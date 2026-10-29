@@ -39,8 +39,13 @@ Every visual item is done only when:
 - N4. [x] *(2026-10-28: bottom tab bar, landmarks, Cath walking)* **Hedgerow illustrated world map** (2-3 sessions): painted landscape per act, nodes as landmarks, Cath walking between them, top pill bar becomes a bottom tab bar.
 - N5. [x] *(2026-10-29: surge, share grid, Bea's drawing; gradient water dropped)* **Runnel "Flow Reveal" win scene** (1-2 sessions): water surges through the network, crops bloom, Bea's drawing revealed, spoiler-free share grid; gradient water on the pipes.
 - N6. [x] *(2026-10-29: card, stat bars, paths and shop panel already existed from AAA UI M3; portrait enlarged on desktop)* **Hedgerow Workshop panel** (2 sessions): tower card with portrait, stat bars, upgrade branches and merge preview; refill the empty right panel with a shop and Cath tip.
-- N7. [ ] **Landing "Games Shelf"** (1-2 sessions): Cath before painted doors, one per game, live hover demos and progress badges; fix her faded lower body and the cropped cards.
-- N8. [ ] **Score and sound pass** (2 sessions): layered music per game (see older sound item).
+- N7. [x] *(2026-10-29: shelf, doors, hover demos, progress lines)* **Landing "Games Shelf"** (1-2 sessions): Cath before painted doors, one per game, live hover demos and progress badges; fix her faded lower body and the cropped cards.
+- N8. [x] *(2026-10-29: Hedgerow and Runnel layered; Cathnivore keeps its ambient pad, bug fixes only)* **Score and sound pass** (2 sessions): layered music per game (see older sound item).
+- N9. [ ] **Hedgerow act 1 finish (H2 open items):** upgrade-UI polish, then a full-act playthrough with screenshots at 390x844 and 1440x900.
+- N10. [ ] **Hedgerow balance pass (item 31):** `hedgerow-tune.ts --verify` across all levels, logged in BALANCE.md.
+- N11. [ ] **Hedgerow chapter scenes (item 58):** staged speakers with a pose per line and a backdrop per chapter.
+- N12. [ ] **Campaign and setup art (item 62):** illustrated chapter headers, locked-chapter silhouettes, progress track.
+- N13. [ ] **NIGHT SHIFT fresh-eyes critique:** shoot title, class pick and districts 2-5, have a subagent critique against VISION.md, add whole features from it.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 
@@ -318,7 +323,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 58. [ ] **Chapter scenes staged like a graphic novel:** every named speaker on screen at 50% viewport height with a pose per line, a coloured backdrop per chapter, AA contrast, staged entrances (bar 5).
 59. [~] *(2026-10-03: staggered entrance + sticky action done)* **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
 60. [ ] **In-game panels:** Sell collapses to one stepper, no overlapping badge glyphs on Squeeze/Expand/Scout chips, category colour and icons in side panels (bar 1).
-61. [ ] **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
+61. [x] *(2026-10-29: already shipped as AAA UI M4 cameo)* **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
 62. [ ] **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
 
 ## Phase 6: CATHODE, the fourth game (owner, 2026-10-03: "I'm okay with month long, start building. Push the limits.")

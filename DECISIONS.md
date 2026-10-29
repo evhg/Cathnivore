@@ -604,3 +604,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-28 22:52: N4 landmarks use cycled inline SVGs per stop (no per-level art); colours live in map.ts SVG attrs so the CSS ratchet stays clean.
 - 2026-10-29: N5 shipped without gradient water (SVG gradient on zero-height lines isn't worth it); N6 ticked as already built by AAA UI M3.
 - 2026-10-29: N7 slice 1 done on the landing: shelf under Cath, unclamped phone card text. Door frames and hover demos next.
+- 2026-10-29: roadmap had under 3 open items, so planned N9-N13 from known gaps (no screenshot critique this session); N7/N8/61 ticked as already built.
