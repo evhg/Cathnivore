@@ -11,7 +11,8 @@ export const PHOTO_FILTERS: ReadonlyArray<{ id: string; label: string; css: stri
 ];
 
 /** Copies the canvas into a PNG data URL with a filter applied (the canvas must have just been rendered). */
-export function snapshot(canvas: HTMLCanvasElement, css: string): string {
+export function snapshot(canvas: HTMLCanvasElement, css: string, polaroid = false): string {
+  if (polaroid) return polaroidSnapshot(canvas, css);
   const out = document.createElement("canvas");
   out.width = canvas.width;
   out.height = canvas.height;
@@ -19,6 +20,33 @@ export function snapshot(canvas: HTMLCanvasElement, css: string): string {
   if (!ctx) return canvas.toDataURL("image/png");
   ctx.filter = css;
   ctx.drawImage(canvas, 0, 0);
+  return out.toDataURL("image/png");
+}
+
+/** A framed polaroid: cream border, thicker foot with a handwritten date, slight shadow margin. */
+function polaroidSnapshot(canvas: HTMLCanvasElement, css: string): string {
+  const w = canvas.width;
+  const h = canvas.height;
+  const side = Math.round(w * 0.04);
+  const foot = Math.round(h * 0.16);
+  const out = document.createElement("canvas");
+  out.width = w + side * 2;
+  out.height = h + side + foot;
+  const ctx = out.getContext("2d");
+  if (!ctx) return canvas.toDataURL("image/png");
+  ctx.fillStyle = "#f3ecdc";
+  ctx.fillRect(0, 0, out.width, out.height);
+  ctx.save();
+  ctx.filter = css;
+  ctx.drawImage(canvas, side, side);
+  ctx.restore();
+  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.lineWidth = Math.max(2, side * 0.06);
+  ctx.strokeRect(side, side, w, h);
+  ctx.fillStyle = "#3a2f2a";
+  ctx.font = `italic ${Math.round(foot * 0.32)}px "Segoe Print", "Bradley Hand", cursive`;
+  ctx.textAlign = "center";
+  ctx.fillText(`Night shift, ${new Date().toISOString().slice(0, 10)}`, out.width / 2, h + side + foot * 0.58);
   return out.toDataURL("image/png");
 }
 
@@ -30,7 +58,7 @@ export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerend
   let idx = 0;
   const apply = () => {
     canvas.style.filter = (PHOTO_FILTERS[idx]?.css ?? "none");
-    bar.querySelectorAll(".photo-filter").forEach((b, i) => b.setAttribute("aria-pressed", String(i === idx)));
+    bar.querySelectorAll(".photo-filter:not(.photo-frame)").forEach((b, i) => b.setAttribute("aria-pressed", String(i === idx)));
   };
   PHOTO_FILTERS.forEach((f, i) => {
     const b = button("photo-filter", bar, f.label);
@@ -39,11 +67,18 @@ export function openPhotoMode(parent: Element, canvas: HTMLCanvasElement, rerend
       apply();
     });
   });
+  let framed = true;
+  const frame = button("photo-filter photo-frame", bar, "Polaroid");
+  frame.setAttribute("aria-pressed", "true");
+  frame.addEventListener("click", () => {
+    framed = !framed;
+    frame.setAttribute("aria-pressed", String(framed));
+  });
   const save = button("photo-save", bar, "Save PNG");
   save.addEventListener("click", () => {
     rerender();
     const a = document.createElement("a");
-    a.href = snapshot(canvas, (PHOTO_FILTERS[idx]?.css ?? "none"));
+    a.href = snapshot(canvas, (PHOTO_FILTERS[idx]?.css ?? "none"), framed);
     a.download = "cathode-photo.png";
     a.click();
   });
