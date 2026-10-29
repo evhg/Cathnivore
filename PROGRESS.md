@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-29 11:53 session (N14 done):** cold-open card got kicker, rule and slow drift; lint and tests pass, not shot. Next: N15.
 - **2026-10-29 10:54 session (N13 done):** shot NIGHT SHIFT gate/HUD (scenes beyond hud time out under swiftshader); world looks strong, title card sparse. Fixed shots script URL; added N14-N15. Next: N14.
 - **2026-10-29 09:52 session (N12 done):** Hedgerow map acts got a progress track (pips) and a greyed locked-act banner; `npm run check` passes. Next: N13 NIGHT SHIFT fresh-eyes critique.
 - **2026-10-29 08:52 session (N11 done):** shot the story panel (act 1) at P and D: poses, speaker glow and the act backdrop all render well; ticked N11. Next: N12 campaign and setup art.

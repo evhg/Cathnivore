@@ -116,6 +116,29 @@
   transform: translateY(calc(var(--u) * 6));
   transition: opacity 600ms ease, transform 900ms cubic-bezier(.2, .7, .2, 1);
 }
+.coldopen-card { display: grid; justify-items: center; gap: calc(var(--u) * 14); animation: coldopen-drift 6s linear both; }
+.coldopen-kicker {
+  margin: 0;
+  font-size: var(--fs-1);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.coldopen-rule {
+  display: block;
+  width: calc(var(--u) * 120);
+  height: 1px; /* px-ok */
+  background: var(--ink);
+  opacity: 0;
+  transform: scaleX(0);
+  transition: opacity 900ms ease, transform 1200ms cubic-bezier(.2, .7, .2, 1);
+}
+.coldopen.is-line .coldopen-kicker { opacity: .55; }
+.coldopen.is-line .coldopen-rule { opacity: .5; transform: none; }
+.coldopen.is-out .coldopen-kicker, .coldopen.is-out .coldopen-rule { opacity: 0; transition-duration: 500ms; }
+@keyframes coldopen-drift { from { transform: scale(1); } to { transform: scale(1.04); } }
 .coldopen.is-line .coldopen-line { opacity: 1; transform: none; }
 .coldopen.is-out .coldopen-line { opacity: 0; transition-duration: 500ms; }
 
