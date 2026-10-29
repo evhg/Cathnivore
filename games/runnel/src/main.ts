@@ -302,7 +302,27 @@ function showWin(): void {
     : parNote(game.taps, puzzle.par)
   ui.btnNext.textContent = isDaily ? 'Play practice' : 'Next puzzle'
   ui.toast.textContent = ''
+  $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
+}
+
+/** Bea's crayon drawing of the field, different every day; a gold star when you were on par. */
+function beaDrawing(seed: string, onPar: boolean): string {
+  let h = 0
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  const rnd = (): number => ((h = (h * 1664525 + 1013904223) >>> 0) / 4294967296)
+  const colours = ['#e0524d', '#f2a33a', '#7bbf4a', '#b25fc4', '#f2d13a']
+  let rows = ''
+  for (let i = 0; i < 4; i++) {
+    const y = 62 + i * 13
+    rows += `<path d="M10 ${y} q 40 ${(rnd() * 6 - 3).toFixed(1)} 80 0 t 80 0 t 60 0" class="bea-row d${i}" pathLength="1"/>`
+    for (let x = 20; x < 210; x += 28 + rnd() * 10) {
+      const c = colours[Math.floor(rnd() * colours.length)]
+      rows += `<circle cx="${x.toFixed(0)}" cy="${(y - 5).toFixed(0)}" r="${(3 + rnd() * 2).toFixed(1)}" fill="${c}" class="bea-bloom d${i}"/>`
+    }
+  }
+  const star = onPar ? '<path d="M200 12 l3 8 9 0 -7 5 3 9 -8 -5 -8 5 3 -9 -7 -5 9 0z" fill="#f2c94c" class="bea-bloom d5"/>' : ''
+  return `<svg viewBox="0 0 240 120" role="img" aria-label="Bea's drawing of the watered field"><circle cx="34" cy="26" r="12" fill="#f6d24a" class="bea-bloom"/><path d="M110 50 l8 -22 8 22" class="bea-row" pathLength="1"/><circle cx="118" cy="22" r="5" class="bea-row" pathLength="1"/>${rows}${star}</svg><figcaption>Drawn by Bea, age 6</figcaption>`
 }
 
 /** Spoiler-free: shows the board's shape (stones, spring, fields) but not a single rotation. */

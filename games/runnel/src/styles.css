@@ -334,7 +334,7 @@ button {
 
 .rock {
   fill: var(--stone);
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-opacity: 0.5;
   stroke-width: 1.5;
 }
@@ -449,7 +449,7 @@ button {
 
 .well-ring {
   fill: var(--stone-2);
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-opacity: 0.55;
   stroke-width: 2;
 }
@@ -495,7 +495,7 @@ button {
 }
 
 .furrow {
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-opacity: 0.25;
   stroke-width: 2;
   stroke-linecap: round;
@@ -636,7 +636,7 @@ button {
 
 .pin {
   fill: var(--clay);
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-width: 1.5;
   opacity: 0;
   transform-box: fill-box;
@@ -1064,7 +1064,7 @@ kbd {
 }
 
 .fixed .tile {
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-width: 4;
   stroke-dasharray: 5 3;
 }
@@ -1090,11 +1090,11 @@ kbd {
 }
 .deck-plank {
   fill: #c9a06a;
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-width: 2;
 }
 .deck-seam {
-  stroke: var(--ink);
+  stroke: var(--wet-edge);
   stroke-width: 1;
   opacity: 0.45;
 }
@@ -1328,3 +1328,65 @@ body {
     grid-column: 2;
   }
 }
+
+/* Bea's drawing */
+
+.bea {
+  margin: 4px 0 10px;
+  padding: 8px 10px 6px;
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--dry-edge);
+  transform: rotate(-1.2deg);
+}
+
+.bea svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bea figcaption {
+  font-size: 0.72rem;
+  text-align: right;
+  opacity: 0.6;
+}
+
+.bea-row {
+  fill: none;
+  stroke: var(--wet-edge);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  animation: bea-draw 700ms ease-out both calc(300ms + var(--i, 0) * 160ms);
+}
+
+.bea-bloom {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bea-pop 420ms cubic-bezier(0.34, 1.7, 0.64, 1) both calc(700ms + var(--i, 0) * 160ms);
+}
+
+@keyframes bea-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes bea-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bea-row,
+  .bea-bloom {
+    animation: none;
+  }
+}
+
+.bea .d1 { --i: 1; }
+.bea .d2 { --i: 2; }
+.bea .d3 { --i: 3; }
+.bea .d5 { --i: 5; }
