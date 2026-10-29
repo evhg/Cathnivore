@@ -37,3 +37,44 @@ describe("The clinic register", () => {
     expect(progress.jobsDone).toContain("vaneLead");
   });
 });
+
+describe("The clinic blackout", () => {
+  it("cuts the lights on the register, spawns an ambush and restores power when it is cleared", () => {
+    const player = { pos: new THREE.Vector3(20, 0.6, 24) };
+    const progress = { jobsDone: ["crispBoss"] as string[], save: vi.fn() };
+    const foes: { alive: boolean }[] = [];
+    const levels: number[] = [];
+    const h = {
+      player,
+      progress,
+      scene: new THREE.Scene(),
+      markers: { "lead:register": [new THREE.Vector3(20, 0, 24)], extract: [] },
+      ground: () => 0,
+      touch: false,
+      spawn: () => {
+        const e = { alive: true };
+        foes.push(e);
+        return e;
+      },
+      arm: vi.fn(),
+      say: vi.fn(),
+      teach: vi.fn(),
+      banner: vi.fn(),
+      blackout: (k: number) => levels.push(k),
+      sting: vi.fn(),
+    };
+    const job = new VaneLeadJob(h as never);
+    job.update(0.1);
+    expect(job.stage).toBe(1);
+    expect(h.sting).toHaveBeenCalled();
+    for (let i = 0; i < 20; i++) job.update(0.1);
+    expect(job.dark).toBeGreaterThan(0.9);
+    expect(job.done).toBe(false);
+    foes.forEach((e) => (e.alive = false));
+    job.update(0.1);
+    expect(job.done).toBe(true);
+    for (let i = 0; i < 80; i++) job.update(0.1);
+    expect(job.dark).toBe(0);
+    expect(progress.jobsDone).toContain("vaneLead");
+  });
+});

@@ -749,6 +749,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
           light: worldLight,
+          blackout: (k) => world.blackout?.(k),
+          sting: () => audio?.blackoutSting(),
         })
       : null;
   // Vane's boss fight starts once the register is taken (in the clinic, right after the lead job).

@@ -3,6 +3,7 @@
 // shift, so the boss job needs it. Closes `vaneLead`.
 
 import * as THREE from "three";
+import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
 export class VaneLeadJob {
@@ -10,6 +11,11 @@ export class VaneLeadJob {
   objective = "";
   done = false;
   target: THREE.Vector3 | null = null;
+  /** The clinic set piece: 0 lit .. 1 dark, eased towards `darkGoal`. */
+  dark = 0;
+  private darkGoal = 0;
+  private ambush: Enemy[] = [];
+  private blackoutT = 0;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -46,9 +52,19 @@ export class VaneLeadJob {
       case 1:
         if (this.inClinic) {
           // Vane's theatre is the way on: the register names her shift, so no taxi run.
+          // Set piece: the register trips the ward's breaker. The lights die and the roof team comes in.
           h.banner("Register recovered", "Candor clinic");
-          h.say("Cath: Names, dates, a doctor's initials on every page. O.V. She's in the theatre.");
-          this.goto(2);
+          h.say("Bea: Cath, the whole ward just lost power. That's a breaker. They know you're in there.");
+          h.sting?.();
+          this.darkGoal = 1;
+          this.blackoutT = 0;
+          this.target = null;
+          this.objective = "The lights are out. Hold the ward until the power returns.";
+          this.ambush = [
+            h.spawn("rifle", [this.M("lead:guard", 2, 24, 22), this.M("lead:register", 0, 20, 24)]),
+            h.spawn("rifle", [this.M("lead:guard", 3, 24, 28), this.M("lead:register", 0, 20, 24)]),
+            h.spawn("shield", [this.M("lead:guard", 1, 22, 26), this.M("lead:register", 0, 20, 24)]),
+          ];
           return;
         }
         this.objective = "Register taken. Get to the water taxi.";
@@ -57,6 +73,7 @@ export class VaneLeadJob {
         h.say("Cath: Names, dates, a doctor's initials on every page. O.V.");
         break;
       case 2:
+        this.darkGoal = 0;
         this.done = true;
         this.target = null;
         this.objective = this.inClinic
@@ -70,7 +87,22 @@ export class VaneLeadJob {
     }
   }
 
-  update(_dt: number): void {
+  update(dt: number): void {
+    if (this.dark !== this.darkGoal) {
+      const k = Math.min(1, dt * (this.darkGoal > this.dark ? 4 : 0.8));
+      this.dark += (this.darkGoal - this.dark) * k;
+      if (Math.abs(this.dark - this.darkGoal) < 0.01) this.dark = this.darkGoal;
+      this.h.blackout?.(this.dark);
+    }
+    if (this.inClinic && this.stage === 1) {
+      this.blackoutT += dt;
+      const cleared = this.ambush.length > 0 && this.ambush.every((e) => !e.alive);
+      if (cleared || this.blackoutT > 60) {
+        this.h.say("Cath: Breaker's back. Names, dates, a doctor's initials on every page. O.V. She's in the theatre.");
+        this.goto(2);
+      }
+      return;
+    }
     const near = this.target && this.h.player.pos.distanceTo(this.target) < (this.stage === 0 ? 2.2 : 3);
     if (near) this.goto(this.stage + 1);
   }

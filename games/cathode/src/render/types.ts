@@ -105,6 +105,8 @@ export interface World {
   groundHeight(x: number, z: number): number;
   /** One of the street's shared materials by key ("rust", "wood"...), for props added after the build. */
   material?(key: string): THREE.Material | undefined;
+  /** The power cut (0 lit .. 1 dark): dims the fill and key light. */
+  blackout?(k: number): void;
   /** How lit a point is, 0 (black) to 1 (under a lamp): stealth reads it. */
   lightAt(p: THREE.Vector3): number;
   /** The baked light's colour around a point (linear RGB): the viewmodel takes a share of it (C4). */

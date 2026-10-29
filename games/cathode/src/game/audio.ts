@@ -1111,6 +1111,29 @@ export class Audio {
     });
   }
 
+  /** The clinic power cut: a breaker thunk, then a low tone sagging as the ward's transformers spin down (1.6 s). */
+  blackoutSting(): void {
+    this.clack(0, 0.4, 900);
+    this.thump(55, 30, 1.4, 0.45, 0.05, "sine", 0.3);
+    const c = this.ctx;
+    const t = c.currentTime + 0.05;
+    const o = c.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.exponentialRampToValueAtTime(55, t + 1.5);
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 700;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.1, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    o.connect(lp).connect(g).connect(this.sfx);
+    g.connect(this.verbSend);
+    o.start(t);
+    o.stop(t + 1.7);
+  }
+
   /** A new weapon (S7.1): the case snaps shut, then a 1.2 s minor-seventh sting on a low string pad and a bell. */
   newWeapon(): void {
     this.clack(0, 0.3, 1800);

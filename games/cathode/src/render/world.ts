@@ -126,6 +126,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const ambient = outdoor ? 0.06 : 0.7;
   const hemi = new THREE.HemisphereLight(outdoor ? 0x6f86b0 : 0xcfeee0, outdoor ? 0x0a0a0c : 0x20302a, ambient);
   scene.add(hemi);
+  /** 0..1: the clinic's power cut (set piece), dims the fill and the key. */
+  let blackoutK = 0;
   const key = new THREE.SpotLight(level.key.color, 1100, 110, Math.PI * 0.16, 0.55, 2);
   key.position.copy(level.key.pos);
   key.target.position.copy(level.key.target);
@@ -268,6 +270,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     ambientAt(p, out) {
       return volume.sample(tmp.set(p.x, p.y, p.z), out);
     },
+    blackout(k) {
+      blackoutK = Math.min(1, Math.max(0, k));
+    },
     lightAt(p) {
       // The baked neon around the point, the key floodlight if it can see the point, and live flashes.
       volume.sample(tmp.set(p.x, p.y + 0.8, p.z), lum);
@@ -339,9 +344,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       }
       shared.uLightning.value = flash;
       lightning.intensity = flash * 2.2;
-      hemi.intensity = ambient + flash * 0.5;
+      hemi.intensity = (ambient + flash * 0.5) * (1 - blackoutK * 0.93);
       // The floodlight hums and sways a hair in the wind.
-      key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3))));
+      key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3)))) * (1 - blackoutK * 0.9);
     },
     render() {
       const t0 = performance.now();

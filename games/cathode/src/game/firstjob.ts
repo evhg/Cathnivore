@@ -43,6 +43,10 @@ export interface JobHost {
   view?(): { cam: THREE.Camera; w: number; h: number; scale: number };
   /** Makes a box solid for her and for rounds; returns the undo. Absent in tests. */
   block?(box: THREE.Box3): () => void;
+  /** The clinic power cut (0 lit .. 1 dark); absent in tests. */
+  blackout?(k: number): void;
+  /** A one-shot music sting for a set piece; absent in tests. */
+  sting?(): void;
   /** The new-weapon toast and sting (S7.1); absent in tests, where the banner stands in. */
   toast?(kind: string, name: string): void;
 }
