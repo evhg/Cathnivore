@@ -18,7 +18,7 @@ import {
   utcDateString,
   type Puzzle,
 } from './engine'
-import { isMuted, playTurn, playWater, playWin, setMuted } from './sound'
+import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice'
@@ -136,7 +136,10 @@ function onTurn(index: number, clockwise: boolean): void {
   const flow = board.refresh(index)
   wetCount = flow.wet.size
   playTurn()
-  playWater(wetCount - wetBefore, wetCount / Math.max(1, puzzle.cells.filter((c) => c.kind !== 'stone').length))
+  playMusic()
+  const wetFraction = wetCount / Math.max(1, puzzle.cells.filter((c) => c.kind !== 'stone').length)
+  setMusicLevel(wetFraction)
+  playWater(wetCount - wetBefore, wetFraction)
   if (flow.solved) finish()
   else save(data)
   render()
