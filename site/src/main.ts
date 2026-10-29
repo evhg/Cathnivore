@@ -4,6 +4,7 @@ import './tokens.css'
 import './styles.css'
 import '../../shared/cath/cath.css'
 import { cathSvg, type CathExpression } from '../../shared/cath/cath'
+import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
 import { startScene } from './scene'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -30,10 +31,35 @@ document.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => el.style.se
 
 // Cath is the face of every game (VISION.md): she stands in the landscape and reacts to the game cards.
 const heroCath = document.getElementById('hero-cath')
+let outfit = chosenOutfit()
 function showCath(expression: CathExpression): void {
-  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, animate: !reducedMotion })
+  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, outfit, animate: !reducedMotion })
 }
 showCath('smirk')
+
+// The wardrobe: outfits earned in the games, one worn everywhere. Hidden until she has more than the blazer.
+const wardrobeEl = document.getElementById('wardrobe')
+if (wardrobeEl) {
+  const open = unlockedOutfits(readProgress())
+  if (open.length > 1) {
+    wardrobeEl.hidden = false
+    const draw = () => {
+      wardrobeEl.innerHTML = WARDROBE.map((w) => {
+        const got = open.includes(w.id)
+        return `<button type="button" class="wardrobe-pick" data-outfit="${w.id}" aria-pressed="${w.id === outfit}" ${got ? '' : 'disabled'} title="${got ? w.name : w.how}">${w.name}</button>`
+      }).join('')
+    }
+    draw()
+    wardrobeEl.addEventListener('click', (e) => {
+      const id = (e.target as HTMLElement).closest<HTMLElement>('[data-outfit]')?.dataset.outfit
+      if (!id) return
+      outfit = id as typeof outfit
+      chooseOutfit(outfit)
+      draw()
+      showCath('delighted')
+    })
+  }
+}
 document.querySelectorAll<HTMLElement>('.card[data-cath]').forEach((card) => {
   const react = () => showCath(card.dataset.cath as CathExpression)
   const rest = () => showCath('smirk')

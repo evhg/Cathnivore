@@ -3,6 +3,7 @@
 // short, specific, dry, warm, with at most the odd exclamation mark.
 
 import { cathSvg, type CathExpression } from '../../../shared/cath/cath'
+import { chosenOutfit } from '../../../shared/cath/wardrobe'
 
 const GREETINGS = [
   "Morning. The spring's running and the fields are thirsty. Let's fix that.",
@@ -34,7 +35,7 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
   let shown = ''
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
-      face.innerHTML = cathSvg({ framing: 'face', expression, animate: true })
+      face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), animate: true })
       current = expression
     }
     line.textContent = text
@@ -67,5 +68,5 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
 }
 
 export function cathMarkup(expression: CathExpression, framing: 'face' | 'bust' | 'half' = 'bust'): string {
-  return cathSvg({ framing, expression, animate: true })
+  return cathSvg({ framing, expression, outfit: chosenOutfit(), animate: true })
 }

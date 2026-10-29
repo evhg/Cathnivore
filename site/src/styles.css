@@ -1125,3 +1125,32 @@ body {
     stroke-dashoffset: -16;
   }
 }
+
+.wardrobe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 8px;
+}
+.wardrobe[hidden] {
+  display: none;
+}
+.wardrobe-pick {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  background: rgb(0 0 0 / 0.25);
+  color: inherit;
+  cursor: pointer;
+}
+.wardrobe-pick[aria-pressed='true'] {
+  background: #e8c15a;
+  color: #2a2110;
+}
+.wardrobe-pick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
