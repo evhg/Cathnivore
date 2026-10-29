@@ -47,7 +47,7 @@ Every visual item is done only when:
 - N12. [x] *(2026-10-29: act progress track and locked-act silhouette; headers and stars existed)* **Campaign and setup art (item 62):** illustrated chapter headers, locked-chapter silhouettes, progress track.
 - N13. [x] *(2026-10-29: shot gate and HUD at P and D; the world and HUD look AAA, the intro title card is sparse; the shots script pointed at the old /cathode/ path, fixed; items N14-N15 added)* **NIGHT SHIFT fresh-eyes critique:** shoot title, class pick and districts 2-5, have a subagent critique against VISION.md, add whole features from it.
 - N14. [x] *(2026-10-29: cold open now has a NIGHT SHIFT kicker, hairline rule and slow drift; not shot)* **NIGHT SHIFT title card:** the quote card on desktop is a lone line on a dark field; add the logotype, a slow camera-drift of the city behind it and a press-to-start prompt.
-- N15. [ ] **NIGHT SHIFT subtitle safe area:** on phone the case objective and Cath's subtitle sit over bright scenery; add a soft scrim and check the HUD clusters at 5K.
+- N15. [x] *(2026-10-29: subtitle gets a shade pool and a denser plate on phones; not shot)* **NIGHT SHIFT subtitle safe area:** on phone the case objective and Cath's subtitle sit over bright scenery; add a soft scrim and check the HUD clusters at 5K.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 

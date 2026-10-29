@@ -1135,6 +1135,18 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   text-wrap: balance;
 }
 .hud-sub.on { opacity: 1; }
+/* N15: a soft pool of shade under the subtitle, so a line over bright scenery (a lit sign, a phone-sized view) never loses its edge. */
+.hud-sub::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -30) calc(var(--u) * -60);
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgb(var(--shade-rgb) / .55), transparent 72%);
+  pointer-events: none;
+}
+@media (max-height: 520px), (max-width: 760px) {
+  .hud-sub > .line { background: rgb(var(--shade-rgb) / .86); }
+}
 .hud-sub > .line {
   display: inline;
   padding: .14em .5em;
