@@ -2781,3 +2781,14 @@ img.act-scene {
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
   }
 }
+
+/* Workshop portrait: on a desktop the tower card leads with a bigger portrait (N6). */
+@media (min-width: 900px) {
+  .panel-tower .tower-icon,
+  .panel .tower-head .tower-icon {
+    width: 84px;
+    height: 84px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 38%, var(--paper) 0%, var(--paper-2) 80%);
+  }
+}
