@@ -1188,7 +1188,21 @@ body {
   }
 }
 
+/* solved: a bright surge of water runs outward ring by ring */
+.won .wet .water,
+.won .wet .hub-water {
+  animation: surge 650ms ease-out both calc(var(--ring, 0) * 110ms);
+}
+
+@keyframes surge {
+  40% {
+    filter: brightness(1.5) saturate(1.3) drop-shadow(0 0 3px var(--water));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .won .wet .water,
+  .won .wet .hub-water,
   .won .crop {
     animation: none;
   }

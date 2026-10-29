@@ -305,10 +305,25 @@ function showWin(): void {
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
 }
 
+/** Spoiler-free: shows the board's shape (stones, spring, fields) but not a single rotation. */
+function shareGrid(): string {
+  const rows = new Map<number, { q: number; e: string }[]>()
+  for (const c of puzzle.cells) {
+    const e = c.kind === 'stone' ? '⬛' : c.kind === 'spring' ? '💧' : '🟩'
+    const row = rows.get(c.r) ?? []
+    row.push({ q: c.q + c.r / 2, e })
+    rows.set(c.r, row)
+  }
+  return [...rows.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([r, row]) => (r % 2 ? ' ' : '') + row.sort((a, b) => a.q - b.q).map((x) => x.e).join(''))
+    .join('\n')
+}
+
 function shareText(): string {
   const head = mode === 'daily' ? `Runnel #${dailyNumber(today)}` : `Runnel practice (${size})`
   const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
-  return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\nhttps://cathnivore.com/runnel/`
+  return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\n${shareGrid()}\nhttps://cathnivore.com/runnel/`
 }
 
 ui.btnShare.addEventListener('click', async () => {
