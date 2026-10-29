@@ -93,3 +93,6 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 - Time to first damage after the squad's first sight of her: min 1.20 s, median 1.40 s, p90 5.30 s (bar: >= 1.0 s; the 0.9 s reaction + 350 ms windup + two warning rounds).
 - Flanks 191 (every encounter >= 1), "Reloading!" 191 (every encounter >= 1, magazine 15), longest stuck 1.57 s (bar < 5 s; a stuck run abandons its point at 1.6 s). Acts: peek 831, lean 1141, blind 524; 169 kills, 1 surrender.
 - Morale recovery (+0.1/s in cover) only counts while no round has cracked past him for 1.5 s ("no damage" read strictly); even so the median lowest morale is 0.45, so fall-backs and surrenders are rare against this Cath (CATH_HIT=0.8: median 0.33, surrenders appear). PASS.
+
+## 2026-10-29 Hedgerow N10: `hedgerow-tune.ts --verify`, levels 1-100
+- The best bot (`playLevel(..., "best")`) wins every level with at least 50% Goodwill at the shipped `START_K`/`HP_SCALE`; no level needed raising (0 of 100 differ from `tuning.ts`). No values changed.
