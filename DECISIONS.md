@@ -602,3 +602,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-28: N1 critique was from 2D shots only; N2-N8 added, verify 3D state before building N2.
 - 2026-10-28: CI red was the landing mask's #000 (CSS ratchet); fixed with 'black'. N2 ticked by audit; N3 started with a wave-cleared banner.
 - 2026-10-28 22:52: N4 landmarks use cycled inline SVGs per stop (no per-level art); colours live in map.ts SVG attrs so the CSS ratchet stays clean.
+- 2026-10-29: N5 shipped without gradient water (SVG gradient on zero-height lines isn't worth it); N6 ticked as already built by AAA UI M3.
