@@ -131,10 +131,10 @@ body {
   bottom: 0;
   height: 14px;
   border-radius: 7px 7px 3px 3px;
-  background: linear-gradient(180deg, #d9a15f 0%, #a8693a 38%, #6b3f24 100%);
+  background: linear-gradient(180deg, var(--wood-hi) 0%, var(--wood-mid) 38%, var(--wood-lo) 100%);
   box-shadow:
-    0 -1px 0 rgba(255, 226, 170, 0.55) inset,
-    0 10px 22px rgba(10, 4, 8, 0.55);
+    0 -1px 0 var(--wood-rim) inset,
+    0 10px 22px var(--shadow-deep);
 }
 
 .games {
@@ -337,9 +337,9 @@ body {
 .card:not(.card-cathode) .card-art {
   border-radius: 38px 38px 12px 12px;
   box-shadow:
-    0 0 0 4px #6b4426,
-    0 0 0 5px rgba(255, 220, 160, 0.25),
-    0 8px 22px rgba(0, 0, 0, 0.35);
+    0 0 0 4px var(--frame),
+    0 0 0 5px var(--frame-edge),
+    0 8px 22px var(--shadow-art);
   transition:
     transform 500ms var(--ease-out),
     box-shadow 400ms;
@@ -348,10 +348,10 @@ body {
 .ready .card:not(.card-cathode):hover .card-art {
   transform: scale(1.06);
   box-shadow:
-    0 0 0 4px #8a5a30,
-    0 0 0 5px rgba(255, 220, 160, 0.5),
-    0 0 26px rgba(244, 199, 116, 0.55),
-    0 8px 22px rgba(0, 0, 0, 0.35);
+    0 0 0 4px var(--frame-lit),
+    0 0 0 5px var(--frame-edge-lit),
+    0 0 26px var(--frame-glow),
+    0 8px 22px var(--shadow-art);
 }
 
 @media (prefers-reduced-motion: reduce) {

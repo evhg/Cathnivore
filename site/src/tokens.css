@@ -21,6 +21,17 @@
   --gold-mid: #e9b457;
   --gold-lo: #d39a3c;
   --gold-edge: rgba(120, 70, 20, 0.35);
+  --wood-hi: #d9a15f;
+  --wood-mid: #a8693a;
+  --wood-lo: #6b3f24;
+  --wood-rim: rgba(255, 226, 170, 0.55);
+  --shadow-deep: rgba(10, 4, 8, 0.55);
+  --shadow-art: rgba(0, 0, 0, 0.35);
+  --frame: #6b4426;
+  --frame-lit: #8a5a30;
+  --frame-edge: rgba(255, 220, 160, 0.25);
+  --frame-edge-lit: rgba(255, 220, 160, 0.5);
+  --frame-glow: rgba(244, 199, 116, 0.55);
   --gold-glow: rgba(233, 180, 87, 0.28);
   --glass-fill: rgba(255, 244, 224, 0.1);
   --glass-edge: rgba(255, 244, 224, 0.28);
