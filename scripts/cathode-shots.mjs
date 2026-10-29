@@ -3,13 +3,13 @@
 // reduced motion. Prints a HUD overlap report (no two clusters may touch; touch buttons 44 px or more) and
 // any CSP violations.
 // Usage: npm run build:site && npx vite preview --outDir dist-site --port 4180 &  then  node scripts/cathode-shots.mjs
-// Env: CATHODE_URL (default http://localhost:4180/cathode/), OUT (default e2e/screenshots), ONLY (comma list
+// Env: CATHODE_URL (default http://localhost:4180/nightshift/), OUT (default e2e/screenshots), ONLY (comma list
 // of scenes: gate,focus,hud,busy,boss,pause; focus shoots the keyboard focus ring on the gate and pause buttons), SIZES (comma list of P,L,D), RM=0 to skip the reduced-motion pass.
 // Set PLAYWRIGHT_CHROMIUM_PATH if the pinned Chromium revision is missing (see CLAUDE.md).
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 
-const base = process.env.CATHODE_URL ?? 'http://localhost:4180/cathode/'
+const base = process.env.CATHODE_URL ?? 'http://localhost:4180/nightshift/'
 const out = process.env.OUT ?? 'e2e/screenshots'
 const only = (process.env.ONLY ?? 'gate,focus,hud,busy,boss,pause').split(',')
 const sizeKeys = (process.env.SIZES ?? 'P,L,D').split(',')

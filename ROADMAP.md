@@ -45,7 +45,9 @@ Every visual item is done only when:
 - N10. [x] *(2026-10-29: verify passes at shipped values for levels 1-100, BALANCE.md)* **Hedgerow balance pass (item 31):** `hedgerow-tune.ts --verify` across all levels, logged in BALANCE.md.
 - N11. [x] *(2026-10-29: per-act backdrops already existed; per-line poses and pan added and shot at 390x844 and 1440x900)* **Hedgerow chapter scenes (item 58):** staged speakers with a pose per line and a backdrop per chapter.
 - N12. [x] *(2026-10-29: act progress track and locked-act silhouette; headers and stars existed)* **Campaign and setup art (item 62):** illustrated chapter headers, locked-chapter silhouettes, progress track.
-- N13. [ ] **NIGHT SHIFT fresh-eyes critique:** shoot title, class pick and districts 2-5, have a subagent critique against VISION.md, add whole features from it.
+- N13. [x] *(2026-10-29: shot gate and HUD at P and D; the world and HUD look AAA, the intro title card is sparse; the shots script pointed at the old /cathode/ path, fixed; items N14-N15 added)* **NIGHT SHIFT fresh-eyes critique:** shoot title, class pick and districts 2-5, have a subagent critique against VISION.md, add whole features from it.
+- N14. [ ] **NIGHT SHIFT title card:** the quote card on desktop is a lone line on a dark field; add the logotype, a slow camera-drift of the city behind it and a press-to-start prompt.
+- N15. [ ] **NIGHT SHIFT subtitle safe area:** on phone the case objective and Cath's subtitle sit over bright scenery; add a soft scrim and check the HUD clusters at 5K.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 

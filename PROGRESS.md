@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-29 10:54 session (N13 done):** shot NIGHT SHIFT gate/HUD (scenes beyond hud time out under swiftshader); world looks strong, title card sparse. Fixed shots script URL; added N14-N15. Next: N14.
 - **2026-10-29 09:52 session (N12 done):** Hedgerow map acts got a progress track (pips) and a greyed locked-act banner; `npm run check` passes. Next: N13 NIGHT SHIFT fresh-eyes critique.
 - **2026-10-29 08:52 session (N11 done):** shot the story panel (act 1) at P and D: poses, speaker glow and the act backdrop all render well; ticked N11. Next: N12 campaign and setup art.
 - **2026-10-29 owner-chat session (portfolio):** cathnivore.com `/` is now a portfolio of apps (`portfolio/`, rendered at build time from `portfolio/src/apps.ts`: Cathnivore Games, Kicksmash, Kinetiq (private), Sleep Lab); the games landing moved to `/games/` (`site/`, base `/games/`); `/kinetiq` is a Vercel function password gate (`api/kinetiq.ts`, env `KINETIQ_PASSWORD_SHA256`/`KINETIQ_URL` set in Vercel); `/cathode/` (trailing slash) now redirects. Tests: `tests/portfolio.test.ts`, portfolio e2e in `site.spec.ts`; release smoke checks `/` then `/games/`.
