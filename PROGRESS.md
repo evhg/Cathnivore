@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-29 21:52 session:** CI was red on `7b3fb6b` (duplicate `isUnlocked` import in Hedgerow `main.ts`, from N19); renamed the wardrobe one, tsc, eslint and hedgerow tests pass, pushed. ROADMAP was empty: added N20-N23 (whole features). Next: N20.
 - **2026-10-29 20:52 session (N19 done):** Hedgerow wardrobe now unlocks outfits earned in other games and shares its pick via `cath:outfit` (`isUnlocked`, `shareOutfit`); NIGHT SHIFT keeps its fixed noir coat (logged). Test added; tsc, eslint pass; not shot. ROADMAP N-list is empty: next session plan new whole-feature items (shoot + critique).
 - **2026-10-29 19:51 session (N19 part):** `shared/cath/wardrobe.ts` reads all three saves, unlocks six outfits, one choice (`cath:outfit`); landing hero picker and Runnel host use it; unit test passes, tsc clean, full check not seen to finish, not shot. Next: wear it in Hedgerow portraits and NIGHT SHIFT, shoot.
 - **2026-10-29 18:52 session (N18 done):** Runnel seasons: `season.ts` sets `data-season` on the root (palette overrides in `tokens.css`), Bea's drawing gets blossom/leaves/snow and a seasonal postcard line; crops and the 28-day calendar already existed. Fixed a `style-prop-assign` ratchet failure from the Hedgerow ghost commit. Tests and lint pass; not shot, not released. Next: N19 shared Cath wardrobe.
