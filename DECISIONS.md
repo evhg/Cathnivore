@@ -614,3 +614,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-29: N19 wardrobe unlocks derive from other games' localStorage saves (no cross-imports); Hedgerow keeps its own per-outfit gear.
 - 2026-10-29: N19 NIGHT SHIFT Cath keeps her fixed black noir coat (3D model, tone); wardrobe applies to the other three games.
 - 2026-10-29: Fixed CI break from N19 (import clash) first; planned N20-N23 without a critique shoot (swiftshader too slow).
+- 2026-10-29: N20 clinic piece is a blackout ambush gated on the register; `World.blackout(k)` scales hemi and key light.
