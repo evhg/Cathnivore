@@ -76,3 +76,22 @@
     --backdrop: rgba(0, 0, 0, 0.55);
   }
 }
+
+/* Seasons (season.ts sets data-season on the root from the date). Summer is the base palette. */
+:root[data-season='spring'] {
+  --wet: #c9e6a6;
+  --wet-edge: #7fb867;
+}
+:root[data-season='autumn'] {
+  --dry: #ead0a0;
+  --dry-edge: #c28f55;
+  --wet: #cfd68f;
+  --wet-edge: #a09a4a;
+}
+:root[data-season='winter'] {
+  --dry: #e6e3d6;
+  --dry-edge: #b9b8ae;
+  --wet: #cfe0c4;
+  --wet-edge: #86a581;
+  --water: #4a86a8;
+}

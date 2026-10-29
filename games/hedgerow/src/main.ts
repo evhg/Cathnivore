@@ -771,8 +771,8 @@ function drawGhost(g: Game): void {
         document.body.append(el);
         ghostEls.set(key, el);
       }
-      el.style.left = `${at.x}px`;
-      el.style.top = `${at.y}px`;
+      el.style.setProperty("left", `${at.x}px`);
+      el.style.setProperty("top", `${at.y}px`);
     }
   }
   for (const [key, el] of ghostEls) if (!live.has(key)) { el.remove(); ghostEls.delete(key); }

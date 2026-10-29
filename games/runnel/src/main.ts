@@ -1,5 +1,6 @@
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
+import { postcard, seasonOf, weatherMarkup } from './season'
 import './fonts.css'
 import './tokens.css'
 import './styles.css'
@@ -60,6 +61,7 @@ $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
 let today = utcDateString(new Date())
+document.documentElement.dataset.season = seasonOf(today)
 let mode: Mode = 'daily'
 let size: Size = 'medium'
 let puzzle: Puzzle
@@ -196,6 +198,7 @@ function checkDailyRollover(): void {
   const now = utcDateString(new Date())
   if (now !== today) {
     today = now
+    document.documentElement.dataset.season = seasonOf(today)
     if (mode === 'daily') openGame()
   }
 }
@@ -311,6 +314,7 @@ function showWin(): void {
 
 /** Bea's crayon drawing of the field, different every day; a gold star when you were on par. */
 function beaDrawing(seed: string, onPar: boolean): string {
+  const season = seasonOf(/^daily-/.test(seed) ? seed.slice(6) : today)
   let h = 0
   for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   const rnd = (): number => ((h = (h * 1664525 + 1013904223) >>> 0) / 4294967296)
@@ -325,7 +329,7 @@ function beaDrawing(seed: string, onPar: boolean): string {
     }
   }
   const star = onPar ? '<path d="M200 12 l3 8 9 0 -7 5 3 9 -8 -5 -8 5 3 -9 -7 -5 9 0z" fill="#f2c94c" class="bea-bloom d5"/>' : ''
-  return `<svg viewBox="0 0 240 120" role="img" aria-label="Bea's drawing of the watered field"><circle cx="34" cy="26" r="12" fill="#f6d24a" class="bea-bloom"/><path d="M110 50 l8 -22 8 22" class="bea-row" pathLength="1"/><circle cx="118" cy="22" r="5" class="bea-row" pathLength="1"/>${rows}${star}</svg><figcaption>Drawn by Bea, age 6</figcaption>`
+  return `<svg viewBox="0 0 240 120" role="img" aria-label="Bea's drawing of the watered field"><circle cx="34" cy="26" r="12" fill="#f6d24a" class="bea-bloom"/><path d="M110 50 l8 -22 8 22" class="bea-row" pathLength="1"/><circle cx="118" cy="22" r="5" class="bea-row" pathLength="1"/>${weatherMarkup(season)}${rows}${star}</svg><figcaption>Drawn by Bea, age 6. ${postcard(season)}</figcaption>`
 }
 
 /** Spoiler-free: shows the board's shape (stones, spring, fields) but not a single rotation. */

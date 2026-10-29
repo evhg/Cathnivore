@@ -50,7 +50,7 @@ Every visual item is done only when:
 - N15. [x] *(2026-10-29: subtitle gets a shade pool and a denser plate on phones; not shot)* **NIGHT SHIFT subtitle safe area:** on phone the case objective and Cath's subtitle sit over bright scenery; add a soft scrim and check the HUD clusters at 5K.
 - N16. [x] *(2026-10-29: pause case board, title-menu entry, polaroid photo mode; not shot)* **NIGHT SHIFT photo mode and case board** (2 sessions): pause into a free camera with depth of field, grain and Cath poses, saved as a framed polaroid; a corkboard of solved cases with photos and red string, shown on the title menu.
 - N17. [x] *(2026-10-29: daily and share card existed; ghost of best placements added; not shot)* **Hedgerow daily field and ghost replay** (2-3 sessions): a seeded daily level with a fixed loadout, a shareable result card, and a ghost of your best run's tower placements replayed in translucent colour.
-- N18. [ ] **Runnel seasons** (2 sessions): crops, palette, weather and the water tune change per season by date, with a seasonal Bea postcard on the win card and a calendar of daily results on the landing card.
+- N18. [x] *(2026-10-29: season.ts palette/weather/postcard; crops and calendar already existed; not shot)* **Runnel seasons** (2 sessions): crops, palette, weather and the water tune change per season by date, with a seasonal Bea postcard on the win card and a calendar of daily results on the landing card.
 - N19. [ ] **Shared Cath wardrobe** (2 sessions): outfits unlocked by stars (Hedgerow), crops (Runnel) and cases (NIGHT SHIFT), worn in all four games and on the portfolio hero via `shared/cath/`.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
