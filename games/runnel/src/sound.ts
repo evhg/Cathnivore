@@ -111,18 +111,18 @@ function note(freq: number, at: number, dur: number, type: OscillatorType, peak:
 function scheduleBar(): void {
   const c = ctx
   if (!c || !musicGain) return
-  const root = ROOTS[bar % ROOTS.length]
+  const root = ROOTS[bar % ROOTS.length]!
   const t = nextBar
   note(root / 2, t, BAR * 1.1, 'sine', 0.05)
   note(root, t, BAR * 1.1, 'triangle', 0.018)
   note(root * 1.5, t + 0.05, BAR, 'sine', 0.014)
   if (wetness > 0.25) {
     for (let i = 0; i < 4; i++) {
-      const deg = SCALE[(bar * 2 + i * 3) % SCALE.length]
+      const deg = SCALE[(bar * 2 + i * 3) % SCALE.length]!
       note(root * 2 * 2 ** (deg / 12), t + i * (BAR / 4), 0.9, 'triangle', 0.02 * Math.min(1, wetness * 1.5))
     }
   }
-  if (wetness > 0.7) note(root * 4 * 2 ** (SCALE[bar % SCALE.length] / 12), t + BAR / 2, 1.6, 'sine', 0.012)
+  if (wetness > 0.7) note(root * 4 * 2 ** (SCALE[bar % SCALE.length]! / 12), t + BAR / 2, 1.6, 'sine', 0.012)
   nextBar += BAR
   bar++
 }

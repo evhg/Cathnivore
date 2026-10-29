@@ -555,6 +555,15 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true, outfit: art() });
     ui.storyLeft.classList.toggle("speaking", line.who === "cath");
     ui.storyRight.classList.toggle("speaking", line.who === other);
+    // A pose per line: the speaker's body language follows what they say, and the backdrop drifts a little each line.
+    const pose = line.who === "cath" ? ({ determined: "lean", worried: "shrink", delighted: "hop", wink: "tilt", smirk: "ease" } as const)[line.expression ?? "smirk"] : /!/.test(line.text) ? "hop" : /\?/.test(line.text) ? "tilt" : "lean";
+    const speaker = line.who === "cath" ? ui.storyLeft : ui.storyRight;
+    for (const el of [ui.storyLeft, ui.storyRight]) delete el.dataset.pose;
+    if (line.who !== "narrator") {
+      void speaker.offsetWidth;
+      speaker.dataset.pose = pose;
+    }
+    ui.storyBg.style.setProperty("--pan", `${(i % 3) * -1.5}%`);
     ui.storySpeech.dataset.who = line.who;
     ui.storySpeech.classList.toggle("from-right", line.who !== "cath" && line.who !== "narrator");
     ui.storySpeech.classList.toggle("caption", line.who === "narrator");

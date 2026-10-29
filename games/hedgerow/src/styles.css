@@ -1087,6 +1087,18 @@ button {
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.3));
   opacity: 1;
 }
+@keyframes pose-lean { 0% { transform: translateY(-6px) scale(1.04) rotate(0); } 55% { transform: translateY(-8px) scale(1.07) rotate(var(--lean, 3deg)); } 100% { transform: translateY(-6px) scale(1.05) rotate(calc(var(--lean, 3deg) / 2)); } }
+@keyframes pose-hop { 0%, 100% { transform: translateY(-6px) scale(1.04); } 30% { transform: translateY(-20px) scale(1.06); } 55% { transform: translateY(-4px) scale(1.03, 1.0); } }
+@keyframes pose-tilt { 0% { transform: translateY(-6px) scale(1.04) rotate(0); } 60%, 100% { transform: translateY(-6px) scale(1.04) rotate(-4deg); } }
+@keyframes pose-shrink { 0% { transform: translateY(-6px) scale(1.04); } 100% { transform: translateY(0) scale(0.97); } }
+.actor.left { --lean: 3deg; }
+.actor.right { --lean: -3deg; }
+.actor[data-pose="lean"] { animation: pose-lean 520ms ease-out forwards; }
+.actor[data-pose="hop"] { animation: pose-hop 560ms ease-out forwards; }
+.actor[data-pose="tilt"] { animation: pose-tilt 420ms ease-out forwards; }
+.actor[data-pose="shrink"] { animation: pose-shrink 420ms ease-out forwards; }
+#story-bg .act-scene { transition: transform 900ms ease; transform: translateX(var(--pan, 0)) scale(1.04); }
+@media (prefers-reduced-motion: reduce) { .actor[data-pose] { animation: none; } #story-bg .act-scene { transition: none; transform: none; } }
 .speech {
   position: relative;
   margin: -18px 14px 0;
