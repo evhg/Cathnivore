@@ -37,3 +37,41 @@ describe("The visitor pass", () => {
     expect(progress.jobsDone).toContain("boardLead");
   });
 });
+
+describe("The visitor pass hostage lift", () => {
+  it("in the tower the keycard leaves a courier held by three captors until they are down", async () => {
+    const { vi } = await import("vitest");
+    const THREE = await import("three");
+    const { BoardLeadJob } = await import("../games/cathode/src/game/boardlead");
+    const player = { pos: new THREE.Vector3(20, 0.6, -30) };
+    const progress = { jobsDone: [] as string[], save: vi.fn() };
+    const foes: { alive: boolean }[] = [];
+    const h = {
+      player,
+      progress,
+      scene: new THREE.Scene(),
+      markers: { "lead:register": [new THREE.Vector3(20, 0, -30)], extract: [] },
+      ground: () => 0,
+      touch: false,
+      spawn: () => {
+        const e = { alive: true };
+        foes.push(e);
+        return e;
+      },
+      arm: vi.fn(),
+      say: vi.fn(),
+      teach: vi.fn(),
+      banner: vi.fn(),
+      sting: vi.fn(),
+    };
+    const job = new BoardLeadJob(h as never);
+    job.update(0.1);
+    expect(job.stage).toBe(1);
+    expect(h.sting).toHaveBeenCalled();
+    job.update(0.1);
+    expect(job.done).toBe(false);
+    foes.forEach((e) => (e.alive = false));
+    job.update(0.1);
+    expect(job.done).toBe(true);
+  });
+});

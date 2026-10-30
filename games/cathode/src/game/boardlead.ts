@@ -3,6 +3,7 @@
 // lift, so the boss job needs it. Closes `boardLead`.
 
 import * as THREE from "three";
+import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
 export class BoardLeadJob {
@@ -10,6 +11,7 @@ export class BoardLeadJob {
   objective = "";
   done = false;
   target: THREE.Vector3 | null = null;
+  private captors: Enemy[] = [];
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -45,9 +47,18 @@ export class BoardLeadJob {
       case 1:
         if (this.inTower) {
           // The keycard rides the private lift: the climb is the way on, so no taxi run.
+          // Set piece: the courier who owned the pass is held at the private lift. Free her to ride up.
           h.banner("Keycard recovered", "The Board Tower");
-          h.say("Cath: A courier's pass. Two floors up, the boardroom. She's waiting.");
-          this.goto(2);
+          h.say("Bea: The courier is at the private lift, and three of Candor's men have her. No shots near her, Cath.");
+          h.sting?.();
+          this.target = null;
+          this.objective = "A courier is held at the private lift. Down the three captors to free her.";
+          const at = this.M("lead:guard", 0, 18, -32);
+          this.captors = [
+            h.spawn("rifle", [this.M("lead:guard", 1, 22, -28), at]),
+            h.spawn("rifle", [this.M("lead:guard", 2, 24, -32), at]),
+            h.spawn("shield", [this.M("lead:guard", 3, 24, -26), at]),
+          ];
           return;
         }
         this.objective = "Keycard taken. Get to the water taxi.";
@@ -70,6 +81,13 @@ export class BoardLeadJob {
   }
 
   update(_dt: number): void {
+    if (this.inTower && this.stage === 1) {
+      if (this.captors.length > 0 && this.captors.every((e) => !e.alive)) {
+        this.h.say("Cath: You're safe. Thank you. Now, the lift. Two floors up, the boardroom.");
+        this.goto(2);
+      }
+      return;
+    }
     const near = this.target && this.h.player.pos.distanceTo(this.target) < (this.stage === 0 ? 2.2 : 3);
     if (near) this.goto(this.stage + 1);
   }
