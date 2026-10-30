@@ -621,3 +621,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-30: N26 done via the vault set piece (clinic, plaza, tower, vault now all have one); N27 scrapbook is counts-only pages from existing saves, no new stored data.
 - 2026-10-30 11:55: N24 closed after shots; no fixes needed. Next session should plan N28+ whole features.
 - 2026-10-30: Runnel Orchard uses generatePuzzle with fixed seeds `orchard-N` (no hand-authored boards); progress lives in optional `orchard`/`orchardGames` save fields, so no save version bump.
+- 2026-10-30: release gate 5 (site) failed only on a stale menu count in cathode-front.spec (Case Board added); fixed spec, retry release next session.

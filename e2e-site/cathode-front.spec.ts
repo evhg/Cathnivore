@@ -21,7 +21,7 @@ test.describe('CATHODE front door', () => {
     test.setTimeout(180_000)
     await open(page, hasTouch)
     const items = page.locator('#menu .menu-item')
-    await expect(items).toHaveCount(4)
+    await expect(items).toHaveCount(5)
     // No save: CONTINUE keeps its row but is off; focus starts on NEW CASE.
     await expect(page.locator('#btn-continue')).toBeDisabled()
     await expect(page.locator('#btn-begin')).toHaveClass(/is-focus/)
