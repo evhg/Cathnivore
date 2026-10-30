@@ -1220,3 +1220,62 @@ body {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* Hero market stall (item 223): fills the empty right of the wide hero; desktop only. */
+.hero-stall {
+  display: none;
+}
+@media (min-width: 1200px) and (min-aspect-ratio: 1/1) {
+  .hero-stall {
+    display: block;
+    position: absolute;
+    right: clamp(24px, 4vw, 90px);
+    bottom: 22vh;
+    width: clamp(170px, 15vw, 260px);
+    opacity: 0;
+    transform: translateY(18px) rotate(2deg);
+    filter: drop-shadow(0 18px 26px rgba(20, 8, 12, 0.5));
+    transition:
+      opacity 1200ms var(--ease-out) 1300ms,
+      transform 1400ms var(--ease-out) 1300ms;
+  }
+  .ready .hero-stall {
+    opacity: 1;
+    transform: rotate(2deg);
+  }
+  .hero {
+    position: relative;
+  }
+  .stall-pipe path {
+    stroke-dasharray: 6 8;
+    animation: stall-flow 1.4s linear infinite;
+  }
+  .stall-sway {
+    transform-origin: 150px 129px;
+    animation: stall-sway 3.2s ease-in-out infinite;
+  }
+  .stall-veg circle,
+  .stall-veg ellipse {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: stall-bob 4s ease-in-out infinite;
+  }
+  .stall-veg > :nth-child(2n) {
+    animation-delay: -1.3s;
+  }
+  .stall-veg > :nth-child(3n) {
+    animation-delay: -2.6s;
+  }
+}
+@keyframes stall-flow {
+  to { stroke-dashoffset: -28; }
+}
+@keyframes stall-sway {
+  50% { transform: rotate(7deg); }
+}
+@keyframes stall-bob {
+  50% { transform: translateY(-2px) scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stall-pipe path, .stall-sway, .stall-veg > * { animation: none; }
+}

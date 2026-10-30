@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 20:51 session:** item 223 partly built: animated market stall (flowing pipe, swaying scarecrow, bobbing veg) fills the empty right of the `/games/` desktop hero; phone unchanged; tsc, eslint, portfolio tests pass. Next: 224 (shoot Runnel mid-solve first) or 225.
 - **2026-10-30 19:52 session (short):** shot Cathnivore game at P and D (looks good); item 226 already built (liberation/Squeeze choreography in `Map.tsx`), ticked. No code changed. Next: 224 (shoot Runnel mid-solve first) or 223 (landing hero scene).
 - **2026-10-30 18:52 session (planning only):** shot landing, Runnel and Hedgerow at P/L/D, had a subagent critique them, and added ROADMAP Phase 22 (items 223-227). No code changed. Next: item 223 (landing hero scene) or 226 (shoot Cathnivore first).
 - **2026-10-30 17:51 session (release only):** `npm run release` passed all gates; `main` moved to `cf93bfb` (79 commits, incl. Runnel Orchard, NIGHT SHIFT set pieces) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (item 219: screenshot, critique vs VISION).
