@@ -1058,6 +1058,20 @@ kbd {
   box-shadow: inset 0 -4px 0 var(--water-hi);
 }
 
+.streak-cal button.missed {
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--paper);
+  border: 1px dashed var(--ink);
+  cursor: pointer;
+}
+
+.streak-cal button.missed:hover,
+.streak-cal button.missed:focus-visible {
+  background: var(--water-hi);
+}
+
 .streak-cal i.today {
   outline: 2px solid var(--ink);
   outline-offset: 1px;

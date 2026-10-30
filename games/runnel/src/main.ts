@@ -63,6 +63,7 @@ $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 const data = load()
 let today = utcDateString(new Date())
 document.documentElement.dataset.season = seasonOf(today)
+let playDay = today // the daily being played: today, or a missed day from the last week
 let mode: Mode = 'daily'
 let size: Size = 'medium'
 let puzzle: Puzzle
@@ -102,9 +103,9 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
 function openGame(): void {
   pauseClock()
   if (mode === 'daily') {
-    puzzle = dailyPuzzle(today)
-    game = restore(puzzle, data.daily[today])
-    data.daily[today] = game
+    puzzle = dailyPuzzle(playDay)
+    game = restore(puzzle, data.daily[playDay])
+    data.daily[playDay] = game
   } else {
     const saved = data.practice[size]
     const seed = saved && !saved.solved ? saved.seed : newPracticeSeed()
@@ -115,7 +116,7 @@ function openGame(): void {
   save(data)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
   wetCount = computeFlow(puzzle.cells).wet.size
-  host.greet(mode === 'daily', mode === 'daily' ? dailyNumber(today) : Math.floor(Math.random() * 3) + 1)
+  host.greet(mode === 'daily', mode === 'daily' ? dailyNumber(playDay) : Math.floor(Math.random() * 3) + 1)
   if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
@@ -162,8 +163,8 @@ function finish(): void {
   game.elapsedMs = elapsed()
   pauseClock()
   game.solved = true
-  if (mode === 'daily' && !data.results[today]) {
-    data.results[today] = { number: dailyNumber(today), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
+  if (mode === 'daily' && !data.results[playDay]) {
+    data.results[playDay] = { number: dailyNumber(playDay), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
   }
   if (mode === 'practice') {
     data.practiceSolved++
@@ -199,6 +200,7 @@ function checkDailyRollover(): void {
   const now = utcDateString(new Date())
   if (now !== today) {
     today = now
+    playDay = now
     document.documentElement.dataset.season = seasonOf(today)
     if (mode === 'daily') openGame()
   }
@@ -232,7 +234,7 @@ function render(): void {
     b.setAttribute('aria-pressed', String(b.dataset.size === size))
   })
   ui.hudTitle.textContent = isDaily
-    ? `Daily #${dailyNumber(today)} · ${formatDay(today)}`
+    ? `Daily #${dailyNumber(playDay)} · ${formatDay(playDay)}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
   ui.hudTime.textContent = formatTime(elapsed())
   ui.hudTaps.textContent = String(game.taps)
@@ -298,7 +300,7 @@ function parNote(taps: number, par: number): string {
 function showWin(): void {
   $<HTMLDivElement>('win-cath').innerHTML = cathMarkup('delighted', 'bust')
   const isDaily = mode === 'daily'
-  ui.winEyebrow.textContent = isDaily ? `Daily #${dailyNumber(today)}` : `Practice · ${size}`
+  ui.winEyebrow.textContent = isDaily ? `Daily #${dailyNumber(playDay)}${playDay === today ? '' : ' · catch-up'}` : `Practice · ${size}`
   ui.winTitle.textContent = 'Every field is watered.'
   ui.winTime.textContent = formatTime(game.elapsedMs)
   ui.winTaps.textContent = String(game.taps)
@@ -349,7 +351,7 @@ function shareGrid(): string {
 }
 
 function shareText(): string {
-  const head = mode === 'daily' ? `Runnel #${dailyNumber(today)}` : `Runnel practice (${size})`
+  const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : `Runnel practice (${size})`
   const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
   return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\n${shareGrid()}\nhttps://cathnivore.com/runnel/`
 }
@@ -421,11 +423,23 @@ function showStats(): void {
   const cal: HTMLElement[] = []
   for (let i = 27; i >= 0; i--) {
     const day = new Date(Date.parse(`${today}T00:00:00Z`) - i * 86_400_000).toISOString().slice(0, 10)
-    const cell = document.createElement('i')
     const solved = data.results[day] !== undefined
+    const missed = !solved && i > 0 && i <= 7
+    const cell = document.createElement(missed ? 'button' : 'i')
     if (solved) cell.className = 'on'
     if (day === today) cell.classList.add('today')
     cell.title = `${day}${solved ? ': solved' : ''}`
+    if (missed) {
+      cell.classList.add('missed')
+      cell.setAttribute('aria-label', `Catch up on ${formatDay(day)}`)
+      cell.title = `${formatDay(day)}: tap to catch up`
+      cell.addEventListener('click', () => {
+        playDay = day
+        mode = 'daily'
+        ui.dlgStats.close()
+        openGame()
+      })
+    }
     cal.push(cell)
   }
   ui.streakCal.replaceChildren(...cal)
@@ -460,6 +474,7 @@ function switchMode(next: Mode): void {
   if (next === mode) return
   pauseClock()
   mode = next
+  if (next === 'daily') playDay = today
   openGame()
 }
 
