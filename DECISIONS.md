@@ -616,3 +616,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-29: Fixed CI break from N19 (import clash) first; planned N20-N23 without a critique shoot (swiftshader too slow).
 - 2026-10-29: N20 clinic piece is a blackout ambush gated on the register; `World.blackout(k)` scales hemi and key light.
 - 2026-10-30: N22 garden lives in the stats sheet (emoji crops, no new screen) to stay light; crops derive from saved results, nothing new stored.
+- 2026-10-30: N23 done without a 3D back-view change: the 3D Cath keeps her noir coat (see N19); wardrobe shows on the loading-file plate and polaroid caption.

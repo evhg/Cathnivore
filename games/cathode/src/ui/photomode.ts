@@ -1,4 +1,5 @@
 import type { PerspectiveCamera } from "three";
+import { WARDROBE, chosenOutfit } from "../../../../shared/cath/wardrobe";
 import { button, el } from "./dom";
 
 /** Filter presets for photo mode: a CSS filter for the preview and the same string for the saved PNG. */
@@ -46,7 +47,10 @@ function polaroidSnapshot(canvas: HTMLCanvasElement, css: string): string {
   ctx.fillStyle = "#3a2f2a";
   ctx.font = `italic ${Math.round(foot * 0.32)}px "Segoe Print", "Bradley Hand", cursive`;
   ctx.textAlign = "center";
-  ctx.fillText(`Night shift, ${new Date().toISOString().slice(0, 10)}`, out.width / 2, h + side + foot * 0.58);
+  ctx.fillText(`Night shift, ${new Date().toISOString().slice(0, 10)}`, out.width / 2, h + side + foot * 0.5);
+  const worn = WARDROBE.find((w) => w.id === chosenOutfit())?.name ?? "";
+  ctx.font = `italic ${Math.round(foot * 0.2)}px "Segoe Print", "Bradley Hand", cursive`;
+  ctx.fillText(`Cath wore the ${worn.toLowerCase()}`, out.width / 2, h + side + foot * 0.78);
   return out.toDataURL("image/png");
 }
 

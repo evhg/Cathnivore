@@ -1983,3 +1983,8 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 }
 .hud-pm-page .hud-pm-back { margin: calc(var(--u) * 22) 0 0 calc(var(--u) * -40); }
 .hud-pm-page .hud-pm-h, .hud-pm-page .hud-settings, .hud-pm-page .hud-keys, .hud-pm-page .hud-set-head { margin-left: 0; }
+
+/* N23: Cath's plate on the loading file, in her chosen outfit. */
+.ld-cath { width: clamp(72px, 9vmin, 150px); margin-top: 1.2em; opacity: 0.92; filter: grayscale(0.35) contrast(1.05); }
+.ld-cath svg { display: block; width: 100%; height: auto; }
+.is-still .ld-cath * { animation: none; }
