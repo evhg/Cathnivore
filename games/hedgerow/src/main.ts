@@ -1442,6 +1442,26 @@ function fieldIntel(g: Game): HTMLElement {
     else row.append(propRow(locks, "chip-props"));
     box.append(row);
   }
+  // The next five rounds after this one, one icon each (the toughest group leads).
+  const ahead = g.level.waves.slice(g.wave + 1, g.wave + 6);
+  if (ahead.length) {
+    const tl = document.createElement("ol");
+    tl.className = "intel-timeline";
+    tl.setAttribute("aria-label", "Coming rounds");
+    ahead.forEach((groups, i) => {
+      const lead = groups.reduce((a, b) => (ENEMIES[b.enemy].hp * b.count > ENEMIES[a.enemy].hp * a.count ? b : a));
+      const li = document.createElement("li");
+      li.className = isBig(lead.enemy) ? "boss" : "";
+      const n = waveNo(g, g.wave + 2 + i);
+      li.title = `${Word(g)} ${n}: ${groups.reduce((a, x) => a + x.count, 0)} led by ${ENEMIES[lead.enemy].name}`;
+      li.append(img(enemyIcon(lead.enemy), "chip-icon"));
+      const num = document.createElement("span");
+      num.textContent = String(n);
+      li.append(num);
+      tl.append(li);
+    });
+    box.append(tl);
+  }
   // The round so far, in three numbers (a quiet scoreboard under the towers).
   const rec = document.createElement("dl");
   rec.className = "intel-record";

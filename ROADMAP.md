@@ -57,7 +57,7 @@ Every visual item is done only when:
 - N22. [x] *(2026-10-30: garden in the stats sheet; not shot)* **Runnel Bea's garden** (2 sessions): a persistent garden screen that grows from solved days, tappable crops, seasonal visitors.
 - N23. [x] *(2026-10-30: loading-file Cath plate + polaroid caption wear the chosen outfit; 3D model stays noir; not shot)* **Cross-game Cath wardrobe in NIGHT SHIFT** (1 session): wardrobe pick shows on her back view in the loading screen and photo mode.
 - N24. [ ] **Shoot everything that shipped "not shot" (N14-N23):** screenshot NIGHT SHIFT title, case board, photo mode, wardrobe plate, Runnel garden and Hedgerow boss arenas at phone and desktop; fix what a critique against `VISION.md` finds.
-- N25. [ ] **Hedgerow field side panel on desktop:** the right panel still leaves a large empty block under "Your field"; add a wave timeline (next five rounds as icons) and Cath's running commentary.
+- N25. [x] **Hedgerow field side panel on desktop:** the right panel still leaves a large empty block under "Your field"; add a wave timeline (next five rounds as icons) and Cath's running commentary.
 - N26. [ ] **NIGHT SHIFT district 3-5 set pieces** (3 sessions): one scripted encounter per remaining district, following the clinic's pattern (N20).
 - N27. [ ] **Runnel and Hedgerow shared "Cath's scrapbook":** one page on the landing shelf collecting polaroids, crops, boss defeats and outfits across all four games.
 

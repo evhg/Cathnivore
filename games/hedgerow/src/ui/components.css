@@ -2897,6 +2897,25 @@ body:has(#dlg-pause[open]) .paused-note {
   font: 700 var(--fs-small) / 1.2 var(--font-ui);
   color: var(--ink);
 }
+.play .panel .intel-timeline {
+  display: flex;
+  gap: 6px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+.play .panel .intel-timeline li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font: 700 var(--fs-small) / 1.2 var(--font-ui);
+  color: var(--ink-2);
+}
+.play .panel .intel-timeline li.boss {
+  color: var(--ink);
+}
 .play .panel .intel-record {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
