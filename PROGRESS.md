@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 00:52 session (N20 part 3, short):** plaza set piece: taking the permits trips the strongbox alarm and a 4-man rally detail rushes in; clear them or survive 40 s (`pelllead.ts`, sting reused); unit test added, tsc, eslint and tests pass; not shot. Next: tower hostage lift, then shoot the clinic and plaza pieces, tick N20.
 - **2026-10-29 23:52 session (N20 part 2, short):** clinic blackout now pulses a red emergency fill (`world.ts` hemi tint); tsc, eslint and the vanelead test pass; not shot. Next: shoot the clinic blackout, then the plaza chase and tower hostage lift.
 - **2026-10-29 22:51 session (N20 part 1):** clinic set piece: taking the register trips a breaker (`World.blackout`, `blackoutSting`), lights sag to near-dark, a 3-man ambush comes in, power returns when they are down (or after 60 s); unit test added, tsc and eslint pass, full vitest slow (>20 min) and not seen to finish, not shot. Next: shoot it, then a chase (plaza) and hostage lift (tower) for N20.
 - **2026-10-29 21:52 session:** CI was red on `7b3fb6b` (duplicate `isUnlocked` import in Hedgerow `main.ts`, from N19); renamed the wardrobe one, tsc, eslint and hedgerow tests pass, pushed. ROADMAP was empty: added N20-N23 (whole features). Next: N20.

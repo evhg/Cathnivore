@@ -787,6 +787,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
           light: worldLight,
+          sting: () => audio?.blackoutSting(),
         })
       : null;
   const makePellBoss = (): PellBossJob | null =>

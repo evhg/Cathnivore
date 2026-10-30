@@ -3,6 +3,7 @@
 // hours, so the boss job needs it. Closes `pellLead`.
 
 import * as THREE from "three";
+import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
 export class PellLeadJob {
@@ -10,6 +11,8 @@ export class PellLeadJob {
   objective = "";
   done = false;
   target: THREE.Vector3 | null = null;
+  private chasers: Enemy[] = [];
+  private chaseT = 0;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -47,8 +50,19 @@ export class PellLeadJob {
         if (this.inPlaza) {
           // Pell's rally on the steps is the way on: the permits name his hours, so no taxi run.
           h.banner("Permits recovered", "Hollowell Plaza");
-          h.say("Cath: One signature on every crate. Marcus Pell. And he's on the steps tonight.");
-          this.goto(2);
+          // Set piece: the strongbox alarm sends a rally detail running across the square. Cath keeps moving.
+          h.say("Bea: The strongbox is wired. Pell's rally detail is coming across the square. Don't stand still, Cath.");
+          h.sting?.();
+          this.chaseT = 0;
+          this.target = null;
+          this.objective = "The alarm is out. Break the rally detail or outrun them for 40 seconds.";
+          const from = this.M("lead:register", 0, 20, 2);
+          this.chasers = [
+            h.spawn("rifle", [this.M("lead:guard", 0, 18, 0), from]),
+            h.spawn("rifle", [this.M("lead:guard", 1, 22, 4), from]),
+            h.spawn("rifle", [this.M("lead:guard", 3, 24, 6), from]),
+            h.spawn("shield", [this.M("lead:guard", 2, 24, 0), from]),
+          ];
           return;
         }
         this.objective = "Permits taken. Get to the water taxi.";
@@ -70,7 +84,16 @@ export class PellLeadJob {
     }
   }
 
-  update(_dt: number): void {
+  update(dt: number): void {
+    if (this.inPlaza && this.stage === 1) {
+      this.chaseT += dt;
+      const cleared = this.chasers.length > 0 && this.chasers.every((e) => !e.alive);
+      if (cleared || this.chaseT > 40) {
+        this.h.say("Cath: One signature on every crate. Marcus Pell. And he's on the steps tonight.");
+        this.goto(2);
+      }
+      return;
+    }
     const near = this.target && this.h.player.pos.distanceTo(this.target) < (this.stage === 0 ? 2.2 : 3);
     if (near) this.goto(this.stage + 1);
   }

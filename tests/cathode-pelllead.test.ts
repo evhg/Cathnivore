@@ -36,4 +36,38 @@ describe("The permit ledger", () => {
     expect(job.done).toBe(true);
     expect(progress.jobsDone).toContain("pellLead");
   });
+
+  it("in the plaza the strongbox alarm sends a chase that ends when the detail is down", () => {
+    const player = { pos: new THREE.Vector3(20, 0.6, 2) };
+    const progress = { jobsDone: [] as string[], save: vi.fn() };
+    const foes: { alive: boolean }[] = [];
+    const h = {
+      player,
+      progress,
+      scene: new THREE.Scene(),
+      markers: { "lead:register": [new THREE.Vector3(20, 0, 2)], extract: [] },
+      ground: () => 0,
+      touch: false,
+      spawn: () => {
+        const e = { alive: true };
+        foes.push(e);
+        return e;
+      },
+      arm: vi.fn(),
+      say: vi.fn(),
+      teach: vi.fn(),
+      banner: vi.fn(),
+      sting: vi.fn(),
+    };
+    const job = new PellLeadJob(h as never);
+    job.update(0.1);
+    expect(job.stage).toBe(1);
+    expect(h.sting).toHaveBeenCalled();
+    job.update(0.1);
+    expect(job.done).toBe(false);
+    foes.forEach((e) => (e.alive = false));
+    job.update(0.1);
+    expect(job.done).toBe(true);
+    expect(progress.jobsDone).toContain("pellLead");
+  });
 });
