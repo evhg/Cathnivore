@@ -526,3 +526,5 @@ const params = new URLSearchParams(location.search)
 if (params.get('mode') === 'practice') mode = 'practice'
 openGame()
 if (!data.seenHelp && !params.has('nohelp')) ui.dlgHelp.showModal()
+// Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
+if (params.has('shotwin')) finish()
