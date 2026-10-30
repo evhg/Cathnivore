@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 02:52 session (N21 part 1, short):** fixed red CI (plaza job test didn't expect the new rally chase); Hedgerow boss phase changes (66%/33%) now fire a shockwave, gold ring, sparks and a big PHASE label (`bossMove.phase`). tsc, eslint, hedgerow.test pass; not shot. Next: N21 per-boss arena twists and defeat vignette.
 - **2026-10-30 01:52 session (N20 done, short):** tower set piece: after the keycard a courier is held at the private lift by 3 captors (`boardlead.ts`, sting wired); free her by downing them. Unit test, tsc, eslint pass; clinic/plaza/tower pieces not shot. Next: N21 Hedgerow boss gallery.
 - **2026-10-30 00:52 session (N20 part 3, short):** plaza set piece: taking the permits trips the strongbox alarm and a 4-man rally detail rushes in; clear them or survive 40 s (`pelllead.ts`, sting reused); unit test added, tsc, eslint and tests pass; not shot. Next: tower hostage lift, then shoot the clinic and plaza pieces, tick N20.
 - **2026-10-29 23:52 session (N20 part 2, short):** clinic blackout now pulses a red emergency fill (`world.ts` hemi tint); tsc, eslint and the vanelead test pass; not shot. Next: shoot the clinic blackout, then the plaza chase and tower hostage lift.

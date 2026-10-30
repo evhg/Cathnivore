@@ -748,6 +748,14 @@ export class Renderer3D {
             takeover: "Hostile takeover!",
           };
           this.floaters.add(short[e.move] ?? "!", new THREE.Vector3(e.x, y + 1.4, e.y), "#ffb3a8", 1.35);
+          if (e.phase) {
+            // Phase change: a shockwave, a gold second ring and a loud label so the player sees the fight turn.
+            this.kick(0.9);
+            this.fx.ring(e.x, y + 0.1, e.y, "#ffd76a", 5.5, 0.9);
+            this.fx.ring(e.x, y + 0.12, e.y, "#ffffff", 2.5, 0.45);
+            this.floaters.add(`PHASE ${e.phase}`, new THREE.Vector3(e.x, y + 2, e.y), "#ffd76a", 1.7);
+            this.sparks.emit(e.x, y + 0.5, e.y, "#ffd76a", 70, 3, 0.16, 1, -2);
+          }
           for (const id of e.towers) {
             const t = game.towers.find((x) => x.id === id);
             if (!t) continue;

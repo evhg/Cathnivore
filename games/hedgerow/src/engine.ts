@@ -1313,7 +1313,7 @@ function bossMoves(game: Game): void {
         const count = 2 + e.escorts * 2;
         for (let i = 0; i < count; i++) born.push(makeEnemy(game, kind, Math.max(0, e.dist - 0.6 - i * 0.4), e.lane, e.wave));
         const p0 = enemyPoint(game.level, e);
-        game.events.push({ type: "bossMove", kind: e.kind, move: "spawn", x: p0.x, y: p0.y, text: `${ENEMIES[e.kind].name} calls its escort: ${count} more.`, towers: [] });
+        game.events.push({ type: "bossMove", kind: e.kind, move: "spawn", x: p0.x, y: p0.y, text: `${ENEMIES[e.kind].name} calls its escort: ${count} more.`, towers: [], phase: e.escorts + 1 });
       }
     }
     if (e.moveCd === undefined) e.moveCd = plan.every * 0.6;
@@ -1823,6 +1823,8 @@ export type GameEvent =
       text: string;
       /** Towers it knocked out. */
       towers: number[];
+      /** Set when this is a phase change (2 at 66% hp, 3 at 33%). */
+      phase?: number;
     };
 
 export type Phase = "build" | "wave" | "won" | "lost";
