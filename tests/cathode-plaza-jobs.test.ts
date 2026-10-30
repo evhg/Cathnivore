@@ -38,6 +38,8 @@ describe("hollowell plaza jobs", () => {
     expect(job.target!.x).toBeCloseTo(box.x);
     player.pos.set(box.x, box.y + 0.6, box.z);
     job.update(0.1);
+    expect(job.done).toBe(false);
+    for (let i = 0; i < 45 && !job.done; i++) job.update(1);
     expect(job.done).toBe(true);
     expect(progress.jobsDone).toContain("pellLead");
   });
