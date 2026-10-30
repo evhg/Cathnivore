@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 11:55 session (N24 done, short):** shot NIGHT SHIFT gate and HUD at P and D (no overlaps, no CSP issues, read well) and Hedgerow boss levels 10/30/50 fields (render cleanly). Nothing needed fixing. Next: plan new big items (screenshot, critique vs VISION).
 - **2026-10-30 10:51 session (N26, N27 done):** Hollow Vault lockdown set piece (index lift trips it, gantry squad, 45 s) with test; landing "Cath's scrapbook" (`shared/cath/scrapbook.ts`, `#scrapbook`) shot at P and D. css lint, eslint, unit tests pass; e2e:site was too slow to finish (stopped). ROADMAP N-list is finished: next session plans new whole features (critique shoot).
 - **2026-10-30 10:51 session (N24 part, short):** shot Runnel garden at P and D: layout fine, but the gold stars were pale blue; now `--gold` (tokens.css). css lint and garden test pass. Remaining N24: NIGHT SHIFT shots, boss arenas. Next: N26 district 3 set piece.
 - **2026-10-30 09:52 session (N24 part, short):** CI green on b0fd363. Shot Hedgerow desktop field: coming-rounds timeline and Round/Popped/Leaked record render cleanly (a small empty strip remains under the record). Remaining N24: NIGHT SHIFT, Runnel garden, boss arenas shots. Next: N24 rest.

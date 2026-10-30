@@ -619,3 +619,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-30: N23 done without a 3D back-view change: the 3D Cath keeps her noir coat (see N19); wardrobe shows on the loading-file plate and polaroid caption.
 - 2026-10-30: all N-items done; planned N24-N27 (shoot unshot work first, side-panel timeline, district set pieces, scrapbook). Added a small field record to the Hedgerow side panel as the first slice.
 - 2026-10-30: N26 done via the vault set piece (clinic, plaza, tower, vault now all have one); N27 scrapbook is counts-only pages from existing saves, no new stored data.
+- 2026-10-30 11:55: N24 closed after shots; no fixes needed. Next session should plan N28+ whole features.
