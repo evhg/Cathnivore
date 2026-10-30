@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 23:52 session (short):** item 227: `shared/cath/scene.ts` (`cathSceneSvg(moment)`, moments intro/win/perfect/lose/chapter-end/thinking/warning, pose animations in `cath.css`); Runnel win card wears the win hop. tsc, eslint, unit tests pass; not shot. Next: adopt in Hedgerow result card, then plan new whole features (critique shoot).
 - **2026-10-30 22:52 session:** item 225 done: Hedgerow map's Almanac/Show/Difficulty/Remix/Heroic buttons fold into a "Modes" drawer on desktop and landscape (`#tools-drawer`, `main.ts`); phone tab bar unchanged. tsc, eslint, hedgerow.test, css lint pass; shot at D. Next: 227 (shared Cath scene component) or plan new whole features.
 - **2026-10-30 21:52 session (short):** shot Runnel mid-solve at P and D: living board already built, item 224 ticked. No code changed. Next: 225 (check N4 map landmarks/trail first) or 227.
 - **2026-10-30 20:51 session:** item 223 partly built: animated market stall (flowing pipe, swaying scarecrow, bobbing veg) fills the empty right of the `/games/` desktop hero; phone unchanged; tsc, eslint, portfolio tests pass. Next: 224 (shoot Runnel mid-solve first) or 225.

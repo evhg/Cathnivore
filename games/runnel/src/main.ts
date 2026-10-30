@@ -7,7 +7,7 @@ import './fonts.css'
 import './tokens.css'
 import './styles.css'
 import '../../../shared/cath/cath.css'
-import { cathMarkup, createHost } from './host'
+import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import {
   computeFlow,
@@ -315,7 +315,7 @@ function parNote(taps: number, par: number): string {
 // ---- dialogs ----------------------------------------------------------------------------------------
 
 function showWin(): void {
-  $<HTMLDivElement>('win-cath').innerHTML = cathMarkup('delighted', 'bust')
+  $<HTMLDivElement>('win-cath').innerHTML = cathMoment('win', 'bust')
   const isDaily = mode === 'daily'
   const isOrchard = mode === 'orchard'
   ui.winEyebrow.textContent = isDaily

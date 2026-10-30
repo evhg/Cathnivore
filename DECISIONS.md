@@ -624,3 +624,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-30: release gate 5 (site) failed only on a stale menu count in cathode-front.spec (Case Board added); fixed spec, retry release next session.
 - 2026-10-30 17:51: spent the session on a full release (gates ~40 min); cf93bfb live.
 - 2026-10-30 18:52: planned Phase 22 from a subagent critique; its Runnel claim (flat board) conflicts with existing flow/ripple CSS, so item 224 says shoot first.
+- 2026-10-30 23:52: 227 scene component is moment-based (games pass the moment, not an expression); only Runnel adopts it this session.

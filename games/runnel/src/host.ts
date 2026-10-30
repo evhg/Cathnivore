@@ -3,6 +3,7 @@
 // short, specific, dry, warm, with at most the odd exclamation mark.
 
 import { cathSvg, type CathExpression } from '../../../shared/cath/cath'
+import { cathSceneSvg, type CathMoment } from '../../../shared/cath/scene'
 import { chosenOutfit } from '../../../shared/cath/wardrobe'
 
 const GREETINGS = [
@@ -69,4 +70,9 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
 
 export function cathMarkup(expression: CathExpression, framing: 'face' | 'bust' | 'half' = 'bust'): string {
   return cathSvg({ framing, expression, outfit: chosenOutfit(), animate: true })
+}
+
+/** Cath posed for a moment (win card hop, etc.) in the player's chosen outfit. */
+export function cathMoment(moment: CathMoment, framing: 'face' | 'bust' | 'half' = 'bust'): string {
+  return cathSceneSvg(moment, { framing, outfit: chosenOutfit() })
 }
