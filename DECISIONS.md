@@ -617,3 +617,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-29: N20 clinic piece is a blackout ambush gated on the register; `World.blackout(k)` scales hemi and key light.
 - 2026-10-30: N22 garden lives in the stats sheet (emoji crops, no new screen) to stay light; crops derive from saved results, nothing new stored.
 - 2026-10-30: N23 done without a 3D back-view change: the 3D Cath keeps her noir coat (see N19); wardrobe shows on the loading-file plate and polaroid caption.
+- 2026-10-30: all N-items done; planned N24-N27 (shoot unshot work first, side-panel timeline, district set pieces, scrapbook). Added a small field record to the Hedgerow side panel as the first slice.

@@ -1442,6 +1442,19 @@ function fieldIntel(g: Game): HTMLElement {
     else row.append(propRow(locks, "chip-props"));
     box.append(row);
   }
+  // The round so far, in three numbers (a quiet scoreboard under the towers).
+  const rec = document.createElement("dl");
+  rec.className = "intel-record";
+  for (const [label, n] of [["Round", g.wave + 1], ["Popped", g.popped], ["Leaked", g.leaked]] as const) {
+    const d = document.createElement("div");
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = String(n);
+    d.append(dd, dt);
+    rec.append(d);
+  }
+  box.append(rec);
   return box;
 }
 
