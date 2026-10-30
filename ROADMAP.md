@@ -593,3 +593,10 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 ### Phase 21 (planned 2026-10-30)
 221. [x] **Runnel catch-up:** missed days in the last week are tappable in the stats calendar and play as that day's daily (`playDay`, `.streak-cal .missed`); unit tests, tsc, eslint pass, not shot.
 222. [x] **Runnel Orchard campaign:** third tab with 30 fixed puzzles (`orchard.ts`: board size, sluices, reservoirs and bridges ramp up), a level strip that unlocks in order, 1-3 drops per row, Next row and a drop total on the win card; shot at P. Unit test `runnel-orchard.test.ts`. Unreleased.
+
+### Phase 22 (planned 2026-10-30, from a subagent critique of the portfolio shots)
+223. [ ] **Landing hero scene:** full-body Cath, a mini market-stall scene and animated game vignettes in the empty right half of the `/games/` and `/` heroes (`site/`, `portfolio/`, `shared/cath/`).
+224. [ ] *(check first: flow, ripple, puddle, bloom and sway keyframes already exist in styles.css, so the critique may be shallow; shoot the board mid-solve before building)* **Runnel living board:** flowing water along solved pipes, tiles that settle when turned, crops that sprout per watered field, a cascade finale before the win card (`games/runnel/src/`).
+225. [ ] **Hedgerow overworld map:** a painted scrolling map per act with level nodes on a path; fold the eight mode pills into one drawer (`games/hedgerow/src/`).
+226. [ ] **Cathnivore map-as-hero pass:** shoot the main game first (none in the portfolio set), then choreograph liberation and Squeeze with camera and Cath reactions (`src/`).
+227. [ ] **Shared Cath scene component:** poses and play-driven expressions for intros, chapter ends and win/lose cards in every game (`shared/cath/`).

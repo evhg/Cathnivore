@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 18:52 session (planning only):** shot landing, Runnel and Hedgerow at P/L/D, had a subagent critique them, and added ROADMAP Phase 22 (items 223-227). No code changed. Next: item 223 (landing hero scene) or 226 (shoot Cathnivore first).
 - **2026-10-30 17:51 session (release only):** `npm run release` passed all gates; `main` moved to `cf93bfb` (79 commits, incl. Runnel Orchard, NIGHT SHIFT set pieces) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (item 219: screenshot, critique vs VISION).
 - **2026-10-30 16:52 session:** ran `npm run release` (77 commits unreleased): gates 1-4 and site e2e passed except `cathode-front.spec.ts` menu count (Case Board made it 5 items, not 4); fixed the spec and it passes at desktop. Release not completed (gate run takes ~35 min). Next: `npm run release` first thing (run in background, poll the log), then plan new whole features (item 219 still open).
 - **2026-10-30 14:52 session:** Runnel Orchard campaign built (item 222): tab, 30 levels, unlock chain, drops, win card; tsc, eslint, runnel and css-lint tests pass, shot at phone. Not released (milestone, full gates not run: too slow here). Next: Orchard desktop shot and win-card shot, then plan the next whole feature.
