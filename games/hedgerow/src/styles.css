@@ -2848,3 +2848,28 @@ img.act-scene {
   opacity: 0.38;
   filter: saturate(0.6) drop-shadow(0 0 0.4rem rgba(127, 209, 185, 0.9));
 }
+
+/* U225: on desktop and landscape the five mode buttons fold into one "Modes" drawer; the portrait tab bar keeps them inline. */
+.modes-toggle { display: none; }
+.tools-drawer { display: contents; }
+@media (min-width: 641px), (orientation: landscape) {
+  #screen-select .top-tools { position: relative; }
+  #screen-select .modes-toggle { display: inline-flex; }
+  #screen-select .tools-drawer {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: var(--z-raise);
+    flex-direction: column;
+    gap: 6px;
+    min-width: 190px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--ink-muted);
+    box-shadow: 0 12px 28px rgba(22, 15, 10, 0.25);
+  }
+  #screen-select .tools-drawer.open { display: flex; }
+  #screen-select .tools-drawer .bank-btn { justify-content: flex-start; width: 100%; }
+}

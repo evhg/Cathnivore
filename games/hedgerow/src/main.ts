@@ -4133,6 +4133,27 @@ const openAlmanac = setupAlmanac(
   { box: $<HTMLElement>("almanac-view"), canvas: $<HTMLCanvasElement>("almanac-canvas"), caption: $<HTMLElement>("almanac-caption") },
 );
 $<HTMLButtonElement>("btn-almanac").addEventListener("click", openAlmanac);
+// U225: the Modes drawer (desktop/landscape) opens on the toggle and closes on a pick, an outside click or Escape.
+{
+  const drawer = $<HTMLElement>("tools-drawer");
+  const toggle = $<HTMLButtonElement>("btn-modes");
+  const setOpen = (open: boolean): void => {
+    drawer.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+  };
+  toggle.addEventListener("click", () => setOpen(!drawer.classList.contains("open")));
+  drawer.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest("button");
+    if (btn && btn.id !== "btn-diff" && btn.id !== "btn-remix") setOpen(false);
+  });
+  document.addEventListener("click", (e) => {
+    if (!drawer.contains(e.target as Node) && !toggle.contains(e.target as Node)) setOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
+}
+
 $<HTMLButtonElement>("almanac-close").addEventListener("click", () => $<HTMLDialogElement>("dlg-almanac").close());
 
 ui.btnCath.addEventListener("click", () => {

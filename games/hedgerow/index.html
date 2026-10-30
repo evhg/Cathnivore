@@ -50,18 +50,22 @@
             <span>Cath <b class="num" id="cath-level">1</b></span>
             <span class="cath-dot" id="cath-dot" hidden aria-label="Points to spend"></span>
           </button>
-          <button class="bank-btn almanac-btn" id="btn-almanac" type="button" aria-label="Almanac">
-            <span class="chip-ico" aria-hidden="true">&#128214;</span> <span class="bank-word">Almanac</span>
-          </button>
           <button class="bank-btn daily-btn" id="btn-daily" type="button">
             <span class="chip-ico" aria-hidden="true">☀</span> <span class="bank-word">Daily</span>
             <span class="new-dot" id="daily-new" hidden aria-label="New challenge today"></span>
           </button>
-          <button class="bank-btn" id="btn-show" type="button">
-            <span class="chip-ico" aria-hidden="true">🏵</span> <span class="bank-word">Show</span>
-          </button>
           <button class="bank-btn" id="btn-continue" type="button" hidden>
             <span aria-hidden="true">▶</span> <span class="bank-word" id="continue-word">Continue</span>
+          </button>
+          <button class="bank-btn modes-toggle" id="btn-modes" type="button" aria-expanded="false" aria-controls="tools-drawer">
+            <span aria-hidden="true">☰</span> <span class="bank-word">Modes</span>
+          </button>
+          <div class="tools-drawer" id="tools-drawer">
+          <button class="bank-btn almanac-btn" id="btn-almanac" type="button" aria-label="Almanac">
+            <span class="chip-ico" aria-hidden="true">&#128214;</span> <span class="bank-word">Almanac</span>
+          </button>
+          <button class="bank-btn" id="btn-show" type="button">
+            <span class="chip-ico" aria-hidden="true">🏵</span> <span class="bank-word">Show</span>
           </button>
           <button class="bank-btn" id="btn-diff" type="button" aria-label="Difficulty: Normal">
             <span aria-hidden="true">⚖</span> <span class="bank-word" id="diff-word">Normal</span>
@@ -72,6 +76,7 @@
           <button class="bank-btn heroic-btn" id="btn-heroic" type="button" aria-pressed="false">
             <span aria-hidden="true">◆</span> <span class="bank-word">Heroic</span>
           </button>
+          </div>
           <button class="bank-btn" id="btn-bank" type="button">
             <span class="chip-ico" aria-hidden="true">★</span> <span class="num" id="bank-stars">0</span>
             <span class="bank-word">Seed Bank</span>
