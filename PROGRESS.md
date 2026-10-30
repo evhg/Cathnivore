@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 04:51 session (N21 done, short):** boss arena twist: the field edge breathes in the live boss's colour (`.stage[data-arena]`, set in `frame`; off in reduced motion). tsc, eslint, css lint, hedgerow.test pass; not shot. Next: N22 Runnel Bea's garden.
 - **2026-10-30 03:51 session (N21 part 2, short):** boss defeat vignette: slow-mo, gold "is beaten" banner and a Cath line on a boss kill (`main.ts` kill case). tsc, eslint, hedgerow.test pass; not shot. Next: per-boss arena twists, then N22.
 - **2026-10-30 02:52 session (N21 part 1, short):** fixed red CI (plaza job test didn't expect the new rally chase); Hedgerow boss phase changes (66%/33%) now fire a shockwave, gold ring, sparks and a big PHASE label (`bossMove.phase`). tsc, eslint, hedgerow.test pass; not shot. Next: N21 per-boss arena twists and defeat vignette.
 - **2026-10-30 01:52 session (N20 done, short):** tower set piece: after the keycard a courier is held at the private lift by 3 captors (`boardlead.ts`, sting wired); free her by downing them. Unit test, tsc, eslint pass; clinic/plaza/tower pieces not shot. Next: N21 Hedgerow boss gallery.

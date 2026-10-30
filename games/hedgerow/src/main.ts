@@ -2955,6 +2955,10 @@ function frame(now: number): void {
       renderer.feed(evs, g);
       updateHud();
       sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
+      // The field takes on the boss's colours while it is alive.
+      const bossNow = g.enemies.find((e) => isBig(e.kind) && e.hp > 0);
+      if (bossNow) ui.stage.dataset.arena = bossNow.kind;
+      else delete ui.stage.dataset.arena;
       // The stacking tip waits for the wave banner and any new-unit card to clear, and goes once Next can't stack.
       if (canCallEarly(g) && g.level.id <= 3 && g.waveClock >= 4 && ui.intro.hidden && ui.bubble.hidden)
         tip("early", "Feeling brave? Tap Next to stack the next wave on this one for bonus Marks.", "wink");

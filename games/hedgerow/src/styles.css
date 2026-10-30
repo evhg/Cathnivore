@@ -1483,6 +1483,31 @@ button {
 .hedgerow-3d .stage {
   background: #1e2a1a;
 }
+/* Boss arena: a slow coloured breath at the field's edge while a boss is on the lane */
+.stage[data-arena]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --arena: var(--corp);
+  box-shadow: inset 0 0 90px 6px color-mix(in srgb, var(--arena) 55%, transparent);
+  animation: arena-breath 3.2s ease-in-out infinite;
+}
+.stage[data-arena="megadozer"] { --arena: #c8641e; }
+.stage[data-arena="blimp"] { --arena: #7a4fd0; }
+.stage[data-arena="clinic"] { --arena: #2fb58a; }
+.stage[data-arena="ship"] { --arena: #2b6fb8; }
+.stage[data-arena="swarm"] { --arena: #b8a21e; }
+.stage[data-arena="board"] { --arena: #8a8f99; }
+.stage[data-arena="candor"], .stage[data-arena="hollowcandor"] { --arena: #d0304a; }
+@keyframes arena-breath {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage[data-arena]::before { animation: none; }
+}
 .stage.hurt::after {
   content: "";
   position: absolute;
