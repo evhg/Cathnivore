@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 09:52 session (N24 part, short):** CI green on b0fd363. Shot Hedgerow desktop field: coming-rounds timeline and Round/Popped/Leaked record render cleanly (a small empty strip remains under the record). Remaining N24: NIGHT SHIFT, Runnel garden, boss arenas shots. Next: N24 rest.
 - **2026-10-30 08:52 session (N25 done, short):** Hedgerow desktop side panel got a coming-rounds timeline (next five rounds, toughest enemy icon each; `.intel-timeline`). tsc, eslint, hedgerow.test pass; not shot. Next: N24 shoot the unshot items.
 - **2026-10-30 07:53 session (short):** N19-N23 done, so planned N24-N27 in ROADMAP; Hedgerow desktop side panel gets a Round/Popped/Leaked record (`.intel-record`). check, tsc, eslint, hedgerow.test pass; Hedgerow map and field shot (look fine, empty panel block seen); record not re-shot. Next: N24 shoot the unshot items.
 - **2026-10-30 06:54 session (N23 done, short):** NIGHT SHIFT loading file shows Cath's plate in her chosen outfit; photo-mode polaroid foot says what she wore. tsc, eslint, wardrobe test pass; not shot. N19-N23 list done; next: plan new big items (screenshot, critique vs VISION).
