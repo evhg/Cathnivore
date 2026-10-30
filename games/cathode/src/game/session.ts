@@ -858,6 +858,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           say: (t) => hud.subtitle(t),
           teach: (t) => hud.teach(t),
           banner: (a, b, k) => hud.showBanner(a, b, k),
+          sting: () => audio?.blackoutSting(),
           light: worldLight,
         })
       : null;

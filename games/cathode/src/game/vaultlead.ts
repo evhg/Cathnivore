@@ -3,6 +3,7 @@
 // vault door code, so the boss job needs it. Closes `vaultLead`.
 
 import * as THREE from "three";
+import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
 export class VaultLeadJob {
@@ -10,6 +11,8 @@ export class VaultLeadJob {
   objective = "";
   done = false;
   target: THREE.Vector3 | null = null;
+  private chasers: Enemy[] = [];
+  private lockT = 0;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -44,10 +47,21 @@ export class VaultLeadJob {
         break;
       case 1:
         if (this.inVault) {
-          // The code opens the core door at the end of the chasm: no taxi run.
+          // The code opens the core door at the end of the chasm: no taxi run. Lifting the index trips the
+          // vault's lockdown, and the gantry squad comes down to retrieve it.
           h.banner("Index recovered", "The Hollow Vault");
-          h.say("Cath: Every debt Candor wrote, and the code on the cover. Across the chasm, then.");
-          this.goto(2);
+          h.say("Bea: Lockdown! The shutters are dropping and the gantry squad is coming for the index. Keep moving, Cath.");
+          h.sting?.();
+          this.lockT = 0;
+          this.target = null;
+          this.objective = "Lockdown. Break the gantry squad or hold out for 45 seconds.";
+          const from = this.M("lead:register", 0, 20, -55);
+          this.chasers = [
+            h.spawn("rifle", [this.M("lead:guard", 0, 18, -57), from]),
+            h.spawn("rifle", [this.M("lead:guard", 1, 22, -53), from]),
+            h.spawn("shield", [this.M("lead:guard", 2, 24, -57), from]),
+            h.spawn("rifle", [this.M("lead:sniper", 0, 27, -45), from]),
+          ];
           return;
         }
         this.objective = "Index taken. Get to the water taxi.";
@@ -69,7 +83,16 @@ export class VaultLeadJob {
     }
   }
 
-  update(_dt: number): void {
+  update(dt: number): void {
+    if (this.inVault && this.stage === 1) {
+      this.lockT += dt;
+      const cleared = this.chasers.length > 0 && this.chasers.every((e) => !e.alive);
+      if (cleared || this.lockT > 45) {
+        this.h.say("Cath: Every debt Candor wrote, and the code on the cover. Across the chasm, then.");
+        this.goto(2);
+      }
+      return;
+    }
     const near = this.target && this.h.player.pos.distanceTo(this.target) < (this.stage === 0 ? 2.2 : 3);
     if (near) this.goto(this.stage + 1);
   }
