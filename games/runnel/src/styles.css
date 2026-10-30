@@ -1390,3 +1390,54 @@ body {
 .bea .d2 { --i: 2; }
 .bea .d3 { --i: 3; }
 .bea .d5 { --i: 5; }
+
+.garden {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--dry-edge);
+}
+
+.garden .plot {
+  position: relative;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  transition: transform 0.15s ease;
+}
+
+.garden .plot:hover,
+.garden .plot:focus-visible {
+  transform: scale(1.18);
+}
+
+.garden .plot.sprout {
+  font-size: 1rem;
+}
+
+.garden .plot.gold::after {
+  content: '★';
+  position: absolute;
+  top: -2px;
+  right: 0;
+  font-size: 0.7rem;
+  color: var(--water-hi);
+}
+
+.garden-note {
+  min-height: 2.6em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden .plot {
+    transition: none;
+  }
+}

@@ -54,7 +54,7 @@ Every visual item is done only when:
 - N19. [x] *(2026-10-29: shared/cath/wardrobe.ts; landing, Runnel and Hedgerow wear and unlock from it; NIGHT SHIFT keeps its fixed noir coat by design; not shot)* **Shared Cath wardrobe** (2 sessions): outfits unlocked by stars (Hedgerow), crops (Runnel) and cases (NIGHT SHIFT), worn in all four games and on the portfolio hero via `shared/cath/`.
 - N20. [x] **NIGHT SHIFT district 2 set piece** (3 sessions): one memorable scripted encounter per district (a chase, a blackout, a hostage lift) with its own music sting and Cath bark; start with the clinic.
 - N21. [x] *(2026-10-30: phase FX, defeat vignette, arena colour breath; not shot)* **Hedgerow boss gallery** (3 sessions): each act's boss gets a distinct 3D model, phase change and arena twist, plus a defeat vignette with Cath.
-- N22. [ ] **Runnel Bea's garden** (2 sessions): a persistent garden screen that grows from solved days, tappable crops, seasonal visitors.
+- N22. [x] *(2026-10-30: garden in the stats sheet; not shot)* **Runnel Bea's garden** (2 sessions): a persistent garden screen that grows from solved days, tappable crops, seasonal visitors.
 - N23. [ ] **Cross-game Cath wardrobe in NIGHT SHIFT** (1 session): wardrobe pick shows on her back view in the loading screen and photo mode.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)

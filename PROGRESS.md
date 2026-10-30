@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 05:52 session (N22 done):** Runnel Bea's garden in the stats sheet: a crop per solved daily that grows sprout→growing→ripe with age, gold star on par, tappable for its day and taps, seasonal visitor from 3 crops (`garden.ts`, `.garden` in styles.css). Unit test, tsc, eslint, css lint pass; not shot. Next: N23 wardrobe in NIGHT SHIFT loading/photo mode.
 - **2026-10-30 04:51 session (N21 done, short):** boss arena twist: the field edge breathes in the live boss's colour (`.stage[data-arena]`, set in `frame`; off in reduced motion). tsc, eslint, css lint, hedgerow.test pass; not shot. Next: N22 Runnel Bea's garden.
 - **2026-10-30 03:51 session (N21 part 2, short):** boss defeat vignette: slow-mo, gold "is beaten" banner and a Cath line on a boss kill (`main.ts` kill case). tsc, eslint, hedgerow.test pass; not shot. Next: per-boss arena twists, then N22.
 - **2026-10-30 02:52 session (N21 part 1, short):** fixed red CI (plaza job test didn't expect the new rally chase); Hedgerow boss phase changes (66%/33%) now fire a shockwave, gold ring, sparks and a big PHASE label (`bossMove.phase`). tsc, eslint, hedgerow.test pass; not shot. Next: N21 per-boss arena twists and defeat vignette.

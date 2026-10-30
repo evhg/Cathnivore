@@ -1,6 +1,7 @@
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
 import { postcard, seasonOf, weatherMarkup } from './season'
+import { gardenPlots, gardenVisitor } from './garden'
 import './fonts.css'
 import './tokens.css'
 import './styles.css'
@@ -373,6 +374,28 @@ ui.btnNext.addEventListener('click', () => {
   else newPractice()
 })
 
+function renderGarden(): void {
+  const plots = gardenPlots(data.results, today)
+  const note = $<HTMLParagraphElement>('garden-note')
+  const visitor = gardenVisitor(seasonOf(today), plots)
+  const base = visitor ? `${visitor.glyph} ${visitor.line}` : 'Solve a daily and Bea plants a seed.'
+  note.textContent = base
+  $<HTMLDivElement>('garden').replaceChildren(
+    ...plots.map((p) => {
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.className = `plot ${p.stage}${p.gold ? ' gold' : ''}`
+      b.textContent = p.glyph
+      b.setAttribute('aria-label', p.label)
+      b.addEventListener('click', (e) => {
+        e.preventDefault()
+        note.textContent = p.label
+      })
+      return b
+    }),
+  )
+}
+
 function showStats(): void {
   const s = dailyStats(data, today)
   const cells: Array<[string, string]> = [
@@ -406,6 +429,7 @@ function showStats(): void {
     cal.push(cell)
   }
   ui.streakCal.replaceChildren(...cal)
+  renderGarden()
   const hot = s.streak > 1
   $<HTMLDivElement>('stats-cath').innerHTML = cathMarkup(hot ? 'delighted' : 'wink', 'face')
   $<HTMLParagraphElement>('stats-line').textContent =
