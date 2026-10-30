@@ -2742,6 +2742,12 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "kill":
         // Fleet: the last layer's pop already sounded (its Mark came with the knock); bosses still crash.
         if (ev.bounty > 0 || isBig(ev.kind)) sfx.playKill(isBig(ev.kind));
+        // Defeat vignette: a beat of slow motion, a gold banner and a word from Cath.
+        if (isBig(ev.kind) && !player) {
+          banner(`${ENEMIES[ev.kind].name} is beaten`, "The lane is quiet again", true, "hero");
+          say(`That's the last of ${ENEMIES[ev.kind].name}. Tea, everyone?`);
+          if (!REDUCED) slowUntil = performance.now() + 900;
+        }
         break;
       case "leak":
         sfx.playLeak();
