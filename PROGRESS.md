@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 17:51 session (release only):** `npm run release` passed all gates; `main` moved to `cf93bfb` (79 commits, incl. Runnel Orchard, NIGHT SHIFT set pieces) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (item 219: screenshot, critique vs VISION).
 - **2026-10-30 16:52 session:** ran `npm run release` (77 commits unreleased): gates 1-4 and site e2e passed except `cathode-front.spec.ts` menu count (Case Board made it 5 items, not 4); fixed the spec and it passes at desktop. Release not completed (gate run takes ~35 min). Next: `npm run release` first thing (run in background, poll the log), then plan new whole features (item 219 still open).
 - **2026-10-30 14:52 session:** Runnel Orchard campaign built (item 222): tab, 30 levels, unlock chain, drops, win card; tsc, eslint, runnel and css-lint tests pass, shot at phone. Not released (milestone, full gates not run: too slow here). Next: Orchard desktop shot and win-card shot, then plan the next whole feature.
 - **2026-10-30 13:52 session (short):** Runnel catch-up: missed days from the last 7 are tappable in the stats calendar and play as that day's daily (`playDay` in `main.ts`). tsc, eslint, runnel tests pass; not shot or released. Next: shoot it, then plan more whole features (critique shoot).
@@ -205,6 +206,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
   and uniform locations and resumes the loop.
 
 ## Recent releases (newest first, last 10)
+- 2026-10-30 `cf93bfb`: gates 1-8 passed, live verified (deploy untagged, 403).
 - 2026-10-28 10:28 `205d01a`: C20 progress (district roster, mech intro, elite glyph, silhouette lineup); C20 not yet ticked.
 - 2026-10-23 06:58 `30fba24`: CATHODE C18 "Every gun is a hero" (revolver, SMG, rifle, shotgun, sniper and break-open launcher rebuilt on the gun kit in one family of finishes, per-class choreography in `feel/arsenal.ts` with `ClassReload` and shell-by-shell shotgun loading, per-class ADS, recoil patterns, flashes and street light, SMG/rifle tracers 1 in 3, foley, scope glint perception, melee trauma, `arsenal-lineup`). All gates passed first try (1626 tests, Lighthouse 91); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 1st release today.
 - 2026-10-22 20:36 `9b94e5d`: CATHODE C17 "Second Wind and the kill cams" (Second Wind: knee, grey world with flashes kept, red outlines through walls, real-time gun, drone/heartbeat, revive or death; kill cams: predict()-gated bullet follow, last-man orbit with 2.39:1 bars, multi-kill, cooldown, skip, setting, octave-down audio, whip-pan, desktop x-ray). All gates passed first try (1569 tests, Lighthouse 91); live version.json matches; browser smoke inconclusive (sandbox proxy), HTTP check passed; tag push 403 (harmless). 2nd release today.
