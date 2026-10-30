@@ -58,8 +58,8 @@ Every visual item is done only when:
 - N23. [x] *(2026-10-30: loading-file Cath plate + polaroid caption wear the chosen outfit; 3D model stays noir; not shot)* **Cross-game Cath wardrobe in NIGHT SHIFT** (1 session): wardrobe pick shows on her back view in the loading screen and photo mode.
 - N24. [ ] **Shoot everything that shipped "not shot" (N14-N23):** screenshot NIGHT SHIFT title, case board, photo mode, wardrobe plate, Runnel garden and Hedgerow boss arenas at phone and desktop; fix what a critique against `VISION.md` finds.
 - N25. [x] **Hedgerow field side panel on desktop:** the right panel still leaves a large empty block under "Your field"; add a wave timeline (next five rounds as icons) and Cath's running commentary.
-- N26. [ ] **NIGHT SHIFT district 3-5 set pieces** (3 sessions): one scripted encounter per remaining district, following the clinic's pattern (N20).
-- N27. [ ] **Runnel and Hedgerow shared "Cath's scrapbook":** one page on the landing shelf collecting polaroids, crops, boss defeats and outfits across all four games.
+- N26. [x] *(2026-10-30: clinic, plaza, tower and vault each have a lead set piece)* **NIGHT SHIFT district 3-5 set pieces** (3 sessions): one scripted encounter per remaining district, following the clinic's pattern (N20).
+- N27. [x] *(2026-10-30: landing scrapbook of tilted pages from the saves; Hedgerow/Runnel/NIGHT SHIFT pages and wardrobe count, shot P and D)* **Runnel and Hedgerow shared "Cath's scrapbook":** one page on the landing shelf collecting polaroids, crops, boss defeats and outfits across all four games.
 
 ## Owner direction, 2026-10-09: work these phases first (FEEDBACK.md)
 

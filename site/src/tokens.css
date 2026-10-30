@@ -15,6 +15,9 @@
   --night: #1a1119;
   --cream: #fbf1df;
   --cream-muted: rgba(251, 241, 223, 0.74);
+  --card-ink: #3a2d22;
+  --shadow-card: 0 10px 22px rgba(0, 0, 0, 0.35);
+  --shadow-text: 0 1px 8px rgba(0, 0, 0, 0.6);
   --gold: #f4c774;
   --gold-ink: #2b1d10;
   --gold-hi: #ffe3a0;

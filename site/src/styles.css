@@ -595,6 +595,72 @@ body {
   display: none;
 }
 
+/* ---- Cath's scrapbook (N27) ---- */
+
+.scrapbook {
+  display: grid;
+  width: min(100%, 1076px);
+  margin-inline: auto;
+  gap: 14px;
+  padding: 8px 0 24px;
+}
+
+.scrapbook[hidden] {
+  display: none;
+}
+
+.scrap-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-voice);
+  font-weight: 400;
+  color: var(--cream);
+  text-shadow: var(--shadow-text);
+}
+
+.scrap-pages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scrap-page {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px 16px;
+  border-radius: 4px;
+  background: var(--cream);
+  color: var(--card-ink);
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  box-shadow: var(--shadow-card);
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 240ms ease;
+}
+
+.scrap-page:hover {
+  transform: rotate(0deg) translateY(-3px);
+}
+
+.scrap-page b {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.scrap-glyph {
+  font-size: 1.6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrap-page {
+    transition: none;
+  }
+}
+
 /* ---- footer ---- */
 
 .foot {

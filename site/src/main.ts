@@ -5,6 +5,7 @@ import './styles.css'
 import '../../shared/cath/cath.css'
 import { cathSvg, type CathExpression } from '../../shared/cath/cath'
 import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
+import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { startScene } from './scene'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -171,4 +172,35 @@ try {
   if (solved > 0) showProgress('prog-runnel', `${solved} ${solved === 1 ? 'day' : 'days'} solved`)
 } catch {
   // Unreadable storage: show nothing.
+}
+
+// Cath's scrapbook (N27): a page per game she has played, tilted like pinned photos. Hidden for a first visit.
+try {
+  const hg = JSON.parse(localStorage.getItem('hedgerow:v1') ?? 'null') as { stars?: Record<string, number> } | null
+  const hedgerowStars = Object.values(hg?.stars ?? {}).reduce((a: number, n) => a + (typeof n === 'number' ? Math.min(3, n) : 0), 0)
+  const pages = scrapbookPages(readProgress(), { hedgerowStars })
+  const section = document.getElementById('scrapbook')
+  const list = document.getElementById('scrap-pages')
+  if (section && list && pages.length > 0) {
+    list.replaceChildren(
+      ...pages.map((pg, i) => {
+        const li = document.createElement('li')
+        li.className = 'scrap-page'
+        li.style.setProperty('--tilt', `${(i % 2 ? 1 : -1) * (1 + (i % 3) * 0.6)}deg`)
+        const g = document.createElement('span')
+        g.className = 'scrap-glyph'
+        g.textContent = pg.glyph
+        g.setAttribute('aria-hidden', 'true')
+        const t = document.createElement('b')
+        t.textContent = pg.title
+        const l = document.createElement('span')
+        l.textContent = pg.line
+        li.append(g, t, l)
+        return li
+      }),
+    )
+    section.hidden = false
+  }
+} catch {
+  // Unreadable storage: no scrapbook.
 }
