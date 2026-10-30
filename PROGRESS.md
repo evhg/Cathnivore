@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-30 14:52 session:** Runnel Orchard campaign built (item 222): tab, 30 levels, unlock chain, drops, win card; tsc, eslint, runnel and css-lint tests pass, shot at phone. Not released (milestone, full gates not run: too slow here). Next: Orchard desktop shot and win-card shot, then plan the next whole feature.
 - **2026-10-30 13:52 session (short):** Runnel catch-up: missed days from the last 7 are tappable in the stats calendar and play as that day's daily (`playDay` in `main.ts`). tsc, eslint, runnel tests pass; not shot or released. Next: shoot it, then plan more whole features (critique shoot).
 - **2026-10-30 12:53 session (short):** Runnel win dialog shot at P and D (Cath, stats, Bea's drawing, share button, timer all fine); added `?shotwin` hook. Next: plan new big items via critique shoot (item 219).
 - **2026-10-30 11:55 session (N24 done, short):** shot NIGHT SHIFT gate and HUD at P and D (no overlaps, no CSP issues, read well) and Hedgerow boss levels 10/30/50 fields (render cleanly). Nothing needed fixing. Next: plan new big items (screenshot, critique vs VISION).

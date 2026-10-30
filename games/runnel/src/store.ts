@@ -2,6 +2,8 @@
 // kept in localStorage under one key; any storage failure (private browsing, quota) degrades to an
 // in-memory copy so the game still plays.
 
+import type { OrchardResult } from './orchard'
+
 export type Size = 'small' | 'medium' | 'large'
 
 export const SIZE_RADIUS: Record<Size, number> = { small: 2, medium: 3, large: 4 }
@@ -34,6 +36,9 @@ export interface SaveData {
   bestPractice: Partial<Record<Size, number>>
   practiceSolved: number
   seenHelp: boolean
+  /** Orchard campaign: best result per solved level and the game in progress per level. */
+  orchard?: Record<number, OrchardResult>
+  orchardGames?: Record<number, SavedGame>
 }
 
 const KEY = 'runnel:v1'

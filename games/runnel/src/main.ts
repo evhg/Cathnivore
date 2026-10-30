@@ -1,6 +1,7 @@
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
 import { postcard, seasonOf, weatherMarkup } from './season'
+import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
 import './fonts.css'
 import './tokens.css'
@@ -23,7 +24,7 @@ import {
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
-type Mode = 'daily' | 'practice'
+type Mode = 'daily' | 'practice' | 'orchard'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -31,6 +32,8 @@ const ui = {
   board: document.getElementById('board') as unknown as SVGSVGElement,
   tabDaily: $<HTMLButtonElement>('tab-daily'),
   tabPractice: $<HTMLButtonElement>('tab-practice'),
+  tabOrchard: $<HTMLButtonElement>('tab-orchard'),
+  levels: $<HTMLDivElement>('levels'),
   sizes: $<HTMLDivElement>('sizes'),
   hudTitle: $<HTMLDivElement>('hud-title'),
   hudTime: $<HTMLElement>('hud-time'),
@@ -66,6 +69,7 @@ document.documentElement.dataset.season = seasonOf(today)
 let playDay = today // the daily being played: today, or a missed day from the last week
 let mode: Mode = 'daily'
 let size: Size = 'medium'
+let level = 1 // the Orchard level being played
 let puzzle: Puzzle
 let game: SavedGame
 let board: Board
@@ -106,6 +110,12 @@ function openGame(): void {
     puzzle = dailyPuzzle(playDay)
     game = restore(puzzle, data.daily[playDay])
     data.daily[playDay] = game
+  } else if (mode === 'orchard') {
+    const games = (data.orchardGames ??= {})
+    level = Math.min(level, unlockedLevel((data.orchard ??= {})))
+    puzzle = generatePuzzle(orchardSeed(level), orchardOptions(level))
+    game = restore(puzzle, games[level])
+    games[level] = game
   } else {
     const saved = data.practice[size]
     const seed = saved && !saved.solved ? saved.seed : newPracticeSeed()
@@ -116,7 +126,7 @@ function openGame(): void {
   save(data)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
   wetCount = computeFlow(puzzle.cells).wet.size
-  host.greet(mode === 'daily', mode === 'daily' ? dailyNumber(playDay) : Math.floor(Math.random() * 3) + 1)
+  host.greet(mode !== 'practice', mode === 'daily' ? dailyNumber(playDay) : mode === 'orchard' ? level : Math.floor(Math.random() * 3) + 1)
   if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
@@ -166,6 +176,7 @@ function finish(): void {
   if (mode === 'daily' && !data.results[playDay]) {
     data.results[playDay] = { number: dailyNumber(playDay), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
   }
+  if (mode === 'orchard') recordOrchard((data.orchard ??= {}), level, game.taps, puzzle.par, game.elapsedMs)
   if (mode === 'practice') {
     data.practiceSolved++
     const best = data.bestPractice[size]
@@ -228,13 +239,19 @@ window.setInterval(() => {
 function render(): void {
   const isDaily = mode === 'daily'
   ui.tabDaily.setAttribute('aria-selected', String(isDaily))
-  ui.tabPractice.setAttribute('aria-selected', String(!isDaily))
-  ui.sizes.hidden = isDaily
+  const isOrchard = mode === 'orchard'
+  ui.tabPractice.setAttribute('aria-selected', String(mode === 'practice'))
+  ui.tabOrchard.setAttribute('aria-selected', String(isOrchard))
+  ui.sizes.hidden = mode !== 'practice'
+  ui.levels.hidden = !isOrchard
+  if (isOrchard) renderLevels()
   ui.sizes.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     b.setAttribute('aria-pressed', String(b.dataset.size === size))
   })
   ui.hudTitle.textContent = isDaily
     ? `Daily #${dailyNumber(playDay)} · ${formatDay(playDay)}`
+    : isOrchard
+    ? `Orchard ${level} · ${orchardName(level)}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
   ui.hudTime.textContent = formatTime(elapsed())
   ui.hudTaps.textContent = String(game.taps)
@@ -251,14 +268,14 @@ function render(): void {
       ? `Solved in ${formatTime(game.elapsedMs)}. Next puzzle in ${untilTomorrow()}.`
       : `Solved in ${formatTime(game.elapsedMs)}.`
     ui.btnNew.hidden = false
-    ui.btnNew.textContent = isDaily ? 'See result' : 'New puzzle'
+    ui.btnNew.textContent = isDaily ? 'See result' : isOrchard ? 'See result' : 'New puzzle'
   } else {
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
       game.taps === 0
         ? 'Tap a tile to turn it. Hold to pin it in place.'
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
-    ui.btnNew.hidden = isDaily
+    ui.btnNew.hidden = mode !== 'practice'
     ui.btnNew.textContent = 'New puzzle'
   }
   ui.btnTip.hidden = isDaily || game.solved
@@ -300,7 +317,12 @@ function parNote(taps: number, par: number): string {
 function showWin(): void {
   $<HTMLDivElement>('win-cath').innerHTML = cathMarkup('delighted', 'bust')
   const isDaily = mode === 'daily'
-  ui.winEyebrow.textContent = isDaily ? `Daily #${dailyNumber(playDay)}${playDay === today ? '' : ' · catch-up'}` : `Practice · ${size}`
+  const isOrchard = mode === 'orchard'
+  ui.winEyebrow.textContent = isDaily
+    ? `Daily #${dailyNumber(playDay)}${playDay === today ? '' : ' · catch-up'}`
+    : isOrchard
+    ? `Orchard ${level} of ${ORCHARD_LEVELS}`
+    : `Practice · ${size}`
   ui.winTitle.textContent = 'Every field is watered.'
   ui.winTime.textContent = formatTime(game.elapsedMs)
   ui.winTaps.textContent = String(game.taps)
@@ -309,7 +331,9 @@ function showWin(): void {
   ui.winNote.textContent = isDaily
     ? `${parNote(game.taps, puzzle.par)} ${stats.streak > 1 ? '🔥 ' : ''}Streak: ${stats.streak} day${stats.streak === 1 ? '' : 's'} (best ${stats.maxStreak}). Next puzzle in ${untilTomorrow()}.`
     : parNote(game.taps, puzzle.par)
-  ui.btnNext.textContent = isDaily ? 'Play practice' : 'Next puzzle'
+  const best = isOrchard ? data.orchard?.[level] : undefined
+  if (best) ui.winNote.textContent = `${'💧'.repeat(best.drops)}${'▫️'.repeat(3 - best.drops)} ${parNote(game.taps, puzzle.par)} Orchard drops: ${totalDrops(data.orchard ?? {})} of ${ORCHARD_LEVELS * 3}.`
+  ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : 'Next puzzle'
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
@@ -351,7 +375,7 @@ function shareGrid(): string {
 }
 
 function shareText(): string {
-  const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : `Runnel practice (${size})`
+  const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice (${size})`
   const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
   return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\n${shareGrid()}\nhttps://cathnivore.com/runnel/`
 }
@@ -373,7 +397,10 @@ ui.btnShare.addEventListener('click', async () => {
 ui.btnNext.addEventListener('click', () => {
   ui.dlgWin.close()
   if (mode === 'daily') switchMode('practice')
-  else newPractice()
+  else if (mode === 'orchard') {
+    if (level >= ORCHARD_LEVELS) switchMode('daily')
+    else playLevel(level + 1)
+  } else newPractice()
 })
 
 function renderGarden(): void {
@@ -478,6 +505,37 @@ function switchMode(next: Mode): void {
   openGame()
 }
 
+function playLevel(n: number): void {
+  pauseClock()
+  level = n
+  openGame()
+}
+
+function renderLevels(): void {
+  const results = data.orchard ?? {}
+  const open = unlockedLevel(results)
+  ui.levels.replaceChildren()
+  for (let n = 1; n <= ORCHARD_LEVELS; n++) {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.dataset.level = String(n)
+    const r = results[n]
+    b.textContent = String(n)
+    b.disabled = n > open
+    b.classList.toggle('done', !!r)
+    b.setAttribute('aria-label', `Orchard ${n}${r ? `, ${r.drops} drops` : n > open ? ', locked' : ''}`)
+    if (n === level) b.setAttribute('aria-current', 'true')
+    ui.levels.append(b)
+  }
+  const cur = ui.levels.querySelector<HTMLElement>('[aria-current]')
+  if (cur) ui.levels.scrollLeft = cur.offsetLeft - (ui.levels.clientWidth - cur.offsetWidth) / 2
+}
+
+ui.levels.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-level]')
+  if (b && !b.disabled && Number(b.dataset.level) !== level) playLevel(Number(b.dataset.level))
+})
+
 function newPractice(): void {
   pauseClock()
   delete data.practice[size]
@@ -486,6 +544,10 @@ function newPractice(): void {
 
 ui.tabDaily.addEventListener('click', () => switchMode('daily'))
 ui.tabPractice.addEventListener('click', () => switchMode('practice'))
+ui.tabOrchard.addEventListener('click', () => {
+  if (mode !== 'orchard') level = unlockedLevel(data.orchard ?? {})
+  switchMode('orchard')
+})
 ui.sizes.addEventListener('click', (e) => {
   const target = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-size]')
   if (!target) return
@@ -496,7 +558,7 @@ ui.sizes.addEventListener('click', (e) => {
   openGame()
 })
 ui.btnTip.addEventListener('click', () => {
-  if (mode !== 'practice' || game.solved || game.hinted) return
+  if (mode === 'daily' || game.solved || game.hinted) return
   const spring = puzzle.cells.find((c) => c.kind === 'spring') ?? puzzle.cells[0]!
   let pick = -1
   let best = Infinity
@@ -516,7 +578,7 @@ ui.btnTip.addEventListener('click', () => {
   render()
 })
 ui.btnNew.addEventListener('click', () => {
-  if (mode === 'daily') showWin()
+  if (mode === 'daily' || mode === 'orchard') showWin()
   else newPractice()
 })
 const soundBtn = $<HTMLButtonElement>('btn-sound')
@@ -539,6 +601,10 @@ document.addEventListener('pointerdown', () => document.body.classList.remove('k
 
 const params = new URLSearchParams(location.search)
 if (params.get('mode') === 'practice') mode = 'practice'
+if (params.get('mode') === 'orchard') {
+  mode = 'orchard'
+  level = unlockedLevel(data.orchard ?? {})
+}
 openGame()
 if (!data.seenHelp && !params.has('nohelp')) ui.dlgHelp.showModal()
 // Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
