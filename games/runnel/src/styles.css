@@ -1428,8 +1428,9 @@ body {
   position: absolute;
   top: -2px;
   right: 0;
-  font-size: 0.7rem;
-  color: var(--water-hi);
+  font-size: 0.85rem;
+  color: var(--gold);
+  text-shadow: 0 0 1px var(--paper);
 }
 
 .garden-note {
