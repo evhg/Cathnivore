@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 16:52 session:** item 228 closed: daily seed already shared (seed = day number); bot survey on seed 5 with no boons: naive loses from field 4, best wins all of 1-24 (test passes). Ticked. Next: release 228, then plan whole features (critique shoot).
 - **2026-10-31 15:52 session (release only):** `npm run release` passed gates 1-8; `main` moved to `35c3b5c` (51 commits: Orchard, workshop, Second Broadcast, Cath's Week, market events, Modes drawer) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (critique shoot), or finish 230/231 leftovers (card on `/`, weekly outfit).
 - **2026-10-31 14:51 session (release):** first `npm run release` failed gate 5 (site): two Hedgerow e2e specs clicked `#btn-diff`/`#btn-show`, now hidden in the Modes drawer (item 225); specs fixed (`e2e-site/site.spec.ts`), second run failed only on M9: the Modes drawer sat under the act title (z-index), fixed in `styles.css` and M9 passes alone; full gates not rerun. Next: check `origin/main` vs `build`; if not moved, rerun `npm run release`.
 - **2026-10-31 13:51 session (short):** item 230 ladder: Case Board shows the Second Broadcast ladder (lap rungs, deck, multiplier; `broadcastLadder`). tsc, eslint, newgameplus test pass; full suite not seen to finish; not shot. Left: card on `/`, weekly outfit.
