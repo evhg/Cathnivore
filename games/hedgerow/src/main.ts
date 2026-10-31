@@ -1,5 +1,6 @@
 import "../../../shared/ui/base.css";
 import "../../../shared/ui/palette.css";
+import { mountWeekChip } from "../../../shared/cath/weekchip";
 import "./fonts.css";
 import "./tokens.css";
 import "./styles.css";
@@ -4323,3 +4324,5 @@ async function openSharedReplay(): Promise<void> {
   else toast("That replay link is damaged.");
 }
 void openSharedReplay();
+
+mountWeekChip(document.getElementById("week-slot"));

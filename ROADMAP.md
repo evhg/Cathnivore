@@ -607,3 +607,6 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 230. [x] *(2026-10-31: deck picker, 4 mods, score multiplier built; Case Board ladder not yet)* **CATHODE New Game+ "Second Broadcast":** after the credits, replay the districts with a modifier deck (pick 1-3: glass-cannon, no-regen, elite patrols, fog) that raises enemy tiers and loot rarity, with a score multiplier and a ladder on the Case Board.
 231. [x] *(2026-10-31: `shared/cath/week.ts`, `#week` card on /games/, postcard pin; weekly outfit and `/` card not built)* **Cross-game "Cath's Week" meta:** one weekly card on `/` and `/games/` giving 3 goals spread across Runnel, Hedgerow and Cathnivore; finishing all three unlocks a weekly outfit/postcard in the shared wardrobe (counts-only, derived from existing saves).
 232. [x] **Cathnivore Marrow Market events:** rotating weekly market events (festival, drought, glut) that change prices and board goals, with a Cath-narrated banner and one exclusive cosmetic per event.
+
+### Phase 24 (planned 2026-10-31)
+233. [x] *(built; not shot)* **Cath's Week chip in Runnel and Hedgerow:** one-line progress pill (`shared/cath/weekchip.ts`) linking to `/games/#week`.

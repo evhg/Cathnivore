@@ -25,6 +25,7 @@ import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMut
 import { boardCode, parseBoardCode } from './code'
 import { initWorkshop } from './workshopui'
 import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed } from './workshop'
+import { mountWeekChip } from '../../../shared/cath/weekchip'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice' | 'orchard'
@@ -702,3 +703,5 @@ function workshopCode(seed: string): string | null {
 }
 
 initWorkshop({ play: (code) => playCode(code), toast: (t) => (ui.toast.textContent = t) })
+
+mountWeekChip(document.getElementById('week-slot'))
