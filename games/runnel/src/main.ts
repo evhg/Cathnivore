@@ -36,6 +36,7 @@ const ui = {
   tabOrchard: $<HTMLButtonElement>('tab-orchard'),
   levels: $<HTMLDivElement>('levels'),
   codebar: $<HTMLFormElement>('codebar'),
+  picks: $<HTMLElement>('picks'),
   sizes: $<HTMLDivElement>('sizes'),
   hudTitle: $<HTMLDivElement>('hud-title'),
   hudTime: $<HTMLElement>('hud-time'),
@@ -246,6 +247,7 @@ function render(): void {
   ui.tabOrchard.setAttribute('aria-selected', String(isOrchard))
   ui.sizes.hidden = mode !== 'practice'
   ui.codebar.hidden = mode !== 'practice'
+  renderPicks()
   ui.levels.hidden = !isOrchard
   if (isOrchard) renderLevels()
   ui.sizes.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
@@ -551,19 +553,61 @@ ui.tabOrchard.addEventListener('click', () => {
   if (mode !== 'orchard') level = unlockedLevel(data.orchard ?? {})
   switchMode('orchard')
 })
-ui.codebar.addEventListener('submit', (e) => {
-  e.preventDefault()
-  const input = $<HTMLInputElement>('code-input')
-  const parsed = parseBoardCode(input.value)
-  if (!parsed) {
-    ui.toast.textContent = 'That is not a board code. It looks like M-abc123-xyz789.'
-    return
-  }
+function playCode(text: string): boolean {
+  const parsed = parseBoardCode(text)
+  if (!parsed) return false
   pauseClock()
   size = parsed.size
   data.practice[size] = blankGame(generatePuzzle(parsed.seed, { radius: SIZE_RADIUS[size] }))
-  input.value = ''
   openGame()
+  return true
+}
+
+/** Bea's picks shelf: saved board codes as chips; tap one to play it, the cross removes it. */
+function renderPicks(): void {
+  const picks = data.picks ?? []
+  ui.picks.hidden = mode !== 'practice' || picks.length === 0
+  ui.picks.replaceChildren(
+    ...picks.map((code) => {
+      const chip = document.createElement('span')
+      chip.className = 'pick'
+      const play = document.createElement('button')
+      play.type = 'button'
+      play.textContent = code
+      play.addEventListener('click', () => playCode(code))
+      const del = document.createElement('button')
+      del.type = 'button'
+      del.className = 'pick-x'
+      del.textContent = '×'
+      del.setAttribute('aria-label', `Remove ${code}`)
+      del.addEventListener('click', () => {
+        data.picks = (data.picks ?? []).filter((c) => c !== code)
+        save(data)
+        renderPicks()
+      })
+      chip.append(play, del)
+      return chip
+    }),
+  )
+}
+
+ui.codebar.addEventListener('submit', (e) => {
+  e.preventDefault()
+  const input = $<HTMLInputElement>('code-input')
+  if (!playCode(input.value)) {
+    ui.toast.textContent = 'That is not a board code. It looks like M-abc123-xyz789.'
+    return
+  }
+  input.value = ''
+})
+$<HTMLButtonElement>('btn-pick').addEventListener('click', () => {
+  const code = boardCode(puzzle.seed)
+  if (!code) return
+  const picks = (data.picks ?? []).filter((c) => c !== code)
+  data.picks = [code, ...picks].slice(0, 8)
+  save(data)
+  renderPicks()
+  ui.toast.textContent = `Saved ${code} to Bea's picks.`
 })
 $<HTMLButtonElement>('btn-code').addEventListener('click', async () => {
   const code = boardCode(puzzle.seed)

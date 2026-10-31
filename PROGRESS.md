@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 06:51 session (short):** item 229: Runnel "Bea's picks" shelf (save a board code, chips to replay or remove, max 8; `data.picks`, `#picks`); tsc, eslint, runnel and css lint tests pass; shot at P. Left: board editor with solver check. Next: 229 editor, then 230.
 - **2026-10-31 05:51 session:** item 228 done (Orchard share card). Item 229 partly built: Runnel practice board codes (`code.ts`, `#codebar`: paste a code to play the same board, copy this board's code); tsc, eslint, tests, css lint pass; shot at P. Left: board editor with solver check and Bea's picks shelf. Next: 229 editor, then 230.
 - **2026-10-31 04:51 session (short):** item 228 mostly done: 4 Cath perks (♥ picks) in the Orchard boon pool, boon card shot at P and D (hid the redundant Take button and empty stars gap), bot clears depth 1/12/24 (test). Left: daily share text. Next: 229.
 - **2026-10-31 03:52 session:** item 228 partly built: Hedgerow Orchard roguelike (`orchard.ts`, `btn-orchard`, `finishOrchard` boon picker in `main.ts`, `recordOrchard`); tsc, eslint, orchard+hedgerow tests pass; smoke-ran at D. Next: shoot the boon card, add Cath perks, bot-check, then 229.

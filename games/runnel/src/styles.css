@@ -225,8 +225,39 @@ button {
   cursor: pointer;
 }
 
+.picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.pick {
+  display: inline-flex;
+  border-radius: 999px;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+
+.pick button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pick-x {
+  color: var(--ink-muted);
+}
+
 .levels[hidden],
 .codebar[hidden],
+.picks[hidden],
 .sizes[hidden] {
   display: none;
 }

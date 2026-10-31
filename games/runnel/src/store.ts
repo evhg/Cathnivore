@@ -39,6 +39,8 @@ export interface SaveData {
   /** Orchard campaign: best result per solved level and the game in progress per level. */
   orchard?: Record<number, OrchardResult>
   orchardGames?: Record<number, SavedGame>
+  /** Bea's picks: board codes saved to replay, newest first (max 8). */
+  picks?: string[]
 }
 
 const KEY = 'runnel:v1'
