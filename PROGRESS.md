@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 20:51 session (release only):** `npm run release` passed gates 1-8; `main` moved to `efeeb5b` (Cath's Week card/chip, Orchard, workshop, Second Broadcast) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (critique shoot); ROADMAP is empty.
 - **2026-10-31 19:51 session (short):** shot item 233 chip at P and D in Hedgerow (reads well, sits under the header) and confirmed it mounts in Runnel (how-to card covers it on first load). CI green on 9c560fa. No code changed; 6 unreleased commits, no milestone finished. Next: plan new whole features (critique shoot), ROADMAP is empty.
 - **2026-10-31 18:51 session (short):** item 233: Cath's Week chip in Runnel and Hedgerow (`shared/cath/weekchip.ts`, test); tsc, eslint, css lint, vite build pass; not shot (local vite dev server failed to start). Next: shoot chip, plan new whole features (critique shoot).
 - **2026-10-31 17:51 session (short):** item 231 finished: Cath's Week card on `/` (shared `shared/cath/weekui.ts` renders it on `/` and `/games/`; the weekly outfit already existed as the Evening gown); shot at D; tsc, eslint, portfolio+css lint tests pass. Next: plan new whole features (critique shoot).
