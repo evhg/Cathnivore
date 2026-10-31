@@ -3400,10 +3400,13 @@ function finishOrchard(g: Game, lv: Level): void {
     ui.resultNote.textContent = "Same orchard for everyone today; a new one tomorrow.";
     ui.resultPrimary.hidden = false;
     ui.resultStars.hidden = true;
-    ui.resultPrimary.textContent = "Go again";
+    const card = `Hedgerow Orchard #${run.seed + 1}\n${"\u{1F34E}".repeat(Math.min(cleared, 10))}${cleared > 10 ? "+" : ""}\n${cleared} of ${ORCHARD_MAX_DEPTH} fields · ${run.taken.length} boons`;
+    ui.resultPrimary.textContent = "Copy card";
     ui.resultPrimary.onclick = () => {
-      ui.dlgResult.close();
-      startOrchard();
+      void navigator.clipboard?.writeText(card).then(
+        () => (ui.resultPrimary.textContent = "Copied"),
+        () => (ui.resultNote.textContent = card),
+      );
     };
     ui.dlgResult.classList.add("lost");
     ui.dlgResult.showModal();
