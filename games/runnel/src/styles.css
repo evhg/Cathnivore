@@ -194,7 +194,39 @@ button {
   background: color-mix(in srgb, var(--gold) 28%, var(--paper-2));
 }
 
+.codebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.codebar input {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ink-muted);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  width: 11em;
+}
+
+.codebar button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
 .levels[hidden],
+.codebar[hidden],
 .sizes[hidden] {
   display: none;
 }

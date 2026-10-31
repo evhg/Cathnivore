@@ -22,6 +22,7 @@ import {
   type Puzzle,
 } from './engine'
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
+import { boardCode, parseBoardCode } from './code'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice' | 'orchard'
@@ -34,6 +35,7 @@ const ui = {
   tabPractice: $<HTMLButtonElement>('tab-practice'),
   tabOrchard: $<HTMLButtonElement>('tab-orchard'),
   levels: $<HTMLDivElement>('levels'),
+  codebar: $<HTMLFormElement>('codebar'),
   sizes: $<HTMLDivElement>('sizes'),
   hudTitle: $<HTMLDivElement>('hud-title'),
   hudTime: $<HTMLElement>('hud-time'),
@@ -243,6 +245,7 @@ function render(): void {
   ui.tabPractice.setAttribute('aria-selected', String(mode === 'practice'))
   ui.tabOrchard.setAttribute('aria-selected', String(isOrchard))
   ui.sizes.hidden = mode !== 'practice'
+  ui.codebar.hidden = mode !== 'practice'
   ui.levels.hidden = !isOrchard
   if (isOrchard) renderLevels()
   ui.sizes.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
@@ -547,6 +550,30 @@ ui.tabPractice.addEventListener('click', () => switchMode('practice'))
 ui.tabOrchard.addEventListener('click', () => {
   if (mode !== 'orchard') level = unlockedLevel(data.orchard ?? {})
   switchMode('orchard')
+})
+ui.codebar.addEventListener('submit', (e) => {
+  e.preventDefault()
+  const input = $<HTMLInputElement>('code-input')
+  const parsed = parseBoardCode(input.value)
+  if (!parsed) {
+    ui.toast.textContent = 'That is not a board code. It looks like M-abc123-xyz789.'
+    return
+  }
+  pauseClock()
+  size = parsed.size
+  data.practice[size] = blankGame(generatePuzzle(parsed.seed, { radius: SIZE_RADIUS[size] }))
+  input.value = ''
+  openGame()
+})
+$<HTMLButtonElement>('btn-code').addEventListener('click', async () => {
+  const code = boardCode(puzzle.seed)
+  if (!code) return
+  try {
+    await navigator.clipboard.writeText(code)
+    ui.toast.textContent = `Copied ${code}. Send it to a friend to play the same board.`
+  } catch {
+    ui.toast.textContent = `Board code: ${code}`
+  }
 })
 ui.sizes.addEventListener('click', (e) => {
   const target = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-size]')
