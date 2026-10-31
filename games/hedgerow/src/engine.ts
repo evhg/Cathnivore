@@ -1440,6 +1440,8 @@ export interface Level {
   hpScale?: number;
   /** An Endless field: generated waves that never stop growing (endless.ts). The run ends when Goodwill does. */
   endless?: boolean;
+  /** An Endless Orchard field (orchard.ts): the run's depth, 1 and up. */
+  orchard?: number;
   /** Set pieces (ROADMAP 54): the level itself changes during the fight. */
   setPieces?: SetPiece[];
   /**

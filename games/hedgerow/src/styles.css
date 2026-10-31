@@ -2873,3 +2873,8 @@ img.act-scene {
   #screen-select .tools-drawer.open { display: flex; }
   #screen-select .tools-drawer .bank-btn { justify-content: flex-start; width: 100%; }
 }
+
+.orchard-offers { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+.orchard-boon { display: grid; gap: 0.15rem; text-align: left; padding: 0.6rem 0.8rem; border-radius: 0.6rem; border: 1px solid var(--gold, #c9a227); background: rgb(255 255 255 / 0.08); color: inherit; font: inherit; cursor: pointer; }
+.orchard-boon:hover, .orchard-boon:focus-visible { background: rgb(255 255 255 / 0.18); }
+.orchard-boon small { opacity: 0.8; }

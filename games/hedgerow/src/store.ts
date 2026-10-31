@@ -30,6 +30,8 @@ export interface SaveData {
   ghosts?: Record<string, Array<[string, number, number]>>;
   /** Best wave reached on each act's Endless field (by act number). Optional in old saves. */
   endless?: Record<string, number>;
+  /** Deepest Endless Orchard run, in fields cleared. */
+  orchard?: number;
   /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
   heroic?: Record<string, boolean>;
   /** Medals won per level id: the modes it was cleared in (Hedgerow 2 M9). Optional in old saves. */
@@ -139,6 +141,7 @@ export function parseSave(raw: string | null): SaveData {
         const ok = MEDAL_MODES.filter((m) => v.includes(m));
         if (ok.length) (data.medals ??= {})[k] = ok;
       }
+      if (typeof obj.orchard === "number" && obj.orchard >= 1) data.orchard = Math.floor(obj.orchard);
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.ghosts ?? {})) {
@@ -254,6 +257,13 @@ export function recordEndless(data: SaveData, act: number, wave: number): boolea
   const best = data.endless?.[String(act)] ?? 0;
   if (wave <= best) return false;
   (data.endless ??= {})[String(act)] = wave;
+  save(data);
+  return true;
+}
+
+export function recordOrchard(data: SaveData, depth: number): boolean {
+  if (depth <= (data.orchard ?? 0)) return false;
+  data.orchard = depth;
   save(data);
   return true;
 }

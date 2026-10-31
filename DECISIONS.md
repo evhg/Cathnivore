@@ -626,3 +626,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-30 18:52: planned Phase 22 from a subagent critique; its Runnel claim (flat board) conflicts with existing flow/ripple CSS, so item 224 says shoot first.
 - 2026-10-30 23:52: 227 scene component is moment-based (games pass the moment, not an expression); only Runnel adopts it this session.
 - 2026-10-31 02:52: ROADMAP was empty; planned 228-232 (Phase 23) from known gaps without a critique shoot (sandbox slow, no node_modules); next session shoots the target screen of each item first.
+- 2026-10-31: Orchard boons only edit the Level (marks/goodwill/hpScale), reusing story levels by depth band; replays not supported for Orchard runs.

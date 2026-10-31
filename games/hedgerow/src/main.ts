@@ -159,6 +159,7 @@ import {
   clearRun,
   type MedalMode,
   recordEndless,
+  recordOrchard,
   recordDaily,
   recordBuild,
   refundAll,
@@ -168,6 +169,7 @@ import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEE
 import { SHOW_EXTRAS, showFields, showKit, showPacket } from "./show";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
+import { orchardLevel, orchardOffers, ORCHARD_MAX_DEPTH, type Boon } from "./orchard";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
@@ -645,6 +647,8 @@ if (SANDBOX) {
   if (target) setTimeout(() => startLevel(target, false), 300);
 }
 
+$<HTMLButtonElement>("btn-orchard").addEventListener("click", startOrchard);
+
 /** The Heroic toggle on the level map: the next level starts with one Goodwill and no pies. */
 let heroicMode = false;
 ui.btnHeroic.addEventListener("click", () => {
@@ -876,6 +880,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
 
 function leaveLevel(): void {
   dailyDay = null;
+  orchardRun = null;
   for (const el of ghostEls.values()) el.remove();
   ghostEls.clear();
   showRun = null;
@@ -3079,12 +3084,14 @@ function finish(g: Game): void {
   const xpBox = document.getElementById("result-xp");
   if (xpBox) xpBox.hidden = true;
   document.getElementById("result-retry")?.remove();
+  document.getElementById("orchard-offers")?.remove();
   ui.resultPrimary.classList.remove("btn-quiet");
   ui.resultNote.hidden = false;
   ui.resultStars.hidden = false;
   ui.dlgResult.classList.remove("has-causes");
   const lv = g.level;
   rememberBuilds(g);
+  if (lv.orchard) return finishOrchard(g, lv);
   if (lv.endless) return finishEndless(g, lv);
   if (dailyDay !== null) return finishDaily(g, lv, dailyDay);
   if (showRun) return finishShow(g, lv, showRun);
@@ -3356,6 +3363,79 @@ function finishDaily(g: Game, lv: Level, day: number): void {
     leaveLevel();
   };
   ui.dlgResult.classList.toggle("lost", !won);
+  ui.dlgResult.showModal();
+}
+
+/** An Endless Orchard run: the day's seed, how deep it is and the boons taken so far. */
+let orchardRun: { seed: number; depth: number; taken: string[] } | null = null;
+
+function startOrchard(): void {
+  dailyDay = null;
+  showRun = null;
+  endlessArgs = null;
+  orchardRun = { seed: dayOf(Date.now()), depth: 1, taken: [] };
+  startLevel(orchardLevel(orchardRun.seed, 1, []), false);
+}
+
+/** Win a field: pick one of three boons and walk on. Lose one: the run is over and its depth is kept. */
+function finishOrchard(g: Game, lv: Level): void {
+  const run = orchardRun;
+  if (!run) return leaveLevel();
+  const won = g.phase === "won";
+  const cleared = won ? run.depth : run.depth - 1;
+  const record = recordOrchard(data, cleared);
+  ui.resultCath.innerHTML = cath(won ? "delighted" : record ? "smirk" : "worried");
+  ui.resultEyebrow.textContent = lv.name;
+  ui.resultStars.replaceChildren();
+  ui.resultStars.setAttribute("aria-label", "");
+  const best = data.orchard ?? cleared;
+  ui.resultSecondary.onclick = () => {
+    ui.dlgResult.close();
+    leaveLevel();
+  };
+  if (!won || run.depth >= ORCHARD_MAX_DEPTH) {
+    ui.resultTitle.textContent = won ? "The whole orchard, picked clean." : record ? "A new deepest row." : "The row fell.";
+    ui.resultStats.textContent = `${cleared} field${cleared === 1 ? "" : "s"} cleared · best ${best} · ${run.taken.length} boon${run.taken.length === 1 ? "" : "s"}`;
+    ui.resultNote.textContent = "Same orchard for everyone today; a new one tomorrow.";
+    ui.resultPrimary.textContent = "Go again";
+    ui.resultPrimary.onclick = () => {
+      ui.dlgResult.close();
+      startOrchard();
+    };
+    ui.dlgResult.classList.add("lost");
+    ui.dlgResult.showModal();
+    return;
+  }
+  ui.resultTitle.textContent = "Field cleared. Pick a boon.";
+  ui.resultStats.textContent = `Field ${run.depth} of the orchard · best ${best}`;
+  ui.resultNote.textContent = "";
+  const offers = orchardOffers(run.seed, run.depth, run.taken);
+  const take = (b: Boon): void => {
+    run.taken.push(b.id);
+    run.depth += 1;
+    ui.dlgResult.close();
+    startLevel(orchardLevel(run.seed, run.depth, run.taken), false);
+  };
+  ui.resultPrimary.textContent = `Take ${offers[0]!.name}`;
+  ui.resultPrimary.onclick = () => take(offers[0]!);
+  const row = document.createElement("div");
+  row.id = "orchard-offers";
+  row.className = "orchard-offers";
+  for (const b of offers) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "orchard-boon";
+    const n = document.createElement("strong");
+    n.textContent = b.name;
+    const t = document.createElement("small");
+    t.textContent = b.text;
+    btn.append(n, t);
+    btn.onclick = () => take(b);
+    row.append(btn);
+  }
+  document.getElementById("orchard-offers")?.remove();
+  ui.resultNote.after(row);
+  ui.dlgResult.classList.remove("lost");
   ui.dlgResult.showModal();
 }
 
@@ -3841,6 +3921,7 @@ const TIPS: Record<string, () => string> = {
   "btn-cath": () => "Cath's character sheet: spend skill points on her attributes and pick talents as she levels up.",
   "btn-show": () => "The County Show: three fields, one kit of six towers and one Goodwill purse. A new Show every week; win it for a Seed Packet.",
   "btn-daily": () => "Today's challenge: one level a day, no Seed Bank, and a score to share.",
+  "btn-orchard": () => "Orchard: a run of fields, one boon after each, ending when a field falls. Same orchard for everyone today.",
   "btn-heroic": () => "Heroic: the next level starts with one Goodwill and no pies. Win it for a gold diamond.",
   "btn-bank": () => "The Seed Bank: spend stars on perks for every level.",
 };
