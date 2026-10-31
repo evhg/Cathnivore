@@ -609,4 +609,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 232. [x] **Cathnivore Marrow Market events:** rotating weekly market events (festival, drought, glut) that change prices and board goals, with a Cath-narrated banner and one exclusive cosmetic per event.
 
 ### Phase 24 (planned 2026-10-31)
-233. [x] *(built; not shot)* **Cath's Week chip in Runnel and Hedgerow:** one-line progress pill (`shared/cath/weekchip.ts`) linking to `/games/#week`.
+233. [x] *(built; shot at P and D 2026-10-31, fine)* **Cath's Week chip in Runnel and Hedgerow:** one-line progress pill (`shared/cath/weekchip.ts`) linking to `/games/#week`.
