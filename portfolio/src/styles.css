@@ -306,3 +306,46 @@ a.card:hover .go::after {
     padding: var(--sp-5);
   }
 }
+
+/* Cath's week (231): same three goals as /games/ */
+.week {
+  display: grid;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+}
+.week[hidden],
+.week-card[hidden] {
+  display: none;
+}
+.week-goals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.week-goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--ink-raised);
+  color: var(--text);
+}
+.week-goal a {
+  color: inherit;
+  text-decoration: none;
+}
+.week-goal[data-done='true'] {
+  border-color: var(--accent-gold);
+  background: var(--accent-gold-soft);
+}
+.week-card {
+  margin: 0;
+  color: var(--accent-gold);
+  font-family: var(--font-display);
+}
