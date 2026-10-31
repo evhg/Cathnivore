@@ -2880,5 +2880,6 @@ img.act-scene {
 .orchard-boon small { opacity: 0.8; }
 .pantry { max-width: 28rem; }
 .pantry-seeds { opacity: 0.85; }
+.pantry .btn + .btn { margin-top: 8px; }
 .orchard-boon:disabled { opacity: 0.45; cursor: not-allowed; }
 .orchard-boon[aria-pressed="true"] { background: rgb(255 255 255 / 0.2); }

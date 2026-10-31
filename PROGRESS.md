@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 23:51 session (short):** pantry sheet buttons now have 8px between them (`.pantry .btn + .btn`); ui-css lint passes. Planned Phase 26 (235-238). Next: 235.
 - **2026-10-31 22:51 session (short):** shot item 234's pantry sheet at P and D (reads well; Plant/Not now buttons nearly touch at P). CI green on a57f7fd. No code changed. Next: plan new whole features (critique shoot); ROADMAP is empty.
 - **2026-10-31 21:51 session:** item 234: Orchard Seeds + Heirlooms (Cath's pantry sheet before a run, `orchardSeeds`, `HEIRLOOMS`, store fields; `tests/hedgerow-heirlooms.test.ts`). eslint, hedgerow tests pass; not shot. Next: shoot the pantry at P and D, then plan more whole features.
 - **2026-10-31 20:51 session (release only):** `npm run release` passed gates 1-8; `main` moved to `efeeb5b` (Cath's Week card/chip, Orchard, workshop, Second Broadcast) and live `version.json` matches; tag push 403 as usual. Next: plan new whole features (critique shoot); ROADMAP is empty.
