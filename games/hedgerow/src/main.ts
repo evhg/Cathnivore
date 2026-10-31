@@ -6,6 +6,7 @@ import "./styles.css";
 import "./ui/components.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
+import { cathSceneSvg, momentForResult } from "../../../shared/cath/scene";
 import { burst, reducedMotion } from "../../../shared/ui/motion";
 import {
   ABILITIES,
@@ -3092,7 +3093,7 @@ function finish(g: Game): void {
   const idx = LEVELS.findIndex((l) => l.id === lv.id);
   const next = LEVELS[idx + 1];
   const before = data.stars[String(lv.id)] ?? 0;
-  ui.resultCath.innerHTML = cath(won ? (n === 3 ? "delighted" : "smirk") : "worried");
+  ui.resultCath.innerHTML = cathSceneSvg(momentForResult(won, n), { framing: "bust", outfit: art() });
   ui.resultEyebrow.textContent = `${lv.place}: ${lv.name}`;
   ui.resultTitle.textContent = won ? (n === 3 ? "Not a scratch on the farmhouse." : "The lane holds.") : "They got through.";
   ui.resultStars.replaceChildren();
