@@ -23,6 +23,8 @@ import {
 } from './engine'
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
 import { boardCode, parseBoardCode } from './code'
+import { initWorkshop } from './workshopui'
+import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed } from './workshop'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice' | 'orchard'
@@ -122,7 +124,7 @@ function openGame(): void {
   } else {
     const saved = data.practice[size]
     const seed = saved && !saved.solved ? saved.seed : newPracticeSeed()
-    puzzle = generatePuzzle(seed, { radius: SIZE_RADIUS[size] })
+    puzzle = practicePuzzle(seed, size)
     game = restore(puzzle, saved && saved.seed === seed ? saved : undefined)
     data.practice[size] = game
   }
@@ -553,7 +555,21 @@ ui.tabOrchard.addEventListener('click', () => {
   if (mode !== 'orchard') level = unlockedLevel(data.orchard ?? {})
   switchMode('orchard')
 })
+function practicePuzzle(seed: string, forSize: Size): Puzzle {
+  return workshopPuzzle(seed) ?? generatePuzzle(isWorkshopSeed(seed) ? newPracticeSeed() : seed, { radius: SIZE_RADIUS[forSize] })
+}
+
 function playCode(text: string): boolean {
+  const layout = parseLayout(text)
+  if (layout) {
+    const p = workshopPuzzle(workshopSeed(encodeLayout(layout)))
+    if (!p) return false
+    pauseClock()
+    size = (Object.keys(SIZE_RADIUS) as Size[]).find((k) => SIZE_RADIUS[k] === layout.radius) ?? size
+    data.practice[size] = blankGame(p)
+    openGame()
+    return true
+  }
   const parsed = parseBoardCode(text)
   if (!parsed) return false
   pauseClock()
@@ -601,7 +617,7 @@ ui.codebar.addEventListener('submit', (e) => {
   input.value = ''
 })
 $<HTMLButtonElement>('btn-pick').addEventListener('click', () => {
-  const code = boardCode(puzzle.seed)
+  const code = boardCode(puzzle.seed) ?? workshopCode(puzzle.seed)
   if (!code) return
   const picks = (data.picks ?? []).filter((c) => c !== code)
   data.picks = [code, ...picks].slice(0, 8)
@@ -610,7 +626,7 @@ $<HTMLButtonElement>('btn-pick').addEventListener('click', () => {
   ui.toast.textContent = `Saved ${code} to Bea's picks.`
 })
 $<HTMLButtonElement>('btn-code').addEventListener('click', async () => {
-  const code = boardCode(puzzle.seed)
+  const code = boardCode(puzzle.seed) ?? workshopCode(puzzle.seed)
   if (!code) return
   try {
     await navigator.clipboard.writeText(code)
@@ -680,3 +696,9 @@ openGame()
 if (!data.seenHelp && !params.has('nohelp')) ui.dlgHelp.showModal()
 // Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
 if (params.has('shotwin')) finish()
+
+function workshopCode(seed: string): string | null {
+  return isWorkshopSeed(seed) ? seed.slice('workshop-'.length) : null
+}
+
+initWorkshop({ play: (code) => playCode(code), toast: (t) => (ui.toast.textContent = t) })

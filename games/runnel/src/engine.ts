@@ -360,7 +360,7 @@ function growTreeAttempt(
  * whatever the last random draw happened to produce, so a puzzle is never handed to a player pre-solved
  * (unless it genuinely has no turnable pieces at all, which is already solved by construction).
  */
-function scramble(cells: Cell[], rng: () => number): number {
+export function scramble(cells: Cell[], rng: () => number): number {
   const turnable = cells.filter((c) => c.kind !== 'stone' && !c.fixed && rotationalPeriod(c.solved) > 1)
   let best: number[] | null = null
   let bestWrong = -1

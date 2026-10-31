@@ -49,6 +49,7 @@
           <input id="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a board code" aria-label="Board code" />
           <button type="submit">Play</button>
           <button type="button" id="btn-code">Copy this board's code</button>
+          <button type="button" id="btn-workshop">Workshop</button>
           <button type="button" id="btn-pick">Save to Bea's picks</button>
         </form>
         <div class="picks" id="picks" hidden aria-label="Bea's picks"></div>
@@ -144,5 +145,13 @@
     </dialog>
 
     <script type="module" src="./src/main.ts"></script>
-  </body>
+    <dialog id="workshop" class="workshop" aria-label="Bea's workshop">
+    <h2>Bea's workshop</h2>
+    <p class="ws-help">Tap a tile, then a tile beside it, to lay or cut a channel between them. The middle tile is the spring.</p>
+    <div class="ws-sizes" id="ws-sizes"><button type="button" data-radius="2">Small</button><button type="button" data-radius="3">Medium</button><button type="button" data-radius="4">Large</button></div>
+    <svg id="ws-board" class="ws-board" role="img" aria-label="Board editor"></svg>
+    <p class="ws-status" id="ws-status" aria-live="polite"></p>
+    <div class="ws-actions"><button type="button" id="ws-clear">Clear</button><button type="button" id="ws-copy">Copy code</button><button type="button" id="ws-play">Play it</button><button type="button" id="ws-close">Close</button></div>
+  </dialog>
+</body>
 </html>
