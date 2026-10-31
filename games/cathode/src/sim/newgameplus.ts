@@ -67,3 +67,14 @@ export const MOD_EFFECTS = {
   eliteChance: (mods: readonly ModId[]): number => (mods.includes("elites") ? 0.25 : 0),
   fogDensity: (mods: readonly ModId[]): number => (mods.includes("fog") ? 2.2 : 1),
 };
+
+/** The Case Board ladder: one rung per lap reached, each with the multiplier it paid at the current deck. Empty before lap 1. */
+export function broadcastLadder(jobsDone: readonly string[]): { lap: number; mult: number; current: boolean }[] {
+  const top = ngPlusLap(jobsDone);
+  const rungs: { lap: number; mult: number; current: boolean }[] = [];
+  for (let lap = 1; lap <= top; lap++) {
+    const probe = jobsDone.filter((id) => !LAP.test(id)).concat(`ngPlus${lap}`);
+    rungs.push({ lap, mult: scoreMultiplier(probe), current: lap === top });
+  }
+  return rungs;
+}

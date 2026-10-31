@@ -39,3 +39,13 @@ describe("Second Broadcast deck", () => {
     expect(MOD_EFFECTS.eliteChance(["elites"])).toBeGreaterThan(0)
   })
 })
+
+import { broadcastLadder as _ladder } from "../games/cathode/src/sim/newgameplus";
+import { it as _it, expect as _expect } from "vitest";
+_it("broadcast ladder has one rung per lap, newest current", () => {
+  _expect(_ladder([])).toEqual([]);
+  const r = _ladder(["ngPlus2", "mod:glass"]);
+  _expect(r.map((x) => x.lap)).toEqual([1, 2]);
+  _expect(r[1]?.current).toBe(true);
+  _expect(r[1]?.mult).toBeGreaterThan(r[0]?.mult ?? 99);
+});

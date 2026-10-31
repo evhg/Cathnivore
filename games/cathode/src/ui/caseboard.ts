@@ -1,5 +1,6 @@
 import { cathSceneSvg } from "../../../../shared/cath/scene";
 import { caseBoard } from "../sim/casefile";
+import { MODS, activeMods, broadcastLadder } from "../sim/newgameplus";
 import { button, el } from "./dom";
 
 /** Opens the case board over `parent`: pinned cards joined by red string, solved ones stamped. Returns a close function. */
@@ -22,6 +23,15 @@ export function openCaseBoard(parent: Element, jobsDone: readonly string[], onCl
     if (c.state === "done") el("em", "case-stamp", li, "Closed");
     el("span", "", li, c.note);
   });
+  const ladder = broadcastLadder(jobsDone);
+  if (ladder.length > 0) {
+    const names = activeMods(jobsDone).map((id) => MODS.find((m) => m.id === id)?.name ?? id);
+    const box = el("div", "case-ladder", card);
+    el("h3", "", box, "Second Broadcast");
+    if (names.length > 0) el("p", "", box, `Deck: ${names.join(" · ")}`);
+    const rungs = el("ol", "", box);
+    for (const r of [...ladder].reverse()) el("li", r.current ? "is-now" : "", rungs, `Lap ${r.lap} · score ×${r.mult.toFixed(2)}`);
+  }
   const close = (): void => {
     wrap.remove();
     onClose();
