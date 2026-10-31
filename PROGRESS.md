@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 11:51 session:** item 232 built: Marrow Market weekly events (`engine/marketEvent.ts`, `GameConfig.marketEvent`, `investCost` takes 1 off two tags; Setup banner with Cath line; Market sheet shows the live price). tsc, eslint, event+invest tests pass; not shot. Left: board-goal tweak, cosmetic is a text flag only, campaign games don't carry an event.
 - **2026-10-31 10:51 session:** item 231: Cath's Week (`shared/cath/week.ts`, `#week` card on `/games/`: Runnel 3 dailies, Hedgerow 3 levels, one NIGHT SHIFT case, from a weekly baseline; all three pin a postcard). Test, tsc, eslint, lints pass; smoke-shot at P (text only). Left: weekly outfit, card on `/`. Next: 232 Marrow Market events.
 - **2026-10-31 09:51 session (short):** CI was red on 5938f27 (deck CSS broke the type and ui-css lints); fixed by tokenising `.deck*` in `front.css`; full unit suite passes. Deck still not shot (headless WebGL too slow to screenshot the page); Case Board ladder left. Next: 230 ladder, then 231.
 - **2026-10-31 08:51 session:** item 230: CATHODE Second Broadcast (`sim/newgameplus.ts` mods glass/noregen/elites/fog + score multiplier, `ui/deck.ts` picker on NG+ start, wired in session). tsc, eslint, unit test pass; not shot, Case Board ladder left. Next: shoot the deck, ladder, then 231.

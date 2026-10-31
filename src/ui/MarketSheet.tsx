@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { investCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import CardTagIcon from './icons/CardTagIcon'
 import Tooltip from './Tooltip'
@@ -61,7 +62,7 @@ export default function MarketSheet({
                 <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>
               </span>
               <Tooltip term="Marks">
-                <span className="coin num">{card.cost}</span>
+                <span className="coin num">{investCost(state, state.activeProducer, card)}</span>
                 <span className="visually-hidden"> Marks</span>
               </Tooltip>
             </div>
@@ -115,7 +116,7 @@ export default function MarketSheet({
                     forbids a focusable Tooltip button inside <summary> itself. */}
                 <div className="card-cost-row">
                   <Tooltip term="Marks">
-                    <span className="coin num">{card.cost}</span>
+                    <span className="coin num">{investCost(state, state.activeProducer, card)}</span>
                     <span className="visually-hidden"> Marks</span>
                   </Tooltip>
                 </div>

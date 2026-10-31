@@ -4,6 +4,7 @@ import { refreshAllLiberation } from './enemy'
 import { checkRiftSplit, resolveRiftSplitFaction, resolveRiftSplitRemoval } from './rift'
 import { advanceTurnIfNeeded, checkWin } from './round'
 import { hasImprovement, improvementCount } from './producer'
+import { eventDiscount } from './marketEvent'
 import { canMarketDayOpenIn, canOpenStallIn, regionStallTotal } from './region'
 import { resolveRules } from './rules'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -106,8 +107,8 @@ export function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId
 // two Media-flavoured cards sharing one PR-cost-cutting ability, matching how the 3 per-region Supply
 // discounts already share one shape), both minimum 1. Checked by id against the producer's improvements
 // *before* this purchase is added to the tableau, so a card never discounts its own purchase.
-export function investCost(state: GameState, producer: ProducerId, card: { cost: number }): number {
-  const discount = hasImprovement(state, producer, 'wholesale-account') ? 1 : 0
+export function investCost(state: GameState, producer: ProducerId, card: { cost: number; tags?: readonly string[] }): number {
+  const discount = (hasImprovement(state, producer, 'wholesale-account') ? 1 : 0) + eventDiscount(state.config.marketEvent, card.tags)
   return Math.max(1, card.cost - discount)
 }
 

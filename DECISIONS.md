@@ -631,3 +631,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-31: Second Broadcast mods are `mod:<id>` flags in jobsDone, picked in an overlay when NG+ starts; ladder deferred.
 - 2026-10-31: CI red after 230 deck CSS (raw px/colours); fixed with tokens. Run npm run check before pushing CSS.
 - 2026-10-31: Cath's Week goals are growth since a per-week baseline in localStorage (`cath:week`); the third goal uses NIGHT SHIFT cases (the only third-game count in the shared reader); reward is a postcard, not an outfit.
+- 2026-10-31: Market events change only Invest prices (2 tags, -1 Mark); the id is stored in GameConfig so replays stay deterministic. Board goals and a real cosmetic left out (scope).

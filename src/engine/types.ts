@@ -108,6 +108,8 @@ export interface GameConfig {
   // SPEC 8.2 ch6: "Cath's Plan starts face down and locked." No Scheme is a legal action while true,
   // regardless of `rulesEnabled.schemes`; a scripted trigger (above) switches it off mid-game.
   cathsPlanLocked?: boolean
+  // ROADMAP 232: this week's Marrow Market event (see marketEvent.ts); cheapens two Improvement tags.
+  marketEvent?: 'festival' | 'drought' | 'glut'
   // A campaign chapter's single lone producer faces far more enemy turns per region than the tuned
   // 2-producer/7-region full game's `DIFFICULTY_SETTINGS.lostLandPool` was balanced for (a chapter runs
   // considerably longer than the full game's 10-round cap). Overrides that pool size for this game only;

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { ALL_REGION_IDS } from '../content/map'
 import type { GameConfig, ProducerId } from '../engine/types'
+import { marketEventFor } from '../engine/marketEvent'
 import CathArt from './CathArt'
 import Portrait from './portraits/Portrait'
 
@@ -18,6 +19,7 @@ export default function Setup({ onStart }: Props) {
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
   const [difficulty, setDifficulty] = useState<GameConfig['difficulty']>('normal')
   const [seedInput, setSeedInput] = useState('')
+  const [marketEvent] = useState(() => marketEventFor(new Date()))
 
   function toggleProducer(id: ProducerId): void {
     setProducers((prev) => {
@@ -34,7 +36,7 @@ export default function Setup({ onStart }: Props) {
     // A non-numeric seed (e.g. a pasted non-digit string) must not silently coerce to a real seed (0)
     // indistinguishable from actually typing "0" — fall back to a fresh random seed instead.
     const seed = Number.isFinite(parsed) ? parsed : Math.floor(Math.random() * 2 ** 31)
-    onStart({ producers, difficulty, activeRegions: ALL_REGION_IDS }, seed, mode)
+    onStart({ producers, difficulty, activeRegions: ALL_REGION_IDS, marketEvent: marketEvent.id }, seed, mode)
   }
 
   return (
@@ -48,6 +50,12 @@ export default function Setup({ onStart }: Props) {
             no game state exists yet to react to here. */}
         <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={80} height={80} title="Cath" />
       </header>
+
+      <section className="settings-card market-event" data-event={marketEvent.id}>
+        <h2>Market event: {marketEvent.name}</h2>
+        <p className="market-event-line">“{marketEvent.banner}”</p>
+        <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Stall flag: {marketEvent.cosmetic}.</p>
+      </section>
 
       <section className="settings-card">
         <h2>Mode</h2>
