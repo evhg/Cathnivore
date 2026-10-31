@@ -3426,7 +3426,7 @@ function finishOrchard(g: Game, lv: Level): void {
     btn.type = "button";
     btn.className = "orchard-boon";
     const n = document.createElement("strong");
-    n.textContent = b.name;
+    n.textContent = b.kind === "cath" ? `\u2665 ${b.name}` : b.name;
     const t = document.createElement("small");
     t.textContent = b.text;
     btn.append(n, t);

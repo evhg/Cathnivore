@@ -34,3 +34,14 @@ describe("endless orchard", () => {
     expect(d.orchard).toBe(3);
   });
 });
+
+describe("orchard balance", () => {
+  it("offers Cath perks and the bot can clear an early and a late field", async () => {
+    const { playLevel } = await import("../games/hedgerow/src/bot");
+    expect(BOONS.filter((b) => b.kind === "cath").length).toBeGreaterThanOrEqual(4);
+    for (const depth of [1, 12, ORCHARD_MAX_DEPTH]) {
+      const g = playLevel(orchardLevel(3, depth, ["thermos", "cardigan"]), "best");
+      expect(g.phase, `depth ${depth}`).toBe("won");
+    }
+  }, 300_000);
+});

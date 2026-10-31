@@ -7,6 +7,8 @@ import { LEVELS } from "./levels";
 
 export interface Boon {
   id: string;
+  /** Whose pick it is: a plain boon from the orchard, or something Cath brings along. */
+  kind: "orchard" | "cath";
   name: string;
   text: string;
   /** Applied to each field of the run after the field is picked. */
@@ -14,14 +16,18 @@ export interface Boon {
 }
 
 export const BOONS: Boon[] = [
-  { id: "pockets", name: "Deep pockets", text: "Start every field with 25% more Marks.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.25) }) },
-  { id: "neighbours", name: "Good neighbours", text: "+4 Goodwill on every field.", apply: (l) => ({ ...l, goodwill: l.goodwill + 4 }) },
-  { id: "thin", name: "Thin crowds", text: "Enemies have 8% less health.", apply: (l) => ({ ...l, hpScale: (l.hpScale ?? 1) * 0.92 }) },
-  { id: "windfall", name: "Windfall", text: "+150 Marks at the start of every field.", apply: (l) => ({ ...l, startMarks: l.startMarks + 150 }) },
-  { id: "pantry", name: "Full pantry", text: "+8 Goodwill, but 4% tougher enemies.", apply: (l) => ({ ...l, goodwill: l.goodwill + 8, hpScale: (l.hpScale ?? 1) * 1.04 }) },
-  { id: "market", name: "Market day", text: "+60% Marks to start, enemies 6% tougher.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.6), hpScale: (l.hpScale ?? 1) * 1.06 }) },
-  { id: "frost", name: "Late frost", text: "Enemies have 14% less health, but -2 Goodwill.", apply: (l) => ({ ...l, hpScale: (l.hpScale ?? 1) * 0.86, goodwill: Math.max(3, l.goodwill - 2) }) },
-  { id: "scrimp", name: "Scrimp and save", text: "+12% Marks and +2 Goodwill.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.12), goodwill: l.goodwill + 2 }) },
+  { id: "pockets", kind: "orchard", name: "Deep pockets", text: "Start every field with 25% more Marks.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.25) }) },
+  { id: "neighbours", kind: "orchard", name: "Good neighbours", text: "+4 Goodwill on every field.", apply: (l) => ({ ...l, goodwill: l.goodwill + 4 }) },
+  { id: "thin", kind: "orchard", name: "Thin crowds", text: "Enemies have 8% less health.", apply: (l) => ({ ...l, hpScale: (l.hpScale ?? 1) * 0.92 }) },
+  { id: "windfall", kind: "orchard", name: "Windfall", text: "+150 Marks at the start of every field.", apply: (l) => ({ ...l, startMarks: l.startMarks + 150 }) },
+  { id: "pantry", kind: "orchard", name: "Full pantry", text: "+8 Goodwill, but 4% tougher enemies.", apply: (l) => ({ ...l, goodwill: l.goodwill + 8, hpScale: (l.hpScale ?? 1) * 1.04 }) },
+  { id: "market", kind: "orchard", name: "Market day", text: "+60% Marks to start, enemies 6% tougher.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.6), hpScale: (l.hpScale ?? 1) * 1.06 }) },
+  { id: "frost", kind: "orchard", name: "Late frost", text: "Enemies have 14% less health, but -2 Goodwill.", apply: (l) => ({ ...l, hpScale: (l.hpScale ?? 1) * 0.86, goodwill: Math.max(3, l.goodwill - 2) }) },
+  { id: "scrimp", kind: "orchard", name: "Scrimp and save", text: "+12% Marks and +2 Goodwill.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.12), goodwill: l.goodwill + 2 }) },
+  { id: "thermos", kind: "cath", name: "Cath's thermos", text: "Cath brings tea: +300 Marks to start every field.", apply: (l) => ({ ...l, startMarks: l.startMarks + 300 }) },
+  { id: "clipboard", kind: "cath", name: "Cath's clipboard", text: "She has the rota sorted: +6 Goodwill and 4% less enemy health.", apply: (l) => ({ ...l, goodwill: l.goodwill + 6, hpScale: (l.hpScale ?? 1) * 0.96 }) },
+  { id: "cardigan", kind: "cath", name: "Cath's good cardigan", text: "Nobody dares to be rude: enemies have 10% less health.", apply: (l) => ({ ...l, hpScale: (l.hpScale ?? 1) * 0.9 }) },
+  { id: "jam", kind: "cath", name: "Cath's jam stall", text: "Neighbours buy jars: +20% Marks and +3 Goodwill.", apply: (l) => ({ ...l, startMarks: Math.round(l.startMarks * 1.2), goodwill: l.goodwill + 3 }) },
 ];
 
 export const ORCHARD_BAND = 4;
