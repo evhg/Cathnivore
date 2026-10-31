@@ -32,6 +32,10 @@ export interface SaveData {
   endless?: Record<string, number>;
   /** Deepest Endless Orchard run, in fields cleared. */
   orchard?: number;
+  /** Orchard Seeds banked (earned per run, spent on Heirlooms), the Heirlooms owned and the one carried. */
+  seeds?: number;
+  heirlooms?: string[];
+  heirloom?: string;
   /** Levels won in a Heroic run (one Goodwill, no pies): the fourth star. Optional in old saves. */
   heroic?: Record<string, boolean>;
   /** Medals won per level id: the modes it was cleared in (Hedgerow 2 M9). Optional in old saves. */
@@ -142,6 +146,9 @@ export function parseSave(raw: string | null): SaveData {
         if (ok.length) (data.medals ??= {})[k] = ok;
       }
       if (typeof obj.orchard === "number" && obj.orchard >= 1) data.orchard = Math.floor(obj.orchard);
+      if (typeof obj.seeds === "number" && obj.seeds >= 1) data.seeds = Math.floor(obj.seeds);
+      if (Array.isArray(obj.heirlooms)) data.heirlooms = obj.heirlooms.filter((x: unknown): x is string => typeof x === "string").slice(0, 20);
+      if (typeof obj.heirloom === "string") data.heirloom = obj.heirloom;
       for (const [k, v] of Object.entries(obj.endless ?? {})) if (typeof v === "number" && v >= 1) (data.endless ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.daily ?? {})) if (typeof v === "number" && v >= 0 && v <= 100) (data.daily ??= {})[k] = Math.floor(v);
       for (const [k, v] of Object.entries(obj.ghosts ?? {})) {
@@ -266,6 +273,28 @@ export function recordOrchard(data: SaveData, depth: number): boolean {
   data.orchard = depth;
   save(data);
   return true;
+}
+
+export function addSeeds(data: SaveData, n: number): void {
+  if (n <= 0) return;
+  data.seeds = (data.seeds ?? 0) + n;
+  save(data);
+}
+
+/** Spend Seeds on an Heirloom and carry it; false if owned already or too dear. */
+export function buyHeirloom(data: SaveData, id: string, cost: number): boolean {
+  if (data.heirlooms?.includes(id) || (data.seeds ?? 0) < cost) return false;
+  data.seeds = (data.seeds ?? 0) - cost;
+  (data.heirlooms ??= []).push(id);
+  data.heirloom = id;
+  save(data);
+  return true;
+}
+
+export function carryHeirloom(data: SaveData, id: string): void {
+  if (!data.heirlooms?.includes(id)) return;
+  data.heirloom = id;
+  save(data);
 }
 
 export function recordDaily(data: SaveData, day: number, score: number, ghost?: Array<[string, number, number]>): boolean {

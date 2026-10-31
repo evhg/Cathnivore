@@ -610,3 +610,6 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 24 (planned 2026-10-31)
 233. [x] *(built; shot at P and D 2026-10-31, fine)* **Cath's Week chip in Runnel and Hedgerow:** one-line progress pill (`shared/cath/weekchip.ts`) linking to `/games/#week`.
+
+### Phase 25 (planned 2026-10-31)
+234. [x] *(2026-10-31: Seeds per Orchard run, Cath's pantry sheet with 5 Heirlooms, carried into each run; test; not shot)* **Orchard Seeds and Heirlooms (meta-progression):** runs bank Seeds, spent on permanent starting kit.

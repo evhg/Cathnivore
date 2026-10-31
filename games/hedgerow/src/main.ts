@@ -161,6 +161,9 @@ import {
   type MedalMode,
   recordEndless,
   recordOrchard,
+  addSeeds,
+  buyHeirloom,
+  carryHeirloom,
   recordDaily,
   recordBuild,
   refundAll,
@@ -170,7 +173,7 @@ import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEE
 import { SHOW_EXTRAS, showFields, showKit, showPacket } from "./show";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
-import { orchardLevel, orchardOffers, ORCHARD_MAX_DEPTH, type Boon } from "./orchard";
+import { orchardLevel, orchardOffers, orchardSeeds, heirloomBoons, HEIRLOOMS, ORCHARD_MAX_DEPTH, type Boon } from "./orchard";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
@@ -3375,8 +3378,72 @@ function startOrchard(): void {
   dailyDay = null;
   showRun = null;
   endlessArgs = null;
-  orchardRun = { seed: dayOf(Date.now()), depth: 1, taken: [] };
-  startLevel(orchardLevel(orchardRun.seed, 1, []), false);
+  if (!data.heirlooms?.length && (data.seeds ?? 0) < HEIRLOOMS[0]!.cost && !data.orchard) return plantOrchard();
+  openPantry();
+}
+
+function plantOrchard(): void {
+  const start = heirloomBoons(data.heirloom);
+  orchardRun = { seed: dayOf(Date.now()), depth: 1, taken: [...start] };
+  startLevel(orchardLevel(orchardRun.seed, 1, orchardRun.taken), false);
+}
+
+/** Cath's pantry: spend Seeds on Heirlooms, carry one into the run, then plant. */
+function openPantry(): void {
+  document.getElementById("dlg-pantry")?.remove();
+  const dlg = document.createElement("dialog");
+  dlg.id = "dlg-pantry";
+  dlg.className = "sheet pantry";
+  const draw = (): void => {
+    const h = document.createElement("h2");
+    h.textContent = "Cath's pantry";
+    const seeds = document.createElement("p");
+    seeds.className = "pantry-seeds";
+    seeds.textContent = `${data.seeds ?? 0} Seeds · every field you clear in the Orchard earns more`;
+    const list = document.createElement("div");
+    list.className = "orchard-offers";
+    for (const hl of HEIRLOOMS) {
+      const owned = data.heirlooms?.includes(hl.id) ?? false;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "orchard-boon";
+      btn.disabled = !owned && (data.seeds ?? 0) < hl.cost;
+      btn.setAttribute("aria-pressed", String(data.heirloom === hl.id));
+      const n = document.createElement("strong");
+      n.textContent = owned ? (data.heirloom === hl.id ? `\u2713 ${hl.name} (carried)` : `${hl.name} (tap to carry)`) : `${hl.name} · ${hl.cost} Seeds`;
+      const t = document.createElement("small");
+      t.textContent = hl.text;
+      btn.append(n, t);
+      btn.onclick = () => {
+        if (owned) carryHeirloom(data, hl.id);
+        else if (!buyHeirloom(data, hl.id, hl.cost)) return;
+        dlg.replaceChildren();
+        draw();
+      };
+      list.append(btn);
+    }
+    const go = document.createElement("button");
+    go.type = "button";
+    go.className = "btn primary";
+    go.textContent = "Plant today's orchard";
+    go.onclick = () => {
+      dlg.close();
+      dlg.remove();
+      plantOrchard();
+    };
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "btn";
+    back.textContent = "Not now";
+    back.onclick = () => {
+      dlg.close();
+      dlg.remove();
+    };
+    dlg.append(h, seeds, list, go, back);
+  };
+  draw();
+  document.body.append(dlg);
+  dlg.showModal();
 }
 
 /** Win a field: pick one of three boons and walk on. Lose one: the run is over and its depth is kept. */
@@ -3386,6 +3453,9 @@ function finishOrchard(g: Game, lv: Level): void {
   const won = g.phase === "won";
   const cleared = won ? run.depth : run.depth - 1;
   const record = recordOrchard(data, cleared);
+  const ended = !won || run.depth >= ORCHARD_MAX_DEPTH;
+  const earned = ended ? orchardSeeds(cleared) : 0;
+  if (ended) addSeeds(data, earned);
   ui.resultCath.innerHTML = cath(won ? "delighted" : record ? "smirk" : "worried");
   ui.resultEyebrow.textContent = lv.name;
   ui.resultStars.replaceChildren();
@@ -3398,7 +3468,7 @@ function finishOrchard(g: Game, lv: Level): void {
   if (!won || run.depth >= ORCHARD_MAX_DEPTH) {
     ui.resultTitle.textContent = won ? "The whole orchard, picked clean." : record ? "A new deepest row." : "The row fell.";
     ui.resultStats.textContent = `${cleared} field${cleared === 1 ? "" : "s"} cleared · best ${best} · ${run.taken.length} boon${run.taken.length === 1 ? "" : "s"}`;
-    ui.resultNote.textContent = "Same orchard for everyone today; a new one tomorrow.";
+    ui.resultNote.textContent = `+${earned} Seeds for Cath's pantry (${data.seeds ?? 0} banked). Same orchard for everyone today; a new one tomorrow.`;
     ui.resultPrimary.hidden = false;
     ui.resultStars.hidden = true;
     const card = `Hedgerow Orchard #${run.seed + 1}\n${"\u{1F34E}".repeat(Math.min(cleared, 10))}${cleared > 10 ? "+" : ""}\n${cleared} of ${ORCHARD_MAX_DEPTH} fields · ${run.taken.length} boons`;

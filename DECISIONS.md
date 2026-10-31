@@ -634,3 +634,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-31: Market events change only Invest prices (2 tags, -1 Mark); the id is stored in GameConfig so replays stay deterministic. Board goals and a real cosmetic left out (scope).
 - 2026-10-31: released 35c3b5c after fixing site e2e for the Modes drawer; tag push 403 as usual.
 - 2026-10-31 17:51: Cath's Week card on / shares one renderer with /games/ (weekui.ts); no new storage.
+- 2026-10-31 21:51: Orchard Heirlooms are pre-taken boons (no new mechanics); Seeds earned only when a run ends; pantry skipped for brand-new players.
