@@ -2860,7 +2860,7 @@ img.act-scene {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    z-index: var(--z-raise);
+    z-index: var(--z-field-ui);
     flex-direction: column;
     gap: 6px;
     min-width: 190px;

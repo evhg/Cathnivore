@@ -701,7 +701,10 @@ test.describe('Hedgerow', () => {
     if (!(await page.locator('#btn-diff').isVisible())) await page.locator('#btn-modes').click()
     await page.locator('#btn-diff').click()
     await expect(page.locator('#btn-diff')).toHaveAttribute('aria-label', 'Difficulty: Hard')
-    for (let i = 0; i < 3; i++) await page.locator('#btn-remix').click()
+    for (let i = 0; i < 3; i++) {
+      if ((await page.locator('#btn-modes').isVisible()) && (await page.locator('#btn-modes').getAttribute('aria-expanded')) !== 'true') await page.locator('#btn-modes').click()
+      await page.locator('#btn-remix').click()
+    }
     await expect(page.locator('#btn-remix')).toHaveAttribute('aria-label', 'Remix: Long Haul')
     await page.locator('button.level[data-level="2"]').click()
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
