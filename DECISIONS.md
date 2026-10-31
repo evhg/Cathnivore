@@ -630,3 +630,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-31: Runnel share codes encode the practice seed + size (`M-ts-rand`), not a board layout; the editor is a later slice.
 - 2026-10-31: Second Broadcast mods are `mod:<id>` flags in jobsDone, picked in an overlay when NG+ starts; ladder deferred.
 - 2026-10-31: CI red after 230 deck CSS (raw px/colours); fixed with tokens. Run npm run check before pushing CSS.
+- 2026-10-31: Cath's Week goals are growth since a per-week baseline in localStorage (`cath:week`); the third goal uses NIGHT SHIFT cases (the only third-game count in the shared reader); reward is a postcard, not an outfit.

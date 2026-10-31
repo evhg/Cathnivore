@@ -6,6 +6,7 @@ import '../../shared/cath/cath.css'
 import { cathSvg, type CathExpression } from '../../shared/cath/cath'
 import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
 import { scrapbookPages } from '../../shared/cath/scrapbook'
+import { loadWeek, pinPostcard, postcardFor, weekComplete, weekGoals } from '../../shared/cath/week'
 import { startScene } from './scene'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -203,4 +204,39 @@ try {
   }
 } catch {
   // Unreadable storage: no scrapbook.
+}
+
+// Cath's week (231): three goals across the games, counted from the saves; all three pin the week's postcard.
+try {
+  const section = document.getElementById('week')
+  const list = document.getElementById('week-goals')
+  const card = document.getElementById('week-card')
+  const now = readProgress()
+  const state = loadWeek(now, new Date())
+  const goals = weekGoals(now, state.base)
+  if (section && list && card) {
+    list.replaceChildren(
+      ...goals.map((g) => {
+        const li = document.createElement('li')
+        li.className = 'week-goal'
+        const done = g.done >= g.need
+        li.dataset.done = String(done)
+        const a = document.createElement('a')
+        a.href = g.href
+        a.textContent = `${g.game}: ${g.text}`
+        const n = document.createElement('span')
+        n.textContent = done ? '✓' : `${Math.min(g.done, g.need)}/${g.need}`
+        li.append(a, n)
+        return li
+      }),
+    )
+    if (weekComplete(goals)) {
+      pinPostcard(state.week)
+      card.textContent = `Postcard pinned: “${postcardFor(state.week)}” — Cath`
+      card.hidden = false
+    }
+    section.hidden = false
+  }
+} catch {
+  // Unreadable storage: no weekly card.
 }
