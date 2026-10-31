@@ -629,3 +629,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-31: Orchard boons only edit the Level (marks/goodwill/hpScale), reusing story levels by depth band; replays not supported for Orchard runs.
 - 2026-10-31: Runnel share codes encode the practice seed + size (`M-ts-rand`), not a board layout; the editor is a later slice.
 - 2026-10-31: Second Broadcast mods are `mod:<id>` flags in jobsDone, picked in an overlay when NG+ starts; ladder deferred.
+- 2026-10-31: CI red after 230 deck CSS (raw px/colours); fixed with tokens. Run npm run check before pushing CSS.

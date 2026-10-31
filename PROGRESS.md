@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 09:51 session (short):** CI was red on 5938f27 (deck CSS broke the type and ui-css lints); fixed by tokenising `.deck*` in `front.css`; full unit suite passes. Deck still not shot (headless WebGL too slow to screenshot the page); Case Board ladder left. Next: 230 ladder, then 231.
 - **2026-10-31 08:51 session:** item 230: CATHODE Second Broadcast (`sim/newgameplus.ts` mods glass/noregen/elites/fog + score multiplier, `ui/deck.ts` picker on NG+ start, wired in session). tsc, eslint, unit test pass; not shot, Case Board ladder left. Next: shoot the deck, ladder, then 231.
 - **2026-10-31 07:51 session:** item 229 done: Runnel workshop (`workshop.ts` layout codec `W2-...` + solver check via `computeFlow`, `workshopui.ts` dialog, `#btn-workshop`); codes play via the paste box and save to Bea's picks. tsc, eslint, css lint, runnel tests pass; shot at P and D. Next: 230 CATHODE Second Broadcast.
 - **2026-10-31 06:51 session (short):** item 229: Runnel "Bea's picks" shelf (save a board code, chips to replay or remove, max 8; `data.picks`, `#picks`); tsc, eslint, runnel and css lint tests pass; shot at P. Left: board editor with solver check. Next: 229 editor, then 230.
