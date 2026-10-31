@@ -3088,6 +3088,7 @@ function finish(g: Game): void {
   ui.resultPrimary.classList.remove("btn-quiet");
   ui.resultNote.hidden = false;
   ui.resultStars.hidden = false;
+  ui.resultPrimary.hidden = false;
   ui.dlgResult.classList.remove("has-causes");
   const lv = g.level;
   rememberBuilds(g);
@@ -3397,6 +3398,8 @@ function finishOrchard(g: Game, lv: Level): void {
     ui.resultTitle.textContent = won ? "The whole orchard, picked clean." : record ? "A new deepest row." : "The row fell.";
     ui.resultStats.textContent = `${cleared} field${cleared === 1 ? "" : "s"} cleared · best ${best} · ${run.taken.length} boon${run.taken.length === 1 ? "" : "s"}`;
     ui.resultNote.textContent = "Same orchard for everyone today; a new one tomorrow.";
+    ui.resultPrimary.hidden = false;
+    ui.resultStars.hidden = true;
     ui.resultPrimary.textContent = "Go again";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
@@ -3416,8 +3419,8 @@ function finishOrchard(g: Game, lv: Level): void {
     ui.dlgResult.close();
     startLevel(orchardLevel(run.seed, run.depth, run.taken), false);
   };
-  ui.resultPrimary.textContent = `Take ${offers[0]!.name}`;
-  ui.resultPrimary.onclick = () => take(offers[0]!);
+  ui.resultPrimary.hidden = true;
+  ui.resultStars.hidden = true;
   const row = document.createElement("div");
   row.id = "orchard-offers";
   row.className = "orchard-offers";
@@ -3430,7 +3433,11 @@ function finishOrchard(g: Game, lv: Level): void {
     const t = document.createElement("small");
     t.textContent = b.text;
     btn.append(n, t);
-    btn.onclick = () => take(b);
+    btn.onclick = () => {
+      ui.resultPrimary.hidden = false;
+      ui.resultStars.hidden = false;
+      take(b);
+    };
     row.append(btn);
   }
   document.getElementById("orchard-offers")?.remove();
