@@ -66,7 +66,7 @@ import { openCaseBoard } from "../ui/caseboard";
 import { openDistrictMap } from "../ui/districtmap";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
-import { ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
+import { activeMods, MOD_EFFECTS, ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
 import { ELITE_CHANCE } from "../sim/enemies";
 import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
@@ -406,7 +406,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           ? [inTower ? BOARD_GUARD : RIOT_SHIELD, "riotShield"]
           : [ENFORCER, "enforcer"];
       // Screenshots never roll an elite (C15 review): an affix changes his name, his HP and so what a staged round does.
-      const elite = !o.shot && Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone));
+      const elite = !o.shot && Math.random() < ELITE_CHANCE[progress.character.difficulty] + ngPlusEliteBonus(ngPlusLap(progress.jobsDone)) + MOD_EFFECTS.eliteChance(activeMods(progress.jobsDone));
       // C10 (S3.2): every fifth rifle patrol is led by a sergeant (the helmet crest and the red visor stripe).
       const leader = base === ENFORCER && n % 5 === 1;
       const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++, elite), base), role: base.role, leader }, route.map((p) => p.clone()), areaLevel);
@@ -1207,6 +1207,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   // C6 "I know I'm hit" (S6.1, S6.2): Guard and Flesh, and every readout of a hit on the hit's frame.
   const vitals = new Vitals(s.maxHp);
+  const mods = activeMods(progress.jobsDone);
+  vitals.noRegen = mods.includes("noregen");
+  if (mods.includes("fog") && world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density *= MOD_EFFECTS.fogDensity(mods);
   s.vitals = vitals;
   s.killcamState = () => ({ active: killcam.active, shot: killcam.shot, ms: killcam.ms, sinceImpact: killcam.sinceImpact, xray: killcam.xrayOn, scale: lastSimScale, returnMs: kcReturnMs });
   // C17 (S6.5): Second Wind, once per checkpoint (none on Hell Week; the Second Wind skill adds a charge, and its
@@ -1373,6 +1376,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    */
   function hurtCath(amount: number, from: { x: number; y: number; z: number } | null, kind: HurtKind = "bullet", key?: unknown): void {
     syncVitals();
+    amount *= MOD_EFFECTS.damageTaken(mods);
     const r = vitals.damage(amount);
     if (r.broke) vitals.drain();
     s.hp = vitals.total;

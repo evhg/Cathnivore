@@ -20,3 +20,22 @@ describe("New Game+", () => {
     expect(ngPlusEliteBonus(9)).toBe(0.2)
   })
 })
+
+import { activeMods, MOD_EFFECTS, scoreMultiplier, startSecondBroadcast } from "../games/cathode/src/sim/newgameplus"
+describe("Second Broadcast deck", () => {
+  it("stores up to three mods as flags and ignores unknown ids", () => {
+    const j = startSecondBroadcast(["vaultBoss", "hardboiledOpen"], ["glass", "fog", "elites", "noregen", "bogus"])
+    expect(activeMods(j)).toEqual(["glass", "noregen", "elites"])
+    expect(j).toContain("ngPlus1")
+  })
+  it("scores more for harder decks and 1 outside New Game+", () => {
+    expect(scoreMultiplier(["fishMarket"])).toBe(1)
+    expect(scoreMultiplier(startSecondBroadcast(["vaultBoss"], []))).toBe(1)
+    expect(scoreMultiplier(startSecondBroadcast(["vaultBoss"], ["glass", "noregen"]))).toBe(1.9)
+  })
+  it("applies effects", () => {
+    expect(MOD_EFFECTS.damageTaken(["glass"])).toBe(1.6)
+    expect(MOD_EFFECTS.damageTaken([])).toBe(1)
+    expect(MOD_EFFECTS.eliteChance(["elites"])).toBeGreaterThan(0)
+  })
+})

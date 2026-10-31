@@ -15,7 +15,8 @@ import "./styles.css";
 import { applyMotionPref, loadPrefs, resolveQuality, savePrefs, type Intensity, type QualityChoice } from "./prefs";
 import { openClassPick } from "./ui/classpick";
 import { Progress } from "./game/progress";
-import { canStartNewGamePlus, startNewGamePlus } from "./sim/newgameplus";
+import { canStartNewGamePlus, startSecondBroadcast } from "./sim/newgameplus";
+import { pickDeck } from "./ui/deck";
 import { newCharacter } from "./sim/character";
 import { SAVE_KEY } from "./sim/save";
 import type { ClassId } from "./sim/types";
@@ -326,7 +327,9 @@ async function confirm(id: string): Promise<void> {
     armed = false;
   } else if (id === "continue" && canStartNewGamePlus(jobs())) {
     const p = new Progress();
-    p.jobsDone = startNewGamePlus(p.jobsDone);
+    if (menu) menu.active = false;
+    const picks = await pickDeck($("screen-title"), p.jobsDone);
+    p.jobsDone = startSecondBroadcast(p.jobsDone, picks);
     p.save();
   }
   void begin(true);

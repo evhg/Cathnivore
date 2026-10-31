@@ -876,3 +876,11 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
 @media (prefers-reduced-motion: reduce) {
   .front-credits, .front-credits-plate, .screen.front .title-col, .screen.front .the-list { transition-duration: 1ms; }
 }
+
+/* Second Broadcast deck picker (ROADMAP 230) */
+.deck { position: fixed; inset: 0; z-index: 40; display: grid; align-content: center; justify-items: center; gap: 12px; padding: 24px; background: rgba(6, 8, 10, 0.92); color: #e9e6df; }
+.deck-title { margin: 0; letter-spacing: 0.3em; font-weight: 600; }
+.deck-sub, .deck-mult { margin: 0; opacity: 0.75; }
+.deck-card { display: grid; gap: 4px; width: min(420px, 100%); padding: 14px 16px; text-align: left; color: inherit; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.18); cursor: pointer; }
+.deck-card[aria-pressed="true"] { border-color: #e8452c; background: rgba(232, 69, 44, 0.16); }
+.deck-go { margin-top: 8px; padding: 12px 28px; color: #fff; background: #e8452c; border: 0; letter-spacing: 0.2em; cursor: pointer; }

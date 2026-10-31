@@ -64,6 +64,8 @@ export class Vitals {
   flesh = 0;
   /** Seconds since the last hit (any hit). */
   sinceHit = 1e9;
+  /** Second Broadcast "no second wind": Guard never starts regenerating. */
+  noRegen = false;
   /** Guard regen: where it started, and how far in (s); -1 when not regenerating. */
   private regenFrom = 0;
   private regenT = -1;
@@ -158,7 +160,7 @@ export class Vitals {
     const before = this.sinceHit;
     this.sinceHit += dt;
     if (this.flesh <= 0) return this.events;
-    if (this.regenT < 0 && this.guard < this.maxGuard - 1e-9 && before < VITALS.regenDelayS && this.sinceHit >= VITALS.regenDelayS) {
+    if (!this.noRegen && this.regenT < 0 && this.guard < this.maxGuard - 1e-9 && before < VITALS.regenDelayS && this.sinceHit >= VITALS.regenDelayS) {
       this.regenT = this.sinceHit - VITALS.regenDelayS;
       this.regenFrom = this.guard;
       this.events.push("regenStart");
