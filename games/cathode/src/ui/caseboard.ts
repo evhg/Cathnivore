@@ -1,3 +1,4 @@
+import { cathSceneSvg } from "../../../../shared/cath/scene";
 import { caseBoard } from "../sim/casefile";
 import { button, el } from "./dom";
 
@@ -5,9 +6,13 @@ import { button, el } from "./dom";
 export function openCaseBoard(parent: Element, jobsDone: readonly string[], onClose: () => void = () => {}): () => void {
   const wrap = el("div", "coach case-board", parent);
   const card = el("div", "coach-card case-cork", wrap);
+  const cases = caseBoard(jobsDone);
+  const allClosed = cases.length > 0 && cases.every((c) => c.state === "done");
+  const scene = el("div", "case-cath", card);
+  scene.setAttribute("aria-hidden", "true");
+  scene.innerHTML = cathSceneSvg(allClosed ? "perfect" : "thinking");
   el("h2", "", card, "Case board");
   const ol = el("ol", "case-list", card);
-  const cases = caseBoard(jobsDone);
   cases.forEach((c, i) => {
     const li = el("li", `case-${c.state}`, ol);
     // A small tilt and drop per card so the board reads pinned by hand, not gridded.

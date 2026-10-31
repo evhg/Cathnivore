@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-10-31 01:51 session (short):** CATHODE Case board header wears the shared Cath scene (thinking; perfect when all closed). tsc, eslint pass; not shot. Next: shoot it, then plan new whole features (critique shoot).
 - **2026-10-31 00:51 session (short):** Hedgerow result card now uses the shared `cathSceneSvg` (win hop / lose slump, perfect wink). tsc, eslint, hedgerow.test pass; not shot. Next: shoot it at P and D, adopt in CATHODE case cards, then plan new whole features (critique shoot).
 - **2026-10-30 23:52 session (short):** item 227: `shared/cath/scene.ts` (`cathSceneSvg(moment)`, moments intro/win/perfect/lose/chapter-end/thinking/warning, pose animations in `cath.css`); Runnel win card wears the win hop. tsc, eslint, unit tests pass; not shot. Next: adopt in Hedgerow result card, then plan new whole features (critique shoot).
 - **2026-10-30 22:52 session:** item 225 done: Hedgerow map's Almanac/Show/Difficulty/Remix/Heroic buttons fold into a "Modes" drawer on desktop and landscape (`#tools-drawer`, `main.ts`); phone tab bar unchanged. tsc, eslint, hedgerow.test, css lint pass; shot at D. Next: 227 (shared Cath scene component) or plan new whole features.

@@ -1839,6 +1839,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cx-savecode { margin-left: auto; align-self: center; font-size: var(--fs-1); }
 .cx-code { width: 100%; box-sizing: border-box; margin: 0 0 calc(var(--u) * 12); padding: calc(var(--u) * 12) 0; font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--ink); background: none; border: 0; resize: none; word-break: break-all; }
 .cx-code:focus-visible { outline: none; }
+.case-cork .case-cath { width: calc(var(--u) * 84); height: calc(var(--u) * 84); margin: 0 auto calc(var(--u) * 6); overflow: hidden; }
+.case-cork .case-cath svg { width: 100%; height: 100%; }
 .case-cork .case-list { list-style: none; margin: 0 0 calc(var(--u) * 16); padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: calc(var(--u) * 14); }
 .case-list li { position: relative; display: flex; flex-direction: column; gap: 4px; padding: calc(var(--u) * 14) calc(var(--u) * 12) calc(var(--u) * 12); background: var(--night-3); border: 1px solid var(--rule); border-radius: 3px; box-shadow: 0 6px 14px rgb(0 0 0 / .45); transform: rotate(var(--tilt, 0deg)); font-size: var(--fs-1); color: var(--ink-2); }
 .case-list li:nth-child(odd):not(:last-child)::after { content: ""; position: absolute; top: 9px; left: 50%; width: 100%; height: 1px; background: var(--blood); opacity: .55; transform: rotate(2deg); transform-origin: left; pointer-events: none; }
