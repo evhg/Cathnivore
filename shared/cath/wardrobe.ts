@@ -11,6 +11,8 @@ export interface WardrobeProgress {
   runnelDays: number
   /** NIGHT SHIFT jobs finished. */
   nightJobs: number
+  /** Weekly postcards pinned from Cath's Week (optional: older callers omit it). */
+  postcards?: number
 }
 
 export interface WardrobeEntry {
@@ -29,8 +31,9 @@ export const WARDROBE: WardrobeEntry[] = [
   {
     id: 'gown',
     name: 'Evening gown',
-    how: 'Clear 20 levels, solve 10 dailies and finish 3 jobs.',
-    unlocked: (p) => p.hedgerowLevels >= 20 && p.runnelDays >= 10 && p.nightJobs >= 3,
+    how: 'Clear 20 levels, solve 10 dailies and finish 3 jobs, or pin 3 weekly postcards.',
+    unlocked: (p) =>
+      (p.hedgerowLevels >= 20 && p.runnelDays >= 10 && p.nightJobs >= 3) || (p.postcards ?? 0) >= 3,
   },
 ]
 
@@ -56,10 +59,12 @@ export function readProgress(storage: Pick<Storage, 'getItem'> = localStorage): 
   const hedge = readJson(storage, 'hedgerow:v1') as { stars?: Record<string, number> } | null
   const runnel = readJson(storage, 'runnel:v1') as { results?: unknown } | null
   const night = readJson(storage, 'cathode.save') as { jobsDone?: unknown } | null
+  const cards = readJson(storage, 'cath:postcards')
   return {
     hedgerowLevels: Object.values(hedge?.stars ?? {}).filter((s) => s > 0).length,
     runnelDays: count(runnel?.results),
     nightJobs: Array.isArray(night?.jobsDone) ? night.jobsDone.length : 0,
+    postcards: Array.isArray(cards) ? cards.length : 0,
   }
 }
 

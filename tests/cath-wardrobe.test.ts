@@ -15,11 +15,15 @@ describe('shared Cath wardrobe', () => {
         'cathode.save': JSON.stringify({ jobsDone: ['x'] }),
       }),
     )
-    expect(p).toEqual({ hedgerowLevels: 12, runnelDays: 5, nightJobs: 1 })
+    expect(p).toEqual({ hedgerowLevels: 12, runnelDays: 5, nightJobs: 1, postcards: 0 })
     expect(unlockedOutfits(p)).toEqual(['field', 'wax', 'pinny', 'market'])
   })
   it('survives garbage and ignores a locked choice', () => {
-    expect(readProgress(store({ 'hedgerow:v1': '{nope' }))).toEqual({ hedgerowLevels: 0, runnelDays: 0, nightJobs: 0 })
+    expect(readProgress(store({ 'hedgerow:v1': '{nope' }))).toEqual({ hedgerowLevels: 0, runnelDays: 0, nightJobs: 0, postcards: 0 })
     expect(chosenOutfit(store({ 'cath:outfit': 'gown' }))).toBe('field')
+  })
+  it('unlocks the gown from three weekly postcards', () => {
+    expect(unlockedOutfits(readProgress(store({ 'cath:postcards': '["a","b"]' })))).not.toContain('gown')
+    expect(unlockedOutfits(readProgress(store({ 'cath:postcards': '["a","b","c"]' })))).toContain('gown')
   })
 })
