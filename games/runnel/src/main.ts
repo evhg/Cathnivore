@@ -11,6 +11,7 @@ import './styles.css'
 import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
+import { skyFor } from './sky'
 import {
   arcLabel,
   computeFlow,
@@ -295,7 +296,7 @@ function render(): void {
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
       game.taps === 0
-        ? 'Tap a tile to turn it. Hold to pin it in place.'
+        ? `${skyFor(puzzle.seed).label}. Tap a tile to turn it, hold to pin it.`
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = mode !== 'practice'
     ui.btnNew.textContent = 'New puzzle'
