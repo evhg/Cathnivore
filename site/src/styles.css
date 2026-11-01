@@ -574,7 +574,7 @@ body {
   text-decoration: none;
   background: linear-gradient(160deg, color-mix(in srgb, var(--wg) 26%, var(--card)), var(--card));
   border: 1px solid color-mix(in srgb, var(--wg) 40%, transparent);
-  box-shadow: 0 14px 34px rgba(10, 4, 8, 0.35);
+  box-shadow: 0 14px 34px var(--ka-1);
   transition: transform 300ms var(--ease-out), border-color 300ms;
 }
 .week-goal a:hover {
@@ -585,9 +585,9 @@ body {
   outline: 3px solid var(--gold);
   outline-offset: 3px;
 }
-.week-goal[data-game='runnel'] { --wg: #5fb4d8; }
-.week-goal[data-game='hedgerow'] { --wg: #8fbf4a; }
-.week-goal[data-game='nightshift'] { --wg: #ff4d94; }
+.week-goal[data-game='runnel'] { --wg: var(--ka-2); }
+.week-goal[data-game='hedgerow'] { --wg: var(--ka-3); }
+.week-goal[data-game='nightshift'] { --wg: var(--ka-4); }
 .week-goal { --wg: var(--gold); }
 .wg-game {
   grid-area: game;
@@ -614,7 +614,7 @@ body {
   height: 6px;
   margin-top: 6px;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--wg) calc(var(--p, 0) * 100%), rgba(251, 241, 223, 0.12) 0);
+  background: linear-gradient(90deg, var(--wg) calc(var(--p, 0) * 100%), var(--ka-5) 0);
 }
 .week-goal[data-done='true'] .wg-count {
   color: var(--wg);
@@ -633,7 +633,7 @@ body {
 
 .foot {
   padding-top: 28px;
-  border-top: 1px solid rgba(255, 244, 224, 0.14);
+  border-top: 1px solid var(--ka-6);
   font-size: var(--fs-meta);
   color: var(--cream-muted);
 }
@@ -649,8 +649,8 @@ body {
   white-space: nowrap;
   overflow: hidden;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(251, 241, 223, 0.28);
-  background: linear-gradient(90deg, #8fbf4a, #5fb4d8, var(--gold), #e0662e);
+  -webkit-text-stroke: 1px var(--ka-7);
+  background: linear-gradient(90deg, var(--ka-3), var(--ka-2), var(--gold), var(--ka-8));
   background-size: 0% 100%;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
@@ -1077,26 +1077,26 @@ body {
 /* Cathnivore: the seven regions at sunset; on hover the corporations' regions turn back to green. */
 .art-cath {
   position: relative;
-  background: #b85a48;
+  background: var(--ka-9);
 }
 .mm-hex {
-  stroke: #e8c77a;
+  stroke: var(--ka-10);
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
 .mm-stall {
-  fill: #79a94e;
+  fill: var(--ka-11);
 }
 .mm-corp {
-  fill: #6b5a4a;
+  fill: var(--ka-12);
   animation: mm-free 5s ease-in-out infinite;
 }
 .mm-corp:nth-of-type(5) { animation-delay: -1.2s; }
 .mm-corp:nth-of-type(7) { animation-delay: -2.4s; }
 @keyframes mm-free {
-  0%, 30% { fill: #6b5a4a; }
-  45%, 85% { fill: #79a94e; }
-  100% { fill: #6b5a4a; }
+  0%, 30% { fill: var(--ka-12); }
+  45%, 85% { fill: var(--ka-11); }
+  100% { fill: var(--ka-12); }
 }
 .cn-sun {
   animation: cn-glow 4s ease-in-out infinite alternate;
@@ -1120,8 +1120,8 @@ body {
   aspect-ratio: 1;
   border-radius: 50%;
   overflow: hidden;
-  background: #f0b264;
-  box-shadow: 0 0 0 2px #fff3cf, 0 4px 14px rgba(20, 8, 12, 0.5);
+  background: var(--ka-13);
+  box-shadow: 0 0 0 2px var(--ka-14), 0 4px 14px var(--ka-15);
 }
 .mm-cath svg {
   width: 100%;
@@ -1130,43 +1130,43 @@ body {
 
 /* Runnel: Cath's fields seen from above; on hover the water runs and the last channel turns into place. */
 .art-runnel {
-  background: #a9c97a;
+  background: var(--ka-16);
 }
 .rn-tile {
-  fill: #b9d78a;
-  stroke: #94b765;
+  fill: var(--ka-17);
+  stroke: var(--ka-18);
   stroke-width: 0.7;
 }
 .rn-tile.rn-field {
-  fill: #e6c35e;
-  stroke: #c9a443;
+  fill: var(--ka-19);
+  stroke: var(--ka-20);
 }
 .rn-tile.rn-spring {
-  fill: #9fd3e8;
-  stroke: #79b8d3;
+  fill: var(--ka-21);
+  stroke: var(--ka-22);
 }
 .rn-crop {
-  stroke: #b58f2f;
+  stroke: var(--ka-23);
   stroke-width: 1.2;
   stroke-linecap: round;
 }
 .rn-groove {
   fill: none;
-  stroke: #7d6142;
+  stroke: var(--ka-24);
   stroke-width: 5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .rn-water {
   fill: none;
-  stroke: #4ea8d6;
+  stroke: var(--ka-25);
   stroke-width: 2.6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .rn-flow {
   fill: none;
-  stroke: #d8f2ff;
+  stroke: var(--ka-26);
   stroke-width: 1;
   stroke-linecap: round;
   stroke-dasharray: 3 9;
@@ -1177,21 +1177,21 @@ body {
   to { stroke-dashoffset: -12; }
 }
 .rn-hub {
-  fill: #4ea8d6;
-  stroke: #7d6142;
+  fill: var(--ka-25);
+  stroke: var(--ka-24);
   stroke-width: 1.2;
 }
 .rn-piece .rn-hub {
-  fill: #c9b79a;
+  fill: var(--ka-27);
 }
 .rn-source {
-  fill: #4ea8d6;
-  stroke: #e9f8ff;
+  fill: var(--ka-25);
+  stroke: var(--ka-28);
   stroke-width: 1.4;
 }
 .rn-ripple {
   fill: none;
-  stroke: #e9f8ff;
+  stroke: var(--ka-28);
   stroke-width: 0.8;
   transform-box: fill-box;
   transform-origin: center;
@@ -1212,28 +1212,28 @@ body {
 }
 .rn-glow {
   fill: none;
-  stroke: #fff6d8;
+  stroke: var(--ka-29);
   stroke-width: 1.2;
   stroke-dasharray: 2 2;
 }
 
 /* Hedgerow: the lane up to Cath's cottage; on hover the vans drive it and the windmill turns. */
 .art-hedgerow {
-  background: #9cc069;
+  background: var(--ka-30);
 }
 .hg-lane {
   fill: none;
-  stroke: #dcc394;
+  stroke: var(--ka-31);
   stroke-width: 9;
   stroke-linecap: round;
 }
 .hg-row circle {
-  fill: #4c7a34;
-  stroke: #2f4f22;
+  fill: var(--ka-32);
+  stroke: var(--ka-33);
   stroke-width: 1.1;
 }
 .hg-berries circle {
-  fill: #c8553d;
+  fill: var(--ka-34);
   stroke: none;
 }
 .hg-sails {
@@ -1271,31 +1271,31 @@ body {
 
 /* NIGHT SHIFT: rain over Hollowell Proper, two signs in the wet street, Cath under her umbrella. */
 .art-cathode {
-  background: #05060a;
+  background: var(--ka-35);
 }
 .cd-towers {
-  fill: #12131c;
+  fill: var(--ka-36);
 }
 .cd-windows rect {
-  fill: #ffb347;
+  fill: var(--ka-37);
   opacity: 0.6;
 }
 .cd-sign-pink {
-  fill: #ff2e88;
-  filter: drop-shadow(0 0 3px #ff2e88);
+  fill: var(--ka-38);
+  filter: drop-shadow(0 0 3px var(--ka-38));
   animation: cd-flicker 4s steps(1) infinite;
 }
 .cd-sign-cyan {
-  fill: #2ee6ff;
-  filter: drop-shadow(0 0 3px #2ee6ff);
+  fill: var(--ka-39);
+  filter: drop-shadow(0 0 3px var(--ka-39));
 }
 .cd-reflect {
   opacity: 0.32;
 }
-.cd-reflect-pink { fill: #ff2e88; }
-.cd-reflect-cyan { fill: #2ee6ff; }
+.cd-reflect-pink { fill: var(--ka-38); }
+.cd-reflect-cyan { fill: var(--ka-39); }
 .cd-rain path {
-  stroke: #9fb4d8;
+  stroke: var(--ka-40);
   stroke-width: 0.5;
   opacity: 0.5;
   animation: cd-rain 0.7s linear infinite;
@@ -1372,10 +1372,10 @@ body {
   }
 }
 .rn-t2 {
-  fill: #aecf7f;
+  fill: var(--ka-41);
 }
 .rn-t3 {
-  fill: #c3dd95;
+  fill: var(--ka-42);
 }
 
 /* Plan item 13: the card's name morphs into the game's wordmark where the game shows one in its first paint

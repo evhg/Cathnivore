@@ -70,3 +70,49 @@
   --focus: #ffd98a;
   --focus-halo: #1a1119;
 }
+
+/* Plan item 13: the games page key art, goal tiles and footer (painted colours, the same in every theme). */
+:root {
+  --ka-1: rgba(10, 4, 8, 0.35);
+  --ka-2: #5fb4d8;
+  --ka-3: #8fbf4a;
+  --ka-4: #ff4d94;
+  --ka-5: rgba(251, 241, 223, 0.12);
+  --ka-6: rgba(255, 244, 224, 0.14);
+  --ka-7: rgba(251, 241, 223, 0.28);
+  --ka-8: #e0662e;
+  --ka-9: #b85a48;
+  --ka-10: #e8c77a;
+  --ka-11: #79a94e;
+  --ka-12: #6b5a4a;
+  --ka-13: #f0b264;
+  --ka-14: #fff3cf;
+  --ka-15: rgba(20, 8, 12, 0.5);
+  --ka-16: #a9c97a;
+  --ka-17: #b9d78a;
+  --ka-18: #94b765;
+  --ka-19: #e6c35e;
+  --ka-20: #c9a443;
+  --ka-21: #9fd3e8;
+  --ka-22: #79b8d3;
+  --ka-23: #b58f2f;
+  --ka-24: #7d6142;
+  --ka-25: #4ea8d6;
+  --ka-26: #d8f2ff;
+  --ka-27: #c9b79a;
+  --ka-28: #e9f8ff;
+  --ka-29: #fff6d8;
+  --ka-30: #9cc069;
+  --ka-31: #dcc394;
+  --ka-32: #4c7a34;
+  --ka-33: #2f4f22;
+  --ka-34: #c8553d;
+  --ka-35: #05060a;
+  --ka-36: #12131c;
+  --ka-37: #ffb347;
+  --ka-38: #ff2e88;
+  --ka-39: #2ee6ff;
+  --ka-40: #9fb4d8;
+  --ka-41: #aecf7f;
+  --ka-42: #c3dd95;
+}
