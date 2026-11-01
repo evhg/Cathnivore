@@ -93,26 +93,29 @@
   }
 }
 
-/* Seasons (season.ts sets data-season on the root from the date). Summer is the base palette. */
-:root[data-season='spring'] {
-  --wet: #c9e6a6;
-  --wet-edge: #7fb867;
-}
-:root[data-season='autumn'] {
-  --tuft: #8f9a3c;
-  --blossom-1: #e9a35a;
-  --dry: #ead0a0;
-  --dry-edge: #c28f55;
-  --wet: #cfd68f;
-  --wet-edge: #a09a4a;
-}
-:root[data-season='winter'] {
-  --tuft: #6f9a6a;
-  --blossom-1: #dfe9f2;
-  --blossom-2: #c8d6e6;
-  --dry: #e6e3d6;
-  --dry-edge: #b9b8ae;
-  --wet: #cfe0c4;
-  --wet-edge: #86a581;
-  --water: #4a86a8;
+/* Seasons (season.ts sets data-season on the root from the date). Summer is the base palette. Light
+   scheme only: the night palette has its own board colours, which the light seasonal tints would wash out. */
+@media (prefers-color-scheme: light) {
+  :root[data-season='spring'] {
+    --wet: #c9e6a6;
+    --wet-edge: #7fb867;
+  }
+  :root[data-season='autumn'] {
+    --tuft: #8f9a3c;
+    --blossom-1: #e9a35a;
+    --dry: #ead0a0;
+    --dry-edge: #c28f55;
+    --wet: #cfd68f;
+    --wet-edge: #a09a4a;
+  }
+  :root[data-season='winter'] {
+    --tuft: #6f9a6a;
+    --blossom-1: #dfe9f2;
+    --blossom-2: #c8d6e6;
+    --dry: #e6e3d6;
+    --dry-edge: #b9b8ae;
+    --wet: #cfe0c4;
+    --wet-edge: #86a581;
+    --water: #4a86a8;
+  }
 }
