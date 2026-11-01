@@ -244,3 +244,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 08:40: PROGRESS.md (272 lines) and DECISIONS.md (645) were over SPEC 16 limits; archived to docs/archive/PROGRESS-2026-11.md and DECISIONS-2026-10.md.
 - 2026-11-01 09:20: clinic patients are static instanced figures (no animation) to keep the phone budget; screens now paint text in every district, which also starts plan item 4's "readable billboards".
 - 2026-11-01 09:30: plan item 1 ticked; "no untextured surface over 30%" judged by eye on D and L shots (walls, floor, ceiling, drawers all textured; props are small). Theatre stays bright white by design (sterile, Vane's spot).
+- 2026-11-01 09:35: plan item 2 slice 1 groups pieces per kind with a count badge (max 3 enemy pieces + 1 stall per producer per hex) rather than shrinking icons; stacks show up to 3 offset copies.
