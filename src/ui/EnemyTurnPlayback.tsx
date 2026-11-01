@@ -52,7 +52,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
               <small>{EXECS[exec].title}</small>
             </span>
             <q className="boardroom-bark">{beat.bark}</q>
-            <span className="boardroom-card">{beat.card}</span>
+            {/* The card names the step in full (with its region), so there is no second caption line. */}
+            <span className="boardroom-card">{captionFor(events[step]!) || beat.card}</span>
           </div>
         </div>
       ) : null}
@@ -60,7 +61,7 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
         <p className="boardroom-cath" key="reply">
           <b>Cath</b> {cathReply(lastExec, `${events.length}:${lastExec}`)}
         </p>
-      ) : (
+      ) : exec ? null : (
         <p>{captionFor(events[step]!)}</p>
       )}
       <span className="enemy-turn-playback-hint">

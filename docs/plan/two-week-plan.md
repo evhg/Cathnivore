@@ -158,7 +158,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The tally respects reduced motion.
 - **Size:** 4
 
-## 11. [ ] Cathnivore: the conglomerates as characters
+## 11. [x] Cathnivore: the conglomerates as characters *(done 2026-11-01, f4d5e08..HEAD: Pell and Vane with smug, gloating and rattled faces in a boardroom strip with a bark per step and Cath's reply (unit-tested picks); the named card flips in; both HQs on the map with each step's pieces arcing out to their hex; the strip docks away from bottom-row hexes and stays dark in both themes; e2e for skip, flights and reduced-motion fades; shots P, D and dark)*
 - **Why:** the antagonists never show a face. The enemy turn is a caption bar.
 - **Build:**
   - Two corporate CEOs with portraits and 3 expressions each.

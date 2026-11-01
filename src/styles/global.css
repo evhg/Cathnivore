@@ -1989,7 +1989,11 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 /* Plan item 11: the boardroom strip. The executive behind each enemy step, cropped to a head-and-shoulders
    cameo in a ring of the faction's colour, with his bark and the card he plays; Cath answers the last one. */
 .enemy-turn-playback.boardroom {
-  --exec: var(--ink);
+  --exec: var(--paper-on-fixed-fill);
+  /* An object on the table, the same in both themes, and solid so the map never shows through the words. */
+  background: var(--ink-on-fixed-fill);
+  color: var(--paper-on-fixed-fill);
+  z-index: calc(var(--z-banner) + 1);
   border-top: 4px solid var(--exec);
 }
 .enemy-turn-playback.boardroom-hollowell {
@@ -2044,7 +2048,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   font-size: var(--fs-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--paper);
+  color: var(--paper-on-fixed-fill);
   opacity: 0.75;
 }
 .boardroom-bark {
@@ -2058,13 +2062,10 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   max-width: 100%;
   padding: 2px 8px;
   border-radius: 4px;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: var(--fs-label);
+  background: var(--paper-on-fixed-fill);
+  color: var(--ink-on-fixed-fill);
+  font-size: var(--fs-small);
   font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   border-left: 4px solid var(--exec);
   animation: boardroom-flip 420ms ease-out;
   transform-origin: left center;
@@ -2133,9 +2134,9 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 .hq-name {
   font-weight: 800;
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  fill: var(--paper);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  fill: var(--paper-on-fixed-fill);
 }
 .hq-candor.hq-active .hq-signal {
   animation: hq-signal 700ms ease-out infinite;
@@ -2253,6 +2254,5 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 /* The round's bunting hangs where the top-docked strip sits: it steps aside while that step plays. */
 .map-wrap:has(.boardroom-dock-top) .round-banner {
-  opacity: 0;
-  transition: opacity 150ms linear;
+  visibility: hidden;
 }

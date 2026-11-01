@@ -651,11 +651,11 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
   )
 }
 
-const HQ_X = 200
-const HQ_Y = 150
+const HQ_X = 196
+const HQ_Y = 146
 /** Where each HQ's door is: the corners on the side away from the strip, Hollowell left and Candor right. */
 function hqDoor(faction: Faction, side: 'top' | 'bottom'): { x: number; y: number } {
-  return { x: faction === 'hollowell' ? -HQ_X : HQ_X, y: side === 'top' ? -HQ_Y : HQ_Y + 62 }
+  return { x: faction === 'hollowell' ? -HQ_X : HQ_X, y: side === 'top' ? -HQ_Y : HQ_Y + 58 }
 }
 
 // Hollowell's HQ: a glossy orange office block with a lit window grid and an H on the roof.
@@ -709,13 +709,13 @@ function EnemyTurnLayer({ view }: { view: EnemyTurnView }) {
           <g
             key={`${f}-${view.hqSide}`}
             className={`hq hq-${f}${view.active === f ? ' hq-active' : ''}`}
-            transform={`translate(${door.x}, ${door.y})`}
+            transform={`translate(${door.x}, ${door.y}) scale(1.15)`}
             data-hq={f}
           >
             <ellipse cx={0} cy={1} rx={30} ry={6} fill="var(--ink)" opacity={0.18} />
             {f === 'hollowell' ? <HollowellHQ /> : <CandorHQ />}
-            <rect x={-34} y={5} width={68} height={15} rx={3} fill="var(--ink)" />
-            <text x={0} y={15.5} textAnchor="middle" className="hq-name">
+            <rect x={-50} y={5} width={100} height={18} rx={3} fill="var(--ink-on-fixed-fill)" />
+            <text x={0} y={18.5} textAnchor="middle" className="hq-name">
               {f === 'hollowell' ? 'HOLLOWELL' : 'CANDOR'}
             </text>
           </g>
