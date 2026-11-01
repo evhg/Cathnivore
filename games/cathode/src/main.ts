@@ -515,6 +515,8 @@ async function begin(fromTitle: boolean): Promise<void> {
   fade.style.setProperty("--fade-ms", "300ms");
   fade.classList.remove("is-black");
   showAreaTitle(district);
+  // Plan item 14: `?talk` opens the district's talk once she is in the street (tests and shots).
+  if (new URLSearchParams(location.search).has("talk") && !shot) setTimeout(() => window.cathode?.talk?.(), 1500);
 }
 
 /** Whether this page load is a travel from the district map (C14: the loading screen's motif). Read once. */

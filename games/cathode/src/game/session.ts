@@ -65,6 +65,8 @@ import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { openDistrictMap } from "../ui/districtmap";
+import { openTalk } from "../ui/talk";
+import { choose, talkFor, type DistrictName } from "../sim/talk";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
 import { activeMods, MOD_EFFECTS, ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
@@ -146,6 +148,8 @@ interface WorldBaseline {
 }
 
 export interface Session {
+  /** Plan item 14: opens this district's talk (tests and shots; the takedown grab will call it too). */
+  talk?: () => void;
   world: World;
   player: Player;
   input: Input;
@@ -1473,6 +1477,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // C14 (S9.7): the pause menu's Case board and Character open those screens in its place.
   let wantMap = false;
   let wantSheet = false;
+  // Plan item 14: a talk with the district's lieutenant (main.ts opens it for `?talk` once the street shows).
+  let wantTalk = false;
+  s.talk = () => {
+    wantTalk = true;
+  };
   hud.onCaseBoard = () => {
     menuOpen = false;
     wantMap = true;
@@ -1634,6 +1643,33 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       document.exitPointerLock?.();
       const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
       openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone, world.colliders);
+    }
+    if (wantTalk && !coaching && !charScreen && !killcam.active && !dead) {
+      wantTalk = false;
+      const talk = talkFor((o.district ?? "market") as DistrictName);
+      if (talk) {
+        coaching = true;
+        document.exitPointerLock?.();
+        const c = progress.character;
+        openTalk(
+          o.hud.parentElement ?? o.hud,
+          talk,
+          c.attributes,
+          c.scrip,
+          (id) => {
+            const r = choose(talk, id, c.attributes, c.scrip, progress.jobsDone);
+            if (!r.ok) return null;
+            c.scrip = r.scrip;
+            progress.jobsDone.push(r.record);
+            progress.save();
+            return r;
+          },
+          () => {
+            coaching = false;
+            input.lock();
+          },
+        );
+      }
     }
     if (intent.photo && !coaching && !charScreen && !killcam.active && !dead && !input.isTouch) {
       coaching = true;

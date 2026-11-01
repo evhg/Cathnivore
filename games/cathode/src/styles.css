@@ -2096,3 +2096,150 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .ld-cath { width: clamp(72px, 9vmin, 150px); margin-top: 1.2em; opacity: 0.92; filter: grayscale(0.35) contrast(1.05); }
 .ld-cath svg { display: block; width: 100%; height: auto; }
 .is-still .ld-cath * { animation: none; }
+
+/* Plan item 14: the talk. His plate on the left under a hard key light, her choices on the right; one red
+   rule, no boxes around the choices, the same type scale as the rest of the chrome. */
+.talk {
+  background: radial-gradient(ellipse at 30% 40%, rgb(var(--shade-rgb) / .55), rgb(var(--shade-rgb) / .9));
+}
+.talk-card {
+  display: grid;
+  grid-template-columns: minmax(160px, 34%) 1fr;
+  gap: clamp(18px, 3vw, 44px);
+  width: min(1040px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow: auto;
+  align-items: center;
+}
+.talk-plate {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.talk-plate svg {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  display: block;
+  border-left: 3px solid var(--blood);
+}
+.talk-who {
+  display: grid;
+  gap: 2px;
+}
+.talk-who b {
+  font: 800 var(--fs-4)/1 var(--font-ui);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.talk-who span {
+  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.talk-body {
+  display: grid;
+  gap: 16px;
+  align-content: center;
+}
+.talk-line {
+  margin: 0;
+  font: 500 var(--fs-3)/1.35 var(--font-ui);
+  color: var(--ink);
+}
+.talk-reply::before,
+.talk-body > .talk-line:first-child::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin-bottom: 12px;
+  background: var(--blood);
+}
+.talk-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.talk-opt {
+  display: grid;
+  grid-template-columns: 10.5em 1fr;
+  gap: 2px 14px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+.talk-opt:hover:not([disabled]),
+.talk-opt:focus-visible {
+  color: var(--ink);
+  border-left-color: var(--blood);
+  background: rgb(var(--white-rgb) / .04);
+  outline: none;
+}
+.talk-approach {
+  grid-row: span 2;
+  font: 700 var(--fs-1)/1.6 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blood-hot);
+}
+.talk-say {
+  font: 500 var(--fs-2)/1.35 var(--font-ui);
+}
+.talk-lock {
+  grid-column: 2;
+  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.talk-opt[disabled] {
+  cursor: default;
+}
+.talk-opt[disabled] .talk-approach,
+.talk-opt[disabled] .talk-say {
+  color: var(--ink-3);
+}
+.talk-said {
+  margin: 0;
+  font: 500 var(--fs-2)/1.35 var(--font-ui);
+  color: var(--ink-3);
+}
+.talk-intel {
+  margin: 0;
+  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.talk-done,
+.talk-walk {
+  justify-self: start;
+  padding: 8px 0;
+  font: 700 var(--fs-2)/1 var(--font-ui);
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line-3);
+  cursor: pointer;
+}
+.talk-done:hover,
+.talk-walk:hover,
+.talk-done:focus-visible,
+.talk-walk:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--blood);
+  outline: none;
+}
+@media (max-width: 640px), (max-height: 480px) {
+  .talk-card {
+    grid-template-columns: minmax(110px, 26%) 1fr;
+    gap: 14px;
+  }
+}
