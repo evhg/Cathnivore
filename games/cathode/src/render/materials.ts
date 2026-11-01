@@ -98,6 +98,9 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.vanWhite = plain("#6c6c68", 0.25, 0.3, 0.3);
   m.carGlass = plain("#030405", 0.04, 0.0, 0.1, 0.3);
   m.glass = plain("#06080b", 0.05, 0.0, 0.1, 0.4);
+  // See-through wired glass for the clinic's partitions and theatre gallery (plan item 1): a pale green tint.
+  const clear = new THREE.MeshStandardMaterial({ color: "#a8d8c8", roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.22, depthWrite: false });
+  m.clearGlass = prop(clear, 0.4, 0.1);
   const tarp = new THREE.MeshStandardMaterial({ map: tarpTexture(), roughness: 0.55, metalness: 0, side: THREE.DoubleSide });
   m.tarp = prop(tarp, 1.2, 0.8);
 

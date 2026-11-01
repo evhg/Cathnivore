@@ -56,7 +56,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     b.boxMinMax("tileWhite", x - 0.12, 0, c, x + 0.12, ceil, z1, { uv: 2, collide: "concrete" });
     b.boxMinMax("tileGreen", x - 0.14, 0, a, x + 0.14, 1.0, c, { uv: 2, collide: "concrete" });
     b.boxMinMax("chrome", x - 0.16, 1.0, a, x + 0.16, 1.05, c);
-    b.boxMinMax("glass", x - 0.03, 1.05, a, x + 0.03, 2.5, c, { collide: "glass" });
+    b.boxMinMax("clearGlass", x - 0.03, 1.05, a, x + 0.03, 2.5, c, { collide: "glass" });
     b.boxMinMax("tileWhite", x - 0.12, 2.5, a, x + 0.12, ceil, c, { uv: 2, collide: "concrete" });
     for (let z = a; z <= c + 0.01; z += (c - a) / Math.round((c - a) / 1.6)) b.box("chrome", x, 1.78, z, 0.08, 1.45, 0.06, { cover: "none" });
   };
@@ -87,10 +87,24 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
 
   // Reception desk, waiting-room benches, ward beds, theatre table.
   b.box("plasticWhite", -1.4, 0.55, 36, 2.6, 1.1, 0.7, { collide: "metal" });
-  for (let i = 0; i < 5; i++) b.box("paintMetal", -6.2, 0.25, 20 + i * 1.6, 0.8, 0.5, 1.2, { collide: "metal" });
+  // Back-to-back moulded benches down the middle of the waiting room.
+  for (let i = 0; i < 5; i++) {
+    const z = 20 + i * 1.6;
+    b.box("chrome", -6.2, 0.2, z, 0.7, 0.4, 0.08, { collide: "metal" });
+    for (const dx of [-0.22, 0.22]) {
+      b.box("plasticSeat", -6.2 + dx, 0.44, z, 0.4, 0.06, 1.2);
+      b.box("plasticSeat", -6.2 + dx * 0.25, 0.72, z, 0.05, 0.5, 1.2);
+    }
+  }
   for (let i = 0; i < 4; i++) b.box("plasticWhite", 6.2, 0.4, 18 - i * 14 + (i > 1 ? 4 : 0), 1.0, 0.8, 2.0, { collide: "metal" });
-  b.box("chrome", 0, 0.55, -44, 1.0, 1.1, 2.2, { collide: "metal" });
-  b.box("darkMetal", 0, 0.1, -44, 0.6, 0.2, 1.6);
+  // The operating table: the old 1.0 x 1.1 x 2.2 m cover box stays as a collider; the table itself is a
+  // pedestal, a steel top, a padded mattress and a head rest.
+  b.collide(new THREE.Box3(V(-0.5, 0, -45.1), V(0.5, 1.1, -42.9)), "metal", "metal");
+  b.box("darkMetal", 0, 0.05, -44, 0.8, 0.1, 1.2);
+  b.box("chrome", 0, 0.45, -44, 0.35, 0.8, 0.5);
+  b.box("chrome", 0, 0.9, -44, 0.7, 0.08, 2.0);
+  b.box("rubber", 0, 0.99, -43.9, 0.62, 0.1, 1.7);
+  b.box("rubber", 0, 1.0, -45.0, 0.3, 0.1, 0.3);
 
   // Cover columns so fights have shape.
   // Tile-clad like the walls, a green dado skirt and chrome corner guards where the gurneys bang into them.
@@ -121,8 +135,14 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   for (const z of [20, 6, -22]) light(V(-6, ceil - 0.4, z), "#9fe8c0", 10, 7, 1);
   for (const z of [18, -6, -30]) light(V(6, ceil - 0.4, z), "#9fe8c0", 10, 7, 0);
   // Surgical lamps over the theatre table.
-  b.box("chrome", 0, ceil - 0.4, -44, 1.6, 0.12, 1.6);
-  light(V(0, ceil - 0.6, -44), "#f4fff8", 80, 12, 0);
+  // Twin lamp heads on a ceiling boom: a dark shell with a bright lens ring underneath.
+  b.box("chrome", 0, ceil - 0.25, -44, 0.08, 0.5, 0.08);
+  b.box("chrome", 0, ceil - 0.5, -44, 1.6, 0.06, 0.06);
+  for (const dx of [-0.75, 0.75]) {
+    b.box("paintMetal", dx, ceil - 0.72, -44, 0.6, 0.18, 0.6);
+    b.box("glowWhite", dx, ceil - 0.815, -44, 0.48, 0.01, 0.48);
+  }
+  light(V(0, ceil - 0.9, -44), "#f4fff8", 48, 10, 0);
   // The flooded morgue stair glows blue-green at the east end.
   b.box("glowCyan", xE - 0.1, 1.2, -16, 0.06, 1.4, 3);
   light(V(xE - 1, 1.2, -16), "#2ee6ff", 14, 8, 1, false);
@@ -148,7 +168,16 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
 
   // Flooded morgue (east, behind the far ward): steel drawer wall, gurneys, a shin-deep slick of water.
   b.boxMinMax("darkMetal", xE - 0.9, 0, -23, xE - 0.1, 2.4, -9, { collide: "metal" });
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) b.box("chrome", xE - 1.0, 0.45 + r * 0.7, -22 + c * 2.2, 0.06, 0.55, 1.9);
+  // Drawer fronts: brushed steel doors, a lever handle and a paper name card each.
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 6; c++) {
+      const y = 0.45 + r * 0.7;
+      const z = -22 + c * 2.2;
+      b.box("chrome", xE - 1.0, y, z, 0.06, 0.55, 1.9);
+      b.box("darkMetal", xE - 1.05, y + 0.08, z + 0.6, 0.06, 0.06, 0.4);
+      b.box("plasticWhite", xE - 1.04, y + 0.08, z - 0.5, 0.02, 0.12, 0.2);
+    }
+  }
   for (const z of [-14, -19]) {
     b.box("chrome", 6.4, 0.45, z, 0.8, 0.1, 2.0, { collide: "metal" });
     b.box("darkMetal", 6.4, 0.2, z, 0.5, 0.4, 1.6);
@@ -157,8 +186,13 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   signs.push({ text: "MORGUE", sub: "LEVEL B", style: "box", color: "#2ee6ff", w: 1.6, h: 0.4, center: V(xE - 0.08, 2.7, -16), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
 
   // Main theatre: glass gallery wall, instrument trolleys, IV stands, vital-sign monitors.
-  b.boxMinMax("glass", -3.1, 0.9, -52, -3.0, 3.0, -38, { cover: "thin", mat: "glass" });
-  b.boxMinMax("glass", 3.0, 0.9, -52, 3.1, 3.0, -38, { cover: "thin", mat: "glass" });
+  b.boxMinMax("clearGlass", -3.1, 0.9, -52, -3.0, 3.0, -38, { cover: "thin", mat: "glass" });
+  b.boxMinMax("clearGlass", 3.0, 0.9, -52, 3.1, 3.0, -38, { cover: "thin", mat: "glass" });
+  for (const x of [-3.05, 3.05]) {
+    b.boxMinMax("chrome", x - 0.07, 3.0, -52, x + 0.07, 3.08, -38);
+    b.boxMinMax("chrome", x - 0.07, 0.84, -52, x + 0.07, 0.9, -38);
+    for (let z = -50; z <= -40; z += 2) b.box("chrome", x, 1.95, z, 0.12, 2.1, 0.06, { cover: "none" });
+  }
   for (const x of [-1.6, 1.6]) {
     b.box("chrome", x, 0.45, -44, 0.5, 0.9, 0.8, { collide: "metal" });
     b.box("chrome", x * 1.5, 0.9, -46, 0.05, 1.8, 0.05, { cover: "thin", mat: "metal" });
@@ -180,7 +214,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     for (const dz of [-0.3, 0.3]) b.box("chrome", -6.9, 0.2, z + dz, 0.08, 0.4, 0.4);
   }
   for (const z of [-14, -19]) b.box("plasticWhite", 6.4, 0.58, z, 0.7, 0.14, 1.8);
-  b.box("glowCool", 0, 0.01, -41, 0.35, 0.02, 12);
+  b.box("glowCoolDim", 0, 0.01, -41, 0.08, 0.02, 12);
   for (let z = -33; z > -41; z -= 2) b.box("glowRed", 1.2, 0.01, z, 0.5, 0.02, 0.5);
 
   // Corridor dressing (plan item 1): parked gurneys and IV stands along the divider walls, steel cabinets in the
