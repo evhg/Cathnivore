@@ -97,6 +97,8 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Shots at P and D, before and after the win.
 - **Size:** 4
 
+- **Progress:** session 1 (2026-11-01, 6e4f165): share card (`games/runnel/src/sharecard.ts`: solved board, time, taps, par, streak) shown on the win card, Save image, Web Share with the PNG file; call-hash snapshot test; site spec checks the image. Left: rivers filling tile by tile, fields blooming, weather/time of day, weekday difficulty arc with a solver report.
+
 ## 7. [ ] NIGHT SHIFT: encounter staging and enemy readability
 - **Why:**
   - The first enemies are about 40 px tall at 30 to 40 m, and the hit marker hides them.
