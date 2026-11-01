@@ -4,7 +4,7 @@
 //
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-perf.mjs
 //
-// PERF_ONLY=phone|desktop runs one case. Serves dist-site itself on the first free port from :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
+// PERF_ONLY=phone|desktop runs one case; PERF_Q appends to the query (e.g. `&district=clinic` for a district's art pass). Serves dist-site itself on the first free port from :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
 // `npm run gates` as a CATHODE sub-check from C10.
 import { chromium } from '@playwright/test'
 import { spawn } from 'node:child_process'
@@ -57,7 +57,7 @@ try {
     const ctx = await browser.newContext({ viewport: C.viewport, deviceScaleFactor: C.dsf, hasTouch: !!C.touch, isMobile: !!C.touch })
     await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
     const page = await ctx.newPage()
-    await page.goto(`${base}?play&shot${C.q}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
+    await page.goto(`${base}?play&shot${C.q}${process.env.PERF_Q ?? ''}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
     await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) > 2 && typeof window.cathode?.stage === 'function', null, { timeout: 400_000 })
     const res = await page.evaluate((s) => window.cathode.stage(s, 40), C.stage)
     if (res !== 'ok') {

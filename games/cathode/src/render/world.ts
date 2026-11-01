@@ -14,8 +14,9 @@ import { L, type Level } from "./level";
 import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { addTraffic } from "./traffic";
-import { addCrowd } from "./crowd";
-import { bakeVolume, LightPool, hash1 } from "./lighting";
+import { addCrowd, addPatients, addShrouds } from "./crowd";
+import { bakeVolume, LightPool, hash1, flicker, signatureGain } from "./lighting";
+import { FAIL_SEED } from "./levels/clinic";
 import { buildSigns } from "./signs";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
 import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
@@ -114,6 +115,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const surfaces = level.builder.surfaces;
   level.builder.build(materials, statics, { shadows: true, layer: (k) => (k === "asphalt" || k === "pavement" ? LAYER_NO_REFLECT : 0) });
   scene.add(statics);
+  // Indoors the ceiling tubes share the district's power: they dip with the brownout and the blackout, and the
+  // failing ones stutter in step with their lights (plan item 1).
+  const tubeMats = outdoor ? [] : (["glowCool", "glowFail"] as const).map((k) => {
+    const mat = materials[k] as THREE.MeshBasicMaterial;
+    return { mat, base: mat.color.clone(), fail: k === "glowFail" };
+  });
   if (outdoor && theme?.water !== false) addWater(scene, materials.water!);
   addWindows(scene, level, shared);
   addInteriors(scene, level);
@@ -145,6 +152,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   scene.add(lightning);
   const traffic = outdoor ? addTraffic(scene, P.skyline > 120 ? 8 : 5) : null;
   const crowd = addCrowd(scene, Object.entries(level.markers).filter(([k]) => k.startsWith("crowd:")).flatMap(([, v]) => v), P.skyline > 120 ? 14 : 8);
+  addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
+  addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
 
   // ------------------------------------------------------------ atmosphere
@@ -200,6 +209,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   // Brighter than the moody first pass: people kept losing enemies in the dark (owner, 2026-10-04:
   // "visibility is really bad"). Phones get more, since they're played on small screens in lit rooms.
   post.grade.uniforms.uExposure!.value = quality === "phone" ? 1.7 : 1.35;
+  if (theme?.cast) (post.grade.uniforms.uCast!.value as THREE.Vector3).set(...theme.cast);
 
   // ------------------------------------------------------------ environment (neon reflections for the game's materials)
   progress(0.8, "Neon in the puddles…");
@@ -350,6 +360,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       hemi.intensity = (ambient + flash * 0.5) * (1 - blackoutK * 0.93) + blackoutK * (0.05 + 0.1 * pulse);
       hemi.color.setHex(outdoor ? 0x6f86b0 : 0xcfeee0).lerp(blackoutTint, blackoutK * 0.85);
       // The floodlight hums and sways a hair in the wind.
+      for (const t of tubeMats) {
+        const k = signatureGain(theme?.signature, time) * (1 - blackoutK * 0.97) * (t.fail ? flicker(2, FAIL_SEED, time) : 1);
+        t.mat.color.copy(t.base).multiplyScalar(k);
+      }
       key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3)))) * (1 - blackoutK * 0.9);
     },
     render() {

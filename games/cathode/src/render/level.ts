@@ -110,6 +110,10 @@ export interface VendDef {
 export interface Level {
   builder: Builder;
   markers: Record<string, THREE.Vector3[]>;
+  /** Seated figures (render/crowd.ts addPatients): x, z and yaw (0 faces +x). */
+  seats?: Array<{ x: number; z: number; yaw: number }>;
+  /** Shrouded bodies (render/crowd.ts addShrouds): underside height y, yaw 0 lies along +x. */
+  bodies?: Array<{ x: number; y: number; z: number; yaw: number }>;
   lights: VLight[];
   signs: SignDef[];
   windows: WindowDef[];
@@ -148,6 +152,8 @@ export interface DistrictTheme {
   /** Walkable bounds the session clamps the player to. */
   bounds: { xMin: number; xMax: number; zMin: number; zMax: number };
   len?: number;
+  /** The grade's colour cast in the shadows and midtones (linear multipliers; neutral when absent). */
+  cast?: [number, number, number];
 }
 
 const C = (hex: string) => new THREE.Color(hex);

@@ -216,8 +216,47 @@ function paint(g: CanvasRenderingContext2D, d: SignDef, c: Cell): void {
       }
     }
   } else if (d.style === "screen") {
-    g.fillStyle = css;
+    // A lit display (plan item 1: screens used to paint as a blank slab of colour): a near-black panel, the headline
+    // lit in the screen's colour, the sub line under a rule, scanlines and a soft edge falloff.
+    g.fillStyle = `#${col.clone().multiplyScalar(0.07).getHexString()}`;
     g.fillRect(c.x, c.y, c.w, c.h);
+    const glow = g.createRadialGradient(x0 + w / 2, y0 + h / 2, 0, x0 + w / 2, y0 + h / 2, Math.max(w, h) * 0.6);
+    glow.addColorStop(0, `#${col.clone().multiplyScalar(0.26).getHexString()}`);
+    glow.addColorStop(1, `#${col.clone().multiplyScalar(0.06).getHexString()}`);
+    g.fillStyle = glow;
+    g.fillRect(x0, y0, w, h);
+    const sub = d.sub ?? "";
+    const pad = Math.min(w, h) * 0.1;
+    let fs = (sub ? h * 0.44 : h * 0.6);
+    g.font = `bold ${fs}px ${cjk ? CJK : SANS}`;
+    const m = g.measureText(d.text).width;
+    if (m > (w - pad * 2) * 0.92) fs *= ((w - pad * 2) * 0.92) / m;
+    g.font = `bold ${fs}px ${cjk ? CJK : SANS}`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    const ty = sub ? y0 + h * 0.4 : y0 + h / 2;
+    g.shadowColor = css;
+    g.shadowBlur = fs * 0.35;
+    g.fillStyle = core;
+    g.fillText(d.text, x0 + w / 2, ty);
+    if (sub) {
+      g.shadowBlur = 0;
+      g.fillStyle = css;
+      g.fillRect(x0 + w * 0.2, y0 + h * 0.64, w * 0.6, Math.max(1, h * 0.012));
+      let ss = h * 0.15;
+      g.font = `600 ${ss}px ${SANS}`;
+      const sm = g.measureText(sub).width;
+      if (sm > (w - pad * 2) * 0.9) ss *= ((w - pad * 2) * 0.9) / sm;
+      g.font = `600 ${ss}px ${SANS}`;
+      g.shadowBlur = ss * 0.3;
+      g.fillText(sub, x0 + w / 2, y0 + h * 0.78);
+    }
+    g.shadowBlur = 0;
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    for (let y = y0; y < y0 + h; y += 4) g.fillRect(x0, y, w, 1.5);
+    g.strokeStyle = `#${col.clone().multiplyScalar(0.5).getHexString()}`;
+    g.lineWidth = 2;
+    g.strokeRect(x0 + 1, y0 + 1, w - 2, h - 2);
   } else {
     // Lightboxes: a lit panel with dark lettering (horizontal) or a dark panel with lit glyphs (blades).
     if (vertical) {
@@ -245,7 +284,9 @@ function paint(g: CanvasRenderingContext2D, d: SignDef, c: Cell): void {
       g.fillStyle = grad;
       roundRect(g, x0 + 2, y0 + 2, w - 4, h - 4, Math.min(12, h * 0.12));
       g.fill();
-      let fs = h * 0.62;
+      // With a sub line (BAY 3 / STAFF ONLY), the name sits high and the sub small beneath it.
+      const sub = d.sub ?? "";
+      let fs = h * (sub ? 0.46 : 0.62);
       g.font = `bold ${fs}px ${cjk ? CJK : SANS}`;
       const m = g.measureText(d.text).width;
       if (m > w * 0.9) fs *= (w * 0.9) / m;
@@ -253,7 +294,16 @@ function paint(g: CanvasRenderingContext2D, d: SignDef, c: Cell): void {
       g.textAlign = "center";
       g.textBaseline = "middle";
       g.fillStyle = "#0a0a0c";
-      g.fillText(d.text, x0 + w / 2, y0 + h / 2 + fs * 0.05);
+      g.fillText(d.text, x0 + w / 2, (sub ? y0 + h * 0.38 : y0 + h / 2) + fs * 0.05);
+      if (sub) {
+        let ss = h * 0.2;
+        g.font = `600 ${ss}px ${SANS}`;
+        const sm = g.measureText(sub).width;
+        if (sm > w * 0.86) ss *= (w * 0.86) / sm;
+        g.font = `600 ${ss}px ${SANS}`;
+        g.fillStyle = "rgba(10,10,12,0.78)";
+        g.fillText(sub, x0 + w / 2, y0 + h * 0.76);
+      }
       // Grime on the plastic.
       const rand = prng(c.x * 7 + c.y);
       for (let k = 0; k < 40; k++) {

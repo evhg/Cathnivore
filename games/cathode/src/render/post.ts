@@ -342,6 +342,8 @@ const GradeShader = {
     uWhip: { value: new THREE.Vector3() },
     uHaze: { value: new THREE.Vector4(0, 0, 0, 0) },
     uFocus: { value: new THREE.Vector2(0.5, 0.5) },
+    // Plan item 1: a district's colour cast in the shadows and midtones (the clinic's surgical green).
+    uCast: { value: new THREE.Vector3(1, 1, 1) },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -350,6 +352,7 @@ const GradeShader = {
     uniform sampler2D tDiffuse;
     uniform vec2 uRes;
     uniform float uDrama;
+    uniform vec3 uCast;
     uniform float uExposure;
     uniform float uFlash;
     uniform float uHurt;
@@ -549,6 +552,8 @@ const GradeShader = {
       float swHot = uSecondWind > 0.001 ? smoothstep( 0.7, 2.2, lum ) * max( smoothstep( 0.12, 0.4, sat ), smoothstep( 2.5, 6.0, lum ) ) * swWarm : 0.0;
       // A cool cast in the shadows, a warmer one in the highlights (sodium stays sodium).
       col += vec3( -0.0006, 0.0003, 0.0016 ) * ( 1.0 - smoothstep( 0.0, 0.05, lum ) );
+      // The district cast: full in the shadows and mids, gone by the highlights (white stays white).
+      col *= mix( uCast, vec3( 1.0 ), smoothstep( 0.15, 1.6, lum ) );
       // Vignette.
       float vig = 1.0 - smoothstep( 0.2, 0.95, r2 * ( 1.6 + uDrama * 1.4 ) ) * ( 0.55 + uDrama * 0.35 );
       col *= vig;

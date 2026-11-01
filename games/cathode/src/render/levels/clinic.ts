@@ -11,6 +11,9 @@ import type { Level, VLight } from "../level";
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const C = (hex: string) => new THREE.Color(hex);
 
+/** The failing tubes' circuit: their lights and their emissive (world.ts glowFail) stutter on this one seed. */
+export const FAIL_SEED = 91;
+
 export const CLINIC = { xW: -9, xE: 9, zS: 44, zN: -52, ceil: 3.6 } as const;
 
 export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
@@ -19,8 +22,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   const rand = prng(3311);
   const lights: VLight[] = [];
   let seed = 1;
-  const light = (pos: THREE.Vector3, color: string, intensity: number, range: number, flicker = 0, real = true) =>
-    lights.push({ pos, color: C(color), intensity, range, normal: null, flicker, seed: seed++, real });
+  const light = (pos: THREE.Vector3, color: string, intensity: number, range: number, flicker = 0, real = true, fixedSeed?: number) =>
+    lights.push({ pos, color: C(color), intensity, range, normal: null, flicker, seed: fixedSeed ?? seed++, real });
   const { xW, xE, zS, zN, ceil } = CLINIC;
   const cx = (xW + xE) / 2;
   const cz = (zS + zN) / 2;
@@ -120,11 +123,11 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
 
   // Fluorescent tubes down the ceiling, some failing; green-white surgical wash.
   for (let z: number = zS - 3, i = 0; z > zN; z -= 6, i++) {
-    b.box("darkMetal", 0, ceil - 0.02, z, 0.7, 0.04, 1.3);
-    b.box("glowCool", 0, ceil - 0.045, z, 0.6, 0.02, 1.2);
-    for (const dz of [-0.3, 0, 0.3]) b.box("ceilingPanel", 0, ceil - 0.06, z + dz, 0.6, 0.012, 0.03);
     const failing = i % 3 === 1;
-    light(V(0, ceil - 0.4, z), failing ? "#b8ffd8" : "#d6fff0", failing ? 14 : 22, 11, failing ? 2 : 0);
+    b.box("darkMetal", 0, ceil - 0.02, z, 0.7, 0.04, 1.3);
+    b.box(failing ? "glowFail" : "glowCool", 0, ceil - 0.045, z, 0.6, 0.02, 1.2);
+    for (const dz of [-0.3, 0, 0.3]) b.box("ceilingPanel", 0, ceil - 0.06, z + dz, 0.6, 0.012, 0.03);
+    light(V(0, ceil - 0.4, z), failing ? "#b8ffd8" : "#d6fff0", failing ? 14 : 22, 11, failing ? 2 : 0, true, failing ? FAIL_SEED : undefined);
   }
   // Wall washers: soft baked lights near each side wall so the white tile reads white, not grey.
   for (let z: number = zS - 6; z > zN + 4; z -= 9) {
@@ -162,7 +165,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
       b.box("chrome", -7.4, 0.36, z - 0.29, 0.44, 0.04, 0.04);
     }
   }
-  b.box("glowCool", xW + 0.02, 2.1, 18, 0.04, 0.9, 2.4);
+  // A dark bezel behind the screen (a bright tube box here blew the screen's text out to white).
+  b.box("darkMetal", xW + 0.02, 2.1, 18, 0.04, 1.0, 2.5);
   signs.push({ text: "DEBT BEFORE DIGNITY", sub: "NOW SERVING 0412", style: "screen", color: "#7dffc0", w: 2.4, h: 0.9, center: V(xW + 0.06, 2.1, 18), normal: V(1, 0, 0), flicker: 2, intensity: 2.5 });
   b.box("chrome", -8.4, 0.5, 30, 0.5, 1.0, 0.5, { collide: "metal" });
 
@@ -213,7 +217,12 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
     b.box("darkMetal", -6.9, 0.85, z - 0.28, 0.6, 0.7, 0.06);
     for (const dz of [-0.3, 0.3]) b.box("chrome", -6.9, 0.2, z + dz, 0.08, 0.4, 0.4);
   }
-  for (const z of [-14, -19]) b.box("plasticWhite", 6.4, 0.58, z, 0.7, 0.14, 1.8);
+  // The morgue's dead lie under sheets (crowd.ts addShrouds), toe tags lit; one more waits on a corridor gurney.
+  const bodies: NonNullable<Level["bodies"]> = [
+    { x: 6.4, y: 0.5, z: -14, yaw: Math.PI / 2 },
+    { x: 6.4, y: 0.5, z: -19, yaw: -Math.PI / 2 },
+    { x: 2.55, y: 0.91, z: -17, yaw: Math.PI / 2 },
+  ];
   b.box("glowCoolDim", 0, 0.01, -41, 0.08, 0.02, 12);
   for (let z = -33; z > -41; z -= 2) b.box("glowRed", 1.2, 0.01, z, 0.5, 0.02, 0.5);
 
@@ -256,10 +265,17 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   hang(-1, "MORGUE · LEVEL B", "THEATRE AHEAD", "#d6fff0");
   hang(-27, "THEATRE · STERILE", "STAFF ONLY", "#ffb347");
 
+  // The waiting room's debtors (plan item 1): seated in the rows and the benches, about two in three seats taken.
+  const seats: NonNullable<Level["seats"]> = [];
+  const take = () => rand() < 0.68;
+  for (let row = 0; row < 3; row++) for (let i = 0; i < 4; i++) if (take()) seats.push({ x: -7.36, z: 16 - row * 7 - i * 0.9, yaw: 0 });
+  for (let i = 0; i < 5; i++) {
+    for (const sd of [-1, 1]) for (const dz of [-0.35, 0.35]) if (take()) seats.push({ x: -6.2 + sd * 0.24, z: 20 + i * 1.6 + dz, yaw: sd > 0 ? 0 : Math.PI });
+  }
+
   const gh = () => 0;
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 3)],
-    "crowd:waiting": [V(-7.5, 0, 14)],
     perch: [V(-6.2, 0.5, 8), V(0, 0, zN + 6)],
     extract: [V(0, 0, zS - 1.5)],
     // Vane works at the table under the surgical lamps; guards flank her, reinforcements come through the doors.
@@ -283,6 +299,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   return {
     builder: b,
     markers,
+    seats,
+    bodies,
     lights,
     signs,
     windows: [],
@@ -307,6 +325,8 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
       volMax: V(xE + 2, ceil + 2, zS + 4),
       probe: V(0, 1.6, 10),
       outdoor: false,
+      // Surgical green in the shadows and mids; the tubes' whites stay white.
+      cast: [0.84, 1.04, 0.93],
       bounds: { xMin: xW + 0.4, xMax: xE - 0.4, zMin: zN + 0.6, zMax: zS - 0.6 },
       len,
     },

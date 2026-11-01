@@ -110,6 +110,8 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.glowSodium = glow("#ff9a40", 9);
   m.glowCool = glow("#d8f0ff", 4);
   m.glowCoolDim = glow("#cfe6ff", 1.6);
+  // The clinic's failing tubes: the same tube, its own material so the world can stutter it with its light.
+  m.glowFail = glow("#d8f0ff", 4);
   m.glowRed = glow("#ff1a10", 5);
   m.glowAmber = glow("#ffa020", 6);
   m.glowPink = glow("#ff3a9a", 6);
