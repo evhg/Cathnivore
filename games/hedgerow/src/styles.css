@@ -2883,3 +2883,70 @@ img.act-scene {
 .pantry .btn + .btn { margin-top: 8px; }
 .orchard-boon:disabled { opacity: 0.45; cursor: not-allowed; }
 .orchard-boon[aria-pressed="true"] { background: rgb(255 255 255 / 0.2); }
+
+/* ---- plan item 3: one-card introductions as systems unlock ---- */
+.unlock-card .unlock-top {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 10px;
+}
+.unlock-card .unlock-face {
+  display: block;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-2);
+  box-shadow: 0 0 0 4px var(--surface), 0 0 0 6px var(--wheat);
+}
+.unlock-card .unlock-face svg { width: 100%; height: 100%; display: block; }
+.unlock-card .unlock-icon {
+  position: absolute;
+  right: -10px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--wheat), 0 4px 10px rgba(0, 0, 0, 0.25);
+  font-size: var(--fs-d2);
+}
+.unlock-card .unlock-body { margin: 0 0 6px; line-height: 1.45; }
+
+/* the fog beyond the last open act */
+.act-fog {
+  --fog: 255, 255, 255;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 22px;
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--ink-muted);
+  background:
+    radial-gradient(ellipse 60% 70% at 25% 40%, rgba(var(--fog), 0.75), transparent 70%),
+    radial-gradient(ellipse 55% 60% at 75% 65%, rgba(var(--fog), 0.65), transparent 70%),
+    linear-gradient(180deg, var(--paper-2), var(--surface));
+  list-style: none;
+}
+.act-fog::before {
+  content: "";
+  position: absolute;
+  inset: -20% -30%;
+  background: radial-gradient(ellipse 30% 22% at 30% 50%, rgba(var(--fog), 0.8), transparent 70%),
+    radial-gradient(ellipse 26% 18% at 70% 40%, rgba(var(--fog), 0.7), transparent 70%);
+  animation: fog-drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@media (prefers-color-scheme: dark) { .act-fog { --fog: 120, 110, 100; } }
+@keyframes fog-drift { from { transform: translateX(-8%); } to { transform: translateX(8%); } }
+@media (prefers-reduced-motion: reduce) { .act-fog::before { animation: none; } }
+.act-fog-text { position: relative; max-width: 30ch; }
+.act-fog-text strong { display: block; font-family: var(--font-display); font-variation-settings: var(--display-axes); font-size: var(--fs-d2); color: var(--ink); margin-bottom: 4px; }
+.unlock-card .win-actions { background: none; position: static; margin-top: 10px; padding: 0; }

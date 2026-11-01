@@ -5,6 +5,7 @@
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { TWISTS, type Level } from "./engine";
+import { openActs } from "./unlocks";
 import { isUnlocked, medalsOf, remixMedalsOf, DIFFICULTY_MEDALS, REMIX_MEDALS, type SaveData } from "./store";
 
 // ---- Act scenes: one painted backdrop per act ----
@@ -1335,7 +1336,7 @@ const BOSS_LANDMARK =
 /** The node Cath stood on at the last render, so she can walk to the new one. */
 let lastNextId: number | null = null;
 
-export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void): void {
+export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void, showAll = false): void {
   list.replaceChildren();
   const acts = new Map<number, Level[]>();
   for (const lv of levels) {
@@ -1343,6 +1344,10 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     if (!acts.has(n)) acts.set(n, []);
     acts.get(n)!.push(lv);
   }
+  // Plan item 3: the journey shows the acts reached so far; everything past them is fog until the boss
+  // before it falls (sandbox shows every act, for screenshots).
+  const shown = showAll ? acts.size : openActs(data, acts.size);
+  for (const n of [...acts.keys()]) if (n > shown) acts.delete(n);
   let current: HTMLElement | null = null;
   const nextId = levels.find((lv) => isUnlocked(data, lv.id) && !data.stars[String(lv.id)])?.id ?? null;
   for (const [n, lvs] of acts) {
@@ -1508,6 +1513,18 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     });
     li.append(trail);
     list.append(li);
+  }
+  if (shown < Math.ceil(levels.length / 10)) {
+    const fog = document.createElement("li");
+    fog.className = "act-fog";
+    fog.dataset.fog = String(shown + 1);
+    const t = document.createElement("p");
+    t.className = "act-fog-text";
+    const h = document.createElement("strong");
+    h.textContent = "Beyond the hedge";
+    t.append(h, `Fog lies over the lanes past ${levels[shown * 10 - 1]?.name ?? "the boss"}. Beat it and the next act opens.`);
+    fog.append(t);
+    list.append(fog);
   }
   const here = current as HTMLElement | null;
   const from = lastNextId !== null && lastNextId !== nextId ? list.querySelector<HTMLElement>(`[data-level="${lastNextId}"]`) : null;

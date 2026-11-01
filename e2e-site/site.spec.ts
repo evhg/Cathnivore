@@ -701,6 +701,29 @@ test.describe('Hedgerow', () => {
     }
   }
 
+  test('Plan item 3: a fresh save shows act 1 only; clearing field 1 introduces the Almanac once', async ({ page }) => {
+    await page.goto(HEDGEROW_2D)
+    await expect(page.locator('li.act')).toHaveCount(1)
+    await expect(page.locator('li.act-fog')).toBeVisible()
+    await expect(page.locator('#btn-almanac')).toBeHidden()
+    await expect(page.locator('#btn-daily')).toBeHidden()
+    await expect(page.locator('#select-kits')).toBeHidden()
+    await expect(page.locator('#dlg-unlock')).not.toBeVisible()
+    await page.evaluate(() => {
+      const d = JSON.parse(localStorage.getItem('hedgerow:v1')!)
+      d.stars = { '1': 2 }
+      localStorage.setItem('hedgerow:v1', JSON.stringify(d))
+    })
+    await page.reload()
+    await expect(page.locator('#dlg-unlock')).toBeVisible()
+    await expect(page.locator('#unlock-title')).toHaveText('The Almanac')
+    await page.locator('#unlock-ok').click()
+    await expect(page.locator('#dlg-unlock')).not.toBeVisible()
+    await page.reload()
+    await expect(page.locator('button.level[data-level="2"]')).toBeEnabled()
+    await expect(page.locator('#dlg-unlock')).not.toBeVisible()
+  })
+
   test('Hedgerow 2 M1: the story moves on one tap per line', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
     await page.locator('button.level[data-level="1"]').click()

@@ -103,6 +103,7 @@ import {
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf } from "./fleet";
 import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
+import { initUnlocks, isOpen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
 import type { Renderer3D } from "./render3d";
@@ -512,13 +513,48 @@ function renderContinue(): void {
   };
 }
 
+/** Plan item 3: hide systems a new player hasn't reached yet, and introduce the next one with a card. */
+function applyUnlocks(): void {
+  const sandbox = new URLSearchParams(location.search).has("sandbox");
+  if (initUnlocks(data)) save(data);
+  const show = (id: string, open: boolean): void => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !open;
+  };
+  const o = (id: UnlockId): boolean => isOpen(data, id, sandbox);
+  show("btn-almanac", o("almanac"));
+  show("select-kits", o("kit"));
+  show("btn-daily", o("daily"));
+  show("btn-orchard", o("orchard"));
+  show("btn-show", o("show"));
+  for (const id of ["btn-diff", "btn-remix", "btn-heroic"]) show(id, o("modes"));
+  show("btn-modes", o("almanac") || o("modes") || o("orchard") || o("show"));
+  const next = pendingUnlock(data, sandbox);
+  const dlg = document.getElementById("dlg-unlock") as HTMLDialogElement | null;
+  if (!next || !dlg || dlg.open || document.querySelector("dialog[open]")) return;
+  $<HTMLElement>("unlock-face").innerHTML = cath("delighted");
+  $<HTMLElement>("unlock-icon").textContent = next.icon;
+  $<HTMLElement>("unlock-title").textContent = next.title;
+  $<HTMLElement>("unlock-body").textContent = next.body;
+  dlg.dataset.unlock = next.id;
+  $<HTMLButtonElement>("unlock-ok").onclick = () => {
+    markUnlockSeen(data, next.id);
+    save(data);
+    dlg.close();
+    sfx.playUpgrade();
+    applyUnlocks();
+  };
+  dlg.showModal();
+}
+
 function renderLevels(): void {
   ui.bankStars.textContent = String(freeStars(data));
   $<HTMLElement>("daily-new").hidden = data.daily?.[String(dayOf(Date.now()))] !== undefined;
   renderCathButton();
   renderSelectKits();
   renderContinue();
-  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; showRun = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); });
+  renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; showRun = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); }, new URLSearchParams(location.search).has("sandbox"));
+  applyUnlocks();
 }
 
 let typing = 0;
