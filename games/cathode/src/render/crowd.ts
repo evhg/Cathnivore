@@ -303,6 +303,12 @@ export function standingParts() {
     skin.push(ball(v(0.12, 0.79, s * 0.23), 0.045, 1, 1.4, 0.8));
   }
   skin.push(limb(v(0, 1.5, 0), v(0.01, 1.6, 0), 0.05), ball(v(0.02, 1.68, 0), 0.105, 1, 1.15, 0.9));
+  // A face at a few metres: brows, the shadow of the eyes, a nose and the line of the mouth.
+  for (const s of [-1, 1]) dark.push(boxAt(0.118, 1.715, s * 0.04, 0.02, 0.014, 0.045, -0.15), boxAt(0.12, 1.69, s * 0.038, 0.012, 0.014, 0.03));
+  skin.push(boxAt(0.125, 1.665, 0, 0.04, 0.05, 0.026, 0.3));
+  dark.push(boxAt(0.112, 1.625, 0, 0.012, 0.008, 0.05));
+  // A scarf at the collar on top of the coat.
+  dark.push(limb(v(0.0, 1.5, 0), v(0.0, 1.56, 0), 0.115, 0.1));
   return { coat, skin, dark };
 }
 
