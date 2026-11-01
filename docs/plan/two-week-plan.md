@@ -171,7 +171,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Reduced motion uses fades.
 - **Size:** 3
 
-## 12. [ ] NIGHT SHIFT: the Case Board and district map
+## 12. [x] NIGHT SHIFT: the Case Board and district map *(done 2026-11-01, fc2f677..ad37318: cork-wall board with The List as polaroids, index-card leads, fresh-save teaser, keyboard e2e; the district map as a drawn survey sheet to scale from the colliders with named landmarks and rooms, hidden-secret counts, red-pencil objective; no-overlap unit test and DOM check; shots D and L fresh from the title and mid-game from pause)*
 - **Why:** the pause board looks like a debug panel. The title's Case Board item is dead on a fresh save.
 - **Build:**
   - A cork wall with polaroids of The List (busts from item 9), red string and stamped case cards.
@@ -184,6 +184,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Keyboard navigation works (e2e).
 - **Size:** 3
 - **Progress:** session 1 (2026-11-01 20:51, fc2f677): the board is a cork wall: The List as five polaroids on red string (stills once unlocked, crossed out when closed), leads as index cards with Closed stamps and an Open lead flag, locked leads face down in a stack, a fresh-save teaser behind an enabled Case Board item, Escape and Tab handling, keyboard e2e from the title. Shot D, L, P fresh and mid-game. Closed leads pile into one card on a phone. Left: the illustrated district map, pause shots.
+  Session 2 (2026-11-01 21:51, ad37318): the drawn district map (`ui/mapplan.ts` layout, `ui/districtmap.ts` SVG in metres), `tests/cathode-mapplan.test.ts`, e2e from the pause Case board, `scripts/cathode-map-shots.mjs`.
 
 ## 13. [ ] The games page (/games/): live cards with key art
 - **Why:**
