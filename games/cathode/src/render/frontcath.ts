@@ -498,8 +498,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const sx of [-1, 1]) {
         const ex = 0.026 * sx;
         const ey = 0.006;
-        const hw = 0.0115;
-        const hh = 0.0058;
+        // Plan item 9: larger, brighter eyes (the bible's "large bright eyes"), about a fifth up on C14's.
+        const hw = 0.0135;
+        const hh = 0.0069;
         const almond = () => {
           g.beginPath();
           g.moveTo(ex - hw, ey);
@@ -513,18 +514,25 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fill();
         g.clip();
         const ix = ex + 0.0012 * sx;
-        g.fillStyle = "#5a3a22";
+        // A hazel iris: a warm amber ring round the pupil, darkening to a limbal ring at the edge.
+        const ir = 0.0068;
+        const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
+        iris.addColorStop(0, "#8a5a2a");
+        iris.addColorStop(0.45, "#a87436");
+        iris.addColorStop(0.8, "#5a3a22");
+        iris.addColorStop(1, "#2e1c10");
+        g.fillStyle = iris;
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0058, 0.0058 * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, ir, ir * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
         g.fill();
         g.fillStyle = "#2e1c10";
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0058, 0.0058 * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, ir, ir * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
         g.lineWidth = 0.0012;
         g.strokeStyle = "#24160c";
         g.stroke();
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0026, 0.0026 * 1.0, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, 0.0029, 0.0029 * 1.0, 0, 0, Math.PI * 2);
         g.fill();
         // The lid's shadow across the top of the iris.
         g.fillStyle = "rgba(40,20,16,0.35)";
