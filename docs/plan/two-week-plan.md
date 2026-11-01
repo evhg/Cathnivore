@@ -82,7 +82,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Contrast meets AA.
 - **Size:** 4
 
-## 6. [ ] Runnel: a living landscape and a win worth sharing
+## 6. [x] Runnel: a living landscape and a win worth sharing *(done 2026-11-01, 6e4f165..HEAD: share card with the solved board on the win card, rivers running tile by tile with a soak ripple, banks that green and fields that bloom, a time of day and weather per board with a rainbow on a drizzly win, a weekday arc from 2 Nov reported in BALANCE.md; shots at P and D before and after the win, plus dark)*
 - **Why:** the board sits on flat paper. The win is a modal of numbers. The "2-minute daily" has a par of 68 taps, which contradicts its own promise.
 - **Build:**
   - Rivers that visibly fill tile by tile as the water reaches them.

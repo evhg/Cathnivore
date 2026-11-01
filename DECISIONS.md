@@ -241,3 +241,8 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 14:10: the speaking cast (Mara, Sol, Tomas, Ines, Pip) and the villains got new half-length figures in Cath's cel style rather than full-height art: the caption covers below the waist anyway, and the acceptance line (50% of viewport height) holds at P, D and L.
 - 2026-11-01 14:15: poses come from the existing punctuation moods (head tilt, lean, a hop and ray burst on "!"), not new per-line tags in the story data; the backlog is screen-reader only on phones and in landscape.
 - 2026-11-01 14:30: plan item 6's "shared PNGs match a stored snapshot hash" is met by hashing the share card's canvas calls (`tests/runnel-sharecard.test.ts`), not the PNG bytes: rasterised bytes differ between browsers and fonts, the call list is the same everywhere.
+- 2026-11-01 15:00: Runnel weekday arc starts on 2026-11-02 (`ARC_FROM`); earlier dailies are untouched because they live in players' saves. Easy days use a smaller board and pre-set sluices, not a gentler scramble, so the 75%-wrong scramble rule stays.
+- 2026-11-01 15:00: the arc's "median time" is a model (1.2 s per tap, 10% waste), stated as such in BALANCE.md; there is no telemetry to measure real solves.
+- 2026-11-01 15:15: Runnel sky (time of day, weather) comes from the board's seed for every mode, not dailies only; drizzle is 1 in 8 and clears into a rainbow on the win. `?sky=` forces it for shots.
+- 2026-11-01 15:25: Runnel seasonal tints now apply only under the light scheme: in dark mode they replaced the night greens with pale khaki (a pre-existing bug the dark shots showed).
+- 2026-11-01 15:30: plan item 7 not started this session (time); next session begins it with stage shots.
