@@ -183,6 +183,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - No overlapping text.
   - Keyboard navigation works (e2e).
 - **Size:** 3
+- **Progress:** session 1 (2026-11-01 20:51, fc2f677): the board is a cork wall: The List as five polaroids on red string (stills once unlocked, crossed out when closed), leads as index cards with Closed stamps and an Open lead flag, locked leads face down in a stack, a fresh-save teaser behind an enabled Case Board item, Escape and Tab handling, keyboard e2e from the title. Shot D, L, P fresh and mid-game. Left: the illustrated district map, a phone stack for closed leads, pause shots.
 
 ## 13. [ ] The games page (/games/): live cards with key art
 - **Why:**
