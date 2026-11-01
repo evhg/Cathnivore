@@ -53,6 +53,12 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
     m.tileGreen = wall(cset(ct.clinicDado, "#ffffff", 0.8), 1, 0.4);
     m.clinicFloor = patchMaterial(cset(ct.clinicFloor, "#ffffff", 0.6), s, { kind: "ground", puddleBias: -0.06 });
     m.ceilingPanel = wall(cset(ct.clinicCeiling, "#e6ece6", 0.7), 1, 0.1);
+    const st = cset(ct.clinicSteel, "#d8dcdc", 0.3);
+    st.metalness = 0.9;
+    m.steel = prop(st, 0.5, 0);
+    const sd = cset(ct.clinicSteel, "#5a6062", 0.3);
+    sd.metalness = 0.85;
+    m.steelDark = prop(sd, 0.6, 0);
   } else {
     m.tileWhite = wall(set("concrete_slab_wall", { color: "#e4f0ea", normal: 0.5 }), 1, 0.5);
     m.tileGreen = wall(set("dirty_tiles", { color: "#5f9a86", normal: 0.5 }), 1, 0.5);
@@ -77,6 +83,8 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.paintTeal = plain("#0f3a3a", 0.4, 0.2);
   m.pipe = plain("#2b2a28", 0.5, 0.8);
   m.chrome = plain("#c8ccd0", 0.12, 1.0, 0.2);
+  m.steel ??= m.chrome;
+  m.steelDark ??= m.darkMetal!;
   m.brass = plain("#b08a3a", 0.25, 0.95, 0.2);
   m.carpetRed = plain("#8a1424", 0.9, 0, 0.3);
   m.leaf = plain("#1f4a2a", 0.7, 0, 0.4);

@@ -171,13 +171,13 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   b.box("chrome", -8.4, 0.5, 30, 0.5, 1.0, 0.5, { collide: "metal" });
 
   // Flooded morgue (east, behind the far ward): steel drawer wall, gurneys, a shin-deep slick of water.
-  b.boxMinMax("darkMetal", xE - 0.9, 0, -23, xE - 0.1, 2.4, -9, { collide: "metal" });
+  b.boxMinMax("steelDark", xE - 0.9, 0, -23, xE - 0.1, 2.4, -9, { collide: "metal" });
   // Drawer fronts: brushed steel doors, a lever handle and a paper name card each.
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 6; c++) {
       const y = 0.45 + r * 0.7;
       const z = -22 + c * 2.2;
-      b.box("chrome", xE - 1.0, y, z, 0.06, 0.55, 1.9);
+      b.box("steel", xE - 1.0, y, z, 0.06, 0.55, 1.9);
       b.box("darkMetal", xE - 1.05, y + 0.08, z + 0.6, 0.06, 0.06, 0.4);
       b.box("plasticWhite", xE - 1.04, y + 0.08, z - 0.5, 0.02, 0.12, 0.2);
     }
@@ -252,7 +252,7 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   for (let i = 0; i < 4; i++) ivStand(7.6, 19 - i * 14 + (i > 1 ? 4 : 0));
   // Steel instrument cabinets with glass doors on the ward's outer wall.
   for (const z of [11, 3, -25]) {
-    b.box("paintMetal", xE - 0.3, 0.95, z, 0.5, 1.9, 1.0, { collide: "metal" });
+    b.box("steel", xE - 0.3, 0.95, z, 0.5, 1.9, 1.0, { collide: "metal" });
     b.box("glass", xE - 0.56, 1.35, z, 0.02, 0.9, 0.86);
     b.box("glowCoolDim", xE - 0.52, 1.35, z, 0.01, 0.82, 0.78);
   }

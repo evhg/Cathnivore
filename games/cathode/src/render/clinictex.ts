@@ -7,7 +7,7 @@ import * as THREE from "three";
 import type { PbrSet } from "./textures";
 import { canvas, prng } from "./textures";
 
-export type ClinicTexId = "clinicWall" | "clinicDado" | "clinicFloor" | "clinicCeiling";
+export type ClinicTexId = "clinicWall" | "clinicDado" | "clinicFloor" | "clinicCeiling" | "clinicSteel";
 
 interface Painted {
   color: HTMLCanvasElement;
@@ -240,6 +240,44 @@ function floor(n: number, seed: number): Painted {
   return p;
 }
 
+/** Brushed stainless (the morgue's drawers, cabinets): fine horizontal grain, smudged prints, tea-stain rust. */
+function steel(n: number, seed: number): Painted {
+  const rand = prng(seed);
+  const color = canvas(n, n);
+  const g = color.getContext("2d")!;
+  const height = new Float32Array(n * n).fill(0.5);
+  const rough = new Float32Array(n * n);
+  const ao = new Float32Array(n * n).fill(1);
+  g.fillStyle = "rgb(150,156,156)";
+  g.fillRect(0, 0, n, n);
+  // The grain: one streak per row, each its own brightness and roughness, broken into runs.
+  for (let y = 0; y < n; y++) {
+    let x = 0;
+    while (x < n) {
+      const run = 8 + rand() * n * 0.4;
+      const v = (rand() - 0.5) * 34;
+      g.fillStyle = v > 0 ? `rgba(255,255,255,${v / 255})` : `rgba(0,0,0,${-v / 255})`;
+      g.fillRect(x, y, run, 1);
+      const r = 0.26 + rand() * 0.14;
+      for (let i = x | 0; i < Math.min(n, x + run); i++) {
+        rough[y * n + i] = r;
+        height[y * n + i] = 0.5 + v / 400;
+      }
+      x += run;
+    }
+  }
+  // Hand smudges and prints: duller, rougher patches.
+  const before = g.getImageData(0, 0, n, n).data;
+  blotches(g, n, rand, 22, "rgba(90,96,92,0.22)", n * 0.02, n * 0.07);
+  blotches(g, n, rand, 5, "rgba(140,96,50,0.18)", n * 0.03, n * 0.09);
+  const after = g.getImageData(0, 0, n, n).data;
+  for (let i = 0; i < n * n; i++) {
+    const d = Math.abs((before[i * 4] ?? 0) - (after[i * 4] ?? 0)) / 40;
+    rough[i] = Math.min(0.85, (rough[i] ?? 0.3) + d);
+  }
+  return { color, height, rough, ao, size: n };
+}
+
 /** Paints every clinic surface. 512 px per 2 m on phones, 1024 elsewhere. */
 export function clinicTextures(quality: "phone" | "high" | "ultra"): Record<ClinicTexId, PbrSet> {
   const n = quality === "phone" ? 512 : 1024;
@@ -252,5 +290,6 @@ export function clinicTextures(quality: "phone" | "high" | "ultra"): Record<Clin
     clinicDado: toSet(dado, 2.2),
     clinicFloor: toSet(floor(n, 73), 1.2),
     clinicCeiling: toSet(ceiling(n, 74), 1.5),
+    clinicSteel: toSet(steel(n / 2, 75), 0.6),
   };
 }
