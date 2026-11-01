@@ -7,6 +7,7 @@ import type { PbrId, PbrSet } from "./textures";
 import { tarpTexture } from "./textures";
 import { clinicTextures } from "./clinictex";
 import { plazaTextures } from "./plazatex";
+import { towerTextures } from "./towertex";
 
 export type Materials = Record<string, THREE.Material>;
 
@@ -72,6 +73,19 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
     m.ceilingPanel = wall(set("concrete_slab_wall", { color: "#c4c8c4", normal: 0.3 }), 1, 0.2);
     m.clinicFloor = m.tileWhite;
   }
+  // The Board Tower (plan item 4): polished marble floors, walls and columns, a slat ceiling and office carpet,
+  // painted at load (towertex.ts) and only for the tower.
+  if (district === "tower") {
+    const tt = towerTextures(quality);
+    const tset = (p: PbrSet, color: string, normal: number) =>
+      new THREE.MeshStandardMaterial({ map: p.map, normalMap: p.normalMap, normalScale: new THREE.Vector2(normal, normal), aoMap: p.arm, aoMapIntensity: 1, roughnessMap: p.arm, roughness: 1, metalness: 0, color: new THREE.Color(color) });
+    m.tiles = wall(tset(tt.towerMarble, "#ffffff", 0.4), 1, 0);
+    m.concreteA = wall(tset(tt.towerMarbleWall, "#f4efe6", 0.4), 1, 0);
+    const ceil = tset(tt.towerCeiling, "#ffffff", 0.8);
+    ceil.metalness = 0.6;
+    m.concreteB = wall(ceil, 1, 0);
+    m.officeCarpet = prop(tset(tt.towerCarpet, "#ffffff", 0.6), 1, 0);
+  }
   m.corrugatedWall = wall(set("corrugated_iron_02", { color: "#6a7070", metal: 1 }), 1, 0.9);
   m.jersey = wall(set("concrete_slab_wall", { color: "#a09c94" }), 1, 0.9);
 
@@ -94,6 +108,9 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.steelDark ??= m.darkMetal!;
   m.brass = plain("#b08a3a", 0.25, 0.95, 0.2);
   m.carpetRed = plain("#8a1424", 0.9, 0, 0.3);
+  // Indoors the tower's carpets stay dry: no rain sheen streaking down them.
+  if (district === "tower") m.carpetRed = prop(new THREE.MeshStandardMaterial({ color: "#4a0a14", roughness: 0.95, metalness: 0 }), 1, 0);
+  m.officeCarpet ??= m.carpetRed;
   m.leaf = plain("#1f4a2a", 0.7, 0, 0.4);
   m.rubber = plain("#0b0b0c", 0.7, 0, 0.4);
   m.cable = plain("#050506", 0.55, 0.1, 0.3, 0.6);

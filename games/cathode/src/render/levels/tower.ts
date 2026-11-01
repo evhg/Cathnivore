@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { Builder } from "../builder";
 import { prng } from "../textures";
 import type { Level, SignDef, VLight, WindowDef } from "../level";
+import type { CrowdGroup } from "../crowd";
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const C = (hex: string) => new THREE.Color(hex);
@@ -83,8 +84,28 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     b.box("concreteA", x, ceil / 2, z, 1.2, ceil, 1.2, { collide: "concrete" });
     b.box("glowCool", x, 2.6, z + 0.62, 0.3, 4, 0.04);
   }
-  b.box("plasticWhite", 0, 0.6, 24, 7, 1.2, 1.2, { collide: "metal" });
+  // Plan item 4: a reception desk worth the lobby: a backlit onyx front in brass frames under a marble top, with
+  // the receptionists' screens behind it.
+  b.box("blackPaint", 0, 0.55, 24, 7, 1.1, 1.2, { collide: "metal" });
+  b.box("tiles", 0, 1.15, 24.05, 7.3, 0.08, 1.4, { cover: "none" });
+  for (let k = 0; k < 5; k++) {
+    const x = -2.8 + k * 1.4;
+    b.box("glowWarm", x, 0.58, 24.62, 1.2, 0.86, 0.02, { cover: "none" });
+    b.box("brass", x - 0.7, 0.58, 24.64, 0.05, 1.0, 0.04, { cover: "none" });
+  }
+  b.box("brass", 3.5, 0.58, 24.64, 0.05, 1.0, 0.04, { cover: "none" });
+  b.box("brass", 0, 0.08, 24.64, 7.0, 0.05, 0.04, { cover: "none" });
+  for (const x of [-2, 0.5, 2.5]) {
+    b.box("darkMetal", x, 1.45, 23.75, 0.6, 0.38, 0.03, { rotY: Math.PI, cover: "none" });
+    b.box("glowCoolDim", x, 1.45, 23.73, 0.54, 0.32, 0.01, { cover: "none" });
+  }
   b.box("glowCoolDim", 0, 1.3, 23.3, 6.2, 0.1, 0.05);
+  // Over the runner hangs the lobby's sculpture: three chrome rings, nested and tilted, lit from below.
+  for (const [r, rx, rz] of [[2.6, 0.3, 0], [2.0, -0.4, 0.5], [1.4, 0.9, -0.3]] as const) {
+    b.shape("chrome", new THREE.TorusGeometry(r, 0.06, 6, 40), V(0, 8.2, 38), 0, undefined, 1, Math.PI / 2 + rx, rz);
+  }
+  b.cylinder("chrome", V(0, 10.9, 38), V(0, ceil, 38), 0.015, 4);
+  for (const x of [-1.2, 1.2]) light(V(x, 0.3, 38), "#ffe0b0", 14, 10, 0, false);
   b.box("darkMetal", 9.5, 0.6, 33, 1.2, 1.2, 1.2, { collide: "metal" }); // the courier's lobby safe
   b.box("glowAmber", 9.5, 1.15, 32.38, 0.5, 0.12, 0.04);
   signs.push({ text: "VANTAGE GROUP", sub: "VISITORS REGISTER AT DESK", style: "screen", color: "#bfe9ff", w: 7, h: 1.8, center: V(0, 5.2, 21.3), normal: V(0, 0, 1), flicker: 0, intensity: 2.2 });
@@ -118,7 +139,17 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     for (const x of [-10.5, -8, 8]) {
       const z = -4 - r * 6;
       b.box("plasticWhite", x, H1 + 0.38, z, 2.0, 0.76, 0.9, { collide: "metal" });
-      b.box("glowCool", x, H1 + 1.0, z - 0.3, 0.7, 0.4, 0.04);
+      // Plan item 4: two monitors on arms, a keyboard, a desk lamp and a chair at each desk; a fabric screen.
+      for (const dx of [-0.42, 0.42]) {
+        b.box("darkMetal", x + dx, H1 + 1.06, z - 0.22, 0.66, 0.42, 0.03, { cover: "none" });
+        b.box("glowCool", x + dx, H1 + 1.06, z - 0.2, 0.6, 0.36, 0.01, { cover: "none" });
+        b.cylinder("darkMetal", V(x + dx, H1 + 0.76, z - 0.3), V(x + dx, H1 + 0.9, z - 0.3), 0.02, 4);
+      }
+      b.box("blackPaint", x, H1 + 0.775, z + 0.05, 0.5, 0.02, 0.16, { cover: "none" });
+      b.box("blackPaint", x, H1 + 0.48, z + 0.85, 0.55, 0.08, 0.5, { cover: "none" }); // seat
+      b.box("blackPaint", x, H1 + 0.85, z + 1.1, 0.5, 0.6, 0.06, { cover: "none" }); // back
+      b.cylinder("chrome", V(x, H1 + 0.05, z + 0.85), V(x, H1 + 0.44, z + 0.85), 0.03, 5);
+      b.box("glowWarm", x + 0.85, H1 + 1.12, z - 0.15, 0.12, 0.03, 0.12, { cover: "none" });
       b.box("paintMetal", x, H1 + 0.7, z + 0.55, 2.0, 1.4, 0.06, { collide: "metal" });
     }
   }
@@ -126,15 +157,34 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   for (let i = 0; i < 6; i++) {
     const z = -12 - i * 2.2;
     b.box("darkMetal", 12.8, H1 + 1.2, z, 0.9, 2.4, 1.2, { collide: "metal" });
-    b.box("glowCyan", 12.33, H1 + 1.2, z, 0.04, 1.8, 0.8);
+    b.box("glowCyan", 12.33, H1 + 1.2, z, 0.02, 0.04, 0.8);
+    // Plan item 4: rack fronts, not glowing slabs: a grille door, rows of blinking status lights, patch cables.
+    b.box("grate", 12.33, H1 + 1.2, z, 0.02, 2.2, 1.0, { cover: "none" });
+    for (let r = 0; r < 14; r++) {
+      const y = H1 + 0.25 + r * 0.14;
+      b.box(r % 5 === 2 ? "glowAmber" : rand() < 0.15 ? "glowRed" : "glowCyan", 12.31, y, z - 0.38 + rand() * 0.1, 0.01, 0.025, 0.04, { cover: "none" });
+      b.box("glowCyan", 12.31, y, z + 0.3, 0.01, 0.02, 0.16, { cover: "none" });
+    }
+    b.cable("cable", V(12.3, H1 + 2.3, z - 0.3), V(12.3, H1 + 2.3, z + 0.3), 0.25, 0.012);
   }
+  // A cable tray over the racks and a raised floor of perforated tiles.
+  b.boxMinMax("grate", 11.6, H1 + 2.9, -26, 12.4, H1 + 2.95, -10, { cover: "none" });
+  b.boxMinMax("grate", 9.06, H1 + 0.005, -26, xE, H1 + 0.03, -10, { uv: 1, cover: "none" });
   light(V(11.5, H1 + 3, -17), "#2ee6ff", 16, 9, 1);
   signs.push({ text: "SERVER ROOM", sub: "AUTHORISED KEYHOLDERS", style: "box", color: "#2ee6ff", w: 2.2, h: 0.4, center: V(8.9, H1 + 2.8, -9.4), normal: V(-1, 0, 0), flicker: 1, intensity: 3 });
 
   // Boardroom: a long table, chairs, the Chair's seat and a wall of glass over the city.
-  b.box("wood", 0, H2 + 0.75, -52, 3.4, 0.15, 13, { collide: "metal" });
-  b.box("darkMetal", 0, H2 + 0.35, -52, 1.2, 0.7, 11);
-  for (let i = 0; i < 6; i++) for (const s of [-1, 1]) b.box("blackPaint", s * 2.4, H2 + 0.45, -57 + i * 2, 0.7, 0.9, 0.7, { collide: "metal" });
+  // Plan item 4: a black marble slab on a chrome spine, brass-edged; leather chairs with high backs.
+  b.box("blackPaint", 0, H2 + 0.75, -52, 3.4, 0.12, 13, { collide: "metal" });
+  b.box("brass", 0, H2 + 0.7, -52, 3.44, 0.03, 13.04, { cover: "none" });
+  b.box("chrome", 0, H2 + 0.35, -52, 1.2, 0.7, 11);
+  for (let i = 0; i < 6; i++) for (const s of [-1, 1]) {
+    const z = -57 + i * 2;
+    b.box("blackPaint", s * 2.4, H2 + 0.25, z, 0.7, 0.5, 0.7, { collide: "metal" });
+    b.box("rubber", s * 2.4, H2 + 0.52, z, 0.62, 0.1, 0.62, { cover: "none" });
+    b.box("rubber", s * 2.72, H2 + 1.0, z, 0.1, 0.95, 0.6, { cover: "none" });
+    b.box("glowWarm", s * 1.2, H2 + 0.82, z, 0.4, 0.005, 0.3, { cover: "none" }); // a lit tablet at each place
+  }
   b.box("chrome", 0, H2 + 0.7, -58.6, 0.9, 1.4, 0.9);
   // The window wall is open to the skyline: chrome mullions and a transom, with an invisible collider so nobody walks out.
   b.collide(new THREE.Box3(V(xW, H2, zN), V(xE, H2 + 5, zN + 0.1)), "metal");
@@ -144,7 +194,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
 
   // Colour pass: a carpet across the office floor with a brass-edged aisle, planters between the cubicles,
   // and a deep red boardroom carpet, oak wall panelling, bookcases and brass pendants, so the climb ends in luxury.
-  b.boxMinMax("carpetRed", -11.8, H1 + 0.004, -1, 8.8, H1 + 0.03, -26, { uv: 3 });
+  b.boxMinMax("officeCarpet", -11.8, H1 + 0.004, -1, 8.8, H1 + 0.03, -26, { uv: 2 });
   for (const x of [-4.6, 4.6]) b.boxMinMax("brass", x - 0.04, H1 + 0.03, -1, x + 0.04, H1 + 0.06, -26, { uv: 1 });
   for (const z of [-3, -11, -19, -27]) {
     for (const x of [-12.3, 12.3]) {
@@ -153,7 +203,8 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
       b.tagLast("thin", "cloth");
     }
   }
-  b.boxMinMax("carpetRed", -9, H2 + 0.004, -44, 9, H2 + 0.03, -62, { uv: 3 });
+  b.boxMinMax("officeCarpet", -9, H2 + 0.004, -44, 9, H2 + 0.03, -62, { uv: 2 });
+  b.boxMinMax("carpetRed", -4, H2 + 0.03, -45.5, 4, H2 + 0.045, -59.5, { uv: 3 }); // the rug under the table
   b.boxMinMax("brass", -9.05, H2 + 0.03, -44, -8.95, H2 + 0.07, -62, { uv: 1 });
   b.boxMinMax("brass", 8.95, H2 + 0.03, -44, 9.05, H2 + 0.07, -62, { uv: 1 });
   for (const s of [-1, 1]) {
@@ -198,7 +249,6 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
 
   const markers: Level["markers"] = {
     player: [V(0, 0, zS - 4)],
-    "crowd:lobby": [V(-8, 0, 30)],
     perch: [V(-12, H1, -4), V(12, H1, -20)],
     extract: [V(0, 0, zS - 1.5)],
     "lead:register": [V(9.5, 0, 31)],
@@ -221,9 +271,17 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     "laser:offices-c": [V(-7, H1, -23), V(7, H1, -23)],
   };
 
+  // Plan item 4: visitors in coats waiting in the lobby and at the desk (render/crowd.ts), not milling capsules.
+  const crowds: CrowdGroup[] = [
+    { x: -7, z: 30, count: 5, radius: 1.8, face: [0, 24], seed: 41 },
+    { x: 6.5, z: 42, count: 3, radius: 1.2, seed: 42 },
+    { x: -1.5, z: 26.4, count: 3, radius: 0, rect: [4, 0.8], face: [0, 24], seed: 43 },
+  ];
+
   return {
     builder: b,
     markers,
+    crowds,
     lights,
     signs,
     windows,
