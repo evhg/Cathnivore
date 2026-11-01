@@ -1,7 +1,6 @@
 {
   "games/cathode/src/styles.css": {
-    "px-font-size": 119,
-    "raw-colour": 128
+    "raw-colour": 13
   },
   "games/cathode/src/ui/photomode.ts": {
     "style-prop-assign": 2
@@ -10,7 +9,7 @@
     "style-prop-assign": 2
   },
   "games/hedgerow/src/styles.css": {
-    "raw-colour": 156
+    "raw-colour": 149
   },
   "games/runnel/src/styles.css": {
     "raw-colour": 34
@@ -34,11 +33,11 @@
     "raw-colour": 3
   },
   "src/styles/global.css": {
-    "px-font-size": 39,
-    "raw-colour": 47
+    "px-font-size": 35,
+    "raw-colour": 26
   },
   "src/styles/table.css": {
-    "px-font-size": 3
+    "px-font-size": 2
   },
   "src/styles/title.css": {
     "px-font-size": 5

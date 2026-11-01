@@ -123,6 +123,12 @@
   --glow-target: 0 0 0 3px var(--wheat), 0 0 18px 4px rgb(217 180 90 / .55);
   --glow-danger: 0 0 0 2px var(--clay-deep), 0 0 16px rgb(158 68 48 / .45);
 
+  /* graphic-novel Scene (plan item 5): fixed print colours, the same in light and dark (they sit on paintings) */
+  --scene-ink: #2b2320; --scene-paper: #fff8ea; --scene-caption: #f3dc98; --scene-name: #8a3447;
+  --scene-cream: #f4ede1; --scene-night: #2a211b; --scene-ray: rgb(255 236 190 / .9);
+  --scene-shade-lo: rgb(20 12 8 / .28); --scene-shade: rgb(20 12 8 / .45); --scene-shade-hi: rgb(20 12 8 / .55);
+  --scene-panel-a: rgb(24 16 10 / .62); --scene-panel-b: rgb(24 16 10 / .78); --scene-text-shadow: rgb(0 0 0 / .6);
+
   /* z-layers: every z-index in src/styles names one of these */
   --z-under: -1; --z-base: 0; --z-raised: 1; --z-lift: 2; --z-map-fx: 5; --z-hud: 10; --z-sticky: 20;
   --z-tooltip: 30; --z-sheet: 40; --z-banner: 50; --z-modal: 60; --z-toast: 70; --z-fx: 80; --z-pass-device: 90;

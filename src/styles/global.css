@@ -675,7 +675,7 @@ html.no-animations .stat-card { animation: none; }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: #2a211b;
+  background: var(--scene-night);
   isolation: isolate;
 }
 
@@ -696,8 +696,8 @@ html.no-animations .stat-card { animation: none; }
   pointer-events: none;
   z-index: var(--z-base);
   background:
-    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(20, 12, 8, 0.45) 100%),
-    linear-gradient(180deg, transparent 58%, rgba(20, 12, 8, 0.28) 100%);
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, var(--scene-shade) 100%),
+    linear-gradient(180deg, transparent 58%, var(--scene-shade-lo) 100%);
 }
 
 .scene-stage-area {
@@ -715,13 +715,56 @@ html.no-animations .stat-card { animation: none; }
   line-height: 0;
   transform-origin: 50% 100%;
   transition: filter 320ms ease, opacity 320ms ease, transform 420ms var(--ease-settle, ease-out);
-  filter: drop-shadow(0 10px 18px rgba(20, 12, 8, 0.45));
+  filter: drop-shadow(0 10px 18px var(--scene-shade));
 }
-.scene-fig > *, .scene-fig svg { display: block; width: 100%; height: 100%; }
+.scene-fig > .cath-art, .scene-fig > svg, .scene-fig .cath-art > svg { display: block; width: 100%; height: 100%; }
+
+/* A delighted line gets a comic burst of rays behind the speaker's head. */
+.scene-burst {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  width: 120%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  z-index: var(--z-under);
+  background: repeating-conic-gradient(from 0deg, var(--scene-ray) 0deg 5deg, transparent 5deg 15deg);
+  mask: radial-gradient(circle, transparent 26%, black 34%, black 52%, transparent 70%);
+  animation: scene-burst 700ms var(--ease-settle, ease-out) both;
+}
+@keyframes scene-burst {
+  from { opacity: 0; scale: 0.6; rotate: -8deg; }
+  to { opacity: 0.85; scale: 1; rotate: 0deg; }
+}
+
+/* The location caption: a comic box in the top-left corner, like a page's first panel. */
+.scene-place {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, calc((100% - 1200px) / 2));
+  z-index: var(--z-lift);
+  max-width: min(72vw, 420px);
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--scene-caption);
+  color: var(--scene-ink);
+  border: 3px solid var(--scene-ink);
+  box-shadow: 4px 4px 0 var(--scene-shade-hi);
+  font-family: var(--font-display);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  animation: scene-place-in 600ms var(--ease-settle, ease-out) 200ms both;
+}
+@keyframes scene-place-in {
+  from { opacity: 0; translate: -16px 0; }
+  to { opacity: 1; translate: 0 0; }
+}
 .scene-fig-left { left: max(-8%, calc(50% - 600px)); animation: panel-wipe-left 520ms var(--ease-settle, ease-out) both; }
 .scene-fig-right { right: max(-8%, calc(50% - 600px)); animation: panel-wipe-right 520ms var(--ease-settle, ease-out) both; }
 .scene-fig.is-speaking { z-index: var(--z-lift); }
-.scene-fig.is-listening { z-index: var(--z-raised); filter: brightness(0.62) saturate(0.7) drop-shadow(0 8px 14px rgba(20, 12, 8, 0.4)); transform: scale(0.95); }
+.scene-fig.is-listening { z-index: var(--z-raised); filter: brightness(0.62) saturate(0.7) drop-shadow(0 8px 14px var(--scene-shade)); transform: scale(0.95); }
 
 /* On a phone the two speakers share the frame: the listener steps back to the edge. */
 /* On small frames the backlog stays for screen readers but leaves the room to the speakers and caption. */
@@ -776,7 +819,7 @@ html.no-animations .stat-card { animation: none; }
   flex-direction: column;
   gap: 10px;
   padding: 72px max(16px, calc((100% - 720px) / 2)) max(16px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, transparent, rgba(24, 16, 10, 0.62) 46%, rgba(24, 16, 10, 0.78));
+  background: linear-gradient(180deg, transparent, var(--scene-panel-a) 46%, var(--scene-panel-b));
 }
 
 .scene-backlog {
@@ -784,11 +827,11 @@ html.no-animations .stat-card { animation: none; }
   flex-direction: column;
   gap: 4px;
   font-size: var(--fs-small);
-  color: #f4ede1;
+  color: var(--scene-cream);
   opacity: 0.72;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px var(--scene-text-shadow);
 }
-.scene-backlog .scene-speaker { color: #f3dc98; }
+.scene-backlog .scene-speaker { color: var(--scene-caption); }
 .scene-log-line { margin: 0; }
 
 /* The caption: a paper panel with an ink border and a tail up to whoever is speaking. */
@@ -798,11 +841,11 @@ html.no-animations .stat-card { animation: none; }
   flex-direction: column;
   gap: 4px;
   padding: 14px 18px 16px;
-  background: #fff8ea;
-  color: #2b2320;
-  border: 3px solid #2b2320;
+  background: var(--scene-paper);
+  color: var(--scene-ink);
+  border: 3px solid var(--scene-ink);
   border-radius: 4px 18px 4px 18px;
-  box-shadow: 6px 6px 0 rgba(20, 12, 8, 0.55);
+  box-shadow: 6px 6px 0 var(--scene-shade-hi);
   cursor: pointer;
   animation: bubble-pop 260ms var(--ease-settle, ease-out) both;
 }
@@ -813,8 +856,8 @@ html.no-animations .stat-card { animation: none; }
   left: 18%;
   width: 26px;
   height: 18px;
-  background: #fff8ea;
-  border: 3px solid #2b2320;
+  background: var(--scene-paper);
+  border: 3px solid var(--scene-ink);
   border-bottom: 0;
   clip-path: polygon(0 100%, 30% 0, 100% 100%);
 }
@@ -825,13 +868,13 @@ html.no-animations .stat-card { animation: none; }
   left: calc(18% + 7px);
   width: 14px;
   height: 18px;
-  background: #2b2320;
+  background: var(--scene-ink);
   clip-path: polygon(0 100%, 40% 0, 50% 0, 14% 100%);
 }
 .scene-bubble-right { border-radius: 18px 4px 18px 4px; }
 .scene-bubble-right::after { left: auto; right: 18%; clip-path: polygon(0 100%, 70% 0, 100% 100%); }
 .scene-bubble-right::before { left: auto; right: calc(18% + 7px); clip-path: polygon(86% 100%, 50% 0, 60% 0, 100% 100%); }
-.scene-bubble .scene-speaker { color: #8a3447; letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-caption); }
+.scene-bubble .scene-speaker { color: var(--scene-name); letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-caption); }
 .scene-bubble-right .scene-speaker { align-self: flex-end; }
 
 @keyframes bubble-pop {
@@ -840,7 +883,7 @@ html.no-animations .stat-card { animation: none; }
 }
 
 .scene-text {
-  color: #2b2320;
+  color: var(--scene-ink);
   font-size: var(--fs-lead);
   line-height: 1.42;
 }
@@ -854,7 +897,7 @@ html.no-animations .stat-card { animation: none; }
 .scene-progress {
   margin-right: auto;
   font-size: var(--fs-caption);
-  color: #f4ede1;
+  color: var(--scene-cream);
   opacity: 0.8;
 }
 
@@ -867,7 +910,7 @@ html.no-animations .stat-card { animation: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scene-backdrop, .scene-fig, .scene-fig.is-speaking.mood-delighted, .scene-bubble { animation: none; }
+  .scene-backdrop, .scene-fig, .scene-fig.is-speaking.mood-delighted, .scene-bubble, .scene-burst, .scene-place { animation: none; }
   .scene-fig, .scene-fig .fig-head, .scene-fig .cath-head, .scene-fig .fig-body, .scene-fig .cath-body { transition: none; }
 }
 

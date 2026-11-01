@@ -187,10 +187,12 @@ function WordOfMouth() {
         {/* microphone on a boom in the window */}
         <path d="M 96 250 L 112 196 L 140 186" stroke="#2A1E1A" strokeWidth={4} fill="none" />
         <rect x={134} y={176} width={16} height={24} rx={7} fill="#2A1E1A" />
+        <g transform="translate(-95 -90)">
         <rect x={250} y={150} width={110} height={34} rx={4} fill="#3A1414" />
         <rect x={258} y={156} width={94} height={22} rx={3} fill="#FF4A3A" />
-        <Glow id={id} cx={1125} cy={567} r={90} color="#FF4A3A" opacity={0.45} />
-        <path d="M 268 162 h 12 v 10 h -12 z M 286 162 l 6 10 l 6 -10 M 306 162 v 10 M 318 162 l 6 10 l 6 -10" stroke="#FFE2D6" strokeWidth={2.5} fill="none" />
+        </g>
+        <Glow id={id} cx={1030} cy={477} r={90} color="#FF4A3A" opacity={0.45} />
+        <text x={210} y={83} textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight={700} fontSize={16} letterSpacing={3} fill="#FFE2D6">ON AIR</text>
         <rect x={250} y={210} width={110} height={108} fill="#4A3028" />
       </g>
       {/* Candor's van */}
@@ -284,65 +286,122 @@ function GrowingSeason() {
   )
 }
 
-// 4. The Plan: Marrow's courthouse steps under an overcast sky, notices pinned by the door.
+// 4. The Plan: Cath's kitchen as a war room after dark. The whiteboard carries the map of Marrow with
+// Kingsmarket in the middle, circled and underlined three times (Ines's line), sticky notes and string.
 function ThePlan() {
   const id = 'bd4'
+  const r = rng(41)
+  // the seven regions as a ring of hexes round Kingsmarket
+  const hexPath = (cx: number, cy: number, s: number) =>
+    Array.from({ length: 6 }, (_, i) => {
+      const a = (Math.PI / 3) * i + Math.PI / 6
+      return `${i ? 'L' : 'M'} ${cx + s * Math.cos(a)} ${cy + s * Math.sin(a)}`
+    }).join(' ') + ' Z'
+  const ring = Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 3) * i
+    return [800 + 92 * Math.cos(a), 330 + 92 * Math.sin(a)] as const
+  })
   return (
     <>
-      <Sky id={id} stops={[[0, '#8E95A2'], [0.5, '#C2C5CC'], [0.66, '#DCDAD4']]} />
-      <path d="M 0 170 q 200 -60 420 -10 q 220 -70 460 0 q 260 -60 720 10 V 0 H 0 Z" fill="#7C8392" opacity={0.6} />
-      <path d="M 0 250 q 300 -50 600 0 q 300 -60 1000 -10 V 140 q -400 -40 -800 20 q -400 -40 -800 0 Z" fill="#A9AEB8" opacity={0.5} />
-      <path d={ridge(520, 40, 19, 260)} fill="#A6A49C" />
-      {/* the courthouse */}
-      <g transform="translate(400 160)">
-        <path d="M 0 150 L 400 30 L 800 150 Z" fill="#CFC8B8" stroke="#8E8676" strokeWidth={4} />
-        <path d="M 120 140 L 400 56 L 680 140 Z" fill="#BDB5A3" />
-        <circle cx={400} cy={108} r={26} fill="#E6DFCD" stroke="#8E8676" strokeWidth={4} />
-        <path d="M 386 108 h 28 M 400 92 v 30 M 388 100 l -6 14 h 12 Z M 412 100 l -6 14 h 12 Z" stroke="#6E6656" strokeWidth={2.4} fill="none" />
-        <rect x={-10} y={150} width={820} height={30} fill="#D9D2C2" stroke="#8E8676" strokeWidth={3} />
-        <text x={400} y={172} textAnchor="middle" fontFamily="Georgia, serif" fontSize={20} letterSpacing={10} fill="#6E6656">MARROW COUNTY COURT</text>
-        <rect x={0} y={180} width={800} height={300} fill="#C9C1AF" />
-        {Array.from({ length: 8 }, (_, i) => (
-          <g key={i} transform={`translate(${40 + i * 104} 180)`}>
-            <rect x={0} y={0} width={44} height={300} fill="#E3DCCB" />
-            <rect x={0} y={0} width={14} height={300} fill="#B6AE9C" />
-            {[10, 22, 34].map((x) => (
-              <path key={x} d={`M ${x} 10 V 290`} stroke="#CFC7B4" strokeWidth={2} />
-            ))}
-            <rect x={-6} y={0} width={56} height={14} fill="#D9D2C2" />
-            <rect x={-6} y={286} width={56} height={14} fill="#D9D2C2" />
+      <Sky id={id} stops={[[0, '#3A2C24'], [0.5, '#5A4232'], [1, '#2A1E18']]} />
+      {/* tiled wall */}
+      <rect x={0} y={0} width={W} height={620} fill="#E8DCC4" />
+      {Array.from({ length: 32 }, (_, i) => (
+        <path key={`v${i}`} d={`M ${i * 50} 380 V 620`} stroke="#CDBFA4" strokeWidth={2} />
+      ))}
+      {Array.from({ length: 6 }, (_, i) => (
+        <path key={`h${i}`} d={`M 0 ${380 + i * 48} H ${W}`} stroke="#CDBFA4" strokeWidth={2} />
+      ))}
+      <rect x={0} y={0} width={W} height={380} fill="#B8A57E" />
+      <rect x={0} y={372} width={W} height={12} fill="#8A6A44" />
+      {/* the window: dusk over the hills */}
+      <g transform="translate(110 90)">
+        <rect width={300} height={240} fill="#3E3866" />
+        <rect y={120} width={300} height={120} fill="#E9967A" opacity={0.5} />
+        <path d="M 0 190 Q 80 150 160 180 T 300 170 V 240 H 0 Z" fill="#4A3A5A" />
+        <circle cx={220} cy={60} r={12} fill="#FFF3D0" />
+        <path d="M 150 0 V 240 M 0 120 H 300" stroke="#6B4A2B" strokeWidth={10} />
+        <rect width={300} height={240} fill="none" stroke="#6B4A2B" strokeWidth={16} />
+        <rect x={-20} y={240} width={340} height={18} fill="#8A6A44" />
+        <path d="M 20 236 q 10 -30 24 -6 q 8 -24 20 -2 v 8 h -44 Z" fill="#5B7F3A" />
+        <rect x={22} y={236} width={40} height={20} fill="#B4500F" />
+      </g>
+      {/* the whiteboard */}
+      <g>
+        <rect x={540} y={110} width={520} height={400} rx={6} fill="#9AA0A6" />
+        <rect x={552} y={122} width={496} height={376} fill="#F8F7F2" />
+        <rect x={552} y={122} width={496} height={376} fill="url(#bd4-board)" />
+        <path d={hexPath(800, 330, 52)} fill="#F2C46A" fillOpacity={0.35} stroke="#2E3A5A" strokeWidth={4} />
+        {ring.map(([x, y], i) => (
+          <path key={i} d={hexPath(x, y, 46)} fill={['#86AC5B', '#E9967A', '#8EC3E6', '#86AC5B', '#D4AE58', '#8EC3E6'][i]} fillOpacity={0.35} stroke="#2E3A5A" strokeWidth={3} />
+        ))}
+        {/* Kingsmarket, circled in red and underlined three times */}
+        <ellipse cx={800} cy={330} rx={70} ry={62} fill="none" stroke="#C9302C" strokeWidth={5} transform="rotate(-8 800 330)" />
+        {[0, 1, 2].map((i) => (
+          <path key={i} d={`M ${736 + i * 4} ${408 + i * 10} q 64 ${-6 + i * 3} 130 ${2 - i * 2}`} stroke="#C9302C" strokeWidth={4} fill="none" strokeLinecap="round" />
+        ))}
+        <path d="M 780 330 h 40 M 800 316 v 28" stroke="#2E3A5A" strokeWidth={3} />
+        {/* arrows from two farms */}
+        <path d="M 640 200 Q 700 220 728 286 M 722 274 l 6 12 l 8 -10" stroke="#2E7A4A" strokeWidth={4} fill="none" strokeLinecap="round" />
+        <path d="M 980 460 Q 920 440 880 392 M 892 394 l -12 -2 l 2 12" stroke="#2E7A4A" strokeWidth={4} fill="none" strokeLinecap="round" />
+        {/* sticky notes and string */}
+        {[[590, 150, '#F2E36A', -4], [960, 150, '#F7A6B8', 5], [590, 420, '#A6E3F7', 3], [990, 300, '#F2E36A', -6]].map(([x, y, c, a], i) => (
+          <g key={i} transform={`rotate(${a} ${x} ${y})`}>
+            <rect x={Number(x)} y={Number(y)} width={56} height={52} fill={String(c)} />
+            <path d={`M ${Number(x) + 8} ${Number(y) + 16} h 36 M ${Number(x) + 8} ${Number(y) + 28} h 28 M ${Number(x) + 8} ${Number(y) + 40} h 32`} stroke="#4A4A5A" strokeWidth={2} />
           </g>
         ))}
-        <path d="M 340 480 V 300 Q 400 250 460 300 V 480 Z" fill="#5A4E40" />
-        <path d="M 400 270 V 480" stroke="#3E3428" strokeWidth={3} />
-        {/* the notices board */}
-        <rect x={560} y={330} width={70} height={90} fill="#7A5A3A" />
-        {[[566, 338, '#F4EDE1'], [598, 342, '#F2C94C'], [570, 378, '#FFFFFF'], [600, 380, '#E46A1E']].map(([x, y, c], i) => (
-          <rect key={i} x={Number(x)} y={Number(y)} width={24} height={30} fill={String(c)} transform={`rotate(${i % 2 ? 4 : -3} ${x} ${y})`} />
+        <path d="M 618 176 L 800 330 L 988 176 M 800 330 L 1018 326" stroke="#C9302C" strokeWidth={1.6} fill="none" opacity={0.7} />
+        <rect x={600} y={498} width={400} height={12} rx={3} fill="#7A8086" />
+        <rect x={660} y={490} width={40} height={8} rx={3} fill="#2E3A5A" />
+        <rect x={720} y={490} width={40} height={8} rx={3} fill="#C9302C" />
+      </g>
+      <defs>
+        <linearGradient id="bd4-board" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stopColor="#FFFFFF" stopOpacity={0.6} />
+          <stop offset="0.4" stopColor="#FFFFFF" stopOpacity={0} />
+          <stop offset="1" stopColor="#B8B0A0" stopOpacity={0.25} />
+        </linearGradient>
+      </defs>
+      {/* shelves with jars */}
+      <g transform="translate(1160 120)">
+        {[0, 1].map((row) => (
+          <g key={row} transform={`translate(0 ${row * 120})`}>
+            <rect x={0} y={90} width={330} height={14} fill="#8A6238" />
+            {Array.from({ length: 6 }, (_, i) => {
+              const h = 50 + r() * 30
+              return (
+                <g key={i} transform={`translate(${14 + i * 52} ${90 - h})`}>
+                  <rect width={40} height={h} rx={6} fill={['#D4AE58', '#A63F55', '#86AC5B', '#E46A1E', '#F4EDE1', '#6E7C4B'][(i + row) % 6]} opacity={0.85} />
+                  <rect x={-2} y={-8} width={44} height={10} rx={2} fill="#6B4A26" />
+                  <rect x={8} y={h * 0.35} width={24} height={14} fill="#F8F2E4" />
+                </g>
+              )
+            })}
+          </g>
         ))}
       </g>
-      {/* steps */}
-      {Array.from({ length: 7 }, (_, i) => (
-        <rect key={i} x={340 - i * 30} y={640 + i * 22} width={920 + i * 60} height={22} fill={i % 2 ? '#BDB6A6' : '#CBC4B4'} />
+      {/* the pendant lamp and its pool of light */}
+      <path d="M 800 0 V 40" stroke="#2A1E18" strokeWidth={4} />
+      <path d="M 750 70 Q 800 20 850 70 Z" fill="#2E3A3A" />
+      <ellipse cx={800} cy={72} rx={18} ry={6} fill="#FFF3D0" />
+      <Glow id={id} cx={800} cy={300} r={720} color="#FFD98A" opacity={0.35} />
+      {/* the table edge in the foreground: mugs, papers, a pen */}
+      <path d="M 0 640 H 1600 V 900 H 0 Z" fill="#6E4A2E" />
+      <path d="M 0 640 H 1600 V 664 H 0 Z" fill="#8A6238" />
+      {Array.from({ length: 10 }, (_, i) => (
+        <path key={i} d={`M 0 ${690 + i * 22} Q 800 ${680 + i * 24} 1600 ${694 + i * 21}`} stroke="#5E3E24" strokeWidth={2} fill="none" opacity={0.6} />
       ))}
-      <path d="M 0 794 H 1600 V 900 H 0 Z" fill="#9E9A90" />
-      {/* lamp posts */}
-      {[260, 1340].map((x) => (
-        <g key={x} transform={`translate(${x} 0)`}>
-          <path d="M 0 800 V 470" stroke="#2E3036" strokeWidth={10} />
-          <path d="M -24 800 h 48" stroke="#2E3036" strokeWidth={16} />
-          <path d="M -22 470 L 22 470 L 14 420 L -14 420 Z" fill="#F4E6B8" stroke="#2E3036" strokeWidth={5} />
-          <path d="M -18 420 L 0 400 L 18 420" fill="#2E3036" />
-        </g>
-      ))}
-      {/* pigeons */}
-      {[[700, 650], [760, 652], [1060, 696]].map(([x, y], i) => (
-        <g key={i} transform={`translate(${x} ${y})`}>
-          <ellipse cx={0} cy={0} rx={12} ry={8} fill="#6E7282" />
-          <circle cx={10} cy={-6} r={5} fill="#5A5E6E" />
-          <path d="M 15 -6 l 5 1" stroke="#C99A61" strokeWidth={2} />
-        </g>
-      ))}
+      <g transform="rotate(-6 700 690)">
+        <rect x={620} y={660} width={180} height={120} fill="#F8F2E4" />
+        <path d="M 640 690 h 120 M 640 712 h 90 M 640 734 h 110" stroke="#8A7A6A" strokeWidth={3} />
+      </g>
+      <g transform="translate(980 640)">
+        <rect x={0} y={0} width={60} height={70} rx={8} fill="#F4EDE1" />
+        <path d="M 60 18 q 26 4 0 36" stroke="#F4EDE1" strokeWidth={10} fill="none" />
+        <ellipse cx={30} cy={4} rx={28} ry={6} fill="#5A3A24" />
+        <path d="M 22 -10 q 6 -16 0 -30 M 36 -12 q 6 -14 0 -26" stroke="#FFFFFF" strokeWidth={3} fill="none" opacity={0.5} />
+      </g>
     </>
   )
 }
@@ -494,6 +553,28 @@ export default function Backdrop({ chapterId }: { chapterId?: string }) {
   return (
     <svg className="scene-backdrop" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
       <Paint />
+      {/* Print finish over every painting: paper grain, and halftone dots that shade the top corners. */}
+      <defs>
+        <filter id="bd-grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={2} stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="table" tableValues="0 0.1" />
+          </feComponentTransfer>
+        </filter>
+        <pattern id="bd-dots" width={10} height={10} patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+          <circle cx={5} cy={5} r={2} fill="#1a100a" />
+        </pattern>
+        <radialGradient id="bd-dot-fade" cx="0.5" cy="0.55" r="0.75">
+          <stop offset="0.55" stopColor="#000" />
+          <stop offset="1" stopColor="#fff" />
+        </radialGradient>
+        <mask id="bd-dot-mask">
+          <rect width={W} height={H} fill="url(#bd-dot-fade)" />
+        </mask>
+      </defs>
+      <rect width={W} height={H} fill="url(#bd-dots)" mask="url(#bd-dot-mask)" opacity={0.16} />
+      <rect width={W} height={H} filter="url(#bd-grain)" />
     </svg>
   )
 }

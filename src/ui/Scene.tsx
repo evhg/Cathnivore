@@ -14,14 +14,24 @@ import { moodOf, sidesFor, type Side } from './sceneStaging'
 // A new face on a side wipes in like a fresh panel; each line sets the speaker's pose (a head tilt and a
 // lean read from the line). Tap the caption or "Next" for the next line; earlier lines stay as a short
 // dimmed backlog. "Continue" is always available and leaves the scene (it doubles as skip).
-// Cath dresses for each chapter's place: the farm, a dusk lambing shed, market day, town, the harbour, the hall.
+// Cath dresses for each chapter's place: the farm, a dusk lambing shed, market day, home, the harbour, the hall.
 const OUTFIT: Record<string, CathOutfit> = {
   'fresh-meat': 'field',
   'word-of-mouth': 'wax',
   'growing-season': 'market',
-  'the-plan': 'trench',
+  'the-plan': 'pinny',
   'friends-in-low-places': 'trench',
   kingsmarket: 'gown',
+}
+
+// A comic location caption per chapter, top left, like the first panel of a page.
+const PLACE: Record<string, string> = {
+  'fresh-meat': 'Brindle Hills. Mara’s gate.',
+  'word-of-mouth': 'Sol’s farm. On air at dusk.',
+  'growing-season': 'Oakvale. Saturday market.',
+  'the-plan': 'Cath’s kitchen, after dark.',
+  'friends-in-low-places': 'Saltmarsh harbour. After dark.',
+  kingsmarket: 'Kingsmarket. The great hall.',
 }
 
 function Speaker({ who, expression, chapterId }: { who: string; expression?: CathExpression; chapterId?: string }) {
@@ -62,6 +72,7 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
   return (
     <main className={`scene scene-gn${chapterId ? ` scene-bg-${chapterId}` : ''}`}>
       <Backdrop chapterId={chapterId} />
+      {chapterId && PLACE[chapterId] && <p className="scene-place">{PLACE[chapterId]}</p>}
       <div className="scene-stage-area">
         {(['left', 'right'] as const).map((s) => {
           const who = stage[s]
@@ -73,6 +84,7 @@ export default function Scene({ scene, onContinue, chapterId }: { scene: SceneDa
               className={`scene-fig scene-fig-${s} ${speaking ? 'is-speaking' : 'is-listening'} mood-${who.mood ?? 'calm'}`}
               aria-hidden={speaking ? undefined : true}
             >
+              {speaking && who.mood === 'delighted' && <span className="scene-burst" key={shown} />}
               <Speaker who={who.who} expression={who.mood} chapterId={chapterId} />
             </div>
           )
