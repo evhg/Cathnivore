@@ -72,12 +72,37 @@ export function isOpen(data: SaveData, id: UnlockId, sandbox = false): boolean {
   return !u || isUnlocked(data, u.level);
 }
 
-/** First run of the table on this save: an old save (any stars) counts every open card as seen. Returns true if `data` changed. */
-export function initUnlocks(data: SaveData): boolean {
+/** What a field card needs to know about a level: its id and its twists. */
+export interface FieldInfo {
+  id: number;
+  twists?: readonly string[];
+}
+
+/** First run of the table on this save: an old save (any stars) counts every open card as seen, and every field
+ * card for a field it has already won (it has met that twist, or merged). Returns true if `data` changed. */
+export function initUnlocks(data: SaveData, levels: readonly FieldInfo[] = [], heirloomFrom = Infinity): boolean {
   if (data.tips[INIT]) return false;
   data.tips[INIT] = true;
-  if (Object.keys(data.stars).length > 0) for (const u of UNLOCKS) if (isUnlocked(data, u.level)) data.tips[key(u.id)] = true;
+  if (Object.keys(data.stars).length > 0) {
+    for (const u of UNLOCKS) if (isUnlocked(data, u.level)) data.tips[key(u.id)] = true;
+    for (const lv of levels) if (data.stars[String(lv.id)]) for (const c of fieldCards(data, lv, heirloomFrom)) data.tips[`unlock:${c}`] = true;
+  }
   return true;
+}
+
+// ---- Field cards: systems introduced inside a field, the first time they matter ----
+// A twist (night, rain, a tight budget...) gets one card the first time a field has it; Heirloom forging gets
+// one at the first field where towers can be forged. Seen flags share the `unlock:` prefix in `tips`.
+
+/** The field cards this level would show and the player hasn't seen yet, twists first. */
+export function fieldCards(data: SaveData, level: FieldInfo, heirloomFrom: number, sandbox = false): string[] {
+  if (sandbox) return [];
+  const ids = [...(level.twists ?? []).map((t) => `twist:${t}`), ...(level.id >= heirloomFrom ? ["heirloom"] : [])];
+  return ids.filter((id) => !data.tips[`unlock:${id}`]);
+}
+
+export function markFieldCardSeen(data: SaveData, id: string): void {
+  data.tips[`unlock:${id}`] = true;
 }
 
 /** The next introduction card to show, if any: open and not yet seen. */

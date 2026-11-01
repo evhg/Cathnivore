@@ -729,6 +729,23 @@ test.describe('Hedgerow', () => {
     await expect(page.locator('#dlg-unlock')).not.toBeVisible()
   })
 
+  test('Plan item 3: the first field with a twist stops for one card, once', async ({ page }) => {
+    await page.goto(HEDGEROW_2D)
+    await page.evaluate(() =>
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { '1': 3, '2': 3, '3': 3 }, seenBefore: { '4': true }, seen: {}, tips: { 'unlock:init': true, 'unlock:almanac': true, 'unlock:kit': true, 'unlock:daily': true }, bank: {} })),
+    )
+    await page.reload()
+    await page.locator('button.level[data-level="4"]').click()
+    await expect(page.locator('#dlg-unlock')).toBeVisible()
+    await expect(page.locator('#unlock-eyebrow')).toHaveText('New on this field')
+    await expect(page.locator('#unlock-title')).toHaveText('Crowds')
+    await assertNoSeriousIssues(page)
+    await page.locator('#unlock-ok').click()
+    await expect(page.locator('#dlg-unlock')).not.toBeVisible()
+    const seen = await page.evaluate(() => JSON.parse(localStorage.getItem('hedgerow:v1')!).tips['unlock:twist:crowd'])
+    expect(seen).toBe(true)
+  })
+
   test('Hedgerow 2 M1: the story moves on one tap per line', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
     await page.locator('button.level[data-level="1"]').click()

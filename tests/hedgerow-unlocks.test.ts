@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { UNLOCKS, initUnlocks, isOpen, markUnlockSeen, openActs, pendingUnlock } from '../games/hedgerow/src/unlocks'
+import { UNLOCKS, fieldCards, initUnlocks, isOpen, markFieldCardSeen, markUnlockSeen, openActs, pendingUnlock } from '../games/hedgerow/src/unlocks'
+import { MEGA_FIRST_LEVEL } from '../games/hedgerow/src/engine'
 import { emptySave } from '../games/hedgerow/src/store'
 import { LEVELS } from '../games/hedgerow/src/levels'
 
@@ -57,5 +58,35 @@ describe('Hedgerow progressive unlocks (plan item 3)', () => {
     expect(openActs(cleared(9), 10)).toBe(1)
     expect(openActs(cleared(10), 10)).toBe(2)
     expect(openActs(cleared(100), 10)).toBe(10)
+  })
+})
+
+describe('Hedgerow field cards (plan item 3)', () => {
+  const firstTwist = LEVELS.find((l) => l.twists?.length)!
+  it('a twist gets one card the first time a field has it, and never again', () => {
+    const d = emptySave()
+    initUnlocks(d, LEVELS, MEGA_FIRST_LEVEL)
+    const ids = fieldCards(d, firstTwist, MEGA_FIRST_LEVEL)
+    expect(ids).toEqual(firstTwist.twists!.map((t) => `twist:${t}`))
+    for (const id of ids) markFieldCardSeen(d, id)
+    expect(fieldCards(d, firstTwist, MEGA_FIRST_LEVEL)).toEqual([])
+    const again = LEVELS.find((l) => l.id > firstTwist.id && l.twists?.[0] === firstTwist.twists![0])
+    if (again) expect(fieldCards(d, again, MEGA_FIRST_LEVEL)).not.toContain(`twist:${firstTwist.twists![0]}`)
+  })
+  it('Heirloom forging is introduced at its first field, not before', () => {
+    const d = emptySave()
+    expect(fieldCards(d, { id: MEGA_FIRST_LEVEL - 1 }, MEGA_FIRST_LEVEL)).toEqual([])
+    expect(fieldCards(d, { id: MEGA_FIRST_LEVEL }, MEGA_FIRST_LEVEL)).toEqual(['heirloom'])
+  })
+  it('levels 1 to 3 teach without twist cards, and sandbox shows none', () => {
+    const d = emptySave()
+    for (const l of LEVELS.slice(0, 3)) expect(fieldCards(d, l, MEGA_FIRST_LEVEL)).toEqual([])
+    expect(fieldCards(d, firstTwist, MEGA_FIRST_LEVEL, true)).toEqual([])
+  })
+  it('an old save counts cards for fields it has already won as seen', () => {
+    const d = cleared(20)
+    initUnlocks(d, LEVELS, MEGA_FIRST_LEVEL)
+    expect(fieldCards(d, firstTwist, MEGA_FIRST_LEVEL)).toEqual([])
+    expect(fieldCards(d, { id: MEGA_FIRST_LEVEL }, MEGA_FIRST_LEVEL)).toEqual([])
   })
 })

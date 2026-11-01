@@ -40,6 +40,8 @@ import {
   TOWER_VS,
   TWISTS,
   twistRule,
+  MEGA_FIRST_LEVEL,
+  type TwistId,
   bookRound,
   inherentProps,
   canCallEarly,
@@ -103,7 +105,7 @@ import {
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf } from "./fleet";
 import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
-import { initUnlocks, isOpen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
+import { fieldCards, initUnlocks, isOpen, markFieldCardSeen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
 import { LEVELS } from "./levels";
 import { Renderer } from "./render";
 import type { Renderer3D } from "./render3d";
@@ -266,6 +268,7 @@ const ui = {
   dlgResult: $<HTMLDialogElement>("dlg-result"),
   resultCath: $<HTMLElement>("result-cath"),
   resultEyebrow: $<HTMLElement>("result-eyebrow"),
+  dlgUnlock: $<HTMLDialogElement>("dlg-unlock"),
   resultTitle: $<HTMLElement>("result-title"),
   resultStars: $<HTMLElement>("result-stars"),
   resultStats: $<HTMLElement>("result-stats"),
@@ -516,7 +519,7 @@ function renderContinue(): void {
 /** Plan item 3: hide systems a new player hasn't reached yet, and introduce the next one with a card. */
 function applyUnlocks(): void {
   const sandbox = new URLSearchParams(location.search).has("sandbox");
-  if (initUnlocks(data)) save(data);
+  if (initUnlocks(data, LEVELS, MEGA_FIRST_LEVEL)) save(data);
   const show = (id: string, open: boolean): void => {
     const el = document.getElementById(id);
     if (el) el.hidden = !open;
@@ -533,6 +536,7 @@ function applyUnlocks(): void {
   const dlg = document.getElementById("dlg-unlock") as HTMLDialogElement | null;
   if (!next || !dlg || dlg.open || document.querySelector("dialog[open]")) return;
   $<HTMLElement>("unlock-face").innerHTML = cath("delighted");
+  $<HTMLElement>("unlock-eyebrow").textContent = "New on the map";
   $<HTMLElement>("unlock-icon").textContent = next.icon;
   $<HTMLElement>("unlock-title").textContent = next.title;
   $<HTMLElement>("unlock-body").textContent = next.body;
@@ -965,9 +969,52 @@ function hideBubble(): void {
   bubbleTip = "";
 }
 
+/** Plan item 3: the first field with a twist (or with Heirloom forging) stops for one card from Cath. */
+const TWIST_ICON: Record<TwistId, string> = { night: "🌙", rain: "🌧", wind: "🌬", fog: "🌫", drought: "☀", air: "🪂", market: "🧺", tight: "🪙", crowd: "👥", rush: "⏩", fast: "💨", armoured: "🛡", fortified: "🏰", protected: "🌼", nocath: "🧺", noscarecrow: "🚫" };
+
+function fieldCardText(lv: Level, id: string): { icon: string; title: string; body: string } {
+  if (id === "heirloom")
+    return {
+      icon: "👑",
+      title: "Heirlooms",
+      body: "Two crowned towers standing side by side can be forged into one Heirloom, the strongest thing on a field. Only one stands per field. Tap a crowned tower to see what it would become.",
+    };
+  const t = id.slice("twist:".length) as TwistId;
+  return { icon: TWIST_ICON[t] ?? "⚑", title: TWISTS[t].name, body: `${twistRule(lv, t)} It's written under the field's name on the map, so you'll see it coming next time.` };
+}
+
+function showFieldCards(lv: Level, ids: string[]): void {
+  const dlg = document.getElementById("dlg-unlock") as HTMLDialogElement | null;
+  if (!dlg || !ids.length || game?.level.id !== lv.id) return;
+  // Wait for the story or another sheet to close first.
+  if (dlg.open || document.querySelector("dialog[open]")) {
+    window.setTimeout(() => showFieldCards(lv, ids), 500);
+    return;
+  }
+  const [id, ...rest] = ids as [string, ...string[]];
+  const c = fieldCardText(lv, id);
+  $<HTMLElement>("unlock-face").innerHTML = cath(id === "heirloom" ? "delighted" : "determined");
+  $<HTMLElement>("unlock-eyebrow").textContent = "New on this field";
+  $<HTMLElement>("unlock-icon").textContent = c.icon;
+  $<HTMLElement>("unlock-title").textContent = c.title;
+  $<HTMLElement>("unlock-body").textContent = c.body;
+  dlg.dataset.unlock = id;
+  $<HTMLButtonElement>("unlock-ok").onclick = () => {
+    markFieldCardSeen(data, id);
+    save(data);
+    dlg.close();
+    if (rest.length) window.setTimeout(() => showFieldCards(lv, rest), 250);
+  };
+  dlg.showModal();
+}
+
 function levelTips(lv: Level): void {
-  // The level's twist, up front: it's what makes this level a different problem.
-  if (lv.twists?.length)
+  // A twist or system met for the first time gets a card; after that, the twist banner up front, because
+  // it's what makes this level a different problem.
+  const story = !lv.endless && dailyDay === null && showRun === null;
+  const cards = story && !player ? fieldCards(data, lv, MEGA_FIRST_LEVEL, SANDBOX) : [];
+  if (cards.length) window.setTimeout(() => showFieldCards(lv, cards), 400);
+  else if (lv.twists?.length)
     window.setTimeout(() => {
       if (game?.level.id !== lv.id) return;
       banner(lv.twists!.map((t) => TWISTS[t].name).join(" · "), lv.twists!.map((t) => twistRule(lv, t)).join(" "), false, "rule");
@@ -2994,7 +3041,7 @@ function frame(now: number): void {
   const g = game;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  if (!paused && !ui.dlgStory.open && !ui.dlgResult.open) {
+  if (!paused && !ui.dlgStory.open && !ui.dlgResult.open && !ui.dlgUnlock.open) {
     if (!player && g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
       // Hold the countdown while the player is choosing something.
       if (!selected && !posting && !aiming) autoLeft -= dt * speed;
