@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-11-01 01:52 session (short):** item 236: Runnel seasonal events (1-21 Apr/Oct, five fixed boards in Practice, exclusive crop in Bea's garden; `events.ts`, test; `?event=spring|autumn` previews). tsc, eslint, css lint, runnel tests pass; shot at P. Next: 237.
 - **2026-11-01 00:51 session (short):** item 235: Orchard daily ladder (`orchardDays` in the save, `recordOrchardDay`, last-6-days line in Cath's pantry, boon names in the share card; test added). tsc, eslint, unit test pass; not shot. Next: 236 (Runnel Bea's seasons).
 - **2026-10-31 23:51 session (short):** pantry sheet buttons now have 8px between them (`.pantry .btn + .btn`); ui-css lint passes. Planned Phase 26 (235-238). Next: 235.
 - **2026-10-31 22:51 session (short):** shot item 234's pantry sheet at P and D (reads well; Plant/Not now buttons nearly touch at P). CI green on a57f7fd. No code changed. Next: plan new whole features (critique shoot); ROADMAP is empty.

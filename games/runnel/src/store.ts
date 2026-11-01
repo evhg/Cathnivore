@@ -41,6 +41,9 @@ export interface SaveData {
   orchardGames?: Record<number, SavedGame>
   /** Bea's picks: board codes saved to replay, newest first (max 8). */
   picks?: string[]
+  /** Seasonal events: board indexes solved per event id, and the ids whose exclusive crop is earned. */
+  eventDone?: Record<string, number[]>
+  eventCrops?: string[]
 }
 
 const KEY = 'runnel:v1'

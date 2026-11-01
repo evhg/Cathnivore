@@ -637,3 +637,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-10-31 21:51: Orchard Heirlooms are pre-taken boons (no new mechanics); Seeds earned only when a run ends; pantry skipped for brand-new players.
 - 2026-10-31 23:51: planned Phase 26 from known leftovers (no critique shoot); pantry button gap fixed.
 - 2026-11-01: 235 ladder lives in Hedgerow's pantry sheet, not the shared Week card (that card is in shared/ and Hedgerow-only data doesn't belong there).
+- 2026-11-01: Runnel events reuse practice seeds (`practice-<size>-<season><yy>-<n>`) so codes and saves need no new game mode; windows are 1-21 Apr and Oct.

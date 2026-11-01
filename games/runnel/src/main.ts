@@ -3,6 +3,7 @@ import '../../../shared/ui/palette.css'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
+import { creditBoard, eventBoardOf, eventCrops, eventOn } from './events'
 import './fonts.css'
 import './tokens.css'
 import './styles.css'
@@ -187,6 +188,16 @@ function finish(): void {
     data.practiceSolved++
     const best = data.bestPractice[size]
     if (best === undefined || game.elapsedMs < best) data.bestPractice[size] = game.elapsedMs
+    const eb = eventBoardOf(game.seed)
+    if (eb) {
+      const done = (data.eventDone ??= {})
+      const c = creditBoard(done[eb.event.id] ?? [], eb.index)
+      done[eb.event.id] = c.done
+      if (c.complete && !(data.eventCrops ??= []).includes(eb.event.id)) {
+        data.eventCrops.push(eb.event.id)
+        ui.toast.textContent = `Bea planted an exclusive ${eb.event.cropName} in your garden!`
+      }
+    }
   }
   save(data)
   board.celebrate()
@@ -430,6 +441,18 @@ function renderGarden(): void {
       })
       return b
     }),
+    ...eventCrops(data.eventCrops ?? []).map((c) => {
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.className = 'plot ripe gold exclusive'
+      b.textContent = c.glyph
+      b.setAttribute('aria-label', c.label)
+      b.addEventListener('click', (e) => {
+        e.preventDefault()
+        note.textContent = c.label
+      })
+      return b
+    }),
   )
 }
 
@@ -580,8 +603,35 @@ function playCode(text: string): boolean {
   return true
 }
 
+/** The seasonal event strip: five limited boards while an event runs (?event=spring|autumn previews one). */
+function renderEvent(): void {
+  const forced = new URLSearchParams(location.search).get('event')
+  const ev = eventOn(forced === 'spring' ? `${today.slice(0, 4)}-04-05` : forced === 'autumn' ? `${today.slice(0, 4)}-10-05` : today)
+  const el = $<HTMLElement>('season-event')
+  el.hidden = mode !== 'practice' || !ev
+  if (!ev) return
+  const done = data.eventDone?.[ev.id] ?? []
+  const title = document.createElement('span')
+  title.className = 'event-title'
+  title.textContent = `${ev.crop} ${ev.name}: solve all 5 for an exclusive ${ev.cropName}${data.eventCrops?.includes(ev.id) ? ' (earned)' : ` (${done.length}/5)`}`
+  el.replaceChildren(
+    title,
+    ...ev.boards.map((b, i) => {
+      const chip = document.createElement('span')
+      chip.className = `pick${done.includes(i) ? ' done' : ''}`
+      const play = document.createElement('button')
+      play.type = 'button'
+      play.textContent = `${i + 1}${done.includes(i) ? ' ✓' : ''} ${b.size}`
+      play.addEventListener('click', () => playCode(b.code))
+      chip.append(play)
+      return chip
+    }),
+  )
+}
+
 /** Bea's picks shelf: saved board codes as chips; tap one to play it, the cross removes it. */
 function renderPicks(): void {
+  renderEvent()
   const picks = data.picks ?? []
   ui.picks.hidden = mode !== 'practice' || picks.length === 0
   ui.picks.replaceChildren(

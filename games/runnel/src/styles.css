@@ -1651,3 +1651,20 @@ body {
   fill: var(--gold);
   pointer-events: none;
 }
+
+/* ---- seasonal event strip ---- */
+.season-event .event-title {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.season-event .pick.done {
+  background: var(--gold);
+}
+
+.garden .plot.exclusive {
+  box-shadow: 0 0 0 2px var(--gold);
+}
