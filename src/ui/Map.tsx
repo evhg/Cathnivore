@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { loadSettings } from '../platform/settings'
+import Portrait from './portraits/Portrait'
 import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
 
 // SPEC 10.1's Settings screen has a "colour-blind patterns" toggle; Stalls are otherwise the one piece
@@ -122,7 +123,7 @@ export function Outlet() {
   return (
     <g className="enemy-piece enemy-outlet">
       {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.4} strokeLinejoin="round" />
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
       <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
       <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -140,7 +141,7 @@ export function Outlet() {
 export function Buyout() {
   return (
     <g className="enemy-piece enemy-buyout">
-      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       <g transform="translate(1,7) rotate(-6)">
         <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -157,8 +158,9 @@ export function Buyout() {
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
-      <circle cx={6} cy={6} r={6} fill="var(--candor)" />
-      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" />
+      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
+      <circle cx={6} cy={6} r={6} fill="var(--candor)" stroke="var(--ink)" strokeWidth={0.7} />
+      <path d="M 3.4,10.4 L 6.2,10.4 L 3.8,12.6 Z" fill="var(--candor)" />
       <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
       <text x={6} y={9} textAnchor="middle" className="doubt-mark">
         ?
@@ -198,6 +200,80 @@ function Stall({ pid, initial, showInitial }: { pid: ProducerId; initial: string
         <text x={7} y={9} textAnchor="middle" className="stall-initial">
           {initial}
         </text>
+      )}
+    </g>
+  )
+}
+
+// Plan item 2: a producer's stall on the board is a pin, not a flag. Their portrait in a disc ringed in
+// their colour, on a short post over the striped awning, so a phone shows whose stall it is at a glance
+// (at least 24 px tall at 390 px wide) and a greyscale board still tells players (faces) from
+// corporations (glossy boxes).
+const STALL_SCALE = 1.75
+export const STALL_SLOT = 27
+const PIN_R = 9.5
+const PIN_Y = -12.5
+function StallPin({ pid, n, clip, showInitial }: { pid: ProducerId; n: number; clip: string; showInitial: boolean }) {
+  const w = 14 * STALL_SCALE
+  const cx = w / 2
+  return (
+    <g className="stall-pin">
+      <path d={`M ${cx} -3 L ${cx} 1`} stroke="var(--ink)" strokeWidth={1.8} strokeLinecap="round" />
+      <clipPath id={clip}>
+        <circle cx={cx} cy={PIN_Y} r={PIN_R} />
+      </clipPath>
+      <circle cx={cx} cy={PIN_Y} r={PIN_R} fill="var(--paper)" />
+      <g clipPath={`url(#${clip})`}>
+        <svg x={cx - PIN_R} y={PIN_Y - PIN_R} width={PIN_R * 2} height={PIN_R * 2} viewBox="24 20 52 52" aria-hidden="true">
+          <Portrait character={pid} size={100} />
+        </svg>
+      </g>
+      <circle cx={cx} cy={PIN_Y} r={PIN_R} fill="none" stroke={`var(--p-${pid})`} strokeWidth={2.6} />
+      <circle cx={cx} cy={PIN_Y} r={PIN_R + 1.5} fill="none" stroke="var(--ink)" strokeWidth={0.9} />
+      <g transform={`translate(0, 1) scale(${STALL_SCALE})`}>
+        <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={showInitial} />
+      </g>
+      {n > 1 && (
+        <g transform={`translate(${w - 13 * 1.35 + 1}, 2) scale(1.35)`}>
+          <PieceCount n={n} />
+        </g>
+      )}
+    </g>
+  )
+}
+
+// Plan item 2: a ring just inside each contested hex shows the balance of the region. The green arc is
+// the producers' share (stalls), the dashed clay arc the corporations' (Outlets, Buyouts, Doubt). It is a
+// full green ring when liberated, and the clay arc turns solid and thick when a Squeeze would cost the
+// region Lost Land (damage above its defence). Dash patterns keep it readable in greyscale.
+function PressureRing({ x, y, ours, theirs, atRisk, liberated }: { x: number; y: number; ours: number; theirs: number; atRisk: boolean; liberated: boolean }) {
+  const total = ours + theirs
+  if (total === 0) return null
+  const share = liberated ? 100 : Math.round((ours / total) * 100)
+  const pts = hexPoints(x, y, HEX_R * GAP_SCALE * 0.9)
+  return (
+    <g className={`pressure-ring${atRisk ? ' at-risk' : ''}${liberated ? ' freed' : ''}`} pointerEvents="none" data-share={share}>
+      {share < 100 && (
+        <polygon
+          points={pts}
+          pathLength={100}
+          fill="none"
+          stroke="var(--clay-deep)"
+          strokeWidth={atRisk ? 5 : 3}
+          strokeDasharray={atRisk ? '5 2.5' : '3 2'}
+          opacity={atRisk ? 0.9 : 0.6}
+        />
+      )}
+      {share > 0 && (
+        <polygon
+          points={pts}
+          pathLength={100}
+          fill="none"
+          stroke="var(--pasture)"
+          strokeWidth={5}
+          strokeDasharray={`${share} ${100 - share}`}
+          strokeLinecap="butt"
+        />
       )}
     </g>
   )
@@ -322,6 +398,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
   const highlighted = new Set(highlight ?? [])
   const targeting = highlighted.size > 0
   const colourBlindPatterns = loadSettings().colourBlindPatterns
+  const uid = useId().replace(/:/g, '')
 
   // Reward choreography (aaa-ui M7): a freshly liberated region gets an anticipation squeeze, a ring and a
   // seed burst; a region that just gained Lost Land flashes and shakes. Tracked by diffing the previous
@@ -362,7 +439,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
   }, [active.length])
 
   return (
-    <svg ref={svgRef} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
+    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
       <RegionTextureDefs />
       {active.map((id) => {
         const def = REGIONS[id]
@@ -425,8 +502,16 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 />
               </g>
             )}
+            <PressureRing
+              x={x}
+              y={y}
+              ours={stalls.reduce((a, [, n]) => a + n, 0)}
+              theirs={r.outlets + r.buyouts + r.doubt}
+              atRisk={!r.liberated && r.outlets + 2 * r.buyouts > stalls.reduce((a, [, n]) => a + n, 0)}
+              liberated={r.liberated}
+            />
             {squeezeTargets.includes(id) && (
-              <g transform={`translate(${x - 30}, ${y - HEX_R * 0.4})`}>
+              <g transform={`translate(${x - 30}, ${y - HEX_R * 0.5})`}>
                 <rect x={0} y={0} width={60} height={16} rx={8} fill="var(--clay-deep)" />
                 <text x={30} y={11} textAnchor="middle" className="badge-text">
                   SQUEEZE
@@ -434,7 +519,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
               </g>
             )}
             {expandTargets.includes(id) && !squeezeTargets.includes(id) && (
-              <g transform={`translate(${x - 28}, ${y - HEX_R * 0.4})`}>
+              <g transform={`translate(${x - 28}, ${y - HEX_R * 0.5})`}>
                 <rect x={0} y={0} width={56} height={16} rx={8} fill="var(--wheat)" />
                 <text x={28} y={11} textAnchor="middle" className="badge-text badge-text-dark">
                   EXPAND
@@ -462,7 +547,7 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 ] as const
               ).filter(([, n]) => n > 0)
               return (
-                <g transform={`translate(${x - kinds.length * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
+                <g transform={`translate(${x - kinds.length * 8 * PIECE_SCALE}, ${y - HEX_R * 0.14}) scale(${PIECE_SCALE})`}>
                   {/* Each piece's own SVG `transform` attribute positions it; the animation class sits on an
                       inner <g>, since a CSS transform would replace the positioning attribute (SVG2). */}
                   {kinds.map(([k, n, icon], i) => (
@@ -483,11 +568,10 @@ export default function Map({ state, highlight, onSelect }: Props) {
 
             {/* Stalls sit along the bottom edge, striped in the producer's colour: one per producer, with a
                 count badge when they hold more than one. */}
-            <g transform={`translate(${x - stalls.length * 9}, ${y + HEX_R * 0.5})`}>
+            <g transform={`translate(${x - (stalls.length * STALL_SLOT) / 2 + 1.5}, ${y + HEX_R * 0.4})`}>
               {stalls.map(([pid, n], slot) => (
-                <g key={pid} transform={`translate(${slot * 18}, 0)`} data-piece="stall" data-count={n}>
-                  <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
-                  {n > 1 && <PieceCount n={n} />}
+                <g key={pid} transform={`translate(${slot * STALL_SLOT}, 0)`} data-piece="stall" data-count={n}>
+                  <StallPin pid={pid} n={n} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} />
                 </g>
               ))}
             </g>
@@ -516,7 +600,8 @@ export default function Map({ state, highlight, onSelect }: Props) {
             )}
             {r.liberated && (
               <g className="coop-stamp">
-                <CoopMarker x={x + HEX_R * 0.55} y={y + HEX_R * 0.55} />
+                {/* Liberated means no corporate pieces, so the seal takes their place at the centre. */}
+                <CoopMarker x={x} y={y - HEX_R * 0.06} />
               </g>
             )}
           </g>

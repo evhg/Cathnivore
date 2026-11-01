@@ -27,7 +27,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The perf gate passes on the phone tier.
 - **Size:** 4
 
-## 2. [ ] Cathnivore: a board that scales
+## 2. [x] Cathnivore: a board that scales *(done 2026-11-01, a6d7d23..HEAD: stacked pieces with count badges, portrait stall pins 28+ px at 390, pressure rings, e2e/board-scales.spec.ts at P and D, greyscale shots)*
 - **Why:** the board is beautiful at round 1 and noise by round 5. Outlets spill across hex borders, the players' stalls are tiny flags, and the end board is a pile of orange.
 - **Build (in `Map.tsx`):**
   - Merge a region's outlets into one stacked corporate tower with a count badge, and its Doubt into one numbered token.
