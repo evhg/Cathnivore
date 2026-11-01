@@ -641,3 +641,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01: 237 stores per-deck bests as kept `deckbest:<mods>:<mult>` flags (no new save field); score is the multiplier.
 - 2026-11-01 03:51: 238 cosmetic is a hair pin (accessory option `pin`), not an outfit; earned by winning during that week's event, stored in `cath:pins`/`cath:pin`.
 - 2026-11-01 05:30: release gate 5 failed on a Runnel site spec picking a non-turnable cell; spec now taps the first cell the daily solver says needs taps.
+- 2026-11-01: release gates passed but live smoke test timed out on #hud-taps; script reverted main to efeeb5b. Investigate smoke step next session.

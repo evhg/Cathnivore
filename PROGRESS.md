@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **2026-11-01 05:51 session (release attempt):** gates 1-8 passed; `main` moved to `613c29a`, but the live smoke test timed out on `#hud-taps` showing 1 after the first tap (not a cert error), so the script reverted `main` to `efeeb5b` (tree identical, revert commit `3ad6674`). Planned Phase 27 (239-242). Next: reproduce the smoke step locally (`scripts/release.ts` liveSmokeTest; is the first tap hitting the new market/event UI?), fix, then rerun `npm run release`.
 - **2026-11-01 04:51 session (release attempt):** `npm run release` passed gates 1-4, failed gate 5 on one stale Runnel site spec (first non-stone cell isn't always turnable); fixed in `e2e-site/site.spec.ts`, passes alone. Not rerun (gates ~40 min). Next: `npm run release` first thing (background, poll log), then plan new whole features.
 - **2026-11-01 03:51 session:** fixed red CI (any in heirlooms test). Item 238: market pins (`shared/cath/pins.ts`; a win during a Marrow event earns its pin, Cath wears it in Cathnivore, Runnel, CATHODE loading; test; pins shot). Phase 26 done; `npm run check` passes. Next: plan new whole features (critique shoot).
 - **2026-11-01 02:52 session (short):** item 237: best score per Second Broadcast deck (`deckbest:` flags survive laps, `deckBests`, Best line on the Case Board; test). tsc, eslint, unit test pass; not shot. Next: 238.
