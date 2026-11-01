@@ -57,8 +57,6 @@ export function drawPlan(input: PlanInput): SVGSVGElement {
   for (const r of p.solids) rect(r, "", solids);
   if (p.flyover) {
     rect(p.flyover, "dmap-flyover", map);
-    const t = svg("text", { x: f(p.flyover.x1 - 1), y: f(p.flyover.z0 + 2.6), "font-size": 2.1, "text-anchor": "end", class: "dmap-t dmap-t-fly" }, map);
-    t.textContent = "Flyover overhead";
   }
   if (p.ground.some((g) => g.kind === "floor")) rect(p.bounds, "dmap-walls", map);
   for (const w of p.wings) rect(w, "dmap-wing", map);
@@ -116,6 +114,8 @@ export function openDistrictMap(
   const plan = drawPlan({ district: here, at, objective, jobsDone, colliders });
   plan.setAttribute("aria-label", `Plan of ${info.name}${objective ? ", objective ringed" : ""}`);
   sheet.append(plan);
+  // On a short screen the sheet is taller than the board: start it scrolled to Cath.
+  requestAnimationFrame(() => plan.querySelector(".dmap-cath")?.scrollIntoView({ block: "center", inline: "nearest" }));
 
   const notes = el("div", "dmap-notes", body);
   const keyCard = el("div", "dmap-card", notes);

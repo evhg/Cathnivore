@@ -1991,12 +1991,16 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .dmap-key .dmap-k-solid::before { background: var(--card-ink); border-radius: 0; }
 .dmap-leads { margin: 0; padding: 0; list-style: none; }
 .dmap-leads li { display: flex; gap: .5em; align-items: baseline; padding: calc(var(--u) * 3) 0; border-bottom: 1px solid var(--card-rule); color: var(--card-ink); }
-.dmap-leads li b { color: var(--card-ink-2); font-weight: 700; }
+.dmap-leads li b { color: var(--card-ink-2); font-weight: 700; white-space: nowrap; }
 .dmap-leads .dmap-lead-state { margin-left: auto; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--card-ink-2); }
 .dmap-leads .is-open .dmap-lead-state { color: var(--stamp-red); }
 .dmap-leads .is-locked { opacity: .6; }
 .dmap-taxi .btn { display: block; width: 100%; margin-top: calc(var(--u) * 6); color: var(--card-ink); }
 .dmap-notes > .btn-primary { align-self: flex-start; color: var(--print-paper); text-shadow: 0 1px 2px rgb(var(--black-rgb) / .8); }
+/* A phone held sideways: the sheet is sized by width and scrolls on the board (it opens on Cath). */
+@media (max-height: 560px) {
+  .dmap-svg { height: auto; min-height: 0; width: min(56vw, 560px); } /* px-ok: sheet cap */
+}
 @media (max-width: 760px) {
   .dmap-body { grid-template-columns: minmax(0, 1fr); }
   .dmap-sheet { transform: none; }

@@ -16,7 +16,7 @@ export interface Rect {
   z1: number;
 }
 
-export type LabelKind = "zone" | "sub" | "room" | "landmark" | "goal" | "cath" | "exit" | "wing";
+export type LabelKind = "zone" | "sub" | "room" | "landmark" | "goal" | "cath" | "exit" | "wing" | "fly";
 
 export interface PlanLabel {
   kind: LabelKind;
@@ -55,8 +55,8 @@ export interface Plan {
 }
 
 /** Rough advance width per character, as a share of the font size (condensed caps; serif italic). */
-const ADVANCE: Record<LabelKind, number> = { zone: 0.62, sub: 0.5, room: 0.62, landmark: 0.56, goal: 0.66, cath: 0.66, exit: 0.6, wing: 0.62 };
-export const LABEL_SIZE: Record<LabelKind, number> = { zone: 2.7, sub: 2.3, room: 3, landmark: 2.4, goal: 2.5, cath: 2.5, exit: 2.3, wing: 2.3 };
+const ADVANCE: Record<LabelKind, number> = { zone: 0.62, sub: 0.5, room: 0.62, landmark: 0.56, goal: 0.66, cath: 0.66, exit: 0.6, wing: 0.62, fly: 0.56 };
+export const LABEL_SIZE: Record<LabelKind, number> = { zone: 2.7, sub: 2.3, room: 3, landmark: 2.4, goal: 2.5, cath: 2.5, exit: 2.3, wing: 2.3, fly: 2.1 };
 
 export function labelWidth(kind: LabelKind, text: string, size = LABEL_SIZE[kind]): number {
   return text.length * size * ADVANCE[kind];
@@ -205,6 +205,8 @@ export function mapPlan({ district, at, objective, jobsDone, colliders }: PlanIn
   if (market) {
     ground = marketGround(bounds);
     flyover = { x0: sheet.x0, z0: -1, x1: sheet.x1, z1: 13 };
+    const fw = labelWidth("fly", "Flyover overhead");
+    place.fixed("fly", "Flyover overhead", sheet.x1 - fw - 1, -1 + 2.8);
     for (const zone of ZONES) {
       const z0 = Math.max(bounds.z0, zone.zMin);
       if (zone.zMin > bounds.z0) dividers.push(zone.zMin);
