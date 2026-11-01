@@ -344,6 +344,47 @@ test.describe('CATHODE takedowns', () => {
     await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.enemies.filter((e) => e.alive).every((e) => !e.entering && e.lift === 0), null, { timeout: 200_000 })
   })
 
+  // Plan item 7: the districts' lead jobs stage their alarms with scripted entrances too. She walks onto the
+  // objective (the register, the strongbox) and the alarm's two entrances fire.
+  for (const [district, want] of [['clinic', ['breach', 'rappel']], ['plaza', ['rappel', 'van']]] as const) {
+    test(`plan item 7: the ${district} alarm comes in by ${want.join(' and ')}`, async ({ page, hasTouch }) => {
+      test.skip(hasTouch, 'one layout is enough: the script is the same on a phone')
+      test.setTimeout(400_000)
+      await page.setViewportSize({ width: 1280, height: 720 })
+      type V3 = { x: number; y: number; z: number; copy(o: V3): void }
+      type C = {
+        stats: { frames: number }
+        progress: { jobsDone: string[]; save(): void }
+        player: { pos: V3 }
+        lead?: () => { stage: number; target: V3 | null } | null
+        entrances?: { kind: string; role: string }[]
+      }
+      await page.goto('/nightshift/')
+      await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+      // The tutorial must be over for the district's lead job to run: boot the street once, mark the first job
+      // done and save (a real save from the game itself).
+      await page.goto('/nightshift/?play&class=ghost&rs=0.5')
+      await page.waitForFunction(() => ((window as unknown as { cathode?: C }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
+      await page.evaluate(() => {
+        const c = (window as unknown as { cathode: C }).cathode
+        c.progress.jobsDone.push('fishMarket')
+        c.progress.save()
+      })
+      await page.goto(`/nightshift/?play&class=ghost&rs=0.5&district=${district}`)
+      await page.waitForFunction(() => {
+        const c = (window as unknown as { cathode?: C }).cathode
+        return !!c && c.stats.frames >= 3 && !!c.lead?.()?.target
+      }, null, { timeout: 200_000 })
+      await page.evaluate(() => {
+        const c = (window as unknown as { cathode: C }).cathode
+        c.player.pos.copy(c.lead!()!.target!)
+      })
+      await page.waitForFunction(() => ((window as unknown as { cathode: C }).cathode.entrances ?? []).length >= 2, null, { timeout: 200_000 })
+      const kinds = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.entrances!.map((e) => e.kind).sort())
+      expect(kinds).toEqual([...want])
+    })
+  }
+
   test('touch: a tap on the world chip is the takedown', async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'the chip is a button on touch only')
     test.setTimeout(400_000)

@@ -232,6 +232,8 @@ export interface Session {
   zoom?: (on: boolean) => boolean;
   /** Plan item 7: every scripted entrance that fired (breach, rappel, van), for e2e. */
   entrances?: readonly import("./entrance").EntranceEvent[];
+  /** Plan item 7: the district's lead job while it runs (e2e walks her to its target to fire the alarm). */
+  lead?: () => { stage: number; target: THREE.Vector3 | null } | null;
   probeEnemy?: () => { enemy: number; street: number; ratio: number; px: number; heightPx: number; box: { x: number; y: number; w: number; h: number } } | null;
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
   silhouetteThumb?: () => string | null;
@@ -5393,6 +5395,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return zoomOn;
   };
   s.entrances = entrances.log;
+  s.lead = () => {
+    const l = vaneLead ?? pellLead ?? boardLead ?? vaultLead;
+    return l && !l.done ? l : null;
+  };
   s.probeEnemy = () => {
     const g = probeGuard;
     if (!g) return null;
