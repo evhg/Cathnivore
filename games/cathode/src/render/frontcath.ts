@@ -358,6 +358,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
     ].map(([r, y]) => new THREE.Vector2(r!, y!));
     // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
     const collar = new THREE.LatheGeometry(pts, seg(22), open / 2, Math.PI * 2 - open);
+    {
+      // Plan item 9: a collar that stands tallest at the back and falls toward the front, its stand rolling out
+      // over the top (it read as a uniform funnel round her neck), so her jaw and hair show at the sides.
+      const p = collar.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const z = p.getZ(i);
+        const r = Math.hypot(x, z) || 1;
+        const front = Math.max(0, z / r);
+        const up = (y - 0.495) / 0.12;
+        const ny = 0.495 + (y - 0.495) * (1 - 0.32 * front * front);
+        const roll = 1 + 0.035 * up * up * (1 - front);
+        p.setXYZ(i, x * roll, ny, z * roll);
+      }
+    }
     collar.scale(1, 1, 0.82);
     collar.computeVertexNormals();
     // Its own material: the collar is seen from inside too (double-sided), the coat is not (no shadow acne).
