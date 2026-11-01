@@ -587,64 +587,114 @@ export function buildFrontCath(phone: boolean): FrontCath {
   add(skull, faceMat, headPivot);
   // Hair: a glossy shell over the crown, swept back from a centre parting, full at the sides over the tops of the
   // ears, gathered at the nape into a low twisted knot (CATHODE's work look).
-  const cap = new THREE.SphereGeometry(1, seg(96), seg(18), 0, Math.PI * 2, 0, Math.PI * 0.7);
+  // Plan item 9: the cap's rows are laid out between the crown and a hairline that depends on the azimuth (high at the
+  // forehead with a soft peak at the centre parting, sweeping down past the temples, low over the ears and the nape),
+  // so its front edge is one smooth curve instead of a deformed sphere's saw-tooth.
+  const cap = new THREE.SphereGeometry(1, seg(96), seg(22), 0, Math.PI * 2, 0, 1);
   {
     const p = cap.attributes.position as THREE.BufferAttribute;
+    const reach = (az: number) => {
+      // az 0 = her front (+z). Front: 0.37π (a touch lower at the parting), temples 0.5π, sides and back 0.8π.
+      const f = Math.max(0, Math.cos(az));
+      const peak = Math.exp(-(az * az) / 0.02) * 0.025;
+      return Math.PI * (0.8 - 0.43 * Math.pow(f, 3.2)) + peak * Math.PI;
+    };
     for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i);
-      const y = p.getY(i);
-      const z = p.getZ(i);
-      // The parting: a shallow groove down the middle at the front; volume at the crown.
-      const part = Math.max(0, 1 - Math.abs(x) / 0.12) * Math.max(0, z) * Math.max(0, y) * 0.05;
-      const crown = 1 + Math.max(0, y) * Math.max(0, -z) * 0.08;
-      // Combed ridges running front to back (around the azimuth): they catch the back light as strands do.
-      const az = Math.atan2(x, z);
-      const ridge = 1 + 0.018 * Math.sin(az * 38) * (0.4 + 0.6 * Math.max(0, y));
-      p.setXYZ(i, x * crown * ridge, y * crown - part, z * crown * ridge);
+      const x0 = p.getX(i);
+      const y0 = p.getY(i);
+      const z0 = p.getZ(i);
+      const v = Math.acos(THREE.MathUtils.clamp(y0, -1, 1)); // 0..1 rad: the row's share of the way down
+      const az = Math.atan2(x0, z0);
+      const polar = v * reach(az);
+      let x = Math.sin(polar) * Math.sin(az);
+      let y = Math.cos(polar);
+      let z = Math.sin(polar) * Math.cos(az);
+      // The parting: a shallow groove down the middle at the front; volume at the crown; soft waves at the sides.
+      const part = Math.max(0, 1 - Math.abs(x) / 0.1) * Math.max(0, z) * Math.max(0, y) * 0.05;
+      const crown = 1 + Math.max(0, y) * Math.max(0, -z) * 0.08 + 0.05 * (1 - Math.max(0, y)) * (1 - Math.max(0, z));
+      // Combed strands from the parting: ridges that run down and back, catching the back light.
+      const ridge = 1 + 0.014 * Math.sin(az * 34 + polar * 3) * (0.4 + 0.6 * Math.max(0, y));
+      x *= crown * ridge;
+      z *= crown * ridge;
+      y = y * crown - part;
+      void x0;
+      p.setXYZ(i, x, y, z);
     }
   }
-  cap.scale(0.081, 0.108, 0.1);
-  cap.rotateX(-0.5);
-  cap.translate(0, 0.008, -0.012);
-  {
-    // C14: the hairline. The shell came down over her face (nobody saw it from behind); on the front it lifts to a
-    // hairline that peaks at the centre parting and sweeps down past the temples, tucked onto the skull.
-    const p = cap.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i);
-      const y = p.getY(i);
-      const z = p.getZ(i);
-      const f = THREE.MathUtils.smoothstep(z, -0.01, 0.045);
-      const line = 0.05 - 4.2 * x * x;
-      if (y < line && f > 0) {
-        const ny = y + (line - y) * f;
-        const tuck = 1 - 0.1 * f * Math.min(1, (line - y) / 0.05);
-        p.setXYZ(i, x * tuck, ny, z * tuck);
-      }
-    }
-  }
+  cap.scale(0.081, 0.104, 0.1);
+  cap.rotateX(-0.2);
+  cap.translate(0, 0.012, -0.004);
   cap.computeVertexNormals();
   add(cap, hairMat, headPivot);
-  // The sides swept back behind the ears to the nape.
-  for (const side of [1, -1]) {
-    add(turned(V(0.058 * side, 0.03, 0.03), V(0.03 * side, -0.05, -0.085), [[0, 0.02], [0.4, 0.03], [1, 0.022]], seg(10), 0.7), hairMat, headPivot);
+  // The long hair (VISION's character bible: very long, glossy, centre-parted, falling in soft waves): one draped
+  // sheet from under the cap, out over the collar and down her back to the shoulder blades, waved, with uneven ends.
+  {
+    const cols = seg(40);
+    const rows = seg(24);
+    const pos: number[] = [];
+    const uv: number[] = [];
+    const idx: number[] = [];
+    // Down the sheet: [radius out from the head's axis (m), height (m), how far round the front it reaches (rad)].
+    const prof: Array<[number, number, number]> = [
+      [0.084, -0.0, 1.45],
+      [0.098, -0.06, 1.35],
+      [0.135, -0.13, 1.25],
+      [0.172, -0.19, 1.18],
+      [0.19, -0.3, 1.1],
+      [0.188, -0.44, 1.02],
+      [0.18, -0.56, 0.95],
+    ];
+    const at = (t: number) => {
+      const k = Math.min(prof.length - 2, Math.floor(t * (prof.length - 1)));
+      const f = t * (prof.length - 1) - k;
+      const a = prof[k]!;
+      const b = prof[k + 1]!;
+      return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f] as const;
+    };
+    for (let r = 0; r <= rows; r++) {
+      const t = r / rows;
+      const [rad, y, open] = at(t);
+      for (let c = 0; c <= cols; c++) {
+        const u = c / cols;
+        // From her right side round the back to her left: az from π - (π - open) .. π + (π - open).
+        const az = Math.PI + (u * 2 - 1) * (Math.PI - open);
+        const wave = 1 + (0.03 + 0.05 * t) * Math.sin(u * 22 + t * 9) + 0.02 * Math.sin(u * 61);
+        const ends = r === rows ? 0.035 * Math.sin(u * 37) + 0.02 * Math.sin(u * 13) : 0;
+        pos.push(Math.sin(az) * rad * wave, y + ends, Math.cos(az) * rad * wave * 0.86 - 0.02);
+        uv.push(u * 3, 1 - t);
+      }
+    }
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++) {
+        const a = r * (cols + 1) + c;
+        const b = a + cols + 1;
+        idx.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+    const sheet = new THREE.BufferGeometry();
+    sheet.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    sheet.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    sheet.setIndex(idx);
+    sheet.computeVertexNormals();
+    const hairSheetMat = hairMat.clone();
+    hairSheetMat.side = THREE.DoubleSide;
+    rimify(hairSheetMat, 0.9);
+    mats.push(hairSheetMat);
+    add(sheet, hairSheetMat, headPivot);
   }
-  // The knot: a twisted coil (torus) round a core, low on the nape.
-  const knot = new THREE.SphereGeometry(1, seg(16), seg(10));
-  knot.scale(0.05, 0.04, 0.038);
-  knot.translate(0, -0.05, -0.105);
-  add(knot, hairMat, headPivot);
-  const coil = new THREE.TorusGeometry(0.038, 0.016, seg(8), seg(18));
-  coil.scale(1.15, 0.9, 1);
-  coil.rotateX(0.35);
-  coil.translate(0, -0.05, -0.098);
-  add(coil, hairMat, headPivot);
+  // Ears: small shells under the hair's side sweep, a pearl stud in each lobe.
+  for (const side of [1, -1]) {
+    const ear = new THREE.SphereGeometry(1, seg(10), seg(8));
+    ear.scale(0.008, 0.02, 0.013);
+    ear.rotateY(side * 0.35);
+    ear.translate(0.07 * side, -0.012, -0.004);
+    add(ear, skinMat, headPivot);
+  }
   // Pearl studs catch the back light.
   const pearlMat = new THREE.MeshStandardMaterial({ color: 0xf2ebe2, roughness: 0.18, metalness: 0.1, emissive: 0x2a2624 });
   mats.push(pearlMat);
   for (const side of [1, -1]) {
     const p = new THREE.SphereGeometry(0.0075, 8, 6);
-    p.translate(0.077 * side, -0.032, 0.0);
+    p.translate(0.074 * side, -0.03, 0.0);
     add(p, pearlMat, headPivot);
   }
   const head = new THREE.Object3D();

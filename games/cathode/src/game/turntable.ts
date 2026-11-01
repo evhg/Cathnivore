@@ -9,6 +9,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ENFORCER, ENFORCER_SNIPER, NURSE, ORDERLY, CIVILIAN, PRICE_WAR_BOY, CANDOR_CHROME, CYBERPSYCHO, HUNTER, TURRET, ED_MECH, Enemy, RIOT_SHIELD, type EnemyKit } from "./enemy";
 import { bodyView } from "./body";
 import { LAYER_NO_REFLECT } from "../render/reflection";
+import { buildFrontCath, type FrontCath } from "../render/frontcath";
 
 const KITS: Record<string, EnemyKit> = {
   enforcer: ENFORCER,
@@ -88,7 +89,21 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
   const shown = view === "close" || portrait ? 1 : kits.length;
   const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
   const enemies: Enemy[] = [];
-  for (let i = 0; i < shown; i++) {
+  // Plan item 9: `arch=cath` is Cath herself (the title's model), `view=face` her head at a 300 px+ head height,
+  // turned by `yaw`; `view=lineup` (default) shows her whole at 0, 45, 90 and 180 degrees.
+  const caths: FrontCath[] = [];
+  const isCath = archParam === "cath";
+  const face = isCath && (view === "face" || portrait);
+  for (let i = 0; isCath && i < (face ? 1 : turns.length); i++) {
+    const c = buildFrontCath(phone);
+    c.group.position.set(face ? 0 : (i - (turns.length - 1) / 2) * 1.05, 0, 0);
+    c.group.rotation.y = face ? THREE.MathUtils.degToRad(yawDeg) : turns[i]!;
+    c.group.traverse((o) => { o.castShadow = true; o.receiveShadow = true; });
+    scene.add(c.group);
+    for (let k = 0; k < 90; k++) c.update(1 / 60, k / 60, { x: 0.2, z: 0 });
+    caths.push(c);
+  }
+  for (let i = 0; !isCath && i < shown; i++) {
     const kit = KITS[kits[i]!] ?? ENFORCER;
     // The portrait is the person, not their shield.
     const e = new Enemy({ ...kit, ...(portrait && kit.role === "shield" ? { role: "rifle" as const } : {}), ...(q.get("elite") ? { elite: true, mods: [q.get("elite")!] } : {}) }, [new THREE.Vector3()], 1);
@@ -113,20 +128,22 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
   cam.layers.enable(LAYER_NO_REFLECT);
   const frame = () => {
     cam.aspect = window.innerWidth / window.innerHeight;
-    const w = portrait ? 0.5 : Math.max(1.2, shown * gap + 0.6);
-    const h = portrait ? 0.82 : view === "close" ? 1.1 : 2.15;
+    const w = face ? 0.3 : portrait ? 0.5 : Math.max(1.2, shown * gap + 0.6);
+    const h = face ? 0.42 : portrait ? 0.82 : view === "close" ? 1.1 : 2.15;
     const fy = THREE.MathUtils.degToRad(cam.fov);
     const dist = Math.max(h / 2 / Math.tan(fy / 2), w / 2 / (Math.tan(fy / 2) * cam.aspect)) * 1.08;
-    const ty = portrait ? 1.62 : view === "close" ? 1.42 : 0.98;
+    const headY = caths[0] ? caths[0].head.getWorldPosition(new THREE.Vector3()).y : 1.62;
+    const ty = face ? headY : portrait ? 1.62 : view === "close" ? 1.42 : 0.98;
     cam.position.set(0, ty + (portrait ? 0.02 : 0.15), dist);
     cam.lookAt(0, ty, 0);
     cam.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     bodyView.eye.copy(cam.position);
     for (const e of enemies) e.body.pose();
+    for (const c of caths) c.setRim(new THREE.Vector3(0.4, 0.3, -1).normalize());
     renderer.render(scene, cam);
   };
   frame();
   window.addEventListener("resize", frame);
-  (window as unknown as { cathodeTurntable: unknown }).cathodeTurntable = { ready: true, render: frame, enemies };
+  (window as unknown as { cathodeTurntable: unknown }).cathodeTurntable = { ready: true, render: frame, enemies, caths };
 }
