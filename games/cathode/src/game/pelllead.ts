@@ -61,7 +61,7 @@ export class PellLeadJob {
           // Plan item 7: a Hollowell van tears up the west side of the square; a man ropes off the west roof.
           this.chasers = [
             enter(h.spawn, "rifle", ENTRIES.plaza.alarmVan, [from]),
-            enter(h.spawn, "rifle", ENTRIES.plaza.alarmRope, [from]),
+            enter(h.spawn, "rifle", ENTRIES.plaza.alarmVanB, [from]),
             h.spawn("rifle", [this.M("lead:guard", 3, 24, 6), from]),
             h.spawn("shield", [this.M("lead:guard", 2, 24, 0), from]),
           ];

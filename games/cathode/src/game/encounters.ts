@@ -41,10 +41,12 @@ export const ENTRIES = {
     bossVent: { kind: "rappel", from: V(2, 3.6, -30), to: V(2, 0, -30), delay: 0.9 },
   },
   plaza: {
-    // The strongbox alarm: a Hollowell van tears up the west side of the square; a second man ropes off the
-    // roof of the west block (its parapet at 12 m), in plain sight of the strongbox.
-    alarmVan: { kind: "van", from: V(-14.5, 0, 1), stop: V(-14.5, 0, 13.5), to: V(-17, 0, 14.5) },
-    alarmRope: { kind: "rappel", from: V(-29.2, 12, 41.5), to: V(-29.2, 0, 41.5), delay: 1.5 },
+    // The strongbox alarm: a pincer of two Hollowell vans, one tearing up the west side of the square from the
+    // south, one down the market lane from the tram stop. Both brake inside the open front of the strongbox's
+    // stall, the only way she can see out from the back of it (a rope off the west block came down behind the
+    // stalls' back walls).
+    alarmVan: { kind: "van", from: V(-14.5, 0, 1), stop: V(-14.5, 0, 24), to: V(-16.2, 0, 25) },
+    alarmVanB: { kind: "van", from: V(-11, 0, 47), stop: V(-11, 0, 31.5), to: V(-13.2, 0, 31), delay: 1.5 },
     // Pell's rally detail: a van down the east side of the fountain, a man off the front of the hall's portico roof.
     bossVan: { kind: "van", from: V(10.5, 0, 20), stop: V(10.5, 0, -1), to: V(8.4, 0, -1.6) },
     bossRope: { kind: "rappel", from: V(-2, 9.4, -45.6), to: V(-2, 2.4, -45.6), delay: 1.2 },

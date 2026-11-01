@@ -61,7 +61,17 @@ for (const vp of vps) {
         c.player.pos.set(at.x, c.player.pos.y, at.z)
       } else c.player.pos.copy(c.lead().target)
     }, d === 'market')
-    await page.waitForFunction(() => (window.cathode.entrances ?? []).length >= 1, null, { timeout: 300_000 })
+    await page.waitForFunction(() => (window.cathode.entrances ?? []).length >= 2, null, { timeout: 300_000 })
+    // The objective sits against a wall or inside a collider she gets pushed out of, so the eye would be hard
+    // against it: step her 1.5 m off the objective towards where the entrances land, as a player would turn to.
+    if (d !== 'market') await page.evaluate(() => {
+      const c = window.cathode
+      const p = c.player.pos
+      let x = 0, z = 0
+      for (const ev of c.entrances) { x += ev.at.x / c.entrances.length; z += ev.at.z / c.entrances.length }
+      const dx = x - p.x, dz = z - p.z, n = Math.hypot(dx, dz) || 1
+      p.set(p.x + (dx / n) * 1.5, p.y, p.z + (dz / n) * 1.5)
+    })
     for (let i = 0; i < frames; i++) {
       const info = await page.evaluate((i) => {
         const c = window.cathode

@@ -346,7 +346,7 @@ test.describe('CATHODE takedowns', () => {
 
   // Plan item 7: the districts' lead jobs stage their alarms with scripted entrances too. She walks onto the
   // objective (the register, the strongbox) and the alarm's two entrances fire.
-  for (const [district, want] of [['clinic', ['breach', 'rappel']], ['plaza', ['rappel', 'van']]] as const) {
+  for (const [district, want] of [['clinic', ['breach', 'rappel']], ['plaza', ['van', 'van']]] as const) {
     test(`plan item 7: the ${district} alarm comes in by ${want.join(' and ')}`, async ({ page, hasTouch }) => {
       test.skip(hasTouch, 'one layout is enough: the script is the same on a phone')
       test.setTimeout(400_000)
