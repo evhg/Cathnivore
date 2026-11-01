@@ -473,6 +473,33 @@ test.describe('Hedgerow', () => {
     expect(errors).toEqual([])
   })
 
+  test('plan item 10: on a portrait phone the field takes 70%+ of the screen, and the round drawer opens over it without resizing it', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=30')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '30': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await expect(page.locator('#btn-send')).toBeVisible({ timeout: 8000 })
+    const field = async () => page.locator('#canvas').evaluate((c) => {
+      const r = c.getBoundingClientRect()
+      return { h: r.height, frac: (r.width * r.height) / (innerWidth * innerHeight) }
+    })
+    const shut = await field()
+    expect(shut.frac).toBeGreaterThanOrEqual(0.7)
+    // The tray peeks; the round ticket waits in the drawer.
+    await expect(page.locator('.tray-wrap')).toBeVisible()
+    await expect(page.locator('.round-ticket')).toBeHidden()
+    await page.locator('.drawer-handle').click()
+    await expect(page.locator('.round-ticket')).toBeVisible()
+    expect((await field()).h).toBe(shut.h)
+    // Every control is still on screen.
+    for (const id of ['#btn-send', '#btn-pie', '#btn-menu']) {
+      const b = await page.locator(id).boundingBox()
+      expect(b && b.y >= 0 && b.y + b.height <= 844).toBe(true)
+    }
+    expect(errors).toEqual([])
+  })
+
   test('Hedgerow 2 M4: a Scarecrow\'s three paths show side by side on a landscape phone without scrolling', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 })
     await page.goto(HEDGEROW_2D + '&sandbox=1')

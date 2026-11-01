@@ -3189,3 +3189,138 @@ body:has(#dlg-pause[open]) .paused-note {
 :root.reduce-motion :is(.btn, .icon-btn, .path-buy) {
   transition: none;
 }
+
+/* ================================================================= portrait phones: the field first (plan item 10)
+   The field runs edge to edge and takes 70%+ of a 390x844 screen. The HUD is a compact strip over it, the side
+   panel is a bottom drawer that peeks only the tower tray (its grip pulls the round ticket up over the field's
+   foot), anything chosen on the field opens as a sheet over the same place, and the tray of abilities is one row
+   of medallions whose names stay with screen readers. The drawer overflows its fixed grid row upward
+   (align-self: end), so opening it never resizes the field. */
+@media (max-width: 520px) and (orientation: portrait) {
+  .app:has(.play:not([hidden])) {
+    padding: max(4px, env(safe-area-inset-top)) 0 max(6px, env(safe-area-inset-bottom));
+  }
+  .play:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) 72px auto;
+    gap: 6px;
+  }
+  .play .hud {
+    margin: 0 8px;
+    min-height: 0;
+    padding-block: 2px;
+  }
+  .play .stage {
+    grid-row: 2;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .play .panel:not(.panel-paths) {
+    grid-row: 3;
+    align-self: end;
+    position: relative;
+    z-index: 4;
+    height: 72px;
+    max-height: 56dvh;
+    margin: 0 8px;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+  .play .panel.open,
+  .play .panel.panel-sheet:not(.panel-paths) {
+    height: auto;
+    min-height: 72px;
+    overflow-y: auto;
+    box-shadow: 0 -10px 28px var(--black-a40, rgba(0, 0, 0, 0.4));
+  }
+  .play .panel.panel-sheet:not(.panel-paths) {
+    max-height: 46dvh;
+  }
+  .play .panel.panel-aim {
+    height: auto;
+  }
+  .play .panel.panel-preview:not(.open) > :not(.tray-wrap, .drawer-handle) {
+    display: none;
+  }
+  .play .panel.panel-preview:not(.open) {
+    overflow: visible;
+  }
+  .play .drawer-handle {
+    position: absolute;
+    top: -22px;
+    right: 14px;
+    z-index: 1;
+    min-height: 22px;
+    padding: 4px 12px 3px;
+    border: 0;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.25);
+    background: var(--oak, #6b4a2b);
+    color: var(--on-fill, #fff7e6);
+    font: 800 var(--fs-label) / 1 var(--font-ui);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .play .drawer-handle::after {
+    content: " ▴";
+  }
+  .play .panel.open .drawer-handle::after {
+    content: " ▾";
+  }
+  .play .panel.panel-preview .tray-wrap {
+    margin-top: 0;
+  }
+  .play .panel.open .drawer-handle {
+    position: sticky;
+    top: -8px;
+    align-self: flex-end;
+    margin: -8px 4px 0 0;
+    border-radius: 0 0 10px 10px;
+  }
+  .play .controls,
+  .play .controls:has(#btn-rally:not([hidden])) {
+    margin: 0 8px;
+    padding: 5px 6px;
+    gap: 4px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .play .controls .go-pill,
+  .play .controls:has(#btn-rally:not([hidden])) .go-pill {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .play .controls .auto-btn {
+    width: 54px;
+    min-height: 0;
+    grid-template-rows: 46px;
+  }
+  .play .controls .auto-word {
+    display: none;
+  }
+  .play .controls .ability,
+  .play .controls:has(#btn-rally:not([hidden])) .ability {
+    min-height: 0;
+    width: 46px;
+    min-width: 46px;
+    grid-template-rows: 46px;
+  }
+  .play .controls .ability-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+.drawer-handle {
+  display: none;
+}
+@media (max-width: 520px) and (orientation: portrait) {
+  .play .drawer-handle {
+    display: block;
+  }
+}

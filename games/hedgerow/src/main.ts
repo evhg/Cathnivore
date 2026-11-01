@@ -1295,13 +1295,17 @@ function renderPanel(force = false): void {
   if (renderer) renderer.preview = null;
 
   if (aiming) {
+    p.classList.add("panel-aim");
     p.append(line(`Tap where the pie should land. It freezes everything it hits for 3 seconds. Tap the pie again to aim at the front of the queue.`));
     return;
   }
   if (!sel) {
     wavePreview(p, g);
+    drawerHandle(p);
     return;
   }
+  // Portrait phones: anything chosen on the field opens as a sheet over the bottom of it (plan item 10).
+  p.classList.add("panel-sheet");
   if (t) {
     towerCard(p, g, t);
     return;
@@ -1332,6 +1336,30 @@ function renderPanel(force = false): void {
     return;
   }
   buildMenu(p, g, sel);
+}
+
+/** Portrait phones keep the round preview in a drawer under the tower tray: open or shut, it stays as left. */
+let drawerOpen = false;
+
+/**
+ * The drawer's grip (plan item 10): on a portrait phone the panel peeks just the tower tray, so the field gets the
+ * screen; the grip pulls the round ticket up over the field's foot. Hidden by CSS everywhere else.
+ */
+function drawerHandle(p: HTMLElement): void {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "drawer-handle";
+  const sync = () => {
+    p.classList.toggle("open", drawerOpen);
+    b.setAttribute("aria-expanded", String(drawerOpen));
+    b.textContent = drawerOpen ? "Hide round" : game ? `Round ${waveNo(game, Math.min(game.wave + 1, game.level.waves.length))}` : "Round";
+  };
+  b.onclick = () => {
+    drawerOpen = !drawerOpen;
+    sync();
+  };
+  sync();
+  p.prepend(b);
 }
 
 function line(text: string, cls = ""): HTMLParagraphElement {
