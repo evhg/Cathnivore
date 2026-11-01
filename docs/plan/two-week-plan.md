@@ -40,7 +40,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - A greyscale shot still tells players from corporations.
 - **Size:** 3
 
-## 3. [ ] Hedgerow: a painted world map and progressive unlocks
+## 3. [x] Hedgerow: a painted world map and progressive unlocks *(done 2026-11-01, 48bc127..HEAD: unlock table with Cath's cards, fog past the last open act with the next act painted under it, patchwork ground per act, a lane from Cath's cottage threaded through the fields, one-time field cards for each twist and Heirlooms; map shots at P, D, L and dark)*
 - **Why:** the level list reads as a menu, not a journey. Every system shows on day one, which overwhelms new players.
 - **Build:**
   - An illustrated, scrollable map of the acts: a path between fields, Cath's cottage at the start, boss landmarks, and locked fog beyond.
