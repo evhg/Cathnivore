@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { Builder } from "../builder";
 import { prng, WIN_COLS, WIN_ROWS } from "../textures";
 import type { Level, SignDef, VLight, WindowDef } from "../level";
+import type { CrowdGroup } from "../crowd";
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const C = (hex: string) => new THREE.Color(hex);
@@ -86,6 +87,62 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   b.cylinder("concreteA", V(0, 0, 8), V(0, 3.2, 8), 0.7, 10, "concrete");
   b.box("darkMetal", 0, 4.0, 8, 0.7, 1.6, 0.7, { cover: "thin", mat: "metal" });
   b.box("darkMetal", 0, 5.0, 8, 0.45, 0.45, 0.45);
+
+  // Plan item 4: the fountain is the square's heart. Uplights in the dry basin wash the column and the founder,
+  // a protest vigil of candles, flowers and taped photos rings its rim, and brass inlay lines radiate from it
+  // across the stone to the steps, catching every lamp in the wet.
+  for (let k = 0; k < 4; k++) {
+    const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
+    const p = V(Math.cos(a) * 1.4, 0.86, 8 + Math.sin(a) * 1.4);
+    b.box("darkMetal", p.x, p.y, p.z, 0.3, 0.12, 0.3, { cover: "none" });
+    b.box("glowWarm", p.x, p.y + 0.065, p.z, 0.2, 0.01, 0.2, { cover: "none" });
+    cones.push({ top: V(p.x, 0.92, p.z), dir: V(-p.x * 0.12, 1, (8 - p.z) * 0.12).normalize(), length: 5.2, radius: 0.9, color: C("#ffd9a8"), strength: 0.35 });
+  }
+  light(V(0, 1.6, 9.6), "#ffd2a0", 22, 7, 0, true);
+  light(V(0, 1.6, 6.4), "#ffd2a0", 14, 6, 0);
+  for (let k = 0; k < 26; k++) {
+    const a = (k / 26) * Math.PI * 2 + 0.4;
+    if (Math.sin(a) < -0.2 && k % 3) continue; // thinner on the hall side
+    const r = 4.45 + ((k * 7) % 3) * 0.04;
+    const x = Math.cos(a) * r;
+    const z = 8 + Math.sin(a) * r;
+    if (k % 2 === 0) {
+      b.cylinder("plasticWhite", V(x, 0.8, z), V(x, 0.86 + (k % 3) * 0.03, z), 0.03, 6);
+      b.box("glowAmber", x, 0.9 + (k % 3) * 0.03, z, 0.02, 0.03, 0.02, { cover: "none" });
+    } else {
+      b.box(k % 4 === 1 ? "paintRed" : "yellowPaint", x, 0.82, z, 0.26, 0.04, 0.12, { rotY: a, cover: "none" }); // flowers
+    }
+    if (k % 5 === 0) b.box("plasticWhite", Math.cos(a) * 4.62, 0.55, 8 + Math.sin(a) * 4.62, 0.2, 0.26, 0.01, { rotY: -a + Math.PI / 2, cover: "none" }); // taped photos
+  }
+  light(V(0, 1.0, 12.6), "#ffb060", 6, 4, 1);
+  light(V(-3.5, 1.0, 10.8), "#ffb060", 5, 4, 1);
+  light(V(3.5, 1.0, 10.8), "#ffb060", 5, 4, 1);
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+    const dx = Math.cos(a);
+    const dz = Math.sin(a);
+    // A line from the basin out to the edge of the square (stopped at the steps and the tram road).
+    const r0 = 5.4;
+    let r1 = 34;
+    if (dz < 0) r1 = Math.min(r1, (8 - stepZ0 - 1) / -dz);
+    if (dx > 0) r1 = Math.min(r1, (16.5 - 0) / dx);
+    if (dx < 0) r1 = Math.min(r1, 29 / -dx);
+    if (dz > 0) r1 = Math.min(r1, (zS - 9) / dz);
+    const len = r1 - r0;
+    const cx = dx * (r0 + len / 2);
+    const cz = 8 + dz * (r0 + len / 2);
+    b.box("brass", cx, 0.004, cz, 0.07, 0.008, len, { rotY: Math.atan2(dx, dz), cover: "none" });
+  }
+  for (const r of [6.2, 14]) {
+    for (let k = 0; k < 48; k++) {
+      const a = (k / 48) * Math.PI * 2;
+      const ch = (2 * Math.PI * r) / 48;
+      const x = Math.cos(a) * r;
+      const z = 8 + Math.sin(a) * r;
+      if (z < stepZ0 + 0.5) continue;
+      b.box("brass", x, 0.004, z, 0.06, 0.008, ch, { rotY: -a, cover: "none" });
+    }
+  }
 
   // Statues of founders either side of the approach, pigeon-streaked.
   for (const x of [-14, 14]) {
@@ -180,6 +237,81 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     light(V(x, top + 1.4, -48), "#ffd9a0", 14, 10, 0);
   }
 
+  // ---- Plan item 4: the rally, dressed. A truss rig frames the lectern, speaker stacks either side, a red
+  // backdrop with his name, the city seal on the lectern, and press risers at the foot of the steps.
+  for (const x of [-8.5, 8.5]) {
+    for (const dx of [-0.25, 0.25])
+      for (const dz of [-0.25, 0.25]) {
+        b.cylinder("pipe", V(x + dx, top, -49 + dz), V(x + dx, top + 6.6, -49 + dz), 0.035, 6);
+        b.tagLast("thin", "metal");
+      }
+    for (let y = top + 0.6; y < top + 6.6; y += 0.8) b.box("chrome", x, y, -49, 0.55, 0.03, 0.55, { cover: "none" });
+    // Speaker stacks: two cabinets each, grilles facing the crowd.
+    for (const [k, y] of [[0, 0.55], [1, 1.6]] as const) {
+      b.box("blackPaint", x + (x < 0 ? 1.4 : -1.4), top + y, -47.6, 1.1, 1.0 - k * 0.05, 0.8, { collide: "metal" });
+      b.box("grate", x + (x < 0 ? 1.4 : -1.4), top + y, -47.19, 0.9, 0.8, 0.02, { cover: "none" });
+    }
+  }
+  for (const dz of [-0.25, 0.25]) for (const dy of [0, 0.5]) b.box("chrome", 0, top + 6.6 + dy, -49 + dz, 17.5, 0.05, 0.05, { cover: "none" });
+  // Par cans hanging off the truss, aimed at the lectern.
+  for (const x of [-6, -3, 3, 6]) {
+    b.box("darkMetal", x, top + 6.25, -48.8, 0.3, 0.42, 0.3, { cover: "none" });
+    b.box("glowWarm", x, top + 6.03, -48.7, 0.22, 0.03, 0.22, { cover: "none" });
+    cones.push({ top: V(x, top + 6.0, -48.7), dir: V(-x * 0.06, -1, -0.12).normalize(), length: 6.4, radius: 1.3, color: C("#ffe2b0"), strength: 0.45 });
+  }
+  b.box("paintRed", 0, top + 3.5, -51.2, 9, 5.6, 0.06, { uv: 1, cover: "none" });
+  signs.push({ text: "PELL", sub: "ORDER · SAFETY · HOLLOWELL", style: "box", color: "#ffe6c0", w: 6.5, h: 1.8, center: V(0, top + 4.6, -51.12), normal: V(0, 0, 1), flicker: 0, intensity: 1.6 });
+  b.box("glowAmber", 0, top + 0.82, -49.62, 0.5, 0.5, 0.02, { cover: "none" }); // the city seal on the lectern
+  for (const dx of [-0.18, 0.18]) b.cylinder("pipe", V(dx, top + 1.1, -50.1), V(dx * 0.6, top + 1.5, -49.85), 0.008, 5);
+  // Press risers and camera tripods at the foot of the steps.
+  for (const x of [-5.5, 5.5]) {
+    b.boxMinMax("blackPaint", x - 1.2, 0, stepZ0 + 5.2, x + 1.2, 0.5, stepZ0 + 6.6, { collide: "metal" });
+    for (const dx of [-0.6, 0.6]) {
+      const c = V(x + dx, 0.5, stepZ0 + 5.9);
+      for (const a of [0, 2.1, 4.2]) b.cylinder("pipe", V(c.x + Math.cos(a) * 0.3, 0.5, c.z + Math.sin(a) * 0.3), V(c.x, 1.9, c.z), 0.012, 4);
+      b.box("blackPaint", c.x, 2.05, c.z, 0.22, 0.26, 0.5, { cover: "none" });
+      b.box("glowRed", c.x + 0.08, 2.14, c.z + 0.26, 0.03, 0.03, 0.01, { cover: "none" });
+    }
+  }
+  // Placards bobbing over the rally crowd: rally boards on poles, his and the protesters'.
+  const placards: Array<[number, number, string]> = [[-6, -18, "paintRed"], [-2, -14, "plasticWhite"], [3, -19, "paintRed"], [7, -15, "plasticWhite"], [-8, -12, "yellowPaint"], [1, -11, "paintRed"], [5, -21, "plasticWhite"], [-4, -21, "yellowPaint"]];
+  for (const [x, z, k] of placards) {
+    b.cylinder("wood", V(x, 1.2, z), V(x, 2.5, z), 0.018, 4);
+    b.box(k, x, 2.75, z, 0.9, 0.6, 0.03, { rotY: (x * 0.37) % 0.5, cover: "none" });
+  }
+
+  // ---- The market under the awnings: goods on the counters, a lit sign on each stall, string lights between.
+  const stallNames: Array<[string, string, string]> = [["NOODLES", "OPEN LATE", "#ffb070"], ["UMBRELLAS", "CASH ONLY", "#7fe9ff"], ["PHONE FIX", "NO QUESTIONS", "#ff7fb0"], ["FISH", "FRESH TODAY", "#ffd27a"]];
+  for (let i = 0; i < 4; i++) {
+    const z = 22 + i * 7;
+    const [name, sub, col] = stallNames[i]!;
+    signs.push({ text: name, sub, style: "box", color: col, w: 2.6, h: 0.55, center: V(-19.35, 2.35, z), normal: V(1, 0, 0), flicker: i === 2 ? 2 : 0, intensity: 2.2 });
+    b.box("blackPaint", -19.38, 2.35, z, 0.04, 0.62, 2.7, { cover: "none" });
+    // Goods: crates of produce or stock on the counter and stacked beside it.
+    const goods = i === 0 ? ["plasticWhite", "plasticRed"] : i === 1 ? ["blackPaint", "paintRed"] : i === 2 ? ["plasticWhite", "glowCyan"] : ["ice", "fish"];
+    for (let k = 0; k < 5; k++) {
+      const gz = z - 1.4 + k * 0.7;
+      b.box("wood", -22, 1.06, gz, 0.6, 0.12, 0.5, { cover: "none" });
+      b.box(goods[k % 2]!, -22, 1.17, gz, 0.5, 0.1, 0.4, { cover: "none" });
+    }
+    b.box("styro", -24.2, 0.3, z - 1.2, 0.7, 0.6, 0.5, { collide: "metal" });
+    b.box("wood", -24.2, 0.9, z - 1.1, 0.6, 0.6, 0.6, { rotY: 0.3, cover: "none" });
+    // A striped valance hanging off the awning's front edge.
+    for (let s = 0; s < 8; s++) b.box(s % 2 ? "paintRed" : "plasticWhite", -19.42, 2.55, z - 1.75 + s * 0.5, 0.03, 0.3, 0.5, { cover: "none" });
+  }
+  for (const [za, zb] of [[20, 27], [27, 34], [34, 41], [41, 46]] as const) {
+    const a = V(-19.4, 2.75, za);
+    const c = V(-14.5, 4.2, zb);
+    b.cable("cable", a, c, 0.5, 0.008);
+    for (let k = 1; k < 9; k++) {
+      const t = k / 9;
+      const p = new THREE.Vector3().lerpVectors(a, c, t);
+      p.y -= 0.5 * 4 * t * (1 - t) + 0.05;
+      b.shape(k % 4 ? "glowWarm" : "glowPink", new THREE.SphereGeometry(0.05, 6, 4), p);
+      if (k === 4) light(p.clone(), "#ffc27a", 2.4, 5, 0, false);
+    }
+  }
+
   // Barriers and cover across the square.
   for (const [x, z] of [[-8, 30], [8, 24], [-6, -2], [6, 16], [0, -18], [-12, 14], [12, -22]] as const) {
     b.box("jersey", x, 0.45, z, 2.6, 0.9, 0.6, { collide: "concrete" });
@@ -217,19 +349,27 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     "patrol:civ-rally-c": [V(-1, 0, -24), V(2, 0, -21)],
     "patrol:police-a": [V(-12, 0, 14), V(12, 0, 14), V(12, 0, -2), V(-12, 0, -2)],
     "patrol:police-b": [V(20, 0, 44), V(20, 0, 24), V(-4, 0, 30)],
-    "crowd:fountain": [V(0, 0, 8)],
-    "crowd:market": [V(-14, 0, 30)],
-    "crowd:tram": [V(21, 0, 38)],
-    "crowd:rally": [V(0, 0, -17)],
     "patrol:sniper-roof": [V(34, 8, -4)],
     // C20: the ED mech guards the approach to the steps and lobs missile volleys once it sees her.
     "patrol:mech-steps": [V(-12, 0, -34), V(12, 0, -34)],
   };
 
+  // The rally crowd packs the square below the steps facing Pell; shoppers under the awnings, a queue at the
+  // tram stop and stragglers round the fountain (counts are scaled down on phones in world.ts).
+  const crowds: CrowdGroup[] = [
+    { x: 0, z: -16, count: 70, radius: 0, rect: [20, 11], face: [0, -50], seed: 11 },
+    { x: -8, z: -6, count: 14, radius: 3.5, face: [0, -50], seed: 12 },
+    { x: 8, z: -8, count: 12, radius: 3.5, face: [0, -50], seed: 13 },
+    { x: 0, z: 8, count: 12, radius: 7.2, seed: 14 },
+    { x: -18.5, z: 32, count: 16, radius: 0, rect: [3, 22], face: [-22, 32], seed: 15 },
+    { x: 20.5, z: 41, count: 10, radius: 0, rect: [3, 8], face: [24.6, 46], seed: 16 },
+  ];
+
   const key = { pos: V(-14, 17, 46), target: V(0, 0, -6), color: C("#ffe9c8") };
   return {
     builder: b,
     markers,
+    crowds,
     lights,
     signs,
     windows,

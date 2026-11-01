@@ -182,7 +182,10 @@ export function buildAtmosphere(o: AtmoOptions, uniforms: AtmoUniforms): Atmosph
             vec3 wc = mix( vec3( 1.0, 0.62, 0.32 ), vec3( 0.55, 0.8, 1.0 ), step( 0.6, h21( cell * 1.7 ) ) );
             col += wc * win * on * 0.9;
             // Holographic edges on some towers.
-            float edge = max( 1.0 - smoothstep( 0.0, 0.012, min( abs( vLocal.x - 0.5 ), abs( vLocal.x + 0.5 ) ) ), 1.0 - smoothstep( 0.0, 0.012, min( abs( vLocal.z - 0.5 ), abs( vLocal.z + 0.5 ) ) ) );
+            // Measured across the face only: on an x-facing side vLocal.x is +-0.5 everywhere, so testing it lit the
+            // whole side as a solid slab (plan item 4: the Plaza's "flat pink and cyan boxes").
+            float across = abs( vNormalL.x ) > 0.5 ? vLocal.z : vLocal.x;
+            float edge = 1.0 - smoothstep( 0.0, 0.012, 0.5 - abs( across ) );
             vec3 ec = mix( vec3( 1.0, 0.15, 0.55 ), vec3( 0.1, 0.9, 1.0 ), step( 0.5, fract( vSeed * 7.0 ) ) );
             col += ec * edge * step( 0.62, vSeed ) * 6.0;
             // A band of LED signage near the top.

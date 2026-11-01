@@ -10,6 +10,7 @@
 // plus the authored data the rest of the renderer needs: lights, signs, windows, vents, drips, cones.
 
 import * as THREE from "three";
+import type { CrowdGroup } from "./crowd";
 import { Builder, carBodyGeometry, jerseyGeometry } from "./builder";
 import { FLOOD, floodT } from "./shading";
 import { prng, WIN_COLS, WIN_ROWS } from "./textures";
@@ -112,6 +113,8 @@ export interface Level {
   markers: Record<string, THREE.Vector3[]>;
   /** Seated figures (render/crowd.ts addPatients): x, z and yaw (0 faces +x). */
   seats?: Array<{ x: number; z: number; yaw: number }>;
+  /** Standing crowds (render/crowd.ts addStandingCrowd): coats, umbrellas, phones held up. */
+  crowds?: CrowdGroup[];
   /** Shrouded bodies (render/crowd.ts addShrouds): underside height y, yaw 0 lies along +x. */
   bodies?: Array<{ x: number; y: number; z: number; yaw: number }>;
   lights: VLight[];

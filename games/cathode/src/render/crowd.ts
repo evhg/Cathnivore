@@ -215,3 +215,162 @@ export function addShrouds(scene: THREE.Scene, bodies: Array<{ x: number; y: num
     scene.add(mesh);
   }
 }
+
+// ------------------------------------------------------------ standing crowds (Hollowell Plaza's rally)
+// Plan item 4: Pell wants a crowd tonight. Standing figures in long rain coats, about half under umbrellas, the
+// rest hatted or bare-headed, a few holding up lit phones to film him. Lit like the props (wet coats catch the
+// lamps), instanced per part (coats, skin, hair, umbrellas, phones), and swayed on the CPU.
+
+export interface CrowdGroup {
+  /** Centre of the scatter (y is the ground height there). */
+  x: number;
+  y?: number;
+  z: number;
+  count: number;
+  radius: number;
+  /** Everyone turns roughly towards this point (x, z); unset faces random ways. */
+  face?: [number, number];
+  /** Scatter as a w x d rectangle instead of a disc (w along x). */
+  rect?: [number, number];
+  seed: number;
+}
+
+export interface Stander {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  phase: number;
+  /** 0 umbrella, 1 hat, 2 bare head. */
+  kind: number;
+  phone: boolean;
+}
+
+/** Deterministic positions for every group, a minimum spacing kept so figures don't stand inside each other. */
+export function crowdStanders(groups: CrowdGroup[], keepOut: (x: number, z: number) => boolean = () => false): Stander[] {
+  const out: Stander[] = [];
+  groups.forEach((g, gi) => {
+    let tries = 0;
+    let i = 0;
+    while (i < g.count && tries < g.count * 12) {
+      tries++;
+      const h1 = hash(g.seed * 97 + tries * 3.1);
+      const h2 = hash(g.seed * 31 + tries * 7.7);
+      let x: number;
+      let z: number;
+      if (g.rect) {
+        x = g.x + (h1 - 0.5) * g.rect[0];
+        z = g.z + (h2 - 0.5) * g.rect[1];
+      } else {
+        const a = h1 * Math.PI * 2;
+        const r = Math.sqrt(h2) * g.radius;
+        x = g.x + Math.cos(a) * r;
+        z = g.z + Math.sin(a) * r;
+      }
+      if (keepOut(x, z)) continue;
+      if (out.some((s) => (s.x - x) ** 2 + (s.z - z) ** 2 < 0.62 * 0.62)) continue;
+      const k = hash(gi * 13.7 + tries * 1.3);
+      // Yaw 0 faces +x; turn towards the focus with a little scatter.
+      const yaw = g.face ? Math.atan2(-(g.face[1] - z), g.face[0] - x) + (hash(tries * 2.9 + gi) - 0.5) * 0.7 : hash(g.seed + tries * 5.3) * Math.PI * 2;
+      out.push({ x, y: g.y ?? 0, z, yaw, phase: hash(tries + g.seed) * 6.28, kind: k < 0.45 ? 0 : k < 0.75 ? 1 : 2, phone: !!g.face && hash(tries * 4.4 + gi) < 0.14 });
+      i++;
+    }
+  });
+  return out;
+}
+
+/** The standing figure's parts in its own frame (feet on the floor, facing +x). */
+export function standingParts() {
+  const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+  const coat: THREE.BufferGeometry[] = [];
+  const skin: THREE.BufferGeometry[] = [];
+  const dark: THREE.BufferGeometry[] = [];
+  // Trousers and shoes below the coat's hem.
+  for (const s of [-1, 1]) {
+    dark.push(limb(v(0, 0.08, s * 0.1), v(0, 0.62, s * 0.1), 0.06, 0.07), boxAt(0.06, 0.04, s * 0.1, 0.26, 0.08, 0.1));
+  }
+  // The long coat: hem flared, waist, shoulders, a turned-up collar.
+  coat.push(limb(v(0, 0.52, 0), v(0, 1.05, 0), 0.25, 0.18));
+  coat.push(limb(v(0, 1.05, 0), v(0, 1.42, 0), 0.18, 0.2));
+  coat.push(ball(v(0, 1.42, 0), 0.2, 0.7, 0.45, 1.15));
+  coat.push(limb(v(-0.02, 1.44, 0), v(-0.02, 1.56, 0), 0.09, 0.11));
+  // Arms hang at the sides, a little forward.
+  for (const s of [-1, 1]) {
+    const sh = v(0, 1.4, s * 0.22);
+    const el = v(0.05, 1.1, s * 0.25);
+    const wr = v(0.1, 0.84, s * 0.23);
+    coat.push(ball(sh, 0.075), limb(sh, el, 0.065, 0.058), limb(el, wr, 0.055, 0.05));
+    skin.push(ball(v(0.12, 0.79, s * 0.23), 0.045, 1, 1.4, 0.8));
+  }
+  skin.push(limb(v(0, 1.5, 0), v(0.01, 1.6, 0), 0.05), ball(v(0.02, 1.68, 0), 0.105, 1, 1.15, 0.9));
+  return { coat, skin, dark };
+}
+
+/** An umbrella held over the head: canopy, ribs' tips and a shaft down to the hand at chest height. */
+function umbrellaParts() {
+  const can = new THREE.ConeGeometry(0.55, 0.22, 10, 1, true);
+  can.translate(0.08, 2.06, 0);
+  const shaft = limb(new THREE.Vector3(0.18, 1.18, 0.12), new THREE.Vector3(0.08, 2.15, 0), 0.012);
+  return [can, shaft];
+}
+
+const COATS = ["#1c2026", "#2a2622", "#3a3430", "#14181e", "#4a4038", "#23282a", "#5a3a34", "#2e3440", "#6a5a48"];
+const UMBRELLAS = ["#0c0d10", "#14161a", "#1a1414", "#2a1a1e", "#0f1418", "#3a1016"];
+
+export function addStandingCrowd(scene: THREE.Scene, standers: Stander[], wrap: (m: THREE.MeshStandardMaterial) => THREE.Material) {
+  if (!standers.length) return null;
+  const parts = standingParts();
+  const merge = (gs: THREE.BufferGeometry[]) => mergeGeometries(gs.map((g) => (g.index ? g.toNonIndexed() : g)), false)!;
+  const hair = [ball(new THREE.Vector3(0.0, 1.72, 0), 0.112, 1.02, 0.9, 0.97)];
+  const hatG = [limb(new THREE.Vector3(0.01, 1.74, 0), new THREE.Vector3(0.01, 1.88, 0), 0.115, 0.1), limb(new THREE.Vector3(0.01, 1.74, 0), new THREE.Vector3(0.01, 1.765, 0), 0.22)];
+  const phoneG = [boxAt(0.32, 1.86, 0.18, 0.012, 0.15, 0.08)];
+  const armUp = [limb(new THREE.Vector3(0, 1.4, 0.22), new THREE.Vector3(0.25, 1.82, 0.19), 0.058, 0.05)];
+  const m = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const up = new THREE.Vector3(0, 1, 0);
+  const p = new THREE.Vector3();
+  const sc = new THREE.Vector3();
+  const c = new THREE.Color();
+  const meshes: Array<{ mesh: THREE.InstancedMesh; who: Stander[] }> = [];
+  const mk = (geo: THREE.BufferGeometry, mat: THREE.Material, who: Stander[], palette: string[] | null, salt: number) => {
+    if (!who.length) return null;
+    const mesh = new THREE.InstancedMesh(geo, mat, who.length);
+    mesh.layers.set(LAYER_NO_REFLECT);
+    mesh.castShadow = false;
+    mesh.receiveShadow = false;
+    mesh.frustumCulled = false;
+    if (palette) who.forEach((s, i) => mesh.setColorAt(i, c.set(palette[Math.floor(hash(s.phase * 13 + salt) * palette.length)]!)));
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    scene.add(mesh);
+    meshes.push({ mesh, who });
+    return mesh;
+  };
+  const std = (rough: number, metal = 0) => wrap(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: rough, metalness: metal }));
+  mk(merge(parts.coat), std(0.55), standers, COATS, 1);
+  mk(merge(parts.skin), std(0.6), standers, SKINS, 2);
+  mk(merge(parts.dark), std(0.7), standers, ["#0e0f12", "#1a1816", "#22201e"], 3);
+  mk(merge(hair), std(0.7), standers.filter((s) => s.kind !== 1), HAIRS, 4);
+  mk(merge(hatG), std(0.6), standers.filter((s) => s.kind === 1), ["#121214", "#2a2420", "#1a1c22"], 5);
+  const umbMat = std(0.25);
+  if ("side" in umbMat) (umbMat as THREE.Material).side = THREE.DoubleSide;
+  mk(merge(umbrellaParts()), umbMat, standers.filter((s) => s.kind === 0), UMBRELLAS, 6);
+  const filming = standers.filter((s) => s.phone && s.kind !== 0);
+  mk(merge(armUp), std(0.55), filming, COATS, 1);
+  mk(merge(phoneG), new THREE.MeshBasicMaterial({ color: new THREE.Color("#cfe6ff").multiplyScalar(3) }), filming, null, 7);
+  const place = (t: number) => {
+    for (const { mesh, who } of meshes) {
+      who.forEach((s, i) => {
+        // A slow weight shift and a turn of the shoulders, never in step with the neighbours.
+        const sway = Math.sin(t * 0.9 + s.phase) * 0.035;
+        q.setFromAxisAngle(up, s.yaw + Math.sin(t * 0.4 + s.phase * 2) * 0.06);
+        const k = 0.93 + hash(s.phase * 7) * 0.12;
+        sc.set(k, k * (0.95 + hash(s.phase * 3) * 0.1), k);
+        p.set(s.x + sway, s.y, s.z + Math.cos(t * 0.7 + s.phase) * 0.02);
+        mesh.setMatrixAt(i, m.compose(p, q, sc));
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+  };
+  place(0);
+  return { update: place, count: standers.length };
+}

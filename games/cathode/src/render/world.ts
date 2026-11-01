@@ -14,7 +14,7 @@ import { L, type Level } from "./level";
 import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { addTraffic } from "./traffic";
-import { addCrowd, addPatients, addShrouds } from "./crowd";
+import { addCrowd, addPatients, addShrouds, addStandingCrowd, crowdStanders } from "./crowd";
 import { bakeVolume, LightPool, hash1, flicker, signatureGain } from "./lighting";
 import { FAIL_SEED } from "./levels/clinic";
 import { buildSigns } from "./signs";
@@ -152,6 +152,14 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   scene.add(lightning);
   const traffic = outdoor ? addTraffic(scene, P.skyline > 120 ? 8 : 5) : null;
   const crowd = addCrowd(scene, Object.entries(level.markers).filter(([k]) => k.startsWith("crowd:")).flatMap(([, v]) => v), P.skyline > 120 ? 14 : 8);
+  // Standing crowds (plan item 4): fewer on phones, never inside a wall, a barrier or a prop.
+  const crowdScale = P.skyline > 120 ? 1 : 0.6;
+  const blocked = (x: number, z: number) => level.builder.colliders.some((b) => b.min.y < 1.6 && x > b.min.x - 0.35 && x < b.max.x + 0.35 && z > b.min.z - 0.35 && z < b.max.z + 0.35);
+  const standing = addStandingCrowd(
+    scene,
+    crowdStanders((level.crowds ?? []).map((g) => ({ ...g, count: Math.round(g.count * crowdScale) })), blocked),
+    (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7 }),
+  );
   addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
@@ -329,7 +337,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       signs.uniforms.uTime.value = time;
       atmo.update(camera, time);
       traffic?.update(time);
-      if (!shot && dt > 0) crowd?.update(time);
+      if (!shot && dt > 0) {
+        crowd?.update(time);
+        standing?.update(time);
+      }
       pool.update(camera, dt, time, shot || dt === 0);
       fxs.update(fxDt, camera);
       // Lightning: two or three quick pulses, then thunder a few seconds later.
