@@ -1,5 +1,6 @@
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
+import { drawShareCard, CARD_W, CARD_H } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
@@ -355,7 +356,30 @@ function showWin(): void {
   ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : 'Next puzzle'
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
+  renderCard(stats.streak)
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
+}
+
+/** Plan item 6: the share card (the solved board and the numbers) as an image on the win card. */
+let cardBlob: Blob | null = null
+function renderCard(streak: number): void {
+  const canvas = document.createElement('canvas')
+  canvas.width = CARD_W
+  canvas.height = CARD_H
+  const ctx = canvas.getContext('2d')
+  const img = $<HTMLImageElement>('win-card')
+  const save = $<HTMLAnchorElement>('btn-save-card')
+  if (!ctx) return
+  const title = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice`
+  drawShareCard(ctx, puzzle, { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined })
+  const url = canvas.toDataURL('image/png')
+  img.src = url
+  img.alt = `${title}: the solved board, ${formatTime(game.elapsedMs)}, ${game.taps} taps, par ${puzzle.par}.`
+  img.hidden = false
+  save.href = url
+  save.hidden = false
+  cardBlob = null
+  canvas.toBlob((b) => (cardBlob = b), 'image/png')
 }
 
 /** Bea's crayon drawing of the field, different every day; a gold star when you were on par. */
@@ -402,6 +426,11 @@ function shareText(): string {
 ui.btnShare.addEventListener('click', async () => {
   const text = shareText()
   try {
+    const file = cardBlob ? new File([cardBlob], 'runnel.png', { type: 'image/png' }) : null
+    if (file && navigator.canShare?.({ files: [file] }) && matchMedia('(pointer: coarse)').matches) {
+      await navigator.share({ text, files: [file] })
+      return
+    }
     if (navigator.share && matchMedia('(pointer: coarse)').matches) {
       await navigator.share({ text })
       return

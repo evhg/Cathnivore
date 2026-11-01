@@ -168,6 +168,9 @@ test.describe('Runnel', () => {
     }
     await expect(page.getByRole('heading', { name: 'Every field is watered.' })).toBeVisible()
     await expect(page.locator('#win-taps')).toHaveText(String(puzzle.par))
+    // plan item 6: the win card shows the share image of the solved board
+    await expect(page.locator('#win-card')).toBeVisible()
+    await expect(page.locator('#win-card')).toHaveAttribute('src', /^data:image\/png/)
     await page.reload()
     await expect(page.locator('#hint')).toContainText('Solved')
     await expect(page.locator('.board.won')).toHaveCount(1)

@@ -926,6 +926,19 @@ kbd {
 }
 
 .stat-grid,
+.win-card {
+  display: block;
+  width: auto;
+  max-width: 62%;
+  max-height: 30vh;
+  height: auto;
+  margin: 12px auto 0;
+  border-radius: 6px;
+  border: 6px solid var(--paper, white);
+  rotate: -2deg;
+}
+.win-card[hidden] { display: none; }
+
 .win-numbers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
