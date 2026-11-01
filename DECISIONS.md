@@ -11,56 +11,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - Inline `style` attributes are forbidden by the CSP. Set dynamic styles through the CSSOM or classes.
 
 ## Recent (older entries in docs/archive/DECISIONS-2026-10.md)
-- 2026-10-14: H9 shipped as 'all 100 levels Fleet'; kept classic ramp()/HP_SCALE because ~dozens of mechanics tests pin classic levels. Deleting them is a test-rewrite, not worth a session.
-
-## 2026-10-14 06:52
-- H7 ticked after verifying hero.ts, kit chips, Last Orders and duel rewards already exist; the bot ignores kits so the 5% share floor stays at 2%.
-- U11 campaign/title done as CSS-only slices (no layout change).
-
-## 2026-10-14 07:51
-- U12 done as CSS/DOM-only slices (level-up beats, kill-cam caption, loot sheen); no gate/release run this session (nothing finished a whole milestone).
-- Temporary lab page `ui-lab.html` is not in the repo; recreate it in `games/cathode` (a div#lab and a module script of `src/ui/lab.ts`) to shoot the level-up, then delete it.
-
-## 2026-10-14 10:52
-- U5 done as hero CTAs first (a visible Today button beats key-art plumbing); landing e2e card selectors now `a.card[href]` because the hero adds second links.
-
-## 2026-10-14 11:53
-- Fixed red CI by tokenising the landing CTA colours rather than raising the ratchet baseline.
-- 2026-10-14: U5 closed without a keyart WebP (the SVG/CSS art is lighter and already sharp).
-- 2026-10-14 16:51: release denied by classifier; not retried, no other work done (needs the owner's go-ahead to deploy).
-- 2026-10-15: Release unblocked; the earlier gate-5 hotseat flake did not recur. Cause of the stalled gates was a Scene.tsx type error.
-- 2026-10-15 05:52: Phases D and H are complete; continued Phase U (U13) with Cath sheet fixes.
-- 2026-10-15 08:51: U13 closed and released (c18b5f4). Phases D, H and U1-U13 done; U14 audit is next and should yield big features, not tweaks.
-- 2026-10-15 09:52: U14 closed as an audit; planned U15 (Hedgerow desktop intel panel). No code this session.
-- 2026-10-15: grid variety (ROADMAP 120) via fieldSize swap, not per-level paths; level 23 exempt (bot lost on its narrow field). Ticked 101 (already built).
-- 2026-10-15 12:52: grid variety verified and released; no k changes needed.
-- 2026-10-15: the owner played CATHODE and asked for a week or more of non-stop work on combat, weapons, enemies and hit, wound and death visuals. Phase C overrides the D/H/U split until done. Bullets already stop at cover (rays against colliders); the gap is feedback.
-- 2026-10-15 13:52: Phase C started with C1 (hit/cover feedback) since the hit marker existed but was tiny; HUD scales via root font-size above 900px tall.
-- 2026-10-15 15:06 (C1): the spec's marker table (body 10u x 2.25u) is a floor; drawn 1.6x (16u x 3.6u, 43x10 physical px at 5K) because the owner found the earlier marker too small and the table would have shrunk it.
-- 2026-10-15 (C1): new shot cover is "thin" (bullets only), so movement and enemy sight are unchanged; LOS ignores thin cover (eyes see through glass). Enemy rounds still stop at any thin cover.
-- 2026-10-15 (C1): collider audit counts props inside the walkable bounds (+2 m) and treats a prop within 15 cm of a collider as covered (flush wall dressing); rooftop clutter is tagged "none".
-- 2026-10-15 (C1): confirm sounds live in `game/audio.ts` (dry bus) rather than a separate `combataudio.ts`; armour markers use the torso of enemies with armour >= 0.3 until C15's plates.
-- 2026-10-16 (C2): flinch springs run at 5 Hz, zeta 0.5 (not the spec's 12 Hz): that's the spring that "settles in about 250 ms" and peaks at ~38 ms; 12 Hz peaks in 16 ms and is gone in two frames. Kicks are sized so each channel peaks at the S4.1 table angle.
-- 2026-10-16 (C2): flinch pushes bend toward the far side of the hit (tuning.flinch.lateral): straight from the camera a pure "back" moves nothing on screen. The 8 px head check is judged at 5K @2 and phone @3; 1440x900 @1 measures 7 to 9 px for the same 0.13 m.
-- 2026-10-16 (C2): blood needs luma above ~0.15 or the grade drains its red, so the puff's "emissive lift" is GORE.liftGain x 0.18; wall decals with a tint above 1 get a small emissive term. Decals also land on shot-only cover (shutters sit 10-15 cm in front of the wall collider).
-- 2026-10-16 (C2): "last enemy of the encounter" = no other armed enemy fighting, searching or within 20 m; takedowns never trigger it (C11 owns that moment). Pools, death variants and severing stay in C9/C19.
-- 2026-10-16 (C2 review): head flinch tips 32 deg (spec 22; 28 measured 7.6 to 8.5 px) so the 60 ms head move clears 8 physical px at every size, 1440x900 included (the old d-only waiver is gone); the head-class marker gap opens to 16u so the X frames the head, checked by a <30% head-cover probe.
-- 2026-10-16 (C2 review): wall splats tint (1.55, 0.55, 0.5) not 2.3 (that toned out to salmon), stream along the round and grow with distance up to 1.6x; a kill's whole body rim glows red 500 ms then fades over 1.4 s (`hitFlash.death`) so a dark corpse on a dark street still reads. Pools stay in C9.
-- 2026-10-16 (C2 review): S4.1's "the hand opens 30 deg" is deferred to C10: the v1 segment body has no fingers to open. A living target's bar keeps a 6% sliver; the Kestrel headshot leaving a base Enforcer at 0.4 HP is a damage-table question for C15 (with a sim run), not a C2 change.
-- 2026-10-16 (C2 fix): `stage()` is deterministic: every stage restores Cath's first stage pose and reuses (and revives) the same guard, so a stage no longer inherits the last one's aim or corpse. The head flinch's on-screen margin comes from a 0.2 m shove (a Kestrel headshot already clamps the 32 deg tip at maxDeg 45).
-- 2026-10-16 (C2 fix): blood reads crimson, not bloom-pink: liftGain 4 (was 7), mist alpha 0.85; a head hit's main cloud sits 14 cm behind the head so its outline cuts it. The spurt is overstated past S4.5 (7-11 drops at 3-5.5 m/s in a 70 deg cone) so streaks clear the marker by 40 ms.
-- 2026-10-16 (C2 fix): the hit flash and death glow take back most of the fog where lit (body.ts), so the phone's death glow drops from 2.6x to 1.5x and stays a dark red; the corpse probe fails at every size again. Gore meshes skip the mirror pass and empty draws; anchors are refcounted.
-- 2026-10-16 (C2 fix): Gate 7 scored 91 on an idle machine (the 62/77/83 runs were CPU contention from parallel swiftshader browsers). Run Lighthouse with no headless WebGL running.
-- 2026-10-16 (C2 fix): the spurt fans across the view at 5-9 m/s (a spurt straight at the camera barely moved on screen) and 4-6 slow "ooze" drops hold the wound red after it; a dead-centre hit's flinch side follows the round's sideways travel, not a hash of the point (that flipped the staged chest flinch between 2.6 and 9.2 px). The 0.2-0.45 m "past the marker" ring probe is tracked as a warning (1.5-3% today) until C9.
-- 2026-10-16 (C2 fix): droplets have air drag (5/s) so the spurt bursts and falls instead of flying on as laser-straight lines; a head hit's rear cloud lives 1.6x longer (the read at 160 ms); the kill glow is 0.32 (was 0.45) now that it takes its fog back off.
-- 2026-10-16 (C2 verify): idle-machine re-shoot at 5K/D/phone/rm: every C2 probe passes except hit-head@160 at 1440x900 (9.8% red; the head occludes its rear cloud), fixed by x1.6 head ooze (12%). rm now matches D exactly (flinch 11.6 px), so stages are deterministic. Phone splat tint (2.3, 0.34, 0.3): the phone fog still lifts it coral-ish; the fix is the phone fog density (C-perf/C20). Gate 7 scored 89 idle.
-- 2026-10-16 (C3): the take key is the takedown key (F, rebindable), not the spec's E: E is lean right. One contextual interact button; the prompt shows the bound key, and on touch the chip itself is the button.
-- 2026-10-16 (C3): HUD sizes convert 1440x900-exact (px x 4/3 = u, rem x 21.3 = u), so D keeps its look and 5K grows 1.78x; text tokens are redefined on `.hud-root` in u with 12 px floors, leaving the rem front end alone. Touch controls and the phone layout blocks stay in px (`/* px-ok:begin */`): tap targets are physical.
-- 2026-10-16 (C3): the beam is full strength 20-60 m and eases to 55% by 5 m and 0 by 1.5 m (S7.1's "fades from 60 m to 5 m" read as: never blinding up close); it rises from behind the gun so the gun stays clear, and the prompt replaces the objective marker once she's at the case.
-- 2026-10-16 (C3): an emptied case stays on its stall, shut; the walkway case gets no collider (the trestle would close the walkway); Crisp's ledger uses the same case and stays walk-in (only weapons need a press).
-- 2026-10-17 (C4): the viewmodel cuff follows the character bible (charcoal gabardine trench, cream silk cuff, pearl bracelet, black gloves), not S2.1's burgundy cuff: Cath is the face of every game.
-- 2026-10-17 (C4): each arm is one skinned mesh (rigid weights), so the Kestrel with hands is 11 draws desktop / 10 phone; ADS narrows the viewmodel camera to 36° with the gun 0.4 m out so the wrists drop under the dot.
-- 2026-10-17 (C4): older guns keep their shapes but fold into the kit material (2-4 draws each); their own rebuild is C18. Gun budgets count visible meshes at rest (the one-frame flash is excluded).
 - 2026-10-17 (C4): glove fingers are single lathed tubes skinned across three phalanx bones (smoothstep blends ±0.75r at each joint) rather than per-phalanx capsules; the palm heel takes 55% of the forearm so the wrist bends without a seam.
 - 2026-10-17 (C4): the phone profile damps dielectric specular to 45% and kit emissives to 60% in the kit shader, compensating its 1.26x brighter grade, half-res bloom and missing sheen/clearcoat lobes; desktop is unchanged.
 - 2026-10-17 (C4): `vm-lab.html` (dev only, like ui-lab) is the fast loop for viewmodel shape work: seconds per angle instead of minutes per full-game SwiftShader frame.
@@ -242,3 +192,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 17:20: entrance ropes now stay hanging after he lands (anchor and floor coil), so she sees where he came from; men entering carry a helmet torch beam aimed at the floor between him and her, vans have headlamp beams and an amber bar. All visual only, no gameplay change.
 - 2026-11-01 17:25: moved four alarm entrances (Plaza rope and van, Tower rope A, Vault lift and rope) into collider sightline of their objectives at 8-20 m; `tests/cathode-entrances.test.ts` enforces it. Non-collider visuals (awnings) still block the Plaza van: next session.
 - 2026-11-01 17:40: plan item 7 left open: the acceptance lines hold (124 px first guard, marker ink test, 2+ entrances per district, e2e in three districts) but the shots don't yet show every alarm entrance from where she stands.
+- 2026-11-01 18:00: the Plaza strongbox alarm is two vans, not a van and a rope: from the back of the stall she can only see out of its open front, and every roof anchor in that cone came down behind the stalls' back walls. The Plaza still has a rappel (Pell's rally detail).
+- 2026-11-01 18:10: plan item 8's "P layout unchanged" is held for Setup (its mode-tile art and poster eyebrow are desktop only); the end screen's P layout does change (it gains the chart and play card) because the item asks for both on the end screen.
+- 2026-11-01 18:10: the end screen's grade is points (10 per region, 30 for the win, 2 per Trust left, less 1 per round) against per-difficulty bars (`GRADE_BARS` in `src/ui/endSummary.ts`); history is rebuilt by replaying the action log, no save change.
+- 2026-11-01 18:20: plan item 9 gives NIGHT SHIFT's Cath the bible's long, centre-parted hair (it was a low knot, CATHODE's old "work look"), because the plan names "long hair as cards" and the bible is the source of truth.

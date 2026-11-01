@@ -141,6 +141,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The title and class pick are re-shot.
   - The perf gate passes on the phone tier.
 - **Size:** 5
+- **Progress:** session 1 (2026-11-01 17:51): `?shot&arch=cath` turntable (`view=face`); hair to the bible (smooth centre-parted hairline, long waved hair over the collar down her back); ears; painted face modelling; larger hazel eyes; shaped neck; collar stepped down at the front; title re-shot at D. Left: expression blends, the four busts, class pick re-shot, phone perf.
 
 ## 10. [ ] Hedgerow: field-first phone layout, swarm readability, a choreographed tally
 - **Why:**
