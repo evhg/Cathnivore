@@ -433,6 +433,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     b.shape(k % 2 ? "paintRed" : "yellowPaint", new THREE.SphereGeometry(0.22, 7, 5), V(x, 1.38, z), 0, V(1, 0.6, 1));
   }
   b.cylinder("pipe", V(9, 1.0, 40), V(9, 2.5, 40), 0.025, 5);
+  b.tagLast("thin", "metal");
   b.shape("paintRed", new THREE.ConeGeometry(1.3, 0.45, 10, 1, true), V(9, 2.6, 40));
   b.shape("glowWarm", new THREE.SphereGeometry(0.06, 6, 4), V(9, 2.3, 40));
   light(V(9, 2.2, 40.6), "#ffb870", 9, 6, 0, true);

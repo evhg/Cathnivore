@@ -103,6 +103,7 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
   // Over the runner hangs the lobby's sculpture: three chrome rings, nested and tilted, lit from below.
   for (const [r, rx, rz] of [[2.6, 0.3, 0], [2.0, -0.4, 0.5], [1.4, 0.9, -0.3]] as const) {
     b.shape("chrome", new THREE.TorusGeometry(r, 0.06, 6, 40), V(0, 8.2, 38), 0, undefined, 1, Math.PI / 2 + rx, rz);
+    b.tagLast("none"); // overhead, far above any firefight
   }
   b.cylinder("chrome", V(0, 10.9, 38), V(0, ceil, 38), 0.015, 4);
   for (const x of [-1.2, 1.2]) light(V(x, 0.3, 38), "#ffe0b0", 14, 10, 0, false);
