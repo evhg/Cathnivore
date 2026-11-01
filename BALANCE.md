@@ -96,3 +96,17 @@ Fleet levels grow those five along paths (`paths.ts`; tier 3 from level 6); the 
 
 ## 2026-10-29 Hedgerow N10: `hedgerow-tune.ts --verify`, levels 1-100
 - The best bot (`playLevel(..., "best")`) wins every level with at least 50% Goodwill at the shipped `START_K`/`HP_SCALE`; no level needed raising (0 of 100 differ from `tuning.ts`). No values changed.
+
+## Runnel weekday arc (2026-11-01, plan item 6)
+
+Dailies from 2026-11-02 follow `WEEKDAY_ARC` in `games/runnel/src/engine.ts`; earlier dailies are unchanged (they are in saves). 52 weeks per weekday, `npx tsx scripts/runnel-arc.ts`. Time is a model (1.2 s per tap, 10% wasted taps), not measured play. Before, every day was the radius-3 board with a median par of 74-83 (about 1:40-1:50).
+
+| Day | Tiles | Par (median) | Par (min-max) | Est. median time |
+| --- | --- | --- | --- | --- |
+| Mon | 18 | 35 | 22-46 | 0:46 |
+| Tue | 18 | 38 | 27-54 | 0:50 |
+| Wed | 35 | 57 | 44-73 | 1:15 |
+| Thu | 35 | 63 | 49-75 | 1:23 |
+| Fri | 35 | 73 | 54-90 | 1:36 |
+| Sat | 35 | 76 | 58-97 | 1:40 |
+| Sun | 36 | 78 | 61-100 | 1:43 |

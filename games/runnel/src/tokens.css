@@ -15,6 +15,10 @@
   --blossom-0: #f6f1e4;
   --blossom-1: #f2a7b8;
   --blossom-2: #b9a3e6;
+  --sky-morning: #fff1c9;
+  --sky-golden: #ffb25c;
+  --sky-dusk: #6b4f9a;
+  --cloud: #2b2320;
   --gold: #d9951c;
   --grain: rgba(107, 74, 43, 0.14);
   --stone: #b9ada0;
@@ -76,6 +80,7 @@
     --blossom-0: #efe6d2;
     --blossom-1: #e693a6;
     --blossom-2: #a995dc;
+    --cloud: #000;
     --grain: rgba(0, 0, 0, 0.2);
     --stone: #6f655b;
     --stone-2: #857a6e;

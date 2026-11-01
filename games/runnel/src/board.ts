@@ -2,6 +2,7 @@
 // Policy forbids inline style attributes, so every dynamic style goes through the CSSOM
 // (`element.style.setProperty`), never through markup.
 
+import { skyFor } from './sky'
 import { computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -108,6 +109,7 @@ export class Board {
     const tiles = el('g', { class: 'tiles' }, svg)
     puzzle.cells.forEach((cell, i) => this.views.push(this.drawCell(tiles, cell, i)))
     this.puddles = el('g', { class: 'puddles' }, svg)
+    this.drawSky(svg, defs)
     // drawCell already gave the first playable cell tabindex="0" as the sole initial roving-tabindex
     // stop; track it so the first focus/click elsewhere clears it instead of leaving two.
     this.focusIndex = this.firstPlayable()
@@ -225,6 +227,61 @@ export class Board {
     else if (cell.kind === 'field') this.drawField(root, index)
     el('circle', { class: 'pin', r: 5.5, cx: 0, cy: -S * 0.62 }, root)
     return view
+  }
+
+  /**
+   * The day's light and weather over the board, clipped to the tiles: a wash for the time of day,
+   * drifting cloud shadows, drizzle (which clears into a rainbow when the board is solved) or a breeze
+   * that makes the crops sway harder. Purely decorative and never in the way of a tap.
+   */
+  private drawSky(svg: SVGSVGElement, defs: SVGDefsElement): void {
+    const sky = skyFor(this.puzzle.seed)
+    // Screenshot hook: `?sky=<time>,<weather>` forces the day's sky.
+    const forced = new URLSearchParams(location.search).get('sky')?.split(',')
+    if (forced?.[0]) sky.time = forced[0] as typeof sky.time
+    if (forced?.[1]) sky.weather = forced[1] as typeof sky.weather
+    svg.dataset.time = sky.time
+    svg.setAttribute('aria-label', `Puzzle board. ${sky.label}`)
+    svg.dataset.weather = sky.weather
+    const clip = el('clipPath', { id: 'board-clip' }, defs)
+    for (const c of this.puzzle.cells) {
+      const { x, y } = cellCentre(c.q, c.r)
+      el('polygon', { points: hexPoints(S * 0.965), transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, clip)
+    }
+    const [vx, vy, vw, vh] = (svg.getAttribute('viewBox') ?? '0 0 0 0').split(' ').map(Number) as [number, number, number, number]
+    const g = el('g', { class: 'sky', 'clip-path': 'url(#board-clip)', 'aria-hidden': 'true' }, svg)
+    el('rect', { class: 'sky-light', x: vx, y: vy, width: vw, height: vh }, g)
+    const rng = (k: number) => (hashString(`${this.puzzle.seed}:sky:${k}`) % 1000) / 1000
+    if (sky.weather === 'clouds' || sky.weather === 'drizzle') {
+      for (let k = 0; k < 3; k++) {
+        const cl = el('ellipse', {
+          class: 'cloud',
+          cx: (vx + vw * (0.15 + 0.35 * k)).toFixed(1),
+          cy: (vy + vh * (0.2 + 0.6 * rng(k))).toFixed(1),
+          rx: (vw * (0.22 + 0.1 * rng(k + 10))).toFixed(1),
+          ry: (vh * 0.12).toFixed(1),
+        }, g)
+        cl.style.setProperty('--drift-delay', `${(-rng(k + 20) * 40).toFixed(1)}s`)
+      }
+    }
+    if (sky.weather === 'drizzle') {
+      const rain = el('g', { class: 'rain' }, g)
+      for (let k = 0; k < 42; k++) {
+        const x = vx + vw * rng(k + 30)
+        const y = vy + vh * rng(k + 80)
+        const d = el('line', { class: 'drop', x1: x.toFixed(1), y1: y.toFixed(1), x2: (x - 4).toFixed(1), y2: (y + 14).toFixed(1) }, rain)
+        d.style.setProperty('--fall-delay', `${(-rng(k + 130) * 1.1).toFixed(2)}s`)
+      }
+      const bow = el('g', { class: 'rainbow' }, svg)
+      bow.setAttribute('aria-hidden', 'true')
+      const cx = vx + vw / 2
+      const base = vy + vh * 0.95
+      ;['#e86f5a', '#f0a33c', '#f2d35b', '#7fbf6a', '#5aa6d6', '#8a7fd0'].forEach((colour, k) => {
+        const r = vw * 0.46 - k * 7
+        const arc = el('path', { d: `M${(cx - r).toFixed(1)} ${base.toFixed(1)} A${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${(cx + r).toFixed(1)} ${base.toFixed(1)}`, class: 'bow-band' }, bow)
+        arc.style.setProperty('stroke', colour)
+      })
+    }
   }
 
   private firstPlayable(): number {

@@ -1785,3 +1785,116 @@ body {
 .garden .plot.exclusive {
   box-shadow: 0 0 0 2px var(--gold);
 }
+
+/* ---- the day's sky over the board (sky.ts): light, clouds, drizzle, breeze, a rainbow on a wet win ---- */
+
+.sky,
+.rainbow {
+  pointer-events: none;
+}
+
+.sky-light {
+  fill: transparent;
+  mix-blend-mode: soft-light;
+  transition: opacity 1.2s ease;
+}
+
+[data-time='morning'] .sky-light {
+  fill: var(--sky-morning);
+  opacity: 0.55;
+}
+
+[data-time='golden'] .sky-light {
+  fill: var(--sky-golden);
+  opacity: 0.26;
+}
+
+[data-time='dusk'] .sky-light {
+  fill: var(--sky-dusk);
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+}
+
+.cloud {
+  fill: var(--cloud);
+  opacity: 0.12;
+  animation: cloud-drift 46s linear infinite var(--drift-delay, 0s);
+}
+
+@keyframes cloud-drift {
+  from {
+    transform: translateX(-60%);
+  }
+  to {
+    transform: translateX(60%);
+  }
+}
+
+.drop {
+  stroke: var(--water-hi);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.55;
+  animation: drop-fall 1.1s linear infinite var(--fall-delay, 0s);
+}
+
+@keyframes drop-fall {
+  from {
+    transform: translate(10px, -40px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.55;
+  }
+  to {
+    transform: translate(-10px, 40px);
+    opacity: 0;
+  }
+}
+
+.won .rain,
+.won .cloud {
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.bow-band {
+  fill: none;
+  stroke-width: 7;
+  opacity: 0;
+}
+
+.won .bow-band {
+  animation: bow-in 1.8s ease-out both 900ms;
+}
+
+@keyframes bow-in {
+  from {
+    opacity: 0;
+    stroke-dasharray: 0 2000;
+  }
+  to {
+    opacity: 0.32;
+    stroke-dasharray: 2000 0;
+  }
+}
+
+[data-weather='breeze'] .wet .sway {
+  animation-duration: 1.7s;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sky-light {
+    opacity: 0.2 !important;
+  }
+
+  .cloud {
+    opacity: 0.18;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rain {
+    display: none;
+  }
+}
