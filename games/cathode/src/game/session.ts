@@ -1633,7 +1633,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       coaching = true;
       document.exitPointerLock?.();
       const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
-      openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone);
+      openDistrictMap(o.hud.parentElement ?? o.hud, player.pos, t ? { x: t.x, z: t.z } : null, () => (coaching = false), progress.jobsDone, world.colliders);
     }
     if (intent.photo && !coaching && !charScreen && !killcam.active && !dead && !input.isTouch) {
       coaching = true;

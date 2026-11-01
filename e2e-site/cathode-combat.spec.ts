@@ -453,4 +453,38 @@ test.describe('CATHODE takedowns', () => {
     await page.keyboard.press('Escape')
     await expect(page.locator('.hud-pause')).toBeHidden({ timeout: 5_000 })
   })
+
+  test('plan item 12: the pause Case board opens the drawn map (no overlapping labels, Tab stays on it, Escape closes)', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'a keyboard path')
+    test.setTimeout(300_000)
+    await boot(page, hasTouch)
+    await page.waitForTimeout(600)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.hud-pause')).toBeVisible({ timeout: 5_000 })
+    await page.locator('.hud-pm-item', { hasText: /case board/i }).click()
+    const map = page.locator('.district-map')
+    await expect(map).toBeVisible({ timeout: 20_000 })
+    await expect(map.locator('h2')).toHaveText(/drowned market/i)
+    await expect(map.locator('.dmap-t', { hasText: 'Noodle cart' })).toHaveCount(1)
+    await expect(map.locator('.dmap-solids rect').first()).toBeAttached()
+    const hits = await page.evaluate(() => {
+      const t = [...document.querySelectorAll('.dmap-t')].map((e) => ({ s: e.textContent, b: e.getBoundingClientRect() }))
+      const out: string[] = []
+      for (let i = 0; i < t.length; i++)
+        for (let j = i + 1; j < t.length; j++) {
+          const a = t[i]!.b
+          const b = t[j]!.b
+          if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) out.push(`${t[i]!.s} x ${t[j]!.s}`)
+        }
+      return out
+    })
+    expect(hits).toEqual([])
+    await expect(map.getByRole('button', { name: /back to the street/i })).toBeFocused()
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Tab')
+      expect(await page.evaluate(() => !!document.activeElement?.closest('.district-map'))).toBe(true)
+    }
+    await page.keyboard.press('Escape')
+    await expect(map).toHaveCount(0, { timeout: 5_000 })
+  })
 })
