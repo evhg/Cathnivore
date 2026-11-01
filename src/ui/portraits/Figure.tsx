@@ -312,6 +312,67 @@ function Outfit({ kind, base, accent }: { kind: CharacterPortrait['accessory']; 
   }
 }
 
+/** What each speaker holds, so they read at a glance: Mara's crook, Sol's mic, Tomas's carrots, Ines's notebook. */
+function Prop({ who, skin, skinLine }: { who: string; skin: string; skinLine: string }) {
+  const hand = (cx: number, cy: number, flip = 1) => (
+    <g>
+      <ellipse cx={cx} cy={cy} rx={15} ry={13} fill={skin} stroke={skinLine} strokeWidth={1.8} />
+      <path d={`M ${cx - 9 * flip} ${cy - 4} h ${16 * flip} M ${cx - 9 * flip} ${cy + 3} h ${16 * flip}`} stroke={skinLine} strokeWidth={1.2} opacity={0.6} />
+    </g>
+  )
+  switch (who) {
+    case 'mara':
+      return (
+        <g>
+          <path d="M 102 580 L 112 150" stroke="#6B4A2B" strokeWidth={9} strokeLinecap="round" />
+          <path d="M 112 152 Q 116 112 92 110 Q 72 112 76 134" stroke="#6B4A2B" strokeWidth={9} fill="none" strokeLinecap="round" />
+          <path d="M 110 300 L 112 160" stroke="#9A7044" strokeWidth={2.5} opacity={0.6} />
+          {hand(110, 362, -1)}
+        </g>
+      )
+    case 'sol':
+      return (
+        <g>
+          <path d="M 268 420 Q 300 470 290 520" stroke="#2A2422" strokeWidth={3} fill="none" />
+          <rect x={256} y={350} width={22} height={70} rx={8} fill="#2A2422" transform="rotate(-14 267 385)" />
+          <ellipse cx={258} cy={346} rx={17} ry={20} fill="#6A6E74" stroke="#2A2422" strokeWidth={2.5} transform="rotate(-14 258 346)" />
+          <path d="M 246 340 h 24 M 246 348 h 24 M 248 356 h 20" stroke="#3A3E44" strokeWidth={1.5} transform="rotate(-14 258 346)" />
+          {hand(270, 400)}
+        </g>
+      )
+    case 'tomas':
+      return (
+        <g>
+          {[0, 1, 2].map((i) => (
+            <path key={i} d={`M ${262 + i * 9} 420 L ${252 + i * 12} 330`} stroke="#E46A1E" strokeWidth={11} strokeLinecap="round" />
+          ))}
+          {[0, 1, 2].map((i) => (
+            <path key={i} d={`M ${252 + i * 12} 332 q ${-12 + i * 8} -30 ${-6 + i * 10} -48 M ${252 + i * 12} 332 q ${4 + i * 4} -26 ${14 + i * 6} -38`} stroke="#5B7F3A" strokeWidth={4} fill="none" strokeLinecap="round" />
+          ))}
+          {hand(270, 404)}
+        </g>
+      )
+    case 'ines':
+      return (
+        <g>
+          <g transform="rotate(10 268 400)">
+            <rect x={240} y={360} width={60} height={78} rx={3} fill="#4E6A8C" stroke="#26364A" strokeWidth={2} />
+            <rect x={244} y={364} width={52} height={70} fill="#FBF7F0" />
+            {[0, 1, 2, 3, 4].map((i) => (
+              <path key={i} d={`M 250 ${378 + i * 11} h ${i % 2 ? 30 : 40}`} stroke="#7A8AA0" strokeWidth={1.6} />
+            ))}
+            <path d="M 236 362 v 76" stroke="#9AA0A6" strokeWidth={4} strokeDasharray="3 4" />
+          </g>
+          <path d="M 222 420 L 252 360" stroke="#C9302C" strokeWidth={5} strokeLinecap="round" />
+          {hand(226, 414, -1)}
+          {hand(290, 430)}
+        </g>
+      )
+    default:
+      return null
+  }
+}
+
 export default function Figure({ character, expression, title }: { character: string; expression?: CathExpression; title?: string }) {
   const spec = CHARACTERS[character]
   if (!spec) return null
@@ -377,6 +438,10 @@ export default function Figure({ character, expression, title }: { character: st
           <path d={`M 0 280 L ${sx(150)} 280 Q ${sx(128)} 390 ${sx(140)} 520 L 0 520 Z`} fill="#180e0c" opacity={0.16} />
           <path d={`M ${sx(292)} 320 Q ${sx(300)} 420 ${sx(298)} 520`} stroke="#FFE7C6" strokeWidth={4} fill="none" opacity={0.5} />
           <Outfit kind={spec.accessory} base={cloth} accent={spec.outfitAccent} />
+        </g>
+        {/* held at chest height so the caption never hides it */}
+        <g transform="translate(0 -60)">
+          <Prop who={character} skin={spec.skin} skinLine={skinLine} />
         </g>
         {spec.accessory === 'clipboard' && (
           <g transform="rotate(-8 270 420)">
