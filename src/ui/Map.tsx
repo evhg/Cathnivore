@@ -666,7 +666,7 @@ function HollowellHQ() {
       <rect x={-19} y={-56} width={9} height={56} fill="var(--hollowell-highlight)" opacity={0.55} />
       {Array.from({ length: 4 }, (_, row) =>
         Array.from({ length: 3 }, (_, col) => (
-          <rect key={`${row}-${col}`} x={-13 + col * 9.5} y={-48 + row * 10} width={6} height={6} rx={0.8} fill="var(--paper)" opacity={(row + col) % 3 === 0 ? 0.95 : 0.6} />
+          <rect key={`${row}-${col}`} x={-13 + col * 9.5} y={-48 + row * 10} width={6} height={6} rx={0.8} fill="var(--wheat-hi, #e8c35a)" opacity={(row + col) % 3 === 0 ? 0.95 : 0.6} />
         )),
       )}
       <rect x={-5} y={-9} width={10} height={9} fill="var(--ink)" />
