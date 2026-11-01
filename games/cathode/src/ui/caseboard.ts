@@ -100,8 +100,19 @@ export function openCaseBoard(parent: Element, jobsDone: readonly string[], onCl
   const ol = el("ol", "case-list", card);
   ol.setAttribute("aria-label", "Leads");
   let i = 0;
+  // On a phone the closed leads are one stamped stack, so the open lead isn't five cards down the wall.
+  const closedLeads = leads.filter((c) => c.state === "done");
+  const stackClosed = closedLeads.length > 1 && typeof matchMedia === "function" && matchMedia("(max-width: 600px)").matches;
+  if (stackClosed) {
+    const li = el("li", "case-done case-pile", ol);
+    cssVar(li, "--tilt", tilt(i++));
+    el("i", "case-pin", li);
+    el("b", "", li, `${closedLeads.length} leads closed`);
+    el("em", "case-stamp", li, "Closed");
+    el("span", "", li, closedLeads.map((c) => c.title).join(" · "));
+  }
   for (const c of leads) {
-    if (c.state === "locked") continue;
+    if (c.state === "locked" || (stackClosed && c.state === "done")) continue;
     const li = el("li", `case-${c.state}`, ol);
     cssVar(li, "--tilt", tilt(i++));
     el("i", "case-pin", li);
