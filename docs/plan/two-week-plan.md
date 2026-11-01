@@ -53,7 +53,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The level tests still pass.
 - **Size:** 4
 
-## 4. [ ] NIGHT SHIFT: Plaza, Tower and Vault art pass (acts 3 to 5)
+## 4. [x] NIGHT SHIFT: Plaza, Tower and Vault art pass (acts 3 to 5) *(done 2026-11-01, f95a297..HEAD: see Progress; D and L shot sets per district, clipping under 0.1%, phone perf 211/209/142 calls)*
 - **Why:**
   - The Plaza is flat pink and cyan boxes, overexposed and empty, while Cath says "Pell wants a crowd tonight".
   - The Tower is a bare hall with a white slab.
@@ -67,7 +67,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Under 5% of any frame is clipped at 255.
   - The perf gate passes.
 - **Size:** 7, sliced as Plaza (3), then Tower and Vault (4).
-- **Progress:** Plaza session 1 (2026-11-01, f95a297..d47a2ac): skyline slab bug fixed, standing crowds, rally rig, stall dressing and signs, fountain vigil and brass inlay, tram, founders; perf and clipping pass. Left for the Plaza: paving set, Pell billboard portrait, awnings, facades.
+- **Progress:** Plaza session 1 (2026-11-01, f95a297..d47a2ac): skyline slab bug fixed, standing crowds, rally rig, stall dressing and signs, fountain vigil and brass inlay, tram, founders; perf and clipping pass. Session 2 (2026-11-01, a452381..HEAD): Plaza granite setts (`plazatex.ts`), Pell's posterised portrait board (`pellboard.ts`, `Level.boards`), lit hall facade, pitched awnings with scalloped valances and lit stall backs, side-block shopfronts, a lit arrival walk; Tower marble/slat ceiling/carpet (`towertex.ts`), onyx reception desk, ring sculpture, dressed desks, glass meeting room, rack fronts, black marble boardroom, standing lobby crowd; Vault core machine, round vault door, ledger archive, mesh cage, hazard-edged gantries. Areas shot: Plaza arrival/market/fountain-rally/hall, Tower lobby/offices/server/boardroom, Vault gate/archive/gantry/core.
 
 ## 5. [ ] Cathnivore: graphic-novel story scenes (ROADMAP 58, U7)
 - **Why:** scenes are a roughly 120 px bust and one speech bubble on an empty gradient.

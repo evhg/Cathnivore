@@ -233,3 +233,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 12:00: Plaza crowds are visual only (no colliders, bullets pass through), like the old capsule crowds; a new `Level.crowds` list replaces the Plaza's `crowd:*` markers. Market and Tower keep the capsules for now.
 - 2026-11-01 12:05: the skyline "holo edge" fix changes every outdoor district's sky (fewer, thinner glowing lines, no solid slabs); taken as a bug fix, not a restyle.
 - 2026-11-01 12:25: "under 5% clipped at 255" is measured on phone-quality D frames with `e2e/screenshots/clipped.mjs`; all Plaza frames are under 0.1%.
+- 2026-11-01 13:05: Pell's billboard is a painted canvas portrait (`pellboard.ts`, one merged mesh via `Level.boards`), not a new sign style; the giant board grew to 21 x 8.6 m so it reads from the square.
+- 2026-11-01 13:15: Plaza and Tower surfaces are painted at load (`plazatex.ts`, `towertex.ts`) like the clinic; tower carpets are dry (no rain sheen) indoors. The Tower's capsule crowd became standing crowds.
+- 2026-11-01 13:25: tried brushed-steel walls in the Vault and reverted: the 2 m tile showed smudge blotches as spots. Vault walls stay concrete; the cage is grate mesh but still stops rounds (unchanged gameplay).
+- 2026-11-01 13:30: plan item 4 ticked: Tower and Vault (estimated 4 sessions) were done in one by painting surfaces and dressing the existing layouts, not rebuilding them. Plaza phone triangles are 252k of 260k, so later Plaza additions must cut something.

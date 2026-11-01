@@ -155,6 +155,24 @@ export function buildTower(quality: "phone" | "high" | "ultra"): Level {
     }
   }
   b.boxMinMax("glass", 9, H1, -10, 9.06, H1 + 3.6, -26, { cover: "thin", mat: "glass" });
+  // Plan item 4: a glass-walled meeting room in the north-west corner of the floor: clear glass on chrome
+  // frames with a frosted band, a round table and chairs, and a wall screen showing the quarter's numbers.
+  b.boxMinMax("clearGlass", xW, H1, -24.03, -9, H1 + 3.2, -23.97, { cover: "thin", mat: "glass" });
+  b.boxMinMax("clearGlass", -6.53, H1, -27.9, -6.47, H1 + 3.2, -24, { cover: "thin", mat: "glass" });
+  b.boxMinMax("plasticWhite", xW, H1 + 1.1, -24.05, -9, H1 + 1.4, -23.95, { cover: "none" }); // frosted band
+  b.boxMinMax("plasticWhite", -6.55, H1 + 1.1, -27.9, -6.45, H1 + 1.4, -24, { cover: "none" });
+  for (const x of [xW, -11.5, -9, -6.5]) b.box("chrome", x, H1 + 1.6, -24, 0.06, 3.2, 0.06, { cover: "none" });
+  for (const z of [-26, -27.9]) b.box("chrome", -6.5, H1 + 1.6, z, 0.06, 3.2, 0.06, { cover: "none" });
+  b.box("chrome", -10.25, H1 + 3.2, -24, 7.5, 0.06, 0.06, { cover: "none" });
+  b.cylinder("blackPaint", V(-10.4, H1 + 0.72, -26), V(-10.4, H1 + 0.76, -26), 1.0, 16);
+  b.cylinder("chrome", V(-10.4, H1, -26), V(-10.4, H1 + 0.72, -26), 0.08, 6);
+  for (let k = 0; k < 4; k++) {
+    const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
+    b.box("rubber", -10.4 + Math.cos(a) * 1.35, H1 + 0.48, -26 + Math.sin(a) * 1.35, 0.5, 0.08, 0.5, { rotY: -a, cover: "none" });
+    b.box("rubber", -10.4 + Math.cos(a) * 1.6, H1 + 0.8, -26 + Math.sin(a) * 1.6, 0.08, 0.6, 0.5, { rotY: -a, cover: "none" });
+  }
+  signs.push({ text: "Q4  +31%", sub: "DEBT BOOK · HOLLOWELL", style: "screen", color: "#7fe9ff", w: 2.6, h: 1.3, center: V(xW + 0.06, H1 + 1.9, -26), normal: V(1, 0, 0), flicker: 0, intensity: 2.2 });
+  light(V(-10.4, H1 + 2.8, -26), "#e8f4ff", 12, 7, 0);
   for (let i = 0; i < 6; i++) {
     const z = -12 - i * 2.2;
     b.box("darkMetal", 12.8, H1 + 1.2, z, 0.9, 2.4, 1.2, { collide: "metal" });
