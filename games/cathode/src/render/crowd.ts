@@ -124,6 +124,8 @@ export function seatedParts() {
   // Neck and a bowed head.
   skin.push(limb(v(0.0, 1.12, 0), v(0.06, 1.24, 0), 0.05), ball(v(0.1, 1.31, 0), 0.105, 1, 1.12, 0.92));
   const hair = [ball(v(0.07, 1.36, 0), 0.112, 1.02, 0.9, 0.97)];
+  // Brows and the shadow of downcast eyes, so a face reads as a face at a few metres.
+  for (const s of [-1, 1]) hair.push(boxAt(0.192, 1.33, s * 0.04, 0.02, 0.014, 0.045, -0.2), boxAt(0.193, 1.305, s * 0.038, 0.012, 0.012, 0.03));
   // The debt tag: a lanyard card on the chest, tipped forward with the hunch.
   const tags = [boxAt(0.15, 0.92, 0.0, 0.012, 0.085, 0.06, -0.25), boxAt(0.33, 0.67, -0.07, 0.035, 0.02, 0.05)];
   return { clothes, skin, hair, tags };

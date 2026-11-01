@@ -13,7 +13,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
 
 ---
 
-## 1. [ ] NIGHT SHIFT: Candor Clinic art pass (act 2)
+## 1. [x] NIGHT SHIFT: Candor Clinic art pass (act 2) *(done 2026-11-01, 245ee8e..HEAD: painted tile/vinyl/ceiling/steel PBR, open side rooms, glazed partitions, props, seated debt-tagged patients, shrouds, green grade, stuttering tubes; D and L shots of all four areas; phone perf 148/260 calls)*
 - **Why:** acts 2 to 5 read as grey-box blockouts. The Clinic is an untextured concrete corridor, and ROADMAP D2 still lists "waiting room, morgue, theatre art, flooded morgue".
 - **Build:**
   - Tiled sterile walls with grime decals, glass partitions, and failing, flickering fluorescents with a green surgical grade.

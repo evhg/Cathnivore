@@ -400,3 +400,8 @@
 - 2026-10-12 H7/M6: in-run Cath level follows layers popped (92*(n)^2.2 curve, +5% damage/HP per level, cap 20), Fleet levels only; no retune yet (bonuses only help the bots); the save-based RPG sheet is untouched.
 - 2026-10-12: clinic door frames + bay signs; quick visual loop: run `npx vite --port 5199` inside games/cathode and screenshot `/?district=clinic&play&shot` with Chromium 1194.
 - 2026-10-12: U6 slice 1: phone board can only grow ~8% (width-bound hex), so accepted below the 15% target; landscape is where the real gain is.
+- 2026-10-12: morgue floor uses the shared "water" material at y=0.1 (no splash surface yet).
+- 2026-10-12: D2 marked done; morgue splash is a `wet` flag on audio.steps decided by a box test in session.ts, not a new surface type.
+- 2026-10-12: kit pick lives as chips on the Hedgerow select screen (no level card exists); per-district saves skipped (character and jobs are already global).
+- 2026-10-12: release moved main to 32f035c (a lock commit) but Vercel never deployed it; logged as Blocked, retry next release.
+- 2026-10-12: D3 plaza dressing (puddles, carpet, banners, flags) added; no release this session since Vercel hasn't deployed 32f035c.

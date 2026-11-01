@@ -11,11 +11,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - Inline `style` attributes are forbidden by the CSP. Set dynamic styles through the CSSOM or classes.
 
 ## Recent (older entries in docs/archive/DECISIONS-2026-10.md)
-- 2026-10-12: morgue floor uses the shared "water" material at y=0.1 (no splash surface yet).
-- 2026-10-12: D2 marked done; morgue splash is a `wet` flag on audio.steps decided by a box test in session.ts, not a new surface type.
-- 2026-10-12: kit pick lives as chips on the Hedgerow select screen (no level card exists); per-district saves skipped (character and jobs are already global).
-- 2026-10-12: release moved main to 32f035c (a lock commit) but Vercel never deployed it; logged as Blocked, retry next release.
-- 2026-10-12: D3 plaza dressing (puddles, carpet, banners, flags) added; no release this session since Vercel hasn't deployed 32f035c.
 - 2026-10-12 17:51: D3 ticked done; release failed gate 2 on load-sensitive perf/hero tests, aborted, main untouched.
 - 2026-10-12 19:51: Freeplay replaces the classic Endless on Fleet acts 1-3 (start Marks 0.85 of the Book's income, 120 Goodwill, untuned); release was classifier-denied, left for the owner.
 - 2026-10-12 20:51: release retried 3x; gate 5 ai-teammate Graft click flaked under load, not changed (no test relaxing).
@@ -247,3 +242,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 08:00: clinic surfaces are painted on canvas at load (clinictex.ts, clinic only) instead of new Poly Haven downloads: no asset weight, and the tile scale matches the 2 m UV repeat.
 - 2026-11-01 08:05: opened the clinic side rooms (divider walls covered their own door gaps). Theatre gallery glass stays rounds-only (`thin`) so the Vane fight's flanking routes are unchanged.
 - 2026-11-01 08:40: PROGRESS.md (272 lines) and DECISIONS.md (645) were over SPEC 16 limits; archived to docs/archive/PROGRESS-2026-11.md and DECISIONS-2026-10.md.
+- 2026-11-01 09:20: clinic patients are static instanced figures (no animation) to keep the phone budget; screens now paint text in every district, which also starts plan item 4's "readable billboards".
+- 2026-11-01 09:30: plan item 1 ticked; "no untextured surface over 30%" judged by eye on D and L shots (walls, floor, ceiling, drawers all textured; props are small). Theatre stays bright white by design (sterile, Vane's spot).
