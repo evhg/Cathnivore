@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { boardroomBeat, cathReply, EXECS, execFor } from '../src/ui/boardroom'
+import { boardroomBeat, cathReply, EXECS, execFor, flightsFor, stripDock } from '../src/ui/boardroom'
 import type { GameEvent } from '../src/engine/types'
 
 // Plan item 11: who plays each enemy-turn step, with which face, and which bark.
@@ -46,5 +46,26 @@ describe('boardroom barks', () => {
   it('gives Cath a reply to whoever spoke last', () => {
     expect(cathReply('pell', 'r3')).toBeTruthy()
     expect(cathReply('vane', 'r3')).not.toBe(cathReply('pell', 'r3'))
+  })
+})
+
+// Plan item 11, slice 2: pieces fly out of the HQ of the corporation that owns them.
+describe('boardroom flights', () => {
+  it('sends an Expand piece from its own HQ to its hex', () => {
+    expect(flightsFor({ type: 'expand', region: 'highmoor', piece: 'doubt' })).toEqual([{ faction: 'candor', piece: 'doubt', to: 'highmoor' }])
+    expect(flightsFor({ type: 'expand', region: 'oakvale', piece: 'buyout' })).toEqual([{ faction: 'hollowell', piece: 'buyout', to: 'oakvale' }])
+  })
+  it('sends a Scout Outlet from Hollowell, and its Doubt from Candor', () => {
+    expect(flightsFor({ type: 'scout', region: 'rivermead', doubtAdded: false })).toEqual([{ faction: 'hollowell', piece: 'outlet', to: 'rivermead' }])
+    expect(flightsFor({ type: 'scout', region: 'rivermead', doubtAdded: true }).map((f) => f.faction)).toEqual(['hollowell', 'candor'])
+  })
+  it('flies nothing for a Squeeze or an Agenda card', () => {
+    expect(flightsFor({ type: 'squeeze', region: 'oakvale', lostLand: true, stallRemoved: false, trustLoss: 0 })).toEqual([])
+  })
+  it('docks the strip away from the bottom row', () => {
+    expect(stripDock('oakvale')).toBe('top')
+    expect(stripDock('shingleBay')).toBe('top')
+    expect(stripDock('highmoor')).toBe('bottom')
+    expect(stripDock(undefined)).toBe('bottom')
   })
 })

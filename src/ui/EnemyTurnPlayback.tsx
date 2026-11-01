@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { captionFor, eventRegion } from './enemyTurnLog'
-import { boardroomBeat, cathReply, EXECS, MOOD_EXPRESSION, type Exec } from './boardroom'
+import { boardroomBeat, cathReply, EXECS, MOOD_EXPRESSION, stripDock, type Exec } from './boardroom'
 import Figure from './portraits/Figure'
 import type { GameEvent, RegionId } from '../engine/types'
 
@@ -10,7 +10,7 @@ const STEP_MS = 1000
 // skips ahead." Plan item 11: each step is played in the boardroom strip by the executive behind it (Graham
 // Pell for Hollowell, Octavia Vane for Candor) with a face and a bark over the step's card and caption; after
 // the last step Cath answers whoever spoke last. A tap anywhere skips the whole turn.
-export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: GameEvent[]; onDone(): void; onStep?(region: RegionId | undefined): void }) {
+export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: GameEvent[]; onDone(): void; onStep?(region: RegionId | undefined, event: GameEvent | undefined, step: number): void }) {
   const [step, setStep] = useState(0)
   const beats = useMemo(() => events.map((e, i) => boardroomBeat(e, i)), [events])
   const lastExec = useMemo<Exec | undefined>(() => [...beats].reverse().find((b) => b)?.exec, [beats])
@@ -18,7 +18,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
   const total = events.length + (lastExec ? 1 : 0)
 
   useEffect(() => {
-    onStep?.(step < events.length ? eventRegion(events[step]!) : undefined)
+    const event = step < events.length ? events[step] : undefined
+    onStep?.(event && eventRegion(event), event, step)
     if (step >= total) {
       onDone()
       return
@@ -33,9 +34,11 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
   const replying = step >= events.length
   const beat = replying ? undefined : beats[step]
   const exec = beat?.exec
+  // The strip docks away from the hex the step plays on, so a piece landing in the bottom row stays in view.
+  const dock = stripDock(replying ? undefined : eventRegion(events[step]!))
   return (
     <div
-      className={`enemy-turn-playback boardroom${exec ? ` boardroom-${EXECS[exec].faction}` : ''}${replying ? ' boardroom-reply' : ''}`}
+      className={`enemy-turn-playback boardroom${exec ? ` boardroom-${EXECS[exec].faction}` : ''}${replying ? ' boardroom-reply' : ''} boardroom-dock-${dock}`}
       onClick={() => setStep(total)}
     >
       {exec && beat ? (

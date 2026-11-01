@@ -20,6 +20,7 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
+import { execFor, flightsFor, stripDock } from './boardroom'
 import LogSheet from './LogSheet'
 import FarmSheet from './FarmSheet'
 import MarketSheet from './MarketSheet'
@@ -396,6 +397,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   const [enemyStepRegion, setEnemyStepRegion] = useState<RegionId | undefined>()
+  // Plan item 11: the step being played, so the map can fly its pieces out of the HQs.
+  const [enemyStep, setEnemyStep] = useState<{ event: GameEvent | undefined; step: number } | undefined>()
   const [showLog, setShowLog] = useState(false)
   const [showFarm, setShowFarm] = useState(false)
   const [showMarket, setShowMarket] = useState(false)
@@ -1530,6 +1533,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </details>
         <RegionMap
           state={state}
+          enemyTurn={
+            pendingEnemyTurn.length > 0 && enemyStep
+              ? {
+                  step: enemyStep.step,
+                  flights: enemyStep.event ? flightsFor(enemyStep.event) : [],
+                  hqSide: stripDock(enemyStepRegion) === 'top' ? 'bottom' : 'top',
+                  active: enemyStep.event ? (execFor(enemyStep.event) === 'vane' ? 'candor' : execFor(enemyStep.event) === 'pell' ? 'hollowell' : undefined) : undefined,
+                }
+              : undefined
+          }
           highlight={
             enemyStepRegion && pendingEnemyTurn.length > 0
               ? [enemyStepRegion]
@@ -1551,7 +1564,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           }
         />
         {pendingEnemyTurn.length > 0 && (
-          <EnemyTurnPlayback events={pendingEnemyTurn} onStep={setEnemyStepRegion} onDone={() => setPendingEnemyTurn([])} />
+          <EnemyTurnPlayback
+            events={pendingEnemyTurn}
+            onStep={(region, event, step) => {
+              setEnemyStepRegion(region)
+              setEnemyStep({ event, step })
+            }}
+            onDone={() => setPendingEnemyTurn([])}
+          />
         )}
       </section>
       </div>

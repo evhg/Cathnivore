@@ -1,7 +1,7 @@
 import { AGENDA_CARDS_BY_ID } from '../content/agenda'
 import { REGIONS } from '../content/map'
 import type { CathExpression } from '../../shared/cath/cath'
-import type { Faction, GameEvent } from '../engine/types'
+import type { Faction, GameEvent, RegionId } from '../engine/types'
 
 // Plan item 11: the conglomerates as characters. Every enemy-turn step is played by the face behind it —
 // Graham Pell for Hollowell (Outlets, Buyouts, Squeeze), Octavia Vane for Candor (Doubt, Trust) — with a
@@ -158,4 +158,34 @@ export function boardroomBeat(event: GameEvent, step: number): BoardroomBeat | u
 export function cathReply(exec: Exec, turnSeed: string): string {
   const lines = REPLIES[exec]
   return lines[pick(turnSeed, lines.length)]!
+}
+
+/** A piece flying from its corporation's HQ to the hex it lands on during an enemy-turn step. */
+export interface Flight {
+  faction: Faction
+  piece: 'outlet' | 'buyout' | 'doubt'
+  to: RegionId
+}
+
+/** The pieces a step sends out of the HQs: an Expand's piece, a Scout's Outlet (and its Doubt). */
+export function flightsFor(event: GameEvent): Flight[] {
+  switch (event.type) {
+    case 'expand':
+      return [{ faction: event.piece === 'doubt' ? 'candor' : 'hollowell', piece: event.piece, to: event.region }]
+    case 'scout':
+      return [
+        { faction: 'hollowell', piece: 'outlet', to: event.region },
+        ...(event.doubtAdded ? [{ faction: 'candor' as const, piece: 'doubt' as const, to: event.region }] : []),
+      ]
+    default:
+      return []
+  }
+}
+
+/** The hexes in the bottom row of the map: a step there docks the strip at the top so the hex stays in view. */
+const BOTTOM_ROW: ReadonlySet<RegionId> = new Set<RegionId>(['oakvale', 'shingleBay'])
+
+/** Where the boardroom strip sits for a step on `region`: away from the hex it plays on. */
+export function stripDock(region: RegionId | undefined): 'top' | 'bottom' {
+  return region && BOTTOM_ROW.has(region) ? 'top' : 'bottom'
 }

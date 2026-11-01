@@ -2106,3 +2106,153 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     opacity: 0;
   }
 }
+
+/* Plan item 11, slice 2: the HQs and pieces in flight. Both HQs stand in the map's corners away from the
+   boardroom strip for the length of the enemy turn; the speaker's HQ lifts and glows, and each step's pieces
+   arc out of it along a dashed trail to the hex they land on, with a ring where they drop. */
+.enemy-turn-layer .hq {
+  animation: boardroom-fade 300ms ease-out;
+}
+.enemy-turn-layer .hq-art {
+  transition: transform 220ms ease-out, filter 220ms ease-out;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.enemy-turn-layer .hq-active .hq-art {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px var(--paper-hi, #fff8e8));
+}
+.enemy-turn-layer .hq:not(.hq-active) {
+  opacity: 0.7;
+}
+.hq-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  fill: var(--ink);
+}
+.hq-name {
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  fill: var(--paper);
+}
+.hq-candor.hq-active .hq-signal {
+  animation: hq-signal 700ms ease-out infinite;
+}
+@keyframes hq-signal {
+  from {
+    opacity: 0.2;
+  }
+}
+.flight-trail {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: flight-trail 1000ms ease-out var(--delay) both;
+}
+.flight-hollowell .flight-trail {
+  stroke: var(--hollowell-lo);
+}
+.flight-candor .flight-trail {
+  stroke: var(--candor-lo);
+}
+@keyframes flight-trail {
+  10%,
+  70% {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.flight-piece {
+  filter: drop-shadow(0 5px 3px rgb(0 0 0 / 0.35));
+  animation: flight-fly 900ms cubic-bezier(0.45, 0, 0.3, 1) var(--delay) both;
+}
+@keyframes flight-fly {
+  0% {
+    transform: translate(var(--x0), var(--y0)) scale(1.3);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  45% {
+    transform: translate(var(--xm), var(--ym)) scale(2.9);
+  }
+  72% {
+    transform: translate(var(--x1), var(--y1)) scale(2.1, 1.7);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(var(--x1), var(--y1)) scale(1.9);
+  }
+  100% {
+    transform: translate(var(--x1), var(--y1)) scale(1.9);
+    opacity: 0;
+  }
+}
+.flight-land {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flight-land 500ms ease-out calc(var(--delay) + 640ms) both;
+}
+@keyframes flight-land {
+  from {
+    opacity: 0.8;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Fades only: the piece appears on its hex and fades out, the trail fades, no ring, no lift. */
+  .flight-piece {
+    animation: flight-fade 900ms linear var(--delay) both;
+    transform: translate(var(--x1), var(--y1)) scale(1.9);
+  }
+  .flight-land {
+    display: none;
+  }
+  .enemy-turn-layer .hq-art,
+  .enemy-turn-layer .hq-active .hq-art {
+    transition: none;
+    transform: none;
+  }
+  .hq-candor.hq-active .hq-signal {
+    animation: none;
+  }
+}
+@keyframes flight-fade {
+  from,
+  to {
+    opacity: 0;
+  }
+  20%,
+  70% {
+    opacity: 1;
+  }
+}
+/* The strip docks at the top of the map when the step plays on a bottom-row hex. */
+.enemy-turn-playback.boardroom-dock-top {
+  top: 0;
+  bottom: auto;
+  border-radius: 0 0 12px 12px;
+  border-top: 0;
+  border-bottom: 4px solid var(--exec);
+}
+/* The round's bunting hangs where the top-docked strip sits: it steps aside while that step plays. */
+.map-wrap:has(.boardroom-dock-top) .round-banner {
+  opacity: 0;
+  transition: opacity 150ms linear;
+}

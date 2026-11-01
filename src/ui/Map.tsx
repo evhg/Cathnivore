@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { REGIONS, regionMatchesPressureSlot } from '../content/map'
 import { loadSettings } from '../platform/settings'
 import Portrait from './portraits/Portrait'
-import type { GameState, ProducerId, RegionId, RegionType } from '../engine/types'
+import type { Flight } from './boardroom'
+import type { Faction, GameState, ProducerId, RegionId, RegionType } from '../engine/types'
 
 // SPEC 10.1's Settings screen has a "colour-blind patterns" toggle; Stalls are otherwise the one piece
 // type distinguished only by fill hue (oxblood/mustard/slate/plum), with no shape difference between
@@ -54,8 +55,18 @@ const REGION_FILL: Record<RegionType, string> = {
   capital: 'var(--region-capital)',
 }
 
+/** Plan item 11: the enemy turn on the map. Both HQs stand in the corners away from the boardroom strip, and
+ * each step's pieces fly out of them to the hex they land on. */
+export interface EnemyTurnView {
+  step: number
+  flights: Flight[]
+  hqSide: 'top' | 'bottom'
+  active?: Faction
+}
+
 interface Props {
   state: GameState
+  enemyTurn?: EnemyTurnView
   highlight?: RegionId[]
   onSelect?: (region: RegionId) => void
 }
@@ -391,7 +402,7 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, highlight, onSelect }: Props) {
+export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
   const active = state.config.activeRegions
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
   const expandTargets = active.filter((id) => matchesSlot(state, id, 'expand'))
@@ -635,7 +646,116 @@ export default function Map({ state, highlight, onSelect }: Props) {
           </g>
         )
       })}
+      {enemyTurn && <EnemyTurnLayer view={enemyTurn} />}
     </svg>
+  )
+}
+
+const HQ_X = 200
+const HQ_Y = 150
+/** Where each HQ's door is: the corners on the side away from the strip, Hollowell left and Candor right. */
+function hqDoor(faction: Faction, side: 'top' | 'bottom'): { x: number; y: number } {
+  return { x: faction === 'hollowell' ? -HQ_X : HQ_X, y: side === 'top' ? -HQ_Y : HQ_Y + 62 }
+}
+
+// Hollowell's HQ: a glossy orange office block with a lit window grid and an H on the roof.
+function HollowellHQ() {
+  return (
+    <g className="hq-art">
+      <rect x={-19} y={-56} width={38} height={56} rx={2} fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1.6} />
+      <rect x={-19} y={-56} width={9} height={56} fill="var(--hollowell-highlight)" opacity={0.55} />
+      {Array.from({ length: 4 }, (_, row) =>
+        Array.from({ length: 3 }, (_, col) => (
+          <rect key={`${row}-${col}`} x={-13 + col * 9.5} y={-48 + row * 10} width={6} height={6} rx={0.8} fill="var(--paper)" opacity={(row + col) % 3 === 0 ? 0.95 : 0.6} />
+        )),
+      )}
+      <rect x={-5} y={-9} width={10} height={9} fill="var(--ink)" />
+      <rect x={-12} y={-68} width={24} height={12} rx={2} fill="var(--paper)" stroke="var(--ink)" strokeWidth={1.4} />
+      <text x={0} y={-58.5} textAnchor="middle" className="hq-mark">
+        H
+      </text>
+    </g>
+  )
+}
+
+// Candor's HQ: a broadcast mast, a lattice tower under a speech-bubble dish with signal arcs.
+function CandorHQ() {
+  return (
+    <g className="hq-art">
+      <path d="M -16,0 L -3,-46 L 3,-46 L 16,0 Z" fill="none" stroke="var(--ink)" strokeWidth={2} strokeLinejoin="round" />
+      <path d="M -12,-12 L 9,-12 M -9,-24 L 6,-24 M -6,-35 L 4,-35 M -12,-12 L 6,-24 L -6,-35 M 12,-12 L -6,-24 L 6,-35" stroke="var(--ink)" strokeWidth={1.1} fill="none" />
+      <path d="M -6,-50 L -2,-50 L -8,-44 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1.2} strokeLinejoin="round" />
+      <circle cx={0} cy={-60} r={12} fill="var(--candor)" stroke="var(--ink)" strokeWidth={1.6} />
+      <circle cx={4} cy={-64} r={3.4} fill="var(--candor-highlight)" />
+      <text x={0} y={-55} textAnchor="middle" className="hq-mark">
+        C
+      </text>
+      <path className="hq-signal" d="M 17,-70 A 18 18 0 0 1 17,-50 M 23,-76 A 26 26 0 0 1 23,-44 M -17,-70 A 18 18 0 0 0 -17,-50 M -23,-76 A 26 26 0 0 0 -23,-44" fill="none" stroke="var(--candor)" strokeWidth={2.2} strokeLinecap="round" />
+    </g>
+  )
+}
+
+function FlightIcon({ piece }: { piece: Flight['piece'] }) {
+  return piece === 'outlet' ? <Outlet /> : piece === 'buyout' ? <Buyout /> : <Doubt />
+}
+
+function EnemyTurnLayer({ view }: { view: EnemyTurnView }) {
+  const factions: Faction[] = ['hollowell', 'candor']
+  return (
+    <g className="enemy-turn-layer" pointerEvents="none" data-hq-side={view.hqSide}>
+      {factions.map((f) => {
+        const door = hqDoor(f, view.hqSide)
+        return (
+          <g
+            key={`${f}-${view.hqSide}`}
+            className={`hq hq-${f}${view.active === f ? ' hq-active' : ''}`}
+            transform={`translate(${door.x}, ${door.y})`}
+            data-hq={f}
+          >
+            <ellipse cx={0} cy={1} rx={30} ry={6} fill="var(--ink)" opacity={0.18} />
+            {f === 'hollowell' ? <HollowellHQ /> : <CandorHQ />}
+            <rect x={-34} y={5} width={68} height={15} rx={3} fill="var(--ink)" />
+            <text x={0} y={15.5} textAnchor="middle" className="hq-name">
+              {f === 'hollowell' ? 'HOLLOWELL' : 'CANDOR'}
+            </text>
+          </g>
+        )
+      })}
+      {view.flights.map((flight, i) => {
+        const from = hqDoor(flight.faction, view.hqSide)
+        const x0 = from.x
+        const y0 = from.y - 34
+        const to = hexCenter(flight.to)
+        const x1 = to.x
+        const y1 = to.y - HEX_R * 0.14 + 12
+        // The arc's peak sits above the midpoint; the trail is a quadratic through that same peak.
+        const xm = (x0 + x1) / 2
+        // Kept inside the viewBox (top at -238) so the peak of the arc is never clipped.
+        const ym = Math.max(Math.min(y0, y1) - 46, -200)
+        const cx = 2 * xm - (x0 + x1) / 2
+        const cy = 2 * ym - (y0 + y1) / 2
+        const vars = {
+          ['--x0' as string]: `${x0}px`,
+          ['--y0' as string]: `${y0}px`,
+          ['--xm' as string]: `${xm}px`,
+          ['--ym' as string]: `${ym}px`,
+          ['--x1' as string]: `${x1}px`,
+          ['--y1' as string]: `${y1}px`,
+          ['--delay' as string]: `${i * 260}ms`,
+        }
+        return (
+          <g key={`${view.step}-${i}`} className={`flight flight-${flight.faction}`} data-flight={flight.piece} data-to={flight.to}>
+            <path className="flight-trail" d={`M ${x0},${y0} Q ${cx},${cy} ${x1},${y1}`} style={vars} />
+            <circle className="flight-land" cx={x1} cy={y1} r={16} style={vars} />
+            <g className="flight-piece" style={vars}>
+              <g transform="translate(-6, -7)">
+                <FlightIcon piece={flight.piece} />
+              </g>
+            </g>
+          </g>
+        )
+      })}
+    </g>
   )
 }
 
