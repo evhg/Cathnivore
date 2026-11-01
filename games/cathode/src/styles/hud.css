@@ -989,7 +989,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .hud-banner-bust {
   order: -2;
   margin: 0 0 var(--sp-2);
-  width: calc(var(--u) * 168);
+  width: max(96px, calc(var(--u) * 200));
   aspect-ratio: 200 / 240;
   box-shadow: 0 calc(var(--u) * 10) calc(var(--u) * 30) rgb(var(--black-rgb) / .7);
   outline: calc(var(--u) * 1.4) solid var(--line-3);
@@ -1003,7 +1003,8 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   45% { opacity: 1; filter: brightness(1.3); }
   100% { transform: rotate(-1.2deg); filter: none; }
 }
-@media (max-height: 500px) { .hud-banner-bust { width: calc(var(--u) * 120); } .hud-root.boss-intro .hud-banner { top: 12%; } }
+/* A short landscape phone: a smaller still and the band tucked under the top bar, clear of the subtitle. */
+@media (max-height: 500px) { .hud-banner-bust { width: 64px; margin-bottom: 0; } .hud-root.boss-intro .hud-banner:has(.hud-banner-bust) { top: 11vh; padding-block: var(--sp-2); } } /* px-ok */
 @media (prefers-reduced-motion: reduce) { .hud-banner.on .hud-banner-bust { animation: none; transform: rotate(-1.2deg); } }
 
 @media (prefers-reduced-motion: reduce) {
