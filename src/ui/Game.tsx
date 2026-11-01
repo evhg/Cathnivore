@@ -661,7 +661,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }
 
   if (pendingMidScene && pendingTrigger) {
-    return <Scene scene={pendingMidScene} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
+    return <Scene scene={pendingMidScene} chapterId={chapterId} onContinue={() => setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])} />
   }
 
   if (passDeviceFor) {

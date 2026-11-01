@@ -661,94 +661,188 @@ html.no-animations .stat-card { animation: none; }
   opacity: 0.6;
 }
 
-/* Scene (dialogue) screen (SPEC 10.1/8.3) */
+/* Scene (dialogue) screen as a graphic novel (SPEC 10.1/8.3; ROADMAP 14, 58, U7; plan item 5).
+   Layers: the painted chapter backdrop (Backdrop.tsx), the speakers at half length standing on it, then
+   the caption panel over their lower half. Speakers are at least half the viewport tall at every size. */
 .scene {
+  position: relative;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 16px;
-  /* Full bleed: the backdrop spans the viewport, the content keeps a 560px column. */
+  min-height: 100dvh;
   max-width: none;
   margin: 0;
-  padding: 24px max(16px, calc((100% - 560px) / 2));
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #2a211b;
+  isolation: isolate;
+}
+
+.scene-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-under);
+  animation: scene-open 700ms var(--ease-settle, ease-out) both;
+}
+
+/* A soft vignette and a floor shadow tie the speakers to the painting. */
+.scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-base);
+  background:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(20, 12, 8, 0.45) 100%),
+    linear-gradient(180deg, transparent 58%, rgba(20, 12, 8, 0.28) 100%);
+}
+
+.scene-stage-area {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raised);
+  pointer-events: none;
+}
+
+.scene-fig {
+  position: absolute;
+  bottom: 0;
+  height: min(76vh, 150vw);
+  aspect-ratio: 2 / 3;
+  line-height: 0;
+  transform-origin: 50% 100%;
+  transition: filter 320ms ease, opacity 320ms ease, transform 420ms var(--ease-settle, ease-out);
+  filter: drop-shadow(0 10px 18px rgba(20, 12, 8, 0.45));
+}
+.scene-fig > *, .scene-fig svg { display: block; width: 100%; height: 100%; }
+.scene-fig-left { left: max(-8%, calc(50% - 600px)); animation: panel-wipe-left 520ms var(--ease-settle, ease-out) both; }
+.scene-fig-right { right: max(-8%, calc(50% - 600px)); animation: panel-wipe-right 520ms var(--ease-settle, ease-out) both; }
+.scene-fig.is-speaking { z-index: var(--z-lift); }
+.scene-fig.is-listening { z-index: var(--z-raised); filter: brightness(0.62) saturate(0.7) drop-shadow(0 8px 14px rgba(20, 12, 8, 0.4)); transform: scale(0.95); }
+
+/* On a phone the two speakers share the frame: the listener steps back to the edge. */
+/* On small frames the backlog stays for screen readers but leaves the room to the speakers and caption. */
+@media (max-width: 640px), (max-height: 500px) {
+  .scene-backlog { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 640px) {
+  .scene-fig { height: min(62vh, 160vw); bottom: 16vh; }
+  .scene-fig-left { left: -22%; }
+  .scene-fig-right { right: -22%; }
+  .scene-fig-left.is-listening { transform: translateX(-14%) scale(0.9); }
+  .scene-fig-right.is-listening { transform: translateX(14%) scale(0.9); }
+}
+/* Phone landscape: tall speakers at the sides, a short caption between them, no visible backlog. */
+@media (max-height: 500px) {
+  .scene-fig { height: 96vh; }
+  .scene-fig-left { left: 1%; }
+  .scene-fig-right { right: 1%; }
+  .scene-panel { padding-top: 32px; padding-inline: max(16px, calc((100% - 560px) / 2)); }
+}
+
+/* Poses: each line sets a head tilt and a lean, read from the line's mood. */
+.scene-fig .fig-head, .scene-fig .cath-head, .scene-fig .fig-body, .scene-fig .cath-body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 420ms var(--ease-settle, ease-out);
+}
+.scene-fig.mood-delighted .fig-head, .scene-fig.mood-delighted .cath-head { transform: rotate(4deg) translateY(-4px); }
+.scene-fig.mood-worried .fig-head, .scene-fig.mood-worried .cath-head { transform: rotate(-5deg) translateY(5px); }
+.scene-fig.mood-determined .fig-head, .scene-fig.mood-determined .cath-head { transform: rotate(-2deg) translateY(3px); }
+.scene-fig.mood-determined .fig-body, .scene-fig.mood-determined .cath-body { transform: scale(1.03, 1.01); }
+.scene-fig-left.is-speaking.mood-determined { transform: translateX(3%); }
+.scene-fig-right.is-speaking.mood-determined { transform: translateX(-3%); }
+.scene-fig.is-speaking.mood-delighted { animation: scene-hop 520ms var(--ease-settle, ease-out); }
+.scene-fig.is-speaking.mood-worried { transform: translateY(1.5%); }
+
+@keyframes panel-wipe-left {
+  from { clip-path: polygon(0 0, 0 0, -30% 100%, -30% 100%); transform: translateX(-6%); }
+  to { clip-path: polygon(-10% -10%, 140% -10%, 110% 110%, -40% 110%); transform: none; }
+}
+@keyframes panel-wipe-right {
+  from { clip-path: polygon(130% 0, 130% 0, 100% 100%, 100% 100%); transform: translateX(6%); }
+  to { clip-path: polygon(-40% -10%, 110% -10%, 140% 110%, -10% 110%); transform: none; }
+}
+@keyframes scene-hop { 40% { translate: 0 -2.5%; } }
+@keyframes scene-open { from { opacity: 0; scale: 1.04; } to { opacity: 1; scale: 1; } }
+
+.scene-panel {
+  position: relative;
+  z-index: var(--z-lift);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 72px max(16px, calc((100% - 720px) / 2)) max(16px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent, rgba(24, 16, 10, 0.62) 46%, rgba(24, 16, 10, 0.78));
 }
 
 .scene-backlog {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  opacity: 0.6;
-  font-size: 14px;
+  gap: 4px;
+  font-size: var(--fs-small);
+  color: #f4ede1;
+  opacity: 0.72;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
+.scene-backlog .scene-speaker { color: #f3dc98; }
+.scene-log-line { margin: 0; }
 
-.scene-log-line {
-  margin: 0;
-}
-
-.scene-stage {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  animation: scene-in var(--dur-md, 240ms) var(--ease-settle, ease-out) both;
-}
-
-.scene-portrait {
-  flex-shrink: 0;
-  transform-origin: bottom center;
-  scale: 1.25;
-  margin: 0 12px 6px;
-  line-height: 0;
-  filter: drop-shadow(0 6px 5px rgba(60, 40, 20, 0.28));
-}
-
-.scene-partner { order: 3; scale: 0.85; opacity: 0.45; filter: grayscale(0.4) drop-shadow(0 4px 4px rgba(60, 40, 20, 0.2)); margin-inline: 0; }
-.scene-stage-right .scene-partner { order: 3; }
-.scene-speaking { animation: scene-talk 1.6s ease-in-out 240ms 2; }
-@keyframes scene-talk { 50% { transform: translateY(-3px); } }
-@media (prefers-reduced-motion: reduce) { .scene-speaking { animation: none; } }
-@media (max-width: 480px) { .scene-partner { display: none; } }
-
-/* Non-Cath speakers stand on the right so a conversation reads left to right (ROADMAP 14). */
-.scene-stage-right { flex-direction: row-reverse; }
-.scene-stage-right .scene-bubble { border-radius: 16px 16px 4px 16px; }
-
-.scene-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: 10px;
-  left: -9px;
-  width: 14px;
-  height: 14px;
-  background: var(--paper, #fff8ea);
-  border-left: 2px solid var(--soil, #5a4632);
-  border-bottom: 2px solid var(--soil, #5a4632);
-  transform: rotate(45deg);
-}
-.scene-stage-right .scene-bubble::after {
-  left: auto;
-  right: -9px;
-  transform: rotate(-135deg);
-}
-
+/* The caption: a paper panel with an ink border and a tail up to whoever is speaking. */
 .scene-bubble {
   position: relative;
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px 14px;
-  background: var(--paper, #fff8ea);
-  color: var(--ink, inherit);
-  border: 2px solid var(--soil, #5a4632);
-  border-radius: 16px 16px 16px 4px;
+  padding: 14px 18px 16px;
+  background: #fff8ea;
+  color: #2b2320;
+  border: 3px solid #2b2320;
+  border-radius: 4px 18px 4px 18px;
+  box-shadow: 6px 6px 0 rgba(20, 12, 8, 0.55);
   cursor: pointer;
+  animation: bubble-pop 260ms var(--ease-settle, ease-out) both;
+}
+.scene-bubble::after {
+  content: '';
+  position: absolute;
+  top: -19px;
+  left: 18%;
+  width: 26px;
+  height: 18px;
+  background: #fff8ea;
+  border: 3px solid #2b2320;
+  border-bottom: 0;
+  clip-path: polygon(0 100%, 30% 0, 100% 100%);
+}
+.scene-bubble::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: calc(18% + 7px);
+  width: 14px;
+  height: 18px;
+  background: #2b2320;
+  clip-path: polygon(0 100%, 40% 0, 50% 0, 14% 100%);
+}
+.scene-bubble-right { border-radius: 18px 4px 18px 4px; }
+.scene-bubble-right::after { left: auto; right: 18%; clip-path: polygon(0 100%, 70% 0, 100% 100%); }
+.scene-bubble-right::before { left: auto; right: calc(18% + 7px); clip-path: polygon(86% 100%, 50% 0, 60% 0, 100% 100%); }
+.scene-bubble .scene-speaker { color: #8a3447; letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-caption); }
+.scene-bubble-right .scene-speaker { align-self: flex-end; }
+
+@keyframes bubble-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
 }
 
 .scene-text {
-  color: var(--ink);
-  font-size: 17px;
-  line-height: 1.4;
+  color: #2b2320;
+  font-size: var(--fs-lead);
+  line-height: 1.42;
 }
 
 .scene-actions {
@@ -759,38 +853,22 @@ html.no-animations .stat-card { animation: none; }
 
 .scene-progress {
   margin-right: auto;
-  font-size: 13px;
-  opacity: 0.7;
+  font-size: var(--fs-caption);
+  color: #f4ede1;
+  opacity: 0.8;
 }
 
 .scene-skip {
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
-/* Per-chapter backdrops (ROADMAP 14): a soft horizon wash tinted to the chapter's region. */
-.scene[class*='scene-bg-'] { background-repeat: no-repeat; background-size: 100% 100%; }
-.scene-bg-fresh-meat { background-image: linear-gradient(180deg, rgba(255, 214, 150, 0.35), transparent 45%, rgba(120, 160, 80, 0.3)); }
-.scene-bg-word-of-mouth { background-image: linear-gradient(180deg, rgba(190, 170, 220, 0.3), transparent 45%, rgba(230, 170, 120, 0.28)); }
-.scene-bg-growing-season { background-image: linear-gradient(180deg, rgba(160, 210, 240, 0.35), transparent 45%, rgba(210, 180, 70, 0.32)); }
-.scene-bg-the-plan { background-image: linear-gradient(180deg, rgba(150, 150, 170, 0.35), transparent 50%, rgba(90, 70, 90, 0.25)); }
-.scene-bg-friends-in-low-places { background-image: linear-gradient(180deg, rgba(60, 60, 90, 0.4), transparent 55%, rgba(40, 40, 60, 0.3)); }
-.scene-bg-kingsmarket { background-image: linear-gradient(180deg, rgba(240, 190, 90, 0.4), transparent 45%, rgba(170, 110, 80, 0.3)); }
-
-/* Horizon silhouettes under each chapter's wash: rolling hills for the countryside chapters, a town skyline for the last two. */
-.scene[class*='scene-bg-']::before {
-  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; max-height: 180px; pointer-events: none; z-index: var(--z-base);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 50 Q60 20 120 44 T240 38 T400 46 V80 H0Z' fill='%23000' fill-opacity='.12'/%3E%3Cpath d='M0 64 Q80 44 170 60 T400 58 V80 H0Z' fill='%23000' fill-opacity='.14'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
-}
-.scene.scene-bg-friends-in-low-places::before, .scene.scene-bg-kingsmarket::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E%3Cpath d='M0 80V52h22v-12h18v12h16V30h14v22h24V44h20v8h18V24l8-8 8 8v28h22V46h20v6h26V36h16v16h28V42h20v10h24H400V80Z' fill='%23000' fill-opacity='.16'/%3E%3C/svg%3E") !important; }
-.scene[class*='scene-bg-'] > * { position: relative; z-index: var(--z-raised); }
-
-@keyframes scene-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+@media (prefers-color-scheme: dark) {
+  .scene-backdrop { filter: brightness(0.82) saturate(0.92); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scene-stage { animation: none; }
+  .scene-backdrop, .scene-fig, .scene-fig.is-speaking.mood-delighted, .scene-bubble { animation: none; }
+  .scene-fig, .scene-fig .fig-head, .scene-fig .cath-head, .scene-fig .fig-body, .scene-fig .cath-body { transition: none; }
 }
 
 .scene-speaker {
