@@ -3183,3 +3183,15 @@ img.act-scene {
   .node .medal { width: 7px; height: 7px; }
   .start-tag { padding: 1px 5px; letter-spacing: 0; }
 }
+/* Plan item 13: arriving from the games page, its card name morphs into this wordmark. */
+@view-transition {
+  navigation: auto;
+}
+.wordmark {
+  view-transition-name: hedgerow-title;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

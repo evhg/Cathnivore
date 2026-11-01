@@ -18,12 +18,25 @@ export function renderWeek(now: WardrobeProgress, doc: Document = document): voi
         li.className = 'week-goal'
         const done = g.done >= g.need
         li.dataset.done = String(done)
+        li.dataset.game = g.href.replace(/\//g, '')
         const a = doc.createElement('a')
         a.href = g.href
-        a.textContent = `${g.game}: ${g.text}`
-        const n = doc.createElement('span')
-        n.textContent = done ? '✓' : `${Math.min(g.done, g.need)}/${g.need}`
-        li.append(a, n)
+        const span = (cls: string, text: string) => {
+          const el = doc.createElement('span')
+          el.className = cls
+          el.textContent = text
+          return el
+        }
+        const meter = span('wg-meter', '')
+        meter.setAttribute('aria-hidden', 'true')
+        meter.style.setProperty('--p', String(Math.min(1, g.done / g.need)))
+        a.append(
+          span('wg-game', g.game),
+          span('wg-text', g.text),
+          meter,
+          span('wg-count', done ? 'Done ✓' : `${Math.min(g.done, g.need)} of ${g.need}`),
+        )
+        li.append(a)
         return li
       }),
     )

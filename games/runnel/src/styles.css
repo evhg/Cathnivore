@@ -1898,3 +1898,16 @@ body {
     display: none;
   }
 }
+
+/* Plan item 13: arriving from the games page, its card name morphs into this wordmark. */
+@view-transition {
+  navigation: auto;
+}
+.wordmark {
+  view-transition-name: runnel-title;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

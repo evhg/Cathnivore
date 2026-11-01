@@ -360,134 +360,6 @@ body {
   }
 }
 
-.art-cath {
-  background: #d9b45a;
-}
-
-.art-cath svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.art-cath {
-  position: relative;
-  background: #c9a24a;
-}
-
-.mm-hex {
-  fill: #7a5a34;
-  stroke: #d9b45a;
-  stroke-width: 1.5;
-  animation: mm-free 6s ease-in-out infinite;
-}
-
-.mm-hex:nth-child(2) { animation-delay: 0.6s; }
-.mm-hex:nth-child(3) { animation-delay: 1.2s; }
-.mm-hex:nth-child(4) { animation-delay: 1.8s; }
-.mm-hex:nth-child(5) { animation-delay: 2.4s; }
-.mm-hex:nth-child(6) { animation-delay: 3s; }
-.mm-hex:nth-child(7) { animation-delay: 3.6s; }
-
-@keyframes mm-free {
-  0%, 8% { fill: #7a5a34; }
-  20%, 78% { fill: #7fb15a; }
-  95%, 100% { fill: #7a5a34; }
-}
-
-.mm-cath {
-  position: absolute;
-  width: 40%;
-  height: 40%;
-  left: 30%;
-  top: 30%;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #d9b45a;
-  box-shadow: 0 0 0 2px #fff8e6;
-}
-
-.art-cath .mm-cath svg {
-  width: 100%;
-  height: 100%;
-}
-
-
-.art-runnel {
-  background: #c4dc9c;
-}
-
-.art-runnel svg {
-  width: 96%;
-  height: 96%;
-}
-
-.rn-tile {
-  fill: #b5d184;
-  stroke: #8fae62;
-  stroke-width: 2;
-}
-
-.rn-spring {
-  fill: var(--rn-spring);
-  stroke: var(--rn-spring-edge);
-}
-
-.rn-field {
-  fill: var(--rn-field);
-  stroke: var(--rn-field-edge);
-}
-
-.rn-crop {
-  stroke: var(--rn-crop);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-}
-
-.rn-source {
-  fill: var(--rn-water);
-  stroke: var(--rn-foam);
-  stroke-width: 3;
-}
-
-.rn-groove {
-  stroke: #7f5c35;
-  stroke-width: 12;
-  stroke-linecap: round;
-}
-
-.rn-water {
-  stroke: var(--rn-water);
-  stroke-width: 6;
-  stroke-linecap: round;
-}
-
-.rn-hub {
-  fill: var(--rn-water);
-  stroke: #7f5c35;
-  stroke-width: 5;
-}
-
-.rn-piece {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: rn-turn 4.2s cubic-bezier(0.34, 1.45, 0.64, 1) infinite;
-}
-
-@keyframes rn-turn {
-  0%,
-  40% {
-    transform: rotate(0deg);
-  }
-  50%,
-  90% {
-    transform: rotate(60deg);
-  }
-  100% {
-    transform: rotate(60deg);
-  }
-}
-
 .card-body {
   display: flex;
   flex-direction: column;
@@ -686,25 +558,67 @@ body {
 }
 
 .week-goal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 4px;
-  background: var(--cream);
-  color: var(--card-ink);
-  font-size: var(--fs-meta);
-  box-shadow: var(--shadow-card);
+  margin: 0;
 }
-
+/* Plan item 13: each goal is a tile in its game's colour, with a meter and a plain count. */
 .week-goal a {
-  color: inherit;
-  font-weight: 600;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "game count" "text text" "meter meter";
+  gap: 6px 12px;
+  height: 100%;
+  padding: 16px 18px 18px;
+  border-radius: 18px;
+  color: var(--cream);
+  text-decoration: none;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--wg) 26%, var(--card)), var(--card));
+  border: 1px solid color-mix(in srgb, var(--wg) 40%, transparent);
+  box-shadow: 0 14px 34px rgba(10, 4, 8, 0.35);
+  transition: transform 300ms var(--ease-out), border-color 300ms;
 }
-
-.week-goal[data-done='true'] {
-  background: var(--gold);
+.week-goal a:hover {
+  transform: translateY(-2px);
+  border-color: var(--wg);
+}
+.week-goal a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+.week-goal[data-game='runnel'] { --wg: #5fb4d8; }
+.week-goal[data-game='hedgerow'] { --wg: #8fbf4a; }
+.week-goal[data-game='nightshift'] { --wg: #ff4d94; }
+.week-goal { --wg: var(--gold); }
+.wg-game {
+  grid-area: game;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wg);
+}
+.wg-count {
+  grid-area: count;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--cream-muted);
+}
+.wg-text {
+  grid-area: text;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.wg-meter {
+  grid-area: meter;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--wg) calc(var(--p, 0) * 100%), rgba(251, 241, 223, 0.12) 0);
+}
+.week-goal[data-done='true'] .wg-count {
+  color: var(--wg);
+  font-weight: 700;
 }
 
 .week-card {
@@ -715,47 +629,59 @@ body {
   text-shadow: var(--shadow-text);
 }
 
-/* ---- footer ---- */
+/* ---- footer (plan item 13: the portfolio's footer, in this page's colours) ---- */
 
 .foot {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding-top: 18px;
+  padding-top: 28px;
   border-top: 1px solid rgba(255, 244, 224, 0.14);
   font-size: var(--fs-meta);
   color: var(--cream-muted);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
-
+.giant {
+  display: block;
+  margin-bottom: 22px;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 0.5rem + 15vw, 15rem);
+  font-weight: 650;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(251, 241, 223, 0.28);
+  background: linear-gradient(90deg, #8fbf4a, #5fb4d8, var(--gold), #e0662e);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background-size 1.1s var(--ease-out);
+}
+.giant:hover,
+.giant:focus-visible {
+  background-size: 100% 100%;
+}
+.foot-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding-bottom: 8px;
+}
 .foot-sign {
   margin: 0;
-  font-style: italic;
-  color: var(--cream);
 }
-
-.foot-cols {
+.foot-links {
   display: flex;
-  gap: 40px;
   flex-wrap: wrap;
-  justify-content: center;
+  gap: 8px 20px;
 }
-
-.foot-col {
-  display: grid;
-  gap: 6px;
-  justify-items: center;
-}
-
-.foot-col b {
-  font-size: var(--fs-label);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cream-muted);
-}
-
-.foot a {
+.foot a:not(.giant) {
   color: var(--cream);
+  text-decoration: none;
+}
+.foot a:not(.giant):hover {
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
 
@@ -819,21 +745,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hg-van {
-    animation: none;
-    offset-distance: 35%;
-  }
-  .hg-van-b {
-    offset-distance: 65%;
-  }
-  .hg-sails,
-  .hg-smoke,
-  .hg-turnip {
-    animation: none;
-  }
-  .hg-turnip {
-    opacity: 0;
-  }
   .letter,
   .card {
     transition: none !important;
@@ -842,196 +753,12 @@ body {
     animation: none;
     opacity: 1;
   }
-  .rn-piece {
-    animation: none;
-  }
-  .mm-hex {
-    animation: none;
-    fill: #7fb15a;
-  }
 }
 
-.art-hedgerow {
-  background: #9dbb6c;
-}
-
-.art-hedgerow svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.hg-lane {
-  fill: none;
-  stroke: #dcc394;
-  stroke-width: 11;
-  stroke-linecap: round;
-}
-
-.hg-row circle {
-  fill: #4c7a34;
-  stroke: #2f4f22;
-  stroke-width: 1.5;
-}
-
-.hg-sails {
-  transform-box: view-box;
-  transform-origin: -20px -24px;
-  animation: hg-spin 6s linear infinite;
-}
-
-.hg-smoke {
-  opacity: 0.7;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: hg-smoke 3s ease-out infinite;
-}
-
-.hg-van {
-  fill: #f4f6f8;
-  stroke: #2b2320;
-  stroke-width: 1.4;
-  offset-path: path("M-64 40 C-30 40 -36 6 -6 6 S 22 -10 40 -10");
-  offset-rotate: auto;
-  animation: hg-walk 7s linear infinite;
-}
-
-.hg-van-b {
-  fill: #cfe6ff;
-  animation-delay: -3.5s;
-}
-
-.hg-turnip {
-  fill: #b05fa0;
-  stroke: #5b2a4e;
-  stroke-width: 1;
-  offset-path: path("M-2 -6 Q-12 -20 -26 18");
-  offset-rotate: 0deg;
-  animation: hg-throw 1.75s ease-in infinite;
-}
-
-@keyframes hg-walk {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  8%,
-  88% {
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-
-@keyframes hg-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes hg-smoke {
-  0% {
-    transform: translateY(0) scale(0.6);
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(-12px) scale(1.6);
-    opacity: 0;
-  }
-}
-
-@keyframes hg-throw {
-  0% {
-    offset-distance: 0%;
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-
-/* CATHODE: a rain-soaked noir skyline, two neon signs reflected in the street, and Cath's silhouette. */
-.art-cathode {
-  background: #05060a;
-}
-.art-cathode svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.cd-towers {
-  fill: #11131b;
-}
-.cd-windows rect {
-  fill: #ffb347;
-  opacity: 0.55;
-}
-.cd-sign-pink {
-  fill: #ff2e88;
-  filter: drop-shadow(0 0 3px #ff2e88);
-}
-.cd-sign-cyan {
-  fill: #2ee6ff;
-  filter: drop-shadow(0 0 3px #2ee6ff);
-}
-.cd-reflect {
-  opacity: 0.35;
-}
-.cd-reflect-pink {
-  fill: #ff2e88;
-}
-.cd-reflect-cyan {
-  fill: #2ee6ff;
-}
-.cd-rain path {
-  stroke: #9fb4d8;
-  stroke-width: 0.6;
-  opacity: 0.45;
-  animation: cd-rain 0.7s linear infinite;
-}
-@keyframes cd-rain {
-  to {
-    transform: translate(-6px, 30px);
-  }
-}
-.cd-sign-pink {
-  animation: cd-flicker 4s steps(1) infinite;
-}
-@keyframes cd-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  71% {
-    opacity: 0.35;
-  }
-  73% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 0.5;
-  }
-  77% {
-    opacity: 1;
-  }
-}
 .badge-adult {
   color: var(--on-blood);
   background: var(--cd-blood);
 }
-@media (prefers-reduced-motion: reduce) {
-  .cd-rain path,
-  .cd-sign-pink {
-    animation: none;
-  }
-}
-
 /* The CATHODE card is taller than the others: its art needs room for the skyline and Cath. */
 .card-cathode .card-art {
   width: 104px;
@@ -1229,23 +956,6 @@ body {
   .btn-cta:hover { transform: none; }
 }
 
-/* N7 hover demos: Runnel's water runs along the channels, Hedgerow's windmill spins up, when a card is hovered. */
-@media (prefers-reduced-motion: no-preference) {
-  .ready .card:hover .rn-water {
-    stroke-dasharray: 9 7;
-    animation: rn-flow 600ms linear infinite;
-  }
-  .ready .card:hover .hg-sails {
-    animation-duration: 1.4s;
-  }
-}
-
-@keyframes rn-flow {
-  to {
-    stroke-dashoffset: -16;
-  }
-}
-
 .wardrobe {
   display: flex;
   flex-wrap: wrap;
@@ -1338,4 +1048,357 @@ body {
    transitions. */
 @view-transition {
   navigation: auto;
+}
+
+/* ---- Plan item 13: key art. Each card is a painted 16:10 still; its motion loop plays only while the card
+   is hovered or focused, and never under reduced motion. Paused animations hold a composed frame (negative
+   delays), so the still is a picture, not frame zero. ---- */
+
+.card-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.card-art * {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ready .card:hover .card-art *,
+  .ready .card:focus-visible .card-art * {
+    animation-play-state: running !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-art * {
+    animation: none !important;
+  }
+}
+
+/* Cathnivore: the seven regions at sunset; on hover the corporations' regions turn back to green. */
+.art-cath {
+  position: relative;
+  background: #b85a48;
+}
+.mm-hex {
+  stroke: #e8c77a;
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+.mm-stall {
+  fill: #79a94e;
+}
+.mm-corp {
+  fill: #6b5a4a;
+  animation: mm-free 5s ease-in-out infinite;
+}
+.mm-corp:nth-of-type(5) { animation-delay: -1.2s; }
+.mm-corp:nth-of-type(7) { animation-delay: -2.4s; }
+@keyframes mm-free {
+  0%, 30% { fill: #6b5a4a; }
+  45%, 85% { fill: #79a94e; }
+  100% { fill: #6b5a4a; }
+}
+.cn-sun {
+  animation: cn-glow 4s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes cn-glow {
+  to { transform: scale(1.12); opacity: 0.85; }
+}
+.cn-beacon {
+  animation: cn-blink 1.6s steps(1) infinite;
+}
+@keyframes cn-blink {
+  50% { opacity: 0.2; }
+}
+.cn-flag {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: cn-flutter 1.8s ease-in-out infinite alternate;
+}
+.cn-flag:nth-of-type(odd) { animation-delay: -0.9s; }
+@keyframes cn-flutter {
+  from { transform: rotate(-9deg); }
+  to { transform: rotate(9deg); }
+}
+.mm-cath {
+  position: absolute;
+  left: 5%;
+  bottom: 7%;
+  height: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0b264;
+  box-shadow: 0 0 0 2px #fff3cf, 0 4px 14px rgba(20, 8, 12, 0.5);
+}
+.mm-cath svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Runnel: Cath's fields seen from above; on hover the water runs and the last channel turns into place. */
+.art-runnel {
+  background: #a9c97a;
+}
+.rn-tile {
+  fill: #b9d78a;
+  stroke: #94b765;
+  stroke-width: 0.7;
+}
+.rn-tile.rn-field {
+  fill: #e6c35e;
+  stroke: #c9a443;
+}
+.rn-tile.rn-spring {
+  fill: #9fd3e8;
+  stroke: #79b8d3;
+}
+.rn-crop {
+  stroke: #b58f2f;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+.rn-groove {
+  fill: none;
+  stroke: #7d6142;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rn-water {
+  fill: none;
+  stroke: #4ea8d6;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rn-flow {
+  fill: none;
+  stroke: #d8f2ff;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 3 9;
+  animation: rn-flow 900ms linear infinite;
+  animation-delay: -300ms;
+}
+@keyframes rn-flow {
+  to { stroke-dashoffset: -12; }
+}
+.rn-hub {
+  fill: #4ea8d6;
+  stroke: #7d6142;
+  stroke-width: 1.2;
+}
+.rn-piece .rn-hub {
+  fill: #c9b79a;
+}
+.rn-source {
+  fill: #4ea8d6;
+  stroke: #e9f8ff;
+  stroke-width: 1.4;
+}
+.rn-ripple {
+  fill: none;
+  stroke: #e9f8ff;
+  stroke-width: 0.8;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rn-ripple 2.4s ease-out infinite;
+  animation-delay: -0.8s;
+}
+.rn-ripple-b { animation-delay: -2s; }
+@keyframes rn-ripple {
+  from { transform: scale(1); opacity: 0.9; }
+  to { transform: scale(2.2); opacity: 0; }
+}
+.rn-piece {
+  animation: rn-turn 3s ease-in-out infinite;
+}
+@keyframes rn-turn {
+  0%, 40% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(60deg); }
+}
+.rn-glow {
+  fill: none;
+  stroke: #fff6d8;
+  stroke-width: 1.2;
+  stroke-dasharray: 2 2;
+}
+
+/* Hedgerow: the lane up to Cath's cottage; on hover the vans drive it and the windmill turns. */
+.art-hedgerow {
+  background: #9cc069;
+}
+.hg-lane {
+  fill: none;
+  stroke: #dcc394;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.hg-row circle {
+  fill: #4c7a34;
+  stroke: #2f4f22;
+  stroke-width: 1.1;
+}
+.hg-berries circle {
+  fill: #c8553d;
+  stroke: none;
+}
+.hg-sails {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hg-spin 5s linear infinite;
+  animation-delay: -0.6s;
+}
+@keyframes hg-spin {
+  to { transform: rotate(360deg); }
+}
+.hg-smoke {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hg-smoke 3s ease-out infinite;
+  animation-delay: -1s;
+}
+@keyframes hg-smoke {
+  from { transform: translateY(0) scale(0.6); opacity: 0.8; }
+  to { transform: translateY(-9px) scale(1.7); opacity: 0; }
+}
+.hg-van {
+  offset-path: path("M-6 98C28 94 36 74 66 68S108 54 130 52");
+  offset-rotate: 0deg;
+  animation: hg-drive 8s linear infinite;
+  animation-delay: -2.6s;
+}
+.hg-van-b {
+  animation-delay: -5.4s;
+}
+@keyframes hg-drive {
+  from { offset-distance: 0%; }
+  to { offset-distance: 92%; }
+}
+
+/* NIGHT SHIFT: rain over Hollowell Proper, two signs in the wet street, Cath under her umbrella. */
+.art-cathode {
+  background: #05060a;
+}
+.cd-towers {
+  fill: #12131c;
+}
+.cd-windows rect {
+  fill: #ffb347;
+  opacity: 0.6;
+}
+.cd-sign-pink {
+  fill: #ff2e88;
+  filter: drop-shadow(0 0 3px #ff2e88);
+  animation: cd-flicker 4s steps(1) infinite;
+}
+.cd-sign-cyan {
+  fill: #2ee6ff;
+  filter: drop-shadow(0 0 3px #2ee6ff);
+}
+.cd-reflect {
+  opacity: 0.32;
+}
+.cd-reflect-pink { fill: #ff2e88; }
+.cd-reflect-cyan { fill: #2ee6ff; }
+.cd-rain path {
+  stroke: #9fb4d8;
+  stroke-width: 0.5;
+  opacity: 0.5;
+  animation: cd-rain 0.7s linear infinite;
+  animation-delay: -0.3s;
+}
+@keyframes cd-rain {
+  to { transform: translate(-6px, 30px); }
+}
+@keyframes cd-flicker {
+  0%, 100% { opacity: 1; }
+  71% { opacity: 0.35; }
+  73% { opacity: 1; }
+  75% { opacity: 0.5; }
+  77% { opacity: 1; }
+}
+
+/* Status line and continue chip. */
+.card-status {
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+  opacity: 0.85;
+}
+.card-continue {
+  justify-self: start;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 12px 4px 10px;
+  border-radius: 99px;
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-ink);
+  background: var(--gold);
+}
+.card-continue::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 6px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+.card-status[hidden],
+.card-continue[hidden] {
+  display: none;
+}
+
+/* Phones: every card is a small poster, the key art a cinematic band across its top. */
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .games > a.card:not(.card-cathode) {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0 0 16px;
+    overflow: hidden;
+  }
+  .games > a.card:not(.card-cathode) .card-art {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .games > a.card:not(.card-cathode) .card-body {
+    padding: 14px 16px 0;
+  }
+  .games > a.card:not(.card-cathode) .card-go {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+  }
+}
+.rn-t2 {
+  fill: #aecf7f;
+}
+.rn-t3 {
+  fill: #c3dd95;
+}
+
+/* Plan item 13: the card's name morphs into the game's wordmark where the game shows one in its first paint
+   (Runnel and Hedgerow); Cathnivore draws its title in script and NIGHT SHIFT opens on the 18+ gate, so
+   those crossfade. No transition under reduced motion. */
+.games > a.card[href="/runnel/"] .card-title {
+  view-transition-name: runnel-title;
+}
+.games > a.card[href="/hedgerow/"] .card-title {
+  view-transition-name: hedgerow-title;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
 }
