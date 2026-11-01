@@ -29,7 +29,7 @@ describe("orchard heirlooms", () => {
 describe("orchard daily ladder", () => {
   it("keeps the deepest run per day and forgets old days", async () => {
     const { recordOrchardDay } = await import("../games/hedgerow/src/store");
-    const d: any = {};
+    const d = {} as Parameters<typeof recordOrchardDay>[0] & { orchardDays: Record<string, unknown> };
     expect(recordOrchardDay(d, 100, 3, ["thin"])).toBe(true);
     expect(recordOrchardDay(d, 100, 2, ["x"])).toBe(false);
     expect(d.orchardDays["100"]).toEqual({ depth: 3, boons: ["thin"] });
