@@ -1112,16 +1112,6 @@ body {
 @keyframes cn-blink {
   50% { opacity: 0.2; }
 }
-.cn-flag {
-  transform-box: fill-box;
-  transform-origin: top center;
-  animation: cn-flutter 1.8s ease-in-out infinite alternate;
-}
-.cn-flag:nth-of-type(odd) { animation-delay: -0.9s; }
-@keyframes cn-flutter {
-  from { transform: rotate(-9deg); }
-  to { transform: rotate(9deg); }
-}
 .mm-cath {
   position: absolute;
   left: 5%;
