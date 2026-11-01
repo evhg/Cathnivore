@@ -405,3 +405,23 @@
 - 2026-10-12: kit pick lives as chips on the Hedgerow select screen (no level card exists); per-district saves skipped (character and jobs are already global).
 - 2026-10-12: release moved main to 32f035c (a lock commit) but Vercel never deployed it; logged as Blocked, retry next release.
 - 2026-10-12: D3 plaza dressing (puddles, carpet, banners, flags) added; no release this session since Vercel hasn't deployed 32f035c.
+- 2026-10-12 17:51: D3 ticked done; release failed gate 2 on load-sensitive perf/hero tests, aborted, main untouched.
+- 2026-10-12 19:51: Freeplay replaces the classic Endless on Fleet acts 1-3 (start Marks 0.85 of the Book's income, 120 Goodwill, untuned); release was classifier-denied, left for the owner.
+- 2026-10-12 20:51: release retried 3x; gate 5 ai-teammate Graft click flaked under load, not changed (no test relaxing).
+- 2026-10-12 21:52: released 9aee11e on retry; flaky e2e Graft click under load left unchanged.
+- 2026-10-12 22:51: H8 slice 1 uses only existing PathMod fields for Pond/Silo (no freeze mod: slow, stun, vuln, sticky stand in); level tests not retuned.
+- 2026-10-13: Market Stall paths use an additive `income` mod on the Fleet's 80 Marks base; Cheer buffs 1.25/1.35/1.5 (max, not stacked); levels not retuned.
+- 2026-10-13 01:51: Courthouse paths use additive injunction secs + classAction flag; Crowns Habeas/Emergency Hearing freeze the whole field; levels not retuned.
+- 2026-10-13 02:51: roster unlock applies to Fleet levels only (classic 31-44 keep tuned lists); full refund = no wave sent since placement; level 16 needed START_K 0.84 for acts 11-16.
+- 2026-10-13: Heirlooms open from level 12 on Fleet levels (act 4 is still classic); sacrifice bonus and Bank interest dropped (stall paths differ from the doc). Released f5a28b7.
+- 2026-10-13 04:51: high ground fixed by vertex colour on its walls, not geometry; H1 stays open (acts already differ in light, lanes and borders, but the field interior is the same grid).
+- 2026-10-13 05:52: act field ground is a per-act vertex-colour tint in the plots (no new geometry), so levels and tuning are unaffected.
+- 2026-10-13 06:52: act props are instanced, corner-placed, own seed, so tower plots and tuning are untouched.
+- 2026-10-13: Took U8 (Phase U) because Phase D is all done; fixed Cath hidden on the gate and the clipped class name. Not released (milestone unfinished).
+- 2026-10-13 09:51: U9 K-sheet check lives in `cathode-shots.mjs` (no cathode e2e project exists); swiftshader needs animations finished before shooting.
+- 2026-10-13 11:10: H10 modes apply to Fleet levels only; remix wins earn no difficulty medal; difficulty price applies to new towers only (upgrade prices unchanged); Continue saves the replay at each round start and re-runs it.
+- 2026-10-13 12:10: Hollow's +5 rounds only when `Setup.shift` is set (old Heroic replays unchanged); Long Haul keeps the original boss round and appends Book rounds to 80.
+- 2026-10-13 12:15: XP gating only in real browser runs (Game.xpGate); existing saves with stars start with 1,500 XP per kind so no one loses tier 3; Daily and sandbox are ungated.
+- 2026-10-13 12:25: Acorn perks live in the Seed Bank list (PerkDef.acorns); Daily rule = plain/Hand Tools/Lean Year/Hard by day hash, Fleet levels only.
+- 2026-10-13 13:05: Compost Heap = XP over 10,000 per kind (2 compost per XP, 500 XP per feed); Packet towers sell for nothing and fail (not consumed) if their top tier is shut on that field; boss levels (id%10==0) drop a rotating Packet; H10 upgrade prices by difficulty dropped (new towers only).
+- 2026-10-13 14:20: oaks/barns assigned by level id from terrain.ts (oak 5+, barn 12+); bots never clear oaks; County Show kit is core four + two picked from six (draft dialog reuses the result dialog) and has no replay; show fields' bot-win tested for weeks 120-122 only.
