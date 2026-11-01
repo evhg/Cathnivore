@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
 import { createRng } from '../engine/rng'
@@ -474,6 +475,12 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
     if (autoplayRef.current && pendingTrigger) setDismissedMidScenes((d) => [...d, pendingTrigger.sceneId])
   }, [pendingTrigger])
 
+  // ROADMAP 238: liberating Marrow while a market event runs earns Cath that event's pin.
+  const [newPin, setNewPin] = useState<CathPin | null>(null)
+  useEffect(() => {
+    if (state.result?.won && awardPin(state.config.marketEvent)) setNewPin(pinForEvent(state.config.marketEvent))
+  }, [state.result, state.config.marketEvent])
+
   useEffect(() => {
     if (mode !== 'hotseat' || autoplayRef.current) return
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
@@ -589,6 +596,7 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
             className="end-screen-cath"
             framing="bust"
             expression={state.result.won ? 'delighted' : 'worried'}
+            pin={chosenPin()}
             animate
             width={128}
             height={128}
@@ -599,6 +607,11 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
           {state.result.won ? 'Liberated' : 'Repossessed'}
         </div>
         <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
+        {newPin && (
+          <p className="pin-earned" data-pin={newPin}>
+            New pin for Cath: {PINS[newPin].name}. She is wearing it already.
+          </p>
+        )}
         <p className="end-screen-verdict">
           {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}
         </p>

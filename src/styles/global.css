@@ -975,6 +975,7 @@ html.native-app body {
 .setup-header-text { flex: 1; min-width: 0; }
 .market-event-line { margin: 0 0 4px; font-family: var(--font-voice); font-style: italic; }
 .market-event-deal { margin: 0; font-size: 0.85em; opacity: 0.8; text-transform: none; }
+.pin-earned { margin: 0 0 var(--space-3, 12px); font-weight: 600; color: var(--gold, #c8962e); }
 .setup-cath-line { margin: 2px 0 0; font-family: var(--font-voice); font-style: italic; font-weight: 460; font-size: 0.9em; opacity: 0.8; }
 .setup-header {
   display: flex;

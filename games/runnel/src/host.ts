@@ -5,6 +5,7 @@
 import { cathSvg, type CathExpression } from '../../../shared/cath/cath'
 import { cathSceneSvg, type CathMoment } from '../../../shared/cath/scene'
 import { chosenOutfit } from '../../../shared/cath/wardrobe'
+import { chosenPin } from '../../../shared/cath/pins'
 
 const GREETINGS = [
   "Morning. The spring's running and the fields are thirsty. Let's fix that.",
@@ -36,7 +37,7 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
   let shown = ''
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
-      face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), animate: true })
+      face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
       current = expression
     }
     line.textContent = text
@@ -69,7 +70,7 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
 }
 
 export function cathMarkup(expression: CathExpression, framing: 'face' | 'bust' | 'half' = 'bust'): string {
-  return cathSvg({ framing, expression, outfit: chosenOutfit(), animate: true })
+  return cathSvg({ framing, expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
 }
 
 /** Cath posed for a moment (win card hop, etc.) in the player's chosen outfit. */

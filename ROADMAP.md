@@ -618,4 +618,4 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 235. [x] **Hedgerow Orchard daily ladder:** a shared-seed daily Orchard with a depth ladder on the Week card and a share text with the boons taken.
 236. [x] *(2026-11-01: events.ts, event strip in Practice, exclusive crop in garden; shot at P)* **Runnel Bea's seasons events:** a seasonal limited board set (spring blossom, autumn harvest) with one exclusive crop each, shown in the garden.
 237. [x] *(2026-11-01: deckbest flags kept across laps, Best line on Case Board; test; not shot)* **CATHODE Case Board ladder:** per-mod Second Broadcast best scores with a deck summary line (left over from 230).
-238. [ ] **Cathnivore Marrow Market exclusive cosmetic:** one cosmetic per market event, worn by Cath in the shared wardrobe.
+238. [x] *(2026-11-01: `shared/cath/pins.ts`, win during an event earns its pin, worn in Cathnivore, Runnel, CATHODE loading; test; pins shot)* **Cathnivore Marrow Market exclusive cosmetic:** one cosmetic per market event, worn by Cath in the shared wardrobe.
