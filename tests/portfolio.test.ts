@@ -43,6 +43,11 @@ describe('portfolio cards', () => {
     expect(caseHtml(APPS.find((a) => a.id === 'games')!)).not.toContain('target="_blank"')
   })
 
+  it('links each app at its own domain, never an old *.vercel.app deployment', () => {
+    expect(APPS.find((a) => a.id === 'sleeplab')!.href).toBe('https://sleep.cathnivore.com')
+    expect(appsHtml() + APPS.map(caseHtml).join('')).not.toMatch(/vercel\.app/)
+  })
+
   it('every screenshot a card names exists', () => {
     for (const a of APPS) {
       if (a.visual.kind !== 'image') continue
