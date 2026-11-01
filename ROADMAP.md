@@ -74,7 +74,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 - U4. [x] **M4 Cathnivore table** *(2026-10-11: shipped to `build`, unreleased; 6 frames and none nested, 0 dotted underlines, map at 1440x900 670x639 -> 706x664, no scroll at 1280x800, axe clean, lint z-literals 0)*
 - U5. [x] **M5 Landing hero, poster cards and key art** *(2026-10-14: hero CTAs, wordmark sheen, CATHODE banner, Runnel card shows a spring, hex junction and two fields; keyart WebP dropped by decision)*
 - U6. [~] **M6 Runnel puzzle and win sheet** *(2026-10-12: landscape two columns and landscape win sheet on `build`; ledger, voice and motion left)*
-- U7. [~] **M7 Cathnivore story scene and end screen** *(2026-10-14: full-bleed scene, unclipped sunburst on `build`; liberation+squeeze choreography added 2026-10-14; per-line poses and L shots left)*
+- U7. [x] **M7 Cathnivore story scene and end screen** *(2026-10-14: full-bleed scene, unclipped sunburst on `build`; liberation+squeeze choreography added 2026-10-14; 2026-11-01: per-line poses and L shots done with plan item 5)*
 - U8. [~] **M8 CATHODE front door: gate, title and class pick** *(2026-10-13: gate shows Cath rim-lit beside the card, title window fades, phone class name no longer clipped; on `build`, unreleased; shots checked at P/L/D; reduced-motion shot and e2e flow not re-run)*
 - U9. [x] **M9 CATHODE dossier and pause** *(2026-10-13: sigils, pause card, keycap table, K sheet shots at P/L/D checked; no cathode e2e project, so the K check lives in cathode-shots.mjs)*
 - U10. [x] **M10 Hedgerow map, story and end screen** *(2026-10-13: Start here tag in flow, story card fits at L, stars stamp (static under reduced motion), win/loss shots at P/L/D via `scripts/hedgerow-end-shots.mjs`; on `build`, unreleased)*
@@ -336,7 +336,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 ### Cathnivore audit (2026-10-03, subagent critique of `npm run shots` against VISION.md)
 
 57. [~] *(2026-10-03: piece shadows done; map >= 45vh, 14.5px labels, legend kept on one row, e2e `phone-map-hero`; tokens scaled 1.5x -> 1.9x (2026-10-03); silhouettes done: Outlet sawtooth roof.)* **Phone map as hero:** at 390x844 the board takes at least 45% of the viewport height; tokens at least 18px with distinct silhouettes; region labels at least 11px; piece shadows (bar 2).
-58. [ ] **Chapter scenes staged like a graphic novel:** every named speaker on screen at 50% viewport height with a pose per line, a coloured backdrop per chapter, AA contrast, staged entrances (bar 5).
+58. [x] *(2026-11-01, plan item 5)* **Chapter scenes staged like a graphic novel:** every named speaker on screen at 50% viewport height with a pose per line, a coloured backdrop per chapter, AA contrast, staged entrances (bar 5).
 59. [~] *(2026-10-03: staggered entrance + sticky action done)* **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
 60. [ ] **In-game panels:** Sell collapses to one stepper, no overlapping badge glyphs on Squeeze/Expand/Scout chips, category colour and icons in side panels (bar 1).
 61. [x] *(2026-10-29: already shipped as AAA UI M4 cameo)* **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
