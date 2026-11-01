@@ -27,24 +27,46 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   const len = zS - zN;
 
   // Shell: tile floor, ceiling, outer walls.
-  b.boxMinMax("tileWhite", xW, -0.5, zN, xE, 0, zS, { uv: 2, skip: ["bottom"] });
+  b.boxMinMax("clinicFloor", xW, -0.5, zN, xE, 0, zS, { uv: 2, skip: ["bottom"] });
   b.boxMinMax("ceilingPanel", xW, ceil, zN, xE, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
   b.boxMinMax("tileWhite", xW - 0.5, -0.5, zN, xW, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
   b.boxMinMax("tileWhite", xE, -0.5, zN, xE + 0.5, ceil + 0.4, zS, { uv: 2, collide: "concrete" });
   b.boxMinMax("tileWhite", xW, -0.5, zS, xE, ceil + 0.4, zS + 0.5, { uv: 2, collide: "concrete" });
   b.boxMinMax("tileWhite", xW, -0.5, zN - 0.5, xE, ceil + 0.4, zN, { uv: 2, collide: "concrete" });
 
-  // A green dado band along the corridor walls, proud of the tile.
-  for (const x of [xW + 0.02, xE - 0.02]) b.box("tileGreen", x, 0.55, cz, 0.04, 0.5, len - 1);
+  // A green tile wainscot to 1.2 m along the outer walls, proud of the white tile, capped by a steel rail.
+  for (const x of [xW + 0.03, xE - 0.03]) {
+    b.box("tileGreen", x, 0.6, cz, 0.06, 1.2, len - 0.2);
+    b.box("chrome", x + Math.sign(-x) * 0.02, 1.22, cz, 0.06, 0.05, len - 0.2);
+  }
 
-  // Corridor dividers with door gaps: waiting room (west), wards (east).
+  // Corridor dividers with door gaps: waiting room (west), wards (east). Walking north from the south door (z
+  // falls), each gap [g0, g1] (g0 < g1) ends one wall segment at its south jamb g1 and the next starts at g0.
+  // (Until 2026-11-01 each segment ran across its own gap, sealing every side room.) Stretches listed in
+  // `glazed` get a tiled sill, wired-glass panes in chrome mullions and a tiled header instead (plan item 1).
+  const glazed: Array<[number, number, number]> = [[-3.2, 10, 26], [3.2, -2, 18]];
+  const seg = (x: number, z0: number, z1: number) => {
+    const gl = glazed.find(([gx, a, c]) => gx === x && a >= z0 && c <= z1);
+    if (!gl) {
+      b.boxMinMax("tileWhite", x - 0.12, 0, z0, x + 0.12, ceil, z1, { uv: 2, collide: "concrete" });
+      return;
+    }
+    const [, a, c] = gl;
+    b.boxMinMax("tileWhite", x - 0.12, 0, z0, x + 0.12, ceil, a, { uv: 2, collide: "concrete" });
+    b.boxMinMax("tileWhite", x - 0.12, 0, c, x + 0.12, ceil, z1, { uv: 2, collide: "concrete" });
+    b.boxMinMax("tileGreen", x - 0.14, 0, a, x + 0.14, 1.0, c, { uv: 2, collide: "concrete" });
+    b.boxMinMax("chrome", x - 0.16, 1.0, a, x + 0.16, 1.05, c);
+    b.boxMinMax("glass", x - 0.03, 1.05, a, x + 0.03, 2.5, c, { collide: "glass" });
+    b.boxMinMax("tileWhite", x - 0.12, 2.5, a, x + 0.12, ceil, c, { uv: 2, collide: "concrete" });
+    for (let z = a; z <= c + 0.01; z += (c - a) / Math.round((c - a) / 1.6)) b.box("chrome", x, 1.78, z, 0.08, 1.45, 0.06, { cover: "none" });
+  };
   const wall = (x: number, gaps: Array<[number, number]>) => {
     let z: number = zS;
     for (const [g0, g1] of gaps) {
-      b.boxMinMax("tileWhite", x - 0.12, 0, g0, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
-      z = g1;
+      seg(x, g1, z);
+      z = g0;
     }
-    b.boxMinMax("tileWhite", x - 0.12, 0, zN, x + 0.12, ceil, z, { uv: 2, collide: "concrete" });
+    seg(x, zN, z);
   };
   wall(-3.2, [[28, 32], [4, 8], [-24, -20]]);
   wall(3.2, [[20, 24], [-8, -4], [-32, -28]]);
@@ -71,14 +93,22 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   b.box("darkMetal", 0, 0.1, -44, 0.6, 0.2, 1.6);
 
   // Cover columns so fights have shape.
+  // Tile-clad like the walls, a green dado skirt and chrome corner guards where the gurneys bang into them.
+  const column = (x: number, z: number) => {
+    b.box("tileWhite", x, ceil / 2, z, 0.5, ceil, 0.5, { collide: "concrete", uv: 2 });
+    b.box("tileGreen", x, 0.5, z, 0.54, 1.0, 0.54, { uv: 2 });
+    for (const dx of [-0.26, 0.26]) for (const dz of [-0.26, 0.26]) b.box("chrome", x + dx, 0.75, z + dz, 0.05, 1.5, 0.05, { cover: "none" });
+  };
   for (let z: number = 36; z > zN + 6; z -= 14) {
-    b.box("concreteA", -1.4, ceil / 2, z + rand() * 3, 0.5, ceil, 0.5, { collide: "concrete" });
-    b.box("concreteA", 1.4, ceil / 2, z - 3 - rand() * 3, 0.5, ceil, 0.5, { collide: "concrete" });
+    column(-1.4, z + rand() * 3);
+    column(1.4, z - 3 - rand() * 3);
   }
 
   // Fluorescent tubes down the ceiling, some failing; green-white surgical wash.
   for (let z: number = zS - 3, i = 0; z > zN; z -= 6, i++) {
-    b.box("glowCool", 0, ceil - 0.05, z, 0.25, 0.05, 2.2);
+    b.box("darkMetal", 0, ceil - 0.02, z, 0.7, 0.04, 1.3);
+    b.box("glowCool", 0, ceil - 0.045, z, 0.6, 0.02, 1.2);
+    for (const dz of [-0.3, 0, 0.3]) b.box("ceilingPanel", 0, ceil - 0.06, z + dz, 0.6, 0.012, 0.03);
     const failing = i % 3 === 1;
     light(V(0, ceil - 0.4, z), failing ? "#b8ffd8" : "#d6fff0", failing ? 14 : 22, 11, failing ? 2 : 0);
   }
@@ -102,10 +132,14 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
 
   // Waiting room (west): rows of chairs facing a debt-tag screen, a drinks cooler, a dead plant.
   for (let row = 0; row < 3; row++) {
+    const z0 = 16 - row * 7;
+    b.box("chrome", -7.45, 0.3, z0 - 1.35, 0.08, 0.06, 3.4, { collide: "metal" });
+    for (const dz of [0.1, -2.8]) b.box("chrome", -7.45, 0.15, z0 + dz, 0.5, 0.3, 0.06);
     for (let i = 0; i < 4; i++) {
-      const z = 16 - row * 7 - i * 0.9;
-      b.box("paintMetal", -7.4, 0.22, z, 0.5, 0.44, 0.6, { collide: "metal" });
-      b.box("paintMetal", -7.75, 0.6, z, 0.1, 0.5, 0.6);
+      const z = z0 - i * 0.9;
+      b.box("plasticSeat", -7.4, 0.42, z, 0.5, 0.06, 0.52, { collide: "metal" });
+      b.box("plasticSeat", -7.68, 0.72, z, 0.06, 0.55, 0.52);
+      b.box("chrome", -7.4, 0.36, z - 0.29, 0.44, 0.04, 0.04);
     }
   }
   b.box("glowCool", xW + 0.02, 2.1, 18, 0.04, 0.9, 2.4);
@@ -148,6 +182,45 @@ export function buildClinic(quality: "phone" | "high" | "ultra"): Level {
   for (const z of [-14, -19]) b.box("plasticWhite", 6.4, 0.58, z, 0.7, 0.14, 1.8);
   b.box("glowCool", 0, 0.01, -41, 0.35, 0.02, 12);
   for (let z = -33; z > -41; z -= 2) b.box("glowRed", 1.2, 0.01, z, 0.5, 0.02, 0.5);
+
+  // Corridor dressing (plan item 1): parked gurneys and IV stands along the divider walls, steel cabinets in the
+  // wards, and wayfinding signs hung from the ceiling so the floor plan reads at a glance.
+  const gurney = (x: number, z: number, sheet: boolean) => {
+    b.box("chrome", x, 0.78, z, 0.7, 0.05, 1.95, { cover: "thin", mat: "metal" });
+    b.box(sheet ? "plasticWhite" : "rubber", x, 0.86, z, 0.66, 0.1, 1.85);
+    b.box("chrome", x, 0.4, z, 0.08, 0.05, 1.7);
+    for (const dz of [-0.85, 0.85]) {
+      b.box("chrome", x, 0.4, z + dz, 0.6, 0.76, 0.04);
+      for (const dx of [-0.28, 0.28]) b.box("rubber", x + dx, 0.06, z + dz, 0.05, 0.12, 0.12);
+    }
+  };
+  const ivStand = (x: number, z: number) => {
+    b.box("chrome", x, 0.95, z, 0.03, 1.9, 0.03);
+    b.box("chrome", x, 1.85, z, 0.4, 0.02, 0.02);
+    b.box("chrome", x, 0.03, z, 0.5, 0.04, 0.06);
+    b.box("chrome", x, 0.03, z, 0.06, 0.04, 0.5);
+    b.box("glass", x + 0.15, 1.65, z, 0.1, 0.25, 0.04);
+  };
+  gurney(2.55, 27, true);
+  gurney(-2.55, -12, false);
+  gurney(2.55, -17, true);
+  ivStand(2.6, 25.4);
+  ivStand(-2.6, -10.2);
+  for (let i = 0; i < 4; i++) ivStand(7.6, 19 - i * 14 + (i > 1 ? 4 : 0));
+  // Steel instrument cabinets with glass doors on the ward's outer wall.
+  for (const z of [11, 3, -25]) {
+    b.box("paintMetal", xE - 0.3, 0.95, z, 0.5, 1.9, 1.0, { collide: "metal" });
+    b.box("glass", xE - 0.56, 1.35, z, 0.02, 0.9, 0.86);
+    b.box("glowCoolDim", xE - 0.52, 1.35, z, 0.01, 0.82, 0.78);
+  }
+  const hang = (z: number, text: string, sub: string, color: string) => {
+    for (const dx of [-0.6, 0.6]) b.box("chrome", dx, ceil - 0.2, z, 0.02, 0.4, 0.02);
+    b.box("paintTeal", 0, ceil - 0.55, z, 1.6, 0.36, 0.06);
+    for (const nz of [1, -1]) signs.push({ text, sub, style: "box", color, w: 1.5, h: 0.32, center: V(0, ceil - 0.55, z + nz * 0.035), normal: V(0, 0, nz), flicker: 0, intensity: 1.6 });
+  };
+  hang(33, "WAITING · WARDS", "THEATRE AHEAD", "#d6fff0");
+  hang(-1, "MORGUE · LEVEL B", "THEATRE AHEAD", "#d6fff0");
+  hang(-27, "THEATRE · STERILE", "STAFF ONLY", "#ffb347");
 
   const gh = () => 0;
   const markers: Level["markers"] = {

@@ -107,7 +107,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   progress(0.66, "Lighting the signs…");
   await frame();
 
-  const materials = createMaterials(pbr, shared, quality);
+  const materials = createMaterials(pbr, shared, quality, options.district);
   const statics = new THREE.Group();
   statics.name = "statics";
   const colliders = level.builder.colliders;

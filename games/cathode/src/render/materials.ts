@@ -5,10 +5,11 @@ import * as THREE from "three";
 import { patchMaterial, type SharedUniforms } from "./shading";
 import type { PbrId, PbrSet } from "./textures";
 import { tarpTexture } from "./textures";
+import { clinicTextures } from "./clinictex";
 
 export type Materials = Record<string, THREE.Material>;
 
-export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, quality: "phone" | "high" | "ultra"): Materials {
+export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, quality: "phone" | "high" | "ultra", district?: string): Materials {
   const m: Materials = {};
   const set = (id: PbrId, o: { color?: string; normal?: number; rough?: number; metal?: number } = {}) => {
     const p = pbr[id];
@@ -42,13 +43,22 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.plasterGreen = wall(set("plastered_wall_04", { color: "#6f8a80" }));
   m.plasterPink = wall(set("plastered_wall_04", { color: "#9a7a80" }));
   m.tiles = wall(set("dirty_tiles", { color: "#a0a4a0" }));
-  // The Candor Clinic: scrubbed white tile, a green dado band and pale ceiling panels (a clean place that is rotten inside).
-  const tileWhite = set("concrete_slab_wall", { color: "#e4f0ea", normal: 0.5 });
-  tileWhite.emissive = new THREE.Color("#7a9a8c");
-  tileWhite.emissiveIntensity = 0.3;
-  m.tileWhite = wall(tileWhite, 1, 0.5);
-  m.tileGreen = wall(set("dirty_tiles", { color: "#5f9a86", normal: 0.5 }), 1, 0.5);
-  m.ceilingPanel = wall(set("concrete_slab_wall", { color: "#c4c8c4", normal: 0.3 }), 1, 0.2);
+  // The Candor Clinic (plan item 1): glazed white tile over a green dado band, speckled vinyl floor tiles and
+  // a suspended acoustic ceiling, painted on canvas at load (clinictex.ts) and only for the clinic.
+  if (district === "clinic") {
+    const ct = clinicTextures(quality);
+    const cset = (p: PbrSet, color: string, normal: number) =>
+      new THREE.MeshStandardMaterial({ map: p.map, normalMap: p.normalMap, normalScale: new THREE.Vector2(normal, normal), aoMap: p.arm, aoMapIntensity: 1, roughnessMap: p.arm, roughness: 1, metalness: 0, color: new THREE.Color(color) });
+    m.tileWhite = wall(cset(ct.clinicWall, "#e8f0ea", 0.8), 1, 0.4);
+    m.tileGreen = wall(cset(ct.clinicDado, "#ffffff", 0.8), 1, 0.4);
+    m.clinicFloor = patchMaterial(cset(ct.clinicFloor, "#ffffff", 0.6), s, { kind: "ground", puddleBias: -0.06 });
+    m.ceilingPanel = wall(cset(ct.clinicCeiling, "#e6ece6", 0.7), 1, 0.1);
+  } else {
+    m.tileWhite = wall(set("concrete_slab_wall", { color: "#e4f0ea", normal: 0.5 }), 1, 0.5);
+    m.tileGreen = wall(set("dirty_tiles", { color: "#5f9a86", normal: 0.5 }), 1, 0.5);
+    m.ceilingPanel = wall(set("concrete_slab_wall", { color: "#c4c8c4", normal: 0.3 }), 1, 0.2);
+    m.clinicFloor = m.tileWhite;
+  }
   m.corrugatedWall = wall(set("corrugated_iron_02", { color: "#6a7070", metal: 1 }), 1, 0.9);
   m.jersey = wall(set("concrete_slab_wall", { color: "#a09c94" }), 1, 0.9);
 
@@ -79,6 +89,7 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.yellowPaint = plain("#a07a08", 0.45, 0.1);
   m.plasticRed = plain("#7a0c0c", 0.35, 0);
   m.plasticWhite = plain("#7a7a74", 0.35, 0);
+  m.plasticSeat = plain("#1d6a6a", 0.3, 0);
   // Car paints: low roughness and some metal so the neon slides over them.
   m.carRed = plain("#4a0609", 0.22, 0.65, 0.3);
   m.carTeal = plain("#0b3236", 0.22, 0.65, 0.3);
