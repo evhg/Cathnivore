@@ -1993,10 +1993,10 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   border-top: 4px solid var(--exec);
 }
 .enemy-turn-playback.boardroom-hollowell {
-  --exec: #ff7a1a;
+  --exec: var(--hollowell);
 }
 .enemy-turn-playback.boardroom-candor {
-  --exec: #3fc1d9;
+  --exec: var(--candor);
 }
 .boardroom-row {
   display: flex;
@@ -2036,12 +2036,12 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   align-items: baseline;
   gap: 2px 8px;
   font-weight: 800;
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: var(--exec);
 }
 .boardroom-who small {
   font-weight: 600;
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--paper);
@@ -2049,7 +2049,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 .boardroom-bark {
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: var(--fs-voice);
   line-height: 1.25;
   quotes: '“' '”';
 }
@@ -2060,7 +2060,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   border-radius: 4px;
   background: var(--paper);
   color: var(--ink);
-  font-size: 12px;
+  font-size: var(--fs-label);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -2070,16 +2070,16 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   transform-origin: left center;
 }
 .enemy-turn-playback.boardroom > p {
-  font-size: 14px;
+  font-size: var(--fs-small);
   opacity: 0.85;
 }
 .enemy-turn-playback.boardroom > p.boardroom-cath {
-  font-size: 18px;
+  font-size: var(--fs-lead);
   opacity: 1;
   animation: boardroom-in 260ms ease-out;
 }
 .boardroom-cath b {
-  color: var(--accent, #8bc34a);
+  color: var(--paper-hi);
   margin-right: 6px;
 }
 @keyframes boardroom-in {
