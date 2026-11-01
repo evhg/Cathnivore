@@ -60,6 +60,8 @@ import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import { useScrollCues } from './useScrollCues'
+import { endSummary } from './endSummary'
+import EndChart from './EndChart'
 import type { TutorialStep } from '../content/chapters'
 import type { Scene as SceneData } from '../content/story/types'
 
@@ -68,6 +70,9 @@ interface Props {
   seed: number
   mode: Mode
   onExit(): void
+  // Plan item 8: a Quick Game's end screen offers the same seed again and a fresh Setup (App.tsx).
+  onPlayAgain?(): void
+  onNewGame?(): void
   // SPEC 8.1: a campaign chapter's end screen continues into its closing scene (via App.tsx) instead of
   // going straight back to the title, so it takes this callback instead of the plain onExit button. The
   // final `state` is passed too so App.tsx can read carry-over data (e.g. chapter 3's surviving Wholesome
@@ -336,7 +341,7 @@ function uniformGroupCost(
   return uniform ? first : undefined
 }
 
-export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
+export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
   // The tutorial step whose note the player folded away (phone); a new step opens again.
@@ -589,73 +594,119 @@ export default function Game({ initial, seed, mode, onExit, onChapterEnd, tutori
   }
 
   if (state.result) {
+    const won = state.result.won
+    const summary = endSummary(state, seed)
     return (
-      <main className="end-screen">
-        <div className={`end-screen-hero ${state.result.won ? 'is-win' : 'is-loss'}`}>
-          <CathArt
-            className="end-screen-cath"
-            framing="bust"
-            expression={state.result.won ? 'delighted' : 'worried'}
-            pin={chosenPin()}
-            animate
-            width={128}
-            height={128}
-            title={state.result.won ? 'Cath, delighted' : 'Cath, undeterred'}
+      <main className={`end-screen ${won ? 'is-win' : 'is-loss'}`} data-seed={seed}>
+        <section className="end-col end-col-story">
+          <div className={`end-screen-hero ${won ? 'is-win' : 'is-loss'}`}>
+            <CathArt
+              className="end-screen-cath"
+              framing="bust"
+              expression={won ? 'delighted' : 'worried'}
+              pin={chosenPin()}
+              animate
+              width={128}
+              height={128}
+              title={won ? 'Cath, delighted' : 'Cath, undeterred'}
+            />
+          </div>
+          <div className={`end-stamp ${won ? 'is-win' : 'is-loss'}`} aria-hidden="true">
+            {won ? 'Liberated' : 'Repossessed'}
+          </div>
+          <h1>{won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
+          {newPin && (
+            <p className="pin-earned" data-pin={newPin}>
+              New pin for Cath: {PINS[newPin].name}. She is wearing it already.
+            </p>
+          )}
+          <p className="end-screen-verdict">
+            {won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}
+            <span className="end-grade" data-grade={summary.grade} aria-label={`Grade ${summary.grade} on ${state.config.difficulty}`}>
+              <b>{summary.grade}</b>
+              <small>{state.config.difficulty}</small>
+            </span>
+          </p>
+          <p className="end-screen-story">{won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}</p>
+          {summary.play && (
+            <article className="end-play">
+              <h2>
+                <small>Play of the game, round {summary.play.round}</small>
+                {summary.play.title}
+              </h2>
+              <p>{summary.play.line}</p>
+            </article>
+          )}
+        </section>
+        <section className="end-col end-col-data" aria-label="How the game went">
+          <EndChart summary={summary} />
+          <dl className="end-screen-stats">
+            {[
+              ['Regions liberated', state.result.regionsLiberated],
+              ['Round', state.result.round],
+              ['Cards bought', state.result.cardsBought],
+              ['Schemes played', state.result.schemesPlayed],
+            ].map(([label, value]) => (
+              <div key={label} className="stat-card">
+                <dd>{value}</dd>
+                <dt>{label}</dt>
+              </div>
+            ))}
+          </dl>
+          <div className="end-screen-map">
+            <RegionMap state={state} />
+          </div>
+        </section>
+        <div className="end-actions">
+          {onChapterEnd ? (
+            <button
+              className="primary"
+              onClick={() => {
+                clearGame()
+                onChapterEnd(won, state)
+              }}
+            >
+              Continue
+            </button>
+          ) : (
+            <>
+              {onPlayAgain && (
+                <button
+                  className="primary"
+                  onClick={() => {
+                    clearGame()
+                    onPlayAgain()
+                  }}
+                >
+                  Play again
+                  <small>same seed</small>
+                </button>
+              )}
+              {onNewGame && (
+                <button
+                  onClick={() => {
+                    clearGame()
+                    onNewGame()
+                  }}
+                >
+                  New game
+                </button>
+              )}
+              <button
+                className="end-back"
+                onClick={() => {
+                  clearGame()
+                  onExit()
+                }}
+              >
+                Back to Title
+              </button>
+            </>
+          )}
+          <ShareResultButton
+            text={`${won ? 'I liberated Marrow' : 'Marrow held out this time'} in Cathnivore: ${state.result.regionsLiberated} regions liberated in ${state.result.round} rounds, grade ${summary.grade} on ${state.config.difficulty}.`}
           />
         </div>
-        <div className={`end-stamp ${state.result.won ? 'is-win' : 'is-loss'}`} aria-hidden="true">
-          {state.result.won ? 'Liberated' : 'Repossessed'}
-        </div>
-        <h1>{state.result.won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
-        {newPin && (
-          <p className="pin-earned" data-pin={newPin}>
-            New pin for Cath: {PINS[newPin].name}. She is wearing it already.
-          </p>
-        )}
-        <p className="end-screen-verdict">
-          {state.result.won ? 'Win' : `Loss: ${LOSS_REASON_LABEL[state.result.lossReason!]}`}
-        </p>
-        <p className="end-screen-story">
-          {state.result.won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}
-        </p>
-        <div className="end-screen-map">
-          <RegionMap state={state} />
-        </div>
-        <dl className="end-screen-stats">
-          {[
-            ['Regions liberated', state.result.regionsLiberated],
-            ['Round', state.result.round],
-            ['Cards bought', state.result.cardsBought],
-            ['Schemes played', state.result.schemesPlayed],
-          ].map(([label, value]) => (
-            <div key={label} className="stat-card">
-              <dd>{value}</dd>
-              <dt>{label}</dt>
-            </div>
-          ))}
-        </dl>
-        <ShareResultButton
-          text={`${state.result.won ? 'I liberated Marrow' : 'Marrow held out this time'} in Cathnivore: ${state.result.regionsLiberated} regions liberated in ${state.result.round} rounds.`}
-        />
-        {onChapterEnd ? (
-          <button
-            onClick={() => {
-              clearGame()
-              onChapterEnd(state.result!.won, state)
-            }}
-          >
-            Continue
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              clearGame()
-              onExit()
-            }}
-          >
-            Back to Title
-          </button>
-        )}
       </main>
     )
   }

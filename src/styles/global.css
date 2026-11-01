@@ -1835,3 +1835,153 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   .sq-flash { animation: sq-flash 400ms linear both; }
 }
 html.no-animations .fx-liberate, html.no-animations .fx-squeeze, html.no-animations .lib-burst, html.no-animations .sq-flash { animation: none !important; display: none; }
+
+/* Plan item 8 (2026-11-01): an end screen that closes the loop. One column on a phone; on a desktop the story
+   (Cath, verdict, grade, play of the game) sits left and the data (the round-by-round chart, stats, the final
+   board) right, with Play again as the primary action under both. */
+.end-screen { justify-content: flex-start; padding-top: 24px; }
+.end-col { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 520px; }
+.end-col h1 { margin: 0; }
+.end-screen-verdict { display: inline-flex; align-items: center; gap: 12px; }
+.end-grade {
+  display: inline-flex; align-items: baseline; gap: 4px; padding: 2px 10px 2px 8px;
+  border: 2px solid currentColor; border-radius: 999px; letter-spacing: 0.04em;
+  animation: end-stamp-in 0.45s 0.6s cubic-bezier(.2,1.6,.4,1) both;
+}
+.end-grade b { font: 800 1.35rem/1 var(--font-display, inherit); }
+.end-grade small { font-size: var(--fs-label); font-weight: 700; color: var(--ink-muted); }
+.end-grade[data-grade='S'], .end-grade[data-grade='A'] { color: var(--wheat-ink); }
+.end-grade[data-grade='D'] { color: var(--clay-deep); }
+.end-play {
+  width: 100%; text-align: left; padding: 12px 16px; border-radius: 12px;
+  background: var(--paper-2); border-left: 6px solid var(--wheat);
+  box-shadow: 0 2px 0 var(--paper-3);
+  animation: end-rise 0.45s ease 0.7s both;
+}
+.end-play h2 { margin: 0 0 4px; font-size: 1.15rem; display: flex; flex-direction: column; }
+.end-play h2 small { font-size: var(--fs-label); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.end-play p { margin: 0; color: var(--ink); }
+.end-chart { margin: 0; width: 100%; padding: 10px 12px 6px; border-radius: 12px; background: var(--paper-2); animation: end-rise 0.45s ease 0.5s both; }
+.end-chart figcaption { display: flex; gap: 16px; justify-content: center; font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.end-chart-key::before { content: ''; display: inline-block; width: 14px; height: 4px; margin-right: 6px; border-radius: 2px; vertical-align: middle; background: currentColor; }
+.end-chart-key.is-trust { color: var(--sea); }
+.end-chart-key.is-land { color: var(--clay-deep); }
+.end-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.end-chart-grid { stroke: var(--paper-3); stroke-width: 1; }
+.end-chart-axis { stroke: var(--ink-muted); stroke-width: 1.5; }
+.end-chart-limit { stroke: var(--clay-deep); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: 0.7; }
+.end-chart-limit-label { fill: var(--clay-deep); font-size: var(--fs-label); font-weight: 700; }
+.end-chart-tick { fill: var(--ink-muted); font-size: var(--fs-label); font-family: var(--font-num, inherit); }
+.end-chart-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: end-draw 1.1s ease 0.7s forwards; }
+.end-chart-line.is-trust { stroke: var(--sea); }
+.end-chart-line.is-land { stroke: var(--clay-deep); }
+.end-chart-dot.is-trust { fill: var(--sea); }
+.end-chart-dot.is-land { fill: var(--clay-deep); }
+@keyframes end-draw { to { stroke-dashoffset: 0; } }
+.end-actions {
+  position: sticky; bottom: 0; z-index: var(--z-sticky); width: 100%; max-width: 520px;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 12px 0;
+  background: linear-gradient(to bottom, transparent, var(--paper) 28%);
+  animation: end-rise 0.4s ease 0.9s both;
+}
+.end-actions .primary { flex: 1 1 100%; min-height: 52px; font-size: 1.1rem; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.end-actions .primary small { font-size: var(--fs-label); font-weight: 600; opacity: 0.8; letter-spacing: 0.04em; }
+.end-actions .end-screen-share-note { flex-basis: 100%; }
+.end-actions .end-screen-share-note:empty { display: none; }
+@media (min-width: 900px) {
+  .end-screen {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; justify-content: center;
+    column-gap: 48px; max-width: 1180px; margin: 0 auto; padding: 32px 32px 0;
+  }
+  .end-col { max-width: none; }
+  .end-col-data { padding-top: 8px; }
+  .end-actions { grid-column: 1 / -1; max-width: 720px; justify-self: center; flex-wrap: nowrap; }
+  .end-actions .primary { flex: 0 1 260px; }
+  .end-actions .end-screen-share-note { display: none; }
+  .end-screen-map { width: min(100%, 300px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .end-chart-line { animation: none; stroke-dashoffset: 0; }
+  .end-play, .end-chart, .end-actions, .end-grade { animation: none; }
+}
+html.no-animations .end-chart-line { animation: none; stroke-dashoffset: 0; }
+html.no-animations .end-play, html.no-animations .end-chart, html.no-animations .end-actions, html.no-animations .end-grade { animation: none; }
+
+/* Plan item 8: Setup as a market-table spread on a desktop. Phones keep the single column exactly as before
+   (the portraits render larger now but are held at their old 72px here; the mode tiles' art is hidden). */
+.setup .pc-portrait svg { width: 72px; height: 86.4px; }
+.setup .segmented .mode-art, .setup .market-event-eyebrow { display: none; }
+@media (min-width: 1100px) {
+  .setup {
+    max-width: 1240px; padding: 24px 32px 32px;
+    display: grid; grid-template-columns: 340px minmax(0, 1fr) minmax(0, 1fr) 300px; column-gap: 20px;
+    grid-template-areas:
+      "head  head  head  head"
+      "event prod  prod  prod"
+      "mode  prod  prod  prod"
+      "diff  seed  seed  start";
+    align-items: stretch;
+  }
+  .setup > * { min-width: 0; }
+  .setup-header { grid-area: head; }
+  .setup-header h1 { font-size: var(--fs-h1); }
+  .setup-header-cath svg { width: 96px; height: 96px; }
+  .setup .market-event { grid-area: event; }
+  .setup .setup-mode { grid-area: mode; }
+  .setup .setup-producers { grid-area: prod; grid-row: 2 / span 2; display: flex; flex-direction: column; }
+  .setup .setup-difficulty { grid-area: diff; }
+  .setup .setup-seed { grid-area: seed; }
+  .setup > button.primary { grid-area: start; position: static; align-self: end; outline: none; margin-top: 14px; min-height: 64px; font-size: var(--fs-lead); }
+  .setup { padding-bottom: 32px; }
+
+  /* The event is a poster pinned to the table. */
+  .setup .market-event {
+    position: relative; padding: 18px 20px 20px; border: 2px dashed var(--soil); background: var(--paper-hi);
+    transform: rotate(-1.2deg); box-shadow: 0 10px 22px color-mix(in srgb, var(--ink) 14%, transparent);
+  }
+  .setup .market-event::before {
+    content: ''; position: absolute; top: -9px; left: 50%; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--wheat-hi), var(--clay-deep)); box-shadow: 0 2px 3px color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+  .setup .market-event-eyebrow { display: block; margin: 0 0 4px; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soil); }
+  .setup .market-event h2 { font-size: var(--fs-h3); }
+
+  /* Two illustrated mode tiles side by side. */
+  .setup .segmented.mode-picker { flex-direction: row; gap: 10px; padding: 0; border: none; background: none; border-radius: 0; }
+  .setup .segmented.mode-picker label {
+    flex: 1 1 0; position: relative; flex-direction: column-reverse; justify-content: flex-end; align-items: center; gap: 6px;
+    padding: 12px 8px 10px; border: 2px solid var(--soil); border-radius: 14px; background: var(--paper); text-align: center;
+  }
+  .setup .segmented.mode-picker label:has(input:checked) { border-color: var(--wheat); box-shadow: 0 0 0 2px var(--wheat); }
+  .setup .segmented.mode-picker span:not(.mode-art) { padding: 0; font-size: var(--fs-small); }
+  .setup .segmented.mode-picker label { min-width: 0; }
+  .setup .segmented.mode-picker span.mode-art { display: flex; justify-content: center; gap: 6px; padding: 0; }
+  .setup .segmented.mode-picker span.mode-who { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; }
+  .setup { min-height: 100vh; align-content: center; }
+  .setup .setup-recommend { align-self: flex-start; }
+  .mode-art svg { width: 52px; height: 62px; border-radius: 50%; }
+  .mode-tag { font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: inherit; }
+  .mode-tag.is-ai { padding: 0 5px; border: 1.5px solid currentColor; border-radius: 999px; }
+
+  /* The producers: four large cards in a row along the table. */
+  .setup .producer-grid { flex: 1; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .setup .producer-card { padding: 16px 14px 14px; gap: 6px; }
+  .setup .pc-portrait svg { width: 112px; height: 134.4px; }
+  .producer-card .pc-name { font-size: var(--fs-h3); }
+  .producer-card .pc-ability { font-size: var(--fs-small); }
+  .producer-card .recommended-badge { margin-top: auto; }
+}
+
+/* Plan item 8: How to Play's tour pages carry a mini Marrow; on a desktop the page widens into a spread with
+   the board beside Cath's words. */
+.tour .tour-board { width: 100%; height: auto; max-height: 220px; margin: 6px 0 10px; }
+.tour .tour-text { min-height: 4.2em; }
+@media (min-width: 1100px) {
+  .rules-reference:has(.tour) { max-width: 1040px; }
+  .tour .tour-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "h2 h2" "board title" "board text" "board nav"; column-gap: 28px; align-content: start; }
+  .tour .tour-body > h2 { grid-area: h2; }
+  .tour .tour-board { grid-area: board; max-height: 260px; align-self: center; }
+  .tour .tour-title { grid-area: title; align-self: end; font-size: var(--fs-h3); }
+  .tour .tour-text { grid-area: text; font-size: var(--fs-body); }
+  .tour .tour-nav { grid-area: nav; align-self: start; }
+}

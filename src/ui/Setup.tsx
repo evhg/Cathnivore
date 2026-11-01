@@ -53,30 +53,52 @@ export default function Setup({ onStart }: Props) {
       </header>
 
       <section className="settings-card market-event" data-event={marketEvent.id}>
+        <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
         <h2>Market event: {marketEvent.name}</h2>
         <p className="market-event-line">“{marketEvent.banner}”</p>
         <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</p>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card setup-mode">
         <h2>Mode</h2>
         <div className="segmented mode-picker">
           <label>
             <span>
               <input type="radio" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
             </span>
+            {/* Plan item 8: the desktop spread draws each mode as a tile (hidden on phones, whose layout stays). */}
+            <span className="mode-art" aria-hidden="true">
+              <span className="mode-who">
+                <Portrait character={producers[0] ?? 'mara'} size={52} />
+                <i className="mode-tag is-you">You</i>
+              </span>
+              <span className="mode-who">
+                <Portrait character={producers[1] ?? 'tomas'} size={52} />
+                <i className="mode-tag is-ai">AI</i>
+              </span>
+            </span>
           </label>
           <label>
             <span>
               <input type="radio" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
             </span>
+            <span className="mode-art" aria-hidden="true">
+              <span className="mode-who">
+                <Portrait character={producers[0] ?? 'mara'} size={52} />
+                <i className="mode-tag is-you">P1</i>
+              </span>
+              <span className="mode-who">
+                <Portrait character={producers[1] ?? 'tomas'} size={52} />
+                <i className="mode-tag is-you">P2</i>
+              </span>
+            </span>
           </label>
         </div>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card setup-producers">
         <h2>Producers (pick 2)</h2>
-        <button type="button" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
+        <button type="button" className="setup-recommend" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
           Use recommended pair
         </button>
         <div className="producer-grid">
@@ -84,7 +106,7 @@ export default function Setup({ onStart }: Props) {
             <label key={id} className="producer-card" data-producer={id}>
               <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
               <span className="pc-portrait" aria-hidden="true">
-                <Portrait character={id} size={72} />
+                <Portrait character={id} size={112} />
               </span>
               <span className="pc-name">{PRODUCERS[id].name}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
@@ -96,7 +118,7 @@ export default function Setup({ onStart }: Props) {
         </div>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card setup-difficulty">
         <h2>Difficulty</h2>
         <div className="segmented">
           {(['easy', 'normal', 'hard'] as const).map((d) => (
@@ -110,7 +132,7 @@ export default function Setup({ onStart }: Props) {
         </div>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card setup-seed">
         <h2>Seed (optional)</h2>
         <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
       </section>

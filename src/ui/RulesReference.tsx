@@ -8,6 +8,7 @@ import { REGIONS } from '../content/map'
 import { ACTION_TERMS, GLOSSARY_TERMS, entryDomId, type GlossaryEntry } from '../content/terms'
 import { ACTIONS_PER_ROUND } from '../engine/region'
 import CathArt from './CathArt'
+import TourBoard, { type TourCard, type TourHex } from './TourBoard'
 
 interface Props {
   onClose(): void
@@ -48,71 +49,61 @@ function EntryList({ entries, activeTerm }: { entries: Entry[]; activeTerm?: str
   )
 }
 
-type Hex = { fill: string; mark?: string }
-const HEX_PTS = '0,-16 14,-8 14,8 0,16 -14,8 -14,-8'
+// Plan item 8: the regions of the mini Marrow, Kingsmarket first, then the ring as on the real map.
+const FILLS = ['var(--region-capital)', 'var(--region-pasture)', 'var(--region-coast)', 'var(--region-crop)', 'var(--region-coast)', 'var(--region-crop)', 'var(--region-pasture)']
+const board = (over: Record<number, Omit<TourHex, 'fill'>>): TourHex[] => FILLS.map((fill, i) => ({ fill, ...over[i] }))
 
-function DemoBoard({ hexes, label }: { hexes: Hex[]; label: string }) {
-  return (
-    <svg className="tour-board" viewBox={`0 0 ${hexes.length * 34 + 6} 42`} role="img" aria-label={label}>
-      {hexes.map((h, i) => (
-        <g key={i} transform={`translate(${i * 34 + 20} 21)`}>
-          <polygon points={HEX_PTS} fill={h.fill} stroke="var(--ink)" strokeWidth="1.5" />
-          {h.mark && (
-            <text textAnchor="middle" dy="5" fontSize="13" fontWeight="800" fill="var(--ink-on-fixed-fill)">
-              {h.mark}
-            </text>
-          )}
-        </g>
-      ))}
-    </svg>
-  )
-}
-
-const TOUR = [
+const TOUR: Array<{ title: string; text: string; board: TourHex[]; cards?: TourCard[]; label: string }> = [
   {
     title: 'Your round',
-    text: `Each round, every producer gets ${ACTIONS_PER_ROUND} actions: sell, invest, scheme, supply and more.`,
-    board: [
-      { fill: 'var(--region-pasture)', mark: '1' },
-      { fill: 'var(--region-crop)', mark: '2' },
-      { fill: 'var(--region-coast)', mark: '3' },
-    ],
-    label: 'Three regions, numbered as actions one to three',
+    text: `Each round, every producer gets ${ACTIONS_PER_ROUND} actions: sell, invest, scheme, supply and more. Open Stalls next to the ones you have, and spread across Marrow.`,
+    board: board({
+      0: { pieces: ['outlet', 'outlet'] },
+      6: { focus: true, mark: '1', pieces: ['stall'] },
+      1: { focus: true, mark: '2', pieces: ['stall', 'stall'] },
+      5: { focus: true, mark: '3', pieces: ['stall2'] },
+      3: { pieces: ['outlet'] },
+    }),
+    label: 'A mini map of Marrow: your Stalls in three regions, numbered as actions one to three',
   },
   {
     title: 'Beat the Squeeze',
-    text: 'Liberate regions by out-building the Outlets and Buyouts on them.',
-    board: [
-      { fill: 'var(--hollowell)', mark: '0.99' },
-      { fill: 'var(--region-crop)', mark: 'S' },
-      { fill: 'var(--region-pasture)', mark: 'S' },
-    ],
-    label: 'An Outlet-held region beside two of your Stalls',
+    text: 'Liberate a region by clearing out its Outlets, Buyouts and Doubt while you have a Stall there. Keep it clear to keep it.',
+    board: board({
+      0: { pieces: ['outlet', 'outlet', 'buyout'] },
+      2: { focus: true, ring: 'ours', pieces: ['stall', 'stall2'] },
+      3: { focus: true, ring: 'theirs', pieces: ['outlet', 'stall', 'stall2'] },
+      4: { pieces: ['buyout'] },
+    }),
+    label: 'One region liberated with a solid green ring; the next held by an Outlet against two Stalls, ringed in dashed clay',
   },
   {
     title: 'Mind the Rift',
-    text: 'Watch Rift and Lost Land: the corporations get bolder as they climb.',
-    board: [
-      { fill: 'var(--candor)', mark: '?' },
-      { fill: 'var(--hollowell)' },
-      { fill: 'var(--candor)', mark: '?' },
-    ],
-    label: 'Corporate regions spreading across the board',
+    text: 'Doubt left alone costs Public Trust when the Squeeze lands, and a Squeeze that beats your Stalls places Lost Land. Trust at zero, or no Lost Land left to place, and Marrow is repossessed.',
+    board: board({
+      0: { pieces: ['outlet', 'buyout'] },
+      4: { focus: true, pieces: ['doubt', 'doubt'] },
+      5: { focus: true, lost: true },
+      6: { pieces: ['stall', 'doubt'] },
+      3: { pieces: ['outlet', 'outlet'] },
+    }),
+    label: 'Doubt tokens spreading and a region hatched over with Lost Land',
   },
   {
     title: 'Play your cards',
-    text: 'Buy Improvements to strengthen your regions, and play Schemes at the right moment to turn a round around.',
-    board: [
-      { fill: 'var(--wheat)', mark: 'I' },
-      { fill: 'var(--candor)', mark: 'S' },
+    text: 'Buy Improvements to strengthen your regions, and play Schemes from Cath’s Plan at the right moment to turn a round around.',
+    board: board({ 1: { pieces: ['stall', 'stall'], ring: 'ours' }, 0: { pieces: ['outlet'] } }),
+    cards: [
+      { kind: 'improvement', name: 'Cold Store' },
+      { kind: 'scheme', name: 'Loss Leader' },
     ],
-    label: 'An Improvement card beside a Scheme card',
+    label: 'An Improvement card and a Scheme card beside the map',
   },
   {
     title: 'Ask the table',
-    text: 'Tap any card or action on the table for its rules; the "?" links land you back here.',
-    board: [{ fill: 'var(--wheat)', mark: '?' }],
-    label: 'A help marker',
+    text: 'Tap any card, region or action on the table for its rules; the "?" links land you back here.',
+    board: board({ 0: { focus: true, mark: '?' } }),
+    label: 'Kingsmarket with a help marker',
   },
 ]
 
@@ -133,7 +124,7 @@ function QuickTour() {
       <div className="tour-body">
         <h2>The basics, from Cath</h2>
         <h3 className="tour-title">{page.title}</h3>
-        <DemoBoard hexes={page.board} label={page.label} />
+        <TourBoard hexes={page.board} cards={page.cards} label={page.label} />
         <p className="tour-text">{page.text}</p>
         <div className="tour-nav">
           <button onClick={() => setI(i - 1)} disabled={i === 0}>Back</button>

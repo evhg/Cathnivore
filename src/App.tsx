@@ -60,6 +60,8 @@ type Screen =
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
   const [updateReady, setUpdateReady] = useState(false)
+  // Bumped by "Play again" so the same-seed game mounts fresh rather than keeping the finished one's state.
+  const [gameRun, setGameRun] = useState(0)
   const saved = loadGame()
 
   // Test-only: SPEC 11.3's global error screen (`ErrorBoundary.tsx`) has no other reliable way to be
@@ -379,5 +381,19 @@ export default function App() {
     )
   }
 
-  return <Game initial={screen.state} seed={screen.seed} mode={screen.mode} onExit={() => setScreen({ name: 'title' })} />
+  return (
+    <Game
+      key={gameRun}
+      initial={screen.state}
+      seed={screen.seed}
+      mode={screen.mode}
+      onExit={() => setScreen({ name: 'title' })}
+      onPlayAgain={() => {
+        // Plan item 8: the same seed from the start, with the same producers and difficulty.
+        setGameRun((n) => n + 1)
+        start(screen.state.config, screen.seed, screen.mode)
+      }}
+      onNewGame={() => setScreen({ name: 'setup' })}
+    />
+  )
 }
