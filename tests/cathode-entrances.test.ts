@@ -67,7 +67,40 @@ function check(id: string, name: string, e: Entry, cols: THREE.Box3[], crowds: C
   return bad.map((b) => `${id}.${name}: ${b}`);
 }
 
+/** How many of three probe heights on him (or on his rope) are hidden from `m` at eye height by a collider. */
+function hidden(cols: THREE.Box3[], m: THREE.Vector3, e: Entry): number {
+  const eye = new THREE.Vector3(m.x, m.y + 1.6, m.z);
+  const ys = e.kind === "rappel" ? [0.6, 1.2, Math.min(3, (e.from.y - e.to.y) / 2)] : [0.6, 1.2, 1.7];
+  return ys.filter((y) => {
+    const tgt = new THREE.Vector3(e.to.x, e.to.y + y, e.to.z);
+    const d = eye.distanceTo(tgt);
+    const ray = new THREE.Ray(eye, tgt.clone().sub(eye).normalize());
+    return cols.some((c) => {
+      const p = ray.intersectBox(c, new THREE.Vector3());
+      return !!p && p.distanceTo(eye) > 0.2 && p.distanceTo(eye) < d - 0.3;
+    });
+  }).length;
+}
+
 describe("NIGHT SHIFT scripted entrances (plan item 7)", () => {
+  // Session 2's shots found the Tower, Vault and Plaza alarms coming in behind walls: she must see them happen.
+  it("every lead job's alarm entrance is in plain sight of the objective that sets it off", () => {
+    const bad: string[] = [];
+    for (const [id, list] of Object.entries(ENTRIES)) {
+      if (id === "market") continue;
+      const lv = buildDistrict(id, "high");
+      const m = lv.markers["lead:register"]?.[0];
+      expect(m, `${id} has a lead objective`).toBeTruthy();
+      for (const [n, e] of Object.entries(list) as [string, Entry][]) {
+        if (!/^(alarm|ambush)/.test(n)) continue;
+        const d = Math.hypot(e.to.x - m!.x, e.to.z - m!.z);
+        if (d < 8 || d > 20) bad.push(`${id}.${n} lands ${d.toFixed(1)} m from the objective`);
+        if (hidden(lv.builder.colliders, m!, e)) bad.push(`${id}.${n} is hidden from the objective`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
   for (const [id, list] of Object.entries(ENTRIES)) {
     it(`${id}: at least two entrances, each staged on the real geometry`, () => {
       const lv = buildDistrict(id, "high");

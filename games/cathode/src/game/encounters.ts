@@ -42,16 +42,16 @@ export const ENTRIES = {
   },
   plaza: {
     // The strongbox alarm: a Hollowell van tears up the west side of the square; a second man ropes off the
-    // roof of the west block (its parapet at 12 m) behind the market.
-    alarmVan: { kind: "van", from: V(-12, 0, -2), stop: V(-12, 0, 10.5), to: V(-14.5, 0, 11.5) },
-    alarmRope: { kind: "rappel", from: V(-29.2, 12, 20), to: V(-29.2, 0, 20), delay: 1.5 },
+    // roof of the west block (its parapet at 12 m), in plain sight of the strongbox.
+    alarmVan: { kind: "van", from: V(-14.5, 0, 1), stop: V(-14.5, 0, 13.5), to: V(-17, 0, 14.5) },
+    alarmRope: { kind: "rappel", from: V(-29.2, 12, 41.5), to: V(-29.2, 0, 41.5), delay: 1.5 },
     // Pell's rally detail: a van down the east side of the fountain, a man off the front of the hall's portico roof.
     bossVan: { kind: "van", from: V(10.5, 0, 20), stop: V(10.5, 0, -1), to: V(8.4, 0, -1.6) },
     bossRope: { kind: "rappel", from: V(-2, 9.4, -45.6), to: V(-2, 2.4, -45.6), delay: 1.2 },
   },
   tower: {
     // The courier safe's alarm: two security men rope down the lobby atrium, one after the other.
-    alarmRopeA: { kind: "rappel", from: V(1, 14.1, 36), to: V(1, 0, 36) },
+    alarmRopeA: { kind: "rappel", from: V(1, 14.1, 31.5), to: V(1, 0, 31.5) },
     alarmRopeB: { kind: "rappel", from: V(5, 14.1, 24), to: V(5, 0, 24), delay: 0.7 },
     // The boardroom: the chairman's detail drops from the ceiling vents either side of the table.
     bossVentL: { kind: "rappel", from: V(-7, 14.1, -46), to: V(-7, 9.1, -46) },
@@ -59,8 +59,8 @@ export const ENTRIES = {
   },
   vault: {
     // The ledger alarm: the lift behind her opens on a breach team; a second man drops off the gate gantry.
-    alarmLift: { kind: "breach", from: V(0, 0, 55.2), to: V(0, 0, 52.6), doorW: 4.4 },
-    alarmRope: { kind: "rappel", from: V(-4, 18, 31), to: V(-4, 0, 31), delay: 1.0 },
+    alarmLift: { kind: "breach", from: V(1, 0, 55.2), to: V(1, 0, 52.6), doorW: 4.4 },
+    alarmRope: { kind: "rappel", from: V(-2, 18, 31), to: V(-2, 0, 31), delay: 1.0 },
     // The core: Hollowell drops two men down the chasm on lines.
     bossRopeL: { kind: "rappel", from: V(-8, 18, -38), to: V(-8, 0, -38) },
     bossRopeR: { kind: "rappel", from: V(8, 18, -38), to: V(8, 0, -38), delay: 0.8 },

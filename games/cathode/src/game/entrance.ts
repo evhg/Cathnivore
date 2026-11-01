@@ -48,8 +48,10 @@ interface Live {
   fired: boolean;
   group: THREE.Group | null;
   rope?: THREE.Mesh;
-  doors?: { mesh: THREE.Mesh; vel: THREE.Vector3; spin: THREE.Vector3; rest: boolean }[];
-  van?: { body: THREE.Group; path: [THREE.Vector3, THREE.Vector3]; yaw: number };
+  doors?: { mesh: THREE.Object3D; vel: THREE.Vector3; spin: THREE.Vector3; rest: boolean }[];
+  van?: { body: THREE.Group; path: [THREE.Vector3, THREE.Vector3]; yaw: number; beacons: THREE.Mesh[] };
+  /** His helmet torch while he comes in (and a moment after): a beam towards her, so the eye finds him. */
+  torch?: THREE.Mesh;
 }
 
 export interface EntranceHost {
@@ -71,7 +73,8 @@ const glass = new THREE.MeshStandardMaterial({ color: 0x0b0e12, roughness: 0.08,
 const tyre = new THREE.MeshStandardMaterial({ color: 0x0d0d0f, roughness: 0.9 });
 const lamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2d8, emissiveIntensity: 3 });
 const tail = new THREE.MeshStandardMaterial({ color: 0x400000, emissive: 0xff2020, emissiveIntensity: 2.2 });
-const ropeMat = new THREE.MeshStandardMaterial({ color: 0x3a3226, roughness: 0.95 });
+const ropeMat = new THREE.MeshStandardMaterial({ color: 0x7a7258, roughness: 0.9 });
+const beacon = new THREE.MeshStandardMaterial({ color: 0x402000, emissive: 0xff9a20, emissiveIntensity: 3 });
 
 /** A Hollowell response van: a long panel body, a cab, wheels, headlamps, the amber company stripe. */
 function makeVan(): THREE.Group {
@@ -92,6 +95,21 @@ function makeVan(): THREE.Group {
   box(0.2, 0.3, 0.04, tail, 0.85, 1.1, -2.52);
   box(0.2, 0.3, 0.04, tail, -0.85, 1.1, -2.52);
   box(2.15, 0.25, 0.3, steel, 0, 0.45, 2.45);
+  // Roof light bar (amber beacons either end), the sliding side door's seam and rail, mirrors.
+  box(1.5, 0.1, 0.3, steel, 0, 2.55, 0.9);
+  box(0.36, 0.12, 0.26, beacon, 0.55, 2.62, 0.9);
+  box(0.36, 0.12, 0.26, beacon, -0.55, 2.62, 0.9);
+  // Headlamp beams through the rain, dipped a little.
+  for (const x of [0.7, -0.7]) {
+    const b = makeBeam(11, 1.7, 0xfff0d0, 0.32);
+    aim(b, new THREE.Vector3(x, 0.95, 2.55), new THREE.Vector3(0, -0.12, 1));
+    g.add(b);
+  }
+  for (const x of [1.06, -1.06]) {
+    box(0.02, 1.7, 0.03, steel, x, 1.4, 0.95);
+    box(0.02, 0.05, 2.4, steel, x, 2.2, -0.3);
+    box(0.06, 0.18, 0.12, vanPaint, x * 1.06, 1.55, 2.25);
+  }
   for (const [x, z] of [[1, 1.6], [-1, 1.6], [1, -1.6], [-1, -1.6]] as const) {
     const w = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.28, 14), tyre);
     w.rotation.z = Math.PI / 2;
@@ -99,6 +117,88 @@ function makeVan(): THREE.Group {
     g.add(w);
   }
   return g;
+}
+
+const doorPaint = new THREE.MeshStandardMaterial({ color: 0x3b4148, roughness: 0.6, metalness: 0.45 });
+const doorInset = new THREE.MeshStandardMaterial({ color: 0x30353b, roughness: 0.7, metalness: 0.4 });
+const wireGlass = new THREE.MeshStandardMaterial({ color: 0x9fb4b8, emissive: 0x1d2a2c, roughness: 0.25, metalness: 0.2, transparent: true, opacity: 0.55 });
+const brushed = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.3, metalness: 0.9 });
+const hazard = new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.7 });
+
+/**
+ * One steel door leaf (centred, 2.4 m tall, facing +z before it is turned): inset panels, a wire-glass vision
+ * panel, a push bar, a kick plate and a hazard band, so it reads as a door as it tumbles, not as a slab.
+ * `hinge` is the side its hinges are on (-1 left, 1 right), which puts the bar on the other edge.
+ */
+function makeLeaf(w: number, hinge: -1 | 1): THREE.Group {
+  const g = new THREE.Group();
+  const box = (bw: number, bh: number, bd: number, m: THREE.Material, x: number, y: number, z: number) => {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), m);
+    b.position.set(x, y, z);
+    b.castShadow = true;
+    g.add(b);
+    return b;
+  };
+  box(w, 2.4, 0.06, doorPaint, 0, 0, 0);
+  for (const side of [-1, 1]) {
+    const z = side * 0.034;
+    // Two raised panels below the glass, one above it.
+    box(w * 0.62, 0.62, 0.012, doorInset, 0, -0.7, z);
+    box(w * 0.62, 0.34, 0.012, doorInset, 0, 0.95, z);
+    box(w * 0.4, 0.5, 0.008, wireGlass, 0, 0.42, z * 1.05);
+    box(w * 0.96, 0.22, 0.008, brushed, 0, -1.05, z);
+    box(w * 0.96, 0.06, 0.008, hazard, 0, -0.88, z);
+    // Push bar on the opening edge.
+    box(w * 0.55, 0.05, 0.05, brushed, -hinge * w * 0.18, -0.05, side * 0.06);
+  }
+  // Hinges.
+  for (const y of [-0.9, 0, 0.9]) box(0.04, 0.14, 0.08, brushed, hinge * (w / 2 - 0.01), y, 0);
+  return g;
+}
+
+/** The steel frame a breached door blows out of: two jambs and a header with a hazard edge. */
+function makeFrame(w: number): THREE.Group {
+  const g = new THREE.Group();
+  const add = (bw: number, bh: number, x: number, y: number, m: THREE.Material) => {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, 0.16), m);
+    b.position.set(x, y, 0);
+    g.add(b);
+  };
+  add(0.1, 2.5, -w / 2 - 0.05, 1.25, doorPaint);
+  add(0.1, 2.5, w / 2 + 0.05, 1.25, doorPaint);
+  add(w + 0.2, 0.12, 0, 2.5, doorPaint);
+  add(w + 0.2, 0.04, 0, 2.43, hazard);
+  return g;
+}
+
+/**
+ * A light beam in the rain: an open cone, apex at the origin pointing down -y, bright at the lamp and fading to
+ * nothing at `len` (vertex colours under additive blending, so black is invisible). Turned with `aim`.
+ */
+function makeBeam(len: number, r: number, color: number, k: number): THREE.Mesh {
+  const geo = new THREE.CylinderGeometry(0.04, r, len, 18, 6, true);
+  geo.translate(0, -len / 2, 0);
+  const pos = geo.getAttribute("position");
+  const c = new THREE.Color(color);
+  const cols = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const t = Math.min(1, -pos.getY(i) / len);
+    const a = k * (1 - t) * (1 - t);
+    cols[i * 3] = c.r * a;
+    cols[i * 3 + 1] = c.g * a;
+    cols[i * 3 + 2] = c.b * a;
+  }
+  geo.setAttribute("color", new THREE.BufferAttribute(cols, 3));
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+  m.renderOrder = 5;
+  return m;
+}
+
+const DOWN = new THREE.Vector3(0, -1, 0);
+/** Points a beam made by `makeBeam` from `from` along `dir`. */
+function aim(beam: THREE.Object3D, from: THREE.Vector3, dir: THREE.Vector3): void {
+  beam.position.copy(from);
+  beam.quaternion.setFromUnitVectors(DOWN, dir.clone().normalize());
 }
 
 const flat = (a: THREE.Vector3, b: THREE.Vector3) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -138,8 +238,7 @@ export class Entrances {
       l.doors = [];
       for (let i = 0; i < leaves; i++) {
         const off = leaves === 1 ? 0 : (i === 0 ? -1 : 1) * (lw / 2 + 0.02);
-        const door = new THREE.Mesh(new THREE.BoxGeometry(lw, 2.4, 0.07), steel);
-        door.castShadow = true;
+        const door = makeLeaf(lw, off < 0 ? -1 : 1);
         door.position.copy(spec.from).addScaledVector(along, off).setY(this.h.ground(spec.from.x, spec.from.z) + 1.2);
         door.rotation.y = Math.atan2(dir.x, dir.z);
         g.add(door);
@@ -147,15 +246,25 @@ export class Entrances {
         const vel = dir.clone().multiplyScalar(6 + Math.random() * 2).addScaledVector(along, Math.sign(off) * 2.2).setY(2.2 + Math.random());
         l.doors.push({ mesh: door, vel, spin: new THREE.Vector3(-4 - Math.random() * 3, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 2), rest: true });
       }
+      // The frame stays where it stood: jambs and a header, scorched once the charge goes.
+      const frame = makeFrame(w);
+      frame.position.copy(spec.from).setY(this.h.ground(spec.from.x, spec.from.z));
+      frame.rotation.y = Math.atan2(dir.x, dir.z);
+      g.add(frame);
       this.h.scene.add(g);
       l.group = g;
     }
     this.live.push(l);
   }
 
-  private doneWith(l: Live): boolean {
+  /** How long his entrance takes (s). */
+  private span(l: Live): number {
     const k = l.spec.kind;
-    return l.t >= (k === "rappel" ? rappelS(l.spec.from.y - l.to.y) : k === "breach" ? BREACH_S : VAN_DRIVE_S + VAN_OUT_S);
+    return k === "rappel" ? rappelS(l.spec.from.y - l.to.y) : k === "breach" ? BREACH_S : VAN_DRIVE_S + VAN_OUT_S;
+  }
+
+  private doneWith(l: Live): boolean {
+    return l.t >= this.span(l);
   }
 
   private fire(l: Live): void {
@@ -167,9 +276,29 @@ export class Entrances {
     const g = l.group ?? new THREE.Group();
     if (!l.group) this.h.scene.add(g);
     l.group = g;
+    if (spec.kind !== "van") {
+      l.torch = makeBeam(7, 0.9, 0xe8f4ff, 0.42);
+      // The lamp itself: a hot point that glares when he faces her.
+      const lens = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
+      lens.scale.setScalar(1.6);
+      l.torch.add(lens);
+      g.add(l.torch);
+    }
     if (spec.kind === "rappel") {
-      const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1, 5), ropeMat);
+      // The rope hangs from its anchor to the floor (and stays there after he lands: she sees where he came from).
+      const top = spec.from.y;
+      const len = Math.max(0.1, top - l.to.y);
+      const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, len, 6), ropeMat);
+      rope.position.set(l.to.x + 0.25, l.to.y + len / 2, l.to.z);
       g.add(rope);
+      const anchor = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.22), steel);
+      anchor.position.set(l.to.x + 0.25, top - 0.02, l.to.z);
+      g.add(anchor);
+      // A loose coil where the tail lies on the floor.
+      const coil = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.03, 5, 14), ropeMat);
+      coil.rotation.x = Math.PI / 2;
+      coil.position.set(l.to.x + 0.4, l.to.y + 0.03, l.to.z + 0.1);
+      g.add(coil);
       l.rope = rope;
     } else if (spec.kind === "breach" && l.doors) {
       const dir = new THREE.Vector3().subVectors(l.to, spec.from).setY(0).normalize();
@@ -197,7 +326,8 @@ export class Entrances {
       body.position.copy(fromFlat);
       body.rotation.y = yaw;
       g.add(body);
-      l.van = { body, path: [fromFlat, stop], yaw };
+      const beacons = body.children.filter((c): c is THREE.Mesh => c instanceof THREE.Mesh && c.material === beacon);
+      l.van = { body, path: [fromFlat, stop], yaw, beacons };
     }
   }
 
@@ -217,13 +347,6 @@ export class Entrances {
         const ease = 1 - (1 - k) * (1 - k);
         const top = spec.from.y - l.to.y;
         e.lift = e.alive ? Math.max(0, top * (1 - ease)) : 0;
-        if (l.rope) {
-          const anchorY = spec.from.y;
-          const footY = l.to.y + e.lift + 1.5;
-          const len = Math.max(0.1, anchorY - footY);
-          l.rope.scale.y = len;
-          l.rope.position.set(l.to.x, footY + len / 2, l.to.z);
-        }
       } else if (spec.kind === "breach" && l.doors) {
         for (const d of l.doors) {
           if (d.rest) continue;
@@ -255,6 +378,25 @@ export class Entrances {
           this.h.sound?.("brake");
         }
       }
+      if (l.torch) {
+        // The torch rides on his helmet, aimed at her and a little down, and goes out a moment after he lands.
+        const on = e.alive && e.body.root.visible && l.t < this.span(l) + 1.5;
+        l.torch.visible = on;
+        if (on) {
+          // Onto the floor 3 m short of him towards her, so she sees the beam side-on sweep the room.
+          const head = e.body.joints.head;
+          const p = this.h.player();
+          const toward = new THREE.Vector3(p.x - head.x, 0, p.z - head.z);
+          const dist = Math.max(0.1, toward.length());
+          const spot = head.clone().addScaledVector(toward, Math.min(3, dist * 0.6) / dist).setY(l.to.y);
+          aim(l.torch, head.clone().add(new THREE.Vector3(0, 0.12, 0)), spot.sub(head));
+        }
+      }
+      if (l.van) {
+        // The roof beacons pulse out of phase.
+        const on = Math.sin(this.clock * 9) > 0;
+        l.van.beacons.forEach((b, i) => (b.visible = i % 2 === 0 ? on : !on));
+      }
       if (!this.doneWith(l) || !e.entering) {
         if (!e.alive && e.lift !== 0 && e.body.root.visible) e.lift = 0;
         continue;
@@ -262,7 +404,6 @@ export class Entrances {
       e.lift = 0;
       e.entering = false;
       e.passive = false;
-      l.rope?.removeFromParent();
       if (e.alive) e.alert(this.h.player());
     }
   }

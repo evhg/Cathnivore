@@ -233,6 +233,8 @@ export interface Session {
   /** Plan item 7: every scripted entrance that fired (breach, rappel, van), for e2e. */
   entrances?: readonly import("./entrance").EntranceEvent[];
   /** Plan item 7: the district's lead job while it runs (e2e walks her to its target to fire the alarm). */
+  /** Screenshot scripts: slows the whole world (1 = normal), so a 1 s entrance can be caught mid-flight at 3 fps. */
+  testTimeScale?: number;
   lead?: () => { stage: number; target: THREE.Vector3 | null } | null;
   probeEnemy?: () => { enemy: number; street: number; ratio: number; px: number; heightPx: number; box: { x: number; y: number; w: number; h: number } } | null;
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
@@ -1676,7 +1678,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (kcSkipAt) kcSkipAt += realDt * 1000;
     // Time: the kill-cam slows the world right down; held focus (bullet-time) slows it while it lasts.
     const run = actives.running();
-    let scale = killcam.timeScale * (killcam.active ? 1 : run.timeScale);
+    let scale = killcam.timeScale * (killcam.active ? 1 : run.timeScale) * (s.testTimeScale ?? 1);
     const focusing = !killcam.active && intent.focus && s.focus > 0 && !wanted?.focusJammed;
     if (focusing) {
       s.focus = Math.max(0, s.focus - realDt);
