@@ -24,7 +24,7 @@ export function canStartNewGamePlus(jobsDone: readonly string[]): boolean {
 /** The jobs list for the next lap: unlock flags kept, lap counter up by one, everything else cleared. */
 export function startNewGamePlus(jobsDone: readonly string[]): string[] {
   const lap = ngPlusLap(jobsDone) + 1;
-  return [...jobsDone.filter((id) => KEEP.has(id)), `ngPlus${lap}`];
+  return [...jobsDone.filter((id) => KEEP.has(id) || id.startsWith("deckbest:")), `ngPlus${lap}`];
 }
 
 /** Extra elite chance per lap (added to the difficulty's chance), capped so a lap never makes everyone elite. */
@@ -51,7 +51,7 @@ export function activeMods(jobsDone: readonly string[]): ModId[] {
 /** Starts the next lap with a deck of at most three mods (unknown ids are ignored). */
 export function startSecondBroadcast(jobsDone: readonly string[], picks: readonly string[]): string[] {
   const ok = MODS.filter((m) => picks.includes(m.id)).slice(0, 3);
-  return [...startNewGamePlus(jobsDone), ...ok.map((m) => `mod:${m.id}`)];
+  return [...startNewGamePlus(withDeckBest(jobsDone)), ...ok.map((m) => `mod:${m.id}`)];
 }
 
 /** Score multiplier for the deck: 1 with no mods, plus each mod's bonus, and 10% per lap. */
@@ -77,4 +77,27 @@ export function broadcastLadder(jobsDone: readonly string[]): { lap: number; mul
     rungs.push({ lap, mult: scoreMultiplier(probe), current: lap === top });
   }
   return rungs;
+}
+
+/** Banks the finished lap's score under its deck (`deckbest:<mods>:<mult>`), keeping only the best per deck. */
+export function withDeckBest(jobsDone: readonly string[]): string[] {
+  if (!canStartNewGamePlus(jobsDone)) return [...jobsDone];
+  const key = activeMods(jobsDone).join("+") || "none";
+  const mult = scoreMultiplier(jobsDone);
+  const old = deckBests(jobsDone).find((d) => d.key === key);
+  const rest = jobsDone.filter((id) => !id.startsWith(`deckbest:${key}:`));
+  return old && old.mult >= mult ? [...jobsDone] : [...rest, `deckbest:${key}:${mult}`];
+}
+
+/** Best finished-lap score per deck, highest first. */
+export function deckBests(jobsDone: readonly string[]): { key: string; names: string[]; mult: number }[] {
+  const out: { key: string; names: string[]; mult: number }[] = [];
+  for (const id of jobsDone) {
+    const m = /^deckbest:([^:]+):([\d.]+)$/.exec(id);
+    if (!m) continue;
+    const key = m[1] as string;
+    const names = key === "none" ? ["No mods"] : key.split("+").map((k) => MODS.find((x) => x.id === k)?.name ?? k);
+    out.push({ key, names, mult: Number(m[2]) });
+  }
+  return out.sort((a, b) => b.mult - a.mult);
 }
