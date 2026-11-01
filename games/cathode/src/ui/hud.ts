@@ -4,6 +4,7 @@
 // when it changed, so a steady frame does no layout. Blood red is danger, cyan is system, amber is reward.
 
 import { tuning, type HitClass } from "../game/feel/tuning";
+import { bustForBanner, bustSvg } from "./busts";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
 import { applyMotionPref, loadPrefs, savePrefs, type DamageFx, type Intensity, type QualityChoice } from "../prefs";
 import { showCredits } from "./credits";
@@ -1148,6 +1149,13 @@ export class Hud {
       this.root.classList.remove("boss-intro", "banner-on");
       document.documentElement.classList.remove("hud-banner-on");
     }, 3200);
+    // A boss intro opens Bea's file on him: the surveillance still sits above the name.
+    const who = kind === "boss" ? bustForBanner(title) : null;
+    if (who) {
+      const f = el("figure", "hud-banner-bust", this.banner);
+      f.setAttribute("aria-hidden", "true");
+      f.innerHTML = bustSvg(who);
+    }
     const p = el("p", "hud-banner-sub", this.banner);
     p.textContent = sub;
     const h = el("p", "hud-banner-title", this.banner);

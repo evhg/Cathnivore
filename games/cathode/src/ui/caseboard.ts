@@ -1,6 +1,7 @@
 import { cathSceneSvg } from "../../../../shared/cath/scene";
 import { caseBoard } from "../sim/casefile";
 import { MODS, activeMods, broadcastLadder, deckBests } from "../sim/newgameplus";
+import { BUST_FOR_CASE, BUST_NAMES, bustSvg } from "./busts";
 import { button, el } from "./dom";
 
 /** Opens the case board over `parent`: pinned cards joined by red string, solved ones stamped. Returns a close function. */
@@ -19,6 +20,15 @@ export function openCaseBoard(parent: Element, jobsDone: readonly string[], onCl
     // A small tilt and drop per card so the board reads pinned by hand, not gridded.
     li.style.setProperty("--tilt", `${((i * 37) % 7) - 3}deg`);
     el("i", "case-pin", li);
+    // The names on the List get a surveillance still from Bea's file once she has a lead on them.
+    const who = BUST_FOR_CASE[c.id];
+    if (who && c.state !== "locked") {
+      li.classList.add("case-wanted");
+      const photo = el("figure", "case-photo", li);
+      photo.innerHTML = bustSvg(who);
+      photo.setAttribute("role", "img");
+      photo.setAttribute("aria-label", `Surveillance still of ${BUST_NAMES[who]}`);
+    }
     el("b", "", li, c.title);
     if (c.state === "done") el("em", "case-stamp", li, "Closed");
     el("span", "", li, c.note);

@@ -984,6 +984,28 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   100% { letter-spacing: .01em; }
 }
 @keyframes boss-rule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* Plan item 9: a boss intro opens Bea's file on him. His surveillance still sits above the name, cut in like a
+   photo dropped on the table: it settles from a slight tilt and a flash of exposure. */
+.hud-banner-bust {
+  order: -2;
+  margin: 0 0 var(--sp-2);
+  width: calc(var(--u) * 168);
+  aspect-ratio: 200 / 240;
+  box-shadow: 0 calc(var(--u) * 10) calc(var(--u) * 30) rgb(var(--black-rgb) / .7);
+  outline: calc(var(--u) * 1.4) solid var(--line-3);
+  outline-offset: calc(var(--u) * 3);
+}
+.hud-banner-bust svg { display: block; width: 100%; height: 100%; }
+.hud-root.boss-intro .hud-banner { top: 22%; }
+.hud-banner.on .hud-banner-bust { animation: boss-still .7s var(--ease-out) both; }
+@keyframes boss-still {
+  0% { opacity: 0; transform: translateY(calc(var(--u) * 18)) rotate(-4deg) scale(1.06); filter: brightness(2.6) contrast(.6); }
+  45% { opacity: 1; filter: brightness(1.3); }
+  100% { transform: rotate(-1.2deg); filter: none; }
+}
+@media (max-height: 500px) { .hud-banner-bust { width: calc(var(--u) * 120); } .hud-root.boss-intro .hud-banner { top: 12%; } }
+@media (prefers-reduced-motion: reduce) { .hud-banner.on .hud-banner-bust { animation: none; transform: rotate(-1.2deg); } }
+
 @media (prefers-reduced-motion: reduce) {
   .hud-root.boss-intro .hud-banner.on .hud-banner-title,
   .hud-root.boss-intro .hud-banner.on .hud-banner-title::after { animation: none; }
