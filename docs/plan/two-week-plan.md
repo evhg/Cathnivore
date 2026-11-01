@@ -67,6 +67,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Under 5% of any frame is clipped at 255.
   - The perf gate passes.
 - **Size:** 7, sliced as Plaza (3), then Tower and Vault (4).
+- **Progress:** Plaza session 1 (2026-11-01, f95a297..d47a2ac): skyline slab bug fixed, standing crowds, rally rig, stall dressing and signs, fountain vigil and brass inlay, tram, founders; perf and clipping pass. Left for the Plaza: paving set, Pell billboard portrait, awnings, facades.
 
 ## 5. [ ] Cathnivore: graphic-novel story scenes (ROADMAP 58, U7)
 - **Why:** scenes are a roughly 120 px bust and one speech bubble on an empty gradient.
