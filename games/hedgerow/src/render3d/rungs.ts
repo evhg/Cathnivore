@@ -96,6 +96,10 @@ function bakeModel(root: THREE.Object3D): THREE.BufferGeometry {
   return merged;
 }
 
+/** The outline's ink and its thickness in world units (a cell is 1). */
+const OUTLINE_INK = 0x2b2320;
+const OUTLINE = 0.035;
+
 export class RungInstances {
   readonly group = new THREE.Group();
   private meshes = new Map<EnemyKind, THREE.InstancedMesh>();
@@ -103,6 +107,11 @@ export class RungInstances {
   /** The same rungs, translucent and camo-tinted, for unrevealed stealth vehicles. */
   private ghosts = new Map<EnemyKind, THREE.InstancedMesh>();
   private ghostUsed = new Map<EnemyKind, number>();
+  /**
+   * Ink outlines (plan item 10): each rung again, slightly larger, back faces only, flat ink. In a packed queue
+   * every vehicle keeps its own silhouette instead of melting into the next. One draw call per kind on the lane.
+   */
+  private outlines = new Map<EnemyKind, THREE.InstancedMesh>();
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private s = new THREE.Vector3();
@@ -116,6 +125,7 @@ export class RungInstances {
 
   constructor() {
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.08 });
+    const inkMat = new THREE.MeshBasicMaterial({ color: OUTLINE_INK, side: THREE.BackSide });
     const ghostMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, metalness: 0, transparent: true, opacity: GHOST_ALPHA, depthWrite: false });
     for (const kind of INSTANCED_RUNGS) {
       const model = buildRung(kind) ?? (buildEnemy(kind).userData.inner as THREE.Group);
@@ -130,6 +140,13 @@ export class RungInstances {
       mesh.setColorAt(0, WHITE);
       this.meshes.set(kind, mesh);
       this.group.add(mesh);
+      const ink = new THREE.InstancedMesh(geo, inkMat, CAPACITY);
+      ink.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      ink.count = 0;
+      ink.frustumCulled = false;
+      ink.name = `outlines:${kind}`;
+      this.outlines.set(kind, ink);
+      this.group.add(ink);
       const ghost = new THREE.InstancedMesh(geo, ghostMat, CAPACITY);
       ghost.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       ghost.count = 0;
@@ -195,6 +212,15 @@ export class RungInstances {
     this.s.setScalar(k);
     this.m.compose(this.p, this.q, this.s);
     mesh.setMatrixAt(i, this.m);
+    if (!ghost) {
+      // The outline hull: grown about the body's middle, not its wheels, so it rings the whole silhouette.
+      const ink = this.outlines.get(kind)!;
+      const grow = 1 + OUTLINE / k;
+      this.p.y -= OUTLINE * 0.5;
+      this.s.setScalar(k * grow);
+      this.m.compose(this.p, this.q, this.s);
+      ink.setMatrixAt(i, this.m);
+    }
     // Its materials: steel, wrap, mesh, frost and hazard bands tint the whole vehicle.
     this.tint.copy(livery);
     for (const [bit, c] of TINTS) if (pm & bit) this.tint.multiply(c);
@@ -208,6 +234,10 @@ export class RungInstances {
       mesh.count = this.used.get(k) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    for (const [k, mesh] of this.outlines) {
+      mesh.count = this.used.get(k) ?? 0;
+      mesh.instanceMatrix.needsUpdate = true;
     }
     for (const [k, mesh] of this.ghosts) {
       mesh.count = this.ghostUsed.get(k) ?? 0;
@@ -224,6 +254,7 @@ export class RungInstances {
   drawCalls(): number {
     let n = 0;
     for (const mesh of this.meshes.values()) if (mesh.count > 0) n++;
+    for (const mesh of this.outlines.values()) if (mesh.count > 0) n++;
     for (const mesh of this.ghosts.values()) if (mesh.count > 0) n++;
     for (const mesh of this.icons.values()) if (mesh.count > 0) n++;
     return n;
