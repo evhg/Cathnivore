@@ -167,6 +167,18 @@ export function Doubt() {
   )
 }
 
+// A piece's count (plan item 2): a small dark disc with the number, at the piece's top-right corner.
+function PieceCount({ n }: { n: number }) {
+  return (
+    <g className="piece-count" pointerEvents="none">
+      <circle cx={13} cy={0} r={4.6} fill="var(--ink, #1b1712)" stroke="var(--paper, #f4ead8)" strokeWidth={0.8} />
+      <text x={13} y={2} textAnchor="middle" fontSize={6} fontWeight={700} fill="var(--paper, #f4ead8)">
+        {n}
+      </text>
+    </g>
+  )
+}
+
 // Stall: "small awning with scalloped edge, striped in the producer's colour and paper" — was a plain
 // rounded rect. Now a two-stripe canvas roof over a scalloped valance, both in the producer's colour.
 function Stall({ pid, initial, showInitial }: { pid: ProducerId; initial: string; showInitial: boolean }) {
@@ -438,45 +450,46 @@ export default function Map({ state, highlight, onSelect }: Props) {
                 this via a real screenshot review, confirmed by inspection — not just trusted). Each hex has
                 ample empty space around this cluster (confirmed visually), so scaling it up in place is
                 safe without widening the map or risking the desktop no-scroll layout. */}
-            <g transform={`translate(${x - Math.min(r.outlets + r.buyouts + r.doubt, PIECE_ROW) * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
-              {/* Each piece's own SVG `transform` attribute positions it (its offset in the row); the
-                  animation class goes on an inner <g> instead of that same element, since a CSS
-                  `animation`/`transform` would otherwise override the positioning attribute rather than
-                  compose with it (SVG2: a CSS transform replaces the presentation attribute, it doesn't
-                  add to it). */}
-              {Array.from({ length: r.outlets }).map((_, i) => (
-                <g key={`o${i}`} transform={`translate(${pieceXY(i)})`}>
-                  <Outlet />
+            {/* Plan item 2 (a board that scales): one stacked piece per kind with a count badge, so a
+                late-game hex shows at most three enemy pieces and one stall per producer, all inside the
+                hex, instead of a row per piece spilling across the borders. */}
+            {(() => {
+              const kinds = (
+                [
+                  ['o', r.outlets, <Outlet />],
+                  ['b', r.buyouts, <Buyout />],
+                  ['d', r.doubt, <Doubt />],
+                ] as const
+              ).filter(([, n]) => n > 0)
+              return (
+                <g transform={`translate(${x - kinds.length * 8 * PIECE_SCALE}, ${y - HEX_R * 0.1}) scale(${PIECE_SCALE})`}>
+                  {/* Each piece's own SVG `transform` attribute positions it; the animation class sits on an
+                      inner <g>, since a CSS transform would replace the positioning attribute (SVG2). */}
+                  {kinds.map(([k, n, icon], i) => (
+                    <g key={k} transform={`translate(${pieceXY(i)})`} data-piece={k} data-count={n}>
+                      {/* A stack: up to two offset copies behind the front piece. */}
+                      {Array.from({ length: Math.min(n, 3) - 1 }).map((_, j) => (
+                        <g key={j} transform={`translate(${(Math.min(n, 3) - 1 - j) * 1.6}, ${-(Math.min(n, 3) - 1 - j) * 2.2})`} opacity={0.75}>
+                          {icon}
+                        </g>
+                      ))}
+                      {icon}
+                      {n > 1 && <PieceCount n={n} />}
+                    </g>
+                  ))}
                 </g>
-              ))}
-              {Array.from({ length: r.buyouts }).map((_, i) => (
-                <g key={`b${i}`} transform={`translate(${pieceXY(r.outlets + i)})`}>
-                  <Buyout />
-                </g>
-              ))}
-              {Array.from({ length: r.doubt }).map((_, i) => (
-                <g key={`d${i}`} transform={`translate(${pieceXY(r.outlets + r.buyouts + i)})`}>
-                  <Doubt />
-                </g>
-              ))}
-            </g>
+              )
+            })()}
 
-            {/* Stalls sit along the bottom edge, striped in the producer's colour. */}
-            <g transform={`translate(${x - 27}, ${y + HEX_R * 0.5})`}>
-              {(() => {
-                let slot = 0
-                return stalls.flatMap(([pid, n]) =>
-                  Array.from({ length: n }).map((_, i) => {
-                    const sx = slot * 18
-                    slot += 1
-                    return (
-                      <g key={`${pid}-${i}`} transform={`translate(${sx}, 0)`}>
-                        <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
-                      </g>
-                    )
-                  }),
-                )
-              })()}
+            {/* Stalls sit along the bottom edge, striped in the producer's colour: one per producer, with a
+                count badge when they hold more than one. */}
+            <g transform={`translate(${x - stalls.length * 9}, ${y + HEX_R * 0.5})`}>
+              {stalls.map(([pid, n], slot) => (
+                <g key={pid} transform={`translate(${slot * 18}, 0)`} data-piece="stall" data-count={n}>
+                  <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={colourBlindPatterns} />
+                  {n > 1 && <PieceCount n={n} />}
+                </g>
+              ))}
             </g>
 
             {fx[id] === 'lib' && (
