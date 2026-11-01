@@ -182,7 +182,9 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   }
   b.box("darkMetal", 22, 3.45, -2, 2.4, 0.3, 6, { cover: "none" });
   b.cylinder("chrome", V(22, 3.6, -2), V(22, 4.9, -3.2), 0.025, 5);
+  b.tagLast("thin", "metal");
   b.cylinder("chrome", V(22, 4.9, -3.2), V(22, 6.15, -2), 0.025, 5);
+  b.tagLast("thin", "metal");
   b.box("darkMetal", 22, 6.17, -2, 1.4, 0.04, 0.12, { cover: "none" });
   for (const [z, n] of [[-9.03, V(0, 0, -1)], [5.03, V(0, 0, 1)]] as const) {
     signs.push({ text: "9  CIVIC SQ", sub: "NOT IN SERVICE", style: "box", color: "#ffb347", w: 2.2, h: 0.42, center: V(22, 2.95, z + n.z * 0.02), normal: n, flicker: 1, intensity: 2.4 });
