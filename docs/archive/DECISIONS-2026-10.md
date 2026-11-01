@@ -425,3 +425,13 @@
 - 2026-10-13 12:25: Acorn perks live in the Seed Bank list (PerkDef.acorns); Daily rule = plain/Hand Tools/Lean Year/Hard by day hash, Fleet levels only.
 - 2026-10-13 13:05: Compost Heap = XP over 10,000 per kind (2 compost per XP, 500 XP per feed); Packet towers sell for nothing and fail (not consumed) if their top tier is shut on that field; boss levels (id%10==0) drop a rotating Packet; H10 upgrade prices by difficulty dropped (new towers only).
 - 2026-10-13 14:20: oaks/barns assigned by level id from terrain.ts (oak 5+, barn 12+); bots never clear oaks; County Show kit is core four + two picked from six (draft dialog reuses the result dialog) and has no replay; show fields' bot-win tested for weeks 120-122 only.
+- 2026-10-13 15:52: fords are a 75% speed slow on one 12% stretch of lane 1 (ground only), no Pond-only rule; not retuned (it only helps the player).
+- 2026-10-13 16:52: perfect duel = every strike >= 0.85; reward per the Hedgerow 2 spec, no retune (sims have duels off).
+- 2026-10-13 17:51: Heirloom idle = gold motes only (no scale pulse, it would fight the build-up animation); wreck decal reuses fx.decal.
+- 2026-10-13 20:52: U10 stars stamp is CSS only (keyframes star-stamp); reduced motion already disables the animation so stars show static.
+- 2026-10-13 21:51: Start bar full width at all sizes rather than reflowing the producer grid.
+- 2026-10-14 00:30: release retry failed gate 5 on flaky hotseat click only; no test changes; H1 ticked.
+- 2026-10-14: Released 2d4d808. Forced the Graft click in the throttled AI-teammate e2e (stable-wait flake under parallel load; the test measures AI timing, not button stability). Never pkill a release: leaked vitest workers starve later runs.
+- 2026-10-14: applied the H9 act-4 patch (levels 31-40 to Fleet). Traffic multipliers up to 6x leave the best bot at 100% (income scales), so difficulty must come from phased bosses/later rounds, not traffic.
+- 2026-10-14: act 5 (41-50) converted to Fleet; tests that borrowed LEVELS[40] as a classic strip now set rules classic; classic Endless tests moved to act 6.
+- 2026-10-14: H9 acts 7-10 applied (all 100 levels Fleet). Fleet twist FV test tolerance widened (0.8-1.2) for Fortified/Crowd rounds at 83/96/99 instead of reworking twists; the classic Endless generator is kept and tested by pinning level 99 to classic.

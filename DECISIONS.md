@@ -11,16 +11,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - Inline `style` attributes are forbidden by the CSP. Set dynamic styles through the CSSOM or classes.
 
 ## Recent (older entries in docs/archive/DECISIONS-2026-10.md)
-- 2026-10-13 15:52: fords are a 75% speed slow on one 12% stretch of lane 1 (ground only), no Pond-only rule; not retuned (it only helps the player).
-- 2026-10-13 16:52: perfect duel = every strike >= 0.85; reward per the Hedgerow 2 spec, no retune (sims have duels off).
-- 2026-10-13 17:51: Heirloom idle = gold motes only (no scale pulse, it would fight the build-up animation); wreck decal reuses fx.decal.
-- 2026-10-13 20:52: U10 stars stamp is CSS only (keyframes star-stamp); reduced motion already disables the animation so stars show static.
-- 2026-10-13 21:51: Start bar full width at all sizes rather than reflowing the producer grid.
-- 2026-10-14 00:30: release retry failed gate 5 on flaky hotseat click only; no test changes; H1 ticked.
-- 2026-10-14: Released 2d4d808. Forced the Graft click in the throttled AI-teammate e2e (stable-wait flake under parallel load; the test measures AI timing, not button stability). Never pkill a release: leaked vitest workers starve later runs.
-- 2026-10-14: applied the H9 act-4 patch (levels 31-40 to Fleet). Traffic multipliers up to 6x leave the best bot at 100% (income scales), so difficulty must come from phased bosses/later rounds, not traffic.
-- 2026-10-14: act 5 (41-50) converted to Fleet; tests that borrowed LEVELS[40] as a classic strip now set rules classic; classic Endless tests moved to act 6.
-- 2026-10-14: H9 acts 7-10 applied (all 100 levels Fleet). Fleet twist FV test tolerance widened (0.8-1.2) for Fortified/Crowd rounds at 83/96/99 instead of reworking twists; the classic Endless generator is kept and tested by pinning level 99 to classic.
 - 2026-10-14: H9 shipped as 'all 100 levels Fleet'; kept classic ramp()/HP_SCALE because ~dozens of mechanics tests pin classic levels. Deleting them is a test-rewrite, not worth a session.
 
 ## 2026-10-14 06:52
@@ -246,3 +236,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-01 15:15: Runnel sky (time of day, weather) comes from the board's seed for every mode, not dailies only; drizzle is 1 in 8 and clears into a rainbow on the win. `?sky=` forces it for shots.
 - 2026-11-01 15:25: Runnel seasonal tints now apply only under the light scheme: in dark mode they replaced the night greens with pale khaki (a pre-existing bug the dark shots showed).
 - 2026-11-01 15:30: plan item 7 not started this session (time); next session begins it with stage shots.
+- 2026-11-01 16:10: plan item 7's "authored arenas at 8-20 m with flanks and height" is met by staging scripted entrances (rappel = height, van/breach = flanks) into the existing district layouts at 8-20 m from the objective or boss, not by rebuilding layouts. Entrance data lives in `game/encounters.ts` and is checked against each district's colliders and crowds (`tests/cathode-entrances.test.ts`).
+- 2026-11-01 16:10: "marker covers under 25% of the enemy box" is measured as the ink of the X rasterised over a 10 m guard's box (unit test), not the X's bounding box; the ticks are thinner (2.6u) and start 14u out so the hit shows through the middle.
+- 2026-11-01 16:10: the first guard now shows at 8.7 m (`FIRST_CONTACT_M`, was 10.5 m) so he reads at 120+ CSS px on a desktop; `first-contact` is the stage that measures it. Vans and doors are visual only (no colliders); a man waiting for his entrance is parked under the floor, out of reach of rounds and probes.

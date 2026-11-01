@@ -114,6 +114,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The marker covers under 25% of the enemy box.
   - Each district has at least 2 encounters with a scripted entrance, and an e2e test sees the spawn event fire.
 - **Size:** 4
+- **Progress:** session 1 (2026-11-01, see Progress): scripted entrances (`game/entrance.ts`: breach with blown door leaves, rappel down a rope, a van that brakes in and drops a man) staged at 8-20 m in every district (`game/encounters.ts`: market flyover pair; clinic ward ambush and Vane's stitch; Plaza alarm and Pell's rally detail; Tower atrium and boardroom; Vault lift and core), checked against each district's colliders and crowds (`tests/cathode-entrances.test.ts`), logged to `window.cathode.entrances` (e2e on the flyover pair); thinner hit marker with a 14u gap (ink under 25% of a 10 m guard's box, unit test); first guard met at 8.7 m (`first-contact` stage, fails under 120 px at D); range-scaled enemy rim (up to 1.7x by 28 m); HUD shade pools tightened, objective pool elliptical. Left: shoot each district's entrances mid-flight at D and L, e2e spawn events in the other districts.
 
 ## 8. [ ] Cathnivore: an end screen that closes the loop, and a designed desktop Setup
 - **Why:**
