@@ -9,7 +9,7 @@ import { canvas, prng } from "./textures";
 
 export type ClinicTexId = "clinicWall" | "clinicDado" | "clinicFloor" | "clinicCeiling" | "clinicSteel";
 
-interface Painted {
+export interface Painted {
   color: HTMLCanvasElement;
   height: Float32Array;
   rough: Float32Array;
@@ -26,7 +26,7 @@ function tex(c: HTMLCanvasElement, srgb: boolean): THREE.CanvasTexture {
 }
 
 /** Packs a painted surface into a PBR set: a wrapped Sobel normal from the height, AO and roughness into ARM. */
-function toSet(p: Painted, strength: number): PbrSet {
+export function toSet(p: Painted, strength: number): PbrSet {
   const n = p.size;
   const nc = canvas(n, n);
   const ac = canvas(n, n);
@@ -56,7 +56,7 @@ function toSet(p: Painted, strength: number): PbrSet {
 }
 
 /** Soft blotches (grime, water stains), drawn wrapped so the texture still tiles. */
-function blotches(g: CanvasRenderingContext2D, n: number, rand: () => number, count: number, rgba: string, rMin: number, rMax: number): void {
+export function blotches(g: CanvasRenderingContext2D, n: number, rand: () => number, count: number, rgba: string, rMin: number, rMax: number): void {
   for (let i = 0; i < count; i++) {
     const x = rand() * n;
     const y = rand() * n;

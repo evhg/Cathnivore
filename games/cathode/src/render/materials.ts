@@ -6,6 +6,7 @@ import { patchMaterial, type SharedUniforms } from "./shading";
 import type { PbrId, PbrSet } from "./textures";
 import { tarpTexture } from "./textures";
 import { clinicTextures } from "./clinictex";
+import { plazaTextures } from "./plazatex";
 
 export type Materials = Record<string, THREE.Material>;
 
@@ -32,6 +33,12 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   // The ground: asphalt with road paint, pavements with fewer puddles.
   m.asphalt = patchMaterial(set("asphalt_02", { color: "#8a8a8a", normal: 0.9 }), s, { kind: "ground", roadLines: true, puddleBias: 0.02 });
   m.pavement = patchMaterial(set("concrete_pavement", { color: "#9a958e", normal: 0.8 }), s, { kind: "ground", puddleBias: -0.04 });
+  // Hollowell Plaza (plan item 4): granite setts painted at load (plazatex.ts) instead of poured concrete.
+  if (district === "plaza") {
+    const p = plazaTextures(quality).plazaSetts;
+    const mat = new THREE.MeshStandardMaterial({ map: p.map, normalMap: p.normalMap, normalScale: new THREE.Vector2(0.75, 0.75), aoMap: p.arm, aoMapIntensity: 1, roughnessMap: p.arm, roughness: 1, metalness: 0, color: new THREE.Color("#c8c6c2") });
+    m.pavement = patchMaterial(mat, s, { kind: "ground", puddleBias: 0.0 });
+  }
   const water = new THREE.MeshStandardMaterial({ color: "#0a1210", roughness: 0.02, metalness: 0, transparent: true, depthWrite: false });
   m.water = patchMaterial(water, s, { kind: "water", volume: 0.5 });
 

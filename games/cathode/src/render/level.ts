@@ -115,6 +115,8 @@ export interface Level {
   seats?: Array<{ x: number; z: number; yaw: number }>;
   /** Standing crowds (render/crowd.ts addStandingCrowd): coats, umbrellas, phones held up. */
   crowds?: CrowdGroup[];
+  /** Painted campaign boards (render/pellboard.ts): lit quads facing `normal`, `w` x `h` metres. */
+  boards?: Array<{ center: THREE.Vector3; normal: THREE.Vector3; w: number; h: number; intensity: number }>;
   /** Shrouded bodies (render/crowd.ts addShrouds): underside height y, yaw 0 lies along +x. */
   bodies?: Array<{ x: number; y: number; z: number; yaw: number }>;
   lights: VLight[];

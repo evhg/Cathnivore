@@ -18,6 +18,8 @@ import { addCrowd, addPatients, addShrouds, addStandingCrowd, crowdStanders } fr
 import { bakeVolume, LightPool, hash1, flicker, signatureGain } from "./lighting";
 import { FAIL_SEED } from "./levels/clinic";
 import { buildSigns } from "./signs";
+import { pellBoardTexture } from "./pellboard";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { buildAtmosphere, type AtmoUniforms } from "./atmosphere";
 import { PlanarReflection, LAYER_NO_REFLECT, hideSmall, unshadowSmall, showAll } from "./reflection";
 import { createFx } from "./fx";
@@ -125,6 +127,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   addWindows(scene, level, shared);
   addInteriors(scene, level);
   addPosters(scene, level, shared);
+  addBoards(scene, level, quality);
   const signs = buildSigns(level.signs);
   scene.add(signs.tubes, signs.boxes);
 
@@ -618,6 +621,26 @@ function addInteriors(scene: THREE.Scene, level: Level): void {
     mesh.name = "vending";
     scene.add(mesh);
   }
+}
+
+/** Pell's campaign boards (plan item 4): one painted portrait texture, every board merged into one lit mesh. */
+function addBoards(scene: THREE.Scene, level: Level, quality: "phone" | "high" | "ultra"): void {
+  const boards = level.boards ?? [];
+  if (!boards.length) return;
+  const geos = boards.map((b) => {
+    const g = new THREE.PlaneGeometry(b.w, b.h);
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), b.normal);
+    g.applyQuaternion(q);
+    g.translate(b.center.x, b.center.y, b.center.z);
+    // Brightness rides in a vertex colour so one material serves boards at different strengths.
+    const col = new Float32Array(g.getAttribute("position").count * 3).fill(b.intensity);
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    return g;
+  });
+  const mat = new THREE.MeshBasicMaterial({ map: pellBoardTexture(quality), vertexColors: true });
+  const mesh = new THREE.Mesh(mergeGeometries(geos, false)!, mat);
+  mesh.name = "boards";
+  scene.add(mesh);
 }
 
 /** Posters and graffiti: merged quads over one atlas. */

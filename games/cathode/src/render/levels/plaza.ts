@@ -30,6 +30,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   const lights: VLight[] = [];
   const signs: SignDef[] = [];
   const windows: WindowDef[] = [];
+  const interiors: Level["interiors"] = [];
   const cones: Level["cones"] = [];
   let seed = 1;
   const light = (pos: THREE.Vector3, color: string, intensity: number, range: number, flicker = 0, real = false) =>
@@ -59,7 +60,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     const alongZ = face.x !== 0;
     const span = alongZ ? z1 - z0 : x1 - x0;
     const n = Math.floor(span / 3.2);
-    for (let row = 0; row < Math.floor(h / 3.3); row++) {
+    for (let row = alongZ ? 1 : 0; row < Math.floor(h / 3.3); row++) {
       for (let i = 0; i < n; i++) {
         const lit = rand() < 0.3;
         const t = z0 + (i + 0.5) * (span / n);
@@ -69,6 +70,34 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
       }
     }
   };
+  // Plan item 4: ground-floor shopfronts on the side blocks, so the square's edges read as a city and not as
+  // walls: a lit interior behind glass, mullions, a fascia sign, a canopy and a step. `sx` is the face's x and
+  // `dir` the way it faces (+1 east, -1 west).
+  const shopfront = (sx: number, dir: number, z: number, w: number, name: string, sub: string, tint: string, col: string, seedK: number) => {
+    const fx = sx + dir * 0.02;
+    interiors.push({ pos: V(sx + dir * 0.03, 1.55, z), normal: V(dir, 0, 0), w: w - 0.5, h: 2.5, tint, seed: seedK });
+    b.box("clearGlass", sx + dir * 0.12, 1.55, z, 0.04, 2.5, w - 0.5, { cover: "thin", mat: "glass" });
+    for (let k = 0; k <= 3; k++) b.box("darkMetal", sx + dir * 0.16, 1.55, z - (w - 0.5) / 2 + (k * (w - 0.5)) / 3, 0.08, 2.6, 0.08, { cover: "none" });
+    b.box("darkMetal", sx + dir * 0.16, 0.25, z, 0.1, 0.5, w - 0.3, { cover: "none" }); // stall riser
+    b.box("blackPaint", fx + dir * 0.1, 3.25, z, 0.2, 0.8, w, { cover: "none" }); // fascia
+    signs.push({ text: name, sub, style: "box", color: col, w: w * 0.7, h: 0.6, center: V(fx + dir * 0.22, 3.25, z), normal: V(dir, 0, 0), flicker: seedK % 5 === 0 ? 2 : 0, intensity: 2 });
+    b.shape("darkMetal", new THREE.BoxGeometry(1.4, 0.06, w), V(sx + dir * 0.75, 3.85, z), 0, undefined, 1, 0, dir * 0.18); // canopy
+    light(V(sx + dir * 1.4, 2.4, z), tint, 10, 6, 0);
+  };
+  const ledge = (x: number, dir: number, z0: number, z1: number, h: number) => {
+    for (let y = 4.4; y < h - 1; y += 3.3) b.boxMinMax("concreteA", Math.min(x, x + dir * 0.25), y - 0.1, z0, Math.max(x, x + dir * 0.25), y + 0.06, z1, { cover: "none" });
+    b.boxMinMax("concreteA", Math.min(x, x + dir * 0.6), h - 0.2, z0, Math.max(x, x + dir * 0.6), h + 0.3, z1, { cover: "none" }); // cornice
+  };
+  shopfront(xE, -1, -40, 6, "CHEMIST", "OPEN 24 HOURS", "#3a8a6a", "#7fffc0", 51);
+  shopfront(xE, -1, -26, 5, "PAWN", "GOLD · PHONES · GUNS", "#8a5a20", "#ffc060", 52);
+  shopfront(xE, -1, 12, 6, "CAFÉ LUMEN", "LAST ORDERS 2AM", "#9a6a3a", "#ffd2a0", 53);
+  shopfront(xE, -1, 26, 5, "NOODLE BAR", "HOT · CHEAP · NOW", "#9a3a2a", "#ff8a60", 54);
+  shopfront(xW, 1, -30, 6, "HOLLOWELL MUTUAL", "LOANS IN MINUTES", "#2a4a8a", "#8ab8ff", 55);
+  shopfront(xW, 1, -12, 5, "BARBER", "WALK-INS", "#5a2a4a", "#ff7fb0", 56);
+  ledge(xE, -1, zN, -14, 8);
+  ledge(xE, -1, -10, zS, 14);
+  ledge(xW, 1, zN, 10, 9);
+  ledge(xW, 1, 14, zS, 12);
   facade(xW - 8, xW, zN, 10, 9, "brickDark", V(1, 0, 0)); // west block, north half
   facade(xW - 8, xW, 14, zS + 6, 12, "brickRed", V(1, 0, 0)); // west block, market side
   facade(xE, xE + 8, zN, -14, 8, "concreteB", V(-1, 0, 0)); // east block, north
@@ -168,7 +197,9 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   const shelters: THREE.Box3[] = [new THREE.Box3(V(-12, 6, -52), V(12, 30, -40))];
   for (let i = 0; i < 4; i++) {
     const z = 22 + i * 7;
-    b.box("tarp", -22, 2.7, z, 5.2, 0.12, 4, { uv: 1 });
+    // Plan item 4: a pitched awning, high at the back and dipping to the shoppers, on a ridge pole.
+    b.shape("tarp", new THREE.BoxGeometry(5.5, 0.05, 4.3), V(-22, 2.78, z), 0, undefined, 1, 0, -0.12);
+    b.cylinder("pipe", V(-24.75, 3.12, z - 2.1), V(-24.75, 3.12, z + 2.1), 0.04, 5);
     for (const dz of [-1.8, 1.8])
       for (const dx of [-2.4, 2.4]) {
         b.cylinder("pipe", V(-22 + dx, 0, z + dz), V(-22 + dx, 2.65, z + dz), 0.05);
@@ -226,12 +257,28 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   }
 
   // Pell's holo-billboard on the hall's face, and flanking campaign screens.
-  b.boxMinMax("blackPaint", -9, 8.8, zN - 0.02, 9, 16.2, zN + 0.2, { uv: 1 });
-  signs.push({ text: "PELL", sub: "A SAFER HOLLOWELL", style: "screen", color: "#ffd9a0", w: 17, h: 7, center: V(0, 12.5, zN + 0.24), normal: V(0, 0, 1), flicker: 1, intensity: 1.7 });
+  // Plan item 4: his face, not a beige box. A posterised campaign portrait (render/pellboard.ts) fills the giant
+  // board and the two screens either side, with a chrome frame and a lit gantry under it.
+  const boards: NonNullable<Level["boards"]> = [{ center: V(0, 13.6, zN + 0.24), normal: V(0, 0, 1), w: 21, h: 8.64, intensity: 1.5 }];
+  b.boxMinMax("blackPaint", -10.9, 9.1, zN - 0.02, 10.9, 18.1, zN + 0.2, { uv: 1 });
+  for (const y of [9.22, 17.98]) b.box("chrome", 0, y, zN + 0.3, 21.4, 0.12, 0.16, { cover: "none" });
+  for (const x of [-10.64, 10.64]) b.box("chrome", x, 13.6, zN + 0.3, 0.12, 8.9, 0.16, { cover: "none" });
+  // The hall's own face around it: tall lit windows in two tiers, a lit cornice and uplit pilasters.
+  for (let x = -34; x <= 34; x += 4) {
+    if (Math.abs(x) < 13) continue;
+    for (const y of [4.2, 11.6]) windows.push({ pos: V(x, y, zN + 0.03), normal: V(0, 0, 1), w: 1.6, h: 3.6, tile: Math.floor(rand() * WIN_COLS * WIN_ROWS), lit: rand() < 0.6 ? 1.2 + rand() * 1.4 : 0.15 });
+    b.box("concreteB", x + 2, 9.5, zN + 0.25, 0.6, 19, 0.5, { cover: "none" });
+    if (Math.abs(x) > 14) cones.push({ top: V(x + 2, 0.3, zN + 0.8), dir: V(0, 1, 0.04).normalize(), length: 12, radius: 1.1, color: C("#ffd2a0"), strength: 0.28 });
+  }
+  b.box("concreteA", 0, 19.4, zN + 0.6, xE - xW + 16, 0.8, 1.2, { cover: "none" });
+  for (let x = -36; x <= 36; x += 1.5) b.box("glowWarm", x, 18.92, zN + 1.15, 0.5, 0.06, 0.06, { cover: "none" });
+  b.box("darkMetal", 0, 8.5, zN + 0.8, 18, 0.12, 1.2, { cover: "none" }); // the maintenance gantry
+  for (let x = -8; x <= 8; x += 2) b.box("glowWarm", x, 8.42, zN + 1.2, 0.3, 0.04, 0.12, { cover: "none" });
   light(V(0, 11, zN + 6), "#ffcf9a", 90, 28, 1);
   for (const x of [-18, 18]) {
-    signs.push({ text: "VOTE ORDER", sub: "PAID FOR BY CANDOR", style: "screen", color: "#ff7fb0", w: 5, h: 2.4, center: V(x, 6, zN + 0.24), normal: V(0, 0, 1), flicker: 2, intensity: 2.6 });
-    light(V(x, 5, zN + 3), "#ff5f9a", 16, 10, 2);
+    b.box("blackPaint", x, 6, zN + 0.12, 5.4, 2.6, 0.2, { cover: "none" });
+    boards.push({ center: V(x, 6, zN + 0.24), normal: V(0, 0, 1), w: 5.1, h: 2.1, intensity: 1.8 });
+    light(V(x, 5, zN + 3), "#ffb98a", 16, 10, 2);
   }
   // Police cruiser lights at the foot of the steps.
   for (const x of [-9, 9]) {
@@ -317,8 +364,8 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   for (let i = 0; i < 4; i++) {
     const z = 22 + i * 7;
     const [name, sub, col] = stallNames[i]!;
-    signs.push({ text: name, sub, style: "box", color: col, w: 2.6, h: 0.55, center: V(-19.35, 2.35, z), normal: V(1, 0, 0), flicker: i === 2 ? 2 : 0, intensity: 2.2 });
-    b.box("blackPaint", -19.38, 2.35, z, 0.04, 0.62, 2.7, { cover: "none" });
+    signs.push({ text: name, sub, style: "box", color: col, w: 2.6, h: 0.55, center: V(-19.2, 2.86, z), normal: V(1, 0, 0), flicker: i === 2 ? 2 : 0, intensity: 2.2 });
+    b.box("blackPaint", -19.24, 2.86, z, 0.04, 0.62, 2.7, { cover: "none" });
     // Goods: crates of produce or stock on the counter and stacked beside it.
     const goods = i === 0 ? ["plasticWhite", "plasticRed"] : i === 1 ? ["blackPaint", "paintRed"] : i === 2 ? ["plasticWhite", "glowCyan"] : ["ice", "fish"];
     for (let k = 0; k < 5; k++) {
@@ -328,8 +375,27 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     }
     b.box("styro", -24.2, 0.3, z - 1.2, 0.7, 0.6, 0.5, { collide: "metal" });
     b.box("wood", -24.2, 0.9, z - 1.1, 0.6, 0.6, 0.6, { rotY: 0.3, cover: "none" });
-    // A striped valance hanging off the awning's front edge.
-    for (let s = 0; s < 8; s++) b.box(s % 2 ? "paintRed" : "plasticWhite", -19.42, 2.55, z - 1.75 + s * 0.5, 0.03, 0.3, 0.5, { cover: "none" });
+    // A scalloped valance off the awning's front edge, the stripes running down it.
+    for (let s = 0; s < 8; s++) {
+      const vz = z - 1.75 + s * 0.5;
+      b.box(s % 2 ? "paintRed" : "plasticWhite", -19.3, 2.37, vz, 0.03, 0.26, 0.5, { cover: "none" });
+      b.shape(s % 2 ? "paintRed" : "plasticWhite", new THREE.CylinderGeometry(0.25, 0.25, 0.03, 10, 1, false, 0, Math.PI), V(-19.3, 2.24, vz), 0, undefined, 1, 0, -Math.PI / 2);
+    }
+    // The stall's back wall: lit shelves of stock seen past the counter, and a bare bulb on a flex.
+    b.box("wood", -24.85, 1.4, z, 0.1, 2.8, 4.1, { collide: "metal" });
+    interiors.push({ pos: V(-24.78, 1.45, z), normal: V(1, 0, 0), w: 3.6, h: 1.9, tint: col, seed: 40 + i });
+    b.cylinder("cable", V(-21.2, 2.95, z + 0.9), V(-21.2, 2.2, z + 0.9), 0.006, 3);
+    b.shape("glowWarm", new THREE.SphereGeometry(0.06, 6, 4), V(-21.2, 2.16, z + 0.9));
+    // Hung stock along the awning's front: umbrellas at the umbrella stall, paper lanterns elsewhere.
+    for (let k = 0; k < 4; k++) {
+      const hz = z - 1.5 + k;
+      if (i === 1) {
+        b.shape(k % 2 ? "paintRed" : "blackPaint", new THREE.ConeGeometry(0.1, 0.8, 6), V(-19.8, 1.85, hz), 0, undefined, 1, Math.PI, 0);
+        b.cylinder("chrome", V(-19.8, 2.25, hz), V(-19.8, 2.5, hz), 0.008, 3);
+      } else {
+        b.shape(k % 2 ? "glowRed" : "glowAmber", new THREE.CylinderGeometry(0.13, 0.13, 0.26, 8), V(-19.8, 2.0, hz));
+      }
+    }
   }
   for (const [za, zb] of [[20, 27], [27, 34], [34, 41], [41, 46]] as const) {
     const a = V(-19.4, 2.75, za);
@@ -347,6 +413,37 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   // Barriers and cover across the square.
   for (const [x, z] of [[-8, 30], [8, 24], [-6, -2], [6, 16], [0, -18], [-12, 14], [12, -22]] as const) {
     b.box("jersey", x, 0.45, z, 2.6, 0.9, 0.6, { collide: "concrete" });
+  }
+  // Plan item 4: the arrival. Her first view used to be a black mirror of wet stone; now the walk in from the tram
+  // stop passes a lit news kiosk, a flower cart, bollard lamps pooling light on the setts and people heading up
+  // to the rally.
+  b.box("paintTeal", -8.5, 1.3, 42, 2.6, 2.6, 1.8, { collide: "metal" });
+  b.box("paintTeal", -8.5, 2.75, 42.25, 3.2, 0.12, 2.6, { cover: "none" }); // roof overhang
+  interiors.push({ pos: V(-8.5, 1.35, 42.92), normal: V(0, 0, 1), w: 2.2, h: 1.2, tint: "#c89a50", seed: 61 });
+  signs.push({ text: "NEWS", sub: "PELL LEADS POLLS", style: "box", color: "#ffe0a0", w: 2.2, h: 0.5, center: V(-8.5, 2.35, 42.93), normal: V(0, 0, 1), flicker: 0, intensity: 2.2 });
+  for (let k = 0; k < 3; k++) b.box(k % 2 ? "plasticWhite" : "paintRed", -10.45, 0.5 + k * 0.4, 42.6, 0.5, 0.32, 0.04, { rotY: 0.2, cover: "none" }); // headline boards
+  light(V(-8.5, 1.6, 44.2), "#ffcf8a", 12, 6, 0, true);
+  // The flower cart: a wooden barrow under a little parasol, buckets of red and yellow, a warm bulb.
+  b.box("wood", 9, 0.75, 40, 2.0, 0.5, 1.0, { collide: "metal" });
+  for (const dx of [-0.8, 0.8]) b.cylinder("rubber", V(9 + dx, 0.3, 39.45), V(9 + dx, 0.3, 40.55), 0.3, 10);
+  for (let k = 0; k < 6; k++) {
+    const x = 8.3 + (k % 3) * 0.7;
+    const z = 39.75 + Math.floor(k / 3) * 0.5;
+    b.cylinder("darkMetal", V(x, 1.0, z), V(x, 1.28, z), 0.16, 8);
+    b.shape(k % 2 ? "paintRed" : "yellowPaint", new THREE.SphereGeometry(0.22, 7, 5), V(x, 1.38, z), 0, V(1, 0.6, 1));
+  }
+  b.cylinder("pipe", V(9, 1.0, 40), V(9, 2.5, 40), 0.025, 5);
+  b.shape("paintRed", new THREE.ConeGeometry(1.3, 0.45, 10, 1, true), V(9, 2.6, 40));
+  b.shape("glowWarm", new THREE.SphereGeometry(0.06, 6, 4), V(9, 2.3, 40));
+  light(V(9, 2.2, 40.6), "#ffb870", 9, 6, 0, true);
+  // Bollard lamps along the walk up from the tram stop.
+  for (const z of [44, 34, 24]) {
+    for (const x of [-3.2, 3.2]) {
+      b.cylinder("darkMetal", V(x, 0, z), V(x, 0.95, z), 0.11, 8, "metal");
+      b.box("glowWarm", x, 0.82, z, 0.17, 0.1, 0.17, { cover: "none" });
+      cones.push({ top: V(x, 0.82, z), dir: V(0, -1, 0), length: 0.9, radius: 1.6, color: C("#ffcf9a"), strength: 0.3 });
+    }
+    light(V(0, 0.9, z), "#ffc88a", 9, 6, 0, z === 44);
   }
   // The tram stop at the south end is the way out.
   b.box("glowRed", 0, 3.2, zS - 0.05, 1.2, 0.3, 0.05);
@@ -395,6 +492,8 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     { x: 0, z: 8, count: 12, radius: 7.2, seed: 14 },
     { x: -18.5, z: 32, count: 16, radius: 0, rect: [3, 22], face: [-22, 32], seed: 15 },
     { x: 20.5, z: 41, count: 10, radius: 0, rect: [3, 8], face: [24.6, 46], seed: 16 },
+    { x: 0, z: 28, count: 6, radius: 4.5, face: [0, -50], seed: 17 },
+    { x: -6, z: 46, count: 3, radius: 1.4, face: [-8.5, 42], seed: 18 },
   ];
 
   const key = { pos: V(-14, 17, 46), target: V(0, 0, -6), color: C("#ffe9c8") };
@@ -402,13 +501,14 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     builder: b,
     markers,
     crowds,
+    boards,
     lights,
     signs,
     windows,
     cones,
     posters: [],
     vending: [],
-    interiors: [],
+    interiors,
     vents: [V(-22, 3, 28), V(26, 8, -6)],
     drips: [V(-22, 2.6, 22), V(-22, 2.6, 36), V(24, 6.2, 20)],
     bulbs: [],
