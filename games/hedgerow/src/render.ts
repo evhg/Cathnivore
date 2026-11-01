@@ -28,6 +28,7 @@ import {
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
+import { swarms, type Swarm } from "./swarm";
 import {
   INK,
   drawEnemy,
@@ -843,6 +844,12 @@ export class Renderer {
       bar(ctx, X(p.x), top, s * 0.5 * Math.min(1.6, k), Math.max(3, s * 0.06), e.hp / max);
     }
 
+    // Swarms (plan item 10): a queue of more than 12 gets a count badge with its make-up by type.
+    for (const sw of swarms(game.enemies)) {
+      const p = enemyPoint(level, sw);
+      this.swarmBadge(ctx, sw, X(p.x), Y(p.y + 0.2) - s * 0.95, s);
+    }
+
     // Boss moves: a red crackle from the boss to each tower it knocked out.
     for (const z of this.zaps) {
       z.age += dt;
@@ -1176,6 +1183,56 @@ export class Renderer {
       layer(PROPERTIES.reefer.colour, 0.85);
     }
     if (pm & P.reinforced) layer(PROPERTIES.reinforced.colour, 0.95, [s * 0.06, s * 0.06]);
+    ctx.restore();
+  }
+
+  /** A swarm's badge: its total in bold, then up to three types as small sprites with their counts, on a paper pill. */
+  private swarmBadge(ctx: CanvasRenderingContext2D, sw: Swarm, x: number, y: number, s: number): void {
+    const h = Math.max(22, s * 0.42);
+    const fs = Math.round(h * 0.5);
+    const icon = h * 0.82;
+    const kinds = sw.kinds.slice(0, SWARM_KINDS);
+    ctx.save();
+    ctx.font = `800 ${fs}px ${FONT}`;
+    const total = `${sw.count}`;
+    const tw = ctx.measureText(total).width;
+    // One type: the total says it all, so the sprite goes without a count.
+    const label = (n: number) => (kinds.length > 1 ? `${n}` : "");
+    const parts = kinds.map((k) => ({ ...k, w: icon + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
+    const pad = h * 0.3;
+    const w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
+    const x0 = x - w / 2;
+    const y0 = y - h;
+    ctx.beginPath();
+    ctx.roundRect(x0, y0, w, h, h / 2);
+    ctx.fillStyle = "rgba(255,247,230,0.95)";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    // A pointer down to the queue.
+    ctx.beginPath();
+    ctx.moveTo(x - h * 0.22, y0 + h - 1);
+    ctx.lineTo(x, y0 + h + h * 0.3);
+    ctx.lineTo(x + h * 0.22, y0 + h - 1);
+    ctx.fillStyle = "rgba(255,247,230,0.95)";
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#c4433a";
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    let cx = x0 + pad;
+    ctx.fillText(total, cx, y0 + h / 2 + 1);
+    cx += tw + 8;
+    ctx.font = `800 ${Math.round(fs * 0.8)}px ${FONT}`;
+    for (const q of parts) {
+      const k = enemyScale(q.kind);
+      const es = (icon * 1.7) / Math.max(1, k * 1.1);
+      drawEnemy(ctx, { kind: q.kind, facing: 1, hit: 9, ghost: false, phase: 0 }, cx + icon / 2, y0 + h * 0.86, es, 0);
+      ctx.fillStyle = INK;
+      ctx.fillText(label(q.n), cx + icon, y0 + h / 2 + 1);
+      cx += q.w + 4;
+    }
     ctx.restore();
   }
 
@@ -1545,6 +1602,9 @@ export class Renderer {
     }
   }
 }
+
+/** The width of a swarm badge's row of types (at most three) and its total, for layout. */
+const SWARM_KINDS = 3;
 
 function bar(
   ctx: CanvasRenderingContext2D,

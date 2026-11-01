@@ -3324,3 +3324,51 @@ body:has(#dlg-pause[open]) .paused-note {
     display: block;
   }
 }
+
+/* Swarm badges on the 3D field (plan item 10): the 2D renderer paints the same pill on its canvas */
+.swarm-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 9px;
+  border: 2px solid var(--line, #2b2320);
+  border-radius: 999px;
+  background: rgba(255, 247, 230, 0.95);
+  font: 800 13px / 1 var(--font-ui);
+  color: var(--ink, #2b2320);
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform;
+}
+.swarm-badge[hidden] {
+  display: none;
+}
+.swarm-badge b {
+  font-size: 16px;
+  color: var(--goodwill, #c4433a);
+}
+.swarm-badge span {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+.swarm-badge img {
+  width: 24px;
+  height: 24px;
+}
+.swarm-badge::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-right: 2px solid var(--line, #2b2320);
+  border-bottom: 2px solid var(--line, #2b2320);
+  background: rgba(255, 247, 230, 0.95);
+  transform: rotate(45deg);
+}

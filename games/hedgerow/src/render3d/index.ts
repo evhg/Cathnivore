@@ -41,6 +41,8 @@ import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
+import { swarms } from "../swarm";
+import { enemyIcon } from "../icons";
 
 interface TowerView {
   obj: THREE.Group;
@@ -181,6 +183,9 @@ export class Renderer3D {
   private ghost: THREE.Group | null = null;
   private ghostKey = "";
   private bossBar: HTMLElement;
+  /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
+  private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
+  private overlayEl: HTMLElement;
   private bossFill: HTMLElement;
   private bossName: HTMLElement;
   private clock = 0;
@@ -238,6 +243,7 @@ export class Renderer3D {
     this.dynamic.add(this.sparks.points, this.debris.mesh);
     this.fx = new Transients(this.dynamic);
     this.floaters = new Floaters(overlay);
+    this.overlayEl = overlay;
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.7, 0.55, 0.8);
@@ -1061,6 +1067,7 @@ export class Renderer3D {
     this.syncHero(game, dt, t);
     this.syncSelection(game, t);
     this.syncBoss(game);
+    this.syncSwarms(game);
     this.syncSetPieces(game, t);
     this.syncPiles(game);
     this.syncOaks(game);
@@ -1807,6 +1814,45 @@ export class Renderer3D {
       pc.pools.count = n;
       pc.pools.instanceMatrix.needsUpdate = true;
     }
+  }
+
+  /** A badge over each swarm: its total and its make-up by type, pinned above the middle of the queue. */
+  private syncSwarms(game: Game): void {
+    const list = game.phase === "wave" ? swarms(game.enemies) : [];
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    list.forEach((sw, i) => {
+      let slot = this.swarmEls[i];
+      if (!slot) {
+        const el = document.createElement("div");
+        el.className = "swarm-badge";
+        el.setAttribute("aria-hidden", "true");
+        this.overlayEl.append(el);
+        slot = { el, key: "" };
+        this.swarmEls.push(slot);
+      }
+      const key = `${sw.count}|${sw.kinds.slice(0, 3).map((k) => `${k.kind}:${k.n}`).join(",")}`;
+      if (key !== slot.key) {
+        slot.key = key;
+        const total = document.createElement("b");
+        total.textContent = String(sw.count);
+        slot.el.replaceChildren(total);
+        for (const k of sw.kinds.slice(0, 3)) {
+          const part = document.createElement("span");
+          const im = document.createElement("img");
+          im.src = enemyIcon(k.kind);
+          im.alt = "";
+          // One type: the total says it all.
+          part.append(im, sw.kinds.length > 1 ? String(k.n) : "");
+          slot.el.append(part);
+        }
+      }
+      const p = enemyPoint(game.level, sw);
+      const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + 1.1, p.y).project(this.camera);
+      slot.el.hidden = false;
+      slot.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
+    });
+    for (let i = list.length; i < this.swarmEls.length; i++) this.swarmEls[i]!.el.hidden = true;
   }
 
   private syncBoss(game: Game): void {
