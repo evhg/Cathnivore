@@ -28,6 +28,11 @@ describe('portfolio cards', () => {
     expect(appsHtml()).not.toMatch(/vercel\.app[^"]*kinetiq|kinetiq[^"]*vercel\.app/)
   })
 
+  it('links each app at its own domain, never an old *.vercel.app deployment', () => {
+    expect(APPS.find((a) => a.id === 'sleeplab')!.href).toBe('https://sleep.cathnivore.com')
+    expect(appsHtml()).not.toMatch(/vercel\.app/)
+  })
+
   it('renders links for live apps, an article for lab ones, and escapes text', () => {
     expect(cardHtml({ ...APPS[0]!, name: 'A <b>' })).toContain('A &lt;b&gt;')
     expect(cardHtml({ ...APPS[0]!, status: 'lab', href: undefined })).toContain('<article')

@@ -68,7 +68,7 @@ export const APPS: PortfolioApp[] = [
     blurb:
       'Room climate, CO2 and light from SwitchBot devices, matched with sleep data from a wearable, in a home-screen dashboard with sleep-science targets. The demo runs on 90 simulated nights.',
     status: 'live',
-    href: 'https://sleep-lab-lac.vercel.app',
+    href: 'https://sleep.cathnivore.com',
     tags: ['Health', 'Home automation', 'PWA'],
     accent: 'teal',
     mark: 'Z',
