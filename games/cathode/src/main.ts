@@ -251,7 +251,8 @@ function fillTitle(): void {
   }
   if (sealed) el("li", "is-more", list, `${sealed} more ${sealed === 1 ? "name" : "names"}`);
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
-  $<HTMLButtonElement>("btn-cases").disabled = !hasSave();
+  // Plan item 12: the board opens on a fresh save too, as a teaser (one lead, five blank prints).
+  $<HTMLButtonElement>("btn-cases").disabled = false;
   const ng = hasSave() && canStartNewGamePlus(done);
   $("btn-continue").querySelector(".menu-label")!.textContent = ng ? "New Game+" : "Continue";
 }

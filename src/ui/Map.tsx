@@ -671,7 +671,7 @@ function HollowellHQ() {
       )}
       <rect x={-5} y={-9} width={10} height={9} fill="var(--ink)" />
       <rect x={-12} y={-68} width={24} height={12} rx={2} fill="var(--paper)" stroke="var(--ink)" strokeWidth={1.4} />
-      <text x={0} y={-58.5} textAnchor="middle" className="hq-mark">
+      <text x={0} y={-58.5} textAnchor="middle" fontSize={11} className="hq-mark">
         H
       </text>
     </g>
@@ -687,7 +687,7 @@ function CandorHQ() {
       <path d="M -6,-50 L -2,-50 L -8,-44 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1.2} strokeLinejoin="round" />
       <circle cx={0} cy={-60} r={12} fill="var(--candor)" stroke="var(--ink)" strokeWidth={1.6} />
       <circle cx={4} cy={-64} r={3.4} fill="var(--candor-highlight)" />
-      <text x={0} y={-55} textAnchor="middle" className="hq-mark">
+      <text x={0} y={-55} textAnchor="middle" fontSize={11} className="hq-mark">
         C
       </text>
       <path className="hq-signal" d="M 17,-70 A 18 18 0 0 1 17,-50 M 23,-76 A 26 26 0 0 1 23,-44 M -17,-70 A 18 18 0 0 0 -17,-50 M -23,-76 A 26 26 0 0 0 -23,-44" fill="none" stroke="var(--candor)" strokeWidth={2.2} strokeLinecap="round" />
@@ -715,7 +715,7 @@ function EnemyTurnLayer({ view }: { view: EnemyTurnView }) {
             <ellipse cx={0} cy={1} rx={30} ry={6} fill="var(--ink)" opacity={0.18} />
             {f === 'hollowell' ? <HollowellHQ /> : <CandorHQ />}
             <rect x={-50} y={5} width={100} height={18} rx={3} fill="var(--ink-on-fixed-fill)" />
-            <text x={0} y={18.5} textAnchor="middle" className="hq-name">
+            <text x={0} y={18.5} textAnchor="middle" fontSize={12} className="hq-name">
               {f === 'hollowell' ? 'HOLLOWELL' : 'CANDOR'}
             </text>
           </g>

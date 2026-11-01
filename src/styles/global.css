@@ -2121,7 +2121,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 .enemy-turn-layer .hq-active .hq-art {
   transform: scale(1.1);
-  filter: drop-shadow(0 0 6px var(--paper-hi, #fff8e8));
+  filter: drop-shadow(0 0 6px var(--paper-hi));
 }
 .enemy-turn-layer .hq:not(.hq-active) {
   opacity: 0.7;
@@ -2129,12 +2129,10 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 .hq-mark {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 11px;
   fill: var(--ink);
 }
 .hq-name {
   font-weight: 800;
-  font-size: 12px;
   letter-spacing: 0.06em;
   fill: var(--paper-on-fixed-fill);
 }
@@ -2171,7 +2169,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   }
 }
 .flight-piece {
-  filter: drop-shadow(0 5px 3px rgb(0 0 0 / 0.35));
+  filter: drop-shadow(0 5px 3px rgb(var(--shadow-ink) / .35));
   animation: flight-fly 900ms cubic-bezier(0.45, 0, 0.3, 1) var(--delay) both;
 }
 @keyframes flight-fly {

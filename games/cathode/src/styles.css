@@ -1839,33 +1839,70 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cx-savecode { margin-left: auto; align-self: center; font-size: var(--fs-1); }
 .cx-code { width: 100%; box-sizing: border-box; margin: 0 0 calc(var(--u) * 12); padding: calc(var(--u) * 12) 0; font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--ink); background: none; border: 0; resize: none; word-break: break-all; }
 .cx-code:focus-visible { outline: none; }
-.case-cork .case-cath { width: calc(var(--u) * 84); height: calc(var(--u) * 84); margin: 0 auto calc(var(--u) * 6); overflow: hidden; }
+/* Plan item 12: the case board is a cork wall in a dark frame. The List runs across the top as polaroids on red
+   string; the leads hang below as index cards with stamps; the rest lie face down. Paper and cork are fixed
+   materials (tokens.css), the red is the one accent. */
+.case-board { overflow: auto; padding: calc(var(--u) * 24) 0; }
+.case-board .case-cork {
+  width: min(calc(var(--u) * 1400), calc(100% - 24px)); /* px-ok: phone gutter */
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: calc(var(--u) * 28) calc(var(--u) * 32) calc(var(--u) * 24);
+  background:
+    radial-gradient(circle at 20% 30%, rgb(var(--black-rgb) / .18) 0 1px, transparent 1.5px) 0 0 / 7px 7px,
+    radial-gradient(circle at 70% 60%, rgb(var(--white-rgb) / .07) 0 1px, transparent 1.5px) 0 0 / 11px 11px,
+    radial-gradient(ellipse at 50% 40%, var(--cork-hi), var(--cork) 55%, var(--cork-lo));
+  border: calc(var(--u) * 10) solid var(--night-2);
+  box-shadow: inset 0 0 calc(var(--u) * 60) rgb(var(--black-rgb) / .55), 0 calc(var(--u) * 20) calc(var(--u) * 60) rgb(var(--black-rgb) / .6);
+  color: var(--card-ink);
+  margin: auto;
+}
+.case-head { display: flex; align-items: center; gap: calc(var(--u) * 14); margin: 0 0 calc(var(--u) * 10); }
+.case-cork .case-cath { flex: none; width: calc(var(--u) * 84); height: calc(var(--u) * 84); overflow: hidden; border-radius: 50%; background: var(--print-paper); box-shadow: 0 2px 6px rgb(var(--black-rgb) / .5); }
 .case-cork .case-cath svg { width: 100%; height: 100%; }
-.case-cork .case-list { list-style: none; margin: 0 0 calc(var(--u) * 16); padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: calc(var(--u) * 14); }
-.case-list li { position: relative; display: flex; flex-direction: column; gap: 4px; padding: calc(var(--u) * 14) calc(var(--u) * 12) calc(var(--u) * 12); background: var(--night-3); border: 1px solid var(--rule); border-radius: 3px; box-shadow: 0 6px 14px rgb(0 0 0 / .45); transform: rotate(var(--tilt, 0deg)); font-size: var(--fs-1); color: var(--ink-2); }
-.case-list li:nth-child(odd):not(:last-child)::after { content: ""; position: absolute; top: 9px; left: 50%; width: 100%; height: 1px; background: var(--blood); opacity: .55; transform: rotate(2deg); transform-origin: left; pointer-events: none; }
-.case-list li b { color: var(--ink); }
-.case-pin { position: absolute; top: 4px; left: 50%; width: 9px; height: 9px; margin-left: -4px; border-radius: 50%; background: var(--blood-hot); box-shadow: 0 1px 2px rgb(0 0 0 / .6); }
-.case-stamp { align-self: flex-start; font: 700 var(--fs-1) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--blood-hot); border: 1px solid var(--blood-hot); padding: 1px 6px; transform: rotate(-4deg); }
-.case-ladder { margin-top: calc(var(--u) * 12); text-align: left; }
-.case-ladder h3 { font: 700 var(--fs-2) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--blood-hot); margin: 0 0 calc(var(--u) * 4); }
+.case-titles h2 { margin: 0; padding: calc(var(--u) * 4) calc(var(--u) * 14); background: var(--card-paper); color: var(--card-ink); font: 800 var(--fs-4) var(--font-ui); font-stretch: var(--wdth-head); letter-spacing: .02em; text-transform: uppercase; transform: rotate(-1.5deg); box-shadow: 0 3px 8px rgb(var(--black-rgb) / .45); display: inline-block; }
+.case-eyebrow { margin: calc(var(--u) * 8) 0 0; font: 600 var(--fs-1) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--print-paper); text-shadow: 0 1px 2px rgb(var(--black-rgb) / .8); }
+/* The List */
+.case-wall { position: relative; margin: 0 0 calc(var(--u) * 18); }
+.case-strings { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.case-string { fill: none; stroke: var(--stamp-red); stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 2px 1px rgb(var(--black-rgb) / .45)); }
+.case-prints { list-style: none; margin: 0; padding: calc(var(--u) * 8) 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 22); }
+.case-print { position: relative; display: flex; flex-direction: column; align-items: center; padding: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 14); background: var(--print-paper); box-shadow: 0 calc(var(--u) * 8) calc(var(--u) * 16) rgb(var(--black-rgb) / .5); transform: rotate(var(--tilt, 0deg)); max-width: calc(var(--u) * 210); justify-self: center; width: 100%; box-sizing: border-box; }
+.case-print .case-pin { top: calc(var(--u) * -6); }
+.case-photo { position: relative; margin: 0; width: 100%; aspect-ratio: 200 / 240; overflow: hidden; background: var(--card-ink); }
+.case-photo svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.case-blank { display: grid; place-items: center; width: 100%; height: 100%; font: 800 var(--fs-6) var(--font-ui); color: rgb(var(--white-rgb) / .12); background: radial-gradient(ellipse at 50% 35%, rgb(var(--white-rgb) / .06), transparent 60%); }
+.case-print .case-name { margin-top: calc(var(--u) * 8); font: 700 var(--fs-1)/1.15 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--card-ink); text-align: center; }
+.case-print.is-locked .case-name { color: var(--card-ink-2); }
+.case-print.is-open { outline: 2px solid var(--stamp-red); outline-offset: calc(var(--u) * 4); }
+.case-print.is-done .case-name { text-decoration: line-through; text-decoration-color: var(--stamp-red); text-decoration-thickness: 2px; } /* px-ok: hairline */
+.case-print.is-done .case-photo svg { filter: grayscale(1) brightness(.7); }
+.case-print.is-done .case-photo::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 2px), var(--stamp-red) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)),
+    linear-gradient(to bottom right, transparent calc(50% - 2px), var(--stamp-red) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px));
+}
+/* The leads */
+.case-cork .case-list { list-style: none; margin: 0 0 calc(var(--u) * 18); padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--u) * 300)), 1fr)); gap: calc(var(--u) * 18); }
+.case-list li { position: relative; display: flex; flex-direction: column; gap: calc(var(--u) * 5); padding: calc(var(--u) * 18) calc(var(--u) * 16) calc(var(--u) * 14); background: linear-gradient(var(--card-paper), var(--card-paper)) padding-box, repeating-linear-gradient(transparent 0 calc(var(--u) * 27), var(--card-rule) calc(var(--u) * 27) calc(var(--u) * 28)); background-color: var(--card-paper); border-top: calc(var(--u) * 4) solid var(--stamp-red); box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 14) rgb(var(--black-rgb) / .45); transform: rotate(var(--tilt, 0deg)); font: 500 var(--fs-1)/1.4 var(--font-ui); color: var(--card-ink-2); }
+.case-list li b { color: var(--card-ink); font: 700 var(--fs-2) var(--font-ui); }
+.case-list .case-done { opacity: .82; }
+.case-list .case-done b { text-decoration: line-through; text-decoration-color: var(--stamp-red); text-decoration-thickness: 2px; }
+.case-pin { position: absolute; top: calc(var(--u) * 5); left: 50%; width: calc(var(--u) * 14); height: calc(var(--u) * 14); min-width: 8px; min-height: 8px; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--blood-hot), var(--stamp-red) 60%, var(--cork-lo)); box-shadow: 0 2px 2px rgb(var(--black-rgb) / .6); } /* px-ok: pin floor */
+.case-stamp { align-self: flex-start; font: 800 var(--fs-1) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--stamp-red); border: 2px solid var(--stamp-red); padding: 1px calc(var(--u) * 8); transform: rotate(-6deg); opacity: .9; mix-blend-mode: multiply; }
+.case-flag { align-self: flex-start; font: 800 var(--fs-1) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--on-blood); background: var(--stamp-red); padding: 1px calc(var(--u) * 8); }
+.case-list .case-sealed { background: repeating-linear-gradient(45deg, var(--cork-lo) 0 calc(var(--u) * 6), var(--night-3) calc(var(--u) * 6) calc(var(--u) * 12)); border-top-color: var(--night-2); color: var(--print-paper); box-shadow: calc(var(--u) * 5) calc(var(--u) * 5) 0 var(--night-3), calc(var(--u) * 10) calc(var(--u) * 10) 0 var(--cork-lo), 0 calc(var(--u) * 6) calc(var(--u) * 14) rgb(var(--black-rgb) / .45); }
+.case-list .case-sealed b { color: var(--print-paper); }
+.case-ladder { margin-top: calc(var(--u) * 12); padding: calc(var(--u) * 14); text-align: left; background: var(--card-paper); color: var(--card-ink-2); box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 14) rgb(var(--black-rgb) / .45); }
+.case-ladder h3 { font: 700 var(--fs-2) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--stamp-red); margin: 0 0 calc(var(--u) * 4); }
 .case-ladder ol { list-style: none; margin: 0; padding: 0; }
 .case-ladder li { opacity: .7; }
 .case-ladder li.is-now { opacity: 1; font-weight: 700; }
-.case-list .case-locked { opacity: 0.5; filter: grayscale(1); }
-.case-list .case-done b { color: var(--ink-3); }
-/* The names on the List: a surveillance still clipped beside the card's text; once closed, a red cross through it. */
-.case-list .case-wanted { display: grid; grid-template-columns: max(84px, calc(var(--u) * 120)) 1fr; grid-auto-rows: min-content; column-gap: calc(var(--u) * 10); align-content: start; }
-.case-wanted > :not(.case-photo, .case-pin) { grid-column: 2; }
-.case-wanted .case-stamp { justify-self: start; }
-.case-photo { position: relative; grid-column: 1; grid-row: 1 / span 3; margin: 2px 0 0; width: 100%; aspect-ratio: 200 / 240; overflow: hidden; outline: 1px solid var(--line-2); outline-offset: 2px; transform: rotate(-2deg); }
-.case-photo svg { display: block; width: 100%; height: 100%; }
-.case-done .case-photo svg { filter: grayscale(1) brightness(.75); }
-.case-done .case-photo::after {
-  content: ""; position: absolute; inset: 0; opacity: .85;
-  background:
-    linear-gradient(to top right, transparent calc(50% - 1.5px), var(--blood) calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
-    linear-gradient(to bottom right, transparent calc(50% - 1.5px), var(--blood) calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px));
+.case-cork > .btn-primary { color: var(--print-paper); text-shadow: 0 1px 2px rgb(var(--black-rgb) / .8); }
+@media (max-width: 600px) {
+  .case-prints { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: calc(var(--u) * 30); }
+  .case-board .case-cork { padding: calc(var(--u) * 20) calc(var(--u) * 18); border-width: calc(var(--u) * 6); }
 }
 
 /* Photo mode: a slim bar at the bottom while the world holds still. */

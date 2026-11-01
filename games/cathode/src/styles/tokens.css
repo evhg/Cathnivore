@@ -48,6 +48,16 @@
   --black-rgb: 0 0 0;
   --white-rgb: 255 255 255;
 
+  /* --- colour: the case board (plan item 12): a cork wall with paper pinned to it, the same in every theme --- */
+  --cork: #6b4f33;
+  --cork-hi: #8a6a47;
+  --cork-lo: #3d2c1c;
+  --print-paper: #ece6da;
+  --card-paper: #e6dfcf;
+  --card-ink: #1d1a16;
+  --card-ink-2: #4a443b;
+  --card-rule: rgb(29 26 22 / .18);
+  --stamp-red: #b3122b;
   /* --- colour: jobs --- */
   --blood: #c8102e;      /* fills only */
   --blood-hot: #ff3b55;  /* danger text and numbers */

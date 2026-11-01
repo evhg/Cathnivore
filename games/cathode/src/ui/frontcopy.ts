@@ -87,7 +87,7 @@ export function slotHint(
       if (o.armed) return "PRESS AGAIN TO CLOSE THE OLD CASE FOR GOOD";
       return o.hasSave ? "A NEW FILE · THE OLD CASE IS CLOSED" : "TOMAS REED · THE HARBOUR · A DEBT TAG";
     case "cases":
-      return o.hasSave ? `THE CORKBOARD · ${o.jobsDone.length} CLOSED` : "NO CASES YET";
+      return o.hasSave ? `THE CORKBOARD · ${o.jobsDone.length} CLOSED` : "BEA'S WALL · ONE LEAD · FIVE NAMES";
     case "settings":
       return "GRAPHICS · VIOLENCE · MOTION";
     case "credits":
