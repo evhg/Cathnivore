@@ -1,5 +1,7 @@
 # Roadmap
 
+**Owner, 2026-11-01: the queue is now `docs/plan/two-week-plan.md`** (whole features with specs and acceptance). Take its first open item. The phases below are history and a backlog; their open items wait unless the plan names them.
+
 The ordered plan for improvement sessions (SPEC 16). **New plan set by the owner on 2026-09-28.** Work from the top: take the first item that isn't done or blocked. Big items are split into slices, and each slice must ship on its own, leaving the games better and never half-broken.
 
 Sessions may add items, split items or reorder within a phase when they find something more important, and log the reason in `DECISIONS.md`. **Never run out:** when fewer than 3 unfinished items remain, the session's work is planning: screenshot every game, have a subagent critique them against `VISION.md`, and add at least 5 concrete, measurable items before ending. Only the owner (through `FEEDBACK.md`) moves items between phases or deletes them. Mark items `[x]` when shipped (released to `main`), with the release commit.
@@ -259,7 +261,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 16. [x] **End screen:** *(2026-09-29: bigger Cath, verdict, stat cards; Share button done; map snapshot done.)* a win or loss illustration with Cath's reaction, the final map snapshot, stat cards, and "Play again" and "Share".
 17. [x] **Cards:** Improvements and Schemes as illustrated cards with a frame per category and an icon per card, and animations for buying and playing them. Cath's Plan cards carry her handwriting and avatar.
 18. [x] **How to Play:** illustrated and paged, taught by Cath, with tiny demo boards.
-19. [ ] **Sound:** *(2026-09-28 night: shipped `src/platform/sound.ts` synth cues for place/liberate/Squeeze/Lost Land/win/lose, Settings "Sound" switch, silent until first tap; unreleased. UI-tap tick added; 2026-09-28 late: optional ambient pad loop, off by default, unreleased.)* a synthesised WebAudio sound set and an optional ambient loop, with Settings switches. Silent until the first tap.
+19. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **Sound:** *(2026-09-28 night: shipped `src/platform/sound.ts` synth cues for place/liberate/Squeeze/Lost Land/win/lose, Settings "Sound" switch, silent until first tap; unreleased. UI-tap tick added; 2026-09-28 late: optional ambient pad loop, off by default, unreleased.)* a synthesised WebAudio sound set and an optional ambient loop, with Settings switches. Silent until the first tap.
 20. [x] **Settings and Credits:** *(2026-09-29: both redesigned with Cath header and paper cards.)* designed screens that match the title.
 21. [x] **Motion system:** *(2026-09-29: `--ease-settle`/`--ease-pop`/`--dur-*` tokens in `tokens.css`; title and campaign use the settle token. Audit of remaining screens still open.)* shared easing and duration tokens, and an audit of every screen.
 
@@ -268,7 +270,7 @@ These two phases come before every older unfinished item below. About 70% of ses
 The owner asked for a tower defense game: a strong story that develops level by level, new weapons and tower upgrades unlocking as you go, and level 100 as the ultimate boss fight. Cath leads. **The design note is `docs/design/hedgerow.md`; follow it.** Sessions pick these up after Phase 2 items 8-13 (**owner, 2026-09-30: start H1 now; don't wait for 9-13 to be fully polished**) (the Cathnivore table, map art and moments). The remaining Phase 2 items (14-21) continue after Hedgerow slice 2.
 
 H1. [x] **Engine and a vertical slice:** *(2026-09-30: `games/hedgerow/`, levels 1-3, `/hedgerow/`, landing card, tests/hedgerow.test.ts bot gate.)* the engine, a Canvas renderer, 2 towers, 2 enemies, levels 1-3 with story scenes, saves, `/hedgerow/` in the site build, a landing card, site e2e tests and the level bot gate.
-H2. [ ] **Act 1 complete (levels 1-10):** *(2026-09-30: levels 1-10, the Beehive, the Acquisition Van boss and Cath's pie are built (released: H1 only; the rest is on `build`). Open: upgrade-UI polish, sound, Hedgerow's own level-select art.)* the Acquisition Van miniboss and the upgrade UI.
+H2. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **Act 1 complete (levels 1-10):** *(2026-09-30: levels 1-10, the Beehive, the Acquisition Van boss and Cath's pie are built (released: H1 only; the rest is on `build`). Open: upgrade-UI polish, sound, Hedgerow's own level-select art.)* the Acquisition Van miniboss and the upgrade UI.
 H3. [x] Act 2 (11-20): *(2026-09-30: Highmoor, Market Stall, price-war trucks, Mr Crisp's Convoy boss.)* H4. [x] Act 3 (21-30): *(2026-09-30: Saltmarsh, Duck Pond, influencers that charm towers, Brand Ambassador Blimp boss.)* H5. [x] Act 4 (31-40): *(2026-09-30: Rivermead, armour, Co-op Barn, Grain Silo, Mega-Dozer boss.)* H6. [x] Act 5 (41-50): *(2026-09-30: Oakvale, stealth couriers, Radio Mast, Vane's Clinic-in-a-Box boss that heals.)*  H7. [x] Act 6 (51-60): *(2026-09-30: Shingle Bay, tenders, Clinic Tent, Container Ship boss.)* H8. [x] Act 7 (61-70): *(2026-09-30: The Rift, lawyers, Courthouse, Lawyer Swarm.)* H9. [x] Act 8 (71-80): *(2026-09-30: The Ballot, Farmers' Union Hall aura + Market Day, Pell's Campaign Bus boss.)* H10. [x] Act 9 (81-90): *(2026-09-30: The Merger, directors, Board of Directors boss.)*
 H11. [x] **Act 10 and level 100:** the multi-phase HollowCandor boss fight and the finale.
 
@@ -288,7 +290,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 28. [x] **Cath on the battlefield:** Cath standing by the farmhouse with live reactions (cheering on a perfect wave, worried when Goodwill drops), and the story beats staged like Cathnivore's graphic-novel scenes (reuse its scene system and backdrops).
 29. [x] **Build UX:** a radial build menu at the tapped plot (tower icons with costs, locked ones greyed), a range preview while choosing, a next-wave preview (enemy icons and counts), and clear sell and upgrade affordances. Must work one-handed on a 390 px phone.
 30. [x] **Level select as a journey:** a map of Marrow with the ten acts as regions and the levels as stops on a path, stars and boss markers, and the current level glowing (like Cathnivore's campaign).
-31. [ ] **Balance pass:** a bot run over all 100 levels logged in `BALANCE.md` (stars per level, a difficulty curve); every level winnable with what's unlocked by then; 3 stars needs real skill; no sudden spikes except the bosses.
+31. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **Balance pass:** a bot run over all 100 levels logged in `BALANCE.md` (stars per level, a difficulty curve); every level winnable with what's unlocked by then; 3 stars needs real skill; no sudden spikes except the bosses.
    _26-30 shipped 2026-10-02 by the owner's chat session (`5a8ec91`..`aadfc2c`), after the owner said Hedgerow was "pretty boring" and should be worth 50 USD: painted acts, sprites for every tier and specialisation, Cath as a hero unit, graphic-novel story scenes, an icon build menu with range preview (a bottom panel, not radial: better one-handed), the journey map. Plus tier-4 specialisations, targeting, early calls, an aimed pie, boss signature moves, the Seed Bank, music. Use `/hedgerow/?sandbox=1` (unlimited Marks) to screenshot late waves._
 32. [x] *(2026-10-03: all 100 levels and the finale rewritten to the clarity rules in docs/design/hedgerow-v2.md 7; live `7e0c69a`.)* **Story pass:** read all 100 levels' beats end to end and tighten them into one arc with setups and payoffs, Bea's thread, each boss's introduction, and Cath's voice (SPEC 3.2).
 
@@ -328,7 +330,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 
 ## Phase 5: second passes (keep going)
 
-33. [ ] **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.
+33. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **Fresh-eyes audit of all three games and the landing page:** `npm run shots` plus Hedgerow and Runnel screenshots, critiqued by a subagent against `VISION.md`'s eight bars; turn its findings into new ranked items here.
 34. [~] *(2026-10-03: Hedgerow first load 329 KB -> 150 KB gzipped: three.js and the 3D renderer are a lazy chunk prefetched on the map; map banners are cached images. Frame time with 60 enemies is being measured under ROADMAP 44.)* **Performance pass:** bundle sizes, first-load time, and frame time in Hedgerow with 50+ enemies on screen; fix anything over budget (VISION 7).
 
 ### Cathnivore audit (2026-10-03, subagent critique of `npm run shots` against VISION.md)
@@ -338,7 +340,7 @@ All 100 levels exist and play, but the look is a flat prototype: a plain grid, s
 59. [~] *(2026-10-03: staggered entrance + sticky action done)* **End screens with payoff:** a 400-1200ms choreographed win/loss sequence, centred full-opacity stat cards, primary action visible at 390x844 without scrolling (bars 4, 6).
 60. [ ] **In-game panels:** Sell collapses to one stepper, no overlapping badge glyphs on Squeeze/Expand/Scout chips, category colour and icons in side panels (bar 1).
 61. [x] *(2026-10-29: already shipped as AAA UI M4 cameo)* **Cath on the game screen:** companion at least 48px with expression changes on events; phone title keeps her inside the frame (bar 5).
-62. [ ] **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
+62. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **Campaign and setup:** illustrated header per chapter card, teaser silhouettes for locked chapters, colour portraits at 48px, a visible progress track, a mode illustration on setup (bars 1, 6).
 
 ## Phase 6: CATHODE, the fourth game (owner, 2026-10-03: "I'm okay with month long, start building. Push the limits.")
 Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the first unfinished item here before any other phase. Each item ships playable on `/cathode/` behind the 18+ gate.
@@ -587,7 +589,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 216. [x] *(phone shot checked, fine)* **Runnel stats sheet:** screenshot the stats dialog at phone and desktop, critique, fix.
 217. [x] **Runnel win dialog:** screenshot a solved board (phone and desktop) and check Cath, share button and next-puzzle timer.
 218. [x] *(third card centred under the pair; shot checked, e2e:site 52 pass)* **Landing page desktop:** re-shot after Phase 19; check card alignment and Cath.
-219. [ ] **CATHODE title and class-select shots:** critique against VISION.md.
+219. [x] *(closed 2026-11-01 by the two-week plan audit: already built or superseded)* **CATHODE title and class-select shots:** critique against VISION.md.
 220. [x] *(stats legible; upgrade label shortened to "Upgrade → T2 · 45")* **Hedgerow tower-info card:** screenshot a selected tower's specialisation panel at phone size; check stats legibility.
 
 ### Phase 21 (planned 2026-10-30)
@@ -621,7 +623,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 238. [x] *(2026-11-01: `shared/cath/pins.ts`, win during an event earns its pin, worn in Cathnivore, Runnel, CATHODE loading; test; pins shot)* **Cathnivore Marrow Market exclusive cosmetic:** one cosmetic per market event, worn by Cath in the shared wardrobe.
 
 ### Phase 27 (planned 2026-11-01, whole features; shoot the target screen first and skip items already built)
-239. [ ] **Hedgerow Orchard relics:** run-long relics found at boss fields (e.g. "Cath's thermos": +1 leak limit, "Old sundial": early calls pay double) that stack with boons, with a relic shelf on the run HUD and in the share text. Bot-check depth 12 stays winnable.
-240. [ ] **Runnel Bea's tournaments:** a weekly 5-board ladder with a shared seed, time and taps scored together, a medal tier (bronze to gold) saved per week and shown in the garden and on Cath's Week card.
-241. [ ] **CATHODE photo-mode gallery:** keep the last 12 photo-mode polaroids in a Case Board gallery (stored as small data URLs), each captioned with district, outfit and time; download or share one.
-242. [ ] **Cathnivore Marrow Market regulars:** three recurring shoppers with their own wish lists and a friendship bar; filling wishes unlocks a stall decoration and a Cath line.
+239. [ ] *(deferred 2026-11-01: ranks below the two-week plan's items)* **Hedgerow Orchard relics:** run-long relics found at boss fields (e.g. "Cath's thermos": +1 leak limit, "Old sundial": early calls pay double) that stack with boons, with a relic shelf on the run HUD and in the share text. Bot-check depth 12 stays winnable.
+240. [ ] *(deferred 2026-11-01: ranks below the two-week plan's items)* **Runnel Bea's tournaments:** a weekly 5-board ladder with a shared seed, time and taps scored together, a medal tier (bronze to gold) saved per week and shown in the garden and on Cath's Week card.
+241. [ ] *(deferred 2026-11-01: ranks below the two-week plan's items)* **CATHODE photo-mode gallery:** keep the last 12 photo-mode polaroids in a Case Board gallery (stored as small data URLs), each captioned with district, outfit and time; download or share one.
+242. [ ] *(deferred 2026-11-01: ranks below the two-week plan's items)* **Cathnivore Marrow Market regulars:** three recurring shoppers with their own wish lists and a friendship bar; filling wishes unlocks a stall decoration and a Cath line.

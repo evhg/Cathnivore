@@ -8,15 +8,16 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
    - If `.build-lock` is less than 75 minutes old, end.
    - Otherwise write the UTC time into it, commit and push.
    - If the push is rejected, end.
-3. **Read, in this order:** `FEEDBACK.md`, `PROGRESS.md`, `ROADMAP.md`, `VISION.md`, the last 60 lines of `DECISIONS.md`, `git log --oneline -15` and `origin/ci-status`. Read `SPEC.md` sections 1, 15 and 16 in full; read other SPEC sections, `STYLE.md` and `BALANCE.md` when the task touches them. Never read `docs/archive/` in full; search it with grep.
-4. **Pick the work:** an open `FEEDBACK.md` note, then anything broken (CI, gates, the live site, saves, rules), then the first unfinished `ROADMAP.md` item. Write it under **Now** in `PROGRESS.md`.
-   - **Never idle** (owner, 2026-10-02): a "health check only" session wastes an hour, and so does a "short" session that stops after one small item.
-   - **Owner direction (2026-10-15, overrides the split below):** work ROADMAP Phase C (CATHODE combat, look and feel) every session, non-stop, until it is done (at least a week). Spec: `docs/design/cathode-combat.md`.
-   - **Owner direction (2026-10-09, FEEDBACK.md):** work ROADMAP Phase D (CATHODE districts, about 70% of sessions) and Phase H (Hedgerow depth, about 30%) before anything else. Batch small polish into at most one session a day. Don't plan micro-items: every new ROADMAP item must be something a player would notice. If both phases ever run out, plan big items the same way: screenshot the games, have a subagent critique them against `VISION.md`, and add whole features, not tweaks.
-5. **Work for about 50 minutes, in slices.** After each slice, run its checks (`npm run check`; `npm run shots` before and after any visual change; the e2e specs it touches), commit and push to `build`. Each slice leaves the game better and never half-broken.
-   - **Use the full ~50 minutes** (owner instruction, 2026-09-25). Finishing one or two slices is not a reason to stop: keep starting the next one until about 45 minutes have passed.
-   - **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51.
-6. **Release** with `npm run release` only when a whole milestone (one ROADMAP item) is finished and every gate passes, or to ship a bug fix for a live game (owner, 2026-10-09; at most 4 times a day). Tick the ROADMAP item when it ships.
+3. **Read, in this order:** `FEEDBACK.md`, `PROGRESS.md`, `docs/plan/two-week-plan.md`, `ROADMAP.md` (its top and the open item you take), `VISION.md`, the last 60 lines of `DECISIONS.md`, `git log --oneline -15` and `origin/ci-status`. Read `SPEC.md` sections 1, 15 and 16 in full; read other SPEC sections, `STYLE.md` and `BALANCE.md` when the task touches them. Never read `docs/archive/` in full; search it with grep.
+4. **Pick the work:** an open `FEEDBACK.md` note, then anything broken (CI, gates, the live site, saves, rules), then the first unfinished item in **`docs/plan/two-week-plan.md`** (owner, 2026-11-01: this plan replaces all older ROADMAP phases as the queue; older open ROADMAP items wait). Write it under **Now** in `PROGRESS.md`.
+   - **Never idle and never short** (owner, 2026-10-02 and 2026-11-01): a "health check only" session wastes an hour, and so does a session that stops after one small item. "(short)" is not an acceptable session: when a slice is done, start the next slice of the same plan item, or the next item, until about 45 minutes have passed.
+   - **Don't invent small items.** The plan holds whole, player-visible features with specs. Only add new items when fewer than 3 plan items are open: then the session's work is planning, the way the plan was made (shoot every game at 390x844 and 1440x900, have a subagent critique the shots against `VISION.md`, add whole features with specs and acceptance to the plan).
+   - Phase C (CATHODE/NIGHT SHIFT combat) is done (C20 released 2026-10-28); the 2026-10-09 D/H split is retired.
+5. **Work for about 50 minutes, in slices.** Each slice: build, run the **targeted** checks it needs (`npx tsc -b`, eslint on the files touched, the unit tests and e2e specs for what changed), commit and push to `build` (CI runs the full suite on every push). Each slice leaves the game better and never half-broken.
+   - **Shoot every visual change**, before and after, at 390x844 and 1440x900 (`npm run shots` for Cathnivore, the game's own shot scripts for the others), and look at the shots. "Not shot" is not done.
+   - Run the full `npm run check` once near the end of the session, not after every slice (it takes 10+ minutes); read CI's result from `origin/ci-status` at the start of the next session.
+   - **Use the full ~50 minutes** (owner instruction, 2026-09-25). **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51.
+6. **Release once a day, in the release session** (owner, 2026-11-01): the session that starts at **19:51 UTC** (02:51 in the owner's time zone) runs `npm run release` first thing if `build` has unreleased work and CI is green on its head; it fixes any gate failure at the root and reruns; it ticks the shipped plan items. Every other session builds and never releases, except to ship an urgent fix for a bug on the live site. If the 19:51 release fails and can't be fixed in that session, the 20:51 session retries once.
 7. **Before ending,** keep the notes short (SPEC 16): update **Now**, the **Session log** and **Recent releases** in `PROGRESS.md`, append at most 5 lines to `DECISIONS.md`, and archive anything over the size limits. Then delete `.build-lock`, commit and push.
 
 ## Non-negotiables (full list in SPEC section 1)
@@ -28,6 +29,7 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
 - **Cath is the face of every game** (VISION.md "Cath: character bible"): a classy, cute, stylish mum, drawn from the shared `shared/cath/` art module.
 - Cut scope before you cut stability.
 - Use at most 2 subagents at once.
+- **Mind the weekly usage limit** (owner, 2026-11-01): the routine and owner chats share it, and it ran out for four days on 2026-10-23. Prefer targeted checks to repeated full runs, and don't start long multi-agent runs.
 
 ## Commands (create these in M0)
 - `npm run check`: typecheck, lint, unit tests, quick fuzz, build.
