@@ -225,12 +225,12 @@ button {
   margin: 0;
   padding: 14px 6px 10px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: auto auto;
   row-gap: 8px;
 }
-.trail:has(.node.next) { padding-top: 40px; }
-.trail:has(.node.next) .trail-path { inset: 40px 6px 10px; height: calc(100% - 50px); }
+.trail:not(.has-home):has(.node.next) { padding-top: 40px; }
+.trail:not(.has-home):has(.node.next) .trail-path { inset: 40px 6px 10px; height: calc(100% - 50px); }
 .trail-path {
   position: absolute;
   inset: 14px 6px 10px;
@@ -238,13 +238,96 @@ button {
   height: calc(100% - 24px);
   pointer-events: none;
 }
+.trail-path {
+  overflow: visible;
+}
 .trail-path path {
   fill: none;
-  stroke: var(--soil);
-  stroke-opacity: 0.35;
-  stroke-width: 4;
-  stroke-dasharray: 2 9;
   stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The lane: a packed-earth road with a darker verge, wheel ruts, and the stretch Cath has walked trodden in. */
+.trail-path .lane-edge {
+  stroke: color-mix(in srgb, var(--soil) 55%, transparent);
+  stroke-width: 17;
+}
+.trail-path .lane-bed {
+  stroke: color-mix(in srgb, var(--wheat) 45%, var(--paper));
+  stroke-width: 12;
+}
+.trail-path .lane-walked {
+  stroke: color-mix(in srgb, var(--wheat) 80%, var(--soil));
+  stroke-width: 6;
+  stroke-opacity: 0.55;
+}
+.trail-path .lane-ruts {
+  stroke: color-mix(in srgb, var(--soil) 45%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+}
+/* The country the lane crosses: one painted patchwork per act (--ground, set by map.ts), behind everything. */
+.trail {
+  background: var(--ground) center / 100% 100% no-repeat;
+}
+.trail > .stop {
+  position: relative;
+}
+.node .level-name {
+  padding: 1px 2px;
+  border-radius: var(--r-s);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+.node .you {
+  z-index: var(--z-raise-2);
+}
+/* Cath's cottage, where the lane starts (act 1 only): a first grid row above field 1, on the same ground. */
+.trail.has-home {
+  grid-template-rows: auto auto auto;
+  padding-top: 6px;
+}
+.trail.has-home .r1 { grid-row: 2; }
+.trail.has-home .r2 { grid-row: 3; }
+.trail.has-home .trail-path {
+  inset: 112px 6px 10px;
+  height: calc(100% - 122px);
+}
+.trail-home {
+  position: relative;
+  z-index: var(--z-raise);
+  grid-row: 1;
+  grid-column: 1;
+  display: grid;
+  justify-items: center;
+  height: 72px;
+  pointer-events: none;
+}
+.home-art {
+  width: 96px;
+  height: 64px;
+  filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--soil) 25%, transparent));
+}
+.home-label {
+  margin-top: -6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--ink-muted);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.home-spot {
+  display: grid;
+  justify-items: center;
+}
+.trail.has-home .stop.r1 {
+  padding-top: 34px;
+}
+@media (prefers-color-scheme: dark) {
+  .trail {
+    background-image: linear-gradient(var(--shade-a62), var(--shade-a62)), var(--ground);
+  }
 }
 .stop {
   display: grid;
@@ -337,7 +420,6 @@ button {
   line-height: 1.2;
   color: var(--ink-muted);
   text-align: center;
-  max-width: 100%;
 }
 .node.next .level-num {
   border-color: var(--wheat);
@@ -2085,7 +2167,7 @@ button {
     grid-column: 1 / -1;
     justify-self: stretch;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
   }
   .top-tools .bank-btn {
@@ -2947,6 +3029,46 @@ img.act-scene {
 @media (prefers-color-scheme: dark) { .act-fog { --fog: 120, 110, 100; } }
 @keyframes fog-drift { from { transform: translateX(-8%); } to { transform: translateX(8%); } }
 @media (prefers-reduced-motion: reduce) { .act-fog::before { animation: none; } }
-.act-fog-text { position: relative; max-width: 30ch; }
+.act-fog-scene {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-canvas);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(3px) saturate(0.55);
+  opacity: 0.5;
+}
+.act-fog::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raise);
+  background: linear-gradient(180deg, transparent, rgba(var(--fog), 0.55) 45%, rgba(var(--fog), 0.85));
+  pointer-events: none;
+}
+.act-fog::before {
+  z-index: var(--z-raise);
+}
+.act-fog-lane {
+  position: absolute;
+  top: 0;
+  left: calc(6px + (100% - 12px) * 0.1 - 6px);
+  width: 12px;
+  height: 70%;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wheat) 45%, var(--paper)), transparent);
+  box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--soil) 30%, transparent);
+  mask-image: linear-gradient(180deg, black 30%, transparent);
+  z-index: var(--z-raise-2);
+}
+.act-fog-text { position: relative; z-index: var(--z-raise-2); max-width: 30ch; }
 .act-fog-text strong { display: block; font-family: var(--font-display); font-variation-settings: var(--display-axes); font-size: var(--fs-d2); color: var(--ink); margin-bottom: 4px; }
 .unlock-card .win-actions { background: none; position: static; margin-top: 10px; padding: 0; }
+/* Phones: five columns of about 72 px. Every row of a stop fits its column, so the fifth column isn't clipped. */
+@media (max-width: 420px) {
+  .node .level-twist { letter-spacing: 0; }
+  .node .level-medals { gap: 2px; }
+  .node .medal { width: 7px; height: 7px; }
+  .start-tag { padding: 1px 5px; letter-spacing: 0; }
+}

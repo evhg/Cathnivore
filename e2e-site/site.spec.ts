@@ -705,6 +705,11 @@ test.describe('Hedgerow', () => {
     await page.goto(HEDGEROW_2D)
     await expect(page.locator('li.act')).toHaveCount(1)
     await expect(page.locator('li.act-fog')).toBeVisible()
+    // The journey is painted: Cath's cottage starts the lane, act 1 sits on its own ground, act 2 shows under the fog.
+    await expect(page.locator('li.act .trail-home .home-art')).toBeVisible()
+    await expect(page.locator('li.act .trail')).toHaveCSS('background-image', /svg/)
+    await expect(page.locator('li.act-fog .act-fog-scene')).toHaveCount(1)
+    await expect(page.locator('.trail-path .lane-bed')).toHaveAttribute('d', /C/)
     await expect(page.locator('#btn-almanac')).toBeHidden()
     await expect(page.locator('#btn-daily')).toBeHidden()
     await expect(page.locator('#select-kits')).toBeHidden()

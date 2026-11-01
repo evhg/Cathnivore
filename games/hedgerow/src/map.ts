@@ -1333,6 +1333,114 @@ const LANDMARKS: string[] = [
 const BOSS_LANDMARK =
   '<path d="M2 17V8l2-1v2h2V7h2v2h4V7h2v2h2V7l2 1v9z" fill="#6b4a2b" stroke="#3a2a14" stroke-width="1"/><path d="M10 3v5" stroke="#3a2a14" stroke-width="1.2"/><path d="M10 3l5 1.6L10 6.2z" fill="#d9b45a"/><path d="M8.5 17v-4a1.5 1.5 0 013 0v4z" fill="#d9b45a"/>';
 
+// ---- The ground under the trail: a patchwork of fields per act ----
+// The trail sits on painted country, not a blank card: a jittered grid of fields in the act's palette, some
+// ploughed, with hedgerows along their edges drawn as round-capped dots (non-scaling, so they stay round when
+// the box stretches from a phone column to a desktop strip). Painted once per act as an image.
+
+type Ground = { base: string; patches: [string, string, string]; hedge: string; leaf: string };
+const GROUND: Ground[] = [
+  { base: "#e9e5c6", patches: ["#d4dea4", "#eadb9e", "#c6d896"], hedge: "#55743a", leaf: "#7d9c4f" },
+  { base: "#e4ddcb", patches: ["#d2c7a4", "#dccab3", "#c4c79e"], hedge: "#6e6650", leaf: "#8f8a66" },
+  { base: "#e5e7d6", patches: ["#d3dcbd", "#e4dcbd", "#c3d6cc"], hedge: "#66784c", leaf: "#8a9c66" },
+  { base: "#e4ebcd", patches: ["#cde0ab", "#e6e0ad", "#c0dbc2"], hedge: "#4f7a3c", leaf: "#78a355" },
+  { base: "#dfe5c5", patches: ["#c4d69c", "#d8d399", "#b6cb91"], hedge: "#41612f", leaf: "#678a43" },
+  { base: "#ede7d7", patches: ["#ddd2b6", "#e8ddc9", "#cdd5cd"], hedge: "#7a7058", leaf: "#a09878" },
+  { base: "#e2d9cf", patches: ["#d0c2b3", "#dccdb8", "#c8c1ab"], hedge: "#5e4e40", leaf: "#85725e" },
+  { base: "#ece3cc", patches: ["#e1cf9f", "#d6d6a2", "#e7c8a2"], hedge: "#66733f", leaf: "#8e9b5a" },
+  { base: "#e1e1dd", patches: ["#cfd0cb", "#d9d4c4", "#c5ccc7"], hedge: "#5d625e", leaf: "#80877f" },
+  { base: "#e4dcd0", patches: ["#d5c8b3", "#d1c4c8", "#ddcfae"], hedge: "#5d4e46", leaf: "#85746a" },
+];
+
+export function groundSvg(n: number): string {
+  const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
+  const g = GROUND[i]!;
+  const rand = mulberry(4271 * (i + 1));
+  const C = 7;
+  const R = 4;
+  const v: Pt[][] = [];
+  for (let r = 0; r <= R; r++) {
+    v.push([]);
+    for (let c = 0; c <= C; c++) {
+      const edge = r === 0 || r === R || c === 0 || c === C;
+      const jx = edge ? 0 : (rand() - 0.5) * 7;
+      const jy = edge ? 0 : (rand() - 0.5) * 12;
+      v[r]!.push([(c / C) * 100 + jx, (r / R) * 100 + jy]);
+    }
+  }
+  const P = (p: Pt): string => `${f(p[0])} ${f(p[1])}`;
+  let cells = "";
+  let ploughed = "";
+  for (let r = 0; r < R; r++)
+    for (let c = 0; c < C; c++) {
+      const q = [v[r]![c]!, v[r]![c + 1]!, v[r + 1]![c + 1]!, v[r + 1]![c]!];
+      const d = `M${q.map(P).join("L")}Z`;
+      const k = Math.floor(rand() * 4);
+      if (k < 3) cells += `<path d="${d}" fill="${g.patches[k]}" opacity="${f(0.55 + rand() * 0.4)}"/>`;
+      if (rand() < 0.3) ploughed += `<path d="${d}" fill="url(#gp${i})"/>`;
+    }
+  let hedges = "";
+  for (let r = 0; r <= R; r++)
+    for (let c = 0; c < C; c++) if (r > 0 && r < R && rand() < 0.65) hedges += `M${P(v[r]![c]!)}L${P(v[r]![c + 1]!)}`;
+  for (let c = 1; c < C; c++) for (let r = 0; r < R; r++) if (rand() < 0.6) hedges += `M${P(v[r]![c]!)}L${P(v[r + 1]![c]!)}`;
+  const ve = 'vector-effect="non-scaling-stroke" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
+    `<defs><pattern id="gp${i}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(${f(20 + rand() * 50)})"><path d="M0 1.5h3" stroke="${g.hedge}" stroke-width=".5" opacity=".22"/></pattern></defs>` +
+    `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
+    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="5" opacity=".45" ${ve}/>` +
+    `<path d="${hedges}" stroke="${g.leaf}" stroke-width="6" stroke-dasharray="0 6" opacity=".75" ${ve}/>` +
+    `</svg>`
+  );
+}
+
+const svgImg = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+/** Cath's cottage at the start of the journey: thatch, a lit window, smoke, a gate, and the lane leaving the door. */
+const COTTAGE =
+  '<svg class="home-art" viewBox="0 0 96 64" aria-hidden="true">' +
+  '<ellipse cx="48" cy="52" rx="40" ry="6" fill="#55743a" opacity=".22"/>' +
+  '<path d="M66 14c3-5 9-5 10-10M70 16c4-3 8-2 9-7" fill="none" stroke="#c9c3b6" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>' +
+  '<rect x="63" y="14" width="7" height="14" fill="#8a5a3c"/>' +
+  '<path d="M24 49V30h48v19z" fill="#f1e3c3" stroke="#6b4a2b" stroke-width="1.4"/>' +
+  '<path d="M18 32Q22 16 48 13Q74 16 78 32Q60 29 48 30Q36 29 18 32z" fill="#d6a95a" stroke="#8a6230" stroke-width="1.4"/>' +
+  '<path d="M26 26q22-8 44 0M30 21q18-6 36 0" fill="none" stroke="#a87d3a" stroke-width="1" opacity=".7"/>' +
+  '<rect x="44" y="36" width="9" height="13" rx="4.5" fill="#6b4a2b"/>' +
+  '<rect x="30" y="35" width="9" height="8" fill="#ffd27a" stroke="#6b4a2b" stroke-width="1.2"/><path d="M34.5 35v8M30 39h9" stroke="#6b4a2b" stroke-width=".9"/>' +
+  '<rect x="58" y="35" width="9" height="8" fill="#ffd27a" stroke="#6b4a2b" stroke-width="1.2"/><path d="M62.5 35v8M58 39h9" stroke="#6b4a2b" stroke-width=".9"/>' +
+  '<circle cx="24" cy="47" r="5" fill="#7d9c4f"/><circle cx="20" cy="44" r="4" fill="#d87a8a"/><circle cx="73" cy="47" r="5" fill="#7d9c4f"/><circle cx="77" cy="44" r="3.5" fill="#f2c94c"/>' +
+  '<path d="M8 50h12M8 46h12M10 44v8M16 44v8M76 50h12M76 46h12M80 44v8M86 44v8" stroke="#8a6230" stroke-width="1.4" stroke-linecap="round"/>' +
+  "</svg>";
+
+function drawLane(svg: SVGSVGElement, lane: [number, number][]): void {
+  const full = svg.dataset.exit ? [...lane, [lane[lane.length - 1]![0], 108] as [number, number]] : lane;
+  const walked = Math.min(Number(svg.dataset.walked ?? 0), full.length - 1);
+  for (const pl of svg.querySelectorAll("path")) {
+    const cls = pl.getAttribute("class");
+    pl.setAttribute("d", cls === "lane-walked" ? (walked > 0 ? trailPath(full.slice(0, walked + 1)) : "") : trailPath(full));
+  }
+}
+
+/** Threads each act's lane through the real centres of its nodes (and from the cottage door), in the svg's 0-100 box. */
+function layoutLanes(list: HTMLElement): void {
+  for (const svg of list.querySelectorAll<SVGSVGElement>(".trail-path")) {
+    const box = svg.getBoundingClientRect();
+    if (box.width < 1 || box.height < 1) continue;
+    const at = (r: DOMRect, y = r.top + r.height / 2): [number, number] => [
+      Math.round(((r.left + r.width / 2 - box.left) / box.width) * 1000) / 10,
+      Math.round(((y - box.top) / box.height) * 1000) / 10,
+    ];
+    const trail = svg.parentElement!;
+    const pts = [...trail.querySelectorAll<HTMLElement>(".stop .level-num")].map((el) => at(el.getBoundingClientRect()));
+    if (!pts.length) continue;
+    const door = trail.querySelector<HTMLElement>(".home-art");
+    const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [pts[0]![0], -8];
+    drawLane(svg, [start, ...pts]);
+  }
+}
+
+let laneObserver: ResizeObserver | null = null;
+
 /** The node Cath stood on at the last render, so she can walk to the new one. */
 let lastNextId: number | null = null;
 
@@ -1410,9 +1518,23 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       track.append(pip);
     }
     li.append(track);
+    let home: HTMLElement | null = null;
+    if (n === 1) {
+      home = document.createElement("li");
+      home.className = "trail-home";
+      home.setAttribute("aria-hidden", "true");
+      const art = document.createElement("div");
+      art.className = "home-spot";
+      art.innerHTML = COTTAGE;
+      const label = document.createElement("span");
+      label.className = "home-label";
+      label.textContent = "Cath's cottage";
+      art.append(label);
+      home.append(art);
+    }
 
     const trail = document.createElement("ol");
-    trail.className = "trail";
+    trail.className = home ? "trail has-home" : "trail";
     const svgNS = "http://www.w3.org/2000/svg";
     const path = document.createElementNS(svgNS, "svg");
     path.setAttribute("class", "trail-path");
@@ -1425,11 +1547,23 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const col = row % 2 === 0 ? i % 5 : 4 - (i % 5);
       pts.push([(col + 0.5) * 20, row === 0 ? 30 : 76]);
     });
-    const pl = document.createElementNS(svgNS, "path");
-    pl.setAttribute("d", trailPath(pts));
-    pl.setAttribute("vector-effect", "non-scaling-stroke");
-    path.append(pl);
+    // The lane comes in from the act above (or Cath's cottage) and leaves for the next act below, so the
+    // journey reads as one road; the stretch she has already walked is trodden in. It is drawn from these
+    // nominal points first, then threaded through the real node centres once laid out (layoutLanes).
+    const nextIdx = nextId === null ? -1 : lvs.findIndex((lv) => lv.id === nextId);
+    const walkedTo = nextIdx >= 0 ? nextIdx + 1 : lvs.every((lv) => data.stars[String(lv.id)]) ? lvs.length + 1 : 0;
+    path.dataset.walked = String(walkedTo);
+    path.dataset.exit = lvs.length === 10 ? "1" : "";
+    for (const cls of ["lane-edge", "lane-bed", "lane-walked", "lane-ruts"]) {
+      const pl = document.createElementNS(svgNS, "path");
+      pl.setAttribute("class", cls);
+      pl.setAttribute("vector-effect", "non-scaling-stroke");
+      path.append(pl);
+    }
+    drawLane(path, [[pts[0]![0], home ? -26 : -8], ...pts]);
+    trail.style.setProperty("--ground", `url("${svgImg(groundSvg(n))}")`);
     trail.append(path);
+    if (home) trail.append(home);
 
     lvs.forEach((lv, i) => {
       const row = Math.floor(i / 5);
@@ -1523,8 +1657,24 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     const h = document.createElement("strong");
     h.textContent = "Beyond the hedge";
     t.append(h, `Fog lies over the lanes past ${levels[shown * 10 - 1]?.name ?? "the boss"}. Beat it and the next act opens.`);
-    fog.append(t);
+    // The next act is painted in, faint under the fog, so the player can see where the lane goes next.
+    const hint = document.createElement("img");
+    hint.className = "act-fog-scene";
+    hint.alt = "";
+    hint.loading = "lazy";
+    hint.decoding = "async";
+    hint.src = svgImg(actScene(shown + 1, "banner").replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '));
+    const lane = document.createElement("span");
+    lane.className = "act-fog-lane";
+    lane.setAttribute("aria-hidden", "true");
+    fog.append(hint, lane, t);
     list.append(fog);
+  }
+  layoutLanes(list);
+  if (typeof ResizeObserver !== "undefined") {
+    laneObserver?.disconnect();
+    laneObserver = new ResizeObserver(() => layoutLanes(list));
+    laneObserver.observe(list);
   }
   const here = current as HTMLElement | null;
   const from = lastNextId !== null && lastNextId !== nextId ? list.querySelector<HTMLElement>(`[data-level="${lastNextId}"]`) : null;
