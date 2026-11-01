@@ -12,12 +12,14 @@ import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import {
+  arcLabel,
   computeFlow,
   dailyNumber,
   dropsFor,
   dailyPuzzle,
   generatePuzzle,
   rotateCell,
+  rotateMask,
   tapsToSolve,
   hexDistance,
   utcDateString,
@@ -269,7 +271,7 @@ function render(): void {
     b.setAttribute('aria-pressed', String(b.dataset.size === size))
   })
   ui.hudTitle.textContent = isDaily
-    ? `Daily #${dailyNumber(playDay)} · ${formatDay(playDay)}`
+    ? `Daily #${dailyNumber(playDay)} · ${formatDay(playDay)}${arcLabel(playDay) ? ` · ${arcLabel(playDay)}` : ''}`
     : isOrchard
     ? `Orchard ${level} · ${orchardName(level)}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
@@ -776,6 +778,29 @@ openGame()
 if (!data.seenHelp && !params.has('nohelp')) ui.dlgHelp.showModal()
 // Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
 if (params.has('shotwin')) finish()
+// Screenshot hook: `?shotsolve` sets every piece to its solution except the first turnable one next to
+// the spring, which is left one clockwise tap away (marked `data-last`), so a single tap shows the whole
+// river running out across the board and the win. Nothing is saved until that tap.
+if (params.has('shotsolve')) shotSolve()
+function shotSolve(): void {
+  if (game.solved) return
+  const spring = puzzle.cells.findIndex((c) => c.kind === 'spring')
+  const near = (i: number) => Math.abs(puzzle.cells[i]!.q - puzzle.cells[spring]!.q) + Math.abs(puzzle.cells[i]!.r - puzzle.cells[spring]!.r)
+  const last = puzzle.cells
+    .map((_, i) => i)
+    .filter((i) => {
+      const c = puzzle.cells[i]!
+      return c.kind !== 'stone' && c.kind !== 'spring' && !c.fixed && !c.reservoir && rotateMask(c.solved, 1) !== c.solved
+    })
+    .sort((a, b) => near(a) - near(b))[0]
+  puzzle.cells.forEach((c, i) => {
+    c.locked = false
+    c.rot = i === last ? 5 : 0
+  })
+  board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
+  wetCount = computeFlow(puzzle.cells).wet.size
+  if (last !== undefined) ui.board.querySelectorAll('.tiles > g.cell')[last]?.setAttribute('data-last', '')
+}
 
 function workshopCode(seed: string): string | null {
   return isWorkshopSeed(seed) ? seed.slice('workshop-'.length) : null

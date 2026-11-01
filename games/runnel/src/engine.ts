@@ -512,13 +512,44 @@ export function bridgesFor(dateString: string): number {
   return ({ 1: 1, 6: 1, 5: 2 } as Record<number, number>)[day] ?? 0
 }
 
-export function dailyPuzzle(dateString: string): Puzzle {
-  return generatePuzzle(`daily-${dateString}`, {
+/** First daily on the weekday difficulty arc; earlier dailies keep their boards (they are in saves). */
+export const ARC_FROM = '2026-11-02'
+
+/**
+ * The weekday arc (Sunday = 0): Monday is a small board, the week builds through bigger boards with
+ * fewer sluices already set, and Sunday is the full board with no help. Par per weekday is reported in
+ * BALANCE.md (`npx tsx scripts/runnel-arc.ts`).
+ */
+export const WEEKDAY_ARC: readonly GenerateOptions[] = [
+  { radius: 3, stoneRate: 0.04, reservoirCount: 2, bridgeCount: 1 }, // Sun: the full board, fewer stones, no sluices
+  { radius: 2, fixedCount: 4 }, // Mon: small, with a few sluices already set
+  { radius: 2, fixedCount: 1, reservoirCount: 1, bridgeCount: 1 }, // Tue: small, a reservoir and a bridge
+  { radius: 3, fixedCount: 12, reservoirCount: 1 }, // Wed: full size, a third already set
+  { radius: 3, fixedCount: 8, reservoirCount: 1, bridgeCount: 1 }, // Thu
+  { radius: 3, fixedCount: 5, bridgeCount: 2 }, // Fri
+  { radius: 3, fixedCount: 2, reservoirCount: 1, bridgeCount: 1 }, // Sat
+]
+
+/** The arc's difficulty word per weekday (Sunday = 0), shown beside the daily's title. */
+const ARC_LABELS = ['Hardest', 'Gentle', 'Easy', 'Steady', 'Tricky', 'Hard', 'Harder']
+
+export function arcLabel(dateString: string): string | null {
+  if (dateString < ARC_FROM) return null
+  return ARC_LABELS[new Date(`${dateString}T00:00:00Z`).getUTCDay()]!
+}
+
+export function dailyOptions(dateString: string): GenerateOptions {
+  if (dateString >= ARC_FROM) return WEEKDAY_ARC[new Date(`${dateString}T00:00:00Z`).getUTCDay()]!
+  return {
     radius: DAILY_RADIUS,
     fixedCount: sluicesFor(dateString),
     reservoirCount: reservoirsFor(dateString),
     bridgeCount: bridgesFor(dateString),
-  })
+  }
+}
+
+export function dailyPuzzle(dateString: string): Puzzle {
+  return generatePuzzle(`daily-${dateString}`, dailyOptions(dateString))
 }
 
 // ---- helpers ----------------------------------------------------------------------------------------
