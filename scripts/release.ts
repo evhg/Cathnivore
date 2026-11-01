@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
+import { dailyPuzzle, tapsToSolve, utcDateString } from '../games/runnel/src/engine'
 
 const VERCEL_ADDRESS = 'cathnivore.vercel.app' // from OWNER.md; used until the domain resolves
 const DOMAIN = 'https://cathnivore.com'
@@ -87,7 +88,10 @@ export async function liveSmokeTest(base: string): Promise<SmokeResult> {
       console.log(`Smoke test failed: ${base}/runnel/ returned ${runnel?.status()}`)
       return 'failed'
     }
-    await page.locator('.tiles > g.cell:not(.stone)').first().click({ timeout: 15_000 })
+    // Tap a cell the daily solver says needs turning (the first non-stone cell may already be right).
+    const puzzle = dailyPuzzle(utcDateString(new Date()))
+    const turnable = Math.max(0, puzzle.cells.findIndex((c) => tapsToSolve(c) > 0))
+    await page.locator('.tiles > g.cell').nth(turnable).click({ timeout: 15_000, force: true })
     await page.locator('#hud-taps', { hasText: '1' }).waitFor({ timeout: 5_000 })
 
     const res = await page.goto(`${base}/cathnivore/`, { waitUntil: 'load' })
