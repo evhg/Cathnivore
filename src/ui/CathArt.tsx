@@ -7,7 +7,7 @@ export default function CathArt({ className, ...options }: CathOptions & { class
   const html = useMemo(
     () => cathSvg(options),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options.expression, options.outfit, options.pin, options.framing, options.title, options.width, options.height, options.animate],
+    [options.expression, options.outfit, options.framing, options.title, options.width, options.height, options.animate],
   )
   return <span className={`cath-art${className ? ` ${className}` : ''}`} dangerouslySetInnerHTML={{ __html: html }} />
 }

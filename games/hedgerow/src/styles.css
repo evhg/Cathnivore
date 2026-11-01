@@ -2878,8 +2878,3 @@ img.act-scene {
 .orchard-boon { display: grid; gap: 0.15rem; text-align: left; padding: 0.6rem 0.8rem; border-radius: 0.6rem; border: 1px solid var(--gold, #c9a227); background: rgb(255 255 255 / 0.08); color: inherit; font: inherit; cursor: pointer; }
 .orchard-boon:hover, .orchard-boon:focus-visible { background: rgb(255 255 255 / 0.18); }
 .orchard-boon small { opacity: 0.8; }
-.pantry { max-width: 28rem; }
-.pantry-seeds { opacity: 0.85; }
-.pantry .btn + .btn { margin-top: 8px; }
-.orchard-boon:disabled { opacity: 0.45; cursor: not-allowed; }
-.orchard-boon[aria-pressed="true"] { background: rgb(255 255 255 / 0.2); }

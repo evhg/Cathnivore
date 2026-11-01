@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { ALL_REGION_IDS } from '../content/map'
 import type { GameConfig, ProducerId } from '../engine/types'
-import { earnedPins, pinForEvent } from '../../shared/cath/pins'
 import { marketEventFor } from '../engine/marketEvent'
 import CathArt from './CathArt'
 import Portrait from './portraits/Portrait'
@@ -55,7 +54,7 @@ export default function Setup({ onStart }: Props) {
       <section className="settings-card market-event" data-event={marketEvent.id}>
         <h2>Market event: {marketEvent.name}</h2>
         <p className="market-event-line">“{marketEvent.banner}”</p>
-        <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</p>
+        <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Stall flag: {marketEvent.cosmetic}.</p>
       </section>
 
       <section className="settings-card">

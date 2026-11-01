@@ -14,8 +14,6 @@
 // (`brush`) rather than constant-width strokes. Hair detail is clipped to the hair shapes, so no strand can
 // ever cross her skin.
 
-import { pinSvg, type CathPin } from './pins'
-
 export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half'
@@ -23,8 +21,6 @@ export type CathFraming = 'face' | 'bust' | 'half'
 export interface CathOptions {
   expression?: CathExpression
   outfit?: CathOutfit
-  /** A market pin from Marrow events (ROADMAP 238), worn on the left lapel-side of her hair. */
-  pin?: CathPin
   framing?: CathFraming
   /** Accessible name. Omit for decorative use (the SVG is then aria-hidden). */
   title?: string
@@ -123,7 +119,6 @@ ${face(id)}
 ${features(id, expression)}
 ${hairFront(id)}
 ${accessories(id, outfit)}
-${options.pin ? `<g class="cath-pin" transform="translate(164 74) scale(1.5)">${pinSvg(options.pin)}</g>` : ''}
 </g>
 </svg>`
 }

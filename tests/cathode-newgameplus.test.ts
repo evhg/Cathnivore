@@ -49,14 +49,3 @@ _it("broadcast ladder has one rung per lap, newest current", () => {
   _expect(r[1]?.current).toBe(true);
   _expect(r[1]?.mult).toBeGreaterThan(r[0]?.mult ?? 99);
 });
-
-import { deckBests, startSecondBroadcast as _sb } from "../games/cathode/src/sim/newgameplus";
-_it("banks the best score per deck when a new lap starts and keeps it across laps", () => {
-  const lap1 = _sb(["vaultBoss"], ["glass"]);
-  const lap2 = _sb([...lap1, "vaultBoss"], ["fog"]);
-  const b = deckBests(lap2);
-  _expect(b.map((x) => x.key)).toEqual(["glass", "none"].filter((k) => b.some((x) => x.key === k)));
-  _expect(deckBests(lap2).some((x) => x.key === "glass" && x.mult > 1)).toBe(true);
-  const lap3 = _sb([...lap2, "vaultBoss"], []);
-  _expect(deckBests(lap3).length).toBe(3);
-});

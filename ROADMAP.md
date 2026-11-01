@@ -610,18 +610,3 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 
 ### Phase 24 (planned 2026-10-31)
 233. [x] *(built; shot at P and D 2026-10-31, fine)* **Cath's Week chip in Runnel and Hedgerow:** one-line progress pill (`shared/cath/weekchip.ts`) linking to `/games/#week`.
-
-### Phase 25 (planned 2026-10-31)
-234. [x] *(2026-10-31: Seeds per Orchard run, Cath's pantry sheet with 5 Heirlooms, carried into each run; test; not shot)* **Orchard Seeds and Heirlooms (meta-progression):** runs bank Seeds, spent on permanent starting kit.
-
-### Phase 26 (planned 2026-10-31, whole features; shoot the target screen first)
-235. [x] **Hedgerow Orchard daily ladder:** a shared-seed daily Orchard with a depth ladder on the Week card and a share text with the boons taken.
-236. [x] *(2026-11-01: events.ts, event strip in Practice, exclusive crop in garden; shot at P)* **Runnel Bea's seasons events:** a seasonal limited board set (spring blossom, autumn harvest) with one exclusive crop each, shown in the garden.
-237. [x] *(2026-11-01: deckbest flags kept across laps, Best line on Case Board; test; not shot)* **CATHODE Case Board ladder:** per-mod Second Broadcast best scores with a deck summary line (left over from 230).
-238. [x] *(2026-11-01: `shared/cath/pins.ts`, win during an event earns its pin, worn in Cathnivore, Runnel, CATHODE loading; test; pins shot)* **Cathnivore Marrow Market exclusive cosmetic:** one cosmetic per market event, worn by Cath in the shared wardrobe.
-
-### Phase 27 (planned 2026-11-01, whole features; shoot the target screen first and skip items already built)
-239. [ ] **Hedgerow Orchard relics:** run-long relics found at boss fields (e.g. "Cath's thermos": +1 leak limit, "Old sundial": early calls pay double) that stack with boons, with a relic shelf on the run HUD and in the share text. Bot-check depth 12 stays winnable.
-240. [ ] **Runnel Bea's tournaments:** a weekly 5-board ladder with a shared seed, time and taps scored together, a medal tier (bronze to gold) saved per week and shown in the garden and on Cath's Week card.
-241. [ ] **CATHODE photo-mode gallery:** keep the last 12 photo-mode polaroids in a Case Board gallery (stored as small data URLs), each captioned with district, outfit and time; download or share one.
-242. [ ] **Cathnivore Marrow Market regulars:** three recurring shoppers with their own wish lists and a friendship bar; filling wishes unlocks a stall decoration and a Cath line.

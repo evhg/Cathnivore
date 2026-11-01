@@ -1,6 +1,6 @@
 import { cathSceneSvg } from "../../../../shared/cath/scene";
 import { caseBoard } from "../sim/casefile";
-import { MODS, activeMods, broadcastLadder, deckBests } from "../sim/newgameplus";
+import { MODS, activeMods, broadcastLadder } from "../sim/newgameplus";
 import { button, el } from "./dom";
 
 /** Opens the case board over `parent`: pinned cards joined by red string, solved ones stamped. Returns a close function. */
@@ -29,8 +29,6 @@ export function openCaseBoard(parent: Element, jobsDone: readonly string[], onCl
     const box = el("div", "case-ladder", card);
     el("h3", "", box, "Second Broadcast");
     if (names.length > 0) el("p", "", box, `Deck: ${names.join(" · ")}`);
-    const bests = deckBests(jobsDone);
-    if (bests.length > 0) el("p", "", box, `Best: ${bests.slice(0, 3).map((b) => `${b.names.join(" + ")} ×${b.mult.toFixed(2)}`).join(" · ")}`);
     const rungs = el("ol", "", box);
     for (const r of [...ladder].reverse()) el("li", r.current ? "is-now" : "", rungs, `Lap ${r.lap} · score ×${r.mult.toFixed(2)}`);
   }

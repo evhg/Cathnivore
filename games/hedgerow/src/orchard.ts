@@ -72,30 +72,3 @@ export function orchardLevel(seed: number, depth: number, taken: string[]): Leve
   }
   return { ...level, name: `Orchard ${depth}: ${level.place}`, orchard: depth };
 }
-
-/** Seeds a run earns: one per field cleared, plus a bonus for each fifth field and for picking the whole orchard. */
-export function orchardSeeds(cleared: number): number {
-  return cleared + Math.floor(cleared / 5) * 2 + (cleared >= ORCHARD_MAX_DEPTH ? 10 : 0);
-}
-
-export interface Heirloom {
-  id: string;
-  name: string;
-  cost: number;
-  text: string;
-  /** Boons the run starts with. */
-  boons: string[];
-}
-
-/** Permanent keepsakes bought with Seeds; one is carried into each new run. */
-export const HEIRLOOMS: Heirloom[] = [
-  { id: "seedbag", name: "Seed bag", cost: 6, text: "Start every run with Deep pockets.", boons: ["pockets"] },
-  { id: "welly", name: "Wellington boots", cost: 12, text: "Start every run with Good neighbours and Thin crowds.", boons: ["neighbours", "thin"] },
-  { id: "flask", name: "Cath's flask", cost: 20, text: "Start every run with Cath's thermos.", boons: ["thermos"] },
-  { id: "rota", name: "The rota", cost: 32, text: "Start every run with Cath's clipboard and Scrimp and save.", boons: ["clipboard", "scrimp"] },
-  { id: "cardi", name: "The good cardigan", cost: 50, text: "Start every run with Cath's good cardigan and Cath's jam stall.", boons: ["cardigan", "jam"] },
-];
-
-export function heirloomBoons(id: string | undefined): string[] {
-  return HEIRLOOMS.find((h) => h.id === id)?.boons ?? [];
-}

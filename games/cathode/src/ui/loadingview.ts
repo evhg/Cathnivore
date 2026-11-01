@@ -1,6 +1,5 @@
 import { cathSvg } from "../../../../shared/cath/cath";
 import { chosenOutfit } from "../../../../shared/cath/wardrobe";
-import { chosenPin } from "../../../../shared/cath/pins";
 // C14 (docs/design/cathode-combat.md S9.6): the loading screen as a case file. The district's establishing frame
 // behind (public/keyart/<id>.webp, rendered from the game by scripts/cathode-keyart.mjs, then duotoned, halftoned,
 // grained and pushed in by CSS), the next name in the left column with Cath's lines about them, an ink bleed along
@@ -59,7 +58,7 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   // N23: Cath in the outfit she wears across the games, signing off the file.
   const plate = el("div", "ld-cath", file);
   plate.setAttribute("aria-hidden", "true");
-  plate.innerHTML = cathSvg({ framing: "bust", expression: "determined", outfit: chosenOutfit(), pin: chosenPin() });
+  plate.innerHTML = cathSvg({ framing: "bust", expression: "determined", outfit: chosenOutfit() });
 
   const corner = el("div", "ld-corner", root);
   el("p", "ld-list-h", corner, "The List");
