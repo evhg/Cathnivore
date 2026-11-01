@@ -7,7 +7,8 @@ import * as THREE from "three";
 import { Builder } from "../builder";
 import { prng, WIN_COLS, WIN_ROWS } from "../textures";
 import type { Level, SignDef, VLight, WindowDef } from "../level";
-import type { CrowdGroup } from "../crowd";
+import { standingParts, type CrowdGroup } from "../crowd";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const C = (hex: string) => new THREE.Color(hex);
@@ -35,6 +36,17 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
     lights.push({ pos, color: C(color), intensity, range, normal: null, flicker, seed: seed++, real });
   const { xW, xE, zS, zN, stepZ0, stepRun, stepRise, stepCount } = PLAZA;
   const top = stepCount * stepRise;
+  // Plan item 4: bronze founders, sculpted from the crowd's figure (crowd.ts standingParts) at heroic scale, one
+  // arm raised towards the hall. Shot-only cover, as the old box statues were.
+  const founder = (at: THREE.Vector3, yaw: number, k: number) => {
+    const p = standingParts();
+    const arm = new THREE.CylinderGeometry(0.05, 0.065, 0.62, 7);
+    arm.rotateZ(-0.9);
+    arm.translate(0.25, 1.62, -0.22);
+    const g = mergeGeometries([...p.coat, ...p.skin, ...p.dark, arm, new THREE.SphereGeometry(0.05, 6, 5).translate(0.5, 1.8, -0.22)].map((x) => (x.index ? x.toNonIndexed() : x)), false)!;
+    b.shape("darkMetal", g, at, yaw, V(k, k, k));
+    b.tagLast("thin", "metal");
+  };
 
   // Ground: wet stone square, a tram road along the east side.
   b.boxMinMax("pavement", xW, -0.5, zN, xE, 0, zS, { uv: 3, skip: ["bottom"] });
@@ -85,8 +97,7 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   b.cylinder("concreteB", V(0, 0, 8), V(0, 0.8, 8), 4.6, 20, "concrete");
   b.cylinder("darkMetal", V(0, 0.2, 8), V(0, 0.82, 8), 4.0, 20);
   b.cylinder("concreteA", V(0, 0, 8), V(0, 3.2, 8), 0.7, 10, "concrete");
-  b.box("darkMetal", 0, 4.0, 8, 0.7, 1.6, 0.7, { cover: "thin", mat: "metal" });
-  b.box("darkMetal", 0, 5.0, 8, 0.45, 0.45, 0.45);
+  founder(V(0, 3.2, 8), -Math.PI / 2, 1.15);
 
   // Plan item 4: the fountain is the square's heart. Uplights in the dry basin wash the column and the founder,
   // a protest vigil of candles, flowers and taped photos rings its rim, and brass inlay lines radiate from it
@@ -147,9 +158,10 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   // Statues of founders either side of the approach, pigeon-streaked.
   for (const x of [-14, 14]) {
     b.box("concreteA", x, 0.8, -12, 2.2, 1.6, 2.2, { collide: "concrete" });
-    b.box("darkMetal", x, 2.6, -12, 0.9, 2.2, 0.7, { cover: "thin", mat: "metal" });
-    b.box("darkMetal", x, 3.9, -12, 0.5, 0.5, 0.5);
-    b.box("darkMetal", x + (x < 0 ? 0.9 : -0.9), 3.0, -12, 0.2, 0.2, 1.4);
+    b.box("concreteB", x, 1.68, -12, 2.5, 0.16, 2.5, { cover: "none" }); // cornice
+    b.box("brass", x, 1.0, -10.88, 1.1, 0.4, 0.03, { cover: "none" }); // the founder's plaque
+    // Each founder faces the square, turned a little towards the fountain.
+    founder(V(x, 1.76, -12), -Math.PI / 2 + (x < 0 ? -0.35 : 0.35), 1.6);
   }
 
   // Market awnings (west): four stalls under tarp, counters, crates and warm bulbs.
