@@ -498,9 +498,15 @@ button {
   stroke-dashoffset: -1;
 }
 
+/* Water crosses a tile in two halves of the cascade step (board.ts CASCADE_MS = 110 ms): it runs in
+   along the inflow spoke, fills the hub, then runs out along the others, so a river visibly flows. */
 .wet .water {
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 240ms linear var(--delay, 0ms);
+  transition: stroke-dashoffset 70ms linear calc(var(--delay, 0ms) + 55ms);
+}
+
+.wet .water.in {
+  transition-delay: var(--delay, 0ms);
 }
 
 .hub-water {
@@ -510,7 +516,7 @@ button {
 
 .wet .hub-water {
   opacity: 1;
-  transition: opacity 120ms linear var(--delay, 0ms);
+  transition: opacity 90ms linear calc(var(--delay, 0ms) + 40ms);
 }
 
 .shimmer {
@@ -542,8 +548,106 @@ button {
 .instant .hub-groove,
 .instant .water,
 .instant .hub-water,
-.instant .crop {
+.instant .crop,
+.instant .blades,
+.instant .blossom {
   transition: none !important;
+}
+
+/* the living landscape: soak ripple, banks that green, wildflowers on watered fields */
+
+.soak,
+.banks {
+  pointer-events: none;
+}
+
+.soak {
+  fill: none;
+  stroke: var(--water-hi);
+  stroke-width: 3;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.wet:not(.instant) .soak {
+  animation: soak 620ms cubic-bezier(0.2, 0.7, 0.3, 1) both calc(var(--delay, 0ms) + 60ms);
+}
+
+@keyframes soak {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.blade {
+  fill: none;
+  stroke: var(--tuft-dry);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 380ms ease calc(var(--delay, 0ms) + 80ms);
+}
+
+.blades {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scale(0.55, 0.4);
+  transition: transform 160ms ease-in;
+}
+
+.wet .blade {
+  stroke: var(--tuft);
+}
+
+.wet .blades {
+  transform: scale(1);
+  transition: transform 520ms cubic-bezier(0.34, 1.6, 0.64, 1) calc(var(--delay, 0ms) + 90ms + var(--k, 0) * 70ms);
+}
+
+.blossom {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  transition: transform 140ms ease-in;
+}
+
+.wet .blossom {
+  transform: scale(1);
+  transition: transform 460ms cubic-bezier(0.34, 1.8, 0.64, 1) calc(var(--delay, 0ms) + 520ms + var(--k, 0) * 90ms);
+}
+
+.blossom-petal {
+  fill: var(--blossom-0);
+}
+
+.hue-1 .blossom-petal {
+  fill: var(--blossom-1);
+}
+
+.hue-2 .blossom-petal {
+  fill: var(--blossom-2);
+}
+
+.blossom-eye {
+  fill: var(--gold);
+}
+
+.won .wet .blossom {
+  animation: blossom-burst 700ms cubic-bezier(0.34, 1.6, 0.64, 1) both calc(var(--ring) * 110ms + 300ms);
+}
+
+@keyframes blossom-burst {
+  50% {
+    transform: scale(1.6) rotate(36deg);
+  }
+  100% {
+    transform: scale(1.25) rotate(72deg);
+  }
 }
 
 /* spring */

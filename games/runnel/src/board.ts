@@ -8,7 +8,9 @@ const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
 const APOTHEM = (S * Math.sqrt(3)) / 2
 const TURN_MS = 150
-const CASCADE_MS = 55
+/** Time for water to cross one tile: in by one spoke, through the hub, out by the others. The next tile
+ *  starts exactly when this one finishes, so a river visibly runs tile by tile from the spring. */
+const CASCADE_MS = 110
 
 type Crop = 'wheat' | 'cabbage' | 'carrot' | 'sunflower' | 'pumpkin'
 const CROPS: Crop[] = ['wheat', 'cabbage', 'carrot', 'sunflower']
@@ -218,6 +220,7 @@ export class Board {
 
     if (cell.bridge) this.drawBridge(piece)
     if (cell.kind === 'spring') this.drawSpring(root)
+    else this.drawBanks(root, cell, index)
     if (cell.reservoir) this.drawReservoir(root)
     else if (cell.kind === 'field') this.drawField(root, index)
     el('circle', { class: 'pin', r: 5.5, cx: 0, cy: -S * 0.62 }, root)
@@ -251,6 +254,43 @@ export class Board {
     el('ellipse', { cx: 0, cy: 2, rx: S * 0.5, ry: S * 0.38, class: 'pond-rim' }, g)
     el('ellipse', { cx: 0, cy: 2, rx: S * 0.4, ry: S * 0.29, class: 'pond-water' }, g)
     el('ellipse', { cx: -6, cy: -1, rx: 9, ry: 3.5, class: 'pond-shine' }, g)
+  }
+
+  /**
+   * The living landscape: a soak ripple that spreads when the water arrives, and grass tufts in the
+   * tile's corners (channels only ever run to edge midpoints, so corners are always free) that stand up
+   * green when watered. Fields also get wildflowers that open after the crop has grown.
+   */
+  private drawBanks(root: SVGGElement, cell: Cell, index: number): void {
+    el('polygon', { class: 'soak', points: hexPoints(S * 0.9) }, root)
+    const g = el('g', { class: 'banks' }, root)
+    const h = hashString(`${this.puzzle.seed}:bank:${index}`)
+    const field = cell.kind === 'field' && !cell.reservoir
+    // The top corner is left clear for the pin marker.
+    const corners = [0, 1, 2, 3, 5]
+    const count = field ? 4 : 2 + (h % 2)
+    const start = h % corners.length
+    for (let k = 0; k < count; k++) {
+      const corner = corners[(start + k * (field ? 1 : 2)) % corners.length]!
+      const a = (Math.PI / 180) * (60 * corner + 30)
+      const r = S * (0.7 + ((h >>> (k + 3)) % 3) * 0.03)
+      const x = r * Math.cos(a)
+      const y = r * Math.sin(a)
+      const flower = field && k % 2 === 1
+      const t = el('g', { class: flower ? 'tuft bloom' : 'tuft', transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})` }, g)
+      t.style.setProperty('--k', String(k))
+      const blades = el('g', { class: 'blades' }, t)
+      el('path', { d: 'M0 3 Q-4 -2 -6 -8 M0 3 Q0 -4 1 -10 M0 3 Q3 -2 6 -7', class: 'blade' }, blades)
+      if (flower) {
+        const head = el('g', { class: 'blossom', transform: 'translate(1 -10)' }, t)
+        for (let p = 0; p < 5; p++) {
+          const pa = (p * 72 * Math.PI) / 180
+          el('circle', { cx: (Math.cos(pa) * 2.6).toFixed(2), cy: (Math.sin(pa) * 2.6).toFixed(2), r: 2.1, class: 'blossom-petal' }, head)
+        }
+        el('circle', { r: 1.5, class: 'blossom-eye' }, head)
+        head.classList.add(`hue-${(h >>> k) % 3}`)
+      }
+    }
   }
 
   /** A plank deck over the crossing, so a bridge reads apart from a plain four-way junction. */
