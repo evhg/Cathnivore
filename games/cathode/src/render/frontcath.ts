@@ -401,8 +401,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   add(limb(V(-0.1, 0.1, 0.09), V(-0.115, -0.08, 0.1), 0.012, 0.01, 6), blackMat, pelvis);
 
   // ---- neck, head, the low knot ----
-  const neck = new THREE.CylinderGeometry(0.036, 0.042, 0.12, seg(12));
-  neck.translate(0, 0.33, 0.0);
+  // Plan item 9: a neck with a shape (slimmer under the jaw, flaring into the shoulders, set a little forward and
+  // narrower front to back), not a plain cylinder.
+  const neck = turned(V(0, 0.27, -0.004), V(0, 0.43, 0.01), [[0, 0.046], [0.25, 0.038], [0.6, 0.033], [1, 0.034]], seg(16), 0.86);
   add(neck, skinMat, chest);
   const headPivot = new THREE.Group();
   headPivot.position.set(0, 0.455, 0.012);
@@ -478,6 +479,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
         blob(0.045 * sx, -0.034, 0.016, 0.01, "rgba(120,70,62,A)", 0.22);
         blob(0.026 * sx, 0.011, 0.016, 0.009, "rgba(92,58,62,A)", 0.45);
       }
+      // Plan item 9: modelling painted in, so the face holds its shape under a flat light: a contour down each side
+      // of the face to the jaw, a highlight down the bridge of the nose and on the brow bone and chin, soft shadow
+      // either side of the nose and under the jaw line.
+      for (const sx of [-1, 1]) {
+        blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.32); // the side planes of the face
+        blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.3); // along the jaw
+        blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
+        blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
+        blob(0.034 * sx, -0.006, 0.012, 0.006, "rgba(255,230,214,A)", 0.28); // top of the cheekbone
+      }
+      blob(0, 0.0, 0.004, 0.02, "rgba(255,232,218,A)", 0.4); // the bridge of the nose
+      blob(0, 0.05, 0.02, 0.016, "rgba(255,230,214,A)", 0.22); // the forehead
+      blob(0, -0.074, 0.01, 0.006, "rgba(255,228,212,A)", 0.3); // the chin
       blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.4); // under the nose
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
