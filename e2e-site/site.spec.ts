@@ -473,6 +473,37 @@ test.describe('Hedgerow', () => {
     expect(errors).toEqual([])
   })
 
+  test('plan item 10: the end tally replays the leaks and counts up; under reduced motion it lands at once', async ({ page }) => {
+    const errors = trackErrors(page)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(HEDGEROW_2D + '&sandbox=1&level=6')
+    await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars: {}, seenBefore: { '6': true }, tips: { build: true, hero: true, early: true } })))
+    await page.reload()
+    await expect(page.locator('#btn-send')).toHaveText('Go', { timeout: 8000 })
+    await page.locator('#btn-send').click()
+    await page.evaluate(() => {
+      type G = { events: object[]; enemies: Array<{ kind: string }>; spawnQueue: unknown[]; earned: number; phase: string }
+      const g = (window as unknown as { hedgerow: { game(): G } }).hedgerow.game()
+      const kind = g.enemies[0]?.kind ?? 'scooter'
+      for (let i = 0; i < 3; i++) g.events.push({ type: 'leak', x: 0, y: 0, kind, lost: 1 })
+    })
+    await page.waitForTimeout(300)
+    await page.evaluate(() => {
+      type G = { enemies: unknown[]; spawnQueue: unknown[]; earned: number; phase: string }
+      const g = (window as unknown as { hedgerow: { game(): G } }).hedgerow.game()
+      g.spawnQueue.length = 0
+      g.enemies.length = 0
+      g.earned = 1873
+      g.phase = 'won'
+    })
+    await expect(page.locator('#result-tally')).toBeVisible({ timeout: 8000 })
+    // No count-up and no stagger: the final numbers and every leak are there as the card opens.
+    await expect(page.locator('#result-tally .tally-num').first()).toHaveText('1,873', { timeout: 300 })
+    await expect(page.locator('#result-tally .tally-leak.in')).toHaveCount(1, { timeout: 300 })
+    await expect(page.locator('#result-tally .tally-n')).toHaveText('×3')
+    expect(errors).toEqual([])
+  })
+
   test('plan item 10: on a portrait phone the field takes 70%+ of the screen, and the round drawer opens over it without resizing it', async ({ page }) => {
     const errors = trackErrors(page)
     await page.setViewportSize({ width: 390, height: 844 })
