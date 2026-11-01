@@ -3,7 +3,7 @@
 // shift, so the boss job needs it. Closes `vaneLead`.
 
 import * as THREE from "three";
-import { ENTRIES, enter } from "./encounters";
+import { ENTRIES, enter, unlessTalkedOff } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -63,8 +63,8 @@ export class VaneLeadJob {
           this.objective = "The lights are out. Hold the ward until the power returns.";
           // Plan item 7: the roof team drops through a ceiling vent, and the ward doors blow in behind her.
           this.ambush = [
-            enter(h.spawn, "rifle", ENTRIES.clinic.ambushVent, [this.M("lead:register", 0, 20, 24)]),
-            enter(h.spawn, "rifle", ENTRIES.clinic.ambushBreach, [this.M("lead:register", 0, 20, 24)]),
+            ...unlessTalkedOff("clinic", "ambushVent", h.progress.jobsDone, () => enter(h.spawn, "rifle", ENTRIES.clinic.ambushVent, [this.M("lead:register", 0, 20, 24)])),
+            ...unlessTalkedOff("clinic", "ambushBreach", h.progress.jobsDone, () => enter(h.spawn, "rifle", ENTRIES.clinic.ambushBreach, [this.M("lead:register", 0, 20, 24)])),
             h.spawn("shield", [this.M("lead:guard", 1, 22, 26), this.M("lead:register", 0, 20, 24)]),
           ];
           return;

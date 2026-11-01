@@ -3,7 +3,7 @@
 // hours, so the boss job needs it. Closes `pellLead`.
 
 import * as THREE from "three";
-import { ENTRIES, enter } from "./encounters";
+import { ENTRIES, enter, unlessTalkedOff } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -60,8 +60,8 @@ export class PellLeadJob {
           const from = this.M("lead:register", 0, 20, 2);
           // Plan item 7: a Hollowell van tears up the west side of the square; a man ropes off the west roof.
           this.chasers = [
-            enter(h.spawn, "rifle", ENTRIES.plaza.alarmVan, [from]),
-            enter(h.spawn, "rifle", ENTRIES.plaza.alarmVanB, [from]),
+            ...unlessTalkedOff("plaza", "alarmVan", h.progress.jobsDone, () => enter(h.spawn, "rifle", ENTRIES.plaza.alarmVan, [from])),
+            ...unlessTalkedOff("plaza", "alarmVanB", h.progress.jobsDone, () => enter(h.spawn, "rifle", ENTRIES.plaza.alarmVanB, [from])),
             h.spawn("rifle", [this.M("lead:guard", 3, 24, 6), from]),
             h.spawn("shield", [this.M("lead:guard", 2, 24, 0), from]),
           ];

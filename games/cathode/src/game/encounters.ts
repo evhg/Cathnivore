@@ -9,6 +9,7 @@
 
 import * as THREE from "three";
 import type { EntranceKind, EntranceSpec } from "./entrance";
+import { squadsRemoved, type DistrictName } from "../sim/talk";
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
@@ -82,3 +83,12 @@ export function enter<T>(spawn: (role: "rifle" | "shield" | "sniper", route: THR
   const { route, entrance } = entryRoute(e, then);
   return spawn(role, route, { entrance });
 }
+
+/**
+ * Plan item 14: an alarm squad she talked off (sim/talk.ts) never comes. Returns the spawned enemy in a list,
+ * or an empty list when that entry was struck off, so callers spread it into their squad.
+ */
+export function unlessTalkedOff<T>(district: DistrictName, key: string, jobsDone: readonly string[], spawnIt: () => T): T[] {
+  return squadsRemoved(district, jobsDone).includes(key) ? [] : [spawnIt()];
+}
+

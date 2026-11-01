@@ -67,3 +67,13 @@ describe("NIGHT SHIFT talks (plan item 14)", () => {
     expect(intelHeld([r.record])).toEqual([{ kind: "weakness", boss: "pell", effect: "turns-back" }]);
   });
 });
+
+describe("alarm squads talked off (plan item 14)", () => {
+  it("unlessTalkedOff skips only the struck entry", async () => {
+    const { unlessTalkedOff } = await import("../games/cathode/src/game/encounters");
+    const done = ["talk:orderly:press"];
+    expect(unlessTalkedOff("clinic", "ambushBreach", done, () => 1)).toEqual([]);
+    expect(unlessTalkedOff("clinic", "ambushVent", done, () => 2)).toEqual([2]);
+    expect(unlessTalkedOff("clinic", "ambushBreach", [], () => 3)).toEqual([3]);
+  });
+});
