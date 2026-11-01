@@ -11,6 +11,7 @@ import { createWorld } from "../render/world";
 import type { Quality, World } from "../render/types";
 import { Input } from "./input";
 import { Player } from "./player";
+import { Entrances, type EntranceSpec } from "./entrance";
 import { ED_MECH, PRICE_WAR_BOY, CANDOR_CHROME, CYBERPSYCHO, CIVILIAN, ENFORCER, ENFORCER_SNIPER, Enemy, eliteTint, NURSE, NURSE_HEAL, NURSE_RANGE, ORDERLY, TURRET, HUNTER, POLICE_DRONE, RIOT_SHIELD, BOARD_GUARD, type EnemyKit, type Sight } from "./enemy";
 import { bodyView, deadCost, deathGlowScale, prewarmGore, type Body } from "./body";
 import { POOLS } from "../render/pools";
@@ -44,7 +45,7 @@ import { Audio } from "./audio";
 import { CLASS_WEAPON, Progress } from "./progress";
 import { Pickups, gunDrop } from "./pickups";
 import type { Item } from "../sim/loot";
-import { FirstJob, TAKEDOWN_POSE, TAKE_RANGE } from "./firstjob";
+import { FIRST_CONTACT_M, FirstJob, TAKEDOWN_POSE, TAKE_RANGE } from "./firstjob";
 import { codesFor, keyLabel } from "../controls";
 import { CrispJob } from "./crispjob";
 import { QuayJob } from "./quayjob";
@@ -229,6 +230,8 @@ export interface Session {
    */
   /** C10: a close-up of the hit-arm stage's struck hand from 1.1 m off his struck side (true), or back to her view (false). */
   zoom?: (on: boolean) => boolean;
+  /** Plan item 7: every scripted entrance that fired (breach, rappel, van), for e2e. */
+  entrances?: readonly import("./entrance").EntranceEvent[];
   probeEnemy?: () => { enemy: number; street: number; ratio: number; px: number; heightPx: number; box: { x: number; y: number; w: number; h: number } } | null;
   /** C10: the silhouette lineup scaled so its tallest figure is 64 px tall, as a PNG data URL. */
   silhouetteThumb?: () => string | null;
@@ -370,13 +373,27 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     shield: [RIOT_SHIELD, "riotShield"],
     sniper: [ENFORCER_SNIPER, "enforcerSniper"],
   } as const;
-  const spawn = (role: "rifle" | "shield" | "sniper", route: THREE.Vector3[], opts: { yaw?: number; passive?: boolean } = {}): Enemy => {
+  // Plan item 7: breaches, rappels and vans (`entrance.ts`). Audio is made later; the closure finds it then.
+  const entrances = new Entrances({
+    scene: world.scene,
+    ground,
+    player: () => player.pos,
+    light: worldLight,
+    burst: (p, n) => world.fx.impact(p, n, "concrete", 2.5),
+    sound: (k) => {
+      if (k === "breach") audio?.blastNear(4);
+      else if (k === "door") audio?.bodyThud(1, 0, 6, true);
+      else audio?.bodyThud(0.8, 0, 8, true);
+    },
+  });
+  const spawn = (role: "rifle" | "shield" | "sniper", route: THREE.Vector3[], opts: { yaw?: number; passive?: boolean; entrance?: EntranceSpec } = {}): Enemy => {
     const [base, archetype]: readonly [EnemyKit, string] = inTower && role === "shield" ? [BOARD_GUARD, "riotShield"] : KITS[role];
     const e = new Enemy({ ...guarded(Progress.kit(base, archetype, areaLevel, seed++), base), role: base.role }, route.map((p) => p.clone()), areaLevel);
     if (opts.yaw !== undefined) e.motion.yaw = opts.yaw;
     e.passive = !!opts.passive;
     world.scene.add(e.body.root);
     enemies.push(e);
+    if (opts.entrance) entrances.add(e, opts.entrance);
     return e;
   };
   if (!tutorial) {
@@ -2002,6 +2019,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     // The hit flash runs on real time, so it shows through the hit-stop that freezes the body (S4.1).
     const flashMs = o.shot ? 0 : realDt * 1000;
+    entrances.update(dt);
     for (const e of enemies) {
       e.update(dt, sight, rays, world.colliders, ground);
       e.body.updateFlash(flashMs);
@@ -4630,7 +4648,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // firefight-<n> (S0 performance, scripts/cathode-perf.mjs): n riflemen shouldered and firing at her, spread 6 to
   // 16 m down the street ahead, in the whole lit, reflected scene (the street's own enemies all hidden, so the
   // count is exactly n; any n works, these two are the budget's): the draw-call and triangle budget frame.
-  const C10_STAGES = ["firefight-6", "firefight-12", "enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "silhouette-lineup-all", "guard-from-10m"];
+  const C10_STAGES = ["firefight-6", "firefight-12", "enemy-front-10m", "enemy-back-10m", "turntable-enforcer", "turntable-riot", "turntable-sniper", "turntable-leader", "silhouette-lineup", "silhouette-lineup-all", "guard-from-10m", "first-contact"];
   let reviewRender: (() => void) | null = null;
   let lineup: Enemy[] = [];
   let probeGuard: Enemy | null = null;
@@ -4679,7 +4697,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       e.detect = 0;
     }
     s.hp = s.maxHp;
-    if (name === "guard-from-10m") {
+    if (name === "guard-from-10m" || name === "first-contact") {
       if (!job) return "no job (load with &job)";
       job.skipTo(1);
       // No diamond: the frame asks whether he reads on his own.
@@ -4687,7 +4705,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const g = enemies.find((e) => e.alive && e.passive);
       if (!g) return "no guard";
       g.update(0.0001, sightNone(), rays, world.colliders, ground);
-      const from = new THREE.Vector3(g.position.x, 0, g.position.z + 10);
+      // first-contact (plan item 7): from where the job first shows him to her.
+      const from = new THREE.Vector3(g.position.x, 0, g.position.z + (name === "first-contact" ? FIRST_CONTACT_M : 10));
       from.y = ground(from.x, from.z);
       lookFrom(from, g.body.joints.chest.clone());
       probeGuard = g;
@@ -5373,6 +5392,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     zoomOn = on && !!zoomAt;
     return zoomOn;
   };
+  s.entrances = entrances.log;
   s.probeEnemy = () => {
     const g = probeGuard;
     if (!g) return null;

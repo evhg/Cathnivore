@@ -3,6 +3,7 @@
 // his reaction time halves). Killing him closes `pellBoss`; then the water taxi.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -76,8 +77,14 @@ export class PellBossJob {
       }
       if (!this.rallied && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.rallied = true;
-        this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
-        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        if (this.h.markers["boss:pell"]) {
+          // Plan item 7: a van brakes in down the east side of the fountain; a man ropes off the portico roof.
+          enter(this.h.spawn, "rifle", ENTRIES.plaza.bossVan, [this.M("boss:reinforce", 3, -12, 28)]);
+          enter(this.h.spawn, "rifle", ENTRIES.plaza.bossRope, [this.M("boss:reinforce", 5, -12, 28)]);
+        } else {
+          this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
+          this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        }
         this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
         // Where the ambush never sprang (no rooftops, or the player stayed back), the marksmen join the rally.
         if (!this.sprung) for (const perch of this.h.markers.perch ?? []) this.h.spawn("sniper", [perch.clone()]);

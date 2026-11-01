@@ -327,6 +327,23 @@ test.describe('CATHODE takedowns', () => {
 
   // On touch the world chip is the takedown button (C11 review 2: that path was never driven): a 44 px target
   // beside his helmet, and a tap on it starts the sequence.
+  test('plan item 7: the flyover pair arrive by rope and by van, and the spawn events fire', async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'one layout is enough: the script is the same on a phone')
+    test.setTimeout(300_000)
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/nightshift/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?play&class=ghost&rs=0.5')
+    type C = { stats: { frames: number }; job?: { skipTo(n: number): void }; entrances?: { kind: string; role: string }[]; enemies: { alive: boolean; lift: number; entering: boolean }[] }
+    await page.waitForFunction(() => ((window as unknown as { cathode?: C }).cathode?.job ? 1 : 0) && (window as unknown as { cathode: C }).cathode.stats.frames >= 3, null, { timeout: 200_000 })
+    await page.evaluate(() => (window as unknown as { cathode: C }).cathode.job!.skipTo(3))
+    await page.waitForFunction(() => ((window as unknown as { cathode: C }).cathode.entrances ?? []).length >= 2, null, { timeout: 200_000 })
+    const kinds = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.entrances!.map((e) => e.kind).sort())
+    expect(kinds).toEqual(['rappel', 'van'])
+    // Both land and join the fight: nobody is left hanging on the rope or parked in the van.
+    await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.enemies.filter((e) => e.alive).every((e) => !e.entering && e.lift === 0), null, { timeout: 200_000 })
+  })
+
   test('touch: a tap on the world chip is the takedown', async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'the chip is a button on touch only')
     test.setTimeout(400_000)

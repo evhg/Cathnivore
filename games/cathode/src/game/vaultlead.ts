@@ -3,6 +3,7 @@
 // vault door code, so the boss job needs it. Closes `vaultLead`.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -56,9 +57,10 @@ export class VaultLeadJob {
           this.target = null;
           this.objective = "Lockdown. Break the gantry squad or hold out for 45 seconds.";
           const from = this.M("lead:register", 0, 20, -55);
+          // Plan item 7: the lift behind her opens on a breach team; a man drops off the gate gantry on a line.
           this.chasers = [
-            h.spawn("rifle", [this.M("lead:guard", 0, 18, -57), from]),
-            h.spawn("rifle", [this.M("lead:guard", 1, 22, -53), from]),
+            this.inVault ? enter(h.spawn, "rifle", ENTRIES.vault.alarmLift, [from]) : h.spawn("rifle", [this.M("lead:guard", 0, 18, -57), from]),
+            this.inVault ? enter(h.spawn, "rifle", ENTRIES.vault.alarmRope, [from]) : h.spawn("rifle", [this.M("lead:guard", 1, 22, -53), from]),
             h.spawn("shield", [this.M("lead:guard", 2, 24, -57), from]),
             h.spawn("rifle", [this.M("lead:sniper", 0, 27, -45), from]),
           ];

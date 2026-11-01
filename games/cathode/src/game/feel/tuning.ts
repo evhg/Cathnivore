@@ -35,18 +35,21 @@ export const tuning = {
   /**
    * S1.2: the marker per hit class, in --u units (1u = 1/1080 of the screen height, S8). The spec's table
    * (body 10u x 2.25u) is the floor; the owner found the marker too small on a 5K screen, so every class is
-   * drawn 1.6x the table's size (body 16u x 3.6u: 43 x 9.6 physical px at 2560x1440 @2).
+   * drawn longer than the table (body 13u x 2.6u: 35 x 6.9 physical px at 2560x1440 @2).
    */
   marker: {
-    body: { len: 16, thick: 3.6, gap: 10, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
-    // The head gap is opened to 16u (about 0.22 m at 10 m, since --u and the projection both scale with the
+    // Plan item 7 (2026-11-01): thinner ticks pushed further out. The audit found the body X hid the whole torso
+    // of a guard at 10 m; the ticks now start 14u out (about the torso's half-width at 10 m) so the hit itself,
+    // the flinch and the puff show through the middle. Still 1.6x the spec's 2.25u thickness floor at 5K.
+    body: { len: 13, thick: 2.6, gap: 14, pop: 1.25, popMs: 60, holdMs: 80, fadeMs: 140 },
+    // The head gap is opened to 18u (about 0.25 m at 10 m, since --u and the projection both scale with the
     // screen height) so the X frames the head instead of covering the flinch, flash and puff it confirms.
-    head: { len: 20.8, thick: 4, gap: 16, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
-    armour: { len: 16, thick: 3.6, gap: 10, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
-    armourBreak: { len: 16, thick: 3.6, gap: 10, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
-    pen: { len: 16, thick: 3.6, gap: 10, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
-    kill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
-    headKill: { len: 24, thick: 4.8, gap: 13, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+    head: { len: 16, thick: 3, gap: 18, pop: 1.35, popMs: 60, holdMs: 90, fadeMs: 160 },
+    armour: { len: 13, thick: 2.6, gap: 14, pop: 1.15, popMs: 60, holdMs: 80, fadeMs: 120 },
+    armourBreak: { len: 13, thick: 2.6, gap: 14, pop: 1.3, popMs: 60, holdMs: 90, fadeMs: 200 },
+    pen: { len: 13, thick: 2.6, gap: 14, pop: 1.2, popMs: 60, holdMs: 60, fadeMs: 120 },
+    kill: { len: 20, thick: 3.6, gap: 17, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
+    headKill: { len: 20, thick: 3.6, gap: 17, pop: 1.5, popMs: 80, holdMs: 120, fadeMs: 400 },
   } satisfies Record<HitClass, { len: number; thick: number; gap: number; pop: number; popMs: number; holdMs: number; fadeMs: number }>,
   /** The kill ring bursts from 27u to 90u over 420 ms, clear of the 1.6x kill ticks (the spec says 12u to 40u, sized for its smaller ticks); two rings on a head kill. */
   killRing: { fromU: 27, toU: 90, ms: 420 },
@@ -110,7 +113,7 @@ export const tuning = {
    * coolant window's pulse, the visor, and the hand that opens on an arm hit.
    */
   enemyLook: {
-    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, eligiblePeak: 0.9, eligibleFloor: 0.35, calmHz: 1, calmFloor: 0.8, sat: 0.9, lum: 0.5, pow: 3, gain: 4.8, phoneGain: 2.8, phonePow: 2.4 },
+    rim: { rest: 0.3, combat: 0.6, hit: 1.0, hitMs: 120, pulseHz: 3, eligiblePeak: 0.9, eligibleFloor: 0.35, calmHz: 1, calmFloor: 0.8, sat: 0.9, lum: 0.5, pow: 3, gain: 4.8, phoneGain: 2.8, phonePow: 2.4, far: [10, 28] as const, farBoost: 0.7, farWiden: 0.3 },
     lod: { phone: [12, 30] as const, desktop: [16, 39] as const, hyst: 1, fadeMs: 300 },
     blinkHz: 1,
     coolantHz: 1.2,

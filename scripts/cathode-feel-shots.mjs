@@ -95,7 +95,7 @@ const STAGE_EXTRA = { 'reduced-mode-death': '&intensity=reduced' }
 const MS = { C19, C18, C18X, C17, C16, C16X, C15, C15X, C14, C1, C2, C3, C4, C5, C5X, C6, C6X, C7, C8, C9, C9X, C10, C10X, C11, C11X, C13, C13T }
 const stages = process.argv.slice(2).length ? process.argv.slice(2) : MS[process.env.MILESTONE ?? 'C1'] ?? C1
 // Stages that need the first job running (the tutorial is skipped in screenshots unless asked for).
-const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', ...C11, ...C11X])
+const JOB_STAGES = new Set([...C3.map((s) => s.split('@')[0]), 'guard-from-10m', 'first-contact', ...C11, ...C11X])
 // C2's red-pixel probe: the share of rendered pixels within 0.2 m of the projected hit point that are
 // red-dominant (the spec's "N", as a share so it holds at every render scale).
 const RED_MIN = 0.1
@@ -953,7 +953,7 @@ for (const vp of vps) {
       }
     }
     // ---- C10 acceptance ----
-    if (/^(enemy-(front|back)-10m|guard-from-10m)$/.test(stage)) {
+    if (/^(enemy-(front|back)-10m|guard-from-10m|first-contact)$/.test(stage)) {
       const pe = await page.evaluate(() => window.cathode.probeEnemy?.() ?? null)
       side.c10 = { probe: pe }
       if (!pe || !pe.px) fail(`${vp} ${spec}: the guard isn't on screen`)
@@ -966,6 +966,8 @@ for (const vp of vps) {
         await page.screenshot({ path: `${file}-body.png`, clip: { x: cx, y: cy, width: bw, height: bh }, timeout: 300_000 })
         console.log(`  C10 ${vp} ${spec}: guard mean luminance ${pe.enemy.toFixed(3)} against the street's ${pe.street.toFixed(3)} (x${pe.ratio.toFixed(2)}), ${pe.heightPx.toFixed(0)} CSS px tall`)
         if (stage === 'enemy-back-10m' && pe.ratio < 1.3) fail(`${vp} ${spec}: from behind he reads at x${pe.ratio.toFixed(2)} of the street (< 1.3)`)
+        // Plan item 7: the first man she meets reads at 120 CSS px or more on a desktop.
+        if (stage === 'first-contact' && vp === 'd' && pe.heightPx < 120) fail(`${vp} ${spec}: the first guard is ${pe.heightPx.toFixed(0)} CSS px tall at first contact (< 120)`)
         if (stage === 'guard-from-10m' && pe.ratio < 1.3) warn(`${vp} ${spec}: the guard under the lamp reads at x${pe.ratio.toFixed(2)} of the street`)
       }
     }

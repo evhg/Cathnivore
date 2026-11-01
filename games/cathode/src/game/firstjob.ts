@@ -7,9 +7,11 @@
 // Each stage spawns its own enemies, so nothing shoots at her before she has been shown how to answer.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import type { Enemy } from "./enemy";
+import type { EntranceSpec } from "./entrance";
 import type { Player } from "./player";
 import type { Progress, Feature } from "./progress";
 import { CLASS_WEAPON } from "./progress";
@@ -27,7 +29,8 @@ export interface JobHost {
   markers: Record<string, THREE.Vector3[]>;
   ground(x: number, z: number): number;
   touch: boolean;
-  spawn(role: Role, route: THREE.Vector3[], opts?: { yaw?: number; passive?: boolean }): Enemy;
+  /** `entrance` stages him coming in (a breach, a rappel, a van: `entrance.ts`); hosts without one just place him. */
+  spawn(role: Role, route: THREE.Vector3[], opts?: { yaw?: number; passive?: boolean; entrance?: EntranceSpec }): Enemy;
   /** Gives her a weapon and puts it in her hands. */
   arm(id: string): void;
   say(text: string): void;
@@ -271,6 +274,8 @@ class Lamp {
 export const TAKEDOWN_POSE = { x: -1.5, z: 37.7, yaw: 0 };
 /** The guard under the lamp. */
 export const FIRST_GUARD = { x: -1.5, z: 36.5 };
+/** Plan item 7: how far down the street (m) she is from him when the job shows him to her (the first-contact frame). */
+export const FIRST_CONTACT_M = 8.7;
 /** Tomas's pistol case. */
 // S7.1's placement rule: within 15 degrees of her facing at the takedown, within 10 m, in plain sight on a stall in
 // the middle of the street (it used to sit 12 m off behind the pawn shop's car, 47% of the way to the screen edge).
@@ -376,7 +381,7 @@ export class FirstJob {
     switch (stage) {
       case 0:
         this.objective = "Walk down the street.";
-        this.target = this.P(-2, 46);
+        this.target = this.P(-2, FIRST_GUARD.z + FIRST_CONTACT_M);
         h.teach(this.key("move"));
         break;
       case 1: {
@@ -404,7 +409,12 @@ export class FirstJob {
         if (!resumed) h.arm("kestrel");
         if (resumed || !h.toast) h.banner(resumed ? "Checkpoint" : "New weapon: Kestrel 9", resumed ? "Back at the flyover" : "Equipped. Checkpoint saved: dying now restarts you here");
         else h.toast("New weapon", "Kestrel 9");
-        this.wave = [h.spawn("rifle", [this.P(-4, 15), this.P(1.5, 15)]), h.spawn("rifle", [this.P(5, 6), this.P(5, 18)])];
+        // Plan item 7: they arrive. One comes down a rope off the flyover's north parapet, 15 m from the stall; the
+        // other is dropped by a Hollowell van that brakes in under the deck from the flooded south road.
+        this.wave = [
+          enter(h.spawn, "rifle", ENTRIES.market.flyoverRope, [this.P(1.5, 14.2)]),
+          enter(h.spawn, "rifle", ENTRIES.market.flyoverVan, [this.P(5, 18)]),
+        ];
         this.target = this.P(-1, 12);
         h.teach(this.key("fire"));
         if (!resumed) h.say("The Kestrel. Quiet, and it'll do.");
@@ -470,7 +480,8 @@ export class FirstJob {
     const cleared = this.wave.length > 0 && this.wave.every((e) => !e.alive);
     switch (this.stage) {
       case 0:
-        if (h.player.pos.z < 47) this.goto(1);
+        // Plan item 7: he comes into view 8.7 m off (was 10.5 m), so the first man she meets reads at 120+ px on a desktop.
+        if (h.player.pos.z < FIRST_GUARD.z + FIRST_CONTACT_M) this.goto(1);
         break;
       case 1:
         if (this.wave[0]?.alive) this.target?.copy(this.wave[0].position).setY(this.wave[0].position.y + 1.9);

@@ -3,6 +3,7 @@
 // closes `boardBoss`; then the roof taxi.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -66,8 +67,14 @@ export class BoardBossJob {
       this.target = this.boss.position.clone().setY(this.boss.position.y + 2.2);
       if (!this.rallied && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.rallied = true;
-        this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
-        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        if (this.h.markers["boss:chair"]) {
+          // Plan item 7: the Chair's detail drops from the ceiling vents either side of the table.
+          enter(this.h.spawn, "rifle", ENTRIES.tower.bossVentL, [this.M("boss:reinforce", 1, -34, 28)]);
+          enter(this.h.spawn, "rifle", ENTRIES.tower.bossVentR, [this.M("boss:reinforce", 3, -12, 28)]);
+        } else {
+          this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
+          this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        }
         this.h.spawn("rifle", [this.M("boss:reinforce", 4, -24, 20), this.M("boss:reinforce", 5, -20, 22)]);
         this.h.say("The Chair: Security! Everyone, now!");
       }

@@ -865,7 +865,7 @@ export class Enemy {
     this.vel.lerp(step, 1 - Math.exp(-8 * dt));
     this.moveWithCollision(this.vel.clone().multiplyScalar(dt), colliders);
     // Snipers stand on their perch (a roof or walkway above the street's floor).
-    this.motion.pos.y = this.kit.role === "sniper" ? Math.max(ground(this.motion.pos.x, this.motion.pos.z), this.route[0]!.y) : ground(this.motion.pos.x, this.motion.pos.z);
+    this.motion.pos.y = (this.kit.role === "sniper" ? Math.max(ground(this.motion.pos.x, this.motion.pos.z), this.route[0]!.y) : ground(this.motion.pos.x, this.motion.pos.z)) + this.lift;
     this.motion.speed = Math.hypot(this.vel.x, this.vel.z);
     this.motion.phase += this.motion.speed * dt * 3.1;
     const lookAt = face ?? (this.motion.speed > 0.2 ? this.motion.pos.clone().add(this.vel) : null);
@@ -1027,6 +1027,10 @@ export class Enemy {
   marked = false;
   /** Tutorial guards: they don't notice her until something happens to them. */
   passive = false;
+  /** Plan item 7: metres above the floor while he comes down a rope (or parked under it, waiting for his entrance). */
+  lift = 0;
+  /** True while a scripted entrance moves him (`entrance.ts`). */
+  entering = false;
 
   /** Seconds of shaken aim left after a near miss, and of the duck. */
   suppressT = 0;

@@ -3,6 +3,7 @@
 // lift, so the boss job needs it. Closes `boardLead`.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -54,9 +55,10 @@ export class BoardLeadJob {
           this.target = null;
           this.objective = "A courier is held at the private lift. Down the three captors to free her.";
           const at = this.M("lead:guard", 0, 18, -32);
+          // Plan item 7: two of them rope down the lobby atrium, one after the other.
           this.captors = [
-            h.spawn("rifle", [this.M("lead:guard", 1, 22, -28), at]),
-            h.spawn("rifle", [this.M("lead:guard", 2, 24, -32), at]),
+            this.inTower ? enter(h.spawn, "rifle", ENTRIES.tower.alarmRopeA, [at]) : h.spawn("rifle", [this.M("lead:guard", 1, 22, -28), at]),
+            this.inTower ? enter(h.spawn, "rifle", ENTRIES.tower.alarmRopeB, [at]) : h.spawn("rifle", [this.M("lead:guard", 2, 24, -32), at]),
             h.spawn("shield", [this.M("lead:guard", 3, 24, -26), at]),
           ];
           return;

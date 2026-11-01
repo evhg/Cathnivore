@@ -3,6 +3,7 @@
 // hours, so the boss job needs it. Closes `pellLead`.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -57,9 +58,10 @@ export class PellLeadJob {
           this.target = null;
           this.objective = "The alarm is out. Break the rally detail or outrun them for 40 seconds.";
           const from = this.M("lead:register", 0, 20, 2);
+          // Plan item 7: a Hollowell van tears up the west side of the square; a man ropes off the west roof.
           this.chasers = [
-            h.spawn("rifle", [this.M("lead:guard", 0, 18, 0), from]),
-            h.spawn("rifle", [this.M("lead:guard", 1, 22, 4), from]),
+            enter(h.spawn, "rifle", ENTRIES.plaza.alarmVan, [from]),
+            enter(h.spawn, "rifle", ENTRIES.plaza.alarmRope, [from]),
             h.spawn("rifle", [this.M("lead:guard", 3, 24, 6), from]),
             h.spawn("shield", [this.M("lead:guard", 2, 24, 0), from]),
           ];

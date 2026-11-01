@@ -70,4 +70,28 @@ describe("CATHODE hit classes (S1.2)", () => {
     // A plate break keeps its own sound.
     expect(confirmSound("armourBreak", { layer: "plate" })).toBe("plateBreak");
   });
+
+  it("plan item 7: the marker covers under 25% of a guard's box at 10 m on a desktop (ink rasterised in --u)", () => {
+    // A guard at 10 m is about 120 CSS px tall at 1440x900 (the stage shots); 1u = 900/1080 px, so 144u by about
+    // 0.38 of that wide. The X is centred on his chest, a third of the way down. The ticks are rasterised on a
+    // 0.5u grid: the share of the box under ink must stay under a quarter, so the hit shows through the middle.
+    const h = 144, w = h * 0.38, cy = h / 3;
+    for (const c of ["body", "head", "kill", "headKill"] as const) {
+      const m = tuning.marker[c];
+      let ink = 0, all = 0;
+      for (let y = 0; y < h; y += 0.5) for (let x = -w / 2; x < w / 2; x += 0.5) {
+        all++;
+        const dy = y - cy;
+        // Each tick runs along a diagonal from `gap` to `gap + len` out, `thick` across.
+        for (const [ax, ay] of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as const) {
+          const along = (x * ax + dy * ay) / Math.SQRT2;
+          const across = (x * ay - dy * ax) / Math.SQRT2;
+          if (along >= m.gap && along <= m.gap + m.len && Math.abs(across) <= m.thick / 2) { ink++; break; }
+        }
+      }
+      expect(ink / all, c).toBeLessThan(0.25);
+    }
+    // And the body ticks start clear of the torso's middle: the gap is at least 14u.
+    expect(tuning.marker.body.gap).toBeGreaterThanOrEqual(14);
+  });
 });

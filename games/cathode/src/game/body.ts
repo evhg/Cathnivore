@@ -570,8 +570,11 @@ export class Body {
     const dEye = this.joints.chest.distanceTo(bodyView.eye);
     const nearK = THREE.MathUtils.smoothstep(dEye, 2, 6);
     const rimNear = this.eligible ? Math.max(0.75, 0.3 + 0.7 * nearK) : 0.3 + 0.7 * nearK;
-    const k = this.rimLevel(now) * rimNear * (bodyView.phone ? R.phoneGain : R.gain);
-    setFx(P, 2, this.facRim.r * k, this.facRim.g * k, this.facRim.b * k, bodyView.phone ? R.phonePow : R.pow);
+    // Plan item 7: past 10 m the rim grows (up to 1.7x by 28 m) and widens, so a man down the street keeps his
+    // outline against wet neon and doesn't sink into a 40 px smudge.
+    const farK = THREE.MathUtils.smoothstep(dEye, R.far[0], R.far[1]);
+    const k = this.rimLevel(now) * rimNear * (bodyView.phone ? R.phoneGain : R.gain) * (1 + R.farBoost * farK);
+    setFx(P, 2, this.facRim.r * k, this.facRim.g * k, this.facRim.b * k, (bodyView.phone ? R.phonePow : R.pow) * (1 - R.farWiden * farK));
     const fade = Math.min(1, (now - this.lodAt) / LOOK.lod.fadeMs);
     const blink = this.visorLevel > 0.05 && Math.floor(((now / 1000) * LOOK.blinkHz * 2) % 2) === 0 ? 1 : 0.06;
     setFx(P, 3, this.lodFrom, this.lod, fade, blink * Math.min(1, this.visorLevel * 1.5));

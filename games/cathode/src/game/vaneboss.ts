@@ -3,6 +3,7 @@
 // `vaneBoss`; then the water taxi.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 
@@ -67,8 +68,14 @@ export class VaneBossJob {
       if (!this.patched && this.boss.alive && this.boss.hp < this.boss.kit.maxHp / 2) {
         this.patched = true;
         this.boss.hp = Math.round(this.boss.kit.maxHp * 0.7);
-        this.h.spawn("rifle", [this.M("boss:reinforce", 0, 16, 22), this.M("boss:reinforce", 1, 22, 22)]);
-        this.h.spawn("rifle", [this.M("boss:reinforce", 2, 30, 22), this.M("boss:reinforce", 3, 26, 24)]);
+        if (this.h.markers["boss:vane"]) {
+          // Plan item 7: one through the STAFF ONLY doors, one down from a ceiling vent.
+          enter(this.h.spawn, "rifle", ENTRIES.clinic.bossBreach, [this.M("boss:reinforce", 0, 16, 22), this.M("boss:reinforce", 1, 22, 22)]);
+          enter(this.h.spawn, "rifle", ENTRIES.clinic.bossVent, [this.M("boss:reinforce", 3, 26, 24)]);
+        } else {
+          this.h.spawn("rifle", [this.M("boss:reinforce", 0, 16, 22), this.M("boss:reinforce", 1, 22, 22)]);
+          this.h.spawn("rifle", [this.M("boss:reinforce", 2, 30, 22), this.M("boss:reinforce", 3, 26, 24)]);
+        }
         this.h.say("Vane: A little stitch. Nothing personal.");
       }
       if (!this.boss.alive) this.goto(1);

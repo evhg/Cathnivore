@@ -3,6 +3,7 @@
 // Killing it closes `vaultBoss` and opens Hardboiled (the `hardboiledOpen` flag); then the vault lift.
 
 import * as THREE from "three";
+import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
 import { actFiveUnlock } from "../sim/difficulty";
@@ -92,8 +93,14 @@ export class VaultBossJob {
       if (this.boss.alive) this.showPhase(this.rallied);
       if (this.boss.alive && this.rallied < 1 && frac < 2 / 3) {
         this.rallied = 1;
-        this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
-        this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        if (this.h.markers["boss:core"]) {
+          // Plan item 7: Hollowell drops two men down the chasm on lines.
+          enter(this.h.spawn, "rifle", ENTRIES.vault.bossRopeL, [this.M("boss:reinforce", 1, -34, 28)]);
+          enter(this.h.spawn, "rifle", ENTRIES.vault.bossRopeR, [this.M("boss:reinforce", 3, -12, 28)]);
+        } else {
+          this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
+          this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);
+        }
         this.h.say("HollowCandor: Security response initiated.");
         this.h.banner("HollowCandor", "Phase 2: security response");
       }
