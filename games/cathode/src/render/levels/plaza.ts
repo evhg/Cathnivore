@@ -173,6 +173,24 @@ export function buildPlaza(quality: "phone" | "high" | "ultra"): Level {
   b.box("vanWhite", 22, 1.7, -2, 3.0, 3.2, 14, { collide: "metal" });
   b.box("glowWarm", 22, 2.2, -2, 3.04, 0.7, 12);
   b.box("darkMetal", 22, 0.35, -2, 2.6, 0.5, 13);
+  // Plan item 4: the tram reads as a tram: window pillars break the lit strip, a teal livery band, a roof pod,
+  // a pantograph up to the wire, lit route boards at both ends, headlamps north and tail lamps south.
+  for (const sx of [20.47, 23.53]) {
+    for (let z = -8.4; z <= 4.4; z += 1.6) b.box("darkMetal", sx, 2.2, z, 0.05, 0.78, 0.16, { cover: "none" });
+    b.box("paintTeal", sx, 1.2, -2, 0.04, 0.32, 13.6, { cover: "none" });
+    b.box("chrome", sx, 2.62, -2, 0.03, 0.04, 13.4, { cover: "none" });
+  }
+  b.box("darkMetal", 22, 3.45, -2, 2.4, 0.3, 6, { cover: "none" });
+  b.cylinder("chrome", V(22, 3.6, -2), V(22, 4.9, -3.2), 0.025, 5);
+  b.cylinder("chrome", V(22, 4.9, -3.2), V(22, 6.15, -2), 0.025, 5);
+  b.box("darkMetal", 22, 6.17, -2, 1.4, 0.04, 0.12, { cover: "none" });
+  for (const [z, n] of [[-9.03, V(0, 0, -1)], [5.03, V(0, 0, 1)]] as const) {
+    signs.push({ text: "9  CIVIC SQ", sub: "NOT IN SERVICE", style: "box", color: "#ffb347", w: 2.2, h: 0.42, center: V(22, 2.95, z + n.z * 0.02), normal: n, flicker: 1, intensity: 2.4 });
+    for (const dx of [-0.95, 0.95]) b.box(z < 0 ? "glowWhite" : "glowRed", 22 + dx, 0.8, z, 0.3, 0.18, 0.04, { cover: "none" });
+  }
+  for (const dx of [-0.95, 0.95]) cones.push({ top: V(22 + dx, 0.8, -9.1), dir: V(0, -0.12, -1).normalize(), length: 12, radius: 2.2, color: C("#e8f0ff"), strength: 0.35 });
+  light(V(22, 1.2, -10.5), "#e8f0ff", 14, 9, 0);
+  light(V(22, 1.0, 6.2), "#ff2a2a", 6, 5, 0);
   for (let z = 44; z >= -40; z -= 14) {
     b.cylinder("pipe", V(26.2, 0, z), V(26.2, 6.4, z), 0.09, 8, "metal");
     b.cylinder("pipe", V(26.2, 6.2, z), V(22, 6.2, z), 0.05);
