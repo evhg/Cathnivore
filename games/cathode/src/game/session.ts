@@ -1627,7 +1627,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       wantSheet = false;
       openSheet();
     }
-    if (intent.skills && !charScreen && !killcam.active) openSheet();
+    if (intent.skills && !charScreen && !coaching && !killcam.active) openSheet();
     if ((intent.map || wantMap) && !coaching && !charScreen && !killcam.active && !dead) {
       wantMap = false;
       coaching = true;
