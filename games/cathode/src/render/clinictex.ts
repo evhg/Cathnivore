@@ -293,3 +293,4 @@ export function clinicTextures(quality: "phone" | "high" | "ultra"): Record<Clin
     clinicSteel: toSet(steel(n / 2, 75), 0.6),
   };
 }
+
