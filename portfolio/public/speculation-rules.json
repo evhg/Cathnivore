@@ -1,0 +1,4 @@
+{
+  "prerender": [{ "where": { "href_matches": "/work/*" }, "eagerness": "moderate" }],
+  "prefetch": [{ "where": { "href_matches": "/games/" }, "eagerness": "moderate" }]
+}

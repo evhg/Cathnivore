@@ -160,6 +160,33 @@
       ]
     },
     {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Speculation-Rules",
+          "value": "\"/speculation-rules.json\""
+        }
+      ]
+    },
+    {
+      "source": "/work/:id/",
+      "headers": [
+        {
+          "key": "Speculation-Rules",
+          "value": "\"/speculation-rules.json\""
+        }
+      ]
+    },
+    {
+      "source": "/speculation-rules.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/speculationrules+json"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {

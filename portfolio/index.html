@@ -3,43 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0e0d12" />
+    <meta name="theme-color" content="#07060b" />
+    <meta name="color-scheme" content="dark" />
     <title>Cathnivore: an AI app incubator</title>
-    <meta name="description" content="Cathnivore is a small incubator for apps built with AI: games, sport, brands and home tools, made with Claude Code." />
+    <meta name="description" content="Cathnivore is an AI product studio: games, sport, health and brand products, built and shipped by AI agents around the clock." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:title" content="Cathnivore: an AI app incubator" />
-    <meta property="og:description" content="Apps built with AI: games, sport, brands and home tools." />
+    <meta property="og:description" content="Products, grown by AI. Games, sport, health and brand products, shipped around the clock." />
     <meta property="og:image" content="https://cathnivore.com/social-preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
-  <body>
+  <body class="home">
+    <canvas class="field" id="field" aria-hidden="true"></canvas>
     <div class="glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
     <header class="top">
-      <a class="wordmark" href="/" aria-label="Cathnivore home">Cathnivore</a>
-      <span class="top-note">AI incubator</span>
+      <a class="wordmark" href="/" aria-label="Cathnivore home"><span class="mark" aria-hidden="true"></span>Cathnivore</a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#portfolio">Work</a>
+        <a href="#method">Method</a>
+        <a href="/games/">Games</a>
+      </nav>
+      <p class="pulse" id="pulse"><span class="dot" aria-hidden="true"></span><span id="pulse-text">Agents building</span></p>
     </header>
     <main>
-      <section class="hero">
-        <p class="eyebrow">Built with Claude Code</p>
-        <h1>Apps we build with AI</h1>
-        <p class="lede">A small studio of experiments that ship: games, sport, brands and tools for the home. Each one began as an idea in a chat and became a working product.</p>
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="eyebrow"><span>AI product studio</span><span class="sep" aria-hidden="true"></span><span>Built with Claude Code</span></p>
+        <h1 id="hero-title" class="kinetic" data-kinetic>Products, grown by&nbsp;AI.</h1>
+        <p class="lede">Cathnivore is an incubator where AI agents design, build, test and ship real products around the clock, guided by one person with taste. Four are live. More are growing.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#portfolio">See the work</a>
+          <a class="btn btn-ghost" href="#method">How it works</a>
+        </div>
+        <dl class="stats" aria-label="The studio in numbers">
+          <div><dt>Products</dt><dd><span data-count="4">4</span></dd></div>
+          <div><dt>Build sessions a day</dt><dd><span data-count="24">24</span></dd></div>
+          <div><dt>Quality gates per release</dt><dd><span data-count="8">8</span></dd></div>
+          <div><dt>Humans in the loop</dt><dd><span data-count="1">1</span></dd></div>
+        </dl>
+        <a class="scroll-cue" href="#portfolio" aria-label="Scroll to the work"><span aria-hidden="true"></span></a>
       </section>
-      <section class="apps" aria-labelledby="apps-title">
-        <h2 id="apps-title" class="section-title">Portfolio</h2>
-        <ul class="grid">
+
+      <section class="work" id="portfolio" aria-labelledby="work-title">
+        <header class="section-head reveal">
+          <p class="eyebrow">Portfolio</p>
+          <h2 id="work-title" class="section-h2">Things we have grown</h2>
+          <p class="section-lede">Each began as a sentence in a chat and became a working product. Open one for the story.</p>
+        </header>
+        <ul class="bento">
         <!--apps-->
         </ul>
       </section>
-      <section class="week" id="week" aria-labelledby="week-title" hidden>
-        <h2 id="week-title" class="section-title">Cath's week</h2>
-        <ul class="week-goals" id="week-goals"></ul>
-        <p class="week-card" id="week-card" hidden></p>
+
+      <section class="method" id="method" aria-labelledby="method-title">
+        <header class="section-head reveal">
+          <p class="eyebrow">Method</p>
+          <h2 id="method-title" class="section-h2">A studio that never sleeps</h2>
+          <p class="section-lede">Every product runs on the same loop. A routine starts an AI build session every hour; each one leaves the product better, and proves it, before it ends.</p>
+        </header>
+        <ol class="loop">
+          <li class="step reveal">
+            <span class="step-n" aria-hidden="true">01</span>
+            <h3>Brief</h3>
+            <p>An idea in plain words. A vision and a spec say what great looks like, and a two-week plan breaks it into whole features.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-n" aria-hidden="true">02</span>
+            <h3>Build</h3>
+            <p>Agents write the code in hourly sessions, day and night. Each picks the next item from the plan, builds it in slices and logs every decision.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-n" aria-hidden="true">03</span>
+            <h3>Prove</h3>
+            <p>Every change is typechecked, tested and screenshotted on a phone and a desktop. Bots play the games thousands of times to tune the difficulty.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-n" aria-hidden="true">04</span>
+            <h3>Ship</h3>
+            <p>A release goes out only when every gate passes, then it is smoke-tested live. Tomorrow the loop starts again.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="thesis" aria-labelledby="thesis-title">
+        <h2 id="thesis-title" class="visually-hidden">What we believe</h2>
+        <p class="thesis-text" data-words>The next great studio is one person with taste and a team of agents that never stop. Cathnivore is where we test that, in public, with real products.</p>
       </section>
     </main>
     <footer class="foot">
-      <span>Cathnivore</span>
-      <span class="foot-links"><a href="/games/">Games</a><a href="/privacy">Privacy</a><a href="/support">Support</a><a href="/licences/fonts/">Font credits</a></span>
+      <a class="giant" href="/games/" aria-label="Play the Cathnivore games"><span aria-hidden="true">Cathnivore</span></a>
+      <div class="foot-row">
+        <span>An AI app incubator. Made with Claude Code.</span>
+        <span class="foot-links"><a href="/games/">Games</a><a href="/privacy">Privacy</a><a href="/support">Support</a><a href="/licences/fonts/">Font credits</a></span>
+      </div>
     </footer>
     <script type="module" src="./src/main.ts"></script>
   </body>

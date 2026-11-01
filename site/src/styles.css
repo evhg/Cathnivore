@@ -1333,3 +1333,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .stall-pipe path, .stall-sway, .stall-veg > * { animation: none; }
 }
+
+/* Arriving from the portfolio (cathnivore.com/) crossfades: both pages opt in to cross-document view
+   transitions. */
+@view-transition {
+  navigation: auto;
+}

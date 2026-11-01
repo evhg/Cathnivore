@@ -26,32 +26,46 @@ async function noSideways(page: Page): Promise<void> {
 }
 
 test.describe('portfolio', () => {
-  test('lists every app, with no errors or sideways scroll', async ({ page }) => {
+  test('lists every app as a case study, with no errors or sideways scroll', async ({ page }) => {
     const errors = trackErrors(page)
     await page.goto('/')
-    await expect(page.getByRole('heading', { level: 1, name: 'Apps we build with AI' })).toBeVisible()
-    for (const id of ['games', 'kicksmash', 'kinetiq', 'sleeplab']) await expect(page.locator(`[data-app="${id}"]`)).toBeVisible()
-    await expect(page.locator('a[data-app="games"]')).toHaveAttribute('href', '/games/')
-    await expect(page.locator('a[data-app="kinetiq"]')).toHaveAttribute('href', '/kinetiq')
-    await expect(page.locator('a[data-app="kicksmash"]')).toHaveAttribute('href', 'https://kicksma.sh')
+    await expect(page.getByRole('heading', { level: 1, name: 'Products, grown by AI.' })).toBeVisible()
+    for (const id of ['games', 'kicksmash', 'kinetiq', 'sleeplab']) {
+      await expect(page.locator(`a[data-app="${id}"]`)).toBeVisible()
+      await expect(page.locator(`a[data-app="${id}"]`)).toHaveAttribute('href', `/work/${id}/`)
+    }
     await noSideways(page)
     expect(errors).toEqual([])
   })
 
-  test('the games card opens the games page', async ({ page }) => {
+  test('a case study links out to the product, and Kinetiq only through its gate', async ({ page }) => {
+    const errors = trackErrors(page)
     await page.goto('/')
     await page.locator('a[data-app="games"]').click()
+    await expect(page).toHaveURL(/\/work\/games\/$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore Games' })).toBeVisible()
+    await noSideways(page)
+    await page.getByRole('link', { name: 'Play the games' }).click()
     await expect(page).toHaveURL(/\/games\/$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Cathnivore' })).toBeVisible()
+    await page.goto('/work/kicksmash/')
+    await expect(page.getByRole('link', { name: 'Visit kicksma.sh' })).toHaveAttribute('href', 'https://kicksma.sh')
+    await page.goto('/work/kinetiq/')
+    await expect(page.getByRole('link', { name: 'Enter password' })).toHaveAttribute('href', '/kinetiq')
+    // Chromium logs an aborted view transition when the test navigates again mid-transition; that's the
+    // test's speed, not a page error.
+    expect(errors.filter((e) => !/Transition was aborted/.test(e))).toEqual([])
   })
 
   test('has no serious or critical accessibility issues', async ({ browser }) => {
     test.setTimeout(90_000)
     const ctx = await browser.newContext({ reducedMotion: 'reduce' })
     const page = await ctx.newPage()
-    await page.goto('/')
-    await expect(page.locator('[data-app="games"]')).toBeVisible()
-    await assertNoSeriousIssues(page)
+    for (const path of ['/', '/work/sleeplab/']) {
+      await page.goto(path)
+      await expect(page.locator('[data-app]').first()).toBeVisible()
+      await assertNoSeriousIssues(page)
+    }
     await ctx.close()
   })
 })

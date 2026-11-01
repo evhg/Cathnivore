@@ -1,5 +1,5 @@
-/* Portfolio tokens: a quiet ink-dark studio page with one accent per app. Spacing and motion come from
-   shared/ui/base.css. */
+/* Portfolio tokens: a deep ink studio page lit by the shader hero, one accent per product. Spacing,
+   easing and durations come from shared/ui/base.css. */
 :root {
   color-scheme: dark;
   --font-display: "Studio Display", "Studio Display Fallback", Georgia, serif;
@@ -7,37 +7,69 @@
   --font-num: var(--font-ui);
   --font-voice: var(--font-display);
 
-  --ink: #0e0d12;
-  --ink-raised: #17151d;
-  --ink-hover: #1e1b26;
-  --line: rgba(240, 235, 225, 0.12);
-  --line-strong: rgba(240, 235, 225, 0.26);
-  --text: #f0ebe1;
-  --text-muted: rgba(240, 235, 225, 0.72);
-  --text-faint: rgba(240, 235, 225, 0.56);
-  --shadow: rgba(0, 0, 0, 0.45);
+  --ink: #07060b;
+  --ink-2: #0d0b14;
+  --ink-raised: #14111d;
+  --ink-hover: #1b1726;
+  --glass: rgba(20, 17, 29, 0.55);
+  --glass-strong: rgba(13, 11, 20, 0.78);
+  --line: rgba(240, 235, 225, 0.1);
+  --line-strong: rgba(240, 235, 225, 0.22);
+  --text: #f3eee4;
+  --text-muted: rgba(243, 238, 228, 0.74);
+  --text-faint: rgba(243, 238, 228, 0.54);
+  --shadow: rgba(0, 0, 0, 0.55);
+  --white-08: rgba(255, 255, 255, 0.08);
+  --white-16: rgba(255, 255, 255, 0.16);
 
   --accent-gold: #f4c774;
-  --accent-gold-soft: rgba(244, 199, 116, 0.14);
+  --accent-gold-soft: rgba(244, 199, 116, 0.16);
   --accent-lime: #c6ec6a;
-  --accent-lime-soft: rgba(198, 236, 106, 0.14);
+  --accent-lime-soft: rgba(198, 236, 106, 0.16);
   --accent-violet: #b8a2ff;
-  --accent-violet-soft: rgba(184, 162, 255, 0.16);
+  --accent-violet-soft: rgba(184, 162, 255, 0.18);
   --accent-teal: #7fd8cf;
-  --accent-teal-soft: rgba(127, 216, 207, 0.14);
-  --glow-a: rgba(184, 162, 255, 0.16);
-  --glow-b: rgba(244, 199, 116, 0.1);
+  --accent-teal-soft: rgba(127, 216, 207, 0.16);
+  --accent-rose: #ff8fa3;
+  --glow-a: rgba(184, 162, 255, 0.22);
+  --glow-b: rgba(244, 199, 116, 0.14);
+  --glow-c: rgba(127, 216, 207, 0.12);
+  --live: #8ef0a8;
+  --live-halo: rgba(142, 240, 168, 0.35);
+
+  /* Interface vignettes (drawn product UIs on the cards). */
+  --ui-paper: #f6f3ea;
+  --ui-paper-ink: #16151a;
+  --ui-paper-muted: rgba(22, 21, 26, 0.6);
+  --ui-paper-line: rgba(22, 21, 26, 0.12);
+  --ui-phone: #0b0a10;
 
   --focus: #f4c774;
   --focus-halo: rgba(244, 199, 116, 0.3);
 
-  --fs-eyebrow: 0.8125rem;
+  --fs-eyebrow: 0.75rem;
+  --fs-small: 0.875rem;
   --fs-body: 1rem;
-  --fs-lede: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
-  --fs-h1: clamp(2.5rem, 1.6rem + 4.2vw, 5rem);
-  --fs-card: 1.5rem;
-  --fs-mark: 2.25rem;
-  --r-card: 20px;
+  --fs-lede: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+  --fs-h1: clamp(3.1rem, 1.2rem + 8.4vw, 9.5rem);
+  --fs-h2: clamp(2rem, 1.2rem + 3.4vw, 4rem);
+  --fs-case-h1: clamp(2.75rem, 1.4rem + 5.6vw, 6.5rem);
+  --fs-card: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  --fs-card-hero: clamp(1.9rem, 1.3rem + 2.2vw, 3.1rem);
+  --fs-stat: clamp(2.4rem, 1.6rem + 3vw, 4.2rem);
+  --fs-thesis: clamp(1.75rem, 1.05rem + 3vw, 3.6rem);
+  --fs-giant: clamp(4rem, 0.5rem + 17vw, 17rem);
+  --r-card: 28px;
+  --r-pill: 999px;
+  --page: 1240px;
+
+  --z-canvas: 0;
   --z-glow: 0;
   --z-page: 1;
+  --z-top: 10;
+  /* Layers inside a card: spotlight, body, shots, edge light. */
+  --z-under: -1;
+  --z-1: 1;
+  --z-2: 2;
+  --z-3: 3;
 }

@@ -1,5 +1,7 @@
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { APPS, appsHtml, cardHtml } from '../portfolio/src/apps'
+import { APPS, appsHtml, cardHtml, caseHtml } from '../portfolio/src/apps'
 import {
   GATE_COOKIE,
   cleared,
@@ -25,13 +27,27 @@ describe('portfolio cards', () => {
     const k = APPS.find((a) => a.id === 'kinetiq')!
     expect(k.status).toBe('private')
     expect(k.href).toBe('/kinetiq')
-    expect(appsHtml()).not.toMatch(/vercel\.app[^"]*kinetiq|kinetiq[^"]*vercel\.app/)
+    const all = appsHtml() + APPS.map(caseHtml).join('')
+    expect(all).not.toMatch(/vercel\.app[^"]*kinetiq|kinetiq[^"]*vercel\.app/)
+    expect(caseHtml(k)).toContain('href="/kinetiq"')
   })
 
-  it('renders links for live apps, an article for lab ones, and escapes text', () => {
+  it('every card opens its case study; the case study links out to the product', () => {
+    for (const a of APPS) {
+      expect(cardHtml(a)).toContain(`href="/work/${a.id}/"`)
+      expect(cardHtml(a)).toContain(`data-vt="${a.id}"`)
+      expect(caseHtml(a)).toContain(`data-vt="${a.id}"`)
+    }
     expect(cardHtml({ ...APPS[0]!, name: 'A <b>' })).toContain('A &lt;b&gt;')
-    expect(cardHtml({ ...APPS[0]!, status: 'lab', href: undefined })).toContain('<article')
-    expect(cardHtml(APPS.find((a) => a.id === 'kicksmash')!)).toContain('rel="noopener" target="_blank"')
+    expect(caseHtml(APPS.find((a) => a.id === 'kicksmash')!)).toContain('href="https://kicksma.sh" rel="noopener" target="_blank"')
+    expect(caseHtml(APPS.find((a) => a.id === 'games')!)).not.toContain('target="_blank"')
+  })
+
+  it('every screenshot a card names exists', () => {
+    for (const a of APPS) {
+      if (a.visual.kind !== 'image') continue
+      for (const src of a.visual.src) expect(existsSync(resolve(import.meta.dirname, '../portfolio/public', src.slice(1))), src).toBe(true)
+    }
   })
 })
 

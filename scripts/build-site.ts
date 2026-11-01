@@ -1,6 +1,7 @@
 // Builds the whole cathnivore.com website into dist-site/ (Vercel's output directory):
 //
 //   /             the portfolio of apps (portfolio/, cards from portfolio/src/apps.ts)
+//   /work/<id>/   a case study per app, generated from portfolio/case.html and apps.ts
 //   /games/       the games landing page (site/)
 //   /kinetiq      the password gate in front of Kinetiq (a Vercel function, api/kinetiq.ts; not built here)
 //   /cathnivore/  Cathnivore, the same app `npm run build` makes, rebuilt under a base path
@@ -17,7 +18,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { resolve } from 'node:path'
 import { build } from 'vite'
 import { siteServiceWorkerSource } from './siteServiceWorker'
-import { appsHtml } from '../portfolio/src/apps'
+import { APPS, appsHtml, caseHtml, escapeHtml } from '../portfolio/src/apps'
 
 const root = resolve(import.meta.dirname, '..')
 // SITE_OUT builds into another folder (a second preview beside a running one, for before/after shots).
@@ -83,6 +84,29 @@ ${rows.join('\n')}
   )
 }
 
+/**
+ * Writes portfolio/work/<id>/index.html (gitignored) for every app from the case.html template, and
+ * returns them as extra Vite inputs so they share the home page's hashed CSS and JS.
+ */
+function writeCasePages(): Record<string, string> {
+  const template = readFileSync(resolve(root, 'portfolio/case.html'), 'utf8')
+  const inputs: Record<string, string> = {}
+  for (const app of APPS) {
+    const dir = resolve(root, 'portfolio/work', app.id)
+    mkdirSync(dir, { recursive: true })
+    const file = resolve(dir, 'index.html')
+    writeFileSync(
+      file,
+      template
+        .replaceAll('<!--title-->', escapeHtml(`${app.name}: a Cathnivore case study`))
+        .replaceAll('<!--description-->', escapeHtml(app.blurb))
+        .replace('<!--case-->', caseHtml(app)),
+    )
+    inputs[`work-${app.id}`] = file
+  }
+  return inputs
+}
+
 async function main(): Promise<void> {
   if (!only) rmSync(out, { recursive: true, force: true })
   mkdirSync(out, { recursive: true })
@@ -97,7 +121,12 @@ async function main(): Promise<void> {
       logLevel: 'warn',
       // The cards are rendered from portfolio/src/apps.ts into the page at build time, so it works without JS.
       plugins: [{ name: 'portfolio-apps', transformIndexHtml: (html: string) => html.replace('<!--apps-->', appsHtml()) }],
-      build: { outDir: out, emptyOutDir: false, assetsDir: 'portfolio-assets' },
+      build: {
+        outDir: out,
+        emptyOutDir: false,
+        assetsDir: 'portfolio-assets',
+        rollupOptions: { input: { main: resolve(root, 'portfolio/index.html'), ...writeCasePages() } },
+      },
     })
   }
   if (want('landing')) {
@@ -147,7 +176,7 @@ async function main(): Promise<void> {
   if (want('cathnivore')) {
     console.log('\n=== Cathnivore ===')
     process.env.CATHNIVORE_BASE = '/cathnivore/'
-    process.env.CATHNIVORE_OUT_DIR = 'dist-site/cathnivore'
+    process.env.CATHNIVORE_OUT_DIR = resolve(out, 'cathnivore')
     await build({ configFile: resolve(root, 'vite.config.ts'), root, logLevel: 'warn' })
     delete process.env.CATHNIVORE_BASE
     delete process.env.CATHNIVORE_OUT_DIR
