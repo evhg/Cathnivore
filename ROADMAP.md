@@ -615,7 +615,7 @@ Design: `docs/design/cathode.md`. FEEDBACK.md puts this phase first: take the fi
 234. [x] *(2026-10-31: Seeds per Orchard run, Cath's pantry sheet with 5 Heirlooms, carried into each run; test; not shot)* **Orchard Seeds and Heirlooms (meta-progression):** runs bank Seeds, spent on permanent starting kit.
 
 ### Phase 26 (planned 2026-10-31, whole features; shoot the target screen first)
-235. [ ] **Hedgerow Orchard daily ladder:** a shared-seed daily Orchard with a depth ladder on the Week card and a share text with the boons taken.
+235. [x] **Hedgerow Orchard daily ladder:** a shared-seed daily Orchard with a depth ladder on the Week card and a share text with the boons taken.
 236. [ ] **Runnel Bea's seasons events:** a seasonal limited board set (spring blossom, autumn harvest) with one exclusive crop each, shown in the garden.
 237. [ ] **CATHODE Case Board ladder:** per-mod Second Broadcast best scores with a deck summary line (left over from 230).
 238. [ ] **Cathnivore Marrow Market exclusive cosmetic:** one cosmetic per market event, worn by Cath in the shared wardrobe.

@@ -161,6 +161,7 @@ import {
   type MedalMode,
   recordEndless,
   recordOrchard,
+  recordOrchardDay,
   addSeeds,
   buyHeirloom,
   carryHeirloom,
@@ -173,7 +174,7 @@ import { awardRun, buyPacket, feedCompost, packetCount, spendPacket, COMPOST_FEE
 import { SHOW_EXTRAS, showFields, showKit, showPacket } from "./show";
 import { dailyLevel, dailyRule, dailyScore, dayOf, shareCard } from "./daily";
 import { endlessLevel, weekOf } from "./endless";
-import { orchardLevel, orchardOffers, orchardSeeds, heirloomBoons, HEIRLOOMS, ORCHARD_MAX_DEPTH, type Boon } from "./orchard";
+import { BOONS, orchardLevel, orchardOffers, orchardSeeds, heirloomBoons, HEIRLOOMS, ORCHARD_MAX_DEPTH, type Boon } from "./orchard";
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
@@ -3382,6 +3383,17 @@ function startOrchard(): void {
   openPantry();
 }
 
+/** The daily ladder in one line: today's best, then the last few days as depths. */
+function orchardLadderLine(): string {
+  const today = dayOf(Date.now());
+  const at = (d: number): string => {
+    const e = data.orchardDays?.[String(d)];
+    return e ? String(e.depth) : "\u2013";
+  };
+  const past = [1, 2, 3, 4, 5, 6].map((i) => at(today - i)).reverse().join(" ");
+  return `Today's orchard: ${at(today) === "\u2013" ? "not planted yet" : `${at(today)} fields so far`} · last 6 days ${past}`;
+}
+
 function plantOrchard(): void {
   const start = heirloomBoons(data.heirloom);
   orchardRun = { seed: dayOf(Date.now()), depth: 1, taken: [...start] };
@@ -3400,6 +3412,9 @@ function openPantry(): void {
     const seeds = document.createElement("p");
     seeds.className = "pantry-seeds";
     seeds.textContent = `${data.seeds ?? 0} Seeds · every field you clear in the Orchard earns more`;
+    const ladder = document.createElement("p");
+    ladder.className = "pantry-seeds";
+    ladder.textContent = orchardLadderLine();
     const list = document.createElement("div");
     list.className = "orchard-offers";
     for (const hl of HEIRLOOMS) {
@@ -3439,7 +3454,7 @@ function openPantry(): void {
       dlg.close();
       dlg.remove();
     };
-    dlg.append(h, seeds, list, go, back);
+    dlg.append(h, seeds, ladder, list, go, back);
   };
   draw();
   document.body.append(dlg);
@@ -3453,6 +3468,7 @@ function finishOrchard(g: Game, lv: Level): void {
   const won = g.phase === "won";
   const cleared = won ? run.depth : run.depth - 1;
   const record = recordOrchard(data, cleared);
+  if (!won || run.depth >= ORCHARD_MAX_DEPTH) recordOrchardDay(data, run.seed, cleared, run.taken);
   const ended = !won || run.depth >= ORCHARD_MAX_DEPTH;
   const earned = ended ? orchardSeeds(cleared) : 0;
   if (ended) addSeeds(data, earned);
@@ -3471,7 +3487,7 @@ function finishOrchard(g: Game, lv: Level): void {
     ui.resultNote.textContent = `+${earned} Seeds for Cath's pantry (${data.seeds ?? 0} banked). Same orchard for everyone today; a new one tomorrow.`;
     ui.resultPrimary.hidden = false;
     ui.resultStars.hidden = true;
-    const card = `Hedgerow Orchard #${run.seed + 1}\n${"\u{1F34E}".repeat(Math.min(cleared, 10))}${cleared > 10 ? "+" : ""}\n${cleared} of ${ORCHARD_MAX_DEPTH} fields · ${run.taken.length} boons`;
+    const card = `Hedgerow Orchard #${run.seed + 1}\n${"\u{1F34E}".repeat(Math.min(cleared, 10))}${cleared > 10 ? "+" : ""}\n${cleared} of ${ORCHARD_MAX_DEPTH} fields · ${run.taken.length} boons\n${run.taken.map((id) => BOONS.find((b) => b.id === id)?.name ?? id).join(", ")}`;
     ui.resultPrimary.textContent = "Copy card";
     ui.resultPrimary.onclick = () => {
       void navigator.clipboard?.writeText(card).then(
