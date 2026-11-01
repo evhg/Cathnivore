@@ -135,6 +135,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
 import { haptic, setHaptics } from "./haptics";
@@ -413,6 +414,8 @@ let raf = 0;
 let finished = false;
 let panelKey = "";
 let earlyCalls = 0;
+/** Every leak of this run, in order, for the end tally's replay strip. */
+const runLeaks: LeakRecord[] = [];
 let startPerkRanks = 0;
 let bubbleTimer = 0;
 let bannerTimer = 0;
@@ -879,6 +882,7 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   posting = false;
   leakCauses.wave = -1;
   leakCauses.seen.clear();
+  runLeaks.length = 0;
   slowUntil = 0;
   runSavedWave = -1;
   panelKey = "";
@@ -2877,6 +2881,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "leak":
+        if (ev.kind) runLeaks.push({ kind: ev.kind, lost: ev.lost ?? 1, round: waveNo(g, g.wave) });
         sfx.playLeak();
         haptic.leak();
         // The first leak of a round gets a moment of slow motion and a banner naming the cause; on the Fleet so
@@ -3166,9 +3171,113 @@ function renderXpBars(gain: Partial<Record<TowerKind, number>>): void {
   box.hidden = rows.length === 0;
 }
 
+/**
+ * The end tally (plan item 10): after the stars, the run's Marks, knockouts and Goodwill count up, then the
+ * leaks are replayed in round order, each vehicle landing with what it cost. Reduced motion: all at once.
+ */
+function renderTally(g: Game, won: boolean, stars: number): void {
+  const box = document.createElement("div");
+  box.id = "result-tally";
+  box.className = "tally";
+  const knockouts = g.towers.reduce((a, t) => a + (t.kills ?? 0), 0) + g.hero.kills;
+  const counters: TallyCounter[] = [
+    { label: "Marks earned", value: g.earned },
+    { label: "Knockouts", value: knockouts },
+    { label: "Goodwill kept", value: Math.max(0, g.goodwill), suffix: ` / ${g.maxGoodwill}` },
+  ];
+  const row = document.createElement("dl");
+  row.className = "tally-counts";
+  const nums: Array<[HTMLElement, TallyCounter]> = [];
+  for (const c of counters) {
+    const cell = document.createElement("div");
+    const dt = document.createElement("dt");
+    dt.textContent = c.label;
+    const dd = document.createElement("dd");
+    const num = document.createElement("span");
+    num.className = "tally-num";
+    dd.append(num);
+    if (c.suffix) {
+      const sfxEl = document.createElement("span");
+      sfxEl.className = "tally-of";
+      sfxEl.textContent = c.suffix;
+      dd.append(sfxEl);
+    }
+    cell.append(dt, dd);
+    row.append(cell);
+    nums.push([num, c]);
+  }
+  const { chips, more } = foldLeaks(runLeaks);
+  const reel = document.createElement("div");
+  reel.className = "tally-leaks";
+  const head = document.createElement("p");
+  head.className = "tally-head";
+  head.textContent = chips.length ? "What got through" : "Nothing got through";
+  const strip = document.createElement("ol");
+  strip.className = "tally-strip";
+  const chipEls: HTMLElement[] = [];
+  for (const c of chips) {
+    const li = document.createElement("li");
+    li.className = "tally-leak";
+    li.append(img(enemyIcon(c.kind), "tally-icon"));
+    const cap = document.createElement("span");
+    cap.className = "tally-cap";
+    cap.textContent = `${waveWord(g)[0]!.toUpperCase()}${c.round} −${c.lost}`;
+    li.append(cap);
+    if (c.n > 1) {
+      const b = document.createElement("span");
+      b.className = "tally-n";
+      b.textContent = `×${c.n}`;
+      li.append(b);
+    }
+    li.title = `${ENEMIES[c.kind].name}${c.n > 1 ? ` ×${c.n}` : ""}, ${waveWord(g)} ${c.round}: −${c.lost} Goodwill`;
+    strip.append(li);
+    chipEls.push(li);
+  }
+  if (more) {
+    const li = document.createElement("li");
+    li.className = "tally-leak tally-more";
+    li.textContent = `+${more}`;
+    strip.append(li);
+    chipEls.push(li);
+  }
+  reel.append(head);
+  if (chipEls.length) reel.append(strip);
+  reel.setAttribute(
+    "aria-label",
+    chips.length ? `Leaks: ${chips.map((c) => `${ENEMIES[c.kind].name}${c.n > 1 ? ` times ${c.n}` : ""} in ${waveWord(g)} ${c.round}, ${c.lost} Goodwill`).join("; ")}${more ? `; ${more} more` : ""}` : "Nothing got through",
+  );
+  box.append(row, reel);
+  ui.resultStats.after(box);
+  box.classList.toggle("lost", !won);
+
+  const settle = () => {
+    for (const [el, c] of nums) el.textContent = c.value.toLocaleString();
+    for (const el of chipEls) el.classList.add("in");
+  };
+  if (REDUCED || reducedMotion()) return settle();
+  const tl = tallyTimeline(stars, chipEls.length);
+  for (const [el] of nums) el.textContent = "0";
+  const t0 = performance.now();
+  const tick = () => {
+    if (!box.isConnected) return;
+    const t = performance.now() - t0 - tl.counters;
+    for (const [el, c] of nums) el.textContent = countAt(c.value, t, tl.countMs).toLocaleString();
+    if (t < tl.countMs) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  chipEls.forEach((el, i) =>
+    setTimeout(() => {
+      if (!box.isConnected) return;
+      el.classList.add("in");
+      if (i === 0) sfx.playLeak();
+    }, tl.leaks[i]),
+  );
+}
+
 function finish(g: Game): void {
   if (game !== g) return;
   document.getElementById("loss-causes")?.remove();
+  document.getElementById("result-tally")?.remove();
   const xpBox = document.getElementById("result-xp");
   if (xpBox) xpBox.hidden = true;
   document.getElementById("result-retry")?.remove();
@@ -3211,13 +3320,9 @@ function finish(g: Game): void {
   ui.resultStars.setAttribute("aria-label", won ? `${n} of 3 stars` : "");
   // A loss has no stars: don't leave an empty row where the causes should be.
   ui.resultStars.hidden = !won;
-  const stats = [
-    `Goodwill kept ${g.goodwill}/${g.maxGoodwill}`,
-    `Cath's knockouts ${g.hero.kills}`,
-  ];
+  // Goodwill and knockouts count up in the tally below; this line keeps the run's other honours.
+  const stats = [`Cath's knockouts ${g.hero.kills}`];
   const crew = g.towers.filter((t) => (t.kills ?? 0) > 0).sort((a, b) => (b.kills ?? 0) - (a.kills ?? 0));
-  const totalKO = crew.reduce((a, t) => a + (t.kills ?? 0), 0);
-  if (totalKO) stats.unshift(`Knockouts ${totalKO.toLocaleString()}`);
   if (g.closeCalls) stats.push(`Close calls ${g.closeCalls}`);
   if (crew[0]) stats.push(`MVP ${TOWERS[crew[0].kind].name} (${(crew[0].kills ?? 0).toLocaleString()})`);
   if (g.difficulty !== "normal") stats.push(`${g.difficulty[0]!.toUpperCase() + g.difficulty.slice(1)} difficulty`);
@@ -3239,6 +3344,7 @@ function finish(g: Game): void {
     ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`
     : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
   renderLossCauses(g, won);
+  renderTally(g, won, won ? n : 0);
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);

@@ -1088,6 +1088,116 @@ button {
   font-weight: 700;
   color: var(--soil);
 }
+/* The end tally (plan item 10): three counters that roll up after the stars, then the run's leaks land one by one. */
+.tally {
+  margin: 0 0 12px;
+}
+.tally-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 10px;
+}
+.tally-counts > div {
+  padding: 6px 4px 5px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-hi);
+  text-align: center;
+}
+.tally-counts dt {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.tally-counts dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.tally-counts > div:first-child dd {
+  color: var(--marks-ink);
+}
+.tally-counts > div:last-child dd {
+  color: var(--goodwill);
+}
+.tally-of {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.tally-head {
+  margin: 0 0 4px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.tally-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tally-leak {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 52px;
+  padding: 3px 2px 2px;
+  border: 1.5px solid var(--goodwill);
+  border-radius: 9px;
+  background: var(--card);
+  opacity: 0;
+  transform: translateY(-14px) scale(0.8);
+}
+.tally-leak.in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 160ms ease-out,
+    transform 260ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.tally-icon {
+  width: 34px;
+  height: 34px;
+}
+.tally-cap {
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--goodwill);
+}
+.tally-n {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 20px;
+  padding: 1px 4px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper-hi);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.tally-more {
+  align-content: center;
+  min-height: 52px;
+  font-weight: 800;
+  color: var(--goodwill);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tally-leak,
+  .tally-leak.in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 .xp-bars {
   display: grid;
   gap: 4px;

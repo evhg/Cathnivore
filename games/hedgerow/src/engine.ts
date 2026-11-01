@@ -4060,6 +4060,7 @@ function step(game: Game): void {
       const crowd = hasTwist(game.level, "crowd") && !isBig(e.kind) ? 0.5 : 1;
       const bounty = Math.max(1, Math.round(ENEMIES[e.kind].bounty * crowd * (hasTwist(game.level, "fast") ? 1.5 : 1)));
       game.marks += bounty;
+      game.earned += bounty;
       const killer = e.lastHit !== undefined ? game.towers.find((t) => t.id === e.lastHit) : undefined;
       if (killer) {
         const before = rankOf(killer.kills ?? 0);
