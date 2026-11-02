@@ -44,3 +44,68 @@ test('plan item 31: hovering a tray card draws a ring the size of the tower\'s r
     await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.ring())).toBeNull()
   }
 })
+
+/** The tallest empty stretch down the side panel: between its children, and from the last one to its foot. */
+async function emptyBand(page: import('@playwright/test').Page): Promise<number> {
+  return page.evaluate(() => {
+    const p = document.querySelector<HTMLElement>('.play .panel')!
+    const pr = p.getBoundingClientRect()
+    const kids = [...p.children]
+      .filter((k) => getComputedStyle(k).display !== 'none' && getComputedStyle(k).position !== 'absolute')
+      .map((k) => k.getBoundingClientRect())
+      .filter((r) => r.height > 0)
+      .sort((a, b) => a.top - b.top)
+    let y = pr.top
+    let gap = 0
+    for (const r of kids) {
+      gap = Math.max(gap, r.top - y)
+      y = Math.max(y, r.bottom)
+    }
+    return Math.max(gap, Math.min(pr.bottom, pr.top + p.clientHeight) - y)
+  })
+}
+
+// Plan item 31: Cath's field notebook fills the desktop side column (no empty band over 120 px) with a page on
+// the tower last looked at and a sketch of the next new vehicle; on a phone it waits in the drawer.
+test('plan item 31: the side column ends on Cath\'s notebook, never an empty band', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the side column is a desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(URL)
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i < 6; i++) stars[String(i)] = 3
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '6': true }, seen: {}, tips: { all: true } }))
+  })
+  for (const level of [6, 12]) {
+    await page.goto(`${URL}&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    const nb = page.locator('.panel .field-notebook')
+    await expect(nb).toBeVisible()
+    await expect(nb.locator('.nb-empty').first()).toBeVisible()
+    await expect(nb.locator('.nb-enemy .nb-name')).not.toBeEmpty()
+    expect(await emptyBand(page)).toBeLessThanOrEqual(120)
+    // Plant one: its page names it, its stand and what it sells for.
+    await page.evaluate(() => {
+      const hg = (window as unknown as { hedgerow: { game(): { level: { cols: number; rows: number } }; place(g: unknown, k: string, c: number, r: number): { ok: boolean }; refresh(): void } }).hedgerow
+      const g = hg.game()
+      for (let r = 0; r < g.level.rows; r++) for (let c = 0; c < g.level.cols; c++) if (hg.place(g, 'scarecrow', c, r).ok) return hg.refresh()
+    })
+    await expect(nb.locator('.nb-tower .nb-name')).toHaveText(/Scarecrow/)
+    await expect(nb.locator('.nb-sell')).toHaveText(/Sells \d+/)
+    await expect(nb.locator('.nb-stand')).toHaveAttribute('aria-label', /tier 1 of 3/)
+    expect(await emptyBand(page)).toBeLessThanOrEqual(120)
+  }
+})
+
+test('plan item 31: on a phone the notebook opens in the round drawer', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(URL)
+  await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { '1': 3, '2': 3, '3': 3, '4': 3, '5': 3 }, seenBefore: { '6': true }, seen: {}, tips: { all: true } })))
+  await page.goto(`${URL}&level=6`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+  const nb = page.locator('.panel .field-notebook')
+  await expect(nb).toBeHidden()
+  await page.locator('.drawer-handle').click()
+  await expect(nb).toBeVisible()
+  await expect(nb.locator('.nb-enemy .nb-name')).not.toBeEmpty()
+})

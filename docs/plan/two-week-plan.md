@@ -433,7 +433,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of puzzle, win and stats at P, D and dark; greyscale legible.
 - **Size:** 2
 
-## 31. [ ] Hedgerow: a tower almanac in the tray, and Cath's field notebook
+## 31. [x] Hedgerow: a tower almanac in the tray, and Cath's field notebook *(done 2026-11-02, 54604d7..HEAD: tray cards with name, role glyph and range and damage pips, a hover or long-press range ring on the field; the desktop side column ends on Cath's notebook (a ruled page growing to the foot: the tower last looked at with its stand and sell value, a sketch of the next new vehicle with its round), in the round drawer on a phone; `e2e-site/hedgerow-tray.spec.ts` (ring radius equals range; no empty band over 120 px at D on levels 6 and 12); field 75% checks pass; shots P, L, D. The tier path itself stays on the tower sheet, which already fills the column when a tower is selected)*
 - **Why:** the build tray shows unnamed icons with a price (`hedgerow-field-P`, `-D`), and the desktop side column is empty below "Coming up". Players can't learn the towers in place.
 - **Build:**
   - Tray cards with name, role glyph and range and damage pips; hover or long-press draws the range ring on the field before placing.

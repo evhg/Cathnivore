@@ -2751,8 +2751,8 @@ body:has(#dlg-pause[open]) .paused-note {
 .tag::before {
   content: "";
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--paper);
   box-shadow: inset 0 0 0 1.5px var(--line);
@@ -3312,4 +3312,119 @@ body:has(#dlg-pause[open]) .paused-note {
   border-bottom: 2px solid var(--line);
   background: var(--paper-hi);
   transform: rotate(45deg);
+}
+
+/* ================================================================= Cath's field notebook (plan item 31) */
+/* The side column's foot: a ruled page with a margin line, a page on the last tower looked at and a pencil
+   sketch of the next new vehicle. It grows to the column's foot so the column never ends on an empty band. */
+.play .panel .field-notebook {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 4px 8px;
+  margin-top: var(--sp-1);
+  padding: 6px 8px 8px 22px;
+  border-radius: var(--r-note);
+  background:
+    linear-gradient(90deg, transparent 15px, color-mix(in srgb, var(--goodwill) 45%, transparent) 15px 16.5px, transparent 16.5px),
+    repeating-linear-gradient(180deg, transparent 0 21px, color-mix(in srgb, var(--corp) 14%, transparent) 21px 22px),
+    var(--paper-hi);
+  box-shadow: 0 0 0 1.5px var(--line), 0 3px 0 var(--paper-shade);
+}
+.play .panel .field-notebook h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  font: 700 var(--fs-d3) / 1.1 var(--font-voice);
+  font-variation-settings: var(--display-axes);
+  color: var(--ink);
+  rotate: -1deg;
+  transform-origin: left;
+}
+.play .panel .nb-page {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 6px;
+  align-items: start;
+  align-content: start;
+}
+.play .panel .nb-page + .nb-page {
+  padding-left: 8px;
+  border-left: 1.5px dashed color-mix(in srgb, var(--ink-3) 50%, transparent);
+}
+/* A sketch, not a sticker: the icon in graphite on its own scrap of paper, a little askew */
+.play .panel .nb-sketch {
+  width: 36px;
+  height: 36px;
+  padding: 3px;
+  border-radius: 3px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink-3) 40%, transparent), 0 2px 4px var(--corp-a18);
+  filter: grayscale(1) contrast(1.35) sepia(0.35);
+  rotate: -3deg;
+}
+.play .panel .nb-enemy .nb-sketch {
+  rotate: 2.5deg;
+}
+.play .panel .nb-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.play .panel .nb-eyebrow {
+  font: 800 var(--fs-label) / 1.1 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.play .panel .nb-name {
+  font: 700 var(--fs-small) / 1.15 var(--font-display);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.play .panel :is(.nb-when, .nb-stand, .nb-empty) {
+  font: 600 var(--fs-label) / 1.3 var(--font-ui);
+  color: var(--ink-2);
+}
+.play .panel .nb-when {
+  color: var(--goodwill);
+  font-weight: 800;
+}
+.play .panel .nb-sell {
+  font: 800 var(--fs-label) / 1.2 var(--font-ui);
+  color: var(--marks-ink);
+}
+.play .panel .nb-empty {
+  grid-column: 1 / -1;
+  text-wrap: pretty;
+}
+/* Its stand, bed to stone drum: three pencil dots, the ones climbed inked */
+.play .panel .nb-stand {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.play .panel .nb-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+.play .panel .nb-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+}
+.play .panel .nb-dots i.on {
+  background: var(--ink);
+  box-shadow: none;
+}
+/* Phones: the notebook waits in the drawer, and shows when the round is pulled up */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .play .panel.panel-preview:not(.open) .field-notebook {
+    display: none;
+  }
+  .play .panel .field-notebook {
+    flex: none;
+  }
 }

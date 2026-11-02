@@ -136,6 +136,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
@@ -414,6 +415,8 @@ let acc = 0;
 let raf = 0;
 let finished = false;
 let panelKey = "";
+/** Plan item 31: the tower Cath's notebook keeps a page on (the last one looked at). */
+let notebookTower: number | null = null;
 let earlyCalls = 0;
 /** Every leak of this run, in order, for the end tally's replay strip. */
 const runLeaks: LeakRecord[] = [];
@@ -1351,6 +1354,7 @@ function renderPanel(force = false): void {
   // Portrait phones: anything chosen on the field opens as a sheet over the bottom of it (plan item 10).
   p.classList.add("panel-sheet");
   if (t) {
+    notebookTower = t.id;
     towerCard(p, g, t);
     return;
   }
@@ -1564,8 +1568,90 @@ function wavePreview(p: HTMLElement, g: Game): void {
   // the card keeps only the facts (a boss, air, heavy plant), as a plain note.
   const advice = cathAdvice(next);
   if (advice) p.append(line(advice, "ticket-note wave-advice"));
-  if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
+  // How to build is on the notebook's empty page (plan item 31); the hint keeps how to move Cath, on the first
+  // fields only (by level 3 she's been moved, and the line pushed the notebook off a 900 px column).
+  if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) p.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
   if (fleet) p.append(fieldIntel(g));
+  p.append(fieldNotebook(g));
+}
+
+/** What a tower stands on at each visible tier (plan item 19's plinths). */
+const STANDS = ["Bed", "Plank deck", "Stone drum"] as const;
+
+/** The next vehicle this lane hasn't shown yet (not in an earlier round, never met): its kind and round. */
+function nextNew(g: Game): { kind: EnemyKind; wave: number } | null {
+  const met = new Set<EnemyKind>();
+  for (const w of g.level.waves.slice(0, g.wave)) for (const gr of w) met.add(gr.enemy);
+  for (let i = g.wave; i < g.level.waves.length; i++)
+    for (const gr of g.level.waves[i]!) if (!met.has(gr.enemy) && !data.seen[gr.enemy]) return { kind: gr.enemy, wave: i + 1 };
+  return null;
+}
+
+/** A tower's growth for picking the notebook's page when none was looked at: tiers bought. */
+function grown(t: Tower): number {
+  return t.path ? t.path[0] + t.path[1] + t.path[2] : t.tier;
+}
+
+/**
+ * Plan item 31: Cath's field notebook, the side column's foot on a desktop (and the open drawer on a phone). A page
+ * on the last tower looked at (its stand from bed to stone drum, its build along each path, what it sells for) and a
+ * pencil sketch of the next new vehicle on the lane with the round it arrives.
+ */
+function fieldNotebook(g: Game): HTMLElement {
+  const nb = document.createElement("section");
+  nb.className = "field-notebook";
+  nb.setAttribute("aria-label", "Cath's field notebook");
+  const h = document.createElement("h3");
+  h.textContent = "Cath's notebook";
+  nb.append(h);
+  const t = g.towers.find((x) => x.id === notebookTower) ?? [...g.towers].sort((a, b) => grown(b) - grown(a))[0];
+  const page = document.createElement("div");
+  page.className = "nb-page nb-tower";
+  if (t) {
+    page.dataset.tower = String(t.id);
+    page.append(img(towerIcon(t.kind, t.tier, t.spec ?? null, t.path), "nb-sketch"));
+    const txt = document.createElement("div");
+    txt.className = "nb-text";
+    txt.append(line(towerName(t), "nb-name"));
+    const tier = towerTier(t);
+    const on = STANDS[tier - 1]!;
+    // Its stand, bed to stone drum, as three pencil dots and the word for the one it's on.
+    const stand = document.createElement("p");
+    stand.className = "nb-stand";
+    stand.setAttribute("aria-label", `Stands on a ${on.toLowerCase()}, tier ${tier} of 3`);
+    const dots = document.createElement("span");
+    dots.className = "nb-dots";
+    dots.setAttribute("aria-hidden", "true");
+    for (let i = 1; i <= 3; i++) {
+      const d = document.createElement("i");
+      if (i <= tier) d.className = "on";
+      dots.append(d);
+    }
+    stand.append(dots, on);
+    txt.append(stand);
+    if (t.path && hasPaths(t.kind)) {
+      const defs = PATHS[t.kind].paths;
+      const bits = ([0, 1, 2] as const).filter((i) => t.path![i] > 0).map((i) => `${defs[i].name} ${t.path![i]}`);
+      page.title = `Build ${buildName(t.path)}${bits.length ? `: ${bits.join(", ")}` : ""}`;
+    }
+    txt.append(line(`Sells ${sellValue(t, g)}`, "nb-sell"));
+    page.append(txt);
+  } else page.append(line("Nothing planted yet: tap a plot to build.", "nb-empty"));
+  nb.append(page);
+  const nx = nextNew(g);
+  const lane = document.createElement("div");
+  lane.className = "nb-page nb-enemy";
+  if (nx) {
+    lane.dataset.kind = nx.kind;
+    lane.append(img(enemyIcon(nx.kind), "nb-sketch"));
+    const txt = document.createElement("div");
+    txt.className = "nb-text";
+    txt.append(line(`Next new`, "nb-eyebrow"), line(ENEMIES[nx.kind].name, "nb-name"), line(`${Word(g)} ${waveNo(g, nx.wave)}`, "nb-when"));
+    lane.title = describeEnemy(nx.kind);
+    lane.append(txt);
+  } else lane.append(line("Nothing new to come: you've met it all.", "nb-empty"));
+  nb.append(lane);
+  return nb;
 }
 
 /** Desktop side panel: which locks the field answers and the rounds ahead (styles hide it on a phone). */
