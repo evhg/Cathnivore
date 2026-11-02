@@ -1174,6 +1174,12 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 @media (max-height: 520px), (max-width: 760px) {
   .hud-sub > .line { background: rgb(var(--shade-rgb) / .86); }
 }
+/* Plan item 29: on a short landscape screen the subtitle drops to the bottom band between the vitals and the arms,
+   so it never meets the middle 30% of the screen (the crosshair and the fight); the radio stacks just above it. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud-sub { bottom: var(--edge-b); }
+  .hud-barks { bottom: calc(var(--edge-b) + var(--u) * 120); }
+}
 .hud-sub > .line {
   display: inline;
   padding: .14em .5em;
@@ -2140,6 +2146,11 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   height: calc(var(--u) * 12);
   translate: -50% 0;
   background: var(--blood-hot);
+}
+/* The lieutenant: the red-dash mark, upright, shorter than the objective's so the two never read as one. */
+.hud-compass-tick.lt {
+  height: calc(var(--u) * 10);
+  background: repeating-linear-gradient(to bottom, var(--blood-hot) 0 calc(var(--u) * 3), transparent 0 calc(var(--u) * 5));
 }
 .hud-compass-tick.behind {
   left: calc(50% + var(--x, 0) * 42%);

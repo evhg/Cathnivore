@@ -62,7 +62,7 @@ export interface HudState {
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
   waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
   /** Plan item 29: her heading (radians clockwise from north) and the objective's place on the compass tape. */
-  compass?: { heading: number; tick: { x: number; off: boolean } | null } | null;
+  compass?: { heading: number; tick: { x: number; off: boolean } | null; lt?: { x: number; off: boolean } | null } | null;
   /** Aiming down the sights (the objective marker steps back, S7.2). */
   ads?: boolean;
   /** The aim-down-sights blend, 0 hip .. 1 aimed: the crosshair fades out as the sights (or the dot) take over (S2.2 layer 1). */
@@ -135,6 +135,7 @@ export class Hud {
   private compassEl: HTMLElement;
   private compassPts: HTMLElement[] = [];
   private compassTick: HTMLElement;
+  private compassLt: HTMLElement;
   private objText: HTMLElement;
   private prompt: HTMLElement;
   private promptKey: HTMLElement;
@@ -186,6 +187,8 @@ export class Hud {
       this.compassPts.push(pt);
     }
     this.compassTick = el("span", "hud-compass-tick", this.compassEl);
+    // The lieutenant, once she has seen him: a dashed red-pencil tick (the red-dash mark over his head).
+    this.compassLt = el("span", "hud-compass-tick lt", this.compassEl);
     this.objective.dataset.case = "Case";
     this.objText = el("span", "hud-objective-text", this.objective);
     // Vitals, bottom left (top left on touch): name and level, hero HP over a segmented bar, armour, XP.
@@ -512,6 +515,13 @@ export class Hud {
         this.compassTick.style.setProperty("--x", t.x.toFixed(3));
         this.compassTick.classList.toggle("behind", t.off);
         this.compassTick.dataset.x = t.x.toFixed(3);
+      }
+      const lt = s.compass.lt;
+      this.show(this.compassLt, !!lt);
+      if (lt) {
+        this.compassLt.style.setProperty("--x", lt.x.toFixed(3));
+        this.compassLt.classList.toggle("behind", lt.off);
+        this.compassLt.dataset.x = lt.x.toFixed(3);
       }
     }
     this.wpPulse = Math.max(0, this.wpPulse - dt);

@@ -164,6 +164,8 @@ export interface Session {
   talk?: () => void;
   /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
   lieutenant?: () => Enemy | null;
+  /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
+  objective?: () => THREE.Vector3 | null;
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
   lastStation?: string;
   travelling?: string;
@@ -441,6 +443,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   const ltTalk = talkFor((o.district ?? "market") as DistrictName);
   let lieutenant: Enemy | null = null;
+  /** Plan item 29: she has seen the lieutenant's name over his head, so he has a tick on the compass. */
+  let ltKnown = false;
   if (!tutorial) {
     for (const [key, route] of Object.entries(world.markers)) {
       if (!key.startsWith("patrol:") || !route.length) continue;
@@ -1571,6 +1575,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     wantTalk = true;
   };
   s.lieutenant = () => lieutenant;
+  s.objective = () => objectiveAt();
   hud.onCaseBoard = () => {
     menuOpen = false;
     wantMap = true;
@@ -2888,10 +2893,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target ?? null;
   }
   /** Plan item 29: her heading and the objective's tick on the compass tape. */
-  function compass(): { heading: number; tick: { x: number; off: boolean } | null } {
+  function compass(): { heading: number; tick: { x: number; off: boolean } | null; lt: { x: number; off: boolean } | null } {
     const heading = headingOf(player.yaw);
-    const t = dead || stageQuiet ? null : objectiveAt();
-    return { heading, tick: t ? tapeTick(heading, player.pos, t) : null };
+    const quiet = dead || stageQuiet;
+    const t = quiet ? null : objectiveAt();
+    // The lieutenant joins the tape once she has seen his name over his head (ltKnown), until the talk or his death.
+    const lt = !quiet && ltKnown && lieutenant?.alive ? tapeTick(heading, player.pos, lieutenant.position) : null;
+    return { heading, tick: t ? tapeTick(heading, player.pos, t) : null, lt };
   }
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
     const t = objectiveAt();
@@ -3012,6 +3020,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, e === lieutenant ? 0.22 : 0.45, 0)).project(world.camera);
       if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) continue;
       if (e === lieutenant) {
+        ltKnown = true;
         out.push({ x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, tint: "", name: e.kit.name });
         continue;
       }

@@ -406,7 +406,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of rounds 1, 5 and 10 at P and D.
 - **Size:** 2
 
-## 29. [ ] NIGHT SHIFT: a HUD that guides without clutter
+## 29. [x] NIGHT SHIFT: a HUD that guides without clutter *(done 2026-11-02, 7f82510..HEAD: a thin compass tape at the top centre with a red-pencil objective tick (an arrow at the end when behind her) and a dashed tick for the lieutenant once she has seen his name; the weapon block (name, rounds in the figures face, amber at a quarter, blood at empty), the hit-direction crescents (`ui/dmgring.ts`) and the blood vignette (`render/post.ts` Vitals pass, strength-only beat under reduced motion) were already in; the subtitle drops to the bottom band on short landscape screens; `e2e-site/cathode-hud.spec.ts` (tick within 5 degrees at three headings, rounds drop on fire, subtitle clear of the central 30% at L and D); type and CSS lints pass; shots D and L via `scripts/cathode-hud-shots.mjs`)*
 - **Why:** the HUD shows a health bar and the job name over an empty rule (`cathode-hud-D`); there's no ammo, no bearing to the objective, no hit direction, and at L Cath's subtitle sits over the crosshair (`cathode-hud-L`).
 - **Build:**
   - A thin compass tape at the top with a red-pencil objective tick (and the lieutenant once known, item 14).

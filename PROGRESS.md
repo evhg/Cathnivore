@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **Plan items 27 and 28 done (2026-11-02 11:51 session).** Next: **plan item 29** (NIGHT SHIFT HUD). Its compass tape is in (`ui/compass.ts`, unit-tested; drawn top centre by `hud.ts`, `scripts/cathode-compass-shots.mjs`); shot at L (D still loading after 45 s under swiftshader: give it longer); still to do: the e2e for the tick's bearing, the weapon block, hit smears, low-health vignette, subtitles clear of the middle 30%.
+- **Plan item 29 (NIGHT SHIFT HUD), 2026-11-02 12:51 session:** slice 2 = the lieutenant's dashed tick on the compass once she has seen his name, the subtitle dropped into the bottom band on short landscape screens (it met the central 30% at L), `e2e-site/cathode-hud.spec.ts` (tick within 5 degrees, rounds drop on fire, subtitle clear of the centre at L and D), `scripts/cathode-hud-shots.mjs`. The weapon block, hit-direction crescents (`ui/dmgring.ts`) and the blood vignette (`render/post.ts` Vitals pass) already exist; checking each against the item.
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing), Cathnivore setup at D has an empty Difficulty panel.
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
