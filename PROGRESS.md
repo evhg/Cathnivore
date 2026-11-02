@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - **Plan items 20 and 21 done (2026-11-02 08:51 session).** Only item 23 (Cath's poses) is open, so per CLAUDE.md step 4 the next session is a **planning** session: shoot every game at P and D, subagent critique against VISION.md, add whole features to the plan. Item 23 can follow.
-- Known pre-existing failure: `e2e/disabled-actions.spec.ts:53` expects 3 still-unaffordable Invest cards after two Grafts and now sees 2 (the seed-1 market changed, not the UI); fix the expectation after checking the market. Known flakes under load: `e2e/tutorial.spec.ts` "walks chapter 1" on phone; `e2e-site/site.spec.ts` "plan item 10" tally on phone.
+- `e2e/disabled-actions.spec.ts:53` fixed (it hard-coded 3 cards still short after two Grafts; now derived from each card's shortfall, and it closes its tooltip before grafting). `npm run check` green (1947). Known flakes under load: `e2e/tutorial.spec.ts` "walks chapter 1" on phone; `e2e-site/site.spec.ts` "plan item 10" tally on phone.
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
 

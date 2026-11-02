@@ -60,9 +60,11 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   // The visible label is "Buy <card>" under the INVEST head; the button's accessible name keeps "Invest: buy".
   const investItems = page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) })
   await expect(investItems).toHaveCount(4)
+  const shortBy: number[] = []
   for (const item of await investItems.all()) {
     await expect(item.getByRole('button', { name: /^Invest/ })).toBeDisabled()
     await expect(item.locator('.action-why-not')).toHaveText(/^Need \d+ more Marks?$/)
+    shortBy.push(Number((await item.locator('.action-why-not').innerText()).match(/\d+/)![0]))
   }
   await expect(investItems.filter({ hasText: 'Wholesale Account' }).locator('.action-why-not')).toHaveText('Need 2 more Marks')
 
@@ -70,6 +72,8 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   const disabledTrigger = investItems.first().locator('.tooltip-trigger-button')
   await disabledTrigger.dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.tooltip-popover')).toHaveCount(0)
 
   // A disabled button is genuinely inert.
   const actionsLeftBefore = await page.locator('.active-producer').textContent()
@@ -77,13 +81,21 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
 
   // Grafting twice (+1 Marks each, no other cost) affords Wholesale Account, which swaps from a disabled
-  // placeholder to a real, clickable Invest button — the other 3 cards stay disabled (still short).
+  // placeholder to a real, clickable Invest button; every card that was more than 2 Marks short stays
+  // disabled (still short), and any other card 2 short becomes affordable with it.
+  // Each Graft spends an action seed; wait for it before the next, since the hand re-lays out after each.
+  const seeds = page.locator('.active-producer .pip.on')
+  const startSeeds = await seeds.count()
   await page.getByRole('button', { name: /^Graft/ }).click({ force: true })
+  await expect(seeds).toHaveCount(startSeeds - 1)
   await page.getByRole('button', { name: /^Graft/ }).click({ force: true })
+  await expect(seeds).toHaveCount(startSeeds - 2)
   const wholesaleAccount = page.locator('.action-item', { hasText: 'Wholesale Account' })
   await expect(wholesaleAccount.locator('.action-why-not')).toHaveCount(0)
   await expect(wholesaleAccount.getByRole('button', { name: /^Invest/ })).toBeEnabled()
-  await expect(page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) }).locator('.action-why-not')).toHaveCount(3)
+  await expect(page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) }).locator('.action-why-not')).toHaveCount(
+    shortBy.filter((n) => n > 2).length,
+  )
 })
 
 // ROADMAP 9, continued: a `targeting: 'none'` Scheme (never needs a region) gets the same per-card
