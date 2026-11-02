@@ -5093,7 +5093,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return "ok";
   };
   // ---- C10 "Enforcer v2" review stages ----
-  // enemy-front-10m / enemy-back-10m: the stage guard 10 m down the street, idle, facing her or turned away.
+  // enemy-front-10m / enemy-back-10m: the stage guard 10 m down the street, idle, facing her or turned away (any
+  // distance: enemy-front-25m).
   // turntable-<arch>: four of one archetype side by side, turned 0, 45, 90 and 180 degrees, 4.6 m off.
   // silhouette-lineup: the archetypes side by side as flat black on mid grey (S3.1's silhouette test).
   // guard-from-10m: the owner's audit frame, the first job's guard under his lamp 10 m off, with no diamond (&job).
@@ -5175,7 +5176,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     world.camera.getWorldDirection(fwd);
     const flat = new THREE.Vector3(fwd.x, 0, fwd.z).normalize();
     const side = new THREE.Vector3(-flat.z, 0, flat.x);
-    if (name === "enemy-front-10m" || name === "enemy-back-10m") {
+    // Plan item 41: any distance (`enemy-front-25m`: the far-off readability check).
+    const enemyAt = /^enemy-(front|back)-(\d+)m$/.exec(name);
+    if (enemyAt) {
       if (stageGuard && stageGuard.body.lost.size === 0 && enemies.includes(stageGuard)) {
         if (!stageGuard.alive) stageGuard.revive();
       } else stageGuard = null;
@@ -5184,10 +5187,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (!g) return "no enemy";
       stageGuard = g;
       g.revive();
-      const at = eye.clone().addScaledVector(flat, 10);
+      const at = eye.clone().addScaledVector(flat, Number(enemyAt[2]));
       at.y = ground(at.x, at.z);
       g.motion.pos.copy(at);
-      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (name === "enemy-back-10m" ? Math.PI : 0);
+      g.motion.yaw = Math.atan2(eye.x - at.x, eye.z - at.z) + (enemyAt[1] === "back" ? Math.PI : 0);
       g.hp = g.kit.maxHp;
       g.flinch.reset();
       g.update(0.0001, sightNone(), rays, world.colliders, ground);
@@ -6258,7 +6261,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       secondWindFrame(0);
       return r;
     }
-    if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name)) return c10Stage(name, tMs);
+    if (C10_STAGES.includes(name) || /^firefight-\d+$/.test(name) || /^enemy-(front|back)-\d+m$/.test(name)) return c10Stage(name, tMs);
     if (C16_STAGES.includes(name.replace(/-\d+$/, ""))) return c16Stage(name, tMs);
     if (C3_STAGES.includes(name)) return c3Stage(name, tMs);
     if (C4_STAGES.includes(name)) return c4Stage(name, tMs);
