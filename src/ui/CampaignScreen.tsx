@@ -3,6 +3,7 @@ import { REGIONS } from '../content/map'
 import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
+import CampaignMap from './CampaignMap'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -144,6 +145,7 @@ export default function CampaignScreen({
           title="Cath"
         />
       </header>
+      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} />
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)

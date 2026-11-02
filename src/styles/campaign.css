@@ -554,3 +554,92 @@ html.no-animations .campaign-screen * {
   .cmp-path .cmp-card:hover .cmp-cta,
   .cmp-path .cmp-card:active .cmp-cta { transform: none; }
 }
+
+/* ---- Plan item 35: the map of Marrow (ui/CampaignMap.tsx). Held regions wear Hollowell orange over
+   their own ground; a won chapter's regions turn green with bunting. ---- */
+.cmp-map {
+  margin: 0 auto 22px;
+  padding: 10px;
+  border-radius: 18px;
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--soil) 22%, transparent), 0 10px 24px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.cmp-map-svg {
+  display: block;
+  width: 100%;
+  max-height: min(62vh, 520px);
+  overflow: visible;
+}
+
+.cmp-map-land {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--soil) 30%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+
+.cmp-map-ground {
+  fill: var(--region-capital);
+  stroke: var(--surface);
+  stroke-width: 3;
+}
+.cmp-map-pasture .cmp-map-ground { fill: var(--region-pasture); }
+.cmp-map-crop .cmp-map-ground { fill: var(--region-crop); }
+.cmp-map-coast .cmp-map-ground { fill: var(--region-coast); }
+
+.cmp-map-tint {
+  fill: transparent;
+  stroke: none;
+  transition: fill 600ms ease;
+}
+.is-held .cmp-map-tint { fill: color-mix(in srgb, var(--hollowell) 38%, transparent); }
+.is-free .cmp-map-tint { fill: color-mix(in srgb, var(--pasture) 34%, transparent); }
+.is-next .cmp-map-ground { stroke: var(--wheat); stroke-width: 4; }
+
+.cmp-map-name {
+  font: 700 11px/1 var(--font-display);
+  text-anchor: middle;
+  fill: var(--soil);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.cmp-bunting-line { fill: none; stroke: var(--soil); stroke-width: 1; }
+.cmp-flag { stroke: none; }
+.cmp-flag-0 { fill: var(--pasture-deep); }
+.cmp-flag-1 { fill: var(--wheat); }
+.cmp-flag-2 { fill: var(--clay); }
+
+.cmp-map-lane {
+  fill: none;
+  stroke: var(--soil);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 6;
+  opacity: 0.7;
+}
+
+.cmp-pin { cursor: pointer; }
+.cmp-pin-disc {
+  fill: var(--surface);
+  stroke: var(--soil);
+  stroke-width: 2;
+}
+.cmp-pin-done .cmp-pin-disc { fill: var(--pasture-deep); stroke: var(--pasture-deep); }
+.cmp-pin-current .cmp-pin-disc { fill: var(--wheat); stroke: var(--soil); stroke-width: 2.5; }
+.cmp-pin-n {
+  font: 800 11px/1 var(--font-text);
+  text-anchor: middle;
+  fill: var(--soil);
+  pointer-events: none;
+}
+.cmp-pin-done .cmp-pin-n { fill: var(--paper-on-fixed-fill); }
+
+.cmp-map-cath svg { overflow: visible; filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 25%, transparent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp-map-tint { transition: none; }
+}
