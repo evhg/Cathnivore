@@ -1349,6 +1349,7 @@ function renderPanel(force = false): void {
   if (!sel) {
     wavePreview(p, g);
     drawerHandle(p);
+    fitPreview(p);
     return;
   }
   // Portrait phones: anything chosen on the field opens as a sheet over the bottom of it (plan item 10).
@@ -1385,6 +1386,56 @@ function renderPanel(force = false): void {
   }
   buildMenu(p, g, sel);
 }
+
+/**
+ * Plan item 40: the desktop side column never scrolls with no cue, so Cath's notebook keeps its foot. When the round
+ * card runs past the column, the lines that repeat something already on screen go first: the round after (Coming up
+ * shows it), then the twist's rule (its tag on the ticket carries it), then the "can't answer" keys (the names stay;
+ * the keys are the warning's hover text), then the round's card line (kept as the ticket's
+ * hover text), then Cath's advice, and last the notebook itself: the column ends on a whole card, never a cut one.
+ * Phones hide these lines anyway.
+ */
+const PREVIEW_SPARE = [
+  ".preview-then",
+  ".twist-line",
+  ".field-warn .warn-key",
+  ".ticket-note:not(.wave-advice)",
+  ".wave-advice",
+  ".field-notebook",
+] as const;
+function fitPreview(p: HTMLElement): void {
+  for (const el of p.querySelectorAll<HTMLElement>(".fit-dropped")) el.classList.remove("fit-dropped");
+  // The last card's foot against the column's content box (scrollHeight also counts the sticky paper fade).
+  const over = () => {
+    const last = [...p.children].reverse().find((c) => c.getClientRects().length > 0);
+    if (!last || !p.clientHeight) return false;
+    return last.getBoundingClientRect().bottom > p.getBoundingClientRect().bottom - parseFloat(getComputedStyle(p).paddingBottom) + 1;
+  };
+  const drop = (sel: string, on: boolean) => {
+    for (const el of p.querySelectorAll<HTMLElement>(sel)) {
+      el.classList.toggle("fit-dropped", on);
+      const ticket = p.querySelector<HTMLElement>(".round-ticket");
+      if (on && el.matches(".ticket-note") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
+    }
+  };
+  const gone: string[] = [];
+  for (const sel of PREVIEW_SPARE) {
+    if (!over()) break;
+    drop(sel, true);
+    gone.push(sel);
+  }
+  // With the notebook gone (Coming up then grows to the foot), give back whatever fits again, latest first.
+  if (!gone.includes(".field-notebook")) return;
+  for (const sel of gone.slice(0, -1).reverse()) {
+    drop(sel, false);
+    if (over()) drop(sel, true);
+  }
+}
+const refit = () => {
+  if (ui.panel.classList.contains("panel-preview")) fitPreview(ui.panel);
+};
+addEventListener("resize", refit);
+void document.fonts?.ready.then(refit);
 
 /** Portrait phones keep the round preview in a drawer under the tower tray: open or shut, it stays as left. */
 let drawerOpen = false;
@@ -1554,7 +1605,15 @@ function wavePreview(p: HTMLElement, g: Game): void {
       const t = tag(`Can't answer`, "warn", `Your field can't answer ${names.join(", ")}`);
       t.append(propRow(miss.reduce((a, m) => a | P[m], 0), "chip-props"));
       head.append(t);
-      warn = line(`Your field can't answer this: ${miss.map((m) => `${PROPERTIES[m].name}. ${PROPERTIES[m].key}`).join(" ")}`, "field-warn");
+      warn = line(`Your field can't answer this:`, "field-warn");
+      // Each lock's key in its own span, so a crowded column can keep just the names (fitPreview).
+      for (const m of miss) {
+        const k = document.createElement("span");
+        k.className = "warn-key";
+        k.textContent = ` ${PROPERTIES[m].key}`;
+        warn.append(` ${PROPERTIES[m].name}.`, k);
+      }
+      warn.title = warn.textContent ?? "";
       warn.setAttribute("role", "status");
     }
   }

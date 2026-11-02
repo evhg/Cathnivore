@@ -2578,7 +2578,7 @@ body:has(#dlg-pause[open]) .paused-note {
     height: 14px;
   }
   .path-foot {
-    column-gap: 4px;
+    column-gap: 2px;
   }
   .path-buy.afford .path-eta {
     width: 20px;
@@ -3427,4 +3427,56 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .panel .field-notebook {
     flex: none;
   }
+}
+
+/* Plan item 40: five things in the desktop tray (Rally from level 25) sit in one row. They wrapped Keep Going onto
+   a second row, which took 80 px from the side column and pushed Cath's notebook off its foot. */
+@media (min-width: 900px) and (min-height: 520.02px) {
+  .play .controls:has(#btn-rally:not([hidden])) {
+    column-gap: 2px;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .ability {
+    min-width: 54px;
+    grid-template-rows: 54px auto;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) :is(.ability-face, .ability .pie-icon, .crown-ability .crown-glyph) {
+    width: 48px;
+    height: 48px;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .ability-ring {
+    width: 54px;
+    height: 54px;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .ability-hp {
+    --ring: 58px;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .ability-label {
+    letter-spacing: 0;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .auto-btn {
+    width: 54px;
+    grid-template-rows: 54px auto;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .auto-btn::before {
+    width: 46px;
+    height: 28px;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .auto-btn::after {
+    width: 22px;
+    height: 22px;
+    translate: -9px 0;
+  }
+  .play .controls:has(#btn-rally:not([hidden])) .auto-btn[aria-pressed="true"]::after {
+    translate: 9px 0;
+  }
+}
+
+/* fitPreview's dropped lines (plan item 40); last in the file so it beats each card's own display. Without the
+   notebook, Coming up runs to the column's foot so it never ends on an empty band. */
+.play .panel .fit-dropped {
+  display: none;
+}
+.play .panel:has(.field-notebook.fit-dropped) .field-intel {
+  flex: 1 0 auto;
+  align-content: start;
 }

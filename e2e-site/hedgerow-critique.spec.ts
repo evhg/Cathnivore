@@ -64,4 +64,31 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
     const cut = await page.locator('.tray-name').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.textContent))
     expect(cut).toEqual([])
   })
+
+  for (const level of [12, 25, 30]) {
+    test(`at 1440x900 level ${level}'s side column ends on a whole card and the tray is one row`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await page.goto('/hedgerow/?sandbox=1&2d')
+      await page.evaluate((lvl) => {
+        const stars = Object.fromEntries(Array.from({ length: 40 }, (_, i) => [String(i + 1), 3]))
+        const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+        localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [lvl]: true }, tips }))
+      }, level)
+      await page.goto(`/hedgerow/?sandbox=1&2d&level=${level}`)
+      await expect(page.locator('.play .panel .field-intel')).toBeVisible()
+      await page.evaluate(() => document.fonts.ready)
+      const r = await page.evaluate(() => {
+        const p = document.querySelector<HTMLElement>('.play .panel')!
+        const last = [...p.children].reverse().find((c) => c.getClientRects().length > 0)!
+        const foot = p.getBoundingClientRect().bottom - parseFloat(getComputedStyle(p).paddingBottom)
+        const tops = [...document.querySelectorAll<HTMLElement>('.play .controls > :is(.ability, .auto-btn)')]
+          .filter((b) => !b.hidden)
+          .map((b) => Math.round(b.getBoundingClientRect().top))
+        return { overBy: Math.round(last.getBoundingClientRect().bottom - foot), gap: Math.round(foot - last.getBoundingClientRect().bottom), spread: Math.max(...tops) - Math.min(...tops) }
+      })
+      expect(r.overBy).toBeLessThanOrEqual(1)
+      expect(r.gap).toBeLessThanOrEqual(2) // the last card runs to the foot: no empty band
+      expect(r.spread).toBeLessThan(20) // one row (a wrapped row sits 80 px lower)
+    })
+  }
 })
