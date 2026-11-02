@@ -22,6 +22,8 @@ const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between
 /* Piles wrap after this many pieces so a heavy board never runs past the hex edge. */
 const PIECE_ROW = 6
 const pieceXY = (n: number) => `${(n % PIECE_ROW) * 16}, ${Math.floor(n / PIECE_ROW) * 14}`
+/** Plan item 20: a tile's thickness (its edge shows below the face) and how far its shadow falls. */
+const TILE_DEPTH = 7
 const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
 function hexCenter(id: RegionId, layout: LayoutId = 'ring'): { x: number; y: number } {
@@ -126,6 +128,23 @@ function RegionTextureDefs() {
       </pattern>
       {/* STYLE.md 6: Lost Land is a "cracked hatched tile" — a cross-hatch pattern under the crack lines
           drawn per-region below, replacing the earlier flat opacity tint. */}
+      {/* Plan item 20 (the board as a diorama): each tile is a painted board piece. The light falls from the
+          top left across the face (a wash over the flat region colour), the tile has a thickness (its edge
+          drawn below the face) and it casts a soft shadow onto the table. */}
+      <linearGradient id="tile-light" x1="0.15" y1="0" x2="0.75" y2="1">
+        <stop offset="0" stopColor="white" stopOpacity={0.34} />
+        <stop offset="0.42" stopColor="white" stopOpacity={0} />
+        <stop offset="0.62" stopColor="black" stopOpacity={0} />
+        <stop offset="1" stopColor="black" stopOpacity={0.16} />
+      </linearGradient>
+      <radialGradient id="tile-paint" cx="0.4" cy="0.38" r="0.7">
+        <stop offset="0" stopColor="white" stopOpacity={0.14} />
+        <stop offset="0.7" stopColor="white" stopOpacity={0} />
+        <stop offset="1" stopColor="black" stopOpacity={0.1} />
+      </radialGradient>
+      <filter id="tile-shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation={7} />
+      </filter>
       <pattern id="texture-lostland" width={8} height={8} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
         <line x1={0} y1={0} x2={0} y2={8} stroke="var(--ink)" strokeWidth={1.4} opacity={0.35} />
         <line x1={4} y1={0} x2={4} y2={8} stroke="var(--ink)" strokeWidth={1.4} opacity={0.35} />
@@ -464,6 +483,26 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
     <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
+      <g className="tile-shadows" filter="url(#tile-shadow)" pointerEvents="none" aria-hidden="true">
+        {active.map((id) => {
+          const { x, y } = hexCenter(id, layout)
+          return <polygon key={id} points={hexPoints(x + 5, y + TILE_DEPTH + 9, HEX_R * GAP_SCALE)} />
+        })}
+      </g>
+      {/* Every tile's edge goes down before any face, so a nearer tile's face covers the edge of the one
+          behind it and the first polygon in each region stays its face. */}
+      <g className="tile-edges" pointerEvents="none" aria-hidden="true">
+        {active.map((id) => {
+          const { x, y } = hexCenter(id, layout)
+          const fill = REGION_FILL[regionType(state, id)]
+          return (
+            <g key={id}>
+              <polygon points={hexPoints(x, y + TILE_DEPTH, HEX_R * GAP_SCALE)} fill={fill} stroke="var(--ink)" strokeWidth={2} />
+              <polygon points={hexPoints(x, y + TILE_DEPTH, HEX_R * GAP_SCALE)} fill="black" opacity={0.32} />
+            </g>
+          )
+        })}
+      </g>
       {active.map((id) => {
         const def = { ...REGIONS[id], type: regionType(state, id) }
         const r = state.regions[id]
@@ -499,6 +538,17 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
               strokeWidth={2}
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
+            <polygon className="tile-paint" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#tile-paint)" pointerEvents="none" />
+            <polygon className="tile-light" points={hexPoints(x, y, HEX_R * GAP_SCALE - 1)} fill="url(#tile-light)" pointerEvents="none" />
+            <polygon
+              className="tile-bevel"
+              points={hexPoints(x, y, HEX_R * GAP_SCALE - 3.5)}
+              fill="none"
+              stroke="white"
+              strokeOpacity={0.3}
+              strokeWidth={2}
+              pointerEvents="none"
+            />
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} id={id} />
             </g>

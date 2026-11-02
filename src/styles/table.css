@@ -448,7 +448,11 @@
   height: 100%;
   max-width: none;
   aspect-ratio: auto;
-  filter: drop-shadow(0 12px 14px rgb(var(--shadow-ink) / .2));
+}
+
+/* plan item 20: each tile casts its own soft shadow onto the table (Map.tsx draws them under the tiles) */
+.tile-shadows polygon {
+  fill: rgb(var(--shadow-ink) / .34);
 }
 
 /* the map key: an "i" tag at the corner opening a card of the pieces' names */
