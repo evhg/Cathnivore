@@ -290,7 +290,10 @@ button.btn-quiet {
   animation: tt-in var(--dur-2) var(--ease-out) both;
 }
 
-/* opened by hover or focus only: it never blocks the controls under it (a tap pins it, and then it can) */
+/* A popover never blocks the controls under it, pinned or not: it only explains, so a tap on it reaches
+   what's beneath (a phone plan card's own highlight button sits under the "?"'s popover) and, being outside
+   the trigger, closes it. */
+.tooltip-popover,
 .tooltip-popover--passive {
   pointer-events: none;
 }
