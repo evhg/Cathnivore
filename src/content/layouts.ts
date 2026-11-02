@@ -38,7 +38,7 @@ export const LAYOUTS: Record<LayoutId, Layout> = {
   ring: {
     id: 'ring',
     name: 'The Ring',
-    blurb: 'Six regions round Kingsmarket.',
+    blurb: 'Six regions round the capital.',
     hexes: { kingsmarket: [0, 0], rivermead: [1, 0], shingleBay: [0, 1], oakvale: [-1, 1], brindleHills: [-1, 0], highmoor: [0, -1], saltmarsh: [1, -1] },
     mix: ['pasture', 'pasture', 'crop', 'crop', 'coast', 'coast'],
     fixedTypes: { highmoor: 'pasture', saltmarsh: 'coast', rivermead: 'crop', shingleBay: 'coast', oakvale: 'crop', brindleHills: 'pasture' },
@@ -46,7 +46,7 @@ export const LAYOUTS: Record<LayoutId, Layout> = {
   coast: {
     id: 'coast',
     name: 'The Long Coast',
-    blurb: 'Ten regions down a ragged shore. Kingsmarket is harder to reach.',
+    blurb: 'Ten regions on a long shore.',
     hexes: {
       kingsmarket: [0, 0],
       rivermead: [1, 0],
@@ -64,7 +64,7 @@ export const LAYOUTS: Record<LayoutId, Layout> = {
   delta: {
     id: 'delta',
     name: 'The Delta',
-    blurb: 'Seven regions split by the river. Only the bridges cross it.',
+    blurb: 'A river splits it. One bridge.',
     hexes: { highmoor: [1, -2], brindleHills: [0, -1], saltmarsh: [1, -1], kingsmarket: [0, 0], oakvale: [-1, 1], shingleBay: [0, 1], rivermead: [-1, 2] },
     mix: ['pasture', 'pasture', 'crop', 'crop', 'coast', 'coast'],
     // The river comes down between the west and east arms; Kingsmarket sits on the mouth.

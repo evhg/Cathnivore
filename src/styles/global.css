@@ -1911,6 +1911,20 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
    (the portraits render larger now but are held at their old 72px here; the mode tiles' art is hidden). */
 .setup .pc-portrait svg { width: 72px; height: 86.4px; }
 .setup .segmented .mode-art, .setup .market-event-eyebrow { display: none; }
+/* Plan item 15: the map picker. Three tiles (the layout in miniature, its name and one line), the seed under them. */
+.setup .layout-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
+.setup .layout-picker .layout-tile {
+  position: relative; display: grid; grid-template-rows: auto auto auto; justify-items: center; align-content: start; gap: 2px;
+  padding: 8px 6px 10px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--paper-hi); cursor: pointer; text-align: center;
+}
+.setup .layout-tile input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.setup .layout-tile:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.setup .layout-tile:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.setup .layout-glyph { display: block; width: auto; height: 44px; max-width: 100%; }
+.setup .layout-name { font-weight: 700; line-height: 1.2; }
+.setup .layout-blurb { font-size: var(--fs-small); color: var(--ink-muted); line-height: 1.25; }
+.setup .setup-seed-field { display: flex; align-items: center; gap: 10px; }
+.setup .setup-seed-field input { flex: 1; min-width: 0; }
 @media (min-width: 1100px) {
   .setup {
     max-width: 1240px; padding: 24px 32px 32px;

@@ -202,7 +202,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The font budget holds.
 - **Size:** 3
 
-## 14. [ ] NIGHT SHIFT: conversations and interrogations
+## 14. [x] NIGHT SHIFT: conversations and interrogations *(done 2026-11-02, 4b15b0f..fc383e1: one lieutenant per district, grabbed by a takedown; Press/Wire/Charm/Pay gated by Nerve, Wire and Scrip; intel as a map tip, a squad struck off or a boss weakness used in the fight; plates per man; e2e for the grab and a pick in the clinic; shots D and L)*
 - **Why:** the story is only subtitles; it has no faces, no talk and no choices.
 - **Build:**
   - In-world talk scenes with close framing and portrait plates.
@@ -214,7 +214,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - An e2e test opens a talk with `?district=clinic`, picks an option and sees its effect.
   - Shots at D and L.
 - **Size:** 5
-- **Progress:** session 1 (2026-11-01 22:51, 4b15b0f): `sim/talk.ts` (one lieutenant per district, Press/Wire/Charm/Pay, intel as waypoint, squad struck off or boss weakness, recorded as `talk:<id>:<opt>`) with unit tests; struck-off squads never arrive (`unlessTalkedOff` in every alarm); the talk screen `ui/talk.ts`; `?talk` and `window.cathode.talk()`; e2e in the clinic (desktop and phone). Left: open the talk by grabbing the lieutenant after a takedown (a marked man per district), waypoints on the map, weaknesses used in the boss fights and shown on the case board, a better portrait plate per man, shots at L after the grab.
+- **Progress:** session 1 (2026-11-01 22:51, 4b15b0f): `sim/talk.ts` (one lieutenant per district, Press/Wire/Charm/Pay, intel as waypoint, squad struck off or boss weakness, recorded as `talk:<id>:<opt>`) with unit tests; struck-off squads never arrive (`unlessTalkedOff` in every alarm); the talk screen `ui/talk.ts`; `?talk` and `window.cathode.talk()`; e2e in the clinic (desktop and phone). Session 1 left: open the talk by grabbing the lieutenant after a takedown (a marked man per district), waypoints on the map, weaknesses used in the boss fights and shown on the case board, a better portrait plate per man, shots at L after the grab. Session 2 (2026-11-01 23:52, 4b15b0f..fc383e1): the lieutenant walks the first rifle (or orderly, or guard) patrol under his name with a red-dash mark, and a takedown on him opens his talk (e2e in the clinic); a talk's tip is crossed in red pencil on the market map (unit test, no-overlap check); intel cards on the case board in his words; weaknesses change the boss fights (`bossEdge`: Vane never stitches, the Chair's right vent stays shut, Pell, the Chair and the core lose 15-25% HP) with Bea saying so (unit tests); a plate per man; the HUD steps out during a talk; shots D and L of the mark, the talk after the grab and the map tip.
 
 ## 15. [ ] Cathnivore: replayable maps and a Daily Market
 - **Why:** every game opens on the same fixed 7-hex board.
@@ -228,6 +228,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The HeuristicBot win rate per map is logged in `BALANCE.md`, within 10 points of the ring.
   - Shots of each map at P and D.
 - **Size:** 5
+- **Progress:** session 1 (2026-11-02 00:00, 5c4d4ce..): every rule reads a region's type and neighbours through the config (`regionType`, `neighborsOf`; ring games unchanged); `src/content/layouts.ts` with the Ring, the ten-hex Long Coast (new regions Gull's Head, Fernlea, Tarnside) and the Delta (channels, one bridge), adjacency from axial hexes, types dealt by the seed (`tests/layouts.test.ts`). Left: `createGame` regions for the coast's extra hexes, Map.tsx drawing from the layout's axial hexes (viewBox from the bounds, delta river and bridge art), the layout picker on Setup (seed into `layoutConfig`), the Daily Market (date seed, producer pair, event, share text, streak), HeuristicBot win rate per map in BALANCE.md, shots P and D.
 
 ## 16. [ ] NIGHT SHIFT: Cath's office, a hub between cases
 - **Why:** jobs chain menu to street to menu. Progression lives only in menus.

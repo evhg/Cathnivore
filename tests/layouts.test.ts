@@ -61,3 +61,27 @@ describe('map layouts', () => {
     for (const id of cfg.activeRegions) if (cfg.regionTypes![id] === 'coast') expect(g.regions[id].doubt).toBeGreaterThanOrEqual(1)
   })
 })
+
+describe('whole games on every layout (plan item 15)', () => {
+  for (const id of IDS)
+    it(`${id}: Random and Heuristic bots finish games with no invariant failures`, async () => {
+      const { applyAction } = await import('../src/engine/actions')
+      const { validate } = await import('../src/engine/api')
+      const { createRng } = await import('../src/engine/rng')
+      const { RandomBot } = await import('../src/ai/random')
+      const { HeuristicBot } = await import('../src/ai/heuristic')
+      for (const bot of [RandomBot, HeuristicBot])
+        for (let seed = 1; seed <= 3; seed++) {
+          let state = createGame({ producers: ['mara', 'tomas'], difficulty: 'normal', ...layoutConfig(id, seed, true) }, seed)
+          let rng = createRng(seed * 7919 + 3)
+          let steps = 0
+          for (; steps < 500 && !state.result; steps++) {
+            const [action, next] = bot.chooseAction(state, rng)
+            rng = next
+            state = applyAction(state, action)
+            expect(validate(state)).toEqual([])
+          }
+          expect(state.result, `${id} seed ${seed} finished`).toBeTruthy()
+        }
+    })
+})

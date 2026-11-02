@@ -44,7 +44,8 @@ export function createGame(config: GameConfig, seed: number): GameState {
   const active = new Set(config.activeRegions)
 
   const regions: GameState['regions'] = {} as GameState['regions']
-  for (const id of ALL_REGION_IDS) {
+  // Plan item 15: a layout's own hexes (the Long Coast's three) get their region too.
+  for (const id of new Set([...ALL_REGION_IDS, ...config.activeRegions])) {
     regions[id] = emptyRegion(id)
   }
 

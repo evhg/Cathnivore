@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
+import { LAYOUTS, type LayoutId } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
 import Portrait from './portraits/Portrait'
 import type { Flight } from './boardroom'
@@ -11,18 +12,9 @@ import type { Faction, GameState, ProducerId, RegionId, RegionType } from '../en
 // producer's initial, stamped on their Stalls.
 const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', ines: 'I', sol: 'S' }
 
-// SPEC 10.2/STYLE.md 7: a square SVG hex flower, Kingsmarket in the centre. Pointy-top hexagons so the
-// six directions land exactly on "left"/"right"/"top-left" etc. (angle 0 = right, going clockwise).
-const HEX_ANGLES: Partial<Record<RegionId, number | null>> = {
-  kingsmarket: null,
-  rivermead: 0,
-  shingleBay: 60,
-  oakvale: 120,
-  brindleHills: 180,
-  highmoor: 240,
-  saltmarsh: 300,
-}
-
+// SPEC 10.2/STYLE.md 7: a square SVG hex flower, Kingsmarket in the centre. Pointy-top hexagons; plan item 15
+// places them from the game's layout (axial q to the right, r down-right; content/layouts.ts), so the ring is
+// the flower and the Long Coast and the Delta draw their own shapes, scaled to fit the same square.
 const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
@@ -32,12 +24,29 @@ const PIECE_ROW = 6
 const pieceXY = (n: number) => `${(n % PIECE_ROW) * 16}, ${Math.floor(n / PIECE_ROW) * 14}`
 const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
-function hexCenter(id: RegionId): { x: number; y: number } {
-  const angle = HEX_ANGLES[id]
-  if (angle === null || angle === undefined) return { x: 0, y: 0 }
-  const rad = (angle * Math.PI) / 180
-  return { x: RING_DISTANCE * Math.cos(rad), y: RING_DISTANCE * Math.sin(rad) }
+function hexCenter(id: RegionId, layout: LayoutId = 'ring'): { x: number; y: number } {
+  const [q, r] = LAYOUTS[layout].hexes[id] ?? LAYOUTS.ring.hexes[id] ?? [0, 0]
+  return { x: RING_DISTANCE * (q + r / 2), y: HEX_R * 1.5 * r }
 }
+
+/** Scales and centres a layout's hexes into the map's square (the ring needs neither). */
+interface Fit {
+  k: number
+  tx: number
+  ty: number
+}
+function layoutFit(layout: LayoutId, ids: readonly RegionId[]): Fit {
+  if (layout === 'ring') return { k: 1, tx: 0, ty: 0 }
+  const pts = ids.map((id) => hexCenter(id, layout))
+  const halfW = (HEX_R * Math.sqrt(3)) / 2
+  const x0 = Math.min(...pts.map((p) => p.x)) - halfW
+  const x1 = Math.max(...pts.map((p) => p.x)) + halfW
+  const y0 = Math.min(...pts.map((p) => p.y)) - HEX_R
+  const y1 = Math.max(...pts.map((p) => p.y)) + HEX_R
+  const k = Math.min(1, (SIZE * 2) / (x1 - x0), (SIZE * 2 - 24) / (y1 - y0))
+  return { k, tx: (-(x0 + x1) / 2) * k, ty: (-(y0 + y1) / 2) * k }
+}
+const fitPoint = (p: { x: number; y: number }, f: Fit) => ({ x: p.x * f.k + f.tx, y: p.y * f.k + f.ty })
 
 function hexPoints(cx: number, cy: number, r: number): string {
   const pts: string[] = []
@@ -404,6 +413,8 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
 
 export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
   const active = state.config.activeRegions
+  const layout: LayoutId = state.config.layout ?? 'ring'
+  const fit = layoutFit(layout, active)
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
   const expandTargets = active.filter((id) => matchesSlot(state, id, 'expand'))
   const highlighted = new Set(highlight ?? [])
@@ -452,10 +463,11 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
   return (
     <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
       <RegionTextureDefs />
+      <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {active.map((id) => {
         const def = { ...REGIONS[id], type: regionType(state, id) }
         const r = state.regions[id]
-        const { x, y } = hexCenter(id)
+        const { x, y } = hexCenter(id, layout)
         const stalls = Object.entries(r.stalls).filter(([, n]) => (n ?? 0) > 0) as [ProducerId, number][]
         const dimmed = targeting && !highlighted.has(id)
         const glow = targeting && highlighted.has(id)
@@ -624,7 +636,7 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
           vertex sits against the row above rather than open background — clipped this way). */}
       {active.map((id) => {
         const def = REGIONS[id]
-        const { x, y } = hexCenter(id)
+        const { x, y } = hexCenter(id, layout)
         return (
           <g key={`name-${id}`} className="region-sign" pointerEvents="none">
             {/* AAA UI M4 fix: a sentence-case Fraunces plaque, sized to the set name once the face has
@@ -646,7 +658,8 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
           </g>
         )
       })}
-      {enemyTurn && <EnemyTurnLayer view={enemyTurn} />}
+      </g>
+      {enemyTurn && <EnemyTurnLayer view={enemyTurn} layout={layout} fit={fit} />}
     </svg>
   )
 }
@@ -699,7 +712,7 @@ function FlightIcon({ piece }: { piece: Flight['piece'] }) {
   return piece === 'outlet' ? <Outlet /> : piece === 'buyout' ? <Buyout /> : <Doubt />
 }
 
-function EnemyTurnLayer({ view }: { view: EnemyTurnView }) {
+function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: LayoutId; fit: Fit }) {
   const factions: Faction[] = ['hollowell', 'candor']
   return (
     <g className="enemy-turn-layer" pointerEvents="none" data-hq-side={view.hqSide}>
@@ -725,7 +738,7 @@ function EnemyTurnLayer({ view }: { view: EnemyTurnView }) {
         const from = hqDoor(flight.faction, view.hqSide)
         const x0 = from.x
         const y0 = from.y - 34
-        const to = hexCenter(flight.to)
+        const to = fitPoint(hexCenter(flight.to, layout), fit)
         const x1 = to.x
         const y1 = to.y - HEX_R * 0.14 + 12
         // The arc's peak sits above the midpoint; the trail is a quadratic through that same peak.
