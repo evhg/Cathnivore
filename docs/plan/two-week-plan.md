@@ -627,7 +627,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The ragdoll and dismemberment e2e still pass.
 - **Size:** 4
 
-## 42. [ ] NIGHT SHIFT: Cath faces the camera (the class pick and staged interrogations) *(lane B, in progress)*
+## 42. [x] NIGHT SHIFT: Cath faces the camera (the class pick and staged interrogations) *(done 2026-11-02, lane B, 22:21-23:21 sessions: the class pick faces her three-quarter to the lens with a 400 ms turn and a coat per class; the talk on high/ultra is a two-shot in the world, the lieutenant (his district's own kind of man) pinned to the nearest wall, Cath three-quarter to the lens, umbrella furled indoors, each answer a beat for both (`TALK_BEATS`), choices on a lower-third strip; phone tier and reduced motion keep the plate; `wallPin`, beat and pose unit tests; two-shot, plate and grab e2e at D)*
 - **Why:**
   - The player never sees her face: the gate, title and class pick are all from behind.
   - At D the class pick has an empty, dark centre for all five classes.
