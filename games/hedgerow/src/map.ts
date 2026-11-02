@@ -1422,6 +1422,17 @@ function drawLane(svg: SVGSVGElement, lane: [number, number][]): void {
 }
 
 /** Threads each act's lane through the real centres of its nodes (and from the cottage door), in the svg's 0-100 box. */
+const FOG_KEY = "hedgerow:fog:v1";
+/** How many acts the map last showed open (0 if never), or record it. */
+function fogSeen(set?: number): number {
+  try {
+    if (set !== undefined) localStorage.setItem(FOG_KEY, String(set));
+    return Number(localStorage.getItem(FOG_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 /** Two boxes overlap (a pixel of touching doesn't count). */
 type Box = { left: number; top: number; right: number; bottom: number; width: number };
 const overlaps = (a: Box, b: Box): boolean =>
@@ -1507,6 +1518,10 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
   // before it falls (sandbox shows every act, for screenshots).
   const shown = showAll ? acts.size : openActs(data, acts.size);
   for (const n of [...acts.keys()]) if (n > shown) acts.delete(n);
+  // Plan item 18: the fog rolls back off an act the first time the map shows it open (kept in storage, so the
+  // reveal still plays if she closed the game after the boss). A fresh save just records where the fog is.
+  const was = showAll ? shown : fogSeen();
+  if (!showAll) fogSeen(shown);
   let current: HTMLElement | null = null;
   const nextId = levels.find((lv) => isUnlocked(data, lv.id) && !data.stars[String(lv.id)])?.id ?? null;
   for (const [n, lvs] of acts) {
@@ -1699,6 +1714,14 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       trail.append(item);
     });
     li.append(trail);
+    if (was > 0 && n > was) {
+      li.classList.add("act-unveil");
+      const fog = document.createElement("div");
+      fog.className = "unveil-fog";
+      fog.setAttribute("aria-hidden", "true");
+      fog.addEventListener("animationend", () => fog.remove(), { once: true });
+      li.append(fog);
+    }
     list.append(li);
   }
   if (shown < Math.ceil(levels.length / 10)) {

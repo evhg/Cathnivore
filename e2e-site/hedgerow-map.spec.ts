@@ -60,3 +60,27 @@ test('plan item 18: no banner overlaps another stop, its padlock or its banner (
   await page.waitForTimeout(600)
   expect(await collisions(page)).toEqual([])
 })
+
+for (const reduced of [false, true]) {
+  test(`plan item 18: the fog rolls back off a newly opened act once${reduced ? ' (a fade under reduced motion)' : ''}`, async ({ page }) => {
+    if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
+    await seed(page, 9)
+    await expect(page.locator('.unveil-fog')).toHaveCount(0)
+    // Act 1's boss falls; the next time the map shows, act 2 opens under rolling fog.
+    await page.evaluate(() => {
+      const d = JSON.parse(localStorage.getItem('hedgerow:v1')!)
+      d.stars['10'] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify(d))
+    })
+    await page.reload()
+    const fog = page.locator('li.act-unveil .unveil-fog')
+    await expect(fog).toHaveCount(1)
+    await expect(page.locator('li.act-unveil')).toHaveAttribute('data-act', '2')
+    await expect(fog).toHaveCSS('animation-name', reduced ? 'fog-fade' : 'fog-roll')
+    // It clears itself, and doesn't play again.
+    await expect(fog).toHaveCount(0, { timeout: 6000 })
+    await page.reload()
+    await expect(page.locator('button.node.next')).toBeVisible()
+    await expect(page.locator('.unveil-fog')).toHaveCount(0)
+  })
+}
