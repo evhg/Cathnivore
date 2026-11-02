@@ -2607,3 +2607,104 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   border-radius: 4px;
   vertical-align: middle;
 }
+
+/* Plan item 36: the farmstead. On a phone each producer stands at their gate over a ribbon that sums what
+   the farm makes a round, with every bought card laid out as a drawn card. On a desktop the Farm is a
+   fixed-height frame of small drawn cards that scrolls inside, so the Actions frame never moves. */
+.farmstead-gate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 2px;
+}
+.farmstead-gate .producer-cameo { --cameo: 56px; }
+.farmstead-gate h3 { margin: 0; }
+.farmstead-ribbon {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 8px 0 10px;
+  padding: 5px 18px 5px 12px;
+  background: var(--pasture);
+  color: var(--paper-on-fixed-fill);
+  font-weight: 800;
+  font-size: var(--fs-small);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%);
+  width: fit-content;
+}
+.farmstead-ribbon svg { vertical-align: -3px; }
+.farmstead-ribbon-tail { font-weight: 600; opacity: 0.9; }
+.farmstead-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.farmstead-card {
+  --frame: var(--rule);
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  overflow: hidden;
+  padding: 0 10px 8px;
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--frame);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--frame) 10%, var(--surface));
+  font-size: var(--fs-small);
+}
+.farmstead-card[data-tag='pasture'] { --frame: var(--pasture); }
+.farmstead-card[data-tag='crop'] { --frame: var(--wheat); }
+.farmstead-card[data-tag='coast'] { --frame: var(--sea); }
+.farmstead-card[data-tag='community'] { --frame: var(--clay); }
+.farmstead-card[data-tag='media'] { --frame: var(--p-sol); }
+.farmstead-card[data-tag='science'] { --frame: var(--p-ines); }
+.farmstead-card .card-vignette {
+  width: calc(100% + 20px);
+  height: 54px;
+  margin: 0 -10px 4px;
+}
+.farmstead-card .card-tags { color: var(--ink-muted); font-size: var(--fs-caption); }
+.farmstead-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+.farmstead-thumb {
+  --frame: var(--rule);
+  overflow: hidden;
+  border: 1px solid var(--ink-a15);
+  border-top: 3px solid var(--frame);
+  border-radius: 4px;
+}
+.farmstead-thumb[data-tag='pasture'] { --frame: var(--pasture); }
+.farmstead-thumb[data-tag='crop'] { --frame: var(--wheat); }
+.farmstead-thumb[data-tag='coast'] { --frame: var(--sea); }
+.farmstead-thumb[data-tag='community'] { --frame: var(--clay); }
+.farmstead-thumb[data-tag='media'] { --frame: var(--p-sol); }
+.farmstead-thumb[data-tag='science'] { --frame: var(--p-ines); }
+.farmstead-thumb .card-vignette {
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border: 0;
+}
+@media (min-width: 1024px) {
+  .farm-inline {
+    height: 88px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+.farm-sheet .farm-column:not(.farm-column--compact) .farm-production {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}

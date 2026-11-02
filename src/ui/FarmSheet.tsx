@@ -3,6 +3,9 @@ import { useSheetDismiss } from './useSheetDismiss'
 import { PRODUCERS } from '../content/producers'
 import { GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
 import Tooltip from './Tooltip'
+import Portrait from './portraits/Portrait'
+import Vignette from './Vignette'
+import { vignetteFor } from './vignetteKind'
 import type { GameState, ProducerId } from '../engine/types'
 
 const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -60,7 +63,34 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
 
   return (
     <section className={compact ? 'farm-column farm-column--compact' : 'farm-column'}>
-      {!hideSummary && <h3>{def.name}</h3>}
+      {!hideSummary && !compact ? (
+        // Plan item 36: the producer at their farm gate, and a ribbon that sums what the farm makes.
+        <div className="farmstead-gate">
+          <span className={`producer-cameo pc-${producer}`}>
+            <Portrait character={producer} size={56} />
+          </span>
+          <h3>{def.name}</h3>
+        </div>
+      ) : (
+        !hideSummary && <h3>{def.name}</h3>
+      )}
+      {!compact && (
+        <p className="farmstead-ribbon">
+          <span>
+            <ProduceIcon /> +{p.production.produce}
+          </span>
+          <span>
+            <MarksIcon /> +{p.production.marks}
+          </span>
+          <span>
+            <GoodwillIcon /> +{p.production.goodwill}
+          </span>
+          <span className="farmstead-ribbon-tail">each round</span>
+          <span className="visually-hidden">
+            : {p.production.produce} Produce, {p.production.marks} {p.production.marks === 1 ? 'Mark' : 'Marks'} and {p.production.goodwill} Goodwill each round
+          </span>
+        </p>
+      )}
       {/* AAA UI M4: a list, not inline " · " joiners (they dangled once the items stacked). The desktop
           frame shows the same figures as compact chips, one line a producer. */}
       {/* compact: the active producer's figures are already on the chips just above */}
@@ -69,21 +99,21 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
           <li>
             <Tooltip term="Produce">
               <ProduceIcon /> {compact ? <span className="num">{p.resources.produce}</span> : `Produce ${p.resources.produce}`}
-              {compact ? <span className="farm-income num"> +{p.production.produce}</span> : ` (${p.production.produce}/round)`}
+              {compact && <span className="farm-income num"> +{p.production.produce}</span>}
               {compact && <span className="visually-hidden"> Produce, plus {p.production.produce} a round</span>}
             </Tooltip>
           </li>
           <li>
             <Tooltip term="Marks">
               <MarksIcon /> {compact ? <span className="num">{p.resources.marks}</span> : `Marks ${p.resources.marks}`}
-              {compact ? <span className="farm-income num"> +{p.production.marks}</span> : ` (${p.production.marks}/round)`}
+              {compact && <span className="farm-income num"> +{p.production.marks}</span>}
               {compact && <span className="visually-hidden"> Marks, plus {p.production.marks} a round</span>}
             </Tooltip>
           </li>
           <li>
             <Tooltip term="Goodwill">
               <GoodwillIcon /> {compact ? <span className="num">{p.resources.goodwill}</span> : `Goodwill ${p.resources.goodwill}`}
-              {compact ? <span className="farm-income num"> +{p.production.goodwill}</span> : ` (${p.production.goodwill}/round)`}
+              {compact && <span className="farm-income num"> +{p.production.goodwill}</span>}
               {compact && <span className="visually-hidden"> Goodwill, plus {p.production.goodwill} a round</span>}
             </Tooltip>
           </li>
@@ -91,33 +121,37 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
       )}
       {p.improvements.length === 0 ? (
         !compact && <p className="farm-empty">{hideSummary || state.config.producers.length < 2 ? 'No Improvements bought yet.' : 'No Improvements yet.'}</p>
-      ) : (
-        <ul className="farm-tableau">
+      ) : compact ? (
+        // Plan item 36: the desktop Farm is a row of small drawn cards a producer, in a fixed-height
+        // frame, so the Actions frame under it never moves as the farm grows.
+        <ul className="farmstead-thumbs" aria-label={`${def.name}'s Improvements`}>
           {p.improvements.map((id) => {
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id}>
-                {compact ? (
-                  // Desktop frame: one line a card until opened, so the Actions frame keeps its height.
-                  <details>
-                    <summary>
-                      <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
-                    </summary>
-                    <div className="farm-card-text">{card.text}</div>
-                    {card.flavor && <div className="farm-flavor">{card.flavor}</div>}
-                  </details>
-                ) : (
-                  <>
-                <strong>{card.name}</strong> ({card.tags.map((t) => TAG_LABEL[t]).join(', ')})
-                {/* SPEC 10.5/STYLE.md 8: same gap as the Market/Cath's Plan sheets (see DECISIONS.md
-                    2026-09-26) — a bought Improvement's own tableau entry is exactly where a player would
-                    want to be reminded what an ongoing ability (a Supply discount, an extra free Rebut)
-                    actually does, without reopening the Market or the Rules Reference. */}
+              <li key={id} className="farmstead-thumb" data-tag={card.tags[0]} title={`${card.name}: ${card.text}`}>
+                <Vignette kind={vignetteFor(card)} seed={card.id} />
+                <span className="visually-hidden">
+                  {card.name} ({card.tags.map((t) => TAG_LABEL[t]).join(', ')}): {card.text}
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        // Plan item 36: the phone Farm lays each bought card out in the farmstead as a drawn card.
+        <ul className="farmstead-row">
+          {p.improvements.map((id) => {
+            const card = IMPROVEMENTS_BY_ID.get(id)
+            if (!card) return null
+            return (
+              <li key={id} className="farmstead-card card-framed" data-tag={card.tags[0]}>
+                <Vignette kind={vignetteFor(card)} seed={card.id} />
+                <strong>{card.name}</strong>
+                <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>
+                {/* SPEC 10.5/STYLE.md 8: a bought card's own entry reminds the player what an ongoing
+                    ability does, without reopening the Market or the Rules Reference. */}
                 <div className="farm-card-text">{card.text}</div>
-                {card.flavor && <div className="farm-flavor">{card.flavor}</div>}
-                  </>
-                )}
               </li>
             )
           })}
