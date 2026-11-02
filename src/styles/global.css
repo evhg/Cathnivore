@@ -2312,3 +2312,45 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 .map-wrap:has(.boardroom-dock-top) .round-banner {
   visibility: hidden;
 }
+
+/* Plan item 33: the strip plays in the Actions area, never over the map (it covered the top row at D and
+   was clipped under the producer bar at P). */
+.actions .enemy-turn-playback {
+  position: relative;
+  inset: auto;
+  flex: 1 0 100%;
+  align-self: stretch;
+  justify-content: center;
+  min-width: 0;
+  border-radius: var(--r-card);
+}
+.actions .enemy-turn-playback.boardroom-dock-top {
+  border-top: 4px solid var(--exec);
+  border-bottom: 0;
+  border-radius: var(--r-card);
+}
+@media (max-width: 1023.98px) {
+  .action-tray .actions .enemy-turn-playback {
+    gap: 2px;
+    padding: 6px 10px;
+  }
+  .action-tray .actions .boardroom-face {
+    width: 52px;
+    height: 52px;
+  }
+  .action-tray .actions .boardroom-face svg {
+    top: -20px;
+    width: 104px;
+  }
+  .action-tray .actions .boardroom-row { gap: 10px; }
+  .action-tray .actions .boardroom-words { gap: 2px; }
+  .action-tray .actions .boardroom-bark { font-size: var(--fs-caption); line-height: 1.2; }
+  .action-tray .actions .boardroom-card { font-size: var(--fs-caption); line-height: 1.25; }
+  .action-tray .actions .boardroom-who { font-size: var(--fs-small); line-height: 1.1; }
+  /* the dock is 112 px: his title and the step count give way to the bark and the card */
+  .action-tray .actions .boardroom-who small,
+  .action-tray .actions .enemy-turn-playback-hint { display: none; }
+}
+@media (min-width: 1024px) {
+  .actions-sheet .actions .boardroom-row { align-items: flex-start; }
+}

@@ -1120,10 +1120,23 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // `standalone`/`groups`/`selectedGroup` closures. `useIsDesktopLayout()` (above) mounts exactly one of the
   // two at a time — not both with CSS hiding one, which left a second `.actions`/`.action-item` permanently
   // in the DOM and broke every Playwright strict-mode locator that queried it (e2e/tooltip.spec.ts).
+  // Plan item 33: the enemy turn plays in the Actions area (the dock on a phone, the Actions column on a
+  // desktop), which has nothing to offer while it runs; over the map it clipped and covered hexes.
   const actionsPanel = (
     <div className="actions-well">
       <section className="actions" tabIndex={0} role="region" aria-label="Actions" data-scroll-cue="">
-      {pendingEnemyTurn.length > 0 ? null : waitingOnAi ? (
+      {pendingEnemyTurn.length > 0 ? (
+        <EnemyTurnPlayback
+          events={pendingEnemyTurn}
+          onStep={(region, event, step) => {
+            setEnemyStepRegion(region)
+            setEnemyStep({ event, step })
+          }}
+          // The guided tutorial holds each caption until it has been read (and its step moves on with it).
+          hold={guidedStep?.waitFor === 'enemyTurn'}
+          onDone={endEnemyTurnPlayback}
+        />
+      ) : waitingOnAi ? (
         <p>AI teammate is deciding…</p>
       ) : selectedGroup ? (
         pendingChoice ? (
@@ -1769,18 +1782,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               : undefined
           }
         />
-        {pendingEnemyTurn.length > 0 && (
-          <EnemyTurnPlayback
-            events={pendingEnemyTurn}
-            onStep={(region, event, step) => {
-              setEnemyStepRegion(region)
-              setEnemyStep({ event, step })
-            }}
-            // The guided tutorial holds each caption until it has been read (and its step moves on with it).
-            hold={guidedStep?.waitFor === 'enemyTurn'}
-            onDone={endEnemyTurnPlayback}
-          />
-        )}
       </section>
       </div>
 

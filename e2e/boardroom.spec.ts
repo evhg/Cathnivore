@@ -43,3 +43,17 @@ test.describe('reduced motion', () => {
     expect(await page.locator('.boardroom-row, .boardroom-cath').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('boardroom-fade')
   })
 })
+
+// Plan item 33: the strip plays in the Actions area, so it covers no hex and nothing in it is cut off.
+test('the boardroom strip covers no hex and is not clipped', async ({ page }) => {
+  await playToEnemyTurn(page)
+  const m = await page.evaluate(() => {
+    const strip = document.querySelector('.enemy-turn-playback')!
+    const s = strip.getBoundingClientRect()
+    const hits = [...document.querySelectorAll('.region-hex polygon')]
+      .map((p) => p.getBoundingClientRect())
+      .filter((t) => t.width > 40 && t.left < s.right && t.right > s.left && t.top < s.bottom && t.bottom > s.top).length
+    return { hits, clipped: strip.scrollHeight > strip.clientHeight + 1, inActions: !!strip.closest('.actions') }
+  })
+  expect(m).toEqual({ hits: 0, clipped: false, inActions: true })
+})
