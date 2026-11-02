@@ -479,7 +479,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of every fixed screen at P and D.
 - **Size:** 3
 
-## 34. [ ] Cathnivore: the turns between yours are a show, not a wait *(lane B, in progress)*
+## 34. [ ] Cathnivore: the turns between yours are a show, not a wait
 - **Why:** the AI teammate's turn and the enemy turn come every round and are the weakest screens.
   - The teammate's turn is a blank band with "deciding…" text.
   - The enemy strip covers hexes and blanks the Actions panel.
@@ -495,7 +495,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of both turns at P and D.
 - **Size:** 3
 
-## 35. [ ] Cathnivore: the Liberation of Marrow as a map you travel
+## 35. [ ] Cathnivore: the Liberation of Marrow as a map you travel *(lane B, in progress)*
 - **Why:**
   - The campaign is a list of cards with padlocks.
   - There's no chapter-complete moment (VISION 4).
