@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **Planning session next (CLAUDE.md step 4):** plan item 14 closed, so only items 15 and 16 are open. Shoot every game at 390x844 and 1440x900, have a subagent critique the shots against `VISION.md`, and add whole features with specs and acceptance to `docs/plan/two-week-plan.md`. Then carry on with item 15 (slices 1-3 done: rules through the config, the layouts as data, Map.tsx draws from the layout; next: the Setup picker, the delta's river and bridge art, the Daily Market, bot win rates per map in BALANCE.md).
+- **Planning session next (CLAUDE.md step 4):** plan item 14 closed, so only items 15 and 16 are open. Shoot every game at 390x844 and 1440x900, have a subagent critique the shots against `VISION.md`, and add whole features with specs and acceptance to `docs/plan/two-week-plan.md`. Then carry on with item 15 (slices 1-4 done: rules through the config, the layouts as data, the Setup picker, the board drawn from the layout with the Delta's river and bridges; next: the Daily Market, HeuristicBot win rates per map in BALANCE.md within 10 points of the ring, map shots).
 - Polish: the NIGHT SHIFT lieutenant's name mark floats about 1 m over his head (shots `talk-clinic-mark-*`), from the head-joint projection.
 - Known flake (pre-existing, 2 of 6 runs on the phone project without this session's changes): `e2e-site/site.spec.ts` "plan item 10: the end tally replays the leaks" times out on `#result-tally`. Worth a look in a polish slice.
 ## Blocked

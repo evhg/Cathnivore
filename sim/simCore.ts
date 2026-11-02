@@ -75,8 +75,10 @@ export function playOneGame(
   difficulty: Difficulty,
   seed: number,
   activeRegions: GameConfig['activeRegions'],
+  /** Plan item 15: a layout's types and adjacency (`layoutConfig`). */
+  extra: Partial<GameConfig> = {},
 ): GameOutcome {
-  const config: GameConfig = { producers: pair, difficulty, activeRegions }
+  const config: GameConfig = { producers: pair, difficulty, activeRegions, ...extra }
   const pairLabel = [...pair].sort().join('+')
   const outcome: GameOutcome = {
     pair: pairLabel,

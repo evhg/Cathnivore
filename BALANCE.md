@@ -110,3 +110,15 @@ Dailies from 2026-11-02 follow `WEEKDAY_ARC` in `games/runnel/src/engine.ts`; ea
 | Fri | 35 | 73 | 54-90 | 1:36 |
 | Sat | 35 | 76 | 58-97 | 1:40 |
 | Sun | 36 | 78 | 61-100 | 1:43 |
+
+## Cathnivore map layouts (2026-11-02, plan item 15)
+
+HeuristicBot, normal difficulty, the recommended pair, seeds 1-1000 per layout (`npx tsx scripts/layout-sim.ts 1000`, about 25 s). The Coast and the Delta deal their region types by the seed; the ring is the printed board. Acceptance: each within 10 points of the ring.
+
+| Layout | Won | Mean rounds | Crashes |
+| --- | --- | --- | --- |
+| The Ring (7) | 6.0% | 8.7 | 0 |
+| The Long Coast (10) | 0.8% | 6.1 | 0 |
+| The Delta (7, river) | 10.8% | 8.9 | 0 |
+
+Both within 10 points, but the Coast's games end about 2.6 rounds sooner: ten regions start with ten Outlets, so the Lost Land track runs out faster. Watch it with MCTS before the Daily Market uses the Coast.
