@@ -695,6 +695,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   else hud.showBanner("The Fish Market", "The Drowned Market · 23:40");
   const zones = new ZoneWatch();
   const wings = new WingWatch();
+  /** Each wing names itself once per visit, not on every crossing. */
+  const wingsNamed = new Set<string>();
   const voice = new Voice((t) => hud.subtitle(t));
   /** Puts a weapon in her hands for good: owned from now on. */
   const arm = (id: string) => {
@@ -1018,6 +1020,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let lookIdle = 0;
   let assist: { left: number; rate: number } | null = null;
   let promptShown = false;
+  const promptXY = { x: 0, y: 0 };
   // A tap on the prompt (touch) is the same press.
   hud.onTake = () => (input.forced.takedown = true);
   const actives = new Actives();
@@ -1527,7 +1530,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let menuOpen = false;
   // C14 (S9.7, game/pausegate.ts): a resume that hasn't got the pointer back yet waits on "click to resume"
   // instead of letting the free mouse reopen the pause; pauseAt debounces the Esc that freed the pointer.
-  let resuming = false;
+  // A desktop job starts the same way (owner, 2026-11-02: committing the class with a held Enter dropped her into
+  // the "Paused" menu): a key isn't a click, so the browser won't hand over the mouse until the first click. Until
+  // then the street holds on a quiet "Click to play" line instead of the pause menu.
+  let resuming = !input.isTouch;
+  let everLocked = false;
   let pauseAt = -1e9;
   hud.onResume = () => {
     menuOpen = false;
@@ -1674,6 +1681,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const portrait = input.isTouch && innerHeight > innerWidth;
     if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
     resuming = nextResuming(resuming, input.locked, menuOpen);
+    if (input.locked) everLocked = true;
     const view = pauseView({
       touch: input.isTouch,
       locked: input.locked,
@@ -1688,7 +1696,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const away = view.frozen;
     if (view.menu && !hud.pauseOn) pauseAt = performance.now();
     hud.showPause(view.menu, input.isTouch);
-    hud.showResumeHint(view.clickToResume);
+    hud.showResumeHint(view.clickToResume, everLocked ? "to resume" : "to play");
     {
       const want = hud.pauseOn ? 1 : 0;
       pauseK = o.shot || trauma.reducedMotion ? want : want > pauseK ? Math.min(1, pauseK + realDt / 0.2) : Math.max(0, pauseK - realDt / 0.15);
@@ -2052,10 +2060,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
     }
     if (!dead && s.hp > 0) {
-      const zone = inMarket ? zones.update(player.pos.z) : undefined;
-      if (zone) hud.showBanner(zone.name, zone.sub);
+      // Crossing between the market's quarters no longer stops play with a full-screen title (owner, 2026-11-02:
+      // "obstructive and annoying because the areas are very small"): the quarter's name sits on the map, and a
+      // newly opened wing gets one quiet subtitle line.
+      if (inMarket) zones.update(player.pos.z);
       const wing = inMarket ? wings.update(progress.jobsDone, player.pos.x, player.pos.z) : undefined;
-      if (wing) hud.showBanner(wing.name, wing.sub);
+      if (wing && !wingsNamed.has(wing.id)) {
+        wingsNamed.add(wing.id);
+        hud.subtitle(`${wing.name} · ${wing.sub}`);
+      }
       const lm = inMarket ? nearLandmark(progress.jobsDone, player.pos.x, player.pos.z) : undefined;
       if (lm) {
         hud.subtitle(lm.text);
@@ -2774,7 +2787,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const dist = camPos.distanceTo(c.gunAt);
     const wantNudge = !nudged && !staged && job?.stage === 2 && dist < 12 && v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1;
     const clear = (onScreen || wantNudge) && sightline(camPos, c.gunAt);
-    const seen = onScreen && clear;
+    // Once up, the prompt stays up while she's in reach and it's on screen (owner, 2026-11-02: the Widowmaker
+    // "starts shaking" on approach): the sightline grazes the case's rim as her head bobs, and the prompt flicked
+    // on and off with every step.
+    const near = Math.hypot(c.gunAt.x - player.pos.x, c.gunAt.z - player.pos.z) <= TAKE_RANGE;
+    const seen = onScreen && (clear || (promptShown && near));
     // The nudge and the assist (never in a screenshot stage, never on the walkway's class case).
     if (Math.abs(look.yaw) > 1e-5 || Math.abs(look.pitch) > 1e-5) {
       lookIdle = 0;
@@ -2796,16 +2813,21 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       assist.left -= step;
       if (Math.abs(assist.left) < 1e-4) assist = null;
     }
-    const near = Math.hypot(c.gunAt.x - player.pos.x, c.gunAt.z - player.pos.z) <= TAKE_RANGE;
     const show = near && seen;
     if (show && !promptShown) audio?.promptUp();
+    const el = o.canvas;
+    const px = ((v.x + 1) / 2) * el.clientWidth;
+    const py = ((1 - v.y) / 2) * el.clientHeight;
+    // The card rides the gun with a short ease, so the walk's head bob doesn't shake it.
+    const ease = promptShown ? 1 - Math.exp(-dt * 18) : 1;
+    promptXY.x += (px - promptXY.x) * ease;
+    promptXY.y += (py - promptXY.y) * ease;
     promptShown = show;
     if (!show) return null;
     const def = SLICE_WEAPONS.find((w) => w.id === c.weapon);
-    const el = o.canvas;
     return {
-      x: ((v.x + 1) / 2) * el.clientWidth,
-      y: ((1 - v.y) / 2) * el.clientHeight,
+      x: Math.round(promptXY.x),
+      y: Math.round(promptXY.y),
       key: input.isTouch ? "Tap" : takeKey,
       verb: "Take",
       name: (def?.name ?? c.weapon ?? "").replace(/ \(.*\)$/, ""),
@@ -3797,10 +3819,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const lastEnemySlowmo = () => {
     if (!lastKillPending) return;
     lastKillPending = false;
-    if (!killcam.active) {
+    // One cinematic moment a fight (owner, 2026-11-02: "only do it once per fight or so"): the slow motion shares
+    // the kill-cams' cooldown, so a run of small encounters doesn't slow down after every guard.
+    const now = performance.now();
+    if (!killcam.active && kcRules.cooldownLeft(now) === 0) {
       const L = tuning.lastEnemySlowmo;
       timescale.hitStop(tuning.hitStop.lastEnemy);
       timescale.push("lastEnemy", L.scale, tuning.hitStop.lastEnemy + L.holdMs, 0, L.rampOutMs, "focus");
+      kcRules.commit(now);
     }
     combat.bus.emit("encounterCleared", { t: combat.clock });
   };
@@ -7057,6 +7083,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     screen.resyncFrame(1, o.warm.resyncLine);
     s.stats.lastRestartMs = Math.round(performance.now() - o.warm.t0);
   }
+  // Every shader the job's frame needs (the viewmodel, the enemies, the job's props) compiles in the background
+  // before the first frame, not mid-fight (render/warm.ts). A checkpoint restart reuses the warm programs.
+  if (!o.warm) await world.warm?.();
   requestAnimationFrame(frame);
   return s;
 }

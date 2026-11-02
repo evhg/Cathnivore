@@ -12,7 +12,8 @@ export type KillCamSetting = "on" | "last" | "off";
 export type KillCamShot = "bullet" | "orbit";
 
 export const KILLCAM = {
-  cooldownMs: 20000,
+  /** About one cinematic moment a fight (owner, 2026-11-02): kill-cams and the last-enemy slow motion share it. */
+  cooldownMs: 45000,
   /** Kills of a new save before the first kill-cam may play. */
   graceKills: 3,
   longHeadshotM: 30,

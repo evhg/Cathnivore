@@ -135,7 +135,33 @@
   transform: scaleX(0);
   transition: opacity 900ms ease, transform 1200ms cubic-bezier(.2, .7, .2, 1);
 }
-.coldopen.is-line .coldopen-kicker { opacity: .55; }
+.coldopen.is-line .coldopen-kicker, .coldopen.is-boot .coldopen-kicker { opacity: .55; }
+.coldopen.is-boot .coldopen-card { animation: none; }
+/* The boot line: visible from the first paint (no script needed), transform-only so it animates even while the
+   main thread is busy building the street. */
+.front-building {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--u) * 48 + var(--safe-b, 0px));
+  z-index: var(--z-hud-top);
+  width: calc(var(--u) * 160);
+  height: 1px; /* px-ok */
+  margin-left: calc(var(--u) * -80);
+  overflow: hidden;
+  background: rgb(var(--ink-rgb) / .12);
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+.front-building i {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: translateX(-100%);
+  animation: front-building 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
+}
+.front-building.is-done { opacity: 0; }
+@keyframes front-building { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .front-building i { animation-duration: 3s; } }
 .coldopen.is-line .coldopen-rule { opacity: .5; transform: none; }
 .coldopen.is-out .coldopen-kicker, .coldopen.is-out .coldopen-rule { opacity: 0; transition-duration: 500ms; }
 @keyframes coldopen-drift { from { transform: scale(1); } to { transform: scale(1.04); } }

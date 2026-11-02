@@ -6,6 +6,18 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
 ## Open
 
+- 2026-11-02 (owner chat, NIGHT SHIFT live on Chrome, MacBook M3 Max): **"took 10 seconds to show anything ... then an unresponsive error popup from Chrome ... the startup screen animation is very stuttery ... the UI for new/resume is slow ... the background hiss is very unpleasant, remove that ... after I hold Enter with the Ghost it says paused ... approaching the Widowmaker it starts shaking ... love the guard-death slow-mo, but only once per fight ... the big area announcements are obstructive, the areas are very small."** The owner session fixed (commit in the session log):
+  - **Load:** about 80 shaders compiled synchronously on the first frames (a 26 s main-thread block under SwiftShader; the 10 s freeze on the Mac). `render/warm.ts` now compiles the exact variants each pass draws (mirror, HDR scene pass, bloom levels, the reflection probe) in the background before the first frame (in parallel where KHR_parallel_shader_compile exists, which includes Chrome on macOS), and skips shader info-log reads in production. Under SwiftShader no shader compiles mid-frame any more; what's left on the first frame is texture upload (fast on a real GPU) and one shadow shader. Pre-uploading textures was tried and dropped: combined with the frame warm-up it left the title street unrendered.
+  - **Boot:** "Night Shift" and a compositor-driven loading line paint from the HTML before any script, and stay until the street draws.
+  - **Stutter:** the title has dynamic resolution (the game's AutoScale), so the 60 fps cap holds evenly.
+  - **Hiss:** the rain-noise beds are gone, on the title and in game.
+  - **"Paused" after a keyboard start:** a desktop job now starts on a quiet "Click to play" line, not the pause menu (a key can't capture the mouse).
+  - **Widowmaker shaking:** the take prompt no longer flickers as the head bob grazes the case rim, it eases instead of jittering, and gun LODs have hysteresis.
+  - **Slow-mo:** the last-enemy slow motion and the kill-cams share one 45 s cooldown, about one a fight.
+  - **Area banners:** crossing the market's quarters shows no full-screen title; a newly opened wing gets one subtitle line, once a visit.
+
+  Keep open until the owner confirms it's fluid on the Mac. **Next:** profile frame pacing on real hardware with the perf overlay. The title runs a full-resolution mirror pass, 2048 soft shadows every frame and 14k rain particles; if it's still not smooth, halve the title mirror's resolution and refresh shadows every second frame on the title.
+
 - 2026-10-15 (owner chat, after playing CATHODE on a 5K desktop): **"Focus on combat mechanics, look and feel, the weapons and enemy design, and make the visuals when getting hit, being wounded and dying very high quality. Spend at least a week on this. Work on it non-stop."** The owner's points:
   - **Name:** doesn't like the name "CATHODE"; a new name is coming.
   - **Front door:** still feels budget, especially the loading screen, the menus and the start screen. Take inspiration from real AAA game designs.

@@ -12,6 +12,7 @@
 
 import * as THREE from "three";
 import { createWorld } from "./world";
+import { AutoScale } from "../game/autoscale";
 import type { Quality, World } from "./types";
 import { buildFrontCath, type FrontCath } from "./frontcath";
 
@@ -305,13 +306,18 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Automated runs draw once every 3 s: software WebGL stalls the main thread for seconds a frame, and every key,
   // timer and axe pass in the front door would wait behind it.
   const frameMin = typeof navigator !== "undefined" && navigator.webdriver ? 3 : phone ? 1 / 30 : 1 / 60;
+  // Dynamic resolution on the title too (owner, 2026-11-02: the umbrella scene was "very stuttery" on an M3 Max):
+  // when frames run long the street renders a little smaller, so the 60 fps cap holds evenly instead of dropping
+  // frames. Off in screenshot and automated runs, where every frame is slow.
+  const dyn = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, slowMs: 18, fastMs: 12 });
+  const dynOn = !o.shot && !(typeof navigator !== "undefined" && navigator.webdriver);
   const resize = () => {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;
     // The 3D DPR caps at 1.5 at 5K and on phones (S8); the phone scene runs at 0.75 render scale (S9.2 cost).
     const cap = phone || innerHeight * devicePixelRatio > 2000 ? 1.5 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
-    const scale = (phone ? 0.75 : 1) * o.renderScale;
+    const scale = (phone ? 0.75 : 1) * o.renderScale * dyn.scale;
     world.resize(w, h, dpr * (phone ? 0.9 : 1), Math.min(1, scale / (phone ? 0.9 : 1)));
     cam.fov = FOV;
     cam.updateProjectionMatrix();
@@ -369,10 +375,15 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const step = since;
     since = 0;
     time += o.still ? 0 : step;
+    // At the 60 fps cap a frame on time is ~16.7 ms apart; a longer gap means the GPU missed one.
+    if (dynOn && dyn.frame(step * 1000) !== null) resize();
     frame(step);
   };
-  // The first frame now, so the canvas never shows black once the scene is ready.
+  // Every shader the frame needs compiles in the background first (render/warm.ts): drawing the first frame
+  // straight away compiled ~80 programs on the main thread and froze the page for seconds.
   aim(0, 0);
+  await world.warm?.();
+  // The first frame now, so the canvas never shows black once the scene is ready.
   frame(1 / 60);
   raf = requestAnimationFrame(loop);
 

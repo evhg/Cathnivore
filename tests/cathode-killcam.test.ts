@@ -61,12 +61,19 @@ describe("CATHODE kill-cam rules (S5.3)", () => {
     expect(last.kill(kill({ now: 200 }))).toBeNull();
   });
 
-  it("one per 20 s", () => {
+  it("one per 45 s, about one a fight (owner, 2026-11-02)", () => {
     const r = new KillCamRules();
     expect(r.kill(kill({ now: 0, last: true, headshot: true }))).toBe("orbit");
-    expect(r.kill(kill({ now: 19999, last: true, headshot: true }))).toBeNull();
-    expect(r.cooldownLeft(19999)).toBe(1);
-    expect(r.kill(kill({ now: 20000, last: true, headshot: true }))).toBe("orbit");
+    expect(r.kill(kill({ now: 44999, last: true, headshot: true }))).toBeNull();
+    expect(r.cooldownLeft(44999)).toBe(1);
+    expect(r.kill(kill({ now: 45000, last: true, headshot: true }))).toBe("orbit");
+  });
+
+  it("the last-enemy slow motion shares the cooldown: committing it holds off the next camera", () => {
+    const r = new KillCamRules();
+    r.commit(1000);
+    expect(r.kill(kill({ now: 30000, last: true, headshot: true }))).toBeNull();
+    expect(r.cooldownLeft(46000)).toBe(0);
   });
 
   it("never in the first 3 kills of a new save, except the first job's finale; Off is off", () => {

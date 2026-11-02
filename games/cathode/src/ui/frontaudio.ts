@@ -1,5 +1,5 @@
 // C13 (docs/design/cathode-combat.md S9.2, S9.4, S10 "Front door: ui and music"): the front door's sound, all
-// synthesised. The ambience bed is rain, a 60 Hz city rumble, the pier sign's 120 Hz hum (with its 2nd and 3rd
+// synthesised. The ambience bed is a 60 Hz city rumble, the pier sign's 120 Hz hum (with its 2nd and 3rd
 // harmonics) and a minor pad of two detuned saws low-passed at 900 Hz that changes chord every 8 s (Am, Fmaj7,
 // Dm9, E7sus). The UI sounds are the focus tick (1.2 kHz sine plus noise, 25 ms, -22 dB) and the confirm (two
 // sines a fifth apart for 70 ms and a sub thump); the push into the street is a saw swell (200 Hz to 2 kHz).
@@ -90,20 +90,8 @@ export class FrontAudio {
     bed.gain.linearRampToValueAtTime(1, now + 2.5);
     bed.connect(this.music);
     this.bedGain = bed;
-    // Rain: noise through a soft band, at about -20 dB.
-    const rain = this.noiseSrc();
-    if (rain) {
-      const hp = c.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 900;
-      const lp = c.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 7000;
-      const g = c.createGain();
-      g.gain.value = db(-20);
-      rain.connect(hp).connect(lp).connect(g).connect(bed);
-      rain.start();
-    }
+    // No rain hiss (owner, 2026-11-02: "a very unpleasant almost hiss ... remove that"): filtered noise reads as
+    // static, not rain. The bed is the city's rumble, the sign's hum and the pad.
     // The city's rumble at 60 Hz.
     const rum = this.noiseSrc();
     if (rum) {

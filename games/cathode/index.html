@@ -60,7 +60,10 @@
         </a>
       </section>
 
-      <div class="coldopen" id="coldopen" hidden><div class="coldopen-card"><p class="coldopen-kicker" aria-hidden="true">Night Shift</p><i class="coldopen-rule" aria-hidden="true"></i><p class="coldopen-line" id="coldopen-line"></p></div></div>
+      <div class="coldopen is-boot" id="coldopen"><div class="coldopen-card"><p class="coldopen-kicker" aria-hidden="true">Night Shift</p><i class="coldopen-rule" aria-hidden="true"></i><p class="coldopen-line" id="coldopen-line"></p></div></div>
+      <!-- Painted with the HTML, before any script: a thin line that runs on the compositor (transform only), so it
+           keeps moving while the street builds and compiles. main.ts removes it once the street has drawn. -->
+      <div class="front-building" id="front-building" role="status" aria-label="Loading"><i></i></div>
       <div class="area-title" id="area-title" role="status" hidden><p class="area-name" id="area-name"></p><p class="area-sub" id="area-sub"></p></div>
       <div class="front-fade" id="front-fade" aria-hidden="true"></div>
 

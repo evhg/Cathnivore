@@ -1212,14 +1212,16 @@ export class Hud {
    * C14 (S9.7): after Esc resumes, the pointer can only come back on a click (a keypress is not a user
    * activation). The frame stays held under one quiet line until then; the menu does not come back.
    */
-  showResumeHint(on: boolean): void {
+  showResumeHint(on: boolean, what = "to resume"): void {
     if (!on && !this.resumeHint) return;
     if (!this.resumeHint) {
       this.resumeHint = el("p", "hud-resume-hint", this.root.parentElement ?? this.root);
       this.resumeHint.setAttribute("role", "status");
       el("span", "hud-resume-hint-k", this.resumeHint).textContent = "Click";
-      el("span", "", this.resumeHint).textContent = "to resume";
+      el("span", "hud-resume-hint-what", this.resumeHint);
     }
+    const label = this.resumeHint.querySelector(".hud-resume-hint-what");
+    if (label && label.textContent !== what) label.textContent = what;
     this.resumeHint.hidden = !on;
   }
 

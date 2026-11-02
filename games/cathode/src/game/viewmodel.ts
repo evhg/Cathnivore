@@ -471,10 +471,11 @@ export function buildGunLOD(model: GunModel, phone = false): THREE.LOD {
   const lod = new THREE.LOD();
   lod.name = `${model}:lod`;
   const near = buildGunDisplay(model, phone);
+  // Hysteresis on each swap, so walking up to a gun on show doesn't flick between levels with every step.
   lod.addLevel(near, 0);
   const mid = model === "pistol" ? buildKestrel(true, true).root : isHero(model) ? HERO_PLACE[model].build(true, true).root : buildGunDisplay(model, true);
   const one = collapse(mid);
-  if (one) lod.addLevel(one, 8);
+  if (one) lod.addLevel(one, 8, 0.15);
   const box = new THREE.Box3().setFromObject(near);
   const size = box.getSize(new THREE.Vector3());
   const centre = box.getCenter(new THREE.Vector3());
@@ -482,7 +483,7 @@ export function buildGunLOD(model: GunModel, phone = false): THREE.LOD {
   const kit = new GunKit(far, true);
   kit.add(new THREE.BoxGeometry(Math.max(0.01, size.x), Math.max(0.01, size.y * 0.6), Math.max(0.01, size.z)), FIN.frame, { p: [centre.x, centre.y, centre.z] });
   kit.finish();
-  lod.addLevel(far, 30);
+  lod.addLevel(far, 30, 0.15);
   return lod;
 }
 

@@ -1387,41 +1387,11 @@ export class Audio {
     }
   }
 
-  // ---- the bed: rain, the city, the score ----
+  // ---- the bed: the city, the score ----
   private ambience(): void {
     const c = this.ctx;
-    const rain = c.createBufferSource();
-    rain.buffer = this.noise.pink;
-    rain.loop = true;
-    const hp = c.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 1400;
-    const lp = c.createBiquadFilter();
-    lp.type = "lowpass";
-    lp.frequency.value = 6000;
-    const g = c.createGain();
-    g.gain.value = 0.055;
-    rain.connect(hp).connect(lp).connect(g).connect(this.beds);
-    rain.start();
-    // Gusts: a slow swell on a second, lower sheet of rain, and a tin-roof patter that drifts in and out.
-    const sheet = c.createBufferSource();
-    sheet.buffer = this.noise.pink;
-    sheet.loop = true;
-    sheet.playbackRate.value = 0.8;
-    const sbp = c.createBiquadFilter();
-    sbp.type = "bandpass";
-    sbp.frequency.value = 700;
-    sbp.Q.value = 0.6;
-    const sg = c.createGain();
-    sg.gain.value = 0.03;
-    const lfo = c.createOscillator();
-    lfo.frequency.value = 0.07;
-    const lfoGain = c.createGain();
-    lfoGain.gain.value = 0.025;
-    lfo.connect(lfoGain).connect(sg.gain);
-    sheet.connect(sbp).connect(sg).connect(this.beds);
-    sheet.start();
-    lfo.start();
+    // No rain hiss or gust sheets (owner, 2026-11-02: "a very unpleasant almost hiss ... remove that"): the
+    // filtered noise read as static, not rain. The bed is the city's low rumble.
     const city = c.createBufferSource();
     city.buffer = this.noise.brown;
     city.loop = true;

@@ -80,8 +80,12 @@ function webgl2(): boolean {
 function quality() {
   return resolveQuality((["phone", "high", "ultra"].includes(params.get("quality") ?? "") ? params.get("quality") : prefs.quality) as typeof prefs.quality);
 }
+/** The boot line (index.html) goes once the street has drawn its first frame, or once there is no street. */
+function built(): void {
+  document.getElementById("front-building")?.classList.add("is-done");
+}
 function startScene(): void {
-  if (!webgl2()) return;
+  if (!webgl2()) return built();
   const rs = Math.max(0.25, Math.min(1, Number(params.get("rs") ?? 1) || 1));
   sceneReady = import("./render/frontscene")
     .then(({ openFrontScene }) =>
@@ -105,10 +109,12 @@ function startScene(): void {
       });
       $("front-fallback").classList.add("is-off");
       $("front-grain").classList.add("is-baked");
+      built();
       return s;
     })
     .catch((e: unknown) => {
       console.warn("front scene unavailable", e);
+      built();
       return null;
     });
 }
@@ -162,7 +168,7 @@ async function coldOpen(full: boolean): Promise<void> {
   co.classList.add("is-out");
   await sleep(full && !late ? 450 : 0);
   co.hidden = true;
-  co.classList.remove("is-line", "is-up", "is-out");
+  co.classList.remove("is-boot", "is-line", "is-up", "is-out");
   removeEventListener("keydown", onKey);
   removeEventListener("pointerdown", onKey);
 }
@@ -626,7 +632,14 @@ const shotBypass = params.has("play") && shot;
 // C10: ?shot&arch=<id> is the enemy review turntable (game/turntable.ts), not the game.
 const turntable = shot && params.has("arch");
 async function boot(): Promise<void> {
+  // The boot card and line are painted by the HTML; the paths below that skip the cold open take them down.
+  const skipBoot = () => {
+    $("coldopen").hidden = true;
+    $("coldopen").classList.remove("is-boot");
+    built();
+  };
   if (turntable) {
+    skipBoot();
     show("screen-game");
     $("hud").hidden = true;
     $("front-bars").classList.add("is-gone");
@@ -638,6 +651,7 @@ async function boot(): Promise<void> {
     return;
   }
   if (params.has("play") && (prefs.adult || shotBypass)) {
+    skipBoot();
     $("front-bars").classList.add("is-gone");
     return begin(false);
   }
@@ -664,6 +678,7 @@ async function boot(): Promise<void> {
   if (frontStage && shot) {
     // A stage: the scene at a fixed time, no cold open.
     const s = await sceneReady;
+    skipBoot();
     const t = Number(params.get("t") ?? 8);
     if (frontStage === "gate") {
       void openGate();

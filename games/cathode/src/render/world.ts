@@ -7,6 +7,7 @@
 //   fx.ts          muzzle flashes, impacts, blood, casings   post.ts      bloom, noir grade, FXAA, grain
 
 import * as THREE from "three";
+import { compileFrame, compileOffscreen } from "./warm";
 import type { CreateWorld, Quality, Surface, World, WorldEvent } from "./types";
 import { installFog, createShared, patchMaterial, FLOOD } from "./shading";
 import { loadPbr, noiseTexture, windowAtlas, WIN_COLS, WIN_ROWS, posterAtlas, POSTER_COUNT, shopInterior, vendingFront } from "./textures";
@@ -75,6 +76,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   renderer.shadowMap.autoUpdate = false;
   renderer.info.autoReset = false;
   renderer.setClearColor(0x000000, 1);
+  // Reading back every program's info log on first use is a synchronous wait per shader; only dev builds need it.
+  renderer.debug.checkShaderErrors = import.meta.env.DEV;
 
   const scene = new THREE.Scene();
 
@@ -235,6 +238,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     scene.position.copy(probe).negate();
     atmo.sky.position.copy(probe);
     scene.updateMatrixWorld(true);
+    // The probe draws the street six times with no tone mapping: compile those variants in the background first.
+    await compileOffscreen(renderer, scene, camera);
     const env = pmrem.fromScene(scene, 0.02, 0.1, 950);
     scene.position.set(0, 0, 0);
     scene.updateMatrixWorld(true);
@@ -245,11 +250,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   progress(0.9, "Compiling shaders…");
   await frame();
   renderer.shadowMap.needsUpdate = true;
-  try {
-    await renderer.compileAsync(scene, camera);
-  } catch {
-    renderer.compile(scene, camera);
-  }
+  // The frame's own shader variants compile in world.warm(), once the caller has added its own things (Cath on the
+  // title, the viewmodel and enemies in a job), so nothing compiles twice.
 
   // ------------------------------------------------------------ the frame
   let drama = 0;
@@ -379,6 +381,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
         t.mat.color.copy(t.base).multiplyScalar(k);
       }
       key.intensity = 1100 * (0.97 + 0.03 * Math.sin(time * 37 + hash1(Math.floor(time * 3)))) * (1 - blackoutK * 0.9);
+    },
+    async warm() {
+      await compileFrame(renderer, () => world.render());
+      frameNo = 0;
     },
     render() {
       const t0 = performance.now();
