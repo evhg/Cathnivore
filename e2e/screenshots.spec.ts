@@ -109,6 +109,8 @@ for (const [i, title] of OTHER_CHAPTERS.entries()) {
     const soloButton = page.getByRole('button', { name: /^Solo/ })
     if (await soloButton.isVisible().catch(() => false)) await soloButton.click()
     await page.locator('.scene').waitFor()
+    // The stage enters with a panel wipe (plan item 5): shoot once the backdrop and cast have landed.
+    await page.waitForTimeout(1500)
     await shoot(page, project, `11-${i}-chapter-scene-${title.toLowerCase().replace(/\s+/g, '-')}`)
   })
 }

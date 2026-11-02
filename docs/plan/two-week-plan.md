@@ -1,4 +1,4 @@
-# Two-week plan (2026-11-01 to 2026-11-15)
+# Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02)
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -243,6 +243,115 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - An e2e test walks to the door and loads the next district.
   - Shots at D and L.
 - **Size:** 5
+
+## 17. [ ] NIGHT SHIFT: the morning-after debrief
+- **Why:** a job ends and play just carries on. No shot shows a payoff beat (critique 2026-11-02).
+- **Build:**
+  - A debrief after each lead job, on the case board's cork: a stamped grade, Scrip and XP counting up, and the job's best three kills as stills from the kill-cam.
+  - The job's polaroid on The List is struck through in red while you watch.
+  - An unlock reveal (a mod or an outfit) when the job gives one.
+  - A Cath line, plus a Bea text on a clean (unseen) run.
+- **Accept:**
+  - An e2e test finishes the clinic lead job (test hook) and sees the debrief; its counters equal the session's stats.
+  - Unit tests on the grade function at its boundaries.
+  - Reduced motion skips the count-up and stills reel.
+  - Shots at D and L.
+- **Size:** 3
+
+## 18. [ ] Hedgerow: a full-bleed campaign map
+- **Why:** at D the map is still a 10-node strip in a rounded card. Nodes are grey circles, lock icons collide with the name pills ("The Acquisition Van" wraps to 3 lines), and the fog is a blurred card (`D-hedgerow-map`, `P-hedgerow-map`, 2026-11-02).
+- **Build:**
+  - One scrolling painted world filling the screen, with each act a distinct biome (meadow, orchard, marsh, town edge, the depot) joined by item 3's lane.
+  - Nodes become landmark flags on plinths with their stars.
+  - Name banners placed with collision avoidance.
+  - The fog rolls back with an animation when an act opens.
+- **Accept:**
+  - The map covers at least 85% of the viewport at D and P.
+  - A DOM test finds no label overlapping any node or lock.
+  - An e2e test covers the unlock roll-back, with a fade under reduced motion.
+  - Shots at P, D, L and dark.
+- **Size:** 4
+
+## 19. [ ] Hedgerow: a living field with tower tiers and impact
+- **Why:** plots are dashed grey squares, the lane is a plain tan band, towers and enemies are small static icons, and the desktop sidebar has three tutorial voices at once (`D-hedgerow-field`, `P-hedgerow-field`).
+- **Build:**
+  - Plots become tilled beds; the lane gets ruts and verges.
+  - Each tower has three visibly different tiers, with idle and fire animations on both renderers.
+  - Hits squash the target, throws arc, and pops burst into particles.
+  - One voice at a time: Cath's tip or the "new on the lane" card, never both.
+  - The desktop sidebar condenses to a wave card.
+- **Accept:**
+  - A unit test gives each tower tier a distinct sprite.
+  - An e2e test sees at most one tutorial or Cath bubble at a time.
+  - The field is at least 70% of the width at D.
+  - Late-wave shots at P, D and L.
+  - The level tests still pass.
+- **Size:** 4
+
+## 20. [ ] Cathnivore: the board as a diorama
+- **Why:** at D the board is about 49% of the width, flat hexes with dashed borders and small glyph pieces. Three dense side panels compete with it (`desktop-chromium-4-game`, `layout-coast-desktop-chromium`).
+- **Build:**
+  - Painted terrain per region type, with an edge bevel and a cast shadow.
+  - Pieces become tokens with depth that drop in when placed.
+  - At D the side panels become slim drawers, so the board is the hero.
+- **Accept:**
+  - The board is at least 62% of the width at D (e2e).
+  - Greyscale shots stay legible.
+  - `e2e/board-scales.spec.ts` still passes.
+  - Shots of all 3 maps at P and D.
+- **Size:** 4
+
+## 21. [ ] Cathnivore: a hand of action cards
+- **Why:** on a phone the actions are a form, a stack of "Sell 1/2/3 Produce" rows with a "17 more" pill. On desktop, Invest is greyed rows tagged "Need 2 more Marks" (`phone-4-game`).
+- **Build:**
+  - Sell, Invest, Play and Scheme become a fanned hand docked under the board, grouped by kind.
+  - Tap a card to raise it and confirm on the hex, or drag it onto the hex.
+  - An affordability glow; unaffordable cards dim with a cost chip.
+  - Keyboard and screen-reader parity.
+- **Accept:**
+  - At P every action is reachable without scrolling the page (e2e).
+  - Keyboard-only play completes a round (e2e).
+  - No "N more" pill remains.
+  - Shots at P and D.
+- **Size:** 4
+
+## 22. [ ] Runnel: teach on the board
+- **Why:** the first screen is a How to Play modal (4 rules and 3 diagrams) that hides item 6's living board (`P-runnel`, `D-runnel`).
+- **Build:**
+  - The first visit opens a tiny tutorial board with Cath coaching in a speech bubble: turn, connect, bloom.
+  - It flows straight into today's daily.
+  - The full rules move behind "?".
+- **Accept:**
+  - On a fresh profile no modal covers the board (e2e).
+  - The tutorial takes 3 or 4 taps, then loads the daily (e2e).
+  - Shots at P and D.
+- **Size:** 2
+
+## 23. [ ] Shared: Cath's poses and an idle
+- **Why:** Cath has one clasped-hands, front-facing pose on the games page, the Cathnivore title, Setup, Campaign and the Hedgerow map: a paper doll, not "characters with presence". The portfolio's right half is empty at D (`D-games`, `D-portfolio`).
+- **Build:**
+  - `shared/cath/` gains at least 6 poses (wave, point, basket, cheer, thinking, arms crossed), plus a blink, a breathing idle and a hair sway.
+  - Each screen picks its own pose.
+  - The portfolio hero gets Cath and game art on its right half.
+- **Accept:**
+  - A unit test checks the pose ids render distinct paths.
+  - A test table shows no two adjacent screens of a game share a pose.
+  - The portfolio's right half is not empty at D (shot).
+  - Reduced motion stops the idle.
+- **Size:** 3
+
+## 24. [ ] NIGHT SHIFT: the gate and cold open on the live world
+- **Why:** the 18+ gate and the cold-open line sit on black, and the phone gate leaves the top 55% blank. Cath and the rain-soaked street (C13's title scene) only appear after them (`P-nightshift-gate`, `D-nightshift-gate`).
+- **Build:**
+  - The gate card and the cold-open line play over the title scene, which is already loading: the rain, the neon, and Cath under her umbrella.
+  - The phone gate is reframed so the scene fills the top.
+  - One continuous camera move from the gate to the title menu.
+- **Accept:**
+  - More than 50% of pixels are above 8% luminance on the gate at P and D (shot script check).
+  - Cath is in frame on the gate at P, D and L.
+  - The gate still works without WebGL (falls back to today's card).
+  - Shots at P, D and L.
+- **Size:** 2
 
 ---
 
