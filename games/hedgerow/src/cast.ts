@@ -122,7 +122,7 @@ class Kit {
   /** The band of a shape left when the shape shifted by (dx, dy) is cut away: shadow side or rim light. */
   band(d: string, dx: number, dy: number, fill: string, opacity: number): string {
     const m = this.key("m");
-    return `<mask id="${m}" maskUnits="userSpaceOnUse" x="-20" y="-20" width="200" height="230"><path fill="#fff" d="${d}"/><path fill="#000" transform="translate(${dx} ${dy})" d="${d}"/></mask><path fill="${fill}" opacity="${opacity}" mask="url(#${m})" d="${d}"/>`;
+    return `<mask id="${m}" maskUnits="userSpaceOnUse" x="-20" y="-20" width="200" height="340"><path fill="#fff" d="${d}"/><path fill="#000" transform="translate(${dx} ${dy})" d="${d}"/></mask><path fill="${fill}" opacity="${opacity}" mask="url(#${m})" d="${d}"/>`;
   }
 
   clip(d: string, inner: string, extra = ""): string {
@@ -145,8 +145,12 @@ class Kit {
     return `url(#${p})`;
   }
 
+  /** The outline colour of the torso garment, for the half-length figure's sleeve lines. */
+  torsoLine = INK;
+
   /** A garment piece: fill, optional texture, the shadow side, a rim light and an outline. */
   cloth(d: string, fill: string, line: string, shadow: string, texture = "", shade = 0.55): string {
+    if (/^M(6|12|26) 190 /.test(d)) this.torsoLine = line;
     return `<path fill="${fill}" d="${d}"/>${texture ? `<path fill="${texture}" d="${d}"/>` : ""}
 ${this.band(d, -24, 0, shadow, shade)}
 ${this.band(d, 2.4, 1.5, this.rim, 0.6)}
@@ -674,7 +678,24 @@ const PEOPLE: Record<Exclude<CastMember, "narrator">, { skin: string; corporate?
   vane: { skin: "#F1D9CB", corporate: true, draw: vane },
 };
 
-export function castSvg(who: CastMember): string {
+// Plan item 27: the half-length figure for the story stage. Each torso carries on down past the bust's
+// edge to the waist (the same garment, gradients and bands, so every coat and cardigan just gets longer),
+// with the arms marked off by a sleeve line either side. Pieces that stopped at the bust's edge go on down.
+const WAIST = 276;
+const LONGER: [string, string][] = [
+  ["C138 152 152 166 154 190 Z", `C138 152 152 166 154 190 C156 214 150 246 142 ${WAIST} L18 ${WAIST} C10 246 4 214 6 190 Z`],
+  ["C134 154 146 168 148 190 Z", `C134 154 146 168 148 190 C150 214 145 246 138 ${WAIST} L22 ${WAIST} C15 246 10 214 12 190 Z`],
+  ["C122 158 132 170 134 190 Z", `C122 158 132 170 134 190 C136 214 133 246 128 ${WAIST} L32 ${WAIST} C27 246 24 214 26 190 Z`],
+  ["L96 190 L64 190 Z", `L99 ${WAIST} L61 ${WAIST} Z`],
+  ["M80 152 L80 190", `M80 152 L80 ${WAIST}`],
+];
+const SLEEVE: Record<"man" | "woman" | "child", [number, number]> = { man: [36, 124], woman: [38, 122], child: [44, 116] };
+const BUILD: Partial<Record<CastMember, keyof typeof SLEEVE>> = { bea: "child", mara: "woman", ines: "woman", vane: "woman" };
+
+/** The viewBox of each framing: the bust crops at the chest, the half-length figure at the waist. */
+export const CAST_VIEWBOX = { bust: "0 0 160 190", half: "-8 6 176 270" } as const;
+
+export function castSvg(who: CastMember, framing: keyof typeof CAST_VIEWBOX = "bust"): string {
   let body: string;
   let defs = "";
   if (who === "narrator") {
@@ -683,7 +704,15 @@ export function castSvg(who: CastMember): string {
     const p = PEOPLE[who];
     const k = new Kit(skinOf(p.skin), p.corporate ? COOL_RIM : WARM_RIM);
     body = p.draw(k);
+    if (framing === "half") {
+      for (const [a, b] of LONGER) body = body.split(a).join(b);
+      const [l, r] = SLEEVE[BUILD[who] ?? "man"];
+      const line = k.torsoLine;
+      // Sleeve lines where the arms hang against the body, and a soft shade under each arm.
+      body += `${brush([l - 4, 178], [l + 1, 226], [l + 3, WAIST], 0.4, 3, 2, line)}${brush([r + 4, 178], [r - 1, 226], [r - 3, WAIST], 0.4, 3, 2, line)}
+<path fill="#000" opacity="0.12" d="M${l} 196 C${l + 4} 226 ${l + 5} 252 ${l + 6} ${WAIST} L${l + 14} ${WAIST} C${l + 11} 246 ${l + 8} 220 ${l} 196 Z"/><path fill="#000" opacity="0.18" d="M${r} 196 C${r - 4} 226 ${r - 5} 252 ${r - 6} ${WAIST} L${r - 14} ${WAIST} C${r - 11} 246 ${r - 8} 220 ${r} 196 Z"/>`;
+    }
     defs = `<defs>${k.defs.join("")}</defs>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" aria-hidden="true" focusable="false" class="cast cast-${who}">${defs}${body}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${CAST_VIEWBOX[framing]}" aria-hidden="true" focusable="false" class="cast cast-${who} cast-${framing}">${defs}${body}</svg>`;
 }

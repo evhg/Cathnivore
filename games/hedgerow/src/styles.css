@@ -1232,18 +1232,36 @@ button {
   flex-wrap: wrap;
 }
 
-/* ---- story scenes ---- */
+/* ---- story scenes (plan item 27: a full stage) ----
+   The scene fills the screen: the act's painted ground, Cath on the left and whoever she's talking to on the
+   right at half length, a location box at the top and the line in a band at the foot (in landscape, a band
+   between the two figures). Each line wipes in like the next panel; reduced motion fades instead. */
 
-.story {
-  width: min(94vw, 640px);
+dialog.sheet.story {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
   padding: 0;
+  border-radius: 0;
   overflow: hidden;
   text-align: left;
+  background: var(--stage-night);
+  box-shadow: none;
 }
+dialog.sheet.story[open] {
+  animation: stage-in 420ms ease-out;
+}
+@keyframes stage-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 .scene {
-  position: relative;
-  height: clamp(200px, 38vh, 300px);
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+  /* Its own stacking context, so a speaking figure never rises over the band. */
+  z-index: var(--z-canvas);
 }
 .scene-bg,
 .scene-bg svg {
@@ -1252,92 +1270,112 @@ button {
   width: 100%;
   height: 100%;
 }
+/* A shade at the foot so the band and the figures' waists sit in the scene's own dusk. */
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(var(--stage-clear), var(--stage-shade));
+  pointer-events: none;
+}
+.story-place {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 16px;
+  margin: 0;
+  padding: 6px 12px 5px;
+  background: var(--stage-paper);
+  color: var(--stage-night);
+  box-shadow: 0 0 0 2px var(--stage-night), 4px 4px 0 var(--stage-night);
+  font-family: var(--font-voice);
+  font-variation-settings: var(--voice-axes);
+  font-size: var(--fs-d3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  z-index: var(--z-raise-2);
+}
+.story-place:empty { display: none; }
 .actor {
   position: absolute;
-  bottom: -6px;
-  height: 92%;
-  aspect-ratio: 240 / 288;
-  transition: transform 260ms cubic-bezier(0.2, 1.2, 0.4, 1), filter 260ms ease, opacity 260ms ease;
-  filter: brightness(0.82) saturate(0.85) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
-  /* Dimmed by brightness only: any transparency lets the backdrop show through their faces. */
-  opacity: 1;
+  bottom: 0;
+  height: 66dvh;
+  aspect-ratio: 2 / 3;
+  transition: transform 260ms cubic-bezier(0.2, 1.2, 0.4, 1), filter 260ms ease;
+  filter: brightness(0.7) saturate(0.8) drop-shadow(0 8px 14px var(--stage-shade));
+  transform-origin: 50% 100%;
+  z-index: var(--z-raise);
 }
 .actor svg {
   width: 100%;
   height: 100%;
   display: block;
 }
-.actor.left {
-  left: 4%;
-}
-.actor.right {
-  right: 4%;
-  height: 78%;
-  aspect-ratio: 160 / 190;
-}
+.actor.left { left: -18vw; }
+.actor.right { right: -18vw; }
 .actor.speaking {
-  transform: translateY(-6px) scale(1.04);
-  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.3));
-  opacity: 1;
+  transform: translateY(-4px) scale(1.03);
+  filter: drop-shadow(0 10px 18px var(--stage-shade));
+  z-index: var(--z-raise-2);
 }
-@keyframes pose-lean { 0% { transform: translateY(-6px) scale(1.04) rotate(0); } 55% { transform: translateY(-8px) scale(1.07) rotate(var(--lean, 3deg)); } 100% { transform: translateY(-6px) scale(1.05) rotate(calc(var(--lean, 3deg) / 2)); } }
-@keyframes pose-hop { 0%, 100% { transform: translateY(-6px) scale(1.04); } 30% { transform: translateY(-20px) scale(1.06); } 55% { transform: translateY(-4px) scale(1.03, 1.0); } }
-@keyframes pose-tilt { 0% { transform: translateY(-6px) scale(1.04) rotate(0); } 60%, 100% { transform: translateY(-6px) scale(1.04) rotate(-4deg); } }
-@keyframes pose-shrink { 0% { transform: translateY(-6px) scale(1.04); } 100% { transform: translateY(0) scale(0.97); } }
-.actor.left { --lean: 3deg; }
-.actor.right { --lean: -3deg; }
+.actor.enter { animation: actor-in-left 460ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.actor.right.enter { animation-name: actor-in-right; }
+@keyframes actor-in-left { from { clip-path: inset(0 100% 0 0); translate: -12% 0; } to { clip-path: inset(0 0 0 0); translate: 0 0; } }
+@keyframes actor-in-right { from { clip-path: inset(0 0 0 100%); translate: 12% 0; } to { clip-path: inset(0 0 0 0); translate: 0 0; } }
+@keyframes pose-lean { 0% { transform: translateY(-4px) scale(1.03) rotate(0); } 55% { transform: translateY(-6px) scale(1.05) rotate(var(--lean, 2deg)); } 100% { transform: translateY(-4px) scale(1.04) rotate(calc(var(--lean, 2deg) / 2)); } }
+@keyframes pose-hop { 0%, 100% { transform: translateY(-4px) scale(1.03); } 30% { transform: translateY(-18px) scale(1.05); } 55% { transform: translateY(-2px) scale(1.03, 1.0); } }
+@keyframes pose-tilt { 0% { transform: translateY(-4px) scale(1.03) rotate(0); } 60%, 100% { transform: translateY(-4px) scale(1.03) rotate(-2.5deg); } }
+@keyframes pose-shrink { 0% { transform: translateY(-4px) scale(1.03); } 100% { transform: translateY(0) scale(0.98); } }
+.actor.left { --lean: 2deg; }
+.actor.right { --lean: -2deg; }
 .actor[data-pose="lean"] { animation: pose-lean 520ms ease-out forwards; }
 .actor[data-pose="hop"] { animation: pose-hop 560ms ease-out forwards; }
 .actor[data-pose="tilt"] { animation: pose-tilt 420ms ease-out forwards; }
 .actor[data-pose="shrink"] { animation: pose-shrink 420ms ease-out forwards; }
 #story-bg .act-scene { transition: transform 900ms ease; transform: translateX(var(--pan, 0)) scale(1.04); }
-@media (prefers-reduced-motion: reduce) { .actor[data-pose] { animation: none; } #story-bg .act-scene { transition: none; transform: none; } }
 .speech {
-  position: relative;
-  margin: -18px 14px 0;
-  padding: 12px 16px 10px;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 22px 18px 14px;
   border-radius: 18px;
-  background: var(--surface);
-  box-shadow: 0 0 0 2px var(--ink), 0 6px 18px rgba(0, 0, 0, 0.15);
+  background: var(--stage-paper);
+  color: var(--stage-night);
+  box-shadow: 0 0 0 2px var(--stage-night), 0 10px 26px var(--stage-shade);
   z-index: var(--z-raise);
 }
-.speech::before {
-  content: "";
+.speech.wipe { animation: panel-wipe 300ms cubic-bezier(0.3, 0.8, 0.3, 1) both; }
+@keyframes panel-wipe { from { clip-path: inset(0 100% 0 0 round 18px); } to { clip-path: inset(0 0 0 0 round 18px); } }
+.speech.from-right.wipe { animation-name: panel-wipe-right; }
+@keyframes panel-wipe-right { from { clip-path: inset(0 0 0 100% round 18px); } to { clip-path: inset(0 0 0 0 round 18px); } }
+/* The speaker plate: just the name, pinned to the band's top edge on the speaker's side. */
+.speech h2 {
   position: absolute;
-  top: -12px;
-  left: 18%;
-  border: 12px solid transparent;
-  border-top: 0;
-  border-bottom-color: var(--ink);
+  top: -16px;
+  left: 16px;
+  margin: 0;
+  padding: 3px 12px 2px;
+  border-radius: 8px;
+  background: var(--stage-night);
+  color: var(--stage-gold);
+  font-size: var(--fs-d2);
+  line-height: 1.2;
+  transform: rotate(-1.5deg);
 }
-.speech::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: calc(18% + 3px);
-  border: 9px solid transparent;
-  border-top: 0;
-  border-bottom-color: var(--surface);
-}
-.speech.from-right::before {
+.speech.from-right h2 {
   left: auto;
-  right: 18%;
-}
-.speech.from-right::after {
-  left: auto;
-  right: calc(18% + 3px);
+  right: 16px;
+  transform: rotate(1.5deg);
 }
 .speech.caption {
-  background: #2b2320;
-  color: #fff8e6;
+  background: var(--stage-night);
+  color: var(--stage-paper);
 }
-.speech.caption::before,
-.speech.caption::after {
-  display: none;
-}
-.speech.caption .eyebrow,
 .speech.caption h2 {
-  color: #f2c94c;
+  background: var(--stage-gold);
+  color: var(--stage-night);
 }
 .speech.caption .story-text {
   font-family: var(--font-voice);
@@ -1347,19 +1385,65 @@ button {
 .speech .story-text {
   margin: 0;
   min-height: 4.6em;
-}
-.speech h2 {
-  margin: 0 0 4px;
   font-size: var(--fs-d2);
+  line-height: 1.4;
 }
-.story-actions {
+dialog.sheet.story .story-actions {
+  position: absolute;
+  right: 12px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 12px;
+  max-width: 680px;
+  margin: 0 auto;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 14px 14px;
+  padding: 0;
+  background: none;
+  z-index: var(--z-raise-2);
 }
 .story-actions #story-next {
-  min-width: 120px;
+  min-width: 132px;
+}
+dialog.sheet.story #story-skip {
+  background: var(--stage-paper);
+  color: var(--stage-night);
+  box-shadow: 0 0 0 2px var(--stage-night);
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog.sheet.story[open] { animation: stage-fade 300ms ease-out; }
+  .actor.enter { animation: stage-fade 300ms ease-out both; }
+  .speech.wipe,
+  .speech.from-right.wipe { animation: stage-fade 240ms ease-out both; }
+  .actor[data-pose] { animation: none; }
+  #story-bg .act-scene { transition: none; transform: none; }
+}
+@keyframes stage-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Desktop and tablets: the figures stand clear of the band, larger. */
+@media (min-width: 900px) and (min-height: 600px) {
+  .actor { height: 66dvh; }
+  .actor.left { left: max(2vw, calc(50% - 340px - 66dvh * 0.6)); }
+  .actor.right { right: max(2vw, calc(50% - 340px - 66dvh * 0.6)); }
+  .speech { bottom: 84px; padding: 26px 26px 18px; }
+  dialog.sheet.story .story-actions { bottom: 24px; }
+}
+
+/* Landscape phones: the figures stand either side of a centred band. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .actor { height: 94dvh; }
+  .actor.left { left: -2vw; }
+  .actor.right { right: -2vw; }
+  .story-place { top: 10px; left: 50%; transform: translateX(-50%); }
+  .speech {
+    left: 30vw;
+    right: 30vw;
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    padding: 18px 14px 8px;
+  }
+  .speech .story-text { min-height: 4.05em; font-size: var(--fs-d3); line-height: 1.35; }
+  .speech h2 { font-size: var(--fs-d3); }
+  dialog.sheet.story .story-actions { left: 30vw; right: 30vw; bottom: calc(10px + env(safe-area-inset-bottom)); justify-content: center; }
 }
 
 .bank {
@@ -1527,19 +1611,6 @@ button {
   }
   .banner {
     transition: none;
-  }
-}
-@media (max-width: 520px) {
-  .actor.left {
-    left: -6%;
-    height: 84%;
-  }
-  .actor.right {
-    right: 0;
-    height: 60%;
-  }
-  .speech {
-    margin: -14px 10px 0;
   }
 }
 
@@ -2049,9 +2120,6 @@ button {
   padding-bottom: 10px;
   background: var(--surface);
   z-index: var(--z-raise-2);
-}
-.sheet.story .story-actions {
-  bottom: 0;
 }
 .panel .panel-row {
   position: sticky;
@@ -2898,14 +2966,6 @@ img.act-scene {
   box-shadow: inset 0 0 0 1px var(--oak);
 }
 
-/* U10: short landscape phones. The scene shrinks so the whole line and both buttons fit (never cut off). */
-@media (orientation: landscape) and (max-height: 520px) {
-  .scene { height: clamp(96px, 32vh, 150px); }
-  .speech { margin-top: -14px; padding: 8px 14px 6px; }
-  .speech .story-text { min-height: 4.05em; font-size: var(--fs-d3); line-height: 1.35; }
-  .speech h2 { font-size: var(--fs-d3); margin-bottom: 2px; }
-  .story-actions { padding: 8px 12px 10px; }
-}
 
 /* Almanac at short heights: the list takes the room, the chrome shrinks */
 @media (max-height: 520px) {

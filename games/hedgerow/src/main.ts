@@ -592,12 +592,20 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
   // The right-hand actor is whoever Cath is talking to at the moment (scenes can have two or three people).
   let other = lines.find((l) => l.who !== "cath" && l.who !== "narrator")?.who as CastMember | undefined;
   ui.storyBg.innerHTML = actScene(act);
+  // Plan item 27: each figure wipes in from its own side when it first steps on stage (a fade under reduced motion).
+  const enter = (el: HTMLElement) => {
+    el.classList.remove("enter");
+    void el.offsetWidth;
+    el.classList.add("enter");
+  };
   const showOther = () => {
-    ui.storyRight.innerHTML = other ? castSvg(other) : "";
+    ui.storyRight.innerHTML = other ? castSvg(other, "half") : "";
     ui.storyRight.hidden = !other;
     ui.storyRight.dataset.who = other ?? "";
+    if (other) enter(ui.storyRight);
   };
   showOther();
+  enter(ui.storyLeft);
   const finishTyping = () => {
     clearInterval(typing);
     typing = 0;
@@ -612,7 +620,7 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyFull.textContent = line.text;
-    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", pose: line.who === "cath" ? LINE_POSE[line.expression ?? "smirk"] : "clasped", animate: true, outfit: art() });
+    ui.storyLeft.innerHTML = cathSvg({ framing: "half", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", pose: line.who === "cath" ? LINE_POSE[line.expression ?? "smirk"] : "clasped", animate: true, outfit: art() });
     ui.storyLeft.classList.toggle("speaking", line.who === "cath");
     ui.storyRight.classList.toggle("speaking", line.who === other);
     // A pose per line: the speaker's body language follows what they say, and the backdrop drifts a little each line.
@@ -627,6 +635,10 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storySpeech.dataset.who = line.who;
     ui.storySpeech.classList.toggle("from-right", line.who !== "cath" && line.who !== "narrator");
     ui.storySpeech.classList.toggle("caption", line.who === "narrator");
+    // The line wipes in like the next panel, from the speaker's side.
+    ui.storySpeech.classList.remove("wipe");
+    void ui.storySpeech.offsetWidth;
+    ui.storySpeech.classList.add("wipe");
     ui.storyNext.textContent = i === lines.length - 1 ? "Let's go" : "Next";
     clearInterval(typing);
     if (REDUCED) {
@@ -650,13 +662,29 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
       done();
     } else show();
   };
-  ui.storySkip.onclick = () => {
+  const skip = () => {
     finishTyping();
     ui.dlgStory.close();
     done();
   };
+  ui.storySkip.onclick = skip;
+  // Keyboard: Escape skips the scene (it used to close the dialog without starting the level); the arrow keys
+  // and Space step on like Next (Enter on the focused Next button already does).
+  ui.dlgStory.oncancel = (e) => {
+    e.preventDefault();
+    skip();
+  };
+  ui.dlgStory.onkeydown = (e) => {
+    if (e.key === "ArrowRight" || (e.key === " " && !(document.activeElement instanceof HTMLButtonElement))) {
+      e.preventDefault();
+      ui.storyNext.click();
+    }
+  };
   show();
-  if (!ui.dlgStory.open) ui.dlgStory.showModal();
+  if (!ui.dlgStory.open) {
+    ui.dlgStory.showModal();
+    ui.storyNext.focus();
+  }
 }
 
 const actOf = (lv: Level) => Math.floor((lv.id - 1) / 10) + 1;
@@ -689,6 +717,11 @@ if (SANDBOX)
     upgrade,
     merge,
     sendWave,
+    // Plan item 27: open a level's opening scene straight from the hook (each act's opener for shots and e2e).
+    story: (id: number) => {
+      const lv = LEVELS.find((l) => l.id === id);
+      if (lv) showStory(lv.before, lv.place, () => {}, actOf(lv));
+    },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.

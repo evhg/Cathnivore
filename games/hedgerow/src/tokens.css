@@ -10,6 +10,12 @@
   --harvest-ink: #4e2606;
   --focus: #2b2320;
   --backdrop: rgba(43, 35, 32, 0.45);
+  /* Plan item 27: the story stage (same in both themes: it's a painted scene, not a sheet). */
+  --stage-night: #2b2320;
+  --stage-paper: #fff8e6;
+  --stage-gold: #f2c94c;
+  --stage-shade: rgba(24, 16, 12, 0.62);
+  --stage-clear: rgba(24, 16, 12, 0);
 
   /* Paper (content) */
   --paper-hi: #fff7e6;
