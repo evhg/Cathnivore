@@ -1649,10 +1649,12 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   letter-spacing: .04em;
   text-transform: uppercase;
   text-shadow: var(--hud-shadow);
-  transition: transform var(--d-tap) var(--ease-out), background-color var(--d-tap), color var(--d-tap);
+  transition: transform var(--d-tap) var(--ease-out), background-color var(--d-tap), color var(--d-tap), opacity var(--d-tap);
   -webkit-tap-highlight-color: transparent;
   font-stretch: var(--wdth-label);
 }
+/* Plan item 44: a moment's button (Takedown, Focus, Skill) is gone until it can be used. */
+.tbtn.idle { opacity: 0; transform: scale(.8); pointer-events: none; }
 .tbtn:active { transform: scale(.94); background-color: rgb(var(--ink-rgb) / .2); color: var(--ink); }
 .tbtn {
   display: grid;

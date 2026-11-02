@@ -2110,6 +2110,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       setTimeout(() => archGeometry(arch, 0, o.quality === "phone", true), 0);
     }
     tdTold = tdCand ? tdCand.e.id : -1;
+    input.context({
+      takedown: canTakedown,
+      focus: s.focus > 0.05 && !wanted?.focusJammed,
+      skill: [0, 1].some((i) => (actives.state(progress.character, progress.stats, i)?.ready ?? 0) >= 1),
+    });
     if (intent.takedown && tdCand) startTakedown(tdCand);
     // Weapons need a press (S7.1): the same key as a takedown, when there's no one to take down.
     if (intent.takedown && !canTakedown && !dead && job?.take()) audio?.promptUp();

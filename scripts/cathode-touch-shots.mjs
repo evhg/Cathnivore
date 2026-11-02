@@ -3,12 +3,12 @@
 // Usage: npm run build:site && npx vite preview --outDir dist-site --port 4186 &  then  node scripts/cathode-touch-shots.mjs [tag]
 import { chromium } from 'playwright'
 const tag = process.argv[2] ?? 'after'
-const b = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] })
+const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] })
 for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, height: 430 }]]) {
   const ctx = await b.newContext({ viewport: vp, hasTouch: true, isMobile: true })
   await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
   const p = await ctx.newPage()
-  await p.goto('http://localhost:4186/nightshift/?play&class=ghost&district=plaza&rs=0.75&quality=phone')
+  await p.goto((process.env.BASE ?? 'http://localhost:4186') + '/nightshift/?play&class=ghost&district=plaza&rs=0.75&quality=phone')
   await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) > 5, null, { timeout: 240000 })
   // Past the tutorial: every control the game introduces, and the Widowmaker in her hands for the scope.
   await p.evaluate(() => {

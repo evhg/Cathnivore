@@ -135,4 +135,36 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     expect(r.overlaps).toEqual([])
     expect(r.inScope).toEqual([])
   })
+
+  test('plan item 44: Takedown shows only beside an unaware guard', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'touch layout only')
+    test.setTimeout(400_000)
+    await boot(page)
+    type P3 = V3 & { set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
+    type E = { alive: boolean; position: P3; motion: { yaw: number } }
+    type W = { cathode: C & { progress: { unlocks: { features: string[] } }; enemies: E[]; job: { skipTo(n: number): void }; player: { pos: P3; yaw: number; pitch: number } } }
+    await page.evaluate(() => (window as unknown as W).cathode.progress.unlocks.features.push('takedown'))
+    const td = page.locator('[data-btn="takedown"]')
+    await expect(td).not.toHaveAttribute('hidden', '', { timeout: 30_000 })
+    // At the start no guard is within reach: the button is gone, and can't be hit.
+    await expect(td).toHaveClass(/idle/, { timeout: 30_000 })
+    expect(await td.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none')
+    // Behind the first guard (the one under the lamp), 1.3 m off his back and looking at him: it comes up.
+    await page.evaluate(() => {
+      const c = (window as unknown as W).cathode
+      c.job.skipTo(1)
+      const g = c.enemies.filter((e) => e.alive).sort((a, b) => a.position.distanceTo(c.player.pos) - b.position.distanceTo(c.player.pos))[0]!
+      const yaw = g.motion.yaw
+      c.player.pos.set(g.position.x - Math.sin(yaw) * 1.3, g.position.y, g.position.z - Math.cos(yaw) * 1.3)
+      c.player.yaw = Math.atan2(-Math.sin(yaw), -Math.cos(yaw))
+      c.player.pitch = -0.15
+    })
+    await expect(td).not.toHaveClass(/idle/, { timeout: 60_000 })
+    // Walked away (back to the start of the street): gone again.
+    await page.evaluate(() => {
+      const c = (window as unknown as W).cathode
+      c.player.pos.set(c.player.pos.x + 12, c.player.pos.y, c.player.pos.z + 12)
+    })
+    await expect(td).toHaveClass(/idle/, { timeout: 60_000 })
+  })
 })

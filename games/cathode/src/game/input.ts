@@ -270,6 +270,20 @@ export class Input {
   }
   private allowedKey = "";
 
+  /**
+   * Plan item 44: the buttons that only make sense in a moment (Takedown beside an unaware guard, Focus with
+   * bullet time left, Skill with one off cooldown) fade in when they can be used and out when they can't, so
+   * the right of the screen is Fire and Aim most of the time. A button stays tappable while it fades out.
+   */
+  context(can: Partial<Record<TouchButton, boolean>>): void {
+    const key = (Object.keys(can) as TouchButton[]).map((b) => `${b}${can[b] ? 1 : 0}`).join(",");
+    if (key === this.contextKey) return;
+    this.contextKey = key;
+    for (const [b, on] of Object.entries(can) as Array<[TouchButton, boolean]>)
+      this.touchLayer.querySelector<HTMLElement>(`[data-btn="${b}"]`)?.classList.toggle("idle", !on && !this.touchHeld.has(b));
+  }
+  private contextKey = "";
+
   private menuTapped = false;
   /** True once after the phone's menu button is tapped. */
   takeMenu(): boolean {
