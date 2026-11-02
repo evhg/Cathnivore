@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane B: plan item 32 done (Cathnivore chapter 2 coach, 2026-11-02 14:08 session). Next for lane B: whatever the owner's new plan items hold (planning was in progress), else a critique bug below.
+- Lane B: plan item 32 done (2026-11-02 14:08 session); **item 34 claimed**, not started. Start: `EnemyTurnPlayback` renders absolute at the map's foot (`.enemy-turn-playback` in global.css, inside `.map-wrap` in Game.tsx ~1773) while `actionsPanel` (~1122) renders null during it and a bare "AI teammate is deciding…" line on the AI's turn; slice 1 = render the playback as a ledger inside `actionsPanel` (D: the Actions column; P: the hand dock), keep `data-tutorial="enemy-turn"` on it for both coaches, e2e no box over a `.hex`. Slice 2 = the teammate's picks as lifted cards with a reason (`data-teammate-step`), paced by `AI_SPEED_DELAY_MS`.
 - Lane A: plan item 33 (Cathnivore critique bug batch) in progress, slices 1-4 done (1 Mark plural, terrain keeps its name, Escape on phone sheets, title footer, Cath's aside unclamped). Left: boardroom strip clipping/covering hexes, "AI teammate is deciding" band, Farm panel cutting Invest cards at D, chapter 1 two-hex map scale, bottom hex row cut by the felt at P, Cath's hand blob in story scenes.
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing). (Cathnivore setup's empty Difficulty panel fixed 2026-11-02 14:40: it now lists what the level changes.)
 ## Blocked
