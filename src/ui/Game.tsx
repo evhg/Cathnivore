@@ -304,6 +304,16 @@ function SellGainChip({ count }: { count: number }) {
   )
 }
 
+// A role card's face names just the ability and its effect ("On Air: +1 Trust"); the full label, with
+// the producer's role title, stays in its accessible name. The long form ran off the foot of a phone card.
+function roleCardText(action: Extract<Action, { kind: 'role' }>, state: GameState): string {
+  const roleName = PRODUCERS[state.activeProducer].roleName
+  const ability = roleName.split(', ').pop() ?? roleName
+  const target = action.targetRegion ? ` on ${REGIONS[action.targetRegion].name}` : ''
+  const choice = action.choice === 'trust' ? ': +1 Trust' : action.choice === 'goodwill' ? ': +2 Goodwill' : ''
+  return `${ability}${target}${choice}`
+}
+
 function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; tutorialTarget?: boolean; onClick(): void }) {
   if (action.kind === 'sell') {
     return (
@@ -322,7 +332,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
     <button aria-label={aria} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {Icon && <Icon size={18} />}
-        {text}
+        {action.kind === 'role' ? roleCardText(action, state) : text}
       </span>
       <ActionCostChip cost={cost} />
     </button>
@@ -1416,7 +1426,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           <span className="ledger">
             <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} tutorial="produce" />
             <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} />
-            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} tutorial="goodwill" />
           </span>
           <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>
@@ -1530,7 +1540,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </span>
           <Meter value={state.round} max={state.round + state.pressureDeck.length} variant="wheat" />
         </div>
-        <div className="board-cell">
+        <div className="board-cell" data-tutorial="trust">
           <Tooltip term="Public Trust">
             <span className="board-head">
               <PublicTrustIcon />

@@ -4,7 +4,7 @@ import type { Action, GameConfig, GameState, PressureCard, ProducerId, RegionId,
 // `data-tutorial` attribute (`tutorialTargetId` in content/tutorial.ts turns a target into that id).
 export type TutorialTarget =
   | { kind: 'region'; region: RegionId }
-  | { kind: 'ui'; id: 'produce' | 'actions-left' | 'enemy-turn' }
+  | { kind: 'ui'; id: 'produce' | 'goodwill' | 'trust' | 'actions-left' | 'enemy-turn' }
   // The button for this step's own `expect` action (then the glowing region, then Confirm, in turn).
   | { kind: 'action' }
 
@@ -13,6 +13,8 @@ export interface TutorialExpect {
   kind: Action['kind']
   region?: RegionId
   count?: 1 | 2
+  // A role ability with a choice (Sol's On Air: Trust or Goodwill).
+  choice?: 'trust' | 'goodwill'
 }
 
 // SPEC 8.1: "Chapters are data: which regions are active, which rules are switched on, the starting
@@ -53,7 +55,7 @@ export interface Chapter {
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
   // The first-time guided tutorial (spotlight, hard gate, one baby step at a time) instead of the
-  // prompt strip. Chapter 1 only: see content/tutorial.ts and ui/TutorialCoach.tsx.
+  // prompt strip (chapters 1 and 2): see content/tutorial.ts and ui/TutorialCoach.tsx.
   guided?: boolean
   openingScene: string // key into `src/content/story/<id>.ts`'s scene data
   closingScene: string
@@ -250,22 +252,81 @@ export const CHAPTER_2: Chapter = {
   scriptedPressure: chapter2Pressure(),
   winCondition: { regionsRequired: 2, requireKingsmarket: false },
   goalDescription: 'Liberate 2 of the 3 regions while keeping Public Trust above 0.',
+  guided: true,
+  // The coach for chapter 2's new ideas (plan item 32): Doubt and Rebut, Goodwill, Public Trust and the
+  // free role ability, shown by doing them in round 1, then a liberation in round 2. The board and
+  // Pressure deck are fixed; tests/tutorial-script.test.ts replays this script with the real engine.
   tutorialSteps: [
     {
-      text: 'Doubt is just a company’s word against ours — and it works far too often. Spend Goodwill to Rebut it in a region with your Stall.',
-      highlight: { kind: 'action', action: 'rebut' },
+      text: "Welcome back, love. This is Sol's patch, and Hollowell has brought a new trick.",
+      why: "I'll show you the one new idea by doing it with you. Skip me whenever you like.",
     },
     {
-      text: 'Public Trust is everyone’s opinion of farmers, shared by both sides. Keep an eye on it — it decides more than you would think.',
-      highlight: null,
+      text: "Saltmarsh is Sol's harbour: two Stalls, two Outlets, and one blue Doubt, the question mark.",
+      why: 'Doubt is a smear on farmers. A region with any Doubt in it cannot be liberated.',
+      target: { kind: 'region', region: 'saltmarsh' },
     },
     {
-      text: 'Once a round, your role ability comes free: On Air raises Trust or Goodwill, your choice.',
-      highlight: { kind: 'action', action: 'role' },
+      text: 'This is Goodwill: 2. It is what you pay to answer Doubt.',
+      why: 'Every Harvest adds 2 more, and it keeps from round to round.',
+      target: { kind: 'ui', id: 'goodwill' },
     },
     {
-      text: 'Liberate 2 of these 3 regions to win the chapter.',
-      highlight: null,
+      text: 'Tap Rebut to answer the Doubt in Saltmarsh.',
+      why: 'Rebut costs 1 Goodwill per Doubt, and you need a Stall there to do it.',
+      target: { kind: 'action' },
+      expect: { kind: 'rebut', region: 'saltmarsh', count: 1 },
+    },
+    {
+      text: 'Doubt gone. Now tap Supply to clear one of its Outlets.',
+      why: 'Outlets still have to go as well: 2 Produce each, just like Mara’s.',
+      target: { kind: 'action' },
+      expect: { kind: 'supplyOutlets', region: 'saltmarsh', count: 1 },
+    },
+    {
+      text: 'This is Public Trust: 10. It is the whole country’s opinion of farmers.',
+      why: 'It is shared by every side. If it ever reaches 0, the chapter is lost.',
+      target: { kind: 'ui', id: 'trust' },
+    },
+    {
+      text: 'Sol has a role ability, On Air, and it is free once a round. Tap it for +1 Trust.',
+      why: 'A role costs no action, so use it every round. It could give 2 Goodwill instead.',
+      target: { kind: 'action' },
+      expect: { kind: 'role', choice: 'trust' },
+    },
+    {
+      text: 'One action left, and no Produce. Tap Graft.',
+      why: 'Graft always works: +1 Produce and +1 Mark. Your last action ends your turn.',
+      target: { kind: 'action' },
+      expect: { kind: 'graft' },
+    },
+    {
+      text: 'Now the corporations move. Their Scout has opened another Outlet in Highmoor.',
+      why: 'After round 3 their Scout brings Doubt as well, so keep some Goodwill in hand.',
+      target: { kind: 'ui', id: 'enemy-turn' },
+      waitFor: 'enemyTurn',
+    },
+    {
+      text: 'Round 2: Harvest has paid out. You have 3 Produce and 3 Goodwill.',
+      why: '2 Produce from the farm plus 1 from Graft, and Goodwill comes in every round.',
+      target: { kind: 'ui', id: 'produce' },
+    },
+    {
+      text: 'Rivermead has one Outlet and no Doubt. Tap Open Stall there.',
+      why: 'A Stall costs 1 Produce and lets you Supply and Rebut in that region.',
+      target: { kind: 'action' },
+      expect: { kind: 'openStall', region: 'rivermead' },
+    },
+    {
+      text: "Now Supply to clear Rivermead's Outlet.",
+      why: 'With no Outlets and no Doubt left, it is liberated.',
+      target: { kind: 'action' },
+      expect: { kind: 'supplyOutlets', region: 'rivermead', count: 1 },
+    },
+    {
+      text: 'Rivermead is liberated! One more region wins the chapter: Saltmarsh has one Outlet left.',
+      why: 'Clear Outlets, Rebut Doubt, use On Air every round. Over to you.',
+      target: { kind: 'region', region: 'saltmarsh' },
     },
   ],
   openingScene: 'opening',

@@ -16,8 +16,9 @@ import {
   recordGrowingSeasonCarryOver,
   recordChapterLoss,
   clearChapterLossCount,
+  isCoachDone,
   isTutorialDone,
-  markTutorialDone,
+  markCoachDone,
 } from './platform/storage'
 import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
@@ -170,7 +171,7 @@ export default function App() {
   // The guided tutorial plays on a guided chapter until it has been finished or skipped once, and only
   // on the chapter's own scripted board (not "Play on Easy", whose extra Stall the script doesn't know).
   function tutorialFor(chapter: Chapter, config: GameConfig, replayTutorial = false): boolean {
-    return !!chapter.guided && config.difficulty === chapter.difficulty && (replayTutorial || !isTutorialDone())
+    return !!chapter.guided && config.difficulty === chapter.difficulty && (replayTutorial || !isCoachDone(chapter.id))
   }
 
   function playChapter(chapter: Chapter, mode: Mode, seedOverride?: number, difficultyOverride?: 'easy' | 'normal' | 'hard', replayTutorial = false): void {
@@ -181,9 +182,10 @@ export default function App() {
     setScreen({ name: 'chapterGame', chapter, state: createGame(config, seed), seed, mode, tutorial: tutorialFor(chapter, config, replayTutorial) })
   }
 
-  // Settings and the campaign card's "Replay the tutorial": straight into chapter 1's guided round.
-  function replayTutorial(): void {
-    playChapter(CHAPTER_1, 'hotseat', undefined, undefined, true)
+  // Settings and the campaign card's "Replay the tutorial": straight into that chapter's guided round
+  // (Settings replays chapter 1's).
+  function replayTutorial(chapter: Chapter = CHAPTER_1): void {
+    playChapter(chapter, 'hotseat', undefined, undefined, true)
   }
 
   function endChapter(chapter: Chapter, mode: Mode, won: boolean, state: GameState, seed: number): void {
@@ -294,7 +296,7 @@ export default function App() {
   }
 
   if (screen.name === 'settings') {
-    return <Settings onClose={() => setScreen({ name: 'title' })} onReplayTutorial={replayTutorial} />
+    return <Settings onClose={() => setScreen({ name: 'title' })} onReplayTutorial={() => replayTutorial()} />
   }
 
   if (screen.name === 'credits') {
@@ -307,6 +309,7 @@ export default function App() {
         chapters={CHAPTERS}
         completed={loadCampaign().completed}
         tutorialDone={isTutorialDone()}
+        coachDone={(id) => isCoachDone(id)}
         onStart={startChapter}
         onReplayTutorial={replayTutorial}
         onBack={() => setScreen({ name: 'title' })}
@@ -370,7 +373,7 @@ export default function App() {
               : screen.chapter.tutorialSteps
         }
         guided={!!screen.tutorial}
-        onTutorialDone={markTutorialDone}
+        onTutorialDone={() => markCoachDone(screen.chapter.id)}
         midGameScenes={midGameScenes}
         chapterId={screen.chapter.id}
         initialDismissedMidScenes={screen.dismissedMidScenes}

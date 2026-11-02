@@ -23,6 +23,7 @@ export function matchesExpect(expect: TutorialExpect, action: Action): boolean {
   if (action.kind !== expect.kind) return false
   if (expect.region !== undefined && actionRegion(action) !== expect.region) return false
   if (expect.count !== undefined && (!('count' in action) || action.count !== expect.count)) return false
+  if (expect.choice !== undefined && (!('choice' in action) || action.choice !== expect.choice)) return false
   return true
 }
 

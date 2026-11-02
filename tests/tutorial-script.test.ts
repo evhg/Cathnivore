@@ -43,9 +43,9 @@ const CLAIMS: Record<number, (s: GameState) => void> = {
 }
 
 describe('chapter 1 guided tutorial script', () => {
-  it('is a guided chapter, and the only one', () => {
+  it('is a guided chapter, as is chapter 2', () => {
     expect(CHAPTER_1.guided).toBe(true)
-    expect(CHAPTERS.filter((c) => c.guided).map((c) => c.id)).toEqual([CHAPTER_1.id])
+    expect(CHAPTERS.filter((c) => c.guided).map((c) => c.id)).toEqual([CHAPTER_1.id, 'word-of-mouth'])
   })
 
   it('keeps every step to two sentences, with a one-line why', () => {

@@ -173,6 +173,9 @@ export interface CampaignProgress {
   // its own (Settings and the campaign card can still replay it). Absent in older saves: see
   // `isTutorialDone`, which also counts an already-completed chapter 1 as done.
   tutorialDone?: boolean
+  // The guided coach of every later chapter (chapter 2 on): the chapter ids whose coach was finished or
+  // skipped. Chapter 1 keeps `tutorialDone` above, so older saves read the same.
+  coachedChapters?: string[]
 }
 
 export function loadCampaign(): CampaignProgress {
@@ -211,6 +214,21 @@ export function markTutorialDone(): void {
   const progress = loadCampaign()
   if (progress.tutorialDone) return
   storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, tutorialDone: true }))
+}
+
+// A guided chapter's coach, by chapter id: chapter 1 is the first-time tutorial above; a later chapter's
+// coach is done once finished or skipped, or if the chapter was already won the old way.
+export function isCoachDone(chapterId: string, progress: CampaignProgress = loadCampaign()): boolean {
+  if (chapterId === 'fresh-meat') return isTutorialDone(progress)
+  return (Array.isArray(progress.coachedChapters) && progress.coachedChapters.includes(chapterId)) || progress.completed.includes(chapterId)
+}
+
+export function markCoachDone(chapterId: string): void {
+  if (chapterId === 'fresh-meat') return markTutorialDone()
+  const progress = loadCampaign()
+  const done = Array.isArray(progress.coachedChapters) ? progress.coachedChapters : []
+  if (done.includes(chapterId)) return
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, coachedChapters: [...done, chapterId] }))
 }
 
 // SPEC 8.2 ch3 carry-over: records how many Wholesome Hollow Contracts survived "Growing Season," for

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
+import { resolveRules } from '../engine/rules'
 import Portrait from './portraits/Portrait'
 import type { Flight } from './boardroom'
 import type { Faction, GameState, ProducerId, RegionId, RegionType } from '../engine/types'
@@ -553,8 +554,10 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
-  const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
-  const expandTargets = active.filter((id) => matchesSlot(state, id, 'expand'))
+  // A slot whose rule is off in this chapter never resolves, so it marks no hex.
+  const rules = resolveRules(state)
+  const squeezeTargets = rules.squeeze ? active.filter((id) => matchesSlot(state, id, 'squeeze')) : []
+  const expandTargets = rules.expand ? active.filter((id) => matchesSlot(state, id, 'expand')) : []
   const highlighted = new Set(highlight ?? [])
   const targeting = highlighted.size > 0
   const colourBlindPatterns = loadSettings().colourBlindPatterns

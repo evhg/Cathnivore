@@ -445,7 +445,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The 75% field checks (items 10, 19) still pass; shots P, D and L.
 - **Size:** 2
 
-## 32. [ ] Cathnivore: chapter 2 taught on the board *(lane B, in progress)*
+## 32. [x] Cathnivore: chapter 2 taught on the board *(done 2026-11-02, lane B: chapter 2 is a guided chapter, 13 steps over round 1 and the start of round 2: Doubt on Saltmarsh, Goodwill, Rebut, Supply, Public Trust, Sol's free On Air, Graft, the Scout's turn, then Open Stall and Supply to liberate Rivermead and hand over; coach progress per chapter (`coachedChapters`, `isCoachDone`), the campaign card's "Replay the walkthrough"; the prompt strip no longer runs in chapters 1-2 (3-6 keep it until coached); `tests/tutorial-script-ch2.test.ts` replays it with the real engine, `e2e/tutorial-ch2.spec.ts` walks it at P and D, resumes after a reload, skips and replays; every step shot at P and D. Along the way: role cards read "On Air: +1 Trust" (the long label ran off a phone card), and a plan slot whose rule is off says "Not in this chapter" and marks no hex)*
 - **Why:** owner feedback 2026-11-02 wants the campaign taught "baby step by baby step"; the owner's coach covers chapter 1 only, and chapter 2 still uses the old prompt strip (FEEDBACK).
 - **Build:**
   - The spotlight coach (`src/content/tutorial.ts`, `TutorialCoach.tsx`) scripts chapter 2's first round: the new idea it brings, shown by doing it, with Cath's what and why.

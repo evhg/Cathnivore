@@ -101,6 +101,7 @@ export default function CampaignScreen({
   chapters,
   completed,
   tutorialDone = true,
+  coachDone,
   onStart,
   onReplayTutorial,
   onBack,
@@ -109,8 +110,10 @@ export default function CampaignScreen({
   completed: string[]
   // The guided tutorial (chapter 1) is still ahead: its card says so, so a first-time player knows where to start.
   tutorialDone?: boolean
+  // A later guided chapter's coach (chapter 2 on), by id: done once finished or skipped. Absent: all done.
+  coachDone?: (chapterId: string) => boolean
   onStart: (chapter: Chapter) => void
-  onReplayTutorial?: () => void
+  onReplayTutorial?: (chapter: Chapter) => void
   onBack: () => void
 }) {
   const done = chapters.filter((c) => completed.includes(c.id)).length
@@ -148,6 +151,9 @@ export default function CampaignScreen({
           const locked = i > 0 && !isDone && !!previous && !completed.includes(previous.id)
           const current = !isDone && !locked && !currentMarked
           if (current) currentMarked = true
+          // Chapter 1's coach is the first-time tutorial; a later chapter's coach is a quieter walkthrough.
+          const first = i === 0
+          const coached = first ? tutorialDone : (coachDone?.(chapter.id) ?? true)
           const state = isDone ? 'done' : locked ? 'locked' : 'current'
           return (
             <li key={chapter.id} className={`cmp-stop cmp-stop-${state}${current ? ' cmp-stop-next' : ''}`}>
@@ -170,13 +176,13 @@ export default function CampaignScreen({
                       </span>
                     ))}
                     {isDone && <span className="cmp-badge">Completed</span>}
-                    {current && chapter.guided && !tutorialDone && <span className="cmp-badge cmp-badge-next">Tutorial</span>}
-                    {current && !(chapter.guided && !tutorialDone) && <span className="cmp-badge cmp-badge-next">Up next</span>}
+                    {current && chapter.guided && !coached && <span className="cmp-badge cmp-badge-next">{first ? 'Tutorial' : 'Cath shows you'}</span>}
+                    {current && !(chapter.guided && !coached) && <span className="cmp-badge cmp-badge-next">Up next</span>}
                   </span>
                   {/* The card is the button: this says so, in the look of a real key. */}
                   {(current || isDone) && (
                     <span className={current ? 'cmp-cta cmp-cta-primary' : 'cmp-cta'} aria-hidden="true">
-                      {current ? (chapter.guided && !tutorialDone ? 'Start here' : 'Play') : 'Play again'}
+                      {current ? (first && chapter.guided && !coached ? 'Start here' : 'Play') : 'Play again'}
                       <svg viewBox="0 0 16 16" width="14" height="14">
                         <path d="M5 3l5 5-5 5" />
                       </svg>
@@ -186,9 +192,9 @@ export default function CampaignScreen({
                 <ChapterScene index={i} tint={isDone ? REGIONS[chapter.activeRegions[0]!].type : undefined} />
                 <MiniMap chapter={chapter} />
               </button>
-              {chapter.guided && tutorialDone && onReplayTutorial && (
-                <button className="btn-quiet cmp-replay" onClick={onReplayTutorial}>
-                  Replay the tutorial
+              {chapter.guided && coached && onReplayTutorial && (
+                <button className="btn-quiet cmp-replay" onClick={() => onReplayTutorial(chapter)}>
+                  {first ? 'Replay the tutorial' : 'Replay the walkthrough'}
                 </button>
               )}
             </li>

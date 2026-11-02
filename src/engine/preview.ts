@@ -2,6 +2,7 @@
 // real resolvers on the current state and reads the log entries they add, so the preview can never drift
 // from the rules (Squeeze, then Expand on the state Squeeze leaves; the Scout card Expands next round).
 import { REGIONS, regionType } from '../content/map'
+import { resolveRules } from './rules'
 import { resolveExpand, resolveSqueeze } from './enemy'
 import type { GameState, GameEvent, PressureCard, RegionId } from './types'
 
@@ -33,6 +34,9 @@ function matching(state: GameState, card: PressureCard): RegionId[] {
 }
 
 export function planPreview(state: GameState, slot: PlanSlot): PlanPreview {
+  // A chapter with Squeeze or Expand switched off (chapters 1 and 2) still moves cards through those
+  // slots, but the enemy turn skips them: say so, and mark nothing.
+  if (slot !== 'scout' && !resolveRules(state)[slot]) return { slot, regions: [], summary: 'Not in this chapter' }
   if (slot === 'squeeze') {
     if (!state.squeeze) {
       return { slot, regions: [], summary: state.expand ? 'Arms next round' : 'Nothing to squeeze yet' }
