@@ -17,9 +17,14 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
     return (
       <section className="farm-sheet farm-inline" aria-labelledby="farm-inline-title">
         <h2 className="farm-inline-title" id="farm-inline-title">Farm</h2>
-        {state.config.producers.map((id) => (
-          <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} compact />
-        ))}
+        {/* Plan item 33: the active producer's row is only her name until she buys something (the card
+            above names her and carries her figures), and that empty row pushed the Actions frame down
+            far enough to cut the Invest cards at 1440x900. */}
+        {state.config.producers
+          .filter((id) => !(id === state.activeProducer && state.config.producers.length > 1 && state.producers[id].improvements.length === 0))
+          .map((id) => (
+            <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} compact />
+          ))}
         {state.config.producers.every((id) => state.producers[id].improvements.length === 0) && (
           <p className="farm-empty">No Improvements bought yet.</p>
         )}
