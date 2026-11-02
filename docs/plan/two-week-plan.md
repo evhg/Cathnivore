@@ -567,7 +567,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all three pages at P and D.
 - **Size:** 2
 
-## 39. [ ] Runnel: one-screen Practice and a proper Bea's workshop
+## 39. [ ] Runnel: one-screen Practice and a proper Bea's workshop *(lane A, in progress)*
 - **Why:**
   - At P, Practice stacks three rows of controls above a small board.
   - The workshop is a plain modal of blank hexes.
