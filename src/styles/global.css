@@ -1642,6 +1642,15 @@ html.no-animations .card-enter {
    Inputs stay real and are stretched invisibly over their card. */
 .setup .settings-card { margin-top: 14px; }
 .setup .segmented.mode-picker { flex-direction: column; border-radius: 18px; }
+/* What the chosen difficulty changes (from the rules' own table); lines that differ from Normal carry a wheat tick. */
+.setup .difficulty-sheet { margin-top: 10px; display: grid; gap: 6px; }
+.setup .difficulty-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-weight: 420; color: var(--ink-muted); }
+.setup .difficulty-sheet dl { margin: 0; display: grid; gap: 0; }
+.setup .difficulty-sheet dl > div { display: grid; grid-template-columns: 7.5em 1fr; gap: 8px; padding: 3px 0 3px 14px; border-bottom: 1px dashed color-mix(in srgb, var(--soil) 30%, transparent); position: relative; }
+.setup .difficulty-sheet dl > div:last-child { border-bottom: 0; }
+.setup .difficulty-sheet dt { font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--soil); align-self: center; }
+.setup .difficulty-sheet dd { margin: 0; font-size: var(--fs-small); color: var(--ink); }
+.setup .difficulty-sheet .is-changed::before { content: ''; position: absolute; left: 2px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--wheat); }
 .setup .segmented.mode-picker label { text-transform: none; }
 .setup .segmented label { padding: 6px; }
 .setup .segmented span { position: absolute; inset: 0; }

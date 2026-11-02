@@ -4,6 +4,7 @@ import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
 import type { GameConfig, ProducerId, RegionId } from '../engine/types'
 import { earnedPins, pinForEvent } from '../../shared/cath/pins'
 import { marketEventFor } from '../engine/marketEvent'
+import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
@@ -154,6 +155,7 @@ export default function Setup({ onStart }: Props) {
             </label>
           ))}
         </div>
+        <DifficultySheet difficulty={difficulty} />
       </section>
 
       <section className="settings-card setup-seed">
@@ -178,5 +180,44 @@ export default function Setup({ onStart }: Props) {
         Start
       </button>
     </main>
+  )
+}
+
+const DIFFICULTY_LINE: Record<GameConfig['difficulty'], string> = {
+  easy: 'A gentle week, love. Learn the market.',
+  normal: 'A fair fight. Hollowell plays to win.',
+  hard: 'They own the capital. Every move counts.',
+}
+
+/**
+ * What the chosen difficulty changes, read from the same table the rules use, so the Setup card never says
+ * one thing and the game does another. A line that differs from Normal is marked.
+ */
+function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] }) {
+  const s = DIFFICULTY_SETTINGS[difficulty]
+  const n = DIFFICULTY_SETTINGS.normal
+  const rows: Array<[string, string, boolean]> = [
+    ['Public Trust', `starts at ${s.publicTrust}`, s.publicTrust !== n.publicTrust],
+    ['Lost Land', `${s.lostLandPool} tokens to lose`, s.lostLandPool !== n.lostLandPool],
+    [
+      'Kingsmarket',
+      `${s.kingsmarketOutlets} Outlet${s.kingsmarketOutlets === 1 ? '' : 's'}${s.kingsmarketBuyouts ? `, ${s.kingsmarketBuyouts} Buyout` : ', no Buyout'}`,
+      s.kingsmarketOutlets !== n.kingsmarketOutlets || s.kingsmarketBuyouts !== n.kingsmarketBuyouts,
+    ],
+  ]
+  if (s.extraHomeStalls) rows.push(['Home', `+${s.extraHomeStalls} Stall to start`, true])
+  if (difficulty === 'hard') rows.push(['Pastures', '1 Doubt each', true])
+  return (
+    <div className="difficulty-sheet" aria-live="polite">
+      <p className="difficulty-line">“{DIFFICULTY_LINE[difficulty]}”</p>
+      <dl>
+        {rows.map(([k, v, changed]) => (
+          <div key={k} className={changed ? 'is-changed' : undefined}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   )
 }

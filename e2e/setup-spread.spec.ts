@@ -19,3 +19,21 @@ test('desktop Setup spreads across the table', async ({ page }, testInfo) => {
   }
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
 })
+
+// The Difficulty card says what each level changes (it was an empty panel stretched to the Map's height), and
+// on a desktop every level's sheet still leaves Start on screen.
+test('the Difficulty card names what each level changes', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const sheet = page.locator('.difficulty-sheet')
+  const rows = { easy: 'starts at 12', normal: 'starts at 10', hard: 'starts at 8' }
+  for (const [i, [d, trust]] of Object.entries(rows).entries()) {
+    await page.locator('.setup-difficulty label').nth(i).click()
+    await expect(sheet.locator('dd').first(), d).toHaveText(trust)
+    // Normal is the baseline: nothing marked; the others mark what differs.
+    expect(await sheet.locator('.is-changed').count()).toBe(d === 'normal' ? 0 : await sheet.locator('dl > div').count())
+    if (testInfo.project.name === 'desktop-chromium') {
+      expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+    }
+  }
+})
