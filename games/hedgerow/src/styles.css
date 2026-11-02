@@ -3200,8 +3200,9 @@ img.act-scene {
   z-index: var(--z-field-ui);
   padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 6px max(14px, env(safe-area-inset-left));
   /* No backdrop-filter: it would make the header the containing block of the phone's fixed tab bar. */
-  background: color-mix(in srgb, var(--paper) 90%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 22%, transparent);
+  /* Solid paper: at 90% the Cath's-kit row scrolled up behind it showed through as ghost chips. */
+  background: var(--paper);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 22%, transparent), 0 6px 14px -10px color-mix(in srgb, var(--soil) 40%, transparent);
 }
 .app:has(#screen-select:not([hidden])), #screen-select { overflow: clip; }
 #screen-select .levels {
