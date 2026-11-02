@@ -16,7 +16,7 @@ import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { playSoundsFor } from '../platform/sound'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
-import { pickExpression, pickRegion } from './teammatePick'
+import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -574,6 +574,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }
   function commitTeammatePick(): void {
     if (!teammatePick) return
+    const region = pickRegion(teammatePick.action)
+    if (region && !skipTeammateRef.current) flyCardToHex(region)
     setTeammatePick(null)
     const turn = `${teammatePick.from.round}:${teammatePick.from.activeProducer}`
     const label = actionLabel(teammatePick.action, teammatePick.from)

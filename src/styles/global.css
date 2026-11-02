@@ -2550,6 +2550,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 .teammate-pick .producer-cameo {
   animation: boardroom-in 260ms ease-out;
 }
+.teammate-card.teammate-card-flight { animation: none; }
 @keyframes teammate-lift {
   from {
     opacity: 0;
