@@ -621,7 +621,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Three LODs each, with gore caps matched to the new limbs.
 - **Accept:**
   - Turntable shots (front, three-quarter, back) of every archetype at D.
-  - Unit: each LOD0 has a face material and two hand meshes, and stays inside a 12k triangle budget.
+  - Unit: each LOD0 has a face material and two hand meshes, and stays inside a 12k triangle budget (changed 2026-11-02: the armoured enforcer, leader and riot keep C10's 16k desktop budget; see DECISIONS).
   - Plaza guards differ from the background by 15% or more in luminance at 25 m (shot check).
   - The phone `cathode-perf` tier stays under 260 calls in a 12-enemy fight.
   - The ragdoll and dismemberment e2e still pass.

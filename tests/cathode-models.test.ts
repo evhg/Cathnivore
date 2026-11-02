@@ -220,3 +220,12 @@ describe("CATHODE enemy faces and hands (plan item 41)", () => {
       expect(parts(arch).some(([b, f]) => b === "head" && f === "glass")).toBe(true); // the mouth line
     });
 });
+
+// Plan item 41's 12k LOD0 budget holds for every archetype outside the armoured enforcer family, whose plates,
+// under-layers and cloth keep C10's 16k desktop budget (docs/design/cathode-combat.md S0; DECISIONS 2026-11-02).
+describe("CATHODE LOD0 budgets (plan item 41)", () => {
+  for (const arch of ["sniper", "orderly", "nurse", "thug", "civilian", "chrome", "psycho", "drone", "turret", "mech"] as Arch[])
+    it(`${arch} LOD0 stays inside 12k triangles on desktop`, () => {
+      expect(cost(arch, 0, false).tris).toBeLessThanOrEqual(12000);
+    });
+});
