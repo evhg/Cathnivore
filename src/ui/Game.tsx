@@ -1137,7 +1137,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           onDone={endEnemyTurnPlayback}
         />
       ) : waitingOnAi ? (
-        <p>AI teammate is deciding…</p>
+        // Plan item 33: their own card at the table, not a line of plain text in an empty band.
+        <p className="teammate-thinking" role="status">
+          <span className={`producer-cameo pc-${state.activeProducer}`}>
+            <Portrait character={state.activeProducer} size={48} />
+          </span>
+          <span>
+            <strong>{PRODUCERS[state.activeProducer].name}</strong>
+            <span className="teammate-thinking-line">is weighing up their move<span className="thinking-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span>
+          </span>
+        </p>
       ) : selectedGroup ? (
         pendingChoice ? (
           <>
