@@ -10,6 +10,7 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
    - If the push is rejected, end.
 3. **Read, in this order:** `FEEDBACK.md`, `PROGRESS.md`, `docs/plan/two-week-plan.md`, `ROADMAP.md` (its top and the open item you take), `VISION.md`, the last 60 lines of `DECISIONS.md`, `git log --oneline -15` and `origin/ci-status`. Read `SPEC.md` sections 1, 15 and 16 in full; read other SPEC sections, `STYLE.md` and `BALANCE.md` when the task touches them. Never read `docs/archive/` in full; search it with grep.
 4. **Pick the work:** an open `FEEDBACK.md` note, then anything broken (CI, gates, the live site, saves, rules), then the first unfinished item in **`docs/plan/two-week-plan.md`** (owner, 2026-11-01: this plan replaces all older ROADMAP phases as the queue; older open ROADMAP items wait). Write it under **Now** in `PROGRESS.md`.
+   - With two lanes, see **Two lanes** below: claim the item first.
    - **Never idle and never short** (owner, 2026-10-02 and 2026-11-01): a "health check only" session wastes an hour, and so does a session that stops after one small item. "(short)" is not an acceptable session: when a slice is done, start the next slice of the same plan item, or the next item, until about 45 minutes have passed.
    - **Don't invent small items.** The plan holds whole, player-visible features with specs. Only add new items when fewer than 3 plan items are open: then the session's work is planning, the way the plan was made (shoot every game at 390x844 and 1440x900, have a subagent critique the shots against `VISION.md`, add whole features with specs and acceptance to the plan).
    - Phase C (CATHODE/NIGHT SHIFT combat) is done (C20 released 2026-10-28); the 2026-10-09 D/H split is retired.
@@ -19,6 +20,14 @@ You are improving the games described in `SPEC.md` and `VISION.md`, fully unatte
    - **Use the full ~50 minutes** (owner instruction, 2026-09-25). **Don't start anything long after about 40 minutes** (a sim run, a big refactor). Wrap up by about 55 minutes so the lock is released before the next session starts at :51.
 6. **Release once a day, in the release session** (owner, 2026-11-01): the session that starts at **19:51 UTC** (02:51 in the owner's time zone) runs `npm run release` first thing if `build` has unreleased work and CI is green on its head; it fixes any gate failure at the root and reruns; it ticks the shipped plan items. Every other session builds and never releases, except to ship an urgent fix for a bug on the live site. If the 19:51 release fails and can't be fixed in that session, the 20:51 session retries once.
 7. **Before ending,** keep the notes short (SPEC 16): update **Now**, the **Session log** and **Recent releases** in `PROGRESS.md`, append at most 5 lines to `DECISIONS.md`, and archive anything over the size limits. Then delete `.build-lock`, commit and push.
+
+## Two lanes (owner, 2026-11-02: "we have extra credit, keep building")
+Two routines build in parallel. **Lane A** ("Cathnivore builder", starts at :51) uses `.build-lock`. **Lane B** ("Cathnivore builder, lane B", starts at :21) uses `.build-lock-b`. Each lane follows every rule above with its own lock file, plus these:
+- **Claiming work:** before working on a plan item, mark its heading `*(lane A, in progress)*` or `*(lane B, in progress)*`, then commit and push at once. Skip any item the other lane has claimed. Remove the mark when the item is done or handed back.
+- **Releases:** lane A alone releases (the 19:51 session). Lane B never runs `npm run release`.
+- **Planning:** when fewer than 3 unclaimed items are open, plan the next ones as step 4 says. Before starting, write `Planning: lane X, <UTC time>` at the top of `docs/plan/two-week-plan.md` and push. If the other lane's planning mark is less than 75 minutes old, take the oldest open FEEDBACK note or a "Critique bugs still open" item from `PROGRESS.md` instead.
+- **Notes:** each lane keeps its own bullet under **Now** in `PROGRESS.md` ("Lane A: ...", "Lane B: ..."). Always `git pull --rebase` before pushing, and resolve note conflicts by keeping both lanes' lines.
+- **Heavy runs:** the full `npm run check` and long sims run in lane A only. Lane B uses targeted checks; CI covers the rest.
 
 ## Non-negotiables (full list in SPEC section 1)
 - Never ask questions or wait for input.
