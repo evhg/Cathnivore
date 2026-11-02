@@ -1674,7 +1674,9 @@ html.no-animations .card-enter {
 .producer-card .pc-pick { align-self: flex-end; font-size: 12px; font-weight: 800; text-transform: uppercase; opacity: 0; }
 .producer-card:has(input:checked) .pc-pick { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .setup .producer-card { transition: none; } }
-.producer-card .recommended-badge { color: var(--ink); border-color: var(--ink); }
+/* A label, not a button (owner 2026-11-02, clickability pass): no outline pill, just a small printed tag. */
+.producer-card .recommended-badge { color: var(--ink); border: 0; padding: 0; border-radius: 0; font-size: var(--fs-label); letter-spacing: .1em; }
+.producer-card .recommended-badge::before { content: "\2605  "; color: var(--wheat-ink); }
 
 /* How to Play: Cath's quick-start card (ROADMAP 18 slice) */
 .rules-basics { display: flex; gap: 12px; align-items: flex-start; }

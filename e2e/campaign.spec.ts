@@ -65,9 +65,19 @@ test('chapter 3 "Growing Season": dismissing the round-5 reveal then reloading b
     const choose = page.getByRole('button', { name: /^Choose /i }).first()
     if (await choose.isVisible().catch(() => false)) await choose.click()
   }
+  // The enemy turn now plays back in chapters with Agenda off too (it used to show nothing), and a forced
+  // decision only appears once that playback is over: settle whichever is showing until Graft is back.
   async function graft() {
-    await resolvePendingDecisionIfShown()
-    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+    const graftButton = page.getByRole('button', { name: /^Graft:/ })
+    const choose = page.getByRole('button', { name: /^Choose /i }).first()
+    const playback = page.locator('.enemy-turn-playback')
+    for (let i = 0; i < 10; i++) {
+      await expect(graftButton.or(choose).or(playback).first()).toBeVisible()
+      if (await playback.isVisible().catch(() => false)) await playback.click().catch(() => {})
+      else if (await choose.isVisible().catch(() => false)) await choose.click()
+      else break
+    }
+    await graftButton.click({ force: true })
   }
   async function dismissEnemyTurnIfShown() {
     const playback = page.locator('.enemy-turn-playback')
