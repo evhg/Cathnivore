@@ -929,9 +929,9 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
         ? restLeft + sleeve('M266 300 Q296 322 308 336 Q318 300 320 262', 24, cl, 'M319 272 Q320 266 320 260') + hand('open', 322, 238, 10, cl)
         : ''
     case 'point':
-      // Pointing up and out to the viewer's right: "over there".
+      // A raised finger up and out to the viewer's right ("here's the thing"), kept inside the bust frame.
       return layer === 'back'
-        ? restLeft + sleeve('M266 300 Q298 322 310 322 Q326 306 332 290', 24, cl, 'M330 296 Q331 292 333 288') + hand('point', 336, 276, 30, cl)
+        ? restLeft + sleeve('M266 300 Q292 324 298 332 Q304 304 304 280', 24, cl, 'M304 288 Q304 284 304 278') + hand('point', 307, 262, 16, cl)
         : ''
     case 'cheer':
       // Both fists up in a V.

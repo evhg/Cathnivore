@@ -3,6 +3,7 @@ import { REGIONS } from '../content/map'
 import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
 // path, with a mini map of the regions it plays on and the producers who play it. Locked chapters stay
@@ -132,6 +133,7 @@ export default function CampaignScreen({
         <CathArt
           className="cmp-header-cath"
           framing="bust"
+          pose={SCREEN_POSE['cathnivore:campaign']}
           expression={done === chapters.length ? 'delighted' : 'smirk'}
           animate
           width={84}

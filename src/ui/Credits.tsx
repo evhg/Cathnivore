@@ -1,4 +1,5 @@
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
 
 interface Props {
@@ -24,7 +25,7 @@ export default function Credits({ onClose }: Props) {
     <main className="settings credits">
       <header className="settings-header">
         <h1>Credits</h1>
-        <CathArt framing="bust" expression="delighted" animate width={64} height={64} title="Cath" />
+        <CathArt framing="bust" pose={SCREEN_POSE['cathnivore:credits']} expression="delighted" animate width={64} height={64} title="Cath" />
       </header>
 
       <section className="settings-card">

@@ -1,4 +1,5 @@
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 
 // The title screen's illustration (STYLE.md 1: "a farmers'-market poster"): the seven regions of Marrow as
 // a hex flower, market stalls popping up across them, co-op seals stamping onto the liberated ones, and
@@ -125,7 +126,7 @@ export default function TitleArt() {
         </g>
       </svg>
       <div className="title-cath">
-        <CathArt framing="half" expression="smirk" animate />
+        <CathArt framing="half" expression="smirk" pose={SCREEN_POSE['cathnivore:title']} animate />
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import type { Scene as SceneData } from '../content/story/types'
 import { portraitKeyFor } from '../content/characters'
 import type { CathExpression, CathOutfit } from '../../shared/cath/cath'
 import CathArt from './CathArt'
+import { LINE_POSE } from '../../shared/cath/screenposes'
 import Figure from './portraits/Figure'
 import Backdrop from './scenes/Backdrop'
 import { moodOf, sidesFor, type Side } from './sceneStaging'
@@ -35,7 +36,7 @@ const PLACE: Record<string, string> = {
 }
 
 function Speaker({ who, expression, chapterId }: { who: string; expression?: CathExpression; chapterId?: string }) {
-  if (who === 'cath') return <CathArt framing="half" title="Cath" expression={expression} outfit={OUTFIT[chapterId ?? ''] ?? 'field'} />
+  if (who === 'cath') return <CathArt framing="half" title="Cath" expression={expression} pose={LINE_POSE[expression ?? 'smirk']} outfit={OUTFIT[chapterId ?? ''] ?? 'field'} />
   return <Figure character={who} expression={expression} title={who[0]!.toUpperCase() + who.slice(1)} />
 }
 

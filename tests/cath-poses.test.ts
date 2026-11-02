@@ -1,6 +1,8 @@
 // Plan item 23: Cath's arm poses render distinct art, and the default stays the classic clasped pose.
 import { describe, expect, it } from 'vitest'
 import { CATH_POSES, cathSvg, type CathOutfit } from '../shared/cath/cath'
+import { ADJACENT, LINE_POSE, SCREEN_POSE } from '../shared/cath/screenposes'
+import { MOMENTS, cathSceneSvg } from '../shared/cath/scene'
 
 /** The SVG minus per-call ids, so two renders of the same pose compare equal. */
 const art = (svg: string) => svg.replace(/cath\d+-/g, 'ID-')
@@ -27,5 +29,16 @@ describe('Cath poses', () => {
 
   it('keeps the CSP rule: no inline style attributes', () => {
     for (const pose of CATH_POSES) expect(cathSvg({ pose })).not.toMatch(/\sstyle=/)
+  })
+})
+
+describe('screen poses', () => {
+  it('no two adjacent screens share a pose', () => {
+    for (const [a, b] of ADJACENT) expect(SCREEN_POSE[a], `${a} vs ${b}`).not.toBe(SCREEN_POSE[b])
+  })
+  it('every moment and story line uses a real pose', () => {
+    for (const m of Object.values(MOMENTS)) expect(CATH_POSES).toContain(m.pose)
+    for (const p of Object.values(LINE_POSE)) expect(CATH_POSES).toContain(p)
+    expect(cathSceneSvg('win')).toContain('cath-pose-cheer')
   })
 })

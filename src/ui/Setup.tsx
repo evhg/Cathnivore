@@ -5,6 +5,7 @@ import type { GameConfig, ProducerId, RegionId } from '../engine/types'
 import { earnedPins, pinForEvent } from '../../shared/cath/pins'
 import { marketEventFor } from '../engine/marketEvent'
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
 
 export type Mode = 'solo' | 'hotseat'
@@ -72,7 +73,7 @@ export default function Setup({ onStart }: Props) {
         </div>
         {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
             no game state exists yet to react to here. */}
-        <CathArt className="setup-header-cath" framing="bust" expression="smirk" animate width={80} height={80} title="Cath" />
+        <CathArt className="setup-header-cath" framing="bust" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate width={80} height={80} title="Cath" />
       </header>
 
       <section className="settings-card market-event" data-event={marketEvent.id}>

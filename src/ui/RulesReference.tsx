@@ -8,6 +8,7 @@ import { REGIONS } from '../content/map'
 import { ACTION_TERMS, GLOSSARY_TERMS, entryDomId, type GlossaryEntry } from '../content/terms'
 import { ACTIONS_PER_ROUND } from '../engine/region'
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import TourBoard, { type TourCard, type TourHex } from './TourBoard'
 
 interface Props {
@@ -120,7 +121,7 @@ function QuickTour() {
         if (e.key === 'ArrowLeft') setI((n) => Math.max(n - 1, 0))
       }}
     >
-      <CathArt framing="bust" expression="delighted" width={64} height={64} title="Cath" />
+      <CathArt framing="bust" pose={SCREEN_POSE['cathnivore:rules']} expression="delighted" width={64} height={64} title="Cath" />
       <div className="tour-body">
         <h2>The basics, from Cath</h2>
         <h3 className="tour-title">{page.title}</h3>

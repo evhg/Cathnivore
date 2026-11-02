@@ -7,6 +7,7 @@ import "./styles.css";
 import "./ui/components.css";
 import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
+import { LINE_POSE } from "../../../shared/cath/screenposes";
 import { cathSceneSvg, momentForResult } from "../../../shared/cath/scene";
 import { burst, reducedMotion } from "../../../shared/ui/motion";
 import {
@@ -611,7 +612,7 @@ function showStory(lines: StoryLine[], place: string, done: () => void, act = 1)
     ui.storyPlace.textContent = place;
     ui.storyWho.textContent = NAMES[line.who];
     ui.storyFull.textContent = line.text;
-    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", animate: true, outfit: art() });
+    ui.storyLeft.innerHTML = cathSvg({ framing: "bust", expression: line.who === "cath" ? (line.expression ?? "smirk") : "smirk", pose: line.who === "cath" ? LINE_POSE[line.expression ?? "smirk"] : "clasped", animate: true, outfit: art() });
     ui.storyLeft.classList.toggle("speaking", line.who === "cath");
     ui.storyRight.classList.toggle("speaking", line.who === other);
     // A pose per line: the speaker's body language follows what they say, and the backdrop drifts a little each line.

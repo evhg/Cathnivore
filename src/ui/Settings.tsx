@@ -7,6 +7,7 @@ import {
   type ThemePreference,
 } from '../platform/settings'
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { clearGame, storage, CAMPAIGN_KEY } from '../platform/storage'
 
 interface Props {
@@ -41,7 +42,7 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           <h1>Settings</h1>
           <p className="settings-tip">Tweak it your way, love. Nothing here costs a Mark.</p>
         </div>
-        <CathArt framing="bust" expression="smirk" animate width={64} height={64} title="Cath" />
+        <CathArt framing="bust" pose={SCREEN_POSE['cathnivore:settings']} expression="smirk" animate width={64} height={64} title="Cath" />
       </header>
 
       <section className="settings-card settings-switches">

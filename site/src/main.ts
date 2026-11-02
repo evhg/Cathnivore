@@ -5,6 +5,7 @@ import './styles.css'
 import '../../shared/cath/cath.css'
 import { cathSvg, type CathExpression } from '../../shared/cath/cath'
 import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
@@ -36,7 +37,7 @@ document.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => el.style.se
 const heroCath = document.getElementById('hero-cath')
 let outfit = chosenOutfit()
 function showCath(expression: CathExpression): void {
-  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, outfit, animate: !reducedMotion })
+  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, pose: SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
 }
 showCath('smirk')
 
