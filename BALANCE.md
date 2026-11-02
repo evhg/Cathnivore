@@ -121,4 +121,4 @@ HeuristicBot, normal difficulty, the recommended pair, seeds 1-1000 per layout (
 | The Long Coast (10) | 0.8% | 6.1 | 0 |
 | The Delta (7, river) | 10.8% | 8.9 | 0 |
 
-Both within 10 points, but the Coast's games end about 2.6 rounds sooner: ten regions start with ten Outlets, so the Lost Land track runs out faster. Watch it with MCTS before the Daily Market uses the Coast.
+Both within 10 points, but the Coast's games end about 2.6 rounds sooner. The likely cause (not yet checked) is that ten regions start with ten Outlets, so the Lost Land track runs out faster. Check the loss reasons and run MCTS before the Daily Market uses the Coast.
