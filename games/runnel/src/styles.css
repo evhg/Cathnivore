@@ -1029,7 +1029,19 @@ kbd {
   }
 }
 
-.stat-grid,
+/* Plan item 30: the stats sheet is a proper grid, six tiles in two rows of three over the 28 days. (It used to
+   share the win card's tilted polaroid rule, which stacked the tiles in a skewed column over the calendar.) */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+
+.stat-grid div {
+  border: 1px solid var(--plinth);
+}
+
 .win-card {
   display: block;
   width: auto;
@@ -1051,6 +1063,7 @@ kbd {
 
 .stat-grid div,
 .win-numbers div {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1815,10 +1828,15 @@ body {
   mix-blend-mode: multiply;
 }
 
+/* Plan item 30: a faint, soft-edged drift (a radial fade, board.ts), never a grey smear over the channels. */
 .cloud {
-  fill: var(--cloud);
-  opacity: 0.12;
+  fill: url(#cloud-soft);
+  opacity: 0.06;
   animation: cloud-drift 46s linear infinite var(--drift-delay, 0s);
+}
+
+.cloud-stop {
+  stop-color: var(--cloud);
 }
 
 @keyframes cloud-drift {
@@ -1889,7 +1907,7 @@ body {
   }
 
   .cloud {
-    opacity: 0.18;
+    opacity: 0.1;
   }
 }
 

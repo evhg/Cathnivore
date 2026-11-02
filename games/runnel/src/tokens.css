@@ -6,7 +6,7 @@
   --dry-edge: #c9a56d;
   --wet: #c4dc9c;
   --wet-edge: #8fae62;
-  --groove: #a57c4c;
+  --groove: #96693b;
   --groove-wet: #7f5c35;
   --water: #3b8db0;
   --water-hi: #bfeaf4;
@@ -71,8 +71,9 @@
     --dry-edge: #7a6045;
     --wet: #3f5b2f;
     --wet-edge: #5f8445;
-    --groove: #3a2c20;
-    --groove-wet: #2a2018;
+    /* Plan item 30: at night the channels are pale sand cut into dark soil (3:1 or more, tests/runnel-contrast). */
+    --groove: #d0ab7c;
+    --groove-wet: #c8a272;
     --water: #4fb3d9;
     --water-hi: #d4f5ff;
     --tuft-dry: #7d6448;

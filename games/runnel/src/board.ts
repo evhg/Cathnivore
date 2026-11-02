@@ -253,6 +253,11 @@ export class Board {
     el('rect', { class: 'sky-light', x: vx, y: vy, width: vw, height: vh }, g)
     const rng = (k: number) => (hashString(`${this.puzzle.seed}:sky:${k}`) % 1000) / 1000
     if (sky.weather === 'clouds' || sky.weather === 'drizzle') {
+      // Plan item 30: each shadow fades out from its middle, so it drifts over the board without an edge.
+      const soft = el('radialGradient', { id: 'cloud-soft' }, defs)
+      el('stop', { class: 'cloud-stop', offset: '0', 'stop-opacity': '1' }, soft)
+      el('stop', { class: 'cloud-stop', offset: '0.55', 'stop-opacity': '0.6' }, soft)
+      el('stop', { class: 'cloud-stop', offset: '1', 'stop-opacity': '0' }, soft)
       for (let k = 0; k < 3; k++) {
         const cl = el('ellipse', {
           class: 'cloud',
