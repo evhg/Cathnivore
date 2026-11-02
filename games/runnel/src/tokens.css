@@ -20,6 +20,10 @@
   --sky-dusk: #6b4f9a;
   --cloud: #2b2320;
   --gold: #d9951c;
+  /* Plan item 39: Bea's workshop table (warm oak) and the ink on it. */
+  --ws-wood-1: #c99a64;
+  --ws-wood-2: #b5844f;
+  --ws-on-wood: #2b1d12;
   /* Bea's garden (gardenart.ts): crop paint, the same in both themes (they're objects on the soil). */
   --ga-leaf: #5f9a3a;
   --ga-leaf-2: #7fb24f;
@@ -78,6 +82,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
+    --ws-wood-1: #4a3626;
+    --ws-wood-2: #3a2a1d;
+    --ws-on-wood: #f3e9d8;
     --paper: #1c1714;
     --paper-2: #2a221d;
     --surface: #332a24;

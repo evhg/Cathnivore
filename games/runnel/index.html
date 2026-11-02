@@ -205,13 +205,30 @@
     </dialog>
 
     <script type="module" src="./src/main.ts"></script>
-    <dialog id="workshop" class="workshop" aria-label="Bea's workshop">
-    <h2>Bea's workshop</h2>
-    <p class="ws-help">Tap a tile, then a tile beside it, to lay or cut a channel between them. The middle tile is the spring.</p>
-    <div class="ws-sizes" id="ws-sizes"><button type="button" data-radius="2">Small</button><button type="button" data-radius="3">Medium</button><button type="button" data-radius="4">Large</button></div>
-    <svg id="ws-board" class="ws-board" role="img" aria-label="Board editor"></svg>
-    <p class="ws-status" id="ws-status" aria-live="polite"></p>
-    <div class="ws-actions"><button type="button" id="ws-clear">Clear</button><button type="button" id="ws-copy">Copy code</button><button type="button" id="ws-play">Play it</button><button type="button" id="ws-close">Close</button></div>
-  </dialog>
+    <dialog id="workshop" class="workshop" aria-labelledby="ws-title">
+      <div class="ws-table">
+        <header class="ws-head">
+          <h2 id="ws-title">Bea's workshop</h2>
+          <div class="ws-sizes" id="ws-sizes" role="group" aria-label="Board size"><button type="button" data-radius="2">Small</button><button type="button" data-radius="3">Medium</button><button type="button" data-radius="4">Large</button></div>
+          <button type="button" class="icon-btn ws-close" id="ws-close" aria-label="Close the workshop">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15" /></svg>
+          </button>
+        </header>
+        <div class="ws-paper">
+          <svg id="ws-board" class="ws-board" role="group" aria-label="Board editor: tap a tile, then a tile beside it, to lay or cut a channel"></svg>
+          <div class="ws-bea" id="ws-bea"></div>
+        </div>
+        <p class="ws-status" id="ws-status" aria-live="polite"></p>
+        <div class="ws-actions">
+          <button type="button" class="bs-btn" id="ws-clear">Clear</button>
+          <button type="button" class="btn" id="ws-play">Test it</button>
+          <button type="button" class="btn ws-share" id="ws-share" disabled>Share</button>
+        </div>
+        <section class="ws-shelf" aria-labelledby="ws-shelf-title">
+          <h3 class="bs-label" id="ws-shelf-title">Bea's shelf</h3>
+          <div class="ws-shelf-row" id="ws-shelf"></div>
+        </section>
+      </div>
+    </dialog>
 </body>
 </html>

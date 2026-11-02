@@ -41,6 +41,8 @@ export interface SaveData {
   orchardGames?: Record<number, SavedGame>
   /** Bea's picks: board codes saved to replay, newest first (max 8). */
   picks?: string[]
+  /** Workshop codes the player has tested and solved in Practice (plan item 39: only these can be shared). */
+  workshopSolved?: string[]
   /** Seasonal events: board indexes solved per event id, and the ids whose exclusive crop is earned. */
   eventDone?: Record<string, number[]>
   eventCrops?: string[]

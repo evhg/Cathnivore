@@ -23,17 +23,18 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
   }
   await p.waitForTimeout(600)
   await p.screenshot({ path: out(`workshop-${n}`) })
-  // Lay a few channels from the spring outward.
-  const tiles = p.locator('#ws-board g[data-cell]')
-  const count = await tiles.count()
-  if (count > 6) {
-    const mid = Math.floor(count / 2)
-    for (const [a, c] of [[mid, mid + 1], [mid, mid - 1]]) {
-      await tiles.nth(a).click(); await tiles.nth(c).click()
-    }
-    await p.waitForTimeout(400)
-    await p.screenshot({ path: out(`workshop-laid-${n}`) })
-  }
+  // Lay a valid board: spring, two to the right, then down-left (as e2e-site/runnel-practice.spec.ts does).
+  const centres = await p.locator('#ws-board g[data-cell]').evaluateAll((gs) =>
+    gs.map((g) => { const r = g.getBoundingClientRect(); return { i: g.dataset.cell, x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width } }))
+  const near = (x, y) => centres.reduce((a, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(a.x - x, a.y - y) ? b : a))
+  const sb = await p.locator('#ws-board').boundingBox()
+  const mid = near(sb.x + sb.width / 2, sb.y + sb.height / 2)
+  const w = mid.w
+  const r2 = near(mid.x + 2 * w, mid.y)
+  const chain = [mid, near(mid.x + w, mid.y), r2, near(r2.x - w / 2, r2.y + w * 0.87), near(r2.x - w * 1.5, r2.y + w * 0.87), near(mid.x - w / 2, mid.y + w * 0.87)]
+  for (const c of chain) await p.locator(`#ws-board g[data-cell="${c.i}"]`).click()
+  await p.waitForTimeout(700)
+  await p.screenshot({ path: out(`workshop-laid-${n}`) })
   await p.goto(base + '?lesson&sky=noon')
   await p.waitForTimeout(900)
   await p.screenshot({ path: out(`lesson-${n}`) })

@@ -203,6 +203,12 @@ function finish(): void {
     data.practiceSolved++
     const best = data.bestPractice[size]
     if (best === undefined || game.elapsedMs < best) data.bestPractice[size] = game.elapsedMs
+    const wsCode = workshopCode(game.seed)
+    if (wsCode) {
+      // Plan item 39: a tested board goes on Bea's shelf and can now be shared.
+      data.workshopSolved = [wsCode, ...(data.workshopSolved ?? []).filter((c) => c !== wsCode)].slice(0, 50)
+      data.picks = [wsCode, ...(data.picks ?? []).filter((c) => c !== wsCode)].slice(0, 8)
+    }
     const eb = eventBoardOf(game.seed)
     if (eb) {
       const done = (data.eventDone ??= {})
@@ -380,6 +386,13 @@ function showWin(): void {
     ui.winNote.prepend(drops)
   }
   ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : 'Next puzzle'
+  const wsCode = workshopCode(puzzle.seed)
+  if (wsCode) {
+    ui.winEyebrow.textContent = "Made in Bea's workshop"
+    ui.winTitle.textContent = 'Your board works.'
+    ui.winNote.textContent = `${parNote(game.taps, puzzle.par)} Its code is ${wsCode}: anyone can paste it to play your board.`
+    ui.btnNext.textContent = 'Back to the workshop'
+  }
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   renderCard(stats.streak)
@@ -388,6 +401,8 @@ function showWin(): void {
 
 /** Plan item 6: the share card (the solved board and the numbers) as an image on the win card. */
 let cardBlob: Blob | null = null
+/** The workshop code the current share card shows, if it shows one. */
+let cardCode: string | null = null
 function renderCard(streak: number): void {
   const canvas = document.createElement('canvas')
   canvas.width = CARD_W
@@ -396,7 +411,9 @@ function renderCard(streak: number): void {
   const img = $<HTMLImageElement>('win-card')
   const save = $<HTMLAnchorElement>('btn-save-card')
   if (!ctx) return
-  const title = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice`
+  const wsCode = workshopCode(puzzle.seed)
+  const title = wsCode ? `Bea's workshop ${wsCode}` : mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice`
+  cardCode = wsCode
   drawShareCard(ctx, puzzle, { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined })
   const url = canvas.toDataURL('image/png')
   img.src = url
@@ -444,15 +461,22 @@ function shareGrid(): string {
 }
 
 function shareText(): string {
+  const wsCode = workshopCode(puzzle.seed)
+  if (wsCode) return workshopShareText(wsCode, `⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par})`)
   const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice (${size})`
   const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
   return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\n${shareGrid()}\nhttps://cathnivore.com/runnel/`
 }
 
-ui.btnShare.addEventListener('click', async () => {
-  const text = shareText()
+function workshopShareText(code: string, result?: string): string {
+  return `I made a Runnel board in Bea's workshop. Can you water every field?\n${result ? `${result}\n` : ''}Board code: ${code}\nPaste it in Practice, under Board: https://cathnivore.com/runnel/`
+}
+
+ui.btnShare.addEventListener('click', () => void shareOut(shareText(), cardBlob))
+
+async function shareOut(text: string, blob: Blob | null): Promise<void> {
   try {
-    const file = cardBlob ? new File([cardBlob], 'runnel.png', { type: 'image/png' }) : null
+    const file = blob ? new File([blob], 'runnel.png', { type: 'image/png' }) : null
     if (file && navigator.canShare?.({ files: [file] }) && matchMedia('(pointer: coarse)').matches) {
       await navigator.share({ text, files: [file] })
       return
@@ -466,11 +490,12 @@ ui.btnShare.addEventListener('click', async () => {
   } catch {
     ui.toast.textContent = 'Could not share from this browser.'
   }
-})
+}
 
 ui.btnNext.addEventListener('click', () => {
   ui.dlgWin.close()
-  if (mode === 'daily') switchMode('practice')
+  if (workshopCode(puzzle.seed) && game.solved) workshop?.open()
+  else if (mode === 'daily') switchMode('practice')
   else if (mode === 'orchard') {
     if (level >= ORCHARD_LEVELS) switchMode('daily')
     else playLevel(level + 1)
@@ -964,10 +989,26 @@ function shotSolve(): void {
   if (last !== undefined) ui.board.querySelectorAll('.tiles > g.cell')[last]?.setAttribute('data-last', '')
 }
 
+// Plan item 39's e2e: under webdriver, set the board one tap from solved (the tile is marked `data-last`).
+if (navigator.webdriver) (window as unknown as { runnelTest: object }).runnelTest = { nearlySolve: shotSolve }
+
 function workshopCode(seed: string): string | null {
   return isWorkshopSeed(seed) ? seed.slice('workshop-'.length) : null
 }
 
-initWorkshop({ play: (code) => playCode(code), toast: (t) => (ui.toast.textContent = t) })
+const workshop = initWorkshop({
+  play: (code) => playCode(code),
+  share: (code) => {
+    // Share the card too when the last win card was this board's.
+    ui.toast.textContent = ''
+    void shareOut(workshopShareText(code), cardCode === code ? cardBlob : null).then(() => {
+      const st = document.getElementById('ws-status')
+      if (st && ui.toast.textContent) st.textContent = ui.toast.textContent === 'Copied to clipboard.' ? `Copied. Send ${code} to a friend.` : ui.toast.textContent
+    })
+  },
+  picks: () => data.picks ?? [],
+  tested: (code) => (data.workshopSolved ?? []).includes(code),
+  toast: (t) => (ui.toast.textContent = t),
+})
 
 mountWeekChip(document.getElementById('week-slot'))

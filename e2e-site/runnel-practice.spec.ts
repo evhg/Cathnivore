@@ -63,3 +63,70 @@ test.describe('Runnel Practice on one screen (plan item 39)', () => {
     await expect(page.locator('#rail')).toBeVisible()
   })
 })
+
+test.describe("Bea's workshop (plan item 39)", () => {
+  test('build a board, test it, solve it and share it; the pasted code plays the same board', async ({ page, context, browserName }) => {
+    test.skip(browserName !== 'chromium', 'clipboard permissions')
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/runnel/?nohelp&mode=practice')
+    await page.locator('#btn-board').click()
+    await page.locator('#btn-workshop').click()
+    const ws = page.locator('#workshop')
+    await expect(ws).toBeVisible()
+    // The workshop fills the screen.
+    const vp = page.viewportSize()!
+    // (after its 280 ms opening scale)
+    await expect.poll(async () => (await ws.boundingBox())!.width).toBeGreaterThanOrEqual(vp.width - 1)
+    expect((await ws.boundingBox())!.height).toBeGreaterThanOrEqual(vp.height - 1)
+    await expect(page.locator('#ws-share')).toBeDisabled()
+
+    // Draw spring -> R1 -> R2 -> the tile below-left of R2 on the small board.
+    const centres = await page.locator('#ws-board g[data-cell]').evaluateAll((gs) =>
+      gs.map((g) => {
+        const r = g.getBoundingClientRect()
+        return { i: Number((g as SVGGElement).dataset.cell), x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width }
+      }),
+    )
+    const near = (x: number, y: number) => centres.reduce((a, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(a.x - x, a.y - y) ? b : a))
+    const svg = (await page.locator('#ws-board').boundingBox())!
+    const mid = near(svg.x + svg.width / 2, svg.y + svg.height / 2)
+    const w = mid.w
+    const r1 = near(mid.x + w, mid.y)
+    const r2 = near(mid.x + 2 * w, mid.y)
+    const bl = near(r2.x - w / 2, r2.y + w * 0.87)
+    for (const c of [mid, r1, r2, bl]) await page.locator(`#ws-board g[data-cell="${c.i}"]`).click()
+    await expect(page.locator('#ws-board .ws-water')).not.toHaveCount(0)
+    await expect(page.locator('#ws-play')).toBeEnabled()
+    await expect(page.locator('#ws-share')).toBeDisabled()
+
+    await page.locator('#ws-play').click()
+    await expect(ws).toBeHidden()
+    const shape = () =>
+      page.locator('#board .tiles').evaluate((t) => [...t.querySelectorAll(':scope > g.cell')].map((g) => `${g.getAttribute('transform')}|${g.getAttribute('class')}`).join(';'))
+    const before = await shape()
+    // Solve it: the test hook leaves one tile a tap away.
+    await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
+    await page.locator('#board [data-last]').click()
+    await expect(page.locator('#dlg-win')).toBeVisible()
+    await expect(page.locator('#win-eyebrow')).toHaveText("Made in Bea's workshop")
+    const code = (await page.locator('#win-note').textContent())!.match(/W2-[A-Za-z0-9_-]+/)![0]
+    await page.locator('#btn-next').click()
+    await expect(ws).toBeVisible()
+    await expect(page.locator('#ws-share')).toBeEnabled()
+    await expect(page.locator('#ws-shelf .ws-pick').first()).toHaveText(code)
+    await page.locator('#ws-share').click()
+    await expect(page.locator('#ws-status')).toContainText(code)
+    const clip = await page.evaluate(() => navigator.clipboard.readText())
+    expect(clip).toContain(code)
+    await page.locator('#ws-close').click()
+
+    // Paste the code into a fresh profile's Practice: the same board comes up.
+    await page.evaluate(() => localStorage.clear())
+    await page.goto('/runnel/?nohelp&mode=practice')
+    await page.locator('#btn-board').click()
+    await page.locator('#code-input').fill(code)
+    await page.locator('#codebar button[type=submit]').click()
+    await expect(page.locator('#board-sheet')).toBeHidden()
+    expect(await shape()).toBe(before)
+  })
+})

@@ -1712,98 +1712,370 @@ body {
   }
 }
 
-/* Bea's workshop (board editor) */
+/* Bea's workshop (plan item 39): a full-screen kitchen table, the board drawn on a sheet of paper, Bea and her
+   crayons in the corner, water running along each channel as it joins the spring. */
 .workshop {
-  width: min(92vw, 30rem);
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
   border: 0;
-  border-radius: 20px;
-  padding: 18px;
-  background: var(--paper);
+  padding: 0;
   color: var(--ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 118px, color-mix(in srgb, var(--soil) 12%, transparent) 118px 120px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--soil) 5%, transparent) 0 3px, transparent 3px 17px),
+    linear-gradient(180deg, var(--ws-wood-1), var(--ws-wood-2));
+}
+
+.workshop[open] {
+  animation: ws-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes ws-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
 }
 
 .workshop::backdrop {
   background: color-mix(in srgb, var(--ink) 55%, transparent);
 }
 
-.workshop h2 {
-  margin: 0 0 4px;
+.ws-table {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  gap: 10px;
+  height: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
 }
 
-.ws-help,
-.ws-status {
-  margin: 4px 0;
-  font-size: var(--fs-small);
-  color: var(--ink-muted);
-}
-
-.ws-status.ok {
-  color: var(--ink);
-  font-weight: 700;
-}
-
-.ws-sizes,
-.ws-actions {
+.ws-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin: 8px 0;
+  align-items: center;
+  gap: 10px;
 }
 
-.ws-sizes button,
-.ws-actions button {
-  min-height: 40px;
-  padding: 0 14px;
+.workshop h2 {
+  margin: 0;
+  flex: 1;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-head);
+  color: var(--ws-on-wood);
+}
+
+.ws-close {
+  color: var(--ws-on-wood);
+}
+
+.ws-close svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.ws-sizes {
+  display: inline-flex;
+  padding: 3px;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+}
+
+.ws-sizes button {
+  min-height: 38px;
+  padding: 0 12px;
   border: 0;
-  background: var(--paper-2);
-  color: var(--ink);
-  font-weight: 700;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: var(--fs-small);
   cursor: pointer;
 }
 
 .ws-sizes button[aria-pressed='true'] {
-  outline: 2px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 15%, transparent);
 }
 
-.ws-actions button:disabled {
-  opacity: 0.45;
+/* The sheet of paper: slightly turned, taped at two corners, with a soft shadow on the wood. */
+.ws-paper {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px 12px 12px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--surface) 70%, transparent), transparent 60%),
+    var(--paper);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--soil) 25%, transparent), 0 14px 30px color-mix(in srgb, var(--ink) 25%, transparent);
+  transform: rotate(-0.6deg);
+}
+
+.ws-paper::before,
+.ws-paper::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 64px;
+  height: 20px;
+  background: color-mix(in srgb, var(--ga-yellow) 45%, transparent);
+  transform: rotate(-6deg);
+}
+
+.ws-paper::before {
+  left: 18px;
+}
+
+.ws-paper::after {
+  right: 18px;
+  transform: rotate(5deg);
 }
 
 .ws-board {
   display: block;
   width: 100%;
-  max-height: 55vh;
+  height: 100%;
+  min-height: 0;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ws-hex {
-  fill: var(--paper-2);
-  stroke: var(--ink-muted);
+  fill: color-mix(in srgb, var(--paper-2) 60%, transparent);
+  stroke: color-mix(in srgb, var(--ink-muted) 55%, transparent);
   stroke-width: 1;
+  stroke-dasharray: 3 3;
   cursor: pointer;
+  transition: fill 200ms;
 }
 
 .ws-hex.live {
-  fill: var(--surface);
+  fill: var(--dry);
+  stroke: var(--soil);
+  stroke-dasharray: none;
+  stroke-width: 1.4;
+}
+
+.ws-hex.wet {
+  fill: color-mix(in srgb, var(--pasture) 30%, var(--paper));
 }
 
 .ws-hex.sel {
-  stroke: var(--ink);
-  stroke-width: 3;
+  stroke: var(--clay);
+  stroke-width: 3.5;
+  stroke-dasharray: none;
 }
 
+/* Crayon-drawn channels: a waxy brown stroke; the water draws over it once it joins the spring. */
 .ws-pipe {
-  stroke: var(--ink);
-  stroke-width: 7;
+  stroke: var(--groove);
+  stroke-width: 9;
   stroke-linecap: round;
   pointer-events: none;
 }
 
-.ws-spring {
-  fill: var(--gold);
+.ws-waters {
   pointer-events: none;
+}
+
+.ws-water {
+  stroke: var(--water);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.ws-water.fresh {
+  animation: ws-water-run 420ms ease-out both;
+}
+
+.ws-water.d1 { animation-delay: 70ms; }
+.ws-water.d2 { animation-delay: 140ms; }
+.ws-water.d3 { animation-delay: 210ms; }
+.ws-water.d4 { animation-delay: 280ms; }
+.ws-water.d5 { animation-delay: 350ms; }
+.ws-water.d6 { animation-delay: 420ms; }
+.ws-water.d7 { animation-delay: 490ms; }
+.ws-water.d8 { animation-delay: 560ms; }
+
+@keyframes ws-water-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.ws-spring {
+  fill: var(--water);
+}
+
+.ws-spring-ring {
+  fill: var(--paper);
+  stroke: var(--water);
+  stroke-width: 2;
+}
+
+.ws-bea {
+  position: absolute;
+  left: 6px;
+  bottom: 4px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.ws-bea .ws-bea-art {
+  width: 84px;
+  height: 74px;
+}
+
+.ws-bea .ws-tin-art {
+  width: 44px;
+  height: 38px;
+}
+
+.ga .ga-crayon-red,
+.ga .ga-crayon-gold,
+.ga .ga-crayon-green,
+.ga .ga-crayon-blue,
+.ga .ga-crayon-plum {
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.ga .ga-crayon-red { stroke: var(--ga-red); }
+.ga .ga-crayon-gold { stroke: var(--ga-yellow); }
+.ga .ga-crayon-green { stroke: var(--ga-leaf); }
+.ga .ga-crayon-blue { stroke: var(--water); }
+.ga .ga-crayon-plum { stroke: var(--ga-plum); }
+.ga .ga-tin { fill: var(--ga-can); }
+.ga .ga-tin-band { fill: none; stroke: var(--ga-wool); stroke-width: 1; opacity: 0.6; }
+
+.ws-status {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--ws-on-wood);
+}
+
+.ws-status.ok {
+  font-weight: 700;
+}
+
+.ws-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ws-actions .btn {
+  min-width: 120px;
+}
+
+.ws-actions .btn:disabled {
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  color: color-mix(in srgb, var(--ws-on-wood) 55%, transparent);
+  cursor: default;
+}
+
+.ws-share:not(:disabled) {
+  background: var(--water);
+}
+
+.ws-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border-top: 3px solid color-mix(in srgb, var(--soil) 45%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper) 30%, transparent);
+}
+
+.ws-shelf .bs-label {
+  color: var(--ws-on-wood);
+}
+
+.ws-shelf-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ws-pick {
+  flex: none;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-num);
+  font-size: var(--fs-label);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--soil) 30%, transparent);
+  max-width: 14em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ws-shelf-empty {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--ws-on-wood);
+  opacity: 0.8;
+}
+
+@media (max-width: 520px) {
+  .ws-head {
+    flex-wrap: wrap;
+  }
+  .ws-sizes {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  .ws-bea .ws-bea-art {
+    width: 60px;
+    height: 52px;
+  }
+  .ws-bea .ws-tin-art {
+    width: 32px;
+    height: 28px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .ws-bea .ws-bea-art {
+    width: 130px;
+    height: 114px;
+  }
+  .ws-bea .ws-tin-art {
+    width: 64px;
+    height: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workshop[open],
+  .ws-water.fresh {
+    animation: none;
+  }
 }
 
 /* ---- seasonal event strip ---- */

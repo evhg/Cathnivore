@@ -145,3 +145,24 @@ export function beaWateringSvg(title?: string): string {
     c(18.5, 0, 0.7, 'ga-water') + c(19, 2.5, 0.7, 'ga-water') + c(18, 5, 0.7, 'ga-water')
   return svg(art, title, ' ga-bea')
 }
+
+/** Bea at the workshop table (plan item 39): kneeling up to it with a crayon, her tin of crayons beside her. */
+export function beaCrayonSvg(title?: string): string {
+  const art =
+    p('M-12 12 H14', 'ga-line') +
+    p('M-6 12 Q-6 1 0 1 Q6 1 6 12 Z', 'ga-cardi') +
+    c(0, -4, 4.8, 'ga-skin') +
+    p('M-5 -5 Q-4.5 -10.5 0 -10 Q4.5 -10.5 5 -5 Q3 -8 0 -7.8 Q-3 -8 -5 -5 Z', 'ga-hair') +
+    c(-5.6, -5.5, 2.2, 'ga-hair') + c(5.6, -5.5, 2.2, 'ga-hair') + c(-5.6, -7.6, 0.9, 'ga-yellow') + c(5.6, -7.6, 0.9, 'ga-yellow') +
+    p('M-1.8 -3.4 q0.6 0.5 1.2 0 M1.4 -3.4 q0.6 0.5 1.2 0', 'ga-line') + p('M-0.8 -1.3 q0.8 0.6 1.6 0', 'ga-line') +
+    p('M4 5 L10 9', 'ga-arm') + p('M9 7.6 L13.5 10.8', 'ga-crayon-red') +
+    p('M-4 5 L-8 9', 'ga-arm')
+  return `<svg class="ga ga-bea ws-bea-art" viewBox="-16 -14 32 28" ${title ? `role="img" aria-label="${title}"` : 'aria-hidden="true"'}><g>${art}</g></svg>`
+}
+
+/** Bea's crayons: five stubs in a tin, the table's only colour. */
+export function crayonTinSvg(): string {
+  const cols = ['ga-crayon-red', 'ga-crayon-gold', 'ga-crayon-green', 'ga-crayon-blue', 'ga-crayon-plum']
+  const sticks = cols.map((k, i) => p(`M${-8 + i * 4} 2 L${-8 + i * 4 + (i - 2) * 0.8} -9`, k)).join('')
+  return `<svg class="ga ws-tin-art" viewBox="-14 -12 28 24" aria-hidden="true"><g>${sticks}${p('M-11 1 H11 L9.5 11 H-9.5 Z', 'ga-tin')}${p('M-9 5 H9', 'ga-tin-band')}</g></svg>`
+}
