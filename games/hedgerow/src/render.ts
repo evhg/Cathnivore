@@ -55,6 +55,8 @@ interface Shot {
   age: number;
   life: number;
   crit: boolean;
+  /** The enemy it is thrown at: it flinches when the shot lands, not when it leaves (plan item 19). */
+  enemy: number;
 }
 
 /** Path tier 3 looks that draw like an old specialisation's shot (the rest have their own). */
@@ -292,7 +294,6 @@ export class Renderer {
       switch (e.type) {
         case "shot": {
           this.fired.set(e.tower, 0);
-          this.hitAt.set(e.enemy, 0);
           const spec = e.spec ?? (e.look ? (LOOK_SPEC[e.look] ?? null) : null);
           const life =
             e.look === "hawk" ? 0.16 : e.kind === "silo" ? 0.12 : e.kind === "beehive" ? 0.35 : e.kind === "cannon" ? 0.4 : e.kind === "scarecrow" && spec === 0 ? 0.32 : 0.22;
@@ -307,6 +308,7 @@ export class Renderer {
             age: 0,
             life,
             crit: !!e.crit,
+            enemy: e.enemy,
           });
           break;
         }
@@ -314,9 +316,15 @@ export class Renderer {
           // A layer (or several) knocked off: a puff in the colour of the rung underneath, and the Marks it paid
           // gathered into one gold floater per moment (merged over GOLD_WINDOW).
           const under = e.to ? RUNGS[e.to]?.colour : RUNGS[e.from]?.colour;
+          // Plan item 19: a pop bursts. Flakes of the shell knocked off, a white shock ring, a couple of sparks.
           if (this.parts.length < 400) {
-            const n = e.from === "lorry" && e.to ? 8 : 4;
-            for (let i = 0; i < n; i++) this.parts.push(this.particle(e.x, e.y - 0.15, under ?? "#f4f6f8", "square", 0.06, 0.45));
+            const n = e.from === "lorry" && e.to ? 12 : 7;
+            const shell = RUNGS[e.from]?.colour ?? "#f4f6f8";
+            for (let i = 0; i < n; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 2 ? shell : (under ?? "#f4f6f8"), "square", 0.065, 0.5));
+            for (let i = 0; i < 2; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#ffe27a", "star", 0.05, 0.4));
+            const ring = this.particle(e.x, e.y - 0.12, "rgba(255,255,255,0.85)", "ring", 0.42, 0.22);
+            ring.vx = ring.vy = ring.g = 0;
+            this.parts.push(ring);
           }
           this.gold.n += e.n;
           this.gold.x = e.x;
@@ -330,7 +338,7 @@ export class Renderer {
         case "kill": {
           if (e.bounty === 0) {
             // Fleet: the last layer just leaves a scrap of parcel tape (its Mark came with the knock).
-            if (this.parts.length < 400) for (let i = 0; i < 3; i++) this.parts.push(this.particle(e.x, e.y - 0.1, i ? "#c79a62" : "#ffe27a", "square", 0.05, 0.5));
+            if (this.parts.length < 400) this.burst(e.x, e.y - 0.05, 0.7);
             break;
           }
           if (this.fallen.length < 24)
@@ -503,7 +511,7 @@ export class Renderer {
     const p = this.particle(x, y, "rgba(255,255,255,0.8)", "ring", 0.6 * scale, 0.35);
     p.vx = p.vy = p.g = 0;
     this.parts.push(p);
-    this.decals.push({ x, y: y + 0.1, r: 0.22 * scale, color: "rgba(60,45,30,0.25)", age: 0, life: 6 });
+    if (this.decals.length < 120) this.decals.push({ x, y: y + 0.1, r: 0.22 * scale, color: "rgba(60,45,30,0.25)", age: 0, life: 6 });
   }
 
   private confetti(x: number, y: number): void {
@@ -1341,7 +1349,10 @@ export class Renderer {
       sh.age += dt;
       const k = Math.min(1, sh.age / sh.life);
       const x = sh.x + (sh.toX - sh.x) * k;
-      const arc = sh.kind === "silo" ? 0 : Math.sin(k * Math.PI) * 0.45;
+      // Plan item 19: throws arc with the distance (a lob from across the field climbs high); bolts fly flat.
+      const dist = Math.hypot(sh.toX - sh.x, sh.toY - sh.y);
+      const loft = sh.kind === "silo" ? 0 : sh.kind === "cannon" || sh.kind === "beehive" ? 0.35 + dist * 0.32 : sh.kind === "scarecrow" && sh.spec === 1 ? 0.15 + dist * 0.08 : 0.25 + dist * 0.22;
+      const arc = Math.sin(k * Math.PI) * Math.min(1.6, loft);
       const y = sh.y + (sh.toY - sh.y) * k - arc;
       ctx.lineWidth = Math.max(1.4, s * 0.025);
       ctx.strokeStyle = INK;
@@ -1458,7 +1469,8 @@ export class Renderer {
           ctx.fill();
       }
       if (sh.age >= sh.life) {
-        // Landing.
+        // Landing: the target flinches (a flash and a squash) as it's struck.
+        this.hitAt.set(sh.enemy, 0);
         const color = sh.kind === "scarecrow" ? (sh.spec === 0 ? "#e98a2b" : "#efe2f0") : sh.kind === "silo" ? "#f2c94c" : sh.kind === "pond" ? "#a9d4e6" : sh.kind === "barn" ? "#e2c06a" : "#f2c94c";
         const n = sh.spec === 0 && (sh.kind === "scarecrow" || sh.kind === "silo") ? 8 : 3;
         for (let i = 0; i < n; i++) this.parts.push(this.particle(sh.toX, sh.toY, color, "dot", 0.05, 0.4));

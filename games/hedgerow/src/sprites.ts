@@ -1460,7 +1460,9 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   if (look.ghost) ctx.globalAlpha = 0.28 + Math.sin(tt * 6) * 0.06;
   const hover = lift > 0 ? Math.sin(tt * 3) * s0 * 0.04 : 0;
   ctx.translate(x, y - lift + hover);
-  ctx.scale(look.facing, 1);
+  // Plan item 19: a hit squashes the body down and out, then it springs back past rest and settles.
+  const q = look.hit < 0.24 ? Math.sin((look.hit / 0.24) * Math.PI * 1.5) * (1 - look.hit / 0.24) : 0;
+  ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
   // Hit flash: the sprite itself brightens for a moment (no effect where canvas filters are unsupported).
   if (look.hit < 0.08) ctx.filter = "brightness(1.7)";
   ctx.lineWidth = lw(s0);
