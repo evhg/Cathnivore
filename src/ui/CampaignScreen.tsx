@@ -134,6 +134,7 @@ export default function CampaignScreen({
   tutorialDone = true,
   coachDone,
   seals,
+  celebrate,
   onStartHard,
   onStart,
   onReplayTutorial,
@@ -147,6 +148,8 @@ export default function CampaignScreen({
   coachDone?: (chapterId: string) => boolean
   // Plan item 35: the wax seals a chapter has earned ('win', 'hard', 'feat'), and its Hard replay.
   seals?: (chapterId: string) => string[]
+  // The chapter just won for the first time: the map plays its chapter-complete moment.
+  celebrate?: string
   onStartHard?: (chapter: Chapter) => void
   onStart: (chapter: Chapter) => void
   onReplayTutorial?: (chapter: Chapter) => void
@@ -180,7 +183,7 @@ export default function CampaignScreen({
           title="Cath"
         />
       </header>
-      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} />
+      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} />
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)

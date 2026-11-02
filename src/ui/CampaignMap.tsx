@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES, MAP_AXIAL, currentChapterIndex, liberatedRegions } from '../content/campaignMap'
@@ -54,13 +54,45 @@ function Bunting() {
   )
 }
 
-export default function CampaignMap({ chapters, completed, onStart }: { chapters: Chapter[]; completed: string[]; onStart(chapter: Chapter): void }) {
+// The chapter-complete moment (plan item 35), in phases: 'before' (the chapter's regions still held, Cath
+// at its pin), 'flood' (they turn green and the bunting drops), 'walk' (Cath walks to the next pin and
+// the next chapter's caption slides in), then 'done'. Reduced motion fades between the same states.
+type Phase = 'before' | 'flood' | 'walk' | 'done'
+const PHASE_MS: Record<Exclude<Phase, 'done'>, number> = { before: 450, flood: 1300, walk: 1400 }
+
+function useCelebration(celebrate: string | undefined): Phase {
+  const [phase, setPhase] = useState<Phase>(celebrate ? 'before' : 'done')
+  useEffect(() => {
+    if (!celebrate || phase === 'done') return
+    const next: Record<Exclude<Phase, 'done'>, Phase> = { before: 'flood', flood: 'walk', walk: 'done' }
+    const t = setTimeout(() => setPhase(next[phase]), PHASE_MS[phase])
+    return () => clearTimeout(t)
+  }, [celebrate, phase])
+  return phase
+}
+
+export default function CampaignMap({
+  chapters,
+  completed: savedCompleted,
+  onStart,
+  celebrate,
+}: {
+  chapters: Chapter[]
+  completed: string[]
+  onStart(chapter: Chapter): void
+  celebrate?: string
+}) {
+  const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
+  // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
+  const completed = phase === 'before' ? savedCompleted.filter((id) => id !== celebrate) : savedCompleted
+  const walked = phase === 'before' || phase === 'flood' ? savedCompleted.filter((id) => id !== celebrate) : savedCompleted
   const free = liberatedRegions(completed)
   const here = currentChapterIndex(
     chapters.map((c) => c.id),
-    completed,
+    walked,
   )
-  const allDone = chapters.every((c) => completed.includes(c.id))
+  const allDone = chapters.every((c) => walked.includes(c.id))
+  const flooding = celebrate && phase !== 'done' ? new Set(CHAPTER_HOMES[celebrate] ?? []) : new Set<RegionId>()
   const herChapter = chapters[here]!
   const herPin = pinOf(herChapter)
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
@@ -85,13 +117,13 @@ export default function CampaignMap({ chapters, completed, onStart }: { chapters
     : `Map of Marrow: ${freedCount} of 7 regions liberated. Next: chapter ${here + 1}, ${herChapter.title}.`
 
   return (
-    <figure className="cmp-map" data-free={freedCount}>
+    <figure className="cmp-map" data-free={freedCount} data-phase={phase}>
       <svg className="cmp-map-svg" viewBox="-160 -150 320 296" role="img" aria-label={label}>
         <path className="cmp-map-land" d="M-150 -40 Q-160 -130 -60 -140 Q40 -152 120 -118 Q160 -60 150 30 Q158 120 70 140 Q-30 152 -110 128 Q-162 80 -150 -40 Z" />
         {(Object.keys(MAP_AXIAL) as RegionId[]).map((id) => {
           const c = centre(id)
           const isFree = free.has(id)
-          const cls = `cmp-map-hex cmp-map-${REGIONS[id].type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}`
+          const cls = `cmp-map-hex cmp-map-${REGIONS[id].type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}${flooding.has(id) ? ' is-flooding' : ''}`
           return (
             <g key={id} data-region={id} data-liberated={isFree ? 'true' : 'false'} className={cls} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
               <polygon points={hexPoints(R * 0.96)} className="cmp-map-ground" />
@@ -117,14 +149,24 @@ export default function CampaignMap({ chapters, completed, onStart }: { chapters
             </g>
           )
         })}
+        {/* Positioned by CSS transform (custom properties, set without a style attribute) so a walk between
+            pins can transition. */}
         <g
           className="cmp-map-cath"
           data-at={herChapter.id}
-          transform={`translate(${(herPin.x + 12).toFixed(1)} ${(herPin.y - 41).toFixed(1)})`}
+          ref={(el) => {
+            el?.style.setProperty('--cx', `${(herPin.x + 12).toFixed(1)}px`)
+            el?.style.setProperty('--cy', `${(herPin.y - 41).toFixed(1)}px`)
+          }}
           aria-hidden="true"
           dangerouslySetInnerHTML={{ __html: cath }}
         />
       </svg>
+      {celebrate && (phase === 'walk' || phase === 'done') && !allDone && (
+        <figcaption className="cmp-map-next" role="status">
+          <span className="cmp-map-next-kicker">Next stop</span> Chapter {here + 1}: {herChapter.title}
+        </figcaption>
+      )}
     </figure>
   )
 }

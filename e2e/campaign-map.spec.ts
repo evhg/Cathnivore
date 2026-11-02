@@ -65,3 +65,48 @@ test('a won chapter offers Play on Hard, which starts it on Hard', async ({ page
   // Hard starts Public Trust at 8 (normal: 10).
   await expect(page.locator('[data-tutorial="trust"] .board-num')).toHaveText('8')
 })
+
+async function winChapter1AndReturn(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/?e2eAutoplay=1')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await page.getByRole('button', { name: /^Fresh Meat/ }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.end-screen')).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.scene')).toBeVisible()
+  // Through the closing scene, back to the campaign.
+  for (let i = 0; i < 30 && (await page.locator('.scene').count()) > 0; i++) {
+    await page.getByRole('button', { name: /Continue|Next/ }).first().click()
+  }
+}
+
+test('a first win plays the chapter-complete moment: the region floods, Cath walks on, the next stop slides in', async ({ page }) => {
+  await winChapter1AndReturn(page)
+  const map = page.locator('.cmp-map')
+  // It starts with chapter 1's regions still held and Cath at its pin...
+  await expect(map).toHaveAttribute('data-phase', /before|flood/)
+  await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-1.png` })
+  await expect(map).toHaveAttribute('data-phase', 'walk', { timeout: 6000 })
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-2.png` })
+  // ...and ends with them freed and Cath at chapter 2.
+  await expect(map).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
+  await expect(page.locator('.cmp-map [data-region="brindleHills"]')).toHaveAttribute('data-liberated', 'true')
+  await expect(page.locator('.cmp-map-cath')).toHaveAttribute('data-at', 'word-of-mouth')
+  await expect(page.locator('.cmp-map-next')).toContainText('Word of Mouth')
+  // Not again on the next visit.
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(map).toHaveAttribute('data-phase', 'done')
+  await expect(page.locator('.cmp-map-next')).toHaveCount(0)
+})
+
+test('under reduced motion the moment fades instead of walking', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await winChapter1AndReturn(page)
+  await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'walk', { timeout: 6000 })
+  const cath = page.locator('.cmp-map-cath')
+  expect(await cath.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s')
+  expect(await cath.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-fade')
+  await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
+})

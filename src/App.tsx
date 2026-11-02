@@ -53,13 +53,14 @@ type Screen =
   | { name: 'rules' }
   | { name: 'settings' }
   | { name: 'credits' }
-  | { name: 'campaign' }
+  // `celebrate`: the chapter just won for the first time; the map plays its chapter-complete moment.
+  | { name: 'campaign'; celebrate?: string }
   | { name: 'saveError' }
   | { name: 'chapterModeSelect'; chapter: Chapter; hard?: boolean }
   // SPEC 8.2 ch3 carry-over: 'contracts1'/'contracts2' are chapter 4's rueful-Tomas scenes, shown (via
   // `openingWhich`) right before 'opening' when contracts survived chapter 3 — see the-plan.ts.
   // `hard`: the campaign card's "Play on Hard" (plan item 35's second seal).
-  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode; hard?: boolean }
+  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode; hard?: boolean; celebrate?: boolean }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
   // `tutorial`: this run plays the chapter's guided tutorial (first time, or replayed on request).
   | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[]; tutorial?: boolean }
@@ -199,10 +200,11 @@ export default function App() {
       recordGrowingSeasonCarryOver(survivingWholesomeHollowContracts(state))
     }
     if (won) {
+      const firstWin = !loadCampaign().completed.includes(chapter.id)
       recordSeals(chapter.id, sealsEarned(chapter.id, state))
       markChapterComplete(chapter.id)
       clearChapterLossCount(chapter.id)
-      setScreen({ name: 'chapterScene', chapter, which: 'closing', mode })
+      setScreen({ name: 'chapterScene', chapter, which: 'closing', mode, celebrate: firstWin })
     } else {
       // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy.
       // After 2 losses, also offer Skip Chapter... Progress is never locked."
@@ -316,6 +318,7 @@ export default function App() {
         tutorialDone={isTutorialDone()}
         coachDone={(id) => isCoachDone(id)}
         seals={(id) => chapterSeals(id)}
+        celebrate={screen.celebrate}
         onStartHard={(chapter) => startChapter(chapter, true)}
         onStart={startChapter}
         onReplayTutorial={replayTutorial}
@@ -349,7 +352,7 @@ export default function App() {
     const continueTo = (): void => {
       if (isCarryOverScene) setScreen({ name: 'chapterScene', chapter: screen.chapter, which: 'opening', mode: screen.mode, hard: screen.hard })
       else if (screen.which === 'opening') playChapter(screen.chapter, screen.mode, undefined, screen.hard ? 'hard' : undefined)
-      else setScreen({ name: 'campaign' })
+      else setScreen({ name: 'campaign', celebrate: screen.celebrate ? screen.chapter.id : undefined })
     }
     if (!scene) {
       // No story data for this chapter/scene yet — skip straight past it rather than show a blank screen.

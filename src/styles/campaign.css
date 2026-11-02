@@ -673,3 +673,56 @@ html.no-animations .campaign-screen * {
 .cmp-path .cmp-replays .cmp-replay {
   width: auto;
 }
+
+/* Plan item 35: the chapter-complete moment (CampaignMap's phases). */
+.cmp-map { position: relative; }
+.cmp-map-cath {
+  transform: translate(var(--cx, 0), var(--cy, 0));
+  transition: transform 1100ms var(--ease-settle);
+}
+.cmp-map[data-phase='flood'] .is-flooding .cmp-map-tint { transition-duration: 900ms; }
+.cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
+.cmp-map[data-phase='walk'] .is-flooding .cmp-bunting {
+  animation: cmp-bunting-drop 700ms var(--ease-settle) both;
+}
+@keyframes cmp-bunting-drop {
+  from { transform: translateY(-26px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.cmp-map-next {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  translate: -50% 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--ink) 18%, transparent);
+  font: 700 var(--fs-label)/1.3 var(--font-text);
+  color: var(--soil);
+  white-space: nowrap;
+  animation: cmp-next-in 500ms var(--ease-settle) both;
+}
+.cmp-map-next-kicker {
+  margin-right: 6px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--pasture-deep);
+}
+@keyframes cmp-next-in {
+  from { transform: translateY(18px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes cmp-fade { from { opacity: 0; } to { opacity: 1; } }
+/* Reduced motion: the moment fades rather than moves. The campaign screen's blanket reduced-motion rule
+   (above) strips every animation, so these three fades opt back in; "Animations off" still removes them. */
+@media (prefers-reduced-motion: reduce) {
+  .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-cath,
+  .campaign-screen .cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
+  .campaign-screen .cmp-map-next { animation: cmp-fade 400ms ease both !important; }
+}
+:root.reduce-motion .campaign-screen .cmp-map-cath { transition: none !important; }
+:root.reduce-motion .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-cath,
+:root.reduce-motion .campaign-screen .cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
+:root.reduce-motion .campaign-screen .cmp-map-next { animation: cmp-fade 400ms ease both !important; }
+html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
