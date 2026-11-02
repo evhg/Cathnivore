@@ -129,7 +129,7 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="farmstead-thumb" data-tag={card.tags[0]} title={`${card.name}: ${card.text}`}>
+              <li key={id} className="farmstead-thumb" data-tag={card.tags[0]} data-card={id} title={`${card.name}: ${card.text}`}>
                 <Vignette kind={vignetteFor(card)} seed={card.id} />
                 <span className="visually-hidden">
                   {card.name} ({card.tags.map((t) => TAG_LABEL[t]).join(', ')}): {card.text}
@@ -145,7 +145,7 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className="farmstead-card card-framed" data-tag={card.tags[0]}>
+              <li key={id} className="farmstead-card card-framed" data-tag={card.tags[0]} data-card={id}>
                 <Vignette kind={vignetteFor(card)} seed={card.id} />
                 <strong>{card.name}</strong>
                 <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>

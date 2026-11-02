@@ -2708,3 +2708,42 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   flex-wrap: wrap;
   gap: 4px 16px;
 }
+/* Plan item 36: the bought card in flight to the farmstead, and its price counting out. */
+.buy-flight {
+  position: fixed;
+  z-index: var(--z-fx);
+  display: grid;
+  width: 120px;
+  overflow: hidden;
+  border: 1px solid var(--ink-a15);
+  border-top: 4px solid var(--frame, var(--wheat));
+  border-radius: 6px;
+  background: var(--paper-hi);
+  box-shadow: var(--e2);
+  pointer-events: none;
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  text-align: center;
+}
+.buy-flight[data-tag='pasture'] { --frame: var(--pasture); }
+.buy-flight[data-tag='coast'] { --frame: var(--sea); }
+.buy-flight[data-tag='community'] { --frame: var(--clay); }
+.buy-flight[data-tag='media'] { --frame: var(--p-sol); }
+.buy-flight[data-tag='science'] { --frame: var(--p-ines); }
+.buy-flight .card-vignette {
+  width: 120px;
+  height: 44px;
+  margin: 0;
+  border: 0;
+}
+.buy-flight span { padding: 2px 4px 4px; }
+.buy-coins {
+  position: fixed;
+  z-index: var(--z-fx);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--wheat);
+  color: var(--ink-on-fixed-fill, var(--ink));
+  font-weight: 800;
+  pointer-events: none;
+}

@@ -17,6 +17,9 @@ import { playHapticsFor } from '../platform/haptics'
 import { playSoundsFor } from '../platform/sound'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
+import BuyFlight from './BuyFlight'
+import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
+import type { ImprovementCard } from '../content/improvements'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -469,6 +472,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // tap commits it at once and plays the rest of their turn without the show.
   const [teammatePick, setTeammatePick] = useState<{ from: GameState; action: Action; reason: string } | null>(null)
   const skipTeammateRef = useRef(false)
+  // Plan item 36: the card of the last buy, in flight to the farmstead.
+  const [buyFlight, setBuyFlight] = useState<{ key: number; card: ImprovementCard; cost: number; path: BuyFlightPath } | null>(null)
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
   const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })
@@ -513,6 +518,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // was undoable before belongs to a turn that's now over.
     if (next.activeProducer !== from.activeProducer) undoStackRef.current = []
     const events = enemyTurnEvents(from, next)
+    // Plan item 36: a buy flies the card into the farmstead and counts the Marks out.
+    // Not when the buy hands a hot-seat device over (the pass screen covers the table).
+    if (action.kind === 'invest' && !autoplayRef.current && !(mode === 'hotseat' && next.activeProducer !== from.activeProducer)) {
+      const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
+      const path = card && buyFlightPath(card.id)
+      if (card && path) {
+        const cost = investCost(from, from.activeProducer, card)
+        setBuyFlight({ key: next.log.length, card, cost, path })
+      }
+    }
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
     playSoundsFor(action, next.log.slice(from.log.length), next.result)
     if (aiReason) {
@@ -1288,7 +1303,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className={position === 0 ? 'action-item action-recommended' : 'action-item'}>
+              <span
+                key={index}
+                className={position === 0 ? 'action-item action-recommended' : 'action-item'}
+                data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
+              >
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
@@ -1906,6 +1925,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <CathsPlanSheet state={state} canPlay={canPlayScheme} missingGoodwill={missingGoodwill} onPlay={playScheme} onClose={() => setShowPlan(false)} />
       )}
       {showLog && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setShowLog(false)} />}
+      {buyFlight && <BuyFlight key={buyFlight.key} card={buyFlight.card} cost={buyFlight.cost} path={buyFlight.path} onDone={() => setBuyFlight(null)} />}
       </main>
 
       {/* Plan item 20: on desktop the Market, Cath's Plan and the Log are a slim drawer rail, so the board is

@@ -34,3 +34,38 @@ test('the phone Farm shows each producer at their gate with a ribbon and drawn c
   await expect(page.locator('.farm-sheet .farmstead-ribbon').first()).toContainText('each round')
   await expect(page.locator('.farm-sheet .farmstead-card .card-vignette').first()).toBeVisible()
 })
+
+test('a buy flies the card into the farmstead and the tableau gains it', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { flights: number }
+    w.flights = 0
+    new MutationObserver((records) => {
+      for (const r of records) for (const n of r.addedNodes) if (n instanceof HTMLElement && n.classList.contains('buy-flight')) w.flights++
+    }).observe(document, { subtree: true, childList: true })
+  })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  const graft = () => page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+  await graft()
+  await graft()
+  // Two Grafts put 4 Marks in hand, enough for most dealt Markets; a seed that deals none is skipped.
+  // (Solo, so a buy never hands a hot-seat device over, where the flight is skipped under the pass screen.)
+  const buyable = page.locator('[data-buy-card] button:enabled')
+  test.skip((await buyable.count()) === 0, 'no affordable card dealt on this seed')
+  const desktop = (page.viewportSize()?.width ?? 0) >= 1024
+  const button = buyable.first()
+  const cardId = (await button.locator('xpath=ancestor::*[@data-buy-card][1]').getAttribute('data-buy-card'))!
+  const inFarm = async () => {
+    if (desktop) return page.locator(`.farm-inline .farmstead-thumb[data-card="${cardId}"]`).count()
+    await page.getByRole('button', { name: /^Farm/ }).first().click()
+    const n = await page.locator(`.farm-sheet .farmstead-card[data-card="${cardId}"]`).count()
+    await page.getByRole('button', { name: 'Close' }).click()
+    return n
+  }
+  expect(await inFarm()).toBe(0)
+  await button.click({ force: true })
+  await expect.poll(() => page.evaluate(() => (window as unknown as { flights: number }).flights)).toBe(1)
+  await page.waitForTimeout(900)
+  expect(await inFarm()).toBe(1)
+})

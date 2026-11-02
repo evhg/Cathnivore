@@ -56,7 +56,7 @@ export default function MarketSheet({
         const card = IMPROVEMENTS_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
+          <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]} data-buy-card={id}>
             {/* Plan item 36: the card's place, drawn. */}
             <Vignette kind={vignetteFor(card)} seed={card.id} />
             {/* AAA UI M4 fix: the same mini-card head as the desktop Market (tag band, name, tags line,
@@ -105,7 +105,7 @@ export default function MarketSheet({
             const card = IMPROVEMENTS_BY_ID.get(id)
             if (!card) return null
             return (
-              <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
+              <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]} data-buy-card={id}>
                 <details>
                   <summary>
                     <Vignette kind={vignetteFor(card)} seed={card.id} />
