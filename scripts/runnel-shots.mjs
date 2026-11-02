@@ -22,6 +22,9 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
       await p.locator('#btn-stats').click()
       await p.waitForTimeout(600)
       await p.screenshot({ path: out(`stats-${n}`) })
+      await p.goto(base + '?nohelp&shotwin&sky=noon,clouds')
+      await p.waitForTimeout(900)
+      await p.screenshot({ path: out(`win-${n}`) })
     }
     await ctx.close()
   }

@@ -528,6 +528,16 @@ function renderRail(): void {
     cells.push(cell)
   }
   $<HTMLDivElement>('rail-cal').replaceChildren(...cells)
+  // Bea's garden in the farm's corner: the newest of her crops (a seed bed until the first daily is solved).
+  const plots = gardenPlots(data.results, today).filter((p) => p.glyph)
+  const crops = plots.slice(-6).map((p) => {
+    const i = document.createElement('i')
+    i.textContent = p.glyph
+    if (p.gold) i.className = 'gold'
+    return i
+  })
+  $<HTMLDivElement>('bea-crops').replaceChildren(...crops)
+  $<HTMLDivElement>('bea-crops').classList.toggle('bare', crops.length === 0)
 }
 
 function showStats(): void {

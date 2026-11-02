@@ -74,6 +74,23 @@
 
       <main class="stage">
         <svg id="board" class="board" role="group" aria-label="Puzzle board"></svg>
+        <div class="farm-deco" aria-hidden="true">
+          <svg class="spring-house" viewBox="0 0 120 110">
+            <ellipse class="sh-shade" cx="60" cy="100" rx="52" ry="8" />
+            <rect class="sh-wall" x="22" y="48" width="76" height="50" rx="3" />
+            <path class="sh-stones" d="M22 62h76M22 76h76M22 90h76M40 48v14M70 62v14M48 76v14M84 76v14M60 90v8" />
+            <path class="sh-roof" d="M10 52 60 14l50 38z" />
+            <path class="sh-thatch" d="M24 42h72M36 32h48" />
+            <rect class="sh-door" x="50" y="70" width="20" height="28" rx="10" />
+            <path class="sh-water" d="M70 96c10 0 14 4 26 4s14-4 22-4" />
+          </svg>
+          <p class="farm-sign spring-sign">The spring house</p>
+          <div class="bea-garden">
+            <p class="farm-sign">Bea's garden</p>
+            <div class="bea-crops" id="bea-crops"></div>
+            <svg class="bea-fence" viewBox="0 0 160 30" preserveAspectRatio="none"><path d="M4 30V6l6-4 6 4v24M44 30V6l6-4 6 4v24M84 30V6l6-4 6 4v24M124 30V6l6-4 6 4v24M0 12h160M0 22h160" /></svg>
+          </div>
+        </div>
         <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
       </main>
 
