@@ -208,6 +208,19 @@ export function Doubt() {
   )
 }
 
+// Plan item 20: every piece stands on a turned wooden base, a game token with a thickness, so the board
+// reads as a diorama. The base sits under the piece's footprint (cx, w wide, at y) and casts a contact shadow.
+function TokenBase({ cx, y, w }: { cx: number; y: number; w: number }) {
+  const rx = w / 2 + 1.4
+  return (
+    <g className="token-base" pointerEvents="none">
+      <ellipse cx={cx + 0.8} cy={y + 2.6} rx={rx + 0.6} ry={2.6} className="token-shadow" />
+      <ellipse cx={cx} cy={y + 1.4} rx={rx} ry={2.5} className="token-side" stroke="var(--ink)" strokeWidth={0.6} />
+      <ellipse cx={cx} cy={y} rx={rx} ry={2.5} className="token-top" stroke="var(--ink)" strokeWidth={0.6} />
+    </g>
+  )
+}
+
 // A piece's count (plan item 2): a small dark disc with the number, at the piece's top-right corner.
 function PieceCount({ n }: { n: number }) {
   return (
@@ -269,7 +282,8 @@ function StallPin({ pid, n, clip, showInitial }: { pid: ProducerId; n: number; c
       </g>
       <circle cx={cx} cy={PIN_Y} r={PIN_R} fill="none" stroke={`var(--p-${pid})`} strokeWidth={2.6} />
       <circle cx={cx} cy={PIN_Y} r={PIN_R + 1.5} fill="none" stroke="var(--ink)" strokeWidth={0.9} />
-      <g transform={`translate(0, 1) scale(${STALL_SCALE})`}>
+      <TokenBase cx={cx} y={1 + 10 * STALL_SCALE - 0.6} w={w} />
+      <g key={n} transform={`translate(0, 1) scale(${STALL_SCALE})`}>
         <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={showInitial} />
       </g>
       {n > 1 && (
@@ -639,13 +653,15 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
                       inner <g>, since a CSS transform would replace the positioning attribute (SVG2). */}
                   {kinds.map(([k, n, icon], i) => (
                     <g key={k} transform={`translate(${pieceXY(i)})`} data-piece={k} data-count={n}>
+                      <TokenBase cx={6} y={12.2} w={12} />
                       {/* A stack: up to two offset copies behind the front piece. */}
                       {Array.from({ length: Math.min(n, 3) - 1 }).map((_, j) => (
                         <g key={j} transform={`translate(${(Math.min(n, 3) - 1 - j) * 1.6}, ${-(Math.min(n, 3) - 1 - j) * 2.2})`} opacity={0.75}>
                           {icon}
                         </g>
                       ))}
-                      {icon}
+                      {/* keyed by the count, so a piece landing on a stack drops in again */}
+                      <g key={n}>{icon}</g>
                       {n > 1 && <PieceCount n={n} />}
                     </g>
                   ))}

@@ -1263,8 +1263,13 @@ html.native-app body {
 /* ROADMAP 57: soft ground shadows so pieces sit on the board instead of floating (bar 2). */
 .stall-piece,
 .enemy-piece {
-  filter: drop-shadow(0 1.2px 0.8px rgba(40, 30, 20, 0.45));
+  filter: drop-shadow(0 1.2px 0.8px rgb(var(--shadow-ink) / .45));
 }
+
+/* plan item 20: the turned wooden base each piece stands on */
+.token-top { fill: var(--kraft); }
+.token-side { fill: var(--kraft-lo); }
+.token-shadow { fill: rgb(var(--shadow-ink) / .3); }
 
 .stall-piece {
   transform-box: fill-box;

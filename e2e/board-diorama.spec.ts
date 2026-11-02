@@ -32,3 +32,16 @@ test('desktop board takes 62%+ of the width and the side sheets are drawers', as
   await page.keyboard.press('Enter')
   await expect(page.locator('.drawer-panel')).toHaveCount(0)
 })
+
+// Shots only (SHOTS=1): a busy mid-game board on each map, to look at tokens and tiles under load.
+for (const map of ['The Ring', 'The Long Coast', 'The Delta'])
+  test(`mid-game board shot on ${map}`, async ({ page }, testInfo) => {
+    test.skip(!process.env.SHOTS, 'shots only')
+    await page.goto('/?e2eAutoplay=1')
+    await page.getByText('Quick Game').click()
+    await page.locator('.layout-tile', { hasText: map }).click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.waitForFunction(() => Number(document.querySelector<SVGSVGElement>('.map-wrap svg.map[data-round]')?.dataset.round ?? 0) >= 5, null, { timeout: 60_000 })
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: `e2e/screenshots/diorama-mid-${map.split(' ').pop()!.toLowerCase()}-${testInfo.project.name}.png` })
+  })
