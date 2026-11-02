@@ -678,6 +678,9 @@ async function boot(): Promise<void> {
     await coldOpen(true);
     const gate = openGate();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 120))));
+    // Plan item 40: the front door is ready once the gate has painted (it waited on the answer, so a run on a
+    // fresh profile never saw it); it stays true through the title that follows.
+    hook.ready = true;
     startScene();
     void sceneReady.then((s) => {
       if (!$("screen-gate").hidden) {

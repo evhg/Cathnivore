@@ -89,3 +89,13 @@ test.describe('CATHODE front door', () => {
     await expect(page.locator('#screen-title')).toBeHidden()
   })
 })
+
+// Plan item 40: on a fresh profile the gate is the front door, and the hook says so once it has painted.
+test('cathodeFront.ready fires at the 18+ gate on a fresh profile', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.clear())
+  await page.goto('/nightshift/?rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
+  await expect(page.locator('#screen-gate')).toBeVisible()
+})
