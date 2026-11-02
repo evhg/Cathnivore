@@ -39,14 +39,18 @@ interface Fit {
   ty: number
 }
 function layoutFit(layout: Layout, ids: readonly RegionId[]): Fit {
-  if (layout.id === 'ring') return { k: 1, tx: 0, ty: 0 }
+  // The whole ring is the printed board. A campaign chapter that opens only part of it (chapter 1's two
+  // hexes) is centred and, when it is that small, drawn a little larger (plan item 33).
+  const ringAll = layout.id === 'ring' && ids.length >= Object.keys(layout.hexes).length
+  if (ringAll || ids.length === 0) return { k: 1, tx: 0, ty: 0 }
+  const cap = layout.id === 'ring' && ids.length <= 3 ? 1.3 : 1
   const pts = ids.map((id) => hexCenter(id, layout))
   const halfW = (HEX_R * Math.sqrt(3)) / 2
   const x0 = Math.min(...pts.map((p) => p.x)) - halfW
   const x1 = Math.max(...pts.map((p) => p.x)) + halfW
   const y0 = Math.min(...pts.map((p) => p.y)) - HEX_R
   const y1 = Math.max(...pts.map((p) => p.y)) + HEX_R
-  const k = Math.min(1, (SIZE * 2) / (x1 - x0), (SIZE * 2 - 24) / (y1 - y0))
+  const k = Math.min(cap, (SIZE * 2) / (x1 - x0), (SIZE * 2 - 24) / (y1 - y0))
   return { k, tx: (-(x0 + x1) / 2) * k, ty: (-(y0 + y1) / 2) * k }
 }
 const fitPoint = (p: { x: number; y: number }, f: Fit) => ({ x: p.x * f.k + f.tx, y: p.y * f.k + f.ty })
