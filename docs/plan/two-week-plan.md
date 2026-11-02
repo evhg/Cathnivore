@@ -243,7 +243,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - An e2e test walks to the door and loads the next district.
   - Shots at D and L.
 - **Size:** 5
-- **Progress:** session 1 (2026-11-02 00:52): the office as a level (`render/levels/office.ts`: a room over the egg stall with a street window, cork wall, gun bench, wardrobe and mirror, desk and phone, stair door; `station:<id>` markers), `?district=office`, `tests/cathode-office.test.ts`, `scripts/cathode-office-shots.mjs` (D, L). Left: an `inOffice` session mode, station prompts and screens, the door, Continue, e2e.
+- **Progress:** session 2 (2026-11-02 01:51): office session mode, station prompts and screens (bench and wardrobe open the character sheet for now), Continue lands in the office, the stair door loads the case district (e2e). Left: the 3D gun on the bench with mods, a wardrobe screen. Session 1 (2026-11-02 00:52): the office as a level (`render/levels/office.ts`: a room over the egg stall with a street window, cork wall, gun bench, wardrobe and mirror, desk and phone, stair door; `station:<id>` markers), `?district=office`, `tests/cathode-office.test.ts`, `scripts/cathode-office-shots.mjs` (D, L). Left: an `inOffice` session mode, station prompts and screens, the door, Continue, e2e.
 
 ## 17. [ ] NIGHT SHIFT: the morning-after debrief
 - **Why:** a job ends and play just carries on. No shot shows a payoff beat (critique 2026-11-02).
