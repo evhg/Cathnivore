@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane B: plan item 35 done (2026-11-02 15:16 session). Next for lane B: the first unclaimed open item (34 now follows lane A's finished 33).
+- Lane B: plan item 37 (Runnel Orchard, Bea's garden, win card above the fold), 2026-11-02 16:39 session.
 - Lane A (2026-11-02 16:20 session): plan item 34 done (64d852bc..4810fe70). Now on plan item 36 (an illustrated Market and farm tableaux); lane B, take 37 or later.
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing). (Cathnivore setup's empty Difficulty panel fixed 2026-11-02 14:40: it now lists what the level changes.)
 ## Blocked
