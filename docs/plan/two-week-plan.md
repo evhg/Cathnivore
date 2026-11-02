@@ -355,7 +355,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P, D and L.
 - **Size:** 2
 
-## 25. [ ] Cathnivore: conglomerate cards that point at the board
+## 25. [x] Cathnivore: conglomerate cards that point at the board *(done 2026-11-02, this session: `src/engine/preview.ts` runs the real resolvers for each card's words by region (an empty slot says when it arms); hover, keyboard focus or a tap marks exactly its targets (`data-threat`) with dotted trails from Hollowell's HQ, static under reduced motion; `tests/plan-preview.test.ts` (20 seeds), `e2e/plan-strip.spec.ts` at P and D; shots P, D and dark)*
 - **Why:** the Plan cards read "Squeeze —", "Expand Pasture", "Scout —" (`cathnivore-game-D`, `-P`, `-L`, planning shots 2026-11-02). The player can't see what Pell and Vane hit next or where, which breaks "no mystery waits" (VISION 2, 4).
 - **Build:**
   - Each card names its target region(s) and effect in words ("Squeeze → Saltmarsh, −2 Trust"), from one `planPreview()` in the rules layer.

@@ -2166,6 +2166,33 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     opacity: 0.2;
   }
 }
+/* Plan item 25: a plan card's targets, traced from Hollowell's HQ while the card is looked at. */
+.threat-trail {
+  fill: none;
+  stroke: var(--hollowell-lo);
+  stroke-width: 2.4;
+  stroke-dasharray: 1.2 3.4;
+  stroke-linecap: round;
+  animation: threat-draw 520ms var(--ease-out) both;
+}
+.threat-land {
+  fill: none;
+  stroke: var(--hollowell-lo);
+  stroke-width: 2.4;
+}
+.threat-hq {
+  animation: ui-fade var(--dur-2) ease-out both;
+}
+@keyframes threat-draw {
+  from { opacity: 0; stroke-dashoffset: 40; }
+  to { opacity: 1; stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .threat-trail,
+  .threat-hq {
+    animation: none;
+  }
+}
 .flight-trail {
   fill: none;
   stroke: var(--ink);

@@ -838,6 +838,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
       })}
       </g>
       {enemyTurn && <EnemyTurnLayer view={enemyTurn} layout={layout} fit={fit} />}
+      {!enemyTurn && threat && threat.regions.length > 0 && <ThreatLayer threat={threat} layout={layout} fit={fit} />}
     </svg>
   )
 }
@@ -882,6 +883,37 @@ function CandorHQ() {
         C
       </text>
       <path className="hq-signal" d="M 17,-70 A 18 18 0 0 1 17,-50 M 23,-76 A 26 26 0 0 1 23,-44 M -17,-70 A 18 18 0 0 0 -17,-50 M -23,-76 A 26 26 0 0 0 -23,-44" fill="none" stroke="var(--candor)" strokeWidth={2.2} strokeLinecap="round" />
+    </g>
+  )
+}
+
+/** Plan item 25: while a plan card is looked at, Hollowell's HQ stands in its corner with a dotted trail to
+ *  each hex the card will hit (drawn in once; static under reduced motion). */
+function ThreatLayer({ threat, layout, fit }: { threat: NonNullable<Props['threat']>; layout: LayoutId; fit: Fit }) {
+  const door = hqDoor('hollowell', 'top')
+  const x0 = door.x
+  const y0 = door.y - 34
+  return (
+    <g className="threat-layer" pointerEvents="none" data-threat-slot={threat.slot}>
+      <g className="hq hq-hollowell threat-hq" transform={`translate(${door.x}, ${door.y}) scale(0.95)`}>
+        <ellipse cx={0} cy={1} rx={30} ry={6} fill="var(--ink)" opacity={0.18} />
+        <HollowellHQ />
+      </g>
+      {threat.regions.map((id) => {
+        const to = fitPoint(hexCenter(id, layout), fit)
+        const x1 = to.x
+        const y1 = to.y - HEX_R * 0.14
+        const xm = (x0 + x1) / 2
+        const ym = Math.max(Math.min(y0, y1) - 40, -200)
+        const cx = 2 * xm - (x0 + x1) / 2
+        const cy = 2 * ym - (y0 + y1) / 2
+        return (
+          <g key={id} className="threat-trail-group" data-threat-to={id}>
+            <path className="threat-trail" d={`M ${x0},${y0} Q ${cx},${cy} ${x1},${y1}`} pathLength={100} />
+            <circle className="threat-land" cx={x1} cy={y1} r={9} />
+          </g>
+        )
+      })}
     </g>
   )
 }
