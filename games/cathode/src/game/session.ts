@@ -444,6 +444,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     return e;
   };
   const ltTalk = talkFor((o.district ?? "market") as DistrictName);
+  // Plan item 42: the kit the lieutenant wears, by district (the talk's stand-in wears the first one too).
+  const ltKinds = o.district === "clinic" ? [ORDERLY, ENFORCER, BOARD_GUARD] : o.district === "tower" || o.district === "vault" ? [BOARD_GUARD, ENFORCER, ORDERLY] : [ENFORCER, ORDERLY, BOARD_GUARD];
   let lieutenant: Enemy | null = null;
   /** Plan item 29: she has seen the lieutenant's name over his head, so he has a tick on the compass. */
   let ltKnown = false;
@@ -492,7 +494,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // name, until she has talked to him. A takedown on him ends in the talk, not the kill.
     if (ltTalk && !talked(ltTalk.id, progress.jobsDone)) {
       const pick = (role: string | undefined) => enemies.find((e) => !e.passive && !e.kit.elite && e.kit.role === role);
-      const lt = pick(ENFORCER.role) ?? pick(ORDERLY.role) ?? pick(BOARD_GUARD.role);
+      // His own district's kind of man first (Orderly Kessel is an orderly), then any patrol.
+      const lt = ltKinds.map((k) => pick(k.role)).find((e) => e);
       if (lt) {
         lt.kit.name = ltTalk.who;
         lieutenant = lt;
@@ -1593,15 +1596,17 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   function openTalkShot(): boolean {
     // The phone tier is the low one: it keeps the plate (and doesn't build a second figure mid-street).
     if (o.quality === "phone" || reduceMotionOn()) return false;
-    const kit = talkKit ?? ENFORCER;
+    const kit = talkKit ?? ltKinds[0]!;
     const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
     const side = new THREE.Vector3(-fwd.z, 0, fwd.x);
     const her = new THREE.Vector3(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
     const him = her.clone().addScaledVector(fwd, 1.15);
     him.y = ground(him.x, him.z);
     const cath = buildFrontCath(false);
+    // Under a roof (the clinic, the tower, the vault) the umbrella is furled in her fist.
+    cath.indoors(inClinic || inTower || inVault);
     cath.group.position.copy(her);
-    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z);
+    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z) - 1.0; // three-quarter to the lens
     world.scene.add(cath.group);
     const guy = new Enemy({ ...kit, role: kit.role === "shield" ? "rifle" : kit.role }, [him.clone()], 1);
     guy.motion.pos.copy(him);

@@ -2487,8 +2487,13 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
    lower-third strip under a soft shade (the two of them stay clear above it). */
 .talk.talk-two-shot {
   align-items: end;
-  background: linear-gradient(to top, rgb(var(--shade-rgb) / .88) 0%, rgb(var(--shade-rgb) / .55) 30%, transparent 52%);
+  background: linear-gradient(to top, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .62) 38%, transparent 64%);
 }
+.talk-two-shot .talk-who,
+.talk-two-shot .talk-body {
+  text-shadow: 0 1px 3px rgb(var(--shade-rgb) / .9), 0 0 12px rgb(var(--shade-rgb) / .6);
+}
+.talk-two-shot .talk-who span { color: var(--ink-2); }
 .talk-two-shot .talk-card {
   grid-template-columns: 1fr;
   width: min(880px, calc(100% - 32px));
