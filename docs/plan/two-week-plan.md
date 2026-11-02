@@ -605,7 +605,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fix is shot at the sizes it broke at, with an e2e or unit check where one fits (no clipped text: `scrollWidth <= clientWidth + 1`; no control overlaps at L; ready fires at the gate).
 - **Size:** 3
 
-## 41. [ ] NIGHT SHIFT: enemies with faces (hero-quality archetype models) *(lane B, in progress)*
+## 41. [x] NIGHT SHIFT: enemies with faces (hero-quality archetype models) *(done 2026-11-02, lane B, 019cf90..HEAD: faces on the bare-faced archetypes (the orderly's opaque shield pane cut to a frame, his headband off his eyes); the riot shield's back modelled with a handle at his hand; rappellers' harness and tether; real two-joint hands on every humanoid (`realHand`); the bystander's coat pockets; guards read at 25 m (faction rim far boost; Plaza 5.4% -> 15.3%, market 18.6%, `scripts/cathode-far-read.mjs`); phone 12-man firefight 294 -> 258 calls (far men out of the mirror, far carbine stand-in, LOD0-only shadows; a standing cathode-perf case); turntables of all 13 at D; face/hands/budget tests in cathode-models.test.ts. Changed: the armoured enforcer family keeps C10's 16k LOD0 budget. Not done: gore caps were untouched since the limbs' shapes didn't change)*
 - **Why:**
   - The player spends most of the game aiming at enemies, and they are the least finished art on screen:
     - the clinic orderly is a mannequin with a slab face, tube limbs and mitten hands;
@@ -627,7 +627,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The ragdoll and dismemberment e2e still pass.
 - **Size:** 4
 
-## 42. [ ] NIGHT SHIFT: Cath faces the camera (the class pick and staged interrogations)
+## 42. [ ] NIGHT SHIFT: Cath faces the camera (the class pick and staged interrogations) *(lane B, in progress)*
 - **Why:**
   - The player never sees her face: the gate, title and class pick are all from behind.
   - At D the class pick has an empty, dark centre for all five classes.
