@@ -6,8 +6,14 @@ import { expect, test } from '@playwright/test'
 // number is final the moment it opens.
 
 type Ledger = { kills: number; headshots: number; takedowns: number; seconds: number; scrip: number; xp: number; damageTaken: number }
+type V3 = { x: number; y: number; z: number; set(x: number, y: number, z: number): void; distanceTo(o: V3): number }
+type E = { alive: boolean; position: V3; motion: { yaw: number }; kit: { role: string } }
 type C = {
   stats: { frames: number }
+  enemies: E[]
+  player: { pos: V3; yaw: number; pitch: number }
+  input: { forced: Record<string, boolean> }
+  takedown: { active: boolean }
   progress: { jobsDone: string[]; save(): void }
   hurtCath(amount: number, from: null, kind: string): void
   finishCase?: () => void
@@ -34,6 +40,20 @@ test('closing the clinic case opens the debrief, and its counters end on the ses
   await page.goto('/nightshift/?play&district=clinic&rs=0.5')
   await page.waitForFunction(() => ((window as unknown as { cathode?: C }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200_000 })
 
+  // A real kill on the ledger: behind the nearest guard, a takedown.
+  await page.evaluate(() => {
+    const c = (window as unknown as { cathode: C }).cathode
+    const g = c.enemies.filter((e) => e.alive && e.kit.role !== 'civilian').sort((a, b) => a.position.distanceTo(c.player.pos) - b.position.distanceTo(c.player.pos))[0]!
+    const yaw = g.motion.yaw
+    c.player.pos.set(g.position.x - Math.sin(yaw) * 1.3, g.position.y, g.position.z - Math.cos(yaw) * 1.3)
+    c.player.yaw = Math.atan2(-Math.sin(yaw), -Math.cos(yaw))
+    c.player.pitch = -0.15
+  })
+  await page.waitForFunction((f) => (window as unknown as { cathode: C }).cathode.stats.frames >= f + 2, await page.evaluate(() => (window as unknown as { cathode: C }).cathode.stats.frames))
+  await page.evaluate(() => ((window as unknown as { cathode: C }).cathode.input.forced = { takedown: true }))
+  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 60_000 })
+  await page.waitForFunction(() => !(window as unknown as { cathode: C }).cathode.takedown.active, null, { timeout: 200_000 })
+
   // A graze, so the visit has something on its ledger; then Vane's case closes.
   await page.evaluate(() => {
     const c = (window as unknown as { cathode: C }).cathode
@@ -51,6 +71,9 @@ test('closing the clinic case opens the debrief, and its counters end on the ses
   await expect(page.locator('.debrief.is-counted')).toHaveCount(1, { timeout: 30_000 })
   const ledger = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.debrief!.ledger)
   expect(ledger.damageTaken).toBeGreaterThan(0)
+  expect(ledger.kills).toBeGreaterThanOrEqual(1)
+  expect(ledger.takedowns).toBeGreaterThanOrEqual(1)
+  expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.debrief!.stills)).toBeGreaterThanOrEqual(1)
   const shown = async () => Object.fromEntries(await deb.locator('dd[data-k]').evaluateAll((els) => els.map((e) => [(e as HTMLElement).dataset.k, e.textContent])))
   const want = {
     scrip: `+${ledger.scrip}`,

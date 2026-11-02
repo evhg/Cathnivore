@@ -1919,7 +1919,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .debrief-print .case-name { text-decoration: line-through; text-decoration-color: var(--stamp-red); text-decoration-thickness: 2px; } /* px-ok: hairline */
 @keyframes debrief-strike { to { stroke-dashoffset: 0; } }
 .debrief-sheet { position: relative; padding: calc(var(--u) * 22) calc(var(--u) * 26); background: var(--card-paper); color: var(--card-ink); box-shadow: 0 calc(var(--u) * 8) calc(var(--u) * 18) rgb(var(--black-rgb) / .5); transform: rotate(.6deg); }
-.debrief-stamp { position: absolute; top: calc(var(--u) * -18); right: calc(var(--u) * 22); display: grid; place-items: center; width: calc(var(--u) * 132); height: calc(var(--u) * 132); border: calc(var(--u) * 5) double var(--stamp-red); border-radius: 50%; color: var(--stamp-red); transform: rotate(-12deg); mix-blend-mode: multiply; opacity: .92; animation: debrief-stamp .28s cubic-bezier(.2, 1.6, .4, 1) .9s both; }
+.debrief-stamp { position: absolute; top: calc(var(--u) * -18); right: calc(var(--u) * 22); display: grid; place-items: center; width: calc(var(--u) * 132); height: calc(var(--u) * 132); border: calc(var(--u) * 5) double var(--stamp-red); border-radius: 50%; color: var(--stamp-red); transform: rotate(-12deg); opacity: .92; animation: debrief-stamp .28s cubic-bezier(.2, 1.6, .4, 1) .9s both; }
 .debrief-stamp b { font: 800 var(--fs-6)/.9 var(--font-ui); font-stretch: var(--wdth-head); color: var(--stamp-red); }
 .debrief-stamp span { margin-top: calc(var(--u) * -18); font: 800 var(--fs-1) var(--font-ui); letter-spacing: .06em; text-transform: uppercase; }
 @keyframes debrief-stamp { from { transform: rotate(-12deg) scale(2.4); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: .92; } }
