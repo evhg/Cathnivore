@@ -368,7 +368,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P, D and dark.
 - **Size:** 2
 
-## 26. [ ] NIGHT SHIFT: Cath's own hands, and a weapon inspect
+## 26. [x] NIGHT SHIFT: Cath's own hands, and a weapon inspect *(done 2026-11-02, this session: `game/armdress.ts` dresses her arms from the wardrobe save (trench, duster, olive mac, silk-lined coat with a burgundy cuff, or her blouse; black leather, brass-knuckle fingerless, copper-wired or bare hands with oxblood nails; skin and trench from the hero model's colours), a fine gold chain on the firing wrist with the pearls on the support wrist; the inspect bound to I and a long press on the weapon name with a clip per class (`feel/inspect.ts`); an idle sway per class, none under reduced motion; `tests/cathode-armdress.test.ts`, `e2e-site/cathode-inspect.spec.ts`; phone perf 245/260 calls; shots D and L per class at rest and mid-inspect, and per outfit, via `scripts/cathode-hands-shots.mjs`)*
 - **Why:** in first person the viewmodel is a gun and a generic black glove (`cathode-hud-D`, `-L`); nothing on screen says this is Cath (CLAUDE.md: Cath is the face of every game).
 - **Build:**
   - First-person sleeves from her worn coat (wardrobe, item 16), a cuff, a fine gold bracelet and painted nails, sharing materials with the item-9 hero model.
