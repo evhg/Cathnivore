@@ -40,20 +40,11 @@
           <button type="button" role="tab" id="tab-practice" aria-selected="false">Practice</button>
           <button type="button" role="tab" id="tab-orchard" aria-selected="false">Orchard</button>
         </div>
-        <div class="sizes" id="sizes" hidden>
-          <button type="button" data-size="small">Small</button>
-          <button type="button" data-size="medium">Medium</button>
-          <button type="button" data-size="large">Large</button>
-        </div>
-        <form class="codebar" id="codebar" hidden>
-          <input id="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a board code" aria-label="Board code" />
-          <button type="submit">Play</button>
-          <button type="button" id="btn-code">Copy this board's code</button>
-          <button type="button" id="btn-workshop">Workshop</button>
-          <button type="button" id="btn-pick">Save to Bea's picks</button>
-        </form>
-        <div class="picks" id="picks" hidden aria-label="Bea's picks"></div>
-        <div class="picks season-event" id="season-event" hidden aria-label="Seasonal boards"></div>
+        <button type="button" class="board-chip" id="btn-board" hidden aria-haspopup="dialog" aria-controls="board-sheet" aria-label="Board options: Medium board">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 16.5 6.25v7.5L10 17.5 3.5 13.75v-7.5z" /></svg>
+          <span id="board-chip-label">Medium</span><span class="bc-word">&nbsp;board</span>
+          <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
+        </button>
         <div class="levels" id="levels" hidden></div>
         <div id="week-slot"></div>
       </nav>
@@ -108,6 +99,44 @@
       </aside>
       <p class="sr-only" id="announce" aria-live="polite"></p>
     </div>
+
+    <dialog id="board-sheet" class="sheet board-sheet" aria-labelledby="board-sheet-title">
+      <div class="sheet-body">
+        <div class="bs-head">
+          <h2 id="board-sheet-title">This board</h2>
+          <button type="button" class="icon-btn bs-close" id="board-sheet-close" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15" /></svg>
+          </button>
+        </div>
+        <section class="bs-group" aria-labelledby="bs-size">
+          <h3 class="bs-label" id="bs-size">Size</h3>
+          <div class="sizes" id="sizes">
+            <button type="button" data-size="small">Small</button>
+            <button type="button" data-size="medium">Medium</button>
+            <button type="button" data-size="large">Large</button>
+          </div>
+        </section>
+        <section class="bs-group" aria-labelledby="bs-share">
+          <h3 class="bs-label" id="bs-share">Share this one</h3>
+          <div class="bs-row">
+            <button type="button" class="bs-btn" id="btn-code">Copy its code</button>
+            <button type="button" class="bs-btn" id="btn-pick">Save to Bea's picks</button>
+          </div>
+        </section>
+        <section class="bs-group" aria-labelledby="bs-paste">
+          <h3 class="bs-label" id="bs-paste">Play a friend's board</h3>
+          <form class="codebar" id="codebar">
+            <input id="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a board code" aria-label="Board code" />
+            <button type="submit">Play</button>
+          </form>
+        </section>
+        <div class="picks" id="picks" hidden aria-label="Bea's picks"></div>
+        <div class="picks season-event" id="season-event" hidden aria-label="Seasonal boards"></div>
+        <button type="button" class="btn bs-workshop" id="btn-workshop">
+          <span>Make your own in Bea's workshop</span>
+        </button>
+      </div>
+    </dialog>
 
     <dialog id="dlg-help" class="sheet" aria-labelledby="help-title">
       <form method="dialog">

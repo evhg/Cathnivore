@@ -48,6 +48,8 @@ const ui = {
   codebar: $<HTMLFormElement>('codebar'),
   picks: $<HTMLElement>('picks'),
   sizes: $<HTMLDivElement>('sizes'),
+  btnBoard: $<HTMLButtonElement>('btn-board'),
+  boardSheet: $<HTMLDialogElement>('board-sheet'),
   hudTitle: $<HTMLDivElement>('hud-title'),
   hudTime: $<HTMLElement>('hud-time'),
   hudTaps: $<HTMLElement>('hud-taps'),
@@ -272,8 +274,12 @@ function render(): void {
   const isOrchard = mode === 'orchard'
   ui.tabPractice.setAttribute('aria-selected', String(mode === 'practice'))
   ui.tabOrchard.setAttribute('aria-selected', String(isOrchard))
-  ui.sizes.hidden = mode !== 'practice'
-  ui.codebar.hidden = mode !== 'practice'
+  document.body.dataset.mode = mode
+  ui.btnBoard.hidden = mode !== 'practice'
+  const sizeName = `${size[0]!.toUpperCase()}${size.slice(1)}`
+  $<HTMLSpanElement>('board-chip-label').textContent = sizeName
+  ui.btnBoard.setAttribute('aria-label', `Board options: ${sizeName} board`)
+  if (mode !== 'practice' && ui.boardSheet.open) ui.boardSheet.close()
   renderPicks()
   ui.levels.hidden = !isOrchard
   if (isOrchard) renderLevels()
@@ -728,7 +734,7 @@ function renderEvent(): void {
   const forced = new URLSearchParams(location.search).get('event')
   const ev = eventOn(forced === 'spring' ? `${today.slice(0, 4)}-04-05` : forced === 'autumn' ? `${today.slice(0, 4)}-10-05` : today)
   const el = $<HTMLElement>('season-event')
-  el.hidden = mode !== 'practice' || !ev
+  el.hidden = !ev
   if (!ev) return
   const done = data.eventDone?.[ev.id] ?? []
   const title = document.createElement('span')
@@ -753,7 +759,7 @@ function renderEvent(): void {
 function renderPicks(): void {
   renderEvent()
   const picks = data.picks ?? []
-  ui.picks.hidden = mode !== 'practice' || picks.length === 0
+  ui.picks.hidden = picks.length === 0
   ui.picks.replaceChildren(
     ...picks.map((code) => {
       const chip = document.createElement('span')
@@ -786,6 +792,15 @@ ui.codebar.addEventListener('submit', (e) => {
     return
   }
   input.value = ''
+  ui.boardSheet.close()
+})
+// Plan item 39: Practice's board tools live in one "Board" chip's sheet, so the board keeps the screen.
+ui.btnBoard.addEventListener('click', () => ui.boardSheet.showModal())
+$<HTMLButtonElement>('board-sheet-close').addEventListener('click', () => ui.boardSheet.close())
+ui.boardSheet.addEventListener('click', (e) => {
+  // A tap on the backdrop (the dialog box itself, outside its body) closes the sheet.
+  if (e.target === ui.boardSheet) ui.boardSheet.close()
+  else if ((e.target as HTMLElement).closest('.pick button:not(.pick-x)')) ui.boardSheet.close()
 })
 $<HTMLButtonElement>('btn-pick').addEventListener('click', () => {
   const code = boardCode(puzzle.seed) ?? workshopCode(puzzle.seed)
@@ -810,6 +825,7 @@ ui.sizes.addEventListener('click', (e) => {
   const target = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-size]')
   if (!target) return
   const next = target.dataset.size as Size
+  ui.boardSheet.close()
   if (next === size) return
   pauseClock()
   size = next

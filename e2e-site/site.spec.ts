@@ -239,8 +239,11 @@ test.describe('Runnel', () => {
     await page.getByRole('tab', { name: 'Practice' }).click()
     await expect(page.locator('#hud-title')).toContainText('Practice')
     const medium = await page.locator('.tiles > g.cell').count()
+    // Plan item 39: the sizes live in the Board chip's sheet.
+    await page.locator('#btn-board').click()
     await page.getByRole('button', { name: 'Large' }).click()
     expect(await page.locator('.tiles > g.cell').count()).toBeGreaterThan(medium)
+    await page.locator('#btn-board').click()
     await page.getByRole('button', { name: 'Small' }).click()
     expect(await page.locator('.tiles > g.cell').count()).toBeLessThan(medium)
     await expect(page.getByRole('button', { name: 'New puzzle' })).toBeVisible()

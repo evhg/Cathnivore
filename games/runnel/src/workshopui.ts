@@ -103,6 +103,7 @@ export function initWorkshop(hooks: Hooks): void {
     }
   })
   open.addEventListener('click', () => {
+    ;(document.getElementById('board-sheet') as HTMLDialogElement | null)?.close()
     draw()
     dlg.showModal()
   })
