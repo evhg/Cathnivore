@@ -2084,3 +2084,14 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 }
 @keyframes elite-glyph { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hud-elite { animation: none; } }
+
+/* Plan item 16: Cath's office is home. The gun is on the bench: no arms panel, no fire, aim, reload or skill buttons. */
+.hud.in-office .hud-arms,
+.touch.in-office [data-btn="fire"],
+.touch.in-office [data-btn="aim"],
+.touch.in-office [data-btn="reload"],
+.touch.in-office [data-btn="cycle"],
+.touch.in-office [data-btn="skill"],
+.touch.in-office [data-btn="focus"] {
+  display: none;
+}

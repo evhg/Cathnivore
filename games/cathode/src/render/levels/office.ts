@@ -106,6 +106,15 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
   b.box("brass", 3.55, 1.05, zS - 0.1, 0.06, 0.06, 0.06, { cover: "none" });
   signs.push({ text: "TAXI", sub: "STAIRS", style: "box", color: "#47ff8f", w: 0.6, h: 0.22, center: V(3.2, 2.45, zS - 0.06), normal: V(0, 0, -1), flicker: 0, intensity: 1.6 });
   light(V(3.2, 2.5, zS - 0.5), "#47ff8f", 0.6, 3);
+  // Slice 2 (shots): from her spot the door read as a dark slab. A detective's door: a frame, a frosted upper
+  // pane lit warm from the stairwell behind it with her name in gilt, a light line under it and a brass sconce.
+  b.box("darkMetal", 2.66, 1.1, zS - 0.08, 0.08, 2.2, 0.1, { cover: "none" });
+  b.box("darkMetal", 3.74, 1.1, zS - 0.08, 0.08, 2.2, 0.1, { cover: "none" });
+  b.box("glowWarm", 3.2, 1.62, zS - 0.02, 0.72, 0.62, 0.02, { cover: "none" });
+  signs.push({ text: "C. HALE", sub: "INQUIRIES", style: "box", color: "#e8c27a", w: 0.5, h: 0.2, center: V(3.2, 1.66, zS - 0.11), normal: V(0, 0, -1), flicker: 0, intensity: 1.1 });
+  b.box("glowWarm", 3.2, 0.012, zS - 0.06, 0.9, 0.012, 0.02, { cover: "none" });
+  b.box("brass", 2.35, 1.85, zS - 0.08, 0.12, 0.2, 0.1, { cover: "none" });
+  light(V(2.35, 1.9, zS - 0.4), "#ffcf8a", 1.2, 3.2);
 
   // A rug and a battered armchair in the middle, so the room reads as lived in.
   b.box("carpetRed", -0.4, 0.01, 0.4, 3.0, 0.02, 2.2, { cover: "none" });

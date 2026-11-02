@@ -325,6 +325,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** Plan item 16: Cath's office, the hub between cases (no jobs, patrols or street voice; stations instead). */
   const inOffice = o.district === "office";
   const inMarket = !inClinic && !inPlaza && !inTower && !inVault && !inOffice;
+  o.hud.classList.toggle("in-office", inOffice);
+  o.touch.classList.toggle("in-office", inOffice);
   // Every window and document listener the session adds goes on this signal, so dispose() takes them all back.
   const life = new AbortController();
   const lifeOpt = { signal: life.signal };
@@ -1639,6 +1641,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     last = now;
     const intent = input.read();
+    // Plan item 16: the office is home. The gun is on the bench, so there's nothing to fire, aim, reload or throw.
+    if (inOffice) Object.assign(intent, { fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0 });
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
     const portrait = input.isTouch && innerHeight > innerWidth;
     if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
@@ -2564,7 +2568,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     promptShown = !!st;
     if (!st) return null;
     return {
-      x: o.canvas.clientWidth / 2,
+      // On a narrow screen the chip sits right of centre so it flips and opens leftward (long door names fit).
+      x: o.canvas.clientWidth * (o.canvas.clientWidth < 1000 ? 0.64 : 0.5),
       y: o.canvas.clientHeight * 0.62,
       key: input.isTouch ? "Tap" : takeKey,
       verb: STATION_VERB[st],
@@ -3759,7 +3764,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function render(): void {
     const t0 = performance.now();
-    if (keyArt) world.viewScene.visible = false;
+    if (keyArt || inOffice) world.viewScene.visible = false;
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();

@@ -15,7 +15,7 @@ const SIZES = [
   ['landscape', { viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true }],
 ]
 // Yaw 0 looks down -z (the cork wall). Each view: [name, x, z, yaw].
-const VIEWS = [['room', 0, 3.4, 0.35], ['bench', 1.6, 0.2, -1.3], ['desk', 0.4, 0.2, 1.9]]
+const VIEWS = [['room', 0, 3.4, 0.35], ['bench', 1.6, 0.2, -1.3], ['desk', 0.4, 0.2, 1.9], ['at-bench', 3.4, -0.6, -1.5708], ['at-door', 3.1, 1.7, 3.1416]]
 for (const [name, opts] of SIZES) {
   const page = await browser.newPage(opts)
   await page.goto(base)
