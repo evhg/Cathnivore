@@ -513,7 +513,11 @@ export class Motes {
  * instanced mesh of flapping V shapes.
  */
 export class Birds {
-  readonly mesh: THREE.InstancedMesh;
+  /** The birds and, on the field below them, a soft shadow each (plan item 40: without one, from the field's
+   * camera a flock reads as dark shards lying on the grass). */
+  readonly mesh = new THREE.Group();
+  private flock: THREE.InstancedMesh;
+  private shade: THREE.InstancedMesh;
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private e = new THREE.Euler();
@@ -530,17 +534,37 @@ export class Birds {
     color = bats ? "#14101a" : "#2e2a2a",
   ) {
     const g = new THREE.BufferGeometry();
-    // Two wings meeting at the body; the tips are raised so scaling y flaps them.
+    // A bird's silhouette, head along +x: a body from beak to rump, a fanned tail, and two swept wings whose tips
+    // are raised so scaling y flaps them (each wing a root, a leading tip and a trailing elbow).
     // prettier-ignore
     const p = [
-      0.05, 0, 0, -0.04, 0, 0, 0, 0.06, -0.15,
-      -0.04, 0, 0, 0.05, 0, 0, 0, 0.06, 0.15,
+      // body (a flat diamond, top and bottom)
+      0.085, 0, 0, 0, 0.012, -0.022, -0.06, 0, 0,
+      0.085, 0, 0, -0.06, 0, 0, 0, 0.012, 0.022,
+      // tail fan
+      -0.05, 0, 0, -0.11, 0, -0.03, -0.11, 0, 0.03,
+      // wings: root front, tip, trailing elbow, root back
+      0.035, 0, 0, -0.01, 0.06, -0.17, -0.045, 0.03, -0.08,
+      0.035, 0, 0, -0.045, 0.03, -0.08, -0.03, 0, 0,
+      0.035, 0, 0, -0.045, 0.03, 0.08, -0.01, 0.06, 0.17,
+      0.035, 0, 0, -0.03, 0, 0, -0.045, 0.03, 0.08,
     ];
     g.setAttribute("position", new THREE.Float32BufferAttribute(p, 3));
     g.computeVertexNormals();
-    const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
-    this.mesh = new THREE.InstancedMesh(g, mat, n);
-    this.mesh.frustumCulled = false;
+    // Lit, so the flock takes the sun's side and the sky's (an unlit black read as a hole in the picture).
+    const mat = new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide });
+    this.flock = new THREE.InstancedMesh(g, mat, n);
+    this.flock.frustumCulled = false;
+    const blob = new THREE.CircleGeometry(0.16, 14).rotateX(-Math.PI / 2).scale(1, 1, 0.55);
+    this.shade = new THREE.InstancedMesh(
+      blob,
+      new THREE.MeshBasicMaterial({ color: "#1b2a12", transparent: true, opacity: bats ? 0 : 0.16, depthWrite: false }),
+      n,
+    );
+    this.shade.frustumCulled = false;
+    this.shade.visible = !bats;
+    this.shade.renderOrder = 1;
+    this.mesh.add(this.flock, this.shade);
     for (let i = 0; i < n; i++) this.phase.push(Math.random() * 100);
   }
 
@@ -561,14 +585,23 @@ export class Birds {
       const flap = Math.sin(t * (this.bats ? 22 : 9) + ph) * (0.25 + 0.75 * burst);
       const s = this.bats ? 0.9 : 1.4;
       this.m.compose(this.pv, this.q, this.sv.set(s, s * flap, s));
-      this.mesh.setMatrixAt(i, this.m);
+      this.flock.setMatrixAt(i, this.m);
+      // Its shadow on the field, a little down-sun, turned with it; it softens as the bird climbs.
+      this.q.setFromEuler(this.e.set(0, heading, 0));
+      const k = s * (1.1 - 0.1 * (this.pv.y - 3));
+      this.pv.set(this.pv.x + this.pv.y * 0.18, 0.03, this.pv.z + this.pv.y * 0.12);
+      this.m.compose(this.pv, this.q, this.sv.set(k, 1, k));
+      this.shade.setMatrixAt(i, this.m);
     }
-    this.mesh.instanceMatrix.needsUpdate = true;
+    this.flock.instanceMatrix.needsUpdate = true;
+    this.shade.instanceMatrix.needsUpdate = true;
   }
 
   dispose(): void {
-    this.mesh.geometry.dispose();
-    (this.mesh.material as THREE.Material).dispose();
-    this.mesh.dispose();
+    for (const o of [this.flock, this.shade]) {
+      o.geometry.dispose();
+      (o.material as THREE.Material).dispose();
+      o.dispose();
+    }
   }
 }

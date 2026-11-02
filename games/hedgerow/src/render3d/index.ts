@@ -452,7 +452,7 @@ export class Renderer3D {
         this.motes.push(new Motes(weather.count, { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : { ...box, y0: 0.1, y1: 0.9 }, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.alpha, additive: weather.additive }));
       }
       const coast = lv.id > 20 && lv.id <= 30 ? true : lv.id > 50 && lv.id <= 60;
-      if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#2e2a2a");
+      if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#3b3540");
     }
     for (const m of this.motes) {
       m.setScale(this.pxScale);
