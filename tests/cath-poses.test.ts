@@ -20,10 +20,11 @@ describe('Cath poses', () => {
     }
   })
 
-  it('defaults to clasped and only draws clasped hands then', () => {
+  it('defaults to clasped and draws her folded hands on their sleeves', () => {
     expect(art(cathSvg({ framing: 'half' }))).toBe(art(cathSvg({ framing: 'half', pose: 'clasped' })))
     expect(cathSvg({ pose: 'wave' })).toContain('cath-pose-wave')
-    expect(cathSvg({ pose: 'clasped' })).not.toContain('cath-arms')
+    // Plan item 33: the clasped hands are on the ends of real sleeves now (they were a lone skin oval).
+    expect(cathSvg({ pose: 'clasped' })).toContain('cath-arms')
     expect(cathSvg({ pose: 'basket' })).toContain('cath-arms')
   })
 

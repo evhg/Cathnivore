@@ -121,7 +121,7 @@ export function cathSvg(options: CathOptions = {}): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
 <g class="cath-hair-back">${hairBack(id)}</g>
-<g class="cath-body">${OUTFITS[outfit](id, pose === 'clasped')}${poseLayer(pose, outfit, 'back')}</g>
+<g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back')}</g>
 <g class="cath-head">
 ${neck(id)}
 ${NECKWEAR[outfit](id)}
@@ -131,7 +131,7 @@ ${hairFront(id)}
 ${accessories(id, outfit)}
 ${options.pin ? `<g class="cath-pin" transform="translate(164 74) scale(1.5)">${pinSvg(options.pin)}</g>` : ''}
 </g>
-${pose === 'clasped' ? '' : `<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>`}
+<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>
 </svg>`
 }
 
@@ -562,7 +562,7 @@ ${band(`${id}-${key}sh`, d, 34, 0, shadow, 0.5)}
 ${band(`${id}-${key}rim`, d, -3, 2, C.rim, 0.55)}`
 }
 
-function fieldOutfit(id: string, clasped = true): string {
+function fieldOutfit(id: string): string {
   // A tailored olive blazer (sloped shoulders, nipped waist, notched lapels, one button) over a cream silk
   // blouse, with a fine gold chain and a small leaf pendant. The collar stands up behind her neck.
   const lapel = (f: 1 | -1) => {
@@ -599,11 +599,10 @@ ${brush([224, 424], [228, 460], [222, 500], 0.3, 1.8, 0.3, C.oliveDeep, ' opacit
 ${brush([218, 254], [232, 262], [238, 268], 0.3, 1.6, 0.3, C.rim, ' opacity="0.7"')}
 ${brush([222, 292], [212, 340], [203, 392], 0.3, 1.6, 0.3, C.rim, ' opacity="0.45"')}
 <circle cx="200" cy="418" r="4.6" fill="${C.oliveShade}" stroke="${C.oliveLine}" stroke-width="1.3"/>
-<circle cx="201.4" cy="416.6" r="1.4" fill="${C.oliveLight}"/>
-${clasped ? hands(id, C.oliveDeep, 404) : ''}`
+<circle cx="201.4" cy="416.6" r="1.4" fill="${C.oliveLight}"/>`
 }
 
-function waxOutfit(id: string, clasped = true): string {
+function waxOutfit(id: string): string {
   // A waxed country jacket in deep green (with the wax's crumpled sheen), a brown corduroy collar turned
   // up, brass poppers, a quilted navy gilet at the front and a cream roll-neck: the farm in October.
   const coat = JACKET.replace('L200 404', 'L200 300')
@@ -624,11 +623,10 @@ ${[318, 352, 386].map((y) => `<circle cx="180" cy="${y}" r="3.2" fill="url(#${id
 <path fill="#4A2E18" opacity="0.8" transform="translate(-2 4)" d="${collar}"/>
 <path fill="${C.cord}" stroke="#3A2210" stroke-width="1.6" stroke-linejoin="round" d="${collar}"/>
 <path fill="url(#${id}-cord)" d="${collar}"/>
-${brush([222, 249], [236, 256], [244, 263], 0.3, 1.6, 0.3, '#C08A5E', ' opacity="0.8"')}
-${clasped ? hands(id, '#1F281E', 404) : ''}`
+${brush([222, 249], [236, 256], [244, 263], 0.3, 1.6, 0.3, '#C08A5E', ' opacity="0.8"')}`
 }
 
-function pinnyOutfit(id: string, clasped = true): string {
+function pinnyOutfit(id: string): string {
   // Market-day baking: a striped cotton blouse with rolled sleeves under a rose-print pinafore, a little
   // ruffle at the bib, and a dusting of flour on the apron.
   const blouse = JACKET.replace('L200 404', 'L200 268')
@@ -647,11 +645,10 @@ ${[[176, 330], [214, 346], [190, 380], [226, 402], [172, 424], [206, 452], [236,
   .join('')}
 <path fill="#E7A9B6" stroke="#7A3A48" stroke-width="1.4" d="M184 404 L216 404 L218 430 L182 430 Z"/>
 <ellipse cx="226" cy="440" rx="10" ry="6" fill="${C.white}" opacity="0.55"/><ellipse cx="232" cy="446" rx="4" ry="2.4" fill="${C.white}" opacity="0.5"/>
-${band(`${id}-aprim`, apron, -2.5, 1.5, C.white, 0.6)}
-${clasped ? hands(id, '#8FA9D2', 404) : ''}`
+${band(`${id}-aprim`, apron, -2.5, 1.5, C.white, 0.6)}`
 }
 
-function gownOutfit(id: string, clasped = true): string {
+function gownOutfit(id: string): string {
   // Kingsmarket, the night it's won: a deep claret satin wrap gown with a modest crossover neckline, a fine
   // gold brooch at the waist and a sheer champagne wrap over her shoulders. Elegant, never showy.
   const gown = JACKET.replace('L200 404', 'L200 292')
@@ -668,11 +665,10 @@ ${brush([246, 420], [252, 456], [248, 496], 0.3, 2.4, 0.3, '#C9667F', ' opacity=
 <circle cx="200" cy="270" r="3" fill="url(#${id}-pearl)" stroke="${C.ink}" stroke-width="0.8"/>
 <g transform="translate(226 388)"><circle r="7" fill="url(#${id}-gold)" stroke="${C.claretLine}" stroke-width="1.2"/><circle r="3.2" fill="#F6E7B8"/><circle cx="-1" cy="-1" r="1.2" fill="${C.white}"/></g>
 <path fill="#F3E3C8" fill-opacity="0.5" stroke="#D9C39C" stroke-width="1.2" d="M118 280 C140 258 168 254 183 252 C170 300 150 360 132 430 C122 400 112 330 118 280 Z M282 280 C260 258 232 254 217 252 C230 300 250 360 268 430 C278 400 288 330 282 280 Z"/>
-<path fill="none" stroke="#FFF6E6" stroke-width="1" opacity="0.6" d="M128 290 C140 330 140 380 134 420 M272 290 C262 330 260 380 266 420"/>
-${clasped ? hands(id, '#4E1424', 404) : ''}`
+<path fill="none" stroke="#FFF6E6" stroke-width="1" opacity="0.6" d="M128 290 C140 330 140 380 134 420 M272 290 C262 330 260 380 266 420"/>`
 }
 
-function marketOutfit(id: string, clasped = true): string {
+function marketOutfit(id: string): string {
   // A camel trench (gabardine twill) with wide lapels and a belted waist; the knit scarf is drawn in
   // NECKWEAR so it wraps over the neck.
   const coat = JACKET.replace('L200 404', 'L200 380')
@@ -694,11 +690,10 @@ ${brush([136, 318], [142, 370], [138, 412], 0.3, 2.2, 0.3, '#7E5A2E', ' opacity=
 ${brush([264, 318], [258, 370], [262, 412], 0.3, 2, 0.3, '#7E5A2E', ' opacity="0.5"')}
 ${brush([148, 340], [138, 352], [142, 366], 0.3, 1.8, 0.3, '#7E5A2E', ' opacity="0.6"')}
 ${brush([252, 340], [262, 352], [258, 366], 0.3, 1.6, 0.3, '#7E5A2E', ' opacity="0.5"')}
-<circle cx="168" cy="330" r="3.2" fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1"/><circle cx="232" cy="330" r="3.2" fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1"/>
-${clasped ? hands(id, C.camelShade, 380) : ''}`
+<circle cx="168" cy="330" r="3.2" fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1"/><circle cx="232" cy="330" r="3.2" fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1"/>`
 }
 
-function trenchOutfit(id: string, clasped = true): string {
+function trenchOutfit(id: string): string {
   // CATHODE's noir edition: a charcoal gabardine trench, collar up, belted, over a cream silk blouse, with
   // a single strand of pearls. Black leather gloves at her clasped hands.
   const coat = JACKET.replace('L200 404', 'L200 380')
@@ -721,11 +716,10 @@ ${brush([222, 248], [238, 256], [246, 264], 0.3, 1.6, 0.3, '#6A6D78', ' opacity=
 <rect x="191" y="410" width="18" height="24" rx="3" fill="none" stroke="#8A8F96" stroke-width="2.4"/>
 ${brush([136, 318], [142, 370], [138, 412], 0.3, 2.2, 0.3, '#0E0F12', ' opacity="0.7"')}
 ${brush([264, 318], [258, 370], [262, 412], 0.3, 2, 0.3, '#5A5D66', ' opacity="0.5"')}
-<circle cx="168" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/><circle cx="232" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/>
-${clasped ? hands(id, '#0E0F12', 380) : ''}`
+<circle cx="168" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/><circle cx="232" cy="330" r="3.2" fill="#1C1D22" stroke="#0E0F12" stroke-width="1"/>`
 }
 
-const OUTFITS: Record<CathOutfit, (id: string, clasped?: boolean) => string> = {
+const OUTFITS: Record<CathOutfit, (id: string) => string> = {
   trench: trenchOutfit,
   field: fieldOutfit,
   market: marketOutfit,
@@ -760,28 +754,6 @@ ${band(`${id}-scsh`, wrap, 22, 0, C.knitShade, 0.85)}
 <path fill="none" stroke="${C.knitShade}" stroke-width="2" stroke-linecap="round" d="M180 246 Q200 258 220 246 M178 258 Q200 270 222 258"/>
 ${band(`${id}-scrim`, wrap, -2.5, 1.5, C.white, 0.7)}`
   },
-}
-
-// A relaxed, graceful pose: both sleeves converge in front of her waist, so her hands rest there, lightly
-// clasped. cy is the sleeve tip's y, shared with the outfit's sleeve paths so the cuffs and hands line up.
-function hands(id: string, cuffShade: string, cy: number): string {
-  const x = 199
-  // Asymmetric on purpose: her far hand peeks out low and to the left, mostly covered by her near hand
-  // resting on top, thumb wrapped over the right side (a symmetric version read as a heart, gate 8).
-  const near = `M${x - 15} ${cy + 2}
-C${x - 7} ${cy - 4} ${x + 7} ${cy - 4} ${x + 16} ${cy + 3}
-C${x + 21} ${cy + 8} ${x + 19} ${cy + 17} ${x + 11} ${cy + 21}
-C${x + 1} ${cy + 25} ${x - 10} ${cy + 23} ${x - 16} ${cy + 17}
-C${x - 20} ${cy + 12} ${x - 19} ${cy + 5} ${x - 15} ${cy + 2} Z`
-  return `<path fill="none" stroke="${cuffShade}" stroke-width="1.6" stroke-linecap="round" d="M186 ${cy - 6} Q200 ${cy} 214 ${cy - 6}"/>
-<ellipse cx="${x - 12}" cy="${cy + 15}" rx="8" ry="11" fill="${C.skinShade}" stroke="${C.skinLine}" stroke-width="1.4" transform="rotate(20 ${x - 12} ${cy + 15})"/>
-<path fill="${SKIN}" stroke="${C.skinLine}" stroke-width="1.6" stroke-linejoin="round" d="${near}"/>
-${band(`${id}-hand`, near, 8, -2, C.skinShade, 0.9)}
-${brush([x - 7, cy + 2], [x - 5, cy + 9], [x - 9, cy + 15], 0.3, 1.1, 0.3, C.skinDeep)}
-${brush([x, cy + 1], [x + 2, cy + 9], [x - 2, cy + 17], 0.3, 1.1, 0.3, C.skinDeep)}
-${brush([x + 7, cy + 2], [x + 9, cy + 10], [x + 5, cy + 18], 0.3, 1.1, 0.3, C.skinDeep)}
-<ellipse cx="${x + 4}" cy="${cy + 2}" rx="5" ry="1.6" fill="${C.skinLight}" opacity="0.7"/>
-<path fill="${C.skinShade}" stroke="${C.skinLine}" stroke-width="1.3" stroke-linejoin="round" d="M${x + 12} ${cy + 4} C${x + 17} ${cy + 6} ${x + 18} ${cy + 12} ${x + 13} ${cy + 15} C${x + 10} ${cy + 12} ${x + 9} ${cy + 7} ${x + 12} ${cy + 4} Z"/>`
 }
 
 function accessories(id: string, outfit: CathOutfit): string {
@@ -921,8 +893,19 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
   const cl = CLOTH[outfit]
   const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 8, cl)
   switch (pose) {
-    case 'clasped':
-      return ''
+    case 'clasped': {
+      // Plan item 33: her hands folded at her waist, each on the end of its own sleeve: her right hand
+      // (viewer's left) lies over her left, fingers across it. They used to be one skin oval with no
+      // arms, which read as a blob in the half-length story frame.
+      if (layer !== 'front') return ''
+      const y = outfit === 'market' || outfit === 'trench' ? 380 : 404
+      return (
+        sleeve(`M128 306 Q120 ${y - 40} 158 ${y - 6} Q170 ${y + 2} 178 ${y + 5}`, 24, cl, `M171 ${y + 1} Q175 ${y + 3} 179 ${y + 5}`) +
+        sleeve(`M272 306 Q280 ${y - 40} 242 ${y - 6} Q230 ${y + 2} 222 ${y + 5}`, 24, cl, `M229 ${y + 1} Q225 ${y + 3} 221 ${y + 5}`) +
+        hand('rest', 207, y + 7, -84, cl) +
+        hand('rest', 193, y + 9, 80, cl)
+      )
+    }
     case 'wave':
       // Her left hand (viewer's right) raised in a hello, palm out; the other hand relaxed at her side.
       return layer === 'back'
