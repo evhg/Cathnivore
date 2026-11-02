@@ -3,6 +3,7 @@
 // load behind the cold open; the game's own code loads during the push. Design: docs/design/cathode.md.
 
 // The 2D Cath art (character sheet, level-up) needs its stylesheet; the front door itself has no 2D Cath (S9.1).
+import { LAST_DISTRICT_KEY, resumeDistrict } from "./game/zones";
 import "../../../shared/cath/cath.css";
 import "../../../shared/ui/base.css";
 import "./styles/fonts.css";
@@ -240,7 +241,8 @@ function hint(id: string): void {
   const done = jobs();
   let district: string | undefined;
   try {
-    district = localStorage.getItem("cathode.district") ?? undefined;
+    // Where Continue really lands (a district no longer open to this save sends it to the Market).
+    district = resumeDistrict(localStorage.getItem(LAST_DISTRICT_KEY), done);
   } catch {
     district = undefined;
   }

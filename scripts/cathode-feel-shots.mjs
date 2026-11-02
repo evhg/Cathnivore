@@ -396,7 +396,7 @@ async function frontRun(list) {
             if (ov > 0) fail(`${vp} ${stage}: the Games link overlaps the logotype (${ov.toFixed(0)} px²)`)
           }
         }
-        if (stage === 'title-continue-focus' && (m.focus !== 'continue' || !/^RESUME/.test(m.hintText))) fail(`${vp} ${stage}: CONTINUE not focused with its resume hint (focus ${m.focus}, "${m.hintText}")`)
+        if (stage === 'title-continue-focus' && (m.focus !== 'continue' || !/^BACK TO/.test(m.hintText))) fail(`${vp} ${stage}: CONTINUE not focused with its resume hint (focus ${m.focus}, "${m.hintText}")`)
       }
       if (stage === 'gate' && !m.plate) fail(`${vp} gate: no gate plate`)
       if (stage === 'areatitle' && !/FISH MARKET/i.test(m.areaText)) fail(`${vp} areatitle: area title "${m.areaText}"`)

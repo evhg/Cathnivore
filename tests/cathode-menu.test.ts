@@ -78,9 +78,9 @@ describe("front door copy from progress (C13)", () => {
 
   it("hints where Continue resumes, and never a district the save hasn't reached", () => {
     expect(slotHint("continue", { hasSave: false, jobsDone: [] })).toBe("NO CASE OPEN")
-    expect(slotHint("continue", { hasSave: true, jobsDone: [] })).toBe("RESUME · THE DROWNED MARKET · THE FISH MARKET")
+    expect(slotHint("continue", { hasSave: true, jobsDone: [] })).toBe("BACK TO THE DROWNED MARKET · YOUR FIRST CASE")
     expect(slotHint("continue", { hasSave: true, jobsDone: ["fishMarket", "crispLead", "quayContracts", "candorManifest", "crispBoss"], district: "clinic" })).toBe(
-      "RESUME · THE CANDOR CLINIC · THE CLINIC REGISTER",
+      "BACK TO THE CANDOR CLINIC · 5 OF 13 CLOSED",
     )
     expect(slotHint("new", { hasSave: true, jobsDone: [], armed: true })).toMatch(/PRESS AGAIN/)
   })

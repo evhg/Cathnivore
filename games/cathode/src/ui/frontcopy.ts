@@ -70,7 +70,7 @@ export function openLead(jobsDone: readonly string[]): string | null {
   return LEADS.find((l) => !jobsDone.includes(l.job))?.line ?? null;
 }
 
-/** The focus hint for each slot (S9.4: `RESUME · THE FISH MARKET · CHECKPOINT 2`). */
+/** The focus hint for each slot (S9.4; Continue: `BACK TO THE DROWNED MARKET · 2 OF 13 CLOSED`). */
 export function slotHint(
   slot: string,
   o: { hasSave: boolean; jobsDone: readonly string[]; district?: string; ngPlus?: boolean; armed?: boolean },
@@ -80,8 +80,10 @@ export function slotHint(
     case "continue": {
       if (!o.hasSave) return "NO CASE OPEN";
       if (o.ngPlus) return "THE LIST IS CLOSED · NEW GAME+ · THE NAMES COME BACK HARDER";
-      const lead = openLead(o.jobsDone);
-      return lead ? `RESUME · ${where} · ${lead}` : `RESUME · ${where}`;
+      // Plan item 40: plainly what Continue opens (the district it lands in) and how far the case has got; the
+      // next lead can sit in another district, so it stays on the case board.
+      const closed = LEADS.filter((l) => o.jobsDone.includes(l.job)).length;
+      return closed ? `BACK TO ${where} · ${closed} OF ${LEADS.length} CLOSED` : `BACK TO ${where} · YOUR FIRST CASE`;
     }
     case "new":
       if (o.armed) return "PRESS AGAIN TO CLOSE THE OLD CASE FOR GOOD";
