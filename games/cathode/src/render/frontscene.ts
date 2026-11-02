@@ -218,7 +218,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const up = new THREE.Vector3(0, 1, 0);
 
   // ---- the wardrobe (C14): its framing blends over the loop; its key light changes colour over 400 ms ----
-  const wd = { w: 0, target: 0, cls: null as string | null };
+  const wd = { w: 0, target: 0, cls: null as string | null, turn: 0 };
+  /** Plan item 42: a change of class turns her out and back to the lens over 400 ms (none under reduced motion). */
+  const TURN_S = 0.4;
   const wPos = toWorld(...WARDROBE.pos);
   const wLook = toWorld(...WARDROBE.look);
   const key = { pos: toWorld(1.35, 1.8, 1.15), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
@@ -231,6 +233,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // About 400 ms to the new colour.
     key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
     key.intensity = (phone ? 7 : 9) * wd.w;
+    if (wd.turn > 0) {
+      wd.turn = Math.max(0, wd.turn - dt);
+      const u = 1 - wd.turn / TURN_S;
+      cath.group.rotation.y = Math.PI + 0.6 * Math.sin(Math.PI * u) * (1 - u * 0.15);
+      if (wd.turn === 0) cath.group.rotation.y = Math.PI;
+    }
     pink.intensity = pinkI * (1 - 0.78 * wd.w);
     cath.tint(key.color, 0.6 * wd.w);
     if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
@@ -418,6 +426,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       framing = THREE.MathUtils.clamp(k, 0, 0.9);
     },
     wardrobe(cls, instant) {
+      const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!instant && !o.still && !reduce && cls && wd.cls && cls !== wd.cls) wd.turn = TURN_S;
       wd.cls = cls;
       wd.target = cls ? 1 : 0;
       const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];
