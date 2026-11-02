@@ -55,6 +55,8 @@ import {
   SupplyIcon,
 } from './icons/ActionIcons'
 import { RegionTypeIcon } from './icons/RegionTypeIcon'
+import { dailyMarket, dailyRecord, dailyShareText, dailyStreak, recordDaily } from '../content/daily'
+import { LAYOUTS } from '../content/layouts'
 import { FarmIcon, LogIcon, MarketIcon, MenuIcon, PlanIcon, UndoIcon } from './icons/RailIcons'
 import { romanStage } from './romanStage'
 import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
@@ -489,6 +491,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     if (state.result?.won && awardPin(state.config.marketEvent)) setNewPin(pinForEvent(state.config.marketEvent))
   }, [state.result, state.config.marketEvent])
 
+  // Plan item 15: a Daily Market's first finish of the day is recorded; the end screen shows the streak.
+  const [dailyStrip, setDailyStrip] = useState<{ number: number; streak: number; layoutName: string } | null>(null)
+  useEffect(() => {
+    const date = state.config.daily
+    if (!state.result || !date) return
+    recordDaily(date, { won: state.result.won, rounds: state.result.round, regions: state.result.regionsLiberated, trust: state.publicTrust })
+    const day = dailyMarket(new Date(`${date}T12:00:00Z`))
+    setDailyStrip({ number: day.number, streak: dailyStreak(date, dailyRecord()), layoutName: LAYOUTS[day.layout].name })
+  }, [state.result, state.config.daily, state.publicTrust])
+
   useEffect(() => {
     if (mode !== 'hotseat' || autoplayRef.current) return
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
@@ -618,6 +630,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             {won ? 'Liberated' : 'Repossessed'}
           </div>
           <h1>{won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
+          {dailyStrip && (
+            <p className="end-daily" data-daily-streak={dailyStrip.streak}>
+              Daily Market #{dailyStrip.number} · {dailyStrip.layoutName}
+              {dailyStrip.streak > 0 && <b> · {dailyStrip.streak} in a row</b>}
+              <small>Same market for everyone today. A new one at midnight UTC.</small>
+            </p>
+          )}
           {newPin && (
             <p className="pin-earned" data-pin={newPin}>
               New pin for Cath: {PINS[newPin].name}. She is wearing it already.
@@ -707,7 +726,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </>
           )}
           <ShareResultButton
-            text={`${won ? 'I liberated Marrow' : 'Marrow held out this time'} in Cathnivore: ${state.result.regionsLiberated} regions liberated in ${state.result.round} rounds, grade ${summary.grade} on ${state.config.difficulty}.`}
+            withUrl={!dailyStrip}
+            text={dailyStrip ? dailyShareText({ number: dailyStrip.number, layout: state.config.layout ?? 'ring' }, { won, rounds: state.result.round, regions: state.result.regionsLiberated, trust: state.publicTrust }, dailyStrip.streak, dailyStrip.layoutName) : `${won ? 'I liberated Marrow' : 'Marrow held out this time'} in Cathnivore: ${state.result.regionsLiberated} regions liberated in ${state.result.round} rounds, grade ${summary.grade} on ${state.config.difficulty}.`}
           />
         </div>
       </main>
@@ -1615,12 +1635,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
 }
 
 /** End-screen "Share result": the native share sheet where there is one, otherwise the clipboard. */
-function ShareResultButton({ text }: { text: string }) {
+function ShareResultButton({ text, withUrl = true }: { text: string; withUrl?: boolean }) {
   const [note, setNote] = useState('')
   const share = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({ text, url: location.origin + '/cathnivore/' })
+        await navigator.share(withUrl ? { text, url: location.origin + '/cathnivore/' } : { text })
         return
       }
       await navigator.clipboard.writeText(text)

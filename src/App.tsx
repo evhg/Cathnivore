@@ -27,6 +27,10 @@ import { SCENES as THE_PLAN_SCENES } from './content/story/the-plan'
 import { SCENES as FRIENDS_IN_LOW_PLACES_SCENES } from './content/story/friends-in-low-places'
 import { SCENES as KINGSMARKET_SCENES } from './content/story/kingsmarket'
 import type { GameConfig, GameState } from './engine/types'
+import { dailyMarket, dailyRecord, dailyStreak } from './content/daily'
+import { LAYOUTS } from './content/layouts'
+import { PRODUCERS } from './content/producers'
+import { MARKET_EVENTS } from './engine/marketEvent'
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
@@ -227,6 +231,7 @@ export default function App() {
               <button className="title-cta" onClick={() => setScreen({ name: 'setup' })}>
                 Quick Game
               </button>
+              <DailyButton onStart={start} />
               <div className="title-minor">
                 <button className="quiet" onClick={() => setScreen({ name: 'rules' })}>
                   <svg className="title-key-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5.5c3-1.2 5.5-1 8 .8 2.5-1.800 5-2 8-.8V19c-3-1.200-5.500-1-8 .8-2.500-1.800-5-2-8-.8zM12 6.300V19.800" /></svg>
@@ -395,5 +400,30 @@ export default function App() {
       }}
       onNewGame={() => setScreen({ name: 'setup' })}
     />
+  )
+}
+
+/** Plan item 15: today's Daily Market on the title, with the day's map, pair and event, and the streak. */
+function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mode: Mode): void }) {
+  const [daily] = useState(() => dailyMarket(new Date()))
+  const rec = dailyRecord()
+  const played = rec.results[daily.date]
+  const streak = dailyStreak(daily.date, rec)
+  const pair = daily.producers.map((id) => PRODUCERS[id].name.replace(/^Dr /, '').split(' ')[0]).join(' & ')
+  return (
+    <button className="title-cta title-daily" data-daily={daily.date} onClick={() => onStart(daily.config, daily.seed, 'solo')}>
+      <span className="title-daily-name">
+        Daily Market <span className="title-daily-no">#{daily.number}</span>
+        {(played || streak > 0) && (
+          <span className="title-daily-streak" aria-label={played ? `Played today${streak ? `, streak ${streak}` : ''}` : `Streak ${streak}`}>
+            {played ? (played.won ? '✓' : '·') : ''}
+            {streak > 0 ? ` ${streak} in a row` : ''}
+          </span>
+        )}
+      </span>
+      <small>
+        {LAYOUTS[daily.layout].name} · {pair} · {MARKET_EVENTS[daily.marketEvent].name}
+      </small>
+    </button>
   )
 }

@@ -633,3 +633,21 @@ html.no-animations .tooltip-popover {
 .actions .action-recommended > button:not(:disabled) {
   box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), var(--glow-select);
 }
+
+/* Plan item 15: the Daily Market strip on the end screen. */
+.end-daily {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.end-daily b {
+  color: var(--gain-ink);
+}
+
+.end-daily small {
+  display: block;
+  font-weight: 400;
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}

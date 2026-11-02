@@ -118,6 +118,8 @@ export interface GameConfig {
   cathsPlanLocked?: boolean
   // ROADMAP 232: this week's Marrow Market event (see marketEvent.ts); cheapens two Improvement tags.
   marketEvent?: 'festival' | 'drought' | 'glut'
+  // Plan item 15: the Daily Market's date (YYYY-MM-DD, UTC) when this game is that day's shared market.
+  daily?: string
   // A campaign chapter's single lone producer faces far more enemy turns per region than the tuned
   // 2-producer/7-region full game's `DIFFICULTY_SETTINGS.lostLandPool` was balanced for (a chapter runs
   // considerably longer than the full game's 10-round cap). Overrides that pool size for this game only;

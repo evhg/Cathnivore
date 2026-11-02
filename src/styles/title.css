@@ -468,3 +468,31 @@ html.no-animations .title-screen * {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Plan item 15: the Daily Market button carries the day's map, pair and event under its name. */
+.title-daily {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding-block: 8px;
+}
+
+.title-daily small {
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.title-daily-no {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.title-daily-streak {
+  margin-left: 8px;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--gain-ink);
+}
