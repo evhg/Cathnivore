@@ -4,7 +4,7 @@
 //
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-perf.mjs
 //
-// PERF_ONLY=phone|desktop runs one case; PERF_Q appends to the query (e.g. `&district=clinic` for a district's art pass). Serves dist-site itself on the first free port from :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
+// SHOT=<dir> saves each staged frame. PERF_ONLY=phone|desktop runs those cases; PERF_Q appends to the query (e.g. `&district=clinic` for a district's art pass). Serves dist-site itself on the first free port from :4181 (run `npm run build:site` first) unless CATHODE_URL is set. Joins
 // `npm run gates` as a CATHODE sub-check from C10.
 import { chromium } from '@playwright/test'
 import { spawn } from 'node:child_process'
@@ -12,6 +12,9 @@ import { spawn } from 'node:child_process'
 const CASES = [
   // The phone: 6 full-detail enemies firing, the whole scene in 260 calls (S0).
   { name: 'phone firefight-6', stage: 'firefight-6', viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true, calls: 260, tris: 260_000 },
+  // Plan item 41: the phone holds 260 with twelve too (the far men's mirror stand-ins, shadows and full carbine go:
+  // body.ts chooseLod, enemy.ts placeRifle, tuning.ts lod.phoneMirror/phoneRifleNear).
+  { name: 'phone firefight-12', stage: 'firefight-12', viewport: { width: 844, height: 390 }, dsf: 3, q: '&rs=0.5&quality=phone', touch: true, calls: 260, tris: 260_000 },
   // Desktop: 12 enemies, the gate's 900 calls. The triangle caps sit about a third over the 2026-10-19 measure (192k phone,
   // 483k desktop): the spec budgets triangles per enemy LOD (cathode-models), so these catch a scene-wide regression.
   { name: 'desktop firefight-12', stage: 'firefight-12', viewport: { width: 1440, height: 900 }, dsf: 1, q: '', calls: 900, tris: 650_000 },
@@ -78,6 +81,7 @@ try {
       refl = Math.max(refl, p.reflCalls ?? 0)
     }
     const ms = await page.evaluate(() => window.cathode.stats.combatMs ?? null)
+    if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}/${C.name.replace(/\s+/g, '-')}.png`, timeout: 300_000 })
     const ok = calls <= C.calls && tris <= C.tris
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${C.name}: ${calls} draw calls (budget ${C.calls}, mirror ${refl}), ${tris} triangles (budget ${C.tris}), combatMs ${ms?.toFixed(2)} (SwiftShader, not judged)`)
     if (calls > C.calls) failures.push(`${C.name}: ${calls} draw calls > ${C.calls}`)

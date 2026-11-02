@@ -142,6 +142,8 @@ export function buildRifle(phone: boolean, sniper = false, lod = phone): Rifle {
     const m = o as THREE.Mesh;
     if (m.isMesh) m.castShadow = true;
   });
+  // Plan item 41: the far stand-in casts no shadow on the phone (it's in his hands 12 m+ off).
+  if (phone) far.traverse((o) => ((o as THREE.Mesh).isMesh ? ((o as THREE.Mesh).castShadow = false) : undefined));
   return { root, bolt, muzzle, mag: magPart, near: gun, far };
 }
 

@@ -978,7 +978,10 @@ export class Enemy {
     }
     place(this.rifle, b.grip, b.foregrip, b.facing.clone().set(0, 1, 0));
     this.rifle.scale.setScalar(b.scale);
-    rifleLod(this.gun, b.lod);
+    // Plan item 41: on the phone the full carbine (a draw call per finish) is for the men close by; past
+    // `phoneRifleNear` he holds the one-mesh stand-in, as at LOD1 (the 12-man firefight's phone budget).
+    const nearPhone = bodyView.phone && b.lod === 0 && b.joints.pelvis.distanceTo(bodyView.eye) > tuning.enemyLook.lod.phoneRifleNear;
+    rifleLod(this.gun, nearPhone ? 1 : b.lod);
     // C16: the magazine is out of the carbine between the drop and the new one going in.
     const rl = this.motion.tac?.reload ?? -1;
     this.gun.mag.visible = !(rl >= RELOAD_KEYS.out && rl < RELOAD_KEYS.in - 250);

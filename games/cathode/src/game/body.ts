@@ -300,7 +300,8 @@ export class Body {
         m.bind(this.skeleton, IDENT);
         m.boundingSphere = this.sphere;
         m.layers.set(LAYER_NO_REFLECT);
-        m.castShadow = i === 0;
+        // Plan item 41: on the phone only LOD0 casts (a far man's shadow in its 1024 map is a smudge, and a draw call).
+        m.castShadow = i === 0 && !(phone && lod > 0);
         m.visible = lod === 0;
         this.root.add(m);
       });
@@ -438,7 +439,7 @@ export class Body {
     if (on === this.cheap) return;
     this.cheap = on;
     for (const m of this.mirror) m.visible = !on;
-    for (const [o] of this.lods) o.castShadow = !on;
+    this.lods.forEach(([o], lod) => (o.castShadow = !on && !(bodyView.phone && lod > 0)));
     if (this.cloth) this.cloth.mesh.castShadow = !on && !bodyView.phone;
   }
 
@@ -616,9 +617,14 @@ export class Body {
     const L = LOOK.lod;
     const [a, b] = bodyView.phone ? L.phone : L.desktop;
     let want: Lod;
+    const d = this.joints.pelvis.distanceTo(bodyView.eye) / this.scale;
+    // Plan item 41: on the phone the street's mirror shows only the men within `phoneMirror` (a reflection of a
+    // figure further off is a few pixels in a puddle, and two draw calls each: 12 in a firefight took the phone past
+    // its 260). The dead are out of it either way (setCheap).
+    const mirrorOn = !this.cheap && (!bodyView.phone || d < L.phoneMirror);
+    if (this.mirror[0] && this.mirror[0].visible !== mirrorOn) for (const m of this.mirror) m.visible = mirrorOn;
     if (bodyView.forceLod >= 0) want = bodyView.forceLod as Lod;
     else {
-      const d = this.joints.pelvis.distanceTo(bodyView.eye) / this.scale;
       const h = L.hyst;
       const cur = this.lod;
       want = d < a - (cur === 0 ? -h : h) ? 0 : d < b - (cur <= 1 ? -h : h) ? 1 : 2;
