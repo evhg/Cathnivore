@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
-import { LAYOUTS, type LayoutId } from '../content/layouts'
+import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
 import Portrait from './portraits/Portrait'
 import type { Flight } from './boardroom'
@@ -26,8 +26,8 @@ const pieceXY = (n: number) => `${(n % PIECE_ROW) * 16}, ${Math.floor(n / PIECE_
 const TILE_DEPTH = 7
 const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
-function hexCenter(id: RegionId, layout: LayoutId = 'ring'): { x: number; y: number } {
-  const [q, r] = LAYOUTS[layout].hexes[id] ?? LAYOUTS.ring.hexes[id] ?? [0, 0]
+function hexCenter(id: RegionId, layout: Layout = LAYOUTS.ring): { x: number; y: number } {
+  const [q, r] = layout.hexes[id] ?? LAYOUTS.ring.hexes[id] ?? [0, 0]
   return { x: RING_DISTANCE * (q + r / 2), y: HEX_R * 1.5 * r }
 }
 
@@ -37,8 +37,8 @@ interface Fit {
   tx: number
   ty: number
 }
-function layoutFit(layout: LayoutId, ids: readonly RegionId[]): Fit {
-  if (layout === 'ring') return { k: 1, tx: 0, ty: 0 }
+function layoutFit(layout: Layout, ids: readonly RegionId[]): Fit {
+  if (layout.id === 'ring') return { k: 1, tx: 0, ty: 0 }
   const pts = ids.map((id) => hexCenter(id, layout))
   const halfW = (HEX_R * Math.sqrt(3)) / 2
   const x0 = Math.min(...pts.map((p) => p.x)) - halfW
@@ -551,7 +551,7 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
 
 export default function Map({ state, enemyTurn, highlight, threat, onSelect }: Props) {
   const active = state.config.activeRegions
-  const layout: LayoutId = state.config.layout ?? 'ring'
+  const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
   const squeezeTargets = active.filter((id) => matchesSlot(state, id, 'squeeze'))
   const expandTargets = active.filter((id) => matchesSlot(state, id, 'expand'))
@@ -822,7 +822,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
       })}
       {/* Plan item 15: the Delta's river, drawn along the hex edges it runs between, with a plank bridge where
           it can be crossed. */}
-      {(LAYOUTS[layout].channels ?? []).map(([a, b]) => {
+      {(layout.channels ?? []).map(([a, b]) => {
         const p = hexCenter(a, layout)
         const q = hexCenter(b, layout)
         const len = Math.hypot(q.x - p.x, q.y - p.y)
@@ -831,7 +831,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
         const mx = (p.x + q.x) / 2
         const my = (p.y + q.y) / 2
         const h = HEX_R / 2
-        const bridged = (LAYOUTS[layout].bridges ?? []).some(([x, y]) => (x === a && y === b) || (x === b && y === a))
+        const bridged = (layout.bridges ?? []).some(([x, y]) => (x === a && y === b) || (x === b && y === a))
         const angle = (Math.atan2(dy, dx) * 180) / Math.PI
         return (
           <g key={`river-${a}-${b}`} className="map-river" pointerEvents="none">
@@ -927,7 +927,7 @@ function CandorHQ() {
 
 /** Plan item 25: while a plan card is looked at, Hollowell's HQ stands in its corner with a dotted trail to
  *  each hex the card will hit (drawn in once; static under reduced motion). */
-function ThreatLayer({ threat, layout, fit }: { threat: NonNullable<Props['threat']>; layout: LayoutId; fit: Fit }) {
+function ThreatLayer({ threat, layout, fit }: { threat: NonNullable<Props['threat']>; layout: Layout; fit: Fit }) {
   const door = hqDoor('hollowell', 'top')
   const x0 = door.x
   const y0 = door.y - 34
@@ -960,7 +960,7 @@ function FlightIcon({ piece }: { piece: Flight['piece'] }) {
   return piece === 'outlet' ? <Outlet /> : piece === 'buyout' ? <Buyout /> : <Doubt />
 }
 
-function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: LayoutId; fit: Fit }) {
+function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: Layout; fit: Fit }) {
   const factions: Faction[] = ['hollowell', 'candor']
   return (
     <g className="enemy-turn-layer" pointerEvents="none" data-hq-side={view.hqSide}>

@@ -27,7 +27,7 @@ describe('dailyMarket', () => {
     expect(new Set(week.map((d) => d.seed)).size).toBe(7)
   })
 
-  it('fixes a producer pair and an event, and deals the ring fresh types', () => {
+  it('fixes a producer pair and an event, and deals the ring fresh places', () => {
     const days = Array.from({ length: 30 }, (_, i) => dailyMarket(new Date(Date.UTC(2026, 10, 2 + i, 9))))
     for (const d of days) {
       expect(d.producers[0]).not.toBe(d.producers[1])
@@ -39,7 +39,7 @@ describe('dailyMarket', () => {
     expect(new Set(days.map((d) => d.producers.join('+'))).size).toBeGreaterThan(3)
     expect(new Set(days.map((d) => d.marketEvent)).size).toBe(3)
     // A daily ring is not always the printed board.
-    const rings = days.filter((d) => d.layout === 'ring').map((d) => JSON.stringify(d.config.regionTypes))
+    const rings = days.filter((d) => d.layout === 'ring').map((d) => JSON.stringify(d.config.placement))
     expect(new Set(rings).size).toBeGreaterThan(1)
   })
 })

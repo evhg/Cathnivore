@@ -12,10 +12,11 @@ import type { GameConfig, ResourceKind } from '../src/engine/types'
 
 const CONFIG: GameConfig = { producers: ['mara', 'tomas'], difficulty: 'normal', activeRegions: ALL_REGION_IDS }
 
-const TRACKS: { kind: ResourceKind; noun: string }[] = [
-  { kind: 'produce', noun: 'Produce' },
-  { kind: 'marks', noun: 'Marks' },
-  { kind: 'goodwill', noun: 'Goodwill' },
+// Plan item 33: Marks count ("1 Mark", "2 Marks"); Produce and Goodwill don't.
+const TRACKS: { kind: ResourceKind; noun: (n: number) => string }[] = [
+  { kind: 'produce', noun: () => 'Produce' },
+  { kind: 'marks', noun: (n) => (Math.abs(n) === 1 ? 'Mark' : 'Marks') },
+  { kind: 'goodwill', noun: () => 'Goodwill' },
 ]
 
 describe('Improvement rules text', () => {
@@ -31,7 +32,7 @@ describe('Improvement rules text', () => {
       for (const { kind, noun } of TRACKS) {
         const delta = after.producers.mara.production[kind] - before.producers.mara.production[kind]
         if (delta !== 0) {
-          expect(card.text).toContain(`+${delta} ${noun} production`)
+          expect(card.text).toContain(`+${delta} ${noun(delta)} production`)
         }
       }
       // Immediate one-off resource gains ("Immediately gain 2 Produce and 1 Goodwill.") aren't production
@@ -41,7 +42,7 @@ describe('Improvement rules text', () => {
       for (const { kind, noun } of TRACKS) {
         const delta = after.producers.mara.resources[kind] - before.producers.mara.resources[kind]
         if (delta !== 0) {
-          expect(card.text).toContain(`${delta} ${noun}`)
+          expect(card.text).toContain(`${delta} ${noun(delta)}`)
         }
       }
       // A few Media Improvements also raise Rift as part of buying them (SPEC 7: "A few Media cards raise
@@ -76,7 +77,7 @@ describe('Improvement rules text', () => {
     const farmShop = byName.get('Farm Shop')
     expect(farmShop?.cost).toBe(3)
     expect(farmShop?.tags).toEqual(['community'])
-    expect(farmShop?.text).toBe('+1 Marks production.')
+    expect(farmShop?.text).toBe('+1 Mark production.')
 
     const rotationalGrazing = byName.get('Rotational Grazing')
     expect(rotationalGrazing?.cost).toBe(6)
@@ -98,7 +99,7 @@ describe('Improvement rules text', () => {
     const vegBoxRound = byName.get('Veg Box Round')
     expect(vegBoxRound?.cost).toBe(5)
     expect(vegBoxRound?.tags).toEqual(['crop', 'community'])
-    expect(vegBoxRound?.text).toBe('+1 Marks production for every 2 Community tags you have, including this one.')
+    expect(vegBoxRound?.text).toBe('+1 Mark production for every 2 Community tags you have, including this one.')
 
     const oysterBeds = byName.get('Oyster Beds')
     expect(oysterBeds?.cost).toBe(4)

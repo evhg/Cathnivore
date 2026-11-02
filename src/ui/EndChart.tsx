@@ -1,4 +1,5 @@
 import type { EndSummary } from './endSummary'
+import { plural } from '../content/plural'
 
 // Plan item 8: Public Trust and Lost Land round by round, the two tracks that end a game, drawn on one chart
 // with each track's losing line marked. Inline SVG, so it scales with its column and themes with the page.
@@ -16,7 +17,7 @@ export default function EndChart({ summary }: { summary: EndSummary }) {
   const path = (pick: (r: (typeof rounds)[number]) => number) =>
     rounds.map((r, i) => `${i ? 'L' : 'M'}${x(r.round).toFixed(1)},${y(pick(r)).toFixed(1)}`).join('')
   const label = last
-    ? `Public Trust went from ${trustStart} to ${last.trust}; the corporations took ${last.lostLand} of ${lostLandLimit} land over ${last.round} rounds.`
+    ? `Public Trust went from ${trustStart} to ${last.trust}; the corporations took ${last.lostLand} of ${lostLandLimit} land over ${plural(last.round, 'round')}.`
     : 'No rounds were played.'
   return (
     <figure className="end-chart">

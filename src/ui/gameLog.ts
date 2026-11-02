@@ -33,7 +33,7 @@ function actionCaption(producer: ProducerId, action: Action): string | null {
     case 'sell':
       return `${name} sells ${action.count} Produce for Marks.`
     case 'graft':
-      return `${name} grafts for +1 Produce, +1 Marks.`
+      return `${name} grafts for +1 Produce, +1 Mark.`
     case 'role':
       return `${name} uses ${PRODUCERS[producer].roleName}.`
     case 'tearUpContract':

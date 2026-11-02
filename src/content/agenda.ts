@@ -74,7 +74,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'hollowell-support-local-farmers',
     faction: 'hollowell',
     headline: 'Hollowell pledges to support local farmers by buying them.',
-    text: 'In the non-liberated region with the fewest Stalls, replace 1 Outlet with a Buyout. Bonus: each producer loses 1 Marks.',
+    text: 'In the non-liberated region with the fewest Stalls, replace 1 Outlet with a Buyout. Bonus: each producer loses 1 Mark.',
     effect: (state) => {
       const target = extremeByStallCount(state, nonLiberated(state), 'fewest')
       if (!target || state.regions[target].outlets === 0) return state
@@ -157,7 +157,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'hollowell-trademark-fresh',
     faction: 'hollowell',
     headline: "Hollowell files a trademark on the word 'fresh.'",
-    text: 'Each producer loses 1 Marks. Bonus: add 1 Outlet to each non-liberated Crop region.',
+    text: 'Each producer loses 1 Mark. Bonus: add 1 Outlet to each non-liberated Crop region.',
     effect: (state) => eachProducerLoses(state, 'marks'),
     bonusEffect: (state) => {
       let next = state
@@ -197,7 +197,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'hollowell-supply-chain',
     faction: 'hollowell',
     headline: "Hollowell announces a 'resilient supply chain.' Resilient to what, unclear.",
-    text: 'Add 1 Outlet to each non-liberated Crop region with a Stall. Bonus: each producer loses 1 Marks.',
+    text: 'Add 1 Outlet to each non-liberated Crop region with a Stall. Bonus: each producer loses 1 Mark.',
     effect: (state) => {
       let next = state
       for (const id of regionsWithStall(next, nonLiberated(next))) {
@@ -314,7 +314,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     id: 'candor-second-opinion-discouraged',
     faction: 'candor',
     headline: 'Candor advises that seeking a second opinion may cause unnecessary alarm.',
-    text: 'Public Trust -1. Bonus: each producer loses 1 Marks.',
+    text: 'Public Trust -1. Bonus: each producer loses 1 Mark.',
     effect: (state) => loseTrust(state, 1),
     bonusEffect: (state) => eachProducerLoses(state, 'marks'),
   },

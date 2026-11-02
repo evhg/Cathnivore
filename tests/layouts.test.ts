@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { LAYOUTS, layoutConfig, layoutNeighbors, layoutTypes, type LayoutId } from '../src/content/layouts'
+import { LAYOUTS, layoutConfig, layoutNeighbors, layoutPlacement, layoutTypes, placedLayout, type LayoutId } from '../src/content/layouts'
+import { regionType } from '../src/content/map'
 import { REGIONS } from '../src/content/map'
 import { createGame } from '../src/engine/state'
-import type { RegionId } from '../src/engine/types'
+import type { ProducerId, RegionId } from '../src/engine/types'
 
 // Plan item 15, slice 2: three layouts as data. Adjacency comes from the hexes (and the delta's bridges), types
 // are dealt by the seed, and the ring with no seeding is exactly the printed board.
@@ -35,9 +36,15 @@ describe('map layouts', () => {
       for (const [a, list] of Object.entries(ns) as [RegionId, RegionId[]][]) for (const b of list) expect(ns[b]).toContain(a)
       expect(connected(ns)).toBe(true)
       expect(ns.kingsmarket!.length).toBeGreaterThanOrEqual(3)
-      const t = layoutTypes(l, 11, true)
+      const t = layoutTypes(l)
       expect(t.kingsmarket).toBe('capital')
       expect(Object.values(t).filter((x) => x !== 'capital').sort()).toEqual([...l.mix].sort())
+      // Dealt, it is still symmetric and connected, and Kingsmarket keeps the middle.
+      const placed = placedLayout(id, layoutPlacement(l, 11))
+      const pns = layoutNeighbors(placed)
+      for (const [a, list] of Object.entries(pns) as [RegionId, RegionId[]][]) for (const b of list) expect(pns[b]).toContain(a)
+      expect(connected(pns)).toBe(true)
+      expect(placed.hexes.kingsmarket).toEqual(l.hexes.kingsmarket)
     })
   it('sizes: the ring and delta 7, the coast 10', () => {
     expect(Object.keys(LAYOUTS.ring.hexes)).toHaveLength(7)
@@ -52,10 +59,18 @@ describe('map layouts', () => {
     expect(ns.kingsmarket).toContain('rivermead')
     expect(ns.oakvale).toContain('shingleBay')
   })
-  it('the same seed deals the same types; different seeds differ somewhere', () => {
-    expect(layoutTypes(LAYOUTS.coast, 42)).toEqual(layoutTypes(LAYOUTS.coast, 42))
-    const deals = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((s) => JSON.stringify(layoutTypes(LAYOUTS.coast, s))))
+  it('the same seed deals the same places; different seeds differ somewhere', () => {
+    expect(layoutPlacement(LAYOUTS.coast, 42)).toEqual(layoutPlacement(LAYOUTS.coast, 42))
+    const deals = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((s) => JSON.stringify(layoutPlacement(LAYOUTS.coast, s))))
     expect(deals.size).toBeGreaterThan(1)
+  })
+  // Plan item 33: the Daily Market dealt terrain against the names (Brindle Hills as a coast).
+  it('every region name keeps one terrain across 100 seeds on every map, seeded ring included', () => {
+    for (const id of IDS)
+      for (let seed = 1; seed <= 100; seed++) {
+        const config = { producers: ['mara', 'tomas'] as ProducerId[], difficulty: 'normal' as const, ...layoutConfig(id, seed, true) }
+        for (const rid of config.activeRegions) expect(regionType({ config }, rid), `${id} ${seed} ${rid}`).toBe(rid === 'kingsmarket' ? 'capital' : REGIONS[rid].type)
+      }
   })
   it('a delta game sets up from its own types', () => {
     const cfg = layoutConfig('delta', 5)

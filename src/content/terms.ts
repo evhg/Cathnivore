@@ -17,7 +17,7 @@ export const ACTION_TERMS: GlossaryEntry[] = [
   { term: 'Invest', body: 'Buy one face-up Improvement from the Market by paying its Marks cost. It joins your tableau and its Market space stays empty until cleanup.' },
   { term: 'Sell', body: 'Turn up to 3 Produce into the same number of Marks.' },
   { term: 'Scheme', body: "Play one face-up Scheme from Cath's Plan by paying its Goodwill cost, then resolve and discard it." },
-  { term: 'Graft', body: 'Gain 1 Produce and 1 Marks. Always legal.' },
+  { term: 'Graft', body: 'Gain 1 Produce and 1 Mark. Always legal.' },
 ]
 
 export const GLOSSARY_TERMS: GlossaryEntry[] = [

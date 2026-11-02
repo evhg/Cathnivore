@@ -10,6 +10,7 @@ import { ACTIONS_PER_ROUND } from '../engine/region'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import TourBoard, { type TourCard, type TourHex } from './TourBoard'
+import { plural } from '../content/plural'
 
 interface Props {
   onClose(): void
@@ -241,7 +242,7 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
         <Section title="Improvements">
           <EntryList
             entries={improvements.map((c) => ({
-              term: `${c.name} (${c.cost} Marks, ${c.tags.join('/')})`,
+              term: `${c.name} (${plural(c.cost, 'Mark')}, ${c.tags.join('/')})`,
               body: c.text,
             }))}
           />

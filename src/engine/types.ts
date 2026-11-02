@@ -95,6 +95,8 @@ export interface GameConfig {
   regionTypes?: Partial<Record<RegionId, RegionType>>
   neighbors?: Partial<Record<RegionId, RegionId[]>>
   layout?: 'ring' | 'coast' | 'delta'
+  // Plan item 33: which region the seed sat on each of the layout's printed slots (slot -> region). Absent: as printed.
+  placement?: Partial<Record<RegionId, RegionId>>
   rulesEnabled?: RulesEnabled // SPEC 8.1; absent means the full game (see `resolveRules`)
   scriptedPressure?: PressureCard[] // SPEC 8.1 "a scripted Pressure sequence where needed" (campaign only)
   // SPEC 8.2's chapters each have their own liberation goal (e.g. chapter 1: "liberate both regions

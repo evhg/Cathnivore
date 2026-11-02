@@ -8,6 +8,7 @@ import type { GameConfig, ProducerId } from '../engine/types'
 import type { MarketEventId } from '../engine/marketEvent'
 import { ALL_PRODUCER_IDS } from './producers'
 import { layoutConfig, type LayoutId } from './layouts'
+import { plural } from './plural'
 
 /** Daily #1 is 2 November 2026, the day the Daily Market opened. */
 const DAY_ONE = Date.UTC(2026, 10, 2)
@@ -147,7 +148,7 @@ export function dailyStreak(today: string, rec: DailyRecord): number {
 /** The share text: the day, the outcome, the regions as a row of squares, and the streak. */
 export function dailyShareText(daily: Pick<DailyMarket, 'number' | 'layout'>, result: DailyResult, streak: number, layoutName: string): string {
   const squares = '🟩'.repeat(result.regions) + '⬜'.repeat(Math.max(0, 5 - result.regions))
-  const outcome = result.won ? `Marrow liberated in ${result.rounds} rounds` : `Marrow held out (round ${result.rounds})`
+  const outcome = result.won ? `Marrow liberated in ${plural(result.rounds, 'round')}` : `Marrow held out (round ${result.rounds})`
   const streakLine = streak > 0 ? ` · streak ${streak}` : ''
   return `Cathnivore Daily Market #${daily.number} · ${layoutName}\n${squares}\n${outcome}, Trust ${result.trust}${streakLine}\ncathnivore.com/cathnivore/`
 }

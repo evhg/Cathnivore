@@ -72,6 +72,7 @@ import type { TutorialStep } from '../content/chapters'
 import { matchesExpect, resumeIndex, stepMode, tutorialTargetId, upcomingExpect } from '../content/tutorial'
 import TutorialCoach from './TutorialCoach'
 import type { Scene as SceneData } from '../content/story/types'
+import { plural } from '../content/plural'
 
 interface Props {
   initial: GameState
@@ -1188,7 +1189,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <button
                   disabled
                   title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
-                  aria-label={`Invest: buy ${card.name} (${cost} Marks). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
+                  aria-label={`Invest: buy ${card.name} (${plural(cost, 'Mark')}). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
                 >
                   <span className="action-label-group">
                     <span className="action-label">

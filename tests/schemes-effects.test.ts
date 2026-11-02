@@ -148,7 +148,7 @@ describe("Every previously-untested Scheme's specific numeric effect (SPEC 11.4 
     expect(after.producers.mara.production.goodwill).toBe(before.producers.mara.production.goodwill + 1)
   })
 
-  it('Seasonal Bonus: +1 Produce production and +1 Marks production', () => {
+  it('Seasonal Bonus: +1 Produce production and +1 Mark production', () => {
     const before = richBoard(7)
     const after = play(before, 'seasonal-bonus')
     expect(after.producers.mara.production.produce).toBe(before.producers.mara.production.produce + 1)
@@ -203,7 +203,7 @@ describe("Every previously-untested Scheme's specific numeric effect (SPEC 11.4 
     expect(after.regions.brindleHills.outlets).toBe(2)
   })
 
-  it('Bumper Crop: gain 2 Produce and 1 Marks', () => {
+  it('Bumper Crop: gain 2 Produce and 1 Mark', () => {
     const before = richBoard(7)
     const after = play(before, 'bumper-crop')
     expect(after.producers.mara.resources.produce).toBe(before.producers.mara.resources.produce + 2)

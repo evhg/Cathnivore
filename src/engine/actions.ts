@@ -350,7 +350,7 @@ export function applyAction(state: GameState, action: Action): GameState {
       break
     }
     case 'sell': {
-      // "Wagon Wheel Press" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Sell yields 1 extra Marks.
+      // "Wagon Wheel Press" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Sell yields 1 extra Mark.
       // "Polytunnel" (2026-09-27 follow-up): Sell also yields 1 extra Goodwill, same trigger.
       const sellBonus = hasImprovement(state, producer, 'wagon-wheel-press') ? 1 : 0
       const sellGoodwillBonus = hasImprovement(state, producer, 'polytunnel') ? 1 : 0
@@ -360,7 +360,7 @@ export function applyAction(state: GameState, action: Action): GameState {
     }
     case 'graft': {
       // "Compost Exchange" (SPEC 7 ongoing-ability mix, see DECISIONS.md): Graft yields 1 extra Produce.
-      // "Seed Library" (2026-09-27 follow-up): Graft also yields 1 extra Marks, same trigger.
+      // "Seed Library" (2026-09-27 follow-up): Graft also yields 1 extra Mark, same trigger.
       const graftBonus = hasImprovement(state, producer, 'compost-exchange') ? 1 : 0
       const graftMarksBonus = hasImprovement(state, producer, 'seed-library') ? 1 : 0
       next = gain(state, producer, { produce: 1 + graftBonus, marks: 1 + graftMarksBonus, goodwill: 0 })

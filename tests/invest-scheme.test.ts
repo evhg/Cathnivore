@@ -69,7 +69,7 @@ describe('Invest', () => {
     expect(actions.some((a) => a.kind === 'invest')).toBe(false)
   })
 
-  it('Farm Shop gives +1 Marks production immediately', () => {
+  it('Farm Shop gives +1 Mark production immediately', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
     // Force it into a slot for a deterministic test of its effect.
     state = { ...state, market: ['farm-shop', ...state.market.slice(1)] }
@@ -209,7 +209,7 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     }
   }
 
-  it('Wagon Wheel Press: Sell yields 1 extra Marks', () => {
+  it('Wagon Wheel Press: Sell yields 1 extra Mark', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
     state = withImprovement(state, 'wagon-wheel-press')
     const before = state.producers.mara.resources.marks
@@ -236,7 +236,7 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     expect(state.producers.mara.resources.goodwill).toBe(before - (SCHEMES_BY_ID.get('leaked-memo')!.cost - 1))
   })
 
-  it('Wholesale Account: Improvements cost 1 less Marks, minimum 1, but never discounts its own purchase', () => {
+  it('Wholesale Account: Improvements cost 1 Mark less, minimum 1, but never discounts its own purchase', () => {
     let state = richMara(createGame(FULL_CONFIG, 5))
     state = withImprovement(state, 'wholesale-account')
     const improvementId = state.market.find((id): id is string => id !== null && id !== 'wholesale-account')!
@@ -411,7 +411,7 @@ describe('ongoing-ability Improvements added for the SPEC 7 effect-mix fix', () 
     expect(state.producers.mara.resources.goodwill).toBe(before + 1)
   })
 
-  it('Seed Library: Graft also yields 1 extra Marks', () => {
+  it('Seed Library: Graft also yields 1 extra Mark', () => {
     let state = createGame(FULL_CONFIG, 5)
     state = withImprovement(state, 'seed-library')
     const before = state.producers.mara.resources.marks

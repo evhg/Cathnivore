@@ -11,6 +11,7 @@ import {
   TEAR_UP_CONTRACT_COST,
 } from '../engine/actions'
 import type { Action, Faction, GameState, RegionId, ResourceKind } from '../engine/types'
+import { plural } from '../content/plural'
 
 const RESOURCE_NAME = { produce: 'Produce', marks: 'Marks', goodwill: 'Goodwill' } as const
 const FACTION_NAME = { hollowell: 'Hollowell', candor: 'Candor' } as const
@@ -38,7 +39,7 @@ export function actionLabel(action: Action, state: GameState): string {
       return `Rebut: remove ${action.count} Doubt in ${REGIONS[action.region].name}`
     case 'invest': {
       const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
-      return `Invest: buy ${card?.name ?? action.improvementId} (${card?.cost ?? '?'} Marks)`
+      return `Invest: buy ${card?.name ?? action.improvementId} (${card ? plural(card.cost, 'Mark') : '? Marks'})`
     }
     case 'sell':
       return `Sell ${action.count} Produce for ${action.count} ${action.count === 1 ? 'Mark' : 'Marks'}`
@@ -48,7 +49,7 @@ export function actionLabel(action: Action, state: GameState): string {
       return `Scheme: ${card?.name ?? action.schemeId}${target}`
     }
     case 'graft':
-      return 'Graft: +1 Produce, +1 Marks'
+      return 'Graft: +1 Produce, +1 Mark'
     case 'role': {
       const roleName = PRODUCERS[state.activeProducer].roleName
       const target = action.targetRegion ? ` on ${REGIONS[action.targetRegion].name}` : ''

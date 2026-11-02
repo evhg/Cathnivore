@@ -34,7 +34,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Farm Shop',
     cost: 3,
     tags: ['community'],
-    text: '+1 Marks production.',
+    text: '+1 Mark production.',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }),
   },
   {
@@ -68,7 +68,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Veg Box Round',
     cost: 5,
     tags: ['crop', 'community'],
-    text: '+1 Marks production for every 2 Community tags you have, including this one.',
+    text: '+1 Mark production for every 2 Community tags you have, including this one.',
     onBuy: (state, producer) => {
       const bonus = Math.floor(communityTagCount(state, producer, 'veg-box-round') / 2)
       return addProduction(state, producer, { marks: bonus })
@@ -135,7 +135,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Grazing Co-op',
     cost: 7,
     tags: ['pasture', 'community'],
-    text: '+1 Produce production and +1 Marks production.',
+    text: '+1 Produce production and +1 Mark production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
@@ -144,7 +144,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['crop', 'science'],
     flavor: 'Borrow a seed, return two.',
-    text: 'Whenever you Graft, gain 1 extra Marks.',
+    text: 'Whenever you Graft, gain 1 extra Mark.',
     onBuy: (state) => state, // ongoing: checked in actions.ts's Graft handler
   },
   {
@@ -162,7 +162,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 2,
     tags: ['coast', 'community'],
     flavor: 'Supply in Coast regions costs 1 less Produce per Outlet (minimum 1).',
-    text: '+1 Marks production. Supply in Coast regions costs 1 less Produce per Outlet (minimum 1).',
+    text: '+1 Mark production. Supply in Coast regions costs 1 less Produce per Outlet (minimum 1).',
     onBuy: (state, producer) => addProduction(state, producer, { marks: 1 }), // ongoing: checked in actions.ts Supply cost
   },
   {
@@ -200,7 +200,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 5,
     tags: ['pasture', 'science'],
     flavor: 'Keeps the beef. Keeps its cool.',
-    text: '+1 Produce production and +1 Marks production.',
+    text: '+1 Produce production and +1 Mark production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
@@ -217,7 +217,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Wholesale Account',
     cost: 4,
     tags: ['community'],
-    text: 'Improvements cost 1 less Marks (minimum 1).',
+    text: 'Improvements cost 1 Mark less (minimum 1).',
     onBuy: (state) => state, // ongoing: checked in actions.ts's Invest cost
   },
   {
@@ -247,7 +247,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 9,
     tags: ['media', 'science'],
     flavor: "Somebody's always listening. Might as well be you.",
-    text: '+1 Marks production and +1 Goodwill production. Rift +1.',
+    text: '+1 Mark production and +1 Goodwill production. Rift +1.',
     onBuy: (state, producer) => {
       let next = addProduction(state, producer, { marks: 1, goodwill: 1 })
       next = { ...next, rift: Math.min(6, next.rift + 1) }
@@ -262,7 +262,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 3,
     tags: ['media'],
     flavor: 'Prints the truth, and the odd correction.',
-    text: 'Whenever you Sell, gain 1 extra Marks.',
+    text: 'Whenever you Sell, gain 1 extra Mark.',
     onBuy: (state) => state, // ongoing: checked in actions.ts's Sell handler
   },
   {
@@ -296,7 +296,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Field Notes App',
     cost: 4,
     tags: ['science'],
-    text: '+1 Marks production for every 2 Science tags you have, including this one.',
+    text: '+1 Mark production for every 2 Science tags you have, including this one.',
     onBuy: (state, producer) => {
       const bonus = Math.floor(tagCount(state, producer, 'field-notes-app', 'science') / 2)
       return addProduction(state, producer, { marks: bonus })
@@ -335,7 +335,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     cost: 4,
     tags: ['coast', 'science'],
     flavor: 'Somebody always sees the van coming.',
-    text: '+1 Produce production and +1 Marks production.',
+    text: '+1 Produce production and +1 Mark production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
@@ -356,7 +356,7 @@ export const IMPROVEMENTS: ImprovementCard[] = [
     name: 'Barn Conversion',
     cost: 6,
     tags: ['pasture', 'community'],
-    text: '+1 Produce production and +1 Marks production.',
+    text: '+1 Produce production and +1 Mark production.',
     onBuy: (state, producer) => addProduction(state, producer, { produce: 1, marks: 1 }),
   },
   {
