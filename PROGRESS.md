@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane B: plan item 38 done (2026-11-02 18:21 session). Next for lane B: the first unclaimed open item (41 on; lane A holds 40).
+- Lane B: plan item 38 done; plan item 41 (NIGHT SHIFT enemies with faces) in progress (2026-11-02 18:21 session).
 - Lane A: plan item 39 done (2026-11-02 17:16 session). **Plan item 40** in progress, slice 1 done (story name plate whole: the band's wipe kept clip-path inset(0); fresh-farm map line clear of the header; "Start here" only on a fresh farm; `e2e-site/hedgerow-critique.spec.ts`). Slice 2: L tray names whole. Next in 40: at D the side column (`.play .panel`, overflow auto) overflows by 37 px on level 12 and scrolls with no cue, so Cath's notebook (`.field-notebook`, `flex: 1 0 auto`) loses its foot; then the L end card, 3D black shards, and the NIGHT SHIFT list. Local-only flake: `e2e/tooltip.spec.ts` plan-strip test at P.
 - Critique bugs still open: the portfolio never goes CPU-idle under Lighthouse (TTI/TBT error, score 0; likely the WebGL hero field running continuously); `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing). (Cathnivore setup's empty Difficulty panel fixed 2026-11-02 14:40: it now lists what the level changes.)
 ## Blocked

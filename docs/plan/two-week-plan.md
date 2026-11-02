@@ -605,7 +605,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fix is shot at the sizes it broke at, with an e2e or unit check where one fits (no clipped text: `scrollWidth <= clientWidth + 1`; no control overlaps at L; ready fires at the gate).
 - **Size:** 3
 
-## 41. [ ] NIGHT SHIFT: enemies with faces (hero-quality archetype models)
+## 41. [ ] NIGHT SHIFT: enemies with faces (hero-quality archetype models) *(lane B, in progress)*
 - **Why:**
   - The player spends most of the game aiming at enemies, and they are the least finished art on screen:
     - the clinic orderly is a mannequin with a slab face, tube limbs and mitten hands;
