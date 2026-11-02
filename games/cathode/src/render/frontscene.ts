@@ -82,7 +82,9 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
  * 2) put her unsculpted face and jointed limbs at the centre of every frame (C14 review); this one reads her by
  * silhouette, coat and umbrella, as the title does, until the figure is sculpted.
  */
-const WARDROBE = { pos: [-1.55, 1.45, -3.7] as [number, number, number], look: [0.05, 1.0, 0.25] as [number, number, number] };
+// Plan item 42: now her face is sculpted (plan item 9), the wardrobe turns to her: a front three-quarter from
+// knees up, so the class pick shows who's walking back in.
+const WARDROBE = { pos: [1.05, 1.5, 2.45] as [number, number, number], look: [0.05, 1.28, 0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
 const CLASS_KEY: Record<string, [number, number, number]> = {
   // The Ghost's cyan is pushed hard: at the same energy as the Butcher's red it read as neutral on her (C14 review).
