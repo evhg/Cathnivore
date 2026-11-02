@@ -16,10 +16,12 @@ import {
   recordGrowingSeasonCarryOver,
   recordChapterLoss,
   clearChapterLossCount,
+  isTutorialDone,
+  markTutorialDone,
 } from './platform/storage'
 import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
-import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
+import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_1, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
@@ -50,7 +52,8 @@ type Screen =
   // `openingWhich`) right before 'opening' when contracts survived chapter 3 — see the-plan.ts.
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
-  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[] }
+  // `tutorial`: this run plays the chapter's guided tutorial (first time, or replayed on request).
+  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[]; tutorial?: boolean }
   // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
   // 2 losses, also offer Skip Chapter." `seed` is the just-lost attempt's own seed, kept so "Retry (same
   // shuffle)" can replay it exactly; `lossCount` is this chapter's consecutive-loss count so far.
@@ -110,7 +113,15 @@ export default function App() {
       // save, or a chapter that no longer exists.
       const chapter = saved.save.chapterId ? CHAPTERS_BY_ID.get(saved.save.chapterId) : undefined
       if (chapter) {
-        setScreen({ name: 'chapterGame', chapter, state, seed: saved.save.seed, mode: 'hotseat', dismissedMidScenes: saved.save.dismissedMidScenes })
+        setScreen({
+          name: 'chapterGame',
+          chapter,
+          state,
+          seed: saved.save.seed,
+          mode: 'hotseat',
+          dismissedMidScenes: saved.save.dismissedMidScenes,
+          tutorial: tutorialFor(chapter, state.config),
+        })
       } else {
         setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
       }
@@ -152,12 +163,23 @@ export default function App() {
     return difficultyOverride ? { ...base, difficulty: difficultyOverride } : base
   }
 
-  function playChapter(chapter: Chapter, mode: Mode, seedOverride?: number, difficultyOverride?: 'easy' | 'normal' | 'hard'): void {
+  // The guided tutorial plays on a guided chapter until it has been finished or skipped once, and only
+  // on the chapter's own scripted board (not "Play on Easy", whose extra Stall the script doesn't know).
+  function tutorialFor(chapter: Chapter, config: GameConfig, replayTutorial = false): boolean {
+    return !!chapter.guided && config.difficulty === chapter.difficulty && (replayTutorial || !isTutorialDone())
+  }
+
+  function playChapter(chapter: Chapter, mode: Mode, seedOverride?: number, difficultyOverride?: 'easy' | 'normal' | 'hard', replayTutorial = false): void {
     // SPEC 8.1 "Retry (same shuffle)" reuses the just-lost attempt's own seed; every other path
     // (a fresh chapter start, "Retry (new shuffle)", "Play on Easy") draws a new one.
     const seed = seedOverride ?? Date.now()
     const config = configForChapter(chapter, difficultyOverride)
-    setScreen({ name: 'chapterGame', chapter, state: createGame(config, seed), seed, mode })
+    setScreen({ name: 'chapterGame', chapter, state: createGame(config, seed), seed, mode, tutorial: tutorialFor(chapter, config, replayTutorial) })
+  }
+
+  // Settings and the campaign card's "Replay the tutorial": straight into chapter 1's guided round.
+  function replayTutorial(): void {
+    playChapter(CHAPTER_1, 'hotseat', undefined, undefined, true)
   }
 
   function endChapter(chapter: Chapter, mode: Mode, won: boolean, state: GameState, seed: number): void {
@@ -267,7 +289,7 @@ export default function App() {
   }
 
   if (screen.name === 'settings') {
-    return <Settings onClose={() => setScreen({ name: 'title' })} />
+    return <Settings onClose={() => setScreen({ name: 'title' })} onReplayTutorial={replayTutorial} />
   }
 
   if (screen.name === 'credits') {
@@ -279,7 +301,9 @@ export default function App() {
       <CampaignScreen
         chapters={CHAPTERS}
         completed={loadCampaign().completed}
+        tutorialDone={isTutorialDone()}
         onStart={startChapter}
+        onReplayTutorial={replayTutorial}
         onBack={() => setScreen({ name: 'title' })}
       />
     )
@@ -330,11 +354,18 @@ export default function App() {
         seed={screen.seed}
         mode={screen.mode}
         tutorialSteps={
-          // Replaying a finished chapter: drop the talk-only prompts, keep the forced action steps (ROADMAP 161).
-          loadCampaign().completed.includes(screen.chapter.id)
-            ? screen.chapter.tutorialSteps.filter((t) => t.highlight)
-            : screen.chapter.tutorialSteps
+          // A guided chapter's script only plays as the guided tutorial; once that's done, it's free play.
+          screen.chapter.guided
+            ? screen.tutorial
+              ? screen.chapter.tutorialSteps
+              : undefined
+            : // Replaying a finished chapter: drop the talk-only prompts, keep the forced action steps (ROADMAP 161).
+              loadCampaign().completed.includes(screen.chapter.id)
+              ? screen.chapter.tutorialSteps.filter((t) => t.highlight)
+              : screen.chapter.tutorialSteps
         }
+        guided={!!screen.tutorial}
+        onTutorialDone={markTutorialDone}
         midGameScenes={midGameScenes}
         chapterId={screen.chapter.id}
         initialDismissedMidScenes={screen.dismissedMidScenes}

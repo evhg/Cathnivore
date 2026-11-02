@@ -1757,6 +1757,7 @@ html.no-animations .card-enter {
 html.no-animations .end-stamp { animation: none; opacity: 0.92; }
 
 .settings-tip { margin: 0.25rem 0 0; font-size: 0.9rem; opacity: 0.75; }
+.settings-note { margin: 0 0 var(--sp-2); font-size: var(--fs-small); color: var(--ink-muted); }
 @media (max-width: 600px) {
   .settings-back { width: 100%; min-height: 48px; margin-top: 0.5rem; background: transparent; color: inherit; border: 2px solid var(--wheat); }
 }

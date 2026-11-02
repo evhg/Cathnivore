@@ -1,63 +1,139 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 // SPEC 11.4 gate 5: "campaign chapter 1 is completed by following the tutorial prompts, with the test
-// clicking the highlighted elements." Unlike e2e/campaign.spec.ts (which drives every chapter through
-// `?e2eAutoplay=1`, bypassing tutorial gating entirely — see src/ui/Game.tsx), this test plays chapter 1
-// for real, by hand, to exercise SPEC 8.1's "only the action being taught is enabled" gating directly:
-// each step should hide every action except the one it names, and taking that action should advance to
-// the next step on its own (no separate "Got it" tap needed — see Game.tsx's `act`).
-test('campaign chapter 1 ("Fresh Meat") is completed by following the tutorial prompts, clicking only the highlighted elements', async ({ page }) => {
-  const errors: string[] = []
-  page.on('pageerror', (err) => errors.push(String(err)))
+// clicking the highlighted elements." Chapter 1 is the guided tutorial (ui/TutorialCoach.tsx): a
+// spotlight on exactly one element per step, everything else dimmed and blocked. The coach names the
+// spotlit element in `data-for`; these tests click only that element (or the card's own Next).
 
+async function startChapter1(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
   await page.getByRole('button', { name: /^Fresh Meat/ }).click()
   await expect(page.locator('.scene')).toBeVisible()
   await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.coach')).toBeVisible()
+}
 
+// Clicks whatever the tutorial points at, once, and returns the step it was on.
+async function followOneStep(page: Page): Promise<string> {
+  const coach = page.locator('.coach')
+  const step = (await page.locator('.coach-count').textContent()) ?? ''
+  const next = page.locator('.coach-primary')
+  if (await next.count()) {
+    await next.click()
+  } else {
+    const target = await coach.getAttribute('data-for')
+    expect(target, `${step} has something to tap`).toBeTruthy()
+    await page.locator(`[data-tutorial="${target}"]`).click()
+  }
+  return step
+}
+
+test('the guided tutorial walks chapter 1\'s first round end to end, clicking only the spotlit targets', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (err) => errors.push(String(err)))
+  await startChapter1(page)
+
+  const coach = page.locator('.coach')
   const actions = page.locator('.actions')
-  const prompt = page.locator('.tutorial-prompt p')
-
-  // Step 0: "Open a Stall here" — only Open Stall is offered, Graft (always otherwise legal) is not.
-  await expect(prompt).toContainText('Open a Stall')
-  await expect(actions.getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
-  await actions.getByRole('button', { name: /^Open Stall/ }).click()
-  await page.locator('.region-hex[aria-label="Brindle Hills"]').click()
-  // SPEC 10.2 targeting mode: tapping the region only stages the choice; a separate Confirm commits it.
-  await actions.getByRole('button', { name: 'Confirm' }).click()
-
-  // Step 1: "Supply and clear the Outlet" — only Supply is offered now.
-  await expect(prompt).toContainText('Supply')
-  await expect(actions.getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
-  await expect(actions.getByRole('button', { name: /^Open Stall/ })).toHaveCount(0)
-  await actions.getByRole('button', { name: /^Supply/ }).click()
-
-  // Step 2: "Highmoor borders Brindle Hills" is informational (not gated — see chapters.ts), so it needs
-  // a manual "Got it" rather than an action click.
-  await expect(prompt).toContainText('Highmoor')
-  await page.getByRole('button', { name: 'Got it' }).click()
-
-  // Step 3: "Graft always works" — only Graft is offered (its own "?" tooltip trigger sits alongside it,
-  // not a second action).
-  await expect(prompt).toContainText('Graft always works')
-  const otherButtons = await actions.locator('button').allTextContents()
-  expect(otherButtons.every((t) => t.startsWith('Graft') || t === '?')).toBe(true)
-  await actions.getByRole('button', { name: /^Graft/ }).click()
-
-  // Steps 4-5 are informational (no highlight): free play resumes, and they need a manual "Got it".
-  await expect(prompt).toContainText('Scout slot')
-  await page.getByRole('button', { name: 'Got it' }).click()
-  await expect(prompt).toContainText('Clear every Outlet');
-  await page.getByRole('button', { name: 'Got it' }).click()
+  await expect(page.locator('.coach-count')).toHaveText('Step 1 of 15')
+  // The prompt strip is gone in favour of the coach, and nothing is clickable but the card itself.
   await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled()
 
-  // Free play now: Graft is legal again, proving the gate lifted.
+  const seen: string[] = []
+  for (let i = 0; i < 40 && (await coach.count()) > 0; i++) {
+    const target = await coach.getAttribute('data-for')
+    const step = await page.locator('.coach-count').textContent()
+    // Hard gate: while an action step shows, the panel offers that one action and nothing else.
+    if (target === 'action') {
+      await expect(actions.locator('[data-tutorial="action"]')).toHaveCount(1)
+      await expect(actions.getByRole('button', { name: /^Graft/ })).toHaveCount(step === 'Step 10 of 15' ? 1 : 0)
+    }
+    // The spotlit element is really on top: a click there reaches it, not a blocker.
+    if (target) {
+      const box = await page.locator(`[data-tutorial="${target}"]`).boundingBox()
+      expect(box, `${step}: ${target} on screen`).not.toBeNull()
+      const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.closest('.coach-block') !== null, [box!.x + box!.width / 2, box!.y + box!.height / 2])
+      expect(hit, `${step}: ${target} not covered by the dimmer`).toBe(false)
+    }
+    seen.push(await followOneStep(page))
+  }
+  expect(new Set(seen).size).toBe(15)
+  await expect(coach).toHaveCount(0)
+
+  // The hand-off: round 2, Highmoor liberated, one Outlet left in Brindle Hills, free play with Graft back.
+  await expect(page.locator('.region-hex[aria-label="Highmoor"] .liberate-bloom')).toHaveCount(1)
   await expect(actions.getByRole('button', { name: /^Graft/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled()
+
+  // First time only: back on the campaign it no longer starts on its own, and can be replayed.
+  await page.getByRole('button', { name: 'Menu' }).click()
+  await expect(page.getByRole('button', { name: 'Replay the tutorial' })).toBeVisible()
+  await page.getByRole('button', { name: /^Fresh Meat/ }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.active-producer')).toBeVisible()
+  await expect(coach).toHaveCount(0)
 
   expect(errors).toEqual([])
 })
 
+test('the tutorial can be skipped (Escape asks first), stays skipped, and replays from Settings', async ({ page }) => {
+  await startChapter1(page)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.coach-confirm')).toBeVisible()
+  await page.getByRole('button', { name: 'Keep going' }).click()
+  await expect(page.locator('.coach-confirm')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Skip tutorial' }).click()
+  await page.getByRole('button', { name: 'Yes, skip it' }).click()
+  await expect(page.locator('.coach')).toHaveCount(0)
+  // Free play straight away: every legal action is offered.
+  await expect(page.locator('.actions').getByRole('button', { name: /^Graft/ })).toBeVisible()
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByRole('button', { name: 'Replay the tutorial' }).click()
+  await expect(page.locator('.coach')).toBeVisible()
+  await expect(page.locator('.coach-count')).toHaveText('Step 1 of 15')
+})
+
+test('the tutorial is keyboard-playable: focus lands on each target and Tab stays inside the step', async ({ page }) => {
+  await startChapter1(page)
+  // Explain steps focus the card's Next; Enter moves on.
+  for (let i = 0; i < 6; i++) {
+    await expect(page.locator('.coach-primary')).toBeFocused()
+    await page.keyboard.press('Enter')
+  }
+  // Step 7: focus is on the one action, Tab only cycles between it and the card's buttons.
+  await expect(page.locator('[data-tutorial="action"]')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('.coach-rules')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('.coach-skip')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-tutorial="action"]')).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(page.locator('.coach-skip')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-tutorial="action"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-tutorial="region-highmoor"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-tutorial="confirm"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.coach-count')).toHaveText('Step 8 of 15')
+})
+
+// A reload mid-tutorial resumes the script just after the last action already taken.
+test('a reload mid-tutorial picks the script back up where it was', async ({ page }) => {
+  await startChapter1(page)
+  for (let i = 0; i < 9; i++) await followOneStep(page) // through step 7's Open Stall (3 clicks)
+  await expect(page.locator('.coach-count')).toHaveText('Step 8 of 15')
+  await page.reload()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.coach-count')).toHaveText('Step 8 of 15')
+})
 test('campaign chapter 2 ("Word of Mouth") is completed by following the tutorial prompts, clicking only the highlighted elements', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(String(err)))
@@ -95,23 +171,20 @@ test('campaign chapter 2 ("Word of Mouth") is completed by following the tutoria
   expect(errors).toEqual([])
 })
 
-// SPEC 8.1: "a '?' link to the rules reference" alongside every tutorial prompt.
-test('the tutorial prompt\'s "?" opens the rules reference and returns to the same game on close', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Campaign' }).click()
-  await page.getByRole('button', { name: /^Fresh Meat/ }).click()
-  await expect(page.locator('.scene')).toBeVisible()
-  await page.getByRole('button', { name: 'Continue' }).click()
 
-  await expect(page.locator('.tutorial-prompt')).toBeVisible()
+// SPEC 8.1: "a '?' link to the rules reference" alongside every tutorial prompt: Cath's card has one.
+test('the tutorial card\'s "?" opens the rules reference and returns to the same step on close', async ({ page }) => {
+  await startChapter1(page)
+  for (let i = 0; i < 6; i++) await followOneStep(page)
+  await expect(page.locator('.coach-count')).toHaveText('Step 7 of 15')
+
   await page.getByRole('button', { name: 'Open the rules reference' }).click()
   await expect(page.locator('.rules-reference')).toBeVisible()
-  await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
+  await expect(page.locator('.coach')).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.rules-reference')).toHaveCount(0)
-  // Back on the same in-progress game (not reset to the title or a fresh chapter start): step 0's prompt
-  // and the Open Stall gating are both still there, exactly as left.
-  await expect(page.locator('.tutorial-prompt')).toContainText('Open a Stall')
+  // Back on the same in-progress game and step, with the same gate.
+  await expect(page.locator('.coach-count')).toHaveText('Step 7 of 15')
   await expect(page.locator('.actions').getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
 })
