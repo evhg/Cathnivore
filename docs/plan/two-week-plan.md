@@ -528,7 +528,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the Market, Plan and Farm at P and D, at rounds 1 and 7.
 - **Size:** 3
 
-## 37. [ ] Runnel: the Orchard as a place, Bea's garden drawn by hand, and a win card above the fold *(lane B, in progress)*
+## 37. [x] Runnel: the Orchard as a place, Bea's garden drawn by hand, and a win card above the fold *(done 2026-11-02, lane B, 00ed3b1..HEAD: `gardenart.ts` draws eight crops in three stages, the season's visitors, the event crops, Bea with her watering can on a solved day and the Orchard's trees; the Orchard is three rows of ten trees (sapling, leaf, blossom when solved, fruit on a three-drop solve; the current one glows with Cath), no strip; the win card puts the result and buttons first with the share card and Bea's postcard in a swipe row; `?shotwin` saves nothing; no platform emoji in rendered text (share texts keep theirs, they're copied text); `e2e-site/runnel-garden.spec.ts`, `runnel-win.spec.ts`, `tests/runnel-garden.test.ts`, `runnel-store-freeze.test.ts`; shots P, D and dark. "Fruits on an under-par solve" reads as a three-drop solve: the save keeps drops and taps, not par)*
 - **Why:**
   - The Orchard is a numbered strip that overflows at P and D.
   - Bea's garden is platform emoji, which breaks "all art authored as code" and differs per OS.
