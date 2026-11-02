@@ -2089,3 +2089,32 @@ html.no-animations .cath-companion .cameo {
   .liberated-life .life-bird,
   .liberated-life .bunting-flag { animation: none; }
 }
+
+/* plan item 28: the table's props, under the board (the map is positioned after them, so it paints over
+   them wherever a layout reaches a corner) */
+.map-wrap svg.map { position: relative; }
+.table-prop {
+  position: absolute;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 3px rgb(var(--shadow-ink) / .2));
+}
+.beas-drawing {
+  top: var(--sp-2);
+  left: var(--sp-2);
+  width: clamp(64px, 8vw, 120px);
+  rotate: -5deg;
+}
+.beas-drawing-word {
+  font: 700 11px/1 var(--font-voice);
+  fill: var(--sea);
+  letter-spacing: .08em;
+}
+.produce-crates {
+  right: var(--sp-2);
+  bottom: calc(var(--sp-2) + 6px);
+  width: clamp(64px, 8vw, 116px);
+}
+/* On a phone the board reaches the foot corners: the crates would only peek out from under it. */
+@media (max-width: 600px) {
+  .produce-crates { display: none; }
+}

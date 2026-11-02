@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { lightFor } from './tableLight'
+import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
@@ -1670,6 +1671,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       <section className="map-wrap" data-light={lightFor(state.round)}>
         {/* Plan item 28: as the round turns, the new light sweeps across the table once. */}
         {roundTick > 0 && <div key={`sweep-${roundTick}`} className="table-sweep" aria-hidden="true" />}
+        <BeasDrawing />
+        <ProduceCrates />
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
             the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}
         {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (
