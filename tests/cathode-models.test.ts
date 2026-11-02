@@ -209,7 +209,8 @@ describe("CATHODE enemy faces and hands (plan item 41)", () => {
       expect(eyes || visor, `${arch}: ${[...new Set(onHead)].join(",")}`).toBe(true);
       for (const s of ["L", "R"]) {
         expect(log.filter(([b]) => b === `hand${s}`).length, `${arch} hand${s}`).toBeGreaterThan(0);
-        expect(log.filter(([b]) => b === `fingers${s}`).length, `${arch} fingers${s}`).toBeGreaterThan(0);
+        // Four digits with a second joint each (a straight box per finger read as a mitten).
+        expect(log.filter(([b]) => b === `fingers${s}`).length, `${arch} fingers${s}`).toBeGreaterThanOrEqual(8);
       }
     });
   for (const arch of ["orderly", "thug", "civilian"] as Arch[])

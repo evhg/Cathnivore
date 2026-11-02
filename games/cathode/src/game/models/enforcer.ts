@@ -910,6 +910,35 @@ function clinicTorso(b: Builder, arch: Arch): void {
   if (lod === 0) b.add("upperChest", b.box(0.012, 0.012, 0.006, 0.002), GLOWS.status, { p: [0.12, 0.085, 0.158], r: [0, 0.3, 0] });
 }
 
+/**
+ * Plan item 41: real hands for the bare-handed and gloved archetypes (clinic, street, augmented), built the way the
+ * enforcer's are: four digits with a second joint hinged at the first's end, curled round the grip by the bone, and a
+ * two-joint thumb (a single straight box per finger read as a mitten). `len` stretches the digits (the psycho's long
+ * fingers). LOD1 keeps a two-piece curled slab, LOD2 one.
+ */
+function realHand(b: Builder, side: "L" | "R", gl: Surface, len = 1): void {
+  const { lod } = b.o;
+  const out = side === "L" ? -1 : 1;
+  const h = `hand${side}`;
+  const f = `fingers${side}`;
+  if (lod === 0) b.add(h, limb(0.032, (t) => 0.0125 - 0.002 * t, 6, 1), gl, { p: [-0.016 * out, 0.06, 0.072], r: [1.35, 0, 0.6 * out] });
+  if (lod === 0) {
+    for (const [z, l0] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) {
+      const l = l0 * len;
+      if (b.det === 0) {
+        b.add(f, limb(l, (t) => 0.0094 - 0.0008 * t, 5, 1), gl, { p: [0, 0.004, z + 0.004] });
+        b.add(f, limb(l * 0.8, (t) => 0.0084 - 0.0014 * t, 5, 1), gl, { p: [0, l + 0.002, z + 0.004], r: [0, 0, -0.9 * out] });
+        continue;
+      }
+      b.add(f, box(0.02, l, 0.0158, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
+      b.add(f, box(0.018, l * 0.85, 0.0145, 0, 0), gl, { p: [-0.011 * out, l + 0.004 + l * 0.38, z + 0.004], r: [0, 0, -0.9 * out] });
+    }
+  } else {
+    b.add(f, b.box(0.024, 0.05 * len, 0.072, 0.008, 1), gl, { p: [0, 0.024 * len, 0.004] });
+    if (lod < 2) b.add(f, b.box(0.021, 0.045 * len, 0.068, 0.008, 1), gl, { p: [-0.012 * out, 0.058 * len, 0.004], r: [0, 0, -0.9 * out] });
+  }
+}
+
 function clinicArm(b: Builder, side: "L" | "R", arch: Arch): void {
   const { lod } = b.o;
   const S = FINISH;
@@ -935,9 +964,8 @@ function clinicArm(b: Builder, side: "L" | "R", arch: Arch): void {
   b.add(h, limb(0.06, (t) => 0.048 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
   b.add(h, b.box(0.032, 0.095, 0.074, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
   if (lod < 2) b.add(h, limb(0.05, (t) => 0.0155 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
-  if (lod === 0) {
-    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.02, l, 0.0165, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
-  } else b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+  realHand(b, side, gl);
+  void f;
 }
 
 function clinicLeg(b: Builder, side: "L" | "R", arch: Arch): void {
@@ -1092,9 +1120,8 @@ function streetArm(b: Builder, side: "L" | "R", arch: Arch): void {
   b.add(h, limb(0.06, (t) => 0.048 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
   b.add(h, b.box(0.032, 0.095, 0.074, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
   if (lod < 2) b.add(h, limb(0.05, (t) => 0.0155 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
-  if (lod === 0) {
-    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.02, l, 0.0165, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
-  } else b.add(f, b.box(0.024, 0.05, 0.074, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+  realHand(b, side, gl);
+  void f;
 }
 
 function streetLeg(b: Builder, side: "L" | "R", arch: Arch): void {
@@ -1216,9 +1243,8 @@ function augArm(b: Builder, side: "L" | "R", arch: Arch): void {
   b.add(h, limb(0.06, (t) => 0.046 - 0.008 * t, b.seg(12), 2), gl, { p: [0, -0.035, 0] });
   b.add(h, b.box(0.03, 0.095, 0.07, 0.012, 1), gl, { p: [0, 0.05, 0.004] });
   if (lod < 2) b.add(h, limb(0.05, (t) => 0.0145 - 0.003 * t, lod ? 4 : 6, 1), gl, { p: [-0.012 * out, 0.03, 0.04], r: [0.85, 0, 0.45 * out] });
-  if (lod === 0) {
-    for (const [z, l] of [[-0.0285, 0.04], [-0.0095, 0.046], [0.0095, 0.044], [0.0285, 0.036]] as const) b.add(f, box(0.019, l * (chrome ? 1.15 : 1.4), 0.0155, 0, 0), gl, { p: [0, l / 2 + 0.004, z + 0.004] });
-  } else b.add(f, b.box(0.024, 0.05, 0.07, 0.008, 1), gl, { p: [0, 0.024, 0.004] });
+  realHand(b, side, gl, chrome ? 1.1 : 1.3);
+  void f;
 }
 
 function augLeg(b: Builder, side: "L" | "R", arch: Arch): void {
