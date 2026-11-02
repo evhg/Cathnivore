@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, type LayoutId } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
@@ -375,6 +375,72 @@ export function CoopMarkerIcon() {
 // ROADMAP 11: a small painted-terrain vignette per region type, tucked into the hex's upper flanks where
 // no piece or label ever sits. Flat fills, 1.5 ink outline (STYLE.md 2), and each is a distinct silhouette
 // (bushes, furrows, boat, tower) so it survives the greyscale shape test as well as the texture does.
+/** Plan item 20: the painted ground under each tile's landmarks, clipped to the face. Pasture rolls in two
+ * hills with tufts, crop is a patchwork of strips, coast has a sand shore and deeper water, the capital a
+ * paved square with roofs at its edge. Low contrast, so pieces and labels stay on top. */
+function GroundArt({ type, id, clip }: { type: RegionType; id: string; clip: string }) {
+  let h = 0
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  const flip = h % 2 === 0 ? 1 : -1
+  const R = HEX_R * GAP_SCALE - 2
+  let art: ReactElement
+  if (type === 'pasture') {
+    art = (
+      <g transform={`scale(${flip},1)`}>
+        <path d={`M${-R},28 C-50,6 -10,8 20,26 S70,40 ${R},22 L${R},${R} L${-R},${R} Z`} fill="var(--pasture)" opacity={0.22} />
+        <path d={`M${-R},58 C-40,38 10,44 40,54 S80,60 ${R},50 L${R},${R} L${-R},${R} Z`} fill="var(--pasture)" opacity={0.22} />
+        {[[-52, 18], [-24, 46], [12, 30], [48, 62], [60, 14], [-58, 64], [-6, 70]].map(([x, y]) => (
+          <path key={`${x}${y}`} d={`M${x! - 3},${y} l1.5,-5 M${x},${y} l0,-6 M${x! + 3},${y} l-1.5,-5`} stroke="var(--pasture)" strokeWidth={1.3} strokeLinecap="round" opacity={0.6} />
+        ))}
+        {[[-36, 34], [28, 44], [-14, 58], [56, 36]].map(([x, y]) => (
+          <circle key={`f${x}`} cx={x} cy={y} r={1.8} fill="var(--paper)" stroke="var(--clay)" strokeWidth={0.8} opacity={0.8} />
+        ))}
+      </g>
+    )
+  } else if (type === 'crop') {
+    const strips = [-90, -54, -18, 18, 54, 90]
+    art = (
+      <g transform={`rotate(${flip * 24})`}>
+        {strips.map((x, i) => (
+          <rect key={x} x={x - 18} y={-R - 20} width={36} height={2 * R + 40} fill={i % 3 === 0 ? 'var(--pasture)' : i % 3 === 1 ? 'var(--wheat)' : 'var(--clay)'} opacity={i % 3 === 1 ? 0.3 : 0.14} />
+        ))}
+        {strips.map((x) => (
+          <path key={`e${x}`} d={`M${x - 18},${-R - 20} V${R + 20}`} stroke="var(--ink)" strokeWidth={0.8} opacity={0.18} />
+        ))}
+      </g>
+    )
+  } else if (type === 'coast') {
+    art = (
+      <g transform={`scale(${flip},1)`}>
+        <path d={`M${-R},${-R} L-34,${-R} C-46,-30 -30,10 -52,40 S-60,70 -40,${R} L${-R},${R} Z`} fill="var(--wheat)" opacity={0.42} />
+        <path d={`M-34,${-R} C-46,-30 -30,10 -52,40 S-60,70 -40,${R}`} fill="none" stroke="var(--paper)" strokeWidth={3} opacity={0.75} />
+        <path d={`M-24,${-R} C-36,-30 -20,10 -42,40 S-50,70 -30,${R} L${R},${R} L${R},${-R} Z`} fill="var(--sea)" opacity={0.12} />
+        <path d={`M10,${-R} C0,-30 20,10 0,40 S-6,70 14,${R} L${R},${R} L${R},${-R} Z`} fill="var(--sea)" opacity={0.12} />
+      </g>
+    )
+  } else {
+    art = (
+      <g>
+        <circle r={58} fill="var(--paper)" opacity={0.34} />
+        <circle r={58} fill="none" stroke="var(--ink)" strokeWidth={1} opacity={0.2} strokeDasharray="3 4" />
+        {[0, 60, 120, 180, 240, 300].map((a) => (
+          <g key={a} transform={`rotate(${a + 30}) translate(0,-74)`}>
+            <path d="M-11,6 L-11,-2 L0,-9 L11,-2 L11,6 Z" fill="var(--clay)" opacity={0.3} stroke="var(--ink)" strokeWidth={0.8} strokeOpacity={0.3} />
+          </g>
+        ))}
+      </g>
+    )
+  }
+  return (
+    <g className="ground-art" pointerEvents="none" aria-hidden="true">
+      <clipPath id={clip}>
+        <polygon points={hexPoints(0, 0, R)} />
+      </clipPath>
+      <g clipPath={`url(#${clip})`}>{art}</g>
+    </g>
+  )
+}
+
 function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   // Per-region variation: a stable hash of the id picks a variant so neighbours of one type don't look cloned.
   let h = 0
@@ -563,6 +629,9 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
               strokeWidth={2}
               pointerEvents="none"
             />
+            <g transform={`translate(${x}, ${y})`} pointerEvents="none">
+              <GroundArt type={def.type} id={id} clip={`${uid}-ground-${id}`} />
+            </g>
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} id={id} />
             </g>
