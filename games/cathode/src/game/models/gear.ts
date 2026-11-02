@@ -195,6 +195,15 @@ export function buildShield(visor: number, phone: boolean): THREE.Group {
     k.add(box(t, len, 0.004, 0), paint, { p: [x, y, 0.013], r: [0, 0, rot] });
   void s;
   void visor;
+  // Plan item 41: the back of the shield, so it's held, not floating. enemy.ts places the shield 0.12 m ahead of
+  // his left hand and 0.08 m above it, so the hand is at (0, -0.08, -0.12) here: a handle bar there, the two
+  // stand-offs that carry it from the shell, and two ribs down the back that give it depth from the side. All in
+  // the shell's own finish, so no new draw call.
+  const back = -0.026;
+  k.add(box(0.026, 0.16, 0.026, 0.006), body, { p: [0, -0.08, -0.12] });
+  for (const y of [0.0, -0.16]) k.add(box(0.022, 0.024, 0.094 - 0.026, 0.004), body, { p: [0, y, (back - 0.107) / 2] });
+  for (const x of [-0.21, 0.21]) k.add(box(0.024, H * 0.86, 0.03, 0.006), body, { p: [x, 0, back - 0.014] });
+  k.add(box(0.44, 0.024, 0.03, 0.006), body, { p: [0, 0.18, back - 0.014] });
   k.finish();
   // The viewport: smoked glass lit faintly from inside by the faction's amber (S3.1's emissive language), so it
   // reads as a window onto a lit visor and not a red lamp. Opaque enough that the role's visor colour behind it
