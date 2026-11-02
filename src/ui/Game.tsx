@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
+import { planPreview } from '../engine/preview'
 import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
@@ -176,7 +177,7 @@ function cathReactionFor(event: GameEvent): { reaction: CathReaction; rank: numb
 
 // A scripted campaign Pressure card (SPEC 8.1) may target regions directly instead of by type.
 function pressureLabel(card: GameState['squeeze']): string {
-  if (!card) return '—'
+  if (!card) return 'Empty'
   if (card.regionTypes.length > 0) return card.regionTypes.join('+')
   return (card.regions ?? []).map((r) => REGIONS[r].name).join('+') || '—'
 }
@@ -1632,7 +1633,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 </span>
                 <span className="plan-strip-headline">{slotLabel}</span>
                 <span className="visually-hidden">: </span>
-                <span className="plan-strip-effect">{pressureLabel(state[slot])}</span>
+                <span className="plan-strip-effect">{card ? pressureLabel(card) : 'Empty'}</span>
+                {/* Plan item 25: what the card will do, by region, from the rules (planPreview). */}
+                <span className="plan-strip-target">{planPreview(state, slot).summary}</span>
                 {card && <span className="visually-hidden">{`, stage ${card.stage}`}</span>}
               </button>
               {/* A separate trigger, not nested inside the button above: that button already has its own

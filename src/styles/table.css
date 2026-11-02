@@ -371,6 +371,22 @@
   text-transform: capitalize;
 }
 
+/* Plan item 25: the card's effect by region, from planPreview. Two lines at most; the full text is in the
+   button's accessible name. */
+.plan-strip-target {
+  display: -webkit-box;
+  margin-top: 2px;
+  /* Clear the card's "i" button in the bottom right. */
+  padding-right: 24px;
+  font-size: var(--fs-floor-label);
+  line-height: 1.3;
+  opacity: .82;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
 .plan-strip-dateline {
   display: flex;
   align-items: center;
