@@ -117,6 +117,7 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
 }
 
 function openGame(): void {
+  renderRail()
   // Leaving the lesson early (a tab, a board code): it comes back on the next visit.
   if (lessonStep >= 0) {
     lessonStep = -1
@@ -193,6 +194,7 @@ function finish(): void {
   if (mode === 'daily' && !data.results[playDay]) {
     data.results[playDay] = { number: dailyNumber(playDay), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
   }
+  renderRail()
   if (mode === 'orchard') recordOrchard((data.orchard ??= {}), level, game.taps, puzzle.par, game.elapsedMs)
   if (mode === 'practice') {
     data.practiceSolved++
@@ -494,6 +496,40 @@ function renderGarden(): void {
   )
 }
 
+/**
+ * Plan item 30: on a wide screen the stats sit in a rail beside the board (the streak, dailies solved, the best
+ * streak and the last 28 days as a strip), so the board can take the middle of the farm. Hidden by CSS elsewhere.
+ */
+function renderRail(): void {
+  const s = dailyStats(data, today)
+  const figs: Array<[string, string]> = [
+    [String(s.streak), 'current streak'],
+    [String(s.played), 'dailies solved'],
+    [String(s.maxStreak), 'best streak'],
+  ]
+  $<HTMLDivElement>('rail-figures').replaceChildren(
+    ...figs.map(([v, label]) => {
+      const div = document.createElement('div')
+      const b = document.createElement('b')
+      b.className = 'num'
+      b.textContent = v
+      const span = document.createElement('span')
+      span.textContent = label
+      div.append(b, span)
+      return div
+    }),
+  )
+  const cells: HTMLElement[] = []
+  for (let i = 27; i >= 0; i--) {
+    const day = new Date(Date.parse(`${today}T00:00:00Z`) - i * 86_400_000).toISOString().slice(0, 10)
+    const cell = document.createElement('i')
+    if (data.results[day] !== undefined) cell.className = 'on'
+    if (day === today) cell.classList.add('today')
+    cells.push(cell)
+  }
+  $<HTMLDivElement>('rail-cal').replaceChildren(...cells)
+}
+
 function showStats(): void {
   const s = dailyStats(data, today)
   const cells: Array<[string, string]> = [
@@ -765,6 +801,7 @@ soundBtn.addEventListener('click', () => {
 })
 $<HTMLButtonElement>('btn-help').addEventListener('click', () => ui.dlgHelp.showModal())
 $<HTMLButtonElement>('btn-stats').addEventListener('click', showStats)
+$<HTMLButtonElement>('btn-rail-stats').addEventListener('click', showStats)
 
 // Focus rings on the board only for keyboard players; a tap focuses the tile too, and a ring there
 // would look like a selection.

@@ -1957,3 +1957,148 @@ body {
 .in-lesson .host {
   font-size: 1.06em;
 }
+
+/* ---- Plan item 30: the farm on a wide screen. The board takes the middle inside a hedge, with the header, the
+   numbers, Cath and a stats rail down the left, so the board is more than half the width of a 1440 screen. ---- */
+.rail {
+  display: none;
+}
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  .app {
+    max-width: 1480px;
+    grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto 1fr auto;
+    column-gap: 28px;
+  }
+
+  .top,
+  .modes,
+  .hud,
+  .host,
+  .rail,
+  .foot {
+    grid-column: 1;
+  }
+
+  .top {
+    grid-row: 1;
+    grid-template-columns: 1fr auto;
+    row-gap: 2px;
+  }
+  .top .back { grid-column: 1 / -1; justify-self: start; }
+  .top .wordmark { justify-self: start; }
+  .modes { grid-row: 2; }
+  .hud { grid-row: 3; }
+  .host { grid-row: 4; align-items: flex-start; }
+  .rail { grid-row: 5; }
+  .foot { grid-row: 6; }
+
+  .stage {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    padding: 26px 26px 28px;
+    isolation: isolate;
+  }
+
+  /* The hedge: two offset rows of round leaves over a deep green, and the field inside it. */
+  .stage::before,
+  .stage::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .stage::before {
+    inset: 0;
+    z-index: -2;
+    border-radius: 34px;
+    background:
+      radial-gradient(circle at 50% 50%, var(--pasture) 0 6px, transparent 7px) 0 0 / 15px 15px,
+      radial-gradient(circle at 50% 50%, var(--tuft) 0 5px, transparent 6px) 7px 7px / 15px 15px,
+      var(--pasture-deep);
+  }
+
+  .stage::after {
+    inset: 14px;
+    z-index: -1;
+    border-radius: 24px;
+    background: var(--paper);
+    box-shadow: inset 0 2px 12px var(--plinth);
+  }
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-self: start;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--paper-2);
+  }
+
+  .rail-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--soil);
+  }
+
+  .rail-figures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .rail-figures div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    border-radius: 12px;
+    background: var(--paper);
+    text-align: center;
+  }
+
+  .rail-figures b {
+    font-family: var(--font-num);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+
+  .rail-figures span {
+    font-size: var(--fs-label);
+    color: var(--ink-muted);
+  }
+
+  .rail .cal-title {
+    margin: 4px 0 0;
+  }
+
+  .rail-cal {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 4px;
+  }
+
+  .rail-cal i {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px dashed var(--dry-edge);
+  }
+
+  .rail-cal i.on {
+    background: var(--water);
+    border: 1px solid var(--water);
+  }
+
+  .rail-cal i.today {
+    border: 1px solid var(--ink);
+  }
+
+  .foot {
+    justify-content: flex-start;
+  }
+}

@@ -128,7 +128,7 @@ test.describe('landing page', () => {
     await page.goto('/games/')
     await page.locator('a.card[href="/runnel/"]').click()
     await expect(page).toHaveURL(/\/runnel\/$/)
-    await expect(page.getByRole('heading', { name: 'Runnel' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Runnel', exact: true })).toBeVisible()
   })
 
   test('the Hedgerow card opens the game', async ({ page }) => {
