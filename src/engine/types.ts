@@ -8,6 +8,10 @@ export type RegionId =
   | 'shingleBay'
   | 'oakvale'
   | 'brindleHills'
+  // Plan item 15: the coast layout's three extra hexes (not on the ring; see content/layouts.ts).
+  | 'gullsHead'
+  | 'fernlea'
+  | 'tarnside'
 
 export type RegionType = 'capital' | 'pasture' | 'crop' | 'coast'
 
@@ -90,6 +94,7 @@ export interface GameConfig {
   // Plan item 15: the map's own region types and adjacency (seeded layouts). Absent: the ring's (content/map.ts).
   regionTypes?: Partial<Record<RegionId, RegionType>>
   neighbors?: Partial<Record<RegionId, RegionId[]>>
+  layout?: 'ring' | 'coast' | 'delta'
   rulesEnabled?: RulesEnabled // SPEC 8.1; absent means the full game (see `resolveRules`)
   scriptedPressure?: PressureCard[] // SPEC 8.1 "a scripted Pressure sequence where needed" (campaign only)
   // SPEC 8.2's chapters each have their own liberation goal (e.g. chapter 1: "liberate both regions

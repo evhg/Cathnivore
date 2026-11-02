@@ -13,7 +13,7 @@ import CathArt from './CathArt'
 
 const R = 10
 const W = R * Math.sqrt(3)
-const AXIAL: Record<RegionId, [number, number]> = {
+const AXIAL: Partial<Record<RegionId, [number, number]>> = {
   highmoor: [0, -1],
   saltmarsh: [1, -1],
   brindleHills: [-1, 0],
@@ -35,7 +35,7 @@ function MiniMap({ chapter }: { chapter: Chapter }) {
   return (
     <svg className="cmp-minimap" viewBox="-30 -28 60 56" aria-hidden="true">
       {(Object.keys(AXIAL) as RegionId[]).map((id) => {
-        const [q, r] = AXIAL[id]
+        const [q, r] = AXIAL[id]!
         const x = W * (q + r / 2)
         const y = 1.5 * R * r
         const on = active.has(id)

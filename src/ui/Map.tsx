@@ -13,7 +13,7 @@ const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', in
 
 // SPEC 10.2/STYLE.md 7: a square SVG hex flower, Kingsmarket in the centre. Pointy-top hexagons so the
 // six directions land exactly on "left"/"right"/"top-left" etc. (angle 0 = right, going clockwise).
-const HEX_ANGLES: Record<RegionId, number | null> = {
+const HEX_ANGLES: Partial<Record<RegionId, number | null>> = {
   kingsmarket: null,
   rivermead: 0,
   shingleBay: 60,
@@ -34,7 +34,7 @@ const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the com
 
 function hexCenter(id: RegionId): { x: number; y: number } {
   const angle = HEX_ANGLES[id]
-  if (angle === null) return { x: 0, y: 0 }
+  if (angle === null || angle === undefined) return { x: 0, y: 0 }
   const rad = (angle * Math.PI) / 180
   return { x: RING_DISTANCE * Math.cos(rad), y: RING_DISTANCE * Math.sin(rad) }
 }

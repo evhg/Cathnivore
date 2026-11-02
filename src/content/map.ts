@@ -26,6 +26,10 @@ export const REGIONS: Record<RegionId, RegionDef> = {
   shingleBay: { id: 'shingleBay', name: 'Shingle Bay', type: 'coast', neighbors: ringNeighbors('shingleBay') },
   oakvale: { id: 'oakvale', name: 'Oakvale', type: 'crop', neighbors: ringNeighbors('oakvale') },
   brindleHills: { id: 'brindleHills', name: 'Brindle Hills', type: 'pasture', neighbors: ringNeighbors('brindleHills') },
+  // Plan item 15: the Long Coast's extra hexes. Their type and neighbours always come from the layout.
+  gullsHead: { id: 'gullsHead', name: "Gull's Head", type: 'coast', neighbors: [] },
+  fernlea: { id: 'fernlea', name: 'Fernlea', type: 'crop', neighbors: [] },
+  tarnside: { id: 'tarnside', name: 'Tarnside', type: 'pasture', neighbors: [] },
 }
 
 // Plan item 15: a game's own map. The config may carry its region types (seeded) and adjacency (the layout);
