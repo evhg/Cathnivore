@@ -241,6 +241,16 @@ function useHudTick<T>(value: T): number {
   return tick.current
 }
 
+// Plan item 36: an income figure ticks up when the same producer's production rises (a buy landing in
+// the farmstead), not when the turn passes to someone else.
+function useIncomeTick(producer: string, income: number): number {
+  const prev = useRef({ producer, income })
+  const tick = useRef(0)
+  if (prev.current.producer === producer && income > prev.current.income) tick.current += 1
+  prev.current = { producer, income }
+  return tick.current
+}
+
 const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
 
 // ROADMAP 9 "an icon per action" (STYLE.md 5.1): a leading icon inside each action button, before the
@@ -290,14 +300,14 @@ function Meter({ value, max, variant }: { value: number; max: number; variant?: 
 
 // AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
 // round's income as a small "+2" rather than "(2/round)".
-function LedgerChip({ term, Icon, value, income, tick, tutorial }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; tutorial?: string }) {
+function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string }) {
   return (
     <Tooltip term={term}>
       <span className="ledger-chip" data-tutorial={tutorial}>
         <Icon size={18} />
         <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
         <span className="visually-hidden"> {term}, </span>
-        <span className="ledger-income num" aria-hidden="true">+{income}</span>
+        <span key={`i${incomeTick}`} className={incomeTick > 0 ? 'ledger-income num hud-tick income-tick' : 'ledger-income num'} aria-hidden="true">+{income}</span>
         <span className="visually-hidden">plus {income} a round</span>
       </span>
     </Tooltip>
@@ -395,6 +405,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const produceTick = useHudTick(`${state.activeProducer}:${activeResources?.produce}`)
   const marksTick = useHudTick(`${state.activeProducer}:${activeResources?.marks}`)
   const goodwillTick = useHudTick(`${state.activeProducer}:${activeResources?.goodwill}`)
+  const activeProduction = state.producers[state.activeProducer]?.production
+  const produceIncomeTick = useIncomeTick(state.activeProducer, activeProduction?.produce ?? 0)
+  const marksIncomeTick = useIncomeTick(state.activeProducer, activeProduction?.marks ?? 0)
+  const goodwillIncomeTick = useIncomeTick(state.activeProducer, activeProduction?.goodwill ?? 0)
   const cathLogSeenRef = useRef(0)
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
@@ -1550,9 +1564,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
           </span>
           <span className="ledger">
-            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} tutorial="produce" />
-            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} />
-            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} tutorial="goodwill" />
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" />
+            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" />
           </span>
           <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>

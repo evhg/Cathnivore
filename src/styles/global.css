@@ -2747,3 +2747,4 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   font-weight: 800;
   pointer-events: none;
 }
+.ledger-income.income-tick { display: inline-block; }
