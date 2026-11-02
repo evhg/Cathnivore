@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - Lane B: plan item 35 done (2026-11-02 15:16 session). Next for lane B: the first unclaimed open item (34 now follows lane A's finished 33).
-- Lane A: plan item 33 done (2026-11-02 15:08 session). Item 34 is open and unclaimed: its enemy-turn half is mostly in (the strip plays in the Actions area, `e2e/boardroom.spec.ts` checks no hex covered), and the teammate's turn is a card with their portrait (`.teammate-thinking`); what's left is the teammate's picks as lifted cards with reasons (`data-teammate-step`), the ledger ticking off, AI-speed pacing and tap-to-skip for the teammate.
+- Lane A (2026-11-02 16:20 session): working plan item 34. Its state at start: its enemy-turn half is mostly in (the strip plays in the Actions area, `e2e/boardroom.spec.ts` checks no hex covered), and the teammate's turn is a card with their portrait (`.teammate-thinking`); what's left is the teammate's picks as lifted cards with reasons (`data-teammate-step`), the ledger ticking off, AI-speed pacing and tap-to-skip for the teammate.
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing). (Cathnivore setup's empty Difficulty panel fixed 2026-11-02 14:40: it now lists what the level changes.)
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
