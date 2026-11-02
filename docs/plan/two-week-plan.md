@@ -644,7 +644,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The talk e2e still picks an option.
 - **Size:** 4
 
-## 43. [ ] Hedgerow: every level a place (hand-shaped fields and set pieces)
+## 43. [ ] Hedgerow: every level a place (hand-shaped fields and set pieces) *(lane A, in progress: baseline 2026-11-02 via `npx tsx scripts/hedgerow-plot-overlap.ts`: 6 within-act pairs over 0.70 Jaccard (17~19, 51~53, 63~67, 75~79 at 0.83, 83~85, 92~98), 89/100 levels with no set piece; the engine already has `Level.setPieces` (flood only) and `terrain` high/water)*
 - **Why:**
   - Level 2 and level 38 are the same plot grid on the same S-lane, in 2D and 3D.
   - Twists barely change the ground.
