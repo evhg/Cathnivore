@@ -11,6 +11,8 @@ export interface WeekGoal {
   need: number
   done: number
   href: string
+  /** Plan item 38: what the tile's tap does, in the goal's own mode. */
+  cta: string
 }
 
 export interface WeekState {
@@ -45,9 +47,9 @@ export function postcardFor(week: string): string {
 export function weekGoals(now: WardrobeProgress, base: WardrobeProgress): WeekGoal[] {
   const grow = (a: number, b: number): number => Math.max(0, a - b)
   return [
-    { id: 'runnel', game: 'Runnel', text: 'Solve 3 dailies', need: 3, done: grow(now.runnelDays, base.runnelDays), href: '/runnel/' },
-    { id: 'hedgerow', game: 'Hedgerow', text: 'Clear 3 new levels', need: 3, done: grow(now.hedgerowLevels, base.hedgerowLevels), href: '/hedgerow/' },
-    { id: 'nightshift', game: 'NIGHT SHIFT', text: 'Close a case', need: 1, done: grow(now.nightJobs, base.nightJobs), href: '/cathode/' },
+    { id: 'runnel', game: 'Runnel', text: 'Solve 3 dailies', need: 3, done: grow(now.runnelDays, base.runnelDays), href: '/runnel/?mode=daily', cta: "Play today's daily" },
+    { id: 'hedgerow', game: 'Hedgerow', text: 'Clear 3 new levels', need: 3, done: grow(now.hedgerowLevels, base.hedgerowLevels), href: '/hedgerow/', cta: 'Open the map' },
+    { id: 'nightshift', game: 'NIGHT SHIFT', text: 'Close a case', need: 1, done: grow(now.nightJobs, base.nightJobs), href: '/cathode/', cta: 'Take a case' },
   ]
 }
 
@@ -94,4 +96,11 @@ export function pinPostcard(week: string, storage: Pick<Storage, 'getItem' | 'se
     // Blocked storage: it shows this visit only.
   }
   return next
+}
+
+/** Plan item 38: the nudge on a goal's tile: "1 to go" (or "2 to go") once started, nothing when done. */
+export function toGo(g: Pick<WeekGoal, 'done' | 'need'>): string | null {
+  const left = g.need - Math.min(g.done, g.need)
+  if (left <= 0) return null
+  return `${left} to go`
 }

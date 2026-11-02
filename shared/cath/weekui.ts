@@ -1,7 +1,7 @@
 // Cath's Week card renderer, shared by `/` and `/games/` (ROADMAP 231). Expects the markup
 // `#week`, `#week-goals`, `#week-card`; shows the section only when storage is readable.
 
-import { loadWeek, pinPostcard, postcardFor, weekComplete, weekGoals } from './week'
+import { loadWeek, pinPostcard, postcardFor, toGo, weekComplete, weekGoals } from './week'
 import type { WardrobeProgress } from './wardrobe'
 
 export function renderWeek(now: WardrobeProgress, doc: Document = document): void {
@@ -18,7 +18,7 @@ export function renderWeek(now: WardrobeProgress, doc: Document = document): voi
         li.className = 'week-goal'
         const done = g.done >= g.need
         li.dataset.done = String(done)
-        li.dataset.game = g.href.replace(/\//g, '')
+        li.dataset.game = g.id
         const a = doc.createElement('a')
         a.href = g.href
         const span = (cls: string, text: string) => {
@@ -30,12 +30,19 @@ export function renderWeek(now: WardrobeProgress, doc: Document = document): voi
         const meter = span('wg-meter', '')
         meter.setAttribute('aria-hidden', 'true')
         meter.style.setProperty('--p', String(Math.min(1, g.done / g.need)))
+        const nudge = toGo(g)
         a.append(
           span('wg-game', g.game),
           span('wg-text', g.text),
           meter,
           span('wg-count', done ? 'Done ✓' : `${Math.min(g.done, g.need)} of ${g.need}`),
+          span('wg-cta', done ? 'Play again' : g.cta),
         )
+        if (nudge) {
+          const n = span('wg-nudge', nudge)
+          a.append(n)
+        }
+        a.setAttribute('aria-label', `${g.game}: ${g.text}, ${done ? 'done' : `${Math.min(g.done, g.need)} of ${g.need}, ${nudge}`}. ${done ? 'Play again' : g.cta}.`)
         li.append(a)
         return li
       }),

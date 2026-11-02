@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loadWeek, pinPostcard, postcardFor, postcards, weekComplete, weekGoals, weekId } from '../shared/cath/week'
+import { loadWeek, pinPostcard, postcardFor, postcards, toGo, weekComplete, weekGoals, weekId } from '../shared/cath/week'
 
 const mem = () => {
   const m = new Map<string, string>()
@@ -32,5 +32,20 @@ describe("Cath's week", () => {
     pinPostcard('2026-W44', s)
     expect(postcards(s)).toEqual(['2026-W44'])
     expect(postcardFor('2026-W44')).toBe(postcardFor('2026-W44'))
+  })
+})
+
+describe("Cath's Week tiles (plan item 38)", () => {
+  it('each goal names what a tap does, opening Runnel on the daily', () => {
+    const goals = weekGoals(p(0, 0, 0), p(0, 0, 0))
+    expect(goals.every((g) => g.cta.length > 0)).toBe(true)
+    expect(goals.find((g) => g.id === 'runnel')!.href).toBe('/runnel/?mode=daily')
+  })
+  it('nudges with how many are left, and says nothing once done', () => {
+    expect(toGo({ done: 2, need: 3 })).toBe('1 to go')
+    expect(toGo({ done: 0, need: 1 })).toBe('1 to go')
+    expect(toGo({ done: 0, need: 3 })).toBe('3 to go')
+    expect(toGo({ done: 3, need: 3 })).toBeNull()
+    expect(toGo({ done: 5, need: 3 })).toBeNull()
   })
 })

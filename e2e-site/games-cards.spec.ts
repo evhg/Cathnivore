@@ -40,5 +40,11 @@ test.describe('games page cards', () => {
     const tiles = page.locator('#week-goals .week-goal a')
     await expect(tiles).toHaveCount(3)
     await expect(tiles.first().locator('.wg-count')).toHaveText(/of \d|Done/)
+    // Plan item 38: each tile says what a tap does and nudges with what's left; it opens the goal's mode.
+    await expect(tiles.locator('.wg-cta')).toHaveCount(3)
+    await expect(tiles.first().locator('.wg-nudge')).toHaveText(/\d to go/)
+    await expect(tiles.first()).toHaveAttribute('href', '/runnel/?mode=daily')
+    // Each tile wears its own game's colour (NIGHT SHIFT's used to miss it).
+    expect(await page.locator('#week-goals .week-goal').evaluateAll((els) => els.map((e) => e.getAttribute('data-game')))).toEqual(['runnel', 'hedgerow', 'nightshift'])
   })
 })

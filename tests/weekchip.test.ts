@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { weekChipText } from '../shared/cath/weekchip'
 import type { WeekGoal } from '../shared/cath/week'
 
-const g = (game: string, need: number, done: number): WeekGoal => ({ id: 'runnel', game, text: 'Do it', need, done, href: '/' })
+const g = (game: string, need: number, done: number): WeekGoal => ({ id: 'runnel', game, text: 'Do it', need, done, href: '/', cta: 'Play' })
 
 describe('weekChipText', () => {
   it('names the next open goal', () => {
