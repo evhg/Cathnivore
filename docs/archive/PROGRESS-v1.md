@@ -3824,3 +3824,5 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 
 ## Final report
 (not yet written)
+
+- **2026-11-01 16:51 session:** plan item 7, session 2. E2e for the clinic (breach + rappel) and Plaza (rappel + van) alarm entrances (3/3 pass with the flyover). Entrance shot script with a test time-scale hook; the shots showed a plain grey door slab, an invisible rope and dark vans, so: steel door leaves (panels, wire glass, push bar, kick plate) in a frame, rope to the floor with anchor and coil left hanging, helmet torch beams and lens, van headlamp beams and an amber light bar. Shots also found four alarm entrances behind walls: moved into sight with a sightline unit test. `npm run check` green (1803).

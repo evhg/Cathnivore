@@ -303,7 +303,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Shots of all 3 maps at P and D.
 - **Size:** 4
 
-## 21. [ ] Cathnivore: a hand of action cards
+## 21. [x] Cathnivore: a hand of action cards *(done 2026-11-02, 5bf9d8b5..HEAD: on a phone the actions are a hand of upright cards docked under the board, grouped behind Sell/Invest/Play spines, fanned and lifted on touch or focus, scrolling sideways in the dock; on desktop the same cards two to a row; unaffordable cards dim with cost and reason; tap raises the card into play (hint in the dock) then tap the hex and Confirm, or drag the card onto a glowing hex; no 'n more' pill on the actions; `e2e/action-hand.spec.ts` (every card reachable at P without page scroll, keyboard-only round at P and D, drag); shots P and D)*
 - **Why:** on a phone the actions are a form, a stack of "Sell 1/2/3 Produce" rows with a "17 more" pill. On desktop, Invest is greyed rows tagged "Need 2 more Marks" (`phone-4-game`).
 - **Build:**
   - Sell, Invest, Play and Scheme become a fanned hand docked under the board, grouped by kind.
