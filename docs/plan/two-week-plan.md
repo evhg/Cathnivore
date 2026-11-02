@@ -456,7 +456,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of each step at P.
 - **Size:** 2
 
-## 33. [ ] Cathnivore: the bugs from the 2026-11-02 critique, fixed as one batch *(lane A, in progress)*
+## 33. [x] Cathnivore: the bugs from the 2026-11-02 critique, fixed as one batch *(done 2026-11-02, lane A, 21fc9fa8..66da2a52: `plural()` (no "1 Marks"), terrain keeps its region name across 100 seeds x 3 maps, Escape closes phone sheets with focus back, title fits 390x844, Cath's aside wraps whole, the whole board above the hand at P with Invest cards showing name, reason and price, Invest cards whole at D, chapter 1's hexes centred and 1.3x, Cath's folded hands on real sleeves, the boardroom strip in the Actions area (no hex covered, nothing clipped, e2e P and D), the AI teammate at the table while thinking; shots P and D)*
 - **Why:** a fresh-eyes pass at P and D found craft bugs a player hits in their first game.
 - **Build:** fix every one of these, each with its own test where one fits:
   - At P the boardroom strip is clipped under the producer bar, and its step label is cut mid-sentence. At D it covers the board's top row.
