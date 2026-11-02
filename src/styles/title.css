@@ -407,8 +407,10 @@
     align-content: start;
     gap: 6px;
   }
+  /* Plan item 33: sized by the screen's height too, so the footer ends on screen on a 390x844 phone (it ran
+     28 px under the fold and the page scrolled). */
   .title-art {
-    max-width: 440px;
+    max-width: min(440px, 38dvh);
   }
   .title-copy {
     align-items: stretch;
@@ -430,6 +432,7 @@
   .title-footer {
     position: relative;
     z-index: var(--z-raised);
+    margin-top: 10px;
   }
 }
 
