@@ -1994,36 +1994,18 @@ body {
   .rail { grid-row: 5; }
   .foot { grid-row: 6; }
 
+  /* The hedge: two offset rows of round leaves over a deep green in the border, and the field inside it. */
   .stage {
     grid-column: 2;
     grid-row: 1 / -1;
-    padding: 26px 26px 28px;
-    isolation: isolate;
-  }
-
-  /* The hedge: two offset rows of round leaves over a deep green, and the field inside it. */
-  .stage::before,
-  .stage::after {
-    content: "";
-    position: absolute;
-    pointer-events: none;
-  }
-
-  .stage::before {
-    inset: 0;
-    z-index: -2;
+    padding: 12px 12px 14px;
+    border: 14px solid transparent;
     border-radius: 34px;
     background:
-      radial-gradient(circle at 50% 50%, var(--pasture) 0 6px, transparent 7px) 0 0 / 15px 15px,
-      radial-gradient(circle at 50% 50%, var(--tuft) 0 5px, transparent 6px) 7px 7px / 15px 15px,
-      var(--pasture-deep);
-  }
-
-  .stage::after {
-    inset: 14px;
-    z-index: -1;
-    border-radius: 24px;
-    background: var(--paper);
+      linear-gradient(var(--paper), var(--paper)) padding-box,
+      radial-gradient(circle at 50% 50%, var(--pasture) 0 6px, transparent 7px) 0 0 / 15px 15px border-box,
+      radial-gradient(circle at 50% 50%, var(--tuft) 0 5px, transparent 6px) 7px 7px / 15px 15px border-box,
+      var(--pasture-deep) border-box;
     box-shadow: inset 0 2px 12px var(--plinth);
   }
 
