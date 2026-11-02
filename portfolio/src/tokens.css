@@ -19,6 +19,11 @@
   --text-muted: rgba(243, 238, 228, 0.74);
   --text-faint: rgba(243, 238, 228, 0.54);
   --shadow: rgba(0, 0, 0, 0.55);
+  /* Plan item 23: the hero's game prints. */
+  --show-shadow: rgba(0, 0, 0, 0.7);
+  --show-ring: rgba(255, 255, 255, 0.03);
+  --show-ground: #15131c;
+  --mask-solid: #000;
   --white-08: rgba(255, 255, 255, 0.08);
   --white-16: rgba(255, 255, 255, 0.16);
 

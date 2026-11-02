@@ -268,7 +268,7 @@ main,
   .hero-show {
     display: block;
     position: absolute;
-    z-index: 0;
+    z-index: var(--z-canvas);
     right: 0;
     top: var(--sp-8);
     /* Ends above the stats row (which runs to about 980 px wide) at 1440x900. */
@@ -278,7 +278,7 @@ main,
   }
   .hero > :not(.hero-show) {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-page);
   }
   .show-card {
     position: absolute;
@@ -288,8 +288,8 @@ main,
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--white-08);
-    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7), 0 0 0 6px rgba(255, 255, 255, 0.03);
-    background: #15131c;
+    box-shadow: 0 30px 60px -20px var(--show-shadow), 0 0 0 6px var(--show-ring);
+    background: var(--show-ground);
   }
   .show-card img {
     display: block;
@@ -306,9 +306,9 @@ main,
     bottom: 0;
     width: 46%;
     translate: -40% 0;
-    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.55));
+    filter: drop-shadow(0 24px 30px var(--shadow));
     /* Half-length art ends at her waist: fade it out rather than show a cut edge. */
-    mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
+    mask-image: linear-gradient(to bottom, var(--mask-solid) 80%, transparent 99%);
   }
   .show-cath svg {
     display: block;
