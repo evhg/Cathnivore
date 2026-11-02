@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { bossEdge } from "../sim/talk";
 
 export class VaneBossJob {
   stage = 0;
@@ -35,13 +36,17 @@ export class VaneBossJob {
       case 0: {
         this.objective = "Dr Octavia Vane is in the clinic bay. End her.";
         const b = h.spawn("rifle", [this.M("boss:vane", 0, 22, 30), this.M("boss:vane", 1, 25, 28)]);
-        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 5);
+        const edge = bossEdge("vane", h.progress.jobsDone);
+        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 5 * edge.hpMul);
+        // Plan item 14: the orderly's tip (the theatre phone) means she never stitches.
+        this.patched = edge.noPatch;
         b.body.root.scale.setScalar(1.1);
         this.boss = b;
         h.spawn("shield", [this.M("boss:guard", 0, 18, 32), this.M("boss:guard", 1, 18, 26)]);
         h.spawn("rifle", [this.M("boss:guard", 2, 28, 34), this.M("boss:guard", 3, 24, 36)]);
         h.banner("Dr Octavia Vane", "Candor's surgeon", "boss");
-        h.say("Bea: Vane stitches herself back together. Hit her hard and fast.");
+        h.say(edge.noPatch ? "Bea: Vane can't stitch herself tonight. Finish it." : "Bea: Vane stitches herself back together. Hit her hard and fast.");
+        for (const l of edge.lines) h.say(l);
         break;
       }
       case 1:

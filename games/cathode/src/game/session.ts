@@ -66,7 +66,7 @@ import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
-import { choose, talkFor, type DistrictName } from "../sim/talk";
+import { choose, talked, talkFor, type DistrictName } from "../sim/talk";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
 import { activeMods, MOD_EFFECTS, ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
@@ -150,6 +150,8 @@ interface WorldBaseline {
 export interface Session {
   /** Plan item 14: opens this district's talk (tests and shots; the takedown grab will call it too). */
   talk?: () => void;
+  /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
+  lieutenant?: () => Enemy | null;
   world: World;
   player: Player;
   input: Input;
@@ -404,6 +406,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (opts.entrance) entrances.add(e, opts.entrance);
     return e;
   };
+  const ltTalk = talkFor((o.district ?? "market") as DistrictName);
+  let lieutenant: Enemy | null = null;
   if (!tutorial) {
     for (const [key, route] of Object.entries(world.markers)) {
       if (!key.startsWith("patrol:") || !route.length) continue;
@@ -444,6 +448,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       }
       world.scene.add(e.body.root);
       enemies.push(e);
+    }
+    // Plan item 14: the district's lieutenant walks the first rifle (or orderly, or tower guard) patrol, under his own
+    // name, until she has talked to him. A takedown on him ends in the talk, not the kill.
+    if (ltTalk && !talked(ltTalk.id, progress.jobsDone)) {
+      const pick = (role: string | undefined) => enemies.find((e) => !e.passive && !e.kit.elite && e.kit.role === role);
+      const lt = pick(ENFORCER.role) ?? pick(ORDERLY.role) ?? pick(BOARD_GUARD.role);
+      if (lt) {
+        lt.kit.name = ltTalk.who;
+        lieutenant = lt;
+      }
     }
     // A Hollowell sniper holds the far perch: take him first, or cross the street under his laser.
     const far = world.markers.perch?.[1];
@@ -1098,6 +1112,14 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (from) k.enemy.rifle.visible = false;
     // C11: a takedown's gear falls once she has let him go (a beacon mid-sequence pulls the eye off the moment).
     if (k.takedown && td.active) tdAfter.push(() => pickups.drop(at, found, from));
+    // Plan item 14: she has the lieutenant by the collar; the talk opens as she lets go.
+    if (k.enemy === lieutenant) {
+      lieutenant = null;
+      if (k.takedown) {
+        if (td.active) tdAfter.push(() => (wantTalk = true));
+        else wantTalk = true;
+      }
+    }
     else pickups.drop(at, found, from);
     const ammo = arsenal.scavenge();
     if (ammo) hud.feedLine(`+${ammo} rounds`);
@@ -1482,6 +1504,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   s.talk = () => {
     wantTalk = true;
   };
+  s.lieutenant = () => lieutenant;
   hud.onCaseBoard = () => {
     menuOpen = false;
     wantMap = true;
@@ -2663,19 +2686,23 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   const vUp = new THREE.Vector3();
   /** C20 (S3.3): glyph points over the (up to three nearest) live elites within 25 m and in front of the camera. */
-  function eliteGlyphs(): Array<{ x: number; y: number; tint: string }> {
+  function eliteGlyphs(): Array<{ x: number; y: number; tint: string; name?: string }> {
     const c = world.renderer.domElement;
     const near: Array<{ e: Enemy; d: number }> = [];
     for (const e of enemies) {
-      if (!e.alive || !e.kit.elite) continue;
+      if (!e.alive || (!e.kit.elite && e !== lieutenant)) continue;
       const d = e.position.distanceTo(player.pos);
       if (d <= 25) near.push({ e, d });
     }
     near.sort((a, b) => a.d - b.d);
-    const out: Array<{ x: number; y: number; tint: string }> = [];
+    const out: Array<{ x: number; y: number; tint: string; name?: string }> = [];
     for (const { e } of near.slice(0, 3)) {
       const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, 0.45, 0)).project(world.camera);
       if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) continue;
+      if (e === lieutenant) {
+        out.push({ x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, tint: "", name: e.kit.name });
+        continue;
+      }
       out.push({ x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, tint: "#" + eliteTint(e.kit.mods).toString(16).padStart(6, "0") });
     }
     return out;

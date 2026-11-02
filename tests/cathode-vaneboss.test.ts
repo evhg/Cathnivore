@@ -44,4 +44,32 @@ describe("Dr Vane", () => {
     expect(job.done).toBe(true);
     expect(progress.jobsDone).toContain("vaneBoss");
   });
+  it("never stitches once the orderly gave up the theatre phone (plan item 14)", () => {
+    const progress = { jobsDone: ["fishMarket", "crispBoss", "talk:orderly:pay"] as string[], save: vi.fn() };
+    const spawned: { alive: boolean; hp: number; kit: { maxHp: number }; position: THREE.Vector3; body: { root: THREE.Object3D } }[] = [];
+    const say = vi.fn();
+    const h = {
+      player: { pos: new THREE.Vector3() },
+      progress,
+      scene: new THREE.Scene(),
+      markers: {},
+      ground: () => 0,
+      touch: false,
+      spawn: () => {
+        const e = { alive: true, hp: 100, kit: { maxHp: 100 }, position: new THREE.Vector3(0, 0, 48), body: { root: new THREE.Group() } };
+        spawned.push(e);
+        return e;
+      },
+      arm: vi.fn(),
+      say,
+      teach: vi.fn(),
+      banner: vi.fn(),
+    };
+    const job = new VaneBossJob(h as never);
+    expect(say.mock.calls.flat().some((l) => String(l).includes("Kessel"))).toBe(true);
+    spawned[0]!.hp = 150;
+    job.update(0.1);
+    expect(spawned[0]!.hp).toBe(150);
+    expect(spawned).toHaveLength(3);
+  });
 });

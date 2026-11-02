@@ -63,6 +63,10 @@ export function drawPlan(input: PlanInput): SVGSVGElement {
   for (const sec of p.secrets) {
     svg("rect", { x: f(sec.x - 0.8), y: f(sec.z - 0.8), width: 1.6, height: 1.6, transform: `rotate(45 ${f(sec.x)} ${f(sec.z)})`, class: "dmap-secret" }, map);
   }
+  for (const t of p.tips) {
+    const d = 1.3;
+    svg("path", { d: `M${f(t.x - d)} ${f(t.z - d)}L${f(t.x + d)} ${f(t.z + d)}M${f(t.x + d)} ${f(t.z - d)}L${f(t.x - d)} ${f(t.z + d)}`, class: "dmap-tip" }, map);
+  }
   if (p.goal) svg("path", { d: pencilRing(p.goal.x, p.goal.z, 2.6), class: "dmap-goal" }, map);
   svg("circle", { cx: f(p.cath.x), cy: f(p.cath.z), r: 1.1, class: "dmap-halo" }, map);
   svg("circle", { cx: f(p.cath.x), cy: f(p.cath.z), r: 1.1, class: "dmap-cath" }, map);

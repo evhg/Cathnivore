@@ -21,7 +21,7 @@ for (const c of cases) {
     const ctx = await browser.newContext({ ...SIZES[s] })
     const page = await ctx.newPage()
     page.on('pageerror', (e) => console.log('pageerror', e.message))
-    const jobs = save === 'mid' ? ['fishMarket', 'crispBoss', 'vaneBoss', 'secret:log-bea1', 'secret:stash-roof'] : []
+    const jobs = save === 'mid' ? ['fishMarket', 'crispBoss', 'vaneBoss', 'secret:log-bea1', 'secret:stash-roof'] : save === 'tip' ? ['fishMarket', 'talk:foreman:pay'] : []
     await page.goto(base)
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'low' })))
     const ready = () => page.waitForFunction(() => !!window.cathode && window.cathode.stats.frames >= 3, null, { timeout: 300_000 })

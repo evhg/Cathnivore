@@ -49,7 +49,7 @@ export interface HudState {
   takedownAt?: { x: number; y: number; left?: boolean } | null;
   takedownKey?: string;
   /** C20 (S3.3): glyphs over live elites within 25 m (CSS px over the head, the affix colour as #rrggbb). */
-  eliteGlyphs?: Array<{ x: number; y: number; tint: string }>;
+  eliteGlyphs?: Array<{ x: number; y: number; tint: string; name?: string }>;
   bulletTime: number;
   /** The two active-skill slots (name and readiness 0..1), and the battery 0..1. */
   skills: Array<{ name: string; ready: number; key: string } | null>;
@@ -282,13 +282,16 @@ export class Hud {
   /** Sets a custom property only when its value changed. */
   private eliteGlyphEls: HTMLElement[] = [];
   /** C20: a small diamond over each elite's head; a pool, so nothing is built per frame. */
-  private eliteGlyphsUpdate(list: ReadonlyArray<{ x: number; y: number; tint: string }>): void {
+  private eliteGlyphsUpdate(list: ReadonlyArray<{ x: number; y: number; tint: string; name?: string }>): void {
     while (this.eliteGlyphEls.length < list.length) this.eliteGlyphEls.push(el("span", "hud-elite", this.root));
     this.eliteGlyphEls.forEach((g, i) => {
       const on = i < list.length;
       this.show(g, on);
       const d = list[i];
       if (!d) return;
+      // Plan item 14: the district's lieutenant is a hollow mark with his name, not an elite's diamond.
+      g.classList.toggle("is-lt", !!d.name);
+      this.text(g, d.name ?? "");
       this.prop(g, "--px", `${Math.round(d.x)}px`);
       this.prop(g, "--py", `${Math.round(d.y)}px`);
       this.prop(g, "--tint", d.tint);

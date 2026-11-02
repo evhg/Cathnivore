@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { bossEdge } from "../sim/talk";
 import { actFiveUnlock } from "../sim/difficulty";
 
 export class VaultBossJob {
@@ -37,7 +38,8 @@ export class VaultBossJob {
       case 0: {
         this.objective = "HollowCandor runs the vault. Pull the plug.";
         const b = h.spawn("shield", [this.M("boss:core", 0, -24, 34), this.M("boss:core", 1, -20, 36)]);
-        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 9);
+        const edge = bossEdge("vault", h.progress.jobsDone);
+        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 9 * edge.hpMul);
         b.body.root.scale.setScalar(1.2);
         this.boss = b;
         h.spawn("shield", [this.M("boss:guard", 0, -28, 30), this.M("boss:guard", 1, -28, 38)]);
@@ -45,6 +47,7 @@ export class VaultBossJob {
         h.spawn("sniper", [this.M("boss:sniper", 0, -24, 44), this.M("boss:sniper", 1, -18, 44)]);
         h.banner("HollowCandor", "The vault", "boss");
         h.say("Bea: It is not a man, it is the building. Break the guards, then break it.");
+        for (const l of edge.lines) h.say(l);
         break;
       }
       case 1:

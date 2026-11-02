@@ -153,3 +153,51 @@ export function hasWeakness(boss: string, effect: string, jobsDone: readonly str
 export function waypoints(jobsDone: readonly string[]): string[] {
   return intelHeld(jobsDone).flatMap((i) => (i.kind === "waypoint" && !jobsDone.includes(`secret:${i.secret}`) ? [i.secret] : []));
 }
+
+/** The talks she has had, in district order, with the choice she made (the case board's intel cards). */
+export function talksHeld(jobsDone: readonly string[]): Array<{ talk: Talk; option: TalkOption }> {
+  const out: Array<{ talk: Talk; option: TalkOption }> = [];
+  for (const t of TALKS) for (const o of t.options) if (jobsDone.includes(talkKey(t.id, o.id))) out.push({ talk: t, option: o });
+  return out;
+}
+
+/** What the intel card says she got, under his words. */
+export function intelLine(i: Intel): string {
+  if (i.kind === "waypoint") return "Marked on the market map.";
+  if (i.kind === "squad") return "One alarm squad won't come.";
+  return "A weakness for the fight.";
+}
+
+/** Plan item 14: what a boss weakness does in the fight. */
+export interface BossEdge {
+  /** Multiplies the boss's HP at spawn (under 1: he goes down faster). */
+  hpMul: number;
+  /** Vane: her half-health stitch (the heal and the team she calls) never comes. */
+  noPatch: boolean;
+  /** The Chair: the right-hand vent stays shut, so no man drops through it. */
+  ventLocked: boolean;
+  /** What Bea says as the fight opens, so the player knows the edge is real. */
+  lines: string[];
+}
+
+const EDGES: Record<string, { hpMul?: number; noPatch?: boolean; ventLocked?: boolean; line: string }> = {
+  "vane:no-stitch": { noPatch: true, line: "Bea: Kessel cut the theatre phone. No stitch team tonight." },
+  "pell:turns-back": { hpMul: 0.75, line: "Bea: Brennick says he turns his back to play the cameras. Hit him then." },
+  "chair:vent-locked": { ventLocked: true, line: "Bea: Oyelaran locked the right-hand vent. That side's clear." },
+  "chair:panics-flanked": { hpMul: 0.85, line: "Bea: Get behind the Chair. Oyelaran says that's when the panic starts." },
+  "vault:core-exposed": { hpMul: 0.75, line: "Bea: Imm opened the cooling shutters. The core is exposed." },
+};
+
+export function bossEdge(boss: "crisp" | "vane" | "pell" | "chair" | "vault", jobsDone: readonly string[]): BossEdge {
+  const edge: BossEdge = { hpMul: 1, noPatch: false, ventLocked: false, lines: [] };
+  for (const i of intelHeld(jobsDone)) {
+    if (i.kind !== "weakness" || i.boss !== boss) continue;
+    const e = EDGES[`${i.boss}:${i.effect}`];
+    if (!e) continue;
+    edge.hpMul *= e.hpMul ?? 1;
+    edge.noPatch ||= !!e.noPatch;
+    edge.ventLocked ||= !!e.ventLocked;
+    edge.lines.push(e.line);
+  }
+  return edge;
+}

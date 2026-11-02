@@ -32,6 +32,17 @@ describe("district map plan", () => {
       });
     }
   }
+  it("crosses the secret a talk pointed her to until she takes it (plan item 14)", () => {
+    const colliders = buildDistrict("market", "phone").builder.colliders;
+    for (const opt of ["press", "charm", "pay"]) {
+      const told = mapPlan({ district: "market", at: { x: 0, z: 57 }, objective: null, jobsDone: [`talk:foreman:${opt}`], colliders });
+      expect(told.tips).toHaveLength(1);
+      expect(told.labels.filter((l) => l.kind === "tip")).toHaveLength(1);
+      expect(check(told)).toEqual([]);
+    }
+    const taken = mapPlan({ district: "market", at: { x: 0, z: 57 }, objective: null, jobsDone: ["talk:foreman:charm", secretKey("stash-roof")], colliders });
+    expect(taken.tips).toHaveLength(0);
+  });
   it("names every market landmark she can see, and marks the secrets she found", () => {
     const colliders = buildDistrict("market", "phone").builder.colliders;
     const fresh = mapPlan({ district: "market", at: { x: 0, z: 57 }, objective: null, jobsDone: [], colliders });

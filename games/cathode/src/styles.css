@@ -1963,6 +1963,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .dmap-solids rect { fill: var(--card-ink); fill-opacity: .82; }
 .dmap-wing { fill: url(#dmap-hatch); stroke: var(--card-ink); stroke-width: .3; stroke-dasharray: 1 .6; }
 .dmap-secret { fill: var(--card-ink); stroke: var(--print-paper); stroke-width: .3; }
+.dmap-tip { fill: none; stroke: var(--stamp-red); stroke-width: .5; stroke-linecap: round; }
 .dmap-goal { fill: none; stroke: var(--stamp-red); stroke-width: .55; stroke-linecap: round; stroke-linejoin: round; }
 .dmap-cath { fill: var(--stamp-red); stroke: var(--print-paper); stroke-width: .35; }
 .dmap-halo { fill: none; stroke: var(--stamp-red); stroke-width: .3; transform-box: fill-box; transform-origin: center; animation: dmap-ping 2s ease-out infinite; }
@@ -1972,11 +1973,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .dmap-t-zone, .dmap-t-room { font-weight: 800; letter-spacing: .04em; text-transform: uppercase; font-stretch: var(--wdth-label); }
 .dmap-t-sub { font-family: var(--font-voice); font-style: italic; font-weight: 400; fill: var(--card-ink-2); }
 .dmap-t-landmark, .dmap-t-exit, .dmap-t-fly, .dmap-t-scale { font-weight: 500; fill: var(--card-ink-2); }
-.dmap-t-goal, .dmap-t-cath { font-weight: 800; letter-spacing: .05em; text-transform: uppercase; fill: var(--stamp-red); }
+.dmap-t-goal, .dmap-t-cath, .dmap-t-tip { font-weight: 800; letter-spacing: .05em; text-transform: uppercase; fill: var(--stamp-red); }
 .dmap-t-wing { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .dmap-t-north { font-weight: 800; }
 .dmap-leader { stroke: var(--card-ink-2); stroke-width: .15; }
-.dmap-leader-goal, .dmap-leader-cath { stroke: var(--stamp-red); stroke-width: .25; }
+.dmap-leader-goal, .dmap-leader-cath, .dmap-leader-tip { stroke: var(--stamp-red); stroke-width: .25; }
 .dmap-north { fill: var(--card-ink); }
 .dmap-scale { fill: none; stroke: var(--card-ink); stroke-width: .3; }
 /* The notes */

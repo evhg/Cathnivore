@@ -1,4 +1,5 @@
 import { cathSceneSvg } from "../../../../shared/cath/scene";
+import { intelLine, talksHeld } from "../sim/talk";
 import { caseBoard, type CaseEntry } from "../sim/casefile";
 import { MODS, activeMods, broadcastLadder, deckBests } from "../sim/newgameplus";
 import { BUST_FOR_CASE, BUST_NAMES, bustSvg } from "./busts";
@@ -131,6 +132,15 @@ export function openCaseBoard(parent: Element, jobsDone: readonly string[], onCl
     el("b", "", li, c.title);
     el("em", "case-flag", li, "On the List");
     el("span", "", li, c.note);
+  }
+  // Plan item 14: what each lieutenant gave up, in his words, pinned beside the leads.
+  for (const { talk, option } of talksHeld(jobsDone)) {
+    const li = el("li", "case-open case-intel", ol);
+    cssVar(li, "--tilt", tilt(i++));
+    el("i", "case-pin", li);
+    el("b", "", li, talk.who);
+    el("em", "case-flag", li, "Intel");
+    el("span", "", li, `“${option.reply}” ${intelLine(option.intel)}`);
   }
   const sealed = leads.filter((c) => c.state === "locked").length;
   if (sealed > 0) {

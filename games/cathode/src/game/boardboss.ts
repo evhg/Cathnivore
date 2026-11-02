@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { bossEdge } from "../sim/talk";
 
 export class BoardBossJob {
   stage = 0;
@@ -14,6 +15,7 @@ export class BoardBossJob {
   target: THREE.Vector3 | null = null;
   boss: Enemy | null = null;
   private rallied = false;
+  private ventLocked = false;
 
   constructor(private readonly h: JobHost) {
     this.goto(0);
@@ -34,7 +36,9 @@ export class BoardBossJob {
       case 0: {
         this.objective = "The Chair of the Board holds the Spire's top floor. Bring her down.";
         const b = h.spawn("shield", [this.M("boss:chair", 0, -24, 34), this.M("boss:chair", 1, -20, 36)]);
-        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 6);
+        const edge = bossEdge("chair", h.progress.jobsDone);
+        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 6 * edge.hpMul);
+        this.ventLocked = edge.ventLocked;
         b.body.root.scale.setScalar(1.12);
         this.boss = b;
         h.spawn("shield", [this.M("boss:guard", 0, -28, 30), this.M("boss:guard", 1, -28, 38)]);
@@ -42,6 +46,7 @@ export class BoardBossJob {
         h.spawn("sniper", [this.M("boss:sniper", 0, -24, 44), this.M("boss:sniper", 1, -18, 44)]);
         h.banner("The Chair of the Board", "The Spire", "boss");
         h.say("Bea: The Chair hides behind her guards, with a sniper above. Break the line, then break her.");
+        for (const l of edge.lines) h.say(l);
         break;
       }
       case 1:
@@ -70,7 +75,7 @@ export class BoardBossJob {
         if (this.h.markers["boss:chair"]) {
           // Plan item 7: the Chair's detail drops from the ceiling vents either side of the table.
           enter(this.h.spawn, "rifle", ENTRIES.tower.bossVentL, [this.M("boss:reinforce", 1, -34, 28)]);
-          enter(this.h.spawn, "rifle", ENTRIES.tower.bossVentR, [this.M("boss:reinforce", 3, -12, 28)]);
+          if (!this.ventLocked) enter(this.h.spawn, "rifle", ENTRIES.tower.bossVentR, [this.M("boss:reinforce", 3, -12, 28)]);
         } else {
           this.h.spawn("rifle", [this.M("boss:reinforce", 0, -40, 26), this.M("boss:reinforce", 1, -34, 28)]);
           this.h.spawn("rifle", [this.M("boss:reinforce", 2, -6, 26), this.M("boss:reinforce", 3, -12, 28)]);

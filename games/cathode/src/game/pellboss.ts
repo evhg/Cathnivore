@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { ENTRIES, enter } from "./encounters";
 import type { Enemy } from "./enemy";
 import type { JobHost } from "./firstjob";
+import { bossEdge } from "../sim/talk";
 
 export class PellBossJob {
   stage = 0;
@@ -36,13 +37,15 @@ export class PellBossJob {
       case 0: {
         this.objective = "Councillor Pell holds the plaza steps. Bring him down.";
         const b = h.spawn("shield", [this.M("boss:pell", 0, -24, 34), this.M("boss:pell", 1, -20, 36)]);
-        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 6);
+        const edge = bossEdge("pell", h.progress.jobsDone);
+        b.hp = b.kit.maxHp = Math.round(b.kit.maxHp * 6 * edge.hpMul);
         b.body.root.scale.setScalar(1.12);
         this.boss = b;
         h.spawn("shield", [this.M("boss:guard", 0, -28, 30), this.M("boss:guard", 1, -28, 38)]);
         h.spawn("shield", [this.M("boss:guard", 2, -18, 30), this.M("boss:guard", 3, -16, 38)]);
         h.banner("Councillor Pell", "Hollowell Plaza", "boss");
         h.say("Bea: Pell hides behind his guards. Break the line, then break him.");
+        for (const l of edge.lines) h.say(l);
         break;
       }
       case 1:

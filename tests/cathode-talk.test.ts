@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ENTRIES } from "../games/cathode/src/game/encounters";
 import { SECRETS } from "../games/cathode/src/game/secrets";
-import { TALKS, choose, hasWeakness, intelHeld, optionState, squadsRemoved, talkFor, waypoints } from "../games/cathode/src/sim/talk";
+import { TALKS, bossEdge, choose, hasWeakness, intelHeld, intelLine, optionState, squadsRemoved, talkFor, talksHeld, waypoints } from "../games/cathode/src/sim/talk";
 
 const ghost = { grit: 15, aim: 25, nerve: 25, wire: 15 };
 const witch = { grit: 15, aim: 15, nerve: 20, wire: 40 };
@@ -75,5 +75,35 @@ describe("alarm squads talked off (plan item 14)", () => {
     expect(unlessTalkedOff("clinic", "ambushBreach", done, () => 1)).toEqual([]);
     expect(unlessTalkedOff("clinic", "ambushVent", done, () => 2)).toEqual([2]);
     expect(unlessTalkedOff("clinic", "ambushBreach", [], () => 3)).toEqual([3]);
+  });
+});
+
+describe("boss weaknesses in the fight (plan item 14, session 2)", () => {
+  it("no intel, no edge", () => {
+    for (const b of ["vane", "pell", "chair", "vault"] as const) expect(bossEdge(b, [])).toEqual({ hpMul: 1, noPatch: false, ventLocked: false, lines: [] });
+  });
+  it("every weakness a talk can give changes its boss's fight and has Bea say so", () => {
+    for (const t of TALKS)
+      for (const o of t.options) {
+        if (o.intel.kind !== "weakness") continue;
+        const e = bossEdge(o.intel.boss, [`talk:${t.id}:${o.id}`]);
+        expect(e.lines).toHaveLength(1);
+        expect(e.hpMul < 1 || e.noPatch || e.ventLocked).toBe(true);
+        // It is that boss's edge only.
+        for (const other of ["vane", "pell", "chair", "vault"] as const) if (other !== o.intel.boss) expect(bossEdge(other, [`talk:${t.id}:${o.id}`]).lines).toEqual([]);
+      }
+  });
+  it("the orderly's phone stops Vane's stitch; the security chief's tablet locks the right vent", () => {
+    expect(bossEdge("vane", ["talk:orderly:pay"]).noPatch).toBe(true);
+    expect(bossEdge("chair", ["talk:secchief:wire"]).ventLocked).toBe(true);
+    expect(bossEdge("chair", ["talk:secchief:pay"]).hpMul).toBeCloseTo(0.85);
+    expect(bossEdge("vault", ["talk:clerk:wire"]).hpMul).toBeCloseTo(0.75);
+  });
+  it("the case board's intel cards are the talks held, in district order, with a line for each kind", () => {
+    const held = talksHeld(["talk:advance:charm", "talk:foreman:pay"]);
+    expect(held.map((h) => h.talk.id)).toEqual(["foreman", "advance"]);
+    expect(intelLine(held[0]!.option.intel)).toBe("Marked on the market map.");
+    expect(intelLine(held[1]!.option.intel)).toBe("A weakness for the fight.");
+    expect(intelLine({ kind: "squad", entry: "alarmVan" })).toBe("One alarm squad won't come.");
   });
 });

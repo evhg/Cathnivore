@@ -6,6 +6,7 @@
 
 import { LANDMARKS } from "../game/landmarks";
 import { SECRETS, secretKey } from "../game/secrets";
+import { waypoints } from "../sim/talk";
 import { MAP_BOUNDS, WINGS, ZONES } from "../game/zones";
 import { districtBounds, districtLabels } from "../render/levels";
 
@@ -16,7 +17,7 @@ export interface Rect {
   z1: number;
 }
 
-export type LabelKind = "zone" | "sub" | "room" | "landmark" | "goal" | "cath" | "exit" | "wing" | "fly";
+export type LabelKind = "zone" | "sub" | "room" | "landmark" | "goal" | "cath" | "exit" | "wing" | "fly" | "tip";
 
 export interface PlanLabel {
   kind: LabelKind;
@@ -46,6 +47,8 @@ export interface Plan {
   /** Solid things at body height, as footprints. */
   solids: Rect[];
   secrets: { x: number; z: number; kind: string }[];
+  /** Plan item 14: secrets a talk pointed her to and she hasn't taken yet, crossed in red pencil. */
+  tips: { x: number; z: number }[];
   wings: Rect[];
   goal?: { x: number; z: number };
   cath: { x: number; z: number };
@@ -55,8 +58,8 @@ export interface Plan {
 }
 
 /** Rough advance width per character, as a share of the font size (condensed caps; serif italic). */
-const ADVANCE: Record<LabelKind, number> = { zone: 0.62, sub: 0.5, room: 0.62, landmark: 0.56, goal: 0.66, cath: 0.66, exit: 0.6, wing: 0.62, fly: 0.56 };
-export const LABEL_SIZE: Record<LabelKind, number> = { zone: 2.7, sub: 2.3, room: 3, landmark: 2.4, goal: 2.5, cath: 2.5, exit: 2.3, wing: 2.3, fly: 2.1 };
+const ADVANCE: Record<LabelKind, number> = { zone: 0.62, sub: 0.5, room: 0.62, landmark: 0.56, goal: 0.66, cath: 0.66, exit: 0.6, wing: 0.62, fly: 0.56, tip: 0.5 };
+export const LABEL_SIZE: Record<LabelKind, number> = { zone: 2.7, sub: 2.3, room: 3, landmark: 2.4, goal: 2.5, cath: 2.5, exit: 2.3, wing: 2.3, fly: 2.1, tip: 2.3 };
 
 export function labelWidth(kind: LabelKind, text: string, size = LABEL_SIZE[kind]): number {
   return text.length * size * ADVANCE[kind];
@@ -198,6 +201,7 @@ export function mapPlan({ district, at, objective, jobsDone, colliders }: PlanIn
   place.near("cath", "Cath", cath.x, cath.z, 1.8);
 
   const secrets: Plan["secrets"] = [];
+  const tips: Plan["tips"] = [];
   const wings: Rect[] = [];
   const dividers: number[] = [];
   let ground: Plan["ground"];
@@ -220,6 +224,12 @@ export function mapPlan({ district, at, objective, jobsDone, colliders }: PlanIn
       place.near("wing", w.name, bounds.x1, (w.zMin + w.zMax) / 2);
     }
     for (const s of SECRETS) if (jobsDone.includes(secretKey(s.id))) secrets.push({ x: s.x, z: s.z, kind: s.kind });
+    for (const id of waypoints(jobsDone)) {
+      const s = SECRETS.find((x) => x.id === id);
+      if (!s) continue;
+      tips.push({ x: s.x, z: s.z });
+      place.near("tip", "Mulvey's tip", s.x, s.z, 2.2);
+    }
     for (const l of LANDMARKS) {
       if (l.needs && !jobsDone.includes(l.needs)) continue;
       place.near("landmark", l.name, l.x, l.z);
@@ -231,5 +241,5 @@ export function mapPlan({ district, at, objective, jobsDone, colliders }: PlanIn
     place.fixed("exit", "Way out", (bounds.x0 + bounds.x1) / 2, bounds.z1 + 3, true);
   }
   const solids = solidsFrom(colliders, bounds).map((r) => ({ x0: round(r.x0), z0: round(r.z0), x1: round(r.x1), z1: round(r.z1) }));
-  return { sheet, bounds, ground, flyover, dividers, solids, secrets, wings, goal, cath, labels: place.labels, legend };
+  return { sheet, bounds, ground, flyover, dividers, solids, secrets, tips, wings, goal, cath, labels: place.labels, legend };
 }
