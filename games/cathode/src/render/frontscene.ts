@@ -10,6 +10,7 @@
 // person eye at the job's start. Then `handover` gives the world to the game session (Cath and the scene lights
 // leave it; the street, its build and its shaders stay warm), so no second load runs for the market.
 
+import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
 import { createWorld } from "./world";
 import { AutoScale } from "../game/autoscale";
@@ -94,6 +95,12 @@ const CLASS_KEY: Record<string, [number, number, number]> = {
   wirewitch: [0.55, 0.18, 1.0],
   fixer: [1.0, 0.5, 0.1],
 };
+/**
+ * Plan item 42: each class's coat in the pick (the outfit swap, 400 ms with the turn). The Ghost keeps her black
+ * trench; the Butcher wears the olive field jacket, the Gunslinger the oxblood duster, the Wirewitch a waxed teal
+ * mac, the Fixer midnight wool (the wardrobe's own coats, game/armdress.ts, where there is one).
+ */
+const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f3324, gunslinger: 0x3a2018, wirewitch: 0x14282c, fixer: 0x171b2b };
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
@@ -225,6 +232,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const wLook = toWorld(...WARDROBE.look);
   const key = { pos: toWorld(1.35, 1.8, 1.15), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
   const keyWant = new THREE.Color(0, 0, 0);
+  const coatBase = new THREE.Color(CATH_HERO.trench);
+  const coatNow = coatBase.clone();
+  const coatWant = coatBase.clone();
   let keyRemove: (() => void) | null = null;
   function wardrobeStep(dt: number): void {
     const k = 1 - Math.exp(-dt * 4.2);
@@ -239,6 +249,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cath.group.rotation.y = Math.PI + 0.6 * Math.sin(Math.PI * u) * (1 - u * 0.15);
       if (wd.turn === 0) cath.group.rotation.y = Math.PI;
     }
+    // The coat eases to the class's cloth over the same 400 ms as the key.
+    coatNow.lerp(coatWant, 1 - Math.exp(-dt * 9));
+    // Back at the black trench, the model's own cloth (the phone's is a shade lighter) takes over again.
+    const home = coatWant.equals(coatBase) && Math.abs(coatNow.r - coatBase.r) + Math.abs(coatNow.g - coatBase.g) + Math.abs(coatNow.b - coatBase.b) < 0.002;
+    cath.coat(home ? null : coatNow);
     pink.intensity = pinkI * (1 - 0.78 * wd.w);
     cath.tint(key.color, 0.6 * wd.w);
     if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
@@ -432,10 +447,13 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       wd.target = cls ? 1 : 0;
       const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];
       keyWant.setRGB(c[0]!, c[1]!, c[2]!);
+      const coatHex = cls ? CLASS_COAT[cls] : null;
+      coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
       if (cls) cath.play(cls, instant ? 0.5 : undefined);
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);
+        coatNow.copy(coatWant);
         wardrobeStep(0);
         frame(0);
       }

@@ -27,6 +27,8 @@ export interface FrontCath {
   tint(c: THREE.Color, w: number): void;
   /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
   indoors(on: boolean): void;
+  /** Plan item 42: the coat's cloth colour (the class pick's outfit swap); null puts her black trench back. */
+  coat(c: THREE.Color | null): void;
   dispose(): void;
   readonly triangles: number;
 }
@@ -189,6 +191,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const hairMat = new THREE.MeshPhysicalMaterial({ color: 0x9a8678, map: strands, roughness: 0.38, metalness: 0, sheen: 0.6, sheenRoughness: 0.3, sheenColor: new THREE.Color(0x7a5a48) });
   const skinMat = new THREE.MeshStandardMaterial({ color: CATH_HERO.skin, roughness: 0.55, metalness: 0 });
   const mats: THREE.Material[] = [coatMat, blackMat, hairMat, skinMat];
+  const coatMats: (THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial)[] = [coatMat];
+  const coat0 = coatMat.color.clone();
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
   // the light, with a cool cyan edge on the far side. The street's real lights add to it; the rim is what
   // makes her read as a silhouette against the neon at any framing.
@@ -382,6 +386,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Its own material: the collar is seen from inside too (double-sided), the coat is not (no shadow acne).
     const collarMat = coatMat.clone();
     collarMat.side = THREE.DoubleSide;
+    coatMats.push(collarMat);
     rimify(collarMat, 1);
     mats.push(collarMat);
     add(collar, collarMat, pelvis);
@@ -1221,6 +1226,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
+    },
+    coat(c) {
+      for (const m of coatMats) m.color.copy(c ?? coat0);
     },
     indoors(on) {
       umb.visible = !on;
