@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - Lane B: plan item 32 (Cathnivore chapter 2 coach), 2026-11-02 14:08 session.
-- Lane A: plan item 31 done (2026-11-02 13:51 session). Item 32 is lane B's and the owner session is planning, so lane A takes the critique bugs below until new items land.
+- Lane A: plan item 31 done; Setup Difficulty card filled; now plan item 33 (Cathnivore critique bug batch), 2026-11-02 13:51 session.
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing). (Cathnivore setup's empty Difficulty panel fixed 2026-11-02 14:40: it now lists what the level changes.)
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)

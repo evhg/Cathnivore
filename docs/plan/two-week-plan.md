@@ -457,7 +457,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of each step at P.
 - **Size:** 2
 
-## 33. [ ] Cathnivore: the bugs from the 2026-11-02 critique, fixed as one batch
+## 33. [ ] Cathnivore: the bugs from the 2026-11-02 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** a fresh-eyes pass at P and D found craft bugs a player hits in their first game.
 - **Build:** fix every one of these, each with its own test where one fits:
   - At P the boardroom strip is clipped under the producer bar, and its step label is cut mid-sentence. At D it covers the board's top row.
