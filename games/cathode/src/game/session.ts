@@ -106,6 +106,10 @@ import { cargoCrate, concretePillar } from "./coverprops";
 import { loadCover } from "./ai/coverload";
 import { BARK_LINES } from "./ai/squad";
 import { SECOND_WIND, SecondWind, weaponDt, type SecondWindLook } from "../sim/secondwind";
+import { beginVisit, grabFrame, keepStill, wantsStill } from "./debriefledger";
+import { CLOSING_CASES, stillScore } from "../sim/debrief";
+import { openDebrief } from "../ui/debrief";
+import { makeUnique, UNIQUE_BY_ID } from "../sim/loot";
 
 export interface SessionOptions {
   canvas: HTMLCanvasElement;
@@ -161,6 +165,18 @@ export interface Session {
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
   lastStation?: string;
   travelling?: string;
+  /** Plan item 17: the last debrief shown (tests compare its counters with the screen). */
+  debrief?: { caseId: string; ledger: import("../sim/debrief").DebriefLedger; stills: number };
+  /** Plan item 17 (tests): opens the debrief for a case now. */
+  showDebrief?: (caseId: string) => void;
+  /** Plan item 17 (tests): closes the clinic's case (Vane down) through the job itself. */
+  finishCase?: () => void;
+  /** Plan item 17 (shots): queues a still of the next frame for the debrief. */
+  grabStill?: (caption: string, score: number) => void;
+  /** Plan item 17 (tests): the wait after a boss falls before the debrief (ms, default 5000). */
+  debriefDelayMs?: number;
+  /** Plan item 17 (tests): closing the debrief stays in the district instead of going home. */
+  debriefStay?: boolean;
   /** Plan item 16: the part slots drawn on the gun lying on the bench (tests). */
   benchParts?: string[];
   world: World;
@@ -1271,6 +1287,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   // C6 "I know I'm hit" (S6.1, S6.2): Guard and Flesh, and every readout of a hit on the hit's frame.
   const vitals = new Vitals(s.maxHp);
+  /** Plan item 17: this visit's ledger for the morning-after debrief (a checkpoint restart keeps it). */
+  const visit = beginVisit(o.district ?? "market", !!o.warm, progress.character, vitals.maxTotal);
+  /** Kills waiting for their still: the frame ~250 ms after the kill, once the body has started to go. */
+  const stillQ: Array<{ at: number; score: number; caption: string }> = [];
   const mods = activeMods(progress.jobsDone);
   vitals.noRegen = mods.includes("noregen");
   if (mods.includes("fog") && world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density *= MOD_EFFECTS.fogDensity(mods);
@@ -1441,6 +1461,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   function hurtCath(amount: number, from: { x: number; y: number; z: number } | null, kind: HurtKind = "bullet", key?: unknown): void {
     syncVitals();
     amount *= MOD_EFFECTS.damageTaken(mods);
+    if (!inOffice) visit.ledger.damageTaken += amount;
     const r = vitals.damage(amount);
     if (r.broke) vitals.drain();
     s.hp = vitals.total;
@@ -2296,6 +2317,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       vaultBoss.update(dt);
       objective = vaultBoss.objective;
     }
+    // Plan item 17: a boss down closes the district's case; the morning-after debrief follows once the banner and
+    // Bea's line have played.
+    if (!visit.shown && !o.shot) {
+      const closed = crispBoss?.done ? "crispBoss" : vaneBoss?.done ? "vaneBoss" : pellBoss?.done ? "pellBoss" : boardBoss?.done ? "boardBoss" : vaultBoss?.done ? "vaultBoss" : null;
+      if (closed) {
+        visit.shown = true;
+        setTimeout(() => showDebrief(closed), s.debriefDelayMs ?? 5000);
+      }
+    }
     if (wanted) {
       wanted.update(dt);
       objective = wanted.objective;
@@ -2307,8 +2337,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     input.allow(progress.unlocks.features, arsenal.ownedIndices.length);
 
     // Voice cues from the street's state.
+    if (!inOffice) visit.ledger.seconds += realDt;
     for (const e of enemies) {
       if (!e.alive) continue;
+      if (e.state === "combat") visit.ledger.spotted = true;
       if (e.state === "suspicious") voice.say("seen");
       if (e.state === "combat") voice.say(e.kit.role === "shield" ? "shield" : "spotted");
       if (e.laser?.visible) voice.say("laser");
@@ -2589,6 +2621,41 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   }
   let beaOnLine = false;
+  /** Plan item 17: the morning-after debrief for a closed case, on the cork, then home to the office. */
+  function showDebrief(caseId: string): void {
+    const info = CLOSING_CASES[caseId];
+    if (!info || ended) return;
+    const c = progress.character;
+    visit.ledger.xp = Math.max(0, c.xp - visit.xp0);
+    visit.ledger.scrip = Math.max(0, c.scrip - visit.scrip0);
+    // The keepsake goes in her bag once per save.
+    let keepsake: { name: string; lore: string; slot: string } | null = null;
+    const claim = `keepsake:${caseId}`;
+    const item = info.keepsake ? makeUnique(info.keepsake) : null;
+    if (item && !c.rewardsClaimed.includes(claim)) {
+      progress.set({ ...c, inventory: [...c.inventory, item], rewardsClaimed: [...c.rewardsClaimed, claim] });
+      progress.save();
+      const slot = item.slot === "head" ? "hat" : item.slot === "coat" || item.slot === "gloves" || item.slot === "boots" ? item.slot : "cyberware";
+      keepsake = { name: item.name, lore: UNIQUE_BY_ID[info.keepsake!]?.lore ?? "", slot };
+    }
+    coaching = true;
+    document.exitPointerLock?.();
+    s.debrief = { caseId, ledger: { ...visit.ledger }, stills: visit.stills.length };
+    openDebrief(o.hud.parentElement ?? o.hud, { caseId, title: info.title, district: info.district, ledger: { ...visit.ledger }, stills: visit.stills.map(({ src, caption }) => ({ src, caption })), keepsake }, () => {
+      coaching = false;
+      if (s.debriefStay) return;
+      try {
+        sessionStorage.setItem("cathode.travel", "1");
+      } catch {
+        // Private mode: the trip still loads.
+      }
+      s.travelling = "office";
+      location.search = travelUrl("office", location.search);
+    });
+  }
+  s.showDebrief = showDebrief;
+  s.finishCase = () => vaneBoss?.finish();
+  s.grabStill = (caption: string, score: number) => stillQ.push({ at: performance.now(), score, caption });
   /**
    * Plan item 16: the gun on the bench. At rest it's her first worn gun with its parts; the bench screen lays
    * whichever gun she picks and turns the camera down onto it (`benchCam`), with the panel beside it.
@@ -3785,6 +3852,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (const k of combat.kills) {
       if (k.enemy.kit.role === "civilian") continue;
       sessionKills++;
+      // Plan item 17: the debrief's counts, and a still if this kill ranks in the visit's best three.
+      visit.ledger.kills++;
+      if (k.headshot) visit.ledger.headshots++;
+      if (k.takedown) visit.ledger.takedowns++;
+      const sc = stillScore({ headshot: k.headshot, takedown: k.takedown, distance: k.distance, severed: k.severed.length > 0 });
+      if (!o.shot && wantsStill(visit, sc)) {
+        const how = k.takedown ? "Takedown" : k.headshot ? "Headshot" : k.severed.length ? "Dismembered" : "Down";
+        stillQ.push({ at: performance.now() + 250, score: sc, caption: k.takedown ? how : `${how} · ${Math.round(k.distance)} m` });
+      }
       const last = !k.takedown ? encounterCleared(k.enemy, enemies) : !enemies.some((x) => x !== k.enemy && x.alive && x.state === "combat");
       const kk = {
         now: performance.now(),
@@ -3957,7 +4033,15 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       cam.fov = fov;
       cam.updateProjectionMatrix();
       cam.updateMatrixWorld();
-    } else world.render();
+    } else {
+      world.render();
+      // Plan item 17: the kill's still, from the frame just drawn (same task, so the drawing buffer is intact).
+      if (stillQ.length && performance.now() >= stillQ[0]!.at && !killcam.active) {
+        const q = stillQ.shift()!;
+        const src = grabFrame(o.canvas);
+        if (src) keepStill(visit, { score: q.score, src, caption: q.caption });
+      }
+    }
     perfPanel?.update();
     s.stats.ms = s.stats.ms * 0.9 + (performance.now() - t0) * 0.1;
     s.stats.frames++;

@@ -67,6 +67,11 @@ export class VaneBossJob {
     }
   }
 
+  /** Plan item 17 (tests): closes the case as if Vane were down and Cath had walked out. */
+  finish(): void {
+    if (!this.done) this.goto(2);
+  }
+
   update(_dt: number): void {
     if (this.stage === 0 && this.boss) {
       this.target = this.boss.position.clone().setY(this.boss.position.y + 2.2);
