@@ -21,6 +21,7 @@ import {
   isBig,
   isFleet,
   isRevealed,
+  landmarks,
   oakAt,
   maxHpOf,
   postMarker,
@@ -33,7 +34,8 @@ import {
   type TowerKind,
 } from "../engine";
 import { actLight, actMood, matte } from "./palette";
-import { buildCath, dressCath, buildEnemy, buildBarn, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { fordMiddle } from "../landmarks";
+import { buildCath, dressCath, buildEnemy, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -1071,6 +1073,7 @@ export class Renderer3D {
     this.syncSetPieces(game, t);
     this.syncPiles(game);
     this.syncOaks(game);
+    if (!this.reducedMotion) for (const sails of this.landmarkSails) sails.rotation.z -= dt * 0.9;
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
       const c = this.ground.farmhouse.localToWorld((this.ground.farmhouse.userData.chimney as THREE.Vector3).clone());
@@ -1683,6 +1686,8 @@ export class Renderer3D {
   /** Fallen oaks lie on their plots until cleared. */
   private oakObjs = new Map<string, THREE.Object3D>();
   private oakLevel = -1;
+  /** A landmark windmill's sails, turned every frame. */
+  private landmarkSails: THREE.Object3D[] = [];
   private syncOaks(game: Game): void {
     if (this.oakLevel !== game.level.id) {
       for (const o of this.oakObjs.values()) this.dynamic.remove(o);
@@ -1702,6 +1707,52 @@ export class Renderer3D {
         }
         this.dynamic.add(grp);
         this.oakObjs.set(`ford${f.from}`, grp);
+      }
+      this.landmarkSails = [];
+      for (const [n, m] of landmarks(game.level).entries()) {
+        if (m.type === "bank") continue;
+        const cs = m.cells.map(([c]) => c);
+        const rs = m.cells.map(([, r]) => r);
+        const c0 = Math.min(...cs);
+        const r0 = Math.min(...rs);
+        const w = Math.max(...cs) - c0 + 1;
+        const d = Math.max(...rs) - r0 + 1;
+        const o = buildLandmark(m.type, w, d, game.level.id * 97 + n * 13 + 5);
+        const x = c0 + w / 2;
+        const z = r0 + d / 2;
+        o.position.set(x, this.height(x, z) + 0.01, z);
+        this.dynamic.add(o);
+        this.oakObjs.set(`landmark${n}`, o);
+        const sails = o.userData.sails as THREE.Object3D | undefined;
+        if (sails) this.landmarkSails.push(sails);
+      }
+      const fordAt = landmarks(game.level).some((m) => m.type === "ford") ? fordMiddle(game.level) : null;
+      if (fordAt !== null) {
+        const p = enemyPoint(game.level, { dist: fordAt });
+        const q = enemyPoint(game.level, { dist: fordAt + 0.2 });
+        const plank = matte("#9a6a3e");
+        const fb = new THREE.Group();
+        for (let i = -4; i <= 4; i++) {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.03, 0.3), plank);
+          m.position.set(0, 0.32 + Math.cos((i / 4) * 1.2) * 0.08, i * 0.12);
+          m.castShadow = true;
+          fb.add(m);
+        }
+        for (const side of [-1, 1]) {
+          const rail = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 1.1), matte("#6b4a2c"));
+          rail.position.set(side * 0.14, 0.5, 0);
+          fb.add(rail);
+          for (const end of [-1, 1]) {
+            const post = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.5, 0.03), matte("#6b4a2c"));
+            post.position.set(side * 0.14, 0.25, end * 0.52);
+            fb.add(post);
+          }
+        }
+        fb.position.set(p.x, this.height(p.x, p.y), p.y);
+        // Across the lane: the lane runs p to q, the bridge's length (local z) is at right angles to it.
+        fb.rotation.y = Math.atan2(q.x - p.x, q.y - p.y) + Math.PI / 2;
+        this.dynamic.add(fb);
+        this.oakObjs.set("footbridge", fb);
       }
       for (const [c, r] of game.level.barns ?? []) {
         const b = buildBarn();

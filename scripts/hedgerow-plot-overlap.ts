@@ -1,13 +1,12 @@
 // Plan item 43: how alike are a Hedgerow act's fields? For each act (ten levels), the plot set of every level
-// (cells that aren't lane), compared pairwise by Jaccard on the cells both fields have. The plan's acceptance is
+// (cells that aren't lane or a landmark's scenery), compared pairwise by Jaccard on the cells both fields have. The plan's acceptance is
 // no pair within an act above 0.70. Usage: npx tsx scripts/hedgerow-plot-overlap.ts
 import { LEVELS } from "../games/hedgerow/src/levels";
-import { laneCellsOf } from "../games/hedgerow/src/engine";
+import { isPlot } from "../games/hedgerow/src/engine";
 
 const plots = (lv: (typeof LEVELS)[number]) => {
-  const lane = laneCellsOf(lv);
   const s = new Set<string>();
-  for (let c = 0; c < lv.cols; c++) for (let r = 0; r < lv.rows; r++) if (!lane.has(`${c},${r}`)) s.add(`${c},${r}`);
+  for (let c = 0; c < lv.cols; c++) for (let r = 0; r < lv.rows; r++) if (isPlot(lv, c, r)) s.add(`${c},${r}`);
   return s;
 };
 const jaccard = (a: Set<string>, b: Set<string>) => {
@@ -32,4 +31,4 @@ for (let act = 1; act <= Math.ceil(LEVELS.length / 10); act++) {
   over += pairs.length;
   console.log(`act ${act}: max ${max.toFixed(2)}, ${pairs.length} pairs over 0.70${pairs.length ? ": " + pairs.slice(0, 6).join(", ") : ""}`);
 }
-console.log(`worst ${worst.toFixed(2)}, ${over} pairs over 0.70; levels with no landmark: ${LEVELS.filter((l) => !l.setPieces?.length).length}/${LEVELS.length}`);
+console.log(`worst ${worst.toFixed(2)}, ${over} pairs over 0.70; levels with no landmark: ${LEVELS.filter((l) => !l.setPieces?.some((p) => p.kind === "landmark")).length}/${LEVELS.length}`);

@@ -2,7 +2,8 @@
 // per level and size into an offscreen canvas by `paintBackground`. Everything is procedural and seeded by
 // the level id, so a level always looks the same and nothing needs downloading.
 
-import { laneCellsOf, plotKind, type Level } from "./engine";
+import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
+import { paintLandmarks } from "./landmarkart";
 
 export type Decor =
   | "oak"
@@ -337,6 +338,7 @@ export function paintBackground(
 
   paintLane(ctx, level, L, theme, rand);
   paintPlots(ctx, level, L);
+  paintLandmarks(ctx, level, L);
   paintDecor(ctx, level, L, theme, rand);
   paintGate(ctx, level, L);
 
@@ -559,9 +561,10 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
     const dy = Math.sign(r - path[1]![1]);
     for (let k = 1; k < Math.max(level.cols, level.rows); k++) leadIn.add(`${c + dx * k},${r + dy * k}`);
   }
+  const scenery = sceneryCells(level);
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
-      if (lane.has(`${c},${r}`)) continue;
+      if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`)) continue;
       const x = L.offX + c * s;
       const y = L.offY + r * s;
       const inset = s * 0.12;

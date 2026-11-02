@@ -1,3 +1,4 @@
+import { LANDMARKS } from "./landmarks";
 import "../../../shared/ui/base.css";
 import "../../../shared/ui/palette.css";
 import { mountWeekChip } from "../../../shared/cath/weekchip";
@@ -57,6 +58,7 @@ import {
   isHeavy,
   enemyClass,
   isPlot,
+  landmarkAt,
   laneCellsOf,
   pieRadius,
   pieUnlocked,
@@ -1359,6 +1361,11 @@ function renderPanel(force = false): void {
     towerCard(p, g, t);
     return;
   }
+  const mark = landmarkAt(g.level, sel.col, sel.row);
+  if (mark && mark.type !== "bank") {
+    p.append(line(`${LANDMARKS[mark.type].name}. ${LANDMARKS[mark.type].note}`));
+    return;
+  }
   if (!isPlot(g.level, sel.col, sel.row)) {
     p.append(line("That's the lane: towers go on the grass beside it. To move Cath, tap her between waves, then tap her new post."));
     return;
@@ -1541,6 +1548,7 @@ function wavePreview(p: HTMLElement, g: Game): void {
     notes.push(line(rule, "twist-line"));
   }
   for (const sp of g.level.setPieces ?? []) {
+    if (sp.kind === "landmark") continue;
     const [name, rule] =
       sp.kind === "flood"
         ? ["Flood", `Flood: from wave ${sp.wave} the river covers the plots by the ford; only Duck Ponds stand there, and vehicles wade.`]

@@ -10,7 +10,7 @@
 import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import type { EnemyKind, MegaId, TowerKind } from "../engine";
+import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
 import { bubble, C, chrome, glass, gloss, glow, matte, metal } from "./palette";
 
 type M = THREE.Material;
@@ -2731,4 +2731,179 @@ export function buildMega(id: MegaId): THREE.Group {
   bake(root);
   root.userData.mega = id;
   return root;
+}
+
+/**
+ * A landmark (plan item 43) on its footprint, `w` cells across (x) by `d` deep (z), centred on the origin with the
+ * ground at y = 0. Baked like the towers; a windmill's sails are left loose (userData.sails) so they can turn.
+ */
+export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1): THREE.Group {
+  let s = (seed * 2654435761) >>> 0 || 1;
+  const rand = () => {
+    s ^= s << 13;
+    s ^= s >>> 17;
+    s ^= s << 5;
+    return (s >>> 0) / 4294967296;
+  };
+  const g = new THREE.Group();
+  const pad = (color: string, inset = 0.08, h = 0.03) => g.add(box(w - inset * 2, h, d - inset * 2, matte(color), 0, 0, 0));
+  const tree = (x: number, z: number, r: number, leaf: string, fruit?: string) => {
+    g.add(cyl(r * 0.18, r * 0.24, r * 1.2, matte("#6b4a2c"), x, 0, z, 6));
+    g.add(ball(r, matte(leaf), x, r * 1.5, z, 1));
+    if (fruit) for (let i = 0; i < 4; i++) g.add(ball(r * 0.14, matte(fruit, 0.6), x + (rand() - 0.5) * r * 1.4, r * (1.2 + rand() * 0.7), z + (rand() - 0.5) * r * 1.4, 0));
+  };
+  const long = w >= d;
+  switch (kind) {
+    case "green": {
+      pad("#93c86a");
+      const wellStone = matte("#bdb3a2");
+      g.add(cyl(0.2, 0.22, 0.2, wellStone, 0, 0.03, 0, 12));
+      g.add(cyl(0.15, 0.15, 0.02, matte("#24343c", 0.2), 0, 0.22, 0, 12));
+      g.add(box(0.03, 0.4, 0.03, matte("#5b4330"), -0.18, 0.2, 0), box(0.03, 0.4, 0.03, matte("#5b4330"), 0.18, 0.2, 0));
+      g.add(rot(bx(0.46, 0.03, 0.22, matte("#a8402f"), 0, 0.66, 0.08), 0.6, 0, 0), rot(bx(0.46, 0.03, 0.22, matte("#a8402f"), 0, 0.66, -0.08), -0.6, 0, 0));
+      g.add(box(0.36, 0.05, 0.1, matte("#7a5534"), -w * 0.3, 0.12, d * 0.32));
+      tree(w * 0.33, -d * 0.3, 0.16, "#5c9a42");
+      break;
+    }
+    case "orchard": {
+      pad("#7fb35a");
+      const n = Math.round((long ? w : d) * 2);
+      for (let k = 0; k < n; k++)
+        for (const lane of [-0.22, 0.22]) {
+          const t = -(long ? w : d) / 2 + ((k + 0.5) * (long ? w : d)) / n;
+          tree(long ? t : lane * w, long ? lane * d : t, 0.15, k % 2 ? "#4f8a3a" : "#5c9a42", "#d0442f");
+        }
+      break;
+    }
+    case "quarry": {
+      // A rim, then benches stepping down (built as rings of slabs above a dark floor).
+      pad("#d8ccb0", 0.05, 0.06);
+      const steps = ["#c6b893", "#b3a37c", "#9c8c67"];
+      steps.forEach((c, k) => g.add(box(w - 0.3 - k * 0.3, 0.03, d - 0.3 - k * 0.3, matte(c), 0, 0.06 + k * 0.005, 0)));
+      g.add(box(0.5, 0.01, 0.3, matte("#5a96aa", 0.15), 0.1, 0.08, 0.1));
+      for (let k = 0; k < 5; k++) g.add(box(0.12, 0.08, 0.09, matte("#e6dcc4"), (rand() - 0.5) * (w - 0.6), 0.06, (rand() - 0.5) * (d - 0.6)));
+      g.add(box(0.24, 0.18, 0.16, matte("#6d6a5f"), w / 2 - 0.25, 0.06, -d / 2 + 0.18));
+      break;
+    }
+    case "farmyard": {
+      pad("#c7a979");
+      const rail = matte("#7a5534");
+      g.add(box(w - 0.2, 0.03, 0.03, rail, 0, 0.16, -d / 2 + 0.1), box(w - 0.2, 0.03, 0.03, rail, 0, 0.16, d / 2 - 0.1));
+      g.add(box(0.03, 0.03, d - 0.2, rail, -w / 2 + 0.1, 0.16, 0), box(0.03, 0.03, d - 0.2, rail, w / 2 - 0.1, 0.16, 0));
+      for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) g.add(box(0.05, 0.22, 0.05, matte("#5b4330"), x * (w / 2 - 0.1), 0, z * (d / 2 - 0.1)));
+      for (let k = 0; k < 3; k++) g.add(rot(cyl(0.11, 0.11, 0.16, matte("#e2bf5f"), -w * 0.25 + k * 0.26, 0.11, -d * 0.2, 12), 0, 0, Math.PI / 2));
+      g.add(box(0.42, 0.14, 0.26, matte("#a8402f"), w * 0.15, 0.1, d * 0.18));
+      for (const x of [-0.13, 0.13]) g.add(disc(0.08, 0.03, matte("#3b3029"), w * 0.15 + x, 0.1, d * 0.18 + 0.15, 10));
+      for (let k = 0; k < 4; k++) g.add(ball(0.04, matte("#fbf6ea"), (rand() - 0.5) * w * 0.6, 0.07, d * 0.05 + rand() * d * 0.3, 0));
+      break;
+    }
+    case "churchyard": {
+      pad("#86b860");
+      const wall = matte("#a59c8b");
+      g.add(box(w - 0.1, 0.16, 0.08, wall, 0, 0, -d / 2 + 0.06));
+      g.add(box(0.08, 0.16, d - 0.1, wall, -w / 2 + 0.06, 0, 0), box(0.08, 0.16, d - 0.1, wall, w / 2 - 0.06, 0, 0));
+      g.add(box(w / 2 - 0.2, 0.16, 0.08, wall, -w / 4 - 0.05, 0, d / 2 - 0.06), box(w / 2 - 0.2, 0.16, 0.08, wall, w / 4 + 0.05, 0, d / 2 - 0.06));
+      tree(w * 0.25, -d * 0.22, Math.min(w, d) * 0.17, "#2f5a33");
+      const cols = Math.max(2, Math.round(w * 2));
+      for (let row = 0; row < 2; row++)
+        for (let k = 0; k < cols; k++) {
+          if (row === 0 && k >= cols - Math.ceil(cols / 3)) continue;
+          g.add(rot(box(0.1, 0.16, 0.035, matte("#cfc8ba"), -w / 2 + 0.25 + (k * (w - 0.5)) / Math.max(1, cols - 1), 0.03, -d * 0.1 + row * d * 0.3), 0, 0, (rand() - 0.5) * 0.2));
+        }
+      break;
+    }
+    case "market": {
+      pad("#c9bda5", 0.05);
+      const awn = ["#d93a2f", "#3c7fb1", "#3f8a52", "#e0a32e"];
+      const spots: Array<[number, number]> = [[-0.25, -0.25], [0.25, -0.25], [-0.25, 0.25], [0.25, 0.25]];
+      spots.forEach(([fx, fz], k) => {
+        if ((w < 1.5 || d < 1.5) && k % 2) return;
+        const x = fx * w;
+        const z = fz * d;
+        for (const [px, pz] of [[-0.16, -0.1], [0.16, -0.1], [-0.16, 0.1], [0.16, 0.1]] as const) g.add(box(0.025, 0.3, 0.025, matte("#5b4330"), x + px, 0.03, z + pz));
+        g.add(box(0.34, 0.08, 0.22, matte("#8a6a40"), x, 0.13, z));
+        g.add(rot(bx(0.4, 0.02, 0.28, matte(awn[k % awn.length]!), x, 0.36, z), 0.25, 0, 0));
+        for (let j = 0; j < 3; j++) g.add(ball(0.035, matte(["#e5533b", "#f2c94c", "#7fb35a"][j]!), x - 0.1 + j * 0.1, 0.24, z, 0));
+      });
+      g.add(box(0.06, 0.32, 0.06, matte("#bdb3a2"), 0, 0.03, 0), box(0.18, 0.05, 0.05, matte("#bdb3a2"), 0, 0.26, 0));
+      break;
+    }
+    case "reeds": {
+      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#4f8ea6", 0.15), 0, 0.0, 0));
+      const reed = [matte("#5d8a3a"), matte("#7aa84a")];
+      const n = Math.round(w * d * 9);
+      for (let k = 0; k < n; k++) {
+        const x = (rand() - 0.5) * (w - 0.3);
+        const z = (rand() - 0.5) * (d - 0.3);
+        const h = 0.22 + rand() * 0.16;
+        g.add(rot(box(0.015, h, 0.015, reed[k % 2]!, x, 0, z), (rand() - 0.5) * 0.3, 0, (rand() - 0.5) * 0.3));
+        if (k % 3 === 0) g.add(box(0.03, 0.07, 0.03, matte("#6b4227"), x, h, z));
+      }
+      // A heron standing in the shallows.
+      g.add(box(0.012, 0.14, 0.012, matte("#d9d4c6"), w * 0.25, 0, 0), ball(0.05, matte("#e9e6dc"), w * 0.25, 0.18, 0, 0), ball(0.025, matte("#e9e6dc"), w * 0.25 + 0.03, 0.27, 0, 0));
+      break;
+    }
+    case "windmill": {
+      g.add(scaled(ball(0.5, matte("#8cb45a"), 0, -0.3, 0, 2), w * 0.9, 0.8, d * 0.9));
+      g.add(cyl(0.16, 0.24, 0.7, matte("#efe6d2"), 0, 0.05, 0, 10));
+      g.add(cone(0.2, 0.2, matte("#4a4540"), 0, 0.75, 0, 10));
+      g.add(box(0.1, 0.16, 0.02, matte("#5b4330"), 0, 0.05, 0.22));
+      const sails = new THREE.Group();
+      sails.name = "sails";
+      sails.position.set(0, 0.72, 0.22);
+      for (let k = 0; k < 4; k++) {
+        const arm = new THREE.Group();
+        arm.rotation.z = (k * Math.PI) / 2 + Math.PI / 4;
+        arm.add(box(0.07, 0.42, 0.01, matte("#f0e8d6"), 0.03, 0.05, 0));
+        arm.add(box(0.015, 0.47, 0.015, matte("#5b4330"), 0, 0, 0));
+        sails.add(arm);
+      }
+      g.add(sails);
+      g.userData.sails = sails;
+      break;
+    }
+    case "lock": {
+      pad("#cbbf9f", 0.08, 0.05);
+      const cw = long ? w - 0.16 : (w - 0.16) * 0.55;
+      const cd = long ? (d - 0.16) * 0.55 : d - 0.16;
+      g.add(box(cw, 0.01, cd, matte("#3f7f9c", 0.12), 0, 0.045, 0));
+      for (const f of [-0.33, 0.33]) {
+        const gx = long ? f * w : 0;
+        const gz = long ? 0 : f * d;
+        g.add(box(long ? 0.06 : cw, 0.14, long ? cd : 0.06, matte("#1f1b19"), gx, 0.04, gz));
+        g.add(box(long ? 0.04 : 0.32, 0.04, long ? 0.32 : 0.04, matte("#f4efe2"), gx + (long ? 0 : 0.3), 0.18, gz + (long ? 0.3 : 0)));
+      }
+      break;
+    }
+    case "silo": {
+      g.add(box(w - 0.16, 0.02, d - 0.16, matte("#8a8273"), 0, 0, 0));
+      const r = Math.min(w, d) * 0.3;
+      g.add(cyl(r, r, 0.9, metal("#d7dcdf"), 0, 0.02, 0, 16));
+      g.add(cone(r * 1.02, 0.18, metal("#9aa1a5"), 0, 0.92, 0, 16));
+      g.add(cyl(r * 1.01, r * 1.01, 0.08, matte("#d9772f"), 0, 0.55, 0, 16));
+      g.add(box(0.06, 0.9, 0.02, matte("#3b3029"), r + 0.02, 0.02, 0));
+      break;
+    }
+    case "ford": {
+      g.add(box(w - 0.2, 0.015, d - 0.2, matte("#5f96aa", 0.15), 0, 0, 0));
+      const n = Math.max(1, Math.round(w * d));
+      for (let k = 0; k < n; k++) {
+        const x = -w / 2 + ((k + 0.5) * w) / n;
+        g.add(cyl(0.04, 0.06, 0.35, matte("#6b4a2c"), x, 0, 0, 6));
+        for (let j = 0; j < 8; j++) {
+          const a = (j / 8) * Math.PI * 2;
+          g.add(rot(box(0.02, 0.3, 0.02, matte("#7ea84e"), x + Math.cos(a) * 0.14, 0.1, Math.sin(a) * 0.14), Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35));
+        }
+        g.add(ball(0.16, matte("#7ea84e"), x, 0.42, 0, 1));
+      }
+      break;
+    }
+    case "bank":
+      break;
+  }
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+  });
+  bake(g);
+  return g;
 }
