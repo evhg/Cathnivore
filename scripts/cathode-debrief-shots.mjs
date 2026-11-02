@@ -30,7 +30,8 @@ for (const [name, opts] of SIZES.filter(([n]) => !ONLY || n === ONLY)) {
   }, JOBS)
   await page.goto(`${base}?play&district=clinic`)
   await page.waitForFunction(() => (window.cathode?.stats.frames ?? 0) >= 3, null, { timeout: 200000 })
-  await page.waitForTimeout(3000)
+  // Past the area title and the boss intro, as in play (the debrief opens 5 s after the boss falls).
+  await page.waitForTimeout(12000)
   const looks = [[0, 0, 'Headshot · 23 m', 60], [0.6, -0.05, 'Takedown', 50], [-0.5, 0.02, 'Down · 14 m', 30]]
   for (const [yaw, pitch, cap, score] of looks) {
     await page.evaluate(([y, p, c, sc]) => {
