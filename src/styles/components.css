@@ -765,6 +765,9 @@ html.no-animations .tooltip-popover {
 
 .coach[data-place="below"] .coach-card::before { top: -8.5px; border-right: 0; border-bottom: 0; }
 .coach[data-place="above"] .coach-card::before { bottom: -8.5px; border-left: 0; border-top: 0; background: var(--card-lo); }
+/* Beside the target (a short, wide screen): `--notch-x` then holds the notch's height on the card's edge. */
+.coach[data-place="right"] .coach-card::before { left: -8.5px; top: var(--notch-x); translate: 0 -50%; border-top: 0; border-right: 0; }
+.coach[data-place="left"] .coach-card::before { left: auto; right: -8.5px; top: var(--notch-x); translate: 0 -50%; border-bottom: 0; border-left: 0; }
 .coach[data-place="centre"] .coach-card::before,
 .coach[data-place="docked"] .coach-card::before { display: none; }
 

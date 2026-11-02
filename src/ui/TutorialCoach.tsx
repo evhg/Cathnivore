@@ -74,22 +74,40 @@ export default function TutorialCoach({ targetId, text, why, step, total, nextLa
           hy = Math.max(0, r.top - GAP)
           hw = Math.min(vw, r.right + GAP) - hx
           hh = Math.min(vh, r.bottom + GAP) - hy
+          const cx = hx + hw / 2
+          const cy = hy + hh / 2
           const below = hy + hh + MARGIN
           const above = hy - MARGIN - ch
+          const rightOf = hx + hw + MARGIN
+          const leftOf = hx - MARGIN - cw
+          const clampX = (x: number) => Math.min(Math.max(x, MARGIN), Math.max(MARGIN, vw - cw - MARGIN))
+          const clampY = (y: number) => Math.min(Math.max(y, MARGIN), Math.max(MARGIN, vh - ch - MARGIN))
           if (below + ch <= vh - MARGIN) {
             top = below
             place = 'below'
           } else if (above >= MARGIN) {
             top = above
             place = 'above'
+          } else if (rightOf + cw <= vw - MARGIN) {
+            // A short screen (a phone held sideways): beside the target instead.
+            left = rightOf
+            top = clampY(cy - ch / 2)
+            place = 'right'
+          } else if (leftOf >= MARGIN) {
+            left = leftOf
+            top = clampY(cy - ch / 2)
+            place = 'left'
           } else {
-            // No room either side (a tall target on a short screen): dock to the far edge.
-            top = hy + hh / 2 > vh / 2 ? MARGIN : vh - ch - MARGIN
+            // No room anywhere: dock to the far edge.
+            top = cy > vh / 2 ? MARGIN : vh - ch - MARGIN
             place = 'docked'
           }
-          const cx = hx + hw / 2
-          left = Math.min(Math.max(cx - cw / 2, MARGIN), Math.max(MARGIN, vw - cw - MARGIN))
-          notch = Math.min(Math.max(cx - left, 22), cw - 22)
+          if (place === 'left' || place === 'right') {
+            notch = Math.min(Math.max(cy - top, 22), ch - 22)
+          } else {
+            left = clampX(cx - cw / 2)
+            notch = Math.min(Math.max(cx - left, 22), cw - 22)
+          }
         }
         const key = [has, hx, hy, hw, hh, left, top, place, notch].map((n) => (typeof n === 'number' ? Math.round(n) : n)).join(',')
         if (key !== last) {
