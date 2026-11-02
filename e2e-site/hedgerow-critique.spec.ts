@@ -50,4 +50,18 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
       await page.locator('#dlg-story').getByRole('button', { name: 'Next' }).click()
     }
   })
+
+  test('at 844x390 every tray card shows its whole name', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto('/hedgerow/?sandbox=1&2d')
+    await page.evaluate(() => {
+      const stars = Object.fromEntries(Array.from({ length: 11 }, (_, i) => [String(i + 1), 3]))
+      const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 12: true }, tips }))
+    })
+    await page.goto('/hedgerow/?sandbox=1&2d&level=12')
+    await expect(page.locator('.tray-name').first()).toBeVisible()
+    const cut = await page.locator('.tray-name').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.textContent))
+    expect(cut).toEqual([])
+  })
 })

@@ -2919,6 +2919,17 @@ img.act-scene {
     display: none;
   }
 }
+/* Plan item 40: on a landscape phone the longest names (Hedgerow, Scarecrow) ran 3 px past the 58 px card
+   (ui/components.css), and Market Stall or Seed Cannon by more; the tray already scrolls sideways, so each card
+   fits its own name (62 px at least) rather than an ellipsis. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .play .tray .tray-tower {
+    flex: none;
+    width: auto;
+    min-width: 62px;
+    padding-inline: 4px;
+  }
+}
 /* Range pips in the field's green, damage in the Marks' red-brown. */
 .pip-row.range b.on {
   background: var(--pasture-ink);
