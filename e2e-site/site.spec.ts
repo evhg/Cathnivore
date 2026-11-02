@@ -143,16 +143,38 @@ test.describe('landing page', () => {
 })
 
 test.describe('Runnel', () => {
-  test('first visit shows how to play, then a tap turns a tile', async ({ page }) => {
+  /** The first-visit lesson (plan item 22): three taps on the glowing tile, then today's daily. */
+  async function walkLesson(page: Page): Promise<void> {
+    await expect(page.locator('.tiles > g.cell')).toHaveCount(4)
+    for (let i = 0; i < 3; i++) {
+      const target = page.locator('.tiles > g.cell.lesson-target')
+      await expect(target).toHaveCount(1)
+      await target.click({ force: true })
+    }
+    await expect(page.locator('#host-line')).toContainText("Here's today's field")
+    await expect(page.locator('.tiles > g.cell')).not.toHaveCount(4, { timeout: 10_000 })
+  }
+
+  test("first visit teaches on the board (no modal), then today's daily plays", async ({ page }) => {
     const errors = trackErrors(page)
     await page.goto('/runnel/')
-    await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
-    await page.getByRole('button', { name: 'Start' }).click()
+    await expect(page.locator('#dlg-help')).not.toBeVisible()
+    await expect(page.locator('#host-line')).toContainText('Tap the glowing tile')
+    // A tap anywhere else does nothing but say where to tap.
+    const off = page.locator('.tiles > g.cell:not(.lesson-target)').first()
+    await off.click({ force: true })
+    await expect(page.locator('#hint')).toContainText('glowing tile')
+    await walkLesson(page)
     await expect(page.locator('#hud-taps')).toHaveText('0')
     const puzzle = dailyPuzzle(utcDateString(new Date()))
     const turnable = puzzle.cells.findIndex((c) => tapsToSolve(c) > 0)
     await page.locator('.tiles > g.cell').nth(turnable).click({ force: true })
     await expect(page.locator('#hud-taps')).toHaveText('1')
+    // It doesn't come back, and the full rules still sit behind "?".
+    await page.reload()
+    await expect(page.locator('.tiles > g.cell.lesson-target')).toHaveCount(0)
+    await page.locator('#btn-help').click()
+    await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
     await noSideways(page)
     expect(errors).toEqual([])
   })
@@ -224,12 +246,11 @@ test.describe('Runnel', () => {
     await expect(target).toHaveAttribute('tabindex', '0')
   })
 
-  test('has no serious or critical accessibility issues, before and during play', async ({ page }) => {
+  test('has no serious or critical accessibility issues, in the lesson and during play', async ({ page }) => {
     await page.goto('/runnel/')
-    await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
+    await expect(page.locator('.tiles > g.cell.lesson-target')).toHaveCount(1)
     await assertNoSeriousIssues(page)
-    await page.getByRole('button', { name: 'Start' }).click()
-    await expect(page.locator('.tiles > g.cell')).not.toHaveCount(0)
+    await walkLesson(page)
     await assertNoSeriousIssues(page)
   })
 })

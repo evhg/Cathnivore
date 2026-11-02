@@ -11,6 +11,7 @@ import './styles.css'
 import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
+import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
 import { skyFor } from './sky'
 import {
   arcLabel,
@@ -116,6 +117,11 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
 }
 
 function openGame(): void {
+  // Leaving the lesson early (a tab, a board code): it comes back on the next visit.
+  if (lessonStep >= 0) {
+    lessonStep = -1
+    document.body.classList.remove('in-lesson')
+  }
   pauseClock()
   if (mode === 'daily') {
     puzzle = dailyPuzzle(playDay)
@@ -767,6 +773,61 @@ document.addEventListener('keydown', (e) => {
 })
 document.addEventListener('pointerdown', () => document.body.classList.remove('keyboard'))
 
+// ---- the first-visit lesson -------------------------------------------------------------------------
+
+/** The lesson's step while it runs, else -1. */
+let lessonStep = -1
+function startLesson(): void {
+  const lp = lessonPuzzle()
+  lessonStep = 0
+  document.body.classList.add('in-lesson')
+  board = new Board(ui.board, lp, {
+    onTurn: (index) => {
+      const r = lessonTap(lp.cells, lessonStep, index)
+      if (!r.accepted) {
+        flashHint('Tap the glowing tile.')
+        return
+      }
+      const before = wetCount
+      const flow = board.refresh(index)
+      wetCount = flow.wet.size
+      playTurn()
+      playWater(wetCount - before, wetCount / lp.cells.length)
+      lessonStep = r.step
+      if (r.solved) {
+        board.celebrate()
+        playWin()
+        markLessonTarget(-1)
+        host.say('delighted', LESSON_DONE)
+        ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
+        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 2600)
+      } else showLessonStep()
+    },
+    onToggleLock: () => flashHint('No need to pin anything yet. Tap the glowing tile.'),
+  })
+  wetCount = computeFlow(lp.cells).wet.size
+  showLessonStep()
+}
+function showLessonStep(): void {
+  const s = LESSON_STEPS[lessonStep]
+  if (!s) return
+  host.say(s.expression, s.ask)
+  markLessonTarget(s.target)
+}
+function markLessonTarget(index: number): void {
+  const tiles = ui.board.querySelectorAll<SVGGElement>('.tiles > g.cell')
+  tiles.forEach((t, i) => t.classList.toggle('lesson-target', i === index))
+  if (index >= 0) tiles[index]?.focus({ preventScroll: true })
+}
+function endLesson(): void {
+  if (lessonStep < 0) return
+  lessonStep = -1
+  document.body.classList.remove('in-lesson')
+  data.seenHelp = true
+  save(data)
+  openGame()
+}
+
 // ---- start ------------------------------------------------------------------------------------------
 
 const params = new URLSearchParams(location.search)
@@ -776,7 +837,8 @@ if (params.get('mode') === 'orchard') {
   level = unlockedLevel(data.orchard ?? {})
 }
 openGame()
-if (!data.seenHelp && !params.has('nohelp')) ui.dlgHelp.showModal()
+// A first visit learns on the board, not from a rules sheet (plan item 22): `?lesson` replays it.
+if ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) startLesson()
 // Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
 if (params.has('shotwin')) finish()
 // Screenshot hook: `?shotsolve` sets every piece to its solution except the first turnable one next to

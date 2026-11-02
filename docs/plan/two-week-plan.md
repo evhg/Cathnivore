@@ -317,7 +317,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Shots at P and D.
 - **Size:** 4
 
-## 22. [ ] Runnel: teach on the board
+## 22. [x] Runnel: teach on the board *(done 2026-11-02, owner session: `lesson.ts`, a four-tile field Cath walks you through in 3 taps on a glowing tile, then today's daily; no modal on a fresh profile; the rules sit behind "?"; `?lesson` replays it; unit test and e2e at P and D)*
 - **Why:** the first screen is a How to Play modal (4 rules and 3 diagrams) that hides item 6's living board (`P-runnel`, `D-runnel`).
 - **Build:**
   - The first visit opens a tiny tutorial board with Cath coaching in a speech bubble: turn, connect, bloom.

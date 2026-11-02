@@ -29,6 +29,8 @@ const PRACTICE = [
 export interface HostView {
   greet(daily: boolean, dayNumber: number): void
   react(fraction: number, solved: boolean): void
+  /** A line of her own (the first-visit lesson). */
+  say(expression: CathExpression, text: string): void
 }
 
 export function createHost(face: HTMLElement, line: HTMLElement): HostView {
@@ -53,6 +55,9 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
       milestone = 0
       const pool = daily ? GREETINGS : PRACTICE
       show('smirk', pool[(dayNumber - 1 + pool.length * 10) % pool.length]!)
+    },
+    say(expression, text) {
+      show(expression, text)
     },
     react(fraction, solved) {
       if (solved) {
