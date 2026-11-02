@@ -4,6 +4,8 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { GoodwillIcon } from './icons/ResourceIcons'
 import CathArt from './CathArt'
 import Tooltip from './Tooltip'
+import Vignette from './Vignette'
+import { vignetteFor } from './vignetteKind'
 import type { GameState } from '../engine/types'
 
 // SPEC 10.2 "Sheets ... Cath's Plan (3 Schemes)." Playing a Scheme may need picking a region, which the
@@ -54,6 +56,7 @@ export default function CathsPlanSheet({
         if (!card) return null
         return (
           <li key={id} className={`card-enter card-framed card-plan${playing === id ? ' card-playing' : ''}`} data-tag="plan">
+            <Vignette kind={vignetteFor(card)} seed={card.id} />
             <div className="card-head">
               <span className="card-head-name">
                 <CathArt className="card-plan-avatar" framing="face" width={32} height={32} title="Cath" />
@@ -105,6 +108,7 @@ export default function CathsPlanSheet({
               <li key={id} className={`card-enter card-row card-framed card-plan${playing === id ? ' card-playing' : ''}`} data-tag="plan">
                 <details>
                   <summary>
+                    <Vignette kind={vignetteFor(card)} seed={card.id} />
                     <strong>{card.name}</strong>
                   </summary>
                   <p className="card-text">{card.text}</p>

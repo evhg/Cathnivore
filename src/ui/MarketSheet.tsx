@@ -4,6 +4,8 @@ import { investCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import CardTagIcon from './icons/CardTagIcon'
 import Tooltip from './Tooltip'
+import Vignette from './Vignette'
+import { vignetteFor } from './vignetteKind'
 import type { GameState } from '../engine/types'
 
 const TAG_LABEL: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -55,6 +57,8 @@ export default function MarketSheet({
         if (!card) return null
         return (
           <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
+            {/* Plan item 36: the card's place, drawn. */}
+            <Vignette kind={vignetteFor(card)} seed={card.id} />
             {/* AAA UI M4 fix: the same mini-card head as the desktop Market (tag band, name, tags line,
                 cost coin), with the effect under it, so one card has one look everywhere. */}
             <div className="card-head">
@@ -104,6 +108,7 @@ export default function MarketSheet({
               <li key={id} className={`card-enter card-row card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]}>
                 <details>
                   <summary>
+                    <Vignette kind={vignetteFor(card)} seed={card.id} />
                     <CardTagIcon tag={card.tags[0]} /> <strong>{card.name}</strong>
                     <span className="card-tags">{card.tags.map((t) => TAG_LABEL[t]).join(', ')}</span>
                   </summary>

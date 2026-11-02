@@ -2588,3 +2588,22 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .actions .teammate-card-name { font-size: var(--fs-body); }
   .actions .teammate-card-reason { font-size: var(--fs-voice); }
 }
+
+/* Plan item 36: each Market and Plan card shows its place as a code-drawn vignette: a banner across the
+   top of a phone card, a thumbnail at the head of a desktop drawer row. */
+.card-vignette {
+  display: block;
+  width: calc(100% + 24px);
+  height: 72px;
+  margin: -10px -12px 8px;
+  border-bottom: 1px solid var(--ink-a15);
+}
+.card-list-collapsible .card-vignette {
+  display: inline-block;
+  width: 52px;
+  height: 30px;
+  margin: 0 8px 0 0;
+  border: 1px solid var(--ink-a15);
+  border-radius: 4px;
+  vertical-align: middle;
+}
