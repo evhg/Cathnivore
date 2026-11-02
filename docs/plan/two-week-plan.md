@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: owner session, 2026-11-02T14:08Z. Items 33-39 (Cathnivore, Runnel, site) are in. NIGHT SHIFT and Hedgerow items follow within the hour; lanes, take 33 onwards now.
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -583,6 +582,144 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - e2e: the rail is hidden during `?lesson` at D.
   - Shots of Practice and the workshop at P and D.
 - **Size:** 2
+
+## 40. [ ] NIGHT SHIFT and Hedgerow: the bugs from the 2026-11-02 critique, fixed as one batch
+- **Why:** a fresh-eyes pass at P, D and L found layout and craft bugs.
+- **Build:**
+  - **Hedgerow:**
+    - In story scenes the speaker's name plate is clipped at D and L, and at P the figure covers it.
+    - On a fresh visit, the map's host line hides under the glass header.
+    - At D, the side column's "Coming up" card is clipped at its foot.
+    - At L, the round card's "OF 13" and the tray names are cut off.
+    - At L, the end card loses its stats and rewards off-card.
+    - In 3D, black wedge shards lie on the grass (back-faced or unlit particles).
+    - "Start here" shows on a level mid-campaign.
+  - **NIGHT SHIFT:**
+    - At L, Skill covers "Drag to aim" and Takedown overlaps the scope.
+    - The objective scrim is a hard dark ellipse over light scenes; make it a soft gradient.
+    - The `?front=classpick` stage draws the list over the menu.
+    - At P, the class pick's stats run off the screen with no scroll cue.
+    - At L, the case board cuts off its leads and Back button.
+    - Continue's line names a district and another case's lead; it should say plainly what Continue opens.
+    - `window.cathodeFront.ready` never fires on a fresh-profile gate.
+- **Accept:** each fix is shot at the sizes it broke at, with an e2e or unit check where one fits (no clipped text: `scrollWidth <= clientWidth + 1`; no control overlaps at L; ready fires at the gate).
+- **Size:** 3
+
+## 41. [ ] NIGHT SHIFT: enemies with faces (hero-quality archetype models)
+- **Why:**
+  - The player spends most of the game aiming at enemies, and they are the least finished art on screen:
+    - the clinic orderly is a mannequin with a slab face, tube limbs and mitten hands;
+    - the shield carrier reads as a floating slab;
+    - the rappeller has no rope;
+    - Plaza guards at 25 m are black blobs.
+  - The owner asked for very high-quality enemy design (FEEDBACK 2026-10-15).
+- **Build:**
+  - Rebuild every archetype in `game/models/`.
+  - Each gets a shaped head with a painted face or a faction mask or visor, real hands, a neck, cloth breakup (hems, pockets, straps) and a faction palette.
+  - A rim or emissive strip so they read at 30 m at night.
+  - Model the shield carrier fully behind the shield, and give rappellers a rope and harness.
+  - Three LODs each, with gore caps matched to the new limbs.
+- **Accept:**
+  - Turntable shots (front, three-quarter, back) of every archetype at D.
+  - Unit: each LOD0 has a face material and two hand meshes, and stays inside a 12k triangle budget.
+  - Plaza guards differ from the background by 15% or more in luminance at 25 m (shot check).
+  - The phone `cathode-perf` tier stays under 260 calls in a 12-enemy fight.
+  - The ragdoll and dismemberment e2e still pass.
+- **Size:** 4
+
+## 42. [ ] NIGHT SHIFT: Cath faces the camera (the class pick and staged interrogations)
+- **Why:**
+  - The player never sees her face: the gate, title and class pick are all from behind.
+  - At D the class pick has an empty, dark centre for all five classes.
+  - The talk is a flat plate of the lieutenant and a menu, with no Cath.
+- **Build:**
+  - **Class pick:** item 9's hero model three-quarter to camera in each class's kit, with a signature pose and a one-line bark. Switching class plays a 400 ms turn and outfit swap. At P she stands above the list.
+  - **Interrogation:** a third-person two-shot in the world, the lieutenant pinned to a wall and Cath on the left third.
+  - The lieutenant gets a real bust that reacts to each answer, and Cath plays a bible expression per approach.
+  - The choices sit on a lower-third strip. The 2D plate stays as the fallback on low quality and with reduced motion.
+- **Accept:**
+  - Shots of all five classes at P, D and L, with Cath's head in frame and at least 12% of the height at D.
+  - Unit: the five poses are distinct.
+  - e2e: `talkCam.mode === 'two-shot'` with both on screen; reduced motion fades.
+  - The talk e2e still picks an option.
+- **Size:** 4
+
+## 43. [ ] Hedgerow: every level a place (hand-shaped fields and set pieces)
+- **Why:**
+  - Level 2 and level 38 are the same plot grid on the same S-lane, in 2D and 3D.
+  - Twists barely change the ground.
+  - This is the owner's top complaint in Hedgerow FEEDBACK rounds 2 and 3.
+- **Build:**
+  - A set-piece layer in the layouts and terrain: each level declares one or two landmarks from a library of about 12:
+    - a ford with a bridge, a village green with a well, orchard rows;
+    - a quarry rim, a raised bank (plots on higher ground with a reach bonus);
+    - a farmyard, a churchyard wall, a market square, a reed bed;
+    - a windmill hill, a canal lock, the silo.
+  - Plots follow the land.
+  - Twists change the ground: Flood raises the river into the field, Night lights lanterns, Crowds lines the verges with vans.
+  - 3D meshes plus 2D tiles; re-fit `START_K` with the tuner.
+- **Accept:**
+  - Unit: within an act, no two levels' plot sets overlap by more than 70% (Jaccard), and every level has a landmark.
+  - `hedgerow-tune --verify` and the level tests pass; the field-share e2e still passes.
+  - Shots of levels 1, 5, 12, 21, 38, 45 and the bosses at P, D and L, in 2D and 3D.
+- **Size:** 5
+
+## 44. [ ] NIGHT SHIFT: a touch layout built for the scene, and a real upright-phone screen
+- **Why:**
+  - At L nine buttons fill the right 40% of the screen and overlap each other.
+  - Upright, the game is a dead-end black "turn your phone" card. The brief's minimum spec is an iPhone.
+- **Build:**
+  - Fire and Aim are always shown.
+  - Takedown, Skill, Focus and Swap appear only when they can be used, in one radial cluster around Fire.
+  - Jump and Crouch become swipes on the move side; Reload is a tap on the ammo counter.
+  - At rest, controls are 30% rings with no labels after first use.
+  - At L, objective and health merge into one compact block.
+  - Upright, the card becomes a designed screen: Cath's portrait, a rotate animation, a Back link, and the case board, wardrobe and gun bench usable upright.
+- **Accept:**
+  - The shot script's overlap report shows 0 overlaps at L in the market, clinic and Plaza.
+  - Controls cover 18% of the screen or less at rest.
+  - The takedown button shows only within 2 m of an unaware guard (e2e).
+  - The case board and wardrobe open upright at P (e2e).
+  - The D keyboard and HUD e2e are unchanged.
+- **Size:** 3
+
+## 45. [ ] Hedgerow: a swarm worth watching
+- **Why:**
+  - Late rounds collapse into one purple lorry with a count badge in 3D, and a pile of sprites in 2D.
+  - The "hundreds of small wins" the Hedgerow 2 design is built on can't be seen.
+- **Build:**
+  - Convoy spacing by vehicle length, two abreast where the lane is wide.
+  - Above a cap, a visible column (instanced or batched) that shrinks as it is popped.
+  - Each layer pop throws shards in the layer's colour, and Mark sparks pool into one rising counter per tower.
+  - Wreck debris stays on the verge for the round.
+  - The badge rides the column's head as a stacked make-up bar. Over the cap, the oldest effects are culled first.
+- **Accept:**
+  - Unit: same-lane gaps stay at or above vehicle length with 600 enemies, deterministic under a fixed seed.
+  - e2e in `?2d&sandbox=1`, level 38 round 20: 40 or more distinct vehicles on screen, and the pop counter rises.
+  - The 3D phone fps floor holds.
+  - Reduced motion drops the shards (e2e).
+  - Shots at P, D and L, in 2D and 3D.
+- **Size:** 3
+
+## 46. [ ] Hedgerow: a win that pays out on stage
+- **Why:**
+  - The rewards (a level-up, a talent choice, Seed Bank stars and rosettes) are buried in one dot-separated sentence.
+  - At L the tally is off-card.
+  - Cath is a 120 px circle (VISION 4: staged moments).
+- **Build:** after item 10's count-up:
+  - the stars stamp in;
+  - Seed Bank coins fly to the header chip;
+  - rosettes pin onto a ribbon with their names;
+  - on a level-up, Cath's full figure appears in the cheer pose (item 23) with the talent picker inline;
+  - a Next card shows the next level's landmark and its twist in one plain sentence.
+  - At L the card goes two-column. A tap skips it; reduced motion fades.
+- **Accept:**
+  - e2e at P, D and L after a 3-star win: the stars, rosettes, Seed Bank delta and Next card are all in view without scrolling.
+  - A level-up pick persists to the save.
+  - Shots of a win, a level-up win and a loss at P, D, L and dark.
+- **Size:** 2
+
+**Later, unranked:** NIGHT SHIFT, Cath's office lived in. A lit flat with rain on the window, Bea's drawings, a mirror with Cath's reflection, and a trophy shelf that fills with each case's keepsake. About 3 sessions.
 
 ---
 
