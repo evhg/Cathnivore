@@ -1299,6 +1299,13 @@ body {
 .art-cathode {
   background: var(--ka-35);
 }
+/* Plan item 38: the card shows the real Drowned Market street (scripts/keyart.mjs), not a doodle. */
+.art-cathode img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .cd-towers {
   fill: var(--ka-36);
 }

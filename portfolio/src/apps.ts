@@ -52,8 +52,9 @@ export const APPS: PortfolioApp[] = [
     size: 'hero',
     visual: {
       kind: 'image',
-      src: ['/work/games-nightshift.webp', '/work/games-landing.webp', '/work/games-runnel.webp', '/work/games-nightshift-combat.webp'],
-      alt: 'Screens from the games: the NIGHT SHIFT title scene in the rain, the games page with Cath, a Runnel puzzle and a NIGHT SHIFT firefight',
+      // Plan item 38: fresh frames from scripts/keyart.mjs (re-run it when a game's look changes).
+      src: ['/work/games-cathnivore.webp', '/work/games-runnel.webp', '/work/games-nightshift.webp', '/work/games-hedgerow.webp'],
+      alt: 'Screens from the games: the Cathnivore market table late in a game, a solved Runnel daily in bloom, the NIGHT SHIFT street in the rain and a busy Hedgerow round',
     },
     year: '2026',
     problem:

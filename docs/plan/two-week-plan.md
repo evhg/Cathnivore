@@ -547,7 +547,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P, D and dark.
 - **Size:** 3
 
-## 38. [ ] The site: live key art, a phone hero, and a header that never overlaps *(lane B, in progress)*
+## 38. [x] The site: live key art, a phone hero, and a header that never overlaps *(done 2026-11-02, lane B, f6ba2fe..HEAD: the header solid glass once scrolled; the scroll cue clear of the stats; the phone hero leads with Cath at 44% in front of a print cross-fading between three games, Cath built into the HTML, prints at 640/960/1440 px so mobile LCP is 1.8-1.9 s; Cath's Week tiles name what a tap does with a "1 to go" nudge (NIGHT SHIFT's tile colour fixed); `npm run keyart` (`scripts/keyart.mjs`) shoots the Cathnivore table at round 7, a really solved Runnel daily, a busy Hedgerow level 30 and NIGHT SHIFT's street key art into portfolio/public/work at three widths, used by the hero, the case study and the /games/ NIGHT SHIFT card (no more doodle); `e2e-site/site-header.spec.ts`, `site-hero.spec.ts`, games-cards; shots of all three pages at P and D. Changed: keyart runs as its own step on `build`, not inside `npm run release`, see DECISIONS)*
 - **Why:**
   - On the portfolio and case studies the fixed header overlaps scrolled content at D.
   - The scroll cue overlaps a stat label.
@@ -555,7 +555,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The case study's Runnel thumbnail is stale.
   - On /games/, the NIGHT SHIFT card is a placeholder doodle, and Cath's Week is three bare bars.
 - **Build:**
-  - `scripts/keyart.mjs` shoots each game's hero state (the Cathnivore round-7 diorama, a solved Runnel daily, a late Hedgerow wave, the NIGHT SHIFT street) and writes WebP into the portfolio and /games/ art. It runs in `npm run release`.
+  - `scripts/keyart.mjs` shoots each game's hero state (the Cathnivore round-7 diorama, a solved Runnel daily, a late Hedgerow wave, the NIGHT SHIFT street) and writes WebP into the portfolio and /games/ art. It runs as `npm run keyart` on `build` (changed 2026-11-02: not inside `npm run release`, which ships only what CI has tested).
   - The header gets a blurred glass backdrop once scrolled.
   - On the phone hero, Cath stands in front of one print that cross-fades between games.
   - Cath's Week tiles become tappable: each opens the game at the goal's mode, with a "1 to go" nudge.
