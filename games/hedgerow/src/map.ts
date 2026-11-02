@@ -1706,7 +1706,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         const tag = document.createElement("span");
         tag.className = "start-tag";
         tag.setAttribute("aria-hidden", "true");
-        tag.textContent = "Start here";
+        // "Start here" only on a fresh farm; mid-campaign the next level is just "Next" (plan item 40).
+        tag.textContent = Object.keys(data.stars).length === 0 ? "Start here" : "Next";
         b.append(me, tag);
         current = b;
       }
@@ -1769,7 +1770,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     // Centre her stop by scrolling the map only: scrollIntoView would also scroll the page under the header.
     const lr = list.getBoundingClientRect();
     const hr = here.getBoundingClientRect();
-    list.scrollTo({ top: list.scrollTop + hr.top - lr.top - (list.clientHeight - hr.height) / 2, behavior: "instant" });
+    // Plan item 40: when her stop already shows in full on the first screen (a fresh farm), leave the map at its
+    // top, so Cath's line isn't scrolled under the glass header.
+    const atTop = list.scrollTop === 0;
+    const headBottom = document.querySelector("#screen-select > header, #screen-select .select-head")?.getBoundingClientRect().bottom ?? lr.top;
+    const fits = hr.top >= headBottom && hr.bottom <= lr.top + list.clientHeight - 96;
+    if (!(atTop && fits)) list.scrollTo({ top: list.scrollTop + hr.top - lr.top - (list.clientHeight - hr.height) / 2, behavior: "instant" });
   }
   const you = here?.querySelector<HTMLElement>(".you");
   if (you && from && !matchMedia("(prefers-reduced-motion: reduce)").matches) {

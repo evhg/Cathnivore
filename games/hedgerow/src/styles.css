@@ -1344,12 +1344,15 @@ dialog.sheet.story[open] {
   background: var(--stage-paper);
   color: var(--stage-night);
   box-shadow: 0 0 0 2px var(--stage-night), 0 10px 26px var(--stage-shade);
-  z-index: var(--z-raise);
+  /* Above the speaking figure (plan item 40): at P her raised figure covered the name plate. */
+  z-index: var(--z-raise-2);
 }
 .speech.wipe { animation: panel-wipe 300ms cubic-bezier(0.3, 0.8, 0.3, 1) both; }
-@keyframes panel-wipe { from { clip-path: inset(0 100% 0 0 round 18px); } to { clip-path: inset(0 0 0 0 round 18px); } }
+/* The wipe's clip reaches 40px past the band (plan item 40): it holds after the animation (fill both), and an inset(0)
+   end sliced off the top of the name plate that sits over the band's edge. */
+@keyframes panel-wipe { from { clip-path: inset(-40px 100% -40px -40px); } to { clip-path: inset(-40px -40px -40px -40px); } }
 .speech.from-right.wipe { animation-name: panel-wipe-right; }
-@keyframes panel-wipe-right { from { clip-path: inset(0 0 0 100% round 18px); } to { clip-path: inset(0 0 0 0 round 18px); } }
+@keyframes panel-wipe-right { from { clip-path: inset(-40px -40px -40px 100%); } to { clip-path: inset(-40px -40px -40px -40px); } }
 /* The speaker plate: just the name, pinned to the band's top edge on the speaker's side. */
 .speech h2 {
   position: absolute;
