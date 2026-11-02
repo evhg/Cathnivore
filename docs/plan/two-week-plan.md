@@ -494,7 +494,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of both turns at P and D.
 - **Size:** 3
 
-## 35. [ ] Cathnivore: the Liberation of Marrow as a map you travel *(lane B, in progress)*
+## 35. [x] Cathnivore: the Liberation of Marrow as a map you travel *(done 2026-11-02, lane B, e6b92a9..HEAD: a code-drawn map of Marrow heads the campaign (held regions Hollowell orange, a won chapter's home regions green with bunting, numbered pins on a dotted lane, Cath at the next one); three wax seals per card (win, Hard, a feat; chapter 1's Hard seal is a swift win by round 3, since Hard chapter 1 can't be won) and Play on Hard on won chapters; the chapter-complete moment after a first win (flood, bunting drop, Cath walks on, "Next stop" slides in; fades under reduced motion); the title's Campaign key shows the freed regions; `tests/campaign-map.test.ts`, `e2e/campaign-map.spec.ts` (sequence, seals across a reload, no sideways scroll at P, Hard, title); shots fresh, mid, complete and mid-moment at P and D. Cut: Cath stands at half length, as the shared art has no full-length framing yet)*
 - **Why:**
   - The campaign is a list of cards with padlocks.
   - There's no chapter-complete moment (VISION 4).
