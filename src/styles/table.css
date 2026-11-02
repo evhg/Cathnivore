@@ -1742,3 +1742,9 @@ html.no-animations .cath-companion .cameo {
     .drawer-panel { animation: none; }
   }
 }
+
+/* plan item 20: the tile bevel's light rim is softer on a dark table */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tile-bevel { stroke-opacity: .12; }
+}
+:root[data-theme='dark'] .tile-bevel { stroke-opacity: .12; }

@@ -290,7 +290,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - The level tests still pass.
 - **Size:** 4
 
-## 20. [ ] Cathnivore: the board as a diorama
+## 20. [x] Cathnivore: the board as a diorama *(done 2026-11-02, ec82f3f..HEAD: on desktop the Market, Cath's Plan and Log are a slim rail of drawer keys with ready counts, Cath's aside shares a row with the papers, so the board is 72% of 1440 (`e2e/board-diorama.spec.ts`); tiles as painted board pieces with a light wash, bevel, thickness edge and cast shadow; painted ground per region type; pieces on turned wooden token bases that drop in again when a stack grows; greyscale legible; board-scales passes; shots of all 3 maps at P and D, mid-game and dark)*
 - **Why:** at D the board is about 49% of the width, flat hexes with dashed borders and small glyph pieces. Three dense side panels compete with it (`desktop-chromium-4-game`, `layout-coast-desktop-chromium`).
 - **Build:**
   - Painted terrain per region type, with an edge bevel and a cast shadow.
