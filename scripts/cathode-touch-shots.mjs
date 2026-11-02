@@ -38,6 +38,15 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
   await p.waitForTimeout(4000)
   console.log(n, 'aim', JSON.stringify(await measure()))
   await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-scope.png`, timeout: 240000 })
+  // Plan item 44: the mag run low, so the round count shows its "Tap to reload".
+  await p.evaluate(() => window.cathode.input.touchHeld.delete('aim'))
+  await p.waitForFunction(() => {
+    if (document.querySelector('.hud-ammo.low, .hud-ammo.empty')) return true
+    window.cathode.input.forced = { fire: true }
+    return false
+  }, null, { timeout: 200000, polling: 400 }).catch(() => console.log(n, 'mag never ran low'))
+  await p.waitForTimeout(1500)
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-low.png`, timeout: 240000 })
   await ctx.close()
 }
 await b.close()

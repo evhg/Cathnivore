@@ -1050,6 +1050,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // A tap on the prompt (touch) is the same press.
   hud.onTake = () => (input.forced.takedown = true);
   hud.onInspect = () => (input.inspectAsked = true);
+  hud.onReload = () => (input.forced.reload = true);
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;

@@ -1686,7 +1686,6 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .tbtn-aim { right: calc(128px + var(--safe-r)); bottom: 40px; }
 .tbtn-jump { right: calc(28px + var(--safe-r)); bottom: 16px; }
 .tbtn-crouch { right: calc(208px + var(--safe-r)); bottom: 16px; }
-.tbtn-reload { right: calc(128px + var(--safe-r)); bottom: 124px; }
 .tbtn-focus { right: calc(36px + var(--safe-r)); bottom: 196px; }
 .tbtn-takedown { right: calc(208px + var(--safe-r)); bottom: 100px; }
 .tbtn-skill { right: calc(208px + var(--safe-r)); bottom: 184px; }
@@ -1723,7 +1722,7 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
    circle and Skill sat on "Drag to aim". The columns close up so the inner one clears a scope of 40vh at
    844x390, and the hint moves up under the Cath and Swap keys, over the outer column. */
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
-  .tbtn-aim, .tbtn-reload { right: calc(118px + var(--safe-r)); }
+  .tbtn-aim { right: calc(118px + var(--safe-r)); }
   .tbtn-crouch, .tbtn-takedown, .tbtn-skill { right: calc(188px + var(--safe-r)); }
   .look-hint { right: calc(20px + var(--safe-r)); top: calc(66px + var(--safe-t)); }
 }
@@ -1758,6 +1757,13 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   /* Plan item 26: a long press on the weapon's name is the inspect; while held it dims a step. */
   .hud-weapon { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
   .hud-weapon.pressing { opacity: .7; }
+  /* Plan item 44: the round count is the reload key. A thumb-sized target round the figures, a dip on the tap,
+     and its word under it while the mag runs low. */
+  .hud-ammo { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; position: relative; flex-wrap: wrap; justify-content: flex-end; padding: var(--sp-2) 0 var(--sp-2) var(--sp-4); margin: calc(-1 * var(--sp-2)) 0; }
+  .hud-ammo.tapped { opacity: .6; }
+  .hud-ammo-tap { display: none; flex-basis: 100%; text-align: right; font: 700 var(--fs-1)/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; font-stretch: var(--wdth-label); color: var(--amber); text-shadow: var(--hud-shadow); }
+  .hud-ammo.low .hud-ammo-tap { display: block; }
+  .hud-ammo.empty .hud-ammo-tap { display: block; color: var(--blood-hot); }
   .hud-tl > *,
   .hud-tr > * { position: relative; inset: auto; }
   /* On a phone the toast hangs under the arms cluster (top right, over the action buttons), clear of the
@@ -2110,7 +2116,6 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .hud.in-office .hud-arms,
 .touch.in-office [data-btn="fire"],
 .touch.in-office [data-btn="aim"],
-.touch.in-office [data-btn="reload"],
 .touch.in-office [data-btn="cycle"],
 .touch.in-office [data-btn="skill"],
 .touch.in-office [data-btn="focus"] {

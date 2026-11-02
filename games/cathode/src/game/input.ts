@@ -34,7 +34,8 @@ export interface Intent {
   skill2: boolean;
 }
 
-const BUTTONS = ["fire", "aim", "jump", "crouch", "reload", "focus", "takedown", "cycle", "skill", "sheet"] as const;
+// Plan item 44: no Reload disc; on a phone the round count is the reload key (hud.onReload).
+const BUTTONS = ["fire", "aim", "jump", "crouch", "focus", "takedown", "cycle", "skill", "sheet"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
 export class Input {
@@ -149,7 +150,6 @@ export class Input {
       aim: "Aim",
       jump: "Jump",
       crouch: "Crouch",
-      reload: "Reload",
       focus: "Focus",
       takedown: "Takedown",
       cycle: "Swap",
@@ -185,7 +185,7 @@ export class Input {
     // Menus over the game (the coach card, the character screen, dialogs) take their own taps: cancelling
     // the touch here would stop iOS from ever turning it into a click.
     const tgt = e.target as Element | null;
-    if (tgt?.closest(".coach, .cx, .cp, dialog, a, button:not([data-btn]), input, label")) return;
+    if (tgt?.closest(".coach, .cx, .cp, dialog, a, button:not([data-btn]), input, label, .hud-ammo")) return;
     e.preventDefault();
     for (const t of Array.from(e.changedTouches)) {
       const target = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
@@ -250,9 +250,8 @@ export class Input {
     const need: Record<string, string | null> = {
       fire: null,
       jump: null,
-      // Aim and Reload are always on screen: a phone player should never wonder how to do either.
+      // Aim is always on screen (Reload is the round count): a phone player should never wonder how to do either.
       aim: null,
-      reload: null,
       crouch: "crouch",
       takedown: "takedown",
       focus: "focus",
@@ -360,7 +359,7 @@ export class Input {
       fire: this.mouse.left || padFire || this.touchHeld.has("fire") || this.autoFire,
       aim: (this.holdToggle ? this.aimLatched : this.mouse.right) || padAim || this.touchHeld.has("aim"),
       alt: this.mouse.middle || k("KeyV"),
-      reload: pa("reload") || padReload || tt.has("reload"),
+      reload: pa("reload") || padReload,
       takedown: pa("takedown") || tt.has("takedown"),
       inspect: pa("inspect") || this.inspectAsked,
       lean: k("KeyQ") ? -1 : k("KeyE") ? 1 : 0,

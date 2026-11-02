@@ -113,7 +113,7 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       c.arsenal.owned.add('widowmaker')
       c.arsenal.equipId('widowmaker')
     })
-    await page.waitForFunction(() => document.querySelectorAll('[data-btn]:not([hidden])').length >= 10, null, { timeout: 60_000 })
+    await page.waitForFunction(() => document.querySelectorAll('[data-btn]:not([hidden])').length >= 9, null, { timeout: 60_000 })
     const r = await page.evaluate(() => {
       type B = { n: string; l: number; r: number; t: number; b: number }
       const rect = (e: Element | null, n: string): B | null => {
@@ -131,7 +131,8 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       const inScope = items.filter((a) => Math.hypot(Math.max(a.l, Math.min(cx, a.r)) - cx, Math.max(a.t, Math.min(cy, a.b)) - cy) < R).map((a) => a.n)
       return { overlaps, inScope, n: items.length }
     })
-    expect(r.n).toBeGreaterThanOrEqual(11)
+    // Nine discs and the menu (plan item 44: Reload is a tap on the round count, not a disc).
+    expect(r.n).toBeGreaterThanOrEqual(10)
     expect(r.overlaps).toEqual([])
     expect(r.inScope).toEqual([])
   })
@@ -166,5 +167,36 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       c.player.pos.set(c.player.pos.x + 12, c.player.pos.y, c.player.pos.z + 12)
     })
     await expect(td).toHaveClass(/idle/, { timeout: 60_000 })
+  })
+
+  test('plan item 44: a tap on the round count reloads, and its word shows when the mag runs low', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'touch layout only')
+    test.setTimeout(400_000)
+    await boot(page)
+    type G = { cathode: C & { arsenal: { mag?: number; ammo?: Record<string, number> } } }
+    expect(await page.locator('[data-btn="reload"]').count()).toBe(0)
+    await page.evaluate(() => {
+      const c = (window as unknown as G).cathode
+      c.arsenal.owned.add('kestrel')
+      c.arsenal.equipId('kestrel')
+    })
+    await page.waitForFunction(() => (window as unknown as G).cathode.arsenal.weapon.id === 'kestrel' && !(window as unknown as G).cathode.arsenal.busy, null, { timeout: 200_000 })
+    const mag = page.locator('.hud-mag')
+    await expect(mag).toHaveText(/^\d+$/, { timeout: 30_000 })
+    const full = Number(await mag.textContent())
+    // Fire until the mag is below a quarter: the word comes up under the count.
+    // One forced frame is one pull; a pull inside the gun's cycle does nothing, so keep pulling.
+    await page.waitForFunction(() => {
+      if (document.querySelector('.hud-ammo.low, .hud-ammo.empty')) return true
+      ;(window as unknown as G).cathode.input.forced = { fire: true }
+      return false
+    }, null, { timeout: 200_000, polling: 400 })
+    await expect(page.locator('.hud-ammo-tap')).toBeVisible()
+    const before = Number(await mag.textContent())
+    expect(before).toBeLessThan(full)
+    // A tap on the count is the reload.
+    await page.locator('.hud-ammo').tap()
+    await expect.poll(async () => Number(await mag.textContent()), { timeout: 60_000 }).toBe(full)
+    await expect(page.locator('.hud-ammo-tap')).toBeHidden()
   })
 })

@@ -265,6 +265,16 @@ export class Hud {
     this.ammo = el("p", "hud-ammo", arms);
     this.mag = el("span", "hud-mag num", this.ammo);
     this.reserve = el("span", "hud-reserve num", this.ammo);
+    // Plan item 44: on a phone the count is the reload key (a tap on it), so no Reload disc sits in the scene.
+    // Its word shows under it while the mag runs low.
+    el("span", "hud-ammo-tap", this.ammo).textContent = "Tap to reload";
+    this.ammo.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse") return;
+      e.preventDefault();
+      this.ammo.classList.add("tapped");
+      setTimeout(() => this.ammo.classList.remove("tapped"), 160);
+      this.onReload?.();
+    });
     this.slots = el("div", "hud-slots", arms);
     this.batBar = bar("sys hud-battery", arms);
     // The middle: crosshair, hit marker, threat arcs.
@@ -956,6 +966,8 @@ export class Hud {
   onTake: (() => void) | null = null;
   /** A long press on the weapon chip (plan item 26): the session plays the inspect. */
   onInspect: (() => void) | null = null;
+  /** Plan item 44: a tap on the round count (touch only). */
+  onReload: (() => void) | null = null;
 
   private updatePickup(p: HudState["pickup"]): void {
     if (!p) {
