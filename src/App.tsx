@@ -68,7 +68,8 @@ type Screen =
   // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
   // 2 losses, also offer Skip Chapter." `seed` is the just-lost attempt's own seed, kept so "Retry (same
   // shuffle)" can replay it exactly; `lossCount` is this chapter's consecutive-loss count so far.
-  | { name: 'chapterLoss'; chapter: Chapter; mode: Mode; seed: number; lossCount: number }
+  // `hard`: the lost attempt was a Hard replay, so both Retries stay on Hard.
+  | { name: 'chapterLoss'; chapter: Chapter; mode: Mode; seed: number; lossCount: number; hard?: boolean }
   | { name: 'chapterSkipSummary'; chapter: Chapter }
 
 export default function App() {
@@ -210,7 +211,7 @@ export default function App() {
       // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy.
       // After 2 losses, also offer Skip Chapter... Progress is never locked."
       const lossCount = recordChapterLoss(chapter.id)
-      setScreen({ name: 'chapterLoss', chapter, mode, seed, lossCount })
+      setScreen({ name: 'chapterLoss', chapter, mode, seed, lossCount, hard: state.config.difficulty === 'hard' && chapter.difficulty !== 'hard' })
     }
   }
 
@@ -397,12 +398,13 @@ export default function App() {
 
   if (screen.name === 'chapterLoss') {
     const { chapter, mode, seed, lossCount } = screen
+    const retryDifficulty = screen.hard ? 'hard' : undefined
     return (
       <main className="campaign chapter-loss">
         <h1>{chapter.title}</h1>
         <p>You didn’t pull it off this time. Progress is never locked — try again whenever you like.</p>
-        <button onClick={() => playChapter(chapter, mode, seed)}>Retry (same shuffle)</button>
-        <button onClick={() => playChapter(chapter, mode)}>Retry (new shuffle)</button>
+        <button onClick={() => playChapter(chapter, mode, seed, retryDifficulty)}>Retry (same shuffle)</button>
+        <button onClick={() => playChapter(chapter, mode, undefined, retryDifficulty)}>Retry (new shuffle)</button>
         <button onClick={() => playChapter(chapter, mode, undefined, 'easy')}>Play on Easy</button>
         {lossCount >= 2 && (
           <button
