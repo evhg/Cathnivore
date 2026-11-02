@@ -5,6 +5,7 @@ import { buildClinic, CLINIC } from "./clinic";
 import { buildPlaza, PLAZA } from "./plaza";
 import { buildTower, TOWER } from "./tower";
 import { buildVault, VAULT } from "./vault";
+import { buildOffice, OFFICE } from "./office";
 
 export type DistrictId = "market" | "clinic" | "plaza" | "tower" | "vault";
 
@@ -23,7 +24,11 @@ export const DISTRICTS: readonly DistrictInfo[] = [
   { id: "vault", name: "The Hollow Vault", act: 5, build: buildVault },
 ];
 
+/** Plan item 16: Cath's office, the hub between cases. Not a district on the case list: no act, no patrols. */
+export const OFFICE_INFO = { id: "office", name: "Cath's office", act: 0, build: buildOffice } as const;
+
 export function districtInfo(id: string | undefined): DistrictInfo {
+  if (id === "office") return OFFICE_INFO as unknown as DistrictInfo;
   return DISTRICTS.find((d) => d.id === id) ?? DISTRICTS[0]!;
 }
 
@@ -43,6 +48,8 @@ export function districtBounds(id: string | undefined): { xMin: number; xMax: nu
       return r(TOWER);
     case "vault":
       return r(VAULT);
+    case "office":
+      return r({ xW: OFFICE.xW, xE: OFFICE.xE, zN: OFFICE.zN, zS: OFFICE.zS });
     default:
       return undefined;
   }
