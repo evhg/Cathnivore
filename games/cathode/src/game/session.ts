@@ -164,6 +164,8 @@ export interface Session {
   talk?: () => void;
   /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
   lieutenant?: () => Enemy | null;
+  /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
+  talkCam?: { mode: "plate" | "two-shot" };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
   objective?: () => THREE.Vector3 | null;
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
@@ -1175,6 +1177,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (k.takedown && td.active) tdAfter.push(() => pickups.drop(at, found, from));
     // Plan item 14: she has the lieutenant by the collar; the talk opens as she lets go.
     if (k.enemy === lieutenant) {
+      talkKit = k.enemy.kit;
       lieutenant = null;
       if (k.takedown) {
         if (td.active) tdAfter.push(() => (wantTalk = true));
@@ -1571,9 +1574,58 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let wantSheet = false;
   // Plan item 14: a talk with the district's lieutenant (main.ts opens it for `?talk` once the street shows).
   let wantTalk = false;
+  /** Plan item 42: the kit of the man she has by the collar, for the talk's two-shot. */
+  let talkKit: EnemyKit | null = null;
   s.talk = () => {
+    talkKit = lieutenant?.kit ?? talkKit;
     wantTalk = true;
   };
+  /**
+   * Plan item 42: the talk as a two-shot in the world. Cath (the title's hero model) stands where she is and the
+   * lieutenant (a stand-in in his kit: the real man stays down where she dropped him) faces her a step away, the
+   * lens off to the side with her on the left third and him on the right; the choices sit on a lower-third strip.
+   * On low quality and under reduced motion the talk stays the 2D plate. `talkCam.mode` says which.
+   */
+  const talkCam = { mode: "plate" as "plate" | "two-shot" };
+  s.talkCam = talkCam;
+  let talkShot: { cath: FrontCath; guy: Enemy; from: THREE.Vector3; at: THREE.Vector3 } | null = null;
+  function openTalkShot(): boolean {
+    // The phone tier is the low one: it keeps the plate (and doesn't build a second figure mid-street).
+    if (o.quality === "phone" || reduceMotionOn()) return false;
+    const kit = talkKit ?? ENFORCER;
+    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const side = new THREE.Vector3(-fwd.z, 0, fwd.x);
+    const her = new THREE.Vector3(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
+    const him = her.clone().addScaledVector(fwd, 1.15);
+    him.y = ground(him.x, him.z);
+    const cath = buildFrontCath(false);
+    cath.group.position.copy(her);
+    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z);
+    world.scene.add(cath.group);
+    const guy = new Enemy({ ...kit, role: kit.role === "shield" ? "rifle" : kit.role }, [him.clone()], 1);
+    guy.motion.pos.copy(him);
+    guy.motion.yaw = Math.atan2(her.x - him.x, her.z - him.z);
+    guy.passive = true;
+    guy.rifle.visible = false;
+    world.scene.add(guy.body.root);
+    for (let k = 0; k < 90; k++) guy.feel(1 / 60, [], () => him.y);
+    guy.body.pose();
+    // The lens: off her right side, back past her shoulder, at chest height, looking between them (she on the left).
+    const mid = her.clone().lerp(him, 0.5);
+    const from = mid.clone().addScaledVector(side, 2.35).addScaledVector(fwd, -0.55).setY(her.y + 1.5);
+    const at = mid.clone().addScaledVector(side, 0.1).setY(her.y + 1.38);
+    talkShot = { cath, guy, from, at };
+    talkCam.mode = "two-shot";
+    return true;
+  }
+  function closeTalkShot(): void {
+    if (!talkShot) return;
+    world.scene.remove(talkShot.cath.group, talkShot.guy.body.root);
+    talkShot.cath.dispose();
+    talkShot.guy.body.dispose();
+    talkShot = null;
+    talkCam.mode = "plate";
+  }
   s.lieutenant = () => lieutenant;
   s.objective = () => objectiveAt();
   hud.onCaseBoard = () => {
@@ -1748,6 +1800,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         coaching = true;
         document.exitPointerLock?.();
         const c = progress.character;
+        const twoShot = openTalkShot();
         openTalk(
           o.hud.parentElement ?? o.hud,
           talk,
@@ -1762,9 +1815,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
             return r;
           },
           () => {
+            closeTalkShot();
             coaching = false;
             input.lock();
           },
+          twoShot,
         );
       }
     }
@@ -2763,6 +2818,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   /** The station close-up this frame (bench or wardrobe), or null for her eyes. */
   function closeUp(): { from: THREE.Vector3; at: THREE.Vector3; fov: number; up: THREE.Vector3 } | null {
+    if (talkShot) return { from: talkShot.from, at: talkShot.at, fov: o.canvas.clientWidth < o.canvas.clientHeight ? 62 : 40, up: new THREE.Vector3(0, 1, 0) };
     const w = o.canvas.clientWidth;
     const aspect = Math.max(0.5, w / Math.max(1, o.canvas.clientHeight));
     const free = w < 1000 ? 0.5 : 0.56;
@@ -4028,11 +4084,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function render(): void {
     const t0 = performance.now();
-    if (keyArt || inOffice) world.viewScene.visible = false;
+    if (keyArt || inOffice || talkShot) world.viewScene.visible = false;
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
-    else if (inOffice && closeUp()) {
+    else if ((inOffice || talkShot) && closeUp()) {
       const cu = closeUp()!;
       const cam = world.camera;
       const q = cam.quaternion.clone();
@@ -4047,6 +4103,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       cam.updateMatrixWorld();
       if (benchLight) benchLight.intensity = benchCam ? 6 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
+      if (talkShot) talkShot.cath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
       // On the bench the gun is lit like a product shot: the street's neon (the window's pink key, the pooled
       // lights and the pink environment) steps back for this render so the gun keeps its own finish under a neutral key.
       const envI = world.scene.environmentIntensity;

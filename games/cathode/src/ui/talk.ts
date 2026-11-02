@@ -99,8 +99,10 @@ export function openTalk(
   scrip: number,
   pick: (optionId: string) => { reply: string; intel: Intel } | null,
   onClose: () => void = () => {},
+  twoShot = false,
 ): () => void {
-  const wrap = el("div", "coach talk", parent);
+  // Plan item 42: in the two-shot the scene is the portrait; the card is a lower-third strip with no plate.
+  const wrap = el("div", twoShot ? "coach talk talk-two-shot" : "coach talk", parent);
   const card = el("div", "talk-card", wrap);
   card.setAttribute("role", "dialog");
   card.setAttribute("aria-modal", "true");

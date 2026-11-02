@@ -2482,3 +2482,18 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .wardrobe-nums { grid-template-columns: auto 1fr auto 1fr; }
 .wardrobe-nums dd { justify-content: flex-start; }
 .wardrobe-nums .bench-val { min-width: 0; text-align: left; }
+
+/* Plan item 42: the talk as a two-shot. The scene is the portrait, so the card drops its plate and sits on a
+   lower-third strip under a soft shade (the two of them stay clear above it). */
+.talk.talk-two-shot {
+  align-items: end;
+  background: linear-gradient(to top, rgb(var(--shade-rgb) / .88) 0%, rgb(var(--shade-rgb) / .55) 30%, transparent 52%);
+}
+.talk-two-shot .talk-card {
+  grid-template-columns: 1fr;
+  width: min(880px, calc(100% - 32px));
+  max-height: 46%;
+  margin-bottom: clamp(16px, 4vh, 40px);
+  align-items: end;
+}
+.talk-two-shot .talk-plate svg { display: none; }
