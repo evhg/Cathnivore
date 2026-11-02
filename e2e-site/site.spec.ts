@@ -38,6 +38,32 @@ test.describe('portfolio', () => {
     expect(errors).toEqual([])
   })
 
+  test('plan item 23: the hero\'s right half shows the work and Cath at 1440x900; reduced motion stops her idle', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const page = await ctx.newPage()
+    await page.goto('/')
+    const show = page.locator('.hero-show')
+    await expect(show).toBeVisible()
+    const box = (await show.boundingBox())!
+    expect(box.x).toBeGreaterThanOrEqual(720)
+    expect(box.width).toBeGreaterThan(400)
+    await expect(show.locator('img')).toHaveCount(3)
+    const cath = show.locator('svg.cath')
+    await expect(cath).toHaveClass(/cath-pose-point/)
+    await expect(cath).toHaveClass(/cath-animate/)
+    expect(await cath.locator('.cath-lids').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('cath-blink')
+    await ctx.close()
+
+    const still = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
+    const p2 = await still.newPage()
+    await p2.goto('/')
+    const cath2 = p2.locator('.hero-show svg.cath')
+    await expect(cath2).toBeVisible()
+    await expect(cath2).not.toHaveClass(/cath-animate/)
+    expect(await cath2.locator('.cath-lids').first().evaluate((el) => getComputedStyle(el).animationName)).toBe('none')
+    await still.close()
+  })
+
   test('a case study links out to the product, and Kinetiq only through its gate', async ({ page }) => {
     const errors = trackErrors(page)
     await page.goto('/')

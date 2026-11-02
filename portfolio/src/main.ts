@@ -2,6 +2,9 @@ import '../../shared/ui/base.css'
 import './fonts.css'
 import './tokens.css'
 import './styles.css'
+import '../../shared/cath/cath.css'
+import { cathSvg } from '../../shared/cath/cath'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { startField } from './hero'
 import { cards, counters, kinetic, pulse, viewTransitionNames, words } from './fx'
 
@@ -15,6 +18,10 @@ viewTransitionNames(document)
 const field = document.querySelector<HTMLCanvasElement>('#field')
 // Automated browsers skip the shader (software WebGL is slow) unless ?field asks for it, for screenshots.
 if (field && (!navigator.webdriver || location.search.includes('field'))) startField(field, reduced)
+
+// Plan item 23: the hero's right half is the studio's work, with Cath (the face of every game) in front.
+const heroCath = document.querySelector<HTMLElement>('#hero-cath')
+if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: !reduced })
 
 const h1 = document.querySelector<HTMLElement>('[data-kinetic]')
 if (h1) kinetic(h1, reduced)

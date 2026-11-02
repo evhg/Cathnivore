@@ -329,7 +329,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P and D.
 - **Size:** 2
 
-## 23. [ ] Shared: Cath's poses and an idle
+## 23. [x] Shared: Cath's poses and an idle *(done 2026-11-02, this session: six arm poses in `shared/cath` (wave, point, basket, cheer, thinking, crossed) in every outfit's cloth, over the existing blink, breathing and hair sway; `shared/cath/screenposes.ts` gives each screen its own pose and story lines a pose per expression, scene moments carry one; `tests/cath-poses.test.ts` (distinct paths per pose and outfit, no two adjacent screens share a pose); the portfolio hero's right half shows three game prints with Cath in front at D (e2e, shot); reduced motion stops the idle (e2e))*
 - **Why:** Cath has one clasped-hands, front-facing pose on the games page, the Cathnivore title, Setup, Campaign and the Hedgerow map: a paper doll, not "characters with presence". The portfolio's right half is empty at D (`D-games`, `D-portfolio`).
 - **Build:**
   - `shared/cath/` gains at least 6 poses (wave, point, basket, cheer, thinking, arms crossed), plus a blink, a breathing idle and a hair sway.
