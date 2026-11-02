@@ -1170,6 +1170,12 @@ export class Renderer3D {
       turret.rotation.y = cur + d * Math.min(1, dt * 10);
     }
     const kick = v.fired < 0.15 ? Math.sin((v.fired / 0.15) * Math.PI) : 0;
+    // Plan item 19: every tower breathes when idle and squashes as it lets go (as in 2D).
+    if (!this.reducedMotion) {
+      const s0 = (ud.scale as number) ?? 1;
+      const breath = Math.sin(t * 2.2 + tw.id) * 0.012;
+      v.obj.scale.set(s0 * (1 + kick * 0.06), s0 * (1 + breath - kick * 0.09), s0 * (1 + kick * 0.06));
+    }
     const arm = ud.arm as THREE.Object3D | undefined;
     if (arm) arm.rotation.z = -kick * 0.9;
     if (turret && tw.kind === "silo") turret.position.y = 0.6 - kick * 0.03;

@@ -62,7 +62,107 @@ export interface TowerLook {
 
 const SPEC_COLOURS: [string, string] = ["#c4433a", "#3f6fb5"];
 
+/** Plan item 19: the visible tier, 1 to 3 (a path tower's best path; a classic tier 4 is a tier 3 with a rosette). */
+export function towerTier(look: Pick<TowerLook, "tier" | "path">): 1 | 2 | 3 {
+  const n = look.path ? Math.max(1, ...look.path) : look.tier;
+  return Math.max(1, Math.min(3, n)) as 1 | 2 | 3;
+}
+
+/** How much bigger each tier stands: a seedling, a working tower, a landmark. */
+export const TIER_SCALE = [1, 1.07, 1.15] as const;
+
+/**
+ * Plan item 19: what a tower stands on says its tier at a glance. Tier 1 stands on the bed; tier 2 on a plank deck;
+ * tier 3 on a dressed stone drum with a gold band.
+ */
+function drawPlinth(ctx: C, tier: 1 | 2 | 3, x: number, base: number, s: number): void {
+  if (tier === 1) return;
+  ctx.save();
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, s * 0.022);
+  if (tier === 2) {
+    const w = s * 0.38;
+    const h = s * 0.13;
+    ctx.fillStyle = "#8a5f38";
+    ctx.beginPath();
+    ctx.ellipse(x, base + s * 0.03, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#c08a55";
+    ctx.beginPath();
+    ctx.ellipse(x, base, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.save();
+    ctx.clip();
+    ctx.strokeStyle = "rgba(60,35,15,0.45)";
+    ctx.lineWidth = Math.max(1, s * 0.014);
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x + i * w * 0.36, base - h);
+      ctx.lineTo(x + i * w * 0.36, base + h);
+      ctx.stroke();
+    }
+    ctx.restore();
+  } else {
+    const w = s * 0.42;
+    const h = s * 0.15;
+    const d = s * 0.1;
+    // The drum's side, then its top, then the gold band where they meet.
+    ctx.fillStyle = "#8d8a80";
+    ctx.beginPath();
+    ctx.ellipse(x, base + d, w, h, 0, 0, Math.PI);
+    ctx.lineTo(x - w, base);
+    ctx.ellipse(x, base, w, h, 0, Math.PI, 0, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(40,35,30,0.35)";
+    ctx.lineWidth = Math.max(1, s * 0.012);
+    for (let i = -2; i <= 2; i++) {
+      const bx = x + i * w * 0.38;
+      ctx.beginPath();
+      ctx.moveTo(bx, base + h * Math.sqrt(1 - (i * 0.38) ** 2));
+      ctx.lineTo(bx, base + d + h * Math.sqrt(1 - (i * 0.38) ** 2));
+      ctx.stroke();
+    }
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    const top = ctx.createLinearGradient(0, base - h, 0, base + h);
+    top.addColorStop(0, "#e2ddcf");
+    top.addColorStop(1, "#b9b3a3");
+    ctx.fillStyle = top;
+    ctx.beginPath();
+    ctx.ellipse(x, base, w, h, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = "#f2c94c";
+    ctx.lineWidth = Math.max(1.5, s * 0.03);
+    ctx.beginPath();
+    ctx.ellipse(x, base + s * 0.015, w * 0.97, h * 0.97, 0, 0.1, Math.PI - 0.1);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: number, t: number): void {
+  const base = y + s * 0.3;
+  const tier = towerTier(look);
+  const k = TIER_SCALE[tier - 1] ?? 1;
+  groundShadow(ctx, x, base, s * (tier === 1 ? 0.36 : 0.46), s * (tier === 1 ? 0.11 : 0.15));
+  drawPlinth(ctx, tier, x, base, s);
+  // Idle: a slow breath. Fire: a quick squash and stretch as it lets go.
+  const kick = look.fired < 0.15 ? Math.sin((look.fired / 0.15) * Math.PI) : 0;
+  const breath = Math.sin(t * 2.2) * 0.012;
+  const lift = tier === 3 ? s * 0.06 : tier === 2 ? s * 0.02 : 0;
+  ctx.save();
+  ctx.translate(x, base - lift);
+  ctx.scale(k * (1 + kick * 0.06), k * (1 + breath - kick * 0.09));
+  ctx.translate(-x, -base);
+  drawTowerBody(ctx, look, x, y, s, t);
+  ctx.restore();
+}
+
+function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number, t: number): void {
   const { kind, tier, fired } = look;
   // A path tower's tier 3 borrows the old specialisation's body where it is the same idea (Crow Caller's dark
   // coat, the Pumpkin Lobber's barrel, Killer Queen's crown...); drawPathParts adds the rest.
@@ -73,7 +173,6 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   ctx.lineCap = "round";
   const kick = fired < 0.15 ? Math.sin((fired / 0.15) * Math.PI) : 0;
   const base = y + s * 0.3;
-  groundShadow(ctx, x, base, s * 0.36, s * 0.11);
   ctx.save();
   if (look.dazed) {
     ctx.translate(x, base);

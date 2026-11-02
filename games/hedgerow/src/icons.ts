@@ -4,7 +4,7 @@
 import type { EnemyKind, TowerKind } from "./engine";
 import type { Path } from "./paths";
 import type { Property } from "./fleet";
-import { drawEnemy, drawPropIcon, drawTower, enemyLift, enemyScale } from "./sprites";
+import { TIER_SCALE, drawEnemy, drawPropIcon, drawTower, enemyLift, enemyScale, towerTier } from "./sprites";
 
 const cache = new Map<string, string>();
 
@@ -26,7 +26,8 @@ function render(key: string, size: number, draw: (ctx: CanvasRenderingContext2D,
 
 export function towerIcon(kind: TowerKind, tier = 1, spec: 0 | 1 | null = null, path?: Path): string {
   return render(`t:${kind}:${tier}:${spec}:${path?.join("") ?? ""}`, 64, (ctx, size) => {
-    const s = size * 0.95;
+    // A higher tier stands taller on its plinth (plan item 19): shrink the cell so it still fits the icon.
+    const s = (size * 0.95) / (TIER_SCALE[towerTier({ tier, ...(path ? { path } : {}) }) - 1] ?? 1);
     drawTower(ctx, { kind, tier, spec, fired: 9, dazed: false, ...(path ? { path } : {}) }, size / 2, size * 0.5, s, 0.6);
   });
 }
