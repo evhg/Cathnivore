@@ -500,8 +500,9 @@ describe("hedgerow engine", () => {
 /** A level as first designed: its original serpentine lane, no fork, no terrain, no twist, no tuning. */
 function classic(id: number): Level {
   const lv = LEVELS[id - 1]!;
-  // Levels 1-10 play the Fleet now (Hedgerow 2 M2); the mechanics tests run them on classic rules.
-  return { ...lv, path: ORIGINAL_PATHS.get(id)!, path2: undefined, terrain: undefined, twists: undefined, hpScale: undefined, rules: "classic", book: undefined };
+  // Levels 1-10 play the Fleet now (Hedgerow 2 M2); the mechanics tests run them on classic rules, on the
+  // original lane (landmarks are placed against today's lane, so they're dropped too).
+  return { ...lv, path: ORIGINAL_PATHS.get(id)!, path2: undefined, terrain: undefined, twists: undefined, hpScale: undefined, rules: "classic", book: undefined, setPieces: lv.setPieces?.filter((p) => p.kind !== "landmark") };
 }
 
 /** A bare level for mechanics tests: a straight lane along row 1 of a 12x3 field. */

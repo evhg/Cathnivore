@@ -95,7 +95,8 @@ describe("hedgerow set pieces", () => {
   });
 
   it("are placed on their levels", () => {
-    const kinds = (id: number) => LEVELS[id - 1]!.setPieces?.map((p) => p.kind);
+    // Every level also has landmarks (plan item 43); this checks the event set pieces.
+    const kinds = (id: number) => LEVELS[id - 1]!.setPieces?.filter((p) => p.kind !== "landmark").map((p) => p.kind);
     expect(kinds(34)).toEqual(["flood"]);
     expect(kinds(27)).toEqual(["bridge"]);
     expect(kinds(67)).toEqual(["blackout"]);

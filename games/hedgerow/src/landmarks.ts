@@ -67,8 +67,16 @@ function hash(n: number): number {
   return (h * 2246822519) >>> 0;
 }
 
+/**
+ * Boss fields the best bot only wins with every plot built on: the boss is a damage check the whole field
+ * just meets, so losing even one plot to scenery loses the level (measured 2026-11-02: level 50 lost with one
+ * churchyard cell taken, at any start k). Their landmark is a raised bank, which keeps its plots as high ground.
+ */
+const FULL_FIELD = new Set([50]);
+
 /** Which landmark kinds a level takes: one per level, two on an act's boss field. */
 export function landmarkKinds(level: Pick<Level, "id" | "fords">): LandmarkKind[] {
+  if (FULL_FIELD.has(level.id)) return ["bank"];
   const act = Math.min(ACT_KINDS.length, Math.max(1, Math.ceil(level.id / 10)));
   const kinds = ACT_KINDS[act - 1]!.filter((k) => k !== "ford" || !!level.fords?.length);
   const i = (level.id - 1) % 10;

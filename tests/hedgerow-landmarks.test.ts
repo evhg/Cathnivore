@@ -17,11 +17,12 @@ const jaccard = (a: Set<string>, b: Set<string>) => {
 };
 
 describe("hedgerow landmarks", () => {
-  it("every level has a landmark, and boss fields two", () => {
+  it("every level has a landmark, and boss fields two (level 50's is one bank: it needs every plot)", () => {
     for (const lv of LEVELS) {
       const ms = landmarks(lv);
       expect(ms.length, `level ${lv.id}`).toBeGreaterThanOrEqual(1);
-      if (lv.id % 10 === 0) expect(ms.length, `level ${lv.id}`).toBe(2);
+      if (lv.id === 50) expect(ms.map((m) => m.type)).toEqual(["bank"]);
+      else if (lv.id % 10 === 0) expect(ms.length, `level ${lv.id}`).toBe(2);
       expect(ms.map((m) => m.type)).toEqual(landmarkKinds(lv));
     }
   });
