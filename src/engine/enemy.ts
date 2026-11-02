@@ -1,4 +1,4 @@
-import { REGIONS } from '../content/map'
+import { regionType } from '../content/map'
 import { AGENDA_CARDS } from '../content/agenda'
 import { addBuyout, addDoubt, addLostLand, addOutlets, countGameStats, countLiberated } from './pieces'
 import { isLiberated, regionStallTotal } from './region'
@@ -24,9 +24,9 @@ function resolveAgenda(state: GameState): GameState {
   return refreshAllLiberation(checkRiftSplit(next))
 }
 
-function matches(card: PressureCard, region: RegionId): boolean {
+function matches(state: GameState, card: PressureCard, region: RegionId): boolean {
   if (card.regions) return card.regions.includes(region)
-  return card.regionTypes.includes(REGIONS[region].type)
+  return card.regionTypes.includes(regionType(state, region))
 }
 
 function activeRegions(state: GameState): RegionId[] {
@@ -37,8 +37,8 @@ function activeRegions(state: GameState): RegionId[] {
 // production: Pasture -> Produce, Crop -> Marks, Coast -> Goodwill, Kingsmarket -> their choice. The
 // choice is a real `currentDecision` (SPEC 9.1): the default (Marks) is applied immediately below, and
 // `applyAction`'s `decide` case swaps it if the human/AI picks something else.
-function firstLiberationProductionBonus(regionId: RegionId): ResourceKind {
-  const type = REGIONS[regionId].type
+function firstLiberationProductionBonus(state: GameState, regionId: RegionId): ResourceKind {
+  const type = regionType(state, regionId)
   if (type === 'pasture') return 'produce'
   if (type === 'crop') return 'marks'
   if (type === 'coast') return 'goodwill'
@@ -59,7 +59,7 @@ function refreshLiberation(state: GameState, region: RegionId): GameState {
     }
     if (isFirstTime) {
       next = { ...next, publicTrust: Math.min(15, next.publicTrust + 1) }
-      const bonus = firstLiberationProductionBonus(region)
+      const bonus = firstLiberationProductionBonus(state, region)
       next = addProduction(next, producer, { [bonus]: 1 })
       if (region === 'kingsmarket') {
         next = {
@@ -97,7 +97,7 @@ export function resolveScout(state: GameState): GameState {
   let next = state
   for (const id of activeRegions(state)) {
     if (next.regions[id].liberated) continue
-    if (!matches(card, id)) continue
+    if (!matches(state, card, id)) continue
     next = addOutlets(next, id, 1)
     if (card.stage === 3) next = addDoubt(next, id, 1)
     next = { ...next, log: [...next.log, { type: 'scout', region: id, doubtAdded: card.stage === 3 }] }
@@ -114,7 +114,7 @@ export function resolveExpand(state: GameState): GameState {
   for (const id of activeRegions(state)) {
     const r = next.regions[id]
     if (r.liberated) continue
-    if (!matches(card, id)) continue
+    if (!matches(state, card, id)) continue
     if (state.expandSkip.includes(id)) continue
     const hasEnemyPiece = r.outlets > 0 || r.buyouts > 0 || r.doubt > 0
     if (!hasEnemyPiece) continue
@@ -160,7 +160,7 @@ export function resolveSqueeze(state: GameState): GameState {
   for (const id of activeRegions(state)) {
     const r = next.regions[id]
     if (r.liberated) continue
-    if (!matches(card, id)) continue
+    if (!matches(state, card, id)) continue
     if (state.squeezeSkip.includes(id)) continue
     const damage = r.outlets + 2 * r.buyouts
     const defence = regionStallTotal(r)

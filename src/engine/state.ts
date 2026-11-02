@@ -1,4 +1,4 @@
-import { ALL_REGION_IDS, REGIONS } from '../content/map'
+import { ALL_REGION_IDS, regionType } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { unshuffledPressureDeck } from '../content/pressure'
 import { AGENDA_CARDS } from '../content/agenda'
@@ -166,15 +166,15 @@ export function createGame(config: GameConfig, seed: number): GameState {
   } else {
     // SPEC 4.3.2: Kingsmarket 2 Outlets/1 Buyout/2 Doubt; every other region 1 Outlet; each Coast +1 Doubt.
     for (const id of config.activeRegions) {
-      const def = REGIONS[id]
-      if (def.type === 'capital') {
+      const type = regionType({ config }, id)
+      if (type === 'capital') {
         state = addOutlets(state, id, settings.kingsmarketOutlets)
         state = addBuyout(state, id, settings.kingsmarketBuyouts)
         state = addDoubt(state, id, 2)
       } else {
         state = addOutlets(state, id, 1)
-        if (def.type === 'coast') state = addDoubt(state, id, 1)
-        if (def.type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
+        if (type === 'coast') state = addDoubt(state, id, 1)
+        if (type === 'pasture' && config.difficulty === 'hard') state = addDoubt(state, id, 1)
       }
     }
   }

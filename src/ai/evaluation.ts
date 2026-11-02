@@ -1,4 +1,4 @@
-import { REGIONS } from '../content/map'
+import { regionType } from '../content/map'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { countLiberated } from '../engine/pieces'
 import type { GameState, RegionType } from '../engine/types'
@@ -69,7 +69,7 @@ export function evaluate(state: GameState): number {
 
   const squeezeTypes = state.squeeze?.regionTypes ?? []
   const squeezeTargets = state.config.activeRegions.filter(
-    (id) => !state.regions[id].liberated && matchesType(squeezeTypes, REGIONS[id].type),
+    (id) => !state.regions[id].liberated && matchesType(squeezeTypes, regionType(state, id)),
   )
   const squeezeCoverageScore =
     squeezeTargets.length === 0
@@ -83,7 +83,7 @@ export function evaluate(state: GameState): number {
   // not "occupied": reward having no enemy pieces left in an Expand-targeted region before it resolves.
   const expandTypes = state.expand?.regionTypes ?? []
   const expandTargets = state.config.activeRegions.filter(
-    (id) => !state.regions[id].liberated && matchesType(expandTypes, REGIONS[id].type),
+    (id) => !state.regions[id].liberated && matchesType(expandTypes, regionType(state, id)),
   )
   const expandCoverageScore =
     expandTargets.length === 0

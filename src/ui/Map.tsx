@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { REGIONS, regionMatchesPressureSlot } from '../content/map'
+import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { loadSettings } from '../platform/settings'
 import Portrait from './portraits/Portrait'
 import type { Flight } from './boardroom'
@@ -453,7 +453,7 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
     <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
       <RegionTextureDefs />
       {active.map((id) => {
-        const def = REGIONS[id]
+        const def = { ...REGIONS[id], type: regionType(state, id) }
         const r = state.regions[id]
         const { x, y } = hexCenter(id)
         const stalls = Object.entries(r.stalls).filter(([, n]) => (n ?? 0) > 0) as [ProducerId, number][]

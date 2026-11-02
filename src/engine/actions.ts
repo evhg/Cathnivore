@@ -1,4 +1,4 @@
-import { REGIONS } from '../content/map'
+import { regionType } from '../content/map'
 import { removeBuyout, removeDoubt, removeOutlets } from './pieces'
 import { refreshAllLiberation } from './enemy'
 import { checkRiftSplit, resolveRiftSplitFaction, resolveRiftSplitRemoval } from './rift'
@@ -90,7 +90,7 @@ export const TEAR_UP_CONTRACT_COST = 3
 // a gentler, investment-gated version of iteration 6's reverted universal base-cost cut.
 export function supplyOutletCostPerOutlet(state: GameState, producer: ProducerId, region: RegionId): number {
   const base = SUPPLY_OUTLET_BASE_COST
-  const type = REGIONS[region].type
+  const type = regionType(state, region)
   if (
     (hasImprovement(state, producer, 'mobile-butcher') && type === 'pasture') ||
     (hasImprovement(state, producer, 'wholesale-crate-deal') && type === 'crop') ||

@@ -1,4 +1,4 @@
-import { REGIONS } from '../content/map'
+import { neighborsOf } from '../content/map'
 import type { GameState, ProducerId, RegionId, RegionState } from './types'
 
 // SPEC 4.6: "3 actions per producer per round" -- the single source of truth so state.ts/round.ts (which
@@ -24,7 +24,7 @@ function ownStalls(state: GameState, producer: ProducerId, region: RegionId): nu
 
 // SPEC 4.8: nobody may place a Stall in Kingsmarket unless at least 2 of its neighbors are liberated.
 export function kingsmarketOpen(state: GameState): boolean {
-  const neighbors = REGIONS.kingsmarket.neighbors
+  const neighbors = neighborsOf(state, 'kingsmarket')
   const liberatedNeighbors = neighbors.filter((n) => state.regions[n].liberated).length
   return liberatedNeighbors >= 2
 }
@@ -32,7 +32,7 @@ export function kingsmarketOpen(state: GameState): boolean {
 // SPEC 4.6.1: legal to Open Stall in a region containing your Stall or bordering one that does.
 export function anyStallsAdjacentOrIn(state: GameState, producer: ProducerId, region: RegionId): boolean {
   if (ownStalls(state, producer, region) > 0) return true
-  return REGIONS[region].neighbors.some((n) => ownStalls(state, producer, n) > 0)
+  return neighborsOf(state, region).some((n) => ownStalls(state, producer, n) > 0)
 }
 
 // The Kingsmarket guard and Stall cap alone, with no adjacency requirement — shared by `canOpenStallIn`
@@ -53,7 +53,7 @@ export function canOpenStallIn(state: GameState, producer: ProducerId, region: R
 // this game's active regions: a campaign chapter's inactive regions (SPEC 8.1) must never become a legal
 // target just because they happen to neighbor a liberated one.
 export function regionsBorderingLiberated(state: GameState): RegionId[] {
-  return state.config.activeRegions.filter((id) => REGIONS[id].neighbors.some((n) => state.regions[n].liberated))
+  return state.config.activeRegions.filter((id) => neighborsOf(state, id).some((n) => state.regions[n].liberated))
 }
 
 function anyProducerHasStall(state: GameState, region: RegionId): boolean {
@@ -66,5 +66,5 @@ export function canMarketDayOpenIn(state: GameState, region: RegionId): boolean 
   if (region === 'kingsmarket' && !kingsmarketOpen(state)) return false
   if (regionStallTotal(state.regions[region]) >= stallCap(state.regions[region])) return false
   if (anyProducerHasStall(state, region)) return true
-  return REGIONS[region].neighbors.some((n) => anyProducerHasStall(state, n))
+  return neighborsOf(state, region).some((n) => anyProducerHasStall(state, n))
 }

@@ -1,7 +1,7 @@
 import type { GameState, RegionId } from '../engine/types'
 import { addBuyout, addDoubt, addOutlets, removeOutlets } from '../engine/pieces'
 import { regionStallTotal } from '../engine/region'
-import { REGIONS } from './map'
+import { regionType } from './map'
 
 export interface AgendaCard {
   id: string
@@ -64,7 +64,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
-        if (REGIONS[id].type === 'crop' && regionStallTotal(next.regions[id]) > 0) next = addOutlets(next, id, 1)
+        if (regionType(next, id) === 'crop' && regionStallTotal(next.regions[id]) > 0) next = addOutlets(next, id, 1)
       }
       return next
     },
@@ -102,7 +102,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of regionsWithStall(next, nonLiberated(next))) {
-        if (REGIONS[id].type === 'pasture') next = addOutlets(next, id, 1)
+        if (regionType(next, id) === 'pasture') next = addOutlets(next, id, 1)
       }
       return next
     },
@@ -130,7 +130,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of regionsWithStall(next, nonLiberated(next))) {
-        if (REGIONS[id].type === 'coast') next = addDoubt(next, id, 1)
+        if (regionType(next, id) === 'coast') next = addDoubt(next, id, 1)
       }
       return next
     },
@@ -162,7 +162,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     bonusEffect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
-        if (REGIONS[id].type === 'crop') next = addOutlets(next, id, 1)
+        if (regionType(next, id) === 'crop') next = addOutlets(next, id, 1)
       }
       return next
     },
@@ -188,7 +188,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     bonusEffect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
-        if (REGIONS[id].type === 'coast') next = addOutlets(next, id, 1)
+        if (regionType(next, id) === 'coast') next = addOutlets(next, id, 1)
       }
       return next
     },
@@ -201,7 +201,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of regionsWithStall(next, nonLiberated(next))) {
-        if (REGIONS[id].type === 'crop') next = addOutlets(next, id, 1)
+        if (regionType(next, id) === 'crop') next = addOutlets(next, id, 1)
       }
       return next
     },
@@ -243,7 +243,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     bonusEffect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
-        if (REGIONS[id].type === 'coast') next = addDoubt(next, id, 1)
+        if (regionType(next, id) === 'coast') next = addDoubt(next, id, 1)
       }
       return next
     },
@@ -267,7 +267,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of regionsWithStall(next, nonLiberated(next))) {
-        if (REGIONS[id].type === 'pasture') next = addDoubt(next, id, 1)
+        if (regionType(next, id) === 'pasture') next = addDoubt(next, id, 1)
       }
       return next
     },
@@ -337,7 +337,7 @@ export const AGENDA_CARDS: AgendaCard[] = [
     effect: (state) => {
       let next = state
       for (const id of nonLiberated(next)) {
-        if (REGIONS[id].type === 'pasture') next = addDoubt(next, id, 1)
+        if (regionType(next, id) === 'pasture') next = addDoubt(next, id, 1)
       }
       return next
     },

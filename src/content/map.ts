@@ -1,4 +1,4 @@
-import type { GameState, RegionId, RegionType } from '../engine/types'
+import type { GameConfig, GameState, RegionId, RegionType } from '../engine/types'
 
 export interface RegionDef {
   id: RegionId
@@ -28,6 +28,17 @@ export const REGIONS: Record<RegionId, RegionDef> = {
   brindleHills: { id: 'brindleHills', name: 'Brindle Hills', type: 'pasture', neighbors: ringNeighbors('brindleHills') },
 }
 
+// Plan item 15: a game's own map. The config may carry its region types (seeded) and adjacency (the layout);
+// absent, they are the ring's in REGIONS, so saves from before layouts read the same. Every rule reads a
+// region's type and neighbours through these two, never REGIONS directly.
+export function regionType(state: { config: GameConfig }, id: RegionId): RegionType {
+  return state.config.regionTypes?.[id] ?? REGIONS[id].type
+}
+
+export function neighborsOf(state: { config: GameConfig }, id: RegionId): RegionId[] {
+  return state.config.neighbors?.[id] ?? REGIONS[id].neighbors
+}
+
 // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card in the enemy plan strip] highlights the matching
 // regions on the map." Shared by `Map.tsx`'s own SQUEEZE/EXPAND badges and `Game.tsx`'s plan-strip buttons
 // so both use the same region-type match, instead of a second, potentially-drifting copy of the logic.
@@ -38,7 +49,7 @@ export function regionMatchesPressureSlot(state: GameState, region: RegionId, sl
   if (state.regions[region].liberated) return false
   const card = slot === 'squeeze' ? state.squeeze : slot === 'expand' ? state.expand : state.scout
   if (!card) return false
-  return card.regionTypes.includes(REGIONS[region].type)
+  return card.regionTypes.includes(regionType(state, region))
 }
 
 export const ALL_REGION_IDS: RegionId[] = [
