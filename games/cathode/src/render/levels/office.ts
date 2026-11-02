@@ -81,8 +81,10 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
   b.boxMinMax("darkMetal", xE - 0.75, 0, -1.9, xE - 0.05, 0.86, 0.6, { collide: "metal" });
   b.boxMinMax("steel", xE - 0.8, 0.86, -1.95, xE, 0.92, 0.65, { collide: "metal" });
   b.box("paintRed", xE - 0.45, 1.0, -1.4, 0.18, 0.16, 0.12, { cover: "none" });
-  b.box("glowWarm", xE - 0.4, 1.6, 0.3, 0.2, 0.05, 0.2, { cover: "none" });
-  light(V(xE - 0.6, 1.5, -0.6), "#ffe6c0", 1.6, 3.5);
+  // The bench lamp hangs high by the wall, out of the bench close-up's frame (it blew out the gun from 1.6 m).
+  b.box("glowWarm", xE - 0.15, 2.6, 0.3, 0.2, 0.05, 0.2, { cover: "none" });
+  // Over the lamp, above the bench close-up's lens (a light's glow between the lens and the gun washed it out).
+  light(V(xE - 0.3, 2.55, -0.6), "#ffe6c0", 1.8, 3.8);
 
   // The wardrobe (west): a tall walnut wardrobe and a standing mirror beside it.
   b.boxMinMax("wood", xW + 0.05, 0, -3.6, xW + 0.7, 2.2, -2.4, { collide: "wood" });

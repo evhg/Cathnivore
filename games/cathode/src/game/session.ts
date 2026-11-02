@@ -81,6 +81,10 @@ import { LAST_DISTRICT_KEY, WingWatch, ZoneWatch, loadingTitle, travelUrl } from
 import { namesLeft } from "../ui/frontcopy";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
+import { openBench, type BenchHandle } from "../ui/bench";
+import { openWardrobe } from "../ui/wardrobe";
+import { buildFrontCath, type FrontCath } from "../render/frontcath";
+import { dressGun, drawnSlots, modelForClass } from "./gunparts";
 import { exportCode, makeSave } from "../sim/save";
 import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
@@ -157,6 +161,8 @@ export interface Session {
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
   lastStation?: string;
   travelling?: string;
+  /** Plan item 16: the part slots drawn on the gun lying on the bench (tests). */
+  benchParts?: string[];
   world: World;
   player: Player;
   input: Input;
@@ -2540,8 +2546,30 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       coaching = true;
       document.exitPointerLock?.();
       openCaseBoard(parent, progress.jobsDone, back);
-    } else if (id === "bench") openSheet("inventory");
-    else if (id === "wardrobe") openSheet("attributes");
+    } else if (id === "bench") {
+      if (bench) return;
+      coaching = true;
+      document.exitPointerLock?.();
+      benchOpen = true;
+      bench = openBench(parent, () => progress.character, (next) => progress.set(next), (item) => layBench(item), () => {
+        bench = null;
+        benchOpen = false;
+        if (benchLight) benchLight.intensity = 0;
+        back();
+      });
+    }
+    else if (id === "wardrobe") {
+      if (wardOpen) return;
+      coaching = true;
+      wardOpen = true;
+      document.exitPointerLock?.();
+      mirrorCath(true);
+      openWardrobe(parent, () => progress.character, (next) => progress.set(next), () => {
+        wardOpen = false;
+        mirrorCath(false);
+        back();
+      });
+    }
     else if (id === "phone") {
       if (beaOnLine) return;
       const lines = beaCall(progress.jobsDone);
@@ -2561,6 +2589,95 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
   }
   let beaOnLine = false;
+  /**
+   * Plan item 16: the gun on the bench. At rest it's her first worn gun with its parts; the bench screen lays
+   * whichever gun she picks and turns the camera down onto it (`benchCam`), with the panel beside it.
+   */
+  let bench: BenchHandle | null = null;
+  let benchGun: THREE.Group | null = null;
+  let benchKey = "";
+  let benchCam = false;
+  let benchOpen = false;
+  const BENCH = { x: 4.6, y: 0.92, z: -0.65 };
+  function layBench(item: Item | null | undefined): void {
+    benchCam = !!item && benchOpen;
+    const show = item ?? (progress.character.equipment.weapon1?.kind === "weapon" ? progress.character.equipment.weapon1 : progress.character.equipment.weapon2);
+    const cls = show ? WEAPON_BASES[show.base]?.cls : undefined;
+    const model = modelForClass(cls);
+    const key = show ? `${model}|${JSON.stringify(show.parts)}` : "";
+    if (key === benchKey) return;
+    benchKey = key;
+    benchGun?.removeFromParent();
+    benchGun = null;
+    s.benchParts = [];
+    if (!show || model === "pin") return;
+    const lo = o.quality === "phone";
+    const g = dressGun(buildGunDisplay(model, lo), model, show.parts, lo);
+    // On its right flank, the left (the faction side) up, muzzle north along the bench; its top toward the window.
+    const holder = new THREE.Group();
+    holder.name = "bench:gun";
+    holder.add(g);
+    g.rotation.z = -Math.PI / 2;
+    holder.updateMatrixWorld(true);
+    const b = new THREE.Box3().setFromObject(holder);
+    g.position.set(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
+    holder.position.set(BENCH.x, BENCH.y, BENCH.z);
+    holder.userData.len = b.max.z - b.min.z;
+    world.scene.add(holder);
+    benchGun = holder;
+    s.benchParts = drawnSlots(g);
+  }
+  if (inOffice) layBench(null);
+  // A soft key over the bench for the close-up: always in the scene (so opening the bench never recompiles a shader),
+  // dark until the bench is open. The street's neon still rims the gun from the window.
+  const benchLight = inOffice ? new THREE.SpotLight(0xfff0dc, 0, 3.2, 0.55, 0.7, 1.4) : null;
+  if (benchLight) {
+    benchLight.position.set(BENCH.x - 0.35, 2.55, BENCH.z + 0.3);
+    benchLight.target.position.set(BENCH.x, BENCH.y, BENCH.z);
+    world.scene.add(benchLight, benchLight.target);
+  }
+  /** Plan item 16: Cath at the long mirror while the wardrobe is open (the title's model, built on first use). */
+  let wardOpen = false;
+  let wardCath: FrontCath | null = null;
+  const WARD = { x: -4.0, z: -1.2 };
+  function mirrorCath(on: boolean): void {
+    if (on && !wardCath) {
+      wardCath = buildFrontCath(o.quality === "phone");
+      wardCath.group.position.set(WARD.x, 0, WARD.z);
+      // Facing into the room (+x), turned a touch toward the lens.
+      wardCath.group.rotation.y = Math.PI / 2 + 0.35;
+      world.scene.add(wardCath.group);
+    }
+    if (wardCath) wardCath.group.visible = on;
+  }
+  /** The station close-up this frame (bench or wardrobe), or null for her eyes. */
+  function closeUp(): { from: THREE.Vector3; at: THREE.Vector3; fov: number; up: THREE.Vector3 } | null {
+    const w = o.canvas.clientWidth;
+    const aspect = Math.max(0.5, w / Math.max(1, o.canvas.clientHeight));
+    const free = w < 1000 ? 0.5 : 0.56;
+    if (benchCam && benchGun) {
+      // Straight down on the gun, its top up the screen and the muzzle left, framed in the part of the screen the
+      // panel leaves (the panel takes the right side). The room is 3 m high: the lens hangs 1.4 m over the bench and
+      // the field of view fits the gun's length.
+      const len = (benchGun.userData.len as number) + 0.12;
+      const dist = 1.4;
+      const tanH = len / free / 2 / dist;
+      const shift = dist * tanH * (1 - free);
+      const at = new THREE.Vector3(BENCH.x, BENCH.y + 0.03, BENCH.z + shift);
+      return { from: at.clone().add(new THREE.Vector3(-0.08 * dist, dist, 0)), at, fov: THREE.MathUtils.radToDeg(2 * Math.atan(tanH / aspect)), up: new THREE.Vector3(1, 0, 0) };
+    }
+    if (wardOpen && wardCath) {
+      // Head to toe from the room, 2.3 m off, a little below her eyes; she stands in the free part of the frame.
+      const dist = 2.3;
+      const fov = 50;
+      const tanH = Math.tan(THREE.MathUtils.degToRad(fov / 2)) * aspect;
+      const shift = dist * tanH * (1 - free);
+      const from = new THREE.Vector3(WARD.x + dist, 1.15, WARD.z + 0.25);
+      const at = new THREE.Vector3(WARD.x, 0.92, WARD.z + 0.25 - shift);
+      return { from, at, fov, up: new THREE.Vector3(0, 1, 0) };
+    }
+    return null;
+  }
   /** The chip over the station she stands at (low centre: she faces it from its spot). */
   function stationPrompt(): HudState["pickup"] {
     const st = coaching || charScreen || dead ? null : stationAt(player.pos.x, player.pos.z);
@@ -3768,7 +3885,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
-    else if (zoomOn && zoomAt) {
+    else if (inOffice && closeUp()) {
+      const cu = closeUp()!;
+      const cam = world.camera;
+      const q = cam.quaternion.clone();
+      const pos = cam.position.clone();
+      const up = cam.up.clone();
+      const fov = cam.fov;
+      cam.fov = cu.fov;
+      cam.up.copy(cu.up);
+      cam.position.copy(cam.parent ? cam.parent.worldToLocal(cu.from.clone()) : cu.from);
+      cam.lookAt(cu.at);
+      cam.updateProjectionMatrix();
+      cam.updateMatrixWorld();
+      if (benchLight) benchLight.intensity = benchCam ? 9 : 0;
+      if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
+      world.render();
+      cam.up.copy(up);
+      cam.quaternion.copy(q);
+      cam.position.copy(pos);
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+      cam.updateMatrixWorld();
+    } else if (zoomOn && zoomAt) {
       // The close-up: the camera moved off his struck side and turned on the hand, a lens 0.4 m across, her gun hidden.
       const cam = world.camera;
       const q = cam.quaternion.clone();

@@ -2247,3 +2247,132 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
     gap: 14px;
   }
 }
+
+/* Plan item 16: the gun bench. The world camera looks down on the gun under the lamp; the panel is a dark column on
+   the right, the gunsmith's numbers and parts in the HUD's type, one red mark for focus and the fitted part. */
+.bench {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-sheet);
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 40%, rgb(var(--shade-rgb) / .55) 58%, rgb(var(--shade-rgb) / .88));
+}
+.bench-panel {
+  pointer-events: auto;
+  width: min(44%, calc(var(--u) * 760));
+  max-height: 100%;
+  overflow-y: auto;
+  padding: calc(var(--u) * 64) calc(var(--u) * 72) calc(var(--u) * 48) calc(var(--u) * 40);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 22);
+  color: var(--ink);
+}
+.bench-eyebrow {
+  margin: 0;
+  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-stretch: var(--wdth-label);
+}
+.bench-name {
+  margin: calc(var(--u) * 6) 0 0;
+  font: 800 var(--fs-5)/.95 var(--font-ui);
+  font-stretch: var(--wdth-head);
+  text-transform: uppercase;
+}
+.bench-sub { margin: calc(var(--u) * 10) 0 0; font: 500 var(--fs-2)/1.2 var(--font-ui); color: var(--ink-2); }
+.bench-guns { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 6) calc(var(--u) * 26); }
+.bench-gun, .bench-slot, .bench-opt, .bench-tier {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+.bench-gun {
+  position: relative;
+  min-height: max(36px, calc(var(--u) * 44)); /* px-ok: tap target */
+  font: 600 var(--fs-2)/1 var(--font-ui);
+  color: var(--ink-3);
+}
+.bench-gun.is-on { color: var(--ink); }
+.bench-gun.is-on::after, .bench-slot:focus-visible::before, .bench-opt:focus-visible::before, .bench-opt.is-fitted::before {
+  content: "";
+  position: absolute;
+  background: var(--blood-hot);
+}
+.bench-gun.is-on::after { left: 0; bottom: 0; width: calc(var(--u) * 24); height: max(2px, calc(var(--u) * 3)); /* px-ok */ }
+.bench-bars {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: calc(var(--u) * 8) calc(var(--u) * 20);
+  margin: 0;
+  align-items: center;
+}
+.bench-bars dt { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
+.bench-bars dd { margin: 0; display: flex; align-items: center; gap: calc(var(--u) * 14); }
+.bench-bar {
+  position: relative;
+  flex: 1;
+  height: max(3px, calc(var(--u) * 5)); /* px-ok */
+  background: rgb(var(--ink-rgb) / .12);
+}
+.bench-bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--v) * 100%); background: var(--ink-2); }
+.bench-val { min-width: calc(var(--u) * 150); font: 600 var(--fs-2)/1 var(--font-ui); font-stretch: var(--wdth-num); text-align: right; }
+.bench-bars dd[data-delta="up"] .bench-val { color: var(--ink); }
+.bench-bars dd[data-delta="down"] .bench-val { color: var(--blood-hot); }
+.bench-slots { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-2); /* px-ok */ }
+.bench-slots > li { border-bottom: 1px solid var(--line-1); /* px-ok */ }
+.bench-slot {
+  position: relative;
+  width: 100%;
+  min-height: max(40px, calc(var(--u) * 56)); /* px-ok: tap target */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 16);
+}
+.bench-slot-name { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
+.bench-slot-part { font: 600 var(--fs-2)/1.1 var(--font-ui); color: var(--ink-2); }
+.bench-slots > li.is-on .bench-slot-part { color: var(--ink); }
+.bench-slot:focus-visible::before, .bench-opt:focus-visible::before, .bench-opt.is-fitted::before { left: calc(var(--u) * -18); top: 50%; width: max(2px, calc(var(--u) * 3)); height: calc(var(--u) * 22); transform: translateY(-50%); /* px-ok */ }
+.bench-opts { list-style: none; margin: 0 0 calc(var(--u) * 14); padding: 0 0 0 calc(var(--u) * 18); display: grid; gap: calc(var(--u) * 4); }
+.bench-opt {
+  position: relative;
+  width: 100%;
+  min-height: max(40px, calc(var(--u) * 52)); /* px-ok: tap target */
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(var(--u) * 16);
+  padding: calc(var(--u) * 6) 0;
+}
+.bench-opt-name { font: 600 var(--fs-2)/1.15 var(--font-ui); }
+.bench-opt-cost { font: 600 var(--fs-1)/1.2 var(--font-ui); color: var(--ink-2); font-stretch: var(--wdth-num); }
+.bench-opt-line { grid-column: 1 / -1; font: 500 var(--fs-1)/1.3 var(--font-ui); color: var(--ink-3); }
+.bench-opt:disabled, .bench-tier:disabled { cursor: default; opacity: .45; }
+.bench-opt.is-fitted .bench-opt-cost { color: var(--blood-hot); }
+@media (hover: hover) { .bench-opt:not(:disabled):hover .bench-opt-name, .bench-slot:hover .bench-slot-part { color: var(--ink); } }
+.bench-tier { display: flex; justify-content: space-between; gap: calc(var(--u) * 16); min-height: max(40px, calc(var(--u) * 52)); /* px-ok: tap target */ align-items: center; font: 600 var(--fs-2)/1.15 var(--font-ui); border-top: 1px solid var(--line-2); /* px-ok */ }
+.bench-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: calc(var(--u) * 20); }
+.bench-note { margin: 0; min-height: 1.2em; font: 500 var(--fs-2)/1.2 var(--font-ui); color: var(--ink-2); }
+@media (max-width: 1000px) {
+  .bench { background: linear-gradient(90deg, transparent 34%, rgb(var(--shade-rgb) / .7) 50%, rgb(var(--shade-rgb) / .9)); }
+  .bench-panel { width: 50%; padding: calc(var(--u) * 28) calc(var(--u) * 40) calc(var(--u) * 24) calc(var(--u) * 28); gap: calc(var(--u) * 14); }
+}
+:root:has(.bench) .hud-root, :root:has(.bench) .touch { visibility: hidden; }
+.bench-empty { padding: calc(var(--u) * 10) 0; font: 500 var(--fs-1)/1.3 var(--font-ui); color: var(--ink-3); }
+.bench [data-rarity="modded"] { color: var(--r-modded); }
+.bench [data-rarity="rare"] { color: var(--r-rare); }
+.bench [data-rarity="unique"] { color: var(--r-unique); }
+.bench [data-rarity="set"] { color: var(--r-set); }
+.wardrobe-nums { grid-template-columns: auto 1fr auto 1fr; }
+.wardrobe-nums dd { justify-content: flex-start; }
+.wardrobe-nums .bench-val { min-width: 0; text-align: left; }

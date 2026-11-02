@@ -9,8 +9,9 @@ type C = {
   stats: { frames: number }
   player: { pos: V3; yaw: number; pitch: number }
   input: { forced: Record<string, boolean> }
-  progress: { jobsDone: string[]; save(): void }
+  progress: { jobsDone: string[]; save(): void; character: { scrip: number }; set(c: unknown): void }
   lastStation?: string
+  benchParts?: string[]
   travelling?: string
 }
 const ACT1 = ['fishMarket', 'crispLead', 'quayContracts', 'candorManifest', 'crispBoss']
@@ -58,6 +59,33 @@ test('Continue lands in the office, the stations open, and the stair door takes 
   await expect(board).toBeVisible({ timeout: 30_000 })
   await page.keyboard.press('Escape')
   await expect(board).toBeHidden({ timeout: 30_000 })
+
+  // The gun bench: the screen opens over the close-up, a part bought there goes onto the gun on the bench.
+  await page.evaluate(() => {
+    const p = (window as unknown as { cathode: C }).cathode.progress
+    p.set({ ...p.character, scrip: 5000 })
+  })
+  await at(3.4, -0.6)
+  await use()
+  const bench = page.getByRole('dialog', { name: 'Gun bench' })
+  await expect(bench).toBeVisible({ timeout: 30_000 })
+  await bench.locator('[data-k="slot:mag"]').click()
+  await bench.locator('[data-k="part:extendedMag"]').click()
+  await expect(bench.locator('[data-k="slot:mag"]')).toContainText('Extended Mag')
+  await expect(bench.getByRole('status')).toHaveText('Extended Mag fitted.')
+  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.benchParts?.includes('mag'), null, { timeout: 30_000 })
+  expect(await page.evaluate(() => (window as unknown as { cathode: C }).cathode.progress.character.scrip)).toBe(5000 - 250)
+  await page.keyboard.press('Escape')
+  await expect(bench).toBeHidden({ timeout: 30_000 })
+
+  // The wardrobe: Cath at the mirror, her four pieces listed.
+  await at(-3.4, -1.6)
+  await use()
+  const ward = page.getByRole('dialog', { name: 'Wardrobe' })
+  await expect(ward).toBeVisible({ timeout: 30_000 })
+  await expect(ward.locator('.bench-slot')).toHaveCount(4)
+  await page.keyboard.press('Escape')
+  await expect(ward).toBeHidden({ timeout: 30_000 })
 
   // Walk to the stair door with the keyboard: from the middle of the room, face east and hold W.
   await at(0, 2.6)
