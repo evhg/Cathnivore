@@ -274,7 +274,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Shots at P, D, L and dark.
 - **Size:** 4
 
-## 19. [ ] Hedgerow: a living field with tower tiers and impact
+## 19. [x] Hedgerow: a living field with tower tiers and impact *(done 2026-11-02, 2c006d2..HEAD: one voice at a time (e2e), the desktop side column a wave card so the field is 75% of 1440 (e2e), tilled beds and a lane with verges and ruts in 2D, stronger beds in 3D; three tiers per tower (bed, plank deck, stone drum with gold band, taller each tier; `tests/hedgerow-tiers.test.ts`), idle breath and firing squash in 2D and 3D, hit squash on landing, distance-scaled lobs, Fleet pop bursts; late-wave shots P, D, L)*
 - **Why:** plots are dashed grey squares, the lane is a plain tan band, towers and enemies are small static icons, and the desktop sidebar has three tutorial voices at once (`D-hedgerow-field`, `P-hedgerow-field`).
 - **Build:**
   - Plots become tilled beds; the lane gets ruts and verges.
