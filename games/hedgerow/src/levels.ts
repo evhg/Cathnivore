@@ -8,7 +8,8 @@ import type { Beat } from "./story/types";
 import { HP_SCALE, START_K } from "./tuning";
 import { bookWave, incomeBefore, windowFor } from "./rounds";
 import { FLEET_GOODWILL } from "./fleet";
-import { relayout, rewind } from "./layouts";
+import { relayout, rewind, untwin } from "./layouts";
+import { addLandmarks } from "./landmarks";
 import { addBarns, addFords, addOaks, addTerrain } from "./terrain";
 
 const van = (count: number, gap: number, delay = 0): WaveGroup => ({
@@ -6346,6 +6347,8 @@ export const ORIGINAL_PATHS = new Map(LEVELS.map((l) => [l.id, l.path] as const)
 // From level 4 on every level gets a bigger field and a long winding route of its own (layouts.ts
 // `rewind`, owner's third playtest); the older shape family is the fallback.
 for (const l of LEVELS) if (l.id > 3 && !rewind(l)) relayout(l);
+// No two fields of an act on the same plots (plan item 43): a near-twin of an earlier level runs mirrored.
+for (const l of LEVELS) if (l.id > 3) untwin(l, LEVELS.filter((e) => e.id < l.id && Math.ceil(e.id / 10) === Math.ceil(l.id / 10)));
 for (const l of LEVELS) if (FORK_LEVELS(l.id)) addSecondLane(l);
 for (const l of LEVELS) addTerrain(l);
 
@@ -6570,6 +6573,8 @@ const SET_PIECES: Record<number, (l: Level) => SetPiece> = {
   93: (l) => ({ kind: "bridge", dist: Math.round(pathLength(l.path) * 0.55), period: 12, open: 4 }),
 };
 for (const l of LEVELS) if (SET_PIECES[l.id]) l.setPieces = [SET_PIECES[l.id]!(l)];
+// Every field is a place (plan item 43): its landmarks stand on cells of their own.
+for (const l of LEVELS) addLandmarks(l);
 
 /** What clearing a level opens up, in plain words: the next level's new towers, abilities and enemies. */
 function unlockText(id: number): string {

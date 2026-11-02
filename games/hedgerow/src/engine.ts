@@ -1476,7 +1476,50 @@ export function bookRound(level: Pick<Level, "book">, wave: number): number {
 export type SetPiece =
   | { kind: "flood"; wave: number; cells: Array<[number, number]>; from: number; to: number }
   | { kind: "bridge"; dist: number; lane?: 1; period: number; open: number }
-  | { kind: "blackout"; light: number };
+  | { kind: "blackout"; light: number }
+  | { kind: "landmark"; type: LandmarkKind; cells: Array<[number, number]> };
+
+/**
+ * Landmarks (plan item 43): the place a field is, from a library of twelve. Each stands on its own cells,
+ * which aren't plots (nothing is built on a churchyard), except a raised bank, whose cells are high ground.
+ */
+export type LandmarkKind =
+  | "ford"
+  | "green"
+  | "orchard"
+  | "quarry"
+  | "bank"
+  | "farmyard"
+  | "churchyard"
+  | "market"
+  | "reeds"
+  | "windmill"
+  | "lock"
+  | "silo";
+
+/** A level's landmarks. */
+export function landmarks(level: Pick<Level, "setPieces">): Array<Extract<SetPiece, { kind: "landmark" }>> {
+  return (level.setPieces ?? []).filter((p): p is Extract<SetPiece, { kind: "landmark" }> => p.kind === "landmark");
+}
+
+const sceneryCache = new WeakMap<SetPiece[], Set<string>>();
+/** Cells a landmark stands on that can't be built on (a raised bank's cells stay plots). */
+export function sceneryCells(level: Pick<Level, "setPieces">): Set<string> {
+  const pieces = level.setPieces;
+  if (!pieces) return EMPTY_CELLS;
+  const hit = sceneryCache.get(pieces);
+  if (hit) return hit;
+  const out = new Set<string>();
+  for (const p of pieces) if (p.kind === "landmark" && p.type !== "bank") for (const [c, r] of p.cells) out.add(`${c},${r}`);
+  sceneryCache.set(pieces, out);
+  return out;
+}
+const EMPTY_CELLS = new Set<string>();
+
+/** The landmark standing on a cell, if any. */
+export function landmarkAt(level: Pick<Level, "setPieces">, col: number, row: number): Extract<SetPiece, { kind: "landmark" }> | undefined {
+  return landmarks(level).find((p) => p.cells.some(([c, r]) => c === col && r === row));
+}
 
 export function setPiece<K extends SetPiece["kind"]>(level: Pick<Level, "setPieces">, kind: K): Extract<SetPiece, { kind: K }> | undefined {
   return level.setPieces?.find((p) => p.kind === kind) as Extract<SetPiece, { kind: K }> | undefined;
@@ -2034,13 +2077,15 @@ export function laneCellsOf(level: Pick<Level, "path" | "path2">): Set<string> {
 export function isPlot(level: Level, col: number, row: number): boolean {
   if (col < 0 || row < 0 || col >= level.cols || row >= level.rows)
     return false;
-  return !laneCellsOf(level).has(`${col},${row}`);
+  const k = `${col},${row}`;
+  return !laneCellsOf(level).has(k) && !sceneryCells(level).has(k);
 }
 
 export type PlotKind = "plain" | "high" | "water";
 
 export function plotKind(level: Level, col: number, row: number): PlotKind {
   const t = level.terrain;
+  if (level.setPieces && landmarks(level).some((p) => p.type === "bank" && p.cells.some(([c, r]) => c === col && r === row))) return "high";
   if (!t) return "plain";
   if (t.high.some(([c, r]) => c === col && r === row)) return "high";
   if (t.water.some(([c, r]) => c === col && r === row)) return "water";

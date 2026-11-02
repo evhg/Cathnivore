@@ -305,3 +305,55 @@ export function rewind(level: Level): boolean {
   level.path = path;
   return true;
 }
+
+// ---- no twin fields (plan item 43: "level 2 and level 38 are the same plot grid on the same lane") ----
+
+/** The cells of a field that aren't lane (its plots before any scenery), as "c,r" keys. */
+export function plotSet(level: Pick<Level, "cols" | "rows" | "path" | "path2">): Set<string> {
+  const lane = new Set<string>();
+  for (const p of [level.path, level.path2]) {
+    if (!p) continue;
+    const cells = walk(p as P[], level.cols, level.rows) ?? [];
+    for (const k of cells) lane.add(k);
+  }
+  const out = new Set<string>();
+  for (let r = 0; r < level.rows; r++) for (let c = 0; c < level.cols; c++) if (!lane.has(`${c},${r}`)) out.add(`${c},${r}`);
+  return out;
+}
+
+/** Jaccard overlap of two plot sets (shared cells over all cells in either). */
+export function plotOverlap(a: Set<string>, b: Set<string>): number {
+  let i = 0;
+  for (const x of a) if (b.has(x)) i++;
+  return i / (a.size + b.size - i || 1);
+}
+
+/** Most two levels of one act may share of their plots (plan item 43). */
+export const TWIN_LIMIT = 0.7;
+
+/**
+ * Mirrors a level whose plots nearly repeat an earlier level of its act. A mirror is the same lane run the other
+ * way across the field, so it plays the same (the tuner's fit holds) but no longer sits on the same plots.
+ * Call before second lanes and terrain are added. Returns true if it flipped the level.
+ */
+export function untwin(level: Level, earlier: Level[]): boolean {
+  const worst = (path: P[]) => {
+    const mine = plotSet({ ...level, path, path2: undefined });
+    return Math.max(0, ...earlier.map((e) => plotOverlap(mine, plotSet(e))));
+  };
+  const own = level.path as P[];
+  if (worst(own) <= TWIN_LIMIT) return false;
+  let best = own;
+  let bestScore = worst(own);
+  for (const [fx, fy] of [[true, false], [false, true], [true, true]] as const) {
+    const path = mirror(own, level.cols, level.rows, fx, fy);
+    const s = worst(path);
+    if (s < bestScore) {
+      best = path;
+      bestScore = s;
+    }
+  }
+  if (best === own) return false;
+  level.path = best;
+  return true;
+}

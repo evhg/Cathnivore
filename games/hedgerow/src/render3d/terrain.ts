@@ -4,7 +4,7 @@
 // level id, so a level always looks the same.
 
 import * as THREE from "three";
-import { hasTwist, isProtected, laneCellsOf, plotKind, type Level } from "../engine";
+import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { rng } from "../theme";
 import { actLight } from "./palette";
 import {
@@ -533,7 +533,10 @@ export function buildGround(level: Level): Ground {
   const cols = level.cols;
   const rows = level.rows;
   const lane = laneCellsOf(level);
-  const high = new Set((level.terrain?.high ?? []).map(([c, r]) => `${c},${r}`));
+  const high = new Set(
+    [...(level.terrain?.high ?? []), ...landmarks(level).flatMap((m) => (m.type === "bank" ? m.cells : []))].map(([c, r]) => `${c},${r}`),
+  );
+  const scenery = sceneryCells(level);
   const wet = new Set((level.terrain?.water ?? []).map(([c, r]) => `${c},${r}`));
   const act = Math.floor((level.id - 1) / 10);
   const mood = actMood(level.id);
@@ -704,7 +707,7 @@ export function buildGround(level: Level): Ground {
     tufts.push({ x, y: heightAt(x, z) - 0.005, z, ry: deco() * Math.PI * 2, s: scale * (0.75 + deco() * 0.6), sy: tall, color: colour ?? tuftCols[Math.floor(deco() * tuftCols.length)]! });
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++) {
-      if (lane.has(`${c},${r}`)) continue;
+      if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`)) continue;
       const h = heightAt(c + 0.5, r + 0.5);
       const kind = plotKind(level, c, r);
       if (kind === "water") {
@@ -786,7 +789,7 @@ export function buildGround(level: Level): Ground {
     const cols3 = prop.colors.map((c) => new THREE.Color(c));
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++) {
-        if (lane.has(`${c},${r}`) || isProtected(level, c, r) || plotKind(level, c, r) === "water") continue;
+        if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`) || isProtected(level, c, r) || plotKind(level, c, r) === "water") continue;
         if (pr() > prop.rate) continue;
         const cx = c + (pr() < 0.5 ? 0.14 : 0.86);
         const cz = r + (pr() < 0.5 ? 0.14 : 0.86);
