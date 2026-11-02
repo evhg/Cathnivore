@@ -2697,7 +2697,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     near.sort((a, b) => a.d - b.d);
     const out: Array<{ x: number; y: number; tint: string; name?: string }> = [];
     for (const { e } of near.slice(0, 3)) {
-      const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, 0.45, 0)).project(world.camera);
+      // (The lieutenant's name sits just over his head: its box grows upward from this point.)
+      const v = tdChip.copy(e.body.joints.head).add(vUp.set(0, e === lieutenant ? 0.22 : 0.45, 0)).project(world.camera);
       if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) continue;
       if (e === lieutenant) {
         out.push({ x: ((v.x + 1) / 2) * c.clientWidth, y: ((1 - v.y) / 2) * c.clientHeight, tint: "", name: e.kit.name });

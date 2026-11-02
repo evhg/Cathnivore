@@ -2103,6 +2103,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .talk {
   background: radial-gradient(ellipse at 30% 40%, rgb(var(--shade-rgb) / .55), rgb(var(--shade-rgb) / .9));
 }
+/* The talk is a scene: the HUD, its toasts and markers and the touch controls step out while it's up. */
+:root:has(.talk) .hud-root,
+:root:has(.talk) .touch { visibility: hidden; }
 .talk-card {
   display: grid;
   grid-template-columns: minmax(160px, 34%) 1fr;

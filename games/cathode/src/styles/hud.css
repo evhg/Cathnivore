@@ -2063,19 +2063,20 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   box-shadow: none;
   transform: translate3d(var(--px, 50vw), var(--py, 50vh), 0) translate(-50%, -100%);
   animation: none;
-  padding-top: max(4px, calc(var(--u) * 7));
+  padding: max(9px, calc(var(--u) * 12)) calc(var(--u) * 18) calc(var(--u) * 7);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / 0));
   font: 700 var(--fs-1)/1 var(--font-ui);
-  letter-spacing: .14em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink);
-  text-shadow: 0 1px 2px rgb(var(--shade-rgb) / .9);
+  text-shadow: 0 max(1px, calc(var(--u) * 1.5)) max(2px, calc(var(--u) * 3)) rgb(var(--shade-rgb) / .9);
 }
 .hud-elite.is-lt::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: 0;
+  top: calc(var(--u) * 3);
   width: max(14px, calc(var(--u) * 22));
   height: max(2px, calc(var(--u) * 3));
   background: var(--blood-hot);
