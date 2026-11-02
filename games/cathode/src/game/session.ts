@@ -2632,7 +2632,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // dark until the bench is open. The street's neon still rims the gun from the window.
   const benchLight = inOffice ? new THREE.SpotLight(0xfff0dc, 0, 3.2, 0.55, 0.7, 1.4) : null;
   if (benchLight) {
-    benchLight.position.set(BENCH.x - 0.35, 2.55, BENCH.z + 0.3);
+    // From the window side and north, so its highlight on the steel top glances away from the lens overhead.
+    benchLight.position.set(BENCH.x + 0.3, 2.1, BENCH.z - 1.1);
     benchLight.target.position.set(BENCH.x, BENCH.y, BENCH.z);
     world.scene.add(benchLight, benchLight.target);
   }
@@ -3898,7 +3899,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       cam.lookAt(cu.at);
       cam.updateProjectionMatrix();
       cam.updateMatrixWorld();
-      if (benchLight) benchLight.intensity = benchCam ? 9 : 0;
+      if (benchLight) benchLight.intensity = benchCam ? 3.5 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
       world.render();
       cam.up.copy(up);

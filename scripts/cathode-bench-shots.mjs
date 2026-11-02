@@ -12,6 +12,7 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
+const ONLY = process.env.SIZE
 const SIZES = [
   ['desktop', { viewport: { width: 1440, height: 900 } }],
   ['landscape', { viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true }],
@@ -26,7 +27,7 @@ const PARTS = {
   pistol: { scope: 'redDot', mag: 'extendedMag', stock: 'paddedStock' },
   revolver: { barrel: 'longBarrel', scope: 'fourGlass', stock: 'paddedStock' },
 }
-for (const [name, opts] of SIZES) {
+for (const [name, opts] of SIZES.filter(([n]) => !ONLY || n === ONLY)) {
   const page = await browser.newPage(opts)
   await page.goto(base)
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'low' })))

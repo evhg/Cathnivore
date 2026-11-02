@@ -81,6 +81,8 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
   b.boxMinMax("darkMetal", xE - 0.75, 0, -1.9, xE - 0.05, 0.86, 0.6, { collide: "metal" });
   b.boxMinMax("steel", xE - 0.8, 0.86, -1.95, xE, 0.92, 0.65, { collide: "metal" });
   b.box("paintRed", xE - 0.45, 1.0, -1.4, 0.18, 0.16, 0.12, { cover: "none" });
+  // A matte gun mat where the gun lies: the steel top mirrored the lamps into the bench close-up as glare.
+  b.box("rubber", xE - 0.4, 0.926, -0.65, 0.66, 0.012, 1.75, { cover: "none" });
   // The bench lamp hangs high by the wall, out of the bench close-up's frame (it blew out the gun from 1.6 m).
   b.box("glowWarm", xE - 0.15, 2.6, 0.3, 0.2, 0.05, 0.2, { cover: "none" });
   // Over the lamp, above the bench close-up's lens (a light's glow between the lens and the gun washed it out).
