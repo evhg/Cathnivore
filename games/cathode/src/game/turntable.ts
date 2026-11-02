@@ -1,4 +1,4 @@
-// C10 (S3.1, S3.4): the enemy review turntable, `?shot&arch=<id>[&lod=0|1|2][&pose=idle|aim|run][&phone=1][&sil=1]
+// C10 (S3.1, S3.4): the enemy review turntable, `?shot&arch=<id>[&lod=0|1|2][&pose=idle|aim|run][&phone=1][&sil=1][&dist=<m>]
 // [&view=lineup|close|back]`. The archetype (or `all` of them) in a neutral studio (a dark cyclorama, a soft room
 // reflection, a warm key and a cool rim), turned 0, 45, 90 and 180 degrees, or side by side for `all`. `sil=1` is
 // S3.1's silhouette test: flat black on mid grey. Built for review and for the critique: it loads in a second, where
@@ -131,7 +131,9 @@ export function openTurntable(canvas: HTMLCanvasElement): void {
     const w = face ? 0.3 : portrait ? 0.5 : Math.max(1.2, shown * gap + 0.6);
     const h = face ? 0.42 : portrait ? 0.82 : view === "close" ? 1.1 : 2.15;
     const fy = THREE.MathUtils.degToRad(cam.fov);
-    const dist = Math.max(h / 2 / Math.tan(fy / 2), w / 2 / (Math.tan(fy / 2) * cam.aspect)) * 1.08;
+    // Plan item 41: `dist=<m>` stands the camera that far off (the readability check: a guard at 25 m).
+    const far = Number(q.get("dist") ?? 0);
+    const dist = far > 0 ? far : Math.max(h / 2 / Math.tan(fy / 2), w / 2 / (Math.tan(fy / 2) * cam.aspect)) * 1.08;
     const headY = caths[0] ? caths[0].head.getWorldPosition(new THREE.Vector3()).y : 1.62;
     const ty = face ? headY : portrait ? 1.62 : view === "close" ? 1.42 : 0.98;
     cam.position.set(0, ty + (portrait ? 0.02 : 0.15), dist);
