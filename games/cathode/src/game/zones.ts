@@ -73,6 +73,7 @@ export function loadingTitle(id: string | undefined): string {
   if (id === "plaza") return "Act 3 · Hollowell Plaza";
   if (id === "tower") return "Act 4 · The Board Tower";
   if (id === "vault") return "Act 5 · The Hollow Vault";
+  if (id === "office") return "Between cases · Cath's office";
   return "Act 1 · The Drowned Market";
 }
 
@@ -82,6 +83,7 @@ export function loadingFlavour(id: string | undefined): string {
   if (id === "plaza") return "Rain on the council steps. Pell's face fills the sky.";
   if (id === "tower") return "Marble, glass, and a lift that only goes up.";
   if (id === "vault") return "Coolant fog. Red lamps. The drop waits.";
+  if (id === "office") return "Neon through wet glass. The kettle's still warm.";
   return "Rain over the Drowned Market…";
 }
 

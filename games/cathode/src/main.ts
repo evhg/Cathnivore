@@ -440,9 +440,13 @@ async function begin(fromTitle: boolean): Promise<void> {
   // Per-district save: Continue returns to the district last played (an explicit ?district= or ?shot wins).
   let district = params.get("district") ?? undefined;
   const zones = await import("./game/zones");
+  const { continueDistrict } = await import("./game/office");
   try {
+    // Plan item 16: Continue from the title lands in Cath's office once the first job is done (the hub between
+    // cases); a `?play` link keeps the last district.
+    if (!district && !shot && fromTitle) district = continueDistrict(new Progress().jobsDone);
     if (!district && !shot) district = zones.resumeDistrict(localStorage.getItem(zones.LAST_DISTRICT_KEY), new Progress().jobsDone);
-    localStorage.setItem(zones.LAST_DISTRICT_KEY, district ?? "market");
+    if (district !== "office") localStorage.setItem(zones.LAST_DISTRICT_KEY, district ?? "market");
   } catch {
     // Private mode: no resume.
   }

@@ -108,6 +108,8 @@ export function areaTitle(district: string | undefined, jobsDone: readonly strin
       return { title: "THE BOARD TOWER", sub: "Forty floors of marble and glass" };
     case "vault":
       return { title: "THE HOLLOW VAULT", sub: "Below the waterline" };
+    case "office":
+      return { title: "CATH'S OFFICE", sub: "Over Tomas's egg stall" };
     default:
       return jobsDone.includes("fishMarket")
         ? { title: "THE DROWNED MARKET", sub: "The quay, after midnight" }
@@ -200,7 +202,8 @@ export function loadingCard(jobsDone: readonly string[], target: string | undefi
   }
   return {
     district: id,
-    place: `ACT ${d.act} · ${d.place.toUpperCase()}`,
+    // Plan item 16: the office is over the market (its key art), between cases rather than in an act.
+    place: want === "office" ? "BETWEEN CASES · CATH’S OFFICE" : `ACT ${d.act} · ${d.place.toUpperCase()}`,
     name: next ? next.name : "The List",
     job: next?.job,
     lore: next ? LORE[next.job]! : CLOSED_LORE,

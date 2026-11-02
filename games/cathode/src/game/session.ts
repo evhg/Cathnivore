@@ -64,6 +64,8 @@ import { Secrets, found as secretsFound, SECRETS } from "./secrets";
 import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
+import { beaCall, caseDistrict, doorName, stationAt, STATION_VERB } from "./office";
+import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
 import { choose, talked, talkFor, type DistrictName } from "../sim/talk";
@@ -75,7 +77,7 @@ import { DIFFICULTY_LABEL, unlockedDifficulties } from "../sim/difficulty";
 import type { Difficulty } from "../sim/types";
 import { Voice } from "./voice";
 import { nearLandmark } from "./landmarks";
-import { WingWatch, ZoneWatch, loadingTitle } from "./zones";
+import { LAST_DISTRICT_KEY, WingWatch, ZoneWatch, loadingTitle, travelUrl } from "./zones";
 import { namesLeft } from "../ui/frontcopy";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
@@ -152,6 +154,9 @@ export interface Session {
   talk?: () => void;
   /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
   lieutenant?: () => Enemy | null;
+  /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
+  lastStation?: string;
+  travelling?: string;
   world: World;
   player: Player;
   input: Input;
@@ -317,7 +322,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const inPlaza = o.district === "plaza";
   const inTower = o.district === "tower";
   const inVault = o.district === "vault";
-  const inMarket = !inClinic && !inPlaza && !inTower && !inVault;
+  /** Plan item 16: Cath's office, the hub between cases (no jobs, patrols or street voice; stations instead). */
+  const inOffice = o.district === "office";
+  const inMarket = !inClinic && !inPlaza && !inTower && !inVault && !inOffice;
   // Every window and document listener the session adds goes on this signal, so dispose() takes them all back.
   const life = new AbortController();
   const lifeOpt = { signal: life.signal };
@@ -377,7 +384,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // The first job teaches the game one thing at a time and brings its own enemies; after that the street
   // is fully patrolled.
   // Screenshots skip the first job unless they ask for it (?shot&job).
-  const tutorial = !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
+  const tutorial = !inOffice && !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
   const KITS = {
     rifle: [ENFORCER, "enforcer"],
     shield: [RIOT_SHIELD, "riotShield"],
@@ -650,6 +657,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     ? "Councillor Pell's permit strongbox is under the market awnings, west side of the square."
     : inClinic
     ? "Find Dr Vane. Her theatre is at the north end of the clinic."
+    : inOffice
+    ? `The office. The water taxi waits downstairs for ${doorName(progress.jobsDone)}.`
     : "Get to the fish market. Somebody there knows who put Tomas in the water.";
   // One area title on arrival: the front door's (main.ts) when it shows one, else the HUD's banner.
   if (o.areaTitle && !o.warm) {
@@ -706,7 +715,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     : null;
   // The second job, Crisp's ledger, picks up once the Fish Market is closed.
   const crisp =
-    !tutorial && progress.jobsDone.includes("fishMarket") && !progress.jobsDone.includes("crispLead") && !o.shot
+    !tutorial && progress.jobsDone.includes("fishMarket") && !progress.jobsDone.includes("crispLead") && !o.shot && !inOffice
       ? new CrispJob({
           player,
           progress,
@@ -723,7 +732,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const quay =
-    !tutorial && progress.jobsDone.includes("crispLead") && !progress.jobsDone.includes("quayContracts") && !o.shot
+    !tutorial && progress.jobsDone.includes("crispLead") && !progress.jobsDone.includes("quayContracts") && !o.shot && !inOffice
       ? new QuayJob({
           player,
           progress,
@@ -740,7 +749,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const manifest =
-    !tutorial && progress.jobsDone.includes("quayContracts") && !progress.jobsDone.includes("candorManifest") && !o.shot
+    !tutorial && progress.jobsDone.includes("quayContracts") && !progress.jobsDone.includes("candorManifest") && !o.shot && !inOffice
       ? new ManifestJob({
           player,
           progress,
@@ -757,7 +766,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const crispBoss =
-    !tutorial && progress.jobsDone.includes("candorManifest") && !progress.jobsDone.includes("crispBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("candorManifest") && !progress.jobsDone.includes("crispBoss") && !o.shot && !inOffice
       ? new CrispBossJob({
           player,
           progress,
@@ -774,7 +783,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const vaneLead =
-    !tutorial && (inClinic || progress.jobsDone.includes("crispBoss")) && !progress.jobsDone.includes("vaneLead") && !o.shot
+    !tutorial && (inClinic || progress.jobsDone.includes("crispBoss")) && !progress.jobsDone.includes("vaneLead") && !o.shot && !inOffice
       ? new VaneLeadJob({
           player,
           progress,
@@ -794,7 +803,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   // Vane's boss fight starts once the register is taken (in the clinic, right after the lead job).
   const makeVaneBoss = (): VaneBossJob | null =>
-    !tutorial && progress.jobsDone.includes("vaneLead") && !progress.jobsDone.includes("vaneBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("vaneLead") && !progress.jobsDone.includes("vaneBoss") && !o.shot && !inOffice
       ? new VaneBossJob({
           player,
           progress,
@@ -812,7 +821,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let vaneBoss = makeVaneBoss();
   const pellLead =
-    !tutorial && (inPlaza || progress.jobsDone.includes("vaneBoss")) && !progress.jobsDone.includes("pellLead") && !o.shot
+    !tutorial && (inPlaza || progress.jobsDone.includes("vaneBoss")) && !progress.jobsDone.includes("pellLead") && !o.shot && !inOffice
       ? new PellLeadJob({
           player,
           progress,
@@ -830,7 +839,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const makePellBoss = (): PellBossJob | null =>
-    !tutorial && progress.jobsDone.includes("pellLead") && !progress.jobsDone.includes("pellBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("pellLead") && !progress.jobsDone.includes("pellBoss") && !o.shot && !inOffice
       ? new PellBossJob({
           player,
           progress,
@@ -848,7 +857,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let pellBoss = makePellBoss();
   const boardLead =
-    !tutorial && (inTower || progress.jobsDone.includes("pellBoss")) && !progress.jobsDone.includes("boardLead") && !o.shot
+    !tutorial && (inTower || progress.jobsDone.includes("pellBoss")) && !progress.jobsDone.includes("boardLead") && !o.shot && !inOffice
       ? new BoardLeadJob({
           player,
           progress,
@@ -866,7 +875,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const makeBoardBoss = (): BoardBossJob | null =>
-    !tutorial && progress.jobsDone.includes("boardLead") && !progress.jobsDone.includes("boardBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("boardLead") && !progress.jobsDone.includes("boardBoss") && !o.shot && !inOffice
       ? new BoardBossJob({
           player,
           progress,
@@ -884,7 +893,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       : null;
   let boardBoss = makeBoardBoss();
   const vaultLead =
-    !tutorial && (inVault || progress.jobsDone.includes("boardBoss")) && !progress.jobsDone.includes("vaultLead") && !o.shot
+    !tutorial && (inVault || progress.jobsDone.includes("boardBoss")) && !progress.jobsDone.includes("vaultLead") && !o.shot && !inOffice
       ? new VaultLeadJob({
           player,
           progress,
@@ -902,7 +911,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         })
       : null;
   const makeVaultBoss = (): VaultBossJob | null =>
-    !tutorial && progress.jobsDone.includes("vaultLead") && !progress.jobsDone.includes("vaultBoss") && !o.shot
+    !tutorial && progress.jobsDone.includes("vaultLead") && !progress.jobsDone.includes("vaultBoss") && !o.shot && !inOffice
       ? new VaultBossJob({
           player,
           progress,
@@ -922,7 +931,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   let vaultBoss = makeVaultBoss();
   const wantedWeek = weekKey(new Date());
   const wanted =
-    !tutorial && progress.jobsDone.includes("hardboiledOpen") && progress.character.difficulty !== "noir" && !progress.jobsDone.includes(`mostWanted:${wantedWeek}`) && !o.shot
+    !tutorial && progress.jobsDone.includes("hardboiledOpen") && progress.character.difficulty !== "noir" && !progress.jobsDone.includes(`mostWanted:${wantedWeek}`) && !o.shot && !inOffice
       ? new MostWantedJob(
         {
           player,
@@ -949,7 +958,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       )
       : null;
   const side =
-    !tutorial && progress.jobsDone.includes("vaultBoss") && !wanted && !o.shot
+    !tutorial && progress.jobsDone.includes("vaultBoss") && !wanted && !o.shot && !inOffice
       ? new SideContractJob({
           player,
           progress,
@@ -991,7 +1000,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
   // Not over a screenshot stage: a stage that takes a while to set up would get the opening line across it.
-  setTimeout(() => staged || voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
+  if (!inOffice) setTimeout(() => staged || voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
   const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, slowMs: 15.5, fastMs: 11, rescueMin: 0.4 });
@@ -1693,6 +1702,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
           },
         );
       }
+    }
+    // Plan item 16: in the office, the take key uses the station she stands at.
+    if (inOffice && intent.takedown && !coaching && !charScreen && !dead) {
+      const st = stationAt(player.pos.x, player.pos.z);
+      if (st) openStation(st);
     }
     if (intent.photo && !coaching && !charScreen && !killcam.active && !dead && !input.isTouch) {
       coaching = true;
@@ -2509,7 +2523,57 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     return sightClear;
   };
+  /** Plan item 16: the office's stations. The take key (or a tap on the chip) opens each one's screen. */
+  function openStation(id: StationId): void {
+    audio?.promptUp();
+    s.lastStation = id;
+    const parent = o.hud.parentElement ?? o.hud;
+    const back = () => {
+      coaching = false;
+      input.lock();
+    };
+    if (id === "board") {
+      coaching = true;
+      document.exitPointerLock?.();
+      openCaseBoard(parent, progress.jobsDone, back);
+    } else if (id === "bench") openSheet("inventory");
+    else if (id === "wardrobe") openSheet("attributes");
+    else if (id === "phone") {
+      if (beaOnLine) return;
+      const lines = beaCall(progress.jobsDone);
+      beaOnLine = true;
+      lines.forEach((t, i) => setTimeout(() => hud.subtitle(t), i * 3200));
+      setTimeout(() => (beaOnLine = false), lines.length * 3200);
+    } else {
+      const to = caseDistrict(progress.jobsDone);
+      try {
+        sessionStorage.setItem("cathode.travel", "1");
+        localStorage.setItem(LAST_DISTRICT_KEY, to);
+      } catch {
+        // Private mode: the trip still loads.
+      }
+      s.travelling = to;
+      location.search = travelUrl(to, location.search);
+    }
+  }
+  let beaOnLine = false;
+  /** The chip over the station she stands at (low centre: she faces it from its spot). */
+  function stationPrompt(): HudState["pickup"] {
+    const st = coaching || charScreen || dead ? null : stationAt(player.pos.x, player.pos.z);
+    if (!!st !== promptShown && st) audio?.promptUp();
+    promptShown = !!st;
+    if (!st) return null;
+    return {
+      x: o.canvas.clientWidth / 2,
+      y: o.canvas.clientHeight * 0.62,
+      key: input.isTouch ? "Tap" : takeKey,
+      verb: STATION_VERB[st],
+      name: st === "door" ? `Water taxi to ${doorName(progress.jobsDone)}` : STATIONS[st].label,
+      stats: [],
+    };
+  }
   function pickupPrompt(dt: number, look: { yaw: number; pitch: number }): HudState["pickup"] {
+    if (inOffice) return stationPrompt();
     const c = job?.case;
     if (!c?.weapon || c.taken || dead) return lootPrompt();
     const cam = world.camera;
