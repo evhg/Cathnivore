@@ -95,3 +95,36 @@ export function eventCropSvg(id: EventCropId, title?: string): string {
 export function dropSvg(full: boolean): string {
   return `<svg class="ga-drop${full ? ' is-full' : ''}" viewBox="-6 -8 12 15" aria-hidden="true"><path d="M0 -7 Q6 0 5 3 A5 5 0 0 1 -5 3 Q-6 0 0 -7 Z"/></svg>`
 }
+
+// ---- The Orchard's trees (plan item 37): one per level, in ten kinds that repeat down the rows ----------
+
+export type TreeState = 'locked' | 'open' | 'blossom' | 'fruit'
+const TREE_FRUIT = ['ga-red', 'ga-yellow', 'ga-plum', 'ga-red', 'ga-yellow', 'ga-brown', 'ga-tuber', 'ga-plum', 'ga-leaf-2', 'ga-brown']
+// A canopy shape per kind, so a row reads as different trees: round, tall, broad, weeping.
+const CANOPY = [
+  c(0, -8, 8, 'ga-canopy'),
+  e(0, -9, 6, 9, 'ga-canopy'),
+  e(0, -7, 9, 6.5, 'ga-canopy'),
+  c(-4, -7, 5.5, 'ga-canopy') + c(4, -7, 5.5, 'ga-canopy') + c(0, -12, 5.5, 'ga-canopy'),
+  c(0, -8, 7.5, 'ga-canopy') + c(-5, -4, 4, 'ga-canopy') + c(5, -4, 4, 'ga-canopy'),
+  e(0, -8, 8.5, 7.5, 'ga-canopy'),
+  c(-3, -9, 6, 'ga-canopy') + c(4, -6, 6, 'ga-canopy'),
+  e(0, -10, 5.5, 8.5, 'ga-canopy'),
+  c(0, -8, 8, 'ga-canopy') + c(0, -14, 3.5, 'ga-canopy'),
+  e(0, -8, 10, 7, 'ga-canopy'),
+]
+const SPOTS: Array<[number, number]> = [[-5, -9], [3, -12], [5, -5], [-2, -4], [0, -9]]
+
+/** A tree for Orchard level `level` (1-based) in its state. */
+export function treeSvg(level: number, state: TreeState): string {
+  const kind = (level - 1) % 10
+  const ground = e(0, 11, 9, 2.4, 'ga-soil')
+  if (state === 'locked') {
+    return svg(ground + p('M0 11 V-2 M0 2 L-3 -2 M0 0 L3 -4', 'ga-trunk ga-sapling'), undefined, ' ga-tree is-locked')
+  }
+  const trunk = p('M0 11 V-2 M0 3 L-3 -1 M0 1 L3 -3', 'ga-trunk')
+  let deco = ''
+  if (state === 'blossom') deco = SPOTS.map(([x, y]) => c(x, y, 1.7, 'ga-blossom')).join('')
+  if (state === 'fruit') deco = SPOTS.map(([x, y]) => c(x, y, 2.1, TREE_FRUIT[kind]!)).join('')
+  return svg(ground + trunk + CANOPY[kind] + deco, undefined, ` ga-tree is-${state}`)
+}

@@ -49,3 +49,13 @@ describe('runnel garden art (plan item 37)', () => {
     expect(all).not.toMatch(/\p{Extended_Pictographic}/u)
   })
 })
+
+describe('runnel orchard trees (plan item 37)', () => {
+  it('draws a tree per level in four distinct states, and ten kinds down a row', async () => {
+    const { treeSvg } = await import('../games/runnel/src/gardenart')
+    const states = ['locked', 'open', 'blossom', 'fruit'] as const
+    expect(new Set(states.map((s) => treeSvg(1, s))).size).toBe(4)
+    expect(new Set(Array.from({ length: 10 }, (_, i) => treeSvg(i + 1, 'open'))).size).toBe(10)
+    expect(treeSvg(11, 'fruit')).toBe(treeSvg(1, 'fruit'))
+  })
+})

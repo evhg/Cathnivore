@@ -4,7 +4,7 @@ import { drawShareCard, CARD_W, CARD_H } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
-import { cropSvg, dropSvg, eventCropSvg, visitorSvg } from './gardenart'
+import { cropSvg, dropSvg, eventCropSvg, treeSvg, visitorSvg } from './gardenart'
 import { creditBoard, eventBoardOf, eventCrops, eventOn } from './events'
 import './fonts.css'
 import './tokens.css'
@@ -650,15 +650,27 @@ function renderLevels(): void {
     b.type = 'button'
     b.dataset.level = String(n)
     const r = results[n]
-    b.textContent = String(n)
+    // Plan item 37: each level is a tree. Locked: a sapling; open: in leaf; solved: in blossom; a
+    // three-drop solve: in fruit. The current tree glows with Cath beside it.
+    const state = n > open ? 'locked' : !r ? 'open' : r.drops === 3 ? 'fruit' : 'blossom'
+    b.innerHTML = treeSvg(n, state)
+    const num = document.createElement('span')
+    num.className = 'tree-n'
+    num.textContent = String(n)
+    b.append(num)
     b.disabled = n > open
     b.classList.toggle('done', !!r)
-    b.setAttribute('aria-label', `Orchard ${n}${r ? `, ${r.drops} drops` : n > open ? ', locked' : ''}`)
-    if (n === level) b.setAttribute('aria-current', 'true')
+    b.setAttribute('aria-label', `Orchard ${n}, ${orchardName(n)}${r ? `, ${r.drops} drops` : n > open ? ', locked' : ''}`)
+    if (n === level) {
+      b.setAttribute('aria-current', 'true')
+      const cath = document.createElement('span')
+      cath.className = 'tree-cath'
+      cath.setAttribute('aria-hidden', 'true')
+      cath.innerHTML = cathMarkup('wink', 'face')
+      b.append(cath)
+    }
     ui.levels.append(b)
   }
-  const cur = ui.levels.querySelector<HTMLElement>('[aria-current]')
-  if (cur) ui.levels.scrollLeft = cur.offsetLeft - (ui.levels.clientWidth - cur.offsetWidth) / 2
 }
 
 ui.levels.addEventListener('click', (e) => {

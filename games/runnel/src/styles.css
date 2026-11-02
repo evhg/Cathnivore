@@ -158,41 +158,65 @@ button {
 }
 
 .levels {
-  display: flex;
-  gap: 6px;
-  width: min(28rem, calc(100vw - 32px));
-  overflow-x: auto;
-  padding: 3px;
-  scrollbar-width: none;
+  /* Plan item 37: the Orchard is three rows of ten trees (Apple to Walnut), never a scrolling strip. */
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 2px 3px;
+  width: min(30rem, calc(100vw - 32px));
+  padding: 8px 6px 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--wet) 30%, var(--paper));
+  box-shadow: inset 0 0 0 1px var(--dry-edge);
 }
 
 .levels button {
-  flex: none;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 999px;
+  position: relative;
+  min-width: 0;
+  height: 48px;
+  padding: 0;
   border: 0;
-  background: var(--paper-2);
+  border-radius: 10px;
+  background: transparent;
   color: var(--ink);
-  font-weight: 700;
-  font-size: var(--fs-small);
-  font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
-
+.levels button .ga-tree {
+  width: 100%;
+  height: 36px;
+}
+.levels .tree-n {
+  display: block;
+  font: 700 0.6875rem/1 var(--font-num);
+  color: var(--ink-muted);
+}
 .levels button:disabled {
-  opacity: 0.45;
   cursor: default;
 }
-
+.levels button:disabled .tree-n { opacity: 0.5; }
 .levels button[aria-current='true'] {
-  background: var(--surface);
-  box-shadow: 0 0 0 2px var(--gold);
+  background: color-mix(in srgb, var(--gold) 22%, transparent);
+  box-shadow: 0 0 0 2px var(--gold), 0 0 14px color-mix(in srgb, var(--gold) 55%, transparent);
 }
-
-.levels button.done {
-  background: color-mix(in srgb, var(--gold) 28%, var(--paper-2));
+.levels button[aria-current='true'] .tree-n { color: var(--ink); }
+.levels button:not(:disabled):hover .ga-tree { transform: translateY(-2px); }
+.levels .tree-cath {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--wheat, var(--gold));
+  box-shadow: 0 0 0 2px var(--surface);
+  pointer-events: none;
 }
+.levels .tree-cath svg { display: block; width: 100%; height: 100%; }
+.ga .ga-canopy { fill: var(--ga-canopy); }
+.ga .ga-plum { fill: var(--ga-plum); }
+.ga .ga-blossom { fill: var(--ga-blossom); stroke: var(--ga-pink); stroke-width: 0.6; }
+.ga .ga-sapling { stroke: var(--ga-tuber); }
+.ga-tree.is-locked { opacity: 0.55; }
 
 .codebar {
   display: flex;
