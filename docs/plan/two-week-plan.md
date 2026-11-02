@@ -567,7 +567,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all three pages at P and D.
 - **Size:** 2
 
-## 39. [ ] Runnel: one-screen Practice and a proper Bea's workshop *(lane A, in progress)*
+## 39. [x] Runnel: one-screen Practice and a proper Bea's workshop *(done 2026-11-02, lane A, 59bf6343..f548b69d: Practice keeps the daily's layout with one "Board" chip beside the tabs whose sheet holds size, copy and paste code, Bea's picks, the seasonal boards and the workshop (board top 223 px, full width at 390x844); the workshop is a full-screen oak table with the board on taped paper, Bea and her crayons in the corner, water running along channels as they join the spring, Test it then Share (code and share card) once solved, Bea's shelf of picks; the stats rail hides during the lesson; `e2e-site/runnel-practice.spec.ts` (P board top and width, chip and sheet, build-test-solve-share-paste at P and D, rail hidden in `?lesson`), `tests/runnel-workshop-water.test.ts`; shots P, D and dark)*
 - **Why:**
   - At P, Practice stacks three rows of controls above a small board.
   - The workshop is a plain modal of blank hexes.
@@ -583,7 +583,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of Practice and the workshop at P and D.
 - **Size:** 2
 
-## 40. [ ] NIGHT SHIFT and Hedgerow: the bugs from the 2026-11-02 critique, fixed as one batch
+## 40. [ ] NIGHT SHIFT and Hedgerow: the bugs from the 2026-11-02 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** a fresh-eyes pass at P, D and L found layout and craft bugs.
 - **Build:**
   - **Hedgerow:**
