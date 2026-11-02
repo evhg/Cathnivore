@@ -3765,8 +3765,8 @@ function renderLossCauses(g: Game, won: boolean): void {
     list.append(li);
   }
   box.append(list);
-  // Right under the title, so the top cause is on screen even on a phone held sideways (390 px tall).
-  ui.resultTitle.after(box);
+  // Right under the title and stars (on a phone held sideways, at the head of the card's right-hand column).
+  ui.resultStars.parentElement!.after(box);
   ui.dlgResult.classList.add("has-causes");
 }
 

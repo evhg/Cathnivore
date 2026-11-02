@@ -91,4 +91,34 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
       expect(r.spread).toBeLessThan(20) // one row (a wrapped row sits 80 px lower)
     })
   }
+
+  for (const outcome of ['won', 'lost'] as const) {
+    test(`at 844x390 the ${outcome} end card keeps its stats and rewards on the card`, async ({ page }) => {
+      await page.setViewportSize({ width: 844, height: 390 })
+      await page.goto('/hedgerow/?sandbox=1&2d&level=3')
+      await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game())
+      for (let i = 0; i < 8 && !(await page.locator('#screen-play:visible').count()); i++) {
+        await page.getByRole('button', { name: /next|skip|start|begin|continue/i }).first().click().catch(() => {})
+        await page.waitForTimeout(300)
+      }
+      await page.evaluate((o) => {
+        ;(window as unknown as { hedgerow: { game(): { phase: string } } }).hedgerow.game().phase = o
+      }, outcome)
+      await expect(page.locator('#dlg-result[open]')).toBeVisible()
+      await page.waitForTimeout(1800) // the tally rolls up
+      const off = await page.evaluate(() => {
+        const d = document.querySelector('#dlg-result')!
+        const box = d.getBoundingClientRect()
+        const acts = d.querySelector('.win-actions')!.getBoundingClientRect()
+        return [...d.querySelectorAll<HTMLElement>('#result-stats, .tally-counts, .tally-head, #result-note')]
+          .filter((e) => e.getClientRects().length && e.textContent!.trim())
+          .filter((e) => {
+            const r = e.getBoundingClientRect()
+            return r.top < box.top || r.bottom > Math.min(box.bottom, acts.top) + 1
+          })
+          .map((e) => e.className || e.id)
+      })
+      expect(off).toEqual([])
+    })
+  }
 })
