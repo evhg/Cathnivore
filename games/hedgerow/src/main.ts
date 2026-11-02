@@ -724,6 +724,8 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
+    ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
       renderPanel(true);
@@ -1856,16 +1858,41 @@ function towerTray(p: HTMLElement, g: Game): void {
     const price = document.createElement("span");
     price.className = "build-cost";
     price.textContent = String(cost);
-    b.append(img(towerIcon(kind), "tray-icon"), price);
+    // Plan item 31: an almanac card: the name, a role glyph, and range and damage as pips against the roster.
+    const name = document.createElement("span");
+    name.className = "tray-name";
+    name.textContent = TOWERS[kind].name;
+    const role = towerRole(kind);
+    const glyph = document.createElement("span");
+    glyph.className = `tray-role role-${role}`;
+    glyph.title = ROLE_NAMES[role];
+    glyph.innerHTML = ROLE_GLYPHS[role];
+    const pips = trayPips(g, kind);
+    b.append(img(towerIcon(kind), "tray-icon"), glyph, name, pips, price);
     b.addEventListener("pointerdown", (e) => startDrag(e, kind));
     b.addEventListener("pointerenter", (e) => {
       if (e.pointerType !== "mouse" || !HOVER) return;
+      ringFor(kind);
       clearTimeout(tipTimer);
       tipTimer = window.setTimeout(() => showTipText(b, `${TOWERS[kind].name}: ${stats}. ${TOWERS[kind].blurb}`), 380);
     });
     b.addEventListener("pointerleave", (e) => {
-      if (e.pointerType === "mouse") hideTip();
+      if (e.pointerType !== "mouse") return;
+      hideTip();
+      ringFor(null);
     });
+    // On touch a long press shows the ring too (a drag that moves takes over from it).
+    b.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse") return;
+      clearTimeout(ringTimer);
+      ringTimer = window.setTimeout(() => ringFor(kind), 420);
+    });
+    for (const ev of ["pointerup", "pointercancel"] as const)
+      b.addEventListener(ev, (e) => {
+        if (e.pointerType === "mouse") return;
+        clearTimeout(ringTimer);
+        if (!drag?.moved) ringFor(null);
+      });
     b.onclick = () => {
       if (dragEnded()) return;
       hideTip();
@@ -1888,6 +1915,91 @@ function towerTray(p: HTMLElement, g: Game): void {
   requestAnimationFrame(sync);
   wrap.append(tray, more);
   p.append(wrap);
+}
+
+type TowerRole = "slow" | "splash" | "boost" | "income" | "shot";
+const ROLE_NAMES: Record<TowerRole, string> = { slow: "Slows", splash: "Splash", boost: "Boosts", income: "Earns", shot: "Shoots" };
+/** Small ink glyphs for each role (24-unit viewBox, stroked in currentColor). */
+const ROLE_GLYPHS: Record<TowerRole, string> = {
+  slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c3-6 6-6 9 0s6 6 9 0"/></svg>',
+  splash: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>',
+  boost: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5M6 11l6-6 6 6"/></svg>',
+  income: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 10h4a2 2 0 0 1 0 4h-3"/></svg>',
+  shot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/></svg>',
+};
+/** What a tower is for, from its tier-1 numbers. */
+function towerRole(kind: TowerKind): TowerRole {
+  const t = TOWERS[kind];
+  if (t.income?.[0]) return "income";
+  if (t.buff?.[0]) return "boost";
+  if (t.damage[0] === 0 && t.slow[0] < 1) return "slow";
+  if (t.splash) return "splash";
+  return "shot";
+}
+/** Range and damage per second as 1-4 pips each, against the strongest tower in this level's roster. */
+function trayPips(g: Game, kind: TowerKind): HTMLElement {
+  const fleet = isFleet(g.level);
+  const of = (k: TowerKind) => {
+    const st = towerStats({ kind: k, tier: 1, spec: null, fleet });
+    return { range: st.range, dps: st.damage > 0 ? (st.damage * Math.max(1, st.pierce ?? 1)) / st.cooldown : 0 };
+  };
+  const all = g.level.towers.filter((k) => towerAllowed(g.level, k)).map(of);
+  const me = of(kind);
+  const scale = (v: number, max: number) => (v <= 0 || max <= 0 ? 0 : Math.max(1, Math.round((v / max) * 4)));
+  const wrap = document.createElement("span");
+  wrap.className = "tray-pips";
+  wrap.setAttribute("aria-hidden", "true");
+  for (const [label, n] of [
+    ["Range", scale(me.range, Math.max(...all.map((a) => a.range)))],
+    ["Damage", scale(me.dps, Math.max(...all.map((a) => a.dps)))],
+  ] as const) {
+    const row = document.createElement("span");
+    row.className = `pip-row ${label.toLowerCase()}`;
+    row.dataset.pips = String(n);
+    row.title = label;
+    for (let i = 0; i < 4; i++) {
+      const pip = document.createElement("b");
+      if (i < n) pip.className = "on";
+      row.append(pip);
+    }
+    wrap.append(row);
+  }
+  return wrap;
+}
+
+let ringTimer = 0;
+/**
+ * Plan item 31: while a tray card is hovered (or long-pressed) its range ring is drawn on the field before placing:
+ * on the selected plot if it's free, else on the open plot nearest the middle of the lane.
+ */
+function ringFor(kind: TowerKind | null): void {
+  if (!game || !renderer || drag?.moved) return;
+  if (!kind) {
+    renderer.selected = selected;
+    renderer.preview = null;
+    return;
+  }
+  const g = game;
+  let at = selected && canDrop(g, kind, selected) ? selected : null;
+  if (!at) {
+    const lane = [...laneCellsOf(g.level)].map((k) => k.split(",").map(Number) as [number, number]);
+    const mid = lane[Math.floor(lane.length / 2)] ?? [g.level.cols / 2, g.level.rows / 2];
+    let best = Infinity;
+    for (let row = 0; row < g.level.rows; row++)
+      for (let col = 0; col < g.level.cols; col++) {
+        const c = { col, row };
+        if (!canDrop(g, kind, c)) continue;
+        // Plain ground first, so the ring shows the card's own range (high ground would stretch it by a quarter).
+        const d = Math.hypot(col - mid[0], row - mid[1]) + (plotKind(g.level, col, row) === "plain" ? 0 : 100);
+        if (d < best) {
+          best = d;
+          at = c;
+        }
+      }
+  }
+  if (!at) return;
+  renderer.selected = at;
+  renderer.preview = kind;
 }
 
 function startDrag(e: PointerEvent, kind: TowerKind): void {

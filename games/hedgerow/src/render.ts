@@ -163,6 +163,8 @@ export class Renderer {
   aim: { x: number; y: number; r: number } | null = null;
   /** The tower being considered for the selected plot: its range is previewed. */
   preview: TowerKind | null = null;
+  /** Plan item 31: the range ring drawn last frame (cells and pixels), for tests; null when none. */
+  shownRing: { range: number; px: number; cell: number } | null = null;
   private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
   private dpr = 1;
@@ -1058,7 +1060,9 @@ export class Renderer {
 
   private drawSelection(game: Game, X: (v: number) => number, Y: (v: number) => number, s: number, t: number): void {
     const { ctx } = this;
+    this.shownRing = null;
     const rangeRing = (cx: number, cy: number, r: number, tint: string) => {
+      this.shownRing = { range: r, px: r * s, cell: s };
       ctx.fillStyle = tint;
       ctx.strokeStyle = "rgba(255,255,255,0.85)";
       ctx.lineWidth = 2;

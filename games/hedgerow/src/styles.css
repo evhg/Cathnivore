@@ -2858,6 +2858,71 @@ img.act-scene {
 .tray-tower .build-cost {
   font-size: var(--fs-small);
 }
+/* Plan item 31: the almanac card: a role glyph in the corner, the name, and range and damage pips. */
+.tray-tower {
+  position: relative;
+  width: 76px;
+}
+.tray-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--fs-label);
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tray-role {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-2);
+}
+.tray-role svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tray-pips {
+  display: grid;
+  gap: 1px;
+}
+.pip-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.pip-row b {
+  width: 9px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+/* On an upright phone the tray only peeks above the field (plan item 10): the card keeps its old height (icon and
+   price, the role glyph in its corner), and the name and numbers come with a long press. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .tray-tower {
+    width: 58px;
+  }
+  .tray-name,
+  .tray-pips {
+    display: none;
+  }
+}
+/* Range pips in the field's green, damage in the Marks' red-brown. */
+.pip-row.range b.on {
+  background: var(--pasture-ink);
+}
+.pip-row.damage b.on {
+  background: var(--marks-ink);
+}
 .tray-tower:disabled {
   opacity: 0.5;
 }
