@@ -1,4 +1,5 @@
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
+import { useSheetDismiss } from './useSheetDismiss'
 import { PRODUCERS } from '../content/producers'
 import { GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
 import Tooltip from './Tooltip'
@@ -11,6 +12,7 @@ const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community:
 // `inline` (SPEC 10.3 desktop 3-column layout) renders the panel content directly in the page flow
 // instead of as a phone-sized modal overlay — the same data, just without the overlay/Close chrome.
 export default function FarmSheet({ state, onClose, inline }: { state: GameState; onClose(): void; inline?: boolean }) {
+  const sheetRef = useSheetDismiss(onClose, !inline)
   if (inline) {
     return (
       <section className="farm-sheet farm-inline" aria-labelledby="farm-inline-title">
@@ -27,7 +29,7 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
 
   return (
     <div className="sheet-overlay" onClick={onClose}>
-      <div className="sheet farm-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet farm-sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label="Farm" onClick={(e) => e.stopPropagation()}>
         <header>
           <h2>Farm</h2>
           <button onClick={onClose}>Close</button>

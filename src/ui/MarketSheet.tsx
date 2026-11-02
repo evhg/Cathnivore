@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSheetDismiss } from './useSheetDismiss'
 import { investCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import CardTagIcon from './icons/CardTagIcon'
@@ -89,6 +90,7 @@ export default function MarketSheet({
   // card's rules text and flavour line at once — see DECISIONS.md for why prior CSS-only squeezes on this
   // column couldn't close the SPEC 10.3 "no scrolling at 1280x800" gap on their own. The Buy button stays
   // outside the <details> so buying never requires expanding a card first.
+  const sheetRef = useSheetDismiss(onClose, !inline)
   if (inline) {
     return (
       <div className="sheet-panel card-sheet frame frame--tray">
@@ -135,7 +137,7 @@ export default function MarketSheet({
 
   return (
     <div className="sheet-overlay" onClick={onClose}>
-      <div className="sheet card-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet card-sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label="Market" onClick={(e) => e.stopPropagation()}>
         <header>
           <h2>Market</h2>
           <button onClick={onClose}>Close</button>

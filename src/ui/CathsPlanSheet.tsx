@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSheetDismiss } from './useSheetDismiss'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { GoodwillIcon } from './icons/ResourceIcons'
 import CathArt from './CathArt'
@@ -87,6 +88,7 @@ export default function CathsPlanSheet({
   // SPEC 10.3 desktop 3-column layout: same collapsed-by-default treatment as the Market sheet's inline
   // mode (see MarketSheet.tsx and DECISIONS.md) — a card's rules text and Cath's line only show once
   // expanded, cutting the right column's fixed height while the Play button stays outside the <details>.
+  const sheetRef = useSheetDismiss(onClose, !inline)
   if (inline) {
     return (
       <div className="sheet-panel card-sheet frame">
@@ -133,7 +135,7 @@ export default function CathsPlanSheet({
 
   return (
     <div className="sheet-overlay" onClick={onClose}>
-      <div className="sheet card-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet card-sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label={'Cath\u2019s Plan'} onClick={(e) => e.stopPropagation()}>
         <header>
           <h2>Cath&rsquo;s Plan</h2>
           <button onClick={onClose}>Close</button>

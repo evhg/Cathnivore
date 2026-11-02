@@ -1,4 +1,5 @@
 import { logCaption } from './gameLog'
+import { useSheetDismiss } from './useSheetDismiss'
 import type { GameEvent } from '../engine/types'
 
 // SPEC 10.2 "Sheets ... Log (turn history with AI reasons and enemy events)." Covers the turn history and
@@ -54,6 +55,7 @@ export default function LogSheet({
   // container can scroll its own overflow, so a keyboard user can actually reach and scroll it (axe's
   // "focusable-content"/"focusable-element" rules; found failing this exact way when the max-height was
   // first added, see DECISIONS.md).
+  const sheetRef = useSheetDismiss(onClose, !inline)
   if (inline) {
     return (
       <div className="sheet-panel log-sheet frame frame--ledger">
@@ -67,7 +69,7 @@ export default function LogSheet({
 
   return (
     <div className="sheet-overlay" onClick={onClose}>
-      <div className="sheet log-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet log-sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label="Log" onClick={(e) => e.stopPropagation()}>
         <header>
           <h2>Log</h2>
           <button onClick={onClose}>Close</button>
