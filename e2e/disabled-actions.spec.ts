@@ -173,6 +173,9 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
   // Still explained by the same "Open Stall" glossary tooltip a real Open Stall button offers.
   await openStall.locator('.tooltip-trigger-button').dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
+  // Put it away again: on a phone the card's "i" sits by its price, so its popover covers the cards.
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.tooltip-popover')).toHaveCount(0)
 
   // A disabled button is genuinely inert.
   const actionsLeftBefore = await page.locator('.active-producer').textContent()
@@ -214,6 +217,9 @@ test('Rebut and Supply-Buyout show a disabled, explained placeholder when there 
   // Still explained by the "Rebut" glossary tooltip the real button offers.
   await rebut1.locator('.tooltip-trigger-button').dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
+  // Put it away again: on a phone the card's "i" sits by its price, so its popover covers the cards.
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.tooltip-popover')).toHaveCount(0)
 
   // A disabled button is genuinely inert.
   const actionsLeftBefore = await page.locator('.active-producer').textContent()

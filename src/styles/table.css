@@ -2114,3 +2114,58 @@ html.no-animations .cath-companion .cameo {
 @media (max-width: 600px) {
   .produce-crates { display: none; }
 }
+
+@media (max-width: 1023.98px) and (orientation: portrait) {
+  /* Plan item 33: the map's 45vh floor ran the bottom hex row under the hand at 390x844 (the scroll area
+     was 55 px short). The stack above the hand and the hand itself give back that height instead. The
+     cards are wider and shorter, with the icon set into the name's first line and the "i" by the price, so an Invest card's name,
+     reason and price all show (they were cut off under the card's foot). */
+  .game-scroll { gap: 6px; }
+  .action-tray { gap: 6px; }
+  .action-tray .actions {
+    height: 112px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+  .action-tray .actions .action-item {
+    width: 152px;
+    height: 96px;
+  }
+  .action-tray .actions .action-item > button:first-child {
+    gap: 3px;
+    padding: 7px 8px 6px;
+  }
+  .action-tray .actions .action-label {
+    display: block;
+    font-size: var(--fs-small);
+    line-height: 1.2;
+  }
+  .action-tray .actions .action-label svg {
+    float: left;
+    width: 18px;
+    height: 18px;
+    margin: 0 4px 0 0;
+  }
+  .action-tray .actions .action-item > .tooltip-trigger {
+    top: auto;
+    bottom: 6px;
+  }
+  .action-tray .actions .action-label-group {
+    gap: 3px;
+    align-self: stretch;
+    min-width: 0;
+  }
+  .action-tray .actions .action-why-not {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: var(--fs-caption);
+  }
+  .plan-strip { padding-top: 5px; padding-bottom: 0; }
+  .controls { padding-block: 6px calc(6px + var(--safe-b)); }
+  .action-tray .active-producer { padding-block: 6px; }
+  .map-wrap { min-height: calc(45vh + 4px); }
+  .cath-companion-line { padding-block: 4px; }
+  .controls > button { min-height: 46px; }
+}
