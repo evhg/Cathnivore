@@ -15,7 +15,8 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
 import { playSoundsFor } from '../platform/sound'
-import { loadSettings, AI_SPEED_DELAY_MS } from '../platform/settings'
+import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
+import { pickExpression, pickRegion } from './teammatePick'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -130,6 +131,14 @@ const E2E_AUTOPLAY_UNTIL = typeof window !== 'undefined' ? Number(new URLSearchP
 // depending on a real MCTS bug. Never set by the app itself outside a test.
 function isE2EAiWorkerCrash(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAiWorkerCrash') === '1'
+}
+
+// Plan item 34: under webdriver the AI teammate's picks show only briefly, unless `?e2eTeammateShow=1`.
+function isE2EWebdriver(): boolean {
+  return typeof navigator !== 'undefined' && navigator.webdriver === true
+}
+function isE2ETeammateShow(): boolean {
+  return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eTeammateShow') === '1'
 }
 
 // ROADMAP 8 "the table, part 1: layout": the action list (see `actionsPanel` below) shows in a different
@@ -456,6 +465,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // engine state itself never carries this narration, since it's not a rule, so it lives alongside the UI
   // state that already tracks everything else not worth serializing into a save (`pendingChoice`, etc.).
   const [aiReasons, setAiReasons] = useState<Record<number, string>>({})
+  // Plan item 34: the AI teammate's pick on show (a lifted card with its reason) before it is applied. A
+  // tap commits it at once and plays the rest of their turn without the show.
+  const [teammatePick, setTeammatePick] = useState<{ from: GameState; action: Action; reason: string } | null>(null)
+  const skipTeammateRef = useRef(false)
+  // The teammate's picks this turn, for the ledger beside the card.
+  // Keyed by round and producer, so last turn's picks never show on this one.
+  const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })
   // Hot-seat "pass the device" screen (Known issues, PROGRESS.md): the mode-picker already promises
   // "pass the device back and forth," but turns used to switch with only the active-producer header
   // changing, an easy-to-miss cue on a shared screen. `passAckRef` is the producer whose turn the screen
@@ -552,8 +568,30 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     if (state.activeProducer !== passAckRef.current) setPassDeviceFor(state.activeProducer)
   }, [mode, state, pendingEnemyTurn.length, pendingMidScene])
 
+  function showTeammatePick(from: GameState, action: Action, reason: string): void {
+    if (skipTeammateRef.current) advance(from, action, reason)
+    else setTeammatePick({ from, action, reason })
+  }
+  function commitTeammatePick(): void {
+    if (!teammatePick) return
+    setTeammatePick(null)
+    const turn = `${teammatePick.from.round}:${teammatePick.from.activeProducer}`
+    const label = actionLabel(teammatePick.action, teammatePick.from)
+    setTeammateTurn((t) => ({ turn, labels: t.turn === turn ? [...t.labels, label] : [label] }))
+    advance(teammatePick.from, teammatePick.action, teammatePick.reason)
+  }
   useEffect(() => {
-    if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
+    if (!teammatePick) return
+    // Under webdriver the show is brief unless a test asks for it, so specs that only need the teammate to
+    // move on don't wait out the reading time; the card and its `data-teammate-step` still render first.
+    const ms = isE2EWebdriver() && !isE2ETeammateShow() ? 120 : TEAMMATE_PICK_MS[loadSettings().aiSpeed]
+    const timer = setTimeout(commitTeammatePick, ms)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teammatePick])
+
+  useEffect(() => {
+    if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene || teammatePick) return
     const aiProducer = aiProducerRef.current
     const decision = currentDecision(state)
     // SPEC 4.7 Rift 6's two decisions belong to "the players" collectively, not one producer (unlike
@@ -610,7 +648,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         console.warn(`AI teammate: ${why}, falling back to HeuristicBot for this decision.`)
         const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
         rngRef.current = nextRng
-        advance(state, action, '(AI worker unavailable — used backup logic)')
+        showTeammatePick(state, action, '(AI worker unavailable — used backup logic)')
       }
       const onMessage = (event: MessageEvent<AIWorkerResponse>) => {
         worker.removeEventListener('message', onMessage)
@@ -619,7 +657,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         if (settled || cancelled) return
         settled = true
         rngRef.current = event.data.rng
-        advance(state, event.data.action, event.data.reason)
+        showTeammatePick(state, event.data.action, event.data.reason)
       }
       const onError = (event: ErrorEvent) => fallBackToHeuristic(`worker error (${event.message || 'unknown'})`)
       worker.addEventListener('message', onMessage)
@@ -635,7 +673,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       clearTimeout(timer)
       clearTimeout(watchdog)
     }
-  }, [state, pendingEnemyTurn.length, pendingMidScene])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, pendingEnemyTurn.length, pendingMidScene, teammatePick])
 
   // The guided tutorial (chapter 1): the step showing, and whether the board still matches the script.
   // It always should (tests/tutorial-script.test.ts replays it), but if a step's action were ever not
@@ -829,6 +868,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const aiProducer = aiProducerRef.current
   const waitingOnAi = decision && 'producer' in decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
   const actions = waitingOnAi || pendingEnemyTurn.length > 0 ? [] : legalActions(state)
+  // A skip lasts for the rest of the teammate's turn only.
+  if (!waitingOnAi) skipTeammateRef.current = false
   const active = state.producers[state.activeProducer]
 
   // SPEC 8.1: "the first few steps are guided: only the action being taught is enabled." A step with a
@@ -1136,6 +1177,48 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           hold={guidedStep?.waitFor === 'enemyTurn'}
           onDone={endEnemyTurnPlayback}
         />
+      ) : waitingOnAi && teammatePick ? (
+        // Plan item 34: the pick is lifted as a card with their reason before it lands; a tap skips the rest.
+        <div
+          className="teammate-pick"
+          role="status"
+          data-teammate-step={teammatePick.reason}
+          style={{ ['--pick' as string]: `var(--p-${state.activeProducer})` }}
+          onClick={() => {
+            skipTeammateRef.current = true
+            commitTeammatePick()
+          }}
+        >
+          <span className={`producer-cameo pc-${state.activeProducer}`} key={`face-${teammatePick.reason}`}>
+            <Portrait character={state.activeProducer} size={88} expression={pickExpression(teammatePick.action, teammatePick.reason)} />
+          </span>
+          <span className="teammate-pick-body">
+            <strong>{PRODUCERS[state.activeProducer].name}</strong>
+            <span className="teammate-card" key={`card-${teammatePick.from.log.length}`}>
+              <span className="teammate-card-name">{actionLabel(teammatePick.action, teammatePick.from)}</span>
+              <q className="teammate-card-reason">{teammatePick.reason}</q>
+            </span>
+            {/* Their turn as a ledger: moves made ticked off, this one lit, the rest to come. */}
+            <ol className="boardroom-ledger teammate-ledger" aria-label={`${PRODUCERS[state.activeProducer].name}'s turn`}>
+              {(teammateTurn.turn === `${teammatePick.from.round}:${teammatePick.from.activeProducer}` ? teammateTurn.labels : []).map((label, i) => (
+                <li key={i} className="done">
+                  <span>{label}</span>
+                </li>
+              ))}
+              <li className="now">
+                <span>{actionLabel(teammatePick.action, teammatePick.from)}</span>
+              </li>
+              {Array.from({ length: Math.max(0, teammatePick.from.actionsLeft - (teammatePick.action.kind === 'decide' ? 0 : 1)) }, (_, i) => (
+                <li key={`next-${i}`} className="next">
+                  <span>Still to come</span>
+                </li>
+              ))}
+            </ol>
+            <span className="teammate-pick-hint">
+              Tap to skip the rest of their turn
+            </span>
+          </span>
+        </div>
       ) : waitingOnAi ? (
         // Plan item 33: their own card at the table, not a line of plain text in an empty band.
         <p className="teammate-thinking" role="status">
@@ -1771,6 +1854,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           highlight={
             enemyStepRegion && pendingEnemyTurn.length > 0
               ? [enemyStepRegion]
+              : teammatePick && pickRegion(teammatePick.action)
+                ? [pickRegion(teammatePick.action)!]
               : drag
                 ? drag.regions
                 : selectedGroup

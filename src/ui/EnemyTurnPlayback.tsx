@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { captionFor, eventRegion } from './enemyTurnLog'
 import { boardroomBeat, cathReply, EXECS, MOOD_EXPRESSION, stripDock, type Exec } from './boardroom'
 import Figure from './portraits/Figure'
+import { ENEMY_STEP_MS, loadSettings } from '../platform/settings'
 import type { GameEvent, RegionId } from '../engine/types'
-
-const STEP_MS = 1000
 
 // SPEC 10.2: "the enemy turn plays back as a short series of steps, at most 1 second each ... Tapping
 // skips ahead." Plan item 11: each step is played in the boardroom strip by the executive behind it (Graham
@@ -17,6 +16,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { ev
   const lastExec = useMemo<Exec | undefined>(() => [...beats].reverse().find((b) => b)?.exec, [beats])
   // One beat more than the steps when someone spoke: Cath's reply.
   const total = events.length + (lastExec ? 1 : 0)
+  // Plan item 34: the AI speed setting paces the enemy turn too (Normal keeps SPEC 10.2's 1 s a step).
+  const [stepMs] = useState(() => ENEMY_STEP_MS[loadSettings().aiSpeed])
 
   useEffect(() => {
     const event = step < events.length ? events[step] : undefined
@@ -26,7 +27,7 @@ export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { ev
       return
     }
     if (hold) return
-    const timer = setTimeout(() => setStep((s) => s + 1), STEP_MS)
+    const timer = setTimeout(() => setStep((s) => s + 1), stepMs)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, events.length, hold])
@@ -45,7 +46,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { ev
       onClick={() => setStep(hold ? (s) => s + 1 : total)}
     >
       {exec && beat ? (
-        <div className="boardroom-row" key={step}>
+        // Plan item 34: a long card (a Candor scheme) takes the bark's place in a phone's dock.
+        <div className={`boardroom-row${(captionFor(events[step]!) || beat.card).length > 48 ? ' boardroom-long' : ''}`} key={step}>
           <div className="boardroom-face" aria-hidden="true">
             <Figure character={exec} expression={MOOD_EXPRESSION[beat.mood]} />
           </div>
@@ -67,6 +69,14 @@ export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { ev
       ) : exec ? null : (
         <p>{captionFor(events[step]!)}</p>
       )}
+      {/* Plan item 34: the turn's steps as a ledger that ticks off (pips on a phone, the list on a desktop). */}
+      <ol className="boardroom-ledger" aria-label="Enemy turn steps">
+        {events.map((e, i) => (
+          <li key={i} className={i < step ? 'done' : i === step ? 'now' : 'next'} data-ledger-step={i < step ? 'done' : i === step ? 'now' : 'next'}>
+            <span>{captionFor(e) || beats[i]?.card}</span>
+          </li>
+        ))}
+      </ol>
       <span className="enemy-turn-playback-hint">
         Enemy turn — {Math.min(step + 1, events.length)}/{events.length} · {hold ? 'tap to carry on' : 'tap to skip'}
       </span>

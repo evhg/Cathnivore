@@ -2332,7 +2332,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 @media (max-width: 1023.98px) {
   .action-tray .actions .enemy-turn-playback {
     gap: 2px;
-    padding: 6px 10px;
+    padding: 4px 10px;
   }
   .action-tray .actions .boardroom-face {
     width: 52px;
@@ -2344,8 +2344,23 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   }
   .action-tray .actions .boardroom-row { gap: 10px; }
   .action-tray .actions .boardroom-words { gap: 2px; }
-  .action-tray .actions .boardroom-bark { font-size: var(--fs-caption); line-height: 1.2; }
+  /* Plan item 34: a long bark could run the strip 6 px past the dock; it keeps two lines, the card stays whole. */
+  .action-tray .actions .boardroom-bark {
+    font-size: var(--fs-caption);
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
   .action-tray .actions .boardroom-card { font-size: var(--fs-caption); line-height: 1.25; }
+  .action-tray .actions .boardroom-long .boardroom-bark { display: none; }
+  .action-tray .actions .boardroom-card {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+  }
   .action-tray .actions .boardroom-who { font-size: var(--fs-small); line-height: 1.1; }
   /* the dock is 112 px: his title and the step count give way to the bark and the card */
   .action-tray .actions .boardroom-who small,
@@ -2353,6 +2368,86 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 @media (min-width: 1024px) {
   .actions-sheet .actions .boardroom-row { align-items: flex-start; }
+}
+
+/* Plan item 34: the enemy turn's ledger. Each step is a line that ticks off as it plays; on a phone's dock
+   the lines fold into a row of pips at the strip's top-right corner. */
+.boardroom-ledger {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  max-width: 460px;
+  margin: 6px 0 0;
+  padding: 6px 0 0;
+  border-top: 1px dashed color-mix(in srgb, var(--paper-on-fixed-fill) 30%, transparent);
+  list-style: none;
+  text-align: left;
+  font-size: var(--fs-small);
+}
+.boardroom-ledger li {
+  position: relative;
+  padding-left: 20px;
+  line-height: 1.3;
+  transition: opacity 200ms linear;
+}
+.boardroom-ledger li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.3em;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.boardroom-ledger li.next { opacity: 0.45; }
+.boardroom-ledger li.now { font-weight: 700; color: var(--exec); }
+.boardroom-ledger li.now::before { background: var(--exec); border-color: var(--exec); }
+.boardroom-ledger li.done { opacity: 0.7; }
+.boardroom-ledger li.done span { text-decoration: line-through; text-decoration-thickness: 1px; }
+.boardroom-ledger li.done::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: calc(0.3em + 1px);
+  width: 4px;
+  height: 8px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+@media (max-width: 1023.98px) {
+  .action-tray .actions .enemy-turn-playback { position: relative; }
+  .action-tray .actions .boardroom-ledger {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .action-tray .actions .boardroom-ledger li {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+  }
+  .action-tray .actions .boardroom-ledger li.now { background: var(--exec); border-color: var(--exec); }
+  .action-tray .actions .boardroom-ledger li.done { background: currentColor; }
+  .action-tray .actions .boardroom-ledger li::before,
+  .action-tray .actions .boardroom-ledger li::after { display: none; }
+  .action-tray .actions .boardroom-ledger li span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* Plan item 33: the AI teammate's turn shows them at the table, thinking (item 34 turns it into a show). */
@@ -2391,4 +2486,104 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 }
 @media (prefers-reduced-motion: reduce) {
   .thinking-dots i { animation: none; }
+}
+
+/* Plan item 34: the AI teammate's pick, lifted from their hand as a card with their reason, before it lands
+   on its hex (which glows on the map). A tap skips the rest of their turn. */
+.actions .teammate-pick {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  align-self: stretch;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--ink-a15);
+  border-radius: var(--r-card);
+  background: var(--mat-card);
+  box-shadow: var(--inset-hi), var(--e2);
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}
+.actions .teammate-pick { --exec: var(--pick, var(--ink)); position: relative; }
+.teammate-ledger { border-top-color: var(--ink-a15); max-width: none; }
+.teammate-ledger li.now { color: var(--ink); }
+.teammate-pick-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.teammate-pick strong {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+}
+.teammate-card {
+  display: grid;
+  gap: 2px;
+  justify-self: start;
+  max-width: 100%;
+  padding: 6px 10px 7px;
+  border-radius: 6px;
+  border-top: 4px solid var(--pick, var(--ink));
+  background: var(--paper-hi);
+  color: var(--ink);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.45), var(--e2);
+  transform: translateY(-3px) rotate(-1.2deg);
+  animation: teammate-lift 380ms cubic-bezier(.2, .8, .3, 1.1) both;
+}
+.teammate-card-name {
+  font-weight: 800;
+  font-size: var(--fs-small);
+}
+.teammate-card-reason {
+  font-family: var(--font-display);
+  font-size: var(--fs-small);
+  line-height: 1.25;
+  quotes: '“' '”';
+}
+.teammate-pick-hint {
+  font-size: var(--fs-caption);
+  color: var(--ink-muted);
+}
+.teammate-pick .producer-cameo {
+  animation: boardroom-in 260ms ease-out;
+}
+@keyframes teammate-lift {
+  from {
+    opacity: 0;
+    transform: translateY(26px) rotate(4deg) scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teammate-card,
+  .teammate-pick .producer-cameo {
+    animation: boardroom-fade 200ms linear;
+  }
+}
+@media (max-width: 1023.98px) {
+  .action-tray .actions .teammate-pick { gap: 10px; padding: 6px 10px; }
+  .action-tray .actions .teammate-pick-body { gap: 2px; }
+  .action-tray .actions .teammate-pick strong { font-size: var(--fs-small); line-height: 1.1; }
+  .action-tray .actions .teammate-card { padding: 4px 8px 5px; border-top-width: 3px; }
+  .action-tray .actions .teammate-card-name,
+  .action-tray .actions .teammate-card-reason { font-size: var(--fs-caption); line-height: 1.2; }
+  .action-tray .actions .teammate-pick-hint { display: none; }
+}
+/* On a desktop the teammate's turn fills the Actions column: their face, the lifted card, then the ledger. */
+@media (min-width: 1024px) {
+  .actions .teammate-pick {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 16px;
+  }
+  .actions .teammate-pick .producer-cameo { align-self: center; }
+  .actions .teammate-pick .producer-cameo { --cameo: 88px; }
+  .actions .teammate-pick-body { gap: 10px; }
+  .actions .teammate-pick strong { text-align: center; font-size: var(--fs-lead); }
+  .actions .teammate-card { justify-self: stretch; padding: 10px 12px 12px; }
+  .actions .teammate-card-name { font-size: var(--fs-body); }
+  .actions .teammate-card-reason { font-size: var(--fs-voice); }
 }

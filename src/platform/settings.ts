@@ -80,6 +80,10 @@ export function applyThemeSetting(theme: ThemePreference): void {
 // The AI teammate's "thinking" pause before it starts its real decision (Game.tsx) — on top of this, the
 // MCTS-in-Worker teammate itself takes up to SPEC 9.2's 400ms deadline (src/ai/mcts.ts's `AI_TEAMMATE_BOT`)
 // to actually choose. This delay alone doesn't dictate feel; it's a speed the player controls.
+// Plan item 34: how long each enemy-turn step and each of the AI teammate's picks stays on show.
+export const ENEMY_STEP_MS: Record<AiSpeed, number> = { slow: 1500, normal: 1000, fast: 550 }
+export const TEAMMATE_PICK_MS: Record<AiSpeed, number> = { slow: 2600, normal: 1700, fast: 750 }
+
 export const AI_SPEED_DELAY_MS: Record<AiSpeed, number> = {
   slow: 500,
   normal: 150,

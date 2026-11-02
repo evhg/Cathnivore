@@ -47,6 +47,8 @@ test.describe('reduced motion', () => {
 // Plan item 33: the strip plays in the Actions area, so it covers no hex and nothing in it is cut off.
 test('the boardroom strip covers no hex and is not clipped', async ({ page }) => {
   await playToEnemyTurn(page)
+  // Measured once the step's card has finished flipping in (its rotateY overshoots the box mid-flip).
+  await page.waitForTimeout(600)
   const m = await page.evaluate(() => {
     const strip = document.querySelector('.enemy-turn-playback')!
     const s = strip.getBoundingClientRect()
