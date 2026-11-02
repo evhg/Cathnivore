@@ -948,13 +948,11 @@
     --cameo: 40px;
   }
 
+  /* Plan item 33: her line wraps whole (a 2-line clamp cut the longer ones mid-word) */
   .cath-companion-line {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
     padding-block: 6px;
     font-size: var(--fs-small);
+    line-height: 1.25;
   }
 
   .plan-strip {
@@ -1124,13 +1122,7 @@
     display: none;
   }
 
-  /* one line for Cath on the table, two at most */
-  .cath-companion-line {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+
 
   .map-wrap {
     padding: 2px;
@@ -1698,9 +1690,13 @@ html.no-animations .cath-companion .cameo {
     grid-column: 1 / -1;
   }
 
+  /* Her line wraps whole beside the papers, a step down from the voice size so a long one stays a few lines */
   .table-head .cath-companion-line {
-    -webkit-line-clamp: 3;
+    font-size: var(--fs-body);
+    line-height: 1.25;
   }
+
+
 
   .drawer-panel > .frame {
     background-color: var(--paper);
