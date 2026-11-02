@@ -58,6 +58,8 @@ export interface TowerLook {
   dazed: boolean;
   /** A path tower's build (Hedgerow 2 M4): per-tier parts, and a tier 3's own silhouette. */
   path?: readonly number[];
+  /** Reduced motion: no idle breath and no squash on firing. */
+  still?: boolean;
 }
 
 const SPEC_COLOURS: [string, string] = ["#c4433a", "#3f6fb5"];
@@ -151,8 +153,8 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   groundShadow(ctx, x, base, s * (tier === 1 ? 0.36 : 0.46), s * (tier === 1 ? 0.11 : 0.15));
   drawPlinth(ctx, tier, x, base, s);
   // Idle: a slow breath. Fire: a quick squash and stretch as it lets go.
-  const kick = look.fired < 0.15 ? Math.sin((look.fired / 0.15) * Math.PI) : 0;
-  const breath = Math.sin(t * 2.2) * 0.012;
+  const kick = !look.still && look.fired < 0.15 ? Math.sin((look.fired / 0.15) * Math.PI) : 0;
+  const breath = look.still ? 0 : Math.sin(t * 2.2) * 0.012;
   const lift = tier === 3 ? s * 0.06 : tier === 2 ? s * 0.02 : 0;
   ctx.save();
   ctx.translate(x, base - lift);
@@ -1285,6 +1287,8 @@ export interface EnemyLook {
   ghost: boolean;
   /** Animation phase, so a column of vans doesn't bob in step. */
   phase: number;
+  /** Reduced motion: no squash on a hit (the flash stays). */
+  still?: boolean;
   /** Bubble wrap left (0 = popped; undefined = whole). */
   shield?: number;
 }
@@ -1461,7 +1465,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   const hover = lift > 0 ? Math.sin(tt * 3) * s0 * 0.04 : 0;
   ctx.translate(x, y - lift + hover);
   // Plan item 19: a hit squashes the body down and out, then it springs back past rest and settles.
-  const q = look.hit < 0.24 ? Math.sin((look.hit / 0.24) * Math.PI * 1.5) * (1 - look.hit / 0.24) : 0;
+  const q = !look.still && look.hit < 0.24 ? Math.sin((look.hit / 0.24) * Math.PI * 1.5) * (1 - look.hit / 0.24) : 0;
   ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
   // Hit flash: the sprite itself brightens for a moment (no effect where canvas filters are unsupported).
   if (look.hit < 0.08) ctx.filter = "brightness(1.7)";
