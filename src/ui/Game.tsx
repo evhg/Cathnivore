@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ComponentProps } from 'react'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
@@ -66,6 +66,8 @@ import { useScrollCues } from './useScrollCues'
 import { endSummary } from './endSummary'
 import EndChart from './EndChart'
 import type { TutorialStep } from '../content/chapters'
+import { matchesExpect, resumeIndex, stepMode, tutorialTargetId, upcomingExpect } from '../content/tutorial'
+import TutorialCoach from './TutorialCoach'
 import type { Scene as SceneData } from '../content/story/types'
 
 interface Props {
@@ -85,6 +87,10 @@ interface Props {
   // from the full spec for now: the player advances them manually rather than the engine gating legal
   // actions down to "only the action being taught" — see DECISIONS.md.
   tutorialSteps?: TutorialStep[]
+  // The first-time guided tutorial (chapter 1): `tutorialSteps` play as a spotlight with a hard gate
+  // (TutorialCoach) instead of the prompt strip. `onTutorialDone` fires once when it's finished or skipped.
+  guided?: boolean
+  onTutorialDone?(): void
   // SPEC 8.1 "triggers ... scenes": a chapter's mid-game scripted scenes, keyed by `scriptedTrigger.sceneId`
   // (e.g. chapter 3's round-5 Wholesome Hollow reveal). Absent for non-campaign games and chapters with no
   // scripted trigger — see `state.log`'s `{type: 'trigger'}` events, appended by `round.ts`.
@@ -265,10 +271,10 @@ function Meter({ value, max, variant }: { value: number; max: number; variant?: 
 
 // AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
 // round's income as a small "+2" rather than "(2/round)".
-function LedgerChip({ term, Icon, value, income, tick }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number }) {
+function LedgerChip({ term, Icon, value, income, tick, tutorial }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; tutorial?: string }) {
   return (
     <Tooltip term={term}>
-      <span className="ledger-chip">
+      <span className="ledger-chip" data-tutorial={tutorial}>
         <Icon size={18} />
         <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
         <span className="visually-hidden"> {term}, </span>
@@ -291,7 +297,7 @@ function SellGainChip({ count }: { count: number }) {
   )
 }
 
-function ActionButton({ action, state, Icon, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; onClick(): void }) {
+function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; tutorialTarget?: boolean; onClick(): void }) {
   if (action.kind === 'sell') {
     return (
       <button aria-label={actionLabel(action, state)} onClick={onClick}>
@@ -306,7 +312,7 @@ function ActionButton({ action, state, Icon, onClick }: { action: Action; state:
   const cost = actionCost(action, state)
   const { text, aria } = chipLabel(actionLabel(action, state), !!cost)
   return (
-    <button aria-label={aria} onClick={onClick}>
+    <button aria-label={aria} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {Icon && <Icon size={18} />}
         {text}
@@ -344,7 +350,7 @@ function uniformGroupCost(
   return uniform ? first : undefined
 }
 
-export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
+export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
   // The tutorial step whose note the player folded away (phone); a new step opens again.
@@ -365,7 +371,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     expression: CATH_REACTION_EXPRESSION.greeting,
     line: cathLine('greeting', String(seed)),
   }))
-  const [tutorialIndex, setTutorialIndex] = useState(0)
+  // A reloaded guided game picks the script up just after the last action it already took.
+  const [tutorialIndex, setTutorialIndex] = useState(() =>
+    guided && tutorialSteps ? resumeIndex(tutorialSteps, initial.actionHistory.length) : 0,
+  )
+  // The guided tutorial ends early when skipped, or if the board ever stops matching the script.
+  const [guidedEnded, setGuidedEnded] = useState(false)
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
@@ -591,6 +602,22 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   }, [state, pendingEnemyTurn.length, pendingMidScene])
 
+  // The guided tutorial (chapter 1): the step showing, and whether the board still matches the script.
+  // It always should (tests/tutorial-script.test.ts replays it), but if a step's action were ever not
+  // legal, the tutorial steps aside into free play rather than stranding the player behind its gate.
+  const guidedActive = !!guided && !guidedEnded && !autoplayRef.current && !!tutorialSteps && tutorialIndex < tutorialSteps.length
+  const guidedStep = guidedActive ? tutorialSteps![tutorialIndex] : undefined
+  const guidedExpect = guidedStep?.expect
+  const guidedBroken =
+    !!guidedExpect && !state.result && pendingEnemyTurn.length === 0 && !legalActions(state).some((a) => matchesExpect(guidedExpect, a))
+  useEffect(() => {
+    if (guidedBroken) setGuidedEnded(true)
+  }, [guidedBroken])
+  function finishTutorial(): void {
+    setGuidedEnded(true)
+    onTutorialDone?.()
+  }
+
   // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.
   useEffect(() => {
     if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
@@ -604,7 +631,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // Only an action-kind highlight names a glossary term this way; a region highlight (e.g. "tap this
     // region") has no single matching entry, so it falls back to opening at the top.
     const highlight = tutorialSteps?.[tutorialIndex]?.highlight
-    const initialTerm = highlight?.kind === 'action' ? actionTermForKind(highlight.action) : undefined
+    const taught = highlight?.kind === 'action' ? highlight.action : tutorialSteps?.[tutorialIndex]?.expect?.kind
+    const initialTerm = taught ? actionTermForKind(taught) : undefined
     return <RulesReference onClose={() => setShowRulesFromTutorial(false)} initialTerm={initialTerm} />
   }
 
@@ -774,7 +802,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // this render path (it calls `legalActions` directly, see the AI-turn effect above), so it's unaffected.
   // If gating would leave nothing playable (a scripting mistake, or the player already cleared the taught
   // move some other way), fall back to the ungated list rather than stranding the player.
-  const tutorialStep = !autoplayRef.current && tutorialSteps && tutorialIndex < tutorialSteps.length ? tutorialSteps[tutorialIndex] : undefined
+  // The prompt strip (chapters 2-6, and chapter 1 outside the guided tutorial) gates on `highlight`.
+  const tutorialStep = !guided && !autoplayRef.current && tutorialSteps && tutorialIndex < tutorialSteps.length ? tutorialSteps[tutorialIndex] : undefined
+  // The guided tutorial's hard gate: the panel offers only the action the script asks for now (or, on an
+  // explain step, the one it asks for next, which `act` still refuses until its own step comes).
+  const guidedOffer = guidedActive ? upcomingExpect(tutorialSteps!, tutorialIndex) : undefined
+  function guidedAllows(a: Action): boolean {
+    return !!guidedExpect && matchesExpect(guidedExpect, a)
+  }
+  // Every gated state hides the "why not" placeholders: only the action being taught shows.
+  const gatedNow = !!tutorialStep?.highlight || guidedActive
   // Whether `a` is genuinely the action a highlight names — used both to gate and (separately, see `act`)
   // to decide whether taking `a` should advance the step. A pending `decide` is never a genuine match: it
   // only needs `tutorialAllows` below to bypass the gate so a forced choice is never blocked, not to be
@@ -790,7 +827,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }
   const allIndices = actions.map((_, i) => i)
   const gatedIndices = allIndices.filter((i) => tutorialAllows(actions[i]!))
-  const visibleIndices = gatedIndices.length > 0 ? gatedIndices : allIndices
+  const visibleIndices = guidedActive
+    ? allIndices.filter((i) => !!guidedOffer && matchesExpect(guidedOffer, actions[i]!))
+    : gatedIndices.length > 0
+      ? gatedIndices
+      : allIndices
 
   // SPEC 10.2 targeting mode: group same-action-different-region choices into one button, then let the
   // player tap the glowing region on the map instead of reading N near-identical buttons.
@@ -822,7 +863,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell' && e.action.kind !== 'invest')
   const investEntries = standalone.filter((e) => e.action.kind === 'invest')
   const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
-  if (rules.sell && !tutorialStep?.highlight) {
+  if (rules.sell && !gatedNow) {
     const affordable = Math.min(3, active.resources.produce)
     for (let n = affordable + 1; n <= 3; n++) {
       disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
@@ -834,7 +875,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // legality also depends on region/target state — each unaffordable market slot gets its own
   // unambiguous "Need N more Marks" placeholder, the same way each unaffordable Sell count does.
   const disabledInvest: { improvementId: string; cost: number; missing: number }[] = []
-  if (rules.improvements && !tutorialStep?.highlight && !waitingOnAi && pendingEnemyTurn.length === 0) {
+  if (rules.improvements && !gatedNow && !waitingOnAi && pendingEnemyTurn.length === 0) {
     for (const id of state.market) {
       if (!id) continue
       if (investEntries.some((e) => e.action.kind === 'invest' && e.action.improvementId === id)) continue
@@ -860,7 +901,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // for being unaffordable. `state.freeSchemePlays` makes the next Scheme played free regardless of cost,
   // so a card is only genuinely unaffordable when that's spent too.
   const disabledScheme: { schemeId: string; cost: number; missing: number }[] = []
-  if (rules.schemes && !state.cathsPlanLocked && !tutorialStep?.highlight && !waitingOnAi && pendingEnemyTurn.length === 0) {
+  if (rules.schemes && !state.cathsPlanLocked && !gatedNow && !waitingOnAi && pendingEnemyTurn.length === 0) {
     for (const id of state.cathsPlan) {
       if (!id) continue
       const card = SCHEMES_BY_ID.get(id)
@@ -884,7 +925,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // here are unambiguous to compute directly from state, so a real "every region is full or unreachable"
   // case now gets its own placeholder too, not just the Produce-0 case this used to be scoped to.
   const disabledOpenStall: { text: string } | undefined = (() => {
-    if (tutorialStep?.highlight || waitingOnAi || pendingEnemyTurn.length > 0 || groups.has('openStall')) return undefined
+    if (gatedNow || waitingOnAi || pendingEnemyTurn.length > 0 || groups.has('openStall')) return undefined
     if (active.resources.produce < 1) return { text: 'Need 1 more Produce' }
     const anyLegalRegion = state.config.activeRegions.some((id) => canOpenStallIn(state, state.activeProducer, id))
     return anyLegalRegion ? undefined : { text: 'No region open to place a Stall' }
@@ -898,7 +939,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // single region check (a missing target there could mean several different things from outside) — so
   // they're worth surfacing instead of leaving the whole group silently absent, same spirit as Sell/
   // Invest/`targeting: 'none'` Scheme/Open Stall above.
-  const whyNotGated = tutorialStep?.highlight || waitingOnAi || pendingEnemyTurn.length > 0
+  const whyNotGated = gatedNow || waitingOnAi || pendingEnemyTurn.length > 0
   function ownedRegionsWith(filter: (r: GameState['regions'][RegionId]) => boolean) {
     return state.config.activeRegions.map((id) => state.regions[id]).filter((r) => (r.stalls[state.activeProducer] ?? 0) > 0 && filter(r))
   }
@@ -935,9 +976,56 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // SPEC 8.1: once the taught action is actually taken, move straight to the next tutorial step rather
     // than waiting on a separate "Got it" tap — the gate above already guaranteed this action is the one
     // being taught (or gating had nothing to show, in which case there's nothing to advance past).
-    if (matchesHighlight(action)) setTutorialIndex((i) => i + 1)
+    if (guidedActive) {
+      // The guided tutorial's hard gate, in code as well as on screen: only the step's own action runs.
+      if (!guidedAllows(action)) return
+      setTutorialIndex((i) => i + 1)
+    } else if (matchesHighlight(action)) setTutorialIndex((i) => i + 1)
     undoStackRef.current = pushUndo(undoStackRef.current, state, action)
     advance(state, action)
+  }
+
+  function endEnemyTurnPlayback(): void {
+    setPendingEnemyTurn([])
+    setTutorialIndex((i) => (guided && tutorialSteps?.[i]?.waitFor === 'enemyTurn' ? i + 1 : i))
+  }
+
+  // What Cath's card shows for the current guided step. An action step follows the action through its
+  // phases: its button, then (targeting mode) the glowing region, then Confirm.
+  function coachProps(step: TutorialStep): ComponentProps<typeof TutorialCoach> {
+    const total = tutorialSteps!.length
+    const base = { step: tutorialIndex + 1, total, why: step.why, onSkip: finishTutorial, onRules: () => setShowRulesFromTutorial(true) }
+    const mode = stepMode(step)
+    if (mode === 'action') {
+      const region = step.expect!.region
+      const phase = pendingChoice ? 'confirm' : selectedGroup ? 'region' : 'button'
+      const text =
+        phase === 'confirm'
+          ? 'Tap Confirm. Nothing is spent until you do.'
+          : phase === 'region' && region
+            ? `Now tap ${REGIONS[region].name} on the map. It's the one glowing.`
+            : step.text
+      return { ...base, targetId: tutorialTargetId(step.target, phase, region), text }
+    }
+    if (mode === 'enemyTurn') {
+      const showing = pendingEnemyTurn.length > 0
+      return { ...base, targetId: showing ? tutorialTargetId(step.target) : null, text: step.text, nextLabel: 'Carry on', onNext: endEnemyTurnPlayback }
+    }
+    const last = tutorialIndex === total - 1
+    return {
+      ...base,
+      targetId: tutorialTargetId(step.target),
+      text: step.text,
+      nextLabel: last ? 'Let me play' : 'Next',
+      onNext: last ? finishTutorial : () => setTutorialIndex((i) => i + 1),
+    }
+  }
+
+  // Guided tutorial: an action with a region always goes through the map (button, glowing region,
+  // Confirm), even with only one region to choose, so the first round teaches targeting too.
+  const forceTargeting = !!guidedOffer?.region
+  function isGuidedTarget(a: Action): boolean {
+    return !!guidedOffer && matchesExpect(guidedOffer, a)
   }
 
   function undo(): void {
@@ -1006,7 +1094,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         pendingChoice ? (
           <>
             <p>{selectedGroup.label} in {REGIONS[pendingChoice.region].name}?</p>
-            <button className="primary" onClick={() => act(pendingChoice.index)}>Confirm</button>
+            <button className="primary" data-tutorial="confirm" onClick={() => act(pendingChoice.index)}>Confirm</button>
             <button onClick={() => setPendingChoice(null)}>Cancel</button>
           </>
         ) : (
@@ -1098,7 +1186,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const Icon = ACTION_ICON[a.kind]
             return (
               <span key={index} className="action-item">
-                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
+                <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -1207,7 +1295,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {(() => {
                   const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
                   return (
-                    <button aria-label={aria} onClick={() => (single ? act(group.entries[0]!.index) : setSelectedGroup(group))}>
+                    <button
+                      aria-label={aria}
+                      data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
+                      onClick={() => {
+                        if (guidedActive && !guidedExpect) return
+                        if (single && !forceTargeting) act(group.entries[0]!.index)
+                        else setSelectedGroup(group)
+                      }}
+                    >
                       <span className="action-label">
                         {Icon && <Icon size={18} />}
                         {text}
@@ -1258,11 +1354,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
           </span>
           <span className="ledger">
-            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} />
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} tutorial="produce" />
             <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} />
             <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} />
           </span>
-          <span className="pips" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
+          <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>
             {Array.from({ length: ACTIONS_PER_ROUND }, (_, i) => (
               <i key={i} className={i < state.actionsLeft ? 'pip on' : 'pip'} />
@@ -1279,7 +1375,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     <footer className="controls">
       <button
         className="rail-undo"
-        disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi}
+        disabled={!canUndo(undoStackRef.current) || pendingEnemyTurn.length > 0 || waitingOnAi || guidedActive}
         onClick={undo}
       >
         <UndoIcon size={22} />
@@ -1412,7 +1508,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
 
       <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
 
-      {tutorialSteps && tutorialIndex < tutorialSteps.length && (
+      {!guided && tutorialSteps && tutorialIndex < tutorialSteps.length && (
         tipCollapsedAt === tutorialIndex ? (
           // AAA UI M4 fix: on a phone the note folds to a pill so the map keeps its full aspect.
           <button type="button" className="tutorial-pill" aria-expanded="false" onClick={() => setTipCollapsedAt(null)}>
@@ -1590,7 +1686,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               setEnemyStepRegion(region)
               setEnemyStep({ event, step })
             }}
-            onDone={() => setPendingEnemyTurn([])}
+            // The guided tutorial holds each caption until it has been read (and its step moves on with it).
+            hold={guidedStep?.waitFor === 'enemyTurn'}
+            onDone={endEnemyTurnPlayback}
           />
         )}
       </section>
@@ -1630,6 +1728,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )}
         <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
+      {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
     </div>
   )
 }

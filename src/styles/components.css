@@ -651,3 +651,242 @@ html.no-animations .tooltip-popover {
   font-size: var(--fs-small);
   color: var(--ink-muted);
 }
+
+/* ---- The guided tutorial (TutorialCoach.tsx, owner 2026-11-02): everything but the one thing to tap is
+   dimmed and blocked, a wheat ring pulses round that thing, and Cath's card says what to do and why.
+   The hole and the card are placed through custom properties the component sets each frame. ---- */
+.coach {
+  --hole-x: 0px;
+  --hole-y: 0px;
+  --hole-w: 0px;
+  --hole-h: 0px;
+  --card-x: 12px;
+  --card-y: 12px;
+  --notch-x: 50%;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  pointer-events: none;
+}
+
+.coach-block {
+  position: fixed;
+  background: var(--coach-scrim);
+  pointer-events: auto;
+}
+
+.coach-block-top { left: 0; right: 0; top: 0; height: var(--hole-y); }
+.coach-block-bottom { left: 0; right: 0; top: calc(var(--hole-y) + var(--hole-h)); bottom: 0; }
+.coach-block-left { left: 0; top: var(--hole-y); width: var(--hole-x); height: var(--hole-h); }
+.coach-block-right { left: calc(var(--hole-x) + var(--hole-w)); right: 0; top: var(--hole-y); height: var(--hole-h); }
+
+/* No target: one blocker dims the whole screen and the card sits in the middle. */
+.coach[data-target="no"] .coach-block-top { height: 100%; }
+.coach[data-target="no"] .coach-block-bottom,
+.coach[data-target="no"] .coach-block-left,
+.coach[data-target="no"] .coach-block-right,
+.coach[data-target="no"] .coach-ring { display: none; }
+
+.coach-ring {
+  position: fixed;
+  left: var(--hole-x);
+  top: var(--hole-y);
+  width: var(--hole-w);
+  height: var(--hole-h);
+  border-radius: var(--r-btn);
+  box-shadow: 0 0 0 3px var(--wheat), 0 0 0 7px var(--coach-halo);
+  animation: coach-pulse 1.5s var(--ease-out) infinite;
+}
+
+@keyframes coach-pulse {
+  0% { box-shadow: 0 0 0 3px var(--wheat), 0 0 0 4px var(--coach-halo); }
+  70%, 100% { box-shadow: 0 0 0 3px var(--wheat), 0 0 0 16px var(--coach-halo-0); }
+}
+
+/* "Tap here", on the side of the ring away from the card, with a little arrow at the target. */
+.coach-tap {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  translate: -50% 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--wheat);
+  color: var(--ink-on-fixed-fill);
+  font: 800 var(--fs-label)/1 var(--font-text);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--e2);
+  animation: coach-bob .9s ease-in-out infinite alternate;
+}
+
+.coach-tap::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  translate: -50% 0;
+  border: 6px solid transparent;
+  border-top-color: var(--wheat);
+}
+
+.coach[data-place="above"] .coach-tap,
+.coach[data-place="docked"] .coach-tap {
+  bottom: auto;
+  top: calc(100% + 12px);
+}
+
+.coach[data-place="above"] .coach-tap::after,
+.coach[data-place="docked"] .coach-tap::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--wheat);
+}
+
+@keyframes coach-bob {
+  to { transform: translateY(-4px); }
+}
+
+.coach[data-place="above"] .coach-tap,
+.coach[data-place="docked"] .coach-tap { animation-direction: alternate-reverse; }
+
+.coach-card {
+  position: fixed;
+  left: var(--card-x);
+  top: var(--card-y);
+  width: min(390px, calc(100vw - 24px));
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4) var(--sp-3);
+  border: 1.5px solid var(--btn-edge);
+  border-radius: var(--r-sheet);
+  background: var(--mat-card-flat);
+  color: var(--ink);
+  box-shadow: var(--e4);
+  pointer-events: auto;
+}
+
+/* The notch points at the target. */
+.coach-card::before {
+  content: '';
+  position: absolute;
+  left: var(--notch-x);
+  width: 14px;
+  height: 14px;
+  translate: -50% 0;
+  rotate: 45deg;
+  background: var(--surface);
+  border: 1.5px solid var(--btn-edge);
+}
+
+.coach[data-place="below"] .coach-card::before { top: -8.5px; border-right: 0; border-bottom: 0; }
+.coach[data-place="above"] .coach-card::before { bottom: -8.5px; border-left: 0; border-top: 0; background: var(--card-lo); }
+/* Beside the target (a short, wide screen): `--notch-x` then holds the notch's height on the card's edge. */
+.coach[data-place="right"] .coach-card::before { left: -8.5px; top: var(--notch-x); translate: 0 -50%; border-top: 0; border-right: 0; }
+.coach[data-place="left"] .coach-card::before { left: auto; right: -8.5px; top: var(--notch-x); translate: 0 -50%; border-bottom: 0; border-left: 0; }
+.coach[data-place="centre"] .coach-card::before,
+.coach[data-place="docked"] .coach-card::before { display: none; }
+
+.coach-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.coach-cameo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--paper-2);
+  box-shadow: 0 0 0 2px var(--wheat);
+}
+
+.coach-meta {
+  display: grid;
+  flex: 1;
+  line-height: 1.15;
+}
+
+.coach-who {
+  font: 700 var(--fs-body)/1.1 var(--font-display);
+  color: var(--soil);
+}
+
+.coach-count {
+  font: 700 var(--fs-label)/1.2 var(--font-text);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.coach-what {
+  margin: 0;
+  font: 700 var(--fs-lead)/1.3 var(--font-text);
+  text-wrap: pretty;
+}
+
+.coach-why {
+  margin: 0;
+  font: 500 var(--fs-small)/1.4 var(--font-text);
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.coach-why-label {
+  font-weight: 800;
+  color: var(--wheat-ink);
+}
+
+.coach-keys {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+.coach-keys .coach-primary,
+.coach-keys .coach-keep { margin-left: auto; min-width: 112px; }
+
+.coach-skip { color: var(--ink-muted); }
+
+.coach-confirm p {
+  margin: 0;
+  font: 600 var(--fs-small)/1.4 var(--font-text);
+}
+
+.coach-progress {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-a08);
+  overflow: hidden;
+}
+
+.coach-progress-fill {
+  display: block;
+  width: var(--coach-progress, 0%);
+  height: 100%;
+  background: var(--pasture);
+  transition: width var(--dur-3) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-ring,
+  .coach-tap { animation: none; }
+}
+
+html.no-animations .coach-ring,
+html.no-animations .coach-tap { animation: none; }
+
+/* A region you can pick (targeting mode) is focusable: give it the house focus ring on the hex itself. */
+.region-hex:focus { outline: none; }
+.region-hex:focus-visible > polygon:first-of-type {
+  stroke: var(--focus);
+  stroke-width: 6;
+}

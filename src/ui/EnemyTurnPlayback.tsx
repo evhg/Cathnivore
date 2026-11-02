@@ -9,8 +9,9 @@ const STEP_MS = 1000
 // SPEC 10.2: "the enemy turn plays back as a short series of steps, at most 1 second each ... Tapping
 // skips ahead." Plan item 11: each step is played in the boardroom strip by the executive behind it (Graham
 // Pell for Hollowell, Octavia Vane for Candor) with a face and a bark over the step's card and caption; after
-// the last step Cath answers whoever spoke last. A tap anywhere skips the whole turn.
-export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: GameEvent[]; onDone(): void; onStep?(region: RegionId | undefined, event: GameEvent | undefined, step: number): void }) {
+// the last step Cath answers whoever spoke last. A tap anywhere skips the whole turn. With `hold` (the guided
+// tutorial), it waits on each beat until tapped, so a first-time player can read it.
+export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { events: GameEvent[]; onDone(): void; onStep?(region: RegionId | undefined, event: GameEvent | undefined, step: number): void; hold?: boolean }) {
   const [step, setStep] = useState(0)
   const beats = useMemo(() => events.map((e, i) => boardroomBeat(e, i)), [events])
   const lastExec = useMemo<Exec | undefined>(() => [...beats].reverse().find((b) => b)?.exec, [beats])
@@ -24,10 +25,11 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
       onDone()
       return
     }
+    if (hold) return
     const timer = setTimeout(() => setStep((s) => s + 1), STEP_MS)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, events.length])
+  }, [step, events.length, hold])
 
   if (step >= total) return null
 
@@ -39,7 +41,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
   return (
     <div
       className={`enemy-turn-playback boardroom${exec ? ` boardroom-${EXECS[exec].faction}` : ''}${replying ? ' boardroom-reply' : ''} boardroom-dock-${dock}`}
-      onClick={() => setStep(total)}
+      data-tutorial="enemy-turn"
+      onClick={() => setStep(hold ? (s) => s + 1 : total)}
     >
       {exec && beat ? (
         <div className="boardroom-row" key={step}>
@@ -65,7 +68,7 @@ export default function EnemyTurnPlayback({ events, onDone, onStep }: { events: 
         <p>{captionFor(events[step]!)}</p>
       )}
       <span className="enemy-turn-playback-hint">
-        Enemy turn — {Math.min(step + 1, events.length)}/{events.length} · tap to skip
+        Enemy turn — {Math.min(step + 1, events.length)}/{events.length} · {hold ? 'tap to carry on' : 'tap to skip'}
       </span>
     </div>
   )

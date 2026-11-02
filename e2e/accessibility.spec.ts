@@ -92,3 +92,19 @@ test('scene screen has no serious or critical accessibility issues in forced dar
   await expect(page.locator('.scene')).toBeVisible()
   await assertNoSeriousIssues(page)
 })
+
+// The guided tutorial (chapter 1): Cath's card and the spotlight on an explain step and an action step,
+// and the campaign screen with its first-time "Start here" key.
+test('guided tutorial and campaign screens have no serious or critical accessibility issues', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.getByRole('heading', { name: 'Campaign' })).toBeVisible()
+  await assertNoSeriousIssues(page)
+  await page.getByRole('button', { name: /Fresh Meat/ }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.locator('.coach')).toBeVisible()
+  await assertNoSeriousIssues(page)
+  for (let i = 0; i < 6; i++) await page.locator('.coach-primary').click()
+  await expect(page.locator('.coach')).toHaveAttribute('data-for', 'action')
+  await assertNoSeriousIssues(page)
+})

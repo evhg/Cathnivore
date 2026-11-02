@@ -99,12 +99,17 @@ function ChapterScene({ index, tint }: { index: number; tint?: string }) {
 export default function CampaignScreen({
   chapters,
   completed,
+  tutorialDone = true,
   onStart,
+  onReplayTutorial,
   onBack,
 }: {
   chapters: Chapter[]
   completed: string[]
+  // The guided tutorial (chapter 1) is still ahead: its card says so, so a first-time player knows where to start.
+  tutorialDone?: boolean
   onStart: (chapter: Chapter) => void
+  onReplayTutorial?: () => void
   onBack: () => void
 }) {
   const done = chapters.filter((c) => completed.includes(c.id)).length
@@ -163,12 +168,27 @@ export default function CampaignScreen({
                       </span>
                     ))}
                     {isDone && <span className="cmp-badge">Completed</span>}
-                    {current && <span className="cmp-badge cmp-badge-next">Up next</span>}
+                    {current && chapter.guided && !tutorialDone && <span className="cmp-badge cmp-badge-next">Tutorial</span>}
+                    {current && !(chapter.guided && !tutorialDone) && <span className="cmp-badge cmp-badge-next">Up next</span>}
                   </span>
+                  {/* The card is the button: this says so, in the look of a real key. */}
+                  {(current || isDone) && (
+                    <span className={current ? 'cmp-cta cmp-cta-primary' : 'cmp-cta'} aria-hidden="true">
+                      {current ? (chapter.guided && !tutorialDone ? 'Start here' : 'Play') : 'Play again'}
+                      <svg viewBox="0 0 16 16" width="14" height="14">
+                        <path d="M5 3l5 5-5 5" />
+                      </svg>
+                    </span>
+                  )}
                 </span>
                 <ChapterScene index={i} tint={isDone ? REGIONS[chapter.activeRegions[0]!].type : undefined} />
                 <MiniMap chapter={chapter} />
               </button>
+              {chapter.guided && tutorialDone && onReplayTutorial && (
+                <button className="btn-quiet cmp-replay" onClick={onReplayTutorial}>
+                  Replay the tutorial
+                </button>
+              )}
             </li>
           )
         })}

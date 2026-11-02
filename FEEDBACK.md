@@ -6,6 +6,14 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
 
 ## Open
 
+- 2026-11-02 (owner chat, Cathnivore): **"when I play for the first time and click on campaign I should be in a tutorial that tells me baby step by baby step what to do and why, teaching the game by example; where to click should be super obvious ... what is clickable should be easily identified as clickable through nice design."** The owner session built:
+  - **Spotlight coach:** `src/content/tutorial.ts` plus `TutorialCoach.tsx`, 15 steps. It covers chapter 1's first round end to end and the start of round 2, then hands over to free play.
+  - **Gating and voice:** everything but the one target is dimmed and blocked. Cath gives the what and the why, with "Tap here" tags.
+  - **Skip, replay, resume:** skip and replay from Settings or the chapter card; a reload resumes where it was.
+  - **Clickability pass:** actions are raised keys, readings are flat, and the campaign card says "Start here".
+  - **Fix along the way:** chapters with Agenda off now play back their enemy turn.
+  - **Not done:** chapter 2 still uses the old prompt strip. Keep open for the owner's verdict.
+
 - 2026-11-02 (owner chat, NIGHT SHIFT live on Chrome, MacBook M3 Max): **"took 10 seconds to show anything ... then an unresponsive error popup from Chrome ... the startup screen animation is very stuttery ... the UI for new/resume is slow ... the background hiss is very unpleasant, remove that ... after I hold Enter with the Ghost it says paused ... approaching the Widowmaker it starts shaking ... love the guard-death slow-mo, but only once per fight ... the big area announcements are obstructive, the areas are very small."** The owner session fixed (commit in the session log):
   - **Load:** about 80 shaders compiled synchronously on the first frames (a 26 s main-thread block under SwiftShader; the 10 s freeze on the Mac). `render/warm.ts` now compiles the exact variants each pass draws (mirror, HDR scene pass, bloom levels, the reflection probe) in the background before the first frame (in parallel where KHR_parallel_shader_compile exists, which includes Chrome on macOS), and skips shader info-log reads in production. Under SwiftShader no shader compiles mid-frame any more; what's left on the first frame is texture upload (fast on a real GPU) and one shadow shader. Pre-uploading textures was tried and dropped: combined with the frame warm-up it left the title street unrendered.
   - **Boot:** "Night Shift" and a compositor-driven loading line paint from the HTML before any script, and stay until the street draws.

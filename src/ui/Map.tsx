@@ -461,7 +461,7 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
   }, [active.length])
 
   return (
-    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role="img" aria-label="Map of Marrow">
+    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {active.map((id) => {
@@ -476,6 +476,20 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
             key={id}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
+            // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
+            tabIndex={onSelect && glow ? 0 : undefined}
+            role={onSelect && glow ? 'button' : undefined}
+            onKeyDown={
+              onSelect && glow
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onSelect(id)
+                    }
+                  }
+                : undefined
+            }
+            data-tutorial={`region-${id}`}
             aria-label={def.name}
           >
             <polygon

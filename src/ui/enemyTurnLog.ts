@@ -8,12 +8,15 @@ import type { GameEvent, GameState, RegionId } from '../engine/types'
 // `GameEvent` per step to `state.log` (agenda, squeeze, expand, scout, plus any liberated/riftSplit they
 // trigger); this just turns the slice of the log added by one `applyAction` call into captions.
 
-// The enemy turn always starts by resolving Agenda (SPEC 4.5.3), so the first 'agenda' event in the
-// newly-appended log entries marks where the player's own action ends and the enemy turn begins.
+// The enemy turn starts by resolving Agenda (SPEC 4.5.3), so the first 'agenda' event in the
+// newly-appended log entries marks where the player's own action ends and the enemy turn begins. A
+// campaign chapter with Agenda switched off (SPEC 8.1, chapters 1-4) starts it at its first Squeeze,
+// Expand or Scout instead: without that, chapter 1's enemy turn used to play back nothing at all.
+const ENEMY_STEP_TYPES: ReadonlySet<GameEvent['type']> = new Set(['agenda', 'squeeze', 'expand', 'scout'])
 export function enemyTurnEvents(previous: GameState, next: GameState): GameEvent[] {
   const added = next.log.slice(previous.log.length)
-  const agendaIndex = added.findIndex((e) => e.type === 'agenda')
-  return agendaIndex === -1 ? [] : added.slice(agendaIndex)
+  const start = added.findIndex((e) => ENEMY_STEP_TYPES.has(e.type))
+  return start === -1 ? [] : added.slice(start)
 }
 
 export function captionFor(event: GameEvent): string {

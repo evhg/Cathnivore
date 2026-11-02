@@ -169,6 +169,10 @@ export interface CampaignProgress {
   // 2 losses, also offer Skip Chapter." Counts consecutive losses since the chapter was last won or
   // skipped, keyed by chapter id. Absent/missing entry means 0 losses recorded yet.
   chapterLossCounts?: Record<string, number>
+  // The guided first-round tutorial (chapter 1): true once finished or skipped, so it never replays on
+  // its own (Settings and the campaign card can still replay it). Absent in older saves: see
+  // `isTutorialDone`, which also counts an already-completed chapter 1 as done.
+  tutorialDone?: boolean
 }
 
 export function loadCampaign(): CampaignProgress {
@@ -195,6 +199,18 @@ export function markChapterComplete(chapterId: string): void {
   const progress = loadCampaign()
   if (progress.completed.includes(chapterId)) return
   storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, completed: [...progress.completed, chapterId] }))
+}
+
+// The guided tutorial runs automatically only for someone who hasn't finished or skipped it. A save
+// from before the flag existed that already finished chapter 1 has played it the old way: done too.
+export function isTutorialDone(progress: CampaignProgress = loadCampaign()): boolean {
+  return progress.tutorialDone === true || progress.completed.includes('fresh-meat')
+}
+
+export function markTutorialDone(): void {
+  const progress = loadCampaign()
+  if (progress.tutorialDone) return
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, tutorialDone: true }))
 }
 
 // SPEC 8.2 ch3 carry-over: records how many Wholesome Hollow Contracts survived "Growing Season," for

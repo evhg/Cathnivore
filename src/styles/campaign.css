@@ -484,3 +484,73 @@ html.no-animations .campaign-screen * {
 :root[data-theme='dark'] .cmp-kicker {
   color: var(--pasture);
 }
+
+/* ---- Clickability pass (owner 2026-11-02: "what is clickable should be easily identified by human as
+   clickable"). The card is the button, and now it says so with a real key; the badges beside it are
+   printed labels, not pills that look pressable. ---- */
+.cmp-badge,
+.cmp-badge-next {
+  margin-left: 14px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font: 800 var(--fs-label)/1.2 var(--font-text);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cmp-badge { color: var(--gain-ink); }
+.cmp-badge-next { color: var(--wheat-ink); }
+
+.cmp-cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  margin-top: var(--sp-2);
+  padding: 0 var(--sp-3) 0 var(--sp-4);
+  border: 1.5px solid var(--btn-edge);
+  border-radius: var(--r-btn);
+  background: var(--mat-card-flat);
+  color: var(--ink);
+  font: 700 var(--fs-small)/1 var(--font-text);
+  box-shadow: var(--inset-hi), 0 3px 0 var(--paper-3);
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
+}
+
+.cmp-cta svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cmp-cta-primary {
+  border-color: var(--seal);
+  background: linear-gradient(180deg, var(--primary-hi), var(--pasture-deep));
+  color: var(--paper-on-fixed-fill);
+  box-shadow: var(--inset-hi), 0 4px 0 var(--seal);
+}
+
+@media (hover: hover) {
+  .cmp-path .cmp-card:hover .cmp-cta { transform: translateY(-1px); }
+}
+
+.cmp-path .cmp-card:active .cmp-cta {
+  transform: translateY(2px);
+  box-shadow: var(--inset-hi), 0 1px 0 var(--seal);
+}
+
+.cmp-replay {
+  grid-column: 2;
+  justify-self: end;
+  margin-top: calc(-1 * var(--sp-2));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp-cta { transition: none; }
+  .cmp-path .cmp-card:hover .cmp-cta,
+  .cmp-path .cmp-card:active .cmp-cta { transform: none; }
+}

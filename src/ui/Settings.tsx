@@ -11,11 +11,13 @@ import { clearGame, storage, CAMPAIGN_KEY } from '../platform/storage'
 
 interface Props {
   onClose(): void
+  // Plays chapter 1's guided tutorial again, whether or not it was finished before.
+  onReplayTutorial?(): void
 }
 
 // SPEC 10.1: "Settings: animations, colour-blind patterns, AI speed, and 'Reset all data' with a
 // confirmation."
-export default function Settings({ onClose }: Props) {
+export default function Settings({ onClose, onReplayTutorial }: Props) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [confirmingReset, setConfirmingReset] = useState(false)
 
@@ -101,6 +103,14 @@ export default function Settings({ onClose }: Props) {
           ))}
         </div>
       </section>
+
+      {onReplayTutorial && (
+        <section className="settings-card">
+          <h2>Tutorial</h2>
+          <p className="settings-note">Cath walks you through your first round again, one tap at a time.</p>
+          <button onClick={onReplayTutorial}>Replay the tutorial</button>
+        </section>
+      )}
 
       <section className="settings-card">
         <h2>Data</h2>
