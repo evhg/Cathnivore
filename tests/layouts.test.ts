@@ -44,11 +44,13 @@ describe('map layouts', () => {
     expect(Object.keys(LAYOUTS.coast.hexes)).toHaveLength(10)
     expect(Object.keys(LAYOUTS.delta.hexes)).toHaveLength(7)
   })
-  it('the delta: channels cut the arms apart, the bridge joins Kingsmarket to Shingle Bay', () => {
+  it('the delta: the river parts the banks, crossed only at its two bridges', () => {
     const ns = layoutNeighbors(LAYOUTS.delta)
-    expect(ns.brindleHills).not.toContain('saltmarsh')
-    expect(ns.oakvale).not.toContain('shingleBay')
-    expect(ns.kingsmarket).toContain('shingleBay')
+    expect(ns.highmoor).not.toContain('saltmarsh')
+    expect(ns.kingsmarket).not.toContain('saltmarsh')
+    expect(ns.kingsmarket).not.toContain('shingleBay')
+    expect(ns.kingsmarket).toContain('rivermead')
+    expect(ns.oakvale).toContain('shingleBay')
   })
   it('the same seed deals the same types; different seeds differ somewhere', () => {
     expect(layoutTypes(LAYOUTS.coast, 42)).toEqual(layoutTypes(LAYOUTS.coast, 42))

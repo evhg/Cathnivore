@@ -64,17 +64,23 @@ export const LAYOUTS: Record<LayoutId, Layout> = {
   delta: {
     id: 'delta',
     name: 'The Delta',
-    blurb: 'A river splits it. One bridge.',
-    hexes: { highmoor: [1, -2], brindleHills: [0, -1], saltmarsh: [1, -1], kingsmarket: [0, 0], oakvale: [-1, 1], shingleBay: [0, 1], rivermead: [-1, 2] },
+    blurb: 'A river splits it. Two bridges.',
+    hexes: { kingsmarket: [0, 0], rivermead: [1, 0], shingleBay: [0, 1], oakvale: [-1, 1], brindleHills: [-1, 0], highmoor: [0, -1], saltmarsh: [1, -1] },
     mix: ['pasture', 'pasture', 'crop', 'crop', 'coast', 'coast'],
-    // The river comes down between the west and east arms; Kingsmarket sits on the mouth.
+    // The river comes in at the top between Highmoor and Saltmarsh, runs down Kingsmarket's east side and out to
+    // sea between Oakvale and Shingle Bay: west bank and east bank, crossed only at the city bridge (to
+    // Rivermead) and the low bridge (Oakvale to Shingle Bay).
     channels: [
-      ['brindleHills', 'saltmarsh'],
-      ['oakvale', 'shingleBay'],
+      ['highmoor', 'saltmarsh'],
+      ['kingsmarket', 'saltmarsh'],
+      ['kingsmarket', 'rivermead'],
       ['kingsmarket', 'shingleBay'],
-      ['highmoor', 'brindleHills'],
+      ['oakvale', 'shingleBay'],
     ],
-    bridges: [['kingsmarket', 'shingleBay']],
+    bridges: [
+      ['kingsmarket', 'rivermead'],
+      ['oakvale', 'shingleBay'],
+    ],
   },
 }
 

@@ -630,6 +630,32 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
           </g>
         )
       })}
+      {/* Plan item 15: the Delta's river, drawn along the hex edges it runs between, with a plank bridge where
+          it can be crossed. */}
+      {(LAYOUTS[layout].channels ?? []).map(([a, b]) => {
+        const p = hexCenter(a, layout)
+        const q = hexCenter(b, layout)
+        const len = Math.hypot(q.x - p.x, q.y - p.y)
+        const dx = (q.x - p.x) / len
+        const dy = (q.y - p.y) / len
+        const mx = (p.x + q.x) / 2
+        const my = (p.y + q.y) / 2
+        const h = HEX_R / 2
+        const bridged = (LAYOUTS[layout].bridges ?? []).some(([x, y]) => (x === a && y === b) || (x === b && y === a))
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI
+        return (
+          <g key={`river-${a}-${b}`} className="map-river" pointerEvents="none">
+            <line x1={mx + dy * h} y1={my - dx * h} x2={mx - dy * h} y2={my + dx * h} stroke="var(--ink)" strokeWidth={15} strokeLinecap="round" />
+            <line x1={mx + dy * h} y1={my - dx * h} x2={mx - dy * h} y2={my + dx * h} stroke="var(--region-coast)" strokeWidth={11} strokeLinecap="round" />
+            {bridged && (
+              <g transform={`translate(${mx} ${my}) rotate(${angle})`}>
+                <rect x={-17} y={-8} width={34} height={16} rx={2} fill="var(--paper-hi)" stroke="var(--ink)" strokeWidth={2} />
+                <path d="M-9 -8V8M0 -8V8M9 -8V8" stroke="var(--ink)" strokeWidth={1.2} />
+              </g>
+            )}
+          </g>
+        )
+      })}
       {/* Region names are drawn in their own pass, after every hex's fill/pattern, so a name near a
           hex's pointy top vertex is never painted over by a neighbouring hex above it (gate 8 found
           Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
