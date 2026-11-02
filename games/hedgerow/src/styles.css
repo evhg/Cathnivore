@@ -3195,3 +3195,46 @@ img.act-scene {
     navigation: none;
   }
 }
+
+/* ---- Plan item 18: a full-bleed campaign map. The map is the screen: one scrolling world of acts joined
+   edge to edge, each its own biome, under a glass header; Cath's line and the kit ride at the top of it. ---- */
+.app:has(#screen-select:not([hidden])) { max-width: none; padding: 0; }
+#screen-select { position: relative; gap: 0; }
+#screen-select > .top {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: var(--z-field-ui);
+  padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 6px max(14px, env(safe-area-inset-left));
+  /* No backdrop-filter: it would make the header the containing block of the phone's fixed tab bar. */
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 22%, transparent);
+}
+.app:has(#screen-select:not([hidden])), #screen-select { overflow: clip; }
+#screen-select .levels {
+  gap: 0;
+  padding: var(--top-h, 60px) 0 0;
+  scroll-padding-top: var(--top-h, 60px);
+}
+.map-hud-row { list-style: none; padding: 10px max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left)); background: var(--paper); }
+.map-hud { max-width: 760px; margin: 0 auto; display: grid; gap: 8px; }
+.map-hud .select-kits { padding: 0; }
+#screen-select .act {
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--ground) center / cover;
+}
+#screen-select .act .trail { background: none; max-width: 1180px; margin: 0 auto; }
+#screen-select .act-track { max-width: 1180px; margin: 0 auto; padding-inline: max(14px, env(safe-area-inset-left)); }
+#screen-select .act-head { height: clamp(120px, 15vw, 210px); }
+#screen-select .act-scene { object-fit: cover; }
+/* The banner's sky fades into the act's own ground, so the biomes join instead of stacking as cards. */
+#screen-select .act-head { mask-image: linear-gradient(180deg, black 72%, transparent); }
+#screen-select .act-title { max-width: 1180px; margin: 0 auto; left: max(14px, calc((100% - 1180px) / 2 + 14px)); right: max(14px, calc((100% - 1180px) / 2 + 14px)); bottom: 22%; }
+#screen-select .act-fog { border-radius: 0; min-height: clamp(180px, 26vh, 300px); }
+/* A phone held sideways: the header is one slim row, so the map keeps the screen. */
+@media (orientation: landscape) and (max-height: 520px) {
+  #screen-select > .top { grid-template-columns: auto auto 1fr; gap: 14px; padding-block: 4px; }
+  #screen-select > .top .wordmark { font-size: var(--fs-d2); }
+  #screen-select .top-tools { grid-column: 3; }
+  #screen-select .top-tools .bank-btn { flex-direction: row; min-height: 40px; padding: 0 12px; gap: 6px; }
+}

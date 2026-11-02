@@ -562,7 +562,15 @@ function renderLevels(): void {
   renderContinue();
   renderMap(ui.levels, LEVELS, data, (lv) => openLevel(lv), (act) => { dailyDay = null; showRun = null; const week = weekOf(Date.now()); endlessArgs = { act, week }; startLevel(endlessLevel(act, week), false); }, new URLSearchParams(location.search).has("sandbox"));
   applyUnlocks();
+  // Plan item 18: the map is the screen. Cath's line and the kit ride at the top of the scrolling world
+  // (renderMap replaces the list, so the row goes back in each time), and the glass header floats over it.
+  hudRow ??= Object.assign(document.createElement("li"), { className: "map-hud-row" });
+  hudRow.append($<HTMLElement>("map-hud"));
+  ui.levels.prepend(hudRow);
+  const top = document.querySelector<HTMLElement>("#screen-select > .top");
+  if (top) ui.levels.style.setProperty("--top-h", `${top.offsetHeight}px`);
 }
+let hudRow: HTMLLIElement | null = null;
 
 let typing = 0;
 const REDUCED = (() => {

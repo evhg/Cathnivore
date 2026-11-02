@@ -1561,7 +1561,9 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       path.append(pl);
     }
     drawLane(path, [[pts[0]![0], home ? -26 : -8], ...pts]);
-    trail.style.setProperty("--ground", `url("${svgImg(groundSvg(n))}")`);
+    // Plan item 18: the act's ground fills the whole band edge to edge, under its banner and its lane.
+    li.style.setProperty("--ground", `url("${svgImg(groundSvg(n))}")`);
+    li.dataset.act = String(n);
     trail.append(path);
     if (home) trail.append(home);
 
@@ -1679,7 +1681,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
   const here = current as HTMLElement | null;
   const from = lastNextId !== null && lastNextId !== nextId ? list.querySelector<HTMLElement>(`[data-level="${lastNextId}"]`) : null;
   lastNextId = nextId;
-  here?.scrollIntoView({ block: "center" });
+  if (here) {
+    // Centre her stop by scrolling the map only: scrollIntoView would also scroll the page under the header.
+    const lr = list.getBoundingClientRect();
+    const hr = here.getBoundingClientRect();
+    list.scrollTo({ top: list.scrollTop + hr.top - lr.top - (list.clientHeight - hr.height) / 2, behavior: "instant" });
+  }
   const you = here?.querySelector<HTMLElement>(".you");
   if (you && from && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
     // She walks the trail from the stop she just cleared (an individual `translate`, so the bob keeps running).
