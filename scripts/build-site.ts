@@ -19,6 +19,8 @@ import { resolve } from 'node:path'
 import { build } from 'vite'
 import { siteServiceWorkerSource } from './siteServiceWorker'
 import { APPS, appsHtml, caseHtml, escapeHtml } from '../portfolio/src/apps'
+import { cathSvg } from '../shared/cath/cath'
+import { SCREEN_POSE } from '../shared/cath/screenposes'
 
 const root = resolve(import.meta.dirname, '..')
 // SITE_OUT builds into another folder (a second preview beside a running one, for before/after shots).
@@ -120,7 +122,20 @@ async function main(): Promise<void> {
       publicDir: resolve(root, 'portfolio/public'),
       logLevel: 'warn',
       // The cards are rendered from portfolio/src/apps.ts into the page at build time, so it works without JS.
-      plugins: [{ name: 'portfolio-apps', transformIndexHtml: (html: string) => html.replace('<!--apps-->', appsHtml()) }],
+      // Plan item 38: Cath is drawn into the hero at build time too, so she paints with the first frame on a
+      // phone (drawn by the script she arrived after the bundle and became a 3 s LCP).
+      plugins: [
+        {
+          name: 'portfolio-apps',
+          transformIndexHtml: (html: string) =>
+            html
+              .replace('<!--apps-->', appsHtml())
+              .replace(
+                '<div class="show-cath" id="hero-cath"></div>',
+                `<div class="show-cath" id="hero-cath">${cathSvg({ framing: 'half', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: true })}</div>`,
+              ),
+        },
+      ],
       build: {
         outDir: out,
         emptyOutDir: false,

@@ -267,9 +267,72 @@ main,
   color: var(--accent-gold);
 }
 /* Plan item 23: the right half of the hero shows the work (three game frames fanned like prints on a desk)
-   with Cath standing in front of them. Desktop only; phones keep the type-led hero. */
+   with Cath standing in front of them. Plan item 38: below 1100px it heads the hero instead: one print that
+   cross-fades between the three games, with Cath in front of it at over 40% of the width. */
 .hero-show {
   display: none;
+}
+@media (max-width: 1099.98px) {
+  .hero {
+    justify-content: flex-start;
+    padding-top: var(--sp-6);
+  }
+  .hero-show {
+    display: block;
+    order: -1;
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 4 / 3;
+    margin: 0 auto var(--sp-6);
+    pointer-events: none;
+  }
+  .show-card {
+    position: absolute;
+    left: 3%;
+    top: 8%;
+    width: 72%;
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--white-08);
+    box-shadow: 0 24px 48px -18px var(--show-shadow), 0 0 0 5px var(--show-ring);
+    background: var(--show-ground);
+    rotate: -4deg;
+    opacity: 0;
+  }
+  .show-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .show-a { opacity: 1; }
+  .ready .hero-show .show-card { animation: show-cycle 12s var(--ease-io) infinite both; }
+  .ready .hero-show .show-b { animation-delay: 4s; }
+  .ready .hero-show .show-c { animation-delay: 8s; }
+  .show-cath {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 48%;
+    filter: drop-shadow(0 18px 24px var(--shadow));
+    mask-image: linear-gradient(to bottom, var(--mask-solid) 80%, transparent 99%);
+  }
+  .show-cath svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+@keyframes show-cycle {
+  0% { opacity: 0; }
+  6%, 33% { opacity: 1; }
+  40%, 100% { opacity: 0; }
+}
+@media (max-width: 1099.98px) and (prefers-reduced-motion: reduce) {
+  .ready .hero-show .show-card { animation: none; }
 }
 @media (min-width: 1100px) {
   .hero-show {
