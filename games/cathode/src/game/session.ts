@@ -69,7 +69,8 @@ import { beaCall, caseDistrict, doorName, stationAt, STATION_VERB } from "./offi
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
-import { choose, talked, talkFor, type DistrictName } from "../sim/talk";
+import { flinchImpulse } from "./anim/springs";
+import { choose, talked, talkFor, TALK_BEATS, type DistrictName, type TalkBeat } from "../sim/talk";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
 import { activeMods, MOD_EFFECTS, ngPlusEliteBonus, ngPlusLap } from "../sim/newgameplus";
@@ -165,7 +166,7 @@ export interface Session {
   /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
   lieutenant?: () => Enemy | null;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
-  talkCam?: { mode: "plate" | "two-shot" };
+  talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
   objective?: () => THREE.Vector3 | null;
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
@@ -1590,7 +1591,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
    * lens off to the side with her on the left third and him on the right; the choices sit on a lower-third strip.
    * On low quality and under reduced motion the talk stays the 2D plate. `talkCam.mode` says which.
    */
-  const talkCam = { mode: "plate" as "plate" | "two-shot" };
+  const talkCam = { mode: "plate" as "plate" | "two-shot", beat: null as TalkBeat["him"] | null };
   s.talkCam = talkCam;
   let talkShot: { cath: FrontCath; guy: Enemy; from: THREE.Vector3; at: THREE.Vector3 } | null = null;
   function openTalkShot(): boolean {
@@ -1624,6 +1625,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     talkCam.mode = "two-shot";
     return true;
   }
+  /** Plan item 42: a choice played in the two-shot (`sim/talk.ts` TALK_BEATS): her clip, his answer. */
+  function playBeat(b: TalkBeat): void {
+    talkCam.beat = b.him;
+    if (!talkShot) return;
+    talkShot.cath.play(b.cath);
+    const g = talkShot.guy;
+    if (b.him === "recoil") g.startReact("stagger", "front", { x: 0, z: -1 });
+    else if (b.him === "visor") {
+      g.startReact("visorSnap", "front", { x: 0, z: -1 });
+      g.visorCracked();
+    }
+    else g.flinch.hit("head", flinchImpulse("head", { x: 0, y: 0, z: b.him === "tip" ? -1 : 1 }, 0, 0.6), { x: 0, y: 0, z: b.him === "tip" ? -1 : 1 });
+  }
   function closeTalkShot(): void {
     if (!talkShot) return;
     world.scene.remove(talkShot.cath.group, talkShot.guy.body.root);
@@ -1631,6 +1645,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     talkShot.guy.body.dispose();
     talkShot = null;
     talkCam.mode = "plate";
+    talkCam.beat = null;
   }
   s.lieutenant = () => lieutenant;
   s.objective = () => objectiveAt();
@@ -1818,6 +1833,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
             c.scrip = r.scrip;
             progress.jobsDone.push(r.record);
             progress.save();
+            const opt = talk.options.find((t) => t.id === id);
+            if (opt) playBeat(TALK_BEATS[opt.approach]);
             return r;
           },
           () => {
@@ -4115,6 +4132,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (benchLight) benchLight.intensity = benchCam ? 6 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
       if (talkShot) talkShot.cath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
+        if (talkShot) talkShot.guy.feel(1 / 60, [], ground);
       // On the bench the gun is lit like a product shot: the street's neon (the window's pink key, the pooled
       // lights and the pink environment) steps back for this render so the gun keeps its own finish under a neutral key.
       const envI = world.scene.environmentIntensity;

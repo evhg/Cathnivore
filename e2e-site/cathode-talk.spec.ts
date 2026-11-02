@@ -92,7 +92,7 @@ test('taking the clinic lieutenant down opens his talk', async ({ page, hasTouch
 // Plan item 42: on high quality the talk is a two-shot in the world (Cath on the left third, the lieutenant facing
 // her) with the choices on a lower-third strip; under reduced motion it stays the 2D plate. Frames saved to
 // e2e/screenshots/talk42/.
-type T = C & { talkCam?: { mode: string } }
+type T = C & { talkCam?: { mode: string; beat?: string | null } }
 for (const reduced of [false, true])
   test(`the talk is ${reduced ? 'the plate under reduced motion' : 'a two-shot in the world'}`, async ({ page, hasTouch }) => {
     test.skip(hasTouch, 'desktop quality')
@@ -109,7 +109,20 @@ for (const reduced of [false, true])
     await expect(page.locator('.talk-two-shot')).toHaveCount(reduced ? 0 : 1)
     await page.waitForTimeout(2500)
     await page.screenshot({ path: `e2e/screenshots/talk42/${reduced ? 'plate' : 'two-shot'}-D.png`, timeout: 300_000 })
-    // Closing the talk hands the camera back (picking a choice is covered above).
+    // With the Scrip to pay him, a pick plays its beat: Cath straightens her collar, he drops his chin.
+    await page.evaluate(() => {
+      ;(window as unknown as { cathode: C }).cathode.progress.character.scrip = 200
+    })
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await page.evaluate(() => (window as unknown as { cathode: { talk: () => void } }).cathode.talk())
+    await expect(dialog).toBeVisible({ timeout: 30_000 })
+    await dialog.locator('[data-option="pay"]').click()
+    await expect(dialog.locator('.talk-intel')).toBeVisible()
+    expect(await page.evaluate(() => (window as unknown as { cathode: T & { talkCam?: { beat: string | null } } }).cathode.talkCam?.beat)).toBe('nod')
+    await page.waitForTimeout(1500)
+    await page.screenshot({ path: `e2e/screenshots/talk42/${reduced ? 'plate' : 'two-shot'}-pay-D.png`, timeout: 300_000 })
+    // Closing the talk hands the camera back.
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
     expect(await page.evaluate(() => (window as unknown as { cathode: T }).cathode.talkCam?.mode)).toBe('plate')

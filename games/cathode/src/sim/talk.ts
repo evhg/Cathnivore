@@ -201,3 +201,20 @@ export function bossEdge(boss: "crisp" | "vane" | "pell" | "chair" | "vault", jo
   }
   return edge;
 }
+
+/**
+ * Plan item 42: how a choice plays in the two-shot. Cath acts it with one of her class clips (Press: the
+ * Butcher's neck roll; Wire: the Wirewitch's umbrella twirl; Charm: the Ghost's draw on the cigarette, eyes on
+ * him; Pay: the Fixer straightening her collar), and he answers with his body: Press backs him off a step,
+ * Wire flickers his visor (the pager), Charm tips his head back, Pay drops his chin.
+ */
+export interface TalkBeat {
+  cath: "butcher" | "wirewitch" | "ghost" | "fixer";
+  him: "recoil" | "visor" | "tip" | "nod";
+}
+export const TALK_BEATS: Record<Approach, TalkBeat> = {
+  press: { cath: "butcher", him: "recoil" },
+  wire: { cath: "wirewitch", him: "visor" },
+  charm: { cath: "ghost", him: "tip" },
+  pay: { cath: "fixer", him: "nod" },
+};
