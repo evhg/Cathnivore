@@ -23,11 +23,13 @@ const report = {}
 for (const [name, opts] of SIZES) {
   const page = await browser.newPage(opts)
   await page.goto(base)
-  await page.evaluate((s) => {
+  await page.evaluate(([s, reveal]) => {
     const seenBefore = {}
     for (const k of Object.keys(s)) seenBefore[k] = true
     localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore, seen: {}, tips: {}, bank: {} }))
-  }, stars)
+    // The fog has already rolled back off every open act (a REVEAL=1 run shoots it mid-roll instead).
+    if (!reveal) localStorage.setItem('hedgerow:fog:v1', String(Math.max(1, Math.ceil((Object.keys(s).length + 1) / 10))))
+  }, [stars, !!process.env.REVEAL])
   await page.reload()
   await page.waitForTimeout(1500)
   // Close any first-visit sheet that covers the map.

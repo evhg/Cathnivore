@@ -175,6 +175,23 @@
   --track-label: 0.09em;
   --track-display: -0.02em;
   font-synthesis: none;
+  /* Plan item 18: the campaign map's plinths, flags and fog */
+  --map-plinth-side: #b39b70;
+  --map-plinth-top: #fffdf6;
+  --map-plinth-base: #efe3c7;
+  --map-plinth-shadow: rgba(40, 28, 10, 0.28);
+  --map-turf-side: #3e5f2b;
+  --map-turf-top: #8fb565;
+  --map-boss-side: #4a3018;
+  --map-boss-top: #8a5a34;
+  --map-stone-shadow: rgba(40, 28, 10, 0.16);
+  --map-next-glow: rgba(217, 180, 90, 0.4);
+  --map-pole-lit: #7a5a3e;
+  --map-pole-shade: #4a3424;
+  --map-flag-red: #c8463c;
+  --map-flag-gold-lit: #f6d36a;
+  --map-flag-gold: #d9a62c;
+  --map-flag-red-shade: #8f2a22;
 }
 @media (prefers-color-scheme: dark) {
   :root {

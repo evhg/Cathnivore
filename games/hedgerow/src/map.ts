@@ -1459,7 +1459,7 @@ export function placeBanners(list: HTMLElement): void {
   for (const trail of list.querySelectorAll<HTMLElement>(".trail")) {
     const names = [...trail.querySelectorAll<HTMLElement>(".node .level-name")];
     for (const n of names) {
-      n.style.removeProperty("margin-top");
+      n.style.removeProperty("--drop");
       delete n.dataset.drop;
     }
     // Obstacles from other stops: their flags, padlocks and start tags; banners join as they're placed.
@@ -1476,7 +1476,7 @@ export function placeBanners(list: HTMLElement): void {
         const hit = placed.map((p) => ({ ...p, b: boxIn(p.el, trail) })).find((p) => p.node !== own && p.b.width > 0 && overlaps(r, p.b));
         if (!hit) break;
         drop += hit.b.bottom - r.top + 3;
-        el.style.marginTop = `${Math.ceil(drop)}px`;
+        el.style.setProperty("--drop", `${Math.ceil(drop)}px`);
         el.dataset.drop = "1";
       }
       placed.push({ el, node: own });
@@ -1646,6 +1646,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       b.className = `level node${boss ? " level-boss" : ""}${stars ? " cleared" : ""}`;
       b.disabled = !unlocked;
       b.dataset.level = String(lv.id);
+      b.dataset.stars = String(stars);
       b.setAttribute(
         "aria-label",
         unlocked

@@ -3239,6 +3239,7 @@ img.act-scene {
   #screen-select .top-tools .bank-btn { flex-direction: row; min-height: 40px; padding: 0 12px; gap: 6px; }
 }
 /* A banner dropped below its neighbour's keeps a tie line up to its own flag. */
+.node .level-name[data-drop] { margin-top: var(--drop, 0); }
 .node .level-name[data-drop]::before {
   content: "";
   position: absolute;
@@ -3299,4 +3300,73 @@ img.act-scene {
 @keyframes fog-fade { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .unveil-fog { animation: fog-fade 0.5s ease 0.2s both; }
+}
+
+/* Plan item 18: each stop is a landmark plinth: a turf-and-stone drum with its number on the top face, and
+   once won, a flag on a pole planted in it (gold for three stars, a swallowtail banner on a boss). Her own
+   stop has Cath instead of a flag; a locked stop is bare stone. */
+#screen-select .node .level-num {
+  --side: var(--map-plinth-side);
+  position: relative;
+  border-radius: 50% / 44%;
+  height: 44px;
+  border-width: 2px;
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, var(--map-plinth-top), var(--map-plinth-base));
+  box-shadow: 0 5px 0 var(--side), 0 10px 9px var(--map-plinth-shadow);
+}
+#screen-select .node.level-boss .level-num { height: 50px; }
+#screen-select .node.cleared .level-num {
+  --side: var(--map-turf-side);
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, var(--map-turf-top), var(--pasture));
+}
+#screen-select .node.level-boss .level-num { --side: var(--map-boss-side); background: radial-gradient(ellipse 70% 60% at 50% 35%, var(--map-boss-top), var(--soil)); }
+#screen-select .node:disabled .level-num {
+  --side: color-mix(in srgb, var(--soil) 30%, var(--paper-2));
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, var(--paper), var(--paper-2));
+  box-shadow: 0 4px 0 var(--side), 0 7px 6px var(--map-stone-shadow);
+}
+#screen-select .node.next .level-num { animation: plinth-pulse 1.8s ease-in-out infinite; }
+@keyframes plinth-pulse {
+  50% { box-shadow: 0 5px 0 var(--side), 0 10px 9px var(--map-plinth-shadow), 0 0 0 7px var(--map-next-glow); }
+}
+/* The pole and the flag. */
+#screen-select .node.cleared:not(.next) .level-num::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  bottom: 62%;
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--map-pole-lit), var(--map-pole-shade));
+}
+#screen-select .node.cleared:not(.next) .level-num::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: calc(62% + 15px);
+  width: 22px;
+  height: 15px;
+  background: var(--flag, var(--map-flag-red));
+  clip-path: polygon(0 0, 100% 45%, 0 100%);
+  transform-origin: left center;
+  animation: flag-flutter 2.6s ease-in-out infinite;
+}
+#screen-select .node[data-stars="3"] { --flag: linear-gradient(180deg, var(--map-flag-gold-lit), var(--map-flag-gold)); }
+#screen-select .node.level-boss.cleared .level-num::after {
+  width: 26px;
+  height: 19px;
+  --flag: linear-gradient(180deg, var(--map-flag-red), var(--map-flag-red-shade));
+  background: var(--flag);
+  clip-path: polygon(0 0, 100% 0, 76% 50%, 100% 100%, 0 100%);
+}
+@keyframes flag-flutter {
+  0%, 100% { transform: skewY(0deg) scaleX(1); }
+  50% { transform: skewY(-5deg) scaleX(0.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #screen-select .node.cleared .level-num::after, #screen-select .node.next .level-num { animation: none; }
+}
+@media (prefers-color-scheme: dark) {
+  #screen-select .act { background-image: linear-gradient(var(--shade-a62), var(--shade-a62)), var(--ground); background-size: cover; }
 }
