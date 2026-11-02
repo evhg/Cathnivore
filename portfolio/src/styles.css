@@ -128,6 +128,13 @@ main,
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   mask-image: linear-gradient(to bottom, black 55%, transparent);
 }
+/* Plan item 38: once the page has scrolled, the header's glass is solid all the way down with a hairline,
+   so scrolled text and images never show through behind the wordmark and the nav. */
+.top.is-scrolled::before {
+  background: var(--glass-solid);
+  mask-image: none;
+  box-shadow: 0 1px 0 var(--line);
+}
 .wordmark {
   display: inline-flex;
   align-items: center;
@@ -276,8 +283,11 @@ main,
     aspect-ratio: 1 / 1;
     pointer-events: none;
   }
-  .hero > :not(.hero-show) {
+  .hero > :not(.hero-show, .scroll-cue) {
     position: relative;
+    z-index: var(--z-page);
+  }
+  .hero > .scroll-cue {
     z-index: var(--z-page);
   }
   .show-card {
@@ -415,12 +425,13 @@ h1 {
   font-variation-settings: "opsz" 144;
 }
 .scroll-cue {
+  /* Plan item 38: in the hero's free right-hand corner, clear of the stats row's labels. */
   position: absolute;
-  left: 50%;
-  bottom: var(--sp-5);
+  right: 0;
+  /* Level with the stats row: the hero runs a little past the first screen. */
+  bottom: 110px;
   width: 26px;
   height: 42px;
-  margin-left: -13px;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-pill);
 }

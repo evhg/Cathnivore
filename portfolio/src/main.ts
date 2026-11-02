@@ -31,3 +31,11 @@ counters(document, reduced)
 void pulse(document.querySelector<HTMLElement>('#pulse-text'))
 
 document.documentElement.classList.add('ready')
+
+// Plan item 38: the header turns solid glass once the page has scrolled (styles.css `.top.is-scrolled`).
+const top = document.querySelector<HTMLElement>('.top')
+if (top) {
+  const mark = () => top.classList.toggle('is-scrolled', window.scrollY > 4)
+  mark()
+  window.addEventListener('scroll', mark, { passive: true })
+}
