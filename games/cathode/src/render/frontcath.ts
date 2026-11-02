@@ -24,6 +24,8 @@ export interface FrontCath {
   play(kind: string, u?: number): void;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
   tint(c: THREE.Color, w: number): void;
+  /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
+  indoors(on: boolean): void;
   dispose(): void;
   readonly triangles: number;
 }
@@ -904,6 +906,45 @@ export function buildFrontCath(phone: boolean): FrontCath {
   umbrellaTop.position.set(0, 0.88, 0);
   umb.add(umbrellaTop);
 
+  // ---- plan item 16: the umbrella furled, for indoors: crook in her fist, the wrapped canopy hanging tip down ----
+  const furled = new THREE.Group();
+  furled.position.set(handR.x, handR.y, handR.z);
+  furled.rotation.set(0.1, 0, -0.1);
+  furled.visible = false;
+  chest.add(furled);
+  {
+    const fShaft = new THREE.CylinderGeometry(0.0075, 0.0075, 0.86, 8);
+    fShaft.translate(0, -0.4, 0);
+    add(fShaft, blackMat, furled);
+    const fCrook = new THREE.TorusGeometry(0.035, 0.009, 6, 12, Math.PI);
+    fCrook.translate(0.035, 0.035, 0);
+    add(fCrook, blackMat, furled);
+    // The wrapped cloth: full under the runner, tapering to the ferrule, with a few soft folds.
+    const prof: Array<[number, number]> = [];
+    for (let i = 0; i <= 10; i++) {
+      const u = i / 10;
+      prof.push([0.008 + 0.024 * Math.sin(Math.min(1, u * 1.6) * Math.PI * 0.5) * (1 - u * 0.75), -0.84 + 0.62 * (1 - u)]);
+    }
+    const cloth = new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(r, y)), 16);
+    const cp = cloth.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < cp.count; i++) {
+      const x = cp.getX(i);
+      const z = cp.getZ(i);
+      const a = Math.atan2(z, x);
+      const k = 1 + 0.12 * Math.sin(a * 4 + cp.getY(i) * 9);
+      cp.setXYZ(i, x * k, cp.getY(i), z * k);
+    }
+    cloth.computeVertexNormals();
+    add(cloth, canopyMat, furled);
+    const strapF = new THREE.TorusGeometry(0.027, 0.004, 4, 14);
+    strapF.rotateX(Math.PI / 2);
+    strapF.translate(0, -0.5, 0);
+    add(strapF, blackMat, furled);
+    const tipF = new THREE.CylinderGeometry(0.009, 0.004, 0.06, 8);
+    tipF.translate(0, -0.87, 0);
+    add(tipF, blackMat, furled);
+  }
+
   // ---- rain running off the rib tips: short falling streaks (Points would be square; thin quads read as water) ----
   const DROPS = phone ? 16 : 32;
   const dropGeo = new THREE.BufferGeometry();
@@ -1179,6 +1220,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
+    },
+    indoors(on) {
+      umb.visible = !on;
+      furled.visible = on;
+      dropLines.visible = !on;
     },
     dispose() {
       group.traverse((o) => {

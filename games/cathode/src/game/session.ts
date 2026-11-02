@@ -2630,10 +2630,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (inOffice) layBench(null);
   // A soft key over the bench for the close-up: always in the scene (so opening the bench never recompiles a shader),
   // dark until the bench is open. The street's neon still rims the gun from the window.
-  const benchLight = inOffice ? new THREE.SpotLight(0xfff0dc, 0, 3.2, 0.55, 0.7, 1.4) : null;
+  const benchLight = inOffice ? new THREE.SpotLight(0xfff0dc, 0, 3.4, 0.8, 0.85, 1.2) : null;
   if (benchLight) {
     // From the window side and north, so its highlight on the steel top glances away from the lens overhead.
-    benchLight.position.set(BENCH.x + 0.3, 2.1, BENCH.z - 1.1);
+    benchLight.position.set(BENCH.x + 0.35, 2.3, BENCH.z - 0.5);
     benchLight.target.position.set(BENCH.x, BENCH.y, BENCH.z);
     world.scene.add(benchLight, benchLight.target);
   }
@@ -2647,6 +2647,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       wardCath.group.position.set(WARD.x, 0, WARD.z);
       // Facing into the room (+x), turned a touch toward the lens.
       wardCath.group.rotation.y = Math.PI / 2 + 0.35;
+      wardCath.indoors(true);
       world.scene.add(wardCath.group);
     }
     if (wardCath) wardCath.group.visible = on;
@@ -3899,9 +3900,25 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       cam.lookAt(cu.at);
       cam.updateProjectionMatrix();
       cam.updateMatrixWorld();
-      if (benchLight) benchLight.intensity = benchCam ? 3.5 : 0;
+      if (benchLight) benchLight.intensity = benchCam ? 6 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
+      // On the bench the gun is lit like a product shot: the street's neon (the window's pink key, the pooled
+      // lights and the pink environment) steps back for this render so the gun keeps its own finish under a neutral key.
+      const envI = world.scene.environmentIntensity;
+      const dimmed: Array<[THREE.Light, number]> = [];
+      if (benchCam) {
+        world.scene.environmentIntensity = envI * 0.2;
+        world.scene.traverse((ob) => {
+          const l = ob as THREE.PointLight & { isSpotLight?: boolean };
+          if ((l.isPointLight || l.isSpotLight) && ob !== benchLight && l.intensity > 0) {
+            dimmed.push([l, l.intensity]);
+            l.intensity *= 0.15;
+          }
+        });
+      }
       world.render();
+      world.scene.environmentIntensity = envI;
+      for (const [l, i] of dimmed) l.intensity = i;
       cam.up.copy(up);
       cam.quaternion.copy(q);
       cam.position.copy(pos);
