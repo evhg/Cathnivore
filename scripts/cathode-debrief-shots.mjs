@@ -55,6 +55,16 @@ for (const [name, opts] of SIZES.filter(([n]) => !ONLY || n === ONLY)) {
   await page.waitForTimeout(1500)
   await page.screenshot({ path: `${out}/debrief-${name}.png`, timeout: 120000 })
   console.log(`debrief-${name}`, await page.evaluate(() => JSON.stringify(window.cathode.debrief)))
+  // The foot of the sheet: the lines and the way home must be reachable by scrolling on a short screen.
+  const reach = await page.evaluate(() => {
+    const go = [...document.querySelectorAll('.debrief button')].pop()
+    go?.scrollIntoView({ block: 'end' })
+    const r = go?.getBoundingClientRect()
+    return r ? { top: Math.round(r.top), bottom: Math.round(r.bottom), h: innerHeight } : null
+  })
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: `${out}/debrief-foot-${name}.png`, timeout: 120000 })
+  console.log(`debrief-foot-${name}`, JSON.stringify(reach))
   await page.close()
 }
 await browser.close()
