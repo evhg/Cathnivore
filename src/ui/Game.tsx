@@ -405,6 +405,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // region, and the action only actually happens on Confirm. Cancel steps back to the full group's glow
   // (or, with nothing pending, drops out of targeting mode entirely).
   const [pendingChoice, setPendingChoice] = useState<{ index: number; region: RegionId } | null>(null)
+  // Plan item 21: a region card can be dragged onto a glowing hex; dropping it there plays it at once.
+  const [drag, setDrag] = useState<{ label: string; x: number; y: number; regions: RegionId[] } | null>(null)
+  const dragRef = useRef<{ x0: number; y0: number; moved: boolean; group: { label: string; entries: { index: number; region: RegionId }[] } } | null>(null)
+  const dragClickGuard = useRef(false)
   // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map." A
   // second tap on the same card clears the highlight; tapping a different card switches to it.
   const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
@@ -1108,7 +1112,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </>
         ) : (
           <>
-            <p>{selectedGroup.label}: tap a glowing region on the map.</p>
+            <p className="action-raised">
+              <span className="action-raised-name">{selectedGroup.label}</span>
+              <span className="action-raised-hint">Tap a glowing region, or drag the card onto one.</span>
+            </p>
             <button onClick={() => setSelectedGroup(null)}>Cancel</button>
           </>
         )
@@ -1307,7 +1314,39 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <button
                       aria-label={aria}
                       data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
+                      className="action-card-draggable"
+                      onPointerDown={(e) => {
+                        if (guidedActive || e.button !== 0) return
+                        dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
+                        e.currentTarget.setPointerCapture(e.pointerId)
+                      }}
+                      onPointerMove={(e) => {
+                        const d = dragRef.current
+                        if (!d) return
+                        if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
+                        d.moved = true
+                        setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
+                      }}
+                      onPointerUp={(e) => {
+                        const d = dragRef.current
+                        dragRef.current = null
+                        if (!d?.moved) return
+                        dragClickGuard.current = true
+                        setDrag(null)
+                        const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
+                        const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
+                        const entry = d.group.entries.find((en) => en.region === region)
+                        if (entry) act(entry.index)
+                      }}
+                      onPointerCancel={() => {
+                        dragRef.current = null
+                        setDrag(null)
+                      }}
                       onClick={() => {
+                        if (dragClickGuard.current) {
+                          dragClickGuard.current = false
+                          return
+                        }
                         if (guidedActive && !guidedExpect) return
                         if (single && !forceTargeting) act(group.entries[0]!.index)
                         else setSelectedGroup(group)
@@ -1674,7 +1713,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           highlight={
             enemyStepRegion && pendingEnemyTurn.length > 0
               ? [enemyStepRegion]
-              : selectedGroup
+              : drag
+                ? drag.regions
+                : selectedGroup
               ? pendingChoice
                 ? [pendingChoice.region]
                 : selectedGroup.entries.map((e) => e.region)
@@ -1767,6 +1808,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </div>
         )}
       </aside>
+      {drag && (
+        <div className="drag-ghost" aria-hidden="true" style={{ left: drag.x, top: drag.y }}>
+          {drag.label}
+        </div>
+      )}
       {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
     </div>
   )

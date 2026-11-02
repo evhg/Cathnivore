@@ -56,3 +56,30 @@ test('keyboard-only play completes a round', async ({ page }) => {
   // The AI teammate takes its turn, the corporations move, and round 2 begins.
   await expect.poll(round, { timeout: 30_000 }).toBe('2')
 })
+
+test('a region card dragged onto a glowing hex plays there', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'mouse drag')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.locator('input[inputmode="numeric"]').fill('1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+
+  const card = page.locator('.actions .action-card-draggable').first()
+  await card.scrollIntoViewIfNeeded()
+  const pipsOn = () => page.locator('.active-producer .pip.on').count()
+  const before = await pipsOn()
+  const from = (await card.boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(from.x + from.width / 2 + 30, from.y + from.height / 2 - 30, { steps: 4 })
+  await expect(page.locator('.drag-ghost')).toBeVisible()
+  const target = page.locator('.region-hex.glow').first()
+  await expect(target).toBeVisible()
+  const t = (await target.locator('polygon').first().boundingBox())!
+  await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2, { steps: 8 })
+  if (process.env.SHOTS) await page.screenshot({ path: `e2e/screenshots/hand-drag-${testInfo.project.name}.png` })
+  await page.mouse.up()
+  await expect(page.locator('.drag-ghost')).toHaveCount(0)
+  await expect.poll(pipsOn).toBe(before - 1)
+})

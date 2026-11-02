@@ -1927,3 +1927,52 @@ html.no-animations .cath-companion .cameo {
 .actions-well[data-more]::after {
   content: none;
 }
+
+/* ---- plan item 21 (slice 3): pick a card up and drop it on a hex ----
+   A sideways swipe still scrolls the hand; a drag up lifts the card (a ghost follows the pointer) and the
+   hexes it can go to glow. While a card is in play its face stays raised in the dock with the hint. */
+.action-card-draggable {
+  touch-action: pan-x;
+}
+
+.drag-ghost {
+  position: fixed;
+  z-index: var(--z-toast);
+  translate: -50% -110%;
+  rotate: -3deg;
+  max-width: 180px;
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  border: 1px solid var(--bunting);
+  background: linear-gradient(180deg, var(--wheat-hi), var(--wheat));
+  color: var(--ink-on-fixed-fill);
+  font: 700 var(--fs-small)/1.2 var(--font-text);
+  box-shadow: var(--e5), var(--glow-select);
+  pointer-events: none;
+}
+
+.actions > .action-raised {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  border: 1px solid var(--bunting);
+  background: linear-gradient(180deg, var(--wheat-hi), var(--wheat));
+  color: var(--ink-on-fixed-fill);
+  box-shadow: 0 4px 0 var(--bunting-lo), var(--glow-select);
+  translate: 0 -4px;
+}
+
+.action-raised-name {
+  font: 700 var(--fs-small)/1.2 var(--font-text);
+}
+
+.action-raised-hint {
+  font: 500 var(--fs-label)/1.3 var(--font-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions > .action-raised { translate: none; }
+}
