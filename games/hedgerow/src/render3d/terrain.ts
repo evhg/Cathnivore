@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
+import { twistDressing } from "../landmarks";
 import { rng } from "../theme";
 import { actLight } from "./palette";
 import {
@@ -950,20 +951,105 @@ export function buildGround(level: Level): Ground {
   // Each lantern's flame flickers (its own material, so no other glow in the scene flickers with it).
   const lamps: THREE.Vector3[] = [];
   const flame = new THREE.MeshStandardMaterial({ color: "#ffb85a", emissive: "#ffb85a", emissiveIntensity: 4, roughness: 0.5 });
-  if (night) {
-    const lampGeo = new THREE.SphereGeometry(0.05, 8, 6);
-    const postGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.35, 5);
-    for (let i = 0; i < 12; i++) {
-      const x = rand() * cols;
-      const y = rand() * rows;
-      const d = laneDistance(level, x, y);
-      if (d < 0.55 || d > 0.95) continue;
-      const lamp = new THREE.Mesh(lampGeo, flame);
-      lamp.position.set(x, heightAt(x, y) + 0.35, y);
-      const post = new THREE.Mesh(postGeo, matte("#2b2320"));
-      post.position.set(x, heightAt(x, y) + 0.17, y);
-      group.add(lamp, post);
-      lamps.push(lamp.position.clone());
+  const dress = twistDressing(level, night);
+  if (dress.lanterns.length) {
+    // A crook post on the verge with the lantern hung over the lane's edge.
+    const postGeo = new THREE.CylinderGeometry(0.014, 0.018, 0.42, 6);
+    const armGeo = new THREE.BoxGeometry(0.11, 0.014, 0.014);
+    const capGeo = new THREE.ConeGeometry(0.04, 0.035, 4);
+    const paneGeo = new THREE.BoxGeometry(0.045, 0.06, 0.045);
+    const ironMat = matte("#2b2320");
+    for (const l of dress.lanterns) {
+      const h = heightAt(l.x, l.y);
+      const g = new THREE.Group();
+      const post = new THREE.Mesh(postGeo, ironMat);
+      post.position.set(0, 0.21, 0);
+      post.castShadow = true;
+      const arm = new THREE.Mesh(armGeo, ironMat);
+      arm.position.set(0.045, 0.41, 0);
+      const pane = new THREE.Mesh(paneGeo, flame);
+      pane.position.set(0.085, 0.36, 0);
+      const cap = new THREE.Mesh(capGeo, ironMat);
+      cap.position.set(0.085, 0.405, 0);
+      cap.rotation.y = Math.PI / 4;
+      g.add(post, arm, pane, cap);
+      // The arm reaches back over the lane: towards the centre line from the verge.
+      // Local +x points from the verge to the lane's centre line, -normal = (-side sin a, side cos a).
+      const tx = -l.side * Math.sin(l.angle);
+      const tz = l.side * Math.cos(l.angle);
+      g.rotation.y = -Math.atan2(tz, tx);
+      g.position.set(l.x, h, l.y);
+      group.add(g);
+      lamps.push(new THREE.Vector3(l.x + tx * 0.085, h + 0.36, l.y + tz * 0.085));
+    }
+  }
+  // Crowd: the crowd's vans parked on the verge by the gate, knots of people with placards down the lane.
+  if (dress.vans.length || dress.people.length) {
+    const vanCols = ["#e8742c", "#f2efe6", "#c9512b"];
+    const bodyGeo = new THREE.BoxGeometry(0.42, 0.2, 0.22);
+    const cabGeo = new THREE.BoxGeometry(0.13, 0.15, 0.21);
+    const glassGeo = new THREE.BoxGeometry(0.02, 0.07, 0.18);
+    const wheelGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.23, 8).rotateX(Math.PI / 2);
+    const glassMat = matte("#2f3d4a", 0.3);
+    const tyreMat = matte("#1d1b1a");
+    for (const [i, v] of dress.vans.entries()) {
+      const g = new THREE.Group();
+      const body = new THREE.Mesh(bodyGeo, matte(vanCols[i % vanCols.length]!));
+      body.position.set(-0.04, 0.15, 0);
+      body.castShadow = true;
+      const cab = new THREE.Mesh(cabGeo, matte(vanCols[i % vanCols.length]!));
+      cab.position.set(0.23, 0.12, 0);
+      cab.castShadow = true;
+      const glass = new THREE.Mesh(glassGeo, glassMat);
+      glass.position.set(0.3, 0.15, 0);
+      g.add(body, cab, glass);
+      for (const wx of [-0.16, 0.2]) {
+        const w = new THREE.Mesh(wheelGeo, tyreMat);
+        w.position.set(wx, 0.04, 0);
+        g.add(w);
+      }
+      g.rotation.y = -v.angle;
+      g.position.set(v.x, heightAt(v.x, v.y), v.y);
+      group.add(g);
+    }
+    const coatCols = ["#4a5a7a", "#7a4a3a", "#3e5a44", "#6a5a8a", "#8a6a3a"];
+    const bodyP = new THREE.CapsuleGeometry(0.035, 0.08, 3, 6);
+    const headP = new THREE.SphereGeometry(0.028, 8, 6);
+    const signGeo = new THREE.BoxGeometry(0.1, 0.06, 0.008);
+    const stickGeo = new THREE.CylinderGeometry(0.004, 0.004, 0.12, 4);
+    const skin = matte("#e0b48c");
+    const board = matte("#f4ecd8");
+    for (const [k, p] of dress.people.entries()) {
+      for (let j = 0; j < 4; j++) {
+        // Spread along the verge, a step back from the lane's edge.
+        const along = (j - 1.5) * 0.2;
+        const back = 0.1 + (j % 2) * 0.1;
+        // Outward normal (away from the lane) is (side sin a, -side cos a).
+        const nx = p.side * Math.sin(p.angle);
+        const ny = -p.side * Math.cos(p.angle);
+        const x = p.x + Math.cos(p.angle) * along + nx * back;
+        const z = p.y + Math.sin(p.angle) * along + ny * back;
+        const h = heightAt(x, z);
+        const g = new THREE.Group();
+        const b = new THREE.Mesh(bodyP, matte(coatCols[(k * 4 + j) % coatCols.length]!));
+        b.position.y = 0.075;
+        b.castShadow = true;
+        const head = new THREE.Mesh(headP, skin);
+        head.position.y = 0.17;
+        g.add(b, head);
+        if (j % 2 === 0) {
+          const stick = new THREE.Mesh(stickGeo, matte("#6b4a2c"));
+          stick.position.set(0.045, 0.2, 0);
+          const sign = new THREE.Mesh(signGeo, board);
+          sign.position.set(0.045, 0.27, 0);
+          g.add(stick, sign);
+        }
+        // Facing the lane.
+        g.rotation.y = -Math.atan2(-ny, -nx);
+        g.scale.setScalar(1.4);
+        g.position.set(x, h, z);
+        group.add(g);
+      }
     }
   }
 

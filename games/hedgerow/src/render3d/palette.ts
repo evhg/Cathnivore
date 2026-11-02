@@ -154,6 +154,28 @@ export const ACT_LIGHT: ActLight[] = [
   { skyTop: "#141a33", skyBottom: "#5a2e3a", fog: "#2a1e2e", fogNear: 10, fogFar: 30, sun: "#ffb070", sunIntensity: 1.6, sunAz: 300, sunEl: 22, hemiSky: "#3a3a6a", hemiGround: "#1e1414", hemiIntensity: 0.75, grass: ["#4f6a3a", "#425a32", "#5a7642"], dirt: ["#7a5a3a", "#5a4028"], exposure: 1.15 },
 ];
 
+/**
+ * A Night twist's light (plan item 43, "Night lights lanterns"): the act's own ground under a blue dusk, a cool
+ * low moon in place of the sun, so the lane's lanterns are what light the field. Kingsmarket is already night.
+ */
+export function nightLight(L: ActLight): ActLight {
+  return {
+    ...L,
+    skyTop: "#18204a",
+    skyBottom: "#6a5a80",
+    fog: "#3c4064",
+    fogNear: L.fogNear * 0.85,
+    fogFar: L.fogFar * 0.85,
+    sun: "#c4d0ff",
+    sunIntensity: L.sunIntensity * 0.55,
+    sunEl: Math.min(L.sunEl, 30),
+    hemiSky: "#6a7ab8",
+    hemiGround: "#2a2c24",
+    hemiIntensity: L.hemiIntensity * 0.8,
+    exposure: L.exposure * 1.05,
+  };
+}
+
 export function actLight(levelId: number): ActLight {
   return ACT_LIGHT[Math.min(ACT_LIGHT.length - 1, Math.floor((levelId - 1) / 10))]!;
 }

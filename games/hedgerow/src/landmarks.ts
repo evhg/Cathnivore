@@ -3,7 +3,7 @@
 // churchyards and Kingsmarket has market squares and locks, and placed on the cells that see least of the
 // lane, so the fight barely changes while the field stops looking like the last one.
 
-import { laneCellsOf, pathLength, pointAt, type LandmarkKind, type Level, type SetPiece } from "./engine";
+import { hasTwist, headingAt, laneCellsOf, pathLength, pointAt, type LandmarkKind, type Level, type SetPiece } from "./engine";
 
 export const LANDMARKS: Record<LandmarkKind, { name: string; note: string }> = {
   ford: { name: "The ford", note: "Willows and a plank footbridge where the lane wades the stream. Nothing's built on the bank." },
@@ -155,4 +155,81 @@ export function fordMiddle(level: Pick<Level, "fords" | "path">): number | null 
   const f = level.fords?.[0];
   if (!f) return null;
   return Math.min(pathLength(level.path), (f.from + f.to) / 2);
+}
+
+/** A thing standing on the lane's verge: where (field units), which way it faces (radians, along the lane) and its side. */
+export type VergeSpot = { x: number; y: number; angle: number; side: 1 | -1 };
+
+/** How far from the lane's centre line the verge is: the lane cell's edge, so nothing stands on a plot. */
+export const VERGE = 0.4;
+
+/**
+ * Twists change the ground (plan item 43): a Night level's lane is lit by lanterns on posts, a Crowd level's
+ * verges are lined with the crowd's parked vans near the gate and knots of people along the way. Dressing
+ * only, so the fight is the same (`lit` asks for the lanterns on a field that is dark without the twist): everything stands on the lane cell's edge, on the outer side of the lane
+ * (the side whose neighbouring cell isn't more lane), and never on a corner.
+ */
+export function twistDressing(level: Pick<Level, "path" | "path2" | "twists" | "id">, lit = false): {
+  lanterns: VergeSpot[];
+  vans: VergeSpot[];
+  people: VergeSpot[];
+} {
+  const out = { lanterns: [] as VergeSpot[], vans: [] as VergeSpot[], people: [] as VergeSpot[] };
+  const night = hasTwist(level, "night") || lit;
+  const crowd = hasTwist(level, "crowd");
+  if (!night && !crowd) return out;
+  const lane = laneCellsOf(level);
+  const len = pathLength(level.path);
+  const at = (d: number, prefer: 1 | -1): VergeSpot | null => {
+    const p = pointAt(level.path, d);
+    const h = headingAt(level.path, d);
+    // Off a corner: the lane must run straight half a cell either way.
+    const a = headingAt(level.path, d - 0.6);
+    const b = headingAt(level.path, d + 0.6);
+    if (a.dx !== h.dx || a.dy !== h.dy || b.dx !== h.dx || b.dy !== h.dy) return null;
+    for (const side of [prefer, -prefer as 1 | -1]) {
+      // Left of travel is (dy, -dx).
+      const nx = h.dy * side;
+      const ny = -h.dx * side;
+      const c = Math.floor(p.x + nx);
+      const r = Math.floor(p.y + ny);
+      if (lane.has(`${c},${r}`)) continue;
+      return { x: p.x + nx * VERGE, y: p.y + ny * VERGE, angle: Math.atan2(h.dy, h.dx), side };
+    }
+    return null;
+  };
+  if (night) {
+    let side: 1 | -1 = level.id % 2 ? 1 : -1;
+    // About a dozen down the lane; a spot on a corner slides on half a cell.
+    for (let d = 1.5; d < len - 0.8; ) {
+      const s = at(d, side);
+      if (!s) {
+        d += 0.5;
+        continue;
+      }
+      out.lanterns.push(s);
+      side = -side as 1 | -1;
+      d += Math.max(2.5, len / 12);
+    }
+  }
+  if (crowd) {
+    const side: 1 | -1 = level.id % 2 ? -1 : 1;
+    for (let d = 1, n = 0; d < Math.min(len - 1, 7) && n < 3; d += 0.75) {
+      const s = at(d, side);
+      if (!s) continue;
+      out.vans.push(s);
+      n++;
+      d += 0.25;
+    }
+    for (let d = Math.max(4.5, len * 0.25); d < len - 1.5; ) {
+      const s = at(d, (out.people.length % 2 ? 1 : -1) as 1 | -1);
+      if (!s) {
+        d += 0.5;
+        continue;
+      }
+      out.people.push(s);
+      d += Math.max(3, len / 6);
+    }
+  }
+  return out;
 }

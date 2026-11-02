@@ -3,7 +3,7 @@
 // the level id, so a level always looks the same and nothing needs downloading.
 
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
-import { paintLandmarks } from "./landmarkart";
+import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 
 export type Decor =
   | "oak"
@@ -341,6 +341,7 @@ export function paintBackground(
   paintLandmarks(ctx, level, L);
   paintDecor(ctx, level, L, theme, rand);
   paintGate(ctx, level, L);
+  paintTwistDressing(ctx, level, L);
 
   // Light and vignette.
   ctx.globalAlpha = theme.lightAlpha;

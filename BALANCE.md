@@ -122,3 +122,6 @@ HeuristicBot, normal difficulty, the recommended pair, seeds 1-1000 per layout (
 | The Delta (7, river) | 10.8% | 8.9 | 0 |
 
 Both within 10 points, but the Coast's games end about 2.6 rounds sooner. The likely cause (not yet checked) is that ten regions start with ten Outlets, so the Lost Land track runs out faster. Check the loss reasons and run MCTS before the Daily Market uses the Coast.
+
+## 2026-11-02 Hedgerow plan item 43: `hedgerow-tune.ts --verify` with landmarks, levels 1-100
+Run at `c832191` (landmarks and `untwin` from `c681984` on every level; level 50 a raised bank only). Every level's shipped `START_K` gives the best bot a clean win (50%+ Goodwill): `tuning.ts` came out unchanged, so no re-fit was needed. The night and crowd dressing added after it is drawing only (lane verges), so it doesn't touch the fight.

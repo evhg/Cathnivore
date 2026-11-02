@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { isPlot, landmarkAt, landmarks, laneCellsOf, newGame, place, plotKind } from "../games/hedgerow/src/engine";
-import { LANDMARKS, landmarkKinds } from "../games/hedgerow/src/landmarks";
+import { LANDMARKS, landmarkKinds, twistDressing, VERGE } from "../games/hedgerow/src/landmarks";
 
 const plots = (lv: (typeof LEVELS)[number]) => {
   const s = new Set<string>();
@@ -71,6 +71,31 @@ describe("hedgerow landmarks", () => {
     for (const [bc, br] of landmarks(bank).find((m) => m.type === "bank")!.cells) {
       expect(isPlot(bank, bc, br)).toBe(true);
       expect(plotKind(bank, bc, br)).toBe("high");
+    }
+  });
+
+  it("twists change the ground: night lanterns and crowd vans stand on the lane's outer verge", () => {
+    const night = LEVELS.filter((l) => l.twists?.includes("night"));
+    const crowd = LEVELS.filter((l) => l.twists?.includes("crowd"));
+    expect(night.length).toBeGreaterThan(3);
+    expect(crowd.length).toBeGreaterThan(3);
+    for (const lv of night) expect(twistDressing(lv).lanterns.length, `level ${lv.id}`).toBeGreaterThanOrEqual(4);
+    for (const lv of crowd) {
+      const d = twistDressing(lv);
+      expect(d.vans.length, `level ${lv.id}`).toBeGreaterThanOrEqual(2);
+      expect(d.people.length, `level ${lv.id}`).toBeGreaterThanOrEqual(2);
+    }
+    // Dressing only: a plain level has none, and every spot is on a lane cell, its outer side not more lane.
+    expect(twistDressing(LEVELS.find((l) => !l.twists?.length)!)).toEqual({ lanterns: [], vans: [], people: [] });
+    for (const lv of [...night, ...crowd]) {
+      const lane = laneCellsOf(lv);
+      const d = twistDressing(lv);
+      for (const s of [...d.lanterns, ...d.vans, ...d.people]) {
+        expect(lane.has(`${Math.floor(s.x)},${Math.floor(s.y)}`), `level ${lv.id} at ${s.x},${s.y}`).toBe(true);
+        const ox = s.x + s.side * Math.sin(s.angle) * (1 - VERGE);
+        const oy = s.y - s.side * Math.cos(s.angle) * (1 - VERGE);
+        expect(lane.has(`${Math.floor(ox)},${Math.floor(oy)}`), `level ${lv.id} outer side`).toBe(false);
+      }
     }
   });
 });

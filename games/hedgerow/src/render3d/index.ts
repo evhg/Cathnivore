@@ -33,7 +33,7 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight, actMood, matte } from "./palette";
+import { actLight, actMood, matte, nightLight } from "./palette";
 import { fordMiddle } from "../landmarks";
 import { buildCath, dressCath, buildEnemy, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
@@ -374,7 +374,7 @@ export class Renderer3D {
     this.birds = null;
     this.world.clear();
     this.clearDynamic();
-    const L = actLight(game.level.id);
+    const L = hasTwist(game.level, "night") && game.level.id <= 90 ? nightLight(actLight(game.level.id)) : actLight(game.level.id);
     this.ground = buildGround(game.level);
     this.world.add(this.ground.group);
     this.buildAir(game);
@@ -395,12 +395,12 @@ export class Renderer3D {
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
     const night = hasTwist(game.level, "night") || game.level.id > 90;
     this.renderer.toneMappingExposure =
-      L.exposure * (hasTwist(game.level, "night") ? 0.9 : 1) * (game.level.id > 90 ? 1.25 : 1) * (setPiece(game.level, "blackout") ? 0.55 : 1);
+      L.exposure * (game.level.id > 90 ? 1.25 : 1) * (setPiece(game.level, "blackout") ? 0.55 : 1);
     this.hemi.color.set(L.hemiSky);
     this.hemi.groundColor.set(L.hemiGround);
     this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.65);
     this.sun.color.set(L.sun);
-    this.sun.intensity = L.sunIntensity * 1.25 * (hasTwist(game.level, "night") ? 0.75 : hasTwist(game.level, "rain") ? 0.7 : 1);
+    this.sun.intensity = L.sunIntensity * 1.25 * (hasTwist(game.level, "rain") ? 0.7 : 1);
     // Night: a cool moon fills in from the back so everything still reads.
     this.rim.color.set(night ? "#8fb0ff" : "#9fc4ff");
     this.rim.position.set(game.level.cols / 2, 6, -8);

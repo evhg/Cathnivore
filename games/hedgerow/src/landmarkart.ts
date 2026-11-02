@@ -4,7 +4,7 @@
 // Drawn from above at a slight tilt, in the field's own flat-with-ink style: soft shadow, fill, dark edge.
 
 import { enemyPoint, landmarks, type LandmarkKind, type Level } from "./engine";
-import { fordMiddle } from "./landmarks";
+import { fordMiddle, twistDressing } from "./landmarks";
 
 type Ctx = CanvasRenderingContext2D;
 const INK = "#2b2320";
@@ -480,3 +480,87 @@ const PAINT: Record<LandmarkKind, Painter> = {
     }
   },
 };
+
+/**
+ * Twists change the ground (plan item 43): a Night field is dusk-blue with lanterns along the lane casting
+ * warm pools; a Crowd field has the crowd's vans parked on the verge by the gate and knots of people with
+ * placards down the lane. Painted after the decor, under the light and vignette.
+ */
+export function paintTwistDressing(ctx: Ctx, level: Level, L: { offX: number; offY: number; cell: number; width: number; height: number }): void {
+  const night = level.twists?.includes("night") ?? false;
+  const d = twistDressing(level);
+  const s = L.cell;
+  const X = (x: number) => L.offX + x * s;
+  const Y = (y: number) => L.offY + y * s;
+  for (const [i, v] of d.vans.entries()) {
+    ctx.save();
+    ctx.translate(X(v.x), Y(v.y));
+    ctx.rotate(v.angle);
+    shadow(ctx, s * 0.03, s * 0.06, s * 0.26, s * 0.14, 0.25);
+    const col = ["#e8742c", "#f2efe6", "#c9512b"][i % 3]!;
+    inked(ctx, col, s, () => ctx.roundRect(-s * 0.24, -s * 0.11, s * 0.36, s * 0.22, s * 0.03));
+    inked(ctx, col, s, () => ctx.roundRect(s * 0.12, -s * 0.1, s * 0.13, s * 0.2, s * 0.04));
+    ctx.fillStyle = "#2f3d4a";
+    ctx.fillRect(s * 0.17, -s * 0.08, s * 0.05, s * 0.16);
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(-s * 0.2, -s * 0.08, s * 0.28, s * 0.04);
+    ctx.restore();
+  }
+  const coats = ["#4a5a7a", "#7a4a3a", "#3e5a44", "#6a5a8a", "#8a6a3a"];
+  const signs = ["#f4ecd8", "#e8742c", "#f4ecd8"];
+  for (const [k, p] of d.people.entries()) {
+    const nx = p.side * Math.sin(p.angle);
+    const ny = -p.side * Math.cos(p.angle);
+    for (let j = 0; j < 4; j++) {
+      const along = (j - 1.5) * 0.2;
+      const back = 0.1 + (j % 2) * 0.1;
+      const x = X(p.x + Math.cos(p.angle) * along + nx * back);
+      const y = Y(p.y + Math.sin(p.angle) * along + ny * back);
+      shadow(ctx, x + s * 0.03, y + s * 0.06, s * 0.09, s * 0.045, 0.25);
+      inked(ctx, coats[(k * 4 + j) % coats.length]!, s, () => ctx.ellipse(x, y, s * 0.08, s * 0.07, 0, 0, Math.PI * 2), 0.025);
+      inked(ctx, "#e0b48c", s, () => ctx.arc(x, y - s * 0.055, s * 0.045, 0, Math.PI * 2), 0.02);
+      if (j % 2 === 0) {
+        ctx.strokeStyle = "#6b4a2c";
+        ctx.lineWidth = Math.max(1.5, s * 0.018);
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.06, y);
+        ctx.lineTo(x + s * 0.06, y - s * 0.18);
+        ctx.stroke();
+        inked(ctx, signs[(k + j) % signs.length]!, s, () => ctx.rect(x - s * 0.02, y - s * 0.28, s * 0.16, s * 0.1), 0.02);
+      }
+    }
+  }
+  if (night) {
+    // Dusk over the whole field, then the lanterns' warm pools punched back through it.
+    ctx.save();
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = "#5c6aa8";
+    ctx.fillRect(0, 0, L.width, L.height);
+    ctx.globalCompositeOperation = "screen";
+    for (const l of d.lanterns) {
+      const g = ctx.createRadialGradient(X(l.x), Y(l.y), 0, X(l.x), Y(l.y), s * 1.1);
+      g.addColorStop(0, "rgba(255,190,110,0.75)");
+      g.addColorStop(0.45, "rgba(255,160,80,0.25)");
+      g.addColorStop(1, "rgba(255,150,70,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(X(l.x) - s * 1.2, Y(l.y) - s * 1.2, s * 2.4, s * 2.4);
+    }
+    ctx.restore();
+  }
+  for (const l of d.lanterns) {
+    const x = X(l.x);
+    const y = Y(l.y);
+    shadow(ctx, x + s * 0.03, y + s * 0.03, s * 0.05, s * 0.025, 0.3);
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = Math.max(1.5, s * 0.025);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - s * 0.22);
+    ctx.stroke();
+    inked(ctx, "#ffd27a", s, () => ctx.roundRect(x - s * 0.04, y - s * 0.3, s * 0.08, s * 0.1, s * 0.015), 0.02);
+    ctx.fillStyle = "#fff4d0";
+    ctx.beginPath();
+    ctx.arc(x, y - s * 0.25, s * 0.02, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
