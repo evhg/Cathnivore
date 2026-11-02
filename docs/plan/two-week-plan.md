@@ -1,8 +1,8 @@
-# Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02)
+# Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
-The items come from two fresh-eyes audits on 2026-11-01. Both were run against `VISION.md` at 390x844, 1440x900 and 844x390, and the screenshots are in that day's session notes. Every item is a whole, player-visible feature. "Size" is a rough count of build sessions.
+The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32: P and D shots of every game, `e2e/screenshots/plan1102`, critiqued against VISION.md). Both were run against `VISION.md` at 390x844, 1440x900 and 844x390, and the screenshots are in that day's session notes. Every item is a whole, player-visible feature. "Size" is a rough count of build sessions.
 
 **Rules for every item**
 - **Slices:** ship it in slices. Each slice builds, passes its targeted tests, is shot before and after at 390x844 and 1440x900 (plus 844x390 for NIGHT SHIFT and Hedgerow), and is pushed to `build`. A slice never leaves a game half-broken.
@@ -353,6 +353,106 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Cath is in frame on the gate at P, D and L.
   - The gate still works without WebGL (falls back to today's card).
   - Shots at P, D and L.
+- **Size:** 2
+
+## 25. [ ] Cathnivore: conglomerate cards that point at the board
+- **Why:** the Plan cards read "Squeeze —", "Expand Pasture", "Scout —" (`cathnivore-game-D`, `-P`, `-L`, planning shots 2026-11-02). The player can't see what Pell and Vane hit next or where, which breaks "no mystery waits" (VISION 2, 4).
+- **Build:**
+  - Each card names its target region(s) and effect in words ("Squeeze → Saltmarsh, −2 Trust"), from one `planPreview()` in the rules layer.
+  - Hover, focus or a tap on a card ghosts its targets on the board: an outline in the conglomerate's colour and a dotted arc from its HQ (item 11).
+  - An empty card says why ("Squeeze arms in round 3"), never a bare dash.
+  - Reduced motion: a static outline, no arc draw.
+- **Accept:**
+  - e2e at P and D: focusing each plan card marks exactly the hexes the rules target (`data-threat`).
+  - Unit test: card text matches `planPreview()` over 20 seeds; no card renders a bare "—".
+  - Shots P, D and dark.
+- **Size:** 2
+
+## 26. [ ] NIGHT SHIFT: Cath's own hands, and a weapon inspect
+- **Why:** in first person the viewmodel is a gun and a generic black glove (`cathode-hud-D`, `-L`); nothing on screen says this is Cath (CLAUDE.md: Cath is the face of every game).
+- **Build:**
+  - First-person sleeves from her worn coat (wardrobe, item 16), a cuff, a fine gold bracelet and painted nails, sharing materials with the item-9 hero model.
+  - An inspect action (I, or a long press on the weapon chip) that turns the gun toward the light, per class.
+  - An idle sway per class that respects reduced motion.
+- **Accept:**
+  - Unit test: the viewmodel picks its sleeve material from the wardrobe save.
+  - e2e: `input.forced = {inspect: true}` plays the inspect.
+  - Phone-tier draw calls stay within the perf gate (`cathode-perf`).
+  - Shots D and L per weapon class.
+- **Size:** 2
+
+## 27. [ ] Hedgerow: story scenes on a full stage
+- **Why:** Hedgerow's story is a 640 px modal over the dimmed map with small busts (`hedgerow-story-D`); at L the faces crop to slivers (`hedgerow-story-L`). Cathnivore's scenes got a full stage in item 5; Hedgerow's still read as a dialog box (VISION 5).
+- **Build:**
+  - A full-viewport scene: the act's painted ground as the backdrop, Cath and the speaker at half length, panel-wipe entrances and a pose per line (item 23's poses).
+  - Landscape: figures either side of a centred text band.
+  - Speaker plates name the speaker, not the act or the game.
+- **Accept:**
+  - e2e at P, D and L: each speaker's figure is at least 50% of the viewport height and its face box isn't clipped.
+  - Keyboard Next and Skip work; reduced motion uses fades only.
+  - Shots of every act's opener at P, D and L.
+- **Size:** 2
+
+## 28. [ ] Cathnivore: a market table where the day passes
+- **Why:** the board sits on a flat beige panel (`cathnivore-game-D`, `-D-dark`), and rounds 1 to 10 look the same. The table should be a place (VISION 1, 4).
+- **Build:**
+  - The board surround as a trestle table: a wood edge, a tablecloth hem, crates, and a drawing of Bea's pinned at a corner (SVG, inside the CSP).
+  - The light moves from dawn to dusk over the rounds (`lightFor(round)`); dark theme is lanterns at night, not an inversion.
+  - A short round-turn moment: the light sweeps the table as the round ticks over.
+  - Life on liberated hexes (bunting, chimney smoke, a bird), still under reduced motion.
+- **Accept:**
+  - e2e: the table's light token differs between round 1 and round 5.
+  - `e2e/board-diorama.spec.ts` (board 72% of 1440) and the greyscale check still pass.
+  - Shots of rounds 1, 5 and 10 at P and D.
+- **Size:** 2
+
+## 29. [ ] NIGHT SHIFT: a HUD that guides without clutter
+- **Why:** the HUD shows a health bar and the job name over an empty rule (`cathode-hud-D`); there's no ammo, no bearing to the objective, no hit direction, and at L Cath's subtitle sits over the crosshair (`cathode-hud-L`).
+- **Build:**
+  - A thin compass tape at the top with a red-pencil objective tick (and the lieutenant once known, item 14).
+  - The weapon block: name and rounds in the HUD's figures face.
+  - Hit-direction ink smears; a low-health vignette (none under reduced motion).
+  - Subtitles in a low band that never covers the middle 30% of the screen.
+- **Accept:**
+  - DOM check at L and D: the subtitle box doesn't meet the central 30% rectangle.
+  - e2e: the compass tick is within 5° of the computed bearing; the round count drops on fire.
+  - Shots D and L; the type lints (C13T) pass.
+- **Size:** 2
+
+## 30. [ ] Runnel: a crisp board, and the stats as a proper sheet
+- **Why:** weather shadows smear grey ellipses over the tiles and the channels are tan on tan (`runnel-puzzle-P`, `-D`, `-P-dark`); at D the board is an island in empty paper. The stats sheet's tiles stack in a skewed column over the 28-day grid (`runnel-stats-P`, `-D`).
+- **Build:**
+  - Cloud shadows down to a faint drift that never darkens a channel; channels inked at 3:1 or more against their tile.
+  - At D, a farm frame around the board (a hedge border, the spring house, Bea's garden) with a stats rail.
+  - The stats sheet as a grid: six tiles in two rows of three, then the 28 days.
+- **Accept:**
+  - Unit test: channel against tile contrast at least 3:1 in light and dark.
+  - The board is at least 55% of 1440; no stats tile overlaps the grid (e2e, P and D).
+  - Shots of puzzle, win and stats at P, D and dark; greyscale legible.
+- **Size:** 2
+
+## 31. [ ] Hedgerow: a tower almanac in the tray, and Cath's field notebook
+- **Why:** the build tray shows unnamed icons with a price (`hedgerow-field-P`, `-D`), and the desktop side column is empty below "Coming up". Players can't learn the towers in place.
+- **Build:**
+  - Tray cards with name, role glyph and range and damage pips; hover or long-press draws the range ring on the field before placing.
+  - The empty column becomes Cath's notebook: the selected tower's tier path (item 19), sell value, and a sketch of the next new enemy.
+  - At P the notebook opens in the tray-peek drawer.
+- **Accept:**
+  - e2e at D: no empty band taller than 120 px in the side column.
+  - Hovering a tray card draws a ring whose radius equals the tower's range (e2e).
+  - The 75% field checks (items 10, 19) still pass; shots P, D and L.
+- **Size:** 2
+
+## 32. [ ] Cathnivore: chapter 2 taught on the board
+- **Why:** owner feedback 2026-11-02 wants the campaign taught "baby step by baby step"; the owner's coach covers chapter 1 only, and chapter 2 still uses the old prompt strip (FEEDBACK).
+- **Build:**
+  - The spotlight coach (`src/content/tutorial.ts`, `TutorialCoach.tsx`) scripts chapter 2's first round: the new idea it brings, shown by doing it, with Cath's what and why.
+  - The old prompt strip is retired from the campaign once both chapters are coached.
+  - Skip, replay and resume as chapter 1.
+- **Accept:**
+  - e2e: a fresh save walks chapter 2's script to free play at P and D.
+  - A reload mid-script resumes on the same step (e2e).
+  - Shots of each step at P.
 - **Size:** 2
 
 ---

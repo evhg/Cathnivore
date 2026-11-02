@@ -71,8 +71,10 @@ if (want('landing')) {
 // ---- Runnel ----
 if (want('runnel')) {
   let s = await fresh('/runnel/')
-  await shoot(s.page, 'runnel-help', PLD, { dir, variants: ['light', 'dark'] })
-  await s.page.getByRole('button', { name: 'Start' }).click()
+  // A fresh profile opens on Cath's lesson (plan item 22), not a rules modal.
+  await shoot(s.page, 'runnel-first', PLD, { dir, variants: ['light', 'dark'] })
+  await s.page.goto(base + '/runnel/?nohelp')
+  await s.page.waitForTimeout(600)
   await shoot(s.page, 'runnel-puzzle', PLD, { dir, variants: ['light', 'dark', 'reduced'] })
   report.fonts.runnel = await fontOf(s.page, '#hud-taps')
   report.contrast.runnel = await contrastWalk(s.page)

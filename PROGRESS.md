@@ -3,8 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **Plan items 20 and 21 done (2026-11-02 08:51 session).** Only item 23 (Cath's poses) is open, so per CLAUDE.md step 4 the next session is a **planning** session: shoot every game at P and D, subagent critique against VISION.md, add whole features to the plan. Item 23 can follow.
-- `e2e/disabled-actions.spec.ts:53` fixed (it hard-coded 3 cards still short after two Grafts; now derived from each card's shortfall, and it closes its tooltip before grafting). `npm run check` green (1947). Known flakes under load: `e2e/tutorial.spec.ts` "walks chapter 1" on phone; `e2e-site/site.spec.ts` "plan item 10" tally on phone.
+- **2026-11-02 09:51 session: planning** (one plan item open): shoot every game at P and D, subagent critique against VISION.md, add whole features to the plan as items 25+, then start item 23 (Cath's poses).
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
 
