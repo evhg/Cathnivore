@@ -1748,3 +1748,117 @@ html.no-animations .cath-companion .cameo {
   :root:not([data-theme='light']) .tile-bevel { stroke-opacity: .12; }
 }
 :root[data-theme='dark'] .tile-bevel { stroke-opacity: .12; }
+
+/* ---- plan item 21 (slice 1): on a phone the actions are a hand of cards docked under the board ----
+   One row of upright cards, grouped by kind behind a small spine label (Sell, Invest, Play), fanned a
+   degree either way and lifted when touched or focused. The row scrolls sideways inside the dock, so the
+   page never scrolls to reach an action and no "n more" pill is needed. Same buttons, same names. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--sp-2);
+    flex: none;
+    height: 136px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 12px var(--sp-2) 10px;
+    margin: -4px calc(-1 * var(--sp-2)) 0;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--sp-2);
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, transparent, black 10px, black calc(100% - 28px), transparent);
+  }
+
+  .action-tray .actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .action-tray .actions > p {
+    flex: 1 1 auto;
+    align-self: center;
+    min-width: 0;
+  }
+
+  .action-tray .actions > button {
+    flex: none;
+    align-self: center;
+  }
+
+  .action-tray .actions .action-head {
+    flex: none;
+    align-self: stretch;
+    margin: 0;
+    padding: 4px 0;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    text-align: center;
+    border-left: 1px solid var(--ink-a15);
+    padding-left: 4px;
+    scroll-snap-align: start;
+  }
+
+  .action-tray .actions .action-item {
+    flex: none;
+    width: 104px;
+    height: 112px;
+    scroll-snap-align: start;
+    rotate: -1.2deg;
+    transition: translate var(--dur-1) var(--ease-out), rotate var(--dur-1) var(--ease-out);
+  }
+
+  .action-tray .actions .action-item:nth-child(even) {
+    rotate: 1.2deg;
+  }
+
+  .action-tray .actions .action-item:focus-within,
+  .action-tray .actions .action-item:active {
+    z-index: var(--z-lift);
+    rotate: 0deg;
+    translate: 0 -6px;
+  }
+
+  .action-tray .actions .action-item > button:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    min-height: 0;
+    height: 100%;
+    padding: 9px 8px 8px;
+    border-radius: var(--r-card);
+  }
+
+  .action-tray .actions .action-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-weight: 700;
+  }
+
+  .action-tray .actions .action-label svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .action-tray .actions .action-label-group {
+    gap: 6px;
+  }
+
+  .action-tray .actions .action-why-not {
+    white-space: normal;
+  }
+
+  .action-tray .actions .action-item > .tooltip-trigger {
+    top: 8px;
+    right: 8px;
+    translate: none;
+  }
+
+  /* the dock's card faces: unaffordable cards dim (their cost chip and reason stay) */
+  .action-tray .actions .action-item > button:disabled {
+    opacity: .72;
+  }
+}
