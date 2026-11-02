@@ -3,6 +3,7 @@
 // transform-driving custom properties (--v, --trail, --px, --gap), opacity and classes, and writes text only
 // when it changed, so a steady frame does no layout. Blood red is danger, cyan is system, amber is reward.
 
+import { wrap } from "./compass";
 import { tuning, type HitClass } from "../game/feel/tuning";
 import { bustForBanner, bustSvg } from "./busts";
 import { BINDABLE, codesFor, keyLabel, rebind } from "../controls";
@@ -60,6 +61,8 @@ export interface HudState {
   defence?: string;
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
   waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
+  /** Plan item 29: her heading (radians clockwise from north) and the objective's place on the compass tape. */
+  compass?: { heading: number; tick: { x: number; off: boolean } | null } | null;
   /** Aiming down the sights (the objective marker steps back, S7.2). */
   ads?: boolean;
   /** The aim-down-sights blend, 0 hip .. 1 aimed: the crosshair fades out as the sights (or the dot) take over (S2.2 layer 1). */
@@ -129,6 +132,9 @@ export class Hud {
   private threats: HTMLElement;
   private feed: HTMLElement;
   private objective: HTMLElement;
+  private compassEl: HTMLElement;
+  private compassPts: HTMLElement[] = [];
+  private compassTick: HTMLElement;
   private objText: HTMLElement;
   private prompt: HTMLElement;
   private promptKey: HTMLElement;
@@ -169,6 +175,17 @@ export class Hud {
     const tl = el("div", "hud-tl", this.root);
     const tr = el("div", "hud-tr", this.root);
     this.objective = el("p", "hud-objective", tl);
+    // Plan item 29: a thin compass tape at the top centre, the points of the compass sliding under a fixed
+    // centre notch, with a red-pencil tick for the objective (an arrow at the tape's end when it's behind her).
+    this.compassEl = el("div", "hud-compass", this.root);
+    this.compassEl.setAttribute("aria-hidden", "true");
+    el("span", "hud-compass-notch", this.compassEl);
+    for (const label of ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]) {
+      const pt = el("span", label.length === 1 ? "hud-compass-pt cardinal" : "hud-compass-pt", this.compassEl);
+      pt.textContent = label;
+      this.compassPts.push(pt);
+    }
+    this.compassTick = el("span", "hud-compass-tick", this.compassEl);
     this.objective.dataset.case = "Case";
     this.objText = el("span", "hud-objective-text", this.objective);
     // Vitals, bottom left (top left on touch): name and level, hero HP over a segmented bar, armour, XP.
@@ -480,6 +497,23 @@ export class Hud {
       this.wpDist = el("span", "hud-wp-dist num", this.wp);
     }
     this.show(this.wp, !!s.waypoint);
+    this.show(this.compassEl, !!s.compass);
+    if (s.compass) {
+      const span = Math.PI / 3;
+      this.compassPts.forEach((pt, i) => {
+        const rel = wrap((i * Math.PI) / 4 - s.compass!.heading);
+        const on = Math.abs(rel) <= span;
+        pt.classList.toggle("off", !on);
+        if (on) pt.style.setProperty("--x", (rel / span).toFixed(3));
+      });
+      const t = s.compass.tick;
+      this.show(this.compassTick, !!t);
+      if (t) {
+        this.compassTick.style.setProperty("--x", t.x.toFixed(3));
+        this.compassTick.classList.toggle("behind", t.off);
+        this.compassTick.dataset.x = t.x.toFixed(3);
+      }
+    }
     this.wpPulse = Math.max(0, this.wpPulse - dt);
     if (s.waypoint) {
       const w = s.waypoint;

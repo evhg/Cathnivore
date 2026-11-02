@@ -1,6 +1,7 @@
 // One play session: builds the world, puts Cath in it and runs the frame loop that ties everything
 // together: input, movement, weapons, combat, enemies, stealth, the kill-cam, bullet-time, XP and the HUD.
 
+import { headingOf, tapeTick } from "../ui/compass";
 import { openPhotoMode } from "../ui/photomode";
 import { calmCameraOn, damageFxLevels, loadPrefs } from "../prefs";
 import * as THREE from "three";
@@ -2466,6 +2467,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         const pickup = pickupPrompt(realDt, intent.look);
         return { pickup, waypoint: pickup ? null : waypoint() };
       })(),
+      compass: inOffice ? null : compass(),
       ads: arsenal.aiming,
       adsBlend: arsenal.weapon.kind === "melee" ? 0 : arsenal.anim.aim,
       // Inspecting or reloading, the gun is the subject and the crosshair steps aside.
@@ -2881,8 +2883,18 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   const wpScratch = new THREE.Vector3();
   /** The objective on screen, for the waypoint diamond. */
+  /** Where the current objective is in the world, if there is one (plan item 29: the compass tick too). */
+  function objectiveAt(): THREE.Vector3 | null {
+    return job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target ?? null;
+  }
+  /** Plan item 29: her heading and the objective's tick on the compass tape. */
+  function compass(): { heading: number; tick: { x: number; off: boolean } | null } {
+    const heading = headingOf(player.yaw);
+    const t = dead || stageQuiet ? null : objectiveAt();
+    return { heading, tick: t ? tapeTick(heading, player.pos, t) : null };
+  }
   function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
-    const t = job?.target ?? crisp?.target ?? quay?.target ?? manifest?.target ?? crispBoss?.target ?? vaneLead?.target ?? vaneBoss?.target ?? pellLead?.target ?? pellBoss?.target ?? boardLead?.target ?? boardBoss?.target ?? vaultLead?.target ?? vaultBoss?.target ?? wanted?.target ?? side?.target;
+    const t = objectiveAt();
     if (!t || dead || stageQuiet) return null;
     // The diamond floats 1.2 m over the objective; over the first gun's case it rides above the beacon's shaft, so
     // the beam reads whole under it instead of being capped by the marker.

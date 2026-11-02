@@ -2098,3 +2098,54 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 .touch.in-office [data-btn="focus"] {
   display: none;
 }
+
+/* Plan item 29: the compass tape. A hairline at the top centre with the points sliding along it; the tick is
+   the objective in red pencil, an arrow at the end when it's behind her. Positions come from --x (-1..1). */
+.hud-compass {
+  position: absolute;
+  top: var(--edge-t);
+  left: 50%;
+  width: min(calc(var(--u) * 420), 34vw);
+  height: calc(var(--u) * 26);
+  translate: -50% 0;
+  border-bottom: 1px solid var(--line-2);
+  mask-image: linear-gradient(90deg, transparent, var(--ink) 10%, var(--ink) 90%, transparent);
+  pointer-events: none;
+  text-shadow: var(--hud-shadow);
+}
+.hud-compass-notch {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1px;
+  height: calc(var(--u) * 8);
+  background: var(--ink);
+}
+.hud-compass-pt {
+  position: absolute;
+  left: calc(50% + var(--x, 0) * 50%);
+  bottom: calc(var(--u) * 6);
+  translate: -50% 0;
+  font: 500 var(--fs-1)/1 var(--font-ui);
+  letter-spacing: .06em;
+  color: var(--ink-3);
+}
+.hud-compass-pt.cardinal { color: var(--ink); font-weight: 600; }
+.hud-compass-pt.off { visibility: hidden; }
+.hud-compass-tick {
+  position: absolute;
+  left: calc(50% + var(--x, 0) * 50%);
+  bottom: -1px;
+  width: max(2px, calc(var(--u) * 2));
+  height: calc(var(--u) * 12);
+  translate: -50% 0;
+  background: var(--blood-hot);
+}
+.hud-compass-tick.behind {
+  left: calc(50% + var(--x, 0) * 42%);
+  width: 0;
+  height: 0;
+  background: none;
+  border: calc(var(--u) * 5) solid transparent;
+  border-bottom-color: var(--blood-hot);
+}
