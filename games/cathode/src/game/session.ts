@@ -70,6 +70,7 @@ import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
 import { flinchImpulse } from "./anim/springs";
+import { clearance, wallPin } from "./talkpin";
 import { choose, talked, talkFor, TALK_BEATS, type DistrictName, type TalkBeat } from "../sim/talk";
 import { SLICE_WEAPONS } from "./weapons";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -1598,16 +1599,29 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     // The phone tier is the low one: it keeps the plate (and doesn't build a second figure mid-street).
     if (o.quality === "phone" || reduceMotionOn()) return false;
     const kit = talkKit ?? ltKinds[0]!;
-    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-    const side = new THREE.Vector3(-fwd.z, 0, fwd.x);
-    const her = new THREE.Vector3(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
-    const him = her.clone().addScaledVector(fwd, 1.15);
+    // She has him pinned to the nearest wall in reach (game/talkpin.ts); in the open they stand face to face.
+    const stand = new THREE.Vector3(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
+    const pin = wallPin(stand, world.colliders);
+    const fwd = pin ? pin.toWall : new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const her = pin ? pin.her : stand;
+    her.y = ground(her.x, her.z);
+    const him = pin ? pin.him : her.clone().addScaledVector(fwd, 1.15);
     him.y = ground(him.x, him.z);
+    // The lens goes off her right (she on the left of frame) unless that side is the tighter one; it backs off
+    // whatever wall is behind it.
+    const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
+    const mid = her.clone().lerp(him, 0.5);
+    const eye = mid.clone().setY(her.y + 1.5);
+    const roomR = clearance(eye, right, world.colliders);
+    const roomL = clearance(eye, right.clone().negate(), world.colliders);
+    const flip = roomR < 2.2 && roomL > roomR;
+    const side = flip ? right.negate() : right;
+    const reach = Math.max(1.3, Math.min(2.35, (flip ? roomL : roomR) - 0.35));
     const cath = buildFrontCath(false);
     // Under a roof (the clinic, the tower, the vault) the umbrella is furled in her fist.
     cath.indoors(inClinic || inTower || inVault);
     cath.group.position.copy(her);
-    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z) - 1.0; // three-quarter to the lens
+    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z) + (flip ? 1.0 : -1.0); // three-quarter to the lens
     world.scene.add(cath.group);
     const guy = new Enemy({ ...kit, role: kit.role === "shield" ? "rifle" : kit.role }, [him.clone()], 1);
     guy.motion.pos.copy(him);
@@ -1618,8 +1632,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     for (let k = 0; k < 90; k++) guy.feel(1 / 60, [], () => him.y);
     guy.body.pose();
     // The lens: off her right side, back past her shoulder, at chest height, looking between them (she on the left).
-    const mid = her.clone().lerp(him, 0.5);
-    const from = mid.clone().addScaledVector(side, 2.35).addScaledVector(fwd, -0.55).setY(her.y + 1.5);
+    const from = mid.clone().addScaledVector(side, reach).addScaledVector(fwd, -0.55).setY(her.y + 1.5);
     const at = mid.clone().addScaledVector(side, 0.1).setY(her.y + 1.38);
     talkShot = { cath, guy, from, at };
     talkCam.mode = "two-shot";
@@ -4132,7 +4145,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (benchLight) benchLight.intensity = benchCam ? 6 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
       if (talkShot) talkShot.cath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
-        if (talkShot) talkShot.guy.feel(1 / 60, [], ground);
+        if (talkShot) talkShot.guy.feel(1 / 60, world.colliders, ground);
       // On the bench the gun is lit like a product shot: the street's neon (the window's pink key, the pooled
       // lights and the pink environment) steps back for this render so the gun keeps its own finish under a neutral key.
       const envI = world.scene.environmentIntensity;
