@@ -16,6 +16,8 @@ export interface Intent {
   alt: boolean;
   reload: boolean;
   takedown: boolean;
+  /** Plan item 26: turn the gun to the light (I, or a long press on the weapon chip). */
+  inspect: boolean;
   lean: -1 | 0 | 1;
   /** Weapon slot pressed this frame (0-based), or -1. */
   slot: number;
@@ -46,6 +48,8 @@ export class Input {
   private lookTouch = { id: -1, x: 0, y: 0 };
   private touchHeld = new Set<TouchButton>();
   private touchTapped = new Set<TouchButton>();
+  /** A long press on the HUD's weapon chip asked for the inspect (read once). */
+  inspectAsked = false;
   /** Test and replay hook: fields here override what the devices say for the next read. */
   forced: Partial<Intent> = {};
   sensitivity = 0.0022;
@@ -344,6 +348,7 @@ export class Input {
       alt: this.mouse.middle || k("KeyV"),
       reload: pa("reload") || padReload || tt.has("reload"),
       takedown: pa("takedown") || tt.has("takedown"),
+      inspect: pa("inspect") || this.inspectAsked,
       lean: k("KeyQ") ? -1 : k("KeyE") ? 1 : 0,
       slot,
       cycle: Math.sign(this.wheel) + (tt.has("cycle") ? 1 : 0),
@@ -357,6 +362,7 @@ export class Input {
     };
     Object.assign(intent, this.forced);
     this.forced = {};
+    this.inspectAsked = false;
     this.mouse.x = this.mouse.y = 0;
     this.touchLook.x = this.touchLook.y = 0;
     this.wheel = 0;

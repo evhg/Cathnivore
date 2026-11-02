@@ -11,6 +11,7 @@ import { Spring1, Spring3 } from "./feel/spring";
 import { tuning } from "./feel/tuning";
 import { CamRecoil, DRAW, EMPTY as EMPTY_CLIP, TAC as TAC_CLIP, FIRE, HERO, Heat, PRESS_CHECK, ReloadMachine, channel, impulseForPeak, pullTrigger, startReload, stepReload, track } from "./feel/pistol";
 import { GunSmoke } from "./gunsmoke";
+import { IDLE_SWAY, idleSway, inspectClip, inspectPeak } from "./feel/inspect";
 import { ARSENAL, ClassReload, chan, isHero, recoilPattern, type ClassFeel, type HeroModel } from "./feel/arsenal";
 
 const KF = tuning.kestrel;
@@ -740,10 +741,28 @@ export class Arsenal {
   private readonly shR = new THREE.Vector3();
   private readonly shL = new THREE.Vector3();
 
-  /** Starts the inspect (C5 binds it to a key; the pistol-inspect stage holds a moment of it). */
-  inspect(atMs = 0): void {
-    if (this.busy) return;
+  /** Seconds the idle sway has run (plan item 26). */
+  private idleClock = 0;
+  /** The inspect playing (plan item 26: per class), and its largest turn. */
+  private inspectNow: Clip = INSPECT;
+  private inspectMax = 0.7;
+  /** Inspects started this session (tests read it). */
+  inspects = 0;
+
+  /** Starts the inspect (I, or a long press on the weapon chip; the pistol-inspect stage holds a moment of it). */
+  inspect(atMs = 0): boolean {
+    if (this.busy || this.aiming || this.swingT >= 0) return false;
+    if (atMs === 0 && this.inspectT >= 0) return false;
+    this.inspectNow = this.kestrel ? INSPECT : inspectClip(this.weapon.weaponClass);
+    this.inspectMax = this.kestrel ? 0.7 : inspectPeak(this.inspectNow) * 0.9;
     this.inspectT = atMs / 1000;
+    this.inspects++;
+    return true;
+  }
+
+  /** The inspect is playing now. */
+  get inspecting(): boolean {
+    return this.inspectT >= 0;
   }
 
   get weapon(): WeaponDef {
@@ -1212,6 +1231,14 @@ export class Arsenal {
       r.root.rotation.y += r.hipRot[1] * k;
       r.root.rotation.z += r.hipRot[2] * k;
     }
+    // Plan item 26: her breath and the gun's weight, a slow figure-eight at the hip, per class (none under
+    // reduced motion, almost none aimed: the aim has its own sway).
+    if (!this.freeze) this.idleClock += dt;
+    const sw = idleSway(IDLE_SWAY[def.weaponClass] ?? IDLE_SWAY.pistol, this.idleClock, (1 - a.aim) * (sprint ? 0 : 1), this.reducedMotion);
+    r.root.position.x += sw.x;
+    r.root.position.y += sw.y;
+    r.root.rotation.z += sw.roll;
+    r.root.rotation.x += sw.pitch;
     if (pistol) this.posePistol(this.freeze ? 0 : dt, r);
     else if (hero) this.poseHero(this.freeze ? 0 : dt, r, hero);
     // C6: the hit's jolt, on top of everything the gun is doing.
@@ -1226,10 +1253,13 @@ export class Arsenal {
     if (this.inspectT >= 0) {
       if (this.busy || this.aiming || this.cd > 0 || swinging) this.inspectT = -1;
       else {
+        const t0 = this.inspectT * 1000;
         this.inspectT += dt;
-        if (this.inspectT * 1000 >= INSPECT.dur) this.inspectT = -1;
+        const C = this.inspectNow;
+        if (this.inspectHold < 0) for (const e of eventsBetween(C, t0, this.inspectT * 1000)) this.cues.push(e);
+        if (this.inspectT * 1000 >= C.dur) this.inspectT = -1;
         else {
-          const k = sampleClip(INSPECT, this.inspectT * 1000).root!;
+          const k = sampleClip(C, this.inspectT * 1000).root!;
           // The turn pivots part-way back toward the wrist (C4 review: turning about the slide swung the grip,
           // and with it the whole forearm, into the camera): the hand stays low and right, the gun turns in it.
           const pv = this.pivV.copy(r.gripR.position).multiplyScalar(INSPECT_PIVOT);
@@ -1243,7 +1273,7 @@ export class Arsenal {
           r.root.position.x += k.pos[0];
           r.root.position.y += k.pos[1];
           r.root.position.z += k.pos[2];
-          this.inspectW = Math.min(1, Math.abs(k.rot[1]) / 0.7);
+          this.inspectW = Math.min(1, Math.max(Math.abs(k.rot[1]), this.kestrel ? 0 : Math.abs(k.rot[2])) / this.inspectMax);
         }
       }
     }

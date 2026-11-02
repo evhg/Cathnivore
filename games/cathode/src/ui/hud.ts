@@ -223,6 +223,25 @@ export class Hud {
     // Arms, bottom right (top right on touch): weapon, mag over reserve, skill slots, battery.
     const arms = el("div", "hud-arms", tr);
     this.weapon = el("p", "hud-weapon", arms);
+    // Plan item 26: a long press (450 ms) on the weapon's name turns the gun to the light.
+    {
+      let hold: ReturnType<typeof setTimeout> | null = null;
+      const stop = () => {
+        if (hold) clearTimeout(hold);
+        hold = null;
+        this.weapon.classList.remove("pressing");
+      };
+      this.weapon.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        stop();
+        this.weapon.classList.add("pressing");
+        hold = setTimeout(() => {
+          stop();
+          this.onInspect?.();
+        }, 450);
+      });
+      for (const ev of ["pointerup", "pointercancel", "pointerleave"] as const) this.weapon.addEventListener(ev, stop);
+    }
     this.ammo = el("p", "hud-ammo", arms);
     this.mag = el("span", "hud-mag num", this.ammo);
     this.reserve = el("span", "hud-reserve num", this.ammo);
@@ -891,6 +910,8 @@ export class Hud {
   private wpromptKey = "";
   /** A tap on the world prompt (touch): the session takes the weapon. */
   onTake: (() => void) | null = null;
+  /** A long press on the weapon chip (plan item 26): the session plays the inspect. */
+  onInspect: (() => void) | null = null;
 
   private updatePickup(p: HudState["pickup"]): void {
     if (!p) {

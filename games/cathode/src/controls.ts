@@ -17,6 +17,7 @@ export const BINDABLE: readonly Bindable[] = [
   { id: "jump", label: "Jump / climb", def: ["Space"] },
   { id: "reload", label: "Reload", def: ["KeyR"] },
   { id: "takedown", label: "Takedown", def: ["KeyF"] },
+  { id: "inspect", label: "Inspect weapon", def: ["KeyI"] },
 ];
 
 export type Binds = Record<string, string>;

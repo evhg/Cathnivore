@@ -83,6 +83,7 @@ import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { openBench, type BenchHandle } from "../ui/bench";
 import { openWardrobe } from "../ui/wardrobe";
+import { armDress } from "./armdress";
 import { buildFrontCath, type FrontCath } from "../render/frontcath";
 import { dressGun, drawnSlots, modelForClass } from "./gunparts";
 import { exportCode, makeSave } from "../sim/save";
@@ -602,6 +603,24 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // C11: the paired takedown (her arms in the street, the camera, the target's body script) and its reward orbs.
   const td = new Takedown(world.scene, o.quality === "phone");
   td.castRay = (from, dir, len) => rays.cast(from, dir, len)?.dist ?? null;
+  /** Plan item 26: her sleeves and gloves in first person (and in the takedowns) are what the wardrobe save says. */
+  const dressArms = (): void => {
+    const d = armDress(progress.character.equipment);
+    arsenal.arms.redress(d);
+    td.rig.arms.redress(d);
+  };
+  dressArms();
+  {
+    // Plan item 26 review shots: `&dress=<coat>.<gloves>` (a base id, or "none") dresses her arms for the frame.
+    const dq = o.shot ? new URLSearchParams(location.search).get("dress") : null;
+    if (dq) {
+      const [c, g] = dq.split(".");
+      const it = (b?: string) => (b && b !== "none" ? { base: b } : undefined);
+      const d = armDress({ coat: it(c), gloves: it(g) });
+      arsenal.arms.redress(d);
+      td.rig.arms.redress(d);
+    }
+  }
   const orbs = new Orbs(world.scene, (x, z) => world.groundHeight(x, z));
   const hud = new Hud(o.hud);
   // The case note's eyebrow: the district the job is in ("Case · The Drowned Market").
@@ -1023,6 +1042,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const promptXY = { x: 0, y: 0 };
   // A tap on the prompt (touch) is the same press.
   hud.onTake = () => (input.forced.takedown = true);
+  hud.onInspect = () => (input.inspectAsked = true);
   const actives = new Actives();
   actives.assign(progress.character);
   actives.battery = progress.stats.battery;
@@ -1937,6 +1957,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (intent.cycle && arsenal.scopedIn) arsenal.stepZoom(-intent.cycle);
     else if (intent.cycle) arsenal.cycleOwned(intent.cycle);
     if (intent.reload) arsenal.reload();
+    if (intent.inspect && !dead && !inOffice) arsenal.inspect();
     arsenal.aiming = (intent.aim || arsenal.holdAim) && !dead;
     arsenal.triggerHeld = intent.fire && !dead;
     arsenal.sprinting = intent.sprint && player.speed > 3;
@@ -2612,6 +2633,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       openWardrobe(parent, () => progress.character, (next) => progress.set(next), () => {
         wardOpen = false;
         mirrorCath(false);
+        dressArms();
         back();
       });
     }
@@ -4181,7 +4203,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // reload), and the seven guns side by side. `<model>-fire` also lights the street with the class's flash (the
   // acceptance probes the wet floor), and `heroInfo` carries the parts and probe points for the runner.
   const C18_MODELS: Record<string, string> = { revolver: "oldTestament", smg: "rattlecan", rifle: "corridorAR", shotgun: "fishmonger", sniper: "widowmaker", launcher: "bargainBin" };
-  const C18_RE = /^(revolver|smg|rifle|shotgun|sniper|launcher)-(idle|ads|fire|reload|reload-mid|reload-empty)$/;
+  const C18_RE = /^(revolver|smg|rifle|shotgun|sniper|launcher)-(idle|ads|fire|reload|reload-mid|reload-empty|inspect)$/;
   let gunLineup: THREE.Group | null = null;
   const c18Stage = (name: string, tMs: number): string => {
     // The Kestrel's stage set-up (the street, the calm, the settled gun), then the class.
@@ -4219,6 +4241,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     } else if (moment === "reload" || moment === "reload-mid" || moment === "reload-empty") {
       const at = moment === "reload-mid" ? (f.model === "shotgun" ? 260 + 200 : Math.round(f.tac.dur * 0.45)) : t;
       arsenal.stageHeroReload(moment === "reload-empty" ? "empty" : "tac", at);
+    } else if (moment === "inspect") {
+      // Plan item 26: the class's inspect held `t` ms in.
+      arsenal.inspect(t);
+      arsenal.inspectHold = t;
+      poseOnce(1 / 60);
     }
     arsenal.freeze = true;
     poseOnce(1 / 60);

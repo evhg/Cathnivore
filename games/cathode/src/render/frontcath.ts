@@ -7,6 +7,7 @@
 // Feet on y = 0 at the group's origin, facing +z, +x her left. The group is placed by render/frontscene.ts.
 
 import * as THREE from "three";
+import { CATH_HERO } from "../game/armdress";
 
 export interface FrontCath {
   readonly group: THREE.Group;
@@ -106,7 +107,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // ---- materials (4) ----
   const coatMat = phone
     ? new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.45, metalness: 0 })
-    : new THREE.MeshPhysicalMaterial({ color: 0x1d1f25, roughness: 0.6, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.14, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
+    : new THREE.MeshPhysicalMaterial({ color: CATH_HERO.trench, roughness: 0.6, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.14, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
   // The cloth itself (C13 review: "faceted, no wet"): a gabardine twill and rain running down the drape, baked
   // once into a normal map, so the coat's highlights break up like wet wool instead of shading like plastic.
   const clothNormal = (() => {
@@ -186,7 +187,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     return t;
   })();
   const hairMat = new THREE.MeshPhysicalMaterial({ color: 0x9a8678, map: strands, roughness: 0.38, metalness: 0, sheen: 0.6, sheenRoughness: 0.3, sheenColor: new THREE.Color(0x7a5a48) });
-  const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9ad98, roughness: 0.55, metalness: 0 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: CATH_HERO.skin, roughness: 0.55, metalness: 0 });
   const mats: THREE.Material[] = [coatMat, blackMat, hairMat, skinMat];
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
   // the light, with a cool cyan edge on the far side. The street's real lights add to it; the rim is what

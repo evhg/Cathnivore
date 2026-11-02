@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { FIN, bake, kitMaterials, placeMatrix, sphere, tube, type Finish, type Place } from "./gunkit";
 import { solveTwoBone, boneQuat, type TwoBoneResult } from "./feel/ik";
+import { ARM_SKIN, DEFAULT_DRESS, type ArmDress } from "./armdress";
 
 /** Bone lengths (m): a slim woman's arm, a touch long so the viewmodel reaches comfortably. */
 export const ARM = { upper: 0.31, fore: 0.27 };
@@ -83,7 +84,10 @@ export class Arm {
   constructor(
     readonly side: 1 | -1,
     phone: boolean,
+    readonly dress: ArmDress = DEFAULT_DRESS,
   ) {
+    const D = dress;
+    const bareHand = D.glove === "bare";
     const s = side;
     const all: THREE.Bone[] = [];
     const bone = (name: string, p: [number, number, number], parent?: THREE.Bone) => {
@@ -119,9 +123,10 @@ export class Arm {
      * Adds a piece in bone `b`'s frame. Rigid by default; `skin(i)` instead gives vertex i (in the piece's own,
      * pre-placement order) up to four [bone, weight] pairs, for the digits and the wrist that bend smoothly.
      */
-    const add = (b: THREE.Bone, g: THREE.BufferGeometry, fin: Finish, pl?: Place, skin?: (i: number) => [THREE.Bone, number][]) => {
+    const add = (b: THREE.Bone, g: THREE.BufferGeometry, fin: Finish, pl?: Place, skin?: (i: number) => [THREE.Bone, number][], paint?: (i: number) => Finish | null) => {
       const m = new THREE.Matrix4().multiplyMatrices(b.matrixWorld, placeMatrix(pl));
       const baked = bake(g, fin, m);
+      if (paint) repaint(baked, paint);
       const n = baked.getAttribute("position").count;
       const idx = all.indexOf(b);
       const si = new Uint16Array(n * 4);
@@ -164,39 +169,50 @@ export class Arm {
     // diagonal folds down the forearm and creases at the elbow, with a sunk seam along the underside.
     // The upper arm is on screen in the takedowns (C11 review: "a large flat brown cylinder"): the same gabardine,
     // its folds twisting down to a crease at the elbow, the seam along the underside, no bunching.
-    add(upper, sleeve(ARM.upper + 0.03, 0.05, 0.045, { seg: phone ? 12 : 18, phone, side, elbowAt: 1, bunch: false }), FIN.sleeve, { p: [0, -0.01, 0] });
-    add(fore, sphere(0.044, phone), FIN.sleeve);
-    add(fore, sleeve(ARM.fore - 0.055, 0.045, 0.033, { seg: phone ? 16 : 28, phone, side, elbowAt: 0 }), FIN.sleeve);
+    add(upper, sleeve(ARM.upper + 0.03, 0.05, 0.045, { seg: phone ? 12 : 18, phone, side, elbowAt: 1, bunch: false }), D.sleeveFin, { p: [0, -0.01, 0] });
+    add(fore, sphere(0.044, phone), D.sleeveFin);
+    add(fore, sleeve(ARM.fore - 0.055, 0.045, 0.033, { seg: phone ? 16 : 28, phone, side, elbowAt: 0 }), D.sleeveFin);
     // The turned-back trench cuff: a wider band with a rolled lip, and its button on the outside.
-    add(fore, tube(0.05, 0.0375, 0.04, { seg, caps: false, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.09, 0] });
-    add(fore, tube(0.006, 0.0405, 0.0405, { seg, caps: true, phone }), FIN.sleeve, { p: [0, ARM.fore - 0.044, 0] });
-    add(fore, sphere(0.0062, phone), { color: 0x16171a, metal: 0.2, rough: 0.35, coat: 1 }, { p: [s * 0.026, ARM.fore - 0.065, 0.029] });
+    add(fore, tube(0.05, 0.0375, 0.04, { seg, caps: false, phone }), D.sleeveFin, { p: [0, ARM.fore - 0.09, 0] });
+    add(fore, tube(0.006, 0.0405, 0.0405, { seg, caps: true, phone }), (D.sleeve === "silkLinedCoat" ? LINING : D.sleeveFin), { p: [0, ARM.fore - 0.044, 0] });
+    add(fore, sphere(0.0062, phone), D.buttonFin, { p: [s * 0.026, ARM.fore - 0.065, 0.029] });
     // The cream silk blouse cuff: a soft roll out from under the trench's lip, draping down onto the gauntlet
     // (C5 review: a 2 cm straight cylinder of cream read as a flat white stripe round the wrist).
     add(fore, silkCuff(phone), FIN.silk, { p: [0, ARM.fore - 0.046, 0], s: [1.1, 1, 0.86] });
     if (side < 0) {
       // The pearl bracelet (C4 review: big pearls read as teeth): a strand of small pearls sitting snug on the
       // gauntlet, tucked half under the silk cuff, with a small gold clasp underneath.
-      const n = phone ? 14 : 22;
+      const n = phone ? 14 : 18; // plan item 26: 18 (was 22) pays for the gold chain on the other wrist
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
         add(fore, sphere(0.0031, true), FIN.pearl, { p: [Math.cos(a) * 0.0281, ARM.fore - 0.0215 + Math.sin(a * 2) * 0.0007, Math.sin(a) * 0.0281] });
       }
       add(fore, sphere(0.0028, phone), FIN.gold, { p: [0, ARM.fore - 0.0215, -0.0298], s: [1.4, 0.9, 0.8] });
+    } else {
+      // Plan item 26: a fine gold chain on the firing wrist, a little loose so it rides down onto the glove,
+      // with a tiny leaf charm (her necklace's leaf, VISION's character bible) hanging on the outside.
+      // One thin torus (a bead chain cost 2.5k triangles): it tips a little toward the back of the wrist.
+      const R = bareHand ? 0.0262 : 0.0284;
+      const chain = new THREE.TorusGeometry(R, 0.00115, 4, phone ? 18 : 24);
+      chain.deleteAttribute("uv");
+      chain.userData.edge = new Float32Array(chain.getAttribute("position").count);
+      add(fore, chain, FIN.gold, { p: [0, ARM.fore - 0.018, 0], r: [Math.PI / 2 + 0.1, 0, 0], s: [1, 0.92, 1] });
+      add(fore, sphere(0.0032, true), FIN.gold, { p: [R + 0.0012, ARM.fore - 0.0135, 0.004], s: [0.45, 1.5, 0.9] });
     }
     // The glove: gauntlet over the wrist, the palm, knuckles, the three-point stitching on the back.
     // The gauntlet rides the forearm (so it follows the arm, not the hand's angle); a short cuff joins it to the palm.
     // C5 review: a hard cylinder with a ring seam read as blockout. Now it flares from the wrist to a rolled hem,
     // oval like the wrist (wider than thick), with a stitched welt above the hem and a short vent on the inside.
-    add(fore, gauntlet(phone), FIN.glove, { p: [0, ARM.fore - 0.039, 0], s: [1.1, 1, 0.86] });
+    // Bare hands: the same shape, slimmer, in her skin, so the wrist runs from the cuff into the hand.
+    add(fore, gauntlet(phone), D.handFin, { p: [0, ARM.fore - 0.039, 0], s: bareHand ? [0.94, 1, 0.74] : [1.1, 1, 0.86] });
     // The wrist joint fills the gap between the gauntlet and the heel of the hand, flush with the back of the
     // hand (C5 review: a full sphere here stood proud of the palm as a smooth dome).
-    add(hand, sphere(0.0245, phone), FIN.glove, { p: [0, -0.002, -0.001], s: [1.04, 1.05, 0.62] });
+    add(hand, sphere(0.0245, phone), D.handFin, { p: [0, -0.002, -0.001], s: [1.04, 1.05, 0.62] });
     {
       // The palm: a soft, tapered slab (narrower at the wrist, the back domed), its heel bending with the wrist.
       const pg = palm(phone, side);
       const pp = pg.getAttribute("position");
-      add(hand, pg, FIN.glove, undefined, (i) => {
+      add(hand, pg, D.handFin, undefined, (i) => {
         const y = pp.getY(i);
         const k = (1 - THREE.MathUtils.smoothstep(y, 0.0, 0.024)) * 0.55;
         return [
@@ -205,12 +221,20 @@ export class Arm {
         ];
       });
     }
-    for (let f = 0; f < 3; f++) {
-      // The stitching points run from the wrist toward the index, middle and ring knuckles.
-      add(hand, tube(0.034, 0.00115, 0.00095, { seg: 4, caps: true, phone }), FIN.gloveSeam, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
+    for (let f = 0; f < (bareHand ? 0 : 3); f++) {
+      // The stitching points run from the wrist toward the index, middle and ring knuckles (wired gloves: copper traces).
+      add(hand, tube(0.034, 0.00115, 0.00095, { seg: 4, caps: true, phone }), D.glove === "wired" ? D.trim! : D.seamFin, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
     }
     // The thumb's pad, filling the web between the thumb and the palm.
-    add(hand, sphere(0.016, phone), FIN.glove, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
+    add(hand, sphere(0.016, phone), D.handFin, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
+    if (D.glove === "knuckle") {
+      // Knuckle gloves: a brass stud over each knuckle.
+      for (let f = 0; f < 4; f++) add(hand, sphere(0.0042, phone), D.trim!, { p: [s * FINGER_X[f]!, PALM.len - 0.006, 0.0125], s: [1, 1, 0.55] });
+    }
+    if (D.glove === "wired") {
+      // Wired gloves: a copper band round the wrist where the traces meet.
+      add(hand, tube(0.004, 0.026, 0.026, { seg: phone ? 12 : 20, caps: false, phone }), D.trim!, { p: [0, 0.004, 0], s: [1.04, 1, 0.66] });
+    }
     // Each digit is one smooth glove finger from inside the palm to a domed tip, bending over its knuckles.
     const dSeg = phone ? 8 : 14;
     const dStep = phone ? 0.008 : 0.0055;
@@ -218,11 +242,19 @@ export class Arm {
       const r = FINGER_R[f]!;
       const lens = FINGERS[f]!;
       const d = digit([...lens], [r, r * 0.93, r * 0.86, r * 0.8], { seg: dSeg, step: dStep, detail: !phone });
-      add(chain[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, chain, [lens[0], lens[0] + lens[1]], d.along, r * 0.75));
+      const cut = D.bareFrom;
+      add(chain[0]!, d.geo, D.handFin, undefined, chainSkin(hand, chain, [lens[0], lens[0] + lens[1]], d.along, r * 0.75), cut === null ? undefined : (i) => (d.along[i]! > cut ? ARM_SKIN : null));
+      // Fingerless: a rolled leather hem at the cut.
+      if (cut !== null) add(chain[0]!, tube(0.004, r * 1.08, r * 1.04, { seg: phone ? 8 : 12, caps: false, phone }), D.handFin, { p: [0, cut, 0], s: [1, 1, 0.82] });
+      // Painted nails on the bare tips: a flattened almond on the back of the end phalanx.
+      if (D.nails) add(chain[2]!, sphere(r * 0.72, phone), D.nails, { p: [0, lens[2] * 0.62, r * 0.6], s: [0.95, 1.45, 0.34] });
     });
     {
       const d = digit([...THUMB], [0.0108, 0.0095, 0.0088, 0.0079], { seg: dSeg, step: dStep, root: 0.012, flat: 0.84, detail: !phone });
-      add(thumb[0]!, d.geo, FIN.glove, undefined, chainSkin(hand, thumb, [THUMB[0], THUMB[0] + THUMB[1]], d.along, 0.009));
+      const cut = D.bareFrom === null ? null : D.bareFrom * 1.3;
+      add(thumb[0]!, d.geo, D.handFin, undefined, chainSkin(hand, thumb, [THUMB[0], THUMB[0] + THUMB[1]], d.along, 0.009), cut === null ? undefined : (i) => (d.along[i]! > cut ? ARM_SKIN : null));
+      if (cut !== null) add(thumb[0]!, tube(0.004, 0.0118, 0.0114, { seg: phone ? 8 : 12, caps: false, phone }), D.handFin, { p: [0, cut, 0], s: [1, 1, 0.84] });
+      if (D.nails) add(thumb[2]!, sphere(0.0079 * 0.74, phone), D.nails, { p: [0, THUMB[2] * 0.6, 0.0079 * 0.62], s: [1, 1.4, 0.34] });
     }
 
     const geo = mergeSkinned(pieces);
@@ -397,19 +429,67 @@ function mergeSkinned(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   return out;
 }
 
+/** The silk-lined coat's burgundy lining, turned back at the cuff. */
+const LINING: Finish = { color: 0x4a1420, metal: 0, rough: 0.4, sheen: 0.18, band: "grain", wear: 0 };
+
+/** Overwrites the colour and PBR numbers of a baked piece's vertices where `paint` names another finish. */
+function repaint(g: THREE.BufferGeometry, paint: (i: number) => Finish | null): void {
+  const col = g.getAttribute("color") as THREE.BufferAttribute;
+  const mr = g.getAttribute("aMR") as THREE.BufferAttribute;
+  const c = new THREE.Color();
+  for (let i = 0; i < col.count; i++) {
+    const f = paint(i);
+    if (!f) continue;
+    c.set(f.color);
+    col.setXYZ(i, c.r, c.g, c.b);
+    mr.setXYZW(i, f.metal, f.rough, f.coat ?? 0, f.sheen ?? 0);
+  }
+}
+
 /**
  * Both arms. They live inside the held gun's root (so they hide with it for the scope and the kill-cam), and
  * are posed each frame onto its grip empties from shoulder anchors given in camera space.
  */
 export class Arms {
-  readonly right: Arm;
-  readonly left: Arm;
+  right: Arm;
+  left: Arm;
   private readonly sR = new THREE.Vector3();
   private readonly sL = new THREE.Vector3();
 
-  constructor(phone = false) {
-    this.right = new Arm(1, phone);
-    this.left = new Arm(-1, phone);
+  constructor(
+    private readonly phone = false,
+    dress?: ArmDress,
+  ) {
+    this.right = new Arm(1, phone, dress);
+    this.left = new Arm(-1, phone, dress);
+  }
+
+  /** The dress worn now (plan item 26: from the wardrobe save). */
+  get dress(): ArmDress {
+    return this.right.dress;
+  }
+
+  /**
+   * Re-dresses both arms (the wardrobe changed): rebuilds them only when the sleeve or glove differs, in the
+   * same parent, so the next pose puts them back on the grips. Returns whether anything was rebuilt.
+   */
+  redress(d: ArmDress): boolean {
+    if (d.sleeve === this.right.dress.sleeve && d.glove === this.right.dress.glove) return false;
+    for (const side of ["right", "left"] as const) {
+      const old = this[side];
+      const next = new Arm(old.side, this.phone, d);
+      const parent = old.mesh.parent;
+      next.mesh.visible = old.mesh.visible;
+      // Keep whatever material the owner gave the arms (the takedown rig lights them with its own copy).
+      next.mesh.material = old.mesh.material;
+      if (parent) {
+        parent.add(next.mesh);
+        parent.remove(old.mesh);
+      }
+      old.mesh.geometry.dispose();
+      this[side] = next;
+    }
+    return true;
   }
 
   /** Moves both arms into `root` (the gun now in hand). */

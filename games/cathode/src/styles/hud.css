@@ -1737,6 +1737,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   }
   .hud-tl { left: var(--edge-l); align-items: flex-start; }
   .hud-tr { right: calc(196px + var(--safe-r)); align-items: flex-end; gap: var(--sp-3); }
+  /* Plan item 26: a long press on the weapon's name is the inspect; while held it dims a step. */
+  .hud-weapon { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .hud-weapon.pressing { opacity: .7; }
   .hud-tl > *,
   .hud-tr > * { position: relative; inset: auto; }
   /* On a phone the toast hangs under the arms cluster (top right, over the action buttons), clear of the

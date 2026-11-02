@@ -20,6 +20,7 @@ function intent(over: Partial<Intent> = {}): Intent {
     alt: false,
     reload: false,
     takedown: false,
+    inspect: false,
     lean: 0,
     slot: -1,
     cycle: 0,
