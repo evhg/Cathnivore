@@ -445,6 +445,10 @@ function paintOneLane(
   const s = L.cell;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
+  // Plan item 19: a verge first, a band of longer, darker grass the wheels never reach.
+  ctx.strokeStyle = "rgba(48,78,22,0.28)";
+  ctx.lineWidth = s * 1.12;
+  strokePath(ctx, pts);
   // Shadowed verge, rim, then the track itself.
   ctx.save();
   ctx.translate(0, s * 0.04);
@@ -458,15 +462,60 @@ function paintOneLane(
   ctx.strokeStyle = theme.dirt[1];
   ctx.lineWidth = s * 0.76;
   strokePath(ctx, pts);
-  // Two wheel ruts: a darker stroke, overpainted down the middle.
+  // Two wheel ruts worn into the track: a dark trough with a lit far edge, a grassy crown between them.
   ctx.strokeStyle = theme.dirt[2];
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.9;
+  ctx.lineWidth = s * 0.54;
+  strokePath(ctx, pts);
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = theme.dirt[0];
   ctx.lineWidth = s * 0.5;
   strokePath(ctx, pts);
   ctx.globalAlpha = 1;
   ctx.strokeStyle = theme.dirt[1];
-  ctx.lineWidth = s * 0.4;
+  ctx.lineWidth = s * 0.38;
   strokePath(ctx, pts);
+  ctx.strokeStyle = "rgba(110,140,60,0.22)";
+  ctx.lineWidth = s * 0.12;
+  strokePath(ctx, pts);
+  // Tufts along both verges.
+  const along = (d0: number): [number, number, number, number] => {
+    let d = d0;
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!;
+      const b = pts[i]!;
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      if (d <= len || i === pts.length - 1) {
+        const t = Math.min(1, d / len);
+        return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, -(b[1] - a[1]) / len, (b[0] - a[0]) / len];
+      }
+      d -= len;
+    }
+    return [pts[0]![0], pts[0]![1], 0, 1];
+  };
+  let length = 0;
+  for (let i = 1; i < pts.length; i++) length += Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]);
+  ctx.strokeStyle = theme.blade;
+  ctx.lineWidth = Math.max(1, s * 0.022);
+  const tufts = Math.round((length / s) * 7);
+  for (let k = 0; k < tufts; k++) {
+    const [x0, y0, nx, ny] = along(rand() * length);
+    const side = rand() > 0.5 ? 1 : -1;
+    const off = side * s * (0.42 + rand() * 0.08);
+    const x = x0 + nx * off;
+    const y = y0 + ny * off;
+    const h = s * (0.07 + rand() * 0.07);
+    ctx.globalAlpha = 0.55 + rand() * 0.35;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - h * 0.45, y - h);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + h * 0.1, y - h * 1.25);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + h * 0.5, y - h * 0.9);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
   // Pebbles.
   let total = 0;
   for (let i = 1; i < pts.length; i++)
@@ -501,17 +550,30 @@ function paintOneLane(
 function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): void {
   const s = L.cell;
   const lane = laneCellsOf(level);
+  // The lead-in from the depot gate to the field's edge is drawn as lane too, so no bed is tilled under it.
+  const leadIn = new Set<string>();
+  for (const path of [level.path, level.path2]) {
+    if (!path || path.length < 2) continue;
+    const [c, r] = path[0]!;
+    const dx = Math.sign(c - path[1]![0]);
+    const dy = Math.sign(r - path[1]![1]);
+    for (let k = 1; k < Math.max(level.cols, level.rows); k++) leadIn.add(`${c + dx * k},${r + dy * k}`);
+  }
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
       if (lane.has(`${c},${r}`)) continue;
       const x = L.offX + c * s;
       const y = L.offY + r * s;
       const inset = s * 0.12;
+      const ground = plotKind(level, c, r);
+      if (ground !== "water" && ground !== "high") {
+        if (!leadIn.has(`${c},${r}`)) paintBed(ctx, x, y, s, (c * 31 + r * 17 + level.id) % 2 === 0);
+        continue;
+      }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
       ctx.beginPath();
       ctx.roundRect(x + inset, y + inset, s - inset * 2, s - inset * 2, s * 0.14);
       ctx.fill();
-      const ground = plotKind(level, c, r);
       if (ground === "water") {
         const g = ctx.createRadialGradient(x + s / 2, y + s / 2, s * 0.05, x + s / 2, y + s / 2, s * 0.5);
         g.addColorStop(0, "rgba(120,190,225,0.9)");
@@ -552,31 +614,61 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         ctx.stroke();
         continue;
       }
-      // Corner pegs: a quiet hint that this is a plot.
-      ctx.strokeStyle = "rgba(255,255,240,0.32)";
-      ctx.lineWidth = Math.max(1.2, s * 0.025);
-      ctx.lineCap = "round";
-      const k = s * 0.12;
-      const a = x + inset;
-      const b = y + inset;
-      const e = x + s - inset;
-      const f = y + s - inset;
-      ctx.beginPath();
-      ctx.moveTo(a, b + k);
-      ctx.lineTo(a, b);
-      ctx.lineTo(a + k, b);
-      ctx.moveTo(e - k, b);
-      ctx.lineTo(e, b);
-      ctx.lineTo(e, b + k);
-      ctx.moveTo(e, f - k);
-      ctx.lineTo(e, f);
-      ctx.lineTo(e - k, f);
-      ctx.moveTo(a + k, f);
-      ctx.lineTo(a, f);
-      ctx.lineTo(a, f - k);
-      ctx.stroke();
     }
   }
+}
+
+/**
+ * Plan item 19: a plot is a tilled bed. A soft rim of turned earth, then furrows (a shadow under each ridge, a lit
+ * crest on top), turned one way or the other so a block of plots reads as a patchwork, not a grid.
+ */
+function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean): void {
+  const i = s * 0.1;
+  const w = s - i * 2;
+  const rad = s * 0.18;
+  ctx.save();
+  // Shadow where the bed sits a touch below the grass, then the soil.
+  ctx.fillStyle = "rgba(40,30,10,0.16)";
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i + s * 0.025, w, w, rad);
+  ctx.fill();
+  const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
+  g.addColorStop(0, "rgba(128,92,52,0.26)");
+  g.addColorStop(1, "rgba(96,66,36,0.32)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.fill();
+  ctx.clip();
+  const n = 3;
+  ctx.lineCap = "round";
+  for (let k = 0; k < n; k++) {
+    const p = i + w * ((k + 0.5) / n);
+    const seg = (dx: number, dy: number) => {
+      ctx.beginPath();
+      if (across) {
+        ctx.moveTo(x + i + s * 0.06, y + p + dy);
+        ctx.lineTo(x + i + w - s * 0.06, y + p + dy);
+      } else {
+        ctx.moveTo(x + p + dx, y + i + s * 0.06);
+        ctx.lineTo(x + p + dx, y + i + w - s * 0.06);
+      }
+      ctx.stroke();
+    };
+    ctx.strokeStyle = "rgba(60,40,18,0.26)";
+    ctx.lineWidth = Math.max(1.5, s * 0.06);
+    seg(s * 0.02, s * 0.025);
+    ctx.strokeStyle = "rgba(235,205,150,0.32)";
+    ctx.lineWidth = Math.max(1, s * 0.028);
+    seg(-s * 0.012, -s * 0.012);
+  }
+  ctx.restore();
+  // A lip of grass over the bed's top edge.
+  ctx.strokeStyle = "rgba(255,255,230,0.18)";
+  ctx.lineWidth = Math.max(1, s * 0.02);
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.stroke();
 }
 
 function paintGate(ctx: CanvasRenderingContext2D, level: Level, L: Layout): void {
