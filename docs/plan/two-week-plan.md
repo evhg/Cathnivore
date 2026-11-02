@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: owner session, 2026-11-02T14:08Z (the next batch of items is being written; lanes keep building the open ones).
+Planning: owner session, 2026-11-02T14:08Z. Items 33-39 (Cathnivore, Runnel, site) are in. NIGHT SHIFT and Hedgerow items follow within the hour; lanes, take 33 onwards now.
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -455,6 +455,133 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - e2e: a fresh save walks chapter 2's script to free play at P and D.
   - A reload mid-script resumes on the same step (e2e).
   - Shots of each step at P.
+- **Size:** 2
+
+## 33. [ ] Cathnivore: the bugs from the 2026-11-02 critique, fixed as one batch
+- **Why:** a fresh-eyes pass at P and D found craft bugs a player hits in their first game.
+- **Build:** fix every one of these, each with its own test where one fits:
+  - At P the boardroom strip is clipped under the producer bar, and its step label is cut mid-sentence. At D it covers the board's top row.
+  - "AI teammate is deciding…" is plain text in an empty band.
+  - Cath's aside is truncated mid-word.
+  - At D the Farm panel pushes the Actions frame, cutting the Invest cards in half.
+  - Escape doesn't close the phone sheets (Farm, Market, Plan).
+  - Card text reads "1 Marks"; add a `plural()` helper for all card text.
+  - The Daily Market deals region terrain against the region names (Brindle Hills as a coast).
+  - Chapter 1's two-hex map isn't scaled or centred.
+  - At P the bottom hex row is cut by the felt.
+  - At P the title's footer is clipped.
+  - In story scenes, Cath's hand is a flesh blob.
+- **Accept:**
+  - e2e at P and D during the enemy turn: the strip intersects no `.hex` and its label isn't clipped.
+  - Unit: no card text matches `/\b1 Marks\b/`.
+  - Unit: every region name keeps one terrain across 100 seeds × 3 maps.
+  - e2e: Escape closes each phone sheet and returns focus.
+  - Shots of every fixed screen at P and D.
+- **Size:** 3
+
+## 34. [ ] Cathnivore: the turns between yours are a show, not a wait
+- **Why:** the AI teammate's turn and the enemy turn come every round and are the weakest screens.
+  - The teammate's turn is a blank band with "deciding…" text.
+  - The enemy strip covers hexes and blanks the Actions panel.
+  - This breaks VISION 3 (no mystery waits) and 5 (characters with presence).
+- **Build:**
+  - **Teammate's turn:** it plays in the dock. Their portrait carries an expression per pick, beside their own hand. Each pick lifts a card with a one-line reason ("Brindle Hills is about to be Squeezed, so I'll open a Stall there") and flies it to its hex the way the player's cards move.
+  - **Enemy turn:** the steps dock into the hand area (P) or the Actions column (D) as a ledger that ticks off, and never cover a hex.
+  - **Pacing:** the AI speed setting paces both turns, and a tap skips.
+- **Accept:**
+  - e2e at P and D during both turns: no panel box intersects a `.hex`, and there is no empty band over 120 px.
+  - Each teammate step exposes `data-teammate-step` with its reason before the state changes, and a tap skips the rest.
+  - Reduced motion uses fades (e2e).
+  - Shots of both turns at P and D.
+- **Size:** 3
+
+## 35. [ ] Cathnivore: the Liberation of Marrow as a map you travel
+- **Why:**
+  - The campaign is a list of cards with padlocks.
+  - There's no chapter-complete moment (VISION 4).
+  - Nothing on the title shows progress.
+- **Build:**
+  - A code-drawn map of the Republic is the campaign screen. Chapters are places on a dotted lane, with a full-length Cath at the current one.
+  - Regions recolour from Hollowell orange to green with bunting as their chapters are won.
+  - Three wax-seal goals per chapter: win, win on Hard, and one chapter feat.
+  - A choreographed chapter complete: the region floods green, bunting drops, Cath walks to the next pin and the next location slides in (fades with reduced motion).
+  - The title shows the map's progress.
+- **Accept:**
+  - e2e: winning chapter 1 by autoplay plays the sequence and ends with the region `data-liberated` and Cath at chapter 2.
+  - e2e: the seals persist across a reload.
+  - e2e: no horizontal scroll at P.
+  - Shots of the map fresh, mid-campaign and complete, at P and D.
+- **Size:** 3
+
+## 36. [ ] Cathnivore: an engine you can see (an illustrated Market, and farm tableaux)
+- **Why:**
+  - The Market, Plan and Farm are text lists, so players can't see their engine grow.
+  - At D the Farm panel grows into the Actions frame.
+- **Build:**
+  - Each card gets a code-drawn vignette from a kit keyed by its tag (crop, coast, science, media, community), plus a cost coin and a one-line effect.
+  - Each producer gets a farmstead tableau: their portrait at the gate, bought cards laid in a row, and a "+3 Produce each round" ribbon that sums them.
+  - The phone Farm sheet shows both tableaux. At D the Farm is a fixed-height tableau that scrolls inside.
+  - A choreographed buy: coins count out, the card flies into the farmstead and the ribbon ticks up.
+- **Accept:**
+  - Unit: every improvement and scheme has a vignette.
+  - e2e at D: the top of the Actions frame doesn't move between round 1 and a 5-card farm.
+  - e2e: a buy creates a `.buy-flight` and the tableau gains a card.
+  - Shots of the Market, Plan and Farm at P and D, at rounds 1 and 7.
+- **Size:** 3
+
+## 37. [ ] Runnel: the Orchard as a place, Bea's garden drawn by hand, and a win card above the fold
+- **Why:**
+  - The Orchard is a numbered strip that overflows at P and D.
+  - Bea's garden is platform emoji, which breaks "all art authored as code" and differs per OS.
+  - At P the win card hides its headline and buttons below the fold and cuts Cath's medallion at the top.
+  - `?shotwin` writes a real daily result.
+- **Build:**
+  - **Orchard screen:** rows of code-drawn trees, one per level. A tree blossoms when its level is solved and fruits on an under-par solve; the current tree glows, with Cath beside it.
+  - **Garden:** tilled rows of code-SVG crops in three growth stages, and Bea with a watering can on the day's first solve. The D board corner shows the same crops.
+  - **Win card:** headline and buttons above the fold at 390x844, with the share card and Bea's postcard in a swipe row below.
+  - `?shotwin` no longer saves.
+- **Accept:**
+  - e2e: no `\p{Extended_Pictographic}` in Runnel's rendered text at P or D.
+  - e2e: the Orchard has no horizontal overflow and its levels are keyboard-reachable.
+  - e2e on the win card at P: the headline, the primary button and the whole medallion are in view.
+  - Unit: every crop has 3 drawn stages.
+  - Shots at P, D and dark.
+- **Size:** 3
+
+## 38. [ ] The site: live key art, a phone hero, and a header that never overlaps
+- **Why:**
+  - On the portfolio and case studies the fixed header overlaps scrolled content at D.
+  - The scroll cue overlaps a stat label.
+  - The phone hero has no imagery.
+  - The case study's Runnel thumbnail is stale.
+  - On /games/, the NIGHT SHIFT card is a placeholder doodle, and Cath's Week is three bare bars.
+- **Build:**
+  - `scripts/keyart.mjs` shoots each game's hero state (the Cathnivore round-7 diorama, a solved Runnel daily, a late Hedgerow wave, the NIGHT SHIFT street) and writes WebP into the portfolio and /games/ art. It runs in `npm run release`.
+  - The header gets a blurred glass backdrop once scrolled.
+  - On the phone hero, Cath stands in front of one print that cross-fades between games.
+  - Cath's Week tiles become tappable: each opens the game at the goal's mode, with a "1 to go" nudge.
+- **Accept:**
+  - e2e at P and D on all three pages, after scrolling 1.5 screens: no text rect intersects the header except its own.
+  - The scroll cue intersects no text.
+  - The phone hero shows Cath at 40% or more of the width.
+  - Lighthouse mobile LCP is 2.0 s or less.
+  - Shots of all three pages at P and D.
+- **Size:** 2
+
+## 39. [ ] Runnel: one-screen Practice and a proper Bea's workshop
+- **Why:**
+  - At P, Practice stacks three rows of controls above a small board.
+  - The workshop is a plain modal of blank hexes.
+  - At D the lesson shows an empty stats rail.
+- **Build:**
+  - **Practice:** uses the daily's layout. Size, paste code, copy code, Save to Bea's picks and Workshop move into one "Board" chip that opens a sheet.
+  - **Workshop:** a full-screen table with Bea and her crayons in a corner, and water animating along channels as you lay them. The flow is "Test it", then "Share" (a code plus a share card), with a shelf of picks.
+  - **Lesson:** the rail stays hidden.
+- **Accept:**
+  - e2e at P: the Practice board's top is within 260 px of the top of the screen, and the board is 85% or more of the width.
+  - e2e: build a board, test it, solve it and share it; the pasted code reproduces the board.
+  - e2e: the rail is hidden during `?lesson` at D.
+  - Shots of Practice and the workshop at P and D.
 - **Size:** 2
 
 ---
