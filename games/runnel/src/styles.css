@@ -2280,3 +2280,19 @@ body {
   margin: 0;
 }
 .win .toast:empty { display: none; }
+
+/* Plan item 37: Bea waters the garden on a day the daily is solved. */
+.ga .ga-cardi { fill: var(--ga-cardi); }
+.ga .ga-skin { fill: var(--ga-skin); }
+.ga .ga-hair { fill: var(--ga-hair); }
+.ga .ga-arm { fill: none; stroke: var(--ga-cardi); stroke-width: 2.2; stroke-linecap: round; }
+.ga .ga-can { fill: var(--ga-can); }
+.ga .ga-can-spout { fill: none; stroke: var(--ga-can); stroke-width: 1.6; stroke-linecap: round; }
+.ga .ga-can-handle { fill: none; stroke: var(--ga-can); stroke-width: 1.2; }
+.ga .ga-water { fill: var(--water); }
+.garden .garden-bea {
+  grid-column: span 2;
+  aspect-ratio: 2 / 1;
+  pointer-events: none;
+}
+.garden .garden-bea .ga { width: auto; height: 100%; margin: 0 auto; }

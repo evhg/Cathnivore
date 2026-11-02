@@ -6,6 +6,7 @@ const PICTO = /\p{Extended_Pictographic}/u
 
 async function seed(page: Page): Promise<void> {
   await page.addInitScript(() => {
+    if (localStorage.getItem('runnel:v1')) return // seed once; a reload keeps what the test changed
     const results: Record<string, unknown> = {}
     for (let i = 1; i < 20; i++) {
       const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
@@ -59,4 +60,20 @@ test('the Orchard is rows of trees: no sideways overflow, and the open trees are
   await expect(levels.locator('button').nth(1)).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(levels.locator('button').nth(1)).toHaveAttribute('aria-current', 'true')
+})
+
+test('Bea waters the garden only on a day the daily is solved', async ({ page }) => {
+  await seed(page) // yesterday and before
+  await page.goto('/runnel/?nohelp')
+  await page.locator('#btn-stats').click()
+  await expect(page.locator('#garden .plot').first()).toBeVisible()
+  await expect(page.locator('#garden .garden-bea')).toHaveCount(0)
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem('runnel:v1')!)
+    d.results[new Date().toISOString().slice(0, 10)] = { number: 1, timeMs: 60000, taps: 10, par: 11 }
+    localStorage.setItem('runnel:v1', JSON.stringify(d))
+  })
+  await page.reload()
+  await page.locator('#btn-stats').click()
+  await expect(page.locator('#garden .garden-bea svg.ga-bea')).toHaveCount(1)
 })

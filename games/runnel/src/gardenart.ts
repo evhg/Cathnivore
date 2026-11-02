@@ -128,3 +128,20 @@ export function treeSvg(level: number, state: TreeState): string {
   if (state === 'fruit') deco = SPOTS.map(([x, y]) => c(x, y, 2.1, TREE_FRUIT[kind]!)).join('')
   return svg(ground + trunk + CANOPY[kind] + deco, undefined, ` ga-tree is-${state}`)
 }
+
+/** Bea (Cath's daughter, six) with her watering can, in the garden on a day the daily is solved. Her look
+ *  follows the cast: dark hair in two bunches with yellow bobbles, a pink cardigan. */
+export function beaWateringSvg(title?: string): string {
+  const art =
+    e(0, 13, 9, 2, 'ga-soil') +
+    p('M-3 6 V12 M2 6 V12', 'ga-leg') +
+    p('M-6 6 Q-6 -3 0 -3 Q6 -3 6 6 Z', 'ga-cardi') +
+    c(-1.5, -7, 4.6, 'ga-skin') +
+    p('M-6 -8 Q-5 -13 -1 -12.5 Q3 -13 4 -8 Q2 -11 -1 -10.5 Q-4 -11 -6 -8 Z', 'ga-hair') +
+    c(-7, -8, 2.2, 'ga-hair') + c(4.2, -8.5, 2.2, 'ga-hair') + c(-7, -10, 0.9, 'ga-yellow') + c(4.2, -10.5, 0.9, 'ga-yellow') +
+    c(-0.2, -7, 0.55, 'ga-face') + c(-3, -7, 0.55, 'ga-face') +
+    p('M4 0 L9 1', 'ga-arm') +
+    p('M8 -1 h6 v6 h-6 Z', 'ga-can') + p('M14 0 L18 -3', 'ga-can-spout') + p('M8 -1 Q11 -5 14 -1', 'ga-can-handle') +
+    c(18.5, 0, 0.7, 'ga-water') + c(19, 2.5, 0.7, 'ga-water') + c(18, 5, 0.7, 'ga-water')
+  return svg(art, title, ' ga-bea')
+}

@@ -4,7 +4,7 @@ import { drawShareCard, CARD_W, CARD_H } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
-import { cropSvg, dropSvg, eventCropSvg, treeSvg, visitorSvg } from './gardenart'
+import { beaWateringSvg, cropSvg, dropSvg, eventCropSvg, treeSvg, visitorSvg } from './gardenart'
 import { creditBoard, eventBoardOf, eventCrops, eventOn } from './events'
 import './fonts.css'
 import './tokens.css'
@@ -483,6 +483,14 @@ function renderGarden(): void {
     v.innerHTML = visitorSvg(visitor.visitor)
     note.prepend(v)
   }
+  // Plan item 37: on a day the daily is solved, Bea is out with her watering can beside the newest crops.
+  const bea: HTMLElement[] = []
+  if (data.results[today]) {
+    const b = document.createElement('div')
+    b.className = 'garden-bea'
+    b.innerHTML = beaWateringSvg("Bea, watering today's seedling")
+    bea.push(b)
+  }
   $<HTMLDivElement>('garden').replaceChildren(
     ...plots.map((p) => {
       const b = document.createElement('button')
@@ -508,6 +516,7 @@ function renderGarden(): void {
       })
       return b
     }),
+    ...bea,
   )
 }
 
