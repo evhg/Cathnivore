@@ -1,14 +1,39 @@
-import type { GameConfig, GameState, PressureCard, ProducerId, RegionId, RulesEnabled } from '../engine/types'
+import type { Action, GameConfig, GameState, PressureCard, ProducerId, RegionId, RulesEnabled } from '../engine/types'
+
+// A part of the game screen the guided tutorial can spotlight. Game.tsx tags each one with a matching
+// `data-tutorial` attribute (`tutorialTargetId` in content/tutorial.ts turns a target into that id).
+export type TutorialTarget =
+  | { kind: 'region'; region: RegionId }
+  | { kind: 'ui'; id: 'produce' | 'actions-left' | 'enemy-turn' }
+  // The button for this step's own `expect` action (then the glowing region, then Confirm, in turn).
+  | { kind: 'action' }
+
+// The one action a guided step waits for: its kind, plus its region and count where they matter.
+export interface TutorialExpect {
+  kind: Action['kind']
+  region?: RegionId
+  count?: 1 | 2
+}
 
 // SPEC 8.1: "Chapters are data: which regions are active, which rules are switched on, the starting
 // state, a scripted Pressure sequence where needed, triggers ..., scenes and tutorial steps." This is
 // the shared shape every chapter in `src/content/story/` is defined against.
 export interface TutorialStep {
-  // 2 sentences maximum (SPEC 8.1), shown as a prompt highlighting part of the screen.
+  // What to do (or look at): 2 sentences maximum (SPEC 8.1), in Cath's voice.
   text: string
-  // The one thing the player may do at this step; chapters 1-2 use this to disable every other control
-  // ("only the action being taught is enabled" — SPEC 8.1). `null` once the chapter is playing freely.
-  highlight: { kind: 'action'; action: string } | { kind: 'region'; region: RegionId } | null
+  // A one-line "why", shown under `text` by the guided tutorial.
+  why?: string
+  // The prompt strip's gating (chapters 2-6): the one thing the player may do at this step ("only the
+  // action being taught is enabled" — SPEC 8.1). `null` once the chapter is playing freely.
+  highlight?: { kind: 'action'; action: string } | { kind: 'region'; region: RegionId } | null
+  // Guided tutorial (a chapter with `guided: true`): where the spotlight goes. Absent: no spotlight,
+  // just Cath's card over a dimmed screen.
+  target?: TutorialTarget
+  // Guided tutorial: the step completes when the player takes this action, and nothing else is
+  // enabled meanwhile. Without it, the step completes on its "Next" button...
+  expect?: TutorialExpect
+  // ...or, with `waitFor: 'enemyTurn'`, once the enemy turn's playback has been read and dismissed.
+  waitFor?: 'enemyTurn'
 }
 
 export interface Chapter {
@@ -27,6 +52,9 @@ export interface Chapter {
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
   tutorialSteps: TutorialStep[]
+  // The first-time guided tutorial (spotlight, hard gate, one baby step at a time) instead of the
+  // prompt strip. Chapter 1 only: see content/tutorial.ts and ui/TutorialCoach.tsx.
+  guided?: boolean
   openingScene: string // key into `src/content/story/<id>.ts`'s scene data
   closingScene: string
 }
@@ -91,34 +119,90 @@ export const CHAPTER_1: Chapter = {
   scriptedPressure: chapter1Pressure(),
   winCondition: { regionsRequired: 2, requireKingsmarket: false },
   goalDescription: 'Liberate both regions.',
+  guided: true,
+  // The guided first round (owner, 2026-11-02: "baby step by baby step what to do and why, teaching me
+  // the game by example"). The chapter's board and Pressure deck are fixed, so every number and claim
+  // below is checked against the real engine, replaying this exact script, in
+  // tests/tutorial-script.test.ts. It hands over to free play with one Outlet left to clear.
   tutorialSteps: [
     {
-      text: 'This is Brindle Hills — ground we are not giving up without a fight. Spend 1 Produce to Open a Stall here.',
-      highlight: { kind: 'action', action: 'openStall' },
+      text: "Hello, love. I'm Cath, and I'll walk you through your first round, one tap at a time.",
+      why: 'Every step says what to do and why. You can skip me whenever you like.',
     },
     {
-      text: 'Good instinct. Stalls push Outlets out — spend Produce to Supply and clear it from Brindle Hills.',
-      highlight: { kind: 'action', action: 'supplyOutlets' },
+      text: "This is Brindle Hills, Mara's farm. The red stall marked 2 shows her two Stalls.",
+      why: 'Stalls are where you sell, and how you fight back.',
+      target: { kind: 'region', region: 'brindleHills' },
     },
     {
-      // Informational, not gated: after steps 0-1 spend Brindle Hills' Outlet-clearing Produce, opening a
-      // Stall in Highmoor isn't affordable again until Harvest next round, so this step's own "you can...
-      // too" phrasing (not an imperative like the other steps) is also the honest one — gating it would
-      // strand a player following the steps in order until they'd earned more Produce.
-      text: 'Highmoor is right next door — open a Stall there too, once you have the Produce for it.',
-      highlight: null,
+      text: 'The orange shops are Hollowell Outlets: two of them here, undercutting her beef.',
+      why: 'Clear every Outlet from a region where you have a Stall, and it is liberated.',
+      target: { kind: 'region', region: 'brindleHills' },
     },
     {
-      text: 'No good move? Graft always works: 1 Produce and 1 Marks, guaranteed. Not glamorous, but neither is undercutting your neighbours.',
-      highlight: { kind: 'action', action: 'graft' },
+      text: 'This is your Produce: 3. You spend it on almost everything.',
+      why: 'Every new round, Harvest adds more: that is the +2 beside it.',
+      target: { kind: 'ui', id: 'produce' },
     },
     {
-      text: 'Keep an eye on the Scout slot — it tells you exactly where the next Outlet lands.',
-      highlight: null,
+      text: 'These three dots are your actions for this turn.',
+      why: 'Everything you do uses one. When they run out, your turn ends.',
+      target: { kind: 'ui', id: 'actions-left' },
     },
     {
-      text: 'Clear every Outlet and Buyout from a region with a Stall in it, and it is liberated. Do that to both regions and we have won.',
-      highlight: null,
+      text: "Highmoor, next door, has just one Outlet and no Stall yet. Let's take it first.",
+      why: 'One Outlet is quick to clear, so it makes an easy first win.',
+      target: { kind: 'region', region: 'highmoor' },
+    },
+    {
+      text: 'Tap Open Stall.',
+      why: 'A Stall costs 1 Produce, and it lets you Supply in that region.',
+      target: { kind: 'action' },
+      expect: { kind: 'openStall', region: 'highmoor' },
+    },
+    {
+      text: "Now tap Supply to remove Highmoor's Outlet.",
+      why: 'Supplying undercuts an Outlet out of business: 2 Produce each.',
+      target: { kind: 'action' },
+      expect: { kind: 'supplyOutlets', region: 'highmoor', count: 1 },
+    },
+    {
+      text: "Highmoor is liberated! The green ring means it's ours.",
+      why: 'It also adds 1 Produce to every Harvest, and their Scout cannot land here any more.',
+      target: { kind: 'region', region: 'highmoor' },
+    },
+    {
+      text: 'No Produce left, and one action to go. Tap Graft.',
+      why: 'Graft always works: +1 Produce and +1 Mark. Your last action ends your turn.',
+      target: { kind: 'action' },
+      expect: { kind: 'graft' },
+    },
+    {
+      text: 'Now the corporations take their turn. Their Scout has opened a new Outlet in Brindle Hills.',
+      why: 'They move after every round, so clear Outlets faster than they arrive.',
+      target: { kind: 'ui', id: 'enemy-turn' },
+      waitFor: 'enemyTurn',
+    },
+    {
+      text: 'Round 2, and Harvest has paid out: you have 4 Produce now.',
+      why: '2 from the farm, 1 from liberating Highmoor, and the 1 that Graft gave you.',
+      target: { kind: 'ui', id: 'produce' },
+    },
+    {
+      text: "Brindle Hills has three Outlets now. Let's knock out two at once.",
+      why: 'Supplying 2 Outlets costs 4 Produce, but only one action.',
+      target: { kind: 'region', region: 'brindleHills' },
+    },
+    {
+      text: 'Tap Supply: remove 2 Outlets.',
+      why: 'Two Outlets for a single action is a very good trade.',
+      target: { kind: 'action' },
+      expect: { kind: 'supplyOutlets', region: 'brindleHills', count: 2 },
+    },
+    {
+      text: 'One Outlet left. You know the loop now: Harvest, Stall, Supply, liberate.',
+      why: 'Clear Brindle Hills to liberate both regions and win the chapter. Over to you.',
+      target: { kind: 'region', region: 'brindleHills' },
     },
   ],
   openingScene: 'opening',
