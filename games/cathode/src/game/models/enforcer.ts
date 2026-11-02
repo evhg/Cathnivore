@@ -1053,6 +1053,11 @@ function streetTorso(b: Builder, arch: Arch): void {
     b.add("abdomen", shell([[0.166, -0.01], [0.18, -0.01], [0.18, 0.05], [0.166, 0.05]], 0, Math.PI * 2, b.seg(22)), thug ? S.knit : S.scrubsDark, { s: [1.03 * k, 1, 0.76] });
     b.add("upperChest", shell([[0.1, 0.125], [0.14, 0.13], [0.136, 0.2], [0.098, 0.19]], 0, Math.PI * 2, b.seg(20)), thug ? S.knit : S.bandana, { s: [1.06, 1, 0.94] });
     if (lod === 0) b.add("chest", b.box(0.01, 0.34, 0.006, 0.001), S.metal, { p: [0, 0.1, 0.14] });
+    // Plan item 41: the coat's breakup: two hip-pocket flaps and a chest pocket, so it's a coat, not a tube.
+    if (lod === 0) {
+      for (const x of [-0.085, 0.085]) b.add("abdomen", b.box(0.09, 0.034, 0.008, 0.003), S.scrubsDark, { p: [x, 0.03, 0.114 * k] });
+      b.add("chest", b.box(0.07, 0.024, 0.008, 0.003), S.scrubsDark, { p: [-0.075, 0.1, 0.132 * k] });
+    }
   }
   if (thug) {
     // A road-sign pauldron on the left shoulder, a belt of tools, a pale stripe across the back so he reads at 10 m.
