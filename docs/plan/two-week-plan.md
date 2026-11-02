@@ -547,7 +547,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P, D and dark.
 - **Size:** 3
 
-## 38. [ ] The site: live key art, a phone hero, and a header that never overlaps
+## 38. [ ] The site: live key art, a phone hero, and a header that never overlaps *(lane B, in progress)*
 - **Why:**
   - On the portfolio and case studies the fixed header overlaps scrolled content at D.
   - The scroll cue overlaps a stat label.
