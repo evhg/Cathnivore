@@ -2447,12 +2447,6 @@ img.act-scene {
 }
 
 
-/* ROADMAP 135/137, AAA UI M3: on short screens Cath's advice is hers to give on the field (her bubble), so the
-   preview card stays readable without clamping her words to an ellipsis. */
-@media (max-height: 700px) {
-  .cath-tip { display: none; }
-}
-
 /* ROADMAP 139: locked stops read as locked (stronger label contrast, larger padlock); a locked act is dimmer but legible. */
 .node:disabled .level-name { color: var(--ink-2); opacity: 1; }
 .node .level-stars.level-lock { font-size: var(--fs-body); opacity: 0.85; }

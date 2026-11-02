@@ -1524,45 +1524,22 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (page) p.append(line(page.card, "ticket-note"));
   p.append(...notes);
   if (then) p.append(then);
-  const advice = cathAdvice(g, next);
-  if (advice) p.append(line(`Cath: ${advice}`, "cath-tip"));
+  // Plan item 19: one voice at a time. Cath speaks in her bubble on the field, never in the side panel too;
+  // the card keeps only the facts (a boss, air, heavy plant), as a plain note.
+  const advice = cathAdvice(next);
+  if (advice) p.append(line(advice, "ticket-note wave-advice"));
   if (g.phase === "build" && g.wave === 0) p.append(line("Tap a plot to build. Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
   if (fleet) p.append(fieldIntel(g));
 }
 
-/** Desktop side panel: what stands on the field and which locks it answers (styles hide it on a phone). */
+/** Desktop side panel: which locks the field answers and the rounds ahead (styles hide it on a phone). */
 function fieldIntel(g: Game): HTMLElement {
+  // Plan item 19: condensed to what's coming (the field itself shows what stands on it).
   const box = document.createElement("section");
   box.className = "field-intel";
   const h = document.createElement("h3");
-  h.textContent = "Your field";
+  h.textContent = "Coming up";
   box.append(h);
-  const by = new Map<TowerKind, { n: number; tier: number }>();
-  for (const t of g.towers) {
-    const e = by.get(t.kind) ?? { n: 0, tier: 0 };
-    e.n++;
-    e.tier = Math.max(e.tier, t.tier);
-    by.set(t.kind, e);
-  }
-  if (!by.size) {
-    box.append(line("Nothing planted yet. Pick a packet from the tray and tap a plot.", "intel-empty"));
-  } else {
-    const ul = document.createElement("ul");
-    ul.className = "intel-towers";
-    for (const [kind, e] of by) {
-      const li = document.createElement("li");
-      li.title = `${e.n} × ${TOWERS[kind].name}, best at tier ${e.tier}`;
-      li.append(img(towerIcon(kind), "chip-icon"));
-      const nm = document.createElement("span");
-      nm.textContent = `${TOWERS[kind].name} ×${e.n}`;
-      const tr = document.createElement("span");
-      tr.className = "intel-tier";
-      tr.textContent = `T${e.tier}`;
-      li.append(nm, tr);
-      ul.append(li);
-    }
-    box.append(ul);
-  }
   const locks = levelLocks(g.level);
   const gaps = unanswered(g, locks);
   if (locks) {
@@ -1596,19 +1573,6 @@ function fieldIntel(g: Game): HTMLElement {
     });
     box.append(tl);
   }
-  // The round so far, in three numbers (a quiet scoreboard under the towers).
-  const rec = document.createElement("dl");
-  rec.className = "intel-record";
-  for (const [label, n] of [["Round", g.wave + 1], ["Popped", g.popped], ["Leaked", g.leaked]] as const) {
-    const d = document.createElement("div");
-    const dt = document.createElement("dt");
-    dt.textContent = label;
-    const dd = document.createElement("dd");
-    dd.textContent = String(n);
-    d.append(dd, dt);
-    rec.append(d);
-  }
-  box.append(rec);
   return box;
 }
 
@@ -1680,15 +1644,14 @@ function propRow(pm: number, cls = "prop-row"): HTMLSpanElement {
   return row;
 }
 
-/** One line from Cath about the coming wave, from its enemy classes. */
-function cathAdvice(g: Game, next: Level["waves"][number]): string {
+/** One line about the coming wave, from its enemy classes (empty for plain light traffic). */
+function cathAdvice(next: Level["waves"][number]): string {
   const kinds = waveSummary(next).map((w) => w.kind);
   const classes = new Set(kinds.map(enemyClass));
   const bits: string[] = [];
   if (kinds.some(isBig)) bits.push("A big one is coming. Save Marks for upgrades and keep the pie ready.");
   if (classes.has("air")) bits.push("There's air traffic: ground-only towers can't touch it.");
   if (classes.has("heavy")) bits.push("Heavy plant is slow but tough. Slow it and hit it hard.");
-  if (!bits.length) bits.push(g.towers.length < 4 ? "Spread a few towers along the bends and let them work." : "Plenty of light traffic. Keep the lane tidy.");
   return bits.slice(0, 2).join(" ");
 }
 
@@ -2844,8 +2807,8 @@ function introduce(kinds: EnemyKind[]): void {
   void ui.intro.offsetWidth;
   ui.intro.classList.add("pop");
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
-  // A short landscape phone has no room for both: Cath's tip steps aside and comes back after the card.
-  if (shortScreen() && !ui.bubble.hidden && bubbleTip) {
+  // Plan item 19: one voice at a time. Cath's tip steps aside and comes back after the card.
+  if (!ui.bubble.hidden && bubbleTip) {
     pendingTip = { id: bubbleTip, text: ui.bubbleText.textContent ?? "", expression: bubbleFace };
     clearTimeout(bubbleTimer);
     hideBubble();

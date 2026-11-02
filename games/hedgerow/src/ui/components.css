@@ -1507,23 +1507,6 @@ body:has(#dlg-pause[open]) .paused-note {
   color: var(--corp);
   box-shadow: 0 2px 6px var(--corp-a25);
 }
-/* Cath's advice in the preview card: a pinned note in her voice */
-.play .cath-tip {
-  position: relative;
-  margin: var(--sp-1) 0 0;
-  padding: 10px 12px 10px 14px;
-  border: 0;
-  border-radius: var(--r-note);
-  background: var(--card);
-  box-shadow: inset 4px 0 0 var(--cath), 0 0 0 1.5px var(--line);
-  color: var(--ink);
-  font-family: var(--font-voice);
-  font-weight: 430;
-  font-variation-settings: var(--voice-axes);
-  font-size: var(--fs-body);
-  line-height: 1.4;
-  text-wrap: pretty;
-}
 .play .twist-line {
   color: var(--clay-deep) !important;
 }
@@ -2221,10 +2204,12 @@ body:has(#dlg-pause[open]) .paused-note {
     flex: 1 1 100%;
   }
 }
-/* A wide desktop gives the side column room for three packets that read without squinting */
+/* Plan item 19: a wide desktop is the field's. The side column is a condensed wave card (the next round, what
+   the field can't answer, the rounds ahead), so the stage takes at least 70% of the window's width. */
 @media (min-width: 1200px) and (min-height: 521px) {
   .play {
-    grid-template-columns: minmax(0, 1fr) clamp(380px, 30vw, 440px);
+    max-width: 1680px;
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 23vw, 400px);
   }
 }
 
@@ -2866,30 +2851,6 @@ body:has(#dlg-pause[open]) .paused-note {
   text-transform: uppercase;
   color: var(--ink-2);
 }
-.play .panel .intel-towers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.play .panel .intel-towers li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font: 700 var(--fs-small) / 1.2 var(--font-ui);
-  color: var(--ink);
-}
-.play .panel .intel-towers .intel-tier {
-  margin-left: auto;
-  color: var(--ink-2);
-}
-.play .panel .intel-empty {
-  margin: 0;
-  font: 500 var(--fs-small) / 1.4 var(--font-ui);
-  color: var(--ink-2);
-}
 .play .panel .intel-locks {
   display: flex;
   align-items: center;
@@ -2916,26 +2877,6 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .panel .intel-timeline li.boss {
   color: var(--ink);
 }
-.play .panel .intel-record {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin: 2px 0 0;
-  padding-top: 8px;
-  border-top: 1.5px dashed var(--line);
-  text-align: center;
-}
-.play .panel .intel-record dd {
-  margin: 0;
-  font: 800 var(--fs-body) / 1.1 var(--font-display, var(--font-ui));
-  color: var(--ink);
-}
-.play .panel .intel-record dt {
-  font: 700 var(--fs-small) / 1.2 var(--font-ui);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
 /* Phones: the tray and the ticket, nothing more; the names, rules and advice wait for the side panel (or the
    ticket's tags and Cath's own bubble). Nothing in the preview scrolls or fades a line in half. */
 @media (max-width: 899.98px), (max-height: 520px) {
@@ -2945,7 +2886,7 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel.panel-preview::after {
     display: none;
   }
-  .panel-preview :is(.ticket-note, .twist-line, .field-warn, .preview-then, .cath-tip, .hint, .field-intel) {
+  .panel-preview :is(.ticket-note, .twist-line, .field-warn, .preview-then, .hint, .field-intel) {
     display: none;
   }
   .ticket-chips .chip-name {
