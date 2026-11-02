@@ -49,7 +49,7 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
 // unlike Scheme/Supply/Rebut/Open Stall its legality is a single Marks-vs-cost comparison per card, just
 // like Sell's Produce-vs-count. Seed 1 is pinned so the market draw (and the exact "Marks needed") stay
 // deterministic: the starting producer's Marks are below every one of this seed's 4 cards' costs, and 2
-// Grafts (+1 Marks each) affords the cheapest, Wholesale Account (4, needing 2 more at the start).
+// Grafts (+1 Mark each) affords the cheapest, Wholesale Account (4, needing 2 more at the start).
 test('Invest shows a disabled, explained placeholder for market cards the player can no longer afford', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
@@ -80,7 +80,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await investItems.first().getByRole('button', { name: /^Invest/ }).click({ force: true })
   await expect(page.locator('.active-producer')).toHaveText(actionsLeftBefore ?? '')
 
-  // Grafting twice (+1 Marks each, no other cost) affords Wholesale Account, which swaps from a disabled
+  // Grafting twice (+1 Mark each, no other cost) affords Wholesale Account, which swaps from a disabled
   // placeholder to a real, clickable Invest button; every card that was more than 2 Marks short stays
   // disabled (still short), and any other card 2 short becomes affordable with it.
   // Each Graft spends an action seed; wait for it before the next, since the hand re-lays out after each.
