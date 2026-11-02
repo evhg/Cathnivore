@@ -419,7 +419,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots D and L; the type lints (C13T) pass.
 - **Size:** 2
 
-## 30. [ ] Runnel: a crisp board, and the stats as a proper sheet
+## 30. [x] Runnel: a crisp board, and the stats as a proper sheet *(done 2026-11-02, 9a9d376..7ffa273: channels at 3:1 or more against their tiles in every palette (darker groove in the light seasons, pale sand channels at night; `tests/runnel-contrast.test.ts`), cloud shadows a faint soft-edged drift; at 1440 the board sits in a hedge with the spring house and Bea's garden in its corners and a stats rail down the left, 58% of the width; the stats sheet a grid of six tiles in two rows of three over the 28 days (it shared the win card's tilted polaroid rule); `e2e-site/runnel-board.spec.ts`; puzzle, win and stats shot at P, D, dark and greyscale via `scripts/runnel-shots.mjs`)*
 - **Why:** weather shadows smear grey ellipses over the tiles and the channels are tan on tan (`runnel-puzzle-P`, `-D`, `-P-dark`); at D the board is an island in empty paper. The stats sheet's tiles stack in a skewed column over the 28-day grid (`runnel-stats-P`, `-D`).
 - **Build:**
   - Cloud shadows down to a faint drift that never darkens a channel; channels inked at 3:1 or more against their tile.
