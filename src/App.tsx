@@ -26,6 +26,7 @@ import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
 import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_1, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { sealsEarned } from './content/campaignMap'
+import { MarrowBadge } from './ui/CampaignMap'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
@@ -258,6 +259,7 @@ export default function App() {
               )}
               <button className={hasSave ? 'title-cta' : 'primary title-cta'} onClick={() => setScreen({ name: 'campaign' })}>
                 Campaign
+                <MarrowBadge completed={loadCampaign().completed} />
               </button>
               <button className="title-cta" onClick={() => setScreen({ name: 'setup' })}>
                 Quick Game

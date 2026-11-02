@@ -110,3 +110,12 @@ test('under reduced motion the moment fades instead of walking', async ({ page }
   expect(await cath.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-fade')
   await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
 })
+
+test('the title\'s Campaign key shows how much of Marrow is freed', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.marrow-badge')).toHaveAttribute('data-free', '0')
+  await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat', 'word-of-mouth'], tutorialDone: true })), KEY)
+  await page.reload()
+  await expect(page.locator('.marrow-badge')).toHaveAttribute('data-free', '3')
+  await expect(page.getByRole('button', { name: /Campaign.*3 of 7 regions liberated/ })).toBeVisible()
+})

@@ -726,3 +726,25 @@ html.no-animations .campaign-screen * {
 :root.reduce-motion .campaign-screen .cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
 :root.reduce-motion .campaign-screen .cmp-map-next { animation: cmp-fade 400ms ease both !important; }
 html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
+
+/* Plan item 35: the title's Campaign key shows the map's progress. */
+.marrow-badge {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 10px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  background: var(--paper-on-fixed-fill);
+  color: var(--soil);
+}
+.marrow-badge svg {
+  width: 26px;
+  height: 23px;
+}
+.marrow-badge-hex {
+  fill: color-mix(in srgb, var(--hollowell) 55%, var(--surface));
+  stroke: currentColor;
+  stroke-width: 0.8;
+  stroke-opacity: 0.35;
+}
+.marrow-badge-hex.is-free { fill: var(--pasture-deep); }

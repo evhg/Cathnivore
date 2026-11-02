@@ -170,3 +170,29 @@ export default function CampaignMap({
     </figure>
   )
 }
+
+// The title's Campaign key carries the map's progress (plan item 35): Marrow's seven regions in little,
+// freed ones green. Text for screen readers says the same.
+export function MarrowBadge({ completed }: { completed: readonly string[] }) {
+  const free = liberatedRegions(completed)
+  const r = 5.2
+  const w = r * Math.sqrt(3)
+  return (
+    <span className="marrow-badge" data-free={free.size}>
+      <svg viewBox="-17 -15 34 30" aria-hidden="true">
+        {(Object.keys(MAP_AXIAL) as RegionId[]).map((id) => {
+          const [q, rr] = MAP_AXIAL[id]!
+          return (
+            <polygon
+              key={id}
+              points={hexPoints(r * 0.92)}
+              transform={`translate(${(w * (q + rr / 2)).toFixed(1)} ${(1.5 * r * rr).toFixed(1)})`}
+              className={free.has(id) ? 'marrow-badge-hex is-free' : 'marrow-badge-hex'}
+            />
+          )
+        })}
+      </svg>
+      <span className="sr-only">{`, ${free.size} of 7 regions liberated`}</span>
+    </span>
+  )
+}
