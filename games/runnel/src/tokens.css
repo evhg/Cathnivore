@@ -20,6 +20,22 @@
   --sky-dusk: #6b4f9a;
   --cloud: #2b2320;
   --gold: #d9951c;
+  /* Bea's garden (gardenart.ts): crop paint, the same in both themes (they're objects on the soil). */
+  --ga-leaf: #5f9a3a;
+  --ga-leaf-2: #7fb24f;
+  --ga-stem: #4e7d2f;
+  --ga-orange: #e8822a;
+  --ga-orange-2: #c96a1c;
+  --ga-red: #d1432f;
+  --ga-yellow: #f2c335;
+  --ga-brown: #7a5230;
+  --ga-pale: #e7f0c9;
+  --ga-pink: #f2a7b8;
+  --ga-tuber: #c9a06a;
+  --ga-soil: #8a6440;
+  --ga-wool: #f7f2e6;
+  --ga-face: #3b2d24;
+  --ga-line: rgba(43, 35, 32, 0.45);
   --grain: rgba(107, 74, 43, 0.14);
   --stone: #b9ada0;
   --stone-2: #cfc4b7;

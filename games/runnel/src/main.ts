@@ -4,6 +4,7 @@ import { drawShareCard, CARD_W, CARD_H } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
+import { cropSvg, dropSvg, eventCropSvg, visitorSvg } from './gardenart'
 import { creditBoard, eventBoardOf, eventCrops, eventOn } from './events'
 import './fonts.css'
 import './tokens.css'
@@ -360,10 +361,18 @@ function showWin(): void {
   ui.winPar.textContent = String(puzzle.par)
   const stats = dailyStats(data, today)
   ui.winNote.textContent = isDaily
-    ? `${parNote(game.taps, puzzle.par)} ${stats.streak > 1 ? '🔥 ' : ''}Streak: ${stats.streak} day${stats.streak === 1 ? '' : 's'} (best ${stats.maxStreak}). Next puzzle in ${untilTomorrow()}.`
+    ? `${parNote(game.taps, puzzle.par)} Streak: ${stats.streak} day${stats.streak === 1 ? '' : 's'} (best ${stats.maxStreak}). Next puzzle in ${untilTomorrow()}.`
     : parNote(game.taps, puzzle.par)
   const best = isOrchard ? data.orchard?.[level] : undefined
-  if (best) ui.winNote.textContent = `${'💧'.repeat(best.drops)}${'▫️'.repeat(3 - best.drops)} ${parNote(game.taps, puzzle.par)} Orchard drops: ${totalDrops(data.orchard ?? {})} of ${ORCHARD_LEVELS * 3}.`
+  if (best) {
+    ui.winNote.textContent = ` ${parNote(game.taps, puzzle.par)} Orchard drops: ${totalDrops(data.orchard ?? {})} of ${ORCHARD_LEVELS * 3}.`
+    const drops = document.createElement('span')
+    drops.className = 'win-drops'
+    drops.setAttribute('role', 'img')
+    drops.setAttribute('aria-label', `${best.drops} of 3 drops`)
+    drops.innerHTML = [1, 2, 3].map((n) => dropSvg(n <= best.drops)).join('')
+    ui.winNote.prepend(drops)
+  }
   ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : 'Next puzzle'
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
@@ -466,14 +475,20 @@ function renderGarden(): void {
   const plots = gardenPlots(data.results, today)
   const note = $<HTMLParagraphElement>('garden-note')
   const visitor = gardenVisitor(seasonOf(today), plots)
-  const base = visitor ? `${visitor.glyph} ${visitor.line}` : 'Solve a daily and Bea plants a seed.'
+  const base = visitor ? visitor.line : 'Solve a daily and Bea plants a seed.'
   note.textContent = base
+  if (visitor) {
+    const v = document.createElement('span')
+    v.className = 'garden-visitor'
+    v.innerHTML = visitorSvg(visitor.visitor)
+    note.prepend(v)
+  }
   $<HTMLDivElement>('garden').replaceChildren(
     ...plots.map((p) => {
       const b = document.createElement('button')
       b.type = 'button'
       b.className = `plot ${p.stage}${p.gold ? ' gold' : ''}`
-      b.textContent = p.glyph
+      b.innerHTML = cropSvg(p.crop, p.stage)
       b.setAttribute('aria-label', p.label)
       b.addEventListener('click', (e) => {
         e.preventDefault()
@@ -485,7 +500,7 @@ function renderGarden(): void {
       const b = document.createElement('button')
       b.type = 'button'
       b.className = 'plot ripe gold exclusive'
-      b.textContent = c.glyph
+      b.innerHTML = eventCropSvg(c.crop)
       b.setAttribute('aria-label', c.label)
       b.addEventListener('click', (e) => {
         e.preventDefault()
@@ -529,10 +544,10 @@ function renderRail(): void {
   }
   $<HTMLDivElement>('rail-cal').replaceChildren(...cells)
   // Bea's garden in the farm's corner: the newest of her crops (a seed bed until the first daily is solved).
-  const plots = gardenPlots(data.results, today).filter((p) => p.glyph)
+  const plots = gardenPlots(data.results, today)
   const crops = plots.slice(-6).map((p) => {
     const i = document.createElement('i')
-    i.textContent = p.glyph
+    i.innerHTML = cropSvg(p.crop, p.stage)
     if (p.gold) i.className = 'gold'
     return i
   })
@@ -544,7 +559,7 @@ function showStats(): void {
   const s = dailyStats(data, today)
   const cells: Array<[string, string]> = [
     [String(s.played), 'dailies solved'],
-    [`${s.streak > 1 ? '🔥 ' : ''}${s.streak}`, 'current streak'],
+    [String(s.streak), 'current streak'],
     [String(s.maxStreak), 'best streak'],
     [s.averageMs === null ? '–' : formatTime(s.averageMs), 'average daily time'],
     [String(data.practiceSolved), 'practice solved'],

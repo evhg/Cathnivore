@@ -2,12 +2,13 @@
 // Solve all five and Bea plants an exclusive crop in the garden that stays for good.
 
 import type { Size } from './store'
+import type { EventCropId } from './gardenart'
 
 export interface SeasonEvent {
   /** `spring-2026`: one event per season per year. */
   id: string
   name: string
-  crop: string
+  crop: EventCropId
   cropName: string
   boards: { code: string; size: Size; seed: string }[]
 }
@@ -23,8 +24,8 @@ function build(season: 'spring' | 'autumn', year: string): SeasonEvent {
     seed: `practice-${size}-${tag}-${i + 1}`,
   }))
   return season === 'spring'
-    ? { id: `spring-${year}`, name: 'Blossom Fortnight', crop: '🌸', cropName: 'blossom tree', boards }
-    : { id: `autumn-${year}`, name: 'Harvest Fortnight', crop: '🎃', cropName: 'giant pumpkin', boards }
+    ? { id: `spring-${year}`, name: 'Blossom Fortnight', crop: 'blossom', cropName: 'blossom tree', boards }
+    : { id: `autumn-${year}`, name: 'Harvest Fortnight', crop: 'giantPumpkin', cropName: 'giant pumpkin', boards }
 }
 
 /** The event running on `date` (YYYY-MM-DD): 1 to 21 April and 1 to 21 October. */
@@ -52,10 +53,10 @@ export function creditBoard(done: number[], index: number): { done: number[]; co
 }
 
 /** Past events whose crop the player has earned, as garden glyphs with a label. */
-export function eventCrops(ids: string[]): { glyph: string; label: string }[] {
+export function eventCrops(ids: string[]): { crop: EventCropId; label: string }[] {
   return ids.map((id) => {
     const [season, year] = id.split('-')
     const e = build(season === 'spring' ? 'spring' : 'autumn', year ?? '2026')
-    return { glyph: e.crop, label: `${e.name} ${year}: Bea's exclusive ${e.cropName}.` }
+    return { crop: e.crop, label: `${e.name} ${year}: Bea's exclusive ${e.cropName}.` }
   })
 }

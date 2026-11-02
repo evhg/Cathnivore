@@ -23,6 +23,6 @@ describe('Runnel seasonal events', () => {
     for (const i of [0, 0, 1, 2, 3]) done = creditBoard(done, i).done
     expect(creditBoard(done, 3).complete).toBe(false)
     expect(creditBoard(done, 4).complete).toBe(true)
-    expect(eventCrops(['autumn-2026'])[0]!.glyph).toBe('🎃')
+    expect(eventCrops(['autumn-2026'])[0]!.crop).toBe('giantPumpkin')
   })
 })

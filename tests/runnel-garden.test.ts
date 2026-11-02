@@ -23,3 +23,29 @@ describe('runnel garden', () => {
     expect(gardenVisitor('autumn', three)?.line).toMatch(/hedgehog/)
   })
 })
+
+describe('runnel garden art (plan item 37)', () => {
+  it('draws every crop in three distinct stages, with the plot\'s own crop', async () => {
+    const { CROP_IDS, cropStages, cropSvg, STAGES } = await import('../games/runnel/src/gardenart')
+    for (const crop of CROP_IDS) {
+      const stages = cropStages(crop)
+      expect(new Set(stages).size, crop).toBe(3)
+      for (const st of STAGES) expect(cropSvg(crop, st)).toMatch(/^<svg class="ga ga-/)
+    }
+    const plots = gardenPlots({ '2026-10-01': r(10) }, '2026-10-30')
+    expect(CROP_IDS).toContain(plots[0]!.crop)
+  })
+  it('uses no platform emoji in the garden, its visitors or the event crops', async () => {
+    const art = await import('../games/runnel/src/gardenart')
+    const { eventCrops } = await import('../games/runnel/src/events')
+    const all = [
+      ...art.CROP_IDS.flatMap((c) => art.STAGES.map((s) => art.cropSvg(c, s))),
+      ...(['lamb', 'butterfly', 'hedgehog', 'robin'] as const).map((v) => art.visitorSvg(v)),
+      art.eventCropSvg('blossom'),
+      art.eventCropSvg('giantPumpkin'),
+      JSON.stringify(eventCrops(['spring-2026', 'autumn-2026'])),
+      JSON.stringify(gardenVisitor('spring', gardenPlots({ a: r(1), b: r(1), c: r(1) } as never, '2026-10-30'))),
+    ].join('')
+    expect(all).not.toMatch(/\p{Extended_Pictographic}/u)
+  })
+})
