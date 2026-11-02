@@ -393,7 +393,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of every act's opener at P, D and L.
 - **Size:** 2
 
-## 28. [ ] Cathnivore: a market table where the day passes
+## 28. [x] Cathnivore: a market table where the day passes *(done 2026-11-02, 059c2e3..48bc91e: a trestle edge and checked cloth hem, Bea's crayon drawing pinned at the top corner and produce crates at the foot (desktop) under the board; `lightFor(round)` lights the table from dawn low on the left to dusk low on the right with a violet shade, lanterns in the dark theme; the new light sweeps across as the round turns; bunting, a cottage with chimney smoke and a bird on liberated regions, still under reduced motion; `e2e/market-table.spec.ts` (dawn vs noon token, via `e2eAutoplayUntil`), board-diorama and board-scales pass; shots of rounds 1, 5 and the last round reached at P and D, plus dark. Autoplayed games end by rounds 7-10, so "round 10" is the last round reached)*
 - **Why:** the board sits on a flat beige panel (`cathnivore-game-D`, `-D-dark`), and rounds 1 to 10 look the same. The table should be a place (VISION 1, 4).
 - **Build:**
   - The board surround as a trestle table: a wood edge, a tablecloth hem, crates, and a drawing of Bea's pinned at a corner (SVG, inside the CSP).
