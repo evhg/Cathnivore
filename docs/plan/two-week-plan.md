@@ -583,7 +583,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of Practice and the workshop at P and D.
 - **Size:** 2
 
-## 40. [ ] NIGHT SHIFT and Hedgerow: the bugs from the 2026-11-02 critique, fixed as one batch *(lane A, in progress)*
+## 40. [x] NIGHT SHIFT and Hedgerow: the bugs from the 2026-11-02 critique, fixed as one batch *(done 2026-11-02, lane A, 17:16-19:30 sessions, slices 1-11: Hedgerow's name plate whole, the fresh map line clear of the header, the D side column ending on a whole card, the L round ticket's stub whole (60 px), the L end card a spread, the 3D rooks drawn as birds, "Start here" only on a fresh farm; NIGHT SHIFT's L touch columns clear of the scope and the look hint, the objective pool's soft fall-off, the class-pick still without the title under it, the P class pick's pinned hold bar with a "More below" cue, the L case board's first lead and Back on screen, Continue's plain line, `cathodeFront.ready` at the gate; e2e in `hedgerow-critique.spec.ts`, `cathode-hud.spec.ts`, `cathode-front.spec.ts`; shots at each size that broke)*
 - **Why:** a fresh-eyes pass at P, D and L found layout and craft bugs.
 - **Build:**
   - **Hedgerow:**

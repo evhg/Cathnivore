@@ -2952,8 +2952,9 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel.panel-preview {
     gap: 6px;
   }
+  /* 60 px: at 50 the stub's "ROUND" (51 px of tracked caps) ran 5 px past the perforation (plan item 40) */
   .round-ticket {
-    --stub: 50px;
+    --stub: 60px;
     min-height: 0;
   }
   .ticket-head .tag {

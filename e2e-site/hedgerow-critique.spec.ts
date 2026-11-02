@@ -65,6 +65,28 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
     expect(cut).toEqual([])
   })
 
+  test('at 844x390 the round ticket shows its whole "of N"', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.goto('/hedgerow/?sandbox=1&2d')
+    await page.evaluate(() => {
+      const stars = Object.fromEntries(Array.from({ length: 11 }, (_, i) => [String(i + 1), 3]))
+      const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 12: true }, tips }))
+    })
+    await page.goto('/hedgerow/?sandbox=1&2d&level=12')
+    const stub = page.locator('.round-ticket .ticket-stub').first()
+    await expect(stub).toBeVisible()
+    await expect(page.locator('.round-ticket .ticket-of').first()).toHaveText(/of \d+/)
+    const bad = await stub.evaluate((s) => {
+      const box = s.getBoundingClientRect()
+      return [...s.querySelectorAll<HTMLElement>('.ticket-label, .ticket-no, .ticket-of')].filter((e) => {
+        const r = e.getBoundingClientRect()
+        return e.scrollWidth > e.clientWidth + 1 || r.left < box.left - 1 || r.right > box.right + 1 || r.right > innerWidth
+      }).map((e) => e.className)
+    })
+    expect(bad).toEqual([])
+  })
+
   for (const level of [12, 25, 30]) {
     test(`at 1440x900 level ${level}'s side column ends on a whole card and the tray is one row`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 })
