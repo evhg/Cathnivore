@@ -66,7 +66,12 @@ const SLEEVES: Record<SleeveId, { sleeve: Finish; button: Finish }> = {
   },
 };
 
-const SKIN: Finish = { color: CATH_HERO.skin, metal: 0, rough: 0.55, sheen: 0.12, band: "flat", wear: 0 };
+/**
+ * Her skin in first person: the hero's tone a step down in albedo, because the viewmodel's own soft key sits
+ * close to her hands (at the hero's value the shot read chalk-white under it; the takedown rig does the same).
+ */
+export const VIEW_SKIN = 0xb4826c;
+const SKIN: Finish = { color: VIEW_SKIN, metal: 0, rough: 0.5, sheen: 0.12, band: "flat", wear: 0 };
 /** Oxblood lacquer: the one red she wears, the same family as the game's accent. */
 const NAILS: Finish = { color: 0x6a0f1c, metal: 0, rough: 0.16, coat: 1, band: "flat", wear: 0 };
 const LEATHER: Finish = { color: 0x141214, metal: 0, rough: 0.45, sheen: 0.4, coat: 0.12, band: "leather", scale: 3, wear: 0.2 };

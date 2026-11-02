@@ -4,11 +4,11 @@
 //   npm run build:site && npx vite preview --outDir dist-site --port 4186 &
 //   PLAYWRIGHT_CHROMIUM_PATH=... node scripts/cathode-hands-shots.mjs [stage ...]
 //
-// Env: CATHODE_URL (default http://localhost:4186/cathode/), OUT (default e2e/screenshots/hands), VPS=d,l.
+// Env: CATHODE_URL (default http://localhost:4186/nightshift/), OUT (default e2e/screenshots/hands), VPS=d,l.
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 
-const base = process.env.CATHODE_URL ?? 'http://localhost:4186/cathode/'
+const base = process.env.CATHODE_URL ?? 'http://localhost:4186/nightshift/'
 const out = process.env.OUT ?? 'e2e/screenshots/hands'
 mkdirSync(out, { recursive: true })
 const VP = {

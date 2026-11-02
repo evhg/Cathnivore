@@ -74,13 +74,13 @@ const RIFLE = clip(
   [100, 1950],
 );
 
-/** The shotgun rolls its loading port up to her, then the muzzle comes up to check the bead. */
+/** The shotgun rolls its port and loading gate up to her (half a turn: further swung the support sleeve across the view), then the muzzle comes up to check the bead. */
 const SHOTGUN = clip(
   2900,
   [
     [0, [0, 0, 0], [0, 0, 0]],
-    [500, [-0.04, 0.05, 0.01], [0.24, 0.3, -0.82], "inOut"],
-    [1400, [-0.04, 0.054, 0.01], [0.28, 0.34, -0.86]],
+    [500, [0.01, 0.03, 0.02], [0.16, 0.22, -0.5], "inOut"],
+    [1400, [0.01, 0.034, 0.02], [0.19, 0.25, -0.54]],
     [1950, [-0.03, 0.06, 0.02], [0.38, 0.16, 0.12], "inOut"],
     [2350, [-0.03, 0.06, 0.02], [0.36, 0.14, 0.1]],
     [2900, [0, 0, 0], [0, 0, 0], "inOut"],

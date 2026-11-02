@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { armDress, gloveFor, sleeveFor, CATH_HERO } from "../games/cathode/src/game/armdress";
+import { armDress, gloveFor, sleeveFor, CATH_HERO, VIEW_SKIN } from "../games/cathode/src/game/armdress";
 import { Arms } from "../games/cathode/src/game/hands";
 import { IDLE_SWAY, INSPECTS, idleSway, inspectClip, inspectPeak } from "../games/cathode/src/game/feel/inspect";
 import { newCharacter } from "../games/cathode/src/sim/character";
@@ -41,7 +41,7 @@ describe("plan item 26: Cath's arms dress from the wardrobe save", () => {
     const sleeves = new Set(["trench", "duster", "armouredMac", "silkLinedCoat"].map((b) => armDress({ coat: { base: b } }).sleeveFin.color));
     expect(sleeves.size).toBe(4);
     const bare = armDress({ coat: { base: "trench" } });
-    expect(bare.handFin.color).toBe(CATH_HERO.skin);
+    expect(bare.handFin.color).toBe(VIEW_SKIN);
     expect(bare.nails).not.toBeNull();
     expect(armDress({ gloves: { base: "knuckleGloves" } }).bareFrom).toBeGreaterThan(0);
   });
@@ -62,7 +62,7 @@ describe("plan item 26: Cath's arms dress from the wardrobe save", () => {
     const cs = colours(arms.right.mesh);
     expect(cs.has(lin(d.sleeveFin.color))).toBe(true);
     expect(cs.has(lin(CATH_HERO.trench))).toBe(false);
-    expect(cs.has(lin(CATH_HERO.skin))).toBe(true);
+    expect(cs.has(lin(VIEW_SKIN))).toBe(true);
     expect(cs.has(lin(d.nails!.color))).toBe(true);
     // The same dress again rebuilds nothing.
     expect(arms.redress(armDress(ch.equipment))).toBe(false);
