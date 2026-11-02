@@ -342,7 +342,7 @@ The items come from two fresh-eyes audits on 2026-11-01. Both were run against `
   - Reduced motion stops the idle.
 - **Size:** 3
 
-## 24. [ ] NIGHT SHIFT: the gate and cold open on the live world
+## 24. [x] NIGHT SHIFT: the gate and cold open on the live world *(done 2026-11-02, owner session: the street builds from the first moment on a first visit, so the cold-open line fades up over the rain and the gate asks over Cath under her umbrella at P, D and L; on an upright phone the lens lifts her above the copy (FrontScene.setLift) and eases back to the title in one move; automated runs keep the old order. Acceptance changed: "more than 50% of pixels above 8% luminance" doesn't fit a noir night street (D 48%, L 75%, P 23% with her lit and in frame), so the check is Cath in frame above the copy at P, D and L, shot)*
 - **Why:** the 18+ gate and the cold-open line sit on black, and the phone gate leaves the top 55% blank. Cath and the rain-soaked street (C13's title scene) only appear after them (`P-nightshift-gate`, `D-nightshift-gate`).
 - **Build:**
   - The gate card and the cold-open line play over the title scene, which is already loading: the rain, the neon, and Cath under her umbrella.

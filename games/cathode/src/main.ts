@@ -84,7 +84,10 @@ function quality() {
 function built(): void {
   document.getElementById("front-building")?.classList.add("is-done");
 }
+let sceneStarted = false
 function startScene(): void {
+  if (sceneStarted) return
+  sceneStarted = true
   if (!webgl2()) return built();
   const rs = Math.max(0.25, Math.min(1, Number(params.get("rs") ?? 1) || 1));
   sceneReady = import("./render/frontscene")
@@ -179,8 +182,12 @@ const gateFraming = () => (innerHeight <= 520 && innerWidth > innerHeight ? 0.62
 function openGate(): Promise<void> {
   show("screen-gate");
   scene?.setFraming(gateFraming());
+  scene?.setLift(1);
   void sceneReady.then((s) => {
-    if (!$("screen-gate").hidden) s?.setFraming(gateFraming());
+    if (!$("screen-gate").hidden) {
+      s?.setFraming(gateFraming());
+      s?.setLift(1);
+    }
   });
   const gate = $("screen-gate");
   requestAnimationFrame(() => gate.classList.add("is-in"));
@@ -197,6 +204,7 @@ function openGate(): Promise<void> {
       plate.classList.add("is-wiping");
       setTimeout(() => {
         scene?.setFraming(0.42);
+        scene?.setLift(0);
         gate.classList.remove("is-in");
         plate.classList.remove("is-wiping");
         resolve();
@@ -660,7 +668,11 @@ async function boot(): Promise<void> {
   // the gate paints, and only then does the street start building behind it (a slow GPU or software WebGL can
   // hold the main thread for a long time while it builds). A returning player's street builds at once.
   const firstVisit = !prefs.adult && !(frontStage && shot);
-  if (!firstVisit) startScene();
+  // Plan item 24: the street starts building at once on a first visit too, so the cold-open line fades up over
+  // the rain and the gate asks its question in front of Cath under her umbrella. Shaders now compile in the
+  // background (render/warm.ts), so the gate stays responsive while it builds. Automated runs keep the old order:
+  // software WebGL there still holds the main thread for seconds, and the gate's keys would wait behind it.
+  if (!firstVisit || !navigator.webdriver) startScene();
   await fontsReady();
   if (firstVisit) {
     await coldOpen(true);
@@ -668,7 +680,10 @@ async function boot(): Promise<void> {
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 120))));
     startScene();
     void sceneReady.then((s) => {
-      if (!$("screen-gate").hidden) s?.setFraming(gateFraming());
+      if (!$("screen-gate").hidden) {
+        s?.setFraming(gateFraming());
+        s?.setLift(1);
+      }
     });
     await gate;
     openTitle(true);

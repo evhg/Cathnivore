@@ -36,6 +36,8 @@ export interface FrontScene {
   focusBias(v: number): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
+  /** Plan item 24: 1 while the age gate is up on an upright phone (the lens aims low so she stands above the copy), 0 to ease back. */
+  setLift(k: number): void;
   /**
    * C14 (S9.5): the wardrobe. A close three-quarter framing of her with a key light in the class's colour (400 ms),
    * and the class's 1.2 s idle. null goes back to the title loop. `instant` (screenshots) skips the eases.
@@ -200,6 +202,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const W = 2 * Math.PI * 2;
   let time = 0;
   let framing = 0.42;
+  let lift = 0;
+  let liftWant = 0;
   let pushT = -1;
   let pushDur = 1.6;
   let pushDone: (() => void) | null = null;
@@ -238,6 +242,14 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const u = (((t / LOOP_S) % 1) + 1) % 1;
     posCurve.getPointAt(u, p);
     lookCurve.getPointAt(u, l);
+    // The gate on an upright phone: the copy fills the lower half, so the lens aims low and steps back to lift
+    // her into the upper window; accepting eases it back into the title's framing in one move.
+    lift += (liftWant - lift) * (o.still || dt === 0 ? 1 : 1 - Math.exp(-dt * 1.6));
+    if (lift > 0.001 && cam.aspect < 1) {
+      const e = smoother(Math.min(1, lift));
+      l.y -= 1.1 * e;
+      p.sub(l).multiplyScalar(1 + 0.3 * e).add(l);
+    }
     if (wd.w > 0) {
       const e = smoother(Math.min(1, wd.w));
       p.lerp(wPos, e);
@@ -396,6 +408,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     set time(v: number) {
       time = v;
+    },
+    setLift(k) {
+      liftWant = THREE.MathUtils.clamp(k, 0, 1);
     },
     setFraming(k) {
       framing = THREE.MathUtils.clamp(k, 0, 0.9);

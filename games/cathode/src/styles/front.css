@@ -727,6 +727,11 @@
     background:
       linear-gradient(180deg, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .8) 45%, rgb(var(--shade-rgb) / .55) 70%, rgb(var(--shade-rgb) / .7) 100%);
   }
+  /* Plan item 24: on the gate the lens lifts her into the top half, so only the copy's lower half is shaded. */
+  .screen.gate::before {
+    background:
+      linear-gradient(180deg, rgb(var(--shade-rgb) / .15) 0%, rgb(var(--shade-rgb) / .1) 38%, rgb(var(--shade-rgb) / .72) 56%, rgb(var(--shade-rgb) / .86) 100%);
+  }
   .title-col { top: calc(var(--safe-y) + 48px); width: calc(100vw - 2 * var(--safe-x)); } /* px-ok: under the back link */
   .logo-svg { width: 100%; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
