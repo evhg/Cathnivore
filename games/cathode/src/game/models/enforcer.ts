@@ -167,6 +167,7 @@ class Builder {
   add(bone: string, geo: THREE.BufferGeometry, surf: Surface | Glow, pl?: Place | THREE.Matrix4): void {
     if (this.o.only !== undefined && this.tag !== this.o.only) return;
     if (TRI_LOG) TRI_LOG.push([bone, tris(geo), new Error().stack?.split("\n")[2]?.trim() ?? ""]);
+    if (PART_LOG) PART_LOG.push([bone, finishName(surf), tris(geo)]);
     const m = pl instanceof THREE.Matrix4 ? pl : placeMatrix(pl);
     const glow = typeof surf === "object" && "surf" in surf ? (surf as Glow) : null;
     const g = bake(geo, glow ? glow.surf : (surf as Surface), m);
@@ -219,6 +220,18 @@ class Builder {
 export let TRI_LOG: Array<[string, number, string]> | null = null;
 export function logTris(on: boolean): void {
   TRI_LOG = on ? [] : null;
+}
+/** Plan item 41 (tests): when set, every piece added logs its bone, its finish's name and its triangles. */
+export let PART_LOG: Array<[string, string, number]> | null = null;
+export function logParts(on: boolean): void {
+  PART_LOG = on ? [] : null;
+  // A cached body would log nothing: a logged build always builds.
+  if (on) ARCH_CACHE.clear();
+}
+function finishName(surf: Surface | Glow): string {
+  for (const [k, v] of Object.entries(FINISH)) if (v === surf) return k;
+  for (const [k, v] of Object.entries(GLOWS)) if (v === surf) return `glow:${k}`;
+  return "other";
 }
 
 const TORSO_SEGS = new Set(["abdomen", "chest", "upperChest"]);
@@ -944,12 +957,32 @@ function clinicLeg(b: Builder, side: "L" | "R", arch: Arch): void {
   if (lod < 2 && !nurse) b.add(sh, b.box(0.07, 0.024, 0.004, 0), GLOWS.tape, { p: [0, sL * 0.3, 0.082] });
 }
 
+/**
+ * Plan item 41: the features below a goggle slit or face shield, so a bare-faced archetype (the orderly behind his
+ * clear shield, the thug, the bystander) has a face, not a slab: the nose's bridge and tip, the mouth's dark line and
+ * the lower lip, the chin. On the head bone in its own frame (the skull lathe is widest, 0.112, at HELM_Y = 0.15),
+ * so it stays with the head when the hair or helmet piece goes; a few boxes, inside every LOD budget.
+ */
+function features(b: Builder): void {
+  const { lod } = b.o;
+  if (lod === 2) return;
+  const S = FINISH;
+  b.add("head", box(0.016, 0.036, 0.02, 0, 0), S.skin, { p: [0, 0.13, 0.112], r: [-0.25, 0, 0] });
+  b.add("head", box(0.024, 0.012, 0.018, 0, 0), S.skin, { p: [0, 0.114, 0.116] });
+  if (lod === 1) return;
+  b.add("head", box(0.036, 0.005, 0.006, 0, 0), S.glass, { p: [0, 0.098, 0.1035] });
+  b.add("head", box(0.03, 0.008, 0.008, 0, 0), S.skin, { p: [0, 0.09, 0.1015] });
+  b.add("head", box(0.05, 0.022, 0.02, 0, 0), S.skin, { p: [0, 0.07, 0.093], r: [0.3, 0, 0] });
+}
+
 function clinicHead(b: Builder, arch: Arch): void {
   const { lod } = b.o;
   const S = FINISH;
   const nurse = arch === "nurse";
   b.add("head", limb(0.1, (t) => 0.052 + 0.004 * t, b.seg(12), 1), S.skin, { p: [0, -0.01, 0] });
   b.add("head", lathe([[0, 0.03], [0.06, 0.04], [0.1, 0.09], [0.112, 0.15], [0.1, 0.22], [0.06, 0.255], [0, 0.262]], 0.92, 1.0, b.seg(14)), S.skin);
+  // The nurse's mask covers her lower face; the orderly's clear shield shows his.
+  if (!nurse) features(b);
   const H = "helmet";
   const sz = 1.04;
   const ring = (pr: P2[], c: number, half: number, surf: Surface | Glow, n: number) => b.add(H, shell(pr, c - half, half * 2, b.seg(n)), surf, { p: [0, 0, -0.008], s: [1, 1, sz] });
@@ -964,7 +997,12 @@ function clinicHead(b: Builder, arch: Arch): void {
     // The orderly: a clear face shield on a headband, its edge catching the light, the slit behind it.
     b.add(H, shell([[0.125, -0.02], [0.14, 0.0], [0.142, 0.05], [0.13, 0.08], [0.128, 0.05], [0.128, 0.0]], -1.45, 2.9, b.seg(18), 0.3), S.cuff, { p: [0, 0, -0.008], s: [1, 1, sz] });
     ring([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], 0, 46 * D, GLOWS.slit, lod === 0 ? 12 : 8);
-    if (lod < 2) ring([[0.138, -0.11], [0.148, -0.1], [0.152, 0.03], [0.146, 0.09], [0.14, 0.09], [0.145, 0.03], [0.142, -0.095]], 0, 70 * D, S.shield, lod === 0 ? 16 : 10);
+    // Plan item 41: only the shield's frame. The body draws opaque, so a full pane read as a grey slab where his
+    // face should be; the frame's lower edge and its two sides show it's there, and his face shows through.
+    if (lod < 2) {
+      ring([[0.144, -0.106], [0.152, -0.1], [0.152, -0.088], [0.144, -0.094]], 0, 70 * D, S.shield, lod === 0 ? 16 : 10);
+      for (const side of [-1, 1]) ring([[0.142, -0.1], [0.152, -0.1], [0.152, 0.09], [0.142, 0.09]], side * 33 * D, 4 * D, S.shield, 1);
+    }
   }
   ring([[0.1105, -0.044], [0.1145, -0.043], [0.1145, -0.023], [0.1105, -0.022]], Math.PI, 30 * D, GLOWS.strip, 8);
 }
@@ -1075,6 +1113,7 @@ function streetHead(b: Builder, arch: Arch): void {
   const thug = arch === "thug";
   b.add("head", limb(0.1, (t) => 0.052 + 0.004 * t, b.seg(12), 1), S.skin, { p: [0, -0.01, 0] });
   b.add("head", lathe([[0, 0.03], [0.06, 0.04], [0.1, 0.09], [0.112, 0.15], [0.1, 0.22], [0.06, 0.255], [0, 0.262]], 0.92, 1.0, b.seg(14)), S.skin);
+  features(b);
   const H = "helmet";
   // Hair: a close crop for the bystander, a shaved side and a mohawk fin for the thug.
   b.add(H, shell([[0.0, 0.15], [0.07, 0.14], [0.11, 0.11], [0.124, 0.07], [0.124, 0.03], [0.118, 0.012], [0.11, 0.02], [0.116, 0.05], [0.1, 0.105], [0.066, 0.128], [0.0, 0.138]], 0, Math.PI * 2, b.seg(22), 0.5), S.hair, { p: [0, 0, -0.012], s: [1, 1, 1.04] });

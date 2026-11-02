@@ -186,3 +186,36 @@ describe("C11 hero detail (the takedown's close-up)", () => {
     expect(refine(prof, 0.5)).toBe(prof);
   });
 });
+
+// Plan item 41: every humanoid archetype has a face at LOD0 (eyes, or a faction visor, lens or mask over
+// modelled features) and two real hands (a hand and fingers on each side). The bare-faced ones (the orderly behind
+// his clear shield, the thug, the bystander) have a nose, mouth and chin below their goggle slit.
+import { logParts, PART_LOG } from "../games/cathode/src/game/models/enforcer";
+describe("CATHODE enemy faces and hands (plan item 41)", () => {
+  const parts = (arch: Arch) => {
+    logParts(true);
+    archGeometry(arch, 0, false, true);
+    const log = PART_LOG!;
+    logParts(false);
+    return log;
+  };
+  const HUMANS: Arch[] = ["enforcer", "leader", "riot", "sniper", "orderly", "nurse", "thug", "civilian", "chrome", "psycho"];
+  for (const arch of HUMANS)
+    it(`${arch} LOD0 has a face and two hands`, () => {
+      const log = parts(arch);
+      const onHead = log.filter(([b]) => b === "head" || b === "helmet").map(([, f]) => f);
+      const eyes = onHead.includes("eye");
+      const visor = onHead.some((f) => f === "glow:slit" || f === "glow:lens" || f === "glow:status");
+      expect(eyes || visor, `${arch}: ${[...new Set(onHead)].join(",")}`).toBe(true);
+      for (const s of ["L", "R"]) {
+        expect(log.filter(([b]) => b === `hand${s}`).length, `${arch} hand${s}`).toBeGreaterThan(0);
+        expect(log.filter(([b]) => b === `fingers${s}`).length, `${arch} fingers${s}`).toBeGreaterThan(0);
+      }
+    });
+  for (const arch of ["orderly", "thug", "civilian"] as Arch[])
+    it(`${arch} has modelled features below the slit (not a slab)`, () => {
+      const skin = parts(arch).filter(([b, f]) => b === "head" && f === "skin").length;
+      expect(skin).toBeGreaterThanOrEqual(6); // skull, neck, nose bridge and tip, lower lip, chin
+      expect(parts(arch).some(([b, f]) => b === "head" && f === "glass")).toBe(true); // the mouth line
+    });
+});
