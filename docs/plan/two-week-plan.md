@@ -445,7 +445,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The 75% field checks (items 10, 19) still pass; shots P, D and L.
 - **Size:** 2
 
-## 32. [ ] Cathnivore: chapter 2 taught on the board
+## 32. [ ] Cathnivore: chapter 2 taught on the board *(lane B, in progress)*
 - **Why:** owner feedback 2026-11-02 wants the campaign taught "baby step by baby step"; the owner's coach covers chapter 1 only, and chapter 2 still uses the old prompt strip (FEEDBACK).
 - **Build:**
   - The spotlight coach (`src/content/tutorial.ts`, `TutorialCoach.tsx`) scripts chapter 2's first round: the new idea it brings, shown by doing it, with Cath's what and why.

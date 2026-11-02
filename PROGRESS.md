@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- Lane B: plan item 32 (Cathnivore chapter 2 coach), 2026-11-02 14:08 session.
 - **Plan items 29 and 30 done; item 31 slice 1 done (2026-11-02 12:51 session).** Next: **plan item 31** slice 2, Cath's field notebook in the empty desktop side column (the selected tower's tier path, sell value, a sketch of the next new enemy; e2e: no empty band over 120 px) and at P in the tray-peek drawer. Then 32 (Cathnivore chapter 2 coach). After 31 only 1-2 items stay open: plan the next items (CLAUDE.md step 4).
 - Critique bugs still open: `landing-full` shots show a long blank band (scroll reveal under full-page capture, or real?), NIGHT SHIFT title at D/L shot black (likely shot timing), Cathnivore setup at D has an empty Difficulty panel.
 ## Blocked
