@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { lightFor } from './tableLight'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
@@ -118,6 +119,9 @@ interface Props {
 function isE2EAutoplay(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAutoplay') === '1'
 }
+// Test-only, with `?e2eAutoplay=1`: `&e2eAutoplayUntil=N` stops the autoplay once round N begins, so a test
+// can look at the table at a given round (plan item 28's light through the day).
+const E2E_AUTOPLAY_UNTIL = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('e2eAutoplayUntil') ?? 0) : 0
 
 // Test-only: forces the AI teammate's Worker to throw on its very first decision, so
 // e2e/ai-teammate-crash.spec.ts can verify the fallback-to-HeuristicBot path (DECISIONS.md) without
@@ -550,6 +554,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // synchronous HeuristicBot for every producer — including the AI teammate's own seat — so a test can
     // finish a whole game in milliseconds rather than waiting on real MCTS decisions.
     if (autoplayRef.current) {
+      if (E2E_AUTOPLAY_UNTIL > 0 && state.round >= E2E_AUTOPLAY_UNTIL) return
       const timer = setTimeout(() => {
         const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
         rngRef.current = nextRng
@@ -1662,7 +1667,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       </section>
       </div>
 
-      <section className="map-wrap">
+      <section className="map-wrap" data-light={lightFor(state.round)}>
+        {/* Plan item 28: as the round turns, the new light sweeps across the table once. */}
+        {roundTick > 0 && <div key={`sweep-${roundTick}`} className="table-sweep" aria-hidden="true" />}
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
             the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}
         {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (

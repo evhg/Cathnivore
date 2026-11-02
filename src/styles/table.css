@@ -456,7 +456,67 @@
   background:
     var(--grain-paper),
     radial-gradient(ellipse 72% 66% at 50% 47%, var(--paper-hi) 0%, var(--paper-2) 58%, var(--paper-3) 100%);
-  box-shadow: inset 0 0 120px rgb(var(--shadow-ink) / .18), inset 0 1px 0 var(--ink-a08);
+  box-shadow:
+    inset 0 0 120px rgb(var(--shadow-ink) / .18), inset 0 1px 0 var(--ink-a08),
+    0 0 0 4px var(--wood), 0 0 0 6px var(--wood-lo), 0 8px 18px rgb(var(--shadow-ink) / .22);
+  --light-x: 50%;
+  --light-y: 0%;
+  --table-light: var(--light-noon);
+  --table-shade: transparent;
+}
+/* plan item 28: the trestle table. A checked cloth hem along the foot of the cloth... */
+.map-wrap::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 9px;
+  border-radius: 0 0 var(--r-sheet) var(--r-sheet);
+  background: repeating-linear-gradient(90deg, var(--hem-check) 0 9px, transparent 9px 18px),
+    repeating-linear-gradient(0deg, var(--hem-check) 0 3px, transparent 3px 6px);
+  opacity: .7;
+  pointer-events: none;
+}
+/* ...and the light of the hour over everything on it: dawn low from the left, noon from above, dusk low
+   from the right with a long violet shade; in the dark theme, two lanterns at the top corners. */
+.map-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raised);
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 90% 85% at var(--light-x) var(--light-y), var(--table-light), transparent 72%),
+    linear-gradient(to left, transparent 40%, var(--table-shade)),
+    radial-gradient(circle at 5% 6%, var(--lantern), transparent 32%),
+    radial-gradient(circle at 95% 6%, var(--lantern), transparent 32%);
+  pointer-events: none;
+}
+.map-wrap[data-light="dawn"] { --table-light: var(--light-dawn); --light-x: 4%; --light-y: 34%; }
+.map-wrap[data-light="morning"] { --table-light: var(--light-morning); --light-x: 24%; --light-y: 8%; }
+.map-wrap[data-light="noon"] { --table-light: var(--light-noon); --light-x: 50%; --light-y: 0%; }
+.map-wrap[data-light="afternoon"] { --table-light: var(--light-afternoon); --light-x: 76%; --light-y: 8%; }
+.map-wrap[data-light="dusk"] { --table-light: var(--light-dusk); --light-x: 96%; --light-y: 36%; --table-shade: var(--dusk-shade); }
+/* As the round turns, a band of the new light sweeps across the table once. */
+.table-sweep {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raised);
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+.table-sweep::before {
+  content: "";
+  position: absolute;
+  inset: -10% auto -10% 0;
+  width: 38%;
+  background: linear-gradient(100deg, transparent, var(--sweep), transparent);
+  translate: -110% 0;
+  animation: table-sweep 1400ms var(--ease-corp) 200ms forwards;
+}
+@keyframes table-sweep { to { translate: 300% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .table-sweep { display: none; }
 }
 
 .map {

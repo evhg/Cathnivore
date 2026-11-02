@@ -152,10 +152,34 @@
 
   /* motion: corporations are mechanical and never overshoot */
   --ease-corp: cubic-bezier(.45, 0, .55, 1);
+
+  /* plan item 28: the market table's light through the day, its trestle edge and its cloth hem */
+  --light-dawn: rgb(255 170 128 / .34);
+  --light-morning: rgb(255 222 160 / .18);
+  --light-noon: rgb(255 252 236 / .12);
+  --light-afternoon: rgb(255 200 112 / .2);
+  --light-dusk: rgb(236 118 70 / .42);
+  --dusk-shade: rgb(48 24 56 / .26);
+  --lantern: rgb(255 184 92 / 0);
+  --sweep: rgb(255 246 220 / .34);
+  --wood: #8A5A34;
+  --wood-lo: #5A3820;
+  --hem-check: rgb(176 64 52 / .55);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --light-dawn: rgb(0 0 0 / 0);
+    --light-morning: rgb(0 0 0 / 0);
+    --light-noon: rgb(0 0 0 / 0);
+    --light-afternoon: rgb(0 0 0 / 0);
+    --light-dusk: rgb(0 0 0 / 0);
+    --dusk-shade: rgb(0 0 0 / 0);
+    --lantern: rgb(255 176 80 / .3);
+    --sweep: rgb(255 196 120 / .16);
+    --wood: #4A3020;
+    --wood-lo: #2E1C12;
+    --hem-check: rgb(150 60 48 / .45);
     --focus: #8EC5F5;
     --focus-halo: #1E1A17;
     --paper: #1E1A17;
@@ -200,6 +224,17 @@
 }
 
 :root[data-theme="dark"] {
+  --light-dawn: rgb(0 0 0 / 0);
+  --light-morning: rgb(0 0 0 / 0);
+  --light-noon: rgb(0 0 0 / 0);
+  --light-afternoon: rgb(0 0 0 / 0);
+  --light-dusk: rgb(0 0 0 / 0);
+  --dusk-shade: rgb(0 0 0 / 0);
+  --lantern: rgb(255 176 80 / .3);
+  --sweep: rgb(255 196 120 / .16);
+  --wood: #4A3020;
+  --wood-lo: #2E1C12;
+  --hem-check: rgb(150 60 48 / .45);
   --focus: #8EC5F5;
   --focus-halo: #1E1A17;
   --paper: #1E1A17;

@@ -381,7 +381,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots D and L per weapon class.
 - **Size:** 2
 
-## 27. [ ] Hedgerow: story scenes on a full stage
+## 27. [x] Hedgerow: story scenes on a full stage *(done 2026-11-02, 2d52ea7: the scene fills the screen on the act's painted ground; Cath and the cast at half length (`castSvg(who, "half")` runs each coat on to the waist with sleeve lines), wiping in from their sides, a pose per line; each line wipes in from the speaker's side, fades under reduced motion; location box up top, speaker plate with the name only; landscape puts the figures either side of a centred band; Escape skips into the level, arrows step on; `e2e-site/hedgerow-story.spec.ts` (50%+ figures, faces in view and clear of the band at P, D, L; keyboard; reduced motion); every act's opener shot at P, D, L via `scripts/hedgerow-story-shots.mjs`)*
 - **Why:** Hedgerow's story is a 640 px modal over the dimmed map with small busts (`hedgerow-story-D`); at L the faces crop to slivers (`hedgerow-story-L`). Cathnivore's scenes got a full stage in item 5; Hedgerow's still read as a dialog box (VISION 5).
 - **Build:**
   - A full-viewport scene: the act's painted ground as the backdrop, Cath and the speaker at half length, panel-wipe entrances and a pose per line (item 23's poses).
