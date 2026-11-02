@@ -995,7 +995,8 @@ function clinicHead(b: Builder, arch: Arch): void {
     ring([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], 0, 46 * D, GLOWS.slit, lod === 0 ? 12 : 8);
   } else {
     // The orderly: a clear face shield on a headband, its edge catching the light, the slit behind it.
-    b.add(H, shell([[0.125, -0.02], [0.14, 0.0], [0.142, 0.05], [0.13, 0.08], [0.128, 0.05], [0.128, 0.0]], -1.45, 2.9, b.seg(18), 0.3), S.cuff, { p: [0, 0, -0.008], s: [1, 1, sz] });
+    // Plan item 41: the shield's headband sits on his forehead, above the goggle slit (it used to run across his eyes).
+    b.add(H, shell([[0.124, 0.03], [0.136, 0.04], [0.138, 0.075], [0.128, 0.098], [0.126, 0.075], [0.126, 0.04]], -1.45, 2.9, b.seg(18), 0.3), S.cuff, { p: [0, 0, -0.008], s: [1, 1, sz] });
     ring([[0.1175, 0.0], [0.1215, 0.002], [0.1215, 0.016], [0.1175, 0.018]], 0, 46 * D, GLOWS.slit, lod === 0 ? 12 : 8);
     // Plan item 41: only the shield's frame. The body draws opaque, so a full pane read as a grey slab where his
     // face should be; the frame's lower edge and its two sides show it's there, and his face shows through.
