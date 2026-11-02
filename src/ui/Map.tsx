@@ -338,6 +338,43 @@ function PressureRing({ x, y, ours, theirs, atRisk, liberated }: { x: number; y:
 // centre disc, the shape a wax seal's pressed rosette actually has. `orbit`/`petalR`/`centreR` scale the
 // whole rosette; the map-piece size (used at `x`/`y` region coordinates) needs a bigger radius than the
 // legend icon below, which must fit inside a compact fixed viewBox like Outlet/Buyout/Doubt's.
+// Plan item 28: life on a liberated region. Bunting strung across the top of the hex, a cottage chimney
+// with smoke curling up and a bird wheeling over it. The CSS drifts the smoke and the bird; reduced motion
+// leaves them still. `seed` staggers each region's timing so the board doesn't move in step.
+function LiberatedLife({ x, y, seed }: { x: number; y: number; seed: number }) {
+  const R = HEX_R
+  const x0 = x - R * 0.56
+  const x1 = x + R * 0.56
+  const yTop = y - R * 0.6
+  const sag = R * 0.14
+  const flags = 7
+  const colours = ['var(--clay)', 'var(--wheat)', 'var(--sea)', 'var(--pasture)']
+  const at = (t: number) => ({ px: x0 + (x1 - x0) * t, py: yTop + 4 * sag * t * (1 - t) })
+  const cx = x + R * 0.42
+  const cy = y + R * 0.12
+  return (
+    <g className="liberated-life" pointerEvents="none" data-seed={seed % 4}>
+      <path d={`M ${x0},${yTop} Q ${x},${yTop + 2 * sag} ${x1},${yTop}`} fill="none" stroke="var(--ink)" strokeWidth={1.2} opacity={0.7} />
+      {Array.from({ length: flags }, (_, i) => {
+        const a = at((i + 0.5) / flags - 0.035)
+        const b = at((i + 0.5) / flags + 0.035)
+        const m = at((i + 0.5) / flags)
+        return <path key={i} className="bunting-flag" d={`M ${a.px},${a.py} L ${b.px},${b.py} L ${m.px},${m.py + 11} Z`} fill={colours[(i + seed) % colours.length]} stroke="var(--ink)" strokeWidth={0.8} strokeLinejoin="round" />
+      })}
+      <g className="life-cottage">
+        <path d={`M ${cx - 11},${cy} L ${cx},${cy - 10} L ${cx + 11},${cy} L ${cx + 11},${cy + 10} L ${cx - 11},${cy + 10} Z`} fill="var(--paper)" stroke="var(--ink)" strokeWidth={1.2} strokeLinejoin="round" />
+        <path d={`M ${cx - 13},${cy + 1} L ${cx},${cy - 11} L ${cx + 13},${cy + 1}`} fill="none" stroke="var(--clay-deep)" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        <rect x={cx + 4} y={cy - 12} width={4} height={8} fill="var(--clay-deep)" stroke="var(--ink)" strokeWidth={0.8} />
+        <rect x={cx - 3} y={cy + 3} width={5} height={7} fill="var(--wheat)" stroke="var(--ink)" strokeWidth={0.6} />
+      </g>
+      {[0, 1, 2].map((i) => (
+        <circle key={i} className="life-smoke" data-puff={i} cx={cx + 6} cy={cy - 15 - i * 6} r={2.6 + i * 1.2} fill="var(--paper-hi)" stroke="var(--ink)" strokeWidth={0.6} opacity={0.75 - i * 0.18} />
+      ))}
+      <path className="life-bird" d={`M ${x - R * 0.3 - 6},${y - R * 0.34} q 3,-4 6,0 q 3,-4 6,0`} fill="none" stroke="var(--ink)" strokeWidth={1.4} strokeLinecap="round" />
+    </g>
+  )
+}
+
 function CoopMarker({
   x,
   y,
@@ -773,6 +810,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
             {fx[id] === 'sq' && (
               <polygon className="sq-flash" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="var(--clay)" pointerEvents="none" />
             )}
+            {r.liberated && <LiberatedLife x={x} y={y} seed={id.length} />}
             {r.liberated && (
               <g className="coop-stamp">
                 {/* Liberated means no corporate pieces, so the seal takes their place at the centre. */}

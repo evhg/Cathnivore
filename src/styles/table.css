@@ -2052,3 +2052,40 @@ html.no-animations .cath-companion .cameo {
 @media (prefers-reduced-motion: reduce) {
   .actions > .action-raised { translate: none; }
 }
+
+/* plan item 28: life on a liberated region. Smoke curls up from the cottage chimney, a bird wheels over
+   it and the bunting stirs; reduced motion keeps them still. */
+.liberated-life .life-smoke {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: life-smoke 3.6s ease-out infinite;
+}
+.liberated-life .life-smoke[data-puff="1"] { animation-delay: -1.2s; }
+.liberated-life .life-smoke[data-puff="2"] { animation-delay: -2.4s; }
+@keyframes life-smoke {
+  0% { translate: 0 6px; scale: .6; opacity: 0; }
+  25% { opacity: .75; }
+  100% { translate: 5px -10px; scale: 1.25; opacity: 0; }
+}
+.liberated-life .life-bird { animation: life-bird 7s ease-in-out infinite; }
+.liberated-life[data-seed="1"] .life-bird { animation-delay: -2s; }
+.liberated-life[data-seed="2"] .life-bird { animation-delay: -4s; }
+.liberated-life[data-seed="3"] .life-bird { animation-delay: -5.5s; }
+@keyframes life-bird {
+  0%, 100% { translate: 0 0; }
+  25% { translate: 14px -6px; }
+  50% { translate: 26px 2px; }
+  75% { translate: 10px 5px; }
+}
+.liberated-life .bunting-flag {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: bunting 2.8s ease-in-out infinite alternate;
+}
+.liberated-life .bunting-flag:nth-of-type(even) { animation-delay: -1.4s; }
+@keyframes bunting { from { rotate: -6deg; } to { rotate: 6deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .liberated-life .life-smoke,
+  .liberated-life .life-bird,
+  .liberated-life .bunting-flag { animation: none; }
+}
