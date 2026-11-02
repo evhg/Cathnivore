@@ -1422,6 +1422,57 @@ function drawLane(svg: SVGSVGElement, lane: [number, number][]): void {
 }
 
 /** Threads each act's lane through the real centres of its nodes (and from the cottage door), in the svg's 0-100 box. */
+/** Two boxes overlap (a pixel of touching doesn't count). */
+type Box = { left: number; top: number; right: number; bottom: number; width: number };
+const overlaps = (a: Box, b: Box): boolean =>
+  a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+/** An element's layout box within `root`, from offsets, so the stops' pop-in scale doesn't skew it. */
+function boxIn(el: HTMLElement, root: HTMLElement): Box {
+  let left = 0;
+  let top = 0;
+  let at: HTMLElement | null = el;
+  while (at && at !== root) {
+    left += at.offsetLeft;
+    top += at.offsetTop;
+    at = at.offsetParent as HTMLElement | null;
+  }
+  return { left, top, right: left + el.offsetWidth, bottom: top + el.offsetHeight, width: el.offsetWidth };
+}
+
+/**
+ * Plan item 18: name banners never sit on another stop's banner, flag or padlock. Each banner is placed in
+ * reading order; one that would land on something already placed drops below it (the row grows, the flags
+ * stay in line), with a short tie line back up to its flag. Run before the lane is threaded through the stops.
+ */
+export function placeBanners(list: HTMLElement): void {
+  for (const trail of list.querySelectorAll<HTMLElement>(".trail")) {
+    const names = [...trail.querySelectorAll<HTMLElement>(".node .level-name")];
+    for (const n of names) {
+      n.style.removeProperty("margin-top");
+      delete n.dataset.drop;
+    }
+    // Obstacles from other stops: their flags, padlocks and start tags; banners join as they're placed.
+    const fixed = [...trail.querySelectorAll<HTMLElement>(".node .level-num, .node .level-lock, .node .start-tag")];
+    const placed: { el: HTMLElement; node: Element | null }[] = fixed.map((el) => ({ el, node: el.closest(".node") }));
+    const order = names
+      .map((el) => ({ el, r: boxIn(el, trail) }))
+      .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left);
+    for (const { el } of order) {
+      const own = el.closest(".node");
+      let drop = 0;
+      for (let pass = 0; pass < 4; pass++) {
+        const r = boxIn(el, trail);
+        const hit = placed.map((p) => ({ ...p, b: boxIn(p.el, trail) })).find((p) => p.node !== own && p.b.width > 0 && overlaps(r, p.b));
+        if (!hit) break;
+        drop += hit.b.bottom - r.top + 3;
+        el.style.marginTop = `${Math.ceil(drop)}px`;
+        el.dataset.drop = "1";
+      }
+      placed.push({ el, node: own });
+    }
+  }
+}
+
 function layoutLanes(list: HTMLElement): void {
   for (const svg of list.querySelectorAll<SVGSVGElement>(".trail-path")) {
     const box = svg.getBoundingClientRect();
@@ -1672,10 +1723,19 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     fog.append(hint, lane, t);
     list.append(fog);
   }
+  placeBanners(list);
   layoutLanes(list);
+  // Banners and the lane are measured; measure again once the web fonts have changed the labels' sizes.
+  void document.fonts?.ready.then(() => {
+    placeBanners(list);
+    layoutLanes(list);
+  });
   if (typeof ResizeObserver !== "undefined") {
     laneObserver?.disconnect();
-    laneObserver = new ResizeObserver(() => layoutLanes(list));
+    laneObserver = new ResizeObserver(() => {
+      placeBanners(list);
+      layoutLanes(list);
+    });
     laneObserver.observe(list);
   }
   const here = current as HTMLElement | null;

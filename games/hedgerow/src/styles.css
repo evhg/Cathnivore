@@ -3238,3 +3238,39 @@ img.act-scene {
   #screen-select .top-tools { grid-column: 3; }
   #screen-select .top-tools .bank-btn { flex-direction: row; min-height: 40px; padding: 0 12px; gap: 6px; }
 }
+/* A banner dropped below its neighbour's keeps a tie line up to its own flag. */
+.node .level-name[data-drop]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 1.5px;
+  height: 100vh;
+  max-height: var(--tie, 40px);
+  background: color-mix(in srgb, var(--soil) 45%, transparent);
+  pointer-events: none;
+}
+/* Banners stay inside their own column, so neighbours never touch. */
+.node .level-name { box-sizing: border-box; max-width: 100%; overflow-wrap: break-word; }
+@media (max-width: 420px) {
+  .node .level-name { padding-inline: 3px; }
+}
+@media (max-width: 420px) {
+  .start-tag { max-width: 100%; box-sizing: border-box; white-space: normal; text-align: center; line-height: 1.15; }
+}
+#screen-select .trail > .stop, #screen-select .node { min-width: 0; }
+/* On a phone a banner may run a little past its column (never mid-word breaks); the placer drops it below
+   a neighbour it would touch. */
+@media (max-width: 420px) {
+  .node .level-name { max-width: calc(100% + 18px); overflow-wrap: normal; justify-self: center; }
+  .node .level-twist { letter-spacing: 0; font-size: 0.62rem; }
+}
+/* A row grown by a dropped banner doesn't stretch its neighbours' flags and banners down with it. */
+#screen-select .trail > .stop { align-content: start; }
+#screen-select .node { align-content: start; align-self: start; }
+/* Portrait phones: a slim header, so the header and tab bar together leave the map 85% of the screen. */
+@media (max-width: 640px) and (orientation: portrait) {
+  #screen-select > .top { padding-block: max(2px, env(safe-area-inset-top)) 2px; }
+  #screen-select > .top .back { min-height: 40px; }
+  #screen-select .top-tools { padding-top: 4px; }
+}
