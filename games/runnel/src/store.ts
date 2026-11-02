@@ -53,6 +53,12 @@ function empty(): SaveData {
 }
 
 let memory: SaveData | null = null
+// Screenshot hooks (`?shotwin`) play in memory only, so a shot never writes a real result (plan item 37).
+let frozen = typeof location !== 'undefined' && new URLSearchParams(location.search).has('shotwin')
+
+export function freezeSaves(on = true): void {
+  frozen = on
+}
 
 export function load(): SaveData {
   if (memory) return memory
@@ -75,6 +81,7 @@ export function save(data: SaveData): void {
   // Keep only the last 14 days of in-progress dailies so the save never grows without limit.
   const days = Object.keys(data.daily).sort()
   for (const day of days.slice(0, Math.max(0, days.length - 14))) delete data.daily[day]
+  if (frozen) return
   try {
     localStorage.setItem(KEY, JSON.stringify(data))
   } catch {

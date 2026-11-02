@@ -2227,3 +2227,32 @@ body {
   stroke-width: 1.4;
 }
 .ga-drop.is-full { fill: var(--water); }
+
+/* Plan item 37: the win card's keepsakes (the share card and Bea's postcard) in a sideways swipe row
+   under the result, so the headline and buttons stay in view on a phone. */
+.win-keepsakes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px -22px 0;
+  padding: 6px 22px 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.win-keepsakes::-webkit-scrollbar { display: none; }
+.win-keepsakes > * {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+}
+.win-keepsakes .win-card {
+  max-width: none;
+  height: min(30vh, 240px);
+  width: auto;
+  margin: 0;
+}
+.win-keepsakes .bea {
+  width: min(78vw, 300px);
+  margin: 0;
+}
+.win .toast:empty { display: none; }
