@@ -6,7 +6,7 @@ import { planPreview } from '../engine/preview'
 import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
-import { REGIONS, regionMatchesPressureSlot } from '../content/map'
+import { REGIONS } from '../content/map'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
@@ -413,6 +413,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map." A
   // second tap on the same card clears the highlight; tapping a different card switches to it.
   const [planHighlightSlot, setPlanHighlightSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
+  // Plan item 25: hovering or focusing a plan card shows its targets too (a tap pins them, as before).
+  const [planPeekSlot, setPlanPeekSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
+  const planHotSlot = planPeekSlot ?? planHighlightSlot
+  const planThreat = planHotSlot ? { slot: planHotSlot, regions: planPreview(state, planHotSlot).regions } : undefined
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   const [enemyStepRegion, setEnemyStepRegion] = useState<RegionId | undefined>()
   // Plan item 11: the step being played, so the map can fly its pieces out of the HQs.
@@ -1609,7 +1613,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 type="button"
                 aria-pressed={planHighlightSlot === slot}
                 className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
-                onClick={() => setPlanHighlightSlot((s) => (s === slot ? null : slot))}
+                onClick={() => {
+                  // A tap pins or unpins; it also ends any hover or focus peek, so unpinning really clears.
+                  setPlanPeekSlot(null)
+                  setPlanHighlightSlot((s) => (s === slot ? null : slot))
+                }}
+                onPointerEnter={(e) => e.pointerType === 'mouse' && setPlanPeekSlot(slot)}
+                onPointerLeave={() => setPlanPeekSlot((s) => (s === slot ? null : s))}
+                onFocus={(e) => e.currentTarget.matches(':focus-visible') && setPlanPeekSlot(slot)}
+                onBlur={() => setPlanPeekSlot((s) => (s === slot ? null : s))}
               >
                 {/* ROADMAP 10: the enemy's plan strip becomes agenda-card-like — STYLE.md 8's Agenda
                     cards put "the faction logo top-left"; both corporations act through every slot
@@ -1722,10 +1734,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               ? pendingChoice
                 ? [pendingChoice.region]
                 : selectedGroup.entries.map((e) => e.region)
-              : planHighlightSlot
-                ? state.config.activeRegions.filter((id) => regionMatchesPressureSlot(state, id, planHighlightSlot))
+              : planThreat && planThreat.regions.length > 0
+                ? planThreat.regions
                 : undefined
           }
+          threat={pendingEnemyTurn.length > 0 || drag || selectedGroup ? undefined : planThreat}
           onSelect={
             selectedGroup
               ? (region) => {

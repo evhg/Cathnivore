@@ -32,3 +32,32 @@ test('tapping the Expand plan-strip card highlights its matching regions, and ta
   await expect(page.locator('.region-hex.glow')).toHaveCount(0)
   await expect(page.locator('.region-hex.dimmed')).toHaveCount(0)
 })
+
+// Plan item 25: looking at a plan card (hover, keyboard focus or a tap) marks exactly the hexes the rules
+// will hit: every glowing hex carries data-threat for that slot, and no other hex does.
+test('a plan card marks exactly its targets with data-threat, on keyboard focus and on tap', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  await expect(page.locator('.plan-strip-target')).toHaveCount(3)
+  for (const text of await page.locator('.plan-strip-target').allTextContents()) expect(text.trim()).not.toBe('—')
+
+  const expand = page.locator('.plan-strip button', { hasText: 'Expand' })
+  await expand.click()
+  const threats = page.locator('.region-hex[data-threat="expand"]')
+  const n = await threats.count()
+  expect(n).toBeGreaterThan(0)
+  await expect(page.locator('.region-hex.glow')).toHaveCount(n)
+  await expect(page.locator('.region-hex.glow:not([data-threat="expand"])')).toHaveCount(0)
+  await expand.click()
+  await expect(page.locator('.region-hex[data-threat]')).toHaveCount(0)
+
+  // Keyboard: Tab onto the card peeks its targets without pinning; moving on clears them.
+  await expand.focus()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  await expect(expand).toBeFocused()
+  await expect(page.locator('.region-hex[data-threat="expand"]')).toHaveCount(n)
+  await expect(expand).toHaveAttribute('aria-pressed', 'false')
+})

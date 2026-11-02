@@ -79,6 +79,8 @@ interface Props {
   state: GameState
   enemyTurn?: EnemyTurnView
   highlight?: RegionId[]
+  /** Plan item 25: the plan card being looked at marks the hexes it will hit (`data-threat="squeeze"`). */
+  threat?: { slot: 'squeeze' | 'expand' | 'scout'; regions: RegionId[] }
   onSelect?: (region: RegionId) => void
 }
 
@@ -510,7 +512,7 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect }: Props) {
   const active = state.config.activeRegions
   const layout: LayoutId = state.config.layout ?? 'ring'
   const fit = layoutFit(layout, active)
@@ -609,6 +611,7 @@ export default function Map({ state, enemyTurn, highlight, onSelect }: Props) {
                 : undefined
             }
             data-tutorial={`region-${id}`}
+            data-threat={threat?.regions.includes(id) ? threat.slot : undefined}
             aria-label={def.name}
           >
             <polygon
