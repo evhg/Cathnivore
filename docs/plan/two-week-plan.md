@@ -664,7 +664,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 5, 12, 21, 38, 45 and the bosses at P, D and L, in 2D and 3D.
 - **Size:** 5
 
-## 44. [ ] NIGHT SHIFT: a touch layout built for the scene, and a real upright-phone screen
+## 44. [ ] NIGHT SHIFT: a touch layout built for the scene, and a real upright-phone screen *(lane A, in progress)*
 - **Why:**
   - At L nine buttons fill the right 40% of the screen and overlap each other.
   - Upright, the game is a dead-end black "turn your phone" card. The brief's minimum spec is an iPhone.
