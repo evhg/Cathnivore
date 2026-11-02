@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentProps } from 'react'
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
@@ -416,6 +416,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const [showFarm, setShowFarm] = useState(false)
   const [showMarket, setShowMarket] = useState(false)
   const [showPlan, setShowPlan] = useState(false)
+  const [drawer, setDrawer] = useState<DrawerId | null>(null)
+  useEffect(() => {
+    if (!drawer) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDrawer(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [drawer])
   const [showRulesFromTutorial, setShowRulesFromTutorial] = useState(false)
   // SPEC 9.2: "Each AI action shows a one-line reason in the log." Keyed by the index of the `state.log`
   // entry the reason belongs to (the `{type: 'action'}` entry `applyAction` appends for that decision) —
@@ -1506,6 +1515,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </button>
       </header>
 
+      {/* Plan item 20: on desktop Cath's aside and tomorrow's papers share one row, so the board gets the height. */}
+      <div className="table-head">
       <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
 
       {!guided && tutorialSteps && tutorialIndex < tutorialSteps.length && (
@@ -1595,6 +1606,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           )
         })}
       </section>
+      </div>
 
       <section className="map-wrap">
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
@@ -1721,15 +1733,71 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       {showLog && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setShowLog(false)} />}
       </main>
 
-      <aside className="desktop-col desktop-col-right" tabIndex={0}>
-        {rules.improvements && <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => {}} inline />}
-        {rules.schemes && (
-          <CathsPlanSheet state={state} canPlay={canPlayScheme} missingGoodwill={missingGoodwill} onPlay={playScheme} onClose={() => {}} inline />
+      {/* Plan item 20: on desktop the Market, Cath's Plan and the Log are a slim drawer rail, so the board is
+          the hero (62%+ of 1440). A key opens its sheet as a drawer over the table's right edge; a count
+          on the key says how many cards can be bought or played right now. Esc or the key again closes. */}
+      <aside className="desktop-col desktop-col-right desktop-rail" aria-label={'Market, Cath\u2019s Plan and Log'}>
+        <nav className="drawer-rail">
+          {rules.improvements && (
+            <DrawerKey id="market" open={drawer} setOpen={setDrawer} label="Market" count={state.market.filter((id) => id !== null && canBuy(id)).length}>
+              <MarketIcon />
+            </DrawerKey>
+          )}
+          {rules.schemes && (
+            <DrawerKey id="plan" open={drawer} setOpen={setDrawer} label={'Cath\u2019s Plan'} short="Plan" count={state.cathsPlan.filter((id) => id !== null && canPlayScheme(id)).length}>
+              <PlanIcon />
+            </DrawerKey>
+          )}
+          <DrawerKey id="log" open={drawer} setOpen={setDrawer} label="Log">
+            <LogIcon />
+          </DrawerKey>
+        </nav>
+        {isDesktop && drawer && (
+          <div className="drawer-panel" id={`drawer-${drawer}`} tabIndex={0}>
+            {drawer === 'market' && rules.improvements && (
+              <MarketSheet state={state} canBuy={canBuy} missingMarks={missingMarks} onBuy={buy} onClose={() => setDrawer(null)} inline />
+            )}
+            {drawer === 'plan' && rules.schemes && (
+              <CathsPlanSheet state={state} canPlay={canPlayScheme} missingGoodwill={missingGoodwill} onPlay={playScheme} onClose={() => setDrawer(null)} inline />
+            )}
+            {drawer === 'log' && <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => setDrawer(null)} inline />}
+            <button className="drawer-close" aria-label="Close drawer" onClick={() => setDrawer(null)}>
+              <span aria-hidden="true">{'\u00d7'}</span>
+            </button>
+          </div>
         )}
-        <LogSheet log={state.log} aiReasons={aiReasons} onClose={() => {}} inline />
       </aside>
       {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
     </div>
+  )
+}
+
+type DrawerId = 'market' | 'plan' | 'log'
+
+/** A key on the desktop drawer rail (plan item 20): icon, a short word and, for the Market and Cath's Plan,
+ * how many cards the active producer can take right now. */
+function DrawerKey({ id, open, setOpen, label, short, count, children }: {
+  id: DrawerId
+  open: DrawerId | null
+  setOpen: (d: DrawerId | null) => void
+  label: string
+  short?: string
+  count?: number
+  children: ReactNode
+}) {
+  const isOpen = open === id
+  return (
+    <button
+      className={isOpen ? 'drawer-key is-open' : 'drawer-key'}
+      aria-expanded={isOpen}
+      aria-controls={`drawer-${id}`}
+      aria-label={count ? `${label}, ${count} ready` : label}
+      onClick={() => setOpen(isOpen ? null : id)}
+    >
+      {children}
+      <span className="drawer-key-word" aria-hidden="true">{short ?? label}</span>
+      {count ? <span className="drawer-key-count" aria-hidden="true">{count}</span> : null}
+    </button>
   )
 }
 
