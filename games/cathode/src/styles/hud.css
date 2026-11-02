@@ -79,16 +79,18 @@
   position: absolute;
   /* Plan item 7: the pool hugs the words. On a bright frame (the Plaza, the theatre) the old 44u/110u spill read as
      a dark slab in the corner; it is now an ellipse that reaches 34u above and below and 64u past the line's end. */
-  inset: calc(var(--u) * -34) calc(var(--u) * -64) calc(var(--u) * -34) calc(var(--u) * -40);
+  inset: calc(var(--u) * -44) calc(var(--u) * -64) calc(var(--u) * -44) calc(var(--u) * -40);
   z-index: var(--z-under);
   /* C16 review: a lit sign behind the note (the reload stage's HOLLOWELL CREDIT) washed the words out: the old
      elliptical pool left the box's corners (where the eyebrow sits) almost bare. The shade is now as dense as the
      bark's plate under every word and eases out past them on all four sides over 40 to 110u (no plate edge, C13T);
      feel-shots probes the words' contrast over whatever is behind it. */
   background: linear-gradient(90deg, transparent, rgb(var(--shade-rgb) / .5) calc(var(--u) * 18), rgb(var(--shade-rgb) / .86) calc(var(--u) * 40), rgb(var(--shade-rgb) / .84) calc(100% - var(--u) * 64), rgb(var(--shade-rgb) / .4) calc(100% - var(--u) * 30), transparent);
-  /* An elliptical fall-off rather than a box with ramped edges: no straight bottom edge to read as a slab. */
-  -webkit-mask-image: radial-gradient(farthest-side at 40% 50%, rgb(var(--shade-rgb)) 0 58%, rgb(var(--shade-rgb) / .7) 76%, rgb(var(--shade-rgb) / .25) 90%, transparent);
-  mask-image: radial-gradient(farthest-side at 40% 50%, rgb(var(--shade-rgb)) 0 58%, rgb(var(--shade-rgb) / .7) 76%, rgb(var(--shade-rgb) / .25) 90%, transparent);
+  /* An elliptical fall-off rather than a box with ramped edges: no straight bottom edge to read as a slab. Plan
+     item 40: the fall-off is a long, near-Gaussian ramp from 30% out (it held solid to 58%, which over a light frame
+     read as a hard dark ellipse), over a pool that spills 44u above and below. */
+  -webkit-mask-image: radial-gradient(farthest-side at 40% 50%, rgb(var(--shade-rgb)) 0 30%, rgb(var(--shade-rgb) / .84) 46%, rgb(var(--shade-rgb) / .58) 61%, rgb(var(--shade-rgb) / .32) 75%, rgb(var(--shade-rgb) / .13) 88%, transparent);
+  mask-image: radial-gradient(farthest-side at 40% 50%, rgb(var(--shade-rgb)) 0 30%, rgb(var(--shade-rgb) / .84) 46%, rgb(var(--shade-rgb) / .58) 61%, rgb(var(--shade-rgb) / .32) 75%, rgb(var(--shade-rgb) / .13) 88%, transparent);
   pointer-events: none;
 }
 .hud-objective.is-new { animation: obj-in var(--d-4) var(--ease-out) both; }
