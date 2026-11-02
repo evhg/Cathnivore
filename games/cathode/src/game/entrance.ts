@@ -48,6 +48,8 @@ interface Live {
   fired: boolean;
   group: THREE.Group | null;
   rope?: THREE.Mesh;
+  /** Plan item 41: on the way down he's clipped to the rope: a harness round his waist and a short tether to it. */
+  rig?: { harness: THREE.Mesh; tether: THREE.Mesh };
   doors?: { mesh: THREE.Object3D; vel: THREE.Vector3; spin: THREE.Vector3; rest: boolean }[];
   van?: { body: THREE.Group; path: [THREE.Vector3, THREE.Vector3]; yaw: number; beacons: THREE.Mesh[] };
   /** His helmet torch while he comes in (and a moment after): a beam towards her, so the eye finds him. */
@@ -300,6 +302,14 @@ export class Entrances {
       coil.position.set(l.to.x + 0.4, l.to.y + 0.03, l.to.z + 0.1);
       g.add(coil);
       l.rope = rope;
+      // His harness (a webbing loop round the waist) and the tether from its front ring to the rope: both ride down
+      // with him and come off once he's landed (enemy.ts's waist is about 0.95 m above his feet).
+      const harness = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.022, 4, 14), ropeMat);
+      harness.rotation.x = Math.PI / 2;
+      const tether = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.25, 5), steel);
+      tether.rotation.z = Math.PI / 2;
+      g.add(harness, tether);
+      l.rig = { harness, tether };
     } else if (spec.kind === "breach" && l.doors) {
       const dir = new THREE.Vector3().subVectors(l.to, spec.from).setY(0).normalize();
       const door = l.doors[0]!.mesh;
@@ -347,6 +357,13 @@ export class Entrances {
         const ease = 1 - (1 - k) * (1 - k);
         const top = spec.from.y - l.to.y;
         e.lift = e.alive ? Math.max(0, top * (1 - ease)) : 0;
+        if (l.rig) {
+          const on = e.alive && k < 1;
+          const waist = l.to.y + e.lift + 0.95;
+          l.rig.harness.visible = l.rig.tether.visible = on;
+          l.rig.harness.position.set(l.to.x, waist, l.to.z);
+          l.rig.tether.position.set(l.to.x + 0.125, waist, l.to.z);
+        }
       } else if (spec.kind === "breach" && l.doors) {
         for (const d of l.doors) {
           if (d.rest) continue;

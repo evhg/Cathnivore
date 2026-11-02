@@ -113,3 +113,45 @@ describe("NIGHT SHIFT scripted entrances (plan item 7)", () => {
     });
   }
 });
+
+// Plan item 41: a rappeller is on the rope: a harness round his waist and a tether to the rope ride down with him,
+// and come off once he has landed.
+import { Entrances } from "../games/cathode/src/game/entrance";
+describe("NIGHT SHIFT rappel rig (plan item 41)", () => {
+  it("clips him to the rope on the way down and unclips him on landing", () => {
+    const scene = new THREE.Scene();
+    const ent = new Entrances({ scene, ground: () => 0, player: () => new THREE.Vector3(0, 0, 10) });
+    const e = {
+      alive: true,
+      passive: false,
+      entering: false,
+      lift: 0,
+      motion: { pos: new THREE.Vector3(2, 0, 3), yaw: 0 },
+      body: { root: new THREE.Group(), joints: { head: new THREE.Vector3(2, 1.7, 3) } },
+      kit: { role: "rifle" },
+      alert: () => {},
+    };
+    ent.add(e as never, { kind: "rappel", from: new THREE.Vector3(2, 8, 3), to: new THREE.Vector3(2, 0, 3) } as never);
+    const rigs = () => {
+      const out: THREE.Mesh[] = [];
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && m.geometry.type === "TorusGeometry" && (m.geometry as THREE.TorusGeometry).parameters.radius === 0.17) out.push(m);
+      });
+      return out;
+    };
+    let mid = false;
+    for (let i = 0; i < 400; i++) {
+      ent.update(0.02);
+      const h = rigs()[0];
+      if (h && h.visible && e.lift > 1) {
+        // At his waist, above the floor, while he's still in the air.
+        expect(h.position.y).toBeCloseTo(e.lift + 0.95, 5);
+        expect(h.position.x).toBeCloseTo(2, 5);
+        mid = true;
+      }
+    }
+    expect(mid).toBe(true);
+    expect(rigs()[0]!.visible).toBe(false);
+  });
+});
