@@ -537,6 +537,7 @@ export function buildGround(level: Level): Ground {
   const high = new Set(
     [...(level.terrain?.high ?? []), ...landmarks(level).flatMap((m) => (m.type === "bank" ? m.cells : []))].map(([c, r]) => `${c},${r}`),
   );
+  const bank = new Set(landmarks(level).flatMap((m) => (m.type === "bank" ? m.cells : [])).map(([c, r]) => `${c},${r}`));
   const scenery = sceneryCells(level);
   const wet = new Set((level.terrain?.water ?? []).map(([c, r]) => `${c},${r}`));
   const act = Math.floor((level.id - 1) / 10);
@@ -552,8 +553,10 @@ export function buildGround(level: Level): Ground {
     const c = Math.floor(x);
     const r = Math.floor(y);
     if (!high.has(`${c},${r}`)) return 0;
-    const fx = Math.min(x - c, c + 1 - x);
-    const fy = Math.min(y - r, r + 1 - y);
+    // A raised bank is one ridge: no dip where two of its cells meet.
+    const joined = (dc: number, dr: number) => bank.has(`${c},${r}`) && bank.has(`${c + dc},${r + dr}`);
+    const fx = Math.min(joined(-1, 0) ? 1 : x - c, joined(1, 0) ? 1 : c + 1 - x);
+    const fy = Math.min(joined(0, -1) ? 1 : y - r, joined(0, 1) ? 1 : r + 1 - y);
     return smooth(Math.min(1, Math.min(fx, fy) / 0.25));
   };
   const heightAt = (x: number, y: number): number => {
@@ -579,6 +582,7 @@ export function buildGround(level: Level): Ground {
   const d0 = new THREE.Color(light.dirt[0]);
   const d1 = new THREE.Color(light.dirt[1]);
   const sand = new THREE.Color("#c9b88a");
+  const bankTop = new THREE.Color("#d6c77a");
   const plinthWall = new THREE.Color(light.dirt[0]).lerp(new THREE.Color("#cfc5af"), 0.45);
   const tmp = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
@@ -620,6 +624,8 @@ export function buildGround(level: Level): Ground {
     if (up > 0) {
       if (up < 0.97) tmp.lerp(plinthWall, 0.85 * Math.min(1, (1 - up) * 3)).multiplyScalar(1.15);
       else tmp.multiplyScalar(1.1);
+      // A raised bank's top is old pasture: paler, sun-dried grass with the odd tussock, so it reads as one rise.
+      if (bank.has(`${Math.floor(x)},${Math.floor(y)}`) && up >= 0.97) tmp.lerp(bankTop, 0.4 + (Math.sin(x * 11 + y * 5) + 1) * 0.06);
     }
     // Darken the far hills a touch so the field reads.
     const out = Math.max(0, -x, x - cols, -y, y - rows);
