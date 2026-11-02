@@ -685,8 +685,9 @@ export function buildGround(level: Level): Ground {
 
   // Building plots: a subtle tilled square on every plot; protected land gets a stone marker instead.
   // All of them are instanced (one draw call each), as are the grass, flowers and stones below.
-  const plotMat = new THREE.MeshStandardMaterial({ color: "#6a5534", roughness: 1, transparent: true, opacity: 0.34, map: plotTexture(), depthWrite: false });
-  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.55, depthWrite: false });
+  // Plan item 19: the bed itself carries the plot (stronger soil); the corner ticks are only a quiet hint now.
+  const plotMat = new THREE.MeshStandardMaterial({ color: "#6a5534", roughness: 1, transparent: true, opacity: 0.5, map: plotTexture(), depthWrite: false });
+  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.22, depthWrite: false });
   const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
   const plots: Inst[] = [];
   const markers: Inst[] = [];
