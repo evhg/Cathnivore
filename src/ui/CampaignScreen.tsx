@@ -4,6 +4,7 @@ import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
 import CampaignMap from './CampaignMap'
+import { CHAPTER_SEALS, hasHardSeal } from '../content/campaignMap'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -51,6 +52,35 @@ function MiniMap({ chapter }: { chapter: Chapter }) {
         )
       })}
     </svg>
+  )
+}
+
+// Plan item 35: three wax seals per chapter (the win, the win on Hard, a chapter feat), pressed when
+// earned and blind-embossed when not. Inside the card's button, so they're text for screen readers.
+function WaxSeals({ chapter, earned }: { chapter: Chapter; earned: string[] }) {
+  const defs = CHAPTER_SEALS[chapter.id]
+  if (!defs) return null
+  const rows: Array<{ id: string; label: string; glyph: string }> = [
+    { id: 'win', label: 'Won', glyph: 'M-4 0.5 L-1 3.5 L4.5 -3' },
+    { id: 'hard', label: defs.hard.label, glyph: hasHardSeal(chapter.id) ? 'M-4 3 L-4 -1 L-1.5 1 L0 -4 L1.5 1 L4 -1 L4 3 Z' : 'M-1 -4.5 L3 -4.5 L0.5 -0.5 L3.5 -0.5 L-2 4.5 L-0.5 0.8 L-3.5 0.8 Z' },
+    { id: 'feat', label: defs.feat.label, glyph: 'M0 -4.5 L1.3 -1.4 L4.5 -1.4 L1.9 0.6 L2.9 4 L0 2 L-2.9 4 L-1.9 0.6 L-4.5 -1.4 L-1.3 -1.4 Z' },
+  ]
+  return (
+    <span className="cmp-seals">
+      {rows.map((r) => {
+        const on = earned.includes(r.id)
+        return (
+          <span key={r.id} className={on ? 'cmp-seal is-earned' : 'cmp-seal'} data-seal={r.id} data-earned={on ? 'true' : 'false'} title={r.label}>
+            <svg viewBox="-10 -10 20 20" aria-hidden="true">
+              <path className="cmp-seal-wax" d="M0 -9 C3 -9.5 4.5 -7 6.6 -6.2 C9 -5 8.6 -2 9.2 0 C9.6 2.5 7.4 4 6.4 6.3 C5 8.6 2.4 8.8 0 9.2 C-2.6 9.6 -4.6 7.6 -6.4 6.4 C-8.6 5 -8.8 2.4 -9.2 0 C-9.4 -2.6 -7.8 -4.4 -6.3 -6.4 C-4.8 -8.4 -2.4 -8.6 0 -9 Z" />
+              <circle r={6} className="cmp-seal-ring" />
+              <path d={r.glyph} className="cmp-seal-glyph" />
+            </svg>
+            <span className="sr-only">{`${r.label}: ${on ? 'earned' : 'not yet'}. `}</span>
+          </span>
+        )
+      })}
+    </span>
   )
 }
 
@@ -103,6 +133,8 @@ export default function CampaignScreen({
   completed,
   tutorialDone = true,
   coachDone,
+  seals,
+  onStartHard,
   onStart,
   onReplayTutorial,
   onBack,
@@ -113,6 +145,9 @@ export default function CampaignScreen({
   tutorialDone?: boolean
   // A later guided chapter's coach (chapter 2 on), by id: done once finished or skipped. Absent: all done.
   coachDone?: (chapterId: string) => boolean
+  // Plan item 35: the wax seals a chapter has earned ('win', 'hard', 'feat'), and its Hard replay.
+  seals?: (chapterId: string) => string[]
+  onStartHard?: (chapter: Chapter) => void
   onStart: (chapter: Chapter) => void
   onReplayTutorial?: (chapter: Chapter) => void
   onBack: () => void
@@ -181,6 +216,7 @@ export default function CampaignScreen({
                     {current && chapter.guided && !coached && <span className="cmp-badge cmp-badge-next">{first ? 'Tutorial' : 'Cath shows you'}</span>}
                     {current && !(chapter.guided && !coached) && <span className="cmp-badge cmp-badge-next">Up next</span>}
                   </span>
+                  <WaxSeals chapter={chapter} earned={seals?.(chapter.id) ?? (isDone ? ['win'] : [])} />
                   {/* The card is the button: this says so, in the look of a real key. */}
                   {(current || isDone) && (
                     <span className={current ? 'cmp-cta cmp-cta-primary' : 'cmp-cta'} aria-hidden="true">
@@ -194,10 +230,19 @@ export default function CampaignScreen({
                 <ChapterScene index={i} tint={isDone ? REGIONS[chapter.activeRegions[0]!].type : undefined} />
                 <MiniMap chapter={chapter} />
               </button>
-              {chapter.guided && coached && onReplayTutorial && (
-                <button className="btn-quiet cmp-replay" onClick={() => onReplayTutorial(chapter)}>
-                  {first ? 'Replay the tutorial' : 'Replay the walkthrough'}
-                </button>
+              {((isDone && onStartHard && hasHardSeal(chapter.id)) || (chapter.guided && coached && onReplayTutorial)) && (
+                <span className="cmp-replays">
+                {isDone && onStartHard && hasHardSeal(chapter.id) && (
+                  <button className="btn-quiet cmp-replay cmp-hard" onClick={() => onStartHard(chapter)}>
+                    Play on Hard
+                  </button>
+                )}
+                {chapter.guided && coached && onReplayTutorial && (
+                  <button className="btn-quiet cmp-replay" onClick={() => onReplayTutorial(chapter)}>
+                    {first ? 'Replay the tutorial' : 'Replay the walkthrough'}
+                  </button>
+                )}
+                </span>
               )}
             </li>
           )

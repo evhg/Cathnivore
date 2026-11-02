@@ -14,6 +14,8 @@ import {
   loadCampaign,
   markChapterComplete,
   recordGrowingSeasonCarryOver,
+  recordSeals,
+  chapterSeals,
   recordChapterLoss,
   clearChapterLossCount,
   isCoachDone,
@@ -23,6 +25,7 @@ import {
 import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
 import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_1, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
+import { sealsEarned } from './content/campaignMap'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
@@ -52,10 +55,11 @@ type Screen =
   | { name: 'credits' }
   | { name: 'campaign' }
   | { name: 'saveError' }
-  | { name: 'chapterModeSelect'; chapter: Chapter }
+  | { name: 'chapterModeSelect'; chapter: Chapter; hard?: boolean }
   // SPEC 8.2 ch3 carry-over: 'contracts1'/'contracts2' are chapter 4's rueful-Tomas scenes, shown (via
   // `openingWhich`) right before 'opening' when contracts survived chapter 3 — see the-plan.ts.
-  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode }
+  // `hard`: the campaign card's "Play on Hard" (plan item 35's second seal).
+  | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode; hard?: boolean }
   | { name: 'game'; state: GameState; seed: number; mode: Mode }
   // `tutorial`: this run plays the chapter's guided tutorial (first time, or replayed on request).
   | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[]; tutorial?: boolean }
@@ -148,13 +152,13 @@ export default function App() {
     return surviving >= 2 ? 'contracts2' : surviving === 1 ? 'contracts1' : 'opening'
   }
 
-  function startChapter(chapter: Chapter): void {
+  function startChapter(chapter: Chapter, hard = false): void {
     // SPEC 8.1: "the player picks Solo or Hot-seat when starting the campaign." A single-producer
     // chapter has no second producer for an AI teammate to play, so there's nothing to choose.
     if (chapter.producers.length > 1) {
-      setScreen({ name: 'chapterModeSelect', chapter })
+      setScreen({ name: 'chapterModeSelect', chapter, hard })
     } else {
-      setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'hotseat' })
+      setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'hotseat', hard })
     }
   }
 
@@ -195,6 +199,7 @@ export default function App() {
       recordGrowingSeasonCarryOver(survivingWholesomeHollowContracts(state))
     }
     if (won) {
+      recordSeals(chapter.id, sealsEarned(chapter.id, state))
       markChapterComplete(chapter.id)
       clearChapterLossCount(chapter.id)
       setScreen({ name: 'chapterScene', chapter, which: 'closing', mode })
@@ -310,6 +315,8 @@ export default function App() {
         completed={loadCampaign().completed}
         tutorialDone={isTutorialDone()}
         coachDone={(id) => isCoachDone(id)}
+        seals={(id) => chapterSeals(id)}
+        onStartHard={(chapter) => startChapter(chapter, true)}
         onStart={startChapter}
         onReplayTutorial={replayTutorial}
         onBack={() => setScreen({ name: 'title' })}
@@ -323,10 +330,10 @@ export default function App() {
       <main className="campaign">
         <h1>{chapter.title}</h1>
         <p>Play with an AI teammate, or pass the device back and forth between two humans.</p>
-        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'solo' })}>
+        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'solo', hard: screen.hard })}>
           Solo (with an AI teammate)
         </button>
-        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'hotseat' })}>
+        <button onClick={() => setScreen({ name: 'chapterScene', chapter, which: openingWhich(chapter), mode: 'hotseat', hard: screen.hard })}>
           Hot-seat (two humans)
         </button>
         <button onClick={() => setScreen({ name: 'campaign' })}>Back</button>
@@ -340,8 +347,8 @@ export default function App() {
     const key = screen.which === 'opening' ? screen.chapter.openingScene : screen.which === 'closing' ? screen.chapter.closingScene : screen.which
     const scene = scenes?.[key as keyof typeof scenes]
     const continueTo = (): void => {
-      if (isCarryOverScene) setScreen({ name: 'chapterScene', chapter: screen.chapter, which: 'opening', mode: screen.mode })
-      else if (screen.which === 'opening') playChapter(screen.chapter, screen.mode)
+      if (isCarryOverScene) setScreen({ name: 'chapterScene', chapter: screen.chapter, which: 'opening', mode: screen.mode, hard: screen.hard })
+      else if (screen.which === 'opening') playChapter(screen.chapter, screen.mode, undefined, screen.hard ? 'hard' : undefined)
       else setScreen({ name: 'campaign' })
     }
     if (!scene) {

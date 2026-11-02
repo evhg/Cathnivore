@@ -176,6 +176,9 @@ export interface CampaignProgress {
   // The guided coach of every later chapter (chapter 2 on): the chapter ids whose coach was finished or
   // skipped. Chapter 1 keeps `tutorialDone` above, so older saves read the same.
   coachedChapters?: string[]
+  // Plan item 35: the wax seals earned per chapter id ('win', 'hard', 'feat'; content/campaignMap.ts).
+  // A chapter in `completed` from an older save counts its 'win' seal (`chapterSeals`).
+  seals?: Record<string, string[]>
 }
 
 export function loadCampaign(): CampaignProgress {
@@ -214,6 +217,22 @@ export function markTutorialDone(): void {
   const progress = loadCampaign()
   if (progress.tutorialDone) return
   storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, tutorialDone: true }))
+}
+
+// The seals a chapter has earned: its saved ones, plus the win for any chapter already completed.
+export function chapterSeals(chapterId: string, progress: CampaignProgress = loadCampaign()): string[] {
+  const saved = progress.seals && typeof progress.seals === 'object' && Array.isArray(progress.seals[chapterId]) ? progress.seals[chapterId]! : []
+  const out = new Set(saved)
+  if (progress.completed.includes(chapterId)) out.add('win')
+  return ['win', 'hard', 'feat'].filter((s) => out.has(s))
+}
+
+export function recordSeals(chapterId: string, seals: readonly string[]): void {
+  if (seals.length === 0) return
+  const progress = loadCampaign()
+  const all = progress.seals && typeof progress.seals === 'object' ? progress.seals : {}
+  const merged = [...new Set([...(Array.isArray(all[chapterId]) ? all[chapterId]! : []), ...seals])]
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, seals: { ...all, [chapterId]: merged } }))
 }
 
 // A guided chapter's coach, by chapter id: chapter 1 is the first-time tutorial above; a later chapter's
