@@ -512,7 +512,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the map fresh, mid-campaign and complete, at P and D.
 - **Size:** 3
 
-## 36. [ ] Cathnivore: an engine you can see (an illustrated Market, and farm tableaux)
+## 36. [x] Cathnivore: an engine you can see (an illustrated Market, and farm tableaux) *(done 2026-11-02, lane A, 9472c66f..HEAD: a code-drawn vignette per card from a kit keyed by its first tag (`src/ui/Vignette.tsx`; untagged Schemes get Cath's notebook), as a banner on phone Market and Plan cards and a thumbnail in desktop drawer rows, with the existing cost coin and effect line; the phone Farm stands each producer at their gate over a ribbon summing a round's income, with bought cards laid out drawn; the desktop Farm is a fixed 88 px frame of drawn thumbnails that scrolls inside (it grew from 75 to 300 px by round 6 and pushed the Actions frame down); a buy flies the drawn card into the farm while the price counts out, and the income figure ticks up; `tests/vignettes.test.ts`, `e2e/farmstead.spec.ts` (Actions top unchanged between round 1 and a grown farm at D; a buy makes a `.buy-flight` and the card lands in the farm at P and D); shots of the Market, Plan and Farm at P and D at rounds 1, 4 and 6 (autoplayed games rarely reach round 7, as in item 28))*
 - **Why:**
   - The Market, Plan and Farm are text lists, so players can't see their engine grow.
   - At D the Farm panel grows into the Actions frame.
