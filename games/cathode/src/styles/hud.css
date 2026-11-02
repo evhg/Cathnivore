@@ -1717,6 +1717,14 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   pointer-events: auto;
 }
 .tbtn-menu-bar { display: block; width: 3px; height: 12px; background: rgb(var(--ink-rgb) / .74); }
+/* Plan item 40: on a phone held sideways the inner column (Skill, Takedown, Crouch) sat inside the scope's
+   circle and Skill sat on "Drag to aim". The columns close up so the inner one clears a scope of 40vh at
+   844x390, and the hint moves up under the Cath and Swap keys, over the outer column. */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
+  .tbtn-aim, .tbtn-reload { right: calc(118px + var(--safe-r)); }
+  .tbtn-crouch, .tbtn-takedown, .tbtn-skill { right: calc(188px + var(--safe-r)); }
+  .look-hint { right: calc(20px + var(--safe-r)); top: calc(66px + var(--safe-t)); }
+}
 
 /* px-ok:end */
 /* ---- phones held upright (a desktop browser this narrow): clusters stack under a full-width subtitle ---- */

@@ -100,4 +100,39 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       expect(meets, `${size.width}x${size.height}: subtitle ${JSON.stringify(r.b)} vs centre ${JSON.stringify(r.c)}`).toBe(false)
     }
   })
+
+  // Plan item 40: on a phone held sideways, Skill sat on "Drag to aim" and the inner column of buttons sat inside
+  // the scope's circle. No two controls (or a control and the hint) overlap, and none reaches into the scope.
+  test('touch controls at L: no overlaps, none inside the scope', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'touch layout only')
+    test.setTimeout(400_000)
+    await boot(page)
+    await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C & { progress: { unlocks: { features: string[] } } } }).cathode
+      c.progress.unlocks.features.push('crouch', 'takedown', 'focus', 'skills', 'swap')
+      c.arsenal.owned.add('widowmaker')
+      c.arsenal.equipId('widowmaker')
+    })
+    await page.waitForFunction(() => document.querySelectorAll('[data-btn]:not([hidden])').length >= 10, null, { timeout: 60_000 })
+    const r = await page.evaluate(() => {
+      type B = { n: string; l: number; r: number; t: number; b: number }
+      const rect = (e: Element | null, n: string): B | null => {
+        const q = e?.getBoundingClientRect()
+        return q && q.width ? { n, l: q.left, r: q.right, t: q.top, b: q.bottom } : null
+      }
+      const items = [...document.querySelectorAll('[data-btn], .tbtn-menu')].map((e) => rect(e, (e as HTMLElement).dataset.btn ?? 'menu')).filter((x): x is B => !!x)
+      const hint = rect(document.querySelector('.look-hint'), 'hint')
+      const all = hint ? [...items, hint] : items
+      const hit = (a: B, c: B) => !(a.r <= c.l || a.l >= c.r || a.b <= c.t || a.t >= c.b)
+      const overlaps: string[] = []
+      for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (hit(all[i]!, all[j]!)) overlaps.push(`${all[i]!.n}/${all[j]!.n}`)
+      // The scope's circle: radius min(40vh, 40vw) about the centre (hud.css .hud-scope).
+      const R = Math.min(innerWidth, innerHeight) * 0.4, cx = innerWidth / 2, cy = innerHeight / 2
+      const inScope = items.filter((a) => Math.hypot(Math.max(a.l, Math.min(cx, a.r)) - cx, Math.max(a.t, Math.min(cy, a.b)) - cy) < R).map((a) => a.n)
+      return { overlaps, inScope, n: items.length }
+    })
+    expect(r.n).toBeGreaterThanOrEqual(11)
+    expect(r.overlaps).toEqual([])
+    expect(r.inScope).toEqual([])
+  })
 })
