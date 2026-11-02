@@ -710,7 +710,9 @@ async function boot(): Promise<void> {
     if (frontStage?.startsWith("loading")) stageLoading(frontStage);
     if (frontStage === "areatitle") await begin(true);
     if (frontStage === "classpick") {
+      // A still: the title is gone at once (its 'is-leaving' fade showed the menu under the list in a shot).
       $("screen-title").classList.add("is-leaving");
+      $("screen-title").hidden = true;
       const cls = (params.get("class") as ClassId | null) ?? "ghost";
       s?.wardrobe(cls, true);
       openClassPick(document.body, () => undefined, cls, { still: true });

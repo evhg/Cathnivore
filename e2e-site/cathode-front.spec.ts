@@ -99,3 +99,52 @@ test('cathodeFront.ready fires at the 18+ gate on a fresh profile', async ({ pag
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
   await expect(page.locator('#screen-gate')).toBeVisible()
 })
+
+// Plan item 40: the critique's front-door bugs. The class-pick still shows no title menu under it; on an upright
+// phone the hold bar is pinned on screen with a "more below" cue that goes once the sheet is read to its end;
+// held sideways, the case board shows its first lead and Back on the first screen.
+test.describe('CATHODE front door fits (plan item 40)', () => {
+  test('class pick: no menu under the still, and the phone pins the hold bar with a scroll cue', async ({ page, hasTouch }) => {
+    test.setTimeout(180_000)
+    if (hasTouch) await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/nightshift/?shot')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+    await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
+    await expect(page.locator('#screen-title')).toBeHidden()
+    const hold = page.locator('.cp-hold')
+    await expect(hold).toBeVisible()
+    const vh = page.viewportSize()!.height
+    const box = await hold.boundingBox()
+    expect(box!.y + box!.height).toBeLessThanOrEqual(vh + 1)
+    if (!hasTouch) return
+    // The sheet runs past the fold: the cue shows, and goes once scrolled to the end.
+    await expect(page.locator('.cp')).toHaveClass(/cp-more/)
+    await expect(page.locator('.cp-cue')).toHaveText(/more below/i)
+    await expect.poll(() => page.locator('.cp-cue').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeGreaterThan(0.9)
+    await page.evaluate(() => {
+      const cp = document.querySelector('.cp')!
+      cp.scrollTop = cp.scrollHeight
+    })
+    await expect(page.locator('.cp')).not.toHaveClass(/cp-more/)
+    await expect.poll(() => page.locator('.cp-cue').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeLessThan(0.1)
+    // At the end, the last of the sheet (the skill trees) sits above the pinned bar, not under it.
+    const last = await page.locator('.cp-tree').last().boundingBox()
+    const bar = await page.locator('.cp-foot').boundingBox()
+    expect(last!.y + last!.height).toBeLessThanOrEqual(bar!.y + 26)
+  })
+
+  test('case board held sideways: the first lead and Back show on the first screen', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'the sideways phone')
+    test.setTimeout(180_000)
+    await open(page, true)
+    await page.locator('#btn-cases').click()
+    await expect(page.locator('.case-board')).toBeVisible({ timeout: 30_000 })
+    for (const sel of ['.case-list li >> nth=0', '.case-board .btn-primary']) {
+      const b = await page.locator(sel).boundingBox()
+      expect(b, sel).not.toBeNull()
+      expect(b!.y + b!.height, sel).toBeLessThanOrEqual(391)
+      expect(b!.y, sel).toBeGreaterThanOrEqual(0)
+    }
+  })
+})

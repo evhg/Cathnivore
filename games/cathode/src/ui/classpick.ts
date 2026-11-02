@@ -98,7 +98,13 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   trees.setAttribute("aria-label", "Skill trees");
 
   // ---- the commit: hold the bar ----
-  const go = button("cp-hold", sheet);
+  // Plan item 40: on an upright phone the sheet runs past the screen, so the foot (a "more below" cue over the
+  // hold bar) is pinned to the bottom; the cue fades once the sheet has been scrolled to its end. Elsewhere the
+  // foot is display: contents and the cue hidden, so the desktop column lays out as before.
+  const foot = el("div", "cp-foot", sheet);
+  const cue = el("p", "cp-cue", foot, "More below");
+  cue.setAttribute("aria-hidden", "true");
+  const go = button("cp-hold", foot);
   go.setAttribute("aria-describedby", "cp-hold-how");
   const goFill = el("span", "cp-hold-fill", go);
   goFill.setAttribute("aria-hidden", "true");
@@ -254,6 +260,10 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     if (ev.key === "Enter" || ev.key === " ") holdCancel();
   }
   const onBlur = () => holdCancel();
+  // The cue shows while there is more of the sheet below the fold (only an upright phone ever scrolls).
+  const moreBelow = () => root.classList.toggle("cp-more", root.scrollHeight - root.clientHeight - root.scrollTop > 8);
+  root.addEventListener("scroll", moreBelow, { passive: true });
+  requestAnimationFrame(moreBelow);
   document.addEventListener("keydown", onKey, true);
   document.addEventListener("keyup", onKeyUp, true);
   addEventListener("blur", onBlur);

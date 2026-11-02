@@ -807,6 +807,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-hold-how { font: 600 var(--fs-1)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
 .cp-hold-how::after { content: " Enter"; }
 @media (hover: none) { .cp-hold-how::after { content: ""; } }
+/* The foot only exists for the upright phone (below): elsewhere the hold bar lays out as the sheet's own child. */
+.cp-foot { display: contents; }
+.cp-cue { display: none; }
 .cp-hold:focus:not(:focus-visible) { outline: none; }
 .cp-hold:focus-visible { outline: none; }
 .cp-hold:focus-visible::before, .cp-hold.is-holding::before { opacity: 1; }
@@ -876,6 +879,36 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-sheet { position: relative; margin-top: 0; padding-top: 30px; } /* px-ok */
   .cp-sheet::before { top: 0; bottom: -16px; background: rgb(var(--shade-rgb) / .93); } /* px-ok */
   .cp-words, .cp-sheet { max-width: none; }
+  /* Plan item 40: the hold bar is pinned to the screen's foot on the sheet's dark band, with a "more below" cue
+     over it while the sheet runs on past the fold. */
+  .cp-foot {
+    display: block;
+    position: sticky;
+    bottom: calc(-1 * max(16px, env(safe-area-inset-bottom))); /* px-ok: through the .cp's bottom padding */
+    z-index: var(--z-lift-4);
+    margin: 0 -16px; /* px-ok */
+    padding: 26px 16px max(12px, env(safe-area-inset-bottom)); /* px-ok */
+    background: linear-gradient(180deg, transparent 0, rgb(var(--black-rgb)) 24px); /* px-ok */
+  }
+  .cp-cue {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* px-ok */
+    height: 0;
+    margin: 0;
+    overflow: visible;
+    transform: translateY(-6px); /* px-ok */
+    font: 700 var(--fs-1)/1 var(--font-ui);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-stretch: var(--wdth-label);
+    opacity: 0;
+    transition: opacity 240ms ease-out;
+  }
+  .cp-cue::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-3px) rotate(45deg); } /* px-ok */
+  .cp.cp-more .cp-cue { opacity: 1; }
 }
 
 /* ---- character screen (C13T): the dossier as type over the blurred street, like pause and death. One left
@@ -1902,6 +1935,34 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .case-ladder li { opacity: .7; }
 .case-ladder li.is-now { opacity: 1; font-weight: 700; }
 .case-cork > .btn-primary { color: var(--print-paper); text-shadow: 0 1px 2px rgb(var(--black-rgb) / .8); }
+/* Plan item 40: a phone held sideways cut off the leads and Back. The wall packs tighter (smaller prints, a
+   smaller head) so the first leads show on the first screen, and Back is pinned to the board's foot. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .case-board { padding: 6px 0 0; } /* px-ok */
+  .case-board .case-cork { padding: 10px 20px 0; border-width: 4px; } /* px-ok */
+  .case-head { gap: 10px; margin-bottom: 4px; } /* px-ok */
+  .case-cork .case-cath { width: 40px; height: 40px; } /* px-ok */
+  .case-titles h2 { font-size: var(--fs-3); }
+  .case-eyebrow { margin-top: 4px; } /* px-ok */
+  .case-wall { margin-bottom: 10px; } /* px-ok */
+  .case-prints { gap: 14px; padding-top: 4px; } /* px-ok */
+  .case-print { max-width: 92px; padding: 5px 5px 7px; } /* px-ok */
+  .case-print .case-name { margin-top: 4px; } /* px-ok */
+  .case-blank { font-size: var(--fs-4); }
+  .case-cork .case-list { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 8px; } /* px-ok */
+  .case-list li { padding: 10px 12px 8px; gap: 3px; } /* px-ok */
+  .case-cork > .btn-primary {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--z-lift);
+    display: block;
+    width: calc(100% + 40px); /* px-ok: across the cork's padding */
+    margin: 0 -20px; /* px-ok */
+    padding: 10px 20px; /* px-ok */
+    text-align: left;
+    background: linear-gradient(180deg, transparent, rgb(var(--black-rgb) / .72) 30%);
+  }
+}
 @media (max-width: 600px) {
   .case-prints { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: calc(var(--u) * 30); }
   .case-board .case-cork { padding: calc(var(--u) * 20) calc(var(--u) * 18); border-width: calc(var(--u) * 6); }
