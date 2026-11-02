@@ -68,7 +68,7 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
 
   // The cork wall (north): a framed cork board with pinned cards and string.
   b.box("wood", 0, 1.6, zN + 0.05, 3.4, 1.7, 0.08, { cover: "none" });
-  b.box("styro", 0, 1.6, zN + 0.1, 3.2, 1.5, 0.04, { cover: "none" });
+  b.box("cork", 0, 1.6, zN + 0.1, 3.2, 1.5, 0.04, { cover: "none" });
   const cards: [number, number, string][] = [[-1.2, 2.0, "plasticWhite"], [-0.4, 1.9, "plasticWhite"], [0.5, 2.05, "plasticWhite"], [1.2, 1.8, "plasticWhite"], [-0.9, 1.25, "plasticWhite"], [0.2, 1.3, "plasticWhite"], [1.0, 1.15, "plasticWhite"]];
   for (const [x, y, m] of cards) b.box(m, x, y, zN + 0.13, 0.34, 0.4, 0.01, { cover: "none" });
   b.cable("glowRed", V(-1.2, 2.15, zN + 0.14), V(0.5, 2.2, zN + 0.14), 0.05, 0.006);

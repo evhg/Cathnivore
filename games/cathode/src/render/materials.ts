@@ -118,6 +118,8 @@ export function createMaterials(pbr: Record<PbrId, PbrSet>, s: SharedUniforms, q
   m.ice = plain("#6f8890", 0.25, 0, 0.2);
   m.fish = plain("#8e9aa0", 0.22, 0.75, 0.2);
   m.styro = plain("#7a7a74", 0.85, 0, 0.5);
+  // Plan item 16: the cork wall in Cath's office.
+  m.cork = plain("#7a5232", 0.95, 0, 0.5);
   m.yellowPaint = plain("#a07a08", 0.45, 0.1);
   m.plasticRed = plain("#7a0c0c", 0.35, 0);
   m.plasticWhite = plain("#7a7a74", 0.35, 0);
