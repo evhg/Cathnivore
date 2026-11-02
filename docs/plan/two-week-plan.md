@@ -478,7 +478,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of every fixed screen at P and D.
 - **Size:** 3
 
-## 34. [ ] Cathnivore: the turns between yours are a show, not a wait
+## 34. [x] Cathnivore: the turns between yours are a show, not a wait *(done 2026-11-02, lane A, 64d852bc..4810fe70: the AI teammate lifts each pick as a card with its reason (`data-teammate-step`, set before the state changes) and a face per pick, its hex glows, a ledger of their turn sits under the card (pips on a phone), and the card flies to its hex as it lands; a tap skips the rest of their turn; the enemy turn's steps are a ledger that ticks off in the Actions area (pips at P); the AI speed setting paces both; reduced motion fades and skips the flight; `e2e/turn-show.spec.ts` at P and D (no box over a hex, no empty band over 120 px, reason first, tap skips, fade), `tests/teammate-pick.test.ts`; shots of both turns and the flight at P and D. Under webdriver a pick shows for 120 ms unless `?e2eTeammateShow=1`, so older specs don't wait out the reading time)*
 - **Why:** the AI teammate's turn and the enemy turn come every round and are the weakest screens.
   - The teammate's turn is a blank band with "deciding…" text.
   - The enemy strip covers hexes and blanks the Actions panel.
