@@ -54,3 +54,17 @@ test('plan item 19: at 1440x900 the field takes at least 70% of the width, and t
   await expect(page.locator('#panel .round-ticket')).toBeVisible()
   await expect(page.locator('#panel .intel-towers')).toHaveCount(0)
 })
+
+test('plan item 69: on an upright phone Cath\'s note is a slim slip clear of the round tab', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone layout')
+  await open(page, 12, {})
+  const bubble = page.locator('#bubble')
+  await expect(bubble).toBeVisible()
+  const b = (await bubble.boundingBox())!
+  expect(b.height).toBeLessThanOrEqual(84)
+  const tab = await page.evaluate(() => {
+    const t = [...document.querySelectorAll<HTMLElement>('body *')].find((e) => /^NEXT: ROUND/i.test(e.textContent?.trim() ?? '') && e.children.length < 3 && e.getClientRects().length)
+    return t ? t.getBoundingClientRect().top : null
+  })
+  if (tab !== null) expect(b.y + b.height).toBeLessThanOrEqual(tab + 1)
+})
