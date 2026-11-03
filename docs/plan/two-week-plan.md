@@ -954,7 +954,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots fresh, mid-campaign and complete at P, L and D, light and dark.
 - **Size:** 2
 
-## 61. [ ] Runnel: channels cut into the earth, and water you can watch *(lane A, in progress)*
+## 61. [x] Runnel: channels cut into the earth, and water you can watch *(done 2026-11-03, lane A, 09:51 session: each opening a ditch seen from above as a V (the slope towards the day's light in shade and the far slope lit, `bankSunlit` in `water.ts`, retoggled as the tile turns), a dark bed with pebbles, a thin cut edge in the ground's colour (green once watered), a stone basin at the hub; water sits in the bed and drains back out when cut off; `data-wet` marks the water's real arrival (`arrivalMs`, one cascade step a tile, so a longer river takes longer); pins are a wooden stake with twine, not a ring; night and the share card match; `tests/runnel-water.test.ts`, the item 30 contrast floor plus a ditch floor (one slope 3:1 on every ground and season, water 2:1 on its bed); `e2e-site/runnel-water.spec.ts` (fill within 600 ms, a cut drains) with runnel-board, practice and win at P and D; shots before (`e2e/screenshots/runnel-before61-*`) and after (`runnel-after61-*`, `ditch61/`: daily, lesson, solved at P and D, light and dark, autumn and winter). Cut: the spill-darkened soil in fields (the existing spill puddles stay))*
 - **Why:**
   - `runnel-daily2-D`, `runnel-daily2-P`: grooves are flat brown bars (`line.groove`, one stroke colour, `board.ts`, `.groove`); they read as planks or roads, not ditches, and the water is a thin dashed line inside them. The most-touched object in the game is the plainest (VISION pillars 1 and 6).
 - **Build:**
