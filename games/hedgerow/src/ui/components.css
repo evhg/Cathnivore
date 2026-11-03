@@ -3504,8 +3504,8 @@ body:has(#dlg-pause[open]) .paused-note {
   left: 0;
   top: 0;
   font: 800 var(--fs-body) / 1 var(--font-ui);
-  color: #ffe27a;
-  -webkit-text-stroke: 3px rgb(60 40 10 / 0.8);
+  color: var(--brass-hi);
+  -webkit-text-stroke: 3px var(--brass-lo);
   paint-order: stroke fill;
   pointer-events: none;
   will-change: transform, opacity;
