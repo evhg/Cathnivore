@@ -40,7 +40,8 @@ const palettes: Record<string, Record<string, string>> = {
 describe('Runnel channel contrast (plan item 30)', () => {
   for (const [name, p] of Object.entries(palettes)) {
     it(`${name}: dry and wet channels stand 3:1 or more off their tiles`, () => {
-      expect(contrast(p['--groove']!, p['--dry']!)).toBeGreaterThanOrEqual(3)
+      // Plan item 50: every dry ground (fallow, meadow, field) keeps the floor.
+      for (const ground of ['--dry', '--dry-meadow', '--dry-field']) expect(contrast(p['--groove']!, p[ground]!), ground).toBeGreaterThanOrEqual(3)
       expect(contrast(p['--groove-wet']!, p['--wet']!)).toBeGreaterThanOrEqual(3)
     })
   }

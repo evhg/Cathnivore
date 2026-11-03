@@ -4,8 +4,14 @@
   color-scheme: light;
   --dry: #ecd7a9;
   --dry-edge: #c9a56d;
-  --wet: #c4dc9c;
-  --wet-edge: #8fae62;
+  /* Plan item 50: dry ground as farmland. Fallow straw (--dry), a pale meadow, a ripe field; water is the lush green. */
+  --dry-meadow: #dfe3b3;
+  --dry-field: #f0d38c;
+  --furrow: #b98a4c;
+  --clover: #8fae62;
+  --flower: #f6f1e4;
+  --wet: #b8d98c;
+  --wet-edge: #7fae52;
   --groove: #96693b;
   --groove-wet: #7f5c35;
   --water: #3b8db0;
@@ -19,6 +25,19 @@
   --sky-golden: #ffb25c;
   --sky-dusk: #6b4f9a;
   --cloud: #2b2320;
+  /* Plan item 50: the sky band over the scene for each time of day (top colour, the horizon under it), and the
+     faint cast it gives the paper. */
+  --band-morning: #ffe7b0;
+  --band-morning-2: #fff3d6;
+  --band-noon: #bfdcec;
+  --band-noon-2: #e4f0ec;
+  --band-golden: #ffc27a;
+  --band-golden-2: #ffe2b4;
+  --band-dusk: #b29bd2;
+  --band-dusk-2: #f0b49c;
+  --cast-morning: #fff4dc;
+  --cast-golden: #fbe6cc;
+  --cast-dusk: #e6dae6;
   --gold: #d9951c;
   /* Plan item 39: Bea's workshop table (warm oak) and the ink on it. */
   --ws-wood-1: #c99a64;
@@ -99,6 +118,11 @@
 
     --dry: #5e4a35;
     --dry-edge: #7a6045;
+    --dry-meadow: #4f5236;
+    --dry-field: #6a5233;
+    --furrow: #3e2f20;
+    --clover: #6f8a4c;
+    --flower: #cfc3ad;
     --wet: #3f5b2f;
     --wet-edge: #5f8445;
     /* Plan item 30: at night the channels are pale sand cut into dark soil (3:1 or more, tests/runnel-contrast). */
@@ -112,6 +136,17 @@
     --blossom-1: #e693a6;
     --blossom-2: #a995dc;
     --cloud: #000;
+    --band-morning: #3a3550;
+    --band-morning-2: #2a2530;
+    --band-noon: #2c3a4e;
+    --band-noon-2: #232a33;
+    --band-golden: #4a3328;
+    --band-golden-2: #2e2420;
+    --band-dusk: #2e2850;
+    --band-dusk-2: #3d2a36;
+    --cast-morning: #1c1714;
+    --cast-golden: #1f1814;
+    --cast-dusk: #1a1620;
     --grain: rgba(0, 0, 0, 0.2);
     --stone: #6f655b;
     --stone-2: #857a6e;
@@ -128,7 +163,9 @@
    scheme only: the night palette has its own board colours, which the light seasonal tints would wash out. */
 @media (prefers-color-scheme: light) {
   :root[data-season='spring'] {
-    --wet: #c9e6a6;
+    --dry-meadow: #d9e8b0;
+    --dry-field: #ecd79a;
+    --wet: #bde39a;
     --wet-edge: #7fb867;
   }
   :root[data-season='autumn'] {
@@ -136,8 +173,10 @@
     --blossom-1: #e9a35a;
     --dry: #ead0a0;
     --dry-edge: #c28f55;
-    --wet: #cfd68f;
-    --wet-edge: #a09a4a;
+    --dry-meadow: #e3d9a0;
+    --dry-field: #f2cd96;
+    --wet: #bcd27f;
+    --wet-edge: #8a9a40;
   }
   :root[data-season='winter'] {
     --tuft: #6f9a6a;
@@ -145,7 +184,9 @@
     --blossom-2: #c8d6e6;
     --dry: #e6e3d6;
     --dry-edge: #b9b8ae;
-    --wet: #cfe0c4;
+    --dry-meadow: #dce6d6;
+    --dry-field: #e9dfc8;
+    --wet: #c2dcb0;
     --wet-edge: #86a581;
     --water: #4a86a8;
   }

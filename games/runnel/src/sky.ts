@@ -36,3 +36,12 @@ export function skyFor(seed: string): Sky {
   const weather = WEATHERS[(h >>> 8) % WEATHERS.length]!
   return { time, weather, label: `${TIME_WORDS[time]}, ${WEATHER_WORDS[weather]}` }
 }
+
+/** The board's sky, with the `?sky=<time>,<weather>` screenshot hook applied (and its words to match). */
+export function boardSky(seed: string, search: string = typeof location === 'undefined' ? '' : location.search): Sky {
+  const sky = skyFor(seed)
+  const forced = new URLSearchParams(search).get('sky')?.split(',')
+  const time = (TIMES as string[]).includes(forced?.[0] ?? '') ? (forced![0] as TimeOfDay) : sky.time
+  const weather = (WEATHERS as string[]).includes(forced?.[1] ?? '') ? (forced![1] as Weather) : sky.weather
+  return { time, weather, label: `${TIME_WORDS[time]}, ${WEATHER_WORDS[weather]}` }
+}

@@ -2,7 +2,8 @@
 // Policy forbids inline style attributes, so every dynamic style goes through the CSSOM
 // (`element.style.setProperty`), never through markup.
 
-import { skyFor } from './sky'
+import { boardSky } from './sky'
+import { furrowAngle, groundFor } from './ground'
 import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -98,6 +99,12 @@ export class Board {
     el('circle', { cx: 3, cy: 4, r: 0.9, class: 'grain' }, grain)
     el('circle', { cx: 10, cy: 9, r: 0.7, class: 'grain' }, grain)
     el('circle', { cx: 6, cy: 12, r: 0.6, class: 'grain' }, grain)
+    // Plan item 50: the dry ground's dressing. A ploughed field's furrows, and a meadow's clover and flowers.
+    const furrows = el('pattern', { id: 'ground-furrows', width: 9, height: 9, patternUnits: 'userSpaceOnUse' }, defs)
+    el('rect', { x: 0, y: 0, width: 9, height: 3.2, class: 'furrow-line' }, furrows)
+    const meadow = el('pattern', { id: 'ground-meadow', width: 26, height: 22, patternUnits: 'userSpaceOnUse' }, defs)
+    for (const [cx, cy, k] of [[4, 5, 'clover'], [17, 3, 'flower'], [11, 13, 'clover'], [22, 16, 'clover'], [3, 18, 'flower']] as const)
+      el('circle', { cx, cy, r: k === 'flower' ? 1.3 : 1.9, class: `meadow-${k}` }, meadow)
 
     // A soft plinth under the whole board.
     const shadow = el('g', { class: 'plinth' }, svg)
@@ -198,10 +205,13 @@ export class Board {
 
   private drawCell(parent: SVGGElement, cell: Cell, index: number): CellView {
     const { x, y } = cellCentre(cell.q, cell.r)
-    const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}${cell.bridge ? ' bridge' : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
+    const ground = cell.kind === 'stone' ? null : groundFor(this.puzzle.seed, cell.q, cell.r)
+    const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}${cell.bridge ? ' bridge' : ''}${ground ? ` ground-${ground}` : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
+    if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)
+    else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
 
     const view: CellView = { root, piece: null, water: [], spokeDirs: [], angle: cell.rot * 60 }
 
@@ -253,12 +263,12 @@ export class Board {
    * that makes the crops sway harder. Purely decorative and never in the way of a tap.
    */
   private drawSky(svg: SVGSVGElement, defs: SVGDefsElement): void {
-    const sky = skyFor(this.puzzle.seed)
     // Screenshot hook: `?sky=<time>,<weather>` forces the day's sky.
-    const forced = new URLSearchParams(location.search).get('sky')?.split(',')
-    if (forced?.[0]) sky.time = forced[0] as typeof sky.time
-    if (forced?.[1]) sky.weather = forced[1] as typeof sky.weather
+    const sky = boardSky(this.puzzle.seed)
     svg.dataset.time = sky.time
+    // Plan item 50: the whole scene takes the board's light (a sky band over the page and the field).
+    document.documentElement.dataset.time = sky.time
+    document.documentElement.dataset.weather = sky.weather
     svg.setAttribute('aria-label', `Puzzle board. ${sky.label}`)
     svg.dataset.weather = sky.weather
     const clip = el('clipPath', { id: 'board-clip' }, defs)

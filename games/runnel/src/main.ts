@@ -13,7 +13,7 @@ import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
-import { skyFor } from './sky'
+import { boardSky } from './sky'
 import {
   arcLabel,
   computeFlow,
@@ -317,7 +317,7 @@ function render(): void {
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
       game.taps === 0
-        ? `${skyFor(puzzle.seed).label}. Tap a tile to turn it, hold to pin it.`
+        ? `${boardSky(puzzle.seed).label}. Tap a tile to turn it, hold to pin it.`
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = mode !== 'practice'
     ui.btnNew.textContent = 'New puzzle'

@@ -447,7 +447,16 @@ button {
   fill: var(--grain);
 }
 
-.wet .tile {
+.ground-meadow .tile { fill: var(--dry-meadow); }
+.ground-field .tile { fill: var(--dry-field); }
+.tile-dress { pointer-events: none; transition: opacity 380ms ease var(--delay, 0ms); }
+.furrow-line { fill: var(--furrow); opacity: 0.34; }
+.meadow-clover { fill: var(--clover); opacity: 0.5; }
+.meadow-flower { fill: var(--flower); stroke: var(--wheat); stroke-width: 0.8; }
+/* Watered, a field greens over and a meadow's flowers stay: the furrows fade under the new growth. */
+.wet .tile-dress { opacity: 0.45; }
+
+.cell.wet .tile {
   fill: var(--wet);
   stroke: var(--wet-edge);
 }
@@ -1431,10 +1440,17 @@ kbd {
   }
 }
 
-/* stage: faint furrow stripes and a soft vignette so the board sits in a landscape */
+/* stage: faint furrow stripes and a soft vignette so the board sits in a landscape. Plan item 50: the board's
+   time of day (board.ts sets data-time on the root) shows as a sky band across the top of the scene and a cast
+   over the paper, so dusk is dusk. */
+:root[data-time='morning'] { --band: var(--band-morning); --band-2: var(--band-morning-2); --cast: var(--cast-morning); }
+:root[data-time='noon'] { --band: var(--band-noon); --band-2: var(--band-noon-2); --cast: var(--paper); }
+:root[data-time='golden'] { --band: var(--band-golden); --band-2: var(--band-golden-2); --cast: var(--cast-golden); }
+:root[data-time='dusk'] { --band: var(--band-dusk); --band-2: var(--band-dusk-2); --cast: var(--cast-dusk); }
 body {
-  background-color: var(--paper);
+  background-color: color-mix(in srgb, var(--paper) 55%, var(--cast, var(--paper)));
   background-image:
+    linear-gradient(180deg, var(--band, transparent) 0, var(--band-2, transparent) 90px, transparent 300px),
     radial-gradient(ellipse at 50% 45%, transparent 45%, color-mix(in srgb, var(--paper-2) 85%, transparent) 100%),
     repeating-linear-gradient(
       168deg,
@@ -2298,7 +2314,8 @@ body {
     border: 14px solid transparent;
     border-radius: 34px;
     background:
-      linear-gradient(var(--paper), var(--paper)) padding-box,
+      linear-gradient(180deg, var(--band, transparent) 0, var(--band-2, transparent) 110px, transparent 360px) padding-box,
+      linear-gradient(color-mix(in srgb, var(--paper) 55%, var(--cast, var(--paper))), color-mix(in srgb, var(--paper) 55%, var(--cast, var(--paper)))) padding-box,
       radial-gradient(circle at 50% 50%, var(--pasture) 0 6px, transparent 7px) 0 0 / 15px 15px border-box,
       radial-gradient(circle at 50% 50%, var(--tuft) 0 5px, transparent 6px) 7px 7px / 15px 15px border-box,
       var(--pasture-deep) border-box;
