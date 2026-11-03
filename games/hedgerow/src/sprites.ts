@@ -269,19 +269,25 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
     }
     case "beehive": {
       const body = spec === 0 ? "#c98a3a" : spec === 1 ? "#e8b13c" : "#d9a649";
-      rr(ctx, x - s * 0.2, base - s * 0.08, s * 0.4, s * 0.08, s * 0.02, "#7a5634");
+      // Plan item 52: a round skep raised on a bench with open legs (a skep on the ground read as the barn's block
+      // at phone size).
+      for (const dx of [-0.16, 0.13]) rr(ctx, x + s * dx, base - s * 0.2, s * 0.04, s * 0.2, s * 0.01, "#6b4a2b");
+      ctx.save();
+      ctx.translate(0, -s * 0.18);
+      rr(ctx, x - s * 0.24, base - s * 0.08, s * 0.48, s * 0.08, s * 0.02, "#7a5634");
       ctx.fillStyle = body;
       ctx.beginPath();
-      ctx.moveTo(x - s * 0.24, base - s * 0.06);
-      ctx.bezierCurveTo(x - s * 0.26, base - s * 0.6, x + s * 0.26, base - s * 0.6, x + s * 0.24, base - s * 0.06);
+      ctx.moveTo(x - s * 0.18, base - s * 0.06);
+      ctx.bezierCurveTo(x - s * 0.5, base - s * 0.2, x - s * 0.36, base - s * 0.62, x, base - s * 0.62);
+      ctx.bezierCurveTo(x + s * 0.36, base - s * 0.62, x + s * 0.5, base - s * 0.2, x + s * 0.18, base - s * 0.06);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
       ctx.strokeStyle = "rgba(90,55,20,0.55)";
       for (let i = 1; i < 4; i++) {
         ctx.beginPath();
-        const yy = base - s * 0.06 - i * s * 0.11;
-        const w = s * (0.24 - i * 0.035);
+        const yy = base - s * 0.08 - i * s * 0.13;
+        const w = s * (0.34 - i * 0.05);
         ctx.moveTo(x - w, yy);
         ctx.quadraticCurveTo(x, yy + s * 0.04, x + w, yy);
         ctx.stroke();
@@ -329,6 +335,7 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
         ctx.ellipse(bx, by - s * 0.02, s * 0.02, s * 0.012, 0, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.restore();
       break;
     }
     case "stall": {
@@ -440,14 +447,37 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       const red = spec === 1 ? "#b8863e" : "#b5523b";
       ctx.fillStyle = red;
       ctx.beginPath();
+      // Plan item 52: a wide gambrel barn with flared eaves and a weathervane, not a block.
+      // A lean-to shed down its right side, under a shallow plank roof.
+      rr(ctx, x + s * 0.16, base - s * 0.24, s * 0.3, s * 0.24, s * 0.01, "#8a4a36");
+      ctx.fillStyle = "#6b4a2b";
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.14, base - s * 0.34);
+      ctx.lineTo(x + s * 0.5, base - s * 0.22);
+      ctx.lineTo(x + s * 0.5, base - s * 0.18);
+      ctx.lineTo(x + s * 0.14, base - s * 0.28);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = red;
+      ctx.beginPath();
       ctx.moveTo(x - s * 0.3, base);
-      ctx.lineTo(x - s * 0.3, base - s * 0.34);
-      ctx.lineTo(x - s * 0.18, base - s * 0.52);
-      ctx.lineTo(x + s * 0.18, base - s * 0.52);
-      ctx.lineTo(x + s * 0.3, base - s * 0.34);
+      ctx.lineTo(x - s * 0.3, base - s * 0.3);
+      ctx.lineTo(x - s * 0.38, base - s * 0.32);
+      ctx.lineTo(x - s * 0.24, base - s * 0.52);
+      ctx.lineTo(x, base - s * 0.62);
+      ctx.lineTo(x + s * 0.24, base - s * 0.52);
+      ctx.lineTo(x + s * 0.38, base - s * 0.32);
+      ctx.lineTo(x + s * 0.3, base - s * 0.3);
       ctx.lineTo(x + s * 0.3, base);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, base - s * 0.62);
+      ctx.lineTo(x, base - s * 0.82);
+      ctx.moveTo(x - s * 0.08, base - s * 0.78);
+      ctx.lineTo(x + s * 0.1, base - s * 0.78);
       ctx.stroke();
       rr(ctx, x - s * 0.11, base - s * 0.26, s * 0.22, s * 0.26, s * 0.01, "#f4ede1");
       ctx.beginPath();
@@ -529,8 +559,9 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
         ctx.stroke();
       }
       const hubY = base - s * (h - 0.04);
-      const spin = t * (1.2 + Math.max(0, 1 - fired) * 6);
-      const len = s * (spec === 0 ? 0.46 : 0.36);
+      // At rest the sails stand as an X, the windmill's own shape (a + read as the silo at phone size).
+      const spin = Math.PI / 4 + t * (1.2 + Math.max(0, 1 - fired) * 6);
+      const len = s * (spec === 0 ? 0.52 : 0.46);
       for (let i = 0; i < 4; i++) {
         const a = spin + (i * Math.PI) / 2;
         ctx.save();
@@ -661,20 +692,22 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
     }
     case "court": {
       const stone = spec === 0 ? "#e6dcc6" : "#ece6da";
-      rr(ctx, x - s * 0.36, base - s * 0.08, s * 0.72, s * 0.08, s * 0.01, "#cfc5af");
+      // Plan item 52: a tall portico on two steps, its columns standing clear (it read as the barn at phone size).
+      rr(ctx, x - s * 0.4, base - s * 0.06, s * 0.8, s * 0.06, s * 0.01, "#cfc5af");
+      rr(ctx, x - s * 0.32, base - s * 0.12, s * 0.64, s * 0.06, s * 0.01, "#d8cfba");
       ctx.fillStyle = stone;
-      for (let i = 0; i < 4; i++) rr(ctx, x - s * 0.28 + i * s * 0.17, base - s * 0.42, s * 0.07, s * 0.34, s * 0.01, stone);
+      for (let i = 0; i < 4; i++) rr(ctx, x - s * 0.26 + i * s * 0.16, base - s * 0.56, s * 0.06, s * 0.44, s * 0.01, stone);
       ctx.fillStyle = stone;
       ctx.beginPath();
-      ctx.moveTo(x - s * 0.38, base - s * 0.42);
-      ctx.lineTo(x, base - s * 0.64);
-      ctx.lineTo(x + s * 0.38, base - s * 0.42);
+      ctx.moveTo(x - s * 0.34, base - s * 0.56);
+      ctx.lineTo(x, base - s * 0.8);
+      ctx.lineTo(x + s * 0.34, base - s * 0.56);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
       // Scales, which swing as it serves.
       ctx.save();
-      ctx.translate(x, base - s * 0.53);
+      ctx.translate(x, base - s * 0.66);
       ctx.rotate(kick * 0.4 + Math.sin(t) * 0.05);
       ctx.strokeStyle = "#a07a2a";
       ctx.beginPath();
@@ -694,45 +727,58 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       if (spec === 0) {
         ctx.fillStyle = "#d4ae58";
         ctx.beginPath();
-        ctx.arc(x, base - s * 0.7, s * 0.05, 0, Math.PI * 2);
+        ctx.arc(x, base - s * 0.84, s * 0.05, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }
       break;
     }
     case "hall": {
-      rr(ctx, x - s * 0.34, base - s * 0.44, s * 0.68, s * 0.44, s * 0.03, "#b36a4a");
+      // Plan item 52: a long, low hall under a shallow roof, its banner high on a pole (it read as the court).
+      // Its clock tower at the right end.
+      rr(ctx, x + s * 0.2, base - s * 0.7, s * 0.16, s * 0.7, s * 0.02, "#a65e40");
+      ctx.fillStyle = "#4d3420";
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.17, base - s * 0.7);
+      ctx.lineTo(x + s * 0.28, base - s * 0.86);
+      ctx.lineTo(x + s * 0.39, base - s * 0.7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      blob(ctx, x + s * 0.28, base - s * 0.58, s * 0.05, "#f4ede1");
+      rr(ctx, x - s * 0.42, base - s * 0.3, s * 0.64, s * 0.3, s * 0.03, "#b36a4a");
       ctx.strokeStyle = "rgba(0,0,0,0.15)";
-      for (let i = 1; i < 4; i++) {
+      for (let i = 1; i < 3; i++) {
         ctx.beginPath();
-        ctx.moveTo(x - s * 0.34, base - i * s * 0.11);
-        ctx.lineTo(x + s * 0.34, base - i * s * 0.11);
+        ctx.moveTo(x - s * 0.42, base - i * s * 0.1);
+        ctx.lineTo(x + s * 0.22, base - i * s * 0.1);
         ctx.stroke();
       }
       ctx.strokeStyle = INK;
       ctx.fillStyle = "#6b4a2b";
       ctx.beginPath();
-      ctx.moveTo(x - s * 0.4, base - s * 0.42);
-      ctx.lineTo(x, base - s * 0.66);
-      ctx.lineTo(x + s * 0.4, base - s * 0.42);
+      ctx.moveTo(x - s * 0.48, base - s * 0.28);
+      ctx.lineTo(x - s * 0.32, base - s * 0.42);
+      ctx.lineTo(x + s * 0.2, base - s * 0.42);
+      ctx.lineTo(x + s * 0.2, base - s * 0.28);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
-      rr(ctx, x - s * 0.07, base - s * 0.22, s * 0.14, s * 0.22, s * 0.04, "#f4ede1");
+      rr(ctx, x - s * 0.17, base - s * 0.22, s * 0.14, s * 0.22, s * 0.04, "#f4ede1");
       // A union banner, waving.
       const banner = spec === 0 ? "#c4433a" : spec === 1 ? "#d4ae58" : "#3f6fb5";
       ctx.fillStyle = banner;
       ctx.beginPath();
-      ctx.moveTo(x + s * 0.24, base - s * 0.7);
-      for (let i = 0; i <= 4; i++) ctx.lineTo(x + s * (0.24 + i * 0.05), base - s * 0.7 + Math.sin(t * 4 + i) * s * 0.015);
-      ctx.lineTo(x + s * 0.44, base - s * 0.56);
-      for (let i = 4; i >= 0; i--) ctx.lineTo(x + s * (0.24 + i * 0.05), base - s * 0.56 + Math.sin(t * 4 + i) * s * 0.015);
+      ctx.moveTo(x - s * 0.34, base - s * 0.7);
+      for (let i = 0; i <= 4; i++) ctx.lineTo(x + s * (-0.34 + i * 0.05), base - s * 0.7 + Math.sin(t * 4 + i) * s * 0.015);
+      ctx.lineTo(x - s * 0.14, base - s * 0.57);
+      for (let i = 4; i >= 0; i--) ctx.lineTo(x + s * (-0.34 + i * 0.05), base - s * 0.57 + Math.sin(t * 4 + i) * s * 0.015);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(x + s * 0.24, base - s * 0.44);
-      ctx.lineTo(x + s * 0.24, base - s * 0.74);
+      ctx.moveTo(x - s * 0.34, base - s * 0.4);
+      ctx.lineTo(x - s * 0.34, base - s * 0.74);
       ctx.stroke();
       break;
     }
@@ -2143,4 +2189,22 @@ export function drawPropIcon(ctx: C, prop: Property, x: number, y: number, d: nu
 /** The properties to show over a vehicle: everything it carries except what its look already says (an Artic's own). */
 export function propIconsFor(pm: number): Property[] {
   return propsOf(pm);
+}
+
+/**
+ * Plan item 52: a tower's tier-1 silhouette at a given cell size, as a mask (1 where the body covers a pixel, the
+ * soft ground shadow left out). Tests compare these pairwise so towers stay tellable apart at phone size.
+ */
+export function towerSilhouette(kind: TowerKind, cell = 24): { w: number; h: number; mask: number[] } {
+  const w = Math.round(cell * 1.5);
+  const h = Math.round(cell * 1.5);
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d")!;
+  drawTower(ctx, { kind, tier: 1, spec: null, fired: 9, dazed: false, still: true }, w / 2, h / 2, cell, 0);
+  const d = ctx.getImageData(0, 0, w, h).data;
+  const mask: number[] = [];
+  for (let i = 0; i < w * h; i++) mask.push(d[i * 4 + 3]! > 160 ? 1 : 0);
+  return { w, h, mask };
 }

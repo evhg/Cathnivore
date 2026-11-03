@@ -138,7 +138,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
-import { towerTier } from "./sprites";
+import { towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
@@ -733,6 +733,8 @@ if (SANDBOX)
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
+    // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
+    silhouette: towerSilhouette,
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
       renderPanel(true);
