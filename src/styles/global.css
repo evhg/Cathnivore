@@ -3389,3 +3389,9 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup-cath-stand .cath-art { width: 112px; }
   .setup-cath-says { padding: 4px 8px; font-size: var(--fs-label); }
 }
+/* Plan item 75: on a phone tall enough to spare the room (840 px or more), Cath's Setup bust beside her line is
+   80 px, not a 44 px thumbnail; shorter phones keep the small one so the screen still never scrolls. */
+@media (max-width: 1099px) and (min-height: 840px) {
+  .setup-header { align-items: center; }
+  .setup-header-cath svg { width: 80px; height: 80px; }
+}
