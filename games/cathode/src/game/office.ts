@@ -116,3 +116,29 @@ export function beaCall(jobsDone: readonly string[]): string[] {
 export function continueDistrict(jobsDone: readonly string[]): string | undefined {
   return jobsDone.includes("fishMarket") ? "office" : undefined;
 }
+
+/** Plan item 51: the cases that close a district (a boss down), in the order the shelf fills, with their keepsake. */
+const CLOSERS: ReadonlyArray<readonly [string, string, string]> = [
+  ["crispBoss", "gumshoes", "Gumshoes, from the Drowned Market"],
+  ["vaneBoss", "velvetKnuckles", "Velvet Knuckles, from the Candor clinic"],
+  ["pellBoss", "widowsVeil", "Widow's Veil, from Hollowell Plaza"],
+  ["boardBoss", "longGoodbye", "The Long Goodbye, from the Board Tower"],
+  ["vaultBoss", "candorsConscience", "Candor's Conscience, from the Hollow Vault"],
+];
+
+/** Bea's drawings: there is always one, and one more for each case closed, from a fixed set of six. */
+export const DRAWINGS = ["sun", "mum", "taxi", "fish", "stars", "home"] as const;
+export type Drawing = (typeof DRAWINGS)[number];
+
+export interface OfficeDressing {
+  /** Bea's drawings pinned by the door, oldest first. */
+  drawings: Drawing[];
+  /** The trophy shelf, in the order the cases closed (story order). */
+  keepsakes: Array<{ id: string; caption: string }>;
+}
+
+/** Plan item 51: what the office shows, read only from the save (the jobs done). */
+export function officeDressing(jobsDone: readonly string[]): OfficeDressing {
+  const keepsakes = CLOSERS.filter(([job]) => jobsDone.includes(job)).map(([, id, caption]) => ({ id, caption }));
+  return { drawings: DRAWINGS.slice(0, Math.min(DRAWINGS.length, 1 + keepsakes.length)), keepsakes };
+}

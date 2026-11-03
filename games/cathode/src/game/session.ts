@@ -65,7 +65,8 @@ import { Secrets, found as secretsFound, SECRETS } from "./secrets";
 import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
-import { beaCall, caseDistrict, doorName, stationAt, STATION_VERB } from "./office";
+import { beaCall, caseDistrict, doorName, officeDressing, stationAt, STATION_VERB } from "./office";
+import { buildOfficeDressing } from "../render/officedress";
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
@@ -167,6 +168,8 @@ export interface Session {
   talk?: () => void;
   /** Plan item 14: the district's lieutenant while he's walking (null once she's talked to him, or he's dead). */
   lieutenant?: () => Enemy | null;
+  /** Plan item 51: what the office shows from the save (null outside the office). */
+  officeDressing?: () => { drawings: number; keepsakes: number } | null;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
   talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
@@ -419,6 +422,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // The first job teaches the game one thing at a time and brings its own enemies; after that the street
   // is fully patrolled.
   // Screenshots skip the first job unless they ask for it (?shot&job).
+  // Plan item 51: the office remembers the cases she has closed (Bea's drawings, the trophy shelf), from the save.
+  const officeDress = inOffice ? buildOfficeDressing(officeDressing(progress.jobsDone)) : null;
+  if (officeDress) world.scene.add(officeDress);
   const tutorial = !inOffice && !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
   const KITS = {
     rifle: [ENFORCER, "enforcer"],
@@ -694,6 +700,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   };
   // A restart rebuilds the same object, so window.cathode (and anything holding it) stays the one session.
   const s: Session = o.warm ? Object.assign(o.warm.into, fresh) : fresh;
+  s.officeDressing = () => (officeDress?.userData.dressing as { drawings: number; keepsakes: number } | undefined) ?? null;
   if (o.warm) for (const k of Object.keys(s) as Array<keyof Session>) if (!(k in fresh)) delete s[k];
   s.deaths = o.warm?.deaths ?? 0;
   s.dying = null;
