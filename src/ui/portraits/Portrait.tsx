@@ -50,7 +50,12 @@ function Hair({ style, color }: { style: HairStyle; color: string }) {
       return (
         <g>
           <path d="M 26 40 Q 24 15 50 14 Q 76 15 74 40 L 68 38 Q 68 20 50 20 Q 32 20 32 38 Z" fill={color} stroke={INK} strokeWidth={1.5} />
-          <rect x={45} y={38} width={10} height={34} rx={4} fill={color} stroke={INK} strokeWidth={1.2} />
+          {/* Plan item 47: the braid falls over her right shoulder, plait by plait (it was a bar down the middle
+              of her face, drawn over it, so her portrait read as a blank grey visor at small sizes). */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <ellipse key={i} cx={71 + i * 1.4} cy={50 + i * 8.5} rx={5.4 - i * 0.35} ry={5.6} fill={color} stroke={INK} strokeWidth={1.1} />
+          ))}
+          <rect x={75.5} y={98} width={6} height={3.4} rx={1.2} fill="#7A4E2E" stroke={INK} strokeWidth={0.8} />
         </g>
       )
     case 'curly':
