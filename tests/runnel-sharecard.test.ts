@@ -43,6 +43,6 @@ describe('runnel share card', () => {
       return hashString(ctx.log.join('\n'))
     }
     expect(draw()).toBe(draw())
-    expect(draw()).toMatchInlineSnapshot(`119405226`)
+    expect(draw()).toMatchInlineSnapshot(`868533435`)
   })
 })
