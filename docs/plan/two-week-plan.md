@@ -1172,7 +1172,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Cathnivore title D** (`cath-title-D`): Cath's bubble overlaps Bea's MUM drawing.
   - **Cathnivore game D** (`cath-game-D`): the faded "PLAY" label sits under the "PLAY · 9 MORE" pill.
   - **Cathnivore Setup P** (`cath-setup-P`): a dead band of about 40 px above Start.
-  - **Hedgerow D** (`hedge-l21-2d-D`): the "Lifestyle influencer" pill text runs past its edge; the tower shelf truncates "Market S..." and clips the fifth tower under the arrow.
+  - [x] **Hedgerow D** (`hedge-l21-2d-D`): the "Lifestyle influencer" pill text runs past its edge; the tower shelf truncates "Market S..." and clips the fifth tower under the arrow. *(2026-11-03 lane A: the pill keeps inside the column and its name takes a second line only when it must, `critique79.spec.ts`; the shelf's cut fifth card is its scroll cue, left as is)*
   - **Hedgerow map P** (`hedge-menu-P`): row 1's stars and labels under the header; the act card cut mid-sentence by the bottom nav; a stop's label on the road.
   - **NIGHT SHIFT title** (`ns-title-D`): a shop sign shows through the wordmark (a scrim behind it); `ns-title-P`: the menu over the figure, grey entries below AA, 11 px lines.
   - **/games/ D** (`games-D`): a lighter rectangle behind Cath; **portfolio D** (`portfolio-D`): Cath's hand by the NIGHT SHIFT card is a stub.
