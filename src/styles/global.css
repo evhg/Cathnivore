@@ -3321,3 +3321,32 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 @media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
   .setup .layout-picker .layout-tile, .setup > button.setup-start { transition: none; }
 }
+/* Plan item 67 slice 2: each producer pulled up to the table in a wooden chair, its back rising round the portrait. */
+.setup .pc-chair { display: none; }
+@media (min-width: 1100px) {
+  .setup .producer-card { position: relative; }
+  .setup .producer-card .pc-portrait { position: relative; }
+  .setup .pc-chair {
+    display: block; position: absolute; left: 50%; top: 4px; width: 150px; height: 180px; margin-left: -75px; pointer-events: none;
+  }
+  .setup .pc-chair .chair-back { fill: color-mix(in srgb, var(--wood) 26%, transparent); stroke: var(--wood); stroke-width: 2.2; }
+  .setup .pc-chair .chair-seat { fill: var(--wood); }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup .pc-chair { top: 2px; width: 124px; height: 149px; margin-left: -62px; }
+}
+/* Plan item 67 slice 2: the seed tag is a real luggage tag: manila card with a punched eyelet, tied by a string to
+   its label, hanging a touch askew. */
+@media (min-width: 1100px) {
+  .setup .setup-seed .setup-seed-field { gap: 14px; }
+  .setup .setup-seed .setup-seed-field > span { font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soil); }
+  .setup .setup-seed .setup-seed-field input {
+    flex: none; width: 190px; max-width: none; min-height: 40px; padding: 8px 14px 8px 32px; border: 0; outline: 0;
+    background:
+      radial-gradient(circle at 16px 50%, var(--paper) 0 4.5px, var(--wood-lo) 4.5px 6.5px, var(--wheat-hi) 6.5px 8px, transparent 8px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wheat) 62%, var(--paper-hi)), color-mix(in srgb, var(--wheat) 82%, var(--soil)));
+    color: var(--wood-lo); font-weight: 600; transform: rotate(-2deg); transform-origin: 0 50%;
+    filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 22%, transparent));
+  }
+  .setup .setup-seed .setup-seed-field input::placeholder { color: color-mix(in srgb, var(--wood-lo) 72%, transparent); }
+}

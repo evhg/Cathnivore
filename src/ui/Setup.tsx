@@ -136,6 +136,11 @@ export default function Setup({ onStart }: Props) {
                 checked={producers.includes(id)}
                 onChange={() => toggleProducer(id)}
               />
+              {/* Plan item 67: at D each producer is pulled up to the table in a chair (item 54's seat, larger). */}
+              <svg className="pc-chair" viewBox="0 0 40 48" aria-hidden="true">
+                <path className="chair-back" d="M7 30V9a7 7 0 0 1 7-7h12a7 7 0 0 1 7 7v21" />
+                <rect className="chair-seat" x="3" y="30" width="34" height="5" rx="2" />
+              </svg>
               <span className="pc-portrait" aria-hidden="true">
                 <Portrait character={id} size={112} />
               </span>
