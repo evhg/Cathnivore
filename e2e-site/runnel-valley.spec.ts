@@ -21,6 +21,16 @@ for (const date of ['2026-11-03', '2026-11-08']) {
     const tiles = await page.evaluate(tileBox)
     expect(Math.max(tiles.w, tiles.h) / Math.min(frame.width, frame.height)).toBeGreaterThanOrEqual(0.55)
     await expect(page.locator('.valley')).toBeVisible()
+    // No blank band over 120 px between the tiles and the frame on either axis.
+    const gaps = await page.evaluate(() => {
+      const st = document.querySelector('.stage')!.getBoundingClientRect()
+      const boxes = [...document.querySelectorAll('#board .tile')].map((t) => t.getBoundingClientRect())
+      const l = Math.min(...boxes.map((b) => b.left)), r = Math.max(...boxes.map((b) => b.right))
+      const t = Math.min(...boxes.map((b) => b.top)), b = Math.max(...boxes.map((b) => b.bottom))
+      const bar = document.querySelector('.progress')!.getBoundingClientRect()
+      return [l - st.left, st.right - r, t - st.top, Math.min(bar.top, st.bottom) - b]
+    })
+    for (const g of gaps) expect(g).toBeLessThanOrEqual(120)
     if (hasTouch) {
       expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
       return

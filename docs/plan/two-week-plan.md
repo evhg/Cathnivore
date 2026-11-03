@@ -1083,7 +1083,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e for each layout case (bounding boxes inside the viewport and not intersecting, at P and D); shots before and after.
 - **Size:** 2
 
-## 70. [ ] Runnel: the daily as a valley diorama *(lane A, in progress)*
+## 70. [x] Runnel: the daily as a valley diorama *(done 2026-11-03 lane A, 2316ae1..HEAD: hills and a stream bed from the spring house to Bea's garden that fills as fields are watered; Cath half length by the stream at D (look, point, wave); the D day card's sky painting; today's seed sprouts; `e2e-site/runnel-valley.spec.ts`; shots in `e2e/screenshots/valley70/`. Bea's drawing stays on the win sheet's postcard and the streak in the rail beside the day card, see DECISIONS)*
 - **Why:** 2026-11-03 13:25 critique (`e2e/screenshots/plan1103e/runnel-daily-D`, `-P`): the tiles fill about 500x500 px of a 1030x860 board frame at D, the left column is empty below the stats, and at P a 230 px cluster sits over about 300 px of blank paper (VISION: the table is the hero; every screen a scene).
 - **Build:**
   - The board fitted to its puzzle and set in a valley scene: the spring house at the source, the stream bed running out, Bea's garden at the outlet growing a bed per watered field.
