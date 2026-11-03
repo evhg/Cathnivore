@@ -407,6 +407,8 @@
    dolly's brightest signs never read through the name and a dimmed menu item keeps 3:1. */
 .screen.title::before {
   background:
+    /* Plan item 79: a tight pool behind the logotype itself, so no street sign reads through the name. */
+    radial-gradient(34% 17% at 25% 18%, rgb(var(--shade-rgb) / .82) 0%, rgb(var(--shade-rgb) / .62) 60%, transparent 100%),
     radial-gradient(60% 46% at 18% 26%, rgb(var(--shade-rgb) / .72) 0%, rgb(var(--shade-rgb) / .5) 50%, transparent 100%),
     linear-gradient(90deg, rgb(var(--shade-rgb) / .86) 0%, rgb(var(--shade-rgb) / .74) 24%, rgb(var(--shade-rgb) / .46) 42%, rgb(var(--shade-rgb) / .12) 58%, transparent 70%),
     linear-gradient(0deg, rgb(var(--shade-rgb) / .6) 0%, transparent 34%);
@@ -741,6 +743,10 @@
   }
   .title-col { top: calc(var(--safe-y) + 48px); width: calc(100vw - 2 * var(--safe-x)); } /* px-ok: under the back link */
   .logo-svg { width: 100%; }
+  /* Plan item 79: upright, the menu sits over her coat, so the resting entries stay near full ink (AA), and the
+     small lines under the menu and in the List step up from the 12 px caption size. */
+  .menu-item { opacity: .94; }
+  .menu-hint, .the-list-h, .the-list-names li.is-more { font-size: var(--fs-2); }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
 }
 

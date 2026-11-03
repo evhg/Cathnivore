@@ -380,8 +380,9 @@ main,
     width: 46%;
     translate: -40% 0;
     filter: drop-shadow(0 24px 30px var(--shadow));
-    /* Half-length art ends at her waist: fade it out rather than show a cut edge. */
-    mask-image: linear-gradient(to bottom, var(--mask-solid) 80%, transparent 99%);
+    /* Half-length art ends at her waist: fade it out rather than show a cut edge. Item 79: the fade starts below
+       her resting hand (about 86% down the art), which the old 80% start left a stub. */
+    mask-image: linear-gradient(to bottom, var(--mask-solid) 91%, transparent 100%);
   }
   .show-cath svg {
     display: block;

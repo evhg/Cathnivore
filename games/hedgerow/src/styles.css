@@ -3707,7 +3707,11 @@ img.act-scene {
 .app:has(#screen-select:not([hidden])), #screen-select { overflow: clip; }
 #screen-select .levels {
   gap: 0;
-  padding: var(--top-h, 60px) 0 0;
+  /* Plan item 79: top and sides only; the bottom keeps the phone's room for the nav (above), which a shorthand
+     here zeroed, so the last act card ended under the nav and the map couldn't scroll her act to the top. */
+  padding-top: var(--top-h, 60px);
+  padding-left: 0;
+  padding-right: 0;
   scroll-padding-top: var(--top-h, 60px);
 }
 .map-hud-row { list-style: none; padding: 10px max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left)); background: var(--paper); }
@@ -4282,6 +4286,9 @@ img.act-scene {
 /* Plan item 73: the next act is a glimpse of its country, not a slab of fog: its painted scene shows clearly (a
    touch muted, mist only at the edges), and a paper plaque names it and what opens it. */
 #screen-select .act-fog.act-glimpse { min-height: clamp(200px, 30vh, 320px); }
+/* Plan item 79: on a desktop the glimpse is a little deeper, so the map has the room to scroll her act's head up to
+   the header rather than stopping with the last act's labels cut under it. */
+@media (min-width: 900px) { #screen-select .act-fog.act-glimpse { min-height: clamp(260px, 38vh, 400px); } }
 .act-fog.act-glimpse .act-fog-scene {
   filter: saturate(0.75);
   opacity: 0.92;

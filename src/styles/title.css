@@ -564,6 +564,13 @@ html.no-animations .title-screen * {
   z-index: var(--z-raised);
   filter: drop-shadow(0 3px 4px color-mix(in srgb, var(--ink) 25%, transparent));
 }
+/* Plan item 79: Cath's line runs up to the board's left edge, so Bea's drawing pins the cloth's far corner
+   instead of tucking under the line's end. */
+.title-art .title-bea {
+  left: auto;
+  right: -10px;
+  transform: rotate(7deg);
+}
 .title-bea .beas-drawing {
   position: static;
   width: 100%;

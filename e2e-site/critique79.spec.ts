@@ -26,3 +26,82 @@ test('Hedgerow D: a long vehicle name keeps its round-card pill inside the colum
     expect(o.name, o.text ?? '').toBeLessThanOrEqual(0.5)
   }
 })
+
+type Box = { x: number; y: number; width: number; height: number }
+const meets = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+
+test("Cathnivore title: Cath's line never meets Bea's drawing", async ({ page }) => {
+  await page.goto('/cathnivore/')
+  const line = await page.locator('.title-cath-line').boundingBox()
+  const bea = await page.locator('.title-bea').boundingBox()
+  expect(line && bea).toBeTruthy()
+  expect(meets(line!, bea!)).toBe(false)
+})
+
+test('Cathnivore Setup P: no dead band pooled above Start', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the phone Setup')
+  await page.goto('/cathnivore/')
+  await page.getByText('Quick Game').click()
+  await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
+  const gap = await page.evaluate(() => {
+    const start = document.querySelector('.setup > button.setup-start')!.getBoundingClientRect()
+    const seed = document.querySelector('.setup .setup-seed')!.getBoundingClientRect()
+    return start.top - seed.bottom
+  })
+  expect(gap).toBeLessThanOrEqual(32) // was about 50 px before item 79
+})
+
+test("Hedgerow map: her act's head opens under the header and the next act's card clears the nav", async ({ page, hasTouch }) => {
+  await page.goto('/hedgerow/?2d')
+  await page.evaluate(() => {
+    const stars = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), 3]))
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 21: true }, tips: { all: true } }))
+  })
+  await page.goto('/hedgerow/')
+  await expect(page.locator('[data-level="21"]')).toBeVisible()
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(300)
+  const at = await page.evaluate(() => {
+    const head = document.querySelector('[data-level="21"]')!.closest('li.act')!.querySelector('.act-head')!.getBoundingClientRect()
+    const bar = document.querySelector('#screen-select > header, #screen-select .select-head')!.getBoundingClientRect()
+    return { head: head.top, bar: bar.bottom }
+  })
+  expect(at.head).toBeGreaterThanOrEqual(at.bar - 1)
+  expect(at.head - at.bar).toBeLessThanOrEqual(24)
+  if (!hasTouch) return
+  await page.locator('#levels').evaluate((l) => l.scrollTo({ top: l.scrollHeight, behavior: 'instant' }))
+  const card = await page.locator('.act-glimpse .act-fog-text').boundingBox()
+  const navTop = await page.evaluate(() => {
+    const tops = [...document.querySelectorAll('#screen-select button')]
+      .map((b) => b.getBoundingClientRect())
+      .filter((r) => r.height > 0 && r.top > innerHeight * 0.8)
+      .map((r) => r.top)
+    return Math.min(innerHeight, ...tops)
+  })
+  expect(card!.y + card!.height).toBeLessThanOrEqual(navTop)
+})
+
+test('NIGHT SHIFT title upright: resting menu entries near full ink, small lines at 13 px or more', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone title')
+  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/')
+  await expect(page.locator('#btn-cases')).toBeVisible({ timeout: 60_000 })
+  const s = await page.evaluate(() => ({
+    opacity: Number(getComputedStyle(document.querySelector('#btn-cases')!).opacity),
+    hint: parseFloat(getComputedStyle(document.querySelector('.menu-hint')!).fontSize),
+    listH: parseFloat(getComputedStyle(document.querySelector('.the-list-h')!).fontSize),
+  }))
+  expect(s.opacity).toBeGreaterThanOrEqual(0.9)
+  expect(s.hint).toBeGreaterThanOrEqual(13)
+  expect(s.listH).toBeGreaterThanOrEqual(13)
+})
+
+test("/games/: Cath's glow is drawn after her waist mask (no lit box behind her)", async ({ page }) => {
+  await page.goto('/games/')
+  const f = await page.evaluate(() => ({
+    svg: getComputedStyle(document.querySelector('.hero-cath svg')!).filter,
+    wrap: getComputedStyle(document.querySelector('.hero-cath')!).filter,
+  }))
+  expect(f.svg).toBe('none')
+  expect(f.wrap).toContain('drop-shadow')
+})

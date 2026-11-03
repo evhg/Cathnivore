@@ -1169,13 +1169,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 79. [ ] The bugs from the 2026-11-03 15:25 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (sizes are the critique's estimates; check each first)
-  - **Cathnivore title D** (`cath-title-D`): Cath's bubble overlaps Bea's MUM drawing.
+  - [x] **Cathnivore title D** (`cath-title-D`): Cath's bubble overlaps Bea's MUM drawing. *(Bea's drawing pins the board's far corner at every size)*
   - **Cathnivore game D** (`cath-game-D`): the faded "PLAY" label sits under the "PLAY · 9 MORE" pill. *(It is item 69's fold fade (lane B); judge it with lane B's item before changing it.)*
-  - **Cathnivore Setup P** (`cath-setup-P`): a dead band of about 40 px above Start.
+  - [x] **Cathnivore Setup P** (`cath-setup-P`): a dead band of about 40 px above Start. *(the spare height is shared between the cards; about 50 -> 27 px)*
   - [x] **Hedgerow D** (`hedge-l21-2d-D`): the "Lifestyle influencer" pill text runs past its edge; the tower shelf truncates "Market S..." and clips the fifth tower under the arrow. *(2026-11-03 lane A: the pill keeps inside the column and its name takes a second line only when it must, `critique79.spec.ts`; the shelf's cut fifth card is its scroll cue, left as is)*
-  - **Hedgerow map P** (`hedge-menu-P`): row 1's stars and labels under the header; the act card cut mid-sentence by the bottom nav; a stop's label on the road.
-  - **NIGHT SHIFT title** (`ns-title-D`): a shop sign shows through the wordmark (a scrim behind it); `ns-title-P`: the menu over the figure, grey entries below AA, 11 px lines.
-  - **/games/ D** (`games-D`): a lighter rectangle behind Cath; **portfolio D** (`portfolio-D`): Cath's hand by the NIGHT SHIFT card is a stub.
+  - [x] **Hedgerow map P** (`hedge-menu-P`): row 1's stars and labels under the header; the act card cut mid-sentence by the bottom nav; a stop's label on the road. *(her act's head opens under the header, re-anchored after the fonts load; a shorthand had zeroed the phone's room for the nav; the label sits on its own pill, left as is)*
+  - [x] **NIGHT SHIFT title** (`ns-title-D`): a shop sign shows through the wordmark (a scrim behind it); `ns-title-P`: the menu over the figure, grey entries below AA, 11 px lines. *(a pool behind the logotype; upright, entries at .94 and the small lines at 13 px; the outline-only wordmark at P was the draw-in still running under SwiftShader)*
+  - [x] **/games/ D** (`games-D`): a lighter rectangle behind Cath; **portfolio D** (`portfolio-D`): Cath's hand by the NIGHT SHIFT card is a stub. *(the glow moved after the waist mask; the portfolio fade starts below her hand)*
 - **Accept:** e2e boxes inside the viewport and not intersecting, and AA contrast where named, at P and D for each case; shots before and after.
 - **Size:** 1
 
