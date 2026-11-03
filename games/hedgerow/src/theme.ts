@@ -849,8 +849,10 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
     ctx.fill();
     ctx.stroke();
   }
-  const sx = x + (dx !== 0 ? 0 : 0) - s * 0.42;
-  const sy = y - s * 0.62;
+  // Plan item 74: the sign stays wholly on the canvas when the gate sits at its edge (a phone's narrow field).
+  const pad = Math.max(2, s * 0.04);
+  const sx = Math.max(pad, Math.min(L.width - s * 0.84 - pad, x - s * 0.42));
+  const sy = Math.max(pad, Math.min(L.height - s * 0.26 - pad, y - s * 0.62));
   ctx.fillStyle = "#1f8a8a";
   ctx.beginPath();
   ctx.roundRect(sx, sy, s * 0.84, s * 0.26, s * 0.05);

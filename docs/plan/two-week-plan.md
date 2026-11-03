@@ -1123,7 +1123,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - **/games/ D** (`site-D`): the game cards start below the fold at 1440x900 (no name visible); the market stall floats with no ground; the plank under Cath runs far past her.
   - **/games/ P** (`site-P`): Cath's plank sits on the first card's top edge.
-  - **Hedgerow 2D P** (`hedge-l40-2d-P`): the HOLLOWELL exit sign clipped to "HOL" at the right edge.
+  - [x] **Hedgerow 2D P** (`hedge-l40-2d-P`): the HOLLOWELL exit sign clipped to "HOL" at the right edge. *(2026-11-03 lane A: the gate sign is clamped inside the canvas; shot `e2e/screenshots/bugs74/`)*
   - **Hedgerow map P** (`hedge-map-P`): "Start here" and "Mara's Field" stack into the row-2 path; labels crowd neighbouring nodes.
   - **NIGHT SHIFT gate P** (`ns-title-P`): the FULL dash starts at x=0 with no gutter; "TAKE ME BACK" grey on near-black (check AA); the progress bar a 100 px hairline.
 - **Accept:** e2e boxes inside the viewport and not intersecting at P and D for each case; shots before and after.
