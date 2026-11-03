@@ -685,7 +685,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The D keyboard and HUD e2e are unchanged.
 - **Size:** 3
 
-## 45. [ ] Hedgerow: a swarm worth watching
+## 45. [ ] Hedgerow: a swarm worth watching *(lane B, in progress)*
 - **Why:**
   - Late rounds collapse into one purple lorry with a count badge in 3D, and a pile of sprites in 2D.
   - The "hundreds of small wins" the Hedgerow 2 design is built on can't be seen.
