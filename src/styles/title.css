@@ -499,3 +499,47 @@ html.no-animations .title-screen * {
   font-weight: 600;
   color: var(--gain-ink);
 }
+
+/* Plan item 60: the title opens on the real table. Cath stands in her own column beside the board (never over a
+   hex), and the board lies on a checked market cloth. */
+.title-art.title-table {
+  display: grid;
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 4px;
+  max-width: 760px;
+}
+.title-table .title-cath {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  width: 100%;
+  z-index: var(--z-raised);
+}
+.title-board {
+  position: relative;
+  padding: 10px 10px 16px;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--clay) 10%, transparent) 0 14px, transparent 14px 28px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--clay) 10%, transparent) 0 14px, transparent 14px 28px),
+    var(--paper-2);
+  box-shadow: 0 14px 22px color-mix(in srgb, var(--ink) 22%, transparent), inset 0 -6px 0 color-mix(in srgb, var(--soil) 45%, transparent);
+}
+.title-board .map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 600px) {
+  .title-art.title-table {
+    grid-template-columns: minmax(0, 0.36fr) minmax(0, 1fr);
+    max-width: min(440px, 100%);
+  }
+  .title-board {
+    padding: 4px 4px 8px;
+  }
+  .title-board .map {
+    max-height: 30dvh;
+  }
+}
