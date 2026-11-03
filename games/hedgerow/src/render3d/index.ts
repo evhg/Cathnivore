@@ -761,7 +761,6 @@ export class Renderer3D {
         }
         case "cleared": {
           const [c, r] = game.level.path[game.level.path.length - 1]!;
-          this.floaters.add(`Wave cleared +${e.reward}`, new THREE.Vector3(c + 0.5, 1.6, r + 0.5), "#ffe27a", 1.05);
           this.sparks.emit(c + 0.5, 1, r + 0.5, "#ffd23f", 40, 2.5, 0.14, 1, -3);
           break;
         }

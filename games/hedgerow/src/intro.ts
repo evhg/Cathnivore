@@ -84,3 +84,38 @@ export function needsUpgrade(kind: EnemyKind, tower: TowerKind): boolean {
   if (tower === "mast") return false;
   return locksOf(kind).some((p) => p !== "stealth" && !towerBadges({ kind: tower, tier: 1, spec: null }).find((b) => b.prop === p)?.ok);
 }
+
+/** A box on screen, in CSS pixels relative to the field. */
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+const overlaps = (a: Box, b: Box): boolean => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+/**
+ * Where the round-end rosette goes (plan item 64): the spot nearest `near` (the lane's end, where the round was
+ * won) whose box covers no plot and stays inside the field with a margin. Scans a grid; if nothing is clear,
+ * the spot covering the least plot area.
+ */
+export function rosetteSpot(plots: readonly Box[], size: { w: number; h: number }, field: { w: number; h: number }, near: { x: number; y: number }, margin = 6, avoid: readonly Box[] = []): { x: number; y: number } {
+  const step = Math.max(4, Math.round(Math.min(size.w, size.h) / 8));
+  let best: { x: number; y: number; cost: number } | null = null;
+  for (let y = margin; y + size.h <= field.h - margin; y += step)
+    for (let x = margin; x + size.w <= field.w - margin; x += step) {
+      const box = { x, y, w: size.w, h: size.h };
+      const area = (list: readonly Box[]): number => {
+        let a = 0;
+        for (const p of list)
+          if (overlaps(box, p)) a += (Math.min(box.x + box.w, p.x + p.w) - Math.max(box.x, p.x)) * (Math.min(box.y + box.h, p.y + p.h) - Math.max(box.y, p.y));
+        return a;
+      };
+      const dist = Math.hypot(x + size.w / 2 - near.x, y + size.h / 2 - near.y);
+      // Any plot cover outweighs any overlay cover (Cath's bubble, the ribbon), which outweighs any distance.
+      const cost = area(plots) * 1e9 + area(avoid) * 1e4 + dist;
+      if (!best || cost < best.cost) best = { x, y, cost };
+    }
+  return best ? { x: best.x, y: best.y } : { x: Math.max(0, (field.w - size.w) / 2), y: margin };
+}

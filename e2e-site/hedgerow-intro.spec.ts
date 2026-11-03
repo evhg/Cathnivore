@@ -57,3 +57,26 @@ test('plan item 64: the first drone round holds the field on a field-guide page 
   const seen = await page.evaluate(() => JSON.parse(localStorage.getItem('hedgerow:v1') ?? '{}').seen?.drone)
   expect(seen).toBe(true)
 })
+
+test('plan item 64: a cleared round pins its rosette clear of every plot, and its coins fly to the Marks chip', async ({ page }) => {
+  await open(page, 12)
+  for (const clean of [true, false]) {
+    await page.evaluate((c) => (window as unknown as { hedgerow: { rosette(r: number, m: number, c: boolean): void } }).hedgerow.rosette(4, 63, c), clean)
+    const rosette = page.locator('.round-rosette')
+    await expect(rosette).toBeVisible()
+    await expect(rosette).toHaveClass(clean ? /clean/ : /^(?!.*clean)/)
+    await expect(rosette).toContainText(clean ? 'Clean sweep' : 'Round 4')
+    await expect(rosette).toContainText('+63')
+    await page.waitForTimeout(500)
+    const box = (await rosette.boundingBox())!
+    const stage = (await page.locator('#stage').boundingBox())!
+    expect(box.x).toBeGreaterThanOrEqual(stage.x)
+    expect(box.y + box.height).toBeLessThanOrEqual(stage.y + stage.height + 1)
+    const plots = await page.evaluate(() => (window as unknown as { hedgerow: { plotBoxes(): Array<{ x: number; y: number; w: number; h: number }> } }).hedgerow.plotBoxes())
+    expect(plots.length).toBeGreaterThan(5)
+    // The art's box is 120x144 with transparent corners; the whole box still covers no plot (1 px slack for rounding).
+    const hit = plots.filter((p) => box.x + 1 < p.x + p.w && p.x + 1 < box.x + box.width && box.y + 1 < p.y + p.h && p.y + 1 < box.y + box.height)
+    expect(hit).toEqual([])
+    await expect(page.locator('.flying-coin').first()).toBeAttached()
+  }
+})

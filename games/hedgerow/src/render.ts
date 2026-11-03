@@ -433,11 +433,8 @@ export class Renderer {
           break;
         case "cleared": {
           const end = game.level.path[game.level.path.length - 1]!;
-          this.float(end[0] + 0.5, end[1] - 0.2, `Wave cleared +${e.reward}`, "#ffe27a", 1.05);
-          if (this.leaksThisWave === 0) {
-            this.cheer = 2.5;
-            this.float(game.hero.x, game.hero.y - 1.2, "Clean sweep!", "#fff6d6", 1.2);
-          }
+          // Plan item 64: the round's words and Marks are main.ts's rosette (clear of plots); the field cheers.
+          if (this.leaksThisWave === 0) this.cheer = 2.5;
           for (let i = 0; i < 14; i++) this.parts.push(this.particle(end[0] + 0.5, end[1] + 0.2, "#f2c94c", "star", 0.08, 1));
           break;
         }

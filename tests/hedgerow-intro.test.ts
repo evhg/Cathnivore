@@ -2,7 +2,7 @@
 // and the level's towers that reach it.
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
-import { countersFor, needsUpgrade, newThisRound, traitsOf } from "../games/hedgerow/src/intro";
+import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf } from "../games/hedgerow/src/intro";
 import type { TowerKind } from "../games/hedgerow/src/engine";
 
 const ALL: TowerKind[] = ["hedgerow", "scarecrow", "beehive", "stall", "pond", "barn", "silo", "mast", "tent", "court", "hall", "windmill", "cannon"];
@@ -68,3 +68,27 @@ describe("countersFor", () => {
     if (c.includes("scarecrow")) expect(needsUpgrade("steel", "scarecrow")).toBe(true);
   });
 });
+
+describe("rosetteSpot", () => {
+  const field = { w: 400, h: 300 }
+  const size = { w: 80, h: 80 }
+  it("sits on the spot nearest the lane's end that covers no plot", () => {
+    const plots = [{ x: 300, y: 200, w: 60, h: 60 }, { x: 200, y: 200, w: 60, h: 60 }]
+    const s = rosetteSpot(plots, size, field, { x: 330, y: 230 })
+    const box = { ...s, ...size }
+    for (const p of plots) expect(box.x < p.x + p.w && p.x < box.x + box.w && box.y < p.y + p.h && p.y < box.y + box.h).toBe(false)
+    expect(Math.hypot(s.x + 40 - 330, s.y + 40 - 230)).toBeLessThan(120)
+    expect(s.x).toBeGreaterThanOrEqual(6)
+    expect(s.y + size.h).toBeLessThanOrEqual(field.h - 6)
+  })
+  it("keeps off an overlay (Cath's bubble) when a plot-free spot allows it", () => {
+    const bubble = { x: 0, y: 200, w: 400, h: 100 }
+    const s = rosetteSpot([], size, field, { x: 200, y: 260 }, 6, [bubble])
+    expect(s.y + size.h).toBeLessThanOrEqual(200)
+  })
+  it("covers the least plot when nothing is clear", () => {
+    const plots = [{ x: 0, y: 0, w: 400, h: 150 }, { x: 0, y: 150, w: 400, h: 150 }]
+    const s = rosetteSpot(plots, size, field, { x: 200, y: 150 })
+    expect(s).toBeDefined()
+  })
+})

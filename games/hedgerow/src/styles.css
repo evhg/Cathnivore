@@ -769,6 +769,141 @@ button {
   display: block;
   margin: 14px 0 0 auto;
 }
+/* Plan item 64: a cleared round's rosette, pinned on the field clear of every plot (main.ts rosetteSpot) */
+.round-rosette {
+  --s: 1;
+  position: absolute;
+  left: var(--at-x, 0);
+  top: var(--at-y, 0);
+  z-index: var(--z-field-ui);
+  width: calc(120px * var(--s));
+  height: calc(144px * var(--s));
+  pointer-events: none;
+  opacity: 0;
+}
+@media (max-width: 600px), (max-height: 520px) {
+  .round-rosette {
+    --s: 0.74;
+  }
+}
+.round-rosette.show {
+  animation: rosette-pin 2.6s cubic-bezier(0.2, 1.2, 0.4, 1) forwards;
+}
+@keyframes rosette-pin {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1.06) rotate(3deg);
+  }
+  22%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.rosette-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 6px var(--stage-shade));
+}
+.rosette-art .tail {
+  fill: var(--path-2);
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.rosette-art .petals {
+  fill: var(--path-2-glow);
+  stroke: var(--line);
+  stroke-width: 1.6;
+}
+.rosette-art .face {
+  fill: var(--stage-paper);
+  stroke: var(--line);
+  stroke-width: 2;
+}
+.rosette-art .ring {
+  fill: none;
+  stroke: var(--path-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.round-rosette.clean .tail {
+  fill: var(--harvest);
+}
+.round-rosette.clean .petals {
+  fill: var(--brass);
+}
+.round-rosette.clean .ring {
+  stroke: var(--brass-mid);
+}
+/* The face holds the round's Marks; the ribbon across the tails names the round, or "Clean sweep" */
+.rosette-text em {
+  position: absolute;
+  left: calc(29px * var(--s));
+  top: calc(29px * var(--s));
+  width: calc(62px * var(--s));
+  height: calc(62px * var(--s));
+  display: grid;
+  place-content: center;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes);
+  font-style: normal;
+  font-weight: 800;
+  font-size: var(--fs-body);
+  color: var(--marks-ink);
+}
+.rosette-text small {
+  position: absolute;
+  left: 50%;
+  top: calc(76px * var(--s));
+  translate: -50% 0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-size: var(--fs-label);
+  font-weight: 850;
+  text-transform: uppercase;
+  color: var(--on-fill);
+  background: var(--path-2);
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.round-rosette.clean .rosette-text small {
+  background: var(--harvest);
+}
+.flying-coin {
+  position: fixed;
+  left: var(--at-x, 0);
+  top: var(--at-y, 0);
+  z-index: var(--z-toast);
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.flying-coin svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.flying-coin .coin-rim {
+  fill: var(--marks);
+  stroke: var(--marks-ink);
+  stroke-width: 1.5;
+}
+.flying-coin .coin-face {
+  fill: none;
+  stroke: var(--brass-hi);
+  stroke-width: 1.4;
+}
 /* A phone: the page fills the field (the stage sits above the tray), the sketch beside the name. */
 @media (max-width: 600px) {
   .intro {
@@ -1622,6 +1757,7 @@ dialog.sheet.story #story-skip {
   /* Plan item 64: the field-guide page fades in, no slide. */
   .intro.pop { animation: stage-fade 240ms ease-out; }
   .intro.pop .intro-sheet { animation: none; }
+  .round-rosette.show { animation: stage-fade 300ms ease-out forwards; }
 }
 @keyframes stage-fade { from { opacity: 0; } to { opacity: 1; } }
 

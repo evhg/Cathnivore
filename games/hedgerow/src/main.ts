@@ -139,7 +139,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
-import { countersFor, needsUpgrade, newThisRound, traitsOf, TRAIT_TEXT, type Trait } from "./intro";
+import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
 import { towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
@@ -730,6 +730,9 @@ if (SANDBOX)
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
     // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
     silhouette: towerSilhouette,
+    // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
+    rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
+    plotBoxes: () => (game ? plotBoxes(game) : []),
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
       renderPanel(true);
@@ -3229,6 +3232,97 @@ ui.intro.addEventListener("keydown", (e) => {
   }
 });
 
+/**
+ * Plan item 64: a cleared round is a painted rosette pinned on the field, on the spot nearest the lane's end that
+ * covers no plot, with the round's Marks flying from it to the Marks chip. A round with no leaks gets the gold
+ * "Clean sweep" rosette. Reduced motion: no flight, a fade.
+ */
+function roundRosette(g: Game, round: number, reward: number, clean: boolean): void {
+  if (!renderer || player) return;
+  ui.stage.querySelector(".round-rosette")?.remove();
+  const el = document.createElement("div");
+  el.className = `round-rosette${clean ? " clean" : ""}`;
+  el.setAttribute("aria-hidden", "true");
+  el.innerHTML = `<svg class="rosette-art" viewBox="0 0 100 120"><path class="tail" d="M34 58 L22 116 L34 106 L44 118 L50 62 Z"/><path class="tail" d="M66 58 L78 116 L66 106 L56 118 L50 62 Z"/><g class="petals">${Array.from({ length: 16 }, (_, i) => `<ellipse cx="50" cy="20" rx="9" ry="16" transform="rotate(${i * 22.5} 50 50)"/>`).join("")}</g><circle class="face" cx="50" cy="50" r="26"/><circle class="ring" cx="50" cy="50" r="21"/></svg><span class="rosette-text"><em>${reward > 0 ? `+${reward}` : "✓"}</em><small>${clean ? "Clean sweep" : `Round ${round}`}</small></span>`;
+  ui.stage.append(el);
+  const field = ui.stage.getBoundingClientRect();
+  const size = { w: el.offsetWidth || 120, h: el.offsetHeight || 144 };
+  el.title = `Round ${round} cleared`;
+  // The plots as boxes on the field (2D or 3D: cellCenter projects either way).
+  const plots = plotBoxes(g).map((p) => ({ ...p, x: p.x - field.left, y: p.y - field.top }));
+  // Cath's bubble and the round ribbon are on the field too: keep off them as well as the plots.
+  const avoid: Box[] = [];
+  for (const o of [ui.bubble, ui.banner]) {
+    const r = o.getBoundingClientRect();
+    if (!o.hidden && r.width && (o !== ui.banner || o.classList.contains("show"))) avoid.push({ x: r.left - field.left, y: r.top - field.top, w: r.width, h: r.height });
+  }
+  const [ec, er] = g.level.path[g.level.path.length - 1]!;
+  const end = renderer.cellCenter(ec, er);
+  const near = end ? { x: end.x - field.left, y: end.y - field.top } : { x: field.width / 2, y: field.height / 2 };
+  const spot = rosetteSpot(plots, size, { w: field.width, h: field.height }, near, 6, avoid);
+  el.style.setProperty("--at-x", `${Math.round(spot.x)}px`);
+  el.style.setProperty("--at-y", `${Math.round(spot.y)}px`);
+  el.classList.add("show");
+  if (reward > 0 && !REDUCED) coinFlight(el, Math.min(8, 3 + Math.round(reward / 20)));
+  window.setTimeout(() => el.remove(), 2600);
+}
+
+/** Every plot's box on screen (client pixels), each sized from its own projected neighbours (3D shrinks with distance). */
+function plotBoxes(g: Game): Box[] {
+  const out: Box[] = [];
+  if (!renderer) return out;
+  for (let r = 0; r < g.level.rows; r++)
+    for (let c = 0; c < g.level.cols; c++) {
+      if (!isPlot(g.level, c, r)) continue;
+      const p = renderer.cellCenter(c, r);
+      if (!p) continue;
+      const e = renderer.cellCenter(c + 1, r) ?? renderer.cellCenter(c - 1, r);
+      const s = renderer.cellCenter(c, r + 1) ?? renderer.cellCenter(c, r - 1);
+      const w = e ? Math.abs(e.x - p.x) : 32;
+      const h = s ? Math.abs(s.y - p.y) : w;
+      out.push({ x: p.x - w / 2, y: p.y - h / 2, w, h });
+    }
+  return out;
+}
+
+const COIN_SVG = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" class="coin-rim"/><circle cx="10" cy="10" r="5.5" class="coin-face"/></svg>';
+
+/** Coins lift off the rosette and land on the Marks chip, which bumps as the last one lands. */
+function coinFlight(from: HTMLElement, n: number): void {
+  const chip = ui.hudMarks.parentElement;
+  if (!chip) return;
+  const a = from.getBoundingClientRect();
+  const z = chip.getBoundingClientRect();
+  if (!z.width) return;
+  const sx = a.left + a.width / 2;
+  const sy = a.top + a.height * 0.42;
+  const dx = z.left + 16 - sx;
+  const dy = z.top + z.height / 2 - sy;
+  for (let i = 0; i < n; i++) {
+    const coin = document.createElement("span");
+    coin.className = "flying-coin";
+    coin.innerHTML = COIN_SVG;
+    coin.style.setProperty("--at-x", `${sx - 9}px`);
+    coin.style.setProperty("--at-y", `${sy - 9}px`);
+    document.body.append(coin);
+    const lift = -40 - (i % 3) * 14;
+    const spread = (i - n / 2) * 10;
+    const anim = coin.animate(
+      [
+        { transform: "translate(0, 0) scale(0.6)", opacity: 0 },
+        { transform: `translate(${spread}px, ${lift}px) scale(1)`, opacity: 1, offset: 0.25 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.7)`, opacity: 1 },
+      ],
+      { duration: 820, delay: 260 + i * 70, easing: "cubic-bezier(0.45, 0, 0.3, 1)", fill: "backwards" },
+    );
+    anim.onfinish = () => {
+      coin.remove();
+      if (i === n - 1) bump(chip, "gain");
+    };
+    anim.oncancel = () => coin.remove();
+  }
+}
+
 // ---- the loop ----
 
 /** Pop pitch steps by rung: the smaller the rung that was hit, the higher the pop. */
@@ -3334,7 +3428,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       }
       case "cleared":
         sfx.playCleared();
-        if (ev.wave < g.level.waves.length) banner(isFleet(g.level) ? `Round ${ev.wave} cleared` : `Wave ${ev.wave} cleared`, ev.reward > 0 ? `+${ev.reward} Marks` : "", false, "small");
+        if (ev.wave < g.level.waves.length) roundRosette(g, waveNo(g, ev.wave), ev.reward, !runLeaks.some((l) => l.round === waveNo(g, ev.wave)));
         break;
       case "pie":
         break;
