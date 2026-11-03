@@ -31,7 +31,7 @@ import {
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
-import { ABREAST, convoy, type Convoy, type ConvoyColumn } from "./convoy";
+import { layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import {
   INK,
   drawEnemy,
@@ -1210,27 +1210,14 @@ export class Renderer {
   }
 
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
-  private lay: Convoy = { slots: new Map(), inColumn: new Set(), columns: [] };
+  private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
   private layOut(game: Game): Convoy {
-    const n = [0, 0];
-    for (const e of game.enemies) n[e.lane ? 1 : 0]!++;
-    this.lay = convoy(
-      game.enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: 0.55 * enemyScale(e.kind) })),
-      (lane) => n[lane ? 1 : 0]! > SWARM_MIN,
-    );
+    this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as EnemyKind), SWARM_MIN);
     return this.lay;
   }
-  /** Where a vehicle is drawn: its convoy slot along the lane, and its file's side of the lane when two abreast. */
+  /** Where a vehicle is drawn (convoy.ts placeOnLane). */
   private placeEnemy(level: Level, e: Enemy): { x: number; y: number } {
-    const sl = this.lay.slots.get(e.id);
-    const d = sl?.dist ?? e.dist;
-    const p = enemyPoint(level, { dist: d, ...(e.lane ? { lane: e.lane } : {}) });
-    if (!sl?.side) return p;
-    const q = enemyPoint(level, { dist: d + 0.05, ...(e.lane ? { lane: e.lane } : {}) });
-    const dx = q.x - p.x;
-    const dy = q.y - p.y;
-    const l = Math.hypot(dx, dy) || 1;
-    return { x: p.x - (dy / l) * ABREAST * sl.side, y: p.y + (dx / l) * ABREAST * sl.side };
+    return placeOnLane(level, e, this.lay);
   }
   /** The column at a queue's tail: the vehicles past the cap, stacked, fewer as the queue is popped. */
   private drawColumns(game: Game, ctx: CanvasRenderingContext2D, X: (v: number) => number, Y: (v: number) => number, s: number, t: number, col: ConvoyColumn): void {

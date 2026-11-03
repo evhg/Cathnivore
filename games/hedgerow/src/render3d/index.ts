@@ -43,7 +43,8 @@ import { buildGround, type Ground } from "./terrain";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
-import { swarms } from "../swarm";
+import { swarms, SWARM_MIN } from "../swarm";
+import { layOutField, placeOnLane } from "../convoy";
 import { enemyIcon } from "../icons";
 
 interface TowerView {
@@ -1301,17 +1302,21 @@ export class Renderer3D {
       }
       this.gold.age = 0;
     }
+    // Plan item 45: the queue laid out as a convoy (convoy.ts); the overflow stacks up as a column at its tail.
+    const lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as Enemy["kind"]), SWARM_MIN);
     for (const e of game.enemies) {
+      const at = placeOnLane(game.level, e, lay);
+      const tierUp = at.tier * 0.26 * enemyScale(e.kind);
       if (fleet && this.rungs?.has(e.kind)) {
         // Instanced: heading from the lane's direction, a little bob, no per-vehicle objects.
-        const p = enemyPoint(game.level, e);
+        const p = at;
         const ahead = enemyPoint(game.level, { dist: e.dist + 0.08, lane: e.lane });
         const heading = Math.atan2(-(ahead.y - p.y), ahead.x - p.x);
         const moving = !(e.stun > 0 || e.held);
         const bob = moving ? Math.abs(Math.sin(t * 9 + e.id)) * 0.012 + (enemyLift(e.kind) ? Math.sin(t * 3 + e.id) * 0.04 : 0) : 0;
         const ghost = !isRevealed(game, e);
         // Unrevealed stealth is drawn see-through in hedge-camo, never blinked out (its icons stay over it).
-        this.rungs.add(e.kind, p.x, this.height(p.x, p.y), p.y, heading, bob, ghost, e.pm, liveryOf(Math.ceil(game.level.id / 10), e.id));
+        this.rungs.add(e.kind, p.x, this.height(p.x, p.y) + tierUp, p.y, heading, bob, ghost, e.pm, liveryOf(Math.ceil(game.level.id / 10), e.id));
         // Its property icons (section 2): a row of roundels over the vehicle.
         if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.95 * enemyScale(e.kind), p.y);
         if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
@@ -1320,8 +1325,8 @@ export class Renderer3D {
       }
       seen.add(e.id);
       let v = this.enemies.get(e.id);
-      const p = enemyPoint(game.level, e);
-      const gy = this.height(p.x, p.y);
+      const p = at;
+      const gy = this.height(p.x, p.y) + tierUp;
       if (!v) {
         const obj = buildEnemy(e.kind);
         const bar = new THREE.Group();
