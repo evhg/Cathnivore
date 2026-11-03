@@ -31,7 +31,7 @@ import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
 import { execFor, flightsFor, stripDock } from './boardroom'
 import LogSheet from './LogSheet'
-import FarmSheet from './FarmSheet'
+import FarmSheet, { Stall } from './FarmSheet'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
@@ -1332,6 +1332,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 </li>
               ))}
             </ol>
+            {/* Plan item 62: while they think, their stall: what they have built so far. */}
+            {state.producers[state.activeProducer].improvements.length > 0 && (
+              <span className="teammate-stall">
+                <Stall producer={state.activeProducer} improvements={state.producers[state.activeProducer].improvements} production={state.producers[state.activeProducer].production} />
+              </span>
+            )}
             <span className="teammate-pick-hint">Tap to skip the rest of their turn</span>
           </span>
         </div>

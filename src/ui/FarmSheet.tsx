@@ -166,7 +166,7 @@ const SHELF_LABEL = { fields: 'From the fields', sea: 'From the sea', town: 'Fro
  * each bought card hangs as a painted crate with its vignette, the tag counts chalked on the stall's board and the
  * round's yield on a price board under the awning. A card bought just now drops into its slot.
  */
-function Stall({ producer, improvements, production }: { producer: ProducerId; improvements: readonly string[]; production: { produce: number; marks: number; goodwill: number } }) {
+export function Stall({ producer, improvements, production }: { producer: ProducerId; improvements: readonly string[]; production: { produce: number; marks: number; goodwill: number } }) {
   const items = improvements.map((id) => ({ id, tags: IMPROVEMENTS_BY_ID.get(id)?.tags ?? [] }))
   const slots = stallLayout(items)
   const tallies = tagTallies(items)

@@ -3132,3 +3132,7 @@ html.no-animations .grip-props > g { animation: none; }
   width: 34px;
   height: 22px;
 }
+/* Plan item 62: the teammate's stall under their ledger while they think. */
+.teammate-stall { display: block; width: 100%; margin-top: 6px; }
+.teammate-stall .farm-stall { --k: 1.7; margin: 0; }
+.teammate-stall .farm-stall-prices { display: none; }
