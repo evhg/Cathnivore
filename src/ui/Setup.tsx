@@ -8,7 +8,7 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
-import { pairLine } from '../content/pairLines'
+import { pairLine, setupCath } from '../content/pairLines'
 
 export type Mode = 'solo' | 'hotseat'
 
@@ -198,6 +198,8 @@ export default function Setup({ onStart }: Props) {
         </label>
       </section>
 
+      {/* Plan item 75: at D Cath stands at the stall behind its OPEN sign, reacting to the picks and the difficulty. */}
+      <SetupCath producers={producers} difficulty={difficulty} />
       <button className="primary setup-start" disabled={!canStart} onClick={start}>
         <span className="open-sign-kicker" aria-hidden="true">
           {canStart ? 'Open' : 'Closed · pick two'}
@@ -287,6 +289,21 @@ function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] 
           </div>
         ))}
       </dl>
+    </div>
+  )
+}
+
+const PRODUCER_NAMES = Object.fromEntries(ALL_PRODUCER_IDS.map((id) => [id, PRODUCERS[id].name])) as Record<ProducerId, string>
+
+/** Plan item 75: the desktop Setup's half-length Cath, her line and face following the picks (`setupCath`). */
+function SetupCath({ producers, difficulty }: { producers: readonly ProducerId[]; difficulty: GameConfig['difficulty'] }) {
+  const cath = setupCath(producers, difficulty, PRODUCER_NAMES)
+  return (
+    <div className="setup-cath-stand">
+      <p className="setup-cath-says" aria-live="polite">
+        “{cath.line}”
+      </p>
+      <CathArt framing="half" expression={cath.expression} pose={SCREEN_POSE['cathnivore:setup']} animate />
     </div>
   )
 }

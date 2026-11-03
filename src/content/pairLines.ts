@@ -20,3 +20,20 @@ export function pairKey(a: ProducerId, b: ProducerId): string {
 export function pairLine(a: ProducerId, b: ProducerId): string {
   return LINES[pairKey(a, b)] ?? 'Two good hands. Let’s see what they make of it.'
 }
+
+/**
+ * Plan item 75: Cath on the desktop Setup reacts to the picks: waiting with a smirk for the first two, delighted
+ * by her favourite pair, a wink for any other good pair, and set and determined when Hard is chosen.
+ */
+export function setupCath(
+  picked: readonly ProducerId[],
+  difficulty: 'easy' | 'normal' | 'hard',
+  names: Record<ProducerId, string>,
+): { expression: 'smirk' | 'delighted' | 'determined' | 'wink'; line: string } {
+  if (picked.length === 0) return { expression: 'smirk', line: 'Pick two producers who’ll cover each other, love.' }
+  if (picked.length === 1) return { expression: 'smirk', line: `${names[picked[0]!].split(' ').slice(-2).join(' ')}. And who stands beside them?` }
+  const [a, b] = picked as [ProducerId, ProducerId]
+  const line = pairLine(a, b)
+  if (difficulty === 'hard') return { expression: 'determined', line: `${line} Hard, though. Eyes open.` }
+  return { expression: pairKey(a, b) === 'mara+tomas' ? 'delighted' : 'wink', line }
+}

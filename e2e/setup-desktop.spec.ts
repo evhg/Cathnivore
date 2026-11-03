@@ -34,3 +34,25 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await page.locator('.game').waitFor()
   })
 }
+
+// Plan item 75: at D Cath stands at the stall behind the OPEN sign, 200 px or taller at 1440x900, her line and face
+// following the picks and the difficulty.
+test('desktop Setup: Cath at the stall reacts to the picks and the difficulty', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop spread')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const cath = page.locator('.setup-cath-stand svg')
+  await expect(cath).toBeVisible()
+  expect((await cath.boundingBox())!.height).toBeGreaterThanOrEqual(200)
+  const says = page.locator('.setup-cath-says')
+  await expect(page.locator('.setup-cath-stand svg.cath-delighted')).toHaveCount(1) // the recommended pair is picked
+  const before = await says.textContent()
+  await page.locator('.producer-card', { hasText: 'Tomas Reed' }).click()
+  await expect(says).not.toHaveText(before!)
+  await page.locator('.producer-card', { hasText: 'Sol Abara' }).click()
+  await expect(page.locator('.setup-cath-stand svg.cath-wink')).toHaveCount(1)
+  await page.locator('.setup-difficulty label', { hasText: /hard/i }).click()
+  await expect(page.locator('.setup-cath-stand svg.cath-determined')).toHaveCount(1)
+  await expect(says).toContainText('Hard')
+})
