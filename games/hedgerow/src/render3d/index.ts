@@ -4,6 +4,7 @@
 // reads the Game. Same interface as the 2D Renderer (render.ts), which stays as the fallback when WebGL
 // isn't available.
 
+import { fitCamera3d } from "./camerafit";
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { BACKDROP_SKY_Y, BACKDROP_Z, buildBackdrop } from "./backdrop";
@@ -498,40 +499,12 @@ export class Renderer3D {
   private fitCamera(game: Game): void {
     const cols = game.level.cols;
     const rows = game.level.rows;
-    const target = new THREE.Vector3(cols / 2, 0, rows / 2 + 0.2);
-    // Portrait screens look down more steeply, so the map uses the height instead of empty foreground.
-    const portrait = this.w / this.h < 0.8;
-    const el = ((portrait ? 56 : 38) * Math.PI) / 180;
-    const dir = new THREE.Vector3(0, Math.sin(el), Math.cos(el));
-    const corners = [
-      [-0.2, 0, -0.2],
-      [cols + 0.2, 0, -0.2],
-      [-0.2, 0, rows + 0.3],
-      [cols + 0.2, 0, rows + 0.3],
-      [-0.2, 0.9, -0.2],
-      [cols + 0.2, 0.9, -0.2],
-      // Plan item 66: the far scenery (houses, the windmill's body) stays whole under a band of painted sky.
-      [cols / 2, 1.5, -3],
-      [0, 1.5, -3],
-      [cols, 1.5, -3],
-      // ...and the sky card shows above the far hills (its point 2.4 up has to reach the frame's top).
-      [cols / 2, 2.4, BACKDROP_Z],
-    ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
-    let lo = 4;
-    let hi = 80;
-    for (let i = 0; i < 24; i++) {
-      const mid = (lo + hi) / 2;
-      this.camera.position.copy(target).addScaledVector(dir, mid);
-      this.camera.lookAt(target);
-      this.camera.updateMatrixWorld();
-      this.camera.updateProjectionMatrix();
-      const fits = corners.every((c) => {
-        const p = c.clone().project(this.camera);
-        return Math.abs(p.x) < 0.98 && p.y > -0.97 && p.y < (c.z < -4 ? 1.0 : c.z < -1 ? 0.9 : 0.8);
-      });
-      if (fits) hi = mid;
-      else lo = mid;
-    }
+    // Plan item 78: fitted to the field per aspect ratio (camerafit.ts), the field filling the frame with a band of
+    // hills and sky above it.
+    const fit = fitCamera3d(cols, rows, this.w / this.h);
+    const target = new THREE.Vector3(...fit.target);
+    const dir = new THREE.Vector3(0, Math.sin(fit.el), Math.cos(fit.el));
+    const hi = fit.dist;
     this.camera.position.copy(target).addScaledVector(dir, hi);
     this.camera.lookAt(target);
     this.camBase.copy(this.camera.position);
