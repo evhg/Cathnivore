@@ -76,3 +76,22 @@ test('a solve leaves the board in view under a slim result strip', async ({ page
   await page.locator('#btn-next').click()
   await expect(strip).toBeHidden()
 })
+
+// Plan item 68: on an upright phone the daily sits in its farm: the spring house above the board, Bea's garden at its
+// foot, both on screen, clear of the progress bar and the hint, with no page scroll.
+test('the phone daily shows the spring house and Bea\'s garden around the board', async ({ page }) => {
+  const vp = page.viewportSize()!
+  test.skip(vp.width > 600 || vp.height < 700, 'an upright phone')
+  await page.goto('/runnel/?nohelp')
+  await page.waitForTimeout(500)
+  const m = await page.evaluate(() => {
+    const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+    const house = r('.spring-house'), garden = r('.bea-garden'), progress = r('.progress'), foot = r('.foot')
+    return {
+      house: house.width > 30 && house.top >= 0, garden: garden.width > 100 && garden.bottom <= innerHeight,
+      clearOfBar: garden.bottom <= progress.top + 1 && garden.bottom <= foot.top + 1,
+      scroll: document.scrollingElement!.scrollHeight - innerHeight,
+    }
+  })
+  expect(m).toEqual({ house: true, garden: true, clearOfBar: true, scroll: 0 })
+})
