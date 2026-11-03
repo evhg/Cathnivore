@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-03 09:29 UTC
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -967,6 +965,65 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Unit: `waterFront(path, t)` timing; item 30's contrast floor holds for dry and wet channels on every ground and season.
   - e2e at P and D: a joining tap fills the next tile within 600 ms (`data-wet`); cutting the path drains it; `runnel-board.spec` and the lesson specs pass.
   - Shots of the daily, the lesson and a solved board at P and D, light and dark, in two seasons.
+- **Size:** 2
+
+## 62. [ ] Cathnivore: your farm as a stall you can see growing
+- **Why:**
+  - `cath-game-D` (2026-11-03 09:35 shots, `e2e/screenshots/plan1103d/`): the left column's FARM block is a name, three figure pairs and one card thumbnail about 40x20 px. The engine the player builds is the smallest thing on screen, and the Actions frame under it is mostly empty dashed space while a teammate thinks.
+  - `cath-game-P`: the farm sits behind the FARM tab; the strip above the action card shows only resource chips and action pips, so you can't see what you've built without opening a sheet (VISION pillars 1, 2, 5).
+- **Build:**
+  - `src/ui/FarmSheet.tsx` (inline and the sheet): each producer's improvements drawn as a market stall that fills up: bought cards hang as painted crates and signs (a `Vignette` per card), tag counts as chalk tallies on the stall's board, the per-round yield as a price board.
+  - A pure `src/ui/stallLayout.ts`: where each improvement sits by tag and count (0 to 12 cards), overflow stacking; shared by the D column and the phone sheet.
+  - `Game.tsx`: at D the stall replaces the FARM list above Actions, and while a teammate thinks the Actions frame shows their stall; at P a short stall strip (the last 3 purchases) above the producer card opens the full sheet.
+  - The buy flight lands the card in its slot on the stall, not just the counter; reduced motion fades.
+- **Accept:**
+  - Unit: `stallLayout` places 0, 1, 6 and 12 improvements with no overlaps and stable slots for the same state.
+  - e2e at P and D: an autoplayed game at round 5 shows one `.stall-item` per improvement owned; a buy adds one in the right tag row; no page scroll at P; the Invest cards still fit at 1440x900.
+  - Shots of rounds 1, 5 and the last round reached at P and D, light and dark.
+- **Size:** 3
+
+## 63. [ ] Cathnivore: pieces on the board as tabletop miniatures that read at a glance
+- **Why:**
+  - `cath-game-P`: at 390 px a hex holds an orange outlet stack, a count badge, a ".99" tag, a SOLD sign, a "?" scheme token and a producer coin, all 12-18 px and overlapping; Highmoor's and Kingsmarket's tokens touch each other and the region label.
+  - `cath-game-D`: outlet stacks still overlap their own SOLD and .99 tags (Saltmarsh, Rivermead, Shingle Bay); producers are flat coin portraits on a small plinth. The table is the hero (pillar 2) but the pieces are its weakest art.
+- **Build:**
+  - `src/ui/Map.tsx`: a per-hex piece tray from a pure `src/ui/pieceLayout.ts`: fixed slots (outlets one stack with a single count, schemes, producers, landmark) sized to the hex on screen, dropping ornaments (tags, SOLD) before shrinking counts.
+  - Producers as standing painted miniatures (portrait bust on a base in their colour, with a shadow) from the portrait art; outlets one glossy plastic box per stack with the count on its face (the player/corporate material contrast).
+  - Pieces move between slots (120-250 ms ease-out) when counts change; a Squeeze drops a box with a thud; reduced motion cross-fades.
+  - Item 55's landmark placement and grip props keep working with the new slots.
+- **Accept:**
+  - Unit: `pieceLayout` for 0-6 outlets plus 2 producers plus a scheme gives no overlapping rects at hex radii 40, 60 and 90 px; counts never under 11 px.
+  - e2e at P and D: through an autoplayed game's rounds 1-8 no two `[data-piece]` boxes overlap and none crosses the region label; `board-landmarks` and `board-scales` pass.
+  - Shots of all three maps at rounds 1 and 6 at P and D, light, dark and greyscale.
+- **Size:** 3
+
+## 64. [ ] Hedgerow: a new enemy arrives as a staged field-guide moment
+- **Why:**
+  - `hedge-wave-P`: the "NEW ON THE LANE" strip reads "Delivery drone / A delivery drone."; its stats and counters are cut at phone width, so a phone player never learns that only anti-air reaches it.
+  - `hedge-wave-D`: the same advert is a plain white box over the field's top right, covering a plot; it doesn't pause, show the vehicle or say which towers hit it. "Clean sweep!" and "Wave cleared +63" are outlined text over the graveyard plot (pillars 3, 4).
+- **Build:**
+  - `games/hedgerow/src/main.ts` (the advert): the round's first new vehicle rolls on and stops, the field dims, and a Cath's-notebook page slides in with the vehicle's sketch, its traits as icons (flies, armour, speed) and "Your towers that reach it" as lit tower chips. Tap to continue; auto-dismiss in sandbox and replays.
+  - A pure `games/hedgerow/src/intro.ts`: which enemies are new this round for this save, and the counters per enemy; seen ones kept in the save (migration test if the shape changes).
+  - Round-end callouts as a painted rosette with a coin flight to the Marks chip, placed clear of plots.
+  - Phone: the page fills the field above the tray. Reduced motion: no slide or dim, a fade. 2D and 3D (the 3D scene dims too).
+- **Accept:**
+  - Unit: `newThisRound(level, round, seen)` and `countersFor(enemy)` for the drone, a boss and the armoured lorry; a seen enemy never re-introduces.
+  - e2e at P and D: a sandbox level's first drone round shows `.intro-page` with the full description and at least one lit counter chip, the game paused until dismissed; the round-end rosette overlaps no plot.
+  - Shots of the drone and a boss intro, and a round end, at P, D and 844x390, in 2D and 3D.
+- **Size:** 2
+
+## 65. [ ] NIGHT SHIFT: a title that's a scene from the first frame, never a black void
+- **Why:**
+  - `ns-title-D`, `ns-title-L`: 5 s after load (under SwiftShader) the front door is a near-black gradient with a faint red blur, as the live street (`render/frontscene.ts`) hasn't arrived; the outlined wordmark is nearly invisible on the dark ground (pillars 1 and 7: first screen under 2 s). The owner saw a 10 s blank on a real Mac (FEEDBACK 2026-11-02).
+- **Build:**
+  - A baked poster of the front scene's first framing (Cath under the umbrella, the pink sign, rain), shot by a script like `scripts/keyart.mjs` into `games/cathode/public/front-poster[-960|-640].webp`, shown at once behind the menu from `index.html`.
+  - When the scene is ready, cross-fade the poster to the live canvas once its first frame is drawn (no pop); on the phone tier or without WebGL the poster stays, with CSS rain streaks.
+  - The wordmark filled, with the outline as an accent, so every glyph reads on the dark (check the font subset renders every letter).
+  - The List line and the case line as a small paper tag pinned in the poster's light, not loose caps.
+- **Accept:**
+  - Unit: a poster-path picker by viewport width and tier.
+  - e2e at L and D: `.front-poster` visible within 1 s of load, with WebGL blocked and enabled; no frame where both poster and canvas are hidden; the wordmark measures as "NIGHT SHIFT" in the loaded font.
+  - Shots at 0.5 s, 5 s and with the scene live, at P, D and 844x390.
 - **Size:** 2
 
 **Later, unranked:** (none)
