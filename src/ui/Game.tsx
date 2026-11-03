@@ -32,6 +32,8 @@ import EnemyTurnPlayback from './EnemyTurnPlayback'
 import { execFor, flightsFor, stripDock } from './boardroom'
 import LogSheet from './LogSheet'
 import FarmSheet, { Stall } from './FarmSheet'
+import { vignetteFor } from './vignetteKind'
+import Vignette from './Vignette'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
@@ -1642,6 +1644,21 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <Portrait character={state.activeProducer} size={48} />
             </span>
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
+            {/* Plan item 62: on a phone, the last three things she bought as crates on a little plank, opening
+                the Farm sheet's whole stall. */}
+            {active.improvements.length > 0 && (
+              <button className="mobile-only stall-strip" onClick={() => setShowFarm(true)} aria-label={`${PRODUCERS[state.activeProducer].name}'s stall: ${active.improvements.length} Improvements. Open the Farm`}>
+                {active.improvements.slice(-3).map((id) => {
+                  const card = IMPROVEMENTS_BY_ID.get(id)
+                  return card ? (
+                    <span key={id} className="stall-item stall-strip-item" data-tag={card.tags[0]} data-card={id}>
+                      <Vignette kind={vignetteFor(card)} seed={card.id} />
+                    </span>
+                  ) : null
+                })}
+                {active.improvements.length > 3 && <b className="stall-strip-more">+{active.improvements.length - 3}</b>}
+              </button>
+            )}
           </span>
           <span className="ledger">
             <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" />
@@ -1674,6 +1691,20 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       <button className={showFarm ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowFarm(true)}>
         <FarmIcon />
         <span>Farm</span>
+        {/* Plan item 62: on a narrow phone the stall's newest crate rides the Farm tab, with how many she owns. */}
+        {active.improvements.length > 0 && (
+          <span className="rail-tab-stall" aria-hidden="true">
+            {(() => {
+              const card = IMPROVEMENTS_BY_ID.get(active.improvements.at(-1)!)
+              return card ? (
+                <span className="stall-item rail-tab-crate" data-tag={card.tags[0]}>
+                  <Vignette kind={vignetteFor(card)} seed={card.id} />
+                </span>
+              ) : null
+            })()}
+            <b>{active.improvements.length}</b>
+          </span>
+        )}
       </button>
       {rules.improvements && (
         <button className={showMarket ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowMarket(true)}>

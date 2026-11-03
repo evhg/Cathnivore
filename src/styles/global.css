@@ -3136,3 +3136,56 @@ html.no-animations .grip-props > g { animation: none; }
 .teammate-stall { display: block; width: 100%; margin-top: 6px; }
 .teammate-stall .farm-stall { --k: 1.7; margin: 0; }
 .teammate-stall .farm-stall-prices { display: none; }
+/* Plan item 62: the phone's stall strip by the producer's name: the last three crates on a plank. */
+.stall-strip {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: auto;
+  padding: 2px 4px 4px;
+  min-height: 0;
+  border: 0;
+  border-radius: 4px;
+  background: linear-gradient(var(--wood-lo) 0 0) bottom / 100% 3px no-repeat, transparent;
+  box-shadow: none;
+}
+.stall-strip .stall-strip-item {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 28px;
+  height: 20px;
+}
+.stall-strip-more { font: 800 var(--fs-label) / 1 var(--font-text); color: var(--ink-muted); margin-left: 2px; }
+@media (max-width: 440px) {
+  .stall-strip { padding: 1px 2px 3px; gap: 1px; }
+  .stall-strip .stall-strip-item { width: 20px; height: 15px; }
+  .stall-strip .stall-strip-item:nth-last-of-type(n + 3) { display: none; }
+}
+@media (max-width: 440px) {
+  .stall-strip { display: none; }
+}
+@media (min-width: 441px) { .rail-tab-stall { display: none; } }
+.rail-tab { position: relative; }
+.rail-tab-stall {
+  position: absolute;
+  top: -6px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+.rail-tab-stall .rail-tab-crate { position: relative; left: auto; top: auto; width: 22px; height: 16px; border-top-width: 2px; }
+.rail-tab-stall b {
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 800 var(--fs-label) / 15px var(--font-text);
+  text-align: center;
+}
+/* The phone's teammate card is a short strip: their stall stays in the Farm sheet there. */
+@media (max-width: 1023px) { .teammate-stall { display: none; } }
