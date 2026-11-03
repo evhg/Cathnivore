@@ -3743,17 +3743,22 @@ function renderPayout(pay: Payout, next: Level | undefined, reward = ""): void {
   };
   const chips: string[] = [];
   if (pay.bank) chips.push(`+${pay.bank} ★ for the Seed Bank`);
+  const bankAt = chips.length - 1;
   if (pay.medal) chips.push(`${pay.medal} ●`);
   if (pay.heroic) chips.push("Heroic ◆ one Goodwill, no pies");
   if (chips.length) {
     const row = piece("payout-chips");
     row.dataset.payout = "bank";
-    for (const c of chips) {
+    chips.forEach((c, k) => {
       const chip = document.createElement("span");
       chip.className = "payout-chip";
       chip.textContent = c;
+      if (k === bankAt && pay.bank) {
+        chip.dataset.bank = String(pay.bank);
+        flyCoins(chip, pay.bank);
+      }
       row.append(chip);
-    }
+    });
   }
   if (pay.rosettes.length) {
     const rib = piece("payout-ribbon");
@@ -3857,6 +3862,72 @@ function renderPayout(pay: Payout, next: Level | undefined, reward = ""): void {
   }
   if (!box.childElementCount) return;
   (document.getElementById("result-xp") ?? ui.resultStats).after(box);
+  // A tap on the card (not on a button) skips the sequence: every piece lands at once.
+  ui.dlgResult.classList.remove("payout-skip");
+  ui.dlgResult.addEventListener(
+    "pointerdown",
+    (ev) => {
+      if ((ev.target as HTMLElement).closest("button")) return;
+      ui.dlgResult.classList.add("payout-skip");
+      for (const a of coinFlights.splice(0)) a.finish();
+    },
+    { once: true },
+  );
+}
+
+/** The Seed Bank coins in flight (a skip finishes them). */
+const coinFlights: Animation[] = [];
+
+/**
+ * Plan item 46: the new stars fly as coins from the stars row into the Seed Bank chip, which counts up as each
+ * lands. (The game's Seed Bank button is on the map, not the play screen, so the card's chip is where they go.)
+ * Reduced motion: no flight, the chip simply says the total.
+ */
+function flyCoins(chip: HTMLElement, n: number): void {
+  const word = (k: number) => `+${k} ★ for the Seed Bank`;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof chip.animate !== "function") return;
+  chip.textContent = word(0);
+  const stars = [...ui.resultStars.querySelectorAll<HTMLElement>(".star.earned")].slice(-n);
+  setTimeout(() => {
+    if (!chip.isConnected) return;
+    // Skipped before the coins set off: bank them at once.
+    if (ui.dlgResult.classList.contains("payout-skip")) {
+      chip.textContent = word(n);
+      return;
+    }
+    const to = chip.getBoundingClientRect();
+    stars.forEach((st, k) => {
+      const from = st.getBoundingClientRect();
+      const coin = document.createElement("span");
+      coin.className = "coin-fly";
+      coin.textContent = "★";
+      coin.setAttribute("aria-hidden", "true");
+      ui.dlgResult.append(coin);
+      const dlg = ui.dlgResult.getBoundingClientRect();
+      const x0 = from.left + from.width / 2 - dlg.left;
+      const y0 = from.top + from.height / 2 - dlg.top + ui.dlgResult.scrollTop;
+      const x1 = to.left + 18 - dlg.left;
+      const y1 = to.top + to.height / 2 - dlg.top + ui.dlgResult.scrollTop;
+      const a = coin.animate(
+        [
+          { transform: `translate(${x0}px, ${y0}px) scale(1)`, opacity: 1 },
+          { transform: `translate(${(x0 + x1) / 2}px, ${Math.min(y0, y1) - 40}px) scale(1.25)`, opacity: 1, offset: 0.45 },
+          { transform: `translate(${x1}px, ${y1}px) scale(0.6)`, opacity: 0.2 },
+        ],
+        { duration: 620, delay: k * 180, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "both" },
+      );
+      coinFlights.push(a);
+      a.finished
+        .catch(() => {})
+        .then(() => {
+          coin.remove();
+          chip.textContent = word(Math.min(n, k + 1));
+          chip.classList.remove("bump");
+          void chip.offsetWidth;
+          chip.classList.add("bump");
+        });
+    });
+  }, 900);
 }
 
 /**

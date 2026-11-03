@@ -65,3 +65,24 @@ test('a level-up talent is chosen on the card and saved', async ({ page, hasTouc
   await level.scrollIntoViewIfNeeded()
   await page.screenshot({ path: 'e2e/screenshots/payout46/talent-picked-D.png' })
 })
+
+// Plan item 46: a tap on the card skips the payout's sequence; every piece is there at once and the coins are banked.
+test('a tap skips the payout', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'one size is enough')
+  test.setTimeout(120_000)
+  await page.goto('/hedgerow/?sandbox=1&2d&level=3')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game(), null, { timeout: 60_000 })
+  for (let i = 0; i < 8 && !(await page.locator('#screen-play:visible').count()); i++) {
+    await page.getByRole('button', { name: /next|skip|start|begin|continue/i }).first().click().catch(() => {})
+    await page.waitForTimeout(300)
+  }
+  await page.evaluate(() => {
+    ;(window as unknown as { hedgerow: { game(): { phase: string } } }).hedgerow.game().phase = 'won'
+  })
+  const dlg = page.locator('#dlg-result[open]')
+  await expect(dlg).toBeVisible({ timeout: 15_000 })
+  await dlg.locator('#result-title').click()
+  await expect(dlg).toHaveClass(/payout-skip/)
+  await expect(dlg.locator('[data-payout="next"]')).toBeVisible({ timeout: 1_000 })
+  await expect(dlg.locator('[data-bank]')).toHaveText(/^\+3 ★/, { timeout: 2_000 })
+})

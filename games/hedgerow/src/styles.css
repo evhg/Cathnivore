@@ -3763,3 +3763,24 @@ img.act-scene {
   font-weight: 700;
   color: var(--path-2);
 }
+/* Plan item 46: Seed Bank coins in flight, the chip's bump as one lands, and a tap that skips it all. */
+.coin-fly {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -0.6em 0 0 -0.5em;
+  font: 800 var(--fs-num-l, 1.6rem) / 1 var(--font-ui);
+  color: var(--brass-hi);
+  text-shadow: 0 2px 0 var(--brass-lo);
+  pointer-events: none;
+  z-index: var(--z-fx);
+}
+.payout-chip.bump {
+  animation: chip-bump 0.28s ease-out;
+}
+@keyframes chip-bump {
+  50% { transform: scale(1.12); }
+}
+#dlg-result.payout-skip :is(.payout-piece, .stars .star, .payout-chip) {
+  animation: none;
+}
