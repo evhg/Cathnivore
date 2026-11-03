@@ -279,3 +279,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-03 16:30 (lane A): item 79's orphaned Actions heading (none of its rows above the fold) is hidden rather than faded harder: its position varies by hand, so no fixed mask catches it, and the tab already names the group.
 - 2026-11-03 16:30 (lane A): item 79's NIGHT SHIFT 'outline-only wordmark' at P is the draw-in still running under SwiftShader (it fills at about 25 s); left as is.
 - 2026-11-03 16:30 (lane A): item 76's ground marks are per region (seeded by id), not per type, each slot trying its own kind before falling back, so a crowded tile still keeps its signature (reeds on Saltmarsh, pebbles on Shingle Bay).
+- 2026-11-03 (lane B): Hedgerow's 3D camera favours the field (item 78's 65% share) over item 66's sky band on wide frames: the elevation is searched for the best share, and the band above the field holds hills and houses; upright phones still show sky above.
+- 2026-11-03 (lane B): on an upright phone the field's width limits the fit, so item 78's "no band over 15%" is checked on the sides and foot only there; the band above is scenery.
