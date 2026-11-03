@@ -967,7 +967,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the daily, the lesson and a solved board at P and D, light and dark, in two seasons.
 - **Size:** 2
 
-## 62. [ ] Cathnivore: your farm as a stall you can see growing
+## 62. [ ] Cathnivore: your farm as a stall you can see growing *(lane B, in progress)*
 - **Why:**
   - `cath-game-D` (2026-11-03 09:35 shots, `e2e/screenshots/plan1103d/`): the left column's FARM block is a name, three figure pairs and one card thumbnail about 40x20 px. The engine the player builds is the smallest thing on screen, and the Actions frame under it is mostly empty dashed space while a teammate thinks.
   - `cath-game-P`: the farm sits behind the FARM tab; the strip above the action card shows only resource chips and action pips, so you can't see what you've built without opening a sheet (VISION pillars 1, 2, 5).
