@@ -1,7 +1,9 @@
 import { Landmark } from './Landmark'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BADGE, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
-import { BOARD_LANDMARKS, pickSpot } from './landmarkSpot'
+import { BOARD_LANDMARKS, boxAt, pickSpot } from './landmarkSpot'
+import { regionGround } from './regionGround'
+import RegionGroundArt from './RegionGroundArt'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
@@ -740,6 +742,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
             />
             <g transform={`translate(${x}, ${y})`} pointerEvents="none">
               <GroundArt type={def.type} id={id} clip={`${uid}-ground-${id}`} />
+            </g>
+            {/* Plan item 76: the region's own ground, where the pieces and the landmark leave the face clear. */}
+            <g transform={`translate(${x}, ${y})`}>
+              <RegionGroundArt
+                marks={(() => {
+                  const spot = pickSpot(tray.rects)
+                  const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
+                  return regionGround(id, def.type, taken)
+                })()}
+              />
             </g>
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} id={id} />
