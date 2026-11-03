@@ -362,6 +362,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const life = new AbortController();
   const lifeOpt = { signal: life.signal };
   const world = o.warm?.world ?? o.world ?? (await createWorld(o.canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot, district: o.district }, o.onProgress));
+  // The title's world may be handed over (warm start): the job runs at full rates again.
+  world.calm?.(false);
   // C8: what the world holds before this session adds anything, so a restart can take the session back out.
   const baseline: WorldBaseline = o.warm?.baseline ?? {
     scene: new Set(world.scene.children),

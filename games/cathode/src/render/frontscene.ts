@@ -106,6 +106,8 @@ const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
 export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOptions): Promise<FrontScene> {
   const world = await createWorld(canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
+  // Behind the menus the street can afford less: a half-resolution mirror, shadows every second frame (render/world.ts).
+  world.calm?.(true);
   const phone = o.quality === "phone";
   const cam = world.camera;
   cam.fov = FOV;

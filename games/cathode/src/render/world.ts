@@ -61,6 +61,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
   const P = PRESETS[quality];
   let shadowEvery = P.shadowEvery;
+  let cooled = false;
   const shot = options.shot === true;
   const progress = (s: number, label: string) => onProgress?.(s, label);
   progress(0.02, "Rain over the Drowned Market…");
@@ -425,7 +426,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     },
     cool() {
       // Thermal rescue: the phone is struggling even at low resolution, so shadows refresh a quarter as often.
+      cooled = true;
       shadowEvery = Math.max(shadowEvery, 4);
+    },
+    calm(on) {
+      shadowEvery = Math.max(cooled ? 4 : P.shadowEvery, on ? 2 : 1);
+      reflection.setScale(on ? P.reflScale * 0.5 : P.reflScale);
     },
     resize(width, height, pixelRatio, worldScale = 1) {
       renderer.setPixelRatio(pixelRatio);

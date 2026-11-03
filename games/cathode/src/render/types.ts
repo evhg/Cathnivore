@@ -86,6 +86,12 @@ export interface World {
   readonly renderer: THREE.WebGLRenderer;
   /** Compiles every shader variant one frame needs, in the background (render/warm.ts). Call before the first frame. */
   warm?(): Promise<void>;
+  /**
+   * The title's calm mode (owner feedback 2026-11-02, "very stuttery" on a Mac): behind the title, gate and class pick
+   * the wet-street mirror renders at half its resolution and the shadow maps refresh every second frame; a job
+   * turns it off again.
+   */
+  calm?(on: boolean): void;
   readonly scene: THREE.Scene;
   /** The player's eye. The game layer moves it; the renderer only reads it. */
   readonly camera: THREE.PerspectiveCamera;

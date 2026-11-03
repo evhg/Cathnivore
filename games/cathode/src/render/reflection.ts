@@ -45,7 +45,17 @@ export class PlanarReflection {
     this.cam.layers.enable(LAYER_MIRROR_ONLY);
   }
 
+  private lastW = 4;
+  private lastH = 4;
+  /** Plan: the title's calm mode renders the mirror at a fraction of its scale (the street behind the menus). */
+  setScale(scale: number): void {
+    this.scale = scale;
+    this.setSize(this.lastW, this.lastH);
+  }
+
   setSize(width: number, height: number): void {
+    this.lastW = width;
+    this.lastH = height;
     this.target.setSize(Math.max(4, Math.round(width * this.scale)), Math.max(4, Math.round(height * this.scale)));
   }
 

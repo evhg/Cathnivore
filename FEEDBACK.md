@@ -24,7 +24,7 @@ Sessions: handle every note under "Open". When a note is done (or turned into a 
   - **Slow-mo:** the last-enemy slow motion and the kill-cams share one 45 s cooldown, about one a fight.
   - **Area banners:** crossing the market's quarters shows no full-screen title; a newly opened wing gets one subtitle line, once a visit.
 
-  Keep open until the owner confirms it's fluid on the Mac. **Next:** profile frame pacing on real hardware with the perf overlay. The title runs a full-resolution mirror pass, 2048 soft shadows every frame and 14k rain particles; if it's still not smooth, halve the title mirror's resolution and refresh shadows every second frame on the title.
+  Keep open until the owner confirms it's fluid on the Mac. **Next:** profile frame pacing on real hardware with the perf overlay. The title runs a full-resolution mirror pass, 2048 soft shadows every frame and 14k rain particles; if it's still not smooth, halve the title mirror's resolution and refresh shadows every second frame on the title. *(Done 2026-11-03, lane B: the title, gate and class pick run the world in a calm mode, a half-resolution mirror and shadows every second frame; a job restores full rates. Title draw calls 279 -> 205 at D on high, and about 1.5x the frames under SwiftShader (`scripts/cathode-title-perf.mjs`). Still open for the owner's verdict on the Mac.)*
 
 - 2026-10-15 (owner chat, after playing CATHODE on a 5K desktop): **"Focus on combat mechanics, look and feel, the weapons and enemy design, and make the visuals when getting hit, being wounded and dying very high quality. Spend at least a week on this. Work on it non-stop."** The owner's points:
   - **Name:** doesn't like the name "CATHODE"; a new name is coming.
