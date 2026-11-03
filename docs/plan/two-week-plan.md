@@ -844,7 +844,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the new Settings sound block at P and D.
 - **Size:** 2
 
-## 54. [ ] Cathnivore: a phone Setup that deals you in *(lane A, in progress)*
+## 54. [x] Cathnivore: a phone Setup that deals you in *(done 2026-11-03, lane A, 00e54074..HEAD: at 390x844 one screen with no page scroll: the event a pinned poster strip, the mode two drawn chairs at a table, the producers a dealt row with the picked pair lifted in their colours, their abilities in full and Cath's line on the pair under them (`content/pairLines.ts`), difficulty Hollowell's threat card flipping to what changes, the maps three boards on a shelf, the seed behind Advanced, Start the stall's open sign (Closed until two are picked); landscape phones two columns; D keeps item 8's spread with the same cards and chairs; `e2e/setup-phone.spec.ts` (no scroll and full abilities at P, keyboard-only to Start at P and D, every card named); shots before and after at P, L, D, light and dark (`scripts/setup-shots.mjs`). Changed: four cards fit a phone's width, so the row is dealt, not swiped)*
 - **Why:**
   - Item 8 designed the desktop Setup and left P "unchanged". At 390x844 (`cath-setup-P`) it is still a form: stacked boxed panels (Market event, Mode, Producers, Difficulty, Map, Seed) under a sticky Start, with the producers off screen. VISION pillar 1: "Nothing looks like a default form".
   - The producer cards are the one place a new player meets the cast, and on a phone they're cut off half-way through their ability text.
