@@ -24,7 +24,7 @@ describe("gun parts on the 3D gun", () => {
         expect(drawnSlots(g), `${cls} + ${p.id}`).toEqual(want);
       }
     }
-  });
+  }, 20_000); // builds every gun with every part: about 1.2 s alone, past 5 s under the full suite's load
 
   it("re-dressing replaces the parts instead of stacking them", () => {
     const g = buildGunDisplay("rifle", true);
