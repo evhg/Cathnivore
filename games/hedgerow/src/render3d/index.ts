@@ -405,7 +405,7 @@ export class Renderer3D {
     skyTex.colorSpace = THREE.SRGBColorSpace;
     this.scene.background = skyTex;
     // Plan item 66: the painted sky and horizon behind the far scenery.
-    this.world.add(buildBackdrop(game.level.cols, L, hasTwist(game.level, "night") || game.level.id > 90));
+    this.world.add(buildBackdrop(game.level.cols, L, hasTwist(game.level, "night") || game.level.id > 90, hasTwist(game.level, "fog")));
     const fogDim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
     const night = hasTwist(game.level, "night") || game.level.id > 90;

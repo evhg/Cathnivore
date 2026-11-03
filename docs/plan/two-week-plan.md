@@ -1026,7 +1026,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at 0.5 s, 5 s and with the scene live, at P, D and 844x390.
 - **Size:** 2
 
-## 66. [ ] Hedgerow: a 3D field as warm as the 2D one *(lane A, in progress)*
+## 66. [x] Hedgerow: a 3D field as warm as the 2D one *(done 2026-11-03, lane A, 12:51 session: `render3d/backdrop.ts`, a painted stage-set card behind the far scenery (the act's sky, poster clouds, three rows of hills fading into the air; dark wall and keeps under a dusk sky at Kingsmarket; veiled in Fog twists), the far country kept low so it shows, the camera framed so the far houses stay whole under it (D 42 -> 38 deg, P 60 -> 56 deg); a warm key and bounce by day and clear air over the field; Cath lit by her own colour; `render3d/verge.ts` puts a flock, pines, wild-flower clumps and a scarecrow on the verges by the level seed (never on a plot, the lane or the sea, nothing tall on the near side; `tests/hedgerow-verge.test.ts`), wild flowers along the lane; the Saltmarsh boardwalk repainted tight and sun-bleached (its dark runners read as rails). Mean frame luminance at a level start up 33% to 52% at P and D on levels 1, 12, 30, sky band 4-8% of the frame (`scripts/hedgerow-warm-shots.mjs`, `window.hedgerow.skyBand()`); draw calls at level 13 P 542 -> ~595, SwiftShader fps 7.3 -> 7.0; shots before and after beside the 2D in `e2e/screenshots/warm66/`. Cut: plot beds keep item 52's look)*
 - **Why:** the 2026-11-03 11:30 critique (`hedge-l30-3d-D`, `hedge-l30-3d-P`, against `hedge-l12-wave-D`):
   - The 3D field is flat overcast grey-green with no sky or horizon, and houses float cut off at the top edge in grey haze.
   - Plots are brown boxes and the lane reads as railway sleepers.

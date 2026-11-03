@@ -861,6 +861,12 @@ export function buildGround(level: Level): Ground {
         if (inLane && !loose) continue;
         stones.push({ x, y: heightAt(x, z) + sz * 0.2, z, ry: deco() * 6.3, s: sz, sy: 0.55, color: stoneCols[Math.floor(deco() * stoneCols.length)]! });
         if (!inLane && deco() < 0.35) tuft(x - nx * side * 0.06, z - ny * side * 0.06, 0.9);
+        // Plan item 66: wild flowers along the lane's verges.
+        else if (!inLane && deco() < mood.flowerRate * 0.7) {
+          const fx = x + nx * side * 0.05;
+          const fz = z + ny * side * 0.05;
+          if (laneDistance(level, fx, fz) > 0.42) flowers.push({ x: fx, y: heightAt(fx, fz), z: fz, ry: deco() * 6.3, s: 1 + deco() * 0.5, sy: 1, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
+        }
       }
     }
   }

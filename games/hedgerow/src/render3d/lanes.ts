@@ -134,36 +134,32 @@ const PAINT: Paint[] = [
     stones(ctx, r, 42, ["#b3aa9a", "#9e9688", "#c8bfb0", "#8c8478"], 4, 0.55);
     speckle(ctx, r, 60, ["#9a6aa0", "#b07ab0"], 2.5, 0.8);
   },
-  // Saltmarsh: a timber boardwalk, planks across the way with dark gaps, weathered grey, nails at the ends.
+  // Saltmarsh: a timber boardwalk, wide sun-bleached planks laid tight across the way, weathered honey and
+  // silver, nails at the ends. Plan item 66: no dark gaps or runners showing through, which read as a railway.
   (ctx, r) => {
-    ctx.fillStyle = "#2c241c";
+    ctx.fillStyle = "#7a6a52";
     ctx.fillRect(0, 0, TW, TH);
-    const plank = TH / 16;
-    for (let i = 0; i < 16; i++) {
+    const plank = TH / 11;
+    for (let i = 0; i < 11; i++) {
       const y = i * plank;
-      const x0 = 3 + r() * 5;
-      const x1 = TW - 3 - r() * 5;
-      const tone = ["#9c8a6c", "#8c7a5e", "#a8977a", "#857358", "#958466"][Math.floor(r() * 5)]!;
+      const x0 = 1 + r() * 4;
+      const x1 = TW - 1 - r() * 4;
+      const tone = ["#c4ad86", "#b8a07a", "#cdb894", "#b09a76", "#c0aa84"][Math.floor(r() * 5)]!;
       ctx.fillStyle = tone;
-      ctx.fillRect(x0, y + 1.5, x1 - x0, plank - 3);
+      ctx.fillRect(x0, y + 0.75, x1 - x0, plank - 1.5);
       // Grain and weathering.
-      for (let k = 0; k < 7; k++) {
-        ctx.globalAlpha = 0.25;
-        ctx.fillStyle = r() < 0.5 ? "#6c5c44" : "#bcae92";
-        ctx.fillRect(x0 + r() * (x1 - x0) * 0.6, y + 2 + r() * (plank - 5), 15 + r() * 40, 1);
+      for (let k = 0; k < 9; k++) {
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = r() < 0.5 ? "#8a7658" : "#e2d4b4";
+        ctx.fillRect(x0 + r() * (x1 - x0) * 0.6, y + 2 + r() * (plank - 4), 18 + r() * 46, 1);
       }
-      ctx.globalAlpha = 0.3;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x0, y + 1.5, x1 - x0, 1);
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#fff6e0";
+      ctx.fillRect(x0, y + 0.75, x1 - x0, 1);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = "#3a3632";
-      for (const x of [x0 + 7, x1 - 7]) ctx.fillRect(x, y + plank / 2 - 1, 2, 2);
+      ctx.fillStyle = "#5a5048";
+      for (const x of [x0 + 6, x1 - 6]) ctx.fillRect(x, y + plank / 2 - 1, 2, 2);
     }
-    // Two runners show through the gaps.
-    ctx.globalCompositeOperation = "destination-over";
-    ctx.fillStyle = "#4a3c2c";
-    for (const u of [0.22, 0.78]) ctx.fillRect(u * TW - 4, 0, 8, TH);
-    ctx.globalCompositeOperation = "source-over";
   },
   // Rivermead: churned wet mud, deep ruts holding water, darker damp patches.
   (ctx, r) => {

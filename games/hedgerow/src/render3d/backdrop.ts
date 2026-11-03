@@ -87,7 +87,7 @@ export function paintBackdrop(ctx: CanvasRenderingContext2D, w: number, h: numbe
 }
 
 /** The card itself: a wide plane standing at `BACKDROP_Z`, its foot a little below the ground. */
-export function buildBackdrop(cols: number, L: ActLight, night: boolean): THREE.Mesh {
+export function buildBackdrop(cols: number, L: ActLight, night: boolean, foggy = false): THREE.Mesh {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 512;
@@ -98,7 +98,8 @@ export function buildBackdrop(cols: number, L: ActLight, night: boolean): THREE.
   tex.anisotropy = 4;
   const width = cols + 40;
   const geo = new THREE.PlaneGeometry(width, BACKDROP_H);
-  const mat = new THREE.MeshBasicMaterial({ map: tex, fog: false, toneMapped: false, depthWrite: true });
+  // A Fog twist veils the card too; otherwise it stays out of the fog, crisp like a painted flat.
+  const mat = new THREE.MeshBasicMaterial({ map: tex, fog: foggy, toneMapped: false, depthWrite: true });
   const mesh = new THREE.Mesh(geo, mat);
   // The foot sits 0.6 below the ground so the hills' base never shows a gap over a dip.
   mesh.position.set(cols / 2, BACKDROP_H / 2 - 0.6, BACKDROP_Z);
