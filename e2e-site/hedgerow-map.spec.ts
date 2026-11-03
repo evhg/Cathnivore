@@ -84,3 +84,37 @@ for (const reduced of [false, true]) {
     await expect(page.locator('.unveil-fog')).toHaveCount(0)
   })
 }
+
+// Plan item 47: every map tool sits whole inside the viewport, none over another; the rest are one Modes drawer away.
+test('the map tools fit the screen, and Modes opens the rest inside it', async ({ page }) => {
+  await seed(page, 13)
+  const boxes = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('#screen-select .top-tools button')]
+        .filter((e) => e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden')
+        .map((e) => {
+          const r = e.getBoundingClientRect()
+          return { id: e.id, l: r.left, r: r.right, t: r.top, b: r.bottom }
+        }),
+    )
+  const check = async () => {
+    const bs = await boxes()
+    const vw = await page.evaluate(() => innerWidth)
+    const vh = await page.evaluate(() => innerHeight)
+    for (const b of bs) {
+      expect(b.l, b.id).toBeGreaterThanOrEqual(0)
+      expect(b.r, b.id).toBeLessThanOrEqual(vw)
+      expect(b.t, b.id).toBeGreaterThanOrEqual(0)
+      expect(b.b, b.id).toBeLessThanOrEqual(vh)
+    }
+    for (let i = 0; i < bs.length; i++)
+      for (let j = i + 1; j < bs.length; j++) {
+        const a = bs[i]!, c = bs[j]!
+        expect(a.l < c.r - 1 && c.l < a.r - 1 && a.t < c.b - 1 && c.t < a.b - 1, `${a.id} over ${c.id}`).toBe(false)
+      }
+  }
+  await check()
+  await page.locator('#btn-modes').click()
+  await expect(page.locator('#btn-show')).toBeVisible()
+  await check()
+})

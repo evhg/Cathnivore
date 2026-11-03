@@ -3115,8 +3115,7 @@ img.act-scene {
     display: flex;
     gap: 4px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: visible;
     background: var(--surface);
     border-top: 1px solid var(--ink-muted);
     box-shadow: 0 -6px 18px rgba(22, 15, 10, 0.18);
@@ -3125,8 +3124,8 @@ img.act-scene {
     display: none;
   }
   #screen-select .top-tools .bank-btn {
-    flex: 0 0 auto;
-    width: 74px;
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 52px;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -3175,10 +3174,11 @@ img.act-scene {
   filter: saturate(0.6) drop-shadow(0 0 0.4rem rgba(127, 209, 185, 0.9));
 }
 
-/* U225: on desktop and landscape the five mode buttons fold into one "Modes" drawer; the portrait tab bar keeps them inline. */
+/* U225: the mode buttons fold into one "Modes" drawer at every size. Plan item 47: the portrait tab bar too (it was
+   a sideways-scrolling row of nine 74 px keys whose fifth ran off the edge); there the drawer opens upward. */
 .modes-toggle { display: none; }
 .tools-drawer { display: contents; }
-@media (min-width: 641px), (orientation: landscape) {
+@media all {
   #screen-select .top-tools { position: relative; }
   #screen-select .modes-toggle { display: inline-flex; }
   #screen-select .tools-drawer {
@@ -3198,6 +3198,23 @@ img.act-scene {
   }
   #screen-select .tools-drawer.open { display: flex; }
   #screen-select .tools-drawer .bank-btn { justify-content: flex-start; width: 100%; }
+}
+@media (max-width: 640px) and (orientation: portrait) {
+  #screen-select .top-tools {
+    position: fixed;
+  }
+  #screen-select .tools-drawer {
+    top: auto;
+    bottom: calc(100% + 8px);
+    right: 8px;
+  }
+  #screen-select .tools-drawer .bank-btn {
+    flex-direction: row;
+    min-height: 44px;
+    padding: 0 12px;
+    gap: 8px;
+    font-size: var(--fs-small);
+  }
 }
 
 .orchard-offers { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
