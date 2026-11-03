@@ -1026,7 +1026,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at 0.5 s, 5 s and with the scene live, at P, D and 844x390.
 - **Size:** 2
 
-## 66. [ ] Hedgerow: a 3D field as warm as the 2D one
+## 66. [ ] Hedgerow: a 3D field as warm as the 2D one *(lane A, in progress)*
 - **Why:** the 2026-11-03 11:30 critique (`hedge-l30-3d-D`, `hedge-l30-3d-P`, against `hedge-l12-wave-D`):
   - The 3D field is flat overcast grey-green with no sky or horizon, and houses float cut off at the top edge in grey haze.
   - Plots are brown boxes and the lane reads as railway sleepers.
