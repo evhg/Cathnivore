@@ -203,3 +203,51 @@ export function buildOfficeDressing(d: OfficeDressing): THREE.Group {
   root.userData.dressing = { drawings: d.drawings.length, keepsakes: d.keepsakes.length };
   return root;
 }
+
+/**
+ * Plan item 51: rain on the street window. A sheet just inside the glass whose shader draws drops that run down
+ * in wavering trails, catching the neon behind (additive, so only the streaks show). `still` (the phone tier and
+ * reduced motion) freezes them where they are.
+ */
+export function buildWindowRain(still: boolean): THREE.Mesh {
+  const { xE } = OFFICE;
+  const mat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 7.3 } },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      varying vec2 vUv;
+      float hash(float n) { return fract(sin(n) * 43758.5453); }
+      void main() {
+        vec2 uv = vUv * vec2(42.0, 1.0);
+        float col = floor(uv.x);
+        float fx = fract(uv.x);
+        float speed = 0.06 + 0.12 * hash(col);
+        float phase = hash(col * 1.7);
+        float head = fract(phase - uTime * speed);
+        float wob = 0.5 + 0.06 * sin(vUv.y * 17.0 + col * 3.1) + 0.03 * sin(vUv.y * 53.0 + col);
+        float d = abs(fx - wob);
+        float trail = smoothstep(0.0, 0.35, head - (1.0 - vUv.y)) * (1.0 - smoothstep(0.35, 0.5, head - (1.0 - vUv.y)));
+        float bead = 1.0 - smoothstep(0.0, 0.012, abs((1.0 - vUv.y) - head));
+        float line = (1.0 - smoothstep(0.03, 0.09, d)) * (trail * 0.35 + bead * 1.2) * step(0.35, hash(col * 3.3));
+        // Static beads all over the pane.
+        vec2 g = vUv * vec2(60.0, 40.0);
+        float dot = 1.0 - smoothstep(0.08, 0.16, length(fract(g) - 0.5));
+        dot *= step(0.86, hash(floor(g.x) * 13.1 + floor(g.y) * 7.7));
+        vec3 tint = mix(vec3(1.0, 0.45, 0.75), vec3(0.45, 0.9, 1.0), vUv.x);
+        gl_FragColor = vec4(tint * (line + dot * 0.5) * 0.22, 1.0);
+      }`,
+  });
+  const pane = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.5), mat);
+  pane.position.set(xE + 0.06, 1.65, -0.9);
+  pane.rotation.y = -Math.PI / 2;
+  pane.renderOrder = 5;
+  pane.name = "window-rain";
+  if (!still) pane.onBeforeRender = () => (mat.uniforms.uTime!.value = performance.now() / 1000);
+  return pane;
+}

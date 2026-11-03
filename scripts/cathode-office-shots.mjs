@@ -17,7 +17,7 @@ const SIZES = [
 // Yaw 0 looks down -z (the cork wall). Each view: [name, x, z, yaw].
 const ALL = [['room', 0, 3.4, 0.35], ['bench', 1.6, 0.2, -1.3], ['desk', 0.4, 0.2, 1.9], ['at-bench', 3.4, -0.6, -1.5708], ['at-door', 3.1, 1.7, 3.1416],
   // Plan item 51: the trophy shelf (west wall) and Bea's drawings (south wall by the door).
-  ['shelf', -2.6, -0.35, 1.5708], ['drawings', 1.3, 1.2, 3.1416]]
+  ['shelf', -2.6, -0.35, 1.5708], ['drawings', 1.3, 1.2, 3.1416], ['window', 1.6, -0.9, -1.5708]]
 const VIEWS = process.env.VIEWS ? ALL.filter(([v]) => process.env.VIEWS.split(',').includes(v)) : ALL
 // CASES=n: a save with the first n cases closed (0-5), written by the game's own Progress and reloaded.
 const CLOSE = ['crispBoss', 'vaneBoss', 'pellBoss', 'boardBoss', 'vaultBoss']

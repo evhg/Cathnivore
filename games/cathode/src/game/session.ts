@@ -66,7 +66,7 @@ import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { beaCall, caseDistrict, doorName, officeDressing, stationAt, STATION_VERB } from "./office";
-import { buildOfficeDressing } from "../render/officedress";
+import { buildOfficeDressing, buildWindowRain } from "../render/officedress";
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
@@ -425,6 +425,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // Plan item 51: the office remembers the cases she has closed (Bea's drawings, the trophy shelf), from the save.
   const officeDress = inOffice ? buildOfficeDressing(officeDressing(progress.jobsDone)) : null;
   if (officeDress) world.scene.add(officeDress);
+  if (officeDress) world.scene.add(buildWindowRain(o.quality === "phone" || reduceMotionOn()));
   const tutorial = !inOffice && !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
   const KITS = {
     rifle: [ENFORCER, "enforcer"],
