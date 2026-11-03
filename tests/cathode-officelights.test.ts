@@ -18,3 +18,17 @@ describe("officeLights", () => {
       }
     });
 });
+
+import { BOARD_LIST, officeDressing } from "../games/cathode/src/game/office";
+import { BUST_FOR_CASE } from "../games/cathode/src/ui/busts";
+
+describe("the case board's polaroids", () => {
+  it("are the List in order, with the bust each case closes on", () => {
+    expect(BOARD_LIST.map((w) => w.job)).toEqual(["crispBoss", "vaneBoss", "pellBoss", "boardBoss", "vaultBoss"]);
+    for (const w of BOARD_LIST) if (w.bust) expect(BUST_FOR_CASE[w.job]).toBe(w.bust);
+    expect(BOARD_LIST.filter((w) => w.bust).length).toBeGreaterThanOrEqual(4);
+  });
+  it("strikes through the cases closed in the save", () => {
+    expect(officeDressing(["crispBoss", "pellBoss"]).closed).toEqual(["crispBoss", "pellBoss"]);
+  });
+});

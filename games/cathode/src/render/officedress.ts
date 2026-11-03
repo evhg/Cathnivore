@@ -3,7 +3,8 @@
 // each closed case's keepsake stands on a little plinth with a brass plate. Built once when the office loads.
 
 import * as THREE from "three";
-import type { Drawing, OfficeDressing } from "../game/office";
+import { BOARD_LIST, type Drawing, type OfficeDressing } from "../game/office";
+import { bustSvg } from "../ui/busts";
 import { OFFICE } from "./levels/office";
 
 /** A child's crayon drawing on cream paper (256 x 320), one of six designs. */
@@ -283,4 +284,72 @@ export function buildBlindLight(): THREE.Mesh {
   floor.renderOrder = 4;
   floor.name = "blind-light";
   return floor;
+}
+
+/**
+ * Plan item 58: the List as polaroids on the cork wall, each printed with the bust art (item 9's portraits, the
+ * same faces as the case board screen), a name in marker under it, and a red cross once the case is closed. The
+ * Vault has no face yet: a question mark. Readable from the doorway (about 120 px wide at 3 m on a desktop).
+ */
+export function buildBoardPolaroids(closed: readonly string[]): THREE.Group {
+  const { zN } = OFFICE;
+  const root = new THREE.Group();
+  root.name = "board-polaroids";
+  const at: Array<[number, number, number]> = [[-1.2, 1.98, -0.05], [-0.4, 1.9, 0.04], [0.5, 2.02, -0.03], [1.2, 1.8, 0.05], [-0.9, 1.25, 0.03]];
+  BOARD_LIST.forEach((who, i) => {
+    const c = document.createElement("canvas");
+    c.width = 240;
+    c.height = 290;
+    const g = c.getContext("2d")!;
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const struck = closed.includes(who.job);
+    const paint = (face: HTMLImageElement | null) => {
+      g.fillStyle = "#f3efe6";
+      g.fillRect(0, 0, 240, 290);
+      g.fillStyle = "#1c1f26";
+      g.fillRect(14, 14, 212, 212);
+      if (face) g.drawImage(face, 14 + (212 - 177) / 2, 14, 177, 212);
+      else {
+        g.fillStyle = "#e8e2d4";
+        g.font = "bold 150px Georgia, serif";
+        g.textAlign = "center";
+        g.fillText("?", 120, 175);
+      }
+      g.fillStyle = "#1a1a1a";
+      g.font = "bold 26px 'Marker Felt', 'Comic Sans MS', cursive";
+      g.textAlign = "center";
+      g.fillText(who.name, 120, 268, 220);
+      if (struck) {
+        g.strokeStyle = "rgba(200,20,30,0.9)";
+        g.lineWidth = 12;
+        g.lineCap = "round";
+        g.beginPath();
+        g.moveTo(30, 30);
+        g.lineTo(210, 210);
+        g.moveTo(210, 30);
+        g.lineTo(30, 210);
+        g.stroke();
+      }
+      tex.needsUpdate = true;
+    };
+    paint(null);
+    if (who.bust) {
+      const img = new Image();
+      img.onload = () => paint(img);
+      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(bustSvg(who.bust))}`;
+    }
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.46), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 }));
+    const [x, y, rot] = at[i]!;
+    card.position.set(x, y, zN + 0.145);
+    card.rotation.z = rot;
+    card.userData.caption = struck ? `${who.name}: closed` : who.name;
+    root.add(card);
+    const pin = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 6), new THREE.MeshStandardMaterial({ color: 0xc81e2a, roughness: 0.35 }));
+    pin.position.set(x, y + 0.2, zN + 0.16);
+    root.add(pin);
+  });
+  root.userData.faces = BOARD_LIST.filter((w) => w.bust).length;
+  return root;
 }

@@ -135,10 +135,22 @@ export interface OfficeDressing {
   drawings: Drawing[];
   /** The trophy shelf, in the order the cases closed (story order). */
   keepsakes: Array<{ id: string; caption: string }>;
+  /** Plan item 58: the closing cases done (struck through on the case board's polaroids). */
+  closed: string[];
 }
 
 /** Plan item 51: what the office shows, read only from the save (the jobs done). */
 export function officeDressing(jobsDone: readonly string[]): OfficeDressing {
   const keepsakes = CLOSERS.filter(([job]) => jobsDone.includes(job)).map(([, id, caption]) => ({ id, caption }));
-  return { drawings: DRAWINGS.slice(0, Math.min(DRAWINGS.length, 1 + keepsakes.length)), keepsakes };
+  const closed = CLOSERS.filter(([job]) => jobsDone.includes(job)).map(([job]) => job);
+  return { drawings: DRAWINGS.slice(0, Math.min(DRAWINGS.length, 1 + keepsakes.length)), keepsakes, closed };
 }
+
+/** Plan item 58: the List on the case board, left to right: who, the case that closes them, and their bust. */
+export const BOARD_LIST: ReadonlyArray<{ name: string; job: string; bust: "crisp" | "vane" | "pell" | "chair" | null }> = [
+  { name: "Julian Crisp", job: "crispBoss", bust: "crisp" },
+  { name: "Dr Octavia Vane", job: "vaneBoss", bust: "vane" },
+  { name: "Marcus Pell", job: "pellBoss", bust: "pell" },
+  { name: "The Chair", job: "boardBoss", bust: "chair" },
+  { name: "HollowCandor", job: "vaultBoss", bust: null },
+];

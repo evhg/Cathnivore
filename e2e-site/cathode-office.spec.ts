@@ -135,6 +135,8 @@ test('a closed case puts its keepsake on the shelf and another drawing by the do
   await page.goto('/nightshift/?play&shot&district=office')
   await page.waitForFunction(() => !!(window as unknown as { cathode?: D }).cathode?.officeDressing, null, { timeout: 200_000 })
   expect(await page.evaluate(() => (window as unknown as { cathode: D }).cathode.officeDressing!())).toEqual({ drawings: 2, keepsakes: 1 })
+  // Plan item 58: the case board carries the List's faces.
+  expect(await page.evaluate(() => (window as unknown as { cathode: D & { boardFaces?: () => number } }).cathode.boardFaces?.() ?? 0)).toBeGreaterThanOrEqual(4)
   // Looking at the shelf's first keepsake names it.
   type L = D & { officeLooking?: () => string }
   await page.evaluate(() => {

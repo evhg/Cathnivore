@@ -66,7 +66,7 @@ import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { beaCall, caseDistrict, doorName, officeDressing, stationAt, STATION_VERB } from "./office";
-import { buildBlindLight, buildOfficeDressing, buildWindowRain } from "../render/officedress";
+import { buildBlindLight, buildBoardPolaroids, buildOfficeDressing, buildWindowRain } from "../render/officedress";
 import { buildOfficeMirror } from "../render/officemirror";
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
@@ -175,6 +175,8 @@ export interface Session {
   officeMirror?: () => boolean | null;
   /** Plan item 51: the caption of the keepsake or drawing under the crosshair ("" for none). */
   officeLooking?: () => string;
+  /** Plan item 58: faces on the office's case board (0 outside the office). */
+  boardFaces?: () => number;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
   talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
@@ -432,6 +434,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (officeDress) world.scene.add(officeDress);
   if (officeDress) world.scene.add(buildWindowRain(o.quality === "phone" || reduceMotionOn()));
   if (officeDress) world.scene.add(buildBlindLight());
+  if (officeDress) officeDress.add(buildBoardPolaroids(officeDressing(progress.jobsDone).closed));
   // Plan item 51: the standing mirror shows her, in the coat the wardrobe saved (render/officemirror.ts).
   const officeMirror = inOffice ? buildOfficeMirror(new THREE.Color(armDress(progress.character.equipment).sleeveFin.color), o.quality === "phone") : null;
   if (officeMirror) world.scene.add(officeMirror.group);
@@ -712,6 +715,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // A restart rebuilds the same object, so window.cathode (and anything holding it) stays the one session.
   const s: Session = o.warm ? Object.assign(o.warm.into, fresh) : fresh;
   s.officeDressing = () => (officeDress?.userData.dressing as { drawings: number; keepsakes: number } | undefined) ?? null;
+  s.boardFaces = () => (officeDress?.getObjectByName("board-polaroids")?.userData.faces as number | undefined) ?? 0;
   s.officeMirror = () => officeMirror?.live ?? null;
   if (o.warm) for (const k of Object.keys(s) as Array<keyof Session>) if (!(k in fresh)) delete s[k];
   s.deaths = o.warm?.deaths ?? 0;
