@@ -684,7 +684,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Size:** 3
 - **Progress:** slices 1-4 (2026-11-02/03, lane A): contextual Takedown/Focus/Skill, Reload on the count, the arc round Fire with Swap under it, Jump/Crouch flicks, rings after first use, cover at rest under 18% (e2e), and touch discs that take real taps. Left: objective and health in one block at L, the upright screen, overlap reports in the clinic and market.
 
-## 45. [ ] Hedgerow: a swarm worth watching *(lane B, in progress)*
+## 45. [x] Hedgerow: a swarm worth watching *(done 2026-11-03, lane B, 2186f1d..HEAD: `convoy.ts` lays each queue out for the eye (a length apart, two abreast past 12, never more than 2 cells behind its real place, so the rules and bot tuning stand), the overflow a column at the tail (2D stack with +N; 3D up to 8 high); per-tower pooled Marks, wreckage on the verge for the round, no shards under reduced motion, the swarm badge riding the column with a make-up bar, in 2D and 3D; unit test at 600 vehicles; e2e on level 38's last round (19; the level has no 20th) at P and D: 40+ drawn, a counter rising, shards gone under reduced motion; layout 0.3 ms a frame; shots 2D and 3D at P, D, L)*
 - **Why:**
   - Late rounds collapse into one purple lorry with a count badge in 3D, and a pile of sprites in 2D.
   - The "hundreds of small wins" the Hedgerow 2 design is built on can't be seen.
@@ -702,7 +702,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P, D and L, in 2D and 3D.
 - **Size:** 3
 
-## 46. [ ] Hedgerow: a win that pays out on stage
+## 46. [ ] Hedgerow: a win that pays out on stage *(lane B, in progress)*
 - **Why:**
   - The rewards (a level-up, a talent choice, Seed Bank stars and rosettes) are buried in one dot-separated sentence.
   - At L the tally is off-card.

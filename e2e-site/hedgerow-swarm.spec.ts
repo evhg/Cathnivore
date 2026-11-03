@@ -6,7 +6,7 @@ type HG = {
   game(): { wave: number; enemies: unknown[]; towers: unknown[] }
   sendWave(g: unknown, force?: boolean): void
   place(g: unknown, kind: string, c: number, r: number): { ok: boolean }
-  convoy(): { drawn: number; column: number; marks: number } | null
+  convoy(): { drawn: number; column: number; marks: number; shards: number } | null
 }
 for (const reduced of [false, true])
   test(`a late round is a convoy${reduced ? ' (reduced motion)' : ''}`, async ({ page, hasTouch }) => {
@@ -32,5 +32,8 @@ for (const reduced of [false, true])
     await page.waitForFunction(() => ((window as unknown as { hedgerow: HG }).hedgerow.convoy()?.marks ?? 0) > 0, null, { timeout: 60_000 })
     const st = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.convoy())
     expect(st!.drawn).toBeGreaterThanOrEqual(40)
+    // Layers come off in shards of their colour, except under reduced motion.
+    if (reduced) expect(st!.shards).toBe(0)
+    else expect(st!.shards).toBeGreaterThan(0)
     await page.screenshot({ path: `e2e/screenshots/swarm45/late${reduced ? '-reduced' : ''}-${hasTouch ? 'P' : 'D'}.png` })
   })

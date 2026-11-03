@@ -330,6 +330,7 @@ export class Renderer {
           // Plan item 19: a pop bursts. Flakes of the shell knocked off, a white shock ring, a couple of sparks.
           if (this.parts.length < 400 && !this.reducedMotion) {
             const n = e.from === "lorry" && e.to ? 12 : 7;
+            this.shardBursts++;
             const shell = RUNGS[e.from]?.colour ?? "#f4f6f8";
             for (let i = 0; i < n; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 2 ? shell : (under ?? "#f4f6f8"), "square", 0.065, 0.5));
             for (let i = 0; i < 2; i++) this.parts.push(this.particle(e.x, e.y - 0.2, "#ffe27a", "star", 0.05, 0.4));
@@ -1272,10 +1273,12 @@ export class Renderer {
   }
 
   /** Plan item 45, for tests and shots: vehicles drawn one by one, in columns, and the biggest pooled tower count. */
-  convoyStats(): { drawn: number; column: number; marks: number } {
+  /** Layer-pop shard bursts thrown so far (none under reduced motion), for tests. */
+  private shardBursts = 0;
+  convoyStats(): { drawn: number; column: number; marks: number; shards: number } {
     let marks = 0;
     for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);
-    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks };
+    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts };
   }
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
