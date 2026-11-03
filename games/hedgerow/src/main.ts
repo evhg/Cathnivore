@@ -1666,9 +1666,12 @@ function wavePreview(p: HTMLElement, g: Game): void {
 /** What a tower stands on at each visible tier (plan item 19's plinths). */
 const STANDS = ["Bed", "Plank deck", "Stone drum"] as const;
 
-/** The next vehicle this lane hasn't shown yet (not in an earlier round, never met): its kind and round. */
-function nextNew(g: Game): { kind: EnemyKind; wave: number } | null {
-  const met = new Set<EnemyKind>();
+/**
+ * The next vehicle this lane hasn't shown yet (not in an earlier round, never met): its kind and round. `skip` is
+ * the one Cath's advice card already sketches (plan item 72), so the lane page looks past it.
+ */
+function nextNew(g: Game, skip?: EnemyKind): { kind: EnemyKind; wave: number } | null {
+  const met = new Set<EnemyKind>(skip ? [skip] : []);
   for (const w of g.level.waves.slice(0, g.wave)) for (const gr of w) met.add(gr.enemy);
   for (let i = g.wave; i < g.level.waves.length; i++)
     for (const gr of g.level.waves[i]!) if (!met.has(gr.enemy) && !data.seen[gr.enemy]) return { kind: gr.enemy, wave: i + 1 };
@@ -1748,7 +1751,7 @@ function fieldNotebook(g: Game): HTMLElement {
   } else if (!advice) page.append(line("Nothing planted yet: tap a plot to build.", "nb-empty"));
   // With nothing planted the advice already says how to build, so the lane's page takes the whole row.
   if (t || !advice) nb.append(page);
-  const nx = nextNew(g);
+  const nx = nextNew(g, advice?.kind);
   const lane = document.createElement("div");
   lane.className = t || !advice ? "nb-page nb-enemy" : "nb-page nb-enemy nb-wide";
   if (nx) {
