@@ -32,15 +32,30 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
         // A scroller that wraps one list (the Log's <ol>) counts that list's rows.
         const rows = el.children.length === 1 && el.firstElementChild?.matches('ol, ul') ? el.firstElementChild.children : el.children
         let head = ''
+        let headEl: Element | null = null
+        let orphan: Element | null = null
+        let shownInGroup = 0
         for (const child of Array.from(rows)) {
-          if (child.matches('.action-head')) head = child.textContent?.trim() ?? ''
+          if (child.matches('.action-head')) {
+            head = child.textContent?.trim() ?? ''
+            headEl = child
+            shownInGroup = 0
+          }
           const r = child.getBoundingClientRect()
+          if (r.height > 0 && r.bottom <= fold && !child.matches('.action-head')) shownInGroup++
           if (r.height > 0 && r.bottom > fold && !child.matches('[aria-hidden="true"], .action-head, .log-round')) {
-            if (!more) next = head
+            if (!more) {
+              next = head
+              // Plan item 79: the group's heading is still above the fold with none of its rows: it would only
+              // ghost through the fade over the tab that already names it.
+              if (headEl && !shownInGroup && headEl.getBoundingClientRect().top < fold) orphan = headEl
+            }
             more++
           }
         }
-      }
+        for (const h of Array.from(el.querySelectorAll('[data-at-fold]'))) if (h !== orphan) h.removeAttribute('data-at-fold')
+        if (orphan && !orphan.hasAttribute('data-at-fold')) orphan.setAttribute('data-at-fold', '')
+      } else for (const h of Array.from(el.querySelectorAll('[data-at-fold]'))) h.removeAttribute('data-at-fold')
       if (more > 0) owner.dataset.more = String(more)
       else delete owner.dataset.more
       if (more > 0 && next) {

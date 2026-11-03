@@ -1167,10 +1167,10 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: the camera fit leaves no off-field band over 15% at P, L and D; e2e: the field's projected box at least 65% of the canvas at P and D; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of levels 1, 21, 40 in 2D and 3D at P, D and L.
 - **Size:** 3
 
-## 79. [ ] The bugs from the 2026-11-03 15:25 critique, fixed as one batch *(lane A, in progress)*
+## 79. [x] The bugs from the 2026-11-03 15:25 critique, fixed as one batch *(done 2026-11-03, lane A, 0c8b5c8..: e2e-site/critique79.spec.ts, one case each at P and D; shots in e2e/screenshots/b79 and a79)*
 - **Build:** (sizes are the critique's estimates; check each first)
   - [x] **Cathnivore title D** (`cath-title-D`): Cath's bubble overlaps Bea's MUM drawing. *(Bea's drawing pins the board's far corner at every size)*
-  - **Cathnivore game D** (`cath-game-D`): the faded "PLAY" label sits under the "PLAY · 9 MORE" pill. *(It is item 69's fold fade (lane B); judge it with lane B's item before changing it.)*
+  - [x] **Cathnivore game D** (`cath-game-D`): the faded "PLAY" label sits under the "PLAY · 9 MORE" pill. *(a group heading with none of its rows above the fold hides (`data-at-fold`); the tab already names it, now on one line at 1280 wide)*
   - [x] **Cathnivore Setup P** (`cath-setup-P`): a dead band of about 40 px above Start. *(the spare height is shared between the cards; about 50 -> 27 px)*
   - [x] **Hedgerow D** (`hedge-l21-2d-D`): the "Lifestyle influencer" pill text runs past its edge; the tower shelf truncates "Market S..." and clips the fifth tower under the arrow. *(2026-11-03 lane A: the pill keeps inside the column and its name takes a second line only when it must, `critique79.spec.ts`; the shelf's cut fifth card is its scroll cue, left as is)*
   - [x] **Hedgerow map P** (`hedge-menu-P`): row 1's stars and labels under the header; the act card cut mid-sentence by the bottom nav; a stop's label on the road. *(her act's head opens under the header, re-anchored after the fonts load; a shorthand had zeroed the phone's room for the nav; the label sits on its own pill, left as is)*

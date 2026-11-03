@@ -105,3 +105,30 @@ test("/games/: Cath's glow is drawn after her waist mask (no lit box behind her)
   expect(f.svg).toBe('none')
   expect(f.wrap).toContain('drop-shadow')
 })
+
+test("Cathnivore game D: a group heading with none of its rows above the fold hides behind the tab that names it", async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop Actions frame')
+  await page.goto('/cathnivore/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.actions .action-head').first()).toBeVisible()
+  await page.waitForTimeout(500)
+  const heads = await page.evaluate(() => {
+    const el = document.querySelector('.actions')!
+    const fold = el.getBoundingClientRect().bottom - 8
+    const out: Array<{ name: string; hidden: boolean; orphan: boolean }> = []
+    let cur: { name: string; hidden: boolean; orphan: boolean } | null = null
+    let el0: Element | null = null
+    for (const c of Array.from(el.children)) {
+      if (c.matches('.action-head')) {
+        el0 = c
+        const r = c.getBoundingClientRect()
+        cur = { name: c.textContent ?? '', hidden: getComputedStyle(c).visibility === 'hidden', orphan: r.top < fold }
+        out.push(cur)
+      } else if (cur && el0 && c.getBoundingClientRect().height > 0 && c.getBoundingClientRect().bottom <= fold) cur.orphan = false
+    }
+    return out
+  })
+  for (const h of heads) expect(h.hidden, h.name).toBe(h.orphan)
+  await expect(page.locator('.actions-well')).toHaveAttribute('data-next', /.+/)
+})

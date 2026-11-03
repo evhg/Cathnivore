@@ -2219,12 +2219,15 @@ html.no-animations .cath-companion .cameo {
     content: attr(data-next) " \00B7  " attr(data-more) " more \2193";
     text-transform: uppercase;
     color: var(--ink);
+    white-space: nowrap; /* plan item 79: one line at 1280 wide too */
   }
 }
 /* Plan item 69: at D the Actions fold fades out fully under the "n more" tab (the cut cards' tops showed through it). */
 @media (min-width: 1024px) {
   .actions[data-scroll-cue][data-fade-bottom] { mask-image: linear-gradient(black calc(100% - 76px), transparent calc(100% - 24px)); }
   .actions[data-scroll-cue][data-fade-top][data-fade-bottom] { mask-image: linear-gradient(transparent, black 22px, black calc(100% - 76px), transparent calc(100% - 24px)); }
+  /* Plan item 79: a group heading left above the fold with none of its rows hides; the tab names it instead. */
+  .actions[data-scroll-cue][data-fade-bottom] .action-head[data-at-fold] { visibility: hidden; }
 }
 /* Plan item 75: Cath with presence in game: her reactive bust beside the narration is about 92 px at D (80 on a
    shorter desktop) and 64 px on a phone, her face following the round's events (CATH_REACTION_EXPRESSION). */
