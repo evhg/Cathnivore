@@ -15,7 +15,13 @@
     <main class="app">
       <!-- C13: the canvas lives under every screen: the title's live street, then the game's. -->
       <canvas id="view"></canvas>
-      <div class="front-fallback" id="front-fallback" aria-hidden="true"></div>
+      <!-- Plan item 65: a baked frame of the title's street (scripts/cathode-poster.mjs), there from the first paint until the live street has drawn. -->
+      <div class="front-fallback" id="front-fallback" aria-hidden="true">
+        <picture class="front-poster" id="front-poster">
+          <source media="(orientation: portrait)" srcset="/nightshift/front-poster-portrait-520.webp 520w, /nightshift/front-poster-portrait-780.webp 780w" sizes="100vw" />
+          <img src="/nightshift/front-poster-960.webp" srcset="/nightshift/front-poster-640.webp 640w, /nightshift/front-poster-960.webp 960w, /nightshift/front-poster-1440.webp 1440w" sizes="100vw" alt="" decoding="async" fetchpriority="high" />
+        </picture>
+      </div>
       <div class="front-bars" id="front-bars" aria-hidden="true"><i></i><i></i></div>
       <div class="front-grain" id="front-grain" aria-hidden="true"></div>
 

@@ -111,9 +111,15 @@ function startScene(): void {
         s.dispose();
         ($<HTMLCanvasElement>("view").getContext("webgl2") as WebGL2RenderingContext | null)?.getExtension("WEBGL_lose_context")?.loseContext();
       });
-      $("front-fallback").classList.add("is-off");
-      $("front-grain").classList.add("is-baked");
-      built();
+      // Plan item 65: the poster stays until the street has drawn a frame, then cross-fades to it (no black gap).
+      const reveal = () => {
+        if (s.stats.frames > 0) {
+          $("front-fallback").classList.add("is-off");
+          $("front-grain").classList.add("is-baked");
+          built();
+        } else requestAnimationFrame(reveal);
+      };
+      reveal();
       return s;
     })
     .catch((e: unknown) => {
