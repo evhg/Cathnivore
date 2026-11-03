@@ -3801,3 +3801,24 @@ img.act-scene {
 #dlg-result.payout-skip :is(.payout-piece, .stars .star, .payout-chip) {
   animation: none;
 }
+
+/* Desktop map: the act's name is a compact plaque up in the sky, not a full-width bar across the middle of
+   the painting (it cut through Brindle Hills' farmhouse roof; critique 2026-11-03). The scrim follows it
+   up, so the scenery below stays in full light. */
+@media (min-width: 1001px) {
+  #screen-select .act-title {
+    top: 14px;
+    bottom: auto;
+    right: auto;
+    width: fit-content;
+    max-width: calc(100% - 28px);
+    gap: 14px;
+    padding: 4px 16px 6px;
+  }
+  #screen-select .act-head::after {
+    top: 0;
+    bottom: auto;
+    height: 40%;
+    background: linear-gradient(to bottom, rgba(22, 15, 10, 0.32), rgba(22, 15, 10, 0));
+  }
+}
