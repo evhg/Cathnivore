@@ -4309,3 +4309,16 @@ img.act-scene {
   text-transform: uppercase;
   color: var(--soil);
 }
+/* Plan item 73: Cath beside her coin when standing above it would cover another stop's name. */
+#screen-select .node.next .you.beside {
+  top: 36px;
+  margin-left: -58px;
+}
+@media (max-width: 420px) {
+  #screen-select .node.next .you.beside {
+    top: 26px;
+    width: 24px;
+    height: 29px;
+    margin-left: -40px;
+  }
+}

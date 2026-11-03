@@ -168,3 +168,20 @@ test('plan item 73: the next act is a named glimpse of its country, not fog', as
   expect(scene.filter).not.toContain('blur')
   expect(scene.opacity).toBeGreaterThanOrEqual(0.85)
 })
+
+test('plan item 73: Cath\'s token never covers another stop\'s name', async ({ page }) => {
+  for (const upTo of [3, 6]) {
+    await seed(page, upTo)
+    await page.waitForTimeout(400)
+    const hits = await page.evaluate(() => {
+      const you = document.querySelector('.node .you')!
+      const own = you.closest('.node')
+      const r = you.getBoundingClientRect()
+      return [...document.querySelectorAll('.node .level-name')]
+        .filter((n) => n.closest('.node') !== own)
+        .filter((n) => { const b = n.getBoundingClientRect(); return b.width > 0 && r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top })
+        .map((n) => n.textContent)
+    })
+    expect(hits, `after ${upTo}`).toEqual([])
+  }
+})

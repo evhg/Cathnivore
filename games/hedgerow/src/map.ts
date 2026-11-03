@@ -1481,6 +1481,15 @@ export function placeBanners(list: HTMLElement): void {
       }
       placed.push({ el, node: own });
     }
+    // Plan item 73: Cath's token stands above her stop; where that would sit on another stop's banner (a row-2
+    // stop under a row-1 name with a twist line), she stands beside her coin instead.
+    const you = trail.querySelector<HTMLElement>(".node .you");
+    if (you) {
+      you.classList.remove("beside");
+      const own = you.closest(".node");
+      const r = boxIn(you, trail);
+      if (placed.some((p) => p.node !== own && p.el.matches(".level-name") && overlaps(r, boxIn(p.el, trail)))) you.classList.add("beside");
+    }
   }
 }
 
