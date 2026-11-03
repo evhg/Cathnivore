@@ -1157,7 +1157,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: time/weather to palette (dusk differs from midday by a measured luminance and hue); e2e at P and D: the board's box at least 60% of the frame's shorter side, no blank band over 100 px, Cath visible; shots of the tutorial and a daily at P and D, light and dark.
 - **Size:** 2
 
-## 78. [ ] Hedgerow: the field fills the frame and looks hedged
+## 78. [ ] Hedgerow: the field fills the frame and looks hedged *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D`/`-P` (plan1103f): the 3D camera leaves about 35% of the D frame as empty grass and sea and about 140 px below the field at P; path tiles show seams; fog lowers the contrast; Cath is about 20 px. In `hedge-l21-2d-D` the plots read as a repeating tilemap and about 280 px right of the field is filler.
 - **Build:**
   - Fit the 3D camera to the field's bounds per aspect ratio (a pure fit function), keeping item 66's sky card in frame.
