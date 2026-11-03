@@ -2221,3 +2221,8 @@ html.no-animations .cath-companion .cameo {
     color: var(--ink);
   }
 }
+/* Plan item 69: at D the Actions fold fades out fully under the "n more" tab (the cut cards' tops showed through it). */
+@media (min-width: 1024px) {
+  .actions[data-scroll-cue][data-fade-bottom] { mask-image: linear-gradient(black calc(100% - 76px), transparent calc(100% - 24px)); }
+  .actions[data-scroll-cue][data-fade-top][data-fade-bottom] { mask-image: linear-gradient(transparent, black 22px, black calc(100% - 76px), transparent calc(100% - 24px)); }
+}
