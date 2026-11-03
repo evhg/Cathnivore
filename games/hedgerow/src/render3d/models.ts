@@ -1995,7 +1995,7 @@ export function dressCath(root: THREE.Group): void {
 }
 
 /** Plan item 66: how much of her own colour Cath gives off, so her dark jacket never reads as a blob on the grass. */
-const CATH_LIFT = 0.3;
+const CATH_LIFT = 0.42;
 
 /**
  * Plan item 66: Cath's figure lit from within a little (each material's own colour as a soft emission), so she
@@ -2115,6 +2115,26 @@ export function buildTree(kind: "oak" | "pine" | "dead", rand: () => number, lea
       o.castShadow = true;
       o.receiveShadow = true;
     }
+  });
+  return g;
+}
+
+/** Plan item 66: an old scarecrow out on the verge (scenery, not the tower: no hat brim, a sack head, a tilt). */
+export function buildScarecrowProp(): THREE.Group {
+  const wood = matte("#8a6a44", 0.8);
+  const shirt = matte("#b5523b", 0.85);
+  const sack = matte("#d8c08a", 0.9);
+  const straw = matte("#e6c768", 0.9);
+  const g = group(
+    cyl(0.012, 0.014, 0.5, wood, 0, 0, 0, 6),
+    box(0.3, 0.018, 0.018, wood, 0, 0.36, 0),
+    box(0.11, 0.12, 0.05, shirt, 0, 0.3, 0),
+    ball(0.042, sack, 0, 0.47, 0, 1),
+    cyl(0.03, 0.05, 0.03, straw, 0, 0.5, 0, 8),
+  );
+  g.rotation.z = 0.08;
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
   return g;
 }

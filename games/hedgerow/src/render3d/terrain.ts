@@ -18,6 +18,7 @@ import {
   buildLighthouse,
   buildOffice,
   buildRock,
+  buildScarecrowProp,
   buildTowerKeep,
   buildTree,
   buildWall,
@@ -25,6 +26,7 @@ import {
 } from "./models";
 import { actMood, matte } from "./palette";
 import { buildLanes, laneStyle } from "./lanes";
+import { laneDistance, vergeScatter } from "./verge";
 
 const MARGIN = 9;
 
@@ -329,27 +331,6 @@ function instanced(geo: THREE.BufferGeometry, mat: THREE.Material, items: Inst[]
 
 function smooth(t: number): number {
   return t * t * (3 - 2 * t);
-}
-
-/** Distance from (x, y) (cell units) to the nearest lane centreline. */
-function laneDistance(level: Level, x: number, y: number): number {
-  let best = Infinity;
-  for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {
-    const pts = path.map(([c, r]) => [c + 0.5, r + 0.5] as const);
-    // Extend the first segment off the field, where the convoys come from.
-    const [a, b] = [pts[0]!, pts[1]!];
-    const dx = Math.sign(a[0] - b[0]);
-    const dy = Math.sign(a[1] - b[1]);
-    const all = [[a[0] + dx * 30, a[1] + dy * 30] as const, ...pts];
-    for (let i = 1; i < all.length; i++) {
-      const [ax, ay] = all[i - 1]!;
-      const [bx, by] = all[i]!;
-      const len2 = (bx - ax) ** 2 + (by - ay) ** 2 || 1;
-      const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / len2));
-      best = Math.min(best, Math.hypot(x - (ax + (bx - ax) * t), y - (ay + (by - ay) * t)));
-    }
-  }
-  return best;
 }
 
 export interface Ground {
@@ -816,6 +797,44 @@ export function buildGround(level: Level): Ground {
     if (deco() < mood.flowerRate * 0.6) flowers.push({ x, y: heightAt(x, z), z, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
     else tuft(x, z, 1.25, 1.2);
   }
+  // Plan item 66: the verges dressed from the 2D field's set: a flock grazing, pines, wild-flower clumps, a scarecrow.
+  const sheepBody: Inst[] = [];
+  const sheepHead: Inst[] = [];
+  const wool = new THREE.Color("#f4efe4");
+  const face = new THREE.Color("#2e2724");
+  for (const v of vergeScatter(level)) {
+    const h = heightAt(v.x, v.y);
+    if (v.kind === "flowers") {
+      for (let k = 0; k < 7; k++) {
+        const a = deco() * 6.3;
+        const r = deco() * 0.16;
+        const fx = v.x + Math.cos(a) * r;
+        const fz = v.y + Math.sin(a) * r;
+        flowers.push({ x: fx, y: heightAt(fx, fz), z: fz, ry: deco() * 6.3, s: (1.5 + deco() * 0.7) * v.s, sy: 1.2, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
+      }
+      tuft(v.x, v.y, 1.3, 1.2);
+    } else if (v.kind === "sheep") {
+      const s = 0.12 * v.s;
+      sheepBody.push({ x: v.x, y: h + s * 0.95, z: v.y, ry: v.ry, s, sy: 0.78, color: wool });
+      // The head leans down to graze, ahead of the body along its facing.
+      sheepHead.push({ x: v.x + Math.cos(v.ry) * s * 1.05, y: h + s * 0.55, z: v.y - Math.sin(v.ry) * s * 1.05, ry: v.ry, s: s * 0.42, sy: 1.1, color: face });
+    } else if (v.kind === "pine") {
+      const t = buildTree("pine", deco, ["#3f6e33", "#355e2c", "#4a7a3a"]);
+      t.position.set(v.x, h, v.y);
+      t.scale.setScalar(v.s);
+      group.add(t);
+    } else {
+      const sc = buildScarecrowProp();
+      sc.position.set(v.x, h, v.y);
+      sc.rotation.y = v.ry;
+      group.add(sc);
+    }
+  }
+  for (const m of [
+    instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff", 0.95), sheepBody, true),
+    instanced(new THREE.SphereGeometry(1, 8, 6), matte("#ffffff", 0.8), sheepHead, true),
+  ])
+    if (m) group.add(m);
   // The lane's own surface for the act (earth, boardwalk, tarmac, cobbles...).
   const laneAct = Math.max(0, Math.min(9, act));
   for (const m of buildLanes(level, laneAct, heightAt, withCloudShadows, rng(level.id * 6271 + 5)).meshes) group.add(m);
