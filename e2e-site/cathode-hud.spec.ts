@@ -113,7 +113,7 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       c.arsenal.owned.add('widowmaker')
       c.arsenal.equipId('widowmaker')
     })
-    await page.waitForFunction(() => document.querySelectorAll('[data-btn]:not([hidden])').length >= 9, null, { timeout: 60_000 })
+    await page.waitForFunction(() => document.querySelectorAll('[data-btn]:not([hidden])').length >= 7, null, { timeout: 60_000 })
     const r = await page.evaluate(() => {
       type B = { n: string; l: number; r: number; t: number; b: number }
       const rect = (e: Element | null, n: string): B | null => {
@@ -131,10 +131,41 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
       const inScope = items.filter((a) => Math.hypot(Math.max(a.l, Math.min(cx, a.r)) - cx, Math.max(a.t, Math.min(cy, a.b)) - cy) < R).map((a) => a.n)
       return { overlaps, inScope, n: items.length }
     })
-    // Nine discs and the menu (plan item 44: Reload is a tap on the round count, not a disc).
-    expect(r.n).toBeGreaterThanOrEqual(10)
+    // Seven discs and the menu (plan item 44: Reload is a tap on the round count, Jump and Crouch are flicks).
+    expect(r.n).toBeGreaterThanOrEqual(8)
     expect(r.overlaps).toEqual([])
     expect(r.inScope).toEqual([])
+  })
+
+  test('plan item 44: Jump and Crouch are flicks on the move side, with no disc', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'touch layout only')
+    test.setTimeout(400_000)
+    await boot(page)
+    await page.evaluate(() => (window as unknown as { cathode: C & { progress: { unlocks: { features: string[] } } } }).cathode.progress.unlocks.features.push('crouch'))
+    expect(await page.locator('[data-btn="jump"], [data-btn="crouch"]').count()).toBe(0)
+    const tip = page.locator('.stick-tip')
+    await expect(tip).toHaveText(/up: jump.*down: crouch/i, { timeout: 30_000 })
+    await expect(tip).not.toHaveClass(/gone/)
+    // A quick upward stroke of the move thumb: the session sees a jump, and the tip goes.
+    const jumped = await page.evaluate(async () => {
+      const area = document.querySelector('canvas')!.parentElement!
+      const x = innerWidth * 0.15, y = innerHeight * 0.75
+      const fire = (type: string, ty: number) => {
+        const t = new Touch({ identifier: 7, target: area, clientX: x, clientY: ty })
+        area.dispatchEvent(new TouchEvent(type, { changedTouches: [t], touches: type === 'touchend' ? [] : [t], bubbles: true, cancelable: true }))
+      }
+      const c = (window as unknown as { cathode: { input: { touchTapped: Set<string> } } }).cathode
+      const seen: string[] = []
+      const add = c.input.touchTapped.add.bind(c.input.touchTapped)
+      c.input.touchTapped.add = (v: string) => (seen.push(v), add(v))
+      fire('touchstart', y)
+      fire('touchmove', y - 30)
+      fire('touchmove', y - 70)
+      fire('touchend', y - 70)
+      return seen
+    })
+    expect(jumped).toContain('jump')
+    await expect(tip).toHaveClass(/gone/)
   })
 
   test('plan item 44: Takedown shows only beside an unaware guard', async ({ page, hasTouch }) => {

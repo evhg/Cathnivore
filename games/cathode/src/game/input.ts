@@ -35,6 +35,16 @@ export interface Intent {
 }
 
 // Plan item 44: no Reload disc; on a phone the round count is the reload key (hud.onReload).
+/**
+ * Plan item 44: a short, quick stroke of the move thumb is a flick: up jumps, down crouches. Under 260 ms,
+ * at least 38 px, and mostly vertical, so walking (a held, steady push) never reads as one.
+ */
+export function flickOf(ox: number, oy: number, x: number, y: number, ms: number): "jump" | "crouch" | null {
+  const dx = x - ox, dy = y - oy;
+  if (ms > 260 || Math.abs(dy) < 38 || Math.abs(dy) < Math.abs(dx) * 1.4) return null;
+  return dy < 0 ? "jump" : "crouch";
+}
+
 const BUTTONS = ["fire", "aim", "jump", "crouch", "focus", "takedown", "cycle", "skill", "sheet"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
@@ -139,7 +149,8 @@ export class Input {
     this.knobEl = el("div", "stick-knob");
     const label = el("span", "stick-label");
     label.textContent = "Move";
-    this.stickEl.append(this.knobEl, label);
+    this.tipEl = el("span", "stick-tip");
+    this.stickEl.append(this.knobEl, label, this.tipEl);
     layer.append(this.stickEl);
     const look = el("div", "look-hint");
     look.textContent = "Drag to aim";
@@ -157,6 +168,8 @@ export class Input {
       sheet: "Cath",
     };
     for (const b of BUTTONS) {
+      // Plan item 44: Jump and Crouch are flicks on the move side (see onTouch), not discs.
+      if (b === "jump" || b === "crouch") continue;
       const btn = el("button", `tbtn tbtn-${b}`);
       btn.setAttribute("type", "button");
       btn.setAttribute("aria-label", labels[b]);
@@ -200,12 +213,15 @@ export class Input {
         } else if (t.clientX < innerWidth * 0.45 && this.stick.id < 0) {
           this.touched = true;
           this.stick = { x: 0, y: 0, id: t.identifier, ox: t.clientX, oy: t.clientY };
+          this.flick = { t: performance.now(), x: t.clientX, y: t.clientY };
           this.stickEl?.classList.add("on");
           this.stickEl?.style.setProperty("--sx", `${t.clientX}px`);
           this.stickEl?.style.setProperty("--sy", `${t.clientY}px`);
         } else if (this.lookTouch.id < 0) this.lookTouch = { id: t.identifier, x: t.clientX, y: t.clientY };
       } else if (e.type === "touchmove") {
         if (t.identifier === this.stick.id) {
+          this.flick.x = t.clientX;
+          this.flick.y = t.clientY;
           const r = 56;
           let dx = (t.clientX - this.stick.ox) / r;
           let dy = (t.clientY - this.stick.oy) / r;
@@ -228,6 +244,11 @@ export class Input {
         }
       } else {
         if (t.identifier === this.stick.id) {
+          const f = flickOf(this.stick.ox, this.stick.oy, this.flick.x, this.flick.y, performance.now() - this.flick.t);
+          if (f && (f === "jump" || this.crouchAllowed)) {
+            this.touchTapped.add(f);
+            this.tipEl?.classList.add("gone");
+          }
           this.stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
           this.stickEl?.classList.remove("on");
           this.stickEl?.style.removeProperty("--sx");
@@ -245,6 +266,9 @@ export class Input {
     }
   };
   private btnTouches = new Map<number, TouchButton>();
+  private flick = { t: 0, x: 0, y: 0 };
+  private tipEl: HTMLElement | null = null;
+  private crouchAllowed = false;
   /** Shows only the touch buttons the game has introduced so far (one thing at a time). */
   allow(features: readonly string[], weapons: number): void {
     const need: Record<string, string | null> = {
@@ -262,6 +286,8 @@ export class Input {
     const key = features.join(",") + "|" + weapons;
     if (key === this.allowedKey) return;
     this.allowedKey = key;
+    this.crouchAllowed = features.includes("crouch");
+    if (this.tipEl) this.tipEl.textContent = this.crouchAllowed ? "Flick up: jump · down: crouch" : "Flick up: jump";
     for (const b of this.touchLayer.querySelectorAll<HTMLElement>("[data-btn]")) {
       const f = need[b.dataset.btn!];
       b.hidden = !!f && !features.includes(f) && !(b.dataset.btn === "cycle" && weapons > 1);

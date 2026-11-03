@@ -291,7 +291,7 @@ const KEYS = {
   move: ["WASD to move, mouse to look.", "Left thumb: move. Right thumb: look."],
   takedown: [
     "Follow the marker. C to crouch, creep up right behind him, then F for a silent takedown.",
-    "Follow the marker. Tap Crouch, creep up right behind him, then tap Takedown.",
+    "Follow the marker. Flick the left thumb down to crouch, creep up right behind him, then tap Takedown.",
   ],
   fire: ["Left click to fire, right click to aim, R to reload.", "Fire to shoot, Aim to aim. Cath fires on her own at anyone shooting at her."],
   focus: ["Right click to aim. Hold X to slow time and steady your breath.", "Aim, then hold Focus to slow time and steady your breath."],

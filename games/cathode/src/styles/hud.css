@@ -1616,6 +1616,21 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   transform: translateX(-50%);
 }
 .stick.on .stick-label { opacity: 0; }
+/* Plan item 44: Jump and Crouch are flicks of the move thumb. The tip shows under "Move" until the first flick. */
+.stick-tip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  white-space: nowrap;
+  font: 700 var(--fs-1)/1 var(--font-ui);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgb(var(--ink-rgb) / .62);
+  text-shadow: var(--hud-shadow);
+  font-stretch: var(--wdth-label);
+  transition: opacity 600ms var(--ease-out);
+}
+.stick-tip.gone, .stick.on .stick-tip { opacity: 0; }
 /* Up right of centre, clear of the gun's slide at rest (C4 review), on a plate like the other HUD clusters with a
    cyan tick (C5 review: bare text over a lamp cone and lit windows lost its last letters and read as web text). */
 .look-hint {
@@ -1683,22 +1698,22 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   background: var(--blood-hot);
 }
 .tbtn-fire:active { background-color: rgb(var(--ink-rgb) / .26); }
-.tbtn-aim { right: calc(128px + var(--safe-r)); bottom: 40px; }
-.tbtn-jump { right: calc(28px + var(--safe-r)); bottom: 16px; }
-.tbtn-crouch { right: calc(208px + var(--safe-r)); bottom: 16px; }
-.tbtn-focus { right: calc(36px + var(--safe-r)); bottom: 196px; }
-.tbtn-takedown { right: calc(208px + var(--safe-r)); bottom: 100px; }
-.tbtn-skill { right: calc(208px + var(--safe-r)); bottom: 184px; }
-.tbtn-cycle,
+/* Plan item 44: one cluster round Fire (centre right 72, bottom 140): Aim, Takedown, Skill and Focus on an arc
+   118 px out from 205 to 90 degrees, so the thumb rolls off Fire on to each, and Swap under Fire. No two
+   boxes touch. Jump and Crouch are flicks on the move side, so they have no disc. Cath stays a key up top. */
+.tbtn-aim { right: calc(147px + var(--safe-r)); bottom: 58px; }
+.tbtn-takedown { right: calc(155px + var(--safe-r)); bottom: 135px; }
+.tbtn-skill { right: calc(113px + var(--safe-r)); bottom: 201px; }
+.tbtn-focus { right: calc(40px + var(--safe-r)); bottom: 226px; }
+.tbtn-cycle { right: calc(40px + var(--safe-r)); bottom: 16px; }
 .tbtn-sheet {
   top: calc(12px + var(--safe-t));
+  right: calc(64px + var(--safe-r));
   width: 56px;
   height: 44px;
   border-radius: 22px;
   font-size: var(--fs-1);
 }
-.tbtn-cycle { right: calc(64px + var(--safe-r)); }
-.tbtn-sheet { right: calc(128px + var(--safe-r)); }
 .tbtn-menu {
   position: absolute;
   top: max(10px, var(--safe-t));
@@ -1718,12 +1733,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   pointer-events: auto;
 }
 .tbtn-menu-bar { display: block; width: 3px; height: 12px; background: rgb(var(--ink-rgb) / .74); }
-/* Plan item 40: on a phone held sideways the inner column (Skill, Takedown, Crouch) sat inside the scope's
-   circle and Skill sat on "Drag to aim". The columns close up so the inner one clears a scope of 40vh at
-   844x390, and the hint moves up under the Cath and Swap keys, over the outer column. */
+/* Plan item 40: on a phone held sideways "Drag to aim" moves up under the Cath key, clear of the cluster
+   (plan item 44's arc already keeps every disc outside a scope of 40vh at 844x390). */
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
-  .tbtn-aim { right: calc(118px + var(--safe-r)); }
-  .tbtn-crouch, .tbtn-takedown, .tbtn-skill { right: calc(188px + var(--safe-r)); }
   .look-hint { right: calc(20px + var(--safe-r)); top: calc(66px + var(--safe-t)); }
 }
 

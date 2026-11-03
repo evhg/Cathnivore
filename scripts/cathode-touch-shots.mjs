@@ -34,6 +34,11 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
   })
   console.log(n, 'rest', JSON.stringify(await measure()))
   await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-rest.png`, timeout: 240000 })
+  // Plan item 44: the whole cluster up at once (every moment's button forced on), checked for overlaps.
+  await p.evaluate(() => { window.__idle = [...document.querySelectorAll('.tbtn.idle')]; window.__idle.forEach((e) => e.classList.remove('idle')); window.cathode.input.context = () => {} })
+  await p.waitForTimeout(800)
+  console.log(n, 'all', JSON.stringify(await measure()))
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-all.png`, timeout: 240000 })
   await p.evaluate(() => window.cathode.input.touchHeld.add('aim'))
   await p.waitForTimeout(4000)
   console.log(n, 'aim', JSON.stringify(await measure()))
