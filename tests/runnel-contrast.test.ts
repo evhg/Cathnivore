@@ -46,3 +46,18 @@ describe('Runnel channel contrast (plan item 30)', () => {
     })
   }
 })
+
+// Plan item 61: the ditch's halves. Whichever way the light falls, one slope of every dry ditch stands 3:1 or more
+// off its ground, and the water stands off the bed it runs in.
+describe('Runnel ditch contrast (plan item 61)', () => {
+  for (const [name, p] of Object.entries(palettes)) {
+    it(`${name}: a slope of every ditch reads on every ground, and the water on its bed`, () => {
+      for (const ground of ['--dry', '--dry-meadow', '--dry-field']) {
+        const best = Math.max(contrast(p['--bank-sun']!, p[ground]!), contrast(p['--bank-shade']!, p[ground]!))
+        expect(best, ground).toBeGreaterThanOrEqual(3)
+      }
+      expect(Math.max(contrast(p['--bank-sun']!, p['--wet']!), contrast(p['--bank-shade']!, p['--wet']!))).toBeGreaterThanOrEqual(3)
+      expect(contrast(p['--water']!, p['--groove-bed-wet']!)).toBeGreaterThanOrEqual(2)
+    })
+  }
+})

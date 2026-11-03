@@ -14,6 +14,20 @@
   --wet-edge: #7fae52;
   --groove: #96693b;
   --groove-wet: #7f5c35;
+  /* Plan item 61: a ditch's dark bed, its sunlit and shaded banks, pebbles, a stone basin and each ground's lip. */
+  --groove-bed: #4e3520;
+  --groove-bed-wet: #3a2a1a;
+  --bank-sun: #b98a55;
+  --bank-shade: #6e4b29;
+  --pebble: #cfc4b0;
+  --basin: #a89f90;
+  --lip-fallow: #a8844f;
+  --lip-meadow: #7f9450;
+  --lip-field: #a87a3c;
+  --lip-wet: #5f8f3a;
+  --stake: #8a5a2e;
+  --stake-hi: #b9814a;
+  --twine: #e6d3a6;
   --water: #3b8db0;
   --water-hi: #bfeaf4;
   --tuft-dry: #c2a170;
@@ -128,6 +142,19 @@
     /* Plan item 30: at night the channels are pale sand cut into dark soil (3:1 or more, tests/runnel-contrast). */
     --groove: #d0ab7c;
     --groove-wet: #c8a272;
+    --groove-bed: #8c6a44;
+    --groove-bed-wet: #6f5236;
+    --bank-sun: #ead0a2;
+    --bank-shade: #9c7a52;
+    --pebble: #e8dcc4;
+    --basin: #b8ae9c;
+    --lip-fallow: #8a6c4c;
+    --lip-meadow: #66704a;
+    --lip-field: #86663e;
+    --lip-wet: #6f9a50;
+    --stake: #c08a52;
+    --stake-hi: #e2b27a;
+    --twine: #f0e2bc;
     --water: #4fb3d9;
     --water-hi: #d4f5ff;
     --tuft-dry: #7d6448;

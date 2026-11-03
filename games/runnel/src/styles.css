@@ -507,6 +507,69 @@ button {
   transition: stroke 380ms ease var(--delay, 0ms);
 }
 
+/* Plan item 61: the ditch, seen from above as a V: the slope towards the light in shade, the far slope lit
+   (board.ts toggles .sun on each half as the tile turns), a dark bed down the middle, wetter-dark when the water
+   runs, and a thin cut edge in the ground's own colour (green once watered). Butt ends meet the next tile's. */
+.groove {
+  stroke-linecap: butt;
+}
+.groove-lip {
+  stroke: var(--lip-fallow);
+  stroke-width: 22;
+  transition: stroke 380ms ease var(--delay, 0ms);
+}
+.ground-meadow .groove-lip,
+.ground-meadow .hub-lip {
+  stroke: var(--lip-meadow);
+  fill: var(--lip-meadow);
+}
+.ground-field .groove-lip,
+.ground-field .hub-lip {
+  stroke: var(--lip-field);
+  fill: var(--lip-field);
+}
+.hub-lip {
+  fill: var(--lip-fallow);
+  transition: fill 380ms ease var(--delay, 0ms);
+}
+.wet .groove-lip {
+  stroke: var(--lip-wet);
+}
+.wet .hub-lip {
+  fill: var(--lip-wet);
+}
+.bank {
+  stroke: var(--bank-shade);
+  stroke-width: 9.2;
+}
+.bank.sun {
+  stroke: var(--bank-sun);
+}
+.groove-bed {
+  stroke: var(--groove-bed);
+  stroke-width: 5.5;
+  transition: stroke 380ms ease var(--delay, 0ms);
+}
+.wet .groove-bed {
+  stroke: var(--groove-bed-wet);
+}
+.pebble {
+  fill: var(--pebble);
+  stroke: var(--groove-bed);
+  stroke-width: 0.5;
+}
+.hub-basin {
+  fill: var(--bank-shade);
+  stroke: var(--basin);
+  stroke-width: 3;
+}
+.hub-bed {
+  fill: var(--groove-bed);
+  transition: fill 380ms ease var(--delay, 0ms);
+}
+.wet .hub-bed {
+  fill: var(--groove-bed-wet);
+}
 .hub-groove {
   fill: var(--groove);
   transition: fill 380ms ease var(--delay, 0ms);
@@ -522,9 +585,11 @@ button {
 
 .water {
   stroke: var(--water);
-  stroke-width: 10;
+  stroke-width: 7.5;
   stroke-dasharray: 1 1;
   stroke-dashoffset: 1;
+  /* Cut off, the water drains back out of the ditch. */
+  transition: stroke-dashoffset 220ms ease-in;
 }
 
 .water.in {
@@ -578,6 +643,10 @@ button {
 
 .instant .tile,
 .instant .groove,
+.instant .groove-lip,
+.instant .hub-lip,
+.instant .groove-bed,
+.instant .hub-bed,
 .instant .hub-groove,
 .instant .water,
 .instant .hub-water,
@@ -873,9 +942,6 @@ button {
 /* pins and spills */
 
 .pin {
-  fill: var(--clay);
-  stroke: var(--wet-edge);
-  stroke-width: 1.5;
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
@@ -888,9 +954,18 @@ button {
   transform: scale(1);
 }
 
-.locked .tile {
-  stroke: var(--soil);
-  stroke-width: 3;
+/* Plan item 61: a pinned tile is staked, not ringed. */
+.pin-stake {
+  fill: var(--stake);
+  stroke: var(--stake-hi);
+  stroke-width: 0.8;
+}
+.pin-twine {
+  fill: var(--twine);
+}
+.pin-shadow {
+  fill: var(--groove-bed);
+  opacity: 0.35;
 }
 
 .puddle {

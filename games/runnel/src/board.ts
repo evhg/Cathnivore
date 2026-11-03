@@ -2,17 +2,15 @@
 // Policy forbids inline style attributes, so every dynamic style goes through the CSSOM
 // (`element.style.setProperty`), never through markup.
 
-import { boardSky } from './sky'
+import { boardSky, type TimeOfDay } from './sky'
 import { furrowAngle, groundFor } from './ground'
+import { arrivalMs, bankSunlit } from './water'
 import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
 const APOTHEM = (S * Math.sqrt(3)) / 2
 const TURN_MS = 150
-/** Time for water to cross one tile: in by one spoke, through the hub, out by the others. The next tile
- *  starts exactly when this one finishes, so a river visibly runs tile by tile from the spring. */
-const CASCADE_MS = 110
 
 type Crop = 'wheat' | 'cabbage' | 'carrot' | 'sunflower' | 'pumpkin'
 const CROPS: Crop[] = ['wheat', 'cabbage', 'carrot', 'sunflower']
@@ -41,6 +39,10 @@ interface CellView {
   piece: SVGGElement | null
   water: SVGLineElement[] // indexed by solved direction; only real openings are present
   spokeDirs: number[]
+  /** Plan item 61: each ditch's two banks, lit or shaded by the sky's light as the tile turns. */
+  banks: Array<{ line: SVGLineElement; dir: number; side: 1 | -1 }>
+  /** The pending timer that marks `data-wet` when the water actually arrives. */
+  wetTimer?: number
   angle: number // accumulated rotation in degrees, so animations always turn the short way
 }
 
@@ -213,7 +215,7 @@ export class Board {
     if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)
     else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
 
-    const view: CellView = { root, piece: null, water: [], spokeDirs: [], angle: cell.rot * 60 }
+    const view: CellView = { root, piece: null, water: [], spokeDirs: [], banks: [], angle: cell.rot * 60 }
 
     if (cell.kind === 'stone') {
       this.drawStones(root, index)
@@ -231,13 +233,33 @@ export class Board {
     piece.style.setProperty('transform', `rotate(${view.angle}deg)`)
     view.piece = piece
 
+    // Plan item 61: each opening a ditch cut into the ground: a grass or soil lip, banks lit and shaded by the
+    // day's light, a dark bed with pebbles, and a stone basin at the hub.
+    const lips = el('g', { class: 'lips' }, piece)
     const grooves = el('g', { class: 'grooves' }, piece)
     const waters = el('g', { class: 'waters' }, piece)
     const shimmer = el('g', { class: 'shimmers' }, piece)
+    const seed = hashString(`${this.puzzle.seed}:${cell.q},${cell.r}`)
     for (let d = 0; d < 6; d++) {
       if (!(cell.solved & (1 << d))) continue
       const end = edgePoint(d, APOTHEM + 1.5)
+      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-lip' }, lips)
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove' }, grooves)
+      const a = (Math.PI / 180) * 60 * d
+      const nx = -Math.sin(a)
+      const ny = Math.cos(a)
+      for (const side of [1, -1] as const) {
+        const o = 4.6 * side
+        const line = el('line', { x1: nx * o, y1: ny * o, x2: end.x + nx * o, y2: end.y + ny * o, class: 'bank' }, grooves)
+        view.banks.push({ line, dir: d, side })
+      }
+      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-bed' }, grooves)
+      for (let k = 0; k < 2; k++) {
+        const h = (seed >>> (d * 4 + k * 2)) & 0xff
+        const t = 0.35 + (h / 255) * 0.5
+        const side = k ? 1 : -1
+        el('circle', { cx: end.x * t + nx * 5.6 * side, cy: end.y * t + ny * 5.6 * side, r: 1.2 + (h % 3) * 0.45, class: 'pebble' }, grooves)
+      }
       const water = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'water' }, waters)
       water.dataset.dir = String(d)
       view.water[d] = water
@@ -245,7 +267,10 @@ export class Board {
       const sh = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'shimmer' }, shimmer)
       sh.dataset.dir = String(d)
     }
+    el('circle', { r: S * 0.2, class: 'hub-lip' }, lips)
     el('circle', { r: S * 0.17, class: 'hub-groove' }, grooves)
+    el('circle', { r: S * 0.155, class: 'hub-basin' }, grooves)
+    el('circle', { r: S * 0.1, class: 'hub-bed' }, grooves)
     el('circle', { r: S * 0.1, class: 'hub-water' }, waters)
 
     if (cell.bridge) this.drawBridge(piece)
@@ -253,7 +278,11 @@ export class Board {
     else this.drawBanks(root, cell, index)
     if (cell.reservoir) this.drawReservoir(root)
     else if (cell.kind === 'field') this.drawField(root, index)
-    el('circle', { class: 'pin', r: 5.5, cx: 0, cy: -S * 0.62 }, root)
+    // Plan item 61: a pinned tile has a wooden stake driven in by its top edge, a twist of twine round it.
+    const pin = el('g', { class: 'pin', transform: `translate(0 ${(-S * 0.6).toFixed(2)})` }, root)
+    el('ellipse', { cx: 1.5, cy: 7.5, rx: 5, ry: 1.8, class: 'pin-shadow' }, pin)
+    el('path', { d: 'M -2.6 -8 L 2.6 -8 L 2.6 5 L 0 8.5 L -2.6 5 Z', class: 'pin-stake' }, pin)
+    el('rect', { x: -3.2, y: -4.5, width: 6.4, height: 2.4, rx: 1, class: 'pin-twine' }, pin)
     return view
   }
 
@@ -546,14 +575,22 @@ export class Board {
       root.classList.toggle('locked', cell.locked)
       root.classList.toggle('fixed', !!cell.fixed)
       if (wet && !wasWet) {
-        const delay = initial || this.reducedMotion ? 0 : settle + (flow.depth.get(i)! - minNewDepth) * CASCADE_MS
+        const delay = initial || this.reducedMotion ? 0 : arrivalMs(flow.depth.get(i)!, minNewDepth, settle)
         root.style.setProperty('--delay', `${delay}ms`)
         root.classList.add('wet')
         root.classList.toggle('instant', initial)
+        // `data-wet` marks when the water is really there (tests, and the CSS for the soaked soil).
+        clearTimeout(view.wetTimer)
+        if (delay) view.wetTimer = window.setTimeout(() => (root.dataset.wet = '1'), delay + 70)
+        else root.dataset.wet = '1'
       } else if (!wet && wasWet) {
         root.style.setProperty('--delay', '0ms')
         root.classList.remove('wet')
+        clearTimeout(view.wetTimer)
+        delete root.dataset.wet
       }
+      const time = this.time()
+      for (const b of view.banks) b.line.classList.toggle('sun', bankSunlit((b.dir + cell.rot) * 60, b.side, time))
       if (wet) this.setInflow(view, cell, flow.inflow.get(i))
       root.classList.toggle('leaking', flow.leaks.has(i))
       this.describe(i, flow)
@@ -591,6 +628,12 @@ export class Board {
     const name = cell.reservoir ? 'Reservoir' : cell.bridge ? 'Bridge' : cell.kind === 'spring' ? 'Spring' : cell.kind === 'field' ? 'Field' : 'Channel'
     const state = flow.wet.has(index) ? (flow.leaks.has(index) ? 'watered, spilling' : 'watered') : 'dry'
     view.root.setAttribute('aria-label', `${name}, ${state}${cell.reservoir ? '' : cell.fixed ? ', fixed sluice' : cell.locked ? ', pinned' : ''}`)
+  }
+
+  private skyTime: TimeOfDay | null = null
+  /** The board's time of day (its light), read once. */
+  private time(): TimeOfDay {
+    return (this.skyTime ??= boardSky(this.puzzle.seed).time)
   }
 
   get focusedIndex(): number {
