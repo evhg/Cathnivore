@@ -758,7 +758,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a win, a loss and a campaign win at P, D and L.
 - **Size:** 2
 
-## 49. [ ] Cathnivore: the campaign map as painted country
+## 49. [ ] Cathnivore: the campaign map as painted country *(lane A, in progress)*
 - **Why:** the map of Marrow is flat orange and beige hexes in a dotted blob. It has none of the board's terrain, and at D it sits in a 720 px column with about 360 px of empty cream each side (critique, cath-campaign-D/P).
 - **Build:**
   - Each hex is painted with its region type's ground from the board (the same kit), with one landmark per region: the docks at Shingle Bay, the mill at Rivermead, the market cross at Kingsmarket, and so on.
