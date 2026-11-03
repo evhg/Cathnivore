@@ -23,3 +23,15 @@ test('the end screen shows Cath, the headline, the chart and Play again without 
   const won = await page.locator('.end-screen.is-win').count()
   await expect(page.locator('.end-screen-cath svg')).toHaveAttribute('class', new RegExp(won ? 'cheer' : 'crossed'))
 })
+
+test('a tap skips the end screen sequence', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto('/?e2eAutoplay=1')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.end-screen').waitFor({ timeout: 60_000 })
+  await page.locator('.end-screen h1').click()
+  await expect(page.locator('.end-screen')).toHaveClass(/end-skip/)
+  // The grade, stamped last (2.1 s in), is there at once.
+  await expect.poll(() => page.locator('.end-grade').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 600 }).toBeGreaterThan(0.95)
+})

@@ -32,7 +32,7 @@ test('reloading mid-chapter resumes into the campaign chapter, not a plain Quick
   // complete below.
   await expect(page.locator('.game, .end-screen')).toBeVisible({ timeout: 10_000 })
   await expect(page.locator('.end-screen')).toBeVisible({ timeout: 30_000 })
-  const won = (await page.locator('.end-screen').textContent())?.includes('You liberated Marrow.') ?? false
+  const won = (await page.locator('.end-screen.is-win').count()) > 0
   await page.getByRole('button', { name: 'Continue' }).click()
 
   if (won) {

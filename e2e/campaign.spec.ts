@@ -27,7 +27,7 @@ for (const title of ['Fresh Meat', 'Word of Mouth', 'Growing Season', 'The Plan'
     await page.getByRole('button', { name: 'Continue' }).click()
 
     await expect(page.locator('.end-screen')).toBeVisible({ timeout: 30_000 })
-    const won = (await page.locator('.end-screen').textContent())?.includes('You liberated Marrow.') ?? false
+    const won = (await page.locator('.end-screen.is-win').count()) > 0
     await page.getByRole('button', { name: 'Continue' }).click()
 
     // A win continues into the closing scene; a loss goes to the SPEC 8.1 retry screen (Retry/Play on

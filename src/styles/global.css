@@ -2804,3 +2804,18 @@ html.no-animations .end-play, html.no-animations .end-grade { animation: none; }
   .end-screen-map { order: 10; }
   .end-actions { order: 11; }
 }
+/* Plan item 48 at L (a phone held sideways): a spread. The story column (Cath, stamp, headline, verdict) on the
+   left, the data (chart, stats, board) on the right, Cath short enough that the moment fits the first screen. */
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 601px) {
+  .end-screen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; align-items: start; padding: 10px 20px 0; }
+  .end-col { max-width: none; gap: 6px; }
+  .end-screen-hero, .end-screen-cath svg { height: clamp(120px, 34vh, 150px); }
+  .end-stamp { margin-top: -1.6rem; font-size: 1.2rem; }
+  .end-screen h1 { font-size: 1.5rem; }
+  .end-chart svg { max-height: 150px; }
+  .end-actions { grid-column: 1 / -1; max-width: 720px; justify-self: center; flex-wrap: nowrap; }
+  .end-actions .primary { flex: 0 1 240px; }
+}
+/* Plan item 48: a tap skips the end screen's sequence. */
+.end-screen.end-skip *, .end-screen.end-skip *::before { animation-delay: 0s !important; animation-duration: 0.01s !important; }
+.end-screen.end-skip .end-screen-hero.is-win::before { animation: none !important; }

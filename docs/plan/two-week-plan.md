@@ -745,7 +745,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of each fix before and after.
 - **Size:** 2
 
-## 48. [ ] Cathnivore: an end screen that is a moment, not a report *(lane B, in progress)*
+## 48. [x] Cathnivore: an end screen that is a moment, not a report *(done 2026-11-03, lane B, 4abfb95..HEAD: Cath at half length in the result's pose (cheer / crossed) over the rays, a big verdict stamp, the chart drawing in, the play of the game flipping in, the grade stamped last; a chapter win names the regions it freed; P one column with the moment and chart above the sticky bar, L a spread, D two columns; a tap skips, reduced motion has no motion; a campaign win still hands over to item 35's map moment via the closing scene; `e2e/end-moment.spec.ts` at P and D (the autoplay's win or loss); shots of win, loss and chapter win at P, D, L, light and dark)*
 - **Why:** a win or a loss ends on a small stamp, a chart and four stat boxes, with the lower-left third empty at D (VISION pillar 4, staged moments; the critique's second-biggest gap). Hedgerow's win payout is item 46; Cathnivore's end has no staging.
 - **Build:**
   - The result is staged on the market table: Cath at full figure in the bible pose for the result (cheer on a win, crossed arms on a loss) beside a large headline stamp.

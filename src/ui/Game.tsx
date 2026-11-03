@@ -9,6 +9,7 @@ import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS } from '../content/map'
+import { CHAPTER_HOMES } from '../content/campaignMap'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
@@ -402,6 +403,19 @@ function uniformGroupCost(
   return uniform ? first : undefined
 }
 
+/**
+ * Plan item 48: a win's headline. A Quick Game frees all of Marrow; a campaign chapter frees its own home regions,
+ * so it names them ("Highmoor and Brindle Hills are free.") rather than claiming the whole Republic.
+ */
+function winHeadline(chapterId: string | undefined): string {
+  // The last chapter, Kingsmarket, is the one that frees the whole Republic.
+  const homes = chapterId && chapterId !== 'kingsmarket' ? CHAPTER_HOMES[chapterId] : undefined
+  if (!homes?.length) return 'You liberated Marrow.'
+  const names = homes.map((id) => REGIONS[id].name)
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]
+  return `${list} ${names.length > 1 ? 'are' : 'is'} free.`
+}
+
 export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
@@ -758,7 +772,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const won = state.result.won
     const summary = endSummary(state, seed)
     return (
-      <main className={`end-screen ${won ? 'is-win' : 'is-loss'}`} data-seed={seed}>
+      // Plan item 48: a tap on the screen (not on a button) skips the sequence: everything lands at once.
+      <main
+        className={`end-screen ${won ? 'is-win' : 'is-loss'}`}
+        data-seed={seed}
+        onPointerDown={(ev) => {
+          if (!(ev.target as HTMLElement).closest('button, a')) ev.currentTarget.classList.add('end-skip')
+        }}
+      >
         <section className="end-col end-col-story">
           <div className={`end-screen-hero ${won ? 'is-win' : 'is-loss'}`}>
             {/* Plan item 48: the result staged on the market table: Cath at half length in the bible pose for it,
@@ -778,7 +799,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           <div className={`end-stamp ${won ? 'is-win' : 'is-loss'}`} aria-hidden="true">
             {won ? 'Liberated' : 'Repossessed'}
           </div>
-          <h1>{won ? 'You liberated Marrow.' : 'Not this time.'}</h1>
+          <h1>{won ? winHeadline(chapterId) : 'Not this time.'}</h1>
           {dailyStrip && (
             <p className="end-daily" data-daily-streak={dailyStrip.streak}>
               Daily Market #{dailyStrip.number} · {dailyStrip.layoutName}

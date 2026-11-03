@@ -14,12 +14,22 @@ for (const scheme of (process.env.SCHEMES ?? 'light').split(','))
     const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: touch, colorScheme: scheme })
     const p = await ctx.newPage()
     await p.goto(`${base}?e2eAutoplay=1`)
-    await p.getByText('Quick Game').click()
-    await p.getByRole('button', { name: 'Start' }).click()
+    if (process.env.CHAPTER) {
+      // CHAPTER="Fresh Meat": a campaign chapter's end screen instead of a Quick Game's.
+      await p.getByRole('button', { name: 'Campaign' }).click()
+      await p.getByRole('button', { name: new RegExp(`^${process.env.CHAPTER}`) }).click()
+      const solo = p.getByRole('button', { name: /^Solo/ })
+      if (await solo.isVisible().catch(() => false)) await solo.click()
+      await p.locator('.scene').waitFor({ timeout: 30_000 })
+      await p.getByRole('button', { name: 'Continue' }).click()
+    } else {
+      await p.getByText('Quick Game').click()
+      await p.getByRole('button', { name: 'Start' }).click()
+    }
     await p.locator('.end-screen').waitFor({ timeout: 60_000 })
     await p.waitForTimeout(Number(process.env.WAIT ?? 3500))
     const won = await p.locator('.end-screen.is-win').count()
-    await p.screenshot({ path: `${out}/${tag}-${won ? 'win' : 'loss'}-${scheme}-${n}.png` })
+    await p.screenshot({ path: `${out}/${tag}-${process.env.CHAPTER ? 'chapter-' : ''}${won ? 'win' : 'loss'}-${scheme}-${n}.png` })
     console.log(tag, scheme, n, won ? 'win' : 'loss')
     await ctx.close()
   }
