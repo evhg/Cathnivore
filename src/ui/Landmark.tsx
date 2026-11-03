@@ -23,7 +23,10 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
           <path d="M-4 -8 L3 -2 H-11 Z" fill="var(--clay)" />
           <rect x={-7} y={2} width={4} height={8} fill="var(--soil)" />
           <circle cx={6} cy={4} r={6.5} fill="var(--region-crop)" />
-          <path d="M6 -2.5 V10.5 M-0.5 4 H12.5 M1.4 -0.6 L10.6 8.6 M10.6 -0.6 L1.4 8.6" strokeWidth={0.9} />
+          {/* Plan item 76: the sails turn slowly on the board (styles: .amb-sails). */}
+          <g className="amb-sails">
+            <path d="M6 -2.5 V10.5 M-0.5 4 H12.5 M1.4 -0.6 L10.6 8.6 M10.6 -0.6 L1.4 8.6" strokeWidth={0.9} />
+          </g>
         </g>
       )
     case 'docks':
@@ -32,8 +35,10 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
           <path d="M-12 1 H6 V4 H-12 Z" fill="var(--soil)" />
           <path d="M-9 4 V10 M-3 4 V10 M3 4 V10" />
           <path d="M-12 10 Q-6 8 0 10 T12 10" fill="none" stroke="var(--sea)" />
-          <path d="M2 -1 H12 L9.5 -5 H4.5 Z" fill="var(--clay)" />
-          <path d="M7 -5 V-12 L11 -6 Z" fill="var(--paper)" />
+          <g className="amb-bob">
+            <path d="M2 -1 H12 L9.5 -5 H4.5 Z" fill="var(--clay)" />
+            <path d="M7 -5 V-12 L11 -6 Z" fill="var(--paper)" />
+          </g>
         </g>
       )
     case 'lighthouse':
@@ -42,7 +47,7 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
           <path d="M-12 11 Q-4 6 4 9 T12 11 Z" fill="var(--soil)" opacity={0.5} />
           <path d="M-4 9 L-2.6 -6 H2.6 L4 9 Z" fill="var(--paper)" />
           <path d="M-3.6 3 H3.6 M-3 -2 H3" stroke="var(--clay)" strokeWidth={2} />
-          <rect x={-3} y={-10} width={6} height={4} fill="var(--wheat)" />
+          <rect className="amb-lamp" x={-3} y={-10} width={6} height={4} fill="var(--wheat)" />
           <path d="M-4 -10 L0 -13 L4 -10 Z" fill="var(--clay)" />
         </g>
       )
@@ -79,7 +84,7 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
         <g {...INK}>
           <path d="M-12 11 L-7 -2 L-1 -6 L4 0 L12 11 Z" fill="var(--paper-2, var(--paper))" />
           <path d="M-12 11 Q-4 8 4 10 T12 11" fill="none" stroke="var(--sea)" />
-          <path d="M-6 -9 q2 -2 4 0 q2 -2 4 0 M3 -12 q1.6 -1.6 3.2 0 q1.6 -1.6 3.2 0" fill="none" strokeWidth={1} />
+          <path className="amb-glide" d="M-6 -9 q2 -2 4 0 q2 -2 4 0 M3 -12 q1.6 -1.6 3.2 0 q1.6 -1.6 3.2 0" fill="none" strokeWidth={1} />
         </g>
       )
     case 'fern':

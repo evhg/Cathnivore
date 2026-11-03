@@ -79,12 +79,21 @@ const ART: Record<GroundKind, ReactElement> = {
   gull: <path d="M-5,1 q2.5,-3 5,0 q2.5,-3 5,0" fill="none" {...ink} strokeOpacity={0.6} />,
 }
 
+/** Plan item 76: the ground's quiet ambient motion: gulls glide, reeds and bunting sway (styles: .amb-*). */
+const AMBIENT: Partial<Record<GroundKind, string>> = { gull: 'amb-glide', reeds: 'amb-sway', bunting: 'amb-sway' }
+
 export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[] }) {
   return (
     <g className="region-ground" pointerEvents="none" aria-hidden="true" opacity={0.75} data-marks={marks.length}>
       {marks.map((m, i) => (
         <g key={i} data-kind={m.kind} transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) rotate(${m.r}) scale(${m.s})`}>
-          {ART[m.kind]}
+          {AMBIENT[m.kind] ? (
+            <g className={AMBIENT[m.kind]} style={{ animationDelay: `${-((i * 1.7) % 6).toFixed(1)}s` }}>
+              {ART[m.kind]}
+            </g>
+          ) : (
+            ART[m.kind]
+          )}
         </g>
       ))}
     </g>

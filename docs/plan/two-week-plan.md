@@ -1140,7 +1140,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: events map to expressions; e2e at P and D: on the title Cath's box is inside the viewport and meets the table's box, no blank band over 80 px; Setup Cath at least 200 px tall at D; shots of title, Setup and game at P and D, light and dark.
 - **Size:** 2
 
-## 76. [ ] Cathnivore: a board that fills its frame and lives *(lane A, in progress)*
+## 76. [x] Cathnivore: a board that fills its frame and lives *(done 2026-11-03, lane A, 9c188d1..HEAD: each region's own ground (`regionGround.ts`, unit-tested), raised tiles kept from item 20, ambient motion (mill sails, docks boat, lighthouse lamp, gulls, reeds, bunting) parked under reduced motion, `e2e/board-frame.spec.ts` at five sizes; shots `e2e/screenshots/a76` rounds 1 and 6, P and D, light and dark)*
 - **Why:** `cath-game-D`/`-P` (plan1103f): the regions are pale washes with dashed borders and the same two or three small icons; at D the lower hexes (Oakvale, Shingle Bay) reportedly run into the frame's bottom edge (y about 880).
 - **Build:**
   - Fit the board to its frame at every size so no hex is clipped.

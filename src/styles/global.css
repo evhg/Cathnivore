@@ -3391,3 +3391,22 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup-cath-stand .cath-art { width: 112px; }
   .setup-cath-says { padding: 4px 8px; font-size: var(--fs-label); }
 }
+
+/* Plan item 76: the board lives quietly: the mill's sails turn, the boat at the docks bobs, the lighthouse lamp
+   breathes, gulls glide, reeds and bunting sway. Board only (the campaign map stays still); parked under reduced
+   motion and the no-animations setting. */
+.board-landmark .amb-sails { transform-box: fill-box; transform-origin: 50% 50%; animation: amb-turn 14s linear infinite; }
+.board-landmark .amb-bob { animation: amb-bob 3.6s ease-in-out infinite; }
+.board-landmark .amb-lamp { animation: amb-lamp 4s ease-in-out infinite; }
+.board-landmark .amb-glide,
+.region-ground .amb-glide { animation: amb-glide 7s ease-in-out infinite; }
+.region-ground .amb-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: amb-sway 4.8s ease-in-out infinite; }
+@keyframes amb-turn { to { transform: rotate(360deg); } }
+@keyframes amb-bob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(0.9px) rotate(-2deg); } }
+@keyframes amb-lamp { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes amb-glide { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(2.5px, -1.2px); } }
+@keyframes amb-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .board-landmark [class^='amb-'], .region-ground [class^='amb-'] { animation: none; }
+}
+html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-ground [class^='amb-'] { animation: none; }
