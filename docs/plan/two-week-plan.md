@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-03T00:22:08Z
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -720,6 +718,75 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - e2e at P, D and L after a 3-star win: the stars, rosettes, Seed Bank delta and Next card are all in view without scrolling.
   - A level-up pick persists to the save.
   - Shots of a win, a level-up win and a loss at P, D, L and dark.
+- **Size:** 2
+
+## 47. [ ] The bugs from the 2026-11-03 critique, fixed as one batch
+- **Why:** a shot-by-shot critique at P and D (2026-11-03, lane B planning) found these. Each one is small, but together they make the games look unfinished.
+- **Build:**
+  - **Hedgerow:**
+    - map at P: the "Beyond the hedge" body is cut off by the bottom nav, and the nav's fifth button ("Normal") runs past the right edge;
+    - title: a "Cath's Week" chip names a Runnel goal on the Hedgerow screen (show this game's goal, or the week in full);
+    - in play at P: the round tab says ROUND 7 while the bar says Round 6/19.
+  - **Runnel:**
+    - Bea's postcard in the win sheet's swipe row is clipped at D and P;
+    - the lesson's spring tile overlaps "The spring house" label at D;
+    - the fourth lesson tile touches the right edge at P;
+    - the lesson's four tiles sit in one corner of the framed board (centre them).
+  - **Cathnivore:**
+    - the end screen is blank cream for about 2.5 s at D before the card mounts;
+    - the end chart at P is clipped under the sticky Play again bar;
+    - the teammate's "weighing up their move .." has a double dot;
+    - the D Actions panel during the teammate's turn is 560 px of blank cream (show the card the teammate is lifting, or Cath's plan);
+    - the Mara Keel farm thumbnail is blank grey;
+    - phone plan cards truncate their effect lines;
+    - the campaign map's "Brindle Hills" label runs into Kingsmarket, and Cath covers "Hills".
+  - **NIGHT SHIFT:** the gate and title show about 80 px letterbox bars at D.
+- **Accept:**
+  - e2e checks for the clipping and overlap cases (bounding boxes inside the viewport and not intersecting, at P and D).
+  - Shots of each fix before and after.
+- **Size:** 2
+
+## 48. [ ] Cathnivore: an end screen that is a moment, not a report
+- **Why:** a win or a loss ends on a small stamp, a chart and four stat boxes, with the lower-left third empty at D (VISION pillar 4, staged moments; the critique's second-biggest gap). Hedgerow's win payout is item 46; Cathnivore's end has no staging.
+- **Build:**
+  - The result is staged on the market table: Cath at full figure in the bible pose for the result (cheer on a win, crossed arms on a loss) beside a large headline stamp.
+  - The round-by-round chart draws itself in, the play of the game flips in as a card, and the grade is stamped last.
+  - On a campaign chapter it hands over to item 35's map moment.
+  - At D a two-column spread uses the width; at P it is one column that never clips under the action bar.
+  - A tap skips it; reduced motion fades between the end states.
+- **Accept:**
+  - e2e at P and D after a win and a loss: headline, Cath, chart and Play again all in view without scrolling, and nothing under the sticky bar.
+  - Shots of a win, a loss and a campaign win at P, D and L.
+- **Size:** 2
+
+## 49. [ ] Cathnivore: the campaign map as painted country
+- **Why:** the map of Marrow is flat orange and beige hexes in a dotted blob. It has none of the board's terrain, and at D it sits in a 720 px column with about 360 px of empty cream each side (critique, cath-campaign-D/P).
+- **Build:**
+  - Each hex is painted with its region type's ground from the board (the same kit), with one landmark per region: the docks at Shingle Bay, the mill at Rivermead, the market cross at Kingsmarket, and so on.
+  - Rivers and the coast are drawn between the hexes. Hollowell's hold is an orange wash with their sign posts, not a flat fill.
+  - At D the map spans the content width with the chapter cards beside it.
+  - Labels are placed so none crosses a neighbour or sits under Cath (unit-tested).
+- **Accept:**
+  - Unit: label boxes don't intersect each other or Cath's box on any map.
+  - e2e at P and D: the map uses at least 80% of the content width at D.
+  - Shots fresh, mid-campaign and complete at P, D and dark.
+- **Size:** 2
+
+## 50. [ ] Runnel: a board with colour, a sky and a garden that grows
+- **Why:**
+  - Most of the board reads as mud: brown tiles, dark-brown grooves, and green only where watered.
+  - The caption says "Dusk, clear skies", but the scene is flat cream with no sky.
+  - Bea's garden at D is a fence and dots.
+  - At D the left rail is empty below about 630 px (critique, runnel-puzzle-D/P).
+- **Build:**
+  - Dry tiles are painted as meadow and field in the season's palette (item 30's contrast floor holds), so water reads as the change, not the only colour.
+  - The board's time of day and weather (item 6) show as a sky band and light across the whole scene: dusk is dusk.
+  - Bea's garden draws item 37's crops at their stage for the week.
+  - The D left rail holds the week's arc as a strip of the past days' small boards.
+- **Accept:**
+  - Unit: tiles and channels stay at 3:1 or more in every palette.
+  - Shots at noon, dusk and night, and of a solved board, at P and D.
+  - The tile luminance spread across a fresh board is wider than today's (measured and reported in BALANCE.md or the commit).
 - **Size:** 2
 
 **Later, unranked:** NIGHT SHIFT, Cath's office lived in. A lit flat with rain on the window, Bea's drawings, a mirror with Cath's reflection, and a trophy shelf that fills with each case's keepsake. About 3 sessions.
