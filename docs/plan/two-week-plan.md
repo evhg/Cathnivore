@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-03T15:19Z
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1129,6 +1127,56 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x **Hedgerow map P** (`hedge-map-P`): "Start here" and "Mara's Field" stack into the row-2 path; labels crowd neighbouring nodes. *(2026-11-03 lane A: an unplayed next stop shows its tag where its empty stars and medal dots were, so its stack ends 20 px above row 2 at P; `hedgerow-map.spec.ts`)*
   - [x **NIGHT SHIFT gate P** (`ns-title-P`): the FULL dash starts at x=0 with no gutter; "TAKE ME BACK" grey on near-black (check AA; done 2026-11-03 lane A: --ink-2, rgb(180,174,163)); the progress bar a 100 px hairline. *(2026-11-03 lane A: the choices step in by the marker's hang under 600 px, so the dash sits at x 16; the loading line 2-3 px by 160-360 px)*
 - **Accept:** e2e boxes inside the viewport and not intersecting at P and D for each case; shots before and after.
+- **Size:** 1
+
+## 75. [ ] Cathnivore: Cath at the table, in every scene
+- **Why:** 2026-11-03 15:25 critique (`e2e/screenshots/plan1103f/`): on `cath-title-D` Cath ends in a flat cut at her waist (y about 645) with nothing in front of her, and the composition leaves cream bands of about 170 px above and 150 px below; on `cath-setup-D`/`-P` and `cath-game-D`/`-P` she is a 50-60 px thumbnail (VISION: Cath is the face of every game, characters with presence).
+- **Build:**
+  - Title: Cath stands behind the table's near edge, her hands on it, the cut hidden under the table line; the composition centred so neither band passes 80 px.
+  - Setup at D: a half-length Cath in the empty bottom-right of the Map panel whose line and expression react to each producer pick and the difficulty (from `content/pairLines.ts`); at P a 90 px bust beside her line.
+  - In game: a reactive bust beside the narration (about 96 px at D, 64 px at P) whose expression follows the events (a Squeeze worried, a liberation delighted).
+- **Accept:** unit: events map to expressions; e2e at P and D: on the title Cath's box is inside the viewport and meets the table's box, no blank band over 80 px; Setup Cath at least 200 px tall at D; shots of title, Setup and game at P and D, light and dark.
+- **Size:** 2
+
+## 76. [ ] Cathnivore: a board that fills its frame and lives
+- **Why:** `cath-game-D`/`-P` (plan1103f): the regions are pale washes with dashed borders and the same two or three small icons; at D the lower hexes (Oakvale, Shingle Bay) reportedly run into the frame's bottom edge (y about 880).
+- **Build:**
+  - Fit the board to its frame at every size so no hex is clipped.
+  - Each region its own drawn ground (Saltmarsh reeds and tide lines, Highmoor heather, Kingsmarket cobbles, orchards, fields) seeded per region, under the pieces and clear of the piece tray.
+  - Hexes as raised tabletop tiles with an edge and a cast shadow; quiet ambient motion (chimney smoke, a boat, gulls) parked under reduced motion.
+- **Accept:** unit: every region's ground has at least 4 elements and none under the piece tray's rects; e2e at P and D: every hex inside the board's box, no animation under reduced motion; greyscale still tells players from corporations; shots at rounds 1 and 6, P and D, light and dark.
+- **Size:** 2
+
+## 77. [ ] Runnel: the valley fills the frame, lit by the day's weather
+- **Why:** `runnel-D`/`-P` (plan1103f): the tutorial board uses about 15% of the D frame; the hills end in a hard edge with a cream void of about 600 px below; the left column has about 450 px of empty bands; the caption says "Dusk" over a midday scene; Cath is absent at P.
+- **Build:**
+  - Scale the board to its frame (the tiles at least 60% of the frame's shorter side, the tutorial included).
+  - Paint the valley down the whole frame (fields, hedges, the trail to Bea's garden) with a soft horizon, no hard cut.
+  - Light the scene from the day's time and weather (dusk warm and low, rain grey), so the caption and the picture agree.
+  - Cath in the valley at P (a corner bust when the board covers her spot); at D the left column holds the forecast and streak card with no empty band.
+- **Accept:** unit: time/weather to palette (dusk differs from midday by a measured luminance and hue); e2e at P and D: the board's box at least 60% of the frame's shorter side, no blank band over 100 px, Cath visible; shots of the tutorial and a daily at P and D, light and dark.
+- **Size:** 2
+
+## 78. [ ] Hedgerow: the field fills the frame and looks hedged
+- **Why:** `hedge-l21-3d-D`/`-P` (plan1103f): the 3D camera leaves about 35% of the D frame as empty grass and sea and about 140 px below the field at P; path tiles show seams; fog lowers the contrast; Cath is about 20 px. In `hedge-l21-2d-D` the plots read as a repeating tilemap and about 280 px right of the field is filler.
+- **Build:**
+  - Fit the 3D camera to the field's bounds per aspect ratio (a pure fit function), keeping item 66's sky card in frame.
+  - Seamless lane meshes; real hedgerow borders between plot blocks and along the field's edge; less fog over the field.
+  - Cath drawn at least twice her size on the field, with an idle.
+  - 2D: plots vary (row direction, stooks, a gate) and the margin is the level's own landscape, not filler.
+- **Accept:** unit: the camera fit leaves no off-field band over 15% at P, L and D; e2e: the field's projected box at least 65% of the canvas at P and D; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of levels 1, 21, 40 in 2D and 3D at P, D and L.
+- **Size:** 3
+
+## 79. [ ] The bugs from the 2026-11-03 15:25 critique, fixed as one batch *(lane A, in progress)*
+- **Build:** (sizes are the critique's estimates; check each first)
+  - **Cathnivore title D** (`cath-title-D`): Cath's bubble overlaps Bea's MUM drawing.
+  - **Cathnivore game D** (`cath-game-D`): the faded "PLAY" label sits under the "PLAY · 9 MORE" pill.
+  - **Cathnivore Setup P** (`cath-setup-P`): a dead band of about 40 px above Start.
+  - **Hedgerow D** (`hedge-l21-2d-D`): the "Lifestyle influencer" pill text runs past its edge; the tower shelf truncates "Market S..." and clips the fifth tower under the arrow.
+  - **Hedgerow map P** (`hedge-menu-P`): row 1's stars and labels under the header; the act card cut mid-sentence by the bottom nav; a stop's label on the road.
+  - **NIGHT SHIFT title** (`ns-title-D`): a shop sign shows through the wordmark (a scrim behind it); `ns-title-P`: the menu over the figure, grey entries below AA, 11 px lines.
+  - **/games/ D** (`games-D`): a lighter rectangle behind Cath; **portfolio D** (`portfolio-D`): Cath's hand by the NIGHT SHIFT card is a stub.
+- **Accept:** e2e boxes inside the viewport and not intersecting, and AA contrast where named, at P and D for each case; shots before and after.
 - **Size:** 1
 
 **Later, unranked:** (none)
