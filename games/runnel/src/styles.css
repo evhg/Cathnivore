@@ -2537,10 +2537,36 @@ body {
   scrollbar-width: none;
 }
 .win-keepsakes::-webkit-scrollbar { display: none; }
-.win-keepsakes > * {
+.win-keepsakes > .keep {
   flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   scroll-snap-align: center;
 }
+.win-keepsakes > .keep:has(> [hidden]) { display: none; }
+/* Plan item 47: on a phone each keepsake is one whole, centred page of the row (it showed the postcard cut off at
+   the edge), with dots under it; from 700 px the sheet is wide enough for both side by side. */
+@media (max-width: 699px) {
+  .win-keepsakes { gap: 0; padding-inline: 0; }
+  .win-keepsakes > .keep { flex-basis: 100%; }
+}
+@media (min-width: 700px) {
+  .sheet.win { width: min(640px, calc(100vw - 32px)); }
+  .win-keepsakes { justify-content: center; margin-inline: 0; padding-inline: 0; }
+}
+.win-pager { display: flex; justify-content: center; gap: 8px; margin-top: 2px; }
+.win-pager[hidden] { display: none; }
+.win-pager button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--soil) 30%, transparent);
+  cursor: pointer;
+}
+.win-pager button[aria-current="true"] { background: var(--soil); }
 .win-keepsakes .win-card {
   max-width: none;
   height: min(30vh, 240px);

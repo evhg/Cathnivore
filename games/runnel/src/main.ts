@@ -397,6 +397,26 @@ function showWin(): void {
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   renderCard(stats.streak)
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
+  syncWinPager()
+}
+
+/** Plan item 47: dots under the keepsakes when they page sideways (a phone), one per keepsake. */
+function syncWinPager(): void {
+  const row = $<HTMLElement>('win-keepsakes')
+  const pager = $<HTMLElement>('win-pager')
+  const pages = [...row.querySelectorAll<HTMLElement>(':scope > .keep')].filter((k) => k.offsetParent !== null)
+  const paged = pages.length > 1 && row.scrollWidth > row.clientWidth + 2
+  pager.hidden = !paged
+  if (!paged) return
+  pager.innerHTML = pages.map(() => '<button type="button" tabindex="-1"></button>').join('')
+  const dots = [...pager.querySelectorAll('button')]
+  const mark = (): void => {
+    const at = Math.round(row.scrollLeft / Math.max(1, row.clientWidth))
+    dots.forEach((d, i) => d.setAttribute('aria-current', String(i === at)))
+  }
+  dots.forEach((d, i) => (d.onclick = () => row.scrollTo({ left: i * row.clientWidth, behavior: 'smooth' })))
+  row.onscroll = mark
+  mark()
 }
 
 /** Plan item 6: the share card (the solved board and the numbers) as an image on the win card. */
