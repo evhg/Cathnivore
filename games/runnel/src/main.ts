@@ -76,7 +76,7 @@ const ui = {
   toast: $<HTMLParagraphElement>('toast'),
 }
 
-const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'))
+const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'))
 $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
@@ -233,6 +233,20 @@ function finish(): void {
   window.setTimeout(showWin, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : Math.max(1400, rings * 110 + 1100))
 }
 
+/** Plan item 70: Cath stands in the valley's bottom-left corner unless the board's tiles reach into it. */
+function placeValleyCath(): void {
+  const cath = document.getElementById('valley-cath')
+  if (!cath) return
+  cath.hidden = false
+  const r = cath.getBoundingClientRect()
+  if (!r.width) return
+  const clash = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')].some((t) => {
+    const b = t.getBoundingClientRect()
+    return b.left < r.right - 12 && r.left + 12 < b.right && b.top < r.bottom - 12 && r.top + 12 < b.bottom
+  })
+  cath.hidden = clash
+}
+
 /** Plan item 68: on a solve Bea runs out to her garden with her watering can. */
 function beaRunsOut(): void {
   const garden = document.querySelector<HTMLElement>('.bea-garden')
@@ -322,6 +336,8 @@ function render(): void {
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length
   ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
   ui.progress.classList.toggle('done', flow.solved)
+  document.getElementById('valley-water')?.style.setProperty('--wet', String(flow.solved ? 1 : flow.wet.size / playable))
+  placeValleyCath()
   if (game.taps > 0) host.react(flow.wet.size / playable, flow.solved)
 
   if (game.solved) {

@@ -64,8 +64,17 @@
       </section>
 
       <main class="stage">
+        <!-- Plan item 70: the valley the board sits in. Far hills under the sky, and the stream bed from the spring
+             house round the board's left and foot to Bea's garden; it fills as the fields are watered. -->
+        <svg class="valley" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+          <path class="vl-hill vl-hill-far" d="M0 120C120 70 220 90 330 105S560 60 700 85 900 110 1000 70V210H0Z" />
+          <path class="vl-hill vl-hill-near" d="M0 170C150 130 260 165 420 150S700 120 820 150 960 160 1000 140V260H0Z" />
+          <path class="vl-bed" d="M128 128C175 190 70 215 45 330S60 560 40 680 55 850 120 885 300 912 520 908 820 902 880 898" />
+          <path class="vl-water" id="valley-water" pathLength="100" d="M128 128C175 190 70 215 45 330S60 560 40 680 55 850 120 885 300 912 520 908 820 902 880 898" />
+        </svg>
         <svg id="board" class="board" role="group" aria-label="Puzzle board"></svg>
         <div class="farm-deco" aria-hidden="true">
+          <span class="valley-cath" id="valley-cath"></span>
           <svg class="spring-house" viewBox="0 0 120 110">
             <ellipse class="sh-shade" cx="60" cy="100" rx="52" ry="8" />
             <rect class="sh-wall" x="22" y="48" width="76" height="50" rx="3" />

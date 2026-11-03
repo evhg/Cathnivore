@@ -2,7 +2,7 @@
 // that changes daily, reacts as the water spreads, and celebrates the win. Lines follow SPEC 3.2's voice:
 // short, specific, dry, warm, with at most the odd exclamation mark.
 
-import { cathSvg, type CathExpression } from '../../../shared/cath/cath'
+import { cathSvg, type CathExpression, type CathPoseId } from '../../../shared/cath/cath'
 import { cathSceneSvg, type CathMoment } from '../../../shared/cath/scene'
 import { chosenOutfit } from '../../../shared/cath/wardrobe'
 import { chosenPin } from '../../../shared/cath/pins'
@@ -33,14 +33,28 @@ export interface HostView {
   say(expression: CathExpression, text: string): void
 }
 
-export function createHost(face: HTMLElement, line: HTMLElement): HostView {
+export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null): HostView {
   let current: CathExpression | null = null
   let milestone = 0
   let shown = ''
+  let wet = 0
+  let pose: CathPoseId = 'clasped'
+  // Plan item 70: Cath stands in the valley too, half length by the stream. She looks round when the water
+  // reaches a new field, and waves at a solve.
+  const drawStage = (expression: CathExpression) => {
+    if (stage) stage.innerHTML = cathSvg({ framing: 'half', expression, pose, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+  }
+  const look = () => {
+    if (!stage) return
+    stage.classList.remove('look')
+    void stage.offsetWidth
+    stage.classList.add('look')
+  }
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
       face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
       current = expression
+      drawStage(expression)
     }
     line.textContent = text
     if (text !== shown && shown) {
@@ -53,6 +67,9 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
   return {
     greet(daily, dayNumber) {
       milestone = 0
+      wet = 0
+      pose = 'clasped'
+      current = null
       const pool = daily ? GREETINGS : PRACTICE
       show('smirk', pool[(dayNumber - 1 + pool.length * 10) % pool.length]!)
     },
@@ -60,6 +77,13 @@ export function createHost(face: HTMLElement, line: HTMLElement): HostView {
       show(expression, text)
     },
     react(fraction, solved) {
+      if (fraction > wet && !solved) look()
+      wet = fraction
+      const nextPose: CathPoseId = solved ? 'wave' : fraction >= 0.4 ? 'point' : 'clasped'
+      if (nextPose !== pose) {
+        pose = nextPose
+        drawStage(current ?? 'smirk')
+      }
       if (solved) {
         show('delighted', 'Every field watered, not a drop spilled. Beautiful work.')
         milestone = 3

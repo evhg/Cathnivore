@@ -3149,3 +3149,73 @@ body[data-mode='practice'] #week-slot {
     display: none;
   }
 }
+
+/* ---- Plan item 70: the daily's valley. Far hills under the sky and a stream bed from the spring house round
+   the board to Bea's garden, behind the board (it is positioned, so it paints over the static stage layers);
+   the water runs down the bed as the fields are watered (--wet, 0..1). Cath stands in the bottom-left corner the
+   board leaves empty at D, and steps out of the way of a board that fills it (main.ts sets hidden). ---- */
+.valley,
+.valley-cath {
+  display: none;
+}
+.board {
+  position: relative;
+}
+@media (min-width: 1100px) and (min-height: 640px), (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .valley {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .vl-hill-far { fill: color-mix(in srgb, var(--lip-meadow) 22%, transparent); }
+  .vl-hill-near { fill: color-mix(in srgb, var(--lip-meadow) 34%, transparent); }
+  .vl-bed,
+  .vl-water {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .vl-bed {
+    stroke: color-mix(in srgb, var(--soil) 45%, transparent);
+    stroke-width: 14;
+  }
+  .vl-water {
+    --wet: 0;
+    stroke: var(--water);
+    stroke-width: 7;
+    stroke-dasharray: 100 100;
+    stroke-dashoffset: calc(100 - var(--wet) * 100);
+    transition: stroke-dashoffset 700ms ease-out;
+  }
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  .valley-cath:not([hidden]) {
+    display: block;
+    position: absolute;
+    left: 14px;
+    bottom: 26px;
+    width: clamp(120px, 11vw, 170px);
+    aspect-ratio: 2 / 3;
+    filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--soil) 30%, transparent));
+  }
+  .valley-cath svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .valley-cath.look {
+    animation: valley-look 900ms ease-out;
+  }
+}
+@keyframes valley-look {
+  30% { transform: translateY(-6px) rotate(-2deg); }
+  60% { transform: translateY(0) rotate(1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vl-water { transition: none; }
+  .valley-cath.look { animation: none; }
+}
