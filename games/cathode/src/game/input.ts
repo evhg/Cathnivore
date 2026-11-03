@@ -45,6 +45,21 @@ export function flickOf(ox: number, oy: number, x: number, y: number, ms: number
   return dy < 0 ? "jump" : "crouch";
 }
 
+/**
+ * Plan item 44: Fire, Aim, Swap and the Cath key are always in the same place, so after the first tap they rest
+ * as 30% rings with no word. The moment's buttons (Takedown, Focus, Skill) keep their word: it says why they came up.
+ */
+const RINGED: readonly string[] = ["fire", "aim", "cycle", "sheet"];
+const USED_KEY = "cathode:touch-used:v1";
+function loadUsed(): Set<string> {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(USED_KEY) ?? "[]");
+    return new Set(Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
 const BUTTONS = ["fire", "aim", "jump", "crouch", "focus", "takedown", "cycle", "skill", "sheet"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
@@ -178,6 +193,7 @@ export class Input {
       lab.textContent = labels[b];
       btn.append(lab);
       btn.dataset.btn = b;
+      if (RINGED.includes(b) && this.used.has(b)) btn.classList.add("used");
       layer.append(btn);
     }
     // The way into the pause menu (settings, the title), top right where a thumb won't hit it by accident.
@@ -208,6 +224,7 @@ export class Input {
           this.touchHeld.add(btn);
           this.touchTapped.add(btn);
           this.btnTouches.set(t.identifier, btn);
+          this.markUsed(btn);
           // Fire and aim double as look: keep turning while the thumb drags off the button.
           if (btn === "fire" || btn === "aim") this.lookTouch = { id: t.identifier, x: t.clientX, y: t.clientY };
         } else if (t.clientX < innerWidth * 0.45 && this.stick.id < 0) {
@@ -266,6 +283,20 @@ export class Input {
     }
   };
   private btnTouches = new Map<number, TouchButton>();
+  /** Plan item 44: the always-there buttons the player has used (saved), drawn as quiet rings with no word. */
+  private used = loadUsed();
+  private markUsed(b: TouchButton): void {
+    if (!RINGED.includes(b) || this.used.has(b)) return;
+    this.used.add(b);
+    try {
+      localStorage.setItem(USED_KEY, JSON.stringify([...this.used]));
+    } catch {
+      /* private mode: the rings come back next visit */
+    }
+    // The word stays up until the thumb lifts, then the disc settles to a ring.
+    const el = this.touchLayer.querySelector<HTMLElement>(`[data-btn="${b}"]`);
+    if (el) setTimeout(() => el.classList.add("used"), 900);
+  }
   private flick = { t: 0, x: 0, y: 0 };
   private tipEl: HTMLElement | null = null;
   private crouchAllowed = false;

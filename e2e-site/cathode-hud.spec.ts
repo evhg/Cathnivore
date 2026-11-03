@@ -168,6 +168,38 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     await expect(tip).toHaveClass(/gone/)
   })
 
+  test('plan item 44: a used button rests as a ring with no word, and controls cover 18% or less at rest', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'touch layout only')
+    test.setTimeout(400_000)
+    await boot(page)
+    await page.evaluate(() => (window as unknown as { cathode: C & { progress: { unlocks: { features: string[] } } } }).cathode.progress.unlocks.features.push('crouch', 'takedown', 'focus', 'skills', 'swap'))
+    const aim = page.locator('[data-btn="aim"]')
+    await expect(aim).toBeVisible({ timeout: 30_000 })
+    await expect(aim).not.toHaveClass(/used/)
+    // The arrival beat holds the controls back; wait until a thumb on Aim would land on it.
+    await page.waitForFunction(() => {
+      const r = document.querySelector('[data-btn="aim"]')!.getBoundingClientRect()
+      return !!document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('[data-btn="aim"]')
+    }, null, { timeout: 60_000 })
+    // A real tap on Aim: the browser hit-tests the touch, so the button itself must take it (its layer lets
+    // touches through to the play area). This failed before 2026-11-03: every disc inherited pointer-events none.
+    const box = (await aim.boundingBox())!
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
+    await expect(aim).toHaveClass(/used/, { timeout: 5_000 })
+    await expect.poll(() => aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 5_000 }).toBeLessThan(0.05)
+    expect(await page.evaluate(() => localStorage.getItem('cathode:touch-used:v1'))).toContain('aim')
+    // At rest (no moment's button up), the controls' boxes cover 18% of the screen or less.
+    const cover = await page.evaluate(() => {
+      let a = 0
+      for (const e of document.querySelectorAll<HTMLElement>('.tbtn:not(.idle):not([hidden]), .tbtn-menu, .stick')) {
+        const r = e.getBoundingClientRect()
+        a += r.width * r.height
+      }
+      return a / (innerWidth * innerHeight)
+    })
+    expect(cover).toBeLessThanOrEqual(0.18)
+  })
+
   test('plan item 44: Takedown shows only beside an unaware guard', async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'touch layout only')
     test.setTimeout(400_000)

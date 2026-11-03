@@ -1649,6 +1649,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
    apart by size, a denser fill and full-strength type, not by a red ring. */
 .tbtn {
   position: absolute;
+  /* The layer itself lets touches through to the play area (styles.css .hud, .touch); its buttons must take them,
+     or a thumb on Fire lands on the canvas: input.ts finds the button by hit-testing the touch point. */
+  pointer-events: auto;
   width: 64px;
   height: 64px;
   padding: 0;
@@ -1668,6 +1671,11 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   -webkit-tap-highlight-color: transparent;
   font-stretch: var(--wdth-label);
 }
+/* Plan item 44: once used, an always-there button rests as a 30% ring with no word; a press fills it again. */
+.tbtn.used { background-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .3); }
+.tbtn.used .tbtn-label { opacity: 0; transition: opacity 600ms var(--ease-out); }
+.tbtn.used:active { background-color: rgb(var(--ink-rgb) / .2); box-shadow: none; }
+.tbtn-fire.used .tbtn-label { opacity: 1; color: transparent; text-shadow: none; }
 /* Plan item 44: a moment's button (Takedown, Focus, Skill) is gone until it can be used. */
 .tbtn.idle { opacity: 0; transform: scale(.8); pointer-events: none; }
 .tbtn:active { transform: scale(.94); background-color: rgb(var(--ink-rgb) / .2); color: var(--ink); }

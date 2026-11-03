@@ -34,6 +34,11 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
   })
   console.log(n, 'rest', JSON.stringify(await measure()))
   await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-rest.png`, timeout: 240000 })
+  // Plan item 44: after first use, Fire, Aim, Swap and Cath rest as rings with no word.
+  await p.evaluate(() => document.querySelectorAll('[data-btn="fire"], [data-btn="aim"], [data-btn="cycle"], [data-btn="sheet"]').forEach((e) => e.classList.add('used')))
+  await p.waitForTimeout(3000)
+  console.log(n, 'ring label opacity', await p.evaluate(() => getComputedStyle(document.querySelector('[data-btn="aim"] .tbtn-label')).opacity))
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-rings.png`, timeout: 240000 })
   // Plan item 44: the whole cluster up at once (every moment's button forced on), checked for overlaps.
   await p.evaluate(() => { window.__idle = [...document.querySelectorAll('.tbtn.idle')]; window.__idle.forEach((e) => e.classList.remove('idle')); window.cathode.input.context = () => {} })
   await p.waitForTimeout(800)
