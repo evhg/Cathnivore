@@ -1,0 +1,205 @@
+/* Plan item 56: How to Play as Cath's almanac. Chapters are index tabs on a kraft rail; each page is a
+   spread of a picture and Cath's margin note on ruled paper, then the rules, then galleries of real cards. */
+.rules-reference.almanac { max-width: 1080px; }
+
+.almanac .rules-search { margin-bottom: 6px; }
+.almanac-found { margin: 0 0 8px; font-size: var(--fs-small); color: var(--ink-muted); }
+
+/* Index tabs: a kraft rail; the open chapter is a paper tab standing proud of it. */
+.almanac-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px 6px 0;
+  margin: 8px 0 0;
+  background: var(--mat-kraft);
+  border-radius: 10px 10px 0 0;
+  box-shadow: var(--inset-hi);
+}
+@media (min-width: 900px) {
+  .almanac-tabs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+}
+.almanac-tab {
+  font: inherit;
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1.15;
+  min-height: 44px;
+  padding: 6px 4px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 55%, var(--kraft));
+  border: 1px solid var(--ink-a15);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background var(--dur-quick) var(--ease-settle), transform var(--dur-quick) var(--ease-settle);
+}
+.almanac-tab:hover { background: color-mix(in srgb, var(--paper) 80%, var(--kraft)); }
+.almanac-tab[aria-selected="true"] {
+  background: var(--paper-hi);
+  transform: translateY(1px);
+  border-color: var(--ink-a35);
+}
+.almanac-tab.is-hit { box-shadow: inset 0 3px 0 var(--wheat); }
+.almanac-tab.is-dim { opacity: 0.55; }
+
+.almanac-panel {
+  background: var(--mat-card);
+  border: 1px solid var(--ink-a35);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--e2);
+  padding: 16px;
+  min-height: 320px;
+}
+.almanac-panel > .tour { border: 0; box-shadow: none; background: none; padding: 0; margin: 0; }
+
+.almanac-page-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.almanac-chapter-no {
+  font-size: var(--fs-label);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--wheat-ink);
+  font-weight: 700;
+}
+.almanac-page-head h2 { margin: 0; font-family: var(--font-display); font-size: var(--fs-h2); line-height: 1.05; }
+
+/* The spread: the picture and Cath's note side by side from 700 px, stacked on a phone. */
+.almanac-spread { display: grid; gap: 12px; margin-bottom: 16px; }
+@media (min-width: 700px) {
+  .almanac-spread { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; }
+}
+.almanac-figure { margin: 0; display: grid; place-items: center; }
+.almanac-figure .tour-board { width: 100%; height: auto; max-height: 200px; margin: 0; }
+.almanac-figure.is-vignette .card-vignette {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  border-radius: 10px;
+  border: 1px solid var(--ink-a15);
+}
+.almanac-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--mat-ledger);
+  border-left: 3px solid var(--clay);
+  border-radius: 4px;
+  box-shadow: var(--e1);
+  transform: rotate(-0.6deg);
+}
+.almanac-note p {
+  margin: 0;
+  font-family: var(--font-voice);
+  font-size: var(--fs-voice);
+  line-height: 1.4;
+  color: var(--ink);
+}
+.almanac-note svg, .almanac-note .cath-art { flex: none; }
+
+.almanac-entries .rules-entry dt { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 600; }
+.almanac-entries .rules-entry { scroll-margin-top: 96px; }
+.almanac-aside { margin: 4px 0 8px; font-size: var(--fs-small); color: var(--ink-muted); }
+
+/* Galleries: the real cards laid out on the table. */
+.almanac-gallery {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+@media (min-width: 700px) {
+  .almanac-gallery { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+}
+.almanac-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--mat-card);
+  border: 1px solid var(--ink-a35);
+  border-radius: 10px;
+  box-shadow: var(--e2);
+  overflow: hidden;
+  scroll-margin-top: 96px;
+}
+.almanac-card-art { display: grid; place-items: center; background: var(--paper); border-bottom: 1px solid var(--ink-a15); }
+.almanac-card-art .card-vignette { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; }
+.almanac-card-producer .almanac-card-art { padding: 8px 0 4px; }
+.almanac-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding: 8px 10px 0; }
+.almanac-card-head h4 { margin: 0; font-family: var(--font-display); font-size: var(--fs-body); line-height: 1.15; }
+.almanac-price {
+  flex: none;
+  font-family: var(--font-num);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  color: var(--wheat-ink);
+  white-space: nowrap;
+}
+.almanac-card-scheme .almanac-price { color: var(--pasture-deep); }
+.almanac-card-text { margin: 4px 10px 8px; font-size: var(--fs-caption); line-height: 1.35; }
+.almanac-card-line {
+  margin: auto 10px 10px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--ink-a15);
+  font-family: var(--font-voice);
+  font-size: var(--fs-caption);
+  color: var(--ink-muted);
+}
+
+/* Agenda: newspaper clippings. */
+.almanac-clipping {
+  padding: 10px 12px;
+  background: var(--mat-news);
+  color: var(--newsprint-ink);
+  border-radius: 2px;
+  box-shadow: var(--e2);
+  scroll-margin-top: 96px;
+}
+.almanac-clipping:nth-child(odd) { transform: rotate(-0.5deg); }
+.almanac-clipping:nth-child(even) { transform: rotate(0.4deg); }
+.almanac-masthead {
+  display: block;
+  font-size: var(--fs-label);
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  border-bottom: 2px solid currentColor;
+  margin-bottom: 6px;
+}
+.almanac-clipping.is-hollowell .almanac-masthead { color: var(--hollowell-ink); }
+.almanac-clipping.is-candor .almanac-masthead { color: var(--candor-ink); }
+.almanac-clipping h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: var(--fs-body); line-height: 1.2; }
+.almanac-clipping p { margin: 0; font-size: var(--fs-caption); line-height: 1.35; }
+
+/* Difficulty: three tickets. */
+.almanac-difficulty {
+  padding: 12px 14px;
+  background: var(--mat-card);
+  border: 1px solid var(--ink-a35);
+  border-top: 6px solid var(--pasture);
+  border-radius: 8px;
+  box-shadow: var(--e2);
+}
+.almanac-difficulty.is-normal { border-top-color: var(--wheat); }
+.almanac-difficulty.is-hard { border-top-color: var(--clay); }
+.almanac-difficulty h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: var(--fs-h3); }
+.almanac-difficulty ul { margin: 0; padding-left: 18px; font-size: var(--fs-caption); line-height: 1.4; }
+
+/* A search hit: a wheat highlighter mark round the card. */
+.almanac-gallery [data-hit] { outline: 3px solid var(--wheat); outline-offset: 2px; }
+
+.almanac-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .almanac-tab { transition: none; }
+}
+@media (max-width: 699px) {
+  .almanac-figure.is-vignette .card-vignette { max-height: 120px; }
+  .almanac-figure .tour-board { max-height: 170px; }
+}
+/* The highlighted entry: a wheat highlighter stroke that reads in light and dark (no fixed pale yellow). */
+.almanac .rules-entry-active { background: color-mix(in srgb, var(--wheat) 30%, transparent); border-radius: 4px; padding: 4px 6px; margin: 0 -6px 10px; }
