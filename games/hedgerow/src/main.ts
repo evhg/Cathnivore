@@ -106,7 +106,7 @@ import {
   NO_PERKS,
   isFleet,
 } from "./engine";
-import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf } from "./fleet";
+import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf, type Property } from "./fleet";
 import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
 import { fieldCards, initUnlocks, isOpen, markFieldCardSeen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
@@ -139,6 +139,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { countersFor, needsUpgrade, newThisRound, traitsOf, TRAIT_TEXT, type Trait } from "./intro";
 import { towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
@@ -395,13 +396,6 @@ let bubbleFace: CathExpression = "smirk";
 /** A tip that waits for the new-unit card to go, so the two never cover the lane together. */
 let pendingTip: { id: string; text: string; expression: CathExpression } | null = null;
 let introTimer = 0;
-const shortScreen = (): boolean => {
-  try {
-    return window.matchMedia("(max-height: 520px)").matches;
-  } catch {
-    return false;
-  }
-};
 /** The last wave that was stacked on early (0 = none this level): a leak soon after names the stacking. */
 let stackedWave = 0;
 /** The causes a round's leak banners have already named (Fleet: one banner per cause per round), and when the leak slow-motion ends. */
@@ -969,6 +963,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   hideBubble();
   ui.intro.hidden = true;
   clearTimeout(introTimer);
+  introHold = false;
+  introQueue = null;
   pendingTip = null;
   syncControls();
   renderer.resize(game);
@@ -3055,8 +3051,6 @@ function banner(text: string, sub = "", boss = false, cls = ""): void {
     ui.banner.append(s);
   }
   ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
-  // A "New on the lane" advert already up steps down out of the ribbon's way (short screens; CSS .dodge).
-  if (!ui.intro.hidden) ui.intro.classList.add("dodge");
   clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => ui.banner.classList.remove("show"), boss ? 2600 : 1700);
 }
@@ -3067,6 +3061,8 @@ function describeEnemy(kind: EnemyKind): string {
   if (rung && !isBig(kind)) return `${rung.look} Worth ${fvOf(kind)} Mark${fvOf(kind) === 1 ? "" : "s"} popped; a leak costs ${fvOf(kind)} Goodwill.`;
   const e = ENEMIES[kind];
   const bits: string[] = [];
+  // A Fleet boss is Heavy Plant by the Fleet's rules (no damage-type resistances): say those, not act 1's.
+  if (isBig(kind) && game && isFleet(game.level)) return `A boss: Cath can't hold it and pies only stun it half as long. ${PROPERTIES.plant.lock} ${PROPERTIES.plant.key}`;
   if (isBig(kind)) bits.push("A boss: Cath can't hold it and pies only stun it half as long.");
   if (e.flying) bits.push("Flies over Cath. Scarecrows and Windmills bring it down fastest.");
   else if (isHeavy(kind))
@@ -3082,71 +3078,156 @@ function describeEnemy(kind: EnemyKind): string {
   return bits.join(" ");
 }
 
-function introduce(kinds: EnemyKind[]): void {
-  const fresh = kinds.filter((k) => !data.seen[k]);
+/**
+ * Plan item 64: a new enemy arrives as a page of Cath's field guide. The round's first unmet vehicle rolls on,
+ * the sim holds and the field dims, and the page shows its sketch, its traits and the level's towers that reach
+ * it. Tap (or Enter, Space, Escape) to carry on. A replay never holds; the sandbox and automated browsers let the
+ * page go by itself after a few seconds (`?intro=hold` keeps it, for the e2e), so screenshot scripts never stall.
+ */
+let introQueue: { g: Game; kinds: EnemyKind[]; at: number } | null = null;
+/** The page is up and the sim is held for it. */
+let introHold = false;
+const INTRO_AUTO = !new URLSearchParams(location.search).has("intro") && (SANDBOX || navigator.webdriver);
+
+function introduce(kinds: EnemyKind[], round?: number): void {
+  const g = game;
+  if (!g) return;
+  const fresh = round ? newThisRound(g.level, round, data.seen) : kinds.filter((k) => !data.seen[k]);
   if (!fresh.length) return;
   for (const k of fresh) data.seen[k] = true;
   save(data);
-  const k = fresh[0]!;
-  ui.intro.replaceChildren();
-  ui.intro.append(img(enemyIcon(k), "intro-icon"));
-  const box = document.createElement("div");
+  // A boss has its own banner; the rest wait for their vehicle to roll on.
+  introQueue = { g, kinds: fresh, at: g.waveClock };
+}
+
+/** Called each stepped frame: open the queued page once its vehicle is a little way down the lane. */
+function introWatch(g: Game): void {
+  const q = introQueue;
+  if (!q || q.g !== g || introHold || !ui.intro.hidden) return;
+  // The round's ribbon says its piece first: the page never lands on it.
+  if (g.phase !== "wave" || ui.banner.classList.contains("show")) return;
+  const k = q.kinds[0]!;
+  const on = g.enemies.some((e) => e.kind === k && e.dist >= 1.2);
+  if (!on && g.waveClock - q.at < 7) return;
+  q.kinds.shift();
+  if (!q.kinds.length) introQueue = null;
+  showIntroPage(g, k);
+}
+
+const TRAIT_PROP: Partial<Record<Trait, Property>> = { flies: "airborne", armour: "plated", stealth: "stealth", wrapped: "wrapped", sealed: "sealed", reefer: "reefer", heavy: "plant" };
+const TRAIT_SVG: Partial<Record<Trait, string>> = {
+  boss: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18 L5 7 L9.5 12 L12 5 L14.5 12 L19 7 L21 18 Z" fill="currentColor"/></svg>',
+  fast: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 L5 14 H11 L10 21 L19 9 H13 Z" fill="currentColor"/></svg>',
+  slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 9 V13 L15 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M9 3 H15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  splits: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 V12 M12 12 L5 5 M12 12 L19 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M5 5 h4 M5 5 v4 M19 5 h-4 M19 5 v4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
+};
+
+function showIntroPage(g: Game, k: EnemyKind): void {
+  const el = ui.intro;
+  el.replaceChildren();
+  el.className = "intro intro-page";
+  el.dataset.kind = k;
+  const sheet = document.createElement("div");
+  sheet.className = "intro-sheet";
+  const sketch = document.createElement("figure");
+  sketch.className = "intro-sketch";
+  sketch.append(img(enemyIcon(k), "intro-icon"));
+  const body = document.createElement("div");
+  body.className = "intro-body";
   const eb = document.createElement("p");
   eb.className = "eyebrow";
-  eb.textContent = isBig(k) ? "Boss" : "New on the lane";
-  const n = document.createElement("strong");
+  eb.textContent = isBig(k) ? "Cath's field guide · Boss" : "Cath's field guide · New on the lane";
+  const n = document.createElement("h2");
+  n.id = "intro-name";
   n.textContent = ENEMIES[k].name;
-  // The lead sentence, then the rest: a short landscape phone shows only the lead, whole, never an ellipsis
-  // (the full text is read out and lives in the Almanac).
-  const d = document.createElement("p");
-  const desc = describeEnemy(k);
-  const cut = desc.search(/\.\s/);
-  const lead = document.createElement("span");
-  lead.className = "intro-lead";
-  lead.textContent = cut > 0 ? desc.slice(0, cut + 1) : desc;
-  d.append(lead);
-  if (cut > 0) {
-    const more = document.createElement("span");
-    more.className = "intro-more";
-    more.textContent = desc.slice(cut + 1);
-    d.append(more);
+  const traits = document.createElement("ul");
+  traits.className = "intro-traits";
+  for (const t of traitsOf(k)) {
+    const li = document.createElement("li");
+    const prop = TRAIT_PROP[t];
+    if (prop) li.append(img(propIcon(prop), "intro-trait-icon"));
+    else if (TRAIT_SVG[t]) li.insertAdjacentHTML("beforeend", TRAIT_SVG[t]!);
+    li.append(TRAIT_TEXT[t]);
+    traits.append(li);
   }
-  box.append(eb, n, d);
-  ui.intro.append(box);
-  // Keep the card off the side the Fleet comes in from: that corner is where the first pops happen.
-  const spawn = game && renderer ? spawnSide(game) : "left";
-  ui.intro.classList.toggle("left", spawn === "right");
-  ui.intro.classList.toggle("dodge", ui.banner.classList.contains("show"));
-  ui.intro.hidden = false;
-  ui.intro.classList.remove("pop");
-  void ui.intro.offsetWidth;
-  ui.intro.classList.add("pop");
+  const d = document.createElement("p");
+  d.className = "intro-desc";
+  d.textContent = describeEnemy(k);
+  const reachH = document.createElement("p");
+  reachH.className = "intro-reach-h";
+  reachH.textContent = "Your towers that reach it";
+  const reach = document.createElement("ul");
+  reach.className = "intro-reach";
+  const counters = countersFor(k, g.level.towers);
+  for (const t of g.level.towers) {
+    const li = document.createElement("li");
+    const lit = counters.includes(t);
+    li.className = lit ? "lit" : "dim";
+    li.append(img(towerIcon(t), "intro-tower"));
+    const label = document.createElement("span");
+    label.textContent = TOWERS[t].name;
+    li.append(label);
+    if (lit && needsUpgrade(k, t)) {
+      const up = document.createElement("small");
+      up.textContent = "once upgraded";
+      li.append(up);
+    }
+    if (!lit) li.setAttribute("aria-label", `${TOWERS[t].name}: can't reach it`);
+    reach.append(li);
+  }
+  if (!counters.length) {
+    const none = document.createElement("li");
+    none.className = "none";
+    none.textContent = "Nothing in this kit reaches it: save Cath's pie for it.";
+    reach.append(none);
+  }
+  const go = document.createElement("button");
+  go.type = "button";
+  go.className = "btn intro-go";
+  go.textContent = "Got it";
+  body.append(eb, n, traits, d, reachH, reach, go);
+  sheet.append(sketch, body);
+  el.append(sheet);
+  el.setAttribute("role", "dialog");
+  el.setAttribute("aria-labelledby", "intro-name");
+  el.hidden = false;
+  el.classList.remove("pop");
+  void el.offsetWidth;
+  el.classList.add("pop");
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
-  // Plan item 19: one voice at a time. Cath's tip steps aside and comes back after the card.
+  // Plan item 19: one voice at a time. Cath's tip steps aside and comes back after the page.
   if (!ui.bubble.hidden && bubbleTip) {
     pendingTip = { id: bubbleTip, text: ui.bubbleText.textContent ?? "", expression: bubbleFace };
     clearTimeout(bubbleTimer);
     hideBubble();
   }
   clearTimeout(introTimer);
-  introTimer = window.setTimeout(hideIntro, shortScreen() ? 3600 : 5200);
+  // A replay never holds the field; elsewhere the sim waits for the tap.
+  introHold = !player;
+  if (player || INTRO_AUTO) introTimer = window.setTimeout(hideIntro, player ? 2600 : 3200);
+  if (introHold) go.focus({ preventScroll: true });
 }
 
 function hideIntro(): void {
+  clearTimeout(introTimer);
   ui.intro.hidden = true;
+  introHold = false;
   const p = pendingTip;
   pendingTip = null;
   if (p && game) tip(p.id, p.text, p.expression, true);
+  if (document.activeElement && ui.intro.contains(document.activeElement)) ui.canvas.focus({ preventScroll: true });
 }
 
-/** Which half of the screen the lane starts in. */
-function spawnSide(g: Game): "left" | "right" {
-  const [c, r] = g.level.path[0]!;
-  const rect = ui.canvas.getBoundingClientRect();
-  const p = renderer?.cellCenter(c, r);
-  if (!p || !rect.width) return c < g.level.cols / 2 ? "left" : "right";
-  return p.x < rect.left + rect.width / 2 ? "left" : "right";
-}
+ui.intro.addEventListener("click", () => {
+  if (!ui.intro.hidden) hideIntro();
+});
+ui.intro.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    e.stopPropagation();
+    hideIntro();
+  }
+});
 
 // ---- the loop ----
 
@@ -3244,8 +3325,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`, false, "round");
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
-        if (isFleet(g.level) && !boss) window.setTimeout(() => game === g && introduce(kinds), 1800);
-        else introduce(kinds);
+        introduce(kinds, ev.wave);
         if (ev.early) {
           earlyCalls += 1;
           stackedWave = ev.wave;
@@ -3360,7 +3440,7 @@ function frame(now: number): void {
   const g = game;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  if (!paused && !ui.dlgStory.open && !ui.dlgResult.open && !ui.dlgUnlock.open) {
+  if (!paused && !introHold && !ui.dlgStory.open && !ui.dlgResult.open && !ui.dlgUnlock.open) {
     if (!player && g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
       // Hold the countdown while the player is choosing something.
       if (!selected && !posting && !aiming) autoLeft -= dt * speed;
@@ -3400,6 +3480,7 @@ function frame(now: number): void {
       onEvents(g, evs);
       renderer.feed(evs, g);
       updateHud();
+      introWatch(g);
       sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
       // The field takes on the boss's colours while it is alive.
       const bossNow = g.enemies.find((e) => isBig(e.kind) && e.hp > 0);
@@ -3420,7 +3501,7 @@ function frame(now: number): void {
         tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
   }
-  renderer.draw(g, paused ? 0 : dt * Math.min(speed, 2));
+  renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {

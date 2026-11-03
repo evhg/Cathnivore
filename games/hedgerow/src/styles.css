@@ -589,51 +589,284 @@ button {
   }
 }
 
+/* ---- plan item 64: a new enemy as a page of Cath's field guide ----
+   The field dims and holds; a ruled notebook page carries the vehicle's sketch, its traits and the towers in
+   this level's kit that reach it (lit) or don't (greyed). Paper and ink are the story stage's, fixed in both
+   themes: it's a page on the table, not a sheet of the UI. */
 .intro {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  left: auto;
-  max-width: 340px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 14px 10px 10px;
-  border-radius: 16px;
-  background: rgba(43, 35, 32, 0.9);
-  color: #fff8e6;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
+  inset: 0;
+  z-index: var(--z-banner);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--scrim);
+  cursor: pointer;
 }
-/* The lane starts on the right: the new-unit card sits on the left, away from the first pops. */
-.intro.left {
-  left: 10px;
-  right: auto;
+.intro[hidden] {
+  display: none;
 }
 .intro.pop {
-  animation: pop-in 320ms cubic-bezier(0.2, 1.3, 0.4, 1);
+  animation: intro-dim 260ms ease-out;
 }
-.intro-icon {
-  flex: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
+.intro.pop .intro-sheet {
+  animation: intro-slide var(--dur-hero) cubic-bezier(0.2, 1.1, 0.35, 1);
+}
+@keyframes intro-dim {
+  from {
+    background: transparent;
+  }
+}
+@keyframes intro-slide {
+  from {
+    opacity: 0;
+    transform: translateX(24%) rotate(4deg);
+  }
+}
+.intro-sheet {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr;
+  gap: 18px;
+  width: min(620px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 20px 22px 18px 34px;
+  border-radius: 6px 14px 14px 6px;
+  color: var(--stage-night);
+  background:
+    linear-gradient(90deg, transparent 22px, color-mix(in srgb, var(--goodwill) 45%, transparent) 22px 24px, transparent 24px),
+    repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in srgb, var(--path-1) 16%, transparent) 25px 26px),
+    var(--stage-paper);
+  box-shadow:
+    0 2px 0 var(--kraft),
+    0 18px 40px var(--stage-shade);
+  transform: rotate(-0.6deg);
+  cursor: default;
+}
+/* Two punched holes down the binding edge */
+.intro-sheet::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 22%;
+  width: 9px;
+  height: 56%;
+  background: radial-gradient(circle at 50% 4.5px, var(--stage-shade) 3.5px, transparent 4.5px) 0 0 / 9px 50% repeat-y;
+}
+.intro-sketch {
+  margin: 0;
+  align-self: start;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 10px;
+  background: var(--paper-hi);
+  border: 1px solid var(--kraft);
+  box-shadow: 0 3px 8px var(--oak-a35);
+  transform: rotate(-3deg);
+}
+.intro-sketch .intro-icon {
+  width: 160px;
+  max-width: 100%;
+  height: auto;
+}
+.intro-body {
+  min-width: 0;
 }
 .intro .eyebrow {
-  color: #f2c94c;
+  margin: 0;
+  color: var(--harvest-ink);
   font-size: var(--fs-label);
 }
-.intro strong {
-  display: block;
+.intro h2 {
+  margin: 2px 0 8px;
   font-family: var(--font-display);
   font-variation-settings: var(--display-axes);
-  font-size: var(--fs-d3);
+  font-size: var(--fs-d2);
+  line-height: 1.1;
 }
-.intro p {
-  margin: 2px 0 0;
+.intro-traits,
+.intro-reach {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.intro-traits li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 4px;
+  border-radius: 999px;
+  border: 1.5px solid var(--stage-night);
   font-size: var(--fs-small);
-  line-height: 1.35;
+  font-weight: 700;
+}
+.intro-traits img,
+.intro-traits svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.intro-desc {
+  margin: 10px 0 12px;
+  font-family: var(--font-voice);
+  font-variation-settings: var(--voice-axes);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+}
+.intro-reach-h {
+  margin: 0 0 6px;
+  font-size: var(--fs-label);
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pasture-ink);
+}
+.intro-reach li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  border-radius: 10px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+.intro-reach li.lit {
+  color: var(--on-fill);
+  background: var(--path-2);
+  box-shadow: 0 0 0 2px var(--path-2-glow);
+}
+.intro-reach li.dim {
+  color: var(--ink-3);
+  background: var(--paper-shade);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.intro-reach li.dim img {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.intro-reach li small {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  opacity: 0.9;
+}
+.intro-reach li.none {
+  font-family: var(--font-voice);
+  font-weight: 400;
+}
+.intro-tower {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--paper-hi);
+}
+.intro-go {
+  display: block;
+  margin: 14px 0 0 auto;
+}
+/* A phone: the page fills the field (the stage sits above the tray), the sketch beside the name. */
+@media (max-width: 600px) {
+  .intro {
+    padding: 8px;
+    place-items: stretch;
+  }
+  .intro-sheet {
+    grid-template-columns: 104px 1fr;
+    grid-template-rows: auto auto auto auto auto auto 1fr;
+    gap: 6px 12px;
+    padding: 14px 14px 12px 28px;
+    transform: none;
+  }
+  .intro-sheet::before {
+    left: 6px;
+  }
+  .intro-sketch {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    width: 104px;
+    padding: 6px;
+  }
+  .intro-sketch .intro-icon {
+    width: 88px;
+    height: 88px;
+  }
+  .intro-body {
+    display: contents;
+  }
+  .intro-body > * {
+    grid-column: 1 / -1;
+  }
+  .intro-body > .eyebrow,
+  .intro-body > h2,
+  .intro-body > .intro-traits {
+    grid-column: 2;
+    align-self: center;
+  }
+  .intro h2 {
+    margin: 0;
+  }
+  .intro-desc {
+    margin: 10px 0 6px;
+    font-size: var(--fs-voice);
+  }
+  .intro-go {
+    width: 100%;
+    margin-top: 10px;
+    align-self: end;
+  }
+}
+/* A short landscape phone: a tighter page, the description kept whole. */
+@media (max-height: 520px) {
+  .intro {
+    padding: 6px;
+  }
+  .intro-sheet {
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 10px 14px 10px 28px;
+    width: min(720px, 100%);
+  }
+  .intro h2 {
+    margin-bottom: 4px;
+  }
+  .intro-desc {
+    margin: 6px 0 8px;
+    font-size: var(--fs-small);
+    line-height: 1.35;
+  }
+  .intro-body > .eyebrow,
+  .intro-body > h2 {
+    padding-right: 110px;
+  }
+  .intro-sketch {
+    padding: 6px;
+  }
+  .intro-sketch .intro-icon {
+    width: 88px;
+  }
+  .intro-reach li {
+    padding: 2px 8px 2px 2px;
+  }
+  .intro-tower {
+    width: 24px;
+    height: 24px;
+  }
+  /* The button rides the page's top corner, so the page never needs a scroll to be dismissed. */
+  .play .intro .intro-go {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    margin: 0;
+  }
+  /* Only the towers that reach it: the struck-through ones would push the lit ones out of sight. */
+  .intro-reach li.dim {
+    display: none;
+  }
 }
 /* A short landscape phone: the new-unit card is a slim pill in the corner, its description trimmed to a line
    (the full line is read out and lives in the Almanac), so the lane under it stays visible. */
@@ -653,40 +886,6 @@ button {
   .bubble p {
     font-size: var(--fs-small);
     line-height: 1.3;
-  }
-  .intro {
-    top: 6px;
-    right: 6px;
-    max-width: 280px;
-    gap: 6px;
-    padding: 5px 10px 5px 5px;
-    border-radius: 12px;
-  }
-  .intro.left {
-    left: 6px;
-  }
-  .intro-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-  }
-  .intro .eyebrow {
-    font-size: var(--fs-label);
-  }
-  .intro strong {
-    font-size: var(--fs-small);
-  }
-  .intro p {
-    font-size: var(--fs-small);
-    line-height: 1.25;
-  }
-  .intro .intro-more {
-    display: none;
-  }
-  /* A round ribbon came up while the advert shows: the advert moves to the field's foot */
-  .intro.dodge {
-    top: auto;
-    bottom: 6px;
   }
 }
 .paused-note {
@@ -1420,6 +1619,9 @@ dialog.sheet.story #story-skip {
   .speech.from-right.wipe { animation: stage-fade 240ms ease-out both; }
   .actor[data-pose] { animation: none; }
   #story-bg .act-scene { transition: none; transform: none; }
+  /* Plan item 64: the field-guide page fades in, no slide. */
+  .intro.pop { animation: stage-fade 240ms ease-out; }
+  .intro.pop .intro-sheet { animation: none; }
 }
 @keyframes stage-fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -1592,14 +1794,12 @@ dialog.sheet.story #story-skip {
     font-size: var(--fs-small);
     color: var(--ink);
   }
-  .intro {
-    left: 10px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sheet[open],
   .bubble.pop,
   .intro.pop,
+  .intro.pop .intro-sheet,
   .chip.gain,
   .chip.hurt,
   .stars .star.earned,
