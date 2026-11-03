@@ -344,7 +344,12 @@ function render(): void {
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length
   ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
   ui.progress.classList.toggle('done', flow.solved)
-  document.getElementById('valley-water')?.style.setProperty('--wet', String(flow.solved ? 1 : flow.wet.size / playable))
+  const wetShare = flow.solved ? 1 : flow.wet.size / playable
+  document.getElementById('valley-water')?.style.setProperty('--wet', String(wetShare))
+  // Plan item 70: today's seed in Bea's garden sprouts as the stream reaches the fields (a full plant at a solve).
+  const crops = document.getElementById('bea-crops')
+  crops?.style.setProperty('--wet', String(wetShare))
+  crops?.toggleAttribute('data-sprouting', game.taps > 0 || flow.solved)
   placeValleyCath()
   if (game.taps > 0) host.react(flow.wet.size / playable, flow.solved)
 
@@ -741,7 +746,7 @@ function renderRail(): void {
   const beds = weekBeds(today, data.results).map((b) => {
     const i = document.createElement('i')
     i.className = `bed bed-${b.state}${b.plot?.gold ? ' gold' : ''}`
-    i.innerHTML = b.plot ? cropSvg(b.plot.crop, b.plot.stage) : `<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="22" rx="12" ry="5"/>${b.state === 'today' ? '<path class="bed-marker" d="M14 21V8"/><rect class="bed-packet" x="9" y="4" width="10" height="8" rx="1"/>' : ''}</svg>`
+    i.innerHTML = b.plot ? cropSvg(b.plot.crop, b.plot.stage) : `<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="22" rx="12" ry="5"/>${b.state === 'today' ? '<path class="bed-marker" d="M14 21V8"/><rect class="bed-packet" x="9" y="4" width="10" height="8" rx="1"/><g class="bed-sprout"><path class="bed-stem" d="M14 21V11"/><path class="bed-leaf" d="M14 16c-4 0-6-3-6-6 4 0 6 3 6 6zM14 13c4 0 6-3 6-6-4 0-6 3-6 6z"/></g>' : ''}</svg>`
     i.title = `${b.short}${b.plot ? `: ${b.plot.label}` : ''}`
     return i
   })
