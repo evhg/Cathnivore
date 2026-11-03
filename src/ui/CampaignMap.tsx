@@ -163,8 +163,9 @@ export default function CampaignMap({
           className="cmp-map-cath"
           data-at={herChapter.id}
           ref={(el) => {
+            // Plan item 47: standing 30 above her pin (was 41) keeps her clear of every region name and pin (e2e).
             el?.style.setProperty('--cx', `${(herPin.x + 12).toFixed(1)}px`)
-            el?.style.setProperty('--cy', `${(herPin.y - 41).toFixed(1)}px`)
+            el?.style.setProperty('--cy', `${(herPin.y - 30).toFixed(1)}px`)
           }}
           aria-hidden="true"
           dangerouslySetInnerHTML={{ __html: cath }}

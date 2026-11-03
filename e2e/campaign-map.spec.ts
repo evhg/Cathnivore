@@ -119,3 +119,29 @@ test('the title\'s Campaign key shows how much of Marrow is freed', async ({ pag
   await expect(page.locator('.marrow-badge')).toHaveAttribute('data-free', '3')
   await expect(page.getByRole('button', { name: /Campaign.*3 of 7 regions liberated/ })).toBeVisible()
 })
+
+// Plan item 47: no region name runs into another, and Cath never stands on one ("Brindle Hills" ran into
+// Kingsmarket, with Cath over "Hills").
+test('region names stay clear of each other and of Cath', async ({ page }) => {
+  for (const completed of [[], ['fresh-meat'], ['fresh-meat', 'word-of-mouth', 'growing-season']]) {
+    await page.addInitScript(
+      ([k, c]) => localStorage.setItem(k as string, JSON.stringify({ version: 1, completed: c, tutorialDone: true })),
+      [KEY, completed] as const,
+    )
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    await expect(page.locator('.cmp-map-cath')).toBeVisible()
+    const hits = await page.evaluate(() => {
+      const ov = (a: DOMRect, b: DOMRect) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+      const names = [...document.querySelectorAll('.cmp-map-name')].map((e) => [e.textContent ?? '', e.getBoundingClientRect()] as const)
+      const cath = document.querySelector('.cmp-map-cath')!.getBoundingClientRect()
+      const out: string[] = []
+      names.forEach(([n, r], i) => {
+        if (ov(r, cath)) out.push(`${n} under Cath`)
+        names.slice(i + 1).forEach(([m, q]) => ov(r, q) && out.push(`${n} x ${m}`))
+      })
+      return out
+    })
+    expect(hits, completed.join(',')).toEqual([])
+  }
+})
