@@ -808,7 +808,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a fresh office and one after three cases, at D and L, and the phone tier at L.
 - **Size:** 3
 
-## 52. [ ] Hedgerow: a field that looks farmed, and towers you can tell apart at a glance *(lane A, in progress)*
+## 52. [x] Hedgerow: a field that looks farmed, and towers you can tell apart at a glance *(done 2026-11-03, lane A, 8bef22e..HEAD: plots by what lies under them (`plotlook.ts`: earth, stubble, clover, a puddle; each plot picks among the looks its left and upper neighbours lack, so 0% of plots share a look with a neighbour), painted in 2D and drawn in 3D as opaque soil beds with a timber edge; tier-1 silhouettes reshaped (beehive a round skep on a bench, barn a gambrel with a lean-to and weathervane, court a tall portico, hall long and low with a clock tower, windmill sails an X), worst pair at 24 px 0.76 -> 0.66 (`e2e-site/hedgerow-silhouettes.spec.ts`); Cath's 3D head modelled (three-quarter face, centre-parted hair), no portrait sprite; draw calls at level 13 P 464 -> 482, fps unchanged under SwiftShader (`scripts/hedgerow-drawcalls.mjs`); `tests/hedgerow-plotlook.test.ts`; shots of levels 1, 13, 38 at P and D in 2D and 3D before and after, the tower lineup and Cath close-ups in `e2e/screenshots/field52/`. Cut: the 3D tower models were not reshaped; the silhouette test covers the 2D sprites)*
 - **Why:**
   - The 2026-11-03 critique (hedge-play2d-P/D, hedge-play3d-D) found a uniform grid: about 40 identical tilled squares.
   - At tier 1 the towers read alike at phone size.
@@ -826,7 +826,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 13 and 38 at P and D in 2D and 3D, before and after.
 - **Size:** 3
 
-## 53. [ ] Cathnivore: a table that sounds like a market
+## 53. [ ] Cathnivore: a table that sounds like a market *(lane A, in progress)*
 - **Why:**
   - `src/platform/sound.ts` is seven oscillator beeps (sine, square and saw notes), plus a three-note pad. VISION's sound line asks for wood, paper and market chatter for the players' world and sterile synth for the corporations. None of that exists.
   - Buying, selling, scheming, Doubt, a Squeeze and the AI teammate's turn (item 34's show) have no sound or share one `place` blip. VISION pillar 3 ("Everything responds") is half met.
