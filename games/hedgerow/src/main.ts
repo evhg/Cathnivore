@@ -724,6 +724,8 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 66: the share of the 3D frame's height that is painted sky (null in 2D).
+    skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).

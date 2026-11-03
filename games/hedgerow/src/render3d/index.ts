@@ -6,6 +6,7 @@
 
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { BACKDROP_SKY_Y, BACKDROP_Z, buildBackdrop } from "./backdrop";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
@@ -35,7 +36,7 @@ import {
 } from "../engine";
 import { actLight, actMood, matte, nightLight } from "./palette";
 import { fordMiddle } from "../landmarks";
-import { buildCath, dressCath, buildEnemy, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, liftCath, buildEnemy, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -403,16 +404,21 @@ export class Renderer3D {
     const skyTex = new THREE.CanvasTexture(sky);
     skyTex.colorSpace = THREE.SRGBColorSpace;
     this.scene.background = skyTex;
+    // Plan item 66: the painted sky and horizon behind the far scenery.
+    this.world.add(buildBackdrop(game.level.cols, L, hasTwist(game.level, "night") || game.level.id > 90));
     const fogDim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
     const night = hasTwist(game.level, "night") || game.level.id > 90;
     this.renderer.toneMappingExposure =
-      L.exposure * (game.level.id > 90 ? 1.25 : 1) * (setPiece(game.level, "blackout") ? 0.55 : 1);
+      L.exposure * (game.level.id > 90 ? 1.25 : night ? 1 : 1.06) * (setPiece(game.level, "blackout") ? 0.55 : 1);
     this.hemi.color.set(L.hemiSky);
     this.hemi.groundColor.set(L.hemiGround);
-    this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.65);
+    // Plan item 66: a warm key and a soft, warm bounce by day (the 2D field's sunny poster), not overcast fill.
+    this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.8);
+    if (!night) this.hemi.groundColor.lerp(new THREE.Color("#c8a46a"), 0.35);
     this.sun.color.set(L.sun);
-    this.sun.intensity = L.sunIntensity * 1.25 * (hasTwist(game.level, "rain") ? 0.7 : 1);
+    if (!night) this.sun.color.lerp(new THREE.Color("#ffd9a0"), 0.3);
+    this.sun.intensity = L.sunIntensity * (night ? 1.25 : 1.4) * (hasTwist(game.level, "rain") ? 0.7 : 1);
     // Night: a cool moon fills in from the back so everything still reads.
     this.rim.color.set(night ? "#8fb0ff" : "#9fc4ff");
     this.rim.position.set(game.level.cols / 2, 6, -8);
@@ -439,6 +445,7 @@ export class Renderer3D {
     this.sun.shadow.map?.dispose();
     this.sun.shadow.map = null;
     this.cath = buildCath(this.faceTex);
+    liftCath(this.cath);
     this.dynamic.add(this.cath);
   }
 
@@ -483,7 +490,7 @@ export class Renderer3D {
     const target = new THREE.Vector3(cols / 2, 0, rows / 2 + 0.2);
     // Portrait screens look down more steeply, so the map uses the height instead of empty foreground.
     const portrait = this.w / this.h < 0.8;
-    const el = ((portrait ? 60 : 42) * Math.PI) / 180;
+    const el = ((portrait ? 56 : 38) * Math.PI) / 180;
     const dir = new THREE.Vector3(0, Math.sin(el), Math.cos(el));
     const corners = [
       [-0.2, 0, -0.2],
@@ -492,6 +499,12 @@ export class Renderer3D {
       [cols + 0.2, 0, rows + 0.3],
       [-0.2, 0.9, -0.2],
       [cols + 0.2, 0.9, -0.2],
+      // Plan item 66: the far scenery (houses, the windmill's body) stays whole under a band of painted sky.
+      [cols / 2, 1.5, -3],
+      [0, 1.5, -3],
+      [cols, 1.5, -3],
+      // ...and the sky card shows above the far hills (its point 2.4 up has to reach the frame's top).
+      [cols / 2, 2.4, BACKDROP_Z],
     ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
     let lo = 4;
     let hi = 80;
@@ -503,7 +516,7 @@ export class Renderer3D {
       this.camera.updateProjectionMatrix();
       const fits = corners.every((c) => {
         const p = c.clone().project(this.camera);
-        return Math.abs(p.x) < 0.98 && p.y > -0.97 && p.y < 0.8;
+        return Math.abs(p.x) < 0.98 && p.y > -0.97 && p.y < (c.z < -4 ? 1.0 : c.z < -1 ? 0.9 : 0.8);
       });
       if (fits) hi = mid;
       else lo = mid;
@@ -515,12 +528,20 @@ export class Renderer3D {
     if (this.scene.fog instanceof THREE.Fog) {
       const L = actLight(game.level.id);
       const dim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
-      this.scene.fog.near = (hi + L.fogNear - 14) * dim;
-      this.scene.fog.far = (hi + L.fogFar - 14) * dim;
+      // Plan item 66: clear air over the field by day; the haze only gathers out towards the hills.
+      const clear = dim === 1 && game.level.id <= 90 ? 4 : 0;
+      this.scene.fog.near = (hi + L.fogNear - 14 + clear) * dim;
+      this.scene.fog.far = (hi + L.fogFar - 14 + clear) * dim;
     }
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
     this.resetView();
+  }
+
+  /** Plan item 66: the share of the frame's height above the backdrop's painted hills (its sky), at the view's centre. */
+  skyBand(): number {
+    const p = this.v1.set(this.fieldSize.x / 2, BACKDROP_SKY_Y, BACKDROP_Z).project(this.camera);
+    return Math.max(0, Math.min(1, (1 - p.y) / 2));
   }
 
   reset(): void {

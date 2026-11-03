@@ -1988,7 +1988,36 @@ export function dressCath(root: THREE.Group): void {
   const d = root.userData.dress as { id: string; mats: Record<"trousers" | "boots" | "jacket" | "blouse" | "sleeve", THREE.MeshStandardMaterial> } | undefined;
   if (!d || d.id === o.id) return;
   d.id = o.id;
-  for (const k of Object.keys(d.mats) as Array<keyof typeof d.mats>) d.mats[k].color.set(o[k]);
+  for (const k of Object.keys(d.mats) as Array<keyof typeof d.mats>) {
+    d.mats[k].color.set(o[k]);
+    d.mats[k].emissive.set(o[k]).multiplyScalar(CATH_LIFT);
+  }
+}
+
+/** Plan item 66: how much of her own colour Cath gives off, so her dark jacket never reads as a blob on the grass. */
+const CATH_LIFT = 0.3;
+
+/**
+ * Plan item 66: Cath's figure lit from within a little (each material's own colour as a soft emission), so she
+ * always reads against the field. Shared, cached materials are cloned first so nothing else on the field glows.
+ */
+export function liftCath(root: THREE.Group): void {
+  const own = new Set(Object.values((root.userData.dress as { mats: Record<string, THREE.Material> } | undefined)?.mats ?? {}));
+  const done = new Map<THREE.Material, THREE.Material>();
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || Array.isArray(m.material)) return;
+    const mat = m.material as THREE.MeshStandardMaterial;
+    if (!mat.isMeshStandardMaterial || mat.map || mat.emissiveIntensity * mat.emissive.getHSL({ h: 0, s: 0, l: 0 }).l > 0.05) return;
+    let next = done.get(mat) as THREE.MeshStandardMaterial | undefined;
+    if (!next) {
+      next = own.has(mat) ? mat : mat.clone();
+      next.emissive.copy(next.color).multiplyScalar(CATH_LIFT);
+      next.emissiveIntensity = 1;
+      done.set(mat, next);
+    }
+    m.material = next;
+  });
 }
 
 // ---- landmarks ----

@@ -594,6 +594,8 @@ export function buildGround(level: Level): Ground {
     const oy = Math.max(0, -y, y - rows);
     const out = Math.hypot(ox, oy);
     let h = out > 0 ? smooth(Math.min(1, out / 6)) * (1.2 + noise(x, y) * 0.9) : 0;
+    // Plan item 66: behind the far edge the country stays low, so the painted backdrop's hills and sky show.
+    if (y < 0) h *= 1 - 0.65 * smooth(Math.min(1, -y / 4));
     h += 0.32 * plinth(x, y);
     const d = laneDistance(level, x, y);
     if (d < 0.5) h -= 0.035 * smooth(1 - d / 0.5);
