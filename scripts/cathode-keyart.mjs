@@ -11,7 +11,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 const base = process.env.CATHODE_URL ?? 'http://localhost:4180/cathode/'
 const out = process.env.KEYART_OUT ?? 'games/cathode/public/keyart'
 mkdirSync(out, { recursive: true })
-const districts = process.argv.slice(2).length ? process.argv.slice(2) : ['market', 'clinic', 'plaza', 'tower', 'vault']
+const districts = process.argv.slice(2).length ? process.argv.slice(2) : ['market', 'clinic', 'plaza', 'tower', 'vault', 'office']
 // Per-district lens moves off her start (session.ts keyart stage: kx/kz/ky metres, kyaw/kpitch degrees), for a
 // district whose start frame reads as a blockout. Override with KEYART_Q for exploring.
 const LENS = { clinic: '&kz=-6&kx=-0.9&kyaw=-6' }

@@ -164,6 +164,15 @@ const LORE: Record<string, string> = {
     "Under the river there is a vault, and in it whatever Candor built to think for it. Every name on my list answered to it. The water is cold down there. I stopped noticing a while ago.",
 };
 const CLOSED_LORE = "The list is closed. The rain hasn’t heard. I keep walking anyway: there is always another name.";
+/**
+ * Plan item 69: the office load is the room between cases, not the next name's file (it showed Crisp's headline and
+ * the market's lines under "Between cases"). Cath's voice at her desk, the next name only as the card on the board.
+ */
+function officeLore(next: { name: string } | undefined): string {
+  return next
+    ? `Coat on the hook, kettle on, rain on the glass. The board waits with ${next.name}’s card pinned at the top. One quiet minute first. Then back to work.`
+    : "Coat on the hook, kettle on. Every card on the board has a line through it. I sit with that a while.";
+}
 
 export interface LoadingCard {
   /** The district shown: the target if reached, else the market. */
@@ -190,8 +199,9 @@ export interface LoadingCard {
  */
 export function loadingCard(jobsDone: readonly string[], target: string | undefined, o: { seen?: number; travel?: boolean } = {}): LoadingCard {
   const want = target ?? "market";
-  const id = districtReached(want, jobsDone) ? want : "market";
-  const d = DISTRICT_NEEDS.find((x) => x.id === id)!;
+  // The office is always hers; it has its own key art (plan item 69), and its act line below.
+  const id = want === "office" ? "office" : districtReached(want, jobsDone) ? want : "market";
+  const d = DISTRICT_NEEDS.find((x) => x.id === id) ?? DISTRICT_NEEDS[0]!;
   const rows = listRows(jobsDone);
   const next = THE_LIST.find((n) => !jobsDone.includes(n.job));
   let struck = 0;
@@ -204,11 +214,11 @@ export function loadingCard(jobsDone: readonly string[], target: string | undefi
   }
   return {
     district: id,
-    // Plan item 16: the office is over the market (its key art), between cases rather than in an act.
+    // Plan item 16: the office is between cases rather than in an act.
     place: want === "office" ? "BETWEEN CASES · CATH’S OFFICE" : `ACT ${d.act} · ${d.place.toUpperCase()}`,
-    name: next ? next.name : "The List",
+    name: want === "office" ? "Cath’s office" : next ? next.name : "The List",
     job: next?.job,
-    lore: next ? LORE[next.job]! : CLOSED_LORE,
+    lore: want === "office" ? officeLore(next) : next ? LORE[next.job]! : CLOSED_LORE,
     list,
     sealed: rows.filter((r) => r.redacted).length,
     motif: o.travel ? "travel" : "arrive",

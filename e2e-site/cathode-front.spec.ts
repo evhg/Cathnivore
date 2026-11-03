@@ -148,3 +148,18 @@ test.describe('CATHODE front door fits (plan item 40)', () => {
     }
   })
 })
+
+// Plan item 69: the office load is Cath's office over the office's own key art, not Crisp's market file.
+test('the office loading card names the office over its own key art, inside the viewport', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=loading-office&shot')
+  const name = page.locator('#loading:not([hidden]) .ld-name')
+  await expect(name).toHaveText('Cath’s office', { timeout: 120_000 })
+  await expect(page.locator('#loading .ld-place')).toContainText('BETWEEN CASES')
+  expect(await page.locator('#loading .ld-img').evaluate((e) => getComputedStyle(e).backgroundImage)).toMatch(/keyart\/office\.webp/)
+  const vp = page.viewportSize()!
+  for (const sel of ['.ld-name', '.ld-lore', '.ld-corner']) {
+    const b = (await page.locator(`#loading ${sel}`).boundingBox())!
+    expect(b.x >= 0 && b.y >= 0 && b.x + b.width <= vp.width + 1 && b.y + b.height <= vp.height + 1, sel).toBe(true)
+  }
+})

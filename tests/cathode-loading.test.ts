@@ -41,6 +41,19 @@ describe('loadingCard', () => {
       }
   })
 
+  it('plan item 69: the office load is Cath\'s office between cases, not the next name\'s file', () => {
+    for (const done of SAVES) {
+      const c = loadingCard(done, 'office')
+      expect(c.place).toMatch(/BETWEEN CASES/)
+      expect(c.name).toBe('Cath’s office')
+      expect(c.district).toBe('office')
+      expect(c.lore).not.toBe(loadingCard(done, 'market').lore)
+      expect(c.lore.split(/\s+/).length).toBeLessThanOrEqual(55)
+      expect(c.lore).not.toMatch(/\b(press|click|tap|hold|key|keys|button)\b/i)
+    }
+    expect(loadingCard([], 'office').lore).toMatch(/Julian Crisp/)
+  })
+
   it('strikes through only the names dealt with since the list was last seen', () => {
     const c = loadingCard(['crispBoss', 'vaneBoss'], 'plaza', { seen: 1 })
     expect(c.list.map((r) => r.fresh)).toEqual([false, true, false])

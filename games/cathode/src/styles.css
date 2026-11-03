@@ -141,6 +141,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .loading[data-district="plaza"] .ld-img { background-image: url("/keyart/plaza.webp"); }
 .loading[data-district="tower"] .ld-img { background-image: url("/keyart/tower.webp"); filter: grayscale(1) contrast(1.4) brightness(.5); }
 .loading[data-district="vault"] .ld-img { background-image: url("/keyart/vault.webp"); }
+/* Plan item 69: the office's own frame (the case board under the lamp, the blinds' light on the boards), cropped
+   below the beams so the board sits in the eye line. */
+.loading[data-district="office"] .ld-img { inset: -42% -12% -4% -12%; background-image: url("/keyart/office.webp"); background-position: 50% 80%; }
 @keyframes ld-push { from { transform: scale(1); } to { transform: scale(1.06); } }
 /* The duotone: the grey frame tinted from night to ink with a hint of the district's own colour. */
 .ld-tone { background: var(--ld-tint, var(--tint-market)); mix-blend-mode: color; opacity: .62; }

@@ -598,7 +598,7 @@ void fetch(`${import.meta.env.BASE_URL}../version.json`)
   .catch(() => ($("build-ver").textContent = "Build dev"));
 
 /**
- * C14 stages: the case file 40% in (`loading`, `loading-fishmarket`) and a travel into a reached district
+ * C14 stages: the case file 40% in (`loading`, `loading-fishmarket`, `loading-office`) and a travel into a reached district
  * (`loading-travel`, the clinic after Crisp), over the district's key art (screenshot runs only).
  */
 function stageLoading(name: string): void {
@@ -608,7 +608,7 @@ function stageLoading(name: string): void {
   $("front-grain").classList.add("is-off");
   const travel = name === "loading-travel";
   const done = travel ? ["fishMarket", "crispLead", "quayContracts", "candorManifest", "crispBoss"] : [];
-  const card = loadingCard(done, travel ? "clinic" : "market", { seen: travel ? 0 : undefined, travel });
+  const card = loadingCard(done, travel ? "clinic" : name === "loading-office" ? "office" : "market", { seen: travel ? 0 : undefined, travel });
   const v = openLoading($("loading"), card, { still: true, held: travel ? 0.62 : 0.4 });
   (hook as { loadTrace?: number[] }).loadTrace = v.trace;
   // The percentage trace for the 4% rule: a real ease over a load that jumps (0, 40%, 90%, 100%) in its own view.
