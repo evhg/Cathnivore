@@ -3,13 +3,20 @@ import { test, expect } from '@playwright/test'
 // Plan item 55: each region's landmark stands on its tile, inside the hex and clear of every piece, through an
 // autoplayed game's later rounds (the same bounding check as board-scales).
 test('landmarks stand inside their hexes, clear of the pieces', async ({ page }) => {
-  await page.goto('/?e2eAutoplay=1')
-  await page.getByText('Quick Game').click()
-  await page.getByRole('button', { name: 'Start' }).click()
+  // Stopped at round 7, so a late board holds still to be judged; a game that ends sooner is dealt again.
+  for (let deal = 0; deal < 3; deal++) {
+    await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=7')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await expect
+      .poll(() => page.evaluate(() => (document.querySelector('.end-screen') ? 99 : Number(document.querySelector('.map-wrap svg.map[data-round]')?.getAttribute('data-round') ?? 0))), { timeout: 60_000 })
+      .toBeGreaterThanOrEqual(7)
+    if (!(await page.locator('.end-screen').isVisible())) break
+  }
   let checked = 0
   const deadline = Date.now() + 60_000
-  while (Date.now() < deadline && checked < 3) {
-    const report = await page.evaluate(() => {
+  const measure = () =>
+    page.evaluate(() => {
       const svg = document.querySelector<SVGSVGElement>('.map-wrap svg.map[data-round]')
       if (!svg) return null
       const round = Number(svg.dataset.round)
@@ -49,6 +56,15 @@ test('landmarks stand inside their hexes, clear of the pieces', async ({ page })
       }
       return { round, out, landmarks, hidden }
     })
+  while (Date.now() < deadline && checked < 3) {
+    let report = await measure()
+    // Plan item 63: pieces drop in and slide 200 ms to new slots, so a clash counts only if it is still there once the
+    // board holds still (the landmark is placed against where they land).
+    if (report && report.out.length > 0) {
+      await page.waitForTimeout(700)
+      const again = await measure()
+      report = again?.round === report.round ? again : null
+    }
     if (report && report.round >= 6) {
       expect(report.out, `round ${report.round}`).toEqual([])
       // Most tiles keep theirs even late in a game.

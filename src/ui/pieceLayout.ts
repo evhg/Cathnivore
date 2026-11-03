@@ -48,7 +48,7 @@ export interface PieceTray {
 
 /** A stack's body at scale 1, and the gap between slots. */
 const STACK_W = 26
-const STACK_H = 30
+const STACK_H = 36
 const ORNAMENT_H = 8
 const PRODUCER_W = 26
 const PRODUCER_H = 40
@@ -57,7 +57,7 @@ const LABEL_Y = -TILE_R * 0.62
 const LABEL_H = 21
 /** The threat badge's box under the name plate (Map.tsx draws it 60 x 14). */
 export const BADGE = { x0: -31, y0: LABEL_Y + 8, x1: 31, y1: LABEL_Y + 22 }
-export const ENEMY_Y = -TILE_R * 0.1
+export const ENEMY_Y = -TILE_R * 0.08
 export const PRODUCER_Y = TILE_R * 0.44
 export { STACK_W, STACK_H, PRODUCER_W, PRODUCER_H, ORNAMENT_H }
 
@@ -85,12 +85,13 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   if (input.badge) out.push({ kind: 'badge', ...BADGE })
   const stacks = (['outlets', 'buyouts', 'doubt'] as const).filter((k) => input[k] > 0)
   const slots: PieceKind[] = [...stacks, ...(input.scheme ? (['scheme'] as const) : [])]
-  // A stack's slot holds its body and its count badge (overhanging the top right corner), plus its ornament above.
-  const w = STACK_W * scale + countR
+  // A stack's slot holds its body and its count badge (half over the body's empty top right corner, half outside),
+  // plus its ornament above.
+  const w = STACK_W * scale + countR * 0.5
   const top = ENEMY_Y - (STACK_H * scale) / 2 - (ornaments ? ORNAMENT_H * scale : 0) - countR * 0.5
   const bottom = ENEMY_Y + (STACK_H * scale) / 2
   row(slots.length, w).forEach((x, k) => out.push({ kind: slots[k]!, x0: x, y0: top, x1: x + w, y1: bottom }))
-  const pw = PRODUCER_W * scale + countR * 0.6
+  const pw = PRODUCER_W * scale + countR * 0.35
   row(input.producers, pw).forEach((x, k) =>
     out.push({ kind: 'producer', i: k, x0: x, y0: PRODUCER_Y - PRODUCER_H * scale * 0.6, x1: x + pw, y1: PRODUCER_Y + PRODUCER_H * scale * 0.4 }),
   )

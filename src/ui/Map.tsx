@@ -1,7 +1,7 @@
 import { Landmark } from './Landmark'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BADGE, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
-import { BOARD_LANDMARKS, landmarkSpot, pickSpot, type Box } from './landmarkSpot'
+import { BOARD_LANDMARKS, pickSpot } from './landmarkSpot'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
@@ -268,7 +268,7 @@ function EnemyStack({ kind, n, scale, ornaments, countR }: { kind: 'outlets' | '
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {n > 1 && <CountBadge cx={STACK_W * scale} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
+      {n > 1 && <CountBadge cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
     </g>
   )
 }
@@ -313,7 +313,7 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial }: { pid: Pr
           </text>
         )}
       </g>
-      {n > 1 && <CountBadge cx={w + 0.6 * countR - countR} cy={top - s + countR} r={countR} n={n} />}
+      {n > 1 && <CountBadge cx={w + 0.35 * countR - countR} cy={top - s + countR} r={countR} n={n} />}
     </g>
   )
 }
@@ -626,15 +626,6 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
     ro?.observe(svg)
     return () => ro?.disconnect()
   }, [fit.k])
-  // Plan item 55: once the pieces are laid out, each landmark moves to the first spot clear of their real boxes.
-  useLayoutEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
-    placeLandmarks(svg)
-    // Plan item 63: pieces slide 200 ms to their new slots, so the landmark is placed again once they have landed.
-    const t = window.setTimeout(() => placeLandmarks(svg), 260)
-    return () => window.clearTimeout(t)
-  }, [state, hexPx])
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
@@ -677,6 +668,20 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
         const stalls = Object.entries(r.stalls).filter(([, n]) => (n ?? 0) > 0) as [ProducerId, number][]
         const dimmed = targeting && !highlighted.has(id)
         const glow = targeting && highlighted.has(id)
+        // Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen; the landmark
+        // takes the first flank spot clear of its slots.
+        const tray = pieceLayout(
+          {
+            outlets: r.outlets,
+            buyouts: r.buyouts,
+            doubt: r.doubt,
+            producers: stalls.length,
+            scheme: false,
+            labelWidth: REGIONS[id].name.length * 8.6 + 16,
+            badge: squeezeTargets.includes(id) || expandTargets.includes(id),
+          },
+          hexPx,
+        )
         return (
           <g
             key={id}
@@ -731,8 +736,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
             {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
                 map's art, on the first flank of the tile its pieces leave clear. */}
             {(() => {
-              const kinds = (r.outlets > 0 ? 1 : 0) + (r.buyouts > 0 ? 1 : 0) + (r.doubt > 0 ? 1 : 0)
-              const spot = landmarkSpot(kinds, stalls.length)
+              const spot = pickSpot(tray.rects)
               if (!spot) return null
               const grip = gripStage(r)
               const edge = atTheEdge(r)
@@ -809,18 +813,6 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
                 stacks in a row across the middle, the producers' miniatures along the bottom, the name plate and any
                 threat badge kept clear. Each piece slides to its slot when the tray changes. */}
             {(() => {
-              const tray = pieceLayout(
-                {
-                  outlets: r.outlets,
-                  buyouts: r.buyouts,
-                  doubt: r.doubt,
-                  producers: stalls.length,
-                  scheme: false,
-                  labelWidth: REGIONS[id].name.length * 8.6 + 16,
-                  badge: squeezeTargets.includes(id) || expandTargets.includes(id),
-                },
-                hexPx,
-              )
               const s = tray.scale
               const icons = { outlets: ['o', r.outlets], buyouts: ['b', r.buyouts], doubt: ['d', r.doubt] } as const
               return (
@@ -1101,36 +1093,6 @@ function fitPlaques(svg: SVGSVGElement) {
 
 function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand'): boolean {
   return regionMatchesPressureSlot(state, region, slot)
-}
-
-/**
- * Plan item 55: moves each tile's landmark clear of the pieces actually drawn on it. The pieces' screen boxes are
- * taken into the tile's own units (round its centre) and the landmark takes the first flank spot clear of them.
- */
-function placeLandmarks(svg: SVGSVGElement): void {
-  for (const lm of Array.from(svg.querySelectorAll<SVGGElement>('.board-landmark'))) {
-    const hex = lm.closest<SVGGElement>('.region-hex')
-    const ctm = hex?.getScreenCTM()
-    if (!hex || !ctm) continue
-    const inv = ctm.inverse()
-    const cx = Number(lm.dataset.cx)
-    const cy = Number(lm.dataset.cy)
-    const taken: Box[] = []
-    for (const el of Array.from(hex.querySelectorAll<SVGGElement>('[data-piece]'))) {
-      const r = el.getBoundingClientRect()
-      if (!r.width && !r.height) continue
-      const a = new DOMPoint(r.left, r.top).matrixTransform(inv)
-      const b = new DOMPoint(r.right, r.bottom).matrixTransform(inv)
-      taken.push({ x0: Math.min(a.x, b.x) - cx, y0: Math.min(a.y, b.y) - cy, x1: Math.max(a.x, b.x) - cx, y1: Math.max(a.y, b.y) - cy })
-    }
-    const spot = pickSpot(taken)
-    if (!spot) {
-      lm.setAttribute('visibility', 'hidden')
-      continue
-    }
-    lm.removeAttribute('visibility')
-    lm.setAttribute('transform', `translate(${cx + spot.x}, ${cy + spot.y}) scale(${spot.scale})`)
-  }
 }
 
 /**
