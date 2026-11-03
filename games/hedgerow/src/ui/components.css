@@ -890,6 +890,42 @@ body:has(#dlg-pause[open]) .paused-note {
   }
 }
 
+/* A portrait phone: the advert is a slim strip across the top, the lead sentence only (the rest is read out
+   and lives in the Almanac), so the lane's first bends under it stay in sight (critique 2026-11-03). */
+@media (max-width: 599.98px) {
+  .play .intro {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    max-width: none;
+    gap: 8px;
+    padding: 5px 10px 9px 5px;
+  }
+  .play .intro::after {
+    height: 4px;
+  }
+  .play .intro-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .play .intro strong {
+    display: inline;
+    font-size: var(--fs-small);
+  }
+  .play .intro .eyebrow {
+    display: inline;
+    margin-right: 6px;
+  }
+  .play .intro p:not(.eyebrow) {
+    margin: 1px 0 0;
+    font-size: var(--fs-label);
+    line-height: 1.25;
+  }
+  .play .intro .intro-more {
+    display: none;
+  }
+}
+
 /* Field overlays: paper notes */
 .play .paused-note {
   z-index: var(--z-field-ui);
