@@ -2211,3 +2211,13 @@ html.no-animations .cath-companion .cameo {
   .cath-companion-line { padding-block: 4px; }
   .controls > button { min-height: 46px; }
 }
+
+/* The desktop Actions frame scrolls once a producer can do a lot: the fold cut through the next group's
+   cards and read as two empty card tops. The tab on its foot names that group and how many are below. */
+@media (min-width: 1024px) {
+  .actions-well[data-more][data-next]::after {
+    content: attr(data-next) " \00B7  " attr(data-more) " more \2193";
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+}

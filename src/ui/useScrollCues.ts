@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 // cut in half by broken layout. Every `[data-scroll-cue]` element under `root` gets
 //   - `data-fade-top` / `data-fade-bottom` while there is more to scroll that way (CSS masks the edge),
 //   - and its parent frame gets `data-more="<n>"`, the number of rows wholly or partly below the fold,
-//     which CSS prints as a small "n more" tab on the frame's bottom edge.
+//     which CSS prints as a small "n more" tab on the frame's bottom edge, and `data-next="<group>"`, the
+//     heading of the group the first hidden row is in (the desktop Actions frame names it: "Play · 8 more").
 // Attributes only, no inline styles (CSP). Re-measured on scroll, resize and any DOM change under root.
 // Returns a callback ref for the root, so the cues bind whenever that element mounts.
 export function useScrollCues(): (el: HTMLElement | null) => void {
@@ -23,17 +24,28 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
       const owner = el.parentElement
       if (!owner) return
       let more = 0
+      // The group the first hidden row belongs to (the Actions frame's "Play", "Supply"...), so the cue
+      // names what is below instead of leaving a faded card top to guess at.
+      let next = ''
       if (bottom) {
         const fold = el.getBoundingClientRect().bottom - 8
         // A scroller that wraps one list (the Log's <ol>) counts that list's rows.
         const rows = el.children.length === 1 && el.firstElementChild?.matches('ol, ul') ? el.firstElementChild.children : el.children
+        let head = ''
         for (const child of Array.from(rows)) {
+          if (child.matches('.action-head')) head = child.textContent?.trim() ?? ''
           const r = child.getBoundingClientRect()
-          if (r.height > 0 && r.bottom > fold && !child.matches('[aria-hidden="true"], .action-head, .log-round')) more++
+          if (r.height > 0 && r.bottom > fold && !child.matches('[aria-hidden="true"], .action-head, .log-round')) {
+            if (!more) next = head
+            more++
+          }
         }
       }
       if (more > 0) owner.dataset.more = String(more)
       else delete owner.dataset.more
+      if (more > 0 && next) {
+        if (owner.dataset.next !== next) owner.dataset.next = next
+      } else delete owner.dataset.next
     }
 
     const scan = () => {
