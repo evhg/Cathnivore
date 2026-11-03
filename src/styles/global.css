@@ -3011,3 +3011,10 @@ html.no-animations .end-play, html.no-animations .end-grade { animation: none; }
 /* Plan item 48: a tap skips the end screen's sequence. */
 .end-screen.end-skip *, .end-screen.end-skip *::before { animation-delay: 0s !important; animation-duration: 0.01s !important; }
 .end-screen.end-skip .end-screen-hero.is-win::before { animation: none !important; }
+/* Plan item 55: Hollowell's grip props pop onto a landmark as a stage arrives; reduced motion cross-fades them. */
+.grip-props > g { transform-box: fill-box; transform-origin: 50% 100%; animation: grip-in 0.45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes grip-in { from { opacity: 0; transform: scale(0.4); } }
+.grip-glaze, .grip-wilt { transition: opacity 0.6s ease; }
+@media (prefers-reduced-motion: reduce) { .grip-props > g { animation: grip-fade 0.6s ease both; } }
+html.no-animations .grip-props > g { animation: none; }
+@keyframes grip-fade { from { opacity: 0; } }

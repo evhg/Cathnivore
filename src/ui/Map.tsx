@@ -1,4 +1,5 @@
 import { Landmark } from './Landmark'
+import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BOARD_LANDMARKS, landmarkSpot, pickSpot, type Box } from './landmarkSpot'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
@@ -567,6 +568,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
   const squeezeTargets = rules.squeeze ? active.filter((id) => matchesSlot(state, id, 'squeeze')) : []
   const expandTargets = rules.expand ? active.filter((id) => matchesSlot(state, id, 'expand')) : []
   const highlighted = new Set(highlight ?? [])
+  const wilted = squeezedLastTurn(state)
   const targeting = highlighted.size > 0
   const colourBlindPatterns = loadSettings().colourBlindPatterns
   const uid = useId().replace(/:/g, '')
@@ -691,15 +693,22 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} id={id} />
             </g>
+            {/* Plan item 55: Hollowell dug in (grip stage 2+) glazes the ground cold; a region the last enemy turn
+                Squeezed wilts (greyed, the crops drooping) until the next. */}
+            {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--sea)" opacity={gripStage(r) >= 3 ? 0.2 : 0.12} pointerEvents="none" />}
+            {wilted.has(id) && !r.liberated && <polygon className="grip-wilt" data-wilt="true" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--ink)" opacity={0.14} pointerEvents="none" />}
             {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
                 map's art, on the first flank of the tile its pieces leave clear. */}
             {(() => {
               const kinds = (r.outlets > 0 ? 1 : 0) + (r.buyouts > 0 ? 1 : 0) + (r.doubt > 0 ? 1 : 0)
               const spot = landmarkSpot(kinds, stalls.length)
               if (!spot) return null
+              const grip = gripStage(r)
+              const edge = atTheEdge(r)
               return (
-                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
+                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
                   <Landmark kind={BOARD_LANDMARKS[id]} />
+                  <GripProps stage={grip} edge={edge} />
                 </g>
               )
             })()}
@@ -1099,4 +1108,49 @@ function placeLandmarks(svg: SVGSVGElement): void {
     lm.removeAttribute('visibility')
     lm.setAttribute('transform', `translate(${cx + spot.x}, ${cy + spot.y}) scale(${spot.scale})`)
   }
+}
+
+/**
+ * Plan item 55: Hollowell's props on a landmark, in its own 24-unit box so they stand where it does: a glossy
+ * billboard (stage 1+), a delivery van (stage 2+), boards across the landmark under a SOLD sign (stage 3), and a
+ * small warning pennant when the next Squeeze would take ground. Each reads by shape, so greyscale tells them apart.
+ */
+function GripProps({ stage, edge }: { stage: GripStage; edge: boolean }) {
+  const ink = { stroke: 'var(--ink)', strokeWidth: 0.9, strokeLinejoin: 'round' as const }
+  return (
+    <g className="grip-props">
+      {stage >= 1 && (
+        <g className="grip-billboard" data-grip-prop="billboard" {...ink}>
+          <path d="M7 -3 V-6 M12 -3 V-6" />
+          <rect x={4.5} y={-12.5} width={9} height={6.5} rx={0.8} fill="var(--hollowell)" />
+          <path d="M5.5 -10.5 H12.5" stroke="var(--paper)" strokeWidth={1.2} />
+          <path d="M5.5 -8 H10" stroke="var(--paper)" strokeWidth={0.8} />
+        </g>
+      )}
+      {stage >= 2 && (
+        <g className="grip-van" data-grip-prop="van" {...ink}>
+          <path d="M-12.5 11 V5 H-5 L-3 8 V11 Z" fill="var(--paper-hi, var(--paper))" />
+          <path d="M-12.5 7.5 H-5" stroke="var(--hollowell)" strokeWidth={1.4} />
+          <circle cx={-10} cy={11.4} r={1.6} fill="var(--ink)" />
+          <circle cx={-5.4} cy={11.4} r={1.6} fill="var(--ink)" />
+        </g>
+      )}
+      {stage >= 3 && (
+        <g className="grip-sold" data-grip-prop="sold" {...ink}>
+          <path d="M-9 -6 L9 6 M-9 6 L9 -6" stroke="var(--soil)" strokeWidth={3} strokeLinecap="round" />
+          <path d="M-9 -6 L9 6 M-9 6 L9 -6" stroke="var(--ink)" strokeWidth={0.6} />
+          <rect x={-7} y={-3} width={14} height={6} rx={1} fill="var(--hollowell)" />
+          <text x={0} y={1.6} textAnchor="middle" fontSize={4.6} fontWeight={800} fill="var(--paper)" stroke="none">
+            SOLD
+          </text>
+        </g>
+      )}
+      {edge && (
+        <g className="grip-edge" data-grip-prop="edge" {...ink}>
+          <path d="M-12 -2 V-13" />
+          <path d="M-12 -13 L-5 -11 L-12 -8.6 Z" fill="var(--clay-deep)" />
+        </g>
+      )}
+    </g>
+  )
 }
