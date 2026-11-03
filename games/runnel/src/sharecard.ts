@@ -35,7 +35,7 @@ export const CARD_H = 1350
 
 const INK = '#2b2320'
 const PAPER = '#f6efe0'
-const COLOURS = { stone: '#9a948a', field: '#7bbf4a', spring: '#4aa3d8', channel: '#d9c39a', water: '#3d8fd1', rim: '#5a4632' }
+const COLOURS = { stone: '#9a948a', field: '#7bbf4a', spring: '#4aa3d8', channel: '#d9c39a', water: '#3d8fd1', rim: '#5a4632', bankSun: '#b98a55', bankShade: '#6e4b29', bed: '#4e3520' }
 
 /** Draws the card: a title, the solved board with water in every channel, the numbers and the address. */
 export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResult): void {
@@ -82,18 +82,32 @@ export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResu
     ctx.lineWidth = 3
     ctx.stroke()
     if (c.kind === 'stone') return
-    // water along every opening of the solved channel
-    ctx.strokeStyle = flow.wet.has(i) ? COLOURS.water : '#b8a98a'
-    ctx.lineWidth = s * 0.22
-    ctx.lineCap = 'round'
-    for (let d = 0; d < 6; d++) {
-      if (!(c.solved & (1 << d))) continue
-      const a = (Math.PI / 180) * 60 * d
+    // Plan item 61: every opening a ditch like the board's: a shaded and a lit slope (noon light from above), a
+    // dark bed, and water in it where the river runs.
+    const spokes: number[] = []
+    for (let d = 0; d < 6; d++) if (c.solved & (1 << d)) spokes.push((Math.PI / 180) * 60 * d)
+    const along = (a: number, off: number, colour: string, width: number) => {
+      const nx = -Math.sin(a) * off
+      const ny = Math.cos(a) * off
+      ctx.strokeStyle = colour
+      ctx.lineWidth = width
       ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + Math.cos(a) * s * 0.86, y + Math.sin(a) * s * 0.86)
+      ctx.moveTo(x + nx, y + ny)
+      ctx.lineTo(x + Math.cos(a) * s * 0.86 + nx, y + Math.sin(a) * s * 0.86 + ny)
       ctx.stroke()
     }
+    ctx.lineCap = 'butt'
+    for (const a of spokes) {
+      along(a, s * 0.055, Math.cos(a) * -0.2 + Math.sin(a) * -0.98 < 0 ? COLOURS.bankSun : COLOURS.bankShade, s * 0.11)
+      along(a, -s * 0.055, Math.cos(a) * -0.2 + Math.sin(a) * -0.98 < 0 ? COLOURS.bankShade : COLOURS.bankSun, s * 0.11)
+      along(a, 0, COLOURS.bed, s * 0.065)
+    }
+    ctx.lineCap = 'round'
+    ctx.fillStyle = COLOURS.bed
+    ctx.beginPath()
+    ctx.arc(x, y, s * 0.13, 0, Math.PI * 2)
+    ctx.fill()
+    if (flow.wet.has(i)) for (const a of spokes) along(a, 0, COLOURS.water, s * 0.09)
     if (c.kind === 'field' || c.kind === 'spring') {
       ctx.fillStyle = c.kind === 'spring' ? '#e8f6ff' : '#f2d13a'
       ctx.beginPath()
