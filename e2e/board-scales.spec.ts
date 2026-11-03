@@ -32,6 +32,9 @@ test('late-game pieces stay inside their hexes', async ({ page }, testInfo) => {
           return c
         }
         for (const el of Array.from(hex.querySelectorAll<SVGGElement>('[data-piece]'))) {
+          // Measure pieces at rest: a Squeeze drops its stack in from above the tile (stack-thud), a new piece
+          // pops in, and pieces slide 200 ms to new slots; a mid-flight box is not where the piece rests.
+          if (el.getAnimations({ subtree: true }).some((a) => a.playState === 'running' && a.effect?.getTiming().iterations !== Infinity)) continue
           pieces++
           const r = el.getBoundingClientRect()
           if (el.dataset.piece === 'stall') stallH = Math.min(stallH, r.height)
@@ -41,14 +44,14 @@ test('late-game pieces stay inside their hexes', async ({ page }, testInfo) => {
       }
       return { round, out, pieces, stallH }
     })
-    if (report && report.round >= 6) {
+    if (report && report.round >= 6 && report.pieces > 0) {
       expect(report.out, `round ${report.round}`).toEqual([])
       if (testInfo.project.name === 'phone' && report.stallH !== Infinity) expect(report.stallH).toBeGreaterThanOrEqual(24)
       checked++
       maxRound = Math.max(maxRound, report.round)
     }
     if (await page.locator('.end-screen').isVisible()) break
-    await page.waitForTimeout(150)
+    await page.waitForTimeout(60)
   }
   expect(checked, 'never saw a round-6+ board (game ended early?)').toBeGreaterThan(0)
   expect(maxRound).toBeGreaterThanOrEqual(6)
