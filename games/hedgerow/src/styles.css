@@ -3544,3 +3544,192 @@ img.act-scene {
     bottom: -14px;
   }
 }
+
+/* Plan item 46: a win pays out on stage. Each piece (the Seed Bank chip, the rosette ribbon, Cath's level-up, the
+   Next card) lands in turn once the tally has counted up; under reduced motion they are simply there. */
+.payout {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 4px;
+  text-align: left;
+}
+.payout-piece {
+  animation: payout-land 0.42s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation-delay: calc(0.7s + var(--i, 0) * 0.3s);
+}
+@keyframes payout-land {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .payout-piece { animation: none; }
+}
+.payout-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.payout-chip {
+  padding: 4px 12px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-hi);
+  font: 800 var(--fs-small) / 1.2 var(--font-ui);
+  color: var(--ink);
+}
+.payout-chip:first-child {
+  background: #f6d77a;
+  color: #3a2a10;
+}
+.payout-head {
+  margin: 0 0 4px;
+  font: 800 var(--fs-small) / 1.2 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2, var(--ink));
+}
+/* The ribbon: a striped band the rosettes are pinned on, each with its name under it. */
+.payout-ribbon ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 8px 10px;
+  list-style: none;
+  border-radius: 6px;
+  background: repeating-linear-gradient(90deg, #b8403a 0 14px, #c85a44 14px 28px);
+}
+.payout-ribbon li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 2px;
+  border-radius: 999px;
+  background: var(--paper-hi);
+  font: 700 var(--fs-small) / 1.2 var(--font-ui);
+  color: var(--ink);
+}
+.payout-rosette {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f2c94c 0 34%, #b8403a 36% 52%, #f2c94c 54% 64%, #d65a4a 66%);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+}
+.payout-level {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff3cf, var(--paper-hi));
+}
+.payout-cath svg {
+  display: block;
+  width: auto;
+  height: clamp(120px, 22vh, 190px);
+}
+.payout-level p {
+  margin: 0 0 6px;
+}
+.payout-level-title {
+  font: 800 var(--fs-body) / 1.2 var(--font-ui);
+  color: var(--ink);
+}
+.payout-next {
+  padding: 8px 12px;
+  border-left: 4px solid #6c9a4a;
+  border-radius: 6px;
+  background: rgb(108 154 74 / 0.12);
+}
+.payout-next p:last-child {
+  margin: 0;
+}
+@media (prefers-color-scheme: dark) {
+  .payout-level { background: linear-gradient(180deg, #4a3c26, var(--paper-hi)); }
+}
+/* On a level-up her whole figure is in the payout, so the round portrait at the top stands down. */
+#dlg-result.levelup .result-hero #result-cath {
+  display: none;
+}
+/* Plan item 46 at L (a phone held sideways): the payout is a spread too. Chips and ribbon across the top, the
+   level-up and the Next card side by side under them, Cath shorter, so it all stands above the buttons. */
+@media (orientation: landscape) and (max-height: 520px) {
+  #dlg-result .payout {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 8px;
+    margin: 4px 0 0;
+  }
+  #dlg-result .payout :is(.payout-chips, .payout-ribbon) {
+    grid-column: 1 / -1;
+  }
+  #dlg-result .payout-ribbon .payout-head {
+    display: none;
+  }
+  #dlg-result .payout-ribbon ul {
+    padding: 4px 8px;
+  }
+  #dlg-result .payout-level {
+    gap: 6px;
+    padding: 4px 8px;
+  }
+  #dlg-result .payout-cath svg {
+    height: 82px;
+  }
+  #dlg-result .payout-level p,
+  #dlg-result .payout-next p {
+    margin: 0 0 2px;
+    font-size: var(--fs-small);
+  }
+  #dlg-result .payout-level .btn {
+    padding: 4px 10px;
+    min-height: 0;
+  }
+  #dlg-result .payout-next {
+    padding: 4px 8px;
+  }
+  #dlg-result .result-stats:has(~ .payout) {
+    display: none;
+  }
+  #dlg-result.levelup #result-note {
+    display: none;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  /* At L the left column keeps her portrait; the level-up is one line and its button. */
+  #dlg-result.levelup .result-hero #result-cath {
+    display: block;
+  }
+  #dlg-result .payout-cath {
+    display: none;
+  }
+  #dlg-result .payout-level {
+    grid-template-columns: 1fr;
+  }
+  #dlg-result .payout-level > div:not(.payout-cath) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+  }
+  #dlg-result .payout-next p:nth-child(2) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+.payout-next .payout-reward {
+  margin-top: 4px;
+  font-weight: 700;
+  color: #3f6a2a;
+}
+@media (prefers-color-scheme: dark) {
+  .payout-next .payout-reward { color: #a8d48a; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  #dlg-result .payout-next .payout-reward { display: none; }
+}

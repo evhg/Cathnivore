@@ -1,4 +1,4 @@
-import { LANDMARKS } from "./landmarks";
+import { LANDMARKS, landmarkKinds } from "./landmarks";
 import "../../../shared/ui/base.css";
 import "../../../shared/ui/palette.css";
 import { mountWeekChip } from "../../../shared/cath/weekchip";
@@ -3640,9 +3640,14 @@ function finish(g: Game): void {
   }
   ui.resultStats.textContent = won ? stats.join(" · ") : `Reached ${waveWord(g)} ${waveNo(g, g.wave)} of ${lastNo(g)}`;
   const gained = won ? Math.max(0, n - before) : 0;
+  // Plan item 46: a win's rewards are staged as their own pieces (renderPayout), not one dot-separated line.
+  const pay: Payout = { bank: gained, rosettes: [] };
   ui.resultNote.textContent = won
-    ? `${lv.reward}${gained ? ` · +${gained} star${gained > 1 ? "s" : ""} for the Seed Bank.` : ""}`
+    ? lv.reward
     : "Regroup and try again. Hedges slow them, scarecrows finish them, and Cath can hold the lane where it bends. Stars buy perks in the Seed Bank.";
+  document.getElementById("result-payout")?.remove();
+  ui.resultNote.hidden = false;
+  ui.dlgResult.classList.remove("levelup");
   renderLossCauses(g, won);
   renderTally(g, won, won ? n : 0);
   if (won) {
@@ -3650,15 +3655,14 @@ function finish(g: Game): void {
     recordStars(data, lv.id, n);
     if (!lv.endless && dailyDay === null) {
       const mode: MedalMode = g.remix ?? (g.heroic ? "hollow" : g.difficulty);
-      if (recordMedal(data, lv.id, mode)) ui.resultNote.textContent += ` · ${mode[0]!.toUpperCase() + mode.slice(1)} medal ●`;
+      if (recordMedal(data, lv.id, mode)) pay.medal = `${mode[0]!.toUpperCase() + mode.slice(1)} medal`;
     }
     if (g.heroic) {
       recordHeroic(data, lv.id);
-      ui.resultNote.textContent += " · Heroic ◆ earned: one Goodwill, no pies.";
+      pay.heroic = true;
     }
     const cathAfter = levelOf(xpOf(data.stars)).level;
-    if (cathAfter > cathBefore)
-      ui.resultNote.textContent += ` · Cath reached level ${cathAfter}: ${cathAfter - cathBefore} skill point${cathAfter - cathBefore > 1 ? "s" : ""} to spend${TALENTS.some(([l]) => l > cathBefore && l <= cathAfter) ? ", and a talent to choose" : ""}.`;
+    if (cathAfter > cathBefore) pay.level = { to: cathAfter, points: cathAfter - cathBefore, talent: TALENTS.some(([l]) => l > cathBefore && l <= cathAfter) };
     const fresh = newRosettes(
       {
         levelId: lv.id,
@@ -3678,8 +3682,9 @@ function finish(g: Game): void {
       data.rosettes = { ...data.rosettes, ...Object.fromEntries(fresh.map((id) => [id, true])) };
       save(data);
       const names = fresh.map((id) => ROSETTES.find((r) => r.id === id)?.name ?? id);
-      ui.resultNote.textContent += ` · Rosette${names.length > 1 ? "s" : ""}: ${names.join(", ")}.`;
+      pay.rosettes = names;
     }
+    renderPayout(pay, next, lv.reward);
     ui.resultPrimary.textContent = next ? "Continue" : "Finale";
     ui.resultPrimary.onclick = () => {
       ui.dlgResult.close();
@@ -3707,6 +3712,114 @@ function finish(g: Game): void {
   };
   ui.dlgResult.classList.toggle("lost", !won);
   ui.dlgResult.showModal();
+}
+
+interface Payout {
+  /** New stars for the Seed Bank. */
+  bank: number;
+  medal?: string;
+  heroic?: boolean;
+  level?: { to: number; points: number; talent: boolean };
+  rosettes: string[];
+}
+
+/**
+ * Plan item 46: a win pays out on stage, after the tally: the Seed Bank stars as a chip, a medal, the rosettes
+ * pinned on a ribbon with their names, Cath's level-up with her whole figure cheering and the talent choice one
+ * tap away, then a Next card naming the next level's landmark and its twist in a plain sentence. Each piece lands
+ * in turn (CSS, `--i`); reduced motion shows them at once.
+ */
+function renderPayout(pay: Payout, next: Level | undefined, reward = ""): void {
+  const box = document.createElement("div");
+  box.id = "result-payout";
+  box.className = "payout";
+  let i = 0;
+  const piece = (cls: string): HTMLElement => {
+    const el = document.createElement("div");
+    el.className = `payout-piece ${cls}`;
+    el.style.setProperty("--i", String(i++));
+    box.append(el);
+    return el;
+  };
+  const chips: string[] = [];
+  if (pay.bank) chips.push(`+${pay.bank} ★ for the Seed Bank`);
+  if (pay.medal) chips.push(`${pay.medal} ●`);
+  if (pay.heroic) chips.push("Heroic ◆ one Goodwill, no pies");
+  if (chips.length) {
+    const row = piece("payout-chips");
+    row.dataset.payout = "bank";
+    for (const c of chips) {
+      const chip = document.createElement("span");
+      chip.className = "payout-chip";
+      chip.textContent = c;
+      row.append(chip);
+    }
+  }
+  if (pay.rosettes.length) {
+    const rib = piece("payout-ribbon");
+    rib.dataset.payout = "rosettes";
+    const head = document.createElement("p");
+    head.className = "payout-head";
+    head.textContent = pay.rosettes.length > 1 ? "Rosettes won" : "Rosette won";
+    const list = document.createElement("ul");
+    for (const name of pay.rosettes) {
+      const li = document.createElement("li");
+      const badge = document.createElement("span");
+      badge.className = "payout-rosette";
+      badge.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      label.textContent = name;
+      li.append(badge, label);
+      list.append(li);
+    }
+    rib.append(head, list);
+  }
+  if (pay.level) {
+    const lvl = piece("payout-level");
+    lvl.dataset.payout = "level";
+    const fig = document.createElement("div");
+    fig.className = "payout-cath";
+    fig.setAttribute("aria-hidden", "true");
+    fig.innerHTML = cathSceneSvg("perfect", { framing: "half", outfit: art() });
+    const text = document.createElement("div");
+    const h = document.createElement("p");
+    h.className = "payout-level-title";
+    h.textContent = `Cath reached level ${pay.level.to}`;
+    const sub = document.createElement("p");
+    sub.textContent = `${pay.level.points} skill point${pay.level.points > 1 ? "s" : ""} to spend${pay.level.talent ? ", and a talent to choose" : ""}.`;
+    const go = document.createElement("button");
+    go.type = "button";
+    go.className = "btn btn-small";
+    go.id = "payout-spend";
+    go.textContent = pay.level.talent ? "Choose her talent" : "Spend her points";
+    go.onclick = () => renderCath();
+    text.append(h, sub, go);
+    lvl.append(fig, text);
+    ui.dlgResult.classList.add("levelup");
+  }
+  if (next) {
+    const card = piece("payout-next");
+    card.dataset.payout = "next";
+    const kicker = document.createElement("p");
+    kicker.className = "payout-head";
+    kicker.textContent = `Next: ${next.id}. ${next.name}`;
+    const what = document.createElement("p");
+    const mark = landmarkKinds(next).map((k) => LANDMARKS[k].name);
+    const tw = next.twists ?? [];
+    const twist = tw.length ? ` ${tw.map((t) => `${TWISTS[t].name}: ${twistRule(next, t)}`).join(" ")}` : " No twist: a straight fight.";
+    what.textContent = `${mark.join(" and ")} on the field.${twist}`;
+    card.append(kicker, what);
+    // The level's own reward line (what it unlocks) belongs with what comes next.
+    if (reward) {
+      const r = document.createElement("p");
+      r.className = "payout-reward";
+      r.textContent = reward;
+      card.append(r);
+      ui.resultNote.hidden = true;
+    }
+  }
+  if (!box.childElementCount) return;
+  (document.getElementById("result-xp") ?? ui.resultStats).after(box);
 }
 
 /**
