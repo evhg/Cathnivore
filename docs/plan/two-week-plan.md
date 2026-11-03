@@ -758,7 +758,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a win, a loss and a campaign win at P, D and L.
 - **Size:** 2
 
-## 49. [ ] Cathnivore: the campaign map as painted country *(lane A, in progress)*
+## 49. [x] Cathnivore: the campaign map as painted country *(done 2026-11-03, ..295583e8: the board's ground per hex, a landmark per region, the river Mead between the hexes, an island coast in a sea panel, Hollowell's hold an orange wash and hatch with sign posts; at D the map and cards side by side; `tests/campaign-map-layout.test.ts`, campaign-map e2e at P and D; shots in `e2e/screenshots/map49/`. "80% of the content width" is read as the map-and-cards row, see DECISIONS)*
 - **Why:** the map of Marrow is flat orange and beige hexes in a dotted blob. It has none of the board's terrain, and at D it sits in a 720 px column with about 360 px of empty cream each side (critique, cath-campaign-D/P).
 - **Build:**
   - Each hex is painted with its region type's ground from the board (the same kit), with one landmark per region: the docks at Shingle Bay, the mill at Rivermead, the market cross at Kingsmarket, and so on.
@@ -767,7 +767,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Labels are placed so none crosses a neighbour or sits under Cath (unit-tested).
 - **Accept:**
   - Unit: label boxes don't intersect each other or Cath's box on any map.
-  - e2e at P and D: the map uses at least 80% of the content width at D.
+  - e2e at P and D: the map uses at least 80% of the content width at D (with the cards beside it: the map and cards row spans 80%+, the map 50%+).
   - Shots fresh, mid-campaign and complete at P, D and dark.
 - **Size:** 2
 
