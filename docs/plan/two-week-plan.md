@@ -1101,7 +1101,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: Cath at least 360 px tall at D and 160 px at P, no overlap with the menu; reduced motion stops every mover; shots at P and D, fresh and complete saves.
 - **Size:** 2
 
-## 72. [ ] Hedgerow: the round's threat staged before Go
+## 72. [ ] Hedgerow: the round's threat staged before Go *(lane A, in progress)*
 - **Why:** `hedge-l40-2d-D`, `hedge-l40-3d-D` (plan1103e): on "The Mega-Dozer" nothing of the coming convoy is on screen before Go, and Cath's notebook is about 120 px of empty ruled paper.
 - **Build:**
   - Between rounds the next convoy queues at the Hollowell gate (a few lead vehicles drawn, a count plate), in 2D and 3D, cleared on Go.
