@@ -3,7 +3,7 @@
 // (`element.style.setProperty`), never through markup.
 
 import { skyFor } from './sky'
-import { computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
+import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
@@ -171,11 +171,29 @@ export class Board {
       minY = Math.min(minY, y - S)
       maxY = Math.max(maxY, y + S)
     }
+    // Plan item 47: a board with only a few tiles (the lesson's four) keeps the scale of its full radius and sits
+    // centred in the frame, rather than zooming its tiles up and running them into a corner.
+    let fullW = 0
+    let fullH = 0
+    const full = boardHexes(this.puzzle.radius)
+    if (this.puzzle.cells.length * 2 < full.length) {
+      let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity
+      for (const h of full) {
+        const { x, y } = cellCentre(h.q, h.r)
+        a = Math.min(a, x - APOTHEM)
+        b = Math.max(b, x + APOTHEM)
+        c = Math.min(c, y - S)
+        d = Math.max(d, y + S)
+      }
+      fullW = b - a
+      fullH = d - c
+    }
+    const w = Math.max(maxX - minX, fullW)
+    const h = Math.max(maxY - minY, fullH)
+    const cx = (minX + maxX) / 2
+    const cy = (minY + maxY) / 2
     const pad = 6
-    this.svg.setAttribute(
-      'viewBox',
-      `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2 + 8}`,
-    )
+    this.svg.setAttribute('viewBox', `${cx - w / 2 - pad} ${cy - h / 2 - pad} ${w + pad * 2} ${h + pad * 2 + 8}`)
   }
 
   private drawCell(parent: SVGGElement, cell: Cell, index: number): CellView {

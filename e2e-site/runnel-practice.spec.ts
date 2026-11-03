@@ -62,6 +62,31 @@ test.describe('Runnel Practice on one screen (plan item 39)', () => {
     await page.goto('/runnel/?nohelp')
     await expect(page.locator('#rail')).toBeVisible()
   })
+
+  test('the lesson tiles sit centred on the board, inside the screen and clear of the spring house sign', async ({ page }) => {
+    // Plan item 47: four tiles kept the zoom of a full board's bounds and ran into the frame's corner and the edge.
+    await page.goto('/runnel/?lesson')
+    await expect(page.locator('body.in-lesson')).toHaveCount(1)
+    const m = await page.evaluate(() => {
+      const tiles = [...document.querySelectorAll('#board .cell .tile, svg .cell .tile')].map((e) => e.getBoundingClientRect())
+      const svg = document.querySelector('svg .cell')!.closest('svg')!.getBoundingClientRect()
+      const sign = document.querySelector('.spring-sign')?.getBoundingClientRect()
+      const box = {
+        l: Math.min(...tiles.map((r) => r.left)), r: Math.max(...tiles.map((r) => r.right)),
+        t: Math.min(...tiles.map((r) => r.top)), b: Math.max(...tiles.map((r) => r.bottom)),
+      }
+      const signHit = !!sign && sign.width > 0 && tiles.some((r) => r.left < sign.right && sign.left < r.right && r.top < sign.bottom && sign.top < r.bottom)
+      return { box, svg: { l: svg.left, r: svg.right, t: svg.top, b: svg.bottom }, vw: innerWidth, vh: innerHeight, signHit, n: tiles.length }
+    })
+    expect(m.n).toBe(4)
+    expect(m.box.l).toBeGreaterThanOrEqual(8)
+    expect(m.box.r).toBeLessThanOrEqual(m.vw - 8)
+    expect(m.box.b).toBeLessThanOrEqual(m.vh)
+    expect(m.signHit).toBe(false)
+    // Centred on the board: the tiles' middle within 10% of the board's width and height of the board's middle.
+    expect(Math.abs((m.box.l + m.box.r) / 2 - (m.svg.l + m.svg.r) / 2)).toBeLessThan((m.svg.r - m.svg.l) * 0.1)
+    expect(Math.abs((m.box.t + m.box.b) / 2 - (m.svg.t + m.svg.b) / 2)).toBeLessThan((m.svg.b - m.svg.t) * 0.1)
+  })
 })
 
 test.describe("Bea's workshop (plan item 39)", () => {
