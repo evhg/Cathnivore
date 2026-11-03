@@ -135,3 +135,25 @@ test('plan item 74: on a fresh farm the start tag replaces the empty stars, and 
   expect(r.bottom + 8).toBeLessThanOrEqual(r.row2)
   expect(await collisions(page)).toEqual([])
 })
+
+// Plan item 73: every stop is a painted vignette (its landmark on the plinth, its number a badge), 44 px or larger,
+// in colour once open and in pencil grey while locked.
+test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey while locked', async ({ page }) => {
+  await seed(page, 6)
+  // The stops scale in as the map opens; measure them at rest.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
+  const nodes = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => {
+      const coin = b.querySelector('.level-num')!.getBoundingClientRect()
+      const mark = b.querySelector('.level-num .level-landmark')
+      return { w: coin.width, h: coin.height, mark: !!mark, badge: b.querySelector('.level-num .level-n')?.textContent, locked: b.disabled, grey: mark ? getComputedStyle(mark).filter.includes('grayscale(1)') : false }
+    }),
+  )
+  expect(nodes).toHaveLength(10)
+  nodes.forEach((n, i) => {
+    expect(Math.min(n.w, n.h), `node ${i + 1}`).toBeGreaterThanOrEqual(44)
+    expect(n.mark).toBe(true)
+    expect(n.badge).toBe(String(i + 1))
+    expect(n.grey).toBe(n.locked)
+  })
+})

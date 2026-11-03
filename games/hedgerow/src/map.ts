@@ -1686,17 +1686,15 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       mark.setAttribute("viewBox", "0 0 20 20");
       mark.setAttribute("aria-hidden", "true");
       mark.innerHTML = boss ? BOSS_LANDMARK : LANDMARKS[(lv.id - 1) % LANDMARKS.length]!;
-      b.append(numEl, mark, st, medals, name);
-      if (!unlocked) {
-        // A faint silhouette of the lane, so locked nodes differ from one another.
-        const pts = lv.path.map(([c, r]) => `${f(c + 0.5)},${f(r + 0.5)}`).join(" ");
-        const sil = document.createElementNS(svgNS, "svg");
-        sil.setAttribute("class", "level-sil");
-        sil.setAttribute("viewBox", `0 0 ${lv.cols} ${lv.rows}`);
-        sil.setAttribute("aria-hidden", "true");
-        sil.innerHTML = `<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width=".7" stroke-linejoin="round" stroke-linecap="round"/>`;
-        b.append(sil);
-      }
+      // Plan item 73: the coin is a painted vignette of the stop (its landmark on its own patch of ground), the
+      // number a small badge on its rim; greyed until the stop is open.
+      numEl.textContent = "";
+      numEl.classList.add("vignette");
+      const n = document.createElement("b");
+      n.className = "level-n";
+      n.textContent = String(lv.id);
+      numEl.append(mark, n);
+      b.append(numEl, st, medals, name);
       if (lv.id === nextId) {
         b.classList.add("next");
         const me = document.createElement("span");

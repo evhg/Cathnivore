@@ -4213,3 +4213,68 @@ img.act-scene {
   width: 100%;
   height: auto;
 }
+
+/* Plan item 73: each stop is a painted vignette: its landmark drawn large on the plinth's top (turf once won, bare
+   stone while locked), the stop's number a small badge on the rim. A locked stop is the same picture in pencil
+   grey, so every node differs and reads as a place; it comes into colour when it opens. */
+.node .level-num.vignette {
+  overflow: visible;
+}
+.node .level-num.vignette .level-landmark {
+  position: absolute;
+  inset: 14% 14% 16%;
+  width: auto;
+  height: auto;
+  right: auto;
+  top: auto;
+  filter: drop-shadow(0 1.5px 0 color-mix(in srgb, var(--soil) 30%, transparent));
+}
+.node .level-num.vignette .level-n {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--soil);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+.node.cleared .level-num.vignette .level-n {
+  background: var(--pasture-ink, var(--pasture));
+}
+.node.level-boss .level-num.vignette .level-n {
+  background: var(--wheat);
+  color: var(--ink);
+}
+.node:disabled .level-num.vignette .level-landmark {
+  filter: grayscale(1) contrast(0.8);
+  opacity: 0.5;
+}
+.node:disabled .level-num.vignette .level-n {
+  background: color-mix(in srgb, var(--ink-muted) 70%, var(--paper));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .node:not(:disabled) .level-num.vignette .level-landmark {
+    animation: vignette-wake 700ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  }
+}
+@keyframes vignette-wake {
+  from {
+    filter: grayscale(1);
+    transform: scale(0.85);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .node:disabled .level-num.vignette .level-landmark {
+    filter: grayscale(1) brightness(1.6);
+    opacity: 0.7;
+  }
+}
