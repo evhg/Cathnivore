@@ -860,7 +860,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P, D and L, light and dark, before and after.
 - **Size:** 2
 
-## 55. [ ] Cathnivore: regions you can tell apart, and Hollowell's grip you can see
+## 55. [ ] Cathnivore: regions you can tell apart, and Hollowell's grip you can see *(lane B, in progress)*
 - **Why:**
   - The in-game board (`cath-board-D`, `cath-daily-D`) gives every pasture the same cloud-hills, every coast the same two boats, every crop the same hatching. Item 49 gave each region a landmark on the campaign map (`LANDMARKS` in `campaignMapLayout.ts`), but the board players spend 95% of the game on doesn't show them.
   - How far Hollowell has taken a region reads only from small orange outlet stacks and the dashed red border; a region with 3 Outlets and one with 1 look alike from arm's length. VISION pillar 2: "big, rich, legible and alive".
