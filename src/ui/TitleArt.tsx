@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import Map from './Map'
 import { titleBoardState, titleLine } from './titleBoard'
 import { BeasDrawing } from './TableProps'
+import { lightForHour } from './tableLight'
 import { loadCampaign } from '../platform/storage'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
@@ -16,13 +17,14 @@ import { SCREEN_POSE } from '../../shared/cath/screenposes'
 export default function TitleArt() {
   const completed = useMemo(() => loadCampaign().completed, [])
   const state = useMemo(() => titleBoardState(completed), [completed])
+  const light = useMemo(() => lightForHour(new Date().getHours()), [])
   return (
     <div className="title-art title-table" aria-hidden="true" data-free={Object.values(state.regions).filter((r) => r.liberated).length}>
       <div className="title-cath">
         <p className="title-cath-line">{titleLine(completed)}</p>
         <CathArt framing="half" expression="smirk" pose={SCREEN_POSE['cathnivore:title']} animate />
       </div>
-      <div className="title-board">
+      <div className="title-board" data-light={light}>
         {/* Bea is at the market too: her drawing of her mum, pinned to the cloth's corner. */}
         <div className="title-bea">
           <BeasDrawing />

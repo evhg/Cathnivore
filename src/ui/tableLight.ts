@@ -12,3 +12,12 @@ export function lightFor(round: number): TablePhase {
   const i = Math.floor((Math.max(1, Math.round(round)) - 1) / 2)
   return PHASES[Math.min(PHASES.length - 1, i)]!
 }
+
+/** Plan item 60: the title's table is lit by the player's own clock: dawn before 8, dusk from 5 in the evening. */
+export function lightForHour(hour: number): TablePhase {
+  if (hour < 8) return 'dawn'
+  if (hour < 11) return 'morning'
+  if (hour < 14) return 'noon'
+  if (hour < 17) return 'afternoon'
+  return 'dusk'
+}

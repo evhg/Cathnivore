@@ -941,7 +941,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 13 and 38 at round 1, mid-level and the win, at P and D, 2D and 3D.
 - **Size:** 3
 
-## 60. [ ] Cathnivore: a title that opens on the real table *(lane B, in progress)*
+## 60. [x] Cathnivore: a title that opens on the real table *(done 2026-11-03, lane B, 1d11a6d..HEAD: the real Map.tsx board on a checked cloth from `titleBoardState(completed)` (Hollowell everywhere on a fresh save, bunting and stalls on freed regions, all of Marrow when complete), lit by the player's hour (`lightForHour`), Cath in her own column with a line by progress, Bea's drawing pinned to the cloth (no Bea figure exists in the shared art), the menu a chalkboard sign with How to Play, Settings and Credits as tags (slate in both themes); unit tests for the board, the line and the light; `e2e/title-table.spec.ts` at P and D (no overlap, bunting from a seeded save, keyboard reaches every entry) plus title-fit (no scroll at P) and title at P, L, D; shots fresh, mid and complete at P, L, D, light and dark)*
 - **Why:**
   - `cath-title-D`: the title board is a flat diagram of six hexes with small stall icons, much plainer than the in-game board (`cath-game2-D`); the right half is cream rays.
   - `cath-title-P`: Cath's figure covers the Brindle Hills and Oakvale hexes. VISION pillar 2: the table is the hero.

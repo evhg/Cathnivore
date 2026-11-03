@@ -653,3 +653,43 @@ html.no-animations .title-screen * {
     display: none;
   }
 }
+/* Plan item 60: the light of the player's hour over the title's table (the same light tokens as the game's table). */
+.title-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raised);
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 90% 85% at var(--light-x, 50%) var(--light-y, 0%), var(--table-light, transparent), transparent 72%),
+    linear-gradient(to left, transparent 40%, var(--table-shade, transparent)),
+    radial-gradient(circle at 5% 6%, var(--lantern, transparent), transparent 32%),
+    radial-gradient(circle at 95% 6%, var(--lantern, transparent), transparent 32%);
+  pointer-events: none;
+}
+.title-board[data-light="dawn"] { --table-light: var(--light-dawn); --light-x: 4%; --light-y: 34%; }
+.title-board[data-light="morning"] { --table-light: var(--light-morning); --light-x: 24%; --light-y: 8%; }
+.title-board[data-light="noon"] { --table-light: var(--light-noon); --light-x: 50%; --light-y: 0%; }
+.title-board[data-light="afternoon"] { --table-light: var(--light-afternoon); --light-x: 76%; --light-y: 8%; }
+.title-board[data-light="dusk"] { --table-light: var(--light-dusk); --light-x: 96%; --light-y: 36%; --table-shade: var(--dusk-shade); }
+/* The chalkboard stays slate in the dark theme too (its ink token turns pale there). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .title-menu {
+    background:
+      radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 60%),
+      color-mix(in srgb, var(--paper) 55%, var(--wood-lo));
+    border-color: var(--wood-lo);
+  }
+  :root:not([data-theme="light"]) .title-menu::before {
+    color: color-mix(in srgb, var(--ink) 78%, transparent);
+  }
+}
+:root[data-theme="dark"] .title-menu {
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 60%),
+    color-mix(in srgb, var(--paper) 55%, var(--wood-lo));
+  border-color: var(--wood-lo);
+}
+:root[data-theme="dark"] .title-menu::before {
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+}

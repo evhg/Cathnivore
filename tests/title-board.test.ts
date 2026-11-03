@@ -33,3 +33,10 @@ describe('titleLine', () => {
     expect(new Set(lines).size).toBe(4)
   })
 })
+
+import { lightForHour } from '../src/ui/tableLight'
+describe('lightForHour', () => {
+  it('runs dawn to dusk through the day', () => {
+    expect([6, 9, 12, 15, 20].map(lightForHour)).toEqual(['dawn', 'morning', 'noon', 'afternoon', 'dusk'])
+  })
+})
