@@ -769,3 +769,32 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   stroke-opacity: 0.35;
 }
 .marrow-badge-hex.is-free { fill: var(--pasture-deep); }
+
+/* Plan item 49: at desktop widths the map spans the content width with the chapter cards beside it, not a
+   720 px column with empty cream either side. The map holds still (sticky) while the cards scroll past it. */
+@media (min-width: 1100px) {
+  .campaign.campaign-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(380px, 1fr);
+    column-gap: 32px;
+    align-items: start;
+    padding-left: max(32px, calc((100vw - 1320px) / 2));
+    padding-right: max(32px, calc((100vw - 1320px) / 2));
+  }
+  .campaign-screen > * {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .campaign-screen > .cmp-header { grid-column: 1 / -1; }
+  .campaign-screen > .cmp-map {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    position: sticky;
+    top: 16px;
+    margin: 0;
+  }
+  .campaign-screen > .cmp-map .cmp-map-svg { max-height: calc(100dvh - 190px); }
+  .campaign-screen > .cmp-path { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .campaign-screen > .cmp-back { grid-column: 2; grid-row: 3; justify-self: center; }
+}

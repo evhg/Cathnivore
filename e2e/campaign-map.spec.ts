@@ -145,3 +145,31 @@ test('region names stay clear of each other and of Cath', async ({ page }) => {
     expect(hits, completed.join(',')).toEqual([])
   }
 })
+
+// Plan item 49: Marrow is painted country (each region its landmark, Hollowell's posts on what they hold), and
+// at desktop widths the map spans the content width with the chapter cards beside it.
+test('the map is painted country, and at desktop it spans the content width beside the cards', async ({ page }) => {
+  await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })), KEY)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.locator('.cmp-map [data-landmark]')).toHaveCount(7)
+  // Five regions still held; Cath stands at Saltmarsh's pin, in front of its post.
+  await expect(page.locator('.cmp-map .cmp-post')).toHaveCount(4)
+  await expect(page.locator('.cmp-map-river')).toHaveCount(1)
+  const m = await page.evaluate(() => {
+    const main = document.querySelector('.campaign-screen')!
+    const cs = getComputedStyle(main)
+    const content = main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+    const map = document.querySelector('.cmp-map')!.getBoundingClientRect()
+    const list = document.querySelector('.cmp-path')!.getBoundingClientRect()
+    return { content, map: map.width, span: Math.max(map.right, list.right) - Math.min(map.left, list.left), side: list.left >= map.right - 1 }
+  })
+  expect(m.span / m.content).toBeGreaterThanOrEqual(0.8)
+  if ((page.viewportSize()?.width ?? 0) >= 1100) {
+    expect(m.side, 'cards beside the map').toBe(true)
+    expect(m.map / m.content).toBeGreaterThanOrEqual(0.5)
+  } else {
+    expect(m.map / m.content).toBeGreaterThanOrEqual(0.95)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+})
