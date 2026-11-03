@@ -3100,3 +3100,52 @@ body[data-mode='practice'] #week-slot {
     height: 28px;
   }
 }
+
+/* Plan item 68: Bea's garden at the foot of the D rail: a bed of the crops she planted, one per daily solved. */
+.rail-garden {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1.5px dashed color-mix(in srgb, var(--soil) 30%, transparent);
+}
+.rail-garden .cal-title {
+  margin: 0;
+}
+.rail-plots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ga-soil) 22%, var(--paper));
+}
+.rail-plots .plot {
+  display: block;
+  aspect-ratio: 1;
+}
+.rail-plots .plot.bare {
+  background: radial-gradient(circle, color-mix(in srgb, var(--groove) 55%, transparent) 0 20%, transparent 21%);
+}
+.rail-plots .plot.sprout .ga {
+  transform: scale(0.82);
+  transform-origin: 50% 85%;
+}
+.rail-garden-note {
+  margin: 0;
+  font-family: var(--font-voice, inherit);
+  font-style: italic;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  color: var(--ink-muted);
+}
+/* The garden only takes room the rail has spare: no note under 960 px tall, no garden under 900 px (the page never scrolls). */
+@media (max-height: 959.98px) {
+  .rail-garden-note {
+    display: none;
+  }
+}
+@media (max-height: 899.98px) {
+  .rail-garden {
+    display: none;
+  }
+}

@@ -647,7 +647,35 @@ function renderGarden(): void {
  * Plan item 30: on a wide screen the stats sit in a rail beside the board (the streak, dailies solved, the best
  * streak and the last 28 days as a strip), so the board can take the middle of the farm. Hidden by CSS elsewhere.
  */
+/** Plan item 68: the rail's foot: one bed of the garden's newest 8 crops (a fixed height), and the visitor or a nudge. */
+function renderRailGarden(): void {
+  const all = gardenPlots(data.results, today)
+  const plots = all.slice(-8)
+  const box = $<HTMLDivElement>('rail-plots')
+  box.setAttribute('aria-label', all.length ? `${all.length} crop${all.length === 1 ? '' : 's'} in Bea's garden` : "Bea's garden is bare")
+  const cells = plots.map((p) => {
+    const i = document.createElement('i')
+    i.className = `plot ${p.stage}${p.gold ? ' gold' : ''}`
+    i.innerHTML = cropSvg(p.crop, p.stage)
+    return i
+  })
+  for (let n = cells.length; n < 8; n++) {
+    const i = document.createElement('i')
+    i.className = 'plot bare'
+    cells.push(i)
+  }
+  box.replaceChildren(...cells)
+  const visitor = gardenVisitor(seasonOf(today), all)
+  const n = all.length
+  $<HTMLParagraphElement>('rail-garden-note').textContent = visitor
+    ? visitor.line
+    : n
+    ? `${n} crop${n === 1 ? '' : 's'} so far. Every daily you solve plants another.`
+    : 'Solve a daily and Bea plants a seed.'
+}
+
 function renderRail(): void {
+  renderRailGarden()
   const s = dailyStats(data, today)
   const figs: Array<[string, string]> = [
     [String(s.streak), 'current streak'],

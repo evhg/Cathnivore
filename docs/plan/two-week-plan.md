@@ -1056,7 +1056,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at D and 1280x800, light and dark.
 - **Size:** 2
 
-## 68. [ ] Runnel: a win that happens on the board *(lane B, in progress)*
+## 68. [x] Runnel: a win that happens on the board *(done 2026-11-03, lane B, e9d778e..: the win stays on the board (the bloom and surge by ring, Bea runs out to her garden with her can), then a slim strip slides up under the board (time, taps, par, streak; Share, Your card, Next), the full sheet only from 'Your card' (a workshop test keeps its sheet); board visible with the strip P 95%, D 97% (was 0%, 46%); the phone daily in its farm (spring house above, Bea's garden below, 700 px tall or more); the D rail ends on Bea's garden (one fixed bed of the newest 8 crops, hidden under 900 px tall). `e2e-site/runnel-win.spec.ts` (solve strip, phone farm, rail garden); shots P and D, light and dark, `scripts/runnel-win-shots.mjs`. Not done: the share card image's own text is still small inside 'Your card'.)*
 - **Why:**
   - `runnel-win-D`/`-P`: the win is a white modal over a blurred board (three stat boxes, three pills, a share card with about 6 px text), so the watered farm, the crops and Bea's garden, the payoff itself, are hidden behind the blur.
   - `runnel-daily-P`: the phone daily floats on blank cream (60 px empty above, 80 px below); the spring house and the garden appear only at D, and the D rail is empty below "All stats" (VISION 4).
