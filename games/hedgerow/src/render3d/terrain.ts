@@ -6,6 +6,7 @@
 import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
+import { plotLooks, type PlotLook } from "../plotlook";
 import { rng } from "../theme";
 import { actLight } from "./palette";
 import {
@@ -191,33 +192,62 @@ function tickTexture(): THREE.Texture {
   return tickTex;
 }
 
-let plotTex: THREE.Texture | null = null;
-/** A tilled plot: soft-edged soil with furrows, so every building plot reads as worked land. */
-function plotTexture(): THREE.Texture {
-  if (plotTex) return plotTex;
+const bedTex = new Map<string, THREE.Texture>();
+/**
+ * Plan item 52: the top of a soil bed, by what lies under it. Greyscale (the instance colour tints it): furrows for
+ * bare earth, rows of cut stalks for stubble, leaf clumps with white heads for clover.
+ */
+function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
+  const hit = bedTex.get(look);
+  if (hit) return hit;
   const S = 64;
   const c = document.createElement("canvas");
   c.width = c.height = S;
   const ctx = c.getContext("2d")!;
-  const img = ctx.createImageData(S, S);
-  for (let y = 0; y < S; y++)
-    for (let x = 0; x < S; x++) {
-      const u = (x + 0.5) / S - 0.5;
-      const v = (y + 0.5) / S - 0.5;
-      const edge = Math.max(Math.abs(u), Math.abs(v));
-      const a = Math.max(0, Math.min(1, (0.5 - edge) / 0.09));
-      const furrow = 0.5 + 0.5 * Math.cos(v * Math.PI * 2 * 5);
-      const i = (y * S + x) * 4;
-      const shade = 255 - furrow * 70;
-      img.data[i] = shade;
-      img.data[i + 1] = shade;
-      img.data[i + 2] = shade;
-      img.data[i + 3] = Math.round(a * (150 + furrow * 105));
+  const r01 = rng(look.length * 977);
+  if (look === "earth") {
+    const img = ctx.createImageData(S, S);
+    for (let y = 0; y < S; y++)
+      for (let x = 0; x < S; x++) {
+        const v = (y + 0.5) / S - 0.5;
+        const furrow = 0.5 + 0.5 * Math.cos(v * Math.PI * 2 * 5);
+        const i = (y * S + x) * 4;
+        const shade = 255 - furrow * 90 - r01() * 18;
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = shade;
+        img.data[i + 3] = 255;
+      }
+    ctx.putImageData(img, 0, 0);
+  } else if (look === "stubble") {
+    ctx.fillStyle = "#d8d8d8";
+    ctx.fillRect(0, 0, S, S);
+    for (let row = 0; row < 6; row++)
+      for (let k = 0; k < 9; k++) {
+        const x = (k + 0.3 + r01() * 0.4) * (S / 9);
+        const y = (row + 0.5) * (S / 6);
+        ctx.fillStyle = "#7a7a7a";
+        ctx.fillRect(x + 1, y - 1, 2, 4);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(x, y - 3, 2, 4);
+      }
+  } else {
+    ctx.fillStyle = "#b8b8b8";
+    ctx.fillRect(0, 0, S, S);
+    for (let k = 0; k < 22; k++) {
+      const x = r01() * S;
+      const y = r01() * S;
+      for (let a = 0; a < 3; a++) {
+        const ang = (a / 3) * Math.PI * 2;
+        ctx.fillStyle = k % 2 ? "#ffffff" : "#e2e2e2";
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(ang) * 2.4, y + Math.sin(ang) * 2.4, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
-  ctx.putImageData(img, 0, 0);
-  plotTex = new THREE.CanvasTexture(c);
-  plotTex.colorSpace = THREE.SRGBColorSpace;
-  return plotTex;
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  bedTex.set(look, t);
+  return t;
 }
 
 let waterNormal: THREE.Texture | null = null;
@@ -696,7 +726,18 @@ export function buildGround(level: Level): Ground {
   // Building plots: a subtle tilled square on every plot; protected land gets a stone marker instead.
   // All of them are instanced (one draw call each), as are the grass, flowers and stones below.
   // Plan item 19: the bed itself carries the plot (stronger soil); the corner ticks are only a quiet hint now.
-  const plotMat = new THREE.MeshStandardMaterial({ color: "#6a5534", roughness: 1, transparent: true, opacity: 0.5, map: plotTexture(), depthWrite: false });
+  // Plan item 52: each plot a soil bed with a timber edge, by what lies under it, so neighbours differ.
+  const looks = plotLooks(level);
+  const bedLooks = ["earth", "stubble", "clover"] as const;
+  const bedTint: Record<(typeof bedLooks)[number], string> = { earth: "#7a5c38", stubble: "#d2b06a", clover: "#6f9a4e" };
+  const beds: Record<(typeof bedLooks)[number], Inst[]> = { earth: [], stubble: [], clover: [] };
+  const boards: Inst[] = [];
+  const puddles: Inst[] = [];
+  const cloverHeads: Inst[] = [];
+  const bedGeo = new THREE.BoxGeometry(0.78, 0.05, 0.78).translate(0, 0.005, 0);
+  const boardGeo = new THREE.BoxGeometry(0.86, 0.07, 0.05);
+  const timberCols = ["#8a6a44", "#7a5c3a", "#94744c"].map((c) => new THREE.Color(c));
+  const lookOf = (c: number, r: number): PlotLook => looks.get(`${c},${r}`) ?? "earth";
   const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.22, depthWrite: false });
   const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
   const plots: Inst[] = [];
@@ -736,7 +777,21 @@ export function buildGround(level: Level): Ground {
         for (let i = 0; i < 6; i++) tuft(c + 0.15 + deco() * 0.7, r + 0.15 + deco() * 0.7, 1.15);
         continue;
       }
-      plots.push({ x: c + 0.5, y: h + 0.012, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
+      plots.push({ x: c + 0.5, y: h + 0.04, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
+      {
+        const look = lookOf(c, r);
+        const base = look === "puddle" ? "earth" : look;
+        const turn = (c * 31 + r * 17 + level.id) % 2 === 0 ? 0 : Math.PI / 2;
+        beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: new THREE.Color(bedTint[base]).multiplyScalar(0.92 + deco() * 0.16) });
+        for (let side = 0; side < 4; side++) {
+          const along = side < 2;
+          const off = (side % 2 ? 1 : -1) * 0.41;
+          boards.push({ x: c + 0.5 + (along ? 0 : off), y: h + 0.015, z: r + 0.5 + (along ? off : 0), ry: along ? 0 : Math.PI / 2, s: 1, sy: 1, color: timberCols[Math.floor(deco() * timberCols.length)]! });
+        }
+        if (look === "puddle") puddles.push({ x: c + 0.3 + deco() * 0.4, y: h + 0.034, z: r + 0.3 + deco() * 0.4, ry: deco() * 6.3, s: 1, sy: 1, color: white });
+        if (look === "clover")
+          for (let k = 0; k < 4; k++) cloverHeads.push({ x: c + 0.18 + deco() * 0.64, y: h + 0.02, z: r + 0.18 + deco() * 0.64, ry: deco() * 6.3, s: 0.7, sy: 1, color: new THREE.Color(k % 3 ? "#fffaf0" : "#f0b8d0") });
+      }
       // Grass and flowers grow around the plot's edges, clear of where a tower stands.
       const n = 5 + Math.floor(deco() * 5);
       for (let i = 0; i < n; i++) {
@@ -812,7 +867,10 @@ export function buildGround(level: Level): Ground {
   const stoneMat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true });
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
   for (const m of [
-    instanced(plotGeo, plotMat, plots),
+    ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l) }), beds[l], false)),
+    instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards, true),
+    instanced(new THREE.CircleGeometry(0.15, 14).scale(1, 0.62, 1).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#8fb8d4", roughness: 0.08, metalness: 0.3 }), puddles),
+    instanced(flowerGeo, flowerMat, cloverHeads),
     instanced(plotGeo, tickMat, plots.map((p) => ({ ...p, y: p.y + 0.006 }))),
     instanced(new THREE.CylinderGeometry(0.05, 0.07, 0.22, 6), matte("#ffffff", 0.9), markers, true),
     instanced(tuftGeometry(), tuftMat, tufts),

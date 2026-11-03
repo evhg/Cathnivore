@@ -3,6 +3,7 @@
 // the level id, so a level always looks the same and nothing needs downloading.
 
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
+import { plotLooks, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 
 export type Decor =
@@ -563,6 +564,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
     for (let k = 1; k < Math.max(level.cols, level.rows); k++) leadIn.add(`${c + dx * k},${r + dy * k}`);
   }
   const scenery = sceneryCells(level);
+  const looks = plotLooks(level);
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
       if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`)) continue;
@@ -571,7 +573,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       const inset = s * 0.12;
       const ground = plotKind(level, c, r);
       if (ground !== "water" && ground !== "high") {
-        if (!leadIn.has(`${c},${r}`)) paintBed(ctx, x, y, s, (c * 31 + r * 17 + level.id) % 2 === 0);
+        if (!leadIn.has(`${c},${r}`)) paintPlot(ctx, x, y, s, looks.get(`${c},${r}`) ?? "earth", (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -620,6 +622,124 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       }
     }
   }
+}
+
+/** Plan item 52: a plot drawn by what lies under it, so neighbouring beds differ. */
+function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number): void {
+  if (look === "earth" || look === "puddle") {
+    paintBed(ctx, x, y, s, across);
+    if (look === "puddle") {
+      // A puddle in one corner of the bed, catching the sky.
+      const r01 = rng(seed);
+      const px = x + s * (0.34 + r01() * 0.32);
+      const py = y + s * (0.36 + r01() * 0.28);
+      ctx.save();
+      ctx.fillStyle = "rgba(60,40,18,0.3)";
+      ctx.beginPath();
+      ctx.ellipse(px, py + s * 0.015, s * 0.19, s * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const g = ctx.createLinearGradient(px, py - s * 0.1, px, py + s * 0.1);
+      g.addColorStop(0, "rgba(196,226,240,0.92)");
+      g.addColorStop(1, "rgba(104,150,182,0.9)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(px, py, s * 0.17, s * 0.095, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.lineWidth = Math.max(1, s * 0.022);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(px - s * 0.09, py - s * 0.03);
+      ctx.lineTo(px - s * 0.02, py - s * 0.05);
+      ctx.stroke();
+      ctx.restore();
+    }
+    return;
+  }
+  const i = s * 0.1;
+  const w = s - i * 2;
+  const rad = s * 0.18;
+  const r01 = rng(seed);
+  ctx.save();
+  ctx.fillStyle = "rgba(40,30,10,0.14)";
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i + s * 0.025, w, w, rad);
+  ctx.fill();
+  const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
+  if (look === "stubble") {
+    // Last year's stubble: a pale straw bed, cut stalks standing in rows.
+    g.addColorStop(0, "rgba(232,204,130,0.62)");
+    g.addColorStop(1, "rgba(196,160,86,0.66)");
+  } else {
+    // Clover: a low green ley, leaves in clumps with a few white heads.
+    g.addColorStop(0, "rgba(98,150,66,0.55)");
+    g.addColorStop(1, "rgba(70,120,50,0.6)");
+  }
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.fill();
+  ctx.clip();
+  ctx.lineCap = "round";
+  if (look === "stubble") {
+    const rows = 4;
+    for (let k = 0; k < rows; k++) {
+      const p = i + w * ((k + 0.5) / rows);
+      for (let j = 0; j < 6; j++) {
+        const q = i + w * ((j + 0.3 + r01() * 0.4) / 6);
+        const [sx, sy] = across ? [x + q, y + p] : [x + p, y + q];
+        const h = s * (0.05 + r01() * 0.03);
+        ctx.strokeStyle = "rgba(120,86,34,0.5)";
+        ctx.lineWidth = Math.max(1, s * 0.03);
+        ctx.beginPath();
+        ctx.moveTo(sx + s * 0.012, sy + s * 0.012);
+        ctx.lineTo(sx + s * 0.012, sy - h + s * 0.012);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255,240,196,0.85)";
+        ctx.lineWidth = Math.max(1, s * 0.02);
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(sx, sy - h);
+        ctx.stroke();
+      }
+    }
+  } else {
+    const leaf = (cx: number, cy: number, r: number) => {
+      for (let a = 0; a < 3; a++) {
+        const ang = (a / 3) * Math.PI * 2 - Math.PI / 2;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(ang) * r * 0.9, cy + Math.sin(ang) * r * 0.9, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    for (let j = 0; j < 9; j++) {
+      const cx = x + i + w * (0.12 + r01() * 0.76);
+      const cy = y + i + w * (0.12 + r01() * 0.76);
+      const r = s * (0.035 + r01() * 0.02);
+      ctx.fillStyle = "rgba(40,80,30,0.35)";
+      leaf(cx + s * 0.01, cy + s * 0.012, r);
+      ctx.fillStyle = j % 2 ? "rgba(150,200,104,0.95)" : "rgba(122,178,86,0.95)";
+      leaf(cx, cy, r);
+    }
+    for (let j = 0; j < 3; j++) {
+      const cx = x + i + w * (0.15 + r01() * 0.7);
+      const cy = y + i + w * (0.15 + r01() * 0.7);
+      ctx.fillStyle = "rgba(255,252,240,0.95)";
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(236,170,200,0.9)";
+      ctx.beginPath();
+      ctx.arc(cx, cy + s * 0.008, s * 0.012, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+  ctx.strokeStyle = "rgba(255,255,230,0.18)";
+  ctx.lineWidth = Math.max(1, s * 0.02);
+  ctx.beginPath();
+  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.stroke();
 }
 
 /**
