@@ -66,6 +66,7 @@ import {
   place,
   sellValue,
   sendWave,
+  waveSpawns,
   specCost,
   specsUnlocked,
   stars as starsOf,
@@ -139,6 +140,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { roundAdvice } from "./advice";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
 import { towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
@@ -1690,6 +1692,27 @@ function fieldNotebook(g: Game): HTMLElement {
   const h = document.createElement("h3");
   h.textContent = "Cath's notebook";
   nb.append(h);
+  // Plan item 72: her advice for the round first: the round's threat sketched, and what in this kit answers it
+  // (the next round between rounds, the one on the lane during it).
+  const ri = betweenRounds(g) ? g.wave : Math.max(0, g.wave - 1);
+  const groups = g.level.waves[ri];
+  const advice = groups ? roundAdvice(waveSpawns(g, groups, ri + 1), g.level.towers, g.towers.map((x) => x.kind)) : null;
+  if (advice) {
+    const card = document.createElement("div");
+    card.className = "nb-page nb-advice";
+    card.dataset.kind = advice.kind;
+    card.append(img(enemyIcon(advice.kind), "nb-sketch"));
+    const txt = document.createElement("div");
+    txt.className = "nb-text";
+    const total = advice.total > advice.count ? ` of ${advice.total}` : "";
+    txt.append(
+      line(`${Word(g)} ${waveNo(g, ri + 1)} · ${betweenRounds(g) ? "next" : "on the lane"}`, "nb-eyebrow"),
+      line(`${ENEMIES[advice.kind].name} ×${advice.count}${total}`, "nb-name"),
+      line(advice.line, "nb-advice-line"),
+    );
+    card.append(txt);
+    nb.append(card);
+  }
   const t = g.towers.find((x) => x.id === notebookTower) ?? [...g.towers].sort((a, b) => grown(b) - grown(a))[0];
   const page = document.createElement("div");
   page.className = "nb-page nb-tower";
@@ -1722,11 +1745,12 @@ function fieldNotebook(g: Game): HTMLElement {
     }
     txt.append(line(`Sells ${sellValue(t, g)}`, "nb-sell"));
     page.append(txt);
-  } else page.append(line("Nothing planted yet: tap a plot to build.", "nb-empty"));
-  nb.append(page);
+  } else if (!advice) page.append(line("Nothing planted yet: tap a plot to build.", "nb-empty"));
+  // With nothing planted the advice already says how to build, so the lane's page takes the whole row.
+  if (t || !advice) nb.append(page);
   const nx = nextNew(g);
   const lane = document.createElement("div");
-  lane.className = "nb-page nb-enemy";
+  lane.className = t || !advice ? "nb-page nb-enemy" : "nb-page nb-enemy nb-wide";
   if (nx) {
     lane.dataset.kind = nx.kind;
     lane.append(img(enemyIcon(nx.kind), "nb-sketch"));

@@ -3274,7 +3274,7 @@ body:has(#dlg-pause[open]) .paused-note {
   flex: 1 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   gap: 4px 8px;
   margin-top: var(--sp-1);
   padding: 6px 8px 8px 22px;
@@ -3318,6 +3318,29 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .play .panel .nb-enemy .nb-sketch {
   rotate: 2.5deg;
+}
+/* Plan item 72: Cath's advice for the round, across the notebook's top: the threat sketched, her one line */
+.play .panel .nb-advice {
+  grid-column: 1 / -1;
+  grid-template-columns: 44px 1fr;
+  padding-bottom: 6px;
+  border-bottom: 1.5px dashed color-mix(in srgb, var(--ink-3) 50%, transparent);
+}
+.play .panel .nb-advice .nb-sketch {
+  width: 44px;
+  height: 44px;
+}
+.play .panel .nb-advice-line {
+  font: 600 var(--fs-small) / 1.3 var(--font-voice);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.play .panel .nb-page.nb-wide {
+  grid-column: 1 / -1;
+}
+.play .panel .nb-advice + .nb-page {
+  padding-left: 0;
+  border-left: 0;
 }
 .play .panel .nb-text {
   display: grid;

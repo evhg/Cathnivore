@@ -39,4 +39,22 @@ for (const level of [1, 12, 40]) {
     })
     await expect.poll(() => queue(page)).toBeNull()
   })
+
+  test(`level ${level}: Cath's notebook gives advice for the round, before and after Go`, async ({ page }) => {
+    test.setTimeout(90_000)
+    await open(page, level)
+    const advice = page.locator('.field-notebook .nb-advice')
+    // On a phone the notebook waits in the drawer: it is built, just not shown until pulled up.
+    await expect(advice).toHaveCount(1)
+    await expect(advice.locator('.nb-advice-line')).toHaveText(/\w{3,}.*\./)
+    await expect(advice.locator('.nb-eyebrow')).toContainText('next')
+    if ((page.viewportSize()?.width ?? 0) >= 900) await expect(advice).toBeVisible()
+    await page.evaluate(() => {
+      const h = (window as unknown as { hedgerow: Hg }).hedgerow
+      h.sendWave(h.game())
+    })
+    await page.evaluate(() => (window as unknown as { hedgerow: { refresh(): void } }).hedgerow.refresh())
+    await expect(advice.locator('.nb-eyebrow')).toContainText('on the lane')
+    await expect(advice.locator('.nb-advice-line')).not.toBeEmpty()
+  })
 }

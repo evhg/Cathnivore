@@ -1101,7 +1101,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: Cath at least 360 px tall at D and 160 px at P, no overlap with the menu; reduced motion stops every mover; shots at P and D, fresh and complete saves.
 - **Size:** 2
 
-## 72. [ ] Hedgerow: the round's threat staged before Go *(lane A, in progress)*
+## 72. [x] Hedgerow: the round's threat staged before Go *(done 2026-11-03, lane A, c1e709a9..HEAD: between rounds the next round's leads wait on the lane at the Hollowell gate in spawn order, spaced by length, with a 'N coming' plate beside the lane's tail, in 2D and 3D (models and a DOM plate), cleared on Go; `engine.waveSpawns` feeds both sendWave and the queue, so the plate counts what Go sends with twists applied; a boss round eases the 3D camera to the gate for 2.6 s (not under reduced motion); Cath's notebook opens on her advice for the round (`advice.ts`: the threat sketched with its count, one line on what in the kit answers it, preferring a tower already planted); `tests/hedgerow-gatequeue.test.ts`, `tests/hedgerow-advice.test.ts`, `e2e-site/hedgerow-gatequeue.spec.ts` at P and D; shots of levels 1, 12, 40 at P and D in 2D and 3D in `e2e/screenshots/gate72/`. Changed: the 2D field has no camera, so the boss ease is 3D only)*
 - **Why:** `hedge-l40-2d-D`, `hedge-l40-3d-D` (plan1103e): on "The Mega-Dozer" nothing of the coming convoy is on screen before Go, and Cath's notebook is about 120 px of empty ruled paper.
 - **Build:**
   - Between rounds the next convoy queues at the Hollowell gate (a few lead vehicles drawn, a count plate), in 2D and 3D, cleared on Go.

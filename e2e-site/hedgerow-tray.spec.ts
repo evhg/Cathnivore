@@ -81,7 +81,8 @@ test('plan item 31: the side column ends on Cath\'s notebook, never an empty ban
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
     const nb = page.locator('.panel .field-notebook')
     await expect(nb).toBeVisible()
-    await expect(nb.locator('.nb-empty').first()).toBeVisible()
+    // Plan item 72: with nothing planted, Cath's advice for the round says how to build (it replaced the empty page).
+    await expect(nb.locator('.nb-advice-line')).toContainText('Tap a plot to build')
     await expect(nb.locator('.nb-enemy .nb-name')).not.toBeEmpty()
     expect(await emptyBand(page)).toBeLessThanOrEqual(120)
     // Plant one: its page names it, its stand and what it sells for.
