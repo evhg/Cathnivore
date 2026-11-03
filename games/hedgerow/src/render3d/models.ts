@@ -1895,15 +1895,14 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     fig.add(p);
     locks.push(p);
   }
-  // Her face, always turned to the camera.
-  if (faceTexture) {
-    // A touch under white, so her skin stays below the bloom threshold and doesn't glow.
-    const head = new THREE.Sprite(new THREE.SpriteMaterial({ map: faceTexture, transparent: true, color: "#e4e4e4" }));
-    head.scale.set(0.42, 0.5, 1);
-    head.position.set(0, 0.72, 0);
-    root.add(head);
-    root.userData.head = head;
-  }
+  // Plan item 52: her head modelled (it was a portrait sprite always turned to the camera). Low-poly, from the
+  // bible: an oval face turned three-quarters to the lens, centre-parted deep brown-black hair over the crown and
+  // the back, warm brown eyes under soft brows, rosy cheeks and a small smile. The sync turns and mirrors it.
+  void faceTexture;
+  const head = cathHead(skinM);
+  head.position.set(0, 0.72, 0);
+  root.add(head);
+  root.userData.head = head;
   fig.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
@@ -1915,6 +1914,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     mergeUnder(a.hand, new Set([pie]));
   }
   mergeUnder(pin, new Set());
+  mergeUnder(head, new Set());
   Object.assign(root.userData, {
     legs,
     fig,
@@ -1929,6 +1929,57 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     pie,
   });
   return root;
+}
+
+/**
+ * Cath's head (plan item 52), facing +x and turned three-quarters toward the camera (+z). Chibi proportions to
+ * match the body: about a third of her height, like the shared art's framing.
+ */
+function cathHead(skinM: M): THREE.Group {
+  const g = new THREE.Group();
+  const yaw = new THREE.Group();
+  yaw.rotation.y = -1.05;
+  yaw.scale.setScalar(1.18);
+  g.add(yaw);
+  // Tipped up toward the camera, which looks down on the field.
+  const turn = new THREE.Group();
+  turn.rotation.z = 0.38;
+  yaw.add(turn);
+  const hairM = matte(HAIR.base, 0.42, false);
+  const shineM = matte(HAIR.shine, 0.35, false);
+  const whiteM = matte("#ffffff", 0.3, false);
+  const eyeM = matte("#5a3a26", 0.3, false);
+  const lipM = matte("#c4646a", 0.5, false);
+  const cheekM = matte("#f2a9a0", 0.8, false);
+  // The face: a slightly long oval, and a neck under it.
+  turn.add(scaled(ball(0.13, skinM, 0, 0, 0, 2), 0.95, 1.1, 0.95));
+  turn.add(cyl(0.035, 0.04, 0.08, skinM, 0, -0.18, 0, 8));
+  // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
+  const cap = mesh(geo("cathHairCap", () => new THREE.SphereGeometry(0.142, 16, 10, Math.PI * 0.62, Math.PI * 1.76, 0, Math.PI * 0.62)), hairM, -0.012, 0.012, 0);
+  turn.add(cap);
+  turn.add(scaled(ball(0.14, hairM, -0.035, -0.005, 0, 2), 0.82, 1.05, 1));
+  for (const z of [-1, 1]) {
+    // A sweep from the part down over each temple, and a curtain past the cheek.
+    const sweep = scaled(ball(0.06, hairM, 0.06, 0.1, z * 0.06, 1), 0.6, 0.45, 1.05);
+    sweep.rotation.x = z * 0.5;
+    turn.add(sweep);
+    turn.add(scaled(ball(0.06, hairM, 0.035, -0.04, z * 0.118, 1), 0.85, 1.9, 0.55));
+  }
+  turn.add(scaled(ball(0.03, shineM, -0.03, 0.12, 0.05, 1), 1.5, 0.35, 1.2));
+  // Eyes, brows, cheeks and lips on the front of the face (+x).
+  for (const z of [-1, 1]) {
+    turn.add(scaled(ball(0.026, eyeM, 0.11, 0.006, z * 0.046, 1), 0.5, 1.2, 0.9));
+    turn.add(scaled(ball(0.007, whiteM, 0.124, 0.016, z * 0.046 + 0.006, 0), 0.5, 1, 1));
+    const brow = scaled(ball(0.026, hairM, 0.112, 0.058, z * 0.048, 1), 0.3, 0.22, 1.2);
+    brow.rotation.x = z * 0.18;
+    turn.add(brow);
+    turn.add(scaled(ball(0.02, cheekM, 0.108, -0.038, z * 0.068, 1), 0.35, 0.7, 1));
+  }
+  turn.add(scaled(ball(0.018, lipM, 0.121, -0.072, 0, 1), 0.45, 0.5, 1.3));
+  g.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+  });
+  return g;
 }
 
 /** Re-colours Cath's 3D model when the wardrobe's worn outfit changes. Cheap when nothing changed. */

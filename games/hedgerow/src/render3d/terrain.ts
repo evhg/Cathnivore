@@ -868,7 +868,7 @@ export function buildGround(level: Level): Ground {
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
   for (const m of [
     ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l) }), beds[l], false)),
-    instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards, true),
+    instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards),
     instanced(new THREE.CircleGeometry(0.15, 14).scale(1, 0.62, 1).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#8fb8d4", roughness: 0.08, metalness: 0.3 }), puddles),
     instanced(flowerGeo, flowerMat, cloverHeads),
     instanced(plotGeo, tickMat, plots.map((p) => ({ ...p, y: p.y + 0.006 }))),

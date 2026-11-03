@@ -162,7 +162,6 @@ export class Renderer3D {
   private gold = { n: 0, x: 0, y: 0, age: 0 };
   private cath: THREE.Group | null = null;
   private faceTex: THREE.Texture | null = null;
-  private faceWorried: THREE.Texture | null = null;
   private sparks = new Sparks();
   private motes: Motes[] = [];
   private birds: Birds | null = null;
@@ -341,7 +340,6 @@ export class Renderer3D {
       return t;
     };
     this.faceTex = tex(cathSvg({ framing: "face", expression: "determined", width: 312, height: 376 }));
-    this.faceWorried = tex(cathSvg({ framing: "face", expression: "worried", width: 312, height: 376 }));
     // Sandbox only: a handle for screenshot scripts (zoom on Cath, freeze a swing).
     if (new URLSearchParams(location.search).has("sandbox")) (window as unknown as { hedgerow3d: Renderer3D }).hedgerow3d = this;
     try {
@@ -1485,7 +1483,7 @@ export class Renderer3D {
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     const ud = c.userData;
     const fig = ud.fig as THREE.Group;
-    const head = ud.head as THREE.Sprite | undefined;
+    const head = ud.head as THREE.Object3D | undefined;
     const legs = ud.legs as THREE.Object3D[];
     // Mirrored, not turned, to face left: her rolling-pin arm is always the one nearer the camera.
     fig.scale.x = h.facing;
@@ -1496,8 +1494,10 @@ export class Renderer3D {
       fig.rotation.set(0, 0, -1.2 * h.facing);
       fig.position.y = 0.1;
       if (head) {
-        head.position.set(0, 0.28, 0);
-        (head.material as THREE.SpriteMaterial).map = this.faceWorried;
+        // Winded: her head down on the grass, turned up to the sky.
+        head.position.set(-0.6 * h.facing, 0.2, 0);
+        head.scale.x = h.facing;
+        head.rotation.set(0, 0, -1.2 * h.facing);
       }
       if (Math.random() < dt * 6) this.sparks.emit(h.x, y + 0.6, h.y, "#ffe66b", 1, 0.4, 0.1, 0.6, 0);
       this.swayHair(ud, dt, 0, t);
@@ -1519,7 +1519,9 @@ export class Renderer3D {
     if (head) {
       // The portrait rides on her shoulders: it follows the lean and the bob.
       head.position.set(-Math.sin(lean) * 0.72 * h.facing, 0.72 * Math.cos(lean) + bob, 0);
-      (head.material as THREE.SpriteMaterial).map = this.faceTex;
+      // Mirrored with her body; it follows her lean and a little of her twist.
+      head.scale.x = h.facing;
+      head.rotation.set(0, twist * 0.5 * h.facing, lean * h.facing);
     }
     legs.forEach((l, i) => (l.rotation.z = walking ? Math.sin(t * 12 + i * Math.PI) * 0.6 : 0));
     this.swayHair(ud, dt, (walking ? -0.32 + Math.sin(t * 24) * 0.05 : Math.sin(t * 1.3) * 0.03) - lean * 1.6, t);
