@@ -32,8 +32,9 @@ export function pinCentre(home: RegionId): { x: number; y: number } {
 }
 export const PIN_R = 11
 
-/** Cath's figure on the map (cathSvg at 34 x 51), standing just right of and above her pin. */
-export const CATH_SIZE = { w: 34, h: 51 }
+/** Cath's figure on the map (cathSvg at 28 x 42), standing just right of and above her pin. At 28 x 42 she
+ * stays inside her own region at Kingsmarket, clear of Shingle Bay's bunting below it. */
+export const CATH_SIZE = { w: 28, h: 42 }
 export function cathBox(pin: { x: number; y: number }): Box {
   const x0 = pin.x + 12
   const y0 = pin.y - 25
@@ -95,6 +96,13 @@ export function postBox(id: RegionId): Box {
   return { x0: p.x - 7, y0: p.y - 16, x1: p.x + 7, y1: p.y + 2 }
 }
 
+/** A freed region's bunting: a swag of pennants across the hex's upper edge (ui/CampaignMap.tsx Bunting). */
+export const BUNTING = { halfSpan: MAP_W * 0.28, top: -MAP_R * 0.72, drop: 14 }
+export function buntingBox(id: RegionId): Box {
+  const c = regionCentre(id)
+  return { x0: c.x - BUNTING.halfSpan, y0: c.y + BUNTING.top, x1: c.x + BUNTING.halfSpan, y1: c.y + BUNTING.top + BUNTING.drop }
+}
+
 export function pinBox(p: { x: number; y: number }): Box {
   return { x0: p.x - PIN_R, y0: p.y - PIN_R, x1: p.x + PIN_R, y1: p.y + PIN_R }
 }
@@ -108,6 +116,7 @@ export interface MapLayout {
   names: { id: RegionId; box: Box }[]
   landmarks: { id: RegionId; box: Box }[]
   posts: { id: RegionId; box: Box }[]
+  bunting: { id: RegionId; box: Box }[]
 }
 
 /** The whole map's layout for a campaign at this point (chapter ids in order, the ones won). */
@@ -127,6 +136,7 @@ export function campaignMapLayout(chapterIds: readonly string[], completed: read
     cath: cathBox(pins[here]!),
     names: regions.map((id) => ({ id, box: nameBox(id) })),
     landmarks: regions.map((id) => ({ id, box: landmarkBox(id) })),
+    bunting: [...free].map((id) => ({ id, box: buntingBox(id) })),
     posts: regions.filter((id) => !free.has(id) && id !== cathHome).map((id) => ({ id, box: postBox(id) })),
   }
 }

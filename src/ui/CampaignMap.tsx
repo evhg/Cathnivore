@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES, MAP_AXIAL, currentChapterIndex, liberatedRegions } from '../content/campaignMap'
-import { LANDMARKS, cathBox, MAP_FACE_R, MAP_R, MAP_W, type LandmarkKind, landmarkAt, nameBaseline, nameLines, pinCentre, postAt, regionCentre, riverPath } from '../content/campaignMapLayout'
+import { BUNTING, CATH_SIZE, LANDMARKS, cathBox, MAP_FACE_R, MAP_R, type LandmarkKind, landmarkAt, nameBaseline, nameLines, pinCentre, postAt, regionCentre, riverPath } from '../content/campaignMapLayout'
 import { BOARD_FACE_R, GroundArt } from './Map'
 import type { RegionId } from '../engine/types'
 import { cathSvg } from '../../shared/cath/cath'
@@ -16,7 +16,6 @@ import { cathSvg } from '../../shared/cath/cath'
 // `.cmp-map-cath` with `data-at` naming the chapter she stands at.
 
 const R = MAP_R
-const W = MAP_W
 
 function hexPoints(r: number): string {
   return Array.from({ length: 6 }, (_, k) => {
@@ -124,9 +123,9 @@ const GROUND_SCALE = MAP_FACE_R / BOARD_FACE_R
 // A swag of pennants across a freed hex's upper edge.
 function Bunting() {
   const flags = 5
-  const span = W * 0.56
+  const span = BUNTING.halfSpan * 2
   const x0 = -span / 2
-  const top = -R * 0.72
+  const top = BUNTING.top
   const sag = (t: number) => top + Math.sin(t * Math.PI) * 5
   return (
     <g className="cmp-bunting" aria-hidden="true">
@@ -186,7 +185,7 @@ export default function CampaignMap({
   const regionIds = Object.keys(MAP_AXIAL) as RegionId[]
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
   const cath = useMemo(
-    () => cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: 34, height: 51, animate: true }),
+    () => cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: CATH_SIZE.w, height: CATH_SIZE.h, animate: true }),
     [allDone],
   )
   const pins = chapters.map(pinOf)

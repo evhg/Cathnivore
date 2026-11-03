@@ -22,9 +22,11 @@ describe('the campaign map layout', () => {
         ...m.landmarks.map((l) => ({ what: `landmark ${l.id}`, box: l.box })),
         ...m.posts.map((p) => ({ what: `post ${p.id}`, box: p.box })),
         ...m.pins.map((p, i) => ({ what: `pin ${i + 1}`, box: pinBox(p) })),
+        ...m.bunting.map((b) => ({ what: `bunting ${b.id}`, box: b.box })),
       ]
       for (const n of m.names) {
-        for (const o of others) expect(boxesMeet(n.box, o.box), `${n.id} vs ${o.what}`).toBe(false)
+        // A region's own bunting hangs over its name like a banner, on purpose; anyone else's may not.
+        for (const o of others) if (o.what !== `bunting ${n.id}`) expect(boxesMeet(n.box, o.box), `${n.id} vs ${o.what}`).toBe(false)
         for (const n2 of m.names) if (n2.id !== n.id) expect(boxesMeet(n.box, n2.box), `${n.id} vs ${n2.id}`).toBe(false)
       }
       // Cath stands clear of every landmark and post too, and nothing sits on another region's name.
