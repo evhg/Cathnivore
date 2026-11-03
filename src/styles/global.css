@@ -3018,3 +3018,117 @@ html.no-animations .end-play, html.no-animations .end-grade { animation: none; }
 @media (prefers-reduced-motion: reduce) { .grip-props > g { animation: grip-fade 0.6s ease both; } }
 html.no-animations .grip-props > g { animation: none; }
 @keyframes grip-fade { from { opacity: 0; } }
+
+/* Plan item 62: the farm as a market stall that fills up (FarmSheet.tsx Stall, stallLayout.ts). --k is px per stall
+   unit (a crate is 25 x 22 units): 2.2 in the phone sheet; the desktop column's fixed frame lays one plank instead. */
+.farm-stall {
+  --k: 2.2;
+  --frame: var(--rule);
+  position: relative;
+  margin: 4px 0 8px;
+  padding: 0 6px 6px;
+  border: 1px solid var(--ink-a15);
+  border-radius: 6px 6px 4px 4px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wood) 22%, var(--paper-2)), var(--paper-2));
+}
+.farm-stall-awning {
+  height: 14px;
+  margin: 0 -6px 4px;
+  border-radius: 6px 6px 0 0;
+  background: repeating-linear-gradient(90deg, var(--clay) 0 12px, var(--paper-hi, var(--paper)) 12px 24px);
+  -webkit-mask: radial-gradient(circle at 6px 100%, transparent 5px, black 5.5px) 0 0 / 12px 100%;
+  mask: radial-gradient(circle at 6px 100%, transparent 5px, black 5.5px) 0 0 / 12px 100%;
+}
+.farm-stall-prices {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 4px;
+  font: 700 var(--fs-caption) / 1.2 var(--font-text);
+}
+.farm-stall-prices small { color: var(--ink-muted); font-weight: 600; }
+.farm-stall-shelves {
+  position: relative;
+  width: calc(var(--stall-w) * 1px * var(--k));
+  max-width: 100%;
+  height: calc(66px * var(--k));
+}
+.farm-stall-shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((var(--row) * 22px + 19px) * var(--k));
+  height: 3px;
+  border-radius: 2px;
+  background: var(--wood-lo);
+  box-shadow: 0 2px 0 var(--ink-a15);
+}
+.stall-item {
+  --frame: var(--rule);
+  position: absolute;
+  left: calc(var(--x) * 1px * var(--k));
+  top: calc((var(--y) + 2) * 1px * var(--k));
+  z-index: calc(var(--layer) + 1);
+  width: calc(23px * var(--k));
+  height: calc(17px * var(--k));
+  overflow: hidden;
+  border: 1px solid var(--ink-a35);
+  border-top: 3px solid var(--frame);
+  border-radius: 3px;
+  background: var(--paper-hi, var(--paper));
+  box-shadow: 0 2px 3px var(--ink-a15);
+}
+.stall-item[data-tag='pasture'] { --frame: var(--pasture); }
+.stall-item[data-tag='crop'] { --frame: var(--wheat); }
+.stall-item[data-tag='coast'] { --frame: var(--sea); }
+.stall-item[data-tag='community'] { --frame: var(--clay); }
+.stall-item[data-tag='media'] { --frame: var(--p-sol); }
+.stall-item[data-tag='science'] { --frame: var(--p-ines); }
+.stall-item .card-vignette {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+.stall-item-new { animation: stall-drop 0.5s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes stall-drop { from { opacity: 0; translate: 0 -14px; } }
+@media (prefers-reduced-motion: reduce) { .stall-item-new { animation: stall-fade 0.4s ease both; } }
+@keyframes stall-fade { from { opacity: 0; } }
+.farm-stall-board {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink) 85%, var(--pasture));
+  color: color-mix(in srgb, var(--paper) 88%, transparent);
+  font: 600 var(--fs-label) / 1.4 var(--font-text);
+}
+.chalk-tally { letter-spacing: 1px; font-weight: 800; }
+/* In the desktop column's fixed frame: no awning or prices (the chips above carry the figures), smaller crates. */
+.farm-column--compact .farm-stall { --k: 0.8; margin: 2px 0; padding: 0 4px 2px; }
+.farm-column--compact .farm-stall-awning { height: 4px; margin-bottom: 1px; }
+.farm-column--compact .farm-stall-prices, .farm-column--compact .farm-stall-board { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .farm-stall-board { background: color-mix(in srgb, var(--paper) 70%, var(--pasture)); color: var(--ink); }
+}
+:root[data-theme="dark"] .farm-stall-board { background: color-mix(in srgb, var(--paper) 70%, var(--pasture)); color: var(--ink); }
+/* In the desktop column the stall is one long shelf (the frame is 88 px tall): crates side by side on a plank. */
+.farm-column--compact .farm-stall-shelves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: auto;
+  height: auto;
+  padding-bottom: 4px;
+  background: linear-gradient(var(--wood-lo) 0 0) bottom / 100% 3px no-repeat;
+}
+.farm-column--compact .farm-stall-shelf { display: none; }
+.farm-column--compact .stall-item {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 34px;
+  height: 22px;
+}

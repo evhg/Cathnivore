@@ -6,6 +6,7 @@ import Tooltip from './Tooltip'
 import Portrait from './portraits/Portrait'
 import Vignette from './Vignette'
 import { vignetteFor } from './vignetteKind'
+import { SHELVES, SLOT_W, stallLayout, tagTallies } from './stallLayout'
 import type { GameState, ProducerId } from '../engine/types'
 
 const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -122,24 +123,12 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
       {p.improvements.length === 0 ? (
         !compact && <p className="farm-empty">{hideSummary || state.config.producers.length < 2 ? 'No Improvements bought yet.' : 'No Improvements yet.'}</p>
       ) : compact ? (
-        // Plan item 36: the desktop Farm is a row of small drawn cards a producer, in a fixed-height
-        // frame, so the Actions frame under it never moves as the farm grows.
-        <ul className="farmstead-thumbs" aria-label={`${def.name}'s Improvements`}>
-          {p.improvements.map((id) => {
-            const card = IMPROVEMENTS_BY_ID.get(id)
-            if (!card) return null
-            return (
-              <li key={id} className="farmstead-thumb" data-tag={card.tags[0]} data-card={id} title={`${card.name}: ${card.text}`}>
-                <Vignette kind={vignetteFor(card)} seed={card.id} />
-                <span className="visually-hidden">
-                  {card.name} ({card.tags.map((t) => TAG_LABEL[t]).join(', ')}): {card.text}
-                </span>
-              </li>
-            )
-          })}
-        </ul>
+        <Stall producer={producer} improvements={p.improvements} production={p.production} />
       ) : (
-        // Plan item 36: the phone Farm lays each bought card out in the farmstead as a drawn card.
+        // Plan item 36: the phone Farm lays each bought card out in the farmstead as a drawn card; plan item 62
+        // puts the stall they fill above them.
+        <>
+        <Stall producer={producer} improvements={p.improvements} production={p.production} />
         <ul className="farmstead-row">
           {p.improvements.map((id) => {
             const card = IMPROVEMENTS_BY_ID.get(id)
@@ -156,8 +145,9 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
             )
           })}
         </ul>
+        </>
       )}
-      {Object.keys(tagCounts).length > 0 && (
+      {!compact && Object.keys(tagCounts).length > 0 && (
         <p className="farm-tags">
           Tags:{' '}
           {Object.entries(tagCounts)
@@ -166,5 +156,64 @@ function FarmColumn({ state, producer, hideSummary, compact }: { state: GameStat
         </p>
       )}
     </section>
+  )
+}
+
+const SHELF_LABEL = { fields: 'From the fields', sea: 'From the sea', town: 'From the town' }
+
+/**
+ * Plan item 62: the farm as a market stall that fills up. A striped awning, three shelves (stallLayout.ts) where
+ * each bought card hangs as a painted crate with its vignette, the tag counts chalked on the stall's board and the
+ * round's yield on a price board under the awning. A card bought just now drops into its slot.
+ */
+function Stall({ producer, improvements, production }: { producer: ProducerId; improvements: readonly string[]; production: { produce: number; marks: number; goodwill: number } }) {
+  const items = improvements.map((id) => ({ id, tags: IMPROVEMENTS_BY_ID.get(id)?.tags ?? [] }))
+  const slots = stallLayout(items)
+  const tallies = tagTallies(items)
+  const W = SLOT_W * 4 + SLOT_W / 2 + 8
+  return (
+    <figure className={`farm-stall pc-${producer}`} data-items={slots.length} aria-label={`${PRODUCERS[producer].name}'s stall: ${slots.length} Improvements`}>
+      <div className="farm-stall-awning" aria-hidden="true" />
+      <p className="farm-stall-prices" aria-label={`Each round: ${production.produce} Produce, ${production.marks} Marks, ${production.goodwill} Goodwill`}>
+        <span><ProduceIcon /> {production.produce}</span>
+        <span><MarksIcon /> {production.marks}</span>
+        <span><GoodwillIcon /> {production.goodwill}</span>
+        <small>a round</small>
+      </p>
+      <div className="farm-stall-shelves" style={{ ['--stall-w' as string]: `${W}` }}>
+        {SHELVES.map((sh, row) => (
+          <div key={sh} className="farm-stall-shelf" data-shelf={sh} style={{ ['--row' as string]: row }}>
+            <span className="visually-hidden">{SHELF_LABEL[sh]}</span>
+          </div>
+        ))}
+        {slots.map((sl, i) => {
+          const card = IMPROVEMENTS_BY_ID.get(sl.id)
+          if (!card) return null
+          return (
+            <span
+              key={sl.id}
+              className={`stall-item${i === slots.length - 1 ? ' stall-item-new' : ''}`}
+              data-card={sl.id}
+              data-shelf={sl.shelf}
+              data-tag={card.tags[0]}
+              style={{ ['--x' as string]: sl.x, ['--y' as string]: sl.y, ['--layer' as string]: sl.layer }}
+              title={`${card.name}: ${card.text}`}
+            >
+              <Vignette kind={vignetteFor(card)} seed={card.id} />
+              <span className="visually-hidden">{card.name}</span>
+            </span>
+          )
+        })}
+      </div>
+      {tallies.length > 0 && (
+        <p className="farm-stall-board" aria-label={`Tags: ${tallies.map(([t, n]) => `${TAG_LABEL[t as keyof typeof TAG_LABEL]} ${n}`).join(', ')}`}>
+          {tallies.map(([t, n]) => (
+            <span key={t} data-tag={t}>
+              {TAG_LABEL[t as keyof typeof TAG_LABEL]} <b className="chalk-tally">{'|'.repeat(Math.min(n, 4))}{n > 4 ? ` ${n}` : ''}</b>
+            </span>
+          ))}
+        </p>
+      )}
+    </figure>
   )
 }
