@@ -13,7 +13,7 @@ import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
-import { boardSky } from './sky'
+import { boardSky, skyArt } from './sky'
 import { weekBeds, weekStrip } from './weekstrip'
 import {
   arcLabel,
@@ -328,6 +328,14 @@ function render(): void {
     : isOrchard
     ? `Orchard ${level} · ${orchardName(level)}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
+  const skySlot = document.getElementById('hud-sky')
+  if (skySlot) {
+    const art = skyArt(boardSky(puzzle.seed))
+    if (skySlot.dataset.art !== art) {
+      skySlot.innerHTML = art
+      skySlot.dataset.art = art
+    }
+  }
   ui.hudTime.textContent = formatTime(elapsed())
   ui.hudTaps.textContent = String(game.taps)
   ui.hudPar.textContent = String(puzzle.par)

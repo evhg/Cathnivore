@@ -25,6 +25,10 @@ for (const date of ['2026-11-03', '2026-11-08']) {
       expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
       return
     }
+    // The day card paints the board's sky beside the daily's name and numbers, on one line.
+    await expect(page.locator('#hud-sky svg')).toBeVisible()
+    const statsH = (await page.locator('.hud-stats').boundingBox())!.height
+    expect(statsH).toBeLessThan(40)
     const cath = page.locator('#valley-cath')
     await expect(cath.locator('svg')).toBeVisible()
     const clash = await page.evaluate(() => {

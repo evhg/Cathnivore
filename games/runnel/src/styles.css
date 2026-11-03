@@ -3219,3 +3219,33 @@ body[data-mode='practice'] #week-slot {
   .vl-water { transition: none; }
   .valley-cath.look { animation: none; }
 }
+
+/* Plan item 70: at D the HUD is the day card: the board's sky painted beside the daily's name and numbers. */
+.hud-sky {
+  display: none;
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  .hud:has(.hud-sky svg) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+    align-items: center;
+    justify-items: start;
+  }
+  .hud-sky {
+    display: block;
+    grid-row: 1 / 3;
+    width: 72px;
+    height: 42px;
+  }
+  .hud:has(.hud-sky svg) .hud-stats {
+    gap: 12px;
+    white-space: nowrap;
+  }
+  .hud-sky svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--soil) 25%, transparent));
+  }
+}
