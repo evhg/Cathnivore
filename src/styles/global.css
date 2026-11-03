@@ -1567,6 +1567,19 @@ html.no-animations .card-enter {
   min-height: 44px;
 }
 .settings .settings-switches label + label { border-top: 1px solid var(--soil); border-radius: 0; }
+/* Plan item 53: the Sound card: a volume slider between the master switch and the two channels. */
+.settings .settings-named { display: grid; gap: 2px; }
+.settings .settings-named small { color: var(--ink-muted); font-size: var(--fs-caption); line-height: 1.25; }
+.settings .settings-volume {
+  display: grid;
+  grid-template-columns: auto 1fr 3.2em;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  min-height: 44px;
+}
+.settings .settings-volume input[type='range'] { width: 100%; min-height: 32px; accent-color: var(--ink); }
+.settings .settings-volume output { text-align: right; font-variant-numeric: tabular-nums; }
 .settings input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;

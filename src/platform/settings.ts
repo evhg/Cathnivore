@@ -15,6 +15,10 @@ export interface Settings {
   version: 1
   animations: boolean
   sound: boolean
+  /** Plan item 53: master volume, 0 to 1. */
+  volume: number
+  /** Plan item 53: the table's sounds (cues) on or off; Ambience is `ambient`. */
+  effects: boolean
   ambient: boolean
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
@@ -27,6 +31,8 @@ export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   animations: true,
   sound: true,
+  volume: 0.8,
+  effects: true,
   ambient: false,
   colourBlindPatterns: false,
   aiSpeed: 'normal',

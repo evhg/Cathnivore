@@ -51,7 +51,8 @@ interface Note {
 }
 
 function play(notes: Note[]): void {
-  if (!loadSettings().sound) return
+  const st = loadSettings()
+  if (!st.sound || !st.effects) return
   const c = ctx // never create a context outside a tap: stay silent until unlocked
   if (!c || c.state !== 'running') return
   const t0 = c.currentTime
@@ -61,7 +62,7 @@ function play(notes: Note[]): void {
     osc.type = n.type ?? 'sine'
     osc.frequency.setValueAtTime(n.freq, t0 + n.at)
     if (n.slideTo) osc.frequency.exponentialRampToValueAtTime(n.slideTo, t0 + n.at + n.dur)
-    const peak = n.gain ?? 0.08
+    const peak = Math.max(0.0002, (n.gain ?? 0.08) * st.volume)
     g.gain.setValueAtTime(0.0001, t0 + n.at)
     g.gain.exponentialRampToValueAtTime(peak, t0 + n.at + 0.015)
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.at + n.dur)
@@ -88,11 +89,14 @@ function cueBus(c: AudioContext): GainNode {
 
 /** Plays a step's cues a beat apart (action first, then what it caused). Silent until the first tap. */
 export function playCues(cues: readonly Cue[]): void {
-  if (!cues.length || !loadSettings().sound) return
+  const st = loadSettings()
+  if (!cues.length || !st.sound || !st.effects) return
   cueLog?.push(...cues)
   const c = ctx
   if (!c || c.state !== 'running') return
   const out = cueBus(c)
+  out.gain.setValueAtTime(0.9 * st.volume, c.currentTime)
+  duckAmbient(c)
   let at = c.currentTime + 0.01
   for (const cue of cues) {
     renderCue(c, out, cue, at)
@@ -104,45 +108,97 @@ export function playSoundsFor(action: Action | null, newEvents: GameEvent[], res
   playCues(cueFor(action, newEvents, result))
 }
 
-// ROADMAP 19's optional ambient loop: a quiet, slowly breathing two-note pad (a fifth apart), off by default.
-// Sound must be on as well, and like every cue it waits for the first tap.
-let ambient: { stop: () => void } | null = null
+// Plan item 53: the market ambience (it replaced ROADMAP 19's pad): soft chatter in two voice bands that drift,
+// and a bird calling now and then. Off by default; Sound must be on too, and like every cue it waits for the
+// first tap. Cues duck it for a moment.
+let ambient: { stop: () => void; master: GainNode; level: number } | null = null
+
+function duckAmbient(c: AudioContext): void {
+  if (!ambient) return
+  const g = ambient.master.gain
+  const t = c.currentTime
+  g.cancelScheduledValues(t)
+  g.setValueAtTime(Math.max(0.0001, g.value), t)
+  g.linearRampToValueAtTime(ambient.level * 0.4, t + 0.05)
+  g.linearRampToValueAtTime(ambient.level, t + 0.9)
+}
 
 export function syncAmbient(): void {
   const s = loadSettings()
   const c = ctx
-  const want = s.sound && s.ambient && !!c && c.state === 'running'
+  const want = s.sound && s.ambient && s.volume > 0 && !!c && c.state === 'running'
   if (!want) {
     ambient?.stop()
     ambient = null
     return
   }
-  if (ambient || !c) return
+  if (!c) return
+  const level = 0.5 * s.volume
+  if (ambient) {
+    ambient.level = level
+    ambient.master.gain.setTargetAtTime(level, c.currentTime, 0.2)
+    return
+  }
   const master = c.createGain()
   master.gain.setValueAtTime(0.0001, c.currentTime)
-  master.gain.exponentialRampToValueAtTime(0.035, c.currentTime + 2)
+  master.gain.linearRampToValueAtTime(level, c.currentTime + 2)
   master.connect(c.destination)
-  const lfo = c.createOscillator()
-  const lfoGain = c.createGain()
-  lfo.frequency.value = 0.12
-  lfoGain.gain.value = 0.015
-  lfo.connect(lfoGain).connect(master.gain)
-  const oscs = [130.81, 196, 261.63].map((freq) => {
-    const o = c.createOscillator()
-    o.type = 'sine'
-    o.frequency.value = freq
-    o.connect(master)
-    o.start()
-    return o
-  })
-  lfo.start()
+  // Chatter: looping noise through two voice-band filters, each breathing on its own slow LFO.
+  const src = c.createBufferSource()
+  const len = c.sampleRate * 2
+  const buf = c.createBuffer(1, len, c.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  src.buffer = buf
+  src.loop = true
+  const stops: Array<AudioScheduledSourceNode> = [src]
+  for (const [freq, q, gain, rate] of [[480, 1.1, 0.05, 0.23], [1150, 1.5, 0.03, 0.37]] as const) {
+    const f = c.createBiquadFilter()
+    f.type = 'bandpass'
+    f.frequency.value = freq
+    f.Q.value = q
+    const g = c.createGain()
+    g.gain.value = gain
+    const lfo = c.createOscillator()
+    const lg = c.createGain()
+    lfo.frequency.value = rate
+    lg.gain.value = gain * 0.6
+    lfo.connect(lg).connect(g.gain)
+    lfo.start()
+    stops.push(lfo)
+    src.connect(f).connect(g).connect(master)
+  }
+  src.start()
+  // A bird now and then: a quick rising-falling chirp pair.
+  const bird = window.setInterval(() => {
+    if (Math.random() < 0.5) return
+    const t = c.currentTime
+    const base = 2600 + Math.random() * 1400
+    for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) {
+      const o = c.createOscillator()
+      const g = c.createGain()
+      const at = t + i * 0.13
+      o.frequency.setValueAtTime(base, at)
+      o.frequency.exponentialRampToValueAtTime(base * 1.35, at + 0.05)
+      o.frequency.exponentialRampToValueAtTime(base * 0.9, at + 0.1)
+      g.gain.setValueAtTime(0.0001, at)
+      g.gain.exponentialRampToValueAtTime(0.025, at + 0.01)
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.11)
+      o.connect(g).connect(master)
+      o.start(at)
+      o.stop(at + 0.12)
+    }
+  }, 2400)
   ambient = {
+    master,
+    level,
     stop: () => {
+      window.clearInterval(bird)
       const t = c.currentTime
       master.gain.cancelScheduledValues(t)
       master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t)
       master.gain.exponentialRampToValueAtTime(0.0001, t + 0.5)
-      for (const o of [...oscs, lfo]) o.stop(t + 0.6)
+      for (const o of stops) o.stop(t + 0.6)
     },
   }
 }

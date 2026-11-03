@@ -55,19 +55,6 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           <span>Animations</span>
         </label>
         <label>
-          <input type="checkbox" checked={settings.sound} onChange={(e) => update({ sound: e.target.checked })} />
-          <span>Sound</span>
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.ambient}
-            disabled={!settings.sound}
-            onChange={(e) => update({ ambient: e.target.checked })}
-          />
-          <span>Ambient music</span>
-        </label>
-        <label>
           <input
             type="checkbox"
             checked={settings.colourBlindPatterns}
@@ -75,6 +62,47 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           />
           <span>Colour-blind patterns</span>
         </label>
+      </section>
+
+      {/* Plan item 53: the table's sound. */}
+      <section className="settings-card settings-sound" aria-labelledby="settings-sound-head">
+        <h2 id="settings-sound-head">Sound</h2>
+        <div className="settings-switches">
+          <label>
+            <input type="checkbox" checked={settings.sound} onChange={(e) => update({ sound: e.target.checked })} />
+            <span>Sound on</span>
+          </label>
+        </div>
+        <label className="settings-volume">
+          <span>Volume</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={Math.round(settings.volume * 100)}
+            disabled={!settings.sound}
+            aria-valuetext={`${Math.round(settings.volume * 100)}%`}
+            onChange={(e) => update({ volume: Number(e.target.value) / 100 })}
+          />
+          <output>{Math.round(settings.volume * 100)}%</output>
+        </label>
+        <div className="settings-switches">
+          <label>
+            <input type="checkbox" checked={settings.effects} disabled={!settings.sound} onChange={(e) => update({ effects: e.target.checked })} />
+            <span className="settings-named">
+              Effects
+              <small>Wood, paper and coin on the table; Hollowell's chimes</small>
+            </span>
+          </label>
+          <label>
+            <input type="checkbox" checked={settings.ambient} disabled={!settings.sound} onChange={(e) => update({ ambient: e.target.checked })} />
+            <span className="settings-named">
+              Market ambience
+              <small>Chatter and birdsong behind the game</small>
+            </span>
+          </label>
+        </div>
       </section>
 
       <section className="settings-card">
