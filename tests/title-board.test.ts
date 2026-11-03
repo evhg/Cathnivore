@@ -25,3 +25,11 @@ describe('titleBoardState', () => {
     expect(titleBoardState(['fresh-meat'])).toEqual(titleBoardState(['fresh-meat']))
   })
 })
+
+import { titleLine } from '../src/ui/titleBoard'
+describe('titleLine', () => {
+  it('changes with progress', () => {
+    const lines = [[], ['fresh-meat'], ['fresh-meat', 'word-of-mouth', 'growing-season'], ['fresh-meat', 'word-of-mouth', 'growing-season', 'the-plan', 'friends-in-low-places', 'kingsmarket']].map((c) => titleLine(c))
+    expect(new Set(lines).size).toBe(4)
+  })
+})

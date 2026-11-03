@@ -543,3 +543,113 @@ html.no-animations .title-screen * {
     max-height: 30dvh;
   }
 }
+
+/* Plan item 60: Cath's line, Bea's drawing on the cloth, and the menu as a chalkboard sign leaning on the table:
+   slate in a wooden frame, the main buttons on it as raised keys, the minor links as paper tags hung under it. */
+.title-cath-line {
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border-radius: 12px 12px 12px 2px;
+  background: var(--paper-hi, var(--paper));
+  box-shadow: 0 2px 0 var(--rule);
+  font: italic 500 var(--fs-label, 13px) / 1.3 var(--font-display, serif);
+  color: var(--ink);
+}
+.title-bea {
+  position: absolute;
+  top: -14px;
+  left: -10px;
+  width: 64px;
+  transform: rotate(-7deg);
+  z-index: var(--z-raised);
+  filter: drop-shadow(0 3px 4px color-mix(in srgb, var(--ink) 25%, transparent));
+}
+.title-bea .beas-drawing {
+  position: static;
+  width: 100%;
+  height: auto;
+}
+.title-menu {
+  position: relative;
+  padding: 16px 16px 14px;
+  border: 7px solid var(--soil);
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--paper) 7%, transparent), transparent 60%),
+    color-mix(in srgb, var(--ink) 88%, var(--pasture));
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--ink) 25%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--paper) 12%, transparent);
+}
+.title-menu::before {
+  content: "Today at the market";
+  display: block;
+  margin: -4px 0 2px;
+  font: 700 var(--fs-label, 13px) / 1 var(--font-display, serif);
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--paper) 78%, transparent);
+  text-align: center;
+}
+.title-minor {
+  margin: 6px -4px -6px;
+  justify-content: center;
+}
+.title-minor .quiet {
+  position: relative;
+  padding: 6px 12px 6px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 4px 10px 10px 4px;
+  background: var(--paper-hi, var(--paper));
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 2px 0 var(--rule);
+}
+.title-minor .quiet::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--soil);
+}
+.title-minor .quiet:hover {
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+@media (max-width: 600px) {
+  .title-cath-line {
+    font-size: var(--fs-label);
+    padding: 5px 7px;
+  }
+  .title-bea {
+    width: 44px;
+  }
+  .title-menu {
+    padding: 8px 10px 8px;
+    border-width: 5px;
+    gap: 8px;
+  }
+  .title-menu::before {
+    margin: -2px 0 -2px;
+    font-size: var(--fs-label);
+  }
+  /* One row of tags on a phone. */
+  .title-minor {
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin: 2px -6px -4px;
+  }
+  .title-minor .quiet {
+    padding: 5px 7px 5px 15px;
+    font-size: var(--fs-label);
+  }
+  .title-minor .quiet::before {
+    left: 5px;
+    width: 5px;
+    height: 5px;
+  }
+  .title-minor .title-key-icon {
+    display: none;
+  }
+}

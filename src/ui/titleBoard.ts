@@ -51,3 +51,12 @@ export function titleBoardState(completed: readonly string[]): GameState {
   }
   return { ...base, regions, log: [], pendingDecisions: [] }
 }
+
+/** Plan item 60: Cath's line beside the table, by how far the campaign has come. */
+export function titleLine(completed: readonly string[]): string {
+  const free = completed.includes('kingsmarket') ? 7 : liberatedRegions(completed).size
+  if (free >= 7) return 'Marrow is ours again. Same time tomorrow? The market never sleeps.'
+  if (free === 0) return "Hollowell's in every stall in Marrow. We start with Brindle Hills."
+  if (free <= 2) return `${free} regions back in local hands. Bea drew me a picture to celebrate.`
+  return `${free} of 7 regions free. Kingsmarket is starting to worry.`
+}
