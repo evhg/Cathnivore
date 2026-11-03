@@ -25,10 +25,13 @@ import {
   type Game,
   type GameEvent,
   type TowerKind,
+  type Enemy,
+  type Level,
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
-import { swarms, type Swarm } from "./swarm";
+import { swarms, SWARM_MIN, type Swarm } from "./swarm";
+import { ABREAST, convoy, type Convoy, type ConvoyColumn } from "./convoy";
 import {
   INK,
   drawEnemy,
@@ -724,9 +727,15 @@ export class Renderer {
       });
     }
     const alive = new Set<number>();
+    this.layOut(game);
+    for (const col of this.lay.columns) {
+      const cp = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
+      items.push({ y: cp.y + 0.2, draw: () => this.drawColumns(game, ctx, X, Y, s, t, col) });
+    }
     for (const e of game.enemies) {
       alive.add(e.id);
-      const p = enemyPoint(level, e);
+      if (this.lay.inColumn.has(e.id)) continue;
+      const p = this.placeEnemy(level, e);
       const lx = this.lastX.get(e.id);
       if (lx !== undefined && Math.abs(p.x - lx) > 0.0005) this.facing.set(e.id, p.x > lx ? 1 : -1);
       this.lastX.set(e.id, p.x);
@@ -837,8 +846,8 @@ export class Renderer {
     for (const e of game.enemies) {
       if (!e.pm) continue;
       const props = propIconsFor(e.pm);
-      if (!props.length) continue;
-      const p = enemyPoint(level, e);
+      if (!props.length || this.lay.inColumn.has(e.id)) continue;
+      const p = this.placeEnemy(level, e);
       const k = enemyScale(e.kind);
       const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12) - icon * 0.9;
       const x0 = X(p.x) - ((props.length - 1) * icon * 1.05) / 2;
@@ -849,8 +858,8 @@ export class Renderer {
     for (const e of game.enemies) {
       const max = maxHpOf(e);
       // Health bars only on shells with more than one layer to them (section 8's budget).
-      if (e.hp >= max || max <= 1 || !isRevealed(game, e)) continue;
-      const p = enemyPoint(level, e);
+      if (e.hp >= max || max <= 1 || !isRevealed(game, e) || this.lay.inColumn.has(e.id)) continue;
+      const p = this.placeEnemy(level, e);
       const k = enemyScale(e.kind);
       const top = Y(p.y + 0.2) - s * (0.5 * k + enemyLift(e.kind) + 0.12);
       bar(ctx, X(p.x), top, s * 0.5 * Math.min(1.6, k), Math.max(3, s * 0.06), e.hp / max);
@@ -881,7 +890,7 @@ export class Renderer {
     // Charging bosses leave speed lines.
     for (const e of game.enemies) {
       if (!e.charge || e.charge <= 0) continue;
-      const p = enemyPoint(level, e);
+      const p = this.placeEnemy(level, e);
       const f = this.facing.get(e.id) ?? 1;
       ctx.strokeStyle = "rgba(255,255,255,0.7)";
       ctx.lineWidth = 2;
@@ -1200,6 +1209,60 @@ export class Renderer {
     ctx.restore();
   }
 
+  /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
+  private lay: Convoy = { slots: new Map(), inColumn: new Set(), columns: [] };
+  private layOut(game: Game): Convoy {
+    const n = [0, 0];
+    for (const e of game.enemies) n[e.lane ? 1 : 0]!++;
+    this.lay = convoy(
+      game.enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: 0.55 * enemyScale(e.kind) })),
+      (lane) => n[lane ? 1 : 0]! > SWARM_MIN,
+    );
+    return this.lay;
+  }
+  /** Where a vehicle is drawn: its convoy slot along the lane, and its file's side of the lane when two abreast. */
+  private placeEnemy(level: Level, e: Enemy): { x: number; y: number } {
+    const sl = this.lay.slots.get(e.id);
+    const d = sl?.dist ?? e.dist;
+    const p = enemyPoint(level, { dist: d, ...(e.lane ? { lane: e.lane } : {}) });
+    if (!sl?.side) return p;
+    const q = enemyPoint(level, { dist: d + 0.05, ...(e.lane ? { lane: e.lane } : {}) });
+    const dx = q.x - p.x;
+    const dy = q.y - p.y;
+    const l = Math.hypot(dx, dy) || 1;
+    return { x: p.x - (dy / l) * ABREAST * sl.side, y: p.y + (dx / l) * ABREAST * sl.side };
+  }
+  /** The column at a queue's tail: the vehicles past the cap, stacked, fewer as the queue is popped. */
+  private drawColumns(game: Game, ctx: CanvasRenderingContext2D, X: (v: number) => number, Y: (v: number) => number, s: number, t: number, col: ConvoyColumn): void {
+    {
+      const tally = new Map<EnemyKind, number>();
+      for (const e of game.enemies) if (this.lay.inColumn.has(e.id) && (e.lane ?? undefined) === col.lane) tally.set(e.kind, (tally.get(e.kind) ?? 0) + 1);
+      const kinds = [...tally].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+      const p = enemyPoint(game.level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
+      const layers = Math.max(1, Math.min(8, Math.ceil(col.count / 6)));
+      for (let i = 0; i < layers; i++) {
+        const kind = kinds[i % Math.max(1, kinds.length)] ?? "hatchback";
+        drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: i * 0.4, still: true }, X(p.x) + (i % 2 ? s * 0.12 : -s * 0.12), Y(p.y + 0.2) - i * s * 0.16, s * 0.92, t);
+      }
+      // "+N": how many wait in the column, on a paper chip beside it.
+      const label = `+${col.count}`;
+      const fs = Math.max(11, s * 0.24);
+      ctx.font = `800 ${fs}px ${FONT}`;
+      const w = ctx.measureText(label).width + fs * 0.9;
+      const cx = X(p.x) + s * 0.42;
+      const cy = Y(p.y + 0.2) - layers * s * 0.08 - fs * 0.7;
+      ctx.fillStyle = "rgba(255,250,238,0.95)";
+      ctx.strokeStyle = "rgba(70,48,30,0.85)";
+      ctx.lineWidth = Math.max(1.5, s * 0.03);
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, w, fs * 1.4, fs * 0.7);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#c0392b";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, cx + fs * 0.45, cy + fs * 0.72);
+    }
+  }
   /** A swarm's badge: its total in bold, then up to three types as small sprites with their counts, on a paper pill. */
   private swarmBadge(ctx: CanvasRenderingContext2D, sw: Swarm, x: number, y: number, s: number): void {
     const h = Math.max(22, s * 0.42);
