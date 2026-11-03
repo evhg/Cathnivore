@@ -160,10 +160,13 @@ export function renderCue(c: Ctx, out: AudioNode, cue: Cue, t0: number): void {
       tone(c, out, t0, { at: 0.12, dur: 0.3, peak: 0.03, freq: 3520 })
       return
     case 'synthSweep':
-      // A Squeeze: a cold descending sweep.
+      // A Squeeze: a cold descending sweep, over the box's thump as it lands (plan item 63).
+      tone(c, out, t0, { at: 0, dur: 0.18, peak: 0.13, freq: 104, slideTo: 48, type: 'sine', attack: 0.003 })
       tone(c, out, t0, { at: 0, dur: 0.6, peak: 0.1, freq: 640, slideTo: 130, type: 'sawtooth', lowpass: 1800, attack: 0.01 })
       return
     case 'synthSweepLow':
+      // Plan item 63: the box slamming down on the tile, a low synthesised thump under the sweep.
+      tone(c, out, t0, { at: 0, dur: 0.2, peak: 0.16, freq: 96, slideTo: 42, type: 'sine', attack: 0.003 })
       tone(c, out, t0, { at: 0, dur: 0.9, peak: 0.11, freq: 320, slideTo: 55, type: 'sawtooth', lowpass: 900, attack: 0.01 })
       tone(c, out, t0, { at: 0.05, dur: 0.85, peak: 0.07, freq: 160, slideTo: 41, type: 'square', lowpass: 500 })
       return

@@ -587,8 +587,10 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
   // Reward choreography (aaa-ui M7): a freshly liberated region gets an anticipation squeeze, a ring and a
   // seed burst; a region that just gained Lost Land flashes and shakes. Tracked by diffing the previous
   // state, so loading a save or the first render plays nothing.
-  const seen = useRef<{ lib: Set<RegionId>; lost: Record<string, number> } | null>(null)
+  const seen = useRef<{ lib: Set<RegionId>; lost: Record<string, number>; log: number } | null>(null)
   const [fx, setFx] = useState<Partial<Record<RegionId, 'lib' | 'sq'>>>({})
+  // Plan item 63: a Squeeze slams Hollowell's box down on its tile (the stack drops in with a thud).
+  const [thud, setThud] = useState<ReadonlySet<RegionId>>(() => new Set())
   useEffect(() => {
     const lib = new Set<RegionId>()
     const lost: Record<string, number> = {}
@@ -597,17 +599,30 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
       lost[id] = state.regions[id].lostLand
     }
     const prev = seen.current
-    seen.current = { lib, lost }
+    seen.current = { lib, lost, log: state.log.length }
     if (!prev) return
+    const squeezed = new Set<RegionId>()
+    for (let i = prev.log; i < state.log.length; i++) {
+      const e = state.log[i]!
+      if (e.type === 'squeeze') squeezed.add(e.region)
+    }
+    let tt = 0
+    if (squeezed.size > 0) {
+      setThud(squeezed)
+      tt = window.setTimeout(() => setThud(new Set()), 700)
+    }
     const next: Partial<Record<RegionId, 'lib' | 'sq'>> = {}
     for (const id of active) {
       if (lib.has(id) && !prev.lib.has(id)) next[id] = 'lib'
       else if ((lost[id] ?? 0) > (prev.lost[id] ?? 0)) next[id] = 'sq'
     }
-    if (Object.keys(next).length === 0) return
+    if (Object.keys(next).length === 0) return () => window.clearTimeout(tt)
     setFx(next)
     const t = window.setTimeout(() => setFx({}), 1400)
-    return () => window.clearTimeout(t)
+    return () => {
+      window.clearTimeout(t)
+      window.clearTimeout(tt)
+    }
   }, [state, active])
 
   const svgRef = useRef<SVGSVGElement>(null)
@@ -686,7 +701,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
           <g
             key={id}
             data-region={id}
-            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' ? ' fx-squeeze' : ''}`}
+            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
             tabIndex={onSelect && glow ? 0 : undefined}
@@ -816,7 +831,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
               const s = tray.scale
               const icons = { outlets: ['o', r.outlets], buyouts: ['b', r.buyouts], doubt: ['d', r.doubt] } as const
               return (
-                <g className="piece-tray" data-scale={s.toFixed(2)} data-ornaments={tray.ornaments || undefined}>
+                <g className={`piece-tray${thud.has(id) ? ' tray-thud' : ''}`} data-scale={s.toFixed(2)} data-ornaments={tray.ornaments || undefined}>
                   {tray.rects.map((rect) => {
                     if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
                       const [k, n] = icons[rect.kind]
