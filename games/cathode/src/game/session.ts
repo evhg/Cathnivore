@@ -66,7 +66,7 @@ import { MostWantedJob } from "./mostwantedjob";
 import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { beaCall, caseDistrict, doorName, officeDressing, stationAt, STATION_VERB } from "./office";
-import { buildBlindLight, buildBoardPolaroids, buildOfficeDressing, buildWindowRain } from "../render/officedress";
+import { buildBlindLight, buildBoardPolaroids, buildOfficeDressing, buildOfficeSet, buildWindowRain } from "../render/officedress";
 import { buildOfficeMirror } from "../render/officemirror";
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
@@ -434,6 +434,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (officeDress) world.scene.add(officeDress);
   if (officeDress) world.scene.add(buildWindowRain(o.quality === "phone" || reduceMotionOn()));
   if (officeDress) world.scene.add(buildBlindLight());
+  if (officeDress) officeDress.add(buildOfficeSet());
   if (officeDress) officeDress.add(buildBoardPolaroids(officeDressing(progress.jobsDone).closed));
   // Plan item 51: the standing mirror shows her, in the coat the wardrobe saved (render/officemirror.ts).
   const officeMirror = inOffice ? buildOfficeMirror(new THREE.Color(armDress(progress.character.equipment).sleeveFin.color), o.quality === "phone") : null;

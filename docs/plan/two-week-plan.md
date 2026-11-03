@@ -906,7 +906,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the market and the Plaza at D and L, calm and mid-fight, and the phone tier at L.
 - **Size:** 3
 
-## 58. [ ] NIGHT SHIFT: Cath's office lit and built like a noir set *(lane B, in progress)*
+## 58. [x] NIGHT SHIFT: Cath's office lit and built like a noir set *(done 2026-11-03, lane B, 75ba525..HEAD: `officeLights(tier)` practicals (a warm pendant, the window's neon spill, a desk pool; the banker's lamp brighter), the blinds' stripes on the floor; bottle-green trellis wallpaper over a walnut wainscot with a dado rail, a worn Persian rug, the desk dressed from case 0 (blotter, case file, cold coffee, Bea's photo); the case board's polaroids printed with the List's faces, struck through as cases close. Spawn luminance D 0.0097 -> 0.0385, L phone 0.0187 -> 0.0511 (`scripts/cathode-office-luma.mjs`, measured by script rather than e2e); unit tests (light counts, stations lit, the board is the List); office e2e checks 4+ faces; perf phone 198/260 and D 281/900 calls in the office; shots fresh and three cases at D and L, phone tier at L)*
 - **Why:**
   - `ns-office-D` (2026-11-03 shots, `e2e/screenshots/plan1103c/`): the hub reads as a greybox: near-black plank walls and ceiling, one dim ceiling glow, the cork board's polaroids blank grey squares from the doorway, a large untextured red slab in the foreground. The street (`ns-market-D`) is lit like a film; the room Cath comes home to is not (VISION pillars 1 and 6).
   - Item 51's dressing grows with closed cases, so a new player sees the bare room.

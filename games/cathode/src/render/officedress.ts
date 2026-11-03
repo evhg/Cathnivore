@@ -353,3 +353,160 @@ export function buildBoardPolaroids(closed: readonly string[]): THREE.Group {
   root.userData.faces = BOARD_LIST.filter((w) => w.bust).length;
   return root;
 }
+
+/** A repeating canvas texture (sRGB, mipmapped), drawn once. */
+function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void, repeat: [number, number]): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  draw(c.getContext("2d")!);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat[0], repeat[1]);
+  t.anisotropy = 4;
+  return t;
+}
+
+/**
+ * Plan item 58: the room built like a noir set. Bottle-green damask wallpaper above a walnut wainscot on the three
+ * solid walls, a worn Persian rug over the bare red slab, and the desk dressed from the first case: a leather
+ * blotter, the case file, a mug of coffee gone cold, and Bea's photo in a frame. Textures are canvas-drawn once.
+ */
+export function buildOfficeSet(): THREE.Group {
+  const { xW, xE, zN, zS } = OFFICE;
+  const root = new THREE.Group();
+  root.name = "office-set";
+  const paper = canvasTex(128, 128, (g) => {
+    g.fillStyle = "#22302a";
+    g.fillRect(0, 0, 128, 128);
+    // A diamond trellis with a small leaf at each crossing: old bottle-green paper, faded.
+    g.strokeStyle = "rgba(170,190,150,0.13)";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(0, 64);
+    g.lineTo(64, 0);
+    g.lineTo(128, 64);
+    g.lineTo(64, 128);
+    g.closePath();
+    g.stroke();
+    g.fillStyle = "rgba(180,200,160,0.14)";
+    for (const [cx, cy] of [[64, 0], [0, 64], [128, 64], [64, 128], [64, 64]] as const) {
+      g.beginPath();
+      g.ellipse(cx, cy, 4, 9, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+  }, [6, 2.5]);
+  const panels = canvasTex(256, 128, (g) => {
+    g.fillStyle = "#3a2418";
+    g.fillRect(0, 0, 256, 128);
+    for (let x = 8; x < 256; x += 128) {
+      g.fillStyle = "#4a2e1e";
+      g.fillRect(x, 14, 112, 100);
+      g.strokeStyle = "rgba(0,0,0,0.45)";
+      g.lineWidth = 4;
+      g.strokeRect(x, 14, 112, 100);
+      g.strokeStyle = "rgba(255,210,160,0.12)";
+      g.lineWidth = 2;
+      g.strokeRect(x + 4, 18, 104, 92);
+    }
+    g.fillStyle = "#2a1810";
+    g.fillRect(0, 0, 256, 8);
+  }, [5, 1]);
+  const wallMat = new THREE.MeshStandardMaterial({ map: paper, roughness: 0.85 });
+  const wainMat = new THREE.MeshStandardMaterial({ map: panels, roughness: 0.6 });
+  const wall = (w: number, x: number, z: number, ry: number) => {
+    const up = new THREE.Mesh(new THREE.PlaneGeometry(w, 1.85), wallMat);
+    up.position.set(x, 1.0 + 1.85 / 2, z);
+    up.rotation.y = ry;
+    const low = new THREE.Mesh(new THREE.PlaneGeometry(w, 1.0), wainMat);
+    low.position.set(x, 0.5, z);
+    low.rotation.y = ry;
+    root.add(up, low);
+  };
+  wall(xE - xW, 0, zN + 0.006, 0); // north (the cork wall)
+  wall(zS - zN, xW + 0.006, 0, Math.PI / 2); // west
+  wall(xE - xW, 0, zS - 0.006, Math.PI); // south (the door wall)
+  // A dado rail where the paper meets the panels.
+  const rail = new THREE.MeshStandardMaterial({ color: 0x2a1810, roughness: 0.5 });
+  for (const [w, x, z, ry] of [[xE - xW, 0, zN + 0.02, 0], [zS - zN, xW + 0.02, 0, Math.PI / 2], [xE - xW, 0, zS - 0.02, Math.PI]] as const) {
+    const r = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, 0.03), rail);
+    r.position.set(x, 1.0, z);
+    r.rotation.y = ry;
+    root.add(r);
+  }
+  // The rug: a worn Persian in oxblood and navy with a border, laid over the slab.
+  const rug = canvasTex(256, 192, (g) => {
+    g.fillStyle = "#5a1a1e";
+    g.fillRect(0, 0, 256, 192);
+    g.strokeStyle = "#1f2a44";
+    g.lineWidth = 14;
+    g.strokeRect(10, 10, 236, 172);
+    g.strokeStyle = "#c9a25a";
+    g.lineWidth = 3;
+    g.strokeRect(22, 22, 212, 148);
+    g.fillStyle = "#1f2a44";
+    g.beginPath();
+    g.moveTo(128, 46);
+    g.lineTo(188, 96);
+    g.lineTo(128, 146);
+    g.lineTo(68, 96);
+    g.closePath();
+    g.fill();
+    g.fillStyle = "#c9a25a";
+    g.beginPath();
+    g.arc(128, 96, 14, 0, Math.PI * 2);
+    g.fill();
+    // Wear in the middle where she paces.
+    const wear = g.createRadialGradient(128, 110, 10, 128, 110, 110);
+    wear.addColorStop(0, "rgba(200,170,140,0.22)");
+    wear.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = wear;
+    g.fillRect(0, 0, 256, 192);
+  }, [1, 1]);
+  const rugMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.2), new THREE.MeshStandardMaterial({ map: rug, roughness: 0.95 }));
+  rugMesh.rotation.x = -Math.PI / 2;
+  rugMesh.position.set(-0.4, 0.024, 0.4);
+  root.add(rugMesh);
+  // The desk, dressed: a green leather blotter, the case file, a cold coffee, Bea's photo.
+  const top = 0.781;
+  const blotter = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.006, 0.86), new THREE.MeshStandardMaterial({ color: 0x1f3a2a, roughness: 0.5 }));
+  blotter.position.set(xW + 0.8, top + 0.003, 1.95);
+  const folder = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.02, 0.32), new THREE.MeshStandardMaterial({ color: 0xc9a96a, roughness: 0.8 }));
+  folder.position.set(xW + 0.78, top + 0.016, 1.8);
+  folder.rotation.y = 0.18;
+  const tab = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.021, 0.05), new THREE.MeshStandardMaterial({ color: 0xb8403a, roughness: 0.7 }));
+  tab.position.set(xW + 0.9, top + 0.017, 1.66);
+  tab.rotation.y = 0.18;
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.036, 0.09, 16), new THREE.MeshStandardMaterial({ color: 0xe9e2d4, roughness: 0.4 }));
+  mug.position.set(xW + 1.08, top + 0.045, 1.2);
+  const coffee = new THREE.Mesh(new THREE.CircleGeometry(0.034, 16), new THREE.MeshStandardMaterial({ color: 0x2a160c, roughness: 0.15 }));
+  coffee.rotation.x = -Math.PI / 2;
+  coffee.position.set(xW + 1.08, top + 0.085, 1.2);
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.2, 0.16), new THREE.MeshStandardMaterial({ color: 0xb08a48, roughness: 0.35, metalness: 0.8 }));
+  frame.position.set(xW + 0.42, top + 0.1, 2.55);
+  frame.rotation.z = -0.15;
+  const photo = canvasTex(96, 120, (g) => {
+    g.fillStyle = "#e9dcc4";
+    g.fillRect(0, 0, 96, 120);
+    g.fillStyle = "#7fb0d8";
+    g.fillRect(6, 6, 84, 70);
+    g.fillStyle = "#e8b48c";
+    g.beginPath();
+    g.arc(48, 52, 14, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#6a3a1a";
+    g.fillRect(34, 34, 28, 10);
+    g.fillStyle = "#d85a7a";
+    g.fillRect(32, 66, 32, 30);
+    g.fillStyle = "#3a2a20";
+    g.font = "bold 14px cursive";
+    g.fillText("Bea, 7", 24, 112);
+  }, [1, 1]);
+  const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.17), new THREE.MeshStandardMaterial({ map: photo, roughness: 0.6 }));
+  pic.position.set(xW + 0.435, top + 0.1, 2.55);
+  pic.rotation.set(0, Math.PI / 2, -0.15);
+  pic.userData.caption = "Bea, at seven";
+  root.add(blotter, folder, tab, mug, coffee, frame, pic);
+  return root;
+}
