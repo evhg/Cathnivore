@@ -24,6 +24,8 @@ export default function EndChart({ summary }: { summary: EndSummary }) {
       <figcaption>
         <span className="end-chart-key is-trust">Public Trust</span>
         <span className="end-chart-key is-land">Lost Land</span>
+        {/* The losing line is keyed here, not labelled in the plot (the label sat on the lines' ends). */}
+        <span className="end-chart-key is-limit">Lost at {lostLandLimit}</span>
       </figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} preserveAspectRatio="xMidYMid meet">
         {/* Round gridlines and labels. */}
@@ -42,9 +44,6 @@ export default function EndChart({ summary }: { summary: EndSummary }) {
         <text className="end-chart-tick" x={PAD.l - 6} y={y(top) + 4} textAnchor="end">{top}</text>
         {/* Lost Land's losing line: the pool runs dry here. Trust's is the axis itself. */}
         <line className="end-chart-limit" x1={PAD.l} x2={W - PAD.r} y1={y(lostLandLimit)} y2={y(lostLandLimit)} />
-        <text className="end-chart-limit-label" x={W - PAD.r} y={y(lostLandLimit) - 4} textAnchor="end">
-          land lost
-        </text>
         <path className="end-chart-line is-land" d={path((r) => r.lostLand)} pathLength={1} />
         <path className="end-chart-line is-trust" d={path((r) => r.trust)} pathLength={1} />
         {last && (

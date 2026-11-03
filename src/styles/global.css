@@ -3216,3 +3216,8 @@ html.no-animations .piece-slot { transition: none; }
   .tray-thud .piece-slot:first-child .enemy-stack { animation: reduced-motion-fade var(--dur-quick) var(--ease-settle); }
 }
 html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: none; }
+/* Plan item 69: the losing line keyed in the legend as a dashed rule. */
+.end-chart-key.is-limit { color: var(--clay-deep); font-weight: 600; }
+.end-chart-key.is-limit::before { height: 0; border-top: 2px dashed currentColor; background: none; border-radius: 0; }
+.end-chart figcaption { flex-wrap: wrap; gap: 4px 12px; }
+.end-chart-key { white-space: nowrap; }

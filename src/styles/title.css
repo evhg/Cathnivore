@@ -589,12 +589,14 @@ html.no-animations .title-screen * {
   text-align: center;
 }
 .title-minor {
-  margin: 6px -4px -6px;
+  margin: 6px -8px -6px;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 .title-minor .quiet {
   position: relative;
-  padding: 6px 12px 6px 20px;
+  padding: 6px 9px 6px 18px;
+  white-space: nowrap;
   border: 1px solid var(--rule);
   border-radius: 4px 10px 10px 4px;
   background: var(--paper-hi, var(--paper));
@@ -693,3 +695,5 @@ html.no-animations .title-screen * {
 :root[data-theme="dark"] .title-menu::before {
   color: color-mix(in srgb, var(--ink) 78%, transparent);
 }
+/* Plan item 69: the three tags fit one row on the sign (Credits wrapped alone at D): label only, no icon. */
+.title-minor .title-key-icon { display: none; }
