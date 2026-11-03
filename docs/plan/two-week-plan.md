@@ -826,7 +826,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 13 and 38 at P and D in 2D and 3D, before and after.
 - **Size:** 3
 
-## 53. [ ] Cathnivore: a table that sounds like a market *(lane A, in progress)*
+## 53. [x] Cathnivore: a table that sounds like a market *(done 2026-11-03, lane A, slices 1-5: `src/platform/sound/` with `cues.ts` (`cueFor`, every action and event its cue, Hollowell's only synth) and `synth.ts` (wood clack, paper slide/flip/tear, coin, awning, crowd, bell; Hollowell's chime, sweeps, blip, glitch) from filtered noise and tones; a market ambience (chatter, birds, crickets from round 7) ducked under cues; the round bell; a coin per Mark in the buy flight; Hollowell's cues on the playback beats; Settings' Sound card (Sound on, Volume, Effects, Market ambience); no AudioContext with sound off. `tests/sound-cues.test.ts`; `e2e/sound.spec.ts` renders every cue offline (audible, under 1.2 s, under -3 dBFS), sound off/on, bell, staged cues; farmstead e2e checks the coins; Settings shot before and after at P and D (`e2e/screenshots/sound53/`). Changed: the offline render check is e2e, not unit, since Node has no WebAudio)*
 - **Why:**
   - `src/platform/sound.ts` is seven oscillator beeps (sine, square and saw notes), plus a three-note pad. VISION's sound line asks for wood, paper and market chatter for the players' world and sterile synth for the corporations. None of that exists.
   - Buying, selling, scheming, Doubt, a Squeeze and the AI teammate's turn (item 34's show) have no sound or share one `place` blip. VISION pillar 3 ("Everything responds") is half met.
