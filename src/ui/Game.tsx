@@ -15,7 +15,8 @@ import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
-import { playSoundsFor, soundRound } from '../platform/sound'
+import { playCues, playSoundsFor, soundRound } from '../platform/sound'
+import { eventCue } from '../platform/sound/cues'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
 import BuyFlight from './BuyFlight'
@@ -570,7 +571,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       }
     }
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
-    playSoundsFor(action, next.log.slice(from.log.length), next.result)
+    // Plan item 53: the enemy turn's cues play on its playback beats (onStep below), not all at once here.
+    const staged = events.length > 0 && !autoplayRef.current ? new Set(events) : null
+    const added = next.log.slice(from.log.length)
+    playSoundsFor(action, staged ? added.filter((e) => !staged.has(e)) : added, next.result)
     if (!next.result) soundRound(next.round, from.round)
     if (aiReason) {
       // `gameLog.ts`'s `actionCaption` deliberately returns null for invest/scheme/decide's own `{type:
@@ -1241,6 +1245,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           onStep={(region, event, step) => {
             setEnemyStepRegion(region)
             setEnemyStep({ event, step })
+            const cue = event && eventCue(event)
+            if (cue) playCues([cue])
           }}
           // The guided tutorial holds each caption until it has been read (and its step moves on with it).
           hold={guidedStep?.waitFor === 'enemyTurn'}
