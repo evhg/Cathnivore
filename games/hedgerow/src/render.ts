@@ -67,6 +67,8 @@ const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter
 
 /** Gold floaters from fleet knocks merge over this many seconds. */
 const GOLD_WINDOW = 0.15;
+/** Classic levels' vehicles have no rung colour: a tint per type for the swarm badge's make-up bar. */
+const SWARM_TINT: Partial<Record<EnemyKind, string>> = { hatchback: "#e0b13a", courier: "#d2694a", quad: "#7a9c4a", lorry: "#4f6fa0", drone: "#9a8fb5" };
 
 interface Particle {
   x: number;
@@ -915,7 +917,18 @@ export class Renderer {
     }
 
     // Swarms (plan item 10): a queue of more than 12 gets a count badge with its make-up by type.
+    // Plan item 45: where the queue has a column, the badge rides its head (the column says how many wait).
+    const rode = this.badged;
+    rode.clear();
     for (const sw of swarms(game.enemies)) {
+      const col = this.lay.columns.find((c) => (c.lane ?? undefined) === (sw.lane ?? undefined) && !rode.has(c));
+      if (col) {
+        rode.add(col);
+        const p = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
+        const layers = Math.max(1, Math.min(8, Math.ceil(col.count / 6)));
+        this.swarmBadge(ctx, sw, X(p.x), Y(p.y + 0.2) - s * (0.75 + layers * 0.16), s);
+        continue;
+      }
       const p = enemyPoint(level, sw);
       this.swarmBadge(ctx, sw, X(p.x), Y(p.y + 0.2) - s * 0.95, s);
     }
@@ -1266,6 +1279,8 @@ export class Renderer {
   }
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
+  /** The columns a swarm badge rode last frame (their own +N chip stands down). */
+  private badged = new Set<ConvoyColumn>();
   private layOut(game: Game): Convoy {
     this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as EnemyKind), SWARM_MIN);
     return this.lay;
@@ -1286,7 +1301,8 @@ export class Renderer {
         const kind = kinds[i % Math.max(1, kinds.length)] ?? "hatchback";
         drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: i * 0.4, still: true }, X(p.x) + (i % 2 ? s * 0.12 : -s * 0.12), Y(p.y + 0.2) - i * s * 0.16, s * 0.92, t);
       }
-      // "+N": how many wait in the column, on a paper chip beside it.
+      // "+N": how many wait in the column, on a paper chip beside it (the swarm badge covers it once it rides here).
+      if (this.badged.has(col)) return;
       const label = `+${col.count}`;
       const fs = Math.max(11, s * 0.24);
       ctx.font = `800 ${fs}px ${FONT}`;
@@ -1329,6 +1345,20 @@ export class Renderer {
     ctx.lineWidth = 2;
     ctx.strokeStyle = INK;
     ctx.stroke();
+    // Plan item 45: the whole make-up as one stacked bar along the pill's foot, a segment per type in its colour.
+    {
+      const bx = x0 + h * 0.5;
+      const bw = w - h;
+      const bh = Math.max(3, h * 0.12);
+      const by = y0 + h - bh - Math.max(2, h * 0.08);
+      let ax = bx;
+      for (const q of sw.kinds) {
+        const segW = (bw * q.n) / sw.count;
+        ctx.fillStyle = RUNGS[q.kind]?.colour ?? SWARM_TINT[q.kind] ?? "#8a7a66";
+        ctx.fillRect(ax, by, Math.max(1, segW - 1), bh);
+        ax += segW;
+      }
+    }
     // A pointer down to the queue.
     ctx.beginPath();
     ctx.moveTo(x - h * 0.22, y0 + h - 1);
