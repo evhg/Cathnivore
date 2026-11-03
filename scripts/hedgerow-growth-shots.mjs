@@ -43,7 +43,7 @@ for (const mode of modes)
           if (m === 'win') { g.paid = n; g.phase = 'won' }
           window.hedgerow.refresh?.()
         }, m)
-        await page.waitForTimeout(m === 'win' ? (mode === '2d' ? 700 : 3000) : mode === '2d' ? 700 : 2500)
+        await page.waitForTimeout(m === 'win' ? (mode === '2d' ? 700 : 900) : mode === '2d' ? 700 : 2500)
         const ripe = await page.evaluate(() => document.querySelector('[data-ripe]')?.getAttribute('data-ripe'))
         const file = `${out}/growth-${mode}-${size}-l${level}-${m}.png`
         await page.screenshot({ path: file })

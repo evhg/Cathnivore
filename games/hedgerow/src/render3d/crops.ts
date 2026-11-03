@@ -18,11 +18,11 @@ interface Look {
 
 const LOOKS: Record<Crop, Look> = {
   wheat: {
-    plant: () => new THREE.ConeGeometry(0.07, 0.26, 5).translate(0, 0.13, 0),
-    head: () => new THREE.ConeGeometry(0.05, 0.12, 5).rotateX(Math.PI).translate(0, 0.3, 0),
+    plant: () => new THREE.ConeGeometry(0.1, 0.3, 6).translate(0, 0.15, 0),
+    head: () => new THREE.ConeGeometry(0.075, 0.16, 6).rotateX(Math.PI).translate(0, 0.34, 0),
     green: ["#8cbf5a", "#5f9a3a", "#c9a24a"],
-    ripe: "#e7c25a",
-    scale: [0.45, 0.8, 1.1],
+    ripe: "#f0cf62",
+    scale: [0.5, 0.9, 1.2],
   },
   cabbage: {
     plant: () => new THREE.IcosahedronGeometry(0.11, 0).scale(1, 0.55, 1).translate(0, 0.05, 0),
