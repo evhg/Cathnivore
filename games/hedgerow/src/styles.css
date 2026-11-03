@@ -3558,7 +3558,7 @@ img.act-scene {
   animation-delay: calc(0.7s + var(--i, 0) * 0.3s);
 }
 @keyframes payout-land {
-  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  from { opacity: 0; visibility: hidden; transform: translateY(10px) scale(0.92); }
 }
 @media (prefers-reduced-motion: reduce) {
   .payout-piece { animation: none; }
@@ -3732,4 +3732,34 @@ img.act-scene {
 }
 @media (orientation: landscape) and (max-height: 520px) {
   #dlg-result .payout-next .payout-reward { display: none; }
+}
+/* Plan item 46: a talent level's two choices inside the level-up. */
+.payout-talents {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 4px 0 6px;
+}
+.payout-talents .talent {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-hi);
+  color: var(--ink);
+  text-align: left;
+  font: 600 var(--fs-small) / 1.25 var(--font-ui);
+  cursor: pointer;
+}
+.payout-talents .talent strong {
+  font-weight: 800;
+}
+.payout-talents .talent:hover,
+.payout-talents .talent:focus-visible {
+  background: color-mix(in srgb, var(--brass-hi) 30%, var(--paper-hi));
+}
+.payout-picked {
+  font-weight: 700;
+  color: var(--path-2);
 }

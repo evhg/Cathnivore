@@ -3793,7 +3793,44 @@ function renderPayout(pay: Payout, next: Level | undefined, reward = ""): void {
     go.id = "payout-spend";
     go.textContent = pay.level.talent ? "Choose her talent" : "Spend her points";
     go.onclick = () => renderCath();
-    text.append(h, sub, go);
+    text.append(h, sub);
+    // A talent level reached: its two choices are right here, and a pick is saved at once.
+    const { c, level } = cathState();
+    const at = talentsWaiting(c, level)[0];
+    const opts = at !== undefined ? TALENTS.find(([l]) => l === at)?.[1] : undefined;
+    if (at !== undefined && opts) {
+      const pick = document.createElement("div");
+      pick.className = "payout-talents";
+      pick.setAttribute("role", "group");
+      pick.setAttribute("aria-label", `Choose a talent for level ${at}`);
+      ([0, 1] as const).forEach((i) => {
+        const t = opts[i];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "talent";
+        b.dataset.talent = String(i);
+        const n = document.createElement("strong");
+        n.textContent = t.name;
+        const d = document.createElement("small");
+        d.textContent = t.blurb;
+        b.append(n, d);
+        b.onclick = () => {
+          if (!pickTalent(c, level, at, i)) return;
+          save(data);
+          sfx.playUpgrade();
+          renderCathButton();
+          const done = document.createElement("p");
+          done.className = "payout-picked";
+          done.textContent = `${t.name}: ${t.blurb}`;
+          pick.replaceWith(done);
+          sub.textContent = `${pay.level!.points} skill point${pay.level!.points > 1 ? "s" : ""} to spend.`;
+        };
+        pick.append(b);
+      });
+      text.append(pick);
+      go.textContent = "Spend her points";
+    }
+    text.append(go);
     lvl.append(fig, text);
     ui.dlgResult.classList.add("levelup");
   }
