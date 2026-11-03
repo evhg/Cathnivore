@@ -2907,3 +2907,105 @@ body[data-mode='practice'] #week-slot {
 .in-lesson .rail {
   display: none;
 }
+
+/* Plan item 68: the win is on the board. Once the water has run and the fields bloomed, this slim strip slides up
+   from the foot with the result and three buttons; the board stays sharp above it, never blurred or covered. */
+.win-strip {
+  position: fixed;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: min(680px, var(--strip-max, 100vw), calc(100vw - 20px));
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 10px 14px 10px 10px;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--soil) 30%, transparent), 0 14px 34px color-mix(in srgb, var(--ink) 22%, transparent);
+  animation: strip-up var(--dur-4) cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+}
+.win-strip[hidden] {
+  display: none;
+}
+@keyframes strip-up {
+  from {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+  }
+}
+.strip-cath {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-2);
+  box-shadow: 0 0 0 2px var(--pasture-deep);
+}
+.strip-cath svg {
+  width: 100%;
+  height: 100%;
+}
+.strip-text {
+  min-width: 0;
+}
+.strip-text h2 {
+  margin: 1px 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-body);
+  line-height: 1.15;
+  color: var(--soil);
+}
+.strip-nums {
+  margin: 2px 0 0;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+.strip-actions {
+  display: flex;
+  gap: 8px;
+}
+.strip-actions .btn {
+  white-space: nowrap;
+}
+.strip-toast {
+  grid-column: 2 / -1;
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--pasture-deep);
+}
+.strip-toast:empty {
+  display: none;
+}
+/* An upright phone: the result on one row, the buttons under it. */
+@media (max-width: 600px) {
+  .win-strip {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 10px 12px;
+    border-radius: 18px;
+  }
+  .strip-cath {
+    width: 44px;
+    height: 44px;
+  }
+  .strip-actions {
+    grid-column: 1 / -1;
+  }
+  .strip-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+  .strip-toast {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .win-strip {
+    animation: none;
+  }
+}

@@ -207,6 +207,22 @@
       </form>
     </dialog>
 
+    <!-- Plan item 68: the win plays on the board; then this slim strip slides up from the foot, never covering it. -->
+    <section class="win-strip" id="win-strip" hidden aria-labelledby="strip-title">
+      <div class="strip-cath" id="strip-cath" aria-hidden="true"></div>
+      <div class="strip-text">
+        <p class="eyebrow" id="strip-eyebrow">Daily #1</p>
+        <h2 id="strip-title">Every field is watered.</h2>
+        <p class="strip-nums" id="strip-nums"></p>
+      </div>
+      <div class="strip-actions">
+        <button class="btn" type="button" id="strip-share">Share</button>
+        <button class="btn btn-quiet" type="button" id="strip-card">Your card</button>
+        <button class="btn btn-quiet" type="button" id="strip-next">Play practice</button>
+      </div>
+      <p class="strip-toast" id="strip-toast" role="status"></p>
+    </section>
+
     <script type="module" src="./src/main.ts"></script>
     <dialog id="workshop" class="workshop" aria-labelledby="ws-title">
       <div class="ws-table">

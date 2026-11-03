@@ -121,6 +121,7 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
 }
 
 function openGame(): void {
+  hideStrip()
   renderRail()
   // Leaving the lesson early (a tab, a board code): it comes back on the next visit.
   if (lessonStep >= 0) {
@@ -397,9 +398,63 @@ function showWin(): void {
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   renderCard(stats.streak)
+  // Plan item 68: the board keeps the stage. A workshop test keeps its sheet (it carries the board's code);
+  // every other win shows the slim strip at the foot, and the full sheet opens from "Your card".
+  if (wsCode) {
+    if (!ui.dlgWin.open) ui.dlgWin.showModal()
+    syncWinPager()
+    return
+  }
+  showStrip(isDaily, stats.streak)
+}
+
+const strip = {
+  root: $<HTMLElement>('win-strip'),
+  cath: $<HTMLDivElement>('strip-cath'),
+  eyebrow: $<HTMLParagraphElement>('strip-eyebrow'),
+  title: $<HTMLHeadingElement>('strip-title'),
+  nums: $<HTMLParagraphElement>('strip-nums'),
+  next: $<HTMLButtonElement>('strip-next'),
+  toast: $<HTMLParagraphElement>('strip-toast'),
+}
+
+/** Plan item 68: the result as a strip under the watered board: time, taps against par, the streak, and three buttons. */
+function showStrip(isDaily: boolean, streak: number): void {
+  strip.cath.innerHTML = cathMoment('win', 'face')
+  strip.eyebrow.textContent = ui.winEyebrow.textContent
+  strip.title.textContent = ui.winTitle.textContent
+  const taps = `${game.taps} tap${game.taps === 1 ? '' : 's'}`
+  strip.nums.textContent = [formatTime(game.elapsedMs), `${taps} · par ${puzzle.par}`, isDaily ? `streak ${streak}` : ''].filter(Boolean).join(' · ')
+  strip.next.textContent = ui.btnNext.textContent
+  strip.toast.textContent = ui.toast.textContent
+  strip.root.hidden = false
+  document.body.classList.add('has-win-strip')
+  placeStrip()
+}
+
+/** At D the strip centres under the board, not the window (the rail sits to its left). */
+function placeStrip(): void {
+  if (strip.root.hidden) return
+  const r = ui.board.getBoundingClientRect()
+  strip.root.style.left = r.width ? `${Math.round(r.left + r.width / 2)}px` : ''
+  strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(r.width)}px` : '')
+}
+window.addEventListener('resize', placeStrip)
+
+function hideStrip(): void {
+  strip.root.hidden = true
+  document.body.classList.remove('has-win-strip')
+}
+
+$<HTMLButtonElement>('strip-share').addEventListener('click', () => {
+  ui.toast.textContent = ''
+  void shareOut(shareText(), cardBlob).then(() => (strip.toast.textContent = ui.toast.textContent))
+})
+$<HTMLButtonElement>('strip-card').addEventListener('click', () => {
   if (!ui.dlgWin.open) ui.dlgWin.showModal()
   syncWinPager()
-}
+})
+strip.next.addEventListener('click', () => ui.btnNext.click())
 
 /** Plan item 47: dots under the keepsakes when they page sideways (a phone), one per keepsake. */
 function syncWinPager(): void {
@@ -515,6 +570,7 @@ async function shareOut(text: string, blob: Blob | null): Promise<void> {
 
 ui.btnNext.addEventListener('click', () => {
   ui.dlgWin.close()
+  hideStrip()
   if (workshopCode(puzzle.seed) && game.solved) workshop?.open()
   else if (mode === 'daily') switchMode('practice')
   else if (mode === 'orchard') {
