@@ -144,18 +144,20 @@
   left: 50%;
   bottom: calc(var(--u) * 48 + var(--safe-b, 0px));
   z-index: var(--z-hud-top);
-  width: calc(var(--u) * 160);
-  height: 1px; /* px-ok */
-  margin-left: calc(var(--u) * -80);
+  /* Plan item 74: a real line, not a hairline (it was 1 px and 100 px wide on a phone). */
+  width: max(160px, calc(var(--u) * 360)); /* px-ok: legible floor */
+  height: max(2px, calc(var(--u) * 3)); /* px-ok */
+  margin-left: min(-80px, calc(var(--u) * -180)); /* px-ok: half the width */
   overflow: hidden;
-  background: rgb(var(--ink-rgb) / .12);
+  border-radius: calc(var(--u) * 2);
+  background: rgb(var(--ink-rgb) / .2);
   pointer-events: none;
   transition: opacity 600ms ease;
 }
 .front-building i {
   position: absolute;
   inset: 0;
-  background: var(--ink);
+  background: linear-gradient(90deg, transparent, var(--ink) 35%, var(--ink) 65%, transparent);
   transform: translateX(-100%);
   animation: front-building 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
 }
@@ -311,6 +313,11 @@
 }
 /* C13T: the chosen tile is ink and full weight; the red dash is focus only (one mark, one meaning). */
 .gate-tile:has(input:checked) .tile-name { font-weight: 800; }
+/* Plan item 74: where the page gutter is narrower than the marker's hang (phones), the choices step in so
+   the focus dash sits in the gutter beside them, never at the screen's edge. */
+@media (max-width: 600px) {
+  .gate-tile { margin-left: var(--mark-hang); }
+}
 .tile-name {
   align-self: center;
   font-family: var(--font-ui);

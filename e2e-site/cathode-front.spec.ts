@@ -100,6 +100,29 @@ test('cathodeFront.ready fires at the 18+ gate on a fresh profile', async ({ pag
   await expect(page.locator('#screen-gate')).toBeVisible()
 })
 
+// Plan item 74: at the gate the focus dash keeps a gutter from the screen's edge, every line of the plate is
+// inside the viewport, and the loading line is a real line (at least 2 px by 150 px), not a hairline.
+test('the 18+ gate keeps its marks off the screen edge, and the loading line is legible', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.clear())
+  await page.goto('/nightshift/?rs=0.5')
+  await expect(page.locator('#screen-gate')).toBeVisible({ timeout: 120_000 })
+  const r = await page.evaluate(() => {
+    const tile = document.querySelector('.gate-tile')!
+    const t = tile.getBoundingClientRect()
+    const dashLeft = t.left + parseFloat(getComputedStyle(tile, '::before').left)
+    const plate = [...document.querySelectorAll<HTMLElement>('#screen-gate .gate-plate *')].map((e) => e.getBoundingClientRect()).filter((b) => b.width > 0)
+    const bar = document.getElementById('front-building')!.getBoundingClientRect()
+    return { dashLeft, minLeft: Math.min(...plate.map((b) => b.left)), maxRight: Math.max(...plate.map((b) => b.right)), barW: bar.width, barH: bar.height }
+  })
+  expect(r.dashLeft).toBeGreaterThanOrEqual(8)
+  expect(r.minLeft).toBeGreaterThanOrEqual(8)
+  expect(r.maxRight).toBeLessThanOrEqual(page.viewportSize()!.width - 8)
+  expect(r.barH).toBeGreaterThanOrEqual(2)
+  expect(r.barW).toBeGreaterThanOrEqual(150)
+})
+
 // Plan item 40: the critique's front-door bugs. The class-pick still shows no title menu under it; on an upright
 // phone the hold bar is pinned on screen with a "more below" cue that goes once the sheet is read to its end;
 // held sideways, the case board shows its first lead and Back on the first screen.
