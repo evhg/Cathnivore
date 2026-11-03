@@ -19,7 +19,7 @@ test('at D the Actions frame does not move between round 1 and a grown farm', as
   await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=6')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await expect.poll(() => page.locator('.farmstead-thumb').count(), { timeout: 20_000 }).toBeGreaterThanOrEqual(2)
+  await expect.poll(() => page.locator('.stall-item').count(), { timeout: 20_000 }).toBeGreaterThanOrEqual(2)
   expect(await actionsTop(page)).toBe(before)
 })
 
@@ -57,7 +57,7 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
   const button = buyable.first()
   const cardId = (await button.locator('xpath=ancestor::*[@data-buy-card][1]').getAttribute('data-buy-card'))!
   const inFarm = async () => {
-    if (desktop) return page.locator(`.farm-inline .farmstead-thumb[data-card="${cardId}"]`).count()
+    if (desktop) return page.locator(`.farm-inline .stall-item[data-card="${cardId}"]`).count()
     await page.getByRole('button', { name: /^Farm/ }).first().click()
     const n = await page.locator(`.farm-sheet .farmstead-card[data-card="${cardId}"]`).count()
     await page.getByRole('button', { name: 'Close' }).click()
@@ -70,4 +70,10 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
   expect(await page.evaluate(() => (window as unknown as { __cathnivoreSound: { log: string[] } }).__cathnivoreSound.log.filter((c) => c === 'coinOne').length)).toBeGreaterThan(0)
   await page.waitForTimeout(900)
   expect(await inFarm()).toBe(1)
+  // Plan item 62: on the stall the crate sits on its tag's shelf (fields, sea or town).
+  if (!desktop) await page.getByRole('button', { name: /^Farm/ }).first().click()
+  const crate = page.locator(`${desktop ? '.farm-inline' : '.farm-sheet'} .stall-item[data-card="${cardId}"]`).first()
+  const [tag, shelf] = [await crate.getAttribute('data-tag'), await crate.getAttribute('data-shelf')]
+  const want = { pasture: 'fields', crop: 'fields', coast: 'sea' }[tag ?? ''] ?? 'town'
+  expect(shelf).toBe(want)
 })

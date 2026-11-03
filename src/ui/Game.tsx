@@ -566,7 +566,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // Not when the buy hands a hot-seat device over (the pass screen covers the table).
     if (action.kind === 'invest' && !autoplayRef.current && !(mode === 'hotseat' && next.activeProducer !== from.activeProducer)) {
       const card = IMPROVEMENTS_BY_ID.get(action.improvementId)
-      const path = card && buyFlightPath(card.id)
+      const path = card && buyFlightPath(card.id, from.activeProducer)
       if (card && path) {
         const cost = investCost(from, from.activeProducer, card)
         setBuyFlight({ key: next.log.length, card, cost, path })
