@@ -3822,3 +3822,9 @@ img.act-scene {
     background: linear-gradient(to bottom, rgba(22, 15, 10, 0.32), rgba(22, 15, 10, 0));
   }
 }
+/* Desktop map: the week chip stands beside Cath's line, one row, so the first act's painting starts higher. */
+@media (min-width: 1001px) {
+  #screen-select .map-hud { max-width: 1000px; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 14px; }
+  #screen-select .map-hud > .select-kits { grid-column: 1 / -1; }
+  #screen-select .map-hud-row { padding-block: 8px 10px; }
+}
