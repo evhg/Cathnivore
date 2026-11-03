@@ -788,7 +788,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The tile luminance spread across a fresh board is wider than today's (measured and reported in BALANCE.md or the commit).
 - **Size:** 2
 
-## 51. [ ] NIGHT SHIFT: Cath's office, lived in *(lane B, in progress)*
+## 51. [x] NIGHT SHIFT: Cath's office, lived in *(done 2026-11-03, lane B, b446271..HEAD: `officeDressing(jobsDone)` gives Bea's crayon drawings by the door (one plus one per case, six designs) and the trophy shelf with each closed case's keepsake; rain runs on the window (still on the phone and under reduced motion); the standing mirror reflects her in the wardrobe's saved coat (a photo on the phone tier); a keepsake or drawing under the crosshair names itself; unit test 0/1/3/5 cases, office e2e (closed case adds keepsake and drawing, the caption), phone perf 132/260; shots fresh and three cases at D and L, phone tier at L. Cut: the kettle's steam)*
 - **Why:**
   - Item 16 built the office as a hub of stations: the case board, the gun bench and the wardrobe.
   - Between them it reads as a set, not her place: nothing in it remembers the cases she has closed.
