@@ -47,4 +47,33 @@ test.describe('games page cards', () => {
     // Each tile wears its own game's colour (NIGHT SHIFT's used to miss it).
     expect(await page.locator('#week-goals .week-goal').evaluateAll((els) => els.map((e) => e.getAttribute('data-game')))).toEqual(['runnel', 'hedgerow', 'nightshift'])
   })
+
+  // Plan item 74: at D every card's name is above the fold; Cath's plank spans her, not past her, and never
+  // sits on the first card; the market stall stands on its turf, below the horizon line of the hero text.
+  test('the hero leaves the card names in view and its plank and stall sit right', async ({ page }) => {
+    await page.goto('/games/')
+    await page.waitForTimeout(2600)
+    const vp = page.viewportSize()!
+    const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!
+    const cath = await box('#hero-cath')
+    const plank = await page.locator('#hero-cath').evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const s = getComputedStyle(el, '::after')
+      return { left: r.left + parseFloat(s.left), right: r.right - parseFloat(s.right), bottom: r.bottom }
+    })
+    expect(plank.left).toBeGreaterThanOrEqual(cath.x)
+    expect(plank.right).toBeLessThanOrEqual(cath.x + cath.width)
+    const card = await box('.games a.card')
+    expect(plank.bottom).toBeLessThanOrEqual(card.y)
+    if (vp.width >= 1200) {
+      for (const t of await page.locator('.games a.card:not(.card-cathode) .card-title').all()) {
+        const b = (await t.boundingBox())!
+        expect(b.y + b.height).toBeLessThanOrEqual(vp.height)
+      }
+      const stall = await box('.hero-stall')
+      const cta = await box('.cta-row')
+      expect(stall.y + stall.height).toBeGreaterThan(cta.y + cta.height)
+      expect(stall.x + stall.width).toBeLessThanOrEqual(vp.width)
+    }
+  })
 })

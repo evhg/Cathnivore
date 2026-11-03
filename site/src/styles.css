@@ -126,8 +126,9 @@ body {
 .hero-cath::after {
   content: '';
   position: absolute;
-  left: -14%;
-  right: -14%;
+  /* item 74: the plank spans her hands (the figure fills about 20%-90% of the art box), not the box */
+  left: 12%;
+  right: 8%;
   bottom: 0;
   height: 14px;
   border-radius: 7px 7px 3px 3px;
@@ -157,7 +158,8 @@ body {
   .hero-cath {
     order: 0;
     justify-self: center;
-    height: min(64vh, 620px);
+    /* item 74: short enough that the game cards' names sit above the fold at 1440x900 and 1280x800 */
+    height: min(52vh, 540px);
     margin-bottom: -12vh;
   }
   .hero .title {
@@ -1020,7 +1022,8 @@ body {
     display: block;
     position: absolute;
     right: clamp(24px, 4vw, 90px);
-    bottom: 22vh;
+    /* item 74: its turf stands on the landscape (below the horizon), level with Cath's plank */
+    bottom: 2vh;
     width: clamp(170px, 15vw, 260px);
     opacity: 0;
     transform: translateY(18px) rotate(2deg);
