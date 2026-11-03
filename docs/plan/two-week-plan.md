@@ -875,7 +875,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all three maps at rounds 1 and 7, P and D, light, dark and greyscale.
 - **Size:** 3
 
-## 56. [ ] Cathnivore: How to Play as Cath's almanac, and Settings with a scene
+## 56. [ ] Cathnivore: How to Play as Cath's almanac, and Settings with a scene *(lane A, in progress)*
 - **Why:**
   - `cath-rules-P`: How to Play opens with a small carousel, then is a wall of boxed rules text with a search field ("Actions (3 per producer per round)", paragraph after paragraph).
   - `cath-settings-D`: Settings is a column of default toggles and segmented pills in boxes with Cath's head in the corner, centred in empty cream at D. Credits is the same. VISION pillar 1: "Nothing looks like a default form, a plain list or unstyled HTML".
