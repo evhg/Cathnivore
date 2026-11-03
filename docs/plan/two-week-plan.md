@@ -719,7 +719,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a win, a level-up win and a loss at P, D, L and dark.
 - **Size:** 2
 
-## 47. [ ] The bugs from the 2026-11-03 critique, fixed as one batch *(lane A, in progress)*
+## 47. [x] The bugs from the 2026-11-03 critique, fixed as one batch *(done 2026-11-03, lane A, e35fbf41..6504f547: Hedgerow's map tools five keys that fit at P with the rest in an upward Modes drawer, its grip 'Next: Round N', a game's own week goal; Runnel's lesson at a daily board's scale centred in the frame, the win keepsakes whole (a page at a time with dots on a phone, side by side from 700 px); Cathnivore's teammate seat staged between picks (face, face-down card, ledger; every lifted card 130 px at D), short plan-card lines at P and for long lines at D, Mara's braid over her shoulder (it was a bar down her face), legible thinking dots, two-line region names and Cath clear of them; NIGHT SHIFT's front bars 5svh; e2e in hedgerow-map, runnel-practice, runnel-win, plan-strip, turn-show, campaign-map at P and D; shots before and after via `scripts/critique47-shots.mjs` and friends. The end chart at P went to item 48 (done there); the end screen's blank 2.5 s at D is listed under Critique bugs in PROGRESS.md)*
 - **Why:** a shot-by-shot critique at P and D (2026-11-03, lane B planning) found these. Each one is small, but together they make the games look unfinished.
 - **Build:**
   - **Hedgerow:**
