@@ -1119,7 +1119,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: node labels never overlap nodes or each other; every node at least 44 px; shots of a fresh, mid and complete save at P and D.
 - **Size:** 2
 
-## 74. [ ] The bugs from the 2026-11-03 13:25 critique, fixed as one batch
+## 74. [ ] The bugs from the 2026-11-03 13:25 critique, fixed as one batch *(lane A, in progress)*
 - **Build:**
   - **/games/ D** (`site-D`): the game cards start below the fold at 1440x900 (no name visible); the market stall floats with no ground; the plank under Cath runs far past her.
   - **/games/ P** (`site-P`): Cath's plank sits on the first card's top edge.
