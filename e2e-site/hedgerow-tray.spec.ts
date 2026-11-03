@@ -113,7 +113,7 @@ test('plan item 31: on a phone the notebook opens in the round drawer', async ({
 
 test('plan item 69: at D the whole roster fits the tray: no packet past its edge, no more-tab, nothing cut', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop side column')
-  for (const [width, height] of [[1440, 900], [1280, 800]]) {
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await page.setViewportSize({ width, height })
     await page.goto(URL)
     await page.evaluate(() => {
