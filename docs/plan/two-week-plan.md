@@ -1070,7 +1070,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a solve at P and D, light and dark, before and after.
 - **Size:** 2
 
-## 69. [ ] The bugs from the 2026-11-03 11:30 critique, fixed as one batch *(lane B, in progress)*
+## 69. [x] The bugs from the 2026-11-03 11:30 critique, fixed as one batch *(done 2026-11-03, lane B, 4228a39..2da4a0e: slices 1-7; e2e cases in setup/title/end, hedgerow-tray, hedgerow-field, cathode-front; the D gate pile's vehicles still overlap one another, but the badge no longer hides them)*
 - **Build:**
   - [x] **Cathnivore D, round 5** (`cath-round5-D`): the "PLAY · 10 MORE ↓" pill sits over half-clipped Scheme cards at the Actions panel's foot.
   - [x] **Cathnivore title D** (`cath-title-D`): Credits wraps alone to a second row in the chalkboard sign.
@@ -1079,7 +1079,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Hedgerow P level start** (`hedge-l12-start-P`): the tip card covers the farmhouse row.
   - [x] **Hedgerow D tray**: the 4th card's name truncates ("Market S…") and a 5th hides under the scroll arrow. *(2026-11-03 lane B: a 4-wide wrapped grid fixes the cut names but its second row makes `fitPreview` drop Cath's notebook at 1440x900 (fails `hedgerow-tray.spec.ts` "never an empty band"); the fix needs a shorter card (e.g. icon beside name and price) so two rows cost no more than one. Shoot with `scripts/hedgerow-tray-shots.mjs`.)* *(Fixed 2026-11-03 15:21 lane B: five or more towers at D become compact packets (picture, role glyph, price; the name in the tooltip) in one row, 59 px tall (was 89), none cut, no more-tab.)*
   - [x] **Hedgerow D wave**: about 40 vehicles clump at the Hollowell gate with the swarm chip on top of them (the convoy layout starts only on the lane). *(2026-11-03 15:21 lane B: the swarm badge now rides above the topmost vehicle of a piled queue, so it no longer hides them; the vehicles still overlap one another where the lane bends.)*
-  - [x] **NIGHT SHIFT office loading** (`ns-office-D2`): labelled "Between cases · Cath's office" but shows Crisp's headline and the market blurb; with `?play&shot` the load can stall at 42-95%. *(Card and art fixed 2026-11-03 lane B; the `?play&shot` stall not reproduced or fixed yet.)*
+  - [x] **NIGHT SHIFT office loading** (`ns-office-D2`): labelled "Between cases · Cath's office" but shows Crisp's headline and the market blurb; with `?play&shot` the load can stall at 42-95%. *(Card and art fixed 2026-11-03 lane B; the `?play&shot` stall not reproduced: on 2026-11-03 15:33 the office load at 1440x900 under SwiftShader reached 100% in 27 s and handed over at 32 s, no errors; reopen with a trace if it recurs.)*
 - **Accept:** e2e for each layout case (bounding boxes inside the viewport and not intersecting, at P and D); shots before and after.
 - **Size:** 2
 
