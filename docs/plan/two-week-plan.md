@@ -808,7 +808,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a fresh office and one after three cases, at D and L, and the phone tier at L.
 - **Size:** 3
 
-## 52. [ ] Hedgerow: a field that looks farmed, and towers you can tell apart at a glance
+## 52. [ ] Hedgerow: a field that looks farmed, and towers you can tell apart at a glance *(lane A, in progress)*
 - **Why:**
   - The 2026-11-03 critique (hedge-play2d-P/D, hedge-play3d-D) found a uniform grid: about 40 identical tilled squares.
   - At tier 1 the towers read alike at phone size.
