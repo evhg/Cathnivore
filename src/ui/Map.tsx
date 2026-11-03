@@ -19,6 +19,8 @@ const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', in
 const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
+/** The painted face's radius on the board (the campaign map scales the board's ground art from it). */
+export const BOARD_FACE_R = 92 * 0.96
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
 /* Piles wrap after this many pieces so a heavy board never runs past the hex edge. */
 const PIECE_ROW = 6
@@ -422,7 +424,7 @@ export function CoopMarkerIcon() {
 /** Plan item 20: the painted ground under each tile's landmarks, clipped to the face. Pasture rolls in two
  * hills with tufts, crop is a patchwork of strips, coast has a sand shore and deeper water, the capital a
  * paved square with roofs at its edge. Low contrast, so pieces and labels stay on top. */
-function GroundArt({ type, id, clip }: { type: RegionType; id: string; clip: string }) {
+export function GroundArt({ type, id, clip }: { type: RegionType; id: string; clip: string }) {
   let h = 0
   for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   const flip = h % 2 === 0 ? 1 : -1
