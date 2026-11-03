@@ -4278,3 +4278,34 @@ img.act-scene {
     opacity: 0.7;
   }
 }
+
+/* Plan item 73: the next act is a glimpse of its country, not a slab of fog: its painted scene shows clearly (a
+   touch muted, mist only at the edges), and a paper plaque names it and what opens it. */
+#screen-select .act-fog.act-glimpse { min-height: clamp(200px, 30vh, 320px); }
+.act-fog.act-glimpse .act-fog-scene {
+  filter: saturate(0.75);
+  opacity: 0.92;
+}
+.act-fog.act-glimpse::after {
+  background:
+    linear-gradient(180deg, rgba(var(--fog), 0.7), transparent 26%, transparent 70%, rgba(var(--fog), 0.75));
+}
+.act-fog.act-glimpse::before {
+  opacity: 0.45;
+}
+.act-fog.act-glimpse .act-fog-text {
+  padding: 12px 20px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--soil) 25%, transparent), 0 8px 18px color-mix(in srgb, var(--ink) 18%, transparent);
+  color: var(--ink-2, var(--ink-muted));
+}
+.act-fog-kicker {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--fs-label);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soil);
+}

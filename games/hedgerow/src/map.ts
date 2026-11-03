@@ -1736,9 +1736,14 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     fog.dataset.fog = String(shown + 1);
     const t = document.createElement("p");
     t.className = "act-fog-text";
+    // Plan item 73: a glimpse of the next act's country, named, rather than a slab of fog.
+    fog.classList.add("act-glimpse");
+    const kicker = document.createElement("span");
+    kicker.className = "act-fog-kicker";
+    kicker.textContent = `Beyond the hedge · Act ${shown + 1}`;
     const h = document.createElement("strong");
-    h.textContent = "Beyond the hedge";
-    t.append(h, `Fog lies over the lanes past ${levels[shown * 10 - 1]?.name ?? "the boss"}. Beat it and the next act opens.`);
+    h.textContent = levels[shown * 10]?.place ?? "The next act";
+    t.append(kicker, h, `Beat ${levels[shown * 10 - 1]?.name ?? "the boss"} and the lane runs on into it.`);
     // The next act is painted in, faint under the fog, so the player can see where the lane goes next.
     const hint = document.createElement("img");
     hint.className = "act-fog-scene";

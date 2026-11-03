@@ -157,3 +157,14 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
     expect(n.grey).toBe(n.locked)
   })
 })
+
+test('plan item 73: the next act is a named glimpse of its country, not fog', async ({ page }) => {
+  await seed(page, 0)
+  const glimpse = page.locator('li.act-fog.act-glimpse')
+  await expect(glimpse).toBeVisible()
+  await expect(glimpse.locator('.act-fog-text strong')).toHaveText('Highmoor')
+  await expect(glimpse.locator('.act-fog-kicker')).toContainText('Act 2')
+  const scene = await glimpse.locator('.act-fog-scene').evaluate((e) => ({ filter: getComputedStyle(e).filter, opacity: Number(getComputedStyle(e).opacity) }))
+  expect(scene.filter).not.toContain('blur')
+  expect(scene.opacity).toBeGreaterThanOrEqual(0.85)
+})
