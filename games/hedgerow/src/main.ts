@@ -1460,7 +1460,16 @@ function drawerHandle(p: HTMLElement): void {
   const sync = () => {
     p.classList.toggle("open", drawerOpen);
     b.setAttribute("aria-expanded", String(drawerOpen));
-    b.textContent = drawerOpen ? "Hide round" : game ? `Round ${waveNo(game, Math.min(game.wave + 1, game.level.waves.length))}` : "Round";
+    // Plan item 47: the grip pulls up the next round's ticket, so it says "Next" (it read "Round 7" beside a bar
+    // that said Round 6 while the sixth was on the lane).
+    const next = game ? game.wave + 1 : 0;
+    b.textContent = drawerOpen
+      ? "Hide round"
+      : !game
+        ? "Round"
+        : next <= game.level.waves.length
+          ? `Next: Round ${waveNo(game, next)}`
+          : `Round ${waveNo(game, game.level.waves.length)}`;
   };
   b.onclick = () => {
     drawerOpen = !drawerOpen;
@@ -5121,4 +5130,4 @@ async function openSharedReplay(): Promise<void> {
 }
 void openSharedReplay();
 
-mountWeekChip(document.getElementById("week-slot"));
+mountWeekChip(document.getElementById("week-slot"), "Hedgerow");

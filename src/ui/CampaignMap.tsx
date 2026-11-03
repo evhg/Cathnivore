@@ -129,8 +129,16 @@ export default function CampaignMap({
               <polygon points={hexPoints(R * 0.96)} className="cmp-map-ground" />
               <polygon points={hexPoints(R * 0.96)} className="cmp-map-tint" />
               {isFree && <Bunting />}
+              {/* Plan item 47: a two-word name goes on two lines, so it stays inside its own hex
+                  ("Brindle Hills" ran into Kingsmarket). */}
               <text y={-R * 0.26} className="cmp-map-name">
-                {REGIONS[id].name}
+                {REGIONS[id].name.includes(' ')
+                  ? REGIONS[id].name.split(' ').map((word, i) => (
+                      <tspan key={word} x={0} dy={i === 0 ? -5 : 11}>
+                        {word}
+                      </tspan>
+                    ))
+                  : REGIONS[id].name}
               </text>
             </g>
           )

@@ -64,7 +64,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  /* Capped at 9% of the height: on 16:10 a true 2.39 would take a third of the screen. */
+  /* Capped at 5% of the height (plan item 47; 9% read as dead bands): on 16:10 a true 2.39 would take a third. */
   height: var(--letterbox);
   background: var(--shade);
   transition: height 600ms cubic-bezier(.6, 0, .2, 1);
@@ -72,7 +72,7 @@
 .front-bars i:first-child { top: 0; }
 .front-bars i:last-child { bottom: 0; }
 .front-bars.is-wide { --aspect: 2; }
-.front-bars.is-wide i { height: min(5svh, max(0px, (100svh - 100vw / 2) / 2)); }
+.front-bars.is-wide i { height: min(3svh, max(0px, (100svh - 100vw / 2) / 2)); }
 .front-bars.is-gone i { height: 0; }
 
 /* A fade to and from black (the push's end, the cold open's start). */
