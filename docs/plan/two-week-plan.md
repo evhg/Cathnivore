@@ -1092,7 +1092,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: the board's tiles cover at least 55% of the board frame's shorter side; no blank band over 120 px on either axis; no page scroll at P. Shots of three dailies at P and D, light and dark.
 - **Size:** 2
 
-## 71. [ ] Cathnivore: a title table that lives
+## 71. [ ] Cathnivore: a title table that lives *(lane B, in progress)*
 - **Why:** `cath-title-D`/`-P` (plan1103e): nothing on the table moves, board labels are about 9 px, Cath is a 240 px cut-out at D's edge and 95 px at P (VISION 4: staged moments; Cath the face of every game).
 - **Build:**
   - Hollowell vans drive the roads between regions, a stall's awning opens, bunting flutters on freed regions (all still under reduced motion).
