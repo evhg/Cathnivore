@@ -982,7 +982,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of rounds 1, 5 and the last round reached at P and D, light and dark.
 - **Size:** 3
 
-## 63. [ ] Cathnivore: pieces on the board as tabletop miniatures that read at a glance
+## 63. [ ] Cathnivore: pieces on the board as tabletop miniatures that read at a glance *(lane A, in progress)*
 - **Why:**
   - `cath-game-P`: at 390 px a hex holds an orange outlet stack, a count badge, a ".99" tag, a SOLD sign, a "?" scheme token and a producer coin, all 12-18 px and overlapping; Highmoor's and Kingsmarket's tokens touch each other and the region label.
   - `cath-game-D`: outlet stacks still overlap their own SOLD and .99 tags (Saltmarsh, Rivermead, Shingle Bay); producers are flat coin portraits on a small plinth. The table is the hero (pillar 2) but the pieces are its weakest art.
