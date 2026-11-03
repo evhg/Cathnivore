@@ -1,7 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
 
-
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
 The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32: P and D shots of every game, `e2e/screenshots/plan1102`, critiqued against VISION.md). Both were run against `VISION.md` at 390x844, 1440x900 and 844x390, and the screenshots are in that day's session notes. Every item is a whole, player-visible feature. "Size" is a rough count of build sessions.
@@ -1071,7 +1070,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a solve at P and D, light and dark, before and after.
 - **Size:** 2
 
-## 69. [ ] The bugs from the 2026-11-03 11:30 critique, fixed as one batch
+## 69. [ ] The bugs from the 2026-11-03 11:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:**
   - **Cathnivore D, round 5** (`cath-round5-D`): the "PLAY · 10 MORE ↓" pill sits over half-clipped Scheme cards at the Actions panel's foot.
   - **Cathnivore title D** (`cath-title-D`): Credits wraps alone to a second row in the chalkboard sign.
