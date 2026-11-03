@@ -923,7 +923,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the office at 0 and 3 cases at L and D, and the phone tier at L.
 - **Size:** 2
 
-## 59. [ ] Hedgerow: a field that grows through the level, and a harvest on the win *(lane A, in progress)*
+## 59. [x] Hedgerow: a field that grows through the level, and a harvest on the win *(done 2026-11-03, lane A, 09:51 session: `growth.ts` (each plain plot's stage from rounds cleared, nearest the farmhouse first with a seeded lag; a crop per act: wheat, kale, sunflowers, pumpkins, lavender; each leak, counted on the game as `leaks`, tramples the growing plot nearest the exit one stage, skipping towers); 2D `cropart.ts` on a cached layer that cross-fades on every change; 3D `render3d/crops.ts`, two instanced meshes that ease each plant in (at once under reduced motion); the win ripens the field in a 1.4 s wave from the farmhouse while Cath walks the nearest beds with a basket and sheaves lift off toward the card (`.harvest`, the field's own Cath steps out); `tests/hedgerow-growth.test.ts`, `e2e-site/hedgerow-growth.spec.ts` at P and D; draw calls at level 13 P 482 -> 483, D 520; shots via `scripts/hedgerow-growth-shots.mjs` in `e2e/screenshots/growth59/`. Changed: sheaves fly toward where the card's Seed Bank chip lands, since the chip is on the card that follows the harvest)*
 - **Why:**
   - `hedge-wave-3d-D`, `hedge-wave-2d-P`: plots are fixed beds (`plotlook.ts`); nothing on the field changes from round 1 to the last, so the farm you defend never shows what is at stake.
   - Item 46's win payout happens on a card, not on the field.
@@ -954,7 +954,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots fresh, mid-campaign and complete at P, L and D, light and dark.
 - **Size:** 2
 
-## 61. [ ] Runnel: channels cut into the earth, and water you can watch
+## 61. [ ] Runnel: channels cut into the earth, and water you can watch *(lane A, in progress)*
 - **Why:**
   - `runnel-daily2-D`, `runnel-daily2-P`: grooves are flat brown bars (`line.groove`, one stroke colour, `board.ts`, `.groove`); they read as planks or roads, not ditches, and the water is a thin dashed line inside them. The most-touched object in the game is the plainest (VISION pillars 1 and 6).
 - **Build:**
