@@ -36,6 +36,8 @@ export default function TitleArt() {
           <TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />
         </div>
       </div>
+      {/* Plan item 75: the market table's near edge, in front of Cath (hiding her waist) and under the board. */}
+      <div className="title-table-front" />
     </div>
   )
 }

@@ -744,3 +744,37 @@ html.no-animations .title-screen * {
     grid-template-columns: minmax(0, 0.46fr) minmax(0, 1fr);
   }
 }
+/* Plan item 75: Cath stands behind the market table. At D the table's near edge runs in front of her waist and
+   under the board, and its front falls to the page foot, so the art sits on it and no blank band opens above
+   or below the composition (the words and menu ride high on the left). */
+.title-table-front { display: none; }
+@media (min-width: 761px) {
+  .title-hero { align-items: stretch; }
+  .title-copy { align-self: start; padding-top: clamp(8px, 4vh, 48px); }
+  .title-art.title-table {
+    align-self: stretch;
+    align-content: end;
+    grid-template-rows: auto auto;
+    row-gap: 0;
+  }
+  .title-art.title-table .title-cath,
+  .title-art.title-table .title-board { grid-row: 1; }
+  .title-art.title-table .title-cath { margin-bottom: -34px; }
+  .title-art.title-table .title-board { margin-bottom: 6px; z-index: var(--z-lift); }
+  .title-table-front {
+    display: block;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    position: relative;
+    z-index: var(--z-lift);
+    margin: 0 -24px 0 -96px;
+    height: clamp(56px, 12vh, 120px);
+    border-radius: 10px 10px 4px 4px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--wood) 70%, var(--paper)) 0 12px, var(--wood) 12px 16px, transparent 16px),
+      repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 30%, transparent) 46px 48px),
+      linear-gradient(180deg, var(--wood), var(--wood-lo));
+    box-shadow: 0 -2px 0 color-mix(in srgb, var(--wood-lo) 60%, transparent), 0 12px 20px color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+  .title-footer { margin-top: 0; }
+}

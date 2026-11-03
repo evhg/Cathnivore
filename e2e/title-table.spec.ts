@@ -51,3 +51,31 @@ test('Cath\'s face follows the menu', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: /^Quick Game/ }).focus()
   await expect(page.locator('.title-cath svg.cath-delighted')).toHaveCount(1)
 })
+
+// Plan item 75: at D Cath stands behind the table's near edge (her box meets the table's), inside the viewport, and
+// the composition leaves no blank band over 80 px above or below it.
+for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  test(`Cath stands behind the table at ${width}x${height}, no blank band over 80 px`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop composition')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.locator('.title-table-front').waitFor()
+    const m = await page.evaluate(() => {
+      const c = document.querySelector('.title-cath svg')!.getBoundingClientRect()
+      const t = document.querySelector('.title-table-front')!.getBoundingClientRect()
+      const kids = [...document.querySelectorAll('.title-hero > *')].map((e) => e.getBoundingClientRect())
+      const top = Math.min(...kids.map((k) => k.top))
+      const bottom = Math.max(...kids.map((k) => k.bottom), t.bottom)
+      const foot = document.querySelector('.title-footer')!.getBoundingClientRect().top
+      return {
+        inside: c.left >= 0 && c.top >= 0 && c.right <= innerWidth && c.bottom <= innerHeight,
+        meets: c.bottom >= t.top && c.left < t.right && c.right > t.left,
+        bandTop: top, bandBottom: foot - bottom,
+      }
+    })
+    expect(m.inside).toBe(true)
+    expect(m.meets).toBe(true)
+    expect(m.bandTop).toBeLessThanOrEqual(80)
+    expect(m.bandBottom).toBeLessThanOrEqual(80)
+  })
+}
