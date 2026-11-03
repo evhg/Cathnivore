@@ -923,7 +923,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the office at 0 and 3 cases at L and D, and the phone tier at L.
 - **Size:** 2
 
-## 59. [ ] Hedgerow: a field that grows through the level, and a harvest on the win
+## 59. [ ] Hedgerow: a field that grows through the level, and a harvest on the win *(lane A, in progress)*
 - **Why:**
   - `hedge-wave-3d-D`, `hedge-wave-2d-P`: plots are fixed beds (`plotlook.ts`); nothing on the field changes from round 1 to the last, so the farm you defend never shows what is at stake.
   - Item 46's win payout happens on a card, not on the field.
