@@ -967,7 +967,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the daily, the lesson and a solved board at P and D, light and dark, in two seasons.
 - **Size:** 2
 
-## 62. [ ] Cathnivore: your farm as a stall you can see growing *(lane B, in progress)*
+## 62. [x] Cathnivore: your farm as a stall you can see growing *(done 2026-11-03, lane B, 4122b44..HEAD: `stallLayout.ts` puts each Improvement on a shelf by tag (fields, sea, town), stacking past four; the phone Farm sheet draws each producer's stall (awning, yield price board, painted crates, chalked tag board); the desktop column one plank of crates; the teammate's stall under their ledger while they think (desktop); the phone strip by the name from 441 px, the newest crate and a count on the Farm tab below; a buy flies to its stall slot and drops in (fades under reduced motion). Unit tests for 0/1/6/12 cards and stable slots; `e2e/farm-stall.spec.ts` (a crate per card) and farmstead (the bought crate on its tag's shelf) at P and D, desktop-no-scroll and action-hand pass; shots at rounds 1, 5 and 7, P and D, light and dark)*
 - **Why:**
   - `cath-game-D` (2026-11-03 09:35 shots, `e2e/screenshots/plan1103d/`): the left column's FARM block is a name, three figure pairs and one card thumbnail about 40x20 px. The engine the player builds is the smallest thing on screen, and the Actions frame under it is mostly empty dashed space while a teammate thinks.
   - `cath-game-P`: the farm sits behind the FARM tab; the strip above the action card shows only resource chips and action pips, so you can't see what you've built without opening a sheet (VISION pillars 1, 2, 5).
