@@ -701,7 +701,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P, D and L, in 2D and 3D.
 - **Size:** 3
 
-## 46. [ ] Hedgerow: a win that pays out on stage *(lane B, in progress)*
+## 46. [x] Hedgerow: a win that pays out on stage *(done 2026-11-03, lane B, 09b909c..HEAD: `renderPayout` in main.ts: Seed Bank, medal and Heroic chips with the new stars flying in as coins, a rosette ribbon with names, Cath's whole figure on a level-up with the talent chosen on the card (saved), a Next card with the next landmark, twist and reward; an L spread; a tap skips, reduced motion shows all at once; e2e `hedgerow-payout.spec.ts` (P, L, D in view, talent saved, skip); shots of win, level-up win and loss at P, L, D, reduced motion and dark)*
 - **Why:**
   - The rewards (a level-up, a talent choice, Seed Bank stars and rosettes) are buried in one dot-separated sentence.
   - At L the tally is off-card.
@@ -745,7 +745,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of each fix before and after.
 - **Size:** 2
 
-## 48. [ ] Cathnivore: an end screen that is a moment, not a report
+## 48. [ ] Cathnivore: an end screen that is a moment, not a report *(lane B, in progress)*
 - **Why:** a win or a loss ends on a small stamp, a chart and four stat boxes, with the lower-left third empty at D (VISION pillar 4, staged moments; the critique's second-biggest gap). Hedgerow's win payout is item 46; Cathnivore's end has no staging.
 - **Build:**
   - The result is staged on the market table: Cath at full figure in the bible pose for the result (cheer on a win, crossed arms on a loss) beside a large headline stamp.
