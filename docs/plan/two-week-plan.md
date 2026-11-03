@@ -890,7 +890,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of How to Play (3 pages), Settings and Credits at P and D, light and dark.
 - **Size:** 2
 
-## 57. [ ] NIGHT SHIFT: a street full of people who react
+## 57. [ ] NIGHT SHIFT: a street full of people who react *(lane A, in progress)*
 - **Why:**
   - `ns-hud-D`: the Drowned Market is beautifully lit but empty at street level: neon, rain and wet asphalt, then the named target and his men far off. The lower half of the frame is near-black road.
   - Bystanders are `render/crowd.ts` instanced dark silhouettes that sway on `crowd:*` markers (Plaza mostly). Nobody walks, shelters, trades or runs when shooting starts, so the world reads as a set. VISION pillar 2 ("alive") and the R-rated stakes (civilians cost reputation) both need people on screen.
