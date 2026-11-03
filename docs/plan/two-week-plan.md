@@ -997,7 +997,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all three maps at rounds 1 and 6 at P and D, light, dark and greyscale.
 - **Size:** 3
 
-## 64. [ ] Hedgerow: a new enemy arrives as a staged field-guide moment
+## 64. [ ] Hedgerow: a new enemy arrives as a staged field-guide moment *(lane A, in progress)*
 - **Why:**
   - `hedge-wave-P`: the "NEW ON THE LANE" strip reads "Delivery drone / A delivery drone."; its stats and counters are cut at phone width, so a phone player never learns that only anti-air reaches it.
   - `hedge-wave-D`: the same advert is a plain white box over the field's top right, covering a plot; it doesn't pause, show the vehicle or say which towers hit it. "Clean sweep!" and "Wave cleared +63" are outlined text over the graveyard plot (pillars 3, 4).
