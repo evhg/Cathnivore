@@ -3578,8 +3578,8 @@ img.act-scene {
   color: var(--ink);
 }
 .payout-chip:first-child {
-  background: #f6d77a;
-  color: #3a2a10;
+  background: var(--brass-hi);
+  color: var(--oak-ink);
 }
 .payout-head {
   margin: 0 0 4px;
@@ -3597,7 +3597,7 @@ img.act-scene {
   padding: 8px 10px;
   list-style: none;
   border-radius: 6px;
-  background: repeating-linear-gradient(90deg, #b8403a 0 14px, #c85a44 14px 28px);
+  background: repeating-linear-gradient(90deg, var(--goodwill) 0 14px, var(--path-0) 14px 28px);
 }
 .payout-ribbon li {
   display: flex;
@@ -3614,8 +3614,8 @@ img.act-scene {
   height: 26px;
   flex: none;
   border-radius: 50%;
-  background: radial-gradient(circle, #f2c94c 0 34%, #b8403a 36% 52%, #f2c94c 54% 64%, #d65a4a 66%);
-  box-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+  background: radial-gradient(circle, var(--brass-hi) 0 34%, var(--goodwill) 36% 52%, var(--brass-hi) 54% 64%, var(--path-0-glow) 66%);
+  box-shadow: 0 1px 0 var(--scrim);
 }
 .payout-level {
   display: grid;
@@ -3625,7 +3625,7 @@ img.act-scene {
   padding: 8px 12px;
   border: 2px solid var(--line);
   border-radius: 12px;
-  background: linear-gradient(180deg, #fff3cf, var(--paper-hi));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brass-hi) 28%, var(--paper-hi)), var(--paper-hi));
 }
 .payout-cath svg {
   display: block;
@@ -3641,15 +3641,15 @@ img.act-scene {
 }
 .payout-next {
   padding: 8px 12px;
-  border-left: 4px solid #6c9a4a;
+  border-left: 4px solid var(--path-2);
   border-radius: 6px;
-  background: rgb(108 154 74 / 0.12);
+  background: color-mix(in srgb, var(--path-2) 12%, transparent);
 }
 .payout-next p:last-child {
   margin: 0;
 }
 @media (prefers-color-scheme: dark) {
-  .payout-level { background: linear-gradient(180deg, #4a3c26, var(--paper-hi)); }
+  .payout-level { background: linear-gradient(180deg, color-mix(in srgb, var(--brass-lo) 45%, var(--paper-hi)), var(--paper-hi)); }
 }
 /* On a level-up her whole figure is in the payout, so the round portrait at the top stands down. */
 #dlg-result.levelup .result-hero #result-cath {
@@ -3725,10 +3725,10 @@ img.act-scene {
 .payout-next .payout-reward {
   margin-top: 4px;
   font-weight: 700;
-  color: #3f6a2a;
+  color: var(--path-2);
 }
 @media (prefers-color-scheme: dark) {
-  .payout-next .payout-reward { color: #a8d48a; }
+  .payout-next .payout-reward { color: var(--path-2-glow); }
 }
 @media (orientation: landscape) and (max-height: 520px) {
   #dlg-result .payout-next .payout-reward { display: none; }
