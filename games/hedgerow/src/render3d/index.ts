@@ -40,6 +40,7 @@ import { buildCath, dressCath, buildEnemy, buildBarn, buildLandmark, buildMega, 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
 import { buildGround, type Ground } from "./terrain";
+import { Crops } from "./crops";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
@@ -153,6 +154,8 @@ export class Renderer3D {
   private world = new THREE.Group();
   private dynamic = new THREE.Group();
   private ground: Ground | null = null;
+  /** Plan item 59: the growing field. */
+  private crops: Crops | null = null;
   private levelId = -1;
   private towers = new Map<number, TowerView>();
   private enemies = new Map<number, EnemyView>();
@@ -382,6 +385,8 @@ export class Renderer3D {
     const L = hasTwist(game.level, "night") && game.level.id <= 90 ? nightLight(actLight(game.level.id)) : actLight(game.level.id);
     this.ground = buildGround(game.level);
     this.world.add(this.ground.group);
+    this.crops = new Crops(game.level, this.ground.heightAt, this.canvas, this.reducedMotion);
+    this.world.add(this.crops.group);
     this.buildAir(game);
     // Sky, fog and light for the act.
     const sky = document.createElement("canvas");
@@ -1105,6 +1110,7 @@ export class Renderer3D {
     }
     for (const sp of (this.ground?.group.userData.spin as THREE.Object3D[] | undefined) ?? []) sp.rotation.z += dt * 0.7;
     this.ground?.update(t, dt);
+    this.crops?.sync(game, t, dt);
     for (const m of this.motes) m.update(dt, t);
     this.birds?.update(t);
     this.sparks.update(dt);
