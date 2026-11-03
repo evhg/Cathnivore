@@ -2054,6 +2054,8 @@ function towerTray(p: HTMLElement, g: Game): void {
     b.disabled = g.marks < cost;
     const stats = towerStatLine(g, kind);
     b.setAttribute("aria-label", `${TOWERS[kind].name}, ${cost} Marks. ${TOWERS[kind].blurb} ${stats}. Drag onto a plot, or pick a plot first.`);
+    // Plan item 69: a compact desktop tray drops the names from the cards; the pointer still reads them here.
+    b.title = `${TOWERS[kind].name} · ${cost} Marks`;
     const price = document.createElement("span");
     price.className = "build-cost";
     price.textContent = String(cost);

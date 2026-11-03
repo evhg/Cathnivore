@@ -110,3 +110,32 @@ test('plan item 31: on a phone the notebook opens in the round drawer', async ({
   await expect(nb).toBeVisible()
   await expect(nb.locator('.nb-enemy .nb-name')).not.toBeEmpty()
 })
+
+test('plan item 69: at D the whole roster fits the tray: no packet past its edge, no more-tab, nothing cut', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop side column')
+  for (const [width, height] of [[1440, 900], [1280, 800]]) {
+    await page.setViewportSize({ width, height })
+    await page.goto(URL)
+    await page.evaluate(() => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < 12; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '12': true }, seen: {}, tips: { all: true } }))
+    })
+    await page.goto(`${URL}&level=12`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    await page.waitForTimeout(300)
+    const r = await page.evaluate(() => {
+      const t = document.querySelector('.tray')!.getBoundingClientRect()
+      const bad = [...document.querySelectorAll<HTMLElement>('.tray-tower')].filter((c) => {
+        const b = c.getBoundingClientRect()
+        const cut = [...c.querySelectorAll<HTMLElement>('.tray-name, .build-cost')].some((e) => e.offsetParent && e.scrollWidth > e.clientWidth + 1)
+        return b.left < t.left - 1 || b.right > t.right + 1 || cut
+      }).map((c) => c.dataset.kind)
+      return { n: document.querySelectorAll('.tray-tower').length, bad, more: !!document.querySelector('.tray-more:not([hidden])'), titled: [...document.querySelectorAll<HTMLElement>('.tray-tower')].every((c) => /Marks/.test(c.title)) }
+    })
+    expect(r.n).toBeGreaterThanOrEqual(5)
+    expect(r.bad, `${width}x${height}`).toEqual([])
+    expect(r.more).toBe(false)
+    expect(r.titled).toBe(true)
+  }
+})
