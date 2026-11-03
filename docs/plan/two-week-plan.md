@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane B, 2026-11-03T00:22:08Z
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
