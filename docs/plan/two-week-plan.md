@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-03 04:18 UTC
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -771,7 +773,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots fresh, mid-campaign and complete at P, D and dark.
 - **Size:** 2
 
-## 50. [ ] Runnel: a board with colour, a sky and a garden that grows *(lane A, in progress)*
+## 50. [x] Runnel: a board with colour, a sky and a garden that grows *(done 2026-11-03, ..dd6b78f7: dry tiles as fallow, meadow and a ploughed field per season (`ground.ts`), the time of day as a sky band and cast over the whole scene with an honest caption, the week's boards in the D rail and Bea's garden as the week's seven beds (`weekstrip.ts`); contrast floor holds for every dry ground; luminance SD 0.0067 -> 0.034 (BALANCE.md); `e2e-site/runnel-board.spec.ts`; shots in `e2e/screenshots/runnel50/`. There is no "night" time of day: night is the dark palette, shot under a dusk sky)*
 - **Why:**
   - Most of the board reads as mud: brown tiles, dark-brown grooves, and green only where watered.
   - The caption says "Dusk, clear skies", but the scene is flat cream with no sky.

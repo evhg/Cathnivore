@@ -27,5 +27,12 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
   await p.waitForTimeout(1200)
   await p.screenshot({ path: out(`win-dusk-${n}`) })
   await ctx.close()
+  // Night: the dark palette, under a dusk sky.
+  const night = await b.newContext({ viewport: vp, colorScheme: 'dark', reducedMotion: 'reduce', deviceScaleFactor: n === 'P' ? 2 : 1 })
+  const np = await night.newPage()
+  await np.goto(`${base}?nohelp&sky=dusk,clear`)
+  await np.waitForTimeout(900)
+  await np.screenshot({ path: out(`night-${n}`) })
+  await night.close()
 }
 await b.close()
