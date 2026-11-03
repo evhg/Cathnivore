@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/engine/state'
 import { resolveSqueeze, runEnemyTurn } from '../src/engine/enemy'
-import { planPreview } from '../src/engine/preview'
+import { planPreview, SHORT_MAX } from '../src/engine/preview'
 import { ALL_REGION_IDS } from '../src/content/map'
 import type { GameConfig, GameState } from '../src/engine/types'
 
@@ -20,6 +20,20 @@ function rounds(seed: number, n: number): GameState[] {
 }
 
 describe('planPreview', () => {
+  it("the phone's short line fits two lines of a narrow card and names a region the card hits", () => {
+    // Plan item 47: the full line ran past two lines of a 120 px phone card and was cut off.
+    for (let seed = 1; seed <= 20; seed++) {
+      for (const s of rounds(seed, 8)) {
+        for (const slot of ['squeeze', 'expand', 'scout'] as const) {
+          const p = planPreview(s, slot)
+          expect(p.short.length, p.short).toBeLessThanOrEqual(SHORT_MAX)
+          expect(p.short.trim().length).toBeGreaterThan(3)
+          if (p.short !== p.summary) expect(p.regions.length).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
   it('never renders a bare dash, over 20 seeds and every round', () => {
     for (let seed = 1; seed <= 20; seed++) {
       for (const s of rounds(seed, 8)) {

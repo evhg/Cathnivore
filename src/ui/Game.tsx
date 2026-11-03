@@ -1780,6 +1780,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
           const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
           const card = state[slot]
+          const preview = planPreview(state, slot)
           return (
             <span key={slot} className="plan-strip-item">
               <button
@@ -1820,7 +1821,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <span className="visually-hidden">: </span>
                 <span className="plan-strip-effect">{card ? pressureLabel(card) : 'Empty'}</span>
                 {/* Plan item 25: what the card will do, by region, from the rules (planPreview). */}
-                <span className="plan-strip-target">{planPreview(state, slot).summary}</span>
+                {/* Plan item 47: a phone's narrow card shows the short line; the full one stays for the
+                    accessible name (visually hidden there) and for wider cards. */}
+                <span className="plan-strip-target plan-strip-target-full">{preview.summary}</span>
+                {preview.short !== preview.summary && (
+                  <span className="plan-strip-target plan-strip-target-short" aria-hidden="true">
+                    {preview.short}
+                  </span>
+                )}
                 {card && <span className="visually-hidden">{`, stage ${card.stage}`}</span>}
               </button>
               {/* A separate trigger, not nested inside the button above: that button already has its own

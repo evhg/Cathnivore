@@ -387,6 +387,23 @@
   overflow: hidden;
 }
 
+/* Plan item 47: a phone's plan card is about 120 px wide, so the by-region line ran past two lines and was
+   cut. There it shows the short line (the regions only); the full line stays in the accessible name. */
+.plan-strip-target-short { display: none; }
+@media (max-width: 599.98px) {
+  .plan-strip-target-full:has(+ .plan-strip-target-short) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .plan-strip-target-short { display: -webkit-box; }
+}
+
 .plan-strip-dateline {
   display: flex;
   align-items: center;

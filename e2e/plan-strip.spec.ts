@@ -40,7 +40,7 @@ test('a plan card marks exactly its targets with data-threat, on keyboard focus 
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
-  await expect(page.locator('.plan-strip-target')).toHaveCount(3)
+  await expect(page.locator('.plan-strip-target-full')).toHaveCount(3)
   for (const text of await page.locator('.plan-strip-target').allTextContents()) expect(text.trim()).not.toBe('—')
 
   const expand = page.locator('.plan-strip button', { hasText: 'Expand' })
@@ -60,4 +60,22 @@ test('a plan card marks exactly its targets with data-threat, on keyboard focus 
   await expect(expand).toBeFocused()
   await expect(page.locator('.region-hex[data-threat="expand"]')).toHaveCount(n)
   await expect(expand).toHaveAttribute('aria-pressed', 'false')
+})
+
+// Plan item 47: on a phone the plan cards' target lines are whole (the full by-region line was cut at two lines).
+test('the phone plan cards show their target line whole', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 600, 'a phone layout')
+  for (let seed = 0; seed < 3; seed++) {
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.game').waitFor()
+    const cut = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.plan-strip-target')]
+        .filter((e) => e.getBoundingClientRect().width > 2)
+        .filter((e) => e.scrollHeight > e.clientHeight + 1)
+        .map((e) => e.textContent),
+    )
+    expect(cut).toEqual([])
+  }
 })
