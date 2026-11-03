@@ -203,3 +203,43 @@
 }
 /* The highlighted entry: a wheat highlighter stroke that reads in light and dark (no fixed pale yellow). */
 .almanac .rules-entry-active { background: color-mix(in srgb, var(--wheat) 30%, transparent); border-radius: 4px; padding: 4px 6px; margin: 0 -6px 10px; }
+
+/* Start here: the contents, a chapter a button with Cath's note as its teaser. */
+.almanac-contents { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--ink-a35); }
+.almanac-contents h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: var(--fs-h3); }
+.almanac-contents ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 700px) { .almanac-contents ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .almanac-contents ol { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.almanac-contents button {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper-hi);
+  border: 1px solid var(--ink-a35);
+  border-radius: 8px;
+  box-shadow: var(--e1);
+  cursor: pointer;
+}
+.almanac-contents button:hover { background: color-mix(in srgb, var(--wheat) 14%, var(--paper-hi)); }
+.almanac-contents-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--wheat);
+  color: var(--ink-on-fixed-fill);
+  font-family: var(--font-num);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+}
+.almanac-contents-text { display: grid; gap: 2px; min-width: 0; }
+.almanac-contents-text strong { font-family: var(--font-display); font-size: var(--fs-body); }
+.almanac-contents-text span { font-size: var(--fs-caption); color: var(--ink-muted); line-height: 1.3; }

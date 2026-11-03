@@ -405,7 +405,25 @@ export default function RulesReference({ onClose, initialTerm }: Props) {
         {chapter ? (
           <Page ch={chapter} n={idx} query={searching ? query.trim() : ''} activeTerm={initialTerm} />
         ) : (
-          <QuickTour />
+          <>
+            <QuickTour />
+            <nav className="almanac-contents" aria-label="In this almanac">
+              <h2>In this almanac</h2>
+              <ol>
+                {ALMANAC.map((c, i) => (
+                  <li key={c.id}>
+                    <button onClick={() => go(c.id)}>
+                      <span className="almanac-contents-no">{i + 1}</span>
+                      <span className="almanac-contents-text">
+                        <strong>{c.title}</strong>
+                        <span>{c.note}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </>
         )}
       </div>
 
