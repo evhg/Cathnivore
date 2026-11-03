@@ -517,8 +517,12 @@ export class Renderer3D {
       const dim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
       // Plan item 66: clear air over the field by day; the haze only gathers out towards the hills.
       const clear = dim === 1 && game.level.id <= 90 ? 4 : 0;
-      this.scene.fog.near = (hi + L.fogNear - 14 + clear) * dim;
-      this.scene.fog.far = (hi + L.fogFar - 14 + clear) * dim;
+      // Plan item 78: measured from the field's far edge (the fitted camera sits much closer than before), so the
+      // field itself stands in clear air and the haze gathers over the hills beyond it.
+      const farEdge = this.camera.position.distanceTo(this.v1.set(cols / 2, 0, -0.5));
+      const near = farEdge + (L.fogNear - 14) * 0.5 + clear;
+      this.scene.fog.near = near * dim;
+      this.scene.fog.far = (near + (L.fogFar - L.fogNear)) * dim;
     }
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
