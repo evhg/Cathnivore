@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-03 09:29 UTC
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -890,7 +892,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of How to Play (3 pages), Settings and Credits at P and D, light and dark.
 - **Size:** 2
 
-## 57. [ ] NIGHT SHIFT: a street full of people who react *(lane A, in progress)*
+## 57. [x] NIGHT SHIFT: a street full of people who react *(done 2026-11-03, lane A, 5400b98c..091e2ee1: `sim/streetlife.ts` (40 people in the market on high, 25 on the phone, the Plaza's walkers and riders; none indoors) with a calm, duck, flee, gone, return machine heard through every muzzle flash; drawn instanced figures, not item 41's jointed models (see DECISIONS); the Plaza's standing rally and shoppers scatter on the same machine; umbrella drips that crown on the ground and footstep splashes on high and ultra (`render/streetwet.ts`); coats, umbrellas and bikes in the wet road's mirror on high/ultra, none on the phone; the phone perf gate fixed at the root (it samples until it sees a shadow frame; the phone's ground and fine clutter cast no shadow; the standing crowd's low-poly cut): market phone 256/260 and D 387/900 calls, Plaza phone 232 calls and 223k/260k tris; unit tests, `e2e-site/cathode-street.spec.ts` (35 on screen at the spawn, they move away after a shot, the wet layer draws, the rally runs); shots of the market and Plaza at D, L and phone L, calm and mid-fight, before and after. Cut: no drips or splashes on the phone tier, to keep its shadow-frame headroom)*
 - **Why:**
   - `ns-hud-D`: the Drowned Market is beautifully lit but empty at street level: neon, rain and wet asphalt, then the named target and his men far off. The lower half of the frame is near-black road.
   - Bystanders are `render/crowd.ts` instanced dark silhouettes that sway on `crowd:*` markers (Plaza mostly). Nobody walks, shelters, trades or runs when shooting starts, so the world reads as a set. VISION pillar 2 ("alive") and the R-rated stakes (civilians cost reputation) both need people on screen.
