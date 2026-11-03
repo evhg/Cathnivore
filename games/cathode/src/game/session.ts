@@ -173,6 +173,8 @@ export interface Session {
   officeDressing?: () => { drawings: number; keepsakes: number } | null;
   /** Plan item 51: whether the office mirror rendered her last frame (null outside the office). */
   officeMirror?: () => boolean | null;
+  /** Plan item 51: the caption of the keepsake or drawing under the crosshair ("" for none). */
+  officeLooking?: () => string;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
   talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
@@ -2925,8 +2927,32 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     return null;
   }
+  /**
+   * Plan item 51: what she is looking at on the shelf or the wall. The crosshair on a keepsake or one of Bea's
+   * drawings, within 3 m, says what it is in a subtitle, once each time she looks at something new.
+   */
+  const lookRay = new THREE.Raycaster(undefined, undefined, 0, 3);
+  const lookCentre = new THREE.Vector2(0, 0);
+  let lookedAt = "";
+  function officeLook(): void {
+    if (!officeDress || coaching || charScreen || dead) return;
+    lookRay.setFromCamera(lookCentre, world.camera);
+    let caption = "";
+    for (const hit of lookRay.intersectObject(officeDress, true)) {
+      let o: THREE.Object3D | null = hit.object;
+      while (o && o !== officeDress && !o.userData.caption) o = o.parent;
+      if (o && o.userData.caption) {
+        caption = o.userData.caption as string;
+        break;
+      }
+    }
+    if (caption && caption !== lookedAt) hud.subtitle(caption);
+    lookedAt = caption;
+  }
+  s.officeLooking = () => lookedAt;
   /** The chip over the station she stands at (low centre: she faces it from its spot). */
   function stationPrompt(): HudState["pickup"] {
+    officeLook();
     const st = coaching || charScreen || dead ? null : stationAt(player.pos.x, player.pos.z);
     if (!!st !== promptShown && st) audio?.promptUp();
     promptShown = !!st;

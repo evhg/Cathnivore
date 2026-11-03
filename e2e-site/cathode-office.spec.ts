@@ -135,4 +135,13 @@ test('a closed case puts its keepsake on the shelf and another drawing by the do
   await page.goto('/nightshift/?play&shot&district=office')
   await page.waitForFunction(() => !!(window as unknown as { cathode?: D }).cathode?.officeDressing, null, { timeout: 200_000 })
   expect(await page.evaluate(() => (window as unknown as { cathode: D }).cathode.officeDressing!())).toEqual({ drawings: 2, keepsakes: 1 })
+  // Looking at the shelf's first keepsake names it.
+  type L = D & { officeLooking?: () => string }
+  await page.evaluate(() => {
+    const c = (window as unknown as { cathode: L }).cathode
+    c.player.pos.set(-3.7, c.player.pos.y, -1.0)
+    c.player.yaw = Math.PI / 2
+    c.player.pitch = -0.08
+  })
+  await page.waitForFunction(() => (window as unknown as { cathode: L }).cathode.officeLooking?.().startsWith('Gumshoes'), null, { timeout: 60_000 })
 })
