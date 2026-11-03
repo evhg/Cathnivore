@@ -788,7 +788,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The tile luminance spread across a fresh board is wider than today's (measured and reported in BALANCE.md or the commit).
 - **Size:** 2
 
-## 51. [ ] NIGHT SHIFT: Cath's office, lived in
+## 51. [ ] NIGHT SHIFT: Cath's office, lived in *(lane B, in progress)*
 - **Why:**
   - Item 16 built the office as a hub of stations: the case board, the gun bench and the wardrobe.
   - Between them it reads as a set, not her place: nothing in it remembers the cases she has closed.
