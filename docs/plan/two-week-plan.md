@@ -1044,7 +1044,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 12 and 30 at P and D in 3D, before and after, beside the 2D.
 - **Size:** 3
 
-## 67. [ ] Cathnivore: the desktop Setup staged like the phone one *(lane B, in progress)*
+## 67. [x] Cathnivore: the desktop Setup staged like the phone one *(done 2026-11-03, lane B, 9595ca1..4065d48: at D the picks sit on a gingham cloth in a timber frame, each producer in item 54's chair drawn larger, the maps framed painted boards (the picked one lifted on a wheat ring), difficulty chalk on a slate, the seed a manila luggage tag, Start the OPEN sign hung on its cord in the right column under the producers; 1280x800 no longer scrolls (was 85 px); `e2e/setup-desktop.spec.ts` at 1440x900 and 1280x800; setup-phone, quick-game, desktop-no-scroll and accessibility pass; shots D, 1280x800, P, light and dark via `scripts/cathnivore-setup-shots.mjs`)*
 - **Why:** `cath-setup-D`: four plain rounded panels ("Mode", "Map", "Difficulty"), a bare seed input reading "random", map tiles as tiny chips, Start a lone slab in the corner with ~300 px of dead space; the phone Setup (item 54) has the drawn chairs, the dealt cards and the open-sign Start (VISION 4: staged moments).
 - **Build:**
   - At D the Setup is the market table seen from above: the producers' chairs pulled up round it (item 54's art, larger), the map tiles as small painted boards laid on the cloth to pick, difficulty as three chalk marks on a slate, the seed a luggage tag ("Random" or the number).
@@ -1056,7 +1056,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at D and 1280x800, light and dark.
 - **Size:** 2
 
-## 68. [ ] Runnel: a win that happens on the board
+## 68. [ ] Runnel: a win that happens on the board *(lane B, in progress)*
 - **Why:**
   - `runnel-win-D`/`-P`: the win is a white modal over a blurred board (three stat boxes, three pills, a share card with about 6 px text), so the watered farm, the crops and Bea's garden, the payoff itself, are hidden behind the blur.
   - `runnel-daily-P`: the phone daily floats on blank cream (60 px empty above, 80 px below); the spring house and the garden appear only at D, and the D rail is empty below "All stats" (VISION 4).
