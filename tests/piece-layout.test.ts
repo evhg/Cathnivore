@@ -5,7 +5,7 @@ import { MIN_COUNT_PX, ORNAMENT_PX, pieceLayout, rectsOverlap, TILE_R } from '..
 const label = (name: string) => name.length * 8.6 + 16
 
 describe('pieceLayout', () => {
-  for (const px of [40, 60, 90])
+  for (const px of [40, 60, 90, 130])
     it(`keeps 0-6 Outlets, 2 producers and a scheme apart and inside the tile at ${px} px`, () => {
       for (let outlets = 0; outlets <= 6; outlets++)
         for (const buyouts of [0, 1])
@@ -26,6 +26,16 @@ describe('pieceLayout', () => {
     const big = pieceLayout(input, 90)
     expect(big.ornaments).toBe(true)
     expect(big.scale).toBe(1)
+  })
+
+  it('keeps a threat badge clear of the stacks and grows the pieces on a roomy hex', () => {
+    const input = { outlets: 4, buyouts: 2, doubt: 1, producers: 3, scheme: false, labelWidth: label('Saltmarsh'), badge: true }
+    for (const px of [45, 63, 90, 125]) {
+      const r = pieceLayout(input, px).rects
+      const badge = r.find((x) => x.kind === 'badge')!
+      for (const o of r) if (o !== badge) expect(rectsOverlap(o, badge), `${px}: ${o.kind}`).toBe(false)
+    }
+    expect(pieceLayout({ ...input, badge: false, outlets: 1, buyouts: 0, doubt: 0, producers: 1 }, 125).scale).toBeGreaterThan(1)
   })
 
   it('is the same every time', () => {

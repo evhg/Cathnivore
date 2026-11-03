@@ -1,5 +1,6 @@
 import { Landmark } from './Landmark'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
+import { BADGE, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
 import { BOARD_LANDMARKS, landmarkSpot, pickSpot, type Box } from './landmarkSpot'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
@@ -26,11 +27,8 @@ const RING_DISTANCE = HEX_R * Math.sqrt(3)
 export const BOARD_FACE_R = 92 * 0.96
 const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
 /* Piles wrap after this many pieces so a heavy board never runs past the hex edge. */
-const PIECE_ROW = 6
-const pieceXY = (n: number) => `${(n % PIECE_ROW) * 16}, ${Math.floor(n / PIECE_ROW) * 14}`
 /** Plan item 20: a tile's thickness (its edge shows below the face) and how far its shadow falls. */
 const TILE_DEPTH = 7
-const PIECE_SCALE = 1.9 // enlarge the enemy-piece cluster in place (see the comment where it's used)
 
 function hexCenter(id: RegionId, layout: Layout = LAYOUTS.ring): { x: number; y: number } {
   const [q, r] = layout.hexes[id] ?? LAYOUTS.ring.hexes[id] ?? [0, 0]
@@ -170,36 +168,36 @@ function RegionTextureDefs() {
 
 // Outlet: "little shopfront box with a price tag reading 0.99" — a glossy Hollowell square (unchanged
 // from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
-export function Outlet() {
+export function Outlet({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-outlet">
       {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
       <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
       <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
-      <g transform="translate(7,9) rotate(18)">
+      {ornament && <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
         <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
         <text x={4.2} y={4} textAnchor="middle" className="price-tag-text">
           .99
         </text>
-      </g>
+      </g>}
     </g>
   )
 }
 
 // Buyout: "picket-fence segment with a SOLD sign" — keeps the peaked sign-post silhouette (already
 // distinct in outline from Outlet's square, STYLE.md 2.3) and adds the sign itself.
-export function Buyout() {
+export function Buyout({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-buyout">
       <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
-      <g transform="translate(1,7) rotate(-6)">
+      {ornament && <g transform="translate(1,7) rotate(-6)">
         <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
         <text x={5} y={3.1} textAnchor="middle" className="sold-text">
           SOLD
         </text>
-      </g>
+      </g>}
     </g>
   )
 }
@@ -233,76 +231,89 @@ function TokenBase({ cx, y, w }: { cx: number; y: number; w: number }) {
   )
 }
 
-// A piece's count (plan item 2): a small dark disc with the number, at the piece's top-right corner.
-function PieceCount({ n }: { n: number }) {
+// Plan item 63: a stack's count, a dark disc sized by the tray so its number never renders under 11 px.
+function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: number }) {
+  const fs = r * 1.25
   return (
     <g className="piece-count" pointerEvents="none">
-      <circle cx={13} cy={0} r={4.6} fill="var(--ink, #1b1712)" stroke="var(--paper, #f4ead8)" strokeWidth={0.8} />
-      <text x={13} y={2} textAnchor="middle" fontSize={6} fontWeight={700} fill="var(--paper, #f4ead8)">
+      <circle cx={cx} cy={cy} r={r} fill="var(--ink, #1b1712)" stroke="var(--paper, #f4ead8)" strokeWidth={Math.max(0.8, r * 0.16)} />
+      <text x={cx} y={cy + fs * 0.36} textAnchor="middle" fontSize={fs} fontWeight={700} fill="var(--paper, #f4ead8)">
         {n}
       </text>
     </g>
   )
 }
 
-// Stall: "small awning with scalloped edge, striped in the producer's colour and paper" — was a plain
-// rounded rect. Now a two-stripe canvas roof over a scalloped valance, both in the producer's colour.
-function Stall({ pid, initial, showInitial }: { pid: ProducerId; initial: string; showInitial: boolean }) {
-  const colour = `var(--p-${pid})`
+/**
+ * Plan item 63: one of Hollowell's stacks in its tray slot (x from the slot's left, y in tile units round the
+ * centre): the glossy plastic piece on its turned base with up to two copies behind, and one count. Small hexes
+ * drop the .99 tag and the SOLD sign (`ornaments`) before the piece shrinks.
+ */
+function EnemyStack({ kind, n, scale, ornaments, countR }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; countR: number }) {
+  // The art spans 15.2 icon units across (copies offset right) and 21.8 down (copies up, the base's shadow below).
+  const k = Math.min((STACK_W * scale) / 16, (STACK_H * scale) / 21.8)
+  const bottom = ENEMY_Y + (STACK_H * scale) / 2
+  const bodyTop = ENEMY_Y - (STACK_H * scale) / 2
+  const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
+  const copies = Math.min(n, 3)
   return (
-    <g className="stall-piece">
-      <rect x={0} y={0} width={7} height={6} fill={colour} />
-      <rect x={7} y={0} width={7} height={6} fill="var(--paper)" />
-      <rect x={0} y={0} width={14} height={6} fill="none" stroke="var(--ink)" strokeWidth={1} />
-      <path
-        d="M 0,6 a 3.5,3 0 0 0 7,0 a 3.5,3 0 0 0 7,0 L 14,10 L 0,10 Z"
-        fill={colour}
-        stroke="var(--ink)"
-        strokeWidth={1}
-      />
-      {showInitial && (
-        <text x={7} y={9} textAnchor="middle" className="stall-initial">
-          {initial}
-        </text>
-      )}
+    <g className={`enemy-stack enemy-stack-${kind}`}>
+      <g transform={`translate(0, ${bottom - 17.4 * k}) scale(${k})`}>
+        <TokenBase cx={6} y={12.2} w={12} />
+        {Array.from({ length: copies - 1 }).map((_, j) => (
+          <g key={j} transform={`translate(${(copies - 1 - j) * 1.6}, ${-(copies - 1 - j) * 2.2})`} opacity={0.75}>
+            {icon}
+          </g>
+        ))}
+        {/* keyed by the count, so a piece landing on a stack drops in again */}
+        <g key={n}>{icon}</g>
+      </g>
+      {n > 1 && <CountBadge cx={STACK_W * scale} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
     </g>
   )
 }
 
-// Plan item 2: a producer's stall on the board is a pin, not a flag. Their portrait in a disc ringed in
-// their colour, on a short post over the striped awning, so a phone shows whose stall it is at a glance
-// (at least 24 px tall at 390 px wide) and a greyscale board still tells players (faces) from
-// corporations (glossy boxes).
-const STALL_SCALE = 1.75
-export const STALL_SLOT = 27
-const PIN_R = 9.5
-const PIN_Y = -12.5
-function StallPin({ pid, n, clip, showInitial }: { pid: ProducerId; n: number; clip: string; showInitial: boolean }) {
-  const w = 14 * STALL_SCALE
+/**
+ * Plan item 63: a producer's stalls as a standing painted miniature: their portrait bust on an arched standee
+ * over a round base in their colour, casting a shadow, matte against Hollowell's glossy plastic. x from the
+ * slot's left, y in tile units round the tile centre. The colour-blind setting stamps their initial on the base.
+ */
+function ProducerMini({ pid, n, scale: s, countR, clip, showInitial }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean }) {
+  const colour = `var(--p-${pid})`
+  const w = PRODUCER_W * s
   const cx = w / 2
+  const top = PRODUCER_Y - PRODUCER_H * s * 0.6 + s
+  const foot = PRODUCER_Y + PRODUCER_H * s * 0.4 - 4.2 * s
+  const hw = 10 * s
+  const arch = `M ${cx - hw} ${foot} L ${cx - hw} ${top + hw} A ${hw} ${hw} 0 0 1 ${cx + hw} ${top + hw} L ${cx + hw} ${foot} Z`
+  const bustH = hw * 2.5
   return (
-    <g className="stall-pin">
-      <path d={`M ${cx} -3 L ${cx} 1`} stroke="var(--ink)" strokeWidth={1.8} strokeLinecap="round" />
-      <clipPath id={clip}>
-        <circle cx={cx} cy={PIN_Y} r={PIN_R} />
-      </clipPath>
-      <circle cx={cx} cy={PIN_Y} r={PIN_R} fill="var(--paper)" />
-      <g clipPath={`url(#${clip})`}>
-        <svg x={cx - PIN_R} y={PIN_Y - PIN_R} width={PIN_R * 2} height={PIN_R * 2} viewBox="24 20 52 52" aria-hidden="true">
-          <Portrait character={pid} size={100} />
-        </svg>
-      </g>
-      <circle cx={cx} cy={PIN_Y} r={PIN_R} fill="none" stroke={`var(--p-${pid})`} strokeWidth={2.6} />
-      <circle cx={cx} cy={PIN_Y} r={PIN_R + 1.5} fill="none" stroke="var(--ink)" strokeWidth={0.9} />
-      <TokenBase cx={cx} y={1 + 10 * STALL_SCALE - 0.6} w={w} />
-      <g key={n} transform={`translate(0, 1) scale(${STALL_SCALE})`}>
-        <Stall pid={pid} initial={PRODUCER_INITIAL[pid]} showInitial={showInitial} />
-      </g>
-      {n > 1 && (
-        <g transform={`translate(${w - 13 * 1.35 + 1}, 2) scale(1.35)`}>
-          <PieceCount n={n} />
+    <g className="producer-mini stall-pin" data-producer={pid}>
+      <ellipse cx={cx + 1.2 * s} cy={foot + 3 * s} rx={12.6 * s} ry={3.4 * s} className="token-shadow" />
+      <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
+      <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill="black" opacity={0.28} />
+      <ellipse cx={cx} cy={foot} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
+      <g className="stall-piece" key={n}>
+        <clipPath id={clip}>
+          <path d={arch} />
+        </clipPath>
+        <path d={arch} fill="var(--paper)" />
+        <g clipPath={`url(#${clip})`}>
+          <svg x={cx - hw} y={top} width={hw * 2} height={bustH} viewBox="14 12 72 90" aria-hidden="true">
+            <Portrait character={pid} size={100} />
+          </svg>
+          <rect x={cx - hw} y={top + bustH - 0.5} width={hw * 2} height={foot - top - bustH + 1} fill={colour} />
+          <path d={`M ${cx - hw} ${top + bustH} h ${hw * 2}`} stroke="var(--ink)" strokeWidth={0.6} opacity={0.5} />
         </g>
-      )}
+        <path d={arch} fill="none" stroke={colour} strokeWidth={1.8 * s} />
+        <path d={arch} fill="none" stroke="var(--ink)" strokeWidth={1} />
+        {showInitial && (
+          <text x={cx} y={foot - 1.6 * s} textAnchor="middle" className="stall-initial" fontSize={7 * s}>
+            {PRODUCER_INITIAL[pid]}
+          </text>
+        )}
+      </g>
+      {n > 1 && <CountBadge cx={w + 0.6 * countR - countR} cy={top - s + countR} r={countR} n={n} />}
     </g>
   )
 }
@@ -600,10 +611,30 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
   }, [state, active])
 
   const svgRef = useRef<SVGSVGElement>(null)
+  // Plan item 63: the hex's radius on screen, so each tile's piece tray is sized to what the player sees.
+  const [hexPx, setHexPx] = useState(72)
+  useLayoutEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const measure = () => {
+      const k = svg.getScreenCTM()?.a ?? 0
+      if (!k) return
+      setHexPx(Math.round(HEX_R * fit.k * k * 2) / 2)
+    }
+    measure()
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
+    ro?.observe(svg)
+    return () => ro?.disconnect()
+  }, [fit.k])
   // Plan item 55: once the pieces are laid out, each landmark moves to the first spot clear of their real boxes.
   useLayoutEffect(() => {
-    if (svgRef.current) placeLandmarks(svgRef.current)
-  }, [state])
+    const svg = svgRef.current
+    if (!svg) return
+    placeLandmarks(svg)
+    // Plan item 63: pieces slide 200 ms to their new slots, so the landmark is placed again once they have landed.
+    const t = window.setTimeout(() => placeLandmarks(svg), 260)
+    return () => window.clearTimeout(t)
+  }, [state, hexPx])
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
@@ -758,72 +789,64 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
               liberated={r.liberated}
             />
             {squeezeTargets.includes(id) && (
-              <g transform={`translate(${x - 30}, ${y - HEX_R * 0.5})`}>
-                <rect x={0} y={0} width={60} height={16} rx={8} fill="var(--clay-deep)" />
-                <text x={30} y={11} textAnchor="middle" className="badge-text">
+              <g className="threat-badge" transform={`translate(${x - 30}, ${y + BADGE.y0})`}>
+                <rect x={0} y={0} width={60} height={14} rx={7} fill="var(--clay-deep)" />
+                <text x={30} y={10.2} textAnchor="middle" className="badge-text">
                   SQUEEZE
                 </text>
               </g>
             )}
             {expandTargets.includes(id) && !squeezeTargets.includes(id) && (
-              <g transform={`translate(${x - 28}, ${y - HEX_R * 0.5})`}>
-                <rect x={0} y={0} width={56} height={16} rx={8} fill="var(--wheat)" />
-                <text x={28} y={11} textAnchor="middle" className="badge-text badge-text-dark">
+              <g className="threat-badge" transform={`translate(${x - 28}, ${y + BADGE.y0})`}>
+                <rect x={0} y={0} width={56} height={14} rx={7} fill="var(--wheat)" />
+                <text x={28} y={10.2} textAnchor="middle" className="badge-text badge-text-dark">
                   EXPAND
                 </text>
               </g>
             )}
 
-            {/* Enemy pieces cluster near the top: Outlets, Buyouts, Doubt. `PIECE_SCALE` enlarges the
-                icons themselves (not the map/hex, which SPEC 10.3's desktop column-height budget already
-                tightens elsewhere): at the desktop map's 260px CSS width (`global.css`), an unscaled
-                12-unit icon renders at ~5px, well under STYLE.md 9's "readable at 16-20px" floor and too
-                small to tell Outlet/Buyout/Doubt apart by shape alone in greyscale (SPEC 11.4 gate 8 found
-                this via a real screenshot review, confirmed by inspection — not just trusted). Each hex has
-                ample empty space around this cluster (confirmed visually), so scaling it up in place is
-                safe without widening the map or risking the desktop no-scroll layout. */}
-            {/* Plan item 2 (a board that scales): one stacked piece per kind with a count badge, so a
-                late-game hex shows at most three enemy pieces and one stall per producer, all inside the
-                hex, instead of a row per piece spilling across the borders. */}
+            {/* Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen: Hollowell's
+                stacks in a row across the middle, the producers' miniatures along the bottom, the name plate and any
+                threat badge kept clear. Each piece slides to its slot when the tray changes. */}
             {(() => {
-              const kinds = (
-                [
-                  ['o', r.outlets, <Outlet />],
-                  ['b', r.buyouts, <Buyout />],
-                  ['d', r.doubt, <Doubt />],
-                ] as const
-              ).filter(([, n]) => n > 0)
+              const tray = pieceLayout(
+                {
+                  outlets: r.outlets,
+                  buyouts: r.buyouts,
+                  doubt: r.doubt,
+                  producers: stalls.length,
+                  scheme: false,
+                  labelWidth: REGIONS[id].name.length * 8.6 + 16,
+                  badge: squeezeTargets.includes(id) || expandTargets.includes(id),
+                },
+                hexPx,
+              )
+              const s = tray.scale
+              const icons = { outlets: ['o', r.outlets], buyouts: ['b', r.buyouts], doubt: ['d', r.doubt] } as const
               return (
-                <g transform={`translate(${x - kinds.length * 8 * PIECE_SCALE}, ${y - HEX_R * 0.14}) scale(${PIECE_SCALE})`}>
-                  {/* Each piece's own SVG `transform` attribute positions it; the animation class sits on an
-                      inner <g>, since a CSS transform would replace the positioning attribute (SVG2). */}
-                  {kinds.map(([k, n, icon], i) => (
-                    <g key={k} transform={`translate(${pieceXY(i)})`} data-piece={k} data-count={n}>
-                      <TokenBase cx={6} y={12.2} w={12} />
-                      {/* A stack: up to two offset copies behind the front piece. */}
-                      {Array.from({ length: Math.min(n, 3) - 1 }).map((_, j) => (
-                        <g key={j} transform={`translate(${(Math.min(n, 3) - 1 - j) * 1.6}, ${-(Math.min(n, 3) - 1 - j) * 2.2})`} opacity={0.75}>
-                          {icon}
+                <g className="piece-tray" data-scale={s.toFixed(2)} data-ornaments={tray.ornaments || undefined}>
+                  {tray.rects.map((rect) => {
+                    if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
+                      const [k, n] = icons[rect.kind]
+                      return (
+                        <g key={k} className="piece-slot" style={{ transform: `translate(${x + rect.x0}px, ${y}px)` }} data-piece={k} data-count={n}>
+                          <EnemyStack kind={rect.kind} n={n} scale={s} ornaments={tray.ornaments} countR={tray.countR} />
                         </g>
-                      ))}
-                      {/* keyed by the count, so a piece landing on a stack drops in again */}
-                      <g key={n}>{icon}</g>
-                      {n > 1 && <PieceCount n={n} />}
-                    </g>
-                  ))}
+                      )
+                    }
+                    if (rect.kind === 'producer') {
+                      const [pid, n] = stalls[rect.i ?? 0]!
+                      return (
+                        <g key={pid} className="piece-slot" style={{ transform: `translate(${x + rect.x0}px, ${y}px)` }} data-piece="stall" data-count={n}>
+                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} />
+                        </g>
+                      )
+                    }
+                    return null
+                  })}
                 </g>
               )
             })()}
-
-            {/* Stalls sit along the bottom edge, striped in the producer's colour: one per producer, with a
-                count badge when they hold more than one. */}
-            <g transform={`translate(${x - (stalls.length * STALL_SLOT) / 2 + 1.5}, ${y + HEX_R * 0.4})`}>
-              {stalls.map(([pid, n], slot) => (
-                <g key={pid} transform={`translate(${slot * STALL_SLOT}, 0)`} data-piece="stall" data-count={n}>
-                  <StallPin pid={pid} n={n} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} />
-                </g>
-              ))}
-            </g>
 
             {fx[id] === 'lib' && (
               <g className="lib-burst" pointerEvents="none">
@@ -891,7 +914,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
         const def = REGIONS[id]
         const { x, y } = hexCenter(id, layout)
         return (
-          <g key={`name-${id}`} className="region-sign" pointerEvents="none">
+          <g key={`name-${id}`} className="region-sign" data-sign={id} pointerEvents="none">
             {/* AAA UI M4 fix: a sentence-case Fraunces plaque, sized to the set name once the face has
                 loaded (see `fitPlaques`); the estimate below is only the first paint. */}
             <rect

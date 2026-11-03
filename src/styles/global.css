@@ -3189,3 +3189,12 @@ html.no-animations .grip-props > g { animation: none; }
 }
 /* The phone's teammate card is a short strip: their stall stays in the Farm sheet there. */
 @media (max-width: 1023px) { .teammate-stall { display: none; } }
+
+/* Plan item 63: a board piece slides to its new tray slot when the tile's pieces change. */
+.piece-slot {
+  transition: transform 200ms var(--ease-out, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece-slot { transition: opacity 160ms linear; }
+}
+html.no-animations .piece-slot { transition: none; }

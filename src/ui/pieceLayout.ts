@@ -12,7 +12,7 @@ export const MIN_COUNT_PX = 11
 /** Below this rendered hex radius the stacks drop their ornaments (tags and signs) before anything shrinks. */
 export const ORNAMENT_PX = 64
 
-export type PieceKind = 'outlets' | 'buyouts' | 'doubt' | 'scheme' | 'producer' | 'label'
+export type PieceKind = 'outlets' | 'buyouts' | 'doubt' | 'scheme' | 'producer' | 'label' | 'badge'
 
 export interface PieceRect {
   kind: PieceKind
@@ -32,6 +32,8 @@ export interface PieceInput {
   scheme: boolean
   /** The name plate's width in tile units (Map.tsx: 8.6 a letter plus 16). */
   labelWidth: number
+  /** A SQUEEZE or EXPAND threat badge under the name plate. */
+  badge?: boolean
 }
 
 export interface PieceTray {
@@ -53,8 +55,11 @@ const PRODUCER_H = 40
 const GAP = 3
 const LABEL_Y = -TILE_R * 0.62
 const LABEL_H = 21
-const ENEMY_Y = -TILE_R * 0.1
-const PRODUCER_Y = TILE_R * 0.44
+/** The threat badge's box under the name plate (Map.tsx draws it 60 x 14). */
+export const BADGE = { x0: -31, y0: LABEL_Y + 8, x1: 31, y1: LABEL_Y + 22 }
+export const ENEMY_Y = -TILE_R * 0.1
+export const PRODUCER_Y = TILE_R * 0.44
+export { STACK_W, STACK_H, PRODUCER_W, PRODUCER_H, ORNAMENT_H }
 
 function insideHex(x: number, y: number): boolean {
   const ax = Math.abs(x)
@@ -77,6 +82,7 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   const out: PieceRect[] = []
   const lw = input.labelWidth / 2
   out.push({ kind: 'label', x0: -lw, y0: LABEL_Y - 15, x1: lw, y1: LABEL_Y - 15 + LABEL_H })
+  if (input.badge) out.push({ kind: 'badge', ...BADGE })
   const stacks = (['outlets', 'buyouts', 'doubt'] as const).filter((k) => input[k] > 0)
   const slots: PieceKind[] = [...stacks, ...(input.scheme ? (['scheme'] as const) : [])]
   // A stack's slot holds its body and its count badge (overhanging the top right corner), plus its ornament above.
@@ -92,7 +98,7 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
 }
 
 function fits(rects: PieceRect[]): boolean {
-  const pieces = rects.filter((r) => r.kind !== 'label')
+  const pieces = rects.filter((r) => r.kind !== 'label' && r.kind !== 'badge')
   if (!pieces.every(rectInside)) return false
   for (let a = 0; a < rects.length; a++) for (let b = a + 1; b < rects.length; b++) if (rectsOverlap(rects[a]!, rects[b]!)) return false
   return true
@@ -107,7 +113,9 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   const unitsPerPx = TILE_R / Math.max(1, hexPx)
   const countR = Math.max(4.6, (MIN_COUNT_PX * unitsPerPx) / 1.25)
   const tryOrnaments = hexPx >= ORNAMENT_PX ? [true, false] : [false]
-  for (let scale = 1; scale >= 0.35; scale -= 0.05)
+  // A roomy hex (a desktop board) grows its pieces up to 1.3x, so they keep their share of the tile.
+  const start = Math.round(Math.min(1.3, Math.max(1, hexPx / 90)) * 20) / 20
+  for (let scale = start; scale >= 0.35 - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
     for (const ornaments of tryOrnaments) {
       const rects = place(input, scale, ornaments, countR)
       if (fits(rects)) return { rects, scale, ornaments, countR }
