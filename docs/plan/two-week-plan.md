@@ -1124,7 +1124,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **/games/ D** (`site-D`): the game cards start below the fold at 1440x900 (no name visible); the market stall floats with no ground; the plank under Cath runs far past her. *(2026-11-03 lane A: Cath 52vh, names at y 819 of 900; the stall on a turf with crates, standing on the landscape; the plank spans her hands; `games-cards.spec.ts`)*
   - [x] **/games/ P** (`site-P`): Cath's plank sits on the first card's top edge. *(2026-11-03 lane A: 32 px clear of the card, asserted in `games-cards.spec.ts`)*
   - [x] **Hedgerow 2D P** (`hedge-l40-2d-P`): the HOLLOWELL exit sign clipped to "HOL" at the right edge. *(2026-11-03 lane A: the gate sign is clamped inside the canvas; shot `e2e/screenshots/bugs74/`)*
-  - **Hedgerow map P** (`hedge-map-P`): "Start here" and "Mara's Field" stack into the row-2 path; labels crowd neighbouring nodes.
+  - [x **Hedgerow map P** (`hedge-map-P`): "Start here" and "Mara's Field" stack into the row-2 path; labels crowd neighbouring nodes. *(2026-11-03 lane A: an unplayed next stop shows its tag where its empty stars and medal dots were, so its stack ends 20 px above row 2 at P; `hedgerow-map.spec.ts`)*
   - **NIGHT SHIFT gate P** (`ns-title-P`): the FULL dash starts at x=0 with no gutter; "TAKE ME BACK" grey on near-black (check AA; done 2026-11-03 lane A: --ink-2, rgb(180,174,163)); the progress bar a 100 px hairline.
 - **Accept:** e2e boxes inside the viewport and not intersecting at P and D for each case; shots before and after.
 - **Size:** 1

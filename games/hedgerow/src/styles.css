@@ -440,6 +440,14 @@ button {
   pointer-events: none;
   box-shadow: 0 2px 0 rgba(60, 90, 40, 0.35);
 }
+/* Plan item 74: an unplayed next stop's tag takes its empty stars' place (see map.ts). */
+.node.next.fresh .level-stars,
+.node.next.fresh .level-medals {
+  display: none;
+}
+.node.next.fresh .start-tag {
+  order: 0;
+}
 .stop {
   animation: node-pop 0.4s ease-out both;
 }

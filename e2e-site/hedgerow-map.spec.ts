@@ -118,3 +118,20 @@ test('the map tools fit the screen, and Modes opens the rest inside it', async (
   await expect(page.locator('#btn-show')).toBeVisible()
   await check()
 })
+
+test('plan item 74: on a fresh farm the start tag replaces the empty stars, and its stack stays clear of row 2', async ({ page }) => {
+  await seed(page, 0)
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(600)
+  const first = page.locator('button.node[data-level="1"]')
+  await expect(first.locator('.start-tag')).toHaveText('Start here')
+  await expect(first.locator('.level-stars')).toBeHidden()
+  const r = await page.evaluate(() => {
+    const n1 = document.querySelector<HTMLElement>('button.node[data-level="1"]')!
+    const bottom = Math.max(...[...n1.querySelectorAll<HTMLElement>('.start-tag, .level-name')].map((e) => e.getBoundingClientRect().bottom))
+    const row2 = document.querySelector<HTMLElement>('button.node[data-level="10"] .level-num')!.getBoundingClientRect().top
+    return { bottom, row2 }
+  })
+  expect(r.bottom + 8).toBeLessThanOrEqual(r.row2)
+  expect(await collisions(page)).toEqual([])
+})

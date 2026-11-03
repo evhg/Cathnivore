@@ -1709,6 +1709,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         // "Start here" only on a fresh farm; mid-campaign the next level is just "Next" (plan item 40).
         tag.textContent = Object.keys(data.stars).length === 0 ? "Start here" : "Next";
         b.append(me, tag);
+        // Plan item 74: an unplayed next stop shows its tag where its empty stars and medal dots would be,
+        // so its label stack is no taller than its neighbours' and never runs into the row below.
+        if (!stars && !all.length) {
+          b.classList.add("fresh");
+          b.insertBefore(tag, st);
+        }
         current = b;
       }
       b.addEventListener("click", () => open(lv));
