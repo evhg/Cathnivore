@@ -1129,7 +1129,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e boxes inside the viewport and not intersecting at P and D for each case; shots before and after.
 - **Size:** 1
 
-## 75. [ ] Cathnivore: Cath at the table, in every scene
+## 75. [ ] Cathnivore: Cath at the table, in every scene *(lane B, in progress)*
 - **Why:** 2026-11-03 15:25 critique (`e2e/screenshots/plan1103f/`): on `cath-title-D` Cath ends in a flat cut at her waist (y about 645) with nothing in front of her, and the composition leaves cream bands of about 170 px above and 150 px below; on `cath-setup-D`/`-P` and `cath-game-D`/`-P` she is a 50-60 px thumbnail (VISION: Cath is the face of every game, characters with presence).
 - **Build:**
   - Title: Cath stands behind the table's near edge, her hands on it, the cut hidden under the table line; the composition centred so neither band passes 80 px.
