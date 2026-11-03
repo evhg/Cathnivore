@@ -9,6 +9,50 @@ import {
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { clearGame, storage, CAMPAIGN_KEY } from '../platform/storage'
+import '../styles/noticeboard.css'
+
+/** Plan item 56: the theme picker shows the table itself in each theme (Auto is half and half). */
+export function ThemePreview({ theme }: { theme: ThemePreference }) {
+  const swatch = (t: 'light' | 'dark') => ({
+    paper: `var(--preview-${t}-paper)`,
+    ink: `var(--preview-${t}-ink)`,
+    a: `var(--preview-${t}-a)`,
+    b: `var(--preview-${t}-b)`,
+    c: `var(--preview-${t}-c)`,
+  })
+  const hex = (cx: number, cy: number, fill: string, stroke: string) => {
+    const r = 11
+    const pts = Array.from({ length: 6 }, (_, i) => {
+      const a = (Math.PI / 3) * i + Math.PI / 6
+      return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`
+    }).join(' ')
+    return <polygon points={pts} style={{ fill, stroke, strokeWidth: 1.4 }} />
+  }
+  const scene = (t: 'light' | 'dark') => {
+    const c = swatch(t)
+    return (
+      <>
+        <rect x="0" y="0" width="96" height="56" style={{ fill: c.paper }} />
+        {hex(34, 22, c.a, c.ink)}
+        {hex(53, 22, c.b, c.ink)}
+        {hex(43.5, 38.5, c.c, c.ink)}
+        {hex(62.5, 38.5, c.a, c.ink)}
+        <rect x="10" y="47" width="22" height="3" rx="1.5" style={{ fill: c.ink, opacity: 0.5 }} />
+      </>
+    )
+  }
+  return (
+    <svg className="theme-preview" viewBox="0 0 96 56" aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id="theme-preview-half">
+          <path d="M48 -10 L106 -10 L106 66 L40 66Z" />
+        </clipPath>
+      </defs>
+      {theme === 'dark' ? scene('dark') : scene('light')}
+      {theme === 'system' && <g clipPath="url(#theme-preview-half)">{scene('dark')}</g>}
+    </svg>
+  )
+}
 
 interface Props {
   onClose(): void
@@ -36,16 +80,25 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
   }
 
   return (
-    <main className="settings">
+    <main className="settings noticeboard">
       <header className="settings-header">
         <div>
           <h1>Settings</h1>
           <p className="settings-tip">Tweak it your way, love. Nothing here costs a Mark.</p>
         </div>
-        <CathArt framing="bust" pose={SCREEN_POSE['cathnivore:settings']} expression="smirk" animate width={64} height={64} title="Cath" />
+        <span className="nb-bust">
+          <CathArt framing="bust" pose={SCREEN_POSE['cathnivore:settings']} expression="smirk" animate width={64} height={64} title="Cath" />
+        </span>
       </header>
 
-      <section className="settings-card settings-switches">
+      <div className="nb-layout">
+      <aside className="nb-cath" aria-hidden="true">
+        <CathArt framing="half" pose={SCREEN_POSE['cathnivore:settings']} expression="smirk" animate />
+      </aside>
+      <div className="nb-board">
+      <section className="settings-card nb-note" aria-labelledby="settings-table-head">
+        <h2 id="settings-table-head">On the table</h2>
+        <div className="settings-switches">
         <label>
           <input
             type="checkbox"
@@ -62,10 +115,11 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           />
           <span>Colour-blind patterns</span>
         </label>
+        </div>
       </section>
 
       {/* Plan item 53: the table's sound. */}
-      <section className="settings-card settings-sound" aria-labelledby="settings-sound-head">
+      <section className="settings-card nb-note settings-sound" aria-labelledby="settings-sound-head">
         <h2 id="settings-sound-head">Sound</h2>
         <div className="settings-switches">
           <label>
@@ -105,21 +159,20 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
         </div>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card nb-note">
         <h2>Theme</h2>
-        <div className="segmented">
+        <div className="theme-picker" role="radiogroup" aria-label="Theme">
           {(['system', 'light', 'dark'] as const satisfies readonly ThemePreference[]).map((theme) => (
-            <label key={theme}>
-              <span>
-                <input type="radio" checked={settings.theme === theme} onChange={() => update({ theme })} />
-                {theme === 'system' ? 'Auto' : theme === 'light' ? 'Light' : 'Dark'}
-              </span>
+            <label key={theme} className="theme-option">
+              <input type="radio" name="theme" checked={settings.theme === theme} onChange={() => update({ theme })} />
+              <ThemePreview theme={theme} />
+              <span>{theme === 'system' ? 'Auto' : theme === 'light' ? 'Light' : 'Dark'}</span>
             </label>
           ))}
         </div>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card nb-note">
         <h2>AI speed</h2>
         <div className="segmented">
           {(['slow', 'normal', 'fast'] as const satisfies readonly AiSpeed[]).map((speed) => (
@@ -134,14 +187,14 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
       </section>
 
       {onReplayTutorial && (
-        <section className="settings-card">
+        <section className="settings-card nb-note">
           <h2>Tutorial</h2>
           <p className="settings-note">Cath walks you through your first round again, one tap at a time.</p>
           <button onClick={onReplayTutorial}>Replay the tutorial</button>
         </section>
       )}
 
-      <section className="settings-card">
+      <section className="settings-card nb-note nb-data">
         <h2>Data</h2>
         {confirmingReset ? (
           <div className="reset-confirm">
@@ -156,7 +209,12 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
         )}
       </section>
 
-      <button className="settings-back" onClick={onClose}>Back</button>
+      </div>
+      </div>
+
+      <div className="nb-counter">
+        <button className="settings-back" onClick={onClose}>Back</button>
+      </div>
     </main>
   )
 }

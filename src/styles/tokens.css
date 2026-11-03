@@ -276,3 +276,10 @@
   --fibres: repeating-linear-gradient(97deg, rgb(241 233 220 / .012) 0 1px, transparent 1px 7px);
   --ruled: repeating-linear-gradient(transparent 0 23px, rgb(111 163 179 / .14) 23px 24px);
 }
+
+/* Plan item 56: the Settings theme picker previews the table in each theme whatever theme is showing,
+   so these are fixed (not redefined in dark). */
+:root {
+  --preview-light-paper: #F4EDE1; --preview-light-ink: #2B2320; --preview-light-a: #CFE0B4; --preview-light-b: #EBD9A6; --preview-light-c: #BFD6DA;
+  --preview-dark-paper: #1E1A17; --preview-dark-ink: #F1E9DC; --preview-dark-a: #3E4A30; --preview-dark-b: #574A2A; --preview-dark-c: #2F474C;
+}

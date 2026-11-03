@@ -1,0 +1,111 @@
+/* Plan item 56: Settings (and Credits) as Cath's stall noticeboard: notes pinned and taped to a cork board in a
+   wooden frame, the Back key on the stall's counter, and Cath standing beside the board at desktop sizes. */
+.settings.noticeboard { max-width: 520px; }
+.nb-cath { display: none; }
+
+.nb-board {
+  position: relative;
+  margin-top: 14px;
+  padding: 6px 12px 18px;
+  background:
+    radial-gradient(circle at 20% 30%, var(--kraft-lo) 0 1px, transparent 1.5px) 0 0 / 13px 11px,
+    radial-gradient(circle at 70% 60%, var(--wood-lo) 0 .8px, transparent 1.3px) 0 0 / 17px 15px,
+    var(--mat-kraft);
+  border: 10px solid var(--wood);
+  border-radius: 6px;
+  box-shadow: inset 0 2px 8px rgb(var(--shadow-ink) / .35), var(--e3);
+}
+
+.settings .nb-note {
+  position: relative;
+  margin-top: 22px;
+  padding: 16px 14px 14px;
+  background: var(--mat-card);
+  border: 0;
+  border-radius: 3px;
+  box-shadow: var(--e2);
+  break-inside: avoid;
+  transform: rotate(-0.5deg);
+}
+.settings .nb-note:nth-child(3n+2) { transform: rotate(0.6deg); }
+.settings .nb-note:nth-child(3n) { transform: rotate(-0.2deg); }
+.settings .nb-note h2 { margin: 0 0 6px; font-family: var(--font-display); font-size: var(--fs-h3); }
+
+/* A drawing pin on odd notes, a strip of tape on even ones. */
+.settings .nb-note::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--hollowell-highlight), var(--clay) 55%, var(--clay-deep));
+  box-shadow: 0 2px 3px rgb(var(--shadow-ink) / .4);
+}
+.settings .nb-note:nth-child(even)::before {
+  top: -9px;
+  width: 64px;
+  height: 18px;
+  margin-left: -32px;
+  border-radius: 2px;
+  background: var(--tape);
+  box-shadow: none;
+  transform: rotate(-3deg);
+}
+
+/* The switches sit on the note, not in a box of their own. */
+.settings .nb-note .settings-switches { padding: 0; }
+
+/* Theme: the table itself in each theme. */
+.theme-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.settings .theme-option {
+  position: relative;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--fs-small);
+}
+.settings .theme-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.settings .theme-option:has(input:checked) { border-color: var(--wheat); background: color-mix(in srgb, var(--wheat) 18%, transparent); }
+.settings .theme-option:has(input:focus-visible) { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
+.theme-preview { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 0 0 1px var(--ink-a35), var(--e1); }
+
+/* The stall's counter along the foot, with Back on it. */
+.nb-counter {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, var(--wood), var(--wood-lo));
+  border-radius: 6px 6px 10px 10px;
+  box-shadow: var(--inset-hi), var(--e3);
+  display: flex;
+  justify-content: flex-end;
+}
+.settings .nb-counter > button { margin: 0; min-width: 160px; }
+@media (max-width: 600px) {
+  .settings .nb-counter > button { width: 100%; background: var(--paper); }
+}
+
+@media (min-width: 1000px) {
+  .settings.noticeboard { max-width: 1120px; padding: 24px 32px; }
+  .nb-bust { display: none; }
+  .nb-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 28px; align-items: end; }
+  .nb-cath { display: block; align-self: end; margin-bottom: -16px; }
+  .nb-cath svg { width: 100%; height: auto; display: block; }
+  .nb-board { columns: 2; column-gap: 22px; padding: 4px 18px 22px; }
+  .settings .nb-note { display: inline-block; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings .nb-note, .settings .nb-note:nth-child(n) { transform: none; }
+}
