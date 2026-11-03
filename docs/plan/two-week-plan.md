@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-03 04:18 UTC
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -826,6 +824,86 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Unit: plot variety deterministic per level, and no two orthogonal neighbours share a look on more than 40% of a level's plots.
   - Unit: tier-1 tower silhouettes overlap less than 70% pairwise at 24 px.
   - Shots of levels 1, 13 and 38 at P and D in 2D and 3D, before and after.
+- **Size:** 3
+
+## 53. [ ] Cathnivore: a table that sounds like a market
+- **Why:**
+  - `src/platform/sound.ts` is seven oscillator beeps (sine, square and saw notes), plus a three-note pad. VISION's sound line asks for wood, paper and market chatter for the players' world and sterile synth for the corporations. None of that exists.
+  - Buying, selling, scheming, Doubt, a Squeeze and the AI teammate's turn (item 34's show) have no sound or share one `place` blip. VISION pillar 3 ("Everything responds") is half met.
+  - Hedgerow and Runnel got layered scores (N8); Cathnivore was left as "bug fixes only".
+- **Build:**
+  - `src/platform/sound/` synthesised in WebAudio (noise bursts through filters and short envelopes, no samples): wood clack (a token placed), paper slide and flip (a card bought or a Scheme played), coin chink (Marks counted out, one per coin in item 36's buy flight), stall awning flap (Open Stall), a crowd murmur that swells on a Liberation.
+  - Hollowell's cues stay clinical synth (a glossy two-tone chime when an Outlet opens, a cold descending sweep for a Squeeze), so the joke is in the sound too.
+  - A market ambience replacing the pad: soft chatter and birdsong by day, quieter with crickets by the last rounds (follows item 28's passing day), ducked under cues.
+  - Cues on the teammate's and Hollowell's turns, timed to item 34's playback beats; a soft end-of-round bell.
+  - Volume slider plus separate Effects and Ambience toggles in Settings; nothing plays before the first tap; iPhone's silent switch respected via the existing unlock path.
+- **Accept:**
+  - Unit: `cueFor(action, events)` maps every action kind and event type to a cue (no event type left on the generic tap), and Hollowell's events only to synth cues.
+  - Unit: every cue renders offline (`OfflineAudioContext`) to non-silent audio under 1.2 s, peak under -3 dBFS.
+  - e2e: with sound off, no `AudioContext` is created; with it on, a round of autoplay schedules at least one cue per action (spy on the cue bus).
+  - Shots of the new Settings sound block at P and D.
+- **Size:** 2
+
+## 54. [ ] Cathnivore: a phone Setup that deals you in
+- **Why:**
+  - Item 8 designed the desktop Setup and left P "unchanged". At 390x844 (`cath-setup-P`) it is still a form: stacked boxed panels (Market event, Mode, Producers, Difficulty, Map, Seed) under a sticky Start, with the producers off screen. VISION pillar 1: "Nothing looks like a default form".
+  - The producer cards are the one place a new player meets the cast, and on a phone they're cut off half-way through their ability text.
+- **Build:**
+  - P Setup as one designed screen with no page scroll: the event as a pinned market poster strip, then the producers as a dealt row of upright portrait cards (swipe through, two lifted as "picked" in their colours, the pair's synergy line from Cath under them).
+  - Mode as two chairs at a table (you and the AI, or two players), drawn, not a toggle row.
+  - Difficulty as Hollowell's threat card (Easy/Normal/Hard flips the card, showing what changes).
+  - Map as three miniature boards on a shelf; Seed folded behind an "Advanced" chip.
+  - Start as the stall's open sign, always on screen; the same producer cards reused at D (item 8's spread keeps its layout).
+- **Accept:**
+  - e2e at P: every control (both picks, mode, difficulty, map, Start) reachable with no page scroll, and the two picked producers' full ability text visible.
+  - e2e: keyboard-only Setup to Start at P and D; screen reader labels on every card.
+  - Shots P, D and L, light and dark, before and after.
+- **Size:** 2
+
+## 55. [ ] Cathnivore: regions you can tell apart, and Hollowell's grip you can see
+- **Why:**
+  - The in-game board (`cath-board-D`, `cath-daily-D`) gives every pasture the same cloud-hills, every coast the same two boats, every crop the same hatching. Item 49 gave each region a landmark on the campaign map (`LANDMARKS` in `campaignMapLayout.ts`), but the board players spend 95% of the game on doesn't show them.
+  - How far Hollowell has taken a region reads only from small orange outlet stacks and the dashed red border; a region with 3 Outlets and one with 1 look alike from arm's length. VISION pillar 2: "big, rich, legible and alive".
+- **Build:**
+  - Each region's landmark drawn on its board tile (the mill, the lighthouse, the market cross...) from the same art as the campaign map, plus new ones for the Long Coast and Delta regions (Gull's Head, Tarnside, Fernlea and the rest), laid out clear of pieces.
+  - Hollowell's grip in three stages per region drawn on the ground: stage 1 a glossy billboard; stage 2 the ground's colour glazed cold and a delivery van parked; stage 3 the landmark boarded up with a SOLD sign. It recovers as Doubt and stalls push them out.
+  - A Squeezed region wilts (desaturated ground, drooping crops) until the next round; a region one step from Lost Land gets a quiet warning flag.
+  - Reduced motion: stage changes cross-fade; greyscale still tells the stages apart by shape.
+- **Accept:**
+  - Unit: `gripStage(region, state)` for 0-4 Outlets, Doubt and a Squeeze; every region of all three maps has a landmark.
+  - e2e at P and D: after an autoplay to round 6, no landmark or grip prop overlaps a piece (reuse `board-scales`' bounding check), and board-scales still passes.
+  - Shots of all three maps at rounds 1 and 7, P and D, light, dark and greyscale.
+- **Size:** 3
+
+## 56. [ ] Cathnivore: How to Play as Cath's almanac, and Settings with a scene
+- **Why:**
+  - `cath-rules-P`: How to Play opens with a small carousel, then is a wall of boxed rules text with a search field ("Actions (3 per producer per round)", paragraph after paragraph).
+  - `cath-settings-D`: Settings is a column of default toggles and segmented pills in boxes with Cath's head in the corner, centred in empty cream at D. Credits is the same. VISION pillar 1: "Nothing looks like a default form, a plain list or unstyled HTML".
+- **Build:**
+  - How to Play as an almanac: chapters (Your round, Selling, Investing, Hollowell, Winning and losing, Producers, Cards) on tabbed pages, each with a live mini board or card vignette (item 36's `Vignette`) that shows the rule, and Cath's margin note in her voice. Search stays, jumping to the page with the hit highlighted.
+  - The cards and producers sections as browsable galleries of the real cards, not text rows.
+  - Settings as Cath's stall noticeboard: each setting a pinned tag or a switch on the stall's wooden counter, the theme picker previewing the table in light and dark, a D two-column layout with Cath half length.
+  - Credits as a closing card in the same style.
+- **Accept:**
+  - Unit: every rules section in `rules-text` has an almanac page and an illustration; the search index covers all pages.
+  - e2e at P and D: search finds "Squeeze" and lands on its page; every Settings control still toggles and persists; keyboard-only use of both.
+  - Shots of How to Play (3 pages), Settings and Credits at P and D, light and dark.
+- **Size:** 2
+
+## 57. [ ] NIGHT SHIFT: a street full of people who react
+- **Why:**
+  - `ns-hud-D`: the Drowned Market is beautifully lit but empty at street level: neon, rain and wet asphalt, then the named target and his men far off. The lower half of the frame is near-black road.
+  - Bystanders are `render/crowd.ts` instanced dark silhouettes that sway on `crowd:*` markers (Plaza mostly). Nobody walks, shelters, trades or runs when shooting starts, so the world reads as a set. VISION pillar 2 ("alive") and the R-rated stakes (civilians cost reputation) both need people on screen.
+- **Build:**
+  - Street life per district from one instanced kit: pedestrians walking marker paths under umbrellas, vendors behind the egg and noodle stalls with steam rising, people sheltering in doorways, a cyclist and a delivery bike, all in the bystander's coat palette (item 41's model at LOD1/LOD2, not black shapes).
+  - They react: at the first shot within 30 m they duck, then scatter away from the shooter to exit markers; vendors drop behind counters; they come back a minute after the fight. A hit bystander costs reputation as now.
+  - Puddle splashes and umbrella drips on the walkers; reflections of them in the wet road (the reflection layer, LOD2 only).
+  - Phone tier: half the walkers, no reflections; the perf gate holds.
+- **Accept:**
+  - Unit: `streetLife(level, tier)` deterministic counts per district and tier; the scatter state machine (calm, duck, flee, return) on a fake clock.
+  - e2e: in the market at D, at least 12 bystanders on screen at the spawn; after a forced shot, their mean distance from Cath rises within 3 s.
+  - `scripts/cathode-perf.mjs` phone and D under budget in the market and the Plaza.
+  - Shots of the market and the Plaza at D and L, calm and mid-fight, and the phone tier at L.
 - **Size:** 3
 
 **Later, unranked:** (none)
