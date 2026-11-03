@@ -2540,6 +2540,15 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   font-weight: 800;
   font-size: var(--fs-small);
 }
+/* Plan item 47: between picks the card is still face down in their hand: flat, dashed, no lift. */
+.teammate-card.teammate-card-thinking {
+  border-top-style: dashed;
+  background: var(--mat-card);
+  box-shadow: var(--e1);
+  transform: none;
+  animation: none;
+}
+.teammate-card-thinking .teammate-card-name { font-weight: 600; color: var(--ink-muted); }
 .teammate-card-reason {
   font-family: var(--font-display);
   font-size: var(--fs-small);
@@ -2587,9 +2596,18 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .actions .teammate-pick .producer-cameo { --cameo: 88px; }
   .actions .teammate-pick-body { gap: 10px; }
   .actions .teammate-pick strong { text-align: center; font-size: var(--fs-lead); }
-  .actions .teammate-card { justify-self: stretch; padding: 10px 12px 12px; }
+  /* Plan item 47: a card stands at one size, so a one-line reason leaves no band under the ledger (131 px seen). */
+  .actions .teammate-card { justify-self: stretch; padding: 10px 12px 12px; min-height: 130px; align-content: center; }
   .actions .teammate-card-name { font-size: var(--fs-body); }
   .actions .teammate-card-reason { font-size: var(--fs-voice); }
+  /* Plan item 47: the card they are weighing up stands face down at a lifted card's size, its back in their colour. */
+  .actions .teammate-card.teammate-card-thinking {
+    justify-items: center;
+    text-align: center;
+    background:
+      repeating-linear-gradient(45deg, color-mix(in srgb, var(--pick, var(--ink)) 9%, transparent) 0 6px, transparent 6px 12px),
+      var(--mat-card);
+  }
 }
 
 /* Plan item 36: each Market and Plan card shows its place as a code-drawn vignette: a banner across the

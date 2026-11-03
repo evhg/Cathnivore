@@ -4,7 +4,7 @@ import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
-import { planPreview } from '../engine/preview'
+import { LONG_MAX, planPreview } from '../engine/preview'
 import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
@@ -1267,16 +1267,46 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </span>
         </div>
       ) : waitingOnAi ? (
-        // Plan item 33: their own card at the table, not a line of plain text in an empty band.
-        <p className="teammate-thinking" role="status">
+        // Plan item 47: between picks their seat is staged like a pick (the D Actions panel was 560 px of blank
+        // cream under one line): their face, a card they are still weighing up, and their turn as a ledger.
+        <div
+          className="teammate-pick teammate-pick-thinking"
+          role="status"
+          style={{ ['--pick' as string]: `var(--p-${state.activeProducer})` }}
+          onClick={() => {
+            skipTeammateRef.current = true
+          }}
+        >
           <span className={`producer-cameo pc-${state.activeProducer}`}>
-            <Portrait character={state.activeProducer} size={48} />
+            <Portrait character={state.activeProducer} size={88} expression="determined" />
           </span>
-          <span>
+          <span className="teammate-pick-body">
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
-            <span className="teammate-thinking-line">is weighing up their move<span className="thinking-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span>
+            <span className="teammate-card teammate-card-thinking">
+              <span className="teammate-card-name teammate-thinking-line">
+                is weighing up their move
+                <span className="thinking-dots" aria-hidden="true">
+                  <i>.</i>
+                  <i>.</i>
+                  <i>.</i>
+                </span>
+              </span>
+            </span>
+            <ol className="boardroom-ledger teammate-ledger" aria-label={`${PRODUCERS[state.activeProducer].name}'s turn`}>
+              {(teammateTurn.turn === `${state.round}:${state.activeProducer}` ? teammateTurn.labels : []).map((label, i) => (
+                <li key={i} className="done">
+                  <span>{label}</span>
+                </li>
+              ))}
+              {Array.from({ length: Math.max(0, state.actionsLeft) }, (_, i) => (
+                <li key={`next-${i}`} className={i === 0 ? 'now' : 'next'}>
+                  <span>{i === 0 ? 'Thinking it over' : 'Still to come'}</span>
+                </li>
+              ))}
+            </ol>
+            <span className="teammate-pick-hint">Tap to skip the rest of their turn</span>
           </span>
-        </p>
+        </div>
       ) : selectedGroup ? (
         pendingChoice ? (
           <>
@@ -1823,7 +1853,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {/* Plan item 25: what the card will do, by region, from the rules (planPreview). */}
                 {/* Plan item 47: a phone's narrow card shows the short line; the full one stays for the
                     accessible name (visually hidden there) and for wider cards. */}
-                <span className="plan-strip-target plan-strip-target-full">{preview.summary}</span>
+                <span className="plan-strip-target plan-strip-target-full" data-long={preview.summary.length > LONG_MAX || undefined}>{preview.summary}</span>
                 {preview.short !== preview.summary && (
                   <span className="plan-strip-target plan-strip-target-short" aria-hidden="true">
                     {preview.short}

@@ -65,7 +65,7 @@ test("the teammate's picks show with their reasons before they land, and a tap s
   const pick = page.locator('.teammate-pick[data-teammate-step]')
   await expect(pick).toBeVisible({ timeout: 15_000 })
   await expect(pick.locator('.teammate-card-reason')).not.toBeEmpty()
-  const m = await measure(page, '.teammate-pick')
+  const m = await measure(page, '.teammate-pick[data-teammate-step]')
   expect(m.hits).toBe(0)
   expect(m.gap).toBeLessThanOrEqual(120)
   expect(m.clipped).toBe(false)
@@ -88,11 +88,22 @@ test("the teammate's picks show with their reasons before they land, and a tap s
   expect(errors).toEqual([])
 })
 
+// Plan item 47: between picks their seat is staged too: no empty band over 120 px and nothing over a hex.
+test('between picks the teammate is a staged card with their ledger, not a line in an empty band', async ({ page }) => {
+  await startSolo(page)
+  const thinking = page.locator('.teammate-pick-thinking')
+  await expect(thinking).toBeVisible({ timeout: 15_000 })
+  await expect(thinking.locator('.teammate-ledger li')).not.toHaveCount(0)
+  const m = await measure(page, '.teammate-pick-thinking')
+  expect(m.hits).toBe(0)
+  expect(m.gap).toBeLessThanOrEqual(120)
+})
+
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' })
   test('the pick card fades in instead of lifting', async ({ page }) => {
     await startSolo(page)
-    const card = page.locator('.teammate-pick .teammate-card')
+    const card = page.locator('.teammate-pick[data-teammate-step] .teammate-card')
     await expect(card).toBeVisible({ timeout: 15_000 })
     expect(await card.evaluate((el) => getComputedStyle(el).animationName)).toBe('boardroom-fade')
   })

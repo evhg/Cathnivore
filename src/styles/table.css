@@ -403,6 +403,20 @@
   }
   .plan-strip-target-short { display: -webkit-box; }
 }
+/* Wider cards (about 200 px) hold about 40 characters in two lines; a longer by-region line takes the short one. */
+@media (min-width: 600px) {
+  .plan-strip-target-full[data-long]:has(+ .plan-strip-target-short) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .plan-strip-target-full[data-long] + .plan-strip-target-short { display: -webkit-box; }
+}
 
 .plan-strip-dateline {
   display: flex;

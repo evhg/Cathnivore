@@ -21,6 +21,8 @@ export interface PlanPreview {
 
 /** Longest summary a phone plan card shows whole. */
 export const SHORT_MAX = 30
+/** Longest summary a desktop plan card (about 200 px) shows whole in its two lines. */
+export const LONG_MAX = 40
 
 function shorten(summary: string, regions: RegionId[], prefix = ''): string {
   if (summary.length <= SHORT_MAX) return summary
