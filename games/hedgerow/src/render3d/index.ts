@@ -18,6 +18,9 @@ import {
   setPiece,
   charmed,
   enemyPoint,
+  betweenRounds,
+  headingAt,
+  waveSpawns,
   hasTwist,
   isBig,
   isFleet,
@@ -36,7 +39,7 @@ import {
 } from "../engine";
 import { actLight, actMood, matte, nightLight } from "./palette";
 import { fordMiddle } from "../landmarks";
-import { buildCath, dressCath, liftCath, buildEnemy, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { buildCath, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -48,6 +51,7 @@ import { RUNGS, crackStage } from "../fleet";
 import { swarms, SWARM_MIN } from "../swarm";
 import { COLUMN_TIERS, layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
+import { gateQueue, type GateQueue } from "../gatequeue";
 
 interface TowerView {
   obj: THREE.Group;
@@ -72,6 +76,13 @@ const RISE = 0.24;
 const RISE_SPREAD = 0.22;
 /** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
 const PLINTH = 0.12;
+
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 interface EnemyView {
   obj: THREE.Group;
@@ -1116,6 +1127,7 @@ export class Renderer3D {
     this.syncBoss(game);
     this.syncSwarms(game);
     this.syncTowerMarks(game, dt);
+    this.syncQueue(game);
     if (game.phase !== "wave" && this.debrisLying) {
       this.debris.clearStaying();
       this.debrisLying = false;
@@ -1141,7 +1153,11 @@ export class Renderer3D {
     // Camera: zoom towards the target, offset by the pan; then shake.
     const look = this.v3.copy(this.camTarget).add(this.v2.set(this.pan.x, 0, this.pan.y));
     this.bossEase += (this.bossPush - this.bossEase) * Math.min(1, dt * 1.2);
-    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * (1 + this.bossEase * 0.07))).add(look);
+    // Plan item 72: a boss round's queue draws the eye to the gate for a few seconds, then lets it go.
+    this.gateHold = Math.max(0, this.gateHold - dt);
+    this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * Math.min(1, dt * 1.6);
+    if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
+    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * (1 + this.bossEase * 0.07 + this.gateEase * 0.14))).add(look);
     if (this.shake > 0) {
       const m = this.shake * 0.12;
       this.camera.position.x += (Math.random() - 0.5) * m;
@@ -2009,6 +2025,118 @@ export class Renderer3D {
       m.el.style.opacity = String(1 - Math.max(0, (m.quiet - 0.5) / 0.4));
       m.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
     }
+  }
+
+  /** Plan item 72: the queue drawn last frame (CSS px from the canvas corner), for the e2e tests; null when nothing waits at the gate. */
+  shownQueue: { leads: Rect[]; plates: Rect[] } | null = null;
+  private queueKey = "";
+  private queueGroup: THREE.Group | null = null;
+  private queuePlates: HTMLElement[] = [];
+  private queueAnchors: Array<{ x: number; z: number; up: number }> = [];
+  private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number }> = [];
+  private gateHold = 0;
+  private gateEase = 0;
+  private gateAt = { x: 0, y: 0 };
+
+  /** Between rounds the next round queues at the Hollowell gate: its leads as models on the lane, a count plate. */
+  private syncQueue(game: Game): void {
+    const groups = game.level.waves[game.wave];
+    const live = game.phase !== "won" && game.phase !== "lost" && betweenRounds(game) && !!groups;
+    const key = live ? `${game.level.id}:${game.wave}` : "";
+    if (key !== this.queueKey) {
+      this.queueKey = key;
+      this.clearQueue();
+      const q = live ? gateQueue(waveSpawns(game, groups, game.wave + 1), isBig) : null;
+      if (q) this.buildQueue(game, q);
+    }
+    if (!this.queueGroup) {
+      this.shownQueue = null;
+      return;
+    }
+    // Wall time, not the frame's dt: the field's clock can run slow or stand still between rounds.
+    const k = Math.max(0, Math.min(1, (performance.now() - (this.queueGroup.userData.born as number)) / 400));
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const shown: { leads: Rect[]; plates: Rect[] } = { leads: [], plates: [] };
+    for (const m of this.queueModels) {
+      m.obj.scale.setScalar(Math.max(0.001, k));
+      const a = this.v1.set(m.x, this.height(m.x, m.z) + m.up, m.z).project(this.camera);
+      const b = this.v2.set(m.x, this.height(m.x, m.z), m.z).project(this.camera);
+      const cx = (a.x * 0.5 + 0.5) * w;
+      const top = (-a.y * 0.5 + 0.5) * h;
+      const foot = (-b.y * 0.5 + 0.5) * h;
+      const half = Math.max(8, (foot - top) * 0.6);
+      shown.leads.push({ x: cx - half, y: top, w: half * 2, h: Math.max(8, foot - top) });
+    }
+    this.queuePlates.forEach((el, i) => {
+      const at = this.queueAnchors[i]!;
+      const v = this.v1.set(at.x, this.height(at.x, at.z) + at.up, at.z).project(this.camera);
+      const pw = el.offsetWidth;
+      const ph = el.offsetHeight;
+      const x = Math.max(4, Math.min(w - pw - 4, (v.x * 0.5 + 0.5) * w - pw / 2));
+      const y = Math.max(4, Math.min(h - ph - 4, (-v.y * 0.5 + 0.5) * h));
+      el.style.opacity = String(k);
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+      shown.plates.push({ x, y, w: pw, h: ph });
+    });
+    this.shownQueue = shown;
+  }
+
+  private buildQueue(game: Game, q: GateQueue): void {
+    const level = game.level;
+    const group = new THREE.Group();
+    group.userData.born = performance.now() - (this.reducedMotion ? 400 : 0);
+    const lanes: Array<{ leads: GateQueue["leads"]; count: number; lane?: 1 }> = [{ leads: q.leads, count: q.count }];
+    if (level.path2) lanes.push({ leads: q.leads2, count: q.count2, lane: 1 });
+    for (const ln of lanes) {
+      if (!ln.count) continue;
+      const path = ln.lane ? level.path2! : level.path;
+      // The first to pull out furthest down the lane, the rest bumper to bumper behind it towards the gate.
+      const dists: number[] = [];
+      let d = 0.15;
+      for (let i = ln.leads.length - 1; i >= 0; i--) {
+        dists[i] = d;
+        if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06;
+      }
+      ln.leads.forEach((kind, i) => {
+        const p = enemyPoint(level, { dist: dists[i]!, ...(ln.lane ? { lane: ln.lane } : {}) });
+        const hd = headingAt(path, dists[i]!);
+        const obj = buildRung(kind) ?? buildEnemy(kind);
+        const lift = enemyLift(kind);
+        obj.position.set(p.x, this.height(p.x, p.y) + lift, p.y);
+        obj.rotation.y = Math.atan2(-hd.dy, hd.dx);
+        group.add(obj);
+        this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind), r: enemyScale(kind) });
+      });
+      const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
+      const hd = headingAt(path, 0);
+      // Beside the lane at the queue's tail, never on it.
+      this.queueAnchors.push(hd.dx === 0 ? { x: tail.x + 0.85, z: tail.y, up: 0.1 } : { x: tail.x, z: tail.y + 0.55, up: 0 });
+      const el = document.createElement("div");
+      el.className = "gate-plate";
+      el.setAttribute("aria-hidden", "true");
+      el.textContent = `${ln.count} coming`;
+      this.overlayEl.append(el);
+      this.queuePlates.push(el);
+      if (!ln.lane) this.gateAt = { x: tail.x, y: tail.y };
+    }
+    this.queueGroup = group;
+    this.dynamic.add(group);
+    // A boss or other heavy plant in the round: the camera eases to the gate, then back.
+    if (q.boss && !this.reducedMotion) this.gateHold = 2.6;
+  }
+
+  private clearQueue(): void {
+    if (this.queueGroup) {
+      this.dynamic.remove(this.queueGroup);
+      this.queueGroup.traverse(disposeOwn);
+    }
+    this.queueGroup = null;
+    this.queueModels = [];
+    this.queueAnchors = [];
+    for (const el of this.queuePlates) el.remove();
+    this.queuePlates = [];
+    this.shownQueue = null;
   }
 
   private syncBoss(game: Game): void {

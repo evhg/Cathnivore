@@ -16,6 +16,9 @@ import {
   isBig,
   isRevealed,
   enemyPoint,
+  headingAt,
+  betweenRounds,
+  waveSpawns,
   postMarker,
   towerAt,
   towerStats,
@@ -34,6 +37,7 @@ import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
 import { layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
+import { gateQueue, type GateQueue } from "./gatequeue";
 import {
   INK,
   drawEnemy,
@@ -116,6 +120,12 @@ export interface View {
   offY: number;
 }
 
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 const FONT = "'Hedgerow UI', system-ui, sans-serif";
 
 /** Overshoot ease for a tower popping in: 0 -> 1 with a small bounce. */
@@ -812,6 +822,49 @@ export class Renderer {
       const cp = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
       items.push({ y: cp.y + 0.2, draw: () => this.drawColumns(game, ctx, X, Y, s, t, col) });
     }
+    // Plan item 72: between rounds the next round queues at the Hollowell gate (its leads on the lane, a count
+    // plate), so the threat is on screen before Go. Go clears it: the real convoy pulls out from the same spot.
+    this.shownQueue = null;
+    const queue = this.nextQueue(game);
+    if (queue) {
+      this.queueAge = Math.min(1, this.queueAge + dt / 0.4);
+      const shown: { leads: Rect[]; plates: Rect[] } = { leads: [], plates: [] };
+      this.shownQueue = shown;
+      const lanes: Array<{ leads: GateQueue["leads"]; count: number; lane?: 1 }> = [{ leads: queue.leads, count: queue.count }];
+      if (level.path2) lanes.push({ leads: queue.leads2, count: queue.count2, lane: 1 });
+      for (const ln of lanes) {
+        if (!ln.count) continue;
+        const path = ln.lane ? level.path2! : level.path;
+        // The first to pull out stands furthest down the lane; the rest wait bumper to bumper behind it, towards
+        // the gate (spaced by their sprites' lengths, so lorries don't overlap).
+        const dists: number[] = [];
+        let d = 0.15;
+        for (let i = ln.leads.length - 1; i >= 0; i--) {
+          dists[i] = d;
+          if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06;
+        }
+        ln.leads.forEach((kind, i) => {
+          const d = dists[i]!;
+          const p = enemyPoint(level, { dist: d, ...(ln.lane ? { lane: ln.lane } : {}) });
+          const hd = headingAt(path, d);
+          const gy = p.y + 0.2;
+          const sc = s * enemyScale(kind) * 0.55;
+          shown.leads.push({ x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc });
+          items.push({
+            y: gy,
+            draw: () => {
+              ctx.save();
+              ctx.globalAlpha = this.queueAge;
+              drawEnemy(ctx, { kind, facing: hd.dx < 0 ? -1 : 1, hit: 9, ghost: false, phase: i * 0.37, still: true }, X(p.x), Y(gy), s, t);
+              ctx.restore();
+            },
+          });
+        });
+        const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
+        const upright = headingAt(path, 0).dx === 0;
+        items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright)) });
+      }
+    } else this.queueAge = 0;
     for (const e of game.enemies) {
       alive.add(e.id);
       if (this.lay.inColumn.has(e.id)) continue;
@@ -1334,6 +1387,57 @@ export class Renderer {
   /** Plan item 45, for tests and shots: vehicles drawn one by one, in columns, and the biggest pooled tower count. */
   /** Layer-pop shard bursts thrown so far (none under reduced motion), for tests. */
   private shardBursts = 0;
+  /** Plan item 72: the queue drawn last frame (CSS px from the canvas corner), for the e2e tests; null when nothing waits at the gate. */
+  shownQueue: { leads: Rect[]; plates: Rect[] } | null = null;
+  private queueAge = 0;
+  private queueKey = "";
+  private queueMemo: GateQueue | null = null;
+  /** The next round's queue while the field is between rounds (null mid-round and once the level is over). */
+  private nextQueue(game: Game): GateQueue | null {
+    if (game.phase === "won" || game.phase === "lost" || !betweenRounds(game)) return null;
+    const groups = game.level.waves[game.wave];
+    if (!groups) return null;
+    const key = `${game.level.id}:${game.wave}`;
+    if (key !== this.queueKey) {
+      this.queueKey = key;
+      this.queueMemo = gateQueue(waveSpawns(game, groups, game.wave + 1), isBig);
+    }
+    return this.queueMemo;
+  }
+  /** The count plate at the gate: "12 coming" on a paper pill, kept on the canvas. */
+  private countPlate(ctx: CanvasRenderingContext2D, count: number, x: number, y: number, s: number, upright: boolean): Rect {
+    const label = `${count} coming`;
+    const fs = Math.max(11, Math.round(s * 0.2));
+    ctx.save();
+    ctx.globalAlpha = this.queueAge;
+    ctx.font = `800 ${fs}px ${FONT}`;
+    const w = ctx.measureText(label).width + fs * 1.1;
+    const h = fs * 1.5;
+    const pad = 4;
+    // Beside the lane at the queue's tail, never on it: under a lane that runs across, to the roomier side of
+    // one that runs up or down.
+    let px = x - w / 2;
+    let py = y + s * 0.5;
+    if (upright) {
+      px = x + s * 0.5 + w <= this.cssW - pad ? x + s * 0.5 : x - s * 0.5 - w;
+      py = y - h / 2;
+    }
+    const cx = Math.max(pad, Math.min(this.cssW - w - pad, px));
+    const cy = Math.max(pad, Math.min(this.cssH - h - pad, py));
+    ctx.fillStyle = "rgba(255,250,238,0.96)";
+    ctx.strokeStyle = "rgba(70,48,30,0.85)";
+    ctx.lineWidth = Math.max(1.5, s * 0.03);
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, w, h, h / 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#b03024";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, cx + w / 2, cy + h / 2 + 0.5);
+    ctx.restore();
+    return { x: cx, y: cy, w, h };
+  }
   convoyStats(): { drawn: number; column: number; marks: number; shards: number } {
     let marks = 0;
     for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);

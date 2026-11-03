@@ -2683,18 +2683,10 @@ export function canCallEarly(game: Game): boolean {
 export const EARLY_MIN_GAP = 1;
 
 /**
- * Starts the next wave: between waves, or early (for a bonus) at any time once the current one has been
- * on the lane a moment. An early wave's spawns join the queue after whatever is still to come.
+ * The spawns a round makes, in the order sendWave queues them (twists applied: Crowd, Air, the Fleet's own
+ * rules). Pure on the game's level, so the gate queue (plan item 72) previews exactly what Go sends.
  */
-export function sendWave(game: Game, forced = false): ActionResult {
-  if (game.phase === "won" || game.phase === "lost")
-    return { ok: false, reason: "The level is over." };
-  if (game.phase === "wave" && !canCallEarly(game))
-    return { ok: false, reason: "A wave is already on its way." };
-  const groups = game.level.waves[game.wave];
-  if (!groups) return { ok: false, reason: "No more waves." };
-  const early = game.phase === "wave" && !forced ? earlyBonus(game) : 0;
-  const wave = game.wave + 1;
+export function waveSpawns(game: Game, groups: WaveGroup[], wave: number): Game["spawnQueue"] {
   const queue: Game["spawnQueue"] = [];
   const crowd = hasTwist(game.level, "crowd");
   let total = 0;
@@ -2713,6 +2705,23 @@ export function sendWave(game: Game, forced = false): ActionResult {
     const extra = Math.ceil(total * 0.4);
     for (let i = 0; i < extra; i++) queue.push({ at: 1.5 + i * 0.7, kind: "drone", wave, lane: i % 2 && game.level.path2 ? 1 : undefined });
   }
+  return queue;
+}
+
+/**
+ * Starts the next wave: between waves, or early (for a bonus) at any time once the current one has been
+ * on the lane a moment. An early wave's spawns join the queue after whatever is still to come.
+ */
+export function sendWave(game: Game, forced = false): ActionResult {
+  if (game.phase === "won" || game.phase === "lost")
+    return { ok: false, reason: "The level is over." };
+  if (game.phase === "wave" && !canCallEarly(game))
+    return { ok: false, reason: "A wave is already on its way." };
+  const groups = game.level.waves[game.wave];
+  if (!groups) return { ok: false, reason: "No more waves." };
+  const early = game.phase === "wave" && !forced ? earlyBonus(game) : 0;
+  const wave = game.wave + 1;
+  const queue = waveSpawns(game, groups, wave);
   // Re-base everything still queued to a fresh clock, then add the new wave after a short gap.
   const pending = game.phase === "wave" ? game.spawnQueue.map((q) => ({ ...q, at: q.at - game.waveClock })) : [];
   const after = pending.length ? Math.max(0, ...pending.map((q) => q.at)) + 1.5 : 0;

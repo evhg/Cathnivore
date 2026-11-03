@@ -728,6 +728,8 @@ if (SANDBOX)
     skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
+    // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.
+    gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
     // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
