@@ -336,6 +336,19 @@ function roleCardText(action: Extract<Action, { kind: 'role' }>, state: GameStat
   return `${ability}${target}${choice}`
 }
 
+// Under the desktop INVEST head the verb is already said, so "Buy" hides there (CSS) and two-line names
+// stay two lines: four Invest cards always fit the Actions frame at 1440x900. The text and the accessible
+// name keep it.
+function BuyVerb({ text }: { text: string }) {
+  if (!text.startsWith('Buy ')) return <>{text}</>
+  return (
+    <>
+      <span className="action-verb">Buy </span>
+      {text.slice(4)}
+    </>
+  )
+}
+
 function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; tutorialTarget?: boolean; onClick(): void }) {
   if (action.kind === 'sell') {
     return (
@@ -354,7 +367,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
     <button aria-label={aria} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {Icon && <Icon size={18} />}
-        {action.kind === 'role' ? roleCardText(action, state) : text}
+        {action.kind === 'role' ? roleCardText(action, state) : <BuyVerb text={text} />}
       </span>
       <ActionCostChip cost={cost} />
     </button>
@@ -1335,7 +1348,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const card = IMPROVEMENTS_BY_ID.get(improvementId)
             if (!card) return null
             return (
-              <span key={`disabled-invest-${improvementId}`} className="action-item">
+              <span key={`disabled-invest-${improvementId}`} className="action-item action-invest">
                 <button
                   disabled
                   title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
@@ -1344,7 +1357,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   <span className="action-label-group">
                     <span className="action-label">
                       <InvestIcon size={18} />
-                      {`Buy ${card.name}`}
+                      <BuyVerb text={`Buy ${card.name}`} />
                     </span>
                     <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
                   </span>

@@ -1974,6 +1974,17 @@ html.no-animations .cath-companion .cameo {
     white-space: normal;
   }
 
+  .actions-sheet .actions .action-invest .action-why-not {
+    max-width: 100%;
+    padding-inline: 5px;
+    white-space: nowrap;
+    letter-spacing: -.01em;
+  }
+
+  .actions-sheet .actions .action-verb {
+    display: none;
+  }
+
   .actions-sheet .actions .action-item > .tooltip-trigger {
     top: auto;
     bottom: 7px;
