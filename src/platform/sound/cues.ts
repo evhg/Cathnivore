@@ -9,6 +9,8 @@ export type Cue =
   | 'paperFlip'
   | 'paperTear'
   | 'coin'
+  /** One coin set down, for counting Marks out. */
+  | 'coinOne'
   | 'awning'
   | 'crowd'
   | 'bell'

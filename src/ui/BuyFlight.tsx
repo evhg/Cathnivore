@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import Vignette from './Vignette'
+import { playCoins } from '../platform/sound'
 import { vignetteFor } from './vignetteKind'
 import { reducedMotion, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
@@ -11,6 +12,8 @@ export default function BuyFlight({ card, cost, path, onDone }: { card: Improvem
   const cardRef = useRef<HTMLDivElement>(null)
   const coinsRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
+    // Plan item 53: a coin chinks for each Mark counted out.
+    playCoins(cost)
     const el = cardRef.current
     const coins = coinsRef.current
     if (!el || typeof el.animate !== 'function') {

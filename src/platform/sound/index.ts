@@ -104,6 +104,12 @@ export function playCues(cues: readonly Cue[]): void {
   }
 }
 
+/** Plan item 53: one coin chink per Mark counted out as a bought card flies to the farm (at most six). */
+export function playCoins(count: number): void {
+  const n = Math.max(0, Math.min(6, Math.round(count)))
+  if (n) playCues(Array.from({ length: n }, () => 'coinOne' as const))
+}
+
 /** Plan item 53: the evening of the market (afternoon on, round 7+): crickets take over from the birds. */
 let evening = false
 

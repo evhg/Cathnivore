@@ -90,6 +90,7 @@ export const CUE_LENGTH: Record<Cue, number> = {
   paperFlip: 0.14,
   paperTear: 0.34,
   coin: 0.36,
+  coinOne: 0.14,
   awning: 0.42,
   crowd: 1.15,
   bell: 1.1,
@@ -130,6 +131,10 @@ export function renderCue(c: Ctx, out: AudioNode, cue: Cue, t0: number): void {
         tone(c, out, t0, { at, dur: 0.18, peak: 0.05, freq: f * 2.76, attack: 0.002 })
         tone(c, out, t0, { at, dur: 0.12, peak: 0.03, freq: f * 5.4, attack: 0.002 })
       }
+      return
+    case 'coinOne':
+      tone(c, out, t0, { at: 0, dur: 0.13, peak: 0.07, freq: 2637, attack: 0.002 })
+      tone(c, out, t0, { at: 0, dur: 0.09, peak: 0.035, freq: 2637 * 2.76, attack: 0.002 })
       return
     case 'awning':
       // The stall's canvas shaken out: three soft low flaps.

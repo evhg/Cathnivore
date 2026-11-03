@@ -66,6 +66,8 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
   expect(await inFarm()).toBe(0)
   await button.click({ force: true })
   await expect.poll(() => page.evaluate(() => (window as unknown as { flights: number }).flights)).toBe(1)
+  // Plan item 53: a coin chinks for each Mark counted out.
+  expect(await page.evaluate(() => (window as unknown as { __cathnivoreSound: { log: string[] } }).__cathnivoreSound.log.filter((c) => c === 'coinOne').length)).toBeGreaterThan(0)
   await page.waitForTimeout(900)
   expect(await inFarm()).toBe(1)
 })
