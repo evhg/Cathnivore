@@ -1897,6 +1897,8 @@ export interface Game {
   wave: number;
   /** Waves cleared and paid for. */
   paid: number;
+  /** Vehicles that reached the farmhouse this run (plan item 59: each tramples a plot; drawing only). */
+  leaks?: number;
   waveClock: number;
   spawnQueue: Array<{ at: number; kind: EnemyKind; wave?: number; lane?: 1; ambush?: number; pm?: number; scout?: true }>;
   enemies: Enemy[];
@@ -4133,6 +4135,7 @@ function step(game: Game): void {
         log.lost += lost;
       }
       game.goodwill -= lost;
+      game.leaks = (game.leaks ?? 0) + 1;
       game.events.push({ type: "leak", x: p.x, y: p.y, kind: e.kind, lost, ...(e.dropped ? { dropped: true } : {}), ...(e.pm ? { pm: e.pm } : {}), ...(cause ? { cause } : {}) });
     } else alive.push(e);
   }

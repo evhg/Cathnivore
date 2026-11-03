@@ -30,6 +30,8 @@ import {
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
+import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
+import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
 import { layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import {
@@ -127,6 +129,13 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private bg: HTMLCanvasElement | null = null;
   private bgKey = "";
+  /** Plan item 59: the crops drawn on the field (cached; a change cross-fades from the old layer). */
+  private crops: HTMLCanvasElement | null = null;
+  private cropsOld: HTMLCanvasElement | null = null;
+  private cropKey = "";
+  private cropFade = 1;
+  private cropGame: Game | null = null;
+  private wonAt: number | null = null;
   private shots: Shot[] = [];
   private parts: Particle[] = [];
   /** Fleet levels: Marks from knocks not yet shown, flushed as one "+N" floater every GOLD_WINDOW seconds. */
@@ -576,6 +585,56 @@ export class Renderer {
     this.flash = Math.max(this.flash, amount);
   }
 
+  /** Plan item 59: the act's crop on every empty plot at its stage, the win's harvest wave, cross-faded. */
+  private drawCrops(game: Game, bgKey: string, dt: number): void {
+    if (this.cropGame !== game) {
+      this.cropGame = game;
+      this.wonAt = null;
+      this.cropKey = "";
+      this.cropsOld = null;
+    }
+    if (game.phase === "won") this.wonAt ??= this.clock;
+    else this.wonAt = null;
+    const stages = shownCrops(game, this.wonAt === null ? null : this.clock - this.wonAt);
+    const occupied = occupiedPlots(game);
+    let sig = "";
+    for (const [k, st] of stages) sig += occupied.has(k) ? "x" : st;
+    const ck = `${bgKey}|${sig}`;
+    if (ck !== this.cropKey) {
+      const resized = !this.cropKey.startsWith(`${bgKey}|`);
+      this.cropsOld = resized ? null : this.crops;
+      this.cropFade = resized ? 1 : 0;
+      const c = document.createElement("canvas");
+      c.width = this.canvas.width;
+      c.height = this.canvas.height;
+      const cctx = c.getContext("2d")!;
+      cctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      const { cellSize: s, offX, offY } = this.view;
+      const crop = cropOf(game.level);
+      for (const [k, st] of stages) {
+        if (st === 0 || occupied.has(k)) continue;
+        const [col, row] = k.split(",").map(Number) as [number, number];
+        drawCrop(cctx, crop, st, offX + col * s, offY + row * s, s, col * 31 + row * 17 + game.level.id);
+      }
+      this.crops = c;
+      this.cropKey = ck;
+      this.canvas.dataset.ripe = String(ripeCount(stages, occupied));
+      this.canvas.dataset.cropSig = sig;
+      this.canvas.dataset.harvest = this.wonAt === null ? "" : "1";
+    }
+    const { ctx } = this;
+    this.cropFade = Math.min(1, this.cropFade + dt / 0.45);
+    if (this.cropsOld && this.cropFade < 1) {
+      ctx.globalAlpha = 1 - this.cropFade;
+      ctx.drawImage(this.cropsOld, 0, 0, this.cssW, this.cssH);
+    }
+    if (this.crops) {
+      ctx.globalAlpha = this.cropFade;
+      ctx.drawImage(this.crops, 0, 0, this.cssW, this.cssH);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   draw(game: Game, dt: number): void {
     const { ctx } = this;
     const { cellSize: s, offX, offY } = this.view;
@@ -630,6 +689,7 @@ export class Renderer {
       this.shake = Math.max(0, this.shake - dt * 1.6);
     }
     if (this.bg) ctx.drawImage(this.bg, 0, 0, W, H);
+    this.drawCrops(game, key, dt);
 
     // Decals: crumbs, cream, scorch.
     for (const d of this.decals) {
