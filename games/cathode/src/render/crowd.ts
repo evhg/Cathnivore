@@ -72,10 +72,13 @@ export interface Seat {
   yaw: number;
 }
 
+/** Segment counts for limbs and balls; standingParts(true) lowers them for the phone's street (plan item 57). */
+let segs = { cyl: 7, sw: 10, sh: 8 };
+
 /** A cylinder from a to b (a limb). */
 function limb(a: THREE.Vector3, b: THREE.Vector3, r0: number, r1 = r0): THREE.BufferGeometry {
   const d = b.clone().sub(a);
-  const g = new THREE.CylinderGeometry(r1, r0, d.length(), 7, 1);
+  const g = new THREE.CylinderGeometry(r1, r0, d.length(), segs.cyl, 1);
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
   const m = a.clone().add(b).multiplyScalar(0.5);
   g.translate(m.x, m.y, m.z);
@@ -83,7 +86,7 @@ function limb(a: THREE.Vector3, b: THREE.Vector3, r0: number, r1 = r0): THREE.Bu
 }
 
 function ball(c: THREE.Vector3, r: number, sx = 1, sy = 1, sz = 1): THREE.BufferGeometry {
-  const g = new THREE.SphereGeometry(r, 10, 8);
+  const g = new THREE.SphereGeometry(r, segs.sw, segs.sh);
   g.scale(sx, sy, sz);
   g.translate(c.x, c.y, c.z);
   return g;
@@ -132,8 +135,8 @@ export function seatedParts() {
 }
 
 const CLOTHES = ["#6f8c86", "#7d8a8e", "#5d7a74", "#2a2622", "#3a2f2a", "#1d2430", "#4a3a3e", "#6a7072"];
-const SKINS = ["#c99a7a", "#8a5a3c", "#e0b494", "#5c3a26", "#b07a58", "#d7a888"];
-const HAIRS = ["#14100e", "#2a1c14", "#5a4a3a", "#8a8a88", "#1a1410"];
+export const SKINS = ["#c99a7a", "#8a5a3c", "#e0b494", "#5c3a26", "#b07a58", "#d7a888"];
+export const HAIRS = ["#14100e", "#2a1c14", "#5a4a3a", "#8a8a88", "#1a1410"];
 
 export function addPatients(scene: THREE.Scene, seats: Seat[], wrap: (m: THREE.MeshStandardMaterial) => THREE.Material) {
   if (!seats.length) return null;
@@ -279,8 +282,18 @@ export function crowdStanders(groups: CrowdGroup[], keepOut: (x: number, z: numb
   return out;
 }
 
-/** The standing figure's parts in its own frame (feet on the floor, facing +x). */
-export function standingParts() {
+/** The standing figure's parts in its own frame (feet on the floor, facing +x); `lo` is a low-poly cut (about a third). */
+export function standingParts(lo = false) {
+  const prev = segs;
+  if (lo) segs = { cyl: 5, sw: 6, sh: 4 };
+  try {
+    return standingPartsAt();
+  } finally {
+    segs = prev;
+  }
+}
+
+function standingPartsAt() {
   const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
   const coat: THREE.BufferGeometry[] = [];
   const skin: THREE.BufferGeometry[] = [];
@@ -313,15 +326,15 @@ export function standingParts() {
 }
 
 /** An umbrella held over the head: canopy, ribs' tips and a shaft down to the hand at chest height. */
-function umbrellaParts() {
+export function umbrellaParts() {
   const can = new THREE.ConeGeometry(0.55, 0.22, 10, 1, true);
   can.translate(0.08, 2.06, 0);
   const shaft = limb(new THREE.Vector3(0.18, 1.18, 0.12), new THREE.Vector3(0.08, 2.15, 0), 0.012);
   return [can, shaft];
 }
 
-const COATS = ["#1c2026", "#2a2622", "#3a3430", "#14181e", "#4a4038", "#23282a", "#5a3a34", "#2e3440", "#6a5a48"];
-const UMBRELLAS = ["#0c0d10", "#14161a", "#1a1414", "#2a1a1e", "#0f1418", "#3a1016"];
+export const COATS = ["#1c2026", "#2a2622", "#3a3430", "#14181e", "#4a4038", "#23282a", "#5a3a34", "#2e3440", "#6a5a48"];
+export const UMBRELLAS = ["#0c0d10", "#14161a", "#1a1414", "#2a1a1e", "#0f1418", "#3a1016"];
 
 export function addStandingCrowd(scene: THREE.Scene, standers: Stander[], wrap: (m: THREE.MeshStandardMaterial) => THREE.Material) {
   if (!standers.length) return null;

@@ -15,6 +15,7 @@ import { L, type Level } from "./level";
 import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { addTraffic } from "./traffic";
+import { addStreetLife } from "./streetlife";
 import { addCrowd, addPatients, addShrouds, addStandingCrowd, crowdStanders } from "./crowd";
 import { bakeVolume, LightPool, hash1, flicker, signatureGain } from "./lighting";
 import { FAIL_SEED } from "./levels/clinic";
@@ -167,6 +168,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     crowdStanders((level.crowds ?? []).map((g) => ({ ...g, count: Math.round(g.count * crowdScale) })), blocked),
     (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7 }),
   );
+  // Plan item 57: the street's own people (walkers, vendors, doorways, riders), who scatter at gunfire.
+  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6 }));
   addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
@@ -212,6 +215,14 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   // Blood and holes also land on shot-only cover (shutters, glass, awnings): it sits in front of the wall behind.
   const thinFaces = level.builder.shotOnly.filter((c) => !c.obb).map((c) => c.box);
   const fxs = createFx({ scene, shared, intensity: options.intensity, quality, colliders, thin: thinFaces, surfaces, groundHeight: level.groundHeight, volume, emit });
+  if (street) {
+    // Every gunshot (hers and theirs) goes through the muzzle flash: the street hears it there.
+    const flashOnly = fxs.fx.muzzle.bind(fxs.fx);
+    fxs.fx.muzzle = (pos, dir, size, suppressed, light) => {
+      street.shot(pos.x, pos.z, suppressed);
+      flashOnly(pos, dir, size, suppressed, light);
+    };
+  }
 
   // ------------------------------------------------------------ reflection and post
   const mainHidden: THREE.Object3D[] = [];
@@ -280,6 +291,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     viewScene,
     viewCamera,
     fx: fxs.fx,
+    street: street ?? undefined,
     wind,
     perf,
     groundHeight: (x, z) => level.groundHeight(x, z),
@@ -346,6 +358,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       if (!shot && dt > 0) {
         crowd?.update(time);
         standing?.update(time);
+        street?.update(dt, time);
       }
       pool.update(camera, dt, time, shot || dt === 0);
       fxs.update(fxDt, camera);

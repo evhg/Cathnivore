@@ -181,6 +181,8 @@ export interface World {
   light?(pos: THREE.Vector3, color: THREE.Color, intensity: number, range: number): () => void;
   /** C14: like `light`, but the caller keeps the object and may change its colour and intensity every frame. */
   liveLight?(l: { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number }): () => void;
+  /** Plan item 57: the street's people (walkers, vendors, riders) and where they are; absent indoors. */
+  readonly street?: { snapshot(): Array<{ x: number; y: number; z: number; mood: string; role: string }>; shot(x: number, z: number, suppressed?: boolean): void };
   /** Optional: the last render's CPU time in ms, draw calls and triangles (for ?perf). */
   readonly perf?: { renderMs: number; drawCalls: number; triangles: number };
 }
