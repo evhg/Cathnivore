@@ -251,3 +251,36 @@ export function buildWindowRain(still: boolean): THREE.Mesh {
   if (!still) pane.onBeforeRender = () => (mat.uniforms.uTime!.value = performance.now() / 1000);
   return pane;
 }
+
+/**
+ * Plan item 58: the window's neon falling through venetian blinds: soft stripes laid on the floorboards inside the
+ * window, fading away from it (one additive decal, baked: the same on every tier, no extra lights or shadows).
+ */
+export function buildBlindLight(): THREE.Mesh {
+  const { xE } = OFFICE;
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 256;
+  const g = c.getContext("2d")!;
+  for (let i = 0; i < 9; i++) {
+    const y = 14 + i * 27;
+    const grad = g.createLinearGradient(0, 0, 256, 0);
+    // Brightest by the window (u 1), gone by the far edge.
+    grad.addColorStop(0, "rgba(255,90,170,0)");
+    grad.addColorStop(0.55, "rgba(255,95,168,0.35)");
+    grad.addColorStop(1, "rgba(255,120,190,0.9)");
+    g.fillStyle = grad;
+    g.fillRect(0, y, 256, 12);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.55 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 4.4), mat);
+  floor.rotation.x = -Math.PI / 2;
+  // Skewed a little, as light through a high window falls at a slant.
+  floor.rotation.z = -0.12;
+  floor.position.set(xE - 1.65, 0.006, -0.9);
+  floor.renderOrder = 4;
+  floor.name = "blind-light";
+  return floor;
+}

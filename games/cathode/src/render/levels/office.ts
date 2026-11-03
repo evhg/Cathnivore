@@ -28,8 +28,20 @@ export function officeGround(): number {
   return 0;
 }
 
+/**
+ * Plan item 58: the room's practical lights, beyond the station lamps built with each set piece: a warm pendant
+ * over the rug, the window's neon spilling in (pink low, cyan high) and a second warm pool by the desk. The phone
+ * tier keeps the pendant and the pink spill only. Deterministic per tier.
+ */
+export function officeLights(quality: "phone" | "high" | "ultra"): VLight[] {
+  const { xE, ceil } = OFFICE;
+  const mk = (pos: THREE.Vector3, color: string, intensity: number, range: number, seed: number): VLight => ({ pos, color: C(color), intensity, range, normal: null, flicker: 0, seed, real: true });
+  const out = [mk(V(-0.3, ceil - 0.45, 0.6), "#ffcf98", 2.6, 7.5, 101), mk(V(xE - 0.9, 1.3, -0.9), "#ff5fa8", 1.5, 5.5, 102)];
+  if (quality !== "phone") out.push(mk(V(xE - 0.9, 1.9, 0.5), "#5fe0ff", 0.8, 4.2, 103), mk(V(-3.6, 1.9, 0.8), "#ffd9a8", 1.0, 3.6, 104));
+  return out;
+}
+
 export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
-  void quality;
   const b = new Builder();
   const lights: VLight[] = [];
   const signs: SignDef[] = [];
@@ -102,7 +114,8 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
   b.box("glowWarm", xW + 0.7, 1.0, 1.4, 0.2, 0.02, 0.2, { cover: "none" });
   b.box("blackPaint", xW + 0.8, 0.82, 2.2, 0.22, 0.08, 0.16, { cover: "none" });
   b.boxMinMax("wood", xW + 1.5, 0, 1.7, xW + 1.95, 0.48, 2.15, { collide: "wood" });
-  light(V(xW + 0.8, 1.2, 1.5), "#d9ffb0", 1.1, 3.2);
+  // The green banker's lamp pools on the desk (plan item 58: brighter, wider).
+  light(V(xW + 0.8, 1.2, 1.5), "#d9ffb0", 2.2, 4.2);
 
   // The stair door (south-east) down to the water taxi: a panelled door in a frame, a lit EXIT over it.
   b.box("wood", 3.2, 1.05, zS - 0.05, 1.0, 2.1, 0.06, { cover: "none" });
@@ -125,6 +138,7 @@ export function buildOffice(quality: "phone" | "high" | "ultra"): Level {
   b.boxMinMax("rubber", -1.2, 0, 0.8, -0.3, 0.45, 1.7, { collide: "wood" });
   b.box("rubber", -0.75, 0.75, 1.65, 0.9, 0.6, 0.15, { cover: "none" });
 
+  lights.push(...officeLights(quality));
   const markers: Record<string, THREE.Vector3[]> = { player: [V(0, 0, 2.6)] };
   for (const [id, s] of Object.entries(STATIONS)) markers[`station:${id}`] = [V(s.x, 0, s.z)];
 
