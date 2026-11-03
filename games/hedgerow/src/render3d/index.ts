@@ -154,6 +154,9 @@ const SHOT_COLOURS: Record<string, string> = {
   silo: "#ffcf5a",
 };
 
+/** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
+export const CATH_3D_SCALE = 1.9;
+
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
   private composer: EffectComposer;
@@ -1496,7 +1499,8 @@ export class Renderer3D {
     const h = game.hero;
     const y = this.height(h.x, h.y);
     c.position.set(h.x, y, h.y);
-    c.scale.setScalar(0.98);
+    // Plan item 78: twice her old size (0.98), so she reads as the farm's hero at a glance.
+    c.scale.setScalar(CATH_3D_SCALE);
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     const ud = c.userData;
     const fig = ud.fig as THREE.Group;
@@ -1520,15 +1524,20 @@ export class Renderer3D {
       this.swayHair(ud, dt, 0, t);
       return;
     }
-    const [sh, el, wr, sh2, el2, lean, twist] = this.heroPose(game, t, walking);
+    const [sh, el, wr, sh2, el2, lean0, twist0] = this.heroPose(game, t, walking);
+    // Plan item 78: standing about she shifts her weight, breathes and lets her free arm swing a little.
+    const still = !walking && this.heroSwung >= 0.45 && this.heroPie >= 0.5 && !this.reducedMotion;
+    const lean = lean0 + (still ? Math.sin(t * 0.9) * 0.035 : 0);
+    const twist = twist0 + (still ? Math.sin(t * 0.6 + 1) * 0.12 : 0);
     const arm = ud.arm as THREE.Object3D;
     arm.rotation.set(-0.08, 0, sh);
     (ud.elbow as THREE.Object3D).rotation.z = el;
     (ud.wrist as THREE.Object3D).rotation.z = wr;
-    (ud.arm2 as THREE.Object3D).rotation.set(0.08, 0, sh2);
+    (ud.arm2 as THREE.Object3D).rotation.set(0.08, 0, sh2 + (still ? Math.sin(t * 1.4) * 0.12 : 0));
     (ud.elbow2 as THREE.Object3D).rotation.z = el2;
     // A light step: a bob twice a stride, and a little forward lean while she walks.
-    const bob = walking ? Math.abs(Math.sin(t * 12)) * 0.028 : Math.sin(t * 2) * 0.005;
+    const idle = !walking && this.heroSwung >= 0.45 && this.heroPie >= 0.5 && !this.reducedMotion;
+    const bob = walking ? Math.abs(Math.sin(t * 12)) * 0.028 : Math.sin(t * 2) * (idle ? 0.012 : 0.005);
     fig.rotation.set(0, twist * h.facing, lean * h.facing);
     fig.position.y = bob;
     const held = ud.pie as THREE.Object3D | undefined;
