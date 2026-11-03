@@ -1,5 +1,7 @@
-import type { Action, GameEvent, GameState } from '../engine/types'
-import { loadSettings } from './settings'
+import type { Action, GameEvent, GameState } from '../../engine/types'
+import { loadSettings } from '../settings'
+import { cueFor, type Cue } from './cues'
+import { CUE_LENGTH, renderCue } from './synth'
 
 // ROADMAP 19: a small synthesised WebAudio sound set, no audio files. Silent until the first tap: browsers
 // only let an AudioContext run after a user gesture, so the context is created lazily on the first
@@ -24,12 +26,15 @@ function getContext(): Ctx | null {
 // Any pointer press unlocks (creates and resumes) the context, so later game-driven sounds can play.
 export function unlockAudioOnFirstTap(): void {
   if (typeof window === 'undefined') return
+  // Plan item 53: with sound off no AudioContext is made at all; the first tap after it is turned on makes it.
   const unlock = (): void => {
+    if (!loadSettings().sound) return
+    window.removeEventListener('pointerdown', unlock)
     const c = getContext()
     if (c && c.state === 'suspended') void c.resume().then(syncAmbient)
     else syncAmbient()
   }
-  window.addEventListener('pointerdown', unlock, { once: true })
+  window.addEventListener('pointerdown', unlock)
   // A soft tick on every button press, so menus feel tactile too (ROADMAP 19's UI-tap cue).
   window.addEventListener('click', (e) => {
     if (e.target instanceof Element && e.target.closest('button, [role="button"], a')) play(SOUNDS.tap)
@@ -68,23 +73,35 @@ function play(notes: Note[]): void {
 
 const SOUNDS = {
   tap: [{ freq: 880, at: 0, dur: 0.04, type: 'sine' as const, gain: 0.03 }],
-  place: [{ freq: 520, at: 0, dur: 0.09, type: 'triangle' as const }],
-  liberate: [523, 659, 784, 1047].map((freq, i) => ({ freq, at: i * 0.09, dur: 0.22, type: 'triangle' as const })),
-  squeeze: [{ freq: 300, at: 0, dur: 0.25, type: 'sawtooth' as const, slideTo: 140, gain: 0.05 }],
-  lostLand: [
-    { freq: 220, at: 0, dur: 0.3, type: 'square' as const, gain: 0.04 },
-    { freq: 165, at: 0.2, dur: 0.45, type: 'square' as const, gain: 0.04 },
-  ],
-  win: [523, 659, 784, 659, 1047].map((freq, i) => ({ freq, at: i * 0.12, dur: 0.3, type: 'triangle' as const })),
-  lose: [392, 330, 262, 196].map((freq, i) => ({ freq, at: i * 0.16, dur: 0.35, type: 'sine' as const })),
+}
+
+// Plan item 53: the table's sounds go through one cue bus (later: the Effects volume).
+let bus: GainNode | null = null
+function cueBus(c: AudioContext): GainNode {
+  if (!bus || bus.context !== c) {
+    bus = c.createGain()
+    bus.gain.value = 0.9
+    bus.connect(c.destination)
+  }
+  return bus
+}
+
+/** Plays a step's cues a beat apart (action first, then what it caused). Silent until the first tap. */
+export function playCues(cues: readonly Cue[]): void {
+  if (!cues.length || !loadSettings().sound) return
+  cueLog?.push(...cues)
+  const c = ctx
+  if (!c || c.state !== 'running') return
+  const out = cueBus(c)
+  let at = c.currentTime + 0.01
+  for (const cue of cues) {
+    renderCue(c, out, cue, at)
+    at += Math.min(0.22, CUE_LENGTH[cue] * 0.6)
+  }
 }
 
 export function playSoundsFor(action: Action | null, newEvents: GameEvent[], result: GameState['result']): void {
-  if (result) return play(result.won ? SOUNDS.win : SOUNDS.lose)
-  if (newEvents.some((e) => e.type === 'liberated')) return play(SOUNDS.liberate)
-  if (newEvents.some((e) => e.type === 'squeeze' && e.lostLand)) return play(SOUNDS.lostLand)
-  if (newEvents.some((e) => e.type === 'squeeze')) return play(SOUNDS.squeeze)
-  if (action?.kind === 'openStall' || newEvents.some((e) => e.type === 'expand')) play(SOUNDS.place)
+  playCues(cueFor(action, newEvents, result))
 }
 
 // ROADMAP 19's optional ambient loop: a quiet, slowly breathing two-note pad (a fifth apart), off by default.
@@ -126,6 +143,34 @@ export function syncAmbient(): void {
       master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t)
       master.gain.exponentialRampToValueAtTime(0.0001, t + 0.5)
       for (const o of [...oscs, lfo]) o.stop(t + 0.6)
+    },
+  }
+}
+
+// Plan item 53, tests only (webdriver): render a cue offline and measure it, and log the cues played, so e2e can
+// check every cue is audible, short and below clipping, and that play schedules them.
+let cueLog: Cue[] | null = null
+if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.webdriver) {
+  cueLog = []
+  ;(window as unknown as { __cathnivoreSound: object }).__cathnivoreSound = {
+    log: cueLog,
+    hasContext: () => ctx !== null,
+    cues: Object.keys(CUE_LENGTH),
+    async measure(cue: Cue): Promise<{ peak: number; rms: number; lastSound: number }> {
+      const rate = 22050
+      const off = new OfflineAudioContext(1, Math.ceil(rate * 1.4), rate)
+      renderCue(off, off.destination, cue, 0)
+      const d = (await off.startRendering()).getChannelData(0)
+      let peak = 0
+      let sum = 0
+      let last = 0
+      for (let i = 0; i < d.length; i++) {
+        const v = Math.abs(d[i]!)
+        peak = Math.max(peak, v)
+        sum += v * v
+        if (v > 0.001) last = i / rate
+      }
+      return { peak, rms: Math.sqrt(sum / d.length), lastSound: last }
     },
   }
 }
