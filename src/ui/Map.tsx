@@ -21,7 +21,7 @@ const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', in
 // places them from the game's layout (axial q to the right, r down-right; content/layouts.ts), so the ring is
 // the flower and the Long Coast and the Delta draw their own shapes, scaled to fit the same square.
 const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
-const HEX_R = 92 // circumradius (centre to vertex)
+export const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 /** The painted face's radius on the board (the campaign map scales the board's ground art from it). */
 export const BOARD_FACE_R = 92 * 0.96

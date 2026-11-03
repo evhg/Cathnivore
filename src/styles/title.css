@@ -697,3 +697,50 @@ html.no-animations .title-screen * {
 }
 /* Plan item 69: the three tags fit one row on the sign (Credits wrapped alone at D): label only, no icon. */
 .title-minor .title-key-icon { display: none; }
+/* Plan item 71: the vans on the title board's roads, over the map in its own viewBox. */
+.title-map-wrap {
+  position: relative;
+}
+.title-movers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.title-movers .van-body { fill: var(--hollowell); stroke: var(--hollowell-ink); stroke-width: 0.8; }
+.title-movers .van-cab { fill: var(--hollowell-highlight); stroke: var(--hollowell-ink); stroke-width: 0.8; stroke-linejoin: round; }
+.title-movers .van-window { fill: var(--paper); }
+.title-movers .van-wheel { fill: var(--ink); }
+.title-movers.is-free .van-body { fill: var(--pasture); stroke: var(--pasture-deep); }
+.title-movers.is-free .van-cab { fill: var(--wheat); stroke: var(--pasture-deep); }
+.title-van { filter: drop-shadow(0 1.5px 1px color-mix(in srgb, var(--ink) 35%, transparent)); }
+/* Plan item 71: Cath larger beside the table (at least 360 px tall at D, 160 px on a phone), and the board's
+   marks on the title either readable (region names 12 px or more at D) or left off (prices, SOLD, threat badges). */
+.title-board .enemy-outlet .price-tag-text,
+.title-board .enemy-buyout .sold-text,
+.title-board .grip-sold,
+.title-board .threat-badge {
+  display: none;
+}
+@media (min-width: 761px) {
+  .title-table .title-cath {
+    width: 142%;
+    margin-left: -42%;
+  }
+  .title-board .region-name {
+    font-size: 1rem; /* 16 board units: 12.6 px on the D board */
+  }
+}
+@media (max-width: 760px) {
+  .title-board .region-name,
+  .title-board .region-plaque {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .title-art.title-table {
+    grid-template-columns: minmax(0, 0.46fr) minmax(0, 1fr);
+  }
+}
