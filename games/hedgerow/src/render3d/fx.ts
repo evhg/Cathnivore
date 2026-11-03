@@ -100,6 +100,8 @@ export class Sparks {
 }
 
 const MAX_DEBRIS = 400;
+/** A staying chunk's life: long enough that it never fades within a round. */
+const STAY = 1e6;
 
 /** Tumbling chunks: cardboard, glass, bodywork. They bounce once or twice and fade by shrinking. */
 export class Debris {
@@ -128,7 +130,11 @@ export class Debris {
     }
   }
 
-  emit(x: number, y: number, z: number, colors: string[], n: number, size = 0.06, speed = 2.2): void {
+  /**
+   * `stay` (plan item 45): the chunks lie where they land until clearStaying(), not fading; they share the ring of
+   * MAX_DEBRIS, so on a busy round the oldest go first.
+   */
+  emit(x: number, y: number, z: number, colors: string[], n: number, size = 0.06, speed = 2.2, stay = false): void {
     for (let k = 0; k < n; k++) {
       const i = this.next;
       this.next = (this.next + 1) % MAX_DEBRIS;
@@ -138,10 +144,15 @@ export class Debris {
       this.r.set([Math.random() * 6, Math.random() * 6, Math.random() * 6], i * 3);
       this.s[i] = size * (0.6 + Math.random() * 0.9);
       this.age[i] = 0;
-      this.life[i] = 1.4 + Math.random() * 0.8;
+      this.life[i] = stay ? STAY : 1.4 + Math.random() * 0.8;
       this.mesh.setColorAt(i, new THREE.Color(colors[k % colors.length]!));
     }
     if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
+  }
+
+  /** Clears the chunks left lying from earlier wrecks (the round is over). */
+  clearStaying(): void {
+    for (let i = 0; i < MAX_DEBRIS; i++) if (this.life[i]! >= STAY) this.age[i] = this.life[i]!;
   }
 
   update(dt: number): void {

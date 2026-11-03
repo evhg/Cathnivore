@@ -3481,3 +3481,32 @@ body:has(#dlg-pause[open]) .paused-note {
   flex: 1 0 auto;
   align-content: start;
 }
+/* Plan item 45: a swarm badge's make-up as one stacked bar, and each tower's pooled Marks in 3D. */
+.swarm-mix {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.swarm-mix i {
+  display: block;
+  min-width: 2px;
+}
+.swarm-badge {
+  padding-bottom: 7px;
+}
+.tower-marks {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font: 800 var(--fs-body) / 1 var(--font-ui);
+  color: #ffe27a;
+  -webkit-text-stroke: 3px rgb(60 40 10 / 0.8);
+  paint-order: stroke fill;
+  pointer-events: none;
+  will-change: transform, opacity;
+}

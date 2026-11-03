@@ -44,7 +44,7 @@ import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedG
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 import { swarms, SWARM_MIN } from "../swarm";
-import { layOutField, placeOnLane } from "../convoy";
+import { COLUMN_TIERS, layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 
 interface TowerView {
@@ -188,6 +188,12 @@ export class Renderer3D {
   private bossBar: HTMLElement;
   /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
   private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
+  /** Plan item 45: this frame's convoy layout (syncEnemies), which the swarm badges ride. */
+  private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
+  /** Plan item 45: each tower's pooled Marks and its "+N" label. */
+  private towerMarks = new Map<number, { n: number; quiet: number; el: HTMLElement | null }>();
+  /** Wreck panels are lying on the field (cleared once the round is over). */
+  private debrisLying = false;
   private overlayEl: HTMLElement;
   private bossFill: HTMLElement;
   private bossName: HTMLElement;
@@ -619,16 +625,29 @@ export class Renderer3D {
           // A layer off: a burst of chips in the colour of the rung underneath (12 for a lorry's box).
           const y = this.height(e.x, e.y);
           const under = (e.to ? RUNGS[e.to]?.colour : RUNGS[e.from]?.colour) ?? "#f4f6f8";
-          this.sparks.emit(e.x, y + 0.3, e.y, under, e.from === "lorry" && e.to ? 12 : 4, 2.2, 0.1, 0.45, -5);
-          this.gold.n += e.n;
-          this.gold.x = e.x;
-          this.gold.y = e.y;
+          if (!this.reducedMotion) this.sparks.emit(e.x, y + 0.3, e.y, under, e.from === "lorry" && e.to ? 12 : 4, 2.2, 0.1, 0.45, -5);
+          // Plan item 45: a tower's Marks pool into one +N over it (syncTowerMarks).
+          if (e.tower !== undefined) {
+            const m = this.towerMarks.get(e.tower) ?? { n: 0, quiet: 0, el: null };
+            m.n += e.n;
+            m.quiet = 0;
+            this.towerMarks.set(e.tower, m);
+          } else {
+            this.gold.n += e.n;
+            this.gold.x = e.x;
+            this.gold.y = e.y;
+          }
           break;
         }
         case "wreck": {
           const y = this.height(e.x, e.y);
-          this.debris.emit(e.x, y + 0.3, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44", "#c79a62", "#f4f6f8"], 36, 0.09, 3.2);
-          this.sparks.emit(e.x, y + 0.3, e.y, "#ffb04a", 50, 3.6, 0.25, 0.5, -1);
+          if (!this.reducedMotion) {
+            this.debris.emit(e.x, y + 0.3, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44", "#c79a62", "#f4f6f8"], 36, 0.09, 3.2);
+            this.sparks.emit(e.x, y + 0.3, e.y, "#ffb04a", 50, 3.6, 0.25, 0.5, -1);
+          }
+          // Plan item 45: a few panels stay lying by the lane until the round is over.
+          this.debris.emit(e.x, y + 0.15, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44"], 5, 0.08, this.reducedMotion ? 0.2 : 1.1, true);
+          this.debrisLying = true;
           // Comic death (H13): a hubcap rolls off, a sound-word pops up.
           this.fx.ring(e.x, y + 0.04, e.y, "#d8dde2", 0.5, 0.6);
           // The wreck leaves a scorch mark and a lazy column of grey smoke.
@@ -1071,6 +1090,11 @@ export class Renderer3D {
     this.syncSelection(game, t);
     this.syncBoss(game);
     this.syncSwarms(game);
+    this.syncTowerMarks(game, dt);
+    if (game.phase !== "wave" && this.debrisLying) {
+      this.debris.clearStaying();
+      this.debrisLying = false;
+    }
     this.syncSetPieces(game, t);
     this.syncPiles(game);
     this.syncOaks(game);
@@ -1303,7 +1327,7 @@ export class Renderer3D {
       this.gold.age = 0;
     }
     // Plan item 45: the queue laid out as a convoy (convoy.ts); the overflow stacks up as a column at its tail.
-    const lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as Enemy["kind"]), SWARM_MIN);
+    const lay = (this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as Enemy["kind"]), SWARM_MIN));
     for (const e of game.enemies) {
       const at = placeOnLane(game.level, e, lay);
       const tierUp = at.tier * 0.26 * enemyScale(e.kind);
@@ -1893,7 +1917,7 @@ export class Renderer3D {
         slot = { el, key: "" };
         this.swarmEls.push(slot);
       }
-      const key = `${sw.count}|${sw.kinds.slice(0, 3).map((k) => `${k.kind}:${k.n}`).join(",")}`;
+      const key = `${sw.count}|${sw.kinds.map((k) => `${k.kind}:${k.n}`).join(",")}`;
       if (key !== slot.key) {
         slot.key = key;
         const total = document.createElement("b");
@@ -1908,13 +1932,53 @@ export class Renderer3D {
           part.append(im, sw.kinds.length > 1 ? String(k.n) : "");
           slot.el.append(part);
         }
+        // Plan item 45: the whole make-up as one stacked bar along the badge's foot.
+        const bar = document.createElement("i");
+        bar.className = "swarm-mix";
+        for (const k of sw.kinds) {
+          const seg = document.createElement("i");
+          seg.style.flexGrow = String(k.n);
+          seg.style.background = RUNGS[k.kind]?.colour ?? "#8a7a66";
+          bar.append(seg);
+        }
+        slot.el.append(bar);
       }
-      const p = enemyPoint(game.level, sw);
-      const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + 1.1, p.y).project(this.camera);
+      // Where the queue has a column (convoy.ts), the badge rides its head.
+      const col: ConvoyColumn | undefined = this.lay.columns.find((c) => (c.lane ?? undefined) === (sw.lane ?? undefined));
+      const p = enemyPoint(game.level, col ? { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) } : sw);
+      const up = col ? 1.1 + Math.min(col.count, COLUMN_TIERS) * 0.26 : 1.1;
+      const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + up, p.y).project(this.camera);
       slot.el.hidden = false;
       slot.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
     });
     for (let i = list.length; i < this.swarmEls.length; i++) this.swarmEls[i]!.el.hidden = true;
+  }
+
+  /** Plan item 45: each tower's pooled Marks, one "+N" over it that counts up while it knocks and fades once it stops. */
+  private syncTowerMarks(game: Game, dt: number): void {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    for (const [id, m] of this.towerMarks) {
+      m.quiet += dt;
+      const tw = game.towers.find((x) => x.id === id);
+      if (!tw || m.quiet > 0.9) {
+        m.el?.remove();
+        this.towerMarks.delete(id);
+        continue;
+      }
+      if (!m.el) {
+        m.el = document.createElement("div");
+        m.el.className = "tower-marks";
+        m.el.setAttribute("aria-hidden", "true");
+        this.overlayEl.append(m.el);
+      }
+      m.el.textContent = `+${Math.floor(m.n)}`;
+      const x = tw.col + 0.5;
+      const z = tw.row + 0.5;
+      const v = new THREE.Vector3(x, this.height(x, z) + 1.25 + (this.reducedMotion ? 0 : m.quiet * 0.4), z).project(this.camera);
+      m.el.style.opacity = String(1 - Math.max(0, (m.quiet - 0.5) / 0.4));
+      m.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
+    }
   }
 
   private syncBoss(game: Game): void {

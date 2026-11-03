@@ -17,14 +17,22 @@ for (const [n, w, h, touch] of [['D', 1440, 900, false], ['P', 390, 844, true], 
   await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 120000 })
   await p.addStyleTag({ content: '#intro { display: none !important; }' })
   await p.waitForTimeout(1500)
-  await p.evaluate(() => {
+  await p.evaluate((real) => {
     const hg = window.hedgerow
     const g = hg.game()
+    if (real) {
+      // REAL=1: six cannons and the level's last round, as it really arrives.
+      let placed = 0
+      for (let r = 0; r < g.level.rows && placed < 6; r++) for (let c = 0; c < g.level.cols && placed < 6; c++) if (hg.place(g, 'cannon', c, r).ok) placed++
+      g.wave = g.level.waves.length - 1
+      hg.sendWave(g, true)
+      return
+    }
     hg.sendWave(g, true)
     const kinds = ['hatchback', 'courier', 'quad', 'lorry', 'drone']
     for (let i = 0; i < 160; i++) hg.spawn(kinds[i % 5], 9 + ((i * 37) % 31) / 10)
-  })
-  await p.waitForTimeout(mode === '2d' ? 700 : 6000)
+  }, !!process.env.REAL)
+  await p.waitForTimeout(process.env.REAL ? (mode === '2d' ? 9000 : 25000) : mode === '2d' ? 700 : 6000)
   const cnt = await p.evaluate(() => window.hedgerow.game().enemies.length)
   await p.screenshot({ path: `/tmp/claude-0/sw/${tag}-${mode}-${n}.png` })
   console.log(tag, mode, n, cnt, 'enemies')
