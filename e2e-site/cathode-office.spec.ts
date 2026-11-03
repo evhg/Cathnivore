@@ -108,3 +108,31 @@ test('Continue lands in the office, the stations open, and the stair door takes 
   await Promise.all([page.waitForURL(/district=clinic/, { timeout: 60_000 }), use()])
   await expect(page.locator('#area-title')).toContainText('THE CANDOR CLINIC', { timeout: 200_000 })
 })
+
+// Plan item 51: the office remembers the cases. With only the first job done there is one of Bea's drawings and an
+// empty shelf; once a case is closed (Crisp down) the shelf holds its keepsake and there is another drawing.
+test('a closed case puts its keepsake on the shelf and another drawing by the door', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the dressing is the same on a phone')
+  test.setTimeout(400_000)
+  type D = C & { officeDressing?: () => { drawings: number; keepsakes: number } | null }
+  await page.goto('/nightshift/')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?play&shot&district=office')
+  await page.waitForFunction(() => !!(window as unknown as { cathode?: D }).cathode?.player, null, { timeout: 200_000 })
+  await page.evaluate(() => {
+    const p = (window as unknown as { cathode: D }).cathode.progress
+    for (const j of ['fishMarket', 'crispLead']) if (!p.jobsDone.includes(j)) p.jobsDone.push(j)
+    p.save()
+  })
+  await page.goto('/nightshift/?play&shot&district=office')
+  await page.waitForFunction(() => !!(window as unknown as { cathode?: D }).cathode?.officeDressing, null, { timeout: 200_000 })
+  expect(await page.evaluate(() => (window as unknown as { cathode: D }).cathode.officeDressing!())).toEqual({ drawings: 1, keepsakes: 0 })
+  await page.evaluate((act1) => {
+    const p = (window as unknown as { cathode: D }).cathode.progress
+    for (const j of act1) if (!p.jobsDone.includes(j)) p.jobsDone.push(j)
+    p.save()
+  }, ACT1)
+  await page.goto('/nightshift/?play&shot&district=office')
+  await page.waitForFunction(() => !!(window as unknown as { cathode?: D }).cathode?.officeDressing, null, { timeout: 200_000 })
+  expect(await page.evaluate(() => (window as unknown as { cathode: D }).cathode.officeDressing!())).toEqual({ drawings: 2, keepsakes: 1 })
+})
