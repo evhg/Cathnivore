@@ -32,7 +32,7 @@ const FACE = R * 0.96 - 3
 /** Half the landmark art's extent (24-unit box, its strokes and the mill's sails to 13) at scale 1. */
 const ART_HALF = 13
 /** Sizes tried, largest first: a crowded tile takes a smaller landmark rather than none. */
-export const LANDMARK_SCALES = [1.25, 1.0, 0.8] as const
+export const LANDMARK_SCALES = [1.5, 1.25, 1.0, 0.8] as const
 const PAD = 2
 /** Flank spots round the middle column, best first: low on each side, then the upper flanks, then the sides. */
 export const SPOTS: ReadonlyArray<{ x: number; y: number }> = [
@@ -44,6 +44,11 @@ export const SPOTS: ReadonlyArray<{ x: number; y: number }> = [
   { x: 64, y: 2 },
   { x: -44, y: 46 },
   { x: 44, y: 46 },
+  // Nearer the middle: room for the largest size on a tile with few pieces.
+  { x: -46, y: 22 },
+  { x: 46, y: 22 },
+  { x: 52, y: -26 },
+  { x: -52, y: -26 },
 ]
 
 /**
