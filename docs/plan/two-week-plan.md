@@ -1072,12 +1072,12 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 69. [ ] The bugs from the 2026-11-03 11:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:**
-  - **Cathnivore D, round 5** (`cath-round5-D`): the "PLAY · 10 MORE ↓" pill sits over half-clipped Scheme cards at the Actions panel's foot.
-  - **Cathnivore title D** (`cath-title-D`): Credits wraps alone to a second row in the chalkboard sign.
-  - **Cathnivore end P** (`cath-end-P`): the chart's "land lost" label overlaps the red line's end.
+  - [x] **Cathnivore D, round 5** (`cath-round5-D`): the "PLAY · 10 MORE ↓" pill sits over half-clipped Scheme cards at the Actions panel's foot.
+  - [x] **Cathnivore title D** (`cath-title-D`): Credits wraps alone to a second row in the chalkboard sign.
+  - [x] **Cathnivore end P** (`cath-end-P`): the chart's "land lost" label overlaps the red line's end.
   - **Hedgerow P mid-round** (`hedge-l12-wave-P`): the swarm counter chip and its "+2" pill run off the right edge; the New-on-the-lane strip covers the top row of plots.
   - **Hedgerow P level start** (`hedge-l12-start-P`): the tip card covers the farmhouse row.
-  - **Hedgerow D tray**: the 4th card's name truncates ("Market S…") and a 5th hides under the scroll arrow.
+  - **Hedgerow D tray**: the 4th card's name truncates ("Market S…") and a 5th hides under the scroll arrow. *(2026-11-03 lane B: a 4-wide wrapped grid fixes the cut names but its second row makes `fitPreview` drop Cath's notebook at 1440x900 (fails `hedgerow-tray.spec.ts` "never an empty band"); the fix needs a shorter card (e.g. icon beside name and price) so two rows cost no more than one. Shoot with `scripts/hedgerow-tray-shots.mjs`.)*
   - **Hedgerow D wave**: about 40 vehicles clump at the Hollowell gate with the swarm chip on top of them (the convoy layout starts only on the lane).
   - **NIGHT SHIFT office loading** (`ns-office-D2`): labelled "Between cases · Cath's office" but shows Crisp's headline and the market blurb; with `?play&shot` the load can stall at 42-95%.
 - **Accept:** e2e for each layout case (bounding boxes inside the viewport and not intersecting, at P and D); shots before and after.
