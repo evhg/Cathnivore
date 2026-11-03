@@ -161,20 +161,36 @@ export function startField(canvas: HTMLCanvasElement, reduced: boolean): boolean
   const play = () => {
     if (running) return
     running = true
+    canvas.dataset.running = 'true'
     raf = requestAnimationFrame(frame)
   }
   const stop = () => {
     running = false
+    canvas.dataset.running = 'false'
     cancelAnimationFrame(raf)
   }
 
   let visible = true
+  // The field rests when nobody is there: after IDLE_MS with no pointer, touch, key or scroll it holds its last
+  // frame (so the page goes CPU-idle, and a laptop's fan stays quiet), and the next input wakes it.
+  const IDLE_MS = 7000
+  let idleTimer = 0
+  const rest = () => {
+    clearTimeout(idleTimer)
+    idleTimer = window.setTimeout(stop, IDLE_MS)
+  }
+  const wake = () => {
+    if (!visible || document.hidden || reduced) return
+    play()
+    rest()
+  }
+  for (const ev of ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart'] as const) addEventListener(ev, wake, { passive: true })
   new IntersectionObserver(([e]) => {
     visible = !!e?.isIntersecting
-    if (visible && !document.hidden) play()
+    if (visible && !document.hidden) wake()
     else stop()
   }).observe(canvas.ownerDocument.querySelector('.hero') ?? canvas)
-  document.addEventListener('visibilitychange', () => (document.hidden || !visible ? stop() : play()))
+  document.addEventListener('visibilitychange', () => (document.hidden || !visible ? stop() : wake()))
   addEventListener('resize', () => reduced && requestAnimationFrame(frame), { passive: true })
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault()
@@ -183,7 +199,7 @@ export function startField(canvas: HTMLCanvasElement, reduced: boolean): boolean
   })
 
   if (reduced) requestAnimationFrame(frame)
-  else play()
+  else wake()
   canvas.classList.add('on')
   return true
 }
