@@ -1043,7 +1043,16 @@ export class Renderer {
         continue;
       }
       const p = enemyPoint(level, sw);
-      this.swarmBadge(ctx, sw, X(p.x), Y(p.y + 0.2) - s * 0.95, s);
+      // Plan item 69: a queue that bends round the lane piles several cells tall; the badge sits above its
+      // topmost vehicle (within two cells of the middle) rather than on the pile, its pointer still on the queue.
+      let top = Y(p.y + 0.2) - s * 0.95;
+      for (const e of game.enemies) {
+        if ((e.lane ?? undefined) !== (sw.lane ?? undefined) || this.lay.inColumn.has(e.id)) continue;
+        const q = this.placeEnemy(level, e);
+        if (Math.hypot(q.x - p.x, q.y - p.y) > 2) continue;
+        top = Math.min(top, Y(q.y + 0.2) - s * (0.5 * enemyScale(e.kind) + enemyLift(e.kind) + 0.35));
+      }
+      this.swarmBadge(ctx, sw, X(p.x), Math.max(s * 0.6, top), s);
     }
 
     // Boss moves: a red crackle from the boss to each tower it knocked out.
