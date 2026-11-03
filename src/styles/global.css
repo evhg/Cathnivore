@@ -2004,7 +2004,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .segmented.mode-picker span.mode-who { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; }
   .setup { min-height: 100vh; align-content: center; }
   .setup .setup-recommend { align-self: flex-start; }
-  .mode-art svg { width: 52px; height: 62px; border-radius: 50%; }
+  .mode-art .mode-sit svg { width: 52px; height: 62px; border-radius: 50%; }
   .mode-tag { font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: inherit; }
   .mode-tag.is-ai { padding: 0 5px; border: 1.5px solid currentColor; border-radius: 999px; }
 
@@ -2025,6 +2025,19 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 .setup [data-producer='sol'] { --pc: var(--wheat-ink); }
 .setup .producer-card[data-producer] { border-top-color: var(--pc); }
 .setup .pair-panel, .setup .setup-advanced, .setup .open-sign-kicker { display: none; }
+/* The mode tiles' seats: a wooden chair drawn behind each producer. */
+.setup .mode-who { position: relative; }
+.setup .mode-art .mode-chair { position: absolute; left: 50%; top: -6px; width: 64px; height: 77px; margin-left: -32px; border-radius: 0; pointer-events: none; }
+.setup .mode-chair .chair-back { fill: color-mix(in srgb, var(--wood) 30%, transparent); stroke: var(--wood); stroke-width: 2.5; }
+.setup .mode-chair .chair-seat { fill: var(--wood); }
+.setup .mode-chair .chair-legs { stroke: var(--wood-lo); stroke-width: 3; stroke-linecap: round; fill: none; }
+.setup .segmented.mode-picker span.mode-who { position: relative; pointer-events: none; }
+.setup .segmented.mode-picker .mode-tag { position: relative; }
+.setup .segmented.mode-picker span.mode-name { display: block; text-align: inherit; }
+.setup .mode-name small { display: block; font-size: inherit; font-weight: 500; }
+/* Picked producers wear their own colour at every size. */
+.setup .producer-card[data-producer]:has(input:checked) { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc); }
+.setup .segmented.mode-picker span.mode-sit { position: relative; inset: auto; padding: 0; line-height: 0; }
 @media (max-width: 1099px) {
   .setup {
     max-width: 520px; min-height: 100dvh; padding: 8px 16px 6px;
@@ -2044,12 +2057,12 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 
   /* The event: a poster strip pinned to the stall, name and deal only. */
   .setup .market-event {
-    position: relative; padding: 6px 12px 6px 30px; border: 1.5px dashed var(--soil); border-radius: 4px;
+    position: relative; padding: 7px 12px 6px; border: 1px solid color-mix(in srgb, var(--soil) 45%, transparent); border-radius: 2px;
     background: var(--mat-paper); transform: rotate(-0.6deg);
     box-shadow: 0 4px 10px color-mix(in srgb, var(--ink) 12%, transparent);
   }
   .setup .market-event::before {
-    content: ''; position: absolute; left: 10px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%;
+    content: ''; position: absolute; left: 50%; top: -6px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
     background: radial-gradient(circle at 35% 35%, var(--wheat-hi), var(--clay-deep)); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 40%, transparent);
   }
   .setup .market-event h2 { font-family: var(--font-display); font-size: var(--fs-body); letter-spacing: 0; text-transform: none; color: var(--ink); }
@@ -2075,8 +2088,13 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .segmented.mode-picker span.mode-name { order: 2; position: static; padding: 0; font-size: var(--fs-label); font-weight: 700; line-height: 1.2; color: var(--ink); }
   .setup .segmented.mode-picker input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
   .setup .segmented.mode-picker span.mode-art { order: 1; position: static; display: flex; gap: 2px; padding: 0; }
-  .setup .segmented.mode-picker span.mode-who { position: static; display: flex; flex-direction: column; align-items: center; padding: 0; }
-  .setup .mode-art svg { width: 28px; height: 34px; border-radius: 50%; }
+  .setup .segmented.mode-picker span.mode-who { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0; }
+  .setup .mode-art .mode-sit svg { width: 28px; height: 34px; border-radius: 50%; }
+  .setup .mode-art .mode-chair { top: -4px; width: 34px; height: 40px; margin-left: -17px; }
+  .setup .segmented.mode-picker .mode-tag { margin-top: -2px; padding: 0 3px; background: var(--paper-hi); border-radius: 999px; }
+  .setup .segmented.mode-picker span.mode-name { display: block; white-space: nowrap; font-size: var(--fs-small); }
+  .setup .mode-name small { display: block; font-size: var(--fs-label); color: var(--ink-muted); }
+  .setup .mode-art .mode-who { width: 36px; }
   .setup .mode-tag { font-style: normal; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); line-height: 1; }
   .setup .mode-tag.is-ai { padding: 0 3px; border: 1px solid currentColor; border-radius: 999px; }
 
@@ -2102,8 +2120,8 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     box-shadow: 0 0 0 1.5px var(--pc), 0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent);
     transform: translateY(-8px) rotate(var(--deal, 0deg));
   }
-  .setup .pc-portrait svg { width: 48px; height: 57.6px; }
-  .setup .producer-card .pc-name { font-size: var(--fs-label); line-height: 1.15; }
+  .setup .producer-card .pc-name { font-size: var(--fs-label); line-height: 1.15; min-height: 2.3em; display: flex; align-items: center; }
+  .setup .pc-portrait svg { width: 52px; height: 62.4px; }
   .setup .producer-card .pc-role { display: none; }
   .setup .producer-card .pc-ability, .setup .producer-card .recommended-badge { display: none; }
   /* Picked: a tick on the card's corner in its colour, clear of the name. */
@@ -2117,11 +2135,12 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .pair-ability { margin: 0; padding: 4px 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-label); line-height: 1.3; color: var(--ink); }
   .setup .pair-ability b { display: block; font-weight: 800; color: var(--ink); }
   .setup .pair-ability.is-empty { color: var(--ink-muted); font-style: italic; }
+  .setup .pair-line-who { font-family: var(--font-ui, inherit); font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soil); }
   .setup .pair-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-size: var(--fs-small); line-height: 1.25; color: var(--ink-muted); }
 
   /* Difficulty: Hollowell's threat card. Picking a level flips the sheet over to what it changes. */
   .setup .setup-difficulty { border-color: color-mix(in srgb, var(--hollowell) 55%, var(--rule)); background: linear-gradient(180deg, color-mix(in srgb, var(--hollowell) 10%, var(--paper-hi)), var(--paper-hi)); }
-  .setup .setup-difficulty h2 { color: var(--clay); }
+  .setup .setup-difficulty h2 { color: var(--soil); }
   .setup .threat-kicker { font-weight: 600; letter-spacing: 0.04em; }
   .setup .setup-difficulty .segmented { margin-top: 4px; }
   .setup .setup-difficulty .segmented label { min-height: 32px; }
@@ -2129,7 +2148,8 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .difficulty-line { display: none; }
   /* The changes in one row: three on Normal, four when a level adds one. */
   .setup .difficulty-sheet dl { grid-template-columns: 0.95fr 1.15fr 1.3fr; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
-  .setup .difficulty-sheet dl:has(> div:nth-child(4)) { grid-template-columns: 0.9fr 1fr 1.15fr 0.95fr; }
+  .setup .difficulty-sheet dl:has(> div:nth-child(4)) { grid-template-columns: 1fr 1fr; grid-auto-flow: row; row-gap: 2px; }
+  .setup .difficulty-sheet dl:has(> div:nth-child(4)) > div { display: flex; align-items: baseline; gap: 6px; }
   .setup .difficulty-sheet dl > div { display: block; padding: 2px 0 0 10px; border-bottom: 0; }
   .setup .difficulty-sheet .is-changed::before { left: 0; top: 9px; width: 6px; height: 6px; margin-top: 0; background: var(--hollowell); }
   .setup .difficulty-sheet dt { font-size: 0.62rem; }
@@ -2155,6 +2175,21 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   }
   .setup .open-sign-kicker { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.8; line-height: 1; }
   .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
+  .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.14em; color: var(--ink); }
+}
+/* A short landscape phone: two columns so less hides under the sign. */
+@media (max-width: 1099px) and (orientation: landscape) and (max-height: 560px) {
+  .setup {
+    max-width: 860px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); column-gap: 12px; row-gap: 6px; align-content: start;
+    grid-template-areas: "head prod" "event prod" "mode prod" "diff seed" "start start";
+  }
+  .setup-header { grid-area: head; }
+  .setup .market-event { grid-area: event; }
+  .setup .setup-mode { grid-area: mode; }
+  .setup .setup-producers { grid-area: prod; }
+  .setup .setup-difficulty { grid-area: diff; }
+  .setup .setup-seed { grid-area: seed; }
+  .setup > button.setup-start { grid-area: start; }
 }
 @keyframes threat-flip { from { transform: perspective(600px) rotateX(-70deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .setup .difficulty-sheet { animation: none; } }

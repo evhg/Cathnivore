@@ -98,33 +98,23 @@ export default function Setup({ onStart }: Props) {
         <div className="segmented mode-picker">
           <label>
             <span className="mode-name">
-              <input type="radio" name="mode" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
+              <input type="radio" name="mode" aria-label="Solo (with an AI teammate)" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo
+              <small> with an AI</small>
             </span>
             {/* Plan item 8: the desktop spread draws each mode as a tile (hidden on phones, whose layout stays). */}
             <span className="mode-art" aria-hidden="true">
-              <span className="mode-who">
-                <Portrait character={producers[0] ?? 'mara'} size={52} />
-                <i className="mode-tag is-you">You</i>
-              </span>
-              <span className="mode-who">
-                <Portrait character={producers[1] ?? 'tomas'} size={52} />
-                <i className="mode-tag is-ai">AI</i>
-              </span>
+              <Seat who={producers[0] ?? 'mara'} tag="You" ai={false} />
+              <Seat who={producers[1] ?? 'tomas'} tag="AI" ai={true} />
             </span>
           </label>
           <label>
             <span className="mode-name">
-              <input type="radio" name="mode" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
+              <input type="radio" name="mode" aria-label="Hot-seat (two humans)" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat
+              <small> two players</small>
             </span>
             <span className="mode-art" aria-hidden="true">
-              <span className="mode-who">
-                <Portrait character={producers[0] ?? 'mara'} size={52} />
-                <i className="mode-tag is-you">P1</i>
-              </span>
-              <span className="mode-who">
-                <Portrait character={producers[1] ?? 'tomas'} size={52} />
-                <i className="mode-tag is-you">P2</i>
-              </span>
+              <Seat who={producers[0] ?? 'mara'} tag="P1" ai={false} />
+              <Seat who={producers[1] ?? 'tomas'} tag="P2" ai={false} />
             </span>
           </label>
         </div>
@@ -205,11 +195,28 @@ export default function Setup({ onStart }: Props) {
 
       <button className="primary setup-start" disabled={!canStart} onClick={start}>
         <span className="open-sign-kicker" aria-hidden="true">
-          Open
+          {canStart ? 'Open' : 'Closed · pick two'}
         </span>
         <span className="open-sign-word">Start</span>
       </button>
     </main>
+  )
+}
+
+/** Plan item 54: a seat at the table: a drawn chair, the producer sitting in it, and who plays them. */
+function Seat({ who, tag, ai }: { who: ProducerId; tag: string; ai: boolean }) {
+  return (
+    <span className="mode-who">
+      <svg className="mode-chair" viewBox="0 0 40 48" aria-hidden="true">
+        <path className="chair-back" d="M7 30V9a7 7 0 0 1 7-7h12a7 7 0 0 1 7 7v21" />
+        <rect className="chair-seat" x="3" y="30" width="34" height="5" rx="2" />
+        <path className="chair-legs" d="M7 35v12M33 35v12" />
+      </svg>
+      <span className="mode-sit">
+        <Portrait character={who} size={52} />
+      </span>
+      <i className={`mode-tag ${ai ? 'is-ai' : 'is-you'}`}>{tag}</i>
+    </span>
   )
 }
 
@@ -231,7 +238,11 @@ function PairPanel({ producers }: { producers: ProducerId[] }) {
           ),
         )}
       </div>
-      {a && b && <p className="pair-line">“{pairLine(a, b)}”</p>}
+      {a && b && (
+        <p className="pair-line">
+          <span className="pair-line-who">Cath</span> “{pairLine(a, b)}”
+        </p>
+      )}
     </div>
   )
 }
