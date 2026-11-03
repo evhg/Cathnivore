@@ -761,15 +761,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       <main className={`end-screen ${won ? 'is-win' : 'is-loss'}`} data-seed={seed}>
         <section className="end-col end-col-story">
           <div className={`end-screen-hero ${won ? 'is-win' : 'is-loss'}`}>
+            {/* Plan item 48: the result staged on the market table: Cath at half length in the bible pose for it,
+                cheering a win, arms crossed over a loss. */}
             <CathArt
               className="end-screen-cath"
-              framing="bust"
-              expression={won ? 'delighted' : 'worried'}
+              framing="half"
+              pose={won ? 'cheer' : 'crossed'}
+              expression={won ? 'delighted' : 'smirk'}
               pin={chosenPin()}
               animate
-              width={128}
-              height={128}
-              title={won ? 'Cath, delighted' : 'Cath, undeterred'}
+              width={200}
+              height={300}
+              title={won ? 'Cath, cheering' : 'Cath, arms crossed, undeterred'}
             />
           </div>
           <div className={`end-stamp ${won ? 'is-win' : 'is-loss'}`} aria-hidden="true">

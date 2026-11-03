@@ -2748,3 +2748,18 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   pointer-events: none;
 }
 .ledger-income.income-tick { display: inline-block; }
+
+/* Plan item 48: the end screen is a staged moment. Cath at half length in the result's pose fills the hero (the
+   rays behind her), the verdict stamp is big and lands after her, the play of the game flips in as a card, and the
+   grade is stamped last. Reduced motion: everything is simply there. */
+.end-screen-hero { width: min(300px, 80vw); height: clamp(200px, 34vh, 330px); }
+.end-screen-cath svg { width: auto; height: clamp(200px, 34vh, 330px); display: block; }
+.end-screen-hero.is-win::before { inset: -10px -40px 0; }
+.end-stamp { font-size: clamp(1.35rem, 1rem + 1.4vw, 2rem); padding: 0.2rem 1.1rem; margin-top: -2.2rem; border-width: 4px; position: relative; z-index: var(--z-raised); background: color-mix(in srgb, var(--paper) 70%, transparent); }
+.end-play { transform-origin: top center; animation: end-flip 0.55s cubic-bezier(.2,1.3,.4,1) 1.5s both; }
+@keyframes end-flip { from { opacity: 0; transform: perspective(700px) rotateX(-75deg); } }
+.end-grade { animation: end-grade-stamp 0.45s cubic-bezier(.2,1.6,.4,1) 2.1s both; }
+@keyframes end-grade-stamp { from { opacity: 0; transform: scale(2.4) rotate(-12deg); } }
+@media (prefers-reduced-motion: reduce) { .end-play, .end-grade { animation: none; } }
+html.no-animations .end-play, html.no-animations .end-grade { animation: none; }
+@media (max-width: 600px) { .end-screen-hero, .end-screen-cath svg { height: clamp(160px, 23vh, 230px); } }
