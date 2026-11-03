@@ -67,6 +67,7 @@ import { mostWanted, weekKey } from "../sim/mostwanted";
 import { openCaseBoard } from "../ui/caseboard";
 import { beaCall, caseDistrict, doorName, officeDressing, stationAt, STATION_VERB } from "./office";
 import { buildOfficeDressing, buildWindowRain } from "../render/officedress";
+import { buildOfficeMirror } from "../render/officemirror";
 import { STATIONS, type StationId } from "../render/levels/office";
 import { openDistrictMap } from "../ui/districtmap";
 import { openTalk } from "../ui/talk";
@@ -170,6 +171,8 @@ export interface Session {
   lieutenant?: () => Enemy | null;
   /** Plan item 51: what the office shows from the save (null outside the office). */
   officeDressing?: () => { drawings: number; keepsakes: number } | null;
+  /** Plan item 51: whether the office mirror rendered her last frame (null outside the office). */
+  officeMirror?: () => boolean | null;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
   talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
@@ -426,6 +429,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const officeDress = inOffice ? buildOfficeDressing(officeDressing(progress.jobsDone)) : null;
   if (officeDress) world.scene.add(officeDress);
   if (officeDress) world.scene.add(buildWindowRain(o.quality === "phone" || reduceMotionOn()));
+  // Plan item 51: the standing mirror shows her, in the coat the wardrobe saved (render/officemirror.ts).
+  const officeMirror = inOffice ? buildOfficeMirror(new THREE.Color(armDress(progress.character.equipment).sleeveFin.color), o.quality === "phone") : null;
+  if (officeMirror) world.scene.add(officeMirror.group);
+  const mirrorFeet = new THREE.Vector3();
   const tutorial = !inOffice && !progress.jobsDone.includes("fishMarket") && (!o.shot || new URLSearchParams(location.search).has("job"));
   const KITS = {
     rifle: [ENFORCER, "enforcer"],
@@ -702,6 +709,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   // A restart rebuilds the same object, so window.cathode (and anything holding it) stays the one session.
   const s: Session = o.warm ? Object.assign(o.warm.into, fresh) : fresh;
   s.officeDressing = () => (officeDress?.userData.dressing as { drawings: number; keepsakes: number } | undefined) ?? null;
+  s.officeMirror = () => officeMirror?.live ?? null;
   if (o.warm) for (const k of Object.keys(s) as Array<keyof Session>) if (!(k in fresh)) delete s[k];
   s.deaths = o.warm?.deaths ?? 0;
   s.dying = null;
@@ -4156,6 +4164,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
 
   function render(): void {
     const t0 = performance.now();
+    if (officeMirror) officeMirror.update(mirrorFeet.set(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z), player.yaw, t0 / 1000);
     if (keyArt || inOffice || talkShot) world.viewScene.visible = false;
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
