@@ -664,7 +664,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 5, 12, 21, 38, 45 and the bosses at P, D and L, in 2D and 3D.
 - **Size:** 5
 
-## 44. [ ] NIGHT SHIFT: a touch layout built for the scene, and a real upright-phone screen *(lane A, in progress)*
+## 44. [x] NIGHT SHIFT: a touch layout built for the scene, and a real upright-phone screen *(done 2026-11-03, lane A, ed02f95..HEAD: contextual Takedown/Focus/Skill fading in only when usable; Reload a tap on the round count; Aim, Takedown, Skill and Focus on one arc round Fire with Swap under it; Jump/Crouch flicks of the move thumb (`flickOf`); used Fire/Aim/Swap/Cath rest as 30% rings with no word; touch discs that take real taps; case note and vitals one block at L; upright, a designed screen (`ui/upright.ts`: Cath, a phone that turns, Back, and the case board, wardrobe and gun bench usable upright); the overlap report 0 at L and L2 in the market, clinic and Plaza; controls under 18% at rest, the takedown and upright e2e (`cathode-hud.spec.ts`, `cathode-upright.spec.ts`); the D HUD e2e unchanged; shots at L, L2, P, P2)*
 - **Why:**
   - At L nine buttons fill the right 40% of the screen and overlap each other.
   - Upright, the game is a dead-end black "turn your phone" card. The brief's minimum spec is an iPhone.
@@ -682,7 +682,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The case board and wardrobe open upright at P (e2e).
   - The D keyboard and HUD e2e are unchanged.
 - **Size:** 3
-- **Progress:** slices 1-4 (2026-11-02/03, lane A): contextual Takedown/Focus/Skill, Reload on the count, the arc round Fire with Swap under it, Jump/Crouch flicks, rings after first use, cover at rest under 18% (e2e), and touch discs that take real taps. Left: objective and health in one block at L, the upright screen, overlap reports in the clinic and market.
 
 ## 45. [x] Hedgerow: a swarm worth watching *(done 2026-11-03, lane B, 2186f1d..HEAD: `convoy.ts` lays each queue out for the eye (a length apart, two abreast past 12, never more than 2 cells behind its real place, so the rules and bot tuning stand), the overflow a column at the tail (2D stack with +N; 3D up to 8 high); per-tower pooled Marks, wreckage on the verge for the round, no shards under reduced motion, the swarm badge riding the column with a make-up bar, in 2D and 3D; unit test at 600 vehicles; e2e on level 38's last round (19; the level has no 20th) at P and D: 40+ drawn, a counter rising, shards gone under reduced motion; layout 0.3 ms a frame; shots 2D and 3D at P, D, L)*
 - **Why:**
@@ -720,7 +719,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of a win, a level-up win and a loss at P, D, L and dark.
 - **Size:** 2
 
-## 47. [ ] The bugs from the 2026-11-03 critique, fixed as one batch
+## 47. [ ] The bugs from the 2026-11-03 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** a shot-by-shot critique at P and D (2026-11-03, lane B planning) found these. Each one is small, but together they make the games look unfinished.
 - **Build:**
   - **Hedgerow:**
