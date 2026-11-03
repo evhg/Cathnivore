@@ -85,6 +85,7 @@ import { namesLeft } from "../ui/frontcopy";
 import { Actives } from "./actives";
 import { openCharacter } from "../ui/character";
 import { openBench, type BenchHandle } from "../ui/bench";
+import { mountUpright } from "../ui/upright";
 import { openWardrobe } from "../ui/wardrobe";
 import { armDress } from "./armdress";
 import { buildFrontCath, type FrontCath } from "../render/frontcath";
@@ -2702,6 +2703,26 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     return sightClear;
   };
+  /** Plan item 44: upright on a phone the game is frozen under the upright screen, whose keys open the office's
+   * board, wardrobe and bench as plain screens (no camera moves or 3D dressing: the street isn't showing). */
+  const rotateCard = (o.hud.parentElement ?? document).querySelector<HTMLElement>(".rotate");
+  if (rotateCard && input.isTouch) {
+    let uprightOpen = false;
+    mountUpright(rotateCard, {
+      open(id, done) {
+        if (uprightOpen) return;
+        uprightOpen = true;
+        const parent = o.hud.parentElement ?? o.hud;
+        const close = () => {
+          uprightOpen = false;
+          done();
+        };
+        if (id === "board") openCaseBoard(parent, progress.jobsDone, close);
+        else if (id === "bench") openBench(parent, () => progress.character, (next) => progress.set(next), () => {}, close);
+        else openWardrobe(parent, () => progress.character, (next) => progress.set(next), () => (dressArms(), close()));
+      },
+    });
+  }
   /** Plan item 16: the office's stations. The take key (or a tap on the chip) opens each one's screen. */
   function openStation(id: StationId): void {
     audio?.promptUp();

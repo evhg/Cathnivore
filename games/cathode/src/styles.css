@@ -1848,10 +1848,87 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   color: var(--ink);
   text-wrap: balance;
 }
+/* Plan item 44: the upright screen. Cath at half length in the top half, pointing down at the copy; under her a
+   phone that turns on its side, the line, and the office's three stations as raised keys. Back sits top left. */
+.rotate.upright {
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: stretch;
+  padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, calc(env(safe-area-inset-bottom) + 14px)) max(20px, env(safe-area-inset-left)); /* px-ok: phone margins */
+}
+.rotate.is-away { visibility: hidden; }
+/* A station opened upright stands alone: the frozen HUD and touch controls don't show round it. */
+.game.is-upright-station .hud, .game.is-upright-station .touch { visibility: hidden; }
+.up-back {
+  position: absolute;
+  z-index: var(--z-lift-2);
+  left: max(12px, env(safe-area-inset-left)); /* px-ok: phone margin */
+  top: max(8px, env(safe-area-inset-top)); /* px-ok: phone margin */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* px-ok */
+  min-height: 44px; /* px-ok: tap target */
+  padding: 0 8px; /* px-ok */
+  font: 600 var(--fs-1) var(--font-ui);
+  font-stretch: var(--wdth-label);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.up-back svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; } /* px-ok */
+.up-cath {
+  position: relative;
+  z-index: var(--z-lift);
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  filter: drop-shadow(0 10px 18px rgb(var(--black-rgb) / .55)); /* px-ok */
+}
+.up-cath svg { height: 100%; max-height: 46svh; width: auto; max-width: 100%; }
+.up-copy { position: relative; z-index: var(--z-lift); display: grid; gap: 10px; } /* px-ok */
+.up-turn { width: 76px; height: 76px; margin-left: -10px; color: var(--ink); } /* px-ok */
+.up-turn svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.up-turn .up-arc, .up-turn .up-tip { stroke: var(--stamp-red); stroke-width: 2.6; }
+.up-phone { transform-origin: 48px 48px; transform-box: view-box; animation: up-turn 3.2s var(--ease-out, ease-out) infinite; }
+@keyframes up-turn {
+  0%, 18% { transform: rotate(0deg); }
+  48%, 78% { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
+.reduce-motion .up-phone { animation: none; transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .up-phone { animation: none; transform: rotate(90deg); } }
+.upright .rotate-line { max-width: 18ch; }
+.up-sub { margin: 0; font: 500 var(--fs-2)/1.35 var(--font-ui); color: var(--ink-2); }
+.up-keys { display: grid; gap: 8px; margin-top: 4px; } /* px-ok */
+.up-key {
+  appearance: none;
+  display: grid;
+  gap: 2px; /* px-ok */
+  min-height: 52px; /* px-ok: tap target */
+  padding: 9px 14px 10px; /* px-ok */
+  text-align: left;
+  color: var(--ink);
+  background: rgb(var(--shade-rgb) / .62);
+  border: 0;
+  border-left: 3px solid var(--stamp-red); /* px-ok */
+  border-radius: 2px; /* px-ok */
+  box-shadow: 0 6px 14px rgb(var(--black-rgb) / .45), inset 0 1px 0 rgb(255 255 255 / .06); /* px-ok */
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.up-key:active { transform: translateY(1px); box-shadow: 0 2px 6px rgb(var(--black-rgb) / .45); } /* px-ok */
+.up-key:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; } /* px-ok */
+.up-key-name { font: 700 var(--fs-3)/1.1 var(--font-ui); font-stretch: var(--wdth-head); text-transform: uppercase; letter-spacing: .02em; }
+.up-key-sub { font: 500 var(--fs-1)/1.2 var(--font-ui); color: var(--ink-3); }
 @media (orientation: portrait) and (pointer: coarse) {
   .game .rotate {
     display: grid;
   }
+  /* The office's screens opened from the upright screen fill the width. */
+  .game .bench { justify-content: stretch; background: rgb(var(--shade-rgb) / .9); }
+  .game .bench-panel { width: 100%; padding: max(56px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); box-sizing: border-box; } /* px-ok: phone margins */
 }
 
 .perf-panel {
