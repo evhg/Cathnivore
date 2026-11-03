@@ -16,6 +16,7 @@ import { buildDistrict } from "./levels";
 import { createMaterials } from "./materials";
 import { addTraffic } from "./traffic";
 import { addStreetLife } from "./streetlife";
+import { streetExits } from "../sim/streetlife";
 import { addCrowd, addPatients, addShrouds, addStandingCrowd, crowdStanders } from "./crowd";
 import { bakeVolume, LightPool, hash1, flicker, signatureGain } from "./lighting";
 import { FAIL_SEED } from "./levels/clinic";
@@ -40,6 +41,9 @@ interface Preset {
   mainCull: number;
   /** On a shadow-refresh frame, meshes spanning under this many radians from the eye cast no shadow (0 = all do). */
   shadowCull: number;
+  /** Static material kinds that cast no shadow on this tier: the ground (nothing lies under it) and clutter too
+   * fine to leave a readable shadow in the map. Each one cut is a draw call off every shadow-refresh frame. */
+  noCast: readonly string[];
   rain: number;
   splashes: number;
   drips: number;
@@ -48,10 +52,13 @@ interface Preset {
   shadowEvery: number;
 }
 
+/** Plan item 57: the phone's firefight-12 shadow frames ran 262-278 calls against 260. */
+export const PHONE_NO_CAST = ["asphalt", "pavement", "fish", "ice", "cable", "carGlass", "plasticRed", "plasticWhite", "paintRed"] as const;
+
 const PRESETS: Record<Quality, Preset> = {
-  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, shadowCull: 0.03, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
-  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, shadowCull: 0, rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
-  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, shadowCull: 0, rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
+  phone: { pool: 12, shadow: 1024, softShadow: false, reflScale: 0.5, reflCull: 0.045, mainCull: 0.006, shadowCull: 0.03, noCast: PHONE_NO_CAST, rain: 5000, splashes: 450, drips: 160, steam: 10, skyline: 90, shadowEvery: 2 },
+  high: { pool: 32, shadow: 2048, softShadow: true, reflScale: 1, reflCull: 0.012, mainCull: 0, shadowCull: 0, noCast: [], rain: 14000, splashes: 1300, drips: 420, steam: 18, skyline: 150, shadowEvery: 1 },
+  ultra: { pool: 44, shadow: 4096, softShadow: true, reflScale: 1, reflCull: 0, mainCull: 0, shadowCull: 0, noCast: [], rain: 22000, splashes: 2200, drips: 700, steam: 24, skyline: 200, shadowEvery: 1 },
 };
 
 /** Fog: a cold blue-grey haze, linear RGB. */
@@ -120,7 +127,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   statics.name = "statics";
   const colliders = level.builder.colliders;
   const surfaces = level.builder.surfaces;
-  level.builder.build(materials, statics, { shadows: true, layer: (k) => (k === "asphalt" || k === "pavement" ? LAYER_NO_REFLECT : 0) });
+  level.builder.build(materials, statics, { shadows: true, noCast: (k) => P.noCast.includes(k), layer: (k) => (k === "asphalt" || k === "pavement" ? LAYER_NO_REFLECT : 0) });
   scene.add(statics);
   // Indoors the ceiling tubes share the district's power: they dip with the brownout and the blackout, and the
   // failing ones stutter in step with their lights (plan item 1).
@@ -167,6 +174,8 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     scene,
     crowdStanders((level.crowds ?? []).map((g) => ({ ...g, count: Math.round(g.count * crowdScale) })), blocked),
     (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7 }),
+    quality === "phone",
+    streetExits(options.district),
   );
   // Plan item 57: the street's own people (walkers, vendors, doorways, riders), who scatter at gunfire.
   const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6 }));
@@ -215,11 +224,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   // Blood and holes also land on shot-only cover (shutters, glass, awnings): it sits in front of the wall behind.
   const thinFaces = level.builder.shotOnly.filter((c) => !c.obb).map((c) => c.box);
   const fxs = createFx({ scene, shared, intensity: options.intensity, quality, colliders, thin: thinFaces, surfaces, groundHeight: level.groundHeight, volume, emit });
-  if (street) {
-    // Every gunshot (hers and theirs) goes through the muzzle flash: the street hears it there.
+  if (street || standing) {
+    // Every gunshot (hers and theirs) goes through the muzzle flash: the street and the standing crowds hear it there.
     const flashOnly = fxs.fx.muzzle.bind(fxs.fx);
     fxs.fx.muzzle = (pos, dir, size, suppressed, light) => {
-      street.shot(pos.x, pos.z, suppressed);
+      street?.shot(pos.x, pos.z, suppressed);
+      standing?.shot(pos.x, pos.z, suppressed);
       flashOnly(pos, dir, size, suppressed, light);
     };
   }
@@ -291,7 +301,13 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     viewScene,
     viewCamera,
     fx: fxs.fx,
-    street: street ?? undefined,
+    street: street || standing ? {
+      snapshot: () => [...(street?.snapshot() ?? []), ...(standing?.snapshot() ?? [])],
+      shot: (x: number, z: number, suppressed?: boolean) => {
+        street?.shot(x, z, suppressed);
+        standing?.shot(x, z, suppressed);
+      },
+    } : undefined,
     wind,
     perf,
     groundHeight: (x, z) => level.groundHeight(x, z),
@@ -357,7 +373,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       traffic?.update(time);
       if (!shot && dt > 0) {
         crowd?.update(time);
-        standing?.update(time);
+        standing?.update(dt, time);
         street?.update(dt, time);
       }
       pool.update(camera, dt, time, shot || dt === 0);

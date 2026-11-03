@@ -144,6 +144,19 @@ export function streetLife(district: string | undefined, tier: StreetTier): Stre
   return { agents, exits };
 }
 
+/** Where a district's people run to, for crowds authored elsewhere (the Plaza rally's standers, render/crowd.ts). */
+export function streetExits(district: string | undefined): Array<[number, number]> {
+  return AUTHORED[district ?? "market"]?.().exits ?? [];
+}
+
+/** A standing crowd as street agents that never walk: they react to shots like everyone else (plan item 57). */
+export function standerPlan(standers: ReadonlyArray<{ x: number; z: number; yaw: number; phase: number }>, exits: Array<[number, number]>): StreetPlan {
+  return {
+    agents: standers.map((s, id) => ({ id, role: "shopper" as const, path: [[s.x, s.z] as [number, number]], yaw: s.yaw, speed: 0, seed: hash(s.phase * 5.1 + id), umbrella: false })),
+    exits,
+  };
+}
+
 // ------------------------------------------------------------ the scatter state machine
 
 export interface AgentState {

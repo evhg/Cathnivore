@@ -225,7 +225,7 @@ export class Builder {
   }
 
   /** Merges every part into one mesh per material. Missing materials are skipped (and reported). */
-  build(materials: Record<string, THREE.Material>, group: THREE.Group, opts: { shadows: boolean; layer?: (key: string) => number }): void {
+  build(materials: Record<string, THREE.Material>, group: THREE.Group, opts: { shadows: boolean; noCast?: (key: string) => boolean; layer?: (key: string) => number }): void {
     for (const [key, list] of this.parts) {
       const mat = materials[key];
       if (!mat) {
@@ -240,7 +240,7 @@ export class Builder {
       const mesh = new THREE.Mesh(merged, mat);
       mesh.name = `static:${key}`;
       mesh.matrixAutoUpdate = false;
-      mesh.castShadow = opts.shadows && !key.startsWith("glow") && !key.startsWith("glass");
+      mesh.castShadow = opts.shadows && !key.startsWith("glow") && !key.startsWith("glass") && !opts.noCast?.(key);
       mesh.receiveShadow = opts.shadows;
       const layer = opts.layer?.(key) ?? 0;
       if (layer) mesh.layers.set(layer);

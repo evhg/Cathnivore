@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { buildDistrict } from "../games/cathode/src/render/levels/index";
+import * as THREE from "three";
+import { crowdStanders } from "../games/cathode/src/render/crowd";
+import { RIM_DRIPS, wetLayout, type WetPerson } from "../games/cathode/src/render/streetwet";
 import {
   DUCK_S,
   RETURN_AFTER_S,
   hearShot,
   initialState,
   pickExit,
+  standerPlan,
   stepStreet,
+  streetExits,
   streetLife,
   visible,
   type AgentState,
@@ -142,5 +147,76 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
     hearShot(plan, st, cath.x, cath.z);
     run(plan, st, 3, () => 3);
     expect(mean()).toBeGreaterThan(m0);
+  });
+
+  it("the Plaza rally's standers scatter too: duck, run for the square's exits, come back a minute after", () => {
+    const level = buildDistrict("plaza", "high");
+    const standers = crowdStanders(level.crowds ?? []);
+    expect(standers.length).toBeGreaterThan(20);
+    const exits = streetExits("plaza");
+    expect(exits.length).toBeGreaterThan(3);
+    const plan = standerPlan(standers, exits);
+    expect(standerPlan(standers, exits)).toEqual(plan);
+    const st = plan.agents.map(initialState);
+    // A shot in the middle of the rally (plaza.ts packs 70 below the steps round (0, -16)): everyone in earshot ducks.
+    const [cx, cz] = [0, -16];
+    const heard = hearShot(plan, st, cx, cz);
+    expect(heard).toBeGreaterThanOrEqual(70);
+    expect(heard).toBe(standers.filter((s) => Math.hypot(s.x - cx, s.z - cz) <= 30).length);
+    const ran = st.filter((s) => s.mood === "duck");
+    const spread = () => ran.reduce((n, s) => n + Math.hypot(s.x - cx, s.z - cz), 0) / ran.length;
+    const s0 = spread();
+    let quiet = 0;
+    run(plan, st, 3, () => (quiet += 0.05));
+    expect(spread()).toBeGreaterThan(s0 + 3);
+    run(plan, st, 30, () => (quiet += 0.05));
+    expect(ran.every((s) => s.mood === "gone")).toBe(true);
+    // Past a minute of quiet they walk back to where they stood.
+    run(plan, st, 120, () => (quiet += 0.05));
+    expect(st.every((s) => s.mood === "calm")).toBe(true);
+    st.forEach((s, i) => expect(Math.hypot(s.x - standers[i]!.x, s.z - standers[i]!.z)).toBeLessThan(0.01));
+  });
+});
+
+describe("NIGHT SHIFT rain on the street's people (plan item 57)", () => {
+  const person = (over: Partial<WetPerson> = {}): WetPerson => ({ x: 2, z: 3, y: 0, yaw: 0, body: new THREE.Matrix4().makeTranslation(2, 0, 3), umbrella: true, gait: null, seed: 0.37, ...over });
+  it("drips fall from the umbrella's rim and land as a crown on the ground", () => {
+    const out = new Float32Array(400);
+    let streaks = 0;
+    let crowns = 0;
+    for (let t = 0; t < 3; t += 0.02) {
+      const n = wetLayout([person()], t, out);
+      expect(n).toBeLessThanOrEqual(RIM_DRIPS);
+      for (let i = 0; i < n; i++) {
+        const [x, y, z, w] = [out[i * 4]!, out[i * 4 + 1]!, out[i * 4 + 2]!, out[i * 4 + 3]!];
+        expect(Math.hypot(x - 2.08, z - 3)).toBeCloseTo(0.53, 2);
+        if (w < 1) {
+          streaks++;
+          expect(y).toBeGreaterThanOrEqual(0);
+          expect(y).toBeLessThanOrEqual(1.95);
+        } else {
+          crowns++;
+          expect(y).toBe(0);
+          expect(w).toBeLessThan(2);
+        }
+      }
+    }
+    expect(streaks).toBeGreaterThan(50);
+    expect(crowns).toBeGreaterThan(20);
+    expect(wetLayout([person()], 1.234, out)).toBe(wetLayout([person()], 1.234, new Float32Array(400)));
+  });
+  it("footsteps splash left and right in turn; no umbrella, no drips; hidden people, nothing", () => {
+    const out = new Float32Array(400);
+    const sides = new Set<number>();
+    for (let g = 0; g < Math.PI * 4; g += 0.1) {
+      const n = wetLayout([person({ umbrella: false, gait: g })], 0, out);
+      for (let i = 0; i < n; i++) {
+        expect(out[i * 4 + 3]).toBeGreaterThanOrEqual(1);
+        sides.add(Math.sign(out[i * 4 + 2]! - 3));
+      }
+    }
+    expect([...sides].sort()).toEqual([-1, 1]);
+    expect(wetLayout([person({ umbrella: false })], 0.5, out)).toBe(0);
+    expect(wetLayout([person({ body: null, gait: 1 })], 0.5, out)).toBe(0);
   });
 });

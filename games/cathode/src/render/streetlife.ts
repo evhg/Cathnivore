@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { HAIRS, SKINS, UMBRELLAS, standingParts, umbrellaParts } from "./crowd";
 import { LAYER_NO_REFLECT } from "./reflection";
+import { RIM_DRIPS, addStreetWet, type WetPerson } from "./streetwet";
 import { hearShot, initialState, stepStreet, streetLife, visible, type AgentState, type StreetPlan, type StreetTier } from "../sim/streetlife";
 
 /** Wet wool in colours that read under neon: camel, olive, oxblood, slate, mustard, teal, charcoal. */
@@ -136,13 +137,18 @@ export function addStreetLife(
   const body = plan.agents.map(() => new THREE.Matrix4());
   const bike = plan.agents.map(() => new THREE.Matrix4());
   let quiet = 1e9;
+  // Rain on the people: umbrella drips and footstep splashes, high and ultra only (plan item 57).
+  const wet = lo ? null : addStreetWet(scene, plan.agents.length * (RIM_DRIPS + 1));
+  const wetPeople: WetPerson[] = plan.agents.map((a) => ({ x: 0, z: 0, y: 0, yaw: 0, body: null, umbrella: a.umbrella, gait: null, seed: a.seed }));
 
   const pose = (t: number) => {
     plan.agents.forEach((a, i) => {
       const st = states[i]!;
+      const w = wetPeople[i]!;
       if (!visible(st)) {
         body[i]!.copy(zero);
         bike[i]!.copy(zero);
+        w.body = null;
         return;
       }
       const rider = a.role === "cyclist" || a.role === "courier";
@@ -175,6 +181,12 @@ export function addStreetLife(
       q.setFromEuler(e);
       sc.set(k, k * squash * (0.95 + hash(a.seed * 3) * 0.1), k);
       body[i]!.compose(p.set(st.x, y + lift, st.z), q, sc);
+      w.x = st.x;
+      w.z = st.z;
+      w.y = y;
+      w.yaw = st.yaw;
+      w.body = body[i]!;
+      w.gait = moving && !rider ? ph : null;
       if (rider) {
         qr.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, st.yaw);
         bike[i]!.compose(p.set(st.x, y, st.z), qr, sc.set(1, 1, 1));
@@ -185,6 +197,7 @@ export function addStreetLife(
       who.forEach((a, j) => mesh.setMatrixAt(j, (onBike ? bike : body)[a]!));
       mesh.instanceMatrix.needsUpdate = true;
     }
+    wet?.update(wetPeople, t);
   };
   pose(0);
 

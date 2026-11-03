@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { LAYER_NO_REFLECT } from "./reflection";
+import { hearShot, initialState, standerPlan, stepStreet, visible } from "../sim/streetlife";
 
 export interface Spot {
   x: number;
@@ -336,9 +337,19 @@ export function umbrellaParts() {
 export const COATS = ["#1c2026", "#2a2622", "#3a3430", "#14181e", "#4a4038", "#23282a", "#5a3a34", "#2e3440", "#6a5a48"];
 export const UMBRELLAS = ["#0c0d10", "#14161a", "#1a1414", "#2a1a1e", "#0f1418", "#3a1016"];
 
-export function addStandingCrowd(scene: THREE.Scene, standers: Stander[], wrap: (m: THREE.MeshStandardMaterial) => THREE.Material) {
+/**
+ * `lo`: the phone's low-poly cut (the Plaza rally's 86 standers were 107k triangles at full detail). `exits`: where
+ * they run when shooting starts nearby (plan item 57: the same duck, flee, return machine as the street's people).
+ */
+export function addStandingCrowd(
+  scene: THREE.Scene,
+  standers: Stander[],
+  wrap: (m: THREE.MeshStandardMaterial) => THREE.Material,
+  lo = false,
+  exits: Array<[number, number]> = [],
+) {
   if (!standers.length) return null;
-  const parts = standingParts();
+  const parts = standingParts(lo);
   const merge = (gs: THREE.BufferGeometry[]) => mergeGeometries(gs.map((g) => (g.index ? g.toNonIndexed() : g)), false)!;
   const hair = [ball(new THREE.Vector3(0.0, 1.72, 0), 0.112, 1.02, 0.9, 0.97)];
   const hatG = [limb(new THREE.Vector3(0.01, 1.74, 0), new THREE.Vector3(0.01, 1.88, 0), 0.115, 0.1), limb(new THREE.Vector3(0.01, 1.74, 0), new THREE.Vector3(0.01, 1.765, 0), 0.22)];
@@ -346,7 +357,6 @@ export function addStandingCrowd(scene: THREE.Scene, standers: Stander[], wrap: 
   const armUp = [limb(new THREE.Vector3(0, 1.4, 0.22), new THREE.Vector3(0.25, 1.82, 0.19), 0.058, 0.05)];
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
-  const up = new THREE.Vector3(0, 1, 0);
   const p = new THREE.Vector3();
   const sc = new THREE.Vector3();
   const c = new THREE.Color();
@@ -376,20 +386,65 @@ export function addStandingCrowd(scene: THREE.Scene, standers: Stander[], wrap: 
   const filming = standers.filter((s) => s.phone && s.kind !== 0);
   mk(merge(armUp), std(0.55), filming, COATS, 1);
   mk(merge(phoneG), new THREE.MeshBasicMaterial({ color: new THREE.Color("#cfe6ff").multiplyScalar(3) }), filming, null, 7);
+  const plan = standerPlan(standers, exits);
+  const states = plan.agents.map(initialState);
+  const index = new Map(standers.map((s, i) => [s, i]));
+  const e = new THREE.Euler();
+  let quiet = 1e9;
   const place = (t: number) => {
     for (const { mesh, who } of meshes) {
       who.forEach((s, i) => {
-        // A slow weight shift and a turn of the shoulders, never in step with the neighbours.
-        const sway = Math.sin(t * 0.9 + s.phase) * 0.035;
-        q.setFromAxisAngle(up, s.yaw + Math.sin(t * 0.4 + s.phase * 2) * 0.06);
+        const st = states[index.get(s)!]!;
+        if (!visible(st)) {
+          mesh.setMatrixAt(i, m.makeScale(0, 0, 0));
+          return;
+        }
         const k = 0.93 + hash(s.phase * 7) * 0.12;
-        sc.set(k, k * (0.95 + hash(s.phase * 3) * 0.1), k);
-        p.set(s.x + sway, s.y, s.z + Math.cos(t * 0.7 + s.phase) * 0.02);
+        let squash = 1;
+        let lean = 0;
+        let lift = 0;
+        let yaw = st.yaw;
+        if (st.mood === "calm") {
+          // A slow weight shift and a turn of the shoulders, never in step with the neighbours.
+          yaw = s.yaw + Math.sin(t * 0.4 + s.phase * 2) * 0.06;
+          p.set(s.x + Math.sin(t * 0.9 + s.phase) * 0.035, s.y, s.z + Math.cos(t * 0.7 + s.phase) * 0.02);
+        } else {
+          // Ducking: knees bent, head low. Running for an exit, or walking back once it has been quiet a minute.
+          const running = st.mood === "flee";
+          const ph = t * (running ? 9 : 5.2) + s.phase * 40;
+          if (st.mood === "duck") {
+            squash = 0.64;
+            lean = -0.2;
+          } else {
+            lift = Math.abs(Math.sin(ph)) * (running ? 0.07 : 0.028);
+            lean = running ? -0.26 : -0.04;
+            yaw += Math.sin(ph) * (running ? 0.05 : 0.03);
+          }
+          p.set(st.x, s.y + lift, st.z);
+        }
+        q.setFromEuler(e.set(0, yaw, lean, "YXZ"));
+        sc.set(k, k * squash * (0.95 + hash(s.phase * 3) * 0.1), k);
         mesh.setMatrixAt(i, m.compose(p, q, sc));
       });
       mesh.instanceMatrix.needsUpdate = true;
     }
   };
   place(0);
-  return { update: place, count: standers.length };
+  return {
+    count: standers.length,
+    /** A gunshot at (x, z): the standers in earshot duck, then run. */
+    shot(x: number, z: number, suppressed = false) {
+      if (!exits.length) return;
+      quiet = 0;
+      hearShot(plan, states, x, z, suppressed);
+    },
+    update(dt: number, t: number) {
+      quiet += dt;
+      if (dt > 0) stepStreet(plan, states, Math.min(dt, 0.1), quiet);
+      place(t);
+    },
+    snapshot() {
+      return states.map((st, i) => ({ x: st.x, y: standers[i]!.y, z: st.z, mood: st.mood, role: "rally" }));
+    },
+  };
 }

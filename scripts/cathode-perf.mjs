@@ -68,17 +68,37 @@ try {
       await ctx.close()
       continue
     }
-    // Three frames on the stage; take the largest count (a shadow-refresh frame draws more).
+    // Sample until both a shadow-refresh frame and a plain frame have been seen (the phone refreshes shadows every
+    // second frame, and a refresh frame draws more), at least three frames, at most twelve; judge the largest.
     let calls = 0
     let tris = 0
     let refl = 0
-    for (let k = 0; k < 3; k++) {
+    let sawShadow = false
+    let sawPlain = false
+    for (let k = 0; k < 12 && (k < 3 || !sawShadow || !sawPlain); k++) {
       const f0 = await page.evaluate(() => window.cathode.stats.frames)
       await page.waitForFunction((f) => window.cathode.stats.frames > f, f0, { timeout: 120_000 })
       const p = await page.evaluate(() => window.cathode.world.perf)
+      if (p.shadowed) sawShadow = true
+      else sawPlain = true
       calls = Math.max(calls, p.drawCalls)
       tris = Math.max(tris, p.triangles)
       refl = Math.max(refl, p.reflCalls ?? 0)
+    }
+    if (!sawShadow) failures.push(`${C.name}: no shadow-refresh frame in 12 samples`)
+    if (process.env.PERF_CASTERS) {
+      const casters = await page.evaluate(() => {
+        const by = {}
+        window.cathode.world.scene.traverseVisible((o) => {
+          if (!o.isMesh || !o.castShadow) return
+          let top = o
+          while (top.parent && top.parent.type !== 'Scene') top = top.parent
+          const key = top.name || top.type
+          by[key] = (by[key] ?? 0) + 1
+        })
+        return Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 25)
+      })
+      console.log(`  casters (visible meshes casting, by root): ${JSON.stringify(casters)}`)
     }
     const ms = await page.evaluate(() => window.cathode.stats.combatMs ?? null)
     if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}/${C.name.replace(/\s+/g, '-')}.png`, timeout: 300_000 })
