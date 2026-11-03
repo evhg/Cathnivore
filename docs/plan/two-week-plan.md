@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-03 13:22 UTC
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1084,6 +1082,52 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **NIGHT SHIFT office loading** (`ns-office-D2`): labelled "Between cases · Cath's office" but shows Crisp's headline and the market blurb; with `?play&shot` the load can stall at 42-95%. *(Card and art fixed 2026-11-03 lane B; the `?play&shot` stall not reproduced or fixed yet.)*
 - **Accept:** e2e for each layout case (bounding boxes inside the viewport and not intersecting, at P and D); shots before and after.
 - **Size:** 2
+
+## 70. [ ] Runnel: the daily as a valley diorama
+- **Why:** 2026-11-03 13:25 critique (`e2e/screenshots/plan1103e/runnel-daily-D`, `-P`): the tiles fill about 500x500 px of a 1030x860 board frame at D, the left column is empty below the stats, and at P a 230 px cluster sits over about 300 px of blank paper (VISION: the table is the hero; every screen a scene).
+- **Build:**
+  - The board fitted to its puzzle and set in a valley scene: the spring house at the source, the stream bed running out, Bea's garden at the outlet growing a bed per watered field.
+  - Cath stands in the scene and reacts to each turn (a look when water reaches a field, a wave at a solve).
+  - At D the left column is a day card: the weather art, the streak and Bea's drawing.
+- **Accept:** e2e at P and D: the board's tiles cover at least 55% of the board frame's shorter side; no blank band over 120 px on either axis; no page scroll at P. Shots of three dailies at P and D, light and dark.
+- **Size:** 2
+
+## 71. [ ] Cathnivore: a title table that lives
+- **Why:** `cath-title-D`/`-P` (plan1103e): nothing on the table moves, board labels are about 9 px, Cath is a 240 px cut-out at D's edge and 95 px at P (VISION 4: staged moments; Cath the face of every game).
+- **Build:**
+  - Hollowell vans drive the roads between regions, a stall's awning opens, bunting flutters on freed regions (all still under reduced motion).
+  - Cath larger, from the waist up (the shared `shared/cath/` art), her expression changing as the menu entries are hovered or focused.
+  - Board labels on the title at least 12 px or hidden.
+- **Accept:** e2e at P and D: Cath at least 360 px tall at D and 160 px at P, no overlap with the menu; reduced motion stops every mover; shots at P and D, fresh and complete saves.
+- **Size:** 2
+
+## 72. [ ] Hedgerow: the round's threat staged before Go
+- **Why:** `hedge-l40-2d-D`, `hedge-l40-3d-D` (plan1103e): on "The Mega-Dozer" nothing of the coming convoy is on screen before Go, and Cath's notebook is about 120 px of empty ruled paper.
+- **Build:**
+  - Between rounds the next convoy queues at the Hollowell gate (a few lead vehicles drawn, a count plate), in 2D and 3D, cleared on Go.
+  - Boss rounds: the camera eases to the gate, then back.
+  - Cath's notebook becomes her advice card for the round: a sketch of the threat and one line on what answers it from the level's kit.
+- **Accept:** unit: the queue's preview matches the next wave's kinds; e2e at P and D: the queue is drawn and inside the field, the notebook never empty; shots of levels 1, 12, 40 between rounds in 2D and 3D.
+- **Size:** 2
+
+## 73. [ ] Hedgerow: the journey map as an illustrated country
+- **Why:** `hedge-map-D`/`-P` (plan1103e): nine of ten nodes are the same grey padlocked coin, each level's landmark is a 15 px icon, and "Beyond the hedge" is a fogged slab.
+- **Build:**
+  - Each node a painted vignette of its level (beehive, pie stall, the long lane, the van), greyed until unlocked and coming to life on unlock.
+  - A Cath token walks the path to the node picked.
+  - The next act shown as a glimpse of its country, not fog.
+- **Accept:** e2e at P and D: node labels never overlap nodes or each other; every node at least 44 px; shots of a fresh, mid and complete save at P and D.
+- **Size:** 2
+
+## 74. [ ] The bugs from the 2026-11-03 13:25 critique, fixed as one batch
+- **Build:**
+  - **/games/ D** (`site-D`): the game cards start below the fold at 1440x900 (no name visible); the market stall floats with no ground; the plank under Cath runs far past her.
+  - **/games/ P** (`site-P`): Cath's plank sits on the first card's top edge.
+  - **Hedgerow 2D P** (`hedge-l40-2d-P`): the HOLLOWELL exit sign clipped to "HOL" at the right edge.
+  - **Hedgerow map P** (`hedge-map-P`): "Start here" and "Mara's Field" stack into the row-2 path; labels crowd neighbouring nodes.
+  - **NIGHT SHIFT gate P** (`ns-title-P`): the FULL dash starts at x=0 with no gutter; "TAKE ME BACK" grey on near-black (check AA); the progress bar a 100 px hairline.
+- **Accept:** e2e boxes inside the viewport and not intersecting at P and D for each case; shots before and after.
+- **Size:** 1
 
 **Later, unranked:** (none)
 
