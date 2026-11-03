@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-03T07:07Z
 
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
@@ -906,6 +905,67 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - `scripts/cathode-perf.mjs` phone and D under budget in the market and the Plaza.
   - Shots of the market and the Plaza at D and L, calm and mid-fight, and the phone tier at L.
 - **Size:** 3
+
+## 58. [ ] NIGHT SHIFT: Cath's office lit and built like a noir set
+- **Why:**
+  - `ns-office-D` (2026-11-03 shots, `e2e/screenshots/plan1103c/`): the hub reads as a greybox: near-black plank walls and ceiling, one dim ceiling glow, the cork board's polaroids blank grey squares from the doorway, a large untextured red slab in the foreground. The street (`ns-market-D`) is lit like a film; the room Cath comes home to is not (VISION pillars 1 and 6).
+  - Item 51's dressing grows with closed cases, so a new player sees the bare room.
+- **Build:**
+  - Practical lighting in `render/levels/office.ts` as named `VLight`s: the green banker's lamp pooling on the desk, the bench lamp, the window's neon falling through venetian blinds as stripes on floor and walls (the rain shadow from `atmosphere.ts`).
+  - Real materials (`materials.ts`/`textures.ts`, a new `officetex.ts`): wallpaper above wainscot, worn floorboards with a rug, a desk with grain and a blotter.
+  - The case board (`pellboard.ts`/`officedress.ts`): polaroids printed with the List's faces from `ui/busts.ts` art, readable at 3 m, pins, string and handwritten names.
+  - A desk dressed from case 0: the phone, a case file, Bea's photo, a cooling coffee; the window shows the market's skyline and signs.
+  - Phone tier: blinds baked into one light cookie, no extra shadows.
+- **Accept:**
+  - Unit: `officeLights(tier)` deterministic counts per tier; every station has a light within 2 m; the board's polaroids map to the List.
+  - e2e at L and D: in the office at spawn, mean frame luminance up at least 40% on today's, the board shows at least 4 faces; `cathode-office` e2e still passes.
+  - `scripts/cathode-perf.mjs` phone and D under budget in the office.
+  - Shots of the office at 0 and 3 cases at L and D, and the phone tier at L.
+- **Size:** 2
+
+## 59. [ ] Hedgerow: a field that grows through the level, and a harvest on the win
+- **Why:**
+  - `hedge-wave-3d-D`, `hedge-wave-2d-P`: plots are fixed beds (`plotlook.ts`); nothing on the field changes from round 1 to the last, so the farm you defend never shows what is at stake.
+  - Item 46's win payout happens on a card, not on the field.
+- **Build:**
+  - `growth.ts` (pure): each empty plot's crop stage (bare, sprout, leaf, ripe) from rounds cleared, the crop per act; a leak tramples the plot nearest the lane's exit back one stage.
+  - Drawn in 2D (`render.ts`/`sprites.ts`) and 3D (`render3d/terrain.ts` beds, instanced crops in `models.ts`).
+  - The win: the field ripens in a wave from the farmhouse, Cath walks the beds with a basket while sheaves fly into item 46's Seed Bank chip.
+  - Reduced motion: a stage cross-fade.
+- **Accept:**
+  - Unit: `cropStage(level, round, leaks)` deterministic; a leak sets back the right plot; drawing only, the tuner fit untouched.
+  - e2e at P and D: the ripe-plot count rises from round 1 to the last round of level 13; a forced leak drops one plot; the win shows `.harvest` before the payout.
+  - Draw calls at level 13 (`scripts/hedgerow-drawcalls.mjs`) within +15%.
+  - Shots of levels 1, 13 and 38 at round 1, mid-level and the win, at P and D, 2D and 3D.
+- **Size:** 3
+
+## 60. [ ] Cathnivore: a title that opens on the real table
+- **Why:**
+  - `cath-title-D`: the title board is a flat diagram of six hexes with small stall icons, much plainer than the in-game board (`cath-game2-D`); the right half is cream rays.
+  - `cath-title-P`: Cath's figure covers the Brindle Hills and Oakvale hexes. VISION pillar 2: the table is the hero.
+- **Build:**
+  - `TitleArt.tsx`'s diagram replaced by the real `Map.tsx` board in a read-only showcase mode on item 28's trestle and cloth (`TableProps.tsx`, `tableLight.ts`), the time of day from the clock.
+  - The board shows the player's campaign: regions freed get bunting and a green wash; a fresh save shows Hollowell's Outlets.
+  - Cath beside the table in her market-day look with Bea at her side, never over a hex (a layout box at P, beside the table at D); her line changes with progress.
+  - The menu a chalkboard sign leaning on the table (Campaign, Quick Game, Daily Market), How to Play, Settings and Credits as tags. Reduced motion: no idle animation.
+- **Accept:**
+  - Unit: `titleBoardState(save)` for a fresh save, 2 freed regions and a complete campaign.
+  - e2e at P and D: Cath and the board never overlap, no page scroll at P, every menu entry reachable by keyboard, a freed region shows bunting from a seeded save.
+  - Shots fresh, mid-campaign and complete at P, L and D, light and dark.
+- **Size:** 2
+
+## 61. [ ] Runnel: channels cut into the earth, and water you can watch
+- **Why:**
+  - `runnel-daily2-D`, `runnel-daily2-P`: grooves are flat brown bars (`line.groove`, one stroke colour, `board.ts`, `.groove`); they read as planks or roads, not ditches, and the water is a thin dashed line inside them. The most-touched object in the game is the plainest (VISION pillars 1 and 6).
+- **Build:**
+  - In `board.ts` each groove a cut ditch: dark bed, sunlit and shaded banks from the sky's light (`sky.ts`), pebbles and a grass lip per ground (`ground.ts`), the hub a stone basin.
+  - Water a filled surface with a moving sheen, running from the spring when a tile joins (time scaled to path length), draining back when cut off, spilling into each field as a puddle that darkens the soil.
+  - Pinned tiles get a stake, not a ring; dark mode and the share card (`sharecard.ts`) match. Reduced motion: water at once, no sheen.
+- **Accept:**
+  - Unit: `waterFront(path, t)` timing; item 30's contrast floor holds for dry and wet channels on every ground and season.
+  - e2e at P and D: a joining tap fills the next tile within 600 ms (`data-wet`); cutting the path drains it; `runnel-board.spec` and the lesson specs pass.
+  - Shots of the daily, the lesson and a solved board at P and D, light and dark, in two seasons.
+- **Size:** 2
 
 **Later, unranked:** (none)
 
