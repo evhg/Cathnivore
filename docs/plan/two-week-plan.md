@@ -939,7 +939,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 13 and 38 at round 1, mid-level and the win, at P and D, 2D and 3D.
 - **Size:** 3
 
-## 60. [ ] Cathnivore: a title that opens on the real table
+## 60. [ ] Cathnivore: a title that opens on the real table *(lane B, in progress)*
 - **Why:**
   - `cath-title-D`: the title board is a flat diagram of six hexes with small stall icons, much plainer than the in-game board (`cath-game2-D`); the right half is cream rays.
   - `cath-title-P`: Cath's figure covers the Brindle Hills and Oakvale hexes. VISION pillar 2: the table is the hero.
