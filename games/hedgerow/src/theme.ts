@@ -598,26 +598,52 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         continue;
       }
       if (ground === "high") {
-        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        // A grassy knoll, not a button: a mound in the field's own greens with contour lines round its
+        // flank and a white trig pillar on top (high ground: +25% range). Critique 2026-11-03.
+        const cx = x + s / 2;
+        const base = y + s * 0.84;
+        ctx.fillStyle = "rgba(40,30,10,0.2)";
         ctx.beginPath();
-        ctx.ellipse(x + s / 2, y + s * 0.78, s * 0.42, s * 0.14, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, base, s * 0.46, s * 0.1, 0, 0, Math.PI * 2);
         ctx.fill();
-        const g = ctx.createLinearGradient(0, y + s * 0.2, 0, y + s * 0.8);
-        g.addColorStop(0, "rgba(190,220,120,0.95)");
-        g.addColorStop(1, "rgba(120,150,70,0.95)");
+        const mound = new Path2D();
+        mound.moveTo(x + s * 0.04, base);
+        mound.bezierCurveTo(x + s * 0.18, y + s * 0.44, x + s * 0.34, y + s * 0.26, cx, y + s * 0.26);
+        mound.bezierCurveTo(x + s * 0.66, y + s * 0.26, x + s * 0.82, y + s * 0.44, x + s * 0.96, base);
+        mound.closePath();
+        const g = ctx.createLinearGradient(x + s * 0.2, y + s * 0.26, x + s * 0.8, base);
+        g.addColorStop(0, "rgb(150,176,92)");
+        g.addColorStop(1, "rgb(92,120,56)");
         ctx.fillStyle = g;
+        ctx.fill(mound);
+        ctx.save();
+        ctx.clip(mound);
+        ctx.strokeStyle = "rgba(60,80,30,0.45)";
+        ctx.lineWidth = Math.max(1, s * 0.022);
+        for (const k of [0.5, 0.66]) {
+          ctx.beginPath();
+          ctx.ellipse(cx, base + s * 0.02, s * 0.46 * k, s * 0.58 * k, 0, Math.PI, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.fillStyle = "rgba(255,255,220,0.22)";
         ctx.beginPath();
-        ctx.roundRect(x + s * 0.1, y + s * 0.18, s * 0.8, s * 0.6, s * 0.2);
+        ctx.ellipse(x + s * 0.4, y + s * 0.42, s * 0.16, s * 0.08, -0.4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,230,0.75)";
-        ctx.lineWidth = Math.max(1.5, s * 0.04);
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
+        ctx.restore();
+        // the trig pillar
+        ctx.fillStyle = "rgb(244,238,224)";
+        ctx.strokeStyle = "rgba(60,50,40,0.7)";
+        ctx.lineWidth = Math.max(1, s * 0.02);
         ctx.beginPath();
-        ctx.moveTo(x + s * 0.38, y + s * 0.5);
-        ctx.lineTo(x + s * 0.5, y + s * 0.36);
-        ctx.lineTo(x + s * 0.62, y + s * 0.5);
+        ctx.moveTo(cx - s * 0.06, y + s * 0.3);
+        ctx.lineTo(cx - s * 0.045, y + s * 0.1);
+        ctx.lineTo(cx + s * 0.045, y + s * 0.1);
+        ctx.lineTo(cx + s * 0.06, y + s * 0.3);
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
+        ctx.fillStyle = "rgba(60,50,40,0.75)";
+        ctx.fillRect(cx - s * 0.02, y + s * 0.08, s * 0.04, s * 0.025);
         continue;
       }
     }
