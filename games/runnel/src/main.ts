@@ -122,6 +122,7 @@ function restore(p: Puzzle, saved: SavedGame | undefined): SavedGame {
 
 function openGame(): void {
   hideStrip()
+  document.querySelector('.bea-runner')?.remove()
   renderRail()
   // Leaving the lesson early (a tab, a board code): it comes back on the next visit.
   if (lessonStep >= 0) {
@@ -225,8 +226,22 @@ function finish(): void {
   save(data)
   board.celebrate()
   playWin()
+  beaRunsOut()
   ui.announce.textContent = 'Solved. Every field is watered.'
-  window.setTimeout(showWin, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : 1400)
+  // Plan item 68: the strip waits for the bloom to reach the board's last ring (110 ms a ring, then the bloom).
+  const rings = Math.max(0, ...puzzle.cells.map((c) => Math.max(Math.abs(c.q), Math.abs(c.r), Math.abs(c.q + c.r))))
+  window.setTimeout(showWin, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : Math.max(1400, rings * 110 + 1100))
+}
+
+/** Plan item 68: on a solve Bea runs out to her garden with her watering can. */
+function beaRunsOut(): void {
+  const garden = document.querySelector<HTMLElement>('.bea-garden')
+  if (!garden || garden.querySelector('.bea-runner')) return
+  const bea = document.createElement('span')
+  bea.className = 'bea-runner'
+  bea.setAttribute('aria-hidden', 'true')
+  bea.innerHTML = beaWateringSvg()
+  garden.append(bea)
 }
 
 // ---- clock ------------------------------------------------------------------------------------------
@@ -436,7 +451,7 @@ function showStrip(isDaily: boolean, streak: number): void {
 function placeStrip(): void {
   if (strip.root.hidden) return
   const r = ui.board.getBoundingClientRect()
-  strip.root.style.left = r.width ? `${Math.round(r.left + r.width / 2)}px` : ''
+  strip.root.style.setProperty('--strip-x', r.width ? `${Math.round(r.left + r.width / 2)}px` : '')
   strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(r.width)}px` : '')
 }
 window.addEventListener('resize', placeStrip)
