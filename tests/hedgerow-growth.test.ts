@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { cropOf, cropStage, cropStages, growthPlots, harvestAt, ripeCount, shownCrops, HARVEST_SECONDS } from "../games/hedgerow/src/growth";
 import { plotLooks } from "../games/hedgerow/src/plotlook";
+import { drainEvents, newGame, sendWave, stepGame } from "../games/hedgerow/src/engine";
 
 const level13 = LEVELS.find((l) => l.id === 13)!;
 const sum = (m: Map<string, number>) => [...m.values()].reduce((a, b) => a + b, 0);
@@ -82,5 +83,18 @@ describe("growth", () => {
     expect(cropOf({ id: 13 })).toBe("cabbage");
     expect(cropOf({ id: 38 })).toBe("pumpkin");
     expect(cropOf({ id: 50 })).toBe("lavender");
+  });
+
+  it("counts every vehicle that reaches the farmhouse, and nothing else changes", () => {
+    // An empty field on a forked level: the first wave walks straight to the farmhouse.
+    const g = newGame(LEVELS.find((l) => l.path2)!);
+    sendWave(g);
+    let events = 0;
+    for (let i = 0; i < 150 * 30 && g.phase === "wave"; i++) {
+      stepGame(g);
+      events += drainEvents(g).filter((e) => e.type === "leak").length;
+    }
+    expect(events).toBeGreaterThan(0);
+    expect(g.leaks).toBe(events);
   });
 });
