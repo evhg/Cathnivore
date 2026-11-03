@@ -766,6 +766,48 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   ctx.beginPath();
   ctx.roundRect(x + i, y + i, w, w, rad);
   ctx.stroke();
+  // Plan item 78: about a third of the stubble beds have a stook or two of last year's sheaves standing in them,
+  // so a block of plots reads as a farm at harvest's end, not a repeating tile.
+  if (look === "stubble" && r01() < 0.38) {
+    const n = r01() < 0.4 ? 2 : 1;
+    for (let k = 0; k < n; k++) paintStook(ctx, x + s * (0.3 + 0.4 * k + (r01() - 0.5) * 0.12), y + s * (0.7 + (r01() - 0.5) * 0.1), s * 0.3);
+  }
+}
+
+/** A stook: four sheaves leant together, a cone of straw tied at the waist, its shadow falling right. */
+function paintStook(ctx: CanvasRenderingContext2D, cx: number, base: number, h: number): void {
+  ctx.save();
+  ctx.fillStyle = "rgba(60,40,12,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(cx + h * 0.28, base, h * 0.5, h * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const g = ctx.createLinearGradient(cx - h * 0.4, 0, cx + h * 0.4, 0);
+  g.addColorStop(0, "rgb(246,218,140)");
+  g.addColorStop(1, "rgb(196,152,70)");
+  ctx.fillStyle = g;
+  ctx.strokeStyle = "rgba(110,76,26,0.85)";
+  ctx.lineWidth = Math.max(1, h * 0.06);
+  ctx.beginPath();
+  ctx.moveTo(cx - h * 0.4, base);
+  ctx.quadraticCurveTo(cx - h * 0.2, base - h * 0.55, cx - h * 0.06, base - h);
+  ctx.lineTo(cx + h * 0.06, base - h);
+  ctx.quadraticCurveTo(cx + h * 0.2, base - h * 0.55, cx + h * 0.4, base);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - h * 0.2, base - h * 0.5);
+  ctx.lineTo(cx + h * 0.2, base - h * 0.5);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,244,200,0.7)";
+  ctx.lineWidth = Math.max(1, h * 0.04);
+  for (const dx of [-0.18, 0, 0.18]) {
+    ctx.beginPath();
+    ctx.moveTo(cx + h * dx, base - h * 0.08);
+    ctx.lineTo(cx + h * dx * 0.3, base - h * 0.85);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /**
