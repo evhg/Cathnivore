@@ -129,6 +129,10 @@ export class Renderer {
   private parts: Particle[] = [];
   /** Fleet levels: Marks from knocks not yet shown, flushed as one "+N" floater every GOLD_WINDOW seconds. */
   private gold = { n: 0, x: 0, y: 0, age: 0 };
+  /** Plan item 45: each tower's Marks from knocks pooled into one rising "+N" over it, gone 0.9 s after its last knock. */
+  private towerMarks = new Map<number, { n: number; quiet: number }>();
+  /** Plan item 45: wreck debris left on the verge for the round (oldest culled past 140 pieces). */
+  private debris: Array<{ x: number; y: number; color: string; rot: number; size: number }> = [];
   private decals: Decal[] = [];
   private pies: PieFlight[] = [];
   /** Defeated enemies tipping over and fading where they fell. */
@@ -322,7 +326,7 @@ export class Renderer {
           // gathered into one gold floater per moment (merged over GOLD_WINDOW).
           const under = e.to ? RUNGS[e.to]?.colour : RUNGS[e.from]?.colour;
           // Plan item 19: a pop bursts. Flakes of the shell knocked off, a white shock ring, a couple of sparks.
-          if (this.parts.length < 400) {
+          if (this.parts.length < 400 && !this.reducedMotion) {
             const n = e.from === "lorry" && e.to ? 12 : 7;
             const shell = RUNGS[e.from]?.colour ?? "#f4f6f8";
             for (let i = 0; i < n; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 2 ? shell : (under ?? "#f4f6f8"), "square", 0.065, 0.5));
@@ -331,13 +335,27 @@ export class Renderer {
             ring.vx = ring.vy = ring.g = 0;
             this.parts.push(ring);
           }
-          this.gold.n += e.n;
-          this.gold.x = e.x;
-          this.gold.y = e.y;
+          if (e.tower !== undefined) {
+            const m = this.towerMarks.get(e.tower) ?? { n: 0, quiet: 0 };
+            m.n += e.n;
+            m.quiet = 0;
+            this.towerMarks.set(e.tower, m);
+          } else {
+            this.gold.n += e.n;
+            this.gold.x = e.x;
+            this.gold.y = e.y;
+          }
           break;
         }
         case "wreck": {
-          if (this.parts.length < 400) for (let i = 0; i < 24; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 3 ? (RUNGS[e.kind]?.colour ?? "#f2c230") : "#3b3f44", "square", 0.09, 0.8));
+          if (this.parts.length < 400 && !this.reducedMotion) for (let i = 0; i < 24; i++) this.parts.push(this.particle(e.x, e.y - 0.15, i % 3 ? (RUNGS[e.kind]?.colour ?? "#f2c230") : "#3b3f44", "square", 0.09, 0.8));
+          // Its wreckage stays on the verge until the round is over.
+          for (let i = 0; i < 4; i++) {
+            const a = this.rand() * Math.PI * 2;
+            const r = 0.25 + this.rand() * 0.25;
+            this.debris.push({ x: e.x + Math.cos(a) * r, y: e.y + Math.sin(a) * r * 0.6, color: i % 2 ? (RUNGS[e.kind]?.colour ?? "#f2c230") : "#3b3f44", rot: this.rand() * Math.PI, size: 0.05 + this.rand() * 0.05 });
+          }
+          if (this.debris.length > 140) this.debris.splice(0, this.debris.length - 140);
           break;
         }
         case "kill": {
@@ -803,8 +821,39 @@ export class Renderer {
         );
       },
     });
+    if (game.phase !== "wave") this.debris.length = 0;
+    for (const d of this.debris) {
+      ctx.save();
+      ctx.translate(X(d.x), Y(d.y));
+      ctx.rotate(d.rot);
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect((-d.size * s) / 2, (-d.size * s) / 3, d.size * s, (d.size * s * 2) / 3);
+      ctx.restore();
+    }
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.draw();
+    // Each tower's pooled Marks: one "+N" that counts up while it keeps knocking, then floats off and fades.
+    for (const [id, m] of this.towerMarks) {
+      m.quiet += dt;
+      const tw = game.towers.find((x) => x.id === id);
+      if (!tw || m.quiet > 0.9) {
+        this.towerMarks.delete(id);
+        continue;
+      }
+      const fs = Math.max(12, s * (0.26 + Math.min(0.14, Math.log10(1 + m.n) * 0.06)));
+      ctx.save();
+      ctx.globalAlpha = 1 - Math.max(0, (m.quiet - 0.5) / 0.4);
+      ctx.font = `800 ${fs}px ${FONT}`;
+      ctx.textAlign = "center";
+      ctx.lineWidth = Math.max(2, fs * 0.16);
+      ctx.strokeStyle = "rgba(60,40,10,0.8)";
+      ctx.fillStyle = "#ffe27a";
+      const ty = Y(tw.row + 0.5) - s * (0.95 + (this.reducedMotion ? 0 : m.quiet * 0.35));
+      ctx.strokeText(`+${Math.floor(m.n)}`, X(tw.col + 0.5), ty);
+      ctx.fillText(`+${Math.floor(m.n)}`, X(tw.col + 0.5), ty);
+      ctx.restore();
+    }
     // Blackout: the field is dark except where the towers and Cath give light.
     const dark = setPiece(level, "blackout");
     if (dark) {
@@ -1209,6 +1258,12 @@ export class Renderer {
     ctx.restore();
   }
 
+  /** Plan item 45, for tests and shots: vehicles drawn one by one, in columns, and the biggest pooled tower count. */
+  convoyStats(): { drawn: number; column: number; marks: number } {
+    let marks = 0;
+    for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);
+    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks };
+  }
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
   private layOut(game: Game): Convoy {
