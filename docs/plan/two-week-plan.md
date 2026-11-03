@@ -1046,7 +1046,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of levels 1, 12 and 30 at P and D in 3D, before and after, beside the 2D.
 - **Size:** 3
 
-## 67. [ ] Cathnivore: the desktop Setup staged like the phone one
+## 67. [ ] Cathnivore: the desktop Setup staged like the phone one *(lane B, in progress)*
 - **Why:** `cath-setup-D`: four plain rounded panels ("Mode", "Map", "Difficulty"), a bare seed input reading "random", map tiles as tiny chips, Start a lone slab in the corner with ~300 px of dead space; the phone Setup (item 54) has the drawn chairs, the dealt cards and the open-sign Start (VISION 4: staged moments).
 - **Build:**
   - At D the Setup is the market table seen from above: the producers' chairs pulled up round it (item 54's art, larger), the map tiles as small painted boards laid on the cloth to pick, difficulty as three chalk marks on a slate, the seed a luggage tag ("Random" or the number).
