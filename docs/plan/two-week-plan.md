@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-03T11:21:47Z
 
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
@@ -1014,7 +1013,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the drone and a boss intro, and a round end, at P, D and 844x390, in 2D and 3D.
 - **Size:** 2
 
-## 65. [ ] NIGHT SHIFT: a title that's a scene from the first frame, never a black void *(lane B, in progress)*
+## 65. [x] NIGHT SHIFT: a title that's a scene from the first frame, never a black void *(done 2026-11-03, lane B, c35c6e7: a baked poster of the street (`scripts/cathode-poster.mjs`, landscape and portrait WebPs) from index.html's first paint under a light boot scrim, cross-faded to the live street once it has drawn (it stays on the phone tier and without WebGL, with CSS rain); `ui/poster.ts` picker unit-tested; `e2e-site/cathode-poster.spec.ts` with and without WebGL; shots at 0.5 s, 5 s and live at P, L, D. The wordmark was already filled glyph paths (the critique caught its draw-in on black). Cut: the List and case lines as a paper tag)*
 - **Why:**
   - `ns-title-D`, `ns-title-L`: 5 s after load (under SwiftShader) the front door is a near-black gradient with a faint red blur, as the live street (`render/frontscene.ts`) hasn't arrived; the outlined wordmark is nearly invisible on the dark ground (pillars 1 and 7: first screen under 2 s). The owner saw a 10 s blank on a real Mac (FEEDBACK 2026-11-02).
 - **Build:**
@@ -1026,6 +1025,63 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Unit: a poster-path picker by viewport width and tier.
   - e2e at L and D: `.front-poster` visible within 1 s of load, with WebGL blocked and enabled; no frame where both poster and canvas are hidden; the wordmark measures as "NIGHT SHIFT" in the loaded font.
   - Shots at 0.5 s, 5 s and with the scene live, at P, D and 844x390.
+- **Size:** 2
+
+## 66. [ ] Hedgerow: a 3D field as warm as the 2D one
+- **Why:** the 2026-11-03 11:30 critique (`hedge-l30-3d-D`, `hedge-l30-3d-P`, against `hedge-l12-wave-D`):
+  - The 3D field is flat overcast grey-green with no sky or horizon, and houses float cut off at the top edge in grey haze.
+  - Plots are brown boxes and the lane reads as railway sleepers.
+  - Cath is a dark blob.
+  - The 2D field has sheep, pines, flowers and warm paper: the 3D is a step down from the game's own 2D (VISION pillars 1-2, art direction "farmers'-market poster").
+- **Build:**
+  - A painted sky dome per act (morning gold to evening rose) with a horizon of hills and hedges, the camera framed so no building is cut at the top edge; warm key light and soft bounce, not overcast fill.
+  - The lane as a rutted earth track with verges and wild flowers (instanced), field edges as hedgerows.
+  - Scatter from the 2D field's set (sheep, pines, flower clumps, a scarecrow) placed on the verges by the level seed.
+  - Cath read clearly: her modelled figure (item 52) lit with a rim, never darker than the ground behind her.
+  - Phone fps floor holds.
+- **Accept:**
+  - Unit: scatter placement deterministic per level and never on a plot or the lane.
+  - Mean frame luminance of a 3D level start at least 25% up on today's, and the sky band visible at the top of the frame (both measured by a script).
+  - Shots of levels 1, 12 and 30 at P and D in 3D, before and after, beside the 2D.
+- **Size:** 3
+
+## 67. [ ] Cathnivore: the desktop Setup staged like the phone one
+- **Why:** `cath-setup-D`: four plain rounded panels ("Mode", "Map", "Difficulty"), a bare seed input reading "random", map tiles as tiny chips, Start a lone slab in the corner with ~300 px of dead space; the phone Setup (item 54) has the drawn chairs, the dealt cards and the open-sign Start (VISION 4: staged moments).
+- **Build:**
+  - At D the Setup is the market table seen from above: the producers' chairs pulled up round it (item 54's art, larger), the map tiles as small painted boards laid on the cloth to pick, difficulty as three chalk marks on a slate, the seed a luggage tag ("Random" or the number).
+  - Start the stall's OPEN sign hung over the table, centred under the picks.
+  - Keyboard: every pick reachable and announced.
+- **Accept:**
+  - e2e at D (1440x900 and 1280x800): every control on screen without scrolling, Start reachable by keyboard; the map picker shows all three maps at 120 px or wider each.
+  - The phone Setup unchanged (setup e2e passes).
+  - Shots at D and 1280x800, light and dark.
+- **Size:** 2
+
+## 68. [ ] Runnel: a win that happens on the board
+- **Why:**
+  - `runnel-win-D`/`-P`: the win is a white modal over a blurred board (three stat boxes, three pills, a share card with about 6 px text), so the watered farm, the crops and Bea's garden, the payoff itself, are hidden behind the blur.
+  - `runnel-daily-P`: the phone daily floats on blank cream (60 px empty above, 80 px below); the spring house and the garden appear only at D, and the D rail is empty below "All stats" (VISION 4).
+- **Build:**
+  - The win plays on the board first: the water runs its whole course once more, the fields bloom in a wave from the spring, Bea runs out to the garden; then a slim result strip slides up from the foot (time, streak, share), never covering the board.
+  - On a phone the daily sits in a scene: the spring house above the board and Bea's garden below, sized to fill the free space.
+  - The D rail's foot holds the week's streak calendar.
+  - Reduced motion: the bloom is a fade, the strip appears.
+- **Accept:**
+  - e2e at P and D: after a solve the board stays unblurred and at least 80% visible with the strip up; the share card's text is at least 12 px; no page scroll at P.
+  - Shots of a solve at P and D, light and dark, before and after.
+- **Size:** 2
+
+## 69. [ ] The bugs from the 2026-11-03 11:30 critique, fixed as one batch
+- **Build:**
+  - **Cathnivore D, round 5** (`cath-round5-D`): the "PLAY · 10 MORE ↓" pill sits over half-clipped Scheme cards at the Actions panel's foot.
+  - **Cathnivore title D** (`cath-title-D`): Credits wraps alone to a second row in the chalkboard sign.
+  - **Cathnivore end P** (`cath-end-P`): the chart's "land lost" label overlaps the red line's end.
+  - **Hedgerow P mid-round** (`hedge-l12-wave-P`): the swarm counter chip and its "+2" pill run off the right edge; the New-on-the-lane strip covers the top row of plots.
+  - **Hedgerow P level start** (`hedge-l12-start-P`): the tip card covers the farmhouse row.
+  - **Hedgerow D tray**: the 4th card's name truncates ("Market S…") and a 5th hides under the scroll arrow.
+  - **Hedgerow D wave**: about 40 vehicles clump at the Hollowell gate with the swarm chip on top of them (the convoy layout starts only on the lane).
+  - **NIGHT SHIFT office loading** (`ns-office-D2`): labelled "Between cases · Cath's office" but shows Crisp's headline and the market blurb; with `?play&shot` the load can stall at 42-95%.
+- **Accept:** e2e for each layout case (bounding boxes inside the viewport and not intersecting, at P and D); shots before and after.
 - **Size:** 2
 
 **Later, unranked:** (none)
