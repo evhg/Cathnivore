@@ -1372,7 +1372,7 @@ export class Renderer {
       const fs = Math.max(11, s * 0.24);
       ctx.font = `800 ${fs}px ${FONT}`;
       const w = ctx.measureText(label).width + fs * 0.9;
-      const cx = X(p.x) + s * 0.42;
+      const cx = Math.max(4, Math.min(this.cssW - w - 4, X(p.x) + s * 0.42));
       const cy = Y(p.y + 0.2) - layers * s * 0.08 - fs * 0.7;
       ctx.fillStyle = "rgba(255,250,238,0.95)";
       ctx.strokeStyle = "rgba(70,48,30,0.85)";
@@ -1401,7 +1401,9 @@ export class Renderer {
     const parts = kinds.map((k) => ({ ...k, w: icon + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
     const pad = h * 0.3;
     const w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
-    const x0 = x - w / 2;
+    // Kept on the field's canvas (plan item 69: at 390 px a queue near the edge ran its badge off the screen).
+    const x0 = Math.max(4, Math.min(this.cssW - w - 4, x - w / 2));
+    x = Math.max(x0 + h * 0.4, Math.min(x0 + w - h * 0.4, x));
     const y0 = y - h;
     ctx.beginPath();
     ctx.roundRect(x0, y0, w, h, h / 2);
