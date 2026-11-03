@@ -929,11 +929,11 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   content: "";
   position: absolute;
   inset: -20% 0 0;
-  background: repeating-linear-gradient(100deg, transparent 0 22px, rgb(var(--cyan-rgb) / .07) 22px 23px, transparent 23px 47px);
+  background: repeating-linear-gradient(100deg, transparent 0 calc(22 * var(--u)), rgb(var(--cyan-rgb) / .07) calc(22 * var(--u)) calc(23 * var(--u)), transparent calc(23 * var(--u)) calc(47 * var(--u)));
   animation: front-rain 0.6s linear infinite;
   pointer-events: none;
 }
-@keyframes front-rain { to { transform: translate(-14px, 20%); } }
+@keyframes front-rain { to { transform: translate(calc(-14 * var(--u)), 20%); } }
 @media (prefers-reduced-motion: reduce) { .front-fallback::after { animation: none; } }
 .front-fallback.is-off::after { animation: none; }
 /* Plan item 65: while the page boots, the poster of the street shows through: the boot card is a light scrim over
