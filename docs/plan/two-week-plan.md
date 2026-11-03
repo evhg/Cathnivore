@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane B, 2026-11-03T11:21:47Z
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1012,7 +1014,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the drone and a boss intro, and a round end, at P, D and 844x390, in 2D and 3D.
 - **Size:** 2
 
-## 65. [ ] NIGHT SHIFT: a title that's a scene from the first frame, never a black void
+## 65. [ ] NIGHT SHIFT: a title that's a scene from the first frame, never a black void *(lane B, in progress)*
 - **Why:**
   - `ns-title-D`, `ns-title-L`: 5 s after load (under SwiftShader) the front door is a near-black gradient with a faint red blur, as the live street (`render/frontscene.ts`) hasn't arrived; the outlined wordmark is nearly invisible on the dark ground (pillars 1 and 7: first screen under 2 s). The owner saw a 10 s blank on a real Mac (FEEDBACK 2026-11-02).
 - **Build:**
