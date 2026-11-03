@@ -1011,4 +1011,4 @@ const workshop = initWorkshop({
   toast: (t) => (ui.toast.textContent = t),
 })
 
-mountWeekChip(document.getElementById('week-slot'))
+mountWeekChip(document.getElementById('week-slot'), 'Runnel')

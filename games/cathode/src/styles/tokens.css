@@ -132,7 +132,7 @@
   --mark-hang: calc(var(--u) * 40);
   /* The front door's letterbox band (2.39:1, capped at 9% of the height) and the top margin every screen under it
      uses: the band plus a margin, so a heading never sits on the band's edge (C13T). */
-  --letterbox: min(9svh, max(0px, (100svh - 100vw / 2.39) / 2));
+  --letterbox: min(5svh, max(0px, (100svh - 100vw / 2.39) / 2)); /* plan item 47: 9svh read as dead bands at D */
   --top-safe: max(var(--safe-y), env(safe-area-inset-top, 0px), calc(var(--letterbox) + max(14px, var(--u) * 40))); /* px-ok */
 
   /* --- hit confirm (S1.2): the marker's colours by class --- */
