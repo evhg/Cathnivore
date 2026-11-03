@@ -771,7 +771,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots fresh, mid-campaign and complete at P, D and dark.
 - **Size:** 2
 
-## 50. [ ] Runnel: a board with colour, a sky and a garden that grows
+## 50. [ ] Runnel: a board with colour, a sky and a garden that grows *(lane A, in progress)*
 - **Why:**
   - Most of the board reads as mud: brown tiles, dark-brown grooves, and green only where watered.
   - The caption says "Dusk, clear skies", but the scene is flat cream with no sky.
