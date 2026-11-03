@@ -1761,7 +1761,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           <Tooltip term="Lost Land">
             <span className="board-head">
               <LostLandIcon />
-              <span className="board-label">{state.lostLandPool <= 3 ? `Last ${state.lostLandPool}` : 'Lost Land'}</span>
+              {/* Critique 2026-11-03: the pool counts land still left to lose (a full bar is good), so the label says
+                  so; "Lost Land" over a full bar read as ten regions lost. The tooltip keeps the rules term. */}
+              <span className="board-label">{state.lostLandPool <= 3 ? `Last ${state.lostLandPool}` : 'Land left'}</span>
               <span key={lostLandTick} className={lostLandTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.lostLandPool}</span>
             </span>
           </Tooltip>
