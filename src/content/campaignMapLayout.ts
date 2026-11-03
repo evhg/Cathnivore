@@ -64,7 +64,7 @@ export function nameBox(id: RegionId): Box {
 
 // Each region's landmark (the docks at Shingle Bay, the mill at Rivermead, the market cross at Kingsmarket...)
 // stands in the hex's lower left, where no name, pin or Cath ever is.
-export type LandmarkKind = 'cross' | 'mill' | 'docks' | 'lighthouse' | 'oak' | 'barn' | 'fold'
+export type LandmarkKind = 'cross' | 'mill' | 'docks' | 'lighthouse' | 'oak' | 'barn' | 'fold' | 'gull' | 'fern' | 'tarn'
 export const LANDMARKS: Record<string, { kind: LandmarkKind; name: string }> = {
   kingsmarket: { kind: 'cross', name: 'the market cross' },
   rivermead: { kind: 'mill', name: 'the mill' },

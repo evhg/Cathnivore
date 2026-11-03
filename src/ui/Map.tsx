@@ -1,4 +1,6 @@
-import { useEffect, useId, useRef, useState, type ReactElement } from 'react'
+import { Landmark } from './Landmark'
+import { BOARD_LANDMARKS, landmarkSpot, pickSpot, type Box } from './landmarkSpot'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
@@ -596,6 +598,10 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
   }, [state, active])
 
   const svgRef = useRef<SVGSVGElement>(null)
+  // Plan item 55: once the pieces are laid out, each landmark moves to the first spot clear of their real boxes.
+  useLayoutEffect(() => {
+    if (svgRef.current) placeLandmarks(svgRef.current)
+  }, [state])
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
@@ -685,6 +691,18 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
               <TerrainArt type={def.type} id={id} />
             </g>
+            {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
+                map's art, on the first flank of the tile its pieces leave clear. */}
+            {(() => {
+              const kinds = (r.outlets > 0 ? 1 : 0) + (r.buyouts > 0 ? 1 : 0) + (r.doubt > 0 ? 1 : 0)
+              const spot = landmarkSpot(kinds, stalls.length)
+              if (!spot) return null
+              return (
+                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
+                  <Landmark kind={BOARD_LANDMARKS[id]} />
+                </g>
+              )
+            })()}
             {r.liberated && (
               <polygon
                 className="liberate-bloom"
@@ -1051,4 +1069,34 @@ function fitPlaques(svg: SVGSVGElement) {
 
 function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand'): boolean {
   return regionMatchesPressureSlot(state, region, slot)
+}
+
+/**
+ * Plan item 55: moves each tile's landmark clear of the pieces actually drawn on it. The pieces' screen boxes are
+ * taken into the tile's own units (round its centre) and the landmark takes the first flank spot clear of them.
+ */
+function placeLandmarks(svg: SVGSVGElement): void {
+  for (const lm of Array.from(svg.querySelectorAll<SVGGElement>('.board-landmark'))) {
+    const hex = lm.closest<SVGGElement>('.region-hex')
+    const ctm = hex?.getScreenCTM()
+    if (!hex || !ctm) continue
+    const inv = ctm.inverse()
+    const cx = Number(lm.dataset.cx)
+    const cy = Number(lm.dataset.cy)
+    const taken: Box[] = []
+    for (const el of Array.from(hex.querySelectorAll<SVGGElement>('[data-piece]'))) {
+      const r = el.getBoundingClientRect()
+      if (!r.width && !r.height) continue
+      const a = new DOMPoint(r.left, r.top).matrixTransform(inv)
+      const b = new DOMPoint(r.right, r.bottom).matrixTransform(inv)
+      taken.push({ x0: Math.min(a.x, b.x) - cx, y0: Math.min(a.y, b.y) - cy, x1: Math.max(a.x, b.x) - cx, y1: Math.max(a.y, b.y) - cy })
+    }
+    const spot = pickSpot(taken)
+    if (!spot) {
+      lm.setAttribute('visibility', 'hidden')
+      continue
+    }
+    lm.removeAttribute('visibility')
+    lm.setAttribute('transform', `translate(${cx + spot.x}, ${cy + spot.y}) scale(${spot.scale})`)
+  }
 }
