@@ -8,7 +8,7 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
   const ctx = await b.newContext({ viewport: vp, hasTouch: true, isMobile: true })
   await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
   const p = await ctx.newPage()
-  await p.goto((process.env.BASE ?? 'http://localhost:4186') + '/nightshift/?play&class=ghost&district=plaza&rs=0.75&quality=phone')
+  await p.goto((process.env.BASE ?? 'http://localhost:4186') + '/nightshift/?play&class=ghost&district=' + (process.env.DISTRICT ?? 'plaza') + '&rs=0.75&quality=phone')
   await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) > 5, null, { timeout: 240000 })
   // Past the tutorial: every control the game introduces, and the Widowmaker in her hands for the scope.
   await p.evaluate(() => {
@@ -33,21 +33,21 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
     return { hint, shown: btns.map((x) => x.n).join(','), weapon: document.querySelector('.hud-weapon')?.textContent, overlaps, inScope: btns.filter(inCircle).map((x) => x.n), scoped: document.documentElement.classList.contains('hud-aiming') }
   })
   console.log(n, 'rest', JSON.stringify(await measure()))
-  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-rest.png`, timeout: 240000 })
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${process.env.DISTRICT ?? 'plaza'}-${n}-rest.png`, timeout: 240000 })
   // Plan item 44: after first use, Fire, Aim, Swap and Cath rest as rings with no word.
   await p.evaluate(() => document.querySelectorAll('[data-btn="fire"], [data-btn="aim"], [data-btn="cycle"], [data-btn="sheet"]').forEach((e) => e.classList.add('used')))
   await p.waitForTimeout(3000)
   console.log(n, 'ring label opacity', await p.evaluate(() => getComputedStyle(document.querySelector('[data-btn="aim"] .tbtn-label')).opacity))
-  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-rings.png`, timeout: 240000 })
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${process.env.DISTRICT ?? 'plaza'}-${n}-rings.png`, timeout: 240000 })
   // Plan item 44: the whole cluster up at once (every moment's button forced on), checked for overlaps.
   await p.evaluate(() => { window.__idle = [...document.querySelectorAll('.tbtn.idle')]; window.__idle.forEach((e) => e.classList.remove('idle')); window.cathode.input.context = () => {} })
   await p.waitForTimeout(800)
   console.log(n, 'all', JSON.stringify(await measure()))
-  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-all.png`, timeout: 240000 })
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${process.env.DISTRICT ?? 'plaza'}-${n}-all.png`, timeout: 240000 })
   await p.evaluate(() => window.cathode.input.touchHeld.add('aim'))
   await p.waitForTimeout(4000)
   console.log(n, 'aim', JSON.stringify(await measure()))
-  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-scope.png`, timeout: 240000 })
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${process.env.DISTRICT ?? 'plaza'}-${n}-scope.png`, timeout: 240000 })
   // Plan item 44: the mag run low, so the round count shows its "Tap to reload".
   await p.evaluate(() => window.cathode.input.touchHeld.delete('aim'))
   await p.waitForFunction(() => {
@@ -56,7 +56,7 @@ for (const [n, vp] of [['L', { width: 844, height: 390 }], ['L2', { width: 932, 
     return false
   }, null, { timeout: 200000, polling: 400 }).catch(() => console.log(n, 'mag never ran low'))
   await p.waitForTimeout(1500)
-  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${n}-low.png`, timeout: 240000 })
+  await p.screenshot({ path: `e2e/screenshots/touch-${tag}-${process.env.DISTRICT ?? 'plaza'}-${n}-low.png`, timeout: 240000 })
   await ctx.close()
 }
 await b.close()

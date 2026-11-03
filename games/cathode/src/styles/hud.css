@@ -1745,7 +1745,24 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
    (plan item 44's arc already keeps every disc outside a scope of 40vh at 844x390). */
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
   .look-hint { right: calc(20px + var(--safe-r)); top: calc(66px + var(--safe-t)); }
+  /* Plan item 44: at L the case note and the vitals are one compact block: one pool of shade under both, a tight
+     gap and a hairline between, instead of two clusters each on its own pool. */
+  .hud-tl { gap: 6px; isolation: isolate; }
+  .hud-tl::before {
+    content: "";
+    position: absolute;
+    inset: -12px -56px -18px -28px;
+    z-index: -1;
+    background: radial-gradient(farthest-side at 28% 45%, rgb(var(--shade-rgb) / .62), rgb(var(--shade-rgb) / .34) 62%, transparent);
+    pointer-events: none;
+  }
+  .hud-tl > .hud-objective { padding-bottom: 0; }
+  .hud-tl > .hud-objective::after,
+  .hud-tl > .hud-vitals::before { display: none; }
+  .hud-tl > .hud-vitals { padding-top: 8px; border-top: 1px solid rgb(var(--ink-rgb) / .16); }
 }
+/* One instruction at a time: while a teach line is up (it says how to flick), the stick's own flick tip steps aside. */
+.game:has(.hud-teach.on) .stick-tip { opacity: 0; }
 
 /* px-ok:end */
 /* ---- phones held upright (a desktop browser this narrow): clusters stack under a full-width subtitle ---- */
