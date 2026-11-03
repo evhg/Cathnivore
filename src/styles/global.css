@@ -2784,3 +2784,23 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 @media (prefers-reduced-motion: reduce) { .end-play, .end-grade { animation: none; } }
 html.no-animations .end-play, html.no-animations .end-grade { animation: none; }
 @media (max-width: 600px) { .end-screen-hero, .end-screen-cath svg { height: clamp(160px, 23vh, 230px); } }
+/* Plan item 48 at P: one column in the order the result reads (Cath, the stamp, the headline, the verdict and grade,
+   then the chart), so the moment and its chart stand above the sticky Play again bar without scrolling; the story,
+   the play of the game, the stats and the final board follow below. */
+@media (max-width: 600px) {
+  .end-screen { gap: 8px; padding: 12px 16px 0; }
+  .end-col { display: contents; }
+  .end-screen-hero { order: 1; height: clamp(140px, 19vh, 180px); }
+  .end-screen-cath svg { height: clamp(140px, 19vh, 180px); }
+  .end-stamp { order: 2; margin-top: -1.8rem; font-size: 1.3rem; }
+  .end-screen h1 { order: 3; font-size: clamp(1.5rem, 6.5vw, 1.9rem); }
+  .end-daily, .pin-earned { order: 4; margin: 0; }
+  .end-screen-verdict { order: 5; }
+  .end-chart { order: 6; max-width: 520px; padding: 6px 10px 4px; }
+  .end-chart svg { max-height: 150px; }
+  .end-screen-story { order: 7; margin: 0; }
+  .end-play { order: 8; }
+  .end-screen-stats { order: 9; }
+  .end-screen-map { order: 10; }
+  .end-actions { order: 11; }
+}

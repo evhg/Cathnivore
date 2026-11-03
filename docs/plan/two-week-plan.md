@@ -733,7 +733,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
     - the lesson's four tiles sit in one corner of the framed board (centre them).
   - **Cathnivore:**
     - the end screen is blank cream for about 2.5 s at D before the card mounts;
-    - the end chart at P is clipped under the sticky Play again bar;
+    - the end chart at P is clipped under the sticky Play again bar *(fixed by lane B under item 48, 2026-11-03)*;
     - the teammate's "weighing up their move .." has a double dot;
     - the D Actions panel during the teammate's turn is 560 px of blank cream (show the card the teammate is lifting, or Cath's plan);
     - the Mara Keel farm thumbnail is blank grey;
