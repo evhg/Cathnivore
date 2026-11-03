@@ -2393,6 +2393,34 @@ body {
     border: 1px solid var(--ink);
   }
 
+  /* Plan item 50: the week's arc, Monday to Sunday, as the days' boards in little. */
+  .rail-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rail-week li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--fs-label);
+    color: var(--ink-muted);
+  }
+  .rail-week li[data-state='today'] { color: var(--ink); font-weight: 700; }
+  .rail-week .wk-board { width: 100%; aspect-ratio: 1; overflow: visible; }
+  .wk-tile { fill: var(--dry); stroke: var(--dry-edge); stroke-width: 1; }
+  .wk-stone { fill: var(--paper-2); }
+  .wk-channel { fill: none; stroke: var(--groove); stroke-width: 3.4; stroke-linecap: round; }
+  .wk-board[data-state='solved'] .wk-tile:not(.wk-stone) { fill: var(--wet); stroke: var(--wet-edge); }
+  .wk-board[data-state='solved'] .wk-channel { stroke: var(--water); }
+  .wk-board[data-state='missed'] { opacity: 0.45; }
+  .wk-board[data-state='ahead'] .wk-tile { fill: none; stroke-dasharray: 2 2; }
+  .wk-board[data-state='today'] .wk-tile { stroke: var(--ink); }
+
   .foot {
     justify-content: flex-start;
   }
@@ -2445,7 +2473,7 @@ body {
     position: absolute;
     right: 20px;
     bottom: 34px;
-    width: 160px;
+    width: 236px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -2468,7 +2496,7 @@ body {
   }
 
   .bea-fence {
-    width: 160px;
+    width: 236px;
     height: 26px;
     fill: none;
     stroke: var(--soil);
@@ -2526,6 +2554,12 @@ body {
   width: 28px;
   height: 28px;
 }
+/* Plan item 50: the week's beds. A bare mound for a day not (yet) solved; today's has its seed packet. */
+.bea-crops .bed svg { display: block; width: 100%; height: 100%; }
+.bed-mound { fill: var(--groove); opacity: 0.55; }
+.bed-ahead .bed-mound { opacity: 0.25; }
+.bed-marker { stroke: var(--soil); stroke-width: 1.4; stroke-linecap: round; }
+.bed-packet { fill: var(--gold); stroke: var(--soil); stroke-width: 1; }
 .win-drops {
   display: inline-flex;
   gap: 2px;

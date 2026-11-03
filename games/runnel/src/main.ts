@@ -14,6 +14,7 @@ import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
 import { boardSky } from './sky'
+import { weekBeds, weekStrip } from './weekstrip'
 import {
   arcLabel,
   computeFlow,
@@ -603,16 +604,26 @@ function renderRail(): void {
     cells.push(cell)
   }
   $<HTMLDivElement>('rail-cal').replaceChildren(...cells)
-  // Bea's garden in the farm's corner: the newest of her crops (a seed bed until the first daily is solved).
-  const plots = gardenPlots(data.results, today)
-  const crops = plots.slice(-6).map((p) => {
+  // Plan item 50: the week's arc in the rail, as small boards (solved ones watered).
+  $<HTMLOListElement>('rail-week').replaceChildren(
+    ...weekStrip(today, data.results).map(({ day, svg }) => {
+      const li = document.createElement('li')
+      li.dataset.state = day.state
+      li.setAttribute('aria-label', `${day.short}${day.arc ? `, ${day.arc}` : ''}: ${day.state === 'solved' ? 'solved' : day.state === 'today' ? "today's board" : day.state === 'missed' ? 'not played' : 'still to come'}`)
+      li.innerHTML = `${svg}<span aria-hidden="true">${day.short}</span>`
+      return li
+    }),
+  )
+  // Bea's garden in the farm's corner: the week's seven beds, a solved day's crop at its stage, a mound otherwise.
+  const beds = weekBeds(today, data.results).map((b) => {
     const i = document.createElement('i')
-    i.innerHTML = cropSvg(p.crop, p.stage)
-    if (p.gold) i.className = 'gold'
+    i.className = `bed bed-${b.state}${b.plot?.gold ? ' gold' : ''}`
+    i.innerHTML = b.plot ? cropSvg(b.plot.crop, b.plot.stage) : `<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="22" rx="12" ry="5"/>${b.state === 'today' ? '<path class="bed-marker" d="M14 21V8"/><rect class="bed-packet" x="9" y="4" width="10" height="8" rx="1"/>' : ''}</svg>`
+    i.title = `${b.short}${b.plot ? `: ${b.plot.label}` : ''}`
     return i
   })
-  $<HTMLDivElement>('bea-crops').replaceChildren(...crops)
-  $<HTMLDivElement>('bea-crops').classList.toggle('bare', crops.length === 0)
+  $<HTMLDivElement>('bea-crops').replaceChildren(...beds)
+  $<HTMLDivElement>('bea-crops').classList.remove('bare')
 }
 
 function showStats(): void {

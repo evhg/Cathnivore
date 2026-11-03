@@ -14,6 +14,15 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
     await p.waitForTimeout(900)
     await p.screenshot({ path: out(`${sky.replace(',', '-')}-${n}`) })
   }
+  // A player who solved Monday and two dailies last week: the week strip and Bea's beds have something in them.
+  const res = (n) => ({ number: n, timeMs: 90000, taps: 50, par: 41 })
+  await p.evaluate((r) => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, daily: {}, practice: {}, results: r, bestPractice: {}, practiceSolved: 0, seenHelp: true })), {
+    '2026-10-26': res(30), '2026-10-29': res(33), '2026-11-02': res(37),
+  })
+  await p.goto(`${base}?nohelp&sky=noon,clear`)
+  await p.waitForTimeout(900)
+  await p.screenshot({ path: out(`week-${n}`) })
+  await p.evaluate(() => localStorage.clear())
   await p.goto(`${base}?nohelp&shotwin&sky=dusk,clear`)
   await p.waitForTimeout(1200)
   await p.screenshot({ path: out(`win-dusk-${n}`) })

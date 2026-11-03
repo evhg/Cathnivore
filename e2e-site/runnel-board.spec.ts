@@ -39,3 +39,19 @@ test.describe('Runnel board and stats sheet (plan item 30)', () => {
     })
   }
 })
+
+// Plan item 50: farmland, a sky and the week. Dry tiles are meadow, field and fallow; the board's time of day
+// lights the whole scene; at 1440 the rail holds the week's boards, Bea's corner the week's beds, and nothing scrolls.
+test('the board is farmland under its sky, with the week in the rail and in Bea\'s beds', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'a desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/runnel/?nohelp&sky=dusk,clear')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  for (const g of ['meadow', 'field', 'fallow']) expect(await page.locator(`.tiles > g.ground-${g}`).count(), g).toBeGreaterThan(0)
+  await expect(page.locator('html')).toHaveAttribute('data-time', 'dusk')
+  await expect(page.locator('#hint')).toContainText('Dusk, clear skies')
+  await expect(page.locator('#rail-week > li')).toHaveCount(7)
+  await expect(page.locator('#rail-week > li[data-state="today"]')).toHaveCount(1)
+  await expect(page.locator('#bea-crops > i.bed')).toHaveCount(7)
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+})

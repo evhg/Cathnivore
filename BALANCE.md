@@ -125,3 +125,6 @@ Both within 10 points, but the Coast's games end about 2.6 rounds sooner. The li
 
 ## 2026-11-02 Hedgerow plan item 43: `hedgerow-tune.ts --verify` with landmarks, levels 1-100
 Run at `c832191` (landmarks and `untwin` from `c681984` on every level; level 50 a raised bank only). Every level's shipped `START_K` gives the best bot a clean win (50%+ Goodwill): `tuning.ts` came out unchanged, so no re-fit was needed. The night and crowd dressing added after it is drawing only (lane verges), so it doesn't touch the fight.
+
+## 2026-11-03 Runnel plan item 50: tile luminance spread on a fresh board
+Measured in the browser on the 2026-11-03 daily (18 playable tiles, autumn palette, noon): the standard deviation of the tiles' fill luminance went from 0.0067 to 0.034, and its range from 0.018 to 0.102, now that dry tiles are fallow, meadow or field instead of one straw colour. Every dry ground keeps the channels at 3:1 or more in every palette (`tests/runnel-contrast.test.ts`).
