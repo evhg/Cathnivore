@@ -185,3 +185,13 @@ test('plan item 73: Cath\'s token never covers another stop\'s name', async ({ p
     expect(hits, `after ${upTo}`).toEqual([])
   }
 })
+
+test('plan item 73: picking another open stop, Cath walks to it before it opens', async ({ page }) => {
+  await seed(page, 6)
+  await page.goto('/hedgerow/?2d&walk')
+  await expect(page.locator('button.node.next')).toBeVisible()
+  await page.locator('button.node[data-level="2"]').click()
+  await expect(page.locator('button.node[data-level="2"] .you.picked')).toHaveCount(1)
+  await expect(page.locator('button.node[data-level="7"] .you')).toHaveCount(0)
+  await expect.poll(() => page.evaluate(() => !!document.querySelector('dialog[open]') || !!document.querySelector<HTMLElement>('#screen-select')?.hidden), { timeout: 5000 }).toBe(true)
+})

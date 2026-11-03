@@ -1512,6 +1512,25 @@ function layoutLanes(list: HTMLElement): void {
 
 let laneObserver: ResizeObserver | null = null;
 
+/**
+ * Plan item 73: picking another open stop, Cath walks the trail to it before its card opens (600 ms). Reduced
+ * motion opens at once; so do test runs, unless the page asks for `?walk`.
+ */
+function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void {
+  const you = list.querySelector<HTMLElement>(".node .you");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator.webdriver && !new URLSearchParams(location.search).has("walk"));
+  if (!you || you.closest(".node") === to || still) return go();
+  const a = you.getBoundingClientRect();
+  you.classList.remove("beside", "walking", "picked");
+  to.append(you);
+  const z = you.getBoundingClientRect();
+  you.style.setProperty("--walk-x", `${a.left - z.left}px`);
+  you.style.setProperty("--walk-y", `${a.top - z.top}px`);
+  void you.offsetWidth;
+  you.classList.add("picked");
+  window.setTimeout(go, 600);
+}
+
 /** The node Cath stood on at the last render, so she can walk to the new one. */
 let lastNextId: number | null = null;
 
@@ -1724,7 +1743,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         }
         current = b;
       }
-      b.addEventListener("click", () => open(lv));
+      b.addEventListener("click", () => walkThenOpen(list, b, () => open(lv)));
       item.append(b);
       trail.append(item);
     });

@@ -1110,7 +1110,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: the queue's preview matches the next wave's kinds; e2e at P and D: the queue is drawn and inside the field, the notebook never empty; shots of levels 1, 12, 40 between rounds in 2D and 3D.
 - **Size:** 2
 
-## 73. [ ] Hedgerow: the journey map as an illustrated country *(lane B, in progress)*
+## 73. [x] Hedgerow: the journey map as an illustrated country *(done 2026-11-03, lane B, d2417af..: every stop a landmark vignette on its plinth (number a badge; pencil grey while locked, waking into colour when open); the next act a named glimpse of its country under a plaque, not fog; Cath's token walks to a picked stop before it opens, and stands beside her coin when above it would cover a name. hedgerow-map e2e cases (44 px vignettes, grey when locked, the named glimpse, no token over a name, the walk on a pick); shots fresh, mid and complete at P and D, light and dark (`scripts/hedgerow-journey-shots.mjs`).)*
 - **Why:** `hedge-map-D`/`-P` (plan1103e): nine of ten nodes are the same grey padlocked coin, each level's landmark is a 15 px icon, and "Beyond the hedge" is a fogged slab.
 - **Build:**
   - Each node a painted vignette of its level (beehive, pie stall, the long lane, the van), greyed until unlocked and coming to life on unlock.
