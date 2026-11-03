@@ -279,7 +279,9 @@ export class Board {
     if (cell.reservoir) this.drawReservoir(root)
     else if (cell.kind === 'field') this.drawField(root, index)
     // Plan item 61: a pinned tile has a wooden stake driven in by its top edge, a twist of twine round it.
-    const pin = el('g', { class: 'pin', transform: `translate(0 ${(-S * 0.6).toFixed(2)})` }, root)
+    // (The CSS pop-in scales .pin, which would override a transform on it, so a wrapper places it.)
+    const pinAt = el('g', { transform: `translate(0 ${(-S * 0.58).toFixed(2)}) scale(1.45)` }, root)
+    const pin = el('g', { class: 'pin' }, pinAt)
     el('ellipse', { cx: 1.5, cy: 7.5, rx: 5, ry: 1.8, class: 'pin-shadow' }, pin)
     el('path', { d: 'M -2.6 -8 L 2.6 -8 L 2.6 5 L 0 8.5 L -2.6 5 Z', class: 'pin-stake' }, pin)
     el('rect', { x: -3.2, y: -4.5, width: 6.4, height: 2.4, rx: 1, class: 'pin-twine' }, pin)
