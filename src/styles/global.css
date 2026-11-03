@@ -3221,3 +3221,103 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 .end-chart-key.is-limit::before { height: 0; border-top: 2px dashed currentColor; background: none; border-radius: 0; }
 .end-chart figcaption { flex-wrap: wrap; gap: 4px 12px; }
 .end-chart-key { white-space: nowrap; }
+/* Plan item 67: the desktop Setup staged like the phone one. The picks sit on a gingham market cloth, the maps
+   are painted boards in timber frames, difficulty is chalk on a slate, the seed a luggage tag, and Start the
+   stall's OPEN sign hung on its cord. The head row is compact so 1280x800 shows everything with no scroll. */
+@media (min-width: 1100px) {
+  .setup { position: relative; isolation: isolate; row-gap: 12px; padding-top: 14px; padding-bottom: 20px; }
+  .setup::before {
+    content: ''; grid-area: 2 / 1 / -1 / -1; margin: -10px -14px -12px; border-radius: 18px;
+    border: 6px solid var(--wood); box-shadow: inset 0 0 0 2px var(--wood-lo), 0 14px 30px color-mix(in srgb, var(--ink) 16%, transparent);
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--clay) 13%, transparent) 0 22px, transparent 22px 44px),
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--clay) 13%, transparent) 0 22px, transparent 22px 44px),
+      var(--paper);
+  }
+  .setup section, .setup .settings-card { margin: 0; }
+  .setup-header { align-items: center; }
+  .setup-header-text { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  .setup-header h1 { font-size: var(--fs-h2); line-height: 1.05; }
+  .setup-cath-line { font-size: var(--fs-body); }
+  .setup-header-cath svg { width: 64px; height: 64px; }
+  .setup .settings-card { background: color-mix(in srgb, var(--paper-hi) 92%, transparent); }
+  .setup .market-event { padding: 12px 18px 14px; }
+  .setup .market-event-line { margin: 4px 0; }
+
+  /* Difficulty: a school slate in a timber frame, the levels chalked on it, the chosen one ringed in chalk. */
+  .setup .setup-difficulty .segmented {
+    gap: 4px; padding: 6px; border: 5px solid var(--wood); border-radius: 10px;
+    background: radial-gradient(120% 140% at 30% 20%, color-mix(in srgb, var(--wood-lo) 62%, var(--pasture-deep)), color-mix(in srgb, var(--wood-lo) 88%, var(--pasture-deep)));
+    box-shadow: inset 0 0 0 1.5px var(--wood-lo), inset 0 2px 8px color-mix(in srgb, var(--wood-lo) 70%, transparent);
+  }
+  .setup .setup-difficulty .segmented label {
+    flex: 1 1 0; justify-content: center; border-radius: 999px; background: none; color: var(--paper-on-fixed-fill);
+    font-family: var(--font-voice); font-style: italic; font-size: var(--fs-lead); letter-spacing: 0.02em; opacity: 0.82;
+  }
+  .setup .setup-difficulty .segmented label:hover { background: color-mix(in srgb, var(--paper-on-fixed-fill) 8%, transparent); }
+  .setup .setup-difficulty .segmented label:has(input:checked) {
+    background: none; color: var(--paper-on-fixed-fill); opacity: 1;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--paper-on-fixed-fill) 80%, transparent), 0 0 0 4px color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent);
+  }
+  .setup .setup-difficulty .segmented label:has(input:focus-visible) { outline: var(--focus-w, 3px) solid var(--focus); outline-offset: 3px; }
+
+  /* The maps: three painted boards in timber frames laid on the cloth; the picked one lifted with a wheat ring. */
+  .setup .layout-picker { gap: 14px; margin: 6px 0 12px; }
+  .setup .layout-picker .layout-tile {
+    padding: 10px 8px 10px; border: 5px solid var(--wood); border-radius: 8px; background: var(--mat-paper);
+    box-shadow: inset 0 0 0 1.5px var(--wood-lo), 0 4px 8px color-mix(in srgb, var(--ink) 16%, transparent);
+    transform: rotate(var(--lay, 0deg)); transition: transform var(--dur-base, 200ms) var(--ease-settle, ease);
+  }
+  .setup .layout-picker .layout-tile:nth-child(1) { --lay: -1deg; }
+  .setup .layout-picker .layout-tile:nth-child(3) { --lay: 1deg; }
+  .setup .layout-tile:has(input:checked) {
+    border-color: var(--wood); transform: translateY(-4px) rotate(var(--lay, 0deg));
+    box-shadow: inset 0 0 0 1.5px var(--wood-lo), 0 0 0 3px var(--wheat), 0 10px 16px color-mix(in srgb, var(--ink) 24%, transparent);
+  }
+  .setup .layout-glyph { height: 56px; }
+
+  /* The seed: a manila luggage tag tied to the map, reading "random" until you write a number on it. */
+  .setup .setup-seed-field { position: relative; gap: 0; font-size: var(--fs-small); }
+  .setup .setup-seed-field input {
+    max-width: 260px; padding: 8px 14px 8px 34px; border: 0; border-radius: 0 8px 8px 0;
+    background: radial-gradient(circle at 15px 50%, var(--paper) 0 5px, var(--wood-lo) 5px 6.5px, transparent 7px), var(--mat-kraft);
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+    font-family: var(--font-voice); font-style: italic; color: var(--ink);
+    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .setup .setup-seed-field input:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--focus); }
+  .setup .setup-seed-field input::placeholder { color: color-mix(in srgb, var(--ink) 55%, transparent); }
+
+  /* Start: the stall's OPEN sign hung on a cord from two nails. */
+  .setup > button.setup-start {
+    position: relative; align-self: center; justify-self: center; width: min(260px, 100%); margin-top: 40px; min-height: 76px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 5px solid var(--wood); border-radius: 12px; box-shadow: inset 0 0 0 1.5px var(--wood-lo), 0 10px 18px color-mix(in srgb, var(--ink) 26%, transparent);
+    transform: rotate(-1.5deg); transform-origin: 50% -36px; overflow: visible;
+  }
+  .setup > button.setup-start::before {
+    content: ''; position: absolute; left: 22%; right: 22%; top: -40px; height: 40px; pointer-events: none;
+    background:
+      linear-gradient(to top right, transparent calc(50% - 1px), var(--wood-lo) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) left / 50% 100% no-repeat,
+      linear-gradient(to top left, transparent calc(50% - 1px), var(--wood-lo) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) right / 50% 100% no-repeat;
+  }
+  .setup > button.setup-start::after {
+    content: ''; position: absolute; left: 50%; top: -46px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--wheat-hi), var(--wood-lo)); pointer-events: none;
+  }
+  .setup > button.setup-start:not(:disabled):hover { transform: rotate(0deg); }
+  .setup .open-sign-kicker { display: block; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.85; line-height: 1; }
+  .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
+  .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.12em; }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup .pc-portrait svg { width: 92px; height: 110.4px; }
+  .setup .producer-card { padding: 12px 12px 10px; }
+  .setup .market-event-line { display: none; }
+  .setup .difficulty-line { display: none; }
+  .setup .layout-glyph { height: 44px; }
+  .setup { row-gap: 10px; padding-top: 10px; padding-bottom: 16px; }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .setup .layout-picker .layout-tile, .setup > button.setup-start { transition: none; }
+}
