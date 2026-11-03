@@ -389,7 +389,7 @@
   font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2); /* plan item 74: --ink-3 was too faint on the night street */
   text-decoration: none;
 }
 .gate-back:hover,
