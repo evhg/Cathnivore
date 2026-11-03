@@ -43,4 +43,6 @@ test('with sound on, a round of autoplay schedules table and Hollowell cues', as
   await expect.poll(() => page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.log.length), { timeout: 60_000 }).toBeGreaterThan(5)
   const log = await page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.log)
   expect(log.some((c) => !c.startsWith('synth'))).toBe(true)
+  // Round 2 opens with the market bell.
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.log.includes('bell')), { timeout: 60_000 }).toBe(true)
 })

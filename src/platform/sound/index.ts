@@ -104,6 +104,15 @@ export function playCues(cues: readonly Cue[]): void {
   }
 }
 
+/** Plan item 53: the evening of the market (afternoon on, round 7+): crickets take over from the birds. */
+let evening = false
+
+/** A new round: the market bell, and the ambience follows the day on the table (tableLight's phases). */
+export function soundRound(round: number, prevRound: number): void {
+  evening = round >= 7
+  if (round > prevRound && round > 1) playCues(['bell'])
+}
+
 export function playSoundsFor(action: Action | null, newEvents: GameEvent[], result: GameState['result']): void {
   playCues(cueFor(action, newEvents, result))
 }
@@ -171,6 +180,23 @@ export function syncAmbient(): void {
   src.start()
   // A bird now and then: a quick rising-falling chirp pair.
   const bird = window.setInterval(() => {
+    if (evening) {
+      // Crickets by the last rounds: a short train of high pulses, quieter than the birds.
+      const t = c.currentTime
+      for (let i = 0; i < 5; i++) {
+        const o = c.createOscillator()
+        const g = c.createGain()
+        const at = t + i * 0.06 + Math.random() * 0.3
+        o.frequency.value = 4400 + Math.random() * 300
+        g.gain.setValueAtTime(0.0001, at)
+        g.gain.exponentialRampToValueAtTime(0.012, at + 0.008)
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.04)
+        o.connect(g).connect(master)
+        o.start(at)
+        o.stop(at + 0.05)
+      }
+      return
+    }
     if (Math.random() < 0.5) return
     const t = c.currentTime
     const base = 2600 + Math.random() * 1400

@@ -15,7 +15,7 @@ import { HeuristicBot } from '../ai/heuristic'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
-import { playSoundsFor } from '../platform/sound'
+import { playSoundsFor, soundRound } from '../platform/sound'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
 import BuyFlight from './BuyFlight'
@@ -571,6 +571,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     playHapticsFor(action, next.log.slice(from.log.length), next.result)
     playSoundsFor(action, next.log.slice(from.log.length), next.result)
+    if (!next.result) soundRound(next.round, from.round)
     if (aiReason) {
       // `gameLog.ts`'s `actionCaption` deliberately returns null for invest/scheme/decide's own `{type:
       // 'action'}` entry, deferring to the richer 'invest'/'schemePlayed'/'decision' entry `applyAction`
