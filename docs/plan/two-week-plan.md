@@ -788,7 +788,45 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The tile luminance spread across a fresh board is wider than today's (measured and reported in BALANCE.md or the commit).
 - **Size:** 2
 
-**Later, unranked:** NIGHT SHIFT, Cath's office lived in. A lit flat with rain on the window, Bea's drawings, a mirror with Cath's reflection, and a trophy shelf that fills with each case's keepsake. About 3 sessions.
+## 51. [ ] NIGHT SHIFT: Cath's office, lived in
+- **Why:**
+  - Item 16 built the office as a hub of stations: the case board, the gun bench and the wardrobe.
+  - Between them it reads as a set, not her place: nothing in it remembers the cases she has closed.
+  - It does not show who she is (VISION's character bible: a mum, Bea's drawings, the rain outside).
+  - Promoted from "Later, unranked" (2026-11-03 planning, lane B).
+- **Build:**
+  - A lit flat over the egg stall: a rain-streaked window whose rain runs on the glass (a screen-space streak shader, static under reduced motion), with the street's neon behind it.
+  - Bea's crayon drawings pinned by the door, one more for each case closed, from a fixed set of six.
+  - A mirror where Cath sees herself: the hero model (item 9) reflected, in the outfit the wardrobe saved.
+  - A trophy shelf that fills with each case's keepsake from the debrief (item 17), each with a hover or tap caption.
+  - The kettle steams on the hub's first visit after a case.
+  - Phone tier: the window streaks become a baked texture, and the mirror a framed photo of her.
+- **Accept:**
+  - Unit: the shelf and the drawings are a pure function of the save (`officeDressing(progress)`) for 0, 1, 3 and 5 cases closed.
+  - e2e: after a closed case the shelf has its keepsake and the drawing count rises.
+  - Phone perf stays at or under budget with the office lit (`scripts/cathode-perf.mjs`).
+  - Shots of a fresh office and one after three cases, at D and L, and the phone tier at L.
+- **Size:** 3
+
+## 52. [ ] Hedgerow: a field that looks farmed, and towers you can tell apart at a glance
+- **Why:**
+  - The 2026-11-03 critique (hedge-play2d-P/D, hedge-play3d-D) found a uniform grid: about 40 identical tilled squares.
+  - At tier 1 the towers read alike at phone size.
+  - In 3D, Cath is a flat billboard on a yellow ring and empty plots are ghostly translucent squares.
+  - VISION pillar 2: "big, rich and alive".
+- **Build:**
+  - Plots by what lies under them: bare earth, last year's stubble, clover, a few with a puddle, seeded by the level, so neighbouring plots differ (2D and 3D).
+  - Empty plots in 3D drawn as soil beds with a timber edge, not translucent squares.
+  - Each tower's tier 1 silhouette made distinct at 24 px (Scarecrow tall and thin, Hedgerow low and wide, Beehive round, Seed Cannon a barrel), checked by a silhouette-overlap test.
+  - Cath in 3D as a modelled figure from the shared bible (low-poly, her olive jacket and hair), not a billboard.
+  - Phone 3D fps floor holds.
+- **Accept:**
+  - Unit: plot variety deterministic per level, and no two orthogonal neighbours share a look on more than 40% of a level's plots.
+  - Unit: tier-1 tower silhouettes overlap less than 70% pairwise at 24 px.
+  - Shots of levels 1, 13 and 38 at P and D in 2D and 3D, before and after.
+- **Size:** 3
+
+**Later, unranked:** (none)
 
 ---
 
