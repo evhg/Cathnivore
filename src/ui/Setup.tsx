@@ -8,6 +8,7 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
+import { pairLine } from '../content/pairLines'
 
 export type Mode = 'solo' | 'hotseat'
 
@@ -15,7 +16,11 @@ interface Props {
   onStart(config: GameConfig, seed: number, mode: Mode): void
 }
 
-// SPEC 10.1/10.2 Setup screen: mode, producers, difficulty and an optional seed. Plain controls for now
+// SPEC 10.1/10.2 Setup screen: mode, producers, difficulty, map and an optional seed. Plan item 8 made it a
+// table spread at D; plan item 54 makes the phone one designed screen with no page scroll: the event a pinned
+// poster strip, the producers a dealt row with the picked pair lifted and their abilities in full under it,
+// the mode two chairs at a table, difficulty Hollowell's threat card, the maps on a shelf, the seed behind an
+// Advanced chip and Start the stall's open sign.
 
 /** Plan item 15: a layout's hexes in miniature. The ring shows its printed types; the others are dealt by the
  * seed, so their hexes are blank paper with Kingsmarket marked. */
@@ -44,6 +49,7 @@ export default function Setup({ onStart }: Props) {
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
   const [difficulty, setDifficulty] = useState<GameConfig['difficulty']>('normal')
   const [seedInput, setSeedInput] = useState('')
+  const [advanced, setAdvanced] = useState(false)
   const [layout, setLayout] = useState<LayoutId>('ring')
   const [marketEvent] = useState(() => marketEventFor(new Date()))
 
@@ -79,7 +85,10 @@ export default function Setup({ onStart }: Props) {
 
       <section className="settings-card market-event" data-event={marketEvent.id}>
         <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
-        <h2>Market event: {marketEvent.name}</h2>
+        <h2>
+          <span className="market-event-kicker">Market event: </span>
+          {marketEvent.name}
+        </h2>
         <p className="market-event-line">“{marketEvent.banner}”</p>
         <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</p>
       </section>
@@ -88,8 +97,8 @@ export default function Setup({ onStart }: Props) {
         <h2>Mode</h2>
         <div className="segmented mode-picker">
           <label>
-            <span>
-              <input type="radio" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
+            <span className="mode-name">
+              <input type="radio" name="mode" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo (with an AI teammate)
             </span>
             {/* Plan item 8: the desktop spread draws each mode as a tile (hidden on phones, whose layout stays). */}
             <span className="mode-art" aria-hidden="true">
@@ -104,8 +113,8 @@ export default function Setup({ onStart }: Props) {
             </span>
           </label>
           <label>
-            <span>
-              <input type="radio" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
+            <span className="mode-name">
+              <input type="radio" name="mode" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat (two humans)
             </span>
             <span className="mode-art" aria-hidden="true">
               <span className="mode-who">
@@ -122,14 +131,21 @@ export default function Setup({ onStart }: Props) {
       </section>
 
       <section className="settings-card setup-producers">
-        <h2>Producers (pick 2)</h2>
-        <button type="button" className="setup-recommend" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
-          Use recommended pair
-        </button>
+        <div className="setup-producers-head">
+          <h2>Producers (pick 2)</h2>
+          <button type="button" className="setup-recommend" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
+            Use recommended pair
+          </button>
+        </div>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
             <label key={id} className="producer-card" data-producer={id}>
-              <input type="checkbox" checked={producers.includes(id)} onChange={() => toggleProducer(id)} />
+              <input
+                type="checkbox"
+                aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}
+                checked={producers.includes(id)}
+                onChange={() => toggleProducer(id)}
+              />
               <span className="pc-portrait" aria-hidden="true">
                 <Portrait character={id} size={112} />
               </span>
@@ -137,29 +153,40 @@ export default function Setup({ onStart }: Props) {
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
               <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
               {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
-              <span className="pc-pick" aria-hidden="true">✓ Picked</span>
+              <span className="pc-pick" aria-hidden="true">
+                ✓<span className="pc-pick-word"> Picked</span>
+              </span>
             </label>
           ))}
         </div>
+        <PairPanel producers={producers} />
       </section>
 
       <section className="settings-card setup-difficulty">
-        <h2>Difficulty</h2>
+        <h2>
+          Difficulty<span className="threat-kicker" aria-hidden="true"> · Hollowell's threat</span>
+        </h2>
         <div className="segmented">
           {(['easy', 'normal', 'hard'] as const).map((d) => (
             <label key={d}>
               <span>
-                <input type="radio" checked={difficulty === d} onChange={() => setDifficulty(d)} />
+                <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
                 {d}
               </span>
             </label>
           ))}
         </div>
-        <DifficultySheet difficulty={difficulty} />
+        <DifficultySheet key={difficulty} difficulty={difficulty} />
       </section>
 
-      <section className="settings-card setup-seed">
-        <h2>Map</h2>
+      <section className="settings-card setup-seed" data-advanced={advanced || undefined}>
+        <div className="setup-map-head">
+          <h2>Map</h2>
+          {/* Plan item 54: on a phone the seed folds behind this chip; at D the field always shows. */}
+          <button type="button" className="setup-advanced" aria-expanded={advanced} aria-controls="setup-seed-field" onClick={() => setAdvanced((a) => !a)}>
+            Advanced
+          </button>
+        </div>
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
@@ -170,16 +197,42 @@ export default function Setup({ onStart }: Props) {
             </label>
           ))}
         </div>
-        <label className="setup-seed-field">
+        <label className="setup-seed-field" id="setup-seed-field">
           <span>Seed (optional)</span>
           <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
         </label>
       </section>
 
-      <button className="primary" disabled={!canStart} onClick={start}>
-        Start
+      <button className="primary setup-start" disabled={!canStart} onClick={start}>
+        <span className="open-sign-kicker" aria-hidden="true">
+          Open
+        </span>
+        <span className="open-sign-word">Start</span>
       </button>
     </main>
+  )
+}
+
+/** Plan item 54: the picked pair's abilities in full, with Cath's line on how they cover each other. */
+function PairPanel({ producers }: { producers: ProducerId[] }) {
+  const [a, b] = producers
+  return (
+    <div className="pair-panel" aria-live="polite">
+      <div className="pair-abilities">
+        {[a, b].map((id, i) =>
+          id ? (
+            <p key={id} className="pair-ability" data-producer={id}>
+              <b>{PRODUCERS[id].roleName.split(', ')[1] ?? PRODUCERS[id].roleName}</b> {PRODUCERS[id].roleAbility}
+            </p>
+          ) : (
+            <p key={`empty-${i}`} className="pair-ability is-empty">
+              Pick {producers.length === 0 && i === 1 ? 'another' : 'one more'} producer.
+            </p>
+          ),
+        )}
+      </div>
+      {a && b && <p className="pair-line">“{pairLine(a, b)}”</p>}
+    </div>
   )
 }
 

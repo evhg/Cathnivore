@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { fillSeed } from './setupSeed'
 
 // ROADMAP 9 "clear disabled and why-not states": Sell's missing counts (Produce too low for 2 or 3) get
 // a disabled placeholder button with a reason, right where the real button would be, instead of the
@@ -53,7 +54,7 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
 test('Invest shows a disabled, explained placeholder for market cards the player can no longer afford', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
@@ -105,7 +106,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
 test('a targeting:none Scheme shows a disabled, explained placeholder when unaffordable', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
@@ -134,7 +135,7 @@ test('a targeting:none Scheme shows a disabled, explained placeholder when unaff
 test('an optional-targeting Scheme shows a disabled, explained placeholder when unaffordable', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('3')
+  await fillSeed(page, '3')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
@@ -195,7 +196,7 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
 test('Rebut and Supply-Buyout show a disabled, explained placeholder when there is nothing to remove yet', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 

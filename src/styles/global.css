@@ -1096,6 +1096,7 @@ html.native-app body {
 .setup-header-text { flex: 1; min-width: 0; }
 .market-event-line { margin: 0 0 4px; font-family: var(--font-voice); font-style: italic; }
 .market-event-deal { margin: 0; font-size: 0.85em; opacity: 0.8; text-transform: none; }
+.market-event-deal::first-letter { text-transform: uppercase; }
 .pin-earned { margin: 0 0 var(--space-3, 12px); font-weight: 600; color: var(--gold, #c8962e); }
 .setup-cath-line { margin: 2px 0 0; font-family: var(--font-voice); font-style: italic; font-weight: 460; font-size: 0.9em; opacity: 0.8; }
 .setup-header {
@@ -2015,6 +2016,149 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .producer-card .pc-ability { font-size: var(--fs-small); }
   .producer-card .recommended-badge { margin-top: auto; }
 }
+
+/* Plan item 54: the phone Setup deals you in. Below the D spread (item 8, unchanged) Setup is one designed
+   screen: on a 390x844 phone everything fits with no page scroll. Producer colours ride on --pc. */
+.setup [data-producer='mara'] { --pc: var(--sea); }
+.setup [data-producer='tomas'] { --pc: var(--clay-deep); }
+.setup [data-producer='ines'] { --pc: var(--pasture-deep); }
+.setup [data-producer='sol'] { --pc: var(--wheat-ink); }
+.setup .producer-card[data-producer] { border-top-color: var(--pc); }
+.setup .pair-panel, .setup .setup-advanced, .setup .open-sign-kicker { display: none; }
+@media (max-width: 1099px) {
+  .setup {
+    max-width: 520px; min-height: 100dvh; padding: 8px 16px 6px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .setup section, .setup .settings-card { margin: 0; }
+  .setup .settings-card { padding: 8px 10px; }
+  .setup h2 { margin: 0; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soil); font-family: inherit; }
+  .setup label { padding: 0; }
+  .setup label:hover { background: none; }
+
+  /* Head: the title and Cath's line beside her bust. */
+  .setup-header h1 { font-size: var(--fs-h3); font-size: 1.5rem; line-height: 1; }
+  .setup-header-text { display: grid; gap: 2px; }
+  .setup-cath-line { font-size: var(--fs-label); line-height: 1.25; }
+  .setup-header-cath svg { width: 44px; height: 44px; }
+
+  /* The event: a poster strip pinned to the stall, name and deal only. */
+  .setup .market-event {
+    position: relative; padding: 6px 12px 6px 30px; border: 1.5px dashed var(--soil); border-radius: 4px;
+    background: var(--mat-paper); transform: rotate(-0.6deg);
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .setup .market-event::before {
+    content: ''; position: absolute; left: 10px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--wheat-hi), var(--clay-deep)); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+  .setup .market-event h2 { font-family: var(--font-display); font-size: var(--fs-body); letter-spacing: 0; text-transform: none; color: var(--ink); }
+  .setup .market-event-kicker { font-family: var(--font-ui, inherit); font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soil); }
+  .setup .market-event-line { display: none; }
+  .setup .market-event-deal { font-size: var(--fs-label); line-height: 1.3; opacity: 0.85; }
+
+  /* Mode: two chairs at a table. Each tile is a wooden table edge with the two seats drawn above it. */
+  .setup .setup-mode { display: grid; gap: 4px; padding-top: 6px; }
+  /* The chairs say what the mode is; the heading stays for screen readers. */
+  .setup .setup-mode > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup .segmented.mode-picker { flex-direction: row; gap: 8px; padding: 0; border: none; background: none; border-radius: 0; }
+  .setup .segmented.mode-picker label {
+    flex: 1 1 0; min-width: 0; min-height: 0; position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px;
+    padding: 4px 8px 9px; border: 2px solid var(--rule); border-radius: 12px; background: var(--paper-hi); text-transform: none; cursor: pointer;
+  }
+  .setup .segmented.mode-picker label::after {
+    content: ''; position: absolute; left: 8px; right: 8px; bottom: 4px; height: 4px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--wood), var(--wood-lo));
+  }
+  .setup .segmented.mode-picker label:has(input:checked) { border-color: var(--wheat); background: color-mix(in srgb, var(--wheat) 22%, var(--paper-hi)); box-shadow: 0 0 0 1px var(--wheat); }
+  .setup .segmented.mode-picker label:has(input:focus-visible) { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
+  .setup .segmented.mode-picker span.mode-name { order: 2; position: static; padding: 0; font-size: var(--fs-label); font-weight: 700; line-height: 1.2; color: var(--ink); }
+  .setup .segmented.mode-picker input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .setup .segmented.mode-picker span.mode-art { order: 1; position: static; display: flex; gap: 2px; padding: 0; }
+  .setup .segmented.mode-picker span.mode-who { position: static; display: flex; flex-direction: column; align-items: center; padding: 0; }
+  .setup .mode-art svg { width: 28px; height: 34px; border-radius: 50%; }
+  .setup .mode-tag { font-style: normal; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); line-height: 1; }
+  .setup .mode-tag.is-ai { padding: 0 3px; border: 1px solid currentColor; border-radius: 999px; }
+
+  /* The producers: a dealt row of upright cards, the two picked lifted in their colours. */
+  .setup .setup-producers { padding-bottom: 6px; }
+  .setup-producers-head, .setup-map-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .setup .setup-recommend, .setup .setup-advanced {
+    margin: 0; padding: 3px 10px; min-height: 28px; font-size: var(--fs-label); font-weight: 700; border-radius: 999px;
+  }
+  .setup .setup-advanced { display: inline-block; }
+  .setup .setup-advanced[aria-expanded='true'] { background: var(--wheat); color: var(--ink); }
+  .setup .producer-grid { margin-top: 2px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding-top: 8px; }
+  .setup .producer-card {
+    align-items: center; text-align: center; gap: 2px; padding: 5px 4px 6px; border-width: 1.5px; border-top-width: 5px; border-radius: 10px;
+    transform: rotate(var(--deal, 0deg));
+  }
+  .setup .producer-card:nth-child(1) { --deal: -2deg; }
+  .setup .producer-card:nth-child(2) { --deal: -0.7deg; }
+  .setup .producer-card:nth-child(3) { --deal: 0.7deg; }
+  .setup .producer-card:nth-child(4) { --deal: 2deg; }
+  .setup .producer-card:has(input:checked) {
+    border-color: var(--pc); background: color-mix(in srgb, var(--pc) 14%, var(--paper-hi));
+    box-shadow: 0 0 0 1.5px var(--pc), 0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent);
+    transform: translateY(-8px) rotate(var(--deal, 0deg));
+  }
+  .setup .pc-portrait svg { width: 48px; height: 57.6px; }
+  .setup .producer-card .pc-name { font-size: var(--fs-label); line-height: 1.15; }
+  .setup .producer-card .pc-role { display: none; }
+  .setup .producer-card .pc-ability, .setup .producer-card .recommended-badge { display: none; }
+  /* Picked: a tick on the card's corner in its colour, clear of the name. */
+  .setup .producer-card .pc-pick { top: 3px; right: 3px; width: 20px; height: 20px; padding: 0; display: grid; place-items: center; overflow: hidden; font-size: 0.75rem; line-height: 20px; text-indent: 0; white-space: nowrap; background: var(--pc); color: var(--paper-hi); border-radius: 50%; }
+  .setup .pc-pick-word { display: none; }
+  .setup .producer-card .pc-portrait { border-width: 1.5px; }
+
+  /* Under them, the pair's abilities in full and Cath's line on how they cover each other. */
+  .setup .pair-panel { display: grid; gap: 4px; margin-top: 6px; }
+  .setup .pair-abilities { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .setup .pair-ability { margin: 0; padding: 4px 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-label); line-height: 1.3; color: var(--ink); }
+  .setup .pair-ability b { display: block; font-weight: 800; color: var(--ink); }
+  .setup .pair-ability.is-empty { color: var(--ink-muted); font-style: italic; }
+  .setup .pair-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-size: var(--fs-small); line-height: 1.25; color: var(--ink-muted); }
+
+  /* Difficulty: Hollowell's threat card. Picking a level flips the sheet over to what it changes. */
+  .setup .setup-difficulty { border-color: color-mix(in srgb, var(--hollowell) 55%, var(--rule)); background: linear-gradient(180deg, color-mix(in srgb, var(--hollowell) 10%, var(--paper-hi)), var(--paper-hi)); }
+  .setup .setup-difficulty h2 { color: var(--clay); }
+  .setup .threat-kicker { font-weight: 600; letter-spacing: 0.04em; }
+  .setup .setup-difficulty .segmented { margin-top: 4px; }
+  .setup .setup-difficulty .segmented label { min-height: 32px; }
+  .setup .difficulty-sheet { margin-top: 4px; gap: 2px; animation: threat-flip var(--dur-base, 280ms) var(--ease-settle, ease) both; transform-origin: 50% 0; }
+  .setup .difficulty-line { display: none; }
+  /* The changes in one row: three on Normal, four when a level adds one. */
+  .setup .difficulty-sheet dl { grid-template-columns: 0.95fr 1.15fr 1.3fr; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .setup .difficulty-sheet dl:has(> div:nth-child(4)) { grid-template-columns: 0.9fr 1fr 1.15fr 0.95fr; }
+  .setup .difficulty-sheet dl > div { display: block; padding: 2px 0 0 10px; border-bottom: 0; }
+  .setup .difficulty-sheet .is-changed::before { left: 0; top: 9px; width: 6px; height: 6px; margin-top: 0; background: var(--hollowell); }
+  .setup .difficulty-sheet dt { font-size: 0.62rem; }
+  .setup .difficulty-sheet dd { font-size: var(--fs-label); line-height: 1.2; }
+
+  /* Map: three miniature boards on a shelf; the seed folds behind Advanced. */
+  .setup .layout-picker { margin: 4px 0 0; padding-bottom: 8px; gap: 6px; position: relative; }
+  .setup .layout-picker::after {
+    content: ''; position: absolute; left: -4px; right: -4px; bottom: 0; height: 6px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--wood), var(--wood-lo)); box-shadow: 0 3px 4px color-mix(in srgb, var(--ink) 25%, transparent);
+  }
+  .setup .layout-picker .layout-tile { padding: 4px 4px 6px; border-radius: 6px 6px 2px 2px; }
+  .setup .layout-glyph { height: 28px; }
+  .setup .layout-name { font-size: var(--fs-label); }
+  .setup .layout-blurb { display: none; }
+  .setup .setup-seed-field { display: none; margin-top: 8px; font-size: var(--fs-small); }
+  .setup .setup-seed[data-advanced] .setup-seed-field { display: flex; }
+
+  /* Start: the stall's open sign, hung at the foot of the screen and always in view. */
+  .setup > button.setup-start {
+    position: sticky; bottom: 8px; margin-top: auto; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+    border-radius: 10px; outline: 8px solid var(--paper);
+  }
+  .setup .open-sign-kicker { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.8; line-height: 1; }
+  .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
+}
+@keyframes threat-flip { from { transform: perspective(600px) rotateX(-70deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .setup .difficulty-sheet { animation: none; } }
+html.no-animations .setup .difficulty-sheet { animation: none; }
 
 /* Plan item 8: How to Play's tour pages carry a mini Marrow; on a desktop the page widens into a spread with
    the board beside Cath's words. */

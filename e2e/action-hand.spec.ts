@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { fillSeed } from './setupSeed'
 
 // Plan item 21 (a hand of action cards): on a phone every action is a card in the dock under the board,
 // reachable without scrolling the page, with no "n more" pill; and the game can be played from the
@@ -7,7 +8,7 @@ test('every action card is reachable at P without scrolling the page', async ({ 
   test.skip(testInfo.project.name !== 'phone', 'phone layout')
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
@@ -32,7 +33,7 @@ test('every action card is reachable at P without scrolling the page', async ({ 
 test('keyboard-only play completes a round', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
   const round = () => page.locator('svg.map[data-round]').first().getAttribute('data-round')
@@ -61,7 +62,7 @@ test('a region card dragged onto a glowing hex plays there', async ({ page }, te
   test.skip(testInfo.project.name !== 'desktop-chromium', 'mouse drag')
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.locator('input[inputmode="numeric"]').fill('1')
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
