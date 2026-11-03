@@ -185,6 +185,8 @@ export class Renderer {
   shownRing: { range: number; px: number; cell: number } | null = null;
   private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
+  /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
+  harvesting = false;
   private dpr = 1;
   private cssW = 1;
   private cssH = 1;
@@ -859,7 +861,7 @@ export class Renderer {
     this.heroSwung += dt;
     this.heroThrew += dt;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
-    if (!hasTwist(level, "nocath")) items.push({
+    if (!hasTwist(level, "nocath") && !this.harvesting) items.push({
       y: h.y + 0.22,
       draw: () => {
         drawHero(

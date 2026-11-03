@@ -228,6 +228,8 @@ export class Renderer3D {
   aim: { x: number; y: number; r: number } | null = null;
   preview: TowerKind | null = null;
   reducedMotion = false;
+  /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
+  harvesting = false;
 
   static supported(): boolean {
     try {
@@ -1480,7 +1482,7 @@ export class Renderer3D {
     const c = this.cath;
     if (!c) return;
     dressCath(c);
-    c.visible = !hasTwist(game.level, "nocath");
+    c.visible = !hasTwist(game.level, "nocath") && !this.harvesting;
     if (!c.visible) return;
     const h = game.hero;
     const y = this.height(h.x, h.y);

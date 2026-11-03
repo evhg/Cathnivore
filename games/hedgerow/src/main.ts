@@ -10,6 +10,7 @@ import "../../../shared/cath/cath.css";
 import { cathSvg, type CathExpression } from "../../../shared/cath/cath";
 import { LINE_POSE } from "../../../shared/cath/screenposes";
 import { cathSceneSvg, momentForResult } from "../../../shared/cath/scene";
+import { growthPlots, harvestAt, occupiedPlots, HARVEST_SECONDS } from "./growth";
 import { burst, reducedMotion } from "../../../shared/ui/motion";
 import {
   ABILITIES,
@@ -898,6 +899,8 @@ function doAct(a: Action): boolean {
 function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recorder: Recorder }): void {
   for (const b of crownTray.values()) b.remove();
   crownTray.clear();
+  document.querySelector(".harvest")?.remove();
+  if (renderer) renderer.harvesting = false;
   // First level of the visit: wait for the 3D chunk (usually already prefetched), then start.
   if (USE_3D && !r3d && !r3dSettled) {
     void loadR3D().then(() => {
@@ -3433,6 +3436,7 @@ function frame(now: number): void {
       // The last enemy falls in slow motion under a gold banner; the result card follows it.
       if (!REDUCED) slowUntil = performance.now() + 1200;
       banner("The lane holds", "Last one down", false, "hero");
+      harvest(g);
     } else {
       sfx.playLose();
       haptic.lose();
@@ -3441,6 +3445,62 @@ function frame(now: number): void {
   }
 }
 
+
+/** A wicker basket of the act's harvest, for Cath's arm in the harvest (plan item 59). */
+const BASKET_SVG = `<svg class="harvest-basket" viewBox="0 0 40 30" aria-hidden="true"><path d="M6 12 Q20 -6 34 12" fill="none" stroke="#7a5a32" stroke-width="2.4"/><circle cx="13" cy="11" r="4" fill="#e7c25a"/><circle cx="20" cy="9" r="4.4" fill="#e07a26"/><circle cx="27" cy="11" r="4" fill="#8cbf5a"/><path d="M4 12 H36 L32 28 H8 Z" fill="#b8874a" stroke="#6e4e26" stroke-width="1.4"/><path d="M6 17 H34 M7 22 H33" stroke="#8a6436" stroke-width="1.2"/></svg>`;
+const SHEAF_SVG = `<svg viewBox="0 0 24 32" aria-hidden="true"><g stroke="#b8902f" stroke-width="1.6" stroke-linecap="round"><path d="M12 30 L6 6"/><path d="M12 30 L12 4"/><path d="M12 30 L18 6"/></g><g fill="#e7c25a"><ellipse cx="6" cy="6" rx="2.4" ry="5"/><ellipse cx="12" cy="4" rx="2.4" ry="5"/><ellipse cx="18" cy="6" rx="2.4" ry="5"/></g><rect x="7" y="18" width="10" height="3" rx="1.5" fill="#c4621c"/></svg>`;
+
+/**
+ * Plan item 59: the win's harvest on the field. While the renderers ripen every empty plot in a wave from the
+ * farmhouse, Cath walks the nearest beds with a basket and a sheaf lifts off each plot as it ripens, flying up
+ * to where the result card's Seed Bank chip will land. The card (finish) clears it. Reduced motion: she stands
+ * by the farmhouse with the basket, no flights.
+ */
+function harvest(g: Game): void {
+  document.querySelector(".harvest")?.remove();
+  if (!renderer) return;
+  renderer.harvesting = true;
+  const occupied = occupiedPlots(g);
+  const plots = growthPlots(g.level).filter((p) => !occupied.has(p.key));
+  const box = document.createElement("div");
+  box.className = "harvest";
+  box.setAttribute("aria-hidden", "true");
+  const cath = document.createElement("div");
+  cath.className = "harvest-cath";
+  cath.innerHTML = cathSvg({ framing: "half", expression: "delighted", outfit: art() }) + BASKET_SVG;
+  box.append(cath);
+  document.body.append(box);
+  const end = g.level.path[g.level.path.length - 1]!;
+  const home = renderer.cellCenter(end[0], end[1]);
+  const walk = [home, ...plots.slice(0, 3).map((p) => renderer!.cellCenter(p.col, p.row))];
+  const at = (q: { x: number; y: number }) => `translate(${Math.round(q.x)}px, ${Math.round(q.y)}px) translate(-50%, -92%)`;
+  cath.style.setProperty("--x", `${Math.round(walk[0]!.x)}px`);
+  cath.style.setProperty("--y", `${Math.round(walk[0]!.y)}px`);
+  if (REDUCED || typeof cath.animate !== "function") return;
+  cath.animate(
+    walk.map((q, i) => ({ transform: at(q), offset: i / Math.max(1, walk.length - 1) })),
+    { duration: HARVEST_SECONDS * 1000 + 300, easing: "ease-in-out", fill: "forwards" },
+  );
+  // Sheaves from up to ten plots, spread along the harvest wave, toward the top centre (the card's Seed Bank chip).
+  const pick = plots.length <= 10 ? plots : Array.from({ length: 10 }, (_, k) => plots[Math.floor((k * plots.length) / 10)]!);
+  const to = { x: innerWidth / 2, y: Math.min(innerHeight * 0.32, 260) };
+  for (const p of pick) {
+    const from = renderer.cellCenter(p.col, p.row);
+    const sheaf = document.createElement("span");
+    sheaf.className = "harvest-sheaf";
+    sheaf.innerHTML = SHEAF_SVG;
+    box.append(sheaf);
+    sheaf.animate(
+      [
+        { transform: `translate(${from.x}px, ${from.y}px) translate(-50%, -50%) scale(0.4)`, opacity: 0 },
+        { transform: `translate(${from.x}px, ${from.y - 26}px) translate(-50%, -50%) scale(1.1)`, opacity: 1, offset: 0.25 },
+        { transform: `translate(${(from.x + to.x) / 2}px, ${Math.min(from.y, to.y) - 50}px) translate(-50%, -50%) scale(1)`, opacity: 1, offset: 0.6 },
+        { transform: `translate(${to.x}px, ${to.y}px) translate(-50%, -50%) scale(0.5)`, opacity: 0 },
+      ],
+      { duration: 900, delay: harvestAt(p) * 1000, easing: "ease-in", fill: "both" },
+    );
+  }
+}
 
 /** Save v3: each path tower kind's most grown build this run, for its sheet's "Last time" next run. */
 function rememberBuilds(g: Game): void {
@@ -3587,6 +3647,8 @@ function renderTally(g: Game, won: boolean, stars: number): void {
 
 function finish(g: Game): void {
   if (game !== g) return;
+  document.querySelector(".harvest")?.remove();
+  if (renderer) renderer.harvesting = false;
   document.getElementById("loss-causes")?.remove();
   document.getElementById("result-tally")?.remove();
   const xpBox = document.getElementById("result-xp");

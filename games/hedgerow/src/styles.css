@@ -3828,3 +3828,44 @@ img.act-scene {
   #screen-select .map-hud > .select-kits { grid-column: 1 / -1; }
   #screen-select .map-hud-row { padding-block: 8px 10px; }
 }
+/* Plan item 59: the win's harvest on the field: Cath with her basket walking the beds, sheaves lifting off. */
+.harvest {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-field-ui);
+  overflow: hidden;
+}
+.harvest-cath {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(64px, 8vw, 112px);
+  transform: translate(var(--x, 0), var(--y, 0)) translate(-50%, -92%);
+  filter: drop-shadow(0 4px 3px rgb(40 28 10 / 0.35));
+}
+.harvest-cath > svg:first-child {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.harvest-basket {
+  position: absolute;
+  right: -18%;
+  bottom: 22%;
+  width: 52%;
+  height: auto;
+}
+.harvest-sheaf {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(22px, 2.6vw, 34px);
+  opacity: 0;
+  filter: drop-shadow(0 2px 1px rgb(40 28 10 / 0.3));
+}
+.harvest-sheaf svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
