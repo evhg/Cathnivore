@@ -684,6 +684,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The case board and wardrobe open upright at P (e2e).
   - The D keyboard and HUD e2e are unchanged.
 - **Size:** 3
+- **Progress:** slices 1-4 (2026-11-02/03, lane A): contextual Takedown/Focus/Skill, Reload on the count, the arc round Fire with Swap under it, Jump/Crouch flicks, rings after first use, cover at rest under 18% (e2e), and touch discs that take real taps. Left: objective and health in one block at L, the upright screen, overlap reports in the clinic and market.
 
 ## 45. [ ] Hedgerow: a swarm worth watching *(lane B, in progress)*
 - **Why:**
