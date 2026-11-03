@@ -1092,7 +1092,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: the board's tiles cover at least 55% of the board frame's shorter side; no blank band over 120 px on either axis; no page scroll at P. Shots of three dailies at P and D, light and dark.
 - **Size:** 2
 
-## 71. [ ] Cathnivore: a title table that lives *(lane B, in progress)*
+## 71. [x] Cathnivore: a title table that lives *(done 2026-11-03, lane B, 1d78a7a: Hollowell's vans drive the ring road and a through road (producers' carts once Marrow is free), parked under reduced motion or the Animations toggle; the freed regions' bunting already flutters; Cath 368 px at D (was 259) and 164 px at P (was 137), clear of the menu, her face following the hovered or focused entry; board marks 12 px or more or left off. `e2e/title-table.spec.ts`; shots fresh and complete, light and dark. Not done: an opening stall awning (the stalls are portrait pins, so it needs new board art).)*
 - **Why:** `cath-title-D`/`-P` (plan1103e): nothing on the table moves, board labels are about 9 px, Cath is a 240 px cut-out at D's edge and 95 px at P (VISION 4: staged moments; Cath the face of every game).
 - **Build:**
   - Hollowell vans drive the roads between regions, a stall's awning opens, bunting flutters on freed regions (all still under reduced motion).
@@ -1110,7 +1110,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: the queue's preview matches the next wave's kinds; e2e at P and D: the queue is drawn and inside the field, the notebook never empty; shots of levels 1, 12, 40 between rounds in 2D and 3D.
 - **Size:** 2
 
-## 73. [ ] Hedgerow: the journey map as an illustrated country
+## 73. [ ] Hedgerow: the journey map as an illustrated country *(lane B, in progress)*
 - **Why:** `hedge-map-D`/`-P` (plan1103e): nine of ten nodes are the same grey padlocked coin, each level's landmark is a 15 px icon, and "Beyond the hedge" is a fogged slab.
 - **Build:**
   - Each node a painted vignette of its level (beehive, pie stall, the long lane, the van), greyed until unlocked and coming to life on unlock.
