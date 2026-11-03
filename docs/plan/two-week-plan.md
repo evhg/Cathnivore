@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-03T16:59Z
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1149,7 +1147,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: every region's ground has at least 4 elements and none under the piece tray's rects; e2e at P and D: every hex inside the board's box, no animation under reduced motion; greyscale still tells players from corporations; shots at rounds 1 and 6, P and D, light and dark.
 - **Size:** 2
 
-## 77. [ ] Runnel: the valley fills the frame, lit by the day's weather
+## 77. [ ] Runnel: the valley fills the frame, lit by the day's weather *(lane A, in progress)*
 - **Why:** `runnel-D`/`-P` (plan1103f): the tutorial board uses about 15% of the D frame; the hills end in a hard edge with a cream void of about 600 px below; the left column has about 450 px of empty bands; the caption says "Dusk" over a midday scene; Cath is absent at P.
 - **Build:**
   - Scale the board to its frame (the tiles at least 60% of the frame's shorter side, the tutorial included).
@@ -1180,6 +1178,53 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **NIGHT SHIFT title** (`ns-title-D`): a shop sign shows through the wordmark (a scrim behind it); `ns-title-P`: the menu over the figure, grey entries below AA, 11 px lines. *(a pool behind the logotype; upright, entries at .94 and the small lines at 13 px; the outline-only wordmark at P was the draw-in still running under SwiftShader)*
   - [x] **/games/ D** (`games-D`): a lighter rectangle behind Cath; **portfolio D** (`portfolio-D`): Cath's hand by the NIGHT SHIFT card is a stub. *(the glow moved after the waist mask; the portfolio fade starts below her hand)*
 - **Accept:** e2e boxes inside the viewport and not intersecting, and AA contrast where named, at P and D for each case; shots before and after.
+- **Size:** 1
+
+## 80. [ ] Cathnivore: producers drawn to Cath's level, with faces that react
+- **Why:** `cath-setup-D` (plan1103g): the four producer cards (about 505-1295 x 170-500) are round busts with dot eyes, flat fills and no hair; Cath beside them (1120-1220 x 615-760) is drawn far more richly, so the producers read as placeholders. On the board (`cath-game-D`) their miniatures are small identical capsules. VISION 5 asks for characters with presence.
+- **Build:**
+  - One portrait module per producer in `shared/cath/`'s style (hair, eyes with highlights, a signature garment and prop), with neutral, delighted and worried faces.
+  - Use it on the Setup cards, the player panel badge and the board miniature's face.
+  - A producer looks delighted when their ability fires and worried when a Squeeze lands on their region (the turn show's beats).
+- **Accept:** unit: every producer has the three expressions and they differ; e2e: the Setup card portrait at least 120 px tall at P and D, the face swaps on a Squeeze in an autoplay game; greyscale still tells producers from corporations; shots before and after at P and D, light and dark.
+- **Size:** 3
+
+## 81. [ ] Hedgerow: 3D Cath, towers and vehicles that match the 2D art
+- **Why:** `hedge-l21-3d-D` (plan1103g): Cath (70-210 x 470-610) is a blocky figure with a white blob across her face that reads as a beard, which breaks the character bible; the cannon towers look like bare logs (380-430 x 270-330); houses and the barn are untextured boxes; Influencers are stacked pink cubes (190-245 x 280-380).
+- **Build:**
+  - A low-poly Cath to the bible: centre-parted long dark hair, the olive jacket, a readable face (a painted decal, no blob).
+  - Every tower model with its own silhouette per type and a visible upgrade-tier tell.
+  - Enemy vehicles that match their 2D icons; the farm buildings textured (boards, tiles, windows).
+- **Accept:** unit: each tower type's model differs in bounding box or part count from every other; e2e (`?sandbox=1`): a tower lineup stage renders each type; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of 2D and 3D side by side at P, D and L, and a face close-up of Cath.
+- **Size:** 3
+
+## 82. [ ] NIGHT SHIFT: the phone front door, recomposed
+- **Why:** `ns-title-P` (plan1103g): the logotype (15-375 x 85-130) is a thin outline lost in the dark art; the figure with the umbrella sits behind the menu text; below y=450 the frame is almost black; both sizes have black letterbox bands (D 0-44 and 855-900, P 0-42 and 800-844).
+- **Build:**
+  - A phone crop of its own: the figure in the lower half with a rim light, the menu above it on a scrim.
+  - A solid logotype (the outline only as the draw-in's first beat) with a legibility pool.
+  - No letterbox: the scene full-bleed, the safe areas padded.
+- **Accept:** e2e: the logotype's contrast against the pixels behind it at least 4.5:1 at P and D, no black band over 8 px at either size, the menu's box not intersecting the figure's at P; the perf gate passes; shots at P, D and L.
+- **Size:** 2
+
+## 83. [ ] Cathnivore: every action this turn in reach, as illustrated cards
+- **Why:** `cath-game-D` (plan1103g): the Actions column (17-332 x 250-875) is a grid of identical yellow buttons; locked ones are washed-out ghosts; "PLAY · 9 MORE" hides most actions below a scroll. `cath-game-P`: one row shows and the third card is cut at x=355.
+- **Build:**
+  - Each Sell, Invest and Play action a card with its own small illustration, cost chip and group colour.
+  - At D every action available this turn fits without scrolling (unaffordable ones collapse into a priced "need N" strip with their art kept); at P a snapping hand with a visible next-card peek.
+  - Playing a card lifts it and sets it down toward the board (250 ms; a fade under reduced motion).
+- **Accept:** e2e: every enabled action's box inside the viewport at 1440x900 and 1280x800 without scrolling; at P no card clipped at rest except the peek, which is at least 24 px; every card has an accessible name; tutorial, action-hand and desktop-no-scroll specs still pass; shots P and D, light and dark.
+- **Size:** 3
+
+## 84. [ ] The bugs from the 2026-11-03 17:00 critique, fixed as one batch
+- **Build:** (check each first; plan1103g)
+  - [ ] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip.
+  - [ ] **Hedgerow D**: an empty band about 1100-1410 x 650-705 under the "Coming up" wave icons.
+  - [ ] **Hedgerow 3D D**: a white flare blob on the field (about 640-680 x 690-720); "216 coming" overlaps the Hollowell gate sign.
+  - [ ] **Cathnivore Setup D** (`cath-setup-D`): empty bands at the foot of the Difficulty and Map panels (stretched to the row).
+  - [ ] **Hedgerow map D** (`hedge-menu-D`): the "Brand Ambassador" two-line pill crowds node 30's lock; Cath's marker covers node 21's top.
+  - [ ] **Cathnivore title P** (`cath-title-P`): the MUM drawing touches the screen edge over the board's corner. **Portfolio D**: a lone scroll-hint capsule far from the content column.
+- **Accept:** e2e boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 1
 
 **Later, unranked:** (none)
