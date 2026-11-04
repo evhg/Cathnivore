@@ -1157,7 +1157,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: time/weather to palette (dusk differs from midday by a measured luminance and hue); e2e at P and D: the board's box at least 60% of the frame's shorter side, no blank band over 100 px, Cath visible; shots of the tutorial and a daily at P and D, light and dark.
 - **Size:** 2
 
-## 78. [ ] Hedgerow: the field fills the frame and looks hedged *(lane B, in progress)*
+## 78. [x] Hedgerow: the field fills the frame and looks hedged *(done 2026-11-04, lane B, bf6d2bd..0e8a: camera fit (`camerafit.ts`, unit over 100 levels), the live projection refreshed after resize, the field 70-72% of the frame at P and D (`e2e-site/hedgerow-3dframe.spec.ts`), Cath 3D x1.9 with an idle, fog past the field, 2D stooks; draw calls at level 13 P 668, D 709 (were 757, 861). Lane seams not seen on the dirt or boardwalk lanes at levels 13 and 21. Not done: hedges between plot blocks inside the field, a 2D field gate.)*
 - **Progress (2026-11-03 16:22 lane B):** slices 1-3 pushed: the 3D camera fit (`render3d/camerafit.ts`, `tests/hedgerow-camerafit.test.ts`: field share at D 65-73%, side and foot bands 5-7%; on a phone the width binds, so the band above holds the hills and sky rather than reaching 65%), Cath 3D at scale 1.9 with a standing idle, 2D stooks in stubble beds, the fog started past the field's far edge (slice 4). Open: seamless lane meshes, hedgerow borders between plot blocks (the field's edge already has each act's own border: hedge, wall, driftwood fence, reeds...), a field gate in 2D, the e2e projected-box check. Note: on wide frames the band above the field now shows hills and houses, not item 66's sky (a sliver of sky cost a fifth of the share).
 - **Why:** `hedge-l21-3d-D`/`-P` (plan1103f): the 3D camera leaves about 35% of the D frame as empty grass and sea and about 140 px below the field at P; path tiles show seams; fog lowers the contrast; Cath is about 20 px. In `hedge-l21-2d-D` the plots read as a repeating tilemap and about 280 px right of the field is filler.
 - **Build:**
@@ -1216,7 +1216,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: every enabled action's box inside the viewport at 1440x900 and 1280x800 without scrolling; at P no card clipped at rest except the peek, which is at least 24 px; every card has an accessible name; tutorial, action-hand and desktop-no-scroll specs still pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 84. [ ] The bugs from the 2026-11-03 17:00 critique, fixed as one batch
+## 84. [ ] The bugs from the 2026-11-03 17:00 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1103g)
   - [ ] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip.
   - [ ] **Hedgerow D**: an empty band about 1100-1410 x 650-705 under the "Coming up" wave icons.
