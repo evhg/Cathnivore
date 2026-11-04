@@ -1482,7 +1482,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: the five classes give five different portrait states (`data-pose` or src); Cath's figure 420 px or more tall at D and 300 at P; stat text 4.5:1 on its backing; at P class labels 14 px or more and no two text boxes overlap; cathode-perf still passes; shots P, D, L.
 - **Size:** 2-3
 
-## 113. [ ] Cathnivore Campaign: Cath presents each chapter on the map *(slices 1-2 done 2026-11-04, lane A: Cath and her line per chapter in the header, `content/campaignLines.ts`; the focused chapter's home regions `data-lit`; e2e `e2e/campaign-cath.spec.ts`. Open: the cards' vignettes)*
+## 113. [ ] Cathnivore Campaign: Cath presents each chapter on the map *(lane A, in progress)* *(slices 1-2 done 2026-11-04, lane A: Cath and her line per chapter in the header, `content/campaignLines.ts`; the focused chapter's home regions `data-lit`; e2e `e2e/campaign-cath.spec.ts`. Open: the cards' vignettes)*
 - **Why:** `cath-campaign-D` (plan1104f): Cath is an 80 px bust floating in the corner (1300-1375 x 45-130) with no line; at P (20-95 x 120-205) she leaves the header's right half empty. The chapter cards' landscape silhouettes are about 10% contrast (1040-1380 x 330-610) and read as placeholders. The screen is a list beside a diagram, not a chapter journey.
 - **Build:**
   - Cath stands at the map's edge, 160 px or more at D (110 at P), with a speech bubble (item 110's) whose line and expression change with the chapter picked or hovered.
