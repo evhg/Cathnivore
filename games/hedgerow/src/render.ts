@@ -936,7 +936,9 @@ export class Renderer {
     const mood = this.moodCheer < 1.4 ? "cheer" : this.moodWorry < 1.4 ? "worried" : this.moodPlant < 1.2 ? "plant" : "rest";
     this.heroMood = mood;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
-    if (!hasTwist(level, "nocath") && !this.harvesting) items.push({
+    // Plan item 132: the site poster (`?keyart`) stands its own Cath in front, so the field leaves hers out.
+    const keyart = typeof document !== "undefined" && document.documentElement.dataset.keyart !== undefined;
+    if (!hasTwist(level, "nocath") && !this.harvesting && !keyart) items.push({
       y: h.y + 0.22,
       draw: () => {
         drawHero(
