@@ -202,13 +202,14 @@ test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its n
   const m = await page.evaluate(() => {
     const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
     return {
-      you: r('button.node[data-level="21"] .you').bottom,
-      coin: r('button.node[data-level="21"] .level-num').top,
+      you: r('button.node[data-level="21"] .you'),
+      coin: r('button.node[data-level="21"] .level-num'),
       lock: r('button.node[data-level="30"] .level-lock').bottom,
       name: r('button.node[data-level="30"] .level-name').top,
     }
   })
-  expect(m.coin - m.you).toBeGreaterThanOrEqual(4)
+  // Plan item 124: she stands beside it on the road, not on it.
+  expect(m.you.right <= m.coin.left || m.you.left >= m.coin.right, JSON.stringify(m)).toBe(true)
   if ((page.viewportSize()?.width ?? 0) >= 600) expect(m.name - m.lock).toBeGreaterThanOrEqual(3)
 })
 
@@ -274,7 +275,7 @@ test('plan item 98: on a phone the level card sits whole above the tab bar', asy
 })
 
 // Plan item 111: at D the stops are landmarks 72 px or larger and Cath's token is 60 px tall, clear of her coin.
-test('plan item 111: at D the stops are 72 px landmarks and Cath is 60 px', async ({ page }, testInfo) => {
+test('plan item 111: at D the stops are 72 px landmarks and Cath is 110 px', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-desktop', 'the desktop map')
   await page.setViewportSize({ width: 1440, height: 900 })
   await seed(page, 6)
@@ -285,7 +286,7 @@ test('plan item 111: at D the stops are 72 px landmarks and Cath is 60 px', asyn
   }))
   expect(m.coins.length).toBeGreaterThan(5)
   expect(Math.min(...m.coins)).toBeGreaterThanOrEqual(72)
-  expect(m.you).toBeGreaterThanOrEqual(60)
+  expect(m.you).toBeGreaterThanOrEqual(110)
 })
 
 // Plan item 111: a shorter desktop keeps the smaller stops, so the level card's Play stays on screen at 1280x800.
@@ -297,3 +298,50 @@ test('plan item 111: at 1280x800 Play is on screen on act 1', async ({ page }, t
   const play = (await page.locator('.level-card button', { hasText: 'Play' }).first().boundingBox())!
   expect(play.y + play.height).toBeLessThanOrEqual(800)
 })
+
+// Plan item 124: Cath stands on the road at full length beside her stop, clear of every label and padlock, and a
+// locked stop is a pencil sketch (under 15% saturation) that comes into colour (over 30%) when it opens.
+for (const upTo of [3, 23]) {
+  test(`plan item 124: Cath at full length on the road, and locked stops in pencil (act ${upTo < 10 ? 1 : 3})`, async ({ page, hasTouch }) => {
+    await seed(page, upTo)
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
+    const m = await page.evaluate(() => {
+      const you = document.querySelector('.node.next .you')!
+      const r = you.getBoundingClientRect()
+      const ov = (b: DOMRect) => b.width > 0 && r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top
+      const hits = [...document.querySelectorAll<HTMLElement>('.node .level-name, .node .level-lock, .node .start-tag, .node .level-num')]
+        .filter((e) => !(e.matches('.level-num') && e.contains(you)) && ov(e.getBoundingClientRect()))
+        .map((e) => `${e.className} @${e.closest('.node')!.getAttribute('data-level')}`)
+      return { h: r.height, pose: (you as HTMLElement).dataset.pose, full: !!you.querySelector('svg.cath .cath-lower'), hits }
+    })
+    expect(m.full, JSON.stringify(m)).toBe(true)
+    expect(m.pose).toBe('clasped')
+    expect(m.h).toBeGreaterThanOrEqual(hasTouch ? 64 : (page.viewportSize()!.height >= 860 ? 110 : 76))
+    expect(m.hits).toEqual([])
+    // Saturation of each landmark's own ink: the HSV saturation of every fill and stroke its shapes paint, after the
+    // landmark's filter (a rectangle of pixels also takes in the field and the coin's paper around it).
+    const sat = (level: number) =>
+      page.evaluate((level) => {
+        const svg = document.querySelector<SVGElement>(`button.node[data-level="${level}"] .level-landmark`)!
+        if (/grayscale\(1\)/.test(getComputedStyle(svg).filter)) return 0
+        const s = (c: string) => {
+          const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/)
+          if (!m || m[4] === '0') return 0
+          const v = [+m[1]!, +m[2]!, +m[3]!]
+          const mx = Math.max(...v)
+          return mx ? (mx - Math.min(...v)) / mx : 0
+        }
+        let top = 0
+        for (const el of svg.querySelectorAll('*')) {
+          const cs = getComputedStyle(el)
+          if (cs.fill !== 'none') top = Math.max(top, s(cs.fill))
+          if (cs.stroke !== 'none' && parseFloat(cs.strokeWidth) > 0) top = Math.max(top, s(cs.stroke))
+        }
+        return top
+      }, level)
+    const open = await sat(upTo)
+    const locked = await sat(upTo + 2)
+    expect(open, `open ${upTo}`).toBeGreaterThan(0.3)
+    expect(locked, `locked ${upTo + 2}`).toBeLessThan(0.15)
+  })
+}

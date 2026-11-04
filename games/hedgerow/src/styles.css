@@ -4408,19 +4408,6 @@ img.act-scene {
   text-transform: uppercase;
   color: var(--soil);
 }
-/* Plan item 73: Cath beside her coin when standing above it would cover another stop's name. */
-#screen-select .node.next .you.beside {
-  top: 36px;
-  margin-left: -58px;
-}
-@media (max-width: 420px) {
-  #screen-select .node.next .you.beside {
-    top: 26px;
-    width: 24px;
-    height: 29px;
-    margin-left: -40px;
-  }
-}
 /* Plan item 73: a pick: Cath walks to the stop picked before its card opens. */
 .you.picked {
   animation: bob 1.6s ease-in-out infinite, walk 600ms cubic-bezier(0.45, 0, 0.25, 1) both;
@@ -4432,7 +4419,6 @@ img.act-scene {
 }
 /* Plan item 84: Cath's token stands clear of her stop's coin (her feet sat on its rim), and a locked stop's name
    keeps a gap below its padlock (a two-line name such as "Brand Ambassador" ran into it). */
-#screen-select .node.next .you:not(.beside) { top: -10px; }
 @media (min-width: 600px) {
   #screen-select .node:disabled .level-lock + .level-medals + .level-name,
   #screen-select .node:disabled .level-lock + .level-name { margin-top: 4px; }
@@ -4550,9 +4536,56 @@ img.act-scene {
   #screen-select .node .level-num { width: 76px; height: 64px; }
   #screen-select .node.level-boss .level-num { width: 86px; height: 72px; }
   #screen-select .node .level-num.vignette .level-n { min-width: 26px; height: 26px; border-radius: 13px; }
-  #screen-select .node.next .you,
-  #screen-select .node.next .you:not(.beside) { top: -52px; width: 52px; height: 60px; margin-left: -26px; }
-  #screen-select .node.next .you.beside { top: 18px; width: 52px; height: 60px; margin-left: -96px; }
+}
+
+/* Plan item 124: Cath stands on the road at full length, beside her stop's coin on the side facing the road ahead
+   (`data-side`), feet level with the coin's foot: 112 px at D, 66 on a phone, 80 between. She strides as she
+   walks and waves when a stop opens (map.ts). */
+#screen-select .node.next .you {
+  top: auto;
+  bottom: -2px;
+  left: auto;
+  right: calc(100% + 6px);
+  width: 36px;
+  height: 80px;
+  /* map.ts's placeYou steps her further along the road and lower when a name above would meet her */
+  margin: 0 var(--you-dx, 0px) calc(-1 * var(--you-dy, 0px)) var(--you-dx, 0px);
+}
+#screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 6px); }
+#screen-select .node.next .you svg { transform-origin: 50% 100%; }
+@media (max-width: 420px) {
+  #screen-select .node.next .you { right: calc(100% + 2px); width: 30px; height: 66px; }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
+}
+@media (min-width: 1100px) and (min-height: 860px) {
+  #screen-select .node.next .you { right: calc(100% + 10px); width: 50px; height: 112px; }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 10px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  #screen-select .you.walking svg { animation: stride 350ms ease-in-out 0.3s 4 alternate both; }
+  #screen-select .you.picked svg { animation: stride 300ms ease-in-out 2 alternate both; }
+}
+@keyframes stride {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(4deg) translateY(-2px); }
+}
+
+/* Plan item 124: a locked stop is its landmark in pencil on the coin's paper, line art with no colour; it comes
+   into colour when it opens (plan item 73's vignette-wake). */
+#screen-select .node:disabled .level-num.vignette .level-landmark {
+  filter: grayscale(1);
+  opacity: 1;
+}
+#screen-select .node:disabled .level-num.vignette .level-landmark * {
+  fill: var(--paper-2);
+  stroke: var(--pencil, color-mix(in srgb, var(--ink) 58%, var(--paper)));
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
+@media (prefers-color-scheme: dark) {
+  #screen-select .node:disabled .level-num.vignette .level-landmark { filter: grayscale(1); opacity: 1; }
 }
 
 /* ---- key art (plan item 116) ---- */

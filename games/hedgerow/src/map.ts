@@ -1483,15 +1483,35 @@ export function placeBanners(list: HTMLElement): void {
       }
       placed.push({ el, node: own });
     }
-    // Plan item 73: Cath's token stands above her stop; where that would sit on another stop's banner (a row-2
-    // stop under a row-1 name with a twist line), she stands beside her coin instead.
     const you = trail.querySelector<HTMLElement>(".node .you");
-    if (you) {
-      you.classList.remove("beside");
-      const own = you.closest(".node");
-      const r = boxIn(you, trail);
-      if (placed.some((p) => p.node !== own && p.el.matches(".level-name") && overlaps(r, boxIn(p.el, trail)))) you.classList.add("beside");
-    }
+    if (you) placeYou(you, trail, placed);
+  }
+}
+
+/**
+ * Plan item 124: Cath stands on the road beside her coin at full length, so on a row-2 stop her head can reach the
+ * row-1 name above. She steps further along the road (her `data-side`), then lower, until her box meets no other
+ * stop's coin, name, padlock or tag and stays inside the trail.
+ */
+function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElement; node: Element | null }[]): void {
+  you.style.removeProperty("--you-dx");
+  you.style.removeProperty("--you-dy");
+  const own = you.closest(".node");
+  const r = boxIn(you, trail);
+  const others = placed.filter((p) => p.node !== own).map((p) => boxIn(p.el, trail)).filter((b) => b.width > 0);
+  const out = you.dataset.side === "right" ? 1 : -1;
+  const step = Math.max(4, Math.round(r.width / 4));
+  const tries: { dx: number; dy: number }[] = [];
+  for (let i = 0; i <= 8; i++) for (let j = 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
+  tries.sort((a, b) => a.dx + 1.5 * a.dy - (b.dx + 1.5 * b.dy));
+  for (const { dx, dy } of tries) {
+    const left = r.left + out * dx;
+    const box: Box = { left, right: left + r.width, top: r.top + dy, bottom: r.bottom + dy, width: r.width };
+    if (box.left < 0 || box.right > trail.offsetWidth) continue;
+    if (others.some((b) => overlaps(box, b))) continue;
+    if (dx) you.style.setProperty("--you-dx", `${dx}px`);
+    if (dy) you.style.setProperty("--you-dy", `${dy}px`);
+    return;
   }
 }
 
@@ -1532,14 +1552,22 @@ function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void 
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator.webdriver && !new URLSearchParams(location.search).has("walk"));
   if (!you || you.closest(".node") === to || still) return go();
   const a = you.getBoundingClientRect();
-  you.classList.remove("beside", "walking", "picked");
-  to.append(you);
+  you.classList.remove("walking", "picked");
+  // Plan item 124: she stands on the road beside the coin, on its side toward the next stop.
+  (to.querySelector(".level-num") ?? to).append(you);
+  you.dataset.side = to.dataset.side ?? "right";
   const z = you.getBoundingClientRect();
   you.style.setProperty("--walk-x", `${a.left - z.left}px`);
   you.style.setProperty("--walk-y", `${a.top - z.top}px`);
   void you.offsetWidth;
   you.classList.add("picked");
   window.setTimeout(go, 600);
+}
+
+/** Plan item 124: her map figure, head to boots, in a pose (`data-pose` for the e2e). */
+function setPose(you: HTMLElement, pose: "clasped" | "wave"): void {
+  you.dataset.pose = pose;
+  you.innerHTML = cathSvg({ framing: "full", expression: pose === "wave" ? "delighted" : "smirk", pose });
 }
 
 /** The node Cath stood on at the last render, so she can walk to the new one. */
@@ -1745,6 +1773,9 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       b.disabled = !unlocked;
       b.dataset.level = String(lv.id);
       b.dataset.stars = String(stars);
+      // Plan item 124: the side of the coin facing the road ahead (row 1 runs right, row 2 back left); at a row's
+      // turn she stands on the side she came in from, so she stays inside the trail.
+      b.dataset.side = row % 2 === 0 ? (col === 4 ? "left" : "right") : col === 0 ? "right" : "left";
       b.setAttribute(
         "aria-label",
         unlocked
@@ -1798,13 +1829,16 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         const me = document.createElement("span");
         me.className = "you";
         me.setAttribute("aria-hidden", "true");
-        me.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+        // Plan item 124: full length, standing on the road beside her stop (she was a floating head over it).
+        setPose(me, "clasped");
+        me.dataset.side = b.dataset.side;
         const tag = document.createElement("span");
         tag.className = "start-tag";
         tag.setAttribute("aria-hidden", "true");
         // "Start here" only on a fresh farm; mid-campaign the next level is just "Next" (plan item 40).
         tag.textContent = Object.keys(data.stars).length === 0 ? "Start here" : "Next";
-        b.append(me, tag);
+        numEl.append(me);
+        b.append(tag);
         // Plan item 74: an unplayed next stop shows its tag where its empty stars and medal dots would be,
         // so its label stack is no taller than its neighbours' and never runs into the row below.
         if (!stars && !all.length) {
@@ -1926,5 +1960,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     you.style.setProperty("--walk-x", `${a.left - z.left}px`);
     you.style.setProperty("--walk-y", `${a.top - z.top}px`);
     you.classList.add("walking");
+    // Plan item 124: at the newly opened stop she waves, then settles.
+    window.setTimeout(() => {
+      if (!you.isConnected) return;
+      setPose(you, "wave");
+      window.setTimeout(() => you.isConnected && setPose(you, "clasped"), 2200);
+    }, 1750);
   }
 }
