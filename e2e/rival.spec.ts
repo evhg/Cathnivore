@@ -24,3 +24,21 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
     await expect(rival.getByRole('img', { name: /Graham Pell/ })).toBeVisible()
   }
 })
+
+// Plan item 92: tomorrow's papers are Hollowell's glossy memos, not the stall's paper: an orange letterhead band,
+// clean-cut (no torn mask) and a background unlike the players' action cards.
+test('the threat cards are styled as Hollowell memos', async ({ page }, testInfo) => {
+  test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.plan-strip-item > button').first()).toBeVisible()
+  const s = await page.evaluate(() => {
+    const memo = getComputedStyle(document.querySelector('.plan-strip-item > button')!)
+    const card = getComputedStyle(document.querySelector('.action-item button, .action-item')!)
+    return { memo: memo.backgroundImage, mask: memo.maskImage || memo.webkitMaskImage, card: card.backgroundImage + card.backgroundColor }
+  })
+  expect(s.memo).toContain('rgb(255, 122, 26)')
+  expect(s.mask === 'none' || s.mask === '').toBe(true)
+  expect(s.memo).not.toBe(s.card)
+})

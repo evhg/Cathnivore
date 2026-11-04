@@ -2589,3 +2589,17 @@ html.no-animations .cath-companion .cameo {
     text-transform: uppercase;
   }
 }
+
+/* Plan item 92: tomorrow's papers are Hollowell's own memos now, not the stall's newsprint: clean-cut card
+   stock with an orange letterhead band and a hard gloss across it (VISION: the corporations glossy, plastic,
+   over-lit), so the threat never reads in the players' paper. On the newsprint tokens, so dark mode dims them too. */
+.plan-strip-item > button:first-child {
+  background:
+    linear-gradient(112deg, transparent 0 34%, color-mix(in srgb, white 55%, transparent) 42%, transparent 50%),
+    linear-gradient(var(--hollowell), var(--hollowell-lo)) top / 100% 5px no-repeat,
+    linear-gradient(180deg, color-mix(in srgb, var(--newsprint) 80%, white), color-mix(in srgb, var(--newsprint-lo) 90%, var(--candor-highlight)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hollowell-ink) 16%, transparent);
+  color: var(--newsprint-ink);
+  -webkit-mask: none;
+  mask: none;
+}
