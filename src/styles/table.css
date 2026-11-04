@@ -2588,6 +2588,20 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-options { margin-right: 0; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) > .tooltip-trigger { top: 3px; translate: none; }
 }
+/* A folded turn that still cuts a card goes tight (Game.tsx's second fold step): the Sell tiles lose their slack and
+   a three-key family puts its name (no icon) beside its keys like a two-key one, about 35 px back for the last card. */
+@media (min-width: 1024px) {
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions .action-item.action-sell[data-group] > button:first-child:not(:disabled) { gap: 2px; min-height: 46px; padding-block: 3px; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) { flex-direction: row; align-items: center; gap: 6px; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-name { max-width: 27%; padding-right: 0; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-name > svg { display: none; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-where { display: block; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-where::before { content: none; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-options { gap: 3px; margin-right: 20px; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-option > button { padding-inline: 4px 3px; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-option .action-label { letter-spacing: -.01em; }
+  .desktop-col-left[data-big-turn='tight'] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) > .tooltip-trigger { top: 50%; translate: 0 -50%; }
+}
 
 /* ---- plan item 92: Hollowell's face across the table ----
    Graham Pell (the boardroom's figure, plan item 11) in a glossy black medallion lit from above, over the

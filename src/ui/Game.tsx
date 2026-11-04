@@ -654,9 +654,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // that turn (its Farm key sits beside Undo), giving the frame its height. Keyed by round and producer, so it
   // never flickers back mid-turn when the fold makes the cards fit.
   const [bigTurn, setBigTurn] = useState('')
+  // A folded turn that still cuts a card (15 cards with a three-key Supply, 1 deal in 20 at 1280x800) goes one
+  // step tighter: one-line Sell tiles and every family card's name beside its keys.
+  const [tightTurn, setTightTurn] = useState('')
   const turnKey = `${state.round}:${state.activeProducer}`
   useLayoutEffect(() => {
-    if (!isDesktop || bigTurn === turnKey) return
+    if (!isDesktop || tightTurn === turnKey) return
+    const folded = bigTurn === turnKey
     const sheet = document.querySelector('.actions-sheet .actions')
     if (!sheet) return
     const check = () => {
@@ -667,7 +671,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const over = [...sheet.querySelectorAll('.action-item')].some(
         (item) => !item.querySelector(':scope > button:disabled') && item.getBoundingClientRect().bottom > floor,
       )
-      if (over) setBigTurn(turnKey)
+      if (over) (folded ? setTightTurn : setBigTurn)(turnKey)
       return over
     }
     if (check() || typeof ResizeObserver === 'undefined') return
@@ -679,7 +683,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     ro.observe(sheet)
     for (const item of sheet.querySelectorAll('.action-item')) ro.observe(item)
     return () => ro.disconnect()
-  }, [state, isDesktop, bigTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
+  }, [state, isDesktop, bigTurn, tightTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
   // Plan item 123: a phone card whose name and price don't fit beside its 56 px picture (a region's name, a long
   // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
   useLayoutEffect(() => {
@@ -2035,7 +2039,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
           focusable descendants of its own, which the right column hit at random in this session's
           testing. */}
-      <aside className="desktop-col desktop-col-left" tabIndex={0} data-big-turn={foldFarm ? '' : undefined}>
+      <aside className="desktop-col desktop-col-left" tabIndex={0} data-big-turn={foldFarm ? (tightTurn === turnKey ? 'tight' : '') : undefined}>
         {/* AAA UI M4 fix: the Farm ledger folds into the producer frame (one line a producer) so the
             Actions frame below keeps the column's height for the verbs. */}
         {isDesktop && (
