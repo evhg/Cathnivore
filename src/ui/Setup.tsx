@@ -76,7 +76,15 @@ export default function Setup({ onStart }: Props) {
       <header className="setup-header">
         <div className="setup-header-text">
           <h1>Quick Game</h1>
-          <p className="setup-cath-line">“Pick two producers who'll cover each other, love.”</p>
+          <p className="setup-cath-line">
+            <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
+            {/* Plan item 80: on a phone, once a pair is picked, Cath's line on them is said up here, beside her. */}
+            {producers.length === 2 && (
+              <span className="cath-line-pair" aria-hidden="true">
+                “{pairLine(producers[0]!, producers[1]!)}”
+              </span>
+            )}
+          </p>
         </div>
         {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
             no game state exists yet to react to here. */}
@@ -145,6 +153,8 @@ export default function Setup({ onStart }: Props) {
                 <Portrait character={id} size={112} />
               </span>
               <span className="pc-name">{PRODUCERS[id].name}</span>
+              {/* Plan item 80: on a phone the four are small toggles by first name; the picked pair are drawn big below. */}
+              <span className="pc-short" aria-hidden="true">{shortName(PRODUCERS[id].name)}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
               <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
               {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
@@ -227,6 +237,11 @@ function Seat({ who, tag, ai }: { who: ProducerId; tag: string; ai: boolean }) {
   )
 }
 
+/** "Dr Ines Farrow" -> "Ines": the phone toggles' label. */
+function shortName(name: string): string {
+  return name.replace(/^Dr\.? /, '').split(' ')[0] ?? name
+}
+
 /** Plan item 54: the picked pair's abilities in full, with Cath's line on how they cover each other. */
 function PairPanel({ producers }: { producers: ProducerId[] }) {
   const [a, b] = producers
@@ -236,6 +251,10 @@ function PairPanel({ producers }: { producers: ProducerId[] }) {
         {[a, b].map((id, i) =>
           id ? (
             <p key={id} className="pair-ability" data-producer={id}>
+              <span className="pair-portrait" aria-hidden="true">
+                <Portrait character={id} size={100} />
+                <span className="pair-plate">{PRODUCERS[id].name}</span>
+              </span>
               <b>{PRODUCERS[id].roleName.split(', ')[1] ?? PRODUCERS[id].roleName}</b> {PRODUCERS[id].roleAbility}
             </p>
           ) : (

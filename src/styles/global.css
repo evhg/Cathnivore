@@ -2004,6 +2004,9 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .segmented.mode-picker span.mode-who { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; }
   .setup { min-height: 100vh; align-content: center; }
   .setup .setup-recommend { align-self: flex-start; }
+  /* Plan item 80: the recommend button beside the heading, so the portraits get the row's height. */
+  .setup .setup-producers-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .setup .setup-producers-head h2 { margin: 0; }
   .mode-art .mode-sit svg { width: 52px; height: 62px; border-radius: 50%; }
   .mode-tag { font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: inherit; }
   .mode-tag.is-ai { padding: 0 5px; border: 1.5px solid currentColor; border-radius: 999px; }
@@ -2122,20 +2125,43 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     box-shadow: 0 0 0 1.5px var(--pc), 0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent);
     transform: translateY(-8px) rotate(var(--deal, 0deg));
   }
-  .setup .producer-card .pc-name { font-size: var(--fs-label); line-height: 1.15; min-height: 2.3em; display: flex; align-items: center; }
-  .setup .pc-portrait svg { width: 52px; height: 62.4px; }
+  /* Plan item 80: the four are toggles (a small face and a first name); the picked pair are drawn big below. */
+  .setup .producer-card .pc-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup .producer-card .pc-short { display: block; font-size: var(--fs-label); font-weight: 800; line-height: 1.15; }
+  .setup .pc-portrait svg { width: 28px; height: 33.6px; }
+  .setup .producer-grid { padding-top: 1px; }
+  .setup .producer-card { flex-direction: row; justify-content: center; gap: 4px; padding: 2px 4px; border-top-width: 4px; }
+  .setup .producer-card .pc-portrait { flex: none; }
+  .setup .producer-card:has(input:checked) { transform: translateY(-3px) rotate(var(--deal, 0deg)); }
   .setup .producer-card .pc-role { display: none; }
   .setup .producer-card .pc-ability, .setup .producer-card .recommended-badge { display: none; }
   /* Picked: a tick on the card's corner in its colour, clear of the name. */
-  .setup .producer-card .pc-pick { top: 3px; right: 3px; width: 20px; height: 20px; padding: 0; display: grid; place-items: center; overflow: hidden; font-size: 0.75rem; line-height: 20px; text-indent: 0; white-space: nowrap; background: var(--pc); color: var(--paper-hi); border-radius: 50%; }
+  .setup .producer-card .pc-pick { top: 1px; right: 1px; width: 15px; height: 15px; padding: 0; display: grid; place-items: center; overflow: hidden; font-size: 0.75rem; line-height: 15px; font-size: 0.6rem; text-indent: 0; white-space: nowrap; background: var(--pc); color: var(--paper-hi); border-radius: 50%; }
   .setup .pc-pick-word { display: none; }
   .setup .producer-card .pc-portrait { border-width: 1.5px; }
 
   /* Under them, the pair's abilities in full and Cath's line on how they cover each other. */
-  .setup .pair-panel { display: grid; gap: 4px; margin-top: 6px; }
+  .setup .pair-panel { display: grid; gap: 2px; margin-top: 3px; }
   .setup .pair-abilities { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .setup .pair-ability { margin: 0; padding: 4px 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-label); line-height: 1.3; color: var(--ink); }
-  .setup .pair-ability b { display: block; font-weight: 800; color: var(--ink); }
+  .setup .pair-ability { margin: 0; padding: 0 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-label); line-height: 1.3; color: var(--ink); }
+  .setup .pair-ability .pair-portrait { display: block; position: relative; width: 104px; margin: 0 auto 12px; line-height: 0; }
+  .setup .pair-portrait svg {
+    width: 100px; height: 120px; border: 2px solid var(--pc); border-radius: 50% / 46%;
+    background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--pc) 18%, var(--paper-hi)), var(--paper-2));
+    box-shadow: 0 6px 12px color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+  .setup .pair-plate {
+    position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); padding: 3px 9px; border-radius: 999px;
+    border: 2px solid var(--pc); background: var(--paper-hi); color: var(--ink); font-size: var(--fs-label); font-weight: 800; line-height: 1.2; white-space: nowrap;
+  }
+  .setup .setup-cath-line:has(.cath-line-pair) .cath-line-ask { display: none; }
+  .setup .setup-cath-line .cath-line-pair { display: inline; }
+  .setup .pair-panel .pair-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup .pair-ability.is-empty { display: grid; place-items: center; min-height: 120px; border-left-style: dashed; }
+  .setup .pair-ability b { display: inline; font-weight: 800; color: var(--ink); }
+  .setup .setup-cath-line:has(.cath-line-pair) .cath-line-ask { display: none; }
+  .setup .setup-cath-line .cath-line-pair { display: inline; }
+  .setup .pair-panel .pair-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .setup .pair-ability.is-empty { color: var(--ink-muted); font-style: italic; }
   .setup .pair-line-who { font-family: var(--font-ui, inherit); font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soil); }
   .setup .pair-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-size: var(--fs-small); line-height: 1.25; color: var(--ink-muted); }
@@ -3313,7 +3339,7 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.12em; }
 }
 @media (min-width: 1100px) and (max-height: 860px) {
-  .setup .pc-portrait svg { width: 92px; height: 110.4px; }
+  .setup .pc-portrait svg { width: 102px; height: 122.4px; }
   .setup .producer-card { padding: 12px 12px 10px; }
   .setup .market-event-line { display: none; }
   .setup .difficulty-line { display: none; }
@@ -3325,6 +3351,7 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 }
 /* Plan item 67 slice 2: each producer pulled up to the table in a wooden chair, its back rising round the portrait. */
 .setup .pc-chair { display: none; }
+.setup .pc-short, .setup .pair-portrait, .setup .cath-line-pair { display: none; }
 @media (min-width: 1100px) {
   .setup .producer-card { position: relative; }
   .setup .producer-card .pc-portrait { position: relative; }
@@ -3335,7 +3362,7 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup .pc-chair .chair-seat { fill: var(--wood); }
 }
 @media (min-width: 1100px) and (max-height: 860px) {
-  .setup .pc-chair { top: 2px; width: 124px; height: 149px; margin-left: -62px; }
+  .setup .pc-chair { top: 2px; width: 136px; height: 163px; margin-left: -68px; }
 }
 /* Plan item 67 slice 2: the seed tag is a real luggage tag: manila card with a punched eyelet, tied by a string to
    its label, hanging a touch askew. */
