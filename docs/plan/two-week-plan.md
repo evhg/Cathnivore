@@ -1597,7 +1597,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her box 110 px or more at D and 64 at P, meeting no label or padlock box; locked stops under 15% saturation, open ones over 30%; hedgerow-map passes; shots P and D, acts 1 and 3.
 - **Size:** 3
 
-## 125. [ ] NIGHT SHIFT phone: the class pick on one screen
+## 125. [ ] NIGHT SHIFT phone: the class pick on one screen *(lane A, in progress)*
 - **Why:** `ns-play-P` (0-390 x 700-790): only GRIT shows above "MORE BELOW"; the weapon, skills and other stats need a scroll, while her back view takes 120-520 px of height.
 - **Build:**
   - A compact dossier card above the call to action: four stat bars in two columns, the weapon line art at 48 px with its name and damage; the quote folded behind a tap.
