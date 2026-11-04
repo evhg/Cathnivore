@@ -1431,84 +1431,99 @@ body {
   }
 }
 
-/* Plan item 85: the four games on the first screen. Two by two under the CTA row on a desktop; a snapping row of
-   cards (two whole, a peek of the third) on a phone. Each is a link to its game, with its live key art. */
+/* Plan items 85 and 96: the four games as posters on the first screen: key art with Cath in that game's dress,
+   a title plate, one line and Play. A row of four across the hero at D, a 2x2 grid on a phone (no sideways scroll). */
 .hero-games {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  width: min(100%, 540px);
-  margin: 22px 0 0;
+  gap: 12px;
+  width: 100%;
+  margin: 20px 0 0;
 }
 .hero-game {
+  position: relative;
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px 6px 6px;
-  border-radius: 12px;
-  background: var(--card);
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--poster-bottom);
   box-shadow: inset 0 0 0 1px var(--card-edge), var(--shadow-card);
   color: var(--cream);
+  text-align: left;
   text-decoration: none;
-  backdrop-filter: blur(6px);
-  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
 }
 .hero-game:hover,
 .hero-game:focus-visible {
-  background: var(--card-hover);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: inset 0 0 0 1px var(--frame-edge-lit), 0 16px 30px var(--shadow-deep);
 }
-.hero-game img {
+.hero-game-art {
+  position: relative;
   display: block;
-  width: 86px;
-  height: 54px;
-  border-radius: 8px;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+}
+.hero-game-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
+.hero-game-nightshift .hero-game-art img { filter: brightness(1.45) saturate(1.1); }
+.hero-game-cath {
+  position: absolute;
+  right: 4px;
+  bottom: -6px;
+  width: 34%;
+  filter: drop-shadow(0 6px 10px var(--shadow-deep));
+}
+.hero-game-cath svg { display: block; width: 100%; height: auto; }
 .hero-game-text {
   display: grid;
-  gap: 2px;
-  min-width: 0;
+  gap: 4px;
+  padding: 10px 12px 4px;
 }
 .hero-game-name {
   font-family: var(--font-display, Georgia, serif);
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.1;
 }
-.hero-game-name .badge {
-  font-size: 0.625rem;
-  vertical-align: middle;
-}
+.hero-game-name .badge { font-size: 0.6875rem; vertical-align: middle; }
 .hero-game-hook {
-  font-size: 0.8125rem;
-  line-height: 1.25;
-  color: var(--cream-muted);
-  text-wrap: balance;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  color: var(--cream);
 }
-/* Plan item 98: "grown-ups" broke at its hyphen, leaving "ups" alone on a line at D. */
-.hero-game-hook .nowrap { white-space: nowrap; }
+.hero-game-play {
+  justify-self: start;
+  margin: 6px 12px 12px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-mid));
+  box-shadow: inset 0 0 0 1px var(--gold-edge);
+  color: var(--gold-ink);
+  font-weight: 800;
+  font-size: 0.9375rem;
+}
 @media (max-width: 899.98px), (max-aspect-ratio: 1/1) {
+  .hero-games { margin-top: 16px; }
+  .hero-game-text { padding: 8px 10px 2px; }
+  .hero-game-name { font-size: 1.0625rem; }
+  .hero-game-hook { font-size: 0.875rem; }
+  .hero-game-play { margin: 6px 10px 10px; padding: 6px 14px; }
+}
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  /* The posters span the hero under Cath and the words. */
   .hero-games {
-    display: flex;
-    width: calc(100% + 32px);
-    margin: 18px -16px 0;
-    padding: 2px 16px 8px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 16px;
-    scrollbar-width: none;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    width: min(1180px, 100%);
+    justify-self: center;
+    margin: 18px 0 0;
   }
-  .hero-games::-webkit-scrollbar { display: none; }
-  .hero-game {
-    flex: 0 0 min(44%, 210px);
-    grid-template-columns: 1fr;
-    padding: 6px 6px 10px;
-    scroll-snap-align: start;
-    text-align: left;
-  }
-  .hero-game img { width: 100%; height: auto; aspect-ratio: 16 / 10; }
 }
 
 /* Plan item 85: Cath stands in the diorama head to boots (the shared art's full framing, with her own contact
@@ -1531,3 +1546,20 @@ body {
 @media (min-width: 1200px) and (min-aspect-ratio: 1/1) {
   .hero-stall { filter: saturate(1.15) brightness(1.06) drop-shadow(-6px 0 14px var(--gold-glow)) drop-shadow(0 18px 26px var(--shadow-deep)); }
 }
+/* Plan item 96: at D the posters take the hero's lower third, so Cath and the words above them are shorter. */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .hero { align-items: end; padding-top: 2vh; }
+  .hero-cath { height: min(44vh, 420px); margin-bottom: 0; }
+  .hero-text { padding-bottom: 0; }
+  .hero .title { font-size: clamp(3rem, 6.4vw, 6rem); }
+}
+@media (min-width: 1200px) and (min-aspect-ratio: 1/1) {
+  /* The stall stands on the horizon right of the words, clear of the posters. */
+  .hero-stall { top: 190px; bottom: auto; width: clamp(150px, 12vw, 200px); }
+}
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  /* The first screen ends on the posters: the games section's cards start below it, not as a faded strip. */
+  .hero { min-height: 100svh; align-content: start; }
+}
+/* Plan item 96: the hero now sits higher on the sunset, so the ghost button is darker glass to hold AA. */
+.hero .btn-cta-glass { background: color-mix(in srgb, var(--scrim) 75%, transparent); }

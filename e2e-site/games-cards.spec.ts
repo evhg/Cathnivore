@@ -61,7 +61,9 @@ test.describe('games page cards', () => {
     expect(plank).toBe('none')
     const card = await box('.games a.card')
     expect(cath.y + cath.height).toBeLessThanOrEqual(card.y)
-    expect(cath.y + cath.height).toBeLessThanOrEqual(vp.height)
+    // Plan item 96: on a phone the posters (each with Cath in that game's dress) take the first screen and her full
+    // figure follows them; at D she stands on it whole.
+    if (vp.width >= 900) expect(cath.y + cath.height).toBeLessThanOrEqual(vp.height)
     if (vp.width >= 1200) {
       // Plan item 85: the four games' names on the first screen are the hero strip's (the section's cards follow).
       for (const t of await page.locator('.hero-games .hero-game-name').all()) {
@@ -134,5 +136,28 @@ test('the hero text reads at 4.5:1 or more against the sunset', async ({ page })
       }, [shot, ink] as const)
       expect(ratio, `${sel} at ${vp.width}`).toBeGreaterThanOrEqual(4.5)
     }
+  }
+})
+
+// Plan item 96: each game a key-art poster: art 240 px wide or more at D, 160 at P, all four in the first viewport
+// at D, no sideways scroll at P, copy 14 px or more, Cath on every poster.
+test('the four games are posters on the first screen', async ({ page }) => {
+  for (const [vp, art] of [[{ width: 1440, height: 900 }, 240], [{ width: 390, height: 844 }, 160]] as const) {
+    await page.setViewportSize(vp)
+    await page.goto('/games/')
+    const posters = page.locator('.hero-games .hero-game')
+    await expect(posters).toHaveCount(4)
+    const m = await page.evaluate(() => ({
+      art: [...document.querySelectorAll('.hero-game-art')].map((e) => e.getBoundingClientRect().width),
+      boxes: [...document.querySelectorAll('.hero-game')].map((e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom] }),
+      copy: [...document.querySelectorAll('.hero-game-hook, .hero-game-play')].map((e) => parseFloat(getComputedStyle(e).fontSize)),
+      caths: [...document.querySelectorAll('.hero-game-cath svg')].length,
+      scroll: document.documentElement.scrollWidth - innerWidth,
+    }))
+    for (const w of m.art) expect(w).toBeGreaterThanOrEqual(art)
+    for (const f of m.copy) expect(f).toBeGreaterThanOrEqual(14)
+    expect(m.caths).toBe(4)
+    expect(m.scroll).toBeLessThanOrEqual(0)
+    if (vp.width >= 900) for (const [l, t, r, b] of m.boxes) expect(l >= 0 && t >= 0 && r <= vp.width && b <= vp.height).toBe(true)
   }
 })

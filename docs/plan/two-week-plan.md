@@ -1323,7 +1323,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: the panel shows 25 words or fewer at D; the bubble within 120 px of Cath at P and D and clear of the lane's tiles; trait icons 28 px or more; hedgerow-tray, -gatequeue and -critique still pass; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 96. [ ] The site's /games/: each game a key-art poster *(lane B, in progress)*
+## 96. [x] The site's /games/: each game a key-art poster *(done 2026-11-04, lane B: the hero strip became four posters (key art about 282 px wide at D and 169 at P, Cath's bust in each game's outfit, a title plate, one line, Play). A row across the hero at D, all four inside 1440x900; a 2x2 grid at P with no sideways scroll. The games section now starts below the first screen at D, the stall sits on the horizon, and the ghost button is darker glass for AA. e2e in `games-cards.spec.ts`; shots P and D, light and dark, in `e2e/screenshots/f96`.)*
 - **Why:** `games-D` (plan1104b): the four games are 85x55 thumbnails with 12 px grey copy (615-1155 x 450-610), and a translucent half-faded strip of cards sits at the bottom (180-890 x 745-900). `games-P` (350-390 x 425-610) cuts Hedgerow off in a sideways scroll.
 - **Build:** four poster cards (about 260x300 at D, a 2x2 grid at P): key art with Cath in that game's dress, a title plate, one line of copy, Play; the bottom strip solid (or gone) on the first screen.
 - **Accept:** e2e: each poster's art 240 px wide or more at D, 160 at P; all four in the first viewport at D; no horizontal scroll at P; copy 14 px or more at AA; games-cards and site-hero still pass; shots P and D, light and dark.

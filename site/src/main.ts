@@ -3,7 +3,7 @@ import './fonts.css'
 import './tokens.css'
 import './styles.css'
 import '../../shared/cath/cath.css'
-import { cathSvg, type CathExpression } from '../../shared/cath/cath'
+import { cathSvg, type CathExpression, type CathOutfit } from '../../shared/cath/cath'
 import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { scrapbookPages } from '../../shared/cath/scrapbook'
@@ -38,6 +38,8 @@ const heroCath = document.getElementById('hero-cath')
 let outfit = chosenOutfit()
 function showCath(expression: CathExpression): void {
   if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'full', expression, pose: SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
+  // Plan item 96: each game's poster carries Cath in that game's dress.
+  for (const el of document.querySelectorAll<HTMLElement>('.hero-game-cath')) el.innerHTML ||= cathSvg({ framing: 'bust', expression: 'delighted', outfit: el.dataset.outfit as CathOutfit })
 }
 showCath('smirk')
 
