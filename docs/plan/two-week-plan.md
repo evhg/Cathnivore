@@ -1315,7 +1315,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: no water footprint meets a lane tile without a bridge, over all 100 levels; sampled water pixels within ΔE 15 of the 2D water colour; draw calls at level 13 within 5% of today's; shots levels 13 and 21 at P and D.
 - **Size:** 2
 
-## 95. [ ] Hedgerow: the round card as a threat poster, Cath's advice spoken on the field
+## 95. [ ] Hedgerow: the round card as a threat poster, Cath's advice spoken on the field *(lane A, in progress)*
 - **Why:** `hedge-l21-2d-D` and `-3d-D` (plan1104b, 1105-1415 x 375-545): the advice is a 14 px paragraph ("Your field can't answer this: Airborne. Scarecrows, Beehives, ..."); Kingdom Rush says this with icons and a hero bark. At P the advice isn't visible.
 - **Build:** the round's threat as a strip of vehicle art with counts and big trait icons (air, armour, speed) with a "can't answer" stamp on the gap; Cath's one-line advice as a speech bubble by her on the field, before Go; the full text behind an (i).
 - **Accept:** e2e: the panel shows 25 words or fewer at D; the bubble within 120 px of Cath at P and D and clear of the lane's tiles; trait icons 28 px or more; hedgerow-tray, -gatequeue and -critique still pass; shots P and D, 2D and 3D.
