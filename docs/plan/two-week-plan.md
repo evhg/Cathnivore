@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-04 21:23 UTC
 
 
 
@@ -1617,4 +1616,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Site /games/ D:** the H1 reads "Cathnivore" over Runnel's pitch (615-1095 x 220-290). *(Fixed 2026-11-04 lane B: the daily line is Cath's daily Runnel nudge, now quoted and signed "— Cath", so it reads as her voice under the brand, not the board game's pitch; games-cards and the landing fonts spec pass; shots `f123a/games-*`.)*
   - [ ] **From item 121:** the Cathnivore phone threat badge's 11 px (now about 8 on a 64 px hex; needs another home than the tray strip, for example a tab on the name plate); Hedgerow 3D D Cath's face a dark smudge under her hair (150-230 x 470-540); the Hedgerow map's Saltmarsh cloud an opaque blob (460-770 x 60-160).
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 127. [ ] Cathnivore: a liberation and a Squeeze as staged moments in play
+- **Why:** `cath-game-D` (plan1104i, 500-1185 x 215-885): the board never stages its two biggest beats (VISION 4); items 28, 48 and 92 staged the decor, the end and Hollowell's turn, not a region freed.
+- **Build:**
+  - A liberation: the hex flips from Hollowell orange to green over about 900 ms, factory tokens topple, bunting drops with an overshoot, the region's producer pops up delighted; table Cath (item 118) cheers and her bubble names the region; the sound bank's bell and crowd.
+  - A Squeeze: a glossy stamp with no overshoot, a synth glitch, Cath and the region's producer worried.
+  - Reduced motion: fades only. An `e2eForce` hook for each moment.
+- **Accept:** e2e at P and D: `data-moment="liberate|squeeze"` appears and lasts 700-1200 ms, and Cath's `data-expression` changes; no layout shift over 2 px; shots mid-moment at P and D, light and dark.
+- **Size:** 3
+
+## 128. [ ] Hedgerow: a level fly-in that teaches the lane
+- **Why:** `hedge-l21-2d-D` (290-740 x 110-880) and level 34: two gates and a long lane, and nothing shows where the vehicles come from or what to guard.
+- **Build:**
+  - On a level's first entry the camera (3D) or a pan and zoom (2D) follows the lane from each gate to the farmhouse in about 2.5 s, vehicles dotted along it; it ends on Cath waving with one line naming the threat.
+  - A tap skips; it plays once a level (`SaveData.seen`).
+- **Accept:** e2e: `data-flyin` runs 3 s or less, a skip ends it within 150 ms, no replay on reload, the closing bubble meets no plot; shots of its start, middle and end at P and D in `?2d`.
+- **Size:** 3
+
+## 129. [ ] NIGHT SHIFT: the desktop class pick composed round her
+- **Why:** `ns-play-D` (470-960 x 100-860): empty street while Cath stands behind the stats panel (935-975 x 280-330, only the umbrella's edge shows); the class names read as a menu, not an operative lineup. Check first against items 112, 117 and 125.
+- **Build:**
+  - Frame her face-on in the empty middle band; narrow the panel to about 380 px so the street sign reads whole.
+  - On a class change: a 250 ms dolly, a kit-on flash and a weapon-rack stinger (`frontaudio.ts`).
+- **Accept:** `faceBox()` inside 470-960 x 150-500 and 110 px or more tall at D, meeting neither the panel nor the list; the stinger audible in the offline audio check; cathode-classpick and cathode-perf pass; shots D and L for all five classes.
+- **Size:** 2
+
+## 130. [ ] Site /games/ phone: Cath in the hero
+- **Why:** `games-P` (0-390 x 0-410): text and buttons with no Cath, where VISION makes her the landing page's centrepiece; on a phone she is only a sliver of each poster.
+- **Build:**
+  - A half-length Cath (`shared/cath`, a wave) 140 px or more by the logotype, standing on the horizon.
+  - Her outfit and expression follow the poster in view (an IntersectionObserver on the 2x2 grid), a 200 ms crossfade; the wave idles after 3 s.
+- **Accept:** at 390x844 and 375x667 her box is 140 px or more tall, on the first screen, meeting no text or button; the first poster's top stays above 640 px; shots P and D and a crossfade frame.
+- **Size:** 2
+
+## 131. [ ] Cathnivore phone: the table fills its frame, and Cath lives on it
+- **Why:** `cath-game-P` (8-380 x 225-605): the board is an inset with about 45 px of empty cloth under the hexes, and Cath is a 64 px ring in the header (8-75 x 55-118), not at the table (item 118 did the desktop).
+- **Build:**
+  - The hexes fit 92% of the frame's width.
+  - A 96 px half-length Cath at the table's lower-left corner, on item 118's expression feed; her line a bubble from her, the header strip dropped.
+- **Accept:** at 390x844 and 375x667 the hexes take 88% or more of the frame's width; Cath 96 px or more, meeting no hex or name plate; no scroll; hand-art and region-closeup pass; shots P light and dark.
+- **Size:** 3
+
+## 132. [ ] The bugs from the 2026-11-04 21:25 critique, fixed as one batch
+- **Build:** (check each first; plan1104i)
+  - [ ] **NIGHT SHIFT:** Cath seen from behind on the title (ns-title-D 960-1070 x 350-730, P 110-235 x 290-620) and the P class pick (100-320 x 210-560), against items 117 and 112 (a stale frame or a regression); a stray thin white bar at the title's foot (D 585-855 x 860-864, P 85-305 x 810-814).
+  - [ ] **Hedgerow:** 3D D the bubble covers the gate sign ("LOWELL", 300-360 x 395-412) and the 3D Hollowell plate sits on plots and the pond (392-595 x 383-407); the map P "Beyond the hedge · Act 4" teaser cut under the tool bar (50-340 x 755-785).
+  - [ ] **Cathnivore:** P "STAGE / I" wraps above "Expand" (165-215 x 150-165); the third hand card clipped to "Sel" with no scroll cue (355-390 x 672-760); D Setup's sign ropes run across Cath (1090-1215 x 740-775).
+  - [ ] **Site /games/ D:** Hedgerow's poster shows its in-game Cath beside the poster's half-length one (900-915 x 470-510); a sliver of the MUM drawing at the Cathnivore poster's corner (110-122 x 463-480).
+- **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more at 4.5:1, at P and D for each case; shots before and after.
 - **Size:** 2
