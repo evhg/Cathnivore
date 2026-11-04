@@ -892,19 +892,24 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
     ctx.stroke();
   }
   // Plan item 74: the sign stays wholly on the canvas when the gate sits at its edge (a phone's narrow field).
+  // Plan item 91: the town's name at 11 px or more (it was about 8 px at D); the plate grows to fit the word.
+  const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL";
+  const fs = Math.max(11, Math.round(s * 0.15));
+  ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
+  const sw = Math.max(s * 0.84, ctx.measureText(label).width + fs * 1.1);
+  const sh = Math.max(s * 0.26, fs * 1.6);
   const pad = Math.max(2, s * 0.04);
-  const sx = Math.max(pad, Math.min(L.width - s * 0.84 - pad, x - s * 0.42));
-  const sy = Math.max(pad, Math.min(L.height - s * 0.26 - pad, y - s * 0.62));
+  const sx = Math.max(pad, Math.min(L.width - sw - pad, x - sw / 2));
+  const sy = Math.max(pad, Math.min(L.height - sh - pad, y - s * 0.36 - sh));
   ctx.fillStyle = "#1f8a8a";
   ctx.beginPath();
-  ctx.roundRect(sx, sy, s * 0.84, s * 0.26, s * 0.05);
+  ctx.roundRect(sx, sy, sw, sh, s * 0.05);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#f4fbfb";
-  ctx.font = `700 ${Math.max(7, Math.round(s * 0.12))}px 'Hedgerow UI', system-ui, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL", sx + s * 0.42, sy + s * 0.135);
+  ctx.fillText(label, sx + sw / 2, sy + sh / 2 + fs * 0.05);
 }
 
 function paintDecor(

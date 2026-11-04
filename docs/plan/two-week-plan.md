@@ -1288,7 +1288,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **Cathnivore game D:** event cards' subtext about 11 px grey (680-1335 x 135-190); fruit crates over the board frame (1215-1325 x 810-870). **P:** the EXPAND tags' text about 7 px.
   - [ ] **Runnel D:** the footer repeats the Up-next card's weather line; the lesson tabs low-contrast grey (140-330 x 340-390). **P:** Cath twice (portrait and figure).
   - [ ] **Hedgerow map:** a stray gold line from stop 30 into the teaser (D 143-155 x 565-720); on P labels collide with padlocks and two-line labels overlap the next row.
-  - [ ] **Hedgerow level:** the gate sign about 8 px; the "N coming" plate over field tiles (2D D, 3D P); at P the "NEXT: ROUND 11" tab over the tray's top edge.
+  - [ ] **Hedgerow level:** ~~the gate sign about 8 px~~ *(fixed 2026-11-04 lane B: the town name is 11 px or more on a plate sized to the word; shots in `e2e/screenshots/f91`)*; the "N coming" plate over field tiles (2D D, 3D P); at P the "NEXT: ROUND 11" tab over the tray's top edge.
   - [ ] **NIGHT SHIFT D:** CONTINUE dimmer than the other entries while a case is saved.
 - **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more, at P and D for each case; shots before and after.
 - **Size:** 1
