@@ -2693,6 +2693,7 @@ html.no-animations .cath-companion .cameo {
     color: var(--ink);
     font-size: var(--fs-body);
     line-height: 1.25;
+    text-wrap: pretty;
     animation: table-cath-say var(--dur-quick) var(--ease-settle);
   }
   /* The tail points down at her mouth. */
