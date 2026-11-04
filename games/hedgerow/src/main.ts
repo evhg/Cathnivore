@@ -355,6 +355,10 @@ wear(outfitFor(data));
 ui.hostFace.innerHTML = cath("smirk");
 ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", outfit: art() });
 
+// Plan item 116: `?keyart` is the site poster's frame (scripts/keyart.mjs): the field alone, no HUD, panel,
+// controls or Cath's lines (styles.css "key art").
+if (new URLSearchParams(location.search).has("keyart")) document.documentElement.dataset.keyart = "";
+
 let game: Game | null = null;
 /** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
 let renderer: Renderer | Renderer3D | null = null;

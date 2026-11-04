@@ -144,7 +144,7 @@ test('the hero text reads at 4.5:1 or more against the sunset', async ({ page })
 // Plan item 96: each game a key-art poster: art 240 px wide or more at D, 160 at P, all four in the first viewport
 // at D, no sideways scroll at P, copy 14 px or more, Cath on every poster.
 test('the four games are posters on the first screen', async ({ page }) => {
-  for (const [vp, art] of [[{ width: 1440, height: 900 }, 240], [{ width: 390, height: 844 }, 160]] as const) {
+  for (const [vp, art] of [[{ width: 1440, height: 900 }, 282], [{ width: 390, height: 844 }, 160]] as const) {
     await page.setViewportSize(vp)
     await page.goto('/games/')
     const posters = page.locator('.hero-games .hero-game')

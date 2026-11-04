@@ -1,0 +1,22 @@
+/* Plan item 116: `?keyart` (set on <html> in main.tsx) is the site poster's frame. The market table fills the
+   window with its regions, pieces, Bea's drawing and the crates (the poster stands its own Cath in front); everything a player
+   reads or presses (the columns, the market board, the plan strip, the tray, the map key, the hex info
+   tags, Cath and her line, the banners) is gone. */
+[data-keyart] .desktop-col,
+[data-keyart] .game > :not(.game-scroll):not(.map-wrap),
+[data-keyart] .game-scroll > :not(.map-wrap),
+[data-keyart] .map-key,
+[data-keyart] .table-cath,
+[data-keyart] .round-banner,
+[data-keyart] .table-sweep,
+[data-keyart] .danger-flash,
+[data-keyart] .map-wrap button,
+[data-keyart] .map-wrap [role="button"] {
+  display: none !important;
+}
+
+[data-keyart] .map-wrap {
+  position: fixed;
+  inset: 0;
+  border-radius: 0;
+}

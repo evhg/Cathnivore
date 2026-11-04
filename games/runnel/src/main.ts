@@ -1160,6 +1160,9 @@ function endLesson(): void {
 // ---- start ------------------------------------------------------------------------------------------
 
 const params = new URLSearchParams(location.search)
+// Plan item 116: `?keyart` is the site poster's frame (scripts/keyart.mjs): the valley and the board alone, no
+// header, stats, host line or buttons (styles.css "key art").
+if (params.has('keyart')) document.documentElement.dataset.keyart = ''
 if (params.get('mode') === 'practice') mode = 'practice'
 if (params.get('mode') === 'orchard') {
   mode = 'orchard'

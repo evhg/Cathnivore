@@ -9,7 +9,8 @@
 // Set PLAYWRIGHT_CHROMIUM_PATH if the pinned Chromium revision is missing (see CLAUDE.md). Review the files
 // and commit them; this runs on `build`, never inside a release, so the art ships only once CI has seen it.
 import { chromium } from '@playwright/test'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { KEYART_MANIFEST, keyartHash } from './keyart-sources.mjs'
 
 const base = (process.env.SITE_URL ?? 'http://localhost:4186').replace(/\/$/, '')
 const out = process.env.KEYART_OUT ?? 'portfolio/public/work'
@@ -60,7 +61,7 @@ const shoot = {
   // The market table late in a Quick Game: the autoplay stops when round 7 begins.
   async cathnivore() {
     const p = await page()
-    await p.goto(`${base}/cathnivore/?e2eAutoplay=1&e2eAutoplayUntil=7`)
+    await p.goto(`${base}/cathnivore/?keyart&e2eAutoplay=1&e2eAutoplayUntil=7`)
     await p.getByText('Quick Game').click()
     await p.getByRole('button', { name: 'Start' }).click()
     const round = () => p.evaluate(() => Number(document.querySelector('.map-wrap svg.map[data-round]')?.dataset.round ?? 0))
@@ -78,14 +79,13 @@ const shoot = {
   // (a fresh browser profile, so nothing is saved anywhere real), then the win sheet is closed.
   async runnel() {
     const p = await page()
-    await p.goto(`${base}/runnel/?nohelp&sky=noon,clouds`)
+    await p.goto(`${base}/runnel/?keyart&nohelp&sky=noon,clouds`)
     await p.waitForFunction(() => !!window.runnelTest)
     await p.evaluate(() => window.runnelTest.nearlySolve())
     await p.locator('#board [data-last]').click()
-    await p.locator('#dlg-win').waitFor({ state: 'visible', timeout: 20000 })
-    await p.waitForTimeout(600)
-    await p.keyboard.press('Escape')
-    await p.waitForTimeout(900)
+    // The win's strip (hidden by `?keyart`) comes up once the river has run out to every field.
+    await p.waitForFunction(() => document.body.classList.contains('has-win-strip'), null, { timeout: 20000 })
+    await p.waitForTimeout(1500)
     return (await p.screenshot()).toString('base64')
   },
   // Level 30 in the 2D field: six towers grown along their paths and a round in flight.
@@ -95,7 +95,7 @@ const shoot = {
     const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
     await p.goto(`${base}/hedgerow/?sandbox=1&2d`)
     await p.evaluate(([s, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { 30: true }, tips: t })), [stars, tips])
-    await p.goto(`${base}/hedgerow/?sandbox=1&2d&level=30`)
+    await p.goto(`${base}/hedgerow/?keyart&sandbox=1${process.env.KEYART_HEDGEROW_3D ? '' : '&2d'}&level=30`)
     await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
     await p.waitForTimeout(800)
     await p.evaluate(() => {
@@ -124,8 +124,6 @@ const shoot = {
     })
     await p.waitForFunction(() => window.hedgerow.game().enemies.length > 8, null, { timeout: 60000 }).catch(() => {})
     await p.waitForTimeout(2500)
-    // The "New on the lane" card would cover the field's corner: key art shows the field.
-    await p.addStyleTag({ content: '#intro { display: none !important; }' })
     return (await p.screenshot()).toString('base64')
   },
   // The Drowned Market street, from NIGHT SHIFT's own key art (scripts/cathode-keyart.mjs renders it from the
@@ -135,10 +133,14 @@ const shoot = {
   },
 }
 
+const manifest = existsSync(KEYART_MANIFEST) ? JSON.parse(readFileSync(KEYART_MANIFEST, 'utf8')) : {}
 for (const name of want) {
   if (!shoot[name]) throw new Error(`unknown game: ${name}`)
   const shot = await shoot[name]()
   if (typeof shot === 'string') await write(name, shot)
   else await write(name, shot.b64, shot.mime)
+  // Plan item 116: what this art was drawn from (tests/keyart-fresh.test.ts). Only for the real output folder.
+  if (out === 'portfolio/public/work') manifest[name] = keyartHash(name)
 }
+if (out === 'portfolio/public/work') writeFileSync(KEYART_MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`)
 await browser.close()

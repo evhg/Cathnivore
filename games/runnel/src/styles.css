@@ -3625,3 +3625,30 @@ body[data-mode='practice'] #week-slot {
    glows. */
 .in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }
 .in-lesson .valley { filter: brightness(.8) saturate(.75); transition: filter 400ms ease; }
+
+/* ---- key art (plan item 116) ---- */
+/* `?keyart`, set on <html> by main.ts: the site poster's frame. The valley, the board and the farm fill the
+   window; the header, stats, host line, hint, rail, signs and progress bar are gone, and so is Cath: the poster
+   stands its own in front. */
+[data-keyart] .top,
+[data-keyart] .modes,
+[data-keyart] .hud,
+[data-keyart] .host,
+[data-keyart] .foot,
+[data-keyart] .rail,
+[data-keyart] .progress,
+[data-keyart] .farm-sign,
+[data-keyart] .win-strip,
+[data-keyart] .valley-cath,
+[data-keyart] dialog {
+  display: none !important;
+}
+[data-keyart] .app {
+  max-width: none;
+}
+[data-keyart] .stage {
+  position: fixed;
+  inset: 0;
+  padding: 3vh 4vw;
+  grid-template-rows: 1fr;
+}

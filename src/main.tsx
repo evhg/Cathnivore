@@ -14,6 +14,7 @@ import './styles/title.css'
 import './styles/campaign.css'
 import '../shared/cath/cath.css'
 import './styles/table.css'
+import './styles/keyart.css'
 import { isNativePlatform } from './platform/native'
 import { applyAnimationsSetting, applyThemeSetting, loadSettings } from './platform/settings'
 import { preloadNativeStorage } from './platform/storage'
@@ -33,6 +34,10 @@ if (!rootEl) {
 if (isNativePlatform()) {
   document.documentElement.classList.add('native-app')
 }
+
+// Plan item 116: `?keyart` is the frame the site's poster is shot from (scripts/keyart.mjs): the table alone,
+// no HUD, header or buttons (styles/keyart.css).
+if (new URLSearchParams(window.location.search).has('keyart')) document.documentElement.dataset.keyart = ''
 
 // SPEC 11.3: on the bundled iPhone app, `storage` (platform/storage.ts) is backed by an in-memory cache
 // over Capacitor Preferences, not raw `localStorage` — that cache has to be warmed from the real native

@@ -4538,3 +4538,25 @@ img.act-scene {
   #screen-select .node.next .you:not(.beside) { top: -52px; width: 52px; height: 60px; margin-left: -26px; }
   #screen-select .node.next .you.beside { top: 18px; width: 52px; height: 60px; margin-left: -96px; }
 }
+
+/* ---- key art (plan item 116) ---- */
+/* `?keyart`, set on <html> by main.ts: the site poster's frame. The field fills the window with its towers,
+   the round in flight and Cath on the lane; the HUD, the build panel, the controls, banners and Cath's
+   lines are gone. */
+[data-keyart] .hud,
+[data-keyart] .panel,
+[data-keyart] .controls,
+[data-keyart] .banner,
+[data-keyart] .bubble,
+[data-keyart] .cath-say,
+[data-keyart] .intro,
+[data-keyart] .replay-bar,
+[data-keyart] .duel,
+[data-keyart] .stage button {
+  display: none !important;
+}
+[data-keyart] .stage {
+  position: fixed;
+  inset: 0;
+  border-radius: 0;
+}
