@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-04 12:18 UTC
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1315,7 +1317,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: no water footprint meets a lane tile without a bridge, over all 100 levels; sampled water pixels within ΔE 15 of the 2D water colour; draw calls at level 13 within 5% of today's; shots levels 13 and 21 at P and D.
 - **Size:** 2
 
-## 95. [ ] Hedgerow: the round card as a threat poster, Cath's advice spoken on the field *(lane A, in progress)*
+## 95. [x] Hedgerow: the round card as a threat poster, Cath's advice spoken on the field *(done 2026-11-04, lane A, e3c192f5: the round's traits as 30 px icons with the field's gaps under a 'Can't answer' stamp; the warning, rules, round after and her full advice behind the ticket's (i); her line in a bubble beside her before Go, naming the gap first (`gapAdvice`); `cathsay.ts` placement, unit `tests/hedgerow-cathsay.test.ts`, e2e `hedgerow-threat.spec.ts` at P and D; tray, gatequeue, critique, field, map e2e pass; shots `e2e/screenshots/h95` before/after, 2D and 3D. Changed: 'clear of the lane's tiles' became 'never over the gate queue or her figure, the least lane it can', see DECISIONS)*
 - **Why:** `hedge-l21-2d-D` and `-3d-D` (plan1104b, 1105-1415 x 375-545): the advice is a 14 px paragraph ("Your field can't answer this: Airborne. Scarecrows, Beehives, ..."); Kingdom Rush says this with icons and a hero bark. At P the advice isn't visible.
 - **Build:** the round's threat as a strip of vehicle art with counts and big trait icons (air, armour, speed) with a "can't answer" stamp on the gap; Cath's one-line advice as a speech bubble by her on the field, before Go; the full text behind an (i).
 - **Accept:** e2e: the panel shows 25 words or fewer at D; the bubble within 120 px of Cath at P and D and clear of the lane's tiles; trait icons 28 px or more; hedgerow-tray, -gatequeue and -critique still pass; shots P and D, 2D and 3D.
