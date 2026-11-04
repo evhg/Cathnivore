@@ -184,3 +184,21 @@ for (const [width, height, min] of [[390, 844, 200], [375, 667, 180]] as const) 
     expect(m.footInside).toBe(true)
   })
 }
+
+// Plan item 98: the vans drive under the region name plates (one sat on Kingsmarket's plate in early frames):
+// they are drawn in the board's own svg, before every name sign.
+test('the vans drive under the name plates', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'plates show at D')
+  await page.goto('/')
+  await expect(page.locator('.title-movers .title-van')).toHaveCount(2)
+  const m = await page.evaluate(() => {
+    const movers = document.querySelector('.title-movers')!
+    const signs = [...document.querySelectorAll('.title-board .region-sign')]
+    return {
+      inMap: movers.closest('svg.map') !== null,
+      signs: signs.length,
+      under: signs.every((s) => !!(movers.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING)),
+    }
+  })
+  expect(m).toEqual({ inMap: true, signs: 7, under: true })
+})

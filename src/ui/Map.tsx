@@ -95,6 +95,8 @@ interface Props {
   onSelect?: (region: RegionId) => void
   /** Plan item 80: the producers' faces this moment (a Squeeze worries them, their ability delights them). */
   faces?: Partial<Record<ProducerId, ProducerFace>>
+  /** Plan item 98: drawn over the hexes but under the region name plates (the title's vans on their roads). */
+  underNames?: ReactElement
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -575,7 +577,7 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, faces }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, faces, underNames }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -933,6 +935,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
           hex's pointy top vertex is never painted over by a neighbouring hex above it (gate 8 found
           Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
           vertex sits against the row above rather than open background — clipped this way). */}
+      {underNames}
       {active.map((id) => {
         const def = REGIONS[id]
         const { x, y } = hexCenter(id, layout)

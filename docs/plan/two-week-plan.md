@@ -1338,7 +1338,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745).
   - [ ] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845).
   - [ ] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604).
-  - [ ] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478). *(2026-11-04 lane A: it is a Hollowell van: `TitleMovers`' roads start on the plate, so every early frame shows it there. Every edge round Kingsmarket passes a neighbour's plate (Oakvale and Shingle Bay sit on its lower edges; a 6 px margin hits all but the bottom spoke), so rerouting can't clear it. Draw the vans inside the map svg under the `.region-plaque` layer instead, then e2e: walk each `animateMotion` path with getPointAtLength against the plates' boxes.)*
+  - [x] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478). *(Done 2026-11-04 lane A: it was a Hollowell van parked on the plate in early frames; every road round Kingsmarket passes a plate, so the vans now drive inside the board's svg under the name signs (Map's `underNames`); e2e in `title-table.spec.ts`.)*
   - [ ] **Cathnivore game D:** the faded last "Not yet" row cut by the "NOT YET · 7 MORE" pill (35-315 x 735-800).
   - [ ] **Hedgerow map P:** the next act's caption clipped behind the nav (50-340 x 760-780).
   - [ ] **Hedgerow 3D:** the gate sign about 9 px (D 175-285 x 378-392, P 20-75 x 410-420); Cath's 3D token a dark blob with no face at P (22-60 x 515-555).

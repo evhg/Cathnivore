@@ -32,8 +32,8 @@ export default function TitleArt() {
           <BeasDrawing />
         </div>
         <div className="title-map-wrap">
-          <Map state={state} />
-          <TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />
+          {/* Plan item 98: the vans drive under the region name plates (one sat on Kingsmarket's in early frames). */}
+          <Map state={state} underNames={<TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />} />
         </div>
       </div>
       {/* Plan item 75: the market table's near edge, in front of Cath (hiding her waist) and under the board. */}
@@ -109,7 +109,7 @@ function TitleMovers({ held }: { held: boolean }) {
     { path: THROUGH_ROAD, dur: '30s', begin: '-9s', park: vertex(2) },
   ]
   return (
-    <svg className={`title-movers ${held ? 'is-held' : 'is-free'}`} viewBox="-250 -238 500 476" aria-hidden="true" data-still={still || undefined}>
+    <g className={`title-movers ${held ? 'is-held' : 'is-free'}`} aria-hidden="true" data-still={still || undefined}>
       {runs.map((r, i) => (
         <g key={i} className="title-van" transform={still ? `translate(${r.park})` : undefined}>
           <g transform="translate(-9 -6)">
@@ -122,7 +122,7 @@ function TitleMovers({ held }: { held: boolean }) {
           {!still && <animateMotion dur={r.dur} begin={r.begin} repeatCount="indefinite" rotate="auto" path={r.path} />}
         </g>
       ))}
-    </svg>
+    </g>
   )
 }
 
