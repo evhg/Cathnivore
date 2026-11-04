@@ -1180,7 +1180,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e boxes inside the viewport and not intersecting, and AA contrast where named, at P and D for each case; shots before and after.
 - **Size:** 1
 
-## 80. [ ] Cathnivore: producers drawn to Cath's level, with faces that react
+## 80. [ ] Cathnivore: producers drawn to Cath's level, with faces that react *(lane A, in progress)*
 - **Why:** `cath-setup-D` (plan1103g): the four producer cards (about 505-1295 x 170-500) are round busts with dot eyes, flat fills and no hair; Cath beside them (1120-1220 x 615-760) is drawn far more richly, so the producers read as placeholders. On the board (`cath-game-D`) their miniatures are small identical capsules. VISION 5 asks for characters with presence.
 - **Build:**
   - One portrait module per producer in `shared/cath/`'s style (hair, eyes with highlights, a signature garment and prop), with neutral, delighted and worried faces.
