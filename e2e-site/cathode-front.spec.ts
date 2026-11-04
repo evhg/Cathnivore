@@ -113,7 +113,10 @@ test('the 18+ gate keeps its marks off the screen edge, and the loading line is 
     const t = tile.getBoundingClientRect()
     const dashLeft = t.left + parseFloat(getComputedStyle(tile, '::before').left)
     const plate = [...document.querySelectorAll<HTMLElement>('#screen-gate .gate-plate *')].map((e) => e.getBoundingClientRect()).filter((b) => b.width > 0)
-    const bar = document.getElementById('front-building')!.getBoundingClientRect()
+    // The boot line leaves the page once the street is built (plan item 89); its size while it shows is what counts.
+    const line = document.getElementById('front-building')!
+    line.hidden = false
+    const bar = line.getBoundingClientRect()
     return { dashLeft, minLeft: Math.min(...plate.map((b) => b.left)), maxRight: Math.max(...plate.map((b) => b.right)), barW: bar.width, barH: bar.height }
   })
   expect(r.dashLeft).toBeGreaterThanOrEqual(8)
@@ -309,4 +312,14 @@ test('at D the focused New Case shows its dossier', async ({ page, hasTouch }) =
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('ArrowDown')
   await expect(page.locator('#dossier.is-open')).toHaveCount(0)
+})
+
+// Plan item 89: the loading line is gone once the title is up (a frozen frame held it under the menu).
+test('the boot line leaves the title once it is built', async ({ page }) => {
+  test.setTimeout(200_000)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  await expect(page.locator('#front-building')).toBeHidden()
 })

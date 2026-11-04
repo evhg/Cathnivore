@@ -84,7 +84,11 @@ function quality() {
 }
 /** The boot line (index.html) goes once the street has drawn its first frame, or once there is no street. */
 function built(): void {
-  document.getElementById("front-building")?.classList.add("is-done");
+  const line = document.getElementById("front-building");
+  line?.classList.add("is-done");
+  // Plan item 89: the progress line only while loading. After its fade it leaves the page for good (a frozen
+  // frame, as in ?shot, held it at full strength under the title).
+  if (line) setTimeout(() => (line.hidden = true), shot || reducedMotion() ? 0 : 650);
 }
 let sceneStarted = false
 function startScene(): void {

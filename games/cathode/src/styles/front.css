@@ -165,6 +165,7 @@
   animation: front-building 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
 }
 .front-building.is-done { opacity: 0; }
+.front-building[hidden] { display: none; }
 @keyframes front-building { to { transform: translateX(100%); } }
 @media (prefers-reduced-motion: reduce) { .front-building i { animation-duration: 3s; } }
 .coldopen.is-line .coldopen-rule { opacity: .5; transform: none; }
