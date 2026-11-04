@@ -657,12 +657,28 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const turnKey = `${state.round}:${state.activeProducer}`
   useLayoutEffect(() => {
     if (!isDesktop || bigTurn === turnKey) return
-    const frame = document.querySelector('.actions-sheet .actions')?.getBoundingClientRect()
-    if (!frame) return
-    const over = [...document.querySelectorAll('.actions-sheet .action-item')].some(
-      (item) => !item.querySelector(':scope > button:disabled') && item.getBoundingClientRect().bottom > frame.bottom + 1,
-    )
-    if (over) setBigTurn(turnKey)
+    const sheet = document.querySelector('.actions-sheet .actions')
+    if (!sheet) return
+    const check = () => {
+      const frame = sheet.getBoundingClientRect()
+      // A card under the frame's bottom fade (shown while more rows lie below) is not really in reach either.
+      const more = sheet.scrollHeight - sheet.clientHeight - sheet.scrollTop > 1
+      const floor = frame.bottom - (more || sheet.hasAttribute('data-fade-bottom') ? 36 : 0) + 1
+      const over = [...sheet.querySelectorAll('.action-item')].some(
+        (item) => !item.querySelector(':scope > button:disabled') && item.getBoundingClientRect().bottom > floor,
+      )
+      if (over) setBigTurn(turnKey)
+      return over
+    }
+    if (check() || typeof ResizeObserver === 'undefined') return
+    // A card can grow after this render (its art or the web fonts land, the frame shrinks as the map settles), so
+    // the check runs again whenever the frame or a card changes size during the turn; once is enough to fold.
+    const ro = new ResizeObserver(() => {
+      if (check()) ro.disconnect()
+    })
+    ro.observe(sheet)
+    for (const item of sheet.querySelectorAll('.action-item')) ro.observe(item)
+    return () => ro.disconnect()
   }, [state, isDesktop, bigTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
   // Plan item 123: a phone card whose name and price don't fit beside its 56 px picture (a region's name, a long
   // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
