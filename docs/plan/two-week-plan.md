@@ -1362,16 +1362,16 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: every photo region's luminance standard deviation is over 12 (no flat fill); the dossier photo 140 px wide or more at D, List frames 56 px or more at P; captions at 4.5:1; the perf gate untouched (DOM/2D art only); shots P, L and D.
 - **Size:** 2
 
-## 100. [ ] Cathnivore: Hollowell's plan as glossy corporate cards *(lane A, in progress)*
+## 100. [x] Cathnivore: Hollowell's plan as glossy corporate cards *(done 2026-11-04, lane A, 0da0cb67..9cedb0a6: `PlanArt` per move in white plastic, the conveyor dial, each target region a chip (`splitTarget`), a new card slides in and stamps with no overshoot (a fade under reduced motion); unit `tests/plan-art.test.ts`, `tests/plan-target.test.ts`; e2e `e2e/plan-cards.spec.ts` (12 px+, axe AA light and dark, nothing cut at 390, 1280, 1440); shots `e2e/screenshots/b100`, `b100s`)*
 - **Why:** `cath-game-D` (plan1104c, 640-1200 x 90-200; P 10-375 x 115-210): Hollowell's Squeeze, Expand and Scout are text on note paper with 10 px "H" glyphs and grey subtext ("Arms next round"), while the players' actions got painted tiles (item 83). VISION gives the corporation a glossy, over-lit, clinical look; here it's the plainest thing on screen.
 - **Build:**
   - Each intent kind (Squeeze, Expand, Scout, Buyout) gets its own art in Hollowell's style (white plastic, teal, a logo watermark), in `HollowellArt` beside `ActionArt`. *(Done 2026-11-04 lane A, slice 1: `icons/HollowellArt.tsx` `PlanArt`, glossy white plastic with Hollowell orange and Candor teal and a faint H watermark (Cathnivore's Hollowell is orange; teal is Candor's, and both act through every slot); 38 px beside the headline at D, 26 at P, where two 11 px logos were; no taller card; unit `tests/plan-art.test.ts`; shots `e2e/screenshots/b100`.)*
-  - Its target region and arming round drawn on the card (a region chip, a stage dial), not grey subtext. *(Stage dial done 2026-11-04 lane A, slice 2: three chevrons in the dateline, lit up to the card's place on the Scout -> Expand -> Squeeze conveyor. Open: the region chips.)*
+  - Its target region and arming round drawn on the card (a region chip, a stage dial), not grey subtext. *(Stage dial done 2026-11-04 lane A, slice 2: three chevrons in the dateline, lit up to the card's place on the Scout -> Expand -> Squeeze conveyor. Region chips, slice 3.)*
   - A card that arms slides in and stamps, with no overshoot (corporations don't bounce); reduced motion fades.
 - **Accept:** unit: each kind's art is distinct; e2e: card text 12 px or more at 4.5:1, no card truncated at 390, 1280 and 1440 wide, no horizontal scroll; turn-show and boardroom e2e still pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 101. [ ] Cathnivore Setup: pick a map by seeing it
+## 101. [ ] Cathnivore Setup: pick a map by seeing it *(lane A, in progress)*
 - **Why:** `cath-setup-D` (plan1104c, 505-975 x 560-705): the three map cards are about 50 px clusters of beige hexes over two lines of text; you choose a board without seeing it, though the board is the hero of the game. The column below them is empty.
 - **Build:**
   - Each map card a miniature of the real board drawn from the map data (each region's own ground from `regionGround.ts`, the river, the bridges).
