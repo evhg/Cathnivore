@@ -48,7 +48,12 @@ for (const level of [1, 12, 40]) {
     await expect(advice).toHaveCount(1)
     await expect(advice.locator('.nb-advice-line')).toHaveText(/\w{3,}.*\./)
     await expect(advice.locator('.nb-eyebrow')).toContainText('next')
-    if ((page.viewportSize()?.width ?? 0) >= 900) await expect(advice).toBeVisible()
+    if ((page.viewportSize()?.width ?? 0) >= 900) {
+      // Plan item 87: at D the notebook shares a tabbed card with Coming up on levels that have it.
+      const tab = page.getByRole('tab', { name: 'Notebook' })
+      if (await tab.count()) await tab.click()
+      await expect(advice).toBeVisible()
+    }
     await page.evaluate(() => {
       const h = (window as unknown as { hedgerow: Hg }).hedgerow
       h.sendWave(h.game())

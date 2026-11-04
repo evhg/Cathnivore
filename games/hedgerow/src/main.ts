@@ -1423,7 +1423,7 @@ function renderPanel(force = false): void {
  * card runs past the column, the lines that repeat something already on screen go first: the round after (Coming up
  * shows it), then the twist's rule (its tag on the ticket carries it), then the "can't answer" keys (the names stay;
  * the keys are the warning's hover text), then the round's card line (kept as the ticket's
- * hover text), then Cath's advice, and last the notebook itself: the column ends on a whole card, never a cut one.
+ * hover text), then Cath's advice, and last the Coming up / notebook card: the column ends on a whole card, never a cut one.
  * Phones hide these lines anyway.
  */
 const PREVIEW_SPARE = [
@@ -1432,10 +1432,14 @@ const PREVIEW_SPARE = [
   ".field-warn .warn-key",
   ".ticket-note:not(.wave-advice)",
   ".wave-advice",
-  ".field-notebook",
+  // Plan item 87: Coming up and the notebook share one tabbed card; when even that runs past the foot it goes.
+  ":scope > :is(.field-tabs, .field-notebook)",
 ] as const;
 function fitPreview(p: HTMLElement): void {
   for (const el of p.querySelectorAll<HTMLElement>(".fit-dropped")) el.classList.remove("fit-dropped");
+  // Only the desktop side column (plan item 87): a phone's peeking drawer is shorter than its tray, and dropping
+  // there took Cath's notebook out of the drawer.
+  if (!matchMedia("(min-width: 900px) and (min-height: 520.02px)").matches) return;
   // The last card's foot against the column's content box (scrollHeight also counts the sticky paper fade).
   const over = () => {
     const last = [...p.children].reverse().find((c) => c.getClientRects().length > 0);
@@ -1449,14 +1453,18 @@ function fitPreview(p: HTMLElement): void {
       if (on && el.matches(".ticket-note") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
     }
   };
+  p.classList.remove("shop-tight");
   const gone: string[] = [];
   for (const sel of PREVIEW_SPARE) {
     if (!over()) break;
     drop(sel, true);
     gone.push(sel);
+    // Plan item 87: a long round (five vehicle groups on a ten-tower level) still runs past the foot with only the
+    // tabbed card left, so the seed packets go shorter first, and the card goes only if the ticket still won't fit.
+    if (sel === PREVIEW_SPARE[PREVIEW_SPARE.length - 2] && over()) p.classList.add("shop-tight");
   }
-  // With the notebook gone (Coming up then grows to the foot), give back whatever fits again, latest first.
-  if (!gone.includes(".field-notebook")) return;
+  // With the last card gone, give back whatever fits again, latest first.
+  if (!gone.includes(PREVIEW_SPARE[PREVIEW_SPARE.length - 1]!)) return;
   for (const sel of gone.slice(0, -1).reverse()) {
     drop(sel, false);
     if (over()) drop(sel, true);
@@ -1746,8 +1754,75 @@ function wavePreview(p: HTMLElement, g: Game): void {
   // How to build is on the notebook's empty page (plan item 31); the hint keeps how to move Cath, on the first
   // fields only (by level 3 she's been moved, and the line pushed the notebook off a 900 px column).
   if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) p.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
-  if (fleet) p.append(fieldIntel(g));
-  p.append(fieldNotebook(g));
+  // Plan item 87: at D the seed packets take more of the column, so Coming up and Cath's notebook share one card
+  // with two tabs (Coming up first). Levels without Coming up keep the notebook alone.
+  p.append(fleet ? fieldTabs(p, g) : fieldNotebook(g));
+}
+
+/** Which tab of the desktop's Coming up / notebook card is open, and the notebook advice last read there. */
+let fieldTab: "intel" | "notebook" = "intel";
+let notebookSeen = "";
+
+/**
+ * Plan item 87: Coming up and Cath's notebook as one card with two tabs at D. A dot on the Notebook tab says her
+ * advice has changed since it was last open. Phones hide the tabs (and Coming up) and show the notebook in the
+ * drawer, as before.
+ */
+function fieldTabs(p: HTMLElement, g: Game): HTMLElement {
+  const box = document.createElement("section");
+  box.className = "field-tabs";
+  const intel = fieldIntel(g);
+  const nb = fieldNotebook(g);
+  intel.id = "field-tab-intel";
+  nb.id = "field-tab-notebook";
+  const bar = document.createElement("div");
+  bar.className = "field-tabbar";
+  bar.setAttribute("role", "tablist");
+  bar.setAttribute("aria-label", "Coming up and Cath's notebook");
+  const adviceKey = nb.querySelector(".nb-advice")?.textContent ?? "";
+  const tabs = (["intel", "notebook"] as const).map((which) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "field-tab";
+    b.id = `field-tab-${which}-btn`;
+    b.dataset.tab = which;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-controls", which === "intel" ? intel.id : nb.id);
+    b.textContent = which === "intel" ? "Coming up" : "Notebook";
+    return b;
+  });
+  intel.setAttribute("role", "tabpanel");
+  intel.setAttribute("aria-labelledby", tabs[0]!.id);
+  nb.setAttribute("role", "tabpanel");
+  nb.setAttribute("aria-labelledby", tabs[1]!.id);
+  const sync = () => {
+    box.dataset.tab = fieldTab;
+    if (fieldTab === "notebook") notebookSeen = adviceKey;
+    for (const b of tabs) {
+      const on = b.dataset.tab === fieldTab;
+      b.setAttribute("aria-selected", String(on));
+      b.tabIndex = on ? 0 : -1;
+    }
+    tabs[1]!.classList.toggle("has-news", fieldTab !== "notebook" && !!adviceKey && adviceKey !== notebookSeen);
+  };
+  for (const b of tabs) {
+    b.onclick = () => {
+      fieldTab = b.dataset.tab as typeof fieldTab;
+      sync();
+      fitPreview(p);
+    };
+    b.onkeydown = (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const other = tabs.find((x) => x !== b)!;
+      other.click();
+      other.focus();
+    };
+  }
+  bar.append(...tabs);
+  box.append(bar, intel, nb);
+  sync();
+  return box;
 }
 
 /** What a tower stands on at each visible tier (plan item 19's plinths). */
@@ -2171,6 +2246,9 @@ function towerTray(p: HTMLElement, g: Game): void {
       hideTip();
       ringFor(null);
     });
+    // Plan item 87: keyboard focus shows the tower's range on the field too.
+    b.addEventListener("focus", () => ringFor(kind));
+    b.addEventListener("blur", () => ringFor(null));
     // On touch a long press shows the ring too (a drag that moves takes over from it).
     b.addEventListener("pointerdown", (e) => {
       if (e.pointerType === "mouse") return;

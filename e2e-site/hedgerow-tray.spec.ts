@@ -80,6 +80,9 @@ test('plan item 31: the side column ends on Cath\'s notebook, never an empty ban
     await page.goto(`${URL}&level=${level}`)
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
     const nb = page.locator('.panel .field-notebook')
+    // Plan item 87: on levels with Coming up the notebook is the card's second tab.
+    const tab = page.getByRole('tab', { name: 'Notebook' })
+    if (await tab.count()) await tab.click()
     await expect(nb).toBeVisible()
     // Plan item 72: with nothing planted, Cath's advice for the round says what to build (it replaced the empty
     // page). Plan items 95 and 103: she says it beside her on the field (hedgerow-threat.spec), and the notebook
@@ -93,6 +96,7 @@ test('plan item 31: the side column ends on Cath\'s notebook, never an empty ban
       const g = hg.game()
       for (let r = 0; r < g.level.rows; r++) for (let c = 0; c < g.level.cols; c++) if (hg.place(g, 'scarecrow', c, r).ok) return hg.refresh()
     })
+    if (await tab.count()) await tab.click()
     await expect(nb.locator('.nb-tower .nb-name')).toHaveText(/Scarecrow/)
     await expect(nb.locator('.nb-sell')).toHaveText(/Sells \d+/)
     await expect(nb.locator('.nb-stand')).toHaveAttribute('aria-label', /tier 1 of 3/)
@@ -142,9 +146,9 @@ test('plan items 69 and 84: at D the whole roster fits the tray: no packet past 
   }
 })
 
-// Plan item 84: when Cath's notebook gives way (level 21 at 1440x900), the rounds ahead grow into tiles that fill
-// the Coming up card to its foot, so it never ends on a blank band.
-test('plan item 84: Coming up fills its card when the notebook gives way', async ({ page, hasTouch }) => {
+// Plan items 84 and 87: Coming up (the tabbed card's first tab) runs to the column's foot, its rounds ahead as tiles
+// that fill the card, so it never ends on a blank band.
+test('plan item 84: Coming up fills its card to the foot', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the side column is a desktop layout')
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto(URL)
@@ -159,8 +163,76 @@ test('plan item 84: Coming up fills its card when the notebook gives way', async
   const m = await page.evaluate(() => {
     const card = document.querySelector('.panel .field-intel')!.getBoundingClientRect()
     const tiles = [...document.querySelectorAll('.panel .field-intel .intel-timeline li')].map((l) => l.getBoundingClientRect().bottom)
-    return { dropped: !!document.querySelector('.panel .field-notebook.fit-dropped'), gap: card.bottom - Math.max(...tiles) }
+    return { gap: card.bottom - Math.max(...tiles) }
   })
-  if (m.dropped) expect(m.gap).toBeLessThanOrEqual(24)
+  expect(m.gap).toBeLessThanOrEqual(24)
   expect(m.gap).toBeGreaterThanOrEqual(0)
+})
+
+// Plan item 87: the shop as seed packets: 90 px tall or more at D (90 wide up to nine towers, 70 with ten or more),
+// 56x64 or more at P, each with its name showing and its price in its accessible name; too dear reads by shape.
+test('plan item 87: the tower shop is seed packets with names', async ({ page, hasTouch }) => {
+  const sizes: Array<[number, number, number]> = hasTouch ? [[390, 844, 12]] : [[1440, 900, 6], [1440, 900, 12], [1440, 900, 30]]
+  for (const [width, height, level] of sizes) {
+    await page.setViewportSize({ width, height })
+    await page.goto(URL)
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < 40; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`${URL}&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    await page.waitForTimeout(300)
+    const r = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.tray-tower')].map((b) => {
+        const box = b.getBoundingClientRect()
+        const name = b.querySelector<HTMLElement>('.tray-name')!
+        return { w: box.width, h: box.height, named: name.getClientRects().length > 0 && name.offsetHeight > 6, aria: b.getAttribute('aria-label') ?? '' }
+      }),
+    )
+    const many = r.length >= 10
+    for (const p of r) {
+      expect(p.h, `${width} level ${level}`).toBeGreaterThanOrEqual(hasTouch ? 64 : 90)
+      expect(p.w, `${width} level ${level}`).toBeGreaterThanOrEqual(hasTouch ? 56 : many ? 70 : 90)
+      expect(p.named).toBe(true)
+      expect(p.aria).toMatch(/\d+ Marks/)
+    }
+  }
+  if (hasTouch) return
+  // Too dear: a dashed packet and a struck price, not colour alone.
+  await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: { game(): { marks: number }; refresh(): void } }).hedgerow
+    hg.game().marks = 150
+    hg.refresh()
+  })
+  const dear = page.locator('.tray-tower:disabled').first()
+  await expect(dear).toBeVisible()
+  expect(await dear.evaluate((b) => [getComputedStyle(b).outlineStyle, getComputedStyle(b.querySelector('.build-cost')!).textDecorationLine])).toEqual(['dashed', 'line-through'])
+})
+
+// Plan item 87: at D Coming up and Cath's notebook share one card with two tabs; the notebook tab carries a dot
+// until her advice has been read.
+test('plan item 87: Coming up and the notebook are tabs of one card', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the side column is a desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(URL)
+  await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { '1': 3, '2': 3, '3': 3, '4': 3, '5': 3 }, seenBefore: { '6': true }, seen: {}, tips: { all: true } })))
+  await page.goto(`${URL}&level=6`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+  const intel = page.locator('.panel .field-intel')
+  const nb = page.locator('.panel .field-notebook')
+  const nbTab = page.getByRole('tab', { name: 'Notebook' })
+  await expect(page.getByRole('tab', { name: 'Coming up' })).toHaveAttribute('aria-selected', 'true')
+  await expect(intel).toBeVisible()
+  await expect(nb).toBeHidden()
+  await expect(nbTab).toHaveClass(/has-news/)
+  await nbTab.click()
+  await expect(nb).toBeVisible()
+  await expect(intel).toBeHidden()
+  await expect(nbTab).not.toHaveClass(/has-news/)
+  // The arrow keys move between the tabs.
+  await nbTab.press('ArrowLeft')
+  await expect(intel).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Coming up' })).toBeFocused()
 })

@@ -97,8 +97,11 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
         localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [lvl]: true }, tips }))
       }, level)
       await page.goto(`/hedgerow/?sandbox=1&2d&level=${level}`)
-      await expect(page.locator('.play .panel .field-intel')).toBeVisible()
+      // Plan item 87: Coming up is the tabbed card's first tab; on a round too long for the column (level 25's five
+      // vehicle groups beside ten seed packets) the card gives way and the column ends on the whole round ticket.
+      await expect(page.locator('.play .panel .round-ticket')).toBeVisible()
       await page.evaluate(() => document.fonts.ready)
+      await page.waitForTimeout(200)
       const r = await page.evaluate(() => {
         const p = document.querySelector<HTMLElement>('.play .panel')!
         const last = [...p.children].reverse().find((c) => c.getClientRects().length > 0)!
@@ -106,10 +109,11 @@ test.describe('Hedgerow critique fixes (plan item 40)', () => {
         const tops = [...document.querySelectorAll<HTMLElement>('.play .controls > :is(.ability, .auto-btn)')]
           .filter((b) => !b.hidden)
           .map((b) => Math.round(b.getBoundingClientRect().top))
-        return { overBy: Math.round(last.getBoundingClientRect().bottom - foot), gap: Math.round(foot - last.getBoundingClientRect().bottom), spread: Math.max(...tops) - Math.min(...tops) }
+        return { overBy: Math.round(last.getBoundingClientRect().bottom - foot), gap: Math.round(foot - last.getBoundingClientRect().bottom), spread: Math.max(...tops) - Math.min(...tops), tabs: last.matches('.field-tabs') }
       })
       expect(r.overBy).toBeLessThanOrEqual(1)
-      expect(r.gap).toBeLessThanOrEqual(2) // the last card runs to the foot: no empty band
+      // the tabbed card runs to the foot: no empty band (a whole ticket that ends the column leaves less than its tabs)
+      expect(r.gap).toBeLessThanOrEqual(r.tabs ? 2 : 96)
       expect(r.spread).toBeLessThan(20) // one row (a wrapped row sits 80 px lower)
     })
   }
