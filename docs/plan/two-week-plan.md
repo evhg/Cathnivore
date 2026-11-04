@@ -1618,7 +1618,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 127. [ ] Cathnivore: a liberation and a Squeeze as staged moments in play
+## 127. [ ] Cathnivore: a liberation and a Squeeze as staged moments in play *(lane B, in progress)*
 - **Why:** `cath-game-D` (plan1104i, 500-1185 x 215-885): the board never stages its two biggest beats (VISION 4); items 28, 48 and 92 staged the decor, the end and Hollowell's turn, not a region freed.
 - **Build:**
   - A liberation: the hex flips from Hollowell orange to green over about 900 ms, factory tokens topple, bunting drops with an overshoot, the region's producer pops up delighted; table Cath (item 118) cheers and her bubble names the region; the sound bank's bell and crowd.
