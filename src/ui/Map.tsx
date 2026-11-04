@@ -848,7 +848,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
                     if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
                       const [k, n] = icons[rect.kind]
                       return (
-                        <g key={k} className="piece-slot" style={{ transform: `translate(${x + rect.x0}px, ${y}px)` }} data-piece={k} data-count={n}>
+                        <g key={k} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece={k} data-count={n}>
                           <EnemyStack kind={rect.kind} n={n} scale={s} ornaments={tray.ornaments} countR={tray.countR} />
                         </g>
                       )
@@ -856,7 +856,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
                     if (rect.kind === 'producer') {
                       const [pid, n] = stalls[rect.i ?? 0]!
                       return (
-                        <g key={pid} className="piece-slot" style={{ transform: `translate(${x + rect.x0}px, ${y}px)` }} data-piece="stall" data-count={n}>
+                        <g key={pid} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece="stall" data-count={n}>
                           <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} />
                         </g>
                       )

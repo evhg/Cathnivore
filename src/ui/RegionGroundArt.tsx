@@ -88,7 +88,7 @@ export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[
       {marks.map((m, i) => (
         <g key={i} data-kind={m.kind} transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) rotate(${m.r}) scale(${m.s})`}>
           {AMBIENT[m.kind] ? (
-            <g className={AMBIENT[m.kind]} style={{ animationDelay: `${-((i * 1.7) % 6).toFixed(1)}s` }}>
+            <g className={AMBIENT[m.kind]} data-phase={i % 4}>
               {ART[m.kind]}
             </g>
           ) : (
