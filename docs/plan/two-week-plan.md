@@ -1590,7 +1590,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** art 56x56 or more on every card at 390x844 ~~(every card)~~ (40 on a card measured tight, about one in seven); text 12 px or more at 4.5:1; no card more than 40% empty (bounding-box sum; measured 55-81% covered, Supply's region card 56%); action-hand, tutorial and accessibility e2e pass; shots P light and dark, plus 375x667.
 - **Size:** 2
 
-## 124. [x] Hedgerow map: Cath walks the road at full length, and locked stops are pencil sketches *(done 2026-11-04, lane A: lane B's/lane A's 21:35 patch landed, plus `placeYou` in map.ts: she steps further along the road (her `data-side`), then lower, until her box meets no other stop's coin, name, padlock or tag (the row-2 overlap under 'Bea's Beehive' at P and D). 112 px at 1440x900, 80 at 1280x800, 66 on a phone; stride and wave; locked landmarks in pencil. The saturation check reads each landmark's painted fills and strokes after its filter, not a pixel box (which took in the field). hedgerow-map 34/34, intro, critique, keyart pass; shots P, D, 1280 for acts 1 and 3)*
+## 124. [x] Hedgerow map: Cath walks the road at full length, and locked stops are pencil sketches *(done 2026-11-04, lane A: the 21:35 patch landed, plus `placeYou` in map.ts: she steps further along the road (her `data-side`), then lower, until her box meets no other stop's coin, name, padlock or tag (the row-2 overlap under 'Bea's Beehive' at P and D). 112 px at 1440x900, 80 at 1280x800, 66 on a phone; stride and wave; locked landmarks in pencil. The saturation check reads each landmark's painted fills and strokes after its filter, not a pixel box (which took in the field). hedgerow-map 34/34, intro, critique, keyart pass; shots P, D, 1280 for acts 1 and 3)*
 - **Why:** `hedge-menu-D` (225-280 x 240-300): her token is a floating head; locked stops (450-1230 x 325-560) are flat grey icons on grey coins. Check first against item 111 (landmark stops, a 60 px Cath at D) and item 73 (pencil-grey vignettes).
 - **Build:**
   - A full-length 2D Cath from `shared/cath`, 110 px or more at D and 64 at P, standing on the road at the next stop; a stride as she walks, a wave when a stop opens.
@@ -1643,7 +1643,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `faceBox()` inside 470-960 x 150-500 and 110 px or more tall at D, meeting neither the panel nor the list; the stinger audible in the offline audio check; cathode-classpick and cathode-perf pass; shots D and L for all five classes.
 - **Size:** 2
 
-## 130. [ ] Site /games/ phone: Cath in the hero
+## 130. [ ] Site /games/ phone: Cath in the hero *(lane A, in progress)*
 - **Why:** `games-P` (0-390 x 0-410): text and buttons with no Cath, where VISION makes her the landing page's centrepiece; on a phone she is only a sliver of each poster.
 - **Build:**
   - A half-length Cath (`shared/cath`, a wave) 140 px or more by the logotype, standing on the horizon.
