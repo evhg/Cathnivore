@@ -1460,7 +1460,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: bubble text 15 px or more at 4.5:1, its tail within 24 px of her head box, nothing overlaps her; Setup still has no scroll at 1440x900 and 390x844 (desktop-no-scroll, setup-* specs); shots P and D.
 - **Size:** 1-2
 
-## 111. [ ] Hedgerow map D: stops as landmarks on a road, and Cath walking it
+## 111. [ ] Hedgerow map D: stops as landmarks on a road, and Cath walking it *(lane A, in progress)*
 - **Why:** `hedge-menu-D` (stops 225-1240 x 330-545): ten near-identical 50 px grey coins with padlocks; Cath's marker about 35 px. Item 88 gave the next stop its card; the road itself is still a grid of coins. Check first: item 88's strip and docked card may already fill 560-790.
 - **Build:**
   - Each stop a 72 px or larger landmark vignette of its level (the blimp, the billboard, the beach clean) on the act's road; locked ones in pencil (item 73), the boss lot drawn bigger.
