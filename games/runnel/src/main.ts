@@ -1171,8 +1171,13 @@ if (params.get('mode') === 'orchard') {
 openGame()
 // A first visit learns on the board, not from a rules sheet (plan item 22): `?lesson` replays it.
 if ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) startLesson()
-// Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot.
-if (params.has('shotwin')) finish()
+// Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot. It plays as a solve
+// on par (with no taps it read '0 taps, 41 under par'); `?shotwin` saves nothing (store.ts `frozen`).
+if (params.has('shotwin')) shotWin()
+function shotWin(): void {
+  if (!game.solved && game.taps === 0) game.taps = puzzle.par
+  finish()
+}
 // Screenshot hook: `?shotsolve` sets every piece to its solution except the first turnable one next to
 // the spring, which is left one clockwise tap away (marked `data-last`), so a single tap shows the whole
 // river running out across the board and the win. Nothing is saved until that tap.

@@ -105,3 +105,11 @@ test('the desktop rail ends on Bea\'s garden with no page scroll', async ({ page
   expect(await page.locator('#rail-plots .plot').count()).toBe(8)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
+
+// Critique 2026-11-03: the `?shotwin` hook read '0 taps, 41 under par'; it plays as a solve on par.
+test('?shotwin shows a solve on par, not zero taps', async ({ page }) => {
+  await page.goto('/runnel/?shotwin&nohelp')
+  await page.locator('#win-strip').waitFor({ state: 'visible', timeout: 20_000 })
+  const text = await page.evaluate(() => `${document.querySelector('#win-strip')!.textContent} ${document.querySelector('#dlg-win')!.textContent}`)
+  expect(text).not.toMatch(/\b0 taps\b|under par/)
+})

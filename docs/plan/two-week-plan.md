@@ -1526,7 +1526,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: no `button`, `header` or HUD element visible in `?keyart` for each game; the poster's longest side 282 px or more at D; a unit test fails when a game's art files are newer than its key art; shots of /games/ and / at P and D.
 - **Size:** 3
 
-## 117. [ ] NIGHT SHIFT: Cath's face on the front door *(lane A, in progress)*
+## 117. [x] NIGHT SHIFT: Cath's face on the front door *(done 2026-11-04, lane A, 90d6367b: the title loop's four framings are front three-quarters on her left, closer in, with a warm face key under the umbrella's edge; she turns 0.42 rad to the lens on the title; `faceBox()`; face 121-130 px at D, 85 at P between the logotype and The List and clear of every menu entry; the class pick at D shows it clear of the stats sheet. e2e in cathode-front and cathode-classpick; cathode-perf passes; shots `e2e/screenshots/n117` (before, after at P, L, D). Cuts in DECISIONS: the umbrella stays upright (framing her left keeps the shaft off her face), and she faces the lens all through the title rather than turning on NEW CASE focus)*
 - **Why:** `ns-title-D` (940-1170 x 260-720) and `ns-title-P` (95-250 x 230-620): the face of every game is seen from behind, and at P the menu sits on her body (item 82 meant her to stand clear). `ns-play-D` (940-980 x 290-330): on the class pick she is behind the stats panel. Check first against item 112's finished state.
 - **Build:**
   - A 3/4 front title pose, umbrella tilted back, her face lit by a neon rim and a face key; she turns to camera when NEW CASE takes focus.

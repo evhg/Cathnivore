@@ -87,3 +87,22 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   const hold = (await page.locator('.cp-hold').boundingBox())!
   expect(cue.y + cue.height).toBeLessThanOrEqual(hold.y)
 })
+
+// Plan item 117: on the class pick at D her face is in the frame and not under the stats sheet.
+test('the class pick shows her face clear of the stats sheet', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop class pick')
+  test.setTimeout(300_000)
+  await fresh(page, false)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
+  type F = { cathodeFront?: { scene: () => { dressed: string | null; faceBox(): Box } | null } }
+  await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
+  await page.waitForTimeout(1500)
+  const m = await page.evaluate(() => {
+    const r = document.querySelector('.cp-sheet')!.getBoundingClientRect()
+    return { face: (window as unknown as F).cathodeFront!.scene()!.faceBox(), sheet: { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }
+  })
+  const { face, sheet } = m
+  expect(face.top >= 0 && face.left >= 0 && face.right <= 1440 && face.bottom <= 900, JSON.stringify(m)).toBe(true)
+  expect(face.left < sheet.right && face.right > sheet.left && face.top < sheet.bottom && face.bottom > sheet.top, JSON.stringify(m)).toBe(false)
+})
