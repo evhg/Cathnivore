@@ -337,6 +337,7 @@ export function paintBackground(
     ctx.fill();
   }
 
+  paintHinterland(ctx, level, L, theme);
   paintLane(ctx, level, L, theme, rand);
   paintPlots(ctx, level, L);
   paintLandmarks(ctx, level, L);
@@ -910,6 +911,73 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(label, sx + sw / 2, sy + sh / 2 + fs * 0.05);
+}
+
+/**
+ * Plan item 120: a wide side margin (a tall level on a wide screen) shows the countryside going on past the
+ * field: a patchwork of neighbours' fields, wheat, pasture and plough, each edged by a hedge. Muted so the
+ * field still leads; the sea side is left to the water. Its own seed, so the decor after it is unchanged.
+ */
+function paintHinterland(ctx: CanvasRenderingContext2D, level: Level, L: Layout, theme: Theme): void {
+  const s = L.cell;
+  const rand = rng(level.id * 104729 + 3);
+  const gap = s * 1.1;
+  const x0 = L.offX - gap;
+  const x1 = L.offX + level.cols * s + gap;
+  const sides: Array<[number, number]> = [];
+  if (theme.water?.side !== "left" && x0 > s * 2.2) sides.push([0, x0]);
+  if (theme.water?.side !== "right" && L.width - x1 > s * 2.2) sides.push([x1, L.width]);
+  const fills = ["rgba(236,204,110,0.55)", "rgba(150,186,86,0.45)", "rgba(176,128,82,0.42)", "rgba(214,222,132,0.48)"];
+  for (const [a, b] of sides) {
+    const cols = b - a > s * 5 ? 2 : 1;
+    const cw = (b - a) / cols;
+    for (let c = 0; c < cols; c++) {
+      let y = -s * 0.3;
+      while (y < L.height) {
+        const h = s * (2 + rand() * 2.5);
+        const px = a + c * cw + s * 0.18;
+        const pw = cw - s * 0.36;
+        const ph = Math.min(h, L.height + s - y) - s * 0.36;
+        const py = y + s * 0.18;
+        const kind = Math.floor(rand() * fills.length);
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(px, py, pw, ph, s * 0.25);
+        ctx.fillStyle = fills[kind]!;
+        ctx.fill();
+        ctx.clip();
+        // Furrows or rows, at the field's own slant.
+        const ang = (rand() - 0.5) * 0.6 + (kind % 2 ? Math.PI / 2 : 0);
+        ctx.translate(px + pw / 2, py + ph / 2);
+        ctx.rotate(ang);
+        ctx.strokeStyle = kind === 2 ? "rgba(110,70,40,0.22)" : "rgba(255,250,220,0.22)";
+        ctx.lineWidth = Math.max(1, s * 0.035);
+        const R = Math.hypot(pw, ph);
+        for (let k = -R; k < R; k += s * 0.22) {
+          ctx.beginPath();
+          ctx.moveTo(-R, k);
+          ctx.lineTo(R, k);
+          ctx.stroke();
+        }
+        ctx.restore();
+        // The hedge round it: a dark line with a bumped top.
+        ctx.strokeStyle = theme.blade;
+        ctx.globalAlpha = 0.8;
+        ctx.lineWidth = Math.max(2, s * 0.11);
+        ctx.beginPath();
+        ctx.roundRect(px, py, pw, ph, s * 0.25);
+        ctx.stroke();
+        ctx.fillStyle = theme.blade;
+        for (let t = px + s * 0.2; t < px + pw - s * 0.1; t += s * 0.22) {
+          ctx.beginPath();
+          ctx.arc(t, py, s * (0.08 + rand() * 0.05), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        y += h;
+      }
+    }
+  }
 }
 
 function paintDecor(
