@@ -1378,7 +1378,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )
       ) : (
         <>
-          {(sellEntries.length > 0 || disabledSell.length > 0) && <span className="action-head" aria-hidden="true">Sell</span>}
+          {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
           {sellEntries.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -1393,25 +1393,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             )
           })}
-          {disabledSell.map(({ count, missing }) => (
-            <span key={`disabled-sell-${count}`} className="action-item">
-              <button disabled title={`Need ${missing} more Produce`}>
-                <span className="action-label-group">
-                  <span className="action-label">
-                    <SellIcon size={18} />
-                    {`Sell ${count} Produce`}
-                    <span className="visually-hidden">{` for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}</span>
-                  </span>
-                  <span className="action-why-not">Need {missing} more Produce</span>
-                </span>
-                <SellGainChip count={count} />
-              </button>
-              <Tooltip term="Sell" label="What is Sell?">
-                ?
-              </Tooltip>
-            </span>
-          ))}
-          {(investEntries.length > 0 || disabledInvest.length > 0) && <span className="action-head" aria-hidden="true">Invest</span>}
+          {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
           {investEntries.map(({ index, action: a }, position) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
@@ -1430,6 +1412,115 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             )
           })}
+          {(otherStandalone.length > 0 || groups.size > 0) && (sellEntries.length > 0 || investEntries.length > 0) && (
+            <span className="action-head" aria-hidden="true">Play</span>
+          )}
+          {otherStandalone.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span key={index} className="action-item">
+                <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {[...groups.entries()].map(([key, group]) => {
+            const single = group.entries.length === 1
+            const firstAction = actions[group.entries[0]!.index]!
+            const term = actionTermFor(firstAction)
+            const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
+            const Icon = ACTION_ICON[firstAction.kind]
+            return (
+              <span key={key} className="action-item">
+                {(() => {
+                  const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
+                  return (
+                    <button
+                      aria-label={aria}
+                      data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
+                      className="action-card-draggable"
+                      onPointerDown={(e) => {
+                        if (guidedActive || e.button !== 0) return
+                        dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
+                        e.currentTarget.setPointerCapture(e.pointerId)
+                      }}
+                      onPointerMove={(e) => {
+                        const d = dragRef.current
+                        if (!d) return
+                        if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
+                        d.moved = true
+                        setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
+                      }}
+                      onPointerUp={(e) => {
+                        const d = dragRef.current
+                        dragRef.current = null
+                        if (!d?.moved) return
+                        dragClickGuard.current = true
+                        setDrag(null)
+                        const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
+                        const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
+                        const entry = d.group.entries.find((en) => en.region === region)
+                        if (entry) act(entry.index)
+                      }}
+                      onPointerCancel={() => {
+                        dragRef.current = null
+                        setDrag(null)
+                      }}
+                      onClick={() => {
+                        if (dragClickGuard.current) {
+                          dragClickGuard.current = false
+                          return
+                        }
+                        if (guidedActive && !guidedExpect) return
+                        if (single && !forceTargeting) act(group.entries[0]!.index)
+                        else setSelectedGroup(group)
+                      }}
+                    >
+                      <span className="action-label">
+                        {Icon && <Icon size={18} />}
+                        {text}
+                      </span>
+                      <ActionCostChip cost={cost} />
+                    </button>
+                  )
+                })()}
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
+          {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
+          disabledOpenStall ||
+          (disabledSupplyBuyoutReason && !groups.has('supplyBuyout')) ? (
+            <span className="action-head action-head-later" aria-hidden="true">Not yet</span>
+          ) : null}
+          {disabledSell.map(({ count, missing }) => (
+            <span key={`disabled-sell-${count}`} className="action-item">
+              <button disabled title={`Need ${missing} more Produce`}>
+                <span className="action-label-group">
+                  <span className="action-label">
+                    <SellIcon size={18} />
+                    {`Sell ${count} Produce`}
+                    <span className="visually-hidden">{` for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}</span>
+                  </span>
+                  <span className="action-why-not">Need {missing} more Produce</span>
+                </span>
+                <SellGainChip count={count} />
+              </button>
+              <Tooltip term="Sell" label="What is Sell?">
+                ?
+              </Tooltip>
+            </span>
+          ))}
           {disabledInvest.map(({ improvementId, cost, missing }) => {
             const card = IMPROVEMENTS_BY_ID.get(improvementId)
             if (!card) return null
@@ -1452,23 +1543,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <Tooltip term="Invest" label="What is Invest?">
                   ?
                 </Tooltip>
-              </span>
-            )
-          })}
-          {(otherStandalone.length > 0 || groups.size > 0) && (sellEntries.length > 0 || investEntries.length > 0) && (
-            <span className="action-head" aria-hidden="true">Play</span>
-          )}
-          {otherStandalone.map(({ index, action: a }) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span key={index} className="action-item">
-                <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
               </span>
             )
           })}
@@ -1561,74 +1635,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </Tooltip>
             </span>
           ))}
-          {[...groups.entries()].map(([key, group]) => {
-            const single = group.entries.length === 1
-            const firstAction = actions[group.entries[0]!.index]!
-            const term = actionTermFor(firstAction)
-            const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
-            const Icon = ACTION_ICON[firstAction.kind]
-            return (
-              <span key={key} className="action-item">
-                {(() => {
-                  const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
-                  return (
-                    <button
-                      aria-label={aria}
-                      data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
-                      className="action-card-draggable"
-                      onPointerDown={(e) => {
-                        if (guidedActive || e.button !== 0) return
-                        dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
-                        e.currentTarget.setPointerCapture(e.pointerId)
-                      }}
-                      onPointerMove={(e) => {
-                        const d = dragRef.current
-                        if (!d) return
-                        if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
-                        d.moved = true
-                        setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
-                      }}
-                      onPointerUp={(e) => {
-                        const d = dragRef.current
-                        dragRef.current = null
-                        if (!d?.moved) return
-                        dragClickGuard.current = true
-                        setDrag(null)
-                        const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
-                        const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
-                        const entry = d.group.entries.find((en) => en.region === region)
-                        if (entry) act(entry.index)
-                      }}
-                      onPointerCancel={() => {
-                        dragRef.current = null
-                        setDrag(null)
-                      }}
-                      onClick={() => {
-                        if (dragClickGuard.current) {
-                          dragClickGuard.current = false
-                          return
-                        }
-                        if (guidedActive && !guidedExpect) return
-                        if (single && !forceTargeting) act(group.entries[0]!.index)
-                        else setSelectedGroup(group)
-                      }}
-                    >
-                      <span className="action-label">
-                        {Icon && <Icon size={18} />}
-                        {text}
-                      </span>
-                      <ActionCostChip cost={cost} />
-                    </button>
-                  )
-                })()}
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
         </>
       )}
     </section>

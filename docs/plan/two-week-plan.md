@@ -1209,6 +1209,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Size:** 2
 
 ## 83. [ ] Cathnivore: every action this turn in reach, as illustrated cards *(lane A, in progress)*
+- **Progress (2026-11-04 lane A):** slice 1: playable actions first (Sell, Invest, Play), then a "Not yet" group of dashed one-line strips (name over a 'need N' line, the price kept); at D every playable action is one row (icon, name, price, i), about 40 px. 1440x900 fits a round-1 turn whole (desktop-no-scroll now checks every playable card). Open: 1280x800 still loses the last one of nine (the left column's producer panel is tall there), the cards' own illustrations and group colours, the P hand's peek, the play lift.
 - **Why:** `cath-game-D` (plan1103g): the Actions column (17-332 x 250-875) is a grid of identical yellow buttons; locked ones are washed-out ghosts; "PLAY · 9 MORE" hides most actions below a scroll. `cath-game-P`: one row shows and the third card is cut at x=355.
 - **Build:**
   - Each Sell, Invest and Play action a card with its own small illustration, cost chip and group colour.

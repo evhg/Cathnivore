@@ -47,8 +47,9 @@ test('desktop game screen has no scrolling at 1280x800, even in a content-dense 
 })
 
 // Plan item 33: at 1440x900 on round 1 the Sell and Invest cards show whole in the Actions frame (the
-// Farm's name-only row for the active producer pushed the Invest cards half under its foot).
-test('desktop Actions frame shows every Sell and Invest card whole on round 1', async ({ page }, testInfo) => {
+// Farm's name-only row for the active producer pushed the Invest cards half under its foot). Plan item 83: every
+// action the turn can play shows whole; what it can't afford yet follows under "Not yet" and may sit below the fold.
+test('desktop Actions frame shows every playable card whole on round 1', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
@@ -60,7 +61,7 @@ test('desktop Actions frame shows every Sell and Invest card whole on round 1', 
     const out: string[] = []
     for (const item of document.querySelectorAll('.actions-sheet .action-item')) {
       const label = item.textContent ?? ''
-      if (!/^(Sell|Buy)/.test(label)) continue
+      if (item.querySelector(':scope > button:disabled')) continue
       const r = item.getBoundingClientRect()
       if (r.top < frame.top - 1 || r.bottom > frame.bottom + 1) out.push(label)
     }
