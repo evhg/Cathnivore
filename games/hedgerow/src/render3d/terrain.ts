@@ -1030,7 +1030,12 @@ export function buildGround(level: Level): Ground {
     gate.position.set(c + 0.5 + dx * 1.1, heightAt(c + 0.5 + dx * 1.1, r + 0.5 + dy * 1.1), r + 0.5 + dy * 1.1);
     gate.rotation.y = dx !== 0 ? 0 : Math.PI / 2;
     group.add(gate);
-    gateSigns.push(gate.userData.sign as THREE.Object3D);
+    const sign = gate.userData.sign as THREE.Object3D;
+    // Plan item 103: a lane that starts on the field's own edge column stands its gate on the plots; the renderer
+    // keeps such a board off a phone's small field (it grew over the next column) and names the town on the plate.
+    sign.userData.inField = gate.position.x > 0 && gate.position.x < level.cols && gate.position.z > 0 && gate.position.z < level.rows;
+    sign.userData.town = label;
+    gateSigns.push(sign);
   }
 
   // The farmhouse at the end of the lane.

@@ -25,7 +25,7 @@ import { liftEnabled, liftPlayedCard, liftTarget } from './playLift'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
-import { actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
+import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
@@ -1566,8 +1566,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
               // Plan item 83: a Role group shows its ability ("Injunction…"), as the standalone Role card does.
               const roleText = !short && firstAction.kind === 'role' ? `${PRODUCERS[state.activeProducer].roleName.split(', ').pop()}…` : undefined
-              const text = short ?? roleText ?? full.text
-              const aria = full.aria ?? (short || roleText || full.text.startsWith('Scheme: ') ? full.text : undefined)
+              const cardText = !short && !roleText && single ? actionCardLabel(firstAction) : undefined
+              const text = short ?? roleText ?? cardText ?? full.text
+              const aria = full.aria ?? (short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
               return (
                 <button
                   aria-label={aria}

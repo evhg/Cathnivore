@@ -4473,9 +4473,11 @@ img.act-scene {
 .lcard-kicker { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .lcard-name { margin: 0; font-family: var(--font-display); font-size: var(--fs-d2); line-height: 1.1; }
 .lcard-twist { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soil); }
-.lcard-stars { margin: 0; color: var(--map-flag-gold); letter-spacing: 0.1em; }
-.lcard-enemies { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 2px 0 0; padding: 0; list-style: none; font: 700 var(--fs-small) / 1.2 var(--font-ui); color: var(--ink-2); }
-.lcard-enemies li { display: flex; align-items: center; gap: 4px; }
+/* Plan item 103: the stars at the number size (they were about 12 px), and the vehicles as a 2x2 grid, so a fourth
+   never wraps alone onto its own line. */
+.lcard-stars { margin: 0; color: var(--map-flag-gold); font-size: var(--fs-num-l); line-height: 1.1; letter-spacing: 0.08em; }
+.lcard-enemies { display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 16px; margin: 2px 0 0; padding: 0; list-style: none; font: 700 var(--fs-small) / 1.2 var(--font-ui); color: var(--ink-2); }
+.lcard-enemies li { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .lcard-enemies img { width: 26px; height: 26px; }
 .lcard-play {
   min-width: 168px;

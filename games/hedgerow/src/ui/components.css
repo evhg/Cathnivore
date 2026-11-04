@@ -3618,6 +3618,16 @@ body:has(#dlg-pause[open]) .paused-note {
   pointer-events: none;
   will-change: transform, opacity;
 }
+/* Plan item 103: on a phone a gate standing on the field drops its 3D board; the plate names the town instead. */
+.gate-plate-town {
+  margin: 0 6px 0 -6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--corp);
+  color: var(--plastic);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+}
 
 /* Plan item 69: on an upright phone Cath's note covered the field's two bottom rows of plots for nine seconds; it is
    a slimmer slip now (her medallion smaller, her voice a size down), so it covers about one row. */

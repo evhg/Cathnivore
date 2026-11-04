@@ -555,6 +555,7 @@ export class Renderer3D {
   /** Plan item 66: the share of the frame's height above the backdrop's painted hills (its sky), at the view's centre. */
   /** Plan item 98: the gate signs turn to face the camera, so the town's name reads at every framing. */
   private faceGateSigns(): void {
+    this.plateTown = "";
     for (const sign of (this.ground?.group.userData.gateSigns as THREE.Object3D[] | undefined) ?? []) {
       const parent = sign.parent;
       if (!parent) continue;
@@ -570,7 +571,12 @@ export class Renderer3D {
       sign.scale.setScalar(1);
       sign.updateMatrixWorld();
       const cap = this.signCap(sign);
-      sign.scale.setScalar(cap > 0 ? Math.min(1.6, Math.max(1, 8.5 / cap)) : 1);
+      const grow = cap > 0 ? Math.min(1.6, Math.max(1, 8.5 / cap)) : 1;
+      sign.scale.setScalar(grow);
+      // Plan item 103: grown on a phone, a board standing on the field covered the next column's plots; there it
+      // steps down and the queue's plate carries the town's name instead.
+      sign.visible = !(grow > 1 && sign.userData.inField);
+      if (!sign.visible) this.plateTown = sign.userData.town as string;
       sign.updateMatrixWorld();
     }
   }
@@ -2138,6 +2144,8 @@ export class Renderer3D {
   private queueKey = "";
   private queueGroup: THREE.Group | null = null;
   private queuePlates: HTMLElement[] = [];
+  /** Plan item 103: the town named on the gate plate when its 3D board steps down on a phone. */
+  private plateTown = "";
   private queueAnchors: Array<{ x: number; z: number; up: number }> = [];
   private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number }> = [];
   private gateHold = 0;
@@ -2175,6 +2183,13 @@ export class Renderer3D {
       shown.leads.push({ x: cx - half, y: top, w: half * 2, h: Math.max(8, foot - top) });
     }
     this.queuePlates.forEach((el, i) => {
+      if (this.plateTown && !el.dataset.town) {
+        el.dataset.town = this.plateTown;
+        const town = document.createElement("span");
+        town.className = "gate-plate-town";
+        town.textContent = this.plateTown;
+        el.prepend(town);
+      }
       const at = this.queueAnchors[i]!;
       const v = this.v1.set(at.x, this.height(at.x, at.z) + at.up, at.z).project(this.camera);
       const pw = el.offsetWidth;

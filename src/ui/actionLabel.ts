@@ -171,6 +171,24 @@ export function actionGroupKey(action: Action): string {
   }
 }
 
+// Plan item 103: a one-region card's face. "Supply: remove 1 Outlet in Brindle Hills" ran past the card's two
+// lines at D and was cut; the face says the verb, the amount and the place in a shorter order, and the full
+// sentence stays the button's accessible name.
+export function actionCardLabel(action: Action): string | undefined {
+  switch (action.kind) {
+    case 'supplyOutlets':
+      return `Supply ${action.count} Outlet${action.count > 1 ? 's' : ''}\u00a0· ${REGIONS[action.region].name}`
+    case 'supplyBuyout':
+      return `Supply Buyout\u00a0· ${REGIONS[action.region].name}`
+    case 'rebut':
+      return `Rebut ${action.count} Doubt\u00a0· ${REGIONS[action.region].name}`
+    case 'openStall':
+      return `Open Stall\u00a0· ${REGIONS[action.region].name}`
+    default:
+      return undefined
+  }
+}
+
 // The label for a group button, with no region mentioned (the map highlight supplies that once tapped).
 export function actionGroupLabel(action: Action, state: GameState): string {
   switch (action.kind) {

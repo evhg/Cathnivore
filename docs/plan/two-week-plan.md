@@ -1388,11 +1388,11 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: the model has named hair, face, jacket and blouse parts; e2e: her face 24 px tall or more at D, 14 at P; her pose changes within 250 ms of a cleared round (`window.hedgerow`); draw calls at level 13 up by 10 or fewer; shots P, L and D.
 - **Size:** 2-3
 
-## 103. [ ] The bugs from the 2026-11-04 12:25 critique, fixed as one batch *(lane A, in progress)*
+## 103. [x] The bugs from the 2026-11-04 12:25 critique, fixed as one batch *(done 2026-11-04, lane A: every bullet; e2e in `e2e-site/critique103.spec.ts` and `hedgerow-3dframe.spec.ts`; shots before and after in `e2e/screenshots/b103/`)*
 - *(done 2026-11-04, 88436762)* Hedgerow D: Cath's notebook repeats her field bubble word for word (`hedge-l21-2d-D`, 1105-1415 x 490-705, the bubble at 65-290 x 540-630): while she says it on the field, the notebook's advice card keeps the sketch and count, not the line. And "Coming up" is five 16 px vans over bare numbers (1105-1415 x 350-480): the vans 28 px or more.
-- Hedgerow map D: the level card's "Pickup" wraps onto its own line; empty stars about 12 px.
-- Cathnivore game D: "Supply: remove 1 Outlet in Brindle..." cut with an ellipsis (80-215 x 582-614).
-- Cathnivore title D: the ring bullets before How to Play, Settings and Credits read as radio buttons (160-445 x 725-740).
-- Hedgerow 3D P: the HOLLOWELL gate sign covers field tiles (0-85 x 405-425).
+- *(done)* Hedgerow map D: the level card's "Pickup" wraps onto its own line; empty stars about 12 px. (Vehicles a 2x2 grid, stars at the number size.)
+- *(done)* Cathnivore game D: "Supply: remove 1 Outlet in Brindle..." cut with an ellipsis (80-215 x 582-614). (A one-region card reads 'Supply 1 Outlet · Brindle Hills'; the full sentence stays its name.)
+- *(done)* Cathnivore title D: the ring bullets before How to Play, Settings and Credits read as radio buttons (160-445 x 725-740). (Line icons at D, plain tags on a phone.)
+- *(done)* Hedgerow 3D P: the HOLLOWELL gate sign covers field tiles (0-85 x 405-425). (A phone board on a gate that stands on the field steps down; the plate names the town.)
 - **Accept:** an e2e case per bullet at P and D (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
 - **Size:** 1
