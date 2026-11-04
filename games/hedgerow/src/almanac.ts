@@ -6,6 +6,7 @@ import type { EnemyClass, EnemyKind, MegaId, TowerKind } from "./engine";
 import { DAMAGE_NAMES, FLEET_TOWERS, PROPERTIES, RUNGS, damageTypeOf, fleetSpecPrice, fvOf } from "./fleet";
 import { propertyEntries, towerBadges } from "./counters";
 import { enemyIcon, img, propIcon, towerIcon } from "./icons";
+import { towerRole } from "./roles";
 import type { Subject } from "./render3d/turntable";
 
 /** Set by setupAlmanac: shows a model on the turntable (null without WebGL). */
@@ -158,7 +159,11 @@ function towers(): HTMLElement[] {
   for (const kind of Object.keys(TOWERS) as TowerKind[]) {
     const t = TOWERS[kind];
     const stats = towerRows(kind).map(([l, v]) => stat(l, v));
-    out.push(card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null }));
+    const c = card(towerIcon(kind), t.name, t.blurb, stats, TOWER_LORE[kind], { tower: kind, tier: 3, spec: null });
+    // Plan item 119: a tower's picture is its seed packet, banded in its role's colour as in the shop.
+    c.classList.add("alm-tower");
+    c.dataset.role = towerRole(kind);
+    out.push(c);
     SPECIALISATIONS[kind].forEach((s, i) => {
       const st = [stat("Cost", `${fleetSpecPrice(kind)} in acts 1-3 · ${s.cost} later`)];
       const ty = damageTypeOf(kind, i as 0 | 1);

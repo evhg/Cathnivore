@@ -192,6 +192,7 @@ import { BOONS, orchardLevel, orchardOffers, orchardSeeds, heirloomBoons, HEIRLO
 import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, rewindToWave, startGame, HOLLOW_SHIFT, type Action, type Replay, type Setup } from "./replay";
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
+import { towerRole, type TowerRole } from "./roles";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -2308,7 +2309,6 @@ function towerTray(p: HTMLElement, g: Game): void {
   p.append(wrap);
 }
 
-type TowerRole = "slow" | "splash" | "boost" | "income" | "shot";
 const ROLE_NAMES: Record<TowerRole, string> = { slow: "Slows", splash: "Splash", boost: "Boosts", income: "Earns", shot: "Shoots" };
 /** Small ink glyphs for each role (24-unit viewBox, stroked in currentColor). */
 const ROLE_GLYPHS: Record<TowerRole, string> = {
@@ -2318,15 +2318,6 @@ const ROLE_GLYPHS: Record<TowerRole, string> = {
   income: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 10h4a2 2 0 0 1 0 4h-3"/></svg>',
   shot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/></svg>',
 };
-/** What a tower is for, from its tier-1 numbers. */
-function towerRole(kind: TowerKind): TowerRole {
-  const t = TOWERS[kind];
-  if (t.income?.[0]) return "income";
-  if (t.buff?.[0]) return "boost";
-  if (t.damage[0] === 0 && t.slow[0] < 1) return "slow";
-  if (t.splash) return "splash";
-  return "shot";
-}
 /** Range and damage per second as 1-4 pips each, against the strongest tower in this level's roster. */
 function trayPips(g: Game, kind: TowerKind): HTMLElement {
   const fleet = isFleet(g.level);

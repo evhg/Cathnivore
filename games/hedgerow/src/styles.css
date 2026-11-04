@@ -2618,6 +2618,22 @@ dialog.sheet.story #story-skip {
 .alm-card h3 { margin: 0; font-family: var(--font-display); font-variation-settings: var(--display-axes); font-size: 1.05rem; }
 .alm-card p { margin: 2px 0 4px; font-size: 0.9rem; }
 .alm-icon { width: 56px; height: 56px; flex: none; border-radius: var(--r-s); background: var(--paper-2); }
+/* Plan item 119: a tower's Almanac picture is its seed packet: a crimped top, the tower, a band in its role's colour. */
+.alm-tower { --band: var(--pasture); }
+.alm-tower[data-role="shot"] { --band: var(--clay); }
+.alm-tower[data-role="splash"] { --band: var(--wheat); }
+.alm-tower[data-role="income"] { --band: var(--marks-ink); }
+.alm-tower[data-role="boost"] { --band: var(--oak); }
+.alm-tower .alm-icon {
+  box-sizing: content-box;
+  padding: 10px 6px 12px;
+  border-radius: var(--r-s);
+  background:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--line) 22%, transparent) 0 1.5px, transparent 1.5px 4px) top / 100% 6px no-repeat,
+    linear-gradient(to top, color-mix(in srgb, var(--band) 45%, var(--paper-hi)) 0 9px, color-mix(in srgb, var(--band) 75%, var(--ink)) 9px 11px, transparent 11px),
+    var(--paper-2);
+  box-shadow: 0 0 0 1.5px var(--line);
+}
 .alm-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--font-num); font-size: var(--fs-small); color: var(--ink-2); }
 .alm-lore { display: block; margin-top: 4px; font-family: var(--font-voice); font-variation-settings: var(--voice-axes); font-weight: 430; color: var(--ink-2); border-left: 2px solid var(--brass); padding-left: 8px; }
 @media (max-width: 520px) { .almanac-btn .bank-word { display: none; } }
