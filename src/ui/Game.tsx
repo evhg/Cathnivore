@@ -2014,6 +2014,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </details>
         <RegionMap
           state={state}
+          faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep
               ? {

@@ -10,6 +10,7 @@ import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
 import { resolveRules } from '../engine/rules'
 import Portrait from './portraits/Portrait'
+import type { ProducerFace } from './portraits/producerFaces'
 import type { Flight } from './boardroom'
 import type { Faction, GameState, ProducerId, RegionId, RegionType } from '../engine/types'
 
@@ -92,6 +93,8 @@ interface Props {
   /** Plan item 25: the plan card being looked at marks the hexes it will hit (`data-threat="squeeze"`). */
   threat?: { slot: 'squeeze' | 'expand' | 'scout'; regions: RegionId[] }
   onSelect?: (region: RegionId) => void
+  /** Plan item 80: the producers' faces this moment (a Squeeze worries them, their ability delights them). */
+  faces?: Partial<Record<ProducerId, ProducerFace>>
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -280,7 +283,7 @@ function EnemyStack({ kind, n, scale, ornaments, countR }: { kind: 'outlets' | '
  * over a round base in their colour, casting a shadow, matte against Hollowell's glossy plastic. x from the
  * slot's left, y in tile units round the tile centre. The colour-blind setting stamps their initial on the base.
  */
-function ProducerMini({ pid, n, scale: s, countR, clip, showInitial }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean }) {
+function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace }) {
   const colour = `var(--p-${pid})`
   const w = PRODUCER_W * s
   const cx = w / 2
@@ -290,7 +293,7 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial }: { pid: Pr
   const arch = `M ${cx - hw} ${foot} L ${cx - hw} ${top + hw} A ${hw} ${hw} 0 0 1 ${cx + hw} ${top + hw} L ${cx + hw} ${foot} Z`
   const bustH = hw * 2.5
   return (
-    <g className="producer-mini stall-pin" data-producer={pid}>
+    <g className="producer-mini stall-pin" data-producer={pid} data-face={face ?? 'neutral'}>
       <ellipse cx={cx + 1.2 * s} cy={foot + 3 * s} rx={12.6 * s} ry={3.4 * s} className="token-shadow" />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill="black" opacity={0.28} />
@@ -302,7 +305,7 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial }: { pid: Pr
         <path d={arch} fill="var(--paper)" />
         <g clipPath={`url(#${clip})`}>
           <svg x={cx - hw} y={top} width={hw * 2} height={bustH} viewBox="14 12 72 90" aria-hidden="true">
-            <Portrait character={pid} size={100} />
+            <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
           </svg>
           <rect x={cx - hw} y={top + bustH - 0.5} width={hw * 2} height={foot - top - bustH + 1} fill={colour} />
           <path d={`M ${cx - hw} ${top + bustH} h ${hw * 2}`} stroke="var(--ink)" strokeWidth={0.6} opacity={0.5} />
@@ -572,7 +575,7 @@ function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, faces }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -857,7 +860,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect }: P
                       const [pid, n] = stalls[rect.i ?? 0]!
                       return (
                         <g key={pid} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece="stall" data-count={n}>
-                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} />
+                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} face={faces?.[pid]} />
                         </g>
                       )
                     }

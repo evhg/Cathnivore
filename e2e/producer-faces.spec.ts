@@ -10,12 +10,16 @@ test('the active producer reacts to the turn', async ({ page }) => {
   await expect(page.locator('.producer-cameo svg.producer-art').first()).toBeVisible()
   const seen = new Set<string>()
   const deadline = Date.now() + 70_000
-  while (Date.now() < deadline && !(seen.has('worried') || seen.has('delighted'))) {
+  const board = new Set<string>()
+  while (Date.now() < deadline && !((seen.has('worried') || seen.has('delighted')) && board.size > 0)) {
     const face = await page.locator('.producer-cameo svg.producer-art').first().getAttribute('data-face').catch(() => null)
     if (face) seen.add(face)
+    // The board's miniatures react with them: the art drawn inside a standee swaps its face.
+    for (const f of await page.locator('.producer-mini svg.producer-art').evaluateAll((els) => els.map((e) => e.getAttribute('data-face')))) if (f && f !== 'neutral') board.add(f)
     await page.waitForTimeout(60)
   }
   expect(seen.has('worried') || seen.has('delighted'), `faces seen: ${[...seen].join(', ')}`).toBe(true)
+  expect([...board].every((f) => f === 'worried' || f === 'delighted') && board.size > 0, `board faces: ${[...board].join(', ')}`).toBe(true)
 })
 
 // Plan item 80: the Setup draws the producers big: each card's portrait at D, the picked pair's at P, at least
