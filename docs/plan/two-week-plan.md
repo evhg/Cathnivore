@@ -1571,7 +1571,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more and boxes not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 122. [ ] Runnel: one Cath, hosting from the valley
+## 122. [ ] Runnel: one Cath, hosting from the valley *(lane A, in progress)*
 - **Why:** `runnel-D` (plan1104h): she appears twice (15-80 x 130-207 portrait, 430-530 x 625-850 figure) and the figure stands mute while the sidebar talks; `runnel-P` the same (15-70 x 195-260, 10-70 x 700-768). Item 91 left this as a design call; this is it: the figure speaks.
 - **Build:**
   - The side portrait goes whenever the valley figure is in view; her bubble comes from the figure with a tail to her mouth.
