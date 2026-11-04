@@ -2480,3 +2480,48 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-head-later,
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item:has(> button:disabled) { order: 2; }
 }
+/* Plan item 83: a big desktop turn widens the left column (the board is bound by the frame's height, so it keeps its
+   size) and stands Invest and Play three to a row; Supply's and Rebut's cards put their name beside their keys. */
+@media (min-width: 1024px) {
+  .game-layout:has(.desktop-col-left[data-big-turn]) { grid-template-columns: clamp(372px, 28vw, 420px) minmax(0, 1fr) 72px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item[data-group='play']:not(.action-family):has(> button:not(:disabled)),
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item[data-group='invest']:has(> button:not(:disabled)) { grid-column: span 2; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family { flex-direction: row; align-items: center; gap: 6px; padding-block: 4px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-name { flex: 0 1 auto; max-width: 36%; padding-right: 0; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-text { white-space: normal; line-height: 1.1; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-where { display: block; font-size: var(--fs-caption); }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-where::before { content: none; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-options { flex: 1 1 auto; margin-right: 22px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item.action-family > .tooltip-trigger { top: 50%; translate: 0 -50%; }
+}
+/* Plan item 83: a big turn's tiles are a name (two lines at most) over a slim price row: three rows of them fit where
+   two and a half did, so a 15-card turn stands whole at 1280x800. Graft's gain takes the name's second line. */
+@media (min-width: 1024px) {
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:first-child:not(:disabled),
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='invest'] > button:first-child:not(:disabled) { gap: 3px; min-height: 0; padding-block: 3px 4px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-cost { height: 20px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-label svg.action-art { bottom: 5px; width: 20px; height: 20px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-colon { display: none; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-sub { display: block; font-weight: 600; color: var(--ink-muted); }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-remove { display: none; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-label { hyphens: manual; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-name { font-size: var(--fs-caption); gap: 4px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-options { gap: 4px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-option > button { padding-inline: 5px; }
+}
+/* Plan item 83: Graft's gain chip (+1 crate, +1 coin) stays clear of the tile's i. */
+.actions .action-item > button .action-gain-graft { gap: 1px; }
+@media (min-width: 1024px) {
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:not(:disabled) .action-gain-graft { padding-inline: 4px; margin-left: 0; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled):has(.action-gain-graft) svg.action-art { display: none; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled) .action-gain-graft svg { width: 12px; height: 12px; }
+}
+/* Plan item 83: a family with three keys keeps its name on a line of its own, so the keys get the whole row. */
+@media (min-width: 1024px) {
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) { flex-direction: column; align-items: stretch; gap: 3px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-name { max-width: none; padding-right: 26px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-where { display: inline; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-where::before { content: ' · '; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) .action-family-options { margin-right: 0; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family:has(.action-family-option:nth-child(3)) > .tooltip-trigger { top: 3px; translate: none; }
+}

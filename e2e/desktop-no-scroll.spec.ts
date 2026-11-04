@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test'
-import { fillSeed } from './setupSeed'
+import { test, expect } from "@playwright/test";
+import { fillSeed } from "./setupSeed";
 
 // SPEC 10.3: "Three columns: both producers' farms on the left, the map and enemy plan strip in the
 // centre, and the Market, Cath's Plan and Log on the right. No scrolling at 1280×800." Prior sessions only
@@ -20,104 +20,160 @@ import { fillSeed } from './setupSeed'
 // overflow against a moving target, so the honest fix is a bounded, keyboard-reachable scroll region, not
 // another one-off CSS squeeze. Confirmed with repeated runs (game-state variance affects action count):
 // `.game`/`.desktop-col-left`/`.desktop-col-right` all measure 0px of overflow every time now.
-test('desktop game screen has no scrolling at 1280x800, even in a content-dense mid-game position', async ({ page, browserName }) => {
-  test.skip(browserName !== 'chromium', 'desktop layout only kicks in at the 1024px breakpoint; one Chromium check is enough, same pattern as e2e/ai-teammate.spec.ts')
+test("desktop game screen has no scrolling at 1280x800, even in a content-dense mid-game position", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(
+    browserName !== "chromium",
+    "desktop layout only kicks in at the 1024px breakpoint; one Chromium check is enough, same pattern as e2e/ai-teammate.spec.ts",
+  );
 
-  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.setViewportSize({ width: 1280, height: 800 });
 
-  await page.goto('/')
-  await page.getByText('Campaign').click()
-  await page.getByRole('button', { name: /^Friends in Low Places/ }).click()
-  const soloButton = page.getByRole('button', { name: /^Solo/ })
-  if (await soloButton.isVisible().catch(() => false)) await soloButton.click()
-  await page.getByRole('button', { name: 'Continue' }).click()
-  await page.locator('.game').waitFor()
+  await page.goto("/");
+  await page.getByText("Campaign").click();
+  await page.getByRole("button", { name: /^Friends in Low Places/ }).click();
+  const soloButton = page.getByRole("button", { name: /^Solo/ });
+  if (await soloButton.isVisible().catch(() => false)) await soloButton.click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.locator(".game").waitFor();
 
   // The page itself must never need to scroll (SPEC's literal "no scrolling").
-  const pageScrolls = await page.evaluate(() => document.documentElement.scrollHeight > document.documentElement.clientHeight)
-  expect(pageScrolls).toBe(false)
+  const pageScrolls = await page.evaluate(
+    () =>
+      document.documentElement.scrollHeight >
+      document.documentElement.clientHeight,
+  );
+  expect(pageScrolls).toBe(false);
 
   // The `.game-layout` grid is pinned to 100vh; `.desktop-col`/`.game`/`.actions`/`.log-sheet` each carry
   // their own internal `overflow-y: auto` as a bounded escape valve for genuinely variable-length content
   // (the Log and the action list), but none of the three top-level columns should ever need to scroll
   // themselves — that's the literal "no scrolling at 1280x800" this test checks.
   const overflowingColumns = await page.evaluate(() =>
-    Array.from(document.querySelectorAll<HTMLElement>('.desktop-col, .game')).filter((el) => el.scrollHeight > el.clientHeight + 1).map((el) => el.className),
-  )
-  expect(overflowingColumns).toEqual([])
-})
+    Array.from(document.querySelectorAll<HTMLElement>(".desktop-col, .game"))
+      .filter((el) => el.scrollHeight > el.clientHeight + 1)
+      .map((el) => el.className),
+  );
+  expect(overflowingColumns).toEqual([]);
+});
 
 // Plan item 33: at 1440x900 on round 1 the Sell and Invest cards show whole in the Actions frame (the
 // Farm's name-only row for the active producer pushed the Invest cards half under its foot). Plan item 83: every
 // action the turn can play shows whole; what it can't afford yet follows under "Not yet" and may sit below the fold.
-test('desktop Actions frame shows every playable card whole on round 1', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
-  await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/')
-  await page.getByText('Quick Game').click()
-  await fillSeed(page, '1')
-  await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.game').waitFor()
-  await page.waitForTimeout(400)
+test("desktop Actions frame shows every playable card whole on round 1", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "desktop layout");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.getByText("Quick Game").click();
+  await fillSeed(page, "1");
+  await page.getByRole("button", { name: "Start" }).click();
+  await page.locator(".game").waitFor();
+  await page.waitForTimeout(400);
   const cut = await page.evaluate(() => {
-    const frame = document.querySelector('.actions-sheet .actions')!.getBoundingClientRect()
-    const out: string[] = []
-    for (const item of document.querySelectorAll('.actions-sheet .action-item')) {
-      const label = item.textContent ?? ''
-      if (item.querySelector(':scope > button:disabled')) continue
-      const r = item.getBoundingClientRect()
-      if (r.top < frame.top - 1 || r.bottom > frame.bottom + 1) out.push(label)
+    const frame = document
+      .querySelector(".actions-sheet .actions")!
+      .getBoundingClientRect();
+    const out: string[] = [];
+    for (const item of document.querySelectorAll(
+      ".actions-sheet .action-item",
+    )) {
+      const label = item.textContent ?? "";
+      if (item.querySelector(":scope > button:disabled")) continue;
+      const r = item.getBoundingClientRect();
+      if (r.top < frame.top - 1 || r.bottom > frame.bottom + 1) out.push(label);
     }
-    return out
-  })
-  expect(cut).toEqual([])
-})
+    return out;
+  });
+  expect(cut).toEqual([]);
+});
 
-// Plan item 83: a late, big turn (round 7) at 1440x900. Supply's removals and Rebut's counts are one card each
-// with their options as keys; when the playable cards overflow, the Farm block folds (its key beside Undo) and
-// the Play cards stand two to a row, so a turn of 12 playable cards always shows whole.
-test('a big round-7 turn shows its playable cards whole at 1440x900', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
-  test.setTimeout(180_000)
-  await page.setViewportSize({ width: 1440, height: 900 })
-  for (let deal = 0; deal < 3; deal++) {
-    await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=7')
-    await page.getByText('Quick Game').click()
-    await page.getByRole('button', { name: 'Start' }).click()
-    await expect
-      .poll(() => page.evaluate(() => (document.querySelector('.end-screen') ? 99 : Number(document.querySelector('.map-wrap svg.map[data-round]')?.getAttribute('data-round') ?? 0))), { timeout: 60_000 })
-      .toBeGreaterThanOrEqual(7)
-    if (!(await page.locator('.end-screen').isVisible())) break
-  }
-  await expect(page.locator('.actions-sheet .action-item').first()).toBeVisible({ timeout: 60_000 })
-  await page.waitForTimeout(800)
-  const r = await page.evaluate(() => {
-    const frame = document.querySelector('.actions-sheet .actions')!.getBoundingClientRect()
-    const enabled = [...document.querySelectorAll('.actions-sheet .action-item')].filter((i) => !i.querySelector(':scope > button:disabled'))
-    const cut = enabled.filter((i) => {
-      const b = i.getBoundingClientRect()
-      return b.top < frame.top - 1 || b.bottom > frame.bottom + 1
-    })
-    const supplyCards = enabled.filter((i) => /^Supply/.test(i.textContent ?? '') || i.getAttribute('data-family') === 'supply').length
-    const supplyKeys = document.querySelectorAll('.actions-sheet .action-family[data-family="supply"] button').length
-    return {
-      enabled: enabled.length,
-      cut: cut.map((i) => i.textContent),
-      supplyCards,
-      supplyKeys,
-      folded: document.querySelector('.desktop-col-left')!.hasAttribute('data-big-turn'),
-      farmInline: !!document.querySelector('.desktop-col-left .farm-inline'),
-      farmKey: (document.querySelector<HTMLElement>('.actions-sheet .controls .rail-tab-farm')?.offsetWidth ?? 0) > 0,
+// Plan item 83: a late, big turn (round 7) at 1440x900 and 1280x800. Supply's removals and Rebut's counts are one
+// card each with their options as keys; when the playable cards overflow, the Farm block folds (its key beside
+// Undo), the column widens and the Invest and Play cards stand three to a row, so the whole turn shows.
+for (const [W, H] of [
+  [1440, 900],
+  [1280, 800],
+] as const)
+  test(`a big round-7 turn shows its playable cards whole at ${W}x${H}`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "desktop layout");
+    test.setTimeout(180_000);
+    await page.setViewportSize({ width: W, height: H });
+    for (let deal = 0; deal < 3; deal++) {
+      await page.goto("/?e2eAutoplay=1&e2eAutoplayUntil=7");
+      await page.getByText("Quick Game").click();
+      await page.getByRole("button", { name: "Start" }).click();
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() =>
+              document.querySelector(".end-screen")
+                ? 99
+                : Number(
+                    document
+                      .querySelector(".map-wrap svg.map[data-round]")
+                      ?.getAttribute("data-round") ?? 0,
+                  ),
+            ),
+          { timeout: 60_000 },
+        )
+        .toBeGreaterThanOrEqual(7);
+      if (!(await page.locator(".end-screen").isVisible())) break;
     }
-  })
-  testInfo.annotations.push({ type: 'turn', description: JSON.stringify(r) })
-  if (process.env.SHOW_TURN) console.log('TURN', r.enabled, r.folded, r.cut.length)
-  // Supply never takes more than one card; a family card carries its options as keys.
-  expect(r.supplyCards).toBeLessThanOrEqual(1)
-  if (r.supplyKeys > 0) expect(r.supplyKeys).toBeGreaterThanOrEqual(2)
-  // The Farm folds only on a big turn, and its key stands in for it.
-  expect(r.farmInline).toBe(!r.folded)
-  expect(r.farmKey).toBe(r.folded)
-  // Up to 12 playable cards always fit; most 14-card turns do too (see the plan's item 83 line).
-  if (r.enabled <= 12) expect(r.cut, JSON.stringify(r)).toEqual([])
-})
+    await expect(
+      page.locator(".actions-sheet .action-item").first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await page.waitForTimeout(800);
+    const r = await page.evaluate(() => {
+      const sheet = document.querySelector(".actions-sheet .actions")!;
+      const frame = sheet.getBoundingClientRect();
+      // under the fold's fade and its 'N more' tab a card isn't really in reach
+      const fade = sheet.hasAttribute("data-fade-bottom") ? 36 : 0;
+      const enabled = [
+        ...document.querySelectorAll(".actions-sheet .action-item"),
+      ].filter((i) => !i.querySelector(":scope > button:disabled"));
+      const cut = enabled.filter((i) => {
+        const b = i.getBoundingClientRect();
+        return b.top < frame.top - 1 || b.bottom > frame.bottom - fade + 1;
+      });
+      const supplyCards = enabled.filter(
+        (i) =>
+          /^Supply/.test(i.textContent ?? "") ||
+          i.getAttribute("data-family") === "supply",
+      ).length;
+      const supplyKeys = document.querySelectorAll(
+        '.actions-sheet .action-family[data-family="supply"] button',
+      ).length;
+      return {
+        enabled: enabled.length,
+        cut: cut.map((i) => i.textContent),
+        supplyCards,
+        supplyKeys,
+        folded: document
+          .querySelector(".desktop-col-left")!
+          .hasAttribute("data-big-turn"),
+        farmInline: !!document.querySelector(".desktop-col-left .farm-inline"),
+        farmKey:
+          (document.querySelector<HTMLElement>(
+            ".actions-sheet .controls .rail-tab-farm",
+          )?.offsetWidth ?? 0) > 0,
+      };
+    });
+    testInfo.annotations.push({ type: "turn", description: JSON.stringify(r) });
+    if (process.env.SHOW_TURN)
+      console.log("TURN", r.enabled, r.folded, r.cut.length);
+    // Supply never takes more than one card; a family card carries its options as keys.
+    expect(r.supplyCards).toBeLessThanOrEqual(1);
+    if (r.supplyKeys > 0) expect(r.supplyKeys).toBeGreaterThanOrEqual(2);
+    // The Farm folds only on a big turn, and its key stands in for it.
+    expect(r.farmInline).toBe(!r.folded);
+    expect(r.farmKey).toBe(r.folded);
+    // Every playable card of a big turn fits (up to 15 seen at 1280x800): the column widens and the tiles stand
+    // three to a row.
+    expect(r.cut, JSON.stringify(r)).toEqual([]);
+  });

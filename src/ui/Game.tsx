@@ -342,13 +342,42 @@ function roleCardText(action: Extract<Action, { kind: 'role' }>, state: GameStat
 // Under the desktop INVEST head the verb is already said, so "Buy" hides there (CSS) and two-line names
 // stay two lines: four Invest cards always fit the Actions frame at 1440x900. The text and the accessible
 // name keep it.
-function BuyVerb({ text }: { text: string }) {
+// Plan item 83: the few long words in card names break at a syllable (a soft hyphen) in a narrow tile, never mid-letter.
+const SOFT_BREAKS: [RegExp, string][] = [
+  [/Reconnaissance/g, 'Recon\u00ADnaissance'],
+  [/Whistleblower/g, 'Whistle\u00ADblower'],
+  [/Letterpress/g, 'Letter\u00ADpress'],
+]
+function softBreaks(text: string): string {
+  return SOFT_BREAKS.reduce((t, [re, to]) => t.replace(re, to), text)
+}
+
+function BuyVerb({ text: raw }: { text: string }) {
+  const text = softBreaks(raw)
   // Plan item 83: in a big turn's two-up tiles the scheme's picture says "Scheme", so the word hides there.
   if (text.startsWith('Scheme: '))
     return (
       <>
         <span className="action-prefix">Scheme: </span>
         {text.slice(8)}
+      </>
+    )
+  // Plan item 83: a lone Rebut's or Supply's count is its own line on a big turn's tile, so the name never cuts
+  // mid-phrase.
+  const lead = /^(Rebut|Supply): /.exec(text)
+  if (lead)
+    return (
+      <>
+        {lead[1]}
+        <span className="action-colon">:</span>
+        <span className="action-sub">
+          {' '}
+          {text.slice(lead[0].length).startsWith('remove ') && <span className="action-remove">remove </span>}
+          {text
+            .slice(lead[0].length)
+            .replace(/^remove /, '')
+            .replace(/ in…$/, '…')}
+        </span>
       </>
     )
   if (!text.startsWith('Buy ')) return <>{text}</>
@@ -370,6 +399,23 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
           <span className="action-word"> Produce</span>
         </span>
         <SellGainChip count={action.count} />
+      </button>
+    )
+  }
+  // Plan item 83: Graft's card is its name over what it gives, drawn as a gain chip (+1 crate, +1 coin) like Sell's.
+  if (action.kind === 'graft') {
+    return (
+      <button aria-label={actionLabel(action, state)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
+        <span className="action-label">
+          {Icon && <Icon size={18} />}
+          Graft
+        </span>
+        <span className="action-cost action-gain action-gain-graft" aria-hidden="true">
+          +1
+          <ProduceIcon size={14} />
+          +1
+          <MarksIcon size={14} />
+        </span>
       </button>
     )
   }
@@ -1475,8 +1521,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
               const Icon = ACTION_ICON[firstAction.kind]
               const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
-              const text = short ?? full.text
-              const aria = full.aria ?? (short || full.text.startsWith('Scheme: ') ? full.text : undefined)
+              // Plan item 83: a Role group shows its ability ("Injunction…"), as the standalone Role card does.
+              const roleText = !short && firstAction.kind === 'role' ? `${PRODUCERS[state.activeProducer].roleName.split(', ').pop()}…` : undefined
+              const text = short ?? roleText ?? full.text
+              const aria = full.aria ?? (short || roleText || full.text.startsWith('Scheme: ') ? full.text : undefined)
               return (
                 <button
                   aria-label={aria}
