@@ -47,10 +47,14 @@ test('winning chapter 1 presses its seals, and they persist across a reload', as
   const read = async () => seals(page).evaluateAll((els) => els.map((e) => `${e.getAttribute('data-seal')}:${e.getAttribute('data-earned')}`))
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
+  // The Campaign renders after the click; read the seals once all three are there (a cold load read none).
+  await expect(seals(page)).toHaveCount(3)
   expect(await read()).toEqual(['win:true', 'hard:false', 'feat:true'])
   await expect(page.locator('.cmp-map-cath')).toHaveAttribute('data-at', 'word-of-mouth')
   await page.reload()
   await page.getByRole('button', { name: 'Campaign' }).click()
+  // The Campaign renders after the click; read the seals once all three are there (a cold load read none).
+  await expect(seals(page)).toHaveCount(3)
   expect(await read()).toEqual(['win:true', 'hard:false', 'feat:true'])
   // Chapter 1 has no Hard replay (its second seal is the swift win); a later won chapter does.
   await expect(page.locator('.cmp-stop').first().locator('.cmp-hard')).toHaveCount(0)

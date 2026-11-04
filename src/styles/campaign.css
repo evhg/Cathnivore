@@ -795,17 +795,18 @@ html.no-animations .campaign-screen * {
 }
 .cmp-seal svg {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
 }
 .cmp-seal-wax {
   fill: transparent;
-  stroke: color-mix(in srgb, var(--soil) 35%, transparent);
-  stroke-width: 1;
+  /* Plan item 126: an unearned seal is still a dashed outline, but at about 3:1 on the card (it read at 2:1). */
+  stroke: color-mix(in srgb, var(--soil) 70%, transparent);
+  stroke-width: 1.1;
   stroke-dasharray: 1.5 1.5;
 }
-.cmp-seal-ring { fill: none; stroke: color-mix(in srgb, var(--soil) 25%, transparent); stroke-width: 0.8; }
-.cmp-seal-glyph { fill: none; stroke: color-mix(in srgb, var(--soil) 35%, transparent); stroke-width: 1.2; stroke-linejoin: round; stroke-linecap: round; }
+.cmp-seal-ring { fill: none; stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 0.8; }
+.cmp-seal-glyph { fill: none; stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.3; stroke-linejoin: round; stroke-linecap: round; }
 .cmp-seal.is-earned .cmp-seal-wax { fill: var(--seal); stroke: none; filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--ink) 35%, transparent)); }
 .cmp-seal.is-earned .cmp-seal-ring { stroke: color-mix(in srgb, var(--paper-on-fixed-fill) 35%, transparent); }
 .cmp-seal.is-earned .cmp-seal-glyph { stroke: var(--paper-on-fixed-fill); }
