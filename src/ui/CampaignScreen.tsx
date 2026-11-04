@@ -4,7 +4,9 @@ import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
 import CampaignMap from './CampaignMap'
-import { CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
+import { CHAPTER_HOMES, CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
+import { LANDMARKS } from '../content/campaignMapLayout'
+import { Landmark } from './Landmark'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { useState } from 'react'
 import { campaignLine } from '../content/campaignLines'
@@ -111,21 +113,55 @@ function Medallion({ n, state }: { n: number; state: 'done' | 'current' | 'locke
   )
 }
 
-// ROADMAP 149: a small drawn scene along the foot of each chapter card (hills plus one motif).
-const SCENE_MOTIFS = [
-  <path key="barn" d="M20 40v-14l9-7 9 7v14zM24 40v-7h10v7z" />,
-  <path key="stall" d="M18 40V28h24v12zM15 28l5-8h20l5 8z" />,
-  <path key="rows" d="M10 40l12-14M20 40l12-14M30 40l12-14M40 40l12-14" strokeWidth="2.5" fill="none" stroke="currentColor" />,
-  <path key="mill" d="M28 40V26h6v14zM31 26l-9-9M31 26l9-9M31 26l-9 9M31 26l9 9" strokeWidth="2.5" stroke="currentColor" />,
-  <path key="boat" d="M14 36h32l-6 6H20zM30 36V20l10 14z" />,
-  <path key="clock" d="M26 40V16h8v24zM24 16l6-7 6 7z" />,
-]
-function ChapterScene({ index, tint }: { index: number; tint?: string }) {
+// Plan item 113: each chapter card's vignette, a drawn postcard of its regions' landmarks (the map's own
+// landmark art, `Landmark.tsx`) on hills in their region colours, at full ink; a locked chapter's is in pencil.
+// The regions winning it frees come first and stand largest.
+const VIG_W = 132
+const VIG_H = 88
+function vignetteRegions(chapter: Chapter): RegionId[] {
+  const homes = CHAPTER_HOMES[chapter.id] ?? []
+  const out: RegionId[] = [...homes]
+  for (const r of chapter.activeRegions) if (!out.includes(r) && LANDMARKS[r]) out.push(r)
+  return out.slice(0, 3)
+}
+function ChapterVignette({ chapter, locked }: { chapter: Chapter; locked: boolean }) {
+  const regions = vignetteRegions(chapter)
+  const homes = new Set(CHAPTER_HOMES[chapter.id] ?? [])
+  const n = regions.length
+  const slot = VIG_W / n
   return (
-    <svg className={tint ? `cmp-scene cmp-scene-${tint}` : 'cmp-scene'} viewBox="0 0 120 44" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
-      <path d="M0 44V30q20-12 40 0t40-4 40 6v12z" opacity="0.5" />
-      <path d="M0 44V36q30-10 60 0t60-4v12z" opacity="0.8" />
-      <g transform={`translate(${46 + (index % 2) * 6} 0)`}>{SCENE_MOTIFS[index % SCENE_MOTIFS.length]}</g>
+    <svg
+      className={locked ? 'cmp-vignette is-pencil' : 'cmp-vignette'}
+      viewBox={`0 0 ${VIG_W} ${VIG_H}`}
+      data-regions={regions.join(' ')}
+      aria-hidden="true"
+    >
+      <rect className="cmp-vig-sky" x={0} y={0} width={VIG_W} height={VIG_H} />
+      <circle className="cmp-vig-sun" cx={18} cy={15} r={7} />
+      <path className="cmp-vig-far" d={`M0 50 Q22 36 44 46 T88 42 T${VIG_W} 44 V${VIG_H} H0 Z`} />
+      {regions.map((id, i) => {
+        const x0 = i * slot
+        const type = REGIONS[id].type
+        const top = 54 + (i % 2) * 4
+        return (
+          <path
+            key={`hill-${id}`}
+            className={`cmp-vig-hill cmp-vig-${type}`}
+            d={`M${x0 - 8} ${VIG_H} V${top + 8} Q${x0 + slot / 2} ${top - 10} ${x0 + slot + 8} ${top + 8} V${VIG_H} Z`}
+          />
+        )
+      })}
+      {regions.map((id, i) => {
+        const s = homes.has(id) ? (n === 3 ? 1.6 : 1.8) : 1.3
+        const cx = i * slot + slot / 2
+        const cy = 64 + (i % 2) * 4 - 11 * s
+        return (
+          <g key={id} className="cmp-vig-mark" transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)}) scale(${s})`}>
+            <Landmark kind={LANDMARKS[id]!.kind} />
+          </g>
+        )
+      })}
+      <rect className="cmp-vig-frame" x={0.75} y={0.75} width={VIG_W - 1.5} height={VIG_H - 1.5} rx={9} />
     </svg>
   )
 }
@@ -160,7 +196,10 @@ export default function CampaignScreen({
   const done = chapters.filter((c) => completed.includes(c.id)).length
   let currentMarked = false
   // Plan item 113: Cath speaks about the chapter under the pointer or focus, else the next one to play.
-  const [pointed, setPointed] = useState<string | null>(null)
+  // Focus wins over hover: a focus scroll can slide another card under a resting pointer.
+  const [hovered, setHovered] = useState<string | null>(null)
+  const [focused, setFocused] = useState<string | null>(null)
+  const pointed = focused ?? hovered
   const next = chapters.find((c, i) => !completed.includes(c.id) && (i === 0 || completed.includes(chapters[i - 1]!.id)))
   const say = campaignLine(pointed ?? next?.id, done === chapters.length)
   return (
@@ -217,10 +256,10 @@ export default function CampaignScreen({
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
                 onClick={() => onStart(chapter)}
-                onPointerEnter={() => setPointed(chapter.id)}
-                onPointerLeave={() => setPointed(null)}
-                onFocus={() => setPointed(chapter.id)}
-                onBlur={() => setPointed(null)}
+                onPointerEnter={() => setHovered(chapter.id)}
+                onPointerLeave={() => setHovered(null)}
+                onFocus={() => setFocused(chapter.id)}
+                onBlur={() => setFocused(null)}
               >
                 <span className="cmp-card-text">
                   <span className="cmp-chapter-no" aria-hidden="true">Chapter {i + 1}</span>
@@ -229,6 +268,8 @@ export default function CampaignScreen({
                     <span className="sr-only">{isDone ? ' (completed)' : locked ? ' (locked)' : ''}</span>
                   </strong>
                   <span className="chapter-goal">{chapter.goalDescription}</span>
+                </span>
+                <span className="cmp-card-foot">
                   <span className="cmp-cast" aria-hidden="true">
                     {chapter.producers.map((p) => (
                       <span key={p} className="cmp-face">
@@ -250,8 +291,10 @@ export default function CampaignScreen({
                     </span>
                   )}
                 </span>
-                <ChapterScene index={i} tint={isDone ? REGIONS[chapter.activeRegions[0]!].type : undefined} />
-                <MiniMap chapter={chapter} />
+                <span className="cmp-art">
+                  <ChapterVignette chapter={chapter} locked={locked} />
+                  <MiniMap chapter={chapter} />
+                </span>
               </button>
               {((isDone && onStartHard && hasHardSeal(chapter.id)) || (chapter.guided && coached && onReplayTutorial)) && (
                 <span className="cmp-replays">

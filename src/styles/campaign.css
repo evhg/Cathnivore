@@ -308,8 +308,9 @@
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "head art" "foot art";
   align-items: center;
-  gap: 12px;
+  gap: 3px 12px;
   padding: 14px 14px 14px 18px;
   text-align: left;
   border-radius: 18px;
@@ -365,10 +366,67 @@
 }
 
 .cmp-card-text {
+  grid-area: head;
+  align-self: end;
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+}
+
+.cmp-card-foot {
+  grid-area: foot;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* Plan item 113: the chapter's vignette, its regions' landmarks at full ink; the mini map pinned to its corner. */
+.cmp-art {
+  grid-area: art;
+  position: relative;
+  display: block;
+  align-self: center;
+}
+
+.cmp-vignette {
+  display: block;
+  width: 132px;
+  height: 88px;
+  border-radius: 10px;
+  box-shadow: 0 2px 0 var(--rule);
+}
+
+.cmp-vig-sky { fill: color-mix(in srgb, var(--region-coast) 45%, var(--paper)); }
+.cmp-vig-sun { fill: var(--wheat); opacity: 0.85; }
+.cmp-vig-far { fill: color-mix(in srgb, var(--pasture) 30%, var(--paper)); }
+.cmp-vig-hill { stroke: var(--ink); stroke-width: 0.8; stroke-linejoin: round; }
+.cmp-vig-pasture { fill: var(--region-pasture); }
+.cmp-vig-crop { fill: var(--region-crop); }
+.cmp-vig-coast { fill: var(--region-coast); }
+.cmp-vig-capital { fill: var(--region-capital); }
+.cmp-vig-frame { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+
+/* A locked chapter's postcard is a pencil sketch: graphite on paper, a lighter frame. */
+.cmp-vignette.is-pencil {
+  filter: grayscale(1) contrast(0.85) brightness(1.08);
+  box-shadow: none;
+}
+.cmp-vignette.is-pencil .cmp-vig-frame { stroke: var(--ink-muted); stroke-dasharray: 3 2; }
+.cmp-vignette.is-pencil .cmp-vig-sun { opacity: 0.4; }
+
+.cmp-art .cmp-minimap {
+  position: absolute;
+  right: -8px;
+  top: -10px;
+  width: 40px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--rule);
+  box-sizing: content-box;
 }
 
 .cmp-chapter-no {
@@ -495,9 +553,13 @@
     height: 40px;
     font-size: 18px;
   }
-  .cmp-minimap {
-    width: 58px;
+  .cmp-path .cmp-card {
+    grid-template-areas: "head head" "foot art";
+    column-gap: 10px;
   }
+  .cmp-art { align-self: end; }
+  .cmp-vignette { width: 120px; height: 80px; }
+  .cmp-art .cmp-minimap { width: 34px; right: -6px; top: -12px; }
   .cmp-title {
     font-size: 19px;
   }

@@ -24,3 +24,35 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   // Its home regions light on the map.
   await expect(page.locator('.cmp-map [data-lit="true"]')).not.toHaveCount(0)
 })
+
+// Plan item 113 (slice 3): each chapter card carries a drawn vignette of its regions' landmarks, 120x80 or
+// more, at full ink; a locked chapter's is in pencil.
+test('each chapter card has a landmark vignette, locked ones in pencil', async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })),
+  )
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  const cards = page.locator('.cmp-card')
+  await expect(cards.nth(5)).toBeVisible()
+  const n = await cards.count()
+  expect(n).toBeGreaterThanOrEqual(6)
+  for (let i = 0; i < n; i++) {
+    const card = cards.nth(i)
+    const vig = card.locator('.cmp-vignette')
+    const box = (await vig.boundingBox())!
+    expect(box.width).toBeGreaterThanOrEqual(120)
+    expect(box.height).toBeGreaterThanOrEqual(80)
+    expect(await vig.locator('.cmp-vig-mark').count()).toBeGreaterThanOrEqual(2)
+    const locked = await card.evaluate((e) => e.classList.contains('chapter-locked'))
+    await expect(vig).toHaveClass(locked ? /is-pencil/ : /^cmp-vignette$/)
+    // The vignette sits inside its card and clear of the card's words.
+    const cb = (await card.boundingBox())!
+    expect(box.x + box.width).toBeLessThanOrEqual(cb.x + cb.width + 0.5)
+    const goal = (await card.locator('.chapter-goal').boundingBox())!
+    const overlaps = goal.x < box.x + box.width && box.x < goal.x + goal.width && goal.y < box.y + box.height && box.y < goal.y + goal.height
+    expect(overlaps).toBe(false)
+  }
+  // Chapter 1 is drawn from the regions it frees: the barn and the sheepfold.
+  await expect(cards.first().locator('.cmp-vignette')).toHaveAttribute('data-regions', 'brindleHills highmoor')
+})
