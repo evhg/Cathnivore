@@ -1256,7 +1256,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: shop items 90x100 or more at D, 56x64 or more at P; each has a visible name and an accessible name with its price; greyscale shot tells the three states apart; hedgerow-tray still passes; shots P and D in 2D and 3D.
 - **Size:** 2
 
-## 88. [ ] Hedgerow: the next level as a hero card on the journey map
+## 88. [ ] Hedgerow: the next level as a hero card on the journey map *(lane B, in progress)*
 - **Why:** `hedge-menu-D` (plan1104a): the only call to act is a small "Next" pill (232-275 x 380-396); no Play button, preview or threat summary; the locked act 4 teaser takes the bottom 37% (565-900).
 - **Build:**
   - A level card for the next (or picked) stop: the field's thumbnail, the twist, the enemies it brings, stars won, and a big Play.
