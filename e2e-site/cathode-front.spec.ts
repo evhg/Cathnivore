@@ -174,6 +174,8 @@ test.describe('CATHODE front door fits (plan item 40)', () => {
 
 // Plan item 69: the office load is Cath's office over the office's own key art, not Crisp's market file.
 test('the office loading card names the office over its own key art, inside the viewport', async ({ page }) => {
+  // The name waits up to 120 s for a cold build under a loaded runner; the test's own budget has to cover that.
+  test.setTimeout(180_000)
   await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
   await page.goto('/nightshift/?front=loading-office&shot')
   const name = page.locator('#loading:not([hidden]) .ld-name')

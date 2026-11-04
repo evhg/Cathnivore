@@ -93,7 +93,8 @@ test.describe('NIGHT SHIFT street life (plan item 57)', () => {
     // A shot in the middle of the crowd below the steps (plaza.ts packs the rally round (0, -16)).
     await page.evaluate(() => (window as unknown as { cathode: C }).cathode.world.street?.shot(0, -16))
     await expect.poll(async () => (await rally()).scared, { timeout: 10_000 }).toBeGreaterThanOrEqual(calm.below)
-    await expect.poll(async () => (await rally()).spread, { timeout: 60_000 }).toBeGreaterThan(calm.spread + 1)
+    // Sim time runs at the frame rate, and SwiftShader under a full gate run manages a few fps: give the scatter time.
+    await expect.poll(async () => (await rally()).spread, { timeout: 180_000 }).toBeGreaterThan(calm.spread + 1)
     expect(errors).toEqual([])
     await ctx.close()
   })
