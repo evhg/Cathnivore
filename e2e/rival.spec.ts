@@ -13,11 +13,12 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
     await expect(rival).toBeVisible()
     const r = (await rival.locator('.rival-frame').boundingBox())!
     expect(r.height, `${width}x${height}`).toBeGreaterThanOrEqual(80)
-    const cath = (await page.locator('.cath-companion').boundingBox())!
+    // Plan item 118: at these sizes Cath stands at the table's left edge (her line over her head).
+    const cath = (await page.locator('.table-cath').boundingBox())!
     const papers = (await page.locator('.plan-strip').boundingBox())!
-    // Opposite Cath: right of the papers, which are right of her, and on the same row.
+    // Opposite Cath: right of the papers, and she is at the row's other end (plan item 118: at the table's left edge).
     expect(papers.x + papers.width).toBeLessThanOrEqual(r.x + 1)
-    expect(cath.x + cath.width).toBeLessThanOrEqual(papers.x + 1)
+    expect(cath.x + cath.width).toBeLessThan(papers.x + papers.width / 2)
     expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
     expect(r.x + r.width).toBeLessThanOrEqual(width)
     expect(['smug', 'gloat', 'rattled']).toContain(await rival.getAttribute('data-mood'))

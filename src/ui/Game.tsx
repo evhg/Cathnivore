@@ -158,18 +158,23 @@ function isE2ETeammateShow(): boolean {
 // same button. Gating which one actually *mounts* on viewport width avoids that: there is only ever one
 // `.actions` in the DOM. Reacts to live resizes (not just the width at first render) since Playwright's
 // `setViewportSize` can change the viewport after the page has already mounted.
-function useIsDesktopLayout(): boolean {
-  const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
-  )
+function useMedia(query: string): boolean {
+  const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    const onChange = () => setIsDesktop(mq.matches)
+    const mq = window.matchMedia(query)
+    const onChange = () => setOn(mq.matches)
+    onChange()
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return isDesktop
+  }, [query])
+  return on
 }
+function useIsDesktopLayout(): boolean {
+  return useMedia('(min-width: 1024px)')
+}
+// Plan item 118: the desktop sizes where Cath stands at the table (styles: .table-cath).
+const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
+
 
 // Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with
 // the company's plastic nameplate, at the end of the papers' row on a desktop. A phone meets him in the boardroom
@@ -570,6 +575,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const isDesktop = useIsDesktopLayout()
+  const tableCath = useMedia(TABLE_CATH_QUERY)
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -2085,8 +2091,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       </header>
 
       {/* Plan item 20: on desktop Cath's aside and tomorrow's papers share one row, so the board gets the height. */}
-      <div className="table-head">
-      <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />
+      <div className={tableCath ? 'table-head with-table-cath' : 'table-head'}>
+      {!tableCath && <CathCompanion expression={cathReaction.expression} line={cathReaction.line} />}
 
       {!guided && tutorialSteps && tutorialIndex < tutorialSteps.length && (
         tipCollapsedAt === tutorialIndex ? (
@@ -2212,9 +2218,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <ProduceCrates />
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
-        <div className="table-cath" data-expression={cathReaction.expression} aria-hidden="true">
-          <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
-        </div>
+        {tableCath && (
+          <section className="table-cath" data-expression={cathReaction.expression} aria-label="Cath">
+            <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
+              {cathReaction.line}
+            </p>
+            <span className="table-cath-figure" aria-hidden="true">
+              <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
+            </span>
+          </section>
+        )}
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
             the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}
         {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (

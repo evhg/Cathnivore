@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test'
 import { fillSeed } from './setupSeed'
 
 // Plan item 118 (slice 1): on a desktop Cath stands at the table's left edge in play, half-length, 260 px or more,
-// clear of every region hex and of the action column, her face following the game's events.
+// clear of every region hex and of the action column, her face following the game's events. Slice 2: her line in
+// a bubble over her head, so the header no longer carries a second Cath.
 test('Cath stands at the table during play at D', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only; the phone keeps the strip portrait')
   for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
@@ -14,7 +15,12 @@ test('Cath stands at the table during play at D', async ({ page }, testInfo) => 
     const cath = page.locator('.table-cath')
     await expect(cath).toBeVisible()
     const box = (await cath.boundingBox())!
-    expect(box.height, `${width}x${height}`).toBeGreaterThanOrEqual(260)
+    expect((await cath.locator('.table-cath-figure').boundingBox())!.height, `${width}x${height}`).toBeGreaterThanOrEqual(260)
+    // Her line is a bubble over her head (15 px or more), not a second Cath in the header.
+    const line = cath.locator('.table-cath-line')
+    await expect(line).not.toBeEmpty()
+    expect(await line.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(15)
+    await expect(page.locator('.table-head .cath-companion')).toHaveCount(0)
     const overlap = (a: { x: number; y: number; width: number; height: number }) =>
       a.x < box.x + box.width && box.x < a.x + a.width && a.y < box.y + box.height && box.y < a.y + a.height
     for (const hex of await page.locator('.region-hex').all()) {

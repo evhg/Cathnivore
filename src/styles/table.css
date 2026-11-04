@@ -2653,26 +2653,66 @@ html.no-animations .cath-companion .cameo {
 }
 
 /* Plan item 118: Cath at the table during play, in the map's empty left margin on a desktop (the hexes start
-   about 150 px in at 1280 and 1440). The half framing is cropped to her figure; the ring cameo steps back so
-   the table has one Cath. */
-.table-cath { display: none; }
+   about 150 px in at 1280 and 1440), her line in a bubble over her head, so the papers' row has one face per
+   side: hers at the table, Pell's at the row's end. Game.tsx mounts it at the same query. */
 @media (min-width: 1240px) and (min-height: 760px) {
+  .table-head.with-table-cath {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
   .table-cath {
-    display: block;
     position: absolute;
-    left: var(--sp-2);
+    left: var(--sp-1);
     bottom: 0;
-    width: 140px;
+    width: 124px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    pointer-events: none;
+  }
+  .table-cath-figure {
+    display: block;
     height: 264px;
     overflow: hidden;
-    pointer-events: none;
     filter: drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .22));
   }
-  .table-cath .cath-art,
-  .table-cath svg {
+  .table-cath-figure .cath-art,
+  .table-cath-figure svg {
     display: block;
     height: 100%;
     width: auto;
-    margin-left: -6px;
+    margin-left: -14px;
+  }
+  .table-cath-line {
+    position: relative;
+    margin: 0 0 12px;
+    padding: var(--sp-2) 10px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 0 var(--rule);
+    color: var(--ink);
+    font-size: var(--fs-body);
+    line-height: 1.25;
+    animation: table-cath-say var(--dur-quick) var(--ease-settle);
+  }
+  /* The tail points down at her mouth. */
+  .table-cath-line::after {
+    content: "";
+    position: absolute;
+    left: 50px;
+    bottom: -9px;
+    width: 16px;
+    height: 16px;
+    background: var(--surface);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    rotate: 45deg;
   }
 }
+@keyframes table-cath-say {
+  from { opacity: 0; translate: 0 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .table-cath-line { animation: none; }
+}
+html.no-animations .table-cath-line { animation: none; }
