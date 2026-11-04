@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-04 19:23 UTC
 
 
 
@@ -1570,4 +1569,49 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **Hedgerow map D:** the Saltmarsh cloud an opaque blob (460-770 x 60-160).
   - [x] **Portfolio D:** darker side columns at x 0-85 and 1355-1440 (check: a max-width background that doesn't bleed). *(Fixed 2026-11-04 lane B: it was the sticky header's glass, which stopped a gutter past the page column; it now bleeds to the window's edges (`inset: 0 calc(50% - 50vw)`, the body clips overflow; no horizontal scroll at P or D). site-header passes; shots `f121c/portfolio-*`.)*
 - **Accept:** e2e text 11 px or more and boxes not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 122. [ ] Runnel: one Cath, hosting from the valley
+- **Why:** `runnel-D` (plan1104h): she appears twice (15-80 x 130-207 portrait, 430-530 x 625-850 figure) and the figure stands mute while the sidebar talks; `runnel-P` the same (15-70 x 195-260, 10-70 x 700-768). Item 91 left this as a design call; this is it: the figure speaks.
+- **Build:**
+  - The side portrait goes whenever the valley figure is in view; her bubble comes from the figure with a tail to her mouth.
+  - Her point pose aims at the glowing tile (arm angle from the tile's centre).
+  - Expressions: a smirk on a tap, delight when the water front reaches a field, worry on a spill, a wink on a solve (`data-expression`).
+  - At P the figure 120 px or more in the valley's bottom-left, the bubble above her clear of the tiles.
+- **Accept:** exactly one Cath visible at P and D; the tail ends within 24 px of her face box; the point within 20 degrees of the glowing tile's centre; `data-expression` changes on a spill and on a solve; bubble text 15 px or more, meeting no tile; item 77's `runnel-lesson-frame`/`runnel-valley` specs updated to one Cath; shots P and D, light and dark.
+- **Size:** 3
+
+## 123. [ ] Cathnivore phone: hand cards with their art
+- **Why:** `cath-game-P` (35-375 x 672-770): each hand card is about 155x100, some 70% blank yellow, with a 30 px icon in a corner; the most-touched phone UI reads as blank slabs.
+- **Build:**
+  - Each card carries its action art at 56 px or more, top-aligned; the name at 15 px; the cost chip on the art's corner.
+  - A disabled card desaturated, with its why-not chip; the peek card shows its art's edge.
+- **Accept:** art 56x56 or more on every card at 390x844; text 12 px or more at 4.5:1; no card more than 40% empty (bounding-box sum); action-hand, tutorial and accessibility e2e pass; shots P light and dark, plus 375x667.
+- **Size:** 2
+
+## 124. [ ] Hedgerow map: Cath walks the road at full length, and locked stops are pencil sketches
+- **Why:** `hedge-menu-D` (225-280 x 240-300): her token is a floating head; locked stops (450-1230 x 325-560) are flat grey icons on grey coins. Check first against item 111 (landmark stops, a 60 px Cath at D) and item 73 (pencil-grey vignettes).
+- **Build:**
+  - A full-length 2D Cath from `shared/cath`, 110 px or more at D and 64 at P, standing on the road at the next stop; a stride as she walks, a wave when a stop opens.
+  - Locked vignettes as pencil line art on paper, coloured in when the stop opens.
+- **Accept:** her box 110 px or more at D and 64 at P, meeting no label or padlock box; locked stops under 15% saturation, open ones over 30%; hedgerow-map passes; shots P and D, acts 1 and 3.
+- **Size:** 3
+
+## 125. [ ] NIGHT SHIFT phone: the class pick on one screen
+- **Why:** `ns-play-P` (0-390 x 700-790): only GRIT shows above "MORE BELOW"; the weapon, skills and other stats need a scroll, while her back view takes 120-520 px of height.
+- **Build:**
+  - A compact dossier card above the call to action: four stat bars in two columns, the weapon line art at 48 px with its name and damage; the quote folded behind a tap.
+  - Her face-on figure (item 117) in the top half.
+- **Accept:** at 390x844 and 375x667 every stat, the weapon and the call to action fit the viewport with no scroll; text 12 px or more at 4.5:1; cathode-classpick and cathode-perf pass; shots P and L.
+- **Size:** 2
+
+## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch
+- **Build:** (check each first; plan1104h)
+  - [ ] **Hedgerow:** the HOLLOWELL gate plate half clipped at the field's top edge (l34-2d-D 228-307 x 76-94); at P both plates touch the screen's left edge (2-83 x 100-118, 508-526); "N coming" plates on plots (l34-2d-D 302-395 x 130-150; l21-2d-D 355-440 x 448-467); Coming up's "22"/"16" touch the panel edge (l34-2d-D 1383-1402 x 628-646).
+  - [ ] **Cathnivore game:** D Cath's bubble a 120 px column of five ragged lines (355-475 x 490-610); "STAGE I" about 9 px (845-895 x 103-113); the Not-yet coin chips grey on grey at about 8 px (243-280 x 640-660); P region names about 10 px (100-175 x 257-270).
+  - [ ] **Cathnivore Campaign D:** chapter goal badges pale grey at about 2:1 (910-1000 x 362-386); progress pips about 6 px (292-340 x 170-178); Cath cut flat at the knees with no ground (1285-1370 x 35-185; P 290-375 x 125-230).
+  - [ ] **Runnel D:** the Up-next title breaks the date ("Wed, Nov / 4", 170-320 x 667-703).
+  - [ ] **NIGHT SHIFT:** class numbers about 9 px and dim (ns-play-D 55-66 x 185-410); "HOLD ENTER" about 10 px grey (1313-1382 x 805-815); the stats panel slices the street sign to "HO" (925-968 x 113-132); ns-title-P's case line about 11 px grey over the photo, under AA (15-275 x 437-450).
+  - [ ] **Site /games/ D:** the H1 reads "Cathnivore" over Runnel's pitch (615-1095 x 220-290).
+- **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
