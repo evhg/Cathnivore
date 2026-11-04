@@ -1,4 +1,5 @@
 import { Landmark } from './Landmark'
+import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BADGE, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, pickSpot } from './landmarkSpot'
@@ -649,6 +650,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     w.cathnivoreMoment = (kind, region) => {
       window.clearTimeout(t)
       setFx({ [region]: kind === 'liberate' ? 'lib' : 'sq' })
+      // The rest of the moment, as a real one gets it from the log: its cue, and Cath's reaction (Game listens).
+      playCues([kind === 'liberate' ? 'crowd' : 'synthSweep'])
+      window.dispatchEvent(new CustomEvent('cathnivore-moment', { detail: { kind, region } }))
       t = window.setTimeout(() => setFx({}), MOMENT_MS)
     }
     return () => {

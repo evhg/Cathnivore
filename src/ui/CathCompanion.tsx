@@ -18,7 +18,7 @@ export default function CathCompanion({ expression, line }: { expression: CathEx
   }
   const nod = nods.current === 0 ? '' : nods.current % 2 ? ' nod-a' : ' nod-b'
   return (
-    <section className="cath-companion" aria-live="polite">
+    <section className="cath-companion" data-expression={expression} aria-live="polite">
       <span className={`cath-frame cameo${nod}`}>
         <CathArt framing="bust" expression={expression} animate width={56} height={56} title="Cath" />
       </span>

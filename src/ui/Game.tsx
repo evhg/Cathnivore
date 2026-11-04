@@ -725,6 +725,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   }, [state.log, state.regions])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
+  // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent<{ kind: 'liberate' | 'squeeze'; region: RegionId }>).detail
+      const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
+      setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
+    }
+    window.addEventListener('cathnivore-moment', on)
+    return () => window.removeEventListener('cathnivore-moment', on)
+  }, [])
 
   useEffect(() => {
     setSelectedGroup(null)

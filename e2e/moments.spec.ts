@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 127: a liberation and a Squeeze are staged on their tile: the map carries data-moment for 700-1200 ms
-// and nothing on the page moves by more than 2 px while it plays.
+// Plan item 127: a liberation and a Squeeze are staged on their tile: the map carries data-moment for 700-1200 ms,
+// Cath's face changes with it, and nothing on the page moves by more than 2 px while it plays.
 for (const kind of ['liberate', 'squeeze'] as const) {
   test(`a ${kind} is a staged moment on its tile`, async ({ page }) => {
     await page.goto('/?e2eMoment=1')
@@ -25,6 +25,8 @@ for (const kind of ['liberate', 'squeeze'] as const) {
       return { on, ms: performance.now() - t0 }
     }, kind)
     expect(r.on).toBe(kind)
+    // Cath reacts with it: delighted at a liberation, determined at a Squeeze (her table figure at D, her strip on a phone).
+    await expect(page.locator('.table-cath, .cath-companion').first()).toHaveAttribute('data-expression', kind === 'liberate' ? 'delighted' : 'determined')
     expect(r.ms).toBeGreaterThanOrEqual(700)
     expect(r.ms).toBeLessThanOrEqual(1200)
     const after = await box()
