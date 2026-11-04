@@ -2651,3 +2651,28 @@ html.no-animations .cath-companion .cameo {
   -webkit-mask: none;
   mask: none;
 }
+
+/* Plan item 118: Cath at the table during play, in the map's empty left margin on a desktop (the hexes start
+   about 150 px in at 1280 and 1440). The half framing is cropped to her figure; the ring cameo steps back so
+   the table has one Cath. */
+.table-cath { display: none; }
+@media (min-width: 1240px) and (min-height: 760px) {
+  .table-cath {
+    display: block;
+    position: absolute;
+    left: var(--sp-2);
+    bottom: 0;
+    width: 140px;
+    height: 264px;
+    overflow: hidden;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .22));
+  }
+  .table-cath .cath-art,
+  .table-cath svg {
+    display: block;
+    height: 100%;
+    width: auto;
+    margin-left: -6px;
+  }
+}

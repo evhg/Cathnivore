@@ -1533,7 +1533,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e face box 120 px or more tall at D and 70 at P; at P it meets no menu entry's box; on the class pick at D it is visible and not under the stats panel; cathode-perf passes; shots P, L and D.
 - **Size:** 3
 
-## 118. [ ] Cathnivore: Cath stands at the table during play *(lane A, in progress)*
+## 118. [ ] Cathnivore: Cath stands at the table during play *(slice 1 done 2026-11-04, lane A: a half-length Cath (`.table-cath`, 264 px, clasped pose) at the map's bottom-left at 1240x760 and up, her `data-expression` from the companion's reactions; e2e `e2e/table-cath.spec.ts` at 1440x900 and 1280x800 (clear of every hex and the action column, no scroll); shots `e2e/screenshots/v118`. Open: her line as a bubble at her mouth with the ring cameo retired at D, the P strip portrait swapping expression (check), a Squeeze and a liberation case in the e2e)*
 - **Why:** `cath-game-D` (350-615 x 95-195): in play she is a 96 px ring portrait while 350-600 x 300-880 beside the board is empty paper; Pell is docked opposite her (item 92), so the rivalry has one face.
 - **Build:**
   - A half-length Cath from `shared/cath`, 260 px or more, at the board's left edge at D, her bubble at her mouth.

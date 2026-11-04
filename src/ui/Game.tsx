@@ -51,6 +51,7 @@ import Portrait from './portraits/Portrait'
 import type { ProducerFace } from './portraits/producerFaces'
 import { producerMoods } from './producerMood'
 import CathArt from './CathArt'
+import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import CathCompanion from './CathCompanion'
 import Tooltip from './Tooltip'
 import { CATH_REACTION_EXPRESSION, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
@@ -2209,6 +2210,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {roundTick > 0 && <div key={`sweep-${roundTick}`} className="table-sweep" aria-hidden="true" />}
         <BeasDrawing />
         <ProduceCrates />
+        {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
+            same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
+        <div className="table-cath" data-expression={cathReaction.expression} aria-hidden="true">
+          <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
+        </div>
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
             the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}
         {riftTick > 0 && (state.rift === 3 || state.rift === 6) && (
