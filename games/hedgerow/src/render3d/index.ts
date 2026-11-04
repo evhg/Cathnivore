@@ -1796,7 +1796,7 @@ export class Renderer3D {
 
   // ---- set pieces: floodwater, the swing bridge, pools of light in a blackout ----
 
-  private pieces: { level: number; flood?: THREE.InstancedMesh; bridge?: THREE.Group; deck?: THREE.Object3D; pools?: THREE.InstancedMesh } | null = null;
+  private pieces: { level: number; flood?: THREE.Group; bridge?: THREE.Group; deck?: THREE.Object3D; pools?: THREE.InstancedMesh } | null = null;
 
   /** Thorn piles on the lane (Blackthorn path): one small heap of cut thorn each, shrinking as it's used. */
   private pileObjs = new Map<number, THREE.Object3D>();
@@ -1833,17 +1833,41 @@ export class Renderer3D {
       this.oakObjs.clear();
       this.oakLevel = game.level.id;
       for (const f of game.level.fords ?? []) {
-        const mat = new THREE.MeshBasicMaterial({ color: "#6fb7e8", transparent: true, opacity: 0.45, depthWrite: false });
-        const grp = new THREE.Group();
-        for (let d = f.from; d <= f.to; d += 0.35) {
+        // Plan item 94: the ford is shallow water running over the lane (lit, the 2D water's blue) with a line of
+        // stepping stones along each edge; it was unlit pale-blue planes that read as a selection overlay. Two
+        // instanced meshes (it was a mesh per step).
+        const steps: Array<{ x: number; y: number; a: number }> = [];
+        for (let d = f.from; d <= f.to; d += 0.3) {
           const q = enemyPoint(game.level, { dist: d });
           const a = enemyPoint(game.level, { dist: d + 0.1 });
-          const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.55), mat);
-          m.rotation.x = -Math.PI / 2;
-          m.rotation.z = -Math.atan2(a.y - q.y, a.x - q.x);
-          m.position.set(q.x, this.height(q.x, q.y) + 0.06, q.y);
-          grp.add(m);
+          steps.push({ x: q.x, y: q.y, a: Math.atan2(a.y - q.y, a.x - q.x) });
         }
+        const grp = new THREE.Group();
+        const water = new THREE.InstancedMesh(
+          new THREE.PlaneGeometry(0.42, 0.98).rotateX(-Math.PI / 2),
+          new THREE.MeshStandardMaterial({ color: "#3f7fa6", roughness: 0.15, metalness: 0.1 }),
+          steps.length,
+        );
+        const stones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: "#8d8a80", roughness: 0.9, flatShading: true }), steps.length * 2);
+        const m4 = new THREE.Matrix4();
+        const q4 = new THREE.Quaternion();
+        const up = new THREE.Vector3(0, 1, 0);
+        const sc = new THREE.Vector3(1, 1, 1);
+        const v = new THREE.Vector3();
+        steps.forEach((st, i) => {
+          q4.setFromAxisAngle(up, -st.a);
+          water.setMatrixAt(i, m4.compose(v.set(st.x, this.height(st.x, st.y) + 0.04, st.y), q4, sc));
+          for (const side of [-1, 1]) {
+            const ox = -Math.sin(st.a) * 0.47 * side;
+            const oz = Math.cos(st.a) * 0.47 * side;
+            const s2 = 0.8 + ((i * 7 + side * 3) % 5) * 0.1;
+            stones.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.compose(v.set(st.x + ox, this.height(st.x + ox, st.y + oz) + 0.03, st.y + oz), q4, sc.set(s2, 0.6 * s2, s2)));
+            sc.set(1, 1, 1);
+          }
+        });
+        water.renderOrder = 2;
+        stones.castShadow = true;
+        grp.add(water, stones);
         this.dynamic.add(grp);
         this.oakObjs.set(`ford${f.from}`, grp);
       }
@@ -1924,19 +1948,37 @@ export class Renderer3D {
       this.pieces = { level: lv.id };
       const flood = setPiece(lv, "flood");
       if (flood) {
-        const m = new THREE.InstancedMesh(
-          new THREE.BoxGeometry(0.98, 0.06, 0.98),
-          new THREE.MeshPhysicalMaterial({ color: "#4f93b8", roughness: 0.08, transparent: true, opacity: 0.78, clearcoat: 1 }),
+        // Plan item 94: floodwater lying on the field, not floating slabs (a box per cell 0.12 up read as a
+        // selection overlay): a sheet of deep water flush with the ground, the cells meeting without seams, over a
+        // margin of wet, darkened earth where it spills onto the grass. Two instanced meshes, two draw calls.
+        const g = new THREE.Group();
+        const sheet = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+        const water = new THREE.InstancedMesh(
+          sheet,
+          new THREE.MeshStandardMaterial({ color: "#3f7fa6", roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.86, depthWrite: false }),
           flood.cells.length,
         );
+        const mud = new THREE.InstancedMesh(
+          sheet,
+          new THREE.MeshStandardMaterial({ color: "#4a3a26", roughness: 0.9, transparent: true, opacity: 0.55, depthWrite: false }),
+          flood.cells.length,
+        );
+        water.renderOrder = 2;
+        mud.renderOrder = 1;
         const mat = new THREE.Matrix4();
         flood.cells.forEach(([c, r], i) => {
-          mat.makeTranslation(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.12, r + 0.5);
-          m.setMatrixAt(i, mat);
+          const x = c + 0.5;
+          const z = r + 0.5;
+          // Level with the highest ground under the cell, so no grass pokes through the sheet.
+          const y = Math.max(this.height(x, z), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
+          water.setMatrixAt(i, mat.makeScale(1.01, 1, 1.01).setPosition(x, y + 0.03, z));
+          mud.setMatrixAt(i, mat.makeScale(1.16, 1, 1.16).setPosition(x, y + 0.015, z));
         });
-        m.visible = false;
-        this.scene.add(m);
-        this.pieces.flood = m;
+        water.receiveShadow = true;
+        g.add(mud, water);
+        g.visible = false;
+        this.scene.add(g);
+        this.pieces.flood = g;
       }
       const bridge = setPiece(lv, "bridge");
       if (bridge) {
