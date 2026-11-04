@@ -913,3 +913,16 @@ html.no-animations .title-screen * {
   .title-hang-word { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; text-anchor: middle; fill: var(--paper-on-fixed-fill); letter-spacing: .01em; }
   .title-hang-sub { font-family: var(--font-display); font-style: italic; font-size: .8rem; text-anchor: middle; fill: color-mix(in srgb, var(--paper-on-fixed-fill) 82%, var(--wood)); }
 }
+/* Plan item 86: the board lies on the table: the cloth tilts back from its near edge, like a board game laid out on
+   the stall, and casts its shadow forward onto the tabletop. */
+@media (min-width: 1024px) {
+  .title-art.title-table .title-board {
+    transform: perspective(1500px) rotateX(11deg);
+    transform-origin: 50% 100%;
+    box-shadow: 0 10px 14px -4px color-mix(in srgb, var(--ink) 30%, transparent), inset 0 -6px 0 color-mix(in srgb, var(--soil) 45%, transparent);
+  }
+}
+@media (min-width: 1024px) {
+  /* the far row's names keep 12 px or more under the tilt */
+  .title-board .region-name { font-size: 1.07rem; }
+}
