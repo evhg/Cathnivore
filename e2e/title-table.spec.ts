@@ -123,3 +123,23 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     for (const want of [/^Campaign/, /^Quick Game/, /^Daily/, /How to Play/, /Settings/, /Credits/]) expect(names.some((n) => want.test(n)), String(want)).toBe(true)
   })
 }
+
+// Plan item 86: the scene fills the frame: no 300x200 window at D is clear of every part of it.
+for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  test(`the title scene leaves no empty 300x200 band at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop composition')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.locator('.title-table-front').waitFor()
+    const empty = await page.evaluate(() => {
+      const parts = ['.title-kicker', '.title-wordmark', '.title-tagline', '.title-bunting', '.title-menu', '.title-cath svg', '.title-cath-line', '.title-board', '.title-table-front', '.title-prop']
+        .flatMap((s) => [...document.querySelectorAll(s)])
+        .map((e) => e.getBoundingClientRect())
+        .filter((r) => r.width > 0 && r.height > 0)
+      const hits = (x: number, y: number) => parts.some((r) => r.left < x + 300 && r.right > x && r.top < y + 200 && r.bottom > y)
+      for (let y = 0; y + 200 <= innerHeight; y += 10) for (let x = 0; x + 300 <= innerWidth; x += 10) if (!hits(x, y)) return { x, y }
+      return null
+    })
+    expect(empty).toBeNull()
+  })
+}

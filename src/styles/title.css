@@ -875,3 +875,17 @@ html.no-animations .title-screen * {
   .title-bunting-flag.f2 { fill: var(--pasture); }
   .title-bunting-flag.f3 { fill: var(--paper); }
 }
+/* Plan item 86: on a tall desktop the price-board stands taller, its keys a size up, so it holds the left of the
+   scene up to the bunting (a 300x200 band of bare paper opened above it at 1440x900). */
+@media (min-width: 1024px) and (min-height: 860px) {
+  .title-menu { width: min(100%, 400px); gap: 12px; }
+  .title-cta { min-height: 62px; font-size: 18px; }
+  .title-cta.primary { font-size: 19px; }
+}
+/* Plan item 86: on a big screen the scene grows with the frame's height (at 1920x1080 a 180 px band of bare paper
+   opened under the bunting). */
+@media (min-width: 1600px) and (min-height: 1000px) {
+  .title-hero { max-width: 1680px; }
+  .title-art.title-table { max-width: min(960px, 88vh); }
+  .title-menu { width: min(100%, 440px); }
+}
