@@ -174,8 +174,12 @@ export class Renderer {
   private rand = rng(99);
   /** Plan item 114: Cath's drawn size on this field (px), for the e2e. */
   heroPx(): { h: number; w: number } {
-    return heroSize(this.view.cellSize * HERO_SCALE, this.face);
+    const key = `${this.view.cellSize}|${this.face?.complete ? 1 : 0}`;
+    if (this.heroPxKey !== key) [this.heroPxKey, this.heroPxAt] = [key, heroSize(this.view.cellSize * HERO_SCALE, this.face)];
+    return this.heroPxAt!;
   }
+  private heroPxKey = "";
+  private heroPxAt: { h: number; w: number } | null = null;
   private face: HTMLImageElement | null = null;
   private faceWorried: HTMLImageElement | null = null;
   private faceCheer: HTMLImageElement | null = null;
@@ -951,9 +955,9 @@ export class Renderer {
           // Plan item 114: she stands a head taller than the towers she leads (she was their height).
           s * HERO_SCALE,
           t,
-          h.down > 0 || (game.goodwill <= game.maxGoodwill / 3 && game.phase === "wave")
+          h.down > 0 || mood === "worried" || (game.goodwill <= game.maxGoodwill / 3 && game.phase === "wave")
             ? this.faceWorried
-            : this.cheer > 0
+            : this.cheer > 0 || mood === "cheer"
               ? this.faceCheer
               : this.face,
         );

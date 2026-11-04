@@ -752,6 +752,12 @@ if (SANDBOX)
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
+    // Plan item 114: Cath's box on screen (client px, like plotBoxes).
+    cathBox: () => {
+      const f = ui.stage.getBoundingClientRect();
+      const b = game && renderer ? cathBox(game, f) : null;
+      return b && { ...b, x: b.x + f.left, y: b.y + f.top };
+    },
     // Plan item 95: Cath's advice bubble on the field (field px), her figure, and the lane cells' boxes.
     cathSay: () => (sayShown && game ? { ...sayShown, lanes: laneBoxes(game) } : null),
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
@@ -3475,12 +3481,8 @@ function syncCathSay(g: Game, now: number): void {
     el.classList.remove("pop");
   }
   const field = ui.stage.getBoundingClientRect();
-  const at = renderer!.cellCenter(g.hero.x - 0.5, g.hero.y - 0.5);
-  const right = renderer!.cellCenter(g.hero.x + 0.5, g.hero.y - 0.5);
-  if (!at || !field.width) return;
-  const cell = right ? Math.max(16, Math.abs(right.x - at.x)) : 40;
-  const tall = is3D(renderer!) ? 1.7 : 1.25;
-  const cath = { x: at.x - field.left - cell * 0.4, y: at.y - field.top - cell * (tall - 0.3), w: cell * 0.8, h: cell * tall };
+  const cath = cathBox(g, field);
+  if (!cath || !field.width) return;
   const shift = (b: Box): Box => ({ x: b.x - field.left, y: b.y - field.top, w: b.w, h: b.h });
   const win = { x: cath.x - 360, y: cath.y - 260, w: cath.w + 720, h: cath.h + 520 };
   const near = (b: Box) => b.x < win.x + win.w && win.x < b.x + b.w && b.y < win.y + win.h && win.y < b.y + b.h;
@@ -3532,7 +3534,9 @@ function roundRosette(g: Game, round: number, reward: number, clean: boolean): v
   // The plots as boxes on the field (2D or 3D: cellCenter projects either way).
   const plots = plotBoxes(g).map((p) => ({ ...p, x: p.x - field.left, y: p.y - field.top }));
   // Cath's bubble and the round ribbon are on the field too: keep off them as well as the plots.
-  const avoid: Box[] = [];
+  // Plan item 114: and off Cath herself, so a clean sweep doesn't hide her cheer.
+  const her = hasTwist(g.level, "nocath") ? null : cathBox(g, field);
+  const avoid: Box[] = her ? [her] : [];
   for (const o of [ui.bubble, ui.banner]) {
     const r = o.getBoundingClientRect();
     if (!o.hidden && r.width && (o !== ui.banner || o.classList.contains("show"))) avoid.push({ x: r.left - field.left, y: r.top - field.top, w: r.width, h: r.height });
@@ -3546,6 +3550,21 @@ function roundRosette(g: Game, round: number, reward: number, clean: boolean): v
   el.classList.add("show");
   if (reward > 0 && !REDUCED) coinFlight(el, Math.min(8, 3 + Math.round(reward / 20)));
   window.setTimeout(() => el.remove(), 2600);
+}
+
+/**
+ * Cath's box on the field (field px): her feet at her cell, as tall as she is drawn. Plan item 114: the 2D
+ * renderer draws her at `HERO_SCALE`, so the 2D box is measured from the sprite, not a fixed guess.
+ */
+function cathBox(g: Game, field: DOMRect): Box | null {
+  const at = renderer!.cellCenter(g.hero.x - 0.5, g.hero.y - 0.5);
+  const right = renderer!.cellCenter(g.hero.x + 0.5, g.hero.y - 0.5);
+  if (!at) return null;
+  const cell = right ? Math.max(16, Math.abs(right.x - at.x)) : 40;
+  const px = is3D(renderer!) ? null : (renderer as { heroPx?: () => { h: number; w: number } }).heroPx?.();
+  const tall = px?.h ? px.h / cell + 0.3 : is3D(renderer!) ? 1.7 : 1.25;
+  const wide = px?.w ? px.w / cell : 0.8;
+  return { x: at.x - field.left - cell * wide / 2, y: at.y - field.top - cell * (tall - 0.3), w: cell * wide, h: cell * tall };
 }
 
 /** Every plot's box on screen (client pixels), each sized from its own projected neighbours (3D shrinks with distance). */

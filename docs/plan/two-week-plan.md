@@ -1489,12 +1489,12 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: Cath's art 160/110 px or more with a bubble at 15 px or more and 4.5:1; each card has a vignette 120x80 or more; picking chapter 2 marks its regions `data-lit`; no page scroll added at 1440x900 beyond today's; shots P and D.
 - **Size:** 2
 
-## 114. [ ] Hedgerow 2D: Cath at a size you can see, with her poses *(lane B, in progress)*
+## 114. [x] Hedgerow 2D: Cath at a size you can see, with her poses *(done 2026-11-04, lane B: 1.35x, a head above her towers; cheer in a V over her face with the pin held high, a hand to her chin and the worried face, a lean to plant; the round rosette keeps off her (`cathBox`); e2e `hedgerow-cath2d.spec.ts` at P and D; shots `cath2d-1104d`)*
 - **Why:** `hedge-l21-2d-D` (plan1104f): Cath on the field is a sprite about 25 px tall (310-340 x 655-715), smaller than the towers she leads; VISION's "characters with presence" goes missing in play. Item 102 drew the 3D Cath to the bible; the 2D renderer (the phone's fallback and `?2d`) didn't get her.
 - **Build:**
   - Check first: measure her 2D sprite against a tower's at P and D. *(2026-11-04 lane B: measured with the new `heroPx()` hook. She was 57 px at D and 42 at P, exactly a tower's height (59 and 43); the critique's 25 px counted only her body under the face image. She is now drawn at `HERO_SCALE` 1.35 (77 and 57), a head above her towers. At twice a tower's height she would stand over the plots she leads.)*
   - Draw her 2D figure at about twice a tower's height from `shared/cath` (her hair, face and jacket to the bible), standing off her post so she covers no plot.
-  - Her idle, cheer (a wave cleared), worried (a leak) and planting poses, as in 3D (item 102), driven by the same `heroMood`. *(Done: the 2D renderer's own `heroMood`, from the same events: both arms up, the pin arm to her face, a lean to plant; e2e `hedgerow-cath2d.spec.ts`. Open: the round's Clean Sweep rosette pops over her, so the cheer is hidden at a clean sweep. Move the rosette or her bubble.)*
+  - Her idle, cheer (a wave cleared), worried (a leak) and planting poses, as in 3D (item 102), driven by the same `heroMood`. *(Done: the 2D renderer's own `heroMood`, from the same events: both arms up, the pin arm to her face, a lean to plant; e2e `hedgerow-cath2d.spec.ts`. Done: the rosette and her bubble both avoid `cathBox()`, measured from her sprite.)*
 - **Accept:** e2e in `?2d`: Cath 48 px or more tall at D and 36 at P; her mood changes on a leak and on a cleared wave; she overlaps no tower's plot; hedgerow-tray and gatequeue still pass; shots P and D.
 - **Size:** 2
 

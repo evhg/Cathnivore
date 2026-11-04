@@ -51,3 +51,31 @@ test('the 2D Cath is a head above her towers and reacts', async ({ page, hasTouc
   })
   await expect.poll(mood, { timeout: 5_000, intervals: [50] }).toBe('plant')
 })
+
+type Box = { x: number; y: number; w: number; h: number }
+type HG2 = HG & { cathBox(): Box | null; plotBoxes(): Box[]; rosette(r: number, m: number, c: boolean): void; game(): { towers: Array<{ col: number; row: number }> } & ReturnType<HG['game']> }
+const overlap = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
+
+test('the 2D Cath covers no plot, and a clean-sweep rosette keeps off her', async ({ page }) => {
+  test.setTimeout(90_000)
+  await page.goto('/hedgerow/?sandbox=1&2d')
+  await page.evaluate(() => {
+    const stars = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), 3]))
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 21: true }, seen: {}, tips: { all: true } }))
+  })
+  await page.goto('/hedgerow/?sandbox=1&2d&level=21')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG2 }).hedgerow?.game(), null, { timeout: 60_000 })
+  const m = await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: HG2 }).hedgerow
+    return { cath: hg.cathBox()!, plots: hg.plotBoxes() }
+  })
+  expect(m.cath.h).toBeGreaterThan(0)
+  // Her box may graze a neighbour's edge; it must not stand over a plot (more than a tenth of one covered).
+  for (const p of m.plots) expect(overlap(m.cath, p), JSON.stringify({ cath: m.cath, plot: p })).toBeLessThan(p.w * p.h * 0.1)
+  await page.evaluate(() => (window as unknown as { hedgerow: HG2 }).hedgerow.rosette(3, 40, true))
+  const rosette = page.locator('.round-rosette.clean')
+  await expect(rosette).toBeVisible()
+  await page.waitForTimeout(700)
+  const r = (await rosette.boundingBox())!
+  expect(overlap(m.cath, { x: r.x, y: r.y, w: r.width, h: r.height })).toBe(0)
+})

@@ -2007,42 +2007,61 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   // Arm with the rolling pin: raised, then brought down on a swing.
   const sw = look.swung < 0.25 ? Math.sin((look.swung / 0.25) * Math.PI) : 0;
   const th = look.threw < 0.3 ? Math.sin((look.threw / 0.3) * Math.PI) : 0;
-  ctx.save();
-  ctx.translate(s * 0.1, -s * 0.4);
-  // Her pin arm goes up with a cheer and to her face when a vehicle gets through.
-  const moodArm = look.mood === "cheer" ? -2.7 + Math.sin(t * 14) * 0.15 : look.mood === "worried" ? -2.3 : look.mood === "plant" ? 0.5 : 0;
-  ctx.rotate(moodArm || -0.4 + sw * 1.6 - th * 1.2 + Math.sin(t * 2) * 0.03);
-  ctx.strokeStyle = o.sleeve;
-  ctx.lineWidth = Math.max(2, s * 0.06);
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(s * 0.04, s * 0.15);
-  ctx.stroke();
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = lw(s);
-  ctx.save();
-  ctx.translate(s * 0.04, s * 0.17);
-  ctx.rotate(-1.2);
-  rr(ctx, -s * 0.03, -s * 0.2, s * 0.06, s * 0.26, s * 0.03, "#d9b384");
-  rr(ctx, -s * 0.015, -s * 0.26, s * 0.03, s * 0.07, s * 0.015, "#a9784a");
-  ctx.restore();
-  ctx.restore();
-  if (look.mood === "cheer") {
-    // Her free arm up too.
+  // A cheer is drawn over her face, below; the pin arm here leans in to plant.
+  if (look.mood !== "cheer") {
     ctx.save();
-    ctx.translate(-s * 0.1, -s * 0.4);
-    ctx.rotate(2.7 - Math.sin(t * 14) * 0.15);
+    ctx.translate(s * 0.1, -s * 0.4);
+    ctx.rotate(look.mood === "plant" ? 0.5 : -0.4 + sw * 1.6 - th * 1.2 + Math.sin(t * 2) * 0.03);
     ctx.strokeStyle = o.sleeve;
     ctx.lineWidth = Math.max(2, s * 0.06);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(-s * 0.03, s * 0.16);
+    ctx.lineTo(s * 0.04, s * 0.15);
     ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = lw(s);
+    ctx.save();
+    ctx.translate(s * 0.04, s * 0.17);
+    ctx.rotate(-1.2);
+    rr(ctx, -s * 0.03, -s * 0.2, s * 0.06, s * 0.26, s * 0.03, "#d9b384");
+    rr(ctx, -s * 0.015, -s * 0.26, s * 0.03, s * 0.07, s * 0.015, "#a9784a");
+    ctx.restore();
     ctx.restore();
   }
   // Head: her real face, slightly big for cuteness.
   if (face) ctx.drawImage(face, -s * 0.2, -s * 0.9, s * 0.4, s * 0.48);
   else blob(ctx, 0, -s * 0.62, s * 0.15, "#F7DCCB");
+  // Plan item 114: arms that read at a glance, drawn over the face image. A cheer: both arms up in a V with the
+  // pin held high. Worried: her free hand to her chin.
+  const arm = (x0: number, y0: number, x1: number, y1: number) => {
+    ctx.strokeStyle = o.sleeve;
+    ctx.lineWidth = Math.max(2, s * 0.065);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(x0 * s, y0 * s);
+    ctx.quadraticCurveTo(((x0 + x1) / 2 + (x1 > x0 ? 0.04 : -0.04)) * s, ((y0 + y1) / 2) * s, x1 * s, y1 * s);
+    ctx.stroke();
+    ctx.strokeStyle = "#b98a74";
+    ctx.lineWidth = lw(s) * 0.6;
+    ctx.fillStyle = "#F7DCCB";
+    ctx.beginPath();
+    ctx.arc(x1 * s, y1 * s, s * 0.03, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  };
+  if (look.mood === "cheer") {
+    const w = Math.sin(t * 14) * 0.02;
+    arm(-0.11, -0.42, -0.27, -0.84 + w);
+    arm(0.11, -0.42, 0.27, -0.84 - w);
+    ctx.save();
+    ctx.translate(s * 0.27, -s * (0.84 + w));
+    ctx.rotate(0.5);
+    rr(ctx, -s * 0.03, -s * 0.22, s * 0.06, s * 0.26, s * 0.03, "#d9b384");
+    rr(ctx, -s * 0.015, -s * 0.28, s * 0.03, s * 0.07, s * 0.015, "#a9784a");
+    ctx.restore();
+  } else if (look.mood === "worried") {
+    arm(-0.11, -0.4, -0.03, -0.47);
+  }
   ctx.restore();
 }
 
