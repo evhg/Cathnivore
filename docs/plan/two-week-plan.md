@@ -1407,7 +1407,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** an e2e case per bullet at the size that broke (text 11 px or more at 4.5:1, nothing cut or overlapping; /games/ CTAs visible and wordmark unfiltered at 1 s); shots before and after.
 - **Size:** 1
 
-## 105. [ ] Hedgerow 2D: vehicles you can tell apart on the lane
+## 105. [ ] Hedgerow 2D: vehicles you can tell apart on the lane *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (310-340 x 270-460): the round's vehicles are about 18 px pink boxes in a file, the influencer, the van and the pickup the same shape; the 3D field (item 81) gives each its own body, the 2D field doesn't. VISION: every piece readable at a glance, in its own silhouette.
 - **Build:**
   - Each vehicle type drawn as its own illustrated sprite in the 2D art (the influencer's hatchback with a ring light, the delivery van's box, the pickup's open bed, the coachload's bus), 28 px or more long at D and 20 at P, with the ink outline the towers have.
