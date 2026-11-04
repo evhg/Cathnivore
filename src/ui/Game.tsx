@@ -40,6 +40,8 @@ import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
 import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Portrait from './portraits/Portrait'
+import type { ProducerFace } from './portraits/producerFaces'
+import { producerMoods } from './producerMood'
 import CathArt from './CathArt'
 import CathCompanion from './CathCompanion'
 import Tooltip from './Tooltip'
@@ -168,6 +170,9 @@ function useIsDesktopLayout(): boolean {
   }, [])
   return isDesktop
 }
+
+// Plan item 80: a producer's face as the expression name Portrait takes.
+const faceExpression = (f?: ProducerFace) => (f === 'delighted' ? 'delighted' : f === 'worried' ? 'worried' : undefined)
 
 // The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
 // ranked so that when a round produces several at once (e.g. a Squeeze and a liberation), the most
@@ -530,6 +535,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const passAckRef = useRef<ProducerId>(initial.activeProducer)
   const [passDeviceFor, setPassDeviceFor] = useState<ProducerId | null>(null)
 
+  const moodRegionsRef = useRef(initial.regions)
+  const moodTimerRef = useRef<number | undefined>(undefined)
+  const [producerFaces, setProducerFaces] = useState<Partial<Record<ProducerId, ProducerFace>>>({})
   // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
   // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
   useEffect(() => {
@@ -541,7 +549,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       if (candidate && (!best || candidate.rank >= best.rank)) best = candidate
     }
     if (best) setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
-  }, [state.log])
+    // Plan item 80: the producers react too, for a few seconds.
+    const moods = producerMoods(newEvents, moodRegionsRef.current)
+    moodRegionsRef.current = state.regions
+    if (Object.keys(moods).length > 0) {
+      setProducerFaces(moods)
+      window.clearTimeout(moodTimerRef.current)
+      moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
+    }
+  }, [state.log, state.regions])
+  useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -1641,7 +1658,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <section className="active-producer">
           <span className="active-producer-header">
             <span className={`producer-cameo pc-${state.activeProducer}`}>
-              <Portrait character={state.activeProducer} size={48} />
+              <Portrait character={state.activeProducer} size={48} expression={faceExpression(producerFaces[state.activeProducer])} />
             </span>
             <strong>{PRODUCERS[state.activeProducer].name}</strong>
             {/* Plan item 62: on a phone, the last three things she bought as crates on a little plank, opening
