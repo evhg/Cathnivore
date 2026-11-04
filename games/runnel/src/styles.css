@@ -3509,3 +3509,11 @@ body[data-mode='practice'] #week-slot {
     filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--soil) 25%, transparent));
   }
 }
+
+/* Plan item 90: tiles read at a glance: a solid piece with a dark rim, a lit bevel and a cast shadow, whatever the
+   weather, so the board stands off the painted valley. */
+.tile-shadow { fill: var(--tile-shadow); pointer-events: none; }
+.cell:not(.stone) .tile { stroke: var(--tile-rim); stroke-width: 3; }
+.cell.wet .tile { stroke: var(--tile-rim); }
+.tile-bevel { fill: none; stroke: var(--tile-bevel); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
+.stone .tile-bevel { display: none; }

@@ -4,6 +4,10 @@
   color-scheme: light;
   --dry: #ecd7a9;
   --dry-edge: #c9a56d;
+  /* Plan item 90: a tile is a solid piece: a dark rim, a lit bevel, a cast shadow on the valley */
+  --tile-rim: #6b4a2b;
+  --tile-bevel: rgb(255 248 230 / .7);
+  --tile-shadow: rgb(52 36 20 / .34);
   /* Plan item 50: dry ground as farmland. Fallow straw (--dry), a pale meadow, a ripe field; water is the lush green. */
   --dry-meadow: #dfe3b3;
   --dry-field: #f0d38c;
@@ -132,6 +136,9 @@
 
     --dry: #5e4a35;
     --dry-edge: #7a6045;
+    --tile-rim: #1e140c;
+    --tile-bevel: rgb(255 236 200 / .22);
+    --tile-shadow: rgb(0 0 0 / .5);
     --dry-meadow: #4f5236;
     --dry-field: #6a5233;
     --furrow: #3e2f20;

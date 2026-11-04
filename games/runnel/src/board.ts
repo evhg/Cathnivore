@@ -211,10 +211,14 @@ export class Board {
     const ground = cell.kind === 'stone' ? null : groundFor(this.puzzle.seed, cell.q, cell.r)
     const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}${cell.bridge ? ' bridge' : ''}${ground ? ` ground-${ground}` : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
+    // Plan item 90: each tile a solid piece casting its shadow on the valley, with a lit bevel inside its dark rim.
+    el('polygon', { class: 'tile-shadow', points: hexPoints(S * 0.965), transform: 'translate(1.5 4.5)' }, root)
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
     if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)
     else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
+
+    el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
 
     const view: CellView = { root, piece: null, water: [], spokeDirs: [], banks: [], angle: cell.rot * 60 }
 
