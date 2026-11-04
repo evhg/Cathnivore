@@ -1507,3 +1507,12 @@ body {
   }
   .hero-game img { width: 100%; height: auto; aspect-ratio: 16 / 10; }
 }
+
+/* Plan item 85: Cath stands in the diorama head to boots (the shared art's full framing, with her own contact
+   shadow), so there is no plank and no fade at the waist. */
+.hero-cath::after { display: none; }
+.hero-cath svg { -webkit-mask-image: none; mask-image: none; }
+.hero-cath { height: clamp(200px, 26vh, 300px); margin-bottom: 0; }
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .hero-cath { height: min(70vh, 640px); margin-bottom: 2vh; }
+}

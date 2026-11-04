@@ -18,7 +18,7 @@ import { pinSvg, type CathPin } from './pins'
 
 export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
-export type CathFraming = 'face' | 'bust' | 'half'
+export type CathFraming = 'face' | 'bust' | 'half' | 'full'
 /** Her arms (plan item 23). 'clasped' is the classic hands-at-the-waist pose; each screen picks its own. */
 export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed'
 export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed']
@@ -102,6 +102,34 @@ const VIEWBOX: Record<CathFraming, string> = {
   face: '122 52 156 188',
   bust: '80 36 240 288',
   half: '40 20 320 480',
+  // Plan item 85: head to boots, standing on the ground (a contact shadow under her feet).
+  full: '20 20 360 800',
+}
+
+/** Plan item 85: what she wears below the jacket's hem (the waist-up framings never show it). Trousers and boots
+ *  per outfit (the colours Hedgerow's 3D wardrobe uses), the gown's long skirt, the trench's knee-length skirt. */
+const LOWER: Record<CathOutfit, { trousers: string; line: string; boots: string; skirt?: { fill: string; line: string; to: number } }> = {
+  field: { trousers: '#3A3340', line: '#1E1A22', boots: '#5A3A28' },
+  market: { trousers: '#E9CDBE', line: '#8A6A5A', boots: '#7A3A4A' },
+  wax: { trousers: '#5B5446', line: '#2C2820', boots: '#2F6B3A' },
+  pinny: { trousers: '#4A4250', line: '#231F28', boots: '#6B4A2B' },
+  gown: { trousers: '#5A1829', line: '#2A0A12', boots: '#2A1A1E', skirt: { fill: '#6E1F33', line: '#2A0A12', to: 772 } },
+  trench: { trousers: '#2A2A30', line: '#0E0F12', boots: '#1C1D22', skirt: { fill: '#2C2D33', line: '#0E0F12', to: 640 } },
+}
+
+function lowerBody(outfit: CathOutfit): string {
+  const o = LOWER[outfit]
+  const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
+  const boot = (d: string) => `<path fill="${o.boots}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="${d}"/>`
+  const skirt = o.skirt
+    ? `<path fill="${o.skirt.fill}" stroke="${o.skirt.line}" stroke-width="2" stroke-linejoin="round" d="M118 490 C114 ${490 + (o.skirt.to - 490) * 0.4} ${108 - (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} ${104 - (o.skirt.to - 490) * 0.03} ${o.skirt.to} L${296 + (o.skirt.to - 490) * 0.03} ${o.skirt.to} C${292 + (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} 286 ${490 + (o.skirt.to - 490) * 0.4} 282 490 Z"/>
+<path fill="none" stroke="${o.skirt.line}" stroke-width="1.2" opacity="0.5" d="M170 500 C166 ${o.skirt.to - 80} 160 ${o.skirt.to - 30} 158 ${o.skirt.to} M232 500 C236 ${o.skirt.to - 80} 240 ${o.skirt.to - 30} 242 ${o.skirt.to}"/>`
+    : ''
+  return `<ellipse cx="200" cy="800" rx="86" ry="10" fill="#120A0E" opacity="0.32"/>
+${leg('M150 490 L198 490 L193 758 L159 758 Z')}${leg('M202 490 L250 490 L241 758 L207 758 Z')}
+<path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 L176 750 M224 520 L224 750"/>
+${boot('M157 746 L195 746 L197 788 Q197 798 187 798 L146 798 Q137 798 140 789 L157 776 Z')}${boot('M205 746 L243 746 L243 776 L260 789 Q263 798 254 798 L213 798 Q203 798 203 788 Z')}
+${skirt}`
 }
 
 let uid = 0
@@ -120,6 +148,7 @@ export function cathSvg(options: CathOptions = {}): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
+${framing === 'full' ? `<g class="cath-lower">${lowerBody(outfit)}</g>` : ''}
 <g class="cath-hair-back">${hairBack(id)}</g>
 <g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back')}</g>
 <g class="cath-head">

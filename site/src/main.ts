@@ -37,7 +37,7 @@ document.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => el.style.se
 const heroCath = document.getElementById('hero-cath')
 let outfit = chosenOutfit()
 function showCath(expression: CathExpression): void {
-  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'half', expression, pose: SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
+  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'full', expression, pose: SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
 }
 showCath('smirk')
 

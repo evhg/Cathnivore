@@ -50,21 +50,18 @@ test.describe('games page cards', () => {
 
   // Plan item 74: at D every card's name is above the fold; Cath's plank spans her, not past her, and never
   // sits on the first card; the market stall stands on its turf, below the horizon line of the hero text.
-  test('the hero leaves the card names in view and its plank and stall sit right', async ({ page }) => {
+  test('the hero leaves the card names in view, Cath grounded and the stall sitting right', async ({ page }) => {
     await page.goto('/games/')
     await page.waitForTimeout(2600)
     const vp = page.viewportSize()!
     const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!
     const cath = await box('#hero-cath')
-    const plank = await page.locator('#hero-cath').evaluate((el) => {
-      const r = el.getBoundingClientRect()
-      const s = getComputedStyle(el, '::after')
-      return { left: r.left + parseFloat(s.left), right: r.right - parseFloat(s.right), bottom: r.bottom }
-    })
-    expect(plank.left).toBeGreaterThanOrEqual(cath.x)
-    expect(plank.right).toBeLessThanOrEqual(cath.x + cath.width)
+    // Plan item 85: she stands head to boots in the diorama (no plank), her feet on the first screen and above the cards.
+    const plank = await page.locator('#hero-cath').evaluate((el) => getComputedStyle(el, '::after').display)
+    expect(plank).toBe('none')
     const card = await box('.games a.card')
-    expect(plank.bottom).toBeLessThanOrEqual(card.y)
+    expect(cath.y + cath.height).toBeLessThanOrEqual(card.y)
+    expect(cath.y + cath.height).toBeLessThanOrEqual(vp.height)
     if (vp.width >= 1200) {
       // Plan item 85: the four games' names on the first screen are the hero strip's (the section's cards follow).
       for (const t of await page.locator('.hero-games .hero-game-name').all()) {
