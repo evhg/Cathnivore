@@ -3578,3 +3578,11 @@ body:has(#dlg-pause[open]) .paused-note {
     height: 13px;
   }
 }
+/* Plan item 84: a roster of eight or more takes two rows, so its packets are shorter (a smaller picture, tighter
+   padding) and the two rows cost about what one row of full packets did; Cath's notebook keeps its room. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(8)) { row-gap: 3px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(8)) .tray-tower { padding: 3px 1px 2px; gap: 0; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(8)) .tray-tower img { width: 24px; height: 24px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(8)) .tray-role { width: 11px; height: 11px; }
+}

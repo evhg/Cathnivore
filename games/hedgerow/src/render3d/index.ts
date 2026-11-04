@@ -2116,8 +2116,11 @@ export class Renderer3D {
       });
       const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
       const hd = headingAt(path, 0);
-      // Beside the lane at the queue's tail, never on it.
-      this.queueAnchors.push(hd.dx === 0 ? { x: tail.x + 0.85, z: tail.y, up: 0.1 } : { x: tail.x, z: tail.y + 0.55, up: 0 });
+      // Beside the lane at the queue's tail, never on it; plan item 84: and 1.4 cells into the field, so it
+      // clears the gate's sign (which stands 1.1 cells outside the field) rather than sitting on its end.
+      const ax = tail.x + hd.dx * 1.4;
+      const az = tail.y + hd.dy * 1.4;
+      this.queueAnchors.push(hd.dx === 0 ? { x: ax + 0.85, z: az, up: 0.1 } : { x: ax, z: az + 0.55, up: 0 });
       const el = document.createElement("div");
       el.className = "gate-plate";
       el.setAttribute("aria-hidden", "true");
