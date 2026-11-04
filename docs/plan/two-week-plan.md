@@ -1382,7 +1382,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 ## 102. [ ] Hedgerow: a 3D Cath drawn to the character bible, who reacts *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (plan1104c, 190-310 x 505-690; P 20-65 x 485-555): the 3D Cath reads as a dark mass of hair with a pale smudge for a face and a stick arm, no liner, smile or olive jacket. She is the one Cath in the four games not drawn to the bible (VISION "Cath: character bible").
 - **Build:**
-  - Her face a texture painted from `shared/cath` (liner, highlights, rose lips), the centre-parted waves framing it, the olive jacket with its collar up over a cream blouse.
+  - Her face a texture painted from `shared/cath` (liner, highlights, rose lips), the centre-parted waves framing it, the olive jacket with its collar up over a cream blouse. *(2026-11-04 lane B, slice 1: drawn on the modelled head rather than as a texture. The shared `face` framing includes her hair, and a flat picture is what item 52 removed. Bigger warm eyes with catchlights, a black liner with a wing, rose lips. Her hair, face, jacket and blouse materials are named; unit `tests/hedgerow-cath3d-parts.test.ts`. Shots in `e2e/screenshots/f102`.)*
   - Poses: planting when a tower is built, a cheer on a cleared round, a worried hand when Goodwill is lost.
   - A face key light when the camera frames her.
 - **Accept:** unit: the model has named hair, face, jacket and blouse parts; e2e: her face 24 px tall or more at D, 14 at P; her pose changes within 250 ms of a cleared round (`window.hedgerow`); draw calls at level 13 up by 10 or fewer; shots P, L and D.

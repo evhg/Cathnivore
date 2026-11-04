@@ -1900,6 +1900,9 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const blouseM = matte(o.blouse, 0.5).clone();
   const sleeveM = matte(o.sleeve, 0.7).clone();
   const skinM = matte(SKIN, 0.6, false);
+  // Plan item 102: her parts are named (the materials survive the merges and her lift), so tests and shots can find them.
+  jacketM.name = "jacket";
+  blouseM.name = "blouse";
   root.userData.dress = { id: o.id, mats: { trousers: trousersM, boots: bootsM, jacket: jacketM, blouse: blouseM, sleeve: sleeveM } };
   for (const z of [-0.05, 0.05]) {
     const leg = new THREE.Group();
@@ -2012,14 +2015,19 @@ function cathHead(skinM: M): THREE.Group {
   const turn = new THREE.Group();
   turn.rotation.z = 0.38;
   yaw.add(turn);
-  const hairM = matte(HAIR.base, 0.42, false);
+  const hairM = matte(HAIR.base, 0.42, false).clone();
+  hairM.name = "hair";
+  const faceM = (skinM as THREE.MeshStandardMaterial).clone();
+  faceM.name = "face";
   const shineM = matte(HAIR.shine, 0.35, false);
   const whiteM = matte("#ffffff", 0.3, false);
   const eyeM = matte("#5a3a26", 0.3, false);
-  const lipM = matte("#c4646a", 0.5, false);
+  // Plan item 102, the bible's face: rose lips, warm brown eyes with a black liner and a little wing, a catchlight.
+  const lipM = matte("#d0566e", 0.4, false);
+  const linerM = matte("#120c0a", 0.4, false);
   const cheekM = matte("#f2a9a0", 0.8, false);
   // The face: a slightly long oval, and a neck under it.
-  turn.add(scaled(ball(0.13, skinM, 0, 0, 0, 2), 0.95, 1.1, 0.95));
+  turn.add(scaled(ball(0.13, faceM, 0, 0, 0, 2), 0.95, 1.1, 0.95));
   turn.add(cyl(0.035, 0.04, 0.08, skinM, 0, -0.18, 0, 8));
   // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
   const cap = mesh(geo("cathHairCap", () => new THREE.SphereGeometry(0.142, 16, 10, Math.PI * 0.62, Math.PI * 1.76, 0, Math.PI * 0.62)), hairM, -0.012, 0.012, 0);
@@ -2035,14 +2043,20 @@ function cathHead(skinM: M): THREE.Group {
   turn.add(scaled(ball(0.03, shineM, -0.03, 0.12, 0.05, 1), 1.5, 0.35, 1.2));
   // Eyes, brows, cheeks and lips on the front of the face (+x).
   for (const z of [-1, 1]) {
-    turn.add(scaled(ball(0.026, eyeM, 0.11, 0.006, z * 0.046, 1), 0.5, 1.2, 0.9));
-    turn.add(scaled(ball(0.007, whiteM, 0.124, 0.016, z * 0.046 + 0.006, 0), 0.5, 1, 1));
+    turn.add(scaled(ball(0.03, eyeM, 0.11, 0.006, z * 0.046, 1), 0.5, 1.25, 0.95));
+    turn.add(scaled(ball(0.009, whiteM, 0.126, 0.018, z * 0.046 + 0.007, 0), 0.5, 1, 1));
+    // The liner along the upper lid, flicked up at the outer corner.
+    const lid = scaled(ball(0.03, linerM, 0.117, 0.04, z * 0.047, 1), 0.2, 0.17, 1.2);
+    turn.add(lid);
+    const wing = scaled(ball(0.012, linerM, 0.113, 0.044, z * 0.078, 0), 0.25, 0.25, 1.4);
+    wing.rotation.x = z * 0.7;
+    turn.add(wing);
     const brow = scaled(ball(0.026, hairM, 0.112, 0.058, z * 0.048, 1), 0.3, 0.22, 1.2);
     brow.rotation.x = z * 0.18;
     turn.add(brow);
     turn.add(scaled(ball(0.02, cheekM, 0.108, -0.038, z * 0.068, 1), 0.35, 0.7, 1));
   }
-  turn.add(scaled(ball(0.018, lipM, 0.121, -0.072, 0, 1), 0.45, 0.5, 1.3));
+  turn.add(scaled(ball(0.021, lipM, 0.122, -0.072, 0, 1), 0.45, 0.5, 1.45));
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
