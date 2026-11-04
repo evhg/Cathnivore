@@ -1605,7 +1605,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 every stat, the weapon and the call to action fit the viewport with no scroll; text 12 px or more at 4.5:1; cathode-classpick and cathode-perf pass; shots P and L.
 - **Size:** 2
 
-## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch
+## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1104h)
   - [ ] **Hedgerow:** the HOLLOWELL gate plate half clipped at the field's top edge (l34-2d-D 228-307 x 76-94); at P both plates touch the screen's left edge (2-83 x 100-118, 508-526); "N coming" plates on plots (l34-2d-D 302-395 x 130-150; l21-2d-D 355-440 x 448-467); Coming up's "22"/"16" touch the panel edge (l34-2d-D 1383-1402 x 628-646).
   - [ ] **Cathnivore game:** D Cath's bubble a 120 px column of five ragged lines (355-475 x 490-610); "STAGE I" about 9 px (845-895 x 103-113); the Not-yet coin chips grey on grey at about 8 px (243-280 x 640-660); P region names about 10 px (100-175 x 257-270).
