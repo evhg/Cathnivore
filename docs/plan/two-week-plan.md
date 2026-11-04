@@ -1489,7 +1489,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: Cath's art 160/110 px or more with a bubble at 15 px or more and 4.5:1; each card has a vignette 120x80 or more; picking chapter 2 marks its regions `data-lit`; no page scroll added at 1440x900 beyond today's; shots P and D.
 - **Size:** 2
 
-## 114. [ ] Hedgerow 2D: Cath at a size you can see, with her poses
+## 114. [ ] Hedgerow 2D: Cath at a size you can see, with her poses *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (plan1104f): Cath on the field is a sprite about 25 px tall (310-340 x 655-715), smaller than the towers she leads; VISION's "characters with presence" goes missing in play. Item 102 drew the 3D Cath to the bible; the 2D renderer (the phone's fallback and `?2d`) didn't get her.
 - **Build:**
   - Check first: measure her 2D sprite against a tower's at P and D.
