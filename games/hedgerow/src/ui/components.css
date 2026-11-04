@@ -3995,7 +3995,7 @@ body:has(#dlg-pause[open]) .paused-note {
   z-index: var(--z-banner);
   width: 100%;
   height: 100%;
-  background: color-mix(in srgb, var(--ink) 28%, transparent);
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
   cursor: pointer;
   animation: flyin-dim 300ms ease-out both;
 }
@@ -4014,4 +4014,8 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 @keyframes flyin-dim {
   from { background: transparent; }
+}
+/* Cath's field note waits for the fly-in to end (her line about the gate comes after it). */
+#stage[data-flyin] #cath-say {
+  visibility: hidden;
 }
