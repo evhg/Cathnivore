@@ -1337,7 +1337,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:** (check each first; plan1104b)
   - [ ] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745).
   - [ ] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845).
-  - [ ] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604).
+  - [x] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604). *(Done 2026-11-04 lane A: the word is kept whole (`.nowrap`) and the hooks wrap balanced.)*
   - [x] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478). *(Done 2026-11-04 lane A: it was a Hollowell van parked on the plate in early frames; every road round Kingsmarket passes a plate, so the vans now drive inside the board's svg under the name signs (Map's `underNames`); e2e in `title-table.spec.ts`.)*
   - [x] **Cathnivore game D:** the faded last "Not yet" row cut by the "NOT YET · 7 MORE" pill (35-315 x 735-800). *(Done 2026-11-04 lane A: a row that starts in the fold's fade (under 80 px above the frame's foot) counts as below the fold and hides until scrolled (opacity 0, still focusable); e2e in `desktop-no-scroll.spec.ts` at 1440x900 and 1280x800.)*
   - [ ] **Hedgerow map P:** the next act's caption clipped behind the nav (50-340 x 760-780).

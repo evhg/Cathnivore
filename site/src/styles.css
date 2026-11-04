@@ -1485,7 +1485,10 @@ body {
   font-size: 0.8125rem;
   line-height: 1.25;
   color: var(--cream-muted);
+  text-wrap: balance;
 }
+/* Plan item 98: "grown-ups" broke at its hyphen, leaving "ups" alone on a line at D. */
+.hero-game-hook .nowrap { white-space: nowrap; }
 @media (max-width: 899.98px), (max-aspect-ratio: 1/1) {
   .hero-games {
     display: flex;
