@@ -199,8 +199,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimU = {
     uRimDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() },
     // Plan item 82: a stronger rim on a phone, where she stands small in the lower half under the menu.
-    uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 1.5 : 1.1) },
-    uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(phone ? 0.45 : 0.28) },
+    // Plan item 89: stronger at D too, so her hair and profile read against the street (1.1 left a silhouette).
+    uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 1.5 : 1.45) },
+    uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(phone ? 0.45 : 0.4) },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const tmpC = new THREE.Color();
@@ -225,7 +226,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   };
   rimify(coatMat, 1);
   rimify(blackMat, 0.8);
-  rimify(hairMat, 0.9);
+  rimify(hairMat, 1.2);
   rimify(skinMat, 0.35);
 
   let tris = 0;
@@ -724,7 +725,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     sheet.computeVertexNormals();
     const hairSheetMat = hairMat.clone();
     hairSheetMat.side = THREE.DoubleSide;
-    rimify(hairSheetMat, 0.9);
+    rimify(hairSheetMat, 1.2);
     mats.push(hairSheetMat);
     add(sheet, hairSheetMat, headPivot);
   }

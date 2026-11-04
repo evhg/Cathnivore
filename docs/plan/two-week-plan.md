@@ -1265,7 +1265,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: Play visible without scrolling at P and D, 160x48 or more; teaser 120 px or less at D; Enter on a stop opens its card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
 
-## 89. [ ] NIGHT SHIFT: the desktop front menu with a case dossier and The List as mugshots *(lane B, in progress)*
+## 89. [x] NIGHT SHIFT: the desktop front menu with a case dossier and The List as mugshots *(done 2026-11-04, lane B, slices 1-4: the List as five mugshots, the case dossier on focus, the boot line gone once built, a stronger desktop rim on her coat and hair. e2e in `cathode-front.spec.ts`: mugshots, dossier, menu and logotype at 4.5:1 or more. Shots at D and L in `e2e/screenshots/f89`; P is unchanged. Perf gate left to the release gates, since the change is DOM and a rim strength.)*
 - **Why:** `ns-title-D` (plan1104a): black bars (0-44 and 855-900); a plain text menu (58-225 x 310-550); the case line and THE LIST are 11 px grey captions (58-280 x 584, 58-150 x 740-800); the figure (960-1070 x 260-930) doesn't read as Cath. Item 82 covers only the phone.
 - **Build:**
   - Full bleed at D; the progress line only while loading. *(Done 2026-11-04 lane B: full bleed came with item 82; the boot line is hidden (`hidden`, not just faded) once the street is built, so a frozen frame no longer holds it under the menu; e2e in `cathode-front.spec.ts`.)*
