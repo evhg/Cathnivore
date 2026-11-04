@@ -3466,7 +3466,21 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .play .panel:has(.field-notebook.fit-dropped) .field-intel {
   flex: 1 0 auto;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+}
+/* Plan item 84: the rounds ahead take the room the notebook leaves, as tiles, so the card never ends on a blank band. */
+.play .panel:has(.field-notebook.fit-dropped) .intel-timeline {
+  flex: 1 0 auto;
+}
+.play .panel:has(.field-notebook.fit-dropped) .intel-timeline li {
+  justify-content: center;
+  gap: 4px;
+  border-radius: var(--r-note);
+  background: color-mix(in srgb, var(--line) 22%, transparent);
+}
+.play .panel:has(.field-notebook.fit-dropped) .intel-timeline li.boss {
+  background: color-mix(in srgb, var(--line) 40%, transparent);
 }
 /* Plan item 45: a swarm badge's make-up as one stacked bar, and each tower's pooled Marks in 3D. */
 .swarm-mix {

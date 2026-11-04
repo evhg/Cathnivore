@@ -139,3 +139,26 @@ test('plan items 69 and 84: at D the whole roster fits the tray: no packet past 
     expect(r.titled).toBe(true)
   }
 })
+
+// Plan item 84: when Cath's notebook gives way (level 21 at 1440x900), the rounds ahead grow into tiles that fill
+// the Coming up card to its foot, so it never ends on a blank band.
+test('plan item 84: Coming up fills its card when the notebook gives way', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the side column is a desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(URL)
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i < 38; i++) stars[String(i)] = 3
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '21': true }, seen: {}, tips: { all: true } }))
+  })
+  await page.goto(`${URL}&level=21`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+  await expect(page.locator('.panel .field-intel .intel-timeline li').first()).toBeVisible()
+  const m = await page.evaluate(() => {
+    const card = document.querySelector('.panel .field-intel')!.getBoundingClientRect()
+    const tiles = [...document.querySelectorAll('.panel .field-intel .intel-timeline li')].map((l) => l.getBoundingClientRect().bottom)
+    return { dropped: !!document.querySelector('.panel .field-notebook.fit-dropped'), gap: card.bottom - Math.max(...tiles) }
+  })
+  if (m.dropped) expect(m.gap).toBeLessThanOrEqual(24)
+  expect(m.gap).toBeGreaterThanOrEqual(0)
+})
