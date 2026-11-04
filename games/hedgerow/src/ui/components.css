@@ -2757,7 +2757,8 @@ body:has(#dlg-pause[open]) .paused-note {
    card clipped it. The pill stays inside the row and the name takes a second line only when it must. */
 @media (min-width: 900px) {
   .play .panel .ticket-chips .preview-chip {
-    max-width: 100%;
+    /* Plan item 115: a two-line name keeps clear of the card's edge */
+    max-width: calc(100% - 8px);
   }
   .play .panel .ticket-chips .chip-name {
     min-width: 0;
@@ -2906,10 +2907,20 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .play .panel .intel-locks {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   font: 700 var(--fs-small) / 1.2 var(--font-ui);
   color: var(--ink);
+}
+/* Plan item 115: the locks still unanswered big enough to tell apart (they were 16 px) */
+.play .panel .intel-locks .chip-props {
+  gap: 4px;
+}
+.play .panel .intel-locks .prop-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
 }
 .play .panel .intel-timeline {
   display: flex;

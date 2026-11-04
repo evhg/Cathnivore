@@ -1510,5 +1510,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Hedgerow 3D P: the 'Hollowell 216 coming' label sits on the lane and the vans (5-200 x 325-350).
   - NIGHT SHIFT title D: a thin white bar at the bottom centre (585-855 x 862); check it is not a loading line that never hides.
   - Cathnivore Setup P: Cath is a 40 px thumbnail (336-376 x 12-55): check against item 110's 80 px header bust.
+  - *(2026-11-04 16:35 lane A: done: the lock icons 22 px, the pill 8 px clear of the edge (two lines kept, item 79), the Saltmarsh cloud moved into open sky and lit; e2e in `hedgerow-tray.spec.ts`, shots `e2e/screenshots/h115`. Not bugs: the 2D bubble is dark ink (the shot caught its fade-in); the phone Act 4 banner sits below the fold of a page that scrolls; the culvert under the Act 4 banner is the next act's teaser; the NIGHT SHIFT line is the boot line, still loading under SwiftShader at 9 s (it hides on the street's first frame); the phone Setup's Cath is item 110's decided header bust. Open: the 3D phone gate plate on the lane.)*
 - **Accept:** e2e per bullet where it can be measured (contrast, one-line pills, icon size, banner inside the viewport, label off the lane); shots P and D.
 - **Size:** 1

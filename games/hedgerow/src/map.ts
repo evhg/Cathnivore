@@ -659,7 +659,8 @@ function saltmarsh(b: Brush): string {
   let o = sky(b, [[0, "#86b8d0"], [0.45, "#d2e3e2"], [0.8, "#fbe8cc"], [1, "#ffd9ac"]]);
   o += glow(b, 340, 104, 200, "#fff0c8", 0.95) + `<circle cx="340" cy="104" r="12" fill="#fff9e6"/>`;
   for (const [x, y, w] of [[110, 40, 190], [300, 26, 150], [430, 56, 130], [60, 72, 110], [210, 62, 100], [400, 84, 90]] as const) o += streak(b, x, y, w, "#ffffff", 0.55) + streak(b, x + 18, y + 5, w * 0.7, "#f8cfae", 0.5);
-  o += bigCloud(b, 70, 122, 120, { top: "#fff3e0", mid: "#f2dccc", base: "#c9b6b8", rim: "#fffaf0" }, 1, 0.85);
+  // Plan item 115: the sea-fog bank sat behind the act plate as a dusky pink blob; it is a lit cumulus in the open sky.
+  o += bigCloud(b, 205, 118, 104, { top: "#fffaf0", mid: "#f9ece0", base: "#d9c6c0", rim: "#fffdf6" }, 1, 0.92);
   // the sea, bright under the low sun, with a shingle spit, a lighthouse and a sail
   o += `<rect x="-10" y="126" width="${SW + 20}" height="22" fill="${b.lin([[0, "#86aec0"], [1, "#c6d8d4"]])}"/>`;
   o += soft(b, [[340, 131, 90, 6]], "#fff6dc", 0.9) + glints(b, 40, 290, 390, 127, 140, 6, "#fffbe8", 0.9);

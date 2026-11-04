@@ -236,3 +236,28 @@ test('plan item 87: Coming up and the notebook are tabs of one card', async ({ p
   await expect(intel).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Coming up' })).toBeFocused()
 })
+
+// Plan item 115: the locks still unanswered are 20 px or more, and a two-line vehicle pill keeps clear of the
+// ticket's edge (level 21's 'x119 Lifestyle influencer').
+test('plan item 115: lock icons read and the vehicle pills keep inside the ticket', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the side column is a desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(URL)
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i < 30; i++) stars[String(i)] = 3
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '21': true }, seen: {}, tips: { all: true } }))
+  })
+  await page.goto(`${URL}&level=21`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+  await expect(page.locator('.panel .intel-locks .prop-icon').first()).toBeVisible()
+  const r = await page.evaluate(() => {
+    const t = document.querySelector('.panel .round-ticket')!.getBoundingClientRect()
+    return {
+      icons: [...document.querySelectorAll('.panel .intel-locks .prop-icon')].map((i) => i.getBoundingClientRect().width),
+      over: [...document.querySelectorAll('.panel .ticket-chips .preview-chip')].map((c) => c.getBoundingClientRect().right - (t.right - 4)),
+    }
+  })
+  for (const w of r.icons) expect(w).toBeGreaterThanOrEqual(20)
+  for (const o of r.over) expect(o).toBeLessThanOrEqual(0)
+})
