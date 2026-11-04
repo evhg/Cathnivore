@@ -1434,7 +1434,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** an e2e case per bullet at the size that broke (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
 - **Size:** 1
 
-## 108. [ ] Site /games/: Cath dressed for each game on its card *(lane A, in progress)*
+## 108. [x] Site /games/: Cath dressed for each game on its card *(done 2026-11-04, lane A: half-length Caths from `shared/cath` with `data-pose`/`data-expression`: Cathnivore with her basket (smirk), Runnel pointing, Hedgerow cheering, NIGHT SHIFT arms crossed in her trench, greyscale with a blood-red rim. 25% of the card wide, 15% or less of its art. e2e `e2e-site/games-cath.spec.ts` at P and D; shots before and after in `e2e/screenshots/b108`. The site has one theme, so no light/dark pair; key art is unchanged (it shoots the games, not /games/).)*
 - **Why:** `games-D` (330-410, 630-710, 930-1010, 1230-1310 x 550-655) and `games-P`: the four game cards carry the same smiling Cath head in the same pose. It covers part of each game's art and breaks NIGHT SHIFT's noir card. VISION: Cath is the face of every game, with presence; item 96's "bust in each game's outfit" reads as one bust.
 - **Build:**
   - Four distinct Cath vignettes from `shared/cath/`: Cathnivore at her market stall with a crate, Runnel kneeling with her watering can, Hedgerow in her garden coat with a trowel, NIGHT SHIFT as the title's umbrella silhouette in her trench (dark, rim-lit, no smile).

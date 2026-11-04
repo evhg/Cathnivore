@@ -1477,9 +1477,14 @@ body {
 .hero-game-cath {
   position: absolute;
   right: 4px;
-  bottom: -6px;
-  width: 34%;
+  bottom: -4px;
+  /* Plan item 108: half length (her pose reads), small enough to leave the game's art its own: 15% of it or less. */
+  width: 25%;
   filter: drop-shadow(0 6px 10px var(--shadow-deep));
+}
+/* Plan item 108: NIGHT SHIFT's Cath is noir: no colour but a red rim, dimmed into the street. */
+.hero-game-nightshift .hero-game-cath {
+  filter: grayscale(1) brightness(0.7) contrast(1.15) drop-shadow(2px 0 0 var(--cd-blood)) drop-shadow(0 6px 10px var(--shadow-deep));
 }
 .hero-game-cath svg { display: block; width: 100%; height: auto; }
 .hero-game-text {
