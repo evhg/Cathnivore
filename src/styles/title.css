@@ -795,15 +795,16 @@ html.no-animations .title-screen * {
    price-board standing on it at the left, Cath behind it, the board lying on it at the right, and the table is
    dressed with crates, jam and coins. The phone title is unchanged. */
 .title-table-props,
-.title-bunting { display: none; }
+.title-bunting,
+.title-hang { display: none; }
 @media (min-width: 1024px) {
   .title-screen { --table-h: clamp(104px, 16vh, 150px); position: relative; padding-bottom: 0; }
   .title-hero {
     position: static;
     max-width: 1320px;
     grid-template-columns: minmax(300px, 0.62fr) minmax(0, 1fr);
-    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-    grid-template-areas: 'kick kick' 'mark mark' 'tag tag' 'note art' 'menu art';
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'kick kick' 'mark mark' 'tag tag' 'hang art' 'note art' 'menu art';
     row-gap: 0;
     padding-bottom: calc(var(--table-h) - 14px);
   }
@@ -888,4 +889,27 @@ html.no-animations .title-screen * {
   .title-hero { max-width: 1680px; }
   .title-art.title-table { max-width: min(960px, 88vh); }
   .title-menu { width: min(100%, 440px); }
+}
+/* Plan item 86: the market's sign hangs on two cords from the bunting, over the price-board; it shows only when
+   the column has the room (it never pushes the board off the table). */
+@media (min-width: 1024px) and (min-height: 860px) {
+  .title-hang {
+    grid-area: hang;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    align-self: stretch;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 18px;
+    background:
+      linear-gradient(var(--wood-lo), var(--wood-lo)) calc(50% - 90px) 36px / 1.5px calc(100% - 136px) no-repeat,
+      linear-gradient(var(--wood-lo), var(--wood-lo)) calc(50% + 90px) 36px / 1.5px calc(100% - 136px) no-repeat;
+  }
+  .title-hang svg { flex: none; width: 240px; height: auto; max-height: 100%; filter: drop-shadow(0 6px 8px color-mix(in srgb, var(--ink) 20%, transparent)); }
+  .title-hang-plank { fill: var(--wood); stroke: var(--wood-lo); stroke-width: 2; }
+  .title-hang-inset { fill: none; stroke: color-mix(in srgb, var(--paper-on-fixed-fill) 55%, transparent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .title-hang-eye { fill: var(--paper); stroke: var(--wood-lo); stroke-width: 2; }
+  .title-hang-word { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; text-anchor: middle; fill: var(--paper-on-fixed-fill); letter-spacing: .01em; }
+  .title-hang-sub { font-family: var(--font-display); font-style: italic; font-size: .8rem; text-anchor: middle; fill: color-mix(in srgb, var(--paper-on-fixed-fill) 82%, var(--wood)); }
 }

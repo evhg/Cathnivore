@@ -264,6 +264,17 @@ function Screens() {
                 {saved.save && <button onClick={resume}>Try Anyway</button>}
               </div>
             )}
+            {/* Plan item 86: at D the market's painted sign hangs from the bunting over the price-board. */}
+            <div className="title-hang" aria-hidden="true">
+              <svg viewBox="0 0 240 92" focusable="false">
+                <rect className="title-hang-plank" x="4" y="10" width="232" height="76" rx="8" />
+                <rect className="title-hang-inset" x="13" y="19" width="214" height="58" rx="4" />
+                <circle className="title-hang-eye" cx="30" cy="10" r="5" />
+                <circle className="title-hang-eye" cx="210" cy="10" r="5" />
+                <text className="title-hang-word" x="120" y="50">Marrow Market</text>
+                <text className="title-hang-sub" x="120" y="68">fresh every round · since the Glut</text>
+              </svg>
+            </div>
             <nav className="title-menu" aria-label="Main menu">
               {hasSave && (
                 <button className="primary title-cta" onClick={resume}>
