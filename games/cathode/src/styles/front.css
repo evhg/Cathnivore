@@ -506,6 +506,7 @@
   display: grid;
   grid-auto-rows: calc(var(--u) * 70);
   justify-items: start;
+  width: max-content; /* plan item 82: the box is the rows' own width, so the scene can stand beside it */
   pointer-events: none;
 }
 .menu-item {
@@ -732,12 +733,14 @@
 }
 /* Upright phones: the street stays behind; the column spans the width. */
 @media (max-width: 600px) and (orientation: portrait) {
-  /* Upright, the column spans the width over the brightest part of the street: a full top-to-bottom scrim. */
+  /* Upright, the column spans the width over the brightest part of the street. Plan item 82: she now stands in
+     the lower half, beside and under the menu, so the scrim is dark only behind the logotype and the menu and
+     lifts over her; The List at the foot keeps a light pool of its own. */
   .screen.front::before,
   .screen.title::before,
   .screen.gate::before {
     background:
-      linear-gradient(180deg, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .8) 45%, rgb(var(--shade-rgb) / .55) 70%, rgb(var(--shade-rgb) / .7) 100%);
+      linear-gradient(180deg, rgb(var(--shade-rgb) / .88) 0%, rgb(var(--shade-rgb) / .78) 42%, rgb(var(--shade-rgb) / .3) 60%, rgb(var(--shade-rgb) / .22) 78%, rgb(var(--shade-rgb) / .5) 100%);
   }
   /* Plan item 24: on the gate the lens lifts her into the top half, so only the copy's lower half is shaded. */
   .screen.gate::before {

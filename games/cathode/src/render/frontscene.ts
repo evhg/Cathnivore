@@ -46,6 +46,8 @@ export interface FrontScene {
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
+  /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
+  figureBox(): { left: number; top: number; right: number; bottom: number };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
   time: number;
   setTime(t: number): void;
@@ -288,13 +290,22 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         p.sub(l).multiplyScalar(1 + 0.35 * e).add(l);
       }
     }
+    // Plan item 82: ...and the lens aims higher there, so she stands in the lower half under the menu.
+    if (cam.aspect < 1) {
+      const e = (1 - smoother(Math.min(1, lift))) * (1 - smoother(Math.min(1, wd.w)));
+      l.y += 0.7 * e;
+      p.sub(l).multiplyScalar(1 + 0.3 * e).add(l);
+    }
     cam.position.copy(p);
     m4.lookAt(p, l, up);
     cam.quaternion.setFromRotationMatrix(m4);
     // Her on the right third: turn the lens left by the angle that puts her at 0.3 of the half-width.
     const aspect = Math.max(0.5, cam.aspect);
     const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect);
-    const fr = (aspect < 1.2 ? 0.12 : framing) * (1 - smoother(Math.min(1, wd.w)));
+    // Plan item 82: on an upright phone's title she stands in the right half, below the menu (she was centred
+    // behind it); the age gate's lift and the wardrobe keep their own framing.
+    const upright = cam.aspect < 1 ? 1 - smoother(Math.min(1, lift)) : 0;
+    const fr = (aspect < 1.2 ? 0.12 + 0.5 * upright : framing) * (1 - smoother(Math.min(1, wd.w)));
     cam.rotateY(Math.atan(Math.tan(half) * fr));
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
@@ -426,10 +437,33 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   frame(1 / 60);
   raf = requestAnimationFrame(loop);
 
+  const corner = new THREE.Vector3();
   const scene: FrontScene = {
     world,
     cath,
     stats,
+    figureBox() {
+      // Every vertex of her (and her umbrella), projected: a box hugging what is drawn, not her 3D bounds.
+      const r = world.renderer.domElement.getBoundingClientRect();
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+      cath.group.updateMatrixWorld(true);
+      cath.group.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !m.visible) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+        if (!pos) return;
+        for (let i = 0; i < pos.count; i += 3) {
+          corner.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).project(cam);
+          const x = r.left + ((corner.x + 1) / 2) * r.width;
+          const y = r.top + ((1 - corner.y) / 2) * r.height;
+          left = Math.min(left, x);
+          right = Math.max(right, x);
+          top = Math.min(top, y);
+          bottom = Math.max(bottom, y);
+        }
+      });
+      return { left, top, right, bottom };
+    },
     get time() {
       return time;
     },

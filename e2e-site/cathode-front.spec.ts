@@ -204,3 +204,61 @@ test('the front door has no letterbox bars at P and D', async ({ page }) => {
     expect(bands.every((h) => h <= 8), `bands ${bands.join(',')} at ${vp.width}`).toBe(true)
   }
 })
+
+// Plan item 82: on an upright phone she stands in the lower right, clear of the menu (she stood behind it).
+test('upright, the menu does not cover her', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone framing')
+  test.setTimeout(200_000)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const m = await page.evaluate(() => {
+    const menu = document.querySelector('#menu')!.getBoundingClientRect()
+    const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(): { left: number; top: number; right: number; bottom: number } } | null } }).cathodeFront.scene()
+    return { menu: { left: menu.left, top: menu.top, right: menu.right, bottom: menu.bottom }, fig: scene!.figureBox() }
+  })
+  const overlap = m.fig.left < m.menu.right && m.fig.right > m.menu.left && m.fig.top < m.menu.bottom && m.fig.bottom > m.menu.top
+  expect(overlap, JSON.stringify(m)).toBe(false)
+  // She stands in the lower half of the frame.
+  expect((m.fig.top + m.fig.bottom) / 2).toBeGreaterThan(844 / 2)
+})
+
+// Plan item 82: the logotype holds at least 4.5:1 against the street behind it at P and D (the 95th-percentile
+// brightest pixel behind its box, with the logotype hidden).
+test('the logotype reads at 4.5:1 or more against the street behind it', async ({ page }) => {
+  test.setTimeout(300_000)
+  for (const vp of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/nightshift/?shot')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+    await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
+    const box = (await page.locator('.logo-svg').boundingBox())!
+    const ink = await page.evaluate(() => getComputedStyle(document.querySelector('.logo-text')!).fill)
+    await page.addStyleTag({ content: '.logo-svg { visibility: hidden !important; }' })
+    const shot = (await page.screenshot({ clip: box })).toString('base64')
+    const ratio = await page.evaluate(async ([png, fill]) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${png}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, c.width, c.height).data
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+      const ls: number[] = []
+      for (let i = 0; i < d.length; i += 4) ls.push(lum(d[i]!, d[i + 1]!, d[i + 2]!))
+      ls.sort((a, b) => a - b)
+      const bg = ls[Math.floor(ls.length * 0.95)]!
+      const [r, g, b] = fill.match(/\d+/g)!.map(Number)
+      return (lum(r!, g!, b!) + 0.05) / (bg + 0.05)
+    }, [shot, ink] as const)
+    expect(ratio, `contrast at ${vp.width}`).toBeGreaterThanOrEqual(4.5)
+  }
+})

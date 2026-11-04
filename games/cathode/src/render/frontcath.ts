@@ -198,8 +198,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // makes her read as a silhouette against the neon at any framing.
   const rimU = {
     uRimDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() },
-    uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 0.9 : 1.1) },
-    uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(0.28) },
+    // Plan item 82: a stronger rim on a phone, where she stands small in the lower half under the menu.
+    uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 1.5 : 1.1) },
+    uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(phone ? 0.45 : 0.28) },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const tmpC = new THREE.Color();
