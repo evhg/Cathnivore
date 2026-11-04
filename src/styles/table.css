@@ -491,7 +491,7 @@
 }
 
 .plan-strip-stage {
-  font: 700 10px/1 var(--font-text);
+  font: 700 var(--fs-label)/1 var(--font-text);
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--newsprint-ink);
