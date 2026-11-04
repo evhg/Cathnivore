@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-04 14:55 UTC
+
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1416,7 +1418,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each type's sprite path is distinct (no two silhouettes within 10% of each other's pixel overlap); e2e (`?2d&sandbox=1`, level 21 mid-round): every vehicle's box 28 px or more long at D, 20 at P; greyscale shot shows the types apart; draw time per frame at D not up more than 1 ms (`hedgerow-perf` or a frame-time sample); shots P, L and D.
 - **Size:** 2
 
-## 106. [ ] Runnel: the spring house and Bea's garden on a phone
+## 106. [ ] Runnel: the spring house and Bea's garden on a phone *(lane A, in progress)*
 - **Why:** `runnel-P`: on a phone there's no spring house, stream or garden at all, and a bare band under the board (open critique bug since 2026-11-03), so the phone loses the valley's story (item 70: the stream runs from the spring house round the board to Bea's garden and fills as fields are watered).
 - **Build:**
   - On a phone, the spring house, the stream bed and Bea's garden fill the band under the board, the stream filling as fields are watered as at D.
