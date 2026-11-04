@@ -2782,6 +2782,95 @@ body:has(#dlg-pause[open]) .paused-note {
 .round-ticket.boss :is(.ticket-label, .ticket-of, .ticket-no) {
   color: var(--white-a90);
 }
+/* Plan item 95: the round's threat as a poster strip: each trait a big icon over its name, the ones the field
+   can't answer boxed under a red rubber stamp. */
+.threat-traits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px 10px;
+}
+.threat-trait {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.threat-traits .trait-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--line);
+}
+.threat-traits .trait-name {
+  font: 800 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.trait-gap {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 8px;
+  padding: 9px 8px 4px 5px;
+  border: 2px dashed var(--clay-deep);
+  border-radius: var(--r-xs);
+  background: color-mix(in srgb, var(--clay-deep) 9%, transparent);
+}
+.trait-gap .trait-name {
+  color: var(--clay-deep);
+}
+.trait-stamp {
+  position: absolute;
+  top: -9px;
+  left: 6px;
+  padding: 2px 6px 1px;
+  border: 2px solid var(--clay-deep);
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--clay-deep);
+  font: 900 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-4deg);
+}
+/* The (i): the round in full (rules, keys, Cath's advice), off by default */
+.ticket-info {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  font: italic 800 var(--fs-body) / 1 var(--font-display);
+  box-shadow: 0 0 0 1.5px var(--line), 0 2px 0 var(--line);
+  cursor: pointer;
+}
+.ticket-info[aria-expanded="true"] {
+  background: var(--brass);
+  box-shadow: 0 0 0 1.5px var(--line);
+  transform: translateY(2px);
+}
+.ticket-info:focus-visible {
+  outline: 3px solid var(--focus-halo);
+  outline-offset: 2px;
+}
+.round-ticket:has(.ticket-info) .ticket-head {
+  padding-right: 30px;
+}
+.round-notes {
+  display: grid;
+  gap: 6px;
+}
+.round-notes[hidden] {
+  display: none;
+}
 .play .panel .ticket-note {
   margin: 0;
   font: 500 var(--fs-small) / 1.4 var(--font-ui);
@@ -2851,6 +2940,13 @@ body:has(#dlg-pause[open]) .paused-note {
     display: none;
   }
   .panel-preview :is(.ticket-note, .twist-line, .field-warn, .preview-then, .hint, .field-intel) {
+    display: none;
+  }
+  /* ...unless the ticket's (i) is open (plan item 95) */
+  .panel-preview .round-notes :is(.ticket-note, .twist-line, .field-warn, .preview-then) {
+    display: block;
+  }
+  .threat-traits .trait-name {
     display: none;
   }
   .ticket-chips .chip-name {

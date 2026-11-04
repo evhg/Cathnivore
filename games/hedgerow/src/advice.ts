@@ -4,6 +4,8 @@
 
 import { ENEMIES, TOWERS, isBig, type EnemyKind, type TowerKind } from "./engine";
 import { countersFor, needsUpgrade, traitsOf, type Trait } from "./intro";
+import { towerBadges, type Lock } from "./counters";
+import { PROPERTIES } from "./fleet";
 
 export interface RoundAdvice {
   kind: EnemyKind;
@@ -60,4 +62,29 @@ export function roundAdvice(
     else line = `Build a ${tn}${up ? " and upgrade it" : ""}: ${why}.${built.length ? "" : " Tap a plot to build."}`;
   }
   return { kind, count, total: spawns.length, tower, line };
+}
+
+/** What a lock asks of a tower, to finish "Nothing on your field ...". */
+const GAP: Record<Lock, string> = {
+  stealth: "sees through hedge-camo",
+  airborne: "reaches the air",
+  plated: "gets through steel",
+  wrapped: "pops the wrap",
+  sealed: "gets through the seal",
+  reefer: "cracks the frost",
+};
+
+/**
+ * Plan item 95: when the round brings a lock no tower on the field answers (the ticket's "Can't answer" stamp),
+ * Cath's line is about that first: the cheapest tower in the kit that holds its key, or what to do without one.
+ * `cost` prices a tower on this field. Null when nothing is missing.
+ */
+export function gapAdvice(gaps: readonly Lock[], kit: readonly TowerKind[], cost: (k: TowerKind) => number): string | null {
+  const lock = gaps[0];
+  if (!lock) return null;
+  const keys = kit.filter((k) => towerBadges({ kind: k, tier: 1, spec: null }).find((b) => b.prop === lock)?.ok);
+  const tower = [...keys].sort((a, b) => cost(a) - cost(b))[0];
+  const name = PROPERTIES[lock].name;
+  if (!tower) return `Nothing on your field ${GAP[lock]}, and this kit can't: slow the ${name.toLowerCase()} ones and keep Goodwill in hand.`;
+  return `Nothing on your field ${GAP[lock]}. Build a ${TOWERS[tower].name} before Go.`;
 }

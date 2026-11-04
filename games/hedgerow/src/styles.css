@@ -597,6 +597,82 @@ button {
   }
 }
 
+/* ---- plan item 95: Cath's advice for the round, said beside her on the field before Go ----
+   Placed by main.ts (cathsay.ts) off the lane's tiles and within reach of her; the tail points at her. */
+.cath-say {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: var(--z-field-ui);
+  max-width: 228px;
+  padding: 8px 12px 9px;
+  border-radius: 16px;
+  background: var(--paper-hi);
+  color: var(--line);
+  border: 2px solid var(--line);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--line) 22%, transparent), 0 8px 18px color-mix(in srgb, var(--line) 28%, transparent);
+  pointer-events: none;
+  transform: translate(var(--at-x, 0), var(--at-y, 0));
+}
+.cath-say p {
+  margin: 0;
+  font: 600 var(--fs-body) / 1.3 var(--font-voice);
+  text-wrap: balance;
+}
+.cath-say::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--paper-hi);
+  border: 2px solid var(--line);
+  border-width: 0 2px 2px 0;
+}
+.cath-say[data-side="bottom"]::after {
+  left: calc(var(--tail, 50%) - 7px);
+  bottom: -9px;
+  transform: rotate(45deg);
+}
+.cath-say[data-side="top"]::after {
+  left: calc(var(--tail, 50%) - 7px);
+  top: -9px;
+  transform: rotate(-135deg);
+}
+.cath-say[data-side="left"]::after {
+  top: calc(var(--tail, 50%) - 7px);
+  left: -9px;
+  transform: rotate(135deg);
+}
+.cath-say[data-side="right"]::after {
+  top: calc(var(--tail, 50%) - 7px);
+  right: -9px;
+  transform: rotate(-45deg);
+}
+.cath-say.pop p {
+  animation: say-in 280ms cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+@keyframes say-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@media (max-width: 600px), (max-height: 520px) {
+  .cath-say {
+    max-width: 150px;
+    padding: 6px 10px 7px;
+    border-radius: 13px;
+  }
+  .cath-say p {
+    font-size: var(--fs-small);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cath-say.pop p {
+    animation: none;
+  }
+}
+
 /* ---- plan item 64: a new enemy as a page of Cath's field guide ----
    The field dims and holds; a ruled notebook page carries the vehicle's sketch, its traits and the towers in
    this level's kit that reach it (lit) or don't (greyed). Paper and ink are the story stage's, fixed in both

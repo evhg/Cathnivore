@@ -61,6 +61,7 @@ import {
   isPlot,
   landmarkAt,
   laneCellsOf,
+  hasTwist,
   pieRadius,
   pieUnlocked,
   place,
@@ -140,7 +141,8 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
-import { roundAdvice } from "./advice";
+import { gapAdvice, roundAdvice } from "./advice";
+import { barkSpot, type BarkSpot } from "./cathsay";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
 import { towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
@@ -253,6 +255,7 @@ const ui = {
   bubble: $<HTMLElement>("bubble"),
   bubbleFace: $<HTMLElement>("bubble-face"),
   bubbleText: $<HTMLElement>("bubble-text"),
+  cathSay: $<HTMLElement>("cath-say"),
   intro: $<HTMLElement>("intro"),
   pausedNote: $<HTMLElement>("paused-note"),
   chooseChip: $<HTMLElement>("choose-chip"),
@@ -742,6 +745,8 @@ if (SANDBOX)
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
+    // Plan item 95: Cath's advice bubble on the field (field px), her figure, and the lane cells' boxes.
+    cathSay: () => (sayShown && game ? { ...sayShown, lanes: laneBoxes(game) } : null),
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
       renderPanel(true);
@@ -1499,6 +1504,49 @@ function line(text: string, cls = ""): HTMLParagraphElement {
   return el;
 }
 
+/** Whether the round ticket's (i) is open (kept across rounds and redraws). */
+let notesOpen = false;
+
+/**
+ * Plan item 95: this round's traits (air, plates, wrap, stealth...) as big icons with their names, those the field
+ * can't answer gathered under one red "Can't answer" stamp, so the threat reads at a glance without a paragraph.
+ * (A lock only the round after brings stays in the (i)'s warning and in Coming up.)
+ */
+function traitStrip(pm: number, miss: readonly Property[]): HTMLElement {
+  const strip = document.createElement("div");
+  strip.className = "threat-traits";
+  const gaps = new Set<Property>(miss);
+  const props = propsOf(pm);
+  const item = (prop: Property) => {
+    const t = document.createElement("span");
+    t.className = "threat-trait";
+    t.dataset.prop = prop;
+    t.title = `${PROPERTIES[prop].name}: ${PROPERTIES[prop].lock}`;
+    t.append(img(propIcon(prop), "trait-icon"));
+    const n = document.createElement("span");
+    n.className = "trait-name";
+    n.textContent = PROPERTIES[prop].name;
+    t.append(n);
+    return t;
+  };
+  const answered = props.filter((x) => !gaps.has(x));
+  const missing = props.filter((x) => gaps.has(x));
+  if (missing.length) {
+    const gap = document.createElement("span");
+    gap.className = "trait-gap";
+    gap.setAttribute("role", "group");
+    gap.setAttribute("aria-label", `Your field can't answer: ${missing.map((x) => PROPERTIES[x].name).join(", ")}`);
+    const stamp = document.createElement("span");
+    stamp.className = "trait-stamp";
+    stamp.textContent = "Can't answer";
+    gap.append(stamp, ...missing.map(item));
+    strip.append(gap);
+  }
+  strip.append(...answered.map(item));
+  if (!props.length) strip.hidden = true;
+  return strip;
+}
+
 /**
  * The round preview (AAA UI M3, spec 4.10): the tower tray, then a perforated ticket for the next round. Its stub
  * carries the round's number; the ticket its name, the level's twist and any lock the field can't answer as
@@ -1632,11 +1680,10 @@ function wavePreview(p: HTMLElement, g: Game): void {
       }
     }
     const miss = unanswered(g, pm);
+    // Plan item 95: the round's traits as a poster strip of big icons; what the field can't answer is stamped.
+    const own = roundProps(g.level, next);
+    body.append(traitStrip(own, unanswered(g, own)));
     if (miss.length) {
-      const names = miss.map((m) => PROPERTIES[m].name);
-      const t = tag(`Can't answer`, "warn", `Your field can't answer ${names.join(", ")}`);
-      t.append(propRow(miss.reduce((a, m) => a | P[m], 0), "chip-props"));
-      head.append(t);
       warn = line(`Your field can't answer this:`, "field-warn");
       // Each lock's key in its own span, so a crowded column can keep just the names (fitPreview).
       for (const m of miss) {
@@ -1650,15 +1697,41 @@ function wavePreview(p: HTMLElement, g: Game): void {
     }
   }
   p.append(ticket);
-  // The side panel's longer read (a phone shows the ticket alone: styles hide these there).
-  if (warn) p.append(warn);
-  if (page) p.append(line(page.card, "ticket-note"));
-  p.append(...notes);
-  if (then) p.append(then);
-  // Plan item 19: one voice at a time. Cath speaks in her bubble on the field, never in the side panel too;
-  // the card keeps only the facts (a boss, air, heavy plant), as a plain note.
-  const advice = cathAdvice(next);
-  if (advice) p.append(line(advice, "ticket-note wave-advice"));
+  // Plan item 95: the longer read waits behind the ticket's (i): the locks' keys, the round's card, the twists'
+  // rules, the round after, and Cath's advice in full (she says it short on the field, beside her).
+  const more: HTMLElement[] = [];
+  if (warn) more.push(warn);
+  if (page) more.push(line(page.card, "ticket-note"));
+  more.push(...notes);
+  if (then) more.push(then);
+  const facts = cathAdvice(next);
+  const spoken = g.phase === "build" ? adviceLine(g) : "";
+  const advice = [spoken && `Cath: “${spoken}”`, facts].filter(Boolean).join(" ");
+  if (advice) more.push(line(advice, "ticket-note wave-advice"));
+  if (more.length) {
+    const box = document.createElement("div");
+    box.className = "round-notes";
+    box.id = "round-notes";
+    box.append(...more);
+    const info = document.createElement("button");
+    info.type = "button";
+    info.className = "ticket-info";
+    info.textContent = "i";
+    info.setAttribute("aria-label", "The round in full");
+    info.setAttribute("aria-controls", box.id);
+    const sync = () => {
+      box.hidden = !notesOpen;
+      info.setAttribute("aria-expanded", String(notesOpen));
+    };
+    info.onclick = () => {
+      notesOpen = !notesOpen;
+      sync();
+      fitPreview(p);
+    };
+    sync();
+    head.append(info);
+    p.append(box);
+  }
   // How to build is on the notebook's empty page (plan item 31); the hint keeps how to move Cath, on the first
   // fields only (by level 3 she's been moved, and the line pushed the notebook off a 900 px column).
   if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) p.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
@@ -3268,6 +3341,84 @@ ui.intro.addEventListener("keydown", (e) => {
   }
 });
 
+// ---- plan item 95: Cath's advice for the round, said beside her on the field before Go ----
+
+/** What the bubble shows now (field px), for the e2e tests through the sandbox hook. */
+let sayShown: { text: string; box: BarkSpot; cath: Box } | null = null;
+let sayText = "";
+let sayAt = -1e9;
+
+/** Her line for the next round (plan item 72's advice), or "" when she has nothing to say. */
+function adviceLine(g: Game): string {
+  if (!betweenRounds(g)) return "";
+  const groups = g.level.waves[g.wave];
+  if (!groups) return "";
+  // A lock this round brings that nothing on the field answers comes first (the ticket stamps it too).
+  const gap = gapAdvice(unanswered(g, roundProps(g.level, groups)), g.level.towers, (k) => towerCost(g, k));
+  return gap ?? roundAdvice(waveSpawns(g, groups, g.wave + 1), g.level.towers, g.towers.map((x) => x.kind))?.line ?? "";
+}
+
+function syncCathSay(g: Game, now: number): void {
+  const el = ui.cathSay;
+  const quiet =
+    !!player || g.phase !== "build" || !!selected || posting || aiming || !ui.intro.hidden || !ui.bubble.hidden || hasTwist(g.level, "nocath") || !renderer;
+  const text = quiet ? "" : adviceLine(g);
+  if (!text) {
+    if (!el.hidden) el.hidden = true;
+    sayShown = null;
+    sayText = "";
+    return;
+  }
+  // Re-place a few times a second (the 3D camera eases; she can be moved) and at once when the line changes.
+  if (text === sayText && now - sayAt < 250) return;
+  const fresh = text !== sayText || el.hidden;
+  sayText = text;
+  sayAt = now;
+  const p = el.querySelector("p")!;
+  if (p.textContent !== text) p.textContent = text;
+  if (el.hidden) {
+    el.hidden = false;
+    el.classList.remove("pop");
+  }
+  const field = ui.stage.getBoundingClientRect();
+  const at = renderer!.cellCenter(g.hero.x - 0.5, g.hero.y - 0.5);
+  const right = renderer!.cellCenter(g.hero.x + 0.5, g.hero.y - 0.5);
+  if (!at || !field.width) return;
+  const cell = right ? Math.max(16, Math.abs(right.x - at.x)) : 40;
+  const tall = is3D(renderer!) ? 1.7 : 1.25;
+  const cath = { x: at.x - field.left - cell * 0.4, y: at.y - field.top - cell * (tall - 0.3), w: cell * 0.8, h: cell * tall };
+  const shift = (b: Box): Box => ({ x: b.x - field.left, y: b.y - field.top, w: b.w, h: b.h });
+  const win = { x: cath.x - 360, y: cath.y - 260, w: cath.w + 720, h: cath.h + 520 };
+  const near = (b: Box) => b.x < win.x + win.w && win.x < b.x + b.w && b.y < win.y + win.h && win.y < b.y + b.h;
+  const avoid: Box[] = [];
+  for (const o of ui.stage.querySelectorAll<HTMLElement>(".gate-plate, .banner.show, .round-rosette")) {
+    const r = o.getBoundingClientRect();
+    if (r.width) avoid.push(shift({ x: r.left, y: r.top, w: r.width, h: r.height }));
+  }
+  // The gate queue's leads and "N coming" plate (canvas px; the canvas sits at the field's corner).
+  const canvas = ui.canvas.getBoundingClientRect();
+  const q = (renderer as { shownQueue?: { leads: Box[]; plates: Box[] } | null }).shownQueue;
+  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? [])]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
+  const size = { w: el.offsetWidth, h: el.offsetHeight };
+  const spot = barkSpot(
+    cath,
+    size,
+    { w: field.width, h: field.height },
+    laneBoxes(g).map(shift).filter(near),
+    plotBoxes(g).map(shift).filter(near),
+    avoid,
+  );
+  el.dataset.side = spot.side;
+  el.style.setProperty("--tail", `${spot.tail}px`);
+  el.style.setProperty("--at-x", `${spot.x}px`);
+  el.style.setProperty("--at-y", `${spot.y}px`);
+  if (fresh && !REDUCED) {
+    void el.offsetWidth;
+    el.classList.add("pop");
+  }
+  sayShown = { text, box: spot, cath };
+}
+
 /**
  * Plan item 64: a cleared round is a painted rosette pinned on the field, on the spot nearest the lane's end that
  * covers no plot, with the round's Marks flying from it to the Marks chip. A round with no leaks gets the gold
@@ -3305,11 +3456,21 @@ function roundRosette(g: Game, round: number, reward: number, clean: boolean): v
 
 /** Every plot's box on screen (client pixels), each sized from its own projected neighbours (3D shrinks with distance). */
 function plotBoxes(g: Game): Box[] {
+  return cellBoxes(g, (c, r) => isPlot(g.level, c, r));
+}
+
+/** Every lane cell's box on screen (client pixels). */
+function laneBoxes(g: Game): Box[] {
+  const lane = laneCellsOf(g.level);
+  return cellBoxes(g, (c, r) => lane.has(`${c},${r}`));
+}
+
+function cellBoxes(g: Game, keep: (col: number, row: number) => boolean): Box[] {
   const out: Box[] = [];
   if (!renderer) return out;
   for (let r = 0; r < g.level.rows; r++)
     for (let c = 0; c < g.level.cols; c++) {
-      if (!isPlot(g.level, c, r)) continue;
+      if (!keep(c, r)) continue;
       const p = renderer.cellCenter(c, r);
       if (!p) continue;
       const e = renderer.cellCenter(c + 1, r) ?? renderer.cellCenter(c - 1, r);
@@ -3632,6 +3793,7 @@ function frame(now: number): void {
     }
   }
   renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
+  syncCathSay(g, now);
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {
