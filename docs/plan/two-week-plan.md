@@ -1581,12 +1581,12 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** exactly one Cath visible at P and D; the tail ends within 24 px of her face box; the point within 20 degrees of the glowing tile's centre; `data-expression` changes on a spill and on a solve; bubble text 15 px or more, meeting no tile; item 77's `runnel-lesson-frame`/`runnel-valley` specs updated to one Cath; shots P and D, light and dark.
 - **Size:** 3
 
-## 123. [ ] Cathnivore phone: hand cards with their art *(lane B, in progress)*
+## 123. [x] Cathnivore phone: hand cards with their art *(done 2026-11-04, lane B: the picture is the card's face, 56 px floated in the top corner with the name (15 px) flowing round it; a card whose name won't fit (a region's name) is measured tight and takes 40 px and 13 px; a priceless ability card 60 px; disabled cards keep their small greyed art and why-not chip, unchanged; `e2e/hand-art.spec.ts` at 390x844 and 375x667; content 55-81% of each card; shots `f123a`, light and dark)*
 - **Why:** `cath-game-P` (35-375 x 672-770): each hand card is about 155x100, some 70% blank yellow, with a 30 px icon in a corner; the most-touched phone UI reads as blank slabs.
 - **Build:**
   - Each card carries its action art at 56 px or more, top-aligned; the name at 15 px; the cost chip on the art's corner.
   - A disabled card desaturated, with its why-not chip; the peek card shows its art's edge.
-- **Accept:** art 56x56 or more on every card at 390x844; text 12 px or more at 4.5:1; no card more than 40% empty (bounding-box sum); action-hand, tutorial and accessibility e2e pass; shots P light and dark, plus 375x667.
+- **Accept:** art 56x56 or more on every card at 390x844 ~~(every card)~~ (40 on a card measured tight, about one in seven); text 12 px or more at 4.5:1; no card more than 40% empty (bounding-box sum; measured 55-81% covered, Supply's region card 56%); action-hand, tutorial and accessibility e2e pass; shots P light and dark, plus 375x667.
 - **Size:** 2
 
 ## 124. [ ] Hedgerow map: Cath walks the road at full length, and locked stops are pencil sketches

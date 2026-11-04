@@ -664,6 +664,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     )
     if (over) setBigTurn(turnKey)
   }, [state, isDesktop, bigTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
+  // Plan item 123: a phone card whose name and price don't fit beside its 56 px picture (a region's name, a long
+  // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
+  useLayoutEffect(() => {
+    if (isDesktop) return
+    for (const b of document.querySelectorAll<HTMLElement>('.action-tray .actions .action-item > button:first-child:not(:disabled)')) {
+      b.removeAttribute('data-tight')
+      if (b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > b.getBoundingClientRect().bottom + 1)) b.setAttribute('data-tight', '')
+    }
+  })
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
   const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })

@@ -2362,6 +2362,15 @@ html.no-animations .cath-companion .cameo {
   .action-tray .actions .action-item > button:first-child { position: relative; }
   .action-tray .actions .action-label svg.action-art { float: none; position: absolute; right: 40px; bottom: 6px; width: 32px; height: 32px; margin: 0; }
   .action-tray .actions .action-item > button:disabled .action-label svg.action-art { width: 28px; height: 28px; filter: grayscale(.5); }
+  /* Plan item 123: a playable card's picture is its face, 56 px in the top corner, the name wrapping beside it at
+     15 px; the price and the "i" keep the foot row (the card was 70% blank yellow round a 32 px tile). */
+  .action-tray .actions .action-item > button:first-child:not(:disabled) .action-label { display: block; width: 100%; font-size: 0.9375rem; line-height: 1.12; }
+  .action-tray .actions .action-item > button:first-child:not(:disabled) .action-label svg.action-art { position: static; float: right; width: 56px; height: 56px; margin: -3px -1px 2px 6px; }
+  /* A name too long for beside the picture (measured in Game.tsx): the picture steps down to 40 px and the name to 13. */
+  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label svg.action-art { width: 40px; height: 40px; }
+  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label { font-size: 0.8125rem; }
+  /* A card with no price (a producer's ability) has the whole face for its picture. */
+  .action-tray .actions .action-item > button:first-child:not(:disabled):not(:has(.action-cost)):not([data-tight]) .action-label svg.action-art { width: 60px; height: 60px; }
 }
 @media (min-width: 1024px) {
   /* the picture holds the row's left edge, so a two-line name wraps beside it, not under it */
