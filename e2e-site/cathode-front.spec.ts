@@ -401,3 +401,48 @@ test('the List and the dossier are painted mugshots', async ({ page, hasTouch })
   }
   if (!hasTouch) expect((await page.locator('#dossier .dossier-photo').boundingBox())!.width).toBeGreaterThanOrEqual(140)
 })
+
+// Plan item 99: the List's and the dossier's captions read at 4.5:1 or more against their print (shot with the
+// caption hidden, the print's own paper behind it).
+test('the mugshot captions read at 4.5:1 or more', async ({ page, hasTouch }) => {
+  test.setTimeout(240_000)
+  await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const sel = hasTouch ? '#the-list-wall .mug-name' : '#the-list-wall .mug-name, #dossier :is(.dossier-kicker, .dossier-target, .dossier-place, .dossier-tag)'
+  const caps = page.locator(sel)
+  const n = await caps.count()
+  expect(n).toBeGreaterThanOrEqual(5)
+  for (let i = 0; i < n; i++) {
+    const cap = caps.nth(i)
+    if (!(await cap.isVisible())) continue
+    const box = (await cap.boundingBox())!
+    const ink = await cap.evaluate((e) => getComputedStyle(e).color)
+    const before = await cap.evaluate((e) => { const s = (e as HTMLElement).style.color; (e as HTMLElement).style.color = 'transparent'; return s })
+    const png = (await page.screenshot({ clip: box })).toString('base64')
+    await cap.evaluate((e, s) => ((e as HTMLElement).style.color = s), before)
+    const ratio = await page.evaluate(async ([b64, c]) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const cv = document.createElement('canvas')
+      cv.width = img.width
+      cv.height = img.height
+      const x = cv.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, cv.width, cv.height).data
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+      const ls: number[] = []
+      for (let k = 0; k < d.length; k += 4) ls.push(lum(d[k]!, d[k + 1]!, d[k + 2]!))
+      ls.sort((a, b) => a - b)
+      const bg = ls[Math.floor(ls.length * 0.5)]!
+      const [r, g, b] = c.match(/[\d.]+/g)!.map(Number)
+      const t = lum(r!, g!, b!)
+      return (Math.max(t, bg) + 0.05) / (Math.min(t, bg) + 0.05)
+    }, [png, ink] as const)
+    expect(ratio, `caption ${i}`).toBeGreaterThanOrEqual(4.5)
+  }
+})
