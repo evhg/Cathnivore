@@ -18,9 +18,10 @@ test('the lesson board fills its frame, with the lesson card and Cath beside it'
   expect(await page.evaluate(tileSpan)).toBeGreaterThanOrEqual(0.6)
   await expect(page.locator('.lc-steps li.now')).toHaveAttribute('data-i', '0')
   await expect(page.locator('#host-face')).toBeVisible()
+  // Cath stands in the valley at D and watches from its corner as a bust on a phone.
+  await expect(page.locator('#valley-cath svg')).toBeVisible()
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
   if (!hasTouch) {
-    await expect(page.locator('#valley-cath svg')).toBeVisible()
     await expect(page.locator('.lc-next svg')).toBeVisible()
     // The left column: no blank band over 100 px between its blocks, from the header to the hint.
     const gaps = await page.evaluate(() => {

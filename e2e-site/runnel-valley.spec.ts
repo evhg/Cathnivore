@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-// Plan item 70: the daily sits in a valley. The tiles fill the board's frame (55% of its shorter side or more), a
+// Plan items 70 and 77: the daily sits in a valley. The tiles fill the board's frame (60% of its shorter side or more), a
 // stream bed runs from the spring house to Bea's garden and fills as fields are watered, and at D Cath stands in
 // the corner the board leaves empty, never on a tile. No page scroll at P.
 
@@ -19,7 +19,7 @@ for (const date of ['2026-11-03', '2026-11-08']) {
     await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
     const frame = (await page.locator('.stage').boundingBox())!
     const tiles = await page.evaluate(tileBox)
-    expect(Math.max(tiles.w, tiles.h) / Math.min(frame.width, frame.height)).toBeGreaterThanOrEqual(0.55)
+    expect(Math.max(tiles.w, tiles.h) / Math.min(frame.width, frame.height)).toBeGreaterThanOrEqual(0.6)
     await expect(page.locator('.valley')).toBeVisible()
     // No blank band over 120 px between the tiles and the frame on either axis.
     const gaps = await page.evaluate(() => {

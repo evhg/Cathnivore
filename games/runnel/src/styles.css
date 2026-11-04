@@ -3447,6 +3447,29 @@ body[data-mode='practice'] #week-slot {
     animation: valley-look 900ms ease-out;
   }
 }
+/* Plan item 77: on an upright phone Cath watches from the valley's bottom-left corner as a framed bust, over the
+   stream bed and under the board's last row (main.ts hides her if a tile reaches into her corner). */
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .valley-cath:not([hidden]) {
+    display: block;
+    position: absolute;
+    left: 8px;
+    bottom: 10px;
+    width: 58px;
+    height: 70px;
+    overflow: hidden;
+    border: 2px solid color-mix(in srgb, var(--soil) 70%, transparent);
+    border-radius: 29px 29px 12px 12px;
+    background: color-mix(in srgb, var(--paper) 88%, var(--vl-sky-low, var(--paper)));
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .valley-cath svg {
+    display: block;
+    width: 112%;
+    height: auto;
+    margin: 3px 0 0 -6%;
+  }
+}
 @keyframes valley-look {
   30% { transform: translateY(-6px) rotate(-2deg); }
   60% { transform: translateY(0) rotate(1deg); }

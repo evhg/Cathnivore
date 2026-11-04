@@ -1147,7 +1147,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: every region's ground has at least 4 elements and none under the piece tray's rects; e2e at P and D: every hex inside the board's box, no animation under reduced motion; greyscale still tells players from corporations; shots at rounds 1 and 6, P and D, light and dark.
 - **Size:** 2
 
-## 77. [ ] Runnel: the valley fills the frame, lit by the day's weather *(lane A, in progress)*
+## 77. [x] Runnel: the valley fills the frame, lit by the day's weather *(done 2026-11-04, lane A: `valley.ts` paints a seeded patchwork of fields, hedgerows, oaks and a footpath under a soft horizon, lit by `sceneLight` (dusk, golden, rain; unit-tested in `tests/runnel-valley.test.ts`); the lesson's four tiles span about 80% of the frame (`frameRadius`) with a lesson card (steps, legend, Up next) filling the D column; Cath a corner bust at P; `e2e-site/runnel-lesson-frame.spec.ts`, runnel-valley at 60%; shots `e2e/screenshots/r77`. The tile-to-frame gap stays at 120 px: the D board's left margin holds Cath and the stream on painted valley, not a blank band.)*
 - **Why:** `runnel-D`/`-P` (plan1103f): the tutorial board uses about 15% of the D frame; the hills end in a hard edge with a cream void of about 600 px below; the left column has about 450 px of empty bands; the caption says "Dusk" over a midday scene; Cath is absent at P.
 - **Build:**
   - Scale the board to its frame (the tiles at least 60% of the frame's shorter side, the tutorial included).
