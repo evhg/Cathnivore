@@ -121,7 +121,9 @@ main,
 .top::before {
   content: "";
   position: absolute;
-  inset: 0 calc(-1 * var(--gutter));
+  /* Plan item 121: the glass bleeds to the window's edges, not just a gutter past the page column (at 1440 its
+     edges stopped at 85 px and read as darker side columns). The body clips horizontal overflow. */
+  inset: 0 calc(50% - 50vw);
   z-index: var(--z-under);
   background: linear-gradient(to bottom, var(--glass-strong), transparent);
   backdrop-filter: blur(14px) saturate(140%);

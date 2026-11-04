@@ -1566,6 +1566,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Cathnivore Setup D:** the Start sign's "OPEN" about 9 px (1135-1182 x 798-808); lines from Cath's figure behind the sign (1085-1235 x 770-790). *(Checked 2026-11-04 lane B: at D the kicker is `--fs-label`, 12.5 px (its caps read as 9 px in the shot); the lines are the sign's hanging cords, by design. The phone's kicker was 0.62rem (10 px), now `--fs-label` (12 px); shot `f121c/setup-start-P.png`.)*
   - [ ] **Hedgerow 3D D:** Coming up's "16" touches the panel edge (1383-1405 x 645-663); Cath's face a dark smudge under her hair (150-230 x 470-540).
   - [ ] **Hedgerow map D:** the Saltmarsh cloud an opaque blob (460-770 x 60-160).
-  - [ ] **Portfolio D:** darker side columns at x 0-85 and 1355-1440 (check: a max-width background that doesn't bleed).
+  - [x] **Portfolio D:** darker side columns at x 0-85 and 1355-1440 (check: a max-width background that doesn't bleed). *(Fixed 2026-11-04 lane B: it was the sticky header's glass, which stopped a gutter past the page column; it now bleeds to the window's edges (`inset: 0 calc(50% - 50vw)`, the body clips overflow; no horizontal scroll at P or D). site-header passes; shots `f121c/portfolio-*`.)*
 - **Accept:** e2e text 11 px or more and boxes not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
