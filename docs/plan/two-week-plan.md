@@ -1555,7 +1555,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Why:** `hedge-l21-2d-D` (800-1080 x 80-880): about 280 px of empty grass right of the field (item 78 framed only 3D). `hedge-l34-2d-D` (845-1070 x 120-205) and `hedge-l21-2d-P`/`3d-P` (150-310 x 445-525): Cath's bubble covers the plots it tells you to tap.
 - **Build:**
   - ~~The 2D view centred and scaled so the field fills 70% or more of the frame.~~ *(Checked 2026-11-04 lane B: the 2D view is already centred at the largest cell the level's rows allow; level 21 is taller than wide, so 70% of a wide frame would crop the field. The real gap is the bare margin.)* The wide side margins painted as the countryside going on: a patchwork of wheat, pasture and plough edged by hedges (`paintHinterland`), the sea side left to the water. *(Done, slice 1; shots `e2e/screenshots/f120b`.)*
-  - The bubble's spot (`barkSpot`) treats buildable plots as boxes to avoid when there is room.
+  - The bubble's spot (`barkSpot`) treats buildable plots as boxes to avoid when there is room. *(Slice 2, 2026-11-04 lane B: she speaks only in the build phase, so empty plots now carry the heavy cost and the lane and built plots the light one; `hedgerow-threat.spec.ts` measures it: D 0-9% of the bubble over empty plots, P 7-28%. Open: P level 12 (28%), a dense field with no free spot within her 116 px reach; the phone bound is 30% until then.)*
 - **Accept:** in `?2d` at D, a side margin wider than 2.2 cells away from the water shows hedged fields (shots of levels 13, 21 and 34); bubble ∩ plot = 0 on those levels at P and D; shots P and D.
 - **Size:** 2
 

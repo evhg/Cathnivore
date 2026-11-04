@@ -759,7 +759,13 @@ if (SANDBOX)
       return b && { ...b, x: b.x + f.left, y: b.y + f.top };
     },
     // Plan item 95: Cath's advice bubble on the field (field px), her figure, and the lane cells' boxes.
-    cathSay: () => (sayShown && game ? { ...sayShown, lanes: laneBoxes(game) } : null),
+    cathSay: () => {
+      if (!sayShown || !game) return null;
+      const f = ui.stage.getBoundingClientRect();
+      // Plan item 120: the empty plots in the bubble's own field px.
+      const empty = emptyPlotBoxes(game).map((p) => ({ ...p, x: p.x - f.left, y: p.y - f.top }));
+      return { ...sayShown, lanes: laneBoxes(game), empty };
+    },
     // After setting a field up through the hook: redraw the panel and controls as a tap would have.
     refresh: () => {
       renderPanel(true);
@@ -3500,8 +3506,10 @@ function syncCathSay(g: Game, now: number): void {
     cath,
     size,
     { w: field.width, h: field.height },
-    laneBoxes(g).map(shift).filter(near),
-    plotBoxes(g).map(shift).filter(near),
+    // Plan item 120: she only speaks in the build phase, when the lane is empty and an empty plot is what she
+    // tells you to tap, so those are the cells to keep clear; the lane and built plots cost little.
+    emptyPlotBoxes(g).map(shift).filter(near),
+    [...laneBoxes(g), ...builtPlotBoxes(g)].map(shift).filter(near),
     avoid,
   );
   el.dataset.side = spot.side;
@@ -3570,6 +3578,14 @@ function cathBox(g: Game, field: DOMRect): Box | null {
 /** Every plot's box on screen (client pixels), each sized from its own projected neighbours (3D shrinks with distance). */
 function plotBoxes(g: Game): Box[] {
   return cellBoxes(g, (c, r) => isPlot(g.level, c, r));
+}
+
+/** The plots with no tower on them, and those with one (client pixels). */
+function emptyPlotBoxes(g: Game): Box[] {
+  return cellBoxes(g, (c, r) => isPlot(g.level, c, r) && !g.towers.some((t) => t.col === c && t.row === r));
+}
+function builtPlotBoxes(g: Game): Box[] {
+  return cellBoxes(g, (c, r) => isPlot(g.level, c, r) && g.towers.some((t) => t.col === c && t.row === r));
 }
 
 /** Every lane cell's box on screen (client pixels). */

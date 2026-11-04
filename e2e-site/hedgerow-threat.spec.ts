@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 95: the round card as a threat poster (trait icons, a "Can't answer" stamp, the long read behind an
 // (i)) and Cath's advice said in a bubble beside her on the field, before Go, clear of the lane's tiles.
 type Box = { x: number; y: number; w: number; h: number }
-type Say = { text: string; box: Box; cath: Box; lanes: Box[] }
+type Say = { text: string; box: Box; cath: Box; lanes: Box[]; empty: Box[] }
 type Hg = { game(): { phase: string; wave: number }; cathSay(): Say | null; gateQueue(): { leads: Box[]; plates: Box[] } | null; sendWave(g: unknown): unknown }
 
 async function open(page: Page, level: number): Promise<void> {
@@ -36,6 +36,13 @@ for (const level of [3, 12, 21]) {
     const dy = Math.max(s.box.y - c.y, 0, c.y - (s.box.y + s.box.h))
     expect(Math.hypot(dx, dy), JSON.stringify(s.box)).toBeLessThanOrEqual(120)
     expect(hit(s.box, s.cath), 'bubble on her figure').toBe(false)
+    // Plan item 120: she tells you to tap an empty plot, so the bubble keeps (almost) off them.
+    const on = (a: Box, p: Box) => Math.max(0, Math.min(a.x + a.w, p.x + p.w) - Math.max(a.x, p.x)) * Math.max(0, Math.min(a.y + a.h, p.y + p.h) - Math.max(a.y, p.y))
+    const covered = s.empty.reduce((n, p) => n + on(s.box, p), 0)
+    // Measured 2026-11-04: D 0-9%; P 7-28% (level 12's dense field has no free spot within her reach). The
+    // phone bound is looser until item 120 finishes.
+    const hasTouch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches)
+    expect(covered, 'bubble over empty plots').toBeLessThanOrEqual(s.box.w * s.box.h * (hasTouch ? 0.3 : 0.15))
     // Never over the round's threat waiting at the gate (canvas px; the canvas fills the field).
     const q = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.gateQueue())
     for (const b of [...(q?.leads ?? []), ...(q?.plates ?? [])]) expect(hit(s.box, b), `bubble ${JSON.stringify(s.box)} on the queue ${JSON.stringify(b)}`).toBe(false)
