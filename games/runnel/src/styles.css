@@ -2302,8 +2302,9 @@ body {
     opacity: 0.2 !important;
   }
 
+  /* Plan item 90: at .1 a cloud's shadow dimmed the night board's lit banks to 2.9:1 against the tile. */
   .cloud {
-    opacity: 0.1;
+    opacity: 0.05;
   }
 }
 

@@ -8,7 +8,8 @@ const SKIES = ['morning,clear', 'noon,clear', 'golden,clear', 'dusk,clear', 'noo
 
 for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['D', { width: 1440, height: 900 }, 3]] as const) {
   for (const scheme of ['light', 'dark'] as const) {
-    test(`tiles stand off the valley and channels off the tiles, every weather (${name}, ${scheme})`, async ({ page }) => {
+    test(`tiles stand off the valley and channels off the tiles, every weather (${name}, ${scheme})`, async ({ page }, info) => {
+      test.skip(info.project.name !== 'site-desktop', 'sets its own viewport; one run is enough')
       test.setTimeout(120_000)
       await page.setViewportSize(size)
       await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
@@ -21,7 +22,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
         const full = (await page.screenshot()).toString('base64')
         const hide = await page.addStyleTag({ content: '#board .tiles, #board .tile-shadow { visibility: hidden !important; }' })
         const bare = (await page.screenshot()).toString('base64')
-        await hide.evaluate((n) => n.remove())
+        await hide.evaluate((n) => (n as Element).remove())
         const r = await page.evaluate(async ([full, bare]) => {
           const load = async (s: string) => {
             const i = new Image()
@@ -69,16 +70,20 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
             // A channel: along its bed, the strongest pixel across it against the tile's fill.
             const bed = g.querySelector<SVGLineElement>('.groove-bed')
             if (bed) {
-              const m = bed.getScreenCTM()!
-              const p0 = new DOMPoint(0, 0).matrixTransform(m)
-              const p1 = new DOMPoint(bed.x2.baseVal.value, bed.y2.baseVal.value).matrixTransform(m)
+              // The bed's box centre is the ditch's midpoint whatever the piece's CSS rotation (getScreenCTM leaves
+              // that rotation out), so the ditch runs from the tile's centre through it to the edge.
+              const bb2 = bed.getBoundingClientRect()
+              const p0 = { x: cx, y: cy }
+              const p1 = { x: 2 * (bb2.x + bb2.width / 2) - cx, y: 2 * (bb2.y + bb2.height / 2) - cy }
               const dx = p1.x - p0.x
               const dy = p1.y - p0.y
               const dl = Math.hypot(dx, dy)
+              // Across the whole ditch (its bed and both banks, about 11% of the tile's width), not just the bed.
+              const reach = Math.max(4, Math.round(bb.width * 0.055))
               const along: number[] = []
               for (let f = 0.35; f <= 0.8; f += 0.05) {
                 let best = 0
-                for (let o = -4; o <= 4; o++) best = Math.max(best, cr(L(F, p0.x + dx * f - (dy / dl) * o, p0.y + dy * f + (dx / dl) * o), fill))
+                for (let o = -reach; o <= reach; o++) best = Math.max(best, cr(L(F, p0.x + dx * f - (dy / dl) * o, p0.y + dy * f + (dx / dl) * o), fill))
                 along.push(best)
               }
               chans.push(med(along))
@@ -88,8 +93,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
         }, [full, bare] as const)
         expect(r.n, sky).toBeGreaterThan(5)
         expect(r.edge, `tile edge vs valley, ${sky}`).toBeGreaterThanOrEqual(edgeMin)
-        // Open (plan item 90): on the night board the morning channels measure 2.3-2.9:1; the next slice lifts them.
-        if (!(scheme === 'dark' && sky.startsWith('morning'))) expect(r.chan, `channel vs tile, ${sky}`).toBeGreaterThanOrEqual(3)
+        expect(r.chan, `channel vs tile, ${sky}`).toBeGreaterThanOrEqual(3)
       }
     })
   }
