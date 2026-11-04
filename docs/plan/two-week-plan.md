@@ -1418,7 +1418,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each type's sprite path is distinct (no two silhouettes within 10% of each other's pixel overlap); e2e (`?2d&sandbox=1`, level 21 mid-round): every vehicle's box 28 px or more long at D, 20 at P; greyscale shot shows the types apart; draw time per frame at D not up more than 1 ms (`hedgerow-perf` or a frame-time sample); shots P, L and D.
 - **Size:** 2
 
-## 106. [ ] Runnel: the spring house and Bea's garden on a phone *(lane A, in progress)*
+## 106. [x] Runnel: the spring house and Bea's garden on a phone *(done 2026-11-04, lane A: the phone already had the spring house, stream and garden (item 68's phone farm; the critique's bare band predates it). The garden is now a tilled plot (a soil patch with furrows, ridged mounds) instead of faint mounds; a solve sets `data-watered` and the soil and mounds go dark and wet, and today's bed pops its sprout as Bea runs out. e2e `e2e-site/runnel-garden-farm.spec.ts` at P and D (lesson and daily in view, no band over 80 px, stream fill rises, the soil darkens on a win). Shots dry and wet, light and dark, in `e2e/screenshots/r106`.)*
 - **Why:** `runnel-P`: on a phone there's no spring house, stream or garden at all, and a bare band under the board (open critique bug since 2026-11-03), so the phone loses the valley's story (item 70: the stream runs from the spring house round the board to Bea's garden and fills as fields are watered).
 - **Build:**
   - On a phone, the spring house, the stream bed and Bea's garden fill the band under the board, the stream filling as fields are watered as at D.

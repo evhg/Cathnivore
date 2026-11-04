@@ -264,6 +264,9 @@ function placeValleyCath(): void {
 function beaRunsOut(): void {
   const garden = document.querySelector<HTMLElement>('.bea-garden')
   if (!garden || garden.querySelector('.bea-runner')) return
+  // Plan item 106: today's bed pops its sprout as the water arrives (once, on the solve itself).
+  garden.dataset.pop = ''
+  window.setTimeout(() => delete garden.dataset.pop, 2600)
   const bea = document.createElement('span')
   bea.className = 'bea-runner'
   bea.setAttribute('aria-hidden', 'true')
@@ -364,6 +367,8 @@ function render(): void {
   const crops = document.getElementById('bea-crops')
   crops?.style.setProperty('--wet', String(wetShare))
   crops?.toggleAttribute('data-sprouting', game.taps > 0 || flow.solved)
+  // Plan item 106: a solved board waters the garden: its beds go dark and wet (the e2e reads `data-watered`).
+  document.querySelector('.bea-garden')?.setAttribute('data-watered', String(flow.solved))
   placeValleyCath()
   if (game.taps > 0) host.react(flow.wet.size / playable, flow.solved)
 
@@ -760,7 +765,7 @@ function renderRail(): void {
   // Bea's garden in the farm's corner: the week's seven beds, a solved day's crop at its stage, a mound otherwise.
   const beds = weekBeds(today, data.results).map((b) => {
     const i = document.createElement('i')
-    i.className = `bed bed-${b.state}${b.plot?.gold ? ' gold' : ''}`
+    i.className = `bed bed-${b.state}${b.plot?.gold ? ' gold' : ''}${b.day === today ? ' is-today' : ''}`
     i.innerHTML = b.plot ? cropSvg(b.plot.crop, b.plot.stage) : `<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="22" rx="12" ry="5"/>${b.state === 'today' ? '<path class="bed-marker" d="M14 21V8"/><rect class="bed-packet" x="9" y="4" width="10" height="8" rx="1"/><g class="bed-sprout"><path class="bed-stem" d="M14 21V11"/><path class="bed-leaf" d="M14 16c-4 0-6-3-6-6 4 0 6 3 6 6zM14 13c4 0 6-3 6-6-4 0-6 3-6 6z"/></g>' : ''}</svg>`
     i.title = `${b.short}${b.plot ? `: ${b.plot.label}` : ''}`
     return i
