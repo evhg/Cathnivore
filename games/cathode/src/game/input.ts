@@ -74,6 +74,14 @@ export class Input {
   private lookTouch = { id: -1, x: 0, y: 0 };
   private touchHeld = new Set<TouchButton>();
   private touchTapped = new Set<TouchButton>();
+  /**
+   * Set by the session while it waits for the mouse ("Click to play" / "Click to resume"). Then any click on the
+   * page, or any key but Escape, takes the pointer: the HUD and the scope sit over the canvas, so a listener on the
+   * canvas alone never heard the click (owner, 2026-11-04: frozen on "Click to play" as the Ghost).
+   */
+  wantsLock = false;
+  /** performance.now() of the last refused pointer lock, or 0. */
+  lockRefusedAt = 0;
   /** A long press on the HUD's weapon chip asked for the inspect (read once). */
   inspectAsked = false;
   /** Test and replay hook: fields here override what the devices say for the next read. */
@@ -98,6 +106,8 @@ export class Input {
     addEventListener("keydown", this.onKey);
     addEventListener("keyup", this.onKey);
     canvas.addEventListener("mousedown", this.onMouse);
+    addEventListener("mousedown", this.onAnyDown, true);
+    document.addEventListener("pointerlockerror", this.onLockError);
     addEventListener("mouseup", this.onMouse);
     addEventListener("mousemove", this.onMove);
     canvas.addEventListener("wheel", this.onWheel, { passive: true });
@@ -115,13 +125,26 @@ export class Input {
     // with Esc) rejects; the game waits on "click to resume" instead (game/pausegate.ts), so it is not an error.
     try {
       const p = this.canvas.requestPointerLock?.() as unknown as Promise<void> | undefined;
-      p?.catch?.(() => undefined);
+      p?.catch?.(() => {
+        this.lockRefusedAt = performance.now();
+      });
     } catch {
       /* older engines throw instead of rejecting */
     }
   }
 
+  private onAnyDown = (e: MouseEvent) => {
+    if (!this.wantsLock || this.isTouch || this.locked) return;
+    if ((e.target as Element | null)?.closest?.(".hud-pause-card, .cx, dialog")) return;
+    this.lock();
+  };
+
+  private onLockError = () => {
+    this.lockRefusedAt = performance.now();
+  };
+
   private onKey = (e: KeyboardEvent) => {
+    if (e.type === "keydown" && this.wantsLock && !this.locked && e.code !== "Escape" && !this.isTouch) this.lock();
     if (e.repeat) return;
     if (e.type === "keydown") {
       this.keys.add(e.code);
@@ -450,6 +473,8 @@ export class Input {
     removeEventListener("mouseup", this.onMouse);
     removeEventListener("mousemove", this.onMove);
     this.canvas.removeEventListener("mousedown", this.onMouse);
+    removeEventListener("mousedown", this.onAnyDown, true);
+    document.removeEventListener("pointerlockerror", this.onLockError);
     this.canvas.removeEventListener("wheel", this.onWheel);
     this.canvas.removeEventListener("contextmenu", this.onContext);
     if (this.isTouch) {

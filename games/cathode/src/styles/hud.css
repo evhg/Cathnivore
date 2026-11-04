@@ -299,6 +299,8 @@
   color: var(--ink-3);
   font-stretch: var(--wdth-label);
 }
+/* The touch reload word (plan item 44) only exists in the touch layout below; desktop never shows it. */
+.hud-ammo-tap { display: none; }
 .hud-ammo {
   display: flex;
   align-items: baseline;

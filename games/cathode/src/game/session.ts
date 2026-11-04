@@ -1821,6 +1821,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     if (input.takeMenu() && !dead && !charScreen) menuOpen = true;
     resuming = nextResuming(resuming, input.locked, menuOpen);
     if (input.locked) everLocked = true;
+    // Waiting on the mouse: any click or key takes it (game/input.ts). If the browser refuses the lock, the pause
+    // menu opens instead of leaving the street frozen behind a line that can't be answered.
+    input.wantsLock = resuming && !menuOpen && !input.locked;
+    if (resuming && !input.locked && input.lockRefusedAt && performance.now() - input.lockRefusedAt < 1000) {
+      input.lockRefusedAt = 0;
+      menuOpen = true;
+    }
     const view = pauseView({
       touch: input.isTouch,
       locked: input.locked,
