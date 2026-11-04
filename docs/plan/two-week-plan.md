@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-04T09:00Z
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1293,6 +1291,57 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **Hedgerow level:** ~~the gate sign about 8 px~~ *(fixed 2026-11-04 lane B: the town name is 11 px or more on a plate sized to the word; shots in `e2e/screenshots/f91`)*; the "N coming" plate over field tiles (2D D, 3D P); at P the "NEXT: ROUND 11" tab over the tray's top edge. *(Checked 2026-11-04 lane B: the tab's foot meets the drawer's top at y 694 and does not touch the tray inside it; it is a folder tab joined to the drawer, so no change.)*
   - [x] **NIGHT SHIFT D:** CONTINUE dimmer than the other entries while a case is saved. *(Checked 2026-11-04 lane B: with a save (`demoSave`), CONTINUE holds the focus and is the brightest entry (ink, opacity 1); it is dim only with no save, where it is disabled by design. No change; shot `e2e/screenshots/f91/ns-cont.png`.)*
 - **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more, at P and D for each case; shots before and after.
+- **Size:** 1
+
+## 92. [ ] Cathnivore: Hollowell as a rival with a face, and its turn staged *(lane A, in progress)*
+- **Why:** `cath-game-D` (plan1104b, 680-1335 x 90-185): the threat row is three paper cards in the players' own style, and Hollowell has no face anywhere; VISION wants glossy, over-lit corporations and characters with presence. `cath-game-P` (15-380 x 120-205) is the same.
+- **Build:**
+  - A Hollowell executive bust (glossy, clinical, synth palette; three expressions: smug, irritated, rattled by Pressure) docked opposite Cath's bust, through `Portrait`.
+  - Threat cards as glossy corporate memos: the logo, a sheen, a typed header, unlike the players' paper.
+  - The corporate turn staged: the bust speaks one line, then Squeeze, Expand and Scout land on the board one by one (400-1200 ms each, eased, no overshoot); fades only under reduced motion.
+- **Accept:** e2e: a `[data-rival]` bust 80 px or more at D, 56 at P; memo background differs from the player cards by computed style; the corporate turn plays 3 or more sequenced steps and each board change waits for its step; tutorial, turn-show and desktop-no-scroll still pass; shots P and D, light and dark.
+- **Size:** 3
+
+## 93. [ ] Cathnivore: the phone title as a staged market scene
+- **Why:** `cath-title-P` (plan1104b): item 86 staged the desktop only. Cath is an 85x160 cut-out top left (40-125 x 120-280), the bubble squeezes four lines into the corner (20-130 x 20-105), the board floats with no table, and the menu is a stacked form (20-370 x 450-720).
+- **Build:** the table edge across the phone with Cath standing behind it, the board lying on it and the chalk menu standing on it; bunting across the top; a one or two line bubble beside her.
+- **Accept:** e2e at 390x844 and 375x667: Cath 200 px tall or more (180 at 667) and clear of the menu and logotype; the menu's foot meets the table within 4 px; bubble 2 lines at most; no scroll; title-fit and title-table still pass; shots P (both sizes), light and dark.
+- **Size:** 2
+
+## 94. [ ] Hedgerow: 3D water as sunken terrain, with banks and bridges
+- **Why:** `hedge-l21-3d-D` (plan1104b): pale translucent slabs cross the lane and plots (240-520 x 380-510, 650-935 x 535-590), reading as a selection overlay; `-3d-P` (60-185 x 365-475) the same. The 2D field draws its ponds and streams well (`hedge-l21-2d-D` 615-800 x 620-680).
+- **Build:** streams and ponds sunk below the ground with earth banks, reeds and a slow ripple (still under reduced motion); a plank bridge wherever the lane crosses water; no water drawn over the lane; keep the draw-call budget.
+- **Accept:** unit: no water footprint meets a lane tile without a bridge, over all 100 levels; sampled water pixels within ΔE 15 of the 2D water colour; draw calls at level 13 within 5% of today's; shots levels 13 and 21 at P and D.
+- **Size:** 2
+
+## 95. [ ] Hedgerow: the round card as a threat poster, Cath's advice spoken on the field
+- **Why:** `hedge-l21-2d-D` and `-3d-D` (plan1104b, 1105-1415 x 375-545): the advice is a 14 px paragraph ("Your field can't answer this: Airborne. Scarecrows, Beehives, ..."); Kingdom Rush says this with icons and a hero bark. At P the advice isn't visible.
+- **Build:** the round's threat as a strip of vehicle art with counts and big trait icons (air, armour, speed) with a "can't answer" stamp on the gap; Cath's one-line advice as a speech bubble by her on the field, before Go; the full text behind an (i).
+- **Accept:** e2e: the panel shows 25 words or fewer at D; the bubble within 120 px of Cath at P and D and clear of the lane's tiles; trait icons 28 px or more; hedgerow-tray, -gatequeue and -critique still pass; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 96. [ ] The site's /games/: each game a key-art poster
+- **Why:** `games-D` (plan1104b): the four games are 85x55 thumbnails with 12 px grey copy (615-1155 x 450-610), and a translucent half-faded strip of cards sits at the bottom (180-890 x 745-900). `games-P` (350-390 x 425-610) cuts Hedgerow off in a sideways scroll.
+- **Build:** four poster cards (about 260x300 at D, a 2x2 grid at P): key art with Cath in that game's dress, a title plate, one line of copy, Play; the bottom strip solid (or gone) on the first screen.
+- **Accept:** e2e: each poster's art 240 px wide or more at D, 160 at P; all four in the first viewport at D; no horizontal scroll at P; copy 14 px or more at AA; games-cards and site-hero still pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 97. [ ] Runnel: ditches dug into the earth, and the water front you can follow
+- **Why:** `runnel-D` (plan1104b, 900-1110 x 215-440, 1000-1140 x 590-640): dry ditches read as cream planks with bolts (the pebbles), not channels cut in soil. Check first what the tap already animates (`arrivalMs` in `water.ts`).
+- **Build:** a dry ditch as a carved trench (shadowed walls, a darker damp bed, the pebbles small and few), so cream reads as the lit bank only; after each tap the water front runs on tile by tile (about 250 ms a tile) with a small spill splash at an open end; reduced motion fills at once.
+- **Accept:** e2e: within 600 ms of a connecting tap the next tile's bed turns blue; a spill shows `[data-spill]`; runnel-tiles (item 90) still passes; greyscale shot readable; shots P and D before and after a tap, light and dark.
+- **Size:** 2
+
+## 98. [ ] The bugs from the 2026-11-04 09:10 critique, fixed as one batch
+- **Build:** (check each first; plan1104b)
+  - [ ] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745).
+  - [ ] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845).
+  - [ ] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604).
+  - [ ] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478).
+  - [ ] **Cathnivore game D:** the faded last "Not yet" row cut by the "NOT YET · 7 MORE" pill (35-315 x 735-800).
+  - [ ] **Hedgerow map P:** the next act's caption clipped behind the nav (50-340 x 760-780).
+  - [ ] **Hedgerow 3D:** the gate sign about 9 px (D 175-285 x 378-392, P 20-75 x 410-420); Cath's 3D token a dark blob with no face at P (22-60 x 515-555).
+- **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more and 4.5:1, at P and D for each case; shots before and after.
 - **Size:** 1
 
 **Later, unranked:** (none)
