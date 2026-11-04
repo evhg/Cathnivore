@@ -56,3 +56,21 @@ test('desktop Setup: Cath at the stall reacts to the picks and the difficulty', 
   await expect(page.locator('.setup-cath-stand svg.cath-determined')).toHaveCount(1)
   await expect(says).toContainText('Hard')
 })
+
+// Plan item 84: the Difficulty and Map panels end at their content, with no empty band at their foot.
+test('desktop Setup: the Difficulty and Map panels end at their content', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop spread')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.locator('.setup-difficulty').waitFor()
+    const feet = await page.evaluate(() =>
+      [...document.querySelectorAll('.setup-difficulty, .setup-seed')].map((s) => {
+        const kids = [...s.children].filter((c) => getComputedStyle(c).display !== 'none').map((c) => c.getBoundingClientRect().bottom)
+        return s.getBoundingClientRect().bottom - Math.max(...kids)
+      }),
+    )
+    for (const f of feet) expect(f, `${width}x${height}`).toBeLessThanOrEqual(24)
+  }
+})

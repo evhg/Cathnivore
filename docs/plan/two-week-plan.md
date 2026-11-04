@@ -1221,7 +1221,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip. *(Fixed: packets never narrower than 38 px; 9 or 11 towers wrap to a second row.)*
   - [ ] **Hedgerow D**: an empty band about 1100-1410 x 650-705 under the "Coming up" wave icons.
   - [ ] **Hedgerow 3D D**: a white flare blob on the field (about 640-680 x 690-720); "216 coming" overlaps the Hollowell gate sign.
-  - [ ] **Cathnivore Setup D** (`cath-setup-D`): empty bands at the foot of the Difficulty and Map panels (stretched to the row).
+  - [x] **Cathnivore Setup D** (`cath-setup-D`): empty bands at the foot of the Difficulty and Map panels (stretched to the row). *(Fixed: the panels end at their content on the cloth.)*
   - [ ] **Hedgerow map D** (`hedge-menu-D`): the "Brand Ambassador" two-line pill crowds node 30's lock; Cath's marker covers node 21's top.
   - [ ] **Cathnivore title P** (`cath-title-P`): the MUM drawing touches the screen edge over the board's corner. **Portfolio D**: a lone scroll-hint capsule far from the content column.
 - **Accept:** e2e boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.

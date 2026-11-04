@@ -3410,3 +3410,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .board-landmark [class^='amb-'], .region-ground [class^='amb-'] { animation: none; }
 }
 html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-ground [class^='amb-'] { animation: none; }
+/* Plan item 84: at D the Difficulty and Map panels end at their content (cards laid on the cloth) rather than
+   stretching to the row and leaving an empty band at their foot. */
+@media (min-width: 1100px) {
+  .setup .setup-difficulty, .setup .setup-seed { align-self: start; }
+}
