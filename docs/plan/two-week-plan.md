@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-04 04:05 UTC
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1228,6 +1226,70 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Hedgerow map D** (`hedge-menu-D`): the "Brand Ambassador" two-line pill crowds node 30's lock; Cath's marker covers node 21's top. *Done 2026-11-04 (lane B): Cath stands 9 px clear of her coin; a locked stop's name keeps 6 px under its padlock at D; e2e in hedgerow-map.spec.ts.*
   - [x] **Cathnivore title P** (`cath-title-P`): the MUM drawing touches the screen edge over the board's corner *(fixed: pinned inside the cloth's corner on a phone)*. **Portfolio D**: a lone scroll-hint capsule far from the content column *(fixed: it sits at the end of the stats row)*.
 - **Accept:** e2e boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
+- **Size:** 1
+
+## 85. [ ] The site's /games/: all four games on the first screen
+- **Why:** `games-D` (plan1104a): the first screen is one "Play today's Runnel" button (615-815 x 352-398); no game shows above the fold; Cath stands cut at the waist on a floating plank (200-450 x 515-532); the stall (1145-1355 x 285-510) is washed out by haze. `games-P`: a dark card (20-370 x 680-844) crosses Cath's legs.
+- **Build:**
+  - A strip of four game cards in the hero (live key art `portfolio/public/work/games-*.webp`, each logotype and a one-line hook): under the CTA row at D, a snapping row from y about 600 at P.
+  - Cath grounded in the diorama: full figure, feet on the ground with a contact shadow, no plank.
+  - The stall out of the fog, lit like the scene; "Free · No ads · No accounts" and the ghost button at AA contrast.
+- **Accept:** e2e: 4 cards wholly inside 1440x900, at least 2 inside 390x844; nothing overlaps Cath's box; hero text 4.5:1 or more; shots P and D, light and dark.
+- **Size:** 2
+
+## 86. [ ] Cathnivore: the desktop title as one staged market scene
+- **Why:** `cath-title-D` (plan1104a): about 40% of the frame is empty paper (130-600 x 600-860, 650-1440 x 0-340); the table is a bare brown slab (626-1334 x 757-865); the menu is a dark box (130-490 x 292-592) beside the scene, not in it.
+- **Build:**
+  - The table dressed (crates, a jam jar, coins, Bea's drawing) and spanning the frame; the menu a chalk price-board standing on it.
+  - The board lying on the table under Cath, the logotype across the top centre, the scene filling 1440x900 edge to edge.
+  - The phone title unchanged.
+- **Accept:** e2e at D (1440x900 and 1280x800): the menu box intersects the table's; no empty band over 300x200; keyboard reaches every entry; title-table and title-fit still pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 87. [ ] Hedgerow: the tower shop as illustrated seed packets
+- **Why:** `hedge-l21-2d-D`/`-3d-D` (plan1104a): buying towers is the core action, but the shop is 9 chips of about 40x40 px with 10 px prices and no names (1108-1414 x 85-170), smaller than the round card under it. `hedge-l21-2d-P` (18-380 x 700-760): no names either.
+- **Build:**
+  - At D each tower a seed packet about 96x112: the tower drawn, its name, price and a role tag (ground, air, support), in a 3-column grid.
+  - Affordable, too dear and locked differ in shape (a price tag, a strike, a padlock), not colour alone.
+  - Hover or focus lifts the packet and shows its range on the field; at P each chip gets its name and the picked one a raised packet.
+- **Accept:** e2e: shop items 90x100 or more at D, 56x64 or more at P; each has a visible name and an accessible name with its price; greyscale shot tells the three states apart; hedgerow-tray still passes; shots P and D in 2D and 3D.
+- **Size:** 2
+
+## 88. [ ] Hedgerow: the next level as a hero card on the journey map
+- **Why:** `hedge-menu-D` (plan1104a): the only call to act is a small "Next" pill (232-275 x 380-396); no Play button, preview or threat summary; the locked act 4 teaser takes the bottom 37% (565-900).
+- **Build:**
+  - A level card for the next (or picked) stop: the field's thumbnail, the twist, the enemies it brings, stars won, and a big Play.
+  - Docked beside the act at D, a sheet above the nav at P.
+  - The next act's teaser a strip of 120 px or less; the next stop pulses gently (still under reduced motion).
+- **Accept:** e2e: Play visible without scrolling at P and D, 160x48 or more; teaser 120 px or less at D; Enter on a stop opens its card; hedgerow-map still passes; shots P and D.
+- **Size:** 2
+
+## 89. [ ] NIGHT SHIFT: the desktop front menu with a case dossier and The List as mugshots
+- **Why:** `ns-title-D` (plan1104a): black bars (0-44 and 855-900); a plain text menu (58-225 x 310-550); the case line and THE LIST are 11 px grey captions (58-280 x 584, 58-150 x 740-800); the figure (960-1070 x 260-930) doesn't read as Cath. Item 82 covers only the phone.
+- **Build:**
+  - Full bleed at D; the progress line only while loading.
+  - Focusing New Case or Continue slides in a dossier (a polaroid of the case's target, place, debt tag).
+  - The List as five pinned mugshots, closed cases struck through; a rim light so Cath's hair and profile read.
+- **Accept:** e2e at D: rows 10 and 880 not uniform black; the dossier visible on focus; five portraits 64 px tall or more; menu text 4.5:1 or more; the perf gate passes; shots D and L, P unchanged.
+- **Size:** 2
+
+## 90. [ ] Runnel: tiles that read at a glance
+- **Why:** `runnel-D`/`runnel-P` (plan1104a, check first: may be the lesson's dim): tiles (580-1215 x 125-730 at D) are pale cream over the wheat fields, their channels tan on cream.
+- **Build:** tiles as solid bevelled pieces with a dark rim and a cast shadow; channels dark grooves with a lit edge; in lessons dim the valley, not the tiles.
+- **Accept:** sampled in e2e: tile fill vs field 3:1 or more, channel vs tile 3:1 or more, every weather; greyscale shot readable; runnel e2e still pass; shots P and D.
+- **Size:** 1
+
+## 91. [ ] The bugs from the 2026-11-04 04:10 critique, fixed as one batch
+- **Build:** (check each first; plan1104a)
+  - [ ] **Portfolio D:** a stray pill in the stats row (1035-1062 x 780-825); the hero collage's stale shots, near-black NIGHT SHIFT tile, no Hedgerow (805-1345 x 160-650).
+  - [ ] **Cathnivore title D:** the bubble's tail a flat underline not pointing at Cath (650-895 x 370-418). **P:** the bubble squeezes four lines into about 110 px.
+  - [ ] **Cathnivore Setup D:** the three maps' glyphs look alike at a glance; the seed tag's eyelet reads as a radio button.
+  - [ ] **Cathnivore game D:** event cards' subtext about 11 px grey (680-1335 x 135-190); fruit crates over the board frame (1215-1325 x 810-870). **P:** the EXPAND tags' text about 7 px.
+  - [ ] **Runnel D:** the footer repeats the Up-next card's weather line; the lesson tabs low-contrast grey (140-330 x 340-390). **P:** Cath twice (portrait and figure).
+  - [ ] **Hedgerow map:** a stray gold line from stop 30 into the teaser (D 143-155 x 565-720); on P labels collide with padlocks and two-line labels overlap the next row.
+  - [ ] **Hedgerow level:** the gate sign about 8 px; the "N coming" plate over field tiles (2D D, 3D P); at P the "NEXT: ROUND 11" tab over the tray's top edge.
+  - [ ] **NIGHT SHIFT D:** CONTINUE dimmer than the other entries while a case is saved.
+- **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more, at P and D for each case; shots before and after.
 - **Size:** 1
 
 **Later, unranked:** (none)
