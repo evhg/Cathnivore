@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
-import RivalArt from './portraits/RivalArt'
-import { rivalFace, type RivalFace } from './portraits/rivalFace'
+import { rivalMood } from './portraits/rivalFace'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
@@ -33,7 +32,8 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
-import { execFor, flightsFor, stripDock } from './boardroom'
+import { EXECS, MOOD_EXPRESSION, execFor, flightsFor, stripDock, type ExecMood } from './boardroom'
+import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
 import FarmSheet, { Stall } from './FarmSheet'
 import { vignetteFor } from './vignetteKind'
@@ -166,12 +166,15 @@ function useIsDesktopLayout(): boolean {
   return isDesktop
 }
 
-// Plan item 92: Julian Crisp, Hollowell's face, in a glossy boardroom frame with the company's nameplate.
-function Rival({ face }: { face: RivalFace }) {
+// Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with
+// the company's plastic nameplate, at the end of the papers' row on a desktop. A phone meets him in the boardroom
+// strip when Hollowell plays its turn.
+function Rival({ mood }: { mood: ExecMood }) {
+  const who = `${EXECS.pell.name}, ${EXECS.pell.title}`
   return (
-    <aside className="rival" data-rival data-face={face} aria-label={`Hollowell: Julian Crisp, ${face}`}>
+    <aside className="rival" data-rival data-mood={mood} aria-label={`${who}, ${mood}`}>
       <span className="rival-frame">
-        <RivalArt size={96} face={face} title={`Julian Crisp, ${face}`} />
+        <Figure character="pell" expression={MOOD_EXPRESSION[mood]} title={EXECS.pell.name} />
       </span>
       <span className="rival-plate" aria-hidden="true">
         <HollowellLogo size={11} />
@@ -2120,7 +2123,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         })}
       </section>
       {/* Plan item 92: Hollowell's face across the table from Cath, his mood the mirror of hers. */}
-      <Rival face={rivalFace(cathReaction.expression)} />
+      <Rival mood={rivalMood(cathReaction.expression)} />
       </div>
 
       <section className="map-wrap" data-light={lightFor(state.round)}>

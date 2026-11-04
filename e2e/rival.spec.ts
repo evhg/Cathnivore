@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 92: Hollowell has a face. At D, Julian Crisp's bust sits at the end of the papers' row, opposite Cath,
+// Plan item 92: Hollowell has a face. At D, Graham Pell's bust sits at the end of the papers' row, opposite Cath,
 // at least 80 px, clear of the papers and inside the table head, his mood the mirror of hers.
 test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop slice; the phone follows')
@@ -20,7 +20,7 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
     expect(cath.x + cath.width).toBeLessThanOrEqual(papers.x + 1)
     expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
     expect(r.x + r.width).toBeLessThanOrEqual(width)
-    expect(['smug', 'irritated', 'rattled']).toContain(await rival.getAttribute('data-face'))
-    await expect(rival.getByRole('img', { name: /Julian Crisp/ })).toBeVisible()
+    expect(['smug', 'gloat', 'rattled']).toContain(await rival.getAttribute('data-mood'))
+    await expect(rival.getByRole('img', { name: /Graham Pell/ })).toBeVisible()
   }
 })

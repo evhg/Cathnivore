@@ -2527,9 +2527,9 @@ html.no-animations .cath-companion .cameo {
 }
 
 /* ---- plan item 92: Hollowell's face across the table ----
-   Julian Crisp in a glossy black boardroom frame, lit from above, over the company's plastic nameplate: the
-   corporations' language (VISION: glossy, plastic, over-lit) against the stall's paper and gingham. Desktop for
-   now; a phone gets him beside the papers next. */
+   Graham Pell (the boardroom's figure, plan item 11) in a glossy black medallion lit from above, over the
+   company's plastic nameplate: the corporations' language (VISION: glossy, plastic, over-lit) against the
+   stall's paper and gingham. Desktop only: a phone meets him in the boardroom strip on Hollowell's turn. */
 .rival {
   display: none;
 }
@@ -2548,6 +2548,7 @@ html.no-animations .cath-companion .cameo {
   }
 
   .rival-frame {
+    position: relative;
     display: block;
     width: 84px;
     height: 84px;
@@ -2562,13 +2563,18 @@ html.no-animations .cath-companion .cameo {
       var(--e3);
   }
 
-  /* The 96 px bust in the 84 px frame: his head and collar fill it, the plate covers the cut. */
-  .rival-frame .rival-art {
-    display: block;
-    margin: -1px 0 0 -6px;
+  /* The half-length figure cropped to head and collar, as the boardroom strip crops it. */
+  .rival-frame svg {
+    position: absolute;
+    left: 50%;
+    top: -28px;
+    width: 140px;
+    height: auto;
+    transform: translateX(-50%);
   }
 
   .rival-plate {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 4px;
