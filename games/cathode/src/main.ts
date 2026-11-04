@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { BUST_FOR_CASE, bustSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio } from "./ui/frontaudio";
@@ -254,6 +254,27 @@ function hint(id: string): void {
     district = undefined;
   }
   $("menu-hint").textContent = slotHint(id, { hasSave: hasSave(), jobsDone: done, district, ngPlus: hasSave() && canStartNewGamePlus(done), armed: armed && id === "new" });
+  showDossier(dossierFor(id, { hasSave: hasSave(), jobsDone: done, district }));
+}
+
+/** Plan item 89: the case file that slides in beside the menu at D while New Case or Continue has the focus. */
+function showDossier(d: ReturnType<typeof dossierFor>): void {
+  const box = document.getElementById("dossier") ?? el("aside", "dossier", $("menu").parentElement!);
+  box.id = "dossier";
+  box.setAttribute("aria-hidden", "true");
+  box.classList.toggle("is-open", !!d);
+  box.style.setProperty("--dossier-top", `${$("menu").offsetTop}px`);
+  if (!d) return;
+  box.replaceChildren();
+  el("i", "dossier-pin", box);
+  const photo = el("figure", "dossier-photo", box);
+  const who = d.job ? BUST_FOR_CASE[d.job] : undefined;
+  if (who) photo.innerHTML = bustSvg(who);
+  else el("span", "mug-blank", photo, "?");
+  el("p", "dossier-kicker", box, "Case file");
+  el("b", "dossier-target", box, d.target);
+  el("span", "dossier-place", box, d.place);
+  el("span", "dossier-tag", box, d.tag);
 }
 
 function fillTitle(): void {

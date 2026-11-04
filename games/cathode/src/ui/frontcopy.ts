@@ -231,3 +231,24 @@ export function easeLoad(shown: number, target: number): number {
   if (gap <= 0) return shown;
   return Math.min(target, shown + Math.min(0.04, Math.max(0.004, gap * 0.16)));
 }
+
+/** Plan item 89: the case dossier New Case and Continue slide in at D: who the case is after, where, and the tag. */
+export interface Dossier {
+  /** The List's job whose bust is the polaroid (null: the blank print, a name not on the board yet). */
+  job: string | null;
+  target: string;
+  place: string;
+  tag: string;
+}
+
+export function dossierFor(slot: string, o: { hasSave: boolean; jobsDone: readonly string[]; district?: string }): Dossier | null {
+  if (slot === "new") return { job: null, target: "Tomas Reed", place: "The Harbour", tag: "A debt tag" };
+  if (slot !== "continue" || !o.hasSave) return null;
+  const next = THE_LIST.find((n) => !o.jobsDone.includes(n.job));
+  const lead = openLead(o.jobsDone);
+  const place = DISTRICT_NAME[o.district ?? "market"] ?? DISTRICT_NAME.market!;
+  if (!next) return { job: null, target: "The List is closed", place: titleCase(place), tag: "New Game+" };
+  return { job: next.job, target: next.name, place: titleCase(place), tag: lead ? `Lead: ${titleCase(lead)}` : "The last name" };
+}
+
+const titleCase = (s: string): string => s.toLowerCase().replace(/(^|\s)(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase()).replace(/’S\b/gi, "’s");

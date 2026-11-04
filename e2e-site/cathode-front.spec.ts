@@ -279,3 +279,34 @@ test('at D the List is five mugshots', async ({ page, hasTouch }) => {
   // The names list stays, for screen readers and phones.
   await expect(page.locator('#the-list li').first()).toBeAttached()
 })
+
+// Plan item 89: at D, New Case (with the focus on a fresh profile) slides in its case file beside the menu.
+test('at D the focused New Case shows its dossier', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop front menu')
+  test.setTimeout(200_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const dossier = page.locator('#dossier.is-open')
+  await expect(dossier).toBeVisible()
+  await expect(dossier.locator('.dossier-target')).toHaveText('Tomas Reed')
+  const d = (await page.locator('#dossier').boundingBox())!
+  // Clear of the menu's words and its hint line (their text, not their column-wide boxes), and inside the frame.
+  const textRight = await page.evaluate(() => {
+    let right = 0
+    for (const e of document.querySelectorAll('#menu .menu-label, #menu-hint')) {
+      const r = document.createRange()
+      r.selectNodeContents(e)
+      for (const b of r.getClientRects()) right = Math.max(right, b.right)
+    }
+    return right
+  })
+  expect(d.x).toBeGreaterThanOrEqual(textRight)
+  expect(d.x + d.width).toBeLessThanOrEqual(1440)
+  // Settings has no case file: the dossier slides away.
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(page.locator('#dossier.is-open')).toHaveCount(0)
+})
