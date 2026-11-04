@@ -2153,29 +2153,44 @@ export function buildGate(label: string): THREE.Group {
   const g = new THREE.Group();
   for (const z of [-0.55, 0.55]) g.add(box(0.12, 0.9, 0.12, gloss("#cfd6dc", 0.6), 0, 0, z));
   g.add(box(0.1, 0.22, 1.2, gloss(C.teal, 0.2), 0, 0.9, 0));
+  // Plan item 98: the town's name read about 9 px at D. The board is taller (0.2 -> 0.34) and a little wider than the
+  // crossbar, and the word is fitted to its width, so the letters stand about twice as tall.
+  const W = 1.34, H = 0.34;
   const c = document.createElement("canvas");
   c.width = 512;
-  c.height = 96;
+  c.height = Math.round((512 * H) / W);
   const ctx = c.getContext("2d");
+  let capFrac = 0.5;
   if (ctx) {
     ctx.fillStyle = "#1f8a8a";
-    ctx.fillRect(0, 0, 512, 96);
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.strokeStyle = "#f4fbfb";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(7, 7, c.width - 14, c.height - 14);
     ctx.fillStyle = "#f4fbfb";
-    ctx.font = "bold 56px 'Hedgerow UI', system-ui, sans-serif";
+    let size = Math.round(c.height * 0.66);
+    ctx.font = `bold ${size}px 'Hedgerow UI', system-ui, sans-serif`;
+    const fit = (c.width - 44) / Math.max(1, ctx.measureText(label).width);
+    if (fit < 1) {
+      size = Math.floor(size * fit);
+      ctx.font = `bold ${size}px 'Hedgerow UI', system-ui, sans-serif`;
+    }
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(label, 256, 50);
+    ctx.fillText(label, c.width / 2, c.height / 2 + 3);
+    capFrac = (size * 0.72) / c.height;
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.2), new THREE.MeshStandardMaterial({ map: tex, emissive: "#ffffff", emissiveMap: tex, emissiveIntensity: 0.6 }));
-  sign.position.set(0.055, 1.01, 0);
+  tex.anisotropy = 4;
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshStandardMaterial({ map: tex, emissive: "#ffffff", emissiveMap: tex, emissiveIntensity: 0.6 }));
+  sign.position.set(0.055, 1.01 + (H - 0.2) / 2, 0);
   sign.rotation.y = Math.PI / 2;
+  // The renderer turns the board to face the camera each frame (a phone looks almost straight down on it, edge on);
+  // the letters' cap height in world units is kept for `gateSigns()`, which projects it to CSS px for tests.
+  sign.userData.gateSignCap = capFrac * H;
   g.add(sign);
-  const back = sign.clone();
-  back.position.x = -0.055;
-  back.rotation.y = -Math.PI / 2;
-  g.add(back);
+  g.userData.sign = sign;
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });

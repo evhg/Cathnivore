@@ -189,6 +189,7 @@ export class Renderer3D {
   private flashMat = Object.assign(new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#fff0dc", emissiveIntensity: 0.9, roughness: 0.6 }), { shared: true });
   private gustLeaves: string[] = ["#6ea04c", "#8fbd57", "#c9a640"];
   private v1 = new THREE.Vector3();
+  private q1 = new THREE.Quaternion();
   private v2 = new THREE.Vector3();
   private v3 = new THREE.Vector3();
   private debris = new Debris();
@@ -550,6 +551,53 @@ export class Renderer3D {
   }
 
   /** Plan item 66: the share of the frame's height above the backdrop's painted hills (its sky), at the view's centre. */
+  /** Plan item 98: the gate signs turn to face the camera, so the town's name reads at every framing. */
+  private faceGateSigns(): void {
+    for (const sign of (this.ground?.group.userData.gateSigns as THREE.Object3D[] | undefined) ?? []) {
+      const parent = sign.parent;
+      if (!parent) continue;
+      parent.getWorldQuaternion(this.q1).invert();
+      sign.quaternion.copy(this.q1).multiply(this.camera.quaternion);
+      // Turned back towards a high camera, the board's foot would sink behind the crossbar: stand it a little out
+      // in front of the bar, towards the camera.
+      const home = (sign.userData.home as THREE.Vector3 | undefined) ?? (sign.userData.home = sign.position.clone());
+      this.v1.set(0, 0, 1).applyQuaternion(this.camera.quaternion).applyQuaternion(this.q1).multiplyScalar(0.16);
+      sign.position.copy(home).add(this.v1);
+      // On a phone the whole field is small: grow the board until its letters stand 8.5 px (about 12 px type), up to
+      // 1.6 times its size.
+      sign.scale.setScalar(1);
+      sign.updateMatrixWorld();
+      const cap = this.signCap(sign);
+      sign.scale.setScalar(cap > 0 ? Math.min(1.6, Math.max(1, 8.5 / cap)) : 1);
+      sign.updateMatrixWorld();
+    }
+  }
+
+  /** A gate sign's letter cap height on screen, in CSS px. */
+  private signCap(o: THREE.Object3D): number {
+    const cap = (o.userData.gateSignCap as number | undefined) ?? 0;
+    const a = o.localToWorld(this.v1.set(0, cap / 2, 0)).project(this.camera).y;
+    const b = o.localToWorld(this.v1.set(0, -cap / 2, 0)).project(this.camera).y;
+    return (Math.abs(a - b) / 2) * this.h;
+  }
+
+  /** Plan item 98: each gate sign's on-screen centre and letter cap height, in CSS px (tests hold it at 11 px). */
+  gateSigns(): Array<{ x: number; y: number; cap: number }> {
+    const rect = this.canvas.getBoundingClientRect();
+    const out: Array<{ x: number; y: number; cap: number }> = [];
+    const toPx = (v: THREE.Vector3) => ({ x: rect.left + (v.x * 0.5 + 0.5) * rect.width, y: rect.top + (-v.y * 0.5 + 0.5) * rect.height });
+    this.scene.updateMatrixWorld();
+    this.scene.traverse((o) => {
+      const cap = o.userData.gateSignCap as number | undefined;
+      if (!cap || !o.visible) return;
+      const mid = toPx(o.localToWorld(new THREE.Vector3(0, 0, 0)).project(this.camera));
+      const a = toPx(o.localToWorld(new THREE.Vector3(0, cap / 2, 0)).project(this.camera));
+      const b = toPx(o.localToWorld(new THREE.Vector3(0, -cap / 2, 0)).project(this.camera));
+      out.push({ x: mid.x, y: mid.y, cap: Math.hypot(a.x - b.x, a.y - b.y) });
+    });
+    return out;
+  }
+
   skyBand(): number {
     const p = this.v1.set(this.fieldSize.x / 2, BACKDROP_SKY_Y, BACKDROP_Z).project(this.camera);
     return Math.max(0, Math.min(1, (1 - p.y) / 2));
@@ -1166,6 +1214,7 @@ export class Renderer3D {
     }
     this.camera.lookAt(look);
     this.camera.updateMatrixWorld();
+    this.faceGateSigns();
     this.composer.render(dt);
     this.floaters.update(dt, this.camera, this.w, this.h);
   }

@@ -1017,7 +1017,9 @@ export function buildGround(level: Level): Ground {
   }
   group.userData.spin = spin;
 
-  // The corporate gate at each spawn.
+  // The corporate gate at each spawn (its sign board is turned to the camera by the renderer).
+  const gateSigns: THREE.Object3D[] = [];
+  group.userData.gateSigns = gateSigns;
   const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 && level.id <= 60 ? "CANDOR" : "HOLLOWELL";
   for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {
     const [c, r] = path[0]!;
@@ -1028,6 +1030,7 @@ export function buildGround(level: Level): Ground {
     gate.position.set(c + 0.5 + dx * 1.1, heightAt(c + 0.5 + dx * 1.1, r + 0.5 + dy * 1.1), r + 0.5 + dy * 1.1);
     gate.rotation.y = dx !== 0 ? 0 : Math.PI / 2;
     group.add(gate);
+    gateSigns.push(gate.userData.sign as THREE.Object3D);
   }
 
   // The farmhouse at the end of the lane.
