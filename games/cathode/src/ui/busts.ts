@@ -296,13 +296,15 @@ const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair,
 /**
  * Plan item 99: a mugshot. The bust in front of a height chart, with the slate held at the chest; a withheld
  * target (null) is a grey silhouette behind a red REDACTED bar and a case stamp, never a black square.
+ * Plan item 107: a `small` print (the List's 64-112 px frames) carries no words: at that scale they drew at 4-5 px,
+ * so the slate, the bar and the stamp stay as shapes and the caption under the print names it.
  */
-export function mugshotSvg(who: BustId | null, slate: string): string {
+export function mugshotSvg(who: BustId | null, slate: string, small = false): string {
   uid += 1;
   const id = `mug${uid}`;
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/><text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text></g>`;
+  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? "" : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
   if (who) {
     const inner = DRAW[who](id).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
     return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}">${inner}${chart}${slateG}</svg>`;
@@ -314,8 +316,8 @@ export function mugshotSvg(who: BustId | null, slate: string): string {
 <path d="M74 88 C74 60 86 46 100 46 C114 46 126 60 126 88 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 88 Z" fill="#2c2c31"/>
 <path d="M74 84 C74 58 86 46 100 46 C114 46 126 58 126 84" stroke="#55534d" stroke-width="1.4" fill="none"/>
 <rect x="-6" y="84" width="212" height="22" fill="#b3122a" transform="rotate(-6 100 95)"/>
-<text x="100" y="100" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="13" font-weight="800" letter-spacing="3" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
-<g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>
+${small ? "" : `<text x="100" y="100" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="13" font-weight="800" letter-spacing="3" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
+<g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
 ${slateG}
 </svg>`;
 }

@@ -1514,6 +1514,9 @@ body {
   .hero-games { margin-top: 16px; }
   .hero-game-text { padding: 8px 10px 2px; }
   .hero-game-name { font-size: 1.0625rem; }
+  /* Plan item 107: a two-column poster has no room for the 18+ badge beside NIGHT SHIFT (it wrapped onto its own
+     line), so it pins to the art's top-right corner, clear of Cath at the bottom. */
+  .hero-game-name .badge-adult { position: absolute; top: 8px; right: 8px; }
   .hero-game-hook { font-size: 0.875rem; }
   .hero-game-play { margin: 6px 10px 10px; padding: 6px 14px; }
 }

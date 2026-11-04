@@ -1020,7 +1020,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   }
   .mug.is-done .mug-name { text-decoration: line-through; text-decoration-color: var(--blood); }
   .mug.is-next { outline: calc(var(--u) * 3) solid var(--blood-hot); outline-offset: calc(var(--u) * 2); }
-  .mug.is-sealed { opacity: .72; }
+  /* Plan item 107: only the print fades, so 'Withheld' keeps its contrast on the white frame. */
+  .mug.is-sealed .mug-photo { opacity: .72; }
 }
 
 /* Plan item 98: on an upright phone the List is the same five mugshots as a small strip (it read as plain text);
@@ -1059,7 +1060,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     rotate: -24deg;
   }
   .mug.is-next { outline: calc(var(--u) * 2) solid var(--blood-hot); outline-offset: calc(var(--u) * 2); }
-  .mug.is-sealed { opacity: .72; }
+  /* Plan item 107: only the print fades, so 'Withheld' keeps its contrast on the white frame. */
+  .mug.is-sealed .mug-photo { opacity: .72; }
 }
 
 /* Plan item 89: the case dossier beside the menu at D, slid in while New Case or Continue has the focus: a pinned

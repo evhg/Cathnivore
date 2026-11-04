@@ -1424,13 +1424,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P on the lesson and today's daily: the spring house and garden in view, no empty band under the board over 80 px, the stream's fill rises as fields are watered; the garden's solved state changes on a win (`data-watered`) at P and D; shots P and D, light and dark.
 - **Size:** 1-2
 
-## 107. [ ] The bugs from the 2026-11-04 14:55 critique, fixed as one batch *(lane A, in progress)*
+## 107. [x] The bugs from the 2026-11-04 14:55 critique, fixed as one batch *(done 2026-11-04, lane A: 'Need 4 more Marks', wordless List prints, the phone 18+ badge on the poster's art; the Hedgerow teaser and the plan-card captions weren't bugs. e2e `e2e/critique107.spec.ts`, `cathode-front.spec.ts`, `e2e-site/critique104.spec.ts`; shots `e2e/screenshots/b107`)*
 - **Why:** shots `e2e/screenshots/plan1104e` (subagent critique; each claim below checked in the shots).
 - *(done 2026-11-04)* Cathnivore D (`cath-game-D`, 65-188 x 654-718): 'Need4 more Marks', 'Need3 more Marks'. The why-not box is inline-flex, which drops the edge space of item 104's 'Need ' span; `.why-lead`/`.why-tail` keep it (`white-space: pre`).
-- NIGHT SHIFT D (`ns-title-D`, 160-530 x 700-755): the List prints' 'REDACTED' bars and 'NO. n' tags are about 5 px, unreadable; 'Withheld' grey on grey. Stamps 11 px or more (or drop the words and keep the bar), 'Withheld' 4.5:1.
-- Hedgerow P map (`hedge-menu-P`, 50-340 x 755-780): the 'Beyond the hedge · Act 4' strip sits half under the tab bar at rest. Whole above the tab bar or wholly below the fold.
-- Site /games/ P (`games-P`, 212-246 x 825-843): NIGHT SHIFT's 18+ badge wraps onto its own line; keep it beside the name (as at D).
-- Cathnivore D plan cards (`cath-game-D`, 648-745 x 169-180 and 1032-1135 x 160-188): 'Arms next round' and 'Turns up at round end' about 11 px muted; check 4.5:1 and 12 px, and the Expand region chips (840-902 x 162-191) at 4.5:1.
+- *(done: a `small` mugshot drops its words, the bar, slate and stamp stay as shapes; only the print fades)* NIGHT SHIFT D (`ns-title-D`, 160-530 x 700-755): the List prints' 'REDACTED' bars and 'NO. n' tags are about 5 px, unreadable; 'Withheld' grey on grey. Stamps 11 px or more (or drop the words and keep the bar), 'Withheld' 4.5:1.
+- *(not a bug: the map scrolls, and the glimpse is the content below the fold, under a fixed tab bar as any scrolling page)* Hedgerow P map (`hedge-menu-P`, 50-340 x 755-780): the 'Beyond the hedge · Act 4' strip sits half under the tab bar at rest. Whole above the tab bar or wholly below the fold.
+- *(done: at P the badge pins to the poster art's top-right corner)* Site /games/ P (`games-P`, 212-246 x 825-843): NIGHT SHIFT's 18+ badge wraps onto its own line; keep it beside the name (as at D).
+- *(already held: item 100's `e2e/plan-cards.spec.ts` checks every plan-card word at 12 px or more and axe AA, light and dark)* Cathnivore D plan cards (`cath-game-D`, 648-745 x 169-180 and 1032-1135 x 160-188): 'Arms next round' and 'Turns up at round end' about 11 px muted; check 4.5:1 and 12 px, and the Expand region chips (840-902 x 162-191) at 4.5:1.
 - **Accept:** an e2e case per bullet at the size that broke (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
 - **Size:** 1
 

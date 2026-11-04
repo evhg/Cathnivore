@@ -310,7 +310,7 @@ function fillTitle(): void {
     const photo = el("figure", "mug-photo", li);
     // Plan item 99: a noir mugshot for every name; one not reached yet is a redacted silhouette, never a black square.
     const who = r.redacted ? undefined : BUST_FOR_CASE[THE_LIST[i]!.job];
-    photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`);
+    photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`, true);
     el("b", "mug-name", li, r.redacted ? "Withheld" : r.name);
   });
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();

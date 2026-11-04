@@ -446,3 +446,23 @@ test('the mugshot captions read at 4.5:1 or more', async ({ page, hasTouch }) =>
     expect(ratio, `caption ${i}`).toBeGreaterThanOrEqual(4.5)
   }
 })
+
+// Plan item 107: the List's prints carry no words under 11 px (their slates and REDACTED bars were 4-5 px), and a
+// withheld print fades only its photo, so 'Withheld' isn't dimmed with it.
+test('the List prints have no unreadable words, and Withheld is not faded', async ({ page, hasTouch }) => {
+  test.setTimeout(240_000)
+  await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const r = await page.evaluate(() => {
+    const wall = document.getElementById('the-list-wall')!
+    const tiny = [...wall.querySelectorAll('svg text')].filter((t) => t.getBoundingClientRect().height < 11).map((t) => t.textContent)
+    const faded = [...wall.querySelectorAll<HTMLElement>('.mug')].filter((m) => parseFloat(getComputedStyle(m).opacity) < 1).length
+    return { tiny, faded, sealed: wall.querySelectorAll('.mug.is-sealed').length }
+  })
+  expect(r.sealed).toBeGreaterThan(0)
+  expect(r.tiny).toEqual([])
+  expect(r.faded).toBe(0)
+})
