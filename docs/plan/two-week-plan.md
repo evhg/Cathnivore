@@ -1339,7 +1339,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845).
   - [ ] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604).
   - [x] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478). *(Done 2026-11-04 lane A: it was a Hollowell van parked on the plate in early frames; every road round Kingsmarket passes a plate, so the vans now drive inside the board's svg under the name signs (Map's `underNames`); e2e in `title-table.spec.ts`.)*
-  - [ ] **Cathnivore game D:** the faded last "Not yet" row cut by the "NOT YET · 7 MORE" pill (35-315 x 735-800).
+  - [x] **Cathnivore game D:** the faded last "Not yet" row cut by the "NOT YET · 7 MORE" pill (35-315 x 735-800). *(Done 2026-11-04 lane A: a row that starts in the fold's fade (under 80 px above the frame's foot) counts as below the fold and hides until scrolled (opacity 0, still focusable); e2e in `desktop-no-scroll.spec.ts` at 1440x900 and 1280x800.)*
   - [ ] **Hedgerow map P:** the next act's caption clipped behind the nav (50-340 x 760-780).
   - [ ] **Hedgerow 3D:** the gate sign about 9 px (D 175-285 x 378-392, P 20-75 x 410-420); Cath's 3D token a dark blob with no face at P (22-60 x 515-555).
 - **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more and 4.5:1, at P and D for each case; shots before and after.

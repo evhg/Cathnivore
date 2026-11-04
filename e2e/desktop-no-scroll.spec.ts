@@ -177,3 +177,28 @@ for (const [W, H] of [
     // three to a row.
     expect(r.cut, JSON.stringify(r)).toEqual([]);
   });
+
+// Plan item 98: under the Actions frame's "n more" tab no row shows only as a faded sliver (the last "Not yet"
+// strip was cut in half by the tab at 1440x900); a row with less than 80 px above the fold is hidden until scrolled.
+test("no Actions row shows only in the fold's fade", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "the desktop Actions frame");
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height });
+    await page.goto("/");
+    await page.getByText("Quick Game").click();
+    await page.getByRole("button", { name: "Start" }).click();
+    await expect(page.locator(".actions .action-item").first()).toBeVisible();
+    await page.waitForTimeout(400);
+    const slivers = await page.evaluate(() => {
+      const a = document.querySelector(".actions")!;
+      if (!a.hasAttribute("data-fade-bottom")) return [];
+      const edge = a.getBoundingClientRect().bottom;
+      return [...a.children]
+        .filter((c) => !c.matches(".action-head") && getComputedStyle(c).opacity !== "0" && getComputedStyle(c).visibility !== "hidden")
+        .map((c) => c.getBoundingClientRect())
+        .filter((r) => r.height > 0 && r.top < edge && edge - r.top < 80)
+        .map((r) => Math.round(r.top));
+    });
+    expect(slivers, `${width}x${height}`).toEqual([]);
+  }
+});

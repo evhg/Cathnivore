@@ -34,6 +34,9 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
         let head = ''
         let headEl: Element | null = null
         let orphan: Element | null = null
+        // Plan item 98: rows cut by the fold that show only in the fade (under the tab that counts them).
+        const cut: Element[] = []
+        const edge = el.getBoundingClientRect().bottom
         let shownInGroup = 0
         for (const child of Array.from(rows)) {
           if (child.matches('.action-head')) {
@@ -42,19 +45,24 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
             shownInGroup = 0
           }
           const r = child.getBoundingClientRect()
-          if (r.height > 0 && r.bottom <= fold && !child.matches('.action-head')) shownInGroup++
-          if (r.height > 0 && r.bottom > fold && !child.matches('[aria-hidden="true"], .action-head, .log-round')) {
+          if (r.height > 0 && r.bottom <= fold && !(el.matches('.actions') && edge - r.top < 80) && !child.matches('.action-head')) shownInGroup++
+          // Plan item 98: a row that starts in the fold's fade counts as below it too (it showed only as a sliver).
+          const inFade = el.matches('.actions') && edge - r.top < 80
+          if (r.height > 0 && (r.bottom > fold || inFade) && !child.matches('[aria-hidden="true"], .action-head, .log-round')) {
             if (!more) {
               next = head
               // Plan item 79: the group's heading is still above the fold with none of its rows: it would only
               // ghost through the fade over the tab that already names it.
               if (headEl && !shownInGroup && headEl.getBoundingClientRect().top < fold) orphan = headEl
             }
+            if (inFade && r.top < edge) cut.push(child)
             more++
           }
         }
-        for (const h of Array.from(el.querySelectorAll('[data-at-fold]'))) if (h !== orphan) h.removeAttribute('data-at-fold')
-        if (orphan && !orphan.hasAttribute('data-at-fold')) orphan.setAttribute('data-at-fold', '')
+        const folded = new Set<Element>(cut)
+        if (orphan) folded.add(orphan)
+        for (const h of Array.from(el.querySelectorAll('[data-at-fold]'))) if (!folded.has(h)) h.removeAttribute('data-at-fold')
+        for (const h of folded) if (!h.hasAttribute('data-at-fold')) h.setAttribute('data-at-fold', '')
       } else for (const h of Array.from(el.querySelectorAll('[data-at-fold]'))) h.removeAttribute('data-at-fold')
       if (more > 0) owner.dataset.more = String(more)
       else delete owner.dataset.more

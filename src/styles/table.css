@@ -2228,6 +2228,8 @@ html.no-animations .cath-companion .cameo {
   .actions[data-scroll-cue][data-fade-top][data-fade-bottom] { mask-image: linear-gradient(transparent, black 22px, black calc(100% - 76px), transparent calc(100% - 24px)); }
   /* Plan item 79: a group heading left above the fold with none of its rows hides; the tab names it instead. */
   .actions[data-scroll-cue][data-fade-bottom] .action-head[data-at-fold] { visibility: hidden; }
+  /* Plan item 98: and a row showing only in the fade (the last 'Not yet' strip, cut by the tab) hides too. */
+  .actions[data-scroll-cue][data-fade-bottom] > [data-at-fold]:not(.action-head):not(:focus-within) { opacity: 0; }
 }
 /* Plan item 75: Cath with presence in game: her reactive bust beside the narration is about 92 px at D (80 on a
    shorter desktop) and 64 px on a phone, her face following the round's events (CATH_REACTION_EXPRESSION). */
