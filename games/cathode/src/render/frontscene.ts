@@ -52,6 +52,8 @@ export interface FrontScene {
   parallax(x: number, y: number): void;
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
   figureBox(): { left: number; top: number; right: number; bottom: number };
+  /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
+  faceBox(): { left: number; top: number; right: number; bottom: number };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
   time: number;
   setTime(t: number): void;
@@ -71,16 +73,20 @@ const FOV = 38;
 const CATH_BACK = 1.2;
 
 /**
- * The four framings in Cath's frame (x her left, y up, z ahead of her), metres: behind her right shoulder, her
- * right profile low, behind her left shoulder high, her left side. `look` is the point the lens aims at; the
- * camera then turns so she sits on the right third.
+ * The four framings in Cath's frame (x her left, y up, z ahead of her), metres. Plan item 117: the face of every
+ * game is seen from the front now, a three-quarter each side of her, knees to umbrella, close enough that her face
+ * reads (120 px or more at 1440x900), all on her left: her right fist holds the umbrella's shaft, which crossed her
+ * face from the right. Front left, her left side, nearly face on and high, front left high. The pink sign
+ * ahead of her rims her and lights her face; the street she looks down is behind the lens. `look` is the point the
+ * lens aims at; the camera then turns so she sits on the right third.
  */
+/** Plan item 117: how far she turns to the lens on the title, radians (toward her left). */
+const TITLE_TURN = 0.42;
 const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, number, number] }> = [
-  // Low, so the umbrella's crown rises clear of the TOMAS EGGS fascia instead of cutting across its lettering.
-  { pos: [-1.9, 1.2, -5.6], look: [0.2, 1.25, 0.5] },
-  { pos: [-4.7, 1.1, -2.4], look: [0, 1.15, 0.6] },
-  { pos: [0.6, 1.9, -6.2], look: [0, 1.25, 0.6] },
-  { pos: [4.6, 1.3, -2.6], look: [0, 1.15, 0.4] },
+  { pos: [1.12, 1.48, 2.34], look: [0.05, 1.36, 0] },
+  { pos: [2.02, 1.38, 1.64], look: [0, 1.34, 0] },
+  { pos: [0.47, 1.62, 2.58], look: [0, 1.38, 0] },
+  { pos: [1.55, 1.56, 2.16], look: [0, 1.34, 0] },
 ];
 
 /**
@@ -142,6 +148,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (world.liveLight) removers.push(world.liveLight(pink));
     else removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), pinkI, 6));
     removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
+    // Plan item 117: a soft face key, warm white, low and ahead of her left cheek, under the umbrella's edge, so
+    // her face reads from the front (the pink sign alone left it a dark oval).
+    removers.push(world.light(toWorld(0.55, 1.5, 1.1), new THREE.Color(1.0, 0.8, 0.72), phone ? 1.1 : 1.3, 2.4));
   }
 
   // ---- progress set pieces (S9.2): the egg shop's sign dark after the Fish Market, a chalk tally of the names ----
@@ -251,12 +260,15 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // About 400 ms to the new colour.
     key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
     key.intensity = (phone ? 7 : 9) * wd.w;
+    let yaw = Math.PI;
     if (wd.turn > 0) {
       wd.turn = Math.max(0, wd.turn - dt);
       const u = 1 - wd.turn / TURN_S;
-      cath.group.rotation.y = Math.PI + 0.6 * Math.sin(Math.PI * u) * (1 - u * 0.15);
-      if (wd.turn === 0) cath.group.rotation.y = Math.PI;
+      yaw = Math.PI + 0.6 * Math.sin(Math.PI * u) * (1 - u * 0.15);
     }
+    // Plan item 117: on the title she turns a little to the lens (which is always on her left there), so her face
+    // is three-quarter, not profile; the wardrobe keeps her square to its own framing.
+    cath.group.rotation.y = yaw + TITLE_TURN * (1 - smoother(Math.min(1, wd.w)));
     // The coat eases to the class's cloth over the same 400 ms as the key.
     coatNow.lerp(coatWant, 1 - Math.exp(-dt * 9));
     // Back at the black trench, the model's own cloth (the phone's is a shade lighter) takes over again.
@@ -466,6 +478,22 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
           bottom = Math.max(bottom, y);
         }
       });
+      return { left, top, right, bottom };
+    },
+    faceBox() {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+      cath.group.updateMatrixWorld(true);
+      // The skull is 0.072 x 0.098 x 0.088 m round the head's origin; the hair adds a little at the crown.
+      for (const x of [-0.08, 0.08]) for (const y of [-0.1, 0.12]) for (const z of [-0.02, 0.1]) {
+        corner.set(x, y, z).applyMatrix4(cath.head.matrixWorld).project(cam);
+        const sx = r.left + ((corner.x + 1) / 2) * r.width;
+        const sy = r.top + ((1 - corner.y) / 2) * r.height;
+        left = Math.min(left, sx);
+        right = Math.max(right, sx);
+        top = Math.min(top, sy);
+        bottom = Math.max(bottom, sy);
+      }
       return { left, top, right, bottom };
     },
     get time() {

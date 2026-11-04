@@ -208,7 +208,9 @@ test('the front door has no letterbox bars at P and D', async ({ page }) => {
   }
 })
 
-// Plan item 82: on an upright phone she stands in the lower right, clear of the menu (she stood behind it).
+// Plan item 82: on an upright phone she stands in the lower right, clear of the menu (she stood behind it). Plan item
+// 117 brought the lens in to her face: the menu covers none of her face or coat; her umbrella's dim canopy may pass
+// behind the last entry's corner.
 test('upright, the menu does not cover her', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'the upright phone framing')
   test.setTimeout(200_000)
@@ -217,13 +219,16 @@ test('upright, the menu does not cover her', async ({ page, hasTouch }) => {
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
   await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  type B = { left: number; top: number; right: number; bottom: number }
   const m = await page.evaluate(() => {
     const menu = document.querySelector('#menu')!.getBoundingClientRect()
-    const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(): { left: number; top: number; right: number; bottom: number } } | null } }).cathodeFront.scene()
-    return { menu: { left: menu.left, top: menu.top, right: menu.right, bottom: menu.bottom }, fig: scene!.figureBox() }
+    const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(): B; faceBox(): B } | null } }).cathodeFront.scene()
+    return { menu: { left: menu.left, top: menu.top, right: menu.right, bottom: menu.bottom }, fig: scene!.figureBox(), face: scene!.faceBox() }
   })
-  const overlap = m.fig.left < m.menu.right && m.fig.right > m.menu.left && m.fig.top < m.menu.bottom && m.fig.bottom > m.menu.top
-  expect(overlap, JSON.stringify(m)).toBe(false)
+  const hits = (a: B, b: B) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+  expect(hits(m.face, m.menu), JSON.stringify(m)).toBe(false)
+  // Her coat starts at her chin: everything from there down is below the menu.
+  expect(m.face.bottom, JSON.stringify(m)).toBeGreaterThan(m.menu.bottom)
   // She stands in the lower half of the frame.
   expect((m.fig.top + m.fig.bottom) / 2).toBeGreaterThan(844 / 2)
 })
@@ -465,4 +470,28 @@ test('the List prints have no unreadable words, and Withheld is not faded', asyn
   expect(r.sealed).toBeGreaterThan(0)
   expect(r.tiny).toEqual([])
   expect(r.faded).toBe(0)
+})
+
+// Plan item 117: the face of every game is seen from the front. On the title the lens circles her left front, her
+// face 120 px or more tall at D and 70 at P, and on an upright phone it meets no menu entry.
+test("her face reads on the title, clear of the menu", async ({ page, hasTouch }) => {
+  test.setTimeout(300_000)
+  const vp = hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 }
+  await page.setViewportSize(vp)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  for (const t of [8, 26]) {
+    await page.goto(`/nightshift/?front=title&shot&t=${t}&quality=phone`)
+    await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+    const m = await page.evaluate(() => {
+      type B = { left: number; top: number; right: number; bottom: number }
+      const scene = (window as unknown as { cathodeFront: { scene(): { faceBox(): B } | null } }).cathodeFront.scene()
+      const rows = [...document.querySelectorAll('#menu button, #menu a')].map((e) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }).filter((r) => r.right > r.left)
+      return { face: scene!.faceBox(), rows }
+    })
+    expect(m.face.bottom - m.face.top, `t=${t}`).toBeGreaterThanOrEqual(hasTouch ? 70 : 120)
+    expect(m.face.top).toBeGreaterThanOrEqual(0)
+    expect(m.face.right).toBeLessThanOrEqual(vp.width)
+    for (const r of m.rows) expect(m.face.left < r.right && m.face.right > r.left && m.face.top < r.bottom && m.face.bottom > r.top, JSON.stringify({ face: m.face, r })).toBe(false)
+  }
 })
