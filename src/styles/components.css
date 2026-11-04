@@ -407,6 +407,13 @@ button.btn-quiet {
   font-weight: 600;
 }
 
+/* Plan item 107: the reason is an inline-flex box, which drops the space at the edge of its lead ('Need ') and
+   tail (' to remove') spans ('Need4 more Marks'); pre keeps it. */
+.why-lead,
+.why-tail {
+  white-space: pre;
+}
+
 .chip--short,
 .action-why-not,
 .card-why-not {

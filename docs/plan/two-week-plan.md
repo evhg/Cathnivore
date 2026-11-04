@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-04 14:55 UTC
-
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
 
@@ -1425,3 +1423,47 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The garden takes the day's water when solved (its beds darken and a sprout pops), the payoff of the stream, at both sizes.
 - **Accept:** e2e at P on the lesson and today's daily: the spring house and garden in view, no empty band under the board over 80 px, the stream's fill rises as fields are watered; the garden's solved state changes on a win (`data-watered`) at P and D; shots P and D, light and dark.
 - **Size:** 1-2
+
+## 107. [ ] The bugs from the 2026-11-04 14:55 critique, fixed as one batch *(lane A, in progress)*
+- **Why:** shots `e2e/screenshots/plan1104e` (subagent critique; each claim below checked in the shots).
+- *(done 2026-11-04)* Cathnivore D (`cath-game-D`, 65-188 x 654-718): 'Need4 more Marks', 'Need3 more Marks'. The why-not box is inline-flex, which drops the edge space of item 104's 'Need ' span; `.why-lead`/`.why-tail` keep it (`white-space: pre`).
+- NIGHT SHIFT D (`ns-title-D`, 160-530 x 700-755): the List prints' 'REDACTED' bars and 'NO. n' tags are about 5 px, unreadable; 'Withheld' grey on grey. Stamps 11 px or more (or drop the words and keep the bar), 'Withheld' 4.5:1.
+- Hedgerow P map (`hedge-menu-P`, 50-340 x 755-780): the 'Beyond the hedge · Act 4' strip sits half under the tab bar at rest. Whole above the tab bar or wholly below the fold.
+- Site /games/ P (`games-P`, 212-246 x 825-843): NIGHT SHIFT's 18+ badge wraps onto its own line; keep it beside the name (as at D).
+- Cathnivore D plan cards (`cath-game-D`, 648-745 x 169-180 and 1032-1135 x 160-188): 'Arms next round' and 'Turns up at round end' about 11 px muted; check 4.5:1 and 12 px, and the Expand region chips (840-902 x 162-191) at 4.5:1.
+- **Accept:** an e2e case per bullet at the size that broke (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
+- **Size:** 1
+
+## 108. [ ] Site /games/: Cath dressed for each game on its card
+- **Why:** `games-D` (330-410, 630-710, 930-1010, 1230-1310 x 550-655) and `games-P`: the four game cards carry the same smiling Cath head in the same pose. It covers part of each game's art and breaks NIGHT SHIFT's noir card. VISION: Cath is the face of every game, with presence; item 96's "bust in each game's outfit" reads as one bust.
+- **Build:**
+  - Four distinct Cath vignettes from `shared/cath/`: Cathnivore at her market stall with a crate, Runnel kneeling with her watering can, Hedgerow in her garden coat with a trowel, NIGHT SHIFT as the title's umbrella silhouette in her trench (dark, rim-lit, no smile).
+  - Each sits at the card art's edge, covering no more than 15% of it; her pose and outfit are told apart in greyscale.
+  - The hero's Cath and the portfolio's game frames keep their current art; re-shoot key art (`npm run keyart`) only if a frame changes.
+- **Accept:** e2e: four distinct `data-pose` values on the cards; each Cath covers 15% or less of its card's art box at P and D; NIGHT SHIFT's vignette has no saturated colour but the game's red; shots P and D, light and dark.
+- **Size:** 1-2
+
+## 109. [ ] Cathnivore phone: tap a region to see it up close
+- **Why:** `cath-game-P` (board 15-375 x 240-590): on a phone the hexes are about 110 px, the pieces 14-18 px and the region names about 10 px; the board loses to the chrome around it (VISION 2: the table is the hero). The layout has no height to spare (item 83), so the board can't simply grow.
+- **Build:**
+  - Tapping a region on a phone opens it up close: a sheet (or an in-place zoom) with the region's hex at 300 px or more, its pieces at 32 px or more with their counts, its name, owner, pressure and what's on it in words, and the actions that can target it.
+  - The board's region names at 12 px or more (pill labels, not cut), and a selected region outlined on the board while the sheet is up.
+  - Esc, a swipe down or the close button returns; keyboard and screen readers reach it from the region's button.
+- **Accept:** e2e at P: a region tap opens the close-up within 300 ms; pieces in it 32 px or more; names on the board 12 px or more; nothing changes at D; axe AA; shots P before and after, light and dark.
+- **Size:** 2
+
+## 110. [ ] Cathnivore: Cath speaks from where she stands
+- **Why:** `cath-title-D` (bubble 555-845 x 335-378: about 13 px italic, no tail, 40 px from her head); `cath-setup-D` (Cath 1110-1215 x 610-780, small, the Start sign across her); `cath-setup-P` (a 40 px thumbnail). VISION: Cath with presence; her lines should read as hers at a glance.
+- **Build:**
+  - One shared speech bubble for Cath's lines on the title and Setup: 15 px or more, a tail pointing at her mouth, anchored within 24 px of her head, one expression per line from `shared/cath`.
+  - On the desktop Setup she stands clear of the Start sign at 160 px or more; on the phone Setup a half-length Cath with her bubble in the header's room, or her line moves to the board's speech strip.
+- **Accept:** e2e at P and D: bubble text 15 px or more at 4.5:1, its tail within 24 px of her head box, nothing overlaps her; Setup still has no scroll at 1440x900 and 390x844 (desktop-no-scroll, setup-* specs); shots P and D.
+- **Size:** 1-2
+
+## 111. [ ] Hedgerow map D: stops as landmarks on a road, and Cath walking it
+- **Why:** `hedge-menu-D` (stops 225-1240 x 330-545): ten near-identical 50 px grey coins with padlocks; Cath's marker about 35 px. Item 88 gave the next stop its card; the road itself is still a grid of coins. Check first: item 88's strip and docked card may already fill 560-790.
+- **Build:**
+  - Each stop a 72 px or larger landmark vignette of its level (the blimp, the billboard, the beach clean) on the act's road; locked ones in pencil (item 73), the boss lot drawn bigger.
+  - Cath's marker 60 px or more, walking to the next stop when a level is won (instant under reduced motion).
+- **Accept:** e2e at D: stops 72 px or more, Cath's marker 60 px or more, no empty band over 150 px between the stops and the level card; hedgerow-map still passes; shots P and D.
+- **Size:** 2
