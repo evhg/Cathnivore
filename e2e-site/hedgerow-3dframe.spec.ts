@@ -46,3 +46,26 @@ test('the 3D gate sign reads at 12 px type or more (level 21)', async ({ page })
     await expect(page.locator('.gate-plate-town').first()).toHaveText('HOLLOWELL')
   } else expect(seen.length).toBeGreaterThan(0)
 })
+
+// Plan item 102: she cheers a cleared round and raises a worried hand when a vehicle gets through. Her reaction
+// starts on the frame the event lands (it eases in over 0.15 s); swiftshader runs at a few fps, so the wait here
+// is frames, not the 250 ms a real GPU shows.
+test('the 3D Cath cheers a cleared round and worries at a leak', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'one size is enough')
+  test.setTimeout(180_000)
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate(() => {
+    const stars = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [String(i + 1), 3]))
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 13: true }, seen: {}, tips: { all: true } }))
+  })
+  await page.goto('/hedgerow/?sandbox=1&level=13')
+  type R3 = { heroMood: string; cath?: unknown }
+  type HG3 = { game(): { events: unknown[] } | null }
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow3d?: R3 }).hedgerow3d?.cath, null, { timeout: 120_000 })
+  const mood = () => page.evaluate(() => (window as unknown as { hedgerow3d: R3 }).hedgerow3d.heroMood)
+  await page.evaluate(() => (window as unknown as { hedgerow: HG3 }).hedgerow.game()!.events.push({ type: 'cleared', wave: 1, reward: 0 }))
+  await expect.poll(mood, { timeout: 15_000, intervals: [100] }).toBe('cheer')
+  await expect.poll(mood, { timeout: 20_000 }).toBe('rest')
+  await page.evaluate(() => (window as unknown as { hedgerow: HG3 }).hedgerow.game()!.events.push({ type: 'leak', x: 1, y: 1, lost: 1 }))
+  await expect.poll(mood, { timeout: 15_000, intervals: [100] }).toBe('worried')
+})

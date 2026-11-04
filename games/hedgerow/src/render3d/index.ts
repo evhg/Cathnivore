@@ -227,6 +227,11 @@ export class Renderer3D {
   private camTarget = new THREE.Vector3();
   private heroSwung = 9;
   private heroPie = 9;
+  /** Plan item 102: seconds since she cheered a cleared round, and since a vehicle leaked (her worried hand). */
+  private heroCheer = 9;
+  /** What her body says right now (read by the sandbox e2e). */
+  heroMood: "rest" | "cheer" | "worried" = "rest";
+  private heroWorry = 9;
   private raycaster = new THREE.Raycaster();
   private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   private w = 1;
@@ -787,6 +792,7 @@ export class Renderer3D {
         }
         case "leak": {
           this.kick(0.35);
+          if (this.heroCheer > 1.2) this.heroWorry = 0;
           const y = this.height(e.x, e.y);
           this.sparks.emit(e.x, y + 0.5, e.y, "#ff5a3d", 30, 2.5, 0.16, 0.7);
           this.floaters.add(`-${e.lost ?? 1} Goodwill`, new THREE.Vector3(e.x, y + 1, e.y), "#ff8f80", 1.1);
@@ -848,6 +854,7 @@ export class Renderer3D {
           break;
         }
         case "cleared": {
+          this.heroCheer = 0;
           const [c, r] = game.level.path[game.level.path.length - 1]!;
           this.sparks.emit(c + 0.5, 1, r + 0.5, "#ffd23f", 40, 2.5, 0.14, 1, -3);
           break;
@@ -1596,6 +1603,8 @@ export class Renderer3D {
     fig.rotation.y = 0;
     this.heroSwung += dt;
     this.heroPie += dt;
+    this.heroCheer += dt;
+    this.heroWorry += dt;
     if (h.down > 0) {
       fig.rotation.set(0, 0, -1.2 * h.facing);
       fig.position.y = 0.1;
@@ -1662,6 +1671,14 @@ export class Renderer3D {
       pose = mix(REST, WIND, ease(1 - h.cd / 0.25));
     }
     pose = [...pose];
+    // Plan item 102: she cheers a cleared round (both arms up, a little bounce of the lean), and raises a worried
+    // hand to her face when a vehicle gets through. Each eases in over 0.15 s and out by 1.4 s.
+    const react = (age: number) => (age < 0.15 ? ease(age / 0.15) : age < 1.1 ? 1 : age < 1.4 ? 1 - ease((age - 1.1) / 0.3) : 0);
+    const cheer = react(this.heroCheer);
+    if (cheer > 0) pose = mix(pose, [-3.0, 0.25, 0.1, -2.95, 0.3, 0.06 * Math.sin(this.heroCheer * 14), 0], cheer);
+    const worry = cheer > 0 ? 0 : react(this.heroWorry);
+    if (worry > 0) pose = mix(pose, [pose[0], pose[1], pose[2], -1.35, 2.1, -0.05, 0.12], worry);
+    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : "rest";
     // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
     // throwing arm (on her far side) round where it can be seen.
     const p = this.heroPie;
