@@ -1138,7 +1138,7 @@ function markLessonCard(step: number): void {
   const next = document.getElementById('lc-next')
   if (next && step >= 0 && !next.dataset.filled) {
     next.dataset.filled = '1'
-    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next</small><b>${escapeText(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
+    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next</small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
   }
   card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
     li.classList.toggle('done', i < step || step >= LESSON_STEPS.length)
@@ -1155,6 +1155,14 @@ function endLesson(): void {
   data.seenHelp = true
   save(data)
   openGame()
+}
+
+/** Critique 2026-11-04 (item 126): "Daily #37 · Wed, Nov 4" may wrap only at a dot, never inside the date. */
+function upNextTitle(title: string): string {
+  return title
+    .split(' · ')
+    .map((part) => escapeText(part).replace(/ /g, '&nbsp;'))
+    .join(' · ')
 }
 
 // ---- start ------------------------------------------------------------------------------------------

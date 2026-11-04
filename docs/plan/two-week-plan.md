@@ -1605,12 +1605,12 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 every stat, the weapon and the call to action fit the viewport with no scroll; text 12 px or more at 4.5:1; cathode-classpick and cathode-perf pass; shots P and L.
 - **Size:** 2
 
-## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch *(lane A, in progress)*
+## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch
 - **Build:** (check each first; plan1104h)
   - [ ] **Hedgerow:** the HOLLOWELL gate plate half clipped at the field's top edge (l34-2d-D 228-307 x 76-94); at P both plates touch the screen's left edge (2-83 x 100-118, 508-526); "N coming" plates on plots (l34-2d-D 302-395 x 130-150; l21-2d-D 355-440 x 448-467); Coming up's "22"/"16" touch the panel edge (l34-2d-D 1383-1402 x 628-646).
   - [ ] **Cathnivore game:** D Cath's bubble a 120 px column of five ragged lines (355-475 x 490-610); "STAGE I" about 9 px (845-895 x 103-113); the Not-yet coin chips grey on grey at about 8 px (243-280 x 640-660); P region names about 10 px (100-175 x 257-270).
   - [ ] **Cathnivore Campaign D:** chapter goal badges pale grey at about 2:1 (910-1000 x 362-386); progress pips about 6 px (292-340 x 170-178); Cath cut flat at the knees with no ground (1285-1370 x 35-185; P 290-375 x 125-230).
-  - [ ] **Runnel D:** the Up-next title breaks the date ("Wed, Nov / 4", 170-320 x 667-703).
+  - [x] **Runnel D:** the Up-next title breaks the date ("Wed, Nov / 4", 170-320 x 667-703). *(Fixed 2026-11-04 lane A: each ' · ' part of the title is unbreakable, so it wraps only at a dot; `runnel-critique91.spec.ts`; shot `e2e/screenshots/k116/runnel-lesson-D.png`.)*
   - [ ] **NIGHT SHIFT:** class numbers about 9 px and dim (ns-play-D 55-66 x 185-410); "HOLD ENTER" about 10 px grey (1313-1382 x 805-815); the stats panel slices the street sign to "HO" (925-968 x 113-132); ns-title-P's case line about 11 px grey over the photo, under AA (15-275 x 437-450).
   - [ ] **Site /games/ D:** the H1 reads "Cathnivore" over Runnel's pitch (615-1095 x 220-290).
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.

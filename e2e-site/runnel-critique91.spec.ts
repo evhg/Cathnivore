@@ -27,3 +27,21 @@ test('the lesson: no repeated sky line, and its steps at AA', async ({ page, has
   expect(ratios.length).toBeGreaterThan(0)
   for (const r of ratios) expect(r).toBeGreaterThanOrEqual(4.5)
 })
+
+// Plan item 126: the Up-next title wraps only at its dot, never inside the date ("Wed, Nov / 4").
+test('the Up-next title keeps its date on one line', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/runnel/?lesson')
+  const title = page.locator('#lc-next b')
+  await expect(title).toBeVisible()
+  const lines = await title.evaluate((b) => {
+    // The date is the text after the last dot; its glyph boxes share one top.
+    const text = b.firstChild as Text
+    const at = (b.textContent ?? '').lastIndexOf('·')
+    const range = document.createRange()
+    range.setStart(text, Math.max(0, at + 1))
+    range.setEnd(text, text.length)
+    return new Set([...range.getClientRects()].filter((r) => r.width > 1).map((r) => Math.round(r.top))).size
+  })
+  expect(lines).toBe(1)
+})
