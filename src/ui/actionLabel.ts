@@ -192,3 +192,17 @@ export function actionGroupLabel(action: Action, state: GameState): string {
       return actionLabel(action, state)
   }
 }
+
+// Plan item 83: the group keys that fold into one family card (Supply's removals, Rebut's counts).
+export function actionFamily(key: string): 'supply' | 'rebut' | undefined {
+  if (key.startsWith('supplyOutlets:') || key === 'supplyBuyout') return 'supply'
+  if (key.startsWith('rebut:')) return 'rebut'
+  return undefined
+}
+
+export function familyOptionLabel(key: string): string {
+  if (key === 'supplyBuyout') return 'Buyout'
+  if (key === 'supplyOutlets:1') return '1 Outlet'
+  if (key === 'supplyOutlets:2') return '2 Outlets'
+  return `${key.split(':')[1]} Doubt`
+}

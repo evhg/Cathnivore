@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
@@ -24,7 +24,7 @@ import { liftEnabled, liftPlayedCard, liftTarget } from './playLift'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
-import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
+import { actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
@@ -519,6 +519,20 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 36: the card of the last buy, in flight to the farmstead.
   const lastCardRef = useRef<{ el: HTMLElement; at: number } | null>(null)
   const [buyFlight, setBuyFlight] = useState<{ key: number; card: ImprovementCard; cost: number; path: BuyFlightPath } | null>(null)
+  // Plan item 83: a desktop turn whose playable cards overflow the Actions frame folds the Farm block for the rest of
+  // that turn (its Farm key sits beside Undo), giving the frame its height. Keyed by round and producer, so it
+  // never flickers back mid-turn when the fold makes the cards fit.
+  const [bigTurn, setBigTurn] = useState('')
+  const turnKey = `${state.round}:${state.activeProducer}`
+  useLayoutEffect(() => {
+    if (!isDesktop || bigTurn === turnKey) return
+    const frame = document.querySelector('.actions-sheet .actions')?.getBoundingClientRect()
+    if (!frame) return
+    const over = [...document.querySelectorAll('.actions-sheet .action-item')].some(
+      (item) => !item.querySelector(':scope > button:disabled') && item.getBoundingClientRect().bottom > frame.bottom + 1,
+    )
+    if (over) setBigTurn(turnKey)
+  }, [state, isDesktop, bigTurn, turnKey])
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
   const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })
@@ -1257,6 +1271,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // in the DOM and broke every Playwright strict-mode locator that queried it (e2e/tooltip.spec.ts).
   // Plan item 33: the enemy turn plays in the Actions area (the dock on a phone, the Actions column on a
   // desktop), which has nothing to offer while it runs; over the map it clipped and covered hexes.
+  const foldFarm = isDesktop && bigTurn === turnKey
+
   const actionsPanel = (
     <div className="actions-well">
       <section
@@ -1267,7 +1283,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         data-scroll-cue=""
         onClickCapture={(e) => {
           // Plan item 83: remember which card was pressed, so act() can lift it toward the board.
-          const card = (e.target as Element).closest?.('.action-item > button:first-child')
+          const card = (e.target as Element).closest?.('.action-item > button:first-child, .action-family-option > button')
           if (card instanceof HTMLElement && !(card as HTMLButtonElement).disabled) lastCardRef.current = { el: card, at: performance.now() }
         }}
       >
@@ -1443,74 +1459,126 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             )
           })}
-          {[...groups.entries()].map(([key, group]) => {
-            const single = group.entries.length === 1
-            const firstAction = actions[group.entries[0]!.index]!
-            const term = actionTermFor(firstAction)
-            const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
-            const Icon = ACTION_ICON[firstAction.kind]
-            return (
-              <span key={key} className="action-item" data-group="play">
-                {(() => {
-                  const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
-                  return (
-                    <button
-                      aria-label={aria}
-                      data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
-                      className="action-card-draggable"
-                      onPointerDown={(e) => {
-                        if (guidedActive || e.button !== 0) return
-                        dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
-                        e.currentTarget.setPointerCapture(e.pointerId)
-                      }}
-                      onPointerMove={(e) => {
-                        const d = dragRef.current
-                        if (!d) return
-                        if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
-                        d.moved = true
-                        setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
-                      }}
-                      onPointerUp={(e) => {
-                        const d = dragRef.current
-                        dragRef.current = null
-                        if (!d?.moved) return
-                        dragClickGuard.current = true
-                        setDrag(null)
-                        const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
-                        const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
-                        const entry = d.group.entries.find((en) => en.region === region)
-                        if (entry) act(entry.index)
-                      }}
-                      onPointerCancel={() => {
-                        dragRef.current = null
-                        setDrag(null)
-                      }}
-                      onClick={() => {
-                        if (dragClickGuard.current) {
-                          dragClickGuard.current = false
-                          return
-                        }
-                        if (guidedActive && !guidedExpect) return
-                        if (single && !forceTargeting) act(group.entries[0]!.index)
-                        else setSelectedGroup(group)
-                      }}
-                    >
-                      <span className="action-label">
-                        {Icon && <Icon size={18} />}
-                        {text}
+          {(() => {
+            // Plan item 83: a group's button (a region-target action), whole or as one option of a family card.
+            const groupButton = (group: { label: string; entries: { index: number; region: RegionId }[] }, short?: string) => {
+              const single = group.entries.length === 1
+              const firstAction = actions[group.entries[0]!.index]!
+              const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
+              const Icon = ACTION_ICON[firstAction.kind]
+              const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
+              const text = short ?? full.text
+              const aria = short ? (full.aria ?? full.text) : full.aria
+              return (
+                <button
+                  aria-label={aria}
+                  data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
+                  className={short ? 'action-card-draggable action-option' : 'action-card-draggable'}
+                  onPointerDown={(e) => {
+                    if (guidedActive || e.button !== 0) return
+                    dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                  }}
+                  onPointerMove={(e) => {
+                    const d = dragRef.current
+                    if (!d) return
+                    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
+                    d.moved = true
+                    setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
+                  }}
+                  onPointerUp={(e) => {
+                    const d = dragRef.current
+                    dragRef.current = null
+                    if (!d?.moved) return
+                    dragClickGuard.current = true
+                    setDrag(null)
+                    const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
+                    const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
+                    const entry = d.group.entries.find((en) => en.region === region)
+                    if (entry) act(entry.index)
+                  }}
+                  onPointerCancel={() => {
+                    dragRef.current = null
+                    setDrag(null)
+                  }}
+                  onClick={() => {
+                    if (dragClickGuard.current) {
+                      dragClickGuard.current = false
+                      return
+                    }
+                    if (guidedActive && !guidedExpect) return
+                    if (single && !forceTargeting) act(group.entries[0]!.index)
+                    else setSelectedGroup(group)
+                  }}
+                >
+                  <span className="action-label">
+                    {!short && Icon && <Icon size={18} />}
+                    {text}
+                  </span>
+                  <ActionCostChip cost={cost} />
+                </button>
+              )
+            }
+            // Plan item 83: Supply's three removals and Rebut's two are one card each with their options as keys,
+            // so a big turn's Play group is a few rich cards rather than a column of near-identical rows.
+            const rendered = new Set<string>()
+            const keys = [...groups.keys()]
+            return keys.map((key) => {
+              if (rendered.has(key)) return null
+              const group = groups.get(key)!
+              const family = actionFamily(key)
+              const members = family ? keys.filter((k) => actionFamily(k) === family) : []
+              const firstAction = actions[group.entries[0]!.index]!
+              const term = actionTermFor(firstAction)
+              if (family && members.length > 1) {
+                members.forEach((k) => rendered.add(k))
+                const regions = new Set(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.region)))
+                const oneRegion = regions.size === 1 && members.every((k) => groups.get(k)!.entries.length === 1) ? [...regions][0]! : undefined
+                const Icon = ACTION_ICON[firstAction.kind]
+                const name = family === 'supply' ? 'Supply' : 'Rebut'
+                return (
+                  <span
+                    key={`family-${family}`}
+                    className="action-item action-family"
+                    data-group="play"
+                    data-family={family}
+                    role="group"
+                    aria-label={oneRegion ? `${name} in ${REGIONS[oneRegion].name}` : name}
+                  >
+                    <span className="action-family-name" aria-hidden="true">
+                      {Icon && <Icon size={18} />}
+                      <span className="action-family-text">
+                        {name}
+                        {oneRegion && <span className="action-family-where">{REGIONS[oneRegion].name}</span>}
                       </span>
-                      <ActionCostChip cost={cost} />
-                    </button>
-                  )
-                })()}
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
+                    </span>
+                    <span className="action-family-options">
+                      {members.map((k) => (
+                        <span key={k} className="action-family-option">
+                          {groupButton(groups.get(k)!, familyOptionLabel(k))}
+                        </span>
+                      ))}
+                    </span>
+                    {term && (
+                      <Tooltip term={term} label={`What is ${term}?`}>
+                        ?
+                      </Tooltip>
+                    )}
+                  </span>
+                )
+              }
+              return (
+                <span key={key} className="action-item" data-group="play">
+                  {groupButton(group)}
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })
+          })()}
           {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
           {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
           disabledOpenStall ||
@@ -1725,7 +1793,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <UndoIcon size={22} />
         <span className="rail-undo-text">Undo</span>
       </button>
-      <button className={showFarm ? 'mobile-only rail-tab is-open' : 'mobile-only rail-tab'} onClick={() => setShowFarm(true)}>
+      <button
+        className={`${foldFarm ? 'rail-tab rail-tab-farm' : 'mobile-only rail-tab rail-tab-farm'}${showFarm ? ' is-open' : ''}`}
+        onClick={() => setShowFarm(true)}
+      >
         <FarmIcon />
         <span>Farm</span>
         {/* Plan item 62: on a narrow phone the stall's newest crate rides the Farm tab, with how many she owns. */}
@@ -1776,13 +1847,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           SPEC 10.3), and at some game states (nothing affordable yet in Market/Cath's Plan) it can have no
           focusable descendants of its own, which the right column hit at random in this session's
           testing. */}
-      <aside className="desktop-col desktop-col-left" tabIndex={0}>
+      <aside className="desktop-col desktop-col-left" tabIndex={0} data-big-turn={foldFarm ? '' : undefined}>
         {/* AAA UI M4 fix: the Farm ledger folds into the producer frame (one line a producer) so the
             Actions frame below keeps the column's height for the verbs. */}
         {isDesktop && (
           <div className="sheet-panel producer-sheet frame">
             {producerPanel}
-            <FarmSheet state={state} onClose={() => {}} inline />
+            {!foldFarm && <FarmSheet state={state} onClose={() => {}} inline />}
           </div>
         )}
         {/* ROADMAP 8: the actions tray lives here on desktop, not the right column — Market/Cath's Plan/Log

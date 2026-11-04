@@ -2364,3 +2364,73 @@ html.no-animations .cath-companion .cameo {
 @media (max-width: 1023.98px) and (orientation: portrait) {
   .action-tray .actions .action-item { width: clamp(128px, calc((100vw - 86px) / 2), 184px); }
 }
+/* Plan item 83: Supply's removals and Rebut's counts are one card each, the options set into it as keys
+   (the same wheat face as a card), so a big turn's Play group is a few rich cards, not a column of rows. */
+.actions .action-family {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 8px 6px;
+  border: 1.5px solid var(--bunting);
+  border-radius: var(--r-card);
+  background: var(--mat-card-flat);
+  box-shadow: var(--inset-hi), var(--e2);
+}
+.actions .action-family-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding-right: 28px;
+  font: 700 var(--fs-small)/1.15 var(--font-text);
+  color: var(--ink);
+}
+.actions .action-family-name > svg { flex: none; }
+.actions .action-family-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.actions .action-family-where { font-weight: 600; color: var(--ink-muted); }
+.actions .action-family-where::before { content: ' · '; }
+.actions .action-family-options { display: flex; gap: 5px; min-width: 0; }
+.actions .action-family-option { display: flex; flex: 1 1 0; min-width: 0; }
+.actions .action-family-option > button {
+  --lip: 3px;
+  --lip-c: var(--bunting-lo);
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 2px 5px 2px 7px;
+  border-color: var(--bunting);
+  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, var(--wheat-hi), var(--wheat));
+  color: var(--ink-on-fixed-fill);
+}
+.actions .action-family-option > button .action-label { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.actions .action-family-option > button .action-cost { flex: none; height: 20px; padding: 0 6px 0 4px; gap: 2px; }
+.actions .action-family-option > button .action-cost svg { width: 12px; height: 12px; }
+/* A key stacks its name over its price, so neither is cut in a third of the card. */
+.actions .action-family-option > button { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 42px; padding: 3px 6px 4px; }
+.actions .action-family-option > button .action-label { max-width: 100%; font-size: var(--fs-caption); line-height: 1.1; }
+.actions .action-item.action-family > .tooltip-trigger { position: absolute; top: 3px; bottom: auto; right: 6px; translate: none; scale: .8; }
+.actions .action-family-name > svg { width: 22px; height: 22px; }
+@media (min-width: 1024px) {
+  .actions-sheet .actions .action-family { gap: 3px; padding: 3px 8px 5px; border-left: 6px solid var(--grp); }
+  .actions-sheet .actions .action-family-option > button { min-height: 36px; padding-block: 2px 3px; }
+}
+@media (max-width: 1023.98px) {
+  .action-tray .actions .action-item.action-family { width: 212px; padding: 6px 7px; border-top: 5px solid var(--grp); justify-content: space-between; }
+  .action-tray .actions .action-family-option > button { min-height: 44px; }
+}
+/* Plan item 83: on a big desktop turn the Farm block folds and its key stands beside Undo at the frame's foot. */
+@media (min-width: 1024px) {
+  .actions-sheet .controls:has(.rail-tab-farm) { display: flex; gap: var(--sp-2); }
+  .actions-sheet .controls .rail-undo { flex: 1 1 0; width: auto; }
+  .actions-sheet .controls .rail-tab-farm {
+    flex: 1 1 0; flex-direction: row; gap: var(--sp-2); height: 40px; min-height: 40px; padding: 0 var(--sp-3); border-radius: var(--r-btn);
+  }
+  .actions-sheet .controls .rail-tab-farm svg { width: 20px; height: 20px; }
+  .actions-sheet .controls .rail-tab-farm .rail-tab-stall { display: none; }
+}
