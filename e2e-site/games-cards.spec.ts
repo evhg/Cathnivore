@@ -95,3 +95,44 @@ test('the hero shows the four games on the first screen, clear of Cath', async (
     await expect(links.nth(3)).toHaveAttribute('href', '/nightshift/')
   }
 })
+
+// Plan item 85: the hero's words hold 4.5:1 or more against what is behind them (the 90th-percentile brightest
+// pixel behind each line's box, with the words made transparent), at P and D.
+test('the hero text reads at 4.5:1 or more against the sunset', async ({ page }) => {
+  for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/games/')
+    await page.waitForTimeout(3200)
+    for (const sel of ['.hero .kicker', '.hero .lede', '.hero-meta', '.btn-cta-glass']) {
+      const el = page.locator(sel).first()
+      const box = (await el.boundingBox())!
+      const ink = await el.evaluate((e) => getComputedStyle(e).color)
+      await el.evaluate((e) => ((e as HTMLElement).style.color = 'transparent'))
+      await page.addStyleTag({ content: `${sel} * { color: transparent !important; }` })
+      const shot = (await page.screenshot({ clip: box })).toString('base64')
+      await el.evaluate((e) => ((e as HTMLElement).style.color = ''))
+      const ratio = await page.evaluate(async ([png, fill]) => {
+        const img = new Image()
+        img.src = `data:image/png;base64,${png}`
+        await img.decode()
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const x = c.getContext('2d')!
+        x.drawImage(img, 0, 0)
+        const d = x.getImageData(0, 0, c.width, c.height).data
+        const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+        const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+        const ls: number[] = []
+        for (let i = 0; i < d.length; i += 4) ls.push(lum(d[i]!, d[i + 1]!, d[i + 2]!))
+        ls.sort((a, b) => a - b)
+        const [r, g, b, a = 1] = fill.match(/[\d.]+/g)!.map(Number)
+        const bg = ls[Math.floor(ls.length * 0.9)]!
+        // A translucent ink is blended over the background it sits on.
+        const text = lum(r!, g!, b!) * a + bg * (1 - a)
+        return (Math.max(text, bg) + 0.05) / (Math.min(text, bg) + 0.05)
+      }, [shot, ink] as const)
+      expect(ratio, `${sel} at ${vp.width}`).toBeGreaterThanOrEqual(4.5)
+    }
+  }
+})

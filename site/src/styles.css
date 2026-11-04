@@ -1516,3 +1516,15 @@ body {
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
   .hero-cath { height: min(70vh, 640px); margin-bottom: 2vh; }
 }
+
+/* Plan item 85: a soft legibility pool under the hero's words, so the lede, the meta line and the ghost button
+   hold AA over the brightest band of the sunset (the kicker and title already did); the meta line in full cream. */
+.hero-text {
+  background: radial-gradient(closest-side, var(--scrim) 0%, var(--scrim) 40%, transparent 100%) center / 100% 100% no-repeat;
+}
+.hero-meta { display: inline-block; padding: 3px 10px; border-radius: 999px; color: var(--cream); background: var(--scrim); }
+/* Plan item 85: the stall lit like the scene (the sunset's warm key from the left, a little more saturation), so it
+   reads as standing in the field rather than in the haze. */
+@media (min-width: 1200px) and (min-aspect-ratio: 1/1) {
+  .hero-stall { filter: saturate(1.15) brightness(1.06) drop-shadow(-6px 0 14px var(--gold-glow)) drop-shadow(0 18px 26px var(--shadow-deep)); }
+}

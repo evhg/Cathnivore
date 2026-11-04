@@ -1229,7 +1229,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 1
 
-## 85. [ ] The site's /games/: all four games on the first screen *(lane B, in progress)*
+## 85. [x] The site's /games/: all four games on the first screen *(done 2026-11-04, lane B, slices 1-3: the hero strip, Cath head to boots in the shared art's `full` framing, the hero text at AA (a legibility pool, the meta line as a pill) and the stall warmed; e2e in `games-cards.spec.ts`; shots P and D, light and dark, in `e2e/screenshots/f85`)*
 - **Why:** `games-D` (plan1104a): the first screen is one "Play today's Runnel" button (615-815 x 352-398); no game shows above the fold; Cath stands cut at the waist on a floating plank (200-450 x 515-532); the stall (1145-1355 x 285-510) is washed out by haze. `games-P`: a dark card (20-370 x 680-844) crosses Cath's legs.
 - **Build:**
   - A strip of four game cards in the hero (live key art `portfolio/public/work/games-*.webp`, each logotype and a one-line hook): under the CTA row at D, a snapping row from y about 600 at P. *(Done 2026-11-04 lane B, slice 1: `nav.hero-games` is a 2x2 under the CTA row at D, and a snapping row of two cards and a peek at P (y 417-603), with Cath below it. e2e in `games-cards.spec.ts`: 4 cards inside 1440x900, 2 inside 390x844, none over Cath. Next: ground Cath (no plank) and lift the stall out of the haze; at P she is now partly below the fold.)*
