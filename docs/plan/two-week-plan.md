@@ -1686,7 +1686,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no lesson text block over 2 lines at D; the hand within 20 px of the target tile; the lesson to the daily in under 1.5 s; under reduced motion the hand appears without moving; shots P and D at each step.
 - **Size:** 2
 
-## 135. [ ] Hedgerow: Cath debriefs a leak on the field
+## 135. [ ] Hedgerow: Cath debriefs a leak on the field *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (62-290 x 528-620) and l34 (845-1070 x 372-458): the same "Build a Scarecrow" line at round 11 and round 17; nothing says what just went wrong.
 - **Build:**
   - After a round with leaks, the stretch of lane they got through glows red for 1.5 s.
