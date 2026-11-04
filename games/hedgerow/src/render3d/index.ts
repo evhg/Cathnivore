@@ -544,6 +544,35 @@ export class Renderer3D {
   }
 
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
+  /** Plan item 102: her face's box on screen in CSS px (the modelled head's face sphere), for the size checks. */
+  faceBox(): { w: number; h: number } | null {
+    const face = this.faceMesh();
+    if (!face) return null;
+    const box = new THREE.Box3().setFromObject(face);
+    const r = this.canvas.getBoundingClientRect();
+    const xs: number[] = [];
+    const ys: number[] = [];
+    const v = new THREE.Vector3();
+    for (let k = 0; k < 8; k++) {
+      v.set(k & 1 ? box.max.x : box.min.x, k & 2 ? box.max.y : box.min.y, k & 4 ? box.max.z : box.min.z).project(this.camera);
+      xs.push(((v.x + 1) / 2) * r.width);
+      ys.push(((1 - v.y) / 2) * r.height);
+    }
+    return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+  }
+
+  private faceCache: THREE.Mesh | null = null;
+  private faceKey = new THREE.Color("#e8a383");
+  private faceMesh(): THREE.Mesh | null {
+    if (this.faceCache?.parent) return this.faceCache;
+    this.faceCache = null;
+    this.cath?.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!this.faceCache && m.isMesh && !Array.isArray(m.material) && m.material.name === "face") this.faceCache = m;
+    });
+    return this.faceCache;
+  }
+
   fieldShare(): number {
     const { x: cols, y: rows } = this.fieldSize;
     // The fitted base view, not the live camera (which carries the player's zoom and pan and the gate's ease).
@@ -1582,6 +1611,15 @@ export class Renderer3D {
   }
 
   private syncHero(game: Game, dt: number, t: number): void {
+    // Plan item 102: a warm key on her face when the camera comes in close to her (a lift of the face's own
+    // material, not another scene light: no extra cost per pixel and no shader change as it fades).
+    const face = this.faceMesh();
+    if (face) {
+      const mat = face.material as THREE.MeshStandardMaterial;
+      mat.userData.base ??= mat.emissive.clone();
+      const framed = Math.min(1, Math.max(0, (this.zoom - 1.25) / 0.6));
+      mat.emissive.copy(mat.userData.base as THREE.Color).lerp(this.faceKey, 0.1 * framed);
+    }
     const c = this.cath;
     if (!c) return;
     dressCath(c);

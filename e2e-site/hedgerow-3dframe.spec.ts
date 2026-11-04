@@ -77,3 +77,22 @@ test('the 3D Cath cheers a cleared round, worries at a leak and stoops to plant'
   })
   await expect.poll(mood, { timeout: 15_000, intervals: [100] }).toBe('plant')
 })
+
+// Plan item 102: her face is big enough to read at the field's own framing: 24 px tall or more at D, 14 on a phone.
+for (const level of [13, 21]) {
+  test(`the 3D Cath's face reads at the field's framing (level ${level})`, async ({ page, hasTouch }) => {
+    test.setTimeout(150_000)
+    await page.goto('/hedgerow/?sandbox=1')
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
+    type FB = { faceBox(): { w: number; h: number } | null }
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow?: FB }).hedgerow?.faceBox() ?? null), { timeout: 120_000 }).not.toBeNull()
+    await page.waitForTimeout(3000)
+    const box = await page.evaluate(() => (window as unknown as { hedgerow: FB }).hedgerow.faceBox()!)
+    expect(box.h).toBeGreaterThanOrEqual(hasTouch ? 14 : 24)
+  })
+}
