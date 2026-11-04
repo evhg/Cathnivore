@@ -1443,7 +1443,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: four distinct `data-pose` values on the cards; each Cath covers 15% or less of its card's art box at P and D; NIGHT SHIFT's vignette has no saturated colour but the game's red; shots P and D, light and dark.
 - **Size:** 1-2
 
-## 109. [ ] Cathnivore phone: tap a region to see it up close
+## 109. [ ] Cathnivore phone: tap a region to see it up close *(lane B, in progress)*
 - **Why:** `cath-game-P` (board 15-375 x 240-590): on a phone the hexes are about 110 px, the pieces 14-18 px and the region names about 10 px; the board loses to the chrome around it (VISION 2: the table is the hero). The layout has no height to spare (item 83), so the board can't simply grow.
 - **Build:**
   - Tapping a region on a phone opens it up close: a sheet (or an in-place zoom) with the region's hex at 300 px or more, its pieces at 32 px or more with their counts, its name, owner, pressure and what's on it in words, and the actions that can target it.
