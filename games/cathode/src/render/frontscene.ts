@@ -44,6 +44,8 @@ export interface FrontScene {
    * and the class's 1.2 s idle. null goes back to the title loop. `instant` (screenshots) skips the eases.
    */
   wardrobe(cls: string | null, instant?: boolean): void;
+  /** Plan item 112: the class whose look and idle she's showing (null on the title). */
+  readonly dressed: string | null;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
@@ -475,6 +477,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     setFraming(k) {
       framing = THREE.MathUtils.clamp(k, 0, 0.9);
+    },
+    get dressed() {
+      return wd.cls;
     },
     wardrobe(cls, instant) {
       const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;

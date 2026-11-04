@@ -727,6 +727,20 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   min-height: 0;
   padding-top: calc(var(--u) * 6);
 }
+/* Plan item 112: the sheet is a dossier on a dark plate (the street's signs ran through its type), with the same
+   hairline down its left edge as her line's plate. The plate bleeds past the type so its edges sit off the words. */
+.cp-sheet { position: relative; isolation: isolate; }
+.cp-sheet::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * -30) calc(var(--u) * -34) calc(var(--u) * -24) calc(var(--u) * -40);
+  z-index: calc(var(--z-lift) * -1);
+  background: linear-gradient(180deg, rgb(var(--shade-rgb) / .86), rgb(var(--shade-rgb) / .78));
+  box-shadow: inset max(1px, calc(var(--u) * 2)) 0 0 rgb(var(--ink-rgb) / .22); /* px-ok */
+  pointer-events: none;
+}
+.cp-weapon-art { display: block; width: calc(var(--u) * 320); max-width: 100%; margin: calc(var(--u) * -18) 0 calc(var(--u) * 2) calc(var(--u) * -40); color: var(--ink-2); }
+.cp-weapon-art svg { display: block; width: 100%; height: auto; }
 .cp-attrs { display: grid; gap: calc(var(--u) * 18); margin: calc(var(--u) * 6) 0 calc(var(--u) * 44); }
 .cp-attr { display: grid; grid-template-columns: calc(var(--u) * 92) minmax(0, 1fr); align-items: center; }
 .cp-attr dt { font: 700 var(--fs-2)/1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .03em; text-transform: uppercase; color: var(--ink-2); }
@@ -851,6 +865,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-attr-v { grid-template-columns: minmax(0, 1fr) 30px; gap: 10px; } /* px-ok */
   .cp-attr-n { font-size: var(--fs-2); }
   .cp-weapon { margin-bottom: 4px; } /* px-ok */
+  .cp-weapon-art { display: none; }
+  .cp-sheet::before { inset: -8px -10px -6px -12px; } /* px-ok */
   .cp-weapon-name { font-size: var(--fs-2); }
   .cp-hold { padding: 10px 0 12px; } /* px-ok */
   .cp-hold-label { font-size: var(--fs-2); }
@@ -859,8 +875,13 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 @media (max-width: 700px) and (orientation: portrait) {
   .cp { grid-template-columns: minmax(0, 1fr); padding: max(20px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow: auto; } /* px-ok */
   .cp-sheet { grid-column: 1; }
-  .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; gap: 0 14px; overflow-x: auto; scrollbar-width: none; } /* px-ok */
-  .cp-opt-name { font-size: var(--fs-2); }
+  /* Plan item 112: the names at 15 px with room between them, a snapping row that scrolls the chosen one into
+     view and fades at the edge it runs past; a sideways swipe across her steps the class (classpick.ts). */
+  .cp { touch-action: pan-y; }
+  .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; gap: 0 22px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin: 0 -16px; padding: 0 32px 0 16px; scroll-padding: 0 32px; -webkit-mask-image: linear-gradient(90deg, transparent, rgb(var(--black-rgb)) 16px, rgb(var(--black-rgb)) calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, rgb(var(--black-rgb)) 16px, rgb(var(--black-rgb)) calc(100% - 40px), transparent); } /* px-ok */
+  .cp-list::-webkit-scrollbar { display: none; }
+  .cp-opt { scroll-snap-align: center; min-height: 44px; } /* px-ok: tap target */
+  .cp-opt-name { font-size: var(--fs-3); }
   .cp-opt-n { display: none; }
   /* The focused name gets the red marker under it, not colour alone. */
   .cp-opt::before { left: 0; top: auto; bottom: 6px; width: 100%; height: 2px; margin: 0; } /* px-ok */
@@ -890,18 +911,17 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
     bottom: calc(-1 * max(16px, env(safe-area-inset-bottom))); /* px-ok: through the .cp's bottom padding */
     z-index: var(--z-lift-4);
     margin: 0 -16px; /* px-ok */
-    padding: 26px 16px max(12px, env(safe-area-inset-bottom)); /* px-ok */
-    background: linear-gradient(180deg, transparent 0, rgb(var(--black-rgb)) 24px); /* px-ok */
+    padding: 14px 16px max(12px, env(safe-area-inset-bottom)); /* px-ok */
+    background: linear-gradient(180deg, transparent 0, rgb(var(--black-rgb)) 12px); /* px-ok */
   }
   .cp-cue {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px; /* px-ok */
-    height: 0;
-    margin: 0;
-    overflow: visible;
-    transform: translateY(-6px); /* px-ok */
+    /* Plan item 112: on the foot's own black band above the bar, never over the sheet's rows. */
+    height: 14px; /* px-ok */
+    margin: 0 0 6px; /* px-ok */
     font: 700 var(--fs-1)/1 var(--font-ui);
     letter-spacing: .06em;
     text-transform: uppercase;

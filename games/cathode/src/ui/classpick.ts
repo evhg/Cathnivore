@@ -14,6 +14,7 @@ import { WEAPON_BASES } from "../sim/weapons";
 import { CLASS_COPY } from "./classart";
 import { button, el, reducedMotion, trapTab } from "./dom";
 import { WEAPON_CLASS_LABEL } from "./itemtext";
+import { weaponArtSvg } from "./weaponart";
 
 export interface ClassPickHandle {
   /** Removes the screen without picking. */
@@ -148,7 +149,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     weapon.replaceChildren();
     const fresh = newCharacter(cls);
     const w = WEAPON_BASES[STARTING_WEAPON[cls]];
-    if (w) el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);
+    if (w) {
+      // Plan item 112: the class weapon as line art on the dossier.
+      const art = el("span", "cp-weapon-art", weapon);
+      art.innerHTML = weaponArtSvg(w.cls);
+      el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);
+    }
     el("span", "cp-weapon-name", weapon, fresh.equipment.weapon1?.name ?? w?.name ?? "");
     if (w) {
       const nums = el("dl", "cp-weapon-nums", weapon);
@@ -179,7 +185,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       const on = c === cls;
       opt.setAttribute("aria-checked", String(on));
       opt.tabIndex = on ? 0 : -1;
-      if (on && focus) opt.focus();
+      if (on && focus) opt.focus({ preventScroll: true });
+      // An upright phone's names are a row wider than the screen: keep the chosen one in view.
+      if (on && list.scrollWidth > list.clientWidth) {
+        const left = opt.offsetLeft - (list.clientWidth - opt.offsetWidth) / 2;
+        list.scrollTo({ left: Math.max(0, left), behavior: still ? "auto" : "smooth" });
+      }
     }
     if (changed) {
       renderDetail();
@@ -260,6 +271,25 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     if (ev.key === "Enter" || ev.key === " ") holdCancel();
   }
   const onBlur = () => holdCancel();
+  // Plan item 112: on a touch screen a sideways swipe across her (anywhere but the names' row, which scrolls, and
+  // the hold bar) steps to the next or previous class.
+  let swipe: { x: number; y: number; id: number } | null = null;
+  root.addEventListener("pointerdown", (e) => {
+    const t = e.target as HTMLElement;
+    swipe = e.pointerType === "touch" && !list.contains(t) && !go.contains(t) ? { x: e.clientX, y: e.clientY, id: e.pointerId } : null;
+  });
+  root.addEventListener("pointerup", (e) => {
+    if (!swipe || e.pointerId !== swipe.id || done) return;
+    const dx = e.clientX - swipe.x;
+    const dy = e.clientY - swipe.y;
+    swipe = null;
+    if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    const i = CLASS_IDS.indexOf(selected);
+    const n = CLASS_IDS.length;
+    holdCancel();
+    select(CLASS_IDS[(i + (dx < 0 ? 1 : n - 1)) % n]!, false);
+  });
+  root.addEventListener("pointercancel", () => (swipe = null));
   // The cue shows while there is more of the sheet below the fold (only an upright phone ever scrolls).
   const moreBelow = () => root.classList.toggle("cp-more", root.scrollHeight - root.clientHeight - root.scrollTop > 8);
   root.addEventListener("scroll", moreBelow, { passive: true });
