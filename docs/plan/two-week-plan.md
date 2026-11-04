@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-04 17:32 UTC
+
 
 
 
@@ -1514,3 +1514,58 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - *(2026-11-04 16:35 lane A: done: the lock icons 22 px, the pill 8 px clear of the edge (two lines kept, item 79), the Saltmarsh cloud moved into open sky and lit; e2e in `hedgerow-tray.spec.ts`, shots `e2e/screenshots/h115`. Not bugs: the 2D bubble is dark ink (the shot caught its fade-in); the phone Act 4 banner sits below the fold of a page that scrolls; the culvert under the Act 4 banner is the next act's teaser; the NIGHT SHIFT line is the boot line, still loading under SwiftShader at 9 s (it hides on the street's first frame); the phone Setup's Cath is item 110's decided header bust. The 3D gate plate steps clear of the queue's vehicles (right of them, else below), `e2e/screenshots/h115b`. Item done.)*
 - **Accept:** e2e per bullet where it can be measured (contrast, one-line pills, icon size, banner inside the viewport, label off the lane); shots P and D.
 - **Size:** 1
+
+## 116. [ ] Site: painted key art, not screenshots
+- **Why:** `games-D` (plan1104g, 130-1310 x 460-655): three of the four posters are UI captures (HUD, tray, side panel) and Runnel's is stale (the old board, not the item 77/90/97 valley); the Cathnivore poster's text is about 3 px. The site's first screen reads as budget.
+- **Build:**
+  - A `?keyart` mode per game: no HUD, the hero subject framed (board, valley, field, street), Cath standing in the scene in her game's outfit.
+  - `npm run keyart` shoots those frames instead of play screens.
+  - A staleness check: a game's key art must be newer than its last art or render change.
+- **Accept:** e2e: no `button`, `header` or HUD element visible in `?keyart` for each game; the poster's longest side 282 px or more at D; a unit test fails when a game's art files are newer than its key art; shots of /games/ and / at P and D.
+- **Size:** 3
+
+## 117. [ ] NIGHT SHIFT: Cath's face on the front door
+- **Why:** `ns-title-D` (940-1170 x 260-720) and `ns-title-P` (95-250 x 230-620): the face of every game is seen from behind, and at P the menu sits on her body (item 82 meant her to stand clear). `ns-play-D` (940-980 x 290-330): on the class pick she is behind the stats panel. Check first against item 112's finished state.
+- **Build:**
+  - A 3/4 front title pose, umbrella tilted back, her face lit by a neon rim and a face key; she turns to camera when NEW CASE takes focus.
+  - At P, frame her head between the logotype and The List, off the menu.
+  - A `faceBox()` hook like Hedgerow's.
+- **Accept:** e2e face box 120 px or more tall at D and 70 at P; at P it meets no menu entry's box; on the class pick at D it is visible and not under the stats panel; cathode-perf passes; shots P, L and D.
+- **Size:** 3
+
+## 118. [ ] Cathnivore: Cath stands at the table during play
+- **Why:** `cath-game-D` (350-615 x 95-195): in play she is a 96 px ring portrait while 350-600 x 300-880 beside the board is empty paper; Pell is docked opposite her (item 92), so the rivalry has one face.
+- **Build:**
+  - A half-length Cath from `shared/cath`, 260 px or more, at the board's left edge at D, her bubble at her mouth.
+  - Her expression from game events: delighted on a liberation, worried on a Squeeze, determined on a plan reveal (`data-expression`).
+  - At P the strip portrait stays and swaps expression from the same events.
+- **Accept:** e2e at 1440x900 and 1280x800: Cath 260 px or more tall, overlapping no region hex or the action column; `data-expression` changes on a Squeeze and a liberation; no page scroll added; shots P and D, light and dark.
+- **Size:** 3
+
+## 119. [ ] Hedgerow: seed packets that are illustrated
+- **Why:** `hedge-l21-3d-D` (1108-1412 x 85-368): each packet is mostly blank tan round a 25 px icon with a 10 px price; the most-touched UI in the game reads as placeholder.
+- **Build:**
+  - Each tower on its packet face at 56 px or more, on a printed packet (a crimped top edge, a seed-type colour band).
+  - The price as a 13 px or larger stamp on the band.
+  - The same art in the phone tray and the Almanac.
+- **Accept:** e2e at D: tower art 56x56 or more; price text 13 px or more at D and 12 at P, at 4.5:1; hedgerow-tray and gatequeue pass; shots P and D in 2D and 3D.
+- **Size:** 2
+
+## 120. [ ] Hedgerow 2D: the field fills its frame, and the bubble keeps off plots *(lane B, in progress)*
+- **Why:** `hedge-l21-2d-D` (800-1080 x 80-880): about 280 px of empty grass right of the field (item 78 framed only 3D). `hedge-l34-2d-D` (845-1070 x 120-205) and `hedge-l21-2d-P`/`3d-P` (150-310 x 445-525): Cath's bubble covers the plots it tells you to tap.
+- **Build:**
+  - The 2D view centred and scaled so the field fills 70% or more of the frame.
+  - The bubble's spot (`barkSpot`) treats buildable plots as boxes to avoid when there is room.
+- **Accept:** e2e in `?2d`: the field box is 70% or more of the canvas at P and D on levels 13, 21 and 34; bubble ∩ plot = 0 there; shots P and D.
+- **Size:** 2
+
+## 121. [ ] The bugs from the 2026-11-04 17:36 critique, fixed as one batch
+- **Build:** (check each first; plan1104g)
+  - [ ] **NIGHT SHIFT P class pick:** the tab row cuts "WIREWITCH" (298-390 x 90-105). **D title:** the dossier's name plate about 8 px (460-528 x 460-472); The List's name plates empty black bars (85-120 x 745-757).
+  - [ ] **Cathnivore game:** P EXPAND tags about 7 px (from item 91); D "HOLLOWELL" ribbon about 10 px (1225-1330 x 176-188); plan-card subtext about 11 px grey (648-745 x 168-180).
+  - [ ] **Cathnivore Setup D:** the Start sign's "OPEN" about 9 px (1135-1182 x 798-808); lines from Cath's figure behind the sign (1085-1235 x 770-790).
+  - [ ] **Hedgerow 3D D:** Coming up's "16" touches the panel edge (1383-1405 x 645-663); Cath's face a dark smudge under her hair (150-230 x 470-540).
+  - [ ] **Hedgerow map D:** the Saltmarsh cloud an opaque blob (460-770 x 60-160).
+  - [ ] **Portfolio D:** darker side columns at x 0-85 and 1355-1440 (check: a max-width background that doesn't bleed).
+- **Accept:** e2e text 11 px or more and boxes not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
