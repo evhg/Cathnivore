@@ -900,3 +900,58 @@ html.no-animations .coach-tap { animation: none; }
   stroke: var(--focus);
   stroke-width: 6;
 }
+
+/* Plan item 109: a region up close on a phone: its hex at 300 px or more, its pieces at 32 px with their counts. */
+.region-closeup {
+  max-height: 88vh;
+}
+.region-closeup header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2, 1.4rem);
+}
+.region-closeup-kind {
+  margin: 2px 0 0;
+  font-size: 0.9375rem;
+  color: var(--ink-muted, var(--ink));
+}
+.region-closeup-hex {
+  display: block;
+  width: min(320px, 82vw);
+  height: auto;
+  margin: 8px auto 6px;
+}
+.region-closeup-pieces {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1rem;
+}
+.region-closeup-pieces li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.region-closeup-pieces svg,
+.region-closeup-stall,
+.region-closeup-lost {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+.region-closeup-stall,
+.region-closeup-lost {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-2, var(--surface));
+  box-shadow: inset 0 0 0 2px var(--ink);
+  font-weight: 800;
+}
+.region-closeup-empty {
+  color: var(--ink-muted, var(--ink));
+}
+.region-inspect:focus { outline: none; }
+.region-inspect:focus-visible { stroke: var(--focus, var(--ink)); stroke-width: 5px; }

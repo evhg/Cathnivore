@@ -44,6 +44,7 @@ import Vignette from './Vignette'
 import MarketSheet from './MarketSheet'
 import CathsPlanSheet from './CathsPlanSheet'
 import RegionMap, { Outlet, Buyout, Doubt, CoopMarkerIcon } from './Map'
+import RegionCloseUp from './RegionCloseUp'
 import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Portrait from './portraits/Portrait'
@@ -593,6 +594,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // region, and the action only actually happens on Confirm. Cancel steps back to the full group's glow
   // (or, with nothing pending, drops out of targeting mode entirely).
   const [pendingChoice, setPendingChoice] = useState<{ index: number; region: RegionId } | null>(null)
+  // Plan item 109: the region opened up close on a phone (null: none).
+  const [closeUp, setCloseUp] = useState<RegionId | null>(null)
   // Plan item 21: a region card can be dragged onto a glowing hex; dropping it there plays it at once.
   const [drag, setDrag] = useState<{ label: string; x: number; y: number; regions: RegionId[] } | null>(null)
   const dragRef = useRef<{ x0: number; y0: number; moved: boolean; group: { label: string; entries: { index: number; region: RegionId }[] } } | null>(null)
@@ -2293,7 +2296,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 }
               : undefined
           }
+          onInspect={!isDesktop && !guidedActive && pendingEnemyTurn.length === 0 && !drag && !teammatePick ? setCloseUp : undefined}
         />
+        {closeUp && !isDesktop && <RegionCloseUp state={boardState} region={closeUp} onClose={() => setCloseUp(null)} />}
       </section>
       </div>
 

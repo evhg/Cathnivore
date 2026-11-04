@@ -95,6 +95,8 @@ interface Props {
   /** Plan item 25: the plan card being looked at marks the hexes it will hit (`data-threat="squeeze"`). */
   threat?: { slot: 'squeeze' | 'expand' | 'scout'; regions: RegionId[] }
   onSelect?: (region: RegionId) => void
+  /** Plan item 109: with nothing to pick, a tap on a region opens it up close (phones). */
+  onInspect?: (region: RegionId) => void
   /** Plan item 80: the producers' faces this moment (a Squeeze worries them, their ability delights them). */
   faces?: Partial<Record<ProducerId, ProducerFace>>
   /** Plan item 98: drawn over the hexes but under the region name plates (the title's vans on their roads). */
@@ -579,7 +581,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, faces, underNames }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, faces, underNames }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -590,6 +592,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
   const highlighted = new Set(highlight ?? [])
   const wilted = squeezedLastTurn(state)
   const targeting = highlighted.size > 0
+  const inspect = !onSelect && !targeting ? onInspect : undefined
   const colourBlindPatterns = loadSettings().colourBlindPatterns
   const uid = useId().replace(/:/g, '')
 
@@ -662,7 +665,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
   }, [active.length])
 
   return (
-    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       <g className="tile-shadows" filter="url(#tile-shadow)" pointerEvents="none" aria-hidden="true">
@@ -712,7 +715,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
             data-region={id}
             data-enemy-pieces={r.outlets + r.buyouts + r.doubt + r.lostLand}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
-            onClick={onSelect ? () => onSelect(id) : undefined}
+            onClick={onSelect ? () => onSelect(id) : inspect ? () => inspect(id) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
             tabIndex={onSelect && glow ? 0 : undefined}
             role={onSelect && glow ? 'button' : undefined}
@@ -738,6 +741,25 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
             <polygon className="tile-paint" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#tile-paint)" pointerEvents="none" />
+            {/* Plan item 109: with nothing to pick on a phone, each region has a button of its own (a shape with no
+                children, so the pieces' own controls aren't nested in it) that opens it up close. */}
+            {inspect && (
+              <polygon
+                className="region-inspect"
+                points={hexPoints(x, y, HEX_R * GAP_SCALE)}
+                fill="transparent"
+                pointerEvents="none"
+                tabIndex={0}
+                role="button"
+                aria-label={`${def.name}: see it up close`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    inspect(id)
+                  }
+                }}
+              />
+            )}
             <polygon className="tile-light" points={hexPoints(x, y, HEX_R * GAP_SCALE - 1)} fill="url(#tile-light)" pointerEvents="none" />
             <polygon
               className="tile-bevel"
