@@ -785,3 +785,8 @@ html.no-animations .title-screen * {
   }
   .title-footer { margin-top: 0; }
 }
+/* Plan item 84: on a phone the board runs to the screen's edge, so Bea's drawing is pinned just inside the cloth's
+   far corner (it overhung it, 8 px from the screen edge). */
+@media (max-width: 600px) {
+  .title-art .title-bea { right: 6px; top: 6px; transform: rotate(6deg); }
+}

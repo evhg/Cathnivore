@@ -79,3 +79,17 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     expect(m.bandBottom).toBeLessThanOrEqual(80)
   })
 }
+
+// Plan item 84: on a phone Bea's drawing is pinned inside the cloth's corner, clear of the screen's edge.
+test("Bea's drawing sits inside the board on a phone", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the upright phone')
+  await page.goto('/')
+  await page.locator('.title-bea').waitFor()
+  const m = await page.evaluate(() => {
+    const b = document.querySelector('.title-bea')!.getBoundingClientRect()
+    const t = document.querySelector('.title-board')!.getBoundingClientRect()
+    return { inBoard: b.left >= t.left && b.right <= t.right + 1 && b.top >= t.top - 1, edge: innerWidth - b.right }
+  })
+  expect(m.inBoard).toBe(true)
+  expect(m.edge).toBeGreaterThanOrEqual(12)
+})
