@@ -1423,9 +1423,8 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       return g;
     }
     case "hatchback": {
-      const g = vehicle({ len: 0.46, h: 0.2, w: 0.26, body: "#e8b23a", stripe: "#2b2b30", logo: null });
-      g.add(box(0.2, 0.09, 0.22, gloss("#e8b23a"), -0.02, 0.27, 0), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, 0.112), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, -0.112));
-      return g;
+      // Plan item 81: the same hatchback body as the Influencer's (it was a van body with a box on top).
+      return hatchback("#e8b23a", "#2b2b30");
     }
     case "influencer": {
       // The Influencer (fleet.ts): a pink hatchback with a ring light on a pole through the sunroof. Baked into

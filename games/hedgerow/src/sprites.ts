@@ -1743,31 +1743,25 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     }
     case "influencer": {
-      // On an e-scooter, ring light held high.
+      // Plan item 81: a pink hatchback with a ring light on a pole through the sunroof, as in 3D and in the round's
+      // copy (fleet.ts); it was a rider on an e-scooter, which is the courier that scoots out when it pops.
+      vehicle(ctx, 0, 0, s, tt, { len: 0.46, h: 0.24, body: "#f27ab0", stripe: "#ffd6ea", wheels: 2 });
       ctx.strokeStyle = INK;
+      ctx.lineWidth = Math.max(1.5, s * 0.025);
       ctx.beginPath();
-      ctx.moveTo(-s * 0.18, -s * 0.05);
-      ctx.lineTo(s * 0.18, -s * 0.05);
-      ctx.lineTo(s * 0.14, -s * 0.5);
+      ctx.moveTo(-s * 0.04, -s * 0.36);
+      ctx.lineTo(-s * 0.04, -s * 0.56);
       ctx.stroke();
-      wheel(ctx, -s * 0.16, -s * 0.05, s * 0.05, tt * 12);
-      wheel(ctx, s * 0.18, -s * 0.05, s * 0.05, tt * 12);
-      rr(ctx, -s * 0.08, -s * 0.42, s * 0.16, s * 0.3, s * 0.06, "#f27ab0");
-      blob(ctx, 0, -s * 0.5, s * 0.08, "#f3d2c1");
-      ctx.fillStyle = "#f2e19a";
-      ctx.beginPath();
-      ctx.ellipse(-s * 0.01, -s * 0.58, s * 0.09, s * 0.05, 0, Math.PI, 0);
-      ctx.fill();
       ctx.strokeStyle = "rgba(255,240,200,0.95)";
       ctx.lineWidth = Math.max(2, s * 0.04);
       ctx.beginPath();
-      ctx.arc(s * 0.2, -s * 0.72, s * 0.1, 0, Math.PI * 2);
+      ctx.arc(-s * 0.04, -s * 0.66, s * 0.1, 0, Math.PI * 2);
       ctx.stroke();
-      const glow = ctx.createRadialGradient(s * 0.2, -s * 0.72, 0, s * 0.2, -s * 0.72, s * 0.45);
+      const glow = ctx.createRadialGradient(-s * 0.04, -s * 0.66, 0, -s * 0.04, -s * 0.66, s * 0.42);
       glow.addColorStop(0, "rgba(255,200,230,0.45)");
       glow.addColorStop(1, "rgba(255,200,230,0)");
       ctx.fillStyle = glow;
-      ctx.fillRect(-s * 0.25, -s * 1.17, s * 0.9, s * 0.9);
+      ctx.fillRect(-s * 0.46, -s * 1.08, s * 0.84, s * 0.84);
       break;
     }
     case "blimp": {
