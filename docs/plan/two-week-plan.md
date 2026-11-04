@@ -1452,7 +1452,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P: a region tap opens the close-up within 300 ms; pieces in it 32 px or more; names on the board 12 px or more; nothing changes at D; axe AA; shots P before and after, light and dark.
 - **Size:** 2
 
-## 110. [ ] Cathnivore: Cath speaks from where she stands
+## 110. [ ] Cathnivore: Cath speaks from where she stands *(lane A, in progress)*
 - **Why:** `cath-title-D` (bubble 555-845 x 335-378: about 13 px italic, no tail, 40 px from her head); `cath-setup-D` (Cath 1110-1215 x 610-780, small, the Start sign across her); `cath-setup-P` (a 40 px thumbnail). VISION: Cath with presence; her lines should read as hers at a glance.
 - **Build:**
   - One shared speech bubble for Cath's lines on the title and Setup: 15 px or more, a tail pointing at her mouth, anchored within 24 px of her head, one expression per line from `shared/cath`.
