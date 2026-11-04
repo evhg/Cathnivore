@@ -1635,7 +1635,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: `data-flyin` runs 3 s or less, a skip ends it within 150 ms, no replay on reload, the closing bubble meets no plot; shots of its start, middle and end at P and D in `?2d`.
 - **Size:** 3
 
-## 129. [ ] NIGHT SHIFT: the desktop class pick composed round her
+## 129. [ ] NIGHT SHIFT: the desktop class pick composed round her *(lane A, in progress)*
 - **Why:** `ns-play-D` (470-960 x 100-860): empty street while Cath stands behind the stats panel (935-975 x 280-330, only the umbrella's edge shows); the class names read as a menu, not an operative lineup. Check first against items 112, 117 and 125.
 - **Build:**
   - Frame her face-on in the empty middle band; narrow the panel to about 380 px so the street sign reads whole.
