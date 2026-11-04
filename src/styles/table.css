@@ -2434,3 +2434,8 @@ html.no-animations .cath-companion .cameo {
   .actions-sheet .controls .rail-tab-farm svg { width: 20px; height: 20px; }
   .actions-sheet .controls .rail-tab-farm .rail-tab-stall { display: none; }
 }
+/* Plan item 75 fix: on a phone her bust overhangs its row (a medallion between the top bar and the plan strip)
+   rather than growing it: the 64 px row ran the game scroll 21 px over, so the board fell under its floor. */
+@media (max-width: 1023.98px) {
+  .cath-companion .cameo { --cameo: 58px; position: relative; z-index: var(--z-lift); margin-block: -7px -8px; }
+}
