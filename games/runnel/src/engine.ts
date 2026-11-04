@@ -48,6 +48,8 @@ export interface Puzzle {
   cells: Cell[]
   /** Taps needed to turn every piece from its scrambled rotation to the generator's solution. */
   par: number
+  /** Plan item 77: the board drawn at this radius's scale when its tiles are sparse (the lesson's four tiles fill the frame). */
+  frameRadius?: number
 }
 
 export interface Flow {

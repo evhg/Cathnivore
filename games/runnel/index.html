@@ -57,6 +57,23 @@
           <span><b class="num" id="hud-taps">0</b> taps</span>
           <span><b class="num" id="hud-par">0</b> par</span>
         </div>
+        <!-- Plan item 77: during the first-visit lesson the HUD is its plan: three taps, the one to do now lit,
+             and at D what each kind of tile is for. -->
+        <div class="lesson-card" id="lesson-card" hidden>
+          <p class="lc-title">Your first field</p>
+          <ol class="lc-steps">
+            <li data-i="0"><span class="lc-dot">1</span><span>Turn the bend</span></li>
+            <li data-i="1"><span class="lc-dot">2</span><span>Line up the channel</span></li>
+            <li data-i="2"><span class="lc-dot">3</span><span>Face the field to the water</span></li>
+          </ol>
+          <ul class="lc-legend" aria-label="The tiles">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lc-hex" d="M12 1.5 21.1 6.75V17.25L12 22.5 2.9 17.25V6.75Z"/><circle class="lc-spring" cx="12" cy="12" r="4.5"/><path class="lc-flow" d="M16.5 12h4"/></svg><span><b>The spring.</b> Water starts here. It never turns.</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lc-hex" d="M12 1.5 21.1 6.75V17.25L12 22.5 2.9 17.25V6.75Z"/><path class="lc-groove" d="M3 12h7.5l4.5 7.5"/></svg><span><b>Channels.</b> Tap to turn them until the grooves meet.</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lc-hex lc-hex-field" d="M12 1.5 21.1 6.75V17.25L12 22.5 2.9 17.25V6.75Z"/><path class="lc-sprout" d="M12 17v-6m0 2c-3 0-4-2-4-4 3 0 4 2 4 4m0-1c2.5 0 3.5-2 3.5-3.5-2.5 0-3.5 1.5-3.5 3.5"/></svg><span><b>Fields.</b> Every one needs water, with nothing spilling.</span></li>
+          </ul>
+          <p class="lc-note">Three taps, then today's daily.</p>
+          <div class="lc-next" id="lc-next"></div>
+        </div>
       </section>
 
       <section class="host" aria-live="polite">

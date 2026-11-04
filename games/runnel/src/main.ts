@@ -128,6 +128,7 @@ function openGame(): void {
   // Leaving the lesson early (a tab, a board code): it comes back on the next visit.
   if (lessonStep >= 0) {
     lessonStep = -1
+    markLessonCard(-1)
     document.body.classList.remove('in-lesson')
   }
   pauseClock()
@@ -1094,6 +1095,7 @@ function startLesson(): void {
         board.celebrate()
         playWin()
         markLessonTarget(-1)
+        markLessonCard(LESSON_STEPS.length)
         host.say('delighted', LESSON_DONE)
         ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
         window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 2600)
@@ -1105,6 +1107,7 @@ function startLesson(): void {
   showLessonStep()
 }
 function showLessonStep(): void {
+  markLessonCard(lessonStep)
   const s = LESSON_STEPS[lessonStep]
   if (!s) return
   host.say(s.expression, s.ask)
@@ -1115,8 +1118,29 @@ function markLessonTarget(index: number): void {
   tiles.forEach((t, i) => t.classList.toggle('lesson-target', i === index))
   if (index >= 0) tiles[index]?.focus({ preventScroll: true })
 }
+const escapeText = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`)
+
+/** Plan item 77: the lesson card ticks off the taps done and lights the one to do now. */
+function markLessonCard(step: number): void {
+  const card = document.getElementById('lesson-card')
+  if (!card) return
+  card.hidden = step < 0
+  // Up next: today's daily, with its sky painted (the HUD already holds both for the board under the lesson).
+  const next = document.getElementById('lc-next')
+  if (next && step >= 0 && !next.dataset.filled) {
+    next.dataset.filled = '1'
+    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next</small><b>${escapeText(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
+  }
+  card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
+    li.classList.toggle('done', i < step || step >= LESSON_STEPS.length)
+    li.classList.toggle('now', i === step)
+    if (i === step) li.setAttribute('aria-current', 'step')
+    else li.removeAttribute('aria-current')
+  })
+}
 function endLesson(): void {
   if (lessonStep < 0) return
+  markLessonCard(-1)
   lessonStep = -1
   document.body.classList.remove('in-lesson')
   data.seenHelp = true

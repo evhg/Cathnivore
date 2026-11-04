@@ -23,7 +23,7 @@ export function lessonPuzzle(): Puzzle {
     // The field, its one opening facing west: one tap turns it to the water.
     { q: 0, r: 2, kind: 'field', solved: NW, rot: 5, locked: false },
   ]
-  return { seed: 'lesson', radius: 2, cells, par: 3 }
+  return { seed: 'lesson', radius: 2, cells, par: 3, frameRadius: 1 }
 }
 
 export interface LessonStep {

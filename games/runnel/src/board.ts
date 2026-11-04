@@ -184,7 +184,7 @@ export class Board {
     // centred in the frame, rather than zooming its tiles up and running them into a corner.
     let fullW = 0
     let fullH = 0
-    const full = boardHexes(this.puzzle.radius)
+    const full = boardHexes(this.puzzle.frameRadius ?? this.puzzle.radius)
     if (this.puzzle.cells.length * 2 < full.length) {
       let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity
       for (const h of full) {
@@ -201,7 +201,8 @@ export class Board {
     const h = Math.max(maxY - minY, fullH)
     const cx = (minX + maxX) / 2
     const cy = (minY + maxY) / 2
-    const pad = 6
+    // Plan item 77: a framed sparse board (the lesson) keeps a margin, so its tiles clear the spring house and garden.
+    const pad = this.puzzle.frameRadius === undefined ? 6 : S * 0.7
     this.svg.setAttribute('viewBox', `${cx - w / 2 - pad} ${cy - h / 2 - pad} ${w + pad * 2} ${h + pad * 2 + 8}`)
   }
 

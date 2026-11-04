@@ -2323,7 +2323,6 @@ body {
 /* Plan item 22: the first-visit lesson. Only the board and Cath: the puzzle's tabs, clock and progress wait
    until today's field opens. The one tile she asks for glows and breathes; the others sit back. */
 .in-lesson .modes,
-.in-lesson .hud,
 .in-lesson .progress,
 .in-lesson .foot .btn {
   visibility: hidden;
@@ -2919,6 +2918,182 @@ body[data-mode='practice'] #week-slot {
   margin-top: 4px;
 }
 
+/* Plan item 77: in the lesson the HUD is the lesson card: the three taps (the one to do now lit, the done ones
+   ticked), and at D a legend of what each tile is for, filling the column the rail leaves. The tabs above give up
+   their height on a phone. */
+.lesson-card[hidden] {
+  display: none;
+}
+.in-lesson .hud > :not(.lesson-card) {
+  display: none;
+}
+.in-lesson .modes {
+  height: 0;
+  margin-block: -5px;
+  overflow: hidden;
+}
+.lesson-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+.lc-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--soil);
+  text-align: center;
+}
+.lc-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lc-steps li {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  font-size: var(--fs-small);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--ink-muted);
+  background: color-mix(in srgb, var(--paper-2) 80%, transparent);
+  transition: background 250ms, color 250ms;
+}
+.lc-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-weight: 700;
+  border: 2px solid color-mix(in srgb, var(--soil) 45%, transparent);
+}
+/* The lesson column only shows Up next when the screen has room for it (the page never scrolls). */
+@media (max-height: 879.98px) {
+  .lesson-card .lc-next {
+    display: none;
+  }
+}
+.lc-steps li.now {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--gold) 22%, var(--paper));
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.lc-steps li.now .lc-dot {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--paper);
+}
+.lc-steps li.done .lc-dot {
+  background: var(--water);
+  border-color: var(--water);
+  color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.lc-legend,
+.lc-note,
+.lc-next {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lc-steps li { transition: none; }
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  /* At D the card takes the rail's place under Cath, and her line comes up under the header. */
+  .in-lesson .hud,
+  .in-lesson .hud:has(.hud-sky svg) {
+    display: block;
+    grid-row: 5;
+    align-self: start;
+  }
+  .lesson-card {
+    align-content: start;
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    background: var(--paper-2);
+  }
+  .lc-title {
+    text-align: start;
+    font-size: 1.25rem;
+  }
+  .lc-legend {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 0 0;
+    list-style: none;
+    border-top: 1.5px dashed color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .lc-legend li {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 12px;
+    align-items: center;
+    font-size: var(--fs-small);
+    line-height: 1.35;
+    color: var(--ink-muted);
+  }
+  .lc-legend b {
+    color: var(--ink);
+  }
+  .lc-legend svg {
+    width: 44px;
+    height: 44px;
+  }
+  .lc-next {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-top: 4px;
+    padding: 12px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--paper) 70%, var(--paper-2));
+    font-size: var(--fs-small);
+    color: var(--ink-muted);
+  }
+  .lc-next > span:last-child {
+    display: grid;
+    gap: 2px;
+  }
+  .lc-next small {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .lc-next b {
+    color: var(--ink);
+  }
+  .lc-next-sky svg {
+    display: block;
+    width: 112px;
+    height: 66px;
+  }
+  .lc-note {
+    display: block;
+    margin: 0;
+    font-family: var(--font-voice, inherit);
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+}
+.lc-hex { fill: color-mix(in srgb, var(--wheat) 45%, var(--paper)); stroke: var(--soil); stroke-width: 1.2; }
+.lc-hex-field { fill: color-mix(in srgb, var(--pasture) 50%, var(--paper)); }
+.lc-spring { fill: var(--water); stroke: var(--paper); stroke-width: 1.5; }
+.lc-flow { stroke: var(--water); stroke-width: 2.5; stroke-linecap: round; }
+.lc-groove { fill: none; stroke: var(--groove); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.lc-sprout { fill: none; stroke: var(--lip-meadow); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
 /* Plan item 39: the lesson teaches on the board alone; the stats rail waits until it ends. */
 .in-lesson .rail {
   display: none;
@@ -3228,7 +3403,7 @@ body[data-mode='practice'] #week-slot {
     vector-effect: non-scaling-stroke;
   }
   .vl-drop {
-    stroke: color-mix(in srgb, #ffffff 55%, var(--vl-sky-top));
+    stroke: color-mix(in srgb, var(--paper) 55%, var(--vl-sky-top));
     stroke-width: 1.5;
     stroke-linecap: round;
     opacity: 0.55;
