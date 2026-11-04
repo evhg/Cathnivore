@@ -3695,6 +3695,15 @@ body[data-mode='practice'] #week-slot {
     transform-origin: 0 50%;
     transform: rotate(var(--tail-a, 0rad));
   }
+  /* In the lesson her line has left the column: the lesson card sits centred in the space it leaves. */
+  .in-lesson .app[data-valley-say=''] .hud {
+    grid-row: 3 / 6;
+    align-self: center;
+  }
+  .in-lesson .app[data-valley-say=''] .lesson-card {
+    padding-block: 30px;
+    row-gap: 20px;
+  }
   /* No room beside her: the sidebar line speaks for the figure, its tail toward the valley, with no portrait. */
   .app[data-valley-say='side'] .host-face {
     display: none;

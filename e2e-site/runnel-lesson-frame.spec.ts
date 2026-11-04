@@ -17,15 +17,31 @@ test('the lesson board fills its frame, with the lesson card and Cath beside it'
   await expect(page.locator('#lesson-card')).toBeVisible()
   expect(await page.evaluate(tileSpan)).toBeGreaterThanOrEqual(0.6)
   await expect(page.locator('.lc-steps li.now')).toHaveAttribute('data-i', '0')
-  await expect(page.locator('#host-face')).toBeVisible()
-  // Cath stands in the valley at D and watches from its corner as a bust on a phone.
+  // Plan item 122: one Cath. At D the valley figure speaks the lesson (the portrait goes) and points at the
+  // glowing tile; a phone keeps the portrait and the corner bust for now.
   await expect(page.locator('#valley-cath svg')).toBeVisible()
+  if (hasTouch) await expect(page.locator('#host-face')).toBeVisible()
+  else {
+    await expect(page.locator('#valley-say')).toBeVisible()
+    await expect(page.locator('#valley-cath')).toHaveAttribute('data-pose', 'point')
+    const off = await page.evaluate(() => {
+      const cath = document.getElementById('valley-cath')!
+      const m = cath.querySelector('svg')!.getScreenCTM()!
+      const s = new DOMPoint(266, 300).matrixTransform(m)
+      const t = document.querySelector('.tiles > g.cell.lesson-target')!.getBoundingClientRect()
+      const want = (Math.atan2(t.top + t.height / 2 - s.y, t.left + t.width / 2 - s.x) * 180) / Math.PI
+      return Math.abs(want - parseFloat(cath.dataset.aim!))
+    })
+    expect(off).toBeLessThanOrEqual(20)
+  }
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
   if (!hasTouch) {
     await expect(page.locator('.lc-next svg')).toBeVisible()
     // The left column: no blank band over 100 px between its blocks, from the header to the hint.
     const gaps = await page.evaluate(() => {
-      const els = ['.top', '.host', '#lesson-card', '.foot'].map((s) => document.querySelector(s)!.getBoundingClientRect())
+      const sel = ['.top', '#lesson-card', '.foot']
+      if (document.querySelector<HTMLElement>('.app')!.dataset.valleySay === undefined) sel.splice(1, 0, '.host')
+      const els = sel.map((s) => document.querySelector(s)!.getBoundingClientRect())
       els.sort((a, b) => a.top - b.top)
       return els.slice(1).map((b, i) => b.top - els[i]!.bottom)
     })

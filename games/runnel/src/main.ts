@@ -258,13 +258,31 @@ function placeValleyCath(): void {
     return b.left < r.right - 12 && r.left + 12 < b.right && b.top < r.bottom - 12 && r.top + 12 < b.bottom
   })
   cath.hidden = clash
+  aimValleyCath(cath)
   placeValleySay()
+}
+
+/** Plan item 122: her pointing arm aims at the glowing tile: the lesson's target or a tip's pulse, else the
+ *  spring. In the lesson she points at it all along; in a daily only once the water is flowing (item 70). */
+function aimValleyCath(cath: HTMLElement): void {
+  const svg = cath.querySelector('svg')
+  const m = svg?.getScreenCTM()
+  const target = document.querySelector('.tiles > g.cell.lesson-target, .tiles > g.cell.tip') ?? document.querySelector('.tiles > g.cell.spring')
+  if (cath.hidden || !m || !target || !matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) {
+    host.aim(null)
+    return
+  }
+  const shoulder = new DOMPoint(266, 300).matrixTransform(m)
+  const t = target.getBoundingClientRect()
+  const deg = (Math.atan2(t.top + t.height / 2 - shoulder.y, t.left + t.width / 2 - shoulder.x) * 180) / Math.PI
+  host.aim(deg, document.body.classList.contains('in-lesson'))
 }
 
 /** Plan item 122: one Cath. Where the valley figure stands at full length (D), her line is a bubble near her
  *  head with a tail to her face, and the side portrait goes. It searches the valley within 56 px of her face at a
  *  few widths, preferring above her head, for a spot that meets no tile; if none fits, the portrait keeps the
  *  line and the figure steps out of view, so there is still only one of her. */
+let sayKey = ''
 function placeValleySay(): void {
   const app = document.querySelector<HTMLElement>('.app')
   const cath = document.getElementById('valley-cath')
@@ -275,15 +293,20 @@ function placeValleySay(): void {
   const off = () => {
     say.hidden = true
     delete app.dataset.valleySay
+    sayKey = ''
   }
-  // Only the full-length figure at D speaks (the phone's framed bust is a later slice of item 122), and the
-  // first-visit lesson keeps its own card.
-  if (document.body.classList.contains('in-lesson') || !text || !matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) return off()
+  // Only the full-length figure at D speaks (the phone's framed bust is a later slice of item 122).
+  if (!text || !matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) return off()
   // She steps back into view to try (placeValleyCath hid her if a tile reaches into her corner).
   if (cath.hidden) return off()
   const fig = cath.getBoundingClientRect()
   if (fig.height < 140) return off()
   const st = stage.getBoundingClientRect()
+  // The search is costly, so it runs only when her line or the layout changes, not on every tap.
+  const board = document.getElementById('board')?.getBoundingClientRect()
+  const key = [text, fig.left, fig.top, fig.height, st.width, st.height, board?.left, board?.top, board?.width, puzzle.seed].join('|')
+  if (key === sayKey && app.dataset.valleySay !== undefined) return
+  sayKey = key
   const face = { left: fig.left + fig.width * 0.3, right: fig.left + fig.width * 0.7, top: fig.top + fig.height * 0.1, bottom: fig.top + fig.height * 0.42 }
   const fx = (face.left + face.right) / 2
   const fy = (face.top + face.bottom) / 2
@@ -1230,6 +1253,7 @@ function markLessonTarget(index: number): void {
   const tiles = ui.board.querySelectorAll<SVGGElement>('.tiles > g.cell')
   tiles.forEach((t, i) => t.classList.toggle('lesson-target', i === index))
   if (index >= 0) tiles[index]?.focus({ preventScroll: true })
+  placeValleyCath()
 }
 const escapeText = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`)
 

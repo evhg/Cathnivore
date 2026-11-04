@@ -33,6 +33,9 @@ export interface HostView {
   react(fraction: number, solved: boolean, fields?: number, spilling?: boolean): void
   /** A line of her own (the first-visit lesson). */
   say(expression: CathExpression, text: string): void
+  /** Plan item 122: the angle (SVG degrees) from the valley figure's shoulder to the glowing tile; with
+   *  `always`, she points at it whatever the water is doing (the lesson's target). */
+  aim(degrees: number | null, always?: boolean): void
 }
 
 export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null, onLine?: () => void): HostView {
@@ -42,11 +45,19 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   let shown = ''
   let wet = 0
   let pose: CathPoseId = 'clasped'
+  let aimAt: number | null = null
+  let aimAlways = false
   // Plan item 70: Cath stands in the valley too, half length by the stream. She looks round when the water
   // reaches a new field, and waves at a solve.
   const drawStage = (expression: CathExpression) => {
-    if (stage) stage.dataset.expression = expression
-    if (stage) stage.innerHTML = cathSvg({ framing: 'half', expression, pose, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+    if (!stage) return
+    const p: CathPoseId = aimAlways && aimAt !== null && pose !== 'wave' ? 'point' : pose
+    stage.dataset.expression = expression
+    stage.dataset.pose = p
+    const pointAt = p === 'point' && aimAt !== null ? aimAt : undefined
+    // What the art draws (cath.ts clamps the arm to -85..15 degrees), so a test reads the real aim.
+    stage.dataset.aim = pointAt === undefined ? '' : Math.min(Math.max(pointAt, -85), 15).toFixed(1)
+    stage.innerHTML = cathSvg({ framing: 'half', expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
   }
   const look = () => {
     if (!stage) return
@@ -89,6 +100,13 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     },
     say(expression, text) {
       show(expression, text)
+    },
+    aim(degrees, always = false) {
+      const moved = degrees === null || aimAt === null ? degrees !== aimAt : Math.abs(degrees - aimAt) > 3
+      if (!moved && always === aimAlways) return
+      aimAt = degrees
+      aimAlways = always
+      if (pose === 'point' || always) drawStage(current ?? 'smirk')
     },
     react(fraction, solved, fields = 0, spilling = false) {
       if (fraction > wet && !solved) look()

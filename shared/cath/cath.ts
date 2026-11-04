@@ -31,6 +31,10 @@ export interface CathOptions {
   framing?: CathFraming
   /** Arm pose (default 'clasped'). */
   pose?: CathPoseId
+  /** Plan item 122: with pose 'point', the angle her pointing arm and finger aim at, in degrees in the SVG's
+   *  own space (0 = the viewer's right, -90 = straight up), clamped to -85..15. Omitted, the classic raised
+   *  finger. */
+  pointAt?: number
   /** Accessible name. Omit for decorative use (the SVG is then aria-hidden). */
   title?: string
   className?: string
@@ -150,7 +154,7 @@ export function cathSvg(options: CathOptions = {}): string {
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-lower">${lowerBody(outfit)}</g>` : ''}
 <g class="cath-hair-back">${hairBack(id)}</g>
-<g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back')}</g>
+<g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
 <g class="cath-head">
 ${neck(id)}
 ${NECKWEAR[outfit](id)}
@@ -918,7 +922,7 @@ ${apple(178, 418, 11)}${apple(160, 424, 9)}${apple(242, 420, 10)}
 <path fill="#5C3E1E" opacity="0.25" d="M138 494 C172 502 228 502 262 494 L264 484 C228 492 172 492 136 484 Z"/>`
 }
 
-function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'): string {
+function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
   const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 8, cl)
   switch (pose) {
@@ -941,6 +945,21 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
         ? restLeft + sleeve('M266 300 Q296 322 308 336 Q318 300 320 262', 24, cl, 'M319 272 Q320 266 320 260') + hand('open', 322, 238, 10, cl)
         : ''
     case 'point':
+      if (layer === 'back' && pointAt !== undefined && Number.isFinite(pointAt)) {
+        // Plan item 122: the arm reaches from her shoulder toward a thing on screen, the finger along it.
+        const a = (Math.min(Math.max(pointAt, -85), 15) * Math.PI) / 180
+        const sx = 266, sy = 300, len = 58
+        const ex = sx + Math.cos(a) * len, ey = sy + Math.sin(a) * len
+        // A soft elbow, bent below the straight line.
+        const qx = sx + Math.cos(a) * len * 0.5 - Math.sin(a) * 10, qy = sy + Math.sin(a) * len * 0.5 + Math.cos(a) * 10
+        const cx = ex - Math.cos(a) * 8, cy = ey - Math.sin(a) * 8
+        const f = (n: number) => n.toFixed(1)
+        return (
+          restLeft +
+          sleeve(`M${sx} ${sy} Q${f(qx)} ${f(qy)} ${f(ex)} ${f(ey)}`, 24, cl, `M${f(cx)} ${f(cy)} L${f(ex)} ${f(ey)}`) +
+          hand('point', +f(ex + Math.cos(a) * 16), +f(ey + Math.sin(a) * 16), +f((a * 180) / Math.PI + 90), cl)
+        )
+      }
       // A raised finger up and out to the viewer's right ("here's the thing"), kept inside the bust frame.
       return layer === 'back'
         ? restLeft + sleeve('M266 300 Q292 324 298 332 Q304 304 304 280', 24, cl, 'M304 288 Q304 284 304 278') + hand('point', 307, 262, 16, cl)
