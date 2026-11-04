@@ -1366,7 +1366,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Why:** `cath-game-D` (plan1104c, 640-1200 x 90-200; P 10-375 x 115-210): Hollowell's Squeeze, Expand and Scout are text on note paper with 10 px "H" glyphs and grey subtext ("Arms next round"), while the players' actions got painted tiles (item 83). VISION gives the corporation a glossy, over-lit, clinical look; here it's the plainest thing on screen.
 - **Build:**
   - Each intent kind (Squeeze, Expand, Scout, Buyout) gets its own art in Hollowell's style (white plastic, teal, a logo watermark), in `HollowellArt` beside `ActionArt`. *(Done 2026-11-04 lane A, slice 1: `icons/HollowellArt.tsx` `PlanArt`, glossy white plastic with Hollowell orange and Candor teal and a faint H watermark (Cathnivore's Hollowell is orange; teal is Candor's, and both act through every slot); 38 px beside the headline at D, 26 at P, where two 11 px logos were; no taller card; unit `tests/plan-art.test.ts`; shots `e2e/screenshots/b100`.)*
-  - Its target region and arming round drawn on the card (a region chip, a stage dial), not grey subtext.
+  - Its target region and arming round drawn on the card (a region chip, a stage dial), not grey subtext. *(Stage dial done 2026-11-04 lane A, slice 2: three chevrons in the dateline, lit up to the card's place on the Scout -> Expand -> Squeeze conveyor. Open: the region chips.)*
   - A card that arms slides in and stamps, with no overshoot (corporations don't bounce); reduced motion fades.
 - **Accept:** unit: each kind's art is distinct; e2e: card text 12 px or more at 4.5:1, no card truncated at 390, 1280 and 1440 wide, no horizontal scroll; turn-show and boardroom e2e still pass; shots P and D, light and dark.
 - **Size:** 2

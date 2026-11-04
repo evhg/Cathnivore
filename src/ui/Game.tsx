@@ -2110,6 +2110,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {/* AAA UI M4 fix: a dateline row in normal flow (the logos used to sit on the headline's
                     first letter), with the Pressure card's stage spelled out. */}
                 <span className="plan-strip-dateline" aria-hidden="true">
+                  {/* Plan item 100: where this card stands on Hollowell's conveyor (it arrives as Scout, Expands
+                      the round after, then Squeezes): three chevrons, lit up to this slot. */}
+                  <span className="plan-strip-dial" data-step={slot === 'scout' ? 1 : slot === 'expand' ? 2 : 3}>
+                    <i />
+                    <i />
+                    <i />
+                  </span>
                   {card && (
                     <span className="plan-strip-card-meta">
                       <span className="plan-strip-stage">Stage {romanStage(card.stage)}</span>

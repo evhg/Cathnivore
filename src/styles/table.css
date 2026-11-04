@@ -439,6 +439,22 @@
   width: 11px;
   height: 11px;
 }
+/* Plan item 100: the card's place on Hollowell's conveyor, Scout -> Expand -> Squeeze, as three chevrons. */
+.plan-strip-dial {
+  display: inline-flex;
+  gap: 1px;
+}
+.plan-strip-dial i {
+  width: 9px;
+  height: 8px;
+  background: color-mix(in srgb, var(--newsprint-ink) 22%, transparent);
+  clip-path: polygon(0 0, 62% 0, 100% 50%, 62% 100%, 0 100%, 38% 50%);
+}
+.plan-strip-dial[data-step="1"] i:nth-child(-n + 1),
+.plan-strip-dial[data-step="2"] i:nth-child(-n + 2),
+.plan-strip-dial[data-step="3"] i {
+  background: var(--hollowell-lo);
+}
 /* Plan item 100: the move's picture, glossy plastic on the memo, beside the headline and effect. */
 .plan-strip-item svg.plan-art {
   float: left;
