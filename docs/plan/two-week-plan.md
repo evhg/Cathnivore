@@ -1524,7 +1524,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: no `button`, `header` or HUD element visible in `?keyart` for each game; the poster's longest side 282 px or more at D; a unit test fails when a game's art files are newer than its key art; shots of /games/ and / at P and D.
 - **Size:** 3
 
-## 117. [ ] NIGHT SHIFT: Cath's face on the front door
+## 117. [ ] NIGHT SHIFT: Cath's face on the front door *(lane A, in progress)*
 - **Why:** `ns-title-D` (940-1170 x 260-720) and `ns-title-P` (95-250 x 230-620): the face of every game is seen from behind, and at P the menu sits on her body (item 82 meant her to stand clear). `ns-play-D` (940-980 x 290-330): on the class pick she is behind the stats panel. Check first against item 112's finished state.
 - **Build:**
   - A 3/4 front title pose, umbrella tilted back, her face lit by a neon rim and a face key; she turns to camera when NEW CASE takes focus.
