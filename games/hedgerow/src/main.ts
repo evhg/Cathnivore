@@ -2233,6 +2233,8 @@ function towerTray(p: HTMLElement, g: Game): void {
     b.type = "button";
     b.className = "tray-tower";
     b.dataset.kind = kind;
+    // Plan item 119: the packet's printed band takes the role's colour.
+    b.dataset.role = towerRole(kind);
     b.dataset.cost = String(cost);
     b.disabled = g.marks < cost;
     const stats = towerStatLine(g, kind);
@@ -2245,7 +2247,9 @@ function towerTray(p: HTMLElement, g: Game): void {
     // Plan item 31: an almanac card: the name, a role glyph, and range and damage as pips against the roster.
     const name = document.createElement("span");
     name.className = "tray-name";
-    name.textContent = TOWERS[kind].name;
+    // Plan item 119: a soft hyphen lets a long one-word name break onto the band's second line (Chromium on Linux
+    // has no hyphenation dictionary for `hyphens: auto`).
+    name.textContent = TOWERS[kind].name.replace("Courthouse", "Court\u00ADhouse");
     const role = towerRole(kind);
     const glyph = document.createElement("span");
     glyph.className = `tray-role role-${role}`;

@@ -261,3 +261,33 @@ test('plan item 115: lock icons read and the vehicle pills keep inside the ticke
   for (const w of r.icons) expect(w).toBeGreaterThanOrEqual(20)
   for (const o of r.over) expect(o).toBeLessThanOrEqual(0)
 })
+
+test('plan item 119: each packet shows its tower large, its name on a printed band, its price 13 px or more', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop packets')
+  for (const level of [12, 21, 40]) {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto(URL)
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`${URL}&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    await page.waitForTimeout(300)
+    const r = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.tray-tower')].map((c) => {
+        const art = c.querySelector('img')!.getBoundingClientRect()
+        const name = c.querySelector<HTMLElement>('.tray-name')!
+        return { art: Math.min(art.width, art.height), price: parseFloat(getComputedStyle(c.querySelector('.build-cost')!).fontSize), band: getComputedStyle(name).backgroundColor !== 'rgba(0, 0, 0, 0)' }
+      }),
+    )
+    // 56 px for up to six packets, 52 for seven to nine, 44 for ten or more (item 87's column budget).
+    const want = r.length >= 10 ? 44 : r.length >= 7 ? 52 : 56
+    for (const p of r) {
+      expect(p.art, `level ${level}`).toBeGreaterThanOrEqual(want)
+      expect(p.price).toBeGreaterThanOrEqual(13)
+      expect(p.band).toBe(true)
+    }
+  }
+})

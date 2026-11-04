@@ -1543,13 +1543,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at 1440x900 and 1280x800: Cath 260 px or more tall, overlapping no region hex or the action column; `data-expression` changes on a Squeeze and a liberation; no page scroll added; shots P and D, light and dark.
 - **Size:** 3
 
-## 119. [ ] Hedgerow: seed packets that are illustrated *(lane B, in progress)* *(slice 1 2026-11-04, lane A: a heat-sealed crimp along each desktop packet's top, the price stamp at `--fs-small` (15 px at 1440x900, was 12); shots `e2e/screenshots/h119`. Measured: D packets 98x90 with 36 px art for 9 towers, 80 px tall at 1280x800; P 65x66 with 30 px art. Open: 56 px art needs taller packets or a denser name, which item 87's column budget must allow; the band; P and the Almanac)*
+## 119. [ ] Hedgerow: seed packets that are illustrated *(lane B, in progress)* *(slice 1 2026-11-04, lane A: a heat-sealed crimp along each desktop packet's top, the price stamp at `--fs-small` (15 px at 1440x900, was 12); shots `e2e/screenshots/h119`. Measured: D packets 98x90 with 36 px art for 9 towers, 80 px tall at 1280x800; P 65x66 with 30 px art. Open: 56 px art needs taller packets or a denser name, which item 87's column budget must allow; the band; P and the Almanac)* *(slice 2, 2026-11-04 lane B: the packet's face. The art took the empty paper under the name: 56 px with up to six packets, 52 with seven to nine, 44 with ten or more, 30 in a tight round; the name printed on a band in the role's colour (`data-role`); 'Court-house' breaks with a soft hyphen. e2e in `hedgerow-tray.spec.ts`; tray, gatequeue and critique pass; shots `f119a`. Open: P and the Almanac)*
 - **Why:** `hedge-l21-3d-D` (1108-1412 x 85-368): each packet is mostly blank tan round a 25 px icon with a 10 px price; the most-touched UI in the game reads as placeholder.
 - **Build:**
   - Each tower on its packet face at 56 px or more, on a printed packet (a crimped top edge, a seed-type colour band).
   - The price as a 13 px or larger stamp on the band.
   - The same art in the phone tray and the Almanac.
-- **Accept:** e2e at D: tower art 56x56 or more; price text 13 px or more at D and 12 at P, at 4.5:1; hedgerow-tray and gatequeue pass; shots P and D in 2D and 3D.
+- **Accept:** e2e at D: tower art ~~56x56 or more~~ 56 px with up to six packets, 52 with seven to nine, 44 with ten or more (item 87's column budget); price text 13 px or more at D and 12 at P, at 4.5:1; hedgerow-tray and gatequeue pass; shots P and D in 2D and 3D.
 - **Size:** 2
 
 ## 120. [x] Hedgerow 2D: the field fills its frame, and the bubble keeps off plots *(done 2026-11-04, lane B: hedged fields in wide 2D margins (`paintHinterland`); the bubble weighs empty plots heavily in the build phase; `hedgerow-threat.spec.ts` bounds it at 15% of the bubble at D and 30% at P; shots `f120b`, `f120d`)*
