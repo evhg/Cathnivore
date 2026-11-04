@@ -1282,7 +1282,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 91. [ ] The bugs from the 2026-11-04 04:10 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1104a)
-  - [ ] **Portfolio D:** a stray pill in the stats row (1035-1062 x 780-825); the hero collage's stale shots, near-black NIGHT SHIFT tile, no Hedgerow (805-1345 x 160-650).
+  - [x] **Portfolio D:** a stray pill in the stats row (1035-1062 x 780-825); the hero collage's stale shots, near-black NIGHT SHIFT tile, no Hedgerow (805-1345 x 160-650). *(Fixed 2026-11-04 lane B: the scroll cue is hidden at D; Hedgerow is a fourth print (the phone cycles four in 16 s); the NIGHT SHIFT print is brightened 1.5x. The shots are the live key art, re-shot by `npm run keyart`. Shots in `e2e/screenshots/f91/pf-*`.)*
   - [ ] **Cathnivore title D:** the bubble's tail a flat underline not pointing at Cath (650-895 x 370-418). **P:** the bubble squeezes four lines into about 110 px.
   - [ ] **Cathnivore Setup D:** the three maps' glyphs look alike at a glance; the seed tag's eyelet reads as a radio button.
   - [ ] **Cathnivore game D:** event cards' subtext about 11 px grey (680-1335 x 135-190); fruit crates over the board frame (1215-1325 x 810-870). **P:** the EXPAND tags' text about 7 px.

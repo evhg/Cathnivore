@@ -15,9 +15,9 @@ test('the phone hero shows Cath at 40% or more of the width, in front of a cycli
     const h1 = (await page.locator('#hero-title').boundingBox())!
     expect(box.y).toBeLessThan(h1.y)
     expect(box.y).toBeGreaterThanOrEqual(0)
-    // The three prints share one spot and take turns.
+    // The four prints share one spot and take turns (plan item 91 added Hedgerow).
     const names = await page.locator('.hero-show .show-card').evaluateAll((els) => els.map((e) => getComputedStyle(e).animationName))
-    expect(names).toEqual(['show-cycle', 'show-cycle', 'show-cycle'])
+    expect(names).toEqual(['show-cycle', 'show-cycle', 'show-cycle', 'show-cycle'])
   }
   // Phone-sized prints are offered.
   expect(await page.locator('.show-a img').getAttribute('srcset')).toContain('640w')
@@ -36,5 +36,5 @@ test('reduced motion keeps the first print still on a phone', async ({ page }) =
   await page.goto('/')
   if (page.viewportSize()!.width >= 1100) return
   const ops = await page.locator('.hero-show .show-card').evaluateAll((els) => els.map((e) => getComputedStyle(e).opacity))
-  expect(ops).toEqual(['1', '0', '0'])
+  expect(ops).toEqual(['1', '0', '0', '0'])
 })
