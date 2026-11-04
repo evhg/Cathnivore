@@ -1333,7 +1333,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: within 600 ms of a connecting tap the next tile's bed turns blue; a spill shows `[data-spill]`; runnel-tiles (item 90) still passes; greyscale shot readable; shots P and D before and after a tap, light and dark.
 - **Size:** 2
 
-## 98. [ ] The bugs from the 2026-11-04 09:10 critique, fixed as one batch
+## 98. [ ] The bugs from the 2026-11-04 09:10 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; plan1104b)
   - [ ] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745).
   - [ ] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845).
