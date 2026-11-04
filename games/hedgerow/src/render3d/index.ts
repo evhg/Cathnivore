@@ -1640,13 +1640,16 @@ export class Renderer3D {
     const hair = ud.hair as THREE.Object3D[] | undefined;
     const vel = ud.hairVel as number[] | undefined;
     if (!hair || !vel) return;
-    const step = Math.min(dt, 1 / 30);
+    // Plan item 84: a frame with a negative (or missing) dt ran the spring backwards, which pumps it, and her
+    // hair swung out level with her shoulders like a pair of wings; the step never runs backwards and the swing
+    // stays within what hair does.
+    const step = Number.isFinite(dt) ? Math.max(0, Math.min(dt, 1 / 30)) : 0;
     hair.forEach((p, i) => {
       const k = 70 - i * 16;
-      const a = p.rotation.z;
+      const a = Number.isFinite(p.rotation.z) ? p.rotation.z : 0;
       const want = Math.max(-0.8, Math.min(0.5, target * (1 + i * 0.15)));
-      vel[i] = vel[i]! + ((want - a) * k - vel[i]! * 7) * step;
-      p.rotation.z = a + vel[i]! * step;
+      vel[i] = Math.max(-12, Math.min(12, (Number.isFinite(vel[i]) ? vel[i]! : 0) + ((want - a) * k - (vel[i] ?? 0) * 7) * step));
+      p.rotation.z = Math.max(-1.1, Math.min(0.8, a + vel[i]! * step));
       p.rotation.x = Math.sin(t * 1.7 + i) * 0.03;
     });
     for (const [i, l] of ((ud.locks as THREE.Object3D[] | undefined) ?? []).entries()) {

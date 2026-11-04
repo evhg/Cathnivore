@@ -2012,7 +2012,9 @@ export function liftCath(root: THREE.Group): void {
     let next = done.get(mat) as THREE.MeshStandardMaterial | undefined;
     if (!next) {
       next = own.has(mat) ? mat : mat.clone();
-      next.emissive.copy(next.color).multiplyScalar(CATH_LIFT);
+      // Plan item 84: a vertex-coloured material (her hair) is white at heart; three.js doesn't tint the
+      // emission by the vertex colours, so lift it by the colour it actually shows.
+      next.emissive.copy(next.vertexColors ? new THREE.Color(HAIR.base) : next.color).multiplyScalar(CATH_LIFT);
       next.emissiveIntensity = 1;
       done.set(mat, next);
     }
