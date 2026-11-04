@@ -1194,7 +1194,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Why:** `hedge-l21-3d-D` (plan1103g): Cath (70-210 x 470-610) is a blocky figure with a white blob across her face that reads as a beard, which breaks the character bible; the cannon towers look like bare logs (380-430 x 270-330); houses and the barn are untextured boxes; Influencers are stacked pink cubes (190-245 x 280-380).
 - **Build:**
   - A low-poly Cath to the bible: centre-parted long dark hair, the olive jacket, a readable face (a painted decal, no blob). *(2026-11-04 lane B, slice 1: the "beard" was the lift blowing her skin and collar out to white, and her hair read as white wings (item 84). The lift now fades for light colours: `tests/hedgerow-cath3d-hair.test.ts`; shot with `scripts/hedgerow-cath3d-shots.mjs`.)*
-  - Every tower model with its own silhouette per type and a visible upgrade-tier tell.
+  - Every tower model with its own silhouette per type and a visible upgrade-tier tell. *(2026-11-04 lane B, slice 2: the "cannon logs" in the critique were level 21's fallen oaks, not towers. They now have warm grooved bark, a pale sawn end and a fuller two-tone crown, and are baked. The towers themselves are still to check against `scripts/hedgerow-tower-lineup.mjs`.)*
   - Enemy vehicles that match their 2D icons; the farm buildings textured (boards, tiles, windows).
 - **Accept:** unit: each tower type's model differs in bounding box or part count from every other; e2e (`?sandbox=1`): a tower lineup stage renders each type; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of 2D and 3D side by side at P, D and L, and a face close-up of Cath.
 - **Size:** 3

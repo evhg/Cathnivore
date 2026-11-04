@@ -371,16 +371,27 @@ export function buildBarn(): THREE.Group {
 
 /** A fallen oak across a plot (H12): a long trunk with a split stump end and a tangle of leafy boughs. */
 export function buildOak(): THREE.Group {
-  const bark = matte("#5a4128");
+  // Plan item 81: the critique took the dark trunk for a cannon barrel ("bare logs"). A warm, grooved bark, a
+  // pale sawn end with its rings, and a full two-tone crown lying across the plot read as a fallen tree.
+  const bark = matte("#7a5839");
+  const groove = matte("#4e3722");
   const leaf = matte("#4f7d34");
-  const trunk = rot(cyl(0.11, 0.14, 0.8, bark, 0, 0.12, 0, 8), 0, 0, Math.PI / 2);
-  const cut = rot(disc(0.14, 0.02, matte("#c9a574"), 0.4, 0.12, 0, 10), 0, 0, Math.PI / 2);
-  const g = group(trunk, cut);
-  for (let i = 0; i < 4; i++) g.add(ball(0.12 + (i % 2) * 0.03, leaf, -0.38 + i * 0.1, 0.17 + (i % 2) * 0.06, ((i * 7) % 5 - 2) * 0.04, 1));
+  const leafLight = matte("#6f9a43");
+  const trunk = rot(cyl(0.1, 0.13, 0.6, bark, 0.1, 0.12, 0, 10), 0, 0, Math.PI / 2);
+  const cut = rot(disc(0.14, 0.02, matte("#d9b783"), 0.4, 0.12, 0, 12), 0, 0, Math.PI / 2);
+  const ring = rot(disc(0.075, 0.022, matte("#b48a57"), 0.401, 0.12, 0, 10), 0, 0, Math.PI / 2);
+  const g = group(trunk, cut, ring);
+  for (const x of [0.02, 0.17, 0.3]) g.add(rot(torus(0.117 + (x - 0.1) * 0.05, 0.008, groove, x, 0.12, 0, 10), 0, Math.PI / 2, 0));
+  for (let i = 0; i < 6; i++) {
+    const x = -0.4 + (i % 3) * 0.12;
+    g.add(ball(0.14 + (i % 3) * 0.03, i % 2 ? leafLight : leaf, x, 0.15 + (i > 2 ? 0.1 : 0), ((i * 7) % 5 - 2) * 0.06, 1));
+  }
   g.add(rot(cyl(0.025, 0.045, 0.3, bark, -0.15, 0.2, 0.1, 6), 0.9, 0, 0.3));
+  g.add(rot(cyl(0.02, 0.035, 0.22, bark, 0.05, 0.2, -0.08, 6), -0.8, 0, 0.4));
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
+  bake(g);
   return g;
 }
 
