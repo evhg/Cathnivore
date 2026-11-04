@@ -20,6 +20,7 @@ import { eventCue } from '../platform/sound/cues'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
 import BuyFlight from './BuyFlight'
+import { liftEnabled, liftPlayedCard, liftTarget } from './playLift'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
@@ -515,6 +516,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const [teammatePick, setTeammatePick] = useState<{ from: GameState; action: Action; reason: string } | null>(null)
   const skipTeammateRef = useRef(false)
   // Plan item 36: the card of the last buy, in flight to the farmstead.
+  const lastCardRef = useRef<{ el: HTMLElement; at: number } | null>(null)
   const [buyFlight, setBuyFlight] = useState<{ key: number; card: ImprovementCard; cost: number; path: BuyFlightPath } | null>(null)
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
@@ -1143,6 +1145,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       setTutorialIndex((i) => i + 1)
     } else if (matchesHighlight(action)) setTutorialIndex((i) => i + 1)
     undoStackRef.current = pushUndo(undoStackRef.current, state, action)
+    // Plan item 83: the pressed card lifts and sets down toward the board (a buy has its own flight).
+    const pressed = lastCardRef.current
+    lastCardRef.current = null
+    if (pressed && action.kind !== 'invest' && !autoplayRef.current && liftEnabled() && performance.now() - pressed.at < 15_000) {
+      liftPlayedCard(pressed.el, liftTarget(regionOf(action)))
+    }
     advance(state, action)
   }
 
@@ -1250,7 +1258,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // desktop), which has nothing to offer while it runs; over the map it clipped and covered hexes.
   const actionsPanel = (
     <div className="actions-well">
-      <section className="actions" tabIndex={0} role="region" aria-label="Actions" data-scroll-cue="">
+      <section
+        className="actions"
+        tabIndex={0}
+        role="region"
+        aria-label="Actions"
+        data-scroll-cue=""
+        onClickCapture={(e) => {
+          // Plan item 83: remember which card was pressed, so act() can lift it toward the board.
+          const card = (e.target as Element).closest?.('.action-item > button:first-child')
+          if (card instanceof HTMLElement && !(card as HTMLButtonElement).disabled) lastCardRef.current = { el: card, at: performance.now() }
+        }}
+      >
       {pendingEnemyTurn.length > 0 ? (
         <EnemyTurnPlayback
           events={pendingEnemyTurn}

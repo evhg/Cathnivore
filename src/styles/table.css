@@ -2331,3 +2331,5 @@ html.no-animations .cath-companion .cameo {
   .actions-sheet .actions .action-gain .action-gain-arrow { display: none; }
   .actions-sheet .actions .action-item > button:not(:disabled) .action-cost { padding-inline: 6px; }
 }
+/* Plan item 83: the played card's flying copy (playLift.ts) */
+.play-lift { position: fixed; z-index: var(--z-fx); pointer-events: none; transform-origin: 50% 50%; border-radius: var(--r-card); }
