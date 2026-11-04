@@ -195,3 +195,19 @@ test('plan item 73: picking another open stop, Cath walks to it before it opens'
   await expect(page.locator('button.node[data-level="7"] .you')).toHaveCount(0)
   await expect.poll(() => page.evaluate(() => !!document.querySelector('dialog[open]') || !!document.querySelector<HTMLElement>('#screen-select')?.hidden), { timeout: 5000 }).toBe(true)
 })
+
+test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its name clear of its padlock', async ({ page }) => {
+  await seed(page, 20)
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
+  const m = await page.evaluate(() => {
+    const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+    return {
+      you: r('button.node[data-level="21"] .you').bottom,
+      coin: r('button.node[data-level="21"] .level-num').top,
+      lock: r('button.node[data-level="30"] .level-lock').bottom,
+      name: r('button.node[data-level="30"] .level-name').top,
+    }
+  })
+  expect(m.coin - m.you).toBeGreaterThanOrEqual(4)
+  if ((page.viewportSize()?.width ?? 0) >= 600) expect(m.name - m.lock).toBeGreaterThanOrEqual(3)
+})

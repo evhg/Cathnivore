@@ -4338,3 +4338,10 @@ img.act-scene {
     animation: none;
   }
 }
+/* Plan item 84: Cath's token stands clear of her stop's coin (her feet sat on its rim), and a locked stop's name
+   keeps a gap below its padlock (a two-line name such as "Brand Ambassador" ran into it). */
+#screen-select .node.next .you:not(.beside) { top: -10px; }
+@media (min-width: 600px) {
+  #screen-select .node:disabled .level-lock + .level-medals + .level-name,
+  #screen-select .node:disabled .level-lock + .level-name { margin-top: 4px; }
+}
