@@ -33,6 +33,8 @@ test('a region tapped on a phone opens up close', async ({ page }, testInfo) => 
   const n = await pieces.count()
   expect(n).toBeGreaterThan(0)
   for (let i = 0; i < n; i++) expect((await pieces.nth(i).boundingBox())!.width).toBeGreaterThanOrEqual(32)
+  // The region is outlined on the board while its sheet is up.
+  await expect(hex).toHaveClass(/inspected/)
   await page.screenshot({ path: `e2e/screenshots/region-closeup-${testInfo.project.name}.png` })
   await page.keyboard.press('Escape')
   await expect(sheet).toBeHidden()
@@ -42,4 +44,31 @@ test('a region tapped on a phone opens up close', async ({ page }, testInfo) => 
   await expect(sheet).toBeVisible()
   await sheet.getByRole('button', { name: 'Close' }).click()
   await expect(sheet).toBeHidden()
+})
+
+// Plan item 109: an action that can target the region is offered in its sheet and goes to its confirm step.
+test('the close-up offers this turn\'s actions on the region', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'phone layout only')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.map').waitFor()
+  // Try regions until one offers an action this turn (the opening turn can open a stall somewhere).
+  const ids = await page.locator('.region-hex').evaluateAll((els) => els.map((e) => (e as SVGGElement).dataset.region!))
+  for (const id of ids) {
+    await page.locator(`.region-hex[data-region="${id}"] .region-inspect`).focus()
+    await page.keyboard.press('Enter')
+    const sheet = page.locator('.region-closeup')
+    await expect(sheet).toBeVisible()
+    const act = sheet.locator('.region-closeup-action')
+    if ((await act.count()) > 0) {
+      await act.first().click()
+      await expect(sheet).toBeHidden()
+      await expect(page.locator(`.region-hex[data-region="${id}"]`)).toHaveClass(/glow/)
+      return
+    }
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+  }
+  throw new Error('no region offered an action on the first turn')
 })

@@ -955,3 +955,24 @@ html.no-animations .coach-tap { animation: none; }
 }
 .region-inspect:focus { outline: none; }
 .region-inspect:focus-visible { stroke: var(--focus, var(--ink)); stroke-width: 5px; }
+.region-closeup-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.region-closeup-actions h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted, var(--ink));
+}
+.region-closeup-action {
+  min-height: 44px;
+  text-align: left;
+}
+/* The region open up close is outlined on the board (the glow's stroke, without its pulse). */
+.region-hex.inspected polygon:first-of-type {
+  stroke: var(--gold, var(--ink));
+  stroke-width: 6px;
+}

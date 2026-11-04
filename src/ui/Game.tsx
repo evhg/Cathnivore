@@ -2296,9 +2296,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 }
               : undefined
           }
+          inspected={closeUp}
           onInspect={!isDesktop && !guidedActive && pendingEnemyTurn.length === 0 && !drag && !teammatePick ? setCloseUp : undefined}
         />
-        {closeUp && !isDesktop && <RegionCloseUp state={boardState} region={closeUp} onClose={() => setCloseUp(null)} />}
+        {closeUp && !isDesktop && (
+          <RegionCloseUp
+            state={boardState}
+            region={closeUp}
+            onClose={() => setCloseUp(null)}
+            // Plan item 109: the actions this turn that can target the region; one goes straight to its confirm step.
+            actions={[...groups.values()].flatMap((g) => {
+              const entry = g.entries.find((e) => e.region === closeUp)
+              return entry
+                ? [{ label: g.label, play: () => {
+                    setCloseUp(null)
+                    setSelectedGroup(g)
+                    setPendingChoice(entry)
+                  } }]
+                : []
+            })}
+          />
+        )}
       </section>
       </div>
 

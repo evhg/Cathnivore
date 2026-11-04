@@ -14,7 +14,7 @@ const TYPE_NAME: Record<RegionType, string> = { capital: 'The capital', pasture:
  * 32 px or more with their counts, and what is on it in words: who holds it, Hollowell's pieces and the
  * producers' stalls. Esc, a tap outside, a swipe down or Close returns to the board.
  */
-export default function RegionCloseUp({ state, region, onClose }: { state: GameState; region: RegionId; onClose(): void }) {
+export default function RegionCloseUp({ state, region, onClose, actions = [] }: { state: GameState; region: RegionId; onClose(): void; actions?: Array<{ label: string; play(): void }> }) {
   const sheetRef = useSheetDismiss(onClose, true)
   const uid = useId().replace(/:/g, '')
   const def = REGIONS[region]
@@ -98,6 +98,16 @@ export default function RegionCloseUp({ state, region, onClose }: { state: GameS
           )}
           {pieces.length + stalls.length === 0 && r.lostLand === 0 && <li className="region-closeup-empty">Nothing on it yet.</li>}
         </ul>
+        {actions.length > 0 && (
+          <section className="region-closeup-actions" aria-label={`What you can do in ${def.name}`}>
+            <h3>This turn, here</h3>
+            {actions.map((a) => (
+              <button key={a.label} className="region-closeup-action" onClick={a.play}>
+                {a.label}
+              </button>
+            ))}
+          </section>
+        )}
       </div>
     </div>
   )

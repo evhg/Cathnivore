@@ -97,6 +97,8 @@ interface Props {
   onSelect?: (region: RegionId) => void
   /** Plan item 109: with nothing to pick, a tap on a region opens it up close (phones). */
   onInspect?: (region: RegionId) => void
+  /** Plan item 109: the region open up close (outlined on the board while its sheet is up). */
+  inspected?: RegionId | null
   /** Plan item 80: the producers' faces this moment (a Squeeze worries them, their ability delights them). */
   faces?: Partial<Record<ProducerId, ProducerFace>>
   /** Plan item 98: drawn over the hexes but under the region name plates (the title's vans on their roads). */
@@ -581,7 +583,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, faces, underNames }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -714,7 +716,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             key={id}
             data-region={id}
             data-enemy-pieces={r.outlets + r.buyouts + r.doubt + r.lostLand}
-            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
+            className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${inspected === id ? ' inspected' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : inspect ? () => inspect(id) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
             tabIndex={onSelect && glow ? 0 : undefined}
