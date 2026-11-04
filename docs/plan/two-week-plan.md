@@ -1280,7 +1280,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** sampled in e2e: tile fill vs field 3:1 or more, channel vs tile 3:1 or more, every weather; greyscale shot readable; runnel e2e still pass; shots P and D.
 - **Size:** 1
 
-## 91. [ ] The bugs from the 2026-11-04 04:10 critique, fixed as one batch
+## 91. [ ] The bugs from the 2026-11-04 04:10 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1104a)
   - [ ] **Portfolio D:** a stray pill in the stats row (1035-1062 x 780-825); the hero collage's stale shots, near-black NIGHT SHIFT tile, no Hedgerow (805-1345 x 160-650).
   - [ ] **Cathnivore title D:** the bubble's tail a flat underline not pointing at Cath (650-895 x 370-418). **P:** the bubble squeezes four lines into about 110 px.
