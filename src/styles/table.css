@@ -2465,7 +2465,7 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:not(:disabled) .action-cost,
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='invest'] > button:not(:disabled) .action-cost { margin-left: 26px; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:not(:disabled) .action-label:only-child,
-  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='invest'] > button:not(:disabled) .action-label:only-child { padding-bottom: 24px; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='invest'] > button:not(:disabled) .action-label:only-child { margin-bottom: 26px; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:not(:disabled) .action-cost,
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='invest'] > button:not(:disabled) .action-cost { align-self: flex-start; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > .tooltip-trigger,
@@ -2473,4 +2473,10 @@ html.no-animations .cath-companion .cameo {
 }
 @media (min-width: 1024px) {
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play'] .action-prefix { display: none; }
+}
+@media (min-width: 1024px) {
+  /* Supply's and Rebut's full-row cards close the Play group, so its tiles pair up without a half-blank row */
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family { order: 1; }
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-head-later,
+  .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item:has(> button:disabled) { order: 2; }
 }
