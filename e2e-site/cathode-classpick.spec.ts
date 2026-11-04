@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test'
 // upright phone the names are 15 px and the "more below" cue keeps off the sheet's rows.
 
 type Box = { left: number; top: number; right: number; bottom: number }
-type Front = { cathodeFront?: { ready: boolean; scene: () => { dressed: string | null; figureBox(): Box } | null } }
+type Front = { cathodeFront?: { ready: boolean; scene: () => { dressed: string | null; kit: string | null; figureBox(): Box } | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
 
@@ -29,9 +29,10 @@ test('a ?play case file turns Cath to the camera, in a different look for each c
   for (const cls of CLASSES) {
     await page.locator(`.cp-opt[data-cls=${cls}]`).click()
     await expect.poll(dressed, { timeout: 30_000 }).toBe(cls)
-    seen.add((await dressed())!)
+    // Each class's own kit over the coat (the rifle sling, the apron, the holster, the wire rig, the tie).
+    seen.add(`${await dressed()}/${await page.evaluate(() => (window as unknown as Front).cathodeFront!.scene()!.kit)}`)
   }
-  expect(seen.size).toBe(5)
+  expect([...seen]).toEqual(CLASSES.map((c) => `${c}/${c}`))
   // Her figure, head to hem, is a presence: 420 px or more at D, 300 at P.
   const fig = await page.evaluate(() => (window as unknown as Front).cathodeFront!.scene()!.figureBox())
   expect(fig.bottom - fig.top, JSON.stringify(fig)).toBeGreaterThanOrEqual(hasTouch ? 300 : 420)

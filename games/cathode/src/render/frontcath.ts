@@ -29,6 +29,11 @@ export interface FrontCath {
   indoors(on: boolean): void;
   /** Plan item 42: the coat's cloth colour (the class pick's outfit swap); null puts her black trench back. */
   coat(c: THREE.Color | null): void;
+  /** Plan item 112: the class's kit over the coat (ghost's rifle sling, butcher's apron, gunslinger's holster,
+   *  wirewitch's wire rig, fixer's tie); null takes it off. One kit shows at a time. */
+  kit(cls: string | null): void;
+  /** The kit she's wearing (null for none). */
+  readonly wearing: string | null;
   dispose(): void;
   readonly triangles: number;
 }
@@ -1213,11 +1218,105 @@ export function buildFrontCath(phone: boolean): FrontCath {
     (dropGeo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
   }
 
+  // ---- plan item 112: the class kits, in the pelvis frame (the coat's front surface sits at about 0.7 x its
+  // profile radius). Each kit is one or two merged meshes; only the worn one is visible, so it costs at most two
+  // draw calls (and their shadows). ----
+  const tube = (pts: Array<[number, number, number]>, r: number, segs = 24) =>
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => V(x, y, z))), segs, r, 6, false);
+  const kits = new Map<string, THREE.Group>();
+  const kitMats: THREE.Material[] = [];
+  const kitMat = (m: THREE.Material) => (kitMats.push(m), m);
+  const kitGroup = (cls: string, parts: Array<[THREE.BufferGeometry[], THREE.Material]>) => {
+    const g = new THREE.Group();
+    g.name = `kit-${cls}`;
+    g.visible = false;
+    for (const [geos, mat] of parts) add(mergeGeos(geos), mat, g);
+    pelvis.add(g);
+    kits.set(cls, g);
+  };
+  {
+    const gunMetal = kitMat(new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.75 }));
+    // Ghost: the rifle's sling across her chest, the scoped barrel standing over her left shoulder.
+    kitGroup("ghost", [
+      [
+        [tube([[-0.17, -0.05, 0.05], [-0.07, 0.14, 0.108], [0.06, 0.33, 0.132], [0.155, 0.47, 0.09], [0.15, 0.54, -0.06]], 0.016)],
+        kitMat(new THREE.MeshStandardMaterial({ color: 0x6e5038, roughness: 0.5, metalness: 0.04 })),
+      ],
+      [
+        [
+          // The barrel along her back, its muzzle and scope standing clear of her hair over the left shoulder.
+          limb(V(0.02, 0.05, -0.19), V(0.31, 1.02, -0.12), 0.018, 0.011, 10),
+          limb(V(0.2, 0.66, -0.17), V(0.245, 0.83, -0.155), 0.026, 0.026, 12),
+          limb(V(0.3, 0.99, -0.122), V(0.318, 1.06, -0.118), 0.017, 0.017, 8),
+        ],
+        gunMetal,
+      ],
+    ]);
+    // Butcher: a heavy leather apron from the chest to below the knee, on a neck strap.
+    const apron = new THREE.CylinderGeometry(0.19, 0.252, 0.8, seg(16), 4, true, -0.62, 1.24);
+    apron.scale(1, 1, 0.74);
+    apron.translate(0, -0.03, 0);
+    kitGroup("butcher", [
+      [
+        [
+          apron,
+          tube([[-0.065, 0.36, 0.12], [-0.06, 0.47, 0.11], [0, 0.545, 0.06], [0.06, 0.47, 0.11], [0.065, 0.36, 0.12]], 0.007, 16),
+        ],
+        kitMat(new THREE.MeshStandardMaterial({ color: 0x4a2418, roughness: 0.36, metalness: 0.08, side: THREE.DoubleSide })),
+      ],
+    ]);
+    // Gunslinger: a gunbelt slung low on her hips and the holstered revolver on her right.
+    const gunbelt = new THREE.TorusGeometry(0.19, 0.016, 6, seg(28));
+    gunbelt.rotateX(Math.PI / 2);
+    gunbelt.scale(1, 1, 0.74);
+    gunbelt.rotateZ(0.12);
+    gunbelt.translate(0, -0.08, 0);
+    const holster = new THREE.BoxGeometry(0.06, 0.17, 0.045);
+    holster.rotateZ(-0.12);
+    holster.translate(-0.215, -0.19, 0.03);
+    const grip = new THREE.BoxGeometry(0.03, 0.075, 0.03);
+    grip.rotateZ(0.5);
+    grip.translate(-0.23, -0.07, 0.04);
+    kitGroup("gunslinger", [
+      [[gunbelt, holster], kitMat(new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.48, metalness: 0.04 }))],
+      [[grip, limb(V(-0.215, -0.1, 0.035), V(-0.2, -0.05, 0.035), 0.016, 0.016, 8)], gunMetal],
+    ]);
+    // Wirewitch: lit cables from her spine over both shoulders, down the coat's front to a deck on her belt.
+    const deck = new THREE.BoxGeometry(0.07, 0.045, 0.022);
+    deck.translate(0.06, 0.1, 0.098);
+    kitGroup("wirewitch", [
+      [
+        [
+          tube([[-0.04, 0.5, -0.11], [-0.15, 0.53, -0.01], [-0.155, 0.42, 0.105], [-0.11, 0.24, 0.105], [0.03, 0.11, 0.1]], 0.0042),
+          tube([[0.04, 0.5, -0.11], [0.15, 0.53, -0.01], [0.15, 0.4, 0.11], [0.09, 0.18, 0.1], [0.07, 0.12, 0.1]], 0.0042),
+          deck,
+        ],
+        kitMat(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.55, 0.16, 1.25), toneMapped: false })),
+      ],
+    ]);
+    // Fixer: a claret tie down the open collar and a white pocket square.
+    const square = new THREE.BoxGeometry(0.045, 0.028, 0.01);
+    square.rotateZ(0.2);
+    square.translate(0.1, 0.37, 0.112);
+    kitGroup("fixer", [
+      [[tube([[0, 0.535, 0.07], [0, 0.48, 0.118], [0, 0.4, 0.13], [0, 0.31, 0.118]], 0.012, 12)], kitMat(new THREE.MeshStandardMaterial({ color: 0x6e1f33, roughness: 0.35, metalness: 0.1 }))],
+      [[square], kitMat(new THREE.MeshStandardMaterial({ color: 0xf2ece2, roughness: 0.6, metalness: 0 }))],
+    ]);
+  }
+  let wearing: string | null = null;
+
   return {
     group,
     head,
     ember,
     umbrellaTop,
+    get wearing() {
+      return wearing;
+    },
+    kit(cls) {
+      wearing = cls && kits.has(cls) ? cls : null;
+      for (const [k, g] of kits) g.visible = k === wearing;
+    },
     update,
     triangles: Math.round(tris),
     setRim(viewDir) {
@@ -1243,6 +1342,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         if (m.geometry) m.geometry.dispose();
       });
       for (const m of mats) m.dispose();
+      for (const m of kitMats) m.dispose();
       smokeTex.dispose();
       strands.dispose();
       faceTex.dispose();

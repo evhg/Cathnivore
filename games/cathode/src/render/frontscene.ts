@@ -46,6 +46,8 @@ export interface FrontScene {
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
   readonly dressed: string | null;
+  /** The class kit she wears over the coat (null on the title). */
+  readonly kit: string | null;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
@@ -481,6 +483,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     get dressed() {
       return wd.cls;
     },
+    get kit() {
+      return cath.wearing;
+    },
     wardrobe(cls, instant) {
       const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (!instant && !o.still && !reduce && cls && wd.cls && cls !== wd.cls) wd.turn = TURN_S;
@@ -491,6 +496,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const coatHex = cls ? CLASS_COAT[cls] : null;
       coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
       if (cls) cath.play(cls, instant ? 0.5 : undefined);
+      cath.kit(cls);
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);
