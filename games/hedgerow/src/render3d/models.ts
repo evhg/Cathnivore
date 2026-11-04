@@ -1288,6 +1288,41 @@ function vehicle(o: VehicleOpts): THREE.Group {
   return g;
 }
 
+/** Plan item 81: a small hatchback facing +x: a body below the beltline, a glass greenhouse with a raked screen
+ * and a sloped hatch, a roof, head- and tail-lights, and four wheels (about 0.46 long, 0.26 wide). */
+function hatchback(body: string, trim: string): THREE.Group {
+  const g = new THREE.Group();
+  const w = 0.26;
+  const wr = 0.07;
+  const extrude = (key: string, pts: Array<[number, number]>, depth: number) =>
+    geo(key, () => {
+      const sh = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+      const e = new THREE.ExtrudeGeometry(sh, { depth, curveSegments: 1, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 1 });
+      e.translate(0, 0, -depth / 2);
+      return e;
+    });
+  const bodyMat = gloss(body);
+  g.add(mesh(extrude("hatchBody", [[-0.215, 0.04], [0.215, 0.04], [0.225, 0.12], [0.12, 0.16], [-0.2, 0.2], [-0.222, 0.18]], w - 0.024), bodyMat, 0, 0, 0));
+  g.add(mesh(extrude("hatchGlass", [[0.11, 0.165], [0.015, 0.255], [-0.15, 0.255], [-0.19, 0.198]], w - 0.05), glass(), 0, 0, 0));
+  g.add(box(0.17, 0.018, w - 0.03, bodyMat, -0.065, 0.268, 0));
+  // A trim line along each flank, the pillars between screen and side glass, and the lights.
+  for (const side of [-1, 1]) {
+    g.add(box(0.4, 0.016, 0.004, glow(trim, 0.6), -0.005, 0.12, side * (w / 2 + 0.001)));
+    g.add(box(0.012, 0.03, 0.03, glow("#ff2a2a", 1.8), -0.226, 0.13, side * w * 0.34));
+    g.add(ball(0.022, glow("#fff2b0", 2.5), 0.226, 0.1, side * w * 0.32, 0));
+  }
+  g.add(box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), 0.23, 0.05, 0), box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), -0.23, 0.05, 0));
+  const wheels: THREE.Object3D[] = [];
+  for (const x of [-0.14, 0.14])
+    for (const side of [-1, 1]) {
+      const wh = wheel(wr, x, (side * w) / 2);
+      g.add(wh);
+      wheels.push(wh);
+    }
+  g.userData.wheels = wheels;
+  return g;
+}
+
 function crown(y: number, w: number): THREE.Group {
   const g = new THREE.Group();
   const gold = metal(C.gold, 0.25);
@@ -1374,10 +1409,11 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "influencer": {
       // The Influencer (fleet.ts): a pink hatchback with a ring light on a pole through the sunroof. Baked into
       // the instanced rungs, so the ring is a vertex colour, not a light, and a parade costs one draw call.
-      const g = vehicle({ len: 0.46, h: 0.2, w: 0.26, body: "#f27ab0", stripe: "#ffd6ea", logo: null });
-      g.add(box(0.2, 0.09, 0.22, gloss("#f27ab0"), -0.02, 0.27, 0), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, 0.112), box(0.21, 0.06, 0.005, glass(), -0.02, 0.29, -0.112));
-      g.add(cyl(0.01, 0.01, 0.16, metal("#5a5e63"), -0.02, 0.38, 0, 5));
-      const ring = mesh(new THREE.TorusGeometry(0.08, 0.016, 6, 16), glow("#ffd6ea", 1), -0.02, 0.5, 0);
+      // Plan item 81: a real hatchback's profile (bonnet, raked screen, roof, sloped hatch) like its 2D icon; it
+      // was a van body with a box on top and read as stacked pink cubes.
+      const g = hatchback("#ff86bd", "#ffd6ea");
+      g.add(cyl(0.01, 0.01, 0.14, metal("#5a5e63"), -0.07, 0.35, 0, 5));
+      const ring = mesh(new THREE.TorusGeometry(0.08, 0.016, 6, 16), glow("#ffd6ea", 1), -0.07, 0.46, 0);
       ring.rotation.y = Math.PI / 2;
       g.add(ring);
       return g;

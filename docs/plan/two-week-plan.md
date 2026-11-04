@@ -1195,7 +1195,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - A low-poly Cath to the bible: centre-parted long dark hair, the olive jacket, a readable face (a painted decal, no blob). *(2026-11-04 lane B, slice 1: the "beard" was the lift blowing her skin and collar out to white, and her hair read as white wings (item 84). The lift now fades for light colours: `tests/hedgerow-cath3d-hair.test.ts`; shot with `scripts/hedgerow-cath3d-shots.mjs`.)*
   - Every tower model with its own silhouette per type and a visible upgrade-tier tell. *(2026-11-04 lane B, slice 2: the "cannon logs" in the critique were level 21's fallen oaks, not towers. They now have warm grooved bark, a pale sawn end and a fuller two-tone crown, and are baked. The towers themselves are still to check against `scripts/hedgerow-tower-lineup.mjs`.)*
-  - Enemy vehicles that match their 2D icons; the farm buildings textured (boards, tiles, windows).
+  - Enemy vehicles that match their 2D icons; the farm buildings textured (boards, tiles, windows). *(2026-11-04 lane B, slice 3: the fleet Influencer is a real hatchback (bonnet, raked screen, sloped hatch) in place of a van body with a box on top. `tests/hedgerow-tower-models.test.ts` checks every tower type's silhouette is its own and each tier shows.)*
 - **Accept:** unit: each tower type's model differs in bounding box or part count from every other; e2e (`?sandbox=1`): a tower lineup stage renders each type; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of 2D and 3D side by side at P, D and L, and a face close-up of Cath.
 - **Size:** 3
 
