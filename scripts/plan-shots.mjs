@@ -24,6 +24,11 @@ const jobs = {
     await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/cath-title-${s}.png` })
     await p.getByText('Quick Game').click(); await p.waitForTimeout(800); await p.screenshot({ path: `${out}/cath-setup-${s}.png` })
     await p.getByRole('button', { name: 'Start' }).click(); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/cath-game-${s}.png` })
+    try {
+      await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1200)
+      await p.getByText('Campaign', { exact: false }).first().click(); await p.waitForTimeout(1500)
+      await p.screenshot({ path: `${out}/cath-campaign-${s}.png` })
+    } catch (e) { console.log('campaign', s, String(e).split('\n')[0]) }
   },
   async runnel(p, s) {
     await p.goto(`${base}/runnel/`); await p.waitForTimeout(2000); await p.screenshot({ path: `${out}/runnel-${s}.png` })
@@ -38,10 +43,14 @@ const jobs = {
       await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
       await p.screenshot({ path: `${out}/hedge-l21-${mode}-${s}.png` })
     }
+    await p.goto(`${base}/hedgerow/?sandbox=1&level=34&2d`)
+    await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
+    await p.waitForTimeout(1000); await p.screenshot({ path: `${out}/hedge-l34-2d-${s}.png` })
   },
   async nightshift(p, s) {
     await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
     await p.goto(`${base}/nightshift/`); await p.waitForTimeout(9000); await p.screenshot({ path: `${out}/ns-title-${s}.png` })
+    await p.goto(`${base}/nightshift/?play`); await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
   },
 }
 for (const [name, job] of Object.entries(jobs)) {
