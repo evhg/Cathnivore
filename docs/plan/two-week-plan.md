@@ -1199,7 +1199,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each tower type's model differs in bounding box or part count from every other; e2e (`?sandbox=1`): a tower lineup stage renders each type; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of 2D and 3D side by side at P, D and L, and a face close-up of Cath.
 - **Size:** 3
 
-## 82. [ ] NIGHT SHIFT: the phone front door, recomposed *(lane B, in progress)*
+## 82. [x] NIGHT SHIFT: the phone front door, recomposed *(done 2026-11-04, lane B: no letterbox; upright she stands lower right, clear of the menu, with a rim light; the logotype contrast e2e at P and D; shots P, L, D in `e2e/screenshots/f82`; the perf gate is left to the release gates, as the change is a lens aim, a rim strength and CSS)*
 - **Why:** `ns-title-P` (plan1103g): the logotype (15-375 x 85-130) is a thin outline lost in the dark art; the figure with the umbrella sits behind the menu text; below y=450 the frame is almost black; both sizes have black letterbox bands (D 0-44 and 855-900, P 0-42 and 800-844).
 - **Build:**
   - A phone crop of its own: the figure in the lower half with a rim light, the menu above it on a scrim. *(Done 2026-11-04 lane B, slice 2: upright, the title's lens aims higher and turns her into the right half, so she stands below and beside the menu. The menu box hugs its rows; a stronger phone rim; the upright scrim is dark only behind the menu. The `figureBox()` hook feeds an e2e for the menu clear of her and her in the lower half.)*
@@ -1229,7 +1229,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 1
 
-## 85. [ ] The site's /games/: all four games on the first screen
+## 85. [ ] The site's /games/: all four games on the first screen *(lane B, in progress)*
 - **Why:** `games-D` (plan1104a): the first screen is one "Play today's Runnel" button (615-815 x 352-398); no game shows above the fold; Cath stands cut at the waist on a floating plank (200-450 x 515-532); the stall (1145-1355 x 285-510) is washed out by haze. `games-P`: a dark card (20-370 x 680-844) crosses Cath's legs.
 - **Build:**
   - A strip of four game cards in the hero (live key art `portfolio/public/work/games-*.webp`, each logotype and a one-line hook): under the CTA row at D, a snapping row from y about 600 at P.
