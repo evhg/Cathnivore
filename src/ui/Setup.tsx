@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
-import type { GameConfig, ProducerId, RegionId } from '../engine/types'
+import BoardMiniature from './BoardMiniature'
+import type { GameConfig, ProducerId } from '../engine/types'
 import { earnedPins, pinForEvent } from '../../shared/cath/pins'
 import { marketEventFor } from '../engine/marketEvent'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
@@ -21,28 +22,6 @@ interface Props {
 // poster strip, the producers a dealt row with the picked pair lifted and their abilities in full under it,
 // the mode two chairs at a table, difficulty Hollowell's threat card, the maps on a shelf, the seed behind an
 // Advanced chip and Start the stall's open sign.
-
-/** Plan item 15: a layout's hexes in miniature. The ring shows its printed types; the others are dealt by the
- * seed, so their hexes are blank paper with Kingsmarket marked. */
-function LayoutGlyph({ id }: { id: LayoutId }) {
-  const l = LAYOUTS[id]
-  const R = 9
-  const W = R * Math.sqrt(3)
-  const pts = (cx: number, cy: number) =>
-    [0, 1, 2, 3, 4, 5].map((i) => `${(cx + R * 0.94 * Math.cos(((-90 + i * 60) * Math.PI) / 180)).toFixed(1)},${(cy + R * 0.94 * Math.sin(((-90 + i * 60) * Math.PI) / 180)).toFixed(1)}`).join(' ')
-  const hexes = (Object.entries(l.hexes) as [RegionId, [number, number]][]).map(([rid, [q, r]]) => ({ rid, x: W * (q + r / 2), y: 1.5 * R * r }))
-  const xs = hexes.map((h) => h.x)
-  const ys = hexes.map((h) => h.y)
-  const vb = `${Math.min(...xs) - W / 2 - 2} ${Math.min(...ys) - R - 2} ${Math.max(...xs) - Math.min(...xs) + W + 4} ${Math.max(...ys) - Math.min(...ys) + 2 * R + 4}`
-  return (
-    <svg className="layout-glyph" viewBox={vb} aria-hidden="true">
-      {hexes.map((h) => {
-        const type = h.rid === 'kingsmarket' ? 'capital' : l.fixedTypes?.[h.rid]
-        return <polygon key={h.rid} className={`cmp-hex ${type ? `cmp-${type}` : 'cmp-off'}`} points={pts(h.x, h.y)} />
-      })}
-    </svg>
-  )
-}
 
 export default function Setup({ onStart }: Props) {
   const [mode, setMode] = useState<Mode>('solo')
@@ -196,7 +175,7 @@ export default function Setup({ onStart }: Props) {
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
               <input type="radio" name="layout" checked={layout === id} onChange={() => setLayout(id)} />
-              <LayoutGlyph id={id} />
+              <BoardMiniature id={id} />
               <span className="layout-name">{LAYOUTS[id].name}</span>
               <span className="layout-blurb">{LAYOUTS[id].blurb}</span>
             </label>

@@ -34,7 +34,7 @@ for (const [w, h] of [
         for (const card of document.querySelectorAll<HTMLElement>('.plan-strip-item > button:first-child')) {
           for (const el of card.querySelectorAll<HTMLElement>('.plan-strip-headline, .plan-strip-effect, .plan-strip-target, .plan-chip')) {
             const r = el.getBoundingClientRect()
-            if (r.width < 2 || el.closest('.plan-strip-target')?.getBoundingClientRect().width! < 2) continue
+            if (r.width < 2 || (el.closest('.plan-strip-target')?.getBoundingClientRect().width ?? 99) < 2) continue
             if (parseFloat(getComputedStyle(el).fontSize) < 12) small.push(el.textContent ?? '')
             if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) cut.push(el.textContent ?? '')
           }

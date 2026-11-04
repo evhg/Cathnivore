@@ -28,7 +28,7 @@ export const HEX_R = 92 // circumradius (centre to vertex)
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 /** The painted face's radius on the board (the campaign map scales the board's ground art from it). */
 export const BOARD_FACE_R = 92 * 0.96
-const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
+export const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap between them (STYLE.md 7)
 /* Piles wrap after this many pieces so a heavy board never runs past the hex edge. */
 /** Plan item 20: a tile's thickness (its edge shows below the face) and how far its shadow falls. */
 const TILE_DEPTH = 7
@@ -61,7 +61,8 @@ function layoutFit(layout: Layout, ids: readonly RegionId[]): Fit {
 }
 const fitPoint = (p: { x: number; y: number }, f: Fit) => ({ x: p.x * f.k + f.tx, y: p.y * f.k + f.ty })
 
-function hexPoints(cx: number, cy: number, r: number): string {
+// eslint-disable-next-line react-refresh/only-export-components -- shared with BoardMiniature (plan item 101)
+export function hexPoints(cx: number, cy: number, r: number): string {
   const pts: string[] = []
   for (let i = 0; i < 6; i++) {
     const angle = ((-90 + i * 60) * Math.PI) / 180
@@ -70,7 +71,8 @@ function hexPoints(cx: number, cy: number, r: number): string {
   return pts.join(' ')
 }
 
-const REGION_FILL: Record<RegionType, string> = {
+// eslint-disable-next-line react-refresh/only-export-components -- shared with BoardMiniature (plan item 101)
+export const REGION_FILL: Record<RegionType, string> = {
   pasture: 'var(--region-pasture)',
   crop: 'var(--region-crop)',
   coast: 'var(--region-coast)',
@@ -508,7 +510,7 @@ export function GroundArt({ type, id, clip }: { type: RegionType; id: string; cl
   )
 }
 
-function TerrainArt({ type, id }: { type: RegionType; id: string }) {
+export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   // Per-region variation: a stable hash of the id picks a variant so neighbours of one type don't look cloned.
   let h = 0
   for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
