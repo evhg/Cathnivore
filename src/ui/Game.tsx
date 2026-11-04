@@ -25,6 +25,8 @@ import { liftEnabled, liftPlayedCard, liftTarget } from './playLift'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
 import { PlanArt } from './icons/HollowellArt'
+import { splitTarget } from './planTarget'
+import { usePlanArming } from './usePlanArming'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
@@ -496,6 +498,27 @@ function winHeadline(chapterId: string | undefined): string {
   return `${list} ${names.length > 1 ? 'are' : 'is'} free.`
 }
 
+/** Plan item 100: a plan card's target line, each region drawn as a chip (the words stay the accessible text). */
+function TargetLine({ line, names }: { line: string; names: string[] }) {
+  return (
+    <>
+      {splitTarget(line, names).map((part, i) =>
+        part.region ? (
+          <span key={i} className="plan-chip">
+            {part.text}
+          </span>
+        ) : part.sep ? (
+          <span key={i}>
+            <span className="visually-hidden">,</span>{' '}
+          </span>
+        ) : (
+          part.text
+        ),
+      )}
+    </>
+  )
+}
+
 export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
@@ -538,6 +561,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // is taken, its own entry can never be popped (see `undo()`) — later actions in the same turn can still
   // be undone individually, right back down to that point.
   const undoStackRef = useRef<UndoEntry[]>([])
+  const planStripRef = usePlanArming([state.squeeze?.id ?? '', state.expand?.id ?? '', state.scout?.id ?? ''])
   const rngRef = useRef(createRng(seed + 1))
   // SPEC 9.2's real AI teammate ("MCTSBot running in a Web Worker so the screen never freezes"), created
   // lazily so hotseat/campaign games with no AI producer never spin one up. Terminated on unmount.
@@ -2084,7 +2108,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
           two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
           has no spare width to share. */}
-      <section className="plan-strip" aria-label="Tomorrow's papers">
+      <section ref={planStripRef} className="plan-strip" aria-label="Tomorrow's papers" data-round={state.round}>
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
           const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
           const card = state[slot]
@@ -2137,10 +2161,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {/* Plan item 25: what the card will do, by region, from the rules (planPreview). */}
                 {/* Plan item 47: a phone's narrow card shows the short line; the full one stays for the
                     accessible name (visually hidden there) and for wider cards. */}
-                <span className="plan-strip-target plan-strip-target-full" data-long={preview.summary.length > LONG_MAX || undefined}>{preview.summary}</span>
+                <span className="plan-strip-target plan-strip-target-full" data-long={preview.summary.length > LONG_MAX || undefined}>
+                  <TargetLine line={preview.summary} names={preview.regions.map((r) => REGIONS[r].name)} />
+                </span>
                 {preview.short !== preview.summary && (
                   <span className="plan-strip-target plan-strip-target-short" aria-hidden="true">
-                    {preview.short}
+                    <TargetLine line={preview.short} names={preview.regions.map((r) => REGIONS[r].name)} />
                   </span>
                 )}
                 {card && <span className="visually-hidden">{`, stage ${card.stage}`}</span>}

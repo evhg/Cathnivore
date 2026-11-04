@@ -21,8 +21,10 @@ export interface PlanPreview {
 
 /** Longest summary a phone plan card shows whole. */
 export const SHORT_MAX = 30
-/** Longest summary a desktop plan card (about 200 px) shows whole in its two lines. */
-export const LONG_MAX = 40
+/** Longest summary a desktop plan card (about 200 px) shows whole in its two lines. Plan item 100: 32, was 40;
+ *  the regions are chips now, which don't break inside a name, so 'Shingle Bay +Buyout · Saltmarsh +Buyout' (39)
+ *  ran to a third line. */
+export const LONG_MAX = 32
 
 function shorten(summary: string, regions: RegionId[], prefix = ''): string {
   if (summary.length <= SHORT_MAX) return summary

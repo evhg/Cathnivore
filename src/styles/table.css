@@ -375,6 +375,8 @@
    button's accessible name. */
 .plan-strip-target {
   display: -webkit-box;
+  /* Plan item 100: under the move's picture, not squeezed beside it (a 140 px card at 1280 cut it to 'Turns up a...'). */
+  clear: left;
   margin-top: 2px;
   /* Clear the card's "i" button in the bottom right. */
   padding-right: 24px;
@@ -385,6 +387,19 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
+}
+
+/* Plan item 100: the regions a card hits, as Hollowell's own orange-edged chips on the memo. */
+.plan-chip {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--hollowell) 16%, var(--newsprint));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hollowell-lo) 45%, transparent);
+  color: var(--hollowell-ink);
+  font-weight: 750;
+  white-space: nowrap;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Plan item 47: a phone's plan card is about 120 px wide, so the by-region line ran past two lines and was
