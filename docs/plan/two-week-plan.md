@@ -1210,7 +1210,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: the logotype's contrast against the pixels behind it at least 4.5:1 at P and D, no black band over 8 px at either size, the menu's box not intersecting the figure's at P; the perf gate passes; shots at P, D and L.
 - **Size:** 2
 
-## 83. [ ] Cathnivore: every action this turn in reach, as illustrated cards
+## 83. [ ] Cathnivore: every action this turn in reach, as illustrated cards *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1103g): the Actions column (17-332 x 250-875) is a grid of identical yellow buttons; locked ones are washed-out ghosts; "PLAY · 9 MORE" hides most actions below a scroll. `cath-game-P`: one row shows and the third card is cut at x=355.
 - **Build:**
   - Each Sell, Invest and Play action a card with its own small illustration, cost chip and group colour.
