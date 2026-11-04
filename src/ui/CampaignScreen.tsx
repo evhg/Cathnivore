@@ -4,7 +4,7 @@ import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
 import CampaignMap from './CampaignMap'
-import { CHAPTER_SEALS, hasHardSeal } from '../content/campaignMap'
+import { CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -164,7 +164,14 @@ export default function CampaignScreen({
           <p className="cmp-kicker">The liberation of Marrow</p>
           <h1>Campaign</h1>
           <p className="cmp-progress">
-            {done} of {chapters.length} chapters
+            {/* The map has seven regions and chapter 1 frees two, so the header counts both (critique 2026-11-03). */}
+            <span className="cmp-progress-text">
+              {done} of {chapters.length} chapters
+              <span className="cmp-progress-regions">
+                {' · '}
+                {liberatedRegions(completed).size} of {Object.keys(MAP_AXIAL).length} regions free
+              </span>
+            </span>
             <span className="cmp-progress-bar" aria-hidden="true">
               <span className={`cmp-progress-fill cmp-fill-${done}`} />
             </span>

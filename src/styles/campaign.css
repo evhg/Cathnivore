@@ -84,8 +84,13 @@
   color: var(--ink-muted);
 }
 
+.cmp-progress-text {
+  flex: none;
+}
+
 .cmp-progress-bar {
   position: relative;
+  min-width: 48px;
   flex: 0 1 180px;
   height: 10px;
   border-radius: 99px;
