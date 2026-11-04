@@ -1265,7 +1265,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: Play visible without scrolling at P and D, 160x48 or more; teaser 120 px or less at D; Enter on a stop opens its card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
 
-## 89. [ ] NIGHT SHIFT: the desktop front menu with a case dossier and The List as mugshots
+## 89. [ ] NIGHT SHIFT: the desktop front menu with a case dossier and The List as mugshots *(lane B, in progress)*
 - **Why:** `ns-title-D` (plan1104a): black bars (0-44 and 855-900); a plain text menu (58-225 x 310-550); the case line and THE LIST are 11 px grey captions (58-280 x 584, 58-150 x 740-800); the figure (960-1070 x 260-930) doesn't read as Cath. Item 82 covers only the phone.
 - **Build:**
   - Full bleed at D; the progress line only while loading.
