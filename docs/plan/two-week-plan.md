@@ -1560,7 +1560,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** in `?2d` at D, a side margin wider than 2.2 cells away from the water shows hedged fields (shots of levels 13, 21 and 34); ~~bubble ∩ plot = 0~~ the bubble over empty plots at most 15% of its area at D and 30% at P (levels 3, 12, 21); shots P and D.
 - **Size:** 2
 
-## 121. [ ] The bugs from the 2026-11-04 17:36 critique, fixed as one batch *(lane B, in progress)*
+## 121. [x] The bugs from the 2026-11-04 17:36 critique, fixed as one batch *(closed 2026-11-04, lane B: the fixed and checked points are ticked below; the three still open moved to item 126)*
 - **Build:** (check each first; plan1104g)
   - [x] **NIGHT SHIFT P class pick:** the tab row cuts "WIREWITCH" (298-390 x 90-105). **D title:** the dossier's name plate about 8 px (460-528 x 460-472); The List's name plates empty black bars (85-120 x 745-757). *(2026-11-04 lane B: the tab row is item 112's snapping row that fades at both edges, by design; the dossier's "TOMAS REED" is lettering on the mugshot's slate with the name at full size under it, no change; the List's small slates (wordless since item 107) now carry chalk strokes so they read as lettered slates; cathode-front's List specs pass; shot `f121d/ns-title-D`.)*
   - [ ] **Cathnivore game:** P EXPAND tags about 7 px (from item 91) *(2026-11-04 lane B: the badge now grows with the hex on screen (`badgeK` in `pieceLayout`), as far as the stalls keep 25 px: about 8 px on a 64 px hex, 10 at 72, 11+ at D; `e2e/threat-badge.spec.ts`, shots `f121c`. Open: 11 px on a phone needs another place for the threat than the tray's strip, for example a tab on the name plate)*; D "HOLLOWELL" ribbon about 10 px (1225-1330 x 176-188); plan-card subtext about 11 px grey (648-745 x 168-180).
@@ -1581,7 +1581,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** exactly one Cath visible at P and D; the tail ends within 24 px of her face box; the point within 20 degrees of the glowing tile's centre; `data-expression` changes on a spill and on a solve; bubble text 15 px or more, meeting no tile; item 77's `runnel-lesson-frame`/`runnel-valley` specs updated to one Cath; shots P and D, light and dark.
 - **Size:** 3
 
-## 123. [ ] Cathnivore phone: hand cards with their art
+## 123. [ ] Cathnivore phone: hand cards with their art *(lane B, in progress)*
 - **Why:** `cath-game-P` (35-375 x 672-770): each hand card is about 155x100, some 70% blank yellow, with a 30 px icon in a corner; the most-touched phone UI reads as blank slabs.
 - **Build:**
   - Each card carries its action art at 56 px or more, top-aligned; the name at 15 px; the cost chip on the art's corner.
@@ -1613,5 +1613,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Runnel D:** the Up-next title breaks the date ("Wed, Nov / 4", 170-320 x 667-703). *(Fixed 2026-11-04 lane A: each ' · ' part of the title is unbreakable, so it wraps only at a dot; `runnel-critique91.spec.ts`; shot `e2e/screenshots/k116/runnel-lesson-D.png`.)*
   - [ ] **NIGHT SHIFT:** class numbers about 9 px and dim (ns-play-D 55-66 x 185-410); "HOLD ENTER" about 10 px grey (1313-1382 x 805-815); the stats panel slices the street sign to "HO" (925-968 x 113-132); ns-title-P's case line about 11 px grey over the photo, under AA (15-275 x 437-450).
   - [ ] **Site /games/ D:** the H1 reads "Cathnivore" over Runnel's pitch (615-1095 x 220-290).
+  - [ ] **From item 121:** the Cathnivore phone threat badge's 11 px (now about 8 on a 64 px hex; needs another home than the tray strip, for example a tab on the name plate); Hedgerow 3D D Cath's face a dark smudge under her hair (150-230 x 470-540); the Hedgerow map's Saltmarsh cloud an opaque blob (460-770 x 60-160).
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
