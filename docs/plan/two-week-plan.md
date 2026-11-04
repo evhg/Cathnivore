@@ -1190,7 +1190,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: every producer has the three expressions and they differ; e2e: the Setup card portrait at least 120 px tall at P and D, the face swaps on a Squeeze in an autoplay game; greyscale still tells producers from corporations; shots before and after at P and D, light and dark.
 - **Size:** 3
 
-## 81. [ ] Hedgerow: 3D Cath, towers and vehicles that match the 2D art
+## 81. [ ] Hedgerow: 3D Cath, towers and vehicles that match the 2D art *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (plan1103g): Cath (70-210 x 470-610) is a blocky figure with a white blob across her face that reads as a beard, which breaks the character bible; the cannon towers look like bare logs (380-430 x 270-330); houses and the barn are untextured boxes; Influencers are stacked pink cubes (190-245 x 280-380).
 - **Build:**
   - A low-poly Cath to the bible: centre-parted long dark hair, the olive jacket, a readable face (a painted decal, no blob).
@@ -1217,7 +1217,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: every enabled action's box inside the viewport at 1440x900 and 1280x800 without scrolling; at P no card clipped at rest except the peek, which is at least 24 px; every card has an accessible name; tutorial, action-hand and desktop-no-scroll specs still pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 84. [ ] The bugs from the 2026-11-03 17:00 critique, fixed as one batch *(lane B, in progress)*
+## 84. [x] The bugs from the 2026-11-03 17:00 critique, fixed as one batch
 - **Build:** (check each first; plan1103g)
   - [x] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip. *(Fixed: packets never narrower than 38 px; 9 or 11 towers wrap to a second row.)*
   - [x] **Hedgerow D**: an empty band about 1100-1410 x 650-705 under the "Coming up" wave icons. *Done 2026-11-04 (lane B): when the notebook gives way, the rounds ahead become tiles that fill the card to its foot; e2e in hedgerow-tray.spec.ts.*
