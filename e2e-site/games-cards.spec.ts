@@ -66,7 +66,8 @@ test.describe('games page cards', () => {
     const card = await box('.games a.card')
     expect(plank.bottom).toBeLessThanOrEqual(card.y)
     if (vp.width >= 1200) {
-      for (const t of await page.locator('.games a.card:not(.card-cathode) .card-title').all()) {
+      // Plan item 85: the four games' names on the first screen are the hero strip's (the section's cards follow).
+      for (const t of await page.locator('.hero-games .hero-game-name').all()) {
         const b = (await t.boundingBox())!
         expect(b.y + b.height).toBeLessThanOrEqual(vp.height)
       }
@@ -76,4 +77,24 @@ test.describe('games page cards', () => {
       expect(stall.x + stall.width).toBeLessThanOrEqual(vp.width)
     }
   })
+})
+
+// Plan item 85: all four games on the first screen: four hero cards wholly inside 1440x900, at least two inside
+// 390x844, none over Cath.
+test('the hero shows the four games on the first screen, clear of Cath', async ({ page }) => {
+  for (const [vp, need] of [[{ width: 1440, height: 900 }, 4], [{ width: 390, height: 844 }, 2]] as const) {
+    await page.setViewportSize(vp)
+    await page.goto('/games/')
+    const links = page.locator('.hero-games .hero-game')
+    await expect(links).toHaveCount(4)
+    await expect(links.first()).toBeVisible()
+    const m = await page.evaluate(() => {
+      const r = (e: Element) => e.getBoundingClientRect()
+      return { cards: [...document.querySelectorAll('.hero-game')].map(r).map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom })), cath: (({ left, top, right, bottom }) => ({ l: left, t: top, r: right, b: bottom }))(r(document.querySelector('#hero-cath')!)) }
+    })
+    const inside = m.cards.filter((c) => c.l >= 0 && c.t >= 0 && c.r <= vp.width && c.b <= vp.height)
+    expect(inside.length, `${vp.width}: ${JSON.stringify(m.cards)}`).toBeGreaterThanOrEqual(need)
+    for (const c of m.cards) expect(c.l < m.cath.r && c.r > m.cath.l && c.t < m.cath.b && c.b > m.cath.t, `a card over Cath at ${vp.width}`).toBe(false)
+    await expect(links.nth(3)).toHaveAttribute('href', '/nightshift/')
+  }
 })

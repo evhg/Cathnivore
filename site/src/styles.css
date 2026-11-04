@@ -1430,3 +1430,80 @@ body {
     navigation: none;
   }
 }
+
+/* Plan item 85: the four games on the first screen. Two by two under the CTA row on a desktop; a snapping row of
+   cards (two whole, a peek of the third) on a phone. Each is a link to its game, with its live key art. */
+.hero-games {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: min(100%, 540px);
+  margin: 22px 0 0;
+}
+.hero-game {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--card-edge), var(--shadow-card);
+  color: var(--cream);
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.hero-game:hover,
+.hero-game:focus-visible {
+  background: var(--card-hover);
+  transform: translateY(-2px);
+}
+.hero-game img {
+  display: block;
+  width: 86px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.hero-game-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.hero-game-name {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.hero-game-name .badge {
+  font-size: 0.625rem;
+  vertical-align: middle;
+}
+.hero-game-hook {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  color: var(--cream-muted);
+}
+@media (max-width: 899.98px), (max-aspect-ratio: 1/1) {
+  .hero-games {
+    display: flex;
+    width: calc(100% + 32px);
+    margin: 18px -16px 0;
+    padding: 2px 16px 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+  .hero-games::-webkit-scrollbar { display: none; }
+  .hero-game {
+    flex: 0 0 min(44%, 210px);
+    grid-template-columns: 1fr;
+    padding: 6px 6px 10px;
+    scroll-snap-align: start;
+    text-align: left;
+  }
+  .hero-game img { width: 100%; height: auto; aspect-ratio: 16 / 10; }
+}
