@@ -1,13 +1,7 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { createGame, replay } from './engine/api'
-import Setup, { type Mode } from './ui/Setup'
-import Game from './ui/Game'
-import Scene from './ui/Scene'
-import RulesReference from './ui/RulesReference'
-import Settings from './ui/Settings'
-import Credits from './ui/Credits'
+import type { Mode } from './ui/Setup'
 import TitleArt from './ui/TitleArt'
-import CampaignScreen from './ui/CampaignScreen'
 import {
   loadGame,
   clearGame,
@@ -38,6 +32,16 @@ import { dailyMarket, dailyRecord, dailyStreak } from './content/daily'
 import { LAYOUTS } from './content/layouts'
 import { PRODUCERS } from './content/producers'
 import { MARKET_EVENTS } from './engine/marketEvent'
+
+// Gate 7 (Lighthouse mobile >= 85): the title paints from the first chunk; every other screen loads on demand
+// (the service worker precaches every chunk, so offline play is unchanged).
+const Setup = lazy(() => import('./ui/Setup'))
+const Game = lazy(() => import('./ui/Game'))
+const Scene = lazy(() => import('./ui/Scene'))
+const RulesReference = lazy(() => import('./ui/RulesReference'))
+const Settings = lazy(() => import('./ui/Settings'))
+const Credits = lazy(() => import('./ui/Credits'))
+const CampaignScreen = lazy(() => import('./ui/CampaignScreen'))
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
@@ -73,6 +77,14 @@ type Screen =
   | { name: 'chapterSkipSummary'; chapter: Chapter }
 
 export default function App() {
+  return (
+    <Suspense fallback={null}>
+      <Screens />
+    </Suspense>
+  )
+}
+
+function Screens() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
   const [updateReady, setUpdateReady] = useState(false)
   // Bumped by "Play again" so the same-seed game mounts fresh rather than keeping the finished one's state.
