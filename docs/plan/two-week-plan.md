@@ -1355,7 +1355,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 **Folded in or retired:** ROADMAP 19, H2, 31, 33, 62 and 219 are closed as built. 239 to 242 (Phase 27 meta add-ons) are deferred below this plan. 58 and U7 become item 5; 74's leftovers become items 14 and 16; U11 is part of item 13.
 
-## 99. [ ] NIGHT SHIFT: The List and the case dossier as painted mugshots
+## 99. [ ] NIGHT SHIFT: The List and the case dossier as painted mugshots *(lane B, in progress)*
 - **Why:** `ns-title-D` (plan1104c, 405-565 x 295-575): the case file's photo for Tomas Reed is a flat black square with a "?", the focal point of the menu; the four "Withheld" List frames (155-535 x 665-800, and 75-300 x 690-750 at P) are the same black squares beside a rich, lit street. Only Julian Crisp has a face.
 - **Build:**
   - A noir mugshot for each of the five targets, from the same bust pipeline as Julian Crisp's (lit, height chart behind, a slate).
