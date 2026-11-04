@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import RivalArt from './portraits/RivalArt'
+import { rivalFace, type RivalFace } from './portraits/rivalFace'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
@@ -162,6 +164,21 @@ function useIsDesktopLayout(): boolean {
     return () => mq.removeEventListener('change', onChange)
   }, [])
   return isDesktop
+}
+
+// Plan item 92: Julian Crisp, Hollowell's face, in a glossy boardroom frame with the company's nameplate.
+function Rival({ face }: { face: RivalFace }) {
+  return (
+    <aside className="rival" data-rival data-face={face} aria-label={`Hollowell: Julian Crisp, ${face}`}>
+      <span className="rival-frame">
+        <RivalArt size={96} face={face} title={`Julian Crisp, ${face}`} />
+      </span>
+      <span className="rival-plate" aria-hidden="true">
+        <HollowellLogo size={11} />
+        Hollowell
+      </span>
+    </aside>
+  )
 }
 
 // Plan item 80: a producer's face as the expression name Portrait takes.
@@ -2102,6 +2119,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           )
         })}
       </section>
+      {/* Plan item 92: Hollowell's face across the table from Cath, his mood the mirror of hers. */}
+      <Rival face={rivalFace(cathReaction.expression)} />
       </div>
 
       <section className="map-wrap" data-light={lightFor(state.round)}>
