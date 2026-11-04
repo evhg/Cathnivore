@@ -1470,3 +1470,45 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Cath's marker 60 px or more, walking to the next stop when a level is won (instant under reduced motion).
 - **Accept:** e2e at D: stops 72 px or more, Cath's marker 60 px or more, no empty band over 150 px between the stops and the level card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
+
+## 112. [ ] NIGHT SHIFT: the class pick as an operative lineup, with Cath's face
+- **Why:** `ns-play-D` (plan1104f, `?play`): all five classes show the same faceless back view of Cath under an umbrella (940-1160 x 260-850); the classes are a word list (80-330 x 160-420); the stats float over the street with no backing and collide with the expressway sign (998-1320 x 85-135). `ns-play-P`: 11 px class tabs that nearly touch, and 'More below' drawn over the AIM row (15-380 x 770-792). Cath, the face of every game, never shows her face before the first job.
+- **Build:**
+  - Cath turns to camera on the pick: a three-quarter front pose per class, in noir light, each in its own outfit accent and expression (Ghost's hood and scope, Butcher's apron, Gunslinger's holster, Wirewitch's wire rig, Fixer's suit), from the 3D rig or a `shared/cath` noir portrait, whichever the perf gate allows.
+  - Switching class crossfades her pose in 250 ms (instant under reduced motion).
+  - The stats, weapon and skills sit on a dossier sheet with a dark backing and the class weapon as line art.
+  - P: the classes as full-width cards to swipe (labels 14 px or more), the 'more below' cue moved off the content.
+- **Accept:** e2e: the five classes give five different portrait states (`data-pose` or src); Cath's figure 420 px or more tall at D and 300 at P; stat text 4.5:1 on its backing; at P class labels 14 px or more and no two text boxes overlap; cathode-perf still passes; shots P, D, L.
+- **Size:** 2-3
+
+## 113. [ ] Cathnivore Campaign: Cath presents each chapter on the map
+- **Why:** `cath-campaign-D` (plan1104f): Cath is an 80 px bust floating in the corner (1300-1375 x 45-130) with no line; at P (20-95 x 120-205) she leaves the header's right half empty. The chapter cards' landscape silhouettes are about 10% contrast (1040-1380 x 330-610) and read as placeholders. The screen is a list beside a diagram, not a chapter journey.
+- **Build:**
+  - Cath stands at the map's edge, 160 px or more at D (110 at P), with a speech bubble (item 110's) whose line and expression change with the chapter picked or hovered.
+  - Each chapter card gets a drawn vignette of its regions' landmarks (the lighthouse, the mill, the market cross: the map's own landmark art) at 120x80 or more, at full ink, in place of the faint silhouettes; locked ones in pencil.
+  - Picking a chapter lights its regions on the map (a 600 ms glow; instant under reduced motion).
+- **Accept:** e2e at P and D: Cath's art 160/110 px or more with a bubble at 15 px or more and 4.5:1; each card has a vignette 120x80 or more; picking chapter 2 marks its regions `data-lit`; no page scroll added at 1440x900 beyond today's; shots P and D.
+- **Size:** 2
+
+## 114. [ ] Hedgerow 2D: Cath at a size you can see, with her poses
+- **Why:** `hedge-l21-2d-D` (plan1104f): Cath on the field is a sprite about 25 px tall (310-340 x 655-715), smaller than the towers she leads; VISION's "characters with presence" goes missing in play. Item 102 drew the 3D Cath to the bible; the 2D renderer (the phone's fallback and `?2d`) didn't get her.
+- **Build:**
+  - Check first: measure her 2D sprite against a tower's at P and D.
+  - Draw her 2D figure at about twice a tower's height from `shared/cath` (her hair, face and jacket to the bible), standing off her post so she covers no plot.
+  - Her idle, cheer (a wave cleared), worried (a leak) and planting poses, as in 3D (item 102), driven by the same `heroMood`.
+- **Accept:** e2e in `?2d`: Cath 48 px or more tall at D and 36 at P; her mood changes on a leak and on a cleared wave; she overlaps no tower's plot; hedgerow-tray and gatequeue still pass; shots P and D.
+- **Size:** 2
+
+## 115. [ ] The bugs from the 2026-11-04 16:00 critique, fixed as one batch
+- **Why:** subagent critique of `e2e/screenshots/plan1104f` against VISION.md.
+- **Build:**
+  - Hedgerow 2D: Cath's 'Build a Scarecrow' bubble is pale grey on cream (`hedge-l21-2d-D` 62-290 x 540-628); the 3D one is dark and readable. Make the 2D ink match (4.5:1).
+  - Hedgerow D: the 'x119 Lifestyle influencer' pill on the round card wraps to two lines and touches the card's edge (1180-1405 x 215-250).
+  - Hedgerow D: the 'Still unanswered' lock icons in Coming up are about 12 px (1245-1335 x 393): 20 px or more.
+  - Hedgerow menu P: the 'Beyond the hedge · Act 4' banner is cut behind the bottom nav (50-340 x 755-785).
+  - Hedgerow menu D: the pink cloud behind 'Act 3 Saltmarsh' (30-390 x 60-165) reads as a placeholder; the culvert arches are cut by the Act 4 banner (530-850 x 785-830).
+  - Hedgerow 3D P: the 'Hollowell 216 coming' label sits on the lane and the vans (5-200 x 325-350).
+  - NIGHT SHIFT title D: a thin white bar at the bottom centre (585-855 x 862); check it is not a loading line that never hides.
+  - Cathnivore Setup P: Cath is a 40 px thumbnail (336-376 x 12-55): check against item 110's 80 px header bust.
+- **Accept:** e2e per bullet where it can be measured (contrast, one-line pills, icon size, banner inside the viewport, label off the lane); shots P and D.
+- **Size:** 1
