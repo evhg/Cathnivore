@@ -89,11 +89,14 @@ export default function CampaignMap({
   completed: savedCompleted,
   onStart,
   celebrate,
+  lit,
 }: {
   chapters: Chapter[]
   completed: string[]
   onStart(chapter: Chapter): void
   celebrate?: string
+  /** Plan item 113: the chapter under the pointer or focus in the list; its home regions glow (`data-lit`). */
+  lit?: string
 }) {
   const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
   // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
@@ -111,6 +114,7 @@ export default function CampaignMap({
   const herHome = CHAPTER_HOMES[herChapter.id]?.[0]
   const regionIds = Object.keys(MAP_AXIAL) as RegionId[]
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
+  const litHomes = new Set(lit ? (CHAPTER_HOMES[lit] ?? []) : [])
   const cath = useMemo(
     () => cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: CATH_SIZE.w, height: CATH_SIZE.h, animate: true }),
     [allDone],
@@ -164,7 +168,7 @@ export default function CampaignMap({
           const type = REGIONS[id].type
           const cls = `cmp-map-hex cmp-map-${type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}${flooding.has(id) ? ' is-flooding' : ''}`
           return (
-            <g key={id} data-region={id} data-liberated={isFree ? 'true' : 'false'} className={cls} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
+            <g key={id} data-region={id} data-liberated={isFree ? 'true' : 'false'} data-lit={litHomes.has(id) ? 'true' : undefined} className={cls} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
               <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-ground" />
               {/* The board's own painted ground for this region type, scaled down to the map's hex. */}
               <g transform={`scale(${GROUND_SCALE.toFixed(4)})`} className="cmp-map-paint">

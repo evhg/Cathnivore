@@ -21,4 +21,6 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   await page.locator('.cmp-card').nth(2).focus()
   await expect(fig).toHaveAttribute('data-chapter', 'growing-season')
   await expect(page.locator('.cmp-cath-line')).not.toHaveText(before!)
+  // Its home regions light on the map.
+  await expect(page.locator('.cmp-map [data-lit="true"]')).not.toHaveCount(0)
 })

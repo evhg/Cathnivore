@@ -199,7 +199,7 @@ export default function CampaignScreen({
           />
         </figure>
       </header>
-      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} />
+      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} lit={pointed ?? undefined} />
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)

@@ -659,6 +659,16 @@ html.no-animations .campaign-screen * {
 .is-free .cmp-map-hatch { opacity: 0; }
 .cmp-hold-line { stroke: var(--hollowell); stroke-width: 1.4; opacity: 0.32; }
 .is-next .cmp-map-ground { stroke: var(--wheat); stroke-width: 4; }
+/* Plan item 113: the chapter under the pointer or focus lights its regions on the map over 600 ms. */
+.cmp-map-hex > .cmp-map-ground { transition: stroke-width 600ms ease-out, filter 600ms ease-out; }
+.cmp-map-hex[data-lit="true"] > .cmp-map-ground {
+  stroke: var(--wheat);
+  stroke-width: 6;
+  filter: drop-shadow(0 0 6px var(--wheat)) brightness(1.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-map-hex > .cmp-map-ground { transition: none; }
+}
 
 .cmp-river-bank { fill: none; stroke: color-mix(in srgb, var(--surface) 75%, var(--region-coast)); stroke-width: 6.5; stroke-linecap: round; }
 .cmp-river-water { fill: none; stroke: color-mix(in srgb, var(--sea) 75%, var(--region-coast)); stroke-width: 3.6; stroke-linecap: round; }
