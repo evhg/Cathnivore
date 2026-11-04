@@ -1643,7 +1643,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `faceBox()` inside 470-960 x 150-500 and 110 px or more tall at D, meeting neither the panel nor the list; the stinger audible in the offline audio check; cathode-classpick and cathode-perf pass; shots D and L for all five classes.
 - **Size:** 2
 
-## 130. [ ] Site /games/ phone: Cath in the hero *(lane A, in progress)*
+## 130. [x] Site /games/ phone: Cath in the hero *(done 2026-11-04, lane A: under 600 px wide a 156 px half-length Cath (`#hero-cath-mini`) waves beside the buttons under the logotype, the hero text two columns; the landscape figure (which fell below the posters) is hidden there. She dresses for the poster nearest a line 45% down the screen, or one focused or hovered, with a 200 ms crossfade; the wave settles to clasped hands after 3 s. `e2e-site/games-hero-cath.spec.ts` at 390x844 and 375x667 (156 px, first screen, no text or button met, first poster at 419/395 px), games-cards updated for the phone figure. Shots P, P667, D, a crossfade frame)*
 - **Why:** `games-P` (0-390 x 0-410): text and buttons with no Cath, where VISION makes her the landing page's centrepiece; on a phone she is only a sliver of each poster.
 - **Build:**
   - A half-length Cath (`shared/cath`, a wave) 140 px or more by the logotype, standing on the horizon.

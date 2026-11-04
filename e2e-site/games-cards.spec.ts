@@ -55,10 +55,14 @@ test.describe('games page cards', () => {
     await page.waitForTimeout(2600)
     const vp = page.viewportSize()!
     const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!
-    const cath = await box('#hero-cath')
+    // Plan item 130: under 600 px wide the landscape figure gives way to the half-length one beside the buttons.
+    const phone = vp.width < 600
+    const cath = await box(phone ? '#hero-cath-mini' : '#hero-cath')
     // Plan item 85: she stands head to boots in the diorama (no plank), her feet on the first screen and above the cards.
-    const plank = await page.locator('#hero-cath').evaluate((el) => getComputedStyle(el, '::after').display)
-    expect(plank).toBe('none')
+    if (!phone) {
+      const plank = await page.locator('#hero-cath').evaluate((el) => getComputedStyle(el, '::after').display)
+      expect(plank).toBe('none')
+    } else expect(cath.y + cath.height).toBeLessThanOrEqual(vp.height)
     const card = await box('.games a.card')
     expect(cath.y + cath.height).toBeLessThanOrEqual(card.y)
     // Plan item 96: on a phone the posters (each with Cath in that game's dress) take the first screen and her full
@@ -91,7 +95,7 @@ test('the hero shows the four games on the first screen, clear of Cath', async (
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
     const m = await page.evaluate(() => {
       const r = (e: Element) => e.getBoundingClientRect()
-      return { cards: [...document.querySelectorAll('.hero-game')].map(r).map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom })), cath: (({ left, top, right, bottom }) => ({ l: left, t: top, r: right, b: bottom }))(r(document.querySelector('#hero-cath')!)) }
+      return { cards: [...document.querySelectorAll('.hero-game')].map(r).map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom })), cath: (({ left, top, right, bottom }) => ({ l: left, t: top, r: right, b: bottom }))(r(document.querySelector(innerWidth < 600 ? '#hero-cath-mini' : '#hero-cath')!)) }
     })
     const inside = m.cards.filter((c) => c.l >= 0 && c.t >= 0 && c.r <= vp.width && c.b <= vp.height)
     expect(inside.length, `${vp.width}: ${JSON.stringify(m.cards)}`).toBeGreaterThanOrEqual(need)

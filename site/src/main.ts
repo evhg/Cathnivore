@@ -51,6 +51,61 @@ function showCath(expression: CathExpression): void {
 }
 showCath('smirk')
 
+// Plan item 130: on a phone the landscape figure falls below the posters, so a half-length Cath waves beside the
+// buttons instead. She dresses for the poster in view (its outfit and mood, a 200 ms crossfade), and her wave
+// settles into her clasped hands after 3 s.
+const miniCath = document.getElementById('hero-cath-mini')
+if (miniCath) {
+  let look = { outfit: outfit as CathOutfit, expression: 'delighted' as CathExpression }
+  let pose: CathPoseId = 'wave'
+  const draw = () => {
+    miniCath.innerHTML = cathSvg({ framing: 'half', expression: look.expression, pose, outfit: look.outfit })
+    miniCath.dataset.outfit = look.outfit
+    miniCath.dataset.pose = pose
+  }
+  draw()
+  window.setTimeout(() => {
+    pose = 'clasped'
+    draw()
+  }, 3000)
+  const posters = [...document.querySelectorAll<HTMLElement>('.hero-game')]
+  let swap = 0
+  const dress = (poster: HTMLElement) => {
+    const tag = poster.querySelector<HTMLElement>('.hero-game-cath')
+    if (!tag) return
+    const next = { outfit: (tag.dataset.outfit ?? look.outfit) as CathOutfit, expression: (tag.dataset.expression ?? 'delighted') as CathExpression }
+    if (next.outfit === look.outfit && next.expression === look.expression) return
+    look = next
+    window.clearTimeout(swap)
+    if (reducedMotion) return draw()
+    miniCath.classList.add('swapping')
+    swap = window.setTimeout(() => {
+      draw()
+      miniCath.classList.remove('swapping')
+    }, 200)
+  }
+  // The poster in view is the one nearest a line 45% down the screen (both of a row tie, and the first wins); a
+  // poster focused or under the pointer outranks it.
+  let frame = 0
+  const inView = () => {
+    frame = 0
+    const line = innerHeight * 0.45
+    const dist = (p: HTMLElement) => {
+      const r = p.getBoundingClientRect()
+      return line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0
+    }
+    dress(posters.reduce((a, b) => (dist(b) < dist(a) ? b : a)))
+  }
+  if (posters.length) {
+    inView()
+    addEventListener('scroll', () => (frame ||= requestAnimationFrame(inView)), { passive: true })
+    for (const p of posters) {
+      p.addEventListener('focus', () => dress(p))
+      p.addEventListener('pointerenter', () => dress(p))
+    }
+  }
+}
+
 // The wardrobe: outfits earned in the games, one worn everywhere. Hidden until she has more than the blazer.
 const wardrobeEl = document.getElementById('wardrobe')
 if (wardrobeEl) {
