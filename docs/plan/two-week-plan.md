@@ -1218,7 +1218,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 84. [ ] The bugs from the 2026-11-03 17:00 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1103g)
-  - [ ] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip.
+  - [x] **Hedgerow D** (`hedge-l21-2d-D`/`-3d-D`): the tower shelf's prices at y about 130 run together and clip. *(Fixed: packets never narrower than 38 px; 9 or 11 towers wrap to a second row.)*
   - [ ] **Hedgerow D**: an empty band about 1100-1410 x 650-705 under the "Coming up" wave icons.
   - [ ] **Hedgerow 3D D**: a white flare blob on the field (about 640-680 x 690-720); "216 coming" overlaps the Hollowell gate sign.
   - [ ] **Cathnivore Setup D** (`cath-setup-D`): empty bands at the foot of the Difficulty and Map panels (stretched to the row).

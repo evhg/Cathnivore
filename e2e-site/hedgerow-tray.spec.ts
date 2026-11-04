@@ -111,17 +111,17 @@ test('plan item 31: on a phone the notebook opens in the round drawer', async ({
   await expect(nb.locator('.nb-enemy .nb-name')).not.toBeEmpty()
 })
 
-test('plan item 69: at D the whole roster fits the tray: no packet past its edge, no more-tab, nothing cut', async ({ page, hasTouch }) => {
+test('plan items 69 and 84: at D the whole roster fits the tray: no packet past its edge, no more-tab, nothing cut', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop side column')
-  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  for (const [width, height, level] of [[1440, 900, 12], [1280, 800, 12], [1440, 900, 21], [1440, 900, 40]] as const) {
     await page.setViewportSize({ width, height })
     await page.goto(URL)
-    await page.evaluate(() => {
+    await page.evaluate((l) => {
       const stars: Record<string, number> = {}
-      for (let i = 1; i < 12; i++) stars[String(i)] = 3
-      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { '12': true }, seen: {}, tips: { all: true } }))
-    })
-    await page.goto(`${URL}&level=12`)
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`${URL}&level=${level}`)
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
     await page.waitForTimeout(300)
     const r = await page.evaluate(() => {
@@ -134,7 +134,7 @@ test('plan item 69: at D the whole roster fits the tray: no packet past its edge
       return { n: document.querySelectorAll('.tray-tower').length, bad, more: !!document.querySelector('.tray-more:not([hidden])'), titled: [...document.querySelectorAll<HTMLElement>('.tray-tower')].every((c) => /Marks/.test(c.title)) }
     })
     expect(r.n).toBeGreaterThanOrEqual(5)
-    expect(r.bad, `${width}x${height}`).toEqual([])
+    expect(r.bad, `${width}x${height} level ${level}`).toEqual([])
     expect(r.more).toBe(false)
     expect(r.titled).toBe(true)
   }
