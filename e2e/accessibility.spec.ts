@@ -3,6 +3,9 @@ import AxeBuilder from '@axe-core/playwright'
 
 // SPEC 11.4 gate 6: "axe finds no serious or critical issues on the title, setup, game and scene screens."
 async function assertNoSeriousIssues(page: import('@playwright/test').Page) {
+  // Judge the screen at rest: an entrance fade (the title's Cath and her line rise in over 1.4 s) measured
+  // mid-way reads as low contrast. Looping animations are left running.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity), null, { timeout: 10_000 })
   const results = await new AxeBuilder({ page }).analyze()
   const serious = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([])
