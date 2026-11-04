@@ -1597,7 +1597,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her box 110 px or more at D and 64 at P, meeting no label or padlock box; locked stops under 15% saturation, open ones over 30%; hedgerow-map passes; shots P and D, acts 1 and 3.
 - **Size:** 3
 
-## 125. [ ] NIGHT SHIFT phone: the class pick on one screen *(lane A, in progress)*
+## 125. [x] NIGHT SHIFT phone: the class pick on one screen *(done 2026-11-04, lane A: on an upright phone the pick is one screen, no scroll and no 'More below' cue: her figure the top half, then how the class plays, her quote folded behind a 'Her line' tap (`.cp-fold`, aria-expanded), the four stats in two columns, the weapon at 48 px with its name, damage, rate and magazine, the trees on one line (dropped at 720 px tall and less with the eyebrow), the full-width hold bar. e2e in `cathode-classpick.spec.ts` at 390x844 and 375x667 (no scroll, every stat, the weapon and the hold inside the viewport, no text under 12 px; 4.5:1 kept). Shots P, P667, L, D unchanged at L and D. The perf gate's staged firefight doesn't touch the pick)*
 - **Why:** `ns-play-P` (0-390 x 700-790): only GRIT shows above "MORE BELOW"; the weapon, skills and other stats need a scroll, while her back view takes 120-520 px of height.
 - **Build:**
   - A compact dossier card above the call to action: four stat bars in two columns, the weapon line art at 48 px with its name and damage; the quote folded behind a tap.

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 
 // Plan item 112: the class pick shows Cath's face. A `?play` link on a fresh save builds the street behind the
 // case file and turns her to the camera in each class's look; the stats sit on a dark dossier plate; on an
-// upright phone the names are 15 px and the "more below" cue keeps off the sheet's rows.
+// upright phone the names are 15 px and (plan item 125) the whole file fits one screen.
 
 type Box = { left: number; top: number; right: number; bottom: number }
 type Front = { cathodeFront?: { ready: boolean; scene: () => { dressed: string | null; kit: string | null; figureBox(): Box } | null } }
@@ -38,7 +38,7 @@ test('a ?play case file turns Cath to the camera, in a different look for each c
   expect(fig.bottom - fig.top, JSON.stringify(fig)).toBeGreaterThanOrEqual(hasTouch ? 300 : 420)
 })
 
-test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and the cue keeps off the rows', async ({ page, hasTouch }) => {
+test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and the file fits one screen', async ({ page, hasTouch }) => {
   test.setTimeout(300_000)
   await fresh(page, hasTouch)
   await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
@@ -79,13 +79,37 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   )
   for (const n of names) expect(n.size).toBeGreaterThanOrEqual(14)
   for (let i = 1; i < names.length; i++) expect(names[i]!.left).toBeGreaterThanOrEqual(names[i - 1]!.right)
-  // The cue shows on the foot's own black band (opaque from 12 px down), so no row of the sheet shows behind it.
-  await expect(page.locator('.cp')).toHaveClass(/cp-more/)
-  const cue = (await page.locator('.cp-cue').boundingBox())!
-  const foot = (await page.locator('.cp-foot').boundingBox())!
-  expect(cue.y, JSON.stringify({ cue, foot })).toBeGreaterThanOrEqual(foot.y + 12)
+  // Plan item 125: the whole file is one screen at 390x844 and 375x667: every stat, the weapon and the hold bar
+  // inside the viewport with no scroll, text 12 px or more; her quote unfolds behind a tap.
+  for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(size)
+    await page.waitForTimeout(400)
+    const m = await page.evaluate(() => {
+      const cp = document.querySelector('.cp')!
+      const box = (s: string) => {
+        const r = document.querySelector(s)!.getBoundingClientRect()
+        return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, w: r.width }
+      }
+      const small = [...cp.querySelectorAll<HTMLElement>('*')]
+        .filter((e) => e.offsetParent && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()))
+        .filter((e) => parseFloat(getComputedStyle(e).fontSize) < 12)
+        .map((e) => e.className)
+      return { scroll: cp.scrollHeight - cp.clientHeight, small, attrs: box('.cp-attrs'), weapon: box('.cp-weapon'), art: box('.cp-weapon-art'), hold: box('.cp-hold'), n: document.querySelectorAll('.cp-attr').length }
+    })
+    const s = JSON.stringify({ size, m })
+    expect(m.scroll, s).toBeLessThanOrEqual(0)
+    expect(m.small, s).toEqual([])
+    expect(m.n).toBe(4)
+    for (const b of [m.attrs, m.weapon, m.hold]) expect(b.top >= 0 && b.bottom <= size.height && b.left >= 0 && b.right <= size.width, s).toBe(true)
+    expect(m.art.bottom - m.art.top, s).toBeGreaterThanOrEqual(44)
+    expect(m.hold.w, s).toBeGreaterThan(size.width - 40)
+    await expect(page.locator('.cp-line')).toBeHidden()
+  }
+  await page.locator('.cp-fold').click()
+  await expect(page.locator('.cp-fold')).toHaveAttribute('aria-expanded', 'true')
+  await expect(page.locator('.cp-line')).toBeVisible()
   const hold = (await page.locator('.cp-hold').boundingBox())!
-  expect(cue.y + cue.height).toBeLessThanOrEqual(hold.y)
+  expect(hold.y + hold.height).toBeLessThanOrEqual(667)
 })
 
 // Plan item 117: on the class pick at D her face is in the frame and not under the stats sheet.

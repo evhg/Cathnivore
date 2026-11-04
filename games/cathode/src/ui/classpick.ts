@@ -74,7 +74,19 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const words = el("div", "cp-words", left);
   words.setAttribute("aria-live", "polite");
   const kicker = el("p", "cp-kicker", words);
+  // Plan item 125: on an upright phone her quote is folded behind a tap so the whole file fits one screen; the
+  // toggle is hidden elsewhere, where the quote always shows.
+  const fold = button("cp-fold", words);
+  fold.setAttribute("aria-expanded", "false");
+  fold.setAttribute("aria-controls", "cp-line");
+  el("span", "cp-fold-label", fold, "Her line");
+  fold.addEventListener("click", () => {
+    const open = !root.classList.contains("cp-quote-open");
+    root.classList.toggle("cp-quote-open", open);
+    fold.setAttribute("aria-expanded", String(open));
+  });
   const line = el("p", "cp-line", words);
+  line.id = "cp-line";
   const plays = el("p", "cp-plays", words);
 
   // ---- right: the stat sheet ----
@@ -276,7 +288,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   let swipe: { x: number; y: number; id: number } | null = null;
   root.addEventListener("pointerdown", (e) => {
     const t = e.target as HTMLElement;
-    swipe = e.pointerType === "touch" && !list.contains(t) && !go.contains(t) ? { x: e.clientX, y: e.clientY, id: e.pointerId } : null;
+    swipe = e.pointerType === "touch" && !list.contains(t) && !go.contains(t) && !fold.contains(t) ? { x: e.clientX, y: e.clientY, id: e.pointerId } : null;
   });
   root.addEventListener("pointerup", (e) => {
     if (!swipe || e.pointerId !== swipe.id || done) return;

@@ -933,6 +933,75 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-cue::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-3px) rotate(45deg); } /* px-ok */
   .cp.cp-more .cp-cue { opacity: 1; }
 }
+/* Plan item 125: the upright phone's class pick is one screen. Her figure takes the top half (frontscene aims
+   low on a tall screen); the names run across the top; under her a compact dossier: how the class plays, her
+   quote folded behind a tap, the four stats in two columns, the weapon at 48 px with its name and damage, the
+   three trees on one line, and the hold bar at the foot. Nothing scrolls, so the "more below" cue goes. */
+.cp-fold { display: none; }
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+  .cp-left { display: contents; }
+  .cp-head { margin-bottom: 4px; } /* px-ok */
+  .cp-eyebrow { margin-bottom: 4px; } /* px-ok */
+  .cp-words { margin-top: auto; padding-top: 16px; } /* px-ok */
+  .cp-kicker { display: none; }
+  .cp-plays { font-size: var(--fs-1); line-height: 1.4; }
+  .cp-fold {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* px-ok */
+    min-height: 32px; /* px-ok: tap target with the gap around it */
+    margin: 2px 0 0; /* px-ok */
+    padding: 0;
+    border: 0;
+    background: none;
+    font: 700 var(--fs-1)/1 var(--font-ui);
+    font-stretch: var(--wdth-label);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .cp-fold::after { content: ""; width: 6px; height: 6px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 160ms ease; } /* px-ok */
+  .cp-quote-open .cp-fold::after { transform: translateY(1px) rotate(-135deg); } /* px-ok */
+  .cp-fold:focus-visible { outline: 2px solid var(--blood-hot); outline-offset: 2px; } /* px-ok */
+  .cp-line { display: none; order: 0; margin: 2px 0 4px; padding: 6px 10px; font-size: var(--fs-2); } /* px-ok */
+  .cp-quote-open .cp-line { display: block; }
+  .cp-words { display: flex; flex-direction: column; align-items: flex-start; }
+  .cp-plays { order: -1; }
+  .cp-sheet { padding-top: 6px; } /* px-ok */
+  .cp-sheet::before { bottom: 0; }
+  .cp-sheet > .cp-label { display: none; }
+  .cp-attrs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 22px; margin: 4px 0 12px; } /* px-ok */
+  .cp-attr { grid-template-columns: 50px minmax(0, 1fr); } /* px-ok */
+  .cp-attr dt { font-size: var(--fs-1); }
+  .cp-attr-v { grid-template-columns: minmax(0, 1fr) 24px; gap: 8px; } /* px-ok */
+  .cp-attr-n { font-size: var(--fs-2); }
+  .cp-weapon { grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 2px; align-items: center; margin-bottom: 10px; } /* px-ok */
+  .cp-weapon-art { grid-row: 1 / span 3; width: auto; height: 48px; margin: 0; } /* px-ok */
+  .cp-weapon-art svg { width: auto; height: 100%; max-width: 132px; } /* px-ok */
+  .cp-weapon .cp-label { grid-column: 2; }
+  .cp-weapon-name { grid-column: 2; font-size: var(--fs-2); }
+  .cp-weapon-nums { grid-column: 2; gap: 16px; margin: 2px 0 0; } /* px-ok */
+  .cp-weapon-nums dt { font-size: var(--fs-1); }
+  .cp-weapon-nums dd { font-size: var(--fs-2); }
+  .cp-weapon-pin { display: none; }
+  .cp-trees { grid-auto-flow: column; justify-content: start; gap: 14px; } /* px-ok */
+  .cp-tree { display: block; }
+  .cp-tree-theme { display: none; }
+  .cp-tree-name { font-size: var(--fs-1); color: var(--ink-2); }
+  .cp-foot { position: relative; bottom: auto; margin-top: 4px; padding-top: 4px; background: none; } /* px-ok */
+  .cp-cue { display: none; }
+  .cp-hold { width: 100%; padding: 14px 0 14px; } /* px-ok */
+  .cp-hold-label { font-size: var(--fs-2); }
+}
+/* A short phone (375x667): the title's eyebrow and the trees step out so the file still fits. */
+@media (max-width: 700px) and (orientation: portrait) and (max-height: 720px) {
+  .cp-eyebrow { display: none; }
+  .cp-title { font-size: var(--fs-3); }
+  .cp-trees { display: none; }
+  .cp-words { padding-top: 10px; } /* px-ok */
+}
 
 /* ---- character screen (C13T): the dossier as type over the blurred street, like pause and death. One left
    edge (the title-safe frame). Tabs are words with the one red marker; numbers are tabular type; skill nodes
