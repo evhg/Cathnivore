@@ -1910,7 +1910,12 @@ export interface HeroLook {
   /** Seconds since she threw a pie. */
   threw: number;
   selected: boolean;
+  /** Plan item 114: her pose (the 3D figure's moods, item 102). */
+  mood?: "rest" | "cheer" | "worried" | "plant";
 }
+
+/** Plan item 114: Cath is drawn this much bigger than a cell's sprite scale, a head above her towers. */
+export const HERO_SCALE = 1.35;
 
 /**
  * Cath on the battlefield, chibi-sized: an olive blazer over a cream blouse, slim trousers, ankle boots, her
@@ -1954,6 +1959,8 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
     return;
   }
   ctx.scale(look.facing, 1);
+  // Plan item 114: she stoops to plant a new tower (a lean forward from the boots).
+  if (look.mood === "plant") ctx.rotate(0.28);
   const walk = look.walking ? Math.sin(t * 12) : 0;
   const bounce = look.walking ? Math.abs(Math.sin(t * 12)) * s * 0.03 : Math.sin(t * 2) * s * 0.006;
   // Legs and boots.
@@ -2002,7 +2009,9 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   const th = look.threw < 0.3 ? Math.sin((look.threw / 0.3) * Math.PI) : 0;
   ctx.save();
   ctx.translate(s * 0.1, -s * 0.4);
-  ctx.rotate(-0.4 + sw * 1.6 - th * 1.2 + Math.sin(t * 2) * 0.03);
+  // Her pin arm goes up with a cheer and to her face when a vehicle gets through.
+  const moodArm = look.mood === "cheer" ? -2.7 + Math.sin(t * 14) * 0.15 : look.mood === "worried" ? -2.3 : look.mood === "plant" ? 0.5 : 0;
+  ctx.rotate(moodArm || -0.4 + sw * 1.6 - th * 1.2 + Math.sin(t * 2) * 0.03);
   ctx.strokeStyle = o.sleeve;
   ctx.lineWidth = Math.max(2, s * 0.06);
   ctx.beginPath();
@@ -2018,6 +2027,19 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   rr(ctx, -s * 0.015, -s * 0.26, s * 0.03, s * 0.07, s * 0.015, "#a9784a");
   ctx.restore();
   ctx.restore();
+  if (look.mood === "cheer") {
+    // Her free arm up too.
+    ctx.save();
+    ctx.translate(-s * 0.1, -s * 0.4);
+    ctx.rotate(2.7 - Math.sin(t * 14) * 0.15);
+    ctx.strokeStyle = o.sleeve;
+    ctx.lineWidth = Math.max(2, s * 0.06);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-s * 0.03, s * 0.16);
+    ctx.stroke();
+    ctx.restore();
+  }
   // Head: her real face, slightly big for cuteness.
   if (face) ctx.drawImage(face, -s * 0.2, -s * 0.9, s * 0.4, s * 0.48);
   else blob(ctx, 0, -s * 0.62, s * 0.15, "#F7DCCB");
@@ -2231,4 +2253,23 @@ export function enemySilhouette(kind: EnemyKind, cell = 64): { w: number; h: num
     }
   }
   return { w, h, len: x1 >= x0 ? x1 - x0 + 1 : 0, mask };
+}
+
+/** Plan item 114: Cath's 2D figure drawn offscreen at a cell size: her drawn height and width in px. */
+export function heroSize(cell: number, face: HTMLImageElement | null): { h: number; w: number } {
+  const W = Math.round(cell * 2);
+  const H = Math.round(cell * 2.4);
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d")!;
+  drawHero(ctx, { facing: 1, walking: false, swung: 9, down: false, threw: 9, selected: false }, W / 2, H * 0.9, cell, 0, face);
+  const d = ctx.getImageData(0, 0, W, H).data;
+  let x0 = W, x1 = -1, y0 = H, y1 = -1;
+  for (let i = 0; i < W * H; i++)
+    if (d[i * 4 + 3]! > 160) {
+      const x = i % W, y = (i / W) | 0;
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+  return { h: y1 >= y0 ? y1 - y0 + 1 : 0, w: x1 >= x0 ? x1 - x0 + 1 : 0 };
 }

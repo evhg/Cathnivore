@@ -45,6 +45,8 @@ import {
   propIconsFor,
   drawFarmhouse,
   drawHero,
+  heroSize,
+  HERO_SCALE,
   drawTower,
   enemyLift,
   enemyScale,
@@ -170,11 +172,21 @@ export class Renderer {
   private flashColor = "255,60,40";
   private clock = 0;
   private rand = rng(99);
+  /** Plan item 114: Cath's drawn size on this field (px), for the e2e. */
+  heroPx(): { h: number; w: number } {
+    return heroSize(this.view.cellSize * HERO_SCALE, this.face);
+  }
   private face: HTMLImageElement | null = null;
   private faceWorried: HTMLImageElement | null = null;
   private faceCheer: HTMLImageElement | null = null;
   /** Seconds left of Cath's cheer after a clean wave. */
   private cheer = 0;
+  /** Plan item 114: seconds since a wave cleared, a leak and a tower went in (her poses), as in 3D (item 102). */
+  private moodCheer = 9;
+  private moodWorry = 9;
+  private moodPlant = 9;
+  private towersSeen = -1;
+  heroMood: "rest" | "cheer" | "worried" | "plant" = "rest";
   private leaksThisWave = 0;
   /** Tower id -> seconds since it was built or upgraded (drives the pop-in). */
   private built = new Map<number, number>();
@@ -404,6 +416,7 @@ export class Renderer {
           break;
         case "leak":
           this.leaksThisWave++;
+          if (this.moodCheer > 1.2) this.moodWorry = 0;
           this.kick(0.3);
           this.flashOnce("220,40,30", 0.35);
           this.float(e.x, e.y - 0.4, `-${e.lost ?? 1} Goodwill`, "#ff8f80", 1.1);
@@ -445,6 +458,7 @@ export class Renderer {
           const end = game.level.path[game.level.path.length - 1]!;
           // Plan item 64: the round's words and Marks are main.ts's rosette (clear of plots); the field cheers.
           if (this.leaksThisWave === 0) this.cheer = 2.5;
+          this.moodCheer = 0;
           for (let i = 0; i < 14; i++) this.parts.push(this.particle(end[0] + 0.5, end[1] + 0.2, "#f2c94c", "star", 0.08, 1));
           break;
         }
@@ -910,6 +924,13 @@ export class Renderer {
     const h = game.hero;
     this.heroSwung += dt;
     this.heroThrew += dt;
+    this.moodCheer += dt;
+    this.moodWorry += dt;
+    this.moodPlant += dt;
+    if (game.towers.length > this.towersSeen && this.towersSeen >= 0) this.moodPlant = 0;
+    this.towersSeen = game.towers.length;
+    const mood = this.moodCheer < 1.4 ? "cheer" : this.moodWorry < 1.4 ? "worried" : this.moodPlant < 1.2 ? "plant" : "rest";
+    this.heroMood = mood;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     if (!hasTwist(level, "nocath") && !this.harvesting) items.push({
       y: h.y + 0.22,
@@ -923,10 +944,12 @@ export class Renderer {
             down: h.down > 0,
             threw: this.heroThrew,
             selected: this.heroSelected,
+            mood,
           },
           X(h.x),
           Y(h.y + 0.22),
-          s,
+          // Plan item 114: she stands a head taller than the towers she leads (she was their height).
+          s * HERO_SCALE,
           t,
           h.down > 0 || (game.goodwill <= game.maxGoodwill / 3 && game.phase === "wave")
             ? this.faceWorried
