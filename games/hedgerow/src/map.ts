@@ -1494,6 +1494,15 @@ export function placeBanners(list: HTMLElement): void {
 }
 
 function layoutLanes(list: HTMLElement): void {
+  // Plan item 91: the lane into the next act's glimpse leaves from under the last stop shown (it was pinned at 10%
+  // of the width and read as a stray gold line beside it).
+  const fog = list.querySelector<HTMLElement>(".act-fog");
+  const lastNum = [...list.querySelectorAll<HTMLElement>(".stop .level-num")].pop();
+  if (fog && lastNum) {
+    const f = fog.getBoundingClientRect();
+    const n = lastNum.getBoundingClientRect();
+    if (f.width > 0) fog.style.setProperty("--lane-x", `${Math.round(n.left + n.width / 2 - f.left)}px`);
+  }
   for (const svg of list.querySelectorAll<SVGSVGElement>(".trail-path")) {
     const box = svg.getBoundingClientRect();
     if (box.width < 1 || box.height < 1) continue;

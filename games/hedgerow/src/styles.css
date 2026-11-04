@@ -3658,7 +3658,7 @@ img.act-scene {
 .act-fog-lane {
   position: absolute;
   top: 0;
-  left: calc(6px + (100% - 12px) * 0.1 - 6px);
+  left: calc(var(--lane-x, calc(6px + (100% - 12px) * 0.1)) - 6px);
   width: 12px;
   height: 70%;
   border-radius: 0 0 6px 6px;

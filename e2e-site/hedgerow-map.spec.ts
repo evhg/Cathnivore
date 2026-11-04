@@ -211,3 +211,16 @@ test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its n
   expect(m.coin - m.you).toBeGreaterThanOrEqual(4)
   if ((page.viewportSize()?.width ?? 0) >= 600) expect(m.name - m.lock).toBeGreaterThanOrEqual(3)
 })
+
+test('plan item 91: the lane into the next act leaves from under the last stop shown', async ({ page }) => {
+  await seed(page, 13)
+  await page.waitForFunction(() => !!document.querySelector('.act-fog-lane'))
+  await page.evaluate(() => document.fonts.ready)
+  const m = await page.evaluate(() => {
+    const lane = document.querySelector('.act-fog-lane')!.getBoundingClientRect()
+    const nums = [...document.querySelectorAll('.stop .level-num')]
+    const last = nums[nums.length - 1]!.getBoundingClientRect()
+    return { lane: lane.left + lane.width / 2, stop: last.left + last.width / 2 }
+  })
+  expect(Math.abs(m.lane - m.stop)).toBeLessThanOrEqual(12)
+})
