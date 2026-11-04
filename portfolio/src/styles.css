@@ -1604,3 +1604,9 @@ h1 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* Plan item 84: the scroll cue sits at the end of the stats row (which stops at 880 px), not alone at the hero's
+   far right edge, so it reads as part of the content column. */
+.scroll-cue {
+  right: auto;
+  left: min(calc(880px + 56px), calc(100% - 26px));
+}
