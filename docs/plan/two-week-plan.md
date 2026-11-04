@@ -1627,7 +1627,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: `data-moment="liberate|squeeze"` appears and lasts 700-1200 ms, and Cath's `data-expression` changes; no layout shift over 2 px; shots mid-moment at P and D, light and dark.
 - **Size:** 3
 
-## 128. [ ] Hedgerow: a level fly-in that teaches the lane *(lane B, in progress)*
+## 128. [ ] Hedgerow: a level fly-in that teaches the lane *(lane B, in progress)* *(slice 1, 2026-11-04 lane B: the field dims and a runner carrying the level's lead vehicle draws each lane from its gate to the farm in 2.5 s (0.6 s under reduced motion), then Cath's tip names the gate (two gates: where the lanes join); a tap or key skips; once a level (`seen['flyin:<id>']`), never in replays, dailies, Endless or the sandbox (`?flyin`, `?flyin=once` for tests). Drawn from the renderer's cell centres, so 3D gets it too. `e2e-site/hedgerow-flyin.spec.ts`; all 18 Hedgerow site specs and site.spec's Hedgerow tests pass; shots `f128a`. Open: a camera follow in 3D and a pan in 2D rather than a trace, its closing bubble kept off plots)*
 - **Why:** `hedge-l21-2d-D` (290-740 x 110-880) and level 34: two gates and a long lane, and nothing shows where the vehicles come from or what to guard.
 - **Build:**
   - On a level's first entry the camera (3D) or a pan and zoom (2D) follows the lane from each gate to the farmhouse in about 2.5 s, vehicles dotted along it; it ends on Cath waving with one line naming the threat.

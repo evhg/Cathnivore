@@ -1017,7 +1017,106 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   raf = requestAnimationFrame(frame);
   sfx.startMusic(Math.floor((lv.id - 1) / 10));
   sfx.setIntensity(0);
-  levelTips(lv);
+  // Plan item 128: a level's first visit traces its lanes first, then Cath's tips follow.
+  // (Decided on the next tick: a replay link sets its player just after startLevel returns, and plays no fly-in.)
+  if (!resume && wantsFlyIn(lv))
+    window.setTimeout(() => {
+      if (game?.level.id === lv.id && !player) laneFlyIn(lv, () => levelTips(lv));
+      else levelTips(lv);
+    }, 0);
+  else levelTips(lv);
+}
+
+/** Plan item 128: the fly-in plays once a level, on a story level; `?flyin` forces it (tests and shots), and
+ *  `?flyin=once` keeps the once-a-level rule even in the sandbox (the reload test). */
+const FLYIN_PARAM = new URLSearchParams(location.search).get("flyin");
+function wantsFlyIn(lv: Level): boolean {
+  if (FLYIN_PARAM === "once") return !data.seen[`flyin:${lv.id}`];
+  if (FLYIN_PARAM !== null) return true;
+  if (SANDBOX || lv.endless || dailyDay !== null || showRun || player) return false;
+  return !data.seen[`flyin:${lv.id}`];
+}
+
+/**
+ * Plan item 128: where the vehicles come from. The field dims, and from each Hollowell gate a runner carrying the
+ * level's lead vehicle travels the lane to the farmhouse, drawing it as it goes (about 2.5 s); Cath then names the
+ * threat. A tap or a key skips it. Drawn over the field from the renderer's own cell centres, so 2D and 3D share it.
+ */
+function laneFlyIn(lv: Level, done: () => void): void {
+  const g = game;
+  if (!g || !renderer) return done();
+  const field = ui.stage.getBoundingClientRect();
+  const lanes = [lv.path, lv.path2].filter((p): p is Level["path"] => !!p && p.length > 1);
+  const pts = lanes.map((path) => path.map(([c, r]) => renderer!.cellCenter(c, r)).filter((q): q is { x: number; y: number } => !!q).map((q) => ({ x: q.x - field.left, y: q.y - field.top })));
+  if (!field.width || pts.some((p) => p.length < 2)) return done();
+  data.seen[`flyin:${lv.id}`] = true;
+  save(data);
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", "flyin");
+  svg.setAttribute("viewBox", `0 0 ${field.width} ${field.height}`);
+  svg.setAttribute("aria-hidden", "true");
+  const runners: Array<{ line: SVGPolylineElement; dot: SVGGElement; pts: { x: number; y: number }[]; len: number; seg: number[] }> = [];
+  pts.forEach((p, i) => {
+    const line = document.createElementNS(NS, "polyline");
+    line.setAttribute("class", "flyin-trail");
+    line.setAttribute("points", p.map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" "));
+    const seg = p.slice(1).map((q, k) => Math.hypot(q.x - p[k]!.x, q.y - p[k]!.y));
+    const len = seg.reduce((a, b) => a + b, 0);
+    line.setAttribute("stroke-dasharray", `${len}`);
+    line.setAttribute("stroke-dashoffset", `${len}`);
+    const dot = document.createElementNS(NS, "g");
+    dot.setAttribute("class", "flyin-runner");
+    const lead = lv.waves[0]?.find((w) => (w.lane === 1) === (i === 1))?.enemy ?? lv.waves[0]?.[0]?.enemy;
+    dot.innerHTML = `<circle r="17"/>${lead ? `<image href="${enemyIcon(lead)}" x="-14" y="-14" width="28" height="28"/>` : ""}`;
+    svg.append(line, dot);
+    runners.push({ line, dot, pts: p, len, seg });
+  });
+  ui.stage.append(svg);
+  ui.stage.dataset.flyin = "on";
+  const dur = REDUCED ? 600 : 2500;
+  const t0 = performance.now();
+  let raf = 0;
+  let over = false;
+  const place = (f: number) => {
+    for (const r of runners) {
+      let d = f * r.len;
+      let k = 0;
+      while (k < r.seg.length - 1 && d > r.seg[k]!) d -= r.seg[k++]!;
+      const a = r.pts[k]!, b = r.pts[k + 1]!;
+      const u = r.seg[k] ? Math.min(1, d / r.seg[k]!) : 1;
+      r.dot.setAttribute("transform", `translate(${(a.x + (b.x - a.x) * u).toFixed(1)} ${(a.y + (b.y - a.y) * u).toFixed(1)})`);
+      r.line.setAttribute("stroke-dashoffset", (r.len * (1 - f)).toFixed(1));
+    }
+  };
+  const finish = () => {
+    if (over) return;
+    over = true;
+    cancelAnimationFrame(raf);
+    removeEventListener("keydown", skip, true);
+    svg.remove();
+    delete ui.stage.dataset.flyin;
+    if (game === g) {
+      const gate = lv.id >= 81 ? "Hollowcandor" : lv.id >= 41 ? "Candor" : "Hollowell";
+      tip(`flyin-${lv.id}`, lanes.length > 1 ? `Two gates today: ${gate} comes in at both and they meet at the farm. Cover where the lanes join.` : `${gate} comes in at the gate and follows the lane to the farm. Build where it bends.`, "determined", true);
+    }
+    done();
+  };
+  const skip = (e: Event) => {
+    if (e instanceof KeyboardEvent && e.key === "Tab") return;
+    e.preventDefault();
+    finish();
+  };
+  svg.addEventListener("pointerdown", skip);
+  addEventListener("keydown", skip, true);
+  const step = (now: number) => {
+    const f = Math.min(1, (now - t0) / dur);
+    place(1 - (1 - f) ** 2);
+    if (f < 1) raf = requestAnimationFrame(step);
+    else window.setTimeout(finish, 250);
+  };
+  place(0);
+  raf = requestAnimationFrame(step);
 }
 
 function leaveLevel(): void {

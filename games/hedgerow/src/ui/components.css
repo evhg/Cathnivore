@@ -3987,3 +3987,31 @@ body:has(#dlg-pause[open]) .paused-note {
       var(--paper-2);
   }
 }
+/* Plan item 128: the lane fly-in. The field dims and each lane is drawn from its gate to the farm by a runner
+   carrying the level's lead vehicle; a tap or a key skips it. */
+.flyin {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-banner);
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--ink) 28%, transparent);
+  cursor: pointer;
+  animation: flyin-dim 300ms ease-out both;
+}
+.flyin-trail {
+  fill: none;
+  stroke: var(--wheat);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wheat) 70%, transparent));
+}
+.flyin-runner circle {
+  fill: var(--paper-hi);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+@keyframes flyin-dim {
+  from { background: transparent; }
+}
