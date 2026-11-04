@@ -899,7 +899,8 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
   ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
   const sw = Math.max(s * 0.84, ctx.measureText(label).width + fs * 1.1);
   const sh = Math.max(s * 0.26, fs * 1.6);
-  const pad = Math.max(2, s * 0.04);
+  // Plan item 126: a gutter clear of the field's rounded frame (at 2 px it sat flush under the frame's edge).
+  const pad = Math.max(8, s * 0.1);
   const sx = Math.max(pad, Math.min(L.width - sw - pad, x - sw / 2));
   const sy = Math.max(pad, Math.min(L.height - sh - pad, y - s * 0.36 - sh));
   ctx.fillStyle = "#1f8a8a";
