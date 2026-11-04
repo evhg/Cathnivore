@@ -229,8 +229,11 @@ export class Renderer3D {
   private heroPie = 9;
   /** Plan item 102: seconds since she cheered a cleared round, and since a vehicle leaked (her worried hand). */
   private heroCheer = 9;
+  /** Seconds since a tower went in (she stoops to plant it), and the tower count she last saw. */
+  private heroPlant = 9;
+  private towersSeen = -1;
   /** What her body says right now (read by the sandbox e2e). */
-  heroMood: "rest" | "cheer" | "worried" = "rest";
+  heroMood: "rest" | "cheer" | "worried" | "plant" = "rest";
   private heroWorry = 9;
   private raycaster = new THREE.Raycaster();
   private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -1605,6 +1608,9 @@ export class Renderer3D {
     this.heroPie += dt;
     this.heroCheer += dt;
     this.heroWorry += dt;
+    this.heroPlant += dt;
+    if (game.towers.length > this.towersSeen && this.towersSeen >= 0) this.heroPlant = 0;
+    this.towersSeen = game.towers.length;
     if (h.down > 0) {
       fig.rotation.set(0, 0, -1.2 * h.facing);
       fig.position.y = 0.1;
@@ -1678,7 +1684,10 @@ export class Renderer3D {
     if (cheer > 0) pose = mix(pose, [-3.0, 0.25, 0.1, -2.95, 0.3, 0.06 * Math.sin(this.heroCheer * 14), 0], cheer);
     const worry = cheer > 0 ? 0 : react(this.heroWorry);
     if (worry > 0) pose = mix(pose, [pose[0], pose[1], pose[2], -1.35, 2.1, -0.05, 0.12], worry);
-    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : "rest";
+    // ...and stoops to plant a new tower: a lean forward, her free hand down to the soil.
+    const plant = cheer > 0 || worry > 0 ? 0 : react(this.heroPlant);
+    if (plant > 0) pose = mix(pose, [pose[0], pose[1], pose[2], 1.1, 0.5, 0.42, 0.1], plant);
+    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : "rest";
     // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
     // throwing arm (on her far side) round where it can be seen.
     const p = this.heroPie;

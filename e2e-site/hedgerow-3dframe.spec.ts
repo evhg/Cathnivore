@@ -50,7 +50,7 @@ test('the 3D gate sign reads at 12 px type or more (level 21)', async ({ page })
 // Plan item 102: she cheers a cleared round and raises a worried hand when a vehicle gets through. Her reaction
 // starts on the frame the event lands (it eases in over 0.15 s); swiftshader runs at a few fps, so the wait here
 // is frames, not the 250 ms a real GPU shows.
-test('the 3D Cath cheers a cleared round and worries at a leak', async ({ page, hasTouch }) => {
+test('the 3D Cath cheers a cleared round, worries at a leak and stoops to plant', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'one size is enough')
   test.setTimeout(180_000)
   await page.goto('/hedgerow/?sandbox=1')
@@ -68,4 +68,12 @@ test('the 3D Cath cheers a cleared round and worries at a leak', async ({ page, 
   await expect.poll(mood, { timeout: 20_000 }).toBe('rest')
   await page.evaluate(() => (window as unknown as { hedgerow: HG3 }).hedgerow.game()!.events.push({ type: 'leak', x: 1, y: 1, lost: 1 }))
   await expect.poll(mood, { timeout: 15_000, intervals: [100] }).toBe('worried')
+  await expect.poll(mood, { timeout: 20_000 }).toBe('rest')
+  // A tower going in: she stoops to plant it.
+  await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: { game(): { level: { cols: number; rows: number } }; place(g: unknown, k: string, c: number, r: number): { ok: boolean } } }).hedgerow
+    const g = hg.game()
+    for (let r = 0; r < g.level.rows; r++) for (let c = 0; c < g.level.cols; c++) if (hg.place(g, 'hedgerow', c, r).ok) return
+  })
+  await expect.poll(mood, { timeout: 15_000, intervals: [100] }).toBe('plant')
 })
