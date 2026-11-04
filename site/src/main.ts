@@ -124,7 +124,9 @@ if (lede) {
     "Today's Runnel is a tricky one. I believe in you.",
     'Water the fields, share the result, and come back tomorrow.',
   ]
-  lede.textContent = lines[day % lines.length] ?? null
+  // Plan item 126: signed as Cath's, so under the "Cathnivore" title a Runnel line doesn't read as the board game's pitch.
+  const line = lines[day % lines.length]
+  if (line) lede.textContent = `\u201C${line}\u201D \u2014 Cath`
 }
 
 // U5: the poster cards lean a few degrees toward a mouse pointer. Fine pointers only, never under reduced motion.
