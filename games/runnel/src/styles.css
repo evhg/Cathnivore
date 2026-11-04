@@ -2201,7 +2201,12 @@ body {
 
 [data-time='morning'] .sky-light {
   fill: var(--sky-morning);
-  opacity: 0.55;
+  /* Plan item 90: a soft wash, not a white-out: at .55 (and .28) the morning light washed the channels to 1.9:1 on the tiles. */
+  opacity: 0.18;
+}
+@media (prefers-color-scheme: dark) {
+  /* Soft-light lifts a dark valley much more than a light one: the night board's morning is a hint of light. */
+  [data-time='morning'] .sky-light { opacity: 0.1; }
 }
 
 [data-time='golden'] .sky-light {
@@ -2211,7 +2216,8 @@ body {
 
 [data-time='dusk'] .sky-light {
   fill: var(--sky-dusk);
-  opacity: 0.22;
+  /* Plan item 90: .22 sank the tiles' dark rims into the dusk field (2.6:1). */
+  opacity: 0.13;
   mix-blend-mode: multiply;
 }
 
@@ -3513,10 +3519,12 @@ body[data-mode='practice'] #week-slot {
 /* Plan item 90: tiles read at a glance: a solid piece with a dark rim, a lit bevel and a cast shadow, whatever the
    weather, so the board stands off the painted valley. */
 .tile-shadow { fill: var(--tile-shadow); pointer-events: none; }
-.cell:not(.stone) .tile { stroke: var(--tile-rim); stroke-width: 3; }
+.cell:not(.stone) .tile { stroke: var(--tile-rim); stroke-width: 4; }
 .cell.wet .tile { stroke: var(--tile-rim); }
-.tile-bevel { fill: none; stroke: var(--tile-bevel); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
+.tile-bevel { fill: none; stroke: var(--tile-bevel); stroke-width: 3.2; stroke-linejoin: round; pointer-events: none; }
 .stone .tile-bevel { display: none; }
+/* The rim stays 2.5 px or more on a phone board, where the hexes are drawn at about half scale. */
+@media (max-width: 600px) { .cell:not(.stone) .tile { stroke-width: 5.5; } .tile-bevel { stroke-width: 4; } }
 /* Plan item 90: a lesson dims the valley, not the tiles, so every piece keeps its colour and rim while the target
    glows. */
 .in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }

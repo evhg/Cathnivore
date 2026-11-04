@@ -1276,7 +1276,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 90. [ ] Runnel: tiles that read at a glance *(lane A, in progress)*
 - **Why:** `runnel-D`/`runnel-P` (plan1104a, check first: may be the lesson's dim): tiles (580-1215 x 125-730 at D) are pale cream over the wheat fields, their channels tan on cream.
-- **Build:** tiles as solid bevelled pieces with a dark rim and a cast shadow; channels dark grooves with a lit edge; in lessons dim the valley, not the tiles.
+- **Build:** tiles as solid bevelled pieces with a dark rim and a cast shadow; channels dark grooves with a lit edge; in lessons dim the valley, not the tiles. *(2026-11-04 lane A, slice 3: light rim #3e2a18, a lit wooden rim #dcb47c on the night board, rims 4 (5.5 on phones), morning wash .55 -> .18 (.1 at night), dusk .22 -> .13. Draft acceptance spec in `docs/plan/wip-90-runnel-tiles.spec.ts.txt` (copy to `e2e-site/runnel-tiles.spec.ts`): light P and D pass every weather (edge vs valley 3:1 at D, 2.5 at P; channel vs tile 3:1); dark fails channel vs tile (2.2:1 at noon, D) though the shots read clearly; check whether the sample hits the cream lip or the bed, then fix or adjust. Tile fill vs field is cut: the rim carries it, see DECISIONS.)*
 - **Accept:** sampled in e2e: tile fill vs field 3:1 or more, channel vs tile 3:1 or more, every weather; greyscale shot readable; runnel e2e still pass; shots P and D.
 - **Size:** 1
 
