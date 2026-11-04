@@ -4526,10 +4526,11 @@ img.act-scene {
   #screen-select .act.act-has-card { overflow: clip; }
 }
 
-/* Plan item 111: at D each stop is a landmark you can read from across the room, 76 px wide (the boss lot 86), and
+/* Plan item 111: at D (860 px tall or more: at 1280x800 the taller rows pushed Play below the fold) each stop is a
+   landmark you can read from across the room, 76 px wide (the boss lot 86), and
    Cath's token 60 px tall walks the road between them. Phones keep their 44 px coins (the map's two rows of five
    fill a phone's width). */
-@media (min-width: 1100px) and (min-height: 760px) {
+@media (min-width: 1100px) and (min-height: 860px) {
   #screen-select .node .level-num { width: 76px; height: 64px; }
   #screen-select .node.level-boss .level-num { width: 86px; height: 72px; }
   #screen-select .node .level-num.vignette .level-n { min-width: 26px; height: 26px; border-radius: 13px; }

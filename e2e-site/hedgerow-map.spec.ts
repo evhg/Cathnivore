@@ -287,3 +287,13 @@ test('plan item 111: at D the stops are 72 px landmarks and Cath is 60 px', asyn
   expect(Math.min(...m.coins)).toBeGreaterThanOrEqual(72)
   expect(m.you).toBeGreaterThanOrEqual(60)
 })
+
+// Plan item 111: a shorter desktop keeps the smaller stops, so the level card's Play stays on screen at 1280x800.
+test('plan item 111: at 1280x800 Play is on screen on act 1', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'the desktop map')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await seed(page, 6)
+  await page.waitForTimeout(400)
+  const play = (await page.locator('.level-card button', { hasText: 'Play' }).first().boundingBox())!
+  expect(play.y + play.height).toBeLessThanOrEqual(800)
+})
