@@ -174,6 +174,8 @@ function useIsDesktopLayout(): boolean {
 }
 // Plan item 118: the desktop sizes where Cath stands at the table (styles: .table-cath).
 const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
+// Plan item 131: on an upright phone she stands at the table too, at its lower-left corner, and the header strip goes.
+const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 830px) and (orientation: portrait)'
 
 
 // Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with
@@ -575,7 +577,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const isDesktop = useIsDesktopLayout()
-  const tableCath = useMedia(TABLE_CATH_QUERY)
+  const deskTableCath = useMedia(TABLE_CATH_QUERY)
+  const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
+  const tableCath = deskTableCath || phoneTableCath
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -2258,7 +2262,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
         {tableCath && (
-          <section className="table-cath" data-expression={cathReaction.expression} aria-label="Cath">
+          <section className={phoneTableCath ? 'table-cath table-cath-phone' : 'table-cath'} data-expression={cathReaction.expression} aria-label="Cath">
             <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
               {cathReaction.line}
             </p>

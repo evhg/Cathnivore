@@ -1635,7 +1635,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: `data-flyin` runs 3 s or less, a skip ends it within 150 ms, no replay on reload, the closing bubble meets no plot; shots of its start, middle and end at P and D in `?2d`.
 - **Size:** 3
 
-## 129. [ ] NIGHT SHIFT: the desktop class pick composed round her *(lane A, in progress)*
+## 129. [x] NIGHT SHIFT: the desktop class pick composed round her *(done 2026-11-04, lane A: the framing already held after items 112/117/125 (face 117-135 px at D in 470-960 x 150-500, the sheet 384 px wide, clear of both columns), so the work was the change: a 250 ms dolly from 9% out, the key light at 2.6x easing back over 320 ms (kept under reduced motion), and a synthesised weapon-rack stinger per class (`scheduleRack`, rendered offline in the e2e at -18 to -15 dB peak) in place of the focus tick. cathode-classpick 6/6, cathode-perf within budget; shots D and L for all five classes and a mid-change frame, `e2e/screenshots/c129`)*
 - **Why:** `ns-play-D` (470-960 x 100-860): empty street while Cath stands behind the stats panel (935-975 x 280-330, only the umbrella's edge shows); the class names read as a menu, not an operative lineup. Check first against items 112, 117 and 125.
 - **Build:**
   - Frame her face-on in the empty middle band; narrow the panel to about 380 px so the street sign reads whole.
@@ -1651,7 +1651,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 her box is 140 px or more tall, on the first screen, meeting no text or button; the first poster's top stays above 640 px; shots P and D and a crossfade frame.
 - **Size:** 2
 
-## 131. [ ] Cathnivore phone: the table fills its frame, and Cath lives on it *(lane A, in progress)*
+## 131. [x] Cathnivore phone: the table fills its frame, and Cath lives on it *(done 2026-11-04, lane A: on an upright phone 830 px tall and up a 96 px half-length Cath (`.table-cath-phone`, item 118's expression feed) stands at the table's lower-left corner and her line is a bubble beside her on the cloth under the hexes; the header strip is gone, the board sits at the top of its frame and lifts 18 px into the viewBox's sky. Hexes 93% of the frame's width at 390x844, nothing met, no scroll, light and dark (`e2e/table-cath.spec.ts` phone test). **Cut:** at 375x667 (and 375x812, 360x780) the strip stays: the cloth has no band for the bubble and the board already ran under the tray there (DECISIONS 2026-11-04 23:15). Passing: table-cath, moments, hand-art, region-closeup, tutorial, accessibility, board-frame, action-hand at P and D. Shots `e2e/screenshots/c131`)*
 - **Why:** `cath-game-P` (8-380 x 225-605): the board is an inset with about 45 px of empty cloth under the hexes, and Cath is a 64 px ring in the header (8-75 x 55-118), not at the table (item 118 did the desktop).
 - **Build:**
   - The hexes fit 92% of the frame's width.

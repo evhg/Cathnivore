@@ -2739,6 +2739,67 @@ html.no-animations .cath-companion .cameo {
     rotate: 45deg;
   }
 }
+/* Plan item 131: on an upright phone Cath stands at the table's lower-left corner (left of Oakvale, under
+   Brindle Hills), 96 px half-length on the same expression feed, and her line is a bubble from her along the cloth
+   under the hexes. The board sits at the top of its frame so the cloth's spare band is at its foot. */
+@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+  .map-wrap:has(.table-cath-phone) { align-items: flex-start; }
+  /* The viewBox's top band is sky for the landmarks; lift the board into it so the hexes' tips clear her bubble. */
+  .map-wrap:has(.table-cath-phone) svg.map { margin-top: -18px; }
+  .table-cath-phone {
+    position: absolute;
+    inset: auto var(--sp-2) 6px 2px;
+    z-index: var(--z-raised);
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .table-cath-phone .table-cath-figure {
+    order: -1;
+    flex: none;
+    display: block;
+    height: 96px;
+    width: 64px;
+    overflow: hidden;
+    filter: drop-shadow(0 3px 3px rgb(var(--shadow-ink) / .22));
+  }
+  .table-cath-phone .table-cath-figure .cath-art,
+  .table-cath-phone .table-cath-figure svg {
+    display: block;
+    height: 100%;
+    width: auto;
+    margin-left: -9px;
+  }
+  .table-cath-phone .table-cath-line {
+    position: relative;
+    flex: 0 1 auto;
+    margin: 0 0 8px;
+    padding: 5px 10px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 0 var(--rule);
+    color: var(--ink);
+    font-size: var(--fs-small);
+    line-height: 1.25;
+    text-wrap: pretty;
+    animation: table-cath-say var(--dur-quick) var(--ease-settle);
+  }
+  /* The tail points left, at her mouth. */
+  .table-cath-phone .table-cath-line::after {
+    content: "";
+    position: absolute;
+    left: -6px;
+    bottom: 14px;
+    width: 10px;
+    height: 10px;
+    background: var(--surface);
+    border-left: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    rotate: 45deg;
+  }
+}
 @keyframes table-cath-say {
   from { opacity: 0; translate: 0 6px; }
 }

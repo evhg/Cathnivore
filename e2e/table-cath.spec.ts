@@ -53,3 +53,48 @@ test('her expression follows the round at D', async ({ page }, testInfo) => {
   }
   await expect(cath).not.toHaveAttribute('data-expression', 'smirk', { timeout: 30_000 })
 })
+
+// Plan item 131: on an upright phone 830 px tall and up she stands at the table's lower-left corner, 96 px, and her
+// line is a bubble beside her; the header strip goes. Neither meets a hex or a name plate, the hexes take 88% or more
+// of the frame's width, and nothing scrolls. Shorter phones keep the strip (the board already runs under the tray).
+test('Cath stands at the table during play on a phone', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'phone only')
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await fillSeed(page, '7')
+    await page.getByRole('button', { name: 'Start' }).click()
+    const cath = page.locator('.table-cath-phone')
+    await expect(cath).toBeVisible()
+    await expect(page.locator('.table-head .cath-companion')).toHaveCount(0)
+    const fig = (await cath.locator('.table-cath-figure').boundingBox())!
+    const line = (await cath.locator('.table-cath-line').boundingBox())!
+    expect(fig.height).toBeGreaterThanOrEqual(96)
+    await expect(cath.locator('.table-cath-line')).not.toBeEmpty()
+    type B = { x: number; y: number; width: number; height: number }
+    const meets = (a: B, b: B) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+    const map = (await page.locator('.map-wrap').boundingBox())!
+    let x0 = Infinity, x1 = -Infinity
+    for (const hex of await page.locator('.region-hex').all()) {
+      const h = (await hex.locator('polygon').first().boundingBox())!
+      x0 = Math.min(x0, h.x)
+      x1 = Math.max(x1, h.x + h.width)
+      const id = await hex.getAttribute('data-region')
+      expect(meets(h, fig), `${scheme} figure meets ${id} ${JSON.stringify({ h, fig })}`).toBe(false)
+      expect(meets(h, line), `${scheme} bubble meets ${id}`).toBe(false)
+    }
+    for (const plate of await page.locator('.map .region-name').all()) {
+      const p = (await plate.boundingBox())!
+      expect(meets(p, fig) || meets(p, line), scheme).toBe(false)
+    }
+    expect((x1 - x0) / map.width, scheme).toBeGreaterThanOrEqual(0.88)
+    for (const b of [fig, line]) expect(b.x >= map.x && b.y + b.height <= map.y + map.height + 1, scheme).toBe(true)
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(844)
+  }
+  // A shorter phone keeps the header strip.
+  await page.setViewportSize({ width: 375, height: 667 })
+  await expect(page.locator('.table-cath-phone')).toHaveCount(0)
+  await expect(page.locator('.table-head .cath-companion')).toHaveCount(1)
+})
