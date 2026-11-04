@@ -926,3 +926,132 @@ html.no-animations .title-screen * {
   /* the far row's names keep 12 px or more under the tilt */
   .title-board .region-name { font-size: 1.07rem; }
 }
+/* Plan item 93: the phone title as a staged market scene, like the desktop's (item 86). Bunting across the top,
+   the logotype under it, then the stall: Cath standing behind the table's back edge with her line in a two-line
+   bubble beside her head, the board lying on the tabletop, and the chalk menu standing on the tabletop at its near
+   edge; the footer is stamped on the table's front, which runs to the screen's foot. */
+@media (max-width: 760px) {
+  .title-screen { padding-bottom: 0; overflow: hidden; }
+  .title-hero {
+    position: static;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'kick' 'mark' 'tag' 'art' 'note' 'menu';
+    gap: 0;
+    padding-top: 22px;
+  }
+  .title-copy { display: contents; }
+  .title-kicker { grid-area: kick; justify-self: center; font-size: var(--fs-caption, 12px); }
+  .title-wordmark { grid-area: mark; justify-self: center; margin: 2px 0 0; font-size: clamp(48px, 7.4dvh, 64px); }
+  .title-tagline { grid-area: tag; justify-self: center; text-align: center; margin: 4px 0 0; font-size: var(--fs-body, 16px); max-width: 34ch; }
+  .title-copy > .update-ready,
+  .title-copy > .save-warning { grid-area: note; margin: 6px 0; position: relative; z-index: var(--z-raised); }
+  /* the tabletop: from just under the board's foot to the table's front */
+  .title-hero::before {
+    content: '';
+    grid-row: 5 / -1;
+    grid-column: 1 / -1;
+    align-self: stretch;
+    position: relative;
+    z-index: var(--z-raised);
+    margin: -26px -20px 0;
+    border-top: 3px solid color-mix(in srgb, var(--wood) 60%, var(--paper));
+    background:
+      repeating-linear-gradient(90deg, transparent 0 58px, color-mix(in srgb, var(--wood-lo) 18%, transparent) 58px 60px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wood) 55%, var(--paper)), color-mix(in srgb, var(--wood) 85%, var(--paper)));
+    box-shadow: inset 0 10px 14px -10px color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+  .title-art.title-table {
+    grid-area: art;
+    position: static;
+    align-self: end;
+    max-width: none;
+    width: 100%;
+    grid-template-columns: minmax(0, 0.5fr) minmax(0, 1fr);
+    gap: 2px;
+    padding-top: 52px;
+  }
+  .title-art.title-table .title-cath {
+    position: relative;
+    z-index: auto;
+    width: 128%;
+    margin: 0 0 -26px -22%;
+  }
+  .title-art.title-table .title-board {
+    position: relative;
+    z-index: var(--z-lift);
+    margin-bottom: -14px;
+    transform: perspective(900px) rotateX(14deg);
+    transform-origin: 50% 100%;
+  }
+  .title-art.title-table .title-board .map { max-height: 27dvh; }
+  /* her line: a two-line bubble beside her head, over the board's far edge */
+  .title-art.title-table .title-cath-line {
+    position: absolute;
+    left: 74%;
+    top: -50px;
+    width: min(250px, 66vw);
+    margin: 0;
+    z-index: var(--z-lift);
+    border-radius: 12px 12px 12px 2px;
+    line-height: 1.25;
+  }
+  .title-menu {
+    grid-area: menu;
+    position: relative;
+    z-index: var(--z-lift);
+    width: 100%;
+    margin-top: 26px;
+  }
+  .title-menu::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -8px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 34%, transparent), transparent);
+  }
+  /* the table's front, with the footer stamped on it */
+  .title-footer {
+    margin: 0 -20px;
+    width: auto;
+    padding: 12px 20px max(10px, env(safe-area-inset-bottom));
+    gap: 2px 12px;
+    font-size: var(--fs-caption, 12px);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--wood) 70%, var(--paper)) 0 6px, var(--wood-lo) 6px 8px, transparent 8px),
+      repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 30%, transparent) 46px 48px),
+      linear-gradient(180deg, var(--wood), var(--wood-lo));
+    color: color-mix(in srgb, var(--paper-on-fixed-fill) 88%, var(--wood));
+  }
+  .title-footer a { color: var(--paper-on-fixed-fill); }
+  .title-bunting {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 30px;
+    pointer-events: none;
+  }
+  .title-bunting-rope { fill: none; stroke: var(--wood-lo); stroke-width: 1.6; }
+  .title-bunting-flag { stroke: color-mix(in srgb, var(--ink) 40%, transparent); stroke-width: .8; stroke-linejoin: round; }
+  .title-bunting-flag.f0 { fill: var(--clay); }
+  .title-bunting-flag.f1 { fill: var(--wheat); }
+  .title-bunting-flag.f2 { fill: var(--pasture); }
+  .title-bunting-flag.f3 { fill: var(--paper); }
+}
+/* a short phone keeps the scene: the tagline gives way */
+@media (max-width: 760px) and (max-height: 720px) {
+  .title-tagline { display: none; }
+  .title-hero { padding-top: 18px; }
+  .title-wordmark { font-size: 2.875rem; }
+  .title-art.title-table .title-board .map { max-height: 22dvh; }
+  .title-art.title-table .title-cath { width: 114%; margin-left: -14%; }
+  .title-menu { gap: 6px; margin-top: 26px; }
+  .title-menu .title-cta { min-height: 44px; }
+  .title-footer { padding-top: 10px; }
+  .title-footer p:nth-child(2) { display: none; }
+}

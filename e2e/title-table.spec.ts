@@ -143,3 +143,44 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     expect(empty).toBeNull()
   })
 }
+
+// Plan item 93: the phone title is a staged market scene. Cath stands behind the table, 200 px or more (180 on a
+// 375x667 phone), clear of the menu and the logotype; the chalk menu stands on the tabletop, its foot within 4 px
+// of the table's front (the footer); her line is two lines at most; nothing scrolls.
+for (const [width, height, min] of [[390, 844, 200], [375, 667, 180]] as const) {
+  test(`the phone title is a market scene at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'phone', 'the phone composition')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.locator('.title-cath svg').waitFor()
+    // the menu and words rise in over 1.2 s
+    await page.waitForTimeout(1400)
+    const m = await page.evaluate(() => {
+      const box = (q: string) => document.querySelector(q)!.getBoundingClientRect()
+      const cath = box('.title-cath svg')
+      const menu = box('.title-menu')
+      const mark = box('.title-wordmark')
+      const foot = box('.title-footer')
+      const line = document.querySelector('.title-cath-line')!
+      const cs = getComputedStyle(line)
+      const lines = Math.round((line.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) / parseFloat(cs.lineHeight))
+      const hit = (a: DOMRect, b: DOMRect) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1
+      return {
+        cath: cath.height,
+        clearMenu: !hit(cath, menu),
+        clearMark: !hit(cath, mark),
+        foot: Math.abs(menu.bottom - foot.top),
+        lines,
+        scroll: document.documentElement.scrollHeight - innerHeight,
+        footInside: foot.bottom <= innerHeight + 1,
+      }
+    })
+    expect(m.cath).toBeGreaterThanOrEqual(min)
+    expect(m.clearMenu).toBe(true)
+    expect(m.clearMark).toBe(true)
+    expect(m.foot).toBeLessThanOrEqual(4)
+    expect(m.lines).toBeLessThanOrEqual(2)
+    expect(m.scroll).toBeLessThanOrEqual(0)
+    expect(m.footInside).toBe(true)
+  })
+}
