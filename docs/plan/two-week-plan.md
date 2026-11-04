@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-04 23:22 UTC
 
 
 
@@ -1668,4 +1667,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [x] **Cathnivore:** ~~P "STAGE / I" wraps above "Expand" (165-215 x 150-165)~~ *(fixed 2026-11-04 lane B: one line, tighter tracking on a phone; it came from item 126's 12.5 px; shots `m127/stage-P-*`)*; ~~the third hand card clipped to "Sel" with no scroll cue (355-390 x 672-760)~~ *(checked 2026-11-04 lane A: the chevron cue from the 18:51 session shows there, shots `c131`)*; ~~D Setup's sign ropes run across Cath (1090-1215 x 740-775)~~ *(fixed 2026-11-04 lane A: at 1100 px and up the sign stands in front of her without its cord and nail; setup specs pass)*.
   - [x] **Site /games/ D:** Hedgerow's poster shows its in-game Cath beside the poster's half-length one (900-915 x 470-510); a sliver of the MUM drawing at the Cathnivore poster's corner (110-122 x 463-480). *(fixed 2026-11-04 lane A: `?keyart` leaves the field's Cath out in Hedgerow's 2D renderer and Bea's drawing off the Cathnivore table; both posters re-shot with `npm run keyart`; keyart-fresh, games-cards, games-cath pass)*
 - **Accept:** e2e boxes inside the viewport and not intersecting, text 11 px or more at 4.5:1, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 133. [ ] Cathnivore: the Daily Market as a ritual on the title table
+- **Why:** `cath-title-D` (plan1104j, 126-478 x 632-692; P 36-354 x 630-680): the strongest reason to come back is a plain button: no streak, no yesterday, no stakes; the table front (0-1440 x 765-860) is bare.
+- **Build:**
+  - Yesterday's result as a receipt pinned on the table front: the score, a SOLD stamp, the pin earned.
+  - The streak as bunting, one pennant a day; tomorrow's event a face-down card that flips at local midnight, with a countdown.
+  - Cath's line follows the streak: kept, broken, the first ever.
+- **Accept:** e2e from a fixture save: a 3-day streak shows 3 pennants; the receipt 120 px or more at D and 90 at P, inside the viewport, meeting no menu button; a broken streak changes `data-expression`; shots P and D, light and dark, at streaks 0, 3 and 10.
+- **Size:** 3
+
+## 134. [ ] Runnel: a lesson taught by Cath's hand, not by paragraphs
+- **Why:** `runnel-D` (32-330 x 390-545): three paragraphs of rules beside a board that should teach itself.
+- **Build:**
+  - A ghost hand taps the glowing tile; the lesson is three steps, each chip stamped as it's done; the rules fold into the (?).
+  - On the last step the water runs to Bea's garden, then a weather card flies in and opens Daily #N.
+- **Accept:** no lesson text block over 2 lines at D; the hand within 20 px of the target tile; the lesson to the daily in under 1.5 s; under reduced motion the hand appears without moving; shots P and D at each step.
+- **Size:** 2
+
+## 135. [ ] Hedgerow: Cath debriefs a leak on the field
+- **Why:** `hedge-l21-2d-D` (62-290 x 528-620) and l34 (845-1070 x 372-458): the same "Build a Scarecrow" line at round 11 and round 17; nothing says what just went wrong.
+- **Build:**
+  - After a round with leaks, the stretch of lane they got through glows red for 1.5 s.
+  - A ghost tower stands on the plot she suggests, and her line names the stretch and the tower; tapping the ghost builds it if affordable.
+- **Accept:** a forced leak gives `data-leak-stretch` and a ghost on an empty plot; her line differs between two rounds with different leaks; the bubble over plots 15% or less at D; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 136. [ ] NIGHT SHIFT: the class pick as an audition in the street
+- **Why:** `ns-play-D` (470-960 x 100-700): empty rain, Cath a distant back view (780-830 x 320-520); `ns-play-P` (100-230 x 300-560) her back again, though items 112, 117 and 129 put her face-on. Check first: is `plan-shots`' `?play` frame the live pick, or the poster? (Lane A: "plan shots wait for the live street".)
+- **Build:**
+  - Each class plays a 3 s vignette with her face-on: Ghost scopes, Butcher racks, Wirewitch's rig lights; a camera cut and a stinger per class.
+  - Her quote as a spoken subtitle.
+- **Accept:** `faceBox()` 110 px or more at D and 70 at P, inside the free column, for all five classes; the vignette starts within 300 ms of a class change; cathode-classpick and cathode-perf pass; shots D and P for every class.
+- **Size:** 3
+
+## 137. [ ] NIGHT SHIFT: a name crossed off The List as a front-door moment
+- **Why:** `ns-title-D` (155-535 x 665-800; P 85-370 x 675-755): The List is four identical "Withheld" polaroids; closing a case is never celebrated where you start the next.
+- **Build:**
+  - On the first title visit after a case closes, a red marker strikes that polaroid, the next target's photo develops in, the "N NAMES LEFT" count ticks down, and Cath has a line.
+- **Accept:** e2e from a save with one case just closed: the polaroid gets `data-struck`, the count drops, and it plays once only; reduced motion: a fade; shots P and D before and after.
+- **Size:** 2
+
+## 138. [ ] The bugs from the 2026-11-04 23:25 critique, fixed as one batch
+- **Build:** (check each first; plan1104j)
+  - [ ] **Site /games/ P:** the hero never finishes landing in the shot (the logotype blurred 50-280 x 115-170, the buttons at about 30%, no posters on the first screen), and Cath crowds the quote's end (295-370 x 225-260). Check against item 130 and the shot's timing.
+  - [ ] **NIGHT SHIFT P:** the class tab row cuts "WIREWITCH" (297-390 x 68-82) with FIXER off screen and no scroll cue.
+  - [ ] **Hedgerow:** l34-2d-P the gate queue's vans and "485 coming" under a white veil (10-125 x 150-310); l21-3d-P the gate sign edge-on, a 2 px bar (15-75 x 410-418), and at D the name twice (sign 175-290 x 365-390, plate 325-525 x 340-365); the round card's "Lifestyle influencer" wraps in a one-line pill (D 1180-1395 x 410-447); the map D road 25-26 through "The Unboxing" (1205-1222 x 420-445), and the bottom band's cut bridge and cow (540-880 x 790-830, 190-235 x 790-812).
+  - [ ] **Runnel D:** "Daily #39 ·" ends its line on a dot (170-250 x 645-660, from item 126's no-break title); the spring-house stream stops dead (435 x 505); channel bars over the hex rims (895-1115 x 400-450, 1000-1010 x 585-640).
+  - [ ] **Cathnivore:** D "Need 1 more Mark" pale pink at about 2.5:1 (65-185 x 750-762); the Campaign's Cath token straddles the Brindle Hills/Kingsmarket edge (D 262-305 x 560-640, P 117-140 x 420-462).
+- **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
