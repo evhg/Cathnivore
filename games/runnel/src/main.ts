@@ -14,6 +14,7 @@ import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
 import { boardSky, skyArt } from './sky'
+import { lightVars, sceneLight, valleyLayers } from './valley'
 import { weekBeds, weekStrip } from './weekstrip'
 import {
   arcLabel,
@@ -233,6 +234,17 @@ function finish(): void {
   window.setTimeout(showWin, matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : Math.max(1400, rings * 110 + 1100))
 }
 
+/** Plan item 77: the valley painted for this board (its fields seeded by it) and lit by its time and weather. */
+function paintValley(seed: string): void {
+  const slot = document.getElementById('valley-paint')
+  if (!slot || slot.dataset.seed === seed) return
+  const sky = boardSky(seed)
+  slot.dataset.seed = seed
+  slot.innerHTML = valleyLayers(seed, sky.weather)
+  const stage = slot.closest<HTMLElement>('.stage')
+  for (const [k, v] of Object.entries(lightVars(sceneLight(sky)))) stage?.style.setProperty(k, v)
+}
+
 /** Plan item 70: Cath stands in the valley's bottom-left corner unless the board's tiles reach into it. */
 function placeValleyCath(): void {
   const cath = document.getElementById('valley-cath')
@@ -336,6 +348,7 @@ function render(): void {
       skySlot.dataset.art = art
     }
   }
+  paintValley(puzzle.seed)
   ui.hudTime.textContent = formatTime(elapsed())
   ui.hudTaps.textContent = String(game.taps)
   ui.hudPar.textContent = String(puzzle.par)

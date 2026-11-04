@@ -2289,6 +2289,9 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
+  .stage .valley {
+    --vk: 32%;
+  }
   .sky-light {
     opacity: 0.2 !important;
   }
@@ -2536,6 +2539,11 @@ body {
     font-size: var(--fs-label);
     font-style: italic;
     color: var(--soil);
+    /* Plan item 77: a paper tag, so the name reads on any field or light. */
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--paper) 84%, transparent);
+    width: max-content;
   }
 
   .spring-sign {
@@ -3178,8 +3186,53 @@ body[data-mode='practice'] #week-slot {
     height: 100%;
     pointer-events: none;
   }
-  .vl-hill-far { fill: color-mix(in srgb, var(--lip-meadow) 22%, transparent); }
-  .vl-hill-near { fill: color-mix(in srgb, var(--lip-meadow) 34%, transparent); }
+  /* Plan item 77: the painted valley, lit by valley.ts's palette (set on the stage). In dark mode the palette is
+     mixed into the night paper, so the day still shows through without lighting up the page. */
+  .valley {
+    --vk: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .vl-sky-top { stop-color: color-mix(in srgb, var(--vl-sky-top, var(--band)) var(--vk), var(--paper)); }
+  .vl-sky-low { stop-color: color-mix(in srgb, var(--vl-sky-low, var(--band-2)) var(--vk), var(--paper)); }
+  .vl-hill-far { fill: color-mix(in srgb, var(--vl-far, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-hill-near,
+  .vl-g-near { fill: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--paper)); stop-color: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-g-meadow { stop-color: color-mix(in srgb, var(--vl-meadow, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-g-low { stop-color: color-mix(in srgb, var(--vl-meadow-low, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-f-crop { fill: color-mix(in srgb, var(--vl-crop) var(--vk), var(--paper)); }
+  .vl-f-wheat { fill: color-mix(in srgb, var(--vl-wheat) var(--vk), var(--paper)); }
+  .vl-f-fallow { fill: color-mix(in srgb, var(--vl-fallow) var(--vk), var(--paper)); }
+  .vl-f-grass { fill: color-mix(in srgb, var(--vl-meadow) var(--vk), var(--paper)); }
+  .vl-row {
+    stroke: color-mix(in srgb, var(--vl-hedge) 30%, transparent);
+    stroke-width: 3;
+  }
+  .vl-hedge {
+    fill: none;
+    stroke: color-mix(in srgb, var(--vl-hedge) var(--vk), var(--paper));
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-dasharray: 0 7;
+    vector-effect: non-scaling-stroke;
+  }
+  .vl-tree { fill: color-mix(in srgb, var(--vl-hedge) var(--vk), var(--paper)); }
+  .vl-tree-lit { fill: color-mix(in srgb, var(--vl-crop) 70%, var(--vl-hedge)); opacity: 0.7; }
+  .vl-tree-shade { fill: color-mix(in srgb, var(--vl-hedge) 40%, transparent); }
+  .vl-trail {
+    fill: none;
+    stroke: color-mix(in srgb, var(--vl-wheat) 75%, var(--paper));
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1 10;
+    vector-effect: non-scaling-stroke;
+  }
+  .vl-drop {
+    stroke: color-mix(in srgb, #ffffff 55%, var(--vl-sky-top));
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
   .vl-bed,
   .vl-water {
     fill: none;
