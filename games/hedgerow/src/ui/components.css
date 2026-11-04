@@ -2927,6 +2927,15 @@ body:has(#dlg-pause[open]) .paused-note {
   font: 700 var(--fs-small) / 1.2 var(--font-ui);
   color: var(--ink-2);
 }
+/* Plan item 103: each round ahead's lead vehicle big enough to tell apart (it was 16 px over a bare number) */
+.play .panel .intel-timeline .chip-icon {
+  width: 30px;
+  height: 30px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--mat-plastic);
+  box-shadow: 0 0 0 1.5px var(--line);
+}
 .play .panel .intel-timeline li.boss {
   color: var(--ink);
 }
@@ -3465,6 +3474,8 @@ body:has(#dlg-pause[open]) .paused-note {
   font: 700 var(--fs-small) / 1.15 var(--font-display);
   color: var(--ink);
   overflow-wrap: anywhere;
+  /* plan item 103: "x119 of 216" never leaves its count alone on a line */
+  text-wrap: balance;
 }
 .play .panel :is(.nb-when, .nb-stand, .nb-empty) {
   font: 600 var(--fs-label) / 1.3 var(--font-ui);

@@ -1504,6 +1504,13 @@ function line(text: string, cls = ""): HTMLParagraphElement {
   return el;
 }
 
+/** "Answered by a Scarecrow or a Beehive." for the notebook's advice page (the kit's counters to a vehicle). */
+function answersLine(kind: EnemyKind, g: Game): string {
+  const names = countersFor(kind, g.level.towers).slice(0, 3).map((t) => TOWERS[t].name);
+  if (!names.length) return "Nothing in this kit answers it outright: slow it and keep Goodwill in hand.";
+  return `Answered by ${names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names.at(-1)}` : names[0]}.`;
+}
+
 /** Whether the round ticket's (i) is open (kept across rounds and redraws). */
 let notesOpen = false;
 
@@ -1787,7 +1794,9 @@ function fieldNotebook(g: Game): HTMLElement {
     txt.append(
       line(`${Word(g)} ${waveNo(g, ri + 1)} · ${betweenRounds(g) ? "next" : "on the lane"}`, "nb-eyebrow"),
       line(`${ENEMIES[advice.kind].name} ×${advice.count}${total}`, "nb-name"),
-      line(advice.line, "nb-advice-line"),
+      // Plan item 103: while she says her line beside her on the field, the page lists what answers the threat
+      // instead of repeating it word for word.
+      line(betweenRounds(g) && g.phase === "build" && !player && !hasTwist(g.level, "nocath") ? answersLine(advice.kind, g) : advice.line, "nb-advice-line"),
     );
     card.append(txt);
     nb.append(card);
