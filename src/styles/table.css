@@ -439,8 +439,20 @@
   width: 11px;
   height: 11px;
 }
+/* Plan item 100: the move's picture, glossy plastic on the memo, beside the headline and effect. */
+.plan-strip-item svg.plan-art {
+  float: left;
+  width: 38px;
+  height: 38px;
+  margin: 1px 7px 2px 0;
+  filter: drop-shadow(0 1px 1px rgb(var(--shadow-ink) / .25));
+}
+@media (max-width: 599.98px) {
+  .plan-strip-item svg.plan-art { width: 26px; height: 26px; margin-right: 5px; }
+}
 
 .plan-strip-card-meta {
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 3px;

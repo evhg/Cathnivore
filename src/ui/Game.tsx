@@ -24,6 +24,7 @@ import BuyFlight from './BuyFlight'
 import { liftEnabled, liftPlayedCard, liftTarget } from './playLift'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
+import { PlanArt } from './icons/HollowellArt'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
@@ -67,7 +68,7 @@ import { dailyMarket, dailyRecord, dailyShareText, dailyStreak, recordDaily } fr
 import { LAYOUTS } from '../content/layouts'
 import { FarmIcon, LogIcon, MarketIcon, MenuIcon, PlanIcon, UndoIcon } from './icons/RailIcons'
 import { romanStage } from './romanStage'
-import { CandorLogo, HollowellLogo } from './icons/EnemyLogos'
+import { HollowellLogo } from './icons/EnemyLogos'
 import type { Action, GameEvent, GameState, ProducerId, RegionId, RegionType, ResourceKind } from '../engine/types'
 import type { Mode } from './Setup'
 import { useScrollCues } from './useScrollCues'
@@ -2109,10 +2110,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {/* AAA UI M4 fix: a dateline row in normal flow (the logos used to sit on the headline's
                     first letter), with the Pressure card's stage spelled out. */}
                 <span className="plan-strip-dateline" aria-hidden="true">
-                  <span className="plan-strip-card-brand">
-                    <HollowellLogo size={12} />
-                    <CandorLogo size={12} />
-                  </span>
                   {card && (
                     <span className="plan-strip-card-meta">
                       <span className="plan-strip-stage">Stage {romanStage(card.stage)}</span>
@@ -2122,6 +2119,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     </span>
                   )}
                 </span>
+                {/* Plan item 100: the move's own picture in the corporations' plastic (two 11 px logos were here),
+                    beside its headline and effect. */}
+                <PlanArt kind={slot} size={38} />
                 <span className="plan-strip-headline">{slotLabel}</span>
                 <span className="visually-hidden">: </span>
                 <span className="plan-strip-effect">{card ? pressureLabel(card) : 'Empty'}</span>
