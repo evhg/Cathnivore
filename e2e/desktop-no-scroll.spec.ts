@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { fillSeed } from './setupSeed'
 
 // SPEC 10.3: "Three columns: both producers' farms on the left, the map and enemy plan strip in the
 // centre, and the Market, Cath's Plan and Log on the right. No scrolling at 1280×800." Prior sessions only
@@ -54,8 +55,10 @@ test('desktop Actions frame shows every playable card whole on round 1', async (
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
   await page.getByText('Quick Game').click()
+  await fillSeed(page, '1')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
+  await page.waitForTimeout(400)
   const cut = await page.evaluate(() => {
     const frame = document.querySelector('.actions-sheet .actions')!.getBoundingClientRect()
     const out: string[] = []

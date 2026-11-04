@@ -2294,3 +2294,14 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left .ledger { gap: 5px; flex-wrap: nowrap; }
   .desktop-col-left .ledger-chip { gap: 3px; padding: 0 7px 0 5px; }
 }
+/* Plan item 83: each playable card carries its group's colour: Sell the pasture green, Invest the sea, Play clay. */
+.actions .action-item[data-group='sell'] { --grp: var(--pasture-deep); }
+.actions .action-item[data-group='invest'] { --grp: var(--sea); }
+.actions .action-item[data-group='play'] { --grp: var(--clay-deep); }
+@media (min-width: 1024px) {
+  .actions-sheet .actions .action-item[data-group] > button:first-child:not(:disabled) { border-left: 6px solid var(--grp); padding-left: 8px; }
+  .actions-sheet .actions .action-head { color: var(--soil); }
+}
+@media (max-width: 1023.98px) {
+  .action-tray .actions .action-item[data-group] > button:first-child:not(:disabled) { border-top: 5px solid var(--grp); }
+}

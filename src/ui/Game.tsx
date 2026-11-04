@@ -1383,7 +1383,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item">
+              <span key={index} className="action-item" data-group="sell">
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
@@ -1400,6 +1400,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             return (
               <span
                 key={index}
+                data-group="invest"
                 className={position === 0 ? 'action-item action-recommended' : 'action-item'}
                 data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
               >
@@ -1419,7 +1420,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item">
+              <span key={index} className="action-item" data-group="play">
                 <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
@@ -1436,7 +1437,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
             const Icon = ACTION_ICON[firstAction.kind]
             return (
-              <span key={key} className="action-item">
+              <span key={key} className="action-item" data-group="play">
                 {(() => {
                   const { text, aria } = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
                   return (
