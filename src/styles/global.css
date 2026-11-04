@@ -2203,7 +2203,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     position: sticky; bottom: 8px; margin-top: 0; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
     border-radius: 10px; outline: 8px solid var(--paper);
   }
-  .setup .open-sign-kicker { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.8; line-height: 1; }
+  .setup .open-sign-kicker { display: block; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.8; line-height: 1; }
   .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
   .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.14em; color: var(--ink); }
 }
