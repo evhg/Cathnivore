@@ -1651,7 +1651,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 her box is 140 px or more tall, on the first screen, meeting no text or button; the first poster's top stays above 640 px; shots P and D and a crossfade frame.
 - **Size:** 2
 
-## 131. [ ] Cathnivore phone: the table fills its frame, and Cath lives on it
+## 131. [ ] Cathnivore phone: the table fills its frame, and Cath lives on it *(lane A, in progress)*
 - **Why:** `cath-game-P` (8-380 x 225-605): the board is an inset with about 45 px of empty cloth under the hexes, and Cath is a 64 px ring in the header (8-75 x 55-118), not at the table (item 118 did the desktop).
 - **Build:**
   - The hexes fit 92% of the frame's width.
