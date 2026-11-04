@@ -4,7 +4,8 @@
 
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
-import { TWISTS, type Level } from "./engine";
+import { ENEMIES, TWISTS, type EnemyKind, type Level } from "./engine";
+import { enemyIcon } from "./icons";
 import { openActs } from "./unlocks";
 import { isUnlocked, medalsOf, remixMedalsOf, DIFFICULTY_MEDALS, REMIX_MEDALS, type SaveData } from "./store";
 
@@ -1543,6 +1544,64 @@ function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void 
 /** The node Cath stood on at the last render, so she can walk to the new one. */
 let lastNextId: number | null = null;
 
+interface LevelCard {
+  el: HTMLElement;
+  show(lv: Level): void;
+}
+
+/** A small plan of the field: its plots and the lane through them (plan item 88's thumbnail). */
+function fieldThumb(lv: Level): string {
+  const w = lv.cols * 10;
+  const h = lv.rows * 10;
+  const lane = new Set(lv.path.map(([c, r]) => `${c},${r}`));
+  let cells = "";
+  for (let r = 0; r < lv.rows; r++)
+    for (let c = 0; c < lv.cols; c++) if (!lane.has(`${c},${r}`)) cells += `<rect class="lc-plot" x="${c * 10 + 1}" y="${r * 10 + 1}" width="8" height="8" rx="2"/>`;
+  const d = lv.path.map(([c, r], i) => `${i ? "L" : "M"}${c * 10 + 5} ${r * 10 + 5}`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><rect class="lc-ground" width="${w}" height="${h}" rx="4"/>${cells}<path class="lc-lane" d="${d}"/></svg>`;
+}
+
+/**
+ * Plan item 88: the level card. The next stop (or the one pointed at) with a plan of its field, its twist, the
+ * vehicles it brings, the stars won and a big Play. Docked under its act at D, a sheet above the nav on a phone.
+ */
+function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
+  const el = document.createElement("section");
+  el.className = "level-card";
+  el.setAttribute("aria-label", "Next level");
+  let shown: Level | null = null;
+  const thumb = document.createElement("div");
+  thumb.className = "lcard-thumb";
+  const body = document.createElement("div");
+  body.className = "lcard-body";
+  const go = document.createElement("button");
+  go.type = "button";
+  go.className = "lcard-play";
+  go.addEventListener("click", () => shown && play(shown));
+  el.append(thumb, body, go);
+  return {
+    el,
+    show(lv) {
+      if (shown === lv) return;
+      shown = lv;
+      thumb.innerHTML = fieldThumb(lv);
+      const stars = data.stars[String(lv.id)] ?? 0;
+      const kinds = new Map<EnemyKind, number>();
+      for (const g of lv.waves.flat()) kinds.set(g.enemy, (kinds.get(g.enemy) ?? 0) + g.count);
+      const top = [...kinds.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+      const esc = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+      body.innerHTML =
+        `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""} · ${lv.waves.length} rounds</p>` +
+        `<h3 class="lcard-name">${esc(lv.name)}</h3>` +
+        (lv.twists?.length ? `<p class="lcard-twist">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</p>` : "") +
+        `<p class="lcard-stars" aria-label="${stars} of 3 stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</p>` +
+        `<ul class="lcard-enemies" aria-label="Brings">${top.map(([k]) => `<li><img src="${enemyIcon(k)}" alt=""><span>${esc(ENEMIES[k].name)}</span></li>`).join("")}</ul>`;
+      go.textContent = stars ? "Play again" : "Play";
+      go.setAttribute("aria-label", `${stars ? "Play again" : "Play"}: level ${lv.id}, ${lv.name}`);
+    },
+  };
+}
+
 export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void, showAll = false): void {
   list.replaceChildren();
   const acts = new Map<number, Level[]>();
@@ -1560,6 +1619,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
   const was = showAll ? shown : fogSeen();
   if (!showAll) fogSeen(shown);
   let current: HTMLElement | null = null;
+  let card: LevelCard | null = null;
   const nextId = levels.find((lv) => isUnlocked(data, lv.id) && !data.stars[String(lv.id)])?.id ?? null;
   for (const [n, lvs] of acts) {
     const li = document.createElement("li");
@@ -1753,10 +1813,22 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         current = b;
       }
       b.addEventListener("click", () => walkThenOpen(list, b, () => open(lv)));
+      // Plan item 88: pointing at or focusing an open stop shows it on the level card.
+      if (unlocked) for (const ev of ["pointerenter", "focus"] as const) b.addEventListener(ev, () => card?.show(lv));
       item.append(b);
       trail.append(item);
     });
     li.append(trail);
+    if (nextId !== null && lvs.some((lv) => lv.id === nextId)) {
+      card = levelCard(data, (lv) => {
+        const stop = list.querySelector<HTMLElement>(`button.node[data-level="${lv.id}"]`);
+        if (stop) walkThenOpen(list, stop, () => open(lv));
+        else open(lv);
+      });
+      card.show(levels.find((lv) => lv.id === nextId)!);
+      li.classList.add("act-has-card");
+      li.append(card.el);
+    }
     if (was > 0 && n > was) {
       li.classList.add("act-unveil");
       const fog = document.createElement("div");

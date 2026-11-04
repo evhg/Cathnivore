@@ -4373,3 +4373,70 @@ img.act-scene {
 @media (min-width: 900px) {
   #screen-select #levels > li.act:has(+ li.act-fog.act-glimpse) { min-height: calc(100dvh - 56px - 120px); }
 }
+/* Plan item 88: the level card. The next stop (or the one pointed at): a plan of its field, its twist, the vehicles
+   it brings, the stars won and a big Play. Docked under its act at D; a sheet over the map's foot on a phone. */
+#screen-select .level-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: min(760px, calc(100% - 32px));
+  margin: 8px auto 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 0 0 2px var(--line), 0 6px 0 var(--line), 0 14px 28px color-mix(in srgb, var(--ink) 22%, transparent);
+  color: var(--ink);
+}
+.lcard-thumb svg { display: block; width: 104px; height: auto; max-height: 120px; }
+.lc-ground { fill: var(--pasture); }
+.lc-plot { fill: color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)); }
+.lc-lane { fill: none; stroke: var(--soil); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.lcard-body { display: grid; gap: 2px; min-width: 0; }
+.lcard-kicker { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.lcard-name { margin: 0; font-family: var(--font-display); font-size: var(--fs-d2); line-height: 1.1; }
+.lcard-twist { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soil); }
+.lcard-stars { margin: 0; color: var(--map-flag-gold); letter-spacing: 0.1em; }
+.lcard-enemies { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 2px 0 0; padding: 0; list-style: none; font: 700 var(--fs-small) / 1.2 var(--font-ui); color: var(--ink-2); }
+.lcard-enemies li { display: flex; align-items: center; gap: 4px; }
+.lcard-enemies img { width: 26px; height: 26px; }
+.lcard-play {
+  min-width: 168px;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--pasture);
+  box-shadow: 0 0 0 2.5px var(--line), 0 5px 0 var(--line);
+  color: var(--on-fill);
+  font: 800 var(--fs-d2) / 1 var(--font-ui);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.lcard-play:hover,
+.lcard-play:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2.5px var(--line), 0 7px 0 var(--line); }
+.lcard-play:active { transform: translateY(3px); box-shadow: 0 0 0 2.5px var(--line), 0 2px 0 var(--line); }
+/* The next stop breathes, gently (its glow eases in and out; still under reduced motion). */
+#screen-select .node.next .level-num { animation: next-breathe 2.4s ease-in-out infinite; }
+@keyframes next-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--map-flag-gold) 0%, transparent); }
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--map-flag-gold) 45%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #screen-select .node.next .level-num { animation: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--map-flag-gold) 40%, transparent); }
+}
+@media (max-width: 899.98px) {
+  #screen-select .level-card {
+    position: sticky;
+    bottom: 8px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 12px;
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    padding: 10px 12px;
+  }
+  .lcard-thumb svg { width: 64px; }
+  .lcard-play { grid-column: 1 / -1; width: 100%; min-height: 48px; }
+  .lcard-enemies { display: none; }
+}

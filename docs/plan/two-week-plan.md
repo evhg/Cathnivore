@@ -1256,12 +1256,12 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: shop items 90x100 or more at D, 56x64 or more at P; each has a visible name and an accessible name with its price; greyscale shot tells the three states apart; hedgerow-tray still passes; shots P and D in 2D and 3D.
 - **Size:** 2
 
-## 88. [ ] Hedgerow: the next level as a hero card on the journey map *(lane B, in progress)*
+## 88. [x] Hedgerow: the next level as a hero card on the journey map *(done 2026-11-04, lane B: the 120 px act strip, the level card docked at D and as a sheet at P, the breathing next stop; e2e in `hedgerow-map.spec.ts`; shots P, D, L and dark in `e2e/screenshots/f88`)*
 - **Why:** `hedge-menu-D` (plan1104a): the only call to act is a small "Next" pill (232-275 x 380-396); no Play button, preview or threat summary; the locked act 4 teaser takes the bottom 37% (565-900).
 - **Build:**
-  - A level card for the next (or picked) stop: the field's thumbnail, the twist, the enemies it brings, stars won, and a big Play.
-  - Docked beside the act at D, a sheet above the nav at P.
-  - The next act's teaser a strip of 120 px or less; the next stop pulses gently (still under reduced motion). *(2026-11-04 lane B, slice 1: at D the glimpse is a 120 px strip with its caption on one line; the last act shown stretches to fill the screen above it, so the map still opens on its head (critique79). e2e in `hedgerow-map.spec.ts`. The room under the act's stops is where the level card can dock next. Not yet done: the pulse, the card, the P sheet.)*
+  - A level card for the next (or picked) stop: the field's thumbnail, the twist, the enemies it brings, stars won, and a big Play. *(Done 2026-11-04 lane B, slice 2: `levelCard()` in `map.ts` shows a plan of the field (plots and lane), the kicker (level, boss, rounds), the twist, stars and up to four vehicles (D only). Play is 168x52 at D and full width at P; pointing at or focusing an open stop shows it on the card. Clicking a stop still starts it, so Enter on a stop starts it too and focus previews it: logged in DECISIONS.)*
+  - Docked beside the act at D, a sheet above the nav at P. *(Done: under the act's stops at D, a sticky sheet at the map's foot at P.)*
+  - The next act's teaser a strip of 120 px or less; the next stop pulses gently (still under reduced motion). *(2026-11-04 lane B, slice 1: at D the glimpse is a 120 px strip with its caption on one line; the last act shown stretches to fill the screen above it, so the map still opens on its head (critique79). e2e in `hedgerow-map.spec.ts`. The room under the act's stops is where the level card can dock next. The next stop's coin now breathes in gold, held as a still ring under reduced motion.)*
 - **Accept:** e2e: Play visible without scrolling at P and D, 160x48 or more; teaser 120 px or less at D; Enter on a stop opens its card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
 

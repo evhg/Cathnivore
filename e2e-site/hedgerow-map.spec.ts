@@ -233,3 +233,26 @@ test('plan item 88: at D the next act is a strip of 120 px or less', async ({ pa
   expect((await glimpse.boundingBox())!.height).toBeLessThanOrEqual(120)
   await expect(glimpse.locator('.act-fog-text strong')).toBeVisible()
 })
+
+test('plan item 88: the next level\'s card: Play on the first screen, a stop focused shows on it, Play opens it', async ({ page }) => {
+  await seed(page, 13)
+  const card = page.locator('#screen-select .level-card')
+  await expect(card).toBeVisible()
+  await expect(card.locator('.lcard-name')).toHaveText(await page.locator('button.node.next .level-name').evaluate((e) => e.firstChild!.textContent!.trim()))
+  const play = card.locator('.lcard-play')
+  const box = (await play.boundingBox())!
+  const vp = page.viewportSize()!
+  expect(box.width).toBeGreaterThanOrEqual(160)
+  expect(box.height).toBeGreaterThanOrEqual(48)
+  expect(box.y + box.height).toBeLessThanOrEqual(vp.height)
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  await expect(card.locator('.lcard-thumb svg')).toBeVisible()
+  // Focusing another open stop shows it on the card.
+  await page.locator('button.node[data-level="12"]').focus()
+  await expect(card.locator('.lcard-name')).toHaveText('Cheap Eggs')
+  await expect(play).toHaveText('Play again')
+  await page.locator('button.node[data-level="14"]').focus()
+  await play.click()
+  // A stop not seen before opens its story first, then the field.
+  await expect(page.locator('#screen-play:not([hidden]), #story-scene:visible').first()).toBeVisible({ timeout: 15_000 })
+})
