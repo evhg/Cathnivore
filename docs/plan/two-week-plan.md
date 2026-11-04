@@ -1329,7 +1329,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 97. [ ] Runnel: ditches dug into the earth, and the water front you can follow *(lane A, in progress)*
 - **Why:** `runnel-D` (plan1104b, 900-1110 x 215-440, 1000-1140 x 590-640): dry ditches read as cream planks with bolts (the pebbles), not channels cut in soil. Check first what the tap already animates (`arrivalMs` in `water.ts`).
-- **Build:** a dry ditch as a carved trench (shadowed walls, a darker damp bed, the pebbles small and few), so cream reads as the lit bank only; after each tap the water front runs on tile by tile (about 250 ms a tile) with a small spill splash at an open end; reduced motion fills at once.
+- **Build:** a dry ditch as a carved trench (shadowed walls, a darker damp bed, the pebbles small and few), so cream reads as the lit bank only; after each tap the water front runs on tile by tile (about 250 ms a tile) with a small spill splash at an open end; reduced motion fills at once. *(Slice 1 done 2026-11-04 lane A: the shaded wall's foot and the cut edge's cast shadow, a darker wider damp bed, one small stone in the bed (on the banks they read as bolts), the cut edge ragged with spoil; CASCADE_MS 110 -> 250; a fresh spill splashes when the front reaches it, every spill `[data-spill]`; `e2e-site/runnel-front.spec.ts`; shots `e2e/screenshots/r97` via `scripts/runnel-97-shots.mjs`. Open: greyscale shot, a further look at the lit wall's width.)*
 - **Accept:** e2e: within 600 ms of a connecting tap the next tile's bed turns blue; a spill shows `[data-spill]`; runnel-tiles (item 90) still passes; greyscale shot readable; shots P and D before and after a tap, light and dark.
 - **Size:** 2
 

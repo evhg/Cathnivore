@@ -4,7 +4,7 @@
 
 import { boardSky, type TimeOfDay } from './sky'
 import { furrowAngle, groundFor } from './ground'
-import { arrivalMs, bankSunlit } from './water'
+import { arrivalMs, bankSunlit, CASCADE_MS } from './water'
 import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -257,13 +257,27 @@ export class Board {
         const o = 4.6 * side
         const line = el('line', { x1: nx * o, y1: ny * o, x2: end.x + nx * o, y2: end.y + ny * o, class: 'bank' }, grooves)
         view.banks.push({ line, dir: d, side })
+        // Plan item 97: the cut edge on the shaded side throws a shadow down its wall (hidden on the sunlit side),
+        // so the ditch reads as dug into the soil rather than laid on it.
+        const c = 7.9 * side
+        const cast = el('line', { x1: nx * c, y1: ny * c, x2: end.x + nx * c, y2: end.y + ny * c, class: 'bank-cast' }, grooves)
+        view.banks.push({ line: cast, dir: d, side })
+        // The shaded wall's foot darkens into the damp bed (the sunlit wall stays lit to the bed).
+        const f = 3.6 * side
+        const foot = el('line', { x1: nx * f, y1: ny * f, x2: end.x + nx * f, y2: end.y + ny * f, class: 'bank-foot' }, grooves)
+        view.banks.push({ line: foot, dir: d, side })
+        // A ragged cut edge: spoil from the digging thrown just past the lip, so the edge is not ruled.
+        const r = 11.4 * side
+        const crumb = el('line', { x1: nx * r, y1: ny * r, x2: end.x + nx * r, y2: end.y + ny * r, class: 'lip-crumb' }, grooves)
+        crumb.style.setProperty('stroke-dashoffset', `${((seed >>> (d * 3 + (side > 0 ? 1 : 0))) % 7) * 0.9}`)
       }
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-bed' }, grooves)
-      for (let k = 0; k < 2; k++) {
-        const h = (seed >>> (d * 4 + k * 2)) & 0xff
-        const t = 0.35 + (h / 255) * 0.5
-        const side = k ? 1 : -1
-        el('circle', { cx: end.x * t + nx * 5.6 * side, cy: end.y * t + ny * 5.6 * side, r: 1.2 + (h % 3) * 0.45, class: 'pebble' }, grooves)
+      // Plan item 97: a few small stones lie in the damp bed (on the banks they read as bolts on a plank).
+      const h = (seed >>> (d * 4)) & 0xff
+      if (h % 3 !== 0) {
+        const t = 0.4 + (h / 255) * 0.45
+        const o = ((h >> 2) % 3 - 1) * 1.3
+        el('circle', { cx: end.x * t + nx * o, cy: end.y * t + ny * o, r: 0.7 + (h % 2) * 0.35, class: 'pebble' }, grooves)
       }
       const water = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'water' }, waters)
       water.dataset.dir = String(d)
@@ -608,13 +622,27 @@ export class Board {
     for (const [i, mask] of flow.leakMask) {
       const cell = this.puzzle.cells[i]!
       const c = cellCentre(cell.q, cell.r)
+      // Plan item 97: the spill comes when the front reaches its open end (the tile's arrival plus the out-run),
+      // with a splash; a spill already there stays still.
+      const fresh = !initial && !this.reducedMotion && !this.flow.leakMask.has(i)
+      const depth = flow.depth.get(i)
+      const at = fresh && depth !== undefined && Number.isFinite(minNewDepth) ? arrivalMs(depth, minNewDepth, settle) + CASCADE_MS : 0
       for (let d = 0; d < 6; d++) {
         if (!(mask & (1 << d))) continue
         const p = edgePoint(d, APOTHEM * 0.93)
-        const g = el('g', { class: 'puddle', transform: `translate(${(c.x + p.x).toFixed(2)} ${(c.y + p.y).toFixed(2)}) rotate(${d * 60})` }, this.puddles)
-        g.style.setProperty('--delay', `${settle + 120}ms`)
+        const g = el('g', { class: fresh ? 'puddle splash' : 'puddle', transform: `translate(${(c.x + p.x).toFixed(2)} ${(c.y + p.y).toFixed(2)}) rotate(${d * 60})` }, this.puddles)
+        g.dataset.spill = String(i)
+        g.style.setProperty('--delay', `${fresh ? at : 0}ms`)
         el('ellipse', { rx: 9, ry: 13, class: 'puddle-water' }, g)
         el('ellipse', { rx: 4, ry: 6, cx: -1, cy: -2, class: 'puddle-shine' }, g)
+        if (fresh) {
+          el('ellipse', { rx: 9, ry: 13, class: 'splash-ring' }, g)
+          for (const [dx, dy] of [[-7, -9], [6, -11], [9, 4], [-8, 8]] as const) {
+            const drop = el('circle', { cx: dx, cy: dy, r: 1.6, class: 'splash-drop' }, g)
+            drop.style.setProperty('--dx', `${dx * 0.6}px`)
+            drop.style.setProperty('--dy', `${dy * 0.6}px`)
+          }
+        }
       }
     }
   }

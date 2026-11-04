@@ -3,8 +3,9 @@
 
 import type { TimeOfDay } from './sky'
 
-/** Time for water to cross one tile: in by one spoke, through the hub, out by the others. */
-export const CASCADE_MS = 110
+/** Time for water to cross one tile: in by one spoke, through the hub, out by the others. Plan item 97: 250 ms, so
+ *  the front can be followed tile by tile down a long river (it was 110 ms, a blink). */
+export const CASCADE_MS = 250
 
 /**
  * The tiles wet by `t` ms after a turn joins them, from each tile's depth along the river (0 at the spring)

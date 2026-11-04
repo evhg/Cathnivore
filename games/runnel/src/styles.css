@@ -545,18 +545,49 @@ button {
 .bank.sun {
   stroke: var(--bank-sun);
 }
+/* Plan item 97: the wall's foot, damp and darker where it meets the bed. */
+.bank-foot {
+  stroke: color-mix(in srgb, var(--groove-bed) 55%, var(--bank-shade));
+  stroke-width: 2.4;
+  opacity: 0.7;
+}
+.bank-foot.sun {
+  opacity: 0;
+}
+/* ...and the cut edge ragged with the spoil thrown past it, in the lip's soil. */
+.lip-crumb {
+  stroke: var(--lip-fallow);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.6 2.4 1.8 3.6 0.9 5.2 2.4 2.8;
+  opacity: 0.85;
+  transition: stroke 380ms ease var(--delay, 0ms);
+}
+.ground-meadow .lip-crumb { stroke: var(--lip-meadow); }
+.ground-field .lip-crumb { stroke: var(--lip-field); }
+.cell.wet .lip-crumb { stroke: var(--lip-wet); }
+/* Plan item 97: the shaded wall's top in the cut edge's shadow; the sunlit side has none. */
+.bank-cast {
+  stroke: var(--groove-bed);
+  stroke-width: 2.6;
+  opacity: 0.6;
+}
+.bank-cast.sun {
+  opacity: 0;
+}
 .groove-bed {
   stroke: var(--groove-bed);
-  stroke-width: 5.5;
+  stroke-width: 6.5;
   transition: stroke 380ms ease var(--delay, 0ms);
 }
 .wet .groove-bed {
   stroke: var(--groove-bed-wet);
 }
 .pebble {
-  fill: var(--pebble);
-  stroke: var(--groove-bed);
-  stroke-width: 0.5;
+  fill: color-mix(in srgb, var(--pebble) 70%, var(--groove-bed));
+}
+.wet .pebble {
+  opacity: 0;
 }
 .hub-basin {
   fill: var(--bank-shade);
@@ -596,14 +627,15 @@ button {
   stroke-dashoffset: -1;
 }
 
-/* Water crosses a tile in two halves of the cascade step (board.ts CASCADE_MS = 110 ms): it runs in
-   along the inflow spoke, fills the hub, then runs out along the others, so a river visibly flows. */
+/* Water crosses a tile in two halves of the cascade step (water.ts CASCADE_MS = 250 ms, plan item 97): it runs
+   in along the inflow spoke, fills the hub, then runs out along the others, so the front can be followed. */
 .wet .water {
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 70ms linear calc(var(--delay, 0ms) + 55ms);
+  transition: stroke-dashoffset 120ms linear calc(var(--delay, 0ms) + 125ms);
 }
 
 .wet .water.in {
+  transition-duration: 115ms;
   transition-delay: var(--delay, 0ms);
 }
 
@@ -614,7 +646,7 @@ button {
 
 .wet .hub-water {
   opacity: 1;
-  transition: opacity 90ms linear calc(var(--delay, 0ms) + 40ms);
+  transition: opacity 90ms linear calc(var(--delay, 0ms) + 90ms);
 }
 
 .shimmer {
@@ -991,6 +1023,33 @@ button {
     transform: scale(0.2);
     opacity: 0;
   }
+}
+
+/* Plan item 97: a fresh spill lands with a splash: a ring that spreads and four drops thrown out. */
+.splash-ring {
+  fill: none;
+  stroke: var(--water-hi);
+  stroke-width: 1.6;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: splash-ring 520ms ease-out both var(--delay, 0ms);
+}
+.splash-drop {
+  fill: var(--water);
+  opacity: 0;
+  animation: splash-drop 420ms ease-out both var(--delay, 0ms);
+}
+@keyframes splash-ring {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes splash-drop {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-ring, .splash-drop { display: none; }
 }
 
 /* solved */
