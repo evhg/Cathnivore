@@ -1571,7 +1571,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more and boxes not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 122. [ ] Runnel: one Cath, hosting from the valley *(lane A, in progress)*
+## 122. [ ] Runnel: one Cath, hosting from the valley *(lane A, in progress)* *(slice 1 2026-11-04, lane A: at D her line is a bubble by the valley figure (a search within 56 px of her face for a spot meeting no tile, tail to her face), the portrait goes; a board with no room keeps the line in the sidebar with no portrait (1440x900: 14 of 14 days fit; 1280x800: 2 of 14). Figure 128 px wide at 1440 (was 158). Worried on a spill, delighted as the front reaches a field, a wink on the solve (`data-expression`). e2e `e2e-site/runnel-one-cath.spec.ts`; shots `e2e/screenshots/r122`. Open: P (one Cath, figure 120 px+), the point aimed at the glowing tile, the lesson)*
 - **Why:** `runnel-D` (plan1104h): she appears twice (15-80 x 130-207 portrait, 430-530 x 625-850 figure) and the figure stands mute while the sidebar talks; `runnel-P` the same (15-70 x 195-260, 10-70 x 700-768). Item 91 left this as a design call; this is it: the figure speaks.
 - **Build:**
   - The side portrait goes whenever the valley figure is in view; her bubble comes from the figure with a tail to her mouth.

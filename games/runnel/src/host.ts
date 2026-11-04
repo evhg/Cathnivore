@@ -28,13 +28,16 @@ const PRACTICE = [
 
 export interface HostView {
   greet(daily: boolean, dayNumber: number): void
-  react(fraction: number, solved: boolean): void
+  /** After a tap: the share of the board that is wet, whether it is solved, and (plan item 122) how many
+   *  fields are watered and whether any channel spills, so her face follows the water. */
+  react(fraction: number, solved: boolean, fields?: number, spilling?: boolean): void
   /** A line of her own (the first-visit lesson). */
   say(expression: CathExpression, text: string): void
 }
 
-export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null): HostView {
+export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null, onLine?: () => void): HostView {
   let current: CathExpression | null = null
+  let fieldsWet = 0
   let milestone = 0
   let shown = ''
   let wet = 0
@@ -42,6 +45,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   // Plan item 70: Cath stands in the valley too, half length by the stream. She looks round when the water
   // reaches a new field, and waves at a solve.
   const drawStage = (expression: CathExpression) => {
+    if (stage) stage.dataset.expression = expression
     if (stage) stage.innerHTML = cathSvg({ framing: 'half', expression, pose, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
   }
   const look = () => {
@@ -63,11 +67,21 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
       face.classList.add('perk')
     }
     shown = text
+    onLine?.()
+  }
+  // Plan item 122: the valley figure's face follows the water between her lines: a smirk on a tap, delight as
+  // the front reaches a new field, worry while a channel spills, a wink on the solve.
+  const mood = (expression: CathExpression) => {
+    if (expression === current) return
+    current = expression
+    face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+    drawStage(expression)
   }
   return {
     greet(daily, dayNumber) {
       milestone = 0
       wet = 0
+      fieldsWet = 0
       pose = 'clasped'
       current = null
       const pool = daily ? GREETINGS : PRACTICE
@@ -76,23 +90,27 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     say(expression, text) {
       show(expression, text)
     },
-    react(fraction, solved) {
+    react(fraction, solved, fields = 0, spilling = false) {
       if (fraction > wet && !solved) look()
       wet = fraction
+      const reached = fields > fieldsWet
+      fieldsWet = fields
       const nextPose: CathPoseId = solved ? 'wave' : fraction >= 0.4 ? 'point' : 'clasped'
       if (nextPose !== pose) {
         pose = nextPose
         drawStage(current ?? 'smirk')
       }
       if (solved) {
-        show('delighted', 'Every field watered, not a drop spilled. Beautiful work.')
+        show('wink', 'Every field watered, not a drop spilled. Beautiful work.')
         milestone = 3
       } else if (fraction >= 0.75 && milestone < 2) {
-        show('wink', "Nearly there. I can hear the lettuces cheering.")
+        show(spilling ? 'worried' : 'delighted', "Nearly there. I can hear the lettuces cheering.")
         milestone = 2
       } else if (fraction >= 0.4 && milestone < 1) {
-        show('determined', "That's the idea. Keep it flowing.")
+        show(spilling ? 'worried' : 'determined', "That's the idea. Keep it flowing.")
         milestone = 1
+      } else {
+        mood(spilling ? 'worried' : reached ? 'delighted' : 'smirk')
       }
     },
   }

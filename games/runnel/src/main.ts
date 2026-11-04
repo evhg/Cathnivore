@@ -77,7 +77,7 @@ const ui = {
   toast: $<HTMLParagraphElement>('toast'),
 }
 
-const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'))
+const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'), () => placeValleyCath())
 $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
@@ -258,6 +258,110 @@ function placeValleyCath(): void {
     return b.left < r.right - 12 && r.left + 12 < b.right && b.top < r.bottom - 12 && r.top + 12 < b.bottom
   })
   cath.hidden = clash
+  placeValleySay()
+}
+
+/** Plan item 122: one Cath. Where the valley figure stands at full length (D), her line is a bubble near her
+ *  head with a tail to her face, and the side portrait goes. It searches the valley within 56 px of her face at a
+ *  few widths, preferring above her head, for a spot that meets no tile; if none fits, the portrait keeps the
+ *  line and the figure steps out of view, so there is still only one of her. */
+function placeValleySay(): void {
+  const app = document.querySelector<HTMLElement>('.app')
+  const cath = document.getElementById('valley-cath')
+  const say = document.getElementById('valley-say')
+  const stage = document.querySelector<HTMLElement>('.stage')
+  const text = document.getElementById('host-line')?.textContent ?? ''
+  if (!app || !cath || !say || !stage) return
+  const off = () => {
+    say.hidden = true
+    delete app.dataset.valleySay
+  }
+  // Only the full-length figure at D speaks (the phone's framed bust is a later slice of item 122), and the
+  // first-visit lesson keeps its own card.
+  if (document.body.classList.contains('in-lesson') || !text || !matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) return off()
+  // She steps back into view to try (placeValleyCath hid her if a tile reaches into her corner).
+  if (cath.hidden) return off()
+  const fig = cath.getBoundingClientRect()
+  if (fig.height < 140) return off()
+  const st = stage.getBoundingClientRect()
+  const face = { left: fig.left + fig.width * 0.3, right: fig.left + fig.width * 0.7, top: fig.top + fig.height * 0.1, bottom: fig.top + fig.height * 0.42 }
+  const fx = (face.left + face.right) / 2
+  const fy = (face.top + face.bottom) / 2
+  // Each tile's hexagon in screen space (its bounding box would rule out the empty corners beside her head).
+  const tiles = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')].flatMap((t) => {
+    const m = t.getScreenCTM()
+    if (!m) return []
+    const pts = [...t.points].map((pt) => new DOMPoint(pt.x, pt.y).matrixTransform(m))
+    const xs = pts.map((q) => q.x), ys = pts.map((q) => q.y)
+    return [{ pts, l: Math.min(...xs), r: Math.max(...xs), t: Math.min(...ys), b: Math.max(...ys) }]
+  })
+  const inside = (x: number, y: number, poly: DOMPoint[]) => {
+    let hit = false
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const a = poly[i]!, b = poly[j]!
+      if (a.y > y !== b.y > y && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) hit = !hit
+    }
+    return hit
+  }
+  const pad = 6
+  const meets = (l: number, t: number, w: number, h: number) =>
+    tiles.some(({ pts, ...b }) => {
+      if (b.l > l + w + pad || b.r < l - pad || b.t > t + h + pad || b.b < t - pad) return false
+      if (pts.some((q) => q.x > l - pad && q.x < l + w + pad && q.y > t - pad && q.y < t + h + pad)) return true
+      for (let x = l - pad; x <= l + w + pad; x += 6) if (inside(x, t - pad, pts) || inside(x, t + h + pad, pts)) return true
+      for (let y = t - pad; y <= t + h + pad; y += 6) if (inside(l - pad, y, pts) || inside(l + w + pad, y, pts)) return true
+      return false
+    })
+  say.textContent = text
+  say.hidden = false
+  app.dataset.valleySay = ''
+  let best: { l: number; t: number; w: number; score: number } | null = null
+  for (const w of [300, 260, 230, 200, 180, 160, 140]) {
+    say.style.setProperty('--say-w', `${w}px`)
+    const h = say.offsetHeight
+    for (let l = Math.max(st.left + 10, face.left - w - 60); l <= Math.min(st.right - 10 - w, face.right + 60); l += 10) {
+      for (let t = Math.max(st.top + 10, face.top - h - 60); t <= Math.min(st.bottom - 10 - h, face.bottom + 40); t += 10) {
+        // Never on her own figure, and its nearest edge within 56 px of her face.
+        if (l < fig.right - 6 && fig.left + 6 < l + w && t < fig.bottom && fig.top + 4 < t + h) continue
+        const gx = Math.max(face.left - (l + w), l - face.right, 0)
+        const gy = Math.max(face.top - (t + h), t - face.bottom, 0)
+        const gap = Math.hypot(gx, gy)
+        if (gap > 56) continue
+        // Prefer above her head, close, and wide (fewer lines).
+        const score = gap + (t + h <= fig.top + 8 ? 0 : 30) - w * 0.08
+        if (best && score >= best.score) continue
+        if (meets(l, t, w, h)) continue
+        best = { l, t, w, score }
+      }
+    }
+  }
+  if (!best) {
+    // No room beside her on this board: the line stays in the sidebar, beside the valley, with its tail toward
+    // her and without the portrait, so the page still shows one Cath.
+    say.hidden = true
+    app.dataset.valleySay = 'side'
+    return
+  }
+  say.style.setProperty('--say-w', `${best.w}px`)
+  const h = say.offsetHeight
+  const box = (say.offsetParent ?? stage).getBoundingClientRect()
+  say.style.setProperty('--say-l', `${best.l - box.left}px`)
+  say.style.setProperty('--say-t', `${best.t - box.top}px`)
+  // The tail runs from inside the bubble, nearest her face, to just short of her face box.
+  let ax = Math.min(Math.max(fx, best.l + 20), best.l + best.w - 20)
+  let ay = Math.min(Math.max(fy, best.t + 18), best.t + h - 18)
+  const gx = Math.max(face.left - (best.l + best.w), best.l - face.right, 0)
+  const gy = Math.max(face.top - (best.t + h), best.t - face.bottom, 0)
+  if (gx > gy) ax = fx < best.l ? best.l + 2 : best.l + best.w - 2
+  else ay = fy < best.t ? best.t + 2 : best.t + h - 2
+  const ex = Math.min(Math.max(ax, face.left - 4), face.right + 4)
+  const ey = Math.min(Math.max(ay, face.top - 4), face.bottom + 4)
+  const len = Math.max(Math.hypot(ex - ax, ey - ay), 12)
+  say.style.setProperty('--tail-x', `${ax - best.l}px`)
+  say.style.setProperty('--tail-y', `${ay - best.t}px`)
+  say.style.setProperty('--tail-len', `${len}px`)
+  say.style.setProperty('--tail-a', `${Math.atan2(ey - ay, ex - ax)}rad`)
+  app.dataset.valleySay = ''
 }
 
 /** Plan item 68: on a solve Bea runs out to her garden with her watering can. */
@@ -370,7 +474,10 @@ function render(): void {
   // Plan item 106: a solved board waters the garden: its beds go dark and wet (the e2e reads `data-watered`).
   document.querySelector('.bea-garden')?.setAttribute('data-watered', String(flow.solved))
   placeValleyCath()
-  if (game.taps > 0) host.react(flow.wet.size / playable, flow.solved)
+  if (game.taps > 0) {
+    const fields = [...flow.wet].filter((i) => puzzle.cells[i]!.kind === 'field').length
+    host.react(flow.wet.size / playable, flow.solved, fields, flow.leaks.size > 0)
+  }
 
   if (game.solved) {
     ui.hint.textContent = isDaily

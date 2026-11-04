@@ -3537,7 +3537,8 @@ body[data-mode='practice'] #week-slot {
     position: absolute;
     left: 14px;
     bottom: 26px;
-    width: clamp(120px, 11vw, 170px);
+    /* Plan item 122: a little smaller than item 70's 170 px, so her bubble fits above her head under the tiles. */
+    width: clamp(104px, 8.6vw, 128px);
     aspect-ratio: 2 / 3;
     filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--soil) 30%, transparent));
   }
@@ -3651,4 +3652,66 @@ body[data-mode='practice'] #week-slot {
   inset: 0;
   padding: 3vh 4vw;
   grid-template-rows: 1fr;
+}
+
+/* Plan item 122: one Cath. At D her line is a bubble beside the valley figure (main.ts places it clear of every
+   tile), and the side portrait goes; the line stays in the sidebar for screen readers only. */
+.valley-say {
+  display: none;
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  .valley-say:not([hidden]) {
+    display: block;
+    position: absolute;
+    left: var(--say-l, 0);
+    top: var(--say-t, 0);
+    width: var(--say-w, 240px);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--soil) 28%, transparent), 0 1px 0 var(--paper-2);
+    font-family: var(--font-voice);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    text-wrap: pretty;
+    color: var(--ink);
+    animation: host-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+  /* The tail: a wedge from inside the bubble to her face; main.ts sets its root, length and angle. */
+  .valley-say::after {
+    content: '';
+    position: absolute;
+    left: var(--tail-x, 40px);
+    top: var(--tail-y, 40px);
+    width: var(--tail-len, 20px);
+    height: 18px;
+    margin-top: -9px;
+    background: var(--surface);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    transform-origin: 0 50%;
+    transform: rotate(var(--tail-a, 0rad));
+  }
+  /* No room beside her: the sidebar line speaks for the figure, its tail toward the valley, with no portrait. */
+  .app[data-valley-say='side'] .host-face {
+    display: none;
+  }
+  .app[data-valley-say='side'] .host-line::before {
+    left: auto;
+    right: -6px;
+  }
+  .app[data-valley-say=''] .host {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .valley-say:not([hidden]) { animation: none; }
 }
