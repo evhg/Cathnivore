@@ -156,6 +156,8 @@ const SHOT_COLOURS: Record<string, string> = {
 
 /** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
 export const CATH_3D_SCALE = 1.9;
+/** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
+const CATH_LEAN_FROM = 0.95;
 
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
@@ -1574,6 +1576,10 @@ export class Renderer3D {
     c.position.set(h.x, y, h.y);
     // Plan item 78: twice her old size (0.98), so she reads as the farm's hero at a glance.
     c.scale.setScalar(CATH_3D_SCALE);
+    // Plan item 98: a phone's camera looks down so steeply that she read as the crown of her head (a dark blob).
+    // On a steep view she leans back a little, like a paper doll on a board, so her face and coat turn up to it.
+    const elev = Math.atan2(this.camera.position.y - y, Math.hypot(this.camera.position.x - h.x, this.camera.position.z - h.y));
+    c.rotation.x = -Math.min(0.55, Math.max(0, (elev - CATH_LEAN_FROM) * 1.1));
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     const ud = c.userData;
     const fig = ud.fig as THREE.Group;

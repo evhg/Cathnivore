@@ -2183,7 +2183,14 @@ export function buildGate(label: string): THREE.Group {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshStandardMaterial({ map: tex, emissive: "#ffffff", emissiveMap: tex, emissiveIntensity: 0.6 }));
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshStandardMaterial({ map: tex, emissive: "#ffffff", emissiveMap: tex, emissiveIntensity: 0.3, fog: false }));
+  // It reads as a label: drawn over the verge's pines and the gate's own bar rather than hidden by them.
+  const signMat = sign.material as THREE.MeshStandardMaterial;
+  signMat.depthTest = false;
+  // In the transparent pass, last, so the lane's translucent set pieces and water don't paint over it.
+  signMat.transparent = true;
+  sign.renderOrder = 10;
+  sign.castShadow = false;
   sign.position.set(0.055, 1.01 + (H - 0.2) / 2, 0);
   sign.rotation.y = Math.PI / 2;
   // The renderer turns the board to face the camera each frame (a phone looks almost straight down on it, edge on);
@@ -2192,7 +2199,7 @@ export function buildGate(label: string): THREE.Group {
   g.add(sign);
   g.userData.sign = sign;
   g.traverse((o) => {
-    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+    if ((o as THREE.Mesh).isMesh && o !== sign) o.castShadow = true;
   });
   return g;
 }
