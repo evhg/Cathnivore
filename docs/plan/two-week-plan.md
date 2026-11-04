@@ -1327,7 +1327,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: each poster's art 240 px wide or more at D, 160 at P; all four in the first viewport at D; no horizontal scroll at P; copy 14 px or more at AA; games-cards and site-hero still pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 97. [ ] Runnel: ditches dug into the earth, and the water front you can follow *(lane A, in progress)*
+## 97. [x] Runnel: ditches dug into the earth, and the water front you can follow *(done 2026-11-04, lane A, 9edbb5bd: carved trenches, a 250 ms a tile front, spill splashes; e2e `runnel-front.spec.ts`, runnel-water and runnel-tiles pass; shots P and D before and after a tap, light, dark and greyscale in `e2e/screenshots/r97`)*
 - **Why:** `runnel-D` (plan1104b, 900-1110 x 215-440, 1000-1140 x 590-640): dry ditches read as cream planks with bolts (the pebbles), not channels cut in soil. Check first what the tap already animates (`arrivalMs` in `water.ts`).
 - **Build:** a dry ditch as a carved trench (shadowed walls, a darker damp bed, the pebbles small and few), so cream reads as the lit bank only; after each tap the water front runs on tile by tile (about 250 ms a tile) with a small spill splash at an open end; reduced motion fills at once. *(Slice 1 done 2026-11-04 lane A: the shaded wall's foot and the cut edge's cast shadow, a darker wider damp bed, one small stone in the bed (on the banks they read as bolts), the cut edge ragged with spoil; CASCADE_MS 110 -> 250; a fresh spill splashes when the front reaches it, every spill `[data-spill]`; `e2e-site/runnel-front.spec.ts`; shots `e2e/screenshots/r97` via `scripts/runnel-97-shots.mjs`. Open: greyscale shot, a further look at the lit wall's width.)*
 - **Accept:** e2e: within 600 ms of a connecting tap the next tile's bed turns blue; a spill shows `[data-spill]`; runnel-tiles (item 90) still passes; greyscale shot readable; shots P and D before and after a tap, light and dark.
@@ -1362,7 +1362,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: every photo region's luminance standard deviation is over 12 (no flat fill); the dossier photo 140 px wide or more at D, List frames 56 px or more at P; captions at 4.5:1; the perf gate untouched (DOM/2D art only); shots P, L and D.
 - **Size:** 2
 
-## 100. [ ] Cathnivore: Hollowell's plan as glossy corporate cards
+## 100. [ ] Cathnivore: Hollowell's plan as glossy corporate cards *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1104c, 640-1200 x 90-200; P 10-375 x 115-210): Hollowell's Squeeze, Expand and Scout are text on note paper with 10 px "H" glyphs and grey subtext ("Arms next round"), while the players' actions got painted tiles (item 83). VISION gives the corporation a glossy, over-lit, clinical look; here it's the plainest thing on screen.
 - **Build:**
   - Each intent kind (Squeeze, Expand, Scout, Buyout) gets its own art in Hollowell's style (white plastic, teal, a logo watermark), in `HollowellArt` beside `ActionArt`.
