@@ -1990,12 +1990,17 @@ export function dressCath(root: THREE.Group): void {
   d.id = o.id;
   for (const k of Object.keys(d.mats) as Array<keyof typeof d.mats>) {
     d.mats[k].color.set(o[k]);
-    d.mats[k].emissive.set(o[k]).multiplyScalar(CATH_LIFT);
+    liftColour(d.mats[k].emissive.set(o[k]));
   }
 }
 
 /** Plan item 66: how much of her own colour Cath gives off, so her dark jacket never reads as a blob on the grass. */
 const CATH_LIFT = 0.42;
+/** Plan item 81: light colours (her skin, her blouse collar) already read; lit at the full lift they blew out to
+ * white and her lower face read as a beard, so the lift fades as a colour gets lighter. */
+function liftColour(c: THREE.Color): THREE.Color {
+  return c.multiplyScalar(CATH_LIFT * (1 - 0.75 * c.getHSL({ h: 0, s: 0, l: 0 }).l));
+}
 
 /**
  * Plan item 66: Cath's figure lit from within a little (each material's own colour as a soft emission), so she
@@ -2014,7 +2019,7 @@ export function liftCath(root: THREE.Group): void {
       next = own.has(mat) ? mat : mat.clone();
       // Plan item 84: a vertex-coloured material (her hair) is white at heart; three.js doesn't tint the
       // emission by the vertex colours, so lift it by the colour it actually shows.
-      next.emissive.copy(next.vertexColors ? new THREE.Color(HAIR.base) : next.color).multiplyScalar(CATH_LIFT);
+      liftColour(next.emissive.copy(next.vertexColors ? new THREE.Color(HAIR.base) : next.color));
       next.emissiveIntensity = 1;
       done.set(mat, next);
     }

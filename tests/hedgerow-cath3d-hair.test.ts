@@ -20,4 +20,19 @@ describe("Cath's 3D hair", () => {
     });
     expect(hair).toBeGreaterThanOrEqual(5);
   });
+
+  // Plan item 81: her skin and collar, lifted at full strength, blew out to white (a beard across her face).
+  it("lifts no part of her so far that it blows out", () => {
+    const cath = buildCath(null);
+    dressCath(cath);
+    liftCath(cath);
+    cath.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const mat = m.material as THREE.MeshStandardMaterial;
+      // A deliberate glow (emission its own colour, such as her pin's halo) is left out.
+      if (!mat.isMeshStandardMaterial || mat.emissive.equals(mat.color)) return;
+      expect(mat.emissive.getHSL({ h: 0, s: 0, l: 0 }).l * mat.emissiveIntensity).toBeLessThanOrEqual(0.2);
+    });
+  });
 });
