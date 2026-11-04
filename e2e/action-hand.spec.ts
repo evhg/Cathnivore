@@ -108,3 +108,31 @@ test('every action card has its picture and a name', async ({ page }) => {
   // Different kinds draw different pictures.
   expect(new Set(cards.map((c) => c.art)).size).toBeGreaterThanOrEqual(4)
 })
+
+// Plan item 83: at rest the phone hand shows whole cards and one peek of the next, at least 24 px, at any width.
+for (const width of [360, 390, 430]) {
+  test(`the phone hand peeks at the next card at ${width} wide`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'phone', 'phone layout')
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await fillSeed(page, '1')
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.game').waitFor()
+    const boxes = await page.evaluate(() => {
+      const tray = document.querySelector('.action-tray .actions')!.getBoundingClientRect()
+      return {
+        right: Math.min(tray.right, window.innerWidth),
+        cards: [...document.querySelectorAll('.action-tray .actions .action-item')].map((el) => {
+          const r = el.getBoundingClientRect()
+          return { left: r.left, right: r.right }
+        }),
+      }
+    })
+    const shown = boxes.cards.filter((c) => c.left < boxes.right)
+    const whole = shown.filter((c) => c.right <= boxes.right + 0.5)
+    expect(whole.length, 'two whole cards').toBeGreaterThanOrEqual(2)
+    expect(shown.length - whole.length, 'one card peeks').toBe(1)
+    expect(boxes.right - shown[shown.length - 1]!.left, 'the peek').toBeGreaterThanOrEqual(24)
+  })
+}

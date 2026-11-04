@@ -2359,3 +2359,8 @@ html.no-animations .cath-companion .cameo {
   .actions-sheet .actions .action-sell > button:not(:disabled) .action-label { gap: 3px; letter-spacing: -.01em; }
   .actions-sheet .actions .action-item.action-sell > button:first-child:not(:disabled) .action-label svg.action-art { width: 20px; height: 20px; }
 }
+/* Plan item 83: on an upright phone the hand shows two whole cards and about 40 px of the next one at any
+   width (the 152 px cards left a 6 px sliver at 360 wide and most of a third card at 430). */
+@media (max-width: 1023.98px) and (orientation: portrait) {
+  .action-tray .actions .action-item { width: clamp(128px, calc((100vw - 86px) / 2), 184px); }
+}
