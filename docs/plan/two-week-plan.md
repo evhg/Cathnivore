@@ -1247,7 +1247,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at D (1440x900 and 1280x800): the menu box intersects the table's; no empty band over 300x200; keyboard reaches every entry; title-table and title-fit still pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 87. [ ] Hedgerow: the tower shop as illustrated seed packets
+## 87. [ ] Hedgerow: the tower shop as illustrated seed packets *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D`/`-3d-D` (plan1104a): buying towers is the core action, but the shop is 9 chips of about 40x40 px with 10 px prices and no names (1108-1414 x 85-170), smaller than the round card under it. `hedge-l21-2d-P` (18-380 x 700-760): no names either.
 - **Build:**
   - At D each tower a seed packet about 96x112: the tower drawn, its name, price and a role tag (ground, air, support), in a 3-column grid.
