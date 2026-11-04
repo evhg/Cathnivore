@@ -1309,7 +1309,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at 390x844 and 375x667: Cath 200 px tall or more (180 at 667) and clear of the menu and logotype; the menu's foot meets the table within 4 px; bubble 2 lines at most; no scroll; title-fit and title-table still pass; shots P (both sizes), light and dark.
 - **Size:** 2
 
-## 94. [ ] Hedgerow: 3D water as sunken terrain, with banks and bridges
+## 94. [ ] Hedgerow: 3D water as sunken terrain, with banks and bridges *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (plan1104b): pale translucent slabs cross the lane and plots (240-520 x 380-510, 650-935 x 535-590), reading as a selection overlay; `-3d-P` (60-185 x 365-475) the same. The 2D field draws its ponds and streams well (`hedge-l21-2d-D` 615-800 x 620-680).
 - **Build:** streams and ponds sunk below the ground with earth banks, reeds and a slow ripple (still under reduced motion); a plank bridge wherever the lane crosses water; no water drawn over the lane; keep the draw-call budget.
 - **Accept:** unit: no water footprint meets a lane tile without a bridge, over all 100 levels; sampled water pixels within ΔE 15 of the 2D water colour; draw calls at level 13 within 5% of today's; shots levels 13 and 21 at P and D.
