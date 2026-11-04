@@ -1303,7 +1303,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: a `[data-rival]` bust 80 px or more at D, 56 at P (at P: the boardroom face during the turn); memo background differs from the player cards by computed style; the corporate turn plays 3 or more sequenced steps and each board change waits for its step; tutorial, turn-show and desktop-no-scroll still pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 93. [ ] Cathnivore: the phone title as a staged market scene
+## 93. [ ] Cathnivore: the phone title as a staged market scene *(lane A, in progress)*
 - **Why:** `cath-title-P` (plan1104b): item 86 staged the desktop only. Cath is an 85x160 cut-out top left (40-125 x 120-280), the bubble squeezes four lines into the corner (20-130 x 20-105), the board floats with no table, and the menu is a stacked form (20-370 x 450-720).
 - **Build:** the table edge across the phone with Cath standing behind it, the board lying on it and the chalk menu standing on it; bunting across the top; a one or two line bubble beside her.
 - **Accept:** e2e at 390x844 and 375x667: Cath 200 px tall or more (180 at 667) and clear of the menu and logotype; the menu's foot meets the table within 4 px; bubble 2 lines at most; no scroll; title-fit and title-table still pass; shots P (both sizes), light and dark.
