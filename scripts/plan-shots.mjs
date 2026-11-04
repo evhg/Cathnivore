@@ -49,7 +49,9 @@ const jobs = {
   },
   async nightshift(p, s) {
     await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-    await p.goto(`${base}/nightshift/`); await p.waitForTimeout(9000); await p.screenshot({ path: `${out}/ns-title-${s}.png` })
+    // Plan item 132: at 9 s under SwiftShader the loading poster (her back, the loading line at the foot) was still up and
+    // read as a regression; the live street is drawn by about 30 s.
+    await p.goto(`${base}/nightshift/`); await p.waitForTimeout(30000); await p.screenshot({ path: `${out}/ns-title-${s}.png` })
     await p.goto(`${base}/nightshift/?play`); await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
   },
 }
