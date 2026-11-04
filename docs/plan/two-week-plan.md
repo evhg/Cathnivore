@@ -1333,9 +1333,9 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: within 600 ms of a connecting tap the next tile's bed turns blue; a spill shows `[data-spill]`; runnel-tiles (item 90) still passes; greyscale shot readable; shots P and D before and after a tap, light and dark.
 - **Size:** 2
 
-## 98. [ ] The bugs from the 2026-11-04 09:10 critique, fixed as one batch *(lane A, in progress)*
+## 98. [x] The bugs from the 2026-11-04 09:10 critique, fixed as one batch *(done 2026-11-04, lane A: every bullet; e2e in title-table, desktop-no-scroll, site-hero, hedgerow-map, hedgerow-3dframe; shots in `e2e/screenshots/b98/`)*
 - **Build:** (check each first; plan1104b)
-  - [ ] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745).
+  - [x] **NIGHT SHIFT D:** the loading line stays after load (585-855 x 860-865) (item 89 may take it). **P:** the logotype a dark outline on dark (15-375 x 85-135; check it isn't mid draw-in) and The List plain text (15-105 x 695-745). *(Done 2026-11-04 lane A: the loading line was item 89's (hidden after its fade); the P logotype is filled glyphs once drawn (the shot was mid draw-in); The List at an upright phone shows the five pinned prints under the names (the D wall's art, about 52 px each, the next one lit); short landscape keeps the text.)*
   - [x] **Portfolio D:** the stats row labels and numerals low contrast (100-910 x 760-845). *(Done 2026-11-04 lane A: at rest the labels were 5.6:1 and the numerals 17:1 (the critique's shot caught the row's rise-in); the labels now use the muted tone (about 9:1); e2e in `site-hero.spec.ts`.)*
   - [x] **/games/ D:** "grown-ups" breaks to leave "ups" alone (993-1015 x 590-604). *(Done 2026-11-04 lane A: the word is kept whole (`.nowrap`) and the hooks wrap balanced.)*
   - [x] **Cathnivore title D:** a marker covers "Kingsmarket"'s plate (1118-1140 x 458-478). *(Done 2026-11-04 lane A: it was a Hollowell van parked on the plate in early frames; every road round Kingsmarket passes a plate, so the vans now drive inside the board's svg under the name signs (Map's `underNames`); e2e in `title-table.spec.ts`.)*

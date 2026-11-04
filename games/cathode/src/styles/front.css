@@ -1023,6 +1023,45 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug.is-sealed { opacity: .72; }
 }
 
+/* Plan item 98: on an upright phone the List is the same five mugshots as a small strip (it read as plain text);
+   the names list above it says who is next (the strip is aria-hidden). Short landscape keeps the text alone. */
+@media (max-width: 899.98px) and (min-height: 600px) and (orientation: portrait) {
+  .the-list-wall {
+    display: flex;
+    gap: calc(var(--u) * 14);
+    margin: calc(var(--u) * 12) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mug {
+    position: relative;
+    display: grid;
+    gap: calc(var(--u) * 3);
+    width: calc(var(--u) * 84);
+    padding: calc(var(--u) * 3) calc(var(--u) * 3) calc(var(--u) * 4);
+    background: rgb(var(--white-rgb) / .9);
+    box-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 10) rgb(var(--black-rgb) / .55);
+    rotate: var(--tilt, 0deg);
+  }
+  .mug-photo { position: relative; margin: 0; width: 100%; aspect-ratio: 200 / 240; overflow: hidden; background: var(--card-ink); }
+  .mug-photo svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .mug-blank { display: grid; place-items: center; width: 100%; height: 100%; font: 800 var(--fs-2) var(--font-ui); color: rgb(var(--white-rgb) / .25); }
+  .mug-name { display: none; }
+  .mug.is-done .mug-photo svg { filter: grayscale(1) brightness(.7); }
+  .mug.is-done .mug-photo::after {
+    content: "";
+    position: absolute;
+    left: -10%;
+    top: 50%;
+    width: 120%;
+    height: calc(var(--u) * 3);
+    background: var(--blood);
+    rotate: -24deg;
+  }
+  .mug.is-next { outline: calc(var(--u) * 2) solid var(--blood-hot); outline-offset: calc(var(--u) * 2); }
+  .mug.is-sealed { opacity: .72; }
+}
+
 /* Plan item 89: the case dossier beside the menu at D, slid in while New Case or Continue has the focus: a pinned
    polaroid of who the case is after, where it lands and its tag. Phones keep the one-line hint. */
 .dossier { display: none; }
