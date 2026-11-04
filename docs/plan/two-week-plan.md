@@ -1238,7 +1238,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: 4 cards wholly inside 1440x900, at least 2 inside 390x844; nothing overlaps Cath's box; hero text 4.5:1 or more; shots P and D, light and dark.
 - **Size:** 2
 
-## 86. [ ] Cathnivore: the desktop title as one staged market scene *(lane A, in progress)*
+## 86. [x] Cathnivore: the desktop title as one staged market scene *(done 2026-11-04, lane A, 2ac049f0..f1142790: at D the logotype across the top centre, bunting strung across the market, the table edge to edge with the footer on its front, the menu the chalk board standing on it with a painted 'Marrow Market' sign hung over it (860 px tall or more), Cath behind it, the board lying on it (an 11 degree tilt), crates, jam and coins on the tabletop; the scene grows with the height on big screens; e2e in title-table.spec.ts (menu meets the table, table edge to edge, logotype centred, Tab reaches every entry, no bare 300x200 window) at 1440x900 and 1280x800; phone unchanged; shots P, D, 1280, 1920, 1024, light and dark)*
 - **Why:** `cath-title-D` (plan1104a): about 40% of the frame is empty paper (130-600 x 600-860, 650-1440 x 0-340); the table is a bare brown slab (626-1334 x 757-865); the menu is a dark box (130-490 x 292-592) beside the scene, not in it.
 - **Build:**
   - The table dressed (crates, a jam jar, coins, Bea's drawing) and spanning the frame; the menu a chalk price-board standing on it.
@@ -1274,7 +1274,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at D: rows 10 and 880 not uniform black; the dossier visible on focus; five portraits 64 px tall or more; menu text 4.5:1 or more; the perf gate passes; shots D and L, P unchanged.
 - **Size:** 2
 
-## 90. [ ] Runnel: tiles that read at a glance
+## 90. [ ] Runnel: tiles that read at a glance *(lane A, in progress)*
 - **Why:** `runnel-D`/`runnel-P` (plan1104a, check first: may be the lesson's dim): tiles (580-1215 x 125-730 at D) are pale cream over the wheat fields, their channels tan on cream.
 - **Build:** tiles as solid bevelled pieces with a dark rim and a cast shadow; channels dark grooves with a lit edge; in lessons dim the valley, not the tiles.
 - **Accept:** sampled in e2e: tile fill vs field 3:1 or more, channel vs tile 3:1 or more, every weather; greyscale shot readable; runnel e2e still pass; shots P and D.
