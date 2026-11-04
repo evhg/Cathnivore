@@ -297,14 +297,15 @@ const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair,
  * Plan item 99: a mugshot. The bust in front of a height chart, with the slate held at the chest; a withheld
  * target (null) is a grey silhouette behind a red REDACTED bar and a case stamp, never a black square.
  * Plan item 107: a `small` print (the List's 64-112 px frames) carries no words: at that scale they drew at 4-5 px,
- * so the slate, the bar and the stamp stay as shapes and the caption under the print names it.
+ * so the slate, the bar and the stamp stay as shapes and the caption under the print names it. Plan item 121: the
+ * small slate carries chalk strokes, so it reads as a lettered slate, not an empty black bar.
  */
 export function mugshotSvg(who: BustId | null, slate: string, small = false): string {
   uid += 1;
   const id = `mug${uid}`;
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? "" : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
+  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
   if (who) {
     const inner = DRAW[who](id).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
     return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}">${inner}${chart}${slateG}</svg>`;
