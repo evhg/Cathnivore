@@ -3517,3 +3517,7 @@ body[data-mode='practice'] #week-slot {
 .cell.wet .tile { stroke: var(--tile-rim); }
 .tile-bevel { fill: none; stroke: var(--tile-bevel); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
 .stone .tile-bevel { display: none; }
+/* Plan item 90: a lesson dims the valley, not the tiles, so every piece keeps its colour and rim while the target
+   glows. */
+.in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }
+.in-lesson .valley { filter: brightness(.8) saturate(.75); transition: filter 400ms ease; }
