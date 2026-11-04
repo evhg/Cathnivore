@@ -2554,13 +2554,14 @@ html.no-animations .setup .difficulty-sheet { animation: none; }
     gap: 2px;
     padding: 4px 10px;
   }
+  /* Plan item 92: the phone's only look at Hollowell's face, so 56 px. */
   .action-tray .actions .boardroom-face {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
   }
   .action-tray .actions .boardroom-face svg {
-    top: -20px;
-    width: 104px;
+    top: -22px;
+    width: 112px;
   }
   .action-tray .actions .boardroom-row { gap: 10px; }
   .action-tray .actions .boardroom-words { gap: 2px; }

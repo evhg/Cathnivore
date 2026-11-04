@@ -32,7 +32,7 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
-import { EXECS, MOOD_EXPRESSION, execFor, flightsFor, stripDock, type ExecMood } from './boardroom'
+import { EXECS, MOOD_EXPRESSION, execFor, flightsFor, stagedRegions, stripDock, type ExecMood } from './boardroom'
 import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
 import FarmSheet, { Stall } from './FarmSheet'
@@ -236,6 +236,8 @@ function pressureIconTypes(card: GameState['squeeze']): RegionType[] {
 // ROADMAP 10 "illustrated gauges": Public Trust's and Rift's fixed ranges, matching the exact bounds
 // `validate()` (engine/api.ts) checks state against — the single source of truth for "full" on each
 // gauge, so it can never silently drift from what the rules actually allow.
+// Plan item 92: when a flown enemy piece lands on its hex (global.css `.flight-land` starts at 640 ms).
+const FLIGHT_LAND_MS = 640
 const TRUST_MAX = 15
 const RIFT_MAX = 6
 
@@ -564,9 +566,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const planHotSlot = planPeekSlot ?? planHighlightSlot
   const planThreat = planHotSlot ? { slot: planHotSlot, regions: planPreview(state, planHotSlot).regions } : undefined
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
+  // Plan item 92: the regions the enemy turn started from, so the map can play its changes step by step.
+  const [enemyTurnBefore, setEnemyTurnBefore] = useState<GameState['regions'] | undefined>()
   const [enemyStepRegion, setEnemyStepRegion] = useState<RegionId | undefined>()
   // Plan item 11: the step being played, so the map can fly its pieces out of the HQs.
   const [enemyStep, setEnemyStep] = useState<{ event: GameEvent | undefined; step: number } | undefined>()
+  // Plan item 92: the last step whose change has reached the map (a flown piece lands 640 ms into its step).
+  const [enemyLanded, setEnemyLanded] = useState(-1)
+  const landTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(landTimerRef.current), [])
   const [showLog, setShowLog] = useState(false)
   const [showFarm, setShowFarm] = useState(false)
   const [showMarket, setShowMarket] = useState(false)
@@ -695,7 +703,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       }
     }
     setState(next)
-    if (events.length > 0) setPendingEnemyTurn(events)
+    if (events.length > 0) {
+      setEnemyTurnBefore(from.regions)
+      setEnemyStep(undefined)
+      setEnemyLanded(-1)
+      setPendingEnemyTurn(events)
+    }
   }
 
   // SPEC 8.1/8.2 ch3: a chapter's mid-game scripted scene (e.g. the round-5 Wholesome Hollow reveal) pauses
@@ -1346,6 +1359,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 33: the enemy turn plays in the Actions area (the dock on a phone, the Actions column on a
   // desktop), which has nothing to offer while it runs; over the map it clipped and covered hexes.
   const foldFarm = isDesktop && bigTurn === turnKey
+  // Plan item 92: while the enemy turn plays, the map shows each step's change only once its step plays.
+  const boardState =
+    pendingEnemyTurn.length > 0 && enemyTurnBefore
+      ? { ...state, regions: stagedRegions(enemyTurnBefore, state.regions, pendingEnemyTurn, enemyLanded + 1) }
+      : state
 
   const actionsPanel = (
     <div className="actions-well">
@@ -1367,6 +1385,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           onStep={(region, event, step) => {
             setEnemyStepRegion(region)
             setEnemyStep({ event, step })
+            // The step before has landed by now; this one lands with its flight (at once if nothing flies).
+            clearTimeout(landTimerRef.current)
+            setEnemyLanded(step - 1)
+            if (event && flightsFor(event).length > 0) landTimerRef.current = setTimeout(() => setEnemyLanded((l) => Math.max(l, step)), FLIGHT_LAND_MS)
+            else setEnemyLanded(step)
             const cue = event && eventCue(event)
             if (cue) playCues([cue])
           }}
@@ -2182,7 +2205,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </section>
         </details>
         <RegionMap
-          state={state}
+          state={boardState}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep

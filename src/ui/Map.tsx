@@ -706,6 +706,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, fac
           <g
             key={id}
             data-region={id}
+            data-enemy-pieces={r.outlets + r.buyouts + r.doubt + r.lostLand}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.

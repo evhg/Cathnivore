@@ -1,7 +1,7 @@
 import { AGENDA_CARDS_BY_ID } from '../content/agenda'
 import { REGIONS } from '../content/map'
 import type { CathExpression } from '../../shared/cath/cath'
-import type { Faction, GameEvent, RegionId } from '../engine/types'
+import type { Faction, GameEvent, ProducerId, RegionId, RegionState } from '../engine/types'
 
 // Plan item 11: the conglomerates as characters. Every enemy-turn step is played by the face behind it —
 // Graham Pell for Hollowell (Outlets, Buyouts, Squeeze), Octavia Vane for Candor (Doubt, Trust) — with a
@@ -188,4 +188,58 @@ const BOTTOM_ROW: ReadonlySet<RegionId> = new Set<RegionId>(['oakvale', 'shingle
 /** Where the boardroom strip sits for a step on `region`: away from the hex it plays on. */
 export function stripDock(region: RegionId | undefined): 'top' | 'bottom' {
   return region && BOTTOM_ROW.has(region) ? 'top' : 'bottom'
+}
+
+/**
+ * Plan item 92: the board as it stands after the first `shown` steps of an enemy turn, so each change
+ * waits for its step instead of the whole turn showing under the first flight. `after` is the state the
+ * turn ended in and `before` the one it started from; the steps not yet shown are rewound from `after`
+ * (an Outlet, Buyout or Doubt taken back, a Lost Land lifted, a removed Stall put back), never past
+ * `before` (a step logged against an empty pool placed nothing). Liberation follows its own events.
+ */
+export function stagedRegions(
+  before: Record<RegionId, RegionState>,
+  after: Record<RegionId, RegionState>,
+  events: readonly GameEvent[],
+  shown: number,
+): Record<RegionId, RegionState> {
+  if (shown >= events.length) return after
+  const out = { ...after }
+  const edit = (id: RegionId): RegionState => (out[id] = out[id] === after[id] ? { ...after[id], stalls: { ...after[id].stalls } } : out[id])
+  for (let i = Math.max(0, shown); i < events.length; i++) {
+    const e = events[i]!
+    switch (e.type) {
+      case 'expand': {
+        const r = edit(e.region)
+        if (e.piece === 'outlet') r.outlets = Math.max(before[e.region].outlets, r.outlets - 1)
+        else if (e.piece === 'buyout') r.buyouts = Math.max(before[e.region].buyouts, r.buyouts - 1)
+        else r.doubt = Math.max(before[e.region].doubt, r.doubt - 1)
+        break
+      }
+      case 'scout': {
+        const r = edit(e.region)
+        r.outlets = Math.max(before[e.region].outlets, r.outlets - 1)
+        if (e.doubtAdded) r.doubt = Math.max(before[e.region].doubt, r.doubt - 1)
+        break
+      }
+      case 'squeeze': {
+        const r = edit(e.region)
+        if (e.lostLand) r.lostLand = Math.max(before[e.region].lostLand, r.lostLand - 1)
+        if (e.stallRemoved) {
+          const lost = (Object.keys(before[e.region].stalls) as ProducerId[]).find((p) => (before[e.region].stalls[p] ?? 0) > (r.stalls[p] ?? 0))
+          if (lost) r.stalls[lost] = (r.stalls[lost] ?? 0) + 1
+        }
+        break
+      }
+      case 'liberated': {
+        const r = edit(e.region)
+        r.liberated = before[e.region].liberated
+        r.everLiberated = before[e.region].everLiberated
+        break
+      }
+      default:
+        break
+    }
+  }
+  return out
 }

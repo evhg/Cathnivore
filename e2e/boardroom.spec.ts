@@ -59,3 +59,43 @@ test('the boardroom strip covers no hex and is not clipped', async ({ page }) =>
   })
   expect(m).toEqual({ hits: 0, clipped: false, inActions: true })
 })
+
+// Plan item 92: the corporate turn is staged. Each step's pieces appear on the map only when that step
+// plays (under its flight), not all at once under the first one: the map's enemy pieces, sampled at every
+// step of the ledger, never fall, and rise during the turn rather than before it.
+test('each board change waits for its step', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { samples: { step: number; pieces: number; t: number }[] }
+    w.samples = []
+    const tick = () => {
+      const now = document.querySelectorAll('.boardroom-ledger li')
+      if (now.length) {
+        const step = [...now].findIndex((li) => li.getAttribute('data-ledger-step') === 'now')
+        const pieces = [...document.querySelectorAll('[data-enemy-pieces]')].reduce((n, g) => n + Number(g.getAttribute('data-enemy-pieces')), 0)
+        w.samples.push({ step: step === -1 ? now.length : step, pieces, t: performance.now() })
+      }
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  })
+  await playToEnemyTurn(page)
+  await expect(page.locator('.enemy-turn-playback')).toHaveCount(0, { timeout: 20_000 })
+  const samples = await page.evaluate(() => (window as unknown as { samples: { step: number; pieces: number; t: number }[] }).samples)
+  const steps = new Set(samples.map((s) => s.step))
+  expect(steps.size).toBeGreaterThanOrEqual(3)
+  for (let i = 1; i < samples.length; i++) expect(samples[i]!.pieces).toBeGreaterThanOrEqual(samples[i - 1]!.pieces)
+  const first = samples[0]!
+  const last = samples[samples.length - 1]!
+  expect(last.pieces).toBeGreaterThan(first.pieces)
+  // Nothing has landed when the turn opens: a flown piece reaches its hex 640 ms into its step.
+  expect(samples.filter((s) => s.t - first.t < 400).every((s) => s.pieces === first.pieces)).toBe(true)
+})
+
+// Plan item 92: phones meet Hollowell's face in the strip on its turn (no permanent bust there), 56 px or more.
+test('Hollowell\'s face in the strip is 56 px or more', async ({ page }) => {
+  await playToEnemyTurn(page)
+  const face = page.locator('.boardroom-hollowell .boardroom-face').first()
+  await expect(face).toBeVisible({ timeout: 8_000 })
+  const box = (await face.boundingBox())!
+  expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(56)
+})
