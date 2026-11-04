@@ -1686,7 +1686,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no lesson text block over 2 lines at D; the hand within 20 px of the target tile; the lesson to the daily in under 1.5 s; under reduced motion the hand appears without moving; shots P and D at each step.
 - **Size:** 2
 
-## 135. [ ] Hedgerow: Cath debriefs a leak on the field *(lane B, in progress)*
+## 135. [ ] Hedgerow: Cath debriefs a leak on the field *(lane B, in progress)* *(slice 1, 2026-11-04 lane B: when a round leaks, the longest stretch of lane no tower reaches (`debrief.ts`, unit-tested) glows red for 1.5 s (`data-leak-stretch`), a ghost of the tower that counters what got through (`countersFor`) breathes on the free plot nearest its middle until the next round (a tap builds it), and her line on the field names the vehicle and the tower, placed off the empty plots; sandbox hook `debrief(kind)`; `e2e-site/hedgerow-debrief.spec.ts`; shots `f135a`. Open: 3D shots, a stretch named by landmark)*
 - **Why:** `hedge-l21-2d-D` (62-290 x 528-620) and l34 (845-1070 x 372-458): the same "Build a Scarecrow" line at round 11 and round 17; nothing says what just went wrong.
 - **Build:**
   - After a round with leaks, the stretch of lane they got through glows red for 1.5 s.

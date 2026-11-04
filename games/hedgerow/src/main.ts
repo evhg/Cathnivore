@@ -193,6 +193,7 @@ import { Player, Recorder, applyAction, decodeReplay, encodeReplay, restoreRun, 
 import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { towerRole, type TowerRole } from "./roles";
+import { leakDebrief } from "./debrief";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -757,6 +758,8 @@ if (SANDBOX)
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
+    // Plan item 135: Cath's debrief as if a vehicle of this kind had just got through.
+    debrief: (kind: EnemyKind) => game && debriefLeaks(game, kind),
     // Plan item 114: Cath's box on screen (client px, like plotBoxes).
     cathBox: () => {
       const f = ui.stage.getBoundingClientRect();
@@ -3573,6 +3576,10 @@ function syncCathSay(g: Game, now: number): void {
   const quiet =
     !!player || g.phase !== "build" || !!selected || posting || aiming || !ui.intro.hidden || !ui.bubble.hidden || hasTwist(g.level, "nocath") || !renderer;
   if (sayOverride && (now > sayOverride.until || g.phase !== "build")) sayOverride = null;
+  if (debriefGhost && g.phase !== "build") {
+    debriefGhost.remove();
+    debriefGhost = null;
+  }
   const text = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
   if (!text) {
     if (!el.hidden) el.hidden = true;
@@ -3678,6 +3685,66 @@ function cathBox(g: Game, field: DOMRect): Box | null {
   const tall = px?.h ? px.h / cell + 0.3 : is3D(renderer!) ? 1.7 : 1.25;
   const wide = px?.w ? px.w / cell : 0.8;
   return { x: at.x - field.left - cell * wide / 2, y: at.y - field.top - cell * (tall - 0.3), w: cell * wide, h: cell * tall };
+}
+
+/**
+ * Plan item 135: after a round that leaked, the stretch of lane no tower reached glows red for 1.5 s, a ghost of the
+ * tower that answers what got through stands on the free plot beside it (a tap builds it), and Cath's line on the
+ * field says so. The ghost goes when the next round starts.
+ */
+let debriefGhost: HTMLButtonElement | null = null;
+function debriefLeaks(g: Game, kind: EnemyKind | undefined): void {
+  if (!renderer || hasTwist(g.level, "nocath")) return;
+  const fleet = isFleet(g.level);
+  const reach = g.towers.map((t) => ({ col: t.col, row: t.row, range: towerStats({ ...t, fleet }).range }));
+  const lanes = [g.level.path, g.level.path2].filter((p): p is Level["path"] => !!p);
+  const free = (c: number, r: number) => isPlot(g.level, c, r) && !g.towers.some((t) => t.col === c && t.row === r);
+  const d = leakDebrief(lanes, reach, free, g.level.cols, g.level.rows);
+  if (!d.cells.length) return;
+  const field = ui.stage.getBoundingClientRect();
+  const want = new Set(d.cells.map(([c, r]) => `${c},${r}`));
+  const glow = document.createElement("div");
+  glow.className = "debrief-glow";
+  glow.setAttribute("aria-hidden", "true");
+  for (const b of cellBoxes(g, (c, r) => want.has(`${c},${r}`))) {
+    const cell = document.createElement("i");
+    cell.style.cssText = `left:${b.x - field.left}px;top:${b.y - field.top}px;width:${b.w}px;height:${b.h}px`;
+    glow.append(cell);
+  }
+  ui.stage.append(glow);
+  ui.stage.dataset.leakStretch = String(d.cells.length);
+  window.setTimeout(() => {
+    glow.remove();
+    delete ui.stage.dataset.leakStretch;
+  }, 1500);
+  debriefGhost?.remove();
+  debriefGhost = null;
+  const kit = g.level.towers.filter((k) => towerAllowed(g.level, k));
+  const pick = (kind ? countersFor(kind, kit)[0] : undefined) ?? kit[0];
+  const at = d.plot && renderer.cellCenter(d.plot.col, d.plot.row);
+  const plot = d.plot;
+  if (pick && plot && at) {
+    const ghost = document.createElement("button");
+    ghost.type = "button";
+    ghost.className = "debrief-ghost";
+    ghost.dataset.kind = pick;
+    ghost.style.cssText = `left:${at.x - field.left}px;top:${at.y - field.top}px`;
+    ghost.setAttribute("aria-label", `Build a ${TOWERS[pick].name} here, as Cath suggests`);
+    ghost.append(img(towerIcon(pick), "debrief-ghost-art"));
+    ghost.onclick = () => {
+      if (doAct({ t: "place", kind: pick, col: plot.col, row: plot.row })) {
+        ghost.remove();
+        debriefGhost = null;
+      } else toast(`Not enough Marks for a ${TOWERS[pick].name} yet.`);
+    };
+    ui.stage.append(ghost);
+    debriefGhost = ghost;
+  }
+  const what = kind ? ENEMIES[kind].name : "They";
+  const laneLen = Math.max(...lanes.map((l) => l.length));
+  const where = d.cells.length >= laneLen * 0.8 ? `${what} got through: nothing reaches most of the lane yet` : `${what} got through the stretch nothing covers`;
+  const line = pick && plot ? `${where}. A ${TOWERS[pick].name} on the plot I've marked would catch it.` : `${where}. Something there next round.`;
+  sayOverride = { text: line, until: performance.now() + Math.max(6000, line.length * 70) };
 }
 
 /** Every plot's box on screen (client pixels), each sized from its own projected neighbours (3D shrinks with distance). */
@@ -3860,6 +3927,11 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "cleared":
         sfx.playCleared();
         if (ev.wave < g.level.waves.length) roundRosette(g, waveNo(g, ev.wave), ev.reward, !runLeaks.some((l) => l.round === waveNo(g, ev.wave)));
+        // Plan item 135: a round that leaked gets Cath's debrief on the field.
+        if (ev.wave < g.level.waves.length && !player) {
+          const leaked = runLeaks.filter((l) => l.round === waveNo(g, ev.wave)).at(-1);
+          if (leaked) debriefLeaks(g, leaked.kind);
+        }
         break;
       case "pie":
         break;
