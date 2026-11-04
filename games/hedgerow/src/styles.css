@@ -4525,3 +4525,15 @@ img.act-scene {
      map's; clip keeps the rounded clipping without one. */
   #screen-select .act.act-has-card { overflow: clip; }
 }
+
+/* Plan item 111: at D each stop is a landmark you can read from across the room, 76 px wide (the boss lot 86), and
+   Cath's token 60 px tall walks the road between them. Phones keep their 44 px coins (the map's two rows of five
+   fill a phone's width). */
+@media (min-width: 1100px) and (min-height: 760px) {
+  #screen-select .node .level-num { width: 76px; height: 64px; }
+  #screen-select .node.level-boss .level-num { width: 86px; height: 72px; }
+  #screen-select .node .level-num.vignette .level-n { min-width: 26px; height: 26px; border-radius: 13px; }
+  #screen-select .node.next .you,
+  #screen-select .node.next .you:not(.beside) { top: -52px; width: 52px; height: 60px; margin-left: -26px; }
+  #screen-select .node.next .you.beside { top: 18px; width: 52px; height: 60px; margin-left: -96px; }
+}

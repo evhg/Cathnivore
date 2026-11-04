@@ -272,3 +272,18 @@ test('plan item 98: on a phone the level card sits whole above the tab bar', asy
     expect(c.y + c.height).toBeLessThanOrEqual(foot + 1)
   }
 })
+
+// Plan item 111: at D the stops are landmarks 72 px or larger and Cath's token is 60 px tall, clear of her coin.
+test('plan item 111: at D the stops are 72 px landmarks and Cath is 60 px', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'the desktop map')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await seed(page, 6)
+  await page.waitForTimeout(400)
+  const m = await page.evaluate(() => ({
+    coins: [...document.querySelectorAll('.node .level-num')].map((e) => e.getBoundingClientRect().width).filter((w) => w > 0),
+    you: document.querySelector('.node .you')!.getBoundingClientRect().height,
+  }))
+  expect(m.coins.length).toBeGreaterThan(5)
+  expect(Math.min(...m.coins)).toBeGreaterThanOrEqual(72)
+  expect(m.you).toBeGreaterThanOrEqual(60)
+})

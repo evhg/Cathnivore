@@ -1460,7 +1460,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: bubble text 15 px or more at 4.5:1, its tail within 24 px of her head box, nothing overlaps her; Setup still has no scroll at 1440x900 and 390x844 (desktop-no-scroll, setup-* specs); shots P and D.
 - **Size:** 1-2
 
-## 111. [ ] Hedgerow map D: stops as landmarks on a road, and Cath walking it *(lane A, in progress)*
+## 111. [x] Hedgerow map D: stops as landmarks on a road, and Cath walking it *(done 2026-11-04, lane A: at 1100x760 and up the stops' vignettes are 76x64 (the boss lot 86x72) and Cath's token 52x60, beside her coin on a row-2 stop as before; she already walks to a picked or newly opened stop (item 73). The empty band was not there: item 88's level card fills it. e2e in `hedgerow-map.spec.ts`; shots `e2e/screenshots/h111` (act 1 and act 3, 1440x900 and 1280x800); phones unchanged.)*
 - **Why:** `hedge-menu-D` (stops 225-1240 x 330-545): ten near-identical 50 px grey coins with padlocks; Cath's marker about 35 px. Item 88 gave the next stop its card; the road itself is still a grid of coins. Check first: item 88's strip and docked card may already fill 560-790.
 - **Build:**
   - Each stop a 72 px or larger landmark vignette of its level (the blimp, the billboard, the beach clean) on the act's road; locked ones in pencil (item 73), the boss lot drawn bigger.
