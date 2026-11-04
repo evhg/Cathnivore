@@ -1,0 +1,120 @@
+# Decisions archive, 2026-11
+
+Moved from DECISIONS.md (oldest first).
+
+- 2026-10-23: C20 starts with the clinical staff (Orderly, Nurse) because they already spawn in-game on the Enforcer body; Price-War/Chrome/Psycho have no kits yet, so they come after.
+- 2026-10-27 (C20 s2): Price-War Boy and the bystander share the `street*` model builders (arch `thug` / `civilian`); civilians now get their own body instead of the Enforcer's. PRICE_WAR_BOY is defined but unspawned until a map gets a `patrol:thug` marker.
+- 2026-10-27: C20 s3: Candor Chrome and Cyberpsycho share one `aug*` builder set keyed on arch, mirroring the thug/clinic pattern; kits are defined but not spawned until a district map places them.
+- 2026-10-27: C20 s4: machine models for drone/turret and elite floor rings; check green (the 900 s timeout wrapper kills long checks; run it detached to a log).
+- 2026-10-27: C20 s5 mech body added; headless turntable never reported ready in this sandbox (also for enforcer), so unreviewed visually.
+- 2026-10-27: C20 pods and DR controller built as pure sim first (tested), game wiring deferred to next session.
+- 2026-10-28 C12: CATHODE is now NIGHT SHIFT (owner's pick). Path `/nightshift/` (build output `dist-site/nightshift/`); `/cathode` and `/cathode/*` 301 to it in vercel.json. Source dir `games/cathode/`, `window.cathode`, localStorage keys and test names keep "cathode" on purpose (saves must survive). Logotype re-outlined from Bodoni Moda opsz 11 wght 700; favicon is an N. In-world "CATHODE CITY" on gun plates is now "HOLLOWELL CITY".
+- 2026-10-28 C12 trademark note: no network search tool in this sandbox beyond proxy, so no clash search could be run; "Night Shift" is a common phrase and several indie titles use it. Per owner rule, ship it unless the clash is a video game; owner to run a USPTO/EUIPO check before any store launch.
+- 2026-10-28: C20 elite glyph is a HUD diamond pool (max 3, 25 m), not per-enemy DOM.
+- 2026-10-28: mech intro reuses hud.showBanner("boss") on first sight; no new component.
+- 2026-10-28: session spent on a full release of C20 work to main (205d01a); C20 stays open for 5K polish.
+2026-10-28: C20 ticked after the lineup re-shot clean (desktop only; 5K skipped, ~10 min a stage). Phase C complete; sessions return to D/H.
+2026-10-28: H13 ticked after a code audit; no code change this session.
+- 2026-10-28: hero Cath gets a CSS bottom mask fade (desktop showed a hard cut at the waist); no release, CSS only.
+- 2026-10-28: C14 ticked after a desktop shot review (Cath stays a back view in the wardrobe); N1 added to plan big features next.
+- 2026-10-28: N1 critique was from 2D shots only; N2-N8 added, verify 3D state before building N2.
+- 2026-10-28: CI red was the landing mask's #000 (CSS ratchet); fixed with 'black'. N2 ticked by audit; N3 started with a wave-cleared banner.
+- 2026-10-28 22:52: N4 landmarks use cycled inline SVGs per stop (no per-level art); colours live in map.ts SVG attrs so the CSS ratchet stays clean.
+- 2026-10-29: N5 shipped without gradient water (SVG gradient on zero-height lines isn't worth it); N6 ticked as already built by AAA UI M3.
+- 2026-10-29: N7 slice 1 done on the landing: shelf under Cath, unclamped phone card text. Door frames and hover demos next.
+- 2026-10-29: roadmap had under 3 open items, so planned N9-N13 from known gaps (no screenshot critique this session); N7/N8/61 ticked as already built.
+- 2026-10-29: N9 needed no code (upgrade UI already done); N10 verify clean, so no retune.
+- 2026-10-29: owner chat: `/` became a portfolio of apps, games landing moved to `/games/`; Kinetiq gated server-side by a Vercel function with only a password hash in Vercel env (public repo); SwitchBot shown as Sleep Lab (the switchbot repo's app), linked to its simulated-data demo.
+- 2026-10-29: N12 scoped to what was missing (progress track, locked silhouette); headers/stars already existed.
+- 2026-10-29: N13 critique kept short (swiftshader too slow for districts 2-5); planned N14-N15 from the shots taken.
+- 2026-10-29: N16 slice = corkboard case board; hud.css z-index literal fixed (N15 broke the ratchet).
+- 2026-10-29: N17: daily level/card already existed, so only the ghost (best win's placements as DOM icons via renderer.cellCenter) was built; ticked.
+- 2026-10-29: N19 wardrobe unlocks derive from other games' localStorage saves (no cross-imports); Hedgerow keeps its own per-outfit gear.
+- 2026-10-29: N19 NIGHT SHIFT Cath keeps her fixed black noir coat (3D model, tone); wardrobe applies to the other three games.
+- 2026-10-29: Fixed CI break from N19 (import clash) first; planned N20-N23 without a critique shoot (swiftshader too slow).
+- 2026-10-29: N20 clinic piece is a blackout ambush gated on the register; `World.blackout(k)` scales hemi and key light.
+- 2026-10-30: N22 garden lives in the stats sheet (emoji crops, no new screen) to stay light; crops derive from saved results, nothing new stored.
+- 2026-10-30: N23 done without a 3D back-view change: the 3D Cath keeps her noir coat (see N19); wardrobe shows on the loading-file plate and polaroid caption.
+- 2026-10-30: all N-items done; planned N24-N27 (shoot unshot work first, side-panel timeline, district set pieces, scrapbook). Added a small field record to the Hedgerow side panel as the first slice.
+- 2026-10-30: N26 done via the vault set piece (clinic, plaza, tower, vault now all have one); N27 scrapbook is counts-only pages from existing saves, no new stored data.
+- 2026-10-30 11:55: N24 closed after shots; no fixes needed. Next session should plan N28+ whole features.
+- 2026-10-30: Runnel Orchard uses generatePuzzle with fixed seeds `orchard-N` (no hand-authored boards); progress lives in optional `orchard`/`orchardGames` save fields, so no save version bump.
+- 2026-10-30: release gate 5 (site) failed only on a stale menu count in cathode-front.spec (Case Board added); fixed spec, retry release next session.
+- 2026-10-30 17:51: spent the session on a full release (gates ~40 min); cf93bfb live.
+- 2026-10-30 18:52: planned Phase 22 from a subagent critique; its Runnel claim (flat board) conflicts with existing flow/ripple CSS, so item 224 says shoot first.
+- 2026-10-30 23:52: 227 scene component is moment-based (games pass the moment, not an expression); only Runnel adopts it this session.
+- 2026-10-31 02:52: ROADMAP was empty; planned 228-232 (Phase 23) from known gaps without a critique shoot (sandbox slow, no node_modules); next session shoots the target screen of each item first.
+- 2026-10-31: Orchard boons only edit the Level (marks/goodwill/hpScale), reusing story levels by depth band; replays not supported for Orchard runs.
+- 2026-10-31: Runnel share codes encode the practice seed + size (`M-ts-rand`), not a board layout; the editor is a later slice.
+- 2026-10-31: Second Broadcast mods are `mod:<id>` flags in jobsDone, picked in an overlay when NG+ starts; ladder deferred.
+- 2026-10-31: CI red after 230 deck CSS (raw px/colours); fixed with tokens. Run npm run check before pushing CSS.
+- 2026-10-31: Cath's Week goals are growth since a per-week baseline in localStorage (`cath:week`); the third goal uses NIGHT SHIFT cases (the only third-game count in the shared reader); reward is a postcard, not an outfit.
+- 2026-10-31: Market events change only Invest prices (2 tags, -1 Mark); the id is stored in GameConfig so replays stay deterministic. Board goals and a real cosmetic left out (scope).
+- 2026-10-31: released 35c3b5c after fixing site e2e for the Modes drawer; tag push 403 as usual.
+- 2026-10-31 17:51: Cath's Week card on / shares one renderer with /games/ (weekui.ts); no new storage.
+- 2026-10-31 21:51: Orchard Heirlooms are pre-taken boons (no new mechanics); Seeds earned only when a run ends; pantry skipped for brand-new players.
+- 2026-10-31 23:51: planned Phase 26 from known leftovers (no critique shoot); pantry button gap fixed.
+- 2026-11-01: 235 ladder lives in Hedgerow's pantry sheet, not the shared Week card (that card is in shared/ and Hedgerow-only data doesn't belong there).
+- 2026-11-01: Runnel events reuse practice seeds (`practice-<size>-<season><yy>-<n>`) so codes and saves need no new game mode; windows are 1-21 Apr and Oct.
+- 2026-11-01: 237 stores per-deck bests as kept `deckbest:<mods>:<mult>` flags (no new save field); score is the multiplier.
+- 2026-11-01 03:51: 238 cosmetic is a hair pin (accessory option `pin`), not an outfit; earned by winning during that week's event, stored in `cath:pins`/`cath:pin`.
+- 2026-11-01 05:30: release gate 5 failed on a Runnel site spec picking a non-turnable cell; spec now taps the first cell the daily solver says needs taps.
+- 2026-11-01: release gates passed but live smoke test timed out on #hud-taps; script reverted main to efeeb5b. Investigate smoke step next session.
+- 2026-11-01 07:30: merged origin/main into build with -s ours so the reverted-main release can fast-forward; release now waits for the 19:51 UTC session per the owner's new rule.
+- 2026-11-01 08:00: clinic surfaces are painted on canvas at load (clinictex.ts, clinic only) instead of new Poly Haven downloads: no asset weight, and the tile scale matches the 2 m UV repeat.
+- 2026-11-01 08:05: opened the clinic side rooms (divider walls covered their own door gaps). Theatre gallery glass stays rounds-only (`thin`) so the Vane fight's flanking routes are unchanged.
+- 2026-11-01 08:40: PROGRESS.md (272 lines) and DECISIONS.md (645) were over SPEC 16 limits; archived to docs/archive/PROGRESS-2026-11.md and DECISIONS-2026-10.md.
+- 2026-11-01 09:20: clinic patients are static instanced figures (no animation) to keep the phone budget; screens now paint text in every district, which also starts plan item 4's "readable billboards".
+- 2026-11-01 09:30: plan item 1 ticked; "no untextured surface over 30%" judged by eye on D and L shots (walls, floor, ceiling, drawers all textured; props are small). Theatre stays bright white by design (sterile, Vane's spot).
+- 2026-11-01 09:35: plan item 2 slice 1 groups pieces per kind with a count badge (max 3 enemy pieces + 1 stall per producer per hex) rather than shrinking icons; stacks show up to 3 offset copies.
+- 2026-11-01 10:05: plan item 2 stall pins sized for the smallest live phone board (map ~383 px tall when the action list is long), not the start layout; the end screen's summary map is exempt from the 24 px check.
+- 2026-11-01 10:05: pressure ring = stall share vs all corporate pieces; "at risk" uses the Squeeze rule (Outlets + 2 Buyouts > Stalls). Dash pattern, not hue, carries the meaning in greyscale.
+- 2026-11-01 10:30: Hedgerow unlock cards live on the level select (shown when the field opens), stored as `unlock:<id>` tips, no save change. Saves with any stars count open cards as seen. Sandbox opens all. Twist/merge cards will be in-game (next slice).
+- 2026-11-01 11:20: plan item 3 "guided first three levels" met by the existing one-idea tips (1 build, 2 Cath's post, 3 pie) and two towers on fields 1-3; no tower roster change (would need a ~1 h retune for no new idea). Twist/Heirloom cards are modal and hold time; Daily/Show/Endless/replays skip them.
+- 2026-11-01 11:20: Hedgerow map ground is a CSS background (`--ground` data URI) not an <img>: an img inside the trail <ol> fails axe's list rule. Lane is laid out from real node centres (ResizeObserver).
+- 2026-11-01 12:00: Plaza crowds are visual only (no colliders, bullets pass through), like the old capsule crowds; a new `Level.crowds` list replaces the Plaza's `crowd:*` markers. Market and Tower keep the capsules for now.
+- 2026-11-01 12:05: the skyline "holo edge" fix changes every outdoor district's sky (fewer, thinner glowing lines, no solid slabs); taken as a bug fix, not a restyle.
+- 2026-11-01 12:25: "under 5% clipped at 255" is measured on phone-quality D frames with `e2e/screenshots/clipped.mjs`; all Plaza frames are under 0.1%.
+- 2026-11-01 13:05: Pell's billboard is a painted canvas portrait (`pellboard.ts`, one merged mesh via `Level.boards`), not a new sign style; the giant board grew to 21 x 8.6 m so it reads from the square.
+- 2026-11-01 13:15: Plaza and Tower surfaces are painted at load (`plazatex.ts`, `towertex.ts`) like the clinic; tower carpets are dry (no rain sheen) indoors. The Tower's capsule crowd became standing crowds.
+- 2026-11-01 13:25: tried brushed-steel walls in the Vault and reverted: the 2 m tile showed smudge blotches as spots. Vault walls stay concrete; the cage is grate mesh but still stops rounds (unchanged gameplay).
+- 2026-11-01 13:30: plan item 4 ticked: Tower and Vault (estimated 4 sessions) were done in one by painting surfaces and dressing the existing layouts, not rebuilding them. Plaza phone triangles are 252k of 260k, so later Plaza additions must cut something.
+- 2026-11-01 14:10: plan item 5's "courthouse" backdrop became Cath's kitchen war room for chapter 4: the chapter's own lines are about a whiteboard with Kingsmarket underlined three times. The six backdrops are inline SVG components (no image assets), sliced from the bottom centre.
+- 2026-11-01 14:10: the speaking cast (Mara, Sol, Tomas, Ines, Pip) and the villains got new half-length figures in Cath's cel style rather than full-height art: the caption covers below the waist anyway, and the acceptance line (50% of viewport height) holds at P, D and L.
+- 2026-11-01 14:15: poses come from the existing punctuation moods (head tilt, lean, a hop and ray burst on "!"), not new per-line tags in the story data; the backlog is screen-reader only on phones and in landscape.
+- 2026-11-01 14:30: plan item 6's "shared PNGs match a stored snapshot hash" is met by hashing the share card's canvas calls (`tests/runnel-sharecard.test.ts`), not the PNG bytes: rasterised bytes differ between browsers and fonts, the call list is the same everywhere.
+- 2026-11-01 15:00: Runnel weekday arc starts on 2026-11-02 (`ARC_FROM`); earlier dailies are untouched because they live in players' saves. Easy days use a smaller board and pre-set sluices, not a gentler scramble, so the 75%-wrong scramble rule stays.
+- 2026-11-01 15:00: the arc's "median time" is a model (1.2 s per tap, 10% waste), stated as such in BALANCE.md; there is no telemetry to measure real solves.
+- 2026-11-01 15:15: Runnel sky (time of day, weather) comes from the board's seed for every mode, not dailies only; drizzle is 1 in 8 and clears into a rainbow on the win. `?sky=` forces it for shots.
+- 2026-11-01 15:25: Runnel seasonal tints now apply only under the light scheme: in dark mode they replaced the night greens with pale khaki (a pre-existing bug the dark shots showed).
+- 2026-11-01 15:30: plan item 7 not started this session (time); next session begins it with stage shots.
+- 2026-11-01 16:10: plan item 7's "authored arenas at 8-20 m with flanks and height" is met by staging scripted entrances (rappel = height, van/breach = flanks) into the existing district layouts at 8-20 m from the objective or boss, not by rebuilding layouts. Entrance data lives in `game/encounters.ts` and is checked against each district's colliders and crowds (`tests/cathode-entrances.test.ts`).
+- 2026-11-01 16:10: "marker covers under 25% of the enemy box" is measured as the ink of the X rasterised over a 10 m guard's box (unit test), not the X's bounding box; the ticks are thinner (2.6u) and start 14u out so the hit shows through the middle.
+- 2026-11-01 16:10: the first guard now shows at 8.7 m (`FIRST_CONTACT_M`, was 10.5 m) so he reads at 120+ CSS px on a desktop; `first-contact` is the stage that measures it. Vans and doors are visual only (no colliders); a man waiting for his entrance is parked under the floor, out of reach of rounds and probes.
+- 2026-11-01 17:20: entrance ropes now stay hanging after he lands (anchor and floor coil), so she sees where he came from; men entering carry a helmet torch beam aimed at the floor between him and her, vans have headlamp beams and an amber bar. All visual only, no gameplay change.
+- 2026-11-01 17:25: moved four alarm entrances (Plaza rope and van, Tower rope A, Vault lift and rope) into collider sightline of their objectives at 8-20 m; `tests/cathode-entrances.test.ts` enforces it. Non-collider visuals (awnings) still block the Plaza van: next session.
+- 2026-11-01 17:40: plan item 7 left open: the acceptance lines hold (124 px first guard, marker ink test, 2+ entrances per district, e2e in three districts) but the shots don't yet show every alarm entrance from where she stands.
+- 2026-11-01 18:00: the Plaza strongbox alarm is two vans, not a van and a rope: from the back of the stall she can only see out of its open front, and every roof anchor in that cone came down behind the stalls' back walls. The Plaza still has a rappel (Pell's rally detail).
+- 2026-11-01 18:10: plan item 8's "P layout unchanged" is held for Setup (its mode-tile art and poster eyebrow are desktop only); the end screen's P layout does change (it gains the chart and play card) because the item asks for both on the end screen.
+- 2026-11-01 18:10: the end screen's grade is points (10 per region, 30 for the win, 2 per Trust left, less 1 per round) against per-difficulty bars (`GRADE_BARS` in `src/ui/endSummary.ts`); history is rebuilt by replaying the action log, no save change.
+- 2026-11-01 18:20: plan item 9 gives NIGHT SHIFT's Cath the bible's long, centre-parted hair (it was a low knot, CATHODE's old "work look"), because the plan names "long hair as cards" and the bible is the source of truth.
+- 2026-11-01 19:40: villain busts are inline SVG surveillance stills (warm greyscale, grain, one red accent), not 3D heads: they serve the case board and boss intros, which are DOM, and cost no draw calls. The Chair's face stays in shadow (only his glasses catch the light); HollowCandor gets no bust.
+- 2026-11-01 19:40: plan item 9's "expression blends for photo mode" is cut: photo mode frames the street in first person and never shows Cath's face, so blends would be unseen. Item 9 ticked on its acceptance lines (300 px turntable face, title and class pick re-shot, phone tier 214 calls on the class pick).
+- 2026-11-01 20:00: before the release, `origin/main`'s extra commit (dccb4ad, Sleep Lab link) was a real change, not a revert, so it was merged normally (conflicts resolved to build's side, which already carried the same link), not with `-s ours`.
+- 2026-11-01 20:10: Hedgerow's portrait-phone panel is a drawer that overflows a fixed 72 px grid row upward (align-self: end), so opening it or a selection sheet never resizes the field; the tower path card keeps its own fixed bottom sheet. Abilities lose their visible labels there (names stay for screen readers).
+- 2026-11-01 20:15: plan item 10's "enemy outlines and type icons" is met by swarm badges (type sprites with counts) on both renderers plus ink outlines on 3D Fleet vehicles; 2D sprites already carry ink outlines. Classic (non-Fleet) 3D enemies get no outline yet.
+- 2026-11-01 20:30: plan item 11's two CEOs are the existing villains Graham Pell (Hollowell) and Octavia Vane (Candor) on the shared Figure rig, with three moods mapped to its expressions (wink, delighted, worried), not new characters.
+- 2026-11-01 21:00: plan item 11's "pieces flying from the HQ" adds two HQ glyphs (Hollowell office block, Candor broadcast mast) to the map only during the enemy turn, in the corners away from the strip; the strip docks at the top for the bottom-row hexes (Oakvale, Shingle Bay) so the landing hex stays in view. The pieces already sit in the hex (state is applied first); the flight is cosmetic.
+- 2026-11-01 21:30: plan item 12's case board keeps every case: the five List cases are polaroids (blank until unlocked, since a bust before Bea has a lead would spoil the List), the open List case also gets a card, and locked leads collapse into one face-down stack. Case Board is enabled on a fresh save as the teaser state.
+- 2026-11-01 22:40: plan item 12's "illustrated map" is a survey sheet drawn from each level's own colliders (footprints at body height) plus the market's street layout from `level.ts`, not hand-drawn art per district, so it stays true when a district changes. Unfound secrets are counted per zone ("2 hidden"), never placed, so the map hints without spoiling.
+- 2026-11-01 22:40: the map's SVG viewBox is in metres and label sizes are metres (2.3-3 m), so text never needs CSS px sizes; on a phone held sideways the sheet is width-sized (labels 14 px) and scrolls, opening on Cath.
+- 2026-11-01 23:35: games-page key art is inline SVG in `site/index.html` (no images, so LCP stays 1.8 s); motion is paused until hover/focus, with negative delays so the still is a composed frame. Hedgerow's daily rule moved to `dailyrule.ts` so the page can name it without the level table.
+- 2026-11-01 23:35: card-to-title view transitions morph only Runnel and Hedgerow (their wordmark is in the first paint); Cathnivore draws its title in script and NIGHT SHIFT opens on the 18+ gate, so those crossfade. Off under reduced motion.
+- 2026-11-01 23:35: NIGHT SHIFT talks give intel only (no failure branch): Press is gated by Nerve, Wire by Wire, Pay by Scrip, Charm is always open. One talk per district, one choice per talk, recorded in `jobsDone` (`talk:<id>:<option>`), so no save change. A struck-off squad is skipped at spawn (`unlessTalkedOff`); the Tower captors line no longer says "three".
+- 2026-11-02 00:25: NIGHT SHIFT's lieutenant is the first non-elite rifle (else orderly, else guard) patrol in the district, named and marked until she's talked to him. A takedown on him still ends him; the talk opens as she lets go. Killed any other way, he's gone for this visit and walks again next time.
+- 2026-11-02 00:25: boss weaknesses "turns back", "panics flanked" and "core exposed" are HP cuts (25/15/25%) that Bea announces when the fight opens, not new boss AI; "no stitch" and "vent locked" remove the stitch and the right-vent drop outright (`bossEdge` in `sim/talk.ts`).
+- 2026-11-02 00:25: plan item 14 closed, which leaves 2 open plan items. Planning (CLAUDE.md step 4) is the next session's whole job; this session, 30 minutes in, kept going on item 15 instead of starting a half-hour planning pass.
+- 2026-11-02 00:25: Cathnivore layouts put `regionTypes`, `neighbors` and `layout` on GameConfig (old saves read as the ring). The Long Coast adds three RegionIds (gullsHead, fernlea, tarnside); the Delta reuses the seven ring regions in a river shape. The unseeded ring is the printed board, so classic games don't change.
+- 2026-11-02 01:20: the Daily Market lives on the title (Daily Market #N, day 1 = 2026-11-02), plays solo on Normal, deals the ring fresh types too (`layoutConfig(..., seedRing)`), and turns the map over day by day. `GameConfig.daily` marks the game (optional, no save migration). Only a day's first finish counts for the streak; results live in `cathnivore:daily` (last 60 days).
+- 2026-11-02 01:20: plan item 15 ticked: the Long Coast's shorter games (2.6 rounds) come from Lost Land filling across ten regions; its win rate (0.8%) is still within 10 points of the ring's, so it is left as the hard map rather than retuned.
+- 2026-11-02 01:20: planning added items 17-24 from a subagent critique of P/D shots of every game. Its "blank story scenes" was a shot timing artefact (fixed in `e2e/screenshots.spec.ts`), so it is not a plan item. Its NIGHT SHIFT "no Cath on the title" came from shots stuck on the gate, so item 24 is scoped to the gate and cold open only.
