@@ -44,6 +44,8 @@ export interface PieceTray {
   ornaments: boolean
   /** A count badge's radius in tile units (its text is 1.25 x this). */
   countR: number
+  /** The SQUEEZE/EXPAND badge's scale, so its 10-unit text is MIN_BADGE_PX or more on screen (item 121). */
+  badgeK: number
 }
 
 /** A stack's body at scale 1, and the gap between slots. */
@@ -57,6 +59,14 @@ const LABEL_Y = -TILE_R * 0.62
 const LABEL_H = 21
 /** The threat badge's box under the name plate (Map.tsx draws it 60 x 14). */
 export const BADGE = { x0: -31, y0: LABEL_Y + 8, x1: 31, y1: LABEL_Y + 22 }
+/** Plan item 121: the badge's text on screen at the least (it was about 7 px on a phone). */
+export const MIN_BADGE_PX = 11
+/** A producer stall's least height on screen while the badge grows (plan item 2's 24 px on a phone). */
+const MIN_STALL_PX = 25
+/** The badge's box at scale k, grown from its top centre (Map.tsx scales the drawn badge the same way). */
+export function badgeBox(k: number): { x0: number; y0: number; x1: number; y1: number } {
+  return { x0: BADGE.x0 * k, y0: BADGE.y0, x1: BADGE.x1 * k, y1: BADGE.y0 + (BADGE.y1 - BADGE.y0) * k }
+}
 export const ENEMY_Y = -TILE_R * 0.08
 export const PRODUCER_Y = TILE_R * 0.44
 export { STACK_W, STACK_H, PRODUCER_W, PRODUCER_H, ORNAMENT_H }
@@ -78,11 +88,12 @@ function row(n: number, w: number): number[] {
   return Array.from({ length: n }, (_, k) => -total / 2 + k * (w + GAP))
 }
 
-function place(input: PieceInput, scale: number, ornaments: boolean, countR: number): PieceRect[] {
+function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1): PieceRect[] {
   const out: PieceRect[] = []
   const lw = input.labelWidth / 2
   out.push({ kind: 'label', x0: -lw, y0: LABEL_Y - 15, x1: lw, y1: LABEL_Y - 15 + LABEL_H })
-  if (input.badge) out.push({ kind: 'badge', ...BADGE })
+  // A gap under the badge so a count circle's outline doesn't touch it.
+  if (input.badge) { const bb = badgeBox(badgeK); out.push({ kind: 'badge', ...bb, y1: bb.y1 + GAP }) }
   const stacks = (['outlets', 'buyouts', 'doubt'] as const).filter((k) => input[k] > 0)
   const slots: PieceKind[] = [...stacks, ...(input.scheme ? (['scheme'] as const) : [])]
   // A stack's slot holds its body and its count badge (half over the body's empty top right corner, half outside),
@@ -113,14 +124,26 @@ function fits(rects: PieceRect[]): boolean {
 export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   const unitsPerPx = TILE_R / Math.max(1, hexPx)
   const countR = Math.max(4.6, (MIN_COUNT_PX * unitsPerPx) / 1.25)
+  const badgeK = Math.max(1, (MIN_BADGE_PX * unitsPerPx) / 10)
   const tryOrnaments = hexPx >= ORNAMENT_PX ? [true, false] : [false]
   // A roomy hex (a desktop board) grows its pieces up to 1.3x, so they keep their share of the tile.
   const start = Math.round(Math.min(1.3, Math.max(1, hexPx / 90)) * 20) / 20
+  // First the badge at a legible size, letting the pieces shrink only while a stall stays MIN_STALL_PX tall on
+  // screen (board-scales.spec); then the old order with the badge at its drawn size.
+  const stallFloor = Math.max(0.6, (MIN_STALL_PX * unitsPerPx) / PRODUCER_H)
+  // The largest badge that fits, each tried with the largest pieces that still fit beside it.
+  if (input.badge)
+    for (let k = badgeK; k > 1 + 1e-9; k = Math.round((k - 0.05) * 100) / 100)
+      for (let scale = start; scale >= stallFloor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
+        for (const ornaments of tryOrnaments) {
+          const rects = place(input, scale, ornaments, countR, k)
+          if (fits(rects)) return { rects, scale, ornaments, countR, badgeK: k }
+        }
   for (let scale = start; scale >= 0.35 - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
     for (const ornaments of tryOrnaments) {
       const rects = place(input, scale, ornaments, countR)
-      if (fits(rects)) return { rects, scale, ornaments, countR }
+      if (fits(rects)) return { rects, scale, ornaments, countR, badgeK: 1 }
     }
   const scale = 0.35
-  return { rects: place(input, scale, false, countR), scale, ornaments: false, countR }
+  return { rects: place(input, scale, false, countR), scale, ornaments: false, countR, badgeK: 1 }
 }

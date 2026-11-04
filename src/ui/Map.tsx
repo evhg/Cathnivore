@@ -852,7 +852,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               liberated={r.liberated}
             />
             {squeezeTargets.includes(id) && (
-              <g className="threat-badge" transform={`translate(${x - 30}, ${y + BADGE.y0})`}>
+              <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-30, 0)`}>
                 <rect x={0} y={0} width={60} height={14} rx={7} fill="var(--clay-deep)" />
                 <text x={30} y={10.2} textAnchor="middle" className="badge-text">
                   SQUEEZE
@@ -860,7 +860,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               </g>
             )}
             {expandTargets.includes(id) && !squeezeTargets.includes(id) && (
-              <g className="threat-badge" transform={`translate(${x - 28}, ${y + BADGE.y0})`}>
+              <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-28, 0)`}>
                 <rect x={0} y={0} width={56} height={14} rx={7} fill="var(--wheat)" />
                 <text x={28} y={10.2} textAnchor="middle" className="badge-text badge-text-dark">
                   EXPAND
