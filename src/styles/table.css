@@ -2717,3 +2717,30 @@ html.no-animations .cath-companion .cameo {
   .table-cath-line { animation: none; }
 }
 html.no-animations .table-cath-line { animation: none; }
+
+/* Critique 2026-11-03 (cath-game-P): the phone's hand of action cards scrolls sideways, but a card cut at the
+   edge gave no sign of it. While more cards lie to the right (useScrollCues' `data-fade-right`), a small paper
+   tab with a chevron sits on the dock's right edge, over the fade. Display only: the swipe is the control. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions-well:has(> .actions[data-fade-right])::before {
+    content: "\203A";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    z-index: var(--z-raised);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: var(--paper-hi);
+    box-shadow: 0 1px 3px var(--ink-a35), inset 0 0 0 1px var(--ink-a15);
+    color: var(--ink);
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: 1;
+    padding-bottom: 2px;
+    pointer-events: none;
+  }
+}

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 
 // AAA UI M4: a list that scrolls inside a frame must look like a list with more in it, not like a card
 // cut in half by broken layout. Every `[data-scroll-cue]` element under `root` gets
-//   - `data-fade-top` / `data-fade-bottom` while there is more to scroll that way (CSS masks the edge),
+//   - `data-fade-top` / `data-fade-bottom` / `data-fade-right` while there is more to scroll that way (CSS masks the
+//     edge; the phone's sideways hand of cards shows a chevron tab),
 //   - and its parent frame gets `data-more="<n>"`, the number of rows wholly or partly below the fold,
 //     which CSS prints as a small "n more" tab on the frame's bottom edge, and `data-next="<group>"`, the
 //     heading of the group the first hidden row is in (the desktop Actions frame names it: "Play · 8 more").
@@ -21,6 +22,8 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
       const bottom = overflow && el.scrollTop + el.clientHeight < el.scrollHeight - 2
       toggle(el, 'fadeTop', top)
       toggle(el, 'fadeBottom', bottom)
+      // Critique 2026-11-03: a row that scrolls sideways (the phone's hand of action cards) says so too.
+      toggle(el, 'fadeRight', el.scrollWidth - el.clientWidth > 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
       const owner = el.parentElement
       if (!owner) return
       let more = 0
@@ -100,7 +103,7 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
   return setHost
 }
 
-function toggle(el: HTMLElement, key: 'fadeTop' | 'fadeBottom', on: boolean) {
+function toggle(el: HTMLElement, key: 'fadeTop' | 'fadeBottom' | 'fadeRight', on: boolean) {
   if (on) {
     if (el.dataset[key] !== '') el.dataset[key] = ''
   } else if (key in el.dataset) {

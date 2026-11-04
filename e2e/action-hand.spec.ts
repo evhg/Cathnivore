@@ -26,7 +26,16 @@ test('every action card is reachable at P without scrolling the page', async ({ 
   }
   // The dock never needs the vertical "n more" pill.
   expect(await page.locator('.actions-well[data-more]').count()).toBe(0)
-  await page.locator('.action-tray .actions').evaluate((el) => el.scrollTo({ left: 0 }))
+  // Critique 2026-11-03: while cards lie to the right the dock shows a chevron tab; at the row's end it goes.
+  const hand = page.locator('.action-tray .actions')
+  const tab = () => page.locator('.action-tray .actions-well').evaluate((w) => getComputedStyle(w, '::before').content)
+  await hand.evaluate((el) => el.scrollTo({ left: 0 }))
+  await expect(hand).toHaveAttribute('data-fade-right', '')
+  expect(await tab()).not.toBe('none')
+  await hand.evaluate((el) => el.scrollTo({ left: el.scrollWidth }))
+  await expect(hand).not.toHaveAttribute('data-fade-right')
+  expect(await tab()).toBe('none')
+  await hand.evaluate((el) => el.scrollTo({ left: 0 }))
   if (process.env.SHOTS) await page.screenshot({ path: `e2e/screenshots/hand-${testInfo.project.name}.png` })
 })
 
