@@ -122,7 +122,7 @@ function startScene(): void {
           $("front-fallback").classList.add("is-off");
           $("front-grain").classList.add("is-baked");
           built();
-        } else requestAnimationFrame(reveal);
+        } else if (scene === s) requestAnimationFrame(reveal);
       };
       reveal();
       return s;
@@ -471,6 +471,15 @@ async function begin(fromTitle: boolean): Promise<void> {
   if (!Progress.hasSave() && (given || shot)) new Progress(given ?? "ghost").set(newCharacter(given ?? "ghost"));
   if (!Progress.hasSave()) {
     $("screen-title").classList.add("is-leaving");
+    // Plan item 112: a `?play` link opens the case file before the street exists, so the pick showed the static
+    // poster (her back under the umbrella). Build the street now and turn her to the camera once it's up; the
+    // game below disposes of it, as it does for another district.
+    let shown: ClassId = "ghost";
+    let picking = true;
+    if (!sceneStarted) startScene();
+    void sceneReady.then((s) => {
+      if (picking) s?.wardrobe(shown, true);
+    });
     const cls = await new Promise<ClassId | null>((resolve) => {
       const h = openClassPick(
         document.body,
@@ -479,7 +488,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           resolve(c);
         },
         "ghost",
-        { onSelect: (c) => (scene?.wardrobe(c), audio.tick()), onThump: () => audio.thump() },
+        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.tick()), onThump: () => audio.thump() },
       );
       // Escape from the case file goes back to the title.
       const onKey = (e: KeyboardEvent) => {
@@ -490,6 +499,7 @@ async function begin(fromTitle: boolean): Promise<void> {
       };
       addEventListener("keydown", onKey, true);
     });
+    picking = false;
     if (!cls) {
       scene?.wardrobe(null);
       starting = false;
@@ -516,6 +526,16 @@ async function begin(fromTitle: boolean): Promise<void> {
   const sessionMod = import("./game/session");
   const fade = $("front-fade");
   const s = fromTitle ? scene : null;
+  if (!fromTitle && sceneStarted) {
+    // Plan item 112: the street built for a `?play` case file goes; the game builds its own on a fresh canvas.
+    // It may still be building, so it is disposed of whenever it's up (drawing to the detached canvas till then).
+    const old = $<HTMLCanvasElement>("view");
+    old.replaceWith(old.cloneNode(false));
+    void sceneReady.then((fs) => {
+      fs?.dispose();
+      if (scene === fs) scene = null;
+    });
+  }
   const sameWorld = !!s && (district ?? "market") === "market";
   let world: World | undefined;
   if (fromTitle) {
