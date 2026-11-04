@@ -1627,7 +1627,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P and D: `data-moment="liberate|squeeze"` appears and lasts 700-1200 ms, and Cath's `data-expression` changes; no layout shift over 2 px; shots mid-moment at P and D, light and dark.
 - **Size:** 3
 
-## 128. [ ] Hedgerow: a level fly-in that teaches the lane
+## 128. [ ] Hedgerow: a level fly-in that teaches the lane *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (290-740 x 110-880) and level 34: two gates and a long lane, and nothing shows where the vehicles come from or what to guard.
 - **Build:**
   - On a level's first entry the camera (3D) or a pan and zoom (2D) follows the lane from each gate to the farmhouse in about 2.5 s, vehicles dotted along it; it ends on Cath waving with one line naming the threat.
