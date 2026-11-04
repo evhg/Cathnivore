@@ -2757,8 +2757,10 @@ body:has(#dlg-pause[open]) .paused-note {
    card clipped it. The pill stays inside the row and the name takes a second line only when it must. */
 @media (min-width: 900px) {
   .play .panel .ticket-chips .preview-chip {
-    /* Plan item 115: a two-line name keeps clear of the card's edge */
-    max-width: calc(100% - 8px);
+    /* Plan item 115: a two-line name keeps clear of the card's edge. Plan item 138: and reads as a rounded box,
+       not a stretched pill (18 px is still a full pill at one line, 34 px tall). */
+    max-width: calc(100% - 14px);
+    border-radius: 18px;
   }
   .play .panel .ticket-chips .chip-name {
     min-width: 0;
