@@ -1379,7 +1379,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e: previews 120 px wide or more at D, 96 at P; the preview's region count matches the map data (6, 10, 7); Setup doesn't scroll at 1440x900 or 1280x800 (setup-desktop e2e); shots P and D, light and dark.
 - **Size:** 1-2
 
-## 102. [ ] Hedgerow: a 3D Cath drawn to the character bible, who reacts
+## 102. [ ] Hedgerow: a 3D Cath drawn to the character bible, who reacts *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (plan1104c, 190-310 x 505-690; P 20-65 x 485-555): the 3D Cath reads as a dark mass of hair with a pale smudge for a face and a stick arm, no liner, smile or olive jacket. She is the one Cath in the four games not drawn to the bible (VISION "Cath: character bible").
 - **Build:**
   - Her face a texture painted from `shared/cath` (liner, highlights, rose lips), the centre-parted waves framing it, the olive jacket with its collar up over a cream blouse.
