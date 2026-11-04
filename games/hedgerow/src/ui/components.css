@@ -3933,7 +3933,6 @@ body:has(#dlg-pause[open]) .paused-note {
    colour, like a seed packet's variety strip. The price stamp keeps its top corner. */
 @media (min-width: 900px) and (min-height: 521px) {
   .play .tray-wrap .tray .tray-tower {
-    --band: var(--pasture);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3941,10 +3940,6 @@ body:has(#dlg-pause[open]) .paused-note {
     padding: 10px 0 0;
     gap: 0;
   }
-  .play .tray-wrap .tray .tray-tower[data-role="shot"] { --band: var(--clay); }
-  .play .tray-wrap .tray .tray-tower[data-role="splash"] { --band: var(--wheat); }
-  .play .tray-wrap .tray .tray-tower[data-role="income"] { --band: var(--marks-ink); }
-  .play .tray-wrap .tray .tray-tower[data-role="boost"] { --band: var(--oak); }
   .play .tray-wrap .tray .tray-tower img {
     width: 56px;
     height: 56px;
@@ -3975,4 +3970,19 @@ body:has(#dlg-pause[open]) .paused-note {
   /* A tight round's 70 px packets: a two-line band (Seed / Cannon) leaves the art 30 px. */
   .play .panel.shop-tight .tray-wrap .tray .tray-tower img { width: 30px; height: 30px; }
   .play .panel.shop-tight .tray-wrap .tray .tray-tower { padding-top: 6px; }
+}
+/* Plan item 119: each role's band colour, for the desktop band and the phone packet's foot. */
+.play .tray-wrap .tray .tray-tower { --band: var(--pasture); }
+.play .tray-wrap .tray .tray-tower[data-role="shot"] { --band: var(--clay); }
+.play .tray-wrap .tray .tray-tower[data-role="splash"] { --band: var(--wheat); }
+.play .tray-wrap .tray .tray-tower[data-role="income"] { --band: var(--marks-ink); }
+.play .tray-wrap .tray .tray-tower[data-role="boost"] { --band: var(--oak); }
+/* On an upright phone the name and price sit at the packet's foot: that strip is printed in the role's colour under
+   a rule, as the desktop band is (the packet keeps its 64 px height). */
+@media (max-width: 600px) and (orientation: portrait) {
+  .play .tray-wrap .tray .tray-tower {
+    background:
+      linear-gradient(to top, color-mix(in srgb, var(--band) 16%, var(--paper-hi)) 0 31px, color-mix(in srgb, var(--band) 75%, var(--ink)) 31px 33px, transparent 33px),
+      var(--paper-2);
+  }
 }
