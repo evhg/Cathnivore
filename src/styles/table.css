@@ -2305,3 +2305,29 @@ html.no-animations .cath-companion .cameo {
 @media (max-width: 1023.98px) {
   .action-tray .actions .action-item[data-group] > button:first-child:not(:disabled) { border-top: 5px solid var(--grp); }
 }
+/* Plan item 83: each card's painted picture (ActionArt.tsx). A 30 px tile at the head of a desktop row, 34 px
+   on a phone card's top line, 22 px on a "Not yet" strip (kept in colour, so the strip still says what it is). */
+.actions .action-label svg.action-art { flex: none; width: 30px; height: 30px; margin-block: -3px; filter: drop-shadow(0 1px 0 var(--ink-a15)); }
+.actions .action-item > button:disabled .action-label svg.action-art { width: 22px; height: 22px; margin-block: 0; filter: none; opacity: .8; }
+@media (max-width: 1023.98px) {
+  /* a phone card's name keeps its lines: the picture sits in the foot row, between the price and the "i" */
+  .action-tray .actions .action-item > button:first-child { position: relative; }
+  .action-tray .actions .action-label svg.action-art { float: none; position: absolute; right: 40px; bottom: 6px; width: 32px; height: 32px; margin: 0; }
+  .action-tray .actions .action-item > button:disabled .action-label svg.action-art { width: 28px; height: 28px; filter: grayscale(.5); }
+}
+@media (min-width: 1024px) {
+  /* the picture holds the row's left edge, so a two-line name wraps beside it, not under it */
+  .actions-sheet .actions .action-item > button:first-child:not(:disabled),
+  .actions-sheet .actions .action-item[data-group] > button:first-child:not(:disabled) { position: relative; padding-left: 42px; }
+  .actions-sheet .actions .action-item > button:first-child:not(:disabled) .action-label svg.action-art {
+    position: absolute; left: 6px; top: 50%; translate: 0 -50%; width: 28px; height: 28px; margin: 0;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1399.98px) {
+  /* a narrower column: a smaller picture, so "Sell 1 Produce" keeps one line at 1280 wide */
+  .actions-sheet .actions .action-item > button:first-child:not(:disabled),
+  .actions-sheet .actions .action-item[data-group] > button:first-child:not(:disabled) { padding-left: 33px; }
+  .actions-sheet .actions .action-item > button:first-child:not(:disabled) .action-label svg.action-art { left: 4px; width: 23px; height: 23px; }
+  .actions-sheet .actions .action-gain .action-gain-arrow { display: none; }
+  .actions-sheet .actions .action-item > button:not(:disabled) .action-cost { padding-inline: 6px; }
+}

@@ -22,6 +22,7 @@ import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
 import BuyFlight from './BuyFlight'
 import { buyFlightPath, type BuyFlightPath } from './buyFlightGeometry'
 import type { ImprovementCard } from '../content/improvements'
+import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCost, actionLabel, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
 import { IMPROVEMENTS_BY_ID } from '../content/improvements'
@@ -57,16 +58,7 @@ import {
   RiftIcon,
   RoundIcon,
 } from './icons/ResourceIcons'
-import {
-  GraftIcon,
-  InvestIcon,
-  OpenStallIcon,
-  RebutIcon,
-  RoleIcon,
-  SchemeIcon,
-  SellIcon,
-  SupplyIcon,
-} from './icons/ActionIcons'
+import { OpenStallIcon } from './icons/ActionIcons'
 import { RegionTypeIcon } from './icons/RegionTypeIcon'
 import { dailyMarket, dailyRecord, dailyShareText, dailyStreak, recordDaily } from '../content/daily'
 import { LAYOUTS } from '../content/layouts'
@@ -266,16 +258,17 @@ const COST_ICON: Record<ResourceKind, typeof ProduceIcon> = { produce: ProduceIc
 // label. `supplyOutlets`/`supplyBuyout` share one icon (both are "Supply," just a different piece
 // removed); `decide`/`tearUpContract` have none yet (a forced choice and a rare campaign-only action,
 // neither part of the core 7-actions-plus-role set STYLE.md 5.1 documents).
+// Plan item 83: the cards draw each kind's painted picture (ActionArt.tsx) where the glyph was.
 const ACTION_ICON: Partial<Record<Action['kind'], typeof OpenStallIcon>> = {
-  openStall: OpenStallIcon,
-  supplyOutlets: SupplyIcon,
-  supplyBuyout: SupplyIcon,
-  rebut: RebutIcon,
-  invest: InvestIcon,
-  sell: SellIcon,
-  scheme: SchemeIcon,
-  graft: GraftIcon,
-  role: RoleIcon,
+  openStall: OpenStallArt,
+  supplyOutlets: SupplyArt,
+  supplyBuyout: SupplyArt,
+  rebut: RebutArt,
+  invest: InvestArt,
+  sell: SellArt,
+  scheme: SchemeArt,
+  graft: GraftArt,
+  role: RoleArt,
 }
 
 // ROADMAP 9 "cost chips shown with resource tokens": a small icon+number badge inside an action button,
@@ -363,7 +356,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
     return (
       <button aria-label={actionLabel(action, state)} onClick={onClick}>
         <span className="action-label">
-          {Icon && <Icon size={18} />}
+          <SellArt size={18} count={action.count} />
           {`Sell ${action.count} Produce`}
         </span>
         <SellGainChip count={action.count} />
@@ -1509,7 +1502,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <button disabled title={`Need ${missing} more Produce`}>
                 <span className="action-label-group">
                   <span className="action-label">
-                    <SellIcon size={18} />
+                    <SellArt size={18} count={count} />
                     {`Sell ${count} Produce`}
                     <span className="visually-hidden">{` for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}</span>
                   </span>
@@ -1534,7 +1527,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 >
                   <span className="action-label-group">
                     <span className="action-label">
-                      <InvestIcon size={18} />
+                      <InvestArt size={18} />
                       <BuyVerb text={`Buy ${card.name}`} />
                     </span>
                     <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
@@ -1555,7 +1548,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <button disabled title={`Need ${missing} more Goodwill`}>
                   <span className="action-label-group">
                     <span className="action-label">
-                      <SchemeIcon size={18} />
+                      <SchemeArt size={18} />
                       {`Scheme: ${card.name}`}
                     </span>
                     <span className="action-why-not">Need {missing} more Goodwill</span>
@@ -1573,7 +1566,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <button disabled title={disabledOpenStall.text}>
                 <span className="action-label-group">
                   <span className="action-label">
-                    <OpenStallIcon size={18} />
+                    <OpenStallArt size={18} />
                     Open Stall
                   </span>
                   <span className="action-why-not">{disabledOpenStall.text}</span>
@@ -1590,7 +1583,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <button disabled title={reason!.text}>
                 <span className="action-label-group">
                   <span className="action-label">
-                    <SupplyIcon size={18} />
+                    <SupplyArt size={18} />
                     {`Supply: remove ${count} Outlet${count > 1 ? 's' : ''}`}
                   </span>
                   <span className="action-why-not">{reason!.text}</span>
@@ -1607,7 +1600,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <button disabled title={disabledSupplyBuyoutReason.text}>
                 <span className="action-label-group">
                   <span className="action-label">
-                    <SupplyIcon size={18} />
+                    <SupplyArt size={18} />
                     Supply: remove Buyout
                   </span>
                   <span className="action-why-not">{disabledSupplyBuyoutReason.text}</span>
@@ -1624,7 +1617,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <button disabled title={reason!.text}>
                 <span className="action-label-group">
                   <span className="action-label">
-                    <RebutIcon size={18} />
+                    <RebutArt size={18} />
                     {`Rebut: remove ${count} Doubt`}
                   </span>
                   <span className="action-why-not">{reason!.text}</span>

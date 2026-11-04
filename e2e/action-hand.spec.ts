@@ -84,3 +84,27 @@ test('a region card dragged onto a glowing hex plays there', async ({ page }, te
   await expect(page.locator('.drag-ghost')).toHaveCount(0)
   await expect.poll(pipsOn).toBe(before - 1)
 })
+
+// Plan item 83: every action card carries its own painted picture (ActionArt.tsx) and an accessible name.
+test('every action card has its picture and a name', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const cards = await page.evaluate(() =>
+    [...document.querySelectorAll('.actions .action-item > button:first-child')].map((b) => {
+      const art = b.querySelector('svg.action-art')
+      const r = art?.getBoundingClientRect()
+      return { name: (b.getAttribute('aria-label') ?? b.textContent ?? '').trim(), art: art?.getAttribute('data-art') ?? null, w: r?.width ?? 0 }
+    }),
+  )
+  expect(cards.length).toBeGreaterThan(5)
+  for (const c of cards) {
+    expect(c.name.length, 'accessible name').toBeGreaterThan(3)
+    expect(c.art, `${c.name} has a picture`).not.toBeNull()
+    expect(c.w, `${c.name} picture size`).toBeGreaterThanOrEqual(20)
+  }
+  // Different kinds draw different pictures.
+  expect(new Set(cards.map((c) => c.art)).size).toBeGreaterThanOrEqual(4)
+})
