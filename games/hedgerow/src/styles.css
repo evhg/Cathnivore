@@ -4345,3 +4345,31 @@ img.act-scene {
   #screen-select .node:disabled .level-lock + .level-medals + .level-name,
   #screen-select .node:disabled .level-lock + .level-name { margin-top: 4px; }
 }
+/* Plan item 88: at D the next act's glimpse is a strip of 120 px or less (it took the map's bottom third), its
+   name and the line to open it set on one row; the journey itself keeps the screen. */
+@media (min-width: 900px) {
+  #screen-select .act-fog.act-glimpse {
+    min-height: 0;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 0;
+    overflow: hidden;
+  }
+  #screen-select .act-fog.act-glimpse .act-fog-scene { object-fit: cover; object-position: center 60%; }
+  #screen-select .act-fog.act-glimpse .act-fog-text {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    max-width: none;
+    padding: 8px 18px;
+  }
+  #screen-select .act-fog.act-glimpse .act-fog-text strong { display: inline; margin: 0; font-size: var(--fs-d3, var(--fs-d2)); }
+  #screen-select .act-fog.act-glimpse .act-fog-kicker { display: inline; margin: 0; }
+}
+/* ...and the last act shown stretches to the screen above that strip, so the map can still open with its head
+   under the header (its landscape fills the room the old teaser took). */
+@media (min-width: 900px) {
+  #screen-select #levels > li.act:has(+ li.act-fog.act-glimpse) { min-height: calc(100dvh - 56px - 120px); }
+}

@@ -224,3 +224,12 @@ test('plan item 91: the lane into the next act leaves from under the last stop s
   })
   expect(Math.abs(m.lane - m.stop)).toBeLessThanOrEqual(12)
 })
+
+test('plan item 88: at D the next act is a strip of 120 px or less', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop map')
+  await seed(page, 13)
+  const glimpse = page.locator('li.act-fog.act-glimpse')
+  await expect(glimpse).toBeVisible()
+  expect((await glimpse.boundingBox())!.height).toBeLessThanOrEqual(120)
+  await expect(glimpse.locator('.act-fog-text strong')).toBeVisible()
+})

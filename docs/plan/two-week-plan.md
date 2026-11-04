@@ -1261,7 +1261,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - A level card for the next (or picked) stop: the field's thumbnail, the twist, the enemies it brings, stars won, and a big Play.
   - Docked beside the act at D, a sheet above the nav at P.
-  - The next act's teaser a strip of 120 px or less; the next stop pulses gently (still under reduced motion).
+  - The next act's teaser a strip of 120 px or less; the next stop pulses gently (still under reduced motion). *(2026-11-04 lane B, slice 1: at D the glimpse is a 120 px strip with its caption on one line; the last act shown stretches to fill the screen above it, so the map still opens on its head (critique79). e2e in `hedgerow-map.spec.ts`. The room under the act's stops is where the level card can dock next. Not yet done: the pulse, the card, the P sheet.)*
 - **Accept:** e2e: Play visible without scrolling at P and D, 160x48 or more; teaser 120 px or less at D; Enter on a stop opens its card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
 
