@@ -1542,7 +1542,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at 1440x900 and 1280x800: Cath 260 px or more tall, overlapping no region hex or the action column; `data-expression` changes on a Squeeze and a liberation; no page scroll added; shots P and D, light and dark.
 - **Size:** 3
 
-## 119. [ ] Hedgerow: seed packets that are illustrated
+## 119. [ ] Hedgerow: seed packets that are illustrated *(lane A, in progress)*
 - **Why:** `hedge-l21-3d-D` (1108-1412 x 85-368): each packet is mostly blank tan round a 25 px icon with a 10 px price; the most-touched UI in the game reads as placeholder.
 - **Build:**
   - Each tower on its packet face at 56 px or more, on a printed packet (a crimped top edge, a seed-type colour band).
