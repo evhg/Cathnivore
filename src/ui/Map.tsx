@@ -25,6 +25,8 @@ const PRODUCER_INITIAL: Record<ProducerId, string> = { mara: 'M', tomas: 'T', in
 // the flower and the Long Coast and the Delta draw their own shapes, scaled to fit the same square.
 const SIZE = 250 // viewBox half-width; hexes drawn within [-SIZE, SIZE]
 export const HEX_R = 92 // circumradius (centre to vertex)
+/** Plan item 127: how long a liberation or a Squeeze is staged on its tile. */
+const MOMENT_MS = 1100
 const RING_DISTANCE = HEX_R * Math.sqrt(3)
 /** The painted face's radius on the board (the campaign map scales the board's ground art from it). */
 export const BOARD_FACE_R = 92 * 0.96
@@ -632,12 +634,29 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     }
     if (Object.keys(next).length === 0) return () => window.clearTimeout(tt)
     setFx(next)
-    const t = window.setTimeout(() => setFx({}), 1400)
+    // Plan item 127: a moment lasts about 1.1 s (the ring's 240 ms delay and 900 ms run).
+    const t = window.setTimeout(() => setFx({}), MOMENT_MS)
     return () => {
       window.clearTimeout(t)
       window.clearTimeout(tt)
     }
   }, [state, active])
+  // Plan item 127: `?e2eMoment` exposes a hook that stages a liberation or a Squeeze on a region, for tests and shots.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !new URLSearchParams(window.location.search).has('e2eMoment')) return
+    const w = window as unknown as { cathnivoreMoment?: (kind: 'liberate' | 'squeeze', region: RegionId) => void }
+    let t = 0
+    w.cathnivoreMoment = (kind, region) => {
+      window.clearTimeout(t)
+      setFx({ [region]: kind === 'liberate' ? 'lib' : 'sq' })
+      t = window.setTimeout(() => setFx({}), MOMENT_MS)
+    }
+    return () => {
+      window.clearTimeout(t)
+      delete w.cathnivoreMoment
+    }
+  }, [])
+  const moment = Object.values(fx).includes('lib') ? 'liberate' : Object.values(fx).includes('sq') ? 'squeeze' : undefined
 
   const svgRef = useRef<SVGSVGElement>(null)
   // Plan item 63: the hex's radius on screen, so each tile's piece tray is sized to what the player sees.
@@ -667,7 +686,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   }, [active.length])
 
   return (
-    <svg ref={svgRef} data-round={state.round} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-round={state.round} data-moment={moment} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       <g className="tile-shadows" filter="url(#tile-shadow)" pointerEvents="none" aria-hidden="true">
@@ -901,6 +920,17 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
 
             {fx[id] === 'lib' && (
               <g className="lib-burst" pointerEvents="none">
+                {/* Plan item 127: the tile turns from Hollowell's orange to the co-op's green, and bunting drops in. */}
+                <polygon className="lib-flip" points={hexPoints(x, y, HEX_R * GAP_SCALE)} />
+                <g className="lib-bunting">
+                  <path d={`M${x - HEX_R * 0.62} ${y - HEX_R * 0.32} Q${x} ${y - HEX_R * 0.12} ${x + HEX_R * 0.62} ${y - HEX_R * 0.32}`} fill="none" stroke="var(--ink)" strokeWidth={1.5} />
+                  {Array.from({ length: 7 }, (_, i) => {
+                    const t = (i + 0.5) / 7
+                    const bx = x - HEX_R * 0.62 + t * HEX_R * 1.24
+                    const by = y - HEX_R * 0.32 + 4 * t * (1 - t) * HEX_R * 0.2
+                    return <path key={i} d={`M${bx - 6} ${by} L${bx + 6} ${by} L${bx} ${by + 12} Z`} fill={['var(--clay)', 'var(--wheat)', 'var(--pasture)'][i % 3]} stroke="var(--ink)" strokeWidth={1} />
+                  })}
+                </g>
                 <circle className="lib-ring" cx={x} cy={y} r={HEX_R * 0.5} fill="none" stroke="var(--wheat-hi, #e8c35a)" strokeWidth={4} />
                 {Array.from({ length: 12 }, (_, i) => {
                   const a = (i / 12) * Math.PI * 2
@@ -919,7 +949,17 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               </g>
             )}
             {fx[id] === 'sq' && (
-              <polygon className="sq-flash" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="var(--clay)" pointerEvents="none" />
+              <g pointerEvents="none">
+                <polygon className="sq-flash" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="var(--clay)" />
+                {/* Plan item 127: Hollowell's glossy stamp, slammed flat with no bounce. */}
+                <g transform={`translate(${x} ${y + HEX_R * 0.36}) rotate(-8)`}>
+                  {/* The animation's transform would replace a transform on this group, so the place is the parent's. */}
+                  <g className="sq-stamp">
+                    <rect x={-44} y={-12} width={88} height={24} rx={4} />
+                    <text x={0} y={5} textAnchor="middle">SQUEEZED</text>
+                  </g>
+                </g>
+              </g>
             )}
             {r.liberated && <LiberatedLife x={x} y={y} seed={id.length} />}
             {r.liberated && (

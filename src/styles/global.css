@@ -1860,6 +1860,24 @@ html.no-animations .end-stamp { animation: none; opacity: 0.92; }
   .sq-flash { animation: sq-flash 400ms linear both; }
 }
 html.no-animations .fx-liberate, html.no-animations .fx-squeeze, html.no-animations .lib-burst, html.no-animations .sq-flash { animation: none !important; display: none; }
+/* Plan item 127: the moments staged. A liberation flips the tile from Hollowell's orange to the co-op's green and
+   bunting drops in with an overshoot; a Squeeze slams Hollowell's glossy stamp flat, with no bounce. Reduced
+   motion keeps the colour change and the stamp as fades. */
+@keyframes lib-flip { 0% { fill: var(--clay); opacity: 0.7; } 20% { fill: var(--clay); opacity: 0.7; } 55% { fill: var(--pasture); opacity: 0.7; } 100% { fill: var(--pasture); opacity: 0; } }
+@keyframes lib-bunting { 0% { transform: translateY(-34px); opacity: 0; } 55% { transform: translateY(5px); opacity: 1; } 72% { transform: translateY(-2px); } 85%, 100% { transform: translateY(0); opacity: 1; } }
+@keyframes sq-stamp { 0% { transform: scale(1.7); opacity: 0; } 22% { transform: scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes moment-fade { 0% { opacity: 0; } 25%, 75% { opacity: 1; } 100% { opacity: 0; } }
+.lib-flip { fill: var(--pasture); animation: lib-flip 1000ms var(--ease-settle) both; }
+.lib-bunting { animation: lib-bunting 700ms 200ms cubic-bezier(.3, 1.4, .5, 1) both; }
+.sq-stamp { transform-box: fill-box; transform-origin: center; }
+.sq-stamp { animation: sq-stamp 1000ms cubic-bezier(.2, .9, .3, 1) both; }
+.sq-stamp rect { fill: var(--clay-deep); stroke: var(--paper-on-fixed-fill); stroke-width: 1.5; }
+.sq-stamp text { fill: var(--paper-on-fixed-fill); font: 800 13px/1 var(--font-text); letter-spacing: 0.12em; }
+@media (prefers-reduced-motion: reduce) {
+  .lib-burst { display: inline; }
+  .lib-ring, .lib-seed, .lib-bunting { display: none; }
+  .lib-flip, .sq-stamp { animation: moment-fade 1000ms linear both; }
+}
 
 /* Plan item 8 (2026-11-01): an end screen that closes the loop. One column on a phone; on a desktop the story
    (Cath, verdict, grade, play of the game) sits left and the data (the round-by-round chart, stats, the final
