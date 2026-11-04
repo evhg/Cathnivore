@@ -358,7 +358,8 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
       <button aria-label={actionLabel(action, state)} onClick={onClick}>
         <span className="action-label">
           <SellArt size={18} count={action.count} />
-          {`Sell ${action.count} Produce`}
+          {`Sell ${action.count}`}
+          <span className="action-word"> Produce</span>
         </span>
         <SellGainChip count={action.count} />
       </button>
@@ -1395,7 +1396,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item" data-group="sell">
+              <span key={index} className="action-item action-sell" data-group="sell">
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>

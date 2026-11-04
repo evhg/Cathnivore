@@ -2333,3 +2333,29 @@ html.no-animations .cath-companion .cameo {
 }
 /* Plan item 83: the played card's flying copy (playLift.ts) */
 .play-lift { position: fixed; z-index: var(--z-fx); pointer-events: none; transform-origin: 50% 50%; border-radius: var(--r-card); }
+/* Plan item 83: at D the Sell cards stand three to a row as small tiles (the crate, "Sell N", what it earns),
+   giving two rows back to the rest of the turn. "Produce" stays in the name for screen readers only. */
+@media (min-width: 1024px) {
+  .actions-sheet .actions { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .actions-sheet .actions > .action-item { grid-column: 1 / -1; }
+  .actions-sheet .actions > .action-item.action-sell:has(> button:not(:disabled)) { grid-column: span 2; }
+  .actions-sheet .actions .action-item.action-sell[data-group] > button:first-child:not(:disabled) {
+    flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 3px;
+    min-height: 56px; padding: 5px 5px 5px 7px; border-left-width: 5px;
+  }
+  .actions-sheet .actions .action-sell > button:not(:disabled) .action-label { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .actions-sheet .actions .action-item.action-sell > button:first-child:not(:disabled) .action-label svg.action-art {
+    position: static; translate: none; width: 24px; height: 24px; margin: 0;
+  }
+  .actions-sheet .actions .action-sell .action-word {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .actions-sheet .actions .action-sell .action-gain .action-gain-arrow { display: none; }
+  .actions-sheet .actions .action-sell .action-cost { padding-inline: 6px; }
+  .actions-sheet .actions .action-item.action-sell > .tooltip-trigger { top: auto; bottom: 5px; right: 5px; translate: none; scale: .85; }
+}
+@media (min-width: 1024px) and (max-width: 1399.98px) {
+  .actions-sheet .actions .action-item.action-sell[data-group] > button:first-child:not(:disabled) { padding-inline: 5px 4px; }
+  .actions-sheet .actions .action-sell > button:not(:disabled) .action-label { gap: 3px; letter-spacing: -.01em; }
+  .actions-sheet .actions .action-item.action-sell > button:first-child:not(:disabled) .action-label svg.action-art { width: 20px; height: 20px; }
+}
