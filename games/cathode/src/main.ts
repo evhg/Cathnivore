@@ -24,7 +24,8 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, frontSet, listRows, loadingCard, slotHint, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { BUST_FOR_CASE, bustSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio } from "./ui/frontaudio";
 import { el, reducedMotion } from "./ui/dom";
@@ -272,6 +273,21 @@ function fillTitle(): void {
     if (r.done) li.setAttribute("aria-label", `${r.name}, dealt with`);
   }
   if (sealed) el("li", "is-more", list, `${sealed} more ${sealed === 1 ? "name" : "names"}`);
+  // Plan item 89: at D the List is five pinned mugshots (the case board's stills): the dealt-with struck through,
+  // the next one lit, the unreached blank prints with their names withheld. The names list stays for phones.
+  const wall = document.getElementById("the-list-wall") ?? el("ol", "the-list-wall", list.parentElement!);
+  wall.id = "the-list-wall";
+  wall.setAttribute("aria-hidden", "true");
+  wall.replaceChildren();
+  listRows(done).forEach((r, i) => {
+    const li = el("li", `mug${r.done ? " is-done" : r.next ? " is-next" : r.redacted ? " is-sealed" : ""}`, wall);
+    li.style.setProperty("--tilt", `${((i * 37) % 7) - 3}deg`);
+    const photo = el("figure", "mug-photo", li);
+    const who = BUST_FOR_CASE[THE_LIST[i]!.job];
+    if (who && !r.redacted) photo.innerHTML = bustSvg(who);
+    else el("span", "mug-blank", photo, "?");
+    el("b", "mug-name", li, r.redacted ? "Withheld" : r.name);
+  });
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
   // Plan item 12: the board opens on a fresh save too, as a teaser (one lead, five blank prints).
   $<HTMLButtonElement>("btn-cases").disabled = false;

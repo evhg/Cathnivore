@@ -262,3 +262,20 @@ test('the logotype reads at 4.5:1 or more against the street behind it', async (
     expect(ratio, `contrast at ${vp.width}`).toBeGreaterThanOrEqual(4.5)
   }
 })
+
+// Plan item 89: at D the List is five pinned mugshots, each 64 px tall or more, the next one marked.
+test('at D the List is five mugshots', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop front menu')
+  test.setTimeout(200_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const mugs = page.locator('#the-list-wall .mug')
+  await expect(mugs).toHaveCount(5)
+  for (const h of await page.locator('#the-list-wall .mug-photo').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(h).toBeGreaterThanOrEqual(64)
+  await expect(page.locator('#the-list-wall .mug.is-next')).toHaveCount(1)
+  // The names list stays, for screen readers and phones.
+  await expect(page.locator('#the-list li').first()).toBeAttached()
+})

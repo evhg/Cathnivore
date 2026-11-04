@@ -1270,7 +1270,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - Full bleed at D; the progress line only while loading.
   - Focusing New Case or Continue slides in a dossier (a polaroid of the case's target, place, debt tag).
-  - The List as five pinned mugshots, closed cases struck through; a rim light so Cath's hair and profile read.
+  - The List as five pinned mugshots, closed cases struck through; a rim light so Cath's hair and profile read. *(2026-11-04 lane B, slice 1: at D `#the-list-wall` is five pinned polaroids built from the case board's busts: done ones greyed with a blood stroke and struck names, the next outlined, unreached ones as blank prints marked Withheld. They are about 92 px tall at 1440x900. The names list is visually hidden but still read out; e2e in `cathode-front.spec.ts`. Full bleed came with item 82. Next: the dossier on focus of New Case or Continue, the rim light at D, and the loading line hidden once loaded.)*
 - **Accept:** e2e at D: rows 10 and 880 not uniform black; the dossier visible on focus; five portraits 64 px tall or more; menu text 4.5:1 or more; the perf gate passes; shots D and L, P unchanged.
 - **Size:** 2
 
