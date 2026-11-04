@@ -97,9 +97,10 @@ body {
   margin-bottom: -9vh;
   opacity: 0;
   transform: translateY(24px);
+  /* Plan item 104: she has landed by about 700 ms, before the posters rise in front of her. */
   transition:
-    opacity 1200ms var(--ease-out) 900ms,
-    transform 1400ms var(--ease-out) 900ms;
+    opacity 520ms var(--ease-out) 100ms,
+    transform 580ms var(--ease-out) 100ms;
 }
 
 .ready .hero-cath {
@@ -215,7 +216,7 @@ body {
   opacity: 0;
 }
 .ready .title-text::after {
-  animation: wordmark-sheen 1.4s var(--ease-out) 1.1s 1 both;
+  animation: wordmark-sheen 1.4s var(--ease-out) .7s 1 both;
 }
 @keyframes wordmark-sheen {
   0% { opacity: 1; background-position: 140% 0; }
@@ -230,11 +231,12 @@ body {
   opacity: 0;
   transform: translateY(0.35em) rotate(4deg);
   filter: blur(8px);
+  /* Plan item 104: the wordmark lands within about 850 ms (it took 1.9 s, so a glance at 1 s saw it blurred). */
   transition:
-    opacity 900ms var(--ease-out),
-    transform 1100ms var(--ease-out),
-    filter 900ms var(--ease-out);
-  transition-delay: calc(350ms + var(--i) * 70ms);
+    opacity 480ms var(--ease-out),
+    transform 560ms var(--ease-out),
+    filter 480ms var(--ease-out);
+  transition-delay: calc(60ms + var(--i) * 30ms);
 }
 
 .ready .letter {
@@ -262,8 +264,9 @@ body {
 
 /* An animation rather than a transition, so the delay doesn't also slow the cards' hover effects. */
 .ready .reveal {
-  animation: rise 1100ms var(--ease-out) both;
-  animation-delay: calc(1000ms + var(--order, 0) * 140ms);
+  /* Plan item 104: everything risen within about 900 ms (the last card took 3 s, the CTAs 1.4 s). */
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: calc(180ms + min(var(--order, 0), 5) * 45ms);
 }
 
 @keyframes rise {

@@ -47,7 +47,7 @@ test.describe('portfolio', () => {
     const box = (await show.boundingBox())!
     expect(box.x).toBeGreaterThanOrEqual(720)
     expect(box.width).toBeGreaterThan(400)
-    await expect(show.locator('img')).toHaveCount(3)
+    await expect(show.locator('img')).toHaveCount(4) // item 91 added Hedgerow as a fourth print
     const cath = show.locator('svg.cath')
     await expect(cath).toHaveClass(/cath-pose-point/)
     await expect(cath).toHaveClass(/cath-animate/)

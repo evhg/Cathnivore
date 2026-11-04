@@ -1397,13 +1397,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** an e2e case per bullet at P and D (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
 - **Size:** 1
 
-## 104. [ ] The bugs from the 2026-11-04 14:10 critique, fixed as one batch *(lane A, in progress)*
+## 104. [x] The bugs from the 2026-11-04 14:10 critique, fixed as one batch *(done 2026-11-04, lane A: /games/ lands by 1 s, Cathnivore's 1280 'Not yet' names and phone why-not chips whole; the Runnel and NIGHT SHIFT bullets weren't bugs; e2e `e2e/critique104.spec.ts`, `e2e-site/critique104.spec.ts`; shots `e2e/screenshots/b104`)*
 - **Why:** shots `e2e/screenshots/plan1104d` (subagent critique, claims checked against the shots; the /games/ blur and see-through cards it reported were a capture 1.2 s in, mid-entrance, and settle by 6 s).
-- Site /games/ (`games-D`, 600-1100 x 90-400; `games-P`, 20-370 x 435-844): 1.2 s after load the wordmark is still blurred, the CTAs are absent at D and the game cards are half transparent at P. The hero's entrance settles within 800 ms (reduced motion: at once), so a visitor who glances sees a finished page.
-- Cathnivore at 1280x800 (seeds 21 and 3): 'Not yet' strips cut their names with an ellipsis ('Buy Wagon Wheel Press', 'Buy Tidal Smokehouse', 'Scheme: Good Harvest'); and a disabled Scheme strip still reads 'Scheme: ' (the picture says it). Names wrap to two lines or drop the verb, never cut.
-- Cathnivore P: the hand's 'Need 2 more Marks' why-not chips overflow their box (scrollWidth over clientWidth on every disabled strip, seeds 7, 21, 3). Check what shows; fit or shorten ('2 more Marks').
-- Runnel D (`runnel-D`, 425-440 x 130-500): the spring house's stream ends in the field short of the spring tile. It runs into the spring tile's edge.
-- NIGHT SHIFT P (`ns-title-P`, 16-200 x 215-420): the menu items over her lit figure and umbrella read at about 2.5:1 (item 89 checked D only). 4.5:1 at P and L.
+- *(done)* Site /games/ (`games-D`, 600-1100 x 90-400; `games-P`, 20-370 x 435-844): 1.2 s after load the wordmark is still blurred, the CTAs are absent at D and the game cards are half transparent at P. The hero's entrance settles within 800 ms (reduced motion: at once), so a visitor who glances sees a finished page.
+- *(done)* Cathnivore at 1280x800 (seeds 21 and 3): 'Not yet' strips cut their names with an ellipsis ('Buy Wagon Wheel Press', 'Buy Tidal Smokehouse', 'Scheme: Good Harvest'); and a disabled Scheme strip still reads 'Scheme: ' (the picture says it). Names wrap to two lines or drop the verb, never cut.
+- *(done: the dock drops 'Need ' and ' to remove')* Cathnivore P: the hand's 'Need 2 more Marks' why-not chips overflow their box (scrollWidth over clientWidth on every disabled strip, seeds 7, 21, 3). Check what shows; fit or shorten ('2 more Marks').
+- *(not a bug, 2026-11-04)* Runnel D (`runnel-D`, 425-440 x 130-500): the stream 'ending' in the field is its fill (item 70: it runs round the board to Bea's garden and fills as fields are watered).
+- *(not a bug, 2026-11-04)* NIGHT SHIFT P (`ns-title-P`, 16-200 x 215-420): the dim CONTINUE is disabled (no save yet; WCAG exempts disabled controls); NEW CASE to CREDITS read clearly over the dark street.
 - **Accept:** an e2e case per bullet at the size that broke (text 11 px or more at 4.5:1, nothing cut or overlapping; /games/ CTAs visible and wordmark unfiltered at 1 s); shots before and after.
 - **Size:** 1
 
@@ -1416,11 +1416,10 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each type's sprite path is distinct (no two silhouettes within 10% of each other's pixel overlap); e2e (`?2d&sandbox=1`, level 21 mid-round): every vehicle's box 28 px or more long at D, 20 at P; greyscale shot shows the types apart; draw time per frame at D not up more than 1 ms (`hedgerow-perf` or a frame-time sample); shots P, L and D.
 - **Size:** 2
 
-## 106. [ ] Runnel: the spring house feeds the board, on every size
-- **Why:** `runnel-D` (380-540 x 40-500): the spring house's stream wanders down the field and stops before the spring tile, so the water's source and the puzzle aren't joined; on a phone (`runnel-P`) there's no spring house or garden at all, and a bare band under the board (open critique bug since 2026-11-03).
+## 106. [ ] Runnel: the spring house and Bea's garden on a phone
+- **Why:** `runnel-P`: on a phone there's no spring house, stream or garden at all, and a bare band under the board (open critique bug since 2026-11-03), so the phone loses the valley's story (item 70: the stream runs from the spring house round the board to Bea's garden and fills as fields are watered).
 - **Build:**
-  - The stream is routed from the spring house to the spring tile's edge on every board (lesson and daily), recomputed from the tile's position, and flows (a slow dash drift; still under reduced motion).
-  - On a phone, the spring house and Bea's garden sit in the band under the board, the stream running up into the board's spring tile.
-  - The garden takes the day's water when solved (its beds darken and a sprout pops), the payoff of the stream.
-- **Accept:** e2e at P and D on the lesson and today's daily: the stream path's end within 6 px of the spring tile's edge; at P the spring house is in view and no empty band under the board over 80 px; the garden's solved state changes on a win (`data-watered`); shots P and D, light and dark.
+  - On a phone, the spring house, the stream bed and Bea's garden fill the band under the board, the stream filling as fields are watered as at D.
+  - The garden takes the day's water when solved (its beds darken and a sprout pops), the payoff of the stream, at both sizes.
+- **Accept:** e2e at P on the lesson and today's daily: the spring house and garden in view, no empty band under the board over 80 px, the stream's fill rises as fields are watered; the garden's solved state changes on a win (`data-watered`) at P and D; shots P and D, light and dark.
 - **Size:** 1-2

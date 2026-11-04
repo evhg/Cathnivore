@@ -87,6 +87,8 @@ test('the hero shows the four games on the first screen, clear of Cath', async (
     const links = page.locator('.hero-games .hero-game')
     await expect(links).toHaveCount(4)
     await expect(links.first()).toBeVisible()
+    // Measure the landed hero, not a frame of its entrance (plan item 104 made the entrance quicker).
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
     const m = await page.evaluate(() => {
       const r = (e: Element) => e.getBoundingClientRect()
       return { cards: [...document.querySelectorAll('.hero-game')].map(r).map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom })), cath: (({ left, top, right, bottom }) => ({ l: left, t: top, r: right, b: bottom }))(r(document.querySelector('#hero-cath')!)) }
