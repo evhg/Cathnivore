@@ -1344,10 +1344,11 @@ export function enemyScale(kind: EnemyKind): number {
   switch (kind) {
     case "drone":
       return 0.75;
+    // Plan item 105: the smallest vehicles drawn 28 px long or more at D (20 on a phone) so they read on the lane.
     case "courier":
-      return 0.8;
+      return 1.0;
     case "hatchback":
-      return 0.9;
+      return 0.95;
     case "quad":
       return 0.85;
     case "lorry":
@@ -1371,9 +1372,10 @@ export function enemyScale(kind: EnemyKind): number {
       return 1.1;
     case "rival":
       return 1.15;
+    case "influencer":
+      return 0.95;
     case "lawyer":
     case "lobbyist":
-    case "influencer":
       return 0.85;
     case "boss":
     case "convoy":
@@ -2201,4 +2203,32 @@ export function towerSilhouette(kind: TowerKind, cell = 24): { w: number; h: num
   const mask: number[] = [];
   for (let i = 0; i < w * h; i++) mask.push(d[i * 4 + 3]! > 160 ? 1 : 0);
   return { w, h, mask };
+}
+
+/**
+ * Plan item 105: a vehicle's 2D silhouette at a cell size, drawn by its own sprite: the mask and the drawn length
+ * (its widest opaque run), for the size and tell-apart checks.
+ */
+export function enemySilhouette(kind: EnemyKind, cell = 64): { w: number; h: number; len: number; mask: number[] } {
+  const w = Math.round(cell * 3);
+  const h = Math.round(cell * 2.4);
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d")!;
+  drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: 0, still: true }, w / 2, h * 0.8, cell, 0);
+  const d = ctx.getImageData(0, 0, w, h).data;
+  const mask: number[] = [];
+  let x0 = w;
+  let x1 = -1;
+  for (let i = 0; i < w * h; i++) {
+    const on = d[i * 4 + 3]! > 160 ? 1 : 0;
+    mask.push(on);
+    if (on) {
+      const x = i % w;
+      x0 = Math.min(x0, x);
+      x1 = Math.max(x1, x);
+    }
+  }
+  return { w, h, len: x1 >= x0 ? x1 - x0 + 1 : 0, mask };
 }

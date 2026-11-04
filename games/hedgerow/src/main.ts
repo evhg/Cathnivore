@@ -144,7 +144,7 @@ import { enemyIcon, img, towerIcon, propIcon } from "./icons";
 import { gapAdvice, roundAdvice } from "./advice";
 import { barkSpot, type BarkSpot } from "./cathsay";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
-import { towerSilhouette, towerTier } from "./sprites";
+import { enemySilhouette, towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
@@ -744,6 +744,8 @@ if (SANDBOX)
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
     // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
     silhouette: towerSilhouette,
+    // Plan item 105: a vehicle's 2D silhouette and drawn length at a cell size.
+    enemySilhouette,
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
