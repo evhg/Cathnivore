@@ -93,3 +93,33 @@ test("Bea's drawing sits inside the board on a phone", async ({ page }, testInfo
   expect(m.inBoard).toBe(true)
   expect(m.edge).toBeGreaterThanOrEqual(12)
 })
+
+// Plan item 86: at D the title is one market scene: the menu board stands on the table (their boxes meet), the
+// table spans the frame edge to edge, the logotype sits across the top centre, and Tab reaches every entry.
+for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  test(`the menu board stands on the table at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop composition')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.locator('.title-table-front').waitFor()
+    const m = await page.evaluate(() => {
+      const menu = document.querySelector('.title-menu')!.getBoundingClientRect()
+      const t = document.querySelector('.title-table-front')!.getBoundingClientRect()
+      const mark = document.querySelector('.title-wordmark')!.getBoundingClientRect()
+      return {
+        meets: menu.bottom >= t.top && menu.top < t.top && menu.left < t.right && menu.right > t.left,
+        edgeToEdge: t.left <= 0 && t.right >= innerWidth - 1,
+        markCentre: Math.abs((mark.left + mark.right) / 2 - innerWidth / 2),
+      }
+    })
+    expect(m.meets).toBe(true)
+    expect(m.edgeToEdge).toBe(true)
+    expect(m.markCentre).toBeLessThanOrEqual(24)
+    const names: string[] = []
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab')
+      names.push(await page.evaluate(() => (document.activeElement?.textContent ?? '').trim()))
+    }
+    for (const want of [/^Campaign/, /^Quick Game/, /^Daily/, /How to Play/, /Settings/, /Credits/]) expect(names.some((n) => want.test(n)), String(want)).toBe(true)
+  })
+}

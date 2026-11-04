@@ -790,3 +790,88 @@ html.no-animations .title-screen * {
 @media (max-width: 600px) {
   .title-art .title-bea { right: 6px; top: 6px; transform: rotate(6deg); }
 }
+/* Plan item 86: at D the title is one staged market scene. The logotype runs across the top centre; the market
+   table spans the frame edge to edge at its foot (the footer stamped on its front); the menu is the chalk
+   price-board standing on it at the left, Cath behind it, the board lying on it at the right, and the table is
+   dressed with crates, jam and coins. The phone title is unchanged. */
+.title-table-props,
+.title-bunting { display: none; }
+@media (min-width: 1024px) {
+  .title-screen { --table-h: clamp(104px, 16vh, 150px); position: relative; padding-bottom: 0; }
+  .title-hero {
+    position: static;
+    max-width: 1320px;
+    grid-template-columns: minmax(300px, 0.62fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    grid-template-areas: 'kick kick' 'mark mark' 'tag tag' 'note art' 'menu art';
+    row-gap: 0;
+    padding-bottom: calc(var(--table-h) - 14px);
+  }
+  .title-copy { display: contents; }
+  .title-kicker { grid-area: kick; justify-self: center; padding-top: clamp(4px, 2vh, 20px); }
+  .title-wordmark { grid-area: mark; justify-self: center; margin: 6px 0 4px; font-size: clamp(72px, 9.5vh, 104px); }
+  .title-tagline { grid-area: tag; justify-self: center; max-width: none; text-align: center; margin: 0; }
+  .title-copy > .update-ready,
+  .title-copy > .save-warning { grid-area: note; align-self: end; margin-bottom: 12px; }
+  .title-menu { grid-area: menu; justify-self: center; position: relative; z-index: var(--z-map-fx); }
+  /* the board's two feet and its shadow on the tabletop */
+  .title-menu::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -9px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 34%, transparent), transparent);
+    z-index: var(--z-under);
+  }
+  .title-art.title-table { grid-area: art; position: static; max-width: 700px; align-self: end; grid-template-rows: auto; }
+  .title-art.title-table .title-cath { margin-bottom: -52px; }
+  .title-art.title-table .title-board { margin-bottom: 14px; }
+  .title-table-front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--table-h);
+    margin: 0;
+    border-radius: 0;
+  }
+  .title-footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-map-fx);
+    max-width: none;
+    margin: 0;
+    padding: 0 max(20px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    justify-content: center;
+    color: color-mix(in srgb, var(--paper-on-fixed-fill) 88%, var(--wood));
+  }
+  .title-footer a { color: var(--paper-on-fixed-fill); }
+  .title-table-props { display: block; position: absolute; inset: 0; pointer-events: none; }
+  .title-prop { position: absolute; top: 12px; display: block; translate: 0 -100%; }
+  .title-prop svg { position: static; display: block; width: 100%; height: auto; }
+  .title-prop-crates { left: calc(50% - 250px); width: clamp(96px, 8vw, 120px); }
+  .title-prop-jam { left: calc(50% - 30px); width: 34px; }
+  .title-prop-coins { left: calc(50% + 14px); width: 50px; }
+}
+@media (min-width: 1024px) {
+  .title-bunting {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: clamp(150px, 21vh, 200px);
+    height: clamp(54px, 8vh, 72px);
+    pointer-events: none;
+  }
+  .title-bunting-rope { fill: none; stroke: var(--wood-lo); stroke-width: 1.6; }
+  .title-bunting-flag { stroke: color-mix(in srgb, var(--ink) 40%, transparent); stroke-width: .8; stroke-linejoin: round; }
+  .title-bunting-flag.f0 { fill: var(--clay); }
+  .title-bunting-flag.f1 { fill: var(--wheat); }
+  .title-bunting-flag.f2 { fill: var(--pasture); }
+  .title-bunting-flag.f3 { fill: var(--paper); }
+}

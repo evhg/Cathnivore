@@ -54,3 +54,40 @@ export function ProduceCrates() {
     </svg>
   )
 }
+
+/** Plan item 86: a jar of Marrow jam with a gingham lid, for the title's market table. */
+export function JamJar() {
+  return (
+    <svg className="table-prop jam-jar" viewBox="0 0 30 40" aria-hidden="true" focusable="false">
+      <ellipse cx="15" cy="38" rx="13" ry="2" fill="var(--ink-a15)" />
+      <path d="M5 12h20v22a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z" fill="var(--clay-deep)" stroke="var(--ink)" strokeWidth="1" />
+      <path d="M8 15v16" stroke="var(--paper)" strokeWidth="2" strokeLinecap="round" opacity=".45" />
+      <rect x="9" y="20" width="12" height="9" rx="1" fill="var(--paper)" stroke="var(--ink)" strokeWidth=".6" />
+      <path d="M11 24.5h8" stroke="var(--clay-deep)" strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M3 8c4-3 20-3 24 0l-1 5H4z" fill="var(--clay)" stroke="var(--ink)" strokeWidth="1" strokeLinejoin="round" />
+      <path d="M8 6.5v6M13 5.6v7M18 5.6v7M23 6.5v6" stroke="var(--paper)" strokeWidth="1.3" opacity=".8" />
+      <path d="M4 13h22" stroke="var(--ink)" strokeWidth=".8" />
+    </svg>
+  )
+}
+
+/** Plan item 86: a few coins, one stood on its edge, beside the till. */
+export function CoinPile() {
+  const coin = (x: number, y: number) => (
+    <g>
+      <ellipse cx={x} cy={y + 2} rx="9" ry="3.4" fill="var(--wood-lo)" stroke="var(--ink)" strokeWidth=".8" />
+      <ellipse cx={x} cy={y} rx="9" ry="3.4" fill="var(--wheat)" stroke="var(--ink)" strokeWidth=".8" />
+    </g>
+  )
+  return (
+    <svg className="table-prop coin-pile" viewBox="0 0 44 26" aria-hidden="true" focusable="false">
+      <ellipse cx="22" cy="23" rx="20" ry="2.4" fill="var(--ink-a15)" />
+      {coin(12, 19)}
+      {coin(12, 16)}
+      {coin(12, 13)}
+      {coin(29, 20)}
+      <ellipse cx="35" cy="12" rx="4" ry="9" fill="var(--wheat)" stroke="var(--ink)" strokeWidth=".8" />
+      <ellipse cx="35" cy="12" rx="2" ry="5.5" fill="none" stroke="var(--wood-lo)" strokeWidth=".7" />
+    </svg>
+  )
+}

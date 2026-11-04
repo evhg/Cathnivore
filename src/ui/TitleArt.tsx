@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Map, { HEX_R } from './Map'
 import { titleBoardState, titleLine } from './titleBoard'
-import { BeasDrawing } from './TableProps'
+import { BeasDrawing, CoinPile, JamJar, ProduceCrates } from './TableProps'
 import { lightForHour } from './tableLight'
 import { loadCampaign } from '../platform/storage'
 import CathArt from './CathArt'
@@ -37,10 +37,51 @@ export default function TitleArt() {
         </div>
       </div>
       {/* Plan item 75: the market table's near edge, in front of Cath (hiding her waist) and under the board. */}
-      <div className="title-table-front" />
+      {/* Plan item 86: bunting strung across the market at D, from the menu board's side to the cloth's. */}
+      <svg className="title-bunting" viewBox="0 0 1440 70" preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
+        <path className="title-bunting-rope" d={BUNTING_ROPE} />
+        {BUNTING_FLAGS.map((f, i) => (
+          <path key={i} className={`title-bunting-flag f${i % 4}`} d={f} />
+        ))}
+      </svg>
+      <div className="title-table-front">
+        {/* Plan item 86: the table is dressed like a real stall: crates by the menu board, jam and coins by Cath. */}
+        <div className="title-table-props">
+          <span className="title-prop title-prop-crates">
+            <ProduceCrates />
+          </span>
+          <span className="title-prop title-prop-jam">
+            <JamJar />
+          </span>
+          <span className="title-prop title-prop-coins">
+            <CoinPile />
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
+
+/** Plan item 86: two drapes of bunting across a 1440-wide frame, a pennant every 48 units along each. */
+const BUNTING_ROPE = 'M0 8 Q360 58 720 10 Q1080 58 1440 8'
+const BUNTING_FLAGS = (() => {
+  const at = (x: number) => {
+    const local = x < 720 ? x / 720 : (x - 720) / 720
+    const ox = x < 720 ? 0 : 720
+    // the quadratic's y at parameter t (endpoints 8/10 near enough, control 58)
+    const t = local
+    const y = (1 - t) * (1 - t) * 8 + 2 * (1 - t) * t * 58 + t * t * 10
+    return { x: ox + local * 720, y }
+  }
+  const flags: string[] = []
+  for (let x = 24; x < 1440; x += 48) {
+    const a = at(x - 13)
+    const b = at(x + 13)
+    const tip = at(x)
+    flags.push(`M${a.x.toFixed(1)} ${a.y.toFixed(1)} L${b.x.toFixed(1)} ${b.y.toFixed(1)} L${tip.x.toFixed(1)} ${(tip.y + 26).toFixed(1)} Z`)
+  }
+  return flags
+})()
 
 /** A vertex of Kingsmarket's hex (pointy-top, i = 0 at the top, clockwise), `k` hex radii out from the centre. */
 function vertex(i: number, k = 1): string {
