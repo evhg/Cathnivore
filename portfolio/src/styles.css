@@ -484,7 +484,8 @@ h1 {
 }
 .stats dt {
   font-size: var(--fs-small);
-  color: var(--text-faint);
+  /* Plan item 98: the labels at the muted tone (about 9:1 on the ink), not the faint one. */
+  color: var(--text-muted);
 }
 .stats dd {
   margin: 0;

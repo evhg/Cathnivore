@@ -256,3 +256,19 @@ test('plan item 88: the next level\'s card: Play on the first screen, a stop foc
   // A stop not seen before opens its story first, then the field.
   await expect(page.locator('#screen-play:not([hidden]), #story-scene:visible').first()).toBeVisible({ timeout: 15_000 })
 })
+
+test('plan item 98: on a phone the level card sits whole above the tab bar', async ({ page }) => {
+  test.skip(page.viewportSize()!.width >= 900, 'at D the card docks under its act')
+  for (const upTo of [0, 13]) {
+    if (upTo) await seed(page, upTo)
+    else await page.goto(URL)
+    const card = page.locator('#screen-select .level-card')
+    await expect(card).toBeVisible()
+    const tools = await page.locator('#screen-select .top-tools').boundingBox()
+    const c = (await card.boundingBox())!
+    const vp = page.viewportSize()!
+    const foot = tools && tools.y > vp.height / 2 ? tools.y : vp.height
+    expect(c.y).toBeGreaterThanOrEqual(0)
+    expect(c.y + c.height).toBeLessThanOrEqual(foot + 1)
+  }
+})

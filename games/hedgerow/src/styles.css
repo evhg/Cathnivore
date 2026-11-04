@@ -4440,3 +4440,10 @@ img.act-scene {
   .lcard-play { grid-column: 1 / -1; width: 100%; min-height: 48px; }
   .lcard-enemies { display: none; }
 }
+/* Plan item 98: on a portrait phone the map's tools are a fixed tab bar at the foot (N4); the sheet was cut by it.
+   The map's own bottom padding (the bar's height) counts toward the sticky inset, so 8 px clears the bar. */
+@media (max-width: 640px) and (orientation: portrait) {
+  /* overflow: hidden made the act the card's scroll container, so it stuck to the act's foot (off screen), not the
+     map's; clip keeps the rounded clipping without one. */
+  #screen-select .act.act-has-card { overflow: clip; }
+}
