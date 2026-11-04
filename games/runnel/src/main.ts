@@ -250,6 +250,14 @@ function paintValley(seed: string): void {
 function placeValleyCath(): void {
   const cath = document.getElementById('valley-cath')
   if (!cath) return
+  // Plan item 122: one Cath. On a phone the portrait beside her line is the one (its face follows the water the
+  // same way); the corner bust in the valley goes, since no bubble spot fits by it on a phone board.
+  if (!matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) {
+    cath.hidden = true
+    host.aim(null)
+    placeValleySay()
+    return
+  }
   cath.hidden = false
   const r = cath.getBoundingClientRect()
   if (!r.width) return

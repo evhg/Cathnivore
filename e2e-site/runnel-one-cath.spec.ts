@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 122: one Cath. At D the valley figure speaks: her line is a bubble beside her head (15 px or more,
 // meeting no tile) with its tail ending within 24 px of her face, and the side portrait goes. On a board with no
 // room beside her the line stays in the sidebar without the portrait. Her face follows the water: worried on a
-// spill, a wink on the solve. (The phone keeps its framed bust for now: a later slice of the item.)
+// spill, a wink on the solve. On a phone the one Cath is the portrait beside her line, and its face follows too.
 
 const visibleCaths = (page: Page) =>
   page.evaluate(() =>
@@ -19,7 +19,7 @@ const visibleCaths = (page: Page) =>
 
 for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
   test(`one Cath at D, speaking from the valley (${date})`, async ({ page, hasTouch }) => {
-    test.skip(hasTouch, 'the phone keeps its framed bust (a later slice)')
+    test.skip(hasTouch, 'the phone has its own test below')
     await page.clock.setFixedTime(new Date(`${date}T10:00:00Z`))
     await page.goto('/runnel/?nohelp')
     await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
@@ -73,3 +73,17 @@ test('her face follows the water: worried on a spill, a wink on the solve', asyn
   await page.locator('[data-last]').click()
   await expect(cath).toHaveAttribute('data-expression', 'wink')
 })
+
+for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
+  test(`one Cath on a phone: the portrait beside her line (${date})`, async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'the phone')
+    await page.clock.setFixedTime(new Date(`${date}T10:00:00Z`))
+    await page.goto('/runnel/?nohelp')
+    await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+    await expect.poll(() => visibleCaths(page)).toEqual(['host-face'])
+    // Still one after a tap (a re-layout must not bring the corner bust back).
+    await page.locator('.tiles > g.cell:not(.stone):not(.fixed)').first().click()
+    await page.waitForTimeout(300)
+    expect(await visibleCaths(page)).toEqual(['host-face'])
+  })
+}
