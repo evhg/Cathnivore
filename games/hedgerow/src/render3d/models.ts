@@ -355,17 +355,38 @@ function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
 /** A heap of cut thorn on the lane (a Blackthorn hedge's pile). */
 /** A red barn on a plot (H12): walls, a pitched roof and a pale door. */
 export function buildBarn(): THREE.Group {
+  // Plan item 81: boards, not a flat box: battens down each long wall, gable ends under the roof, a white-trimmed
+  // door with its cross brace, a hayloft hatch and a ridge cap.
   const wall = matte("#a8402f");
+  const batten = matte("#83301f");
+  const trim = matte("#efe6d2");
   const roof = matte("#4a4540");
-  const g = group(box(0.62, 0.34, 0.5, wall, 0, 0, 0), box(0.2, 0.22, 0.02, matte("#efe6d2"), 0, 0, 0.26));
+  const g = group(box(0.62, 0.34, 0.5, wall, 0, 0, 0));
+  for (const z of [-0.252, 0.252]) for (let x = -0.27; x <= 0.271; x += 0.06) g.add(box(0.014, 0.34, 0.006, batten, x, 0, z));
+  const gable = new THREE.Shape([new THREE.Vector2(-0.25, 0), new THREE.Vector2(0, 0.2), new THREE.Vector2(0.25, 0)]);
+  const gables = mesh(geo("barnGable", () => new THREE.ExtrudeGeometry(gable, { depth: 0.62, bevelEnabled: false })), wall, -0.31, 0.34, 0);
+  gables.rotation.y = Math.PI / 2;
+  g.add(gables);
+  // The door on the near long wall: a darker leaf, a white frame and the brace across it.
+  g.add(box(0.2, 0.22, 0.008, batten, 0, 0, 0.258));
+  for (const x of [-0.1, 0.1]) g.add(box(0.016, 0.22, 0.012, trim, x, 0, 0.262));
+  g.add(box(0.216, 0.016, 0.012, trim, 0, 0.212, 0.262), box(0.216, 0.016, 0.012, trim, 0, 0.105, 0.262));
+  for (const sd of [-1, 1]) {
+    const brace = bx(0.012, 0.13, 0.01, trim, 0, 0.16, 0.264);
+    brace.rotation.z = sd * 0.75;
+    g.add(brace);
+  }
+  g.add(box(0.09, 0.07, 0.008, matte("#3a2a22"), 0, 0.25, 0.258));
+  g.add(box(0.106, 0.012, 0.012, trim, 0, 0.32, 0.262), box(0.106, 0.012, 0.012, trim, 0, 0.245, 0.262));
   const r = rot(box(0.7, 0.04, 0.34, roof, 0, 0, 0), 0.62, 0, 0);
   r.position.set(0, 0.44, 0.1);
   const r2 = rot(box(0.7, 0.04, 0.34, roof, 0, 0, 0), -0.62, 0, 0);
   r2.position.set(0, 0.44, -0.1);
-  g.add(r, r2);
+  g.add(r, r2, box(0.72, 0.03, 0.05, matte("#2f2c29"), 0, 0.535, 0));
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
+  bake(g);
   return g;
 }
 
@@ -2086,6 +2107,8 @@ export function buildFarmhouse(): THREE.Group {
     slab.position.set(0, 0.6, side * 0.15);
     slab.rotation.x = side * 0.72;
     g.add(slab);
+    // Plan item 81: tile courses across each slab, so the roof reads as tiles.
+    for (let k = 0; k < 4; k++) slab.add(bx(0.86, 0.012, 0.016, matte("#a83a2c", 0.7), 0, 0.026, -0.14 + k * 0.093));
   }
   const gable = new THREE.Shape();
   gable.moveTo(-0.28, 0);
@@ -2098,7 +2121,23 @@ export function buildFarmhouse(): THREE.Group {
   g.add(gables);
   g.add(box(0.1, 0.28, 0.1, matte("#8a5a35"), 0.2, 0.55, -0.1));
   g.add(box(0.14, 0.26, 0.01, matte(C.leaf), 0, 0, 0.285));
-  for (const x of [-0.24, 0.24]) g.add(box(0.12, 0.12, 0.01, glow("#ffd98a", 1.2), x, 0.22, 0.285));
+  for (const x of [-0.24, 0.24]) {
+    g.add(box(0.12, 0.12, 0.01, glow("#ffd98a", 1.2), x, 0.22, 0.285));
+    // A white frame and a cross of glazing bars on each window.
+    const fr = matte("#f6f1e6");
+    g.add(box(0.14, 0.014, 0.014, fr, x, 0.34, 0.29), box(0.014, 0.12, 0.014, fr, x - 0.063, 0.22, 0.29), box(0.014, 0.12, 0.014, fr, x + 0.063, 0.22, 0.29));
+    g.add(box(0.008, 0.12, 0.012, fr, x, 0.22, 0.292), box(0.12, 0.008, 0.012, fr, x, 0.276, 0.292));
+  }
+  g.add(box(0.18, 0.02, 0.06, matte("#b8ad98"), 0, 0, 0.3));
+  // A window in each gable end too: from the field's camera the side wall is often the one in view.
+  for (const sd of [-1, 1]) {
+    const fr = matte("#f6f1e6");
+    const x = sd * 0.375;
+    g.add(box(0.01, 0.12, 0.12, glow("#ffd98a", 1.2), x, 0.22, 0));
+    g.add(box(0.014, 0.014, 0.14, fr, x + sd * 0.004, 0.34, 0), box(0.014, 0.12, 0.014, fr, x + sd * 0.004, 0.22, -0.063), box(0.014, 0.12, 0.014, fr, x + sd * 0.004, 0.22, 0.063));
+    g.add(box(0.012, 0.12, 0.008, fr, x + sd * 0.006, 0.22, 0), box(0.012, 0.008, 0.12, fr, x + sd * 0.006, 0.276, 0));
+    g.add(box(0.05, 0.04, 0.14, matte("#e8748b", 0.6), x + sd * 0.02, 0.14, 0));
+  }
   for (const x of [-0.24, 0.24]) g.add(box(0.14, 0.04, 0.05, matte("#e8748b", 0.6), x, 0.14, 0.3));
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) {
@@ -2106,6 +2145,7 @@ export function buildFarmhouse(): THREE.Group {
       o.receiveShadow = true;
     }
   });
+  bake(g);
   g.userData.chimney = new THREE.Vector3(0.2, 0.86, -0.1);
   return g;
 }
