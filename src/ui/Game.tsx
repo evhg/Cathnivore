@@ -1568,7 +1568,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               // Plan item 83: a Role group shows its ability ("Injunction…"), as the standalone Role card does.
               const roleText = !short && firstAction.kind === 'role' ? `${PRODUCERS[state.activeProducer].roleName.split(', ').pop()}…` : undefined
               const cardText = !short && !roleText && single ? actionCardLabel(firstAction) : undefined
-              const text = short ?? roleText ?? cardText ?? full.text
+              // Plan item 103 follow-up: the scheme's painted tile already says Scheme, so the face names the card alone
+              // ('Price War in Brindle…' was cut at 1280); the accessible name keeps 'Scheme: '.
+              const text = short ?? roleText ?? cardText ?? full.text.replace(/^Scheme: /, '')
               const aria = full.aria ?? (short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
               return (
                 <button
