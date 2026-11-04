@@ -1181,6 +1181,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Size:** 1
 
 ## 80. [ ] Cathnivore: producers drawn to Cath's level, with faces that react *(lane A, in progress)*
+- **Progress (2026-11-04 lane A):** slices 1-2: `ProducerArt.tsx` (three faces each, unit-tested), used by Portrait everywhere; the active cameo reacts (`producerMood.ts`, `e2e/producer-faces.spec.ts`). Open: Setup card portrait at least 120 px tall at P (about 55 px today) and D, the player panel badge and board miniatures' faces, greyscale check, light/dark shots in game.
 - **Why:** `cath-setup-D` (plan1103g): the four producer cards (about 505-1295 x 170-500) are round busts with dot eyes, flat fills and no hair; Cath beside them (1120-1220 x 615-760) is drawn far more richly, so the producers read as placeholders. On the board (`cath-game-D`) their miniatures are small identical capsules. VISION 5 asks for characters with presence.
 - **Build:**
   - One portrait module per producer in `shared/cath/`'s style (hair, eyes with highlights, a signature garment and prop), with neutral, delighted and worried faces.
