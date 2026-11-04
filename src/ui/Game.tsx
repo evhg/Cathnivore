@@ -343,6 +343,14 @@ function roleCardText(action: Extract<Action, { kind: 'role' }>, state: GameStat
 // stay two lines: four Invest cards always fit the Actions frame at 1440x900. The text and the accessible
 // name keep it.
 function BuyVerb({ text }: { text: string }) {
+  // Plan item 83: in a big turn's two-up tiles the scheme's picture says "Scheme", so the word hides there.
+  if (text.startsWith('Scheme: '))
+    return (
+      <>
+        <span className="action-prefix">Scheme: </span>
+        {text.slice(8)}
+      </>
+    )
   if (!text.startsWith('Buy ')) return <>{text}</>
   return (
     <>
@@ -368,7 +376,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
   const cost = actionCost(action, state)
   const { text, aria } = chipLabel(actionLabel(action, state), !!cost)
   return (
-    <button aria-label={aria} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
+    <button aria-label={aria ?? (action.kind === 'scheme' ? text : undefined)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {Icon && <Icon size={18} />}
         {action.kind === 'role' ? roleCardText(action, state) : <BuyVerb text={text} />}
@@ -532,7 +540,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       (item) => !item.querySelector(':scope > button:disabled') && item.getBoundingClientRect().bottom > frame.bottom + 1,
     )
     if (over) setBigTurn(turnKey)
-  }, [state, isDesktop, bigTurn, turnKey])
+  }, [state, isDesktop, bigTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
   const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })
@@ -1468,7 +1476,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               const Icon = ACTION_ICON[firstAction.kind]
               const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
               const text = short ?? full.text
-              const aria = short ? (full.aria ?? full.text) : full.aria
+              const aria = full.aria ?? (short || full.text.startsWith('Scheme: ') ? full.text : undefined)
               return (
                 <button
                   aria-label={aria}
@@ -1513,7 +1521,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 >
                   <span className="action-label">
                     {!short && Icon && <Icon size={18} />}
-                    {text}
+                    {short ? text : <BuyVerb text={text} />}
                   </span>
                   <ActionCostChip cost={cost} />
                 </button>
