@@ -1452,11 +1452,11 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at P: a region tap opens the close-up within 300 ms; pieces in it 32 px or more; names on the board 12 px or more; nothing changes at D; axe AA; shots P before and after, light and dark.
 - **Size:** 2
 
-## 110. [ ] Cathnivore: Cath speaks from where she stands *(lane A, in progress)*
+## 110. [x] Cathnivore: Cath speaks from where she stands *(done 2026-11-04, lane A: the title's and the desktop Setup's lines are speech bubbles, 15 px or more with a tail at her face; `e2e/title-bubble.spec.ts`; shots `e2e/screenshots/s110`. Cut: the phone Setup's 80 px header bust stays (that screen has 0 px to spare, item 101; see DECISIONS))*
 - **Why:** `cath-title-D` (bubble 555-845 x 335-378: about 13 px italic, no tail, 40 px from her head); `cath-setup-D` (Cath 1110-1215 x 610-780, small, the Start sign across her); `cath-setup-P` (a 40 px thumbnail). VISION: Cath with presence; her lines should read as hers at a glance.
 - **Build:**
   - One shared speech bubble for Cath's lines on the title and Setup: 15 px or more, a tail pointing at her mouth, anchored within 24 px of her head, one expression per line from `shared/cath`. *(2026-11-04 lane A, slice 1: the title's line is a bubble at 16 px (D) and 15 px (P) with a tail toward her face, 18 px above her hair at D and over the board's far edge at P, two lines at 375 and 390 wide; `e2e/title-bubble.spec.ts`; shots in the session's scratchpad. Her expression already follows the menu (`useMenuExpression`).)*
-  - On the desktop Setup she stands clear of the Start sign at 160 px or more; on the phone Setup a half-length Cath with her bubble in the header's room, or her line moves to the board's speech strip.
+  - *(D done: the bubble; she shows about 165 px above the OPEN sign, which hides her waist on purpose (item 75). Phone cut.)* On the desktop Setup she stands clear of the Start sign at 160 px or more; on the phone Setup a half-length Cath with her bubble in the header's room, or her line moves to the board's speech strip.
 - **Accept:** e2e at P and D: bubble text 15 px or more at 4.5:1, its tail within 24 px of her head box, nothing overlaps her; Setup still has no scroll at 1440x900 and 390x844 (desktop-no-scroll, setup-* specs); shots P and D.
 - **Size:** 1-2
 

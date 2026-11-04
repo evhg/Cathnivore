@@ -3406,19 +3406,31 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
     margin-bottom: 46px;
     pointer-events: none;
   }
+  /* Plan item 110: her line is a speech bubble (15 px, a tail down at her face), not a caption card. */
   .setup-cath-says {
-    margin: 0 0 4px;
-    max-width: 260px;
-    padding: 6px 10px;
-    border-radius: 12px 12px 12px 3px;
+    position: relative;
+    margin: 0 0 14px;
+    max-width: 280px;
+    padding: 8px 12px;
+    border-radius: 14px;
     background: var(--paper-hi);
-    box-shadow: 0 2px 0 var(--rule), 0 6px 12px color-mix(in srgb, var(--ink) 12%, transparent);
+    filter: drop-shadow(0 2px 0 var(--rule)) drop-shadow(0 4px 6px color-mix(in srgb, var(--ink) 12%, transparent));
     font-family: var(--font-voice);
     font-style: italic;
-    font-size: var(--fs-small);
+    font-size: 0.9375rem;
     line-height: 1.3;
     color: var(--ink);
     pointer-events: auto;
+  }
+  .setup-cath-says::after {
+    content: "";
+    position: absolute;
+    left: 46%;
+    bottom: -12px;
+    width: 20px;
+    height: 13px;
+    background: inherit;
+    clip-path: polygon(0 0, 100% 0, 30% 100%);
   }
   .setup-cath-stand .cath-art { display: block; width: 150px; }
   .setup-cath-stand .cath-art svg { display: block; width: 100%; height: auto; }
