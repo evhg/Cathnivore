@@ -1499,7 +1499,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e in `?2d`: Cath 48 px or more tall at D and 36 at P; her mood changes on a leak and on a cleared wave; she overlaps no tower's plot; hedgerow-tray and gatequeue still pass; shots P and D.
 - **Size:** 2
 
-## 115. [ ] The bugs from the 2026-11-04 16:00 critique, fixed as one batch *(lane A, in progress)*
+## 115. [x] The bugs from the 2026-11-04 16:00 critique, fixed as one batch *(done 2026-11-04, lane A)*
 - **Why:** subagent critique of `e2e/screenshots/plan1104f` against VISION.md.
 - **Build:**
   - Hedgerow 2D: Cath's 'Build a Scarecrow' bubble is pale grey on cream (`hedge-l21-2d-D` 62-290 x 540-628); the 3D one is dark and readable. Make the 2D ink match (4.5:1).
@@ -1510,6 +1510,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Hedgerow 3D P: the 'Hollowell 216 coming' label sits on the lane and the vans (5-200 x 325-350).
   - NIGHT SHIFT title D: a thin white bar at the bottom centre (585-855 x 862); check it is not a loading line that never hides.
   - Cathnivore Setup P: Cath is a 40 px thumbnail (336-376 x 12-55): check against item 110's 80 px header bust.
-  - *(2026-11-04 16:35 lane A: done: the lock icons 22 px, the pill 8 px clear of the edge (two lines kept, item 79), the Saltmarsh cloud moved into open sky and lit; e2e in `hedgerow-tray.spec.ts`, shots `e2e/screenshots/h115`. Not bugs: the 2D bubble is dark ink (the shot caught its fade-in); the phone Act 4 banner sits below the fold of a page that scrolls; the culvert under the Act 4 banner is the next act's teaser; the NIGHT SHIFT line is the boot line, still loading under SwiftShader at 9 s (it hides on the street's first frame); the phone Setup's Cath is item 110's decided header bust. Open: the 3D phone gate plate on the lane.)*
+  - *(2026-11-04 16:35 lane A: done: the lock icons 22 px, the pill 8 px clear of the edge (two lines kept, item 79), the Saltmarsh cloud moved into open sky and lit; e2e in `hedgerow-tray.spec.ts`, shots `e2e/screenshots/h115`. Not bugs: the 2D bubble is dark ink (the shot caught its fade-in); the phone Act 4 banner sits below the fold of a page that scrolls; the culvert under the Act 4 banner is the next act's teaser; the NIGHT SHIFT line is the boot line, still loading under SwiftShader at 9 s (it hides on the street's first frame); the phone Setup's Cath is item 110's decided header bust. The 3D gate plate steps clear of the queue's vehicles (right of them, else below), `e2e/screenshots/h115b`. Item done.)*
 - **Accept:** e2e per bullet where it can be measured (contrast, one-line pills, icon size, banner inside the viewport, label off the lane); shots P and D.
 - **Size:** 1

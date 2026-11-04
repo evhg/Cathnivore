@@ -2258,8 +2258,17 @@ export class Renderer3D {
       const v = this.v1.set(at.x, this.height(at.x, at.z) + at.up, at.z).project(this.camera);
       const pw = el.offsetWidth;
       const ph = el.offsetHeight;
-      const x = Math.max(4, Math.min(w - pw - 4, (v.x * 0.5 + 0.5) * w - pw / 2));
-      const y = Math.max(4, Math.min(h - ph - 4, (-v.y * 0.5 + 0.5) * h));
+      let x = Math.max(4, Math.min(w - pw - 4, (v.x * 0.5 + 0.5) * w - pw / 2));
+      let y = Math.max(4, Math.min(h - ph - 4, (-v.y * 0.5 + 0.5) * h));
+      // Plan item 115: a wide plate (a phone's, with the town's name) clamped at the field's edge could land on the
+      // queue itself; it steps clear of the vehicles, to their right or else below them.
+      const hits = (px: number, py: number) => shown.leads.some((l) => px < l.x + l.w && px + pw > l.x && py < l.y + l.h && py + ph > l.y);
+      if (shown.leads.length && hits(x, y)) {
+        const right = Math.max(...shown.leads.map((l) => l.x + l.w)) + 6;
+        const below = Math.max(...shown.leads.map((l) => l.y + l.h)) + 4;
+        if (right + pw <= w - 4 && !hits(right, y)) x = right;
+        else y = Math.min(h - ph - 4, below);
+      }
       el.style.opacity = String(k);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       shown.plates.push({ x, y, w: pw, h: ph });
