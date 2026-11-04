@@ -6,6 +6,8 @@ import CathArt from './CathArt'
 import CampaignMap from './CampaignMap'
 import { CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
+import { useState } from 'react'
+import { campaignLine } from '../content/campaignLines'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
 // path, with a mini map of the regions it plays on and the producers who play it. Locked chapters stay
@@ -157,6 +159,10 @@ export default function CampaignScreen({
 }) {
   const done = chapters.filter((c) => completed.includes(c.id)).length
   let currentMarked = false
+  // Plan item 113: Cath speaks about the chapter under the pointer or focus, else the next one to play.
+  const [pointed, setPointed] = useState<string | null>(null)
+  const next = chapters.find((c, i) => !completed.includes(c.id) && (i === 0 || completed.includes(chapters[i - 1]!.id)))
+  const say = campaignLine(pointed ?? next?.id, done === chapters.length)
   return (
     <main className="campaign campaign-screen">
       <header className="cmp-header">
@@ -179,16 +185,19 @@ export default function CampaignScreen({
         </div>
         {/* ROADMAP "Cath on the title, Campaign, setup and end screens with a matching expression":
             delighted once every chapter is done, her default warm smirk otherwise. */}
-        <CathArt
-          className="cmp-header-cath"
-          framing="bust"
-          pose={SCREEN_POSE['cathnivore:campaign']}
-          expression={done === chapters.length ? 'delighted' : 'smirk'}
-          animate
-          width={84}
-          height={84}
-          title="Cath"
-        />
+        <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'}>
+          <p className="cmp-cath-line" aria-live="polite">
+            {say.line}
+          </p>
+          <CathArt
+            className="cmp-header-cath"
+            framing="half"
+            pose={SCREEN_POSE['cathnivore:campaign']}
+            expression={say.expression}
+            animate
+            title="Cath"
+          />
+        </figure>
       </header>
       <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} />
       <ol className="chapter-list cmp-path">
@@ -208,6 +217,10 @@ export default function CampaignScreen({
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
                 onClick={() => onStart(chapter)}
+                onPointerEnter={() => setPointed(chapter.id)}
+                onPointerLeave={() => setPointed(null)}
+                onFocus={() => setPointed(chapter.id)}
+                onBlur={() => setPointed(null)}
               >
                 <span className="cmp-card-text">
                   <span className="cmp-chapter-no" aria-hidden="true">Chapter {i + 1}</span>
