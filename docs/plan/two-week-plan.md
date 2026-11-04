@@ -1358,7 +1358,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - A noir mugshot for each of the five targets, from the same bust pipeline as Julian Crisp's (lit, height chart behind, a slate).
   - A withheld target is a silhouette behind a red REDACTED bar and a case stamp, never a black square.
-  - The dossier shows the focused target's mugshot with a paper clip and a slight tilt; drop the menu-foot line ("TOMAS REED · THE HARBOUR · A DEBT TAG") that repeats it.
+  - The dossier shows the focused target's mugshot with a paper clip and a slight tilt; drop the menu-foot line ("TOMAS REED · THE HARBOUR · A DEBT TAG") that repeats it. *(Done 2026-11-04 lane B, slice 1: `mugshotSvg()` in `ui/busts.ts` puts a bust in front of a height chart with a slate. New busts: Tomas Reed (slicker, knit cap, stubble, a red debt tag) and the Mind Under the River (cold light, cables, a red status light). A withheld name is a silhouette behind a red REDACTED bar and a CASE OPEN stamp. The dossier photo is clipped and tilted, and the menu hint hides while the dossier shows. Phone frames have a 64 px floor. e2e: every photo's luminance spread is over 12, the dossier photo is 140 px or more at D, phone frames are 56 px or more.)*
 - **Accept:** e2e: every photo region's luminance standard deviation is over 12 (no flat fill); the dossier photo 140 px wide or more at D, List frames 56 px or more at P; captions at 4.5:1; the perf gate untouched (DOM/2D art only); shots P, L and D.
 - **Size:** 2
 

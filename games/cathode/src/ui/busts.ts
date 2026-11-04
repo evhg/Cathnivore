@@ -3,9 +3,9 @@
 // greyscale lit hard from the left, film grain, and the one accent red (a pocket square, a fleck of blood, a
 // rosette, a lapel pin). Inline SVG so they stay crisp at any size, on the case board and in the boss intros.
 
-export type BustId = "crisp" | "vane" | "pell" | "chair";
+export type BustId = "crisp" | "vane" | "pell" | "chair" | "reed" | "mind";
 
-export const BUSTS: readonly BustId[] = ["crisp", "vane", "pell", "chair"];
+export const BUSTS: readonly BustId[] = ["crisp", "vane", "pell", "chair", "reed", "mind"];
 
 /** Who the bust shows, for alt text and the case board caption. */
 export const BUST_NAMES: Record<BustId, string> = {
@@ -13,6 +13,8 @@ export const BUST_NAMES: Record<BustId, string> = {
   vane: "Dr Octavia Vane",
   pell: "Councillor Marcus Pell",
   chair: "The Chair of the Board",
+  reed: "Tomas Reed",
+  mind: "The Mind Under the River",
 };
 
 /** The case each bust is pinned to on the board (ids from `sim/casefile.ts`). */
@@ -21,6 +23,7 @@ export const BUST_FOR_CASE: Record<string, BustId> = {
   vaneBoss: "vane",
   pellBoss: "pell",
   boardBoss: "chair",
+  vaultBoss: "mind",
 };
 
 /** The bust shown under a boss intro's name (matched on the banner title). */
@@ -240,7 +243,82 @@ function chair(id: string): string {
   );
 }
 
-const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair };
+/** Plan item 99: Tomas Reed, the harbour man the first case is after: a rain slicker, a knit cap, stubble. */
+function reed(id: string): string {
+  return frame(
+    id,
+    `
+<path d="M0 240 L6 194 C22 176 52 168 74 164 L100 176 L126 164 C148 168 178 176 194 194 L200 240 Z" fill="#2f3a2a"/>
+<path d="M74 164 L100 176 L92 240 L64 240 L58 196 Z" fill="#3c4a35"/>
+<path d="M126 164 L100 176 L108 240 L136 240 L142 196 Z" fill="#26301f"/>
+<path d="M60 200 L140 200" stroke="#1a2116" stroke-width="2" opacity=".6"/>
+<!-- the debt tag pinned to his slicker -->
+<path d="M140 204 L160 200 L164 216 L144 220 Z" fill="${RED}"/><circle cx="144" cy="208" r="1.6" fill="#0b0c10"/>
+<path d="M86 130 L114 130 L116 160 C108 166 92 166 84 160 Z" fill="${SKIN_MID}"/>
+${face(
+  "M72 90 C72 62 84 50 100 50 C116 50 128 62 128 90 C128 112 124 128 116 140 C110 148 105 152 100 152 C95 152 90 148 84 140 C76 128 72 112 72 90 Z",
+  "M108 52 C122 56 128 68 128 90 C128 112 124 128 116 140 C110 148 105 152 100 152 C106 142 112 128 113 110 C114 92 114 68 108 52 Z",
+)}
+<g fill="${SKIN_DK}" opacity=".35">${Array.from({ length: 40 }, (_, i) => `<circle cx="${80 + ((i * 37) % 40)}" cy="${118 + ((i * 53) % 26)}" r=".9"/>`).join("")}</g>
+<path d="M66 82 C64 52 80 36 100 36 C120 36 136 52 134 82 C126 74 114 70 100 70 C86 70 74 74 66 82 Z" fill="#5a2a24"/>
+<g stroke="#43201b" stroke-width="1.4" opacity=".8">${[74, 84, 94, 104, 114, 124].map((x) => `<line x1="${x}" y1="46" x2="${x}" y2="76"/>`).join("")}</g>
+<path d="M66 82 C78 74 122 74 134 82 L134 88 C122 80 78 80 66 88 Z" fill="#3d1c18"/>
+<path d="M82 92 C86 90 92 90 96 92" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<path d="M104 92 C108 90 114 90 118 92" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<path d="M83 99 C87 97 92 97 95 99 C92 101 87 101 83 99 Z" fill="${INK}"/><path d="M105 99 C108 97 113 97 117 99 C113 101 108 101 105 99 Z" fill="${INK}"/>
+<path d="M100 100 C99 110 97 116 96 120 C99 122 103 122 105 120" stroke="${SKIN_DK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M90 132 C96 129 104 129 111 131" stroke="${SKIN_DK}" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M73 76 C71 98 74 120 84 138" stroke="${P}" stroke-width="1.2" fill="none" opacity=".5"/>
+`,
+  );
+}
+
+/** Plan item 99: the Mind Under the River: a figure of cold light in the dark, cables where the shoulders end. */
+function mind(id: string): string {
+  return frame(
+    id,
+    `
+<g stroke="#3a3f44" stroke-width="2" fill="none" opacity=".7">${[30, 52, 74, 126, 148, 170].map((x, i) => `<path d="M${x} 240 C${x + (i < 3 ? 10 : -10)} 210 ${x + (i < 3 ? 30 : -30)} 196 ${i < 3 ? 80 : 120} 176"/>`).join("")}</g>
+<path d="M60 240 L66 196 C76 182 88 176 100 176 C112 176 124 182 134 196 L140 240 Z" fill="#121418"/>
+<path d="M76 90 C76 62 86 48 100 48 C114 48 124 62 124 90 C124 112 120 128 112 140 C107 147 103 150 100 150 C97 150 93 147 88 140 C80 128 76 112 76 90 Z" fill="#15171b"/>
+<path d="M76 90 C76 62 86 48 100 48 C114 48 124 62 124 90" stroke="#cfd6d8" stroke-width="1.6" fill="none" opacity=".8"/>
+<path d="M124 84 C126 106 122 126 112 140" stroke="#cfd6d8" stroke-width="1.4" fill="none" opacity=".6"/>
+<circle cx="100" cy="160" r="3" fill="${RED}"/>
+<path d="M84 96 L96 96 M104 96 L116 96" stroke="#eef1f2" stroke-width="3" stroke-linecap="round"/>
+<g fill="#cfd6d8" opacity=".55">${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="${86 + i * 5}" y="${112 + (i % 2) * 3}" width="2" height="${6 + (i % 3) * 3}"/>`).join("")}</g>
+`,
+    0.25,
+  );
+}
+
+const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair, reed, mind };
+
+/**
+ * Plan item 99: a mugshot. The bust in front of a height chart, with the slate held at the chest; a withheld
+ * target (null) is a grey silhouette behind a red REDACTED bar and a case stamp, never a black square.
+ */
+export function mugshotSvg(who: BustId | null, slate: string): string {
+  uid += 1;
+  const id = `mug${uid}`;
+  const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
+  const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/><text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text></g>`;
+  if (who) {
+    const inner = DRAW[who](id).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+    return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}">${inner}${chart}${slateG}</svg>`;
+  }
+  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld">
+<defs><radialGradient id="r${id}" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#3a3833"/><stop offset="1" stop-color="#121317"/></radialGradient></defs>
+<rect width="200" height="240" fill="url(#r${id})"/>${chart}
+<path d="M24 240 L30 198 C46 180 70 172 84 168 L100 176 L116 168 C130 172 154 180 170 198 L176 240 Z" fill="#26262b"/>
+<path d="M74 88 C74 60 86 46 100 46 C114 46 126 60 126 88 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 88 Z" fill="#2c2c31"/>
+<path d="M74 84 C74 58 86 46 100 46 C114 46 126 58 126 84" stroke="#55534d" stroke-width="1.4" fill="none"/>
+<rect x="-6" y="84" width="212" height="22" fill="#b3122a" transform="rotate(-6 100 95)"/>
+<text x="100" y="100" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="13" font-weight="800" letter-spacing="3" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
+<g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>
+${slateG}
+</svg>`;
+}
 
 /** The bust as an inline SVG string; every call gets its own ids so several can share a page. */
 export function bustSvg(who: BustId): string {

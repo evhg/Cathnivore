@@ -363,3 +363,41 @@ test('at D the menu entries read at 4.5:1 or more', async ({ page, hasTouch }) =
     expect(ratio, id).toBeGreaterThanOrEqual(4.5)
   }
 })
+
+// Plan item 99: every List photo and the dossier's is a painted mugshot, not a flat fill (luminance spread over 12),
+// the dossier photo 140 px wide or more at D and the List frames 56 px or more on an upright phone.
+test('the List and the dossier are painted mugshots', async ({ page, hasTouch }) => {
+  test.setTimeout(240_000)
+  if (hasTouch) await page.setViewportSize({ width: 390, height: 844 })
+  else await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const photos = page.locator(hasTouch ? '#the-list-wall .mug-photo' : '#the-list-wall .mug-photo, #dossier .dossier-photo')
+  const n = await photos.count()
+  expect(n).toBeGreaterThanOrEqual(5)
+  for (let i = 0; i < n; i++) {
+    const ph = photos.nth(i)
+    const box = (await ph.boundingBox())!
+    if (hasTouch) expect(box.width).toBeGreaterThanOrEqual(56)
+    const png = (await page.screenshot({ clip: box })).toString('base64')
+    const sd = await page.evaluate(async (b64) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, c.width, c.height).data
+      const ls: number[] = []
+      for (let k = 0; k < d.length; k += 4) ls.push(0.2126 * d[k]! + 0.7152 * d[k + 1]! + 0.0722 * d[k + 2]!)
+      const mean = ls.reduce((a, b) => a + b, 0) / ls.length
+      return Math.sqrt(ls.reduce((a, b) => a + (b - mean) ** 2, 0) / ls.length)
+    }, png)
+    expect(sd, `photo ${i}`).toBeGreaterThan(12)
+  }
+  if (!hasTouch) expect((await page.locator('#dossier .dossier-photo').boundingBox())!.width).toBeGreaterThanOrEqual(140)
+})

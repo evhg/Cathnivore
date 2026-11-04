@@ -25,7 +25,7 @@ import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
 import { areaTitle, COLD_OPEN_LINE, dossierFor, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
-import { BUST_FOR_CASE, bustSvg } from "./ui/busts";
+import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio } from "./ui/frontaudio";
 import { el, reducedMotion } from "./ui/dom";
@@ -272,9 +272,9 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   box.replaceChildren();
   el("i", "dossier-pin", box);
   const photo = el("figure", "dossier-photo", box);
-  const who = d.job ? BUST_FOR_CASE[d.job] : undefined;
-  if (who) photo.innerHTML = bustSvg(who);
-  else el("span", "mug-blank", photo, "?");
+  // Plan item 99: the focused target's mugshot (Tomas Reed's for the opening case), clipped to the file.
+  const who = d.job ? BUST_FOR_CASE[d.job] : d.target === "Tomas Reed" ? "reed" : undefined;
+  photo.innerHTML = mugshotSvg(who ?? null, who ? d.target.toUpperCase().slice(0, 16) : "CASE FILE");
   el("p", "dossier-kicker", box, "Case file");
   el("b", "dossier-target", box, d.target);
   el("span", "dossier-place", box, d.place);
@@ -308,9 +308,9 @@ function fillTitle(): void {
     const li = el("li", `mug${r.done ? " is-done" : r.next ? " is-next" : r.redacted ? " is-sealed" : ""}`, wall);
     li.style.setProperty("--tilt", `${((i * 37) % 7) - 3}deg`);
     const photo = el("figure", "mug-photo", li);
-    const who = BUST_FOR_CASE[THE_LIST[i]!.job];
-    if (who && !r.redacted) photo.innerHTML = bustSvg(who);
-    else el("span", "mug-blank", photo, "?");
+    // Plan item 99: a noir mugshot for every name; one not reached yet is a redacted silhouette, never a black square.
+    const who = r.redacted ? undefined : BUST_FOR_CASE[THE_LIST[i]!.job];
+    photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`);
     el("b", "mug-name", li, r.redacted ? "Withheld" : r.name);
   });
   $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
