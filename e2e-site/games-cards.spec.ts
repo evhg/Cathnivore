@@ -158,6 +158,6 @@ test('the four games are posters on the first screen', async ({ page }) => {
     for (const f of m.copy) expect(f).toBeGreaterThanOrEqual(14)
     expect(m.caths).toBe(4)
     expect(m.scroll).toBeLessThanOrEqual(0)
-    if (vp.width >= 900) for (const [l, t, r, b] of m.boxes) expect(l >= 0 && t >= 0 && r <= vp.width && b <= vp.height).toBe(true)
+    if (vp.width >= 900) for (const [l = -1, t = -1, r = 1e9, b = 1e9] of m.boxes) expect(l >= 0 && t >= 0 && r <= vp.width && b <= vp.height).toBe(true)
   }
 })
