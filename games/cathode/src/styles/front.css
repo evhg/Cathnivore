@@ -74,6 +74,9 @@
 .front-bars.is-wide { --aspect: 2; }
 .front-bars.is-wide i { height: min(3svh, max(0px, (100svh - 100vw / 2) / 2)); }
 .front-bars.is-gone i { height: 0; }
+/* Plan item 82: no letterbox on the front door: the street runs full-bleed to every edge (the bars read as dead
+   black bands at P and D); the menus keep their padding from the safe areas (--top-safe). */
+.front-bars { display: none; }
 
 /* A fade to and from black (the push's end, the cold open's start). */
 .front-fade {

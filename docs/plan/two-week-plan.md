@@ -1204,7 +1204,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:**
   - A phone crop of its own: the figure in the lower half with a rim light, the menu above it on a scrim.
   - A solid logotype (the outline only as the draw-in's first beat) with a legibility pool.
-  - No letterbox: the scene full-bleed, the safe areas padded.
+  - No letterbox: the scene full-bleed, the safe areas padded. *(Done 2026-11-04 lane B, slice 1: `.front-bars` hidden on the front door, and the menus keep the `--top-safe` padding; e2e in `cathode-front.spec.ts`.)*
 - **Accept:** e2e: the logotype's contrast against the pixels behind it at least 4.5:1 at P and D, no black band over 8 px at either size, the menu's box not intersecting the figure's at P; the perf gate passes; shots at P, D and L.
 - **Size:** 2
 

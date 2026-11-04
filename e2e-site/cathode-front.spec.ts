@@ -188,3 +188,19 @@ test('the office loading card names the office over its own key art, inside the 
     expect(b.x >= 0 && b.y >= 0 && b.x + b.width <= vp.width + 1 && b.y + b.height <= vp.height + 1, sel).toBe(true)
   }
 })
+
+// Plan item 82: no letterbox on the front door. The street runs full-bleed; the 2.39:1 bars read as dead black
+// bands (42 px at P, 45 px at D).
+test('the front door has no letterbox bars at P and D', async ({ page }) => {
+  test.setTimeout(120_000)
+  for (const vp of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/nightshift/?shot')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?front=title&shot&quality=phone')
+    const bands = await page.evaluate(() =>
+      [...document.querySelectorAll('#front-bars i')].map((i) => Math.round(i.getBoundingClientRect().height)),
+    )
+    expect(bands.every((h) => h <= 8), `bands ${bands.join(',')} at ${vp.width}`).toBe(true)
+  }
+})
