@@ -1397,7 +1397,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** an e2e case per bullet at P and D (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
 - **Size:** 1
 
-## 104. [ ] The bugs from the 2026-11-04 14:10 critique, fixed as one batch
+## 104. [ ] The bugs from the 2026-11-04 14:10 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** shots `e2e/screenshots/plan1104d` (subagent critique, claims checked against the shots; the /games/ blur and see-through cards it reported were a capture 1.2 s in, mid-entrance, and settle by 6 s).
 - Site /games/ (`games-D`, 600-1100 x 90-400; `games-P`, 20-370 x 435-844): 1.2 s after load the wordmark is still blurred, the CTAs are absent at D and the game cards are half transparent at P. The hero's entrance settles within 800 ms (reduced motion: at once), so a visitor who glances sees a finished page.
 - Cathnivore at 1280x800 (seeds 21 and 3): 'Not yet' strips cut their names with an ellipsis ('Buy Wagon Wheel Press', 'Buy Tidal Smokehouse', 'Scheme: Good Harvest'); and a disabled Scheme strip still reads 'Scheme: ' (the picture says it). Names wrap to two lines or drop the verb, never cut.
