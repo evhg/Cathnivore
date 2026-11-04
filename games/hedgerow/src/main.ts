@@ -1098,7 +1098,10 @@ function laneFlyIn(lv: Level, done: () => void): void {
     delete ui.stage.dataset.flyin;
     if (game === g) {
       const gate = lv.id >= 81 ? "Hollowcandor" : lv.id >= 41 ? "Candor" : "Hollowell";
-      tip(`flyin-${lv.id}`, lanes.length > 1 ? `Two gates today: ${gate} comes in at both and they meet at the farm. Cover where the lanes join.` : `${gate} comes in at the gate and follows the lane to the farm. Build where it bends.`, "determined", true);
+      // Spoken from where she stands on the field (placed clear of the empty plots), not the corner card.
+      const line = lanes.length > 1 ? `Two gates today: ${gate} comes in at both and they meet at the farm. Cover where the lanes join.` : `${gate} comes in at the gate and follows the lane to the farm. Build where it bends.`;
+      sayOverride = { text: line, until: performance.now() + Math.max(5000, line.length * 70) };
+      say(`Cath: ${line}`);
     }
     done();
   };
@@ -3562,11 +3565,15 @@ function adviceLine(g: Game): string {
   return gap ?? roundAdvice(waveSpawns(g, groups, g.wave + 1), g.level.towers, g.towers.map((x) => x.kind))?.line ?? "";
 }
 
+/** Plan item 128: a line of hers for a few seconds in place of the advice (the fly-in's closing word). */
+let sayOverride: { text: string; until: number } | null = null;
+
 function syncCathSay(g: Game, now: number): void {
   const el = ui.cathSay;
   const quiet =
     !!player || g.phase !== "build" || !!selected || posting || aiming || !ui.intro.hidden || !ui.bubble.hidden || hasTwist(g.level, "nocath") || !renderer;
-  const text = quiet ? "" : adviceLine(g);
+  if (sayOverride && (now > sayOverride.until || g.phase !== "build")) sayOverride = null;
+  const text = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
   if (!text) {
     if (!el.hidden) el.hidden = true;
     sayShown = null;

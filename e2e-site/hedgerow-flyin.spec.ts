@@ -11,7 +11,7 @@ const seed = async (page: Page, lv: number) => {
 }
 const flying = (page: Page) => page.evaluate(() => !!document.querySelector('[data-flyin]'))
 
-test('the fly-in traces the lanes in 3 s or less, then Cath names the threat', async ({ page }) => {
+test('the fly-in traces the lanes in 3 s or less, then Cath names the threat', async ({ page, hasTouch }) => {
   await seed(page, 34)
   await page.goto('/hedgerow/?2d&sandbox=1&flyin=once&level=34')
   await page.waitForFunction(() => !!document.querySelector('[data-flyin]'), null, { timeout: 30_000 })
@@ -22,8 +22,16 @@ test('the fly-in traces the lanes in 3 s or less, then Cath names the threat', a
     return performance.now() - t0
   })
   expect(ms).toBeLessThanOrEqual(3000)
-  await expect(page.locator('#bubble')).toBeVisible()
-  await expect(page.locator('#bubble')).toContainText(/gate/i)
+  // Her closing word comes from where she stands on the field, placed off the empty plots (item 120's bounds).
+  await expect(page.locator('#cath-say')).toBeVisible()
+  await expect(page.locator('#cath-say')).toContainText(/gate/i)
+  const cover = await page.evaluate(() => {
+    type B = { x: number; y: number; w: number; h: number }
+    const s = (window as unknown as { hedgerow: { cathSay(): { box: B; empty: B[] } | null } }).hedgerow.cathSay()!
+    const on = (a: B, p: B) => Math.max(0, Math.min(a.x + a.w, p.x + p.w) - Math.max(a.x, p.x)) * Math.max(0, Math.min(a.y + a.h, p.y + p.h) - Math.max(a.y, p.y))
+    return s.empty.reduce((n, p) => n + on(s.box, p), 0) / (s.box.w * s.box.h)
+  })
+  expect(cover).toBeLessThanOrEqual(hasTouch ? 0.3 : 0.15)
   // Seen once: a reload starts the level without it.
   await page.reload()
   await page.waitForTimeout(1500)
