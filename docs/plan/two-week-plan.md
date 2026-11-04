@@ -1515,7 +1515,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e per bullet where it can be measured (contrast, one-line pills, icon size, banner inside the viewport, label off the lane); shots P and D.
 - **Size:** 1
 
-## 116. [ ] Site: painted key art, not screenshots
+## 116. [ ] Site: painted key art, not screenshots *(lane A, in progress)*
 - **Why:** `games-D` (plan1104g, 130-1310 x 460-655): three of the four posters are UI captures (HUD, tray, side panel) and Runnel's is stale (the old board, not the item 77/90/97 valley); the Cathnivore poster's text is about 3 px. The site's first screen reads as budget.
 - **Build:**
   - A `?keyart` mode per game: no HUD, the hero subject framed (board, valley, field, street), Cath standing in the scene in her game's outfit.
