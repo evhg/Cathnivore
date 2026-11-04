@@ -242,7 +242,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const up = new THREE.Vector3(0, 1, 0);
 
   // ---- the wardrobe (C14): its framing blends over the loop; its key light changes colour over 400 ms ----
-  const wd = { w: 0, target: 0, cls: null as string | null, turn: 0 };
+  const wd = { w: 0, target: 0, cls: null as string | null, turn: 0, dolly: 0, flash: 0 };
+  /** Plan item 129: a class change dollies the lens in to her over 250 ms (from 9% further out) and flashes her key. */
+  const DOLLY_S = 0.25;
+  const FLASH_S = 0.32;
   /** Plan item 42: a change of class turns her out and back to the lens over 400 ms (none under reduced motion). */
   const TURN_S = 0.4;
   const wPos = toWorld(...WARDROBE.pos);
@@ -259,7 +262,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
     // About 400 ms to the new colour.
     key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
-    key.intensity = (phone ? 7 : 9) * wd.w;
+    // Plan item 129: the kit-on flash, the key light at 2.6x the moment the kit goes on, easing back over 320 ms.
+    if (wd.flash > 0) wd.flash = Math.max(0, wd.flash - dt);
+    const flash = wd.flash > 0 ? 1.6 * Math.pow(wd.flash / FLASH_S, 2) : 0;
+    key.intensity = (phone ? 7 : 9) * wd.w * (1 + flash);
     let yaw = Math.PI;
     if (wd.turn > 0) {
       wd.turn = Math.max(0, wd.turn - dt);
@@ -275,7 +281,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const home = coatWant.equals(coatBase) && Math.abs(coatNow.r - coatBase.r) + Math.abs(coatNow.g - coatBase.g) + Math.abs(coatNow.b - coatBase.b) < 0.002;
     cath.coat(home ? null : coatNow);
     pink.intensity = pinkI * (1 - 0.78 * wd.w);
-    cath.tint(key.color, 0.6 * wd.w);
+    cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
     if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
     if (wd.w <= 0.002 && keyRemove) {
       keyRemove();
@@ -304,6 +310,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       if (cam.aspect < 1) {
         l.y -= 0.15 * e;
         p.sub(l).multiplyScalar(1 + 0.35 * e).add(l);
+      }
+      // Plan item 129: the dolly in after a class change, 9% further out easing home over 250 ms.
+      if (wd.dolly > 0) {
+        wd.dolly = Math.max(0, wd.dolly - dt);
+        p.sub(l).multiplyScalar(1 + 0.09 * smoother(wd.dolly / DOLLY_S)).add(l);
       }
     }
     // Plan item 82: ...and the lens aims higher there, so she stands in the lower half under the menu.
@@ -516,7 +527,14 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     wardrobe(cls, instant) {
       const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!instant && !o.still && !reduce && cls && wd.cls && cls !== wd.cls) wd.turn = TURN_S;
+      if (!instant && !o.still && cls && wd.cls && cls !== wd.cls) {
+        // Reduced motion keeps the flash (light, not movement) and drops the turn and the dolly.
+        if (!reduce) {
+          wd.turn = TURN_S;
+          wd.dolly = DOLLY_S;
+        }
+        wd.flash = FLASH_S;
+      }
       wd.cls = cls;
       wd.target = cls ? 1 : 0;
       const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];

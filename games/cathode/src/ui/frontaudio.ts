@@ -16,6 +16,108 @@ const CHORDS: ReadonlyArray<readonly number[]> = [
 ];
 const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
+/**
+ * Plan item 129: each class's weapon-rack stinger, the kit going on as she turns: the rack's pitch (1 is the
+ * Ghost's rifle bolt) and how many clacks it makes (a bolt and a pump rack twice, the cleaver's hook once).
+ */
+const RACK: Record<string, { pitch: number; clacks: number; ring: number }> = {
+  ghost: { pitch: 1, clacks: 2, ring: 1 },
+  butcher: { pitch: 0.72, clacks: 1, ring: 0.7 },
+  gunslinger: { pitch: 1.18, clacks: 2, ring: 1.15 },
+  wirewitch: { pitch: 1.4, clacks: 1, ring: 1.6 },
+  fixer: { pitch: 0.9, clacks: 2, ring: 0.85 },
+};
+
+/** A seeded white-noise buffer, `s` seconds long. */
+function noiseBuffer(c: BaseAudioContext, s: number): AudioBuffer {
+  const len = Math.ceil(c.sampleRate * s);
+  const b = c.createBuffer(1, len, c.sampleRate);
+  const d = b.getChannelData(0);
+  let x = 0x2f6e2b1;
+  for (let i = 0; i < len; i++) {
+    x = (x * 1664525 + 1013904223) | 0;
+    d[i] = ((x >>> 8) / 16777216) * 2 - 1;
+  }
+  return b;
+}
+
+/**
+ * Plan item 129: the weapon-rack stinger on a class change, scheduled on any context (live, or offline for the
+ * audio check): a cloth swish as the kit goes on (noise, its low-pass sweeping 500 Hz to 2.6 kHz over 120 ms),
+ * then the rack, one or two band-passed clacks 45 ms apart, and a short inharmonic steel ring under them. About
+ * 0.45 s, peaking near -12 dB.
+ */
+export function scheduleRack(c: BaseAudioContext, out: AudioNode, now: number, noise: AudioBuffer, cls: string): number {
+  const r = RACK[cls] ?? RACK.ghost!;
+  const play = (at: number, dur: number, chain: AudioNode) => {
+    const n = c.createBufferSource();
+    n.buffer = noise;
+    n.loop = true;
+    n.connect(chain);
+    n.start(at, (at * 7.3) % 1);
+    n.stop(at + dur);
+  };
+  // The swish.
+  {
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(500, now);
+    lp.frequency.exponentialRampToValueAtTime(2600, now + 0.12);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(db(-24), now + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+    lp.connect(g).connect(out);
+    play(now, 0.17, lp);
+  }
+  // The rack: clacks with a fast attack, high and bright, each one a little lower than the last.
+  const t0 = now + 0.11;
+  for (let i = 0; i < r.clacks; i++) {
+    const at = t0 + i * 0.045;
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 2400 * r.pitch * (1 - i * 0.18);
+    bp.Q.value = 5;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(db(-6), at + 0.001);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.035);
+    bp.connect(g).connect(out);
+    play(at, 0.04, bp);
+  }
+  // The steel ring: three inharmonic partials, the lowest longest.
+  const ringAt = t0 + (r.clacks - 1) * 0.045;
+  [1, 1.63, 2.7].forEach((m, i) => {
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.value = 820 * r.ring * m;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, ringAt);
+    g.gain.linearRampToValueAtTime(db(-24 - i * 4), ringAt + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, ringAt + 0.32 - i * 0.07);
+    o.connect(g).connect(out);
+    o.start(ringAt);
+    o.stop(ringAt + 0.34);
+  });
+  return ringAt + 0.34 - now;
+}
+
+/** Plan item 129: the stinger rendered offline, for the audio check: its peak and RMS (linear) and its length. */
+export async function renderRack(cls: string): Promise<{ peak: number; rms: number; seconds: number }> {
+  const OAC = window.OfflineAudioContext ?? (window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext }).webkitOfflineAudioContext;
+  const rate = 44100;
+  const c = new OAC(1, Math.ceil(rate * 0.6), rate);
+  const seconds = scheduleRack(c, c.destination, 0, noiseBuffer(c, 1), cls);
+  const d = (await c.startRendering()).getChannelData(0);
+  let peak = 0;
+  let sum = 0;
+  for (const v of d) {
+    peak = Math.max(peak, Math.abs(v));
+    sum += v * v;
+  }
+  return { peak, rms: Math.sqrt(sum / d.length), seconds };
+}
+
 export class FrontAudio {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -50,14 +152,7 @@ export class FrontAudio {
         this.ui.connect(this.master);
         this.music = c.createGain();
         this.music.connect(this.master);
-        const len = c.sampleRate * 2;
-        this.noise = c.createBuffer(1, len, c.sampleRate);
-        const d = this.noise.getChannelData(0);
-        let s = 0x2f6e2b1;
-        for (let i = 0; i < len; i++) {
-          s = (s * 1664525 + 1013904223) | 0;
-          d[i] = ((s >>> 8) / 16777216) * 2 - 1;
-        }
+        this.noise = noiseBuffer(c, 2);
       }
       if (this.ctx.state === "suspended") void this.ctx.resume();
       if (this.bedOn && !this.bedGain) this.startBed();
@@ -230,6 +325,13 @@ export class FrontAudio {
     sub.connect(sg).connect(this.ui);
     sub.start(now);
     sub.stop(now + 0.26);
+  }
+
+  /** Plan item 129: the class's weapon-rack stinger as her kit goes on (`scheduleRack`). */
+  rack(cls: string): void {
+    const c = this.ctx;
+    if (!c || !this.ui || !this.awake || !this.noise) return;
+    scheduleRack(c, this.ui, c.currentTime, this.noise, cls);
   }
 
   /** C14 (S9.5): one heartbeat thump while the class commit is held (a 55 Hz sine body under a low click). */

@@ -27,7 +27,7 @@ import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
 import { areaTitle, COLD_OPEN_LINE, dossierFor, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
-import { FrontAudio } from "./ui/frontaudio";
+import { FrontAudio, renderRack } from "./ui/frontaudio";
 import { el, reducedMotion } from "./ui/dom";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -488,7 +488,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           resolve(c);
         },
         "ghost",
-        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.tick()), onThump: () => audio.thump() },
+        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump() },
       );
       // Escape from the case file goes back to the title.
       const onKey = (e: KeyboardEvent) => {
@@ -693,6 +693,8 @@ const hook = {
   ticks: 0,
   scene: () => scene,
   stage: frontStage,
+  /** Plan item 129: the class pick's weapon-rack stinger rendered offline (the audio check). */
+  rack: (cls: string) => renderRack(cls),
   begin: () => begin(true),
   /** Screenshot runs only: a save with these jobs done, written by the game's own serializer. */
   demoSave: (done: string[]) => {

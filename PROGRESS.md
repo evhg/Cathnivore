@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A: the folded 14-15 card turn at 1280x800 is fixed (e4d5eff4, a second 'tight' fold step; desktop-no-scroll 50/50), so the **2026-11-05 19:51 session releases** if CI is green. Items 124 and 130 done (2026-11-04 21:51). `main` untouched at 9b4bfcfa.
+- Lane A: item 129 (NIGHT SHIFT desktop class pick: the dolly, kit-on flash and rack stinger) in progress, 2026-11-04 22:51. The **2026-11-05 19:51 session releases** if CI is green (the folded 14-15 card turn fixed in e4d5eff4). `main` untouched at 9b4bfcfa.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark reportedly drops both 'H's at L and D (unconfirmed; the 14:55 D shot shows it whole). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B: item 128 claimed, slices 1-2: a level's first visit traces its lanes from the gate to the farm (a runner with the lead vehicle, 2.5 s, skip on a tap or key, once a level, never in replays/dailies/Endless/sandbox), then Cath names the gate; `e2e-site/hedgerow-flyin.spec.ts`. Next for 128: a 3D camera follow and a 2D pan instead of a trace, the closing bubble off plots. Item 126 still claimed (open points listed there) (2026-11-04 22:21 session).
 - Critique bug seen 2026-11-04 13:30 (lane A, 1280x800): a Not-yet name cut on a 1280 desktop. Fixed 2026-11-04 14:15 (item 104 slice 1).

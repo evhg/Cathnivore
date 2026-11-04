@@ -130,3 +130,33 @@ test('the class pick shows her face clear of the stats sheet', async ({ page, ha
   expect(face.top >= 0 && face.left >= 0 && face.right <= 1440 && face.bottom <= 900, JSON.stringify(m)).toBe(true)
   expect(face.left < sheet.right && face.right > sheet.left && face.top < sheet.bottom && face.bottom > sheet.top, JSON.stringify(m)).toBe(false)
 })
+
+// Plan item 129: at D every class frames her face-on in the middle band, at least 110 px tall, meeting neither the
+// stats sheet nor the names; a class change has its weapon-rack stinger, heard in an offline render.
+test('every class frames her face in the middle band, and each has an audible rack stinger', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop class pick')
+  test.setTimeout(400_000)
+  type F = { cathodeFront?: { ready: boolean; rack(c: string): Promise<{ peak: number; rms: number; seconds: number }>; scene: () => { faceBox(): Box } | null } }
+  const db = (d: number) => Math.pow(10, d / 20)
+  for (const cls of CLASSES) {
+    await fresh(page, false)
+    await page.goto(`/nightshift/?front=classpick&shot&t=8&class=${cls}&rs=0.5`)
+    await page.waitForFunction(() => (window as unknown as F).cathodeFront?.ready === true, null, { timeout: 150_000 })
+    const m = await page.evaluate(() => {
+      const b = (s: string) => {
+        const r = document.querySelector(s)!.getBoundingClientRect()
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
+      }
+      return { face: (window as unknown as F).cathodeFront!.scene()!.faceBox(), sheet: b('.cp-sheet'), list: b('.cp-left') }
+    })
+    const s = JSON.stringify({ cls, m })
+    const { face } = m
+    expect(face.left >= 470 && face.right <= 960 && face.top >= 150 && face.bottom <= 500, s).toBe(true)
+    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(110)
+    for (const o of [m.sheet, m.list]) expect(face.left < o.right && face.right > o.left && face.top < o.bottom && face.bottom > o.top, s).toBe(false)
+    const a = await page.evaluate((c) => (window as unknown as F).cathodeFront!.rack(c), cls)
+    expect(a.peak, `${cls} ${JSON.stringify(a)}`).toBeGreaterThan(db(-24))
+    expect(a.peak, `${cls} ${JSON.stringify(a)}`).toBeLessThan(db(-1))
+    expect(a.seconds, `${cls} ${JSON.stringify(a)}`).toBeLessThan(0.6)
+  }
+})
