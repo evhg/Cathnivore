@@ -728,6 +728,7 @@ if (SANDBOX)
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
     // Plan item 66: the share of the 3D frame's height that is painted sky (null in 2D).
     skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
+    fieldShare: () => (renderer && is3D(renderer) ? renderer.fieldShare() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
     // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.

@@ -508,6 +508,9 @@ export class Renderer3D {
     const target = new THREE.Vector3(...fit.target);
     const dir = new THREE.Vector3(0, Math.sin(fit.el), Math.cos(fit.el));
     const hi = fit.dist;
+    // resize() set the aspect; the projection has to follow it (the old search loop refreshed it as a side effect).
+    this.camera.aspect = this.w / this.h;
+    this.camera.updateProjectionMatrix();
     this.camera.position.copy(target).addScaledVector(dir, hi);
     this.camera.lookAt(target);
     this.camBase.copy(this.camera.position);
@@ -527,6 +530,23 @@ export class Renderer3D {
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
     this.resetView();
+  }
+
+  /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
+  fieldShare(): number {
+    const { x: cols, y: rows } = this.fieldSize;
+    // The fitted base view, not the live camera (which carries the player's zoom and pan and the gate's ease).
+    const cam = this.camera.clone();
+    cam.position.copy(this.camBase);
+    cam.lookAt(this.camTarget);
+    cam.updateMatrixWorld();
+    let x0 = 1, x1 = -1, y0 = 1, y1 = -1;
+    for (const [x, z] of [[0, 0], [cols, 0], [0, rows], [cols, rows]] as const) {
+      const p = this.v1.set(x, 0, z).project(cam);
+      x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+    }
+    const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+    return ((clamp(x1) - clamp(x0)) / 2) * ((clamp(y1) - clamp(y0)) / 2);
   }
 
   /** Plan item 66: the share of the frame's height above the backdrop's painted hills (its sky), at the view's centre. */
