@@ -3905,3 +3905,26 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower { min-height: 74px; padding-top: 15px; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img { width: 28px; height: 28px; }
 }
+/* Plan item 119 (slice 1): a printed seed packet: a heat-sealed crimp along the top, and the price a stamp at the
+   small size (13 px or more) rather than a label. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray .tray-tower::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 7px;
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--line) 22%, transparent) 0 1.5px, transparent 1.5px 4px),
+      color-mix(in srgb, var(--paper-hi) 35%, transparent);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--line) 30%, transparent);
+    pointer-events: none;
+  }
+  .play .tray-wrap .tray .build-cost {
+    z-index: var(--z-raise);
+    font-size: var(--fs-small);
+    padding: 1px 5px;
+  }
+}
