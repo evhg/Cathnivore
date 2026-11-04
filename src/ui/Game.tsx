@@ -498,6 +498,20 @@ function winHeadline(chapterId: string | undefined): string {
   return `${list} ${names.length > 1 ? 'are' : 'is'} free.`
 }
 
+/** Plan item 104: a disabled action's reason. Its lead ('Need ') and tail (' to remove') are their own spans so the
+ *  phone dock's narrow card can drop them ('2 more Marks', 'No Outlets left') instead of cutting the words. */
+function WhyNot({ text }: { text: string }) {
+  const lead = text.startsWith('Need ') ? 'Need ' : ''
+  const tail = / to remove$/.test(text) ? ' to remove' : ''
+  return (
+    <span className="action-why-not">
+      {lead && <span className="why-lead">{lead}</span>}
+      {text.slice(lead.length, text.length - tail.length)}
+      {tail && <span className="why-tail">{tail}</span>}
+    </span>
+  )
+}
+
 /** Plan item 100: a plan card's target line, each region drawn as a chip (the words stay the accessible text). */
 function TargetLine({ line, names }: { line: string; names: string[] }) {
   return (
@@ -1721,7 +1735,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     {`Sell ${count} Produce`}
                     <span className="visually-hidden">{` for ${count} ${count === 1 ? 'Mark' : 'Marks'}`}</span>
                   </span>
-                  <span className="action-why-not">Need {missing} more Produce</span>
+                  <WhyNot text={`Need ${missing} more Produce`} />
                 </span>
                 <SellGainChip count={count} />
               </button>
@@ -1745,7 +1759,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                       <InvestArt size={18} />
                       <BuyVerb text={`Buy ${card.name}`} />
                     </span>
-                    <span className="action-why-not">Need {missing} more {missing === 1 ? "Mark" : "Marks"}</span>
+                    <WhyNot text={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`} />
                   </span>
                   <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
                 </button>
@@ -1764,9 +1778,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   <span className="action-label-group">
                     <span className="action-label">
                       <SchemeArt size={18} />
-                      {`Scheme: ${card.name}`}
+                      {/* Plan item 104: the picture says Scheme; the word stays for screen readers. */}
+                      <span className="visually-hidden">Scheme: </span>
+                      {card.name}
                     </span>
-                    <span className="action-why-not">Need {missing} more Goodwill</span>
+                    <WhyNot text={`Need ${missing} more Goodwill`} />
                   </span>
                   <ActionCostChip cost={{ resource: 'goodwill', amount: cost }} />
                 </button>
@@ -1784,7 +1800,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <OpenStallArt size={18} />
                     Open Stall
                   </span>
-                  <span className="action-why-not">{disabledOpenStall.text}</span>
+                  <WhyNot text={disabledOpenStall.text} />
                 </span>
                 {disabledOpenStall.text.startsWith('Need') && <ActionCostChip cost={{ resource: 'produce', amount: 1 }} />}
               </button>
@@ -1801,7 +1817,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <SupplyArt size={18} />
                     {`Supply: remove ${count} Outlet${count > 1 ? 's' : ''}`}
                   </span>
-                  <span className="action-why-not">{reason!.text}</span>
+                  <WhyNot text={reason!.text} />
                 </span>
                 {reason!.cost && <ActionCostChip cost={reason!.cost} />}
               </button>
@@ -1818,7 +1834,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <SupplyArt size={18} />
                     Supply: remove Buyout
                   </span>
-                  <span className="action-why-not">{disabledSupplyBuyoutReason.text}</span>
+                  <WhyNot text={disabledSupplyBuyoutReason.text} />
                 </span>
                 {disabledSupplyBuyoutReason.cost && <ActionCostChip cost={disabledSupplyBuyoutReason.cost} />}
               </button>
@@ -1835,7 +1851,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <RebutArt size={18} />
                     {`Rebut: remove ${count} Doubt`}
                   </span>
-                  <span className="action-why-not">{reason!.text}</span>
+                  <WhyNot text={reason!.text} />
                 </span>
                 {reason!.cost && <ActionCostChip cost={reason!.cost} />}
               </button>
