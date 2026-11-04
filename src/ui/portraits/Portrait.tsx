@@ -1,4 +1,6 @@
 import CathArt from '../CathArt'
+import ProducerArt from './ProducerArt'
+import { PRODUCER_ART_IDS } from './producerFaces'
 import type { CathExpression } from '../../../shared/cath/cath'
 import { CHARACTERS, type CharacterPortrait, type HairStyle } from '../../content/characters'
 
@@ -172,6 +174,9 @@ export default function Portrait({
 }) {
   const spec = CHARACTERS[character]
   if (!spec) return null
+  // Plan item 80: the producers have their own richer art, with neutral, delighted and worried faces.
+  if ((PRODUCER_ART_IDS as readonly string[]).includes(character))
+    return <ProducerArt character={character} size={size} expression={expression} />
   const mood = expressionMood(expression)
   // Cath is drawn by the shared art module (VISION.md "Cath: character bible"), same as in Runnel and on
   // the landing page. The bust framing has the same 5:6 shape as the other portraits.
