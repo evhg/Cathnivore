@@ -1499,7 +1499,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e in `?2d`: Cath 48 px or more tall at D and 36 at P; her mood changes on a leak and on a cleared wave; she overlaps no tower's plot; hedgerow-tray and gatequeue still pass; shots P and D.
 - **Size:** 2
 
-## 115. [ ] The bugs from the 2026-11-04 16:00 critique, fixed as one batch
+## 115. [ ] The bugs from the 2026-11-04 16:00 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** subagent critique of `e2e/screenshots/plan1104f` against VISION.md.
 - **Build:**
   - Hedgerow 2D: Cath's 'Build a Scarecrow' bubble is pale grey on cream (`hedge-l21-2d-D` 62-290 x 540-628); the 3D one is dark and readable. Make the 2D ink match (4.5:1).
