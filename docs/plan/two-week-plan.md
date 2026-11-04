@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-04 12:18 UTC
+
 
 
 **Owner, 2026-11-01: this is the queue.** Every build session takes the **first item not marked done**, writes it under **Now** in `PROGRESS.md`, and works it in slices until about 45 minutes have passed. When the item is done, the session starts the next one. Older ROADMAP items wait unless an item here names them.
@@ -1354,3 +1354,47 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 **Done on 2026-11-01, before this plan:** the portfolio front page (`/`). It has the WebGL2 hero, kinetic type, bento case cards and the `/work/<id>/` case studies with view transitions, and covers audit items P-A and P-B.
 
 **Folded in or retired:** ROADMAP 19, H2, 31, 33, 62 and 219 are closed as built. 239 to 242 (Phase 27 meta add-ons) are deferred below this plan. 58 and U7 become item 5; 74's leftovers become items 14 and 16; U11 is part of item 13.
+
+## 99. [ ] NIGHT SHIFT: The List and the case dossier as painted mugshots
+- **Why:** `ns-title-D` (plan1104c, 405-565 x 295-575): the case file's photo for Tomas Reed is a flat black square with a "?", the focal point of the menu; the four "Withheld" List frames (155-535 x 665-800, and 75-300 x 690-750 at P) are the same black squares beside a rich, lit street. Only Julian Crisp has a face.
+- **Build:**
+  - A noir mugshot for each of the five targets, from the same bust pipeline as Julian Crisp's (lit, height chart behind, a slate).
+  - A withheld target is a silhouette behind a red REDACTED bar and a case stamp, never a black square.
+  - The dossier shows the focused target's mugshot with a paper clip and a slight tilt; drop the menu-foot line ("TOMAS REED · THE HARBOUR · A DEBT TAG") that repeats it.
+- **Accept:** e2e: every photo region's luminance standard deviation is over 12 (no flat fill); the dossier photo 140 px wide or more at D, List frames 56 px or more at P; captions at 4.5:1; the perf gate untouched (DOM/2D art only); shots P, L and D.
+- **Size:** 2
+
+## 100. [ ] Cathnivore: Hollowell's plan as glossy corporate cards
+- **Why:** `cath-game-D` (plan1104c, 640-1200 x 90-200; P 10-375 x 115-210): Hollowell's Squeeze, Expand and Scout are text on note paper with 10 px "H" glyphs and grey subtext ("Arms next round"), while the players' actions got painted tiles (item 83). VISION gives the corporation a glossy, over-lit, clinical look; here it's the plainest thing on screen.
+- **Build:**
+  - Each intent kind (Squeeze, Expand, Scout, Buyout) gets its own art in Hollowell's style (white plastic, teal, a logo watermark), in `HollowellArt` beside `ActionArt`.
+  - Its target region and arming round drawn on the card (a region chip, a stage dial), not grey subtext.
+  - A card that arms slides in and stamps, with no overshoot (corporations don't bounce); reduced motion fades.
+- **Accept:** unit: each kind's art is distinct; e2e: card text 12 px or more at 4.5:1, no card truncated at 390, 1280 and 1440 wide, no horizontal scroll; turn-show and boardroom e2e still pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 101. [ ] Cathnivore Setup: pick a map by seeing it
+- **Why:** `cath-setup-D` (plan1104c, 505-975 x 560-705): the three map cards are about 50 px clusters of beige hexes over two lines of text; you choose a board without seeing it, though the board is the hero of the game. The column below them is empty.
+- **Build:**
+  - Each map card a miniature of the real board drawn from the map data (each region's own ground from `regionGround.ts`, the river, the bridges).
+  - The picked map's preview larger, with its region names; on a phone the previews in a row that scrolls with a cue.
+- **Accept:** e2e: previews 120 px wide or more at D, 96 at P; the preview's region count matches the map data (6, 10, 7); Setup doesn't scroll at 1440x900 or 1280x800 (setup-desktop e2e); shots P and D, light and dark.
+- **Size:** 1-2
+
+## 102. [ ] Hedgerow: a 3D Cath drawn to the character bible, who reacts
+- **Why:** `hedge-l21-3d-D` (plan1104c, 190-310 x 505-690; P 20-65 x 485-555): the 3D Cath reads as a dark mass of hair with a pale smudge for a face and a stick arm, no liner, smile or olive jacket. She is the one Cath in the four games not drawn to the bible (VISION "Cath: character bible").
+- **Build:**
+  - Her face a texture painted from `shared/cath` (liner, highlights, rose lips), the centre-parted waves framing it, the olive jacket with its collar up over a cream blouse.
+  - Poses: planting when a tower is built, a cheer on a cleared round, a worried hand when Goodwill is lost.
+  - A face key light when the camera frames her.
+- **Accept:** unit: the model has named hair, face, jacket and blouse parts; e2e: her face 24 px tall or more at D, 14 at P; her pose changes within 250 ms of a cleared round (`window.hedgerow`); draw calls at level 13 up by 10 or fewer; shots P, L and D.
+- **Size:** 2-3
+
+## 103. [ ] The bugs from the 2026-11-04 12:25 critique, fixed as one batch *(lane A, in progress)*
+- Hedgerow D: Cath's notebook repeats her field bubble word for word (`hedge-l21-2d-D`, 1105-1415 x 490-705, the bubble at 65-290 x 540-630): while she says it on the field, the notebook's advice card keeps the sketch and count, not the line. And "Coming up" is five 16 px vans over bare numbers (1105-1415 x 350-480): the vans 28 px or more.
+- Hedgerow map D: the level card's "Pickup" wraps onto its own line; empty stars about 12 px.
+- Cathnivore game D: "Supply: remove 1 Outlet in Brindle..." cut with an ellipsis (80-215 x 582-614).
+- Cathnivore title D: the ring bullets before How to Play, Settings and Credits read as radio buttons (160-445 x 725-740).
+- Hedgerow 3D P: the HOLLOWELL gate sign covers field tiles (0-85 x 405-425).
+- **Accept:** an e2e case per bullet at P and D (text 11 px or more at 4.5:1, nothing cut or overlapping); shots before and after.
+- **Size:** 1
