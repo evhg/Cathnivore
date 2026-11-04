@@ -1661,7 +1661,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 the hexes take 88% or more of the frame's width; Cath 96 px or more, meeting no hex or name plate; no scroll; hand-art and region-closeup pass; shots P light and dark.
 - **Size:** 3
 
-## 132. [ ] The bugs from the 2026-11-04 21:25 critique, fixed as one batch *(lane A, in progress)*
+## 132. [ ] The bugs from the 2026-11-04 21:25 critique, fixed as one batch *(handed back 2026-11-04 23:25 by lane A: only the Hedgerow 3D D points are open)*
 - **Build:** (check each first; plan1104i)
   - [x] **NIGHT SHIFT:** Cath seen from behind on the title (ns-title-D 960-1070 x 350-730, P 110-235 x 290-620) and the P class pick (100-320 x 210-560), against items 117 and 112 (a stale frame or a regression); a stray thin white bar at the title's foot (D 585-855 x 860-864, P 85-305 x 810-814). *(checked 2026-11-04 lane A: not bugs. At 9 s under SwiftShader the title is still the loading poster (her back) and the bar is its loading line; by 30 s the live street shows her face-on at D and P. `scripts/plan-shots.mjs` now waits 30 s. The P class pick's back view was item 112's `?play` fix)*
   - [ ] **Hedgerow:** 3D D the bubble covers the gate sign ("LOWELL", 300-360 x 395-412) and the 3D Hollowell plate sits on plots and the pond (392-595 x 383-407); ~~the map P "Beyond the hedge · Act 4" teaser cut under the tool bar (50-340 x 755-785)~~ *(fixed 2026-11-04 lane A: it is the scrolling list's next row (scrolled, it sits clear at 520 px); the phone tab bar now has a 44 px fade on its top edge, so what scrolls under it fades instead of being sliced; hedgerow-map 34/34)*. Still open: the 3D D points.
