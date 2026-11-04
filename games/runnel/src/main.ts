@@ -377,7 +377,8 @@ function render(): void {
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
       game.taps === 0
-        ? `${boardSky(puzzle.seed).label}. Tap a tile to turn it, hold to pin it.`
+        ? // Plan item 91: under the lesson its card's "Up next" already names the sky; the hint doesn't repeat it.
+          `${document.getElementById('lesson-card')?.hidden === false ? '' : `${boardSky(puzzle.seed).label}. `}Tap a tile to turn it, hold to pin it.`
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = mode !== 'practice'
     ui.btnNew.textContent = 'New puzzle'
@@ -1125,6 +1126,9 @@ function markLessonCard(step: number): void {
   const card = document.getElementById('lesson-card')
   if (!card) return
   card.hidden = step < 0
+  // Plan item 91: the hint may have been written before the card showed; drop its sky label (Up next carries it).
+  const skyLead = `${boardSky(puzzle.seed).label}. `
+  if (!card.hidden && ui.hint.textContent?.startsWith(skyLead)) ui.hint.textContent = ui.hint.textContent.slice(skyLead.length)
   // Up next: today's daily, with its sky painted (the HUD already holds both for the board under the lesson).
   const next = document.getElementById('lc-next')
   if (next && step >= 0 && !next.dataset.filled) {

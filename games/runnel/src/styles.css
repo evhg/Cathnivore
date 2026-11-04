@@ -2961,8 +2961,9 @@ body[data-mode='practice'] #week-slot {
   font-size: var(--fs-small);
   line-height: 1.2;
   text-align: center;
-  color: var(--ink-muted);
-  background: color-mix(in srgb, var(--paper-2) 80%, transparent);
+  /* Plan item 91: the steps still to come read at AA (they were muted ink on a see-through paper over the valley). */
+  color: color-mix(in srgb, var(--ink) 84%, var(--paper));
+  background: var(--paper-2);
   transition: background 250ms, color 250ms;
 }
 .lc-dot {
