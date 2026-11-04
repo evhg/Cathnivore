@@ -27,3 +27,22 @@ for (const [w, h] of [
     expect(scroll).toBeLessThanOrEqual(0)
   })
 }
+
+// On a phone the Setup has no spare height (plan items 75 and 80), so the board stands beside its name: 44 px
+// tall or more (it was 28 px over the name), in the same no-scroll screen.
+test('the phone maps are boards beside their names', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const minis = page.locator('.layout-tile .board-mini')
+  await expect(minis).toHaveCount(3)
+  for (const box of await minis.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect))) {
+    expect(box.height).toBeGreaterThanOrEqual(44)
+  }
+  for (const tile of await page.locator('.layout-tile').all()) {
+    const mini = (await tile.locator('.board-mini').boundingBox())!
+    const name = (await tile.locator('.layout-name').boundingBox())!
+    expect(name.x).toBeGreaterThanOrEqual(mini.x + mini.width - 1)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+})

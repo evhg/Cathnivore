@@ -2193,8 +2193,12 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
     content: ''; position: absolute; left: -4px; right: -4px; bottom: 0; height: 6px; border-radius: 2px;
     background: linear-gradient(180deg, var(--wood), var(--wood-lo)); box-shadow: 0 3px 4px color-mix(in srgb, var(--ink) 25%, transparent);
   }
-  .setup .layout-picker .layout-tile { padding: 4px 4px 6px; border-radius: 6px 6px 2px 2px; }
-  .setup .board-mini { height: 28px; }
+  /* Plan item 101: the board beside its name (it was 28 px over it), so it reads as a board in the same height. */
+  .setup .layout-picker .layout-tile {
+    grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto; align-items: center; justify-items: start;
+    column-gap: 4px; padding: 3px 4px 3px 3px; border-radius: 6px 6px 2px 2px; text-align: left;
+  }
+  .setup .board-mini { height: 46px; max-width: 48px; }
   .setup .layout-name { font-size: var(--fs-label); }
   .setup .layout-blurb { display: none; }
   .setup .setup-seed-field { display: none; margin-top: 8px; font-size: var(--fs-small); }

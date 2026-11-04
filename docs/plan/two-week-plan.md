@@ -1371,7 +1371,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each kind's art is distinct; e2e: card text 12 px or more at 4.5:1, no card truncated at 390, 1280 and 1440 wide, no horizontal scroll; turn-show and boardroom e2e still pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 101. [ ] Cathnivore Setup: pick a map by seeing it *(lane A, in progress)*
+## 101. [x] Cathnivore Setup: pick a map by seeing it *(done 2026-11-04, lane A, 3e1ef86f..HEAD: `BoardMiniature` draws each layout from its data with the board's tile art, the Delta's river and two bridges; 121-123 px wide at 1440x900 and 1280x800 (were 50 px glyphs), a short desktop drops the blurbs; on a phone the board stands beside its name, 46 px tall (was 28) in the same no-scroll screen; e2e `e2e/setup-maps.spec.ts`; shots `e2e/screenshots/s101` P, 1280 and D, light and dark. Cut: the larger picked preview with names and the phone's 96 px scrolling row, see DECISIONS)*
 - **Why:** `cath-setup-D` (plan1104c, 505-975 x 560-705): the three map cards are about 50 px clusters of beige hexes over two lines of text; you choose a board without seeing it, though the board is the hero of the game. The column below them is empty.
 - **Build:**
   - Each map card a miniature of the real board drawn from the map data (each region's own ground from `regionGround.ts`, the river, the bridges).
