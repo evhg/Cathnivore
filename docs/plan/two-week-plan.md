@@ -1470,7 +1470,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at D: stops 72 px or more, Cath's marker 60 px or more, no empty band over 150 px between the stops and the level card; hedgerow-map still passes; shots P and D.
 - **Size:** 2
 
-## 112. [ ] NIGHT SHIFT: the class pick as an operative lineup, with Cath's face
+## 112. [ ] NIGHT SHIFT: the class pick as an operative lineup, with Cath's face *(lane A, in progress)*
 - **Why:** `ns-play-D` (plan1104f, `?play`): all five classes show the same faceless back view of Cath under an umbrella (940-1160 x 260-850); the classes are a word list (80-330 x 160-420); the stats float over the street with no backing and collide with the expressway sign (998-1320 x 85-135). `ns-play-P`: 11 px class tabs that nearly touch, and 'More below' drawn over the AIM row (15-380 x 770-792). Cath, the face of every game, never shows her face before the first job.
 - **Build:**
   - Cath turns to camera on the pick: a three-quarter front pose per class, in noir light, each in its own outfit accent and expression (Ghost's hood and scope, Butcher's apron, Gunslinger's holster, Wirewitch's wire rig, Fixer's suit), from the 3D rig or a `shared/cath` noir portrait, whichever the perf gate allows.
