@@ -1190,7 +1190,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: every producer has the three expressions and they differ; e2e: the Setup card portrait at least 120 px tall at P and D, the face swaps on a Squeeze in an autoplay game; greyscale still tells producers from corporations; shots before and after at P and D, light and dark.
 - **Size:** 3
 
-## 81. [ ] Hedgerow: 3D Cath, towers and vehicles that match the 2D art *(lane B, in progress)*
+## 81. [x] Hedgerow: 3D Cath, towers and vehicles that match the 2D art *(done 2026-11-04, lane B, slices 1-6: the hair and face lift, oaks, the hatchback Influencer in 2D and 3D, the barn and farmhouse, tower-silhouette unit test, Almanac lineup e2e; draw calls at level 13 down; shots P, D, L and the face close-up in `e2e/screenshots/f81`)*
 - **Why:** `hedge-l21-3d-D` (plan1103g): Cath (70-210 x 470-610) is a blocky figure with a white blob across her face that reads as a beard, which breaks the character bible; the cannon towers look like bare logs (380-430 x 270-330); houses and the barn are untextured boxes; Influencers are stacked pink cubes (190-245 x 280-380).
 - **Build:**
   - A low-poly Cath to the bible: centre-parted long dark hair, the olive jacket, a readable face (a painted decal, no blob). *(2026-11-04 lane B, slice 1: the "beard" was the lift blowing her skin and collar out to white, and her hair read as white wings (item 84). The lift now fades for light colours: `tests/hedgerow-cath3d-hair.test.ts`; shot with `scripts/hedgerow-cath3d-shots.mjs`.)*
@@ -1199,7 +1199,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit: each tower type's model differs in bounding box or part count from every other; e2e (`?sandbox=1`): a tower lineup stage renders each type; draw calls at level 13 within 10% of today's (`scripts/hedgerow-drawcalls.mjs`); shots of 2D and 3D side by side at P, D and L, and a face close-up of Cath.
 - **Size:** 3
 
-## 82. [ ] NIGHT SHIFT: the phone front door, recomposed
+## 82. [ ] NIGHT SHIFT: the phone front door, recomposed *(lane B, in progress)*
 - **Why:** `ns-title-P` (plan1103g): the logotype (15-375 x 85-130) is a thin outline lost in the dark art; the figure with the umbrella sits behind the menu text; below y=450 the frame is almost black; both sizes have black letterbox bands (D 0-44 and 855-900, P 0-42 and 800-844).
 - **Build:**
   - A phone crop of its own: the figure in the lower half with a rim light, the menu above it on a scrim.
