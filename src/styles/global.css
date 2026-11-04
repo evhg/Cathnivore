@@ -3447,6 +3447,9 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup-cath-stand .cath-art { display: block; width: 150px; }
   .setup-cath-stand .cath-art svg { display: block; width: 100%; height: auto; }
   .setup > button.setup-start { grid-area: start; align-self: end; position: relative; z-index: var(--z-lift); margin-top: 0; }
+  /* Plan item 132: here the sign stands on the counter in front of her, so its cord and nail (which ran across her
+     coat) go. */
+  .setup > button.setup-start::before, .setup > button.setup-start::after { display: none; }
 }
 @media (min-width: 1100px) and (max-height: 860px) {
   .setup-cath-stand { margin-bottom: 40px; }
