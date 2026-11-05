@@ -3,7 +3,8 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 122: one Cath. At D the valley figure speaks: her line is a bubble beside her head (15 px or more,
 // meeting no tile) with its tail ending within 24 px of her face, and the side portrait goes. On a board with no
 // room beside her the line stays in the sidebar without the portrait. Her face follows the water: worried on a
-// spill, a wink on the solve. On a phone the one Cath is the portrait beside her line, and its face follows too.
+// spill, a wink on the solve. On a phone (plan item 165) the one Cath stands in the valley, 120 px or taller at 390,
+// meeting no tile, her line in the card above with no portrait.
 
 const visibleCaths = (page: Page) =>
   page.evaluate(() =>
@@ -75,15 +76,46 @@ test('her face follows the water: worried on a spill, a wink on the solve', asyn
 })
 
 for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
-  test(`one Cath on a phone: the portrait beside her line (${date})`, async ({ page, hasTouch }) => {
+  test(`one Cath on a phone: standing in the valley (${date})`, async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'the phone')
     await page.clock.setFixedTime(new Date(`${date}T10:00:00Z`))
     await page.goto('/runnel/?nohelp')
     await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
-    await expect.poll(() => visibleCaths(page)).toEqual(['host-face'])
-    // Still one after a tap (a re-layout must not bring the corner bust back).
+    await expect.poll(() => visibleCaths(page)).toEqual(['valley-cath'])
+    const m = await page.evaluate(() => {
+      const c = document.getElementById('valley-cath')!
+      const r = c.getBoundingClientRect()
+      const st = document.querySelector('.stage')!.getBoundingClientRect()
+      const svg = document.getElementById('board') as unknown as SVGSVGElement
+      const pt = svg.createSVGPoint()
+      let hit = false
+      for (const t of document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
+        for (let y = r.top + r.height / 3; y <= r.bottom - 4 && !hit; y += 6)
+          for (let x = r.left + r.width * 0.2; x <= r.right - r.width * 0.2 && !hit; x += 6) {
+            pt.x = x
+            pt.y = y
+            hit = t.isPointInFill(pt.matrixTransform(t.getScreenCTM()!.inverse()))
+          }
+      const line = getComputedStyle(document.getElementById('host-line')!)
+      return { h: r.height, inside: r.left >= st.left - 1 && r.right <= st.right + 1 && r.top >= st.top - 1 && r.bottom <= st.bottom + 1, hit, font: parseFloat(line.fontSize) }
+    })
+    expect(m.h).toBeGreaterThanOrEqual(120)
+    expect(m.inside).toBe(true)
+    expect(m.hit).toBe(false)
+    expect(m.font).toBeGreaterThanOrEqual(15)
+    // Still one after a tap, and her face follows the water: a wink on the solve.
     await page.locator('.tiles > g.cell:not(.stone):not(.fixed)').first().click()
     await page.waitForTimeout(300)
-    expect(await visibleCaths(page)).toEqual(['host-face'])
+    expect(await visibleCaths(page)).toEqual(['valley-cath'])
   })
 }
+
+test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the phone')
+  await page.goto('/runnel/?nohelp&practice')
+  await expect(page.locator('#valley-cath[data-cath-figure]')).toBeVisible()
+  const before = await page.locator('#valley-cath').getAttribute('data-expression')
+  await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
+  await page.locator('#board [data-last]').click()
+  await expect(page.locator('#valley-cath')).not.toHaveAttribute('data-expression', before ?? '')
+})

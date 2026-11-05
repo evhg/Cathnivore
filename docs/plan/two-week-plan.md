@@ -1945,7 +1945,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 no card title with `scrollWidth > clientWidth`; titles 14 px or more; a tapped card rises 12 px or more within 200 ms; rule tests unchanged; shots P light and dark.
 - **Size:** 2
 
-## 165. [ ] Runnel phone: Cath standing in the valley *(lane B, in progress)*
+## 165. [x] Runnel phone: Cath standing in the valley *(done 2026-11-05, lane B: on an upright phone the valley figure stands at the frame's bottom-left, the tallest of 140/120/100/84 px whose shape meets no tile hexagon (each hex's own shape, not its box), the garden, the spring house, a sign or a keep (`data-cath-figure`; 120 or 140 at 390x844 on the lesson, practice and the 3, 4 and 8 Nov dailies; 100-120 at 360); her line stays in the card above (15 px voice) with its tail down to her, and the card's portrait goes (`data-valley-say="phone"`), so one Cath shows; her face follows play (a wink on the solve). The keeps place first and she steps round them; the folk gained a hillside row of spots. runnel-one-cath and runnel-lesson-frame updated from item 122's phone portrait; the Runnel site specs (82) pass; shots P light and dark)*
 - **Why:** `runnel-P` (15-375 x 190-265): Cath is a 50 px avatar beside a chat bubble; on desktop she stands in the scene (`runnel-D` 420-510 x 675-850).
 - **Build:**
   - A full-figure Cath in the phone valley, clear of the tiles, her bubble anchored to her.

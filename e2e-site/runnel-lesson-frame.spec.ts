@@ -18,10 +18,10 @@ test('the lesson board fills its frame, with the lesson card and Cath beside it'
   expect(await page.evaluate(tileSpan)).toBeGreaterThanOrEqual(0.6)
   await expect(page.locator('.lc-steps li.now')).toHaveAttribute('data-i', '0')
   // Plan item 122: one Cath. At D the valley figure speaks the lesson (the portrait goes) and points at the
-  // glowing tile; a phone's one Cath is the portrait beside her line (the corner bust goes).
+  // glowing tile. Plan item 165: a phone's one Cath stands in the valley (the card's portrait goes).
   if (hasTouch) {
-    await expect(page.locator('#host-face')).toBeVisible()
-    await expect(page.locator('#valley-cath')).toBeHidden()
+    await expect(page.locator('#valley-cath[data-cath-figure] svg')).toBeVisible()
+    await expect(page.locator('#host-face')).toBeHidden()
   } else {
     await expect(page.locator('#valley-cath svg')).toBeVisible()
     await expect(page.locator('#valley-say')).toBeVisible()

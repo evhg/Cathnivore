@@ -28,6 +28,8 @@ export const FOLK_SPOTS: ReadonlyArray<readonly [number, number]> = [
   ...[14, 26, 38, 50, 62, 74, 86].map((x) => [x, 97] as const),
   ...[36, 46, 56, 66, 76, 86].flatMap((y) => [[5, y] as const, [95, y] as const]),
   ...[20, 32, 44, 56, 68, 80].map((x) => [x, 91] as const),
+  // Plan item 165: the hillside above the board, where a phone's dense board leaves the foot to Cath and the garden.
+  ...[50, 64, 78, 90].map((x) => [x, 11] as const),
 ]
 
 /** Each folk's first spot to try: spread round the ring so they don't all queue for the same one. */

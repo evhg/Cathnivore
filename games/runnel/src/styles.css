@@ -3707,6 +3707,37 @@ body[data-mode='practice'] #week-slot {
     margin: 3px 0 0 -6%;
   }
 }
+/* Plan item 165: on a phone with room, she stands in the valley at full height (main.ts picks the spot and size), and
+   the card above keeps her line with its tail pointing down to her; the card's portrait goes. */
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .valley-cath[data-cath-figure]:not([hidden]) {
+    left: var(--fig-x);
+    top: var(--fig-y);
+    bottom: auto;
+    width: calc(var(--fig-h) * 2 / 3);
+    height: var(--fig-h);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 6px 6px color-mix(in srgb, var(--soil) 30%, transparent));
+  }
+  .valley-cath[data-cath-figure] svg {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+  .app[data-valley-say='phone'] .host-face {
+    display: none;
+  }
+  .app[data-valley-say='phone'] .host-line::before {
+    left: 28px;
+    top: auto;
+    bottom: -6px;
+    transform: rotate(45deg);
+  }
+}
 @keyframes valley-look {
   30% { transform: translateY(-6px) rotate(-2deg); }
   60% { transform: translateY(0) rotate(1deg); }

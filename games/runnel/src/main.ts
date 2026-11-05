@@ -284,7 +284,8 @@ function placeWeekValley(): void {
   // The layer's own box: it sits inside the stage's frame, and the % positions are of the layer, not the stage.
   const st = layer.getBoundingClientRect()
   if (!st.width) return
-  const blocks = [...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .valley-say:not([hidden])')]
+  // The week's keeps are earned, so they come first: the phone's standing Cath (item 165) steps round them.
+  const blocks = [...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]):not([data-cath-figure]), .bea-garden, .spring-house, .valley-say:not([hidden])')]
     .map((e) => e.getBoundingClientRect())
     .filter((r) => r.width > 0)
   const taken: DOMRect[] = []
@@ -376,7 +377,8 @@ if (typeof ResizeObserver !== 'undefined') {
   const ro = new ResizeObserver(() => {
     cancelAnimationFrame(raf)
     raf = requestAnimationFrame(() => {
-      placeWeekValley()
+      // Cath first (item 165 sizes her to the settled frame), then the keeps and the folk round her.
+      placeValleyCath()
       placeValleyFolk()
     })
   })
@@ -389,6 +391,66 @@ if (typeof ResizeObserver !== 'undefined') {
   watch()
 }
 
+// Plan item 165: on an upright phone Cath stands in the valley, as tall as the board leaves room for (140, 120, 100
+// or 84 px), at the first spot from the frame's bottom-left whose figure meets no tile (each hexagon's own shape:
+// a board's corners leave room its boxes don't), the garden, the spring house, a sign or a keep. Her line stays in
+// the card above the valley, its tail down to her, and the card's portrait goes, so one Cath shows. No room: the
+// portrait keeps the line, as before.
+function placePhoneCath(cath: HTMLElement): void {
+  const app = document.querySelector<HTMLElement>('.app')
+  const stage = document.querySelector<HTMLElement>('.stage')
+  const phone = matchMedia('(max-width: 600px) and (orientation: portrait) and (min-height: 700px)').matches
+  const none = () => {
+    cath.hidden = true
+    delete cath.dataset.cathFigure
+    if (app?.dataset.valleySay === 'phone') delete app.dataset.valleySay
+  }
+  if (!app || !stage || !phone) return none()
+  const st = stage.getBoundingClientRect()
+  if (!st.width) return none()
+  const blocks = [...document.querySelectorAll<Element>('.bea-garden, .spring-house, .farm-sign, .valley-feature:not([hidden])')]
+    .map((e) => e.getBoundingClientRect())
+    .filter((r) => r.width > 0)
+  const svg = document.getElementById('board') as SVGSVGElement | null
+  const tiles = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')]
+  const pt = svg?.createSVGPoint()
+  const onTile = (x: number, y: number) =>
+    !!pt &&
+    tiles.some((t) => {
+      const m = t.getScreenCTM()?.inverse()
+      if (!m) return false
+      pt.x = x
+      pt.y = y
+      return t.isPointInFill(pt.matrixTransform(m))
+    })
+  for (const H of [140, 120, 100, 84]) {
+    const W = Math.round(H * (2 / 3))
+    for (let y = st.bottom - 4 - H; y >= st.top + st.height * 0.45; y -= 4)
+      for (let x = st.left + 4; x + W <= st.left + st.width * 0.5; x += 4) {
+        const r = { l: x + W * 0.2, t: y, r: x + W * 0.8, b: y + H }
+        if (blocks.some((b) => b.left < r.r - 4 && r.l + 4 < b.right && b.top < r.b - 4 && r.t + 4 < b.bottom)) continue
+        let hit = false
+        // Her shape: shoulders to feet at the box's middle 70%, her head the middle 40% of its top third.
+        for (let yy = r.t; yy <= r.b && !hit; yy += 6)
+          for (let xx = r.l; xx <= r.r && !hit; xx += 6) {
+            if (yy < r.t + H / 3 && (xx < x + W * 0.3 || xx > x + W * 0.7)) continue
+            hit = onTile(xx, yy)
+          }
+        if (hit) continue
+        cath.hidden = false
+        cath.dataset.cathFigure = String(H)
+        // Positions are in her containing block's frame, not the stage's.
+        const base = (cath.offsetParent ?? stage).getBoundingClientRect()
+        cath.style.setProperty('--fig-x', `${Math.round(x - base.left)}px`)
+        cath.style.setProperty('--fig-y', `${Math.round(y - base.top)}px`)
+        cath.style.setProperty('--fig-h', `${H}px`)
+        app.dataset.valleySay = 'phone'
+        return
+      }
+  }
+  none()
+}
+
 function placeValleyCath(): void {
   placeWeekValley()
   const cath = document.getElementById('valley-cath')
@@ -396,8 +458,8 @@ function placeValleyCath(): void {
   // Plan item 122: one Cath. On a phone the portrait beside her line is the one (its face follows the water the
   // same way); the corner bust in the valley goes, since no bubble spot fits by it on a phone board.
   if (!matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) {
-    cath.hidden = true
     host.aim(null)
+    placePhoneCath(cath)
     placeValleySay()
     return
   }
@@ -443,7 +505,8 @@ function placeValleySay(): void {
   if (!app || !cath || !say || !stage) return
   const off = () => {
     say.hidden = true
-    delete app.dataset.valleySay
+    // The phone's standing figure (item 165) keeps its own flag.
+    if (app.dataset.valleySay !== 'phone') delete app.dataset.valleySay
     sayKey = ''
   }
   // Only the full-length figure at D speaks (the phone's framed bust is a later slice of item 122).
