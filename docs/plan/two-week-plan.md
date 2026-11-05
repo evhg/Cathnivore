@@ -1719,7 +1719,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 139. [ ] The bugs from the 2026-11-05 01:05 critique, fixed as one batch
+## 139. [ ] The bugs from the 2026-11-05 01:05 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; plan1105a; points already in items 136 and 138 left out)
   - [x] **Site /games/ D:** no poster shows its status line or continue chip (110-1330 x 670-790): a CSS rule at 1440, or the shot fired before `#status-<id>` filled? *(fixed 2026-11-05 lane A: the lines lived on the cards below the fold; each first-screen poster now carries today's line under its hook at D (`#hero-status-<id>`, gold, from `cardLines`), phones keep it on the cards; the continue chip needs a save, so a fresh visit shows none; shots `g139/games-D`, `-L`, `-P`)*
   - [ ] **Cathnivore:** P title: the "No sale yet" receipt lies across Cath's torso and jar (35-140 x 400-470). D game: the ".99" price tags about 7 px (720-745 x 345-358, every Outlet), illegible at P (225-245 x 262-274). P game: Brindle Hills' EXPAND pill on the name plate (45-115 x 330-346); Kingsmarket's stacks, badges and tags overlap (150-245 x 340-400). D Setup: the picked map card's body text fainter than the unpicked (520-640 x 712-745), so it reads disabled. D Campaign: Cath's bust a hard cut at the waist with no ground (1285-1370 x 170-185; also item 126).
