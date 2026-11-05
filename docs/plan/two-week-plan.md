@@ -1971,7 +1971,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 `[data-player-mat]` exists; each 'Not yet' card is 80 px wide or more with its picture; one visible portrait per producer; nothing in the rail overlaps; rule tests unchanged; shots D light and dark.
 - **Size:** 2
 
-## 168. [ ] Hedgerow: the coming rounds as an illustrated timeline
+## 168. [ ] Hedgerow: the coming rounds as an illustrated timeline *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` 'Coming up' (1105-1415 x 545-710): five near-identical van icons with numbers; only the threat card says what's coming, and a twist round (l34's FLOOD) shows nothing on the field.
 - **Build:**
   - A strip of the next rounds, each a chip with a stacked bar of its mix in each vehicle's colour and its count.
