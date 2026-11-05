@@ -7,6 +7,9 @@ import { loadCampaign } from '../platform/storage'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import type { CathExpression } from '../../shared/cath/cath'
+import DailyRitual from './DailyRitual'
+import { dailyRitual } from '../content/dailyRitual'
+import { dailyRecord } from '../content/daily'
 
 // The title screen's illustration: the real board (plan item 60), purely decorative (aria-hidden); every
 // animation is CSS so reduced motion stills it.
@@ -19,11 +22,13 @@ export default function TitleArt() {
   const completed = useMemo(() => loadCampaign().completed, [])
   const state = useMemo(() => titleBoardState(completed), [completed])
   const light = useMemo(() => lightForHour(new Date().getHours()), [])
-  const expression = useMenuExpression()
+  // Plan item 133: her line and face follow the Daily streak once there is one (kept, broken, the first ever).
+  const ritual = useMemo(() => dailyRitual(new Date(), dailyRecord()), [])
+  const expression = useMenuExpression(ritual.expression)
   return (
     <div className="title-art title-table" aria-hidden="true" data-free={Object.values(state.regions).filter((r) => r.liberated).length}>
-      <div className="title-cath">
-        <p className="title-cath-line">{titleLine(completed)}</p>
+      <div className="title-cath" data-expression={expression}>
+        <p className="title-cath-line">{ritual.line ?? titleLine(completed)}</p>
         <CathArt framing="half" expression={expression} pose={SCREEN_POSE['cathnivore:title']} animate />
       </div>
       <div className="title-board" data-light={light}>
@@ -36,6 +41,9 @@ export default function TitleArt() {
           <Map state={state} underNames={<TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />} />
         </div>
       </div>
+      {/* Plan item 133: on a phone the Daily's receipt is pinned to the table's lip in front of her (outside her
+          box, whose fade-in makes a stacking context under the tabletop). */}
+      <DailyRitual compact />
       {/* Plan item 75: the market table's near edge, in front of Cath (hiding her waist) and under the board. */}
       {/* Plan item 86: bunting strung across the market at D, from the menu board's side to the cloth's. */}
       <svg className="title-bunting" viewBox="0 0 1440 70" preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
@@ -45,6 +53,7 @@ export default function TitleArt() {
         ))}
       </svg>
       <div className="title-table-front">
+        <DailyRitual />
         {/* Plan item 86: the table is dressed like a real stall: crates by the menu board, jam and coins by Cath. */}
         <div className="title-table-props">
           <span className="title-prop title-prop-crates">
@@ -133,17 +142,17 @@ const MENU_FACES: Array<[RegExp, CathExpression]> = [
   [/^daily/i, 'wink'],
   [/^credits/i, 'delighted'],
 ]
-function useMenuExpression(): CathExpression {
-  const [face, setFace] = useState<CathExpression>('smirk')
+function useMenuExpression(rest: CathExpression = 'smirk'): CathExpression {
+  const [face, setFace] = useState<CathExpression>(rest)
   useEffect(() => {
     const pick = (e: Event) => {
       const el = (e.target as Element | null)?.closest?.('.title-menu button, .title-menu a')
-      if (!el) return setFace('smirk')
+      if (!el) return setFace(rest)
       const text = (el.textContent ?? '').trim()
-      setFace(MENU_FACES.find(([re]) => re.test(text))?.[1] ?? 'smirk')
+      setFace(MENU_FACES.find(([re]) => re.test(text))?.[1] ?? rest)
     }
     const leave = (e: Event) => {
-      if (!(e as FocusEvent).relatedTarget || !(e.target as Element).closest?.('.title-menu')) setFace('smirk')
+      if (!(e as FocusEvent).relatedTarget || !(e.target as Element).closest?.('.title-menu')) setFace(rest)
     }
     document.addEventListener('pointerover', pick)
     document.addEventListener('focusin', pick)
@@ -153,6 +162,6 @@ function useMenuExpression(): CathExpression {
       document.removeEventListener('focusin', pick)
       document.removeEventListener('focusout', leave)
     }
-  }, [])
+  }, [rest])
   return face
 }

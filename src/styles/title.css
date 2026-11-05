@@ -1076,3 +1076,134 @@ html.no-animations .title-screen * {
   .title-footer { padding-top: 10px; }
   .title-footer p:nth-child(2) { display: none; }
 }
+
+/* Plan item 133: the Daily Market as a ritual on the table's front. The last Daily's receipt pinned to the front's
+   lip, the streak as a string of pennants (one a day), tomorrow's market as a face-down card with its countdown.
+   Shown on a desktop title (the table front's band under the board) and on a phone (the footer's band). */
+.daily-ritual { display: none; }
+@media (min-width: 1024px) {
+  .daily-ritual:not(.is-compact) {
+    display: flex;
+    position: absolute;
+    left: calc(50% + 120px);
+    right: max(24px, 3vw);
+    top: -8px;
+    bottom: 34px;
+    align-items: flex-start;
+    gap: 18px;
+    pointer-events: none;
+  }
+}
+.ritual-receipt {
+  --rc-paper: var(--paper-on-fixed-fill);
+  --rc-edge: color-mix(in srgb, var(--paper-on-fixed-fill) 86%, var(--ink-on-fixed-fill));
+  position: relative;
+  flex: none;
+  width: 150px;
+  margin: 0;
+  padding: 12px 10px 10px;
+  display: grid;
+  gap: 1px;
+  font-family: var(--font-num);
+  font-size: var(--fs-label);
+  line-height: 1.2;
+  color: var(--ink-on-fixed-fill);
+  background:
+    radial-gradient(circle at 6px 100%, transparent 4px, var(--rc-paper) 4.5px) 0 100% / 12px 8px repeat-x,
+    linear-gradient(180deg, var(--rc-paper), var(--rc-edge)) 0 0 / 100% calc(100% - 7px) no-repeat;
+  filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink-on-fixed-fill) 35%, transparent));
+  rotate: -3deg;
+  transform-origin: 50% 0;
+}
+.ritual-pin {
+  position: absolute;
+  left: calc(50% - 7px);
+  top: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--clay) 40%, var(--paper-on-fixed-fill)), var(--clay) 55%, var(--clay-deep));
+  box-shadow: 0 2px 2px color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent);
+}
+.ritual-receipt[data-won] .ritual-pin { background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--pasture) 40%, var(--paper-on-fixed-fill)), var(--pasture) 55%, var(--pasture-deep)); }
+.ritual-receipt-head { font-family: var(--font-display); font-size: var(--fs-small); font-weight: 700; }
+.ritual-receipt-when { color: color-mix(in srgb, var(--ink-on-fixed-fill) 72%, var(--paper-on-fixed-fill)); border-bottom: 1px dashed color-mix(in srgb, var(--ink-on-fixed-fill) 35%, transparent); padding-bottom: 2px; margin-bottom: 1px; }
+.ritual-receipt-row { display: flex; gap: 6px; }
+.ritual-receipt-row span { width: 50px; }
+.ritual-receipt-row b { font-variant-numeric: tabular-nums; }
+.ritual-stamp {
+  position: absolute;
+  right: -8px;
+  top: 14px;
+  padding: 0 6px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  font-family: var(--font-display);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--pasture-deep);
+  rotate: 12deg;
+  line-height: 1.25;
+  mix-blend-mode: multiply;
+}
+.ritual-receipt:not([data-won]) .ritual-stamp { color: var(--clay-deep); }
+.ritual-receipt.is-blank .ritual-receipt-when { border: 0; }
+.ritual-bunting { flex: 1 1 auto; min-width: 0; display: grid; align-content: start; justify-items: center; gap: 4px; padding-top: 14px; }
+.ritual-bunting svg { flex: none; max-width: 100%; height: auto; overflow: visible; }
+.ritual-bunting[data-pennants="0"] svg { opacity: .5; }
+.ritual-rope { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.4; opacity: .8; }
+.ritual-pennant { stroke: color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent); stroke-width: .8; stroke-linejoin: round; }
+.ritual-pennant.p0 { fill: var(--clay); }
+.ritual-pennant.p1 { fill: var(--wheat); }
+.ritual-pennant.p2 { fill: var(--pasture); }
+.ritual-pennant.p3 { fill: var(--paper-on-fixed-fill); }
+.ritual-streak { font-family: var(--font-text); font-size: var(--fs-caption); font-weight: 700; color: var(--paper-on-fixed-fill); text-align: center; text-shadow: 0 1px 0 color-mix(in srgb, var(--ink-on-fixed-fill) 50%, transparent); }
+.ritual-card {
+  position: relative;
+  flex: none;
+  width: 78px;
+  height: 92px;
+  margin-top: 4px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 2px;
+  border-radius: 7px;
+  border: 2px solid var(--paper-on-fixed-fill);
+  background:
+    repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent) 6px 7px),
+    repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent) 6px 7px),
+    var(--pasture-deep);
+  box-shadow: 0 4px 6px color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent);
+  rotate: 4deg;
+  color: var(--paper-on-fixed-fill);
+}
+.ritual-card-no { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 700; line-height: 1; }
+.ritual-card-in { white-space: nowrap; font-family: var(--font-num); font-size: var(--fs-label); font-weight: 700; padding: 1px 5px; border-radius: 999px; background: color-mix(in srgb, var(--ink-on-fixed-fill) 55%, transparent); }
+.ritual-card-kicker { font-family: var(--font-text); font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+/* the phone's receipt: pinned to the table's lip in front of Cath's waist, clear of the menu below */
+@media (max-width: 760px) {
+  .daily-ritual.is-compact {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+    justify-self: end;
+    position: relative;
+    z-index: var(--z-map-fx);
+    margin: 0 4px -26px 0;
+    pointer-events: none;
+  }
+  .title-art.title-table .title-cath { grid-column: 1; grid-row: 1; }
+  .title-art.title-table .title-board { grid-column: 2; grid-row: 1; }
+  .daily-ritual.is-compact .ritual-receipt { width: 98px; padding: 10px 7px 8px; rotate: -4deg; }
+  .daily-ritual.is-compact .ritual-receipt-row span { width: 44px; }
+  .daily-ritual.is-compact .ritual-stamp { top: auto; bottom: -6px; right: -26px; font-size: var(--fs-label); }
+  .daily-ritual.is-compact .ritual-streak { display: none; }
+}
+/* a short desktop: the table front is shorter, so the receipt drops its rounds line to stay clear of the footer */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .ritual-receipt-row.is-rounds { display: none; }
+}
