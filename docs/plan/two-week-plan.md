@@ -1847,7 +1847,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-twist-active="flood"]` on the field with 1 or more `data-flooded` plots; the fog layer's opacity over 0.3 in a fret round; level tests and the tuner unchanged (dressing only, or re-tuned and logged); shots 2D and 3D, P and D.
 - **Size:** 2
 
-## 153. [ ] Hedgerow: the journey map as one painted country *(lane A, in progress)*
+## 153. [ ] Hedgerow: the journey map as one painted country *(lane A, in progress)* *(slice 1, 2026-11-05 14:20 lane A: all ten acts in the one scroller; acts past the last open one in pencil (`.act-pencil`, `data-pencil`: grayscale-sepia over paper, stops shut, names in full ink), the next with a note naming the boss that opens it; the glimpse strip retired; hedgerow-map.spec's item-153 test (10 acts, next act's top 60 px+ on the first screen, locked names 4.5:1). Shots `e2e/screenshots/b160/a153-*` (P, D, light, dark). Open: the ground running from act to act (a hard line where an act's ground meets the next act's banner; overlapping the acts with a mask fades the level card and can clip a sticky card, so it needs care), a pencil-to-colour wash when an act opens (the unveil fog plays today; Cath's walk from the cleared boss into the new act already crosses the border), real pencil linework instead of a filter if the shots still read as faded)*
 - **Why:** `hedge-menu-D` (0-1440 x 790-900): act 4 is a washed-out strip and each act a page of its own.
 - **Build:**
   - The acts joined into one vertical scroll of painted country, each act's ground running into the next.
