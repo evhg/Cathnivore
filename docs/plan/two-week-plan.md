@@ -2012,7 +2012,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each `[data-piece]` box 36 px or more at D and 24 px or more at P; the map 75% or more of the board panel's width at D; every piece kind has its own `data-silhouette`; rule tests unchanged; shots P and D, light and dark.
 - **Size:** 3
 
-## 173. [ ] Cathnivore: Hollowell's moves as a glossy corporate ticker *(lane B, in progress)*
+## 173. [x] Cathnivore: Hollowell's moves as a glossy corporate ticker *(done 2026-11-05, lane B, db01617: `.plan-strip[data-corp]` as acrylic panels on a chrome rim with a specular strip, slate sans caps, an orange rail and the Hollowell plate (desktop; a phone card has no room); no tilt or tape; region chips orange on white at 4.5:1+; item 100's slot-in kept (no overshoot) and a card's target chips pulse once when it lands; reduced motion only fades. `e2e/plan-corp.spec.ts`; shots `t173` P and D, light and dark)*
 - **Why:** `cath-game-D` (350-1205 x 88-185) and `cath-game-P` (10-380 x 68-160): Squeeze, Expand and Scout are drawn on the producers' own warm paper. VISION's art direction says the corporations are glossy, plastic, over-lit and clinical; this row is where that contrast belongs.
 - **Build:**
   - The row as an acrylic and chrome dashboard: cool corporate tokens, a specular strip, sans caps, the Hollowell plate.
