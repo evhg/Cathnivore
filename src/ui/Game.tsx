@@ -1918,10 +1918,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     </>
   )
 
+  // Plan item 167: on a big desktop what can't be played yet is a shelf of small cards, each with its picture.
+  const shelf = handOnTable && isDesktop
+  const shelfPic = (art: ReactNode) => (shelf ? <span className="later-pic" aria-hidden="true">{art}</span> : null)
   const actionsPanel = (
     <div className="actions-well">
       <section
         className="actions"
+        data-shelf={shelf ? '' : undefined}
         tabIndex={0}
         role="region"
         aria-label="Actions"
@@ -2075,6 +2079,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledSell.map(({ count, missing }) => (
             <span key={`disabled-sell-${count}`} className="action-item">
               <button disabled title={`Need ${missing} more Produce`}>
+                {shelfPic(<SellArt size={44} count={count} />)}
                 <span className="action-label-group">
                   <span className="action-label">
                     <SellArt size={18} count={count} />
@@ -2100,6 +2105,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
                   aria-label={`Invest: buy ${card.name} (${plural(cost, 'Mark')}). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
                 >
+                  {shelfPic(<Vignette kind={vignetteFor(card)} seed={card.id} />)}
                   <span className="action-label-group">
                     <span className="action-label">
                       <InvestArt size={18} />
@@ -2121,6 +2127,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             return (
               <span key={`disabled-scheme-${schemeId}`} className="action-item">
                 <button disabled title={`Need ${missing} more Goodwill`}>
+                  {shelfPic(<SchemeArt size={44} />)}
                   <span className="action-label-group">
                     <span className="action-label">
                       <SchemeArt size={18} />
@@ -2141,6 +2148,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledOpenStall && (
             <span className="action-item">
               <button disabled title={disabledOpenStall.text}>
+                {shelfPic(<OpenStallArt size={44} />)}
                 <span className="action-label-group">
                   <span className="action-label">
                     <OpenStallArt size={18} />
@@ -2158,6 +2166,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledSupplyOutlets.map(({ count, reason }) => (
             <span key={`disabled-supply-outlets-${count}`} className="action-item">
               <button disabled title={reason!.text}>
+                {shelfPic(<SupplyArt size={44} />)}
                 <span className="action-label-group">
                   <span className="action-label">
                     <SupplyArt size={18} />
@@ -2175,6 +2184,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledSupplyBuyoutReason && !groups.has('supplyBuyout') && (
             <span className="action-item">
               <button disabled title={disabledSupplyBuyoutReason.text}>
+                {shelfPic(<SupplyArt size={44} />)}
                 <span className="action-label-group">
                   <span className="action-label">
                     <SupplyArt size={18} />
@@ -2192,6 +2202,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledRebut.map(({ count, reason }) => (
             <span key={`disabled-rebut-${count}`} className="action-item">
               <button disabled title={reason!.text}>
+                {shelfPic(<RebutArt size={44} />)}
                 <span className="action-label-group">
                   <span className="action-label">
                     <RebutArt size={18} />
