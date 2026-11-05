@@ -36,7 +36,7 @@ test('a fresh save walks chapter 2\'s coach to free play, clicking only the spot
   await startChapter2(page)
 
   const coach = page.locator('.coach')
-  const actions = page.locator('.actions')
+  const actions = page.locator(':is(.actions, .table-hand)')
   await expect(page.locator('.coach-count')).toHaveText(`Step 1 of ${TOTAL}`)
   // The old prompt strip is retired from the campaign.
   await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
@@ -99,7 +99,7 @@ test('chapter 2\'s coach can be skipped and replayed from its campaign card', as
   await page.getByRole('button', { name: 'Skip tutorial' }).click()
   await page.getByRole('button', { name: 'Yes, skip it' }).click()
   await expect(page.locator('.coach')).toHaveCount(0)
-  await expect(page.locator('.actions').getByRole('button', { name: /^Graft/ })).toBeVisible()
+  await expect(page.locator(':is(.actions, .table-hand)').getByRole('button', { name: /^Graft/ })).toBeVisible()
   await page.getByRole('button', { name: 'Menu' }).click()
   await page.getByRole('button', { name: 'Replay the walkthrough' }).click()
   await expect(page.locator('.coach-count')).toHaveText(`Step 1 of ${TOTAL}`)

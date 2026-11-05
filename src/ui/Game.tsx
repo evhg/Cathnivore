@@ -606,6 +606,32 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const deskTableCath = useMedia(TABLE_CATH_QUERY)
   const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
   const tableCath = deskTableCath || phoneTableCath
+  // Plan item 149: the same sizes hold the hand of cards at the table's edge.
+  const handOnTable = deskTableCath
+  // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.
+  useLayoutEffect(() => {
+    if (!handOnTable) return
+    const fan = () => {
+    const hand = document.querySelector<HTMLElement>('.table-hand')
+    const cards = [...document.querySelectorAll<HTMLElement>('.table-hand .action-item')]
+    if (!hand || cards.length === 0) return
+    const mid = (cards.length - 1) / 2
+    // A crowded turn overlaps the cards (each keeps its full face; the next one covers its right side) rather than
+    // squeezing their words; a hover or focus lifts a card clear of its neighbours.
+    const widths = cards.reduce((sum, c) => sum + c.offsetWidth, 0)
+    const room = hand.clientWidth - parseFloat(getComputedStyle(hand).paddingLeft) * 2
+    const step = cards.length > 1 ? Math.min(-6, (room - widths) / (cards.length - 1)) : 0
+    cards.forEach((card, i) => {
+      const off = mid === 0 ? 0 : (i - mid) / Math.max(mid, 3)
+      card.style.setProperty('--fan', `${(off * 4).toFixed(2)}deg`)
+      card.style.setProperty('--rise', `${Math.round(-(1 - off * off) * 8)}px`)
+      card.style.setProperty('--step', i === 0 ? '0px' : `${step.toFixed(1)}px`)
+    })
+    }
+    fan()
+    window.addEventListener('resize', fan)
+    return () => window.removeEventListener('resize', fan)
+  })
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -1562,6 +1588,200 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       ? { ...state, regions: stagedRegions(enemyTurnBefore, state.regions, pendingEnemyTurn, enemyLanded + 1) }
       : state
 
+  // Plan item 149: the cards this turn can play. On a big desktop they are a hand at the table's bottom edge
+  // (`.table-hand`, under the map); elsewhere they lead the Actions list.
+  const playableCards = (
+    <>
+          {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
+          {sellEntries.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span key={index} className="action-item action-sell" data-group="sell" data-hand-card="" data-suggested={isSuggested([index])} {...previewProps([index])}>
+                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
+          {investEntries.map(({ index, action: a }, position) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span
+                key={index}
+                data-group="invest"
+                data-hand-card=""
+                className={position === 0 && !suggested ? 'action-item action-recommended' : 'action-item'}
+                data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
+                data-suggested={isSuggested([index])}
+                {...previewProps([index])}
+              >
+                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {(otherStandalone.length > 0 || groups.size > 0) && (sellEntries.length > 0 || investEntries.length > 0) && (
+            <span className="action-head" aria-hidden="true">Play</span>
+          )}
+          {otherStandalone.map(({ index, action: a }) => {
+            const term = actionTermFor(a)
+            const Icon = ACTION_ICON[a.kind]
+            return (
+              <span key={index} className="action-item" data-group="play" data-hand-card="" data-suggested={isSuggested([index])} {...previewProps([index])}>
+                <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
+                {term && (
+                  <Tooltip term={term} label={`What is ${term}?`}>
+                    ?
+                  </Tooltip>
+                )}
+              </span>
+            )
+          })}
+          {(() => {
+            // Plan item 83: a group's button (a region-target action), whole or as one option of a family card.
+            const groupButton = (group: { label: string; entries: { index: number; region: RegionId }[] }, short?: string) => {
+              const single = group.entries.length === 1
+              const firstAction = actions[group.entries[0]!.index]!
+              const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
+              const Icon = ACTION_ICON[firstAction.kind]
+              const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
+              // Plan item 83: a Role group shows its ability ("Injunction…"), as the standalone Role card does.
+              const roleText = !short && firstAction.kind === 'role' ? `${PRODUCERS[state.activeProducer].roleName.split(', ').pop()}…` : undefined
+              const cardText = !short && !roleText && single ? actionCardLabel(firstAction) : undefined
+              // Plan item 103 follow-up: the scheme's painted tile already says Scheme, so the face names the card alone
+              // ('Price War in Brindle…' was cut at 1280); the accessible name keeps 'Scheme: '.
+              const text = short ?? roleText ?? cardText ?? full.text.replace(/^Scheme: /, '')
+              const aria = full.aria ?? (short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
+              return (
+                <button
+                  aria-label={aria}
+                  data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
+                  className={short ? 'action-card-draggable action-option' : 'action-card-draggable'}
+                  onPointerDown={(e) => {
+                    if (guidedActive || e.button !== 0) return
+                    dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                  }}
+                  onPointerMove={(e) => {
+                    const d = dragRef.current
+                    if (!d) return
+                    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
+                    d.moved = true
+                    setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
+                  }}
+                  onPointerUp={(e) => {
+                    const d = dragRef.current
+                    dragRef.current = null
+                    if (!d?.moved) return
+                    dragClickGuard.current = true
+                    setDrag(null)
+                    const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
+                    const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
+                    const entry = d.group.entries.find((en) => en.region === region)
+                    if (entry) act(entry.index)
+                  }}
+                  onPointerCancel={() => {
+                    dragRef.current = null
+                    setDrag(null)
+                  }}
+                  onClick={() => {
+                    if (dragClickGuard.current) {
+                      dragClickGuard.current = false
+                      return
+                    }
+                    if (guidedActive && !guidedExpect) return
+                    if (single && !forceTargeting) act(group.entries[0]!.index)
+                    else setSelectedGroup(group)
+                  }}
+                >
+                  <span className="action-label">
+                    {!short && Icon && <Icon size={18} />}
+                    {short ? text : <BuyVerb text={text} />}
+                  </span>
+                  <ActionCostChip cost={cost} />
+                </button>
+              )
+            }
+            // Plan item 83: Supply's three removals and Rebut's two are one card each with their options as keys,
+            // so a big turn's Play group is a few rich cards rather than a column of near-identical rows.
+            const rendered = new Set<string>()
+            const keys = [...groups.keys()]
+            return keys.map((key) => {
+              if (rendered.has(key)) return null
+              const group = groups.get(key)!
+              const family = actionFamily(key)
+              const members = family ? keys.filter((k) => actionFamily(k) === family) : []
+              const firstAction = actions[group.entries[0]!.index]!
+              const term = actionTermFor(firstAction)
+              if (family && members.length > 1) {
+                members.forEach((k) => rendered.add(k))
+                const regions = new Set(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.region)))
+                const oneRegion = regions.size === 1 && members.every((k) => groups.get(k)!.entries.length === 1) ? [...regions][0]! : undefined
+                const Icon = ACTION_ICON[firstAction.kind]
+                const name = family === 'supply' ? 'Supply' : 'Rebut'
+                return (
+                  <span
+                    key={`family-${family}`}
+                    className="action-item action-family"
+                    data-group="play" data-hand-card=""
+                    data-family={family}
+                    data-suggested={isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
+                    role="group"
+                    {...previewProps(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
+                    aria-label={oneRegion ? `${name} in ${REGIONS[oneRegion].name}` : name}
+                  >
+                    {isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index))) !== undefined && SUGGEST_LEAF}
+                    <span className="action-family-name" aria-hidden="true">
+                      {Icon && <Icon size={18} />}
+                      <span className="action-family-text">
+                        {name}
+                        {oneRegion && <span className="action-family-where">{REGIONS[oneRegion].name}</span>}
+                      </span>
+                    </span>
+                    <span className="action-family-options">
+                      {members.map((k) => (
+                        <span key={k} className="action-family-option">
+                          {groupButton(groups.get(k)!, familyOptionLabel(k))}
+                        </span>
+                      ))}
+                    </span>
+                    {term && (
+                      <Tooltip term={term} label={`What is ${term}?`}>
+                        ?
+                      </Tooltip>
+                    )}
+                  </span>
+                )
+              }
+              return (
+                <span key={key} className="action-item" data-group="play" data-hand-card="" data-suggested={isSuggested(group.entries.map((e) => e.index))} {...previewProps(group.entries.map((e) => e.index))}>
+                  {groupButton(group)}
+                  {isSuggested(group.entries.map((e) => e.index)) !== undefined && SUGGEST_LEAF}
+                  {term && (
+                    <Tooltip term={term} label={`What is ${term}?`}>
+                      ?
+                    </Tooltip>
+                  )}
+                </span>
+              )
+            })
+          })()}
+    </>
+  )
+
   const actionsPanel = (
     <div className="actions-well">
       <section
@@ -1709,192 +1929,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             </p>
           )}
-          {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
-          {sellEntries.map(({ index, action: a }) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span key={index} className="action-item action-sell" data-group="sell" data-suggested={isSuggested([index])} {...previewProps([index])}>
-                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
-                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-          {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
-          {investEntries.map(({ index, action: a }, position) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span
-                key={index}
-                data-group="invest"
-                className={position === 0 && !suggested ? 'action-item action-recommended' : 'action-item'}
-                data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
-                data-suggested={isSuggested([index])}
-                {...previewProps([index])}
-              >
-                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
-                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-          {(otherStandalone.length > 0 || groups.size > 0) && (sellEntries.length > 0 || investEntries.length > 0) && (
-            <span className="action-head" aria-hidden="true">Play</span>
-          )}
-          {otherStandalone.map(({ index, action: a }) => {
-            const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
-            return (
-              <span key={index} className="action-item" data-group="play" data-suggested={isSuggested([index])} {...previewProps([index])}>
-                <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
-                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
-                {term && (
-                  <Tooltip term={term} label={`What is ${term}?`}>
-                    ?
-                  </Tooltip>
-                )}
-              </span>
-            )
-          })}
-          {(() => {
-            // Plan item 83: a group's button (a region-target action), whole or as one option of a family card.
-            const groupButton = (group: { label: string; entries: { index: number; region: RegionId }[] }, short?: string) => {
-              const single = group.entries.length === 1
-              const firstAction = actions[group.entries[0]!.index]!
-              const cost = single ? actionCost(firstAction, state) : uniformGroupCost(group.entries, actions, state)
-              const Icon = ACTION_ICON[firstAction.kind]
-              const full = chipLabel(single ? actionLabel(firstAction, state) : `${group.label}…`, !!cost)
-              // Plan item 83: a Role group shows its ability ("Injunction…"), as the standalone Role card does.
-              const roleText = !short && firstAction.kind === 'role' ? `${PRODUCERS[state.activeProducer].roleName.split(', ').pop()}…` : undefined
-              const cardText = !short && !roleText && single ? actionCardLabel(firstAction) : undefined
-              // Plan item 103 follow-up: the scheme's painted tile already says Scheme, so the face names the card alone
-              // ('Price War in Brindle…' was cut at 1280); the accessible name keeps 'Scheme: '.
-              const text = short ?? roleText ?? cardText ?? full.text.replace(/^Scheme: /, '')
-              const aria = full.aria ?? (short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
-              return (
-                <button
-                  aria-label={aria}
-                  data-tutorial={isGuidedTarget(firstAction) ? 'action' : undefined}
-                  className={short ? 'action-card-draggable action-option' : 'action-card-draggable'}
-                  onPointerDown={(e) => {
-                    if (guidedActive || e.button !== 0) return
-                    dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
-                    e.currentTarget.setPointerCapture(e.pointerId)
-                  }}
-                  onPointerMove={(e) => {
-                    const d = dragRef.current
-                    if (!d) return
-                    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
-                    d.moved = true
-                    setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
-                  }}
-                  onPointerUp={(e) => {
-                    const d = dragRef.current
-                    dragRef.current = null
-                    if (!d?.moved) return
-                    dragClickGuard.current = true
-                    setDrag(null)
-                    const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
-                    const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
-                    const entry = d.group.entries.find((en) => en.region === region)
-                    if (entry) act(entry.index)
-                  }}
-                  onPointerCancel={() => {
-                    dragRef.current = null
-                    setDrag(null)
-                  }}
-                  onClick={() => {
-                    if (dragClickGuard.current) {
-                      dragClickGuard.current = false
-                      return
-                    }
-                    if (guidedActive && !guidedExpect) return
-                    if (single && !forceTargeting) act(group.entries[0]!.index)
-                    else setSelectedGroup(group)
-                  }}
-                >
-                  <span className="action-label">
-                    {!short && Icon && <Icon size={18} />}
-                    {short ? text : <BuyVerb text={text} />}
-                  </span>
-                  <ActionCostChip cost={cost} />
-                </button>
-              )
-            }
-            // Plan item 83: Supply's three removals and Rebut's two are one card each with their options as keys,
-            // so a big turn's Play group is a few rich cards rather than a column of near-identical rows.
-            const rendered = new Set<string>()
-            const keys = [...groups.keys()]
-            return keys.map((key) => {
-              if (rendered.has(key)) return null
-              const group = groups.get(key)!
-              const family = actionFamily(key)
-              const members = family ? keys.filter((k) => actionFamily(k) === family) : []
-              const firstAction = actions[group.entries[0]!.index]!
-              const term = actionTermFor(firstAction)
-              if (family && members.length > 1) {
-                members.forEach((k) => rendered.add(k))
-                const regions = new Set(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.region)))
-                const oneRegion = regions.size === 1 && members.every((k) => groups.get(k)!.entries.length === 1) ? [...regions][0]! : undefined
-                const Icon = ACTION_ICON[firstAction.kind]
-                const name = family === 'supply' ? 'Supply' : 'Rebut'
-                return (
-                  <span
-                    key={`family-${family}`}
-                    className="action-item action-family"
-                    data-group="play"
-                    data-family={family}
-                    data-suggested={isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
-                    role="group"
-                    {...previewProps(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
-                    aria-label={oneRegion ? `${name} in ${REGIONS[oneRegion].name}` : name}
-                  >
-                    {isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index))) !== undefined && SUGGEST_LEAF}
-                    <span className="action-family-name" aria-hidden="true">
-                      {Icon && <Icon size={18} />}
-                      <span className="action-family-text">
-                        {name}
-                        {oneRegion && <span className="action-family-where">{REGIONS[oneRegion].name}</span>}
-                      </span>
-                    </span>
-                    <span className="action-family-options">
-                      {members.map((k) => (
-                        <span key={k} className="action-family-option">
-                          {groupButton(groups.get(k)!, familyOptionLabel(k))}
-                        </span>
-                      ))}
-                    </span>
-                    {term && (
-                      <Tooltip term={term} label={`What is ${term}?`}>
-                        ?
-                      </Tooltip>
-                    )}
-                  </span>
-                )
-              }
-              return (
-                <span key={key} className="action-item" data-group="play" data-suggested={isSuggested(group.entries.map((e) => e.index))} {...previewProps(group.entries.map((e) => e.index))}>
-                  {groupButton(group)}
-                  {isSuggested(group.entries.map((e) => e.index)) !== undefined && SUGGEST_LEAF}
-                  {term && (
-                    <Tooltip term={term} label={`What is ${term}?`}>
-                      ?
-                    </Tooltip>
-                  )}
-                </span>
-              )
-            })
-          })()}
+          {!handOnTable && playableCards}
           {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
           {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
           disabledOpenStall ||
@@ -2514,6 +2549,19 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           />
         )}
       </section>
+      {handOnTable && pendingEnemyTurn.length === 0 && !(waitingOnAi && teammatePick) && !selectedGroup && (
+        <section
+          className="table-hand"
+          role="region"
+          aria-label="Your hand"
+          onClickCapture={(e) => {
+            const card = (e.target as Element).closest?.('.action-item > button:first-child, .action-family-option > button')
+            if (card instanceof HTMLElement && !(card as HTMLButtonElement).disabled) lastCardRef.current = { el: card, at: performance.now() }
+          }}
+        >
+          {playableCards}
+        </section>
+      )}
       </div>
 
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle

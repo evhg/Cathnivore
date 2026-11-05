@@ -35,6 +35,7 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
 
   // Still explained by the same "Sell" glossary tooltip a real Sell button offers (SPEC 10.5).
   const disabledTrigger = page.locator('.action-item', { hasText: 'Sell 1 Produce' }).locator('.tooltip-trigger-button')
+  await page.mouse.move(0, 0) // plan item 149: a hand card's tip opens under a resting pointer
   await disabledTrigger.dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
 
@@ -71,6 +72,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
 
   // Still explained by the same "Invest" glossary tooltip a real Invest button offers (SPEC 10.5).
   const disabledTrigger = investItems.first().locator('.tooltip-trigger-button')
+  await page.mouse.move(0, 0) // plan item 149: a hand card's tip opens under a resting pointer
   await disabledTrigger.dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
   await page.keyboard.press('Escape')
@@ -172,6 +174,7 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
   await expect(openStall.locator('.action-why-not')).toHaveText('Need 1 more Produce')
 
   // Still explained by the same "Open Stall" glossary tooltip a real Open Stall button offers.
+  await page.mouse.move(0, 0) // plan item 149: a hand card's tip opens under a resting pointer
   await openStall.locator('.tooltip-trigger-button').dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
   // Put it away again: on a phone the card's "i" sits by its price, so its popover covers the cards.
@@ -216,6 +219,7 @@ test('Rebut and Supply-Buyout show a disabled, explained placeholder when there 
   await expect(rebut1.locator('.action-cost')).toHaveCount(0)
 
   // Still explained by the "Rebut" glossary tooltip the real button offers.
+  await page.mouse.move(0, 0) // plan item 149: a hand card's tip opens under a resting pointer
   await rebut1.locator('.tooltip-trigger-button').dispatchEvent('click')
   await expect(page.locator('.tooltip-popover')).toBeVisible()
   // Put it away again: on a phone the card's "i" sits by its price, so its popover covers the cards.
@@ -266,18 +270,18 @@ test('Open Stall shows a disabled, explained placeholder when every region is fu
   await page.getByRole('button', { name: 'Continue' }).click()
   await page.locator('.game').waitFor()
 
-  const actions = page.locator('.actions')
+  const actions = page.locator(':is(.actions, .table-hand)')
   await expect(page.locator('.action-item', { hasText: 'Open Stall' }).locator('.action-why-not')).toHaveCount(0)
 
   await actions.getByRole('button', { name: /^Open Stall/ }).click()
   await page.locator('.region-hex[aria-label="Brindle Hills"]').click()
-  await actions.getByRole('button', { name: 'Confirm' }).click()
-  await actions.waitFor()
+  await page.locator('.actions').getByRole('button', { name: 'Confirm' }).click()
+  await page.locator('.actions').waitFor()
 
   // Brindle Hills is now full, so Oakvale is the only legal target left — a single, directly-clickable
   // button (SPEC 10.2: a group only needs the map-tap-and-Confirm flow when more than one target remains).
   await actions.getByRole('button', { name: /^Open Stall in Oakvale/ }).click()
-  await actions.waitFor()
+  await page.locator('.actions').waitFor()
 
   const openStall = page.locator('.action-item', { hasText: 'Open Stall' })
   await expect(openStall.getByRole('button', { name: /^Open Stall/ })).toBeDisabled()

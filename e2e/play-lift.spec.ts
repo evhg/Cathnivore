@@ -11,9 +11,12 @@ for (const reduced of [false, true]) {
     await fillSeed(page, '1')
     await page.getByRole('button', { name: 'Start' }).click()
     await page.locator('.game').waitFor()
-    const scope = testInfo.project.name === 'phone' ? '.action-tray' : '.actions-sheet'
-    const sell = page.locator(`${scope} .actions .action-item > button:first-child`, { hasText: 'Sell 1 Produce' }).first()
+    const scope = testInfo.project.name === 'phone' ? '.action-tray .actions' : '.table-hand'
+    const sell = page.locator(`${scope} .action-item > button:first-child`, { hasText: 'Sell 1 Produce' }).first()
     await sell.scrollIntoViewIfNeeded()
+    // Plan item 149: a desktop hand card lifts out of the fan under the pointer; measure it there, as it's clicked.
+    await sell.hover()
+    await page.waitForTimeout(250)
     const from = (await sell.boundingBox())!
     // Watch for the flying layer inside the page: the flight is shorter than a Playwright round trip.
     await page.evaluate(() => {

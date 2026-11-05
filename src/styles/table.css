@@ -1697,7 +1697,7 @@ html.no-animations .cath-companion .cameo {
    action is a key you press: a wheat face on a soil lip, unlike anything printed around it. The ledger
    chips are readings, so they lose the raised pill look and sit flat, like ink on the ledger. The
    Pressure clippings toggle a map highlight, so they lift under the pointer and press down. ---- */
-.actions .action-item > button:first-child:not(:disabled) {
+:is(.actions, .table-hand) .action-item > button:first-child:not(:disabled) {
   --lip: 4px;
   --lip-c: var(--bunting-lo);
   border-color: var(--bunting);
@@ -1705,7 +1705,7 @@ html.no-animations .cath-companion .cameo {
   color: var(--ink-on-fixed-fill);
 }
 
-.actions .action-item > button:first-child:not(:disabled) .action-label svg {
+:is(.actions, .table-hand) .action-item > button:first-child:not(:disabled) .action-label svg {
   color: var(--ink-on-fixed-fill);
 }
 
@@ -2415,9 +2415,9 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left .ledger-chip { gap: 3px; padding: 0 7px 0 5px; }
 }
 /* Plan item 83: each playable card carries its group's colour: Sell the pasture green, Invest the sea, Play clay. */
-.actions .action-item[data-group='sell'] { --grp: var(--pasture-deep); }
-.actions .action-item[data-group='invest'] { --grp: var(--sea); }
-.actions .action-item[data-group='play'] { --grp: var(--clay-deep); }
+:is(.actions, .table-hand) .action-item[data-group='sell'] { --grp: var(--pasture-deep); }
+:is(.actions, .table-hand) .action-item[data-group='invest'] { --grp: var(--sea); }
+:is(.actions, .table-hand) .action-item[data-group='play'] { --grp: var(--clay-deep); }
 @media (min-width: 1024px) {
   .actions-sheet .actions .action-item[data-group] > button:first-child:not(:disabled) { border-left: 6px solid var(--grp); padding-left: 8px; }
   .actions-sheet .actions .action-head { color: var(--soil); }
@@ -2427,8 +2427,8 @@ html.no-animations .cath-companion .cameo {
 }
 /* Plan item 83: each card's painted picture (ActionArt.tsx). A 30 px tile at the head of a desktop row, 34 px
    on a phone card's top line, 22 px on a "Not yet" strip (kept in colour, so the strip still says what it is). */
-.actions .action-label svg.action-art { flex: none; width: 30px; height: 30px; margin-block: -3px; filter: drop-shadow(0 1px 0 var(--ink-a15)); }
-.actions .action-item > button:disabled .action-label svg.action-art { width: 22px; height: 22px; margin-block: 0; filter: none; opacity: .8; }
+:is(.actions, .table-hand) .action-label svg.action-art { flex: none; width: 30px; height: 30px; margin-block: -3px; filter: drop-shadow(0 1px 0 var(--ink-a15)); }
+:is(.actions, .table-hand) .action-item > button:disabled .action-label svg.action-art { width: 22px; height: 22px; margin-block: 0; filter: none; opacity: .8; }
 @media (max-width: 1023.98px) {
   /* a phone card's name keeps its lines: the picture sits in the foot row, between the price and the "i" */
   .action-tray .actions .action-item > button:first-child { position: relative; }
@@ -2495,7 +2495,7 @@ html.no-animations .cath-companion .cameo {
 }
 /* Plan item 83: Supply's removals and Rebut's counts are one card each, the options set into it as keys
    (the same wheat face as a card), so a big turn's Play group is a few rich cards, not a column of rows. */
-.actions .action-family {
+:is(.actions, .table-hand) .action-family {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2506,7 +2506,7 @@ html.no-animations .cath-companion .cameo {
   background: var(--mat-card-flat);
   box-shadow: var(--inset-hi), var(--e2);
 }
-.actions .action-family-name {
+:is(.actions, .table-hand) .action-family-name {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2515,13 +2515,13 @@ html.no-animations .cath-companion .cameo {
   font: 700 var(--fs-small)/1.15 var(--font-text);
   color: var(--ink);
 }
-.actions .action-family-name > svg { flex: none; }
-.actions .action-family-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.actions .action-family-where { font-weight: 600; color: var(--ink-muted); }
-.actions .action-family-where::before { content: ' · '; }
-.actions .action-family-options { display: flex; gap: 5px; min-width: 0; }
-.actions .action-family-option { display: flex; flex: 1 1 0; min-width: 0; }
-.actions .action-family-option > button {
+:is(.actions, .table-hand) .action-family-name > svg { flex: none; }
+:is(.actions, .table-hand) .action-family-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+:is(.actions, .table-hand) .action-family-where { font-weight: 600; color: var(--ink-muted); }
+:is(.actions, .table-hand) .action-family-where::before { content: ' · '; }
+:is(.actions, .table-hand) .action-family-options { display: flex; gap: 5px; min-width: 0; }
+:is(.actions, .table-hand) .action-family-option { display: flex; flex: 1 1 0; min-width: 0; }
+:is(.actions, .table-hand) .action-family-option > button {
   --lip: 3px;
   --lip-c: var(--bunting-lo);
   display: flex;
@@ -2537,14 +2537,14 @@ html.no-animations .cath-companion .cameo {
   background: linear-gradient(180deg, var(--wheat-hi), var(--wheat));
   color: var(--ink-on-fixed-fill);
 }
-.actions .action-family-option > button .action-label { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.actions .action-family-option > button .action-cost { flex: none; height: 20px; padding: 0 6px 0 4px; gap: 2px; }
-.actions .action-family-option > button .action-cost svg { width: 12px; height: 12px; }
+:is(.actions, .table-hand) .action-family-option > button .action-label { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+:is(.actions, .table-hand) .action-family-option > button .action-cost { flex: none; height: 20px; padding: 0 6px 0 4px; gap: 2px; }
+:is(.actions, .table-hand) .action-family-option > button .action-cost svg { width: 12px; height: 12px; }
 /* A key stacks its name over its price, so neither is cut in a third of the card. */
-.actions .action-family-option > button { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 42px; padding: 3px 6px 4px; }
-.actions .action-family-option > button .action-label { max-width: 100%; font-size: var(--fs-caption); line-height: 1.1; }
-.actions .action-item.action-family > .tooltip-trigger { position: absolute; top: 3px; bottom: auto; right: 6px; translate: none; scale: .8; }
-.actions .action-family-name > svg { width: 22px; height: 22px; }
+:is(.actions, .table-hand) .action-family-option > button { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 42px; padding: 3px 6px 4px; }
+:is(.actions, .table-hand) .action-family-option > button .action-label { max-width: 100%; font-size: var(--fs-caption); line-height: 1.1; }
+:is(.actions, .table-hand) .action-item.action-family > .tooltip-trigger { position: absolute; top: 3px; bottom: auto; right: 6px; translate: none; scale: .8; }
+:is(.actions, .table-hand) .action-family-name > svg { width: 22px; height: 22px; }
 @media (min-width: 1024px) {
   .actions-sheet .actions .action-family { gap: 3px; padding: 3px 8px 5px; border-left: 6px solid var(--grp); }
   .actions-sheet .actions .action-family-option > button { min-height: 36px; padding-block: 2px 3px; }
@@ -2639,7 +2639,7 @@ html.no-animations .cath-companion .cameo {
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-family-option > button { padding-inline: 5px; }
 }
 /* Plan item 83: Graft's gain chip (+1 crate, +1 coin) stays clear of the tile's i. */
-.actions .action-item > button .action-gain-graft { gap: 1px; }
+:is(.actions, .table-hand) .action-item > button .action-gain-graft { gap: 1px; }
 @media (min-width: 1024px) {
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group='play']:not(.action-family) > button:not(:disabled) .action-gain-graft { padding-inline: 4px; margin-left: 0; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions .action-item[data-group] > button:not(:disabled):has(.action-gain-graft) svg.action-art { display: none; }
@@ -2900,4 +2900,95 @@ html.no-animations .table-cath-line { animation: none; }
     padding-bottom: 2px;
     pointer-events: none;
   }
+}
+
+/* Plan item 149: on a big desktop the cards this turn can play are a hand at the table's bottom edge, under the
+   map, overlapping its wooden rim. Each card is a face: the picture large on top, the name, the cost; a card
+   lifts out of the fan on hover or focus. What can't be played yet stays in the Actions column as priced strips. */
+.table-hand { display: none; }
+@media (min-width: 1240px) and (min-height: 760px) {
+  .game-layout .table-hand {
+    position: relative;
+    z-index: var(--z-raised);
+    display: flex;
+    flex: none;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0;
+    margin: calc(-1 * var(--sp-1)) var(--sp-5) 0;
+    padding: 0 var(--sp-3) var(--sp-3);
+    min-height: 0;
+  }
+  .game-layout .table-hand .action-head { display: none; }
+  .game-layout .table-hand .action-item {
+    --fan: 0deg;
+    --rise: 0px;
+    position: relative;
+    flex: none;
+    width: 124px;
+    height: 114px;
+    margin-left: var(--step, 0px);
+    transform-origin: 50% 140%;
+    transform: rotate(var(--fan)) translateY(calc(var(--rise) + var(--pick-rise, 0px)));
+    transition: transform 160ms ease-out;
+    filter: drop-shadow(-2px 3px 4px rgb(var(--shadow-ink) / .28));
+  }
+  .game-layout .table-hand .action-family { width: 164px; }
+  /* Cath's suggested card stands a little proud of the fan. */
+  .game-layout .table-hand .action-item[data-suggested] { --pick-rise: -10px; }
+  .game-layout .table-hand .action-item:hover,
+  .game-layout .table-hand .action-item:focus-within {
+    z-index: var(--z-lift);
+    transform: rotate(0deg) translateY(-14px) scale(1.06);
+  }
+  .game-layout .table-hand .action-item > button:first-child,
+  .game-layout .table-hand .action-item .action-card-draggable {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 7px 8px 6px;
+    overflow: hidden;
+    border-radius: var(--r-card);
+    text-align: left;
+  }
+  .game-layout .table-hand .action-item .action-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: var(--fs-caption);
+    line-height: 1.1;
+  }
+  .game-layout .table-hand .action-item .action-cost { flex: none; }
+  .game-layout .table-hand .action-item .action-label > svg {
+    width: 30px;
+    height: 30px;
+    flex: none;
+  }
+  .game-layout .table-hand .action-item .tooltip-trigger-button,
+  .game-layout .table-hand .action-item > .tooltip-trigger {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+  }
+  .game-layout .table-hand .action-item > button:first-child,
+  .game-layout .table-hand .action-item .action-card-draggable { padding-right: 30px; }
+  /* Supply / Rebut: one card with its options as keys under the name. */
+  .game-layout .table-hand .action-family {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    border-radius: var(--r-card);
+    background: var(--paper-hi);
+  }
+  .game-layout .table-hand .action-family .action-family-options { display: flex; flex-wrap: wrap; gap: 4px; }
+  .game-layout .table-hand .action-family .action-family-option .action-card-draggable { padding: 4px 6px; height: auto; }
+}
+@media (min-width: 1240px) and (min-height: 760px) and (prefers-reduced-motion: reduce) {
+  .game-layout .table-hand .action-item { transition: none; }
 }

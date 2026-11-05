@@ -579,7 +579,7 @@ html.no-animations .tooltip-popover {
   font-size: var(--fs-small);
 }
 
-.actions .action-head {
+:is(.actions, .table-hand) .action-head {
   margin: var(--sp-2) 0 0;
   font: 760 var(--fs-label)/1.2 var(--font-text);
   letter-spacing: .14em;
@@ -587,18 +587,18 @@ html.no-animations .tooltip-popover {
   color: var(--ink-muted);
 }
 
-.actions .action-head:first-child {
+:is(.actions, .table-hand) .action-head:first-child {
   margin-top: 0;
 }
 
-.actions .action-item {
+:is(.actions, .table-hand) .action-item {
   position: relative;
   display: flex;
   align-items: stretch;
   min-width: 0;
 }
 
-.actions .action-item > button:first-child {
+:is(.actions, .table-hand) .action-item > button:first-child {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 48px;
@@ -612,7 +612,7 @@ html.no-animations .tooltip-popover {
   line-height: 1.2;
 }
 
-.actions .action-item > .tooltip-trigger {
+:is(.actions, .table-hand) .action-item > .tooltip-trigger {
   position: absolute;
   right: 9px;
   top: 50%;
@@ -640,7 +640,7 @@ html.no-animations .tooltip-popover {
 }
 
 /* the one recommended Invest is the single accent in the list: a wheat key, still card stock */
-.actions .action-recommended > button:not(:disabled) {
+:is(.actions, .table-hand) .action-recommended > button:not(:disabled) {
   box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), var(--glow-select);
 }
 
@@ -995,7 +995,7 @@ html.no-animations .coach-tap { animation: none; }
   stroke-linecap: round;
 }
 
-.actions .action-item > .suggest-leaf {
+:is(.actions, .table-hand) .action-item > .suggest-leaf {
   position: absolute;
   top: -6px;
   left: -6px;
@@ -1007,11 +1007,11 @@ html.no-animations .coach-tap { animation: none; }
   z-index: var(--z-raised);
 }
 
-.actions .action-item[data-suggested] > button:first-child:not(:disabled) {
+:is(.actions, .table-hand) .action-item[data-suggested] > button:first-child:not(:disabled) {
   box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), 0 0 0 2px var(--gain-ink);
 }
 
-.actions > .suggest-line {
+:is(.actions, .table-hand) > .suggest-line {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-2);

@@ -56,7 +56,7 @@ test('keyboard-only play completes a round', async ({ page }) => {
       found = await page.evaluate(() => {
         const el = document.activeElement as HTMLButtonElement | null
         const name = el?.getAttribute('aria-label') ?? el?.textContent ?? ''
-        return !!el && el.tagName === 'BUTTON' && !el.disabled && !!el.closest('.actions') && /^(Graft|Sell)/.test(name.trim())
+        return !!el && el.tagName === 'BUTTON' && !el.disabled && !!el.closest('.actions, .table-hand') && /^(Graft|Sell)/.test(name.trim())
       })
     }
     expect(found, `found a Sell or Graft card for action ${k + 1}`).toBe(true)
@@ -75,7 +75,7 @@ test('a region card dragged onto a glowing hex plays there', async ({ page }, te
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
-  const card = page.locator('.actions .action-card-draggable').first()
+  const card = page.locator(':is(.actions, .table-hand) .action-card-draggable').first()
   await card.scrollIntoViewIfNeeded()
   const pipsOn = () => page.locator('.active-producer .pip.on').count()
   const before = await pipsOn()

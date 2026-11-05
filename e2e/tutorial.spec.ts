@@ -35,7 +35,7 @@ test('the guided tutorial walks chapter 1\'s first round end to end, clicking on
   await startChapter1(page)
 
   const coach = page.locator('.coach')
-  const actions = page.locator('.actions')
+  const actions = page.locator(':is(.actions, .table-hand)')
   await expect(page.locator('.coach-count')).toHaveText('Step 1 of 15')
   // The prompt strip is gone in favour of the coach, and nothing is clickable but the card itself.
   await expect(page.locator('.tutorial-prompt')).toHaveCount(0)
@@ -89,7 +89,7 @@ test('the tutorial can be skipped (Escape asks first), stays skipped, and replay
   await page.getByRole('button', { name: 'Yes, skip it' }).click()
   await expect(page.locator('.coach')).toHaveCount(0)
   // Free play straight away: every legal action is offered.
-  await expect(page.locator('.actions').getByRole('button', { name: /^Graft/ })).toBeVisible()
+  await expect(page.locator(':is(.actions, .table-hand)').getByRole('button', { name: /^Graft/ })).toBeVisible()
 
   await page.goto('/')
   await page.getByRole('button', { name: 'Settings' }).click()
@@ -150,5 +150,5 @@ test('the tutorial card\'s "?" opens the rules reference and returns to the same
   await expect(page.locator('.rules-reference')).toHaveCount(0)
   // Back on the same in-progress game and step, with the same gate.
   await expect(page.locator('.coach-count')).toHaveText('Step 7 of 15')
-  await expect(page.locator('.actions').getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
+  await expect(page.locator(':is(.actions, .table-hand)').getByRole('button', { name: 'Graft', exact: false })).toHaveCount(0)
 })
