@@ -114,3 +114,26 @@ test('a turn with more cards than a row holds spills into two rows of whole card
   expect(tops.filter((t, i) => i > 0 && t - tops[i - 1]! > 40).length + 1, 'rows').toBe(2)
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(780)
 })
+
+// Plan item 160: a card that still needs a region says so in words on its own line ('Pick a region', or the role's
+// one region) instead of a bare '…' that read as a cut name; the line is 12 px or more.
+test('no hand card ends in a bare ellipsis at D', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop hand only')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await fillSeed(page, '7')
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.mouse.move(5, 5)
+    await expect(page.locator('.table-hand [data-hand-card]').first()).toBeVisible()
+    const faces = await page.locator('.table-hand [data-hand-card] .action-label').evaluateAll((els) => els.map((e) => (e as HTMLElement).innerText.trim()))
+    for (const f of faces) expect(f, `${width}x${height}`).not.toMatch(/…$/)
+    const picks = page.locator('.table-hand .action-pick')
+    expect(await picks.count(), `${width}x${height}`).toBeGreaterThanOrEqual(1)
+    for (const p of await picks.all()) {
+      await expect(p).toBeVisible()
+      expect(parseFloat(await p.evaluate((e) => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)
+    }
+  }
+})

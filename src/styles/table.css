@@ -2906,6 +2906,7 @@ html.no-animations .table-cath-line { animation: none; }
    map, overlapping its wooden rim. Each card is a face: the picture large on top, the name, the cost; a card
    lifts out of the fan on hover or focus. What can't be played yet stays in the Actions column as priced strips. */
 .table-hand { display: none; }
+.action-pick { display: none; }
 @media (min-width: 1240px) and (min-height: 760px) {
   .game-layout .table-hand {
     position: relative;
@@ -2962,6 +2963,14 @@ html.no-animations .table-cath-line { animation: none; }
     line-height: 1.1;
   }
   .game-layout .table-hand .action-item .action-cost { flex: none; }
+  /* Plan item 160: a card that still needs a region says so on its own line, not with a bare '…'. */
+  .game-layout .table-hand .action-item .action-more { display: none; }
+  .game-layout .table-hand .action-item .action-pick {
+    display: block;
+    font-size: var(--fs-label);
+    font-weight: 600;
+    color: color-mix(in srgb, var(--ink-on-fixed-fill) 72%, var(--wheat));
+  }
   .game-layout .table-hand .action-item .action-label > svg {
     width: 30px;
     height: 30px;
@@ -2998,6 +3007,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding: 6px 8px 6px; }
   .game-layout .table-hand[data-rows] .action-item .action-label { flex-direction: row; align-items: flex-start; gap: 6px; }
   .game-layout .table-hand[data-rows] .action-item .action-label > svg { width: 26px; height: 26px; }
+  .game-layout .table-hand[data-rows] .action-item .action-label:has(.action-pick) { flex-wrap: wrap; row-gap: 0; }
+  .game-layout .table-hand[data-rows] .action-item .action-pick { flex-basis: 100%; padding-left: 32px; }
   .game-layout .table-hand[data-rows] .action-item > .tooltip-trigger,
   .game-layout .table-hand[data-rows] .action-item.action-family > .tooltip-trigger { left: auto; right: 6px; top: 6px; }
   .game-layout .table-hand[data-rows] .action-family { padding: 6px 8px; gap: 3px; }

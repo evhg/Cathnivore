@@ -1787,7 +1787,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               // Plan item 103 follow-up: the scheme's painted tile already says Scheme, so the face names the card alone
               // ('Price War in Brindle…' was cut at 1280); the accessible name keeps 'Scheme: '.
               const text = short ?? roleText ?? cardText ?? full.text.replace(/^Scheme: /, '')
-              const aria = full.aria ?? (short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
+              // Plan item 160: a group that still needs a region ends in '…' in the column; the desktop hand's card
+              // says so in words instead ('Pick a region' on its own line), so the card never reads as cut.
+              const pick = !short && (!single || !!roleText) && /…$/.test(text)
+              const pickLine = single ? `in ${REGIONS[group.entries[0]!.region].name}` : 'Pick a region'
+              const face = pick ? text.replace(/( in)?…$/, '') : text
+              const aria = full.aria ?? (pick || short || roleText || cardText || full.text.startsWith('Scheme: ') ? full.text : undefined)
               return (
                 <button
                   aria-label={aria}
@@ -1832,7 +1837,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 >
                   <span className="action-label">
                     {!short && Icon && <Icon size={18} />}
-                    {short ? text : <BuyVerb text={text} />}
+                    {short ? text : <BuyVerb text={face} />}
+                    {pick && (
+                      <>
+                        <span className="action-more" aria-hidden="true">…</span>
+                        <span className="action-pick" aria-hidden="true">{pickLine}</span>
+                      </>
+                    )}
                   </span>
                   <ActionCostChip cost={cost} />
                 </button>
