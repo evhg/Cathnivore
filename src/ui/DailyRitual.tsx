@@ -69,6 +69,8 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
       {compact ? null : (
         <>
           <div className="ritual-bunting" data-pennants={r.pennants}>
+            {/* Plan item 146: no rope until a pennant hangs on it (an empty one read as a stray arc on the table). */}
+            {r.pennants > 0 ? (
             <svg viewBox={`0 0 ${Math.max(1, r.pennants) * 22 + 8} 34`} width={Math.max(1, r.pennants) * 22 + 8} height={34} focusable="false">
               <path className="ritual-rope" d={`M2 6 Q${(Math.max(1, r.pennants) * 22 + 8) / 2} 14 ${Math.max(1, r.pennants) * 22 + 6} 6`} />
               {Array.from({ length: r.pennants }, (_, i) => {
@@ -87,6 +89,7 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
                 )
               })}
             </svg>
+            ) : null}
             <span className="ritual-streak">
               {r.streak > 0 ? `${plural(r.streak, 'day')} in a row${r.more ? ` (+${r.more})` : ''}` : 'Win a Daily to hang the first pennant'}
             </span>
