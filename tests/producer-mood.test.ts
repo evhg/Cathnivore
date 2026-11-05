@@ -23,6 +23,13 @@ describe('producer moods', () => {
     ] as unknown as GameEvent[]
     expect(producerMoods(ev, regions)).toEqual({ mara: 'worried' })
   })
+  it('a liberation or a bought Improvement delights its producer (item 155)', () => {
+    const ev = [
+      { type: 'liberated', region: 'a', producer: 'mara' },
+      { type: 'invest', producer: 'tomas', improvementId: 'x' },
+    ] as unknown as GameEvent[]
+    expect(producerMoods(ev, regions)).toEqual({ mara: 'delighted', tomas: 'delighted' })
+  })
   it('other events leave faces alone', () => {
     const ev = [{ type: 'action', producer: 'mara', action: { kind: 'sell', count: 1 } }] as unknown as GameEvent[]
     expect(producerMoods(ev, regions)).toEqual({})

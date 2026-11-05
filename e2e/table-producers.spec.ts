@@ -48,4 +48,15 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
     }
   }
   expect(worried, 'a Squeeze on a Stall worries its producer').toBe(true)
+  // A liberation there delights its first Stall-holder, once the worry has passed.
+  await page.waitForTimeout(200)
+  const delighted = await page.evaluate(async (regions) => {
+    for (const r of regions) {
+      ;(window as unknown as { cathnivoreMoment(k: string, id: string): void }).cathnivoreMoment('liberate', r)
+      await new Promise((res) => setTimeout(res, 150))
+      if (document.querySelector('.map-wrap [data-table-producer][data-expression="delighted"]')) return true
+    }
+    return false
+  }, regions)
+  expect(delighted, 'a liberation delights a producer with a Stall there').toBe(true)
 })

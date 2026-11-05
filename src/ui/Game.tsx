@@ -906,9 +906,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const d = (e as CustomEvent<{ kind: 'liberate' | 'squeeze'; region: RegionId }>).detail
       const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
-      // Plan item 155: the seated producers with a Stall there look worried, as on a real Squeeze.
-      if (d.kind === 'squeeze') {
-        const moods = producerMoods([{ type: 'squeeze', region: d.region, lostLand: false, stallRemoved: false, trustLoss: 0 }], moodRegionsRef.current)
+      // Plan item 155: the seated producers react as to a real one: worried with a Stall under a Squeeze, the
+      // region's first Stall-holder delighted at a liberation.
+      {
+        const stalls = moodRegionsRef.current[d.region]?.stalls ?? {}
+        const holder = (Object.keys(stalls) as ProducerId[]).find((p) => (stalls[p] ?? 0) > 0)
+        const events: GameEvent[] =
+          d.kind === 'squeeze'
+            ? [{ type: 'squeeze', region: d.region, lostLand: false, stallRemoved: false, trustLoss: 0 }]
+            : holder
+              ? [{ type: 'liberated', region: d.region, producer: holder }]
+              : []
+        const moods = producerMoods(events, moodRegionsRef.current)
         if (Object.keys(moods).length > 0) {
           setProducerFaces(moods)
           window.clearTimeout(moodTimerRef.current)

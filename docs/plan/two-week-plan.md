@@ -1863,7 +1863,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 no playable action appears in both the column and the hand; each `[data-hand-card]` 120 px or wider with its title's `scrollWidth <= clientWidth`; no two cards overlap by more than 20%; `[data-seat-producer]` art 180 px or taller; rule tests unchanged; shots D light and dark, P unchanged.
 - **Size:** 2
 
-## 155. [ ] Cathnivore: the producers seated at the table *(lane A, in progress)*
+## 155. [x] Cathnivore: the producers seated at the table *(done 2026-11-05, lane A: busts on arched chair-backs inside the map frame, placed by a measured free-spot search opposite Cath (161 px at D, 65 at P, stepping down to 60% before going unseated); faces worried at a Squeeze on their Stall, delighted at an ability, a liberation or a bought Improvement; e2e/table-producers.spec. 'By the stalls they own' became 'opposite Cath': the free spots are the frame's corners, not beside a hex)*
 - **Why:** `cath-game-D` (33-320 x 165-200): Tomas is a line of text, Mara a 55 px roundel; `cath-game-P` shows neither. Only Cath sits at the table (VISION: characters with presence).
 - **Build:**
   - Half-length producers (item 80's `ProducerArt`) at the table's far edge opposite Cath, by the stalls they own; 64 px busts on the phone's table rail.
