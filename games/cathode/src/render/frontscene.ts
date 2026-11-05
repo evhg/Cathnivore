@@ -65,6 +65,8 @@ export interface FrontScene {
   readonly kit: string | null;
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
+  /** Plan item 175: her idle loop now (breath, weight shift, umbrella sway, blinks). */
+  readonly idle: FrontCath["idle"];
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
   /** Her projected box; `body` leaves the umbrella out (plan item 159: what a menu plate must stay clear of). */
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
@@ -664,6 +666,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   }
   // The first frame now, so the canvas never shows black once the scene is ready.
   frame(1 / 60);
+  // Plan item 175: the blink's shut-eyed face uploads now, with the first frame's textures, not on her first blink.
+  world.renderer.initTexture(cath.blinkMap);
   raf = requestAnimationFrame(loop);
 
   const corner = new THREE.Vector3();
@@ -733,6 +737,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     get dressed() {
       return wd.cls;
+    },
+    get idle() {
+      return cath.idle;
     },
     get expression() {
       return cath.expressionNow;

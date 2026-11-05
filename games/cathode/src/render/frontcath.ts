@@ -45,6 +45,11 @@ export interface FrontCath {
   /** Plan item 140: repaints her face with this expression (a no-op when it's already showing). */
   expression(e: FaceExpression): void;
   readonly expressionNow: FaceExpression;
+  /** Plan item 175: the idle loop now: breath (-1..1), the weight shift (-1..1), the umbrella's sway (rad), blinks so
+   *  far and whether the lids are shut this frame. */
+  readonly idle: { breath: number; weight: number; sway: number; blinks: number; blinking: boolean };
+  /** Plan item 175: the shut-eyed face, for the scene to upload up front (not on her first blink). */
+  readonly blinkMap: THREE.Texture;
   dispose(): void;
   readonly triangles: number;
 }
@@ -554,10 +559,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const faceCanvas = document.createElement("canvas");
   faceCanvas.width = 2048;
   faceCanvas.height = 1024;
-  const paintFace = (expr: FaceExpression): void => {
-    const W = faceCanvas.width;
-    const H = faceCanvas.height;
-    const g = faceCanvas.getContext("2d");
+  // Plan item 175: a second face with both eyes shut, the blink's frame (swapped in as the map for ~130 ms, so the
+  // material keeps its shader; repainted with the open face on an expression change).
+  const blinkCanvas = document.createElement("canvas");
+  blinkCanvas.width = faceCanvas.width;
+  blinkCanvas.height = faceCanvas.height;
+  const paintFace = (expr: FaceExpression, shut = false): void => {
+    const canvas = shut ? blinkCanvas : faceCanvas;
+    const W = canvas.width;
+    const H = canvas.height;
+    const g = canvas.getContext("2d");
     if (g) {
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.fillStyle = "#d9ad98";
@@ -609,21 +620,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 9: larger, brighter eyes (the bible's "large bright eyes"), about a fifth up on C14's.
         const hw = 0.0135 * E;
         const hh = 0.0069 * E;
-        // A wink closes her left eye (the viewer's right) to a lashed curve, the wing still out past it.
-        if (expr === "wink" && sx > 0) {
+        // A wink closes her left eye (the viewer's right) to a lashed curve, the wing still out past it; a blink
+        // (plan item 175) closes both.
+        if (shut || (expr === "wink" && sx > 0)) {
           g.strokeStyle = "#120a08";
           g.lineCap = "round";
           g.lineWidth = 0.0024 * E;
           g.beginPath();
-          g.moveTo(ex - hw, ey + hh * 0.2);
-          g.quadraticCurveTo(ex, ey - hh * 1.1, ex + hw, ey + hh * 0.5);
-          g.lineTo(ex + hw + 0.0058 * E, ey + hh * 1.3);
+          g.moveTo(ex - hw * sx, ey + hh * 0.2);
+          g.quadraticCurveTo(ex, ey - hh * 1.1, ex + hw * sx, ey + hh * 0.5);
+          g.lineTo(ex + (hw + 0.0058 * E) * sx, ey + hh * 1.3);
           g.stroke();
           g.strokeStyle = "rgba(110,64,58,0.55)";
           g.lineWidth = 0.001 * E;
           g.beginPath();
-          g.moveTo(ex - hw * 0.8, ey + hh * 1.2);
-          g.quadraticCurveTo(ex, ey + hh * 2.2, ex + hw, ey + hh * 1.4);
+          g.moveTo(ex - hw * 0.8 * sx, ey + hh * 1.2);
+          g.quadraticCurveTo(ex, ey + hh * 2.2, ex + hw * sx, ey + hh * 1.4);
           g.stroke();
         } else {
         const almond = () => {
@@ -738,9 +750,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
   };
   let faceExpr: FaceExpression = "smirk";
   paintFace(faceExpr);
+  paintFace(faceExpr, true);
   const faceTex = new THREE.CanvasTexture(faceCanvas);
   faceTex.colorSpace = THREE.SRGBColorSpace;
   faceTex.anisotropy = 4;
+  const blinkTex = new THREE.CanvasTexture(blinkCanvas);
+  blinkTex.colorSpace = THREE.SRGBColorSpace;
+  blinkTex.anisotropy = 4;
   const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.5, metalness: 0 });
   rimify(faceMat, 0.25, 1, 4);
   mats.push(faceMat);
@@ -1206,6 +1222,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const tmpV = new THREE.Vector3();
   const restPole = elbowL.clone().sub(shoulderL).normalize();
 
+  const BLINK_S = 0.13;
+  let blinkAt = 2.2;
+  let blinkT0 = -1;
+  let blinks = 0;
+  const idleNow = { breath: 0, weight: 0, sway: 0, blinks: 0, blinking: false };
   function update(dt: number, t: number, wind: { x: number; z: number }): void {
     const step = Math.min(dt, 1 / 20);
     // Breathing at 0.25 Hz.
@@ -1232,6 +1253,24 @@ export function buildFrontCath(phone: boolean): FrontCath {
     legs.forEach((l, i) => (l.rotation.z = legRest[i]! + w * 0.01));
     // The umbrella sways a touch in the wind.
     umb.rotation.z = 0.06 + Math.sin(t * 0.9) * 0.015 + wind.x * 0.004;
+    // Plan item 175: a blink every 3 to 5 s, the lids shut for 130 ms (the shut face swapped in as the map).
+    if (t < blinkAt - 6) {
+      // Time ran backwards (a screenshot's held clock): start over.
+      blinkAt = t + 1.5;
+      blinkT0 = -1;
+    }
+    if (t >= blinkAt) {
+      blinks++;
+      blinkT0 = t;
+      blinkAt = t + 3 + ((blinks * 1.618) % 2);
+    }
+    const shutNow = blinkT0 >= 0 && t >= blinkT0 && t - blinkT0 < BLINK_S;
+    if ((faceMat.map === blinkTex) !== shutNow) faceMat.map = shutNow ? blinkTex : faceTex;
+    idleNow.breath = br;
+    idleNow.weight = w;
+    idleNow.sway = umb.rotation.z;
+    idleNow.blinks = blinks;
+    idleNow.blinking = shutNow;
     chest.rotation.x = 0;
     chest.rotation.y = 0;
     umb.rotation.y = 0;
@@ -1706,11 +1745,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
     get expressionNow() {
       return faceExpr;
     },
+    blinkMap: blinkTex,
+    get idle() {
+      return { ...idleNow };
+    },
     expression(e) {
       if (e === faceExpr) return;
       faceExpr = e;
       paintFace(e);
+      paintFace(e, true);
       faceTex.needsUpdate = true;
+      blinkTex.needsUpdate = true;
     },
     kit(cls) {
       wearing = cls && kits.has(cls) ? cls : null;
@@ -1755,6 +1800,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       glintTex.dispose();
       strands.dispose();
       faceTex.dispose();
+      blinkTex.dispose();
       group.removeFromParent();
     },
   };
