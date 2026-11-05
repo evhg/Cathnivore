@@ -17,7 +17,8 @@ const stars = (n) => Object.fromEntries(Array.from({ length: n }, (_, i) => [Str
 const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
 const jobs = {
   async site(p, s) {
-    await p.goto(`${base}/`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/portfolio-${s}.png` })
+    // Plan item 146: the entrance (kinetic title, Cath and the prints rising) runs about 3 s; shoot it settled.
+    await p.goto(`${base}/`); await p.waitForTimeout(3500); await p.screenshot({ path: `${out}/portfolio-${s}.png` })
     await p.goto(`${base}/games/`); await p.waitForTimeout(1200); await p.screenshot({ path: `${out}/games-${s}.png` })
   },
   async cathnivore(p, s) {
