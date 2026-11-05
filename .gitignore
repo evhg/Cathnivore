@@ -36,3 +36,4 @@ ios/App/Pods
 ios/App/Podfile.lock
 dist-site
 portfolio/work
+scripts/tmp/

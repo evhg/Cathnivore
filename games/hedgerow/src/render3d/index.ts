@@ -25,6 +25,7 @@ import {
   hasTwist,
   isBig,
   isFleet,
+  laneCellsOf,
   isRevealed,
   landmarks,
   oakAt,
@@ -2269,11 +2270,101 @@ export class Renderer3D {
         if (right + pw <= w - 4 && !hits(right, y)) x = right;
         else y = Math.min(h - ph - 4, below);
       }
+      // Plan item 132: the plate sat on plots and the pond (and could meet the gate's own sign). It steps to the
+      // nearest spot, within about two cells, that covers no plot, sign, vehicle or earlier plate.
+      ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...shown.leads, ...shown.plates, ...this.gateSignRects()], w, h));
       el.style.opacity = String(k);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       shown.plates.push({ x, y, w: pw, h: ph });
     });
     this.shownQueue = shown;
+  }
+
+  /** The field's non-lane cells (plots, pond, scenery) as boxes on the canvas (CSS px from its corner), cached per camera pose and size. */
+  private plotRectsKey = "";
+  private plotRectsCache: Rect[] = [];
+  private plotRects(game: Game, w: number, h: number): Rect[] {
+    const e = this.camera.matrixWorld.elements;
+    const key = `${game.level.id}:${w}x${h}:${e.map((v) => v.toFixed(3)).join(",")}`;
+    if (key === this.plotRectsKey) return this.plotRectsCache;
+    const out: Rect[] = [];
+    const lv = game.level;
+    const lane = new Set(laneCellsOf(lv));
+    // A ford is lane under water: the plate keeps off it like the pond around it.
+    for (const f of lv.fords ?? [])
+      for (let d = f.from; d <= f.to; d += 0.25) {
+        const q = enemyPoint(lv, { dist: d });
+        lane.delete(`${Math.floor(q.x)},${Math.floor(q.y)}`);
+      }
+    // A plot's tile stands inset in its cell; 0.08 of a cell each side is the border of grass between tiles.
+    const inset = 0.08;
+    for (let r = 0; r < lv.rows; r++)
+      for (let c = 0; c < lv.cols; c++) {
+        // Plots, the pond, fords and the scenery: everything on the field but the dry lane.
+        if (lane.has(`${c},${r}`)) continue;
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const [dx, dz] of [[inset, inset], [1 - inset, inset], [inset, 1 - inset], [1 - inset, 1 - inset]] as const) {
+          const v = this.v2.set(c + dx, this.height(c + 0.5, r + 0.5), r + dz).project(this.camera);
+          const px = (v.x * 0.5 + 0.5) * w;
+          const py = (-v.y * 0.5 + 0.5) * h;
+          x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+        }
+        out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+      }
+    this.plotRectsKey = key;
+    this.plotRectsCache = out;
+    return out;
+  }
+
+  /** Visible gate signs' boards as boxes on the canvas (CSS px from its corner); Cath's bubble keeps off them too. */
+  gateSignRects(): Rect[] {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const out: Rect[] = [];
+    for (const sign of (this.ground?.group.userData.gateSigns as THREE.Object3D[] | undefined) ?? []) {
+      if (!sign.visible) continue;
+      const b = new THREE.Box3().setFromObject(sign);
+      if (b.isEmpty()) continue;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let i = 0; i < 8; i++) {
+        const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+        const px = (v.x * 0.5 + 0.5) * w;
+        const py = (-v.y * 0.5 + 0.5) * h;
+        x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+      }
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+    }
+    return out;
+  }
+
+  /** Plan item 132: the spot nearest `at` (up to about two cells away) where the plate covers the least plot. */
+  private clearPlateSpot(at: Rect, game: Game, keepOff: Rect[], w: number, h: number): { x: number; y: number } {
+    const plots = this.plotRects(game, w, h);
+    const area = (x: number, y: number) => {
+      let a = 0;
+      for (const p of plots) {
+        const ox = Math.min(x + at.w, p.x + p.w) - Math.max(x, p.x);
+        const oy = Math.min(y + at.h, p.y + p.h) - Math.max(y, p.y);
+        if (ox > 0 && oy > 0) a += ox * oy;
+      }
+      return a;
+    };
+    const meets = (x: number, y: number) => keepOff.some((o) => x < o.x + o.w && x + at.w > o.x && y < o.y + o.h && y + at.h > o.y);
+    const cell = Math.max(16, plots.length ? Math.max(...plots.slice(0, 4).map((p) => p.w)) : 40);
+    const reach = cell * 2;
+    let best = { x: at.x, y: at.y, cost: meets(at.x, at.y) ? Infinity : area(at.x, at.y) };
+    if (best.cost === 0) return best;
+    const step = 4;
+    for (let dy = -reach; dy <= reach; dy += step)
+      for (let dx = -reach * 1.5; dx <= reach * 1.5; dx += step) {
+        const x = at.x + dx;
+        const y = at.y + dy;
+        if (x < 4 || y < 4 || x + at.w > w - 4 || y + at.h > h - 4 || meets(x, y)) continue;
+        // Covered plot area first, then distance from where the plate belongs.
+        const cost = area(x, y) + Math.hypot(dx, dy) * 0.5;
+        if (cost < best.cost) best = { x, y, cost };
+      }
+    return best;
   }
 
   private buildQueue(game: Game, q: GateQueue): void {

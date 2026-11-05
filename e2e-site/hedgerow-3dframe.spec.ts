@@ -96,3 +96,54 @@ for (const level of [13, 21]) {
     expect(box.h).toBeGreaterThanOrEqual(hasTouch ? 14 : 24)
   })
 }
+
+// Plan item 132: at D the "N coming" plate sat on plots and the pond, and Cath's bubble covered the gate sign's
+// town name. The plate now covers at most a sliver of any plot (its inset tile) and meets no sign; the bubble
+// meets no sign either. Both stay inside the field.
+type HGQ = HGS & {
+  gateQueue(): { leads: Box[]; plates: Box[] } | null
+  gateSignBoxes(): Box[]
+  plotBoxes(): Box[]
+  cathSay(): { box: Box } | null
+}
+type Box = { x: number; y: number; w: number; h: number }
+for (const level of [13, 21]) {
+  test(`the 3D gate plate keeps off plots and the sign, the bubble off the sign (level ${level})`, async ({ page }) => {
+    test.setTimeout(120_000)
+    await page.goto('/hedgerow/?sandbox=1')
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true } }))
+    }, level)
+    await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HGQ }).hedgerow?.game(), null, { timeout: 60_000 })
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HGQ }).hedgerow.gateQueue()?.plates.length ?? 0), { timeout: 60_000 }).toBeGreaterThan(0)
+    await page.waitForTimeout(1500)
+    const r = await page.evaluate(() => {
+      const h = (window as unknown as { hedgerow: HGQ }).hedgerow
+      const c = document.getElementById('canvas')!.getBoundingClientRect()
+      const toClient = (b: Box) => ({ ...b, x: b.x + c.left, y: b.y + c.top })
+      const stage = document.getElementById('stage')!.getBoundingClientRect()
+      const say = h.cathSay()
+      return {
+        canvas: { x: c.left, y: c.top, w: c.width, h: c.height },
+        plates: h.gateQueue()!.plates.map(toClient),
+        signs: h.gateSignBoxes().map(toClient),
+        plots: h.plotBoxes(),
+        bubble: say ? { ...say.box, x: say.box.x + stage.left, y: say.box.y + stage.top } : null,
+      }
+    })
+    const meet = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
+    for (const p of r.plates) {
+      expect(p.x).toBeGreaterThanOrEqual(r.canvas.x)
+      expect(p.x + p.w).toBeLessThanOrEqual(r.canvas.x + r.canvas.w)
+      for (const s of r.signs) expect(meet(p, s)).toBe(0)
+      // A plot box here is its whole cell; the tile is inset in it, so a plate on the grass between tiles still
+      // meets a little of a cell's box. 12% of the plate is about that border.
+      const covered = r.plots.reduce((a, b) => a + meet(p, b), 0)
+      expect(covered / (p.w * p.h)).toBeLessThanOrEqual(0.12)
+    }
+    if (r.bubble) for (const s of r.signs) expect(meet(r.bubble, s)).toBe(0)
+  })
+}

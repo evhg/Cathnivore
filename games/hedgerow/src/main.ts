@@ -749,6 +749,8 @@ if (SANDBOX)
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
     // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.
     gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
+    // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
+    gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
     // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
@@ -3612,7 +3614,9 @@ function syncCathSay(g: Game, now: number): void {
   // The gate queue's leads and "N coming" plate (canvas px; the canvas sits at the field's corner).
   const canvas = ui.canvas.getBoundingClientRect();
   const q = (renderer as { shownQueue?: { leads: Box[]; plates: Box[] } | null }).shownQueue;
-  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? [])]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
+  // Plan item 132: and the gate's own sign, whose town name the bubble covered at D.
+  const signs = (renderer as { gateSignRects?: () => Box[] }).gateSignRects?.() ?? [];
+  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...signs]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
   const size = { w: el.offsetWidth, h: el.offsetHeight };
   const spot = barkSpot(
     cath,
