@@ -1913,7 +1913,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; 3dframe:111 passes 10 runs in a row; shots before and after.
 - **Size:** 2
 
-## 161. [ ] NIGHT SHIFT: the class pick with Cath on its stage
+## 161. [ ] NIGHT SHIFT: the class pick with Cath on its stage *(lane B, in progress)*
 - **Why:** `ns-play-D` (970-1440 x 50-850): the stats sheet covers her; only an umbrella edge shows (940-975 x 290-335). The pick is a list over an empty alley. `ns-play-P` (100-300 x 180-520) shows her small and soft. (Check first that it isn't shot timing: item 146 saw her centred once.)
 - **Build:**
   - At D she stands key-lit between the class list and the sheet, whole figure; each class gives her its pose and its weapon in hand (Ghost with the rifle shouldered, Butcher the cleaver...).
