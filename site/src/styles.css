@@ -1504,6 +1504,15 @@ body {
   line-height: 1.3;
   color: var(--cream);
 }
+/* Plan item 139: what is on today, under the hook (desktop posters; a phone's two-column posters keep it to the
+   cards below). */
+.hero-game-status {
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-hi);
+}
+.hero-game-status[hidden] { display: none; }
 .hero-game-play {
   justify-self: start;
   margin: 6px 12px 12px;
@@ -1523,6 +1532,7 @@ body {
      line), so it pins to the art's top-right corner, clear of Cath at the bottom. */
   .hero-game-name .badge-adult { position: absolute; top: 8px; right: 8px; }
   .hero-game-hook { font-size: 0.875rem; }
+  .hero-game-status { display: none; }
   .hero-game-play { margin: 6px 10px 10px; padding: 6px 14px; }
 }
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {

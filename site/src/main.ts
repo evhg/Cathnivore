@@ -238,6 +238,12 @@ function fillCards(par?: number): void {
       status.textContent = l.status
       status.hidden = false
     }
+    // Plan item 139: the first screen's poster carries the same line (what is on today) at D.
+    const hero = document.getElementById(`hero-status-${id}`)
+    if (hero) {
+      hero.textContent = l.status
+      hero.hidden = false
+    }
     if (resume) {
       resume.textContent = l.resume
       resume.hidden = !l.resume
