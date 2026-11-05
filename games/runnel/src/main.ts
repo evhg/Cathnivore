@@ -628,6 +628,11 @@ function render(): void {
     if (skySlot.dataset.art !== art) {
       skySlot.innerHTML = art
       skySlot.dataset.art = art
+      // Plan item 158: the almanac page carries the day's weather as a picture, with its words under it.
+      const page = document.getElementById('al-sky-art')
+      if (page) page.innerHTML = art.replace(/sk-g/g, 'sk-g-al')
+      const words = document.getElementById('al-sky-label')
+      if (words) words.textContent = boardSky(puzzle.seed).label
     }
   }
   paintValley(puzzle.seed)
@@ -669,7 +674,7 @@ function render(): void {
     ui.hint.textContent =
       game.taps === 0
         ? // Plan item 91: under the lesson its card's "Up next" already names the sky; the hint doesn't repeat it.
-          `${document.getElementById('lesson-card')?.hidden === false ? '' : `${boardSky(puzzle.seed).label}. `}Tap a tile to turn it, hold to pin it.`
+          `${document.getElementById('lesson-card')?.hidden === false || almanacShown() ? '' : `${boardSky(puzzle.seed).label}. `}Tap a tile to turn it, hold to pin it.`
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = mode !== 'practice'
     ui.btnNew.textContent = 'New puzzle'
@@ -1009,6 +1014,12 @@ function renderRailGarden(): void {
     : n
     ? `${n} crop${n === 1 ? '' : 's'} so far. Every daily you solve plants another.`
     : 'Solve a daily and Bea plants a seed.'
+}
+
+// Plan item 158: the almanac page (desktop rail) shows the weather, so the foot hint needn't say it again.
+function almanacShown(): boolean {
+  const head = document.getElementById('almanac-head')
+  return !!head && head.offsetParent !== null
 }
 
 // Plan item 158: Bea's note on the almanac page, by the day's place in the weekly arc.

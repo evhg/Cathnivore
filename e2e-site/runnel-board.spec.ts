@@ -49,7 +49,10 @@ test('the board is farmland under its sky, with the week in the rail and in Bea\
   await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
   for (const g of ['meadow', 'field', 'fallow']) expect(await page.locator(`.tiles > g.ground-${g}`).count(), g).toBeGreaterThan(0)
   await expect(page.locator('html')).toHaveAttribute('data-time', 'dusk')
-  await expect(page.locator('#hint')).toContainText('Dusk, clear skies')
+  // Plan item 158: at 1440 the weather is on the almanac page (its picture and words), not repeated in the hint.
+  await expect(page.locator('#al-sky-label')).toContainText('Dusk, clear skies')
+  await expect(page.locator('#al-sky-art svg')).toHaveCount(1)
+  expect((await page.locator('#al-sky-art').boundingBox())!.width).toBeGreaterThanOrEqual(120)
   await expect(page.locator('#rail-week > li')).toHaveCount(7)
   await expect(page.locator('#rail-week > li[data-state="today"]')).toHaveCount(1)
   await expect(page.locator('#bea-crops > i.bed')).toHaveCount(7)
