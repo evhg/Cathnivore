@@ -2222,7 +2222,7 @@ export class Renderer3D {
   private queuePlates: HTMLElement[] = [];
   /** Plan item 103: the town named on the gate plate when its 3D board steps down on a phone. */
   private plateTown = "";
-  private queueAnchors: Array<{ x: number; z: number; up: number }> = [];
+  private queueAnchors: Array<{ x: number; z: number; up: number; gx: number; gz: number }> = [];
   private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number }> = [];
   private gateHold = 0;
   private gateEase = 0;
@@ -2283,7 +2283,24 @@ export class Renderer3D {
       }
       // Plan item 132: the plate sat on plots and the pond (and could meet the gate's own sign). It steps to the
       // nearest spot, within about two cells, that covers no plot, sign, vehicle or earlier plate.
-      ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...shown.leads, ...shown.plates, ...this.gateSignRects()], w, h));
+      // Plan item 139: first it tries to dock on its own gate's sign (the board nearest the gate, under it, then
+      // beside it, then over it), so the count reads as the gate's, not as a label floating over the field.
+      const signs = this.gateSignRects();
+      const g = this.v2.set(at.gx, this.height(at.gx, at.gz), at.gz).project(this.camera);
+      const gx = (g.x * 0.5 + 0.5) * w;
+      const gy = (-g.y * 0.5 + 0.5) * h;
+      const sign = signs.slice().sort((a, b) => Math.hypot(a.x + a.w / 2 - gx, a.y + a.h / 2 - gy) - Math.hypot(b.x + b.w / 2 - gx, b.y + b.h / 2 - gy))[0];
+      // An edge-on board (a phone's upright frame shows it as a 2 px bar) is no anchor: keep item 132's search.
+      const dock = sign && sign.h >= 10 && Math.hypot(sign.x + sign.w / 2 - gx, sign.y + sign.h / 2 - gy) < Math.max(w, h) * 0.25
+        ? [
+            { x: sign.x + sign.w / 2 - pw / 2, y: sign.y + sign.h + 4 },
+            { x: sign.x + sign.w + 6, y: sign.y + sign.h / 2 - ph / 2 },
+            { x: sign.x - pw - 6, y: sign.y + sign.h / 2 - ph / 2 },
+            { x: sign.x + sign.w / 2 - pw / 2, y: sign.y - ph - 4 },
+          ]
+        : [];
+      for (const d of dock) d.x = Math.max(4, Math.min(w - pw - 4, d.x));
+      ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...shown.leads, ...shown.plates, ...signs], w, h, dock));
       el.style.opacity = String(k);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       shown.plates.push({ x, y, w: pw, h: ph });
@@ -2349,7 +2366,7 @@ export class Renderer3D {
   }
 
   /** Plan item 132: the spot nearest `at` (up to about two cells away) where the plate covers the least plot. */
-  private clearPlateSpot(at: Rect, game: Game, keepOff: Rect[], w: number, h: number): { x: number; y: number } {
+  private clearPlateSpot(at: Rect, game: Game, keepOff: Rect[], w: number, h: number, prefer: Array<{ x: number; y: number }> = []): { x: number; y: number } {
     const plots = this.plotRects(game, w, h);
     const area = (x: number, y: number) => {
       let a = 0;
@@ -2361,6 +2378,9 @@ export class Renderer3D {
       return a;
     };
     const meets = (x: number, y: number) => keepOff.some((o) => x < o.x + o.w && x + at.w > o.x && y < o.y + o.h && y + at.h > o.y);
+    // Plan item 139: a preferred spot (docked on the gate's sign) wins outright when it is clear of everything.
+    for (const p of prefer)
+      if (p.x >= 4 && p.y >= 4 && p.x + at.w <= w - 4 && p.y + at.h <= h - 4 && !meets(p.x, p.y) && area(p.x, p.y) === 0) return p;
     const cell = Math.max(16, plots.length ? Math.max(...plots.slice(0, 4).map((p) => p.w)) : 40);
     const reach = cell * 2;
     let best = { x: at.x, y: at.y, cost: meets(at.x, at.y) ? Infinity : area(at.x, at.y) };
@@ -2410,7 +2430,7 @@ export class Renderer3D {
       // clears the gate's sign (which stands 1.1 cells outside the field) rather than sitting on its end.
       const ax = tail.x + hd.dx * 1.4;
       const az = tail.y + hd.dy * 1.4;
-      this.queueAnchors.push(hd.dx === 0 ? { x: ax + 0.85, z: az, up: 0.1 } : { x: ax, z: az + 0.55, up: 0 });
+      this.queueAnchors.push(hd.dx === 0 ? { x: ax + 0.85, z: az, up: 0.1, gx: tail.x, gz: tail.y } : { x: ax, z: az + 0.55, up: 0, gx: tail.x, gz: tail.y });
       const el = document.createElement("div");
       el.className = "gate-plate";
       el.setAttribute("aria-hidden", "true");
