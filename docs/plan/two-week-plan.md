@@ -1737,7 +1737,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `faceBox()` 110 px or more at D and 70 at P; pixels inside it find an eye highlight (luminance over 0.85) and a rose lip hue; `data-expression` changes on class focus; cathode-perf in budget; shots P, L and D.
 - **Size:** 3
 
-## 141. [ ] Cathnivore: Cath suggests a move, and every action previews on the board *(lane B, in progress)*
+## 141. [ ] Cathnivore: Cath suggests a move, and every action previews on the board *(lane B, in progress)* *(slice 1, 2026-11-05 lane B: HeuristicBot's pick wears a leaf on its card (`data-suggested`, family and group cards too) with a green ring, and above the list Cath says why (`reasonForAction`); off on Hard, the Daily, the guided tutorial, forced decisions and autoplay; Settings > On the table > Cath's suggestions; the first-Invest accent steps aside while she suggests; `e2e/suggest-move.spec.ts`. Open: the phone strip hides her line and may leave the leafed card off-screen; slice 2 is the hover/long-press preview, ghost piece and meter deltas)*
 - **Why:** `cath-game-D` (33-315 x 320-800): eleven actions of equal weight, and the meters (350-1335 x 15-75) never show what a move will do; a newcomer can't tell a good move from a bad one.
 - **Build:**
   - The HeuristicBot's pick gets a leaf badge on its card, and Cath says one line on why.

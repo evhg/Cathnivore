@@ -1934,6 +1934,11 @@ html.no-animations .cath-companion .cameo {
     min-width: 0;
   }
 
+  /* Plan item 141: the phone's card strip has no room for Cath's line; the leaf on the card still marks her pick. */
+  .action-tray .actions > .suggest-line {
+    display: none;
+  }
+
   .action-tray .actions > button {
     flex: none;
     align-self: center;

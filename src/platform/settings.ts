@@ -23,6 +23,8 @@ export interface Settings {
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
   theme: ThemePreference
+  /** Plan item 141: Cath marks the move she'd play (Easy and Normal; never on Hard or the Daily). */
+  suggestions: boolean
 }
 
 export const SETTINGS_KEY = 'cathnivore:settings:v1'
@@ -37,6 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   colourBlindPatterns: false,
   aiSpeed: 'normal',
   theme: 'system',
+  suggestions: true,
 }
 
 export function loadSettings(): Settings {

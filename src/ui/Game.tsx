@@ -14,6 +14,7 @@ import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES } from '../content/campaignMap'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
+import { reasonForAction } from '../ai/reason'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame } from '../platform/storage'
 import { playHapticsFor } from '../platform/haptics'
@@ -198,6 +199,16 @@ function Rival({ mood }: { mood: ExecMood }) {
 }
 
 // Plan item 144: a market event's rule in words: the two Improvement tags it makes 1 Mark cheaper.
+// Plan item 141: the leaf on the card Cath would play.
+const SUGGEST_LEAF = (
+  <span className="suggest-leaf" aria-hidden="true">
+    <svg viewBox="0 0 16 16" width="16" height="16" focusable="false">
+      <path d="M3 13C3 7 7 3 13 3c0 6-4 10-10 10Z" />
+      <path className="suggest-leaf-vein" d="M3.5 12.5 10 6" />
+    </svg>
+  </span>
+)
+
 const EVENT_SHORT: Record<string, string> = { festival: 'Festival', drought: 'Dry Spell', glut: 'Glut' }
 const EVENT_TAG: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
 function eventRule(id: keyof typeof MARKET_EVENTS, short = false): string {
@@ -1159,6 +1170,29 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const aiProducer = aiProducerRef.current
   const waitingOnAi = decision && 'producer' in decision ? decision.producer === aiProducer : state.activeProducer === aiProducer
   const actions = waitingOnAi || pendingEnemyTurn.length > 0 ? [] : legalActions(state)
+  // Plan item 141: on Easy and Normal Cath marks the move she'd play (HeuristicBot's pick, which is deterministic and
+  // leaves the rng alone) with a leaf on its card and one line on why. Never on Hard, the Daily, the guided tutorial,
+  // a forced decision, or autoplay; Settings can turn it off.
+  let suggested: { index: number; why: string } | undefined
+  if (
+    actions.length > 1 &&
+    !decision &&
+    !autoplayRef.current &&
+    !guidedActive &&
+    state.config.difficulty !== 'hard' &&
+    !state.config.daily &&
+    loadSettings().suggestions
+  ) {
+    try {
+      const [pick] = HeuristicBot.chooseAction(state, rngRef.current)
+      const key = JSON.stringify(pick)
+      const index = actions.findIndex((a) => JSON.stringify(a) === key)
+      if (index >= 0) suggested = { index, why: reasonForAction(state, pick) }
+    } catch {
+      suggested = undefined
+    }
+  }
+  const isSuggested = (indices: number[]) => (suggested && indices.includes(suggested.index) ? '' : undefined)
   // A skip lasts for the rest of the teammate's turn only.
   if (!waitingOnAi) skipTeammateRef.current = false
   const active = state.producers[state.activeProducer]
@@ -1606,13 +1640,22 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )
       ) : (
         <>
+          {suggested && (
+            <p className="suggest-line voice" data-testid="suggest-line">
+              {SUGGEST_LEAF}
+              <span>
+                <b>Cath:</b> I&rsquo;d play the leaf, love. {suggested.why}
+              </span>
+            </p>
+          )}
           {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
           {sellEntries.map(({ index, action: a }) => {
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item action-sell" data-group="sell">
+              <span key={index} className="action-item action-sell" data-group="sell" data-suggested={isSuggested([index])}>
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -1629,10 +1672,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span
                 key={index}
                 data-group="invest"
-                className={position === 0 ? 'action-item action-recommended' : 'action-item'}
+                className={position === 0 && !suggested ? 'action-item action-recommended' : 'action-item'}
                 data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
+                data-suggested={isSuggested([index])}
               >
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -1648,8 +1693,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item" data-group="play">
+              <span key={index} className="action-item" data-group="play" data-suggested={isSuggested([index])}>
                 <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
+                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -1746,9 +1792,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     className="action-item action-family"
                     data-group="play"
                     data-family={family}
+                    data-suggested={isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
                     role="group"
                     aria-label={oneRegion ? `${name} in ${REGIONS[oneRegion].name}` : name}
                   >
+                    {isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index))) !== undefined && SUGGEST_LEAF}
                     <span className="action-family-name" aria-hidden="true">
                       {Icon && <Icon size={18} />}
                       <span className="action-family-text">
@@ -1772,8 +1820,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 )
               }
               return (
-                <span key={key} className="action-item" data-group="play">
+                <span key={key} className="action-item" data-group="play" data-suggested={isSuggested(group.entries.map((e) => e.index))}>
                   {groupButton(group)}
+                  {isSuggested(group.entries.map((e) => e.index)) !== undefined && SUGGEST_LEAF}
                   {term && (
                     <Tooltip term={term} label={`What is ${term}?`}>
                       ?

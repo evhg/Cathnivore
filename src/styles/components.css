@@ -976,3 +976,49 @@ html.no-animations .coach-tap { animation: none; }
   stroke: var(--gold, var(--ink));
   stroke-width: 6px;
 }
+
+/* Plan item 141: Cath's suggestion, a leaf on the card she'd play and one line on why above the list. */
+.suggest-leaf {
+  display: inline-flex;
+  flex: none;
+  color: var(--gain-ink);
+}
+
+.suggest-leaf svg {
+  fill: currentColor;
+}
+
+.suggest-leaf .suggest-leaf-vein {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.actions .action-item > .suggest-leaf {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--gain-ink);
+  pointer-events: none;
+  z-index: var(--z-raised);
+}
+
+.actions .action-item[data-suggested] > button:first-child:not(:disabled) {
+  box-shadow: var(--inset-hi), 0 var(--lip) 0 var(--lip-c), 0 0 0 2px var(--gain-ink);
+}
+
+.actions > .suggest-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.suggest-line b {
+  color: var(--gain-ink);
+}

@@ -115,6 +115,17 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           />
           <span>Colour-blind patterns</span>
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={settings.suggestions}
+            onChange={(e) => update({ suggestions: e.target.checked })}
+          />
+          <span className="settings-named">
+            Cath&rsquo;s suggestions
+            <small>She marks the move she&rsquo;d play, on Easy and Normal</small>
+          </span>
+        </label>
         </div>
       </section>
 
