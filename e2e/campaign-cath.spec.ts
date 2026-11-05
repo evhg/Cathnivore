@@ -45,7 +45,7 @@ test('each chapter card has a landmark vignette, locked ones in pencil', async (
     expect(box.height).toBeGreaterThanOrEqual(80)
     expect(await vig.locator('.cmp-vig-mark').count()).toBeGreaterThanOrEqual(2)
     const locked = await card.evaluate((e) => e.classList.contains('chapter-locked'))
-    await expect(vig).toHaveClass(locked ? /is-pencil/ : /^cmp-vignette$/)
+    await expect(vig).toHaveClass(locked ? /is-pencil/ : /^cmp-vignette( is-won)?$/)
     // The vignette sits inside its card and clear of the card's words.
     const cb = (await card.boundingBox())!
     expect(box.x + box.width).toBeLessThanOrEqual(cb.x + cb.width + 0.5)

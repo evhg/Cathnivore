@@ -1818,7 +1818,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-hand-card]` count equals the legal actions; each card 110 px or taller; no card meets a region; no page scroll at 1440x900; rule tests unchanged; shots D light and dark.
 - **Size:** 2
 
-## 150. [ ] Cathnivore Campaign: chapters as storybook vignettes, with Cath standing on the map *(lane B, in progress)*
+## 150. [ ] Cathnivore Campaign: chapters as storybook vignettes, with Cath standing on the map *(lane B, in progress)* *(slice 1, 2026-11-05 07:21 lane B: each chapter's scene (item 113's vignette) gains its producer behind a striped market stall, front right, the landmarks sharing the width left of it; a won chapter's scene is coloured in with seven bunting flags and the sun's rays (`data-chapter-art` = done, current or locked; locked stays pencil); `e2e/campaign-vignettes.spec.ts`; shots `vig-*` D and P, light and dark. Open, a design call: a 120 px (D) / 64 px (P) map Cath inside her region doesn't fit beside the name, landmark and pin of a 90-unit hex (she has about 55 units by the pin); options are moving the pin under her feet and the landmark aside in her region, or zooming the phone map)*
 - **Why:** `cath-campaign-D` (890-1380 x 220-900): text cards with grey thumbnails; Cath is a cut-off sticker (1285-1375 x 35-180) and a 40 px token (262-305 x 560-645).
 - **Build:**
   - A full-figure Cath, about 140 px at D, standing on the current chapter's region; she walks there when a chapter is picked.

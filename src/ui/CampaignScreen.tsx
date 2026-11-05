@@ -124,16 +124,23 @@ function vignetteRegions(chapter: Chapter): RegionId[] {
   for (const r of chapter.activeRegions) if (!out.includes(r) && LANDMARKS[r]) out.push(r)
   return out.slice(0, 3)
 }
-function ChapterVignette({ chapter, locked }: { chapter: Chapter; locked: boolean }) {
+// Plan item 150: the chapter's producer keeps a stall in its scene, and a won chapter's scene is coloured in
+// with the co-op's bunting across it and the sun out. `data-chapter-art` names the state: locked (pencil),
+// current, or done.
+const BUNTING_FLAGS = 7
+function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked' | 'current' | 'done' }) {
+  const locked = state === 'locked'
+  const producer = chapter.producers[0]
   const regions = vignetteRegions(chapter)
   const homes = new Set(CHAPTER_HOMES[chapter.id] ?? [])
   const n = regions.length
   const slot = VIG_W / n
   return (
     <svg
-      className={locked ? 'cmp-vignette is-pencil' : 'cmp-vignette'}
+      className={locked ? 'cmp-vignette is-pencil' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette'}
       viewBox={`0 0 ${VIG_W} ${VIG_H}`}
       data-regions={regions.join(' ')}
+      data-chapter-art={state}
       aria-hidden="true"
     >
       <rect className="cmp-vig-sky" x={0} y={0} width={VIG_W} height={VIG_H} />
@@ -152,8 +159,10 @@ function ChapterVignette({ chapter, locked }: { chapter: Chapter; locked: boolea
         )
       })}
       {regions.map((id, i) => {
-        const s = homes.has(id) ? (n === 3 ? 1.6 : 1.8) : 1.3
-        const cx = i * slot + slot / 2
+        const s = homes.has(id) ? (n === 3 ? 1.5 : 1.8) : 1.25
+        // The landmarks share the width left of the producer's stall (front right).
+        const markSlot = (VIG_W - (producer ? 32 : 0)) / n
+        const cx = i * markSlot + markSlot / 2
         const cy = 64 + (i % 2) * 4 - 11 * s
         return (
           <g key={id} className="cmp-vig-mark" transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)}) scale(${s})`}>
@@ -161,6 +170,39 @@ function ChapterVignette({ chapter, locked }: { chapter: Chapter; locked: boolea
           </g>
         )
       })}
+      {/* The producer at their stall, front right: a striped awning over a counter, their bust behind it. */}
+      {producer && (
+        <g className="cmp-vig-stall" transform={`translate(${VIG_W - 34} ${VIG_H - 33})`}>
+          <g transform="translate(5 -4)">
+            <Portrait character={producer} size={20} />
+          </g>
+          <rect className="cmp-vig-counter" x={0} y={17} width={30} height={12} rx={1.5} />
+          <path className="cmp-vig-awning" d="M-2 4 H32 L29 -2 H1 Z" />
+          {[0, 1, 2, 3].map((k) => (
+            <path key={k} className="cmp-vig-stripe" d={`M${2 + k * 8} -2 H${6 + k * 8} L${7 + k * 8} 4 H${2 + k * 8} Z`} />
+          ))}
+          <path className="cmp-vig-post" d="M1 4 V17 M29 4 V17" />
+          <circle className="cmp-vig-produce" cx={8} cy={16} r={2.4} />
+          <circle className="cmp-vig-produce is-b" cx={14} cy={16.3} r={2.2} />
+          <circle className="cmp-vig-produce" cx={20} cy={16} r={2.4} />
+        </g>
+      )}
+      {/* Won: the co-op's bunting strung across the scene, and the sun's rays. */}
+      {state === 'done' && (
+        <g className="cmp-vig-bunting">
+          <path className="cmp-vig-string" d={`M4 10 Q${VIG_W / 2} 30 ${VIG_W - 4} 10`} />
+          {Array.from({ length: BUNTING_FLAGS }, (_, k) => {
+            const t = (k + 0.5) / BUNTING_FLAGS
+            const x = 4 + t * (VIG_W - 8)
+            const y = 10 + 4 * t * (1 - t) * 20 * 0.5
+            return <path key={k} className={`cmp-vig-flag is-${k % 3}`} d={`M${(x - 4).toFixed(1)} ${y.toFixed(1)} H${(x + 4).toFixed(1)} L${x.toFixed(1)} ${(y + 8).toFixed(1)} Z`} />
+          })}
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
+            const a = (k / 8) * Math.PI * 2
+            return <path key={`ray-${k}`} className="cmp-vig-ray" d={`M${(18 + Math.cos(a) * 9).toFixed(1)} ${(15 + Math.sin(a) * 9).toFixed(1)} L${(18 + Math.cos(a) * 12).toFixed(1)} ${(15 + Math.sin(a) * 12).toFixed(1)}`} />
+          })}
+        </g>
+      )}
       <rect className="cmp-vig-frame" x={0.75} y={0.75} width={VIG_W - 1.5} height={VIG_H - 1.5} rx={9} />
     </svg>
   )
@@ -292,7 +334,7 @@ export default function CampaignScreen({
                   )}
                 </span>
                 <span className="cmp-art">
-                  <ChapterVignette chapter={chapter} locked={locked} />
+                  <ChapterVignette chapter={chapter} state={state} />
                   <MiniMap chapter={chapter} />
                 </span>
               </button>
