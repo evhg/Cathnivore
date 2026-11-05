@@ -197,6 +197,7 @@ import { setupAlmanac } from "./almanac";
 import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
+import { ringLayout } from "./buildring";
 import { depotSvg, entrySide, repMood, repSvg, type RepMood } from "./depot";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
@@ -243,6 +244,7 @@ const ui = {
   rallyRing: $<HTMLElement>("rally-ring"),
   rallyLabel: $<HTMLElement>("rally-label"),
   pieRing: $<HTMLElement>("pie-ring"),
+  buildRing: $<HTMLElement>("build-ring"),
   pieLabel: $<HTMLElement>("pie-label"),
   btnHero: $<HTMLButtonElement>("btn-hero"),
   btnAuto: $<HTMLButtonElement>("btn-auto"),
@@ -757,6 +759,9 @@ if (SANDBOX)
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
+    // Plan item 156: a tower's tier-1 range (cells) on the selected plot's ground, to check the build ring's preview.
+    towerRange: (kind: TowerKind) =>
+      towerStats({ kind, tier: 1, spec: null, high: !!game && !!selected && plotKind(game.level, selected.col, selected.row) === "high" }).range,
     // Plan item 52: a tower's tier-1 silhouette mask at a cell size (tests keep them apart at 24 px).
     silhouette: towerSilhouette,
     // Plan item 105: a vehicle's 2D silhouette and drawn length at a cell size.
@@ -1500,6 +1505,11 @@ function waveSummary(groups: Level["waves"][number]): Array<{ kind: EnemyKind; c
 }
 
 function renderPanel(force = false): void {
+  renderPanelInner(force);
+  syncRing();
+}
+
+function renderPanelInner(force = false): void {
   if (!game) return;
   const g = game;
   const sel = selected;
@@ -1519,7 +1529,9 @@ function renderPanel(force = false): void {
     p.append(line(`Tap where the pie should land. It freezes everything it hits for 3 seconds. Tap the pie again to aim at the front of the queue.`));
     return;
   }
-  if (!sel) {
+  // Plan item 156: on an upright phone the build ring builds at the plot, so the panel stays the round preview and
+  // its tray (the fallback: a tap on a tray packet plants it on the ringed plot) rather than a sheet over the field.
+  if (!sel || (ringWanted() && uprightPhone())) {
     wavePreview(p, g);
     drawerHandle(p);
     fitPreview(p);
@@ -2228,6 +2240,176 @@ function counterLine(kind: TowerKind): string {
   return ` ${text[0]!.toUpperCase()}${text.slice(1)}.`;
 }
 
+/** Build a tower on a plot, from the build menu or the build ring. */
+function plant(g: Game, kind: TowerKind, sel: { col: number; row: number }): boolean {
+  if (!doAct({ t: "place", kind, col: sel.col, row: sel.row })) return false;
+  sfx.playBuild();
+  haptic.build();
+  const nt = g.towers[g.towers.length - 1];
+  if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
+  renderPanel(true);
+  // Cath's post (the ring in the lane) is where she holds vans for the towers: say so while building.
+  if (g.level.id <= 5 && !heroCovered(g))
+    tip("post-uncovered", "That one can't reach my post, the amber ring in the lane. I hold vans there for the towers: build one in reach and it turns green, or tap me and move me.", "worried");
+  else if (g.level.id === 1)
+    tip("send", "Lovely: the ring's green, so that tower finishes what I hold at my post. When you're ready, send the wave.", "delighted");
+  return true;
+}
+
+// ---- the build ring (plan item 156): tap an empty plot and its seed packets ring it ----
+
+const RING_PX = 52;
+let ringKey = "";
+let ringAt = "";
+/** On touch the first tap on a packet previews its range; the second plants it. */
+let ringArmed: TowerKind | null = null;
+
+/** An upright phone (the panel's peek and sheet styles: max-width 520px, portrait). */
+function uprightPhone(): boolean {
+  return matchMedia("(max-width: 520px) and (orientation: portrait)").matches;
+}
+
+function ringWanted(): boolean {
+  const g = game;
+  const sel = selected;
+  if (!g || !renderer || !sel || player || aiming || posting || g.phase === "won" || g.phase === "lost") return false;
+  if (towerAt(g, sel.col, sel.row) || !isPlot(g.level, sel.col, sel.row)) return false;
+  if (laneCellsOf(g.level).has(`${sel.col},${sel.row}`)) return false;
+  const mark = landmarkAt(g.level, sel.col, sel.row);
+  if ((mark && mark.type !== "bank") || barnAt(g.level, sel.col, sel.row) || oakAt(g, sel.col, sel.row)) return false;
+  return true;
+}
+
+function ringKinds(g: Game): TowerKind[] {
+  return (g.level.towers as TowerKind[]).filter((k) => towerAllowed(g.level, k));
+}
+
+/** Open, rebuild or close the ring to match the selection. */
+function syncRing(): void {
+  const el = ui.buildRing;
+  if (!ringWanted()) {
+    if (!el.hidden) {
+      el.hidden = true;
+      el.replaceChildren();
+    }
+    ringKey = "";
+    ringAt = "";
+    ringArmed = null;
+    return;
+  }
+  const g = game!;
+  const sel = selected!;
+  const kinds = ringKinds(g);
+  const key = `${sel.col},${sel.row}|${kinds.join(",")}|${g.level.id}`;
+  if (key !== ringKey) {
+    ringKey = key;
+    ringAt = "";
+    ringArmed = null;
+    el.replaceChildren();
+    const wet = plotKind(g.level, sel.col, sel.row) === "water";
+    for (const kind of kinds) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ring-packet";
+      b.dataset.kind = kind;
+      b.dataset.role = towerRole(kind);
+      if (wet && kind !== "pond") b.dataset.wet = "true";
+      const price = document.createElement("span");
+      price.className = "ring-cost";
+      const name = document.createElement("span");
+      name.className = "ring-name";
+      name.textContent = TOWERS[kind].name;
+      b.append(img(towerIcon(kind), "ring-icon"), price, name);
+      const show = () => {
+        ringFor(kind);
+        el.dataset.preview = kind;
+      };
+      const hide = () => {
+        if (ringArmed) return;
+        ringFor(null);
+        delete el.dataset.preview;
+      };
+      b.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && show());
+      b.addEventListener("pointerleave", (e) => e.pointerType === "mouse" && hide());
+      b.addEventListener("focus", show);
+      b.addEventListener("blur", hide);
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!game || !selected) return;
+        const touch = (e as PointerEvent).pointerType === "touch" || (e as PointerEvent).pointerType === "pen";
+        if (touch && ringArmed !== kind) {
+          // First tap on touch: show its reach and name; a second tap plants.
+          ringArmed = kind;
+          for (const o of el.querySelectorAll<HTMLElement>(".ring-packet")) o.toggleAttribute("data-armed", o === b);
+          show();
+          return;
+        }
+        if (b.dataset.wet) {
+          toast("Wet ground: only a Duck Pond will sit here.");
+          return;
+        }
+        if (b.dataset.affordable === "false") {
+          toast(`${TOWERS[kind].name}: ${towerCost(game, kind)} Marks. ${etaText(game, towerCost(game, kind))}`.trim());
+          return;
+        }
+        ringArmed = null;
+        plant(game, kind, selected);
+      });
+      el.append(b);
+    }
+    el.hidden = false;
+  }
+  placeRing();
+}
+
+/** Keep the ring on its plot (the 3D camera moves) and its prices and affordability current. Called every frame. */
+function placeRing(): void {
+  const el = ui.buildRing;
+  if (el.hidden || !game || !renderer || !selected) return;
+  const g = game;
+  const sel = selected;
+  for (const b of el.querySelectorAll<HTMLButtonElement>(".ring-packet")) {
+    const kind = b.dataset.kind as TowerKind;
+    const cost = towerCost(g, kind);
+    const ok = g.marks >= cost && !b.dataset.wet;
+    const price = b.querySelector(".ring-cost")!;
+    if (price.textContent !== String(cost)) price.textContent = String(cost);
+    if (b.dataset.affordable !== String(ok)) {
+      b.dataset.affordable = String(ok);
+      b.setAttribute(
+        "aria-label",
+        `Plant a ${TOWERS[kind].name} here, ${cost} Marks.${b.dataset.wet ? " Too wet here." : ok ? "" : " Not enough Marks yet."} ${TOWERS[kind].blurb}`,
+      );
+    }
+  }
+  const c = renderer.cellCenter(sel.col, sel.row);
+  const r = renderer.cellCenter(sel.col + 1, sel.row);
+  const d = renderer.cellCenter(sel.col, sel.row + 1);
+  if (!c || !r || !d) return;
+  const stage = ui.stage.getBoundingClientRect();
+  // Keep off a panel that lies over the field (a phone's peek or sheet).
+  const pr = ui.panel.getBoundingClientRect();
+  const bottom = pr.height && pr.top < stage.bottom && pr.top > stage.top + stage.height / 2 ? pr.top : stage.bottom;
+  const at = { x: c.x - stage.left, y: c.y - stage.top };
+  const half = Math.max(Math.hypot(r.x - c.x, r.y - c.y), Math.hypot(d.x - c.x, d.y - c.y)) / 2;
+  const w = el.clientWidth || stage.width;
+  const key = `${Math.round(at.x)},${Math.round(at.y)},${Math.round(half)},${Math.round(stage.width)}x${Math.round(bottom - stage.top)}`;
+  if (key === ringAt) return;
+  ringAt = key;
+  const packets = [...el.querySelectorAll<HTMLElement>(".ring-packet")];
+  const lay = ringLayout(at, half, packets.length, RING_PX, { x: 0, y: 0, w, h: bottom - stage.top });
+  el.style.setProperty("--plot-x", `${Math.round(at.x)}px`);
+  el.style.setProperty("--plot-y", `${Math.round(at.y)}px`);
+  el.style.setProperty("--plot-r", `${Math.round(half)}px`);
+  packets.forEach((b, i) => {
+    const p = lay.spots[i]!;
+    b.style.setProperty("--x", `${Math.round(p.x - RING_PX / 2)}px`);
+    b.style.setProperty("--y", `${Math.round(p.y - RING_PX / 2)}px`);
+    // The name tag hangs on the side away from the plot.
+    b.dataset.side = p.y < at.y - half ? "up" : "down";
+  });
+}
+
 function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): void {
   p.classList.add("panel-build");
   const row = document.createElement("div");
@@ -2268,18 +2450,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
     b.addEventListener("pointerdown", (e) => startDrag(e, kind));
     b.onclick = () => {
       if (dragEnded()) return;
-      if (doAct({ t: "place", kind, col: sel.col, row: sel.row })) {
-        sfx.playBuild();
-        haptic.build();
-        const nt = g.towers[g.towers.length - 1];
-        if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
-        renderPanel(true);
-        // Cath's post (the ring in the lane) is where she holds vans for the towers: say so while building.
-        if (g.level.id <= 5 && !heroCovered(g))
-          tip("post-uncovered", "That one can't reach my post, the amber ring in the lane. I hold vans there for the towers: build one in reach and it turns green, or tap me and move me.", "worried");
-        else if (g.level.id === 1)
-          tip("send", "Lovely: the ring's green, so that tower finishes what I hold at my post. When you're ready, send the wave.", "delighted");
-      }
+      plant(g, kind, sel);
     };
     row.append(b);
   }
@@ -2415,6 +2586,12 @@ function towerTray(p: HTMLElement, g: Game): void {
     b.onclick = () => {
       if (dragEnded()) return;
       hideTip();
+      if (selected && ringWanted() && canDrop(g, kind, selected)) {
+        const now = towerCost(g, kind);
+        if (g.marks >= now) plant(g, kind, selected);
+        else toast(`${TOWERS[kind].name}: ${now} Marks. ${etaText(g, now)}`.trim());
+        return;
+      }
       toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first. ${stats}.`);
     };
     tray.append(b);
@@ -4199,6 +4376,7 @@ function syncTwists(g: Game): void {
 function frame(now: number): void {
   raf = requestAnimationFrame(frame);
   if (!game || !renderer) return;
+  placeRing();
   const g = game;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;

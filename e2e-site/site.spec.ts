@@ -339,7 +339,7 @@ test.describe('Hedgerow', () => {
     // Tap a plot beside the lane (column 0, row 0 is grass in level 1).
     // The keyboard cursor starts on (0, 0), a plot in level 1; Enter selects it (works in 2D and 3D).
     await selectCell(page, 0, 0)
-    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await page.locator('.ring-packet[data-kind="scarecrow"]').click()
     await expect(page.locator('#hud-marks')).toHaveText('400')
     // Escape on the battlefield clears the selection and the panel goes back to the wave preview.
     await page.locator('#canvas').focus()
@@ -384,7 +384,7 @@ test.describe('Hedgerow', () => {
     await page.locator('button.level[data-level="6"]').click()
     await selectCell(page, PLOT6[0], PLOT6[1])
     await expect(page.locator('#panel')).toContainText('Scarecrow')
-    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await page.locator('.ring-packet[data-kind="scarecrow"]').click()
     // Hedgerow 2 M4: three paths; Flock's tier 3 is Crow Caller, and once bought the tower takes its name.
     await expect(page.locator('#panel')).toContainText('Flock')
     await expect(page.locator('#panel')).toContainText('Lookout')
@@ -594,7 +594,7 @@ test.describe('Hedgerow', () => {
     // From level 6 Keep Going is on by default.
     await expect(page.locator('#btn-auto')).toHaveAttribute('aria-pressed', 'true')
     await selectCell(page, PLOT6[0], PLOT6[1])
-    await page.locator('button.btn-build[data-kind="scarecrow"]').click()
+    await page.locator('.ring-packet[data-kind="scarecrow"]').click()
     // Fleet levels: the tower sheet has three path columns, each with its next tier ready to buy.
     await expect(page.locator('#panel .path-col')).toHaveCount(3)
     await page.locator('button.path-buy[data-path="0"]').click()
@@ -702,7 +702,7 @@ test.describe('Hedgerow', () => {
       for (const plan of [[0, 0, 0, 1, 1], [2, 2, 2]]) {
         const [c, r] = plots[k++]!
         await selectCell(page, c, r)
-        await page.locator(`button.btn-build[data-kind="${kind}"]`).click()
+        await page.locator(`.ring-packet[data-kind="${kind}"]`).click()
         await page.keyboard.press('Escape')
         await selectCell(page, c, r)
         await expect(page.locator('#panel .path-col')).toHaveCount(3)

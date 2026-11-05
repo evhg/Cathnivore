@@ -4067,3 +4067,116 @@ body:has(#dlg-pause[open]) .paused-note {
   .debrief-glow i { animation: none; opacity: 0.8; }
   .debrief-ghost-art { animation: none; }
 }
+
+/* Plan item 156: the build ring. Tap an empty plot and its seed packets stand round it on the field, each with its
+   price; one you can't afford yet is greyed with its price in ink-3. A hovered, focused or (on touch) first-tapped
+   packet shows its name tag and draws its range ring on the field. Placed by `buildring.ts`. */
+.play .build-ring {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-field-ui);
+  pointer-events: none;
+}
+.play .build-ring[hidden] {
+  display: none;
+}
+.play .build-ring::before {
+  /* A soft halo on the tapped plot, so the ring reads as growing from it. */
+  content: "";
+  position: absolute;
+  left: calc(var(--plot-x) - var(--plot-r) - 6px);
+  top: calc(var(--plot-y) - var(--plot-r) - 6px);
+  width: calc(2 * var(--plot-r) + 12px);
+  height: calc(2 * var(--plot-r) + 12px);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--paper-hi), 0 0 0 4px var(--line), 0 0 18px 6px var(--black-a25);
+}
+.play .ring-packet {
+  --band: var(--pasture);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 52px;
+  height: 52px;
+  padding: 3px 0 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  border: 0;
+  border-radius: var(--r-s);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(var(--x), var(--y));
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--band) 18%, var(--paper-hi)) 0 18px, color-mix(in srgb, var(--band) 75%, var(--ink)) 18px 20px, transparent 20px),
+    var(--paper-2);
+  box-shadow: 0 0 0 1.5px var(--line), 0 3px 0 var(--line), 0 6px 14px var(--black-a25);
+  animation: ring-pop var(--dur-2) var(--spring) both;
+}
+.play .ring-packet[data-role="shot"] { --band: var(--clay); }
+.play .ring-packet[data-role="splash"] { --band: var(--wheat); }
+.play .ring-packet[data-role="income"] { --band: var(--marks-ink); }
+.play .ring-packet[data-role="boost"] { --band: var(--oak); }
+.play .ring-packet .ring-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+.play .ring-packet .ring-cost {
+  font: 900 var(--fs-label) / 18px var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--marks-ink);
+}
+.play .ring-packet[data-affordable="false"] {
+  background: var(--paper-shade);
+  box-shadow: 0 0 0 1.5px var(--ink-3), 0 3px 0 var(--ink-3), 0 6px 14px var(--black-a18);
+}
+.play .ring-packet[data-affordable="false"] .ring-icon {
+  opacity: 0.5;
+  filter: grayscale(0.8);
+}
+.play .ring-packet[data-affordable="false"] .ring-cost {
+  color: var(--ink-3);
+}
+.play .ring-packet .ring-name {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  translate: -50% 0;
+  padding: 3px 8px;
+  white-space: nowrap;
+  border-radius: var(--r-s);
+  font: 800 var(--fs-label) / 1.2 var(--font-ui);
+  color: var(--ink);
+  background: var(--paper-hi);
+  box-shadow: 0 0 0 1.5px var(--line);
+  opacity: 0;
+  pointer-events: none;
+}
+.play .ring-packet[data-side="up"] .ring-name {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.play .ring-packet:is(:hover, :focus-visible, [data-armed]) {
+  z-index: var(--z-raise);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--pasture), 0 0 0 4.5px var(--line), 0 6px 16px var(--black-a25);
+}
+.play .ring-packet:is(:hover, :focus-visible, [data-armed]) .ring-name {
+  opacity: 1;
+}
+.play .ring-packet:active {
+  transform: translate(var(--x), calc(var(--y) + 2px));
+}
+@keyframes ring-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play .ring-packet {
+    animation: none;
+  }
+}
