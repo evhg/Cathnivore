@@ -356,7 +356,9 @@ function placeValleyFolk(): void {
         const [px, py] = FOLK_SPOTS[(folkStart(i) + k) % FOLK_SPOTS.length]!
         const x = st.left + (st.width * px) / 100, y = st.top + (st.height * py) / 100
         const box = new DOMRect(x - size / 2 - range, y - size, size + 2 * range, size)
-        if (box.left < st.left || box.right > st.right || box.bottom > st.bottom) continue
+        // Plan item 166: a margin inside the frame, so a walk's far end isn't cut by the frame's rounded edge.
+        const EDGE = 12
+        if (box.left < st.left + EDGE || box.right > st.right - EDGE || box.bottom > st.bottom) continue
         const meets = (r: DOMRect) => r.left < box.right && box.left < r.right && r.top < box.bottom && box.top < r.bottom
         if (blocks.some(meets) || taken.some(meets)) continue
         taken.push(box)

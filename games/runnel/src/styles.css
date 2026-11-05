@@ -823,14 +823,17 @@ button {
 
 /* fields */
 
+/* Plan item 166: a dry field's mound is faint tilled earth; at 0.55 it read as a dark smudge across the tile. It
+   darkens to wet soil when the water arrives. */
 .mound {
   fill: var(--groove);
-  opacity: 0.55;
-  transition: fill 380ms ease var(--delay, 0ms);
+  opacity: 0.28;
+  transition: fill 380ms ease var(--delay, 0ms), opacity 380ms ease var(--delay, 0ms);
 }
 
 .wet .mound {
   fill: var(--groove-wet);
+  opacity: 0.55;
 }
 
 .furrow {
