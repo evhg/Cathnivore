@@ -1773,7 +1773,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `data-event` on the map for every event; dressing in the regions, none meeting a piece; the ticket's rule matches `content`; shots per event at P and D, light and dark.
 - **Size:** 2
 
-## 145. [ ] Site: posters that play
+## 145. [ ] Site: posters that play *(lane A, in progress)*
 - **Why:** `games-D` (110-1330 x 460-660) and `portfolio-D` (790-1345 x 160-690): every poster is a still; nothing shows play happening.
 - **Build:**
   - A poster in view, hovered or focused plays a short loop: Runnel's water filling, a Hedgerow convoy, a Cathnivore region flipping green, NIGHT SHIFT neon and rain (video or canvas, lazy, one at a time, paused off-screen).
