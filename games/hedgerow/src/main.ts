@@ -199,6 +199,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, entrySide, repMood, repSvg, type RepMood } from "./depot";
+import { gateSignRect } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -4278,6 +4279,8 @@ function runSpeed(g: Game): number {
 // Plan item 157: Hollowell's depot at each gate (2D, where the field has a margin beside the gate wide enough for
 // a 2 x 2-cell depot clear of every plot). Its departures board shows the next round's count; the rep's mood follows
 // the last round (smug, then gleeful after a leak or rattled after a clean one).
+let signCtx: CanvasRenderingContext2D | null = null;
+const signMeasure = (): CanvasRenderingContext2D => (signCtx ??= document.createElement("canvas").getContext("2d")!);
 let depotLeaksAtStart = 0;
 let depotMood: RepMood = "smug";
 let depotJudged = 0;
@@ -4366,13 +4369,24 @@ function syncDepots(g: Game): void {
       if (room < size + 12) continue;
       const x = side === "left" ? fieldL - 8 - size : side === "right" ? fieldR + 8 : gate.x - size / 2;
       const y = side === "top" ? fieldT - 8 - size : side === "bottom" ? fieldB + 8 : gate.y - size / 2;
-      const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - size - 4, y));
-      const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - size - 4, x));
-      // A clamp that pulls it onto the field (a top margin shorter than the depot) rules the spot out.
-      const meetsField = clampX < fieldR && clampX + size > fieldL && clampY < fieldB && clampY + size > fieldT;
-      if (meetsField) continue;
-      spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i });
-      break;
+      // Plan item 160: the gate's town sign (painted by theme.ts's paintOneGate) stays readable: the depot slides
+      // along the margin to clear it (it hid all but '…WELL' of the second gate's sign on level 34).
+      const sr = gateSignRect(L, path!, { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY }, signMeasure());
+      const sign = { left: canvas.left + sr.sx, top: canvas.top + sr.sy, right: canvas.left + sr.sx + sr.sw, bottom: canvas.top + sr.sy + sr.sh };
+      const tries = side === "left" || side === "right" ? [y, sign.top - 6 - size, sign.bottom + 6] : [x, sign.left - 6 - size, sign.right + 6];
+      let placed = false;
+      for (const t of tries) {
+        const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - size - 4, side === "left" || side === "right" ? t : y));
+        const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - size - 4, side === "left" || side === "right" ? x : t));
+        // A clamp that pulls it onto the field (a top margin shorter than the depot) rules the spot out.
+        const meetsField = clampX < fieldR && clampX + size > fieldL && clampY < fieldB && clampY + size > fieldT;
+        const meetsSign = clampX < sign.right && clampX + size > sign.left && clampY < sign.bottom && clampY + size > sign.top;
+        if (meetsField || meetsSign) continue;
+        spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i });
+        placed = true;
+        break;
+      }
+      if (placed) break;
     }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
@@ -4397,7 +4411,9 @@ function syncDepots(g: Game): void {
       el.style.setProperty("--x", `${Math.round(sp.x)}px`);
       el.style.setProperty("--y", `${Math.round(sp.y)}px`);
       el.style.setProperty("--size", `${size}px`);
-      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}">${sp.count ? `<b>${sp.count}</b> next` : "&mdash;"}</span><span class="depot-rep">${repSvg(depotMood)}</span>`;
+      // Plan item 160: a phone's small depot shows the count alone ('485 NEXT' overflowed its board at 12 px).
+      el.toggleAttribute("data-small", size < 100);
+      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}">${sp.count ? `<b>${sp.count}</b><span class="depot-next"> next</span>` : "&mdash;"}</span><span class="depot-rep">${repSvg(depotMood)}</span>`;
       return el;
     }),
   );

@@ -55,3 +55,34 @@ test('the depot stands by the gate with the next round on its board, and the rep
   })
   await expect(page.locator('[data-depot]').first()).toHaveAttribute('data-door-open', '')
 })
+
+// Plan item 160: the depot never hides its gate's town sign (level 34's second gate showed only '…WELL'), and its
+// board's words fit inside the board at P and D.
+test('the depot keeps clear of the gate sign and its board fits', async ({ page }) => {
+  await page.goto('/hedgerow/?2d&sandbox=1&level=34')
+  await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
+  await expect(page.locator('[data-depot]').first()).toBeAttached()
+  const boards = await page.locator('.depot-board').evaluateAll((els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })))
+  for (const b of boards) expect(b.sw).toBeLessThanOrEqual(b.cw + 1)
+  // The sign is painted on the canvas: sample its teal plate (#1f8a8a, about rgb(41,128,124) under the act's grade), then check no depot box
+  // covers any of those pixels.
+  const covered = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas') as HTMLCanvasElement
+    const rect = canvas.getBoundingClientRect()
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return 0
+    const sx = canvas.width / rect.width
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+    const depots = [...document.querySelectorAll('[data-depot]')].map((d) => d.getBoundingClientRect())
+    let n = 0
+    for (let y = 0; y < canvas.height; y += 2)
+      for (let x = 0; x < canvas.width; x += 2) {
+        const i = (y * canvas.width + x) * 4
+        if (Math.abs(img[i]! - 41) > 10 || Math.abs(img[i + 1]! - 128) > 10 || Math.abs(img[i + 2]! - 124) > 10) continue
+        const cx = rect.left + x / sx, cy = rect.top + y / sx
+        if (depots.some((d) => cx > d.left && cx < d.right && cy > d.top && cy < d.bottom)) n++
+      }
+    return n
+  })
+  expect(covered).toBe(0)
+})

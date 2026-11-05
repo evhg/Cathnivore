@@ -869,6 +869,36 @@ function paintGate(ctx: CanvasRenderingContext2D, level: Level, L: Layout): void
   if (level.path2) paintOneGate(ctx, level, level.path2, L);
 }
 
+/**
+ * The gate's town sign in canvas CSS px (theme's paintOneGate draws it; plan item 160: Hollowell's depot keeps clear of
+ * it). Plan item 74: the sign stays wholly on the canvas when the gate sits at its edge (a phone's narrow field).
+ * Plan item 91: the town's name at 11 px or more (it was about 8 px at D); the plate grows to fit the word.
+ */
+export function gateSignRect(
+  level: Level,
+  path: Level["path"],
+  L: Layout,
+  ctx: CanvasRenderingContext2D,
+): { label: string; fs: number; sx: number; sy: number; sw: number; sh: number } {
+  const s = L.cell;
+  const [c, r] = path[0]!;
+  const [c2, r2] = path[1]!;
+  const dx = Math.sign(c - c2);
+  const dy = Math.sign(r - r2);
+  const x = L.offX + (c + 0.5 + dx * 0.95) * s;
+  const y = L.offY + (r + 0.5 + dy * 0.95) * s;
+  const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL";
+  const fs = Math.max(11, Math.round(s * 0.15));
+  ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
+  const sw = Math.max(s * 0.84, ctx.measureText(label).width + fs * 1.1);
+  const sh = Math.max(s * 0.26, fs * 1.6);
+  // Plan item 126: a gutter clear of the field's rounded frame (at 2 px it sat flush under the frame's edge).
+  const pad = Math.max(8, s * 0.1);
+  const sx = Math.max(pad, Math.min(L.width - sw - pad, x - sw / 2));
+  const sy = Math.max(pad, Math.min(L.height - sh - pad, y - s * 0.36 - sh));
+  return { label, fs, sx, sy, sw, sh };
+}
+
 function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["path"], L: Layout): void {
   // Where they come from: a glossy depot sign just off the field.
   const s = L.cell;
@@ -892,17 +922,8 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
     ctx.fill();
     ctx.stroke();
   }
-  // Plan item 74: the sign stays wholly on the canvas when the gate sits at its edge (a phone's narrow field).
-  // Plan item 91: the town's name at 11 px or more (it was about 8 px at D); the plate grows to fit the word.
-  const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL";
-  const fs = Math.max(11, Math.round(s * 0.15));
+  const { label, fs, sx, sy, sw, sh } = gateSignRect(level, path, L, ctx);
   ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
-  const sw = Math.max(s * 0.84, ctx.measureText(label).width + fs * 1.1);
-  const sh = Math.max(s * 0.26, fs * 1.6);
-  // Plan item 126: a gutter clear of the field's rounded frame (at 2 px it sat flush under the frame's edge).
-  const pad = Math.max(8, s * 0.1);
-  const sx = Math.max(pad, Math.min(L.width - sw - pad, x - sw / 2));
-  const sy = Math.max(pad, Math.min(L.height - sh - pad, y - s * 0.36 - sh));
   ctx.fillStyle = "#1f8a8a";
   ctx.beginPath();
   ctx.roundRect(sx, sy, sw, sh, s * 0.05);

@@ -4697,6 +4697,7 @@ img.act-scene {
   white-space: nowrap;
 }
 .depot-board b { font-size: 1.15em; }
+.depot[data-small] .depot-next { display: none; }
 .depot-rep {
   position: absolute;
   left: 72%;

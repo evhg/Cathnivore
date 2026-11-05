@@ -662,7 +662,10 @@ function saltmarsh(b: Brush): string {
   // Plan item 115: the sea-fog bank sat behind the act plate as a dusky pink blob; it is a lit cumulus in the open sky.
   // Plan item 139: it still read as a flat pink smear: the banner's crop cut its top flat and its belly was the sky's
   // own pink. Now white tops lit from the sun's side, a cool lavender belly, set lower so the crop clears its domes.
-  o += bigCloud(b, 200, 123, 94, { top: "#ffffff", mid: "#fdf4ea", base: "#a7a9c2", rim: "#fff1cf" }, 1, 0.96);
+  // Plan item 160: its belly sat on the horizon as a hard lilac scallop: a paler belly, and a haze of the low sky's own
+  // light along its base so it dissolves into the sea air instead of ending in a line.
+  o += bigCloud(b, 200, 123, 94, { top: "#ffffff", mid: "#fdf4ea", base: "#c3c2d4", rim: "#fff1cf" }, 1, 0.96);
+  o += soft(b, [[200, 122, 54, 6.5], [176, 124, 26, 4], [226, 124, 26, 4]], "#f7ebd9", 0.9);
   // the sea, bright under the low sun, with a shingle spit, a lighthouse and a sail
   o += `<rect x="-10" y="126" width="${SW + 20}" height="22" fill="${b.lin([[0, "#86aec0"], [1, "#c6d8d4"]])}"/>`;
   o += soft(b, [[340, 131, 90, 6]], "#fff6dc", 0.9) + glints(b, 40, 290, 390, 127, 140, 6, "#fffbe8", 0.9);
