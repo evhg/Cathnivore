@@ -1746,7 +1746,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** exactly one `[data-suggested]` card in round 1; hovering Open Stall adds a `.ghost-piece` in a region and `data-delta` on the meters; the toggle hides both; rule unit tests unchanged; shots P and D, light and dark.
 - **Size:** 2
 
-## 142. [ ] Runnel: a valley that remembers your week
+## 142. [ ] Runnel: a valley that remembers your week *(lane B, in progress)*
 - **Why:** `runnel-D` (390-1410 x 20-880): the valley looks the same every day; a solve leaves nothing behind, so a streak has no picture worth showing a friend.
 - **Build:**
   - Each daily solved this ISO week adds a lasting feature placed by the day's seed: a mill, a footbridge, an orchard row, Bea's scarecrow; a missed day leaves a fallow plot.
