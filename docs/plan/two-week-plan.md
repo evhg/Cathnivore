@@ -1678,7 +1678,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e from a fixture save: a 3-day streak shows 3 pennants; the receipt 120 px or more at D and 90 at P, inside the viewport, meeting no menu button; a broken streak changes `data-expression`; shots P and D, light and dark, at streaks 0, 3 and 10.
 - **Size:** 3
 
-## 134. [ ] Runnel: a lesson taught by Cath's hand, not by paragraphs
+## 134. [ ] Runnel: a lesson taught by Cath's hand, not by paragraphs *(lane B, in progress)*
 - **Why:** `runnel-D` (32-330 x 390-545): three paragraphs of rules beside a board that should teach itself.
 - **Build:**
   - A ghost hand taps the glowing tile; the lesson is three steps, each chip stamped as it's done; the rules fold into the (?).
