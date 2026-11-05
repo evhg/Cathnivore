@@ -619,7 +619,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // A crowded turn overlaps the cards (each keeps its full face; the next one covers its right side) rather than
     // squeezing their words; a hover or focus lifts a card clear of its neighbours.
     const widths = cards.reduce((sum, c) => sum + c.offsetWidth, 0)
-    const room = hand.clientWidth - parseFloat(getComputedStyle(hand).paddingLeft) * 2
+    const later = hand.querySelector<HTMLElement>('.hand-later')
+    const room = hand.clientWidth - parseFloat(getComputedStyle(hand).paddingLeft) * 2 - (later ? later.offsetWidth + 8 : 0)
     const step = cards.length > 1 ? Math.min(-6, (room - widths) / (cards.length - 1)) : 0
     cards.forEach((card, i) => {
       const off = mid === 0 ? 0 : (i - mid) / Math.max(mid, 3)
@@ -1458,6 +1459,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const disabledSupplyOutlets = ([1, 2] as const).map((count) => ({ count, reason: whyNotSupplyOutlets(count) })).filter((d) => d.reason)
   const disabledSupplyBuyoutReason = whyNotSupplyBuyout()
   const disabledRebut = ([1, 2] as const).map((count) => ({ count, reason: whyNotRebut(count) })).filter((d) => d.reason)
+  // Plan item 149: how many cards sit face down at the end of the desktop hand (the column's 'Not yet' strips).
+  const laterCount = () =>
+    disabledSell.length +
+    disabledInvest.length +
+    disabledScheme.length +
+    disabledSupplyOutlets.length +
+    disabledRebut.length +
+    (disabledOpenStall ? 1 : 0) +
+    (disabledSupplyBuyoutReason && !groups.has('supplyBuyout') ? 1 : 0)
 
   function act(actionIndex: number): void {
     const action = actions[actionIndex]!
@@ -2560,6 +2570,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           }}
         >
           {playableCards}
+          {laterCount() > 0 && (
+            // Plan item 149: what can't be played yet lies face down at the fan's end; its reasons are the
+            // column's 'Not yet' strips, which a click brings into view.
+            <button
+              type="button"
+              className="hand-later"
+              data-later={laterCount()}
+              aria-label={`${laterCount()} not yet playable: show why`}
+              onClick={() => {
+                const head = document.querySelector<HTMLElement>('.actions .action-head-later')
+                head?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+              }}
+            >
+              <span className="hand-later-back" aria-hidden="true" />
+              <span className="hand-later-back" aria-hidden="true" />
+              <span className="hand-later-back" aria-hidden="true">
+                <b>{laterCount()}</b>
+                <small>Not yet</small>
+              </span>
+            </button>
+          )}
         </section>
       )}
       </div>

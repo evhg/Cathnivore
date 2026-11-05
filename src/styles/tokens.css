@@ -167,6 +167,7 @@
   --sweep: rgb(255 246 220 / .34);
   --wood: #8A5A34;
   --wood-lo: #5A3820;
+  --wood-ink: #F6EBD8;         /* lettering on wood (card backs), light in both themes */
   --hem-check: rgb(176 64 52 / .55);
 }
 

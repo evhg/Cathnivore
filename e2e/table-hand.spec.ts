@@ -32,6 +32,13 @@ test('the actions are a hand of cards at the table edge at D', async ({ page }, 
       }
     }
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(height)
+    // What can't be played yet lies face down at the fan's end, one count for the column's 'Not yet' strips.
+    const later = page.locator('.table-hand .hand-later')
+    const strips = await page.locator('.actions .action-head-later ~ .action-item').count()
+    await expect(later).toHaveAttribute('data-later', String(strips))
+    const pile = (await later.boundingBox())!
+    expect(pile.x + pile.width).toBeLessThanOrEqual(width)
+    expect(pile.y + pile.height).toBeLessThanOrEqual(height)
     // The same cards lead the Actions list when the window is too small for the hand.
     await page.setViewportSize({ width: 1100, height: 800 })
     await expect(page.locator('.table-hand')).toHaveCount(0)
