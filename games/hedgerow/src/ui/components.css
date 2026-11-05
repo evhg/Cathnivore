@@ -4275,7 +4275,8 @@ body:has(#dlg-pause[open]) .paused-note {
   grid-area: count;
   text-align: center;
   font: 700 var(--fs-label) / 1 var(--font-num);
-  color: var(--ink-2);
+  /* Plan item 177: --ink-2 was 4.41:1 on a chip's grey face (axe, site.spec's Hedgerow story); full ink reads. */
+  color: var(--ink);
 }
 /* The painted banner: a ribbon across the chip's top with swallow-tailed ends, the round's number under it. */
 /* (it overhangs the chip's top, so the vehicles stay level along the strip) */

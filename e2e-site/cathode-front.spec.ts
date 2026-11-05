@@ -65,9 +65,12 @@ test.describe('CATHODE front door', () => {
     await page.keyboard.press('Escape')
     await expect(page.locator('.front-credits')).toHaveCount(0, { timeout: 30_000 })
     await expect(page.locator('#btn-credits')).toHaveClass(/is-focus/)
-    // Tab leaves the roving menu for the Games link, not the page body.
+    // Tab leaves the roving menu for the next control, not the page body: The List's prints (tab stops since item
+    // 169) or the Games link.
     await page.keyboard.press('Tab')
-    await expect(page.locator('.front-back')).toBeFocused()
+    await expect
+      .poll(() => page.evaluate(() => { const a = document.activeElement; return !!a && a !== document.body && !!a.closest('.front-back, li.mug') }))
+      .toBe(true)
     // The subtitle and The List come from progress.
     await expect(page.locator('#title-sub')).toHaveText('HOLLOWELL PROPER · 2079 · 5 NAMES LEFT')
     // The next name, then the unreached ones as a count (C13T: no grey skeleton bars).
