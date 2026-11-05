@@ -3150,6 +3150,56 @@ html.no-animations .table-cath-line { animation: none; }
   }
 }
 
+/* Plan item 167: the rail is the producer's player mat. Their seat at the table is the bust, so the rail drops its
+   portrait whenever the active producer is seated there (it comes back if the table had no room for them). The
+   ledger becomes a wooden board with three stores on it: a crate of Produce, a coin stack of Marks and a Goodwill
+   rosette, each with its count and this round's income. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .game-layout:has(.table-producer[data-active]:not([data-unseated])) .producer-sheet .active-producer[data-seat] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "who pips" "ledger ledger";
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+  .game-layout:has(.table-producer[data-active]:not([data-unseated])) .producer-seat { display: none; }
+  .producer-sheet .active-producer[data-seat] .pips { grid-template-columns: repeat(3, 26px); }
+  .producer-sheet .active-producer[data-seat] .player-mat {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: var(--sp-2);
+    width: 100%;
+    padding: var(--sp-2);
+    border-radius: var(--r-sm);
+    background:
+      repeating-linear-gradient(90deg, transparent 0 calc(33.333% - 1px), color-mix(in srgb, var(--wood-lo) 60%, transparent) calc(33.333% - 1px) 33.333%),
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--wood-lo) 18%, transparent) 0 1px, transparent 1px 7px),
+      linear-gradient(color-mix(in srgb, var(--wood) 88%, var(--paper-hi)), var(--wood));
+    box-shadow: inset 0 0 0 2px var(--wood-lo), inset 0 2px 0 color-mix(in srgb, var(--wood-ink) 25%, transparent), var(--e2);
+  }
+  .player-mat > .tooltip-trigger { display: block; min-width: 0; }
+  .player-mat .ledger-chip.mat-store {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas: "art art art" "icon value income";
+    align-items: center;
+    justify-items: start;
+    gap: 2px 3px;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: var(--sp-1) var(--sp-1) var(--sp-2);
+    border: 0;
+    border-radius: var(--r-xs);
+    background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--paper-hi) 92%, transparent), color-mix(in srgb, var(--paper) 86%, transparent) 70%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wood-lo) 55%, transparent), 0 2px 0 var(--wood-lo);
+  }
+  .player-mat .mat-art { grid-area: art; justify-self: center; width: min(76px, 100%); height: auto; aspect-ratio: 64 / 60; }
+  .player-mat .mat-store > svg:not(.mat-art) { grid-area: icon; }
+  .player-mat .mat-store .ledger-value { grid-area: value; font-size: var(--fs-h3); }
+  .player-mat .mat-store .ledger-income { grid-area: income; justify-self: end; }
+}
+
 /* Plan item 155: the producers seated at the table, opposite Cath: a bust on a painted chair-back in their colour,
    placed by Game.tsx in the map's free space (`--seat-x`, `--seat-y`). The active one sits up, lit. */
 .table-producers { display: contents; }

@@ -69,6 +69,7 @@ import {
   RoundIcon,
 } from './icons/ResourceIcons'
 import { OpenStallIcon } from './icons/ActionIcons'
+import { MatCoins, MatCrate, MatRosette } from './PlayerMat'
 import { RegionTypeIcon } from './icons/RegionTypeIcon'
 import { dailyMarket, dailyRecord, dailyShareText, dailyStreak, recordDaily } from '../content/daily'
 import { LAYOUTS } from '../content/layouts'
@@ -362,10 +363,11 @@ function Meter({ value, max, variant, preview }: { value: number; max: number; v
 
 // AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
 // round's income as a small "+2" rather than "(2/round)".
-function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial, delta }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string; delta?: number }) {
+function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial, delta, art }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string; delta?: number; art?: ReactNode }) {
   return (
     <Tooltip term={term}>
-      <span className="ledger-chip" data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
+      <span className={art ? 'ledger-chip mat-store' : 'ledger-chip'} data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
+        {art}
         <Icon size={18} />
         <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
         <span className="visually-hidden"> {term}, </span>
@@ -2217,6 +2219,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // ROADMAP 8, the owner's chat session 2026-09-30: the active producer's panel and the Undo/sheet controls
   // live next to the actions they belong to: in the left tray on desktop (freeing the centre column for
   // the map), in the pinned action tray on phone. Mounted exactly once, like `actionsPanel`.
+  const mat = handOnTable && isDesktop
   const producerPanel = (
     <>
       {decision ? (
@@ -2259,10 +2262,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </button>
             )}
           </span>
-          <span className="ledger">
-            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" delta={previewDelta((g) => g.producers[g.activeProducer].resources.produce)} />
-            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} delta={previewDelta((g) => g.producers[g.activeProducer].resources.marks)} />
-            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" delta={previewDelta((g) => g.producers[g.activeProducer].resources.goodwill)} />
+          {/* Plan item 167: on a big desktop the ledger is the producer's player mat: a crate, a coin stack and a
+              rosette on a wooden board, each with its count and this round's income. */}
+          <span className={mat ? 'ledger player-mat' : 'ledger'} data-player-mat={mat ? '' : undefined}>
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" delta={previewDelta((g) => g.producers[g.activeProducer].resources.produce)} art={mat ? <MatCrate count={active.resources.produce} /> : undefined} />
+            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} delta={previewDelta((g) => g.producers[g.activeProducer].resources.marks)} art={mat ? <MatCoins count={active.resources.marks} /> : undefined} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" delta={previewDelta((g) => g.producers[g.activeProducer].resources.goodwill)} art={mat ? <MatRosette count={active.resources.goodwill} /> : undefined} />
           </span>
           <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>

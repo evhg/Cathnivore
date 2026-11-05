@@ -63,10 +63,13 @@ test('the actions are a hand of cards at the table edge at D', async ({ page }, 
     }
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(height)
     await expectWholeCards(page, `${width}x${height}`)
-    // The producer frame is the active producer's seat: their portrait 180 px or taller.
-    const seat = page.locator('.producer-sheet [data-seat-producer]')
-    await expect(seat).toBeVisible()
-    expect((await seat.locator('svg').first().boundingBox())!.height, `${width}x${height} seat`).toBeGreaterThanOrEqual(180)
+    // Plan item 167: the producer frame is the active producer's player mat; their bust is their seat at the
+    // table, so the rail shows no second portrait while they are seated there.
+    await expect(page.locator('.producer-sheet [data-player-mat]')).toBeVisible()
+    await expect(page.locator('.producer-sheet [data-player-mat] .mat-art')).toHaveCount(3)
+    const seated = page.locator('.table-producer[data-active]:not([data-unseated])')
+    if (await seated.count()) await expect(page.locator('.producer-sheet [data-seat-producer]')).toBeHidden()
+    else await expect(page.locator('.producer-sheet [data-seat-producer]')).toBeVisible()
     // What can't be played yet lies face down beside the hand, one count for the column's 'Not yet' strips.
     const later = page.locator('.desktop-rail .hand-later')
     const strips = await page.locator('.actions .action-head-later ~ .action-item').count()
