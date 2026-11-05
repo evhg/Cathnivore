@@ -1995,7 +1995,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the lesson tiles' box is 55% of the valley's width or more at D; the bubble's tail ends within 40 px of Cath's box at P and D; the daily board is shown within 1.5 s of the lesson's end with no route change; reduced motion cuts instead; shots P and D.
 - **Size:** 2
 
-## 171. [ ] Cathnivore and Hedgerow phone: Cath's line docked, off the board
+## 171. [ ] Cathnivore and Hedgerow phone: Cath's line docked, off the board *(lane A, in progress)*
 - **Why:** `cath-game-P` (80-375 x 540-590) and `hedge-l21-2d-P` (90-240 x 600-678): her speech bubble covers hexes and plots, against 'the table is the hero'.
 - **Build:**
   - On an upright phone her line docks above the hand or tray beside her bust (64 px or more), sliding in over 200 ms; a tap dismisses it.
