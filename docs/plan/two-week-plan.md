@@ -1904,7 +1904,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** enabled items at 4.5:1, disabled ones `aria-disabled` with a visible reason; at 390x844 no menu box meets Cath's projected box; `data-lit` follows the arrow keys within 250 ms; cathode-front passes; shots P and D.
 - **Size:** 2
 
-## 160. [ ] The bugs from the 2026-11-05 13:00 critique, fixed as one batch
+## 160. [ ] The bugs from the 2026-11-05 13:00 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1105d`; points already open in items 126, 138, 139 and 146 left out)
   - **Cathnivore:** D game: hand cards 'Injunction…' (1130-1260 x 740-860) and 'Open Stall…' (905-1020 x 785-805) cut with an ellipsis. P setup: the difficulty stat labels (37-330 x 610-640) and the chair tags YOU / AI / P1 (45-110 x 345-357) about 9-10 px. From `plan1105c`: D title footer about 12 px (310-1130 x 872-886); P title small keys' labels about 12 px; D setup seed 'random' low contrast (655-840 x 795-835).
   - **Hedgerow:** 2D D: the depot's 'HOLLOWELL' about 8 px (183-255 x 450-460); l34 D the second gate sign clipped to '…WELL' behind a depot roof (195-240 x 728-742); l34 P the depot's '485 NEXT' clipped (20-90 x 100-122). D rack names, 'OF 26' and 'KEEP GOING' about 11 px. D menu: a lilac cloud with a hard bottom edge (460-745 x 95-200).
