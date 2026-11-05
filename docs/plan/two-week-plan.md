@@ -1945,7 +1945,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 no card title with `scrollWidth > clientWidth`; titles 14 px or more; a tapped card rises 12 px or more within 200 ms; rule tests unchanged; shots P light and dark.
 - **Size:** 2
 
-## 165. [ ] Runnel phone: Cath standing in the valley
+## 165. [ ] Runnel phone: Cath standing in the valley *(lane B, in progress)*
 - **Why:** `runnel-P` (15-375 x 190-265): Cath is a 50 px avatar beside a chat bubble; on desktop she stands in the scene (`runnel-D` 420-510 x 675-850).
 - **Build:**
   - A full-figure Cath in the phone valley, clear of the tiles, her bubble anchored to her.
