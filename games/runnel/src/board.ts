@@ -115,6 +115,10 @@ export class Board {
       el('polygon', { points: hexPoints(S * 1.08), transform: `translate(${x} ${y + 7})` }, shadow)
     }
 
+    // Plan item 138: each tile's ditches end inside its own dark rim (they used to run over it into the seam). The
+    // clip is in the tile's own frame and doesn't turn with the piece, so it holds at every rotation.
+    const tileClip = el('clipPath', { id: 'tile-clip' }, defs)
+    el('polygon', { points: hexPoints(S * 0.965 - 2.6) }, tileClip)
     const tiles = el('g', { class: 'tiles' }, svg)
     puzzle.cells.forEach((cell, i) => this.views.push(this.drawCell(tiles, cell, i)))
     this.puddles = el('g', { class: 'puddles' }, svg)
@@ -231,7 +235,7 @@ export class Board {
     root.setAttribute('role', 'button')
     this.bindInput(root, index)
 
-    const piece = el('g', { class: 'piece' }, root)
+    const piece = el('g', { class: 'piece' }, el('g', { class: 'piece-clip', 'clip-path': 'url(#tile-clip)' }, root))
     // An invisible disc keeps the piece's bounding box centred on the cell, so CSS can rotate it about
     // its centre with transform-box: fill-box.
     el('circle', { r: S, class: 'bbox' }, piece)
