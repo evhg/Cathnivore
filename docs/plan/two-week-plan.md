@@ -1871,7 +1871,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** two `[data-table-producer]` inside the map frame at P and D, 64 px or taller at P and 160 at D, meeting no hex or name plate; `data-expression` changes after a Squeeze in e2e; shots P and D.
 - **Size:** 2
 
-## 156. [ ] Hedgerow: build at the plot from a ring of seed packets
+## 156. [ ] Hedgerow: build at the plot from a ring of seed packets *(lane A, in progress)*
 - **Why:** `hedge-l21-2d-P` (305-345 x 705-770): the phone tray shows about 4.5 of 9 packets, Duck Pond cut under the arrow.
 - **Build:**
   - Tapping an empty plot opens a ring of packets round it, each with its price and whether it's affordable; pressing one previews its range ring.
