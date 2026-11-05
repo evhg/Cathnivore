@@ -1,7 +1,7 @@
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
-import { BADGE, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
+import { BADGE, COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -196,7 +196,9 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-outlet">
       {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
+      {/* plan item 172: a chunky token, its moulded side showing under the face */}
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -213,7 +215,8 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
 export function Buyout({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-buyout">
-      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(1,7) rotate(-6)">
         <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -229,8 +232,9 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
-      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={0.7} strokeLinejoin="round" />
-      <circle cx={6} cy={6} r={6} fill="var(--candor)" stroke="var(--ink)" strokeWidth={0.7} />
+      <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--ink)" strokeWidth={1} />
+      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <circle cx={6} cy={6} r={6} fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} />
       <path d="M 3.4,10.4 L 6.2,10.4 L 3.8,12.6 Z" fill="var(--candor)" />
       <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
       <text x={6} y={9} textAnchor="middle" className="doubt-mark">
@@ -271,26 +275,31 @@ function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: nu
  * centre): the glossy plastic piece on its turned base with up to two copies behind, and one count. Small hexes
  * drop the .99 tag and the SOLD sign (`ornaments`) before the piece shrinks.
  */
-function EnemyStack({ kind, n, scale, ornaments, countR }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; countR: number }) {
-  // The art spans 15.2 icon units across (copies offset right) and 21.8 down (copies up, the base's shadow below).
-  const k = Math.min((STACK_W * scale) / 16, (STACK_H * scale) / 21.8)
-  const bottom = ENEMY_Y + (STACK_H * scale) / 2
-  const bodyTop = ENEMY_Y - (STACK_H * scale) / 2
+/** Plan item 172: each piece kind's outline, so the board reads without colour. */
+const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'bubble' } as const
+
+function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; countR: number; cy?: number }) {
+  // The art spans 18 icon units across (the base's lip, copies offset right) and 22.6 down (copies up, the
+  // base's shadow below).
+  const k = Math.min((STACK_W * scale) / 18, (STACK_H * scale) / 22.6)
+  const bottom = cy + (STACK_H * scale) / 2
+  const bodyTop = cy - (STACK_H * scale) / 2
   const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
   const copies = Math.min(n, 3)
   return (
     <g className={`enemy-stack enemy-stack-${kind}`}>
-      <g transform={`translate(0, ${bottom - 17.4 * k}) scale(${k})`}>
+      <g transform={`translate(${1.4 * k}, ${bottom - 17.4 * k}) scale(${k})`}>
         <TokenBase cx={6} y={12.2} w={12} />
+        {/* plan item 172: two or three of a kind stand as a pile, each copy whole and outlined */}
         {Array.from({ length: copies - 1 }).map((_, j) => (
-          <g key={j} transform={`translate(${(copies - 1 - j) * 1.6}, ${-(copies - 1 - j) * 2.2})`} opacity={0.75}>
+          <g key={j} className="pile-copy" transform={`translate(${(copies - 1 - j) * 2.2}, ${-(copies - 1 - j) * 2.4})`}>
             {icon}
           </g>
         ))}
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {n > 1 && <CountBadge cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
+      {n >= COUNT_FROM && <CountBadge cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
     </g>
   )
 }
@@ -300,22 +309,30 @@ function EnemyStack({ kind, n, scale, ornaments, countR }: { kind: 'outlets' | '
  * over a round base in their colour, casting a shadow, matte against Hollowell's glossy plastic. x from the
  * slot's left, y in tile units round the tile centre. The colour-blind setting stamps their initial on the base.
  */
-function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace }) {
+function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = PRODUCER_Y }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace; py?: number }) {
   const colour = `var(--p-${pid})`
   const w = PRODUCER_W * s
   const cx = w / 2
-  const top = PRODUCER_Y - PRODUCER_H * s * 0.6 + s
-  const foot = PRODUCER_Y + PRODUCER_H * s * 0.4 - 4.2 * s
+  const top = py - PRODUCER_H * s * 0.6 + s
+  const foot = py + PRODUCER_H * s * 0.4 - 4.2 * s
   const hw = 10 * s
   const arch = `M ${cx - hw} ${foot} L ${cx - hw} ${top + hw} A ${hw} ${hw} 0 0 1 ${cx + hw} ${top + hw} L ${cx + hw} ${foot} Z`
   const bustH = hw * 2.5
+  // Plan item 172: two or three stalls stand as a pile of standees, the front one stepped left to make room (the
+  // copies rise only into the slot's spare top unit, so they never meet Hollowell's row above).
+  const copies = Math.min(n, 3)
+  const off = 2.6 * s
+  const shift = ((copies - 1) * off) / 2
   return (
     <g className="producer-mini stall-pin" data-producer={pid} data-face={face ?? 'neutral'}>
       <ellipse cx={cx + 1.2 * s} cy={foot + 3 * s} rx={12.6 * s} ry={3.4 * s} className="token-shadow" />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill="black" opacity={0.28} />
       <ellipse cx={cx} cy={foot} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
-      <g className="stall-piece" key={n}>
+      {Array.from({ length: copies - 1 }).map((_, j) => (
+        <path key={j} className="pile-copy" d={arch} transform={`translate(${shift - j * off}, ${-(copies - 1 - j) * 0.5 * s})`} fill={colour} stroke="var(--ink)" strokeWidth={1} />
+      ))}
+      <g className="stall-piece" key={n} transform={copies > 1 ? `translate(${-shift} 0)` : undefined}>
         <clipPath id={clip}>
           <path d={arch} />
         </clipPath>
@@ -335,7 +352,7 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face }: { p
           </text>
         )}
       </g>
-      {n > 1 && <CountBadge cx={w + 0.35 * countR - countR} cy={top - s + countR} r={countR} n={n} />}
+      {n >= COUNT_FROM && <CountBadge cx={w + 0.35 * countR - countR} cy={top - s + countR} r={countR} n={n} />}
     </g>
   )
 }
@@ -735,6 +752,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             buyouts: r.buyouts,
             doubt: r.doubt,
             producers: stalls.length,
+            stallCounts: stalls.map(([, n]) => n),
             scheme: false,
             labelWidth: REGIONS[id].name.length * 8.6 + 16,
             badge: squeezeTargets.includes(id) || expandTargets.includes(id),
@@ -929,16 +947,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                     if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
                       const [k, n] = icons[rect.kind]
                       return (
-                        <g key={k} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece={k} data-count={n}>
-                          <EnemyStack kind={rect.kind} n={n} scale={s} ornaments={tray.ornaments} countR={tray.countR} />
+                        <g key={k} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece={k} data-count={n} data-silhouette={SILHOUETTE[rect.kind]}>
+                          <EnemyStack kind={rect.kind} n={n} scale={s} ornaments={tray.ornaments} countR={tray.countR} cy={tray.enemyY} />
                         </g>
                       )
                     }
                     if (rect.kind === 'producer') {
                       const [pid, n] = stalls[rect.i ?? 0]!
                       return (
-                        <g key={pid} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece="stall" data-count={n}>
-                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} face={faces?.[pid]} />
+                        <g key={pid} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece="stall" data-count={n} data-silhouette="standee">
+                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} face={faces?.[pid]} py={tray.producerY} />
                         </g>
                       )
                     }

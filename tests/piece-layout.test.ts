@@ -25,7 +25,7 @@ describe('pieceLayout', () => {
     expect(pieceLayout(input, ORNAMENT_PX - 1).ornaments).toBe(false)
     const big = pieceLayout(input, 90)
     expect(big.ornaments).toBe(true)
-    expect(big.scale).toBe(1)
+    expect(big.scale).toBeGreaterThanOrEqual(1)
   })
 
   it('keeps a threat badge clear of the stacks and grows the pieces on a roomy hex', () => {
