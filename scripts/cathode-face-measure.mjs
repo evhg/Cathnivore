@@ -6,7 +6,7 @@ const tag = process.argv[2] || 'x'
 const out = 'e2e/screenshots/face140'
 mkdirSync(out, { recursive: true })
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] })
-for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, height: 844 }]]) {
+for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, height: 844 }], ['L', { width: 844, height: 390 }]]) {
   const p = await b.newPage({ viewport: vp })
   await p.goto('http://localhost:4190/nightshift/?shot')
   await p.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))

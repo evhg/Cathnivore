@@ -161,6 +161,10 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     }, 3200);
   }
   addEventListener("resize", placeSub);
+  // The columns settle after the first speak (fonts, the fold, the weapon art): re-place it as they move, or a
+  // held subtitle sits over the words it was placed above.
+  const subRO = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => placeSub());
+  for (const e of [left, sheet, words]) subRO?.observe(e);
 
   let countRaf = 0;
   function renderDetail(): void {
@@ -353,6 +357,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);
     removeEventListener("resize", placeSub);
+    subRO?.disconnect();
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("keyup", onKeyUp, true);
     removeEventListener("blur", onBlur);

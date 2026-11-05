@@ -238,6 +238,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 0.95 : 0.85) },
   };
   const rimA0 = rimU.uRimA.value.clone();
+  const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
   const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0) => {
     let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 );` : "";
@@ -1593,6 +1594,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
+      // The class's own key lights her face in the wardrobe: the face key steps back so it keeps its modelling.
+      rimU.uKey.value.copy(key0).multiplyScalar(1 - 0.55 * w);
     },
     coat(c) {
       for (const m of coatMats) m.color.copy(c ?? coat0);
