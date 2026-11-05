@@ -2472,7 +2472,48 @@ body {
     align-self: start;
     padding: 16px;
     border-radius: 18px;
-    background: var(--paper-2);
+    /* Plan item 158: a page of Bea's almanac: faint ruled lines on the paper, a stitched spine at the left. */
+    background:
+      repeating-linear-gradient(180deg, transparent 0 23px, color-mix(in srgb, var(--ink) 6%, transparent) 23px 24px),
+      var(--paper-2);
+    box-shadow: inset 6px 0 0 color-mix(in srgb, var(--ink) 7%, transparent);
+  }
+  .almanac-head {
+    display: grid;
+    gap: 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+  .al-kicker {
+    margin: 0;
+    font-size: var(--fs-label, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft, var(--ink));
+  }
+  /* The masthead names the page, so the old 'Your Runnel' title stays for screen readers only. */
+  .rail .rail-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .al-day {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+  .al-date {
+    margin: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink);
   }
 
   .rail-title {

@@ -1013,6 +1013,14 @@ function renderRailGarden(): void {
 
 function renderRail(): void {
   renderRailGarden()
+  // Plan item 158: the almanac's masthead, today's date (UTC, the daily's own day).
+  const head = document.getElementById('almanac-head')
+  if (head && head.dataset.almanacDate !== today) {
+    const d = new Date(`${today}T12:00:00Z`)
+    head.dataset.almanacDate = today
+    $<HTMLParagraphElement>('al-day').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })
+    $<HTMLParagraphElement>('al-date').textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+  }
   const s = dailyStats(data, today)
   const figs: Array<[string, string]> = [
     [String(s.streak), 'current streak'],
