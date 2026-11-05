@@ -78,6 +78,7 @@
   --btn-edge: #2B2320;
   --gain-ink: #466A2B;
   --short-ink: #9E4430;
+  --short-ink-shelf: #873D2D;
   --pip-on: #466A2B;
   --ink-a08: rgb(43 35 32 / .08);
   --ink-a15: rgb(43 35 32 / .15);
@@ -212,6 +213,7 @@
     --btn-edge: rgb(241 233 220 / .42);
     --gain-ink: #A5C982;
     --short-ink: #E8957F;
+    --short-ink-shelf: #E8957F;
     --pip-on: #7FA35A;
     --ink-a08: rgb(241 233 220 / .06);
     --ink-a15: rgb(241 233 220 / .12);
@@ -267,6 +269,7 @@
   --btn-edge: rgb(241 233 220 / .42);
   --gain-ink: #A5C982;
   --short-ink: #E8957F;
+  --short-ink-shelf: #E8957F;
   --pip-on: #7FA35A;
   --ink-a08: rgb(241 233 220 / .06);
   --ink-a15: rgb(241 233 220 / .12);

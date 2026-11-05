@@ -2948,8 +2948,10 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-family { width: 164px; }
   /* Cath's suggested card stands a little proud of the fan. */
   .game-layout .table-hand .action-item[data-suggested] { --pick-rise: -10px; }
+  /* Plan item 177: only a pointer or keyboard focus lifts a card; a card focused by a click stays in the fan, so
+     it never lies over its neighbour's name. */
   .game-layout .table-hand .action-item:hover,
-  .game-layout .table-hand .action-item:focus-within {
+  .game-layout .table-hand .action-item:has(:focus-visible) {
     z-index: var(--z-lift);
     transform: rotate(0deg) translateY(-14px) scale(1.06);
   }
@@ -3016,6 +3018,11 @@ html.no-animations .table-cath-line { animation: none; }
      the picture beside the name, the cost under it (rows overlap little, so the 'i' goes back top right). */
   .game-layout .table-hand[data-rows] .action-item { width: 156px; height: 84px; }
   .game-layout .table-hand[data-rows] .action-family { width: 196px; }
+  /* Plan item 177: a card whose name would run past its face (fan() measures it) is dealt wider. */
+  .game-layout .table-hand .action-item[data-wide] { width: 156px; }
+  .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 196px; }
+  .game-layout .table-hand .action-item[data-dense] .action-label { font-size: var(--fs-label); line-height: 1.02; }
+  .game-layout .table-hand .action-item[data-dense] .action-label > svg { width: 22px; height: 22px; }
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
   .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding: 6px 8px 6px; }
   .game-layout .table-hand[data-rows] .action-item .action-label { flex-direction: row; align-items: flex-start; gap: 6px; }
@@ -3394,6 +3401,9 @@ html.no-animations .table-cath-line { animation: none; }
     line-height: 1.1;
     white-space: normal;
     letter-spacing: 0;
+    /* Plan item 177: the reason was 4.3:1 on the shelf's grey face in light; its own token is darker there (5.2:1)
+       and the same as --short-ink in dark (5.4:1). */
+    color: var(--short-ink-shelf);
   }
   /* the lead and tail keep their spaces (pre-wrap) but may wrap: 'No Buyout to remove' ran off an 88 px card */
   .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item .action-why-not :is(.why-lead, .why-tail) {

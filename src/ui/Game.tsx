@@ -641,11 +641,28 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     const fits = (rows: ReturnType<typeof plan>, widths: number[]) =>
       rows.every((row) => row.step >= -0.2 * Math.min(...widths) - 0.01 && row.width <= room + 0.5)
+    // Plan item 177: a card whose name runs past its face is dealt wider; where that would break the row, its name
+    // is set tighter instead (`data-dense`: a smaller picture and a 12 px name). Then everything is measured.
+    const overflows = (c: HTMLElement) => {
+      const face = c.querySelector<HTMLElement>(':scope > button:first-child, .action-card-draggable')
+      return !!face && face.scrollHeight > face.clientHeight + 1
+    }
+    const widen = () => {
+      for (const c of cards) { delete c.dataset.wide; delete c.dataset.dense }
+      for (const c of cards) if (overflows(c)) c.dataset.wide = ''
+    }
     delete hand.dataset.rows
+    widen()
     let widths = cards.map((c) => c.offsetWidth)
     let rows = plan(1, widths)
+    if (!fits(rows, widths) && cards.some((c) => c.dataset.wide !== undefined)) {
+      for (const c of cards) if (c.dataset.wide !== undefined) { delete c.dataset.wide; c.dataset.dense = '' }
+      widths = cards.map((c) => c.offsetWidth)
+      rows = plan(1, widths)
+    }
     if (!fits(rows, widths)) {
       hand.dataset.rows = '2'
+      widen()
       widths = cards.map((c) => c.offsetWidth)
       for (let r = 2; r <= 4; r++) {
         rows = plan(r, widths)
