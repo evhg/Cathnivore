@@ -756,6 +756,8 @@ if (SANDBOX)
     // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.
     gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
+    // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
+    depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),

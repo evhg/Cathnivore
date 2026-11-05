@@ -12,6 +12,7 @@ import { actLight } from "./palette";
 import {
   buildBoat,
   buildCrane,
+  buildDepot,
   buildFarmhouse,
   buildGate,
   buildHouse,
@@ -1020,6 +1021,8 @@ export function buildGround(level: Level): Ground {
   // The corporate gate at each spawn (its sign board is turned to the camera by the renderer).
   const gateSigns: THREE.Object3D[] = [];
   group.userData.gateSigns = gateSigns;
+  const depots: THREE.Object3D[] = [];
+  group.userData.depots = depots;
   const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 && level.id <= 60 ? "CANDOR" : "HOLLOWELL";
   for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {
     const [c, r] = path[0]!;
@@ -1036,6 +1039,17 @@ export function buildGround(level: Level): Ground {
     sign.userData.inField = gate.position.x > 0 && gate.position.x < level.cols && gate.position.z > 0 && gate.position.z < level.rows;
     sign.userData.town = label;
     gateSigns.push(sign);
+    // Plan item 157: Hollowell's depot beside the gate, set back off the field's edge, its door turned to the lane.
+    const depot = buildDepot();
+    // Small enough to stand on the verge just outside the fence, where the camera still frames it, a cell past the gate.
+    depot.scale.setScalar(0.55);
+    const out = (v: number, n: number) => (v <= 0 ? -0.9 : v >= n - 1 ? n + 0.9 : v + 0.5);
+    const along = dx !== 0 ? { x: out(c, level.cols), z: r + 0.5 - 1.6 } : { x: out(c, level.cols), z: r + 0.5 + dy * 2.4 };
+    if (dx === 0 && c > 0 && c < level.cols - 1) along.z = out(r, level.rows);
+    depot.position.set(along.x, heightAt(along.x, along.z), along.z);
+    depot.rotation.y = dx > 0 ? Math.PI : dx < 0 ? 0 : dy > 0 ? Math.PI / 2 : -Math.PI / 2;
+    group.add(depot);
+    depots.push(depot);
   }
 
   // The farmhouse at the end of the lane.

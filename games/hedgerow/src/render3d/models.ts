@@ -2163,6 +2163,23 @@ export function buildFarmhouse(): THREE.Group {
   return g;
 }
 
+/** Plan item 157: Hollowell's depot by the gate: a glossy shed with a pitched roof, the orange brand stripe and a
+ * ribbed roller door facing +x (the renderer turns it to face the lane). About 1.6 x 1.1 x 1.4 world units. */
+export function buildDepot(): THREE.Group {
+  const g = new THREE.Group();
+  g.add(box(1.4, 0.9, 1.6, matte("#b7c0c9"), 0, 0, 0));
+  g.add(box(1.46, 0.2, 1.66, matte("#e2601a"), 0, 0.6, 0));
+  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.95, 0.42, 4, 1), matte("#8a949e"));
+  roof.rotation.y = Math.PI / 4;
+  roof.scale.set(1.05, 1, 1.2);
+  roof.position.y = 1.1;
+  g.add(roof);
+  g.add(box(0.04, 0.56, 0.9, matte("#cdd3d9"), 0.71, 0, 0));
+  for (let i = 0; i < 5; i++) g.add(box(0.05, 0.02, 0.9, matte("#8d96a0"), 0.73, 0.08 + i * 0.1, 0));
+  g.userData.depot = true;
+  return g;
+}
+
 export function buildGate(label: string): THREE.Group {
   const g = new THREE.Group();
   for (const z of [-0.55, 0.55]) g.add(box(0.12, 0.9, 0.12, gloss("#cfd6dc", 0.6), 0, 0, z));

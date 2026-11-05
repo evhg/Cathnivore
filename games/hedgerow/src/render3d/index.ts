@@ -2344,6 +2344,25 @@ export class Renderer3D {
     return out;
   }
 
+  /** Plan item 157: the depots by the gates as boxes on the canvas (CSS px), and their world footprint (x, z). */
+  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number }> {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number }> = [];
+    for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
+      const b = new THREE.Box3().setFromObject(d);
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let i = 0; i < 8; i++) {
+        const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+        const px = (v.x * 0.5 + 0.5) * w;
+        const py = (-v.y * 0.5 + 0.5) * h;
+        x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+      }
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z });
+    }
+    return out;
+  }
+
   /** Visible gate signs' boards as boxes on the canvas (CSS px from its corner); Cath's bubble keeps off them too. */
   gateSignRects(): Rect[] {
     const w = this.canvas.clientWidth;
