@@ -123,6 +123,8 @@ for (const width of [360, 390, 430]) {
   test(`the phone hand peeks at the next card at ${width} wide`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'phone layout')
     await page.setViewportSize({ width, height: 844 })
+    // At rest means unscrolled: Cath's suggestion (plan item 141) would scroll the strip to her card.
+    await page.addInitScript(() => localStorage.setItem('cathnivore:settings:v1', JSON.stringify({ version: 1, suggestions: false })))
     await page.goto('/')
     await page.getByText('Quick Game').click()
     await fillSeed(page, '1')

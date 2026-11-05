@@ -727,6 +727,22 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       if (b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > b.getBoundingClientRect().bottom + 1)) b.setAttribute('data-tight', '')
     }
   })
+  // Plan item 141: on a phone the card strip scrolls sideways, so after each move the card Cath suggests is
+  // brought into view if it's off the strip (never fighting the player's own scroll between moves).
+  useEffect(() => {
+    if (isDesktop) return
+    const item = document.querySelector<HTMLElement>('.action-tray .actions [data-suggested]')
+    if (!item) return
+    let strip: HTMLElement | null = item.parentElement
+    while (strip && strip.scrollWidth <= strip.clientWidth + 1) strip = strip.parentElement
+    if (!strip) return
+    const s = strip.getBoundingClientRect()
+    const r = item.getBoundingClientRect()
+    if (r.left >= s.left - 1 && r.right <= s.right + 1) return
+    // Lands on the card's own snap point (the strip snaps to card starts).
+    const left = strip.scrollLeft + (r.left - s.left) - (parseFloat(getComputedStyle(strip).scrollPaddingInlineStart) || 0)
+    strip.scrollTo({ left: Math.max(0, left), behavior: loadSettings().animations ? 'smooth' : 'auto' })
+  }, [state, isDesktop])
   // The teammate's picks this turn, for the ledger beside the card.
   // Keyed by round and producer, so last turn's picks never show on this one.
   const [teammateTurn, setTeammateTurn] = useState<{ turn: string; labels: string[] }>({ turn: '', labels: [] })

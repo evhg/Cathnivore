@@ -1929,6 +1929,13 @@ html.no-animations .cath-companion .cameo {
     display: none;
   }
 
+  /* The strip clips what overhangs a card, so the leaf sits just inside its corner, over the picture's (not the name). */
+  .action-tray .actions .action-item > .suggest-leaf {
+    top: 3px;
+    right: 3px;
+    left: auto;
+  }
+
   .action-tray .actions > button {
     flex: none;
     align-self: center;

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 // Plan item 141: on Normal Cath marks one card, the move she'd play, and says why; Settings turns it off.
-test('Cath suggests exactly one move in round 1, and the Settings toggle hides it', async ({ page }) => {
+test('Cath suggests exactly one move in round 1, and the Settings toggle hides it', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
@@ -9,6 +9,21 @@ test('Cath suggests exactly one move in round 1, and the Settings toggle hides i
   await expect(page.locator('.actions [data-suggested]')).toHaveCount(1, { timeout: 10_000 })
   await expect(page.locator('.actions [data-suggested] .suggest-leaf')).toHaveCount(1)
   await expect(page.getByTestId('suggest-line')).toContainText('Cath:')
+  if (testInfo.project.name === 'phone') {
+    // The strip scrolls sideways: the leafed card is brought onto it.
+    await expect
+      .poll(() =>
+        page.locator('.action-tray .actions [data-suggested]').evaluate((el) => {
+          let strip = el.parentElement
+          while (strip && strip.scrollWidth <= strip.clientWidth + 1) strip = strip.parentElement
+          if (!strip) return true
+          const s = strip.getBoundingClientRect()
+          const r = el.getBoundingClientRect()
+          return r.left >= s.left - 1 && r.right <= s.right + 1
+        }),
+      )
+      .toBe(true)
+  }
   // Turn it off the way Settings stores it, then reload the saved game.
   await page.evaluate(() => {
     const key = 'cathnivore:settings:v1'
