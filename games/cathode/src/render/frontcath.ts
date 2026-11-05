@@ -437,23 +437,56 @@ export function buildFrontCath(phone: boolean): FrontCath {
     mats.push(collarMat);
     add(collar, collarMat, pelvis);
   }
+  // The coat's radius at a height in the pelvis frame, from its profile (for laying things on its surface).
+  const rAtCoat = (y: number) => {
+    for (let i = 0; i < coatProfile.length - 1; i++) {
+      const [r0, y0] = coatProfile[i]!;
+      const [r1, y1] = coatProfile[i + 1]!;
+      if ((y - y0) * (y - y1) <= 0 && y0 !== y1) return r0 + ((r1 - r0) * (y - y0)) / (y1 - y0);
+    }
+    return 0.15;
+  };
   for (const side of [1, -1]) {
-    // A lapel: a thin folded wedge from the collar's corner down to the top button, angled out.
-    const lap = new THREE.BufferGeometry();
-    const a = V(0.045 * side, 0.5, 0.098);
-    const b = V(0.14 * side, 0.43, 0.088);
-    const c = V(0.052 * side, 0.27, 0.112);
-    const d = V(0.105 * side, 0.36, 0.1);
-    const t = 0.008;
-    const v = [a, d, b, a, c, d].flatMap((p) => [p.x, p.y, p.z + t]);
-    lap.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
-    lap.computeVertexNormals();
+    // A lapel. Plan item 147: a notched lapel with a bevelled edge, laid on the chest's curve (it was one flat
+    // triangle pair, which caught the light as a pale wedge and showed on one side only): from the collar's
+    // corner it widens to the notch under the shoulder, a pointed peak, then narrows down to the top button.
+    const outline: Array<[number, number]> = [
+      [0.044, 0.5],
+      [0.1, 0.462],
+      [0.112, 0.425], // the notch
+      [0.098, 0.418],
+      [0.138, 0.398], // the peak
+      [0.118, 0.35],
+      [0.08, 0.3],
+      [0.054, 0.268],
+      [0.04, 0.32],
+    ];
+    const shape = new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x * side, y)));
+    const lap = new THREE.ExtrudeGeometry(shape, { depth: 0.004, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.0035, bevelSegments: 2, curveSegments: 1 });
+    {
+      // Lay it on the coat: the lathe's front surface is z = 0.7 * sqrt(r(y)^2 - x^2), r from the profile. The
+      // inner edge stands a touch prouder than the outer, as a lapel rolls.
+      const rAt = rAtCoat;
+      const p = lap.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const r = rAt(y);
+        const surf = 0.7 * Math.sqrt(Math.max(0, r * r - x * x));
+        const roll = 0.006 * (1 - Math.min(1, Math.abs(x) / 0.13));
+        p.setZ(i, surf + 0.002 + roll + p.getZ(i));
+      }
+      lap.computeVertexNormals();
+    }
     add(lap, coatMat, pelvis);
     // Buttons: two columns of three down the front.
     for (let i = 0; i < 3; i++) {
       const bt = new THREE.SphereGeometry(0.009, 8, 6);
       bt.scale(1, 1, 0.5);
-      bt.translate(0.06 * side, 0.25 - i * 0.075, 0.112 - i * 0.004);
+      // On the chest's surface (they stood about 2 cm proud of it).
+      const by = 0.25 - i * 0.075;
+      const br = rAtCoat(by);
+      bt.translate(0.06 * side, by, 0.7 * Math.sqrt(Math.max(0, br * br - 0.0036)) + 0.004);
       add(bt, blackMat, pelvis);
     }
     // Epaulette: a flat strap across the shoulder to the collar.
