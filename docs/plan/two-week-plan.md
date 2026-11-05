@@ -1886,7 +1886,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a `[data-depot]` within 60 px of each path start covering 2x2 cells or more; the coming count inside the depot's box; `data-rep-mood` smug to gleeful on a leak and rattled on a clean round in e2e; no depot over a plot; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 158. [ ] Runnel desktop: the rail as today's almanac page
+## 158. [ ] Runnel desktop: the rail as today's almanac page *(lane B, in progress)*
 - **Why:** `runnel-D` (16-346 x 198-840): the rail reads as a settings form (a stepper, a legend, a list) over an empty band (760-840).
 - **Build:**
   - A painted almanac page: the date as a masthead, a vignette of today's weather, par and streak in display figures, a note from Bea, the legend drawn by hand.
