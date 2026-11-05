@@ -1694,7 +1694,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a forced leak gives `data-leak-stretch` and a ghost on an empty plot; her line differs between two rounds with different leaks; the bubble over plots 15% or less at D; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 136. [ ] NIGHT SHIFT: the class pick as an audition in the street
+## 136. [ ] NIGHT SHIFT: the class pick as an audition in the street *(lane A, in progress)*
 - **Why:** `ns-play-D` (470-960 x 100-700): empty rain, Cath a distant back view (780-830 x 320-520); `ns-play-P` (100-230 x 300-560) her back again, though items 112, 117 and 129 put her face-on. Check first: is `plan-shots`' `?play` frame the live pick, or the poster? (Lane A: "plan shots wait for the live street".)
 - **Build:**
   - Each class plays a 3 s vignette with her face-on: Ghost scopes, Butcher racks, Wirewitch's rig lights; a camera cut and a stinger per class.
