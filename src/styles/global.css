@@ -399,7 +399,8 @@ h3 {
 .region-name {
   font-family: var(--font-display);
   font-variation-settings: "opsz" 24;
-  font-size: 16.5px;
+  /* Board units, not screen px. Plan item 126: 16.5 read about 10 px on a 390 px phone; 19.5 reads 11.5 or more. */
+  font-size: 19.5px;
   font-weight: 700;
   fill: var(--ink);
   paint-order: stroke;
