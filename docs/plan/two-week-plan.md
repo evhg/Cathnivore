@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-05 12:55 UTC
+
 
 
 
@@ -1902,4 +1902,53 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The menu as neon or stencilled signage on a dark plate; the chosen item lights with a buzz and a flicker (still under reduced motion).
   - A disabled item says why ('No case open'); on a phone the plate sits clear of her.
 - **Accept:** enabled items at 4.5:1, disabled ones `aria-disabled` with a visible reason; at 390x844 no menu box meets Cath's projected box; `data-lit` follows the arrow keys within 250 ms; cathode-front passes; shots P and D.
+- **Size:** 2
+
+## 160. [ ] The bugs from the 2026-11-05 13:00 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1105d`; points already open in items 126, 138, 139 and 146 left out)
+  - **Cathnivore:** D game: hand cards 'Injunction…' (1130-1260 x 740-860) and 'Open Stall…' (905-1020 x 785-805) cut with an ellipsis. P setup: the difficulty stat labels (37-330 x 610-640) and the chair tags YOU / AI / P1 (45-110 x 345-357) about 9-10 px. From `plan1105c`: D title footer about 12 px (310-1130 x 872-886); P title small keys' labels about 12 px; D setup seed 'random' low contrast (655-840 x 795-835).
+  - **Hedgerow:** 2D D: the depot's 'HOLLOWELL' about 8 px (183-255 x 450-460); l34 D the second gate sign clipped to '…WELL' behind a depot roof (195-240 x 728-742); l34 P the depot's '485 NEXT' clipped (20-90 x 100-122). D rack names, 'OF 26' and 'KEEP GOING' about 11 px. D menu: a lilac cloud with a hard bottom edge (460-745 x 95-200).
+  - **NIGHT SHIFT:** D title 'No case open' about 11 px grey on near-black (205-272 x 330-341) and the GAMES link about 11 px; D pick class indices about 9 px (58-66 x 185-410), HOLD ENTER about 11 px.
+  - **e2e flake:** `hedgerow-3dframe.spec.ts:111` level 21 at P fails about 2 runs in 5 (the plate covers 0.28 of plots): the plate's spot depends on when the shot is read.
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; 3dframe:111 passes 10 runs in a row; shots before and after.
+- **Size:** 2
+
+## 161. [ ] NIGHT SHIFT: the class pick with Cath on its stage
+- **Why:** `ns-play-D` (970-1440 x 50-850): the stats sheet covers her; only an umbrella edge shows (940-975 x 290-335). The pick is a list over an empty alley. `ns-play-P` (100-300 x 180-520) shows her small and soft. (Check first that it isn't shot timing: item 146 saw her centred once.)
+- **Build:**
+  - At D she stands key-lit between the class list and the sheet, whole figure; each class gives her its pose and its weapon in hand (Ghost with the rifle shouldered, Butcher the cleaver...).
+  - A class switch plays a 400-600 ms swap with a rim-light flash (a fade under reduced motion); the weapon line art takes the class colour.
+- **Accept:** at 1440x900 her projected box 300 px or taller and meeting neither the list nor the sheet; keys 1-5 change `data-class` on the stage within 650 ms; picker labels 12 px or more; cathode-perf in budget; shots P, L and D.
+- **Size:** 2
+
+## 162. [ ] Hedgerow 3D: Cath a readable hero on the field
+- **Why:** `hedge-l21-3d-D` (140-250 x 470-620): her face is lost under a dark mass of hair; she reads as a brown blob, not as Cath (item 139's open point).
+- **Build:**
+  - Her 3D head to the `shared/cath` proportions: a lit face with eyes and liner, the fringe off her face, the olive jacket and a hair shine band.
+  - Idle, cheer (a clean round) and worried (a leak) poses.
+- **Accept:** her projected face 24 px or more at P and 40 at D (`hedgerow.faceBox()`), face mean luminance above the hair's; `data-cath-pose` changes on a leak in e2e; level tests unchanged; shots P and D.
+- **Size:** 2
+
+## 163. [ ] Hedgerow: the whole tower rack painted *(lane A, in progress)*
+- **Why:** `hedge-l21-2d-D` rack (1108-1412 x 85-365): Hedgerow, Beehive and Market Stall are in colour, but Windmill, Radio Mast and Grain Silo are grey line sketches with 99,999 coins in hand, so the rack reads as half-finished.
+- **Build:**
+  - Every tower card gets a coloured, ink-outlined portrait at one scale with a ground shadow, matching the field's art.
+  - Unaffordable is a desaturated card with a red price, not a sketch; names 13 px.
+- **Accept:** each rack card's art draws 3 or more distinct fills; names 13 px or more; on a phone no price under the scroll arrow (`elementFromPoint`); shots P and D, light and dark.
+- **Size:** 1
+
+## 164. [ ] Cathnivore phone: the hand as a fanned deck of whole cards
+- **Why:** `cath-game-P` (5-390 x 665-770): two cards show, the third cut to 'Bu' by the edge, a sideways NOT YET strip about 10 px; `cath-game-D` cuts 'Injunction…'.
+- **Build:**
+  - The phone hand as a fan above the dock with snap scrolling: a tap lifts a card, 'Not yet' cards dimmed and tucked behind.
+  - Every card shows its whole name (two lines allowed), no ellipsis.
+- **Accept:** at 390x844 no card title with `scrollWidth > clientWidth`; titles 14 px or more; a tapped card rises 12 px or more within 200 ms; rule tests unchanged; shots P light and dark.
+- **Size:** 2
+
+## 165. [ ] Runnel phone: Cath standing in the valley
+- **Why:** `runnel-P` (15-375 x 190-265): Cath is a 50 px avatar beside a chat bubble; on desktop she stands in the scene (`runnel-D` 420-510 x 675-850).
+- **Build:**
+  - A full-figure Cath in the phone valley, clear of the tiles, her bubble anchored to her.
+  - Her expression follows play: pointing at a hint, delighted on a watered field, worried after many turns.
+- **Accept:** at 390x844 `[data-cath-figure]` 120 px or taller inside the board's frame, meeting no tile; `data-expression` changes on a solve in e2e; bubble text 15 px at 4.5:1; shots P and D.
 - **Size:** 2
