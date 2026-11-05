@@ -2148,7 +2148,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </p>
         </section>
       ) : (
-        <section className="active-producer">
+        <section className="active-producer" data-seat={handOnTable && isDesktop ? '' : undefined}>
+          {/* Plan item 154: on a big desktop the frame is the active producer's seat at the table: their portrait
+              large in a painted chair-back, the action tokens and resources beside them. */}
+          {handOnTable && isDesktop && (
+            <span className={`producer-seat pc-${state.activeProducer}`} data-seat-producer={state.activeProducer} data-expression={faceExpression(producerFaces[state.activeProducer]) ?? 'neutral'} aria-hidden="true">
+              <Portrait character={state.activeProducer} size={150} expression={faceExpression(producerFaces[state.activeProducer])} />
+            </span>
+          )}
           <span className="active-producer-header">
             <span className={`producer-cameo pc-${state.activeProducer}`}>
               <Portrait character={state.activeProducer} size={48} expression={faceExpression(producerFaces[state.activeProducer])} />

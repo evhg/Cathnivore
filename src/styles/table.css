@@ -3055,3 +3055,85 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-item { transition: none; }
   .game-layout .hand-later { transition: none; }
 }
+
+/* Plan item 154: on a big desktop the producer frame is the active producer's seat: the portrait large in an
+   arched chair-back of their colour, the name, the action tokens (wooden discs, a spent one an empty socket) and
+   the three resources stacked beside it. The small cameo steps aside. */
+.producer-seat { display: none; }
+@media (min-width: 1240px) and (min-height: 760px) {
+  .producer-sheet .active-producer[data-seat] {
+    grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-areas: "seat who" "seat pips" "seat ledger";
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
+    gap: var(--sp-2) var(--sp-3);
+  }
+  .producer-sheet .active-producer[data-seat] .producer-cameo { display: none; }
+  .producer-sheet .active-producer[data-seat] .active-producer-header strong { font-size: var(--fs-h3); }
+  .producer-seat {
+    grid-area: seat;
+    position: relative;
+    display: block;
+    width: 150px;
+    height: 186px;
+    border-radius: 75px 75px var(--r-sm) var(--r-sm);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--cameo-ring, var(--wheat)) 30%, var(--paper-hi)) 0 45%, transparent 72%),
+      color-mix(in srgb, var(--cameo-ring, var(--wheat)) 55%, var(--wood));
+    box-shadow: inset 0 0 0 4px var(--wood), inset 0 0 0 6px var(--wood-lo), var(--e2);
+  }
+  /* the chair's top rail, behind the shoulders */
+  .producer-seat::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 58%;
+    height: 10px;
+    border-radius: var(--r-xs);
+    background: linear-gradient(var(--wood), var(--wood-lo));
+  }
+  .producer-seat > svg {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 150px;
+    height: 180px;
+  }
+  .producer-seat.pc-mara { --cameo-ring: var(--p-mara); }
+  .producer-seat.pc-tomas { --cameo-ring: var(--p-tomas); }
+  .producer-seat.pc-ines { --cameo-ring: var(--p-ines); }
+  .producer-seat.pc-sol { --cameo-ring: var(--p-sol); }
+  .producer-sheet .active-producer[data-seat] .pips {
+    justify-self: start;
+    grid-template-columns: repeat(3, 26px);
+    column-gap: 8px;
+  }
+  .producer-sheet .active-producer[data-seat] .pips-label { justify-self: start; }
+  .producer-sheet .active-producer[data-seat] .pip {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    rotate: 0deg;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 0 5px, color-mix(in srgb, var(--wood-lo) 55%, transparent) 5px 6px, transparent 6px),
+      radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--wood-ink) 40%, transparent), transparent 55%),
+      var(--wood);
+    box-shadow: inset 0 0 0 2px var(--wood-lo), 0 2px 0 var(--wood-lo), 0 3px 4px rgb(var(--shadow-ink) / .3);
+  }
+  .producer-sheet .active-producer[data-seat] .pip:not(.on) {
+    scale: 1;
+    translate: 0;
+    opacity: 1;
+    background: color-mix(in srgb, var(--wood-lo) 22%, var(--paper));
+    box-shadow: inset 0 2px 3px rgb(var(--shadow-ink) / .35), inset 0 0 0 1.5px color-mix(in srgb, var(--wood-lo) 50%, transparent);
+  }
+  .producer-sheet .active-producer[data-seat] .ledger {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+  }
+}

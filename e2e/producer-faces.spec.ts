@@ -1,18 +1,18 @@
 import { test, expect } from '@playwright/test'
 
 // Plan item 80: the producers' faces follow the game. In an autoplayed game, the active producer's cameo swaps to
-// a worried face after a Squeeze lands on one of their Stalls, or a delighted one when their ability fires.
+// a worried face (item 154: the seat's portrait on a big desktop) after a Squeeze lands on one of their Stalls, or a delighted one when their ability fires.
 test('the active producer reacts to the turn', async ({ page }) => {
   test.setTimeout(90_000)
   await page.goto('/?e2eAutoplay=1')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await expect(page.locator('.producer-cameo svg.producer-art').first()).toBeVisible()
+  await expect(page.locator(':is(.producer-cameo, .producer-seat) svg.producer-art:visible').first()).toBeVisible()
   const seen = new Set<string>()
   const deadline = Date.now() + 70_000
   const board = new Set<string>()
   while (Date.now() < deadline && !((seen.has('worried') || seen.has('delighted')) && board.size > 0)) {
-    const face = await page.locator('.producer-cameo svg.producer-art').first().getAttribute('data-face').catch(() => null)
+    const face = await page.locator(':is(.producer-cameo, .producer-seat) svg.producer-art:visible').first().getAttribute('data-face').catch(() => null)
     if (face) seen.add(face)
     // The board's miniatures react with them: the art drawn inside a standee swaps its face.
     for (const f of await page.locator('.producer-mini svg.producer-art').evaluateAll((els) => els.map((e) => e.getAttribute('data-face')))) if (f && f !== 'neutral') board.add(f)
