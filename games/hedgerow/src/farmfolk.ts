@@ -278,8 +278,11 @@ export function stepFolk(world: FolkWorld, dt: number, busy: Set<string>, wave: 
       }
       const next = pickNext(world, f, busy, wave);
       if (!next) {
+        // Nowhere to step (penned in on a lone cell): stand for the rest of this frame. Without the break, a
+        // tower on its cell zeroes this wait again above and the loop never uses up `left` (the page hung).
         f.wait = 1;
-        continue;
+        f.moving = false;
+        break;
       }
       [f.fc, f.fr, f.tc, f.tr, f.k] = [f.tc, f.tr, next[0], next[1], 0];
       f.tending = false;

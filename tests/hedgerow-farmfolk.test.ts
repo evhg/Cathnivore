@@ -27,6 +27,18 @@ describe('Hedgerow farmfolk (plan item 143)', () => {
     }
   })
 
+  it('a critter on a plot a tower took, with nowhere to step, waits rather than spinning forever', () => {
+    // Level 38's swarm round hung the page: a hen penned on a lone cell under a new tower looped
+    // wait 0 -> no next cell -> wait 1 -> wait 0 inside one frame, never using up the frame's time.
+    const w = makeFolk(LEVELS[0]!)
+    const f = w.folk[0]!
+    w.walk = new Set([`${f.tc},${f.tr}`])
+    Object.assign(f, { k: 1, wait: 0.5, mode: 'work', fc: f.tc, fr: f.tr })
+    const busy = new Set([`${f.tc},${f.tr}`])
+    for (let i = 0; i < 120; i++) stepFolk(w, 1 / 60, busy, true)
+    expect(f.moving).toBe(false)
+  })
+
   it('actually walks between rounds', () => {
     const w = makeFolk(LEVELS[0]!)
     const start = w.folk.map((f) => [f.x, f.y])
