@@ -3754,3 +3754,32 @@ body[data-mode='practice'] #week-slot {
 @media (prefers-reduced-motion: reduce) {
   .valley-say:not([hidden]) { animation: none; }
 }
+
+/* Plan item 134: today's weather card flies from the lesson column to the centre and fades as the daily opens. */
+.daily-fly {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(var(--w, 300px), calc(100vw - 64px));
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--ink) 25%, transparent);
+  pointer-events: none;
+  animation: daily-fly 1200ms cubic-bezier(.3, .7, .2, 1) both;
+}
+.daily-fly .lc-next-sky svg { width: 96px; height: auto; display: block; border-radius: 8px; }
+.daily-fly small { display: block; font-size: var(--fs-small); letter-spacing: 0.08em; text-transform: uppercase; }
+.daily-fly b { display: block; }
+@keyframes daily-fly {
+  0% { transform: translate(calc(-50% + var(--fx, 0px)), calc(-50% + var(--fy, 0px))) scale(1); opacity: 1; }
+  55% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.14); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily-fly { animation: daily-fade 800ms linear both; transform: translate(-50%, -50%); }
+  @keyframes daily-fade { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }
+}

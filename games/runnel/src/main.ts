@@ -1316,12 +1316,33 @@ function markLessonCard(step: number): void {
 }
 function endLesson(): void {
   if (lessonStep < 0) return
+  flyDailyCard()
   markLessonCard(-1)
   lessonStep = -1
   document.body.classList.remove('in-lesson')
   data.seenHelp = true
   save(data)
   openGame()
+}
+
+/** Plan item 134: the lesson hands over to today's daily with its weather card: the Up next card lifts from the
+ *  lesson column (or the middle of the screen on a phone, where it isn't shown), flies to the centre and fades as
+ *  the daily opens behind it. Under reduced motion it only fades. */
+function flyDailyCard(): void {
+  const src = document.getElementById('lc-next')
+  if (!src?.innerHTML) return
+  const r = src.getBoundingClientRect()
+  const card = document.createElement('div')
+  card.className = 'daily-fly'
+  card.setAttribute('aria-hidden', 'true')
+  card.innerHTML = src.innerHTML
+  const w = r.width || Math.min(300, innerWidth - 64)
+  const from = r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: innerWidth / 2, y: innerHeight * 0.6 }
+  card.style.setProperty('--w', `${Math.round(w)}px`)
+  card.style.setProperty('--fx', `${Math.round(from.x - innerWidth / 2)}px`)
+  card.style.setProperty('--fy', `${Math.round(from.y - innerHeight / 2)}px`)
+  document.body.append(card)
+  window.setTimeout(() => card.remove(), 1300)
 }
 
 /** Critique 2026-11-04 (item 126): "Daily #37 · Wed, Nov 4" may wrap only at a dot, never inside the date. */
