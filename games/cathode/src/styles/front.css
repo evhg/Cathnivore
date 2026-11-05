@@ -1127,3 +1127,22 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   }
   .title-col:has(.dossier.is-open) #menu-hint { visibility: hidden; }
 }
+
+/* Plan item 137: a name just crossed off The List. The red marker strikes its print (the bar draws from the left),
+   the print goes grey, the next target's photo develops in, and the count under the logotype ticks down. Reduced
+   motion: the same states as fades. */
+.mug[data-struck="fresh"] .mug-photo::after { transform-origin: 0 50%; animation: list-strike 520ms cubic-bezier(.3, .7, .2, 1) 500ms both; }
+.mug[data-struck="fresh"] .mug-photo svg { animation: list-grey 700ms ease-out 700ms both; }
+.mug[data-developing] .mug-photo svg { animation: list-develop 1600ms ease-out 1100ms both; }
+.the-list-names li[data-struck="fresh"] { animation: list-fade 500ms ease-out 500ms both; }
+#title-sub.is-ticking { animation: list-tick 700ms ease-out both; }
+@keyframes list-strike { from { scale: 0 1; } to { scale: 1 1; } }
+@keyframes list-grey { from { filter: none; } to { filter: grayscale(1) brightness(.7); } }
+@keyframes list-develop { from { filter: brightness(2.6) sepia(1) blur(calc(var(--u) * 2)); opacity: .25; } to { filter: none; opacity: 1; } }
+@keyframes list-fade { from { opacity: .3; } to { opacity: 1; } }
+@keyframes list-tick { 0% { color: var(--blood-hot); } 100% { color: inherit; } }
+@media (prefers-reduced-motion: reduce) {
+  .mug[data-struck="fresh"] .mug-photo::after { animation: list-fade 400ms ease-out 300ms both; }
+  .mug[data-struck="fresh"] .mug-photo svg { animation: none; }
+  .mug[data-developing] .mug-photo svg { animation: list-fade 600ms ease-out 600ms both; }
+}

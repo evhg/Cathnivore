@@ -252,3 +252,21 @@ export function dossierFor(slot: string, o: { hasSave: boolean; jobsDone: readon
 }
 
 const titleCase = (s: string): string => s.toLowerCase().replace(/(^|\s)(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase()).replace(/’S\b/gi, "’s");
+
+/**
+ * Plan item 137: a name crossed off The List is a front-door moment, once. `seen` is the boss jobs the title has
+ * already shown struck; the first done one not in it is struck now (the latest in List order, so a save that
+ * closed two cases away from the title strikes the newer). Returns its List index, or -1.
+ */
+export function freshlyStruck(jobsDone: readonly string[], seen: readonly string[]): number {
+  for (let i = THE_LIST.length - 1; i >= 0; i--) {
+    const job = THE_LIST[i]!.job;
+    if (jobsDone.includes(job)) return seen.includes(job) ? -1 : i;
+  }
+  return -1;
+}
+
+/** The boss jobs to remember as shown once the title has played its strike (every done name on the List). */
+export function struckJobs(jobsDone: readonly string[]): string[] {
+  return THE_LIST.filter((n) => jobsDone.includes(n.job)).map((n) => n.job);
+}

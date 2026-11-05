@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, dossierFor, frontSet, listRows, loadingCard, slotHint, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, frontSet, listRows, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
@@ -281,9 +281,38 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   el("span", "dossier-tag", box, d.tag);
 }
 
+/** Plan item 137: the boss jobs whose names the title has already shown struck off The List. */
+const LIST_STRUCK_KEY = "cathode:list-struck:v1";
+let subTick = 0;
+
 function fillTitle(): void {
   const done = jobs();
-  $("title-sub").textContent = titleSubtitle(done);
+  // Plan item 137: the first title visit after a boss case closes strikes that name with a red marker, develops
+  // the next target's photo and ticks the count down. Once: the strike is remembered as soon as it plays.
+  let seen: string[] = [];
+  try {
+    const raw = JSON.parse(localStorage.getItem(LIST_STRUCK_KEY) ?? "[]") as unknown;
+    if (Array.isArray(raw)) seen = raw.filter((j): j is string => typeof j === "string");
+  } catch {
+    seen = [];
+  }
+  const fresh = freshlyStruck(done, seen);
+  try {
+    localStorage.setItem(LIST_STRUCK_KEY, JSON.stringify(struckJobs(done)));
+  } catch {
+    // private mode: the strike may play again next visit
+  }
+  const sub = $("title-sub");
+  window.clearTimeout(subTick);
+  if (fresh >= 0) {
+    const before = done.filter((j) => j !== THE_LIST[fresh]!.job);
+    sub.textContent = titleSubtitle(before);
+    sub.classList.remove("is-ticking");
+    subTick = window.setTimeout(() => {
+      sub.textContent = titleSubtitle(done);
+      sub.classList.add("is-ticking");
+    }, 1300);
+  } else sub.textContent = titleSubtitle(done);
   const list = $("the-list");
   list.replaceChildren();
   // C13T: names the player hasn't reached are not drawn as grey bars (they read as a web skeleton loader): the
@@ -296,6 +325,7 @@ function fillTitle(): void {
     }
     const li = el("li", r.done ? "is-done" : r.next ? "is-next" : "", list, r.name);
     if (r.done) li.setAttribute("aria-label", `${r.name}, dealt with`);
+    if (r.done) li.dataset.struck = THE_LIST[fresh]?.name === r.name ? "fresh" : "";
   }
   if (sealed) el("li", "is-more", list, `${sealed} more ${sealed === 1 ? "name" : "names"}`);
   // Plan item 89: at D the List is five pinned mugshots (the case board's stills): the dealt-with struck through,
@@ -306,6 +336,8 @@ function fillTitle(): void {
   wall.replaceChildren();
   listRows(done).forEach((r, i) => {
     const li = el("li", `mug${r.done ? " is-done" : r.next ? " is-next" : r.redacted ? " is-sealed" : ""}`, wall);
+    if (r.done) li.dataset.struck = i === fresh ? "fresh" : "";
+    if (r.next && fresh >= 0) li.dataset.developing = "";
     li.style.setProperty("--tilt", `${((i * 37) % 7) - 3}deg`);
     const photo = el("figure", "mug-photo", li);
     // Plan item 99: a noir mugshot for every name; one not reached yet is a redacted silhouette, never a black square.
