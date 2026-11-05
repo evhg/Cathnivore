@@ -693,7 +693,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   transform-origin: left;
   transition: transform 160ms cubic-bezier(.2, .7, .2, 1);
 }
-.cp-opt-n { min-width: 1.4ch; font: 600 var(--fs-1)/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink-dim); transition: color 160ms ease; }
+.cp-opt-n { min-width: 1.4ch; font: 700 var(--fs-1)/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink-3); transition: color 160ms ease; }
 .cp-opt-name {
   font: 800 var(--fs-5)/1 var(--font-ui);
   letter-spacing: -.005em;
@@ -848,7 +848,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 .cp-hold.is-holding .cp-hold-fill, .cp-hold.is-done .cp-hold-fill { transform: none; transition: transform 600ms linear; }
 .cp-hold-label { font: 800 var(--fs-3)/1.1 var(--font-ui); text-transform: uppercase; letter-spacing: .01em; font-stretch: var(--wdth-head); }
-.cp-hold-how { font: 600 var(--fs-1)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
+.cp-hold-how { font: 700 var(--fs-1)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); font-stretch: var(--wdth-label); }
 .cp-hold-how::after { content: " Enter"; }
 @media (hover: none) { .cp-hold-how::after { content: ""; } }
 /* The foot only exists for the upright phone (below): elsewhere the hold bar lays out as the sheet's own child. */
