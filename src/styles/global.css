@@ -3484,3 +3484,9 @@ html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-g
 @media (min-width: 1100px) {
   .setup .setup-difficulty, .setup .setup-seed { align-self: start; }
 }
+/* Plan item 144: the Dry Spell's ground shimmers in the heat; still under reduced motion. */
+@keyframes ev-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  svg.map[data-event='drought'] .ev-cracks { animation: none; }
+}

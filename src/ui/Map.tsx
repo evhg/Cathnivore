@@ -122,6 +122,11 @@ const REGION_PATTERN_ID: Record<RegionType, string> = {
 function RegionTextureDefs() {
   return (
     <defs>
+      {/* Plan item 144: the Dry Spell's cracked earth, laid over every region's ground. */}
+      <pattern id="ev-cracks" width={46} height={46} patternUnits="userSpaceOnUse">
+        <rect width={46} height={46} fill="#e9c36a" opacity={0.26} />
+        <path d="M2 10l9 4 4 10 10 3 6 9M15 24l-6 9M25 27l8-6 9 2M31 36l-2 9" fill="none" stroke="var(--ink)" strokeWidth={1.4} opacity={0.5} strokeLinecap="round" />
+      </pattern>
       {/* Pasture: short diagonal strokes. STYLE.md 3.2 specifies "8% ink," but a 2026-09-28 gate-8 review
           (2 subagents, phone + desktop) found the region textures were reading as flat, uniform grey in
           the mandated greyscale screenshot at map scale — the plain 8% opacity anti-aliases away on thin
@@ -660,6 +665,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       delete w.cathnivoreMoment
     }
   }, [])
+  const marketEvent = state.config.marketEvent
   const moment = Object.values(fx).includes('lib') ? 'liberate' : Object.values(fx).includes('sq') ? 'squeeze' : undefined
 
   const svgRef = useRef<SVGSVGElement>(null)
@@ -690,7 +696,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   }, [active.length])
 
   return (
-    <svg ref={svgRef} data-round={state.round} data-moment={moment} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       <g className="tile-shadows" filter="url(#tile-shadow)" pointerEvents="none" aria-hidden="true">
@@ -766,6 +772,25 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             />
             <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
             <polygon className="tile-paint" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#tile-paint)" pointerEvents="none" />
+            {/* Plan item 144: the week's market event dresses every region's ground, under the pieces (the band at the
+                hex's foot, below the stalls, is free on every tile). */}
+            {marketEvent === 'drought' && <polygon className="ev-cracks" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#ev-cracks)" pointerEvents="none" />}
+            {marketEvent === 'glut' && (
+              <g className="ev-heap" transform={`translate(${x} ${y + HEX_R * 0.8})`} pointerEvents="none">
+                <ellipse cx={0} cy={5} rx={22} ry={3.5} fill="var(--ink)" opacity={0.15} />
+                <circle cx={-13} cy={0} r={5.5} fill="#7fae4a" stroke="var(--ink)" strokeWidth={1.2} />
+                <circle cx={0} cy={0} r={5.5} fill="#e9a23b" stroke="var(--ink)" strokeWidth={1.2} />
+                <circle cx={13} cy={0} r={5.5} fill="#9b5aa0" stroke="var(--ink)" strokeWidth={1.2} />
+              </g>
+            )}
+            {marketEvent === 'festival' && (
+              <g className="ev-lanterns" transform={`translate(${x} ${y + HEX_R * 0.72})`} pointerEvents="none">
+                <path d="M-30 -5Q0 5 30 -5" fill="none" stroke="var(--ink)" strokeWidth={1.3} />
+                {[-20, -7, 7, 20].map((dx, k) => (
+                  <ellipse key={dx} cx={dx} cy={3 - 5 * (dx / 30) ** 2} rx={4.6} ry={5.8} fill={['#d9502f', '#e9b83b', '#4f8a3a', '#d9502f'][k]} stroke="var(--ink)" strokeWidth={1} />
+                ))}
+              </g>
+            )}
             {/* Plan item 109: with nothing to pick on a phone, each region has a button of its own (a shape with no
                 children, so the pieces' own controls aren't nested in it) that opens it up close. */}
             {inspect && (
