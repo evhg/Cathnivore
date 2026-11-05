@@ -1854,7 +1854,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-act]` count equals the acts, in one scroller; the current act in view on load; the next act's top 60 px or more into the viewport; locked labels at 4.5:1; shots P and D, light and dark.
 - **Size:** 2
 
-## 154. [ ] Cathnivore desktop: one hand of whole cards, and the active producer's seat
+## 154. [ ] Cathnivore desktop: one hand of whole cards, and the active producer's seat *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1105c): the left Actions column (16-332 x 250-660) still lists what the table-edge hand (375-1205 x 745-885) holds, and the hand's cards overlap until names cut ('Buy Market Da', 'Supply 1 Outlet · Brindle H'; a cost chip cut at 770-845 x 860-880).
 - **Build:**
   - At 1240 px and up the column stops repeating the hand: it becomes the active producer's seat (half-length portrait, the action pips as wooden tokens, the three resources, the not-yet strips).
