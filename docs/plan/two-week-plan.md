@@ -1962,7 +1962,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
 
-## 167. [ ] Cathnivore desktop: the left rail as the producer's player mat
+## 167. [ ] Cathnivore desktop: the left rail as the producer's player mat *(lane A, in progress)*
 - **Why:** `cath-game-D` (16-332 x 12-876): the rail is a plain list (five 'Not yet' rows, red 'Need N more') beside a painted table, and Mara's portrait shows twice (30-185 x 25-210 and her seat, 1195-1330 x 285-445).
 - **Build:**
   - A wooden mat: produce, Marks and Goodwill as crates, a coin stack and rosettes, with counts and this round's gains.
