@@ -861,7 +861,59 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const handR = V(-0.085, 0.12, 0.185);
   const wristR = handR.clone().add(V(-0.012, -0.045, -0.03));
   sleeve(shoulderR, elbowR, wristR, chest);
-  glove(wristR, handR.clone().sub(wristR).normalize(), -1, chest);
+  // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
+  // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the
+  // thumb over the index. Built round the shaft's rest axis in the chest frame (the umbrella twirls in its own
+  // group; her grip stays).
+  {
+    const rest = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.05, 0, 0.06));
+    const at = (v: THREE.Vector3) => v.applyQuaternion(rest).add(handR);
+    // Toward the wrist, across the shaft: where the back of her hand sits.
+    const back = wristR.clone().sub(handR).setY(0).normalize();
+    const tb = Math.atan2(back.z, back.x);
+    const ring = (y: number, rr: number, a0: number, a1: number) =>
+      Array.from({ length: 7 }, (_, i) => {
+        const a = tb + a0 + ((a1 - a0) * i) / 6;
+        return at(V(Math.cos(a) * rr, y - i * 0.0012, Math.sin(a) * rr));
+      });
+    const parts: THREE.BufferGeometry[] = [];
+    // The back of the hand: a flattened pad outside the shaft, knuckles up.
+    const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
+    pad.scale(0.016, 0.044, 0.03);
+    pad.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(1, 0, 0), back));
+    const padAt = at(back.clone().multiplyScalar(0.02).add(V(0, -0.002, 0)));
+    pad.translate(padAt.x, padAt.y, padAt.z);
+    parts.push(pad);
+    // Four fingers: each a tube from the knuckle round the shaft's front, ending curled in toward the palm.
+    const fingers: Array<[number, number, number]> = [
+      [0.021, 0.0082, 1.45],
+      [0.006, 0.0085, 1.5],
+      [-0.009, 0.008, 1.45],
+      [-0.023, 0.007, 1.3],
+    ];
+    for (const [y, r, wrap] of fingers) {
+      const curve = new THREE.CatmullRomCurve3(ring(y, 0.0075 + r + 0.0008, -0.55, Math.PI * wrap - 0.55));
+      parts.push(new THREE.TubeGeometry(curve, seg(10), r, seg(6), false));
+      // A rounded tip.
+      const tip = new THREE.SphereGeometry(r * 0.98, seg(6), seg(5));
+      const e = curve.getPoint(1);
+      tip.translate(e.x, e.y, e.z);
+      parts.push(tip);
+    }
+    // The thumb: from the base of the palm, across over the index finger's middle joint.
+    const thumbA = at(V(Math.cos(tb - 1.2) * 0.022, -0.006, Math.sin(tb - 1.2) * 0.022));
+    const thumbB = at(V(Math.cos(tb - 2.1) * 0.02, 0.026, Math.sin(tb - 2.1) * 0.02));
+    parts.push(limb(thumbA, thumbB, 0.0105, 0.0085, seg(8)));
+    const thumbTip = new THREE.SphereGeometry(0.0086, seg(6), seg(5));
+    thumbTip.translate(thumbB.x, thumbB.y, thumbB.z);
+    parts.push(thumbTip);
+    // The wrist, from the cuff into the hand.
+    parts.push(turned(wristR.clone(), padAt.clone().lerp(handR, 0.3), [[0, 0.024], [1, 0.022]], seg(8), 0.8));
+    const fist = mergeGeos(parts);
+    for (const g of parts) g.dispose();
+    const fistMesh = add(fist, blackMat, chest);
+    fistMesh.name = "cath-fist-r";
+  }
 
   const shoulderL = V(0.15, 0.25, -0.005);
   const elbowL = V(0.192, -0.02, -0.035);
