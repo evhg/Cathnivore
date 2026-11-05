@@ -1737,7 +1737,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `faceBox()` 110 px or more at D and 70 at P; pixels inside it find an eye highlight (luminance over 0.85) and a rose lip hue; `data-expression` changes on class focus; cathode-perf in budget; shots P, L and D.
 - **Size:** 3
 
-## 141. [ ] Cathnivore: Cath suggests a move, and every action previews on the board
+## 141. [ ] Cathnivore: Cath suggests a move, and every action previews on the board *(lane B, in progress)*
 - **Why:** `cath-game-D` (33-315 x 320-800): eleven actions of equal weight, and the meters (350-1335 x 15-75) never show what a move will do; a newcomer can't tell a good move from a bad one.
 - **Build:**
   - The HeuristicBot's pick gets a leaf badge on its card, and Cath says one line on why.
