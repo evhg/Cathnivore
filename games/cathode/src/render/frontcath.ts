@@ -347,20 +347,23 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const coatProfile: Array<[number, number]> = [
     [0.001, 0.555],
     [0.07, 0.55],
+    // Plan item 147: a tailored line, not a box: the shoulders slope and round off (no square corner), the
+    // chest and back taper to a cinched waist, and below the belt the skirt flares to the hem.
     [0.105, 0.53], // collar base
-    [0.172, 0.497], // shoulder slope
-    [0.184, 0.455], // shoulders
-    [0.166, 0.36], // chest
-    [0.148, 0.24],
-    [0.117, 0.12], // the belted waist
-    [0.138, 0.05],
-    [0.178, -0.05], // hips
-    [0.196, -0.19],
-    [0.214, -0.33],
-    [0.238, -0.46], // the hem, just below the knee: a trench falls, it doesn't bell
-    [0.234, -0.475],
+    [0.158, 0.505], // shoulder slope
+    [0.176, 0.47], // the rounded shoulder
+    [0.17, 0.42],
+    [0.158, 0.34], // chest
+    [0.136, 0.24],
+    [0.106, 0.12], // the belted waist
+    [0.132, 0.05],
+    [0.174, -0.05], // hips
+    [0.202, -0.19],
+    [0.232, -0.33],
+    [0.266, -0.46], // the hem, just below the knee: the skirt flares from the belt
+    [0.262, -0.475],
   ];
-  const HEM_FROM = 9; // profile rows from here down follow the hem particles
+  const HEM_FROM = 10; // profile rows from here down follow the hem particles
   const coatSegs = seg(32);
   // LatheGeometry faces outward when the profile climbs: hem first.
   coatProfile.reverse();
@@ -391,7 +394,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   coat.name = "coat";
   const coatRest = (coatGeo.attributes.position!.array as Float32Array).slice();
   // The belt and its buckle, and a popped collar.
-  const belt = new THREE.TorusGeometry(0.12, 0.015, 6, seg(28));
+  const belt = new THREE.TorusGeometry(0.112, 0.015, 6, seg(28));
   belt.rotateX(Math.PI / 2);
   belt.scale(1, 1, 0.72);
   belt.translate(0, 0.12, 0);
@@ -750,6 +753,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
   cap.translate(0, 0.012, -0.004);
   cap.computeVertexNormals();
   add(cap, hairMat, headPivot);
+  // Plan item 147: the long hair's rest positions, so the update can sway its lower lengths in the wind.
+  let hairRest: Float32Array | null = null;
+  let hairGeo: THREE.BufferGeometry | null = null;
+  let hairCols = 0;
+  let hairRows = 0;
   // The long hair (VISION's character bible: very long, glossy, centre-parted, falling in soft waves): one draped
   // sheet from under the cap, out over the collar and down her back to the shoulder blades, waved, with uneven ends.
   {
@@ -796,6 +804,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
       }
     const sheet = new THREE.BufferGeometry();
     sheet.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    hairRest = new Float32Array(pos);
+    hairGeo = sheet;
+    hairCols = cols;
+    hairRows = rows;
     sheet.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
     sheet.setIndex(idx);
     sheet.computeVertexNormals();
@@ -830,13 +842,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const sleeve = (sh: THREE.Vector3, el: THREE.Vector3, wr: THREE.Vector3, parent: THREE.Object3D, fore: THREE.Object3D = parent) => {
     // Plan item 147: the upper sleeve tapers into the elbow ball (its flat end showed as a rim with the forearm
     // starting inside it), and the forearm starts just outside both, so the join reads as a soft fold.
-    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.8, 0.042], [0.93, 0.039], [1, 0.034]], seg(12), 0.9), coatMat, parent);
+    // A straight arm (her left at rest) showed the forearm's wider start as a step, so the radii now meet at the
+    // elbow (0.039) and only the bend's fold shows.
+    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.8, 0.043], [0.93, 0.0405], [1, 0.037]], seg(12), 0.9), coatMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    const elb = new THREE.SphereGeometry(0.0405, seg(12), seg(8));
+    const elb = new THREE.SphereGeometry(0.0395, seg(12), seg(8));
     elb.scale(1, 1, 0.9);
     elb.translate(el.x, el.y, el.z);
     add(elb, coatMat, fore);
-    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.036], [0.04, 0.0425], [0.2, 0.041], [0.5, 0.039], [0.88, 0.044], [0.97, 0.047], [1, 0.03]], seg(12), 0.9), coatMat, fore);
+    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.037], [0.05, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), coatMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
@@ -845,18 +859,6 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const at = wr.clone().addScaledVector(d, -0.04);
     strap.translate(at.x, at.y, at.z);
     add(strap, blackMat, parent);
-  };
-  const glove = (at: THREE.Vector3, dir: THREE.Vector3, side: number, parent: THREE.Object3D) => {
-    // The hand: a flattened, rounded block along `dir`, fingers curled; the thumb wrapped across.
-    const palm = new THREE.SphereGeometry(1, seg(10), seg(8));
-    palm.scale(0.026, 0.05, 0.036);
-    palm.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
-    palm.translate(at.x + dir.x * 0.04, at.y + dir.y * 0.04, at.z + dir.z * 0.04);
-    add(palm, blackMat, parent);
-    const wrist = turned(at.clone().addScaledVector(dir, -0.01), at.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.027]], seg(8), 0.8);
-    add(wrist, blackMat, parent);
-    const t0 = at.clone().addScaledVector(dir, 0.03).add(V(-0.02 * side, 0, 0.02));
-    add(limb(t0, t0.clone().add(V(0.012 * side, 0.02 * Math.sign(dir.y || 1), 0.02)), 0.011, 0.009, 6), blackMat, parent);
   };
   const shoulderR = V(-0.15, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
@@ -929,7 +931,37 @@ export function buildFrontCath(phone: boolean): FrontCath {
   foreL.matrixAutoUpdate = false;
   chest.add(upperL, foreL);
   sleeve(shoulderL, elbowL, wristL, upperL, foreL);
-  glove(wristL, V(0, -1, 0.15).normalize(), 1, foreL);
+  // Plan item 147: her left hand hangs relaxed with the cigarette between two fingers, not a mitt: the back of the
+  // hand outward, the index above the cigarette's end and the middle finger under it, the ring and little fingers
+  // curled in toward the palm, the thumb along the index. Built in the chest frame on the forearm bone, so the
+  // class idles' IK carries it.
+  {
+    const dir = V(0, -1, 0.15).normalize();
+    const parts: THREE.BufferGeometry[] = [];
+    const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
+    pad.scale(0.015, 0.042, 0.03);
+    pad.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
+    const padAt = wristL.clone().addScaledVector(dir, 0.045);
+    pad.translate(padAt.x, padAt.y, padAt.z);
+    parts.push(pad);
+    parts.push(turned(wristL.clone().addScaledVector(dir, -0.01), wristL.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.026]], seg(8), 0.8));
+    const finger = (pts: THREE.Vector3[], r: number) => {
+      const curve = new THREE.CatmullRomCurve3(pts);
+      parts.push(new THREE.TubeGeometry(curve, seg(8), r, seg(6), false));
+      const tip = new THREE.SphereGeometry(r * 0.98, seg(6), seg(5));
+      const e = curve.getPoint(1);
+      tip.translate(e.x, e.y, e.z);
+      parts.push(tip);
+    };
+    finger([V(0.175, -0.292, 0.062), V(0.178, -0.304, 0.068), V(0.181, -0.311, 0.078), V(0.183, -0.318, 0.09)], 0.0078);
+    finger([V(0.175, -0.294, 0.05), V(0.179, -0.314, 0.058), V(0.182, -0.327, 0.068), V(0.184, -0.334, 0.08)], 0.008);
+    finger([V(0.175, -0.292, 0.039), V(0.171, -0.314, 0.042), V(0.164, -0.32, 0.051), V(0.159, -0.309, 0.055)], 0.0076);
+    finger([V(0.174, -0.286, 0.028), V(0.17, -0.304, 0.03), V(0.164, -0.309, 0.038), V(0.16, -0.3, 0.041)], 0.0066);
+    finger([V(0.166, -0.258, 0.06), V(0.167, -0.276, 0.072), V(0.171, -0.293, 0.079)], 0.0088);
+    const hand = mergeGeos(parts);
+    for (const g of parts) g.dispose();
+    add(hand, blackMat, foreL).name = "cath-hand-l";
+  }
   // The cigarette between two fingers, the ember at its tip.
   const cig = new THREE.CylinderGeometry(0.0035, 0.0035, 0.075, 6);
   cig.rotateX(Math.PI / 2 - 0.3);
@@ -1321,6 +1353,25 @@ export function buildFrontCath(phone: boolean): FrontCath {
       }
     }
     pos.needsUpdate = true;
+
+    // Plan item 147: the long hair lifts and sways a little in the wind, more toward its ends (still under
+    // reduced motion, where the frame loop holds t).
+    if (hairGeo && hairRest) {
+      const hp = hairGeo.attributes.position as THREE.BufferAttribute;
+      const ha = hp.array as Float32Array;
+      const gust = 0.6 + 0.4 * Math.sin(t * 0.7) * Math.sin(t * 0.23 + 1.1);
+      for (let r = 1; r <= hairRows; r++) {
+        const k = Math.pow(r / hairRows, 2);
+        for (let c = 0; c <= hairCols; c++) {
+          const vi = (r * (hairCols + 1) + c) * 3;
+          const ph = t * 1.4 + c * 0.35 + r * 0.22;
+          ha[vi] = hairRest[vi]! + k * (0.012 * Math.sin(ph) * gust + wind.x * 0.004);
+          ha[vi + 1] = hairRest[vi + 1]! + k * 0.004 * Math.sin(ph * 0.8 + 0.5);
+          ha[vi + 2] = hairRest[vi + 2]! + k * (0.008 * Math.cos(ph * 0.9) * gust - 0.006 * gust + wind.z * 0.004);
+        }
+      }
+      hp.needsUpdate = true;
+    }
 
     // The ember breathes; every 14 s she draws on it (brighter) and a curl of smoke rises.
     const cyc = t % 14;

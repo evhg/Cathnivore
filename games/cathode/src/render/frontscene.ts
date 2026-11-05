@@ -150,6 +150,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   cath.group.rotation.y = Math.PI; // facing -z (south), the way the player starts
   world.scene.add(cath.group);
   world.renderer.domElement.dataset.expression = cath.expressionNow;
+  // Plan item 147: the title's Cath is the full hero model (fingers, tailored trench, moving hair).
+  world.renderer.domElement.dataset.cathLod = "hero";
   // Local frame -> world.
   const toWorld = (x: number, y: number, z: number, out = new THREE.Vector3()) => out.set(-x, y, -z).add(feet);
   // The back light: pink, high and ahead of her (the camera is always behind or beside her, so it rims her

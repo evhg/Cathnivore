@@ -554,3 +554,42 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
     }
   }
 })
+
+// Plan item 147: the title's Cath is the hero model (a tailored, flared trench, gloved fingers on the umbrella and
+// the cigarette, long hair that moves), and her silhouette stands 300 px or taller on the desktop title.
+test('the title Cath is the hero model, 300 px or taller at D', async ({ page, hasTouch }) => {
+  test.setTimeout(300_000)
+  const vp = hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 }
+  await page.setViewportSize(vp)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  await expect(page.locator('canvas[data-cath-lod]').first()).toHaveAttribute('data-cath-lod', 'hero')
+  const m = await page.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = (window as any).cathodeFront.scene().world
+    const g = w.scene.getObjectByName('front-cath')
+    const names = ['cath-fist-r', 'cath-hand-l'].filter((n) => !!g?.getObjectByName(n))
+    const box = { top: Infinity, bottom: -Infinity }
+    g.updateWorldMatrix(true, true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    g.traverse((o: any) => {
+      if (!o.isMesh || !o.geometry) return
+      o.geometry.computeBoundingBox()
+      const bb = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld)
+      for (const y of [bb.min.y, bb.max.y]) {
+        const v = bb.min.clone().setY(y)
+        v.x = (bb.min.x + bb.max.x) / 2
+        v.z = (bb.min.z + bb.max.z) / 2
+        v.project(w.camera)
+        const sy = ((1 - v.y) / 2) * innerHeight
+        box.top = Math.min(box.top, sy)
+        box.bottom = Math.max(box.bottom, sy)
+      }
+    })
+    return { names, top: Math.max(0, box.top), bottom: Math.min(innerHeight, box.bottom) }
+  })
+  expect(m.names).toEqual(['cath-fist-r', 'cath-hand-l'])
+  if (!hasTouch) expect(m.bottom - m.top, 'her silhouette on screen').toBeGreaterThanOrEqual(300)
+})
