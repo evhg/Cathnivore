@@ -50,8 +50,9 @@ test("yesterday's receipt is pinned to the table, clear of the menu", async ({ p
   }
   // no scroll was added
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true)
+  // one pennant a day: the table's string at D, a row on the receipt on a phone
+  await expect(ritual.locator('[data-pennant]')).toHaveCount(3)
   if (vp.width >= 1024) {
-    await expect(ritual.locator('.ritual-pennant')).toHaveCount(3)
     await expect(ritual.locator('.ritual-card-in')).toHaveText(/^in (\d+h )?\d+m$/)
     const card = (await ritual.locator('.ritual-card').boundingBox())!
     expect(card.x + card.width).toBeLessThanOrEqual(vp.width)
@@ -74,4 +75,18 @@ test('a player who never played the Daily keeps the campaign line and sees a bla
   await seed(page, 'none')
   await expect(page.locator('.title-cath-line')).toContainText('Brindle Hills')
   await expect(visibleRitual(page).locator('.ritual-receipt.is-blank')).toBeVisible()
+})
+
+test("tomorrow's card flips face up as the new Daily opens at 00:00 UTC", async ({ page }) => {
+  test.skip(page.viewportSize()!.width < 1024, 'the card is on the desktop table')
+  await page.clock.install({ time: new Date('2026-11-05T23:59:00Z') })
+  await seed(page, 3)
+  const card = visibleRitual(page).locator('.ritual-card')
+  await expect(card.locator('.ritual-card-in')).toHaveText('in 1m')
+  await expect(card).not.toHaveAttribute('data-flipped', /.*/)
+  const next = await card.locator('.ritual-card-down .ritual-card-no').textContent()
+  await page.clock.fastForward('02:00')
+  await expect(card).toHaveAttribute('data-flipped', 'true')
+  await expect(card.locator('.ritual-card-up .ritual-card-no')).toHaveText(next!)
+  await expect(card.locator('.ritual-card-event')).not.toBeEmpty()
 })

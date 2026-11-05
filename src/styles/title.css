@@ -1166,19 +1166,43 @@ html.no-animations .title-screen * {
   width: 78px;
   height: 92px;
   margin-top: 4px;
+  rotate: 4deg;
+  perspective: 400px;
+  color: var(--paper-on-fixed-fill);
+}
+.ritual-card-face {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-content: center;
   justify-items: center;
   gap: 2px;
   border-radius: 7px;
   border: 2px solid var(--paper-on-fixed-fill);
+  box-shadow: 0 4px 6px color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent);
+  backface-visibility: hidden;
+  transition: transform 600ms var(--ease-settle, ease-out), opacity 300ms;
+}
+.ritual-card-down {
   background:
     repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent) 6px 7px),
     repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent) 6px 7px),
     var(--pasture-deep);
-  box-shadow: 0 4px 6px color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent);
-  rotate: 4deg;
-  color: var(--paper-on-fixed-fill);
+}
+.ritual-card-up {
+  transform: rotateY(180deg);
+  background: var(--paper-on-fixed-fill);
+  color: var(--ink-on-fixed-fill);
+  border-color: var(--pasture-deep);
+}
+.ritual-card[data-flipped] .ritual-card-down { transform: rotateY(-180deg); }
+.ritual-card[data-flipped] .ritual-card-up { transform: rotateY(0deg); }
+.ritual-card-event { font-family: var(--font-text); font-size: var(--fs-label); font-weight: 700; text-align: center; line-height: 1.1; padding: 0 4px; }
+@media (prefers-reduced-motion: reduce) {
+  .ritual-card-face { transform: none !important; transition: opacity 300ms; }
+  .ritual-card-up { opacity: 0; }
+  .ritual-card[data-flipped] .ritual-card-down { opacity: 0; }
+  .ritual-card[data-flipped] .ritual-card-up { opacity: 1; }
 }
 .ritual-card-no { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 700; line-height: 1; }
 .ritual-card-in { white-space: nowrap; font-family: var(--font-num); font-size: var(--fs-label); font-weight: 700; padding: 1px 5px; border-radius: 999px; background: color-mix(in srgb, var(--ink-on-fixed-fill) 55%, transparent); }
@@ -1193,15 +1217,21 @@ html.no-animations .title-screen * {
     justify-self: end;
     position: relative;
     z-index: var(--z-map-fx);
-    margin: 0 4px -26px 0;
+    margin: 0 4px -20px 0;
     pointer-events: none;
   }
   .title-art.title-table .title-cath { grid-column: 1; grid-row: 1; }
   .title-art.title-table .title-board { grid-column: 2; grid-row: 1; }
   .daily-ritual.is-compact .ritual-receipt { width: 98px; padding: 10px 7px 8px; rotate: -4deg; }
   .daily-ritual.is-compact .ritual-receipt-row span { width: 44px; }
-  .daily-ritual.is-compact .ritual-stamp { top: auto; bottom: -6px; right: -26px; font-size: var(--fs-label); }
-  .daily-ritual.is-compact .ritual-streak { display: none; }
+  .daily-ritual.is-compact .ritual-stamp { top: 46px; bottom: auto; right: -38px; font-size: var(--fs-label); background: var(--paper-on-fixed-fill); mix-blend-mode: normal; }
+  .ritual-mini-bunting { display: flex; gap: 2px; align-items: center; margin-top: 3px; }
+  .ritual-mini-pennant { width: 10px; height: 12px; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .ritual-mini-pennant.p0 { background: var(--clay); }
+  .ritual-mini-pennant.p1 { background: var(--wheat); }
+  .ritual-mini-pennant.p2 { background: var(--pasture); }
+  .ritual-mini-pennant.p3 { background: var(--paper-on-fixed-fill); }
+  .ritual-mini-bunting b { font-family: var(--font-num); font-size: var(--fs-label); line-height: 1; }
 }
 /* a short desktop: the table front is shorter, so the receipt drops its rounds line to stay clear of the footer */
 @media (min-width: 1024px) and (max-height: 860px) {
