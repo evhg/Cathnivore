@@ -105,6 +105,7 @@ type HGQ = HGS & {
   gateSignBoxes(): Box[]
   plotBoxes(): Box[]
   cathSay(): { box: Box } | null
+  camSettled(): boolean
 }
 type Box = { x: number; y: number; w: number; h: number }
 for (const level of [13, 21]) {
@@ -119,7 +120,22 @@ for (const level of [13, 21]) {
     await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HGQ }).hedgerow?.game(), null, { timeout: 60_000 })
     await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HGQ }).hedgerow.gateQueue()?.plates.length ?? 0), { timeout: 60_000 }).toBeGreaterThan(0)
-    await page.waitForTimeout(1500)
+    // Plan item 160: a boss round's queue draws the camera towards the gate for 2.6 s of field time, and the plate
+    // follows it, so a fixed wait measured it mid-look about 2 runs in 5 at a few fps (0.28 of plots at P level 21,
+    // 0.07-0.10 once it lets go). Measure once the camera has settled.
+    // Settled means the camera has let go and the plots (and so the plate) stood still over three reads.
+    const pose = () => page.evaluate(() => {
+      const h = (window as unknown as { hedgerow: HGQ }).hedgerow
+      const b = h.plotBoxes()[0]
+      return h.camSettled() ? `${b?.x.toFixed(1)},${b?.y.toFixed(1)},${b?.w.toFixed(1)}` : 'moving'
+    })
+    const seen: string[] = []
+    await expect.poll(async () => {
+      seen.push(await pose())
+      const last = seen.slice(-3)
+      return last.length === 3 && last[0] !== 'moving' && last.every((v) => v === last[0])
+    }, { timeout: 60_000, intervals: [600] }).toBe(true)
+    await page.waitForTimeout(300)
     const r = await page.evaluate(() => {
       const h = (window as unknown as { hedgerow: HGQ }).hedgerow
       const c = document.getElementById('canvas')!.getBoundingClientRect()

@@ -2226,6 +2226,10 @@ export class Renderer3D {
   private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number }> = [];
   private gateHold = 0;
   private gateEase = 0;
+  /** Plan item 160 (tests): the gate's look has let go and the boss push has eased out. */
+  camSettled(): boolean {
+    return this.gateHold === 0 && this.gateEase < 0.001 && Math.abs(this.bossPush - this.bossEase) < 0.001;
+  }
   private gateAt = { x: 0, y: 0 };
 
   /** Between rounds the next round queues at the Hollowell gate: its leads as models on the lane, a count plate. */

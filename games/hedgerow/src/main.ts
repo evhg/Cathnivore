@@ -755,6 +755,8 @@ if (SANDBOX)
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
     // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.
     gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
+    // Plan item 160: true once the 3D camera has let go of the gate (a boss queue's look) and stands still; true in 2D.
+    camSettled: () => (renderer && is3D(renderer) ? renderer.camSettled() : true),
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
