@@ -2003,7 +2003,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the line meets no `.region-hex` (Cathnivore) and no plot (Hedgerow); her bust 64 px or more; `role=status`; tutorial specs pass; shots P light and dark.
 - **Size:** 2
 
-## 172. [ ] Cathnivore: pieces worth holding on the board
+## 172. [ ] Cathnivore: pieces worth holding on the board *(lane A, in progress)*
 - **Why:** `cath-game-D` (580-1105 x 215-735, from `plan1105f`): the hexes take about half the board panel (350-1335 x 195-740) and the pieces are tiny: Outlets about 22x28 px, Scout discs about 26 px, count badges about 16 px. On `cath-game-P` (120-300 x 360-500) they shrink to about 16 px and run together. VISION 2: the table is the hero, big, rich and legible.
 - **Build:**
   - The hex map fills more of the board panel (seated producers and Cath keep their free-spot search).
