@@ -1764,7 +1764,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** 4 or more critters in the build phase, none on a lane cell; after `debrief()` they flee within 500 ms; the frame-time budget holds; shots 2D and 3D, P and D.
 - **Size:** 2
 
-## 144. [ ] Cathnivore: market events you can see on the table
+## 144. [ ] Cathnivore: market events you can see on the table *(lane B, in progress)*
 - **Why:** `cath-setup-D` (130-470 x 75-270): the "Great Glut" event is text only, and in play (`cath-game-D`) nothing on the board shows it, so every Daily looks alike.
 - **Build:**
   - Each event dresses the board (Great Glut: produce piled on stalls; Dry Spell: cracked earth and a heat shimmer; and so on for the rest).
