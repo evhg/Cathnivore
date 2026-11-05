@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-05 00:55 UTC
+
 
 
 
@@ -1717,4 +1717,66 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - [ ] **Runnel D:** ~~"Daily #39 ·" ends its line on a dot (170-250 x 645-660, from item 126's no-break title)~~ *(fixed 2026-11-05 lane B: Up next's title is the number on one line and the date under it; `runnel-critique91.spec.ts` updated; shot `f134a/upnext-D`)*; the spring-house stream stops dead (435 x 505); channel bars over the hex rims (895-1115 x 400-450, 1000-1010 x 585-640).
   - [ ] **Cathnivore:** ~~D "Need 1 more Mark" pale pink at about 2.5:1 (65-185 x 750-762)~~ *(checked 2026-11-04 lane B: the shown why-not chips are rgb(158,68,48) on cream, about 6:1, 14 px; the shot caught a chip mid-fade; no change)*; the Campaign's Cath token straddles the Brindle Hills/Kingsmarket edge (D 262-305 x 560-640, P 117-140 x 420-462). *(Note 2026-11-04 lane B: she stands on the road beside chapter 1's pin, item 49's `cathBox` placement, kept clear of every name by its unit test; moving her into a hex is a design call left open.)*
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 139. [ ] The bugs from the 2026-11-05 01:05 critique, fixed as one batch
+- **Build:** (check each first; plan1105a; points already in items 136 and 138 left out)
+  - [ ] **Site /games/ D:** no poster shows its status line or continue chip (110-1330 x 670-790): a CSS rule at 1440, or the shot fired before `#status-<id>` filled?
+  - [ ] **Cathnivore:** P title: the "No sale yet" receipt lies across Cath's torso and jar (35-140 x 400-470). D game: the ".99" price tags about 7 px (720-745 x 345-358, every Outlet), illegible at P (225-245 x 262-274). P game: Brindle Hills' EXPAND pill on the name plate (45-115 x 330-346); Kingsmarket's stacks, badges and tags overlap (150-245 x 340-400). D Setup: the picked map card's body text fainter than the unpicked (520-640 x 712-745), so it reads disabled. D Campaign: Cath's bust a hard cut at the waist with no ground (1285-1370 x 170-185; also item 126).
+  - [ ] **Hedgerow:** D menu: the cloud a flat grey-pink smear (460-775 x 65-150; also item 126). P menu: the "BEYOND THE HEDGE · ACT 4" banner washed out and cut by the tab bar (50-340 x 755-782). 3D l21: the "N coming" plate about 150 px from the gate at D (328-432 x 245-270) and over the centre plots at P (135-330 x 362-386), after item 132's fix.
+  - [ ] **NIGHT SHIFT:** D title: The List's name plates (165-525 x 745-757) and the dossier's TOMAS REED tag (462-527 x 459-471) about 6-8 px; CONTINUE grey at about 2.5:1 with a save present (D 58-195 x 310-338, P 16-128 x 215-240): enable it or drop it. P pick: SNIPER RIFLE and the DAMAGE/RATE/MAGAZINE labels about 9 px (160-330 x 690-736).
+- **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 140. [ ] NIGHT SHIFT: Cath's 3D face to the character bible at title distance
+- **Why:** `ns-title-D` (960-1060 x 255-360) and `ns-title-P` (265-335 x 535-600): the front door's hero face is two dots and a line under a flat magenta wash, with a stiff shell of hair; it falls well short of the 2D Cath on /games/.
+- **Build:**
+  - A painted face texture (canvas): large eyes with two highlights, winged liner, soft brows with the right one raised, rosy cheeks, glossy rose lips.
+  - Expressions on that texture (smirk, determined, wink) driven by the title and the class pick, `data-expression` on the front.
+  - Long centre-parted hair with soft waves and a shine band; a warm face key against a cool rim in place of the flat wash.
+- **Accept:** `faceBox()` 110 px or more at D and 70 at P; pixels inside it find an eye highlight (luminance over 0.85) and a rose lip hue; `data-expression` changes on class focus; cathode-perf in budget; shots P, L and D.
+- **Size:** 3
+
+## 141. [ ] Cathnivore: Cath suggests a move, and every action previews on the board
+- **Why:** `cath-game-D` (33-315 x 320-800): eleven actions of equal weight, and the meters (350-1335 x 15-75) never show what a move will do; a newcomer can't tell a good move from a bad one.
+- **Build:**
+  - The HeuristicBot's pick gets a leaf badge on its card, and Cath says one line on why.
+  - Hover, focus or long-press on an action previews it: a ghost piece on its target region and ghost +/- segments on the meters.
+  - A Settings toggle: on for Easy and Normal, off for Hard and the Daily.
+- **Accept:** exactly one `[data-suggested]` card in round 1; hovering Open Stall adds a `.ghost-piece` in a region and `data-delta` on the meters; the toggle hides both; rule unit tests unchanged; shots P and D, light and dark.
+- **Size:** 2
+
+## 142. [ ] Runnel: a valley that remembers your week
+- **Why:** `runnel-D` (390-1410 x 20-880): the valley looks the same every day; a solve leaves nothing behind, so a streak has no picture worth showing a friend.
+- **Build:**
+  - Each daily solved this ISO week adds a lasting feature placed by the day's seed: a mill, a footbridge, an orchard row, Bea's scarecrow; a missed day leaves a fallow plot.
+  - A strip of seven stamps under Up next.
+  - The share card carries the week's valley.
+- **Accept:** a save with three solves this week renders three `[data-valley-feature]`, none meeting a tile; a new week resets them; the share card includes them; no layout shift over 2 px; shots P and D.
+- **Size:** 2
+
+## 143. [ ] Hedgerow: people and animals working the farm
+- **Why:** `hedge-l21-2d-D` (300-1080 x 75-890), `hedge-l34-2d-D`: the plots stand static with no one tending them; the field reads as a board, not a place worth defending.
+- **Build:**
+  - Farmhands, Bea, a dog and hens (2D sprites and 3D meshes) walk the verges and tend plots in the build phase, never on lane cells, never taking taps.
+  - On a leak they run for the farmhouse; on a won round they cheer.
+  - Positions exposed through the sandbox hook.
+- **Accept:** 4 or more critters in the build phase, none on a lane cell; after `debrief()` they flee within 500 ms; the frame-time budget holds; shots 2D and 3D, P and D.
+- **Size:** 2
+
+## 144. [ ] Cathnivore: market events you can see on the table
+- **Why:** `cath-setup-D` (130-470 x 75-270): the "Great Glut" event is text only, and in play (`cath-game-D`) nothing on the board shows it, so every Daily looks alike.
+- **Build:**
+  - Each event dresses the board (Great Glut: produce piled on stalls; Dry Spell: cracked earth and a heat shimmer; and so on for the rest).
+  - A pinned event ticket in the header with its rule; Cath's first-round line names it.
+  - Reduced motion: the dressing stays, the shimmer is still.
+- **Accept:** `data-event` on the map for every event; dressing in the regions, none meeting a piece; the ticket's rule matches `content`; shots per event at P and D, light and dark.
+- **Size:** 2
+
+## 145. [ ] Site: posters that play
+- **Why:** `games-D` (110-1330 x 460-660) and `portfolio-D` (790-1345 x 160-690): every poster is a still; nothing shows play happening.
+- **Build:**
+  - A poster in view, hovered or focused plays a short loop: Runnel's water filling, a Hedgerow convoy, a Cathnivore region flipping green, NIGHT SHIFT neon and rain (video or canvas, lazy, one at a time, paused off-screen).
+  - Reduced motion: stills.
+- **Accept:** one `[data-playing]` at a time; none off-screen; LCP within 100 ms of today; gate 1's weight budget kept; shots P and D still match the key art.
 - **Size:** 2
