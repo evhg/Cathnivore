@@ -61,7 +61,8 @@ export interface FrontScene {
   /** Pointer or tilt, each -1..1. */
   parallax(x: number, y: number): void;
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
-  figureBox(): { left: number; top: number; right: number; bottom: number };
+  /** Her projected box; `body` leaves the umbrella out (plan item 159: what a menu plate must stay clear of). */
+  figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
   /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
   faceBox(): { left: number; top: number; right: number; bottom: number };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
@@ -641,14 +642,16 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     world,
     cath,
     stats,
-    figureBox() {
+    figureBox(body = false) {
       // Every vertex of her (and her umbrella), projected: a box hugging what is drawn, not her 3D bounds.
       const r = world.renderer.domElement.getBoundingClientRect();
       let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
       cath.group.updateMatrixWorld(true);
+      const skip = new Set<THREE.Object3D>();
+      if (body) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
       cath.group.traverse((o) => {
         const m = o as THREE.Mesh;
-        if (!m.isMesh || !m.visible) return;
+        if (!m.isMesh || !m.visible || skip.has(m)) return;
         const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
         if (!pos) return;
         for (let i = 0; i < pos.count; i += 3) {

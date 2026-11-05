@@ -1895,7 +1895,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no empty band over 80 px in the rail at 1440x900; `[data-almanac-date]`; the vignette's `svg` 120 px or wider; rail text 14 px or more at 4.5:1; shots P and D.
 - **Size:** 2
 
-## 159. [ ] NIGHT SHIFT: the front menu written in the world *(lane A, in progress)*
+## 159. [x] NIGHT SHIFT: the front menu written in the world *(done 2026-11-05, lane A: a dark enamel plate with a screwed rim; the lit row a neon glow whose buzz flickers the glow, never the letters (held still under reduced motion); `#menu[data-lit]`; CONTINUE `aria-disabled` with 'No case open'; upright the plate is a bracket sign flush left, ending left of her body. 'Cath's projected box' read as `figureBox(true)`, her body without the umbrella's canopy, which spans 82-372 of 390 and no menu can clear; cathode-front's new sign test)*
 - **Why:** `ns-title-D` (58-225 x 310-550): the menu is grey text on black, the default list VISION rules out; `ns-title-P` (16-160 x 210-420): it lies over Cath's body; CONTINUE greys out with no reason.
 - **Build:**
   - The menu as neon or stencilled signage on a dark plate; the chosen item lights with a buzz and a flicker (still under reduced motion).

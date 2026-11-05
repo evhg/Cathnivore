@@ -352,7 +352,11 @@ function fillTitle(): void {
     photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`, true);
     el("b", "mug-name", li, r.redacted ? "Withheld" : r.name);
   });
-  $<HTMLButtonElement>("btn-continue").disabled = !hasSave();
+  // Plan item 159: a slot that can't be used says why, on the sign itself.
+  const cont = $<HTMLButtonElement>("btn-continue");
+  cont.disabled = !hasSave();
+  cont.setAttribute("aria-disabled", String(cont.disabled));
+  $("continue-why").hidden = !cont.disabled;
   // Plan item 12: the board opens on a fresh save too, as a teaser (one lead, five blank prints).
   $<HTMLButtonElement>("btn-cases").disabled = false;
   const ng = hasSave() && canStartNewGamePlus(done);

@@ -127,7 +127,12 @@ export function bindMenu(buttons: HTMLButtonElement[], o: MenuOptions): MenuBind
     buttons.forEach((b, k) => {
       b.classList.toggle("is-focus", k === i);
       b.tabIndex = k === i ? 0 : -1;
+      // Plan item 159: the lit sign (the CSS buzzes it on); the menu names it for tests and styles.
+      if (k === i) b.dataset.lit = "";
+      else delete b.dataset.lit;
     });
+    const nav = buttons[0]?.parentElement;
+    if (nav && buttons[i]) nav.dataset.lit = buttons[i]!.dataset.slot ?? "";
     const b = buttons[i];
     if (b && document.activeElement !== b && binding.active) b.focus({ preventScroll: true });
   };

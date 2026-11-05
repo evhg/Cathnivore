@@ -566,6 +566,50 @@
   transition: none;
 }
 .menu-item.is-armed { color: var(--blood-hot); }
+
+/* Plan item 159: the menu is a sign on the street, not a list: stencilled letters on a dark enamel plate with a
+   screwed-on rim; the chosen row lights as neon with a buzz (two flickers as it strikes; held still under reduced
+   motion). Resting rows read at full ink (AA on the plate); a slot that can't be used says why. */
+.menu {
+  position: relative;
+  padding: calc(var(--u) * 14) calc(var(--u) * 34) calc(var(--u) * 14) calc(var(--u) * 40);
+  margin-left: calc(var(--u) * -40);
+  border-radius: calc(var(--u) * 6);
+  background:
+    radial-gradient(circle at calc(var(--u) * 14) calc(var(--u) * 14), color-mix(in srgb, var(--ink) 30%, transparent) 0 calc(var(--u) * 2.5), transparent calc(var(--u) * 3.5)),
+    radial-gradient(circle at calc(100% - var(--u) * 14) calc(100% - var(--u) * 14), color-mix(in srgb, var(--ink) 30%, transparent) 0 calc(var(--u) * 2.5), transparent calc(var(--u) * 3.5)),
+    linear-gradient(170deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .96));
+  box-shadow:
+    inset 0 0 0 max(1px, calc(var(--u) * 1.5)) color-mix(in srgb, var(--ink) 16%, transparent),
+    inset 0 0 0 calc(var(--u) * 5) rgb(var(--shade-rgb) / .9),
+    inset 0 0 0 calc(var(--u) * 6) color-mix(in srgb, var(--ink) 8%, transparent),
+    0 calc(var(--u) * 10) calc(var(--u) * 30) rgb(var(--black-rgb) / .55);
+}
+.menu-item { color: var(--ink); opacity: 1; text-shadow: none; }
+.menu-item[data-lit] {
+  /* The tube's white-hot core is the ink itself; the colour is all in the glow, which is what buzzes. */
+  color: var(--ink);
+  text-shadow:
+    0 0 calc(var(--u) * 6) color-mix(in srgb, var(--blood-hot) 85%, transparent),
+    0 0 calc(var(--u) * 20) color-mix(in srgb, var(--blood-hot) 55%, transparent),
+    0 0 calc(var(--u) * 44) color-mix(in srgb, var(--blood-hot) 30%, transparent);
+  animation: menu-buzz 240ms steps(1, end);
+}
+@keyframes menu-buzz {
+  0% { text-shadow: none; }
+  25% { text-shadow: 0 0 calc(var(--u) * 6) color-mix(in srgb, var(--blood-hot) 85%, transparent); }
+  45% { text-shadow: none; }
+}
+.menu-item:disabled { color: var(--ink-3); opacity: 1; }
+.menu-why {
+  margin-left: calc(var(--u) * 16);
+  font-weight: 500;
+  font-size: var(--fs-1);
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--ink-3);
+}
+.menu-why[hidden] { display: none; }
 .menu-hint {
   min-height: calc(var(--u) * 24);
   margin: calc(var(--u) * 22) 0 0;
@@ -780,6 +824,15 @@
   /* Plan item 126: over the photo --ink-3 falls under AA; the hint is her case line, so it reads at --ink-2. */
   .menu-hint { color: var(--ink-2); font-weight: 600; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
+  /* Plan item 159: upright, the plate is a bracket sign flush with the screen's left edge, as narrow as its words,
+     so it ends left of her coat; the reason a slot is shut sits under its name. */
+  .menu {
+    margin-left: calc(-1 * var(--safe-x));
+    padding: calc(var(--u) * 10) calc(var(--u) * 26) calc(var(--u) * 10) var(--safe-x);
+    border-radius: 0 calc(var(--u) * 6) calc(var(--u) * 6) 0;
+  }
+  .menu-item:has(.menu-why:not([hidden])) { flex-direction: column; align-items: flex-start; justify-content: center; line-height: 1.05; }
+  .menu-item:has(.menu-why:not([hidden])) .menu-why { margin: calc(var(--u) * 4) 0 0; }
 }
 
 /* Short landscape (phones): a smaller, tighter name that clears the HUD's top clusters and the crosshair. */
@@ -795,6 +848,7 @@
   .front-grain { animation: none; }
   .logo.is-drawing .logo-text { animation: logo-fill 1ms forwards; }
   .gate-plate, .coldopen, .coldopen-line, .front-bars i, .menu-item, .menu-item::before { transition-duration: 1ms; }
+  .menu-item[data-lit] { animation: none; }
   .gate-plate.is-wiping { animation-duration: 1ms; }
   .area-title { animation-duration: 3.2s; }
 }

@@ -256,6 +256,42 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
   expect(m.neon.drops).toBeGreaterThan(100)
 })
 
+// Plan item 159: the menu is a sign: a shut slot says why (aria-disabled, a visible reason), the lit row follows the
+// arrow keys within 250 ms, and upright the plate stays clear of her body (the umbrella's canopy aside).
+test('the front menu is a sign: lit by the keys, a shut slot says why, clear of her upright', async ({ page, hasTouch }) => {
+  test.setTimeout(200_000)
+  const upright = hasTouch
+  await page.setViewportSize(upright ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })) })
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const cont = page.locator('#btn-continue')
+  await expect(cont).toHaveAttribute('aria-disabled', 'true')
+  await expect(cont.locator('.menu-why')).toBeVisible()
+  await expect(cont.locator('.menu-why')).toHaveText('No case open')
+  await expect(page.locator('#menu')).toHaveAttribute('data-lit', 'new')
+  await page.locator('#btn-begin').focus()
+  for (const next of ['cases', 'settings']) {
+    const t0 = Date.now()
+    await page.keyboard.press('ArrowDown')
+    await expect(page.locator('#menu')).toHaveAttribute('data-lit', next, { timeout: 250 })
+    expect(Date.now() - t0).toBeLessThan(400)
+    await expect(page.locator(`#menu [data-slot="${next}"]`)).toHaveAttribute('data-lit', '')
+  }
+  if (upright) {
+    type B = { left: number; top: number; right: number; bottom: number }
+    const m = await page.evaluate(() => {
+      const r = document.getElementById('menu')!.getBoundingClientRect()
+      const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(body?: boolean): B } | null } }).cathodeFront.scene()
+      return { menu: { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, body: scene!.figureBox(true) }
+    })
+    const hits = m.menu.left < m.body.right && m.menu.right > m.body.left && m.menu.top < m.body.bottom && m.menu.bottom > m.body.top
+    expect(hits, JSON.stringify(m)).toBe(false)
+    expect(m.menu.left).toBeGreaterThanOrEqual(0)
+  }
+})
+
 // Plan item 82: the logotype holds at least 4.5:1 against the street behind it at P and D (the 95th-percentile
 // brightest pixel behind its box, with the logotype hidden).
 test('the logotype reads at 4.5:1 or more against the street behind it', async ({ page }) => {
@@ -384,11 +420,12 @@ test('at D the menu entries read at 4.5:1 or more', async ({ page, hasTouch }) =
       for (let i = 0; i < d.length; i += 4) ls.push(lum(d[i]!, d[i + 1]!, d[i + 2]!))
       ls.sort((a, b) => a - b)
       const bg = ls[Math.floor(ls.length * 0.9)]!
-      const [r, g, b] = c.match(/[\d.]+/g)!.map(Number)
+      // A color-mix() computes to color(srgb r g b) with 0-1 channels (plan item 159's lit row).
+      const [r, g, b] = c.match(/[\d.]+/g)!.map(Number).map((v: number) => (c.startsWith('color(') ? v * 255 : v))
       const text = lum(r!, g!, b!) * o + bg * (1 - o)
       return (Math.max(text, bg) + 0.05) / (Math.min(text, bg) + 0.05)
     }, [shot, ink.c, ink.o] as const)
-    expect(ratio, id).toBeGreaterThanOrEqual(4.5)
+    expect(ratio, `${id} ${JSON.stringify(ink)}`).toBeGreaterThanOrEqual(4.5)
   }
 })
 
