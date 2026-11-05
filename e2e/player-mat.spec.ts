@@ -29,12 +29,16 @@ for (const scheme of ['light', 'dark'] as const) {
       els.map((e) => {
         const el = e as HTMLElement
         const pic = el.querySelector('.later-pic')
-        return { name: el.textContent ?? '', w: el.offsetWidth, x: el.offsetLeft, y: el.offsetTop, h: el.offsetHeight, pic: !!pic && pic.getBoundingClientRect().height > 30 }
+        const b = el.querySelector('button')!.getBoundingClientRect()
+        // no line of the card's words runs past its edges
+        const spill = [...el.querySelectorAll<HTMLElement>('.action-label, .action-why-not')].some((t) => { const r = t.getBoundingClientRect(); return r.left < b.left - 1 || r.right > b.right + 1 })
+        return { name: el.textContent ?? '', w: el.offsetWidth, x: el.offsetLeft, y: el.offsetTop, h: el.offsetHeight, pic: !!pic && pic.getBoundingClientRect().height > 30, spill }
       }),
     )
     for (const c of cards) {
       expect(c.w, `${c.name} width`).toBeGreaterThanOrEqual(80)
       expect(c.pic, `${c.name} picture`).toBe(true)
+      expect(c.spill, `${c.name} words run off the card`).toBe(false)
     }
     for (let i = 0; i < cards.length; i++)
       for (let j = i + 1; j < cards.length; j++) {

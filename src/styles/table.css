@@ -3370,7 +3370,7 @@ html.no-animations .table-cath-line { animation: none; }
     hyphens: manual;
   }
   .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item .action-label > svg { display: none; }
-  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item .action-why-not {
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item > button:disabled .action-why-not {
     max-width: 100%;
     display: block;
     min-height: 0;
@@ -3382,6 +3382,10 @@ html.no-animations .table-cath-line { animation: none; }
     line-height: 1.1;
     white-space: normal;
     letter-spacing: 0;
+  }
+  /* the lead and tail keep their spaces (pre-wrap) but may wrap: 'No Buyout to remove' ran off an 88 px card */
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item .action-why-not :is(.why-lead, .why-tail) {
+    white-space: pre-wrap;
   }
   /* the price tag, tied to the card's top corner */
   .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item .action-cost {
