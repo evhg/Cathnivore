@@ -770,6 +770,8 @@
      small lines under the menu and in the List step up from the 12 px caption size. */
   .menu-item { opacity: .94; }
   .menu-hint, .the-list-h, .the-list-names li.is-more { font-size: var(--fs-2); }
+  /* Plan item 126: over the photo --ink-3 falls under AA; the hint is her case line, so it reads at --ink-2. */
+  .menu-hint { color: var(--ink-2); font-weight: 600; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
 }
 
