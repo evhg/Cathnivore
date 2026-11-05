@@ -1151,8 +1151,32 @@ export class Renderer {
     // Set pieces: floodwater over the plots, and the swing bridge (up and red while it's open).
     const flood = setPiece(level, "flood");
     if (flood && game.wave >= flood.wave) {
-      ctx.fillStyle = `rgba(79,147,184,${0.55 + Math.sin(t * 2) * 0.05})`;
-      for (const [c, r] of flood.cells) ctx.fillRect(X(c) + 1, Y(r) + 1, X(c + 1) - X(c) - 2, Y(r + 1) - Y(r) - 2);
+      // Plan item 152: the river over its banks: deep water on each plot, a pale wet edge, and ripples that run
+      // across it (each plot's on its own beat), so the flood reads as water, not a blue tile.
+      const cw = X(1) - X(0);
+      const ch = Y(1) - Y(0);
+      for (const [c, r] of flood.cells) {
+        const x0 = X(c) + 1, y0 = Y(r) + 1, w = cw - 2, h = ch - 2;
+        ctx.fillStyle = `rgba(63,128,166,${0.72 + Math.sin(t * 2 + c) * 0.04})`;
+        ctx.beginPath();
+        ctx.roundRect(x0, y0, w, h, Math.min(w, h) * 0.22);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(214,236,246,0.55)";
+        ctx.lineWidth = Math.max(1, cw * 0.04);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(226,243,250,0.6)";
+        ctx.lineWidth = Math.max(1, cw * 0.03);
+        for (let k = 0; k < 2; k++) {
+          const phase = (t * 0.35 + (c * 0.37 + r * 0.61) + k * 0.5) % 1;
+          const yy = y0 + h * (0.28 + k * 0.4);
+          const xx = x0 + w * (0.12 + phase * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(xx, yy);
+          ctx.quadraticCurveTo(xx + w * 0.09, yy - h * 0.07, xx + w * 0.18, yy);
+          ctx.quadraticCurveTo(xx + w * 0.27, yy + h * 0.07, xx + w * 0.36, yy);
+          ctx.stroke();
+        }
+      }
     }
     const bridge = setPiece(level, "bridge");
     if (bridge) {

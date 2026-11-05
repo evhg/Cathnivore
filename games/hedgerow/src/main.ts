@@ -62,6 +62,8 @@ import {
   landmarkAt,
   laneCellsOf,
   hasTwist,
+  flooded,
+  setPiece,
   pieRadius,
   pieUnlocked,
   place,
@@ -4052,6 +4054,34 @@ function runSpeed(g: Game): number {
   return capped ? 3 : speed;
 }
 
+// Plan item 152: the level's twists you can see on the field. A flood that's up marks the stage
+// `data-twist-active~="flood"` with the count of plots under it (the renderers draw the water); a fog level's
+// sea fret is a drifting layer over the field (`.field-fog`) that thickens as the round runs.
+let twistKey = "";
+function syncTwists(g: Game): void {
+  const flood = setPiece(g.level, "flood");
+  const under = flood ? flood.cells.filter(([c, r]) => flooded(g, c, r)).length : 0;
+  const active = [under > 0 ? "flood" : "", hasTwist(g.level, "fog") ? "fog" : ""].filter(Boolean).join(" ");
+  const key = `${active}|${under}`;
+  if (key === twistKey) return;
+  twistKey = key;
+  if (active) ui.stage.dataset.twistActive = active;
+  else delete ui.stage.dataset.twistActive;
+  if (under) ui.stage.dataset.flooded = String(under);
+  else delete ui.stage.dataset.flooded;
+  let fog = document.getElementById("field-fog");
+  if (hasTwist(g.level, "fog")) {
+    if (!fog) {
+      fog = document.createElement("div");
+      fog.id = "field-fog";
+      fog.className = "field-fog";
+      fog.setAttribute("aria-hidden", "true");
+      for (let i = 0; i < 3; i++) fog.appendChild(document.createElement("span"));
+      ui.stage.querySelector("#fx-layer")?.before(fog);
+    }
+  } else fog?.remove();
+}
+
 function frame(now: number): void {
   raf = requestAnimationFrame(frame);
   if (!game || !renderer) return;
@@ -4121,6 +4151,7 @@ function frame(now: number): void {
   }
   renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
   syncCathSay(g, now);
+  syncTwists(g);
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {

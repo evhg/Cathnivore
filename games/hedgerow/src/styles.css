@@ -4628,3 +4628,34 @@ img.act-scene {
   inset: 0;
   border-radius: 0;
 }
+
+/* Plan item 152: a sea fret over the field on a fog level. Three soft banks drift across it at their own pace,
+   under the floaters and the HUD; the towers' reach is already cut by the twist (twistMods). */
+.field-fog {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.9;
+}
+.field-fog span {
+  position: absolute;
+  left: -40%;
+  width: 90%;
+  height: 52%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--cream-a45), var(--cream-a45) 45%, transparent);
+  box-shadow: 0 0 60px 30px var(--cream-a45) inset;
+  filter: blur(14px);
+  animation: fret-drift 46s linear infinite;
+}
+.field-fog span:nth-child(1) { top: 4%; animation-delay: -6s; }
+.field-fog span:nth-child(2) { top: 34%; width: 110%; animation-duration: 63s; animation-delay: -30s; }
+.field-fog span:nth-child(3) { top: 62%; animation-duration: 54s; animation-delay: -18s; }
+@keyframes fret-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(150%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .field-fog span { animation: none; left: 5%; }
+}
