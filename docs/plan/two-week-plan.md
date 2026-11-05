@@ -1728,7 +1728,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 140. [ ] NIGHT SHIFT: Cath's 3D face to the character bible at title distance
+## 140. [ ] NIGHT SHIFT: Cath's 3D face to the character bible at title distance *(lane A, in progress)*
 - **Why:** `ns-title-D` (960-1060 x 255-360) and `ns-title-P` (265-335 x 535-600): the front door's hero face is two dots and a line under a flat magenta wash, with a stiff shell of hair; it falls well short of the 2D Cath on /games/.
 - **Build:**
   - A painted face texture (canvas): large eyes with two highlights, winged liner, soft brows with the right one raised, rosy cheeks, glossy rose lips.
