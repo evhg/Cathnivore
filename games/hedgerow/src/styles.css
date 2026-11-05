@@ -3828,6 +3828,9 @@ img.act-scene {
 }
 #screen-select .act .trail { background: none; max-width: 1180px; margin: 0 auto; }
 #screen-select .act-track { max-width: 1180px; margin: 0 auto; padding-inline: max(14px, env(safe-area-inset-left)); }
+/* Plan item 146: over a painted act the pip track floated across the scene as a stray dashed bar; its banner
+   already counts the act's stars and every stop shows its own, so the track is dropped there. */
+#screen-select .act.act-has-card .act-track { display: none; }
 #screen-select .act-head { height: clamp(120px, 15vw, 210px); }
 #screen-select .act-scene { object-fit: cover; }
 /* The banner's sky fades into the act's own ground, so the biomes join instead of stacking as cards. */
