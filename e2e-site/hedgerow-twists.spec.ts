@@ -10,6 +10,13 @@ test('a flood level floods its plots once the river rises', async ({ page }) => 
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   const stage = page.locator('#stage')
   await expect(stage).not.toHaveAttribute('data-twist-active', /flood/)
+  // The build before the flood round: Cath warns on the field.
+  await page.evaluate(() => {
+    const g = (window as unknown as W).hedgerow!.game()!
+    g.wave = g.level.setPieces!.find((p) => p.kind === 'flood')!.wave! - 1
+  })
+  await expect(stage).toHaveAttribute('data-twist-warn', 'flood')
+  await expect(page.locator('#cath-say p')).toContainText('Duck Ponds')
   await page.evaluate(() => {
     const g = (window as unknown as W).hedgerow!.game()!
     g.wave = g.level.setPieces!.find((p) => p.kind === 'flood')!.wave!
@@ -23,6 +30,8 @@ test('a fog level drifts a sea fret over the field', async ({ page }) => {
   await page.goto('/hedgerow/?2d&sandbox=1&level=16')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   await expect(page.locator('#stage')).toHaveAttribute('data-twist-active', /\bfog\b/)
+  await expect(page.locator('#stage')).toHaveAttribute('data-twist-warn', 'fog')
+  await expect(page.locator('#cath-say p')).toContainText('Sea fret')
   const fog = page.locator('#field-fog')
   await expect(fog).toBeAttached()
   expect(Number(await fog.evaluate((e) => getComputedStyle(e).opacity))).toBeGreaterThan(0.3)

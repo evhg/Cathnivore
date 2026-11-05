@@ -4058,8 +4058,30 @@ function runSpeed(g: Game): number {
 // `data-twist-active~="flood"` with the count of plots under it (the renderers draw the water); a fog level's
 // sea fret is a drifting layer over the field (`.field-fog`) that thickens as the round runs.
 let twistKey = "";
+let twistWarned = "";
 function syncTwists(g: Game): void {
   const flood = setPiece(g.level, "flood");
+  // Cath calls it on the field in the build before it bites: the round whose Go floods the ford, and a fog
+  // level's first build. Once per level and round; the stage says which (data-twist-warn) for tests.
+  const warn = g.phase === "build" && !player && !hasTwist(g.level, "nocath")
+    ? flood && g.wave + 1 === flood.wave
+      ? "flood"
+      : hasTwist(g.level, "fog") && g.wave === 0
+        ? "fog"
+        : ""
+    : "";
+  const warnKey = warn ? `${g.level.id}:${g.wave}:${warn}` : "";
+  if (warnKey !== twistWarned) {
+    twistWarned = warnKey;
+    if (warn) {
+      ui.stage.dataset.twistWarn = warn;
+      const line =
+        warn === "flood"
+          ? "The river's coming over the ford when you press Go. Only Duck Ponds stand by the water: move what you can't lose."
+          : "Sea fret's rolled in. Every tower reaches a fifth less, so build closer to the lanes.";
+      sayOverride = { text: line, until: performance.now() + Math.max(8000, line.length * 80) };
+    } else delete ui.stage.dataset.twistWarn;
+  }
   const under = flood ? flood.cells.filter(([c, r]) => flooded(g, c, r)).length : 0;
   const active = [under > 0 ? "flood" : "", hasTwist(g.level, "fog") ? "fog" : ""].filter(Boolean).join(" ");
   const key = `${active}|${under}`;

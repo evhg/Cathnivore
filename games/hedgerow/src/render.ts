@@ -1319,9 +1319,13 @@ export class Renderer {
     this.shownRing = null;
     const rangeRing = (cx: number, cy: number, r: number, tint: string) => {
       this.shownRing = { range: r, px: r * s, cell: s };
+      // Plan item 152: in a sea fret the reach is dim and its edge soft (the twist cuts it by a fifth).
+      const fret = hasTwist(game.level, "fog");
       ctx.fillStyle = tint;
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = fret ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.85)";
+      ctx.lineWidth = fret ? 3 : 2;
+      ctx.shadowColor = fret ? "rgba(255,255,255,0.6)" : "transparent";
+      ctx.shadowBlur = fret ? 8 : 0;
       ctx.setLineDash([7, 5]);
       ctx.lineDashOffset = -t * 12;
       ctx.beginPath();
@@ -1329,6 +1333,8 @@ export class Renderer {
       ctx.fill();
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "transparent";
     };
     if (this.selected) {
       const { col, row } = this.selected;
