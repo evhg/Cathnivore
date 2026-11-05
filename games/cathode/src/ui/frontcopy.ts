@@ -10,6 +10,18 @@ export const THE_LIST: ReadonlyArray<{ job: string; name: string }> = [
   { job: "vaultBoss", name: "The Mind Under the River" },
 ];
 
+/**
+ * Plan item 169: the case wall's file on each name, in List order: the district it is pinned to (the stamp on the
+ * print) and the rumour Cath wrote under it. The rumours never name a withheld target.
+ */
+export const LIST_FILE: ReadonlyArray<{ district: string; stamp: string; rumour: string }> = [
+  { district: "market", stamp: "MARKET", rumour: "Buys debts by the crate at the fish market." },
+  { district: "clinic", stamp: "CLINIC", rumour: "Signs the clinic\u2019s death notes in green ink." },
+  { district: "plaza", stamp: "PLAZA", rumour: "Shakes hands on the plaza. Counts fingers after." },
+  { district: "tower", stamp: "TOWER", rumour: "No face on file. Top floor, the lights never off." },
+  { district: "vault", stamp: "VAULT", rumour: "Something under the river is listening." },
+];
+
 export interface ListRow {
   name: string;
   done: boolean;

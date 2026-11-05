@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
@@ -339,19 +339,37 @@ function fillTitle(): void {
   // the next one lit, the unreached blank prints with their names withheld. The names list stays for phones.
   const wall = document.getElementById("the-list-wall") ?? el("ol", "the-list-wall", list.parentElement!);
   wall.id = "the-list-wall";
-  wall.setAttribute("aria-hidden", "true");
+  wall.setAttribute("aria-label", "The List, as a case wall");
   wall.replaceChildren();
-  listRows(done).forEach((r, i) => {
+  const rows = listRows(done);
+  // Plan item 169: the wall is a living case wall. Each print carries its district's stamp and Cath's rumour; red
+  // string runs from every other print to the open case; a hovered or focused print comes forward with a typed note.
+  const open = Math.max(0, rows.findIndex((r) => r.next));
+  rows.forEach((r, i) => {
+    const file = LIST_FILE[i]!;
     const li = el("li", `mug${r.done ? " is-done" : r.next ? " is-next" : r.redacted ? " is-sealed" : ""}`, wall);
     if (r.done) li.dataset.struck = i === fresh ? "fresh" : "";
     if (r.next && fresh >= 0) li.dataset.developing = "";
+    li.dataset.district = file.district;
+    li.tabIndex = 0;
+    const status = r.done ? "dealt with" : r.next ? "the open case" : "name withheld";
+    li.setAttribute("aria-label", `${r.redacted ? "Withheld" : r.name}, ${DISTRICT_LABEL[file.district] ?? file.stamp}, ${status}. ${file.rumour}`);
     li.style.setProperty("--tilt", `${((i * 37) % 7) - 3}deg`);
     const photo = el("figure", "mug-photo", li);
+    photo.setAttribute("aria-hidden", "true");
     // Plan item 99: a noir mugshot for every name; one not reached yet is a redacted silhouette, never a black square.
     const who = r.redacted ? undefined : BUST_FOR_CASE[THE_LIST[i]!.job];
     photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`, true);
-    el("b", "mug-name", li, r.redacted ? "Withheld" : r.name);
+    el("span", "mug-stamp", photo, file.stamp);
+    el("b", "mug-name", li, r.redacted ? "Withheld" : r.name).setAttribute("aria-hidden", "true");
+    el("span", "rumour", li, file.rumour).setAttribute("aria-hidden", "true");
+    const note = el("span", "mug-note", li);
+    note.setAttribute("aria-hidden", "true");
+    const typed = `${DISTRICT_LABEL[file.district] ?? file.stamp} \u00B7 ${r.done ? "CLOSED" : r.next ? "OPEN" : "SEALED"}`;
+    el("span", "mug-note-type", note, typed).style.setProperty("--chars", String(typed.length));
+    if (i === open) li.dataset.open = "";
   });
+  stringWall(wall, open);
   // Plan item 159: a slot that can't be used says why, on the sign itself.
   const cont = $<HTMLButtonElement>("btn-continue");
   cont.disabled = !hasSave();
@@ -362,6 +380,52 @@ function fillTitle(): void {
   const ng = hasSave() && canStartNewGamePlus(done);
   $("btn-continue").querySelector(".menu-label")!.textContent = ng ? "New Game+" : "Continue";
 }
+
+/** Plan item 169: the district names the case wall's typed notes use. */
+const DISTRICT_LABEL: Record<string, string> = {
+  market: "THE DROWNED MARKET",
+  clinic: "THE CANDOR CLINIC",
+  plaza: "HOLLOWELL PLAZA",
+  tower: "THE BOARD TOWER",
+  vault: "THE HOLLOW VAULT",
+};
+
+/**
+ * Plan item 169: red string from each print's pin to the open case's pin, sagging under its own weight. Drawn in the
+ * wall's own box from the prints' layout positions, and again whenever the wall changes size.
+ */
+function stringWall(wall: HTMLElement, open: number): void {
+  const draw = (): void => {
+    wall.querySelector(":scope > .list-string")?.remove();
+    const mugs = Array.from(wall.querySelectorAll<HTMLElement>(":scope > .mug"));
+    const w = wall.clientWidth;
+    const h = wall.clientHeight;
+    if (!w || !h || mugs.length < 2) return;
+    const pin = (m: HTMLElement): [number, number] => [m.offsetLeft + m.offsetWidth / 2, m.offsetTop];
+    const [ox, oy] = pin(mugs[open]!);
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "list-string");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.setAttribute("preserveAspectRatio", "none");
+    mugs.forEach((m, i) => {
+      if (i === open) return;
+      const [x, y] = pin(m);
+      const sag = Math.min(h * 0.3, 10 + Math.abs(x - ox) * 0.13);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", `M${x.toFixed(1)} ${y.toFixed(1)} Q${((x + ox) / 2).toFixed(1)} ${(Math.max(y, oy) + sag).toFixed(1)} ${ox.toFixed(1)} ${oy.toFixed(1)}`);
+      path.dataset.from = String(i);
+      svg.append(path);
+    });
+    wall.prepend(svg);
+  };
+  draw();
+  requestAnimationFrame(draw);
+  wallObserver?.disconnect();
+  wallObserver = new ResizeObserver(() => draw());
+  wallObserver.observe(wall);
+}
+let wallObserver: ResizeObserver | null = null;
 
 /**
  * Plan item 148: on an upright phone the title gives her the screen above The List's photo strip, edge to edge, and
