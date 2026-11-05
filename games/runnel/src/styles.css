@@ -2470,6 +2470,8 @@ body {
     flex-direction: column;
     /* Plan item 158: 8 px between sections, so the almanac's note fits without the page scrolling after a solve. */
     gap: 8px;
+    /* Plan item 158: the page's small print (labels, weekdays, the sky's words) at 14 px, not the HUD's 13. */
+    --fs-label: 0.875rem;
     align-self: start;
     padding: 16px;
     border-radius: 18px;
@@ -2490,29 +2492,29 @@ body {
   .almanac-head > p { grid-column: 1; }
   .almanac-head > .al-note { grid-column: 1 / -1; }
   .al-sky {
-    position: relative;
     grid-column: 2;
     grid-row: 1 / 4;
     align-self: center;
     margin: 0;
+    display: grid;
+    gap: 1px;
+  }
+  .al-sky-art {
+    display: block;
     width: 120px;
-    height: 64px;
-    border-radius: 10px;
+    height: 50px;
+    border-radius: 9px;
     overflow: hidden;
     box-shadow: 0 0 0 2px var(--paper), 0 2px 6px color-mix(in srgb, var(--soil) 30%, transparent);
     rotate: 2deg;
   }
-  .al-sky-art { display: block; width: 100%; height: 100%; }
   .al-sky-art svg { display: block; width: 100%; height: 100%; }
-  /* The weather's words on the picture's foot, on a band of paper so they read on any sky. */
+  /* The weather's words under the picture, on one line. */
   .al-sky figcaption {
-    position: absolute;
-    inset: auto 0 0;
-    padding: 1px 4px 2px;
-    background: color-mix(in srgb, var(--paper) 82%, transparent);
     font-size: var(--fs-label, 0.75rem);
     font-style: italic;
     line-height: 1.2;
+    white-space: nowrap;
     text-align: center;
     color: var(--ink);
   }

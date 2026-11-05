@@ -24,6 +24,14 @@ test('the almanac page: masthead, sky and note, in the rail at D and the stats s
       return Math.max(gap, r.bottom - reach)
     })
     expect(band).toBeLessThanOrEqual(80)
+    // The page's text is 14 px or more.
+    const small = await page.evaluate(() =>
+      [...document.querySelectorAll('#rail *')]
+        .filter((e) => [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) && e.getBoundingClientRect().width > 0)
+        .map((e) => parseFloat(getComputedStyle(e).fontSize))
+        .filter((f) => f < 14),
+    )
+    expect(small).toEqual([])
   } else {
     await page.locator('#btn-stats').click()
     const head = page.locator('#dlg-stats .almanac-head')

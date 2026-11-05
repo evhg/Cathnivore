@@ -630,7 +630,8 @@ function render(): void {
       skySlot.dataset.art = art
       // Plan item 158: the almanac page carries the day's weather as a picture, with its words under it.
       const page = document.getElementById('al-sky-art')
-      if (page) page.innerHTML = art.replace(/sk-g/g, 'sk-g-al')
+      // Cropped to fill the page's frame (the HUD's art is a wider strip).
+      if (page) page.innerHTML = art.replace(/sk-g/g, 'sk-g-al').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ')
       const words = document.getElementById('al-sky-label')
       if (words) words.textContent = boardSky(puzzle.seed).label
     }
