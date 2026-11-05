@@ -4465,6 +4465,11 @@ img.act-scene {
 @media (min-width: 900px) {
   #screen-select #levels > li.act:has(+ li.act-fog.act-glimpse) { min-height: calc(100dvh - 56px - 120px); }
 }
+/* Plan item 139: on a phone the glimpse peeked out between the level sheet and the tab bar, its plaque cut in half
+   under a veil; the last act fills the screen under the header, so the glimpse waits below the fold. */
+@media (max-width: 899px) {
+  #screen-select #levels > li.act:has(+ li.act-fog.act-glimpse) { min-height: calc(100dvh - 52px); }
+}
 /* Plan item 88: the level card. The next stop (or the one pointed at): a plan of its field, its twist, the vehicles
    it brings, the stars won and a big Play. Docked under its act at D; a sheet over the map's foot on a phone. */
 #screen-select .level-card {
