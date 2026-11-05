@@ -1921,7 +1921,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 her projected box 300 px or taller and meeting neither the list nor the sheet; keys 1-5 change `data-class` on the stage within 650 ms; picker labels 12 px or more; cathode-perf in budget; shots P, L and D.
 - **Size:** 2
 
-## 162. [ ] Hedgerow 3D: Cath a readable hero on the field
+## 162. [ ] Hedgerow 3D: Cath a readable hero on the field *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (140-250 x 470-620): her face is lost under a dark mass of hair; she reads as a brown blob, not as Cath (item 139's open point).
 - **Build:**
   - Her 3D head to the `shared/cath` proportions: a lit face with eyes and liner, the fringe off her face, the olive jacket and a hair shine band.
