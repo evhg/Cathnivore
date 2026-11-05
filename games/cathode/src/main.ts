@@ -380,6 +380,33 @@ function stageTitle(): void {
 }
 addEventListener("resize", () => stageTitle());
 
+/**
+ * Plan item 161: on a landscape class pick she stands whole in the gap between the class list and the stat sheet
+ * (its plate bleeds left of the type), key-lit and centred, never behind either column.
+ */
+function stagePick(): void {
+  const left = document.querySelector(".cp .cp-left")?.getBoundingClientRect();
+  const sheet = document.querySelector(".cp .cp-sheet");
+  if (!left || !sheet || innerWidth < innerHeight) {
+    scene?.setPickStage(null);
+    return;
+  }
+  // The sheet's dark plate (its ::before) runs past the type on the left; she clears the plate, not just the words.
+  const plate = parseFloat(getComputedStyle(sheet, "::before").left) || 0;
+  const r = sheet.getBoundingClientRect();
+  const gap = Math.round(innerWidth * 0.012);
+  const list = Array.from(document.querySelectorAll(".cp .cp-opt-name, .cp .cp-title")).reduce((m, el) => Math.max(m, el.getBoundingClientRect().right), left.left);
+  scene?.setPickStage({
+    left: Math.max(list, left.right - left.width * 0.25) + gap,
+    top: Math.round(innerHeight * 0.05),
+    right: r.left + Math.min(0, plate) - gap,
+    bottom: Math.round(innerHeight * 0.95),
+  });
+}
+addEventListener("resize", () => {
+  if (document.querySelector(".cp")) stagePick();
+});
+
 function openTitle(drawLogo: boolean): void {
   fillTitle();
   show("screen-title");
@@ -539,7 +566,9 @@ async function begin(fromTitle: boolean): Promise<void> {
     let picking = true;
     if (!sceneStarted) startScene();
     void sceneReady.then((s) => {
-      if (picking) s?.wardrobe(shown, true);
+      if (!picking) return;
+      stagePick();
+      s?.wardrobe(shown, true);
     });
     const cls = await new Promise<ClassId | null>((resolve) => {
       const h = openClassPick(
@@ -551,6 +580,7 @@ async function begin(fromTitle: boolean): Promise<void> {
         "ghost",
         { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump() },
       );
+      stagePick();
       // Escape from the case file goes back to the title.
       const onKey = (e: KeyboardEvent) => {
         if (menuKey(e.key) !== "back" || e.key === "Backspace") return;
@@ -561,6 +591,7 @@ async function begin(fromTitle: boolean): Promise<void> {
       addEventListener("keydown", onKey, true);
     });
     picking = false;
+    scene?.setPickStage(null);
     if (!cls) {
       scene?.wardrobe(null);
       starting = false;
@@ -846,6 +877,8 @@ async function boot(): Promise<void> {
       const cls = (params.get("class") as ClassId | null) ?? "ghost";
       s?.wardrobe(cls, true);
       openClassPick(document.body, () => undefined, cls, { still: true });
+      stagePick();
+      s?.wardrobe(cls, true);
     }
     hook.ready = true;
     return;

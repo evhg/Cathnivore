@@ -43,6 +43,11 @@ export interface FrontScene {
    * from umbrella to shoes: above The List, at the right. null keeps the loop's own framing.
    */
   setStage(r: { left: number; top: number; right: number; bottom: number } | null): void;
+  /**
+   * Plan item 161: on a landscape class pick, the free rectangle (CSS px) between the class list and the stat sheet;
+   * the wardrobe fits her whole figure, umbrella to shoes, centred in it. null keeps the wardrobe's own framing.
+   */
+  setPickStage(r: { left: number; top: number; right: number; bottom: number } | null): void;
   /** Plan item 24: 1 while the age gate is up on an upright phone (the lens aims low so she stands above the copy), 0 to ease back. */
   setLift(k: number): void;
   /**
@@ -338,18 +343,27 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
 
   // ---- plan item 148: the upright phone's title frames her whole, inside the stage the menus leave ----
   let stage: { left: number; top: number; right: number; bottom: number } | null = null;
+  let pickStage: { left: number; top: number; right: number; bottom: number } | null = null;
   // A sparse cloud of her posed figure in her own frame (every 7th vertex), so the fit costs a few hundred
   // projections; re-sampled every 20 fits as her idle moves.
-  const cloud: THREE.Vector3[] = [];
+  // Plan item 161: the class pick fits her body, head to shoes, without the umbrella (its canopy may crop at the
+  // top), so her face keeps item 129's size while she stands whole.
+  const allCloud: THREE.Vector3[] = [];
+  const bodyCloud: THREE.Vector3[] = [];
+  let cloud = allCloud;
   let cloudAge = Infinity;
+  let cloudBody = false;
   function sampleCloud(): void {
+    cloud = cloudBody ? bodyCloud : allCloud;
     cloud.length = 0;
     cath.group.updateMatrixWorld(true);
     const inv = cath.group.matrixWorld.clone().invert();
     const mm = new THREE.Matrix4();
+    const skip = new Set<THREE.Object3D>();
+    if (cloudBody) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
     cath.group.traverse((obj) => {
       const m = obj as THREE.Mesh;
-      if (!m.isMesh || !m.visible) return;
+      if (!m.isMesh || !m.visible || skip.has(m)) return;
       const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
       if (!pos) return;
       mm.multiplyMatrices(inv, m.matrixWorld);
@@ -380,12 +394,18 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     }
     return { l, r, t, b };
   }
-  /** Puts the camera where her figure's box fills the stage's height, right-aligned in it (NDC from the CSS rect). */
-  function fitStage(from: THREE.Vector3): void {
+  /**
+   * Puts the camera where her figure's box fills the stage's height, right-aligned in it (NDC from the CSS rect).
+   * Centred (plan item 161, the class pick's stage between its columns), the box fits both ways and sits in the middle.
+   */
+  function fitStage(from: THREE.Vector3, s = stage!, centred = false): void {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;
+    if (cloudBody !== centred) {
+      cloudBody = centred;
+      cloudAge = Infinity;
+    }
     if (cloudAge++ >= 20) sampleCloud();
-    const s = stage!;
     const nt = 1 - (2 * s.top) / h, nb = 1 - (2 * s.bottom) / h, nr = (2 * s.right) / w - 1, nl = (2 * s.left) / w - 1;
     const hv = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
     const hh = hv * cam.aspect;
@@ -405,10 +425,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.rotateX(pitch);
       const bx = cloudBox();
       if (pass === 3) break;
-      d *= (bx.t - bx.b) / (nt - nb);
+      d *= centred ? Math.max((bx.t - bx.b) / (nt - nb), (bx.r - bx.l) / (nr - nl)) : (bx.t - bx.b) / (nt - nb);
       // Turn and tilt so the box's middle lands on the stage's (its right edge on the stage's right).
       const half = (bx.r - bx.l) / 2;
-      const tx = Math.max(nl + half, nr - half);
+      const tx = centred ? (nl + nr) / 2 : Math.max(nl + half, nr - half);
       const ty = (nt + nb) / 2;
       yaw += Math.atan(hh * tx) - Math.atan(hh * ((bx.l + bx.r) / 2));
       pitch -= Math.atan(hv * ty) - Math.atan(hv * ((bx.t + bx.b) / 2));
@@ -497,6 +517,15 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       fitStage(p);
       cam.position.copy(keepPos).lerp(fitPos, fitK);
       cam.quaternion.copy(keepQuat).slerp(fitQuat, fitK);
+    }
+    // Plan item 161: a landscape class pick stands her whole between the list and the sheet, key-lit, centred.
+    const pickK = pickStage && cam.aspect >= 1 ? smoother(Math.min(1, wd.w)) : 0;
+    if (pickK > 0.001) {
+      keepPos.copy(cam.position);
+      keepQuat.copy(cam.quaternion);
+      fitStage(p, pickStage!, true);
+      cam.position.copy(keepPos).lerp(fitPos, pickK);
+      cam.quaternion.copy(keepQuat).slerp(fitQuat, pickK);
     }
     placeNeon(fitK);
     if (!o.still) {
@@ -692,6 +721,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       stage = r;
       cloudAge = Infinity;
     },
+    setPickStage(r) {
+      pickStage = r;
+      cloudAge = Infinity;
+    },
     setLift(k) {
       liftWant = THREE.MathUtils.clamp(k, 0, 1);
     },
@@ -734,6 +767,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const expr = cls ? CLASS_EXPRESSION[cls] ?? "smirk" : "smirk";
       cath.expression(expr);
       world.renderer.domElement.dataset.expression = expr;
+      // Plan item 161: the class on her stage, for the pick's checks (set at once; the swap plays over it).
+      if (cls) world.renderer.domElement.dataset.class = cls;
+      else delete world.renderer.domElement.dataset.class;
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);

@@ -1913,7 +1913,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; 3dframe:111 passes 10 runs in a row; shots before and after.
 - **Size:** 2
 
-## 161. [ ] NIGHT SHIFT: the class pick with Cath on its stage *(lane B, in progress)*
+## 161. [ ] NIGHT SHIFT: the class pick with Cath on its stage *(lane B, in progress)* *(slice 1 landed by lane A, 2026-11-05 16:30, before it saw lane B's claim; lane B carries on from it: at a landscape pick `stagePick()` (main.ts) gives the scene the gap between the names and the sheet's plate, and `setPickStage` fits her body head to shoes, centred in it (the umbrella's canopy may crop at the top): 810-840 px tall at D, clear of the names and the sheet, rifle shouldered as the Ghost; the canvas carries `data-class`. Her face is 85-96 px at D now, so items 129/136's face floor 110 -> 85 and their band's top 150 -> 100 (DECISIONS). New test in `cathode-classpick.spec.ts` (keys 1-5 within 650 ms, 300 px+, clear of both columns). Shots `e2e/screenshots/ns161`. Open: the swap's rim-light flash and the weapon art in the class colour, P and L shots, cathode-perf)*
 - **Why:** `ns-play-D` (970-1440 x 50-850): the stats sheet covers her; only an umbrella edge shows (940-975 x 290-335). The pick is a list over an empty alley. `ns-play-P` (100-300 x 180-520) shows her small and soft. (Check first that it isn't shot timing: item 146 saw her centred once.)
 - **Build:**
   - At D she stands key-lit between the class list and the sheet, whole figure; each class gives her its pose and its weapon in hand (Ghost with the rifle shouldered, Butcher the cleaver...).

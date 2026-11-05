@@ -23,7 +23,13 @@ for (const s of sizes) {
     await page.goto(`${base}?front=classpick&shot&t=8&quality=${q}&class=${cls}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
     await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
     await page.waitForTimeout(2500)
-    const head = await page.evaluate(() => window.cathodeFront?.cathHead?.() ?? null)
+    // Plan item 161: her projected box against the list's names and the sheet's plate.
+    const head = await page.evaluate(() => {
+      const f = window.cathodeFront?.scene?.()?.figureBox?.()
+      const names = Math.max(...[...document.querySelectorAll('.cp-opt-name')].map((e) => e.getBoundingClientRect().right))
+      const sheet = document.querySelector('.cp-sheet')?.getBoundingClientRect()
+      return f && { fig: [f.left, f.top, f.right, f.bottom].map(Math.round), h: Math.round(f.bottom - f.top), names: Math.round(names), sheet: sheet && Math.round(sheet.left) }
+    })
     await page.screenshot({ path: `${out}/${tag}-${s}-${cls}.png`, timeout: 300_000 })
     console.log(s, cls, head ? `head ${JSON.stringify(head)}` : '')
     await page.close()

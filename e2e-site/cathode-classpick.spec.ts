@@ -155,8 +155,9 @@ test('every class frames her face in the middle band, and each has an audible ra
     })
     const s = JSON.stringify({ cls, m })
     const { face } = m
-    expect(face.left >= 470 && face.right <= 960 && face.top >= 150 && face.bottom <= 500, s).toBe(true)
-    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(110)
+    expect(face.left >= 470 && face.right <= 960 && face.top >= 100 && face.bottom <= 500, s).toBe(true)
+    // Plan item 161: she stands whole between the columns now, so her face is 85 px or more (was 110 at a closer cut).
+    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(85)
     for (const o of [m.sheet, m.list]) expect(face.left < o.right && face.right > o.left && face.top < o.bottom && face.bottom > o.top, s).toBe(false)
     const a = await page.evaluate((c) => (window as unknown as F).cathodeFront!.rack(c), cls)
     expect(a.peak, `${cls} ${JSON.stringify(a)}`).toBeGreaterThan(db(-24))
@@ -201,10 +202,10 @@ test('a class change starts its audition at once, her face framed and her line s
     const s = JSON.stringify({ cls, m })
     const meets = (a: Box, o: Box) => a.left < o.right && a.right > o.left && a.top < o.bottom && a.bottom > o.top
     const { face } = m
-    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(hasTouch ? 70 : 110)
+    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(hasTouch ? 70 : 85)
     expect(face.left >= 0 && face.top >= 0 && face.right <= W && face.bottom <= H, s).toBe(true)
     if (!hasTouch) {
-      expect(face.left >= 470 && face.right <= 960 && face.top >= 150 && face.bottom <= 500, s).toBe(true)
+      expect(face.left >= 470 && face.right <= 960 && face.top >= 100 && face.bottom <= 500, s).toBe(true)
       for (const o of [m.sheet, m.list]) expect(meets(face, o), s).toBe(false)
     }
     expect(m.on, s).toBe(true)
@@ -222,5 +223,41 @@ test('a class change starts its audition at once, her face framed and her line s
   for (const [cls, gun] of [['butcher', 'shotgun'], ['ghost', 'rifle']] as const) {
     await page.evaluate((c) => (window as unknown as { cathodeFront: { scene: () => { wardrobe(c: string, i: boolean): void } } }).cathodeFront.scene().wardrobe(c, true), cls)
     await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette?.prop ?? null), { timeout: 15_000 }).toBe(gun)
+  }
+})
+
+// Plan item 161: at D she stands whole, key-lit, between the class list and the sheet: her figure 300 px or taller,
+// her body clear of the list's column and the sheet, the umbrella clear of the names; keys 1-5 change the stage's
+// class within 650 ms.
+test('at D she stands whole between the list and the sheet, and keys 1-5 change her class', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop class pick')
+  test.setTimeout(300_000)
+  type F = { cathodeFront?: { scene: () => { dressed: string | null; figureBox(body?: boolean): Box } | null } }
+  await fresh(page, false)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
+  await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
+  const canvas = page.locator('canvas[data-class]').first()
+  for (const [i, cls] of CLASSES.entries()) {
+    const t0 = Date.now()
+    await page.keyboard.press(String(i + 1))
+    await expect(canvas).toHaveAttribute('data-class', cls, { timeout: 650 })
+    expect(Date.now() - t0).toBeLessThan(650 + 200)
+    // After the audition's cut eases home (3 s), the settled framing.
+    await page.waitForTimeout(3600)
+    const m = await page.evaluate(() => {
+      const b = (s: string) => {
+        const r = document.querySelector(s)!.getBoundingClientRect()
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
+      }
+      const names = [...document.querySelectorAll('.cp-opt-name')].map((e) => e.getBoundingClientRect().right)
+      const scene = (window as unknown as F).cathodeFront!.scene()!
+      return { fig: scene.figureBox(), body: scene.figureBox(true), sheet: b('.cp-sheet'), list: b('.cp-left'), names: Math.max(...names) }
+    })
+    const s = JSON.stringify({ cls, m })
+    expect(m.fig.bottom - m.fig.top, s).toBeGreaterThanOrEqual(300)
+    expect(m.fig.left, s).toBeGreaterThan(m.names)
+    expect(m.fig.right, s).toBeLessThan(m.sheet.left)
+    expect(m.body.left, s).toBeGreaterThan(m.list.right)
   }
 })
