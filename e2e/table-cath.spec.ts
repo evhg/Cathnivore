@@ -71,7 +71,7 @@ test('Cath stands at the table during play on a phone', async ({ page }, testInf
     await expect(page.locator('.table-head .cath-companion')).toHaveCount(0)
     const fig = (await cath.locator('.table-cath-figure').boundingBox())!
     const line = (await cath.locator('.table-cath-line').boundingBox())!
-    expect(fig.height).toBeGreaterThanOrEqual(96)
+    expect(fig.height).toBeGreaterThanOrEqual(112)
     await expect(cath.locator('.table-cath-line')).not.toBeEmpty()
     type B = { x: number; y: number; width: number; height: number }
     const meets = (a: B, b: B) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height

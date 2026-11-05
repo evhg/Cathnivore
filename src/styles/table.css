@@ -2806,7 +2806,7 @@ html.no-animations .cath-companion .cameo {
   }
 }
 /* Plan item 131: on an upright phone Cath stands at the table's lower-left corner (left of Oakvale, under
-   Brindle Hills), 96 px half-length on the same expression feed, and her line is a bubble from her along the cloth
+   Brindle Hills), 112 px half-length (item 146; was 96) on the same expression feed, and her line is a bubble from her along the cloth
    under the hexes. The board sits at the top of its frame so the cloth's spare band is at its foot. */
 @media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
   .map-wrap:has(.table-cath-phone) { align-items: flex-start; }
@@ -2825,8 +2825,9 @@ html.no-animations .cath-companion .cameo {
     order: -1;
     flex: none;
     display: block;
-    height: 96px;
-    width: 64px;
+    /* Plan item 146: 112 px (was 96, her face about 15 px), in the free cloth under Brindle Hills, left of Oakvale. */
+    height: 112px;
+    width: 66px;
     overflow: hidden;
     filter: drop-shadow(0 3px 3px rgb(var(--shadow-ink) / .22));
   }
@@ -2835,7 +2836,7 @@ html.no-animations .cath-companion .cameo {
     display: block;
     height: 100%;
     width: auto;
-    margin-left: -9px;
+    margin-left: -4px;
   }
   .table-cath-phone .table-cath-line {
     position: relative;
