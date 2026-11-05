@@ -615,18 +615,59 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const hand = document.querySelector<HTMLElement>('.table-hand')
     const cards = [...document.querySelectorAll<HTMLElement>('.table-hand .action-item')]
     if (!hand || cards.length === 0) return
-    const mid = (cards.length - 1) / 2
-    // A crowded turn overlaps the cards (each keeps its full face; the next one covers its right side) rather than
-    // squeezing their words; a hover or focus lifts a card clear of its neighbours.
-    const widths = cards.reduce((sum, c) => sum + c.offsetWidth, 0)
-    const later = hand.querySelector<HTMLElement>('.hand-later')
-    const room = hand.clientWidth - parseFloat(getComputedStyle(hand).paddingLeft) * 2 - (later ? later.offsetWidth + 8 : 0)
-    const step = cards.length > 1 ? Math.min(-6, (room - widths) / (cards.length - 1)) : 0
-    cards.forEach((card, i) => {
-      const off = mid === 0 ? 0 : (i - mid) / Math.max(mid, 3)
-      card.style.setProperty('--fan', `${(off * 4).toFixed(2)}deg`)
-      card.style.setProperty('--rise', `${Math.round(-(1 - off * off) * 8)}px`)
-      card.style.setProperty('--step', i === 0 ? '0px' : `${step.toFixed(1)}px`)
+    // Plan item 154: every card keeps its whole face. Cards overlap by at most a fifth of a card; a turn with more
+    // cards than one row holds that way lays them out as two rows of shorter, landscape cards (`data-rows`), each
+    // still showing its picture, whole name and cost. Cards sit at measured spots (`--x`, `--y`), not in a flex
+    // row, so nothing can squeeze them.
+    const cs = getComputedStyle(hand)
+    const padL = parseFloat(cs.paddingLeft)
+    const padB = parseFloat(cs.paddingBottom)
+    const room = hand.clientWidth - padL - parseFloat(cs.paddingRight)
+    const LAP = 6
+    const plan = (rows: number, widths: number[]) => {
+      const per = Math.ceil(cards.length / rows)
+      const out: { from: number; to: number; step: number; width: number }[] = []
+      for (let from = 0; from < cards.length; from += per) {
+        const to = Math.min(cards.length, from + per)
+        const ws = widths.slice(from, to)
+        const sum = ws.reduce((x, y) => x + y, 0)
+        const n = ws.length
+        const step = n > 1 ? Math.min(-LAP, (room - sum) / (n - 1)) : 0
+        out.push({ from, to, step, width: sum + step * (n - 1) })
+      }
+      return out
+    }
+    const fits = (rows: ReturnType<typeof plan>, widths: number[]) =>
+      rows.every((row) => row.step >= -0.2 * Math.min(...widths) - 0.01 && row.width <= room + 0.5)
+    delete hand.dataset.rows
+    let widths = cards.map((c) => c.offsetWidth)
+    let rows = plan(1, widths)
+    if (!fits(rows, widths)) {
+      hand.dataset.rows = '2'
+      widths = cards.map((c) => c.offsetWidth)
+      for (let r = 2; r <= 4; r++) {
+        rows = plan(r, widths)
+        if (fits(rows, widths)) break
+      }
+    }
+    const cardH = Math.max(...cards.map((c) => c.offsetHeight))
+    const rowStep = cardH + 6
+    hand.style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + 12)}px`)
+    rows.forEach((row, r) => {
+      const n = row.to - row.from
+      const mid = (n - 1) / 2
+      let x = padL + Math.max(0, (room - row.width) / 2)
+      // The first row is the upper one; the last sits at the table's edge.
+      const y = padB + (rows.length - 1 - r) * rowStep
+      for (let i = row.from; i < row.to; i++) {
+        const card = cards[i]!
+        const off = mid === 0 || rows.length > 1 ? 0 : (i - row.from - mid) / Math.max(mid, 3)
+        card.style.setProperty('--fan', `${(off * 4).toFixed(2)}deg`)
+        card.style.setProperty('--rise', rows.length > 1 ? '0px' : `${Math.round(-(1 - off * off) * 8)}px`)
+        card.style.setProperty('--x', `${x.toFixed(1)}px`)
+        card.style.setProperty('--y', `${y}px`)
+        x += widths[i]! + row.step
+      }
     })
     }
     fan()
@@ -1600,6 +1641,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
 
   // Plan item 149: the cards this turn can play. On a big desktop they are a hand at the table's bottom edge
   // (`.table-hand`, under the map); elsewhere they lead the Actions list.
+  const showHand = handOnTable && pendingEnemyTurn.length === 0 && !(waitingOnAi && teammatePick) && !selectedGroup
   const playableCards = (
     <>
           {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
@@ -2559,7 +2601,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           />
         )}
       </section>
-      {handOnTable && pendingEnemyTurn.length === 0 && !(waitingOnAi && teammatePick) && !selectedGroup && (
+      {showHand && (
         <section
           className="table-hand"
           role="region"
@@ -2570,27 +2612,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           }}
         >
           {playableCards}
-          {laterCount() > 0 && (
-            // Plan item 149: what can't be played yet lies face down at the fan's end; its reasons are the
-            // column's 'Not yet' strips, which a click brings into view.
-            <button
-              type="button"
-              className="hand-later"
-              data-later={laterCount()}
-              aria-label={`${laterCount()} not yet playable: show why`}
-              onClick={() => {
-                const head = document.querySelector<HTMLElement>('.actions .action-head-later')
-                head?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-              }}
-            >
-              <span className="hand-later-back" aria-hidden="true" />
-              <span className="hand-later-back" aria-hidden="true" />
-              <span className="hand-later-back" aria-hidden="true">
-                <b>{laterCount()}</b>
-                <small>Not yet</small>
-              </span>
-            </button>
-          )}
         </section>
       )}
       </div>
@@ -2655,6 +2676,28 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span aria-hidden="true">{'\u00d7'}</span>
             </button>
           </div>
+        )}
+      {showHand && laterCount() > 0 && (
+          // Plan item 149: what can't be played yet lies face down beside the hand (item 154: in the rail's gutter, so the
+          // cards keep the table's width); its reasons are the
+          // column's 'Not yet' strips, which a click brings into view.
+          <button
+            type="button"
+            className="hand-later"
+            data-later={laterCount()}
+            aria-label={`${laterCount()} not yet playable: show why`}
+            onClick={() => {
+              const head = document.querySelector<HTMLElement>('.actions .action-head-later')
+              head?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+            }}
+          >
+            <span className="hand-later-back" aria-hidden="true" />
+            <span className="hand-later-back" aria-hidden="true" />
+            <span className="hand-later-back" aria-hidden="true">
+              <b>{laterCount()}</b>
+              <small>Not yet</small>
+            </span>
+          </button>
         )}
       </aside>
       {drag && (
