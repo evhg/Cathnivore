@@ -2300,7 +2300,12 @@ function syncRing(): void {
   const g = game!;
   const sel = selected!;
   const kinds = ringKinds(g);
-  const key = `${sel.col},${sel.row}|${kinds.join(",")}|${g.level.id}`;
+  // Seed Bank packets the player holds plant free, as in the build menu (an upright phone has no sheet for them).
+  const seeds =
+    !(g.heroic && isFleet(g.level)) && !SANDBOX && dailyDay === null
+      ? PACKETS.filter((pk) => packetCount(data, pk.id) >= 1 && g.level.towers.includes(pk.kind))
+      : [];
+  const key = `${sel.col},${sel.row}|${kinds.join(",")}|${seeds.map((pk) => `${pk.id}:${packetCount(data, pk.id)}`).join(",")}|${g.level.id}`;
   if (key !== ringKey) {
     ringKey = key;
     ringAt = "";
@@ -2357,6 +2362,37 @@ function syncRing(): void {
       });
       el.append(b);
     }
+    for (const pk of seeds) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ring-seed";
+      b.dataset.packet = pk.id;
+      b.dataset.affordable = "true";
+      b.dataset.role = towerRole(pk.kind);
+      const n = packetCount(data, pk.id);
+      b.setAttribute("aria-label", `Plant a ${pk.name} Seed Packet here, free. You have ${n}.`);
+      const price = document.createElement("span");
+      price.className = "ring-cost";
+      price.textContent = `🌱 ${n}`;
+      const name = document.createElement("span");
+      name.className = "ring-name";
+      name.textContent = pk.name;
+      b.append(img(towerIcon(pk.kind), "ring-icon"), price, name);
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!game || !selected) return;
+        if (doAct({ t: "packet", kind: pk.kind, path: pk.path, col: selected.col, row: selected.row })) {
+          spendPacket(data, pk.id);
+          save(data);
+          sfx.playBuild();
+          haptic.build();
+          const nt = game.towers[game.towers.length - 1];
+          if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
+          renderPanel(true);
+        } else toast("This Packet's top tier is not open on this field yet.");
+      });
+      el.append(b);
+    }
     el.hidden = false;
   }
   placeRing();
@@ -2396,7 +2432,7 @@ function placeRing(): void {
   const key = `${Math.round(at.x)},${Math.round(at.y)},${Math.round(half)},${Math.round(stage.width)}x${Math.round(bottom - stage.top)}`;
   if (key === ringAt) return;
   ringAt = key;
-  const packets = [...el.querySelectorAll<HTMLElement>(".ring-packet")];
+  const packets = [...el.querySelectorAll<HTMLElement>(".ring-packet, .ring-seed")];
   const lay = ringLayout(at, half, packets.length, RING_PX, { x: 0, y: 0, w, h: bottom - stage.top });
   el.style.setProperty("--plot-x", `${Math.round(at.x)}px`);
   el.style.setProperty("--plot-y", `${Math.round(at.y)}px`);

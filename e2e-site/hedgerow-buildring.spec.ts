@@ -99,3 +99,42 @@ test('a packet you cannot afford says so', async ({ page, hasTouch }) => {
   await packets.first().click()
   expect(await hg(page)(() => (window as unknown as { hedgerow: HG }).hedgerow.game()!.towers.length)).toBe(before)
 })
+
+test('a Seed Bank packet the player holds stands in the ring and plants free', async ({ page }) => {
+  await page.goto('/hedgerow/?2d')
+  const stars: Record<string, number> = {}
+  for (let i = 1; i <= 5; i++) stars[String(i)] = 3
+  await page.evaluate((stars) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 2, stars, seenBefore: { '6': true }, tips: { spec: true, build: true, hero: true, early: true }, packets: { 'cannon-302': 1 } })), stars)
+  await page.reload()
+  await page.locator('button.level[data-level="6"]').click()
+  await expect(page.locator('#btn-send')).toBeVisible({ timeout: 15_000 })
+  // The keyboard cursor: home, then Enter on the first plot the ring opens for.
+  await page.locator('#canvas').focus()
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press('ArrowLeft')
+    await page.keyboard.press('ArrowUp')
+  }
+  const ring = page.locator('[data-build-ring]')
+  for (let i = 0; i < 8 && !(await ring.isVisible()); i++) {
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Enter')
+  }
+  await expect(ring).toBeVisible()
+  // A field card (the level's twist) may open over the field: put it away first.
+  for (let i = 0; i < 3; i++) {
+    await page.waitForTimeout(400)
+    if (await page.locator('#dlg-unlock').isVisible()) await page.locator('#unlock-ok').click()
+  }
+  if (!(await ring.isVisible())) await page.keyboard.press('Enter')
+  await expect(ring).toBeVisible()
+  const seed = ring.locator('.ring-seed[data-packet="cannon-302"]')
+  await expect(seed).toBeVisible()
+  await expect(seed).toHaveAttribute('data-affordable', 'true')
+  const marks = await page.locator('#hud-marks').textContent()
+  await seed.click()
+  await expect(ring).toBeHidden()
+  // Free: the purse is untouched, and the packet is spent.
+  await expect(page.locator('#hud-marks')).toHaveText(marks!)
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('hedgerow:v1')!).packets?.['cannon-302'] ?? 0)).toBe(0)
+})

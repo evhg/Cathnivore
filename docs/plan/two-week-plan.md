@@ -1871,7 +1871,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** two `[data-table-producer]` inside the map frame at P and D, 64 px or taller at P and 160 at D, meeting no hex or name plate; `data-expression` changes after a Squeeze in e2e; shots P and D.
 - **Size:** 2
 
-## 156. [ ] Hedgerow: build at the plot from a ring of seed packets *(lane A, in progress)*
+## 156. [x] Hedgerow: build at the plot from a ring of seed packets *(done 2026-11-05, lane A, 408a48a3..HEAD: `buildring.ts` lays one 52 px packet per unlocked tower on the most compact arc round the tapped plot that fits whole (a full circle in open ground, narrowing and facing into the field near an edge; one row before two), never over the plot or a neighbour, inside the field and above a panel over it (unit-tested); each shows its price, an unaffordable or too-wet one greyed with `data-affordable="false"`; hover or focus (a first tap on touch) shows its name and the field's range ring, a click (a second tap) plants; free Seed Bank packets stand in it too (`.ring-seed`); it follows the plot in 3D. On an upright phone the panel stays the round preview and tray (no sheet over the field); a tray tap plants on the ringed plot. `e2e-site/hedgerow-buildring.spec.ts` at P and D; site.spec builds through the ring. Shots `e2e/screenshots/ring156` (2D and 3D, P and D, before and after, `scripts/hedgerow-ring-shots.mjs`))*
 - **Why:** `hedge-l21-2d-P` (305-345 x 705-770): the phone tray shows about 4.5 of 9 packets, Duck Pond cut under the arrow.
 - **Build:**
   - Tapping an empty plot opens a ring of packets round it, each with its price and whether it's affordable; pressing one previews its range ring.

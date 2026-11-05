@@ -4091,7 +4091,7 @@ body:has(#dlg-pause[open]) .paused-note {
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--paper-hi), 0 0 0 4px var(--line), 0 0 18px 6px var(--black-a25);
 }
-.play .ring-packet {
+.play :is(.ring-packet, .ring-seed) {
   --band: var(--pasture);
   position: absolute;
   left: 0;
@@ -4114,32 +4114,32 @@ body:has(#dlg-pause[open]) .paused-note {
   box-shadow: 0 0 0 1.5px var(--line), 0 3px 0 var(--line), 0 6px 14px var(--black-a25);
   animation: ring-pop var(--dur-2) var(--spring) both;
 }
-.play .ring-packet[data-role="shot"] { --band: var(--clay); }
-.play .ring-packet[data-role="splash"] { --band: var(--wheat); }
-.play .ring-packet[data-role="income"] { --band: var(--marks-ink); }
-.play .ring-packet[data-role="boost"] { --band: var(--oak); }
-.play .ring-packet .ring-icon {
+.play :is(.ring-packet, .ring-seed)[data-role="shot"] { --band: var(--clay); }
+.play :is(.ring-packet, .ring-seed)[data-role="splash"] { --band: var(--wheat); }
+.play :is(.ring-packet, .ring-seed)[data-role="income"] { --band: var(--marks-ink); }
+.play :is(.ring-packet, .ring-seed)[data-role="boost"] { --band: var(--oak); }
+.play :is(.ring-packet, .ring-seed) .ring-icon {
   width: 30px;
   height: 30px;
   object-fit: contain;
 }
-.play .ring-packet .ring-cost {
+.play :is(.ring-packet, .ring-seed) .ring-cost {
   font: 900 var(--fs-label) / 18px var(--font-ui);
   font-variant-numeric: tabular-nums;
   color: var(--marks-ink);
 }
-.play .ring-packet[data-affordable="false"] {
+.play :is(.ring-packet, .ring-seed)[data-affordable="false"] {
   background: var(--paper-shade);
   box-shadow: 0 0 0 1.5px var(--ink-3), 0 3px 0 var(--ink-3), 0 6px 14px var(--black-a18);
 }
-.play .ring-packet[data-affordable="false"] .ring-icon {
+.play :is(.ring-packet, .ring-seed)[data-affordable="false"] .ring-icon {
   opacity: 0.5;
   filter: grayscale(0.8);
 }
-.play .ring-packet[data-affordable="false"] .ring-cost {
+.play :is(.ring-packet, .ring-seed)[data-affordable="false"] .ring-cost {
   color: var(--ink-3);
 }
-.play .ring-packet .ring-name {
+.play :is(.ring-packet, .ring-seed) .ring-name {
   position: absolute;
   left: 50%;
   top: calc(100% + 6px);
@@ -4154,19 +4154,19 @@ body:has(#dlg-pause[open]) .paused-note {
   opacity: 0;
   pointer-events: none;
 }
-.play .ring-packet[data-side="up"] .ring-name {
+.play :is(.ring-packet, .ring-seed)[data-side="up"] .ring-name {
   top: auto;
   bottom: calc(100% + 6px);
 }
-.play .ring-packet:is(:hover, :focus-visible, [data-armed]) {
+.play :is(.ring-packet, .ring-seed):is(:hover, :focus-visible, [data-armed]) {
   z-index: var(--z-raise);
   outline: none;
   box-shadow: 0 0 0 3px var(--pasture), 0 0 0 4.5px var(--line), 0 6px 16px var(--black-a25);
 }
-.play .ring-packet:is(:hover, :focus-visible, [data-armed]) .ring-name {
+.play :is(.ring-packet, .ring-seed):is(:hover, :focus-visible, [data-armed]) .ring-name {
   opacity: 1;
 }
-.play .ring-packet:active {
+.play :is(.ring-packet, .ring-seed):active {
   transform: translate(var(--x), calc(var(--y) + 2px));
 }
 @keyframes ring-pop {
@@ -4176,7 +4176,7 @@ body:has(#dlg-pause[open]) .paused-note {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .play .ring-packet {
+  .play :is(.ring-packet, .ring-seed) {
     animation: none;
   }
 }
