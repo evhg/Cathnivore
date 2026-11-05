@@ -1755,7 +1755,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a save with three solves this week renders three `[data-valley-feature]`, none meeting a tile; a new week resets them; the share card includes them; no layout shift over 2 px; shots P and D.
 - **Size:** 2
 
-## 143. [ ] Hedgerow: people and animals working the farm
+## 143. [ ] Hedgerow: people and animals working the farm *(lane A, in progress)*
 - **Why:** `hedge-l21-2d-D` (300-1080 x 75-890), `hedge-l34-2d-D`: the plots stand static with no one tending them; the field reads as a board, not a place worth defending.
 - **Build:**
   - Farmhands, Bea, a dog and hens (2D sprites and 3D meshes) walk the verges and tend plots in the build phase, never on lane cells, never taking taps.
