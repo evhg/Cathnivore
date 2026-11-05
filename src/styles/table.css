@@ -2438,9 +2438,10 @@ html.no-animations .cath-companion .cameo {
      15 px; the price and the "i" keep the foot row (the card was 70% blank yellow round a 32 px tile). */
   .action-tray .actions .action-item > button:first-child:not(:disabled) .action-label { display: block; width: 100%; font-size: 0.9375rem; line-height: 1.12; }
   .action-tray .actions .action-item > button:first-child:not(:disabled) .action-label svg.action-art { position: static; float: right; width: 56px; height: 56px; margin: -3px -1px 2px 6px; }
-  /* A name too long for beside the picture (measured in Game.tsx): the picture steps down to 40 px and the name to 13. */
-  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label svg.action-art { width: 40px; height: 40px; }
-  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label { font-size: 0.8125rem; }
+  /* A name too long for beside the picture (measured in Game.tsx): the picture steps down to 34 px and the name to
+     14 (plan item 164: no phone card name under 14 px). */
+  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label svg.action-art { width: 34px; height: 34px; }
+  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label { font-size: 0.875rem; line-height: 1.08; }
   /* A card with no price (a producer's ability) has the whole face for its picture. */
   .action-tray .actions .action-item > button:first-child:not(:disabled):not(:has(.action-cost)):not([data-tight]) .action-label svg.action-art { width: 60px; height: 60px; }
 }
@@ -3177,3 +3178,46 @@ html.no-animations .table-cath-line { animation: none; }
 .table-producer.pc-ines { --cameo-ring: var(--p-ines); }
 .table-producer.pc-sol { --cameo-ring: var(--p-sol); }
 @media (prefers-reduced-motion: reduce) { .table-producer { transition: none; } }
+
+/* ---- Plan item 164: the phone hand as a fanned deck ----
+   The playable cards fan along an arc, snapping card by card; a touched or focused card rises 14 px clear of its
+   neighbours (within the 150 ms transition). What can't be played yet is tucked behind as a pile at the hand's
+   end: each card dimmed and slid under the one before so only a card edge shows, the last whole and
+   face up; focusing one lifts it out of the pile. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions .action-item[data-hand-card] { transform-origin: 50% 140%; transition: translate 150ms var(--ease-out), rotate 150ms var(--ease-out), box-shadow 150ms var(--ease-out); }
+  .action-tray .actions .action-item[data-hand-card]:nth-of-type(3n + 1) { rotate: -1.6deg; translate: 0 2px; }
+  .action-tray .actions .action-item[data-hand-card]:nth-of-type(3n + 2) { rotate: 0.4deg; }
+  .action-tray .actions .action-item[data-hand-card]:nth-of-type(3n) { rotate: 1.8deg; translate: 0 3px; }
+  .action-tray .actions .action-item[data-hand-card]:is(:focus-within, :active) {
+    z-index: var(--z-lift);
+    rotate: 0deg;
+    translate: 0 -14px;
+  }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]) {
+    scroll-snap-align: none;
+    rotate: 2deg;
+    translate: 0 6px;
+    filter: saturate(0.55) brightness(0.96);
+    transition: translate 150ms var(--ease-out), rotate 150ms var(--ease-out);
+  }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]) ~ .action-item:not([data-hand-card]) {
+    margin-left: -126px;
+    box-shadow: -3px 0 6px var(--ink-a15);
+  }
+  /* Under the pile's top card only the edges show: their faces stay blank backs until one is lifted out. */
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) :is(button > *, .tooltip-trigger) { opacity: 0; }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):focus-within {
+    z-index: var(--z-lift);
+    rotate: 0deg;
+    translate: 0 -14px;
+    filter: none;
+  }
+}
+@media (max-width: 1023.98px) {
+  /* The pile's face-up card scrolls clear of the edge fade and the scroll key. */
+  .action-tray .actions:has(> .action-head-later)::after { content: ""; flex: none; width: 40px; }
+}
+@media (max-width: 1023.98px) and (prefers-reduced-motion: reduce) {
+  .action-tray .actions .action-item { transition: none; }
+}

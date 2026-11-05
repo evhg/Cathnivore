@@ -1937,7 +1937,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each rack card's art draws 3 or more distinct fills; names 13 px or more; on a phone no price under the scroll arrow (`elementFromPoint`); shots P and D, light and dark.
 - **Size:** 1
 
-## 164. [ ] Cathnivore phone: the hand as a fanned deck of whole cards *(lane A, in progress)*
+## 164. [ ] Cathnivore phone: the hand as a fanned deck of whole cards *(lane A, in progress)* *(slice 1, 2026-11-05 15:50 lane A: the playable cards fan on an arc (three tilts, pivot below the card); a touched or focused card rises 14 px in 150 ms (13-15 px measured); the 'Not yet' cards are a dimmed pile tucked at the hand's end, each slid under the one before with its face blank (opacity, so names stay in the accessibility tree) and the last face up, a focused one lifted out; the phone's tight card names 13 -> 14 px. Snap stays proximity (mandatory broke scrolling to the hand's end). Shots `e2e/screenshots/h164` (`scripts/cathnivore-phone-hand-shots.mjs`, prints each title's fit and the rise). Open: an e2e for the acceptance (titles 14 px, no scrollWidth overflow, the rise), the literal '…' in region cards' names on the phone ('Injunction…'), dark shots checked)*
 - **Why:** `cath-game-P` (5-390 x 665-770): two cards show, the third cut to 'Bu' by the edge, a sideways NOT YET strip about 10 px; `cath-game-D` cuts 'Injunction…'.
 - **Build:**
   - The phone hand as a fan above the dock with snap scrolling: a tap lifts a card, 'Not yet' cards dimmed and tucked behind.
