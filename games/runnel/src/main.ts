@@ -569,7 +569,7 @@ function render(): void {
   ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
   ui.progress.classList.toggle('done', flow.solved)
   const wetShare = flow.solved ? 1 : flow.wet.size / playable
-  document.getElementById('valley-water')?.style.setProperty('--wet', String(wetShare))
+  for (const path of document.querySelectorAll<SVGPathElement>('.vl-water, .vl-trickle')) path.style.setProperty('--wet', String(wetShare))
   // Plan item 70: today's seed in Bea's garden sprouts as the stream reaches the fields (a full plant at a solve).
   const crops = document.getElementById('bea-crops')
   crops?.style.setProperty('--wet', String(wetShare))
