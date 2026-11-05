@@ -3221,3 +3221,16 @@ html.no-animations .table-cath-line { animation: none; }
 @media (max-width: 1023.98px) and (prefers-reduced-motion: reduce) {
   .action-tray .actions .action-item { transition: none; }
 }
+@media (max-width: 1023.98px) {
+  /* Plan item 164: a phone card that still needs a region says so on its own line ('in Brindle Hills',
+     'Pick a region'), as the desktop hand does (item 160), never with a bare '…' after its name. */
+  .action-tray .actions .action-item .action-more { display: none; }
+  .action-tray .actions .action-item > button:first-child .action-pick {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-label);
+    font-weight: 600;
+    line-height: 1.1;
+    color: color-mix(in srgb, currentColor 72%, transparent);
+  }
+}

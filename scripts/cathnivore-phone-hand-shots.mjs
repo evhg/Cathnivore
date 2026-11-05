@@ -40,6 +40,13 @@ for (const scheme of ['light', 'dark']) {
     })
     console.log(scheme, seed, 'rise', rise)
     await page.evaluate(() => document.activeElement?.blur())
+    // The start of the hand (the Sell cards, a family card's 'Pick a region' line).
+    await page.evaluate(() => { const a = document.querySelector('.action-tray .actions'); a.style.scrollBehavior = 'auto'; a.scrollLeft = 0 })
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: `${out}/P-${scheme}-${seed}-start${tag}.png`, clip: { x: 0, y: 600, width: 390, height: 244 } })
+    await page.evaluate(() => { const a = document.querySelector('.action-tray .actions'); a.scrollLeft = 600 })
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: `${out}/P-${scheme}-${seed}-mid${tag}.png`, clip: { x: 0, y: 600, width: 390, height: 244 } })
     // The end of the hand: the 'Not yet' pile.
     await page.evaluate(() => { const a = document.querySelector('.action-tray .actions'); a.style.scrollBehavior = 'auto'; a.scrollLeft = a.scrollWidth })
     await page.waitForTimeout(400)
