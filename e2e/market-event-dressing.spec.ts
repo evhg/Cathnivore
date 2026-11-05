@@ -26,8 +26,8 @@ for (const [event, day, sel, says] of [
     expect(hit).toBe(false)
     // Cath opens the game on the week's event.
     await expect(page.locator('.table-cath-line, .cath-companion-line').first()).toContainText(says)
-    // At D its ticket is pinned to the table, its rule naming the cheaper kit, clear of every region.
-    if (testInfo.project.name === 'desktop-chromium') {
+    // Its ticket is pinned to the table (one line on a phone), its rule naming the cheaper kit, clear of every region.
+    if (testInfo.project.name === 'desktop-chromium' || testInfo.project.name === 'phone') {
       await expect(page.locator('.event-ticket')).toBeVisible()
       await expect(page.locator('.event-ticket')).toContainText('1 Mark off')
       const overlap = await page.evaluate(() => {

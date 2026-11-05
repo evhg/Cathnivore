@@ -198,9 +198,11 @@ function Rival({ mood }: { mood: ExecMood }) {
 }
 
 // Plan item 144: a market event's rule in words: the two Improvement tags it makes 1 Mark cheaper.
+const EVENT_SHORT: Record<string, string> = { festival: 'Festival', drought: 'Dry Spell', glut: 'Glut' }
 const EVENT_TAG: Record<string, string> = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
-function eventRule(id: keyof typeof MARKET_EVENTS): string {
-  return `${MARKET_EVENTS[id].cheap.map((t) => EVENT_TAG[t] ?? t).join(' & ')} kit 1 Mark off`
+function eventRule(id: keyof typeof MARKET_EVENTS, short = false): string {
+  const tags = MARKET_EVENTS[id].cheap.map((t) => EVENT_TAG[t] ?? t).join(' & ')
+  return short ? `${tags} \u22121` : `${tags} kit 1 Mark off`
 }
 
 // Plan item 80: a producer's face as the expression name Portrait takes.
@@ -2270,8 +2272,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* Plan item 144: the week's market event pinned to the table: its name and its rule. */}
         {state.config.marketEvent && (
           <p className="event-ticket" data-event={state.config.marketEvent}>
-            <b>{MARKET_EVENTS[state.config.marketEvent].name}</b>
-            <span>{eventRule(state.config.marketEvent)}</span>
+            <b>
+              <span className="event-name">{MARKET_EVENTS[state.config.marketEvent].name}</span>
+              <span className="event-name-short" aria-hidden="true">{EVENT_SHORT[state.config.marketEvent]}</span>
+            </b>
+            <span className="event-rule">{eventRule(state.config.marketEvent)}</span>
+            <span className="event-rule-short" aria-hidden="true">{eventRule(state.config.marketEvent, true)}</span>
           </p>
         )}
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
