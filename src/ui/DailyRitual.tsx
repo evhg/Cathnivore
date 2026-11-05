@@ -63,7 +63,7 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
         <figure className="ritual-receipt is-blank">
           <span className="ritual-pin" />
           <span className="ritual-receipt-head">No sale yet</span>
-          <span className="ritual-receipt-when">Today's Daily is open</span>
+          <span className="ritual-receipt-when">{compact ? 'The Daily is open' : "Today's Daily is open"}</span>
         </figure>
       )}
       {compact ? null : (

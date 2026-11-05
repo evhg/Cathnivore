@@ -867,7 +867,8 @@ html.no-animations .title-screen * {
   .title-table-props { display: block; position: absolute; inset: 0; pointer-events: none; }
   .title-prop { position: absolute; top: 12px; display: block; translate: 0 -100%; }
   .title-prop svg { position: static; display: block; width: 100%; height: auto; }
-  .title-prop-crates { left: calc(50% - 250px); width: clamp(96px, 8vw, 120px); }
+  /* Plan item 166: the crates stand in the gap between the menu board and Cath, not on the board's edge. */
+  .title-prop-crates { left: calc(50% - 208px); width: clamp(80px, 6.6vw, 96px); }
   .title-prop-jam { left: calc(50% - 30px); width: 34px; }
   .title-prop-coins { left: calc(50% + 14px); width: 50px; }
 }
@@ -1165,7 +1166,8 @@ html.no-animations .title-screen * {
   flex: none;
   width: 78px;
   height: 92px;
-  margin-top: 4px;
+  /* Plan item 166: the card lies wholly on the table, below its front edge (it hung over the edge at 4 px). */
+  margin-top: 20px;
   rotate: 4deg;
   perspective: 400px;
   color: var(--paper-on-fixed-fill);
@@ -1218,13 +1220,14 @@ html.no-animations .title-screen * {
     justify-self: start;
     position: relative;
     z-index: var(--z-map-fx);
-    margin: 0 0 -22px -4px;
+    margin: 0 0 -22px -14px;
     pointer-events: none;
   }
   .title-art.title-table .title-cath { grid-column: 1; grid-row: 1; }
   .title-art.title-table .title-board { grid-column: 2; grid-row: 1; }
+  /* Plan item 166: 128 px wide so the slip ends left of the board's cloth (158 px reached 37 px into it). */
   .daily-ritual.is-compact .ritual-receipt {
-    width: 158px;
+    width: 128px;
     padding: 5px 9px 9px;
     grid-template-columns: auto auto 1fr;
     column-gap: 7px;

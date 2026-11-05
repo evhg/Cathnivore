@@ -3234,3 +3234,16 @@ html.no-animations .table-cath-line { animation: none; }
     color: color-mix(in srgb, currentColor 72%, transparent);
   }
 }
+
+/* Plan item 166: on the table's fanned hand the leaf sits on the card's top edge, centred, so it never hangs
+   over the neighbouring card (cards overlap by up to a fifth at their sides), nor over its own 'i'. */
+.table-hand .action-item > .suggest-leaf {
+  top: -22px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* Plan item 166: at a desktop's width the plan cards' by-region line was the smallest print on the table. */
+@media (min-width: 1024px) {
+  .plan-strip-target { font-size: .8125rem; opacity: .9; }
+}

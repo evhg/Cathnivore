@@ -43,6 +43,9 @@ test('the phone maps are boards beside their names', async ({ page }) => {
     const mini = (await tile.locator('.board-mini').boundingBox())!
     const name = (await tile.locator('.layout-name').boundingBox())!
     expect(name.x).toBeGreaterThanOrEqual(mini.x + mini.width - 1)
+    // Plan item 166: two lines at most ('The Long Coast' took three).
+    const lh = await tile.locator('.layout-name').evaluate((e) => parseFloat(getComputedStyle(e).lineHeight))
+    expect(name.height).toBeLessThanOrEqual(lh * 2 + 1)
   }
   expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
