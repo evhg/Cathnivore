@@ -1791,7 +1791,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
 - **Size:** 2
 
-## 147. [ ] NIGHT SHIFT: Cath's 3D body to the character bible
+## 147. [ ] NIGHT SHIFT: Cath's 3D body to the character bible *(lane A, in progress)*
 - **Why:** `ns-title-D` (900-1150 x 250-900): the trench is boxy flat panels, the arm segments don't join and the hands are mitts; item 140 fixed only her face.
 - **Build:**
   - A tailored trench with collar, belt and a flared skirt; shoulders and arms that join smoothly.
