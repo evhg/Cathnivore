@@ -2573,6 +2573,11 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .tray-wrap.overflows .tray {
   padding-inline-end: 44px;
 }
+/* Plan item 166: the packet under the brass tab fades out beneath it rather than being cut by it. */
+.play .tray-wrap.more-shown .tray {
+  -webkit-mask: linear-gradient(to left, transparent 0 26px, var(--ink) 64px);
+  mask: linear-gradient(to left, transparent 0 26px, var(--ink) 64px);
+}
 .play .tray-tower {
   scroll-snap-align: start;
 }
@@ -3286,9 +3291,10 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .panel.panel-preview:not(.open) {
     overflow: visible;
   }
+  /* Plan item 166: the grip straddles the tray's top edge (at -22 px it stood wholly over the field's foot). */
   .play .drawer-handle {
     position: absolute;
-    top: -22px;
+    top: -11px;
     right: 14px;
     z-index: var(--z-raise);
     min-height: 22px;

@@ -2649,6 +2649,7 @@ function towerTray(p: HTMLElement, g: Game): void {
     const over = tray.scrollWidth > tray.clientWidth + 2;
     more.hidden = !over || tray.scrollLeft + tray.clientWidth >= tray.scrollWidth - 4;
     wrap.classList.toggle("overflows", over);
+    wrap.classList.toggle("more-shown", !more.hidden);
   };
   tray.addEventListener("scroll", sync, { passive: true });
   requestAnimationFrame(sync);
@@ -4415,7 +4416,8 @@ function syncDepots(g: Game): void {
       el.style.setProperty("--size", `${size}px`);
       // Plan item 160: a phone's small depot shows the count alone ('485 NEXT' overflowed its board at 12 px).
       el.toggleAttribute("data-small", size < 100);
-      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}">${sp.count ? `<b>${sp.count}</b><span class="depot-next"> next</span>` : "&mdash;"}</span><span class="depot-rep">${repSvg(depotMood)}</span>`;
+      // Plan item 166: a quiet gate reads "0 next" (a bare dash read as a broken board).
+      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
       return el;
     }),
   );

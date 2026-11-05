@@ -3834,7 +3834,7 @@ img.act-scene {
 #screen-select .act-head { height: clamp(120px, 15vw, 210px); }
 #screen-select .act-scene { object-fit: cover; }
 /* The banner's sky fades into the act's own ground, so the biomes join instead of stacking as cards. */
-#screen-select .act-head { mask-image: linear-gradient(180deg, black 72%, transparent); }
+#screen-select .act-head > .act-scene { mask-image: linear-gradient(180deg, black 72%, transparent); }
 #screen-select .act-title { max-width: 1180px; margin: 0 auto; left: max(14px, calc((100% - 1180px) / 2 + 14px)); right: max(14px, calc((100% - 1180px) / 2 + 14px)); bottom: 22%; }
 #screen-select .act-fog { border-radius: 0; min-height: clamp(180px, 26vh, 300px); }
 /* A phone held sideways: the header is one slim row, so the map keeps the screen. */
@@ -4730,6 +4730,9 @@ img.act-scene {
 #screen-select .act.act-pencil .act-scene { filter: brightness(1.12) contrast(0.9); opacity: 0.8; }
 #screen-select .act.act-pencil .node .level-name,
 #screen-select .act.act-pencil .act-title { color: var(--ink); }
+/* Plan item 166: the pencil act's title on a paper plate (ink on the dark banner plate read at about 2:1). */
+#screen-select .act.act-pencil .act-title { background: color-mix(in srgb, var(--paper-hi) 90%, transparent); text-shadow: none; }
+#screen-select .act.act-pencil .act-title :is(.act-num, .act-tally) { color: var(--ink-2); }
 #screen-select .act-pencil-note {
   inset: 8% 0 auto;
   flex-direction: column;
@@ -4769,7 +4772,8 @@ img.act-scene {
   .act-hedge { filter: brightness(0.82); }
   #screen-select .act.act-pencil { background-image: linear-gradient(var(--shade-a62), var(--shade-a62)), var(--ground); }
 }
-#screen-select .act + .act .act-head { mask-image: linear-gradient(180deg, transparent, black 18%, black 72%, transparent); }
+/* Plan item 166: the fade is on the painting only, not the banner's title (at D the title sits in the top 18%). */
+#screen-select .act + .act .act-head > .act-scene { mask-image: linear-gradient(180deg, transparent, black 18%, black 72%, transparent); }
 /* The pencil act's note sits beside its banner: over the banner's sky at a desktop width, a paper tag under it on
    a phone, where it would cover the act's title. */
 #screen-select .act > .act-pencil-note {
