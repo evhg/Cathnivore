@@ -171,7 +171,16 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const cls = selected;
     const def = CLASSES[cls];
     const copy = CLASS_COPY[cls];
+    // Plan item 161: the stage names the class (data-class), and a change flashes her rim light (500 ms; a fade
+    // under reduced motion), restarted on each switch.
+    const was = root.dataset.class;
     root.dataset.cls = cls;
+    root.dataset.class = cls;
+    if (was && was !== cls) {
+      root.classList.remove("cp-swap");
+      void root.offsetWidth;
+      root.classList.add("cp-swap");
+    }
     kicker.textContent = def.fantasy.replace(/\.$/, "");
     line.textContent = `“${copy.line}”`;
     plays.textContent = copy.playsLike;

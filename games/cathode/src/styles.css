@@ -2700,3 +2700,26 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   align-items: end;
 }
 .talk-two-shot .talk-plate svg { display: none; }
+
+/* Plan item 161: a class switch flashes her rim light across the stage between the list and the sheet, and the
+   weapon's line art takes the class accent. Under reduced motion it is a soft fade. */
+.cp-weapon-art { color: var(--blood-hot); }
+.cp::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse 22% 48% at 50% 46%, rgb(var(--accent-rgb, var(--blood-rgb)) / .34), transparent 70%);
+  mix-blend-mode: screen;
+}
+.cp.cp-swap::after { animation: cp-rim 500ms ease-out; }
+@keyframes cp-rim {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp.cp-swap::after { animation: cp-rim-fade 500ms ease; }
+  @keyframes cp-rim-fade { 0%, 100% { opacity: 0; } 50% { opacity: .5; } }
+}
