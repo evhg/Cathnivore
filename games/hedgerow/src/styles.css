@@ -4882,6 +4882,8 @@ img.act-scene {
   color: var(--ink);
   font-size: var(--fs-small);
   text-shadow: none;
+  /* Plan item 182: balanced, so no word is left alone on its last line ('it.' was, on a phone) */
+  text-wrap: balance;
 }
 #screen-select .act-pencil-note .act-fog-kicker { color: var(--ink-2); }
 

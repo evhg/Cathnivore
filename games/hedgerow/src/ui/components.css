@@ -4274,7 +4274,8 @@ body:has(#dlg-pause[open]) .paused-note {
 .round-chip-btn .round-count {
   grid-area: count;
   text-align: center;
-  font: 700 var(--fs-label) / 1 var(--font-num);
+  /* Plan item 182: a step up from the 12 px label size (its figures read about 10 px at D) */
+  font: 700 var(--fs-small) / 1 var(--font-num);
   /* Plan item 177: --ink-2 was 4.41:1 on a chip's grey face (axe, site.spec's Hedgerow story); full ink reads. */
   color: var(--ink);
 }
