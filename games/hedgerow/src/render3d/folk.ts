@@ -96,7 +96,7 @@ function hinge(colour: string, w: number, len: number, x: number, y: number, z: 
 
 function person(f: Folk): Rig {
   const bea = f.kind === "bea";
-  const h = bea ? 0.44 : 0.6;
+  const h = bea ? 0.53 : 0.72;
   const shirt = bea ? "#e8748b" : f.id % 2 ? "#c4433a" : "#4f7fb0";
   const legC = bea ? "#f6efe4" : "#5b4a3a";
   const skin = "#f0c9a0";
@@ -121,9 +121,11 @@ function person(f: Folk): Rig {
       head.add(part("ball", "#f2c94c", hr * 0.18, hr * 0.18, hr * 0.18, -hr * 0.1, hr * 0.22, z * hr * 0.52));
     }
   } else {
-    head.add(part("disc", "#e3c26a", hr * 1.9, hr * 0.12, hr * 1.9, 0, hr * 0.32, 0));
-    head.add(part("disc", "#e3c26a", hr * 0.95, hr * 0.42, hr * 0.95, 0, hr * 0.55, 0));
-    head.add(part("disc", shirt, hr * 0.97, hr * 0.1, hr * 0.97, 0, hr * 0.42, 0));
+    head.add(part("disc", "#e3c26a", hr * 1.55, hr * 0.1, hr * 1.55, 0, hr * 0.42, 0));
+    head.add(part("disc", "#e3c26a", hr * 0.9, hr * 0.36, hr * 0.9, 0, hr * 0.62, 0));
+    head.add(part("disc", shirt, hr * 0.92, hr * 0.1, hr * 0.92, 0, hr * 0.5, 0));
+    // Eyes on the side the figure faces, so a face reads under the brim.
+    for (const z of [-1, 1]) head.add(part("ball", "#2b2320", hr * 0.16, hr * 0.16, hr * 0.16, hr * 0.42, hr * 0.05, z * hr * 0.2));
   }
   body.add(head);
   let tool: THREE.Group | undefined;
@@ -139,7 +141,7 @@ function person(f: Folk): Rig {
 }
 
 function dog(): Rig {
-  const L = 0.42;
+  const L = 0.5;
   const coat = "#3b3029";
   const root = new THREE.Group();
   const body = new THREE.Group();
@@ -166,7 +168,7 @@ function dog(): Rig {
 }
 
 function hen(f: Folk): Rig {
-  const L = 0.27;
+  const L = 0.32;
   const col = f.id % 2 ? "#b5683a" : "#f3ead8";
   const root = new THREE.Group();
   const body = new THREE.Group();
@@ -234,8 +236,10 @@ export class FolkMeshes {
     for (let i = 0; i < legs.length; i++) legs[i]!.rotation.z = stride * 0.6 * (i % 2 ? -1 : 1) * (i >= 2 ? -1 : 1);
     if (r.arms.length) {
       const [a, b] = r.arms as [THREE.Object3D, THREE.Object3D];
-      if (cheer) [a.rotation.x, b.rotation.x, a.rotation.z, b.rotation.z] = [2.6, -2.6, 0, 0];
-      else if (hide) [a.rotation.x, b.rotation.x, a.rotation.z, b.rotation.z] = [2.2, -2.2, 0.6, 0.6];
+      // Raised arms swing up in the screen's plane (about z), spread a little, so they read from the camera.
+      const wave = cheer ? Math.sin(f.t * 12 + f.id) * 0.2 : 0;
+      if (cheer) [a.rotation.x, b.rotation.x, a.rotation.z, b.rotation.z] = [0.35, -0.35, 2.85 + wave, 2.85 - wave];
+      else if (hide) [a.rotation.x, b.rotation.x, a.rotation.z, b.rotation.z] = [0.5, -0.5, 2.3, 2.3];
       else [a.rotation.x, b.rotation.x, a.rotation.z, b.rotation.z] = [0.15, -0.15, -stride * 0.6, stride * 0.6];
     }
     if (r.tool) {

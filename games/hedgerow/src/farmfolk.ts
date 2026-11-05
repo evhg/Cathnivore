@@ -266,6 +266,8 @@ export function stepFolk(world: FolkWorld, dt: number, busy: Set<string>, wave: 
         [f.fc, f.fr, f.tc, f.tr, f.k] = [f.tc, f.tr, next[0], next[1], 0];
         continue;
       }
+      // A tower just went up where it stands: it steps off at once rather than standing inside the tower.
+      if (f.wait > 0 && busy.has(key(f.tc, f.tr))) f.wait = 0;
       if (f.wait > 0) {
         f.moving = false;
         f.tending = f.kind !== "dog" && !busy.has(key(f.tc, f.tr));

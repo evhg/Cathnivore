@@ -194,7 +194,7 @@ import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
-import { panic } from "./farmfolk";
+import { cheer, panic } from "./farmfolk";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -767,6 +767,11 @@ if (SANDBOX)
       // Plan item 143: a leak sends the farmfolk running, as a real one would.
       if (renderer?.farm.world) panic(renderer.farm.world);
       debriefLeaks(game, kind);
+    },
+    // Plan item 143: set the farmfolk cheering or running, as a cleared round or a leak would.
+    folkDo: (what: "cheer" | "panic") => {
+      const w = renderer?.farm.world;
+      if (w) (what === "cheer" ? cheer : panic)(w);
     },
     // Plan item 143: the farmfolk (cell units, mode), as the renderer last drew them.
     folk: () => {

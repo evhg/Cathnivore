@@ -69,4 +69,13 @@ describe('Hedgerow farmfolk (plan item 143)', () => {
     }
     expect(a.folk.map((f) => [f.x, f.y])).toEqual(b.folk.map((f) => [f.x, f.y]))
   })
+
+  it('steps off a plot as soon as a tower goes up on it', () => {
+    const w = makeFolk(LEVELS[3]!)
+    for (let i = 0; i < 60; i++) stepFolk(w, 1 / 60, new Set(), false)
+    const f = w.folk.find((x) => x.kind === 'hand')!
+    const cell = `${Math.floor(f.x)},${Math.floor(f.y)}`
+    for (let i = 0; i < 60 * 3; i++) stepFolk(w, 1 / 60, new Set([cell]), false)
+    expect(`${Math.floor(f.x)},${Math.floor(f.y)}`).not.toBe(cell)
+  })
 })
