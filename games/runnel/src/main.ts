@@ -498,6 +498,8 @@ function aimValleyCath(cath: HTMLElement): void {
  *  few widths, preferring above her head, for a spot that meets no tile; if none fits, the portrait keeps the
  *  line and the figure steps out of view, so there is still only one of her. */
 let sayKey = ''
+/** How often each lesson line found no room beside her on a phone (a few tries, while the board settles). */
+const phoneSayMiss = new Map<string, number>()
 function placeValleySay(): void {
   const app = document.querySelector<HTMLElement>('.app')
   const cath = document.getElementById('valley-cath')
@@ -509,14 +511,20 @@ function placeValleySay(): void {
     say.hidden = true
     // The phone's standing figure (item 165) keeps its own flag.
     if (app.dataset.valleySay !== 'phone') delete app.dataset.valleySay
+    delete app.dataset.phoneSay
     sayKey = ''
   }
-  // Only the full-length figure at D speaks (the phone's framed bust is a later slice of item 122).
-  if (!text || !matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) return off()
+  // Plan item 170: in the lesson on an upright phone her line leaves the card above the valley for a bubble beside
+  // her standing figure (it read 400 px above her). A line that finds no room keeps the card; after three misses
+  // (the board settling) it stops trying, so the layout can't swing between the two.
+  const phoneLesson =
+    document.body.classList.contains('in-lesson') && app.dataset.valleySay === 'phone' && !cath.hidden && !!cath.dataset.cathFigure && (phoneSayMiss.get(text) ?? 0) < 3
+  // Otherwise only the full-length figure at D speaks.
+  if (!text || !(phoneLesson || matchMedia('(min-width: 1100px) and (min-height: 640px)').matches)) return off()
   // She steps back into view to try (placeValleyCath hid her if a tile reaches into her corner).
   if (cath.hidden) return off()
   const fig = cath.getBoundingClientRect()
-  if (fig.height < 140) return off()
+  if (fig.height < (phoneLesson ? 84 : 140)) return off()
   const st = stage.getBoundingClientRect()
   // The search is costly, so it runs only when her line or the layout changes, not on every tap.
   const board = document.getElementById('board')?.getBoundingClientRect()
@@ -553,7 +561,8 @@ function placeValleySay(): void {
     })
   say.textContent = text
   say.hidden = false
-  app.dataset.valleySay = ''
+  if (phoneLesson) app.dataset.phoneSay = ''
+  else app.dataset.valleySay = ''
   let best: { l: number; t: number; w: number; score: number } | null = null
   for (const w of [300, 260, 230, 200, 180, 160, 140]) {
     say.style.setProperty('--say-w', `${w}px`)
@@ -573,6 +582,11 @@ function placeValleySay(): void {
         best = { l, t, w, score }
       }
     }
+  }
+  if (!best && phoneLesson) {
+    // Only a miss after it fit counts (the valley grew when the card went): misses while the board settles don't.
+    if (app.dataset.phoneSay !== undefined) phoneSayMiss.set(text, (phoneSayMiss.get(text) ?? 0) + 1)
+    return off()
   }
   if (!best) {
     // No room beside her on this board: the line stays in the sidebar, beside the valley, with its tail toward
@@ -600,7 +614,7 @@ function placeValleySay(): void {
   say.style.setProperty('--tail-y', `${ay - best.t}px`)
   say.style.setProperty('--tail-len', `${len}px`)
   say.style.setProperty('--tail-a', `${Math.atan2(ey - ay, ex - ax)}rad`)
-  app.dataset.valleySay = ''
+  if (!phoneLesson) app.dataset.valleySay = ''
 }
 
 /** Plan item 68: on a solve Bea runs out to her garden with her watering can. */
@@ -1481,6 +1495,8 @@ document.addEventListener('pointerdown', () => document.body.classList.remove('k
 
 /** The lesson's step while it runs, else -1. */
 let lessonStep = -1
+/** The lesson tiles the water has reached so far (each gets its ring once). */
+let lessonWet = new Set<number>()
 function startLesson(): void {
   const lp = lessonPuzzle()
   lessonStep = 0
@@ -1495,6 +1511,9 @@ function startLesson(): void {
       const before = wetCount
       const flow = board.refresh(index)
       wetCount = flow.wet.size
+      // Plan item 170: a ring breaks on each tile the water reaches for the first time.
+      for (const i of flow.wet) if (!lessonWet.has(i)) lessonRing(i)
+      lessonWet = new Set(flow.wet)
       playTurn()
       playWater(wetCount - before, wetCount / lp.cells.length)
       lessonStep = r.step
@@ -1505,14 +1524,29 @@ function startLesson(): void {
         markLessonCard(LESSON_STEPS.length)
         host.say('delighted', LESSON_DONE)
         ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
-        // Plan item 134: on to today's daily in about a second (it waited 2.6 s).
-        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1200)
+        // Plan item 134: on to today's daily in about a second (it waited 2.6 s); item 170: 1 s, so the board is up by 1.5.
+        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1000)
       } else showLessonStep()
     },
     onToggleLock: () => flashHint('No need to pin anything yet. Tap the glowing tile.'),
   })
-  wetCount = computeFlow(lp.cells).wet.size
+  lessonWet = new Set(computeFlow(lp.cells).wet)
+  wetCount = lessonWet.size
   showLessonStep()
+}
+/** Plan item 170: the flourish as the water reaches a lesson tile: a ring breaking out from its centre. */
+function lessonRing(index: number): void {
+  const cell = ui.board.querySelectorAll<SVGGElement>('.tiles > g.cell')[index]
+  const tile = cell?.querySelector<SVGPolygonElement>('polygon.tile')
+  if (!cell || !tile) return
+  const b = tile.getBBox()
+  const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+  ring.setAttribute('class', 'lesson-ring')
+  ring.setAttribute('cx', String(b.x + b.width / 2))
+  ring.setAttribute('cy', String(b.y + b.height / 2))
+  ring.setAttribute('r', String(Math.min(b.width, b.height) * 0.42))
+  cell.append(ring)
+  window.setTimeout(() => ring.remove(), 900)
 }
 function showLessonStep(): void {
   markLessonCard(lessonStep)
@@ -1586,6 +1620,11 @@ function endLesson(): void {
   data.seenHelp = true
   save(data)
   openGame()
+  // Plan item 170: the camera pulls back from the lesson's close field to today's board in the same valley.
+  ui.board.classList.remove('pull-back')
+  void ui.board.getBoundingClientRect()
+  ui.board.classList.add('pull-back')
+  window.setTimeout(() => ui.board.classList.remove('pull-back'), 1000)
 }
 
 /** Plan item 134: the lesson hands over to today's daily with its weather card: the Up next card lifts from the
