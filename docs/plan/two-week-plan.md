@@ -1895,7 +1895,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no empty band over 80 px in the rail at 1440x900; `[data-almanac-date]`; the vignette's `svg` 120 px or wider; rail text 14 px or more at 4.5:1; shots P and D.
 - **Size:** 2
 
-## 159. [ ] NIGHT SHIFT: the front menu written in the world
+## 159. [ ] NIGHT SHIFT: the front menu written in the world *(lane A, in progress)*
 - **Why:** `ns-title-D` (58-225 x 310-550): the menu is grey text on black, the default list VISION rules out; `ns-title-P` (16-160 x 210-420): it lies over Cath's body; CONTINUE greys out with no reason.
 - **Build:**
   - The menu as neon or stencilled signage on a dark plate; the chosen item lights with a buzz and a flicker (still under reduced motion).
