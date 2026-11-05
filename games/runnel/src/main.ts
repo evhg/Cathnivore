@@ -1011,6 +1011,20 @@ function renderRailGarden(): void {
     : 'Solve a daily and Bea plants a seed.'
 }
 
+// Plan item 158: Bea's note on the almanac page, by the day's place in the weekly arc.
+const BEA_NOTES: Record<string, string> = {
+  Gentle: 'Monday, so a gentle one. Mum says to warm up your thumbs.',
+  Easy: 'An easy field today. I bet you do it under par.',
+  Steady: 'Steady going. Follow the water out from the spring.',
+  Tricky: 'Tricky today: look for the tiles that can only go one way first.',
+  Hard: 'A hard one. Work from the fields back to the spring.',
+  Harder: 'Harder still. The fixed sluices are your friends.',
+  Hardest: "Sunday's the hardest of the week. Take your time, I'm watching.",
+}
+function beaNote(arc: string | null): string {
+  return `“${(arc && BEA_NOTES[arc]) || 'Every field watered, not a drop spilled. That\'s the rule.'}” — Bea`
+}
+
 function renderRail(): void {
   renderRailGarden()
   // Plan item 158: the almanac's masthead, today's date (UTC, the daily's own day).
@@ -1020,6 +1034,7 @@ function renderRail(): void {
     head.dataset.almanacDate = today
     $<HTMLParagraphElement>('al-day').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })
     $<HTMLParagraphElement>('al-date').textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+    $<HTMLParagraphElement>('al-note').textContent = beaNote(arcLabel(today))
   }
   const s = dailyStats(data, today)
   const figs: Array<[string, string]> = [

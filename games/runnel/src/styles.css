@@ -2468,7 +2468,8 @@ body {
   .rail {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    /* Plan item 158: 8 px between sections, so the almanac's note fits without the page scrolling after a solve. */
+    gap: 8px;
     align-self: start;
     padding: 16px;
     border-radius: 18px;
@@ -2481,7 +2482,7 @@ body {
   .almanac-head {
     display: grid;
     gap: 0;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
     border-bottom: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
   }
   .al-kicker {
@@ -2506,6 +2507,14 @@ body {
     font-family: var(--font-display);
     font-size: 1.75rem;
     line-height: 1.05;
+    color: var(--ink);
+  }
+  .al-note {
+    margin: 3px 0 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.3;
     color: var(--ink);
   }
   .al-date {
