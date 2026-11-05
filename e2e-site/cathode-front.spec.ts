@@ -487,8 +487,39 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
     expect(m.face.top).toBeGreaterThanOrEqual(0)
     expect(m.face.right).toBeLessThanOrEqual(vp.width)
     for (const r of m.rows) expect(m.face.left < r.right && m.face.right > r.left && m.face.top < r.bottom && m.face.bottom > r.top, JSON.stringify({ face: m.face, r })).toBe(false)
-    // Plan item 140: the title shows her smirk (the pixel checks for the catch-light and the lips wait for the face
-    // key light: under the street grade the brightest face pixel peaks at 0.4 at P and 0.8 at D).
+    // Plan item 140: the title shows her smirk, lit by a warm face key (the face's mean luminance was 0.12 at P and
+    // 0.16 at D under the flat pink wash; about 0.18 and 0.22 with it) with rose lips that read as a hue.
     await expect(page.locator('canvas[data-expression]').first()).toHaveAttribute('data-expression', 'smirk')
+    if (t === 8) {
+      // ?shot draws its held frame a moment after ready (the face canvas uploads on the first draw).
+      await page.waitForTimeout(3000)
+      const f = m.face
+      const buf = await page.screenshot({ clip: { x: f.left, y: f.top, width: f.right - f.left, height: f.bottom - f.top } })
+      const px = await page.evaluate(async (b64) => {
+        const img = new Image()
+        img.src = 'data:image/png;base64,' + b64
+        await img.decode()
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const g = c.getContext('2d')!
+        g.drawImage(img, 0, 0)
+        const d = g.getImageData(0, 0, c.width, c.height).data
+        let mean = 0
+        let rose = 0
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i]! / 255, gr = d[i + 1]! / 255, b = d[i + 2]! / 255
+          mean += 0.2126 * r + 0.7152 * gr + 0.0722 * b
+          const mx = Math.max(r, gr, b), mn = Math.min(r, gr, b)
+          if (mx - mn > 0.15 && r === mx && mx > 0.35) {
+            const h = (((gr - b) / (mx - mn)) * 60 + 360) % 360
+            if (h >= 330 || h <= 15) rose++
+          }
+        }
+        return { mean: mean / (d.length / 4), rose }
+      }, buf.toString('base64'))
+      expect(px.mean, 'the warm key lights her face').toBeGreaterThanOrEqual(hasTouch ? 0.15 : 0.19)
+      expect(px.rose, 'rose lips').toBeGreaterThanOrEqual(40)
+    }
   }
 })

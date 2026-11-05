@@ -197,6 +197,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fillRect(x, 0, 0.6 + rnd() * 1.2, 128);
         void l;
       }
+      // Plan item 140: a shine band across the strands, a third of the way down (the crown on the cap, the
+      // shoulders on the long hair), broken by the strands so it reads as glossy hair, not a painted stripe.
+      const band = g.createLinearGradient(0, 26, 0, 66);
+      band.addColorStop(0, "rgba(214,176,150,0)");
+      band.addColorStop(0.5, "rgba(214,176,150,0.62)");
+      band.addColorStop(1, "rgba(214,176,150,0)");
+      g.fillStyle = band;
+      for (let x = 0; x < 64; x += 1) {
+        const w = 0.55 + 0.45 * rnd();
+        const dy = (rnd() - 0.5) * 6;
+        g.globalAlpha = w;
+        g.fillRect(x, 26 + dy, 1, 40);
+      }
+      g.globalAlpha = 1;
     }
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
@@ -218,14 +232,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 89: stronger at D too, so her hair and profile read against the street (1.1 left a silhouette).
     uRimA: { value: new THREE.Color(1.0, 0.3, 0.52).multiplyScalar(phone ? 1.5 : 1.45) },
     uRimB: { value: new THREE.Color(0.1, 0.55, 0.8).multiplyScalar(phone ? 0.45 : 0.4) },
+    // Plan item 140: a warm face key from the lens's upper left (view space, so it follows every framing), on her
+    // skin and face only: the street's pink washed her face to a flat oval. A soft wrap keeps the far cheek modelled.
+    uKeyDir: { value: new THREE.Vector3(-0.45, 0.5, 0.75).normalize() },
+    uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 0.95 : 0.85) },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0) => {
+    let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 );` : "";
+    // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
+    // the eyes hold a bright point under the street's grade.
+    if (glint > 0) keyTerm += `\ntotalEmissiveRadiance += ${glint.toFixed(2)} * uKey * smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) );`;
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;")
+        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;")
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
@@ -235,15 +257,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
             float fr = smoothstep( 0.0, 1.0, pow( 1.0 - facing, 2.2 ) );
             float side = dot( normal, uRimDir );
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
+            ${keyTerm}
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}`;
   };
   rimify(coatMat, 1);
   rimify(blackMat, 0.8);
   rimify(hairMat, 1.2);
-  rimify(skinMat, 0.35);
+  rimify(skinMat, 0.35, 0.8);
 
   let tris = 0;
   const add = (geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D = group) => {
@@ -681,7 +704,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   faceTex.colorSpace = THREE.SRGBColorSpace;
   faceTex.anisotropy = 4;
   const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.5, metalness: 0 });
-  rimify(faceMat, 0.35);
+  rimify(faceMat, 0.25, 1, 4);
   mats.push(faceMat);
   add(skull, faceMat, headPivot);
   // Hair: a glossy shell over the crown, swept back from a centre parting, full at the sides over the tops of the
