@@ -1401,6 +1401,51 @@ export function groundSvg(n: number): string {
   );
 }
 
+/**
+ * Plan item 153: the hedge along an act's foot, where its ground meets the next act's: one repeating tile in the
+ * act's own hedge greens (a dark root band, leafy crowns along the top, a few lit leaves), flat along the border.
+ */
+export function hedgeTile(n: number): string {
+  const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
+  const g = GROUND[i]!;
+  const rand = mulberry(911 * (i + 1));
+  const W = 360;
+  let crowns = "";
+  let lit = "";
+  const crown = (x: number, y: number, r: number): void => {
+    crowns += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}"/>`;
+    if (rand() < 0.75) lit += `<circle cx="${f(x - r * 0.28)}" cy="${f(y - r * 0.42)}" r="${f(r * 0.45)}"/>`;
+  };
+  for (let x = -8; x < W + 12; x += 8 + rand() * 7) crown(x, 30 + rand() * 4, 7 + rand() * 6);
+  // A hedgerow tree or two stand up out of the hedge.
+  let trunks = "";
+  for (const tx of [70 + rand() * 40, 230 + rand() * 60]) {
+    const s = 0.8 + rand() * 0.35;
+    trunks += `<path d="M${f(tx - 2 * s)} 40L${f(tx - 1.2 * s)} ${f(24 - 6 * s)}h${f(2.4 * s)}L${f(tx + 2 * s)} 40z" fill="#5a4330"/>`;
+    for (let k = 0; k < 7; k++) crown(tx + (rand() - 0.5) * 26 * s, 13 - 5 * s + rand() * 12 * s, (9 + rand() * 5) * s);
+  }
+  // The tile repeats every W px: crowns past an edge are drawn again on the other side.
+  const both = (id: string): string => `<use href="#${id}"/><use href="#${id}" x="-${W}"/><use href="#${id}" x="${W}"/>`;
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} 48" width="${W}" height="48">` +
+    `<defs><g id="c">${crowns}</g><g id="l">${lit}</g></defs>` +
+    trunks +
+    `<rect x="0" y="34" width="${W}" height="14" fill="${g.hedge}"/>` +
+    `<g fill="${g.hedge}">${both("c")}</g>` +
+    `<g fill="${g.leaf}" opacity=".85">${both("l")}</g>` +
+    `<path d="M0 47h${W}" stroke="#2e2a1c" stroke-width="2" opacity=".3"/>` +
+    `</svg>`
+  );
+}
+
+/** The field gate the lane leaves an act by: two posts and a five-bar gate swung open against the hedge. */
+const HEDGE_GATE =
+  '<svg viewBox="0 0 72 48" aria-hidden="true">' +
+  '<rect x="9" y="16" width="6" height="32" rx="1" fill="#6b4a2b"/><rect x="57" y="16" width="6" height="32" rx="1" fill="#6b4a2b"/>' +
+  '<path d="M9.5 17h5M57.5 17h5" stroke="#b08a5c" stroke-width="2"/>' +
+  '<g stroke="#d9b47c" stroke-width="2.4" stroke-linecap="round"><path d="M15 21L1 27M15 26L1 31M15 31L1 35M15 36L1 39M15 41L1 43M15 21L1 43"/></g>' +
+  "</svg>";
+
 const svgImg = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 /** Cath's cottage at the start of the journey: thatch, a lit window, smoke, a gate, and the lane leaving the door. */
@@ -1420,7 +1465,7 @@ const COTTAGE =
   "</svg>";
 
 function drawLane(svg: SVGSVGElement, lane: [number, number][], detours: Array<[number, [number, number]]> = []): void {
-  const base = svg.dataset.exit ? [...lane, [lane[lane.length - 1]![0], 108] as [number, number]] : lane;
+  const base = svg.dataset.exit ? [...lane, [lane[lane.length - 1]![0], Number(svg.dataset.exitY) || 108] as [number, number]] : lane;
   // Plan item 138: a detour point goes in after lane point `i` (round a stop's name at a row's turn); the walked
   // stretch still ends on the same stop.
   const full: [number, number][] = [];
@@ -1565,6 +1610,13 @@ function layoutLanes(list: HTMLElement): void {
     if (turn) detours.push([5, turn]);
     const out = svg.dataset.exit && pts.length === 10 ? round(names[9], -1) : null;
     if (out) detours.push([10, out]);
+    // Plan item 153: the lane runs on out of the act through the field gate in the hedge at its foot.
+    const li = svg.closest<HTMLElement>("li.act");
+    if (svg.dataset.exit && li?.querySelector(".act-hedge")) {
+      const lb = li.getBoundingClientRect();
+      svg.dataset.exitY = String(Math.round(((lb.bottom + 4 - box.top) / box.height) * 1000) / 10);
+      li.style.setProperty("--gate-x", `${Math.round(box.left + (pts[pts.length - 1]![0] / 100) * box.width - lb.left)}px`);
+    }
     drawLane(svg, [start, ...pts], detours);
   }
 }
@@ -1726,6 +1778,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       title.append(eb);
     }
     head.append(title);
+    let pencilNote: HTMLElement | null = null;
     if (pencil) {
       // The act after the last open one names the boss that opens it; the ones beyond just wait.
       const veil = document.createElement("p");
@@ -1734,7 +1787,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       kicker.className = "act-fog-kicker";
       kicker.textContent = n === shown + 1 ? `Beyond the hedge · Act ${n}` : `Further on · Act ${n}`;
       veil.append(kicker, n === shown + 1 ? `Beat ${levels[(n - 1) * 10 - 1]?.name ?? "the boss"} and the lane runs on into it.` : "Still in pencil: the lane gets there.");
-      head.append(veil);
+      // Beside the banner, not in it: on a phone it would sit on the act's title (and the banner's top fades).
+      pencilNote = veil;
     } else if (!firstUnlocked) {
       const veil = document.createElement("div");
       veil.className = "act-veil";
@@ -1742,6 +1796,23 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       head.append(veil);
     }
     li.append(head);
+    if (pencilNote) li.append(pencilNote);
+    if (n < acts.size) {
+      // Plan item 153: a hedge runs along the act's foot, the lane leaving through its gate (placed by layoutLanes).
+      const hedge = document.createElement("div");
+      hedge.className = "act-hedge";
+      hedge.setAttribute("aria-hidden", "true");
+      hedge.style.setProperty("--hedge", `url("${svgImg(hedgeTile(n))}")`);
+      const l = document.createElement("i");
+      l.className = "hedge-l";
+      const gate = document.createElement("i");
+      gate.className = "hedge-gate";
+      gate.innerHTML = HEDGE_GATE;
+      const r = document.createElement("i");
+      r.className = "hedge-r";
+      hedge.append(l, gate, r);
+      li.append(hedge);
+    }
     // Progress track: one pip per field, filled once it has a star.
     const track = document.createElement("div");
     track.className = "act-track";
@@ -1908,12 +1979,17 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       li.append(card.el);
     }
     if (was > 0 && n > was && !pencil) {
+      // Plan item 153: a newly opened act inks in from its pencil drawing, top to bottom (a fade under reduced motion).
       li.classList.add("act-unveil");
-      const fog = document.createElement("div");
-      fog.className = "unveil-fog";
-      fog.setAttribute("aria-hidden", "true");
-      fog.addEventListener("animationend", () => fog.remove(), { once: true });
-      li.append(fog);
+      const wash = document.createElement("div");
+      wash.className = "unveil-wash";
+      wash.setAttribute("aria-hidden", "true");
+      wash.addEventListener("animationend", (e) => {
+        if (e.target !== wash) return;
+        wash.remove();
+        li.classList.remove("act-unveil");
+      });
+      li.append(wash);
     }
     list.append(li);
   }

@@ -62,28 +62,69 @@ test('plan item 18: no banner overlaps another stop, its padlock or its banner (
 })
 
 for (const reduced of [false, true]) {
-  test(`plan item 18: the fog rolls back off a newly opened act once${reduced ? ' (a fade under reduced motion)' : ''}`, async ({ page }) => {
+  // Plan item 153 (was item 18's fog): a newly opened act inks in from its pencil drawing, once.
+  test(`plan item 153: a newly opened act inks in from pencil once${reduced ? ' (a fade under reduced motion)' : ''}`, async ({ page }) => {
     if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
     await seed(page, 9)
-    await expect(page.locator('.unveil-fog')).toHaveCount(0)
-    // Act 1's boss falls; the next time the map shows, act 2 opens under rolling fog.
+    await expect(page.locator('.unveil-wash')).toHaveCount(0)
+    await expect(page.locator('li[data-act="2"]')).toHaveAttribute('data-pencil', '')
+    // Act 1's boss falls; the next time the map shows, act 2 inks in.
     await page.evaluate(() => {
       const d = JSON.parse(localStorage.getItem('hedgerow:v1')!)
       d.stars['10'] = 3
       localStorage.setItem('hedgerow:v1', JSON.stringify(d))
     })
     await page.reload()
-    const fog = page.locator('li.act-unveil .unveil-fog')
-    await expect(fog).toHaveCount(1)
+    const wash = page.locator('li.act-unveil .unveil-wash')
+    await expect(wash).toHaveCount(1)
     await expect(page.locator('li.act-unveil')).toHaveAttribute('data-act', '2')
-    await expect(fog).toHaveCSS('animation-name', reduced ? 'fog-fade' : 'fog-roll')
+    await expect(page.locator('li[data-act="2"]')).not.toHaveAttribute('data-pencil', '')
+    await expect(wash).toHaveCSS('animation-name', reduced ? 'ink-fade' : 'ink-in')
     // It clears itself, and doesn't play again.
-    await expect(fog).toHaveCount(0, { timeout: 6000 })
+    await expect(wash).toHaveCount(0, { timeout: 8000 })
+    await expect(page.locator('li.act-unveil')).toHaveCount(0)
     await page.reload()
     await expect(page.locator('button.node.next')).toBeVisible()
-    await expect(page.locator('.unveil-fog')).toHaveCount(0)
+    await expect(page.locator('.unveil-wash')).toHaveCount(0)
   })
 }
+
+// Plan item 153: act runs into act: a hedge along every act's foot but the last, the lane leaving through its gate,
+// and on a phone the pencil act's note sits clear of the act's title.
+test('plan item 153: a hedge with a gate the lane goes through joins each act to the next', async ({ page }) => {
+  await seed(page, 13)
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(500)
+  const m = await page.evaluate(() => {
+    const acts = [...document.querySelectorAll<HTMLElement>('#levels > li[data-act]')]
+    return acts.map((li) => {
+      const hedge = li.querySelector<HTMLElement>(':scope > .act-hedge')
+      const gate = hedge?.querySelector('.hedge-gate')?.getBoundingClientRect()
+      const lb = li.getBoundingClientRect()
+      const last = [...li.querySelectorAll('.stop .level-num')].pop()?.getBoundingClientRect()
+      const names = [...li.querySelectorAll('.stop .level-name')].map((n) => n.getBoundingClientRect())
+      const hb = hedge?.getBoundingClientRect()
+      const note = li.querySelector('.act-pencil-note')?.getBoundingClientRect()
+      const title = li.querySelector('.act-title')?.getBoundingClientRect()
+      return {
+        hedge: !!hedge,
+        atFoot: hb ? Math.abs(hb.bottom - lb.bottom) : -1,
+        gateOff: gate && last ? Math.abs(gate.left + gate.width / 2 - (last.left + last.width / 2)) : -1,
+        overName: hb ? names.some((n) => n.bottom > hb.top + 14 && n.right > hb.left && n.left < hb.right) : false,
+        noteOverTitle: note && title ? note.bottom > title.top && note.top < title.bottom && note.right > title.left && note.left < title.right : false,
+      }
+    })
+  })
+  expect(m).toHaveLength(10)
+  m.forEach((a, i) => {
+    expect(a.hedge, `act ${i + 1}`).toBe(i < 9)
+    expect(a.noteOverTitle, `act ${i + 1} note`).toBe(false)
+    if (i === 9) return
+    expect(a.atFoot, `act ${i + 1}`).toBeLessThanOrEqual(1)
+    expect(a.gateOff, `act ${i + 1} gate`).toBeLessThanOrEqual(6)
+    expect(a.overName, `act ${i + 1} names`).toBe(false)
+  })
+})
 
 // Plan item 47: every map tool sits whole inside the viewport, none over another; the rest are one Modes drawer away.
 test('the map tools fit the screen, and Modes opens the rest inside it', async ({ page }) => {
