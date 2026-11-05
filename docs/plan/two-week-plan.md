@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-05T22:22Z
-
 
 
 
@@ -2059,3 +2057,44 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - `ns-title-P` (0-185 x 207-435): the menu plate bleeds off the left edge, the cursor at x=0; (15-260 x 450-462) the case line's contrast on the scene (unconfirmed).
 - **Accept:** each fixed point has a check in a critique177 spec (P and D) or is logged as not reproduced; shots before and after.
 - **Size:** 1
+
+## 178. [ ] Runnel: the water reaches Bea's garden
+- **Why:** `plan1105g/runnel-D` (1155-1390 x 765-835) and `runnel-P` (220-380 x 705-745): Bea's garden is a fence far from the tiles, and the chain ends mid-field (1010-1220 x 500-730), so a solve pays off nowhere in the valley (VISION 4).
+- **Build:**
+  - A dry ditch drawn from the board's outlet (its last field's edge) to the garden, routed round the tiles, Cath and the keeps; on a solve the water runs it in about 900 ms.
+  - The garden then blooms: its rows of sprouts pop in, Bea (item 68's run) waves at the fence, Cath turns delighted. Works on every daily and practice board.
+- **Accept:** `[data-garden="dry"|"watered"]` on the garden; `.runnel-ditch` is an SVG path meeting no tile and ending at the garden; the sequence ends within 1.2 s of the solve; reduced motion cross-fades; the garden 160 px or more wide on a phone; shots P and D, before and after a solve.
+- **Size:** 2
+
+## 179. [ ] Hedgerow 3D: Hollowell's depot read at a glance
+- **Why:** `plan1105g/hedge-l21-3d-D` (35-150 x 480-560): item 157's 3D depot is a grey roof at the field's edge, half under Cath's bubble; the HOLLOWELL sign floats over grass (180-315 x 362-395) and the vans queue on bare ground (275-310 x 260-360). The 2D depot (`hedge-l21-2d-D` 160-280 x 355-470) reads; the 3D one doesn't.
+- **Build:**
+  - The 3D depot as Hollowell's glossy shed: white plastic, an orange fascia carrying the next round's count (the "216 coming" pill moves onto it), a rolling shutter that rises as a round leaves, a floodlight and a painted loading bay where the vans queue.
+  - Placed beside the gate, in view of the camera and clear of Cath, her bubble and the plots; one per lane, matching 2D.
+- **Accept:** `window.hedgerow.depots3d()` length equals the 2D depot count on levels 21 and 34; its fascia count 14 px or more on screen; its screen box 90 px or more wide at D and meeting no plot, Cath or `#cath-say`; the shutter opens on `sendWave` (snaps under reduced motion); `hedgerow-depot` and `hedgerow-3dframe` pass; shots P and D in 3D, plus `?2d`.
+- **Size:** 3
+
+## 180. [ ] NIGHT SHIFT: Cath posed as each class
+- **Why:** `plan1105g/ns-play-D` (480-960 x 400-900): item 161 stands her on the class pick's stage, but every class shows the same Cath in the same stance; on `ns-play-P` (130-230 x 300-560) she is a back-lit silhouette turned away. You choose a class without seeing her as it (VISION 5).
+- **Build:**
+  - Per class, a coat variant, its weapon or prop in hand or on her shoulder, and a signature pose; switching blends over about 400 ms.
+  - The camera turns her three-quarter to the lens under a key light; on a phone it frames her face and upper body above the stat block.
+- **Accept:** the stage's `data-class` drives `scene().figurePose()` (a different pose per class); her head box 90 px or more tall at D and 70 at P; her body box meets no panel; the blend ends within 600 ms (a cut under reduced motion); `cathode-classpick`, `cathode-classstage` and `cathode-perf` pass; shots P and D for every class.
+- **Size:** 3
+
+## 181. [ ] Site: the /games/ landing as Cath's market stall
+- **Why:** `plan1105g/games-D` (270-385 x 60-430): Cath stands alone on the horizon and a small stall floats far right (1190-1360 x 220-400); the game cards (110-1330 x 460-810) are a plain row. On `games-P` (290-370 x 255-390) she is squeezed beside the buttons.
+- **Build:**
+  - One staged scene: Cath behind a full-width awning stall, today's Runnel chalked on a slate as the main call to action.
+  - The four games hang from the awning as pegged posters (their key art) that sway a little on hover or focus; on a phone the stall front is the header and the posters stack under it.
+- **Accept:** `.stall-hero` holds Cath and `[data-cta="daily"]`; her feet on the counter's line (no floating figure); posters 280 px or more wide at D; a sway of 3 degrees or less over 200 ms, none under reduced motion; `site.spec` passes; shots P and D, light and dark.
+- **Size:** 2
+
+## 182. [ ] The bugs from the 2026-11-05 22:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1105g`; points already open in 126, 138 and 177 left out)
+  - **Cathnivore:** P game: the 'Glut Pasture & Crop -1' ticket over the board frame's top (120-270 x 162-186); the next hand card cut at the right edge with its 'NOT YET' about 10 px (325-385 x 675-770). D game: the Injunction card clipped under Supply (1195-1325 x 765-880); the 'Not yet' shelf's red 'Need N more' about 11 px below AA (35-320 x 545-745). P setup: the sticky Start bar cuts the map cards and hides the seed field (255-390 x 705-770); 'YOU'/'AI' over the chair art (35-105 x 198-215). D title: 'Win a Daily to hang the first pennant' about 13 px white on mid wood, crowded by NEXT (1030-1280 x 763-780).
+  - **Hedgerow:** P menu: Act 4's teaser leaves 'it.' alone on its last line (20-370 x 735-770). D l21: the round chips' counts, 'OF 26' and 'KEEP GOING' about 10-11 px (1115-1405 x 668-685, 1340-1400 x 790-815). 3D D l21: Cath's bubble over her head (20-250 x 400-490). 3D P l21: the lane's entry and a cyan gate bar past the left edge (0-75 x 405-440).
+  - **NIGHT SHIFT:** P title: the menu over Cath's body (0-185 x 205-435); the List's district stamps clipped (15-370 x 725-752). D title: the disabled CONTINUE below contrast (58-195 x 320-350); the List blurbs italic at about 11 px (60-600 x 750-800).
+  - **Site:** P /games/: the 'Cathnivore' wordmark's right half blurred (230-345 x 120-170).
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
+- **Size:** 2
