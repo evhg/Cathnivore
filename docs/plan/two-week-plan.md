@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-05T18:21Z
+
 
 
 
@@ -2002,3 +2002,58 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Her expression follows the line's context.
 - **Accept:** at 390x844 the line meets no `.region-hex` (Cathnivore) and no plot (Hedgerow); her bust 64 px or more; `role=status`; tutorial specs pass; shots P light and dark.
 - **Size:** 2
+
+## 172. [ ] Cathnivore: pieces worth holding on the board
+- **Why:** `cath-game-D` (580-1105 x 215-735, from `plan1105f`): the hexes take about half the board panel (350-1335 x 195-740) and the pieces are tiny: Outlets about 22x28 px, Scout discs about 26 px, count badges about 16 px. On `cath-game-P` (120-300 x 360-500) they shrink to about 16 px and run together. VISION 2: the table is the hero, big, rich and legible.
+- **Build:**
+  - The hex map fills more of the board panel (seated producers and Cath keep their free-spot search).
+  - Outlet, Buyout, Stall and Scout redrawn as chunky tokens: ink outline, a cast shadow and a silhouette per kind, so they read without colour.
+  - Two or three of a kind stand as an offset pile; the number badge only above 3. A placed piece drops in over about 300 ms with a small overshoot (a fade under reduced motion).
+- **Accept:** each `[data-piece]` box 36 px or more at D and 24 px or more at P; the map 75% or more of the board panel's width at D; every piece kind has its own `data-silhouette`; rule tests unchanged; shots P and D, light and dark.
+- **Size:** 3
+
+## 173. [ ] Cathnivore: Hollowell's moves as a glossy corporate ticker
+- **Why:** `cath-game-D` (350-1205 x 88-185) and `cath-game-P` (10-380 x 68-160): Squeeze, Expand and Scout are drawn on the producers' own warm paper. VISION's art direction says the corporations are glossy, plastic, over-lit and clinical; this row is where that contrast belongs.
+- **Build:**
+  - The row as an acrylic and chrome dashboard: cool corporate tokens, a specular strip, sans caps, the Hollowell plate.
+  - A sterile slot-in (no overshoot) when Hollowell commits a move, and the target region chips pulse once.
+- **Accept:** `.plan-strip[data-corp]`; its cards draw no paper texture; region chips 4.5:1 or more; reduced motion only fades; tutorial and plan-target specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 174. [ ] Hedgerow: the level card as a seed-catalogue page
+- **Why:** `hedge-menu-D` (340-1100 x 603-765): the level card is a flat white panel over the bottom of the journey map, its thumbnail a pixel grid of the lane (365-447 x 622-742) and its enemies 16 px icons in a list. On `hedge-menu-P` (8-382 x 490-660) it covers the map from 520 to 660.
+- **Build:**
+  - A seed-catalogue page: a painted vignette of the level's field, illustrated enemy portraits (40 px or more) with one threat line each, and Cath's line about the level.
+  - At D it docks beside the map, never over the path; on a phone it is a bottom sheet with a peek state.
+- **Accept:** `[data-level-card]` meets no map stop at D; one `.enemy-portrait` (40 px or more) per enemy type; `[data-cath-line]` present; hedgerow-map specs pass; shots P and D.
+- **Size:** 2
+
+## 175. [ ] NIGHT SHIFT: Cath alive on the front door
+- **Why:** `ns-title-D` (880-1110 x 240-900) and `ns-play-D` (600-900 x 140-820): items 140 and 147 gave her the bible's face and coat, but standing still she still reads as a mannequin: limbs show segment joints (650-690 x 300-560, 1075-1100 x 640-760), the hair is one solid shell, and nothing about her moves.
+- **Build:**
+  - An idle loop: breath in the chest and shoulders, a blink every 3 to 5 s, the umbrella's small sway, her weight shifting now and then.
+  - Hair as layered strand cards with a shine band; sleeves and legs joined (tube geometry or capped joints) so no seam shows at title distance.
+- **Accept:** `window.cathodeFront.scene().idle` reports breath, blink and sway; a blink within 6 s of time-stepping under `?shot`; no seam over 2 px at D in the shots; `cathode-perf` within budget; shots P, L and D at the title and class pick.
+- **Size:** 3
+
+## 176. [ ] Runnel desktop: the lesson panel as a field notebook
+- **Why:** `runnel-D` (16-346 x 198-755): the left panel is a generic rounded card (a stepper, a legend list and an 'Up next' tile) with no illustration, beside a painted valley. (Item 170 anchors her bubble; this is the panel.)
+- **Build:**
+  - Ruled notebook paper with a stitched spine; the legend's tiles as hand-inked glyphs; each lesson step ticked off with a pencil stroke as it is done.
+  - 'Up next' as a pinned card with the daily's sky and its weekday.
+- **Accept:** `.lesson-panel[data-notebook]`; each legend row has an inked glyph 28 px or more; a finished step has `data-ticked`; the page never scrolls at 1440x900; shots D light and dark (and P unchanged).
+- **Size:** 2
+
+## 177. [ ] The bugs from the 2026-11-05 18:30 critique, fixed as one batch
+- **Why:** subagent critique of `e2e/screenshots/plan1105f` (lane A). Fixed already: the 'Not yet' shelf's reasons running off the card (`cath-game-D` 220-322 x 700-716).
+- **Fix:**
+  - `cath-game-D` (1195-1330 x 790-830): the fanned 'Injunction' card's name cut by its neighbour ('njunction', 'Brindle ...lls').
+  - `cath-game-D` (35-120 x 660-690): red 'Need 1 more Goodwill' on the shelf's grey face: check 4.5:1 (unconfirmed).
+  - `cath-game-P` (358-388 x 680-760): the vertical 'NOT YET' tab about 10 px.
+  - `hedge-l21-2d-D` (1118-1400 x 670-684): the round chips' totals about 11 px grey.
+  - `hedge-l21-3d-D` (200-330 x 370-395): the HOLLOWELL gate sign over the queued vans.
+  - `hedge-l21-2d-P` (305-345 x 705-765): the Duck Pond packet's name and price under the scroll arrow.
+  - `hedge-menu-D` (195-310 x 545-582) and `hedge-menu-P` (8-95 x 440-470): 'Brand Ambassador' on the path (still open from 2026-11-05 09:30).
+  - `ns-title-P` (0-185 x 207-435): the menu plate bleeds off the left edge, the cursor at x=0; (15-260 x 450-462) the case line's contrast on the scene (unconfirmed).
+- **Accept:** each fixed point has a check in a critique177 spec (P and D) or is logged as not reproduced; shots before and after.
+- **Size:** 1
