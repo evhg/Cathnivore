@@ -10,6 +10,7 @@ import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
 import { cardLines } from './cards'
+import { startPosterPlay } from './posterplay'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
 const root = document.documentElement
@@ -289,3 +290,12 @@ try {
 
 // Cath's week (231): three goals across the games, counted from the saves.
 renderWeek(readProgress())
+
+// Plan item 145: the posters play (one at a time, in view, after load; reduced motion keeps the stills).
+startPosterPlay(
+  [...document.querySelectorAll<HTMLElement>('.hero-game')].flatMap((poster) => {
+    const art = poster.querySelector<HTMLElement>('.hero-game-art')
+    const game = (['cathnivore', 'runnel', 'hedgerow', 'nightshift'] as const).find((id) => poster.classList.contains(`hero-game-${id}`))
+    return art && game ? [{ poster, art, game }] : []
+  }),
+)

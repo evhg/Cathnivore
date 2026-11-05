@@ -1623,3 +1623,15 @@ body {
 @media (max-width: 599.98px) and (prefers-reduced-motion: reduce) {
   .hero-cath-mini { transition: none; }
 }
+
+/* Plan item 145: a playing poster's loop, over the still and under Cath. */
+.poster-loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.poster-loop.on { opacity: 1; }

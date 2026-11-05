@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-05 05:56 UTC
+
 
 
 
@@ -1779,4 +1779,74 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - A poster in view, hovered or focused plays a short loop: Runnel's water filling, a Hedgerow convoy, a Cathnivore region flipping green, NIGHT SHIFT neon and rain (video or canvas, lazy, one at a time, paused off-screen).
   - Reduced motion: stills.
 - **Accept:** one `[data-playing]` at a time; none off-screen; LCP within 100 ms of today; gate 1's weight budget kept; shots P and D still match the key art.
+- **Size:** 2
+
+## 146. [ ] The bugs from the 2026-11-05 05:56 critique, fixed as one batch
+- **Build:** (check each first; shots `plan1105b`; points already open in items 126, 138 and 139 left out)
+  - **Cathnivore:** P game: the next hand card cut by the scroll arrow ('Bu...', 330-390 x 670-770) and its rotated NOT YET label about 9 px; Cath at the phone table about 48 px wide, face about 15 px (10-60 x 505-600). D title: a stray arc on the table edge above 'Win a Daily' (1138-1172 x 760-772; unsure).
+  - **Hedgerow:** D menu: a faint dashed bar across the map (145-1295 x 280-285; unsure); act 4's ghosted grey arches behind its banner (0-1440 x 790-900). P menu: the 'Brand Ambassador' label about 55 px under its stop (10-95 x 448-482). 3D l21 D: the frame cuts the bottom plot row and the lane while 70-180 px of grass is empty at the top (90-1070 x 760-890); Cath's 3D face a pale blur (145-235 x 480-570). P field: the fifth seed packet's name and price cut by the scroll arrow (305-390 x 700-770). D l21 2D: 'Lifestyle influencer' wraps inside a one-line pill (1180-1390 x 410-445).
+  - **NIGHT SHIFT:** P title: Cath cut by the right edge and The List's polaroids across her body (270-390 x 540-844). D pick: Cath hidden behind the stats panel (935-975 x 280-330; check it isn't shot timing). P pick: stat and skill labels about 10-11 px (16-210 x 645-780); unselected class tabs low contrast (75-375 x 68-82).
+  - **Site:** portfolio D: the plan shot fires mid-entrance (blurred 'grown by AI', see-through Cath): make `plan-shots.mjs` wait for the page to settle, then re-check.
+- **Accept:** e2e text 11 px or more at 4.5:1, boxes inside the viewport and not intersecting, at P and D for each case; shots before and after.
+- **Size:** 2
+
+## 147. [ ] NIGHT SHIFT: Cath's 3D body to the character bible
+- **Why:** `ns-title-D` (900-1150 x 250-900): the trench is boxy flat panels, the arm segments don't join and the hands are mitts; item 140 fixed only her face.
+- **Build:**
+  - A tailored trench with collar, belt and a flared skirt; shoulders and arms that join smoothly.
+  - Hands with fingers round the umbrella handle.
+  - The long hair falls in waves over the coat, with a little secondary motion in the rain.
+- **Accept:** `data-cath-lod="hero"` on the front canvas; her silhouette 300 px or taller at D; cathode-perf in budget at P and D; shots P, L and D.
+- **Size:** 3
+
+## 148. [ ] NIGHT SHIFT: a front door lit like a noir poster
+- **Why:** `ns-title-D` (700-1440 x 0-900), `ns-title-P` (0-390 x 300-844): she stands in an evenly dim purple alley, with no key light, no reflection of her and no neon on her.
+- **Build:**
+  - A flickering neon sign as her key and rim light.
+  - Her reflection in a wet puddle at her feet; rain streaks lit from behind.
+  - On a phone the camera frames her whole figure above The List.
+- **Accept:** `[data-key-light]` on the front; face mean luminance 0.25 or more at D; at P her figure's box inside the viewport and meeting no polaroid; cathode-perf in budget.
+- **Size:** 2
+
+## 149. [ ] Cathnivore desktop: the actions as a hand of cards at the table's edge
+- **Why:** `cath-game-D` (33-315 x 360-710): eleven yellow buttons with 20 px icons and '8 more' folded away, while the phone has art cards (item 123).
+- **Build:**
+  - A fanned hand of illustrated cards along the table's bottom edge; a card lifts on hover and focus.
+  - The cost printed on each face; cards that can't be played sit face-down at the fan's end.
+  - Keeps item 141's suggestion leaf and previews.
+- **Accept:** `[data-hand-card]` count equals the legal actions; each card 110 px or taller; no card meets a region; no page scroll at 1440x900; rule tests unchanged; shots D light and dark.
+- **Size:** 2
+
+## 150. [ ] Cathnivore Campaign: chapters as storybook vignettes, with Cath standing on the map
+- **Why:** `cath-campaign-D` (890-1380 x 220-900): text cards with grey thumbnails; Cath is a cut-off sticker (1285-1375 x 35-180) and a 40 px token (262-305 x 560-645).
+- **Build:**
+  - A full-figure Cath, about 140 px at D, standing on the current chapter's region; she walks there when a chapter is picked.
+  - Each chapter card a painted scene of its regions and its producer, colouring in as the chapter is completed.
+- **Accept:** `[data-map-cath]` 120 px or taller at D and 64 at P, inside its chapter's region; each `[data-chapter-art]` an SVG of 5 or more shapes; shots P and D, light and dark.
+- **Size:** 2
+
+## 151. [ ] Runnel: a valley people live in
+- **Why:** `runnel-D` (390-1410 x 230-870), `runnel-P` (0-390 x 300-750): flat, empty fields; nobody cares that the water arrives.
+- **Build:**
+  - A farmer, Bea, sheep and a cart on the road walk the valley margins.
+  - When water reaches a field its farmer starts work and its crop sprouts; on the solve they cheer.
+  - Reduced motion holds them still.
+- **Accept:** 4 or more `[data-valley-folk]`; a watered field gets `data-tended`; no folk meets a tile, Cath or item 142's features; no layout shift; shots P and D before and after a solve.
+- **Size:** 2
+
+## 152. [ ] Hedgerow: twists you can see on the field
+- **Why:** `hedge-l34-2d-D` (1270-1345 x 385-405): 'The wall: FLOOD' is only a tag; the river (880-1080 x 75-890) never rises, and Sea Fret shows no fog.
+- **Build:**
+  - A flood that swells the ford and covers the edge plots for its rounds.
+  - Sea fret that drifts over the lanes and dims the tower ranges.
+  - Cath warns of it on the field the round before; 2D and 3D.
+- **Accept:** `[data-twist-active="flood"]` on the field with 1 or more `data-flooded` plots; the fog layer's opacity over 0.3 in a fret round; level tests and the tuner unchanged (dressing only, or re-tuned and logged); shots 2D and 3D, P and D.
+- **Size:** 2
+
+## 153. [ ] Hedgerow: the journey map as one painted country
+- **Why:** `hedge-menu-D` (0-1440 x 790-900): act 4 is a washed-out strip and each act a page of its own.
+- **Build:**
+  - The acts joined into one vertical scroll of painted country, each act's ground running into the next.
+  - Locked acts drawn in pencil rather than washed out; Cath walks over the act border when the next act unlocks.
+- **Accept:** `[data-act]` count equals the acts, in one scroller; the current act in view on load; the next act's top 60 px or more into the viewport; locked labels at 4.5:1; shots P and D, light and dark.
 - **Size:** 2
