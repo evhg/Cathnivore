@@ -1979,7 +1979,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** 5 or more `.round-chip`, each with a `.mix-bar` whose segments sum to 100% (±1); a twist round has `data-twist` and a label 12 px or more; at P the strip doesn't meet the field; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 169. [ ] NIGHT SHIFT: The List as a living case wall *(lane A, in progress)*
+## 169. [x] NIGHT SHIFT: The List as a living case wall *(done 2026-11-05, lane A: every print has `data-district`, a district stamp on the photo and, at D, a `.rumour` in Cath's hand (the voice serif, 12 px); four red strings (`.list-string path`) from the other prints' pins to the open case's (`data-open`); hover or focus scales a print 1.1 with a typed note (district and OPEN/SEALED/CLOSED); reduced motion: no movement. `e2e-site/cathode-listwall.spec.ts`, shots `ns169` (`scripts/cathode-listwall-shots.mjs`). Cut: at P the 64 px prints keep stamp and string but no rumour (see DECISIONS); L shows no List, as before)*
 - **Why:** `ns-title-D` (155-535 x 668-800) and `ns-title-P` (88-375 x 677-752): four identical grey 'withheld' prints are dead space on the front door.
 - **Build:**
   - Each withheld name as a silhouette with its district stamp and one rumour line in her hand.
