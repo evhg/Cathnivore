@@ -3390,7 +3390,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
     color: var(--wood-lo); font-weight: 600; transform: rotate(-2deg); transform-origin: 0 50%;
     filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 22%, transparent));
   }
-  .setup .setup-seed .setup-seed-field input::placeholder { color: color-mix(in srgb, var(--wood-lo) 72%, transparent); }
+  /* Plan item 160: the placeholder reads at 4.5:1 or more on the tag (72% was 3.5:1); italic tells it from a typed seed. */
+  .setup .setup-seed .setup-seed-field input::placeholder { color: color-mix(in srgb, var(--wood-lo) 90%, transparent); font-style: italic; }
 }
 /* Plan item 75: at D Cath stands at the stall in the Setup's right column, half length, behind the hung OPEN
    sign (it hides her waist), her line above her reacting to the picks; the header's small bust steps aside. */
