@@ -1987,7 +1987,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every List print has a non-empty `.rumour` (12 px or more) and a distinct `data-district`; 4 string paths; a focused print scales 1.08 or more; under reduced motion no movement; shots P, L and D.
 - **Size:** 2
 
-## 170. [ ] Runnel: the lesson framed close, then a pull-back to the daily
+## 170. [ ] Runnel: the lesson framed close, then a pull-back to the daily *(lane B, in progress)*
 - **Why:** `runnel-D`: the four lesson tiles fill under a third of the valley (575-1220 x 120-735); `runnel-P`: Cath's bubble (15-375 x 188-270) is about 400 px above her (25-110 x 640-750), its tail pointing at nothing.
 - **Build:**
   - The lesson frames its tiles close with Cath beside them, the bubble anchored to her.
