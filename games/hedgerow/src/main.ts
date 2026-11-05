@@ -110,6 +110,7 @@ import {
   NO_PERKS,
   isFleet,
 } from "./engine";
+import { livery, roundBanner, roundLead, roundMix } from "./roundchips";
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf, type Property } from "./fleet";
 import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
 import { roundFor } from "./rounds";
@@ -2097,6 +2098,9 @@ function fieldNotebook(g: Game): HTMLElement {
   return nb;
 }
 
+/** Which round ahead has its vehicles open under the strip (kept across redraws). */
+let openRound: string | null = null;
+
 /** Desktop side panel: which locks the field answers and the rounds ahead (styles hide it on a phone). */
 function fieldIntel(g: Game): HTMLElement {
   // Plan item 19: condensed to what's coming (the field itself shows what stands on it).
@@ -2118,25 +2122,93 @@ function fieldIntel(g: Game): HTMLElement {
     else row.append(propRow(locks, "chip-props"));
     box.append(row);
   }
-  // The next five rounds after this one, one icon each (the toughest group leads).
+  // Plan item 168: the next five rounds after this one as chips: the round, its lead vehicle, a stacked bar of its
+  // mix in each vehicle's livery and its count; a boss or flood round under a painted banner. A tap opens its vehicles.
   const ahead = g.level.waves.slice(g.wave + 1, g.wave + 6);
   if (ahead.length) {
     const tl = document.createElement("ol");
-    tl.className = "intel-timeline";
+    tl.className = "intel-timeline round-strip";
     tl.setAttribute("aria-label", "Coming rounds");
+    const detail = document.createElement("div");
+    detail.className = "round-detail";
+    detail.hidden = true;
+    const chips: HTMLButtonElement[] = [];
+    const open = (key: string | null) => {
+      openRound = key;
+      detail.replaceChildren();
+      detail.hidden = true;
+      for (const c of chips) c.setAttribute("aria-expanded", String(c.dataset.key === key));
+      const c = chips.find((x) => x.dataset.key === key);
+      if (!c) return;
+      const w = Number(c.dataset.wave);
+      const groups = g.level.waves[w] ?? [];
+      const head = line(`${Word(g)} ${waveNo(g, w + 1)}`, "round-detail-head");
+      const b = roundBanner(g.level, w);
+      if (b) head.append(" · ", b.twist === "flood" ? "the river floods the ford" : "a boss on the lane");
+      detail.append(head);
+      const ul = document.createElement("ul");
+      for (const m of roundMix(groups)) {
+        const li = document.createElement("li");
+        li.style.setProperty("--seg", livery(m.kind));
+        li.append(img(enemyIcon(m.kind), "round-detail-icon"));
+        const t = document.createElement("span");
+        t.textContent = `×${m.count} ${ENEMIES[m.kind].name}`;
+        li.append(t);
+        ul.append(li);
+      }
+      detail.append(ul);
+      detail.hidden = false;
+    };
     ahead.forEach((groups, i) => {
-      const lead = groups.reduce((a, b) => (ENEMIES[b.enemy].hp * b.count > ENEMIES[a.enemy].hp * a.count ? b : a));
+      const w = g.wave + 1 + i;
+      const n = waveNo(g, w + 1);
+      const lead = roundLead(groups);
+      const mix = roundMix(groups);
+      const total = mix.reduce((a, m) => a + m.count, 0);
+      const banner = roundBanner(g.level, w);
       const li = document.createElement("li");
-      li.className = isBig(lead.enemy) ? "boss" : "";
-      const n = waveNo(g, g.wave + 2 + i);
-      li.title = `${Word(g)} ${n}: ${groups.reduce((a, x) => a + x.count, 0)} led by ${ENEMIES[lead.enemy].name}`;
-      li.append(img(enemyIcon(lead.enemy), "chip-icon"));
-      const num = document.createElement("span");
-      num.textContent = String(n);
-      li.append(num);
+      li.className = "round-chip" + (isBig(lead) ? " boss" : "");
+      if (banner) li.dataset.twist = banner.twist;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "round-chip-btn";
+      b.dataset.key = `${g.level.id}:${w}`;
+      b.dataset.wave = String(w);
+      b.setAttribute("aria-expanded", "false");
+      b.setAttribute("aria-controls", "round-detail");
+      b.title = `${Word(g)} ${n}: ${mix.map((m) => `${m.count} ${ENEMIES[m.kind].name}`).join(", ")}`;
+      b.setAttribute("aria-label", `${Word(g)} ${n}${banner ? `, ${banner.label}` : ""}: ${total} vehicles, led by ${ENEMIES[lead].name}`);
+      if (banner) {
+        const ban = document.createElement("span");
+        ban.className = "round-banner";
+        ban.textContent = banner.label;
+        b.append(ban);
+      }
+      const no = document.createElement("span");
+      no.className = "round-no";
+      no.textContent = String(n);
+      b.append(no, img(enemyIcon(lead), "chip-icon"));
+      const bar = document.createElement("span");
+      bar.className = "mix-bar";
+      for (const m of mix) {
+        const seg = document.createElement("i");
+        seg.dataset.kind = m.kind;
+        seg.style.setProperty("--pct", String(m.pct));
+        seg.style.setProperty("--seg", livery(m.kind));
+        bar.append(seg);
+      }
+      const count = document.createElement("span");
+      count.className = "round-count";
+      count.textContent = String(total);
+      b.append(bar, count);
+      b.onclick = () => open(openRound === b.dataset.key ? null : b.dataset.key!);
+      chips.push(b);
+      li.append(b);
       tl.append(li);
     });
-    box.append(tl);
+    detail.id = "round-detail";
+    box.append(tl, detail);
+    if (openRound && chips.some((c) => c.dataset.key === openRound)) open(openRound);
   }
   return box;
 }

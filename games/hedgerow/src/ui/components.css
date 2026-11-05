@@ -4189,3 +4189,170 @@ body:has(#dlg-pause[open]) .paused-note {
     animation: none;
   }
 }
+
+/* ================================================================= The rounds ahead as chips (plan item 168) */
+/* Each round ahead: its number, its lead vehicle, a stacked bar of its mix in each vehicle's livery and its count; a
+   boss or flood round wears a painted banner across its top. A tap opens its vehicles under the strip. */
+.play .panel .intel-timeline.round-strip {
+  gap: 5px;
+  align-items: stretch;
+}
+.play .panel .intel-timeline.round-strip li.round-chip,
+.play .panel .field-tabs[data-tab="intel"] .intel-timeline.round-strip li.round-chip {
+  position: relative;
+  align-items: stretch;
+  padding: 0;
+  overflow: visible;
+  background: none;
+}
+.round-chip-btn {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto auto;
+  grid-template-areas: "no icon" "bar bar" "count count";
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  column-gap: 4px;
+  row-gap: 4px;
+  width: 100%;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: var(--r-note);
+  background: color-mix(in srgb, var(--line) 22%, transparent);
+  color: var(--ink-2);
+  font: 700 var(--fs-label) / 1.1 var(--font-ui);
+  cursor: pointer;
+}
+.round-chip.boss .round-chip-btn {
+  background: color-mix(in srgb, var(--line) 40%, transparent);
+  color: var(--ink);
+}
+.round-chip-btn:hover {
+  background: color-mix(in srgb, var(--line) 48%, transparent);
+}
+.round-chip-btn[aria-expanded="true"] {
+  box-shadow: inset 0 0 0 2px var(--brass);
+  color: var(--ink);
+}
+.round-chip-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+.round-chip-btn .round-no {
+  grid-area: no;
+  font: 700 var(--fs-small) / 1.1 var(--font-num);
+  color: var(--ink);
+}
+.round-chip-btn .chip-icon {
+  grid-area: icon;
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+}
+.round-chip-btn .mix-bar {
+  grid-area: bar;
+  display: flex;
+  width: 100%;
+  height: 9px;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--ink-a14);
+  background: var(--paper-shade);
+}
+.round-chip-btn .mix-bar i {
+  display: block;
+  flex: none;
+  width: calc(var(--pct, 0) * 1%);
+  height: 100%;
+  background: var(--seg, var(--ink-3));
+}
+.round-chip-btn .mix-bar i + i {
+  box-shadow: inset 1px 0 0 var(--white-a50);
+}
+.round-chip-btn .round-count {
+  grid-area: count;
+  text-align: center;
+  font: 700 var(--fs-label) / 1 var(--font-num);
+  color: var(--ink-2);
+}
+/* The painted banner: a ribbon across the chip's top with swallow-tailed ends, the round's number under it. */
+/* (it overhangs the chip's top, so the vehicles stay level along the strip) */
+.round-chip[data-twist] .round-chip-btn {
+  padding-top: 12px;
+}
+.round-banner {
+  position: absolute;
+  top: -8px;
+  left: -3px;
+  right: -3px;
+  padding: 2px 0 3px;
+  clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
+  background: var(--path-0);
+  color: var(--on-fill);
+  font: 800 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  text-align: center;
+  box-shadow: var(--sh-1);
+}
+.round-chip[data-twist="flood"] .round-banner {
+  background: var(--path-1);
+}
+.round-chip[data-twist="flood"] .round-chip-btn {
+  background: color-mix(in srgb, var(--path-1) 16%, transparent);
+}
+/* Its vehicles, under the strip */
+.round-detail {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: var(--r-note);
+  background: color-mix(in srgb, var(--line) 16%, transparent);
+  font: 600 var(--fs-small) / 1.25 var(--font-ui);
+  color: var(--ink);
+}
+.round-detail[hidden] {
+  display: none;
+}
+.round-detail .round-detail-head {
+  margin: 0 0 4px;
+  font-weight: 800;
+}
+.round-detail ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.round-detail li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 6px;
+  border-left: 4px solid var(--seg, var(--ink-3));
+}
+.round-detail-icon {
+  width: 24px;
+  height: 24px;
+}
+/* A phone's drawer: the same chip, tighter, so the notebook still ends whole above the tray */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .round-chip-btn {
+    column-gap: 3px;
+    row-gap: 2px;
+    padding: 3px;
+  }
+  .round-chip-btn .chip-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .round-chip-btn .mix-bar {
+    height: 7px;
+  }
+  .round-banner {
+    padding: 1px 0 2px;
+  }
+}
