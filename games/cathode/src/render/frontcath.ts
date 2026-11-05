@@ -22,7 +22,9 @@ export interface FrontCath {
    * C14 (S9.5): a 1.2 s class idle, from the next update (or held at `u`, 0..1, for screenshots): ghost glances over
    * her shoulder, butcher rolls her neck, gunslinger squares up, wirewitch twirls the umbrella, fixer checks her cuff.
    */
-  play(kind: string, u?: number): void;
+  play(kind: string, u?: number, seconds?: number): void;
+  /** Plan item 136: the class idle playing now and how far through it is (0..1), or null. */
+  readonly clipState: { kind: string; u: number } | null;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
   tint(c: THREE.Color, w: number): void;
   /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
@@ -32,6 +34,9 @@ export interface FrontCath {
   /** Plan item 112: the class's kit over the coat (ghost's rifle sling, butcher's apron, gunslinger's holster,
    *  wirewitch's wire rig, fixer's tie); null takes it off. One kit shows at a time. */
   kit(cls: string | null): void;
+  /** Plan item 136: every kit shown at once (true) or back to the one she wears, so the warm-up compiles their
+   *  shaders before the first class change (one compiled mid-pick stalled the frame). */
+  showAllKits(on: boolean): void;
   /** The kit she's wearing (null for none). */
   readonly wearing: string | null;
   dispose(): void;
@@ -1006,7 +1011,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let n = 0;
   const legRest = legs.map((l) => l.rotation.z);
   const CLIP_S = 1.2;
-  let clip: { kind: string; t0: number | null; held?: number } | null = null;
+  let clip: { kind: string; t0: number | null; held?: number; dur: number; u: number } | null = null;
+  // Plan item 136: the Wirewitch's rig flares through her audition (its base colour, scaled up and back).
+  let rigMat: THREE.MeshBasicMaterial | null = null;
+  const rigBase = new THREE.Color(0.55, 0.16, 1.25);
   let clipDraw = 0;
   const tgt = new THREE.Vector3();
   const pole = new THREE.Vector3();
@@ -1049,7 +1057,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     let armOn = false;
     if (clip) {
       if (clip.t0 === null) clip.t0 = t;
-      const cu = clip.held ?? (t - clip.t0) / CLIP_S;
+      const cu = clip.held ?? (t - clip.t0) / clip.dur;
+      clip.u = Math.max(0, cu);
       if (cu >= 1 || cu < 0) clip = null;
       else {
         const e = THREE.MathUtils.smootherstep(cu, 0, 0.26) * (1 - THREE.MathUtils.smootherstep(cu, 0.8, 1));
@@ -1109,6 +1118,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
     const palmed = armOn && !!clip && clip.kind !== "ghost" && clip.kind !== "fixer";
     cigMesh.visible = !palmed;
+    if (rigMat) {
+      const on = clip?.kind === "wirewitch" ? THREE.MathUtils.smoothstep(clip.u, 0.15, 0.35) * (1 - THREE.MathUtils.smoothstep(clip.u, 0.75, 0.95)) : 0;
+      // Two pulses down the cables as the rig powers up, then a steady glow that settles.
+      const pulse = on * (1.4 + 0.6 * Math.sin(clip ? clip.u * Math.PI * 8 : 0));
+      rigMat.color.copy(rigBase).multiplyScalar(1 + pulse);
+    }
     ember.visible = !palmed;
     if (!armOn) {
       upperL.matrix.identity();
@@ -1291,7 +1306,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
           tube([[0.04, 0.5, -0.11], [0.15, 0.53, -0.01], [0.15, 0.4, 0.11], [0.09, 0.18, 0.1], [0.07, 0.12, 0.1]], 0.0042),
           deck,
         ],
-        kitMat(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.55, 0.16, 1.25), toneMapped: false })),
+        kitMat((rigMat = new THREE.MeshBasicMaterial({ color: rigBase.clone(), toneMapped: false }))),
       ],
     ]);
     // Fixer: a claret tie down the open collar and a white pocket square.
@@ -1317,13 +1332,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
       wearing = cls && kits.has(cls) ? cls : null;
       for (const [k, g] of kits) g.visible = k === wearing;
     },
+    showAllKits(on) {
+      for (const [k, g] of kits) g.visible = on || k === wearing;
+    },
     update,
     triangles: Math.round(tris),
     setRim(viewDir) {
       rimU.uRimDir.value.copy(viewDir).normalize();
     },
-    play(kind, u) {
-      clip = { kind, t0: null, held: u };
+    play(kind, u, seconds) {
+      clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };
+    },
+    get clipState() {
+      return clip ? { kind: clip.kind, u: clip.u } : null;
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);

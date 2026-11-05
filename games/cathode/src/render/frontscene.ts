@@ -44,6 +44,8 @@ export interface FrontScene {
    * and the class's 1.2 s idle. null goes back to the title loop. `instant` (screenshots) skips the eases.
    */
   wardrobe(cls: string | null, instant?: boolean): void;
+  /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
+  readonly vignette: { kind: string; u: number } | null;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
   readonly dressed: string | null;
   /** The class kit she wears over the coat (null on the title). */
@@ -242,9 +244,24 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const up = new THREE.Vector3(0, 1, 0);
 
   // ---- the wardrobe (C14): its framing blends over the loop; its key light changes colour over 400 ms ----
-  const wd = { w: 0, target: 0, cls: null as string | null, turn: 0, dolly: 0, flash: 0 };
-  /** Plan item 129: a class change dollies the lens in to her over 250 ms (from 9% further out) and flashes her key. */
-  const DOLLY_S = 0.25;
+  const wd = { w: 0, target: 0, cls: null as string | null, turn: 0, flash: 0, cut: 0, cutCls: "ghost" };
+  /**
+   * Plan item 136: a class change is a 3 s audition. The lens cuts to the class's own angle (closer, and from below,
+   * above or the side: the Ghost low and tight, the Butcher from under her fist, the Gunslinger squared off from her
+   * left, the Wirewitch from above her rig, the Fixer from her right), holds through the pose, then eases home over
+   * the last 0.7 s. [push toward her as a fraction of the distance, rise in m, step sideways in m]
+   */
+  const VIGNETTE_S = 3;
+  const CUT_EASE_S = 0.7;
+  const CUT: Record<string, [number, number, number]> = {
+    ghost: [0.16, -0.1, 0.06],
+    butcher: [0.1, -0.22, -0.08],
+    gunslinger: [0.08, -0.04, 0.24],
+    wirewitch: [0.14, 0.16, -0.05],
+    fixer: [0.12, 0.04, -0.22],
+  };
+  const side = new THREE.Vector3();
+  /** Plan item 129: a class change flashes her key (its 250 ms dolly became item 136's cut). */
   const FLASH_S = 0.32;
   /** Plan item 42: a change of class turns her out and back to the lens over 400 ms (none under reduced motion). */
   const TURN_S = 0.4;
@@ -311,10 +328,15 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         l.y -= 0.15 * e;
         p.sub(l).multiplyScalar(1 + 0.35 * e).add(l);
       }
-      // Plan item 129: the dolly in after a class change, 9% further out easing home over 250 ms.
-      if (wd.dolly > 0) {
-        wd.dolly = Math.max(0, wd.dolly - dt);
-        p.sub(l).multiplyScalar(1 + 0.09 * smoother(wd.dolly / DOLLY_S)).add(l);
+      // Plan item 136: the audition's cut, held, then eased home.
+      if (wd.cut > 0) {
+        wd.cut = Math.max(0, wd.cut - dt);
+        const c = CUT[wd.cutCls] ?? CUT.ghost!;
+        const k = smoother(Math.min(1, wd.cut / CUT_EASE_S)) * e;
+        side.subVectors(l, p).cross(up).normalize();
+        p.lerp(l, c[0] * k);
+        p.y += c[1] * k;
+        p.addScaledVector(side, c[2] * k);
       }
     }
     // Plan item 82: ...and the lens aims higher there, so she stands in the lower half under the menu.
@@ -459,7 +481,13 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Every shader the frame needs compiles in the background first (render/warm.ts): drawing the first frame
   // straight away compiled ~80 programs on the main thread and froze the page for seconds.
   aim(0, 0);
-  await world.warm?.();
+  // Plan item 136: the class kits compile here too, not on her first change of class.
+  cath.showAllKits(true);
+  try {
+    await world.warm?.();
+  } finally {
+    cath.showAllKits(false);
+  }
   // The first frame now, so the canvas never shows black once the scene is ready.
   frame(1 / 60);
   raf = requestAnimationFrame(loop);
@@ -522,16 +550,21 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     get dressed() {
       return wd.cls;
     },
+    get vignette() {
+      return cath.clipState;
+    },
     get kit() {
       return cath.wearing;
     },
     wardrobe(cls, instant) {
       const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (!instant && !o.still && cls && wd.cls && cls !== wd.cls) {
-        // Reduced motion keeps the flash (light, not movement) and drops the turn and the dolly.
+        // Reduced motion keeps the flash (light, not movement) and drops the turn and the cut.
+        // Plan item 136: the audition's cut replaces item 129's dolly (a cut, not a push, reads as a new shot).
         if (!reduce) {
           wd.turn = TURN_S;
-          wd.dolly = DOLLY_S;
+          wd.cut = VIGNETTE_S;
+          wd.cutCls = cls;
         }
         wd.flash = FLASH_S;
       }
@@ -541,7 +574,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       keyWant.setRGB(c[0]!, c[1]!, c[2]!);
       const coatHex = cls ? CLASS_COAT[cls] : null;
       coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
-      if (cls) cath.play(cls, instant ? 0.5 : undefined);
+      if (cls) cath.play(cls, instant ? 0.5 : undefined, VIGNETTE_S);
       cath.kit(cls);
       if (instant) {
         wd.w = wd.target;

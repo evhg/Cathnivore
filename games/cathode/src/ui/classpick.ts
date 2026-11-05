@@ -125,6 +125,43 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const goHow = el("span", "cp-hold-how", go, "Hold");
   goHow.id = "cp-hold-how";
 
+  // Plan item 136: her line spoken over the audition as a subtitle under her, word by word, gone after 3.2 s
+  // (the vignette's length). The quote in the column carries it for screen readers, so this one is hidden from them.
+  const sub = el("p", "cp-sub", root);
+  sub.setAttribute("aria-hidden", "true");
+  let subTimer = 0;
+  function placeSub(): void {
+    const portrait = innerWidth <= 700 && innerHeight > innerWidth;
+    const a = left.getBoundingClientRect();
+    const b = sheet.getBoundingClientRect();
+    const w = words.getBoundingClientRect();
+    // Between the columns at D, its foot level with the left column's; on an upright phone just over her words.
+    const l = portrait ? 16 : a.right;
+    const r = portrait ? innerWidth - 16 : b.left;
+    root.style.setProperty("--sub-l", `${Math.ceil(l)}px`);
+    root.style.setProperty("--sub-w", `${Math.max(0, Math.floor(r) - Math.ceil(l))}px`);
+    root.style.setProperty("--sub-b", `${Math.round(innerHeight - (portrait ? w.top - 8 : a.bottom))}px`);
+  }
+  function speak(text: string): void {
+    clearTimeout(subTimer);
+    sub.replaceChildren();
+    text.split(/\s+/).forEach((word, i) => {
+      const s = el("span", "cp-sub-w", sub, `${word} `);
+      s.style.setProperty("--i", String(i));
+    });
+    placeSub();
+    sub.classList.remove("is-on");
+    void sub.offsetWidth;
+    sub.classList.add("is-on");
+    root.dataset.speaking = "true";
+    if (hooks.still) return;
+    subTimer = window.setTimeout(() => {
+      sub.classList.remove("is-on");
+      delete root.dataset.speaking;
+    }, 3200);
+  }
+  addEventListener("resize", placeSub);
+
   let countRaf = 0;
   function renderDetail(): void {
     const cls = selected;
@@ -134,6 +171,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     kicker.textContent = def.fantasy.replace(/\.$/, "");
     line.textContent = `“${copy.line}”`;
     plays.textContent = copy.playsLike;
+    speak(copy.line);
     for (const e of [kicker, line, plays]) {
       e.classList.remove("is-in");
       void e.offsetWidth;
@@ -313,6 +351,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     cancelAnimationFrame(countRaf);
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
+    clearTimeout(subTimer);
+    removeEventListener("resize", placeSub);
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("keyup", onKeyUp, true);
     removeEventListener("blur", onBlur);

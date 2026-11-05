@@ -130,7 +130,7 @@ test('the 18+ gate keeps its marks off the screen edge, and the loading line is 
 // phone the hold bar is pinned on screen with a "more below" cue that goes once the sheet is read to its end;
 // held sideways, the case board shows its first lead and Back on the first screen.
 test.describe('CATHODE front door fits (plan item 40)', () => {
-  test('class pick: no menu under the still, and the phone pins the hold bar with a scroll cue', async ({ page, hasTouch }) => {
+  test('class pick: no menu under the still, and the phone pins the hold bar on one screen', async ({ page, hasTouch }) => {
     test.setTimeout(180_000)
     if (hasTouch) await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/nightshift/?shot')
@@ -144,17 +144,11 @@ test.describe('CATHODE front door fits (plan item 40)', () => {
     const box = await hold.boundingBox()
     expect(box!.y + box!.height).toBeLessThanOrEqual(vh + 1)
     if (!hasTouch) return
-    // The sheet runs past the fold: the cue shows, and goes once scrolled to the end.
-    await expect(page.locator('.cp')).toHaveClass(/cp-more/)
-    await expect(page.locator('.cp-cue')).toHaveText(/more below/i)
-    await expect.poll(() => page.locator('.cp-cue').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeGreaterThan(0.9)
-    await page.evaluate(() => {
-      const cp = document.querySelector('.cp')!
-      cp.scrollTop = cp.scrollHeight
-    })
+    // Plan item 125 replaced item 40's scroll: the whole file fits one screen, so there is no 'more below' cue,
+    // and the last of the sheet (the skill trees) sits above the pinned bar, not under it.
     await expect(page.locator('.cp')).not.toHaveClass(/cp-more/)
-    await expect.poll(() => page.locator('.cp-cue').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeLessThan(0.1)
-    // At the end, the last of the sheet (the skill trees) sits above the pinned bar, not under it.
+    expect(await page.locator('.cp').evaluate((e) => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(1)
+    await expect.poll(() => page.locator('.cp-cue').evaluate((e) => (getComputedStyle(e).display === 'none' ? 0 : Number(getComputedStyle(e).opacity)))).toBeLessThan(0.1)
     const last = await page.locator('.cp-tree').last().boundingBox()
     const bar = await page.locator('.cp-foot').boundingBox()
     expect(last!.y + last!.height).toBeLessThanOrEqual(bar!.y + 26)

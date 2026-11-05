@@ -160,3 +160,53 @@ test('every class frames her face in the middle band, and each has an audible ra
     expect(a.seconds, `${cls} ${JSON.stringify(a)}`).toBeLessThan(0.6)
   }
 })
+
+// Plan item 136: each class change is a 3 s audition, started at once: a cut to the class's angle with her face
+// framed (110 px or more at D in the middle band, 70 at P), the pose, and her line as a subtitle under her that
+// stays inside the screen and off the names, the sheet and her words.
+test('a class change starts its audition at once, her face framed and her line subtitled', async ({ page, hasTouch }) => {
+  test.setTimeout(420_000)
+  type F = { cathodeFront?: { scene: () => { dressed: string | null; vignette: { kind: string; u: number } | null; faceBox(): Box } | null } }
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
+  await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
+  const W = hasTouch ? 390 : 1440
+  const H = hasTouch ? 844 : 900
+  for (const cls of [...CLASSES.slice(1), 'ghost']) {
+    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    // Started within the click's own task: no frame needs to pass.
+    const v = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette)
+    expect(v?.kind, cls).toBe(cls)
+    await page.waitForTimeout(1200)
+    const m = await page.evaluate(() => {
+      const b = (s: string) => {
+        const r = document.querySelector(s)!.getBoundingClientRect()
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
+      }
+      const sub = document.querySelector('.cp-sub')!
+      return {
+        face: (window as unknown as F).cathodeFront!.scene()!.faceBox(),
+        sub: b('.cp-sub'), on: sub.classList.contains('is-on'), text: sub.textContent ?? '', size: parseFloat(getComputedStyle(sub).fontSize),
+        sheet: b('.cp-sheet'), list: b('.cp-list'), words: b('.cp-words'), head: b('.cp-head'),
+      }
+    })
+    const s = JSON.stringify({ cls, m })
+    const meets = (a: Box, o: Box) => a.left < o.right && a.right > o.left && a.top < o.bottom && a.bottom > o.top
+    const { face } = m
+    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(hasTouch ? 70 : 110)
+    expect(face.left >= 0 && face.top >= 0 && face.right <= W && face.bottom <= H, s).toBe(true)
+    if (!hasTouch) {
+      expect(face.left >= 470 && face.right <= 960 && face.top >= 150 && face.bottom <= 500, s).toBe(true)
+      for (const o of [m.sheet, m.list]) expect(meets(face, o), s).toBe(false)
+    }
+    expect(m.on, s).toBe(true)
+    expect(m.text.length, s).toBeGreaterThan(10)
+    expect(m.size, s).toBeGreaterThanOrEqual(13)
+    expect(m.sub.left >= 0 && m.sub.top >= 0 && m.sub.right <= W && m.sub.bottom <= H, s).toBe(true)
+    for (const o of [m.sheet, m.list, m.words, m.head]) expect(meets(m.sub, o), s).toBe(false)
+    expect(meets(m.sub, face), s).toBe(false)
+  }
+  // Gone after the audition.
+  await expect(page.locator('.cp-sub')).not.toHaveClass(/is-on/, { timeout: 6000 })
+})
