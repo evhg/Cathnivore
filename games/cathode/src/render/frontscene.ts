@@ -81,6 +81,8 @@ const LOOP_S = 36;
 const FOV = 38;
 /** Cath stands 1.2 m north of the job's start, facing south down the street: the push passes her shoulder. */
 const CATH_BACK = 1.2;
+/** Plan item 148: on the upright title, how far past her the neon blade hangs (m). */
+const NEON_BEHIND = 4.2;
 
 /**
  * The four framings in Cath's frame (x her left, y up, z ahead of her), metres. Plan item 117: the face of every
@@ -412,6 +414,27 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     fitQuat.copy(cam.quaternion);
   }
 
+  // Plan item 148: on the upright title the blade (screen right of her elsewhere) would hang off the edge, so it
+  // steps in behind her: up the street on the line through her shoulders, a few metres past her, and its pink
+  // haloes her silhouette there.
+  const neonHome = neon.group.quaternion.clone();
+  const neonStaged = new THREE.Vector3();
+  const neonFace = new THREE.Vector3();
+  function placeNeon(k: number): void {
+    if (k <= 0.001) {
+      neon.group.position.copy(neonAt);
+      neon.group.quaternion.copy(neonHome);
+      return;
+    }
+    const bx = cloudBox();
+    fitV.set(bx.l + (bx.r - bx.l) * 0.56, bx.t - (bx.t - bx.b) * 0.32, 0.5).unproject(cam).sub(cam.position).normalize();
+    neonStaged.copy(cam.position).addScaledVector(fitV, cam.position.distanceTo(feet) + NEON_BEHIND);
+    neon.group.position.lerpVectors(neonAt, neonStaged, k);
+    neonFace.set(cam.position.x, neon.group.position.y, cam.position.z);
+    neon.group.lookAt(neonFace);
+    neon.group.quaternion.slerpQuaternions(neonHome, neon.group.quaternion, k);
+  }
+
   function aim(t: number, dt: number): void {
     const u = (((t / LOOP_S) % 1) + 1) % 1;
     posCurve.getPointAt(u, p);
@@ -472,6 +495,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.position.copy(keepPos).lerp(fitPos, fitK);
       cam.quaternion.copy(keepQuat).slerp(fitQuat, fitK);
     }
+    placeNeon(fitK);
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
       spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
@@ -560,7 +584,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       aim(time, dt);
     }
     cath.update(dt, time, world.wind);
-    neon.update(time, o.still);
+    // The rain round the sign dims as the wardrobe's class key takes over.
+    neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
     rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);

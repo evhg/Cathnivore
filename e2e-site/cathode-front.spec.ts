@@ -204,7 +204,8 @@ test('the front door has no letterbox bars at P and D', async ({ page }) => {
 
 // Plan item 82: on an upright phone she stood in the lower right, clear of the menu. Plan item 148 frames her whole
 // on the title instead, umbrella to shoes, down the right above The List's photo strip: her figure inside the
-// viewport and meeting no polaroid, her face meeting no menu entry, the scene's key light named on the canvas.
+// viewport and meeting no polaroid, her face meeting no menu entry, the scene's key light named on the canvas, and
+// the neon blade behind her with its backlit rain.
 test('upright, she stands whole above The List, her face clear of the menu', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'the upright phone framing')
   test.setTimeout(200_000)
@@ -223,6 +224,16 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
       mugs: [...document.querySelectorAll('#the-list-wall .mug')].map(box).filter((r) => r.right > r.left),
       fig: scene!.figureBox(),
       face: scene!.faceBox(),
+      // Plan item 148: the neon blade's middle on screen, and its backlit rain.
+      neon: (() => {
+        type V = { clone(): V; project(c: unknown): V; x: number; y: number }
+        type O = { name: string; position: V; getWorldPosition(v: V): V; geometry?: { instanceCount?: number } }
+        const w = (scene as unknown as { world: { camera: unknown; scene: { getObjectByName(n: string): O | undefined } } }).world
+        const g = w.scene.getObjectByName('front-neon')!
+        const v = g.getWorldPosition(g.position.clone()).project(w.camera)
+        const rain = w.scene.getObjectByName('front-neon-rain')
+        return { x: ((v.x + 1) / 2) * innerWidth, y: ((1 - v.y) / 2) * innerHeight, drops: rain?.geometry?.instanceCount ?? 0 }
+      })(),
     }
   })
   const hits = (a: B, b: B) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
@@ -235,6 +246,14 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
   for (const r of m.rows) expect(hits(m.face, r), JSON.stringify({ face: m.face, r })).toBe(false)
   // Whole, but not small: she fills most of the screen above the strip.
   expect(m.fig.bottom - m.fig.top).toBeGreaterThan(560)
+  // Plan item 148: the sign steps in behind her (it hangs off the right edge in the landscape framings), its middle
+  // inside her figure's width and her top half, off every menu entry; rain falls through its light.
+  expect(m.neon.x, JSON.stringify(m.neon)).toBeGreaterThan(m.fig.left)
+  expect(m.neon.x).toBeLessThan(m.fig.right)
+  expect(m.neon.y).toBeGreaterThan(m.fig.top)
+  expect(m.neon.y).toBeLessThan((m.fig.top + m.fig.bottom) / 2)
+  for (const r of m.rows) expect(m.neon.x > r.left && m.neon.x < r.right && m.neon.y > r.top && m.neon.y < r.bottom).toBe(false)
+  expect(m.neon.drops).toBeGreaterThan(100)
 })
 
 // Plan item 82: the logotype holds at least 4.5:1 against the street behind it at P and D (the 95th-percentile
