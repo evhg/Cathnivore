@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-05T16:02Z
+
 
 
 
@@ -1951,4 +1951,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - A full-figure Cath in the phone valley, clear of the tiles, her bubble anchored to her.
   - Her expression follows play: pointing at a hint, delighted on a watered field, worried after many turns.
 - **Accept:** at 390x844 `[data-cath-figure]` 120 px or taller inside the board's frame, meeting no tile; `data-expression` changes on a solve in e2e; bubble text 15 px at 4.5:1; shots P and D.
+- **Size:** 2
+
+## 166. [ ] The bugs from the 2026-11-05 16:05 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1105e`; points already open in 91, 126, 138 and 161 left out)
+  - **Cathnivore:** D game: the Supply card's leaf badge (955-980 x 735-760) over the Open Stall card; Hollowell plan cards' small print about 11 px (360-460 x 160-175). P game: Cath's bubble (80-375 x 540-590) over the Oakvale and Shingle Bay hexes; the Tomas bust (320-380 x 480-545) over the Shingle Bay hex. D title: the crates (500-580 x 700-765) on the chalk board's edge; 'NEXT #5' (1318-1398 x 752-845) off the table. P title: the 'No sale yet' ticket (15-175 x 425-470) across Cath's waist. D setup: 'OPEN' over Start about 10 px. P setup: 'The Long Coast' in 3 lines (195-250 x 712-755).
+  - **Runnel:** P: the wheelbarrow clipped by the left edge (0-30 x 435-455). D: a dark smudge across the third lesson tile (1010-1165 x 580-660).
+  - **Hedgerow:** 2D D l21: the bubble's tail points at the depot, not at Cath (60-290 x 528-612). P (l21 2D and 3D, l34): the Duck Pond packet clipped under the next arrow (305-345 x 705-770); 'NEXT: ROUND' tab over the field (225-370 x 672-692). l34 D: the second depot shows '—' for its count (90-215 x 600-720). Menu: the Act 4 'Rivermead' header low contrast under fog (D 145-440 x 795-835; P 15-380 x 735-770).
+  - **NIGHT SHIFT:** D title: the neon glyphs cross Cath's head (1000-1170 x 180-450); 'No case open' about 10 px. P pick: 'HOLD' about 10 px (343-373 x 805-817).
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
+- **Size:** 2
+
+## 167. [ ] Cathnivore desktop: the left rail as the producer's player mat
+- **Why:** `cath-game-D` (16-332 x 12-876): the rail is a plain list (five 'Not yet' rows, red 'Need N more') beside a painted table, and Mara's portrait shows twice (30-185 x 25-210 and her seat, 1195-1330 x 285-445).
+- **Build:**
+  - A wooden mat: produce, Marks and Goodwill as crates, a coin stack and rosettes, with counts and this round's gains.
+  - What isn't affordable yet as a shelf of small illustrated cards in shadow with their price tags, not text rows.
+  - One portrait per producer on screen: the seat at the table is the bust; the rail shows the mat.
+- **Accept:** at 1440x900 `[data-player-mat]` exists; each 'Not yet' card is 80 px wide or more with its picture; one visible portrait per producer; nothing in the rail overlaps; rule tests unchanged; shots D light and dark.
+- **Size:** 2
+
+## 168. [ ] Hedgerow: the coming rounds as an illustrated timeline
+- **Why:** `hedge-l21-3d-D` 'Coming up' (1105-1415 x 545-710): five near-identical van icons with numbers; only the threat card says what's coming, and a twist round (l34's FLOOD) shows nothing on the field.
+- **Build:**
+  - A strip of the next rounds, each a chip with a stacked bar of its mix in each vehicle's colour and its count.
+  - Boss and twist rounds carry a painted banner (flood, fog...); tapping a chip opens its vehicles.
+- **Accept:** 5 or more `.round-chip`, each with a `.mix-bar` whose segments sum to 100% (±1); a twist round has `data-twist` and a label 12 px or more; at P the strip doesn't meet the field; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 169. [ ] NIGHT SHIFT: The List as a living case wall
+- **Why:** `ns-title-D` (155-535 x 668-800) and `ns-title-P` (88-375 x 677-752): four identical grey 'withheld' prints are dead space on the front door.
+- **Build:**
+  - Each withheld name as a silhouette with its district stamp and one rumour line in her hand.
+  - Red string pinned from each print to the open case; focusing or hovering a print pulls it forward with a typed note.
+- **Accept:** every List print has a non-empty `.rumour` (12 px or more) and a distinct `data-district`; 4 string paths; a focused print scales 1.08 or more; under reduced motion no movement; shots P, L and D.
+- **Size:** 2
+
+## 170. [ ] Runnel: the lesson framed close, then a pull-back to the daily
+- **Why:** `runnel-D`: the four lesson tiles fill under a third of the valley (575-1220 x 120-735); `runnel-P`: Cath's bubble (15-375 x 188-270) is about 400 px above her (25-110 x 640-750), its tail pointing at nothing.
+- **Build:**
+  - The lesson frames its tiles close with Cath beside them, the bubble anchored to her.
+  - A small flourish as the water reaches each tile; after step 3 a 900 ms pull-back shows the daily board in the same valley.
+- **Accept:** the lesson tiles' box is 55% of the valley's width or more at D; the bubble's tail ends within 40 px of Cath's box at P and D; the daily board is shown within 1.5 s of the lesson's end with no route change; reduced motion cuts instead; shots P and D.
+- **Size:** 2
+
+## 171. [ ] Cathnivore and Hedgerow phone: Cath's line docked, off the board
+- **Why:** `cath-game-P` (80-375 x 540-590) and `hedge-l21-2d-P` (90-240 x 600-678): her speech bubble covers hexes and plots, against 'the table is the hero'.
+- **Build:**
+  - On an upright phone her line docks above the hand or tray beside her bust (64 px or more), sliding in over 200 ms; a tap dismisses it.
+  - Her expression follows the line's context.
+- **Accept:** at 390x844 the line meets no `.region-hex` (Cathnivore) and no plot (Hedgerow); her bust 64 px or more; `role=status`; tutorial specs pass; shots P light and dark.
 - **Size:** 2
