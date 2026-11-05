@@ -16,11 +16,12 @@ test("Hedgerow map: the level card's stars read at 18 px or more, and no vehicle
   const stars = await card.locator('.lcard-stars').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
   expect(stars).toBeGreaterThanOrEqual(18)
   if (hasTouch) return // the phone sheet leaves the vehicles off
+  // Plan item 174: each vehicle is a portrait with its name over a threat line; the name itself stays on one line.
   const rows = await card.locator('.lcard-enemies li').evaluateAll((lis) =>
-    lis.map((li) => ({ h: li.getBoundingClientRect().height, text: li.textContent, top: li.getBoundingClientRect().top })),
+    lis.map((li) => ({ h: li.querySelector('.lcard-foe b')!.getBoundingClientRect().height, text: li.textContent, top: li.getBoundingClientRect().top })),
   )
   expect(rows.length).toBeGreaterThan(0)
-  for (const r of rows) expect(r.h, r.text ?? '').toBeLessThanOrEqual(30)
+  for (const r of rows) expect(r.h, r.text ?? '').toBeLessThanOrEqual(22)
   // A fourth vehicle sits in the grid's second column, never alone on a row of its own.
   if (rows.length === 4) expect(Math.abs(rows[3]!.top - rows[2]!.top)).toBeLessThanOrEqual(1)
 })

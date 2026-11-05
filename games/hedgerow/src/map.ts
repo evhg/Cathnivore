@@ -1658,36 +1658,149 @@ interface LevelCard {
   show(lv: Level): void;
 }
 
-/** A small plan of the field: its plots and the lane through them (plan item 88's thumbnail). */
+/**
+ * Plan item 174: the level card's vignette, a painted catalogue plate of the field: meadow under a soft light, each
+ * plot a furrowed bed in its own crop, the lane a rutted farm track with its verges, water and high ground, the
+ * field's oaks and barns, all framed by a hedge. Drawn from the level's own layout, so each field has its own plate.
+ */
+const CROPS = [
+  ["#d9b25a", "#b98c34"],
+  ["#8fb35a", "#6a8f3c"],
+  ["#c9a46a", "#9c7a44"],
+  ["#a7c46c", "#7f9e48"],
+] as const;
 function fieldThumb(lv: Level): string {
-  const w = lv.cols * 10;
-  const h = lv.rows * 10;
-  const lane = new Set(lv.path.map(([c, r]) => `${c},${r}`));
-  let cells = "";
+  const S = 12;
+  const w = lv.cols * S;
+  const h = lv.rows * S;
+  const key = (c: number, r: number) => `${c},${r}`;
+  const lane = new Set([...lv.path, ...(lv.path2 ?? [])].map(([c, r]) => key(c, r)));
+  const water = new Set((lv.terrain?.water ?? []).map(([c, r]) => key(c, r)));
+  const high = new Set((lv.terrain?.high ?? []).map(([c, r]) => key(c, r)));
+  const taken = new Set([...(lv.oaks ?? []), ...(lv.barns ?? [])].map(([c, r]) => key(c, r)));
+  let beds = "";
   for (let r = 0; r < lv.rows; r++)
-    for (let c = 0; c < lv.cols; c++) if (!lane.has(`${c},${r}`)) cells += `<rect class="lc-plot" x="${c * 10 + 1}" y="${r * 10 + 1}" width="8" height="8" rx="2"/>`;
-  const d = lv.path.map(([c, r], i) => `${i ? "L" : "M"}${c * 10 + 5} ${r * 10 + 5}`).join("");
-  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><rect class="lc-ground" width="${w}" height="${h}" rx="4"/>${cells}<path class="lc-lane" d="${d}"/></svg>`;
+    for (let c = 0; c < lv.cols; c++) {
+      const k = key(c, r);
+      const x = c * S;
+      const y = r * S;
+      if (lane.has(k)) continue;
+      if (water.has(k)) {
+        beds += `<rect x="${x + 0.5}" y="${y + 0.5}" width="${S - 1}" height="${S - 1}" rx="4" fill="#6fa8c0"/><path d="M${x + 3} ${y + 6}q1.5-1.5 3 0t3 0" fill="none" stroke="#d8eef4" stroke-width=".9" stroke-linecap="round"/>`;
+        continue;
+      }
+      if (taken.has(k)) continue;
+      const [fill, row] = CROPS[(c * 7 + r * 3 + lv.id) % CROPS.length]!;
+      const lift = high.has(k) ? `<rect x="${x + 1}" y="${y + 2}" width="${S - 2}" height="${S - 2}" rx="2.5" fill="#5a6b3a" opacity=".45"/>` : "";
+      beds += `${lift}<rect x="${x + 1}" y="${y + 1}" width="${S - 2}" height="${S - 2}" rx="2.5" fill="${fill}"/><path d="M${x + 2.5} ${y + 4}h7M${x + 2.5} ${y + 6.5}h7M${x + 2.5} ${y + 9}h7" stroke="${row}" stroke-width=".9" stroke-linecap="round"/>`;
+    }
+  const trees = (lv.oaks ?? [])
+    .map(([c, r]) => `<circle cx="${c * S + 6}" cy="${r * S + 7.5}" r="4.6" fill="#3f5f2a" opacity=".35"/><circle cx="${c * S + 6}" cy="${r * S + 5.5}" r="4.8" fill="#5d8a3a"/><circle cx="${c * S + 4.6}" cy="${r * S + 4.2}" r="1.8" fill="#86b257"/>`)
+    .join("");
+  const barns = (lv.barns ?? [])
+    .map(([c, r]) => `<path d="M${c * S + 1.5} ${r * S + 11}V${r * S + 5.5}L${c * S + 6} ${r * S + 1.5}L${c * S + 10.5} ${r * S + 5.5}V${r * S + 11}z" fill="#b5533c" stroke="#5a2a1e" stroke-width=".8"/><rect x="${c * S + 4.5}" y="${r * S + 7}" width="3" height="4" fill="#f2e2c4"/>`)
+    .join("");
+  const track = (p: Array<[number, number]>) => p.map(([c, r], i) => `${i ? "L" : "M"}${c * S + S / 2} ${r * S + S / 2}`).join("");
+  const lanes = [lv.path, ...(lv.path2 ? [lv.path2] : [])]
+    .map(
+      (p) =>
+        `<path d="${track(p)}" fill="none" stroke="#7a5a36" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>` +
+        `<path d="${track(p)}" fill="none" stroke="#d9bd8a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>` +
+        `<path d="${track(p)}" fill="none" stroke="#a9875a" stroke-width=".9" stroke-dasharray="2.5 2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(-1.6 0)"/>`,
+    )
+    .join("");
+  const pad = 6;
+  return (
+    `<svg viewBox="${-pad} ${-pad} ${w + pad * 2} ${h + pad * 2}" aria-hidden="true">` +
+    `<defs><radialGradient id="lcm-${lv.id}" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#b9d68a"/><stop offset=".6" stop-color="#8fb560"/><stop offset="1" stop-color="#6c9445"/></radialGradient></defs>` +
+    `<rect x="${-pad}" y="${-pad}" width="${w + pad * 2}" height="${h + pad * 2}" rx="9" fill="#3f6a2c"/>` +
+    `<rect x="${-pad + 2.5}" y="${-pad + 2.5}" width="${w + pad * 2 - 5}" height="${h + pad * 2 - 5}" rx="7" fill="none" stroke="#5d8a3a" stroke-width="3" stroke-dasharray="1 3.2" stroke-linecap="round"/>` +
+    `<rect width="${w}" height="${h}" rx="4" fill="url(#lcm-${lv.id})"/>` +
+    beds + lanes + barns + trees +
+    `<rect width="${w}" height="${h}" rx="4" fill="none" stroke="#fff6dc" stroke-opacity=".35" stroke-width="1"/>` +
+    `</svg>`
+  );
 }
 
+/** Plan item 174: one line on what a vehicle does to you, for its portrait on the level card. */
+function threatLine(kind: EnemyKind): string {
+  const e = ENEMIES[kind];
+  if (e.hp >= 1500) return "The boss: a long, hard slog.";
+  if (e.flying) return "Flies over the hedges.";
+  if (e.stealth) return "Unseen till a Radio Mast spots it.";
+  if (e.armor) return "Plated: shrugs off light shots.";
+  if (e.shield) return "Wrapped: the first hit only pops it.";
+  if (e.charm) return "Charms towers into holding fire.";
+  if (e.jam) return "Slows nearby towers with paperwork.";
+  if (e.heal) return "Patches up whatever rolls beside it.";
+  if (e.splits) return `Pops open into ${ENEMIES[e.splits.kind].name.toLowerCase()}s.`;
+  if (e.speed >= 1.3) return "Quick and flimsy.";
+  if (e.hp >= 150) return "Slow, and takes some stopping.";
+  return "Steady, and full of parcels.";
+}
+
+/** Plan item 174: what Cath says about the field: her first line before it, else its twist, else a word on the lane. */
+function cathLine(lv: Level): string {
+  const said = lv.before.find((l) => l.who === "cath")?.text;
+  if (said) return said;
+  if (lv.twists?.length) return `${TWISTS[lv.twists[0]!].name} today. Plan for it before the first van turns in.`;
+  return lv.path2 ? "Two lanes in: cover the crossing and they both pay." : "One lane, start to finish. Make every corner count.";
+}
+
+interface LevelCard {
+  el: HTMLElement;
+  show(lv: Level): void;
+}
+
+/** Whether a phone's level sheet is pulled up (kept across redraws of the map). */
+let cardOpen = false;
+
 /**
- * Plan item 88: the level card. The next stop (or the one pointed at) with a plan of its field, its twist, the
- * vehicles it brings, the stars won and a big Play. Docked under its act at D, a sheet above the nav on a phone.
+ * Plan item 88, as a seed-catalogue page (item 174): the next stop (or the one pointed at) with a painted plate of
+ * its field, its twist and stars, Cath's line on it, each vehicle it brings as a portrait with what it does, and a
+ * big Play. Docked under its act at D, beside the map's lane; on a phone a bottom sheet that peeks its name and
+ * Play, and pulls up for the rest.
  */
 function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   const el = document.createElement("section");
   el.className = "level-card";
+  el.dataset.levelCard = "";
   el.setAttribute("aria-label", "Next level");
   let shown: Level | null = null;
+  const grip = document.createElement("button");
+  grip.type = "button";
+  grip.className = "lcard-grip";
+  const sync = () => {
+    el.classList.toggle("open", cardOpen);
+    grip.setAttribute("aria-expanded", String(cardOpen));
+    grip.setAttribute("aria-label", cardOpen ? "Show less of this level" : "Show more of this level");
+  };
+  grip.addEventListener("click", () => {
+    cardOpen = !cardOpen;
+    sync();
+  });
   const thumb = document.createElement("div");
   thumb.className = "lcard-thumb";
   const body = document.createElement("div");
   body.className = "lcard-body";
+  const say = document.createElement("div");
+  say.className = "lcard-cath";
+  say.dataset.cathLine = "";
+  const face = document.createElement("span");
+  face.className = "lcard-cath-face";
+  face.setAttribute("aria-hidden", "true");
+  face.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+  const words = document.createElement("p");
+  say.append(face, words);
+  const foes = document.createElement("ul");
+  foes.className = "lcard-enemies";
+  foes.setAttribute("aria-label", "Brings");
   const go = document.createElement("button");
   go.type = "button";
   go.className = "lcard-play";
   go.addEventListener("click", () => shown && play(shown));
-  el.append(thumb, body, go);
+  el.append(grip, thumb, body, say, foes, go);
+  sync();
   return {
     el,
     show(lv) {
@@ -1703,8 +1816,14 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
         `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""} · ${lv.waves.length} rounds</p>` +
         `<h3 class="lcard-name">${esc(lv.name)}</h3>` +
         (lv.twists?.length ? `<p class="lcard-twist">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</p>` : "") +
-        `<p class="lcard-stars" aria-label="${stars} of 3 stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</p>` +
-        `<ul class="lcard-enemies" aria-label="Brings">${top.map(([k]) => `<li><img src="${enemyIcon(k)}" alt=""><span>${esc(ENEMIES[k].name)}</span></li>`).join("")}</ul>`;
+        `<p class="lcard-stars" aria-label="${stars} of 3 stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</p>`;
+      words.textContent = cathLine(lv);
+      foes.innerHTML = top
+        .map(
+          ([k]) =>
+            `<li data-kind="${k}"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt=""></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span></span></li>`,
+        )
+        .join("");
       go.textContent = stars ? "Play again" : "Play";
       go.setAttribute("aria-label", `${stars ? "Play again" : "Play"}: level ${lv.id}, ${lv.name}`);
     },

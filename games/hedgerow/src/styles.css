@@ -4561,31 +4561,43 @@ img.act-scene {
 #screen-select .level-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(200px, 1fr) auto auto;
+  grid-template-areas: "thumb body foes play" "thumb cath cath play";
   align-items: center;
-  gap: 14px;
-  width: min(760px, calc(100% - 32px));
+  gap: 6px 16px;
+  width: min(1060px, calc(100% - 32px));
   margin: 8px auto 16px;
-  padding: 12px 14px;
+  padding: 10px 16px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 94%, transparent);
-  box-shadow: 0 0 0 2px var(--line), 0 6px 0 var(--line), 0 14px 28px color-mix(in srgb, var(--ink) 22%, transparent);
+  /* a seed catalogue's page: warm paper with a printer's rule inside its edge */
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--paper-hi) 92%, transparent), color-mix(in srgb, var(--surface) 94%, transparent));
+  box-shadow: 0 0 0 2px var(--line), inset 0 0 0 5px color-mix(in srgb, var(--paper-hi) 92%, transparent), inset 0 0 0 6px color-mix(in srgb, var(--soil) 28%, transparent), 0 6px 0 var(--line), 0 14px 28px color-mix(in srgb, var(--ink) 22%, transparent);
   color: var(--ink);
 }
-.lcard-thumb svg { display: block; width: 104px; height: auto; max-height: 120px; }
-.lc-ground { fill: var(--pasture); }
-.lc-plot { fill: color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)); }
-.lc-lane { fill: none; stroke: var(--soil); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
-.lcard-body { display: grid; gap: 2px; min-width: 0; }
+.lcard-grip { display: none; }
+.lcard-thumb { grid-area: thumb; }
+.lcard-thumb svg { display: block; width: 132px; height: auto; max-height: 116px; filter: drop-shadow(0 3px 0 color-mix(in srgb, var(--ink) 18%, transparent)); }
+.lcard-body { grid-area: body; display: grid; gap: 2px; min-width: 0; align-self: end; }
 .lcard-kicker { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .lcard-name { margin: 0; font-family: var(--font-display); font-size: var(--fs-d2); line-height: 1.1; }
 .lcard-twist { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soil); }
-/* Plan item 103: the stars at the number size (they were about 12 px), and the vehicles as a 2x2 grid, so a fourth
-   never wraps alone onto its own line. */
+/* Plan item 103: the stars at the number size (they were about 12 px). */
 .lcard-stars { margin: 0; color: var(--map-flag-gold); font-size: var(--fs-num-l); line-height: 1.1; letter-spacing: 0.08em; }
-.lcard-enemies { display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 16px; margin: 2px 0 0; padding: 0; list-style: none; font: 700 var(--fs-small) / 1.2 var(--font-ui); color: var(--ink-2); }
-.lcard-enemies li { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-.lcard-enemies img { width: 26px; height: 26px; }
+/* Cath's line on the field, beside her face */
+.lcard-cath { grid-area: cath; display: flex; align-items: center; gap: 8px; align-self: start; min-width: 0; padding-top: 6px; border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); }
+.lcard-cath-face { flex: none; width: 32px; height: 32px; overflow: hidden; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 2px var(--line); }
+.lcard-cath-face svg { display: block; width: 100%; height: 100%; }
+.lcard-cath p { margin: 0; font: italic 500 var(--fs-small) / 1.3 var(--font-voice); color: var(--ink); text-wrap: pretty; }
+/* Each vehicle as a portrait with what it does, two by two */
+.lcard-enemies { grid-area: foes; display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: 6px 12px; margin: 0; padding: 0 0 0 16px; border-left: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); list-style: none; }
+.lcard-enemies li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.enemy-portrait { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--paper-hi), var(--card)); box-shadow: 0 0 0 2px var(--line), 0 3px 0 var(--line); }
+.enemy-portrait img { width: 38px; height: 38px; }
+.lcard-foe { display: grid; gap: 1px; min-width: 0; }
+.lcard-foe b { overflow: hidden; font: 800 var(--fs-small) / 1.15 var(--font-ui); color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
+.lcard-foe span { font: 600 var(--fs-label) / 1.25 var(--font-ui); color: var(--ink-2); }
+.lcard-play { grid-area: play; }
 .lcard-play {
   min-width: 168px;
   min-height: 52px;
@@ -4612,18 +4624,53 @@ img.act-scene {
   #screen-select .node.next .level-num { animation: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--map-flag-gold) 40%, transparent); }
 }
 @media (max-width: 899.98px) {
+  /* A bottom sheet: it peeks the level's name and Play; its grip pulls up the plate, Cath's line and the vehicles. */
   #screen-select .level-card {
     position: sticky;
     bottom: 8px;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 8px 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "grip grip" "body play";
+    gap: 6px 12px;
     width: calc(100% - 16px);
     margin: 8px auto;
-    padding: 10px 12px;
+    padding: 4px 12px 10px;
   }
-  .lcard-thumb svg { width: 64px; }
-  .lcard-play { grid-column: 1 / -1; width: 100%; min-height: 48px; }
-  .lcard-enemies { display: none; }
+  #screen-select .level-card.open {
+    /* pulled up, it reaches over the next act, which would otherwise paint over its foot */
+    z-index: var(--z-raise);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "grip grip" "thumb body" "cath cath" "foes foes" "play play";
+  }
+  .lcard-grip {
+    grid-area: grip;
+    display: block;
+    justify-self: center;
+    width: 64px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .lcard-grip::before {
+    content: "";
+    display: block;
+    width: 44px;
+    height: 5px;
+    margin: 0 auto;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 30%, transparent);
+  }
+  .level-card:not(.open) :is(.lcard-thumb, .lcard-cath, .lcard-enemies, .lcard-stars, .lcard-twist) { display: none; }
+  .lcard-thumb svg { width: 96px; }
+  .lcard-body { align-self: center; }
+  .level-card:not(.open) .lcard-play { min-width: 160px; min-height: 48px; }
+  .level-card.open .lcard-play { width: 100%; min-height: 48px; }
+  .lcard-cath { padding-top: 0; border-top: 0; }
+  .lcard-enemies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 0 0; border-left: 0; border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); }
+  .enemy-portrait { width: 42px; height: 42px; }
+  .enemy-portrait img { width: 34px; height: 34px; }
 }
 /* Plan item 98: on a portrait phone the map's tools are a fixed tab bar at the foot (N4); the sheet was cut by it.
    The map's own bottom padding (the bar's height) counts toward the sticky inset, so 8 px clears the bar. */
