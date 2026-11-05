@@ -1825,7 +1825,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-map-cath]` 120 px or taller at D and 64 at P, inside its chapter's region; each `[data-chapter-art]` an SVG of 5 or more shapes; shots P and D, light and dark.
 - **Size:** 2
 
-## 151. [ ] Runnel: a valley people live in
+## 151. [ ] Runnel: a valley people live in *(lane B, in progress)*
 - **Why:** `runnel-D` (390-1410 x 230-870), `runnel-P` (0-390 x 300-750): flat, empty fields; nobody cares that the water arrives.
 - **Build:**
   - A farmer, Bea, sheep and a cart on the road walk the valley margins.
