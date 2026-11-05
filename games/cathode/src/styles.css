@@ -908,7 +908,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp { touch-action: pan-y; }
   .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; justify-content: space-between; gap: 0 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin: 0; padding: 0; } /* px-ok */
   .cp-list::-webkit-scrollbar { display: none; }
-  .cp-opt { scroll-snap-align: center; min-height: 44px; } /* px-ok: tap target */
+  /* Plan item 146: the unpicked names sit over the street, not a plate, so --ink-3 fell under 4.5:1 there. */
+  .cp-opt { scroll-snap-align: center; min-height: 44px; color: var(--ink-2); } /* px-ok: tap target */
   .cp-opt-name { font-size: var(--fs-3); font-stretch: var(--wdth-tight); }
   .cp-opt-n { display: none; }
   /* The focused name gets the red marker under it, not colour alone. */
