@@ -764,7 +764,9 @@ function renderCard(streak: number): void {
   const wsCode = workshopCode(puzzle.seed)
   const title = wsCode ? `Bea's workshop ${wsCode}` : mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice`
   cardCode = wsCode
-  drawShareCard(ctx, puzzle, { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined })
+  // Plan item 142: a daily's card carries the week's valley (today's solve included).
+  const week = mode === 'daily' ? weekFeatures(today, data.results).map((f) => f.kind) : undefined
+  drawShareCard(ctx, puzzle, { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined, ...(week?.length ? { week } : {}) })
   const url = canvas.toDataURL('image/png')
   img.src = url
   img.alt = `${title}: the solved board, ${formatTime(game.elapsedMs)}, ${game.taps} taps, par ${puzzle.par}.`

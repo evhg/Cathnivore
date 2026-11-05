@@ -36,6 +36,15 @@ describe('runnel share card', () => {
     // every non-stone cell is drawn as a hex: six corners each
     expect(ctx.log.filter((l) => l === 'Z').length).toBe(p.cells.length)
   })
+  it('carries the week along the meadow (plan item 142)', () => {
+    const draw = (week?: Array<'mill' | 'fallow' | 'orchard'>) => {
+      const ctx = recorder()
+      drawShareCard(ctx, dailyPuzzle('2026-11-01'), { title: 'Runnel #36', time: '1:42', taps: 40, par: 38, ...(week ? { week } : {}) })
+      return ctx.log.length
+    }
+    expect(draw(['mill', 'fallow', 'orchard'])).toBeGreaterThan(draw())
+    expect(draw([])).toBe(draw())
+  })
   it('is the same picture for the same seed', () => {
     const draw = () => {
       const ctx = recorder()

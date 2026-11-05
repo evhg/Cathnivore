@@ -3,6 +3,7 @@
 // so a test can record the calls and pin them with a hash: the same seed always draws the same card.
 
 import { computeFlow, type Puzzle } from './engine'
+import type { FeatureKind } from './weekvalley'
 
 export interface CardContext {
   fillStyle: string | CanvasGradient | CanvasPattern
@@ -28,6 +29,8 @@ export interface CardResult {
   taps: number
   par: number
   streak?: number
+  /** Plan item 142: the week's valley, Monday on: what each day left (a keep, or a fallow plot for a day missed). */
+  week?: FeatureKind[]
 }
 
 export const CARD_W = 1080
@@ -132,7 +135,63 @@ export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResu
     ctx.font = '30px Georgia, serif'
     ctx.fillText(label, x, CARD_H - 198)
   })
+  if (result.week?.length) drawWeek(ctx, result.week)
   ctx.fillStyle = INK
   ctx.font = '600 34px Georgia, serif'
   ctx.fillText('cathnivore.com/runnel', CARD_W / 2, CARD_H - 70)
+}
+
+/** Plan item 142: the week's keeps along the meadow, in the order the days came, each on a 90 px spot. */
+function drawWeek(ctx: CardContext, week: readonly FeatureKind[]): void {
+  const step = 110
+  const x0 = CARD_W / 2 - ((week.length - 1) * step) / 2
+  const base = CARD_H - 120
+  const line = (pts: Array<[number, number]>, colour: string, w: number) => {
+    ctx.strokeStyle = colour
+    ctx.lineWidth = w
+    ctx.beginPath()
+    pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)))
+    ctx.stroke()
+  }
+  const dot = (x: number, y: number, r: number, colour: string) => {
+    ctx.fillStyle = colour
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.lineCap = 'round'
+  week.forEach((kind, i) => {
+    const x = x0 + i * step
+    if (kind === 'mill') {
+      ctx.fillStyle = '#f1e4cc'
+      ctx.fillRect(x - 10, base - 44, 20, 44)
+      line([[x - 22, base - 66], [x + 22, base - 26]], INK, 4)
+      line([[x + 22, base - 66], [x - 22, base - 26]], INK, 4)
+      dot(x, base - 46, 4, INK)
+    } else if (kind === 'footbridge') {
+      ctx.strokeStyle = '#8a5a32'
+      ctx.lineWidth = 8
+      ctx.beginPath()
+      ctx.arc(x, base + 18, 40, Math.PI * 1.15, Math.PI * 1.85)
+      ctx.stroke()
+      line([[x - 40, base + 4], [x + 40, base + 4]], '#5f9ab0', 6)
+    } else if (kind === 'orchard') {
+      for (const dx of [-26, 0, 26]) {
+        line([[x + dx, base], [x + dx, base - 16]], '#6b4a2b', 5)
+        dot(x + dx, base - 26, 13, '#6f9a45')
+        dot(x + dx - 4, base - 27, 3, '#c8402e')
+      }
+    } else if (kind === 'scarecrow') {
+      line([[x, base], [x, base - 56]], '#6b4a2b', 5)
+      line([[x - 22, base - 40], [x + 22, base - 40]], '#6b4a2b', 5)
+      ctx.fillStyle = '#5f7a3a'
+      ctx.fillRect(x - 12, base - 40, 24, 22)
+      dot(x, base - 60, 9, '#e8c88a')
+    } else {
+      ctx.fillStyle = '#a88763'
+      ctx.fillRect(x - 34, base - 22, 68, 22)
+      for (const dy of [-16, -9, -2]) line([[x - 30, base + dy], [x + 30, base + dy]], '#7d5f40', 2)
+    }
+  })
+  ctx.lineCap = 'butt'
 }
