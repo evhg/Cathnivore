@@ -1800,7 +1800,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `data-cath-lod="hero"` on the front canvas; her silhouette 300 px or taller at D; cathode-perf in budget at P and D; shots P, L and D.
 - **Size:** 3
 
-## 148. [ ] NIGHT SHIFT: a front door lit like a noir poster
+## 148. [ ] NIGHT SHIFT: a front door lit like a noir poster *(lane A, in progress)*
 - **Why:** `ns-title-D` (700-1440 x 0-900), `ns-title-P` (0-390 x 300-844): she stands in an evenly dim purple alley, with no key light, no reflection of her and no neon on her.
 - **Build:**
   - A flickering neon sign as her key and rim light.
