@@ -2003,7 +2003,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the line meets no `.region-hex` (Cathnivore) and no plot (Hedgerow); her bust 64 px or more; `role=status`; tutorial specs pass; shots P light and dark.
 - **Size:** 2
 
-## 172. [ ] Cathnivore: pieces worth holding on the board *(lane A, in progress)*
+## 172. [x] Cathnivore: pieces worth holding on the board *(done 2026-11-05, lane A, 1f48903e: pieces start at 1.35-1.7x and shrink only to fit, with the landmark keeping a spot; Hollowell's row and the producers step down the tile under a threat badge instead of shrinking; Outlet, Buyout and Doubt have a moulded side and 1-unit ink outlines; two or three of a kind stand as an outlined pile (stalls as a pile of standees), a number only from 4; `data-silhouette` sawtooth/peak/bubble/standee; a 300 ms drop with overshoot (the Farm sheet's `stall-drop` had been replacing the board's keyframes); crowded tiles get a smaller second pass of ground marks. `e2e/board-tokens.spec.ts`; shots `e2e/screenshots/p172` P and D, light and dark. **Cuts** (DECISIONS): the map can't reach 75% of the panel's width, since the panel is height-bound at D and the hexes already fill 90%+ of its height (the spec checks 85%); sizes are the median piece 36 px at D and 24 at P, floors 32 and 20 on a tile with three kinds, a badge and two producers)*
 - **Why:** `cath-game-D` (580-1105 x 215-735, from `plan1105f`): the hexes take about half the board panel (350-1335 x 195-740) and the pieces are tiny: Outlets about 22x28 px, Scout discs about 26 px, count badges about 16 px. On `cath-game-P` (120-300 x 360-500) they shrink to about 16 px and run together. VISION 2: the table is the hero, big, rich and legible.
 - **Build:**
   - The hex map fills more of the board panel (seated producers and Cath keep their free-spot search).
@@ -2044,7 +2044,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `.lesson-panel[data-notebook]`; each legend row has an inked glyph 28 px or more; a finished step has `data-ticked`; the page never scrolls at 1440x900; shots D light and dark (and P unchanged).
 - **Size:** 2
 
-## 177. [ ] The bugs from the 2026-11-05 18:30 critique, fixed as one batch
+## 177. [ ] The bugs from the 2026-11-05 18:30 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** subagent critique of `e2e/screenshots/plan1105f` (lane A). Fixed already: the 'Not yet' shelf's reasons running off the card (`cath-game-D` 220-322 x 700-716).
 - **Fix:**
   - `cath-game-D` (1195-1330 x 790-830): the fanned 'Injunction' card's name cut by its neighbour ('njunction', 'Brindle ...lls').
