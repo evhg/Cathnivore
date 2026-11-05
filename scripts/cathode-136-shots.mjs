@@ -23,9 +23,14 @@ for (const [s, o] of Object.entries(SIZES)) {
   })
   await p.goto(`${base}/nightshift/?play&rs=0.5`)
   await p.waitForFunction(() => window.cathodeFront?.scene()?.dressed === 'ghost', null, { timeout: 200000 })
-  for (const cls of ['butcher', 'gunslinger', 'wirewitch', 'fixer', 'ghost']) {
+  for (const cls of (process.env.CLASSES ?? 'butcher,gunslinger,wirewitch,fixer,ghost').split(',')) {
     await p.locator(`.cp-opt[data-cls=${cls}]`).click()
-    await p.waitForTimeout(2500)
+    // HOLD=1 holds the audition at its middle (the scope at her eye, the shotgun mid-rack) for a still.
+    if (process.env.HOLD) {
+      await p.waitForTimeout(400)
+      await p.evaluate((c) => window.cathodeFront.scene().wardrobe(c, true), cls)
+      await p.waitForTimeout(3500)
+    } else await p.waitForTimeout(2500)
     await p.screenshot({ path: `${out}/after-${cls}-${s}.png` })
   }
   await ctx.close()

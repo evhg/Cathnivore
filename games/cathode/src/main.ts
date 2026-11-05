@@ -274,7 +274,9 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   const photo = el("figure", "dossier-photo", box);
   // Plan item 99: the focused target's mugshot (Tomas Reed's for the opening case), clipped to the file.
   const who = d.job ? BUST_FOR_CASE[d.job] : d.target === "Tomas Reed" ? "reed" : undefined;
-  photo.innerHTML = mugshotSvg(who ?? null, who ? d.target.toUpperCase().slice(0, 16) : "CASE FILE");
+  // Plan item 139: the dossier's print is about 150 px wide, where the slate's lettering drew at 8 px; it carries
+  // item 107's lettered shapes instead, and the name stands in type under the print.
+  photo.innerHTML = mugshotSvg(who ?? null, who ? d.target.toUpperCase().slice(0, 16) : "CASE FILE", true);
   el("p", "dossier-kicker", box, "Case file");
   el("b", "dossier-target", box, d.target);
   el("span", "dossier-place", box, d.place);

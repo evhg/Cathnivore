@@ -25,6 +25,7 @@
   --wdth-label: 78%;
   --wdth-num: 86%;
   --wdth-head: 76%;
+  --wdth-tight: 64%; /* plan item 138: the phone class row, five names across 375 px */
   --num-hero-track: -0.02em;
 
   /* --- colour: base (contrast against --night in the comments) --- */

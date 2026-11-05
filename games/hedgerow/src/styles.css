@@ -4447,7 +4447,9 @@ img.act-scene {
     padding-block: 0;
     overflow: hidden;
   }
-  #screen-select .act-fog.act-glimpse .act-fog-scene { object-fit: cover; object-position: center 60%; }
+  /* Plan item 138: the strip cut a cow and the bridge's arches in half along its top edge; the scene fades in from
+     the paper instead, so nothing ends on a hard line. */
+  #screen-select .act-fog.act-glimpse .act-fog-scene { object-fit: cover; object-position: center 60%; mask-image: linear-gradient(180deg, transparent, black 55%); }
   #screen-select .act-fog.act-glimpse .act-fog-text {
     display: flex;
     align-items: baseline;

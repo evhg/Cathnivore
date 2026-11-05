@@ -23,8 +23,8 @@ export interface FrontCath {
    * her shoulder, butcher rolls her neck, gunslinger squares up, wirewitch twirls the umbrella, fixer checks her cuff.
    */
   play(kind: string, u?: number, seconds?: number): void;
-  /** Plan item 136: the class idle playing now and how far through it is (0..1), or null. */
-  readonly clipState: { kind: string; u: number } | null;
+  /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
+  readonly clipState: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
   tint(c: THREE.Color, w: number): void;
   /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
@@ -1055,6 +1055,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Her left arm reaches by two-bone IK; the head turns to the lens (the wardrobe sees her from the front).
     clipDraw = 0;
     let armOn = false;
+    let gunInHand: "rifle" | "shotgun" | null = null;
+    let glint = 0;
+    let rack = 0;
+    let shellU = -1;
     if (clip) {
       if (clip.t0 === null) clip.t0 = t;
       const cu = clip.held ?? (t - clip.t0) / clip.dur;
@@ -1069,23 +1073,40 @@ export function buildFrontCath(phone: boolean): FrontCath {
           armOn = true;
         };
         switch (clip.kind) {
-          case "ghost":
-            // A draw on the cigarette, eyes to the lens: the ember flares.
-            reach(0.07, 0.27, 0.17, 1, -1.1, -0.2, -0.5);
-            headPivot.rotation.y += 0.32 * e;
-            headPivot.rotation.x += 0.1 * e;
-            chest.rotation.y += 0.08 * e;
-            clipDraw = THREE.MathUtils.smoothstep(cu, 0.3, 0.5) * (1 - THREE.MathUtils.smoothstep(cu, 0.7, 0.85));
+          case "ghost": {
+            // Plan item 136: she unslings the rifle from over her left shoulder and stands it beside her face, the
+            // scope at her eye and a glint off its lens, then slings it again: rest -> shoulder -> hold, and back.
+            const sh = (cu < 0.5 ? THREE.MathUtils.smoothstep(cu, 0, 0.13) - THREE.MathUtils.smoothstep(cu, 0.13, 0.28) : THREE.MathUtils.smoothstep(cu, 0.78, 0.89) - THREE.MathUtils.smoothstep(cu, 0.89, 1));
+            tgt.copy(wristL).lerp(GHOST_HOLD, e).lerp(GHOST_GRAB, sh);
+            pole.copy(restPole).lerp(tmpV.set(1, -0.8, -0.3).normalize(), Math.max(e, sh));
+            armIK(tgt, pole, -0.4 * e);
+            armOn = true;
+            gunInHand = cu > 0.13 && cu < 0.89 ? "rifle" : null;
+            headPivot.rotation.y += 0.1 * e;
+            headPivot.rotation.z -= 0.08 * e;
+            chest.rotation.y -= 0.06 * e;
+            // One glint mid-audition; held (the pick's first frame), it catches the light every few seconds.
+            glint = clip.held !== undefined ? Math.max(0, Math.sin(t * 1.4)) ** 12 : THREE.MathUtils.smoothstep(cu, 0.4, 0.47) * (1 - THREE.MathUtils.smoothstep(cu, 0.5, 0.62));
             break;
+          }
           case "butcher": {
-            // The neck roll: chin down, over to the side, up; shoulders drop; her free fist low and forward.
+            // The neck roll: chin down, over to the side, up; shoulders drop. Plan item 136: her free hand draws the
+            // shotgun off her hip, muzzle up past her shoulder, and racks it one-handed with a snap; a shell flies.
             const ph = Math.PI * 2 * cu + Math.PI / 2;
             headPivot.rotation.z += 0.34 * Math.sin(ph) * e;
             headPivot.rotation.x += (0.12 + 0.16 * Math.cos(ph)) * e;
             headPivot.rotation.y += 0.18 * e;
             chest.rotation.x += 0.06 * e;
             chest.position.y -= 0.012 * e;
-            reach(0.21, -0.14, 0.15, 1, 0.2, -0.8, 0.6);
+            const snap = THREE.MathUtils.smoothstep(cu, 0.42, 0.46) * (1 - THREE.MathUtils.smoothstep(cu, 0.47, 0.54));
+            tgt.copy(wristL).lerp(BUTCHER_HOLD, e);
+            tgt.y -= 0.07 * snap;
+            pole.copy(restPole).lerp(tmpV.set(1, 0.2, -0.8).normalize(), e);
+            armIK(tgt, pole, 0.5 * e);
+            armOn = true;
+            gunInHand = cu > 0.1 && cu < 0.92 ? "shotgun" : null;
+            rack = snap;
+            shellU = cu >= 0.46 && cu < 0.8 ? (cu - 0.46) * clip.dur : -1;
             break;
           }
           case "gunslinger":
@@ -1116,7 +1137,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     }
     // Only the Ghost's draw and the Fixer's collar keep the cigarette in hand: in a fist (the Butcher), on the hip or
     // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
-    const palmed = armOn && !!clip && clip.kind !== "ghost" && clip.kind !== "fixer";
+    const palmed = armOn && !!clip && clip.kind !== "fixer";
+    poseProps(gunInHand, glint, rack, shellU);
     cigMesh.visible = !palmed;
     if (rigMat) {
       const on = clip?.kind === "wirewitch" ? THREE.MathUtils.smoothstep(clip.u, 0.15, 0.35) * (1 - THREE.MathUtils.smoothstep(clip.u, 0.75, 0.95)) : 0;
@@ -1318,6 +1340,155 @@ export function buildFrontCath(phone: boolean): FrontCath {
       [[square], kitMat(new THREE.MeshStandardMaterial({ color: 0xf2ece2, roughness: 0.6, metalness: 0 }))],
     ]);
   }
+  // ---- plan item 136: the auditions' guns in her left hand, in the chest frame. Each is a group built along +y from
+  // the grip (muzzle up), its top (the scope, the rib) along +z; poseProps() stands it in her palm each frame. ----
+  const gunMetalH = kitMat(new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.75 }));
+  const woodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x5a3220, roughness: 0.45, metalness: 0.05 }));
+  const box = (w: number, h: number, d: number, x: number, y: number, z: number) => {
+    const g = new THREE.BoxGeometry(w, h, d);
+    g.translate(x, y, z);
+    return g;
+  };
+  const rod = (r: number, y0: number, y1: number, z = 0, n = 10) => {
+    const g = new THREE.CylinderGeometry(r, r, y1 - y0, n);
+    g.translate(0, (y0 + y1) / 2, z);
+    return g;
+  };
+  const rifle = new THREE.Group();
+  rifle.name = "prop-rifle";
+  add(
+    mergeGeos([
+      box(0.03, 0.2, 0.05, 0, 0.06, 0), // the receiver
+      rod(0.009, 0.16, 0.68), // the barrel
+      rod(0.014, 0.6, 0.72, 0, 10), // the suppressor
+      rod(0.017, 0.16, 0.34, 0.045, 12), // the scope tube
+      rod(0.022, 0.32, 0.36, 0.045, 12), // its objective bell
+      box(0.012, 0.03, 0.035, 0, 0.21, 0.025), // the mounts
+      box(0.012, 0.03, 0.035, 0, 0.3, 0.025),
+      box(0.022, 0.06, 0.04, 0, -0.02, -0.035), // the pistol grip
+    ]),
+    gunMetalH,
+    rifle,
+  );
+  add(mergeGeos([box(0.034, 0.24, 0.06, 0, -0.16, -0.008), box(0.03, 0.16, 0.035, 0, 0.22, -0.02)]), woodMat, rifle);
+  // The glint: a four-point star off the scope's lens, always to the lens of the camera.
+  const glintTex = (() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    const x = c.getContext("2d")!;
+    const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.15, "rgba(255,240,220,0.8)");
+    g.addColorStop(1, "rgba(255,240,220,0)");
+    x.fillStyle = g;
+    x.fillRect(0, 0, 64, 64);
+    x.fillStyle = "rgba(255,255,255,0.9)";
+    x.fillRect(31, 0, 2, 64);
+    x.fillRect(0, 31, 64, 2);
+    return new THREE.CanvasTexture(c);
+  })();
+  const glintMat = new THREE.SpriteMaterial({ map: glintTex, color: new THREE.Color(3, 2.6, 2.2), blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, transparent: true });
+  mats.push(glintMat);
+  const glintSprite = new THREE.Sprite(glintMat);
+  glintSprite.position.set(0, 0.36, 0.045);
+  glintSprite.scale.setScalar(0.001);
+  rifle.add(glintSprite);
+  rifle.visible = false;
+  chest.add(rifle);
+
+  const shotgunGeo = (parent: THREE.Object3D) => {
+    add(
+      mergeGeos([
+        box(0.034, 0.14, 0.05, 0, 0.04, 0), // the receiver
+        rod(0.011, 0.1, 0.46, 0.008), // the barrel
+        rod(0.008, 0.1, 0.4, -0.016), // the magazine tube
+        box(0.024, 0.06, 0.036, 0, -0.03, -0.034), // the pistol grip
+      ]),
+      gunMetalH,
+      parent,
+    );
+    add(box(0.03, 0.17, 0.05, 0, -0.13, -0.015), woodMat, parent);
+    const fore = add(box(0.03, 0.11, 0.032, 0, 0.21, -0.016), woodMat, parent);
+    return fore;
+  };
+  const shotgun = new THREE.Group();
+  shotgun.name = "prop-shotgun";
+  const forend = shotgunGeo(shotgun);
+  shotgun.visible = false;
+  chest.add(shotgun);
+  // The shell: a red hull on a brass head, flung from the port.
+  const shell = new THREE.Group();
+  add(rod(0.0075, 0, 0.05, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0x9a1c1c, roughness: 0.5 })), shell);
+  add(rod(0.008, -0.008, 0.002, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0xc9a050, roughness: 0.3, metalness: 0.8 })), shell);
+  shell.visible = false;
+  chest.add(shell);
+  // The Butcher's shotgun on her left hip (the pelvis frame), muzzle down, until she draws it.
+  const hipGun = new THREE.Group();
+  hipGun.name = "kit-butcher-gun";
+  shotgunGeo(hipGun);
+  hipGun.position.set(0.245, -0.04, 0.05);
+  hipGun.quaternion.setFromUnitVectors(V(0, 1, 0), V(0.05, -1, 0.06).normalize());
+  kits.get("butcher")!.add(hipGun);
+  const backRifle = kits.get("ghost")!.children[1]!;
+
+  const GHOST_GRAB = V(0.22, 0.36, -0.1);
+  const GHOST_HOLD = V(0.28, 0.17, 0.15);
+  const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
+  const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
+  const pBasis = new THREE.Matrix4();
+  const pX = new THREE.Vector3();
+  const pY = new THREE.Vector3();
+  const pZ = new THREE.Vector3();
+  const shellFrom = new THREE.Vector3();
+  const shellV = new THREE.Vector3();
+  let shellLive = false;
+  const stand = (o: THREE.Object3D, dir: THREE.Vector3, top: THREE.Vector3) => {
+    o.position.copy(palmRest).applyMatrix4(foreL.matrix);
+    pY.copy(dir).normalize();
+    pZ.copy(top).addScaledVector(pY, -top.dot(pY)).normalize();
+    pX.crossVectors(pY, pZ);
+    o.quaternion.setFromRotationMatrix(pBasis.makeBasis(pX, pY, pZ));
+  };
+  const RIFLE_DIR = V(0.32, 1, -0.04);
+  const RIFLE_TOP = V(-1, 0, 0.35);
+  const SHOT_DIR = V(0.38, 0.88, 0.28);
+  const SHOT_TOP = V(0.2, 0.1, -1);
+  let propNow: "rifle" | "shotgun" | null = null;
+  function poseProps(inHand: "rifle" | "shotgun" | null, glintK: number, rackK: number, shellT: number): void {
+    propNow = inHand;
+    rifle.visible = inHand === "rifle";
+    backRifle.visible = inHand !== "rifle";
+    shotgun.visible = inHand === "shotgun";
+    hipGun.visible = inHand !== "shotgun";
+    if (inHand === "rifle") {
+      stand(rifle, RIFLE_DIR, RIFLE_TOP);
+      glintSprite.scale.setScalar(0.001 + 0.07 * glintK);
+      glintSprite.visible = glintK > 0.01;
+    }
+    if (inHand === "shotgun") {
+      stand(shotgun, SHOT_DIR, SHOT_TOP);
+      forend.position.y = -0.075 * rackK;
+      if (shellT >= 0) {
+        // Thrown from the port out past her left side, under gravity, tumbling; gone below her knees.
+        if (!shellLive) {
+          shellLive = true;
+          shellFrom.set(0.02, 0.05, 0).applyQuaternion(shotgun.quaternion).add(shotgun.position);
+          shellV.set(0.9, 1.3, 0.5);
+        }
+        shell.position.copy(shellFrom).addScaledVector(shellV, shellT);
+        shell.position.y -= 4.9 * shellT * shellT;
+        shell.rotation.set(shellT * 19, 0, shellT * 13);
+        shell.visible = shell.position.y > -0.8;
+      } else {
+        shell.visible = false;
+        shellLive = false;
+      }
+    } else {
+      shell.visible = false;
+      shellLive = false;
+    }
+  }
+
   let wearing: string | null = null;
 
   return {
@@ -1334,6 +1505,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     },
     showAllKits(on) {
       for (const [k, g] of kits) g.visible = on || k === wearing;
+      rifle.visible = shotgun.visible = shell.visible = glintSprite.visible = on;
     },
     update,
     triangles: Math.round(tris),
@@ -1344,7 +1516,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };
     },
     get clipState() {
-      return clip ? { kind: clip.kind, u: clip.u } : null;
+      return clip ? { kind: clip.kind, u: clip.u, prop: propNow } : null;
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
@@ -1365,6 +1537,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const m of mats) m.dispose();
       for (const m of kitMats) m.dispose();
       smokeTex.dispose();
+      glintTex.dispose();
       strands.dispose();
       faceTex.dispose();
       group.removeFromParent();

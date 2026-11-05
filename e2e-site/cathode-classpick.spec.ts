@@ -166,13 +166,16 @@ test('every class frames her face in the middle band, and each has an audible ra
 // stays inside the screen and off the names, the sheet and her words.
 test('a class change starts its audition at once, her face framed and her line subtitled', async ({ page, hasTouch }) => {
   test.setTimeout(420_000)
-  type F = { cathodeFront?: { scene: () => { dressed: string | null; vignette: { kind: string; u: number } | null; faceBox(): Box } | null } }
+  type F = { cathodeFront?: { scene: () => { dressed: string | null; vignette: { kind: string; u: number; prop: string | null } | null; faceBox(): Box } | null } }
   await fresh(page, hasTouch)
   await page.goto('/nightshift/?play&rs=0.5')
   await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
   await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
   const W = hasTouch ? 390 : 1440
   const H = hasTouch ? 844 : 900
+  // Plan item 138: every name in the row is whole on screen (the phone row once cut WIREWITCH and hid FIXER).
+  const tabs = await page.locator('.cp-opt').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [r.left, r.right] as [number, number] }))
+  for (const [l, r] of tabs) expect(l >= 0 && r <= W, JSON.stringify(tabs)).toBe(true)
   for (const cls of [...CLASSES.slice(1), 'ghost']) {
     await page.locator(`.cp-opt[data-cls=${cls}]`).click()
     // Started within the click's own task: no frame needs to pass.
@@ -209,4 +212,11 @@ test('a class change starts its audition at once, her face framed and her line s
   }
   // Gone after the audition.
   await expect(page.locator('.cp-sub')).not.toHaveClass(/is-on/, { timeout: 6000 })
+  // The Ghost stands her rifle at her eye, the Butcher racks the shotgun off her hip: the gun is in her hand. Held
+  // mid-audition (as the pick's first frame holds it): under SwiftShader a frame can take longer than the gun's
+  // 2.4 s in hand.
+  for (const [cls, gun] of [['butcher', 'shotgun'], ['ghost', 'rifle']] as const) {
+    await page.evaluate((c) => (window as unknown as { cathodeFront: { scene: () => { wardrobe(c: string, i: boolean): void } } }).cathodeFront.scene().wardrobe(c, true), cls)
+    await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette?.prop ?? null), { timeout: 15_000 }).toBe(gun)
+  }
 })

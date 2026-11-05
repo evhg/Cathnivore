@@ -45,7 +45,7 @@ export interface FrontScene {
    */
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
-  readonly vignette: { kind: string; u: number } | null;
+  readonly vignette: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
   readonly dressed: string | null;
   /** The class kit she wears over the coat (null on the title). */

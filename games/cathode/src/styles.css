@@ -902,13 +902,14 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 @media (max-width: 700px) and (orientation: portrait) {
   .cp { grid-template-columns: minmax(0, 1fr); padding: max(20px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow: auto; } /* px-ok */
   .cp-sheet { grid-column: 1; }
-  /* Plan item 112: the names at 15 px with room between them, a snapping row that scrolls the chosen one into
-     view and fades at the edge it runs past; a sideways swipe across her steps the class (classpick.ts). */
+  /* Plan item 112: a sideways swipe across her steps the class (classpick.ts). Plan item 138: all five names fit
+     the row from 375 px up at --fs-3 on the tightest width (item 112 keeps them 14 px or more), spread edge to edge, so none is cut and no
+     cue is needed; on a narrower phone the row scrolls, unmasked. */
   .cp { touch-action: pan-y; }
-  .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; gap: 0 22px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin: 0 -16px; padding: 0 32px 0 16px; scroll-padding: 0 32px; -webkit-mask-image: linear-gradient(90deg, transparent, rgb(var(--black-rgb)) 16px, rgb(var(--black-rgb)) calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, rgb(var(--black-rgb)) 16px, rgb(var(--black-rgb)) calc(100% - 40px), transparent); } /* px-ok */
+  .cp-list { grid-auto-flow: column; grid-auto-columns: max-content; justify-content: space-between; gap: 0 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin: 0; padding: 0; } /* px-ok */
   .cp-list::-webkit-scrollbar { display: none; }
   .cp-opt { scroll-snap-align: center; min-height: 44px; } /* px-ok: tap target */
-  .cp-opt-name { font-size: var(--fs-3); }
+  .cp-opt-name { font-size: var(--fs-3); font-stretch: var(--wdth-tight); }
   .cp-opt-n { display: none; }
   /* The focused name gets the red marker under it, not colour alone. */
   .cp-opt::before { left: 0; top: auto; bottom: 6px; width: 100%; height: 2px; margin: 0; } /* px-ok */

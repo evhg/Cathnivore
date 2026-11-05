@@ -1414,9 +1414,17 @@ const COTTAGE =
   '<path d="M8 50h12M8 46h12M10 44v8M16 44v8M76 50h12M76 46h12M80 44v8M86 44v8" stroke="#8a6230" stroke-width="1.4" stroke-linecap="round"/>' +
   "</svg>";
 
-function drawLane(svg: SVGSVGElement, lane: [number, number][]): void {
-  const full = svg.dataset.exit ? [...lane, [lane[lane.length - 1]![0], 108] as [number, number]] : lane;
-  const walked = Math.min(Number(svg.dataset.walked ?? 0), full.length - 1);
+function drawLane(svg: SVGSVGElement, lane: [number, number][], detours: Array<[number, [number, number]]> = []): void {
+  const base = svg.dataset.exit ? [...lane, [lane[lane.length - 1]![0], 108] as [number, number]] : lane;
+  // Plan item 138: a detour point goes in after lane point `i` (round a stop's name at a row's turn); the walked
+  // stretch still ends on the same stop.
+  const full: [number, number][] = [];
+  base.forEach((p, i) => {
+    full.push(p);
+    for (const [at, q] of detours) if (at === i && i < base.length - 1) full.push(q);
+  });
+  const w0 = Math.min(Number(svg.dataset.walked ?? 0), base.length - 1);
+  const walked = Math.min(w0 + detours.filter(([at]) => at < w0).length, full.length - 1);
   for (const pl of svg.querySelectorAll("path")) {
     const cls = pl.getAttribute("class");
     pl.setAttribute("d", cls === "lane-walked" ? (walked > 0 ? trailPath(full.slice(0, walked + 1)) : "") : trailPath(full));
@@ -1537,7 +1545,22 @@ function layoutLanes(list: HTMLElement): void {
     if (!pts.length) continue;
     const door = trail.querySelector<HTMLElement>(".home-art");
     const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [pts[0]![0], -8];
-    drawLane(svg, [start, ...pts]);
+    // Plan item 138: at the turn from row 1 to row 2, and on the way out under the last stop, the lane ran straight
+    // down through that stop's name; it swings round the name's outer side instead (as far as the band allows).
+    const names = [...trail.querySelectorAll<HTMLElement>(".stop .level-name")].map((el) => el.getBoundingClientRect());
+    const round = (r: DOMRect | undefined, side: 1 | -1): [number, number] | null => {
+      if (!r || r.width < 1) return null;
+      const x = side > 0 ? r.right + 12 : r.left - 12;
+      const [px, py] = at(r);
+      const cx = Math.round(((x - box.left) / box.width) * 1000) / 10;
+      return [Math.max(1, Math.min(99, side > 0 ? Math.max(cx, px) : Math.min(cx, px))), py];
+    };
+    const detours: Array<[number, [number, number]]> = [];
+    const turn = pts.length > 5 ? round(names[4], 1) : null;
+    if (turn) detours.push([5, turn]);
+    const out = svg.dataset.exit && pts.length === 10 ? round(names[9], -1) : null;
+    if (out) detours.push([10, out]);
+    drawLane(svg, [start, ...pts], detours);
   }
 }
 
