@@ -13,7 +13,7 @@ test('Escape closes each phone sheet and returns focus', async ({ page }, testIn
     await tab.press('Enter')
     const sheet = page.getByRole('dialog', { name })
     await expect(sheet).toBeVisible()
-    await expect(sheet.getByRole('button', { name: 'Close' })).toBeFocused()
+    await expect(sheet.getByRole('button', { name: 'Close', exact: true })).toBeFocused()
     await page.keyboard.press('Escape')
     await expect(sheet).toHaveCount(0)
     await expect(tab).toBeFocused()

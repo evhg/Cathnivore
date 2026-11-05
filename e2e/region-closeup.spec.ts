@@ -42,7 +42,7 @@ test('a region tapped on a phone opens up close', async ({ page }, testInfo) => 
   await hex.locator('.region-inspect').focus()
   await page.keyboard.press('Enter')
   await expect(sheet).toBeVisible()
-  await sheet.getByRole('button', { name: 'Close' }).click()
+  await sheet.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(sheet).toBeHidden()
 })
 

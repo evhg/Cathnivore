@@ -24,7 +24,7 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
 
   await page.getByText('How to Play').click()
   await shoot(page, project, '2-rules-reference')
-  await page.getByRole('button', { name: 'Close' }).click()
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
 
   await page.getByText('Quick Game').click()
   await shoot(page, project, '3-setup')

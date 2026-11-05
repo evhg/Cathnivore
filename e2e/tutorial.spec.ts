@@ -146,7 +146,7 @@ test('the tutorial card\'s "?" opens the rules reference and returns to the same
   await expect(page.locator('.rules-reference')).toBeVisible()
   await expect(page.locator('.coach')).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Close' }).click()
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(page.locator('.rules-reference')).toHaveCount(0)
   // Back on the same in-progress game and step, with the same gate.
   await expect(page.locator('.coach-count')).toHaveText('Step 7 of 15')

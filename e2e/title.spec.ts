@@ -20,7 +20,7 @@ test('How to Play opens and closes the rules reference', async ({ page }) => {
   await page.goto('/')
   await page.getByText('How to Play').click()
   await expect(page.getByRole('heading', { name: 'How to Play' })).toBeVisible()
-  await page.getByRole('button', { name: 'Close' }).click()
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Cathnivore' })).toBeVisible()
 })
 

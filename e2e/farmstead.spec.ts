@@ -60,7 +60,7 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
     if (desktop) return page.locator(`.farm-inline .stall-item[data-card="${cardId}"]`).count()
     await page.getByRole('button', { name: /^Farm/ }).first().click()
     const n = await page.locator(`.farm-sheet .farmstead-card[data-card="${cardId}"]`).count()
-    await page.getByRole('button', { name: 'Close' }).click()
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
     return n
   }
   expect(await inFarm()).toBe(0)
