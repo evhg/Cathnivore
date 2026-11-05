@@ -2508,7 +2508,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
           two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
           has no spare width to share. */}
-      <section ref={planStripRef} className="plan-strip" aria-label="Tomorrow's papers" data-round={state.round}>
+      <section ref={planStripRef} className="plan-strip" aria-label="Tomorrow's papers" data-round={state.round} data-corp="hollowell">
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
           const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
           const card = state[slot]
@@ -2543,6 +2543,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <i />
                     <i />
                   </span>
+                  {/* Plan item 173: Hollowell's plate on its dashboard (desktop only; a phone's card has no room). */}
+                  <span className="plan-strip-plate">Hollowell</span>
                   {card && (
                     <span className="plan-strip-card-meta">
                       <span className="plan-strip-stage">Stage {romanStage(card.stage)}</span>

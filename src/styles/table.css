@@ -3429,3 +3429,86 @@ html.no-animations .table-cath-line { animation: none; }
     scale: .8;
   }
 }
+
+/* Plan item 173: Hollowell's moves as its own glossy dashboard, not the producers' paper: acrylic panels on a chrome
+   rim, a specular strip across the top, slate sans caps and the Hollowell plate; nothing tilted, taped or torn.
+   (VISION: the corporations are glossy, plastic, over-lit and clinical.) */
+.plan-strip[data-corp] .plan-strip-item,
+.plan-strip[data-corp] .plan-strip-item:nth-child(2),
+.plan-strip[data-corp] .plan-strip-item:nth-child(3) {
+  rotate: 0deg;
+  filter: drop-shadow(0 2px 3px rgb(var(--shadow-ink) / .22));
+}
+.plan-strip[data-corp] .plan-strip-item::before {
+  display: none;
+}
+.plan-strip[data-corp] .plan-strip-item > button:first-child {
+  border-radius: 9px;
+  background:
+    /* the specular strip: a hard band of light across the panel's top */
+    linear-gradient(180deg, color-mix(in srgb, white 70%, transparent) 0 2px, color-mix(in srgb, white 34%, transparent) 2px 38%, transparent 38%),
+    /* Hollowell's orange rail along its foot */
+    linear-gradient(var(--hollowell), var(--hollowell-lo)) bottom / 100% 3px no-repeat,
+    linear-gradient(180deg, var(--corp-acrylic), var(--corp-acrylic-lo));
+  box-shadow:
+    inset 0 0 0 1px var(--corp-chrome),
+    inset 0 1px 0 1px color-mix(in srgb, white 80%, transparent),
+    inset 0 -2px 0 color-mix(in srgb, var(--corp-chrome) 60%, transparent);
+  color: var(--corp-slate);
+}
+.plan-strip[data-corp] .plan-strip-headline {
+  font: 800 var(--fs-caption)/1.1 var(--font-ui);
+  font-style: normal;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.plan-strip[data-corp] .plan-strip-effect {
+  color: var(--corp-slate);
+}
+.plan-strip[data-corp] .plan-strip-target {
+  opacity: 1;
+  color: color-mix(in srgb, var(--corp-slate) 86%, var(--corp-acrylic));
+}
+.plan-strip[data-corp] .plan-strip-dateline {
+  border-bottom-color: color-mix(in srgb, var(--corp-chrome) 45%, transparent);
+}
+.plan-strip[data-corp] .plan-strip-stage {
+  color: var(--corp-slate);
+}
+.plan-strip[data-corp] .plan-strip-dial i {
+  background: color-mix(in srgb, var(--corp-chrome) 45%, transparent);
+}
+.plan-strip[data-corp] .plan-strip-dial[data-step="1"] i:nth-child(-n + 1),
+.plan-strip[data-corp] .plan-strip-dial[data-step="2"] i:nth-child(-n + 2),
+.plan-strip[data-corp] .plan-strip-dial[data-step="3"] i {
+  background: var(--hollowell-lo);
+}
+/* its region chips: Hollowell orange on clean white, crisp-edged */
+.plan-strip[data-corp] .plan-chip {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--hollowell) 14%, white);
+  box-shadow: inset 0 0 0 1px var(--hollowell-lo);
+  color: var(--hollowell-ink);
+}
+/* the Hollowell plate, a small chrome-edged nameplate beside the conveyor's chevrons */
+.plan-strip-plate {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .plan-strip[data-corp] .plan-strip-plate {
+    display: inline-block;
+    margin-right: auto;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--hollowell), var(--hollowell-lo));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 45%, transparent), 0 0 0 1px var(--hollowell-ink);
+    color: white;
+    font: 800 var(--fs-label)/1.1 var(--font-ui);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+}
+.plan-strip[data-corp] .plan-strip-item:has(.plan-strip-active) {
+  filter: drop-shadow(0 0 2px var(--candor-highlight)) drop-shadow(0 0 5px var(--candor)) drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .25));
+}

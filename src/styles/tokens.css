@@ -61,6 +61,11 @@
   --newsprint: #F7F4EC;        /* Agenda clippings (stay light in dark mode: they are objects) */
   --newsprint-lo: #EFEAE0;
   --newsprint-ink: #2B2320;
+  /* Plan item 173: Hollowell's dashboard: acrylic over chrome, slate type (an object too, so it stays light) */
+  --corp-acrylic: #F6FAFC;
+  --corp-acrylic-lo: #D9E4EA;
+  --corp-chrome: #8E9CA6;
+  --corp-slate: #1E2B34;
   --bunting: #6B4A2B;           /* the round banner's soil cloth: a fixed object, the same in both themes */
   --bunting-lo: #573B21;
   --kraft: #CFAE7E;            /* market tray, tab rail: a fill only, never under bare text */
@@ -208,6 +213,9 @@
     --wheat-ink: #E5C46F;
     --kraft: #5A4631;
     --kraft-lo: #4C3B29;
+    --corp-acrylic: #CDD6DC;
+    --corp-acrylic-lo: #AAB7BF;
+    --corp-chrome: #66737C;
     --newsprint: #C2B9A8;        /* aged grey-cream: still an object, no longer the brightest thing on the table */
     --newsprint-lo: #B5AB99;
     --btn-edge: rgb(241 233 220 / .42);
@@ -264,6 +272,9 @@
   --wheat-ink: #E5C46F;
   --kraft: #5A4631;
   --kraft-lo: #4C3B29;
+  --corp-acrylic: #CDD6DC;
+  --corp-acrylic-lo: #AAB7BF;
+  --corp-chrome: #66737C;
   --newsprint: #C2B9A8;
   --newsprint-lo: #B5AB99;
   --btn-edge: rgb(241 233 220 / .42);

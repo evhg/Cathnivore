@@ -39,6 +39,16 @@ export function usePlanArming(ids: readonly string[]) {
             { duration: ARM_SLIDE_MS, delay, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'backwards' },
           )
       anim.onfinish = anim.oncancel = () => delete card.dataset.arming
+      // Plan item 173: once it's in, the regions it targets light once (no pulse under reduced motion).
+      if (!reduced())
+        for (const chip of card.querySelectorAll<HTMLElement>('.plan-chip'))
+          chip.animate(
+            [
+              { boxShadow: '0 0 0 0 rgb(255 122 26 / .6)' },
+              { boxShadow: '0 0 0 4px rgb(255 122 26 / 0)' },
+            ],
+            { duration: 520, delay: delay + ARM_SLIDE_MS, easing: 'ease-out' },
+          )
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
