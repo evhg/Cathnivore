@@ -26,7 +26,7 @@ for (const kind of ['liberate', 'squeeze'] as const) {
     }, kind)
     expect(r.on).toBe(kind)
     // Cath reacts with it: delighted at a liberation, determined at a Squeeze (her table figure at D, her strip on a phone).
-    await expect(page.locator('.table-cath, .cath-companion').first()).toHaveAttribute('data-expression', kind === 'liberate' ? 'delighted' : 'determined')
+    await expect(page.locator('.table-cath, .cath-companion, .cath-dock').first()).toHaveAttribute('data-expression', kind === 'liberate' ? 'delighted' : 'determined')
     expect(r.ms).toBeGreaterThanOrEqual(700)
     expect(r.ms).toBeLessThanOrEqual(1200)
     const after = await box()

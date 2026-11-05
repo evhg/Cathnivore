@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { CathExpression } from '../../shared/cath/cath'
 import CathArt from './CathArt'
 
@@ -29,6 +29,32 @@ export default function CathCompanion({ expression, line }: { expression: CathEx
           {line}
         </p>
       </span>
+    </section>
+  )
+}
+
+// Plan item 171: on an upright phone her line docks above the hand, beside a 64 px bust, so nothing of hers lies on
+// the board (the table is the hero). A new line slides in over 200 ms; a tap folds it away until she next speaks
+// (the dock keeps its height, so the board never jumps), and a tap on the folded dock brings it back.
+export function CathDock({ expression, line }: { expression: CathExpression; line: string }) {
+  const [folded, setFolded] = useState<string | null>(null)
+  const isFolded = folded === line
+  return (
+    <section className="cath-dock" data-expression={expression} data-folded={isFolded ? '' : undefined} aria-label="Cath">
+      <button
+        type="button"
+        className="cath-dock-btn"
+        aria-label={isFolded ? 'Show Cath’s line' : 'Fold Cath’s line away'}
+        aria-pressed={isFolded}
+        onClick={() => setFolded(isFolded ? null : line)}
+      >
+        <span className="cath-dock-bust" aria-hidden="true">
+          <CathArt framing="bust" expression={expression} animate width={64} height={64} />
+        </span>
+      </button>
+      <p className="cath-dock-line voice" role="status" aria-live="polite" key={line} onClick={() => setFolded(line)}>
+        {line}
+      </p>
     </section>
   )
 }

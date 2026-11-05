@@ -54,7 +54,7 @@ import type { ProducerFace } from './portraits/producerFaces'
 import { producerMoods } from './producerMood'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
-import CathCompanion from './CathCompanion'
+import CathCompanion, { CathDock } from './CathCompanion'
 import Tooltip from './Tooltip'
 import { CATH_REACTION_EXPRESSION, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
 import type { CathExpression } from '../../shared/cath/cath'
@@ -2586,8 +2586,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )}
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
-        {tableCath && (
-          <section className={phoneTableCath ? 'table-cath table-cath-phone' : 'table-cath'} data-expression={cathReaction.expression} aria-label="Cath">
+        {/* Plan item 171: on an upright phone she speaks from the dock above the hand instead (CathDock), off the board. */}
+        {deskTableCath && (
+          <section className="table-cath" data-expression={cathReaction.expression} aria-label="Cath">
             <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
               {cathReaction.line}
             </p>
@@ -2735,6 +2736,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
           buttons, always on screen — see the `.game-scroll` comment above for how. */}
       <div className="action-tray">
+      {phoneTableCath && <CathDock expression={cathReaction.expression} line={cathReaction.line} />}
       {!isDesktop && producerPanel}
 
       {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when

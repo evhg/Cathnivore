@@ -2806,44 +2806,47 @@ html.no-animations .cath-companion .cameo {
     rotate: 45deg;
   }
 }
-/* Plan item 131: on an upright phone Cath stands at the table's lower-left corner (left of Oakvale, under
-   Brindle Hills), 112 px half-length (item 146; was 96) on the same expression feed, and her line is a bubble from her along the cloth
-   under the hexes. The board sits at the top of its frame so the cloth's spare band is at its foot. */
+/* Plan item 171 (was item 131's standing figure and bubble on the cloth): on an upright phone Cath's line docks
+   above the hand, beside a 64 px bust, so nothing of hers lies on the board. The dock keeps its height when the
+   line is folded away, so the board never jumps. */
 @media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
-  .map-wrap:has(.table-cath-phone) { align-items: flex-start; }
-  /* The viewBox's top band is sky for the landmarks; lift the board into it so the hexes' tips clear her bubble. */
-  .map-wrap:has(.table-cath-phone) svg.map { margin-top: -18px; }
-  .table-cath-phone {
-    position: absolute;
-    inset: auto var(--sp-2) 6px 2px;
-    z-index: var(--z-raised);
+  .game:has(.cath-dock) .map-wrap { min-height: 0; }
+  /* The board lost the bubble band at its foot: the ticket rides up onto the frame's rim to clear the top plaques. */
+  .game:has(.cath-dock) .event-ticket { top: -5px; }
+  .game:has(.cath-dock) .map-wrap svg.map { translate: 0 10px; }
+  .cath-dock {
     display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    pointer-events: none;
+    align-items: center;
+    gap: 10px;
+    min-height: 64px;
+    padding-inline: 2px var(--sp-1);
   }
-  .table-cath-phone .table-cath-figure {
-    order: -1;
+  .cath-dock-btn {
     flex: none;
     display: block;
-    /* Plan item 146: 112 px (was 96, her face about 15 px), in the free cloth under Brindle Hills, left of Oakvale. */
-    height: 112px;
-    width: 66px;
-    overflow: hidden;
-    filter: drop-shadow(0 3px 3px rgb(var(--shadow-ink) / .22));
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
   }
-  .table-cath-phone .table-cath-figure .cath-art,
-  .table-cath-phone .table-cath-figure svg {
+  .cath-dock-bust {
     display: block;
-    height: 100%;
-    width: auto;
-    margin-left: -4px;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 0 0 2px var(--wheat), 0 2px 4px rgb(var(--shadow-ink) / .25);
   }
-  .table-cath-phone .table-cath-line {
+  .cath-dock-bust svg { display: block; width: 100%; height: 100%; }
+  .cath-dock-line {
     position: relative;
-    flex: 0 1 auto;
-    margin: 0 0 8px;
-    padding: 5px 10px;
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 6px 12px;
     border-radius: 12px;
     background: var(--surface);
     border: 1px solid var(--rule);
@@ -2852,14 +2855,15 @@ html.no-animations .cath-companion .cameo {
     font-size: var(--fs-small);
     line-height: 1.25;
     text-wrap: pretty;
-    animation: table-cath-say var(--dur-quick) var(--ease-settle);
+    cursor: pointer;
+    animation: cath-dock-in 200ms var(--ease-settle);
   }
   /* The tail points left, at her mouth. */
-  .table-cath-phone .table-cath-line::after {
+  .cath-dock-line::after {
     content: "";
     position: absolute;
     left: -6px;
-    bottom: 14px;
+    top: calc(50% - 5px);
     width: 10px;
     height: 10px;
     background: var(--surface);
@@ -2867,7 +2871,15 @@ html.no-animations .cath-companion .cameo {
     border-bottom: 1px solid var(--rule);
     rotate: 45deg;
   }
+  .cath-dock[data-folded] .cath-dock-line { visibility: hidden; }
 }
+@keyframes cath-dock-in {
+  from { opacity: 0; translate: -12px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cath-dock-line { animation: none; }
+}
+html.no-animations .cath-dock-line { animation: none; }
 @keyframes table-cath-say {
   from { opacity: 0; translate: 0 6px; }
 }
