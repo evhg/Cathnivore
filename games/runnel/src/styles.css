@@ -3871,11 +3871,11 @@ body[data-mode='practice'] #week-slot {
 .valley-folk[data-working] [data-valley-folk="farmer"] { animation-play-state: paused; }
 .valley-folk[data-working] [data-valley-folk="farmer"] .folk-tool { animation: folk-hoe 900ms ease-in-out infinite; transform-box: fill-box; transform-origin: 0% 0%; }
 @keyframes folk-hoe { 0%, 100% { rotate: 0deg; } 45% { rotate: -22deg; } }
-/* A solve: everyone hops, Bea waves her flower. */
+/* A solve: everyone hops. Bea is the one who runs out to her garden with the can (item 68's .bea-runner), so her
+   walking self steps out of the valley as the runner sets off: one Bea on screen. */
 .valley-folk[data-cheer] .valley-folk-one .folk-body { animation: folk-hop 520ms cubic-bezier(.3, 0, .4, 1) 4 alternate; }
-.valley-folk[data-cheer] [data-valley-folk="bea"] .folk-arm { animation: folk-wave 380ms ease-in-out 6 alternate; transform-box: fill-box; transform-origin: 0% 100%; }
+.valley-folk[data-cheer] [data-valley-folk="bea"] { opacity: 0; transition: opacity 400ms ease 300ms; }
 @keyframes folk-hop { to { translate: 0 -7px; } }
-@keyframes folk-wave { to { rotate: -40deg; } }
 @media (max-width: 1099.98px) {
   .valley-folk-one { width: 32px; height: 32px; margin: -32px 0 0 -16px; }
   .valley-folk-one[data-valley-folk="sheep"] { width: 26px; height: 26px; margin: -26px 0 0 -13px; }

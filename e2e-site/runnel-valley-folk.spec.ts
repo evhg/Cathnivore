@@ -36,6 +36,8 @@ test('four or more folk walk the valley, clear of everything; a solve tends the 
   const n = await fields.count()
   expect(n).toBeGreaterThan(0)
   await expect(page.locator('#board .tiles > g.cell.field[data-tended]')).toHaveCount(n, { timeout: 3_000 })
+  // One Bea: her walking self steps out as she runs to the garden.
+  await expect(page.locator('[data-valley-folk="bea"]')).toHaveCSS('opacity', '0', { timeout: 3_000 })
 })
 
 test.describe('reduced motion', () => {

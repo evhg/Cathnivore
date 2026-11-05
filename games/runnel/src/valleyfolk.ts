@@ -1,5 +1,5 @@
 // Plan item 151: the people of the valley. A farmer, Bea, two sheep and Bea's cart walk its margins; when water
-// reaches a field the farmer takes up the hoe, and at a solve everyone cheers. main.ts places them (clear of the
+// reaches a field the farmer takes up the hoe, and at a solve everyone hops while Bea runs to her garden (item 68). main.ts places them (clear of the
 // tiles, Cath, the garden, the spring house and the week's keeps) and drives their state; the walk is CSS.
 
 export type FolkKind = 'farmer' | 'bea' | 'sheep' | 'cart'
