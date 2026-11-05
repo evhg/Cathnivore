@@ -26,13 +26,17 @@ test('a ?play case file turns Cath to the camera, in a different look for each c
   const dressed = () => page.evaluate(() => (window as unknown as Front).cathodeFront?.scene()?.dressed ?? null)
   await expect.poll(dressed, { timeout: 200_000 }).toBe('ghost')
   const seen = new Set<string>()
+  // Plan item 140: her painted face changes with the class (the ghost set, the wirewitch winking).
+  const faces: Record<string, string | null> = {}
   for (const cls of CLASSES) {
     await page.locator(`.cp-opt[data-cls=${cls}]`).click()
     await expect.poll(dressed, { timeout: 30_000 }).toBe(cls)
+    faces[cls] = await page.locator('canvas[data-expression]').first().getAttribute('data-expression')
     // Each class's own kit over the coat (the rifle sling, the apron, the holster, the wire rig, the tie).
     seen.add(`${await dressed()}/${await page.evaluate(() => (window as unknown as Front).cathodeFront!.scene()!.kit)}`)
   }
   expect([...seen]).toEqual(CLASSES.map((c) => `${c}/${c}`))
+  expect(faces).toEqual({ ghost: 'determined', butcher: 'determined', gunslinger: 'smirk', wirewitch: 'wink', fixer: 'smirk' })
   // Her figure, head to hem, is a presence: 420 px or more at D, 300 at P.
   const fig = await page.evaluate(() => (window as unknown as Front).cathodeFront!.scene()!.figureBox())
   expect(fig.bottom - fig.top, JSON.stringify(fig)).toBeGreaterThanOrEqual(hasTouch ? 300 : 420)

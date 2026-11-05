@@ -9,6 +9,9 @@
 import * as THREE from "three";
 import { CATH_HERO } from "../game/armdress";
 
+/** Plan item 140: the painted face's expressions (the title's smirk, the class pick's). */
+export type FaceExpression = "smirk" | "determined" | "wink";
+
 export interface FrontCath {
   readonly group: THREE.Group;
   /** World-space points the scene lights and frames from. */
@@ -39,6 +42,9 @@ export interface FrontCath {
   showAllKits(on: boolean): void;
   /** The kit she's wearing (null for none). */
   readonly wearing: string | null;
+  /** Plan item 140: repaints her face with this expression (a no-op when it's already showing). */
+  expression(e: FaceExpression): void;
+  readonly expressionNow: FaceExpression;
   dispose(): void;
   readonly triangles: number;
 }
@@ -483,14 +489,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // C14: her face, painted (VISION: large bright eyes with a neat winged liner and two highlights, soft brows with
   // the right one a touch raised, a little colour on the cheeks, rose lips in a half-smile). Painted on the skull's
   // own UVs in metres: u = 0.25 is her front, +x her left (the viewer's right), the canvas top is her crown.
-  const faceTex = (() => {
-    const W = 2048;
-    const H = 1024;
-    const c = document.createElement("canvas");
-    c.width = W;
-    c.height = H;
-    const g = c.getContext("2d");
+  // Plan item 140: painted per expression (smirk on the title, determined, a wink), repainted on a change.
+  const faceCanvas = document.createElement("canvas");
+  faceCanvas.width = 2048;
+  faceCanvas.height = 1024;
+  const paintFace = (expr: FaceExpression): void => {
+    const W = faceCanvas.width;
+    const H = faceCanvas.height;
+    const g = faceCanvas.getContext("2d");
     if (g) {
+      g.setTransform(1, 0, 0, 1, 0, 0);
       g.fillStyle = "#d9ad98";
       g.fillRect(0, 0, W, H);
       // Metres on the face -> canvas: 1 normalised unit is H/π pixels, x in units of 0.072 m, y of 0.098 m.
@@ -511,7 +519,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       };
       // Shading: warm cheeks, a cooler shadow under the cheekbones and the brow, the lids a touch smoky.
       for (const sx of [-1, 1]) {
-        blob(0.036 * sx, -0.016, 0.017, 0.012, "rgba(214,110,112,A)", 0.5);
+        blob(0.038 * sx, -0.018, 0.018, 0.013, "rgba(222,104,116,A)", 0.62);
         blob(0.045 * sx, -0.034, 0.016, 0.01, "rgba(120,70,62,A)", 0.22);
         blob(0.026 * sx, 0.011, 0.016, 0.009, "rgba(92,58,62,A)", 0.45);
       }
@@ -532,11 +540,31 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
       for (const sx of [-1, 1]) {
-        const ex = 0.026 * sx;
+        // Plan item 140: at title distance (a 120 px face) item 9's eyes read as two dots; 1.3x again, set a little
+        // wider, every part of the eye scaled with them (E), the catch-lights larger still.
+        const E = 1.3;
+        const ex = 0.0275 * sx;
         const ey = 0.006;
         // Plan item 9: larger, brighter eyes (the bible's "large bright eyes"), about a fifth up on C14's.
-        const hw = 0.0135;
-        const hh = 0.0069;
+        const hw = 0.0135 * E;
+        const hh = 0.0069 * E;
+        // A wink closes her left eye (the viewer's right) to a lashed curve, the wing still out past it.
+        if (expr === "wink" && sx > 0) {
+          g.strokeStyle = "#120a08";
+          g.lineCap = "round";
+          g.lineWidth = 0.0024 * E;
+          g.beginPath();
+          g.moveTo(ex - hw, ey + hh * 0.2);
+          g.quadraticCurveTo(ex, ey - hh * 1.1, ex + hw, ey + hh * 0.5);
+          g.lineTo(ex + hw + 0.0058 * E, ey + hh * 1.3);
+          g.stroke();
+          g.strokeStyle = "rgba(110,64,58,0.55)";
+          g.lineWidth = 0.001 * E;
+          g.beginPath();
+          g.moveTo(ex - hw * 0.8, ey + hh * 1.2);
+          g.quadraticCurveTo(ex, ey + hh * 2.2, ex + hw, ey + hh * 1.4);
+          g.stroke();
+        } else {
         const almond = () => {
           g.beginPath();
           g.moveTo(ex - hw, ey);
@@ -549,9 +577,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fillStyle = "#efe6e0";
         g.fill();
         g.clip();
-        const ix = ex + 0.0012 * sx;
+        const ix = ex + 0.0012 * E * sx;
         // A hazel iris: a warm amber ring round the pupil, darkening to a limbal ring at the edge.
-        const ir = 0.0068;
+        const ir = 0.0068 * E;
         const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
         iris.addColorStop(0, "#8a5a2a");
         iris.addColorStop(0.45, "#a87436");
@@ -564,21 +592,21 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fillStyle = "#2e1c10";
         g.beginPath();
         g.ellipse(ix, ey + 0.0004, ir, ir * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
-        g.lineWidth = 0.0012;
+        g.lineWidth = 0.0012 * E;
         g.strokeStyle = "#24160c";
         g.stroke();
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0029, 0.0029 * 1.0, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, 0.0029 * E, 0.0029 * E, 0, 0, Math.PI * 2);
         g.fill();
         // The lid's shadow across the top of the iris.
         g.fillStyle = "rgba(40,20,16,0.35)";
         g.fillRect(ex - hw, ey + hh * 0.55, hw * 2, hh);
         g.fillStyle = "#fffaf4";
         g.beginPath();
-        g.ellipse(ix - 0.0021, ey + 0.0026, 0.0014, 0.0011, 0, 0, Math.PI * 2);
+        g.ellipse(ix - 0.0021 * E, ey + 0.0024 * E, 0.0031 * E, 0.0025 * E, 0, 0, Math.PI * 2);
         g.fill();
         g.beginPath();
-        g.ellipse(ix + 0.0022, ey - 0.0019, 0.0007, 0.0006, 0, 0, Math.PI * 2);
+        g.ellipse(ix + 0.0024 * E, ey - 0.0021 * E, 0.0015 * E, 0.0012 * E, 0, 0, Math.PI * 2);
         g.fill();
         g.restore();
         // The liner: heavier on the upper lid, out to a wing that lifts past the outer corner.
@@ -587,58 +615,71 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.beginPath();
         g.moveTo(ex - hw * sx * 1.02, ey - 0.0002);
         g.bezierCurveTo(ex - hw * 0.5 * sx, ey + hh * 1.55, ex + hw * 0.5 * sx, ey + hh * 1.65, ox, ey + hh * 0.25);
-        g.lineTo(ox + 0.0062 * sx, ey + hh * 1.25);
-        g.lineTo(ox - 0.0005 * sx, ey + hh * 0.85);
+        g.lineTo(ox + 0.0062 * E * sx, ey + hh * 1.25);
+        g.lineTo(ox - 0.0005 * E * sx, ey + hh * 0.85);
         g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 2.15, ex - hw * 0.5 * sx, ey + hh * 2.0, ex - hw * sx * 1.02, ey - 0.0002);
         g.closePath();
         g.fill();
-        g.strokeStyle = "rgba(30,16,12,0.7)";
-        g.lineWidth = 0.0007;
+        g.strokeStyle = "rgba(30,16,12,0.8)";
+        g.lineWidth = 0.001 * E;
         g.beginPath();
         g.moveTo(ex - hw * 0.7 * sx, ey - hh * 0.95);
         g.quadraticCurveTo(ex + hw * 0.3 * sx, ey - hh * 1.35, ex + hw * sx, ey + hh * 0.1);
         g.stroke();
         // The lid crease.
         g.strokeStyle = "rgba(110,64,58,0.55)";
-        g.lineWidth = 0.0008;
+        g.lineWidth = 0.001 * E;
         g.beginPath();
         g.moveTo(ex - hw * 0.8 * sx, ey + hh * 2.1);
         g.quadraticCurveTo(ex + hw * 0.1 * sx, ey + hh * 3.3, ex + hw * 1.05 * sx, ey + hh * 1.9);
         g.stroke();
+        }
         // Soft brows, her right (sx -1) a touch higher at the arch.
-        const by = 0.0215 + (sx < 0 ? 0.0022 : 0);
-        g.fillStyle = "#2a1a14";
+        // Plan item 140: higher over the larger eyes, a little fuller and longer.
+        // Determined: both level, drawn down at the inner ends. A wink lowers the winking side's brow.
+        const by = 0.0262 + (expr === "smirk" && sx < 0 ? 0.0026 : 0) - (expr === "wink" && sx > 0 ? 0.0018 : 0);
+        const inner = expr === "determined" ? -0.0034 : 0;
+        g.fillStyle = "#24160f";
         g.beginPath();
-        g.moveTo(0.0085 * sx, by - 0.0018);
-        g.quadraticCurveTo(0.024 * sx, by + 0.0042, 0.04 * sx, by - 0.0018);
-        g.quadraticCurveTo(0.025 * sx, by + 0.0012, 0.0085 * sx, by - 0.0048);
+        g.moveTo(0.0085 * sx, by - 0.0022 + inner);
+        g.quadraticCurveTo(0.026 * sx, by + 0.0052, 0.0445 * sx, by - 0.0024);
+        g.quadraticCurveTo(0.027 * sx, by + 0.0012, 0.0085 * sx, by - 0.0062 + inner);
         g.closePath();
         g.fill();
       }
       // Rose lips in a half-smile: her left corner lifts a little.
+      // Plan item 140: fuller (1.3x) and a deeper, more saturated rose, so they read as lips at title distance.
       const my = -0.047;
-      g.fillStyle = "#b24a58";
+      g.save();
+      g.translate(0, my);
+      // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
+      const [lc, rc] = expr === "determined" ? [-0.0004, -0.0002] : expr === "wink" ? [0.0024, 0.0036] : [0.0005, 0.0026];
+      g.scale(1.3, expr === "determined" ? 1.15 : 1.4);
+      g.translate(0, -my);
+      g.fillStyle = "#b02a4c";
       g.beginPath();
-      g.moveTo(-0.0165, my + 0.0005);
+      g.moveTo(-0.0165, my + lc);
       g.bezierCurveTo(-0.009, my + 0.0058, -0.003, my + 0.0072, 0, my + 0.0048);
-      g.bezierCurveTo(0.003, my + 0.0072, 0.009, my + 0.0062, 0.0168, my + 0.0026);
-      g.bezierCurveTo(0.009, my - 0.0072, -0.009, my - 0.0078, -0.0165, my + 0.0005);
+      g.bezierCurveTo(0.003, my + 0.0072, 0.009, my + 0.0062, 0.0168, my + rc);
+      g.bezierCurveTo(0.009, my - 0.0072, -0.009, my - 0.0078, -0.0165, my + lc);
       g.closePath();
       g.fill();
       g.strokeStyle = "#5e1e28";
       g.lineWidth = 0.0011;
       g.beginPath();
-      g.moveTo(-0.0165, my + 0.0005);
-      g.bezierCurveTo(-0.008, my + 0.0012, 0.008, my + 0.0018, 0.0168, my + 0.0026);
+      g.moveTo(-0.0165, my + lc);
+      g.bezierCurveTo(-0.008, my + 0.0012, 0.008, my + 0.0018, 0.0168, my + rc);
       g.stroke();
       // The gloss on the lower lip.
-      blob(0.003, my - 0.0032, 0.0055, 0.0014, "rgba(255,226,226,A)", 0.55);
+      blob(0.003, my - 0.0032, 0.0062, 0.0017, "rgba(255,232,236,A)", 0.8);
+      g.restore();
     }
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 4;
-    return t;
-  })();
+  };
+  let faceExpr: FaceExpression = "smirk";
+  paintFace(faceExpr);
+  const faceTex = new THREE.CanvasTexture(faceCanvas);
+  faceTex.colorSpace = THREE.SRGBColorSpace;
+  faceTex.anisotropy = 4;
   const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.5, metalness: 0 });
   rimify(faceMat, 0.35);
   mats.push(faceMat);
@@ -1498,6 +1539,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
     umbrellaTop,
     get wearing() {
       return wearing;
+    },
+    get expressionNow() {
+      return faceExpr;
+    },
+    expression(e) {
+      if (e === faceExpr) return;
+      faceExpr = e;
+      paintFace(e);
+      faceTex.needsUpdate = true;
     },
     kit(cls) {
       wearing = cls && kits.has(cls) ? cls : null;

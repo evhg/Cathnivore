@@ -487,5 +487,8 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
     expect(m.face.top).toBeGreaterThanOrEqual(0)
     expect(m.face.right).toBeLessThanOrEqual(vp.width)
     for (const r of m.rows) expect(m.face.left < r.right && m.face.right > r.left && m.face.top < r.bottom && m.face.bottom > r.top, JSON.stringify({ face: m.face, r })).toBe(false)
+    // Plan item 140: the title shows her smirk (the pixel checks for the catch-light and the lips wait for the face
+    // key light: under the street grade the brightest face pixel peaks at 0.4 at P and 0.8 at D).
+    await expect(page.locator('canvas[data-expression]').first()).toHaveAttribute('data-expression', 'smirk')
   }
 })

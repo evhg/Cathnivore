@@ -15,7 +15,7 @@ import * as THREE from "three";
 import { createWorld } from "./world";
 import { AutoScale } from "../game/autoscale";
 import type { Quality, World } from "./types";
-import { buildFrontCath, type FrontCath } from "./frontcath";
+import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -46,6 +46,8 @@ export interface FrontScene {
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
   readonly vignette: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
+  /** Plan item 140: the expression painted on her face now. */
+  readonly expression: FaceExpression;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
   readonly dressed: string | null;
   /** The class kit she wears over the coat (null on the title). */
@@ -118,6 +120,9 @@ const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f33
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
+/** Plan item 140: the face each class shows in the pick: the ghost and the butcher set, the wirewitch winks. */
+const CLASS_EXPRESSION: Record<string, FaceExpression> = { ghost: "determined", butcher: "determined", gunslinger: "smirk", wirewitch: "wink", fixer: "smirk" };
+
 export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOptions): Promise<FrontScene> {
   const world = await createWorld(canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
   // Behind the menus the street can afford less: a half-resolution mirror, shadows every second frame (render/world.ts).
@@ -136,6 +141,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   cath.group.position.copy(feet);
   cath.group.rotation.y = Math.PI; // facing -z (south), the way the player starts
   world.scene.add(cath.group);
+  world.renderer.domElement.dataset.expression = cath.expressionNow;
   // Local frame -> world.
   const toWorld = (x: number, y: number, z: number, out = new THREE.Vector3()) => out.set(-x, y, -z).add(feet);
   // The back light: pink, high and ahead of her (the camera is always behind or beside her, so it rims her
@@ -550,6 +556,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     get dressed() {
       return wd.cls;
     },
+    get expression() {
+      return cath.expressionNow;
+    },
     get vignette() {
       return cath.clipState;
     },
@@ -576,6 +585,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
       if (cls) cath.play(cls, instant ? 0.5 : undefined, VIGNETTE_S);
       cath.kit(cls);
+      // Plan item 140: her face for the class (the title's smirk with none), on the canvas for the front's checks.
+      const expr = cls ? CLASS_EXPRESSION[cls] ?? "smirk" : "smirk";
+      cath.expression(expr);
+      world.renderer.domElement.dataset.expression = expr;
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);
