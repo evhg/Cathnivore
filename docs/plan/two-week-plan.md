@@ -2012,7 +2012,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each `[data-piece]` box 36 px or more at D and 24 px or more at P; the map 75% or more of the board panel's width at D; every piece kind has its own `data-silhouette`; rule tests unchanged; shots P and D, light and dark.
 - **Size:** 3
 
-## 173. [ ] Cathnivore: Hollowell's moves as a glossy corporate ticker
+## 173. [ ] Cathnivore: Hollowell's moves as a glossy corporate ticker *(lane B, in progress)*
 - **Why:** `cath-game-D` (350-1205 x 88-185) and `cath-game-P` (10-380 x 68-160): Squeeze, Expand and Scout are drawn on the producers' own warm paper. VISION's art direction says the corporations are glossy, plastic, over-lit and clinical; this row is where that contrast belongs.
 - **Build:**
   - The row as an acrylic and chrome dashboard: cool corporate tokens, a specular strip, sans caps, the Hollowell plate.
