@@ -4215,9 +4215,9 @@ body:has(#dlg-pause[open]) .paused-note {
   align-content: center;
   align-items: center;
   column-gap: 4px;
-  row-gap: 4px;
+  row-gap: 3px;
   width: 100%;
-  padding: 6px 4px;
+  padding: 4px;
   border: 0;
   border-radius: var(--r-note);
   background: color-mix(in srgb, var(--line) 22%, transparent);
@@ -4280,7 +4280,7 @@ body:has(#dlg-pause[open]) .paused-note {
 /* The painted banner: a ribbon across the chip's top with swallow-tailed ends, the round's number under it. */
 /* (it overhangs the chip's top, so the vehicles stay level along the strip) */
 .round-chip[data-twist] .round-chip-btn {
-  padding-top: 12px;
+  padding-top: 10px;
 }
 .round-banner {
   position: absolute;
@@ -4289,40 +4289,67 @@ body:has(#dlg-pause[open]) .paused-note {
   right: -3px;
   padding: 2px 0 3px;
   clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
-  background: var(--path-0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  /* painted: lighter where the brush started, a darker drag along its foot */
+  background:
+    linear-gradient(180deg, var(--white-a22), var(--white-a00) 45%, var(--black-a20)),
+    var(--path-0);
   color: var(--on-fill);
   font: 800 var(--fs-label) / 1 var(--font-ui);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   text-align: center;
   box-shadow: var(--sh-1);
+  pointer-events: none;
 }
 .round-chip[data-twist="flood"] .round-banner {
-  background: var(--path-1);
+  background:
+    linear-gradient(180deg, var(--white-a22), var(--white-a00) 45%, var(--black-a20)),
+    var(--path-1);
+}
+.round-banner svg {
+  flex: none;
+  width: 12px;
+  height: 8px;
 }
 .round-chip[data-twist="flood"] .round-chip-btn {
   background: color-mix(in srgb, var(--path-1) 16%, transparent);
 }
-/* Its vehicles, under the strip */
+/* Its vehicles: a card laid over the strip (the column has no room to grow), shut with a tap */
+.play .panel .field-intel:has(.round-strip) {
+  position: relative;
+}
 .round-detail {
-  margin-top: 6px;
-  padding: 6px 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-raise);
+  max-height: 100%;
+  overflow: hidden;
+  padding: 5px 8px;
   border-radius: var(--r-note);
-  background: color-mix(in srgb, var(--line) 16%, transparent);
+  background: var(--paper-hi);
+  box-shadow: var(--sh-2), inset 0 0 0 2px var(--brass);
   font: 600 var(--fs-small) / 1.25 var(--font-ui);
   color: var(--ink);
+  cursor: pointer;
 }
 .round-detail[hidden] {
   display: none;
 }
 .round-detail .round-detail-head {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-weight: 800;
 }
 .round-detail ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: 2px 12px;
+  font-size: var(--fs-label);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -4335,8 +4362,8 @@ body:has(#dlg-pause[open]) .paused-note {
   border-left: 4px solid var(--seg, var(--ink-3));
 }
 .round-detail-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 /* A phone's drawer: the same chip, tighter, so the notebook still ends whole above the tray */
 @media (max-width: 899.98px), (max-height: 520px) {

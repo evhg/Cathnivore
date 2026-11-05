@@ -2181,7 +2181,12 @@ function fieldIntel(g: Game): HTMLElement {
       if (banner) {
         const ban = document.createElement("span");
         ban.className = "round-banner";
-        ban.textContent = banner.label;
+        // A painted glyph before its word: the river's ripples, or the boss's crown.
+        ban.innerHTML =
+          banner.twist === "flood"
+            ? '<svg viewBox="0 0 16 10" aria-hidden="true"><path d="M1 3.5q2-2 3.5 0t3.5 0 3.5 0 3.5 0M1 7.5q2-2 3.5 0t3.5 0 3.5 0 3.5 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+            : '<svg viewBox="0 0 16 10" aria-hidden="true"><path d="M2 9h12l1-7-4 3-3-4-3 4-4-3z" fill="currentColor"/></svg>';
+        ban.append(banner.label);
         b.append(ban);
       }
       const no = document.createElement("span");
@@ -2207,6 +2212,7 @@ function fieldIntel(g: Game): HTMLElement {
       tl.append(li);
     });
     detail.id = "round-detail";
+    detail.onclick = () => open(null);
     box.append(tl, detail);
     if (openRound && chips.some((c) => c.dataset.key === openRound)) open(openRound);
   }

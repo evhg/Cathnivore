@@ -37,12 +37,15 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   expect(box.y + box.height).toBeLessThanOrEqual(vp.height)
   const panel = (await page.locator('.round-strip').evaluate((e) => e.closest('.panel')!.getBoundingClientRect().toJSON())) as DOMRect
   expect(box.y).toBeGreaterThanOrEqual(panel.y)
-  // A tap opens its vehicles; a second closes them.
+  // A tap opens its vehicles over the strip, inside the panel; a tap on them shuts them.
   await flood.locator('button').click()
   const detail = page.locator('#round-detail')
   await expect(detail).toBeVisible()
   await expect(detail).toContainText(/floods/)
   expect(await detail.locator('li').count()).toBeGreaterThanOrEqual(1)
-  await flood.locator('button').click()
+  const d = (await detail.boundingBox())!
+  expect(d.y).toBeGreaterThanOrEqual(panel.y)
+  expect(d.y + d.height).toBeLessThanOrEqual(Math.min(vp.height, panel.y + panel.height))
+  await detail.click()
   await expect(detail).toBeHidden()
 })
