@@ -2020,7 +2020,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `.plan-strip[data-corp]`; its cards draw no paper texture; region chips 4.5:1 or more; reduced motion only fades; tutorial and plan-target specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 174. [ ] Hedgerow: the level card as a seed-catalogue page
+## 174. [ ] Hedgerow: the level card as a seed-catalogue page *(lane B, in progress)*
 - **Why:** `hedge-menu-D` (340-1100 x 603-765): the level card is a flat white panel over the bottom of the journey map, its thumbnail a pixel grid of the lane (365-447 x 622-742) and its enemies 16 px icons in a list. On `hedge-menu-P` (8-382 x 490-660) it covers the map from 520 to 660.
 - **Build:**
   - A seed-catalogue page: a painted vignette of the level's field, illustrated enemy portraits (40 px or more) with one threat line each, and Cath's line about the level.
