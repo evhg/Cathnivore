@@ -1207,25 +1207,40 @@ html.no-animations .title-screen * {
 .ritual-card-no { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 700; line-height: 1; }
 .ritual-card-in { white-space: nowrap; font-family: var(--font-num); font-size: var(--fs-label); font-weight: 700; padding: 1px 5px; border-radius: 999px; background: color-mix(in srgb, var(--ink-on-fixed-fill) 55%, transparent); }
 .ritual-card-kicker { font-family: var(--font-text); font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-/* the phone's receipt: pinned to the table's lip in front of Cath's waist, clear of the menu below */
+/* the phone's receipt: a slip lying on the table's front under Cath (plan item 139: the upright receipt pinned
+   at her waist covered her torso), clear of the board's hexes and the menu below */
 @media (max-width: 760px) {
   .daily-ritual.is-compact {
     display: block;
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-row: 1;
     align-self: end;
-    justify-self: end;
+    justify-self: start;
     position: relative;
     z-index: var(--z-map-fx);
-    margin: 0 4px -20px 0;
+    margin: 0 0 -22px -4px;
     pointer-events: none;
   }
   .title-art.title-table .title-cath { grid-column: 1; grid-row: 1; }
   .title-art.title-table .title-board { grid-column: 2; grid-row: 1; }
-  .daily-ritual.is-compact .ritual-receipt { width: 98px; padding: 10px 7px 8px; rotate: -4deg; }
-  .daily-ritual.is-compact .ritual-receipt-row span { width: 44px; }
-  .daily-ritual.is-compact .ritual-stamp { top: 46px; bottom: auto; right: -38px; font-size: var(--fs-label); background: var(--paper-on-fixed-fill); mix-blend-mode: normal; }
-  .ritual-mini-bunting { display: flex; gap: 2px; align-items: center; margin-top: 3px; }
+  .daily-ritual.is-compact .ritual-receipt {
+    width: 158px;
+    padding: 5px 9px 9px;
+    grid-template-columns: auto auto 1fr;
+    column-gap: 7px;
+    row-gap: 0;
+    align-items: baseline;
+    line-height: 1.15;
+    rotate: -2deg;
+  }
+  .daily-ritual.is-compact .ritual-pin { left: 6px; top: 5px; width: 10px; height: 10px; }
+  .daily-ritual.is-compact .ritual-receipt-head { grid-column: 1; padding-left: 10px; white-space: nowrap; }
+  .daily-ritual.is-compact .ritual-receipt-when { grid-column: 2 / -1; border: 0; padding: 0; margin: 0; }
+  .daily-ritual.is-compact .ritual-receipt-row { gap: 3px; }
+  .daily-ritual.is-compact .ritual-receipt-row span { width: auto; }
+  .daily-ritual.is-compact .ritual-receipt.is-blank .ritual-receipt-when { grid-column: 1 / -1; padding-left: 10px; }
+  .daily-ritual.is-compact .ritual-stamp { top: -9px; bottom: auto; right: -12px; font-size: var(--fs-label); background: var(--paper-on-fixed-fill); mix-blend-mode: normal; }
+  .ritual-mini-bunting { display: flex; gap: 2px; align-items: center; }
   .ritual-mini-pennant { width: 10px; height: 12px; clip-path: polygon(0 0, 100% 0, 50% 100%); }
   .ritual-mini-pennant.p0 { background: var(--clay); }
   .ritual-mini-pennant.p1 { background: var(--wheat); }

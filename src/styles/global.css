@@ -1957,6 +1957,8 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
 .board-mini-name { font: 800 30px/1 var(--font-text); fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 8px; stroke-linejoin: round; }
 .setup .layout-name { font-weight: 700; line-height: 1.2; }
 .setup .layout-blurb { font-size: var(--fs-small); color: var(--ink-muted); line-height: 1.25; }
+/* plan item 139: the picked map's line in full ink, so the lifted card reads chosen, not greyed out */
+.setup .layout-tile:has(input:checked) .layout-blurb { color: var(--ink); }
 .setup .setup-seed-field { display: flex; align-items: center; gap: 10px; }
 .setup .setup-seed-field input { flex: 1; min-width: 0; }
 @media (min-width: 1100px) {

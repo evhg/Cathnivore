@@ -48,6 +48,11 @@ test("yesterday's receipt is pinned to the table, clear of the menu", async ({ p
     const m = await a.boundingBox()
     if (m) expect(meet(b, m)).toBe(false)
   }
+  // plan item 139: on a phone it lies on the table's front under Cath, not across her torso
+  if (vp.width < 761) {
+    const art = (await page.locator('.title-art').boundingBox())!
+    expect(b.y).toBeGreaterThanOrEqual(art.y + art.height - 30)
+  }
   // no scroll was added
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true)
   // one pennant a day: the table's string at D, a row on the receipt on a phone
