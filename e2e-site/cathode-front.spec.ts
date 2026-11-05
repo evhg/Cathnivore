@@ -292,6 +292,13 @@ test('the front menu is a sign: lit by the keys, a shut slot says why, clear of 
     const hits = m.menu.left < m.body.right && m.menu.right > m.body.left && m.menu.top < m.body.bottom && m.menu.bottom > m.body.top
     expect(hits, JSON.stringify(m)).toBe(false)
     expect(m.menu.left).toBeGreaterThanOrEqual(0)
+    // Plan item 177: the plate hangs in from the screen's edge, and the lit row's neon mark sits on the plate.
+    expect(m.menu.left).toBeGreaterThanOrEqual(4)
+    const mark = await page.locator('#menu .menu-item.is-focus').evaluate((e) => {
+      const r = e.getBoundingClientRect()
+      return r.left + parseFloat(getComputedStyle(e, '::before').left)
+    })
+    expect(mark).toBeGreaterThanOrEqual(m.menu.left + 2)
   }
 })
 

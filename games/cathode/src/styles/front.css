@@ -826,12 +826,13 @@
   /* Plan item 126: over the photo --ink-3 falls under AA; the hint is her case line, so it reads at --ink-2. */
   .menu-hint { color: var(--ink-2); font-weight: 600; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
-  /* Plan item 159: upright, the plate is a bracket sign flush with the screen's left edge, as narrow as its words,
-     so it ends left of her coat; the reason a slot is shut sits under its name. */
+  /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
+     shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon
+     mark at x 0; it now hangs a little in from the edge, rim whole, the mark inside its left margin. */
   .menu {
-    margin-left: calc(-1 * var(--safe-x));
-    padding: calc(var(--u) * 10) calc(var(--u) * 26) calc(var(--u) * 10) var(--safe-x);
-    border-radius: 0 calc(var(--u) * 6) calc(var(--u) * 6) 0;
+    --mark-hang: calc(var(--u) * 30);
+    margin-left: calc(var(--u) * 12 - var(--safe-x));
+    padding: calc(var(--u) * 10) calc(var(--u) * 18) calc(var(--u) * 10) calc(var(--u) * 40);
   }
   .menu-item:has(.menu-why:not([hidden])) { flex-direction: column; align-items: flex-start; justify-content: center; line-height: 1.05; }
   .menu-item:has(.menu-why:not([hidden])) .menu-why { margin: calc(var(--u) * 4) 0 0; }
