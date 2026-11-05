@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-05T09:29Z
 
 
 
@@ -1852,4 +1851,53 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The acts joined into one vertical scroll of painted country, each act's ground running into the next.
   - Locked acts drawn in pencil rather than washed out; Cath walks over the act border when the next act unlocks.
 - **Accept:** `[data-act]` count equals the acts, in one scroller; the current act in view on load; the next act's top 60 px or more into the viewport; locked labels at 4.5:1; shots P and D, light and dark.
+- **Size:** 2
+
+## 154. [ ] Cathnivore desktop: one hand of whole cards, and the active producer's seat
+- **Why:** `cath-game-D` (plan1105c): the left Actions column (16-332 x 250-660) still lists what the table-edge hand (375-1205 x 745-885) holds, and the hand's cards overlap until names cut ('Buy Market Da', 'Supply 1 Outlet · Brindle H'; a cost chip cut at 770-845 x 860-880).
+- **Build:**
+  - At 1240 px and up the column stops repeating the hand: it becomes the active producer's seat (half-length portrait, the action pips as wooden tokens, the three resources, the not-yet strips).
+  - The hand's cards keep whole titles and costs: 120 px or wider, fanning on hover or focus, spilling to a second row before clipping.
+  - Keeps item 141's leaf and previews.
+- **Accept:** at 1440x900 no playable action appears in both the column and the hand; each `[data-hand-card]` 120 px or wider with its title's `scrollWidth <= clientWidth`; no two cards overlap by more than 20%; `[data-seat-producer]` art 180 px or taller; rule tests unchanged; shots D light and dark, P unchanged.
+- **Size:** 2
+
+## 155. [ ] Cathnivore: the producers seated at the table
+- **Why:** `cath-game-D` (33-320 x 165-200): Tomas is a line of text, Mara a 55 px roundel; `cath-game-P` shows neither. Only Cath sits at the table (VISION: characters with presence).
+- **Build:**
+  - Half-length producers (item 80's `ProducerArt`) at the table's far edge opposite Cath, by the stalls they own; 64 px busts on the phone's table rail.
+  - Their faces react: an income gain, a Squeeze on their region, a liberation.
+- **Accept:** two `[data-table-producer]` inside the map frame at P and D, 64 px or taller at P and 160 at D, meeting no hex or name plate; `data-expression` changes after a Squeeze in e2e; shots P and D.
+- **Size:** 2
+
+## 156. [ ] Hedgerow: build at the plot from a ring of seed packets
+- **Why:** `hedge-l21-2d-P` (305-345 x 705-770): the phone tray shows about 4.5 of 9 packets, Duck Pond cut under the arrow.
+- **Build:**
+  - Tapping an empty plot opens a ring of packets round it, each with its price and whether it's affordable; pressing one previews its range ring.
+  - The ring turns inward near the screen's edges; the tray stays as a fallback.
+- **Accept:** a tap shows `[data-build-ring]` with one `.ring-packet` per unlocked tower, each 44x44 px or larger and inside 390x844, none over the tapped plot; unaffordable ones `data-affordable="false"`; the previewed ring's radius equals the tower's range (`hedgerow.ring()`); level tests unchanged; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 157. [ ] Hedgerow: Hollowell's depot at the gate
+- **Why:** `hedge-l21-2d-D` (283-362 x 478-495): the corporation is a 12 px sign; `hedge-l21-3d-P` (133-330 x 360-385): the 'N coming' pill floats mid-field away from its gate.
+- **Build:**
+  - A glossy plastic depot at each lane's entrance, 2D and 3D: roller door, brand stripe, vehicles rolling out of the door.
+  - A departures board on it replaces the 'N coming' pill; a rep on the balcony is smug, rattled (a clean round) or gleeful (a leak).
+- **Accept:** a `[data-depot]` within 60 px of each path start covering 2x2 cells or more; the coming count inside the depot's box; `data-rep-mood` smug to gleeful on a leak and rattled on a clean round in e2e; no depot over a plot; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 158. [ ] Runnel desktop: the rail as today's almanac page
+- **Why:** `runnel-D` (16-346 x 198-840): the rail reads as a settings form (a stepper, a legend, a list) over an empty band (760-840).
+- **Build:**
+  - A painted almanac page: the date as a masthead, a vignette of today's weather, par and streak in display figures, a note from Bea, the legend drawn by hand.
+  - On a phone the page sits behind the stats key.
+- **Accept:** no empty band over 80 px in the rail at 1440x900; `[data-almanac-date]`; the vignette's `svg` 120 px or wider; rail text 14 px or more at 4.5:1; shots P and D.
+- **Size:** 2
+
+## 159. [ ] NIGHT SHIFT: the front menu written in the world
+- **Why:** `ns-title-D` (58-225 x 310-550): the menu is grey text on black, the default list VISION rules out; `ns-title-P` (16-160 x 210-420): it lies over Cath's body; CONTINUE greys out with no reason.
+- **Build:**
+  - The menu as neon or stencilled signage on a dark plate; the chosen item lights with a buzz and a flicker (still under reduced motion).
+  - A disabled item says why ('No case open'); on a phone the plate sits clear of her.
+- **Accept:** enabled items at 4.5:1, disabled ones `aria-disabled` with a visible reason; at 390x844 no menu box meets Cath's projected box; `data-lit` follows the arrow keys within 250 ms; cathode-front passes; shots P and D.
 - **Size:** 2
