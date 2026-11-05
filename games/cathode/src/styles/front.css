@@ -754,10 +754,17 @@
      the lower half, beside and under the menu, so the scrim is dark only behind the logotype and the menu and
      lifts over her; The List at the foot keeps a light pool of its own. */
   .screen.front::before,
-  .screen.title::before,
   .screen.gate::before {
     background:
       linear-gradient(180deg, rgb(var(--shade-rgb) / .88) 0%, rgb(var(--shade-rgb) / .78) 42%, rgb(var(--shade-rgb) / .3) 60%, rgb(var(--shade-rgb) / .22) 78%, rgb(var(--shade-rgb) / .5) 100%);
+  }
+  /* Plan item 148: on the title she stands whole down the right, her face beside the logotype's foot, so the
+     shade runs across, dark under the menu column and clear over her, with bands for the logotype and The List. */
+  .screen.title::before {
+    background:
+      linear-gradient(180deg, rgb(var(--shade-rgb) / .6) 0%, transparent 15%),
+      linear-gradient(0deg, rgb(var(--shade-rgb) / .62) 0%, transparent 28%),
+      linear-gradient(90deg, rgb(var(--shade-rgb) / .82) 0%, rgb(var(--shade-rgb) / .66) 40%, rgb(var(--shade-rgb) / .14) 60%, transparent 70%);
   }
   /* Plan item 24: on the gate the lens lifts her into the top half, so only the copy's lower half is shaded. */
   .screen.gate::before {

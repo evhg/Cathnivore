@@ -1800,7 +1800,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `data-cath-lod="hero"` on the front canvas; her silhouette 300 px or taller at D; cathode-perf in budget at P and D; shots P, L and D.
 - **Size:** 3
 
-## 148. [ ] NIGHT SHIFT: a front door lit like a noir poster *(lane A, in progress)*
+## 148. [ ] NIGHT SHIFT: a front door lit like a noir poster *(lane A, in progress)* *(slice 1, 2026-11-05 08:20 lane A: a wordless pink neon blade (crescent moon, three stars, `render/frontneon.ts`, two unlit draw calls) hangs from the wires behind her, screen right of her at D and L; its live pink rim light and the front pink key stutter with its tubes (a 0.62 s ballast fault every 7.3 s, lit at the shot times, none under reduced motion); `data-key-light="neon"` on the front canvas; the face key raised and lifted above her (face mean luminance 0.224 -> 0.256 at D). On an upright phone the title fits her whole, umbrella to shoes, into the stage above The List's strip (`setStage`, a projected point cloud of her, right-aligned; face 71 px), and the phone title scrim runs across (dark under the menu, clear over her). e2e in cathode-front. Open: her reflection in a puddle (a sharp-mirror puddle shader is in `docs/plan/wip/148-puddle.patch`, not shipped: at D and L the frame stops above her feet and at P the ground in front of her lies under The List, so it needs a spot the lens sees, e.g. behind her catching the sign), rain lit from behind, the sign at P)*
 - **Why:** `ns-title-D` (700-1440 x 0-900), `ns-title-P` (0-390 x 300-844): she stands in an evenly dim purple alley, with no key light, no reflection of her and no neon on her.
 - **Build:**
   - A flickering neon sign as her key and rim light.

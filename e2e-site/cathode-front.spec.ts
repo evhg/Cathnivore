@@ -202,10 +202,10 @@ test('the front door has no letterbox bars at P and D', async ({ page }) => {
   }
 })
 
-// Plan item 82: on an upright phone she stands in the lower right, clear of the menu (she stood behind it). Plan item
-// 117 brought the lens in to her face: the menu covers none of her face or coat; her umbrella's dim canopy may pass
-// behind the last entry's corner.
-test('upright, the menu does not cover her', async ({ page, hasTouch }) => {
+// Plan item 82: on an upright phone she stood in the lower right, clear of the menu. Plan item 148 frames her whole
+// on the title instead, umbrella to shoes, down the right above The List's photo strip: her figure inside the
+// viewport and meeting no polaroid, her face meeting no menu entry, the scene's key light named on the canvas.
+test('upright, she stands whole above The List, her face clear of the menu', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'the upright phone framing')
   test.setTimeout(200_000)
   await page.setViewportSize({ width: 390, height: 844 })
@@ -213,18 +213,28 @@ test('upright, the menu does not cover her', async ({ page, hasTouch }) => {
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
   await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  await expect(page.locator('canvas[data-key-light="neon"]')).toHaveCount(1)
   type B = { left: number; top: number; right: number; bottom: number }
   const m = await page.evaluate(() => {
-    const menu = document.querySelector('#menu')!.getBoundingClientRect()
+    const box = (e: Element) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }
     const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(): B; faceBox(): B } | null } }).cathodeFront.scene()
-    return { menu: { left: menu.left, top: menu.top, right: menu.right, bottom: menu.bottom }, fig: scene!.figureBox(), face: scene!.faceBox() }
+    return {
+      rows: [...document.querySelectorAll('#menu button, #menu a')].map(box).filter((r) => r.right > r.left),
+      mugs: [...document.querySelectorAll('#the-list-wall .mug')].map(box).filter((r) => r.right > r.left),
+      fig: scene!.figureBox(),
+      face: scene!.faceBox(),
+    }
   })
   const hits = (a: B, b: B) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
-  expect(hits(m.face, m.menu), JSON.stringify(m)).toBe(false)
-  // Her coat starts at her chin: everything from there down is below the menu.
-  expect(m.face.bottom, JSON.stringify(m)).toBeGreaterThan(m.menu.bottom)
-  // She stands in the lower half of the frame.
-  expect((m.fig.top + m.fig.bottom) / 2).toBeGreaterThan(844 / 2)
+  expect(m.mugs.length).toBeGreaterThan(0)
+  expect(m.fig.top, JSON.stringify(m.fig)).toBeGreaterThanOrEqual(0)
+  expect(m.fig.left).toBeGreaterThanOrEqual(0)
+  expect(m.fig.right).toBeLessThanOrEqual(390)
+  expect(m.fig.bottom).toBeLessThanOrEqual(844)
+  for (const mug of m.mugs) expect(hits(m.fig, mug), JSON.stringify({ fig: m.fig, mug })).toBe(false)
+  for (const r of m.rows) expect(hits(m.face, r), JSON.stringify({ face: m.face, r })).toBe(false)
+  // Whole, but not small: she fills most of the screen above the strip.
+  expect(m.fig.bottom - m.fig.top).toBeGreaterThan(560)
 })
 
 // Plan item 82: the logotype holds at least 4.5:1 against the street behind it at P and D (the 95th-percentile
@@ -467,7 +477,7 @@ test('the List prints have no unreadable words, and Withheld is not faded', asyn
 })
 
 // Plan item 117: the face of every game is seen from the front. On the title the lens circles her left front, her
-// face 120 px or more tall at D and 70 at P, and on an upright phone it meets no menu entry.
+// face 120 px or more tall at D and 70 at P (66 since item 148's whole figure), and on an upright phone it meets no menu entry.
 test("her face reads on the title, clear of the menu", async ({ page, hasTouch }) => {
   test.setTimeout(300_000)
   const vp = hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 }
@@ -483,7 +493,8 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
       const rows = [...document.querySelectorAll('#menu button, #menu a')].map((e) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }).filter((r) => r.right > r.left)
       return { face: scene!.faceBox(), rows }
     })
-    expect(m.face.bottom - m.face.top, `t=${t}`).toBeGreaterThanOrEqual(hasTouch ? 70 : 120)
+    // Plan item 148: 66 at P, where she now stands whole (umbrella to shoes) above The List (70 as a half figure).
+    expect(m.face.bottom - m.face.top, `t=${t}`).toBeGreaterThanOrEqual(hasTouch ? 66 : 120)
     expect(m.face.top).toBeGreaterThanOrEqual(0)
     expect(m.face.right).toBeLessThanOrEqual(vp.width)
     for (const r of m.rows) expect(m.face.left < r.right && m.face.right > r.left && m.face.top < r.bottom && m.face.bottom > r.top, JSON.stringify({ face: m.face, r })).toBe(false)
@@ -518,7 +529,8 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
         }
         return { mean: mean / (d.length / 4), rose }
       }, buf.toString('base64'))
-      expect(px.mean, 'the warm key lights her face').toBeGreaterThanOrEqual(hasTouch ? 0.15 : 0.19)
+      // Plan item 148: the noir poster's lit face, 0.25 or more at D.
+      expect(px.mean, 'the warm key lights her face').toBeGreaterThanOrEqual(hasTouch ? 0.17 : 0.25)
       expect(px.rose, 'rose lips').toBeGreaterThanOrEqual(40)
     }
   }

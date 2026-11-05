@@ -16,6 +16,7 @@ import { createWorld } from "./world";
 import { AutoScale } from "../game/autoscale";
 import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
+import { buildFrontNeon } from "./frontneon";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -37,6 +38,11 @@ export interface FrontScene {
   focusBias(v: number): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
+  /**
+   * Plan item 148: on an upright phone's title, the free rectangle (CSS px in the canvas) her whole figure stands in,
+   * from umbrella to shoes: above The List, at the right. null keeps the loop's own framing.
+   */
+  setStage(r: { left: number; top: number; right: number; bottom: number } | null): void;
   /** Plan item 24: 1 while the age gate is up on an upright phone (the lens aims low so she stands above the copy), 0 to ease back. */
   setLift(k: number): void;
   /**
@@ -152,13 +158,24 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const pinkI = phone ? 9 : 10;
   const pink = { pos: toWorld(0.4, 2.7, 2.2), color: new THREE.Color(1.0, 0.09, 0.42), intensity: pinkI, range: 6 };
   const rimDir = new THREE.Vector3();
+  // Plan item 148: the neon sign that is her key and rim; the pink lights stutter with its tubes.
+  const neon = buildFrontNeon(phone);
+  const neonAt = toWorld(-1.6, 1.8, -3.0);
+  neon.group.position.copy(neonAt);
+  neon.group.lookAt(toWorld(1.5, 1.8, 2.0));
+  world.scene.add(neon.group);
+  const neonRimI = phone ? 7 : 9;
+  const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
+  world.renderer.domElement.dataset.keyLight = "neon";
   if (world.light) {
     if (world.liveLight) removers.push(world.liveLight(pink));
     else removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), pinkI, 6));
     removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
+    // Plan item 148: the neon blade behind her rims her from behind in its own pink.
+    if (world.liveLight) removers.push(world.liveLight(neonRim));
     // Plan item 117: a soft face key, warm white, low and ahead of her left cheek, under the umbrella's edge, so
     // her face reads from the front (the pink sign alone left it a dark oval).
-    removers.push(world.light(toWorld(0.55, 1.5, 1.1), new THREE.Color(1.0, 0.8, 0.72), phone ? 1.1 : 1.3, 2.4));
+    removers.push(world.light(toWorld(0.5, 1.95, 0.85), new THREE.Color(1.0, 0.8, 0.72), 2.4, 1.9));
   }
 
   // ---- progress set pieces (S9.2): the egg shop's sign dark after the Fish Market, a chalk tally of the names ----
@@ -303,13 +320,96 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Back at the black trench, the model's own cloth (the phone's is a shade lighter) takes over again.
     const home = coatWant.equals(coatBase) && Math.abs(coatNow.r - coatBase.r) + Math.abs(coatNow.g - coatBase.g) + Math.abs(coatNow.b - coatBase.b) < 0.002;
     cath.coat(home ? null : coatNow);
-    pink.intensity = pinkI * (1 - 0.78 * wd.w);
+    const lit = neon.level(time, o.still);
+    pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
+    neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
     if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
     if (wd.w <= 0.002 && keyRemove) {
       keyRemove();
       keyRemove = null;
     }
+  }
+
+  // ---- plan item 148: the upright phone's title frames her whole, inside the stage the menus leave ----
+  let stage: { left: number; top: number; right: number; bottom: number } | null = null;
+  // A sparse cloud of her posed figure in her own frame (every 7th vertex), so the fit costs a few hundred
+  // projections; re-sampled every 20 fits as her idle moves.
+  const cloud: THREE.Vector3[] = [];
+  let cloudAge = Infinity;
+  function sampleCloud(): void {
+    cloud.length = 0;
+    cath.group.updateMatrixWorld(true);
+    const inv = cath.group.matrixWorld.clone().invert();
+    const mm = new THREE.Matrix4();
+    cath.group.traverse((obj) => {
+      const m = obj as THREE.Mesh;
+      if (!m.isMesh || !m.visible) return;
+      const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+      if (!pos) return;
+      mm.multiplyMatrices(inv, m.matrixWorld);
+      // Small parts (a splash quad, a ring) keep every vertex: one sample of four corners misses its edge.
+      const step = pos.count < 64 ? 1 : 7;
+      for (let i = 0; i < pos.count; i += step) cloud.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(mm));
+    });
+    cloudAge = 0;
+  }
+  const fitPos = new THREE.Vector3();
+  const fitQuat = new THREE.Quaternion();
+  const fitV = new THREE.Vector3();
+  const fitDir = new THREE.Vector3();
+  const fitAim = new THREE.Vector3();
+  const keepPos = new THREE.Vector3();
+  const keepQuat = new THREE.Quaternion();
+  function cloudBox(): { l: number; r: number; t: number; b: number } {
+    cam.updateMatrixWorld();
+    cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
+    cath.group.updateMatrixWorld();
+    let l = Infinity, r = -Infinity, t = -Infinity, b = Infinity;
+    for (const c of cloud) {
+      fitV.copy(c).applyMatrix4(cath.group.matrixWorld).project(cam);
+      l = Math.min(l, fitV.x);
+      r = Math.max(r, fitV.x);
+      t = Math.max(t, fitV.y);
+      b = Math.min(b, fitV.y);
+    }
+    return { l, r, t, b };
+  }
+  /** Puts the camera where her figure's box fills the stage's height, right-aligned in it (NDC from the CSS rect). */
+  function fitStage(from: THREE.Vector3): void {
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
+    if (cloudAge++ >= 20) sampleCloud();
+    const s = stage!;
+    const nt = 1 - (2 * s.top) / h, nb = 1 - (2 * s.bottom) / h, nr = (2 * s.right) / w - 1, nl = (2 * s.left) / w - 1;
+    const hv = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+    const hh = hv * cam.aspect;
+    // The lens keeps the loop's bearing round her, a little below her waist, looking level at her middle.
+    fitDir.subVectors(from, feet).setY(0).normalize();
+    fitAim.set(feet.x, feet.y + 1.05, feet.z);
+    // Converge: place, turn by the angles so far, measure, then correct the distance and the angles.
+    let d = 4;
+    let yaw = 0;
+    let pitch = 0;
+    for (let pass = 0; pass < 4; pass++) {
+      cam.position.copy(fitAim).addScaledVector(fitDir, d);
+      cam.position.y = feet.y + 0.95;
+      m4.lookAt(cam.position, fitAim, up);
+      cam.quaternion.setFromRotationMatrix(m4);
+      cam.rotateY(yaw);
+      cam.rotateX(pitch);
+      const bx = cloudBox();
+      if (pass === 3) break;
+      d *= (bx.t - bx.b) / (nt - nb);
+      // Turn and tilt so the box's middle lands on the stage's (its right edge on the stage's right).
+      const half = (bx.r - bx.l) / 2;
+      const tx = Math.max(nl + half, nr - half);
+      const ty = (nt + nb) / 2;
+      yaw += Math.atan(hh * tx) - Math.atan(hh * ((bx.l + bx.r) / 2));
+      pitch -= Math.atan(hv * ty) - Math.atan(hv * ((bx.t + bx.b) / 2));
+    }
+    fitPos.copy(cam.position);
+    fitQuat.copy(cam.quaternion);
   }
 
   function aim(t: number, dt: number): void {
@@ -362,6 +462,16 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const upright = cam.aspect < 1 ? 1 - smoother(Math.min(1, lift)) : 0;
     const fr = (aspect < 1.2 ? 0.12 + 0.5 * upright : framing) * (1 - smoother(Math.min(1, wd.w)));
     cam.rotateY(Math.atan(Math.tan(half) * fr));
+    // Plan item 148: the upright title fits her whole into the stage instead (blended out by the gate's lift and
+    // the wardrobe, which keep their own framings).
+    const fitK = stage && cam.aspect < 1 ? upright * (1 - smoother(Math.min(1, wd.w))) : 0;
+    if (fitK > 0.001) {
+      keepPos.copy(cam.position);
+      keepQuat.copy(cam.quaternion);
+      fitStage(p);
+      cam.position.copy(keepPos).lerp(fitPos, fitK);
+      cam.quaternion.copy(keepQuat).slerp(fitQuat, fitK);
+    }
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
       spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
@@ -450,6 +560,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       aim(time, dt);
     }
     cath.update(dt, time, world.wind);
+    neon.update(time, o.still);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
     rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);
@@ -547,6 +658,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     set time(v: number) {
       time = v;
     },
+    setStage(r) {
+      stage = r;
+      cloudAge = Infinity;
+    },
     setLift(k) {
       liftWant = THREE.MathUtils.clamp(k, 0, 1);
     },
@@ -606,6 +721,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     setTime(t) {
       time = t;
+      cloudAge = Infinity;
       // Settle the hem, the smoke and the springs as a live run would have, then draw once.
       const steps = 30;
       for (let i = 0; i < steps; i++) cath.update(1 / 30, t - (steps - i) / 30, world.wind);
@@ -647,6 +763,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       keyRemove?.();
       keyRemove = null;
       for (const c of chalk) c.removeFromParent();
+      neon.dispose();
+      delete world.renderer.domElement.dataset.keyLight;
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });
       return world;

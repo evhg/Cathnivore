@@ -235,7 +235,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 140: a warm face key from the lens's upper left (view space, so it follows every framing), on her
     // skin and face only: the street's pink washed her face to a flat oval. A soft wrap keeps the far cheek modelled.
     uKeyDir: { value: new THREE.Vector3(-0.45, 0.5, 0.75).normalize() },
-    uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 0.95 : 0.85) },
+    // Plan item 148: a step brighter, the noir poster's lit face (mean luminance 0.22 -> 0.25 at D).
+    uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 1.45 : 1.3) },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();

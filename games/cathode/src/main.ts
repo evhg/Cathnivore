@@ -109,6 +109,7 @@ function startScene(): void {
     )
     .then((s) => {
       scene = s;
+      stageTitle();
       // Leaving the page (or a bfcache eviction): free the street's GPU memory and its context now, not at GC.
       addEventListener("pagehide", (e) => {
         if (e.persisted || scene !== s) return;
@@ -358,9 +359,27 @@ function fillTitle(): void {
   $("btn-continue").querySelector(".menu-label")!.textContent = ng ? "New Game+" : "Continue";
 }
 
+/**
+ * Plan item 148: on an upright phone the title gives her the screen above The List's photo strip, edge to edge, and
+ * the scene fits her whole figure, umbrella to shoes, into it (right-aligned, beside the menu).
+ */
+function stageTitle(): void {
+  const wall = document.getElementById("the-list-wall")?.getBoundingClientRect();
+  const upright = innerWidth < innerHeight && innerWidth < 900;
+  if (!upright || !wall || wall.height <= 0) {
+    scene?.setStage(null);
+    return;
+  }
+  const m = Math.round(Math.min(innerWidth, innerHeight) * 0.02);
+  // The top leaves the umbrella room under the screen's edge so her face falls below the logotype's subtitle.
+  scene?.setStage({ left: m, top: Math.round(innerHeight * 0.03), right: innerWidth - m, bottom: wall.top - Math.max(4, m / 2) });
+}
+addEventListener("resize", () => stageTitle());
+
 function openTitle(drawLogo: boolean): void {
   fillTitle();
   show("screen-title");
+  stageTitle();
   const title = $("screen-title");
   title.classList.remove("is-leaving");
   const logo = $("title-word");
