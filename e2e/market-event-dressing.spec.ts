@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test'
 // Plan item 144: the week's market event dresses the board. The map carries data-event, and every region shows the
 // event's dressing (produce heaped for the Great Glut, lanterns for the Harvest Festival, cracked earth for the Dry
 // Spell), none of it meeting a piece. The event comes from the ISO week, so each is reached by a date in its week.
-for (const [event, day, sel] of [
-  ['glut', '2026-11-05', '.ev-heap'],
-  ['festival', '2026-11-10', '.ev-lanterns'],
-  ['drought', '2026-11-17', '.ev-cracks'],
+for (const [event, day, sel, says] of [
+  ['glut', '2026-11-05', '.ev-heap', 'Too many cabbages'],
+  ['festival', '2026-11-10', '.ev-lanterns', 'Bunting up'],
+  ['drought', '2026-11-17', '.ev-cracks', 'Not a cloud'],
 ] as const) {
   test(`the ${event} week dresses every region`, async ({ page }) => {
     await page.clock.setFixedTime(new Date(`${day}T10:00:00Z`))
@@ -24,5 +24,7 @@ for (const [event, day, sel] of [
       })
     }, sel === '.ev-cracks' ? '.ev-none' : sel)
     expect(hit).toBe(false)
+    // Cath opens the game on the week's event.
+    await expect(page.locator('.table-cath-line, .cath-companion-line').first()).toContainText(says)
   })
 }

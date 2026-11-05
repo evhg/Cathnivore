@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { MARKET_EVENTS } from '../engine/marketEvent'
 import { rivalMood } from './portraits/rivalFace'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
@@ -565,7 +566,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const cathLogSeenRef = useRef(0)
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
-    line: cathLine('greeting', String(seed)),
+    // Plan item 144: a game in a market week opens on Cath naming it (the event's own line, in her voice).
+    line: initial.config.marketEvent && initial.round === 1 && initial.actionHistory.length === 0 ? MARKET_EVENTS[initial.config.marketEvent].banner : cathLine('greeting', String(seed)),
   }))
   // A reloaded guided game picks the script up just after the last action it already took.
   const [tutorialIndex, setTutorialIndex] = useState(() =>
