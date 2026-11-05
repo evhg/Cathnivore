@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, frontSet, listRows, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
@@ -313,6 +313,10 @@ function fillTitle(): void {
       sub.classList.add("is-ticking");
     }, 1300);
   } else sub.textContent = titleSubtitle(done);
+  // Plan item 137: and Cath says so, under The List's heading, on that visit only.
+  const say = $("list-line");
+  say.hidden = fresh < 0;
+  say.textContent = fresh >= 0 ? `\u201C${struckLine(fresh)}\u201D \u2014 Cath` : "";
   const list = $("the-list");
   list.replaceChildren();
   // C13T: names the player hasn't reached are not drawn as grey bars (they read as a web skeleton loader): the

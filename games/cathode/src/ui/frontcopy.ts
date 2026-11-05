@@ -270,3 +270,15 @@ export function freshlyStruck(jobsDone: readonly string[], seen: readonly string
 export function struckJobs(jobsDone: readonly string[]): string[] {
   return THE_LIST.filter((n) => jobsDone.includes(n.job)).map((n) => n.job);
 }
+
+const SHORT: Record<string, string> = { crispBoss: "Crisp", vaneBoss: "Vane", pellBoss: "Pell", boardBoss: "the Chair", vaultBoss: "the Mind" };
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Plan item 137: Cath's word as a name comes off The List (the surname struck, and who is next, or that it's over). */
+export function struckLine(index: number): string {
+  const n = THE_LIST[index];
+  if (!n) return "";
+  const next = THE_LIST[index + 1];
+  const who = (job: string) => SHORT[job] ?? job;
+  return next ? `One off the list. ${cap(who(n.job))}'s done. ${cap(who(next.job))} next.` : `That's the last of them. The list is closed.`;
+}

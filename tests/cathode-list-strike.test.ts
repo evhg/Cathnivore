@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { freshlyStruck, struckJobs } from '../games/cathode/src/ui/frontcopy'
+import { THE_LIST, freshlyStruck, struckJobs, struckLine } from '../games/cathode/src/ui/frontcopy'
 
 describe('a name crossed off The List (plan item 137)', () => {
   it('strikes the case just closed, once', () => {
@@ -16,5 +16,13 @@ describe('a name crossed off The List (plan item 137)', () => {
   })
   it('remembers only names on the List', () => {
     expect(struckJobs(['fishMarket', 'crispBoss', 'pellBoss'])).toEqual(['crispBoss', 'pellBoss'])
+  })
+})
+
+describe('Cath on a struck name (plan item 137)', () => {
+  it('names the struck surname and the next, or closes the list', () => {
+    expect(struckLine(0)).toMatch(/done\. \w+ next\.$/)
+    expect(struckLine(THE_LIST.length - 1)).toMatch(/list is closed/)
+    expect(struckLine(99)).toBe('')
   })
 })

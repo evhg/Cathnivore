@@ -31,11 +31,15 @@ test('a closed boss case is crossed off The List on the next title, once', async
   // The count ticks from five to four.
   await expect(page.locator('#title-sub')).toContainText('4 NAMES LEFT', { timeout: 10_000 })
   await expect(page.locator('#title-sub')).toHaveClass(/is-ticking/)
+  // Cath says so under the heading.
+  await expect(page.locator('#list-line')).toBeVisible()
+  await expect(page.locator('#list-line')).toContainText("Crisp's done. Vane next.")
 
   // Once only.
   await page.reload()
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
   await expect(page.locator('#the-list-wall .mug').first()).toHaveAttribute('data-struck', '')
   await expect(page.locator('#the-list-wall .mug[data-developing]')).toHaveCount(0)
+  await expect(page.locator('#list-line')).toBeHidden()
   await expect(page.locator('#title-sub')).toContainText('4 NAMES LEFT')
 })
