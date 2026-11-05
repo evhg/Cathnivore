@@ -106,6 +106,8 @@ interface Props {
   faces?: Partial<Record<ProducerId, ProducerFace>>
   /** Plan item 98: drawn over the hexes but under the region name plates (the title's vans on their roads). */
   underNames?: ReactElement
+  /** Plan item 141: the action being looked at, as a ghost piece on each region it could play into. */
+  ghost?: { regions: RegionId[]; sign: '+' | '-' }
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -590,7 +592,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1030,6 +1032,19 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
           vertex sits against the row above rather than open background — clipped this way). */}
       {underNames}
+      {ghost && (
+        <g className="ghost-pieces" pointerEvents="none" aria-hidden="true">
+          {ghost.regions.filter((id) => active.includes(id)).map((id) => {
+            const { x, y } = hexCenter(id, layout)
+            return (
+              <g key={id} className="ghost-piece" data-region={id} data-sign={ghost.sign} transform={`translate(${x} ${y - HEX_R * 0.42})`}>
+                <circle r={17} />
+                <path d={ghost.sign === '+' ? 'M-7 0H7M0-7V7' : 'M-7 0H7'} />
+              </g>
+            )
+          })}
+        </g>
+      )}
       {active.map((id) => {
         const def = REGIONS[id]
         const { x, y } = hexCenter(id, layout)

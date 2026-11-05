@@ -343,24 +343,29 @@ function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: numb
 
 // AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.7): a segmented seed-packet meter. Decorative: the number
 // beside it is the readable value. The newest lit segment pops once when it changes.
-function Meter({ value, max, variant }: { value: number; max: number; variant?: 'danger' | 'wheat' | 'plastic' }) {
+function Meter({ value, max, variant, preview }: { value: number; max: number; variant?: 'danger' | 'wheat' | 'plastic'; preview?: number }) {
   const n = Math.max(1, max)
   const lit = Math.max(0, Math.min(n, value))
+  // Plan item 141: the action being looked at shows its change as ghost segments (gained or lost).
+  const next = preview === undefined ? lit : Math.max(0, Math.min(n, preview))
+  const delta = next - lit
   return (
-    <span className={variant ? `meter meter--${variant}` : 'meter'} aria-hidden="true">
-      {Array.from({ length: n }, (_, i) => (
-        <i key={i} className={i < lit ? (i === lit - 1 ? 'on last' : 'on') : undefined} />
-      ))}
+    <span className={variant ? `meter meter--${variant}` : 'meter'} aria-hidden="true" data-delta={delta || undefined}>
+      {Array.from({ length: n }, (_, i) => {
+        const ghost = delta > 0 && i >= lit && i < next ? 'ghost-gain' : delta < 0 && i >= next && i < lit ? 'ghost-loss' : ''
+        const base = i < lit ? (i === lit - 1 ? 'on last' : 'on') : ''
+        return <i key={i} className={[base, ghost].filter(Boolean).join(' ') || undefined} />
+      })}
     </span>
   )
 }
 
 // AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
 // round's income as a small "+2" rather than "(2/round)".
-function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string }) {
+function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial, delta }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string; delta?: number }) {
   return (
     <Tooltip term={term}>
-      <span className="ledger-chip" data-tutorial={tutorial}>
+      <span className="ledger-chip" data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
         <Icon size={18} />
         <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
         <span className="visually-hidden"> {term}, </span>
@@ -619,6 +624,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       aiWorkerRef.current = null
     }
   }, [])
+  // Plan item 141: the action(s) under the pointer or focus, previewed on the board.
+  const [previewKeys, setPreviewKeys] = useState<string[] | null>(null)
+  // A move changes the list, so an old preview's indices would point at the wrong cards.
+  useEffect(() => setPreviewKeys(null), [state])
   const [selectedGroup, setSelectedGroup] = useState<{ label: string; entries: { index: number; region: RegionId }[] } | null>(null)
   // SPEC 10.2: "Choosing an action enters targeting mode: legal regions ... glow, everything else dims, a
   // clear Confirm button appears, and Cancel is always visible." Tapping a glowing region used to commit
@@ -1193,6 +1202,42 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   }
   const isSuggested = (indices: number[]) => (suggested && indices.includes(suggested.index) ? '' : undefined)
+  // Keyed by the action itself, so a preview left over from before a move can't land on a different card.
+  const actionKeys = actions.map((a) => JSON.stringify(a))
+  const previewActions = (previewKeys ?? []).map((k) => actions[actionKeys.indexOf(k)]).filter((a): a is Action => !!a)
+  let previewState: GameState | undefined
+  const previewsOn = loadSettings().suggestions
+  if (previewsOn && previewActions.length > 0 && !decision && !autoplayRef.current) {
+    try {
+      const next = applyAction(structuredClone(state), previewActions[0]!)
+      // A move that ends the round would preview Hollowell's turn too; only same-round changes are shown.
+      if (next.round === state.round && next.activeProducer === state.activeProducer) previewState = next
+    } catch {
+      previewState = undefined
+    }
+  }
+  const previewRegions = previewActions.flatMap((a) => ('region' in a && a.region ? [a.region as RegionId] : []))
+  const ghost = previewsOn && previewRegions.length > 0 ? { regions: [...new Set(previewRegions)], sign: previewActions[0]!.kind === 'openStall' ? ('+' as const) : ('-' as const) } : undefined
+  const previewDelta = (f: (g: GameState) => number) => (previewState ? f(previewState) - f(state) : 0)
+  const previewProps = (indices: number[]) => {
+    const keys = indices.map((i) => actionKeys[i]!)
+    return {
+      onPointerEnter: (e: React.PointerEvent) => {
+        if (e.pointerType === 'mouse') setPreviewKeys(keys)
+      },
+      onPointerLeave: () => setPreviewKeys(null),
+      onFocus: (e: React.FocusEvent) => {
+        // Keyboard focus previews; a click's focus doesn't (the move is being made, not looked at).
+        if ((e.target as HTMLElement).matches(':focus-visible')) setPreviewKeys(keys)
+      },
+      onBlur: () => setPreviewKeys(null),
+      onContextMenu: (e: React.MouseEvent) => {
+        // A long-press on a phone previews instead of opening the browser's menu.
+        e.preventDefault()
+        setPreviewKeys(keys)
+      },
+    }
+  }
   // A skip lasts for the rest of the teammate's turn only.
   if (!waitingOnAi) skipTeammateRef.current = false
   const active = state.producers[state.activeProducer]
@@ -1653,7 +1698,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item action-sell" data-group="sell" data-suggested={isSuggested([index])}>
+              <span key={index} className="action-item action-sell" data-group="sell" data-suggested={isSuggested([index])} {...previewProps([index])}>
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
@@ -1675,6 +1720,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 className={position === 0 && !suggested ? 'action-item action-recommended' : 'action-item'}
                 data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
                 data-suggested={isSuggested([index])}
+                {...previewProps([index])}
               >
                 <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
                 {isSuggested([index]) !== undefined && SUGGEST_LEAF}
@@ -1693,7 +1739,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item" data-group="play" data-suggested={isSuggested([index])}>
+              <span key={index} className="action-item" data-group="play" data-suggested={isSuggested([index])} {...previewProps([index])}>
                 <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
                 {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
@@ -1794,6 +1840,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     data-family={family}
                     data-suggested={isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
                     role="group"
+                    {...previewProps(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index)))}
                     aria-label={oneRegion ? `${name} in ${REGIONS[oneRegion].name}` : name}
                   >
                     {isSuggested(members.flatMap((k) => groups.get(k)!.entries.map((e) => e.index))) !== undefined && SUGGEST_LEAF}
@@ -1820,7 +1867,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 )
               }
               return (
-                <span key={key} className="action-item" data-group="play" data-suggested={isSuggested(group.entries.map((e) => e.index))}>
+                <span key={key} className="action-item" data-group="play" data-suggested={isSuggested(group.entries.map((e) => e.index))} {...previewProps(group.entries.map((e) => e.index))}>
                   {groupButton(group)}
                   {isSuggested(group.entries.map((e) => e.index)) !== undefined && SUGGEST_LEAF}
                   {term && (
@@ -2021,9 +2068,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             )}
           </span>
           <span className="ledger">
-            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" />
-            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} />
-            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" />
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" delta={previewDelta((g) => g.producers[g.activeProducer].resources.produce)} />
+            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} delta={previewDelta((g) => g.producers[g.activeProducer].resources.marks)} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" delta={previewDelta((g) => g.producers[g.activeProducer].resources.goodwill)} />
           </span>
           <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>
@@ -2162,7 +2209,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span key={trustTick} className={trustTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.publicTrust}</span>
             </span>
           </Tooltip>
-          <Meter value={state.publicTrust} max={TRUST_MAX} />
+          <Meter value={state.publicTrust} max={TRUST_MAX} preview={previewState?.publicTrust} />
         </div>
         <div className={state.lostLandPool <= 3 ? 'board-cell board-cell--danger' : 'board-cell'}>
           <Tooltip term="Lost Land">
@@ -2174,7 +2221,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span key={lostLandTick} className={lostLandTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.lostLandPool}</span>
             </span>
           </Tooltip>
-          <Meter value={state.lostLandPool} max={lostLandStartingPool(state)} variant={state.lostLandPool <= 3 ? 'danger' : undefined} />
+          <Meter value={state.lostLandPool} max={lostLandStartingPool(state)} variant={state.lostLandPool <= 3 ? 'danger' : undefined} preview={previewState?.lostLandPool} />
         </div>
         <div className="board-cell">
           <Tooltip term="Rift">
@@ -2184,7 +2231,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span key={riftTick} className={riftTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.rift}</span>
             </span>
           </Tooltip>
-          <Meter value={state.rift} max={RIFT_MAX} variant="plastic" />
+          <Meter value={state.rift} max={RIFT_MAX} variant="plastic" preview={previewState?.rift} />
         </div>
         {/* SPEC 10.2: the menu button belongs in the fixed top bar. */}
         <button className="btn-icon board-menu" onClick={onExit} aria-label="Menu">
@@ -2393,6 +2440,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </details>
         <RegionMap
           state={boardState}
+          ghost={selectedGroup || drag ? undefined : ghost}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep

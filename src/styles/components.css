@@ -1022,3 +1022,75 @@ html.no-animations .coach-tap { animation: none; }
 .suggest-line b {
   color: var(--gain-ink);
 }
+
+/* Plan item 141: the action under the pointer or focus shows its change on the meters and the ledger. */
+.meter > i.ghost-gain {
+  background: color-mix(in srgb, var(--pasture-deep) 35%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--pasture-deep);
+  animation: ghost-blink 1.1s ease-in-out infinite alternate;
+}
+
+.meter > i.ghost-loss {
+  background: color-mix(in srgb, var(--clay-deep) 45%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--clay-deep);
+  animation: ghost-blink 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes ghost-blink {
+  from { opacity: 1; }
+  to { opacity: 0.45; }
+}
+
+html.no-animations .meter > i.ghost-gain,
+html.no-animations .meter > i.ghost-loss {
+  animation: none;
+}
+
+/* Out of the flow: a preview must never move the list under the pointer (it would end its own hover). */
+.ledger-chip[data-delta] {
+  position: relative;
+}
+
+/* Drawn by CSS so the preview never enters the ledger's text (its accessible reading stays the real count). */
+.ledger-chip[data-delta-label]::after {
+  content: attr(data-delta-label);
+  position: absolute;
+  top: -0.9em;
+  right: 2px;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--ink-a15);
+  font-size: var(--fs-label);
+  font-weight: 760;
+  line-height: 1.4;
+  color: var(--gain-ink);
+  pointer-events: none;
+  z-index: var(--z-raised);
+}
+
+.ledger-chip[data-delta^="-"]::after {
+  color: var(--clay-deep);
+}
+
+.map .ghost-piece circle {
+  fill: color-mix(in srgb, var(--paper) 70%, transparent);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 4;
+}
+
+.map .ghost-piece path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.map .ghost-piece[data-sign="+"] circle {
+  stroke: var(--gain-ink);
+}
+
+.map .ghost-piece[data-sign="+"] path {
+  stroke: var(--gain-ink);
+}

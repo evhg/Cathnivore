@@ -24,3 +24,26 @@ test('Cath suggests exactly one move in round 1, and the Settings toggle hides i
   await expect(page.locator('.actions [data-suggested]')).toHaveCount(0)
   await expect(page.getByTestId('suggest-line')).toHaveCount(0)
 })
+
+test('looking at Open Stall puts a ghost piece on the board and its cost on the ledger', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.game')).toBeVisible()
+  const stall = page.locator('.actions .action-item').filter({ hasText: 'Open Stall' }).first()
+  await expect(stall).toBeAttached({ timeout: 10_000 })
+  await expect(page.locator('.ghost-piece')).toHaveCount(0)
+  // Keyboard focus previews (a tap's focus doesn't), so the phone run tabs in.
+  if (testInfo.project.name === 'phone') {
+    await page.keyboard.press('Shift')
+    await stall.locator('button').first().focus()
+  }
+  else await stall.hover()
+  await expect(page.locator('.map .ghost-piece').first()).toBeAttached()
+  await expect(page.locator('.ledger-chip[data-delta="-1"]').first()).toBeAttached()
+  // The preview stays out of the ledger's text.
+  await expect(page.locator('.ledger-chip[data-delta="-1"]').first()).not.toContainText('\u2212')
+  if (testInfo.project.name === 'phone') await stall.locator('button').first().blur()
+  else await page.mouse.move(0, 0)
+  await expect(page.locator('.ghost-piece')).toHaveCount(0)
+})
