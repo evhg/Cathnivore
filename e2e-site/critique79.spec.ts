@@ -51,7 +51,7 @@ test('Cathnivore Setup P: no dead band pooled above Start', async ({ page, hasTo
   expect(gap).toBeLessThanOrEqual(32) // was about 50 px before item 79
 })
 
-test("Hedgerow map: her act's head opens under the header and the next act's card clears the nav", async ({ page, hasTouch }) => {
+test("Hedgerow map: her act's head opens under the header", async ({ page, hasTouch }) => {
   await page.goto('/hedgerow/?2d')
   await page.evaluate(() => {
     const stars = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), 3]))
@@ -68,17 +68,9 @@ test("Hedgerow map: her act's head opens under the header and the next act's car
   })
   expect(at.head).toBeGreaterThanOrEqual(at.bar - 1)
   expect(at.head - at.bar).toBeLessThanOrEqual(24)
-  if (!hasTouch) return
-  await page.locator('#levels').evaluate((l) => l.scrollTo({ top: l.scrollHeight, behavior: 'instant' }))
-  const card = await page.locator('.act-glimpse .act-fog-text').boundingBox()
-  const navTop = await page.evaluate(() => {
-    const tops = [...document.querySelectorAll('#screen-select button')]
-      .map((b) => b.getBoundingClientRect())
-      .filter((r) => r.height > 0 && r.top > innerHeight * 0.8)
-      .map((r) => r.top)
-    return Math.min(innerHeight, ...tops)
-  })
-  expect(card!.y + card!.height).toBeLessThanOrEqual(navTop)
+  // Plan item 153 retired the glimpse strip at the map's foot (the next act is on the map in pencil), so the
+  // 'card clears the nav' half of this test went with it.
+  void hasTouch
 })
 
 test('NIGHT SHIFT title upright: resting menu entries near full ink, small lines at 13 px or more', async ({ page, hasTouch }) => {

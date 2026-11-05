@@ -158,15 +158,41 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
   })
 })
 
-test('plan item 73: the next act is a named glimpse of its country, not fog', async ({ page }) => {
-  await seed(page, 0)
-  const glimpse = page.locator('li.act-fog.act-glimpse')
-  await expect(glimpse).toBeVisible()
-  await expect(glimpse.locator('.act-fog-text strong')).toHaveText('Highmoor')
-  await expect(glimpse.locator('.act-fog-kicker')).toContainText('Act 2')
-  const scene = await glimpse.locator('.act-fog-scene').evaluate((e) => ({ filter: getComputedStyle(e).filter, opacity: Number(getComputedStyle(e).opacity) }))
-  expect(scene.filter).not.toContain('blur')
-  expect(scene.opacity).toBeGreaterThanOrEqual(0.85)
+// Plan item 153: the journey is one painted country: every act in the one scroller, those past the last open act in
+// pencil with their stops shut and their names in full ink (4.5:1 on the paper), the next act's top on the first
+// screen, and its note naming the boss that opens it.
+test('plan item 153: every act is on one map, the locked ones in pencil', async ({ page }) => {
+  await seed(page, 13)
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(400)
+  const acts = page.locator('#levels > li[data-act]')
+  await expect(acts).toHaveCount(10)
+  await expect(page.locator('#levels li[data-pencil]')).toHaveCount(8)
+  const next = page.locator('#levels li[data-act="3"]')
+  await expect(next).toHaveAttribute('data-pencil', '')
+  await expect(next.locator('.act-pencil-note')).toContainText("Beat Mr Crisp's Convoy")
+  await expect(next.locator('button.node:not(:disabled)')).toHaveCount(0)
+  const m = await page.evaluate(() => {
+    const list = document.querySelector('#levels')!.getBoundingClientRect()
+    const nextTop = document.querySelector('#levels li[data-act="3"]')!.getBoundingClientRect().top
+    const lum = (c: string) => {
+      const v = (c.match(/[\d.]+/g) ?? []).slice(0, 3).map((x) => Number(x) / 255).map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4))
+      return 0.2126 * v[0]! + 0.7152 * v[1]! + 0.0722 * v[2]!
+    }
+    // The names sit on their paper label; the pencil filter greys both alike, so compare their own colours.
+    const names = [...document.querySelectorAll<HTMLElement>('li[data-act="3"] .level-name')].map((n) => {
+      const fg = lum(getComputedStyle(n).color)
+      let bg = 1
+      for (let e: HTMLElement | null = n; e; e = e.parentElement) {
+        const b = getComputedStyle(e).backgroundColor
+        if (!/rgba\(0, 0, 0, 0\)|transparent/.test(b)) { bg = lum(b); break }
+      }
+      return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
+    })
+    return { into: Math.min(innerHeight, list.bottom) - nextTop, names }
+  })
+  expect(m.into).toBeGreaterThanOrEqual(60)
+  for (const c of m.names) expect(c).toBeGreaterThanOrEqual(4.5)
 })
 
 test('plan item 73: Cath\'s token never covers another stop\'s name', async ({ page }) => {
@@ -211,28 +237,6 @@ test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its n
   // Plan item 124: she stands beside it on the road, not on it.
   expect(m.you.right <= m.coin.left || m.you.left >= m.coin.right, JSON.stringify(m)).toBe(true)
   if ((page.viewportSize()?.width ?? 0) >= 600) expect(m.name - m.lock).toBeGreaterThanOrEqual(3)
-})
-
-test('plan item 91: the lane into the next act leaves from under the last stop shown', async ({ page }) => {
-  await seed(page, 13)
-  await page.waitForFunction(() => !!document.querySelector('.act-fog-lane'))
-  await page.evaluate(() => document.fonts.ready)
-  const m = await page.evaluate(() => {
-    const lane = document.querySelector('.act-fog-lane')!.getBoundingClientRect()
-    const nums = [...document.querySelectorAll('.stop .level-num')]
-    const last = nums[nums.length - 1]!.getBoundingClientRect()
-    return { lane: lane.left + lane.width / 2, stop: last.left + last.width / 2 }
-  })
-  expect(Math.abs(m.lane - m.stop)).toBeLessThanOrEqual(12)
-})
-
-test('plan item 88: at D the next act is a strip of 120 px or less', async ({ page, hasTouch }) => {
-  test.skip(hasTouch, 'the desktop map')
-  await seed(page, 13)
-  const glimpse = page.locator('li.act-fog.act-glimpse')
-  await expect(glimpse).toBeVisible()
-  expect((await glimpse.boundingBox())!.height).toBeLessThanOrEqual(120)
-  await expect(glimpse.locator('.act-fog-text strong')).toBeVisible()
 })
 
 test('plan item 88: the next level\'s card: Play on the first screen, a stop focused shows on it, Play opens it', async ({ page }) => {

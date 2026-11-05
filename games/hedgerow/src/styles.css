@@ -4725,3 +4725,29 @@ img.act-scene {
 @media (prefers-reduced-motion: reduce) {
   .depot-door { transition: none; }
 }
+
+/* Plan item 153: the acts past the last open one stay on the map in pencil: the country drawn in graphite on the
+   paper, its stops shut, its words in full ink (so they read at 4.5:1), the lane running on into it. */
+#screen-select .act.act-pencil {
+  filter: grayscale(1) sepia(0.22) contrast(1.08);
+  opacity: 1;
+  background-image: linear-gradient(color-mix(in srgb, var(--paper-hi) 55%, transparent), color-mix(in srgb, var(--paper-hi) 55%, transparent)), var(--ground);
+}
+#screen-select .act.act-pencil .act-scene { filter: brightness(1.12) contrast(0.9); opacity: 0.8; }
+#screen-select .act.act-pencil .node .level-name,
+#screen-select .act.act-pencil .act-title { color: var(--ink); }
+#screen-select .act-pencil-note {
+  inset: 8% 0 auto;
+  flex-direction: column;
+  gap: 2px;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin-inline: auto;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper-hi) 86%, transparent);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  text-shadow: none;
+}
+#screen-select .act-pencil-note .act-fog-kicker { color: var(--ink-2); }

@@ -816,13 +816,14 @@ test.describe('Hedgerow', () => {
 
   test('Plan item 3: a fresh save shows act 1 only; clearing field 1 introduces the Almanac once', async ({ page }) => {
     await page.goto(HEDGEROW_2D)
-    await expect(page.locator('li.act')).toHaveCount(1)
-    await expect(page.locator('li.act-fog')).toBeVisible()
+    // Plan item 153: every act is on the map; only act 1 is in colour, the rest in pencil.
+    await expect(page.locator('li.act:not(.act-pencil)')).toHaveCount(1)
+    await expect(page.locator('li.act-pencil').first()).toBeAttached()
     // The journey is painted: Cath's cottage starts the lane, act 1 sits on its own ground, act 2 shows under the fog.
     await expect(page.locator('li.act .trail-home .home-art')).toBeVisible()
     await expect(page.locator('li.act').first()).toHaveCSS('background-image', /svg/)
-    await expect(page.locator('li.act-fog .act-fog-scene')).toHaveCount(1)
-    await expect(page.locator('.trail-path .lane-bed')).toHaveAttribute('d', /C/)
+    await expect(page.locator('li.act-pencil').first().locator('.act-scene')).toHaveCount(1)
+    await expect(page.locator('.trail-path .lane-bed').first()).toHaveAttribute('d', /C/)
     await expect(page.locator('#btn-almanac')).toBeHidden()
     await expect(page.locator('#btn-daily')).toBeHidden()
     await expect(page.locator('#select-kits')).toBeHidden()

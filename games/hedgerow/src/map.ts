@@ -1670,7 +1670,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
   // Plan item 3: the journey shows the acts reached so far; everything past them is fog until the boss
   // before it falls (sandbox shows every act, for screenshots).
   const shown = showAll ? acts.size : openActs(data, acts.size);
-  for (const n of [...acts.keys()]) if (n > shown) acts.delete(n);
+  // Plan item 153: the journey is one painted country: every act is on the map, those past the last open one
+  // drawn in pencil (their stops shut) instead of hidden under fog, so the lane visibly runs on.
   // Plan item 18: the fog rolls back off an act the first time the map shows it open (kept in storage, so the
   // reveal still plays if she closed the game after the boss). A fresh save just records where the fog is.
   const was = showAll ? shown : fogSeen();
@@ -1683,6 +1684,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     li.className = "act";
     const firstUnlocked = isUnlocked(data, lvs[0]!.id);
     if (!firstUnlocked) li.classList.add("act-locked");
+    const pencil = n > shown;
+    if (pencil) {
+      li.classList.add("act-pencil");
+      li.dataset.pencil = "";
+    }
     const got = lvs.reduce((a, lv) => a + (data.stars[String(lv.id)] ?? 0), 0);
     const head = document.createElement("div");
     head.className = "act-head";
@@ -1720,7 +1726,16 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       title.append(eb);
     }
     head.append(title);
-    if (!firstUnlocked) {
+    if (pencil) {
+      // The act after the last open one names the boss that opens it; the ones beyond just wait.
+      const veil = document.createElement("p");
+      veil.className = "act-veil act-pencil-note";
+      const kicker = document.createElement("span");
+      kicker.className = "act-fog-kicker";
+      kicker.textContent = n === shown + 1 ? `Beyond the hedge · Act ${n}` : `Further on · Act ${n}`;
+      veil.append(kicker, n === shown + 1 ? `Beat ${levels[(n - 1) * 10 - 1]?.name ?? "the boss"} and the lane runs on into it.` : "Still in pencil: the lane gets there.");
+      head.append(veil);
+    } else if (!firstUnlocked) {
       const veil = document.createElement("div");
       veil.className = "act-veil";
       veil.textContent = "🔒 Finish the act before to open this";
@@ -1892,7 +1907,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       li.classList.add("act-has-card");
       li.append(card.el);
     }
-    if (was > 0 && n > was) {
+    if (was > 0 && n > was && !pencil) {
       li.classList.add("act-unveil");
       const fog = document.createElement("div");
       fog.className = "unveil-fog";
@@ -1901,33 +1916,6 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       li.append(fog);
     }
     list.append(li);
-  }
-  if (shown < Math.ceil(levels.length / 10)) {
-    const fog = document.createElement("li");
-    fog.className = "act-fog";
-    fog.dataset.fog = String(shown + 1);
-    const t = document.createElement("p");
-    t.className = "act-fog-text";
-    // Plan item 73: a glimpse of the next act's country, named, rather than a slab of fog.
-    fog.classList.add("act-glimpse");
-    const kicker = document.createElement("span");
-    kicker.className = "act-fog-kicker";
-    kicker.textContent = `Beyond the hedge · Act ${shown + 1}`;
-    const h = document.createElement("strong");
-    h.textContent = levels[shown * 10]?.place ?? "The next act";
-    t.append(kicker, h, `Beat ${levels[shown * 10 - 1]?.name ?? "the boss"} and the lane runs on into it.`);
-    // The next act is painted in, faint under the fog, so the player can see where the lane goes next.
-    const hint = document.createElement("img");
-    hint.className = "act-fog-scene";
-    hint.alt = "";
-    hint.loading = "lazy";
-    hint.decoding = "async";
-    hint.src = svgImg(actScene(shown + 1, "banner").replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '));
-    const lane = document.createElement("span");
-    lane.className = "act-fog-lane";
-    lane.setAttribute("aria-hidden", "true");
-    fog.append(hint, lane, t);
-    list.append(fog);
   }
   placeBanners(list);
   layoutLanes(list);
