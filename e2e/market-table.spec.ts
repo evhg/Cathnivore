@@ -10,10 +10,15 @@ async function tableAt(page: Page, round: number): Promise<number> {
   const at = () => page.evaluate(() => Number(document.querySelector<SVGSVGElement>('.map-wrap svg.map[data-round]')?.dataset.round ?? 0))
   await expect.poll(at, { timeout: 60_000 }).toBeGreaterThanOrEqual(1)
   // Wait for the autoplay to settle on its round (or the game to end first), then for the sweep to pass.
+  // "Settled" is no change for 3 s: a round with an enemy turn to play back can hold one number longer than one
+  // half-second poll, which used to stop the wait at round 3 on its way to 5.
   let last = -1
-  for (let i = 0; i < 40; i++) {
+  let still = 0
+  for (let i = 0; i < 80; i++) {
     const now = await at()
-    if (now >= round || (now === last && now > 0)) break
+    if (now >= round) break
+    still = now === last && now > 0 ? still + 1 : 0
+    if (still >= 6) break
     last = now
     await page.waitForTimeout(500)
   }
