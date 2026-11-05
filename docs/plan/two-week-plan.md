@@ -1709,7 +1709,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e from a save with one case just closed: the polaroid gets `data-struck`, the count drops, and it plays once only; reduced motion: a fade; shots P and D before and after.
 - **Size:** 2
 
-## 138. [ ] The bugs from the 2026-11-04 23:25 critique, fixed as one batch
+## 138. [ ] The bugs from the 2026-11-04 23:25 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; plan1104j)
   - [x] **Site /games/ P:** *(checked 2026-11-05 lane A: at 1.2 s the hero has landed, the posters are on the first screen and Cath stands under the quote's end, not on it; shot `g138/games-1200-P`; no change)* the hero never finishes landing in the shot (the logotype blurred 50-280 x 115-170, the buttons at about 30%, no posters on the first screen), and Cath crowds the quote's end (295-370 x 225-260). Check against item 130 and the shot's timing.
   - [x] **NIGHT SHIFT P:** the class tab row cuts "WIREWITCH" (297-390 x 68-82) with FIXER off screen and no scroll cue. *(fixed 2026-11-05 lane A: the five names at --fs-3 on a 64% width (`--wdth-tight`), spread edge to edge, all five on screen from 375 px up, no mask; cathode-classpick asserts it; shot `g138b/after-ghost-P`)*
