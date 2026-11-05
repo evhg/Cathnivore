@@ -750,7 +750,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             onClick={onSelect ? () => onSelect(id) : inspect ? () => inspect(id) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
             tabIndex={onSelect && glow ? 0 : undefined}
-            role={onSelect && glow ? 'button' : undefined}
+            role={onSelect && glow ? 'button' : 'group'}
             onKeyDown={
               onSelect && glow
                 ? (e) => {
