@@ -139,6 +139,9 @@
 
   /* type scale, fluid between 390 and 1440 */
   --fs-label: clamp(.75rem, .74rem + .05vw, .78rem);
+  /* The floor for small print on the table (plan cards' lines, the chips on the cloth): 12 px. Used by table.css
+     before it was defined, which voided the shorthand `font:` that named it (critique, item 91). */
+  --fs-floor-label: .75rem;
   --fs-caption: clamp(.8125rem, .79rem + .1vw, .875rem);
   --fs-small: clamp(.875rem, .85rem + .1vw, .9375rem);
   --fs-body: clamp(1rem, .97rem + .1vw, 1.0625rem);
