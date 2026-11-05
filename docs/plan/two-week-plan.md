@@ -1879,7 +1879,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a tap shows `[data-build-ring]` with one `.ring-packet` per unlocked tower, each 44x44 px or larger and inside 390x844, none over the tapped plot; unaffordable ones `data-affordable="false"`; the previewed ring's radius equals the tower's range (`hedgerow.ring()`); level tests unchanged; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 157. [ ] Hedgerow: Hollowell's depot at the gate
+## 157. [ ] Hedgerow: Hollowell's depot at the gate *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (283-362 x 478-495): the corporation is a 12 px sign; `hedge-l21-3d-P` (133-330 x 360-385): the 'N coming' pill floats mid-field away from its gate.
 - **Build:**
   - A glossy plastic depot at each lane's entrance, 2D and 3D: roller door, brand stripe, vehicles rolling out of the door.
