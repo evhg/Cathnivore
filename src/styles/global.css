@@ -444,20 +444,7 @@ h3 {
   pointer-events: none;
 }
 
-.price-tag-text {
-  font-family: var(--font-text);
-  font-size: 3.6px;
-  font-weight: 700;
-  fill: var(--ink);
-  pointer-events: none;
-}
-
-.sold-text {
-  font-family: var(--font-text);
-  font-size: 3.4px;
-  font-weight: 700;
-  fill: var(--ink);
-  letter-spacing: 0.2px;
+.tag-print {
   pointer-events: none;
 }
 

@@ -187,7 +187,8 @@ function RegionTextureDefs() {
 // STYLE.md 6's exact game pieces, drawn as small self-contained SVG groups so `Map` can place one per
 // slot in the enemy-piece row / Stall row without repeating their geometry inline.
 
-// Outlet: "little shopfront box with a price tag reading 0.99" — a glossy Hollowell square (unchanged
+// Outlet: "little shopfront box with a price tag reading 0.99" (plan item 139: the tag is wordless, its print
+// as lines: no size of the piece let '.99' reach 11 px) — a glossy Hollowell square (unchanged
 // from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
 export function Outlet({ ornament = true }: { ornament?: boolean }) {
   return (
@@ -198,9 +199,8 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
       {ornament && <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
         <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
-        <text x={4.2} y={4} textAnchor="middle" className="price-tag-text">
-          .99
-        </text>
+        {/* plan item 139: printed lines, not '.99' (the text drew at 7 px on a desktop board, under the 11 px floor) */}
+        <path d="M 2.6,2.2 h 3.2 M 2.6,3.5 h 2.2" className="tag-print" stroke="var(--ink)" strokeWidth={0.55} strokeLinecap="round" />
       </g>}
     </g>
   )
@@ -215,9 +215,8 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(1,7) rotate(-6)">
         <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
-        <text x={5} y={3.1} textAnchor="middle" className="sold-text">
-          SOLD
-        </text>
+        {/* plan item 139: a lettered stroke, not 'SOLD' (about 6 px on screen); the sign's shape carries it */}
+        <path d="M 2,2 h 6" className="tag-print" stroke="var(--hollowell)" strokeWidth={1.1} strokeLinecap="round" />
       </g>}
     </g>
   )
