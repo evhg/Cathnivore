@@ -16,6 +16,7 @@ import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
 import { boardSky, skyArt } from './sky'
 import { lightVars, sceneLight, valleyLayers } from './valley'
 import { weekBeds, weekStrip } from './weekstrip'
+import { SPOTS, featureSvg, firstSpot, weekFeatures } from './weekvalley'
 import {
   arcLabel,
   computeFlow,
@@ -247,7 +248,78 @@ function paintValley(seed: string): void {
 }
 
 /** Plan item 70: Cath stands in the valley's bottom-left corner unless the board's tiles reach into it. */
+/** Plan item 142: the valley keeps the week. Each daily solved since Monday stands as a feature in the valley's margins
+ *  (a missed day is a fallow plot), each at the first spot from its own that meets no tile, Cath or the garden. */
+let keepsKey = ''
+function placeWeekValley(): void {
+  const stage = document.querySelector<HTMLElement>('.stage')
+  if (!stage) return
+  let layer = document.getElementById('valley-keeps')
+  if (!layer) {
+    layer = document.createElement('div')
+    layer.id = 'valley-keeps'
+    layer.className = 'valley-keeps'
+    layer.setAttribute('aria-hidden', 'true')
+    stage.querySelector('svg.valley')?.after(layer)
+  }
+  const feats = weekFeatures(today, data.results)
+  const key = feats.map((f) => `${f.day}:${f.kind}`).join('|')
+  if (key !== keepsKey) {
+    keepsKey = key
+    layer.replaceChildren(
+      ...feats.map((f) => {
+        const el = document.createElement('span')
+        el.className = 'valley-feature'
+        el.dataset.valleyFeature = f.kind
+        el.dataset.day = f.day
+        el.innerHTML = featureSvg(f.kind)
+        return el
+      }),
+    )
+  }
+  const st = stage.getBoundingClientRect()
+  if (!st.width) return
+  const blocks = [...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .valley-say:not([hidden])')]
+    .map((e) => e.getBoundingClientRect())
+    .filter((r) => r.width > 0)
+  const taken: DOMRect[] = []
+  for (const el of layer.querySelectorAll<HTMLElement>('.valley-feature')) {
+    const size = el.offsetWidth || 48
+    let placed = false
+    const start = firstSpot(el.dataset.day ?? '')
+    for (let k = 0; k < SPOTS.length && !placed; k++) {
+      const [px, py] = SPOTS[(start + k) % SPOTS.length]!
+      const x = st.left + (st.width * px) / 100, y = st.top + (st.height * py) / 100
+      const box = new DOMRect(x - size / 2, y - size, size, size)
+      const meets = (r: DOMRect) => r.left < box.right && box.left < r.right && r.top < box.bottom && box.top < r.bottom
+      if (blocks.some(meets) || taken.some(meets)) continue
+      taken.push(box)
+      el.style.setProperty('--vx', `${px}%`)
+      el.style.setProperty('--vy', `${py}%`)
+      placed = true
+    }
+    el.hidden = !placed
+  }
+}
+
+// The board settles its size after the first layout (fonts, the phone's frame): re-place the keeps when it does.
+if (typeof ResizeObserver !== 'undefined') {
+  let raf = 0
+  const ro = new ResizeObserver(() => {
+    cancelAnimationFrame(raf)
+    raf = requestAnimationFrame(placeWeekValley)
+  })
+  const watch = () => {
+    const b = document.getElementById('board')
+    if (b) ro.observe(b)
+    const st = document.querySelector('.stage')
+    if (st) ro.observe(st)
+  }
+  watch()
+}
+
 function placeValleyCath(): void {
+  placeWeekValley()
   const cath = document.getElementById('valley-cath')
   if (!cath) return
   // Plan item 122: one Cath. On a phone the portrait beside her line is the one (its face follows the water the

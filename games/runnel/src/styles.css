@@ -3791,3 +3791,24 @@ body[data-mode='practice'] #week-slot {
 .daily-fly .unt-rest {
   display: block;
 }
+
+/* Plan item 142: the week's keeps in the valley's margins: a mill, a footbridge, an orchard row, Bea's scarecrow,
+   or a fallow plot for a day missed. Each stands on its spot (its foot at the spot), under the board. */
+.valley-keeps {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.valley-feature {
+  position: absolute;
+  left: var(--vx, 0);
+  top: var(--vy, 0);
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 2px 1px color-mix(in srgb, var(--ink) 25%, transparent));
+}
+.valley-feature svg { display: block; width: 100%; height: 100%; }
+@media (max-width: 1099.98px) {
+  .valley-feature { width: 40px; height: 40px; }
+}
