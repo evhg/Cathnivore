@@ -2021,7 +2021,7 @@ function cathHead(skinM: M): THREE.Group {
   const faceM = (skinM as THREE.MeshStandardMaterial).clone();
   faceM.name = "face";
   // Plan item 162: her face lit from within a little, so it reads lighter than the hair round it in any act's light.
-  faceM.emissive = new THREE.Color("#f2c2a4").multiplyScalar(0.32);
+  faceM.emissive = new THREE.Color("#f2c2a4").multiplyScalar(0.3);
   const shineM = matte(HAIR.shine, 0.35, false);
   const whiteM = matte("#ffffff", 0.3, false);
   const eyeM = matte("#5a3a26", 0.3, false);
