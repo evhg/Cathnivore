@@ -887,7 +887,9 @@ export class Renderer {
         });
         const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
         const upright = headingAt(path, 0).dx === 0;
-        items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright)) });
+        // Plan item 157: where Hollowell's depot stands by this gate its departures board carries the count instead.
+        if (!this.depotLanes.has(ln.lane ?? 0))
+          items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright)) });
       }
     } else this.queueAge = 0;
     for (const e of game.enemies) {
@@ -1467,6 +1469,8 @@ export class Renderer {
   private shardBursts = 0;
   /** Plan item 72: the queue drawn last frame (CSS px from the canvas corner), for the e2e tests; null when nothing waits at the gate. */
   shownQueue: { leads: Rect[]; plates: Rect[] } | null = null;
+  /** Plan item 157: the lanes (0, 1) whose gate has a depot on screen, which shows the count. */
+  depotLanes = new Set<number>();
   private queueAge = 0;
   private queueKey = "";
   private queueMemo: GateQueue | null = null;

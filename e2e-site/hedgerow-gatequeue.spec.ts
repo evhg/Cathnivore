@@ -25,7 +25,9 @@ for (const level of [1, 12, 40]) {
     await expect.poll(async () => (await queue(page))?.leads.length ?? 0).toBeGreaterThan(0)
     const q = (await queue(page))!
     const canvas = (await page.locator('canvas').first().boundingBox())!
-    expect(q.plates.length).toBeGreaterThan(0)
+    // Plan item 157: where Hollowell's depot stands by the gate its departures board carries the count instead.
+    const boards = await page.locator('[data-depot] [data-depot-count]').count()
+    expect(q.plates.length + boards).toBeGreaterThan(0)
     for (const b of [...q.leads, ...q.plates]) {
       expect(b.x, JSON.stringify(b)).toBeGreaterThanOrEqual(-1)
       expect(b.y, JSON.stringify(b)).toBeGreaterThanOrEqual(-1)

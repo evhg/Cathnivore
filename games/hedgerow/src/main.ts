@@ -197,6 +197,7 @@ import { setupAlmanac } from "./almanac";
 import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
+import { depotSvg, entrySide, repMood, repSvg, type RepMood } from "./depot";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -4057,6 +4058,97 @@ function runSpeed(g: Game): number {
 // Plan item 152: the level's twists you can see on the field. A flood that's up marks the stage
 // `data-twist-active~="flood"` with the count of plots under it (the renderers draw the water); a fog level's
 // sea fret is a drifting layer over the field (`.field-fog`) that thickens as the round runs.
+// Plan item 157: Hollowell's depot at each gate (2D, where the field has a margin beside the gate wide enough for
+// a 2 x 2-cell depot clear of every plot). Its departures board shows the next round's count; the rep's mood follows
+// the last round (smug, then gleeful after a leak or rattled after a clean one).
+let depotLeaksAtStart = 0;
+let depotMood: RepMood = "smug";
+let depotJudged = 0;
+let depotKey = "";
+let depotLevel = -1;
+function syncDepots(g: Game): void {
+  const layer0 = document.getElementById("depots");
+  const show = !!renderer && !is3D(renderer) && g.phase !== "won" && g.phase !== "lost";
+  if (!show) {
+    layer0?.remove();
+    depotKey = "";
+    if (renderer && !is3D(renderer)) (renderer as Renderer).depotLanes.clear();
+    return;
+  }
+  // The mood: each time a round is over (the round counter moves on and the field is between rounds), compare the
+  // leaks with the last time he judged. A new level starts him smug.
+  const L0 = g.level;
+  if (depotLevel !== L0.id) {
+    depotLevel = L0.id;
+    depotMood = "smug";
+    depotJudged = g.wave;
+    depotLeaksAtStart = g.leaks ?? 0;
+  } else if (betweenRounds(g) && g.wave !== depotJudged) {
+    depotMood = repMood(depotLeaksAtStart, g.leaks ?? 0);
+    depotJudged = g.wave;
+    depotLeaksAtStart = g.leaks ?? 0;
+  }
+  const r = renderer as Renderer;
+  const L = g.level;
+  const c00 = r.cellCenter(0, 0);
+  const c11 = r.cellCenter(1, 1);
+  if (!c00 || !c11) return;
+  const cell = c11.x - c00.x;
+  const size = Math.round(cell * 2);
+  const canvas = ui.stage.querySelector("#canvas")!.getBoundingClientRect();
+  const stage = ui.stage.getBoundingClientRect();
+  const fieldL = c00.x - cell / 2, fieldT = c00.y - cell / 2;
+  const fieldR = fieldL + L.cols * cell, fieldB = fieldT + L.rows * cell;
+  const counts = [0, 0];
+  if (betweenRounds(g) && L.waves[g.wave]) for (const q of waveSpawns(g, L.waves[g.wave]!, g.wave + 1)) counts[(q as { lane?: number }).lane ? 1 : 0]!++;
+  const lanes = [L.path, L.path2].map((path, i) => ({ path, i })).filter((l) => !!l.path);
+  const spots: Array<{ x: number; y: number; count: number; lane: number }> = [];
+  for (const { path, i } of lanes) {
+    const start = path![0] as unknown as [number, number];
+    const gate = r.cellCenter(start[0], start[1]);
+    if (!gate) continue;
+    for (const side of entrySide(start, L.cols, L.rows)) {
+      const room = side === "left" ? fieldL - canvas.left : side === "right" ? canvas.right - fieldR : side === "top" ? fieldT - canvas.top : canvas.bottom - fieldB;
+      // Only where the margin outside the field holds the whole depot: it never stands on a plot.
+      if (room < size + 12) continue;
+      const x = side === "left" ? fieldL - 8 - size : side === "right" ? fieldR + 8 : gate.x - size / 2;
+      const y = side === "top" ? fieldT - 8 - size : side === "bottom" ? fieldB + 8 : gate.y - size / 2;
+      const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - size - 4, y));
+      const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - size - 4, x));
+      // A clamp that pulls it onto the field (a top margin shorter than the depot) rules the spot out.
+      const meetsField = clampX < fieldR && clampX + size > fieldL && clampY < fieldB && clampY + size > fieldT;
+      if (meetsField) continue;
+      spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i });
+      break;
+    }
+  }
+  r.depotLanes = new Set(spots.map((sp) => sp.lane));
+  const key = `${L.id}|${size}|${depotMood}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count}`).join(";")}`;
+  if (key === depotKey) return;
+  depotKey = key;
+  let layer = layer0;
+  if (!layer) {
+    layer = document.createElement("div");
+    layer.id = "depots";
+    layer.className = "depots";
+    layer.setAttribute("aria-hidden", "true");
+    ui.stage.querySelector("#fx-layer")?.before(layer);
+  }
+  layer.replaceChildren(
+    ...spots.map((sp) => {
+      const el = document.createElement("div");
+      el.className = "depot";
+      el.dataset.depot = String(sp.lane);
+      el.dataset.repMood = depotMood;
+      el.style.setProperty("--x", `${Math.round(sp.x)}px`);
+      el.style.setProperty("--y", `${Math.round(sp.y)}px`);
+      el.style.setProperty("--size", `${size}px`);
+      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}">${sp.count ? `<b>${sp.count}</b> next` : "&mdash;"}</span><span class="depot-rep">${repSvg(depotMood)}</span>`;
+      return el;
+    }),
+  );
+}
+
 let twistKey = "";
 let twistWarned = "";
 function syncTwists(g: Game): void {
@@ -4174,6 +4266,7 @@ function frame(now: number): void {
   renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
   syncCathSay(g, now);
   syncTwists(g);
+  syncDepots(g);
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {

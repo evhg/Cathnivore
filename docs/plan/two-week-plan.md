@@ -1879,7 +1879,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a tap shows `[data-build-ring]` with one `.ring-packet` per unlocked tower, each 44x44 px or larger and inside 390x844, none over the tapped plot; unaffordable ones `data-affordable="false"`; the previewed ring's radius equals the tower's range (`hedgerow.ring()`); level tests unchanged; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 157. [ ] Hedgerow: Hollowell's depot at the gate *(lane B, in progress)*
+## 157. [ ] Hedgerow: Hollowell's depot at the gate *(lane B, in progress)* *(slice 1, 2026-11-05 11:21 lane B, 2D: a glossy depot (`depot.ts`: roller door, brand stripe, the rep on the balcony) stands in the margin outside each gate where the margin holds 2 x 2 cells (never on the field; level 21 and 34 at D, 34 at P); its departures board (`[data-depot-count]`) carries the next round's count, and the gate's 'N coming' pill steps aside where it stands; `data-rep-mood` smug, then rattled after a clean round or gleeful after one that leaked; `e2e-site/hedgerow-depot.spec.ts`; gatequeue spec accepts the board; Hedgerow key art re-shot; shots `dep-*`. Open: 3D, vehicles rolling out of the door at Go, a depot on fields with no margin (P level 21))*
 - **Why:** `hedge-l21-2d-D` (283-362 x 478-495): the corporation is a 12 px sign; `hedge-l21-3d-P` (133-330 x 360-385): the 'N coming' pill floats mid-field away from its gate.
 - **Build:**
   - A glossy plastic depot at each lane's entrance, 2D and 3D: roller door, brand stripe, vehicles rolling out of the door.

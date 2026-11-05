@@ -4662,3 +4662,53 @@ img.act-scene {
 @media (prefers-reduced-motion: reduce) {
   .field-fog span { animation: none; left: 5%; }
 }
+
+/* Plan item 157: Hollowell's depot beside each gate (2D, desktop margin). The departures board is a lit sign over the
+   roller door; the rep leans on the balcony rail. */
+.depots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.depot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+}
+.depot > svg { display: block; width: 100%; height: 100%; }
+.depot-board {
+  position: absolute;
+  left: 26%;
+  top: 53%;
+  width: 48%;
+  padding: 2px 0;
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--wheat, var(--cream-a45));
+  font-family: var(--font-ui, sans-serif);
+  font-size: max(0.75rem, calc(var(--size) * 0.085));
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.depot-board b { font-size: 1.15em; }
+.depot-rep {
+  position: absolute;
+  left: 72%;
+  top: 31%;
+  width: 22%;
+  height: 28%;
+}
+.depot-rep svg { display: block; width: 100%; height: 100%; }
+.depot[data-rep-mood="gleeful"] .depot-rep { animation: rep-gloat 600ms ease-in-out 3 alternate; }
+.depot[data-rep-mood="rattled"] .depot-rep { animation: rep-shake 120ms linear 6 alternate; }
+@keyframes rep-gloat { to { translate: 0 -12%; } }
+@keyframes rep-shake { to { translate: 6% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .depot-rep { animation: none !important; }
+}
