@@ -2036,7 +2036,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `window.cathodeFront.scene().idle` reports breath, blink and sway; a blink within 6 s of time-stepping under `?shot`; no seam over 2 px at D in the shots; `cathode-perf` within budget; shots P, L and D at the title and class pick.
 - **Size:** 3
 
-## 176. [ ] Runnel desktop: the lesson panel as a field notebook *(lane B, in progress)*
+## 176. [x] Runnel desktop: the lesson panel as a field notebook *(done 2026-11-05, lane B: `.lesson-panel[data-notebook]` as ruled paper with a red margin and a stitched spine; the legend's tiles as inked glyphs (46 px); a finished step gets `data-ticked`, a pencil tick and a pencil strike; Up next pinned with the daily's weekday; no scroll at 1440x900; the phone unchanged. `e2e-site/runnel-lesson-notebook.spec.ts`; shots `t176` D light and dark, P)*
 - **Why:** `runnel-D` (16-346 x 198-755): the left panel is a generic rounded card (a stepper, a legend list and an 'Up next' tile) with no illustration, beside a painted valley. (Item 170 anchors her bubble; this is the panel.)
 - **Build:**
   - Ruled notebook paper with a stitched spine; the legend's tiles as hand-inked glyphs; each lesson step ticked off with a pencil stroke as it is done.
