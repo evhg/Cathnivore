@@ -2217,7 +2217,7 @@ html.no-animations .cath-companion .cameo {
   padding: 7px 10px 8px;
   border-radius: 4px;
   background: var(--paper);
-  box-shadow: 0 0 0 1.5px var(--line), 0 3px 6px rgb(var(--shadow-ink) / .18);
+  box-shadow: 0 0 0 1.5px var(--rule), 0 3px 6px rgb(var(--shadow-ink) / .18);
   rotate: 2deg;
   font-size: var(--fs-small);
   line-height: 1.2;
