@@ -828,13 +828,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Set-in sleeves: full at the shoulder seam (inside the coat's shoulder line, so no ball shows), easing to the
   // elbow, flaring a touch at the cuff with a strap; black leather gloves with a thumb.
   const sleeve = (sh: THREE.Vector3, el: THREE.Vector3, wr: THREE.Vector3, parent: THREE.Object3D, fore: THREE.Object3D = parent) => {
-    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.85, 0.042], [1, 0.04]], seg(12), 0.9), coatMat, parent);
+    // Plan item 147: the upper sleeve tapers into the elbow ball (its flat end showed as a rim with the forearm
+    // starting inside it), and the forearm starts just outside both, so the join reads as a soft fold.
+    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.8, 0.042], [0.93, 0.039], [1, 0.034]], seg(12), 0.9), coatMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    const elb = new THREE.SphereGeometry(0.039, seg(12), seg(8));
+    const elb = new THREE.SphereGeometry(0.0405, seg(12), seg(8));
     elb.scale(1, 1, 0.9);
     elb.translate(el.x, el.y, el.z);
     add(elb, coatMat, fore);
-    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.04], [0.5, 0.039], [0.88, 0.044], [0.97, 0.047], [1, 0.03]], seg(12), 0.9), coatMat, fore);
+    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.036], [0.04, 0.0425], [0.2, 0.041], [0.5, 0.039], [0.88, 0.044], [0.97, 0.047], [1, 0.03]], seg(12), 0.9), coatMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
