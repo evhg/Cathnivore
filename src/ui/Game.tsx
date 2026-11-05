@@ -674,6 +674,59 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     window.addEventListener('resize', fan)
     return () => window.removeEventListener('resize', fan)
   })
+  // Plan item 155: each seated producer takes the free spot in the map frame furthest from Cath (and from the
+  // other producer), clear of every hex, name plaque, prop, the event ticket, the map key and Cath herself.
+  useLayoutEffect(() => {
+    if (!tableCath) return
+    const seat = () => {
+      const wrap = document.querySelector<HTMLElement>('.map-wrap')
+      const people = [...document.querySelectorAll<HTMLElement>('.table-producers .table-producer')]
+      if (!wrap || people.length === 0) return
+      const w = wrap.getBoundingClientRect()
+      const rect = (e: Element) => e.getBoundingClientRect()
+      const obstacles: DOMRect[] = [
+        ...[...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)),
+        ...[...wrap.querySelectorAll('.region-plaque, .table-prop, .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
+      ].filter((r) => r.width > 0 && r.height > 0)
+      const cath = wrap.querySelector('.table-cath-figure')
+      const cathX = cath ? rect(cath).left + rect(cath).width / 2 : w.left
+      const PAD = 6
+      const taken: { x: number; y: number; w: number; h: number }[] = []
+      for (const person of people) {
+        // Full size where the frame has room; a smaller bust (down to 60%) before none at all.
+        let best = null as { x: number; y: number; score: number } | null
+        let pw = 0
+        let ph = 0
+        for (const k of [1, 0.88, 0.76, 0.6]) {
+        person.style.setProperty('--seat-k', String(k))
+        pw = person.offsetWidth
+        ph = person.offsetHeight
+        for (let y = w.top + PAD; y + ph <= w.bottom - PAD; y += 4)
+          for (let x = w.left + PAD; x + pw <= w.right - PAD; x += 4) {
+            const hit = (o: { left: number; top: number; right: number; bottom: number }) =>
+              x < o.right + 3 && o.left - 3 < x + pw && y < o.bottom + 3 && o.top - 3 < y + ph
+            if (obstacles.some(hit)) continue
+            if (taken.some((t) => hit({ left: t.x, top: t.y, right: t.x + t.w, bottom: t.y + t.h }))) continue
+            const cx = x + pw / 2
+            const score = Math.abs(cx - cathX) + taken.reduce((acc, t) => acc + Math.hypot(cx - (t.x + t.w / 2), y - t.y) * 0.5, 0) - y * 0.05
+            if (!best || score > best.score) best = { x, y, score }
+          }
+        if (best) break
+        }
+        if (best) {
+          taken.push({ x: best.x, y: best.y, w: pw, h: ph })
+          person.style.setProperty('--seat-x', `${(best.x - w.left).toFixed(0)}px`)
+          person.style.setProperty('--seat-y', `${(best.y - w.top).toFixed(0)}px`)
+          delete person.dataset.unseated
+        } else person.dataset.unseated = ''
+      }
+    }
+    seat()
+    const ro = new ResizeObserver(seat)
+    const wrap = document.querySelector('.map-wrap')
+    if (wrap) ro.observe(wrap)
+    return () => ro.disconnect()
+  }, [tableCath, phoneTableCath, state.config.producers])
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -853,6 +906,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const d = (e as CustomEvent<{ kind: 'liberate' | 'squeeze'; region: RegionId }>).detail
       const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
+      // Plan item 155: the seated producers with a Stall there look worried, as on a real Squeeze.
+      if (d.kind === 'squeeze') {
+        const moods = producerMoods([{ type: 'squeeze', region: d.region, lostLand: false, stallRemoved: false, trustLoss: 0 }], moodRegionsRef.current)
+        if (Object.keys(moods).length > 0) {
+          setProducerFaces(moods)
+          window.clearTimeout(moodTimerRef.current)
+          moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
+        }
+      }
     }
     window.addEventListener('cathnivore-moment', on)
     return () => window.removeEventListener('cathnivore-moment', on)
@@ -2497,6 +2559,17 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>
+        )}
+        {/* Plan item 155: the producers sit at the table too, opposite Cath, their faces following the turn (an
+            ability firing, a Squeeze on their Stall). Placed by `seatProducers` in the map's free corners. */}
+        {tableCath && (
+          <div className={phoneTableCath ? 'table-producers table-producers-phone' : 'table-producers'} aria-hidden="true">
+            {state.config.producers.map((id) => (
+              <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-active={id === state.activeProducer ? '' : undefined}>
+                <Portrait character={id} size={phoneTableCath ? 54 : 134} expression={faceExpression(producerFaces[id])} />
+              </span>
+            ))}
+          </div>
         )}
         {/* AAA UI M4 fix: the round's bunting hangs across the map's top edge (it used to float at 18% of
             the viewport, over the clippings on a phone); the Rift's plastic sign hangs below it. */}

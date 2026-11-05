@@ -3137,3 +3137,32 @@ html.no-animations .table-cath-line { animation: none; }
     gap: var(--sp-1);
   }
 }
+
+/* Plan item 155: the producers seated at the table, opposite Cath: a bust on a painted chair-back in their colour,
+   placed by Game.tsx in the map's free space (`--seat-x`, `--seat-y`). The active one sits up, lit. */
+.table-producers { display: contents; }
+.table-producer {
+  position: absolute;
+  left: var(--seat-x, 0px);
+  top: var(--seat-y, 0px);
+  z-index: var(--z-raised);
+  display: block;
+  border-radius: 50% 50% var(--r-sm) var(--r-sm) / 40% 40% var(--r-sm) var(--r-sm);
+  background:
+    radial-gradient(circle at 50% 36%, color-mix(in srgb, var(--cameo-ring, var(--wheat)) 26%, var(--paper-hi)) 0 42%, transparent 70%),
+    color-mix(in srgb, var(--cameo-ring, var(--wheat)) 50%, var(--wood));
+  box-shadow: inset 0 0 0 3px var(--wood), inset 0 0 0 4.5px var(--wood-lo), 0 4px 6px rgb(var(--shadow-ink) / .25);
+  overflow: hidden;
+  pointer-events: none;
+  transition: translate var(--dur-2) var(--ease-out), filter var(--dur-2);
+  filter: saturate(.85);
+}
+.table-producer > svg { display: block; width: calc(var(--seat-w, 134px) * var(--seat-k, 1)); height: auto; }
+.table-producers-phone .table-producer { --seat-w: 54px; }
+.table-producer[data-active] { translate: 0 -4px; filter: none; box-shadow: inset 0 0 0 3px var(--wood), inset 0 0 0 4.5px var(--wood-lo), 0 0 0 3px var(--cameo-ring, var(--wheat)), 0 6px 10px rgb(var(--shadow-ink) / .3); }
+.table-producer[data-unseated] { display: none; }
+.table-producer.pc-mara { --cameo-ring: var(--p-mara); }
+.table-producer.pc-tomas { --cameo-ring: var(--p-tomas); }
+.table-producer.pc-ines { --cameo-ring: var(--p-ines); }
+.table-producer.pc-sol { --cameo-ring: var(--p-sol); }
+@media (prefers-reduced-motion: reduce) { .table-producer { transition: none; } }
