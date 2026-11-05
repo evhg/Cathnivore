@@ -1702,7 +1702,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `faceBox()` 110 px or more at D and 70 at P, inside the free column, for all five classes; the vignette starts within 300 ms of a class change; cathode-classpick and cathode-perf pass; shots D and P for every class.
 - **Size:** 3
 
-## 137. [ ] NIGHT SHIFT: a name crossed off The List as a front-door moment *(lane A, in progress)*
+## 137. [ ] NIGHT SHIFT: a name crossed off The List as a front-door moment *(slice 1 2026-11-05, lane A, 67d76124: the first title after a boss job gives its print `data-struck="fresh"` (a red marker bar draws across it, the print greys), the next target's print develops in (`data-developing`), and the subtitle ticks 'N NAMES LEFT' down after 1.3 s; once only (`cathode:list-struck:v1`, `freshlyStruck` in frontcopy.ts, unit `tests/cathode-list-strike.test.ts`); fades under reduced motion; e2e `e2e-site/cathode-list-strike.spec.ts` at D from a real save; shots `e2e/screenshots/t133/strike-*-D.png`. Open: Cath's line, the P shots (the phone strip uses the same markup), a reduced-motion check)*
 - **Why:** `ns-title-D` (155-535 x 665-800; P 85-370 x 675-755): The List is four identical "Withheld" polaroids; closing a case is never celebrated where you start the next.
 - **Build:**
   - On the first title visit after a case closes, a red marker strikes that polaroid, the next target's photo develops in, the "N NAMES LEFT" count ticks down, and Cath has a line.
