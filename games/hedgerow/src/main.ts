@@ -194,6 +194,7 @@ import { ROSETTES, newRosettes } from "./rosettes";
 import { setupAlmanac } from "./almanac";
 import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
+import { panic } from "./farmfolk";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -761,7 +762,18 @@ if (SANDBOX)
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
     // Plan item 135: Cath's debrief as if a vehicle of this kind had just got through.
-    debrief: (kind: EnemyKind) => game && debriefLeaks(game, kind),
+    debrief: (kind: EnemyKind) => {
+      if (!game) return;
+      // Plan item 143: a leak sends the farmfolk running, as a real one would.
+      if (renderer?.farm.world) panic(renderer.farm.world);
+      debriefLeaks(game, kind);
+    },
+    // Plan item 143: the farmfolk (cell units, mode), as the renderer last drew them.
+    folk: () => {
+      if (!renderer || !game) return [];
+      const lanes = laneCellsOf(game.level);
+      return renderer.shownFolk.map((f) => ({ kind: f.kind, x: f.x, y: f.y, mode: f.mode, moving: f.moving, tending: f.tending, onLane: lanes.has(`${Math.floor(f.x)},${Math.floor(f.y)}`) }));
+    },
     // Plan item 114: Cath's box on screen (client px, like plotBoxes).
     cathBox: () => {
       const f = ui.stage.getBoundingClientRect();

@@ -23,7 +23,7 @@ await ctx.addInitScript(() => {
 const page = await ctx.newPage()
 await page.goto(`${base}?sandbox=1`)
 await page.evaluate((l) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: Object.fromEntries(Array.from({ length: l - 1 }, (_, i) => [String(i + 1), 3])), seenBefore: { [l]: true }, tips: { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true } })), level)
-await page.goto(`${base}?sandbox=1&level=${level}`)
+await page.goto(`${base}?sandbox=1&level=${level}${process.env.QUERY ?? ''}`)
 await page.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 90000 })
 await page.waitForTimeout(8000)
 const r = await page.evaluate(() => new Promise((res) => {

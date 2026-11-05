@@ -38,6 +38,8 @@ import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
 import { layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import { gateQueue, type GateQueue } from "./gatequeue";
+import { FarmFolk, type Folk } from "./farmfolk";
+import { drawFolk } from "./folkart";
 import {
   INK,
   drawEnemy,
@@ -213,6 +215,10 @@ export class Renderer {
   reducedMotion = false;
   /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
   harvesting = false;
+  /** Plan item 143: the people and animals working the farm. */
+  readonly farm = new FarmFolk();
+  /** The farmfolk drawn last frame (the sandbox hook reads it). */
+  shownFolk: Folk[] = [];
   private dpr = 1;
   private cssW = 1;
   private cssH = 1;
@@ -338,6 +344,7 @@ export class Renderer {
   }
 
   feed(events: GameEvent[], game: Game): void {
+    this.farm.feed(events, game);
     for (const e of events) {
       switch (e.type) {
         case "shot": {
@@ -965,6 +972,9 @@ export class Renderer {
         );
       },
     });
+    // Plan item 143: the farmfolk, y-sorted with everything else on the field.
+    this.shownFolk = this.harvesting || keyart ? [] : this.farm.step(game, dt, this.reducedMotion);
+    for (const f of this.shownFolk) items.push({ y: f.y, draw: () => drawFolk(ctx, f, X(f.x), Y(f.y), s, t) });
     if (game.phase !== "wave") this.debris.length = 0;
     for (const d of this.debris) {
       ctx.save();

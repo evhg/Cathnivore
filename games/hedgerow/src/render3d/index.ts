@@ -54,6 +54,8 @@ import { swarms, SWARM_MIN } from "../swarm";
 import { COLUMN_TIERS, layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
+import { FarmFolk, type Folk } from "../farmfolk";
+import { FolkMeshes } from "./folk";
 
 interface TowerView {
   obj: THREE.Group;
@@ -256,6 +258,10 @@ export class Renderer3D {
   aim: { x: number; y: number; r: number } | null = null;
   preview: TowerKind | null = null;
   reducedMotion = false;
+  /** Plan item 143: the people and animals working the farm. */
+  readonly farm = new FarmFolk();
+  shownFolk: Folk[] = [];
+  private folkMeshes = new FolkMeshes();
   /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
   harvesting = false;
 
@@ -417,6 +423,8 @@ export class Renderer3D {
     this.world.add(this.ground.group);
     this.crops = new Crops(game.level, this.ground.heightAt, this.canvas, this.reducedMotion);
     this.world.add(this.crops.group);
+    this.folkMeshes = new FolkMeshes();
+    this.world.add(this.folkMeshes.group);
     this.buildAir(game);
     // Sky, fog and light for the act.
     const sky = document.createElement("canvas");
@@ -727,6 +735,7 @@ export class Renderer3D {
   }
 
   feed(events: GameEvent[], game: Game): void {
+    this.farm.feed(events, game);
     for (const e of events) {
       switch (e.type) {
         case "shot": {
@@ -1219,6 +1228,8 @@ export class Renderer3D {
     this.syncTowers(game, dt, t);
     this.syncEnemies(game, dt, t);
     this.syncHero(game, dt, t);
+    this.shownFolk = this.farm.step(game, dt, this.reducedMotion);
+    this.folkMeshes.update(this.shownFolk, (x, z) => this.height(x, z), t);
     this.syncSelection(game, t);
     this.syncBoss(game);
     this.syncSwarms(game);

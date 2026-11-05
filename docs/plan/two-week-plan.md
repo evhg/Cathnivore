@@ -1755,7 +1755,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a save with three solves this week renders three `[data-valley-feature]`, none meeting a tile; a new week resets them; the share card includes them; no layout shift over 2 px; shots P and D.
 - **Size:** 2
 
-## 143. [ ] Hedgerow: people and animals working the farm *(lane A, in progress)*
+## 143. [ ] Hedgerow: people and animals working the farm *(lane A, in progress)* *(slice 1, 2026-11-05 lane A: `farmfolk.ts` walks Bea, two farmhands, the collie and three hens cell to cell over the plots (never a lane, pond or landmark; each critter keeps to its own side of the lanes), hoeing, sniffing and pecking at stops, slower in a round; a leak sends them running for the cell of their patch nearest the farmhouse to crouch there 3.5 s, a cleared round makes them hop with arms up; reduced motion holds them still. 2D figures in `folkart.ts`, 3D rigs in `render3d/folk.ts` baked to one draw call per moving part (+56 calls a frame at level 21 D, 520 -> 576). Sandbox `folk()`, `?nofolk`; `tests/hedgerow-farmfolk.test.ts`, `e2e-site/hedgerow-folk.spec.ts`; shots `e2e/screenshots/folk143` (2D/3D, P/D, build and flee). Open: the frame-time line measured on a real budget, P size check, cheer shots)*
 - **Why:** `hedge-l21-2d-D` (300-1080 x 75-890), `hedge-l34-2d-D`: the plots stand static with no one tending them; the field reads as a board, not a place worth defending.
 - **Build:**
   - Farmhands, Bea, a dog and hens (2D sprites and 3D meshes) walk the verges and tend plots in the build phase, never on lane cells, never taking taps.
