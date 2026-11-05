@@ -5,8 +5,15 @@ import { test, expect, type Page } from '@playwright/test'
 // so a real CSP violation wouldn't show up as a console error in this suite). What *is* checkable here,
 // regardless of server headers: a DOM `style="..."` attribute is exactly what that header would block, so
 // this guards the CSP by construction instead of only by the header being right.
+// Custom properties set through the CSSOM (`el.style.setProperty('--x', ...)`, the pattern Tooltip, TutorialCoach,
+// the hand and the seated producers use to pass measured positions to CSS) show up as a style attribute too, but
+// CSP never blocks CSSOM writes; so only a declaration of a real property counts.
 async function inlineStyleCount(page: Page): Promise<number> {
-  return page.evaluate(() => document.querySelectorAll('[style]').length)
+  return page.evaluate(() =>
+    Array.from(document.querySelectorAll('[style]')).filter((el) =>
+      (el.getAttribute('style') ?? '').split(';').some((d) => d.trim() !== '' && !d.trim().startsWith('--')),
+    ).length,
+  )
 }
 
 test('the app never renders a DOM element with an inline style attribute', async ({ page }) => {
