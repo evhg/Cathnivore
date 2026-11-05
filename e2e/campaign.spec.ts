@@ -77,7 +77,9 @@ test('chapter 3 "Growing Season": dismissing the round-5 reveal then reloading b
       else if (await choose.isVisible().catch(() => false)) await choose.click()
       else break
     }
-    await graftButton.click({ force: true })
+    // Clicked on the element itself, not at its centre: in the desktop hand (plan item 149) the fan's next card can
+    // overlap Graft's middle, and a forced click there played Open Stall instead.
+    await graftButton.dispatchEvent('click')
   }
   async function dismissEnemyTurnIfShown() {
     const playback = page.locator('.enemy-turn-playback')
