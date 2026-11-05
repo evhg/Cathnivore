@@ -8,7 +8,7 @@ for (const [event, day, sel, says] of [
   ['festival', '2026-11-10', '.ev-lanterns', 'Bunting up'],
   ['drought', '2026-11-17', '.ev-cracks', 'Not a cloud'],
 ] as const) {
-  test(`the ${event} week dresses every region`, async ({ page }) => {
+  test(`the ${event} week dresses every region`, async ({ page }, testInfo) => {
     await page.clock.setFixedTime(new Date(`${day}T10:00:00Z`))
     await page.goto('/')
     await page.getByText('Quick Game').click()
@@ -26,5 +26,22 @@ for (const [event, day, sel, says] of [
     expect(hit).toBe(false)
     // Cath opens the game on the week's event.
     await expect(page.locator('.table-cath-line, .cath-companion-line').first()).toContainText(says)
+    // At D its ticket is pinned to the table, its rule naming the cheaper kit, clear of every region.
+    if (testInfo.project.name === 'desktop-chromium') {
+      await expect(page.locator('.event-ticket')).toBeVisible()
+      await expect(page.locator('.event-ticket')).toContainText('1 Mark off')
+      const overlap = await page.evaluate(() => {
+        const t = document.querySelector('.event-ticket')!.getBoundingClientRect()
+        const inside = (x: number, y: number, pts: DOMPoint[]) => {
+          let c = false
+          for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) if (pts[i]!.y > y !== pts[j]!.y > y && x < ((pts[j]!.x - pts[i]!.x) * (y - pts[i]!.y)) / (pts[j]!.y - pts[i]!.y) + pts[i]!.x) c = !c
+          return c
+        }
+        const hexes = [...document.querySelectorAll<SVGPolygonElement>('.region-hex > polygon:first-of-type')].map((pg) => [...pg.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(pg.getScreenCTM()!)))
+        for (let x = t.left; x <= t.right; x += 4) for (let y = t.top; y <= t.bottom; y += 4) if (hexes.some((h) => inside(x, y, h))) return true
+        return false
+      })
+      expect(overlap).toBe(false)
+    }
   })
 }

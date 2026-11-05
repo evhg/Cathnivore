@@ -2201,6 +2201,42 @@ html.no-animations .cath-companion .cameo {
   bottom: calc(var(--sp-2) + 6px);
   width: clamp(64px, 8vw, 116px);
 }
+/* Plan item 144: the week's market event, a paper ticket pinned at the table's top right (left of the map's "i"):
+   its name and its rule. From 1240 px (below that the board reaches the corner; a phone has none free yet). */
+.event-ticket {
+  position: absolute;
+  top: var(--sp-2);
+  right: calc(var(--sp-2) + 48px);
+  z-index: var(--z-raised);
+  display: grid;
+  gap: 2px;
+  max-width: 170px;
+  margin: 0;
+  padding: 7px 10px 8px;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--line), 0 3px 6px rgb(var(--shadow-ink) / .18);
+  rotate: 2deg;
+  font-size: var(--fs-small);
+  line-height: 1.2;
+  pointer-events: none;
+}
+.event-ticket b { font-family: var(--font-display); font-size: var(--fs-body); color: var(--soil); }
+.event-ticket::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--clay);
+  box-shadow: 0 1px 0 rgb(var(--shadow-ink) / .3);
+}
+@media (max-width: 1239.98px) {
+  .event-ticket { display: none; }
+}
 /* On a phone the board reaches the foot corners: the crates would only peek out from under it. */
 @media (max-width: 600px) {
   .produce-crates { display: none; }
