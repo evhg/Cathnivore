@@ -1347,10 +1347,10 @@ function flyDailyCard(): void {
 
 /** Critique 2026-11-04 (item 126): "Daily #37 · Wed, Nov 4" may wrap only at a dot, never inside the date. */
 function upNextTitle(title: string): string {
-  return title
-    .split(' · ')
-    .map((part) => escapeText(part).replace(/ /g, '&nbsp;'))
-    .join(' · ')
+  // Plan item 138: the daily's number on its own line and the date with its sky under it, so no line ends on a dot.
+  const parts = title.split(' · ').map((part) => escapeText(part).replace(/ /g, '&nbsp;'))
+  if (parts.length < 2) return parts.join('')
+  return `<span class="unt-head">${parts[0]}</span><span class="unt-rest">${parts.slice(1).join(' · ')}</span>`
 }
 
 // ---- start ------------------------------------------------------------------------------------------

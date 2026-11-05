@@ -34,14 +34,18 @@ test('the Up-next title keeps its date on one line', async ({ page }) => {
   await page.goto('/runnel/?lesson')
   const title = page.locator('#lc-next b')
   await expect(title).toBeVisible()
-  const lines = await title.evaluate((b) => {
-    // The date is the text after the last dot; its glyph boxes share one top.
-    const text = b.firstChild as Text
-    const at = (b.textContent ?? '').lastIndexOf('·')
+  const r = await title.evaluate((b) => {
+    // Plan item 138: the number on its own line, then the date; no line ends on a dot, and the date's glyph boxes
+    // share one top.
+    const rest = b.querySelector('.unt-rest')!
+    const text = rest.firstChild as Text
+    const at = text.data.indexOf('·')
     const range = document.createRange()
-    range.setStart(text, Math.max(0, at + 1))
-    range.setEnd(text, text.length)
-    return new Set([...range.getClientRects()].filter((r) => r.width > 1).map((r) => Math.round(r.top))).size
+    range.setStart(text, 0)
+    range.setEnd(text, at < 0 ? text.length : at)
+    const dateLines = new Set([...range.getClientRects()].filter((q) => q.width > 1).map((q) => Math.round(q.top))).size
+    return { dateLines, head: b.querySelector('.unt-head')?.textContent ?? '' }
   })
-  expect(lines).toBe(1)
+  expect(r.dateLines).toBe(1)
+  expect(r.head).toMatch(/^Daily\s#\d+$/)
 })

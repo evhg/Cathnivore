@@ -3783,3 +3783,11 @@ body[data-mode='practice'] #week-slot {
   .daily-fly { animation: daily-fade 800ms linear both; transform: translate(-50%, -50%); }
   @keyframes daily-fade { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }
 }
+
+/* Plan item 138: Up next's title in two lines, the number then the date, so no line ends on a dangling dot. */
+.lc-next .unt-head,
+.lc-next .unt-rest,
+.daily-fly .unt-head,
+.daily-fly .unt-rest {
+  display: block;
+}
