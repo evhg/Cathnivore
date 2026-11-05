@@ -1773,7 +1773,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `data-event` on the map for every event; dressing in the regions, none meeting a piece; the ticket's rule matches `content`; shots per event at P and D, light and dark.
 - **Size:** 2
 
-## 145. [ ] Site: posters that play *(lane A, in progress)*
+## 145. [x] Site: posters that play *(done 2026-11-05, lane A: `site/src/posterplay.ts` lays a canvas loop over each still, drawn in the key art's 960x600 space and mapped like its object-fit cover: Runnel's river runs and water pulses out of the spring along four channels, a Hedgerow convoy runs the lane under rising '+2' Marks, Cathnivore's four contested regions turn green one by one, NIGHT SHIFT's neon flickers over sheeting rain. /games/ posters and the portfolio's four prints; one `[data-playing]` at a time (hovered or focused, else each in view in turn every 5.2 s, a faded-out print counts as out of view), none off-screen or in a hidden tab, 30 fps, canvases made on first play; it starts 1.5 s after `load`, so the first paint and LCP are untouched, and it rests after 20 s without input (like the portfolio field's idle fix). Reduced motion: stills, no canvas. The key art files are unchanged. `e2e-site/poster-play.spec.ts` at P and D; shots `e2e/screenshots/p145` (`scripts/poster-play-shots.mjs`))*
 - **Why:** `games-D` (110-1330 x 460-660) and `portfolio-D` (790-1345 x 160-690): every poster is a still; nothing shows play happening.
 - **Build:**
   - A poster in view, hovered or focused plays a short loop: Runnel's water filling, a Hedgerow convoy, a Cathnivore region flipping green, NIGHT SHIFT neon and rain (video or canvas, lazy, one at a time, paused off-screen).

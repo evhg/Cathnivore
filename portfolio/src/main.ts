@@ -7,6 +7,7 @@ import { cathSvg } from '../../shared/cath/cath'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { startField } from './hero'
 import { cards, counters, kinetic, pulse, viewTransitionNames, words } from './fx'
+import { startPosterPlay } from '../../site/src/posterplay'
 
 // Every page (the home page and each /work/<id>/ case study) runs this. The HTML is complete without
 // it; this adds the shader field, the kinetic type and the motion.
@@ -42,3 +43,12 @@ if (top) {
   mark()
   window.addEventListener('scroll', mark, { passive: true })
 }
+
+// Plan item 145: the hero's game prints play, one at a time (they take no pointer, so they play in turn).
+startPosterPlay(
+  [...document.querySelectorAll<HTMLElement>('.hero-show .show-card')].flatMap((card) => {
+    const src = card.querySelector('img')?.getAttribute('src') ?? ''
+    const game = (['cathnivore', 'runnel', 'hedgerow', 'nightshift'] as const).find((id) => src.includes(`games-${id}`))
+    return game ? [{ poster: card, art: card, game }] : []
+  }),
+)
