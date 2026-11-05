@@ -1596,20 +1596,44 @@ function layoutLanes(list: HTMLElement): void {
     const door = trail.querySelector<HTMLElement>(".home-art");
     const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [pts[0]![0], -8];
     // Plan item 138: at the turn from row 1 to row 2, and on the way out under the last stop, the lane ran straight
-    // down through that stop's name; it swings round the name's outer side instead (as far as the band allows).
-    const names = [...trail.querySelectorAll<HTMLElement>(".stop .level-name")].map((el) => el.getBoundingClientRect());
-    const round = (r: DOMRect | undefined, side: 1 | -1): [number, number] | null => {
-      if (!r || r.width < 1) return null;
-      const x = side > 0 ? r.right + 12 : r.left - 12;
-      const [px, py] = at(r);
-      const cx = Math.round(((x - box.left) / box.width) * 1000) / 10;
-      return [Math.max(1, Math.min(99, side > 0 ? Math.max(cx, px) : Math.min(cx, px))), py];
+    // down through that stop's name; it swings round the name's outer side instead.
+    // Plan item 177: names are measured by layout offsets (boxIn), not client rects, since the stops pop in scaled
+    // down and a mid-animation read put the detour too close. The detour has two points, at the stop's height and at
+    // the name's foot, so the curve turns round the plate instead of cutting its corner. Where the band has no room
+    // outside the name (an upright phone's first column), the name steps inward (`--nudge-x`), its tie line kept on
+    // its flag, so the lane passes outside it.
+    const tb = trail.getBoundingClientRect();
+    const nameEls = [...trail.querySelectorAll<HTMLElement>(".stop .level-name")];
+    for (const n of nameEls) n.style.removeProperty("--nudge-x");
+    const LANE = 10; // half the lane's verge (17 px) plus a little air
+    const toX = (x: number) => Math.round(((x - box.left) / box.width) * 1000) / 10;
+    const toY = (y: number) => Math.round(((y - box.top) / box.height) * 1000) / 10;
+    const round = (el: HTMLElement | undefined, flag: [number, number] | undefined, side: 1 | -1): [number, number][] => {
+      if (!el || !flag || el.offsetWidth < 1) return [];
+      let r = boxIn(el, trail);
+      const room = side > 0 ? box.right - (tb.left + r.right) : tb.left + r.left - box.left;
+      const need = 12 + LANE;
+      if (room < need) {
+        const shift = Math.ceil(need - room);
+        // As far as the gap to the next name in its row allows, never onto it.
+        const row = nameEls.filter((o) => o !== el).map((o) => boxIn(o, trail)).filter((o) => o.top < r.bottom && r.top < o.bottom);
+        const gap = side > 0 ? r.left - Math.max(0, ...row.filter((o) => o.right <= r.left + 1).map((o) => o.right)) : Math.min(trail.offsetWidth, ...row.filter((o) => o.left >= r.right - 1).map((o) => o.left)) - r.right;
+        const step = Math.min(shift, Math.floor(gap - 4));
+        if (step > 0) {
+          el.style.setProperty("--nudge-x", `${-side * step}px`);
+          r = { ...r, left: r.left - side * step, right: r.right - side * step };
+        }
+      }
+      const x = toX(side > 0 ? tb.left + r.right + 12 : tb.left + r.left - 12);
+      const cx = Math.max(1, Math.min(99, side > 0 ? Math.max(x, flag[0]) : Math.min(x, flag[0])));
+      return [
+        [cx, flag[1]],
+        [cx, toY(tb.top + r.bottom)],
+      ];
     };
     const detours: Array<[number, [number, number]]> = [];
-    const turn = pts.length > 5 ? round(names[4], 1) : null;
-    if (turn) detours.push([5, turn]);
-    const out = svg.dataset.exit && pts.length === 10 ? round(names[9], -1) : null;
-    if (out) detours.push([10, out]);
+    if (pts.length > 5) for (const q of round(nameEls[4], pts[4], 1)) detours.push([5, q]);
+    if (svg.dataset.exit && pts.length === 10) for (const q of round(nameEls[9], pts[9], -1)) detours.push([10, q]);
     // Plan item 153: the lane runs on out of the act through the field gate in the hedge at its foot.
     const li = svg.closest<HTMLElement>("li.act");
     if (svg.dataset.exit && li?.querySelector(".act-hedge")) {

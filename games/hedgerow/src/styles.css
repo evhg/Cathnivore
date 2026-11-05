@@ -3946,6 +3946,10 @@ img.act-scene {
   background: color-mix(in srgb, var(--soil) 45%, transparent);
   pointer-events: none;
 }
+/* Plan item 177: a name with no room outside it for the lane steps inward (map.ts sets --nudge-x); its tie line
+   stays on its own flag. */
+.node .level-name { translate: var(--nudge-x, 0) 0; }
+.node .level-name[data-drop]::before { left: calc(50% - var(--nudge-x, 0px)); }
 /* Banners stay inside their own column, so neighbours never touch. */
 .node .level-name { box-sizing: border-box; max-width: 100%; overflow-wrap: break-word; }
 @media (max-width: 420px) {
