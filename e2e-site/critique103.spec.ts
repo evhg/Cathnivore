@@ -30,10 +30,13 @@ test('Cathnivore game: no playable action card cuts its label', async ({ page })
     await page.goto('/cathnivore/')
     await page.getByText('Quick Game').click()
     const adv = page.getByRole('button', { name: 'Advanced' })
-    if (await adv.isVisible()) await adv.click()
+    // isVisible() doesn't wait: let the setup render before asking whether the seed is folded behind the chip.
+    await page.getByLabel('Seed (optional)').waitFor({ state: 'attached' })
+    if ((await adv.isVisible()) && (await adv.getAttribute('aria-expanded')) !== 'true') await adv.click()
     await page.getByLabel('Seed (optional)').fill(seed)
     await page.getByRole('button', { name: 'Start' }).click()
-    const labels = page.locator('.actions .action-item > button:not(:disabled) .action-label')
+    // Plan item 149: on a big desktop the playable cards are the hand at the table's edge, not the Actions list.
+    const labels = page.locator(':is(.actions, .table-hand) .action-item > button:not(:disabled) .action-label')
     await expect(labels.first()).toBeAttached({ timeout: 15_000 })
     const cut = await labels.evaluateAll((els) =>
       els
