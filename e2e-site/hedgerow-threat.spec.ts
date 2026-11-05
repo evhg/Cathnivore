@@ -27,6 +27,17 @@ for (const level of [3, 12, 21]) {
       const b = document.getElementById('bubble')
       if (b) b.hidden = true
     })
+    // Plan item 171: an upright phone docks her line over the tray instead (hedgerow-catdock.spec).
+    if ((page.viewportSize()?.width ?? 0) < 600) {
+      await expect(page.locator('#cath-dock-line')).not.toBeEmpty()
+      await expect(page.locator('#cath-say')).toBeHidden()
+      await page.evaluate(() => {
+        const h = (window as unknown as { hedgerow: Hg }).hedgerow
+        h.sendWave(h.game())
+      })
+      await expect(page.locator('#cath-dock')).toBeHidden()
+      return
+    }
     await expect.poll(async () => (await say(page))?.text ?? '').not.toBe('')
     const s = (await say(page))!
     await expect(page.locator('#cath-say')).toBeVisible()
@@ -73,6 +84,7 @@ test('level 23: the round ticket is a poster: few words, big trait icons, a stam
     if (b) b.hidden = true
   })
   if (wide) await expect(page.locator('#cath-say')).toContainText('air')
+  else await expect(page.locator('#cath-dock-line')).toContainText('air')
   if (wide) {
     // The words a sighted player reads on the card (the stub's screen-reader copy aside).
     const words = await ticket.evaluate((el) => {

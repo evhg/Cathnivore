@@ -266,6 +266,9 @@ const ui = {
   bubbleFace: $<HTMLElement>("bubble-face"),
   bubbleText: $<HTMLElement>("bubble-text"),
   cathSay: $<HTMLElement>("cath-say"),
+  cathDock: $<HTMLElement>("cath-dock"),
+  cathDockBust: $<HTMLButtonElement>("cath-dock-bust"),
+  cathDockLine: $<HTMLElement>("cath-dock-line"),
   intro: $<HTMLElement>("intro"),
   pausedNote: $<HTMLElement>("paused-note"),
   chooseChip: $<HTMLElement>("choose-chip"),
@@ -3892,6 +3895,79 @@ function adviceLine(g: Game): string {
 /** Plan item 128: a line of hers for a few seconds in place of the advice (the fly-in's closing word). */
 let sayOverride: { text: string; until: number } | null = null;
 
+/** Plan item 171: an upright phone docks her line over the tray instead of on the field. */
+const DOCK_QUERY = matchMedia("(max-width: 599.98px) and (orientation: portrait)");
+/** The line a tap folded away; it stays folded until she says something else. */
+let dockFolded = "";
+/** Once folded, or once the player picks a plot, the dock stays away for that build (`level:wave`), so a new line
+ *  after each tower never covers the tray again mid-build. */
+let dockQuietFor = "";
+let dockText = "";
+let dockFace: CathExpression | null = null;
+// A tap anywhere on the dock folds it away whole, so the tray under it is free (a drag can start at once after).
+const foldDock = () => {
+  dockFolded = dockText;
+  if (game) dockQuietFor = `${game.level.id}:${game.wave}`;
+  syncDockFold();
+};
+ui.cathDock.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  foldDock();
+});
+ui.cathDockBust.addEventListener("click", foldDock);
+function syncDockFold(): void {
+  const folded = !!dockText && dockFolded === dockText;
+  ui.cathDock.toggleAttribute("data-folded", folded);
+}
+
+/** Her face follows the line: a gap nothing answers worries her, a closing word is a smirk, advice is determined. */
+function dockExpression(g: Game, text: string): CathExpression {
+  if (sayOverride?.text === text) return "smirk";
+  const groups = g.level.waves[g.wave];
+  if (groups && gapAdvice(unanswered(g, roundProps(g.level, groups)), g.level.towers, (k) => towerCost(g, k)) === text) return "worried";
+  return "determined";
+}
+
+function syncCathDock(g: Game, text: string): void {
+  const el = ui.cathDock;
+  if (!text) {
+    if (!el.hidden) el.hidden = true;
+    dockText = "";
+    return;
+  }
+  const panel = ui.panel.getBoundingClientRect();
+  // The round drawer open (the panel grown over the field's foot) is the player reading on: she folds away.
+  if (!panel.height || panel.height > 120) {
+    el.hidden = true;
+    if (panel.height) dockQuietFor = `${g.level.id}:${g.wave}`;
+    return;
+  }
+  if (text === dockText && dockFolded === text) return;
+  const fresh = text !== dockText || el.hidden;
+  if (fresh) {
+    dockText = text;
+    ui.cathDockLine.textContent = text;
+    const face = dockExpression(g, text);
+    if (face !== dockFace) {
+      dockFace = face;
+      ui.cathDockBust.innerHTML = cathSvg({ framing: "bust", expression: face, outfit: art(), animate: true });
+    }
+    el.dataset.expression = face;
+    el.hidden = false;
+    syncDockFold();
+    if (!REDUCED) {
+      el.classList.remove("slide");
+      void el.offsetWidth;
+      el.classList.add("slide");
+    }
+  }
+  // Over the tray (never the field), under the round drawer's handle so that stays a tap away.
+  const handle = ui.panel.querySelector(".drawer-handle")?.getBoundingClientRect();
+  const top = Math.max(panel.top, handle && handle.height ? handle.bottom + 1 : 0);
+  el.style.setProperty("--dock-top", `${Math.round(top)}px`);
+  el.style.setProperty("--dock-h", `${Math.round(Math.max(66, panel.bottom - top))}px`);
+}
+
 function syncCathSay(g: Game, now: number): void {
   const el = ui.cathSay;
   const quiet =
@@ -3901,7 +3977,12 @@ function syncCathSay(g: Game, now: number): void {
     debriefGhost.remove();
     debriefGhost = null;
   }
-  const text = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
+  const said = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
+  const docked = DOCK_QUERY.matches && !document.documentElement.hasAttribute("data-keyart");
+  const build = `${g.level.id}:${g.wave}`;
+  if (docked && g.phase === "build" && (!!selected || posting || aiming)) dockQuietFor = build;
+  syncCathDock(g, docked && dockQuietFor !== build ? said : "");
+  const text = docked ? "" : said;
   if (!text) {
     if (!el.hidden) el.hidden = true;
     sayShown = null;

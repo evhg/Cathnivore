@@ -23,8 +23,12 @@ test('the fly-in traces the lanes in 3 s or less, then Cath names the threat', a
   })
   expect(ms).toBeLessThanOrEqual(3000)
   // Her closing word comes from where she stands on the field, placed off the empty plots (item 120's bounds).
-  await expect(page.locator('#cath-say')).toBeVisible()
-  await expect(page.locator('#cath-say')).toContainText(/gate/i)
+  // Plan item 171: an upright phone docks her line over the tray (hedgerow-catdock.spec), off the field.
+  const docked = (page.viewportSize()?.width ?? 0) < 600
+  const said = page.locator(docked ? '#cath-dock-line' : '#cath-say')
+  await expect(said).toBeVisible()
+  await expect(said).toContainText(/gate/i)
+  if (!docked) {
   const cover = await page.evaluate(() => {
     type B = { x: number; y: number; w: number; h: number }
     const s = (window as unknown as { hedgerow: { cathSay(): { box: B; empty: B[] } | null } }).hedgerow.cathSay()!
@@ -32,6 +36,7 @@ test('the fly-in traces the lanes in 3 s or less, then Cath names the threat', a
     return s.empty.reduce((n, p) => n + on(s.box, p), 0) / (s.box.w * s.box.h)
   })
   expect(cover).toBeLessThanOrEqual(hasTouch ? 0.3 : 0.15)
+  }
   // Seen once: a reload starts the level without it.
   await page.reload()
   await page.waitForTimeout(1500)

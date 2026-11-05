@@ -673,6 +673,95 @@ button {
   }
 }
 
+/* ---- plan item 171: on an upright phone her advice docks over the tray, beside her 64 px bust ----
+   main.ts lays it over the panel's box (--dock-top, --dock-h), never over the field; a tap folds it away
+   whole and the tray under it is free again, until she says something new. */
+.cath-dock {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  top: var(--dock-top, auto);
+  height: var(--dock-h, 80px);
+  z-index: var(--z-panel);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1px 10px 1px 8px;
+  border-radius: 18px;
+  background: var(--paper-shade);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 18%, transparent);
+  pointer-events: none;
+}
+.cath-dock[data-folded] {
+  display: none;
+}
+.cath-dock[hidden] {
+  display: none;
+}
+.cath-dock-bust {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-hi);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--line) 22%, transparent);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.cath-dock-bust svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cath-dock-line {
+  position: relative;
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 8px 12px 9px;
+  border-radius: 14px;
+  background: var(--paper-hi);
+  color: var(--line);
+  border: 2px solid var(--line);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--line) 22%, transparent), 0 8px 18px color-mix(in srgb, var(--line) 28%, transparent);
+  font: 600 var(--fs-small) / 1.3 var(--font-voice);
+  text-wrap: pretty;
+  cursor: pointer;
+  pointer-events: auto;
+}
+/* The tail points left, at her mouth. */
+.cath-dock-line::after {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  background: var(--paper-hi);
+  border: 2px solid var(--line);
+  border-width: 0 0 2px 2px;
+  transform: rotate(45deg);
+}
+.cath-dock.slide .cath-dock-line {
+  animation: dock-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes dock-in {
+  from {
+    opacity: 0;
+    translate: -14px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cath-dock.slide .cath-dock-line {
+    animation: none;
+  }
+}
+[data-keyart] .cath-dock {
+  display: none;
+}
+
 /* ---- plan item 64: a new enemy as a page of Cath's field guide ----
    The field dims and holds; a ruled notebook page carries the vehicle's sketch, its traits and the towers in
    this level's kit that reach it (lit) or don't (greyed). Paper and ink are the story stage's, fixed in both

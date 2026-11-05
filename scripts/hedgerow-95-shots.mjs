@@ -22,7 +22,7 @@ for (const [s, opts] of Object.entries(SIZES)) {
     localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: seen, tips: { move: true, early: true, build: true } }))
   })
   for (const lv of levels.length ? levels : [21, 12, 3]) {
-    for (const mode of ['2d', '3d']) {
+    for (const mode of (process.env.MODES ?? "2d,3d").split(",")) {
       await p.goto(`${base}/hedgerow/?sandbox=1&level=${lv}${mode === '2d' ? '&2d' : ''}`)
       await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
       await p.waitForTimeout(mode === '2d' ? 1500 : 6000)

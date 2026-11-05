@@ -578,7 +578,7 @@ test.describe('Hedgerow', () => {
     // Every control is still on screen.
     for (const id of ['#btn-send', '#btn-pie', '#btn-menu']) {
       const b = await page.locator(id).boundingBox()
-      expect(b && b.y >= 0 && b.y + b.height <= 844).toBe(true)
+      expect(b && b.y >= 0 && b.y + b.height <= 844, `${id} ${JSON.stringify(b)}`).toBe(true)
     }
     expect(errors).toEqual([])
   })
@@ -740,6 +740,12 @@ test.describe('Hedgerow', () => {
     await page.reload()
     const tray = page.locator('#panel .tray-tower[data-kind="scarecrow"]')
     await expect(tray).toBeVisible({ timeout: 10_000 })
+    // Plan item 171: on an upright phone Cath's advice docks over the tray; a tap folds it away.
+    if (w < 600) {
+      await expect(page.locator('#cath-dock')).toBeVisible()
+      await page.locator('#cath-dock-line').click()
+      await expect(page.locator('#cath-dock')).toBeHidden()
+    }
     // The tray is a real row of towers, not a squeezed sliver, and the preview chips under it aren't crushed.
     expect((await page.locator('#panel .tray').boundingBox())!.height).toBeGreaterThanOrEqual(48)
     const chips = await page.locator('#panel .preview-row').boundingBox()
