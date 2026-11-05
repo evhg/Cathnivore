@@ -19,7 +19,8 @@ export function depotSvg(): string {
     `<rect x="6" y="42" width="88" height="10" fill="#ef7a2a"/>` +
     `<text x="50" y="50" text-anchor="middle" font-size="7.2" font-weight="800" fill="#fff" font-family="sans-serif" letter-spacing="1">HOLLOWELL</text>` +
     // roller door
-    `<rect x="28" y="58" width="44" height="36" rx="2" fill="#c9d0d7"/>${ribs}` +
+    `<rect x="28" y="58" width="44" height="36" fill="#2a2f36"/>` +
+    `<g class="depot-door"><rect x="28" y="58" width="44" height="36" rx="2" fill="#c9d0d7"/>${ribs}</g>` +
     // departures board on the left wall
     `<rect x="9" y="56" width="17" height="22" rx="2" fill="#1d2228"/>` +
     // balcony rail on the right

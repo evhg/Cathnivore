@@ -4712,3 +4712,15 @@ img.act-scene {
 @media (prefers-reduced-motion: reduce) {
   .depot-rep { animation: none !important; }
 }
+/* Plan item 157: the roller door rolls up as the round's convoy pulls out; in 3D the rep leans over the depot's roof. */
+.depot-door { transform-box: fill-box; transform-origin: 50% 0; transition: transform 500ms ease; }
+.depot[data-door-open] .depot-door { transform: scaleY(0.12); }
+.depot-3d {
+  width: var(--size);
+  height: calc(var(--size) * 1.25);
+  margin: calc(var(--size) * -1.1) 0 0 calc(var(--size) * -0.5);
+}
+.depot-3d .depot-rep { left: 0; top: 0; width: 100%; height: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .depot-door { transition: none; }
+}

@@ -4285,7 +4285,7 @@ let depotKey = "";
 let depotLevel = -1;
 function syncDepots(g: Game): void {
   const layer0 = document.getElementById("depots");
-  const show = !!renderer && !is3D(renderer) && g.phase !== "won" && g.phase !== "lost";
+  const show = !!renderer && g.phase !== "won" && g.phase !== "lost";
   if (!show) {
     layer0?.remove();
     depotKey = "";
@@ -4304,6 +4304,42 @@ function syncDepots(g: Game): void {
     depotMood = repMood(depotLeaksAtStart, g.leaks ?? 0);
     depotJudged = g.wave;
     depotLeaksAtStart = g.leaks ?? 0;
+  }
+  // The door rolls up as a round's convoy pulls out of it (the first 2.5 s of a wave).
+  const doorOpen = g.phase === "wave" && g.waveClock < 2.5;
+  if (renderer && is3D(renderer)) {
+    // 3D: the depot is in the world (buildDepot); its rep leans out over its roof as a small overlay.
+    const canvas3 = ui.stage.querySelector("#canvas")!.getBoundingClientRect();
+    const stage3 = ui.stage.getBoundingClientRect();
+    const reps = renderer
+      .depotRects()
+      .map((d, i) => ({ x: canvas3.left - stage3.left + d.x + d.w / 2, y: canvas3.top - stage3.top + d.y, w: d.w, lane: i }))
+      .filter((d) => d.x > 0 && d.x < canvas3.width && d.y > 0 && d.y < canvas3.height);
+    const key3 = `3d|${depotMood}|${reps.map((d) => `${Math.round(d.x)},${Math.round(d.y)}`).join(";")}`;
+    if (key3 === depotKey) return;
+    depotKey = key3;
+    let layer3 = layer0;
+    if (!layer3) {
+      layer3 = document.createElement("div");
+      layer3.id = "depots";
+      layer3.className = "depots";
+      layer3.setAttribute("aria-hidden", "true");
+      ui.stage.querySelector("#fx-layer")?.before(layer3);
+    }
+    layer3.replaceChildren(
+      ...reps.map((d) => {
+        const el = document.createElement("div");
+        el.className = "depot depot-3d";
+        el.dataset.depot = String(d.lane);
+        el.dataset.repMood = depotMood;
+        el.style.setProperty("--x", `${Math.round(d.x)}px`);
+        el.style.setProperty("--y", `${Math.round(d.y)}px`);
+        el.style.setProperty("--size", `${Math.round(Math.max(28, Math.min(56, d.w * 0.45)))}px`);
+        el.innerHTML = `<span class="depot-rep">${repSvg(depotMood)}</span>`;
+        return el;
+      }),
+    );
+    return;
   }
   const r = renderer as Renderer;
   const L = g.level;
@@ -4340,7 +4376,7 @@ function syncDepots(g: Game): void {
     }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
-  const key = `${L.id}|${size}|${depotMood}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count}`).join(";")}`;
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;
   let layer = layer0;
@@ -4357,6 +4393,7 @@ function syncDepots(g: Game): void {
       el.className = "depot";
       el.dataset.depot = String(sp.lane);
       el.dataset.repMood = depotMood;
+      el.toggleAttribute("data-door-open", doorOpen);
       el.style.setProperty("--x", `${Math.round(sp.x)}px`);
       el.style.setProperty("--y", `${Math.round(sp.y)}px`);
       el.style.setProperty("--size", `${size}px`);

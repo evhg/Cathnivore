@@ -47,4 +47,11 @@ test('the depot stands by the gate with the next round on its board, and the rep
   await expect(depot).toHaveAttribute('data-rep-mood', 'rattled')
   await round(true)
   await expect(depot).toHaveAttribute('data-rep-mood', 'gleeful')
+  // Go: the roller door rolls up as the convoy pulls out.
+  await expect(depot).not.toHaveAttribute('data-door-open', '')
+  await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: { game: () => unknown; sendWave: (g: unknown, f?: boolean) => void } }).hedgerow
+    hg.sendWave(hg.game(), true)
+  })
+  await expect(page.locator('[data-depot]').first()).toHaveAttribute('data-door-open', '')
 })
