@@ -1242,7 +1242,8 @@ function startLesson(): void {
         markLessonCard(LESSON_STEPS.length)
         host.say('delighted', LESSON_DONE)
         ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
-        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 2600)
+        // Plan item 134: on to today's daily in about a second (it waited 2.6 s).
+        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1200)
       } else showLessonStep()
     },
     onToggleLock: () => flashHint('No need to pin anything yet. Tap the glowing tile.'),
@@ -1262,7 +1263,34 @@ function markLessonTarget(index: number): void {
   tiles.forEach((t, i) => t.classList.toggle('lesson-target', i === index))
   if (index >= 0) tiles[index]?.focus({ preventScroll: true })
   placeValleyCath()
+  placeLessonHand()
 }
+
+/** Plan item 134: Cath's hand (her jacket's green at the cuff) taps the lesson's glowing tile, so the lesson shows
+ *  rather than tells. Its fingertip sits on the tile's centre; it goes when the lesson does. */
+const HAND_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M30 60c-7-1-12-6-14-12l-4-11c-1-3 1-5 3-5s3 1 4 3l3 6V12c0-3 2-5 4-5s4 2 4 5v14c0-2 2-4 4-4s4 2 4 4v2c0-2 2-4 4-4s4 2 4 4v3c0-2 2-3 4-3s3 2 3 4v12c0 10-6 17-15 17z" fill="#fbe3d2" stroke="#3b2a20" stroke-width="2.4" stroke-linejoin="round"/><path d="M27 54h18l1 10H26z" fill="#5f7a3a" stroke="#3b2a20" stroke-width="2.4" stroke-linejoin="round"/></svg>'
+function placeLessonHand(): void {
+  const stage = document.querySelector<HTMLElement>('.stage')
+  const target = ui.board.querySelector<SVGGElement>('.tiles > g.cell.lesson-target')
+  let hand = document.getElementById('lesson-hand')
+  if (!stage || !target || lessonStep < 0) {
+    hand?.remove()
+    return
+  }
+  if (!hand) {
+    hand = document.createElement('span')
+    hand.id = 'lesson-hand'
+    hand.className = 'lesson-hand'
+    hand.setAttribute('aria-hidden', 'true')
+    hand.innerHTML = HAND_SVG
+    stage.append(hand)
+  }
+  const st = stage.getBoundingClientRect()
+  const t = target.getBoundingClientRect()
+  hand.style.setProperty('--hx', `${Math.round(t.left + t.width / 2 - st.left)}px`)
+  hand.style.setProperty('--hy', `${Math.round(t.top + t.height / 2 - st.top)}px`)
+}
+addEventListener('resize', () => placeLessonHand())
 const escapeText = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`)
 
 /** Plan item 77: the lesson card ticks off the taps done and lights the one to do now. */
@@ -1337,7 +1365,8 @@ function shotSolve(): void {
     .map((_, i) => i)
     .filter((i) => {
       const c = puzzle.cells[i]!
-      return c.kind !== 'stone' && c.kind !== 'spring' && !c.fixed && !c.reservoir && rotateMask(c.solved, 1) !== c.solved
+      // Not a bridge: turned, its crossing channel can still carry water, so it would not be the dry last tile.
+      return c.kind !== 'stone' && c.kind !== 'spring' && !c.fixed && !c.reservoir && !c.bridge && rotateMask(c.solved, 1) !== c.solved
     })
     .sort((a, b) => near(a) - near(b))[0]
   puzzle.cells.forEach((c, i) => {

@@ -3107,6 +3107,36 @@ body[data-mode='practice'] #week-slot {
 .lc-next {
   display: none;
 }
+/* Plan item 134: a step done is stamped, the tick pressing in. */
+.lc-steps li.done .lc-dot {
+  animation: lc-stamp 380ms cubic-bezier(.2, .9, .3, 1) both;
+}
+@keyframes lc-stamp {
+  0% { transform: scale(1.8) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(0.92) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+/* Plan item 134: Cath's hand shows the tap: it presses on the glowing tile and lifts, over and over. */
+.lesson-hand {
+  position: absolute;
+  left: var(--hx, 0);
+  top: var(--hy, 0);
+  width: 64px;
+  height: 64px;
+  margin: -8px 0 0 -18px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 4px color-mix(in srgb, var(--ink) 30%, transparent));
+  animation: lesson-tap 1300ms ease-in-out infinite;
+}
+.lesson-hand svg { display: block; width: 100%; height: 100%; }
+@keyframes lesson-tap {
+  0%, 100% { transform: translate(14px, 18px) scale(1); }
+  40% { transform: translate(0, 0) scale(0.92); }
+  55% { transform: translate(0, 0) scale(0.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lc-steps li.done .lc-dot, .lesson-hand { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .lc-steps li { transition: none; }
 }
