@@ -1953,7 +1953,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 `[data-cath-figure]` 120 px or taller inside the board's frame, meeting no tile; `data-expression` changes on a solve in e2e; bubble text 15 px at 4.5:1; shots P and D.
 - **Size:** 2
 
-## 166. [ ] The bugs from the 2026-11-05 16:05 critique, fixed as one batch
+## 166. [ ] The bugs from the 2026-11-05 16:05 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1105e`; points already open in 91, 126, 138 and 161 left out)
   - **Cathnivore:** D game: the Supply card's leaf badge (955-980 x 735-760) over the Open Stall card; Hollowell plan cards' small print about 11 px (360-460 x 160-175). P game: Cath's bubble (80-375 x 540-590) over the Oakvale and Shingle Bay hexes; the Tomas bust (320-380 x 480-545) over the Shingle Bay hex. D title: the crates (500-580 x 700-765) on the chalk board's edge; 'NEXT #5' (1318-1398 x 752-845) off the table. P title: the 'No sale yet' ticket (15-175 x 425-470) across Cath's waist. D setup: 'OPEN' over Start about 10 px. P setup: 'The Long Coast' in 3 lines (195-250 x 712-755).
   - **Runnel:** P: the wheelbarrow clipped by the left edge (0-30 x 435-455). D: a dark smudge across the third lesson tile (1010-1165 x 580-660).
