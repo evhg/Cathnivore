@@ -1987,7 +1987,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every List print has a non-empty `.rumour` (12 px or more) and a distinct `data-district`; 4 string paths; a focused print scales 1.08 or more; under reduced motion no movement; shots P, L and D.
 - **Size:** 2
 
-## 170. [ ] Runnel: the lesson framed close, then a pull-back to the daily *(lane B, in progress)*
+## 170. [x] Runnel: the lesson framed close, then a pull-back to the daily *(done 2026-11-05, lane B, 63c7cce: at D the lesson tiles already spanned about 62% of the valley with her bubble by her; on an upright phone her line leaves the card for a bubble beside her standing figure (the card collapses in its grid row, so the valley takes the room; a line that fits and then loses its room stops trying after three misses). A ring as the water reaches each tile; the daily pulls back from scale 1.6 over 900 ms inside the valley's frame, 1 s after the solve; reduced motion cuts. `e2e-site/runnel-lesson-close.spec.ts` at P and D; shots `t170`)*
 - **Why:** `runnel-D`: the four lesson tiles fill under a third of the valley (575-1220 x 120-735); `runnel-P`: Cath's bubble (15-375 x 188-270) is about 400 px above her (25-110 x 640-750), its tail pointing at nothing.
 - **Build:**
   - The lesson frames its tiles close with Cath beside them, the bubble anchored to her.
