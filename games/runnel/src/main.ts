@@ -17,6 +17,7 @@ import { boardSky, skyArt } from './sky'
 import { lightVars, sceneLight, valleyLayers } from './valley'
 import { weekBeds, weekStrip } from './weekstrip'
 import { SPOTS, featureSvg, firstSpot, weekFeatures } from './weekvalley'
+import { FOLK, FOLK_SPOTS, folkStart, folkSvg } from './valleyfolk'
 import {
   arcLabel,
   computeFlow,
@@ -78,7 +79,10 @@ const ui = {
   toast: $<HTMLParagraphElement>('toast'),
 }
 
-const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'), () => placeValleyCath())
+const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'), () => {
+  placeValleyCath()
+  placeValleyFolk()
+})
 $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
@@ -277,7 +281,8 @@ function placeWeekValley(): void {
       }),
     )
   }
-  const st = stage.getBoundingClientRect()
+  // The layer's own box: it sits inside the stage's frame, and the % positions are of the layer, not the stage.
+  const st = layer.getBoundingClientRect()
   if (!st.width) return
   const blocks = [...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .valley-say:not([hidden])')]
     .map((e) => e.getBoundingClientRect())
@@ -302,12 +307,78 @@ function placeWeekValley(): void {
   }
 }
 
+// Plan item 151: the valley's people, each at the first spot from its own whose standing box and walk meet no tile,
+// Cath, her line, the garden, the spring house, a keep or another folk. One that fits nowhere stays home (hidden).
+function placeValleyFolk(): void {
+  const stage = document.querySelector<HTMLElement>('.stage')
+  if (!stage) return
+  let layer = document.getElementById('valley-folk')
+  if (!layer) {
+    layer = document.createElement('div')
+    layer.id = 'valley-folk'
+    layer.className = 'valley-folk'
+    layer.setAttribute('aria-hidden', 'true')
+    ;(document.getElementById('valley-keeps') ?? stage.querySelector('svg.valley'))?.after(layer)
+    layer.replaceChildren(
+      ...FOLK.map((f) => {
+        const el = document.createElement('span')
+        el.className = 'valley-folk-one'
+        el.dataset.valleyFolk = f.kind
+        el.dataset.id = f.id
+        el.style.setProperty('--range', `${f.range}px`)
+        el.innerHTML = folkSvg(f.kind)
+        return el
+      }),
+    )
+  }
+  // The layer's own box: it sits inside the stage's frame, and the % positions are of the layer, not the stage.
+  const st = layer.getBoundingClientRect()
+  if (!st.width) return
+  const blocks = [
+    ...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .farm-sign, .valley-say:not([hidden]), .valley-feature:not([hidden])'),
+  ]
+    .map((e) => e.getBoundingClientRect())
+    .filter((r) => r.width > 0)
+  const taken: DOMRect[] = []
+  FOLK.forEach((f, i) => {
+    const el = layer!.querySelector<HTMLElement>(`[data-id="${f.id}"]`)
+    if (!el) return
+    // Measured shown: a hidden one reads 0 wide, and a guess would keep it hidden for good.
+    el.hidden = false
+    const size = el.offsetWidth || 40
+    // A phone's frame is half as wide, so each walk is half as long; where a walk won't fit anywhere, a shorter one
+    // (or standing still) is tried before staying home.
+    const full = st.width < 600 ? Math.round(f.range / 2) : f.range
+    let placed = false
+    for (const range of [full, Math.round(full / 2), 0]) {
+      for (let k = 0; k < FOLK_SPOTS.length && !placed; k++) {
+        const [px, py] = FOLK_SPOTS[(folkStart(i) + k) % FOLK_SPOTS.length]!
+        const x = st.left + (st.width * px) / 100, y = st.top + (st.height * py) / 100
+        const box = new DOMRect(x - size / 2 - range, y - size, size + 2 * range, size)
+        if (box.left < st.left || box.right > st.right || box.bottom > st.bottom) continue
+        const meets = (r: DOMRect) => r.left < box.right && box.left < r.right && r.top < box.bottom && box.top < r.bottom
+        if (blocks.some(meets) || taken.some(meets)) continue
+        taken.push(box)
+        el.style.setProperty('--vx', `${px}%`)
+        el.style.setProperty('--vy', `${py}%`)
+        el.style.setProperty('--range', `${range}px`)
+        placed = true
+      }
+      if (placed) break
+    }
+    el.hidden = !placed
+  })
+}
+
 // The board settles its size after the first layout (fonts, the phone's frame): re-place the keeps when it does.
 if (typeof ResizeObserver !== 'undefined') {
   let raf = 0
   const ro = new ResizeObserver(() => {
     cancelAnimationFrame(raf)
-    raf = requestAnimationFrame(placeWeekValley)
+    raf = requestAnimationFrame(() => {
+      placeWeekValley()
+      placeValleyFolk()
+    })
   })
   const watch = () => {
     const b = document.getElementById('board')
@@ -576,7 +647,12 @@ function render(): void {
   crops?.toggleAttribute('data-sprouting', game.taps > 0 || flow.solved)
   // Plan item 106: a solved board waters the garden: its beds go dark and wet (the e2e reads `data-watered`).
   document.querySelector('.bea-garden')?.setAttribute('data-watered', String(flow.solved))
+  // Plan item 151: water on a field sets the farmer to work; a solve makes the whole valley cheer.
+  const folk = document.getElementById('valley-folk')
+  folk?.toggleAttribute('data-working', [...flow.wet].some((i) => puzzle.cells[i]!.kind === 'field'))
+  folk?.toggleAttribute('data-cheer', flow.solved)
   placeValleyCath()
+  placeValleyFolk()
   if (game.taps > 0) {
     const fields = [...flow.wet].filter((i) => puzzle.cells[i]!.kind === 'field').length
     host.react(flow.wet.size / playable, flow.solved, fields, flow.leaks.size > 0)

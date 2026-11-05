@@ -3832,3 +3832,55 @@ body[data-mode='practice'] #week-slot {
 @media (max-width: 1099.98px) {
   .valley-feature { width: 40px; height: 40px; }
 }
+
+/* Plan item 151: the valley's people. Each paces its spot (--range either side), the sheep graze, the cart's wheel
+   turns; water on a field sets the farmer hoeing, and a solve makes everyone hop. */
+.valley-folk {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.valley-folk-one {
+  position: absolute;
+  left: var(--vx, 0);
+  top: var(--vy, 0);
+  width: 64px;
+  height: 64px;
+  margin: -64px 0 0 -32px;
+  filter: drop-shadow(0 2px 1px color-mix(in srgb, var(--ink) 25%, transparent));
+  animation: folk-pace 11s ease-in-out infinite alternate;
+}
+.valley-folk-one svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.valley-folk-one[data-valley-folk="bea"] { animation-duration: 8s; animation-delay: -3s; }
+.valley-folk-one[data-valley-folk="sheep"] { width: 48px; height: 48px; margin: -48px 0 0 -24px; animation-duration: 17s; }
+.valley-folk-one[data-id="sheep-2"] { animation-delay: -7s; animation-direction: alternate-reverse; }
+.valley-folk-one[data-valley-folk="cart"] { width: 72px; height: 72px; margin: -72px 0 0 -36px; animation-duration: 20s; animation-delay: -5s; }
+@keyframes folk-pace {
+  0%, 8% { translate: calc(var(--range) * -1) 0; scale: 1 1; }
+  46%, 54% { scale: 1 1; }
+  47% { scale: -1 1; }
+  92%, 100% { translate: var(--range) 0; scale: -1 1; }
+}
+.valley-folk-one .folk-body { animation: folk-bob 700ms ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+.valley-folk-one[data-valley-folk="sheep"] .folk-head { animation: folk-graze 4s ease-in-out infinite; transform-box: fill-box; transform-origin: 0% 0%; }
+.valley-folk-one .folk-wheel { animation: folk-roll 1.6s linear infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+@keyframes folk-bob { to { translate: 0 -1.2px; } }
+@keyframes folk-graze { 0%, 55%, 100% { rotate: 0deg; } 70%, 85% { rotate: 28deg; } }
+@keyframes folk-roll { to { rotate: 360deg; } }
+/* Water on a field: the farmer stops pacing and works the hoe. */
+.valley-folk[data-working] [data-valley-folk="farmer"] { animation-play-state: paused; }
+.valley-folk[data-working] [data-valley-folk="farmer"] .folk-tool { animation: folk-hoe 900ms ease-in-out infinite; transform-box: fill-box; transform-origin: 0% 0%; }
+@keyframes folk-hoe { 0%, 100% { rotate: 0deg; } 45% { rotate: -22deg; } }
+/* A solve: everyone hops, Bea waves her flower. */
+.valley-folk[data-cheer] .valley-folk-one .folk-body { animation: folk-hop 520ms cubic-bezier(.3, 0, .4, 1) 4 alternate; }
+.valley-folk[data-cheer] [data-valley-folk="bea"] .folk-arm { animation: folk-wave 380ms ease-in-out 6 alternate; transform-box: fill-box; transform-origin: 0% 100%; }
+@keyframes folk-hop { to { translate: 0 -7px; } }
+@keyframes folk-wave { to { rotate: -40deg; } }
+@media (max-width: 1099.98px) {
+  .valley-folk-one { width: 32px; height: 32px; margin: -32px 0 0 -16px; }
+  .valley-folk-one[data-valley-folk="sheep"] { width: 26px; height: 26px; margin: -26px 0 0 -13px; }
+  .valley-folk-one[data-valley-folk="cart"] { width: 38px; height: 38px; margin: -38px 0 0 -19px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .valley-folk-one, .valley-folk-one * { animation: none !important; }
+}

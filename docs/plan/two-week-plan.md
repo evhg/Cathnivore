@@ -1826,7 +1826,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-map-cath]` 120 px or taller at D and 64 at P, inside its chapter's region; each `[data-chapter-art]` an SVG of 5 or more shapes; shots P and D, light and dark.
 - **Size:** 2
 
-## 151. [ ] Runnel: a valley people live in *(lane B, in progress)*
+## 151. [ ] Runnel: a valley people live in *(lane B, in progress)* *(slice 1, 2026-11-05 06:22 lane B: a farmer with a hoe, Bea with a flower, two sheep and her cart (`valleyfolk.ts`) pace the valley's foot and sides, each at the first spot of a ring of 25 whose standing box and walk meet no tile, Cath, her line, the garden, the spring house, a sign, a keep or another folk (a shorter walk or standing still before staying home); water on a field sets `data-tended` on it and the farmer hoeing (`data-working`), a solve makes them hop and Bea wave (`data-cheer`); reduced motion holds them still. Also fixed: item 142's keeps were placed against the stage, not their own layer 14 px inside it. `runnel-valley-folk.spec.ts`; shots P and D, lesson and daily. Open: their own crop sprouting per field, a cheer shot after a solve)*
 - **Why:** `runnel-D` (390-1410 x 230-870), `runnel-P` (0-390 x 300-750): flat, empty fields; nobody cares that the water arrives.
 - **Build:**
   - A farmer, Bea, sheep and a cart on the road walk the valley margins.

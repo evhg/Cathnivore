@@ -602,13 +602,19 @@ export class Board {
         root.classList.toggle('instant', initial)
         // `data-wet` marks when the water is really there (tests, and the CSS for the soaked soil).
         clearTimeout(view.wetTimer)
-        if (delay) view.wetTimer = window.setTimeout(() => (root.dataset.wet = '1'), delay + 70)
-        else root.dataset.wet = '1'
+        // Plan item 151: a watered field is tended (its farmer at work, its crop up).
+        const mark = () => {
+          root.dataset.wet = '1'
+          if (cell.kind === 'field') root.dataset.tended = '1'
+        }
+        if (delay) view.wetTimer = window.setTimeout(mark, delay + 70)
+        else mark()
       } else if (!wet && wasWet) {
         root.style.setProperty('--delay', '0ms')
         root.classList.remove('wet')
         clearTimeout(view.wetTimer)
         delete root.dataset.wet
+        delete root.dataset.tended
       }
       const time = this.time()
       for (const b of view.banks) b.line.classList.toggle('sun', bankSunlit((b.dir + cell.rot) * 60, b.side, time))
