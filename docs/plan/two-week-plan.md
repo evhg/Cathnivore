@@ -1781,7 +1781,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** one `[data-playing]` at a time; none off-screen; LCP within 100 ms of today; gate 1's weight budget kept; shots P and D still match the key art.
 - **Size:** 2
 
-## 146. [ ] The bugs from the 2026-11-05 05:56 critique, fixed as one batch
+## 146. [ ] The bugs from the 2026-11-05 05:56 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `plan1105b`; points already open in items 126, 138 and 139 left out)
   - **Cathnivore:** P game: the next hand card cut by the scroll arrow ('Bu...', 330-390 x 670-770) and its rotated NOT YET label about 9 px; Cath at the phone table about 48 px wide, face about 15 px (10-60 x 505-600). D title: a stray arc on the table edge above 'Win a Daily' (1138-1172 x 760-772; unsure).
   - **Hedgerow:** D menu: a faint dashed bar across the map (145-1295 x 280-285; unsure); act 4's ghosted grey arches behind its banner (0-1440 x 790-900). P menu: the 'Brand Ambassador' label about 55 px under its stop (10-95 x 448-482). 3D l21 D: the frame cuts the bottom plot row and the lane while 70-180 px of grass is empty at the top (90-1070 x 760-890); Cath's 3D face a pale blur (145-235 x 480-570). P field: the fifth seed packet's name and price cut by the scroll arrow (305-390 x 700-770). D l21 2D: 'Lifestyle influencer' wraps inside a one-line pill (1180-1390 x 410-445).
