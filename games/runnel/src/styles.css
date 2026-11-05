@@ -3965,3 +3965,27 @@ body[data-mode='practice'] #week-slot {
 @media (prefers-reduced-motion: reduce) {
   .valley-folk-one, .valley-folk-one * { animation: none !important; }
 }
+
+/* Plan item 158: the almanac page at the top of the stats sheet (on a phone it's where the page lives). The desktop
+   rail's copy is styled in the 1100 px block above; this is the sheet's. */
+.stats-almanac .almanac-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  column-gap: 10px;
+  margin: 4px 0 10px;
+  padding: 10px 12px 8px;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 23px, color-mix(in srgb, var(--ink) 6%, transparent) 23px 24px),
+    var(--paper-2);
+  box-shadow: inset 6px 0 0 color-mix(in srgb, var(--ink) 7%, transparent);
+  text-align: left;
+}
+.stats-almanac .almanac-head > p { grid-column: 1; margin: 0; }
+.stats-almanac .al-kicker { font-size: var(--fs-label, 0.75rem); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+.stats-almanac .al-day { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.05; color: var(--ink); }
+.stats-almanac .al-date { font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--ink); }
+.stats-almanac .almanac-head > .al-note { grid-column: 1 / -1; margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 0.95rem; line-height: 1.3; color: var(--ink); }
+.stats-almanac .al-sky { position: relative; grid-column: 2; grid-row: 1 / 4; align-self: center; margin: 0; width: 128px; height: 64px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 2px var(--paper); rotate: 2deg; }
+.stats-almanac .al-sky-art, .stats-almanac .al-sky-art svg { display: block; width: 100%; height: 100%; }
+.stats-almanac .al-sky figcaption { position: absolute; inset: auto 0 0; padding: 1px 4px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: color-mix(in srgb, var(--paper) 82%, transparent); font-size: var(--fs-label, 0.75rem); font-style: italic; text-align: center; color: var(--ink); }

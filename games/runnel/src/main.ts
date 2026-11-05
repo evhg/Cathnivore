@@ -1098,6 +1098,19 @@ function renderRail(): void {
 
 function showStats(): void {
   const s = dailyStats(data, today)
+  // Plan item 158: on a phone (no rail) the stats sheet opens on the almanac page: the same masthead, date, sky and
+  // Bea's note, copied without its ids.
+  const slot = document.getElementById('stats-almanac')
+  const head = document.getElementById('almanac-head')
+  if (slot && head) {
+    renderRail()
+    const copy = head.cloneNode(true) as HTMLElement
+    copy.removeAttribute('id')
+    // The page's own ids go; the sky's gradient ids stay, renamed so they don't clash with the rail's.
+    for (const el of copy.querySelectorAll('[id]')) if (!el.closest('svg')) el.removeAttribute('id')
+    copy.innerHTML = copy.innerHTML.replace(/sk-g-al/g, 'sk-g-st')
+    slot.replaceChildren(copy)
+  }
   const cells: Array<[string, string]> = [
     [String(s.played), 'dailies solved'],
     [String(s.streak), 'current streak'],
