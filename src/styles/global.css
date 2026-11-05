@@ -2106,7 +2106,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .segmented.mode-picker span.mode-name { display: block; white-space: nowrap; font-size: var(--fs-small); }
   .setup .mode-name small { display: block; font-size: var(--fs-label); color: var(--ink-muted); }
   .setup .mode-art .mode-who { width: 36px; }
-  .setup .mode-tag { font-style: normal; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); line-height: 1; }
+  .setup .mode-tag { font-style: normal; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); line-height: 1; }
   .setup .mode-tag.is-ai { padding: 0 3px; border: 1px solid currentColor; border-radius: 999px; }
 
   /* The producers: a dealt row of upright cards, the two picked lifted in their colours. */
@@ -2186,7 +2186,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .difficulty-sheet dl:has(> div:nth-child(4)) > div { display: flex; align-items: baseline; gap: 6px; }
   .setup .difficulty-sheet dl > div { display: block; padding: 2px 0 0 10px; border-bottom: 0; }
   .setup .difficulty-sheet .is-changed::before { left: 0; top: 9px; width: 6px; height: 6px; margin-top: 0; background: var(--hollowell); }
-  .setup .difficulty-sheet dt { font-size: 0.62rem; }
+  .setup .difficulty-sheet dt { font-size: var(--fs-label); letter-spacing: 0.02em; }
   .setup .difficulty-sheet dd { font-size: var(--fs-label); line-height: 1.2; }
 
   /* Map: three miniature boards on a shelf; the seed folds behind Advanced. */
