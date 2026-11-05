@@ -1485,11 +1485,13 @@ body:has(#dlg-pause[open]) .paused-note {
   background: var(--paper-shade);
   box-shadow: 0 0 0 1.5px var(--ink-3);
 }
+/* Plan item 163: one you can't afford keeps its painted portrait, desaturated, with its price in red. */
 .play .tray-tower:disabled img {
-  opacity: 0.55;
+  opacity: 0.8;
+  filter: grayscale(0.85);
 }
 .play .tray-tower:disabled .build-cost {
-  color: var(--ink-3);
+  color: color-mix(in srgb, var(--clay) 70%, var(--clay-ink));
 }
 .play .build-cost::before {
   width: 12px;
@@ -3957,6 +3959,7 @@ body:has(#dlg-pause[open]) .paused-note {
     padding: 3px 2px 4px;
     /* A long one-word name (Courthouse) on a four-to-a-row packet breaks onto the band's second line. */
     hyphens: auto;
+    font-size: var(--fs-rack);
     background: color-mix(in srgb, var(--band) 30%, var(--paper-hi));
     border-top: 2px solid color-mix(in srgb, var(--band) 75%, var(--ink));
   }

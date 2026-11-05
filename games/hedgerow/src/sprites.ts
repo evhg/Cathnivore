@@ -507,8 +507,20 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
     }
     case "silo": {
       const w = spec === 1 ? 0.24 : 0.18;
-      const body = spec === 0 ? "#6f9a4a" : "#c7ccd1";
+      // Plan item 163: the plain silo is cream-painted with a terracotta dome and a red band (it was all grey).
+      const body = spec === 0 ? "#6f9a4a" : spec === 1 ? "#c7ccd1" : "#eadcb8";
       rr(ctx, x - s * w, base - s * 0.72, s * w * 2, s * 0.72, s * 0.04, body);
+      if (spec !== 0) {
+        rr(ctx, x - s * w, base - s * 0.6, s * w * 2, s * 0.1, 0, "#c2553a");
+        ctx.fillStyle = "#f6efe0";
+        ctx.beginPath();
+        ctx.moveTo(x, base - s * 0.59);
+        ctx.lineTo(x + s * 0.04, base - s * 0.55);
+        ctx.lineTo(x, base - s * 0.51);
+        ctx.lineTo(x - s * 0.04, base - s * 0.55);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.strokeStyle = "rgba(0,0,0,0.18)";
       for (let i = 1; i < 5; i++) {
         ctx.beginPath();
@@ -517,7 +529,7 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
         ctx.stroke();
       }
       ctx.strokeStyle = INK;
-      ctx.fillStyle = spec === 0 ? "#557a36" : "#9ea6ad";
+      ctx.fillStyle = spec === 0 ? "#557a36" : "#b84a33";
       ctx.beginPath();
       ctx.arc(x, base - s * 0.72, s * w, Math.PI, 0);
       ctx.closePath();
@@ -528,7 +540,7 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       ctx.save();
       ctx.translate(x + s * w, base - s * 0.6);
       ctx.rotate(-0.6 - kick * 0.4);
-      rr(ctx, 0, -s * 0.03, s * 0.2, s * 0.06, s * 0.02, "#8a8f94");
+      rr(ctx, 0, -s * 0.03, s * 0.2, s * 0.06, s * 0.02, "#d9a441");
       ctx.restore();
       break;
     }
@@ -544,8 +556,19 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
-      rr(ctx, x - s * 0.05, base - s * 0.16, s * 0.1, s * 0.16, s * 0.03, "#6b4a2b");
-      ctx.fillStyle = "#5e3d22";
+      // Plan item 163: a brick footing, a blue window, a green door and a red cap (it read as a grey sketch).
+      ctx.fillStyle = "#b5654a";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.2, base);
+      ctx.lineTo(x - s * 0.185, base - s * 0.12);
+      ctx.lineTo(x + s * 0.185, base - s * 0.12);
+      ctx.lineTo(x + s * 0.2, base);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      rr(ctx, x - s * 0.05, base - s * 0.18, s * 0.1, s * 0.18, s * 0.03, "#4f7a3a");
+      rr(ctx, x - s * 0.04, base - s * (h * 0.62), s * 0.08, s * 0.09, s * 0.02, "#6b8fb5");
+      ctx.fillStyle = "#a8452f";
       ctx.beginPath();
       ctx.arc(x, base - s * h, s * 0.15, Math.PI, 0);
       ctx.closePath();
@@ -567,8 +590,15 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
         ctx.save();
         ctx.translate(x, hubY);
         ctx.rotate(a);
-        ctx.fillStyle = spec === 0 ? "#f6efe0" : "rgba(246,239,224,0.8)";
+        ctx.fillStyle = spec === 0 ? "#f6efe0" : spec === 1 ? "rgba(246,239,224,0.8)" : "#ecd5a4";
         ctx.fillRect(s * 0.03, -s * 0.05, len, s * 0.1);
+        // The sail's wooden stock down its middle.
+        ctx.strokeStyle = "#7a4a2a";
+        ctx.beginPath();
+        ctx.moveTo(s * 0.03, 0);
+        ctx.lineTo(s * 0.03 + len, 0);
+        ctx.stroke();
+        ctx.strokeStyle = INK;
         ctx.strokeRect(s * 0.03, -s * 0.05, len, s * 0.1);
         ctx.restore();
       }
@@ -604,21 +634,46 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       break;
     }
     case "mast": {
-      ctx.strokeStyle = "#5a5e63";
-      ctx.lineWidth = Math.max(1.5, s * 0.03);
+      // Plan item 163: a red-and-white banded lattice mast over a green equipment hut (it was a grey line drawing).
+      rr(ctx, x + s * 0.06, base - s * 0.16, s * 0.2, s * 0.16, s * 0.02, "#5f8f3f");
+      rr(ctx, x + s * 0.04, base - s * 0.2, s * 0.24, s * 0.05, s * 0.02, "#3f6e33");
+      const legW = Math.max(2.2, s * 0.05);
+      for (let i = 0; i < 4; i++) {
+        const y0 = base - (i * s * 0.85) / 4;
+        const y1 = base - ((i + 1) * s * 0.85) / 4;
+        const w0 = s * 0.18 * (1 - i / 4);
+        const w1 = s * 0.18 * (1 - (i + 1) / 4);
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = legW + lw(s) * 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x - w0, y0);
+        ctx.lineTo(x - w1, y1);
+        ctx.moveTo(x + w0, y0);
+        ctx.lineTo(x + w1, y1);
+        ctx.stroke();
+        ctx.strokeStyle = i % 2 ? "#f6efe0" : "#c8452f";
+        ctx.lineWidth = legW;
+        ctx.stroke();
+      }
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = Math.max(1, s * 0.02);
       ctx.beginPath();
-      ctx.moveTo(x - s * 0.18, base);
-      ctx.lineTo(x, base - s * 0.85);
-      ctx.lineTo(x + s * 0.18, base);
       for (let i = 1; i < 4; i++) {
         const yy = base - i * s * 0.2;
         const w = s * 0.18 * (1 - (i * 0.2) / 0.85);
         ctx.moveTo(x - w, yy);
         ctx.lineTo(x + w, yy);
+        ctx.moveTo(x - w, yy);
+        ctx.lineTo(x + w * 0.75, yy - s * 0.2);
       }
       ctx.stroke();
-      ctx.strokeStyle = INK;
       ctx.lineWidth = lw(s);
+      // A dish on the mast.
+      ctx.fillStyle = "#f6efe0";
+      ctx.beginPath();
+      ctx.ellipse(x - s * 0.1, base - s * 0.55, s * 0.04, s * 0.08, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
       const blink = Math.sin(t * 4) > 0;
       const lamp = spec === 1 ? (Math.sin(t * 8) > 0 ? "#ff3b30" : "#ffb3ad") : blink ? "#d95f3b" : "#7a2f1f";
       blob(ctx, x, base - s * 0.88, s * 0.05, lamp);

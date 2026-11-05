@@ -1929,7 +1929,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her projected face 24 px or more at P and 40 at D (`hedgerow.faceBox()`), face mean luminance above the hair's; `data-cath-pose` changes on a leak in e2e; level tests unchanged; shots P and D.
 - **Size:** 2
 
-## 163. [ ] Hedgerow: the whole tower rack painted *(lane A, in progress)*
+## 163. [x] Hedgerow: the whole tower rack painted *(done 2026-11-05, lane A: the Windmill (brick footing, green door, blue window, red cap, canvas sails on wooden stocks), Radio Mast (red-and-white banded lattice, a dish, a green equipment hut) and Grain Silo (cream with a red band and terracotta dome, a yellow spout) are painted on the field and in every icon; `towerIcon` measures each picture and shrinks it about its ground point until it sits whole in the icon (the tall three lost their tops); desktop rack names 13 px (`--fs-rack`); an unaffordable card keeps its portrait, desaturated, with its price in red, light and dark; `e2e-site/hedgerow-rack.spec.ts` (2+ coloured fills per portrait, nothing cut at the top, 13 px names at D; fails on the old code); key art re-shot; shots `e2e/screenshots/rack163` (`scripts/hedgerow-rack-shots.mjs`). Cut: 'no price under the phone's scroll arrow' is the tray's scroll peek (item 146 checked it), and an upright phone now builds from item 156's ring)*
 - **Why:** `hedge-l21-2d-D` rack (1108-1412 x 85-365): Hedgerow, Beehive and Market Stall are in colour, but Windmill, Radio Mast and Grain Silo are grey line sketches with 99,999 coins in hand, so the rack reads as half-finished.
 - **Build:**
   - Every tower card gets a coloured, ink-outlined portrait at one scale with a ground shadow, matching the field's art.
