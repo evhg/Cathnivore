@@ -1809,7 +1809,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-key-light]` on the front; face mean luminance 0.25 or more at D; at P her figure's box inside the viewport and meeting no polaroid; cathode-perf in budget.
 - **Size:** 2
 
-## 149. [ ] Cathnivore desktop: the actions as a hand of cards at the table's edge
+## 149. [ ] Cathnivore desktop: the actions as a hand of cards at the table's edge *(lane A, in progress)*
 - **Why:** `cath-game-D` (33-315 x 360-710): eleven yellow buttons with 20 px icons and '8 more' folded away, while the phone has art cards (item 123).
 - **Build:**
   - A fanned hand of illustrated cards along the table's bottom edge; a card lifts on hover and focus.
