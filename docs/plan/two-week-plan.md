@@ -1854,7 +1854,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-act]` count equals the acts, in one scroller; the current act in view on load; the next act's top 60 px or more into the viewport; locked labels at 4.5:1; shots P and D, light and dark.
 - **Size:** 2
 
-## 154. [ ] Cathnivore desktop: one hand of whole cards, and the active producer's seat *(lane A, in progress)*
+## 154. [x] Cathnivore desktop: one hand of whole cards, and the active producer's seat *(done 2026-11-05, lane A: 03f3bea7 cards at measured spots overlapping at most a fifth, a two-row landscape spill, the 'i' by the picture, the 'Not yet' pile at the rail's foot; a8e997c2 the seat: a 180 px portrait in an arched chair-back, wooden action tokens, resources stacked. 'Half-length' is ProducerArt's bust frame at 180 px; the column already listed only 'Not yet' strips; table-hand.spec)*
 - **Why:** `cath-game-D` (plan1105c): the left Actions column (16-332 x 250-660) still lists what the table-edge hand (375-1205 x 745-885) holds, and the hand's cards overlap until names cut ('Buy Market Da', 'Supply 1 Outlet · Brindle H'; a cost chip cut at 770-845 x 860-880).
 - **Build:**
   - At 1240 px and up the column stops repeating the hand: it becomes the active producer's seat (half-length portrait, the action pips as wooden tokens, the three resources, the not-yet strips).
@@ -1863,7 +1863,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 no playable action appears in both the column and the hand; each `[data-hand-card]` 120 px or wider with its title's `scrollWidth <= clientWidth`; no two cards overlap by more than 20%; `[data-seat-producer]` art 180 px or taller; rule tests unchanged; shots D light and dark, P unchanged.
 - **Size:** 2
 
-## 155. [ ] Cathnivore: the producers seated at the table
+## 155. [ ] Cathnivore: the producers seated at the table *(lane A, in progress)*
 - **Why:** `cath-game-D` (33-320 x 165-200): Tomas is a line of text, Mara a 55 px roundel; `cath-game-P` shows neither. Only Cath sits at the table (VISION: characters with presence).
 - **Build:**
   - Half-length producers (item 80's `ProducerArt`) at the table's far edge opposite Cath, by the stalls they own; 64 px busts on the phone's table rail.
