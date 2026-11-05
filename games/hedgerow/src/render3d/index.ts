@@ -570,6 +570,23 @@ export class Renderer3D {
     return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
   }
 
+  /** Plan item 162: the lit brightness (0..1) of her face's and her hair's materials: colour plus emission. */
+  faceTone(): { face: number; hair: number } | null {
+    let face: number | null = null, hair: number | null = null;
+    const lum = (m: THREE.MeshStandardMaterial) => {
+      const c = m.color.clone().add(m.emissive.clone().multiplyScalar(m.emissiveIntensity));
+      return 0.2126 * Math.min(1, c.r) + 0.7152 * Math.min(1, c.g) + 0.0722 * Math.min(1, c.b);
+    };
+    this.cath?.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh || Array.isArray(m.material)) return;
+      const mat = m.material as THREE.MeshStandardMaterial;
+      if (mat.name === "face" && face === null) face = lum(mat);
+      if (mat.name === "hair" && hair === null) hair = lum(mat);
+    });
+    return face === null || hair === null ? null : { face, hair };
+  }
+
   private faceCache: THREE.Mesh | null = null;
   private faceKey = new THREE.Color("#e8a383");
   private faceMesh(): THREE.Mesh | null {

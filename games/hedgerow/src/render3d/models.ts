@@ -2013,12 +2013,15 @@ function cathHead(skinM: M): THREE.Group {
   g.add(yaw);
   // Tipped up toward the camera, which looks down on the field.
   const turn = new THREE.Group();
-  turn.rotation.z = 0.38;
+  // Plan item 162: less tipped back (0.38 showed the camera her crown, not her face).
+  turn.rotation.z = 0.24;
   yaw.add(turn);
   const hairM = matte(HAIR.base, 0.42, false).clone();
   hairM.name = "hair";
   const faceM = (skinM as THREE.MeshStandardMaterial).clone();
   faceM.name = "face";
+  // Plan item 162: her face lit from within a little, so it reads lighter than the hair round it in any act's light.
+  faceM.emissive = new THREE.Color("#f2c2a4").multiplyScalar(0.32);
   const shineM = matte(HAIR.shine, 0.35, false);
   const whiteM = matte("#ffffff", 0.3, false);
   const eyeM = matte("#5a3a26", 0.3, false);
@@ -2030,33 +2033,35 @@ function cathHead(skinM: M): THREE.Group {
   turn.add(scaled(ball(0.13, faceM, 0, 0, 0, 2), 0.95, 1.1, 0.95));
   turn.add(cyl(0.035, 0.04, 0.08, skinM, 0, -0.18, 0, 8));
   // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
-  const cap = mesh(geo("cathHairCap", () => new THREE.SphereGeometry(0.142, 16, 10, Math.PI * 0.62, Math.PI * 1.76, 0, Math.PI * 0.62)), hairM, -0.012, 0.012, 0);
+  const cap = mesh(geo("cathHairCap2", () => new THREE.SphereGeometry(0.144, 18, 10, Math.PI * 0.78, Math.PI * 1.44, 0, Math.PI * 0.5)), hairM, -0.012, 0.012, 0);
   turn.add(cap);
-  turn.add(scaled(ball(0.14, hairM, -0.035, -0.005, 0, 2), 0.82, 1.05, 1));
+  turn.add(scaled(ball(0.14, hairM, -0.075, -0.03, 0, 2), 0.72, 0.95, 1));
+  // Plan item 162: hair over each temple, where the wider face opening showed the skin of her head's side.
+  for (const z of [-1, 1]) turn.add(scaled(ball(0.06, hairM, -0.005, 0.03, z * 0.112, 1), 0.9, 1.25, 0.6));
   for (const z of [-1, 1]) {
     // A sweep from the part down over each temple, and a curtain past the cheek.
-    const sweep = scaled(ball(0.06, hairM, 0.06, 0.1, z * 0.06, 1), 0.6, 0.45, 1.05);
+    const sweep = scaled(ball(0.05, hairM, 0.03, 0.125, z * 0.075, 1), 0.5, 0.32, 0.9);
     sweep.rotation.x = z * 0.5;
     turn.add(sweep);
-    turn.add(scaled(ball(0.06, hairM, 0.035, -0.04, z * 0.118, 1), 0.85, 1.9, 0.55));
+    turn.add(scaled(ball(0.055, hairM, 0.0, -0.05, z * 0.125, 1), 0.75, 1.9, 0.5));
   }
-  turn.add(scaled(ball(0.03, shineM, -0.03, 0.12, 0.05, 1), 1.5, 0.35, 1.2));
+  turn.add(scaled(ball(0.034, shineM, -0.02, 0.122, 0.045, 1), 1.4, 0.22, 1.4));
   // Eyes, brows, cheeks and lips on the front of the face (+x).
   for (const z of [-1, 1]) {
-    turn.add(scaled(ball(0.03, eyeM, 0.11, 0.006, z * 0.046, 1), 0.5, 1.25, 0.95));
+    turn.add(scaled(ball(0.026, eyeM, 0.112, 0.0, z * 0.046, 1), 0.5, 1.2, 0.9));
     turn.add(scaled(ball(0.009, whiteM, 0.126, 0.018, z * 0.046 + 0.007, 0), 0.5, 1, 1));
     // The liner along the upper lid, flicked up at the outer corner.
-    const lid = scaled(ball(0.03, linerM, 0.117, 0.04, z * 0.047, 1), 0.2, 0.17, 1.2);
+    const lid = scaled(ball(0.026, linerM, 0.119, 0.03, z * 0.047, 1), 0.2, 0.17, 1.2);
     turn.add(lid);
-    const wing = scaled(ball(0.012, linerM, 0.113, 0.044, z * 0.078, 0), 0.25, 0.25, 1.4);
+    const wing = scaled(ball(0.011, linerM, 0.114, 0.034, z * 0.074, 0), 0.25, 0.25, 1.4);
     wing.rotation.x = z * 0.7;
     turn.add(wing);
-    const brow = scaled(ball(0.026, hairM, 0.112, 0.058, z * 0.048, 1), 0.3, 0.22, 1.2);
+    const brow = scaled(ball(0.024, hairM, 0.116, 0.054, z * 0.048, 1), 0.3, 0.2, 1.15);
     brow.rotation.x = z * 0.18;
     turn.add(brow);
     turn.add(scaled(ball(0.02, cheekM, 0.108, -0.038, z * 0.068, 1), 0.35, 0.7, 1));
   }
-  turn.add(scaled(ball(0.021, lipM, 0.122, -0.072, 0, 1), 0.45, 0.5, 1.45));
+  turn.add(scaled(ball(0.016, lipM, 0.123, -0.07, 0, 1), 0.45, 0.45, 1.3));
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });

@@ -750,6 +750,8 @@ if (SANDBOX)
     // Plan item 114: Cath's drawn size in 2D (null in 3D).
     heroPx: () => (renderer as { heroPx?: () => { h: number; w: number } } | null)?.heroPx?.() ?? null,
     heroMood: () => (renderer as { heroMood?: string } | null)?.heroMood ?? null,
+    // Plan item 162: her face's and hair's brightness in 3D (null in 2D).
+    faceTone: () => (renderer && is3D(renderer) ? renderer.faceTone() : null),
     // Plan item 98: the 3D gate signs' letter height on screen (null in 2D).
     gateSigns: () => (renderer && is3D(renderer) ? renderer.gateSigns() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
@@ -4537,6 +4539,9 @@ function frame(now: number): void {
   renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
   syncCathSay(g, now);
   syncTwists(g);
+  // Plan item 162: her pose on the stage (rest, cheer after a clean round, worried after a leak), for tests and CSS.
+  const pose = (renderer as { heroMood?: string } | null)?.heroMood;
+  if (pose && ui.stage.dataset.cathPose !== pose) ui.stage.dataset.cathPose = pose;
   syncDepots(g);
   drawGhost(g);
   drawDuel(g);
