@@ -848,7 +848,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 .cp-hold.is-holding .cp-hold-fill, .cp-hold.is-done .cp-hold-fill { transform: none; transition: transform 600ms linear; }
 .cp-hold-label { font: 800 var(--fs-3)/1.1 var(--font-ui); text-transform: uppercase; letter-spacing: .01em; font-stretch: var(--wdth-head); }
-.cp-hold-how { font: 700 var(--fs-1)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); font-stretch: var(--wdth-label); }
+/* Plan item 166: 'Hold' a step up from the caption size; condensed caps at --fs-1 read about 10 px. */
+.cp-hold-how { font: 700 var(--fs-2)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); font-stretch: var(--wdth-label); }
 .cp-hold-how::after { content: " Enter"; }
 @media (hover: none) { .cp-hold-how::after { content: ""; } }
 /* The foot only exists for the upright phone (below): elsewhere the hold bar lays out as the sheet's own child. */
