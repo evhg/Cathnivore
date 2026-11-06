@@ -2326,7 +2326,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-road="vertical"]` at 390; no two label boxes meet; labels 13 px or more; the Next stop wholly above the card; no sideways scroll; hedgerow-map and -level-card pass; shots P and D (D unchanged).
 - **Size:** 3
 
-## 210. [ ] NIGHT SHIFT phone: the class sheet as a dossier card *(lane B, in progress)*
+## 210. [x] NIGHT SHIFT phone: the class sheet as a dossier card *(done 2026-11-06, lane B: `.cp-sheet[data-dossier]` on an upright phone, a paper card with a paperclip: four `.stat-dial` rings (the desktop's dials in red on the card's rule), the trees as red stamps, Walk in on red tape; text 12 px or more, clear of the class tabs, the file still on one screen at 390x844 and 375x667. Cut: tap-to-read stamps (the trees carry their theme already) and a felt strip (the weapon keeps item 199's case art). `e2e-site/cathode-dossier.spec.ts`; shots `t210`)*
 - **Why:** `plan1106e/ns-play-P` (16-375 x 640-830): thin bars with about 10 px labels, a grey weapon silhouette (16-170 x 690-750), the abilities as bare caps (16-220 x 768-780); the desktop has item 199's dials, the phone doesn't.
 - **Build:**
   - A paper dossier clipped over the street: four ring dials in a row, the weapon on a felt strip with its stats beside it, the abilities as rubber stamps that open their text on a tap.
