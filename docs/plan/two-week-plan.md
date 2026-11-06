@@ -2226,7 +2226,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-garden-stage="0|1|2|3"]` follows the watered share; the garden 120 x 60 px or more on a phone; reduced motion cross-fades; runnel-ditch and runnel-valley-folk pass; shots P and D, mid-level and solved.
 - **Size:** 2
 
-## 198. [ ] Hedgerow 3D: each act's biome, Saltmarsh first
+## 198. [ ] Hedgerow 3D: each act's biome, Saltmarsh first *(lane B, in progress)*
 - **Why:** `plan1106c/hedge-l21-2d-D` (14-290 x 75-890) shows Saltmarsh's sea, reeds and boats; the same level in 3D (`hedge-l21-3d-D`) is generic turf with a thin teal strip (14-120 x 75-560) and generic houses (150-900 x 75-130); on `hedge-l21-3d-P` it doesn't read as a place.
 - **Build:**
   - Per-act biome sets from instanced low-poly pieces: Saltmarsh's tidal flats, reed beds, moored boats, a lighthouse and egrets; Rivermead's willows and river; the rest after.
