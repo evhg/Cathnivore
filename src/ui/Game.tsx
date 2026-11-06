@@ -180,6 +180,9 @@ function useIsDesktopLayout(): boolean {
 // Plan item 118: the desktop sizes where Cath stands at the table (styles: .table-cath).
 const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
 // Plan item 131: on an upright phone she stands at the table too, at its lower-left corner, and the header strip goes.
+// Plan item 225: her bubble carries the suggestion too only where the table is tall enough for both lines (at
+// 1280x800 the two-part bubble rose over the plan strip); shorter desktops keep the suggestion in the rail.
+const TABLE_CATH_TALL_QUERY = '(min-width: 1240px) and (min-height: 880px)'
 const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 830px) and (orientation: portrait)'
 
 
@@ -596,6 +599,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const deskTableCath = useMedia(TABLE_CATH_QUERY)
   const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
   const tableCath = deskTableCath || phoneTableCath
+  const bubbleSuggest = useMedia(TABLE_CATH_TALL_QUERY)
   // Plan item 149: the same sizes hold the hand of cards at the table's edge.
   const handOnTable = deskTableCath
   // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.
@@ -661,7 +665,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     const cardH = Math.max(...cards.map((c) => c.offsetHeight))
     const rowStep = cardH + 6
-    hand.style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + 12)}px`)
+    // Set on the parent so the spacer that holds the hand's place while it steps away (item 190) keeps its height:
+    // on the hand itself the spacer fell back to 140 px, and the board jumped 34 px on Hollowell's turn after the
+    // painted cards (item 218) grew taller.
+    ;(hand.parentElement ?? hand).style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + 12)}px`)
     rows.forEach((row, r) => {
       const n = row.to - row.from
       const mid = (n - 1) / 2
@@ -2139,6 +2146,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             )
           }
+  // Plan item 225: Cath's suggestion, one line in her voice. On a desktop with her at the table it speaks from her
+  // bubble there (one Cath voice on screen), elsewhere from the top of the actions.
+  const suggestBody = suggested ? (
+            <>
+              {SUGGEST_LEAF}
+              <span>
+                <b>Cath:</b> I&rsquo;d play the leaf, love. {suggested.why}
+                {goal && goalShort !== undefined && goalCard(goal) && (
+                  <span data-goal-line="">
+                    {` Still saving for ${goalCard(goal)!.name}: ${goalShort} more ${goalShort === 1 && goalCard(goal)!.coin === 'Marks' ? 'Mark' : goalCard(goal)!.coin} to go.`}
+                  </span>
+                )}
+                {goalLift && goalCard(goalLift) && <span data-goal-line="">{` And ${goalCard(goalLift)!.name}'s paid for: it's in your hand.`}</span>}
+              </span>
+            </>
+  ) : null
+  const suggestLine = suggestBody && (
+            <p className="suggest-line voice" data-testid="suggest-line">
+              {suggestBody}
+            </p>
+  )
   const actionsPanel = (
     <div className="actions-well">
       <section
@@ -2281,20 +2309,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )
       ) : (
         <>
-          {suggested && (
-            <p className="suggest-line voice" data-testid="suggest-line">
-              {SUGGEST_LEAF}
-              <span>
-                <b>Cath:</b> I&rsquo;d play the leaf, love. {suggested.why}
-                {goal && goalShort !== undefined && goalCard(goal) && (
-                  <span data-goal-line="">
-                    {` Still saving for ${goalCard(goal)!.name}: ${goalShort} more ${goalShort === 1 && goalCard(goal)!.coin === 'Marks' ? 'Mark' : goalCard(goal)!.coin} to go.`}
-                  </span>
-                )}
-                {goalLift && goalCard(goalLift) && <span data-goal-line="">{` And ${goalCard(goalLift)!.name}'s paid for: it's in your hand.`}</span>}
-              </span>
-            </p>
-          )}
+          {!(handOnTable && bubbleSuggest) && suggestLine}
           {!handOnTable && playableCards}
           {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
           {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
@@ -2564,7 +2579,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             `.sheet-panel` to match the tray it sits alongside. */}
         {isDesktop && (
           <div className="sheet-panel actions-sheet frame">
-            <h2 className="frame-title">Actions</h2>
+            {/* Plan item 225: with the hand on the table the rail holds no actions, so no "Actions" heading. */}
+            {!handOnTable && <h2 className="frame-title">Actions</h2>}
             {actionsPanel}
             {/* Plan item 190: the rail's foot holds the game's ledger, Trust and land changes as till receipts. */}
             <RoundLedger state={state} />
@@ -2822,6 +2838,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           <section className="table-cath" data-expression={cathReaction.expression} aria-label="Cath">
             <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
               {cathReaction.line}
+              {bubbleSuggest && suggestBody && (
+                <span className="suggest-line table-cath-suggest" data-testid="suggest-line">
+                  {suggestBody}
+                </span>
+              )}
             </p>
             <span className="table-cath-figure" aria-hidden="true">
               <CathArt framing="full" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />

@@ -63,3 +63,23 @@ test('looking at Open Stall puts a ghost piece on the board and its cost on the 
   else await page.mouse.move(0, 0)
   await expect(page.locator('.ghost-piece')).toHaveCount(0)
 })
+
+// Plan item 225: on a tall desktop Cath's suggestion speaks from her table bubble, the only Cath line on screen,
+// and the rail (no actions there since the hand moved to the table) has no "Actions" heading. The bubble stays
+// below the plan strip; a 1280x800 desktop keeps the suggestion in the rail.
+test('desktop: one Cath voice, from her table bubble', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
+  for (const [width, height, inBubble] of [[1440, 900, true], [1920, 1080, true], [1280, 800, false]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await expect(page.locator('.table-hand [data-suggested]')).toHaveCount(1, { timeout: 10_000 })
+    await expect(page.getByTestId('suggest-line')).toHaveCount(1)
+    await expect(page.locator('.table-cath [data-testid=suggest-line]')).toHaveCount(inBubble ? 1 : 0)
+    await expect(page.locator('.actions-sheet .frame-title')).toHaveCount(0)
+    const [bubble, strip] = await Promise.all([page.locator('.table-cath-line').boundingBox(), page.locator('.plan-strip').first().boundingBox()])
+    expect(bubble && strip && bubble.y >= strip.y + strip.height - 1, `${width}x${height}: bubble below the plan strip`).toBe(true)
+    await page.evaluate(() => localStorage.clear())
+  }
+})

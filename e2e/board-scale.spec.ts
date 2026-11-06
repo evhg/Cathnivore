@@ -3,14 +3,14 @@ import { fillSeed } from './setupSeed'
 
 // Plan item 190: the board at the table's scale. At the table sizes (1240x760 and up) tomorrow's papers are one
 // ticker row (72 px or less with Pell's medallion; a long target wraps to a second line at 1280), so the cloth takes the height: the hexes fill 90%+ of its height
-// and 57%+ of its width at 1440x900 (53.5% before), and Cath stands full length at its left edge, 300 px or more,
+// and 54%+ of its width at 1440x900 (57%, and 53% at 1280x800, until item 218's painted hand took 34 px; 53.5% before item 190), and Cath stands full length at its left edge, 300 px or more,
 // meeting no hex, with Bea's drawing by her boots clear of both.
 type Box = { x: number; y: number; width: number; height: number }
 const meet = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
 
 test('the board takes the table at D', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
-  for (const [width, height, minW] of [[1440, 900, 0.57], [1280, 800, 0.53]] as const) {
+  for (const [width, height, minW] of [[1440, 900, 0.54], [1280, 800, 0.5]] as const) {
     await page.setViewportSize({ width, height })
     await page.goto('/')
     await page.getByText('Quick Game').click()
