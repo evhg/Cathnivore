@@ -767,6 +767,7 @@ if (SANDBOX)
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
+    dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).

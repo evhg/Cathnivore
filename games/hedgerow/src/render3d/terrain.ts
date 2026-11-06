@@ -730,6 +730,14 @@ export function buildGround(level: Level): Ground {
   const flowers: Inst[] = [];
   const pads: Inst[] = [];
   const stones: Inst[] = [];
+  // Plan item 185: standing dressing per plot by its look (ridges in bare earth, hay stooks on stubble, clover
+  // clumps), in the plot's corners and edges so a tower at its centre stands clear; and hedge strips along the lane.
+  const ridges: Inst[] = [];
+  const stooks: Inst[] = [];
+  const clumps: Inst[] = [];
+  const laneHedge: Inst[] = [];
+  let plotCount = 0;
+  let dressedCount = 0;
   const white = new THREE.Color("#ffffff");
   const markerCol = new THREE.Color("#bdb6a6");
   const tuftCols = [light.grass[2], light.grass[0], "#9cc46a", light.grass[1]].map((c) => new THREE.Color(c).multiplyScalar(1.05));
@@ -773,6 +781,23 @@ export function buildGround(level: Level): Ground {
           boards.push({ x: c + 0.5 + (along ? 0 : off), y: h + 0.015, z: r + 0.5 + (along ? off : 0), ry: along ? 0 : Math.PI / 2, s: 1, sy: 1, color: timberCols[Math.floor(deco() * timberCols.length)]! });
         }
         if (look === "puddle") puddles.push({ x: c + 0.3 + deco() * 0.4, y: h + 0.034, z: r + 0.3 + deco() * 0.4, ry: deco() * 6.3, s: 1, sy: 1, color: white });
+        plotCount++;
+        const corners: Array<[number, number]> = [[0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]];
+        if (base === "earth") {
+          // Two ridges either side of the middle, along the bed's grain.
+          const soil = new THREE.Color(bedTint.earth).multiplyScalar(0.8);
+          for (const o of [-0.22, 0.22])
+            ridges.push({ x: c + 0.5 + (turn ? o : 0), y: h + 0.03, z: r + 0.5 + (turn ? 0 : o), ry: turn, s: 1, sy: 1, color: soil });
+        } else if (base === "stubble") {
+          const hay = new THREE.Color("#d9b45a");
+          for (const [dx, dz] of corners.filter(() => deco() < 0.6).slice(0, 3).concat([corners[(c + r) % 4]!]).slice(0, 3))
+            stooks.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 0.85 + deco() * 0.35, sy: 1, color: hay.clone().multiplyScalar(0.9 + deco() * 0.2) });
+        } else {
+          const leaf = new THREE.Color("#5f9a3a");
+          for (const [dx, dz] of corners)
+            clumps.push({ x: c + dx + (deco() - 0.5) * 0.06, y: h + 0.03, z: r + dz + (deco() - 0.5) * 0.06, ry: deco() * 6.3, s: 0.9 + deco() * 0.3, sy: 1, color: leaf.clone().multiplyScalar(0.85 + deco() * 0.3) });
+        }
+        dressedCount++;
         if (look === "clover")
           for (let k = 0; k < 4; k++) cloverHeads.push({ x: c + 0.18 + deco() * 0.64, y: h + 0.02, z: r + 0.18 + deco() * 0.64, ry: deco() * 6.3, s: 0.7, sy: 1, color: new THREE.Color(k % 3 ? "#fffaf0" : "#f0b8d0") });
       }
@@ -907,6 +932,43 @@ export function buildGround(level: Level): Ground {
     instanced(padGeo, new THREE.MeshStandardMaterial({ roughness: 0.6 }), pads),
   ])
     if (m) group.add(m);
+
+  // Plan item 185: a low hedge along every lane edge that borders a plot (on the plot's side of the edge, clear of
+  // its centre), so the lane runs between hedgerows as it does in 2D.
+  let laneEdges = 0;
+  let hedgedEdges = 0;
+  const laneHedgeCols = ["#3f6e33", "#4a7a3a", "#355e2c", "#527f3d"].map((c) => new THREE.Color(c));
+  for (const k of lane) {
+    const [lc, lr] = k.split(",").map(Number) as [number, number];
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const c = lc + dc;
+      const r = lr + dr;
+      if (c < 0 || r < 0 || c >= cols || r >= rows || lane.has(`${c},${r}`)) continue;
+      laneEdges++;
+      if (scenery.has(`${c},${r}`) || plotKind(level, c, r) === "water") continue;
+      hedgedEdges++;
+      // The edge's midpoint, nudged 0.07 into the plot; bushes every 0.16 along it.
+      const ex = lc + 0.5 + dc * 0.5 + dc * 0.07;
+      const ez = lr + 0.5 + dr * 0.5 + dr * 0.07;
+      for (let t = -0.42; t <= 0.42; t += 0.14) {
+        const x = ex + (dr ? t : 0);
+        const z = ez + (dc ? t : 0);
+        const rad = 0.065 + deco() * 0.025;
+        laneHedge.push({ x, y: heightAt(x, z) + rad * 0.85, z, ry: deco() * 6.3, s: rad, sy: 1.15 + deco() * 0.3, color: laneHedgeCols[Math.floor(deco() * laneHedgeCols.length)]! });
+      }
+    }
+  }
+  for (const m of [
+    instanced(new THREE.BoxGeometry(0.66, 0.05, 0.07).translate(0, 0.0, 0), new THREE.MeshStandardMaterial({ roughness: 1, flatShading: true }), ridges),
+    instanced(new THREE.ConeGeometry(0.075, 0.2, 7).translate(0, 0.1, 0), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), stooks, true),
+    instanced(new THREE.IcosahedronGeometry(0.06, 0).scale(1, 0.7, 1).translate(0, 0.03, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), clumps),
+    instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), laneHedge, true),
+  ])
+    if (m) {
+      m.userData.dressing = true;
+      group.add(m);
+    }
+  group.userData.dressing = { plots: plotCount, dressed: dressedCount, laneEdges, hedgedEdges, meshes: 4 };
 
   // Scenery out beyond the field.
   const leaves = (SCENERY_LEAVES[act] ?? [light.grass[1], "#4f7f37", "#5e8f41", "#6ea04c"]).slice();
