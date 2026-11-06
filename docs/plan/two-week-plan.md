@@ -2302,7 +2302,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-sky="dawn|day|golden|evening"]` on the title root, dark forces `evening`; menu text 4.5:1 in all four; the sky meets neither the menu nor the board; no lantern flicker under reduced motion; title specs pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 207. [ ] Runnel phone: a valley signboard header, and Cath's line docked off the board *(lane B, in progress)* *(slice 1, 2026-11-06 lane B: `.top[data-signboard]` a plank sign on an upright phone, its tokens 44 px; the Practice board still within 260 px. Open: the dock; the critique's bubble (`runnel-P` 10-212 x 545-638) is item 170's lesson bubble, which sits beside Cath clear of the tiles in `plan1106e`, so check the daily before building one)*
+## 207. [x] Runnel phone: a valley signboard header, and Cath's line docked off the board *(done 2026-11-06, lane B: `.top[data-signboard]` a plank sign on an upright phone, sound, stats and help as 44 px carved tokens, the Practice board still within 260 px; her line already sits above the valley, off the board, with its tail down to her standing figure (item 165), and item 170's lesson bubble stands beside her clear of the tiles, so no new dock was built. `e2e-site/runnel-signboard.spec.ts` (tokens 44 px, the line meets no tile and reads at 14 px or more); shots `t207`)*
 - **Why:** `plan1106e/runnel-P`: the header (0-390 x 0-60) is a title by bare glyphs (245-360 x 22-42); the tabs (14-375 x 100-178) read as a form; Cath's bubble (10-212 x 545-638) covers the valley and the board's left edge.
 - **Build:**
   - The header as a painted wooden signboard, sound, stats and help as carved tokens on it.
@@ -2334,7 +2334,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-dossier]` holds four `.stat-dial`; text 12 px or more at AA; the card meets neither the class tabs nor her head box; fits 844 px with no scroll; no stamp animation under reduced motion; cathode-classpick passes; shots P and D.
 - **Size:** 2
 
-## 211. [ ] The bugs from the 2026-11-06 14:45 critique, fixed as one batch
+## 211. [ ] The bugs from the 2026-11-06 14:45 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1106e`; points open in 126, 138, 182 and 205 left out)
   - **NIGHT SHIFT:** D pick: the stats panel hides Cath, only her umbrella showing (935-970 x 290-330); the weapon a flat grey silhouette (1065-1310 x 250-320). P pick: 'FIXER' tab without a 16 px gutter (338-375 x 66-84). P title: the List stamps about 9 px (15-370 x 730-750), '4 MORE NAMES' about 10 px (16-105 x 655-666).
   - **Hedgerow:** P 2D l21 and l34: Cath's hint light grey on cream (97-360 x 712-765). P menu: the Act 4 note under the nav (100-290 x 740-775). D l21: the depot sign and road sign about 10 px (165-250 x 398-430, 289-357 x 480-492; P 8-88 x 365-380); the Notebook tab's dot clipped (1355-1370 x 548-560). D l34: rack labels wrapping unevenly ('Duck Pond', 'Court-house', 'Market Stall').
