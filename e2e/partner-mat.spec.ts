@@ -31,3 +31,27 @@ test('the partner farm is a mat with three crates and slots', async ({ page }, t
   await page.waitForTimeout(1000)
   await check()
 })
+
+// Plan item 196: the ledger is a till receipt (an ol, [data-ledger]) whose new lines feed out in 200 ms, or only fade
+// under reduced motion; Undo is a 'VOID' rubber stamp whose accessible name stays "Undo".
+for (const reduced of [false, true]) {
+  test(`the ledger is a receipt roll and Undo a void stamp${reduced ? ' (reduced motion)' : ''}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'desktop rail only')
+    if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    const roll = page.locator('.actions-sheet [data-ledger]')
+    await expect(roll).toBeVisible()
+    expect(await roll.evaluate((e) => e.tagName)).toBe('OL')
+    const anim = await roll.locator('.receipt').first().evaluate((e) => {
+      const s = getComputedStyle(e)
+      return { name: s.animationName, dur: parseFloat(s.animationDuration) }
+    })
+    expect(anim.dur).toBeLessThanOrEqual(0.2)
+    expect(anim.name).toBe(reduced ? 'receipt-fade' : 'receipt-print')
+    const undo = page.getByRole('button', { name: 'Undo', exact: true })
+    await expect(undo.locator('.rail-undo-void')).toBeVisible()
+    expect(parseFloat(await undo.evaluate((e) => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)
+  })
+}

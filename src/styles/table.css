@@ -3851,7 +3851,8 @@ html.no-animations .table-cath-line { animation: none; }
     mask: var(--torn-foot) bottom left / 12px 6px repeat-x, linear-gradient(black 0 0) 0 0 / 100% calc(100% - 6px) no-repeat;
     font: 600 var(--fs-caption)/1.25 var(--font-text);
     color: var(--ink);
-    animation: receipt-print var(--dur-moment) var(--ease-settle) both;
+    /* Plan item 196: a new line feeds out of the till in 200 ms (under reduced motion it only fades in). */
+    animation: receipt-print 200ms var(--ease-settle) both;
   }
   .receipt-amount { white-space: nowrap; font-weight: 800; }
   .receipt[data-sign="up"] .receipt-amount { color: var(--gain-ink); }
@@ -3866,8 +3867,9 @@ html.no-animations .table-cath-line { animation: none; }
   /* the roll's first slip: the balance it started from, its words under the figures */
   .receipt[data-kind="opening"] { grid-template-columns: minmax(0, 1fr) auto; }
   .receipt[data-kind="opening"] .receipt-why { grid-column: 1; color: var(--ink-muted); }
-  @keyframes receipt-print { from { opacity: 0; translate: 0 -6px; } }
-  @media (prefers-reduced-motion: reduce) { .receipt { animation: none; } }
+  @keyframes receipt-print { from { clip-path: inset(0 0 100% 0); translate: 0 -8px; } }
+  @keyframes receipt-fade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .receipt { animation: receipt-fade 200ms linear both; } }
 }
 
 /* Plan item 196: the partner's farm as a small wooden mat under the active producer's card: their seat (a cameo in
@@ -3887,8 +3889,23 @@ html.no-animations .table-cath-line { animation: none; }
     linear-gradient(color-mix(in srgb, var(--wood) 88%, var(--paper-hi)), var(--wood));
   box-shadow: inset 0 0 0 2px var(--wood-lo), inset 0 2px 0 color-mix(in srgb, var(--wood-ink) 25%, transparent);
 }
-.partner-mat-seat { grid-area: seat; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; overflow: hidden; }
-.partner-mat-seat svg { width: 38px; height: 38px; }
+.partner-mat-seat {
+  grid-area: seat;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cameo-ring, var(--wheat)) 22%, var(--paper-hi));
+  box-shadow: inset 0 0 0 3px var(--cameo-ring, var(--wheat)), 0 2px 0 var(--wood-lo);
+  font: 700 var(--fs-small)/1 var(--font-display);
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.partner-mat-seat.pc-mara { --cameo-ring: var(--p-mara); }
+.partner-mat-seat.pc-tomas { --cameo-ring: var(--p-tomas); }
+.partner-mat-seat.pc-ines { --cameo-ring: var(--p-ines); }
+.partner-mat-seat.pc-sol { --cameo-ring: var(--p-sol); }
 .farm-inline .partner-mat-name {
   grid-area: name;
   margin: 0;
@@ -3928,3 +3945,36 @@ html.no-animations .table-cath-line { animation: none; }
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper-hi) 55%, transparent);
 }
 .partner-slot-more { align-self: center; font: 760 var(--fs-label)/1 var(--font-text); color: var(--paper-hi); }
+
+/* Plan item 196: on a desktop Undo is a rubber stamp in the till's red ink, 'VOID' boxed beside the word; with
+   nothing to undo it is a worn, faded stamp rather than the hatched form field. */
+.rail-undo-void { display: none; }
+@media (min-width: 1024px) {
+  .actions-sheet .rail-undo,
+  .actions-sheet .rail-undo:disabled {
+    align-items: center;
+    background: transparent;
+    border: 2px solid var(--short-ink);
+    box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px color-mix(in srgb, var(--short-ink) 60%, transparent);
+    color: var(--short-ink);
+    font: 800 var(--fs-small)/1 var(--font-text);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    rotate: -1deg;
+  }
+  .actions-sheet .rail-undo:not(:disabled):hover { background: color-mix(in srgb, var(--short-ink) 8%, transparent); }
+  .actions-sheet .rail-undo:disabled {
+    border-color: var(--ink-a35);
+    box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--ink-a15);
+    color: var(--ink-muted);
+  }
+  .actions-sheet .rail-undo-void {
+    display: inline-block;
+    padding: 2px 6px 1px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    rotate: -5deg;
+  }
+}

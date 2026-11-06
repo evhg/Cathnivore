@@ -2455,6 +2455,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       >
         <UndoIcon size={22} />
         <span className="rail-undo-text">Undo</span>
+        {/* Plan item 196: on a desktop Undo is a rubber stamp that voids the last line on the ledger's receipt. */}
+        <span className="rail-undo-void" aria-hidden="true">Void</span>
       </button>
       <button
         className={`${foldFarm ? 'rail-tab rail-tab-farm' : 'mobile-only rail-tab rail-tab-farm'}${showFarm ? ' is-open' : ''}`}

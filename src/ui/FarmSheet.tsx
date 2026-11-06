@@ -82,8 +82,10 @@ function PartnerMat({ state, producer }: { state: GameState; producer: ProducerI
   const more = p.improvements.length - shown.length
   return (
     <section className="partner-mat" data-partner-mat={producer} aria-label={`${def.name}'s farm`}>
-      <span className={`partner-mat-seat producer-cameo pc-${producer}`} aria-hidden="true">
-        <Portrait character={producer} size={44} />
+      {/* Their face is already at the table (one portrait a producer, item 167): the mat holds their seat token, a
+          monogram in their colour. */}
+      <span className={`partner-mat-seat pc-${producer}`} aria-hidden="true">
+        {def.name.split(' ').map((w) => w[0]).join('')}
       </span>
       <h3 className="partner-mat-name">{def.name}</h3>
       <ul className="partner-mat-stores">

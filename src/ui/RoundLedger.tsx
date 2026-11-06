@@ -60,7 +60,7 @@ export default function RoundLedger({ state }: { state: GameState }) {
   return (
     <section ref={ref} className="round-ledger" aria-label="Ledger: Trust and land this game">
       <h3 className="round-ledger-title label">Ledger</h3>
-      <ol className="round-ledger-roll">
+      <ol className="round-ledger-roll" data-ledger="">
         {receipts.map((r) => (
           <li key={r.id} className="receipt" data-kind={r.kind} data-sign={r.delta > 0 ? 'up' : 'down'}>
             <b className="receipt-amount num">
