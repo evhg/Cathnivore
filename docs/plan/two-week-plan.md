@@ -2099,7 +2099,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
 
-## 183. [ ] Cathnivore: the 'Not yet' shelf as a savings goal *(lane A, in progress)*
+## 183. [ ] Cathnivore: the 'Not yet' shelf as a savings goal *(lane A, in progress)* *(slice 1, 2026-11-06 03:15 lane A: at D the shelf shows one row, the pinned goal first, and a '+N more not yet' key opens the rest; each priced card (Invest, Scheme) has a pin; the pinned card is lit with a jar meter (`aria-valuenow`/`max` = held/cost); `SavedGame.savingFor` per producer round-trips (`savingForFrom` migrates older saves; storage.test); `e2e/saving-goal.spec.ts`; shots `s183`. Open: the lift into the hand when affordable, Cath's line naming the goal, the phone chip on the mat row)*
 - **Why:** `plan1106a/cath-game-D` (30-330 x 440-860): nine greyed cards with 'Need N more' fill most of the left rail; about 60% of the producer's mat is things she can't do, and nothing turns the shortfall into a plan.
 - **Build:**
   - The shelf folds to one row of price-tagged goods; the player pins one as 'Saving for', and a jar beside it fills with Mark and Goodwill coins at each income step.

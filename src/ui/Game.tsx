@@ -16,7 +16,8 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import { reasonForAction } from '../ai/reason'
 import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
-import { saveGame, clearGame } from '../platform/storage'
+import { saveGame, clearGame, type SavedGame } from '../platform/storage'
+import { goalCard, investGoal, schemeGoal } from './shelfGoal'
 import { playHapticsFor } from '../platform/haptics'
 import { playCues, playSoundsFor, soundRound } from '../platform/sound'
 import { eventCue } from '../platform/sound/cues'
@@ -121,6 +122,8 @@ interface Props {
   // dismissed just before a reload (before any further action) doesn't replay once more on resume (see
   // DECISIONS.md). Absent for a fresh game or an older save.
   initialDismissedMidScenes?: string[]
+  // Plan item 183: each producer's 'Saving for' goal from the save (App.tsx's `resume()`).
+  initialSavingFor?: SavedGame['savingFor']
 }
 
 // SPEC 10.2 Game screen. Plain controls for now — see PROGRESS.md M3 for what's still missing (the SVG
@@ -569,7 +572,7 @@ function TargetLine({ line, names }: { line: string; names: string[] }) {
   )
 }
 
-export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes }: Props) {
+export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes, initialSavingFor }: Props) {
   const [state, setState] = useState(initial)
   const layoutRef = useScrollCues()
   // The tutorial step whose note the player folded away (phone); a new step opens again.
@@ -602,6 +605,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // The guided tutorial ends early when skipped, or if the board ever stops matching the script.
   const [guidedEnded, setGuidedEnded] = useState(false)
   const [dismissedMidScenes, setDismissedMidScenes] = useState<string[]>(initialDismissedMidScenes ?? [])
+  // Plan item 183: the Not-yet shelf's pinned goal per producer, and whether the folded shelf is open.
+  const [savingFor, setSavingFor] = useState<NonNullable<SavedGame['savingFor']>>(initialSavingFor ?? {})
+  const [shelfOpen, setShelfOpen] = useState(false)
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const isDesktop = useIsDesktopLayout()
@@ -954,8 +960,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }, [state])
 
   useEffect(() => {
-    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId, dismissedMidScenes })
-  }, [state, seed, chapterId, dismissedMidScenes])
+    saveGame({ version: 1, config: state.config, seed, actions: state.actionHistory, chapterId, dismissedMidScenes, savingFor })
+  }, [state, seed, chapterId, dismissedMidScenes, savingFor])
 
   // SPEC 6/8.1: in Solo mode, the second producer is played by the AI teammate — the real MCTSBot-in-Worker
   // bot below, not a HeuristicBot stand-in (see the effect further down that wires `aiWorker.ts`).
@@ -1938,11 +1944,136 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 167: on a big desktop what can't be played yet is a shelf of small cards, each with its picture.
   const shelf = handOnTable && isDesktop
   const shelfPic = (art: ReactNode) => (shelf ? <span className="later-pic" aria-hidden="true">{art}</span> : null)
+  // Plan item 183: the shelf folds to one row (the pinned goal first); each card counts its place as it renders.
+  const goal = savingFor[state.activeProducer]
+  let shelfCount = 0
+  const laterIdx = () => (shelf ? shelfCount++ : undefined)
+  const pinnedInvest = shelf && goal ? disabledInvest.find((d) => investGoal(d.improvementId) === goal) : undefined
+  const pinnedScheme = shelf && goal && !pinnedInvest ? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal) : undefined
+  const togglePin = (key: string) =>
+    setSavingFor((cur) => {
+      const next = { ...cur }
+      if (next[state.activeProducer] === key) delete next[state.activeProducer]
+      else next[state.activeProducer] = key
+      return next
+    })
+  // The pin and, on the pinned card, the jar: the coins held toward its price.
+  const shelfGoalBits = (key: string, cost: number, missing: number) => {
+    if (!shelf) return null
+    const card = goalCard(key)
+    if (!card) return null
+    const pinned = goal === key
+    const have = Math.max(0, cost - missing)
+    return (
+      <>
+        <button
+          type="button"
+          className="shelf-pin"
+          aria-pressed={pinned}
+          aria-label={pinned ? `Stop saving for ${card.name}` : `Save for ${card.name}`}
+          title={pinned ? 'Saving for this' : 'Save for this'}
+          onClick={() => togglePin(key)}
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 1.5c-2.3 0-4 1.6-4 3.8 0 2.9 4 7.7 4 7.7s4-4.8 4-7.7c0-2.2-1.7-3.8-4-3.8Z" />
+            <circle cx="8" cy="5.4" r="1.5" />
+          </svg>
+        </button>
+        {pinned && (
+          <span
+            className="saving-jar"
+            role="meter"
+            aria-valuemin={0}
+            aria-valuemax={cost}
+            aria-valuenow={have}
+            aria-label={`Saving for ${card.name}: ${have} of ${cost} ${card.coin}`}
+            data-coin={card.coin === 'Marks' ? 'marks' : 'goodwill'}
+            style={{ ['--jar' as string]: String(Math.min(1, have / Math.max(1, cost))) }}
+          >
+            <svg viewBox="0 0 24 30" aria-hidden="true">
+              <rect className="jar-lid" x="6" y="1" width="12" height="4" rx="1.2" />
+              <path className="jar-glass" d="M7 5h10v2.5c2.6 1 4 3.2 4 6V25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V13.5c0-2.8 1.4-5 4-6Z" />
+              <rect className="jar-fill" x="4" y="9" width="16" height="18" rx="2" />
+              <path className="jar-shine" d="M6.5 12.5v10" />
+            </svg>
+            <span className="jar-count">
+              {have}/{cost}
+            </span>
+          </span>
+        )}
+      </>
+    )
+  }
+  const investLater = ({ improvementId, cost, missing }: (typeof disabledInvest)[number]) => {
+            const card = IMPROVEMENTS_BY_ID.get(improvementId)
+            if (!card) return null
+            const key = investGoal(improvementId)
+            return (
+              <span
+                key={`disabled-invest-${improvementId}`}
+                className="action-item action-invest"
+                data-later-idx={laterIdx()}
+                data-saving-goal={goal === key ? '' : undefined}
+              >
+                <button
+                  disabled
+                  title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
+                  aria-label={`Invest: buy ${card.name} (${plural(cost, 'Mark')}). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
+                >
+                  {shelfPic(<Vignette kind={vignetteFor(card)} seed={card.id} />)}
+                  <span className="action-label-group">
+                    <span className="action-label">
+                      <InvestArt size={18} />
+                      <BuyVerb text={`Buy ${card.name}`} />
+                    </span>
+                    <WhyNot text={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`} />
+                  </span>
+                  <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
+                </button>
+                <Tooltip term="Invest" label="What is Invest?">
+                  ?
+                </Tooltip>
+                {shelfGoalBits(key, cost, missing)}
+              </span>
+            )
+          }
+  const schemeLater = ({ schemeId, cost, missing }: (typeof disabledScheme)[number]) => {
+            const card = SCHEMES_BY_ID.get(schemeId)
+            if (!card) return null
+            return (
+              <span
+                key={`disabled-scheme-${schemeId}`}
+                className="action-item"
+                data-later-idx={laterIdx()}
+                data-saving-goal={goal === schemeGoal(schemeId) ? '' : undefined}
+              >
+                <button disabled title={`Need ${missing} more Goodwill`}>
+                  {shelfPic(<SchemeArt size={44} />)}
+                  <span className="action-label-group">
+                    <span className="action-label">
+                      <SchemeArt size={18} />
+                      {/* Plan item 104: the picture says Scheme; the word stays for screen readers. */}
+                      <span className="visually-hidden">Scheme: </span>
+                      {card.name}
+                    </span>
+                    <WhyNot text={`Need ${missing} more Goodwill`} />
+                  </span>
+                  <ActionCostChip cost={{ resource: 'goodwill', amount: cost }} />
+                </button>
+                <Tooltip term="Scheme" label="What is Scheme?">
+                  ?
+                </Tooltip>
+                {shelfGoalBits(schemeGoal(schemeId), cost, missing)}
+              </span>
+            )
+          }
   const actionsPanel = (
     <div className="actions-well">
       <section
         className="actions"
         data-shelf={shelf ? '' : undefined}
+        data-shelf-open={shelf && shelfOpen ? '' : undefined}
+        data-saving-for={goal}
         tabIndex={0}
         role="region"
         aria-label="Actions"
@@ -2093,8 +2224,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           (disabledSupplyBuyoutReason && !groups.has('supplyBuyout')) ? (
             <span className="action-head action-head-later" aria-hidden="true">Not yet</span>
           ) : null}
+          {pinnedInvest && investLater(pinnedInvest)}
+          {pinnedScheme && schemeLater(pinnedScheme)}
           {disabledSell.map(({ count, missing }) => (
-            <span key={`disabled-sell-${count}`} className="action-item">
+            <span key={`disabled-sell-${count}`} className="action-item" data-later-idx={laterIdx()}>
               <button disabled title={`Need ${missing} more Produce`}>
                 {shelfPic(<SellArt size={44} count={count} />)}
                 <span className="action-label-group">
@@ -2112,58 +2245,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </Tooltip>
             </span>
           ))}
-          {disabledInvest.map(({ improvementId, cost, missing }) => {
-            const card = IMPROVEMENTS_BY_ID.get(improvementId)
-            if (!card) return null
-            return (
-              <span key={`disabled-invest-${improvementId}`} className="action-item action-invest">
-                <button
-                  disabled
-                  title={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
-                  aria-label={`Invest: buy ${card.name} (${plural(cost, 'Mark')}). Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`}
-                >
-                  {shelfPic(<Vignette kind={vignetteFor(card)} seed={card.id} />)}
-                  <span className="action-label-group">
-                    <span className="action-label">
-                      <InvestArt size={18} />
-                      <BuyVerb text={`Buy ${card.name}`} />
-                    </span>
-                    <WhyNot text={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`} />
-                  </span>
-                  <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
-                </button>
-                <Tooltip term="Invest" label="What is Invest?">
-                  ?
-                </Tooltip>
-              </span>
-            )
-          })}
-          {disabledScheme.map(({ schemeId, cost, missing }) => {
-            const card = SCHEMES_BY_ID.get(schemeId)
-            if (!card) return null
-            return (
-              <span key={`disabled-scheme-${schemeId}`} className="action-item">
-                <button disabled title={`Need ${missing} more Goodwill`}>
-                  {shelfPic(<SchemeArt size={44} />)}
-                  <span className="action-label-group">
-                    <span className="action-label">
-                      <SchemeArt size={18} />
-                      {/* Plan item 104: the picture says Scheme; the word stays for screen readers. */}
-                      <span className="visually-hidden">Scheme: </span>
-                      {card.name}
-                    </span>
-                    <WhyNot text={`Need ${missing} more Goodwill`} />
-                  </span>
-                  <ActionCostChip cost={{ resource: 'goodwill', amount: cost }} />
-                </button>
-                <Tooltip term="Scheme" label="What is Scheme?">
-                  ?
-                </Tooltip>
-              </span>
-            )
-          })}
+          {disabledInvest.filter((d) => d !== pinnedInvest).map(investLater)}
+          {disabledScheme.filter((d) => d !== pinnedScheme).map(schemeLater)}
           {disabledOpenStall && (
-            <span className="action-item">
+            <span className="action-item" data-later-idx={laterIdx()}>
               <button disabled title={disabledOpenStall.text}>
                 {shelfPic(<OpenStallArt size={44} />)}
                 <span className="action-label-group">
@@ -2181,7 +2266,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </span>
           )}
           {disabledSupplyOutlets.map(({ count, reason }) => (
-            <span key={`disabled-supply-outlets-${count}`} className="action-item">
+            <span key={`disabled-supply-outlets-${count}`} className="action-item" data-later-idx={laterIdx()}>
               <button disabled title={reason!.text}>
                 {shelfPic(<SupplyArt size={44} />)}
                 <span className="action-label-group">
@@ -2199,7 +2284,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </span>
           ))}
           {disabledSupplyBuyoutReason && !groups.has('supplyBuyout') && (
-            <span className="action-item">
+            <span className="action-item" data-later-idx={laterIdx()}>
               <button disabled title={disabledSupplyBuyoutReason.text}>
                 {shelfPic(<SupplyArt size={44} />)}
                 <span className="action-label-group">
@@ -2217,7 +2302,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </span>
           )}
           {disabledRebut.map(({ count, reason }) => (
-            <span key={`disabled-rebut-${count}`} className="action-item">
+            <span key={`disabled-rebut-${count}`} className="action-item" data-later-idx={laterIdx()}>
               <button disabled title={reason!.text}>
                 {shelfPic(<RebutArt size={44} />)}
                 <span className="action-label-group">
@@ -2234,6 +2319,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </Tooltip>
             </span>
           ))}
+          {/* Plan item 183: one row of the shelf shows; the rest wait behind this key. */}
+          {shelf && shelfCount > 3 && (
+            <button type="button" className="shelf-fold" aria-expanded={shelfOpen} onClick={() => setShelfOpen((o) => !o)}>
+              {shelfOpen ? 'Fold the shelf' : `${shelfCount - 3} more not yet`}
+            </button>
+          )}
         </>
       )}
     </section>

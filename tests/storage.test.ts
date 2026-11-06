@@ -10,6 +10,7 @@ import {
   recordChapterLoss,
   clearChapterLossCount,
   preloadNativeStorage,
+  savingForFrom,
 } from '../src/platform/storage'
 import type { GameConfig } from '../src/engine/types'
 
@@ -186,5 +187,26 @@ describe('chapter loss counts (SPEC 8.1, campaign storage)', () => {
 describe('preloadNativeStorage (SPEC 11.3)', () => {
   it('resolves immediately and does nothing off a native platform', async () => {
     await expect(preloadNativeStorage()).resolves.toBeUndefined()
+  })
+})
+
+describe("the Not-yet shelf's 'Saving for' goal (plan item 183)", () => {
+  beforeEach(() => vi.stubGlobal('window', { localStorage: fakeLocalStorage() }))
+  afterEach(() => vi.unstubAllGlobals())
+  const known = (g: string) => g === 'invest:fieldNotes' || g === 'scheme:leakedMemo'
+
+  it('round-trips through the save', () => {
+    saveGame({ version: 1, config: CONFIG, seed: 7, actions: [], savingFor: { mara: 'invest:fieldNotes', tomas: 'scheme:leakedMemo' } })
+    expect(savingForFrom(loadGame().save, known)).toEqual({ mara: 'invest:fieldNotes', tomas: 'scheme:leakedMemo' })
+  })
+
+  it('migrates a save from before goals existed to none', () => {
+    saveGame({ version: 1, config: CONFIG, seed: 7, actions: [] })
+    expect(savingForFrom(loadGame().save, known)).toEqual({})
+  })
+
+  it('drops unknown producers, kinds and cards', () => {
+    const save = { savingFor: { mara: 'sell:2', tomas: 'invest:gone', ines: 'invest:fieldNotes', bob: 'invest:fieldNotes' } } as never
+    expect(savingForFrom(save, known)).toEqual({ ines: 'invest:fieldNotes' })
   })
 })

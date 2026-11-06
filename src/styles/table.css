@@ -3317,6 +3317,95 @@ html.no-animations .table-cath-line { animation: none; }
   .plan-strip-target { font-size: .8125rem; opacity: .9; }
 }
 
+/* Plan item 183: the Not-yet shelf as a savings goal. Off the big-desktop shelf the pin, the jar and the fold key
+   don't show; on it one row of cards shows (the pinned goal first) and the rest wait behind the fold key. */
+.shelf-pin, .saving-jar, .shelf-fold { display: none; }
+@media (min-width: 1240px) and (min-height: 760px) {
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .action-item[data-later-idx]:not([data-later-idx='0'], [data-later-idx='1'], [data-later-idx='2']) {
+    display: none;
+  }
+  .actions-sheet .actions[data-shelf] .shelf-pin {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    right: 6px;
+    bottom: 5px;
+    z-index: var(--z-raised, 1);
+    width: 26px;
+    height: 26px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border-radius: var(--r-pill);
+    border: 1.5px solid var(--ink-a35);
+    background: var(--paper);
+    color: var(--ink-muted, var(--ink));
+    box-shadow: 0 1px 2px rgb(var(--shadow-ink) / .3);
+    cursor: pointer;
+  }
+  /* a strip at the card's foot holds the jar (left) and the pin (right), clear of the price and why-not */
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item:has(> .shelf-pin) > button:first-child { padding-bottom: 34px; }
+  .actions-sheet .actions[data-shelf] .shelf-pin svg { width: 14px; height: 14px; fill: currentColor; }
+  .actions-sheet .actions[data-shelf] .shelf-pin svg circle { fill: var(--paper); }
+  .actions-sheet .actions[data-shelf] .shelf-pin:hover { color: var(--ink); border-color: var(--ink); }
+  .actions-sheet .actions[data-shelf] .shelf-pin[aria-pressed='true'] {
+    background: var(--wheat);
+    border-color: var(--ink-on-fixed-fill);
+    color: var(--ink-on-fixed-fill);
+  }
+  .actions-sheet .actions[data-shelf] .shelf-pin[aria-pressed='true'] svg circle { fill: var(--wheat); }
+  /* the pinned card: lit, not in shadow, with its jar standing on the ledge beside it */
+  .actions-sheet .actions[data-shelf] .action-item[data-saving-goal] > button:first-child {
+    box-shadow: inset 0 0 0 1.5px var(--wheat), 0 0 0 2px color-mix(in srgb, var(--wheat) 45%, transparent);
+  }
+  .actions-sheet .actions[data-shelf] .action-item[data-saving-goal] .later-pic { filter: none; opacity: 1; }
+  .actions-sheet .actions[data-shelf] .saving-jar {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    position: absolute;
+    left: 6px;
+    bottom: 5px;
+    z-index: var(--z-raised, 1);
+    pointer-events: none;
+  }
+  .actions-sheet .actions[data-shelf] .saving-jar svg { width: 20px; height: 25px; overflow: visible; }
+  .saving-jar .jar-lid { fill: var(--wood); stroke: var(--wood-ink); stroke-width: 1; }
+  .saving-jar .jar-glass { fill: color-mix(in srgb, var(--paper) 70%, transparent); stroke: var(--ink-a35); stroke-width: 1.2; }
+  .saving-jar .jar-fill {
+    fill: var(--wheat);
+    stroke: var(--ink-on-fixed-fill);
+    stroke-width: .8;
+    transform-box: fill-box;
+    transform-origin: bottom;
+    transform: scaleY(var(--jar, 0));
+    transition: transform var(--dur-3, 400ms) var(--ease-out);
+  }
+  .saving-jar[data-coin='goodwill'] .jar-fill { fill: var(--wheat-hi); }
+  .saving-jar .jar-shine { fill: none; stroke: var(--paper); stroke-width: 1.2; stroke-linecap: round; opacity: .7; }
+  .saving-jar .jar-count {
+    padding: 0 4px;
+    border-radius: var(--r-xs);
+    background: var(--paper);
+    color: var(--ink);
+    font: 800 var(--fs-label)/1.2 var(--font-num);
+    box-shadow: inset 0 0 0 1px var(--ink-a15);
+  }
+  .actions-sheet .actions[data-shelf] .shelf-fold {
+    display: block;
+    grid-column: 1 / -1;
+    justify-self: center;
+    min-height: 32px;
+    margin-top: var(--sp-1);
+    padding: 2px var(--sp-3);
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-label)/1.2 var(--font-ui);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .saving-jar .jar-fill { transition: none; }
+}
+
 /* Plan item 167: on a big desktop what can't be played yet is a shelf of small cards in shadow: each one's picture,
    its name, a paper price tag and why not, three to a row on a wooden ledge. They stay disabled buttons (the same
    accessible names), only drawn as cards rather than text rows. */

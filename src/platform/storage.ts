@@ -30,6 +30,23 @@ export interface SavedGame {
   // if narrow, bug: see DECISIONS.md). Absent/omitted for saves from before this field existed or with no
   // mid-game scenes dismissed yet.
   dismissedMidScenes?: string[]
+  // Plan item 183: each producer's 'Saving for' goal on the Not-yet shelf, as `invest:<id>` or `scheme:<id>`.
+  // UI-only like `dismissedMidScenes`; absent in saves from before it existed (`savingForFrom` migrates them).
+  savingFor?: Partial<Record<import('../engine/types').ProducerId, string>>
+}
+
+/** Plan item 183: the save's goals, cleaned: an older save has none, and a goal must be a known kind and id. */
+export function savingForFrom(
+  save: Pick<SavedGame, 'savingFor'> | null | undefined,
+  known: (goal: string) => boolean,
+): Partial<Record<import('../engine/types').ProducerId, string>> {
+  const raw = save?.savingFor
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Partial<Record<import('../engine/types').ProducerId, string>> = {}
+  for (const [who, goal] of Object.entries(raw)) {
+    if ((who === 'mara' || who === 'tomas' || who === 'ines' || who === 'sol') && typeof goal === 'string' && /^(invest|scheme):/.test(goal) && known(goal)) out[who] = goal
+  }
+  return out
 }
 
 export interface KeyValueStorage {

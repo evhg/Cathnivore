@@ -15,7 +15,10 @@ import {
   isCoachDone,
   isTutorialDone,
   markCoachDone,
+  savingForFrom,
+  type SavedGame,
 } from './platform/storage'
+import { isShelfGoal } from './ui/shelfGoal'
 import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
 import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_1, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
@@ -66,9 +69,9 @@ type Screen =
   // `openingWhich`) right before 'opening' when contracts survived chapter 3 — see the-plan.ts.
   // `hard`: the campaign card's "Play on Hard" (plan item 35's second seal).
   | { name: 'chapterScene'; chapter: Chapter; which: 'opening' | 'closing' | 'contracts1' | 'contracts2'; mode: Mode; hard?: boolean; celebrate?: boolean }
-  | { name: 'game'; state: GameState; seed: number; mode: Mode }
+  | { name: 'game'; state: GameState; seed: number; mode: Mode; savingFor?: SavedGame['savingFor'] }
   // `tutorial`: this run plays the chapter's guided tutorial (first time, or replayed on request).
-  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[]; tutorial?: boolean }
+  | { name: 'chapterGame'; chapter: Chapter; state: GameState; seed: number; mode: Mode; dismissedMidScenes?: string[]; tutorial?: boolean; savingFor?: SavedGame['savingFor'] }
   // SPEC 8.1: "Losing a chapter: offer Retry (same shuffle), Retry (new shuffle) and Play on Easy. After
   // 2 losses, also offer Skip Chapter." `seed` is the just-lost attempt's own seed, kept so "Retry (same
   // shuffle)" can replay it exactly; `lossCount` is this chapter's consecutive-loss count so far.
@@ -145,9 +148,10 @@ function Screens() {
           mode: 'hotseat',
           dismissedMidScenes: saved.save.dismissedMidScenes,
           tutorial: tutorialFor(chapter, state.config),
+          savingFor: savingForFrom(saved.save, isShelfGoal),
         })
       } else {
-        setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat' })
+        setScreen({ name: 'game', state, seed: saved.save.seed, mode: 'hotseat', savingFor: savingForFrom(saved.save, isShelfGoal) })
       }
     } catch {
       setScreen({ name: 'saveError' })
@@ -413,6 +417,7 @@ function Screens() {
         midGameScenes={midGameScenes}
         chapterId={screen.chapter.id}
         initialDismissedMidScenes={screen.dismissedMidScenes}
+        initialSavingFor={screen.savingFor}
         onExit={() => setScreen({ name: 'campaign' })}
         onChapterEnd={(won, state) => endChapter(screen.chapter, screen.mode, won, state, screen.seed)}
       />
@@ -463,6 +468,7 @@ function Screens() {
       initial={screen.state}
       seed={screen.seed}
       mode={screen.mode}
+      initialSavingFor={screen.savingFor}
       onExit={() => setScreen({ name: 'title' })}
       onPlayAgain={() => {
         // Plan item 8: the same seed from the start, with the same producers and difficulty.
