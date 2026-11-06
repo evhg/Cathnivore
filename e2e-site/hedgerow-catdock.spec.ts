@@ -47,6 +47,14 @@ for (const level of [21, 34]) {
       // Under the field, over the tray.
       const stage = (await page.locator('#stage').boundingBox())!
       expect((await dock.boundingBox())!.y).toBeGreaterThanOrEqual(stage.y + stage.height - 1)
+      // Plan item 188: it reaches the panel's top (no strip of tray cards above it), the drawer handle uncovered.
+      const panelTop = (await page.locator('#panel').boundingBox())!.y
+      expect(Math.abs((await dock.boundingBox())!.y - panelTop)).toBeLessThanOrEqual(1)
+      const handle = page.locator('#panel .drawer-handle')
+      if (await handle.isVisible()) {
+        const h = (await handle.boundingBox())!
+        expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('.drawer-handle'), { x: h.x + h.width / 2, y: h.y + h.height / 2 })).toBe(true)
+      }
       // Go: she goes quiet.
       await page.evaluate(() => {
         const h = (window as unknown as { hedgerow: Hg }).hedgerow

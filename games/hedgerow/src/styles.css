@@ -686,8 +686,11 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 1px 10px 1px 8px;
+  padding: calc(1px + var(--notch-h, 0px)) 10px 1px 8px;
+  box-sizing: border-box;
   border-radius: 18px;
+  /* Plan item 188: a notch round the round drawer's handle, which stays visible and a tap away. */
+  clip-path: polygon(0 0, var(--notch-l, -1px) 0, var(--notch-l, -1px) var(--notch-h, 0px), var(--notch-r, -1px) var(--notch-h, 0px), var(--notch-r, -1px) 0, 100% 0, 100% 100%, 0 100%);
   background: var(--paper-shade);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 18%, transparent);
   pointer-events: none;

@@ -3965,8 +3965,15 @@ function syncCathDock(g: Game, text: string): void {
   // Over the tray (never the field), under the round drawer's handle so that stays a tap away.
   const handle = ui.panel.querySelector(".drawer-handle")?.getBoundingClientRect();
   const top = Math.max(panel.top, handle && handle.height ? handle.bottom + 1 : 0);
-  el.style.setProperty("--dock-top", `${Math.round(top)}px`);
-  el.style.setProperty("--dock-h", `${Math.round(Math.max(66, panel.bottom - top))}px`);
+  // Plan item 188: the dock reaches the panel's top either side of the handle (a notch round it), so no strip of the
+  // tray's cards shows above it; its content stays below the handle.
+  const notch = Math.round(top - panel.top);
+  el.style.setProperty("--dock-top", `${Math.round(panel.top)}px`);
+  el.style.setProperty("--dock-h", `${Math.round(Math.max(66, panel.bottom - top)) + notch}px`);
+  el.style.setProperty("--notch-h", `${notch}px`);
+  const dl = 8;
+  el.style.setProperty("--notch-l", `${handle && handle.height ? Math.round(handle.left - dl - 4) : -1}px`);
+  el.style.setProperty("--notch-r", `${handle && handle.height ? Math.round(handle.right - dl + 4) : -1}px`);
 }
 
 function syncCathSay(g: Game, now: number): void {
