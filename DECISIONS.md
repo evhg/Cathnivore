@@ -330,3 +330,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-06 19:35 lane A: `disabled-actions.spec` opens the desktop Not-yet shelf rather than the shelf showing every placeholder: item 183's one-row fold is the design, the test predated it.
 - 2026-11-06 19:35 lane A: item 217's Hedgerow D l21 point (gate boards repeating the ticker) left as is: they're in-world signs at the gate, reworked by lane B's item 215 hours earlier.
 - 2026-11-06 19:35 lane A: NIGHT SHIFT's phone front door now renders at DPR 2 with the world at 0.85 (was 1.35 x 0.83); the dynamic scale still protects frame time on real phones; cathode-perf measures firefights, unaffected.
+- 2026-11-06 20:35 (lane B, item 220): the rack fills its last row by widening packets on a 12-track grid (a lone last packet spans the row) rather than re-flowing counts per row; it keeps every packet's art size and the 3/4-per-row budget of item 87.

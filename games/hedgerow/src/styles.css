@@ -4871,10 +4871,13 @@ img.act-scene {
 .depot > svg { display: block; width: 100%; height: 100%; }
 .depot-board {
   position: absolute;
-  left: 26%;
+  /* Plan item 222: sized to its count (a three-digit count ran past a fixed 48% box onto the rep), centred. */
+  left: 50%;
   top: 53%;
-  width: 48%;
-  padding: 2px 0;
+  min-width: 48%;
+  translate: -50% 0;
+  padding: 2px 3px;
+  box-sizing: border-box;
   border-radius: 3px;
   background: var(--ink);
   color: var(--wheat, var(--cream-a45));
@@ -4888,6 +4891,7 @@ img.act-scene {
   white-space: nowrap;
 }
 .depot-board b { font-size: 1.15em; }
+.depot-board .depot-next { letter-spacing: 0; }
 .depot[data-small] .depot-next { display: none; }
 .depot-rep {
   position: absolute;
