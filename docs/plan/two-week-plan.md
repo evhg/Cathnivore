@@ -2392,7 +2392,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 every playable card's art box is 96x56 px or more; within a card the name, art and cost boxes don't intersect; a card's name stays clear of the next card (item 217's rule); text 4.5:1; hand specs pass; shots D and P (P unchanged).
 - **Size:** 2
 
-## 219. [ ] Cathnivore phone Setup: one screen, nothing cut at the edge *(lane B, in progress)*
+## 219. [x] Cathnivore phone Setup: one screen, nothing cut at the edge *(dropped 2026-11-06 lane B: checked at 390x844, nothing is cut: the producer chips run 22-368 and the maps 23-367, inside the panel's rim (to 383) with no sideways scroll; the critique read the rim as the screen's edge. The 2x2 redesign isn't needed for a layout that fits; shot `e2e/screenshots/i214/setup-before.png`)*
 - **Why:** `plan1106g/cath-setup-P`: the producer tabs run off the right edge (Sol 300-390 x 290-335) and so does the third map (The Delta 256-390 x 565-615); the panel reads as stacked form rows.
 - **Build:** the producers a 2x2 grid of seated busts (56 px or more) with their check stamps; the three maps as mini boards in one row inside the gutter; difficulty stays the three tags; no sideways scroll.
 - **Accept:** at 390x844 every interactive box inside x 16-374; Start visible without scrolling; tap targets 44 px or more; text 12 px or more; setup specs pass; shots P and D (D unchanged).
@@ -2410,7 +2410,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the coat's mean luminance under 0.35 with no blown highlight over 5% of its area; her face's luminance 0.15 or more and 30 px or more at the 640 size; keyart-fresh passes; the three webps re-shot and looked at.
 - **Size:** 1
 
-## 222. [ ] The bugs from the 2026-11-06 19:30 critique, fixed as one batch
+## 222. [ ] The bugs from the 2026-11-06 19:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1106g`; dropped as capture timing or already measured: NS D pick's hidden Cath, NS title stamps, the P map's faded act banner (item 211's intended fade), FIXER's gutter)
   - **Cathnivore:** D game: a stray 'I' glyph after EXPAND's chevrons (868-884 x 95-112); UNDO's VOID stamp low contrast over the label (185-250 x 822-850). P game: the vertical 'NOT YET' about 9 px (330-347 x 690-760). D setup: Ines's and Sol's cards shorter than Mara's and Tomas's (bottoms 392/352 vs 415); 'Two at the table' skewed and cut by the rail (265-385 x 770-875). D title: the pennant hint white 13 px on mid wood (1030-1278 x 763-779), check 4.5:1.
   - **Site:** D: the stall prop's 'FRESH · FREE' about 8 px (1245-1305 x 356-368). P: "Play today's Runnel" an italic chalk button beside a sans pill (60-230 x 287-330).
