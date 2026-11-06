@@ -140,6 +140,11 @@ export class ScoreClock {
   }
 }
 
+/** Plan item 213: before a game the title's sky stands in for the round: a dawn stroll, a busy day, golden hour, the Dorian evening. */
+export function scoreRoundForSky(sky: 'dawn' | 'day' | 'golden' | 'evening'): number {
+  return { dawn: 1, day: 4, golden: 6, evening: 8 }[sky]
+}
+
 export function midiToHz(m: number): number {
   return 440 * 2 ** ((m - 69) / 12)
 }

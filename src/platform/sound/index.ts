@@ -291,6 +291,12 @@ export function syncScore(): void {
   score = { clock, bus, timer: window.setInterval(tick, 200) }
 }
 
+/** Plan item 213: the tempo and mode follow the round (the title passes its sky's stand-in); from the next bar. */
+export function setScoreRound(round: number): void {
+  scoreRound = round
+  if (score) score.clock.round = round
+}
+
 /** Plan item 213: Hollowell's turn ducks the market under its muzak; the market comes back when the turn ends. */
 export function setScoreMode(mode: ScoreMode): void {
   scoreMode = mode

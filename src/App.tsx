@@ -6,6 +6,8 @@ import TitleSky from './ui/TitleSky'
 import { skyForHour } from './ui/tableLight'
 import { effectiveIsDark } from './platform/statusBar'
 import { loadSettings } from './platform/settings'
+import { setScoreRound } from './platform/sound'
+import { scoreRoundForSky } from './platform/sound/score'
 import {
   loadGame,
   clearGame,
@@ -112,6 +114,11 @@ function Screens() {
     window.addEventListener('cathnivore:update-ready', onUpdateReady)
     return () => window.removeEventListener('cathnivore:update-ready', onUpdateReady)
   }, [])
+
+  // Plan item 213: on the title the market score keeps the title's clock (its sky); a game sets it by the round.
+  useEffect(() => {
+    if (screen.name === 'title') setScoreRound(scoreRoundForSky(skyForHour(new Date().getHours(), effectiveIsDark(loadSettings().theme))))
+  }, [screen.name])
 
   // ErrorBoundary.tsx's "Resume From Last Autosave" reloads with this flag rather than calling `resume()`
   // directly (it has no access to App's internal state); this is the other half of that path.

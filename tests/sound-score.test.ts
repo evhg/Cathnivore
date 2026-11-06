@@ -71,3 +71,12 @@ describe('the market score', () => {
     expect(late[0]!.t0).toBeGreaterThan(60)
   })
 })
+
+describe("the title's clock", () => {
+  it('maps the sky to a stand-in round: evening is Dorian, the day busier than dawn', async () => {
+    const { scoreRoundForSky } = await import('../src/platform/sound/score')
+    expect(modeFor(scoreRoundForSky('evening'))).toBe('dorian')
+    expect(modeFor(scoreRoundForSky('day'))).toBe('major')
+    expect(tempoFor(scoreRoundForSky('day'))).toBeGreaterThan(tempoFor(scoreRoundForSky('dawn')))
+  })
+})

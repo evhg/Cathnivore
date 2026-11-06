@@ -20,7 +20,7 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame, type SavedGame } from '../platform/storage'
 import { goalCard, investGoal, schemeGoal } from './shelfGoal'
 import { playHapticsFor } from '../platform/haptics'
-import { playCues, playSoundsFor, setScoreMode, soundRound } from '../platform/sound'
+import { playCues, playSoundsFor, setScoreMode, setScoreRound, soundRound } from '../platform/sound'
 import { eventCue } from '../platform/sound/cues'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
@@ -795,6 +795,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   // Plan item 213: Hollowell's turn ducks the market score under its muzak until the turn's playback ends.
   const hollowellPlaying = pendingEnemyTurn.length > 0
+  // The round sets the score's tempo and mode (a resumed game too, not only a round change).
+  useEffect(() => setScoreRound(state.round), [state.round])
   useEffect(() => {
     setScoreMode(hollowellPlaying ? 'muzak' : 'market')
     return () => setScoreMode('market')
