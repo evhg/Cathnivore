@@ -2318,7 +2318,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a unit test on her parts: head height 25% or less of her total; her face 18 px or more at D in the default camera; draw calls within the perf budget; idle still under reduced motion; `hedgerow-cath3d` passes; shots P and D in 3D.
 - **Size:** 3
 
-## 209. [ ] Hedgerow phone map: the act's road runs down the screen
+## 209. [ ] Hedgerow phone map: the act's road runs down the screen *(lane A, in progress)*
 - **Why:** `plan1106e/hedge-menu-P`: ten stops in two rows (22-375 x 215-470), labels wrapping into each other ('Brand Ambassador' 28-115 x 438-470; 'Next / On Air' under 21, 22-68 x 262-300); the level card over the map (8-382 x 495-585); the Act 4 note under the nav (100-290 x 740-775).
 - **Build:**
   - Under 600 px the act's road snakes down the screen, two stops a bend, labels beside each stop, never under the road; Cath walks it.
