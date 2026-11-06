@@ -3613,6 +3613,18 @@ body:has(#dlg-pause[open]) .paused-note {
   }
 }
 
+/* Plan item 220: the dock's five controls on one row in a 1280 px column too (309 px wanted 304: Keep going
+   wrapped to a second row and the column lost its Coming up card). */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .controls {
+    padding-inline: 5px;
+  }
+  .play .controls .ability-label,
+  .play .controls .auto-btn .auto-word {
+    letter-spacing: 0.015em;
+  }
+}
+
 /* Plan item 220: the round's ticket, its notes and the Coming up / notebook card are one group in the desktop
    column, on a sunk paper tray between the shop above and the controls below. Elsewhere the group is transparent
    to layout. */
