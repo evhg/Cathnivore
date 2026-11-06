@@ -1256,3 +1256,108 @@ html.no-animations .title-screen * {
 @media (min-width: 1024px) and (max-height: 860px) {
   .ritual-receipt-row.is-rounds { display: none; }
 }
+
+/* ---- Plan item 206: Marrow's street and sky behind the stall, by the player's clock ---- */
+.title-screen { position: relative; isolation: isolate; }
+.title-screen[data-sky='dawn'] { --sky-top: var(--sky-dawn-top); --sky-low: var(--sky-dawn-low); }
+.title-screen[data-sky='day'] { --sky-top: var(--sky-day-top); --sky-low: var(--sky-day-low); }
+.title-screen[data-sky='golden'] { --sky-top: var(--sky-golden-top); --sky-low: var(--sky-golden-low); }
+.title-screen[data-sky='evening'] { --sky-top: var(--sky-eve-top); --sky-low: var(--sky-eve-low); }
+.title-sky {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 246px;
+  z-index: var(--z-under);
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-low));
+  /* the street fades into the morning haze above the stall, never a hard edge over the scene */
+  mask-image: linear-gradient(180deg, var(--ink) 0 80%, transparent 100%);
+}
+.title-street { position: absolute; left: 0; bottom: 0; width: 100%; height: 64px; }
+.street-far { fill: var(--street-far); }
+.street-near { fill: var(--street-near); }
+.street-far-windows rect { fill: color-mix(in srgb, var(--street-far) 55%, var(--street-window)); }
+.street-windows rect { fill: var(--street-window); stroke: var(--street-trim); stroke-width: 1; }
+.street-clock { fill: var(--street-window); stroke: var(--street-trim); stroke-width: 1.5; }
+.street-awnings .awning { stroke: var(--street-trim); stroke-width: 1; }
+.street-awnings .a0 { fill: color-mix(in srgb, var(--clay) 50%, var(--street-near)); }
+.street-awnings .a1 { fill: color-mix(in srgb, var(--pasture) 50%, var(--street-near)); }
+.street-awnings .a2 { fill: color-mix(in srgb, var(--wheat) 55%, var(--street-near)); }
+.title-screen[data-sky='evening'] .street-windows .is-lit,
+.title-screen[data-sky='evening'] .street-far-windows .is-lit { fill: var(--street-window-lit); }
+.title-sky-sun {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  left: 84%;
+  top: 8px;
+  background: radial-gradient(circle, var(--sky-sun) 0 36%, var(--sky-sun-glow) 40%, transparent 70%);
+}
+.title-screen[data-sky='dawn'] .title-sky-sun { left: 4%; top: 150px; }
+.title-screen[data-sky='golden'] .title-sky-sun { left: 78%; top: 96px; width: 96px; height: 96px; }
+.title-screen[data-sky='evening'] .title-sky-sun {
+  background: radial-gradient(circle, var(--sky-moon) 0 22%, color-mix(in srgb, var(--sky-moon) 30%, transparent) 26%, transparent 62%);
+}
+.title-sky-stars { display: none; }
+.title-screen[data-sky='evening'] .title-sky-stars {
+  display: block;
+  position: absolute;
+  inset: 0 0 45% 0;
+  background:
+    radial-gradient(1.4px 1.4px at 7% 22%, var(--sky-star), transparent),
+    radial-gradient(1px 1px at 17% 58%, var(--sky-star), transparent),
+    radial-gradient(1.2px 1.2px at 29% 14%, var(--sky-star), transparent),
+    radial-gradient(1px 1px at 41% 70%, var(--sky-star), transparent),
+    radial-gradient(1.4px 1.4px at 63% 8%, var(--sky-star), transparent),
+    radial-gradient(1px 1px at 71% 52%, var(--sky-star), transparent),
+    radial-gradient(1.2px 1.2px at 92% 66%, var(--sky-star), transparent),
+    radial-gradient(1px 1px at 97% 18%, var(--sky-star), transparent);
+}
+/* the bunting's lanterns: paper by day, lit at evening */
+.title-lantern-cord { fill: none; stroke: var(--wood-lo); stroke-width: 1.4; }
+.title-lantern-cap { fill: var(--wood-lo); }
+.title-lantern-body { fill: color-mix(in srgb, var(--clay) 28%, var(--paper-on-fixed-fill)); stroke: color-mix(in srgb, var(--clay) 60%, var(--wood-lo)); stroke-width: 1; }
+.title-lantern-rib { fill: none; stroke: color-mix(in srgb, var(--clay) 45%, transparent); stroke-width: .8; }
+.title-lantern-glow { opacity: 0; }
+.title-lantern-halo-in { stop-color: var(--lamp-glow); }
+.title-lantern-halo-out { stop-color: var(--lamp-glow); stop-opacity: 0; }
+.title-screen[data-sky='evening'] .title-lantern-body { fill: var(--street-window-lit); }
+.title-screen[data-sky='evening'] .title-lantern-glow { opacity: 1; }
+/* evening: the pennants, the NEXT ticket and the price-board take the lanterns' light */
+.title-screen[data-sky='evening'] .title-bunting-flag { filter: drop-shadow(0 2px 4px var(--lamp-glow)); }
+.title-screen[data-sky='evening'] .ritual-card { filter: drop-shadow(0 0 12px var(--lamp-glow)); }
+.title-screen[data-sky='evening'] .title-menu { filter: drop-shadow(0 -8px 22px var(--lamp-glow)); }
+@media (min-width: 1024px) {
+  .title-sky { height: calc(clamp(150px, 21vh, 200px) + 104px); }
+  .title-street { height: 128px; }
+  .title-sky-sun { width: 90px; height: 90px; left: 80%; top: 26px; }
+  .title-screen[data-sky='dawn'] .title-sky-sun { left: 6%; top: 150px; }
+  .title-screen[data-sky='golden'] .title-sky-sun { left: 82%; top: 64px; width: 130px; height: 130px; }
+  /* warm pools of lantern light on the counter */
+  .title-screen[data-sky='evening'] .title-table-front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(28% 70% at 22% 0, var(--lamp-glow), transparent),
+      radial-gradient(22% 60% at 50% 0, color-mix(in srgb, var(--lamp-glow) 70%, transparent), transparent),
+      radial-gradient(26% 70% at 80% 0, var(--lamp-glow), transparent);
+    mix-blend-mode: screen;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .title-screen[data-sky='evening'] .title-lantern-glow { animation: title-lantern-flicker 2.8s ease-in-out infinite alternate; }
+  .title-screen[data-sky='evening'] .title-lantern:nth-of-type(2n) .title-lantern-glow { animation-duration: 3.6s; animation-delay: -1.2s; }
+  .title-screen[data-sky='evening'] .title-lantern:nth-of-type(3n) .title-lantern-glow { animation-duration: 2.2s; animation-delay: -0.5s; }
+}
+:root.reduce-motion .title-lantern-glow { animation: none !important; }
+@keyframes title-lantern-flicker {
+  0%, 100% { opacity: 1; }
+  40% { opacity: .78; }
+  70% { opacity: .92; }
+}

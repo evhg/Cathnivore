@@ -2,6 +2,10 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { createGame, replay } from './engine/api'
 import type { Mode } from './ui/Setup'
 import TitleArt from './ui/TitleArt'
+import TitleSky from './ui/TitleSky'
+import { skyForHour } from './ui/tableLight'
+import { effectiveIsDark } from './platform/statusBar'
+import { loadSettings } from './platform/settings'
 import {
   loadGame,
   clearGame,
@@ -247,8 +251,11 @@ function Screens() {
 
   if (screen.name === 'title') {
     const hasSave = !!saved.save && !saved.incompatible
+    // Plan item 206: the sky over the market follows the player's clock; the dark theme is always evening.
+    const sky = skyForHour(new Date().getHours(), effectiveIsDark(loadSettings().theme))
     return (
-      <main className="title title-screen">
+      <main className="title title-screen" data-sky={sky}>
+        <TitleSky sky={sky} />
         <div className="title-hero">
           <TitleArt />
           <div className="title-copy">

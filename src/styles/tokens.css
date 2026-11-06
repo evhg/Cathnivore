@@ -175,6 +175,25 @@
   --wood-lo: #5A3820;
   --wood-ink: #F6EBD8;         /* lettering on wood (card backs), light in both themes */
   --hem-check: rgb(176 64 52 / .55);
+  /* plan item 206: the title market's sky by the local hour (dawn, day, golden, evening), its street and lamps */
+  --sky-dawn-top: #E9DCE6;
+  --sky-dawn-low: #F8E4CF;
+  --sky-day-top: #D3E4EC;
+  --sky-day-low: #F2EEE2;
+  --sky-golden-top: #F7EDDC;
+  --sky-golden-low: #F9D9AE;
+  --sky-eve-top: #E7E2EF;
+  --sky-eve-low: #F5E6DC;
+  --sky-sun: #FFF6DC;
+  --sky-sun-glow: rgb(255 214 150 / .55);
+  --sky-moon: #FBF3DE;
+  --sky-star: rgb(255 250 236 / 0);
+  --street-far: #D9CCBA;
+  --street-near: #C9B49A;
+  --street-trim: #A88A6A;
+  --street-window: #EFE6D6;
+  --street-window-lit: #FFD98C;
+  --lamp-glow: rgb(255 178 84 / .55);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -190,6 +209,16 @@
     --wood: #4A3020;
     --wood-lo: #2E1C12;
     --hem-check: rgb(150 60 48 / .45);
+    --sky-eve-top: #141A2E;
+    --sky-eve-low: #3A2A36;
+    --sky-moon: #F4E9C8;
+    --sky-star: rgb(255 246 220 / .85);
+    --street-far: #2E2C44;
+    --street-near: #1C1A26;
+    --street-trim: #3A3346;
+    --street-window: #2B2A3A;
+    --street-window-lit: #F6B860;
+    --lamp-glow: rgb(255 168 72 / .5);
     --focus: #8EC5F5;
     --focus-halo: #1E1A17;
     --paper: #1E1A17;
@@ -248,6 +277,16 @@
   --sweep: rgb(255 196 120 / .16);
   --wood: #4A3020;
   --wood-lo: #2E1C12;
+  --sky-eve-top: #141A2E;
+  --sky-eve-low: #3A2A36;
+  --sky-moon: #F4E9C8;
+  --sky-star: rgb(255 246 220 / .85);
+  --street-far: #2E2C44;
+  --street-near: #1C1A26;
+  --street-trim: #3A3346;
+  --street-window: #2B2A3A;
+  --street-window-lit: #F6B860;
+  --lamp-glow: rgb(255 168 72 / .5);
   --hem-check: rgb(150 60 48 / .45);
   --focus: #8EC5F5;
   --focus-halo: #1E1A17;

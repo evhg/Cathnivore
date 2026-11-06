@@ -21,3 +21,14 @@ export function lightForHour(hour: number): TablePhase {
   if (hour < 17) return 'afternoon'
   return 'dusk'
 }
+
+/** Plan item 206: the title market's sky by the player's clock. The dark theme is always the lantern-lit evening. */
+export type TitleSky = 'dawn' | 'day' | 'golden' | 'evening'
+
+export function skyForHour(hour: number, dark = false): TitleSky {
+  if (dark) return 'evening'
+  if (hour >= 5 && hour < 8) return 'dawn'
+  if (hour >= 8 && hour < 16) return 'day'
+  if (hour >= 16 && hour < 19) return 'golden'
+  return 'evening'
+}

@@ -47,9 +47,26 @@ export default function TitleArt() {
       {/* Plan item 75: the market table's near edge, in front of Cath (hiding her waist) and under the board. */}
       {/* Plan item 86: bunting strung across the market at D, from the menu board's side to the cloth's. */}
       <svg className="title-bunting" viewBox="0 0 1440 70" preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
+        <defs>
+          <radialGradient id="title-lantern-halo">
+            <stop className="title-lantern-halo-in" offset="0" />
+            <stop className="title-lantern-halo-out" offset="1" />
+          </radialGradient>
+        </defs>
         <path className="title-bunting-rope" d={BUNTING_ROPE} />
         {BUNTING_FLAGS.map((f, i) => (
           <path key={i} className={`title-bunting-flag f${i % 4}`} d={f} />
+        ))}
+        {/* Plan item 206: paper lanterns on the rope, unlit by day, lit (and flickering, motion allowing) at evening. */}
+        {BUNTING_LANTERNS.map((l, i) => (
+          <g key={`l${i}`} className="title-lantern" transform={`translate(${l.x.toFixed(1)} ${l.y.toFixed(1)})`}>
+            <circle className="title-lantern-glow" cx="0" cy="14" r="20" fill="url(#title-lantern-halo)" />
+            <path className="title-lantern-cord" d="M0 0V5" />
+            <rect className="title-lantern-cap" x="-3" y="4" width="6" height="2.5" rx="1" />
+            <ellipse className="title-lantern-body" cx="0" cy="14" rx="7.5" ry="8.5" />
+            <path className="title-lantern-rib" d="M0 5.5V22.5M-4 6.6Q-6.5 14 -4 21.4M4 6.6Q6.5 14 4 21.4" />
+            <rect className="title-lantern-cap" x="-3" y="21.5" width="6" height="2.5" rx="1" />
+          </g>
         ))}
       </svg>
       <div className="title-table-front">
@@ -90,6 +107,16 @@ const BUNTING_FLAGS = (() => {
     flags.push(`M${a.x.toFixed(1)} ${a.y.toFixed(1)} L${b.x.toFixed(1)} ${b.y.toFixed(1)} L${tip.x.toFixed(1)} ${(tip.y + 26).toFixed(1)} Z`)
   }
   return flags
+})()
+/** Plan item 206: a lantern on the rope between every fourth pair of pennants. */
+const BUNTING_LANTERNS = (() => {
+  const out: { x: number; y: number }[] = []
+  for (let x = 96; x < 1440; x += 192) {
+    const ox = x < 720 ? 0 : 720
+    const t = (x - ox) / 720
+    out.push({ x, y: (1 - t) * (1 - t) * 8 + 2 * (1 - t) * t * 58 + t * t * 10 })
+  }
+  return out
 })()
 
 /** A vertex of Kingsmarket's hex (pointy-top, i = 0 at the top, clockwise), `k` hex radii out from the centre. */
