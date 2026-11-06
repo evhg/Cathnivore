@@ -2286,7 +2286,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-place-card]` x2 as `role=radio`, 44 px+; no element in the left column taller than 160 px with under 6 words; AA throughout; setup specs pass; shots D (1440, 1280), light and dark, and P unchanged.
 - **Size:** 2
 
-## 205. [ ] NIGHT SHIFT: Cath's face painted onto her head (a texture, not geometry)
+## 205. [ ] NIGHT SHIFT: Cath's face painted onto her head (a texture, not geometry) *(lane A, in progress)*
 - **Why:** `plan1106d/ns-title-D` (970-1060 x 270-350): items 117, 140, 175 and 187 moved the camera and reshaped the head, and her face still reads as a pale oval with closed lines, no liner, brows or lip colour at title distance.
 - **Build:**
   - A procedural canvas face texture on the head's front (`shared/cath` bible colours): winged liner, irises with two highlights, brows (the right one raised), rose lips, blush; mipmapped so it holds at title distance.
