@@ -2165,7 +2165,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 the hex group is ~~70%+~~ 57%+ (53%+ at 1280) of `.table`'s (`.map-wrap`'s) width and ~~80%+~~ 90%+ of its height (cut 2026-11-06, DECISIONS: the hex group is about square and height-bound, so 70% of the width would need a 690 px tall board in an 876 px column that also holds the Market Board and the hand); no empty vertical band over 80 px in the left rail; Cath 300 px+ tall, meeting no hex box; `desktop-no-scroll`, `board-tokens`, `plan-corp` pass; shots D (1440 and 1280), light and dark.
 - **Size:** 2
 
-## 191. [ ] Hedgerow 3D: a camera that directs the round *(lane B, in progress)*
+## 191. [x] Hedgerow 3D: a camera that directs the round *(done 2026-11-06, lane B: on Go the look starts on the depot at 1.35x and eases to the play view over 1.5 s (within 1% after); one close-up a round on a merge or on the house at a leak; double-tap pushes in on a plot, a second returns; zoom keeps its 1-2.6x clamps and pan stays on the field; no moves on phones (<600 px) or under reduced motion, where the gate look and boss push now cut too; no new meshes. `e2e-site/hedgerow-camera3d.spec.ts`; shots `t191` D and L. Not separately tested: the zoom clamp's 'lane within 2 cells' and the draw-call script (no geometry was added))*
 - **Why:** `plan1106b/hedge-l21-3d-D` and `-P` are one fixed overhead view, so the 3D world never gets a hero angle: the depot, the queue (270-300 x 265-360) and Cath (150-235 x 470-610) are small and far.
 - **Build:**
   - On Go, a slow dolly from the depot along the lane, settling back into the play view.
