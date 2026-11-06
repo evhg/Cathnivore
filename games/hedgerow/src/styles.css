@@ -4838,7 +4838,8 @@ img.act-scene {
 .depot[data-small] .depot-next { display: none; }
 .depot-rep {
   position: absolute;
-  left: 72%;
+  /* Plan item 201: along the rail clear of the departures board (26-74%); at 72% his shoulder sat on its end. */
+  left: 76%;
   top: 31%;
   width: 22%;
   height: 28%;

@@ -64,6 +64,15 @@ test('the depot keeps clear of the gate sign and its board fits', async ({ page 
   await expect(page.locator('[data-depot]').first()).toBeAttached()
   const boards = await page.locator('.depot-board').evaluateAll((els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })))
   for (const b of boards) expect(b.sw).toBeLessThanOrEqual(b.cw + 1)
+  // Plan item 201: the rep stands along the rail, clear of the board's end (his shoulder sat on it).
+  const gaps = await page.locator('.depot:not(.depot-3d)').evaluateAll((els) =>
+    els.map((d) => {
+      const b = d.querySelector('.depot-board')!.getBoundingClientRect()
+      const r = d.querySelector('.depot-rep')!.getBoundingClientRect()
+      return r.left - b.right
+    }),
+  )
+  for (const g of gaps) expect(g).toBeGreaterThanOrEqual(0)
   // The sign is painted on the canvas: sample its teal plate (#1f8a8a, about rgb(41,128,124) under the act's grade), then check no depot box
   // covers any of those pixels.
   const covered = await page.evaluate(() => {
