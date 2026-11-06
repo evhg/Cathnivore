@@ -2294,7 +2294,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the title canvas reports `data-cath-expr`; in a D face crop (85 px+) the eye regions are 3:1+ darker than the cheek (pixel test); `cathode-front` and `cathode-perf` pass (run alone); shots title and class pick at P and D.
 - **Size:** 2-3
 
-## 206. [ ] Cathnivore: the title market under a real sky, morning to a lantern-lit evening *(lane A, in progress)*
+## 206. [x] Cathnivore: the title market under a real sky, morning to a lantern-lit evening *(done 2026-11-06, lane A, 271e232c and 9846effe: `TitleSky.tsx`, Marrow's street (clock tower, market hall, two rows of houses with windows and awnings) under a dawn, day, golden or evening sky by the local hour, dark always evening with stars and a moon; paper lanterns on the bunting lit at evening, flicker stilled by reduced motion; the pennants, NEXT ticket and price-board take their glow, warm pools on the counter at D. `e2e/title-sky.spec.ts` (4.5:1 for logotype and menu in all five states, the sky above menu and board at P, D, 1280x800, 1024x768, 1920x1080 and 844x390); shots `t206`)*
 - **Why:** `plan1106e/cath-title-D`: the top third is flat cream, bunting (0-1440 x 175-310) over empty paper either side of Cath (0-540 x 250-330, 860-1440 x 250-310); `cath-title-P` plain beige behind the board and Cath (140-390 x 240-430). VISION 1 'a scene', VISION 6 'a dark mode that is designed'.
 - **Build:**
   - A painted street behind the stall (awnings, Marrow's rooftops, a sky) in four states by the local hour: dawn, day, golden, evening.
@@ -2310,7 +2310,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-signboard]`; icon targets 44 px or more; at 390x844 her line's box meets no tile; the dock's text 14 px or more; runnel-one-cath, -lesson-close and -almanac pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 208. [ ] Hedgerow 3D: Cath's body to the character bible
+## 208. [ ] Hedgerow 3D: Cath's body to the character bible *(lane A, in progress)*
 - **Why:** `plan1106e/hedge-l21-3d-D` (160-290 x 490-680): item 162 made her head readable, but her body is a chibi (the head about a third of her height), the hair a black mass, no collar-up olive jacket or pearls; on `hedge-l21-3d-P` (20-70 x 485-545) she reads only as hair.
 - **Build:**
   - Proportions towards 1:5 head to body: a fitted olive jacket, collar up, cream blouse, dark trousers, from the `shared/cath/` palette; hair as layered locks with a shine band.
