@@ -1,3 +1,4 @@
+import AbilityMoment, { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './AbilityMoment'
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
@@ -683,6 +684,34 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       delete w.cathnivoreMoment
     }
   }, [])
+  // Plan item 189: a producer's role ability staged over the hex it acted on (diffed, as the engine logs no event).
+  const [ability, setAbility] = useState<AbilityMomentView | null>(null)
+  const abilityPrev = useRef(state)
+  useEffect(() => {
+    const prev = abilityPrev.current
+    abilityPrev.current = state
+    if (prev === state) return
+    const used = abilityUsed(prev, state)
+    if (!used) return
+    setAbility((a) => ({ ...used, key: (a?.key ?? 0) + 1 }))
+    playCues([used.producer === 'mara' ? 'woodClack' : used.producer === 'tomas' ? 'awning' : used.producer === 'ines' ? 'paperSlide' : 'synthChime'])
+    const t = window.setTimeout(() => setAbility(null), ABILITY_MOMENT_MS)
+    return () => window.clearTimeout(t)
+  }, [state])
+  useEffect(() => {
+    if (typeof window === 'undefined' || !new URLSearchParams(window.location.search).has('e2eMoment')) return
+    const w = window as unknown as { cathnivoreAbility?: (producer: ProducerId, region: RegionId) => void }
+    let t = 0
+    w.cathnivoreAbility = (producer, region) => {
+      window.clearTimeout(t)
+      setAbility((a) => ({ producer, region, key: (a?.key ?? 0) + 1 }))
+      t = window.setTimeout(() => setAbility(null), ABILITY_MOMENT_MS)
+    }
+    return () => {
+      window.clearTimeout(t)
+      delete w.cathnivoreAbility
+    }
+  }, [])
   const marketEvent = state.config.marketEvent
   const moment = Object.values(fx).includes('lib') ? 'liberate' : Object.values(fx).includes('sq') ? 'squeeze' : undefined
 
@@ -1087,6 +1116,10 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           </g>
         )
       })}
+      {ability && active.includes(ability.region) && (() => {
+        const { x, y } = hexCenter(ability.region, layout)
+        return <AbilityMoment key={ability.key} view={ability} x={x} y={y} r={HEX_R * GAP_SCALE} />
+      })()}
       </g>
       {enemyTurn && <EnemyTurnLayer view={enemyTurn} layout={layout} fit={fit} />}
       {!enemyTurn && threat && threat.regions.length > 0 && <ThreatLayer threat={threat} layout={layout} fit={fit} />}

@@ -3517,3 +3517,35 @@ svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-ou
     background: var(--paper-hi); border-left: 1px solid color-mix(in srgb, var(--soil) 30%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--soil) 30%, transparent);
   }
 }
+
+/* Plan item 189: each producer's role ability staged over its hex for about a second (AbilityMoment.tsx). The
+   whole moment fades out by 1.1 s; reduced motion keeps only the fades. */
+@keyframes ab-life { 0% { opacity: 0; } 8%, 78% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ab-nail { 0% { transform: translateY(-18px) rotate(-8deg) scale(1.15); } 40% { transform: translateY(0) rotate(-3deg) scale(1); } 52% { transform: translateY(0) rotate(-3deg) scale(1.04, 0.96); } 64%, 100% { transform: translateY(0) rotate(-3deg) scale(1); } }
+@keyframes ab-gavel { 0%, 30% { transform: rotate(-40deg); } 48% { transform: rotate(8deg); } 58% { transform: rotate(-4deg); } 70%, 100% { transform: rotate(0deg); } }
+@keyframes ab-puff { 0%, 45% { opacity: 0; transform: scale(0.6); } 55% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+@keyframes ab-drop { 0% { transform: translateY(-22px); } 55% { transform: translateY(3px); } 75%, 100% { transform: translateY(0); } }
+@keyframes ab-pop { 0%, 25% { transform: scale(0, 0.2); } 55% { transform: scale(1.12, 1.05); } 72%, 100% { transform: scale(1); } }
+@keyframes ab-strike { 0%, 25% { stroke-dashoffset: 1; } 55%, 100% { stroke-dashoffset: 0; } }
+@keyframes ab-wane { 0%, 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.6); } }
+@keyframes ab-wave { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+.ability-moment { animation: ab-life var(--ab-run, 1100ms) linear both; }
+.ability-moment * { transform-box: fill-box; }
+.ab-notice { transform-origin: center top; animation: ab-nail 700ms var(--ease-settle) both; }
+.ab-gavel > g { transform-box: view-box; }
+.ab-gavel { transform-origin: 30% 90%; animation: ab-gavel 700ms var(--ease-settle) both; }
+.ab-dust { transform-origin: center; animation: ab-puff 700ms ease-out both; }
+.ab-bunting { animation: ab-drop 650ms var(--ease-pop) both; }
+.ab-awning { transform-origin: center bottom; animation: ab-pop 700ms var(--ease-pop) both; }
+.ab-strike { stroke-dasharray: 1; animation: ab-strike 700ms ease-out both; }
+.ab-doubt { transform-origin: center; animation: ab-wane 1000ms ease-in both; }
+.ab-check { transform-origin: center; animation: ab-pop 700ms var(--ease-pop) both; }
+.ab-wave { transform-origin: center; animation: ab-wave 900ms ease-out both; }
+.ab-mast { transform-origin: center bottom; animation: ab-pop 500ms var(--ease-pop) both; }
+@media (prefers-reduced-motion: reduce) {
+  .ability-moment * { animation: none; }
+  .ab-strike { stroke-dasharray: none; }
+  .ab-wave { opacity: 0.5; }
+  .ab-wave + .ab-wave { display: none; }
+}
+html.no-animations .ability-moment * { animation: none !important; }
