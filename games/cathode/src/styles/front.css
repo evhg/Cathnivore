@@ -1103,7 +1103,7 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug.is-done .mug-name { text-decoration: line-through; text-decoration-color: var(--blood); }
   .mug.is-next { outline: calc(var(--u) * 3) solid var(--blood-hot); outline-offset: calc(var(--u) * 2); }
   /* Plan item 107: only the print fades, so 'Withheld' keeps its contrast on the white frame. */
-  .mug.is-sealed .mug-photo { opacity: .72; }
+  .mug.is-sealed .mug-photo { background: color-mix(in srgb, var(--card-ink) 72%, rgb(var(--white-rgb))); } .mug.is-sealed .mug-photo svg { opacity: .72; }
 }
 
 /* Plan item 98: on an upright phone the List is the same five mugshots as a small strip (it read as plain text);
@@ -1143,7 +1143,7 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   }
   .mug.is-next { outline: calc(var(--u) * 2) solid var(--blood-hot); outline-offset: calc(var(--u) * 2); }
   /* Plan item 107: only the print fades, so 'Withheld' keeps its contrast on the white frame. */
-  .mug.is-sealed .mug-photo { opacity: .72; }
+  .mug.is-sealed .mug-photo { background: color-mix(in srgb, var(--card-ink) 72%, rgb(var(--white-rgb))); } .mug.is-sealed .mug-photo svg { opacity: .72; }
 }
 
 /* Plan item 89: the case dossier beside the menu at D, slid in while New Case or Continue has the focus: a pinned
@@ -1153,7 +1153,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .dossier {
     position: absolute;
     top: var(--dossier-top, 0);
-    left: calc(var(--u) * 470);
+    /* Plan item 194: past the List's last print when beside the menu its foot would meet the List (main.ts). */
+    left: var(--dossier-left, calc(var(--u) * 470));
     display: grid;
     gap: calc(var(--u) * 4);
     width: calc(var(--u) * 200);
@@ -1260,14 +1261,26 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   font: 800 var(--fs-1) / 1.15 var(--font-ui);
   letter-spacing: .06em;
   color: var(--blood-hot);
-  background: rgb(var(--black-rgb) / .35);
+  /* Plan item 194: inked on a dark label, not screened onto the photo: on a sealed grey print the screen blend left
+     a pale pink word nobody could read. */
+  background: rgb(var(--black-rgb) / .82);
   rotate: -11deg;
-  mix-blend-mode: screen;
 }
 .mug-note { display: none; }
 .rumour { display: none; }
 @media (min-width: 900px) and (min-height: 521px) {
   .the-list-wall { gap: calc(var(--u) * 16); }
+  /* Plan item 194: the rumours' larger hand made the prints taller; the wall sits lower over the letterbox's line so
+     its heading stays clear of the menu. */
+  .the-list { bottom: max(var(--safe-y), calc(9svh + var(--u) * 6)); }
+  /* Plan item 194: the front was laid out for 16:10 (1200 u tall). On a shorter screen, 16:9 at 1920x1080 above all,
+     the List rose over Credits and the case file. The column now gives back what the screen lacks (--short, up to
+     60 u off its top and 14 u off each menu row), and 24 px for the List's 12-14 px type floors. */
+  .title-col {
+    --short: min(0px, 100svh - var(--u) * 1200); /* px-ok: zero */
+    top: calc(var(--safe-y) + clamp(var(--u) * 60, var(--u) * 120 + var(--short) - 24px, var(--u) * 120)); /* px-ok: type floors */
+  }
+  .title-col .menu { grid-auto-rows: max(calc(var(--u) * 56), calc(var(--u) * 70 + var(--short) / 8)); }
   .mug {
     width: calc(var(--u) * 132);
     outline-offset: calc(var(--u) * 2);
@@ -1277,9 +1290,10 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug::before { z-index: var(--z-lift-3); }
   .mug .mug-name { min-height: 0; }
   .the-list:has(.mug:is(:hover, :focus)) { z-index: var(--z-pop); }
+  /* Plan item 194: Cath's hand a step up the scale (at --fs-1 the italic serif read as 11 px). */
   .rumour {
     display: block;
-    font: italic 400 var(--fs-1) / 1.2 var(--font-voice);
+    font: italic 500 var(--fs-2) / 1.05 var(--font-voice);
     color: var(--card-ink);
   }
   .mug:is(:hover, :focus) {

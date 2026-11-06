@@ -282,6 +282,23 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   el("b", "dossier-target", box, d.target);
   el("span", "dossier-place", box, d.place);
   el("span", "dossier-tag", box, d.tag);
+  placeDossier(box);
+}
+
+/** Plan item 194: the case file stands beside the menu while its foot clears The List; on a shorter screen (16:9 at
+ *  1366x768, say) it moves past the List's last print instead of covering it. */
+function placeDossier(box: HTMLElement | null): void {
+  if (!box) return;
+  box.style.removeProperty("--dossier-left");
+  const wall = document.getElementById("the-list-wall");
+  const parent = box.offsetParent;
+  if (!wall || !parent || !box.classList.contains("is-open")) return;
+  const b = box.getBoundingClientRect();
+  const w = wall.getBoundingClientRect();
+  if (b.height === 0 || w.height === 0) return;
+  if (b.bottom > w.top - 12 && b.left < w.right) {
+    box.style.setProperty("--dossier-left", `${Math.round(w.right - parent.getBoundingClientRect().left + 28)}px`);
+  }
 }
 
 /** Plan item 137: the boss jobs whose names the title has already shown struck off The List. */
@@ -442,7 +459,10 @@ function stageTitle(): void {
   // The top leaves the umbrella room under the screen's edge so her face falls below the logotype's subtitle.
   scene?.setStage({ left: m, top: Math.round(innerHeight * 0.03), right: innerWidth - m, bottom: wall.top - Math.max(4, m / 2) });
 }
-addEventListener("resize", () => stageTitle());
+addEventListener("resize", () => {
+  stageTitle();
+  placeDossier(document.getElementById("dossier"));
+});
 
 /**
  * Plan item 161: on a landscape class pick she stands whole in the gap between the class list and the stat sheet

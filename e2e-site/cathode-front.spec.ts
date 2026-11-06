@@ -697,3 +697,37 @@ test('left idle on the title, the lens pushes in to her face', async ({ page, ha
   await page.keyboard.press('ArrowDown')
   await page.waitForFunction(() => Number(document.querySelector<HTMLCanvasElement>('canvas[data-idle-push]')?.dataset.idlePush) < 0.2, null, { timeout: 5_000 })
 })
+
+// Plan item 194: on a 16:9 desktop the List rose over Credits and the case file; its rumours were 12 px italic and
+// its district stamps were screened pale onto grey prints. Now no two of menu, case file and List meet at 16:10 or
+// 16:9, the rumours are 14 px or more, and each stamp is inked on a dark label.
+test('the title column, case file and List never meet on a desktop', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop front')
+  test.setTimeout(300_000)
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  for (const vp of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 1366, height: 768 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+    await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+    await expect(page.locator('#dossier.is-open')).toBeVisible()
+    const m = await page.evaluate(() => {
+      const box = (s: string) => { const r = document.querySelector(s)!.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }
+      const stamp = getComputedStyle(document.querySelector('.mug-stamp')!)
+      return {
+        menu: box('#menu'), dossier: box('#dossier'), wall: box('#the-list-wall'), head: box('.the-list-h'),
+        rumour: Math.min(...[...document.querySelectorAll('#the-list-wall .rumour')].map((e) => parseFloat(getComputedStyle(e).fontSize))),
+        blend: stamp.mixBlendMode, stampBg: stamp.backgroundColor,
+      }
+    })
+    const meets = (a: typeof m.menu, b: typeof m.menu) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+    const at = `${vp.width}x${vp.height}`
+    expect(m.menu.bottom, `${at} menu over the List's heading`).toBeLessThanOrEqual(m.head.top)
+    expect(meets(m.dossier, m.wall), `${at} case file on the List ${JSON.stringify(m)}`).toBe(false)
+    expect(meets(m.dossier, m.menu), `${at} case file on the menu`).toBe(false)
+    expect(m.dossier.right, at).toBeLessThanOrEqual(vp.width)
+    expect(m.rumour, at).toBeGreaterThanOrEqual(14)
+    expect(m.blend, at).toBe('normal')
+    expect(Number(/[\d.]+\)$/.exec(m.stampBg)?.[0].slice(0, -1) ?? 1), at).toBeGreaterThanOrEqual(0.8)
+  }
+})
