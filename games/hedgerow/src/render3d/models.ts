@@ -1982,12 +1982,22 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   clip.position.set(-0.08, -0.2, 0.06);
   clip.rotation.set(0, Math.PI / 2, 0.35);
   top.add(clip);
-  // Front locks: they fall from under her portrait over her shoulders, framing her face.
+  // Front locks: they fall from under her portrait over her shoulders, framing her face. Plan item 208: each is two
+  // flat, layered locks lying on her jacket (they were round tubes hanging free, like two bunches), the outer one
+  // longer and turned out over the shoulder.
   const locks: THREE.Group[] = [];
-  for (const z of [-0.06, 0.06]) {
+  for (const z of [-1, 1]) {
     const p = new THREE.Group();
-    p.position.set(0.13, CATH_HEAD_Y - 0.12, z);
-    p.add(mesh(hairLock(0.3, 0.032, 0.04, 0.01, -0.02, 0.3), hairMaterial(), 0, 0, 0));
+    p.position.set(0.1, CATH_HEAD_Y - 0.11, z * 0.065);
+    // Both locks in one geometry, so a side stays one draw call.
+    const both = geo(`cathFrontLocks${z}`, () => {
+      const outer = hairLock(0.3, 0.05, 0.02, 0.012, -0.03, 0.26).clone();
+      outer.applyMatrix4(new THREE.Matrix4().makeRotationX(z * 0.1).setPosition(0, 0, z * 0.008));
+      const inner = hairLock(0.22, 0.04, 0.018, 0.016, -0.025, 0.3).clone();
+      inner.applyMatrix4(new THREE.Matrix4().makeRotationX(z * 0.14).setPosition(0.012, 0.01, -z * 0.02));
+      return mergeGeometries([outer, inner])!;
+    });
+    p.add(mesh(both, hairMaterial(), 0, 0, 0));
     fig.add(p);
     locks.push(p);
   }
@@ -2061,8 +2071,11 @@ function cathHead(skinM: M): THREE.Group {
   // Plan item 208: a short neck; her collar stands up round the rest of it.
   turn.add(cyl(0.035, 0.04, 0.06, skinM, 0, -0.15, 0, 8));
   // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
-  const cap = mesh(geo("cathHairCap2", () => new THREE.SphereGeometry(0.144, 18, 10, Math.PI * 0.78, Math.PI * 1.44, 0, Math.PI * 0.5)), hairM, -0.012, 0.012, 0);
+  // Plan item 208: the cap's opening faces her face (+x). It used to face +z, her side toward the camera, so the
+  // skin of her head showed as a pale patch over her ear; a shallow front piece makes the hairline above her brows.
+  const cap = mesh(geo("cathHairCap3", () => new THREE.SphereGeometry(0.144, 18, 10, Math.PI * 1.28, Math.PI * 1.44, 0, Math.PI * 0.5)), hairM, -0.012, 0.012, 0);
   turn.add(cap);
+  turn.add(mesh(geo("cathHairFront", () => new THREE.SphereGeometry(0.146, 10, 6, Math.PI * 0.7, Math.PI * 0.6, 0, Math.PI * 0.34)), hairM, -0.012, 0.012, 0));
   turn.add(scaled(ball(0.14, hairM, -0.075, -0.03, 0, 2), 0.72, 0.95, 1));
   // Plan item 162: hair over each temple, where the wider face opening showed the skin of her head's side.
   for (const z of [-1, 1]) turn.add(scaled(ball(0.06, hairM, -0.005, 0.03, z * 0.112, 1), 0.9, 1.25, 0.6));
