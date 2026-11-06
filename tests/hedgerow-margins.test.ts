@@ -86,3 +86,16 @@ describe("hedgerow 2D margins", () => {
     for (const act of [4, 5, 6, 7, 8, 9]) expect(MARGIN_SETS[act]!.pieces.some((p) => LIVE_PIECES.has(p.kind)), `act ${act}`).toBe(true);
   });
 });
+
+// Plan item 224: Hollowell's adverts stand in the Ballot's and the Merger's margins, the pieces wide enough for
+// the panel (about 2.3 of its scale), and the Saltmarsh keeps its salt pans.
+describe("margin billboards", () => {
+  it("the Ballot and the Merger carry billboards wide enough for their panels", () => {
+    for (const act of [7, 8]) {
+      const b = MARGIN_SETS[act]!.pieces.find((p) => p.kind === "billboard");
+      expect(b, `act ${act + 1}`).toBeTruthy();
+      expect(b!.w).toBeGreaterThanOrEqual(2.2);
+    }
+    expect(MARGIN_SETS[2]!.pieces.some((p) => p.kind === "saltpan")).toBe(true);
+  });
+});

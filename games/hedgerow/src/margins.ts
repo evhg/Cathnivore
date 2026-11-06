@@ -34,10 +34,11 @@ export type MarginPiece =
   | "cars"
   | "cabin"
   | "lanterns"
-  | "cart";
+  | "cart"
+  | "billboard";
 
 /** Pieces drawn by theme.ts's shared decor painter (base point at the piece's foot). */
-export const DECOR_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["willow", "heather", "oak", "deadtree", "stall", "tower", "boat"]);
+export const DECOR_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["willow", "heather", "oak", "deadtree", "stall", "tower", "boat", "billboard"]);
 
 /** Pieces with an ambient loop (`drawMarginLife`). */
 export const LIVE_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["gulls", "mill", "kiln", "fissure", "marquee", "crane", "lanterns"]);
@@ -144,6 +145,8 @@ export const MARGIN_SETS: Partial<Record<number, MarginSet>> = {
       { kind: "hustings", weight: 2, w: 1.2, h: 0.85 },
       { kind: "stall", weight: 3, w: 1.0, h: 0.85 },
       { kind: "oak", weight: 3, w: 0.95, h: 1.15 },
+      // Plan item 224: Hollowell's adverts along the roads in.
+      { kind: "billboard", weight: 3, w: 2.3, h: 1.15 },
     ],
     density: 0.3,
     boardwalk: false,
@@ -157,6 +160,7 @@ export const MARGIN_SETS: Partial<Record<number, MarginSet>> = {
       { kind: "crane", weight: 2, w: 1.3, h: 1.4 },
       { kind: "cars", weight: 3, w: 1.1, h: 0.45 },
       { kind: "cabin", weight: 2, w: 0.9, h: 0.6 },
+      { kind: "billboard", weight: 3, w: 2.3, h: 1.15 },
     ],
     density: 0.3,
     boardwalk: false,

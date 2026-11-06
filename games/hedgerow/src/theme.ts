@@ -1007,7 +1007,9 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
 }
 
 function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
-  if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
+  // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
+  if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
+  else if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
   else paintPiece(ctx, p, s, rand);
 }
 
@@ -1137,7 +1139,15 @@ function paintDecor(
     }
     if (inWater(x, y) && kind !== "boat" && kind !== "reeds") continue;
     if (!inWater(x, y) && kind === "boat" && water) continue;
-    if (items.some((it) => Math.hypot(it.x - x, it.y - y) < s * 0.55)) continue;
+    // Plan item 224: a billboard is a wide panel standing above its foot: the whole panel keeps off the field.
+    if (kind === "billboard") {
+      const half = Math.max(s * 1.15, 80);
+      const tall = Math.max(s * 1.4, 64);
+      if (x + half > gx0 && x - half < gx1 && y > gy0 && y - tall < gy1) continue;
+    }
+    // Plan item 224: a billboard is a wide panel, so it keeps a wider berth.
+    const berth = (k: Decor) => (k === "billboard" ? s * 1.2 : s * 0.55);
+    if (items.some((it) => Math.hypot(it.x - x, it.y - y) < Math.max(berth(kind), berth(it.kind)))) continue;
     if (inMargin) continue;
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
@@ -1415,26 +1425,109 @@ export function drawDecor(
       break;
     }
     case "billboard": {
-      shadow(ctx, x, y, s * 0.35, s * 0.07);
-      ctx.fillStyle = "#6b6f75";
-      ctx.fillRect(x - s * 0.24, y - s * 0.4, s * 0.04, s * 0.4);
-      ctx.fillRect(x + s * 0.2, y - s * 0.4, s * 0.04, s * 0.4);
-      ctx.fillStyle = "#1f8a8a";
+      // Plan item 224: Hollowell's adverts: a glossy slate panel on two posts, an orange brand stripe, a face (Pell's
+      // grin, a crate of 0.99 farm kit, a QR code or the ballot tick) and a slogan in bold at 12 px or more.
+      const ads = [
+        { face: "pell", lines: ["VOTE", "PELL"] },
+        { face: "crate", lines: ["KIT", "0.99"] },
+        { face: "qr", lines: ["SCAN", "& SAVE"] },
+        { face: "tick", lines: ["FRESHER", "THAN FRESH™"] },
+      ] as const;
+      const ad = ads[Math.floor(rand() * ads.length)]!;
+      const fs = Math.max(12, Math.round(s * 0.2));
+      ctx.font = `800 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
+      const tw = Math.max(...ad.lines.map((l) => ctx.measureText(l).width));
+      const fw = fs * 2.3;
+      const pw = fw + tw + fs * 1.1;
+      const ph = fs * 2.9;
+      const top = y - s * 0.42 - ph;
+      const left = x - pw / 2;
+      shadow(ctx, x, y, pw * 0.45, s * 0.07);
+      ctx.fillStyle = "#5d6168";
+      ctx.fillRect(left + pw * 0.18, top + ph, s * 0.05, y - top - ph);
+      ctx.fillRect(left + pw * 0.78, top + ph, s * 0.05, y - top - ph);
+      ctx.fillStyle = "#1e2b34";
       ctx.beginPath();
-      ctx.roundRect(x - s * 0.36, y - s * 0.78, s * 0.72, s * 0.4, s * 0.04);
+      ctx.roundRect(left, top, pw, ph, fs * 0.25);
       ctx.fill();
       ctx.stroke();
+      // the brand stripe and the gloss
+      ctx.fillStyle = "#ff7a1a";
+      ctx.fillRect(left + fs * 0.15, top + ph - fs * 0.42, pw - fs * 0.3, fs * 0.22);
+      const gl = ctx.createLinearGradient(left, top, left, top + ph * 0.5);
+      gl.addColorStop(0, "rgba(255,255,255,0.22)");
+      gl.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = gl;
+      ctx.beginPath();
+      ctx.roundRect(left + 2, top + 2, pw - 4, ph * 0.45, fs * 0.2);
+      ctx.fill();
+      // the face
+      const fx = left + fs * 0.35 + fw / 2;
+      const fy = top + ph * 0.44;
+      const r = fs * 0.95;
+      if (ad.face === "pell") {
+        ctx.fillStyle = "#f0c9a0";
+        ctx.beginPath();
+        ctx.arc(fx, fy, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#2b2320";
+        ctx.beginPath();
+        ctx.ellipse(fx - r * 0.1, fy - r * 0.62, r * 0.95, r * 0.45, -0.2, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(fx - r * 0.42, fy - r * 0.18, r * 0.2, r * 0.12);
+        ctx.fillRect(fx + r * 0.22, fy - r * 0.18, r * 0.2, r * 0.12);
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.ellipse(fx, fy + r * 0.32, r * 0.55, r * 0.24, 0, 0, Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = "#2b2320";
+        ctx.lineWidth = Math.max(1, fs * 0.08);
+        ctx.stroke();
+      } else if (ad.face === "crate") {
+        ctx.fillStyle = "#ff7a1a";
+        ctx.fillRect(fx - r, fy - r * 0.6, r * 2, r * 1.3);
+        ctx.strokeStyle = "#7a3a0e";
+        ctx.lineWidth = Math.max(1, fs * 0.1);
+        ctx.strokeRect(fx - r, fy - r * 0.6, r * 2, r * 1.3);
+        ctx.beginPath();
+        ctx.moveTo(fx - r, fy);
+        ctx.lineTo(fx + r, fy);
+        ctx.stroke();
+        ctx.fillStyle = "#8fbf4a";
+        for (const dx of [-0.5, 0, 0.5]) {
+          ctx.beginPath();
+          ctx.arc(fx + dx * r, fy - r * 0.75, r * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (ad.face === "qr") {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(fx - r, fy - r, r * 2, r * 2);
+        ctx.fillStyle = "#1e2b34";
+        const c = (r * 2) / 7;
+        const bits = [0x7f, 0x41, 0x5d, 0x5d, 0x41, 0x7f, 0x14];
+        for (let row = 0; row < 7; row++)
+          for (let col = 0; col < 7; col++)
+            if ((bits[row]! >> col) & 1 || (row > 3 && col > 3 && (row + col) % 2 === 0)) ctx.fillRect(fx - r + col * c, fy - r + row * c, c * 0.92, c * 0.92);
+      } else {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(fx - r * 0.85, fy - r * 0.85, r * 1.7, r * 1.7);
+        ctx.strokeStyle = "#ff7a1a";
+        ctx.lineWidth = Math.max(1.5, fs * 0.2);
+        ctx.beginPath();
+        ctx.moveTo(fx - r * 0.5, fy);
+        ctx.lineTo(fx - r * 0.1, fy + r * 0.4);
+        ctx.lineTo(fx + r * 0.55, fy - r * 0.45);
+        ctx.stroke();
+      }
+      // the slogan
       ctx.fillStyle = "#f4fbfb";
-      ctx.font = `700 ${Math.max(6, Math.round(s * 0.11))}px 'Hedgerow UI', system-ui, sans-serif`;
-      ctx.textAlign = "center";
+      ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      const lines = [
-        ["CONVENIENCE,", "DELIVERED"],
-        ["VOTE PELL", "for less"],
-        ["NOW 0.99", "at Hollowell"],
-      ][Math.floor(rand() * 3)]!;
-      ctx.fillText(lines[0]!, x, y - s * 0.64);
-      ctx.fillText(lines[1]!, x, y - s * 0.5);
+      const tx = left + fs * 0.55 + fw;
+      ctx.fillText(ad.lines[0], tx, top + ph * 0.3);
+      ctx.fillText(ad.lines[1], tx, top + ph * 0.62);
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = lw;
       break;
     }
     case "tower": {
