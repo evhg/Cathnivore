@@ -562,12 +562,57 @@ export class Renderer3D {
     const gate = game.level.path[0];
     this.openFrame =
       this.w < 600 && this.h > this.w && gate
-        ? { zoom: 1.6, x: (gate[0] + 0.5 + cols / 2) / 2, z: (gate[1] + 0.5 + rows / 2) / 2 }
+        ? { zoom: 1.6, ...this.gateLook(gate[0] + 0.5, gate[1] + 0.5, cols, rows, 1.6) }
         : null;
+    this.openFramePending = !!this.openFrame;
     this.frameClose();
   }
 
+  /** Where the close frame looks: towards the field's middle from the gate, as far as keeps the gate (and its
+   * depot beyond the edge) about a cell and a half inside the view on each axis. */
+  private gateLook(gx: number, gz: number, cols: number, rows: number, zoom: number): { x: number; z: number } {
+    const axis = (g: number, mid: number, half: number) => {
+      const d = mid - g;
+      const k = Math.max(0, half - 1.5);
+      return Math.abs(d) <= k ? mid : g + Math.sign(d) * k;
+    };
+    return { x: axis(gx, cols / 2, cols / (2 * zoom)), z: axis(gz, rows / 2, rows / (2 * zoom)) };
+  }
+
   private openFrame: { zoom: number; x: number; z: number } | null = null;
+  private openFramePending = false;
+  /** Plan item 215: once the depots stand (the first frame after a resize), slide the close frame towards the
+   * first gate's depot until at least 80% of it is in view, so the next round's count still hangs on it. */
+  private fitOpenFrame(): void {
+    this.openFramePending = false;
+    const f = this.openFrame;
+    const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
+    if (!f || !d) return;
+    const box = new THREE.Box3().setFromObject(d);
+    if (box.isEmpty()) return;
+    const c = box.getCenter(new THREE.Vector3());
+    const look = new THREE.Vector3();
+    const p = new THREE.Vector3();
+    for (let i = 0; i < 40; i++) {
+      look.set(f.x, this.camTarget.y, f.z);
+      this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / f.zoom).add(look);
+      this.camera.lookAt(look);
+      this.camera.updateMatrixWorld();
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let k = 0; k < 8; k++) {
+        p.set(k & 1 ? box.max.x : box.min.x, k & 2 ? box.max.y : box.min.y, k & 4 ? box.max.z : box.min.z).project(this.camera);
+        x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+      }
+      const seen = (Math.max(0, Math.min(1, x1) - Math.max(-1, x0)) * Math.max(0, Math.min(1, y1) - Math.max(-1, y0))) / Math.max(1e-6, (x1 - x0) * (y1 - y0));
+      if (seen >= 0.8) break;
+      const dx = c.x - f.x, dz = c.z - f.z;
+      const len = Math.hypot(dx, dz);
+      if (len < 0.3) break;
+      f.x += (dx / len) * 0.25;
+      f.z += (dz / len) * 0.25;
+    }
+    this.frameClose();
+  }
   /** Plan item 215: whether this view opens closer than the whole field (an upright phone). */
   get hasCloseFrame(): boolean {
     return !!this.openFrame;
@@ -577,8 +622,8 @@ export class Renderer3D {
     const f = this.openFrame;
     if (!f) return;
     this.zoom = f.zoom;
+    // Not clamped to the field: the frame may lean past its edge to keep the gate's depot in view.
     this.pan.set(f.x - this.camTarget.x, f.z - this.camTarget.z);
-    this.clampPan();
   }
 
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
@@ -689,7 +734,9 @@ export class Renderer3D {
       sign.scale.setScalar(grow);
       // Plan item 103: grown on a phone, a board standing on the field covered the next column's plots; there it
       // steps down and the queue's plate carries the town's name instead.
-      sign.visible = !(grow > 1 && sign.userData.inField);
+      // Plan item 215: an upright phone's close frame needs no growth, but the board still stands on the plots; on a
+      // phone it steps down whatever the zoom, so the town stays on the plate as the view goes close and back.
+      sign.visible = !((grow > 1 || this.openFrame) && sign.userData.inField);
       if (!sign.visible) this.plateTown = sign.userData.town as string;
       sign.updateMatrixWorld();
     }
@@ -1353,6 +1400,7 @@ export class Renderer3D {
     this.syncSwarms(game);
     this.syncTowerMarks(game, dt);
     this.placeDepots(game);
+    if (this.openFramePending) this.fitOpenFrame();
     this.settleFar(game);
     this.syncDepotShutters(game, dt);
     this.syncQueue(game);

@@ -2365,7 +2365,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each `[data-power]` 44 px or more with a visible label 11 px or more; the toggle has an aria-label and a caption; the dock meets neither Go nor Cath's docked line; hedgerow tray/dock specs pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 215. [ ] Hedgerow 3D phone: a default frame a phone can read *(lane B, in progress)*
+## 215. [ ] Hedgerow 3D phone: a default frame a phone can read *(lane B, in progress)* *(slice 1, 2026-11-06 lane B: an upright phone opens at zoom 1.6 on the gate's side, slid until the first depot is 80% in view so its count stays docked; a Whole field / Closer oak pill in the field's corner; an in-field gate board steps down on a phone at any zoom (its town on the plate). Plots about 55 px, vehicle footprints about 34 px at l21. Left: a cathode-perf-style draw-call check)*
 - **Why:** `plan1106f/hedge-l21-3d-P`: the whole field fits a 390 px width, so plots are about 30 px, vehicles about 8 px (45-60 x 275-380) and Cath about 25 px; the depot plate (5-200 x 157-183) covers the top row. Pinch zoom exists but the opening frame is unreadable.
 - **Build:** on an upright phone, open on a closer three-quarter frame round the lane's busy half (the gate to the field's middle), with a "whole field" button to fit all; the directed camera (item 191) keeps working inside it.
 - **Accept:** at 390x844 the default frame shows plots 44 px or more and vehicles 16 px or more; the fit button shows every plot; the depot plate meets no plot; `?2d` unchanged; draw calls within budget; shots P and D (D unchanged).
