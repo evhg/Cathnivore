@@ -2751,6 +2751,49 @@ dialog.sheet.story #story-skip {
   min-height: 40px;
   font-size: var(--fs-small);
 }
+/* Plan item 215: an upright phone's 3D field opens close; this oak pill in the field's corner fits the whole
+   field ("Whole field") and comes back ("Closer"). */
+.field-fit {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: var(--z-field-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px 0 10px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--oak);
+  color: var(--on-fill);
+  box-shadow: 0 0 0 2px var(--line), 0 3px 0 var(--line), 0 6px 12px var(--black-a25);
+  font: 800 var(--fs-label) / 1 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.field-fit[hidden] {
+  display: none;
+}
+.field-fit svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.field-fit:active {
+  translate: 0 2px;
+  box-shadow: 0 0 0 2px var(--line), 0 1px 0 var(--line);
+}
+.field-fit:focus-visible {
+  outline: 3px solid var(--brass-hi);
+  outline-offset: 2px;
+}
 .replay-bar {
   position: absolute;
   left: 50%;

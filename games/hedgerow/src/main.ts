@@ -307,6 +307,7 @@ const ui = {
   resultWatch: $<HTMLButtonElement>("result-watch"),
   resultShare: $<HTMLButtonElement>("result-share"),
   replayBar: $<HTMLElement>("replay-bar"),
+  fieldFit: $<HTMLButtonElement>("btn-field-fit"),
   replayFill: $<HTMLElement>("replay-fill"),
   replayExit: $<HTMLButtonElement>("replay-exit"),
   btnHeroic: $<HTMLButtonElement>("btn-heroic"),
@@ -754,6 +755,7 @@ if (SANDBOX)
     fieldShare: () => (renderer && is3D(renderer) ? renderer.fieldShare() : null),
     // Plan item 102: Cath's face on screen (CSS px), null in 2D.
     faceBox: () => (renderer && is3D(renderer) ? renderer.faceBox() : null),
+    vehicleBoxes: () => (renderer && game && is3D(renderer) ? renderer.vehicleBoxes(game) : []),
     // Plan item 114: Cath's drawn size in 2D (null in 3D).
     heroPx: () => (renderer as { heroPx?: () => { h: number; w: number } } | null)?.heroPx?.() ?? null,
     heroMood: () => (renderer as { heroMood?: string } | null)?.heroMood ?? null,
@@ -4723,6 +4725,7 @@ function frame(now: number): void {
     }
   }
   renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
+  syncFieldFit();
   syncCathSay(g, now);
   syncTwists(g);
   // Plan item 162: her pose on the stage (rest, cheer after a clean round, worried after a leak), for tests and CSS.
@@ -5831,6 +5834,26 @@ ui.canvas.addEventListener(
   },
   { passive: false },
 );
+// Plan item 215: an upright phone's 3D field opens close; this button fits the whole field, and comes back.
+function syncFieldFit(): void {
+  const on = !!renderer && is3D(renderer) && renderer.hasCloseFrame;
+  if (ui.fieldFit.hidden === on) ui.fieldFit.hidden = !on;
+  if (!on || !is3D(renderer)) return;
+  const whole = !renderer.zoomed;
+  const word = whole ? "Closer" : "Whole field";
+  const label = ui.fieldFit.querySelector<HTMLElement>(".field-fit-word")!;
+  if (label.textContent !== word) {
+    label.textContent = word;
+    ui.fieldFit.setAttribute("aria-pressed", String(whole));
+    ui.fieldFit.dataset.view = whole ? "whole" : "close";
+  }
+}
+ui.fieldFit.addEventListener("click", () => {
+  if (!renderer || !is3D(renderer)) return;
+  if (renderer.zoomed) renderer.resetView();
+  else renderer.frameClose();
+  syncFieldFit();
+});
 ui.canvas.addEventListener("dblclick", (e) => {
   // Plan item 191: a double-tap pushes in on the plot; a second comes back to the whole field.
   if (!is3D(renderer)) return;

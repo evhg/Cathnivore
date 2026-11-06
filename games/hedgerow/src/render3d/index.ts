@@ -557,6 +557,28 @@ export class Renderer3D {
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
     this.resetView();
+    // Plan item 215: an upright phone opens closer, on the lane's busy half (the gate towards the field's middle),
+    // so plots and vehicles read; the whole-field button (and a double-tap) fits it all.
+    const gate = game.level.path[0];
+    this.openFrame =
+      this.w < 600 && this.h > this.w && gate
+        ? { zoom: 1.6, x: (gate[0] + 0.5 + cols / 2) / 2, z: (gate[1] + 0.5 + rows / 2) / 2 }
+        : null;
+    this.frameClose();
+  }
+
+  private openFrame: { zoom: number; x: number; z: number } | null = null;
+  /** Plan item 215: whether this view opens closer than the whole field (an upright phone). */
+  get hasCloseFrame(): boolean {
+    return !!this.openFrame;
+  }
+  /** Plan item 215: back to the opening close frame (no-op where the view opens on the whole field). */
+  frameClose(): void {
+    const f = this.openFrame;
+    if (!f) return;
+    this.zoom = f.zoom;
+    this.pan.set(f.x - this.camTarget.x, f.z - this.camTarget.z);
+    this.clampPan();
   }
 
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
@@ -575,6 +597,28 @@ export class Renderer3D {
       ys.push(((1 - v.y) / 2) * r.height);
     }
     return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+  }
+
+  /** Plan item 215: each vehicle's box on screen (CSS px, the canvas's own frame), for the size checks: its
+   * convoy footprint (the instanced fleet has no per-vehicle object), 0.55 units a size class long, 0.4 high. */
+  vehicleBoxes(game: Game): Array<{ x: number; y: number; w: number; h: number }> {
+    const r = this.canvas.getBoundingClientRect();
+    const v = new THREE.Vector3();
+    const out: Array<{ x: number; y: number; w: number; h: number }> = [];
+    if (!this.lay) return out;
+    for (const e of game.enemies) {
+      const at = placeOnLane(game.level, e, this.lay);
+      const half = 0.275 * enemyScale(e.kind);
+      const gy = this.height(at.x, at.y);
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let k = 0; k < 8; k++) {
+        v.set(at.x + (k & 1 ? half : -half), gy + (k & 2 ? 0.4 * enemyScale(e.kind) : 0), at.y + (k & 4 ? half : -half)).project(this.camera);
+        const x = ((v.x + 1) / 2) * r.width, y = ((1 - v.y) / 2) * r.height;
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+    }
+    return out;
   }
 
   /** Plan item 162: the lit brightness (0..1) of her face's and her hair's materials: colour plus emission. */
