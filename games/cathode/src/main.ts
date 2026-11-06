@@ -106,6 +106,7 @@ function startScene(): void {
         still: still(),
         renderScale: rs,
         set: frontSet(Progress.load()?.jobsDone ?? []),
+        keyart: params.has("keyart"),
       }),
     )
     .then((s) => {

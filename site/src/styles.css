@@ -1473,7 +1473,8 @@ body {
   height: 100%;
   object-fit: cover;
 }
-.hero-game-nightshift .hero-game-art img { filter: brightness(1.45) saturate(1.1); }
+/* Plan item 203: the key art carries its own light now (1.45 turned her trench silver). */
+.hero-game-nightshift .hero-game-art img { filter: brightness(1.05) saturate(1.1); }
 .hero-game-cath {
   position: absolute;
   right: 4px;

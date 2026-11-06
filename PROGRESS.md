@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (12:51): item 201 **done** (3D far houses settle in or out of the frame); item 204 **done** (Setup flyer, place cards, pin tin); item 203 slice 1 (NS key art from the title street with Cath; open: light her for 2x luminance, the `/` crop). **Today's 19:51 session releases.**
+- Lane A (13:51): item 203 slice 2 (a key-art light on Cath for the NS key art, re-shoot, check the `/` crop). **Today's 19:51 session releases.**
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark reportedly drops both 'H's at L and D (unconfirmed; the 14:55 D shot shows it whole). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B: item 198 **done** (every Hedgerow act has a 3D biome; the per-act turf/fog tint cut, the acts already carry their own grass and light). Items 126, 138, 182 still claimed (2026-11-06 13:22 session).
 - Critique bugs from the 2026-11-05 09:30 shots (`e2e/screenshots/plan1105c/`, lane B): `cath-title-D` pennant hint ~13 px white on brown (1030-1280 x 800-818) and footer ~12 px (310-1130 x 872-886); `cath-title-P` small keys' labels ~12 px (85-305 x 692-735); `cath-setup-D` seed 'random' low contrast (655-840 x 795-835); `hedge-l34-2d-D` '485 coming' over a farmer (300-395 x 128-150); `hedge-menu-P` 'Brand Ambassador' on the road (10-95 x 450-480); `ns-title-D` neon sign clipped at the top (790-1150 x 0-45); `ns-play-P` FIXER tab cut (340-390 x 68-82); `games-P` hero ghosted (likely shot mid-entrance: check before fixing).

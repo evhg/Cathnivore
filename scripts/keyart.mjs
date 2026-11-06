@@ -134,7 +134,7 @@ const shoot = {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 })
     await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
     const p = await ctx.newPage()
-    await p.goto(`${base}/nightshift/?shot&quality=high`, { timeout: 120_000 })
+    await p.goto(`${base}/nightshift/?shot&keyart&quality=high`, { timeout: 120_000 })
     // Under SwiftShader the street is drawn by about 30 s (plan-shots.mjs).
     await p.waitForTimeout(40_000)
     await p.evaluate(() => {

@@ -28,6 +28,8 @@ export interface FrontSceneOptions {
   /** Forced 3D render scale (?rs=). */
   renderScale: number;
   set: { signDark: boolean; tally: number };
+  /** Plan item 203: the key-art shoot (`?keyart`): a poster light on Cath (a warm key on her coat and face, a cool rim). */
+  keyart?: boolean;
   onProgress?: (share: number, label: string) => void;
 }
 
@@ -190,6 +192,15 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Plan item 117: a soft face key, warm white, low and ahead of her left cheek, under the umbrella's edge, so
     // her face reads from the front (the pink sign alone left it a dark oval).
     removers.push(world.light(toWorld(0.5, 1.95, 0.85), new THREE.Color(1.0, 0.8, 0.72), 2.4, 1.9));
+    // Plan item 203: the poster's light, for the key-art shoot only. A warm tungsten key low ahead of her left (the
+    // lens's side) lifts the black trench off the street; a second, softer one at face height; a cool cyan rim from
+    // behind her right parts her from the dark.
+    if (o.keyart) {
+      removers.push(world.light(toWorld(0.9, 1.2, 1.6), new THREE.Color(1.0, 0.72, 0.5), 20, 3.6));
+      removers.push(world.light(toWorld(0.7, 1.75, 1.2), new THREE.Color(1.0, 0.82, 0.7), 6, 2.4));
+      removers.push(world.light(toWorld(-0.9, 1.6, -0.9), new THREE.Color(0.2, 0.8, 1.0), 12, 3.2));
+      world.renderer.domElement.dataset.keyart = "1";
+    }
   }
 
   // ---- progress set pieces (S9.2): the egg shop's sign dark after the Fish Market, a chalk tally of the names ----

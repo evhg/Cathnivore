@@ -311,6 +311,8 @@ main,
     object-fit: cover;
   }
   .show-a { opacity: 1; }
+  /* Plan item 203: Cath's sticker covers the print's right half, so NIGHT SHIFT's zooms onto her in the left. */
+  .show-c img { width: 160%; height: 160%; max-width: none; margin: -18.75% 0 0 -75%; filter: brightness(1.1); }
   .ready .hero-show .show-card { animation: show-cycle 16s var(--ease-io) infinite both; }
   .ready .hero-show .show-b { animation-delay: 4s; }
   .ready .hero-show .show-c { animation-delay: 8s; }
@@ -381,7 +383,9 @@ main,
   .show-c { left: 0; bottom: 10%; rotate: -3deg; }
   /* Plan item 91: Hedgerow in the collage too, and the night shot lifted so it doesn't read as a black tile. */
   .show-d { right: 2%; bottom: 2%; rotate: 4deg; }
-  .show-c img { filter: brightness(1.5) saturate(1.1); }
+  /* Plan item 203: the key art is lit now (a 1.5 lift washed her coat out), and Hedgerow's print and Cath cover the
+     right of this one, so it zooms 1.6x onto her (umbrella to waist) in its open left half. */
+  .show-c img { filter: brightness(1.1) saturate(1.1); width: 160%; height: 160%; max-width: none; margin: -18.75% 0 0 -75%; }
   .show-cath {
     position: absolute;
     left: 50%;

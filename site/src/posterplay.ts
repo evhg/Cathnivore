@@ -168,12 +168,13 @@ const cathnivore: Loop = (g, t) => {
 }
 
 // NIGHT SHIFT: rain sheets down through the street and the neon flickers.
+// Plan item 203: the key art is the title street: the pink tubes behind Cath, the cyan screen across the top, the
+// umbrella's pink tip and the wet street's sheen under the neon (960x600 art coordinates).
 const SIGNS: { at: Pt; r: number; hue: string; seed: number }[] = [
-  { at: [256, 100], r: 46, hue: '120, 255, 170', seed: 1 },
-  { at: [346, 168], r: 40, hue: '255, 190, 90', seed: 2 },
-  { at: [638, 166], r: 44, hue: '200, 140, 255', seed: 3 },
-  { at: [520, 96], r: 70, hue: '120, 230, 255', seed: 4 },
-  { at: [668, 168], r: 34, hue: '230, 240, 255', seed: 5 },
+  { at: [612, 170], r: 40, hue: '255, 60, 150', seed: 1 },
+  { at: [655, 245], r: 34, hue: '255, 60, 150', seed: 2 },
+  { at: [760, 8], r: 70, hue: '120, 230, 255', seed: 4 },
+  { at: [447, 122], r: 20, hue: '255, 120, 190', seed: 3 },
 ]
 const DROPS = Array.from({ length: 130 }, (_, i) => ({ x: (i * 397) % 1060 - 50, y: (i * 211) % 600, v: 780 + ((i * 53) % 260), l: 14 + ((i * 7) % 16) }))
 function flicker(t: number, seed: number): number {
@@ -191,13 +192,13 @@ const nightshift: Loop = (g, t) => {
     g.fillStyle = glow
     g.fillRect(s.at[0] - s.r * 1.6, s.at[1] - s.r * 1.6, s.r * 3.2, s.r * 3.2)
   }
-  // The wet road's reflection shimmers under the big screen.
+  // The wet street's sheen shimmers in the neon's pink.
   const sh = 0.5 + 0.5 * Math.sin(t * 5)
-  const pool = g.createRadialGradient(518, 395, 0, 518, 395, 70)
-  pool.addColorStop(0, `rgba(120, 230, 255, ${0.12 + 0.12 * sh})`)
-  pool.addColorStop(1, 'rgba(120, 230, 255, 0)')
+  const pool = g.createRadialGradient(330, 500, 0, 330, 500, 90)
+  pool.addColorStop(0, `rgba(255, 90, 170, ${0.08 + 0.08 * sh})`)
+  pool.addColorStop(1, 'rgba(255, 90, 170, 0)')
   g.fillStyle = pool
-  g.fillRect(440, 320, 160, 150)
+  g.fillRect(240, 410, 180, 180)
   g.globalCompositeOperation = 'source-over'
   g.strokeStyle = 'rgba(200, 220, 255, 0.42)'
   g.lineWidth = 1.6
@@ -307,11 +308,15 @@ export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; d
       g.canvas.width = w
       g.canvas.height = h
     }
-    // object-fit: cover, centred: the art's scale and offset inside the box.
-    const s = Math.max(w / ART_W, h / ART_H)
+    // object-fit: cover, centred: the art's scale and offset inside the box. Plan item 203: when the still is
+    // laid out larger than the box (the portfolio zooms NIGHT SHIFT's print onto Cath), map onto the image's own box.
+    const img = playing.art.querySelector('img')
+    const ib = img && img.offsetParent === playing.art ? { x: img.offsetLeft, y: img.offsetTop, w: img.offsetWidth, h: img.offsetHeight } : null
+    const r = ib && ib.w > 0 && ib.h > 0 ? { x: ib.x * dpr, y: ib.y * dpr, w: ib.w * dpr, h: ib.h * dpr } : { x: 0, y: 0, w, h }
+    const s = Math.max(r.w / ART_W, r.h / ART_H)
     g.setTransform(1, 0, 0, 1, 0, 0)
     g.clearRect(0, 0, w, h)
-    g.setTransform(s, 0, 0, s, (w - ART_W * s) / 2, (h - ART_H * s) / 2)
+    g.setTransform(s, 0, 0, s, r.x + (r.w - ART_W * s) / 2, r.y + (r.h - ART_H * s) / 2)
     POSTER_LOOPS[playing.game](g, (now - started) / 1000)
   }
 
