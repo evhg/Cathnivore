@@ -151,6 +151,8 @@ export interface GenerateOptions {
   reservoirCount?: number
   /** How many straight channels become bridges carrying a second, crossing channel (default 0). */
   bridgeCount?: number
+  /** Plan item 193: how many springs (default 1). A second sits near the board's rim; each waters its own part. */
+  springs?: number
 }
 
 /**
@@ -176,20 +178,27 @@ function generateOnce(seed: string, drawSeed: string, options: GenerateOptions):
   const hexes = boardHexes(radius)
   const neighbours = neighbourTable(hexes)
   const centre = hexes.findIndex((h) => h.q === 0 && h.r === 0)
+  // Extra springs (plan item 193) one ring in from the rim, drawn only when asked for, so other boards' draws
+  // are unchanged.
+  const roots = [centre]
+  if ((options.springs ?? 1) > 1) {
+    const ring = hexes.map((_, i) => i).filter((i) => hexDistance(hexes[i]!, { q: 0, r: 0 }) === radius - 1)
+    for (let k = 1; k < options.springs! && ring.length; k++) roots.push(ring.splice(Math.floor(rng() * ring.length), 1)[0]!)
+  }
 
-  const stones = chooseStones(hexes, neighbours, centre, stoneRate, rng)
-  const masks = growTree(hexes, neighbours, centre, stones, rng)
+  const stones = chooseStones(hexes, neighbours, centre, stoneRate, rng, roots)
+  const masks = growTree(hexes, neighbours, roots, stones, rng)
 
   const cells: Cell[] = hexes.map((h, i) => {
     if (stones.has(i)) return { q: h.q, r: h.r, kind: 'stone', solved: 0, rot: 0, locked: false }
     const mask = masks[i] ?? 0
-    const kind: CellKind = i === centre ? 'spring' : bitCount(mask) === 1 ? 'field' : 'channel'
+    const kind: CellKind = roots.includes(i) ? 'spring' : bitCount(mask) === 1 ? 'field' : 'channel'
     return { q: h.q, r: h.r, kind, solved: mask, rot: 0, locked: false }
   })
 
   const fixedCount = options.fixedCount ?? 0
   if (fixedCount > 0) {
-    const pool = cells.map((_, i) => i).filter((i) => i !== centre && cells[i]!.kind === 'channel')
+    const pool = cells.map((_, i) => i).filter((i) => !roots.includes(i) && cells[i]!.kind === 'channel')
     shuffle(pool, rng)
     for (const i of pool.slice(0, fixedCount)) {
       cells[i]!.fixed = true
@@ -258,10 +267,11 @@ function chooseStones(
   centre: number,
   rate: number,
   rng: () => number,
+  roots: readonly number[] = [centre],
 ): Set<number> {
   const stones = new Set<number>()
   const target = Math.round((hexes.length - 7) * rate)
-  const candidates = hexes.map((_, i) => i).filter((i) => hexDistance(hexes[i]!, { q: 0, r: 0 }) >= 2)
+  const candidates = hexes.map((_, i) => i).filter((i) => roots.every((r) => hexDistance(hexes[i]!, hexes[r]!) >= 2))
   shuffle(candidates, rng)
   for (const i of candidates) {
     if (stones.size >= target) break
@@ -301,16 +311,16 @@ const GROW_TREE_ATTEMPTS = 40
 function growTree(
   hexes: readonly Hex[],
   neighbours: number[][],
-  centre: number,
+  roots: readonly number[],
   stones: Set<number>,
   rng: () => number,
 ): number[] {
   let best: number[] | null = null
   let bestScore = Infinity
   for (let attempt = 0; attempt < GROW_TREE_ATTEMPTS; attempt++) {
-    const masks = growTreeAttempt(hexes, neighbours, centre, stones, rng)
+    const masks = growTreeAttempt(hexes, neighbours, roots, stones, rng)
     const score = masks.reduce(
-      (sum, m, i) => sum + Math.max(0, bitCount(m) - MAX_OPENINGS) * (i === centre ? 100 : 1),
+      (sum, m, i) => sum + Math.max(0, bitCount(m) - MAX_OPENINGS) * (roots.includes(i) ? 100 : 1),
       0,
     )
     if (score === 0) return masks
@@ -325,12 +335,13 @@ function growTree(
 function growTreeAttempt(
   hexes: readonly Hex[],
   neighbours: number[][],
-  centre: number,
+  roots: readonly number[],
   stones: Set<number>,
   rng: () => number,
 ): number[] {
+  // Several roots grow one tree each at once (a spanning forest): every cell is watered by exactly one spring.
   const masks = new Array<number>(hexes.length).fill(0)
-  const inTree = new Set<number>([centre])
+  const inTree = new Set<number>(roots)
   const total = hexes.length - stones.size
   while (inTree.size < total) {
     const good: Array<[number, number]> = []
@@ -344,7 +355,7 @@ function growTreeAttempt(
       }
     }
     // If nothing keeps every cell in cap, prefer overloading a non-spring cell over the spring.
-    const nonSpring = any.filter(([i]) => i !== centre)
+    const nonSpring = any.filter(([i]) => !roots.includes(i))
     const pool = good.length ? good : nonSpring.length ? nonSpring : any
     const [i, d] = pool[Math.floor(rng() * pool.length)]!
     const j = neighbours[i]![d]!
@@ -409,7 +420,8 @@ function neighboursOf(cells: readonly Cell[]): number[][] {
 /** Where the water gets to, which wet cells leak, and whether the puzzle is solved. */
 export function computeFlow(cells: readonly Cell[]): Flow {
   const neighbours = neighboursOf(cells)
-  const spring = cells.findIndex((c) => c.kind === 'spring')
+  const springs = cells.flatMap((c, i) => (c.kind === 'spring' ? [i] : []))
+  const spring = springs[0] ?? -1
   const wet = new Set<number>()
   const leaks = new Set<number>()
   const leakMask = new Map<number, number>()
@@ -423,10 +435,13 @@ export function computeFlow(cells: readonly Cell[]): Flow {
   })
   // Breadth-first, so depth is the water's travel distance and animations can cascade outwards. Bridges
   // carry two independent flows, so each way water enters one is queued (and processed) separately.
-  const queue: Array<[number, number]> = [[spring, -1]]
+  // Every spring feeds at once (plan item 193's big valley has two).
+  const queue: Array<[number, number]> = springs.map((s) => [s, -1])
   const bridgeSeen = new Set<number>()
-  wet.add(spring)
-  depth.set(spring, 0)
+  for (const s of springs) {
+    wet.add(s)
+    depth.set(s, 0)
+  }
   for (let head = 0; head < queue.length; head++) {
     const [i, via] = queue[head]!
     const mask = cells[i]!.reservoir ? 0 : cells[i]!.bridge ? 1 << via : masks[i]!
@@ -559,7 +574,7 @@ export function dailyPuzzle(dateString: string): Puzzle {
  * reservoirs and bridges and no sluices set. One per week, seeded by the week's Sunday (UTC), so everyone plays
  * the same board from Sunday to Saturday.
  */
-export const SUNDAY_OPTIONS: GenerateOptions = { radius: 5, stoneRate: 0.05, reservoirCount: 3, bridgeCount: 3 }
+export const SUNDAY_OPTIONS: GenerateOptions = { radius: 5, stoneRate: 0.05, reservoirCount: 3, bridgeCount: 3, springs: 2 }
 
 /** The Sunday (YYYY-MM-DD, UTC) that starts the week holding this date. */
 export function sundayOf(dateString: string): string {

@@ -40,4 +40,7 @@ test('the Weekly tab plays the big valley: whole board in view, progress kept, a
   await expect(page.locator('#win-strip')).toBeVisible({ timeout: 8_000 })
   await expect(page.locator('#strip-eyebrow')).toContainText('big valley')
   await expect(page.locator('#tab-weekly')).toHaveAttribute('data-state', 'watered')
+  // Its own line on the almanac's stats page.
+  await page.locator('#btn-stats').click()
+  await expect(page.locator('#stat-grid')).toContainText('big valley, watered')
 })

@@ -1425,6 +1425,13 @@ function showStats(): void {
     [s.averageMs === null ? '–' : formatTime(s.averageMs), 'average daily time'],
     [String(data.practiceSolved), 'practice solved'],
     [data.bestPractice.large === undefined ? '–' : formatTime(data.bestPractice.large), 'best large time'],
+    // Plan item 193: this week's big valley, its own line on the almanac page.
+    (() => {
+      const week = sundayOf(today)
+      const r = data.sundayResults?.[week]
+      const g = data.sunday?.[week]
+      return [r ? formatTime(r.timeMs) : g && g.taps > 0 ? `${g.taps} taps` : '–', r ? 'big valley, watered' : 'big valley this week'] as [string, string]
+    })(),
   ]
   ui.statGrid.replaceChildren(
     ...cells.map(([value, label]) => {

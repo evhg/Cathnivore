@@ -17,6 +17,8 @@ describe("Runnel's Sunday big valley", () => {
       // About three times a daily's par (68 on a Sunday daily), never a slog past 260 taps.
       expect(p.par).toBeGreaterThanOrEqual(150);
       expect(p.par).toBeLessThanOrEqual(260);
+      // Two springs, each watering its own part of the valley.
+      expect(p.cells.filter((c) => c.kind === "spring").length, day).toBe(2);
       for (const c of p.cells) c.rot = (c.rot + tapsToSolve(c)) % 6;
       expect(computeFlow(p.cells).solved, day).toBe(true);
     }
