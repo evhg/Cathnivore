@@ -556,6 +556,13 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: normal;
     text-wrap: balance;
   }
+  /* Item 214's one-row dock leaves the pill about 66 px beside three powers (level 25 on): "Next +31" goes to two
+     lines there rather than running past the button. */
+  .play .controls:has(#btn-rally:not([hidden])) .go-pill .btn.send {
+    line-height: 1.05;
+    white-space: normal;
+    text-wrap: balance;
+  }
 }
 @media (max-width: 360px) {
   .chip-wave svg {

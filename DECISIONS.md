@@ -335,3 +335,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-06 20:20 lane A: the desktop Setup place cards hide the mode name transparent over the card (not a 1px clip) so the radio stays clickable for keyboard, assistive tech and the hot-seat gate.
 - 2026-11-06 20:20 lane A: don't shoot WebGL (key art, NS shots) while `npm run release` runs: it starved the CPU-throttled ai-teammate gate test and returned black key-art frames.
 - 2026-11-06 21:40 (lane B, item 220): the round group is a real wrapper (`.round-group`, display: contents except in the desktop column) rather than a CSS join of siblings; `fitPreview` flattens it when finding the column's last card, and its spare-list selector reaches into it.
+- 2026-11-06 21:20 lane A: item 218's picture window is ActionArt's own tile opened into a wider scene through a React context (no new art set, no prop threading); the family card keeps a small window, cut for its option keys' height.
+- 2026-11-06 21:20 lane A: desktop hand cards grow 114 -> 148 px tall for the window; the board loses 34 px at D, and the 1280x800 board still clears the hand (table-hand spec).
+- 2026-11-06 21:20 lane A: the 20:51 release's first run failed gate 5 on two 30 s timeouts while I ran e2e beside it; both pass alone. Don't run Playwright beside a release, not just WebGL.
