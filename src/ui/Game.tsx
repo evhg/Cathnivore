@@ -1985,9 +1985,36 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const pinnedInvest = shelf && goal ? disabledInvest.find((d) => investGoal(d.improvementId) === goal) : undefined
   const pinnedScheme = shelf && goal && !pinnedInvest ? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal) : undefined
   // How far the goal is, for Cath's line (on every layout), and whether it can be played now.
-  const goalShort = goal
-    ? (disabledInvest.find((d) => investGoal(d.improvementId) === goal) ?? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal))?.missing
-    : undefined
+  const goalEntry = goal ? (disabledInvest.find((d) => investGoal(d.improvementId) === goal) ?? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal)) : undefined
+  const goalShort = goalEntry?.missing
+  const jarArt = (
+    <svg viewBox="0 0 24 30" aria-hidden="true">
+      <rect className="jar-lid" x="6" y="1" width="12" height="4" rx="1.2" />
+      <path className="jar-glass" d="M7 5h10v2.5c2.6 1 4 3.2 4 6V25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V13.5c0-2.8 1.4-5 4-6Z" />
+      <rect className="jar-fill" x="4" y="9" width="16" height="18" rx="2" />
+      <path className="jar-shine" d="M6.5 12.5v10" />
+    </svg>
+  )
+  // Plan item 183: on a phone the goal is a chip on the mat row (the shelf's jar, with its count).
+  const goalChipCard = goal && goalEntry ? goalCard(goal) : undefined
+  const goalChip =
+    goal && goalEntry && goalChipCard && !shelf ? (
+      <span
+        className="goal-chip saving-jar"
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={goalEntry.cost}
+        aria-valuenow={Math.max(0, goalEntry.cost - goalEntry.missing)}
+        aria-label={`Saving for ${goalChipCard.name}: ${Math.max(0, goalEntry.cost - goalEntry.missing)} of ${goalEntry.cost} ${goalChipCard.coin}`}
+        data-coin={goalChipCard.coin === 'Marks' ? 'marks' : 'goodwill'}
+        style={{ ['--jar' as string]: String(Math.min(1, (goalEntry.cost - goalEntry.missing) / Math.max(1, goalEntry.cost))) }}
+      >
+        {jarArt}
+        <span className="jar-count">
+          {Math.max(0, goalEntry.cost - goalEntry.missing)}/{goalEntry.cost}
+        </span>
+      </span>
+    ) : null
   const togglePin = (key: string) =>
     setSavingFor((cur) => {
       const next = { ...cur }
@@ -1997,7 +2024,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     })
   // The pin and, on the pinned card, the jar: the coins held toward its price.
   const shelfGoalBits = (key: string, cost: number, missing: number) => {
-    if (!shelf) return null
     const card = goalCard(key)
     if (!card) return null
     const pinned = goal === key
@@ -2017,7 +2043,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <circle cx="8" cy="5.4" r="1.5" />
           </svg>
         </button>
-        {pinned && (
+        {pinned && shelf && (
           <span
             className="saving-jar"
             role="meter"
@@ -2028,12 +2054,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             data-coin={card.coin === 'Marks' ? 'marks' : 'goodwill'}
             style={{ ['--jar' as string]: String(Math.min(1, have / Math.max(1, cost))) }}
           >
-            <svg viewBox="0 0 24 30" aria-hidden="true">
-              <rect className="jar-lid" x="6" y="1" width="12" height="4" rx="1.2" />
-              <path className="jar-glass" d="M7 5h10v2.5c2.6 1 4 3.2 4 6V25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V13.5c0-2.8 1.4-5 4-6Z" />
-              <rect className="jar-fill" x="4" y="9" width="16" height="18" rx="2" />
-              <path className="jar-shine" d="M6.5 12.5v10" />
-            </svg>
+            {jarArt}
             <span className="jar-count">
               {have}/{cost}
             </span>
@@ -2438,6 +2459,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <i key={i} className={i < state.actionsLeft ? 'pip on' : 'pip'} />
             ))}
           </span>
+          {goalChip}
         </section>
       )}
     </>
