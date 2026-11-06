@@ -2377,7 +2377,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** canvas backing width 780 px or more at P; the menu's box misses Cath's projected box; `cathode-perf` within budget on the phone; cathode-front passes; shots P and D (D unchanged).
 - **Size:** 2
 
-## 217. [ ] The bugs from the 2026-11-06 17:10 critique, fixed as one batch
+## 217. [ ] The bugs from the 2026-11-06 17:10 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1106f`; points already in 211 left out)
   - **NIGHT SHIFT:** P pick: 'WALK IN AS THE GHOST' runs flush to x 0 (0-370 x 790-830), and a stray scrollbar thumb (353-362 x 632-650). P title: 'CONTINUE / No case open' about 3:1 (32-145 x 212-255).
   - **Runnel:** P: the wordmark 2 px from the sound button (120-262 x 15-52).
