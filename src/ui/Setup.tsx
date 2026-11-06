@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
 import BoardMiniature from './BoardMiniature'
@@ -31,6 +31,10 @@ export default function Setup({ onStart }: Props) {
   const [advanced, setAdvanced] = useState(false)
   const [layout, setLayout] = useState<LayoutId>('ring')
   const [marketEvent] = useState(() => marketEventFor(new Date()))
+  // Plan item 195: Start rolls the stall's shutter up (520 ms; a 180 ms fade under reduced motion) before the game opens.
+  const [opening, setOpening] = useState(false)
+  const openTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(openTimer.current), [])
 
   function toggleProducer(id: ProducerId): void {
     setProducers((prev) => {
@@ -41,6 +45,13 @@ export default function Setup({ onStart }: Props) {
   }
 
   const canStart = producers.length === 2
+
+  function rollUp(): void {
+    if (opening) return
+    setOpening(true)
+    const calm = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')
+    openTimer.current = window.setTimeout(start, calm ? 180 : 520)
+  }
 
   function start(): void {
     const parsed = seedInput.trim() ? Number.parseInt(seedInput, 10) : NaN
@@ -107,6 +118,8 @@ export default function Setup({ onStart }: Props) {
         </div>
       </section>
 
+      {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
+      <div className="setup-table" data-setup-table>
       <section className="settings-card setup-producers">
         <div className="setup-producers-head">
           <h2>Producers (pick 2)</h2>
@@ -116,7 +129,7 @@ export default function Setup({ onStart }: Props) {
         </div>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
-            <label key={id} className="producer-card" data-producer={id}>
+            <label key={id} className="producer-card" data-producer={id} data-seat={producers.includes(id) ? id : undefined}>
               <input
                 type="checkbox"
                 aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}
@@ -146,23 +159,6 @@ export default function Setup({ onStart }: Props) {
         <PairPanel producers={producers} />
       </section>
 
-      <section className="settings-card setup-difficulty">
-        <h2>
-          Difficulty<span className="threat-kicker" aria-hidden="true"> · Hollowell's threat</span>
-        </h2>
-        <div className="segmented">
-          {(['easy', 'normal', 'hard'] as const).map((d) => (
-            <label key={d}>
-              <span>
-                <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
-                {d}
-              </span>
-            </label>
-          ))}
-        </div>
-        <DifficultySheet key={difficulty} difficulty={difficulty} />
-      </section>
-
       <section className="settings-card setup-seed" data-advanced={advanced || undefined}>
         <div className="setup-map-head">
           <h2>Map</h2>
@@ -187,13 +183,34 @@ export default function Setup({ onStart }: Props) {
         </label>
       </section>
 
+      <section className="settings-card setup-difficulty">
+        <h2>
+          Difficulty<span className="threat-kicker" aria-hidden="true"> · Hollowell's threat</span>
+        </h2>
+        <div className="segmented">
+          {(['easy', 'normal', 'hard'] as const).map((d) => (
+            <label key={d} className="price-tag" data-tag={d}>
+              <span>
+                <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
+                {d}
+              </span>
+            </label>
+          ))}
+        </div>
+        <DifficultySheet key={difficulty} difficulty={difficulty} />
+      </section>
+
+      </div>
+
       {/* Plan item 75: at D Cath stands at the stall behind its OPEN sign, reacting to the picks and the difficulty. */}
       <SetupCath producers={producers} difficulty={difficulty} />
-      <button className="primary setup-start" disabled={!canStart} onClick={start}>
-        <span className="open-sign-kicker" aria-hidden="true">
-          {canStart ? 'Open' : 'Closed · pick two'}
+      <button className="primary setup-start" disabled={!canStart} onClick={rollUp} data-opening={opening || undefined}>
+        <span className="shutter">
+          <span className="open-sign-kicker" aria-hidden="true">
+            {canStart ? 'Open' : 'Closed · pick two'}
+          </span>
+          <span className="open-sign-word">Start</span>
         </span>
-        <span className="open-sign-word">Start</span>
       </button>
     </main>
   )
