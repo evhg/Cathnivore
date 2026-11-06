@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-06T14:23Z
 
 
 
@@ -2294,3 +2293,51 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Expressions swap the eye and mouth regions (calm, smirk, determined); the title uses calm-smirk.
 - **Accept:** the title canvas reports `data-cath-expr`; in a D face crop (85 px+) the eye regions are 3:1+ darker than the cheek (pixel test); `cathode-front` and `cathode-perf` pass (run alone); shots title and class pick at P and D.
 - **Size:** 2-3
+
+## 206. [ ] Cathnivore: the title market under a real sky, morning to a lantern-lit evening
+- **Why:** `plan1106e/cath-title-D`: the top third is flat cream, bunting (0-1440 x 175-310) over empty paper either side of Cath (0-540 x 250-330, 860-1440 x 250-310); `cath-title-P` plain beige behind the board and Cath (140-390 x 240-430). VISION 1 'a scene', VISION 6 'a dark mode that is designed'.
+- **Build:**
+  - A painted street behind the stall (awnings, Marrow's rooftops, a sky) in four states by the local hour: dawn, day, golden, evening.
+  - Dark mode is always the evening: lanterns lit along the bunting, warm pools on the counter, the board under a lamp; the NEXT ticket and pennants take the same light.
+- **Accept:** `[data-sky="dawn|day|golden|evening"]` on the title root, dark forces `evening`; menu text 4.5:1 in all four; the sky meets neither the menu nor the board; no lantern flicker under reduced motion; title specs pass; shots P and D, light and dark.
+- **Size:** 3
+
+## 207. [ ] Runnel phone: a valley signboard header, and Cath's line docked off the board *(lane B, in progress)*
+- **Why:** `plan1106e/runnel-P`: the header (0-390 x 0-60) is a title by bare glyphs (245-360 x 22-42); the tabs (14-375 x 100-178) read as a form; Cath's bubble (10-212 x 545-638) covers the valley and the board's left edge.
+- **Build:**
+  - The header as a painted wooden signboard, sound, stats and help as carved tokens on it.
+  - Cath's line docked in a strip under the board on an upright phone, as item 171 did for Cathnivore and Hedgerow (her standing figure stays).
+- **Accept:** `[data-signboard]`; icon targets 44 px or more; at 390x844 her line's box meets no tile; the dock's text 14 px or more; runnel-one-cath, -lesson-close and -almanac pass; shots P and D (D unchanged).
+- **Size:** 2
+
+## 208. [ ] Hedgerow 3D: Cath's body to the character bible
+- **Why:** `plan1106e/hedge-l21-3d-D` (160-290 x 490-680): item 162 made her head readable, but her body is a chibi (the head about a third of her height), the hair a black mass, no collar-up olive jacket or pearls; on `hedge-l21-3d-P` (20-70 x 485-545) she reads only as hair.
+- **Build:**
+  - Proportions towards 1:5 head to body: a fitted olive jacket, collar up, cream blouse, dark trousers, from the `shared/cath/` palette; hair as layered locks with a shine band.
+  - An idle weight shift, and a point when she gives a hint.
+- **Accept:** a unit test on her parts: head height 25% or less of her total; her face 18 px or more at D in the default camera; draw calls within the perf budget; idle still under reduced motion; `hedgerow-cath3d` passes; shots P and D in 3D.
+- **Size:** 3
+
+## 209. [ ] Hedgerow phone map: the act's road runs down the screen
+- **Why:** `plan1106e/hedge-menu-P`: ten stops in two rows (22-375 x 215-470), labels wrapping into each other ('Brand Ambassador' 28-115 x 438-470; 'Next / On Air' under 21, 22-68 x 262-300); the level card over the map (8-382 x 495-585); the Act 4 note under the nav (100-290 x 740-775).
+- **Build:**
+  - Under 600 px the act's road snakes down the screen, two stops a bend, labels beside each stop, never under the road; Cath walks it.
+  - The level card docks above the nav and the map scrolls the Next stop to sit above it.
+- **Accept:** `[data-road="vertical"]` at 390; no two label boxes meet; labels 13 px or more; the Next stop wholly above the card; no sideways scroll; hedgerow-map and -level-card pass; shots P and D (D unchanged).
+- **Size:** 3
+
+## 210. [ ] NIGHT SHIFT phone: the class sheet as a dossier card
+- **Why:** `plan1106e/ns-play-P` (16-375 x 640-830): thin bars with about 10 px labels, a grey weapon silhouette (16-170 x 690-750), the abilities as bare caps (16-220 x 768-780); the desktop has item 199's dials, the phone doesn't.
+- **Build:**
+  - A paper dossier clipped over the street: four ring dials in a row, the weapon on a felt strip with its stats beside it, the abilities as rubber stamps that open their text on a tap.
+  - 'Walk in' as a strip of red tape.
+- **Accept:** `[data-dossier]` holds four `.stat-dial`; text 12 px or more at AA; the card meets neither the class tabs nor her head box; fits 844 px with no scroll; no stamp animation under reduced motion; cathode-classpick passes; shots P and D.
+- **Size:** 2
+
+## 211. [ ] The bugs from the 2026-11-06 14:45 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106e`; points open in 126, 138, 182 and 205 left out)
+  - **NIGHT SHIFT:** D pick: the stats panel hides Cath, only her umbrella showing (935-970 x 290-330); the weapon a flat grey silhouette (1065-1310 x 250-320). P pick: 'FIXER' tab without a 16 px gutter (338-375 x 66-84). P title: the List stamps about 9 px (15-370 x 730-750), '4 MORE NAMES' about 10 px (16-105 x 655-666).
+  - **Hedgerow:** P 2D l21 and l34: Cath's hint light grey on cream (97-360 x 712-765). P menu: the Act 4 note under the nav (100-290 x 740-775). D l21: the depot sign and road sign about 10 px (165-250 x 398-430, 289-357 x 480-492; P 8-88 x 365-380); the Notebook tab's dot clipped (1355-1370 x 548-560). D l34: rack labels wrapping unevenly ('Duck Pond', 'Court-house', 'Market Stall').
+  - **Cathnivore:** D game: Injunction over Supply (1085-1320 x 740-865); card sublines about 11 px (1005-1055 x 806-818). P game: the Glut ticket on the board's top rim (120-270 x 160-182); intent sublines about 11 px (18-95 x 128-152); 'NOT YET' about 10 px (325-345 x 668-750). D setup: 'Two at the table' tilted and cut (265-385 x 770-870); Start over Cath's legs (1095-1295 x 775-850). D campaign: Cath small and fading at the waist (1280-1370 x 35-180); 'Kingsmarket' across the river (335-512 x 505-537).
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
+- **Size:** 2
