@@ -36,6 +36,21 @@ describe("hedgerow 2D margins", () => {
           }
       });
     }
+  it("Highmoor and Rivermead have their own sets (moor and water meadow, punts on the river)", () => {
+    expect(MARGIN_SETS[1]!.ground).toBe("moor");
+    expect(MARGIN_SETS[1]!.pieces.map((p) => p.kind)).toEqual(expect.arrayContaining(["tor", "flock"]));
+    expect(MARGIN_SETS[3]!.ground).toBe("meadow");
+    expect(MARGIN_SETS[3]!.pieces.map((p) => p.kind)).toContain("mill");
+    expect(MARGIN_SETS[3]!.water?.map((p) => p.kind)).toContain("punt");
+  });
+  for (const act of [1, 3])
+    it(`act ${act}'s set keeps the same spacing rules`, () => {
+      const out = placeMargin(MARGIN_SETS[act]!, cases[1]!.rects, 58, 11);
+      expect(out.length).toBeGreaterThan(3);
+      for (let a = 0; a < out.length; a++)
+        for (let b = a + 1; b < out.length; b++)
+          if (out[a]!.kind === out[b]!.kind) expect(Math.hypot(out[a]!.x - out[b]!.x, out[a]!.y - out[b]!.y)).toBeGreaterThanOrEqual(SAME_GAP);
+    });
   it("a wide side margin gets several kinds of piece", () => {
     const out = placeMargin(set, cases[1]!.rects, 58, 3);
     expect(new Set(out.map((p) => p.kind)).size).toBeGreaterThanOrEqual(3);

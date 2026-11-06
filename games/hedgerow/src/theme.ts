@@ -5,7 +5,7 @@
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { plotLooks, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
-import { MARGIN_SETS, paintBoardwalk, paintMarsh, paintPiece, placeMargin, recordMargin, seeded, type Rect } from "./margins";
+import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, placeMargin, recordMargin, seeded, type Placed, type Rect } from "./margins";
 
 export type Decor =
   | "oak"
@@ -965,15 +965,21 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
   if (side !== "top" && y0 > s * 1.4) rects.push({ x: bx0, y: 0, w: bx1 - bx0, h: y0 });
   if (side !== "bottom" && L.height - y1 > s * 1.4) rects.push({ x: bx0, y: y1, w: bx1 - bx0, h: L.height - y1 });
   const rand = seeded(level.id * 7727 + 11);
-  for (const r of rects) paintMarsh(ctx, r, s, rand);
+  for (const r of rects) paintGround(ctx, set.ground, r, s, rand);
   // The lanes run in from the edges: nothing stands on them.
   const keepOut: Rect[] = [];
-  for (const lane of [lanePoints(level, L), ...(level.path2 ? [lanePoints(level, L, true)] : [])])
+  for (const lane of [lanePoints(level, L), ...(level.path2 ? [lanePoints(level, L, true)] : [])]) {
+    // The depot and its queue stand at the lane's way in: a wide berth there.
+    const fx1 = L.offX + level.cols * s;
+    const fy1 = L.offY + level.rows * s;
+    const entry = lane.find(([x, y]) => x >= L.offX - 1 && x <= fx1 + 1 && y >= L.offY - 1 && y <= fy1 + 1) ?? lane[0]!;
+    keepOut.push({ x: entry[0] - s * 2.6, y: entry[1] - s * 2.6, w: s * 5.2, h: s * 5.2 });
     for (let i = 1; i < lane.length; i++) {
       const [ax, ay] = lane[i - 1]!;
       const [bx, by] = lane[i]!;
       keepOut.push({ x: Math.min(ax, bx) - s * 0.6, y: Math.min(ay, by) - s * 0.6, w: Math.abs(bx - ax) + s * 1.2, h: Math.abs(by - ay) + s * 1.2 });
     }
+  }
   // A boardwalk down each side margin wide enough for it, toward its outer edge (the wider strip by the hedge
   // keeps room for the salt pans).
   if (set.boardwalk)
@@ -986,9 +992,23 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
       keepOut.push(bw);
     }
   const pieces = placeMargin(set, rects, s, level.id * 131 + 7, keepOut);
-  for (const p of [...pieces].sort((a, b) => a.y - b.y)) paintPiece(ctx, p, s, rand);
+  // The water margin's own pieces (punts on the river), wholly on the water.
+  if (set.water && side) {
+    const wx0 = side === "left" ? 0 : side === "right" ? x1 + s * 0.3 : 0;
+    const wx1 = side === "left" ? x0 - s * 0.3 : L.width;
+    const wy0 = side === "top" ? 0 : side === "bottom" ? y1 + s * 0.3 : 0;
+    const wy1 = side === "top" ? y0 - s * 0.3 : L.height;
+    const wr = { x: wx0, y: wy0, w: wx1 - wx0, h: wy1 - wy0 };
+    if (wr.w > s * 1.3 && wr.h > s * 1.3) pieces.push(...placeMargin(set, [wr], s, level.id * 977 + 5, keepOut, set.water));
+  }
+  for (const p of [...pieces].sort((a, b) => a.y - b.y)) paintMarginPiece(ctx, p, s, rand);
   recordMargin({ act, set: set.name, pieces });
   return rects;
+}
+
+function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
+  if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
+  else paintPiece(ctx, p, s, rand);
 }
 
 /**
