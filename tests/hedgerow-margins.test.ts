@@ -1,7 +1,7 @@
 // Plan item 202: Hedgerow 2D's margin placer: seeded, inside its rects, clear of keep-outs and of each other, and
 // never two identical pieces within 200 px.
 import { describe, expect, it } from "vitest";
-import { MARGIN_SETS, SAME_GAP, placeMargin } from "../games/hedgerow/src/margins";
+import { LIVE_PIECES, MARGIN_SETS, SAME_GAP, placeMargin } from "../games/hedgerow/src/margins";
 
 const set = MARGIN_SETS[2]!;
 const cases = [
@@ -54,5 +54,35 @@ describe("hedgerow 2D margins", () => {
   it("a wide side margin gets several kinds of piece", () => {
     const out = placeMargin(set, cases[1]!.rects, 58, 3);
     expect(new Set(out.map((p) => p.kind)).size).toBeGreaterThanOrEqual(3);
+  });
+  it("every act but Brindle Hills has its own set, with its own land", () => {
+    const names = new Set<string>();
+    const grounds = new Set<string>();
+    for (let act = 1; act <= 9; act++) {
+      const m = MARGIN_SETS[act];
+      expect(m, `act ${act}`).toBeDefined();
+      names.add(m!.name);
+      grounds.add(m!.ground);
+    }
+    expect(names.size).toBe(9);
+    expect(grounds.size).toBe(9);
+    expect(MARGIN_SETS[0]).toBeUndefined();
+  });
+  for (const act of [4, 5, 6, 7, 8, 9])
+    it(`act ${act}'s set: several kinds, no repeat within ${SAME_GAP} px, no overlaps`, () => {
+      for (const seed of [3, 41, 977]) {
+        const out = placeMargin(MARGIN_SETS[act]!, cases[1]!.rects, 58, seed);
+        expect(new Set(out.map((p) => p.kind)).size).toBeGreaterThanOrEqual(3);
+        for (let a = 0; a < out.length; a++)
+          for (let b = a + 1; b < out.length; b++) {
+            const A = out[a]!;
+            const B = out[b]!;
+            if (A.kind === B.kind) expect(Math.hypot(A.x - B.x, A.y - B.y)).toBeGreaterThanOrEqual(SAME_GAP);
+            expect(Math.abs(A.x - B.x) >= (A.w + B.w) / 2 || Math.abs(A.y - B.y) >= (A.h + B.h) / 2).toBe(true);
+          }
+      }
+    });
+  it("each later act has at least one ambient loop", () => {
+    for (const act of [4, 5, 6, 7, 8, 9]) expect(MARGIN_SETS[act]!.pieces.some((p) => LIVE_PIECES.has(p.kind)), `act ${act}`).toBe(true);
   });
 });

@@ -33,7 +33,7 @@ import {
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
-import { drawMarginLife, lastMargin, type Placed } from "./margins";
+import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins";
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
@@ -712,7 +712,7 @@ export class Renderer {
       const bctx = this.bg.getContext("2d")!;
       bctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       paintBackground(bctx, level, { width: W, height: H, cell: s, offX, offY });
-      this.marginPieces = lastMargin?.pieces ?? [];
+      this.marginPieces = (lastMargin?.pieces ?? []).filter((p) => LIVE_PIECES.has(p.kind));
       this.bgKey = key;
     }
 

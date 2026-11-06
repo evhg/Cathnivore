@@ -3,10 +3,44 @@
 // its pieces are placed by a seeded placer that never puts two identical pieces within 200 px of each other.
 // Acts without a set yet keep item 120's patchwork of neighbours' fields (theme.ts).
 
-export type MarginPiece = "saltpan" | "hut" | "gulls" | "post" | "mill" | "punt" | "tor" | "cairn" | "flock" | "willow" | "heather";
+export type MarginPiece =
+  | "saltpan"
+  | "hut"
+  | "gulls"
+  | "post"
+  | "mill"
+  | "punt"
+  | "tor"
+  | "cairn"
+  | "flock"
+  | "willow"
+  | "heather"
+  | "oak"
+  | "deadtree"
+  | "stall"
+  | "tower"
+  | "boat"
+  | "logpile"
+  | "kiln"
+  | "deer"
+  | "nets"
+  | "pots"
+  | "fissure"
+  | "barrier"
+  | "digger"
+  | "marquee"
+  | "hustings"
+  | "crane"
+  | "cars"
+  | "cabin"
+  | "lanterns"
+  | "cart";
 
 /** Pieces drawn by theme.ts's shared decor painter (base point at the piece's foot). */
-export const DECOR_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["willow", "heather"]);
+export const DECOR_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["willow", "heather", "oak", "deadtree", "stall", "tower", "boat"]);
+
+/** Pieces with an ambient loop (`drawMarginLife`). */
+export const LIVE_PIECES: ReadonlySet<MarginPiece> = new Set<MarginPiece>(["gulls", "mill", "kiln", "fissure", "marquee", "crane", "lanterns"]);
 
 export interface MarginSet {
   name: string;
@@ -17,7 +51,7 @@ export interface MarginSet {
   /** A boardwalk down each side margin. */
   boardwalk: boolean;
   /** The land the pieces stand on. */
-  ground: "marsh" | "meadow" | "moor";
+  ground: "marsh" | "meadow" | "moor" | "wood" | "shingle" | "scorch" | "green" | "tarmac" | "cobbles";
   /** Pieces on the act's water margin (the river or the sea), if it has one. */
   water?: Array<{ kind: MarginPiece; weight: number; w: number; h: number }>;
 }
@@ -61,6 +95,85 @@ export const MARGIN_SETS: Partial<Record<number, MarginSet>> = {
     density: 0.3,
     boardwalk: false,
     ground: "moor",
+  },
+  // Oakvale: old woodland, bluebells under the oaks, a woodsman's log pile, a charcoal clamp smoking, deer.
+  4: {
+    name: "oakvale",
+    pieces: [
+      { kind: "oak", weight: 6, w: 0.95, h: 1.15 },
+      { kind: "logpile", weight: 2, w: 0.9, h: 0.5 },
+      { kind: "kiln", weight: 2, w: 0.8, h: 0.9 },
+      { kind: "deer", weight: 2, w: 0.9, h: 0.6 },
+    ],
+    density: 0.32,
+    boardwalk: false,
+    ground: "wood",
+  },
+  // Shingle Bay: a pebble beach in bands, beach huts, boats hauled up, nets on poles, lobster pots, gulls.
+  5: {
+    name: "shingle-bay",
+    pieces: [
+      { kind: "hut", weight: 3, w: 0.62, h: 0.95 },
+      { kind: "boat", weight: 3, w: 1.0, h: 0.85 },
+      { kind: "nets", weight: 2, w: 1.0, h: 0.7 },
+      { kind: "pots", weight: 2, w: 0.6, h: 0.45 },
+      { kind: "gulls", weight: 2, w: 0.9, h: 0.45 },
+    ],
+    density: 0.3,
+    boardwalk: false,
+    ground: "shingle",
+  },
+  // The Rift: scorched, cracked ground, glowing fissures, dead trees, roadworks barriers and an abandoned digger.
+  6: {
+    name: "the-rift",
+    pieces: [
+      { kind: "fissure", weight: 4, w: 1.3, h: 0.6 },
+      { kind: "deadtree", weight: 4, w: 0.8, h: 1.0 },
+      { kind: "barrier", weight: 2, w: 1.0, h: 0.5 },
+      { kind: "digger", weight: 2, w: 1.3, h: 0.9 },
+    ],
+    density: 0.3,
+    boardwalk: false,
+    ground: "scorch",
+  },
+  // The Ballot: a village green on polling day: bunting, a striped marquee, the hustings stage, stalls, oaks.
+  7: {
+    name: "the-ballot",
+    pieces: [
+      { kind: "marquee", weight: 3, w: 1.2, h: 0.95 },
+      { kind: "hustings", weight: 2, w: 1.2, h: 0.85 },
+      { kind: "stall", weight: 3, w: 1.0, h: 0.85 },
+      { kind: "oak", weight: 3, w: 0.95, h: 1.15 },
+    ],
+    density: 0.3,
+    boardwalk: false,
+    ground: "green",
+  },
+  // The Merger: the farmland's gone to a business park: car parks, glass blocks, a tower crane, site cabins.
+  8: {
+    name: "the-merger",
+    pieces: [
+      { kind: "tower", weight: 4, w: 0.85, h: 1.35 },
+      { kind: "crane", weight: 2, w: 1.3, h: 1.4 },
+      { kind: "cars", weight: 3, w: 1.1, h: 0.45 },
+      { kind: "cabin", weight: 2, w: 0.9, h: 0.6 },
+    ],
+    density: 0.3,
+    boardwalk: false,
+    ground: "tarmac",
+  },
+  // Kingsmarket: a cobbled night market: stalls under strung lanterns, barrows of produce.
+  9: {
+    name: "kingsmarket",
+    pieces: [
+      { kind: "stall", weight: 5, w: 1.0, h: 0.85 },
+      { kind: "lanterns", weight: 3, w: 1.3, h: 0.5 },
+      { kind: "cart", weight: 3, w: 0.8, h: 0.55 },
+      { kind: "oak", weight: 1, w: 0.95, h: 1.15 },
+    ],
+    density: 0.32,
+    boardwalk: false,
+    ground: "cobbles",
   },
 };
 
@@ -200,6 +313,7 @@ export function paintMarsh(ctx: CanvasRenderingContext2D, r: Rect, s: number, ra
 /** A water meadow: lush grass in strips, cut by a mill race; or a moor: heather, bracken and dry-stone walls. */
 export function paintGround(ctx: CanvasRenderingContext2D, ground: MarginSet["ground"], r: Rect, s: number, rand: () => number): void {
   if (ground === "marsh") return paintMarsh(ctx, r, s, rand);
+  if (ground !== "meadow" && ground !== "moor") return paintLand(ctx, ground, r, s, rand);
   ctx.save();
   ctx.beginPath();
   ctx.rect(r.x, r.y, r.w, r.h);
@@ -263,6 +377,151 @@ export function paintGround(ctx: CanvasRenderingContext2D, ground: MarginSet["gr
   ctx.restore();
 }
 
+const dot = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) => {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+};
+
+/** The later acts' land: woodland floor, a shingle beach, scorched earth, a village green, tarmac, cobbles. */
+function paintLand(ctx: CanvasRenderingContext2D, ground: MarginSet["ground"], r: Rect, s: number, rand: () => number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.w, r.h);
+  ctx.clip();
+  const n = (r.w * r.h) / (s * s);
+  if (ground === "wood") {
+    // Dappled woodland floor: leaf litter, drifts of bluebells, pools of sun.
+    ctx.fillStyle = "rgba(70,90,44,0.42)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    for (let i = 0; i < n * 1.6; i++) {
+      const x = r.x + rand() * r.w;
+      const y = r.y + rand() * r.h;
+      const rr = s * (0.25 + rand() * 0.35);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
+      g.addColorStop(0, rand() > 0.45 ? "rgba(112,104,200,0.26)" : "rgba(250,236,170,0.18)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+    }
+    for (let i = 0; i < n * 18; i++) dot(ctx, r.x + rand() * r.w, r.y + rand() * r.h, s * (0.015 + rand() * 0.02), rand() > 0.5 ? "rgba(120,110,210,0.7)" : rand() > 0.5 ? "rgba(150,100,50,0.45)" : "rgba(40,70,30,0.35)");
+  } else if (ground === "shingle") {
+    // Shingle in bands parallel to the sea: sand, grey pebbles, a wrack line of weed.
+    ctx.fillStyle = "rgba(214,200,170,0.55)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    for (let y = r.y + s * rand(); y < r.y + r.h; y += s * (0.9 + rand() * 0.8)) {
+      ctx.fillStyle = "rgba(150,146,136,0.28)";
+      ctx.fillRect(r.x, y, r.w, s * (0.25 + rand() * 0.3));
+      ctx.strokeStyle = "rgba(90,96,60,0.45)";
+      ctx.lineWidth = Math.max(1, s * 0.03);
+      ctx.beginPath();
+      for (let x = r.x; x <= r.x + r.w; x += s * 0.2) ctx.lineTo(x, y + (rand() - 0.5) * s * 0.08);
+      ctx.stroke();
+    }
+    for (let i = 0; i < n * 30; i++) {
+      const c = ["rgba(168,164,156,0.8)", "rgba(206,200,188,0.85)", "rgba(120,118,112,0.7)", "rgba(196,170,140,0.75)"][Math.floor(rand() * 4)]!;
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.ellipse(r.x + rand() * r.w, r.y + rand() * r.h, s * (0.025 + rand() * 0.03), s * (0.018 + rand() * 0.02), rand() * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (ground === "scorch") {
+    // Dry, scorched earth, cracked into plates.
+    ctx.fillStyle = "rgba(120,84,58,0.42)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    for (let i = 0; i < n * 1.2; i++) {
+      const x = r.x + rand() * r.w;
+      const y = r.y + rand() * r.h;
+      const rr = s * (0.3 + rand() * 0.6);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
+      g.addColorStop(0, "rgba(50,34,28,0.18)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+    }
+    ctx.strokeStyle = "rgba(60,38,26,0.5)";
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    for (let i = 0; i < n * 2.2; i++) {
+      let x = r.x + rand() * r.w;
+      let y = r.y + rand() * r.h;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      for (let k = 0; k < 3; k++) {
+        x += (rand() - 0.5) * s * 0.7;
+        y += (rand() - 0.5) * s * 0.7;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  } else if (ground === "green") {
+    // A mown village green in stripes, with bunting strung across it.
+    ctx.fillStyle = "rgba(120,176,84,0.3)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = "rgba(255,255,230,0.09)";
+    for (let x = r.x; x < r.x + r.w; x += s * 0.9) ctx.fillRect(x, r.y, s * 0.45, r.h);
+    for (let y = r.y + s * (1 + rand()); y < r.y + r.h; y += s * (3 + rand() * 1.5)) {
+      const sag = s * 0.25;
+      ctx.strokeStyle = "rgba(70,60,50,0.55)";
+      ctx.lineWidth = Math.max(1, s * 0.015);
+      ctx.beginPath();
+      ctx.moveTo(r.x, y);
+      ctx.quadraticCurveTo(r.x + r.w / 2, y + sag * 2, r.x + r.w, y);
+      ctx.stroke();
+      const flags = ["#d9534f", "#f6f1e4", "#5b8fd1"];
+      for (let k = 0, x = r.x + s * 0.12; x < r.x + r.w; x += s * 0.24, k++) {
+        const t = (x - r.x) / r.w;
+        const fy = y + 4 * sag * t * (1 - t);
+        ctx.fillStyle = flags[k % 3]!;
+        ctx.beginPath();
+        ctx.moveTo(x - s * 0.06, fy);
+        ctx.lineTo(x + s * 0.06, fy);
+        ctx.lineTo(x, fy + s * 0.14);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  } else if (ground === "tarmac") {
+    // Grey tarmac car park: painted bays, kerbed islands with a shrub.
+    ctx.fillStyle = "rgba(96,100,104,0.55)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = "rgba(240,240,232,0.6)";
+    ctx.lineWidth = Math.max(1, s * 0.025);
+    for (let y = r.y + s * 0.6; y < r.y + r.h; y += s * 1.6) {
+      for (let x = r.x + s * 0.2; x < r.x + r.w - s * 0.2; x += s * 0.4) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + s * 0.55);
+        ctx.stroke();
+      }
+    }
+    for (let i = 0; i < n * 6; i++) dot(ctx, r.x + rand() * r.w, r.y + rand() * r.h, s * (0.02 + rand() * 0.04), "rgba(40,44,48,0.25)");
+  } else {
+    // Cobbles at dusk, worn smooth, with a lantern's warmth pooled here and there.
+    ctx.fillStyle = "rgba(92,72,70,0.5)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    const c = s * 0.16;
+    for (let y = r.y, row = 0; y < r.y + r.h; y += c * 0.8, row++)
+      for (let x = r.x - (row % 2) * c * 0.5; x < r.x + r.w; x += c) {
+        ctx.fillStyle = rand() > 0.5 ? "rgba(150,128,116,0.45)" : "rgba(120,100,96,0.45)";
+        ctx.beginPath();
+        ctx.ellipse(x + c / 2, y + c * 0.4, c * 0.42, c * 0.32, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    for (let i = 0; i < n * 0.8; i++) {
+      const x = r.x + rand() * r.w;
+      const y = r.y + rand() * r.h;
+      const rr = s * (0.6 + rand() * 0.6);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
+      g.addColorStop(0, "rgba(255,190,110,0.28)");
+      g.addColorStop(1, "rgba(255,190,110,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+    }
+  }
+  ctx.restore();
+}
+
 /** A boardwalk down a margin: weathered planks on posts. */
 export function paintBoardwalk(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
   ctx.save();
@@ -284,6 +543,39 @@ export function paintBoardwalk(ctx: CanvasRenderingContext2D, r: Rect, s: number
     ctx.fillRect(r.x + r.w - s * 0.03, y, s * 0.08, s * 0.12);
   }
   ctx.restore();
+}
+
+/** A fissure's zig-zag, the same every call for the same piece. */
+function fissurePoints(p: Placed): Array<[number, number]> {
+  const r = seeded(Math.round(p.x * 13 + p.y * 7));
+  const out: Array<[number, number]> = [];
+  for (let i = 0; i <= 6; i++) out.push([p.x - p.w / 2 + (p.w * i) / 6, p.y + (i === 0 || i === 6 ? 0 : (r() - 0.5) * p.h * 0.8)]);
+  return out;
+}
+
+const LANTERN_COLOURS = ["#ffb04a", "#e8748b", "#f2c94c", "#ff8a5c"];
+/** Where a lantern string's lanterns hang, and their paper colours. */
+function lanternSpots(p: Placed): Array<[number, number, string]> {
+  const x0 = p.x - p.w / 2;
+  const y0 = p.y - p.h / 2;
+  const out: Array<[number, number, string]> = [];
+  for (let i = 1; i <= 4; i++) {
+    const t = i / 5;
+    out.push([x0 + p.w * t, y0 + 4 * (p.h * 0.33) * t * (1 - t) + p.h * 0.18, LANTERN_COLOURS[i % 4]!]);
+  }
+  return out;
+}
+
+/** The crane's jib and counter-jib across the mast's head. */
+function drawJib(ctx: CanvasRenderingContext2D, p: Placed, s: number): void {
+  const mx = p.x - p.w * 0.1;
+  const top = p.y - p.h / 2 + p.h * 0.12;
+  ctx.fillStyle = "#e0a82e";
+  ctx.fillRect(mx - p.w * 0.3, top - s * 0.06, p.w * 0.88, s * 0.07);
+  ctx.fillStyle = "#6b6f75";
+  ctx.fillRect(mx - p.w * 0.32, top - s * 0.02, s * 0.16, s * 0.12);
+  ctx.fillStyle = "#c48e1e";
+  ctx.fillRect(mx - s * 0.06, top - s * 0.16, s * 0.12, s * 0.12);
 }
 
 export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
@@ -520,13 +812,411 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
       ctx.stroke();
       break;
     }
+    case "logpile": {
+      // Felled trunks stacked, cut ends to us.
+      ctx.fillStyle = "rgba(30,40,20,0.28)";
+      ctx.beginPath();
+      ctx.ellipse(p.x + s * 0.05, y0 + p.h, p.w * 0.55, s * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const lr = p.h * 0.24;
+      const rows = [4, 3, 2];
+      rows.forEach((count, row) => {
+        for (let i = 0; i < count; i++) {
+          const lx = p.x + (i - (count - 1) / 2) * lr * 2;
+          const ly = y0 + p.h - lr - row * lr * 1.7;
+          dot(ctx, lx, ly, lr, "#7a5634");
+          dot(ctx, lx, ly, lr * 0.78, "#d9b480");
+          ctx.strokeStyle = "rgba(122,86,52,0.6)";
+          ctx.lineWidth = Math.max(1, s * 0.012);
+          ctx.beginPath();
+          ctx.arc(lx, ly, lr * 0.42, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+      break;
+    }
+    case "kiln": {
+      // A charcoal burner's clamp: an earth-covered mound, a vent, a sack beside it.
+      ctx.fillStyle = "rgba(30,40,20,0.28)";
+      ctx.beginPath();
+      ctx.ellipse(p.x + s * 0.05, y0 + p.h, p.w * 0.55, s * 0.09, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#5a4a3a";
+      ctx.beginPath();
+      ctx.ellipse(p.x, y0 + p.h - p.h * 0.25, p.w * 0.45, p.h * 0.32, 0, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.beginPath();
+      ctx.ellipse(p.x - p.w * 0.12, y0 + p.h - p.h * 0.42, p.w * 0.18, p.h * 0.08, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      dot(ctx, p.x, y0 + p.h - p.h * 0.55, s * 0.05, "#2a2420");
+      ctx.fillStyle = "#c8ac7a";
+      ctx.beginPath();
+      ctx.roundRect(p.x + p.w * 0.3, y0 + p.h - p.h * 0.28, p.w * 0.2, p.h * 0.28, s * 0.03);
+      ctx.fill();
+      break;
+    }
+    case "deer": {
+      // A doe and her fawn, heads up.
+      for (const [dx, k] of [
+        [-0.2, 1],
+        [0.28, 0.7],
+      ] as const) {
+        const cx = p.x + dx * p.w;
+        const by = y0 + p.h * 0.62;
+        const bw = p.w * 0.26 * k;
+        ctx.fillStyle = "rgba(30,40,20,0.25)";
+        ctx.beginPath();
+        ctx.ellipse(cx, y0 + p.h, bw * 1.1, s * 0.05, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#6e4a2c";
+        ctx.lineWidth = Math.max(1, s * 0.03 * k);
+        ctx.beginPath();
+        for (const lx of [-0.7, -0.4, 0.45, 0.75]) {
+          ctx.moveTo(cx + lx * bw, by);
+          ctx.lineTo(cx + lx * bw, y0 + p.h);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "#a8703e";
+        ctx.beginPath();
+        ctx.ellipse(cx, by, bw, bw * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(cx + bw * 0.7, by - bw * 0.1);
+        ctx.lineTo(cx + bw * 1.05, by - bw * 0.95);
+        ctx.lineTo(cx + bw * 1.3, by - bw * 0.85);
+        ctx.lineTo(cx + bw * 0.95, by + bw * 0.1);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx + bw * 1.25, by - bw * 0.95, bw * 0.3, bw * 0.18, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        dot(ctx, cx - bw * 0.95, by - bw * 0.1, bw * 0.16, "#f4ead8");
+      }
+      break;
+    }
+    case "nets": {
+      // Fishing nets hung to dry between two poles, a float or two caught in them.
+      const top = y0 + p.h * 0.1;
+      const bot = y0 + p.h;
+      ctx.fillStyle = "rgba(40,40,30,0.22)";
+      ctx.fillRect(x0, bot - s * 0.04, p.w, s * 0.06);
+      ctx.fillStyle = "#6e5236";
+      ctx.fillRect(x0, top, s * 0.05, bot - top);
+      ctx.fillRect(x0 + p.w - s * 0.05, top, s * 0.05, bot - top);
+      ctx.strokeStyle = "rgba(60,80,90,0.75)";
+      ctx.lineWidth = Math.max(0.8, s * 0.012);
+      ctx.beginPath();
+      const nx0 = x0 + s * 0.05;
+      const nx1 = x0 + p.w - s * 0.05;
+      ctx.moveTo(nx0, top + s * 0.03);
+      ctx.quadraticCurveTo((nx0 + nx1) / 2, top + p.h * 0.25, nx1, top + s * 0.03);
+      for (let x = nx0; x <= nx1; x += s * 0.08) {
+        const t = (x - nx0) / (nx1 - nx0);
+        ctx.moveTo(x, top + s * 0.03 + 4 * p.h * 0.11 * t * (1 - t));
+        ctx.lineTo(x + s * 0.03, top + p.h * 0.62);
+      }
+      for (let y = top + p.h * 0.2; y < top + p.h * 0.62; y += s * 0.08) {
+        ctx.moveTo(nx0, y);
+        ctx.lineTo(nx1, y + s * 0.02);
+      }
+      ctx.stroke();
+      dot(ctx, x0 + p.w * 0.35, top + p.h * 0.4, s * 0.04, "#e8743c");
+      dot(ctx, x0 + p.w * 0.66, top + p.h * 0.48, s * 0.04, "#e8743c");
+      break;
+    }
+    case "pots": {
+      // Lobster pots stacked: netted domes on slatted bases, a coil of orange rope.
+      const pw = p.w * 0.42;
+      const ph = p.h * 0.48;
+      for (const [dx, dy] of [
+        [-0.22, 0],
+        [0.24, 0],
+        [0.01, -1],
+      ] as const) {
+        const px = p.x + dx * p.w - pw / 2;
+        const py = y0 + p.h - ph + dy * ph * 0.9;
+        ctx.fillStyle = "#6e5236";
+        ctx.fillRect(px, py + ph * 0.7, pw, ph * 0.3);
+        ctx.fillStyle = "rgba(60,90,100,0.85)";
+        ctx.beginPath();
+        ctx.ellipse(px + pw / 2, py + ph * 0.7, pw / 2, ph * 0.7, 0, Math.PI, 0);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(230,236,230,0.55)";
+        ctx.lineWidth = Math.max(0.8, s * 0.012);
+        ctx.beginPath();
+        for (let k = 1; k < 4; k++) {
+          ctx.moveTo(px + (pw * k) / 4, py + ph * 0.7);
+          ctx.lineTo(px + pw / 2, py + ph * 0.05);
+        }
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "#e8743c";
+      ctx.lineWidth = Math.max(1, s * 0.025);
+      ctx.beginPath();
+      ctx.ellipse(x0 + p.w * 0.94, y0 + p.h * 0.92, p.w * 0.1, s * 0.04, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    }
+    case "fissure": {
+      // A crack in the ground, its depths glowing ember-orange (the glow breathes in drawMarginLife).
+      const pts = fissurePoints(p);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (const [wd, color] of [
+        [0.13, "rgba(40,24,20,0.5)"],
+        [0.07, "#2a1612"],
+        [0.025, "#ff8a3c"],
+      ] as const) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(1, s * wd);
+        ctx.beginPath();
+        pts.forEach(([px, py], i) => (i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+        ctx.stroke();
+      }
+      break;
+    }
+    case "barrier": {
+      // Red-and-white roadworks barriers on feet, a cone at each end.
+      const by = y0 + p.h * 0.4;
+      const bh = p.h * 0.22;
+      ctx.fillStyle = "rgba(30,20,20,0.25)";
+      ctx.fillRect(x0, y0 + p.h - s * 0.04, p.w, s * 0.06);
+      ctx.fillStyle = "#3a3a3a";
+      ctx.fillRect(x0 + p.w * 0.2, by, s * 0.035, y0 + p.h - by);
+      ctx.fillRect(x0 + p.w * 0.78, by, s * 0.035, y0 + p.h - by);
+      const stripes = 7;
+      for (let i = 0; i < stripes; i++) {
+        ctx.fillStyle = i % 2 ? "#f6f1e4" : "#c4433a";
+        ctx.fillRect(x0 + p.w * 0.12 + ((p.w * 0.76) / stripes) * i, by, (p.w * 0.76) / stripes + 0.5, bh);
+      }
+      for (const cx of [x0 + p.w * 0.05, x0 + p.w * 0.95]) {
+        ctx.fillStyle = "#f08a3c";
+        ctx.beginPath();
+        ctx.moveTo(cx - s * 0.08, y0 + p.h);
+        ctx.lineTo(cx, y0 + p.h - s * 0.24);
+        ctx.lineTo(cx + s * 0.08, y0 + p.h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(cx - s * 0.04, y0 + p.h - s * 0.12, s * 0.08, s * 0.035);
+      }
+      break;
+    }
+    case "digger": {
+      // An abandoned yellow excavator, its arm down in a trench.
+      const gy = y0 + p.h;
+      ctx.fillStyle = "rgba(30,20,20,0.28)";
+      ctx.beginPath();
+      ctx.ellipse(p.x, gy, p.w * 0.5, s * 0.09, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#3a3a3a";
+      ctx.beginPath();
+      ctx.roundRect(x0 + p.w * 0.05, gy - p.h * 0.2, p.w * 0.55, p.h * 0.2, p.h * 0.1);
+      ctx.fill();
+      ctx.fillStyle = "#e0a82e";
+      ctx.fillRect(x0 + p.w * 0.08, gy - p.h * 0.45, p.w * 0.5, p.h * 0.26);
+      ctx.fillRect(x0 + p.w * 0.12, gy - p.h * 0.72, p.w * 0.24, p.h * 0.28);
+      ctx.fillStyle = "rgba(200,226,236,0.85)";
+      ctx.fillRect(x0 + p.w * 0.15, gy - p.h * 0.68, p.w * 0.18, p.h * 0.16);
+      ctx.strokeStyle = "#c48e1e";
+      ctx.lineWidth = Math.max(2, s * 0.07);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x0 + p.w * 0.5, gy - p.h * 0.42);
+      ctx.lineTo(x0 + p.w * 0.78, gy - p.h * 0.92);
+      ctx.lineTo(x0 + p.w * 0.95, gy - p.h * 0.25);
+      ctx.stroke();
+      ctx.fillStyle = "#5a4a3a";
+      ctx.beginPath();
+      ctx.moveTo(x0 + p.w * 0.88, gy - p.h * 0.28);
+      ctx.lineTo(x0 + p.w, gy - p.h * 0.28);
+      ctx.lineTo(x0 + p.w * 0.96, gy - p.h * 0.08);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "marquee": {
+      // A striped marquee with its flap tied back (its pennant flutters in drawMarginLife).
+      const gy = y0 + p.h;
+      const eave = y0 + p.h * 0.45;
+      ctx.fillStyle = "rgba(30,40,20,0.25)";
+      ctx.beginPath();
+      ctx.ellipse(p.x + s * 0.06, gy, p.w * 0.55, s * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const stripes = 6;
+      for (let i = 0; i < stripes; i++) {
+        ctx.fillStyle = i % 2 ? "#f6f1e4" : "#d9534f";
+        ctx.fillRect(x0 + (p.w / stripes) * i, eave, p.w / stripes + 0.5, gy - eave);
+      }
+      ctx.fillStyle = "#4a3a2c";
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.w * 0.12, gy);
+      ctx.lineTo(p.x, eave + (gy - eave) * 0.25);
+      ctx.lineTo(p.x + p.w * 0.12, gy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#f6f1e4";
+      ctx.beginPath();
+      ctx.moveTo(x0 - s * 0.05, eave);
+      ctx.lineTo(p.x, y0 + p.h * 0.18);
+      ctx.lineTo(x0 + p.w + s * 0.05, eave);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(60,40,30,0.55)";
+      ctx.lineWidth = Math.max(1, s * 0.02);
+      ctx.stroke();
+      ctx.fillStyle = "#d9534f";
+      for (let i = 0; i < 6; i++) {
+        const sx = x0 + (p.w / 6) * i;
+        ctx.beginPath();
+        ctx.arc(sx + p.w / 12, eave, p.w / 12, 0, Math.PI);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "#4a3a2c";
+      ctx.beginPath();
+      ctx.moveTo(p.x, y0 + p.h * 0.18);
+      ctx.lineTo(p.x, y0);
+      ctx.stroke();
+      break;
+    }
+    case "hustings": {
+      // The hustings: a plank stage, a lectern, a VOTE banner and a few folding chairs.
+      const gy = y0 + p.h;
+      const deck = y0 + p.h * 0.55;
+      ctx.fillStyle = "rgba(30,40,20,0.25)";
+      ctx.fillRect(x0 + s * 0.05, gy - s * 0.02, p.w, s * 0.07);
+      ctx.fillStyle = "#8a6a48";
+      ctx.fillRect(x0, deck, p.w, p.h * 0.18);
+      ctx.fillStyle = "#6e5236";
+      ctx.fillRect(x0, deck + p.h * 0.18, p.w, gy - deck - p.h * 0.18);
+      ctx.fillStyle = "#1f3a6a";
+      ctx.fillRect(x0 + p.w * 0.08, y0, p.w * 0.84, p.h * 0.3);
+      ctx.fillStyle = "#f6f1e4";
+      ctx.font = `700 ${Math.max(6, Math.round(p.h * 0.18))}px 'Hedgerow UI', system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("VOTE", p.x, y0 + p.h * 0.16);
+      ctx.fillStyle = "#4a3a2c";
+      ctx.fillRect(p.x - p.w * 0.06, deck - p.h * 0.2, p.w * 0.12, p.h * 0.2);
+      ctx.fillStyle = "#d9534f";
+      ctx.fillRect(p.x - p.w * 0.08, deck - p.h * 0.24, p.w * 0.16, p.h * 0.05);
+      break;
+    }
+    case "crane": {
+      // A tower crane: a lattice mast and its counterweight (the jib slews in drawMarginLife).
+      const gy = y0 + p.h;
+      const mx = p.x - p.w * 0.1;
+      ctx.fillStyle = "rgba(30,30,40,0.25)";
+      ctx.fillRect(mx - s * 0.2, gy - s * 0.03, s * 0.4, s * 0.08);
+      ctx.fillStyle = "#6b6f75";
+      ctx.fillRect(mx - s * 0.16, gy - s * 0.1, s * 0.32, s * 0.1);
+      ctx.strokeStyle = "#e0a82e";
+      ctx.lineWidth = Math.max(1, s * 0.025);
+      const mw = s * 0.09;
+      ctx.beginPath();
+      ctx.moveTo(mx - mw, gy - s * 0.1);
+      ctx.lineTo(mx - mw, y0 + p.h * 0.12);
+      ctx.moveTo(mx + mw, gy - s * 0.1);
+      ctx.lineTo(mx + mw, y0 + p.h * 0.12);
+      for (let y = gy - s * 0.1, k = 0; y > y0 + p.h * 0.16; y -= mw * 2, k++) {
+        ctx.moveTo(mx - mw, y);
+        ctx.lineTo(mx + mw, y - mw * 2);
+      }
+      ctx.stroke();
+      drawJib(ctx, p, s);
+      break;
+    }
+    case "cars": {
+      // A row of parked cars nose-in, in company silver and one red one.
+      const n = 3;
+      const cw = p.w / n;
+      for (let i = 0; i < n; i++) {
+        const cx = x0 + cw * i + cw * 0.1;
+        const c = i === 1 && rand() > 0.5 ? "#c4433a" : ["#c8ccd2", "#8fa3b4", "#3e4650"][Math.floor(rand() * 3)]!;
+        ctx.fillStyle = "rgba(20,20,30,0.3)";
+        ctx.fillRect(cx + s * 0.03, y0 + s * 0.04, cw * 0.8, p.h);
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.roundRect(cx, y0, cw * 0.8, p.h, cw * 0.2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(40,60,80,0.75)";
+        ctx.fillRect(cx + cw * 0.12, y0 + p.h * 0.2, cw * 0.56, p.h * 0.18);
+        ctx.fillRect(cx + cw * 0.12, y0 + p.h * 0.66, cw * 0.56, p.h * 0.14);
+      }
+      break;
+    }
+    case "cabin": {
+      // Stacked site cabins, the steel-blue of the Hollowell contractor, with a small window lit.
+      const gy = y0 + p.h;
+      ctx.fillStyle = "rgba(20,20,30,0.28)";
+      ctx.fillRect(x0 + s * 0.06, gy - s * 0.02, p.w, s * 0.07);
+      for (const [dy, off] of [
+        [0, 0],
+        [1, 0.12],
+      ] as const) {
+        const ch = p.h * 0.46;
+        const cy = gy - ch * (dy + 1);
+        const cx = x0 + p.w * off;
+        ctx.fillStyle = dy ? "#5b7f9e" : "#4a6c8a";
+        ctx.fillRect(cx, cy, p.w * 0.86, ch);
+        ctx.fillStyle = "rgba(0,0,0,0.15)";
+        for (let x = cx + s * 0.06; x < cx + p.w * 0.86; x += s * 0.1) ctx.fillRect(x, cy, s * 0.015, ch);
+        ctx.fillStyle = dy ? "#ffe9a8" : "rgba(200,226,236,0.8)";
+        ctx.fillRect(cx + p.w * 0.12, cy + ch * 0.25, p.w * 0.2, ch * 0.35);
+      }
+      break;
+    }
+    case "lanterns": {
+      // Paper lanterns strung between two poles (they glow and flicker in drawMarginLife).
+      ctx.fillStyle = "#3a2a22";
+      ctx.fillRect(x0, y0, s * 0.04, p.h);
+      ctx.fillRect(x0 + p.w - s * 0.04, y0, s * 0.04, p.h);
+      ctx.strokeStyle = "rgba(40,30,30,0.7)";
+      ctx.lineWidth = Math.max(0.8, s * 0.015);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0 + s * 0.04);
+      ctx.quadraticCurveTo(p.x, y0 + p.h * 0.7, x0 + p.w, y0 + s * 0.04);
+      ctx.stroke();
+      for (const [lx, ly, c] of lanternSpots(p)) {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, s * 0.09, s * 0.115, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
+    case "cart": {
+      // A costermonger's barrow piled with apples and greens.
+      const gy = y0 + p.h;
+      ctx.fillStyle = "rgba(30,20,20,0.3)";
+      ctx.beginPath();
+      ctx.ellipse(p.x, gy, p.w * 0.5, s * 0.07, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#4a3a2c";
+      ctx.lineWidth = Math.max(1, s * 0.03);
+      ctx.beginPath();
+      ctx.moveTo(x0 + p.w * 0.8, gy - p.h * 0.45);
+      ctx.lineTo(x0 + p.w, gy - p.h * 0.2);
+      ctx.stroke();
+      ctx.fillStyle = "#8a5a36";
+      ctx.fillRect(x0, gy - p.h * 0.6, p.w * 0.82, p.h * 0.3);
+      for (let i = 0; i < 9; i++)
+        dot(ctx, x0 + p.w * (0.08 + (i % 5) * 0.16), gy - p.h * (0.62 + Math.floor(i / 5) * 0.12), p.h * 0.1, ["#c4433a", "#e0a82e", "#6a9a3a"][i % 3]!);
+      for (const wx of [x0 + p.w * 0.2, x0 + p.w * 0.62]) {
+        dot(ctx, wx, gy - p.h * 0.18, p.h * 0.18, "#4a3a2c");
+        dot(ctx, wx, gy - p.h * 0.18, p.h * 0.07, "#a88a5a");
+      }
+      break;
+    }
   }
   ctx.restore();
 }
 
 /**
  * Plan item 202: the margins' ambient loops, drawn each frame over the painted field: a gull wheels over each
- * flock of gulls, and the mill's wheel turns. Not drawn under reduced motion (the painted margin stays as is).
+ * flock of gulls, the mill's wheel turns, a charcoal clamp smokes, a fissure's embers breathe, a marquee's pennant
+ * flutters, a crane's hook runs along its jib, and the market's lanterns flicker. Not drawn under reduced motion (the painted margin stays as is).
  */
 export function drawMarginLife(ctx: CanvasRenderingContext2D, pieces: readonly Placed[], s: number, t: number): void {
   pieces.forEach((p, i) => {
@@ -550,6 +1240,66 @@ export function drawMarginLife(ctx: CanvasRenderingContext2D, pieces: readonly P
       ctx.quadraticCurveTo(gx - r / 2, gy - r * (0.5 + flap), gx, gy);
       ctx.quadraticCurveTo(gx + r / 2, gy - r * (0.5 + flap), gx + r, gy - r * flap);
       ctx.stroke();
+    } else if (p.kind === "kiln") {
+      // Smoke curls up from the clamp's vent and drifts off.
+      const vx = p.x;
+      const vy = p.y + p.h / 2 - p.h * 0.55;
+      for (let k = 0; k < 4; k++) {
+        const ph = (t * 0.35 + k / 4 + i * 0.3) % 1;
+        ctx.fillStyle = `rgba(220,220,214,${(0.45 * (1 - ph)).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(vx + Math.sin(ph * 5 + i) * s * 0.12 + ph * s * 0.3, vy - ph * s * 1.1, s * (0.06 + ph * 0.14), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (p.kind === "fissure") {
+      // The ember glow in the crack breathes.
+      const pts = fissurePoints(p);
+      const a = 0.25 + 0.25 * Math.sin(t * 1.6 + i * 1.3);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = `rgba(255,150,70,${a.toFixed(3)})`;
+      ctx.lineWidth = Math.max(1.5, s * 0.09);
+      ctx.beginPath();
+      pts.forEach(([px, py], k) => (k ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+      ctx.stroke();
+    } else if (p.kind === "marquee") {
+      // A pennant flutters on the marquee's pole.
+      const px = p.x;
+      const py = p.y - p.h / 2;
+      const f = Math.sin(t * 5 + i) * s * 0.04;
+      ctx.fillStyle = "#5b8fd1";
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.quadraticCurveTo(px + s * 0.14, py + s * 0.02 + f, px + s * 0.28, py + s * 0.05 + f * 1.6);
+      ctx.lineTo(px, py + s * 0.12);
+      ctx.closePath();
+      ctx.fill();
+    } else if (p.kind === "crane") {
+      // The trolley runs out along the jib and back, its hook on a cable.
+      const mx = p.x - p.w * 0.1;
+      const top = p.y - p.h / 2 + p.h * 0.12;
+      const reach = mx + s * 0.1 + (0.5 + 0.5 * Math.sin(t * 0.4 + i)) * (p.w * 0.58 - s * 0.2);
+      const drop = s * (0.35 + 0.15 * Math.sin(t * 0.3 + i));
+      ctx.fillStyle = "#3a3a3a";
+      ctx.fillRect(reach - s * 0.05, top + s * 0.01, s * 0.1, s * 0.05);
+      ctx.strokeStyle = "rgba(40,40,40,0.8)";
+      ctx.lineWidth = Math.max(0.8, s * 0.012);
+      ctx.beginPath();
+      ctx.moveTo(reach, top + s * 0.06);
+      ctx.lineTo(reach, top + drop);
+      ctx.stroke();
+      ctx.fillStyle = "#c4433a";
+      ctx.fillRect(reach - s * 0.04, top + drop, s * 0.08, s * 0.06);
+    } else if (p.kind === "lanterns") {
+      // Each lantern's warm halo flickers on its own.
+      for (const [k, [lx, ly]] of lanternSpots(p).entries()) {
+        const a = 0.42 + 0.14 * Math.sin(t * 7.3 + k * 2.1 + i) * Math.sin(t * 3.1 + k);
+        const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, s * 0.4);
+        g.addColorStop(0, `rgba(255,200,120,${a.toFixed(3)})`);
+        g.addColorStop(1, "rgba(255,200,120,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(lx - s * 0.4, ly - s * 0.4, s * 0.8, s * 0.8);
+      }
     } else if (p.kind === "mill") {
       // Matches paintPiece's wheel: the turning spokes over the painted ones.
       const y0 = p.y - p.h / 2;
