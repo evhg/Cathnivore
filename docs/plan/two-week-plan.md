@@ -2260,7 +2260,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or checked and logged here with its measurement; text 12 px+ and 4.5:1+ on its ground; a spec for each fix that fails on the old code where one can; shots before and after.
 - **Size:** 2
 
-## 202. [ ] Hedgerow 2D: each act's margins a place, Saltmarsh first
+## 202. [ ] Hedgerow 2D: each act's margins a place, Saltmarsh first *(lane A, in progress)*
 - **Why:** `plan1106d/hedge-l21-2d-D`: the right margin (880-1080 x 75-890) is the same ploughed plot and pond repeated four times; the left is tiled reeds (15-290). Nothing on the 2D field's edges says salt marsh, river or moor (item 198 does this for 3D only).
 - **Build:**
   - Per-act margin sets in the 2D renderer from painted pieces: Saltmarsh salt pans, a boardwalk, beach huts and gulls; Rivermead a mill and weir, punts and willows; Highmoor heather, tors and sheep; the rest after.
