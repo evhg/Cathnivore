@@ -63,7 +63,8 @@ test("Hollowell's cues play on the enemy turn's playback beats", async ({ page }
   // Graft until the turn passes and the enemy turn plays back.
   for (let i = 0; i < 6 && !(await page.locator('.enemy-turn-playback').count()); i++) {
     const graft = page.getByRole('button', { name: /^Graft:/ })
-    if (await graft.isEnabled().catch(() => false)) await graft.click({ force: true })
+    // A short wait: on a phone the Graft card leaves the hand once the turn passes, and isEnabled would wait 30 s for it.
+    if (await graft.isEnabled({ timeout: 1000 }).catch(() => false)) await graft.click({ force: true, timeout: 3000 }).catch(() => {})
     await page.waitForTimeout(400)
   }
   await expect.poll(async () => (await log()).filter((c) => c.startsWith('synth')).length, { timeout: 30_000 }).toBeGreaterThan(0)
