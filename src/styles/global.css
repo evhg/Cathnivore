@@ -3663,7 +3663,7 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
   .setup .setup-table .setup-producers-head { position: absolute; top: 8px; right: 214px; left: 20px; z-index: var(--z-lift); justify-content: flex-start; gap: 12px; pointer-events: none; }
   .setup .setup-table .setup-producers-head > * { pointer-events: auto; }
   .setup .setup-table .setup-recommend { min-height: 32px; padding: 4px 12px; font-size: var(--fs-small); }
-  .setup .setup-table .producer-grid { gap: 10px; padding-top: 36px; align-items: start; }
+  .setup .setup-table .producer-grid { gap: 10px; padding-top: 36px; align-items: stretch; } /* plan item 222: one height for all four */
   .setup .setup-table .producer-card {
     gap: 4px; padding: 10px 10px 12px; border: 1.5px solid var(--rule); border-top: 5px solid var(--pc); border-radius: 12px;
     background: color-mix(in srgb, var(--paper-hi) 94%, transparent); box-shadow: 0 3px 6px color-mix(in srgb, var(--ink) 10%, transparent);

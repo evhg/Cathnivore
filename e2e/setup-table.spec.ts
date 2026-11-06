@@ -21,6 +21,9 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     // A seat for each picked producer, inside the table; picking another pulls their chair in instead.
     await expect(table.locator('[data-seat]')).toHaveCount(2)
     await expect(table.locator('[data-seat="mara"], [data-seat="tomas"]')).toHaveCount(2)
+    // Plan item 222: the four producer cards are one height (the picked pair pulled in, not taller).
+    const hs = await page.locator('.producer-card').evaluateAll((cs) => cs.map((c) => c.getBoundingClientRect().height))
+    expect(Math.max(...hs) - Math.min(...hs)).toBeLessThanOrEqual(1)
     await page.locator('.producer-card', { hasText: 'Sol Abara' }).click()
     await expect(table.locator('[data-seat]')).toHaveCount(2)
     await expect(table.locator('[data-seat="sol"]')).toHaveCount(1)
