@@ -2201,7 +2201,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or checked and logged here with its measurement; text 12 px+ and 4.5:1+ on its ground; a spec for each fix that fails on the old code where one can; shots before and after.
 - **Size:** 2
 
-## 195. [ ] Cathnivore: Quick Game setup as a laid table
+## 195. [ ] Cathnivore: Quick Game setup as a laid table *(lane A, in progress)*
 - **Why:** `plan1106c/cath-setup-P` stacks form panels with no focus (mode 16-380 x 155-230, difficulty 16-380 x 520-625, maps 16-380 x 640-770); `cath-setup-D` is six bordered boxes (130-1310 x 75-870) with Cath in a corner (1100-1220 x 610-780).
 - **Build:**
   - The picked producers seated at a gingham table in the centre, Cath at its head; picking a producer pulls their chair in (the 'Picked' ribbons go).
