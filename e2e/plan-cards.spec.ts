@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from '@playwright/test'
 import { fillSeed } from './setupSeed'
@@ -12,7 +13,7 @@ async function start(page: Page, seed: string) {
   await fillSeed(page, seed)
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
-  await page.locator('.plan-strip').waitFor()
+  await page.locator('.plan-strip').waitFor({ state: 'attached' })
 }
 
 for (const [w, h] of [
@@ -28,6 +29,7 @@ for (const [w, h] of [
     ] as const) {
       await page.emulateMedia({ colorScheme: scheme })
       await start(page, seed)
+      await openPapers(page)
       const report = await page.evaluate(() => {
         const small: string[] = []
         const cut: string[] = []
@@ -60,6 +62,11 @@ for (const [w, h] of [
   })
 }
 
+function uprightPhone(page: Page) {
+  const v = page.viewportSize()!
+  return v.width < 600 && v.height > v.width
+}
+
 async function endRound(page: Page) {
   const before = await page.locator('.plan-strip').getAttribute('data-round')
   for (let i = 0; i < 12 && (await page.locator('.plan-strip').getAttribute('data-round')) === before; i++) {
@@ -70,6 +77,7 @@ async function endRound(page: Page) {
 }
 
 test('a card the conveyor moves in slides in and stamps', async ({ page }) => {
+  test.skip(uprightPhone(page), 'an upright phone folds the cards into the placard (papers-placard.spec)')
   await page.addInitScript(() => {
     const w = window as unknown as { armed: { transform: boolean }[] }
     w.armed = []
@@ -92,6 +100,7 @@ test('a card the conveyor moves in slides in and stamps', async ({ page }) => {
 })
 
 test('under reduced motion a new card fades in, with no slide', async ({ page }) => {
+  test.skip(uprightPhone(page), 'an upright phone folds the cards into the placard (papers-placard.spec)')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.addInitScript(() => {
     const w = window as unknown as { armed: boolean[] }

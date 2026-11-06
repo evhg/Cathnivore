@@ -774,6 +774,23 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 25: hovering or focusing a plan card shows its targets too (a tap pins them, as before).
   const [planPeekSlot, setPlanPeekSlot] = useState<'squeeze' | 'expand' | 'scout' | null>(null)
   const planHotSlot = planPeekSlot ?? planHighlightSlot
+  // Plan item 212: on an upright phone the three papers fold into one placard; a tap opens them as a sheet.
+  const [papersOpen, setPapersOpen] = useState(false)
+  useEffect(() => {
+    if (!papersOpen) return
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent && e.key !== 'Escape') return
+      const t = e.target as Element | null
+      if (e.type === 'pointerdown' && t?.closest?.('.plan-strip, [data-intent-placard]')) return
+      setPapersOpen(false)
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [papersOpen])
   const planThreat = planHotSlot ? { slot: planHotSlot, regions: planPreview(state, planHotSlot).regions } : undefined
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
   // Plan item 92: the regions the enemy turn started from, so the map can play its changes step by step.
@@ -2644,7 +2661,36 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           grows to fill the leftover width; `.map-legend` keeps its own natural size. Phone keeps the original
           two-row stack (`.plan-legend-row` is a plain block there, see global.css) since the narrower column
           has no spare width to share. */}
-      <section ref={planStripRef} className="plan-strip" aria-label="Tomorrow's papers" data-round={state.round} data-corp="hollowell">
+      {/* Plan item 212: on an upright phone, tomorrow's papers fold into one glossy placard hung from Pell's portrait,
+          so the board starts near the top of the screen; a tap opens the three memos as a sheet over the table. */}
+      <div className="papers">
+      <button
+        type="button"
+        className="papers-placard"
+        data-intent-placard
+        aria-expanded={papersOpen}
+        aria-controls="papers-sheet"
+        aria-label={`Tomorrow's papers: ${(['squeeze', 'expand', 'scout'] as const)
+          .map((slot) => `${slot[0]!.toUpperCase()}${slot.slice(1)} ${state[slot] ? pressureLabel(state[slot]) : 'empty'}`)
+          .join(', ')}`}
+        onClick={() => setPapersOpen((o) => !o)}
+      >
+        <span className="papers-placard-face" aria-hidden="true">
+          <Figure character="pell" expression={MOOD_EXPRESSION[rivalMood(cathReaction.expression)]} />
+        </span>
+        {(['squeeze', 'expand', 'scout'] as const).map((slot) => (
+          // Keyed on the card, so a card the conveyor moves in re-mounts and stamps (the strip's arming can't show while folded).
+          <span key={`${slot}-${state[slot]?.id ?? 'none'}`} className="papers-placard-slot" data-slot={slot} data-hot={planHighlightSlot === slot || undefined} aria-hidden="true">
+            <PlanArt kind={slot} size={22} />
+            <span className="papers-placard-words">
+              <b>{slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'}</b>
+              <span>{state[slot] ? pressureLabel(state[slot]) : 'Empty'}</span>
+            </span>
+          </span>
+        ))}
+        <span className="papers-placard-caret" aria-hidden="true" />
+      </button>
+      <section ref={planStripRef} id="papers-sheet" className="plan-strip" aria-label="Tomorrow's papers" data-round={state.round} data-corp="hollowell" data-open={papersOpen || undefined}>
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => {
           const slotLabel = slot === 'squeeze' ? 'Squeeze' : slot === 'expand' ? 'Expand' : 'Scout'
           const card = state[slot]
@@ -2659,6 +2705,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   // A tap pins or unpins; it also ends any hover or focus peek, so unpinning really clears.
                   setPlanPeekSlot(null)
                   setPlanHighlightSlot((s) => (s === slot ? null : slot))
+                  // Plan item 212: the phone sheet closes so the marked hexes show.
+                  setPapersOpen(false)
                 }}
                 onPointerEnter={(e) => e.pointerType === 'mouse' && setPlanPeekSlot(slot)}
                 onPointerLeave={() => setPlanPeekSlot((s) => (s === slot ? null : s))}
@@ -2728,6 +2776,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           )
         })}
       </section>
+      </div>
       {/* Plan item 92: Hollowell's face across the table from Cath, his mood the mirror of hers. */}
       <Rival mood={rivalMood(cathReaction.expression)} />
       </div>

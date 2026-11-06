@@ -27,7 +27,7 @@ for (const reduced of [false, true]) {
       const strip = r(document.querySelector('.market-board')!)
       const menu = r(document.querySelector('.board-menu')!)
       const cells = [...document.querySelectorAll('[data-meter]')].map(r)
-      const corp = [...document.querySelectorAll('.plan-strip-item')].map(r).filter((b) => b.width > 0)
+      const corp = [...document.querySelectorAll('.plan-strip-item, [data-intent-placard]')].map(r).filter((b) => b.width > 0)
       return { h: strip.height, cellsMenu: cells.some((c) => meet(c, menu)), stripCorp: corp.some((c) => meet(strip, c)), corp: corp.length }
     })
     expect(m.h).toBeLessThanOrEqual(isMobile ? 52 : 72)

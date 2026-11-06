@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import { test, expect } from '@playwright/test'
 
 // SPEC 10.5: "Every game term ... is explained in the rules reference and in a tap or hover tooltip."
@@ -33,6 +34,7 @@ test('the plan-strip cards have their own "?" tooltip, separate from the tap-to-
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
+  await openPapers(page)
 
   const info = page.locator('.plan-strip-item .tooltip-trigger-button', { hasText: '?' }).first()
   await expect(info).toBeVisible()

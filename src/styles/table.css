@@ -3987,3 +3987,224 @@ html.no-animations .table-cath-line { animation: none; }
     rotate: -5deg;
   }
 }
+
+/* ---- plan item 212: on an upright phone, tomorrow's papers fold into one placard ----
+   Pell's medallion at the left with Hollowell's three moves hung from it on one glossy plastic plate (VISION: the
+   corporations glossy, plastic, over-lit), 44 px tall, so the board starts near the top. A tap opens the three memos
+   as a sheet over the table; tapping one marks its hexes and closes the sheet. Wider screens keep the strip. */
+.papers {
+  display: contents;
+}
+
+.papers-placard {
+  display: none;
+}
+
+@media (max-width: 599.98px) and (orientation: portrait) {
+  .papers {
+    position: relative;
+    display: block;
+    z-index: var(--z-sheet);
+    margin-block: -2px -3px;
+  }
+
+  .papers-placard {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    height: 44px;
+    min-height: 0;
+    margin: 0;
+    padding: 0 26px 0 2px;
+    border: 0;
+    border-radius: 22px 12px 12px 22px;
+    background:
+      linear-gradient(112deg, transparent 0 30%, color-mix(in srgb, white 45%, transparent) 38%, transparent 46%),
+      linear-gradient(var(--hollowell), var(--hollowell-lo)) top / 100% 3px no-repeat,
+      linear-gradient(180deg, color-mix(in srgb, var(--newsprint) 80%, white), color-mix(in srgb, var(--newsprint-lo) 90%, var(--candor-highlight)));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--hollowell-ink) 18%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 70%, transparent),
+      var(--e2);
+    color: var(--newsprint-ink);
+    font: 600 var(--fs-caption)/1.1 var(--font-text);
+    text-align: left;
+    transform: none;
+  }
+
+  .papers-placard:focus-visible {
+    outline: var(--focus-w) solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .papers-placard-face {
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--hollowell-highlight) 55%, white) 0 18%, transparent 62%),
+      linear-gradient(180deg, color-mix(in srgb, var(--hollowell-ink) 60%, black), color-mix(in srgb, var(--hollowell-ink) 22%, black));
+    box-shadow:
+      0 0 0 1.5px color-mix(in srgb, var(--hollowell-ink) 30%, black),
+      0 0 0 3px var(--hollowell);
+  }
+
+  .papers-placard-face svg {
+    position: absolute;
+    left: 50%;
+    top: -13px;
+    width: 67px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
+  .papers-placard-slot {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    height: 36px;
+    padding: 0 3px;
+    border-radius: 8px;
+  }
+
+  .papers-placard-slot + .papers-placard-slot {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--hollowell-ink) 16%, transparent);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .papers-placard-slot {
+    animation: papers-slot-in var(--dur-moment) var(--ease-settle) both;
+  }
+
+  .papers-placard-slot[data-hot] {
+    background: color-mix(in srgb, var(--hollowell) 22%, transparent);
+  }
+
+  .papers-placard-slot svg.plan-art {
+    flex: none;
+    width: 20px;
+    height: 20px;
+  }
+
+  .papers-placard-words {
+    display: grid;
+    min-width: 0;
+  }
+
+  .papers-placard-words > * {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .papers-placard-words b {
+    font: italic 780 var(--fs-caption)/1.1 var(--font-voice);
+  }
+
+  .papers-placard-words span {
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  /* A chevron that turns over when the sheet is open. */
+  .papers-placard-caret {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border: solid var(--hollowell-ink);
+    border-width: 0 2px 2px 0;
+    translate: 0 -70%;
+    rotate: 45deg;
+    transition: rotate var(--dur-base) var(--ease-settle), translate var(--dur-base) var(--ease-settle);
+  }
+
+  .papers-placard[aria-expanded="true"] .papers-placard-caret {
+    translate: 0 -20%;
+    rotate: 225deg;
+  }
+
+  /* The sheet: the three memos stacked full width under the placard, over the board's top. */
+  .plan-strip:not([data-open]) {
+    display: none;
+  }
+
+  .plan-strip[data-open] {
+    position: absolute;
+    z-index: var(--z-sheet);
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px 10px 10px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--hollowell-ink) 88%, black);
+    box-shadow: var(--e3);
+    animation: papers-sheet-in var(--dur-base) var(--ease-settle);
+  }
+
+  .plan-strip[data-open] .plan-strip-item {
+    rotate: 0deg;
+  }
+
+  .plan-strip[data-open]::before {
+    content: "Hollowell\2019s next moves \00B7  tap one to mark its hexes";
+    color: var(--newsprint);
+    font: italic 600 var(--fs-caption)/1.2 var(--font-voice);
+  }
+
+  .plan-strip[data-open] .plan-strip-item > button:first-child {
+    min-height: 0;
+    padding: 10px 34px 8px 10px;
+    font-size: var(--fs-caption);
+  }
+
+  .plan-strip[data-open] :is(.plan-strip-target, .plan-strip-stage) {
+    font-size: var(--fs-caption);
+  }
+
+  /* There is room for the whole line in the sheet: the short one goes. */
+  .plan-strip[data-open] .plan-strip-target-full:has(+ .plan-strip-target-short) {
+    position: static;
+    display: -webkit-box;
+    width: auto;
+    height: auto;
+    margin: 2px 0 0;
+    padding: 0 24px 0 0;
+    overflow: hidden;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .plan-strip[data-open] .plan-strip-target-short {
+    display: none;
+  }
+}
+
+@keyframes papers-slot-in {
+  from { opacity: 0; scale: 1.25; }
+  60% { opacity: 1; scale: .96; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .papers-placard-slot { animation-name: papers-fade-in; }
+  .plan-strip[data-open] { animation-name: papers-fade-in; }
+}
+
+@keyframes papers-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes papers-sheet-in {
+  from { opacity: 0; translate: 0 -8px; }
+}

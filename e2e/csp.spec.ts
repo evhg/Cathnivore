@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import { test, expect, type Page } from '@playwright/test'
 
 // SPEC 11.5: the CSP's `style-src` allows only `'self'` (no `'unsafe-inline'`) — vercel.json was changed
@@ -26,6 +27,7 @@ test('the app never renders a DOM element with an inline style attribute', async
   expect(await inlineStyleCount(page)).toBe(0)
 
   // The map's targeting mode and the plan-strip highlight both toggle classes, not styles — exercise both.
+  await openPapers(page)
   const expandButton = page.locator('.plan-strip button', { hasText: 'Expand' })
   await expandButton.click()
   expect(await inlineStyleCount(page)).toBe(0)

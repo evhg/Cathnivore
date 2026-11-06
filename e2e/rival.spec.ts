@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import { test, expect } from '@playwright/test'
 
 // Plan item 92: Hollowell has a face. At D, Graham Pell's bust sits at the end of the papers' row, opposite Cath,
@@ -34,6 +35,8 @@ test('the threat cards are styled as Hollowell memos', async ({ page }, testInfo
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  await openPapers(page)
   await expect(page.locator('.plan-strip-item > button').first()).toBeVisible()
   const s = await page.evaluate(() => {
     const memo = getComputedStyle(document.querySelector('.plan-strip-item > button')!)

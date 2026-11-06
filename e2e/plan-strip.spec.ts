@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import { test, expect } from '@playwright/test'
 
 // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map. This is
@@ -8,6 +9,7 @@ test('tapping the Expand plan-strip card highlights its matching regions, and ta
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
+  await openPapers(page)
 
   const expandButton = page.locator('.plan-strip button', { hasText: 'Expand' })
   await expect(expandButton).toBeVisible()
@@ -27,6 +29,7 @@ test('tapping the Expand plan-strip card highlights its matching regions, and ta
   expect(dimmedCount + glowCount).toBe(totalRegions)
 
   // Tapping the same card again clears the highlight.
+  await openPapers(page)
   await expandButton.click()
   await expect(expandButton).toHaveAttribute('aria-pressed', 'false')
   await expect(page.locator('.region-hex.glow')).toHaveCount(0)
@@ -40,6 +43,7 @@ test('a plan card marks exactly its targets with data-threat, on keyboard focus 
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
+  await openPapers(page)
   await expect(page.locator('.plan-strip-target-full')).toHaveCount(3)
   for (const text of await page.locator('.plan-strip-target').allTextContents()) expect(text.trim()).not.toBe('—')
 
@@ -50,10 +54,12 @@ test('a plan card marks exactly its targets with data-threat, on keyboard focus 
   expect(n).toBeGreaterThan(0)
   await expect(page.locator('.region-hex.glow')).toHaveCount(n)
   await expect(page.locator('.region-hex.glow:not([data-threat="expand"])')).toHaveCount(0)
+  await openPapers(page)
   await expand.click()
   await expect(page.locator('.region-hex[data-threat]')).toHaveCount(0)
 
   // Keyboard: Tab onto the card peeks its targets without pinning; moving on clears them.
+  await openPapers(page)
   await expand.focus()
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')
@@ -70,6 +76,7 @@ test('the phone plan cards show their target line whole', async ({ page }) => {
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
     await page.locator('.game').waitFor()
+  await openPapers(page)
     const cut = await page.evaluate(() =>
       [...document.querySelectorAll<HTMLElement>('.plan-strip-target')]
         .filter((e) => e.getBoundingClientRect().width > 2)

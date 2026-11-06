@@ -1,3 +1,4 @@
+import { openPapers } from './papers'
 import { test, expect } from '@playwright/test'
 
 // Plan item 173: Hollowell's moves are its own glossy dashboard: the row carries data-corp, its cards draw no
@@ -7,6 +8,7 @@ test('the plan strip is Hollowell\'s acrylic dashboard', async ({ page }) => {
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
+  await openPapers(page)
   const strip = page.locator('.plan-strip[data-corp]')
   await expect(strip).toBeVisible()
   const cards = strip.locator('.plan-strip-item > button:first-child')
