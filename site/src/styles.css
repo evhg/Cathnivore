@@ -1487,6 +1487,9 @@ body {
   filter: grayscale(1) brightness(0.7) contrast(1.15) drop-shadow(2px 0 0 var(--cd-blood)) drop-shadow(0 6px 10px var(--shadow-deep));
 }
 .hero-game-cath svg { display: block; width: 100%; height: auto; }
+/* Plan item 203: NIGHT SHIFT's key art is Cath herself under her umbrella on the title street, so its poster drops the
+   sticker (two Caths side by side read as a ghost). */
+.hero-game-nightshift .hero-game-cath { display: none; }
 .hero-game-text {
   display: grid;
   gap: 4px;

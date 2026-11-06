@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 // Plan item 108: each /games/ poster carries Cath in that game's dress, pose and mood: four distinct poses,
-// each covering 15% or less of its card's art, and NIGHT SHIFT's in noir (greyscale, a red rim).
+// each covering 15% or less of its card's art, and NIGHT SHIFT's in noir (greyscale, a red rim). Plan item 203:
+// NIGHT SHIFT's key art now shows Cath herself, so its sticker is drawn but not displayed (cover 0).
 test("each game's poster has its own Cath, small beside the game's art", async ({ page }) => {
   await page.goto('/games/')
   await page.waitForFunction(() => document.documentElement.classList.contains('ready'))

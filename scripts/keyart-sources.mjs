@@ -9,7 +9,7 @@ export const KEYART_SOURCES = {
   cathnivore: ['src/ui/RegionGroundArt.tsx', 'src/ui/Landmark.tsx', 'src/ui/regionGround.ts', 'src/ui/TableProps.tsx'],
   runnel: ['games/runnel/src/valley.ts', 'games/runnel/src/gardenart.ts', 'games/runnel/src/ground.ts', 'games/runnel/src/water.ts'],
   hedgerow: ['games/hedgerow/src/render.ts', 'games/hedgerow/src/sprites.ts', 'games/hedgerow/src/terrain.ts'],
-  nightshift: ['games/cathode/public/keyart/market.webp'],
+  nightshift: ['games/cathode/src/render/frontscene.ts', 'games/cathode/src/render/frontcath.ts'],
 }
 
 export const KEYART_MANIFEST = 'portfolio/public/work/keyart.json'

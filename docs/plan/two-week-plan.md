@@ -2268,7 +2268,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the stage reports `margin` per act (`window.hedgerow.margin2d()`); no two identical pieces within 200 px (unit test on the placer); 2D frame time within +10% (`scripts/hedgerow-drawcalls.mjs` or the fps probe); `?2d` field specs pass; shots P and D, levels 21, 34 and one Highmoor level.
 - **Size:** 2-3
 
-## 203. [ ] Site: NIGHT SHIFT's key art as a lit noir poster, with Cath *(lane A, in progress)*
+## 203. [ ] Site: NIGHT SHIFT's key art as a lit noir poster, with Cath *(lane A, in progress)* *(slice 1, 2026-11-06 13:35 lane A: `scripts/keyart.mjs`'s `nightshift` shoot is the title street frozen (`?shot`, quality high) with every DOM layer hidden: Cath under her umbrella in the neon key light at right, the left kept dark; her figure ~75% of the frame's height; `KEYART_SOURCES.nightshift` now the front scene files; /games/ drops the poster's grey sticker Cath for NIGHT SHIFT (`display: none`, games-cath passes). **Short:** mean luminance in her box 33.1 -> 38.4 (1.16x, the plan asks 2x): her black trench. Open: a key-art light on her (a warm key or rim on coat and face for the shoot), then re-shoot; on `/` the stacked frames' Cath cut-out covers her (only the umbrella shows), so check the poster crop there)*
 - **Why:** `plan1106d/portfolio-D`: the NIGHT SHIFT frame (790-1030 x 425-640) is a murky blur with no Cath, the weakest image on the page; on `games-D` its poster's Cath is a grey ghost (1265-1310 x 590-690).
 - **Build:**
   - A `?keyart` framing in NIGHT SHIFT (like Cathnivore's, Runnel's and Hedgerow's): Cath front three-quarter under her umbrella in the street's key light, a neon rim, the wordmark's space kept clear.

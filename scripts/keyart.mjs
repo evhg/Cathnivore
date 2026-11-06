@@ -1,6 +1,6 @@
 // Plan item 38: fresh key art for the portfolio and /games/, shot from the games themselves. Each game's hero
 // state at 1440x900 (the Cathnivore table at round 7, a solved Runnel daily, a late Hedgerow round in flight,
-// the NIGHT SHIFT street from its own key art), written as WebP at 1440, 960 and 640 px wide into
+// Cath on the NIGHT SHIFT title street), written as WebP at 1440, 960 and 640 px wide into
 // portfolio/public/work/games-<game>[-960|-640].webp, the sizes the hero's srcset offers.
 // No image library is installed: Chromium encodes the WebP (canvas.toDataURL) in a blank page.
 //
@@ -128,8 +128,22 @@ const shoot = {
   },
   // The Drowned Market street, from NIGHT SHIFT's own key art (scripts/cathode-keyart.mjs renders it from the
   // game; WebGL under SwiftShader is too slow to render it again here).
+  // Plan item 203: the title's street as a lit noir poster: Cath under her umbrella in the neon key light, the left
+  // of the frame kept dark for the wordmark. The title scene frozen (`?shot`) at quality high, every DOM layer hidden.
   async nightshift() {
-    return { b64: readFileSync('games/cathode/public/keyart/market.webp').toString('base64'), mime: 'image/webp' }
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 })
+    await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
+    const p = await ctx.newPage()
+    await p.goto(`${base}/nightshift/?shot&quality=high`, { timeout: 120_000 })
+    // Under SwiftShader the street is drawn by about 30 s (plan-shots.mjs).
+    await p.waitForTimeout(40_000)
+    await p.evaluate(() => {
+      for (const el of document.querySelectorAll('body *')) if (el.tagName !== 'CANVAS' && !el.querySelector('canvas')) el.style.visibility = 'hidden'
+    })
+    await p.waitForTimeout(1500)
+    const b64 = (await p.screenshot()).toString('base64')
+    await ctx.close()
+    return b64
   },
 }
 
