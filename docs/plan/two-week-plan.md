@@ -2326,7 +2326,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-road="vertical"]` at 390; no two label boxes meet; labels 13 px or more; the Next stop wholly above the card; no sideways scroll; hedgerow-map and -level-card pass; shots P and D (D unchanged).
 - **Size:** 3
 
-## 210. [ ] NIGHT SHIFT phone: the class sheet as a dossier card
+## 210. [ ] NIGHT SHIFT phone: the class sheet as a dossier card *(lane B, in progress)*
 - **Why:** `plan1106e/ns-play-P` (16-375 x 640-830): thin bars with about 10 px labels, a grey weapon silhouette (16-170 x 690-750), the abilities as bare caps (16-220 x 768-780); the desktop has item 199's dials, the phone doesn't.
 - **Build:**
   - A paper dossier clipped over the street: four ring dials in a row, the weapon on a felt strip with its stats beside it, the abilities as rubber stamps that open their text on a tap.
