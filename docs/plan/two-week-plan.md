@@ -2184,7 +2184,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at D and L: `[data-cine="opener"]` runs 2.5-4.5 s, then the HUD is visible; Cath's box 25%+ of the frame's height at its middle; Escape reaches the HUD in under 300 ms (timed in the page); `cathode-perf` in budget (run alone); shots mid-opener at P, L and D.
 - **Size:** 2
 
-## 193. [ ] Runnel: a Sunday 'big valley' puzzle
+## 193. [ ] Runnel: a Sunday 'big valley' puzzle *(lane B, in progress)*
 - **Why:** `plan1106b/runnel-D`/`-P`: every daily is one small board; there's no weekly showpiece worth sharing or paying for.
 - **Build:**
   - A weekly board 2-3x the daily's, with two springs, the mill, Bea's garden and a neighbour's.
