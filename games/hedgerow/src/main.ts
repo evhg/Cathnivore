@@ -4487,10 +4487,14 @@ function syncDepots(g: Game): void {
     // 3D: the depot is in the world (buildDepot); its rep leans out over its roof as a small overlay.
     const canvas3 = ui.stage.querySelector("#canvas")!.getBoundingClientRect();
     const stage3 = ui.stage.getBoundingClientRect();
+    const hudFoot = document.querySelector("#screen-play .hud")?.getBoundingClientRect().bottom ?? stage3.top;
     const reps = renderer
       .depotRects()
-      .map((d, i) => ({ x: canvas3.left - stage3.left + d.x + d.w / 2, y: canvas3.top - stage3.top + d.y, w: d.w, lane: i }))
-      .filter((d) => d.x > 0 && d.x < canvas3.width && d.y > 0 && d.y < canvas3.height);
+      .map((d, i) => ({ x: canvas3.left - stage3.left + d.roofX, y: canvas3.top - stage3.top + d.roofY, w: d.w, lane: i }))
+      .filter((d) => d.x > 0 && d.x < canvas3.width && d.y > 0 && d.y < canvas3.height)
+      // Plan item 200: on an upright phone the depot's roof can sit under the top bar; the rep stands down there
+      // rather than show a headless suit under the bar.
+      .filter((d) => d.y - 1.1 * Math.max(28, Math.min(56, d.w * 0.45)) >= hudFoot - stage3.top);
     const key3 = `3d|${depotMood}|${reps.map((d) => `${Math.round(d.x)},${Math.round(d.y)}`).join(";")}`;
     if (key3 === depotKey) return;
     depotKey = key3;

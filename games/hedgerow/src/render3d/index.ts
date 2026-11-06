@@ -2542,10 +2542,10 @@ export class Renderer3D {
     return (this.ground?.group.userData.dressing as ReturnType<Renderer3D["dressing"]>) ?? null;
   }
 
-  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number }> {
+  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number }> {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
-    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number }> = [];
+    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number }> = [];
     for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
       const b = new THREE.Box3().setFromObject(d);
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -2555,7 +2555,10 @@ export class Renderer3D {
         const py = (-v.y * 0.5 + 0.5) * h;
         x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
       }
-      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z });
+      // Plan item 200: the roof's centre on screen. The box's far top corners project well above the roof itself
+      // (40 px at D on l21), so a figure stood on the box's top floated over the depot.
+      const roof = this.v2.set((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2).project(this.camera);
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h });
     }
     return out;
   }

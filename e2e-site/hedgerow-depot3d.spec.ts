@@ -67,6 +67,18 @@ for (const level of [21, 34]) {
       const onField = r.plots.reduce((a, p) => a + meet(dep, p), 0) / (dep.w * dep.h)
       expect(onField).toBeLessThan(0.12)
     }
+    // Plan item 200: Hollowell's rep stands on the roof, not in the air over it (at D on l21 his feet were 40 px
+    // over the ridge: he stood on the box's top, which the far corners lift well above the roof).
+    const repEl = page.locator('.depot-3d[data-depot="0"] .depot-rep')
+    const rep = (await repEl.count()) ? await repEl.boundingBox() : null
+    if (rep && d.y >= r.canvas.y) {
+      const feet = rep.y + rep.height
+      expect(feet, `rep's feet ${feet} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y + d.h * 0.2)
+      expect(feet).toBeLessThan(d.y + d.h)
+    }
+    // ...and is never a headless suit under the top bar (an upright phone's l21 cuts the depot's roof).
+    const hud = (await page.locator('#screen-play .hud').boundingBox())!
+    if (rep) expect(rep.y, `rep ${JSON.stringify(rep)} under the bar`).toBeGreaterThanOrEqual(hud.y + hud.height - 1)
     // Go: the shutter rolls up as the convoy leaves.
     expect(await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.depotShutter3d())).toBe(0)
     await page.evaluate(() => {
