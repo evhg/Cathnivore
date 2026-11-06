@@ -3402,8 +3402,20 @@ html.no-animations .table-cath-line { animation: none; }
     font: 700 var(--fs-label)/1.2 var(--font-ui);
   }
 }
+/* the goal, once affordable, rises off the shelf into the hand (about 700 ms; a fade under reduced motion) */
+.action-item[data-goal-lift] { animation: goal-lift 700ms var(--ease-out) both; }
+@keyframes goal-lift {
+  0% { translate: 0 -64px; scale: .72; opacity: 0; }
+  55% { translate: 0 -12px; scale: 1.06; opacity: 1; }
+  100% { translate: 0 0; scale: 1; opacity: 1; }
+}
+@keyframes goal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
   .saving-jar .jar-fill { transition: none; }
+  .action-item[data-goal-lift] { animation: goal-fade 400ms linear both; }
 }
 
 /* Plan item 167: on a big desktop what can't be played yet is a shelf of small cards in shadow: each one's picture,

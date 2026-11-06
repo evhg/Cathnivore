@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { MARKET_EVENTS } from '../engine/marketEvent'
 import { rivalMood } from './portraits/rivalFace'
 import { lightFor } from './tableLight'
@@ -608,6 +608,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 183: the Not-yet shelf's pinned goal per producer, and whether the folded shelf is open.
   const [savingFor, setSavingFor] = useState<NonNullable<SavedGame['savingFor']>>(initialSavingFor ?? {})
   const [shelfOpen, setShelfOpen] = useState(false)
+  // The goal that just became affordable, lifting into the hand.
+  const [goalLift, setGoalLift] = useState<string | null>(null)
   const aiProducerRef = useRef<ProducerId | null>(mode === 'solo' ? initial.config.producers[1] ?? null : null)
   const autoplayRef = useRef(isE2EAutoplay())
   const isDesktop = useIsDesktopLayout()
@@ -1177,6 +1179,29 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   useEffect(() => {
     if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
   }, [pendingEnemyTurn])
+
+  // Plan item 183: once affordable the goal lifts off the shelf into the hand, and the pin comes off after it lands.
+  // (Before the early returns below, so the hooks keep their order; `goalReady` is the render's own check.)
+  const goalNow = savingFor[state.activeProducer]
+  const goalPlayableNow = useMemo(() => {
+    if (!goalNow || pendingEnemyTurn.length > 0) return false
+    return legalActions(state).some((a) => (a.kind === 'invest' && investGoal(a.improvementId) === goalNow) || (a.kind === 'scheme' && schemeGoal(a.schemeId) === goalNow))
+  }, [state, goalNow, pendingEnemyTurn.length])
+  useEffect(() => {
+    const goal = goalNow
+    if (!goal || !goalPlayableNow || state.activeProducer === aiProducerRef.current) return
+    const who = state.activeProducer
+    setGoalLift(goal)
+    setTimeout(() => {
+      setGoalLift((cur) => (cur === goal ? null : cur))
+      setSavingFor((cur) => {
+        if (cur[who] !== goal) return cur
+        const next = { ...cur }
+        delete next[who]
+        return next
+      })
+    }, 900)
+  }, [goalNow, goalPlayableNow, state.activeProducer])
 
   // SPEC 8.1: "Each new rule is introduced ... with a '?' link to the rules reference." A full early
   // return (rather than an overlay stacked on top of the game's own `<main>`) avoids nesting two
@@ -1767,6 +1792,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 data-hand-card=""
                 className={position === 0 && !suggested ? 'action-item action-recommended' : 'action-item'}
                 data-buy-card={a.kind === 'invest' ? a.improvementId : undefined}
+                data-goal-lift={a.kind === 'invest' && goalLift === investGoal(a.improvementId) ? '' : undefined}
                 data-suggested={isSuggested([index])}
                 {...previewProps([index])}
               >
@@ -1787,7 +1813,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             const term = actionTermFor(a)
             const Icon = ACTION_ICON[a.kind]
             return (
-              <span key={index} className="action-item" data-group="play" data-hand-card="" data-suggested={isSuggested([index])} {...previewProps([index])}>
+              <span
+                key={index}
+                className="action-item"
+                data-group="play"
+                data-hand-card=""
+                data-suggested={isSuggested([index])}
+                data-goal-lift={a.kind === 'scheme' && goalLift === schemeGoal(a.schemeId) ? '' : undefined}
+                {...previewProps([index])}
+              >
                 <ActionButton action={a} state={state} Icon={Icon} tutorialTarget={isGuidedTarget(a)} onClick={() => act(index)} />
                 {isSuggested([index]) !== undefined && SUGGEST_LEAF}
                 {term && (
@@ -1950,6 +1984,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const laterIdx = () => (shelf ? shelfCount++ : undefined)
   const pinnedInvest = shelf && goal ? disabledInvest.find((d) => investGoal(d.improvementId) === goal) : undefined
   const pinnedScheme = shelf && goal && !pinnedInvest ? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal) : undefined
+  // How far the goal is, for Cath's line (on every layout), and whether it can be played now.
+  const goalShort = goal
+    ? (disabledInvest.find((d) => investGoal(d.improvementId) === goal) ?? disabledScheme.find((d) => schemeGoal(d.schemeId) === goal))?.missing
+    : undefined
   const togglePin = (key: string) =>
     setSavingFor((cur) => {
       const next = { ...cur }
@@ -2214,6 +2252,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               {SUGGEST_LEAF}
               <span>
                 <b>Cath:</b> I&rsquo;d play the leaf, love. {suggested.why}
+                {goal && goalShort !== undefined && goalCard(goal) && (
+                  <span data-goal-line="">
+                    {` Still saving for ${goalCard(goal)!.name}: ${goalShort} more ${goalShort === 1 && goalCard(goal)!.coin === 'Marks' ? 'Mark' : goalCard(goal)!.coin} to go.`}
+                  </span>
+                )}
+                {goalLift && goalCard(goalLift) && <span data-goal-line="">{` And ${goalCard(goalLift)!.name}'s paid for: it's in your hand.`}</span>}
               </span>
             </p>
           )}
