@@ -264,7 +264,7 @@ test('plan item 115: lock icons read and the vehicle pills keep inside the ticke
 
 test('plan item 119: each packet shows its tower large, its name on a printed band, its price 13 px or more', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop packets')
-  for (const level of [12, 21, 40]) {
+  for (const level of [12, 21, 34, 40]) {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(URL)
     await page.evaluate((l) => {
@@ -279,9 +279,11 @@ test('plan item 119: each packet shows its tower large, its name on a printed ba
       [...document.querySelectorAll<HTMLElement>('.tray-tower')].map((c) => {
         const art = c.querySelector('img')!.getBoundingClientRect()
         const name = c.querySelector<HTMLElement>('.tray-name')!
-        return { art: Math.min(art.width, art.height), price: parseFloat(getComputedStyle(c.querySelector('.build-cost')!).fontSize), band: getComputedStyle(name).backgroundColor !== 'rgba(0, 0, 0, 0)' }
+        return { art: Math.min(art.width, art.height), price: parseFloat(getComputedStyle(c.querySelector('.build-cost')!).fontSize), band: getComputedStyle(name).backgroundColor !== 'rgba(0, 0, 0, 0)', bandH: name.getBoundingClientRect().height }
       }),
     )
+    // Plan item 211: four to a row, a two-line name (Market Stall) sits on a band the same height as a one-line one.
+    if (r.length >= 10) expect(Math.max(...r.map((p) => p.bandH)) - Math.min(...r.map((p) => p.bandH)), `level ${level} bands`).toBeLessThanOrEqual(1)
     // 56 px for up to six packets, 52 for seven to nine, 44 for ten or more (item 87's column budget).
     const want = r.length >= 10 ? 44 : r.length >= 7 ? 52 : 56
     for (const p of r) {

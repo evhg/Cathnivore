@@ -3995,6 +3995,15 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower { padding-top: 8px; }
 }
+/* Plan item 211: four to a row on a tall desktop, every band holds two lines with its name centred, so Market
+   Stall and Duck Pond sit on bands the same height as Hedgerow's (a shorter desktop keeps its art instead). */
+@media (min-width: 900px) and (min-height: 861px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
+    display: grid;
+    place-items: center;
+    min-height: calc(2.2em + 9px);
+  }
+}
 /* The shorter desktops and a tight round keep the same face with smaller art. */
 @media (min-width: 900px) and (min-height: 521px) and (max-height: 860px) {
   .play .tray-wrap .tray .tray-tower img { width: 48px; height: 48px; }
