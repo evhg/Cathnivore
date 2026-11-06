@@ -2833,18 +2833,34 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
     color: var(--card-ink);
     box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .6);
   }
-  /* the paperclip */
-  .cp-sheet[data-dossier]::before {
+  /* the paperclip: a steel wire's outer loop and the inner loop inside it, read as wire, not a dark pill
+     (item 217: the 6 x 16 loop read as a stray scrollbar thumb) */
+  .cp-sheet[data-dossier]::before,
+  .cp-sheet[data-dossier]::after {
     content: "";
     position: absolute;
-    top: calc(var(--u) * -8);
-    right: calc(var(--u) * 26);
     left: auto;
     bottom: auto;
-    width: calc(var(--u) * 10);
-    height: calc(var(--u) * 26);
-    border: max(2px, calc(var(--u) * 2)) solid var(--ink-3); /* px-ok */
-    border-radius: calc(var(--u) * 6);
+    border: max(1.5px, calc(var(--u) * 1.6)) solid color-mix(in srgb, var(--ink) 78%, var(--ink-3)); /* px-ok */
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 max(1px, var(--u)) 0 rgb(var(--black-rgb) / .45)); /* px-ok */
+    pointer-events: none;
+  }
+  .cp-sheet[data-dossier]::before {
+    top: calc(var(--u) * -12);
+    right: calc(var(--u) * 24);
+    width: calc(var(--u) * 13);
+    height: calc(var(--u) * 34);
+    border-radius: calc(var(--u) * 7);
+  }
+  .cp-sheet[data-dossier]::after {
+    top: calc(var(--u) * -6);
+    right: calc(var(--u) * 27);
+    width: calc(var(--u) * 7);
+    height: calc(var(--u) * 24);
+    border-radius: calc(var(--u) * 4);
+    border-top-color: transparent;
   }
   .cp-sheet[data-dossier] :is(.cp-label, .cp-attr dt, .cp-weapon-nums dt, .cp-tree-name, .cp-hold-how) { color: var(--card-ink-2); }
   .cp-sheet[data-dossier] :is(.cp-attr-n, .cp-weapon-name, .cp-weapon-nums dd, .cp-hold-label) { color: var(--card-ink); }
@@ -2886,6 +2902,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   /* Walk in, on red tape */
   .cp-sheet[data-dossier] .cp-hold {
     margin: 0 calc(var(--u) * -12);
+    padding-inline: calc(var(--u) * 16); /* item 217: the words sit in from the tape's ends */
     background: var(--stamp-red);
   }
   .cp-sheet[data-dossier] .cp-hold :is(.cp-hold-label, .cp-hold-how) { color: var(--on-blood); }
