@@ -2302,7 +2302,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-sky="dawn|day|golden|evening"]` on the title root, dark forces `evening`; menu text 4.5:1 in all four; the sky meets neither the menu nor the board; no lantern flicker under reduced motion; title specs pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 207. [ ] Runnel phone: a valley signboard header, and Cath's line docked off the board *(lane B, in progress)*
+## 207. [ ] Runnel phone: a valley signboard header, and Cath's line docked off the board *(lane B, in progress)* *(slice 1, 2026-11-06 lane B: `.top[data-signboard]` a plank sign on an upright phone, its tokens 44 px; the Practice board still within 260 px. Open: the dock; the critique's bubble (`runnel-P` 10-212 x 545-638) is item 170's lesson bubble, which sits beside Cath clear of the tiles in `plan1106e`, so check the daily before building one)*
 - **Why:** `plan1106e/runnel-P`: the header (0-390 x 0-60) is a title by bare glyphs (245-360 x 22-42); the tabs (14-375 x 100-178) read as a form; Cath's bubble (10-212 x 545-638) covers the valley and the board's left edge.
 - **Build:**
   - The header as a painted wooden signboard, sound, stats and help as carved tokens on it.
