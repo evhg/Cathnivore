@@ -53,7 +53,11 @@ const jobs = {
     // Plan item 132: at 9 s under SwiftShader the loading poster (her back, the loading line at the foot) was still up and
     // read as a regression; the live street is drawn by about 30 s.
     await p.goto(`${base}/nightshift/`); await p.waitForTimeout(30000); await p.screenshot({ path: `${out}/ns-title-${s}.png` })
-    await p.goto(`${base}/nightshift/?play`); await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
+    // Plan item 223: at 15 s the pick's camera was still mid walk-down, Cath out of frame, and two critiques flagged
+    // her as missing. Wait for the pick to set its class on the canvas, then for the walk-down to settle.
+    await p.goto(`${base}/nightshift/?play`)
+    await p.waitForFunction(() => document.querySelector('canvas')?.dataset.class, null, { timeout: 90000 }).catch(() => {})
+    await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
   },
 }
 for (const [name, job] of Object.entries(jobs)) {
