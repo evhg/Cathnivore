@@ -2350,7 +2350,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-intent-placard]` at P is 44 px tall or less and the board's top at y 110 or less; no intent text under 13 px (in the sheet too); nothing over the board frame; D unchanged; the tutorial's intent step still points at it; shots P and D.
 - **Size:** 2
 
-## 213. [ ] Cathnivore: a market score (music), separate from the effects
+## 213. [ ] Cathnivore: a market score (music), separate from the effects *(lane A, in progress)*
 - **Why:** VISION "Sound": organic market sound against sterile corporate synth. Item 53 gave every action a cue and an ambience, but there is no music anywhere: the title (`plan1106f/cath-title-D`) and a game are silent between cues.
 - **Build:**
   - A generative WebAudio score from the same synth kit (plucked strings, accordion-like reed, a soft hand drum), its tempo and mode following the title's clock (item 206) and the round.
