@@ -57,6 +57,8 @@ export interface FrontScene {
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
   readonly vignette: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
+  /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
+  figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 140: the expression painted on her face now. */
   readonly expression: FaceExpression;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
@@ -747,6 +749,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     get vignette() {
       return cath.clipState;
     },
+    figurePose() {
+      return cath.poseState;
+    },
     get kit() {
       return cath.wearing;
     },
@@ -769,6 +774,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const coatHex = cls ? CLASS_COAT[cls] : null;
       coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
       if (cls) cath.play(cls, instant ? 0.5 : undefined, VIGNETTE_S);
+      // Plan item 180: and she keeps the class's pose once its audition is done (a cut under reduced motion).
+      cath.stance(cls, instant || reduce || o.still);
       cath.kit(cls);
       // Plan item 140: her face for the class (the title's smirk with none), on the canvas for the front's checks.
       const expr = cls ? CLASS_EXPRESSION[cls] ?? "smirk" : "smirk";

@@ -26,6 +26,13 @@ export interface FrontCath {
    * her shoulder, butcher rolls her neck, gunslinger squares up, wirewitch twirls the umbrella, fixer checks her cuff.
    */
   play(kind: string, u?: number, seconds?: number): void;
+  /**
+   * Plan item 180: the class's signature pose, held while she wears it (the audition's pose, kept): a change of class
+   * lets the old one go and takes up the new over 400 ms; `instant` cuts (reduced motion, screenshots). null: none.
+   */
+  stance(kind: string | null, instant?: boolean): void;
+  /** Plan item 180: the stance she holds now, its weight (0..1; 1 once the blend is done), how long the last blend took (loop s) and her posing hand. */
+  readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
   readonly clipState: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
@@ -1336,11 +1343,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const legRest = legs.map((l) => l.rotation.z);
   const CLIP_S = 1.2;
   let clip: { kind: string; t0: number | null; held?: number; dur: number; u: number } | null = null;
+  // Plan item 180: the held stance (the kind she holds now, the one wanted, and its weight).
+  let stanceNow: string | null = null;
+  let stanceWant: string | null = null;
+  let stanceW = 0;
+  // How long the running blend has taken (loop seconds), and how long the last one took to settle.
+  let blendClock = 0;
+  let blendS = 0;
   // Plan item 136: the Wirewitch's rig flares through her audition (its base colour, scaled up and back).
   let rigMat: THREE.MeshBasicMaterial | null = null;
   const rigBase = new THREE.Color(0.55, 0.16, 1.25);
   let clipDraw = 0;
   const tgt = new THREE.Vector3();
+  // Plan item 180: where her posing hand is now (her own frame, metres): the pose's signature for the checks.
+  const handNow = new THREE.Vector3();
   const pole = new THREE.Vector3();
   const tmpV = new THREE.Vector3();
   const restPole = elbowL.clone().sub(shoulderL).normalize();
@@ -1406,20 +1422,48 @@ export function buildFrontCath(phone: boolean): FrontCath {
     let glint = 0;
     let rack = 0;
     let shellU = -1;
+    // Plan item 180: the stance lets go of the old class (200 ms) and takes up the new (200 ms).
+    if (stanceNow !== stanceWant || (stanceNow && stanceW < 1)) blendClock += step;
+    if (stanceNow !== stanceWant) {
+      stanceW = Math.max(0, stanceW - step / 0.2);
+      if (stanceW === 0) stanceNow = stanceWant;
+    } else if (stanceNow && stanceW < 1) {
+      stanceW = Math.min(1, stanceW + step / 0.2);
+      if (stanceW === 1) blendS = blendClock;
+    }
+    let cu = 0;
     if (clip) {
       if (clip.t0 === null) clip.t0 = t;
-      const cu = clip.held ?? (t - clip.t0) / clip.dur;
+      cu = clip.held ?? (t - clip.t0) / clip.dur;
       clip.u = Math.max(0, cu);
       if (cu >= 1 || cu < 0) clip = null;
-      else {
-        const e = THREE.MathUtils.smootherstep(cu, 0, 0.26) * (1 - THREE.MathUtils.smootherstep(cu, 0.8, 1));
+    }
+    // The pose to draw: the audition while one plays (held at its middle once it gets there when it is the stance's
+    // own class, so it settles into the stance rather than back to rest), else the stance at its weight.
+    const posing = clip ? { kind: clip.kind, held: clip.held } : stanceNow && stanceW > 0 ? { kind: stanceNow, held: 0.5 } : null;
+    // The rack's snap and the flying shell run on the audition's own clock (none while she only holds the stance).
+    const cuR = clip ? cu : -1;
+    // Settled into the stance (its own audition past the middle, or none playing): a held pose, so the Ghost's glint
+    // catches the light every few seconds instead of staying lit.
+    let settled = !clip;
+    if (clip && clip.kind === stanceNow && cu > 0.5) {
+      cu = 0.5;
+      settled = true;
+    }
+    if (!clip) cu = 0.5;
+    if (posing) {
+      {
+        const clipE = clip ? THREE.MathUtils.smootherstep(cu, 0, 0.26) * (1 - THREE.MathUtils.smootherstep(cu, 0.8, 1)) : 0;
+        const ease = stanceW * stanceW * (3 - 2 * stanceW);
+        const e = clip && clip.kind !== stanceNow ? clipE : Math.max(clipE, ease);
+        const clip_ = { kind: posing.kind, held: settled ? 0.5 : posing.held, dur: clip?.dur ?? CLIP_S };
         const reach = (x: number, y: number, z: number, px: number, py: number, pz: number, roll: number) => {
           tgt.copy(wristL).lerp(tmpV.set(x, y, z), e);
           pole.copy(restPole).lerp(tmpV.set(px, py, pz).normalize(), e);
           armIK(tgt, pole, roll * e);
           armOn = true;
         };
-        switch (clip.kind) {
+        switch (clip_.kind) {
           case "ghost": {
             // Plan item 136: she unslings the rifle from over her left shoulder and stands it beside her face, the
             // scope at her eye and a glint off its lens, then slings it again: rest -> shoulder -> hold, and back.
@@ -1428,12 +1472,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
             pole.copy(restPole).lerp(tmpV.set(1, -0.8, -0.3).normalize(), Math.max(e, sh));
             armIK(tgt, pole, -0.4 * e);
             armOn = true;
-            gunInHand = cu > 0.13 && cu < 0.89 ? "rifle" : null;
+            gunInHand = cu > 0.13 && cu < 0.89 && e > 0.3 ? "rifle" : null;
             headPivot.rotation.y += 0.1 * e;
             headPivot.rotation.z -= 0.08 * e;
             chest.rotation.y -= 0.06 * e;
             // One glint mid-audition; held (the pick's first frame), it catches the light every few seconds.
-            glint = clip.held !== undefined ? Math.max(0, Math.sin(t * 1.4)) ** 12 : THREE.MathUtils.smoothstep(cu, 0.4, 0.47) * (1 - THREE.MathUtils.smoothstep(cu, 0.5, 0.62));
+            glint = clip_.held !== undefined ? Math.max(0, Math.sin(t * 1.4)) ** 12 : THREE.MathUtils.smoothstep(cu, 0.4, 0.47) * (1 - THREE.MathUtils.smoothstep(cu, 0.5, 0.62));
             break;
           }
           case "butcher": {
@@ -1445,15 +1489,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
             headPivot.rotation.y += 0.18 * e;
             chest.rotation.x += 0.06 * e;
             chest.position.y -= 0.012 * e;
-            const snap = THREE.MathUtils.smoothstep(cu, 0.42, 0.46) * (1 - THREE.MathUtils.smoothstep(cu, 0.47, 0.54));
+            const snap = THREE.MathUtils.smoothstep(cuR, 0.42, 0.46) * (1 - THREE.MathUtils.smoothstep(cuR, 0.47, 0.54));
             tgt.copy(wristL).lerp(BUTCHER_HOLD, e);
             tgt.y -= 0.07 * snap;
             pole.copy(restPole).lerp(tmpV.set(1, 0.2, -0.8).normalize(), e);
             armIK(tgt, pole, 0.5 * e);
             armOn = true;
-            gunInHand = cu > 0.1 && cu < 0.92 ? "shotgun" : null;
+            gunInHand = cu > 0.1 && cu < 0.92 && e > 0.3 ? "shotgun" : null;
             rack = snap;
-            shellU = cu >= 0.46 && cu < 0.8 ? (cu - 0.46) * clip.dur : -1;
+            shellU = cuR >= 0.46 && cuR < 0.8 ? (cuR - 0.46) * clip_.dur : -1;
             break;
           }
           case "gunslinger":
@@ -1484,11 +1528,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
     }
     // Only the Ghost's draw and the Fixer's collar keep the cigarette in hand: in a fist (the Butcher), on the hip or
     // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
-    const palmed = armOn && !!clip && clip.kind !== "fixer";
+    handNow.copy(armOn ? tgt : wristL);
+    const palmed = armOn && !!posing && posing.kind !== "fixer";
     poseProps(gunInHand, glint, rack, shellU);
     cigMesh.visible = !palmed;
     if (rigMat) {
-      const on = clip?.kind === "wirewitch" ? THREE.MathUtils.smoothstep(clip.u, 0.15, 0.35) * (1 - THREE.MathUtils.smoothstep(clip.u, 0.75, 0.95)) : 0;
+      const held = stanceNow === "wirewitch" ? stanceW * 0.6 : 0;
+      const on = Math.max(held, clip?.kind === "wirewitch" ? THREE.MathUtils.smoothstep(clip.u, 0.15, 0.35) * (1 - THREE.MathUtils.smoothstep(clip.u, 0.75, 0.95)) : 0);
       // Two pulses down the cables as the rig powers up, then a steady glow that settles.
       const pulse = on * (1.4 + 0.6 * Math.sin(clip ? clip.u * Math.PI * 8 : 0));
       rigMat.color.copy(rigBase).multiplyScalar(1 + pulse);
@@ -1907,6 +1953,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
     triangles: Math.round(tris),
     setRim(viewDir) {
       rimU.uRimDir.value.copy(viewDir).normalize();
+    },
+    stance(kind, instant) {
+      if (kind !== stanceWant) blendClock = 0;
+      stanceWant = kind;
+      if (instant) {
+        stanceNow = kind;
+        stanceW = kind ? 1 : 0;
+        blendS = 0;
+      }
+    },
+    get poseState() {
+      const r = (v: number) => Math.round(v * 1000) / 1000;
+      return { kind: stanceNow, w: stanceW, blendS, hand: [r(handNow.x), r(handNow.y), r(handNow.z)] as [number, number, number] };
     },
     play(kind, u, seconds) {
       clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };

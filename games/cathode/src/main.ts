@@ -462,9 +462,10 @@ function stagePick(): void {
   const list = Array.from(document.querySelectorAll(".cp .cp-opt-name, .cp .cp-title")).reduce((m, el) => Math.max(m, el.getBoundingClientRect().right), left.left);
   scene?.setPickStage({
     left: Math.max(list, left.right - left.width * 0.25) + gap,
-    top: Math.round(innerHeight * 0.05),
+    // Plan item 180: she stands nearly the frame's height (her face 90 px+ at 1440x900), shoes just above its foot.
+    top: Math.round(innerHeight * 0.02),
     right: r.left + Math.min(0, plate) - gap,
-    bottom: Math.round(innerHeight * 0.95),
+    bottom: Math.round(innerHeight * 0.985),
   });
 }
 addEventListener("resize", () => {
