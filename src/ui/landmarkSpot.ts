@@ -103,3 +103,38 @@ export function pickSpot(taken: readonly Box[]): { x: number; y: number; scale: 
     }
   return null
 }
+
+/** The market event's dressing (Map.tsx, plan item 144) round its anchor at scale 1: the Great Glut's heap and the
+ *  Harvest Festival's lantern string. */
+export const DRESSING_BOX: Record<'glut' | 'festival', Box> = {
+  glut: { x0: -22, y0: -5.5, x1: 22, y1: 6 },
+  festival: { x0: -34.6, y0: -6, x1: 34.6, y1: 9 },
+}
+
+function scaled(b: Box, p: { x: number; y: number }, k: number): Box {
+  return { x0: p.x + b.x0 * k, y0: p.y + b.y0 * k, x1: p.x + b.x1 * k, y1: p.y + b.y1 * k }
+}
+
+/**
+ * Where the event's dressing goes on a tile: its home at the hex's foot when the pieces leave that clear, else the
+ * nearest spot (and the largest size) inside the face and clear of every piece; a crowded tile gets a small
+ * dressing tucked into a flank. Null only when nothing fits at all.
+ */
+export function dressingSpot(
+  kind: 'glut' | 'festival',
+  taken: readonly Box[],
+  home: { x: number; y: number },
+): { x: number; y: number; scale: number } | null {
+  const box = DRESSING_BOX[kind]
+  const clear = (b: Box) => !taken.some((t) => overlaps(b, t, 1))
+  if (clear(scaled(box, home, 1))) return { ...home, scale: 1 }
+  const tries: { x: number; y: number }[] = []
+  for (const dy of [0, -4, 4, -8, -12, -16]) for (const dx of [0, -12, 12, -24, 24]) tries.push({ x: home.x + dx, y: home.y + dy })
+  for (const s of SPOTS) tries.push(s)
+  for (const k of [1, 0.85, 0.7, 0.55, 0.45])
+    for (const p of tries) {
+      const b = scaled(box, p, k)
+      if (boxInside(b) && clear(b)) return { ...p, scale: k }
+    }
+  return null
+}

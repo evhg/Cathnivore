@@ -4,7 +4,7 @@ import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BADGE, COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
-import { BOARD_LANDMARKS, boxAt, pickSpot } from './landmarkSpot'
+import { BOARD_LANDMARKS, boxAt, dressingSpot, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
@@ -790,6 +790,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           },
           hexPx,
         )
+        // Plan item 144: the event's dressing keeps to the hex's foot, but steps aside (and down in size) when the
+        // stalls, pushed down the tile by Hollowell's stacks, reach there; it never meets a piece or the landmark.
+        const dress =
+          marketEvent === 'glut' || marketEvent === 'festival'
+            ? (() => {
+                const spot = pickSpot(tray.rects)
+                const taken = spot ? [...tray.rects, boxAt(spot, spot.scale)] : tray.rects
+                return dressingSpot(marketEvent, taken, { x: 0, y: HEX_R * (marketEvent === 'glut' ? 0.8 : 0.72) })
+              })()
+            : null
         return (
           <g
             key={id}
@@ -825,16 +835,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             {/* Plan item 144: the week's market event dresses every region's ground, under the pieces (the band at the
                 hex's foot, below the stalls, is free on every tile). */}
             {marketEvent === 'drought' && <polygon className="ev-cracks" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#ev-cracks)" pointerEvents="none" />}
-            {marketEvent === 'glut' && (
-              <g className="ev-heap" transform={`translate(${x} ${y + HEX_R * 0.8})`} pointerEvents="none">
+            {marketEvent === 'glut' && dress && (
+              <g className="ev-heap" transform={`translate(${x + dress.x} ${y + dress.y}) scale(${dress.scale})`} pointerEvents="none">
                 <ellipse cx={0} cy={5} rx={22} ry={3.5} fill="var(--ink)" opacity={0.15} />
                 <circle cx={-13} cy={0} r={5.5} fill="#7fae4a" stroke="var(--ink)" strokeWidth={1.2} />
                 <circle cx={0} cy={0} r={5.5} fill="#e9a23b" stroke="var(--ink)" strokeWidth={1.2} />
                 <circle cx={13} cy={0} r={5.5} fill="#9b5aa0" stroke="var(--ink)" strokeWidth={1.2} />
               </g>
             )}
-            {marketEvent === 'festival' && (
-              <g className="ev-lanterns" transform={`translate(${x} ${y + HEX_R * 0.72})`} pointerEvents="none">
+            {marketEvent === 'festival' && dress && (
+              <g className="ev-lanterns" transform={`translate(${x + dress.x} ${y + dress.y}) scale(${dress.scale})`} pointerEvents="none">
                 <path d="M-30 -5Q0 5 30 -5" fill="none" stroke="var(--ink)" strokeWidth={1.3} />
                 {[-20, -7, 7, 20].map((dx, k) => (
                   <ellipse key={dx} cx={dx} cy={3 - 5 * (dx / 30) ** 2} rx={4.6} ry={5.8} fill={['#d9502f', '#e9b83b', '#4f8a3a', '#d9502f'][k]} stroke="var(--ink)" strokeWidth={1} />
