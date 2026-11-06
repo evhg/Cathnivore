@@ -2218,7 +2218,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-partner-mat]` holds three `[data-crate]`; the receipt `[data-ledger]` is an `ol`; text 12 px or more at AA; reduced motion only fades new lines; undo specs pass; shots P and D.
 - **Size:** 2
 
-## 197. [ ] Runnel: Bea's garden grows through the level *(lane B, in progress)*
+## 197. [x] Runnel: Bea's garden grows through the level *(done 2026-11-06, lane B: `.bea-garden[data-garden-stage]` 0-3 by the share of fields watered, an SVG of eight plants and a scarecrow over the planter (seedlings, leaves, flowers and the scarecrow at the solve), a 600 ms cross-fade; the garden is 164 x 58 on a phone. The tiles' own sprouting was already there (watered fields grow their crops). `e2e-site/runnel-garden-stages.spec.ts`; shots `t197`)*
 - **Why:** `plan1106c/runnel-D` (1155-1390 x 760-840) and `runnel-P` (220-380 x 720-765): until the solve the garden is a flat brown planter; the payoff at the ditch's end isn't visible while you play.
 - **Build:**
   - The garden in stages by the share of fields watered: seedlings at a third, leaves at two thirds, flowers and a scarecrow at the solve (item 68's run-out and item 106's pop stay).
