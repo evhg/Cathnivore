@@ -41,7 +41,7 @@ import {
 } from "../engine";
 import { actLight, actMood, matte, nightLight } from "./palette";
 import { fordMiddle } from "../landmarks";
-import { buildCath, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { CATH_HEAD_Y, buildCath, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -1770,7 +1770,7 @@ export class Renderer3D {
     if (held) held.visible = this.heroPie < HERO_PIE_RELEASE;
     if (head) {
       // The portrait rides on her shoulders: it follows the lean and the bob.
-      head.position.set(-Math.sin(lean) * 0.72 * h.facing, 0.72 * Math.cos(lean) + bob, 0);
+      head.position.set(-Math.sin(lean) * CATH_HEAD_Y * h.facing, CATH_HEAD_Y * Math.cos(lean) + bob, 0);
       // Mirrored with her body; it follows her lean and a little of her twist.
       head.scale.x = h.facing;
       head.rotation.set(0, twist * 0.5 * h.facing, lean * h.facing);

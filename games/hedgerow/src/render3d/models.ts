@@ -1800,6 +1800,12 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
 
 // ---- Cath ----
 
+/** Plan item 208: her figure's heights (model units, feet at 0): the hip, the shoulders and her head's centre. */
+export const CATH_HIP_Y = 0.46;
+export const CATH_SHOULDER_Y = 0.77;
+export const CATH_HEAD_Y = 1.03;
+const CATH_HEAD_SCALE = 0.84;
+
 // Her hair, from OWNER.md and the shared Cath art (shared/cath/cath.ts): deep brown-black with a warm shine band.
 const HAIR = { deep: "#1A110E", base: "#2E211C", mid: "#4A362D", shine: "#7E5D4D" };
 const SKIN = "#F7DCCB";
@@ -1866,9 +1872,10 @@ function leafClip(): THREE.Group {
 function cathArm(sleeveM: M, cuffM: M, skinM: M): { shoulder: THREE.Group; elbow: THREE.Group; hand: THREE.Group } {
   const shoulder = new THREE.Group();
   shoulder.add(ball(0.03, sleeveM, 0, -0.005, 0, 1));
-  shoulder.add(cyl(0.026, 0.023, 0.13, sleeveM, 0, -0.13, 0, 8));
+  // Plan item 208: a longer upper arm, for her taller figure.
+  shoulder.add(cyl(0.026, 0.023, 0.17, sleeveM, 0, -0.17, 0, 8));
   const elbow = new THREE.Group();
-  elbow.position.y = -0.13;
+  elbow.position.y = -0.17;
   elbow.add(ball(0.023, sleeveM, 0, 0, 0, 1));
   // The sleeve is rolled to just below the elbow: a cuff, then her forearm.
   elbow.add(cyl(0.023, 0.022, 0.04, sleeveM, 0, -0.04, 0, 8));
@@ -1904,23 +1911,41 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   jacketM.name = "jacket";
   blouseM.name = "blouse";
   root.userData.dress = { id: o.id, mats: { trousers: trousersM, boots: bootsM, jacket: jacketM, blouse: blouseM, sleeve: sleeveM } };
-  for (const z of [-0.05, 0.05]) {
+  // Plan item 208: her figure to the character bible, about five heads tall (it was a chibi, the head a third of
+  // her height): long legs from the hip, a fitted jacket to the hip with its collar up, a cream blouse, pearls.
+  for (const z of [-0.045, 0.045]) {
     const leg = new THREE.Group();
-    leg.position.set(0, 0.24, z);
-    leg.add(cyl(0.03, 0.026, 0.22, trousersM, 0, -0.24, 0, 8));
-    leg.add(box(0.08, 0.05, 0.065, bootsM, 0.015, -0.26, 0));
+    leg.position.set(0, CATH_HIP_Y, z);
+    leg.add(cyl(0.024, 0.03, CATH_HIP_Y - 0.04, trousersM, 0, -CATH_HIP_Y + 0.04, 0, 8));
+    leg.add(box(0.075, 0.045, 0.06, bootsM, 0.014, -CATH_HIP_Y, 0));
     fig.add(leg);
     legs.push(leg);
   }
-  // Jacket: a gently flared lathe, collar up.
-  const pts = [new THREE.Vector2(0.12, 0), new THREE.Vector2(0.11, 0.1), new THREE.Vector2(0.1, 0.2), new THREE.Vector2(0.11, 0.26), new THREE.Vector2(0.05, 0.3)];
-  const jacket = mesh(geo("cathJacket", () => new THREE.LatheGeometry(pts, 12)), jacketM, 0, 0.22, 0);
+  // Jacket: fitted, flaring a little over the hip, nipped at the waist, square at the shoulder.
+  const pts = [
+    new THREE.Vector2(0.105, 0),
+    new THREE.Vector2(0.095, 0.08),
+    new THREE.Vector2(0.082, 0.16),
+    new THREE.Vector2(0.094, 0.26),
+    new THREE.Vector2(0.108, 0.32),
+    new THREE.Vector2(0.05, 0.36),
+  ];
+  const jacket = mesh(geo("cathJacket2", () => new THREE.LatheGeometry(pts, 14)), jacketM, 0, CATH_HIP_Y - 0.06, 0);
   fig.add(jacket);
-  fig.add(box(0.02, 0.1, 0.08, blouseM, 0.1, 0.38, 0));
-  fig.add(ball(0.012, glow("#ffe9a8", 1), 0.112, 0.44, 0.02, 0));
+  // The collar, turned up round her neck and open at the front.
+  const collar = mesh(geo("cathCollar2", () => new THREE.CylinderGeometry(0.05, 0.068, 0.11, 12, 1, true, Math.PI * 0.25, Math.PI * 1.5)), jacketM, 0, CATH_SHOULDER_Y + 0.06, 0);
+  collar.rotation.y = Math.PI / 2;
+  (collar.material as THREE.Material).side = THREE.DoubleSide;
+  fig.add(collar);
+  // Her neck, from the collar up to her head (which rides on it, and moves with her lean).
+  fig.add(cyl(0.028, 0.032, 0.14, skinM, 0, CATH_SHOULDER_Y, 0, 8));
+  // The blouse in the jacket's open front, and a short string of pearls at her neckline.
+  fig.add(box(0.02, 0.14, 0.07, blouseM, 0.086, CATH_SHOULDER_Y - 0.15, 0));
+  const pearlM = matte("#fbf3e4", 0.25, false);
+  for (let i = -2; i <= 2; i++) fig.add(ball(0.007, pearlM, 0.098 - Math.abs(i) * 0.004, CATH_SHOULDER_Y - 0.004 - (2 - Math.abs(i)) * 0.006, i * 0.013, 0));
   // Arms from the shoulders. The near one (+Z) holds the rolling pin by one handle, like a club.
   const right = cathArm(sleeveM, jacketM, skinM);
-  right.shoulder.position.set(0, 0.47, 0.115);
+  right.shoulder.position.set(0, CATH_SHOULDER_Y, 0.11);
   const wood = matte("#d9b384", 0.6, false);
   const handle = matte("#b98a5a", 0.6, false);
   const pin = group(cyl(0.011, 0.011, 0.06, handle, 0, -0.03, 0, 6), cyl(0.028, 0.028, 0.17, wood, 0, -0.2, 0, 10), cyl(0.011, 0.011, 0.05, handle, 0, -0.25, 0, 6));
@@ -1928,7 +1953,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   right.hand.add(pin);
   fig.add(right.shoulder);
   const left = cathArm(sleeveM, jacketM, skinM);
-  left.shoulder.position.set(0, 0.47, -0.115);
+  left.shoulder.position.set(0, CATH_SHOULDER_Y, -0.11);
   fig.add(left.shoulder);
   // The pie in her free hand, shown while she winds up to throw it.
   const pie = group(cyl(0.05, 0.042, 0.022, matte("#e0b26a", 0.7), 0, 0, 0, 12), scaled(ball(0.04, matte("#fff6e0", 0.5, false), 0, 0.02, 0, 1), 1, 0.55, 1));
@@ -1948,9 +1973,10 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     hair.push(p);
     return p;
   };
-  layer(-0.1, 0.62, hairLock(0.42, 0.105, 0.06, 0.012, 0.02, 0.18), -0.045);
-  layer(-0.11, 0.63, hairLock(0.38, 0.092, 0.05, 0.016, 0.035, 0.2), -0.065);
-  const top = layer(-0.12, 0.64, hairLock(0.31, 0.078, 0.04, 0.014, 0.045, 0.24), -0.085);
+  const nape = CATH_HEAD_Y - 0.1;
+  layer(-0.09, nape, hairLock(0.44, 0.095, 0.055, 0.012, 0.02, 0.18), -0.04);
+  layer(-0.1, nape + 0.01, hairLock(0.4, 0.084, 0.046, 0.016, 0.035, 0.2), -0.058);
+  const top = layer(-0.11, nape + 0.02, hairLock(0.33, 0.072, 0.038, 0.014, 0.045, 0.24), -0.076);
   const clip = leafClip();
   // The clip gathers the top layer low on her back, on the side the camera sees.
   clip.position.set(-0.08, -0.2, 0.06);
@@ -1960,8 +1986,8 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const locks: THREE.Group[] = [];
   for (const z of [-0.06, 0.06]) {
     const p = new THREE.Group();
-    p.position.set(0.155, 0.6, z);
-    p.add(mesh(hairLock(0.36, 0.036, 0.045, 0.01, -0.02, 0.3), hairMaterial(), 0, 0, 0));
+    p.position.set(0.13, CATH_HEAD_Y - 0.12, z);
+    p.add(mesh(hairLock(0.3, 0.032, 0.04, 0.01, -0.02, 0.3), hairMaterial(), 0, 0, 0));
     fig.add(p);
     locks.push(p);
   }
@@ -1970,7 +1996,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   // the back, warm brown eyes under soft brows, rosy cheeks and a small smile. The sync turns and mirrors it.
   void faceTexture;
   const head = cathHead(skinM);
-  head.position.set(0, 0.72, 0);
+  head.position.set(0, CATH_HEAD_Y, 0);
   root.add(head);
   root.userData.head = head;
   fig.traverse((o) => {
@@ -2009,7 +2035,8 @@ function cathHead(skinM: M): THREE.Group {
   const g = new THREE.Group();
   const yaw = new THREE.Group();
   yaw.rotation.y = -1.05;
-  yaw.scale.setScalar(1.18);
+  // Plan item 208: smaller against her taller figure (1.18), about a fifth of her height.
+  yaw.scale.setScalar(CATH_HEAD_SCALE);
   g.add(yaw);
   // Tipped up toward the camera, which looks down on the field.
   const turn = new THREE.Group();
@@ -2031,7 +2058,8 @@ function cathHead(skinM: M): THREE.Group {
   const cheekM = matte("#f2a9a0", 0.8, false);
   // The face: a slightly long oval, and a neck under it.
   turn.add(scaled(ball(0.13, faceM, 0, 0, 0, 2), 0.95, 1.1, 0.95));
-  turn.add(cyl(0.035, 0.04, 0.08, skinM, 0, -0.18, 0, 8));
+  // Plan item 208: a short neck; her collar stands up round the rest of it.
+  turn.add(cyl(0.035, 0.04, 0.06, skinM, 0, -0.15, 0, 8));
   // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
   const cap = mesh(geo("cathHairCap2", () => new THREE.SphereGeometry(0.144, 18, 10, Math.PI * 0.78, Math.PI * 1.44, 0, Math.PI * 0.5)), hairM, -0.012, 0.012, 0);
   turn.add(cap);
