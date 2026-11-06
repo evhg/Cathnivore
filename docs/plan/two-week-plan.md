@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-06 22:55 UTC
-
 
 
 
@@ -2421,3 +2419,39 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **NIGHT SHIFT:** D title: 'THE LIST' about 10 px (57-105 x 568-580); 'No case open' grey under 4.5:1 (205-293 x 304-318). P pick: perk tags about 10 px (16-230 x 765-780), 'HOLD' about 10 px (322-356 x 803-817). D pick: GRIT/AIM/NERVE/WIRE, 'STARTS WITH', 'SNIPER RIFLE' about 10 px.
 - **Accept:** text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after; the specs for each screen pass.
 - **Size:** 2
+
+## 223. [ ] NIGHT SHIFT desktop class pick: Cath back on her stage
+- **Why:** `plan1106h/ns-play-D` (470-960 x 80-860): an empty alley; only her umbrella tip shows behind the sheet (935-965 x 285-330). Item 222 put an earlier report down to capture timing; it came back, so check it first with a long settle.
+- **Build:** at 1100 px wide and up she stands in the open frame between the class list and the sheet, feet about 40 px above the foot, facing the lens, in item 180's class pose with the class weapon; switching class re-poses her in place, no camera cut; `?shot` settles her deterministically so shots can't miss her.
+- **Accept:** at 1440x900 and 1280x800 her projected box lies inside x 470-960, 500 px or more tall, not touching the sheet; cycling all five classes keeps her there; cathode-front, -classpick, -classstage pass; shots D and P (P unchanged).
+- **Size:** 2
+
+## 224. [ ] Hedgerow: Hollowell's billboards carry real adverts
+- **Why:** `plan1106h/hedge-l21-2d-D` (885-995 x 100-160, 885-980 x 330-395, 905-980 x 650-705): the billboards are a ruled two-pane glyph with a white hill, read as placeholder image icons, missing VISION's glossy-corporate joke.
+- **Build:** three or four advert faces per act in Hollowell's acrylic style (Pell's grin, a slogan such as "Fresher Than Fresh™" or "Farm kit 0.99", the act's brand, a fake QR), drawn on the 2D canvas and used as the 3D textures; a won level gets Bea's crayon over one advert.
+- **Accept:** no billboard draws the old glyph; slogans 12 px or more at 4.5:1 inside the sign at D; three or more distinct faces per act; hedgerow level and field specs pass; shots l21 and l34 at P and D, 2D and 3D.
+- **Size:** 2
+
+## 225. [ ] Cathnivore desktop: one Cath voice, and a left rail with no empty "Actions" panel
+- **Why:** `plan1106h/cath-game-D`: the rail headed "Actions" (16-332 x 327-875) holds no actions since the hand moved to the table; it repeats Cath's advice ("I'd play the leaf, love…", 55-300 x 385-425) while her table bubble says something else (355-525 x 255-355), so two Cath lines show at once; a dead band at 16-332 x 660-730. The Injunction hand card (1150-1278 x 705-855) has an empty beige window with a small medal, unlike item 218's painted windows (P: 168-322 x 672-765, no cost chip or "i").
+- **Build:** at 1240 px and up the rail loses its heading and its Cath line; her suggestion speaks only from the table bubble with the leaf on the card; the Not-yet shelf becomes a wall shelf titled "Saving for"; the receipt ledger grows to meet Undo. Injunction (and any other card without a scene) gets a painted window and its chips.
+- **Accept:** one Cath line in the DOM at D; no "Actions" heading at 1240 px and up; no vertical gap over 24 px in the rail; every hand card's window is a painted scene at D and its cost chip shows at P; saving-goal, table-cath, table-hand, undo specs pass; shots D (light and dark) and P.
+- **Size:** 2
+
+## 226. [ ] Runnel: the ditch to Bea's garden dug through the valley, not laid over the board
+- **Why:** `plan1106h/runnel-D` (1000-1060 x 550-760) and `runnel-P` (222-250 x 530-720): the ditch is a tan rope across the third tile and the fourth tile's rim; it reads as a stick on the puzzle.
+- **Build:** the ditch leaves the field's terrace lip and runs under the board's z-order through the valley layer, following the footpath curve to the garden; a dry earth trench until that field is watered, then water fills it front-first (400 ms; a fade under reduced motion).
+- **Accept:** the ditch path meets no tile hex except where it leaves its own field; it fills only when that field is watered; runnel-ditch and garden specs pass; shots of the lesson, the daily and a solved board at P and D.
+- **Size:** 2
+
+## 227. [ ] NIGHT SHIFT: Cath's trench as cloth, her arm one sleeve
+- **Why:** `plan1106h/ns-title-D`: her umbrella arm (900-1000 x 380-560) reads as jointed cylinders ending in a block glove; the coat (900-1150 x 380-900) is flat plum plastic with no folds, mannequin-like against the character bible.
+- **Build:** a procedural wool normal map (weave noise, fold bands at the belt, elbow and hem), roughness 0.85 or more with low sheen and a light clearcoat; a tapered sleeve with a turned cuff; curled fingers on the umbrella handle; on the title and the pick.
+- **Accept:** a measured coat patch's luminance variance rises; no visible joint seam at the elbow in the D shot; cathode-perf within budget at P; shots title and pick at P and D.
+- **Size:** 2
+
+## 228. [ ] The bugs from the 2026-11-06 23:00 critique, fixed as one batch
+- **Hedgerow:** P l34: '283 coming' ghosted under the haze (5-125 x 558-575), the waiting vans washed out (15-75 x 160-300). P and D l34: Cath's tip is l21's "Build a Scarecrow" though l34's threat is the Box Lorry / Same-Day van (D 845-1070 x 372-457; P 90-370 x 705-760): check the advice is per round. 3D l21 D: a Hollowell man's bust floats on the depot roof (150-190 x 135-195); red slabs cut by the frame's left edge (15-55 x 195-240). 3D l21 P: the left margin a brown band that reads as mud (0-60 x 100-680).
+- **NIGHT SHIFT:** P pick: Cath soft (150-300 x 200-560); item 216 sharpened the title's P resolution, not the pick's.
+- **Accept:** each point fixed or checked and left with the reason; shots before and after; the specs for each screen pass.
+- **Size:** 1
