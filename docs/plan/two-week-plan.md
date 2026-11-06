@@ -2124,7 +2124,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every non-empty plot has an instanced crop mesh (`scene.userData.dressing`); hedges or verges along 60%+ of the lane's edge length; 12 draw calls or fewer added; the 3D frame specs pass; shots P and D.
 - **Size:** 3
 
-## 186. [ ] Runnel: the board dug into the valley *(lane B, in progress)*
+## 186. [x] Runnel: the board dug into the valley *(done 2026-11-06, lane B: `[data-terrace]` in the board SVG, each cell's hex at 1.24 (turf lip) and 1.14 (soil apron) overlapping into one outline over the plinth's shadow, so no valley hedge or furrow shows within 8 px of a tile; the spring-house stream sends a branch (`#runnel-feeder`) from its upper reach to the lip, ending in a stone culvert within 12 px of it. **Cut:** 'the stream ends within 12 px of the spring tile' — the spring sits inside the board, so a stream to it would cross tiles; it ends at the lip instead (DECISIONS). `e2e-site/runnel-terrace.spec.ts`; shots `t186` P and D, light and dark)*
 - **Why:** `plan1106a/runnel-D` (580-1220 x 120-735): the hexes float over the valley like stickers; the valley's hedge lines run straight under them (390-1410 x 300-310). Same on `runnel-P` (40-330 x 325-590).
 - **Build:**
   - A dug soil apron following the board's hex outline, with a turf-and-stone lip and a contact shadow.
