@@ -664,7 +664,7 @@ export function buildGround(level: Level): Ground {
     const c = Math.floor(x);
     const r = Math.floor(y);
     // Plan item 198: Saltmarsh's sea comes in close, behind a band of tidal flats (it sat 2.5 cells out, a thin strip).
-    const coast = act === 2 ? x < -1.7 : act === 3 ? x > cols + 2.5 : act === 5 ? y > rows + 2.5 : false;
+    const coast = act === 2 ? x < -1.7 : act === 3 ? x > cols + 1.6 : act === 5 ? y > rows + 2.5 : false;
     return wet.has(`${c},${r}`) || (coast && !lane.has(`${c},${r}`) && laneDistance(level, x, y) > 1.2);
   };
   /** Near enough the water's edge that the sloping bank would leave a plant floating. */
@@ -1017,6 +1017,42 @@ export function buildGround(level: Level): Ground {
       b.rotation.y = Math.PI / 2 + (rand() - 0.5) * 0.6;
       group.add(b);
     }
+  }
+  if (act === 3) {
+    // Rivermead: the river comes in close on the east, its bank lined with weeping willows and reed beds.
+    biome = "rivermead";
+    const trunks: Inst[] = [];
+    const crowns: Inst[] = [];
+    const reeds: Inst[] = [];
+    const bark = new THREE.Color("#6b5640");
+    const leafCols = ["#8fae55", "#a3bb62", "#7f9f4c"].map((c) => new THREE.Color(c));
+    const reedCols = ["#8f9a4c", "#a8a45a", "#768540"].map((c) => new THREE.Color(c));
+    for (let z = -1.5; z <= rows + 1.5; z += 1.9 + deco() * 0.8) {
+      const x = cols + 0.75 + deco() * 0.5;
+      if (laneDistance(level, x, z) < 1.2) continue;
+      const h = heightAt(x, z);
+      const ry = deco() * 6.3;
+      trunks.push({ x, y: h, z, ry, s: 1, sy: 1, color: bark });
+      crowns.push({ x, y: h + 0.62, z, ry, s: 0.42 + deco() * 0.1, sy: 1, color: leafCols[Math.floor(deco() * leafCols.length)]! });
+    }
+    for (let z = -2; z <= rows + 2; z += 0.3) {
+      if (deco() > 0.55) continue;
+      const x = cols + 1.25 + deco() * 0.3;
+      if (laneDistance(level, x, z) < 1) continue;
+      for (let k = 0; k < 6; k++)
+        reeds.push({ x: x + (deco() - 0.5) * 0.2, y: heightAt(x, z), z: z + (deco() - 0.5) * 0.2, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
+    }
+    // A willow's crown: a dome whose skirt hangs to the ground (a cone opening downward under a cap).
+    const crownGeo = new THREE.LatheGeometry(
+      [[0, 0.32], [0.45, 0.24], [0.78, 0.02], [0.92, -0.35], [0.98, -0.75], [0.9, -1.0]].map(([x, y]) => new THREE.Vector2(x!, y!)),
+      12,
+    );
+    for (const m of [
+      instanced(new THREE.CylinderGeometry(0.035, 0.05, 0.7, 6).translate(0, 0.35, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), trunks, true),
+      instanced(crownGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true, side: THREE.DoubleSide }), crowns, true),
+      instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
+    ])
+      if (m) group.add(m);
   }
   group.userData.biome = biome;
 
