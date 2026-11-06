@@ -4933,3 +4933,44 @@ img.act-scene {
 @media (max-width: 640px) {
   #screen-select .act > .act-pencil-note { position: relative; top: auto; margin: 2px auto 0; }
 }
+
+/* Plan item 209: on an upright phone the act's road snakes down the screen, two stops a bend (map.ts sets the
+   v/vc classes and data-road). Each name sits beside its coin, on the outer side, never under the road. */
+@media (max-width: 599px) {
+  #screen-select .trail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(5, auto);
+    row-gap: 22px;
+    column-gap: 28px;
+  }
+  #screen-select .trail.has-home { grid-template-rows: auto repeat(5, auto); }
+  #screen-select .trail > .stop.vc1 { grid-column: 1; }
+  #screen-select .trail > .stop.vc2 { grid-column: 2; }
+  #screen-select .trail > .stop.v1 { grid-row: 1; }
+  #screen-select .trail > .stop.v2 { grid-row: 2; }
+  #screen-select .trail > .stop.v3 { grid-row: 3; }
+  #screen-select .trail > .stop.v4 { grid-row: 4; }
+  #screen-select .trail > .stop.v5 { grid-row: 5; }
+  #screen-select .trail.has-home > .stop.v1 { grid-row: 2; }
+  #screen-select .trail.has-home > .stop.v2 { grid-row: 3; }
+  #screen-select .trail.has-home > .stop.v3 { grid-row: 4; }
+  #screen-select .trail.has-home > .stop.v4 { grid-row: 5; }
+  #screen-select .trail.has-home > .stop.v5 { grid-row: 6; }
+  #screen-select .trail > .stop { justify-items: stretch; }
+  #screen-select .trail .node {
+    max-width: none;
+    grid-template-columns: 64px minmax(0, 1fr);
+    column-gap: 8px;
+    justify-items: start;
+    align-items: center;
+    align-content: center;
+  }
+  #screen-select .trail .node > * { grid-column: 2; }
+  #screen-select .trail .node > .level-num { grid-column: 1; grid-row: 1 / span 4; justify-self: center; }
+  #screen-select .trail .node .level-name { text-align: left; max-width: 100%; font-size: var(--fs-small); }
+  /* The left column mirrors: the coin on the inside, its name on the outer (left) side. */
+  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 64px; justify-items: end; }
+  #screen-select .trail > .stop.vc1 .node > * { grid-column: 1; }
+  #screen-select .trail > .stop.vc1 .node > .level-num { grid-column: 2; }
+  #screen-select .trail > .stop.vc1 .node .level-name { text-align: right; }
+}

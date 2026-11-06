@@ -392,3 +392,34 @@ for (const upTo of [3, 23]) {
     expect(locked, `locked ${upTo + 2}`).toBeLessThan(0.15)
   })
 }
+
+// Plan item 209: on an upright phone each act's road snakes down the screen two stops a bend, the names beside
+// their coins (no two names meeting, none on another coin), 13 px or more, and no sideways scroll; wider screens
+// keep the two rows of five.
+test('plan item 209: the phone road runs down the screen, names beside their stops', async ({ page }) => {
+  await seed(page, 23)
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(800)
+  const phone = (page.viewportSize()?.width ?? 0) < 600
+  const m = await page.evaluate(() => {
+    const meet = (a: DOMRect, b: DOMRect) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+    return [...document.querySelectorAll<HTMLElement>('#levels .trail')].map((t) => {
+      const names = [...t.querySelectorAll<HTMLElement>('.stop .level-name')]
+      const nb = names.map((n) => n.getBoundingClientRect())
+      const coins = [...t.querySelectorAll<HTMLElement>('.stop .level-num')].map((c) => c.getBoundingClientRect())
+      return {
+        road: t.dataset.road,
+        clash: nb.some((a, i) => nb.some((b, j) => j > i && meet(a, b)) || coins.some((c, j) => j !== i && meet(a, c))),
+        minFont: Math.min(...names.map((n) => parseFloat(getComputedStyle(n).fontSize))),
+      }
+    })
+  })
+  const sideways = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)
+  expect(sideways).toBe(false)
+  for (const [i, a] of m.entries()) {
+    expect(a.road, `act ${i + 1}`).toBe(phone ? 'vertical' : 'rows')
+    if (!phone) continue
+    expect(a.clash, `act ${i + 1} names`).toBe(false)
+    expect(a.minFont, `act ${i + 1} font`).toBeGreaterThanOrEqual(13)
+  }
+})

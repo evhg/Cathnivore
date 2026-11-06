@@ -1591,7 +1591,16 @@ function layoutLanes(list: HTMLElement): void {
       Math.round(((y - box.top) / box.height) * 1000) / 10,
     ];
     const trail = svg.parentElement!;
-    const pts = [...trail.querySelectorAll<HTMLElement>(".stop .level-num")].map((el) => at(el.getBoundingClientRect()));
+    const vertical = matchMedia("(max-width: 599px)").matches;
+    trail.dataset.road = vertical ? "vertical" : "rows";
+    // Plan item 209: coins measured by layout offsets, not client rects: the stops pop in scaled from their centre,
+    // and on the vertical road a coin sits off its stop's centre, so a mid-animation read put the lane (and the
+    // act's gate) beside it.
+    const trailBox = trail.getBoundingClientRect();
+    const pts = [...trail.querySelectorAll<HTMLElement>(".stop .level-num")].map((el) => {
+      const b = boxIn(el, trail);
+      return at(new DOMRect(trailBox.left + b.left, trailBox.top + b.top, b.width, el.offsetHeight));
+    });
     if (!pts.length) continue;
     const door = trail.querySelector<HTMLElement>(".home-art");
     const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [pts[0]![0], -8];
@@ -1632,8 +1641,9 @@ function layoutLanes(list: HTMLElement): void {
       ];
     };
     const detours: Array<[number, [number, number]]> = [];
-    if (pts.length > 5) for (const q of round(nameEls[4], pts[4], 1)) detours.push([5, q]);
-    if (svg.dataset.exit && pts.length === 10) for (const q of round(nameEls[9], pts[9], -1)) detours.push([10, q]);
+    // On the vertical road the names sit beside their coins, off the road, so it needs no detours.
+    if (pts.length > 5 && !vertical) for (const q of round(nameEls[4], pts[4], 1)) detours.push([5, q]);
+    if (svg.dataset.exit && pts.length === 10 && !vertical) for (const q of round(nameEls[9], pts[9], -1)) detours.push([10, q]);
     // Plan item 153: the lane runs on out of the act through the field gate in the hedge at its foot.
     const li = svg.closest<HTMLElement>("li.act");
     if (svg.dataset.exit && li?.querySelector(".act-hedge")) {
@@ -2022,7 +2032,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const unlocked = isUnlocked(data, lv.id);
       const stars = data.stars[String(lv.id)] ?? 0;
       const item = document.createElement("li");
-      item.className = `stop c${col + 1} r${row + 1}`;
+      // Plan item 209: on an upright phone the act's road snakes down the screen, two stops a bend (CSS places
+      // them by `v`/`vc` under 600 px; wider screens keep the two rows of five).
+      const vrow = Math.floor(i / 2);
+      const vcol = vrow % 2 === 0 ? i % 2 : 1 - (i % 2);
+      item.className = `stop c${col + 1} r${row + 1} v${vrow + 1} vc${vcol + 1}`;
       const b = document.createElement("button");
       b.type = "button";
       const boss = lv.id % 10 === 0;
