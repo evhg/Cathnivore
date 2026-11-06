@@ -2371,7 +2371,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the default frame shows plots 44 px or more and vehicles 16 px or more; the fit button shows every plot; the depot plate meets no plot; `?2d` unchanged; draw calls within budget; shots P and D (D unchanged).
 - **Size:** 2
 
-## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her *(slice 1, 2026-11-06 19:32 lane A: the front door renders at the device ratio capped at 2 on a phone, the world at 0.85 of it; backing 780 at 390, cathode-front test. Left: the framing (menu off her umbrella hand). Handed back)*
+## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her *(lane A, in progress)* *(slice 1, 2026-11-06 19:32 lane A: the front door renders at the device ratio capped at 2 on a phone, the world at 0.85 of it; backing 780 at 390, cathode-front test. Left: the framing (menu off her umbrella hand). Handed back)*
 - **Why:** `plan1106f/ns-title-P`: Cath is soft (210-370 x 140-640), the menu panel (8-195 x 205-435) lies over her arm, and 470-600 is dead space.
 - **Build:** the phone title renders at the device's pixel ratio (capped at 2) with depth of field off; a portrait framing puts the menu in the space under her shoulder line.
 - **Accept:** canvas backing width 780 px or more at P; the menu's box misses Cath's projected box; `cathode-perf` within budget on the phone; cathode-front passes; shots P and D (D unchanged).
