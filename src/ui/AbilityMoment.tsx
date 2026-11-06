@@ -102,7 +102,7 @@ function MarketDay({ r }: { r: number }) {
 }
 
 function SecondOpinion({ r }: { r: number }) {
-  const R = r * 0.22
+  const R = r * 0.34
   return (
     <>
       <g className="ab-doubt">
@@ -113,10 +113,10 @@ function SecondOpinion({ r }: { r: number }) {
           </text>
         </g>
       </g>
-      <path className="ab-strike" d={`M${-R * 1.6} ${R * 1.1} L${R * 1.6} ${-R * 1.1}`} fill="none" stroke="var(--pasture-deep)" strokeWidth={4} strokeLinecap="round" pathLength={1} />
+      <path className="ab-strike" d={`M${-R * 1.6} ${R * 1.1} L${R * 1.6} ${-R * 1.1}`} fill="none" stroke="var(--pasture-deep)" strokeWidth={6} strokeLinecap="round" pathLength={1} />
       <g className="ab-check" transform={`translate(${R * 1.9} ${-R * 1.5})`}>
-        <circle r={8} fill="var(--paper-hi)" {...line} />
-        <path d="M-4 0 L-1 3 L4 -3" fill="none" stroke="var(--pasture-deep)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        <circle r={11} fill="var(--paper-hi)" {...line} />
+        <path d="M-5.5 0 L-1.5 4 L5.5 -4" fill="none" stroke="var(--pasture-deep)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
       </g>
     </>
   )
