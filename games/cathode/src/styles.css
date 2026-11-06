@@ -2816,3 +2816,75 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-bar-fill, .cp-tick { display: none; }
   .cp-attr-n { font-size: var(--fs-3); text-align: center; }
 }
+
+/* Plan item 210: on an upright phone the class sheet is a paper dossier clipped over the street: the four stats as
+   the desktop's ring dials in a row, the weapon on a felt strip, the skill trees as rubber stamps, Walk in as red tape. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-sheet[data-dossier] {
+    margin: 0 calc(var(--u) * -8);
+    padding: calc(var(--u) * 10) calc(var(--u) * 8) 0;
+    border-radius: calc(var(--u) * 3);
+    background: var(--card-paper);
+    color: var(--card-ink);
+    box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .6);
+  }
+  /* the paperclip */
+  .cp-sheet[data-dossier]::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--u) * -8);
+    right: calc(var(--u) * 26);
+    left: auto;
+    bottom: auto;
+    width: calc(var(--u) * 10);
+    height: calc(var(--u) * 26);
+    border: max(2px, calc(var(--u) * 2)) solid var(--ink-3); /* px-ok */
+    border-radius: calc(var(--u) * 6);
+  }
+  .cp-sheet[data-dossier] :is(.cp-label, .cp-attr dt, .cp-weapon-nums dt, .cp-tree-name, .cp-hold-how) { color: var(--card-ink-2); }
+  .cp-sheet[data-dossier] :is(.cp-attr-n, .cp-weapon-name, .cp-weapon-nums dd, .cp-hold-label) { color: var(--card-ink); }
+  .cp-sheet[data-dossier] .cp-attrs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: calc(var(--u) * 6);
+    margin: 0 0 calc(var(--u) * 6);
+  }
+  .cp-sheet[data-dossier] .stat-dial { grid-template-columns: none; grid-template-rows: auto auto; justify-items: center; row-gap: calc(var(--u) * 2); }
+  .cp-sheet[data-dossier] .stat-dial dt { grid-row: 2; font-size: var(--fs-1); }
+  .cp-sheet[data-dossier] .cp-attr-v { grid-row: 1; grid-template-columns: none; place-items: center; gap: 0; }
+  .cp-sheet[data-dossier] .cp-attr-v > * { grid-area: 1 / 1; }
+  .cp-sheet[data-dossier] .cp-bar {
+    width: calc(var(--u) * 46);
+    height: calc(var(--u) * 46);
+    border-radius: 50%;
+    background: conic-gradient(from 225deg, var(--stamp-red) 0 calc(var(--v, 0) * 270deg), var(--card-rule) calc(var(--v, 0) * 270deg) 270deg, transparent 270deg);
+    -webkit-mask: radial-gradient(closest-side, transparent 76%, var(--ink) 78% 99%, transparent);
+    mask: radial-gradient(closest-side, transparent 76%, var(--ink) 78% 99%, transparent);
+  }
+  .cp-sheet[data-dossier] :is(.cp-bar-fill, .cp-tick) { display: none; }
+  .cp-sheet[data-dossier] .cp-attr-n { font-size: var(--fs-2); text-align: center; }
+  /* the weapon on a strip of green felt */
+  .cp-sheet[data-dossier] .cp-weapon-art {
+    border-radius: calc(var(--u) * 3);
+    background:
+      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .06) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: felt nap */
+      linear-gradient(180deg, color-mix(in srgb, var(--green) 38%, var(--night)), color-mix(in srgb, var(--green) 24%, var(--night)));
+  }
+  /* the trees as rubber stamps */
+  .cp-sheet[data-dossier] .cp-tree-name {
+    display: inline-block;
+    padding: 0 calc(var(--u) * 4);
+    border: max(1.5px, calc(var(--u) * 1.5)) solid var(--stamp-red); /* px-ok */
+    border-radius: calc(var(--u) * 2);
+    color: var(--stamp-red);
+    rotate: -2deg;
+  }
+  /* Walk in, on red tape */
+  .cp-sheet[data-dossier] .cp-hold {
+    margin: 0 calc(var(--u) * -12);
+    background: var(--stamp-red);
+  }
+  .cp-sheet[data-dossier] .cp-hold :is(.cp-hold-label, .cp-hold-how) { color: var(--on-blood); }
+}
+@media (max-width: 700px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
+  .cp-sheet[data-dossier] .cp-tree-name { rotate: none; }
+}

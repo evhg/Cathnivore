@@ -94,11 +94,13 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   // ---- right: the stat sheet ----
   const sheet = el("aside", "cp-sheet", root);
   sheet.setAttribute("aria-label", "Starting file");
+  // Plan item 210: on an upright phone the sheet is a paper dossier clipped over the street (styles.css).
+  sheet.dataset.dossier = "";
   el("p", "cp-label", sheet, "Starts with");
   const attrs = el("dl", "cp-attrs", sheet);
   const bars = new Map<AttributeId, { row: HTMLElement; n: HTMLElement; v: number }>();
   for (const a of ATTRIBUTES) {
-    const row = el("div", "cp-attr", attrs);
+    const row = el("div", "cp-attr stat-dial", attrs);
     el("dt", "", row, ATTRIBUTE_LABEL[a]);
     const dd = el("dd", "cp-attr-v", row);
     const bar = el("span", "cp-bar", dd);

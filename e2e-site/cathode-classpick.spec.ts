@@ -69,7 +69,9 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
     ls.sort((a, b) => a - b)
     const bg = ls[Math.floor(ls.length * 0.95)]!
     const [r, g, b] = fill.match(/\d+/g)!.map(Number)
-    return (lum(r!, g!, b!) + 0.05) / (bg + 0.05)
+    // Either way round (plan item 210's phone dossier is dark ink on paper).
+    const t = lum(r!, g!, b!)
+    return (Math.max(t, bg) + 0.05) / (Math.min(t, bg) + 0.05)
   }, [png, ink] as const)
   expect(ratio).toBeGreaterThanOrEqual(4.5)
   await page.addStyleTag({ content: '.cp-attrs { visibility: visible !important; }' })
