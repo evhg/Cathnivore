@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 // Plan item 92: Hollowell has a face. At D, Graham Pell's bust sits at the end of the papers' row, opposite Cath,
-// at least 80 px, clear of the papers and inside the table head, his mood the mirror of hers.
+// at least 80 px (56 since plan item 190's ticker), clear of the papers and inside the table head, his mood the mirror of hers.
 test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop slice; the phone follows')
   for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
@@ -12,7 +12,8 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
     const rival = page.locator('[data-rival]')
     await expect(rival).toBeVisible()
     const r = (await rival.locator('.rival-frame').boundingBox())!
-    expect(r.height, `${width}x${height}`).toBeGreaterThanOrEqual(80)
+    // Plan item 190: the papers fold into a one-line ticker at these sizes, and his medallion steps down to its height.
+    expect(r.height, `${width}x${height}`).toBeGreaterThanOrEqual(56)
     // Plan item 118: at these sizes Cath stands at the table's left edge (her line over her head).
     const cath = (await page.locator('.table-cath').boundingBox())!
     const papers = (await page.locator('.plan-strip').boundingBox())!

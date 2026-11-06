@@ -3728,3 +3728,77 @@ html.no-animations .table-cath-line { animation: none; }
 @media (prefers-reduced-motion: reduce) { .plan-chip.plan-chip-enjoined { animation: none; } }
 /* A phone's narrow Expand card has no room for it: the tile's Expand badge going is the sign there. */
 @media (max-width: 599.98px) { .plan-chip.plan-chip-enjoined { display: none; } }
+
+/* Plan item 190: the board at the table's scale (1240x760 and up, where Cath stands at the table). Tomorrow's papers
+   fold from three-line memos into one ticker row along the board's top edge (art, move and effect on one line, the
+   target under it, the conveyor's chevrons and stage at the right), Pell's medallion steps down to the ticker's
+   height, so the cloth takes the height back and the map grows; Cath stands full length at its left edge. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .table-head.with-table-cath { align-items: center; }
+  .table-head.with-table-cath .plan-strip {
+    gap: var(--sp-2);
+    padding: 2px 3px 3px;
+  }
+  .table-head.with-table-cath .plan-strip-item > button:first-child {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art head eff date"
+      "tgt tgt tgt tgt";
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 1px;
+    min-height: 0;
+    padding: 6px 36px 7px 8px;
+  }
+  .table-head.with-table-cath .plan-strip-item svg.plan-art {
+    grid-area: art;
+    float: none;
+    width: 26px;
+    height: 26px;
+    margin: 0;
+  }
+  .table-head.with-table-cath .plan-strip-headline { grid-area: head; letter-spacing: .06em; }
+  .table-head.with-table-cath .plan-strip-dateline { gap: 3px; }
+  .table-head.with-table-cath .plan-strip-dial i { width: 7px; height: 7px; }
+  .table-head.with-table-cath .plan-strip-effect {
+    grid-area: eff;
+    margin: 0;
+    overflow-wrap: normal;
+  }
+  .table-head.with-table-cath .plan-strip-dateline {
+    grid-area: date;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .table-head.with-table-cath .plan-strip[data-corp] .plan-strip-plate,
+  .table-head.with-table-cath .plan-strip-card-meta svg { display: none; }
+  .table-head.with-table-cath .plan-strip-card-meta { margin-left: 4px; }
+  /* the stage as its numeral beside the chevrons (the word is in the card's accessible name) */
+  .table-head.with-table-cath .plan-strip-stage-word { display: none; }
+  .table-head.with-table-cath .plan-strip-target {
+    grid-area: tgt;
+    margin: 0;
+  }
+  .table-head.with-table-cath .plan-strip-item > .tooltip-trigger { bottom: auto; top: 50%; translate: 0 -50%; }
+
+  .table-head.with-table-cath .rival-frame { width: 58px; height: 58px; }
+  .table-head.with-table-cath .rival-frame svg { top: -18px; width: 96px; }
+  .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 7px 2px 5px; }
+
+  /* Full length: head to boots, 330 px at 1440x900 (300 at 1280x800). */
+  .table-cath { width: 150px; }
+  .table-cath-figure { height: clamp(300px, 37vh, 340px); }
+  .table-cath-figure .cath-art,
+  .table-cath-figure svg { margin-left: -6px; }
+  /* Her line takes the cloth's top-left corner, so Bea's drawing lies on the table by her boots instead. */
+  .table-cath-line { margin-right: -24px; }
+  .beas-drawing {
+    top: auto;
+    bottom: var(--sp-3);
+    left: 166px;
+    width: 84px;
+    rotate: 7deg;
+  }
+}

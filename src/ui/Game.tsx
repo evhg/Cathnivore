@@ -2678,7 +2678,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   <span className="plan-strip-plate">Hollowell</span>
                   {card && (
                     <span className="plan-strip-card-meta">
-                      <span className="plan-strip-stage">Stage {romanStage(card.stage)}</span>
+                      <span className="plan-strip-stage"><span className="plan-strip-stage-word">Stage </span>{romanStage(card.stage)}</span>
                       {pressureIconTypes(card).map((type) => (
                         <RegionTypeIcon key={type} type={type} size={13} />
                       ))}
@@ -2743,6 +2743,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <span className="event-rule-short" aria-hidden="true">{eventRule(state.config.marketEvent, true)}</span>
           </p>
         )}
+        {/* Plan item 190: full length now, head to boots, since the papers' ticker gave the table its height. */}
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
         {/* Plan item 171: on an upright phone she speaks from the dock above the hand instead (CathDock), off the board. */}
@@ -2752,7 +2753,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               {cathReaction.line}
             </p>
             <span className="table-cath-figure" aria-hidden="true">
-              <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
+              <CathArt framing="full" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>
         )}

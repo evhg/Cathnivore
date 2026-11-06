@@ -2156,7 +2156,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `e2e/ability-moment.spec.ts` (P and D) uses each ability once: a `[data-moment="ability-<id>"]` node appears within 300 ms over the target hex's box and is gone by 1.4 s; no transform under reduced motion; shots mid-moment, light and dark.
 - **Size:** 2
 
-## 190. [ ] Cathnivore desktop: the board at the table's scale *(lane A, in progress)*
+## 190. [ ] Cathnivore desktop: the board at the table's scale *(lane A, in progress)* *(slice 1, 2026-11-06 06:15 lane A: at the table sizes (1240x760+) tomorrow's papers fold into one ticker row (art, move, effect and the chevrons with the stage numeral on a line, the targets under it; 62 px with Pell's medallion stepped down to 58 px, was 106), so the cloth grows 537 -> 581 px at 1440x900 and the hexes 529 -> 571 px wide (53.5% -> 58% of the cloth, 94% of its height); Cath stands full length (333 px at 1440, 300 at 1280) with Bea's drawing at her boots. `e2e/board-scale.spec.ts`; rival.spec's medallion 80 -> 56 px; shots `e2e/screenshots/i190`. Open: the rail's foot ledger)*
 - **Why:** `plan1106b/cath-game-D`: the hexes span about 530 px of a 985 px frame (575-1110); the cloth around them is empty, Cath is squeezed into 355-470 x 490-735, and the left rail has a dead band (16-332 x 655-815). (Item 172 found the panel height-bound: this item changes the table's layout, not the map's fit.)
 - **Build:**
   - Give the board the table: Hollowell's plan as a strip along the board's top edge instead of a column, so the map grows to the frame's height and width.
