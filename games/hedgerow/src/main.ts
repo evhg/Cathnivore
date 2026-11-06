@@ -3964,6 +3964,8 @@ function syncCathDock(g: Game, text: string): void {
     el.dataset.expression = face;
     el.hidden = false;
     syncDockFold();
+    // Plan item 208: the 3D Cath on the field points as her docked line arrives, as she does for a field bubble.
+    (renderer as { cathPoints?: () => void } | null)?.cathPoints?.();
     if (!REDUCED) {
       el.classList.remove("slide");
       void el.offsetWidth;
@@ -4052,6 +4054,8 @@ function syncCathSay(g: Game, now: number): void {
     void el.offsetWidth;
     el.classList.add("pop");
   }
+  // Plan item 208: a new line, and the 3D Cath points out over the field as she gives it.
+  if (fresh) (renderer as { cathPoints?: () => void } | null)?.cathPoints?.();
   sayShown = { text, box: spot, cath };
 }
 

@@ -234,9 +234,16 @@ export class Renderer3D {
   private heroCheer = 9;
   /** Seconds since a tower went in (she stoops to plant it), and the tower count she last saw. */
   private heroPlant = 9;
+  /** Plan item 208: seconds since she last gave a hint (she points out over the field while it is fresh). */
+  private heroPoint = 9;
   private towersSeen = -1;
   /** What her body says right now (read by the sandbox e2e). */
-  heroMood: "rest" | "cheer" | "worried" | "plant" = "rest";
+  heroMood: "rest" | "cheer" | "worried" | "plant" | "point" = "rest";
+
+  /** Plan item 208: she has just given a hint: she points out over the field with her free hand. */
+  cathPoints(): void {
+    this.heroPoint = 0;
+  }
   private heroWorry = 9;
   private raycaster = new THREE.Raycaster();
   private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -1735,6 +1742,7 @@ export class Renderer3D {
     this.heroCheer += dt;
     this.heroWorry += dt;
     this.heroPlant += dt;
+    this.heroPoint += dt;
     if (game.towers.length > this.towersSeen && this.towersSeen >= 0) this.heroPlant = 0;
     this.towersSeen = game.towers.length;
     if (h.down > 0) {
@@ -1813,7 +1821,11 @@ export class Renderer3D {
     // ...and stoops to plant a new tower: a lean forward, her free hand down to the soil.
     const plant = cheer > 0 || worry > 0 ? 0 : react(this.heroPlant);
     if (plant > 0) pose = mix(pose, [pose[0], pose[1], pose[2], 1.1, 0.5, 0.42, 0.1], plant);
-    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : "rest";
+    // Plan item 208: a fresh hint: her free arm rises out over the field, the hand open, for about two seconds.
+    const pointAge = this.heroPoint;
+    const point = cheer > 0 || worry > 0 || plant > 0 ? 0 : pointAge < 0.25 ? ease(pointAge / 0.25) : pointAge < 1.9 ? 1 : pointAge < 2.3 ? 1 - ease((pointAge - 1.9) / 0.4) : 0;
+    if (point > 0) pose = mix(pose, [pose[0], pose[1], pose[2], -2.05, 0.1, -0.04, -0.6], point);
+    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : point > 0.5 ? "point" : "rest";
     // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
     // throwing arm (on her far side) round where it can be seen.
     const p = this.heroPie;
