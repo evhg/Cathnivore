@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
+import { ArtSceneContext } from './artScene'
 
 // Plan item 83: each action card carries its own small painted picture (a 40x40 tile: a sky-and-ground
 // wash and the subject in flat colour with a soft ink line), in place of the 24px glyph from
@@ -18,6 +19,21 @@ const LEAF = 'var(--art-leaf, #6E9A44)'
 const LINE = { stroke: INK, strokeWidth: 1.2, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
 
 function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; kind: string; ground?: string; children: ReactNode }) {
+  // Plan item 218: in the desktop hand the tile opens out into a wide window: the same subject, centred, standing
+  // in its land (a sky wash, a far ridge and the near ground running the window's width) inside a painted frame.
+  if (useContext(ArtSceneContext)) {
+    return (
+      <svg viewBox="-12 4 64 36" preserveAspectRatio="xMidYMid meet" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
+        <rect x="-11.5" y="4.5" width="63" height="35" rx="4" fill={CREAM} />
+        <rect x="-11.5" y="4.5" width="63" height="17" rx="4" fill={SEA} opacity={0.1} />
+        <path d="M-12 25 Q -6 19 4 23 T 24 21 T 44 22 T 52 20 L52 40 L-12 40 Z" fill={ground} opacity={0.16} />
+        <path d="M-12 30 Q -4 26 8 28.5 T 30 27 T 52 28 L52 40 L-12 40 Z" fill={ground} opacity={0.3} />
+        <circle cx="43" cy="10.5" r="3.2" fill={WHEAT} opacity={0.55} />
+        {children}
+        <rect x="-11.5" y="4.5" width="63" height="35" rx="4" fill="none" stroke={INK} strokeOpacity={0.35} strokeWidth={1} />
+      </svg>
+    )
+  }
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" className="action-art" data-art={kind}>
       <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="7" fill={CREAM} stroke={INK} strokeOpacity={0.35} strokeWidth={1} />

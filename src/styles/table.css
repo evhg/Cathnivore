@@ -3103,6 +3103,53 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item.action-family > .tooltip-trigger { left: auto; right: 6px; top: 6px; }
   .game-layout .table-hand[data-rows] .action-family { padding: 6px 8px; gap: 3px; }
   .game-layout .table-hand[data-rows] .action-family .action-family-options { flex-wrap: nowrap; }
+  /* Plan item 218: a card in the hand is a painted card: a wide picture window across its top (the subject in its
+     land, ActionArt's scene), the name under it, the price at its foot. The window runs under the next card's
+     edge, but the subject sits in its middle, clear of it; the 'i' rides the window's top-left corner. */
+  .game-layout .table-hand:not([data-rows]) .action-item { height: 148px; }
+  .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
+  .game-layout .table-hand:not([data-rows]) .action-item .action-card-draggable { padding: 6px 6px 6px; justify-content: flex-start; }
+  .game-layout .table-hand:not([data-rows]) .action-item .action-cost { margin-top: auto; }
+  .game-layout .table-hand:not([data-rows]) .action-item .action-label { align-self: stretch; gap: 4px; padding-left: 2px; }
+  .game-layout .table-hand .action-item .action-label > svg.action-art[data-scene] {
+    width: calc(100% + max(0px, calc(var(--lap, 0px) - var(--sp-1))) - 2px);
+    height: 58px;
+    margin: 0 0 0 -2px;
+    filter: drop-shadow(0 1px 0 var(--ink-a15));
+  }
+  .game-layout .table-hand:not([data-rows]) .action-item > .tooltip-trigger { left: 10px; top: 10px; scale: .85; }
+  .game-layout .table-hand .action-item[data-dense] .action-label > svg.action-art[data-scene] { height: 56px; }
+  .game-layout .table-hand .action-family-name > svg.action-art[data-scene] { width: 44px; height: 24px; }
+  /* Two rows: landscape cards, the window down the card's left side, the name and price beside it. */
+  .game-layout .table-hand[data-rows] .action-item { width: 214px; height: 90px; }
+  .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 254px; }
+  .game-layout .table-hand[data-rows] .action-item > button:first-child,
+  .game-layout .table-hand[data-rows] .action-item .action-card-draggable { position: relative; padding-left: 112px; }
+  .game-layout .table-hand[data-rows] .action-item .action-label > svg.action-art[data-scene] {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    width: 100px;
+    height: calc(100% - 12px);
+    margin: 0;
+  }
+  .game-layout .table-hand[data-rows] .action-item .action-label,
+  .game-layout .table-hand[data-rows] .action-item .action-label:has(.action-pick) {
+    flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: 0;
+    font-size: var(--fs-label); line-height: 1.1;
+  }
+  .game-layout .table-hand[data-rows] .action-item .action-pick { flex-basis: auto; padding-left: 0; }
+  .game-layout .table-hand[data-rows] .action-item > button:first-child,
+  .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding-right: 6px; }
+  .game-layout .table-hand[data-rows] .action-item > .tooltip-trigger { left: 10px; right: auto; top: 10px; scale: .85; }
+  /* Under 1400 px a narrower window keeps a nine-card turn to two rows (fan() allows a fifth's overlap). */
+  @media (max-width: 1399.98px) {
+    .game-layout .table-hand[data-rows] .action-item { width: 186px; }
+    .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 220px; }
+    .game-layout .table-hand[data-rows] .action-item > button:first-child,
+    .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding-left: 90px; }
+    .game-layout .table-hand[data-rows] .action-item .action-label > svg.action-art[data-scene] { width: 80px; }
+  }
 }
 @media (min-width: 1240px) and (min-height: 760px) {
   /* The cards that can't be played yet: a face-down pile at the fan's end. */

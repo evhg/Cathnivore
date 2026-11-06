@@ -19,8 +19,15 @@ test('desktop hand: no card name runs off its face or lies under another card', 
     cards.forEach((c, i) => {
       const face = c.querySelector<HTMLElement>(':scope > button:first-child, .action-card-draggable')
       if (face && face.scrollHeight > face.clientHeight + 1) out.push(`${c.textContent} runs off its face`)
-      const name = c.querySelector('.action-label')?.getBoundingClientRect()
-      if (!name) return
+      // Item 218: the label opens with the picture window, which may run under the next card's edge (its subject sits
+      // in its middle); the name is the text after it.
+      const label = c.querySelector('.action-label')
+      if (!label) return
+      const range = document.createRange()
+      range.selectNodeContents(label)
+      const art = label.querySelector(':scope > svg')
+      if (art) range.setStartAfter(art)
+      const name = range.getBoundingClientRect()
       // Later cards paint over earlier ones (a hover lifts one; the pointer is parked off the hand).
       for (const o of cards.slice(i + 1)) {
         const r = o.getBoundingClientRect()

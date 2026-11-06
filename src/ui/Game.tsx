@@ -31,6 +31,7 @@ import type { ImprovementCard } from '../content/improvements'
 import { PlanArt } from './icons/HollowellArt'
 import { splitTarget } from './planTarget'
 import { usePlanArming } from './usePlanArming'
+import { ArtSceneContext } from './icons/artScene'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
@@ -637,6 +638,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const widen = () => {
       for (const c of cards) { delete c.dataset.wide; delete c.dataset.dense; c.style.setProperty('--lap', '0px') }
       for (const c of cards) if (overflows(c)) c.dataset.wide = ''
+      // Item 218: a name that runs three lines under the picture window can still spill from a wide card; set it tighter.
+      for (const c of cards) if (c.dataset.wide !== undefined && overflows(c)) c.dataset.dense = ''
     }
     delete hand.dataset.rows
     widen()
@@ -677,7 +680,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         x += widths[i]! + row.step
       }
     })
-    // A name that no longer fits its face with the strip kept takes the strip back (it's still read whole).
+    // A name that no longer fits its face with the strip kept is set tighter first (item 218: the picture window
+    // leaves less height); only then does it take the strip back (it's still read whole).
+    for (const c of cards) if (overflows(c)) c.dataset.dense = ''
     for (const c of cards) if (overflows(c)) c.style.setProperty('--lap', '0px')
     }
     fan()
@@ -2954,7 +2959,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             if (card instanceof HTMLElement && !(card as HTMLButtonElement).disabled) lastCardRef.current = { el: card, at: performance.now() }
           }}
         >
-          {playableCards}
+          <ArtSceneContext.Provider value={true}>{playableCards}</ArtSceneContext.Provider>
         </section>
       )}
       {/* Plan item 190: while the hand steps away (Hollowell's turn, a region pick) its place stays, so the board keeps
