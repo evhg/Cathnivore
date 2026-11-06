@@ -3682,6 +3682,10 @@ img.act-scene {
   }
   #screen-select .levels {
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    /* Plan item 211: the map fades out above the tab bar, so the next act's banner isn't sliced by it (the fade
+       starts about where the padding does, so the last act stays whole at the bottom of the scroll). */
+    -webkit-mask-image: linear-gradient(180deg, black calc(100% - 96px - env(safe-area-inset-bottom)), transparent calc(100% - 70px - env(safe-area-inset-bottom)));
+    mask-image: linear-gradient(180deg, black calc(100% - 96px - env(safe-area-inset-bottom)), transparent calc(100% - 70px - env(safe-area-inset-bottom)));
   }
 }
 

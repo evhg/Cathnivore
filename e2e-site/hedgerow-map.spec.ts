@@ -423,3 +423,15 @@ test('plan item 209: the phone road runs down the screen, names beside their sto
     expect(a.minFont, `act ${i + 1} font`).toBeGreaterThanOrEqual(13)
   }
 })
+
+// Plan item 211: on an upright phone the map fades out above the tab bar, so the next act's banner isn't sliced.
+test('the phone map fades out above the tab bar', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 600, 'upright phone only')
+  await seed(page, 20)
+  const mask = await page.locator('#levels').evaluate((e) => getComputedStyle(e).maskImage || getComputedStyle(e).webkitMaskImage)
+  expect(mask).toContain('linear-gradient')
+  const nav = (await page.locator('#screen-select .top-tools').boundingBox())!
+  const levels = (await page.locator('#levels').boundingBox())!
+  // The fade ends at or above the tab bar's top edge.
+  expect(levels.y + levels.height - 70).toBeLessThanOrEqual(nav.y + 2)
+})
