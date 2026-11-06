@@ -663,7 +663,8 @@ export function buildGround(level: Level): Ground {
     if (!hasWater) return false;
     const c = Math.floor(x);
     const r = Math.floor(y);
-    const coast = act === 2 ? x < -2.5 : act === 3 ? x > cols + 2.5 : act === 5 ? y > rows + 2.5 : false;
+    // Plan item 198: Saltmarsh's sea comes in close, behind a band of tidal flats (it sat 2.5 cells out, a thin strip).
+    const coast = act === 2 ? x < -1.7 : act === 3 ? x > cols + 2.5 : act === 5 ? y > rows + 2.5 : false;
     return wet.has(`${c},${r}`) || (coast && !lane.has(`${c},${r}`) && laneDistance(level, x, y) > 1.2);
   };
   /** Near enough the water's edge that the sloping bank would leave a plant floating. */
@@ -969,6 +970,55 @@ export function buildGround(level: Level): Ground {
       group.add(m);
     }
   group.userData.dressing = { plots: plotCount, dressed: dressedCount, laneEdges, hedgedEdges, meshes: 4 };
+
+  // Plan item 198: each act's biome in 3D, from the 2D field's set. Saltmarsh first: tidal flats between the field
+  // and the sea, reed beds on them, egrets wading, and boats moored out on the water. Four instanced meshes (the
+  // boats are the existing models). Other acts keep their scenery for now.
+  let biome = "farm";
+  if (act === 2) {
+    biome = "saltmarsh";
+    const flats: Inst[] = [];
+    const reeds: Inst[] = [];
+    const egretBody: Inst[] = [];
+    const egretNeck: Inst[] = [];
+    const mud = ["#6e6146", "#7a6b4d", "#5f553f"].map((c) => new THREE.Color(c));
+    const reedCols = ["#9a9a52", "#b5a35e", "#7f8a44"].map((c) => new THREE.Color(c));
+    const white = new THREE.Color("#f6f4ee");
+    for (let z = -2.5; z <= rows + 2.5; z += 0.34)
+      for (let x = -1.65; x <= -0.45; x += 0.34) {
+        const jx = x + (deco() - 0.5) * 0.2;
+        const jz = z + (deco() - 0.5) * 0.2;
+        if (laneDistance(level, jx, jz) < 0.9) continue;
+        flats.push({ x: jx, y: heightAt(jx, jz) - 0.015, z: jz, ry: deco() * 6.3, s: 0.3 + deco() * 0.1, sy: 0.05, color: mud[Math.floor(deco() * mud.length)]! });
+        if (deco() < 0.4)
+          for (let k = 0; k < 8; k++)
+            reeds.push({ x: jx + (deco() - 0.5) * 0.22, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.22, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
+      }
+    for (let i = 0; i < 5; i++) {
+      const x = -1.4 + deco() * 0.8;
+      const z = deco() * rows;
+      if (laneDistance(level, x, z) < 1.1) continue;
+      const ry = deco() * 6.3;
+      egretBody.push({ x, y: heightAt(x, z) + 0.12, z, ry, s: 0.07, sy: 0.75, color: white });
+      egretNeck.push({ x: x + Math.cos(ry) * 0.05, y: heightAt(x, z) + 0.16, z: z - Math.sin(ry) * 0.05, ry, s: 1, sy: 1, color: white });
+    }
+    for (const m of [
+      instanced(new THREE.SphereGeometry(1, 10, 5), new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.08 }), flats),
+      instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
+      instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretBody, true),
+      instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),
+    ])
+      if (m) group.add(m);
+    // Boats moored off the flats, along the shore.
+    for (let i = 0; i < 4; i++) {
+      const b = buildBoat(rand);
+      const z = -0.5 + ((i + 0.5) / 4) * (rows + 1);
+      b.position.set(-2.6 - rand() * 1.2, -0.06, z);
+      b.rotation.y = Math.PI / 2 + (rand() - 0.5) * 0.6;
+      group.add(b);
+    }
+  }
+  group.userData.biome = biome;
 
   // Scenery out beyond the field.
   const leaves = (SCENERY_LEAVES[act] ?? [light.grass[1], "#4f7f37", "#5e8f41", "#6ea04c"]).slice();

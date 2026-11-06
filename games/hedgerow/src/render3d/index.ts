@@ -2532,6 +2532,11 @@ export class Renderer3D {
   }
 
   /** Plan item 157: the depots by the gates as boxes on the canvas (CSS px), and their world footprint (x, z). */
+  /** Plan item 198: the act's biome in 3D ('saltmarsh', or 'farm' where none is built yet). */
+  get biome(): string {
+    return (this.ground?.group.userData.biome as string | undefined) ?? "farm";
+  }
+
   /** Plan item 185: the field's standing dressing (plots dressed, lane edges hedged), for the e2e. */
   dressing(): { plots: number; dressed: number; laneEdges: number; hedgedEdges: number; meshes: number } | null {
     return (this.ground?.group.userData.dressing as ReturnType<Renderer3D["dressing"]>) ?? null;
