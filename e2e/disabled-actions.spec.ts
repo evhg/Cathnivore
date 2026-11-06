@@ -1,5 +1,12 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { fillSeed } from './setupSeed'
+
+// Plan item 183: on a desktop the Not-yet shelf shows one row and folds the rest behind its key; open it so
+// every disabled placeholder is on the table.
+async function openShelf(page: Page) {
+  const fold = page.locator('.shelf-fold[aria-expanded="false"]')
+  if (await fold.isVisible()) await fold.click()
+}
 
 // ROADMAP 9 "clear disabled and why-not states": Sell's missing counts (Produce too low for 2 or 3) get
 // a disabled placeholder button with a reason, right where the real button would be, instead of the
@@ -59,6 +66,7 @@ test('Invest shows a disabled, explained placeholder for market cards the player
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
+  await openShelf(page)
   // The visible label is "Buy <card>" under the INVEST head; the button's accessible name keeps "Invest: buy".
   const investItems = page.locator('.action-item', { has: page.getByRole('button', { name: /^Invest/ }) })
   await expect(investItems).toHaveCount(4)
@@ -112,6 +120,7 @@ test('a targeting:none Scheme shows a disabled, explained placeholder when unaff
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
+  await openShelf(page)
   const seasonalBonus = page.locator('.action-item', { hasText: 'Seasonal Bonus' })
   await expect(seasonalBonus.getByRole('button', { name: /^Scheme/ })).toBeDisabled()
   await expect(seasonalBonus.locator('.action-why-not')).toHaveText('Need 2 more Goodwill')
@@ -141,6 +150,7 @@ test('an optional-targeting Scheme shows a disabled, explained placeholder when 
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
+  await openShelf(page)
   const leakedMemo = page.locator('.action-item', { hasText: 'Leaked Memo' })
   await expect(leakedMemo.getByRole('button', { name: /^Scheme/ })).toBeDisabled()
   await expect(leakedMemo.locator('.action-why-not')).toHaveText('Need 2 more Goodwill')
@@ -169,6 +179,7 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
   await page.getByRole('button', { name: /^Sell 3 Produce/ }).click()
   await page.locator('.actions').waitFor()
 
+  await openShelf(page)
   const openStall = page.locator('.action-item', { hasText: 'Open Stall' })
   await expect(openStall.getByRole('button', { name: /^Open Stall/ })).toBeDisabled()
   await expect(openStall.locator('.action-why-not')).toHaveText('Need 1 more Produce')
@@ -203,6 +214,7 @@ test('Rebut and Supply-Buyout show a disabled, explained placeholder when there 
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
+  await openShelf(page)
   const supplyBuyout = page.locator('.action-item', { hasText: 'Supply: remove Buyout' })
   const rebut1 = page.locator('.action-item', { hasText: 'Rebut: remove 1 Doubt' })
   const rebut2 = page.locator('.action-item', { hasText: 'Rebut: remove 2 Doubt' })
@@ -239,6 +251,7 @@ test('Rebut and Supply-Buyout show a disabled, explained placeholder when there 
   await realSupply1.click()
   await page.locator('.actions').waitFor()
 
+  await openShelf(page)
   const disabledSupply1 = page.locator('.action-item', { hasText: 'Supply: remove 1 Outlet' })
   const disabledSupply2 = page.locator('.action-item', { hasText: 'Supply: remove 2 Outlets' })
   await expect(disabledSupply1.getByRole('button', { name: /^Supply: remove 1 Outlet/ })).toBeDisabled()
@@ -283,6 +296,7 @@ test('Open Stall shows a disabled, explained placeholder when every region is fu
   await actions.getByRole('button', { name: /^Open Stall in Oakvale/ }).click()
   await page.locator('.actions').waitFor()
 
+  await openShelf(page)
   const openStall = page.locator('.action-item', { hasText: 'Open Stall' })
   await expect(openStall.getByRole('button', { name: /^Open Stall/ })).toBeDisabled()
   await expect(openStall.locator('.action-why-not')).toHaveText('No region open to place a Stall')

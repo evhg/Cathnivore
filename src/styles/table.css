@@ -3042,6 +3042,8 @@ html.no-animations .table-cath-line { animation: none; }
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
+    /* Item 217: clear of the next card's edge (--lap, set by the fan), with a little air. */
+    padding-right: max(0px, calc(var(--lap, 0px) - var(--sp-1)));
     font-size: var(--fs-caption);
     line-height: 1.1;
   }

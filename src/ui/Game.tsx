@@ -635,7 +635,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       return !!face && face.scrollHeight > face.clientHeight + 1
     }
     const widen = () => {
-      for (const c of cards) { delete c.dataset.wide; delete c.dataset.dense }
+      for (const c of cards) { delete c.dataset.wide; delete c.dataset.dense; c.style.setProperty('--lap', '0px') }
       for (const c of cards) if (overflows(c)) c.dataset.wide = ''
     }
     delete hand.dataset.rows
@@ -672,9 +672,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         card.style.setProperty('--rise', rows.length > 1 ? '0px' : `${Math.round(-(1 - off * off) * 8)}px`)
         card.style.setProperty('--x', `${x.toFixed(1)}px`)
         card.style.setProperty('--y', `${y}px`)
+        // Item 217: the name keeps clear of the strip the next card covers (a card's face never runs under it).
+        card.style.setProperty('--lap', i < row.to - 1 ? `${Math.max(0, Math.round(-row.step))}px` : '0px')
         x += widths[i]! + row.step
       }
     })
+    // A name that no longer fits its face with the strip kept takes the strip back (it's still read whole).
+    for (const c of cards) if (overflows(c)) c.style.setProperty('--lap', '0px')
     }
     fan()
     window.addEventListener('resize', fan)
