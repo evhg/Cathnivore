@@ -2058,7 +2058,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fixed point has a check in a critique177 spec (P and D) or is logged as not reproduced; shots before and after.
 - **Size:** 1
 
-## 178. [ ] Runnel: the water reaches Bea's garden *(lane B, in progress)*
+## 178. [x] Runnel: the water reaches Bea's garden *(done 2026-11-06, lane B: `#runnel-ditch` in the farm layer from the field nearest the garden (its nearest corner) to the garden's beds, routed clear of every tile and of Cath (straight, else an L either way); on a solve the water runs it in 900 ms and `.bea-garden[data-garden]` goes dry -> watered as it arrives, with item 68's run-out and the bed's pop; a cross-fade under reduced motion. At D the garden often sits beside the board's last field, so the ditch is short there. `e2e-site/runnel-ditch.spec.ts`; shots `t178`)*
 - **Why:** `plan1105g/runnel-D` (1155-1390 x 765-835) and `runnel-P` (220-380 x 705-745): Bea's garden is a fence far from the tiles, and the chain ends mid-field (1010-1220 x 500-730), so a solve pays off nowhere in the valley (VISION 4).
 - **Build:**
   - A dry ditch drawn from the board's outlet (its last field's edge) to the garden, routed round the tiles, Cath and the keeps; on a solve the water runs it in about 900 ms.
