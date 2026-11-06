@@ -2310,7 +2310,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-signboard]`; icon targets 44 px or more; at 390x844 her line's box meets no tile; the dock's text 14 px or more; runnel-one-cath, -lesson-close and -almanac pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 208. [ ] Hedgerow 3D: Cath's body to the character bible *(lane A, in progress)*
+## 208. [ ] Hedgerow 3D: Cath's body to the character bible *(lane A, in progress)* *(slices 1-2, 2026-11-06 15:51 lane A: about five heads tall (head 24% of her height, `hedgerow-cath3d-figure.test.ts`), long legs, a fitted jacket with the collar up, blouse, pearls; she points as she gives a hint (`data-cath-pose="point"`). Left: the hair's layered locks and shine (her front locks still hang like two bunches), a draw-call check, shots P and D in light of the plan's checks)*
 - **Why:** `plan1106e/hedge-l21-3d-D` (160-290 x 490-680): item 162 made her head readable, but her body is a chibi (the head about a third of her height), the hair a black mass, no collar-up olive jacket or pearls; on `hedge-l21-3d-P` (20-70 x 485-545) she reads only as hair.
 - **Build:**
   - Proportions towards 1:5 head to body: a fitted olive jacket, collar up, cream blouse, dark trousers, from the `shared/cath/` palette; hair as layered locks with a shine band.
