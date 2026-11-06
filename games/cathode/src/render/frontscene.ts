@@ -200,8 +200,20 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // lens's side) lifts the black trench off the street; a second, softer one at face height; a cool cyan rim from
     // behind her right parts her from the dark.
     if (o.keyart) {
-      removers.push(world.light(toWorld(0.9, 1.2, 1.6), new THREE.Color(1.0, 0.72, 0.5), 20, 3.6));
-      removers.push(world.light(toWorld(0.7, 1.75, 1.2), new THREE.Color(1.0, 0.82, 0.7), 6, 2.4));
+      // Plan item 221: the key at 6.5 (20 polished the trench to chrome) and a small face key, so she reads as the
+      // mum in the rain; the coat's lacquer is taken down to wool for the poster only.
+      removers.push(world.light(toWorld(0.9, 1.2, 1.6), new THREE.Color(1.0, 0.72, 0.5), 6.5, 3.2));
+      removers.push(world.light(toWorld(0.45, 1.68, 0.75), new THREE.Color(1.0, 0.82, 0.7), 3, 1.6));
+      cath.group.traverse((obj) => {
+        const mats = (obj as THREE.Mesh).material;
+        for (const m of Array.isArray(mats) ? mats : mats ? [mats] : []) {
+          const pm = m as THREE.MeshPhysicalMaterial;
+          if (!pm.isMeshPhysicalMaterial || pm.clearcoat < 0.5) continue;
+          pm.clearcoat = 0.12;
+          pm.clearcoatRoughness = 0.5;
+          pm.roughness = Math.max(pm.roughness, 0.85);
+        }
+      });
       removers.push(world.light(toWorld(-0.9, 1.6, -0.9), new THREE.Color(0.2, 0.8, 1.0), 12, 3.2));
       world.renderer.domElement.dataset.keyart = "1";
     }
