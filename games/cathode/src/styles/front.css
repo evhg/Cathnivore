@@ -1291,8 +1291,10 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug .mug-name { min-height: 0; }
   .the-list:has(.mug:is(:hover, :focus)) { z-index: var(--z-pop); }
   /* Plan item 194: Cath's hand a step up the scale (at --fs-1 the italic serif read as 11 px). */
+  /* Plan item 200: inset from the print's edge (the italic's overhang met the paper's edge at 4 px). */
   .rumour {
     display: block;
+    padding-inline: calc(var(--u) * 1.5) calc(var(--u) * 3);
     font: italic 500 var(--fs-2) / 1.05 var(--font-voice);
     color: var(--card-ink);
   }

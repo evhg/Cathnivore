@@ -28,13 +28,20 @@ test('The List is a living case wall', async ({ page, hasTouch }) => {
   const prints = await mugs.evaluateAll((els) =>
     els.map((e) => {
       const r = e.querySelector<HTMLElement>('.rumour')
-      return { district: e.getAttribute('data-district'), rumour: r?.textContent?.trim() ?? '', size: r ? parseFloat(getComputedStyle(r).fontSize) : 0, shown: !!r && r.getBoundingClientRect().height > 0 }
+      // Plan item 200: the hand's ink stays 5 px or more inside the print (it met the paper's edge at 4 px).
+      const m = e.getBoundingClientRect()
+      const range = document.createRange()
+      if (r) range.selectNodeContents(r)
+      const lines = r ? [...range.getClientRects()] : []
+      const inset = lines.length ? Math.min(...lines.map((l) => Math.min(l.left - m.left, m.right - l.right))) : 0
+      return { district: e.getAttribute('data-district'), rumour: r?.textContent?.trim() ?? '', size: r ? parseFloat(getComputedStyle(r).fontSize) : 0, shown: !!r && r.getBoundingClientRect().height > 0, inset }
     }),
   )
   for (const p of prints) {
     expect(p.rumour.length, JSON.stringify(p)).toBeGreaterThan(0)
     expect(p.size).toBeGreaterThanOrEqual(12)
     expect(p.shown).toBe(true)
+    expect(p.inset, JSON.stringify(p)).toBeGreaterThanOrEqual(5)
   }
   expect(new Set(prints.map((p) => p.district)).size).toBe(5)
   await expect(page.locator('#the-list-wall .list-string path')).toHaveCount(4)
