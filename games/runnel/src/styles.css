@@ -4406,3 +4406,33 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   font-size: var(--fs-small);
   color: var(--ink);
 }
+
+/* Plan item 207: on an upright phone the header is a painted wooden signboard over the valley, the wordmark in
+   cream on the plank and sound, stats and help as carved round tokens nailed to it. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .top[data-signboard] {
+    position: relative;
+    margin: 0 6px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 11px, color-mix(in srgb, var(--soil) 30%, transparent) 11px 12px),
+      linear-gradient(180deg, var(--stake-hi), var(--stake));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper) 35%, transparent), inset 0 -2px 0 color-mix(in srgb, var(--soil) 45%, transparent), 0 4px 10px color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .top[data-signboard] .wordmark {
+    color: var(--paper);
+    text-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 70%, transparent);
+  }
+  .top[data-signboard] .back {
+    color: var(--paper);
+  }
+  .top[data-signboard] .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    color: var(--paper);
+    background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--stake-hi) 80%, var(--paper)), var(--stake) 70%);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--soil) 55%, transparent), inset 0 2px 2px color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+}
