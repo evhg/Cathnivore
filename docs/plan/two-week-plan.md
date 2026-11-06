@@ -2058,7 +2058,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fixed point has a check in a critique177 spec (P and D) or is logged as not reproduced; shots before and after.
 - **Size:** 1
 
-## 178. [ ] Runnel: the water reaches Bea's garden
+## 178. [ ] Runnel: the water reaches Bea's garden *(lane B, in progress)*
 - **Why:** `plan1105g/runnel-D` (1155-1390 x 765-835) and `runnel-P` (220-380 x 705-745): Bea's garden is a fence far from the tiles, and the chain ends mid-field (1010-1220 x 500-730), so a solve pays off nowhere in the valley (VISION 4).
 - **Build:**
   - A dry ditch drawn from the board's outlet (its last field's edge) to the garden, routed round the tiles, Cath and the keeps; on a solve the water runs it in about 900 ms.
