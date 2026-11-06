@@ -417,8 +417,102 @@ function placeDitch(): void {
   }
 }
 
+// Plan item 186: the spring-house stream feeds the board: a short branch leaves the valley stream where it runs
+// nearest the terrace and ends in a stone culvert in the terrace's turf lip (the spring sits inside the board, so
+// the water goes under the tiles from there). Drawn in the farm layer, re-routed when the layout moves.
+let feederKey = ''
+function placeFeeder(): void {
+  const deco = document.querySelector<HTMLElement>('.farm-deco')
+  const bed = document.querySelector<SVGPathElement>('.valley .vl-bed')
+  const lips = [...document.querySelectorAll<SVGPolygonElement>('#board .terrace-lip polygon')]
+  let svg = document.getElementById('runnel-feeder') as SVGSVGElement | null
+  if (!deco || !bed || !lips.length || !deco.offsetWidth) {
+    svg?.setAttribute('hidden', '')
+    return
+  }
+  const box = deco.getBoundingClientRect()
+  const first = lips[0]!.getBoundingClientRect()
+  const key = [puzzle.seed, box.width, box.height, first.left, first.top].join('|')
+  if (key === feederKey && svg) return
+  feederKey = key
+  if (!svg) {
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.id = 'runnel-feeder'
+    svg.setAttribute('class', 'runnel-feeder-layer')
+    svg.setAttribute('aria-hidden', 'true')
+    svg.innerHTML = '<path class="feeder-bed" /><path class="feeder-water" /><g class="feeder-culvert"><path class="culvert-stone" /><path class="culvert-mouth" /></g>'
+    deco.prepend(svg)
+  }
+  const m = bed.getScreenCTM()
+  if (!m) return
+  const len = bed.getTotalLength()
+  const stream: DOMPoint[] = []
+  for (let l = 0; l <= len; l += len / 160) stream.push(bed.getPointAtLength(l).matrixTransform(m))
+  // The lip's outline points (each enlarged hex's corners and edge midpoints), in screen space.
+  const rim = lips.flatMap((t) => {
+    const tm = t.getScreenCTM()
+    if (!tm) return []
+    const pts = [...t.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(tm))
+    return pts.flatMap((q, i) => {
+      const n = pts[(i + 1) % pts.length]!
+      return [q, new DOMPoint((q.x + n.x) / 2, (q.y + n.y) / 2)]
+    })
+  })
+  // Only the rim's outer points: those no other lip hex covers.
+  const covered = (x: number, y: number) =>
+    lips.some((t) => {
+      const tm = t.getScreenCTM()?.inverse()
+      if (!tm) return false
+      const q = new DOMPoint(x, y).matrixTransform(tm)
+      const pt = (t.ownerSVGElement as SVGSVGElement).createSVGPoint()
+      pt.x = q.x
+      pt.y = q.y
+      return t.isPointInFill(pt)
+    })
+  const outer = rim.filter((q) => {
+    const cx = q.x + Math.sign(q.x - first.left) * 0
+    return !covered(cx - 3, q.y) || !covered(cx + 3, q.y) || !covered(cx, q.y - 3) || !covered(cx, q.y + 3)
+  })
+  // Only the stream's run from the spring house to where it first reaches the terrace (it later runs under the
+  // board's foot on its way to the garden).
+  const run: DOMPoint[] = []
+  for (const st of stream) {
+    if (st.x < box.left || st.y < box.top || st.y > box.bottom) continue
+    if (covered(st.x, st.y)) break
+    run.push(st)
+  }
+  // Nearest the terrace, but early in the stream's run: the branch should leave it near the spring house.
+  let best: { s: DOMPoint; r: DOMPoint; d: number; score: number } | null = null
+  let walked = 0
+  for (let i = 0; i < run.length; i++) {
+    const st = run[i]!
+    if (i) walked += Math.hypot(st.x - run[i - 1]!.x, st.y - run[i - 1]!.y)
+    for (const r of outer) {
+      const d = Math.hypot(r.x - st.x, r.y - st.y)
+      const score = d + walked * 0.25
+      if (!best || score < best.score) best = { s: st, r, d, score }
+    }
+  }
+  if (!best || best.d > box.width * 0.4) {
+    svg.setAttribute('hidden', '')
+    return
+  }
+  const a = { x: best.s.x - box.left, y: best.s.y - box.top }
+  const b = { x: best.r.x - box.left, y: best.r.y - box.top }
+  const d = `M${a.x.toFixed(1)} ${a.y.toFixed(1)}Q${((a.x + b.x) / 2).toFixed(1)} ${(a.y + 4).toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`
+  svg.querySelector('.feeder-bed')!.setAttribute('d', d)
+  svg.querySelector('.feeder-water')!.setAttribute('d', d)
+  // The culvert: a stone arch round a dark mouth, at the lip.
+  const r = 7
+  svg.querySelector('.culvert-stone')!.setAttribute('d', `M${b.x - r - 3} ${b.y + 4}a${r + 3} ${r + 3} 0 0 1 ${2 * (r + 3)} 0z`)
+  svg.querySelector('.culvert-mouth')!.setAttribute('d', `M${b.x - r + 1} ${b.y + 4}a${r - 1} ${r - 1} 0 0 1 ${2 * (r - 1)} 0z`)
+  svg.dataset.end = `${Math.round(best.r.x)},${Math.round(best.r.y)}`
+  svg.removeAttribute('hidden')
+}
+
 function placeValleyFolk(): void {
   placeDitch()
+  placeFeeder()
   const stage = document.querySelector<HTMLElement>('.stage')
   if (!stage) return
   let layer = document.getElementById('valley-folk')

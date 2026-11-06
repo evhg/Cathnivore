@@ -114,6 +114,19 @@ export class Board {
       const { x, y } = cellCentre(c.q, c.r)
       el('polygon', { points: hexPoints(S * 1.08), transform: `translate(${x} ${y + 7})` }, shadow)
     }
+    // Plan item 186: the board is dug into the valley. Each cell's enlarged hex overlaps its neighbours', so together
+    // they make one terrace following the board's outline: a turf lip, then the dug soil apron inside it (its grain
+    // the tiles' own), its contact shadow the plinth's. The valley's hedges and furrows stop at its edge.
+    const terrace = el('g', { class: 'terrace', 'data-terrace': '' }, svg)
+    const lip = el('g', { class: 'terrace-lip' }, terrace)
+    const apron = el('g', { class: 'terrace-apron' }, terrace)
+    const grainy = el('g', { class: 'terrace-grain' }, terrace)
+    for (const c of puzzle.cells) {
+      const { x, y } = cellCentre(c.q, c.r)
+      el('polygon', { points: hexPoints(S * 1.24), transform: `translate(${x} ${y + 1})` }, lip)
+      el('polygon', { points: hexPoints(S * 1.14), transform: `translate(${x} ${y})` }, apron)
+      el('polygon', { points: hexPoints(S * 1.14), transform: `translate(${x} ${y})`, fill: 'url(#soil-grain)' }, grainy)
+    }
 
     // Plan item 138: each tile's ditches end inside its own dark rim (they used to run over it into the seam). The
     // clip is in the tile's own frame and doesn't turn with the piece, so it holds at every rotation.
