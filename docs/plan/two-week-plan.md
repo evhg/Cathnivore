@@ -2124,7 +2124,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every non-empty plot has an instanced crop mesh (`scene.userData.dressing`); hedges or verges along 60%+ of the lane's edge length; 12 draw calls or fewer added; the 3D frame specs pass; shots P and D.
 - **Size:** 3
 
-## 186. [ ] Runnel: the board dug into the valley
+## 186. [ ] Runnel: the board dug into the valley *(lane B, in progress)*
 - **Why:** `plan1106a/runnel-D` (580-1220 x 120-735): the hexes float over the valley like stickers; the valley's hedge lines run straight under them (390-1410 x 300-310). Same on `runnel-P` (40-330 x 325-590).
 - **Build:**
   - A dug soil apron following the board's hex outline, with a turf-and-stone lip and a contact shadow.
