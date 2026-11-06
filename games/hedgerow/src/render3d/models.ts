@@ -2168,19 +2168,55 @@ export function buildFarmhouse(): THREE.Group {
   return g;
 }
 
-/** Plan item 157: Hollowell's depot by the gate: a glossy shed with a pitched roof, the orange brand stripe and a
- * ribbed roller door facing +x (the renderer turns it to face the lane). About 1.6 x 1.1 x 1.4 world units. */
+/** Plan item 157: Hollowell's depot by the gate, facing +x (the renderer turns it to face the lane). About 1.6 x 1.1
+ * x 1.4 world units before its scale.
+ * Plan item 179: Hollowell's glossy shed, so it reads at a glance as theirs: white plastic walls, an orange fascia
+ * over a ribbed rolling shutter (its own part, `userData.shutter`, so a round can raise it), a floodlight on a pole
+ * and a painted loading bay in front of the door, striped where the vans pull in. */
 export function buildDepot(): THREE.Group {
   const g = new THREE.Group();
-  g.add(box(1.4, 0.9, 1.6, matte("#b7c0c9"), 0, 0, 0));
-  g.add(box(1.46, 0.2, 1.66, matte("#e2601a"), 0, 0.6, 0));
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.95, 0.42, 4, 1), matte("#8a949e"));
+  const white = gloss("#f3f5f7", 0.05);
+  const orange = gloss("#ef6a1c", 0.1);
+  // The shed, on a low grey plinth.
+  g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
+  g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
+  // A shallow pitched roof with an overhang, the ridge along the door's width.
+  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#8d97a1", 0.2));
   roof.rotation.y = Math.PI / 4;
-  roof.scale.set(1.05, 1, 1.2);
-  roof.position.y = 1.1;
+  roof.scale.set(1.1, 1, 1.25);
+  roof.position.y = 1.07;
   g.add(roof);
-  g.add(box(0.04, 0.56, 0.9, matte("#cdd3d9"), 0.71, 0, 0));
-  for (let i = 0; i < 5; i++) g.add(box(0.05, 0.02, 0.9, matte("#8d96a0"), 0.73, 0.08 + i * 0.1, 0));
+  // The orange fascia across the front and a brand stripe round the walls under the eaves.
+  g.add(box(0.07, 0.24, 1.72, orange, 0.73, 0.7, 0));
+  // Plan item 179: the band runs round all four walls (the camera mostly sees a side and the roof, not the door).
+  g.add(box(1.44, 0.2, 1.64, orange, 0, 0.6, 0));
+  // The door's frame, dark, and the shutter in it: ribbed slats that roll up into the fascia.
+  g.add(box(0.05, 0.64, 1.06, matte("#3b4148"), 0.71, 0.06, 0));
+  const shutter = new THREE.Group();
+  shutter.add(box(0.03, 0.6, 0.96, matte("#d7dce1", 0.5), 0, 0, 0));
+  for (let i = 0; i < 6; i++) shutter.add(box(0.035, 0.018, 0.96, matte("#a7afb7", 0.5), 0.008, 0.06 + i * 0.09, 0));
+  shutter.position.set(0.735, 0.08, 0);
+  g.add(shutter);
+  g.userData.shutter = shutter;
+  // The loading bay: dark tarmac in front of the door, yellow lines down its sides and chevrons where vans stop.
+  const tarmac = matte("#40464d", 0.9);
+  const paint = matte("#f2c230", 0.6);
+  g.add(box(1.0, 0.012, 1.3, tarmac, 1.25, 0, 0));
+  for (const z of [-0.6, 0.6]) g.add(box(1.0, 0.016, 0.05, paint, 1.25, 0, z));
+  for (let i = 0; i < 3; i++) {
+    for (const side of [-1, 1]) {
+      const c = box(0.06, 0.016, 0.34, paint, 0.95 + i * 0.22, 0, side * 0.15);
+      c.rotation.y = side * 0.75;
+      g.add(c);
+    }
+  }
+  // The floodlight: a pole at the bay's corner, its lamp angled down onto the door.
+  g.add(cyl(0.025, 0.03, 1.35, matte("#59616a"), 0.85, 0, 0.82));
+  const lamp = box(0.16, 0.08, 0.12, matte("#2f353b"), 0, 0, 0);
+  lamp.position.set(0.82, 1.32, 0.76);
+  lamp.rotation.x = -0.5;
+  g.add(lamp);
+  g.add(box(0.13, 0.012, 0.09, glow("#fff1c2", 0.7), 0.82, 1.3, 0.735));
   g.userData.depot = true;
   return g;
 }

@@ -2066,7 +2066,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-garden="dry"|"watered"]` on the garden; `.runnel-ditch` is an SVG path meeting no tile and ending at the garden; the sequence ends within 1.2 s of the solve; reduced motion cross-fades; the garden 160 px or more wide on a phone; shots P and D, before and after a solve.
 - **Size:** 2
 
-## 179. [ ] Hedgerow 3D: Hollowell's depot read at a glance *(lane A, in progress)*
+## 179. [ ] Hedgerow 3D: Hollowell's depot read at a glance *(lane A, in progress)* *(slice 1, 2026-11-06 00:45 lane A: `buildDepot` is Hollowell's glossy white shed: an orange band round all four walls (the camera sees a side and the roof, rarely the door), an orange fascia over a ribbed shutter kept as `userData.shutter`, a grey roof, a floodlight on a pole and a striped loading bay. Shots `e2e/screenshots/h179`. Open: the count on the fascia, the shutter on `sendWave`, `depots3d()`, placement clear of Cath (at D it stands just left of her) and in frame at P (at the left edge))*
 - **Why:** `plan1105g/hedge-l21-3d-D` (35-150 x 480-560): item 157's 3D depot is a grey roof at the field's edge, half under Cath's bubble; the HOLLOWELL sign floats over grass (180-315 x 362-395) and the vans queue on bare ground (275-310 x 260-360). The 2D depot (`hedge-l21-2d-D` 160-280 x 355-470) reads; the 3D one doesn't.
 - **Build:**
   - The 3D depot as Hollowell's glossy shed: white plastic, an orange fascia carrying the next round's count (the "216 coming" pill moves onto it), a rolling shutter that rises as a round leaves, a floodlight and a painted loading bay where the vans queue.
