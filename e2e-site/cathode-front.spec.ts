@@ -775,3 +775,18 @@ test("her painted eyes hold 3:1 on her cheek at title distance", async ({ page, 
   }, { b64: buf.toString('base64'), pts })
   for (const r of m) expect(r, 'eye vs cheek contrast').toBeGreaterThanOrEqual(3)
 })
+
+// Plan item 216: an upright phone's title renders at the device's pixel ratio (capped at 2), so her face is sharp.
+test('the upright phone title renders at the device pixel ratio, 780 px or more across at 390', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-phone', 'an upright phone')
+  test.setTimeout(180_000)
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true })
+  const page = await ctx.newPage()
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
+  const w = await page.evaluate(() => Math.max(...[...document.querySelectorAll('canvas')].map((c) => c.width)))
+  expect(w).toBeGreaterThanOrEqual(780)
+  await ctx.close()
+})

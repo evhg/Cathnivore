@@ -623,11 +623,13 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const resize = () => {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;
-    // The 3D DPR caps at 1.5 at 5K and on phones (S8); the phone scene runs at 0.75 render scale (S9.2 cost).
-    const cap = phone || innerHeight * devicePixelRatio > 2000 ? 1.5 : 2;
+    // The 3D DPR caps at 1.5 at 5K (S8). Plan item 216: a phone's front door renders at the device's ratio, capped
+    // at 2 (at 1.35 with a 0.75 world her face went soft at 390 px); the world there runs at 0.85 of it (S9.2
+    // cost) and the dynamic scale takes it down further when frames run long.
+    const cap = phone ? 2 : innerHeight * devicePixelRatio > 2000 ? 1.5 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
-    const scale = (phone ? 0.75 : 1) * o.renderScale * dyn.scale;
-    world.resize(w, h, dpr * (phone ? 0.9 : 1), Math.min(1, scale / (phone ? 0.9 : 1)));
+    const scale = (phone ? 0.85 : 1) * o.renderScale * dyn.scale;
+    world.resize(w, h, dpr, Math.min(1, scale));
     cam.fov = FOV;
     cam.updateProjectionMatrix();
   };
