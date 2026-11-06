@@ -2132,7 +2132,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-terrace]` exists; no valley hedge or furrow box meets the board's hull plus 8 px; the stream ends within 12 px of the spring tile; the Runnel site specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 187. [ ] NIGHT SHIFT: Cath's face readable on the title
+## 187. [ ] NIGHT SHIFT: Cath's face readable on the title *(lane A, in progress)*
 - **Why:** `plan1106a/ns-title-D` (900-1200 x 230-900): she is a 670 px figure, but her face (985-1050 x 280-360) is a 65 px oval in the umbrella's shadow, against the character bible's large bright eyes.
 - **Build:**
   - A soft warm key on her face under the canopy as well as the pink rim; her gaze follows the focused menu row.
