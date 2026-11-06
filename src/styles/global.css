@@ -3746,6 +3746,61 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
   .setup > button.setup-start { margin-right: 10px; margin-bottom: 18px; width: 200px; justify-self: center; }
   .setup .setup-header { padding-bottom: 6px; }
 }
+/* Plan item 204: the left column's web form becomes table objects at D: the week's market a printed flyer pinned up
+   (its rule a stamped line), the mode two tent place cards on a plank ledge, the picked one upright, the other laid
+   flat. The column narrows by 34 px and the table takes it. */
+.setup .segmented.mode-picker span.place-word { display: none; }
+@media (min-width: 1100px) {
+  .setup { grid-template-columns: 256px minmax(0, 1fr) 220px; }
+  .setup .market-event[data-flyer] {
+    padding: 0 0 20px; border: 0; border-radius: 2px; background: var(--paper-hi); transform: rotate(-1.4deg);
+    box-shadow: 0 1px 0 var(--rule), 0 12px 22px color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+  .setup .market-event[data-flyer]::before { top: -6px; left: 22px; margin-left: 0; z-index: var(--z-raised); }
+  .setup .market-event[data-flyer] .market-event-eyebrow {
+    margin: 0 0 14px; padding: 14px 14px 10px; border-radius: 2px 2px 0 0; background: var(--ink); color: var(--paper-hi); text-align: center; letter-spacing: 0.16em;
+  }
+  .setup .market-event[data-flyer] h2 { margin: 0; padding: 0 14px; text-align: center; line-height: 1.05; }
+  .setup .market-event[data-flyer] .market-event-kicker { display: block; margin-bottom: 4px; font-family: inherit; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soil); }
+  .setup .market-event[data-flyer] .market-event-name { display: block; font-size: var(--fs-h2); }
+  .setup .market-event[data-flyer] .market-event-line { margin: 12px 0 0; padding: 0 16px; text-align: center; font-size: var(--fs-body); line-height: 1.35; }
+  .setup .market-event[data-flyer] .market-event-deal { display: grid; justify-items: center; gap: 8px; margin: 0; padding: 0 14px; opacity: 1; text-align: center; }
+  .setup .market-event-rule[data-stamp] {
+    margin-top: 18px; padding: 6px 10px; border: 2.5px solid var(--short-ink-shelf); border-radius: 4px; transform: rotate(-3deg);
+    color: var(--short-ink-shelf); font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.04em; line-height: 1.25; text-transform: uppercase;
+  }
+  .setup .market-event[data-flyer] .market-event-pin { margin-top: 6px; font-size: var(--fs-small); line-height: 1.3; color: var(--ink); }
+
+  /* The place cards stand on a ledge at the column's foot. */
+  .setup .setup-mode { justify-content: flex-end; padding: 0; border: 0; background: none; box-shadow: none; }
+  .setup .setup-mode > h2 { margin: 0 0 6px; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soil); font-family: inherit; }
+  .setup .setup-mode .segmented.mode-picker {
+    flex: 0 0 auto; flex-direction: row; align-items: flex-end; gap: 12px; padding: 12px 8px 0; border-bottom: 10px solid var(--wood); border-radius: 0;
+    box-shadow: 0 6px 10px color-mix(in srgb, var(--ink) 18%, transparent); perspective: 520px;
+  }
+  .setup .setup-mode .segmented.mode-picker label[data-place-card] {
+    flex: 1 1 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px;
+    min-height: 150px; padding: 20px 8px 12px; border: 0; border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px);
+    box-shadow: 0 0 0 1px var(--rule); color: var(--ink);
+    transform-origin: 50% 100%; transform: rotateX(48deg); transition: transform 320ms var(--ease-settle), box-shadow 320ms;
+  }
+  .setup .setup-mode .segmented.mode-picker label[data-place-card]:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px); transform: rotateX(36deg); }
+  /* Upright: its back half leans away behind it, and it throws a shadow on the ledge. */
+  .setup .setup-mode .segmented.mode-picker label[data-place-card]:has(input:checked) {
+    transform: none; background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px);
+    box-shadow: 0 0 0 1px var(--rule), 0 0 0 3px var(--wheat), 8px 2px 10px -4px color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+  .setup .setup-mode label[data-place-card] .mode-name { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup .setup-mode .segmented.mode-picker label[data-place-card] span.place-word { display: block; position: static; padding: 0; text-wrap: balance; order: 2; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; line-height: 1.15; text-align: center; }
+  .setup .setup-mode .segmented.mode-picker label[data-place-card] span.mode-art { order: 1; gap: 4px; }
+  .setup .setup-mode label[data-place-card] .mode-art .mode-sit svg { width: 44px; height: 52.8px; }
+  .setup .setup-mode label[data-place-card] .mode-art .mode-chair { top: -5px; width: 56px; height: 67px; margin-left: -28px; }
+  .setup .setup-mode label[data-place-card] .mode-tag { font-size: var(--fs-label); }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .setup .setup-mode .segmented.mode-picker label[data-place-card] { transition: none; }
+}
 @media (min-width: 1100px) and (max-height: 860px) {
   .setup .setup-table .producer-card .pc-ability { line-height: 1.25; }
   .setup .setup-table .setup-seed { margin-top: 4px; }

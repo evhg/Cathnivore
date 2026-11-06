@@ -81,7 +81,7 @@ export default function Setup({ onStart }: Props) {
         <CathArt className="setup-header-cath" framing="bust" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate width={80} height={80} title="Cath" />
       </header>
 
-      <section className="settings-card market-event" data-event={marketEvent.id}>
+      <section className="settings-card market-event" data-event={marketEvent.id} data-flyer>
         <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
         <h2>
           <span className="market-event-kicker">Market event: </span>
@@ -89,13 +89,20 @@ export default function Setup({ onStart }: Props) {
           <span className="market-event-name">{marketEvent.name}</span>
         </h2>
         <p className="market-event-line">“{marketEvent.banner}”</p>
-        <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</p>
+        {/* Plan item 204: at D the rule is a stamped line on the flyer; on a phone the two run on as one line. */}
+        <p className="market-event-deal">
+          <span className="market-event-rule" data-stamp>{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week.</span>{' '}
+          <span className="market-event-pin">Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</span>
+        </p>
       </section>
 
       <section className="settings-card setup-mode">
         <h2>Mode</h2>
+        {/* Plan item 204: at D each mode is a tent place card standing on a ledge, the picked one upright, the other
+            laid flat; the phone keeps its chairs. */}
         <div className="segmented mode-picker">
-          <label>
+          <label data-place-card="solo">
+            <span className="place-word" aria-hidden="true">You and an AI</span>
             <span className="mode-name">
               <input type="radio" name="mode" aria-label="Solo (with an AI teammate)" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo
               <small> with an AI</small>
@@ -106,7 +113,8 @@ export default function Setup({ onStart }: Props) {
               <Seat who={producers[1] ?? 'tomas'} tag="AI" ai={true} />
             </span>
           </label>
-          <label>
+          <label data-place-card="hotseat">
+            <span className="place-word" aria-hidden="true">Two at the table</span>
             <span className="mode-name">
               <input type="radio" name="mode" aria-label="Hot-seat (two humans)" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat
               <small> two players</small>
