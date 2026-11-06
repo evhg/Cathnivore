@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-06 19:22
-
 
 
 
@@ -2386,4 +2384,38 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Cathnivore:** P game: the Glut chip over the intent cards' foot and the board frame (118-270 x 158-184; may go with 212). D game: a hand card's 'Supply 1 Outlet · Brindle Hills' runs into the Injunction card (1100-1195 x 795-830). P title: the 'No sale yet' ticket over Cath's sleeve (5-135 x 445-492). P campaign: region labels past their hexes ('Brindle Hills' 75-122 x 410-442, 'Shingle Bay' 215-260 x 498-522).
   - **Hedgerow:** D 3D l21: two signs on the depot ('216 coming' 112-218 x 232-258, 'HOLLOWELL' 165-288 x 360-388), saying what the ticker says.
 - **Accept:** each point checked in a shot before and after at P and D; the specs for each screen pass.
+- **Size:** 2
+
+## 218. [ ] Cathnivore desktop: the hand as painted cards
+- **Why:** `plan1106g/cath-game-D` (360-1320 x 755-880): seven of eight hand cards are about 70% flat yellow with a 24 px icon in the corner ('Sell 1 Produce', 'Buy Seed Library', 'Graft'); they read as buttons, not cards on the table (VISION: the table is the hero). The phone hand already carries art.
+- **Build:** each desktop hand card gets a picture window (the same illustrations as the phone cards and the card-art set) of 96x56 px or more, its name under it at 14 px or more, the cost chip at its foot; the fan keeps its overlap.
+- **Accept:** at 1440x900 every playable card's art box is 96x56 px or more; within a card the name, art and cost boxes don't intersect; a card's name stays clear of the next card (item 217's rule); text 4.5:1; hand specs pass; shots D and P (P unchanged).
+- **Size:** 2
+
+## 219. [ ] Cathnivore phone Setup: one screen, nothing cut at the edge
+- **Why:** `plan1106g/cath-setup-P`: the producer tabs run off the right edge (Sol 300-390 x 290-335) and so does the third map (The Delta 256-390 x 565-615); the panel reads as stacked form rows.
+- **Build:** the producers a 2x2 grid of seated busts (56 px or more) with their check stamps; the three maps as mini boards in one row inside the gutter; difficulty stays the three tags; no sideways scroll.
+- **Accept:** at 390x844 every interactive box inside x 16-374; Start visible without scrolling; tap targets 44 px or more; text 12 px or more; setup specs pass; shots P and D (D unchanged).
+- **Size:** 2
+
+## 220. [ ] Hedgerow desktop: a side column with one headline
+- **Why:** `plan1106g/hedge-l21-2d-D`, `hedge-l34-2d-D` (1095-1425 x 75-890): rack, round ticket, Coming up/Notebook tabs, the chip timeline and the dock stack as five equal panels; at l34 the rack's last row leaves about 40% empty (1260-1410 x 280-370).
+- **Build:** the round ticket is the column's headline with the round chips (item 168) folded into it; the rack's last row stretches its packets so no cell is empty; the dock pinned at the column's foot. Three visual groups: shop, round, controls.
+- **Accept:** at 1440x900 and 1280x800 the column shows three groups at most; no empty rack cell; every label 12 px or more; Go 56 px or more tall; tray, round-chips and critique specs pass; shots D and P (P unchanged).
+- **Size:** 2
+
+## 221. [ ] NIGHT SHIFT poster: Cath lit as on the title, not chrome
+- **Why:** `portfolio/public/work/games-nightshift-960.webp` (shown on `/games/` 1040-1330 x 490-690 and the portfolio 790-990 x 430-640): the `?keyart` frame lights her trench like polished chrome and her face flat white, so the poster reads as an armoured figure, not the mum in the rain the title shows.
+- **Build:** the key-art frame uses the title's grade and key light (warm key on her face, the coat a matte wool, rim light from the neon), framed waist-up so her face is 30 px or more at 640 px wide; re-shoot with `npm run keyart nightshift`.
+- **Accept:** the coat's mean luminance under 0.35 with no blown highlight over 5% of its area; her face's luminance 0.15 or more and 30 px or more at the 640 size; keyart-fresh passes; the three webps re-shot and looked at.
+- **Size:** 1
+
+## 222. [ ] The bugs from the 2026-11-06 19:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106g`; dropped as capture timing or already measured: NS D pick's hidden Cath, NS title stamps, the P map's faded act banner (item 211's intended fade), FIXER's gutter)
+  - **Cathnivore:** D game: a stray 'I' glyph after EXPAND's chevrons (868-884 x 95-112); UNDO's VOID stamp low contrast over the label (185-250 x 822-850). P game: the vertical 'NOT YET' about 9 px (330-347 x 690-760). D setup: Ines's and Sol's cards shorter than Mara's and Tomas's (bottoms 392/352 vs 415); 'Two at the table' skewed and cut by the rail (265-385 x 770-875). D title: the pennant hint white 13 px on mid wood (1030-1278 x 763-779), check 4.5:1.
+  - **Site:** D: the stall prop's 'FRESH · FREE' about 8 px (1245-1305 x 356-368). P: "Play today's Runnel" an italic chalk button beside a sans pill (60-230 x 287-330).
+  - **Hedgerow:** P 3D l21: the Whole field pill meets the 'NEXT: ROUND' tab (222-385 x 630-700). D menu: 'Beyond the hedge · Act 4' cut at the viewport's foot (527-912 x 850-900). D 2D l21: the keeper icon over '216 NEXT' on the depot (165-280 x 395-430); the gate sign about 11 px (285-360 x 478-492). D 2D l34: the lower HOLLOWELL sign on the depot's base (155-245 x 725-747). P 2D l34: '283 coming' over the vans (5-130 x 555-580); the top sign over the first vans (8-98 x 95-118).
+  - **Runnel:** P and D: the hint 'Tap a tile to turn it, hold to pin it.' grey 13 px on cream, about 3:1 (P 95-295 x 790-805; D 75-290 x 846-862). P: Cath's bubble over the stream and wall (12-212 x 545-640).
+  - **NIGHT SHIFT:** D title: 'THE LIST' about 10 px (57-105 x 568-580); 'No case open' grey under 4.5:1 (205-293 x 304-318). P pick: perk tags about 10 px (16-230 x 765-780), 'HOLD' about 10 px (322-356 x 803-817). D pick: GRIT/AIM/NERVE/WIRE, 'STARTS WITH', 'SNIPER RIFLE' about 10 px.
+- **Accept:** text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after; the specs for each screen pass.
 - **Size:** 2
