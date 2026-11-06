@@ -2099,7 +2099,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
 
-## 183. [ ] Cathnivore: the 'Not yet' shelf as a savings goal
+## 183. [ ] Cathnivore: the 'Not yet' shelf as a savings goal *(lane A, in progress)*
 - **Why:** `plan1106a/cath-game-D` (30-330 x 440-860): nine greyed cards with 'Need N more' fill most of the left rail; about 60% of the producer's mat is things she can't do, and nothing turns the shortfall into a plan.
 - **Build:**
   - The shelf folds to one row of price-tagged goods; the player pins one as 'Saving for', and a jar beside it fills with Mark and Goodwill coins at each income step.
