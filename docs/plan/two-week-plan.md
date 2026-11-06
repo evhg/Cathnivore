@@ -2294,7 +2294,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the title canvas reports `data-cath-expr`; in a D face crop (85 px+) the eye regions are 3:1+ darker than the cheek (pixel test); `cathode-front` and `cathode-perf` pass (run alone); shots title and class pick at P and D.
 - **Size:** 2-3
 
-## 206. [ ] Cathnivore: the title market under a real sky, morning to a lantern-lit evening
+## 206. [ ] Cathnivore: the title market under a real sky, morning to a lantern-lit evening *(lane A, in progress)*
 - **Why:** `plan1106e/cath-title-D`: the top third is flat cream, bunting (0-1440 x 175-310) over empty paper either side of Cath (0-540 x 250-330, 860-1440 x 250-310); `cath-title-P` plain beige behind the board and Cath (140-390 x 240-430). VISION 1 'a scene', VISION 6 'a dark mode that is designed'.
 - **Build:**
   - A painted street behind the stall (awnings, Marrow's rooftops, a sky) in four states by the local hour: dawn, day, golden, evening.
