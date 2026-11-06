@@ -1635,3 +1635,87 @@ body {
   transition: opacity 400ms ease;
 }
 .poster-loop.on { opacity: 1; }
+
+/* Plan item 181: the landing as Cath's market stall. A striped awning runs the length of the posters, its top the
+   counter line Cath stands on; the four games hang from it as posters that sway a little when pointed at; today's
+   Runnel is chalked on a slate in a wooden frame. */
+.stall-hero .hero-games {
+  position: relative;
+  padding-top: 30px;
+}
+.stall-hero .hero-games::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -14px;
+  right: -14px;
+  height: 42px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 22%, transparent), transparent 40%, color-mix(in srgb, var(--awning-red-lo) 35%, transparent)),
+    repeating-linear-gradient(90deg, var(--awning-red) 0 40px, var(--awning-cream) 40px 80px);
+  /* scalloped foot: a row of half-discs */
+  -webkit-mask: linear-gradient(black 0 0) top / 100% 32px no-repeat, radial-gradient(circle 10px at 20px 0, black 98%, transparent) 0 32px / 40px 10px repeat-x;
+  mask: linear-gradient(black 0 0) top / 100% 32px no-repeat, radial-gradient(circle 10px at 20px 0, black 98%, transparent) 0 32px / 40px 10px repeat-x;
+  filter: drop-shadow(0 4px 4px var(--shadow-deep));
+  pointer-events: none;
+}
+/* the awning's wooden rail */
+.stall-hero .hero-games::after {
+  content: "";
+  position: absolute;
+  /* the counter Cath stands on: the rail sits at her feet */
+  top: -17px;
+  left: -20px;
+  right: -20px;
+  height: 7px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
+  box-shadow: 0 2px 3px var(--shadow-deep);
+  pointer-events: none;
+}
+.stall-hero .hero-game {
+  transform-origin: 50% 0;
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), rotate 200ms var(--ease-out);
+}
+/* each hangs straight, and swings a little from its pegs when pointed at (a tilted card at rest left one poster
+   unpainted over the WebGL scene) */
+.stall-hero .hero-game:nth-child(odd) { --sway: -1.6deg; }
+.stall-hero .hero-game:nth-child(even) { --sway: 1.6deg; }
+.stall-hero .hero-game:hover,
+.stall-hero .hero-game:focus-visible {
+  transform: none;
+  rotate: var(--sway);
+}
+/* today's Runnel, chalked on a slate */
+.btn-cta-slate {
+  position: relative;
+  border-radius: 6px;
+  color: var(--chalk);
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--chalk) 9%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--slate-hi), var(--slate));
+  box-shadow: inset 0 0 0 4px var(--wood-mid), inset 0 0 0 5px var(--wood-lo), 0 8px 20px var(--shadow-deep);
+  font-family: var(--font-voice, inherit);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.btn-cta-slate #cta-today-label {
+  padding-bottom: 1px;
+  border-bottom: 2px solid color-mix(in srgb, var(--gold-hi) 80%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stall-hero .hero-game,
+  .stall-hero .hero-game:hover,
+  .stall-hero .hero-game:focus-visible { rotate: none; transition: none; }
+}
+
+/* The lede's own soft pool on a phone: Cath's morning line runs to three lines, and the last sat over the sunset's
+   brightest band at 4.2:1. A scrim the shape of the words, feathered at its edge. */
+@media (max-width: 599.98px) {
+  .hero .lede {
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--scrim) 70%, transparent);
+    box-shadow: 0 0 18px 10px color-mix(in srgb, var(--scrim) 70%, transparent);
+  }
+}

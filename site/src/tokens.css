@@ -14,6 +14,13 @@
   --rn-water: #3b8db0;
   --night: #1a1119;
   --cream: #fbf1df;
+  /* Plan item 181: Cath's market stall: its awning's stripes and the slate today's Runnel is chalked on */
+  --awning-red: #c8553d;
+  --awning-red-lo: #9a3a27;
+  --awning-cream: #f3e3c3;
+  --slate: #2b3330;
+  --slate-hi: #3c4642;
+  --chalk: #f4efe2;
   --cream-muted: rgba(251, 241, 223, 0.74);
   --card-ink: #3a2d22;
   --shadow-card: 0 10px 22px rgba(0, 0, 0, 0.35);
