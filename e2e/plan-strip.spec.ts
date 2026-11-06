@@ -86,3 +86,21 @@ test('the phone plan cards show their target line whole', async ({ page }) => {
     expect(cut).toEqual([])
   }
 })
+
+// Plan item 222: beside Cath at D the Pressure card's stage is its numeral alone; it reads as a slate tag, not a
+// stray glyph after the chevrons.
+test('the stage numeral at D is a filled tag', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop plan strip')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const stage = page.locator('.plan-strip-stage').first()
+  await expect(stage).toBeVisible()
+  const s = await stage.evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, word: getComputedStyle(e.querySelector('.plan-strip-stage-word')!).display, h: e.getBoundingClientRect().height }))
+  if (s.word === 'none') {
+    expect(s.bg).not.toBe('rgba(0, 0, 0, 0)')
+    expect(s.h).toBeGreaterThanOrEqual(16)
+  }
+})

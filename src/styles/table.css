@@ -3835,6 +3835,19 @@ html.no-animations .table-cath-line { animation: none; }
   .table-head.with-table-cath .plan-strip-card-meta { margin-left: 4px; }
   /* the stage as its numeral beside the chevrons (the word is in the card's accessible name) */
   .table-head.with-table-cath .plan-strip-stage-word { display: none; }
+  /* Plan item 222: the lone numeral read as a stray glyph after the chevrons; it is a small square slate tag (a
+     ring would read as the (i) beside it). */
+  .table-head.with-table-cath .plan-strip-stage {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.5em;
+    height: 1.5em;
+    padding: 0 3px;
+    border-radius: 3px;
+    background: var(--corp-slate);
+    color: var(--paper-on-fixed-fill);
+    letter-spacing: 0;
+  }
   .table-head.with-table-cath .plan-strip-target {
     grid-area: tgt;
     margin: 0;
