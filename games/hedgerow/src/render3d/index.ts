@@ -1302,6 +1302,7 @@ export class Renderer3D {
     this.syncSwarms(game);
     this.syncTowerMarks(game, dt);
     this.placeDepots(game);
+    this.settleFar(game);
     this.syncDepotShutters(game, dt);
     this.syncQueue(game);
     if (game.phase !== "wave" && this.debrisLying) {
@@ -2439,10 +2440,10 @@ export class Renderer3D {
 
   /** Plan item 179: the frame the depots were placed for (level, canvas size). */
   private depotKey = "";
-  private boxRect(b: THREE.Box3, w: number, h: number): Rect {
+  private boxRect(b: THREE.Box3, w: number, h: number, cam: THREE.Camera = this.camera): Rect {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (let i = 0; i < 8; i++) {
-      const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+      const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(cam);
       const px = (v.x * 0.5 + 0.5) * w;
       const py = (-v.y * 0.5 + 0.5) * h;
       x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
@@ -2495,6 +2496,57 @@ export class Renderer3D {
       d.updateMatrixWorld(true);
       taken.push(best.r);
     }
+  }
+  /** Plan item 201: the frame the far houses were settled for (level, canvas size). */
+  private farKey = "";
+  /**
+   * Plan item 201: a far house cut by the frame's top (a wide frame sliced l21's through their roofs) steps toward the
+   * field, no nearer than its band allows, until it stands wholly in the frame; one that can't is set back out of it.
+   * Once per level and canvas size, at the fitted camera, like the depots.
+   */
+  private settleFar(game: Game): void {
+    const far = (this.ground?.group.userData.far as THREE.Object3D[] | undefined) ?? [];
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const key = `${game.level.id}:${w}x${h}`;
+    if (!far.length || !w || !h || key === this.farKey) return;
+    this.farKey = key;
+    const cam = this.fittedCamera();
+    const at = (o: THREE.Object3D, z: number): Rect => {
+      o.position.set(o.position.x, Math.max(0, this.height(o.position.x, z)), z);
+      o.updateMatrixWorld(true);
+      return this.boxRect(new THREE.Box3().setFromObject(o), w, h, cam);
+    };
+    for (const o of far) {
+      const home = o.userData.home as number;
+      const near = o.userData.near as number;
+      let z = home;
+      let r = at(o, z);
+      if (r.y >= 2 || r.y + r.h <= 0) continue;
+      while (r.y < 2 && z + 0.1 <= near) r = at(o, (z += 0.1));
+      if (r.y >= 2) continue;
+      // No room in front: back out of the frame instead of showing a sliced roof.
+      z = home;
+      do r = at(o, (z -= 0.25));
+      while (r.y + r.h > 0 && z > home - 8);
+    }
+  }
+  /** The fitted base view (no zoom, pan, gate look or directed shot), as `fieldShare` measures it. */
+  private fittedCamera(): THREE.PerspectiveCamera {
+    const cam = this.camera.clone();
+    cam.aspect = this.w / this.h;
+    cam.updateProjectionMatrix();
+    cam.position.copy(this.camBase);
+    cam.lookAt(this.camTarget);
+    cam.updateMatrixWorld();
+    return cam;
+  }
+  /** Plan item 201 (tests): the far houses' boxes on the canvas (CSS px) at the fitted view. */
+  farRects(): Rect[] {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const cam = this.fittedCamera();
+    return ((this.ground?.group.userData.far as THREE.Object3D[] | undefined) ?? []).map((o) => this.boxRect(new THREE.Box3().setFromObject(o), w, h, cam));
   }
   /** Plan item 179: the shutter rolls up as a round's convoy leaves (the first 2.5 s of a round), and down again. */
   private depotOpen = 0;

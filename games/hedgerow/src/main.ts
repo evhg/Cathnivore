@@ -770,6 +770,8 @@ if (SANDBOX)
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
     cam3d: () => (renderer && is3D(renderer) ? renderer.camState() : null),
     biome3d: () => (renderer && is3D(renderer) ? renderer.biome : null),
+    // Plan item 201: the far houses' boxes (canvas px); empty in 2D.
+    farHouses3d: () => (renderer && is3D(renderer) ? renderer.farRects() : []),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).

@@ -1255,12 +1255,23 @@ export function buildGround(level: Level): Ground {
     });
     group.add(o);
   };
-  const across = (n: number, z0: number, z1: number, make: (i: number) => THREE.Object3D) => {
+  // Plan item 201: the far row's houses, which the renderer settles wholly into the frame or out of it (a wide frame's
+  // top edge sliced them through the roofs).
+  const far: THREE.Object3D[] = [];
+  group.userData.far = far;
+  const across = (n: number, z0: number, z1: number, make: (i: number) => THREE.Object3D, settle = false) => {
     for (let i = 0; i < n; i++) {
       const x = -3 + ((i + 0.5) / n) * (cols + 6) + (rand() - 0.5) * 1.2;
       const z = z0 + rand() * (z1 - z0);
       if (laneDistance(level, x, z) < 1.5) continue;
-      back(x, z, make(i), (rand() - 0.5) * 0.6);
+      const o = make(i);
+      back(x, z, o, (rand() - 0.5) * 0.6);
+      if (settle) {
+        o.userData.home = z;
+        // How near the field it may come: the far side's reserved band (verge.ts), or behind act 9's wall.
+        o.userData.near = act === 9 ? -3 : -1.8;
+        far.push(o);
+      }
     }
   };
   switch (act) {
@@ -1269,33 +1280,33 @@ export function buildGround(level: Level): Ground {
       const w = buildWindmill();
       back(cols + 1.8, -2.4, w, -0.4);
       spin.push(w.userData.spin as THREE.Object3D);
-      across(3, -3.2, -2.2, () => buildHouse(rand));
+      across(3, -3.2, -2.2, () => buildHouse(rand), true);
       break;
     }
     case 2:
     case 5: {
       back(act === 5 ? cols + 2 : -2.2, -2.6, buildLighthouse());
       across(4, -3.8, -2.4, () => buildBoat(rand));
-      across(3, -3, -2.2, () => buildHouse(rand));
+      across(3, -3, -2.2, () => buildHouse(rand), true);
       break;
     }
     case 3:
     case 4:
-      across(5, -3.2, -2.2, () => buildHouse(rand, night));
+      across(5, -3.2, -2.2, () => buildHouse(rand, night), true);
       break;
     case 6:
       across(3, -3.6, -2.4, () => buildCrane());
       break;
     case 7:
-      across(7, -3.2, -2.2, () => buildHouse(rand, night));
+      across(7, -3.2, -2.2, () => buildHouse(rand, night), true);
       break;
     case 8:
-      across(6, -4.2, -2.6, () => buildOffice(rand, true));
+      across(6, -4.2, -2.6, () => buildOffice(rand, true), true);
       break;
     case 9:
       back(cols / 2, -2.2, buildWall(cols + 6));
       across(3, -2.9, -2.6, () => buildTowerKeep());
-      across(5, -4, -3.2, () => buildHouse(rand, true));
+      across(5, -4, -3.2, () => buildHouse(rand, true), true);
       break;
   }
   group.userData.spin = spin;
