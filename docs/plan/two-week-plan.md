@@ -2234,7 +2234,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the 3D renderer reports `biome` ('saltmarsh' on level 21); water across 25% or more of the frame's shoreline edge; 12 draw calls or fewer added; `?2d` unchanged; the 3D frame specs pass; shots P and D, levels 21 and 34.
 - **Size:** 3
 
-## 199. [ ] NIGHT SHIFT: the class pick's armoury table
+## 199. [ ] NIGHT SHIFT: the class pick's armoury table *(lane A, in progress)*
 - **Why:** `plan1106c/ns-play-D` (975-1205 x 305-355) and `ns-play-P` (18-150 x 708-742): each class's weapon is a thin red outline icon; the stats are hairline bars (1065-1320 x 115-260); nothing in the world anchors the choice.
 - **Build:**
   - The class's weapon as a 3D prop on a rain-wet case table under a lamp, turning slowly; switching swaps it with a 250 ms slide.
