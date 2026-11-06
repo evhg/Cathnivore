@@ -2392,7 +2392,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 every playable card's art box is 96x56 px or more; within a card the name, art and cost boxes don't intersect; a card's name stays clear of the next card (item 217's rule); text 4.5:1; hand specs pass; shots D and P (P unchanged).
 - **Size:** 2
 
-## 219. [ ] Cathnivore phone Setup: one screen, nothing cut at the edge
+## 219. [ ] Cathnivore phone Setup: one screen, nothing cut at the edge *(lane B, in progress)*
 - **Why:** `plan1106g/cath-setup-P`: the producer tabs run off the right edge (Sol 300-390 x 290-335) and so does the third map (The Delta 256-390 x 565-615); the panel reads as stacked form rows.
 - **Build:** the producers a 2x2 grid of seated busts (56 px or more) with their check stamps; the three maps as mini boards in one row inside the gutter; difficulty stays the three tags; no sideways scroll.
 - **Accept:** at 390x844 every interactive box inside x 16-374; Start visible without scrolling; tap targets 44 px or more; text 12 px or more; setup specs pass; shots P and D (D unchanged).
