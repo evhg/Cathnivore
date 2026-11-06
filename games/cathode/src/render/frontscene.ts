@@ -543,9 +543,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const idleWant = idleReduce || o.still ? 0 : smoother(THREE.MathUtils.clamp((idleS - 6) / 8, 0, 1));
     idleK += (idleWant - idleK) * (idleWant < idleK ? 1 - Math.exp(-dt / 0.25) : 1);
     if (idleK * titleK > 0.001) {
-      cath.head.getWorldPosition(idleHead);
-      // An upright phone holds (its title and menu sit over her; a push there needs its own framing).
-      const g = 1 + (cam.aspect < 1 ? 0 : 0.45) * idleK * titleK;
+      // Upright, her face sits just under the title's line with the menu beside it, so the lens dollies toward
+      // her crown instead: the top of her head keeps its place and the face grows down and out, clear of both.
+      const upr = cam.aspect < 1;
+      idleHead.set(0, upr ? 0.12 : 0, upr ? 0.04 : 0).applyMatrix4(cath.head.matrixWorld);
+      const g = 1 + (upr ? 0.3 : 0.45) * idleK * titleK;
       cam.position.sub(idleHead).divideScalar(g).add(idleHead);
     }
     canvas.dataset.idlePush = (idleK * titleK).toFixed(2);

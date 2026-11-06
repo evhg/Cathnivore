@@ -645,15 +645,55 @@ test('the title Cath is the hero model, 300 px or taller at D', async ({ page, h
 test('Cath looks toward the focused menu row', async ({ page, hasTouch }) => {
   test.setTimeout(180_000)
   await open(page, hasTouch)
+  // Under load the keys can land before the menu is live: wait for its lit row and the scene.
+  await page.waitForFunction(() => !!document.querySelector('#menu[data-lit]') && !!(window as unknown as { cathodeFront?: { scene(): unknown } }).cathodeFront?.scene(), null, { timeout: 60_000 })
+  // Timed in the page, from the key's event to the gaze's change: under load the round trip from the test runner
+  // includes seconds of a main thread busy rendering under SwiftShader.
+  await page.evaluate(() => {
+    const w = window as unknown as { gz: { key: number; at: number } }
+    w.gz = { key: 0, at: 0 }
+    addEventListener('keydown', () => { w.gz.key = performance.now(); w.gz.at = 0 }, { capture: true })
+    const c = document.querySelector<HTMLCanvasElement>('canvas[data-key-light]')!
+    new MutationObserver(() => { if (!w.gz.at) w.gz.at = performance.now() }).observe(c, { attributeFilter: ['data-gaze'] })
+  })
   const gazeAfter = async (key: string) => {
-    const t0 = Date.now()
     await page.keyboard.press(key)
-    const g = await page.evaluate(() => document.querySelector<HTMLCanvasElement>('canvas[data-key-light]')?.dataset.gaze ?? '')
-    return { g: Number(g), ms: Date.now() - t0, set: g !== '' }
+    await page.waitForFunction(() => (window as unknown as { gz: { at: number } }).gz.at > 0, null, { timeout: 10_000 }).catch(() => {})
+    return page.evaluate(() => {
+      const gz = (window as unknown as { gz: { key: number; at: number } }).gz
+      const g = document.querySelector<HTMLCanvasElement>('canvas[data-key-light]')?.dataset.gaze ?? ''
+      return { g: Number(g), ms: gz.at - gz.key, set: g !== '' && gz.at > 0 }
+    })
   }
   const down = await gazeAfter('ArrowDown')
   const up = await gazeAfter('ArrowUp')
   expect(down.set && up.set).toBe(true)
   expect(down.g).toBeGreaterThan(up.g)
   expect(Math.max(down.ms, up.ms)).toBeLessThan(300)
+})
+
+// Plan item 187: left alone on the title, the lens pushes in toward her (90 px face at D, 70 upright), her face
+// staying clear of the title and every menu row; any key eases it back.
+test('left idle on the title, the lens pushes in to her face', async ({ page, hasTouch }) => {
+  test.setTimeout(240_000)
+  if (hasTouch) await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?quality=phone')
+  type W = { cathodeFront?: { ready: boolean; scene(): { faceBox(): { left: number; top: number; right: number; bottom: number } } | null } }
+  await page.waitForFunction(() => (window as unknown as W).cathodeFront?.ready === true && !!(window as unknown as W).cathodeFront!.scene(), null, { timeout: 150_000 })
+  await page.waitForFunction(() => document.querySelector<HTMLCanvasElement>('canvas[data-idle-push]')?.dataset.idlePush === '1.00', null, { timeout: 60_000 })
+  const m = await page.evaluate(() => {
+    const box = (e: Element) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }
+    return {
+      face: (window as unknown as W).cathodeFront!.scene()!.faceBox(),
+      blocks: [...document.querySelectorAll('h1, #menu button, #menu a')].map(box).filter((r) => r.right > r.left),
+    }
+  })
+  expect(m.face.bottom - m.face.top, JSON.stringify(m.face)).toBeGreaterThanOrEqual(hasTouch ? 70 : 90)
+  const hits = (a: typeof m.face, b: typeof m.face) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+  for (const b of m.blocks) expect(hits(m.face, b), JSON.stringify({ face: m.face, b })).toBe(false)
+  await page.mouse.move(10, 10)
+  await page.keyboard.press('ArrowDown')
+  await page.waitForFunction(() => Number(document.querySelector<HTMLCanvasElement>('canvas[data-idle-push]')?.dataset.idlePush) < 0.2, null, { timeout: 5_000 })
 })
