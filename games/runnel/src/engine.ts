@@ -554,6 +554,31 @@ export function dailyPuzzle(dateString: string): Puzzle {
   return generatePuzzle(`daily-${dateString}`, dailyOptions(dateString))
 }
 
+/**
+ * Plan item 193: the week's big valley, a board 2.5 times the daily's (radius 5: 91 cells against 37), with
+ * reservoirs and bridges and no sluices set. One per week, seeded by the week's Sunday (UTC), so everyone plays
+ * the same board from Sunday to Saturday.
+ */
+export const SUNDAY_OPTIONS: GenerateOptions = { radius: 5, stoneRate: 0.05, reservoirCount: 3, bridgeCount: 3 }
+
+/** The Sunday (YYYY-MM-DD, UTC) that starts the week holding this date. */
+export function sundayOf(dateString: string): string {
+  const d = new Date(`${dateString}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay())
+  return utcDateString(d)
+}
+
+export function sundayPuzzle(dateString: string): Puzzle {
+  // On a board this size with three bridges the generator now and then leaves a solution that spills (about one
+  // week in 26); such a week takes the next seed in a fixed series, so the board is still the same for everyone.
+  const week = sundayOf(dateString)
+  for (let n = 0; ; n++) {
+    const p = generatePuzzle(n ? `sunday-${week}-${n}` : `sunday-${week}`, SUNDAY_OPTIONS)
+    const solved = p.cells.map((c) => ({ ...c, rot: (c.rot + tapsToSolve(c)) % 6 }))
+    if (computeFlow(solved).solved || n >= 8) return p
+  }
+}
+
 // ---- helpers ----------------------------------------------------------------------------------------
 
 function shuffle<T>(items: T[], rng: () => number): void {
