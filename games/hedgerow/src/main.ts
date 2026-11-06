@@ -768,6 +768,7 @@ if (SANDBOX)
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
+    cam3d: () => (renderer && is3D(renderer) ? renderer.camState() : null),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
@@ -5815,8 +5816,11 @@ ui.canvas.addEventListener(
   },
   { passive: false },
 );
-ui.canvas.addEventListener("dblclick", () => {
-  if (is3D(renderer)) renderer.resetView();
+ui.canvas.addEventListener("dblclick", (e) => {
+  // Plan item 191: a double-tap pushes in on the plot; a second comes back to the whole field.
+  if (!is3D(renderer)) return;
+  if (renderer.zoomed) renderer.resetView();
+  else renderer.pushTo(e.clientX, e.clientY);
 });
 
 ui.canvas.addEventListener("click", (e) => {

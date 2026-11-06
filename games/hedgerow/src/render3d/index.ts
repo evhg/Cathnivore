@@ -851,6 +851,7 @@ export class Renderer3D {
         }
         case "leak": {
           this.kick(0.35);
+          if (this.ground) this.closeUp(game, this.ground.farmhouse.position.x, this.ground.farmhouse.position.z);
           if (this.heroCheer > 1.2) this.heroWorry = 0;
           const y = this.height(e.x, e.y);
           this.sparks.emit(e.x, y + 0.5, e.y, "#ff5a3d", 30, 2.5, 0.16, 0.7);
@@ -980,6 +981,7 @@ export class Renderer3D {
           break;
         }
         case "merge": {
+          this.closeUp(game, e.x, e.y);
           const y = this.height(e.x, e.y);
           this.shake = Math.max(this.shake, 0.4);
           this.fx.ring(e.x, y + 0.05, e.y, "#ffd76a", 3.2, 0.8);
@@ -1224,6 +1226,54 @@ export class Renderer3D {
     this.pan.set(0, 0);
   }
 
+  /** Plan item 191: a double-tap pushes in on the plot under it (a second double-tap, resetView, comes back). */
+  pushTo(clientX: number, clientY: number): void {
+    const w = this.worldAt(clientX, clientY);
+    this.zoom = 2;
+    this.pan.set(w.x - this.camTarget.x, w.y - this.camTarget.z);
+    this.clampPan();
+  }
+
+  // ---- the director (plan item 191): a dolly from the depot along the lane on Go, and at most one close-up a
+  // round (a megastructure's merge, or the house at a leak). Reduced motion and phones get no moves at all.
+  private shot: { x: number; z: number; zoom: number; dur: number; t: number; dolly: boolean } | null = null;
+  private shotRound = -1;
+  private lastPhase = "";
+  private get directs(): boolean {
+    return !this.reducedMotion && this.w >= 600;
+  }
+  private direct(game: Game, dt: number): void {
+    if (game.phase === "wave" && this.lastPhase && this.lastPhase !== "wave" && this.directs && !this.zoomed) {
+      const depot = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
+      const [c, r] = game.level.path[0] ?? [0, 0];
+      this.shot = { x: depot ? depot.position.x : c + 0.5, z: depot ? depot.position.z : r + 0.5, zoom: 1.35, dur: 1.5, t: 0, dolly: true };
+    }
+    this.lastPhase = game.phase;
+    if (this.shot) {
+      this.shot.t += dt;
+      if (this.shot.t >= this.shot.dur) this.shot = null;
+    }
+  }
+  /** A close-up on (x, z), at most one a round and never over a move already running. */
+  private closeUp(game: Game, x: number, z: number): void {
+    if (!this.directs || this.shot || this.zoomed || this.shotRound === game.wave) return;
+    this.shotRound = game.wave;
+    this.shot = { x, z, zoom: 1.5, dur: 1.6, t: 0, dolly: false };
+  }
+  /** How far the director has the camera away from the play view (0 = the play view). */
+  private shotWeight(): number {
+    const s = this.shot;
+    if (!s) return 0;
+    const k = Math.min(1, s.t / s.dur);
+    if (s.dolly) return 1 - k * k * (3 - 2 * k);
+    return s.t < 0.3 ? s.t / 0.3 : s.t > s.dur - 0.6 ? Math.max(0, (s.dur - s.t) / 0.6) : 1;
+  }
+  /** Tests: the camera's position, and whether a directed move is running. */
+  camState(): { x: number; y: number; z: number; moving: boolean } {
+    const p = this.camera.position;
+    return { x: p.x, y: p.y, z: p.z, moving: !!this.shot };
+  }
+
   get zoomed(): boolean {
     return this.zoom > 1.01;
   }
@@ -1278,12 +1328,18 @@ export class Renderer3D {
     this.fx.update(dt);
     // Camera: zoom towards the target, offset by the pan; then shake.
     const look = this.v3.copy(this.camTarget).add(this.v2.set(this.pan.x, 0, this.pan.y));
-    this.bossEase += (this.bossPush - this.bossEase) * Math.min(1, dt * 1.2);
+    // (Plan item 191: under reduced motion these cut rather than ease.)
+    const ease = (k: number) => (this.reducedMotion ? 1 : Math.min(1, dt * k));
+    this.bossEase += (this.bossPush - this.bossEase) * ease(1.2);
     // Plan item 72: a boss round's queue draws the eye to the gate for a few seconds, then lets it go.
     this.gateHold = Math.max(0, this.gateHold - dt);
-    this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * Math.min(1, dt * 1.6);
+    this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * ease(1.6);
     if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
-    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * (1 + this.bossEase * 0.07 + this.gateEase * 0.14))).add(look);
+    this.direct(game, dt);
+    const sw = this.shotWeight();
+    if (sw > 0 && this.shot) look.lerp(this.v2.set(this.shot.x, this.camTarget.y, this.shot.z), sw * (this.shot.dolly ? 0.85 : 0.6));
+    const shotZoom = this.shot ? 1 + (this.shot.zoom - 1) * sw : 1;
+    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * shotZoom * (1 + this.bossEase * 0.07 + this.gateEase * 0.14))).add(look);
     if (this.shake > 0) {
       const m = this.shake * 0.12;
       this.camera.position.x += (Math.random() - 0.5) * m;
