@@ -2184,7 +2184,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e at D and L: `[data-cine="opener"]` runs 2.5-4.5 s, then the HUD is visible; Cath's box 25%+ of the frame's height at its middle; Escape reaches the HUD in under 300 ms (timed in the page); `cathode-perf` in budget (run alone); shots mid-opener at P, L and D.
 - **Size:** 2
 
-## 193. [ ] Runnel: a Sunday 'big valley' puzzle *(lane B, in progress)*
+## 193. [ ] Runnel: a Sunday 'big valley' puzzle *(lane B, in progress)* *(slices 1-2, 2026-11-06 lane B: `sundayPuzzle` radius 5 (91 tiles, 2.5x the daily), seeded by the week's Sunday, reseeded in a fixed series when a solution spills (2 weeks in 52); `tests/runnel-sunday.test.ts` (52 weeks solvable, par 150-260); a Weekly tab with progress saved all week, its own title, win strip and share; `e2e-site/runnel-weekly.spec.ts`. Open: the pan as the water reaches each field, an almanac row; one spring so far (two springs need computeFlow from several sources))*
 - **Why:** `plan1106b/runnel-D`/`-P`: every daily is one small board; there's no weekly showpiece worth sharing or paying for.
 - **Build:**
   - A weekly board 2-3x the daily's, with two springs, the mill, Bea's garden and a neighbour's.
