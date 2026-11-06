@@ -43,5 +43,38 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
     }
     expect(meet(r.bea, r.cath), at).toBe(false)
     expect(r.scroll, at).toBeLessThanOrEqual(height)
+    // The rail's foot holds the ledger, opening on the game's balance, so no band over 80 px stands empty there.
+    const ledger = page.locator('.round-ledger')
+    await expect(ledger.locator('.receipt[data-kind="opening"]')).toContainText('Opening balance')
+    const band = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('.actions-sheet .actions *')].map((e) => e.getBoundingClientRect()).filter((b) => b.height > 0)
+      const contentBottom = Math.max(...items.map((b) => b.bottom))
+      const firstSlip = [...document.querySelectorAll<HTMLElement>('.round-ledger .receipt')].find((e) => !e.hidden)
+      const ledgerTop = document.querySelector('.round-ledger')!.getBoundingClientRect().top
+      return { gap: ledgerTop - contentBottom, slip: !!firstSlip, room: document.querySelector<HTMLElement>('.round-ledger')!.dataset.room }
+    })
+    if (band.room === 'yes') expect(band.gap, `${at} empty band over the ledger`).toBeLessThanOrEqual(80)
+    if (width >= 1440) expect(band.room, at).toBe('yes')
   }
+})
+
+// An Undo tears off the receipts its turn printed; Hollowell's turn keeps the board's size (the hand's place stays).
+test('the ledger prints a receipt for a lost Trust and the board holds its size on Hollowell\'s turn', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
+  test.setTimeout(120_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  const map = page.locator('.map-wrap')
+  const h0 = (await map.boundingBox())!.height
+  // Spend the round on sells until Hollowell's turn plays back.
+  for (let i = 0; i < 30 && !(await page.locator('.enemy-turn-playback').isVisible().catch(() => false)); i++) {
+    await page.getByRole('button', { name: /^Sell 1 Produce/ }).first().click({ timeout: 2000 }).catch(() => {})
+    await page.waitForTimeout(300)
+  }
+  await expect(page.locator('.enemy-turn-playback')).toBeVisible()
+  expect(Math.abs((await map.boundingBox())!.height - h0)).toBeLessThanOrEqual(4)
+  await expect(page.locator('.round-ledger .receipt:not([data-kind="opening"])').first()).toBeVisible({ timeout: 30_000 })
 })

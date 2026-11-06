@@ -102,11 +102,17 @@ test('every action card has its picture and a name', async ({ page }) => {
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
   const cards = await page.evaluate(() =>
-    [...document.querySelectorAll('.actions .action-item > button:first-child')].map((b) => {
-      const art = b.querySelector('svg.action-art')
-      const r = art?.getBoundingClientRect()
-      return { name: (b.getAttribute('aria-label') ?? b.textContent ?? '').trim(), art: art?.getAttribute('data-art') ?? null, w: r?.width ?? 0 }
-    }),
+    // At D the playable cards are the hand on the table (plan item 149) and the Not-yet shelf folds all but one row
+    // behind its '+N more' key (plan item 183), so only cards with a box count; a shelf card shows its own drawn
+    // picture in place of the action's.
+    [...document.querySelectorAll(':is(.actions, .table-hand) .action-item > button:first-child')]
+      .filter((b) => b.getBoundingClientRect().width > 0)
+      .map((b) => {
+        const own = b.querySelector('svg.action-art')
+        const shown = [own, ...b.querySelectorAll('svg, img')].find((e) => e && e.getBoundingClientRect().width >= 20)
+        const r = shown?.getBoundingClientRect()
+        return { name: (b.getAttribute('aria-label') ?? b.textContent ?? '').trim(), art: own?.getAttribute('data-art') ?? null, w: r?.width ?? 0 }
+      }),
   )
   expect(cards.length).toBeGreaterThan(5)
   for (const c of cards) {

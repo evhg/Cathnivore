@@ -42,6 +42,7 @@ import EnemyTurnPlayback from './EnemyTurnPlayback'
 import { EXECS, MOOD_EXPRESSION, execFor, flightsFor, stagedRegions, stripDock, type ExecMood } from './boardroom'
 import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
+import RoundLedger from './RoundLedger'
 import FarmSheet, { Stall } from './FarmSheet'
 import { vignetteFor } from './vignetteKind'
 import Vignette from './Vignette'
@@ -2529,6 +2530,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           <div className="sheet-panel actions-sheet frame">
             <h2 className="frame-title">Actions</h2>
             {actionsPanel}
+            {/* Plan item 190: the rail's foot holds the game's ledger, Trust and land changes as till receipts. */}
+            <RoundLedger state={state} />
             {controls}
           </div>
         )}
@@ -2891,6 +2894,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {playableCards}
         </section>
       )}
+      {/* Plan item 190: while the hand steps away (Hollowell's turn, a region pick) its place stays, so the board keeps
+          its size instead of growing over Cath's line at the table's edge. */}
+      {handOnTable && !showHand && <div className="table-hand-spacer" aria-hidden="true" />}
       </div>
 
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle

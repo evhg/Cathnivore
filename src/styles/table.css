@@ -3787,6 +3787,11 @@ html.no-animations .table-cath-line { animation: none; }
   .table-head.with-table-cath .rival-frame svg { top: -18px; width: 96px; }
   .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 7px 2px 5px; }
 
+  .game-layout .table-hand-spacer {
+    flex: none;
+    height: var(--hand-h, 140px);
+    margin-top: var(--sp-1);
+  }
   /* Full length: head to boots, 330 px at 1440x900 (300 at 1280x800). */
   .table-cath { width: 150px; }
   .table-cath-figure { height: clamp(300px, 37vh, 340px); }
@@ -3801,4 +3806,66 @@ html.no-animations .table-cath-line { animation: none; }
     width: 84px;
     rotate: 7deg;
   }
+}
+
+/* Plan item 190: the ledger at the foot of the desktop rail, a short roll of till receipts (the amount, what moved
+   it, the round). It sits over Undo at its natural height and gives way first when the hand needs the column. */
+.round-ledger { display: none; }
+@media (min-width: 1024px) {
+  .actions-sheet .round-ledger {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1000 auto;
+    min-height: 0;
+    overflow: hidden;
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    box-shadow: inset 0 1px 0 var(--ink-a15);
+  }
+  .round-ledger-title { margin: 0 0 6px; color: var(--ink-muted); }
+  .actions-sheet .round-ledger[data-room="no"] { visibility: hidden; }
+  .round-ledger [hidden] { display: revert; visibility: hidden; }
+  .round-ledger-empty {
+    margin: 0;
+    color: var(--ink-muted);
+    font: italic var(--fs-small)/1.3 var(--font-voice);
+  }
+  .round-ledger-roll {
+    display: grid;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* a till receipt: thin paper with a torn foot, the amount in its own ink */
+  .receipt {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: var(--sp-2);
+    padding: 5px 9px 10px;
+    background: var(--paper-hi);
+    box-shadow: inset 0 0 0 1px var(--ink-a15), 0 1px 2px rgb(var(--shadow-ink) / .14);
+    --torn-foot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 0 L3 4.5 L6 2 L9 5.5 L12 0 Z'/%3E%3C/svg%3E");
+    -webkit-mask: var(--torn-foot) bottom left / 12px 6px repeat-x, linear-gradient(black 0 0) 0 0 / 100% calc(100% - 6px) no-repeat;
+    mask: var(--torn-foot) bottom left / 12px 6px repeat-x, linear-gradient(black 0 0) 0 0 / 100% calc(100% - 6px) no-repeat;
+    font: 600 var(--fs-caption)/1.25 var(--font-text);
+    color: var(--ink);
+    animation: receipt-print var(--dur-moment) var(--ease-settle) both;
+  }
+  .receipt-amount { white-space: nowrap; font-weight: 800; }
+  .receipt[data-sign="up"] .receipt-amount { color: var(--gain-ink); }
+  .receipt[data-sign="down"] .receipt-amount { color: var(--short-ink-shelf); }
+  .receipt-why {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .receipt-round { color: var(--ink-muted); font-size: var(--fs-label); }
+  /* the roll's first slip: the balance it started from, its words under the figures */
+  .receipt[data-kind="opening"] { grid-template-columns: minmax(0, 1fr) auto; }
+  .receipt[data-kind="opening"] .receipt-why { grid-column: 1; color: var(--ink-muted); }
+  @keyframes receipt-print { from { opacity: 0; translate: 0 -6px; } }
+  @media (prefers-reduced-motion: reduce) { .receipt { animation: none; } }
 }
