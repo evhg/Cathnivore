@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 // Plan item 113 (slice 1): Cath presents the chapters on the Campaign screen: half-length, 160 px tall at D and
-// 110 on a phone, with a speech bubble at 15 px or more whose line follows the chapter under the pointer or focus.
+// 110 on a phone (a round cameo there since item 200), with a speech bubble at 15 px or more whose line follows the chapter under the pointer or focus.
 test('Cath speaks about the chapter under the pointer or focus', async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })),
@@ -13,6 +13,11 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   const phone = page.viewportSize()!.width <= 600
   const art = (await page.locator('.cmp-header-cath').boundingBox())!
   expect(art.height).toBeGreaterThanOrEqual(phone ? 110 : 160)
+  // Plan item 200: on a phone she's a whole cameo (no fade into the paper), inside the viewport.
+  if (phone) {
+    expect(await page.locator('.cmp-header-cath').evaluate((e) => getComputedStyle(e).maskImage)).toBe('none')
+    expect(art.x + art.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+  }
   const size = await page.locator('.cmp-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))
   expect(size).toBeGreaterThanOrEqual(15)
   // The next chapter to play by default; another chapter's line when it takes focus.

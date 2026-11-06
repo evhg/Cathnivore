@@ -99,7 +99,20 @@
 }
 @media (max-width: 600px) {
   .cmp-cath { width: 100%; justify-content: flex-end; }
-  .cmp-header-cath { height: 110px; }
+  /* Plan item 200: on a phone a half-length figure fading out under the bubble read as cropped and washed out; she
+     sits in a round cameo instead, head and shoulders, ringed like a portrait on a stall sign. */
+  .cmp-header-cath {
+    height: 110px;
+    aspect-ratio: 1;
+    margin-top: 4px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 35%, var(--paper-hi, var(--paper)) 0 55%, var(--paper-2) 100%);
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--pasture), 0 4px 10px color-mix(in srgb, var(--ink) 18%, transparent);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .cmp-header-cath svg { height: 150%; filter: none; transform: translateY(4%); }
   .cmp-cath-line { flex: 1; max-width: none; margin-top: 12px; }
 }
 .cmp-header-cath svg {
@@ -144,9 +157,10 @@
   width: 180px;
   height: 12px;
   border-radius: 99px;
-  background: var(--paper-2);
-  /* The empty track keeps an edge in dark, where paper-2 sits close to the page. */
-  box-shadow: inset 0 0 0 1px var(--ink-a15);
+  /* Plan item 200: the empty segments read as six slots (an ink-tinted well and a 3:1 rim against the page), not a
+     faint smudge, so a fresh campaign shows how far there is to go. */
+  background: color-mix(in oklab, var(--ink) 16%, var(--paper-2));
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--ink) 55%, var(--paper));
   overflow: hidden;
 }
 

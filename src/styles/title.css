@@ -1217,10 +1217,11 @@ html.no-animations .title-screen * {
     grid-column: 1 / -1;
     grid-row: 1;
     align-self: end;
+    /* Plan item 200: pinned low on the counter's front, below her jacket's hem and hand (it hung over both). */
     justify-self: start;
     position: relative;
     z-index: var(--z-map-fx);
-    margin: 0 0 -22px -14px;
+    margin: 0 0 -40px -14px;
     pointer-events: none;
   }
   .title-art.title-table .title-cath { grid-column: 1; grid-row: 1; }

@@ -48,12 +48,19 @@ test('the desktop title keeps its crates off the menu board and the NEXT card on
 })
 
 test("the phone title's Daily slip stays off the board and Cath's figure, on two lines", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
-  await page.locator('.daily-ritual.is-compact .ritual-receipt').waitFor()
-  const slip = await boxOf(page, '.daily-ritual.is-compact .ritual-receipt')
-  const board = await boxOf(page, '.title-board')
-  expect(meets(slip, board)).toBe(false)
-  expect(slip.bottom - slip.top).toBeLessThanOrEqual(52)
-  expect(slip.left).toBeGreaterThanOrEqual(0)
+  // Plan item 200: at 390 it hung over her jacket's hem and hand (top 424); it is pinned low on the counter's front,
+  // which hides her figure's last 50 px or so.
+  for (const width of [390, 430]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/')
+    await page.locator('.daily-ritual.is-compact .ritual-receipt').waitFor()
+    const slip = await boxOf(page, '.daily-ritual.is-compact .ritual-receipt')
+    const board = await boxOf(page, '.title-board')
+    const cath = await boxOf(page, '.title-cath')
+    expect(meets(slip, board), `board at ${width}`).toBe(false)
+    expect(slip.top, `below her hem at ${width}`).toBeGreaterThanOrEqual(cath.bottom - 52)
+    expect(slip.bottom - slip.top).toBeLessThanOrEqual(52)
+    expect(slip.left).toBeGreaterThanOrEqual(0)
+    expect(slip.right).toBeLessThanOrEqual(width)
+  }
 })
