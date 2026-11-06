@@ -2724,3 +2724,95 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp.cp-swap::after { animation: cp-rim-fade 500ms ease; }
   @keyframes cp-rim-fade { 0%, 100% { opacity: 0; } 50% { opacity: .5; } }
 }
+
+/* Plan item 199: the armoury's case table. The class weapon lies on a rain-wet table under one lamp: its profile
+   extruded in stacked layers (gunmetal sides, a lit face), turning slowly; the wet top reflects it. A class change
+   slides the new one in over 250 ms. No turn under reduced motion (a held three-quarter view) and the slide fades. */
+.cp-weapon-art.cp-case {
+  position: relative;
+  display: block;
+  width: calc(100% + var(--u) * 74);
+  height: calc(var(--u) * 190);
+  max-width: none;
+  margin: calc(var(--u) * -14) 0 calc(var(--u) * 10) calc(var(--u) * -40);
+  overflow: hidden;
+  perspective: calc(var(--u) * 900);
+  color: var(--ink);
+  background:
+    radial-gradient(40% 72% at 50% 0%, rgb(var(--amber-rgb) / .3), rgb(var(--amber-rgb) / .08) 60%, transparent 78%),
+    repeating-linear-gradient(97deg, transparent 0 calc(var(--u) * 19), rgb(var(--ink-rgb) / .04) calc(var(--u) * 19) calc(var(--u) * 20)),
+    linear-gradient(180deg, transparent 0 70%, rgb(var(--ink-rgb) / .2) 70.4%, rgb(var(--shade-rgb) / .3) 72%, rgb(var(--ink-rgb) / .08) 84%, rgb(var(--shade-rgb) / .6));
+}
+/* The lamp: a shade's lit rim over the table, its light falling as the pool above. */
+.cp-case-lamp {
+  position: absolute; left: 50%; top: 0; width: calc(var(--u) * 70); height: calc(var(--u) * 5); margin-left: calc(var(--u) * -35);
+  border-radius: 0 0 50% 50%; background: rgb(var(--amber-rgb) / .9);
+  box-shadow: 0 0 calc(var(--u) * 18) calc(var(--u) * 4) rgb(var(--amber-rgb) / .28);
+}
+/* Its shadow on the table, under the prop. */
+.cp-case::after {
+  content: ""; position: absolute; left: 16%; right: 16%; top: 64%; height: 12%;
+  background: radial-gradient(50% 50% at 50% 50%, rgb(var(--shade-rgb) / .75), transparent);
+  pointer-events: none;
+}
+.cp-prop {
+  position: absolute; z-index: var(--z-lift); left: 6%; right: 6%; top: 4%; height: 70%;
+  transform-style: preserve-3d;
+  -webkit-box-reflect: below calc(var(--u) * 6) linear-gradient(transparent 58%, rgb(var(--white-rgb) / .2));
+  animation: cp-prop-in 250ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.cp-prop-turn { position: absolute; inset: 0; transform-style: preserve-3d; animation: cp-prop-turn 9s ease-in-out infinite alternate; }
+.cp-prop-layer { position: absolute; inset: 0; transform: translateZ(calc(var(--z) * var(--u) * 2.4)); }
+.cp-prop-layer svg { display: block; width: 100%; height: 100%; }
+.cp-prop-layer .wa-body { fill: color-mix(in srgb, var(--ink) 14%, rgb(var(--shade-rgb))); fill-opacity: 1; stroke: color-mix(in srgb, var(--ink) 16%, rgb(var(--shade-rgb))); }
+.cp-prop-layer .wa-detail { display: none; }
+.cp-prop-layer.is-face .wa-body { fill: color-mix(in srgb, var(--ink) 34%, rgb(var(--shade-rgb))); stroke: rgb(var(--ink-rgb) / .85); }
+.cp-prop-layer.is-face .wa-detail { display: inline; stroke: rgb(var(--ink-rgb) / .62); opacity: 1; }
+@keyframes cp-prop-turn {
+  from { transform: rotateX(10deg) rotateY(-34deg); }
+  to { transform: rotateX(10deg) rotateY(34deg); }
+}
+@keyframes cp-prop-in {
+  from { opacity: 0; transform: translateX(28%); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cp-prop-fade { from { opacity: 0; } to { opacity: 1; } }
+.cp-case.is-still .cp-prop { animation: none; }
+.cp-case.is-still .cp-prop-turn { animation: none; transform: rotateX(10deg) rotateY(-24deg); }
+@media (prefers-reduced-motion: reduce) {
+  .cp-prop { animation-name: cp-prop-fade; }
+  .cp-prop-turn { animation: none; transform: rotateX(10deg) rotateY(-24deg); }
+}
+/* An upright phone: the case beside the weapon's name and numbers, 156 x 66. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-weapon-art.cp-case { width: 156px; height: 66px; margin: 0; } /* px-ok */
+  .cp-weapon-art.cp-case svg { max-width: none; }
+  .cp-prop { left: 2%; right: 2%; top: 8%; height: 58%; }
+  .cp-case-lamp { width: 40px; height: 3px; margin-left: -20px; } /* px-ok */
+}
+
+/* Plan item 199 slice 2: at D the four stats are gauge dials stamped on the case's lid: a 270-degree ring that fills
+   to the value (the bars' --v, still counted up over 350 ms), its number in the middle, the name under it. Phones
+   keep the compact bars (the upright file must fit one screen). */
+@media (min-width: 701px) and (min-height: 561px) {
+  .cp-attrs {
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: calc(var(--u) * 10);
+    margin: calc(var(--u) * 4) calc(var(--u) * -12) calc(var(--u) * 26); padding: calc(var(--u) * 16) calc(var(--u) * 10) calc(var(--u) * 12);
+    border-radius: calc(var(--u) * 6);
+    background: linear-gradient(180deg, rgb(var(--ink-rgb) / .07), rgb(var(--ink-rgb) / .02));
+    box-shadow: inset 0 calc(var(--u) * 2) 0 rgb(var(--ink-rgb) / .1), inset 0 calc(var(--u) * -2) 0 rgb(var(--shade-rgb) / .6), 0 0 0 max(1px, var(--u)) var(--line-2); /* px-ok */
+  }
+  .cp-attr { grid-template-columns: none; grid-template-rows: auto auto; justify-items: center; row-gap: calc(var(--u) * 8); }
+  .cp-attr dt { grid-row: 2; font-size: var(--fs-1); }
+  .cp-attr-v { grid-row: 1; grid-template-columns: none; place-items: center; gap: 0; }
+  .cp-attr-v > * { grid-area: 1 / 1; }
+  .cp-bar {
+    width: calc(var(--u) * 92); height: calc(var(--u) * 92); border-radius: 50%;
+    background:
+      conic-gradient(from 225deg, var(--ink) 0 calc(var(--v, 0) * 270deg), var(--line-2) calc(var(--v, 0) * 270deg) 270deg, transparent 270deg);
+    -webkit-mask: radial-gradient(closest-side, transparent 80%, var(--ink) 81.5% 99%, transparent);
+    mask: radial-gradient(closest-side, transparent 80%, var(--ink) 81.5% 99%, transparent);
+  }
+  .cp-bar-fill, .cp-tick { display: none; }
+  .cp-attr-n { font-size: var(--fs-3); text-align: center; }
+}

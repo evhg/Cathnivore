@@ -47,7 +47,7 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   await fresh(page, hasTouch)
   await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
-  await expect(page.locator('.cp-weapon-art svg')).toHaveCount(1)
+  await expect(page.locator('.cp-weapon-art .cp-prop-layer.is-face svg')).toHaveCount(1)
   const box = (await page.locator('.cp-attrs').boundingBox())!
   const ink = await page.evaluate(() => getComputedStyle(document.querySelector('.cp-attr dt')!).color)
   await page.addStyleTag({ content: '.cp-attrs { visibility: hidden !important; }' })
@@ -260,4 +260,23 @@ test('at D she stands whole between the list and the sheet, and keys 1-5 change 
     expect(m.fig.right, s).toBeLessThan(m.sheet.left)
     expect(m.body.left, s).toBeGreaterThan(m.list.right)
   }
+})
+
+// Plan item 199: the class weapon is a prop on the armoury's case table (`[data-armoury-prop]`), naming the class and
+// changing with it: 200 px or wider at D, 140 at P, turning slowly (held still under reduced motion).
+test('the class weapon lies on the armoury case table and changes with the class', async ({ page, hasTouch }) => {
+  test.setTimeout(180_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
+  const prop = page.locator('[data-armoury-prop]')
+  for (const cls of CLASSES) {
+    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    await expect(prop).toHaveAttribute('data-armoury-prop', cls)
+    const w = (await prop.locator('.cp-prop').boundingBox())!.width
+    expect(w, cls).toBeGreaterThanOrEqual(hasTouch ? 140 : 200)
+  }
+  expect(await page.locator('.cp-prop-turn').evaluate((e) => getComputedStyle(e).animationName)).toBe('cp-prop-turn')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  expect(await page.locator('.cp-prop-turn').evaluate((e) => getComputedStyle(e).animationName)).toBe('none')
 })

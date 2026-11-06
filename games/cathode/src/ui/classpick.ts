@@ -34,6 +34,8 @@ export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim:
 /** The stat sheet's full bar (no class starts above 35). */
 const ATTR_MAX = 40;
 export const HOLD_MS = 600;
+/** The armoury prop's depth: copies of the profile stacked front to back (plan item 199). */
+const PROP_LAYERS = 6;
 
 /**
  * Opens the class pick over `host` and calls `onPick` once with the chosen class, after the exit
@@ -213,9 +215,25 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const fresh = newCharacter(cls);
     const w = WEAPON_BASES[STARTING_WEAPON[cls]];
     if (w) {
-      // Plan item 112: the class weapon as line art on the dossier.
-      const art = el("span", "cp-weapon-art", weapon);
-      art.innerHTML = weaponArtSvg(w.cls);
+      // Plan item 199: the class weapon as a prop on the armoury's rain-wet case table, under a lamp: its profile
+      // (item 112's line art) extruded in layers so it has a body, turning slowly; a class change slides the new
+      // one in over 250 ms (a fade, and no turn, under reduced motion).
+      const art = el("span", "cp-weapon-art cp-case", weapon);
+      art.dataset.armouryProp = cls;
+      art.dataset.weapon = w.cls;
+      art.setAttribute("role", "img");
+      art.setAttribute("aria-label", `${WEAPON_CLASS_LABEL[w.cls] ?? w.cls} on the case table`);
+      el("span", "cp-case-lamp", art).setAttribute("aria-hidden", "true");
+      const prop = el("span", "cp-prop", art);
+      prop.setAttribute("aria-hidden", "true");
+      const turn = el("span", "cp-prop-turn", prop);
+      const svg = weaponArtSvg(w.cls);
+      for (let i = 0; i < PROP_LAYERS; i++) {
+        const layer = el("span", i === PROP_LAYERS - 1 ? "cp-prop-layer is-face" : "cp-prop-layer", turn);
+        layer.style.setProperty("--z", String(i - (PROP_LAYERS - 1) / 2));
+        layer.innerHTML = svg;
+      }
+      if (still) art.classList.add("is-still");
       el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);
     }
     el("span", "cp-weapon-name", weapon, fresh.equipment.weapon1?.name ?? w?.name ?? "");
