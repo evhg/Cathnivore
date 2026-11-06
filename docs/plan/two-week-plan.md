@@ -2242,7 +2242,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-armoury-prop]` names the class and changes with it; the prop 200 px or more wide at D and 140 at P; labels 12 px or more at AA; no rotation under reduced motion; `cathode-classpick`, `cathode-classstage` and `cathode-perf` pass; shots P and D for every class.
 - **Size:** 2
 
-## 200. [ ] The bugs from the 2026-11-06 08:30 critique, fixed as one batch
+## 200. [ ] The bugs from the 2026-11-06 08:30 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1106c`; points already open in 126, 138 and 182 left out)
   - **NIGHT SHIFT:** D class pick: the stats panel (970-1440 x 55-850) hides Cath, only her umbrella tip showing (935-975 x 300-330). P title: her face blurred by depth of field (210-285 x 170-250), the menu panel against her coat (8-195 x 207-435); '4 MORE NAMES' about 10 px grey (16-105 x 655-667) and the List tags about 9 px (100-375 x 730-750). D title: the List blurbs run to the cards' edges (283-378 x 732-812, 390-490 x 725-805). P pick: stat labels and values about 10 px (16-374 x 643-678, 162-330 x 728-738).
   - **Cathnivore:** P campaign: Cath's portrait cropped and faded beside her bubble (300-360 x 145-245); the progress segments nearly invisible (16-195 x 120-132). P title: 'No sale yet' over her jacket's hem and hand (5-135 x 425-465).
