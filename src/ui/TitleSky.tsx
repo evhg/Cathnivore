@@ -22,12 +22,12 @@ interface House {
   chimney: boolean
 }
 
-/** One row of houses across the 1440-wide frame, `[minTop, maxTop]` their eaves in the 160-high box. */
+/** One row of houses across the 2880-wide frame (wide, so the street scales with its band's height, not the screen's width), `[minTop, maxTop]` their eaves in the 160-high box. */
 function row(seed: number, minW: number, maxW: number, minTop: number, maxTop: number): House[] {
   const r = rng(seed)
   const out: House[] = []
   let x = -20
-  while (x < 1460) {
+  while (x < 2900) {
     const w = Math.round(minW + r() * (maxW - minW))
     const top = Math.round(minTop + r() * (maxTop - minTop))
     const k = r()
@@ -52,8 +52,8 @@ const FAR = row(206, 70, 116, 72, 90)
 const NEAR = row(1106, 90, 150, 98, 110)
 
 /** Marrow's clock tower and the market hall's roof, the two shapes that say "a town", on the left of the frame. */
-const TOWER = 'M168 160V62H176V48L190 32L204 48V62H212V160Z'
-const HALL = 'M1180 160V84L1240 62L1300 84V160Z'
+const TOWER = 'M978 160V62H986V48L1000 32L1014 48V62H1022V160Z'
+const HALL = 'M1900 160V84L1960 62L2020 84V160Z'
 
 /** The windows of the near row: two floors of them above each shop's awning. */
 const WINDOWS = NEAR.flatMap((h, i) => {
@@ -81,7 +81,7 @@ export default function TitleSky({ sky }: { sky: Sky }) {
     <div className="title-sky" aria-hidden="true" data-sky-layer={sky}>
       <span className="title-sky-sun" />
       <span className="title-sky-stars" />
-      <svg className="title-street" viewBox="0 0 1440 160" preserveAspectRatio="xMidYMax slice" focusable="false">
+      <svg className="title-street" viewBox="0 0 2880 160" preserveAspectRatio="xMidYMax slice" focusable="false">
         <g className="street-far">
           <path d={TOWER} />
           <path d={HALL} />
@@ -92,7 +92,7 @@ export default function TitleSky({ sky }: { sky: Sky }) {
             <rect key={i} x={h.x + h.w * 0.7} y={h.top - 14} width="7" height="16" />
           ))}
         </g>
-        <circle className="street-clock" cx="190" cy="74" r="7" />
+        <circle className="street-clock" cx="1000" cy="74" r="7" />
         <g className="street-far-windows">
           {FAR_WINDOWS.map((w, i) => (
             <rect key={i} className={w.lit ? 'is-lit' : undefined} x={w.x} y={w.y} width="8" height="10" rx="1" />

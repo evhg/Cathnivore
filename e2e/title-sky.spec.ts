@@ -90,3 +90,16 @@ test('the evening lanterns hold still under reduced motion', async ({ page }, te
   const moving = await page.locator('.title-lantern-glow').first().evaluate((e) => getComputedStyle(e).animationName)
   expect(moving).not.toBe('none')
 })
+
+test('the sky stays above the menu and board on short desktops and landscape phones too', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'once, at several sizes')
+  for (const [width, height] of [[1280, 800], [1024, 768], [1920, 1080], [844, 390]] as const) {
+    await page.setViewportSize({ width, height })
+    await open(page, 11, 'light')
+    const sky = (await page.locator('.title-sky').boundingBox())!
+    for (const sel of ['.title-menu', '.title-board']) {
+      const b = (await page.locator(sel).boundingBox())!
+      expect(sky.y + sky.height, `${width}x${height}: the sky reaches ${sel}`).toBeLessThanOrEqual(b.y)
+    }
+  }
+})
