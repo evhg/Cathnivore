@@ -46,6 +46,9 @@ export interface SaveData {
   /** Seasonal events: board indexes solved per event id, and the ids whose exclusive crop is earned. */
   eventDone?: Record<string, number[]>
   eventCrops?: string[]
+  /** Plan item 193: the week's big valley, its game in progress and its result, keyed by the week's Sunday. */
+  sunday?: Record<string, SavedGame>
+  sundayResults?: Record<string, DailyResult>
 }
 
 const KEY = 'runnel:v1'

@@ -31,6 +31,8 @@ import {
   hexDistance,
   utcDateString,
   type Puzzle,
+  sundayOf,
+  sundayPuzzle,
 } from './engine'
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
 import { boardCode, parseBoardCode } from './code'
@@ -39,7 +41,7 @@ import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed
 import { mountWeekChip } from '../../../shared/cath/weekchip'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
-type Mode = 'daily' | 'practice' | 'orchard'
+type Mode = 'daily' | 'practice' | 'orchard' | 'sunday'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -141,6 +143,12 @@ function openGame(): void {
     puzzle = dailyPuzzle(playDay)
     game = restore(puzzle, data.daily[playDay])
     data.daily[playDay] = game
+  } else if (mode === 'sunday') {
+    // Plan item 193: the week's big valley, its progress kept all week.
+    const week = sundayOf(today)
+    puzzle = sundayPuzzle(today)
+    game = restore(puzzle, (data.sunday ??= {})[week])
+    data.sunday[week] = game
   } else if (mode === 'orchard') {
     const games = (data.orchardGames ??= {})
     level = Math.min(level, unlockedLevel((data.orchard ??= {})))
@@ -206,6 +214,10 @@ function finish(): void {
   game.solved = true
   if (mode === 'daily' && !data.results[playDay]) {
     data.results[playDay] = { number: dailyNumber(playDay), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
+  }
+  if (mode === 'sunday') {
+    const week = sundayOf(today)
+    ;(data.sundayResults ??= {})[week] ??= { number: 0, timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
   }
   renderRail()
   if (mode === 'orchard') recordOrchard((data.orchard ??= {}), level, game.taps, puzzle.par, game.elapsedMs)
@@ -886,6 +898,7 @@ function render(): void {
   const isOrchard = mode === 'orchard'
   ui.tabPractice.setAttribute('aria-selected', String(mode === 'practice'))
   ui.tabOrchard.setAttribute('aria-selected', String(isOrchard))
+  $<HTMLButtonElement>('tab-weekly').setAttribute('aria-selected', String(mode === 'sunday'))
   document.body.dataset.mode = mode
   ui.btnBoard.hidden = mode !== 'practice'
   const sizeName = `${size[0]!.toUpperCase()}${size.slice(1)}`
@@ -902,6 +915,8 @@ function render(): void {
     ? `Daily #${dailyNumber(playDay)} · ${formatDay(playDay)}${arcLabel(playDay) ? ` · ${arcLabel(playDay)}` : ''}`
     : isOrchard
     ? `Orchard ${level} · ${orchardName(level)}`
+    : mode === 'sunday'
+    ? `The big valley · week of ${formatDay(sundayOf(today))}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
   const skySlot = document.getElementById('hud-sky')
   if (skySlot) {
@@ -950,7 +965,7 @@ function render(): void {
       ? `Solved in ${formatTime(game.elapsedMs)}. Next puzzle in ${untilTomorrow()}.`
       : `Solved in ${formatTime(game.elapsedMs)}.`
     ui.btnNew.hidden = false
-    ui.btnNew.textContent = isDaily ? 'See result' : isOrchard ? 'See result' : 'New puzzle'
+    ui.btnNew.textContent = isDaily || isOrchard || mode === 'sunday' ? 'See result' : 'New puzzle'
   } else {
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
@@ -1005,6 +1020,8 @@ function showWin(): void {
     ? `Daily #${dailyNumber(playDay)}${playDay === today ? '' : ' · catch-up'}`
     : isOrchard
     ? `Orchard ${level} of ${ORCHARD_LEVELS}`
+    : mode === 'sunday'
+    ? `This week's big valley`
     : `Practice · ${size}`
   ui.winTitle.textContent = 'Every field is watered.'
   ui.winTime.textContent = formatTime(game.elapsedMs)
@@ -1024,7 +1041,7 @@ function showWin(): void {
     drops.innerHTML = [1, 2, 3].map((n) => dropSvg(n <= best.drops)).join('')
     ui.winNote.prepend(drops)
   }
-  ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : 'Next puzzle'
+  ui.btnNext.textContent = isDaily ? 'Play practice' : isOrchard ? (level >= ORCHARD_LEVELS ? 'Back to daily' : 'Next row') : mode === 'sunday' ? 'Back to daily' : 'Next puzzle'
   const wsCode = workshopCode(puzzle.seed)
   if (wsCode) {
     ui.winEyebrow.textContent = "Made in Bea's workshop"
@@ -1125,7 +1142,7 @@ function renderCard(streak: number): void {
   const save = $<HTMLAnchorElement>('btn-save-card')
   if (!ctx) return
   const wsCode = workshopCode(puzzle.seed)
-  const title = wsCode ? `Bea's workshop ${wsCode}` : mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice`
+  const title = wsCode ? `Bea's workshop ${wsCode}` : mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : mode === 'sunday' ? `Runnel big valley` : `Runnel practice`
   cardCode = wsCode
   // Plan item 142: a daily's card carries the week's valley (today's solve included).
   const week = mode === 'daily' ? weekFeatures(today, data.results).map((f) => f.kind) : undefined
@@ -1178,7 +1195,7 @@ function shareGrid(): string {
 function shareText(): string {
   const wsCode = workshopCode(puzzle.seed)
   if (wsCode) return workshopShareText(wsCode, `⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par})`)
-  const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : `Runnel practice (${size})`
+  const head = mode === 'daily' ? `Runnel #${dailyNumber(playDay)}` : mode === 'orchard' ? `Runnel Orchard ${level}` : mode === 'sunday' ? `Runnel big valley, week of ${formatDay(sundayOf(today))}` : `Runnel practice (${size})`
   const drops = '💧'.repeat(dropsFor(game.taps, puzzle.par))
   return `${head} 🌱 Cath's fields, all watered\n⏱ ${formatTime(game.elapsedMs)} · ${game.taps} taps (par ${puzzle.par}) ${drops}\n${shareGrid()}\nhttps://cathnivore.com/runnel/`
 }
@@ -1212,6 +1229,7 @@ ui.btnNext.addEventListener('click', () => {
   hideStrip()
   if (workshopCode(puzzle.seed) && game.solved) workshop?.open()
   else if (mode === 'daily') switchMode('practice')
+  else if (mode === 'sunday') switchMode('daily')
   else if (mode === 'orchard') {
     if (level >= ORCHARD_LEVELS) switchMode('daily')
     else playLevel(level + 1)
@@ -1319,6 +1337,13 @@ function beaNote(arc: string | null): string {
 }
 
 function renderRail(): void {
+  // Plan item 193: the Weekly tab says how this week's big valley stands.
+  const wk = document.getElementById('tab-weekly')
+  if (wk) {
+    const week = sundayOf(today)
+    const g = data.sunday?.[week]
+    wk.dataset.state = data.sundayResults?.[week] ? 'watered' : g && g.taps > 0 ? 'started' : 'fresh'
+  }
   renderRailGarden()
   // Plan item 158: the almanac's masthead, today's date (UTC, the daily's own day).
   const head = document.getElementById('almanac-head')
@@ -1673,7 +1698,7 @@ ui.btnTip.addEventListener('click', () => {
   render()
 })
 ui.btnNew.addEventListener('click', () => {
-  if (mode === 'daily' || mode === 'orchard') showWin()
+  if (mode === 'daily' || mode === 'orchard' || mode === 'sunday') showWin()
   else newPractice()
 })
 const soundBtn = $<HTMLButtonElement>('btn-sound')
@@ -1685,6 +1710,7 @@ soundBtn.addEventListener('click', () => {
 $<HTMLButtonElement>('btn-help').addEventListener('click', () => ui.dlgHelp.showModal())
 $<HTMLButtonElement>('btn-stats').addEventListener('click', showStats)
 $<HTMLButtonElement>('btn-rail-stats').addEventListener('click', showStats)
+$<HTMLButtonElement>('tab-weekly').addEventListener('click', () => switchMode('sunday'))
 
 // Focus rings on the board only for keyboard players; a tap focuses the tile too, and a ring there
 // would look like a selection.
@@ -1868,6 +1894,7 @@ const params = new URLSearchParams(location.search)
 // header, stats, host line or buttons (styles.css "key art").
 if (params.has('keyart')) document.documentElement.dataset.keyart = ''
 if (params.get('mode') === 'practice') mode = 'practice'
+if (params.get('mode') === 'sunday') mode = 'sunday'
 if (params.get('mode') === 'orchard') {
   mode = 'orchard'
   level = unlockedLevel(data.orchard ?? {})
