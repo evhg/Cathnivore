@@ -2191,7 +2191,9 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   /* The changes in one row: three on Normal, four when a level adds one. */
   .setup .difficulty-sheet dl { grid-template-columns: 0.95fr 1.15fr 1.3fr; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
   .setup .difficulty-sheet dl:has(> div:nth-child(4)) { grid-template-columns: 1fr 1fr; grid-auto-flow: row; row-gap: 2px; }
-  .setup .difficulty-sheet dl:has(> div:nth-child(4)) > div { display: flex; align-items: baseline; gap: 6px; }
+  /* Plan item 188: each of four changes as label over value, one line each (inline they wrapped to two rows of two lines and scrolled the phone page). */
+  .setup .difficulty-sheet dl:has(> div:nth-child(4)) > div { display: block; }
+  .setup .difficulty-sheet dl:has(> div:nth-child(4)) :is(dt, dd) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
   .setup .difficulty-sheet dl > div { display: block; padding: 2px 0 0 10px; border-bottom: 0; }
   .setup .difficulty-sheet .is-changed::before { left: 0; top: 9px; width: 6px; height: 6px; margin-top: 0; background: var(--hollowell); }
   .setup .difficulty-sheet dt { font-size: var(--fs-label); letter-spacing: 0.02em; }
@@ -3493,4 +3495,25 @@ html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-g
 svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   svg.map[data-event='drought'] .ev-cracks { animation: none; }
+}
+
+/* Plan item 188: on an upright phone Cath speaks her setup line: her bust on the left, under and beside the title,
+   the line in a paper bubble with its tail at her (it read as the page's subtitle beside a 40 px head). */
+@media (max-width: 599px) and (orientation: portrait) {
+  .setup-header {
+    display: grid; grid-template-columns: 52px 1fr; grid-template-areas: "cath title" "cath line";
+    column-gap: 10px; row-gap: 1px; align-items: start;
+  }
+  .setup-header-text { display: contents; }
+  .setup-header h1 { grid-area: title; }
+  .setup-header-cath { grid-area: cath; grid-row: 1 / 3; align-self: center; order: -1; }
+  .setup-header-cath svg { width: 52px; height: 52px; border-radius: 50%; background: var(--paper-hi); box-shadow: 0 0 0 2px color-mix(in srgb, var(--soil) 40%, transparent); }
+  .setup-cath-line {
+    grid-area: line; position: relative; margin: 0; padding: 1px 8px; border-radius: 10px; line-height: 1.15;
+    background: var(--paper-hi); border: 1px solid color-mix(in srgb, var(--soil) 30%, transparent); opacity: 1; color: var(--ink);
+  }
+  .setup-cath-line::before {
+    content: ""; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; rotate: 45deg;
+    background: var(--paper-hi); border-left: 1px solid color-mix(in srgb, var(--soil) 30%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--soil) 30%, transparent);
+  }
 }

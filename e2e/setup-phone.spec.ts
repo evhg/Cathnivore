@@ -95,3 +95,22 @@ test('Setup to Start from the keyboard alone, every card named', async ({ page }
   await page.keyboard.press('Enter')
   await page.locator('.game').waitFor()
 })
+
+// Plan item 188: on an upright phone Cath speaks her setup line: a 52 px+ bust left of the title and her bubble,
+// the bubble's text 12 px+, neither box meeting the title.
+test('Cath speaks her setup line from a bust beside it', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the upright phone layout')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
+  const m = await page.evaluate(() => {
+    const b = (q: string) => document.querySelector(q)!.getBoundingClientRect()
+    return { cath: b('.setup-header-cath'), h1: b('.setup-header h1'), line: b('.setup-cath-line'), fs: parseFloat(getComputedStyle(document.querySelector('.setup-cath-line')!).fontSize) }
+  })
+  const s = JSON.stringify(m)
+  expect(m.cath.height, s).toBeGreaterThanOrEqual(52)
+  expect(m.cath.right, s).toBeLessThanOrEqual(m.line.left)
+  expect(m.cath.right, s).toBeLessThanOrEqual(m.h1.left)
+  expect(m.line.top, s).toBeGreaterThanOrEqual(m.h1.bottom - 1)
+  expect(m.fs, s).toBeGreaterThanOrEqual(12)
+})
