@@ -767,6 +767,26 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // forehead with a soft peak at the centre parting, sweeping down past the temples, low over the ears and the nape),
   // so its front edge is one smooth curve instead of a deformed sphere's saw-tooth.
   const cap = new THREE.SphereGeometry(1, seg(96), seg(22), 0, Math.PI * 2, 0, 1);
+  // The cap's shape before its scale and tilt: `v` 0..1 from the crown to the hairline, `az` 0 at her front.
+  // Plan item 175: shared with the locks laid over it.
+  const capReach = (az: number) => {
+    const f = Math.max(0, Math.cos(az));
+    const peak = Math.exp(-(az * az) / 0.02) * 0.025;
+    return Math.PI * (0.8 - 0.43 * Math.pow(f, 3.2)) + peak * Math.PI;
+  };
+  const capShape = (v: number, az: number, out = 0) => {
+    const polar = v * capReach(az);
+    let x = Math.sin(polar) * Math.sin(az);
+    let y = Math.cos(polar);
+    let z = Math.sin(polar) * Math.cos(az);
+    const part = Math.max(0, 1 - Math.abs(x) / 0.1) * Math.max(0, z) * Math.max(0, y) * 0.05;
+    const crown = (1 + Math.max(0, y) * Math.max(0, -z) * 0.08 + 0.05 * (1 - Math.max(0, y)) * (1 - Math.max(0, z))) * (1 + out);
+    x *= crown;
+    z *= crown;
+    y = y * crown - part;
+    return V(x, y, z);
+  };
+  const capPlace = new THREE.Matrix4().makeTranslation(0, 0.012, -0.004).multiply(new THREE.Matrix4().makeRotationX(-0.2)).multiply(new THREE.Matrix4().makeScale(0.081, 0.104, 0.1));
   {
     const p = cap.attributes.position as THREE.BufferAttribute;
     const reach = (az: number) => {
@@ -807,6 +827,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let hairGeo: THREE.BufferGeometry | null = null;
   let hairCols = 0;
   let hairRows = 0;
+  let lockGeo: THREE.BufferGeometry | null = null;
+  let lockRest: Float32Array | null = null;
+  // Per lock vertex: its place on the sheet's grid (column, row), so it sways with the sheet under it.
+  let lockAt: Float32Array | null = null;
   // The long hair (VISION's character bible: very long, glossy, centre-parted, falling in soft waves): one draped
   // sheet from under the cap, out over the collar and down her back to the shoulder blades, waved, with uneven ends.
   {
@@ -865,6 +889,98 @@ export function buildFrontCath(phone: boolean): FrontCath {
     rimify(hairSheetMat, 1.2);
     mats.push(hairSheetMat);
     add(sheet, hairSheetMat, headPivot);
+
+    // Plan item 175: locks laid over the sheet, so the hair reads as layered strands rather than one shell: each
+    // a rounded ribbon a few centimetres wide that follows the sheet's waves just outside it, emerging under the
+    // cap and tapering to a point past the sheet's ends, its shine band shifted a little so the band breaks from
+    // lock to lock. One merged mesh on the sheet's material; it sways with the sheet's own formula (`lockAt`).
+    const lp: number[] = [];
+    const luv: number[] = [];
+    const lidx: number[] = [];
+    const lockAtArr: number[] = [];
+    let sd = 11;
+    const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    const LOCKS = 18;
+    const ALONG = 12;
+    for (let i = 0; i < LOCKS; i++) {
+      const uc = i === 0 ? 0.025 : i === LOCKS - 1 ? 0.975 : (i + 0.5) / LOCKS + (rnd() - 0.5) * 0.025;
+      const du = 0.03 + rnd() * 0.02;
+      const t0 = 0.04 + rnd() * 0.12;
+      const t1 = 0.8 + rnd() * 0.26;
+      const lift = 0.004 + rnd() * 0.005;
+      const dv = (rnd() - 0.5) * 0.08;
+      const curl = (rnd() - 0.5) * 0.03;
+      const base = lp.length / 3;
+      for (let a = 0; a <= ALONG; a++) {
+        const s = a / ALONG;
+        const t = t0 + (t1 - t0) * s;
+        const tc = Math.min(1, t);
+        const [rad0, y0, open] = at(tc);
+        const yExtra = t > 1 ? -(t - 1) * 0.6 : 0;
+        // Narrow where it emerges, full through the length, then to a point.
+        const w = du * (0.55 + 0.45 * Math.min(1, s / 0.2)) * (1 - 0.92 * Math.pow(s, 3));
+        const uMid = uc + curl * Math.sin(s * Math.PI);
+        for (let j = 0; j < 3; j++) {
+          const u = THREE.MathUtils.clamp(uMid + (j - 1) * w * 0.5, 0, 1);
+          const az = Math.PI + (u * 2 - 1) * (Math.PI - open);
+          const wave = 1 + (0.03 + 0.05 * tc) * Math.sin(u * 22 + tc * 9) + 0.02 * Math.sin(u * 61);
+          // Rounded across: the middle stands proud of the edges.
+          const rad = rad0 * wave + lift + (j === 1 ? 0.0045 : 0) * (1 - s * 0.6);
+          lp.push(Math.sin(az) * rad, y0 + yExtra, Math.cos(az) * rad * 0.86 - 0.02);
+          luv.push(uMid * 3 + (j - 1) * 0.16, 1 - t + dv);
+          lockAtArr.push(u * cols, Math.min(1, t) * rows);
+        }
+      }
+      for (let a = 0; a < ALONG; a++)
+        for (let j = 0; j < 2; j++) {
+          const p0 = base + a * 3 + j;
+          const p1 = p0 + 3;
+          lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
+        }
+    }
+    // Locks over the cap, combed back from the centre parting and down past the temples to the hairline, each a
+    // little proud of the shell (they don't sway: the cap holds them).
+    const CAP_LOCKS = 26;
+    for (let i = 0; i < CAP_LOCKS; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      const n = Math.floor(i / 2) / (CAP_LOCKS / 2 - 1);
+      const az0 = side * (0.06 + rnd() * 0.05);
+      const az1 = side * (0.55 + n * 2.3 + (rnd() - 0.5) * 0.15);
+      const v0 = 0.04 + rnd() * 0.05;
+      const v1 = 0.9 + rnd() * 0.12;
+      const w0 = 0.09 + rnd() * 0.05;
+      const out = 0.025 + rnd() * 0.02;
+      const dv = (rnd() - 0.5) * 0.06;
+      const base = lp.length / 3;
+      for (let a = 0; a <= ALONG; a++) {
+        const s = a / ALONG;
+        const v = v0 + (v1 - v0) * s;
+        // Swept: it leaves the parting heading back, then turns down over the side of the head.
+        const az = az0 + (az1 - az0) * Math.pow(s, 0.7);
+        const w = w0 * (0.5 + 0.5 * Math.min(1, s / 0.25)) * (1 - 0.85 * Math.pow(s, 4));
+        for (let j = 0; j < 3; j++) {
+          const pt = capShape(Math.min(1.02, v), az + (j - 1) * w * 0.5, out + (j === 1 ? 0.018 : 0)).applyMatrix4(capPlace);
+          lp.push(pt.x, pt.y, pt.z);
+          luv.push(0.4 + i * 0.37 + (j - 1) * 0.16, 1 - (0.08 + v * 0.42) + dv);
+          lockAtArr.push(0, 0);
+        }
+      }
+      for (let a = 0; a < ALONG; a++)
+        for (let j = 0; j < 2; j++) {
+          const p0 = base + a * 3 + j;
+          const p1 = p0 + 3;
+          lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
+        }
+    }
+    const locks = new THREE.BufferGeometry();
+    locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
+    locks.setAttribute("uv", new THREE.Float32BufferAttribute(luv, 2));
+    locks.setIndex(lidx);
+    locks.computeVertexNormals();
+    lockGeo = locks;
+    lockRest = new Float32Array(lp);
+    lockAt = new Float32Array(lockAtArr);
+    add(locks, hairSheetMat, headPivot).name = "cath-hair-locks";
   }
   // Ears: small shells under the hair's side sweep, a pearl stud in each lobe.
   for (const side of [1, -1]) {
@@ -893,14 +1009,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // starting inside it), and the forearm starts just outside both, so the join reads as a soft fold.
     // A straight arm (her left at rest) showed the forearm's wider start as a step, so the radii now meet at the
     // elbow (0.039) and only the bend's fold shows.
-    // Plan item 175: the upper sleeve runs 2.5 cm past the elbow and gathers there (a fold over the forearm), and
+    // Plan item 175: the upper sleeve runs 1.2 cm past the elbow (its corner stays inside the ball at a full bend) and gathers there (a fold over the forearm), and
     // the forearm's closed start sits inside the elbow ball at a smaller radius, so a bent arm never swings the
     // forearm's rim out of the sleeve (at D it caught the light as a capsule top at the elbow).
     const ud = el.clone().sub(sh).normalize();
     const upLen = sh.distanceTo(el);
-    const past = 0.025;
+    const past = 0.012;
     const k = upLen / (upLen + past);
-    add(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.0425], [k + (1 - k) * 0.5, 0.041], [1, 0.039]], seg(12), 0.9), coatMat, parent);
+    add(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), coatMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
     const elb = new THREE.SphereGeometry(0.041, seg(12), seg(8));
     elb.scale(1, 1, 0.92);
@@ -1450,6 +1566,21 @@ export function buildFrontCath(phone: boolean): FrontCath {
         }
       }
       hp.needsUpdate = true;
+      if (lockGeo && lockRest && lockAt) {
+        const lpos = lockGeo.attributes.position as THREE.BufferAttribute;
+        const la = lpos.array as Float32Array;
+        for (let i = 0; i < lpos.count; i++) {
+          const c = lockAt[i * 2]!;
+          const r = lockAt[i * 2 + 1]!;
+          const k = Math.pow(r / hairRows, 2);
+          const ph = t * 1.4 + c * 0.35 + r * 0.22;
+          const vi = i * 3;
+          la[vi] = lockRest[vi]! + k * (0.012 * Math.sin(ph) * gust + wind.x * 0.004);
+          la[vi + 1] = lockRest[vi + 1]! + k * 0.004 * Math.sin(ph * 0.8 + 0.5);
+          la[vi + 2] = lockRest[vi + 2]! + k * (0.008 * Math.cos(ph * 0.9) * gust - 0.006 * gust + wind.z * 0.004);
+        }
+        lpos.needsUpdate = true;
+      }
     }
 
     // The ember breathes; every 14 s she draws on it (brighter) and a curl of smoke rises.
