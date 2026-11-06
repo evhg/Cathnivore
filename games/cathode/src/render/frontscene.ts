@@ -462,6 +462,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     neon.group.quaternion.slerpQuaternions(neonHome, neon.group.quaternion, k);
   }
 
+  let idleS = 0;
+  let idleK = 0;
+  const idleHead = new THREE.Vector3();
+  const idleReduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function aim(t: number, dt: number): void {
     const u = (((t / LOOP_S) % 1) + 1) % 1;
     posCurve.getPointAt(u, p);
@@ -532,6 +536,19 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.quaternion.copy(keepQuat).slerp(fitQuat, pickK);
     }
     placeNeon(fitK);
+    // Plan item 187: left alone on the title for 6 s, the lens dollies slowly in along its line to her head (so her
+    // head keeps its place on screen) toward waist-up; any input eases it back. None under reduced motion.
+    const titleK = (1 - smoother(Math.min(1, lift))) * (1 - smoother(Math.min(1, wd.w))) * (pickStage || pushT >= 0 ? 0 : 1);
+    idleS = titleK > 0.5 ? idleS + dt : 0;
+    const idleWant = idleReduce || o.still ? 0 : smoother(THREE.MathUtils.clamp((idleS - 6) / 8, 0, 1));
+    idleK += (idleWant - idleK) * (idleWant < idleK ? 1 - Math.exp(-dt / 0.25) : 1);
+    if (idleK * titleK > 0.001) {
+      cath.head.getWorldPosition(idleHead);
+      // An upright phone holds (its title and menu sit over her; a push there needs its own framing).
+      const g = 1 + (cam.aspect < 1 ? 0 : 0.45) * idleK * titleK;
+      cam.position.sub(idleHead).divideScalar(g).add(idleHead);
+    }
+    canvas.dataset.idlePush = (idleK * titleK).toFixed(2);
     if (!o.still) {
       const k = Math.min(dt, 1 / 20);
       spring.vx += (W * W * (spring.tx - spring.x) - 2 * W * spring.vx) * k;
@@ -796,11 +813,13 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     focusBias(v) {
       spring.tb = THREE.MathUtils.clamp(v, -1, 1);
+      idleS = 0;
       // Plan item 187: her eyes go to the focused row (the gaze target is published for the tests).
       cath.look(v);
       world.renderer.domElement.dataset.gaze = cath.gaze.toFixed(2);
     },
     parallax(x, y) {
+      if (Math.abs(x - spring.tx) + Math.abs(y - spring.ty) > 0.02) idleS = 0;
       spring.tx = THREE.MathUtils.clamp(x, -1, 1);
       spring.ty = THREE.MathUtils.clamp(y, -1, 1);
     },
