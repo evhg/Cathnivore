@@ -25,6 +25,12 @@ test('an upright phone opens close on the lane, and Whole field fits every plot'
   await expect(fit).toHaveText(/Whole field/i)
   const fb = (await fit.boundingBox())!
   expect(fb.height).toBeGreaterThanOrEqual(44)
+  // Plan item 222: clear of the tray's round tab rising into the field's foot.
+  const tab = page.locator('#panel .drawer-handle')
+  if (await tab.isVisible()) {
+    const t = (await tab.boundingBox())!
+    expect(fb.x < t.x + t.width && t.x < fb.x + fb.width && fb.y < t.y + t.height && t.y < fb.y + fb.height).toBe(false)
+  }
   // Plots in view read at 44 px or more.
   const inView = await page.evaluate(() => {
     const c = document.getElementById('canvas')!.getBoundingClientRect()

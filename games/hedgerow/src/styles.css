@@ -2777,6 +2777,12 @@ dialog.sheet.story #story-skip {
 .field-fit[hidden] {
   display: none;
 }
+/* Plan item 222: the tray's round tab rises about 22 px into the field's foot; the pill stands clear above it. */
+@media (max-width: 520px) and (orientation: portrait) {
+  .field-fit {
+    bottom: 34px;
+  }
+}
 .field-fit svg {
   width: 20px;
   height: 20px;
