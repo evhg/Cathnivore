@@ -85,7 +85,8 @@ export default function Setup({ onStart }: Props) {
         <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
         <h2>
           <span className="market-event-kicker">Market event: </span>
-          {marketEvent.name}
+          {/* Plan item 201: the name breaks as a whole ('Great / Glut' left one word on a line). */}
+          <span className="market-event-name">{marketEvent.name}</span>
         </h2>
         <p className="market-event-line">“{marketEvent.banner}”</p>
         <p className="market-event-deal">{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week. Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</p>

@@ -2005,6 +2005,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   }
   .setup .market-event-eyebrow { display: block; margin: 0 0 4px; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soil); }
   .setup .market-event h2 { font-size: var(--fs-h3); }
+  .setup .market-event-name { display: inline-block; }
 
   /* Two illustrated mode tiles side by side. */
   .setup .segmented.mode-picker { flex-direction: row; gap: 10px; padding: 0; border: none; background: none; border-radius: 0; }
