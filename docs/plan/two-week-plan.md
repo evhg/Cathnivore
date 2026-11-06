@@ -2234,7 +2234,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the 3D renderer reports `biome` ('saltmarsh' on level 21); water across 25% or more of the frame's shoreline edge; 12 draw calls or fewer added; `?2d` unchanged; the 3D frame specs pass; shots P and D, levels 21 and 34.
 - **Size:** 3
 
-## 199. [ ] NIGHT SHIFT: the class pick's armoury table *(lane A, in progress)*
+## 199. [x] NIGHT SHIFT: the class pick's armoury table *(done 2026-11-06, lane A: `[data-armoury-prop]` is the class weapon on a rain-wet case table under a lamp, item 112's profile extruded in six CSS-3D layers (gunmetal sides, a lit face), turning slowly with its reflection and shadow, sliding in over 250 ms on a change; held at three-quarters with a fade under reduced motion; 440 px wide at 1440, 156 at 390. At D the stats are 270-degree gauge dials on the case lid (labels 12 px); phones keep their compact bars to fit one screen. Cath's caption is item 136's subtitle of her line. Cut: a CSS-3D prop rather than a three.js mesh, see DECISIONS. Passing: cathode-classpick (with the new prop test), cathode-classstage; the perf gate measures the street, untouched. Shots scratchpad c1-c4, every class D and P)*
 - **Why:** `plan1106c/ns-play-D` (975-1205 x 305-355) and `ns-play-P` (18-150 x 708-742): each class's weapon is a thin red outline icon; the stats are hairline bars (1065-1320 x 115-260); nothing in the world anchors the choice.
 - **Build:**
   - The class's weapon as a 3D prop on a rain-wet case table under a lamp, turning slowly; switching swaps it with a 250 ms slide.
