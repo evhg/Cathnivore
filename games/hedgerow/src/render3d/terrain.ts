@@ -1188,6 +1188,91 @@ export function buildGround(level: Level): Ground {
     ])
       if (m) group.add(m);
   }
+  if (act === 7) {
+    // The Ballot: polling day. Bunting strung on poles round the field's edge, a poppy-and-cornflower verge.
+    biome = "ballot";
+    const poles: Inst[] = [];
+    const flags: Inst[] = [];
+    const blooms: Inst[] = [];
+    const pole = new THREE.Color("#6e5a44");
+    const flagCols = ["#e8433a", "#f4ede1", "#3f6fb5", "#f2c94c"].map((c) => new THREE.Color(c));
+    const bloomCols = ["#e8433a", "#6f8ff0"].map((c) => new THREE.Color(c));
+    const ring: Array<[number, number]> = [];
+    for (let x = -1; x <= cols + 1; x += 1.6) ring.push([x, -1.1]);
+    for (let z = -1; z <= rows + 1; z += 1.6) ring.push([cols + 1.1, z], [-1.1, z]);
+    for (const [x, z] of ring) {
+      if (laneDistance(level, x, z) < 1) continue;
+      poles.push({ x, y: heightAt(x, z), z, ry: 0, s: 1, sy: 1, color: pole });
+      for (let k = 0; k < 4; k++) {
+        const along = z === -1.1 ? [x + 0.32 * (k + 0.5), z] : [x, z + 0.32 * (k + 0.5)];
+        flags.push({ x: along[0]!, y: heightAt(x, z) + 0.5 - Math.sin(((k + 0.5) / 4) * Math.PI) * 0.06, z: along[1]!, ry: z === -1.1 ? 0 : Math.PI / 2, s: 1, sy: 1, color: flagCols[k % 4]! });
+      }
+    }
+    for (let i = 0; i < 300; i++) {
+      const x = -4 + deco() * (cols + 8);
+      const z = -4 + deco() * (rows + 8);
+      if (!outside(x, z)) continue;
+      blooms.push({ x, y: heightAt(x, z) + 0.05, z, ry: 0, s: 0.03, sy: 1, color: bloomCols[Math.floor(deco() * 2)]! });
+    }
+    for (const m of [
+      instanced(new THREE.CylinderGeometry(0.018, 0.022, 0.56, 5).translate(0, 0.28, 0), new THREE.MeshStandardMaterial({ roughness: 0.9 }), poles, true),
+      instanced(new THREE.ConeGeometry(0.06, 0.12, 3).rotateX(Math.PI).translate(0, -0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.8, side: THREE.DoubleSide }), flags),
+      instanced(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: 0.7 }), blooms),
+    ])
+      if (m) group.add(m);
+  }
+  if (act === 8) {
+    // The Merger: the corporations moving in. Grey glass office blocks on the skyline, and a chain-link fence of
+    // grey posts where the hedge used to run thin.
+    biome = "merger";
+    const blocks: Inst[] = [];
+    const posts: Inst[] = [];
+    const glass = ["#8a96a2", "#9fabb6", "#76828e"].map((c) => new THREE.Color(c));
+    const steel = new THREE.Color("#9a9a96");
+    for (let i = 0; i < 9; i++) {
+      const x = -2.5 + (i / 8) * (cols + 5) + (deco() - 0.5) * 0.6;
+      const z = -3.2 - deco() * 0.9;
+      if (laneDistance(level, x, z) < 1.4) continue;
+      blocks.push({ x, y: heightAt(x, z), z, ry: (deco() - 0.5) * 0.2, s: 0.55 + deco() * 0.25, sy: 1.4 + deco() * 1.8, color: glass[Math.floor(deco() * 3)]! });
+    }
+    for (let x = -1; x <= cols + 1; x += 0.5) {
+      const z = -1.05;
+      if (laneDistance(level, x, z) < 0.9) continue;
+      posts.push({ x, y: heightAt(x, z), z, ry: 0, s: 1, sy: 1, color: steel });
+    }
+    for (const m of [
+      instanced(new THREE.BoxGeometry(1, 1, 0.7).translate(0, 0.5, 0), new THREE.MeshStandardMaterial({ roughness: 0.2, metalness: 0.5 }), blocks, true),
+      instanced(new THREE.CylinderGeometry(0.012, 0.012, 0.34, 4).translate(0, 0.17, 0), new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.6 }), posts),
+    ])
+      if (m) group.add(m);
+  }
+  if (act === 9) {
+    // Kingsmarket: market night. Striped stalls ring the field with their lanterns lit.
+    biome = "kingsmarket";
+    const stalls: Inst[] = [];
+    const roofs: Inst[] = [];
+    const lamps: Inst[] = [];
+    const wood = new THREE.Color("#6a543c");
+    const roofCols = ["#c4433a", "#3f6fb5", "#d9a23a", "#5f8a5a"].map((c) => new THREE.Color(c));
+    const lamp = new THREE.Color("#ffd27a");
+    for (let i = 0; i < 26; i++) {
+      const side = i % 3;
+      const x = side === 0 ? -1.7 - deco() * 0.6 : side === 1 ? cols + 1.7 + deco() * 0.6 : -1 + deco() * (cols + 2);
+      const z = side === 2 ? -1.8 - deco() * 0.6 : -1 + deco() * (rows + 2);
+      if (!outside(x, z, 1.2)) continue;
+      const y = heightAt(x, z);
+      const ry = deco() * 6.3;
+      stalls.push({ x, y, z, ry, s: 1, sy: 1, color: wood });
+      roofs.push({ x, y: y + 0.36, z, ry, s: 1, sy: 1, color: roofCols[Math.floor(deco() * 4)]! });
+      lamps.push({ x, y: y + 0.3, z, ry: 0, s: 0.035, sy: 1, color: lamp });
+    }
+    for (const m of [
+      instanced(new THREE.BoxGeometry(0.4, 0.3, 0.26).translate(0, 0.15, 0), new THREE.MeshStandardMaterial({ roughness: 0.9 }), stalls, true),
+      instanced(new THREE.ConeGeometry(0.33, 0.14, 4).rotateY(Math.PI / 4).translate(0, 0.07, 0), new THREE.MeshStandardMaterial({ roughness: 0.8 }), roofs, true),
+      instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial(), lamps),
+    ])
+      if (m) group.add(m);
+  }
   group.userData.biome = biome;
 
   // Scenery out beyond the field.
