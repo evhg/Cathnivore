@@ -3716,3 +3716,15 @@ html.no-animations .table-cath-line { animation: none; }
 .plan-strip[data-corp] .plan-strip-item:has(.plan-strip-active) {
   filter: drop-shadow(0 0 2px var(--candor-highlight)) drop-shadow(0 0 5px var(--candor)) drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .25));
 }
+
+/* Plan item 189: a region Mara's Injunction took off Expand's list stays on the card, struck through in ink. */
+.plan-chip.plan-chip-enjoined {
+  margin-inline-start: 0.3em;
+  text-decoration: line-through 2px var(--ink);
+  opacity: 0.8;
+  animation: chip-enjoin 500ms var(--ease-settle) both;
+}
+@keyframes chip-enjoin { from { text-decoration-color: transparent; transform: scale(1.15); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .plan-chip.plan-chip-enjoined { animation: none; } }
+/* A phone's narrow Expand card has no room for it: the tile's Expand badge going is the sign there. */
+@media (max-width: 599.98px) { .plan-chip.plan-chip-enjoined { display: none; } }

@@ -2696,6 +2696,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     accessible name (visually hidden there) and for wider cards. */}
                 <span className="plan-strip-target plan-strip-target-full" data-long={preview.summary.length > LONG_MAX || undefined}>
                   <TargetLine line={preview.summary} names={preview.regions.map((r) => REGIONS[r].name)} />
+                  {/* Plan item 189: a region under Mara's Injunction stays on Expand's card, struck through. */}
+                  {slot === 'expand' &&
+                    state.expandSkip.map((r) => (
+                      <span key={r} className="plan-chip plan-chip-enjoined" data-enjoined={r}>
+                        <span className="visually-hidden"> (skipped by Injunction: </span>
+                        {REGIONS[r].name}
+                        <span className="visually-hidden">)</span>
+                      </span>
+                    ))}
                 </span>
                 {preview.short !== preview.summary && (
                   <span className="plan-strip-target plan-strip-target-short" aria-hidden="true">

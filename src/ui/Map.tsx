@@ -1,4 +1,5 @@
-import AbilityMoment, { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './AbilityMoment'
+import AbilityMoment from './AbilityMoment'
+import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilityUsed'
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
@@ -617,7 +618,8 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   // A slot whose rule is off in this chapter never resolves, so it marks no hex.
   const rules = resolveRules(state)
   const squeezeTargets = rules.squeeze ? active.filter((id) => matchesSlot(state, id, 'squeeze')) : []
-  const expandTargets = rules.expand ? active.filter((id) => matchesSlot(state, id, 'expand')) : []
+  // Plan item 189: a region under Mara's Injunction loses its Expand badge for the round.
+  const expandTargets = rules.expand ? active.filter((id) => matchesSlot(state, id, 'expand') && !state.expandSkip.includes(id)) : []
   const highlighted = new Set(highlight ?? [])
   const wilted = squeezedLastTurn(state)
   const targeting = highlighted.size > 0

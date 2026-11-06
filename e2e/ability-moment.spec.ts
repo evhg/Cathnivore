@@ -62,3 +62,21 @@ test.describe('reduced motion', () => {
     expect(t).toEqual([])
   })
 })
+
+test('an Injunction leaves its region struck through on Expand', async ({ page }) => {
+  await start(page)
+  const card = page.getByRole('button', { name: /Injunction/ }).first()
+  test.skip(!(await card.isVisible().catch(() => false)), 'Mara does not open this seat')
+  await card.click()
+  const pick = page.locator('.region-hex-selectable.glow').first()
+  if (await pick.isVisible({ timeout: 800 }).catch(() => false)) await pick.click()
+  const chip = page.locator('[data-enjoined]').first()
+  await expect(chip).toHaveCount(1)
+  const region = (await chip.getAttribute('data-enjoined'))!
+  // The tile's Expand badge goes for the round; a wide card keeps the region, struck through.
+  await expect(page.locator(`[data-region="${region}"] .threat-badge`, { hasText: 'EXPAND' })).toHaveCount(0)
+  if ((page.viewportSize()?.width ?? 0) >= 600) {
+    await expect(chip).toBeVisible()
+    expect(await chip.evaluate((e) => getComputedStyle(e).textDecorationLine)).toContain('line-through')
+  }
+})

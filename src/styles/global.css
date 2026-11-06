@@ -3541,6 +3541,8 @@ svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-ou
 .ab-doubt { transform-origin: center; animation: ab-wane 1000ms ease-in both; }
 .ab-check { transform-origin: center; animation: ab-pop 700ms var(--ease-pop) both; }
 .ab-wave { transform-origin: center; animation: ab-wave 900ms ease-out both; }
+.ab-wave-1 { animation-delay: 160ms; }
+.ab-wave-2 { animation-delay: 320ms; }
 .ab-mast { transform-origin: center bottom; animation: ab-pop 500ms var(--ease-pop) both; }
 @media (prefers-reduced-motion: reduce) {
   .ability-moment * { animation: none; }

@@ -4,42 +4,8 @@
 //   Ines's Second Opinion: a Doubt bubble is struck off with a pen stroke and fades.
 //   Sol's On Air: radio rings run out across the board from the mast on her home tile.
 // Pure SVG inside the map's fitted group; every motion is CSS (`.ab-*` in global.css), cut to fades under reduced motion.
-import type { ProducerId, RegionId } from '../engine/types'
-import type { GameState } from '../engine/types'
-
-export const ABILITY_MOMENT_MS = 1100
-
-export interface AbilityMomentView {
-  producer: ProducerId
-  region: RegionId
-  /** Bumped per moment so a repeat remounts and replays its animations. */
-  key: number
-}
-
-/**
- * The producer whose role ability was just used between `prev` and `next`, and the hex it acted on, or null.
- * The engine logs no event for a role, so this reads the flag and the ability's own mark on the board.
- */
-export function abilityUsed(prev: GameState, next: GameState): { producer: ProducerId; region: RegionId } | null {
-  for (const id of Object.keys(next.producers) as ProducerId[]) {
-    const was = prev.producers[id]
-    const now = next.producers[id]
-    if (!was || !now || was.roleUsedThisRound || !now.roleUsedThisRound) continue
-    if (prev.round !== next.round) continue
-    const regions = next.config.activeRegions
-    let region: RegionId | undefined
-    if (id === 'mara') region = next.expandSkip.find((r) => !prev.expandSkip.includes(r))
-    else if (id === 'tomas') region = regions.find((r) => (next.regions[r].stalls[id] ?? 0) > (prev.regions[r].stalls[id] ?? 0))
-    else if (id === 'ines') region = regions.find((r) => next.regions[r].doubt < prev.regions[r].doubt)
-    else {
-      // On Air has no target: the rings start from her own Stall (her home first), else the board's first tile.
-      const home = regions.find((r) => (next.regions[r].stalls.sol ?? 0) > 0)
-      region = home ?? regions[0]
-    }
-    if (region) return { producer: id, region }
-  }
-  return null
-}
+import type { ProducerId } from '../engine/types'
+import type { AbilityMomentView } from './abilityUsed'
 
 const NAME: Record<ProducerId, string> = { mara: 'injunction', tomas: 'market-day', ines: 'second-opinion', sol: 'on-air' }
 
@@ -141,9 +107,11 @@ function SecondOpinion({ r }: { r: number }) {
     <>
       <g className="ab-doubt">
         <circle cx={0} cy={0} r={R} fill="var(--candor)" {...line} />
-        <text x={0} y={R * 0.38} textAnchor="middle" className="doubt-mark" style={{ fontSize: R * 1.1 }}>
-          ?
-        </text>
+        <g transform={`scale(${((R * 1.1) / 8).toFixed(3)})`}>
+          <text x={0} y={3} textAnchor="middle" className="doubt-mark">
+            ?
+          </text>
+        </g>
       </g>
       <path className="ab-strike" d={`M${-R * 1.6} ${R * 1.1} L${R * 1.6} ${-R * 1.1}`} fill="none" stroke="var(--pasture-deep)" strokeWidth={4} strokeLinecap="round" pathLength={1} />
       <g className="ab-check" transform={`translate(${R * 1.9} ${-R * 1.5})`}>
@@ -158,7 +126,7 @@ function OnAir({ r }: { r: number }) {
   return (
     <>
       {[0, 1, 2].map((i) => (
-        <circle key={i} className="ab-wave" style={{ animationDelay: `${i * 160}ms` }} r={r * 0.9} fill="none" stroke="var(--p-sol)" strokeWidth={3} />
+        <circle key={i} className={`ab-wave ab-wave-${i}`} r={r * 0.9} fill="none" stroke="var(--p-sol)" strokeWidth={3} />
       ))}
       <g className="ab-mast">
         <path d="M0 -26 L-8 6 M0 -26 L8 6 M-5 -6 L5 -6" {...line} fill="none" />
