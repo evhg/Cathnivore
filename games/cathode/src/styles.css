@@ -2766,8 +2766,13 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .cp-prop-layer svg { display: block; width: 100%; height: 100%; }
 .cp-prop-layer .wa-body { fill: color-mix(in srgb, var(--ink) 14%, rgb(var(--shade-rgb))); fill-opacity: 1; stroke: color-mix(in srgb, var(--ink) 16%, rgb(var(--shade-rgb))); }
 .cp-prop-layer .wa-detail { display: none; }
-.cp-prop-layer.is-face .wa-body { fill: color-mix(in srgb, var(--ink) 34%, rgb(var(--shade-rgb))); stroke: rgb(var(--ink-rgb) / .85); }
-.cp-prop-layer.is-face .wa-detail { display: inline; stroke: rgb(var(--ink-rgb) / .62); opacity: 1; }
+.cp-prop-layer.is-face .wa-body { fill: color-mix(in srgb, var(--ink) 20%, rgb(var(--shade-rgb))); stroke: rgb(var(--ink-rgb) / .7); }
+.cp-prop-layer.is-face .wa-detail { display: inline; stroke: rgb(var(--ink-rgb) / .7); opacity: 1; }
+/* Plan item 211: gunmetal under the lamp, not a flat grey cut-out: a darker face, the class accent catching its
+   top edges as a rim light and a cool sheen off the wet table under it. */
+.cp-prop-layer.is-face svg {
+  filter: drop-shadow(0 calc(var(--u) * -2) 0 rgb(var(--accent-rgb, var(--blood-rgb)) / .7)) drop-shadow(0 calc(var(--u) * 2) 0 rgb(var(--ink-rgb) / .2));
+}
 @keyframes cp-prop-turn {
   from { transform: rotateX(10deg) rotateY(-34deg); }
   to { transform: rotateX(10deg) rotateY(34deg); }
