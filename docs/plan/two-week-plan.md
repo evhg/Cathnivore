@@ -2268,7 +2268,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the stage reports `margin` per act (`window.hedgerow.margin2d()`); no two identical pieces within 200 px (unit test on the placer); 2D frame time within +10% (`scripts/hedgerow-drawcalls.mjs` or the fps probe); `?2d` field specs pass; shots P and D, levels 21, 34 and one Highmoor level.
 - **Size:** 2-3
 
-## 203. [ ] Site: NIGHT SHIFT's key art as a lit noir poster, with Cath
+## 203. [ ] Site: NIGHT SHIFT's key art as a lit noir poster, with Cath *(lane A, in progress)*
 - **Why:** `plan1106d/portfolio-D`: the NIGHT SHIFT frame (790-1030 x 425-640) is a murky blur with no Cath, the weakest image on the page; on `games-D` its poster's Cath is a grey ghost (1265-1310 x 590-690).
 - **Build:**
   - A `?keyart` framing in NIGHT SHIFT (like Cathnivore's, Runnel's and Hedgerow's): Cath front three-quarter under her umbrella in the street's key light, a neon rim, the wordmark's space kept clear.
@@ -2276,7 +2276,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `games-nightshift*.webp` mean luminance in Cath's box 2x the old frame's, her box 30%+ of the frame's height; `keyart-fresh` passes; shots of `/` and `/games/` at P and D.
 - **Size:** 1-2
 
-## 204. [ ] Cathnivore desktop Setup: the week's market and the mode as table objects *(lane A, in progress)*
+## 204. [x] Cathnivore desktop Setup: the week's market and the mode as table objects *(done 2026-11-06 13:30, lane A, `33351ae8` and `85d12771`: at D the event is a printed flyer (a black print band, the name at h2, the rule a stamped red-ink line in `--short-ink-shelf`, AA in light and dark); Solo and Hot-seat are tent place cards on a plank ledge (`[data-place-card]` labels round the radios, 150 px, 'You and an AI' / 'Two at the table'), the picked one upright with its shadow, the other laid flat (rotateX 48 deg), a 320 ms tip (none under reduced motion); Cath's pin tin fills the column between them (the three market pins, earned in colour, this week's ringed). The column narrows 290 -> 256 px and the maps widen 205 -> 217 px. P unchanged. `e2e/setup-placecards.spec.ts`; shots `e2e/screenshots/i204` (D, D2 1280, P, light and dark))*
 - **Why:** `plan1106d/cath-setup-D`: beside item 195's laid table, the left column is a web form: a 265x243 yellow block for 'Solo with an AI' (145-410 x 372-615), a second box for Hot-seat, and the week's event as a dashed note.
 - **Build:**
   - The week's market event as a printed market flyer pinned to the table's corner, its rule a stamped line.
