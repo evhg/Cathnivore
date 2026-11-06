@@ -893,13 +893,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // starting inside it), and the forearm starts just outside both, so the join reads as a soft fold.
     // A straight arm (her left at rest) showed the forearm's wider start as a step, so the radii now meet at the
     // elbow (0.039) and only the bend's fold shows.
-    add(turned(sh, el, [[0, 0.03], [0.06, 0.052], [0.3, 0.05], [0.8, 0.043], [0.93, 0.0405], [1, 0.037]], seg(12), 0.9), coatMat, parent);
+    // Plan item 175: the upper sleeve runs 2.5 cm past the elbow and gathers there (a fold over the forearm), and
+    // the forearm's closed start sits inside the elbow ball at a smaller radius, so a bent arm never swings the
+    // forearm's rim out of the sleeve (at D it caught the light as a capsule top at the elbow).
+    const ud = el.clone().sub(sh).normalize();
+    const upLen = sh.distanceTo(el);
+    const past = 0.025;
+    const k = upLen / (upLen + past);
+    add(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.0425], [k + (1 - k) * 0.5, 0.041], [1, 0.039]], seg(12), 0.9), coatMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    const elb = new THREE.SphereGeometry(0.0395, seg(12), seg(8));
-    elb.scale(1, 1, 0.9);
+    const elb = new THREE.SphereGeometry(0.041, seg(12), seg(8));
+    elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
     add(elb, coatMat, fore);
-    add(turned(el.clone().add(el.clone().sub(sh).normalize().multiplyScalar(-0.02)), wr, [[0, 0.037], [0.05, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), coatMat, fore);
+    add(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), coatMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
@@ -969,7 +976,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
 
   const shoulderL = V(0.15, 0.25, -0.005);
-  const elbowL = V(0.192, -0.02, -0.035);
+  const elbowL = V(0.202, -0.02, -0.035);
   const handL = V(0.175, -0.26, 0.05);
   const wristL = handL.clone().add(V(0, 0.04, -0.012));
   // C14: her left arm is two bones (the class idles reach with it: a draw on the cigarette, the collar, the hip).
