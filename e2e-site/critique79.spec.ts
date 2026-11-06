@@ -45,8 +45,9 @@ test('Cathnivore Setup P: no dead band pooled above Start', async ({ page, hasTo
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
   const gap = await page.evaluate(() => {
     const start = document.querySelector('.setup > button.setup-start')!.getBoundingClientRect()
-    const seed = document.querySelector('.setup .setup-seed')!.getBoundingClientRect()
-    return start.top - seed.bottom
+    // The seed folds under the map's Advanced toggle now, so measure from the last block drawn above Start.
+    const above = [...document.querySelectorAll('.setup > *')].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0 && r.bottom <= start.top + 1)
+    return start.top - Math.max(...above.map((r) => r.bottom))
   })
   expect(gap).toBeLessThanOrEqual(32) // was about 50 px before item 79
 })
