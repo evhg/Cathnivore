@@ -4420,6 +4420,11 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
       linear-gradient(180deg, var(--stake-hi), var(--stake));
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper) 35%, transparent), inset 0 -2px 0 color-mix(in srgb, var(--soil) 45%, transparent), 0 4px 10px color-mix(in srgb, var(--soil) 30%, transparent);
   }
+  /* Plan item 217: the 16 px column gaps left the middle column about 8 px narrower than the wordmark, which
+     overflowed onto the sound token; 10 px gaps give it room and an even 10 px or more either side. */
+  .top[data-signboard] {
+    column-gap: 10px;
+  }
   .top[data-signboard] .wordmark {
     color: var(--paper);
     text-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 70%, transparent);

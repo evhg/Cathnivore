@@ -20,3 +20,17 @@ test('the phone header is a signboard; her line clears the board', async ({ page
   expect(line.meets).toBe(false)
   expect(line.size).toBeGreaterThanOrEqual(14)
 })
+
+// Plan item 217: the wordmark kept 2 px from the sound token; it keeps 8 px or more from it and from Back.
+test('the signboard wordmark clears Back and the sound token', async ({ page }) => {
+  test.skip(page.viewportSize()!.width > 600, 'the upright phone')
+  await page.goto('/runnel/?nohelp')
+  await page.waitForSelector('#board .tiles > g.cell')
+  await page.evaluate(() => document.fonts.ready)
+  const r = await page.evaluate(() => {
+    const box = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+    return { wm: box('.top .wordmark'), back: box('.top .back'), sound: box('#btn-sound') }
+  })
+  expect(r.sound.left - r.wm.right).toBeGreaterThanOrEqual(8)
+  expect(r.wm.left - r.back.right).toBeGreaterThanOrEqual(8)
+})
