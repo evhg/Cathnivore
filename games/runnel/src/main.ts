@@ -949,6 +949,14 @@ function render(): void {
   crops?.toggleAttribute('data-sprouting', game.taps > 0 || flow.solved)
   // Plan item 106: a solved board waters the garden: its beds go dark and wet (the e2e reads `data-watered`).
   document.querySelector('.bea-garden')?.setAttribute('data-watered', String(flow.solved))
+  // Plan item 197: the garden grows with the share of fields watered: seedlings at a third, leaves at two thirds,
+  // flowers and a scarecrow at the solve.
+  {
+    const fields = puzzle.cells.flatMap((c, i) => (c.kind === 'field' ? [i] : []))
+    const share = fields.length ? fields.filter((i) => flow.wet.has(i)).length / fields.length : 0
+    const stage = flow.solved ? 3 : share >= 2 / 3 ? 2 : share >= 1 / 3 ? 1 : 0
+    document.querySelector('.bea-garden')?.setAttribute('data-garden-stage', String(stage))
+  }
   // Plan item 151: water on a field sets the farmer to work; a solve makes the whole valley cheer.
   const folk = document.getElementById('valley-folk')
   folk?.toggleAttribute('data-working', [...flow.wet].some((i) => puzzle.cells[i]!.kind === 'field'))
@@ -1425,14 +1433,18 @@ function showStats(): void {
     [s.averageMs === null ? '–' : formatTime(s.averageMs), 'average daily time'],
     [String(data.practiceSolved), 'practice solved'],
     [data.bestPractice.large === undefined ? '–' : formatTime(data.bestPractice.large), 'best large time'],
-    // Plan item 193: this week's big valley, its own line on the almanac page.
-    (() => {
-      const week = sundayOf(today)
-      const r = data.sundayResults?.[week]
-      const g = data.sunday?.[week]
-      return [r ? formatTime(r.timeMs) : g && g.taps > 0 ? `${g.taps} taps` : '–', r ? 'big valley, watered' : 'big valley this week'] as [string, string]
-    })(),
   ]
+  // Plan item 193: this week's big valley, on its own line under the tiles (the grid keeps its two rows of three).
+  {
+    const week = sundayOf(today)
+    const r = data.sundayResults?.[week]
+    const g = data.sunday?.[week]
+    $<HTMLParagraphElement>('stats-weekly').textContent = r
+      ? `This week's big valley: watered in ${formatTime(r.timeMs)}, ${r.taps} taps (par ${r.par}).`
+      : g && g.taps > 0
+        ? `This week's big valley: ${g.taps} taps in, still drying.`
+        : "This week's big valley: not started. It's under Weekly."
+  }
   ui.statGrid.replaceChildren(
     ...cells.map(([value, label]) => {
       const div = document.createElement('div')
