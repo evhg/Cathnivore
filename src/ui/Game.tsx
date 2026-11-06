@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
 import { rivalMood } from './portraits/rivalFace'
 import { lightFor } from './tableLight'
@@ -62,12 +63,8 @@ import type { CathExpression } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
   GoodwillIcon,
-  LostLandIcon,
   MarksIcon,
   ProduceIcon,
-  PublicTrustIcon,
-  RiftIcon,
-  RoundIcon,
 } from './icons/ResourceIcons'
 import { OpenStallIcon } from './icons/ActionIcons'
 import { MatCoins, MatCrate, MatRosette } from './PlayerMat'
@@ -341,25 +338,6 @@ function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: numb
     <span className="action-cost">
       <Icon size={14} />
       {cost.amount}
-    </span>
-  )
-}
-
-// AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.7): a segmented seed-packet meter. Decorative: the number
-// beside it is the readable value. The newest lit segment pops once when it changes.
-function Meter({ value, max, variant, preview }: { value: number; max: number; variant?: 'danger' | 'wheat' | 'plastic'; preview?: number }) {
-  const n = Math.max(1, max)
-  const lit = Math.max(0, Math.min(n, value))
-  // Plan item 141: the action being looked at shows its change as ghost segments (gained or lost).
-  const next = preview === undefined ? lit : Math.max(0, Math.min(n, preview))
-  const delta = next - lit
-  return (
-    <span className={variant ? `meter meter--${variant}` : 'meter'} aria-hidden="true" data-delta={delta || undefined}>
-      {Array.from({ length: n }, (_, i) => {
-        const ghost = delta > 0 && i >= lit && i < next ? 'ghost-gain' : delta < 0 && i >= next && i < lit ? 'ghost-loss' : ''
-        const base = i < lit ? (i === lit - 1 ? 'on last' : 'on') : ''
-        return <i key={i} className={[base, ghost].filter(Boolean).join(' ') || undefined} />
-      })}
     </span>
   )
 }
@@ -2572,48 +2550,44 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           cells (icon, tabular figure, segmented meter) plus the Menu key. The words stay inside each
           cell's tooltip trigger, visible from landscape up and read by screen readers on a phone. */}
       <header className="market-board" aria-label="Market board">
-        <div className="board-cell board-round">
+        <div className="board-cell board-round" data-meter="round" role="group" aria-label={`Round ${state.round} of ${state.round + state.pressureDeck.length}`}>
           <span className="board-head">
-            <RoundIcon />
+            <BoardObject kind="slate" value={state.round} max={state.round + state.pressureDeck.length} />
             <span className="board-label">Round</span>
             <span key={roundTick} className={roundTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>
               {state.round}
               <span className="board-of">/{state.round + state.pressureDeck.length}</span>
             </span>
           </span>
-          <Meter value={state.round} max={state.round + state.pressureDeck.length} variant="wheat" />
         </div>
-        <div className="board-cell" data-tutorial="trust">
+        <div className="board-cell" data-tutorial="trust" data-meter="trust" role="group" aria-label={`Public Trust ${state.publicTrust} of ${TRUST_MAX}`}>
           <Tooltip term="Public Trust">
             <span className="board-head">
-              <PublicTrustIcon />
+              <BoardObject kind="jar" value={state.publicTrust} max={TRUST_MAX} preview={previewState?.publicTrust} />
               <span className="board-label">Trust</span>
               <span key={trustTick} className={trustTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.publicTrust}</span>
             </span>
           </Tooltip>
-          <Meter value={state.publicTrust} max={TRUST_MAX} preview={previewState?.publicTrust} />
         </div>
-        <div className={state.lostLandPool <= 3 ? 'board-cell board-cell--danger' : 'board-cell'}>
+        <div className={state.lostLandPool <= 3 ? 'board-cell board-cell--danger' : 'board-cell'} data-meter="land" role="group" aria-label={`Land left ${state.lostLandPool} of ${lostLandStartingPool(state)}`}>
           <Tooltip term="Lost Land">
             <span className="board-head">
-              <LostLandIcon />
+              <BoardObject kind="deeds" value={state.lostLandPool} max={lostLandStartingPool(state)} preview={previewState?.lostLandPool} />
               {/* Critique 2026-11-03: the pool counts land still left to lose (a full bar is good), so the label says
                   so; "Lost Land" over a full bar read as ten regions lost. The tooltip keeps the rules term. */}
               <span className="board-label">{state.lostLandPool <= 3 ? `Last ${state.lostLandPool}` : 'Land left'}</span>
               <span key={lostLandTick} className={lostLandTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.lostLandPool}</span>
             </span>
           </Tooltip>
-          <Meter value={state.lostLandPool} max={lostLandStartingPool(state)} variant={state.lostLandPool <= 3 ? 'danger' : undefined} preview={previewState?.lostLandPool} />
         </div>
-        <div className="board-cell">
+        <div className="board-cell" data-meter="rift" role="group" aria-label={`Rift ${state.rift} of ${RIFT_MAX}`}>
           <Tooltip term="Rift">
             <span className="board-head">
-              <RiftIcon />
+              <BoardObject kind="plate" value={state.rift} max={RIFT_MAX} preview={previewState?.rift} />
               <span className="board-label">Rift</span>
               <span key={riftTick} className={riftTick > 0 ? 'num board-num hud-tick' : 'num board-num'}>{state.rift}</span>
             </span>
           </Tooltip>
-          <Meter value={state.rift} max={RIFT_MAX} variant="plastic" preview={previewState?.rift} />
         </div>
         {/* SPEC 10.2: the menu button belongs in the fixed top bar. */}
         <button className="btn-icon board-menu" onClick={onExit} aria-label="Menu">

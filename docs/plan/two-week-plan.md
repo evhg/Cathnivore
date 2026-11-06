@@ -2108,7 +2108,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at D, 3 or fewer not-yet cards show at once; `[data-saving-for]` round-trips through the save (migration and unit test); the jar's `aria-valuenow`/`aria-valuemax` are current and cost; the card reaches the hand within 800 ms of becoming affordable (a fade under reduced motion); text 12 px+ at 4.5:1; shots P and D, light and dark.
 - **Size:** 2
 
-## 184. [ ] Cathnivore: the scoreboard as objects on the table *(lane A, in progress)*
+## 184. [ ] Cathnivore: the scoreboard as objects on the table *(lane A, in progress)* *(slice 1, 2026-11-06 04:15 lane A: `BoardObjects.tsx` puts a chalk slate (tallies in fives, rounds to come faint), a glass jar of Trust tokens, a stack of deeds with a seal and a plate whose cracks run (the fourth on in Hollowell ink) in each cell's icon place, and the bars are gone; each `[data-meter]` has its aria label and a 16 px+ figure; a tally or crack draws, a token drops in, a deed tears off (350-550 ms; `bo-fade` under reduced motion); the plan-141 preview blinks on the objects; strip 61 px at D, 46 at P (Round's cell wider there). `e2e/board-objects.spec.ts`; shots `s184` (start and round 7, P and D, light and dark). Open: a closer look at the objects' detail at P (the jar and deeds read small at 27 px), then tick)*
 - **Why:** `plan1106a/cath-game-D` (350-1335 x 12-75): Round, Trust, Land left and Rift are a flat strip of bar meters, the most web-app thing on the table; the same on `cath-game-P` (8-380 x 8-55).
 - **Build:**
   - Round a chalk slate with tally marks, Trust a jar of glass tokens, Land a stack of deed cards, Rift a plate that cracks.
