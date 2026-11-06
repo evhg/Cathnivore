@@ -664,7 +664,7 @@ export function buildGround(level: Level): Ground {
     const c = Math.floor(x);
     const r = Math.floor(y);
     // Plan item 198: Saltmarsh's sea comes in close, behind a band of tidal flats (it sat 2.5 cells out, a thin strip).
-    const coast = act === 2 ? x < -1.7 : act === 3 ? x > cols + 1.6 : act === 5 ? y > rows + 2.5 : false;
+    const coast = act === 2 ? x < -1.7 : act === 3 ? x > cols + 1.6 : act === 5 ? x < -1.8 : false;
     return wet.has(`${c},${r}`) || (coast && !lane.has(`${c},${r}`) && laneDistance(level, x, y) > 1.2);
   };
   /** Near enough the water's edge that the sloping bank would leave a plant floating. */
@@ -1051,6 +1051,71 @@ export function buildGround(level: Level): Ground {
       instanced(new THREE.CylinderGeometry(0.035, 0.05, 0.7, 6).translate(0, 0.35, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), trunks, true),
       instanced(crownGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true, side: THREE.DoubleSide }), crowns, true),
       instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
+    ])
+      if (m) group.add(m);
+  }
+  // Outside the field and its hedge, clear of the lane and the water: where a biome's set dressing may stand.
+  const outside = (x: number, z: number, m = 0.7) =>
+    !(x > -m && x < cols + m && z > -m && z < rows + m) && laneDistance(level, x, z) > 1.1 && !nearWater(x, z, 0.35);
+  if (act === 1) {
+    // Highmoor: open moor round the field, heather and gorse in clumps and granite tors on the skyline.
+    biome = "highmoor";
+    const heather: Inst[] = [];
+    const gorse: Inst[] = [];
+    const tors: Inst[] = [];
+    const heathCols = ["#8a5a9a", "#9b6fb8", "#7a4f88"].map((c) => new THREE.Color(c));
+    const gorseCol = new THREE.Color("#d9b02e");
+    const granite = ["#8e8a82", "#a09a90", "#7c786f"].map((c) => new THREE.Color(c));
+    for (let i = 0; i < 420; i++) {
+      const x = -4 + deco() * (cols + 8);
+      const z = -4 + deco() * (rows + 8);
+      if (!outside(x, z)) continue;
+      const y = heightAt(x, z);
+      if (deco() < 0.78) heather.push({ x, y: y + 0.02, z, ry: deco() * 6.3, s: 0.11 + deco() * 0.08, sy: 0.55, color: heathCols[Math.floor(deco() * 3)]! });
+      else gorse.push({ x, y: y + 0.05, z, ry: deco() * 6.3, s: 0.12 + deco() * 0.06, sy: 0.8, color: gorseCol });
+    }
+    // A few tors: stacked slabs of granite out beyond the hedge.
+    for (let t = 0; t < 4; t++) {
+      const side = t % 4;
+      const x = side === 0 ? -2.8 - deco() : side === 1 ? cols + 2.4 + deco() : deco() * cols;
+      const z = side === 2 ? -2.6 - deco() : side === 3 ? rows + 2.4 + deco() : deco() * rows;
+      if (!outside(x, z, 1.5)) continue;
+      const y = heightAt(x, z);
+      for (let k = 0; k < 3; k++)
+        tors.push({ x: x + (deco() - 0.5) * 0.3, y: y + 0.12 + k * 0.2, z: z + (deco() - 0.5) * 0.3, ry: deco() * 6.3, s: 0.32 - k * 0.07, sy: 0.55, color: granite[Math.floor(deco() * 3)]! });
+    }
+    for (const m of [
+      instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), heather),
+      instanced(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), gorse),
+      instanced(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), tors, true),
+    ])
+      if (m) group.add(m);
+  }
+  if (act === 5) {
+    // Shingle Bay: the sea in close to the west, behind a shingle beach with wooden groynes running into it.
+    biome = "shingle";
+    const pebbles: Inst[] = [];
+    const posts: Inst[] = [];
+    const shingle = ["#c9bfae", "#b2a794", "#d8d0c0", "#9f9584"].map((c) => new THREE.Color(c));
+    const timber = new THREE.Color("#6e5a44");
+    // (on the west, where the camera looks: the field's south edge sits under the HUD)
+    for (let z = -3; z <= rows + 3; z += 0.16)
+      for (let x = -1.8; x <= -0.75; x += 0.16) {
+        const jx = x + (deco() - 0.5) * 0.12;
+        const jz = z + (deco() - 0.5) * 0.12;
+        if (laneDistance(level, jx, jz) < 0.9) continue;
+        pebbles.push({ x: jx, y: heightAt(jx, jz) + 0.005, z: jz, ry: deco() * 6.3, s: 0.04 + deco() * 0.035, sy: 0.55, color: shingle[Math.floor(deco() * 4)]! });
+      }
+    for (let z = -1.5; z <= rows + 1.5; z += 2.6) {
+      if (laneDistance(level, -1.2, z) < 1.2) continue;
+      for (let k = 0; k < 7; k++) {
+        const x = -0.95 - k * 0.28;
+        posts.push({ x, y: Math.max(-0.1, heightAt(x, z)), z, ry: 0, s: 1, sy: 1, color: timber });
+      }
+    }
+    for (const m of [
+      instanced(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: 0.8, flatShading: true }), pebbles),
+      instanced(new THREE.CylinderGeometry(0.035, 0.04, 0.32, 6).translate(0, 0.12, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), posts, true),
     ])
       if (m) group.add(m);
   }

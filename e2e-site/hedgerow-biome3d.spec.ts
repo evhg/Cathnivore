@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 // their farm scenery for now.
 type W = { hedgerow?: { game: () => unknown; biome3d?: () => string | null } }
 
-for (const [level, biome] of [[21, 'saltmarsh'], [34, 'rivermead'], [5, 'farm']] as const) {
+for (const [level, biome] of [[21, 'saltmarsh'], [34, 'rivermead'], [15, 'highmoor'], [55, 'shingle'], [5, 'farm']] as const) {
   test(`level ${level} in 3D is ${biome}`, async ({ page }) => {
     test.setTimeout(120_000)
     await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
