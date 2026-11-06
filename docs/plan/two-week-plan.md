@@ -2371,7 +2371,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the default frame shows plots 44 px or more and vehicles 16 px or more; the fit button shows every plot; the depot plate meets no plot; `?2d` unchanged; draw calls within budget; shots P and D (D unchanged).
 - **Size:** 2
 
-## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her *(lane A, in progress)* *(slice 1, 2026-11-06 19:32 lane A: the front door renders at the device ratio capped at 2 on a phone, the world at 0.85 of it; backing 780 at 390, cathode-front test. Left: the framing (menu off her umbrella hand). Handed back)*
+## 216. [x] NIGHT SHIFT phone title: Cath sharp, and the menu off her *(done 2026-11-06 20:20, lane A: framing checked and left: at 390x844 her body (canopy aside) starts at x 205, clear of the menu plate's right edge at 197 (spec 'the front menu is a sign'); the canopy's dark arc behind the logotype is item 148's framing. A body-clears-the-menu fit was built and dropped: it shrank her from 647 to 499 px tall for 30 px of gap. D unchanged. Shots scratchpad t216-before/after)* *(slice 1, 2026-11-06 19:32 lane A: the front door renders at the device ratio capped at 2 on a phone, the world at 0.85 of it; backing 780 at 390, cathode-front test. Left: the framing (menu off her umbrella hand). Handed back)*
 - **Why:** `plan1106f/ns-title-P`: Cath is soft (210-370 x 140-640), the menu panel (8-195 x 205-435) lies over her arm, and 470-600 is dead space.
 - **Build:** the phone title renders at the device's pixel ratio (capped at 2) with depth of field off; a portrait framing puts the menu in the space under her shoulder line.
 - **Accept:** canvas backing width 780 px or more at P; the menu's box misses Cath's projected box; `cathode-perf` within budget on the phone; cathode-front passes; shots P and D (D unchanged).
@@ -2404,7 +2404,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 and 1280x800 the column shows three groups at most; no empty rack cell; every label 12 px or more; Go 56 px or more tall; tray, round-chips and critique specs pass; shots D and P (P unchanged).
 - **Size:** 2
 
-## 221. [ ] NIGHT SHIFT poster: Cath lit as on the title, not chrome
+## 221. [ ] NIGHT SHIFT poster: Cath lit as on the title, not chrome *(lane A, in progress)*
 - **Why:** `portfolio/public/work/games-nightshift-960.webp` (shown on `/games/` 1040-1330 x 490-690 and the portfolio 790-990 x 430-640): the `?keyart` frame lights her trench like polished chrome and her face flat white, so the poster reads as an armoured figure, not the mum in the rain the title shows.
 - **Build:** the key-art frame uses the title's grade and key light (warm key on her face, the coat a matte wool, rim light from the neon), framed waist-up so her face is 30 px or more at 640 px wide; re-shoot with `npm run keyart nightshift`.
 - **Accept:** the coat's mean luminance under 0.35 with no blown highlight over 5% of its area; her face's luminance 0.15 or more and 30 px or more at the 640 size; keyart-fresh passes; the three webps re-shot and looked at.
