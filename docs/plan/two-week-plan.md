@@ -2386,7 +2386,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked in a shot before and after at P and D; the specs for each screen pass.
 - **Size:** 2
 
-## 218. [ ] Cathnivore desktop: the hand as painted cards
+## 218. [ ] Cathnivore desktop: the hand as painted cards *(lane A, in progress)*
 - **Why:** `plan1106g/cath-game-D` (360-1320 x 755-880): seven of eight hand cards are about 70% flat yellow with a 24 px icon in the corner ('Sell 1 Produce', 'Buy Seed Library', 'Graft'); they read as buttons, not cards on the table (VISION: the table is the hero). The phone hand already carries art.
 - **Build:** each desktop hand card gets a picture window (the same illustrations as the phone cards and the card-art set) of 96x56 px or more, its name under it at 14 px or more, the cost chip at its foot; the fan keeps its overlap.
 - **Accept:** at 1440x900 every playable card's art box is 96x56 px or more; within a card the name, art and cost boxes don't intersect; a card's name stays clear of the next card (item 217's rule); text 4.5:1; hand specs pass; shots D and P (P unchanged).
