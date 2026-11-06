@@ -2116,7 +2116,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each `[data-meter]` keeps its number at 16 px+ with an aria label; change animations 250-600 ms, a fade only under reduced motion; the strip is 72 px tall or less at D and 52 at P, its box meeting neither the corp cards nor the menu button; shots P and D, light and dark.
 - **Size:** 2
 
-## 185. [ ] Hedgerow 3D: a field that looks farmed *(lane B, in progress)*
+## 185. [x] Hedgerow 3D: a field that looks farmed *(done 2026-11-06, lane B: every plain plot dressed by its 2D look (two soil ridges on bare earth, two or three hay stooks on stubble, clover clumps in a clover plot's corners), clear of its centre; a low hedge along every lane edge that borders a plot (87% of level 21's; the rest meet water or scenery); four instanced meshes (`userData.dressing`, `window.hedgerow.dressing3d()`), four draw calls. Water already had lily pads and reeds. **Cut:** the swaying wheat; act crops already grow on empty plots via item 59's `crops.ts`, so the dressing stays low and static. `e2e-site/hedgerow-dressing3d.spec.ts`; shots `t185` P and D)*
 - **Why:** `plan1106a/hedge-l21-3d-D` (240-1060 x 180-860): flat textured squares, bare lanes, no hedges between plots, no crop height, plain water rectangles (270-450 x 380-560); the same level in 2D (`hedge-l21-2d-D`) has cabbage rows, stooks, reeds and hedge lines. `hedge-l21-3d-P` reads as an empty board.
 - **Build:**
   - Instanced crops per 2D plot type: cabbage heads, wheat about 0.3 units tall swaying in the wind, hay stooks.
