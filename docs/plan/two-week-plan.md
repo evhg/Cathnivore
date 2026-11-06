@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-06T08:22Z
-
 
 
 
@@ -2201,4 +2199,53 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** l21-2d-P and l34-2d-P Cath's docked line pale on cream (95-360 x 712-740; item 188 found it mid-fade once, so measure settled); l21-3d-P the 'HOLLOWELL 216 coming' plate over the depot roof under the HUD (5-200 x 93-118) and 3D Cath clipped at the left edge (20-75 x 485-560); l34-2d-P the second gate and its lane off the left edge (0-90 x 505-530); l34 the second depot's dead '0 NEXT' (95-215 x 600-715): a shuttered depot reading 'opens round N' that rolls up, with a siren, on its first round; menu-P act 4's blurb fading under the bottom nav (100-290 x 755-775).
   - **NIGHT SHIFT:** title-D The List's captions about 11 px dark italic on grey paper (170-600 x 750-800) and its district stamps unreadable (200-590 x 705-725).
 - **Accept:** each point fixed or checked and logged here with its measurement; text 12 px+ and 4.5:1+ on its ground; a spec for each fix that fails on the old code where one can; shots before and after.
+- **Size:** 2
+
+## 195. [ ] Cathnivore: Quick Game setup as a laid table
+- **Why:** `plan1106c/cath-setup-P` stacks form panels with no focus (mode 16-380 x 155-230, difficulty 16-380 x 520-625, maps 16-380 x 640-770); `cath-setup-D` is six bordered boxes (130-1310 x 75-870) with Cath in a corner (1100-1220 x 610-780).
+- **Build:**
+  - The picked producers seated at a gingham table in the centre, Cath at its head; picking a producer pulls their chair in (the 'Picked' ribbons go).
+  - Difficulty as three Hollowell price tags pinned to the table's edge; the map cards as folded maps lying on it.
+  - Start as a stall shutter rolling up in 400-600 ms (a fade under reduced motion).
+- **Accept:** `[data-setup-table]` is the largest element; a `[data-seat]` per picked producer; tags `role=radio`, 44 px tall or more; AA throughout; nothing overlaps at 390 px; setup specs pass; shots P and D, light and dark.
+- **Size:** 3
+
+## 196. [ ] Cathnivore desktop: the partner's farm and the ledger as table objects
+- **Why:** `plan1106c/cath-game-D`: the partner's farm is one line, 'No Improvements bought yet' (33-315 x 228-290); the ledger a grey form row (33-315 x 735-800) and Undo a hatched bar (33-315 x 820-858), a web form beside a rich board.
+- **Build:**
+  - The partner's farm as a small wooden mat: their seated portrait, three resource crates with counts, slots for their Improvements.
+  - The ledger as a till receipt printing a line per action (a 200 ms paper feed); Undo as a 'VOID' rubber stamp.
+- **Accept:** `[data-partner-mat]` holds three `[data-crate]`; the receipt `[data-ledger]` is an `ol`; text 12 px or more at AA; reduced motion only fades new lines; undo specs pass; shots P and D.
+- **Size:** 2
+
+## 197. [ ] Runnel: Bea's garden grows through the level *(lane B, in progress)*
+- **Why:** `plan1106c/runnel-D` (1155-1390 x 760-840) and `runnel-P` (220-380 x 720-765): until the solve the garden is a flat brown planter; the payoff at the ditch's end isn't visible while you play.
+- **Build:**
+  - The garden in stages by the share of fields watered: seedlings at a third, leaves at two thirds, flowers and a scarecrow at the solve (item 68's run-out and item 106's pop stay).
+  - Each field tile sprouts as the water passes it, staggered 80 ms a tile.
+- **Accept:** `[data-garden-stage="0|1|2|3"]` follows the watered share; the garden 120 x 60 px or more on a phone; reduced motion cross-fades; runnel-ditch and runnel-valley-folk pass; shots P and D, mid-level and solved.
+- **Size:** 2
+
+## 198. [ ] Hedgerow 3D: each act's biome, Saltmarsh first
+- **Why:** `plan1106c/hedge-l21-2d-D` (14-290 x 75-890) shows Saltmarsh's sea, reeds and boats; the same level in 3D (`hedge-l21-3d-D`) is generic turf with a thin teal strip (14-120 x 75-560) and generic houses (150-900 x 75-130); on `hedge-l21-3d-P` it doesn't read as a place.
+- **Build:**
+  - Per-act biome sets from instanced low-poly pieces: Saltmarsh's tidal flats, reed beds, moored boats, a lighthouse and egrets; Rivermead's willows and river; the rest after.
+  - Turf and fog tinted per act.
+- **Accept:** the 3D renderer reports `biome` ('saltmarsh' on level 21); water across 25% or more of the frame's shoreline edge; 12 draw calls or fewer added; `?2d` unchanged; the 3D frame specs pass; shots P and D, levels 21 and 34.
+- **Size:** 3
+
+## 199. [ ] NIGHT SHIFT: the class pick's armoury table
+- **Why:** `plan1106c/ns-play-D` (975-1205 x 305-355) and `ns-play-P` (18-150 x 708-742): each class's weapon is a thin red outline icon; the stats are hairline bars (1065-1320 x 115-260); nothing in the world anchors the choice.
+- **Build:**
+  - The class's weapon as a 3D prop on a rain-wet case table under a lamp, turning slowly; switching swaps it with a 250 ms slide.
+  - The stats as gauge dials stamped on the case lid; the class's line as Cath's caption.
+- **Accept:** `[data-armoury-prop]` names the class and changes with it; the prop 200 px or more wide at D and 140 at P; labels 12 px or more at AA; no rotation under reduced motion; `cathode-classpick`, `cathode-classstage` and `cathode-perf` pass; shots P and D for every class.
+- **Size:** 2
+
+## 200. [ ] The bugs from the 2026-11-06 08:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106c`; points already open in 126, 138 and 182 left out)
+  - **NIGHT SHIFT:** D class pick: the stats panel (970-1440 x 55-850) hides Cath, only her umbrella tip showing (935-975 x 300-330). P title: her face blurred by depth of field (210-285 x 170-250), the menu panel against her coat (8-195 x 207-435); '4 MORE NAMES' about 10 px grey (16-105 x 655-667) and the List tags about 9 px (100-375 x 730-750). D title: the List blurbs run to the cards' edges (283-378 x 732-812, 390-490 x 725-805). P pick: stat labels and values about 10 px (16-374 x 643-678, 162-330 x 728-738).
+  - **Cathnivore:** P campaign: Cath's portrait cropped and faded beside her bubble (300-360 x 145-245); the progress segments nearly invisible (16-195 x 120-132). P title: 'No sale yet' over her jacket's hem and hand (5-135 x 425-465).
+  - **Hedgerow:** P 2D l21 and l34: Cath's hint light grey on cream, as if disabled (97-355 x 715-765). 3D P l21: the depot cut by the HUD (75-135 x 55-140), its '216 coming' chip over the top plot row (5-203 x 152-178). 3D D l21: the Hollowell executive floating clear of the depot (155-200 x 108-170). P menu: 'Brand Ambassador' on the path (30-115 x 437-470). D menu: the level card's threat lines about 11 px (692-812 x 632-662). P l34: '283 coming' over the van queue (3-77 x 560-578).
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
