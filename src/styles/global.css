@@ -1569,7 +1569,7 @@ html.no-animations .card-enter {
 .settings .settings-named small { color: var(--ink-muted); font-size: var(--fs-caption); line-height: 1.25; }
 .settings .settings-volume {
   display: grid;
-  grid-template-columns: auto 1fr 3.2em;
+  grid-template-columns: 4.5em 1fr 3.2em; /* plan item 213: one label width, so the Volume and Music tracks line up */
   align-items: center;
   gap: 12px;
   padding: 6px 14px;

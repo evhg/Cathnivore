@@ -1,7 +1,8 @@
 import type { Action, GameEvent, GameState } from '../../engine/types'
 import { loadSettings } from '../settings'
 import { cueFor, type Cue } from './cues'
-import { CUE_LENGTH, renderCue } from './synth'
+import { CUE_LENGTH, renderCue, renderScoreNote } from './synth'
+import { ScoreClock, barNotes, tempoFor, BEATS_PER_BAR, type ScoreMode } from './score'
 
 // ROADMAP 19: a small synthesised WebAudio sound set, no audio files. Silent until the first tap: browsers
 // only let an AudioContext run after a user gesture, so the context is created lazily on the first
@@ -31,8 +32,14 @@ export function unlockAudioOnFirstTap(): void {
     if (!loadSettings().sound) return
     window.removeEventListener('pointerdown', unlock)
     const c = getContext()
-    if (c && c.state === 'suspended') void c.resume().then(syncAmbient)
-    else syncAmbient()
+    if (c && c.state === 'suspended') void c.resume().then(() => {
+        syncAmbient()
+        syncScore()
+      })
+    else {
+      syncAmbient()
+      syncScore()
+    }
   }
   window.addEventListener('pointerdown', unlock)
   // A soft tick on every button press, so menus feel tactile too (ROADMAP 19's UI-tap cue).
@@ -116,6 +123,8 @@ let evening = false
 /** A new round: the market bell, and the ambience follows the day on the table (tableLight's phases). */
 export function soundRound(round: number, prevRound: number): void {
   evening = round >= 7
+  scoreRound = round
+  if (score) score.clock.round = round
   if (round > prevRound && round > 1) playCues(['bell'])
 }
 
@@ -235,6 +244,59 @@ export function syncAmbient(): void {
   }
 }
 
+// Plan item 213: the market score on its own bus (the Music level times Volume). A look-ahead timer asks the clock
+// for the bars due in the next 0.6 s and schedules their notes on the audio clock. Like every sound it waits for the
+// first tap: no AudioContext is made for it.
+let score: { clock: ScoreClock; bus: GainNode; timer: number } | null = null
+let scoreRound = 1
+let scoreMode: ScoreMode = 'market'
+
+function musicLevel(): number {
+  const s = loadSettings()
+  return s.sound ? s.music * s.volume : 0
+}
+
+export function syncScore(): void {
+  const c = ctx
+  const level = musicLevel()
+  if (!c || c.state !== 'running' || level <= 0) {
+    if (score) {
+      const { clock, bus, timer } = score
+      clock.stop()
+      window.clearInterval(timer)
+      if (c) {
+        bus.gain.cancelScheduledValues(c.currentTime)
+        bus.gain.setTargetAtTime(0.0001, c.currentTime, 0.15)
+        window.setTimeout(() => bus.disconnect(), 1500)
+      } else bus.disconnect()
+      score = null
+    }
+    return
+  }
+  if (score) {
+    score.bus.gain.setTargetAtTime(level, c.currentTime, 0.2)
+    return
+  }
+  const bus = c.createGain()
+  bus.gain.setValueAtTime(0.0001, c.currentTime)
+  bus.gain.linearRampToValueAtTime(level, c.currentTime + 3)
+  bus.connect(c.destination)
+  const clock = new ScoreClock(c.currentTime + 0.1)
+  clock.round = scoreRound
+  clock.mode = scoreMode
+  const tick = (): void => {
+    for (const b of clock.due(c.currentTime, 0.6)) for (const n of b.notes) renderScoreNote(c, bus, n, b.t0, b.beat)
+  }
+  tick()
+  score = { clock, bus, timer: window.setInterval(tick, 200) }
+}
+
+/** Plan item 213: Hollowell's turn ducks the market under its muzak; the market comes back when the turn ends. */
+export function setScoreMode(mode: ScoreMode): void {
+  scoreMode = mode
+  if (score) score.clock.mode = mode
+}
+
 // Plan item 53, tests only (webdriver): render a cue offline and measure it, and log the cues played, so e2e can
 // check every cue is audible, short and below clipping, and that play schedules them.
 let cueLog: Cue[] | null = null
@@ -244,6 +306,26 @@ if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigat
     log: cueLog,
     hasContext: () => ctx !== null,
     cues: Object.keys(CUE_LENGTH),
+    playing: () => score !== null,
+    scoreMode: () => scoreMode,
+    // Plan item 213: render bars of the score offline at the default Music level and measure them.
+    async measureScore(bars: number, mode: ScoreMode, round: number): Promise<{ peak: number; rms: number }> {
+      const rate = 22050
+      const beat = 60 / tempoFor(round)
+      const off = new OfflineAudioContext(1, Math.ceil(rate * (bars * BEATS_PER_BAR * beat + 1)), rate)
+      const bus = off.createGain()
+      bus.gain.value = 0.5 * 0.8
+      bus.connect(off.destination)
+      for (let b = 0; b < bars; b++) for (const n of barNotes(b, mode, round)) renderScoreNote(off, bus, n, b * BEATS_PER_BAR * beat, beat)
+      const d = (await off.startRendering()).getChannelData(0)
+      let peak = 0
+      let sum = 0
+      for (let i = 0; i < d.length; i++) {
+        peak = Math.max(peak, Math.abs(d[i]!))
+        sum += d[i]! * d[i]!
+      }
+      return { peak, rms: Math.sqrt(sum / d.length) }
+    },
     async measure(cue: Cue): Promise<{ peak: number; rms: number; lastSound: number }> {
       const rate = 22050
       const off = new OfflineAudioContext(1, Math.ceil(rate * 1.4), rate)

@@ -185,3 +185,65 @@ export function renderCue(c: Ctx, out: AudioNode, cue: Cue, t0: number): void {
       return
   }
 }
+
+// Plan item 213: the score's voices, from the same kit. `beat` is seconds per beat; the note's times are in beats.
+export function renderScoreNote(c: Ctx, out: AudioNode, n: import('./score').ScoreNote, t0: number, beat: number): void {
+  const at = t0 + n.at * beat
+  const dur = Math.max(0.05, n.dur * beat)
+  const hz = 440 * 2 ** ((n.midi - 69) / 12)
+  if (n.voice === 'slap') {
+    burst(c, out, at, { at: 0, dur: 0.07, peak: n.gain, type: 'bandpass', freq: 2200, q: 1.4, attack: 0.002 })
+    return
+  }
+  if (n.voice === 'drum') {
+    // A soft hand drum: a sine that drops in pitch, with a muffled skin noise on top.
+    const o = c.createOscillator()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(hz * 1.6, at)
+    o.frequency.exponentialRampToValueAtTime(hz, at + 0.08)
+    o.connect(env(c, out, at, Math.min(dur, 0.35), n.gain, 0.003))
+    o.start(at)
+    o.stop(at + 0.4)
+    burst(c, out, at, { at: 0, dur: 0.05, peak: n.gain * 0.25, type: 'lowpass', freq: 900, attack: 0.002 })
+    return
+  }
+  if (n.voice === 'pluck') {
+    // A plucked string: a triangle and its octave through a lowpass that closes fast, a quick decay.
+    const f = c.createBiquadFilter()
+    f.type = 'lowpass'
+    f.frequency.setValueAtTime(hz * 8, at)
+    f.frequency.exponentialRampToValueAtTime(hz * 1.5, at + 0.25)
+    f.connect(env(c, out, at, dur, n.gain, 0.003))
+    for (const [mult, type] of [[1, 'triangle'], [2, 'sine']] as const) {
+      const o = c.createOscillator()
+      o.type = type
+      o.frequency.value = hz * mult
+      o.connect(f)
+      o.start(at)
+      o.stop(at + dur + 0.02)
+    }
+    return
+  }
+  // The reed (two detuned saws, a slow swell, a warm lowpass) and the muzak (sterile sines, a hard flat envelope).
+  const reed = n.voice === 'reed'
+  const g = c.createGain()
+  const attack = reed ? Math.min(0.25, dur / 3) : 0.01
+  g.gain.setValueAtTime(0.0001, at)
+  g.gain.linearRampToValueAtTime(n.gain, at + attack)
+  g.gain.setValueAtTime(n.gain, at + dur * 0.8)
+  g.gain.linearRampToValueAtTime(0.0001, at + dur)
+  g.connect(out)
+  const f = c.createBiquadFilter()
+  f.type = 'lowpass'
+  f.frequency.value = reed ? 1400 : 5000
+  f.connect(g)
+  for (const detune of reed ? [-7, 7] : [0]) {
+    const o = c.createOscillator()
+    o.type = reed ? 'sawtooth' : 'sine'
+    o.frequency.value = hz
+    o.detune.value = detune
+    o.connect(f)
+    o.start(at)
+    o.stop(at + dur + 0.02)
+  }
+}

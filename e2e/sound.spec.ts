@@ -2,7 +2,15 @@ import { test, expect, type Page } from '@playwright/test'
 
 // Plan item 53: a table that sounds like a market. Every cue renders offline to audible sound under 1.2 s that
 // peaks below -3 dBFS; with sound off no AudioContext is made; with it on, autoplay schedules cues as it plays.
-type Snd = { log: string[]; cues: string[]; hasContext(): boolean; measure(c: string): Promise<{ peak: number; rms: number; lastSound: number }> }
+type Snd = {
+  log: string[]
+  cues: string[]
+  hasContext(): boolean
+  playing(): boolean
+  scoreMode(): string
+  measure(c: string): Promise<{ peak: number; rms: number; lastSound: number }>
+  measureScore(bars: number, mode: string, round: number): Promise<{ peak: number; rms: number }>
+}
 const snd = (page: Page) => page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.cues)
 
 test('every cue renders offline: audible, under 1.2 s, peak under -3 dBFS', async ({ page }) => {
@@ -59,4 +67,39 @@ test("Hollowell's cues play on the enemy turn's playback beats", async ({ page }
     await page.waitForTimeout(400)
   }
   await expect.poll(async () => (await log()).filter((c) => c.startsWith('synth')).length, { timeout: 30_000 }).toBeGreaterThan(0)
+  // Plan item 213: the market score ducks under Hollowell's muzak while his turn plays back.
+  if (await page.locator('.enemy-turn-playback').count()) {
+    expect(await page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.scoreMode())).toBe('muzak')
+  }
+})
+
+// Plan item 213: the market score.
+test('the market score renders offline: audible and under -3 dBFS, the market and the muzak, morning and evening', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForFunction(() => !!(window as unknown as { __cathnivoreSound?: Snd }).__cathnivoreSound)
+  for (const [mode, round] of [['market', 1], ['market', 8], ['muzak', 4]] as const) {
+    const m = await page.evaluate(([md, r]) => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.measureScore(4, md, r), [mode, round] as const)
+    expect(m.rms, `${mode} ${round}`).toBeGreaterThan(0.004)
+    expect(m.peak, `${mode} ${round}`).toBeLessThan(0.708)
+  }
+})
+
+test('the Music slider is saved across reloads and starts the score after a tap', async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Settings', { exact: true }).click()
+  const music = page.locator('[data-music] input[type="range"]')
+  await expect(music).toBeEnabled()
+  // No AudioContext until a tap (the Settings tap above was the first; with Sound on it unlocked the score).
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.playing())).toBe(true)
+  await music.fill('20')
+  await expect(page.locator('[data-music] output')).toHaveText('20%')
+  await page.reload()
+  await page.getByText('Settings', { exact: true }).click()
+  await expect(page.locator('[data-music] input[type="range"]')).toHaveValue('20')
+  // Music at 0 stops the score; Sound off disables the slider.
+  await page.locator('[data-music] input[type="range"]').fill('0')
+  await expect(page.locator('[data-music] output')).toHaveText('Off')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __cathnivoreSound: Snd }).__cathnivoreSound.playing())).toBe(false)
+  await page.getByLabel('Sound on').uncheck()
+  await expect(page.locator('[data-music] input[type="range"]')).toBeDisabled()
 })

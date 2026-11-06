@@ -1,6 +1,6 @@
 import { storage } from './storage'
 import { applyStatusBarStyle } from './statusBar'
-import { syncAmbient } from './sound'
+import { syncAmbient, syncScore } from './sound'
 
 // SPEC 10.1: "Settings: animations, colour-blind patterns, AI speed, and 'Reset all data' with a
 // confirmation."
@@ -20,6 +20,8 @@ export interface Settings {
   /** Plan item 53: the table's sounds (cues) on or off; Ambience is `ambient`. */
   effects: boolean
   ambient: boolean
+  /** Plan item 213: the market score's level, 0 (off) to 1; silent whenever Sound is off. */
+  music: number
   colourBlindPatterns: boolean
   aiSpeed: AiSpeed
   theme: ThemePreference
@@ -36,6 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   volume: 0.8,
   effects: true,
   ambient: false,
+  music: 0.5,
   colourBlindPatterns: false,
   aiSpeed: 'normal',
   theme: 'system',
@@ -60,6 +63,7 @@ export function saveSettings(settings: Settings): void {
   applyThemeSetting(settings.theme)
   void applyStatusBarStyle(settings.theme)
   syncAmbient()
+  syncScore()
 }
 
 // STYLE.md 11: "with reduced motion switched on, use fades only" is the OS-level `prefers-reduced-motion`

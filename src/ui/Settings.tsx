@@ -152,6 +152,21 @@ export default function Settings({ onClose, onReplayTutorial }: Props) {
           />
           <output>{Math.round(settings.volume * 100)}%</output>
         </label>
+        {/* Plan item 213: the market score, on its own level, under the Volume above. */}
+        <label className="settings-volume" data-music>
+          <span>Music</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={Math.round(settings.music * 100)}
+            disabled={!settings.sound}
+            aria-valuetext={settings.music > 0 ? `${Math.round(settings.music * 100)}%` : 'Off'}
+            onChange={(e) => update({ music: Number(e.target.value) / 100 })}
+          />
+          <output>{settings.music > 0 ? `${Math.round(settings.music * 100)}%` : 'Off'}</output>
+        </label>
         <div className="settings-switches">
           <label>
             <input type="checkbox" checked={settings.effects} disabled={!settings.sound} onChange={(e) => update({ effects: e.target.checked })} />

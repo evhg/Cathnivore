@@ -20,7 +20,7 @@ import type { AIWorkerRequest, AIWorkerResponse } from '../ai/aiWorker'
 import { saveGame, clearGame, type SavedGame } from '../platform/storage'
 import { goalCard, investGoal, schemeGoal } from './shelfGoal'
 import { playHapticsFor } from '../platform/haptics'
-import { playCues, playSoundsFor, soundRound } from '../platform/sound'
+import { playCues, playSoundsFor, setScoreMode, soundRound } from '../platform/sound'
 import { eventCue } from '../platform/sound/cues'
 import { loadSettings, AI_SPEED_DELAY_MS, TEAMMATE_PICK_MS } from '../platform/settings'
 import { flyCardToHex, pickExpression, pickRegion } from './teammatePick'
@@ -793,6 +793,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }, [papersOpen])
   const planThreat = planHotSlot ? { slot: planHotSlot, regions: planPreview(state, planHotSlot).regions } : undefined
   const [pendingEnemyTurn, setPendingEnemyTurn] = useState<GameEvent[]>([])
+  // Plan item 213: Hollowell's turn ducks the market score under its muzak until the turn's playback ends.
+  const hollowellPlaying = pendingEnemyTurn.length > 0
+  useEffect(() => {
+    setScoreMode(hollowellPlaying ? 'muzak' : 'market')
+    return () => setScoreMode('market')
+  }, [hollowellPlaying])
   // Plan item 92: the regions the enemy turn started from, so the map can play its changes step by step.
   const [enemyTurnBefore, setEnemyTurnBefore] = useState<GameState['regions'] | undefined>()
   const [enemyStepRegion, setEnemyStepRegion] = useState<RegionId | undefined>()
