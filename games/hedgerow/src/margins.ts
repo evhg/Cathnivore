@@ -584,40 +584,85 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
   ctx.save();
   switch (p.kind) {
     case "saltpan": {
-      // A shallow rectangular pan, crusted white at the rim, pink where the brine is strongest.
-      ctx.fillStyle = "rgba(40,50,40,0.22)";
-      ctx.beginPath();
-      ctx.roundRect(x0 + s * 0.05, y0 + s * 0.06, p.w, p.h, s * 0.12);
-      ctx.fill();
-      ctx.fillStyle = "#efeee6";
-      ctx.beginPath();
-      ctx.roundRect(x0, y0, p.w, p.h, s * 0.12);
-      ctx.fill();
-      const g = ctx.createLinearGradient(x0, y0, x0 + p.w, y0 + p.h);
-      g.addColorStop(0, "#7db8c9");
-      g.addColorStop(1, rand() > 0.5 ? "#d996aa" : "#9cc9d6");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.roundRect(x0 + s * 0.09, y0 + s * 0.09, p.w - s * 0.18, p.h - s * 0.18, s * 0.08);
-      ctx.fill();
-      // Raked salt in rows, and a divider wall.
-      ctx.strokeStyle = "rgba(255,255,255,0.35)";
-      ctx.lineWidth = Math.max(1, s * 0.025);
-      for (let y = y0 + s * 0.22; y < y0 + p.h - s * 0.15; y += s * 0.14) {
+      // Plan item 224: a pan dug into the marsh, not a framed panel (the white rim, divider and heap read as an
+      // image icon from across the field). A low mud bank of uneven sides, brine pink where it's strongest with a
+      // few ripples and a crust at its edge, small salt heaps on the bank and a rake leaning on one.
+      const j = () => (rand() - 0.5) * s * 0.07;
+      const pan = (inset: number) => {
+        const l = x0 + inset, r = x0 + p.w - inset, t = y0 + inset * 0.8, btm = y0 + p.h - inset * 0.8;
         ctx.beginPath();
-        ctx.moveTo(x0 + s * 0.16, y);
-        ctx.lineTo(x0 + p.w * 0.45, y);
+        ctx.moveTo(l + s * 0.06 + j(), t + j());
+        ctx.lineTo(r - s * 0.04 + j(), t + s * 0.02 + j());
+        ctx.quadraticCurveTo(r + j(), (t + btm) / 2, r - s * 0.03 + j(), btm + j());
+        ctx.lineTo(l + s * 0.03 + j(), btm - s * 0.02 + j());
+        ctx.quadraticCurveTo(l + j(), (t + btm) / 2, l + s * 0.06 + j(), t + j());
+        ctx.closePath();
+      };
+      // The bank: trodden mud, darker at its outer foot.
+      ctx.fillStyle = "#9c8f74";
+      pan(0);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(60,50,35,0.45)";
+      ctx.lineWidth = Math.max(1, s * 0.025);
+      ctx.stroke();
+      // The brine, sunk below the bank (a shadow along its top edge).
+      const g = ctx.createLinearGradient(x0, y0, x0 + p.w, y0 + p.h);
+      g.addColorStop(0, "#86b9c4");
+      g.addColorStop(1, rand() > 0.5 ? "#d89aa8" : "#a9cdd3");
+      ctx.fillStyle = g;
+      pan(s * 0.1);
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+      ctx.fillStyle = "rgba(40,45,40,0.22)";
+      ctx.fillRect(x0, y0, p.w, s * 0.16);
+      // Ripples.
+      ctx.strokeStyle = "rgba(255,255,255,0.5)";
+      ctx.lineWidth = Math.max(1, s * 0.018);
+      for (let k = 0; k < 3; k++) {
+        const ry = y0 + p.h * (0.35 + k * 0.17);
+        const rx = x0 + p.w * (0.2 + rand() * 0.35);
+        ctx.beginPath();
+        ctx.moveTo(rx, ry);
+        ctx.quadraticCurveTo(rx + p.w * 0.1, ry - s * 0.04, rx + p.w * 0.2, ry);
         ctx.stroke();
       }
-      ctx.fillStyle = "#efeee6";
-      ctx.fillRect(x0 + p.w * 0.5 - s * 0.03, y0, s * 0.06, p.h);
-      // A salt heap at one end.
-      ctx.fillStyle = "#fbfaf4";
+      ctx.restore();
+      // The salt crust where the brine meets the bank.
+      ctx.strokeStyle = "rgba(250,248,240,0.8)";
+      ctx.lineWidth = Math.max(1, s * 0.03);
+      ctx.setLineDash([s * 0.08, s * 0.05]);
+      pan(s * 0.11);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Salt heaps along the bank's top, raked up out of the pan, and the rake.
+      const heaps = 2 + Math.floor(rand() * 2);
+      for (let k = 0; k < heaps; k++) {
+        const hx = x0 + p.w * (0.22 + k * 0.24) + j();
+        const hy = y0 + s * 0.06;
+        const hw = s * (0.09 + rand() * 0.04);
+        ctx.fillStyle = "rgba(40,40,30,0.25)";
+        ctx.beginPath();
+        ctx.ellipse(hx + hw * 0.3, hy + s * 0.01, hw, hw * 0.35, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fbfaf4";
+        ctx.beginPath();
+        ctx.moveTo(hx - hw, hy);
+        ctx.quadraticCurveTo(hx, hy - hw * 1.5, hx + hw, hy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "rgba(120,110,90,0.5)";
+        ctx.lineWidth = Math.max(1, s * 0.015);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "#6e5236";
+      ctx.lineWidth = Math.max(1.2, s * 0.03);
       ctx.beginPath();
-      ctx.moveTo(x0 + p.w * 0.62, y0 + p.h * 0.72);
-      ctx.quadraticCurveTo(x0 + p.w * 0.72, y0 + p.h * 0.2, x0 + p.w * 0.84, y0 + p.h * 0.72);
-      ctx.closePath();
-      ctx.fill();
+      ctx.moveTo(x0 + p.w * 0.86, y0 + p.h * 0.1);
+      ctx.lineTo(x0 + p.w * 0.66, y0 + p.h * 0.62);
+      ctx.moveTo(x0 + p.w * 0.6, y0 + p.h * 0.58);
+      ctx.lineTo(x0 + p.w * 0.72, y0 + p.h * 0.66);
+      ctx.stroke();
       break;
     }
     case "hut": {
