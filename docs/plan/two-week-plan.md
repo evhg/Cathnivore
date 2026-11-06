@@ -2156,7 +2156,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `e2e/ability-moment.spec.ts` (P and D) uses each ability once: a `[data-moment="ability-<id>"]` node appears within 300 ms over the target hex's box and is gone by 1.4 s; no transform under reduced motion; shots mid-moment, light and dark.
 - **Size:** 2
 
-## 190. [ ] Cathnivore desktop: the board at the table's scale
+## 190. [ ] Cathnivore desktop: the board at the table's scale *(lane A, in progress)*
 - **Why:** `plan1106b/cath-game-D`: the hexes span about 530 px of a 985 px frame (575-1110); the cloth around them is empty, Cath is squeezed into 355-470 x 490-735, and the left rail has a dead band (16-332 x 655-815). (Item 172 found the panel height-bound: this item changes the table's layout, not the map's fit.)
 - **Build:**
   - Give the board the table: Hollowell's plan as a strip along the board's top edge instead of a column, so the map grows to the frame's height and width.
