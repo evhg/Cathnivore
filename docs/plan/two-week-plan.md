@@ -2210,7 +2210,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-setup-table]` is the largest element; a `[data-seat]` per picked producer; tags `role=radio`, 44 px tall or more; AA throughout; nothing overlaps at 390 px; setup specs pass; shots P and D, light and dark.
 - **Size:** 3
 
-## 196. [ ] Cathnivore desktop: the partner's farm and the ledger as table objects *(lane A, in progress)*
+## 196. [x] Cathnivore desktop: the partner's farm and the ledger as table objects *(done 2026-11-06, lane A: the partner's farm a wooden mat (`[data-partner-mat]`: a monogram seat token in their colour, their name, five Improvement slots that fill with the cards' vignettes, a crate, coins and a rosette `[data-crate]` with counts and income), listed first so it never scrolls out of the 88 px Farm block; the ledger's `ol[data-ledger]` lines feed out in 200 ms (a fade under reduced motion); Undo a red-ink stamp with 'VOID' boxed beside the word, a faded stamp when there's nothing to undo. `e2e/partner-mat.spec.ts`; farmstead spec counts a card on the partner's mat (a buy can end the turn); shots scratchpad mat1-4, undo1-3)*
 - **Why:** `plan1106c/cath-game-D`: the partner's farm is one line, 'No Improvements bought yet' (33-315 x 228-290); the ledger a grey form row (33-315 x 735-800) and Undo a hatched bar (33-315 x 820-858), a web form beside a rich board.
 - **Build:**
   - The partner's farm as a small wooden mat: their seated portrait, three resource crates with counts, slots for their Improvements.
