@@ -640,3 +640,20 @@ test('the title Cath is the hero model, 300 px or taller at D', async ({ page, h
   expect(m.names).toEqual(['cath-fist-r', 'cath-hand-l'])
   if (!hasTouch) expect(m.bottom - m.top, 'her silhouette on screen').toBeGreaterThanOrEqual(300)
 })
+
+// Plan item 187: her gaze follows the focused menu row, the target moving with the focus (well inside 300 ms).
+test('Cath looks toward the focused menu row', async ({ page, hasTouch }) => {
+  test.setTimeout(180_000)
+  await open(page, hasTouch)
+  const gazeAfter = async (key: string) => {
+    const t0 = Date.now()
+    await page.keyboard.press(key)
+    const g = await page.evaluate(() => document.querySelector<HTMLCanvasElement>('canvas[data-key-light]')?.dataset.gaze ?? '')
+    return { g: Number(g), ms: Date.now() - t0, set: g !== '' }
+  }
+  const down = await gazeAfter('ArrowDown')
+  const up = await gazeAfter('ArrowUp')
+  expect(down.set && up.set).toBe(true)
+  expect(down.g).toBeGreaterThan(up.g)
+  expect(Math.max(down.ms, up.ms)).toBeLessThan(300)
+})

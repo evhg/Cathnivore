@@ -2132,7 +2132,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-terrace]` exists; no valley hedge or furrow box meets the board's hull plus 8 px; the stream ends within 12 px of the spring tile; the Runnel site specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 187. [ ] NIGHT SHIFT: Cath's face readable on the title *(lane A, in progress)*
+## 187. [ ] NIGHT SHIFT: Cath's face readable on the title *(lane A, in progress)* *(slice 1, 2026-11-06 04:25 lane A: her head turns toward the menu and tips to the focused row, easing in about 150 ms (`FrontCath.look`; the class pick clears it); the target is published as the canvas's `data-gaze` on the focus tick (cathode-front 'Cath looks toward the focused menu row'); shots `s187` D top and bottom rows. Open: the warm face key brightened to 3:1 against the wall, the 6 s idle push-in to waist-up (face 90 px D, 70 P), cathode-perf alone)*
 - **Why:** `plan1106a/ns-title-D` (900-1200 x 230-900): she is a 670 px figure, but her face (985-1050 x 280-360) is a 65 px oval in the umbrella's shadow, against the character bible's large bright eyes.
 - **Build:**
   - A soft warm key on her face under the canopy as well as the pink rim; her gaze follows the focused menu row.

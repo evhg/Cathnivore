@@ -782,6 +782,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cath.expression(expr);
       world.renderer.domElement.dataset.expression = expr;
       // Plan item 161: the class on her stage, for the pick's checks (set at once; the swap plays over it).
+      // Plan item 187: the class pick has her own look to the lens; the menu gaze is the title's.
+      if (cls) cath.look(null);
       if (cls) world.renderer.domElement.dataset.class = cls;
       else delete world.renderer.domElement.dataset.class;
       if (instant) {
@@ -794,6 +796,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     focusBias(v) {
       spring.tb = THREE.MathUtils.clamp(v, -1, 1);
+      // Plan item 187: her eyes go to the focused row (the gaze target is published for the tests).
+      cath.look(v);
+      world.renderer.domElement.dataset.gaze = cath.gaze.toFixed(2);
     },
     parallax(x, y) {
       spring.tx = THREE.MathUtils.clamp(x, -1, 1);

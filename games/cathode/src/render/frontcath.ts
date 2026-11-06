@@ -35,6 +35,12 @@ export interface FrontCath {
   readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
   readonly clipState: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
+  /**
+   * Plan item 187: where she looks, -1..1 down the title menu (the menu sits to her right of frame): her head turns
+   * toward it and tips to the focused row, easing there in about 150 ms (`instant` cuts). `gaze` is the target now.
+   */
+  look(v: number | null, instant?: boolean): void;
+  readonly gaze: number;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
   tint(c: THREE.Color, w: number): void;
   /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
@@ -1366,8 +1372,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let blinkT0 = -1;
   let blinks = 0;
   const idleNow = { breath: 0, weight: 0, sway: 0, blinks: 0, blinking: false };
+  // Plan item 187: the menu gaze (null: none, the head's idle drift alone), eased at a 60 ms time constant.
+  let gazeWant: number | null = null;
+  let gazeNow = 0;
+  let gazeW = 0;
   function update(dt: number, t: number, wind: { x: number; z: number }): void {
     const step = Math.min(dt, 1 / 20);
+    const gk = 1 - Math.exp(-dt / 0.06);
+    gazeNow += ((gazeWant ?? 0) - gazeNow) * gk;
+    gazeW += ((gazeWant === null ? 0 : 1) - gazeW) * gk;
     // Breathing at 0.25 Hz.
     const br = Math.sin(t * Math.PI * 2 * 0.25);
     chest.scale.set(1 + br * 0.008, 1 + br * 0.004, 1 + br * 0.014);
@@ -1388,7 +1401,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     pelvis.rotation.z = -w * 0.035;
     chest.rotation.z = w * 0.05;
     headPivot.rotation.z = -w * 0.03 + Math.sin(t * 0.31) * 0.015;
-    headPivot.rotation.y = Math.sin(t * 0.17) * 0.12;
+    headPivot.rotation.y = Math.sin(t * 0.17) * 0.12 * (1 - 0.6 * gazeW);
+    // Plan item 187: toward the menu (her right, +y turns her head that way as she faces the lens) and down its rows.
+    headPivot.rotation.y += gazeW * 0.22;
+    headPivot.rotation.x += gazeW * (0.04 + gazeNow * 0.09);
     legs.forEach((l, i) => (l.rotation.z = legRest[i]! + w * 0.01));
     // The umbrella sways a touch in the wind.
     umb.rotation.z = 0.06 + Math.sin(t * 0.9) * 0.015 + wind.x * 0.004;
@@ -1932,6 +1948,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
     blinkMap: blinkTex,
     get idle() {
       return { ...idleNow };
+    },
+    get gaze() {
+      return gazeWant ?? 0;
+    },
+    look(v, instant) {
+      gazeWant = v === null ? null : THREE.MathUtils.clamp(v, -1, 1);
+      if (instant) {
+        gazeNow = gazeWant ?? 0;
+        gazeW = gazeWant === null ? 0 : 1;
+      }
     },
     expression(e) {
       if (e === faceExpr) return;
