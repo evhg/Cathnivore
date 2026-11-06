@@ -2147,3 +2147,57 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Runnel:** her valley figure cut flat at the thighs by the board frame (D 425-505 x 830-850; P 25-85 x 755-775); 'The spring house' and 'Bea's garden' about 12 px on translucent pills (D 412-532 x 153-170, 1298-1390 x 765-781).
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
+
+## 189. [ ] Cathnivore: each producer's ability as a staged moment on the board
+- **Why:** `plan1106b/cath-game-D`: abilities exist only as card text (1195-1330 x 760-860); nothing on the board (575-1110 x 215-725) shows what Mara, Tomas, Ines or Sol does. Items 92 and 127 staged Hollowell, liberations and the Squeeze, never the producers.
+- **Build:**
+  - Mara's Injunction: a court notice nails onto the hex, a gavel lands with a wood thud, and Expand is struck through on Hollowell's card.
+  - Tomas's Market Day: bunting and an awning pop up over the hex. Ines's Second Opinion strikes a Doubt off; Sol's On Air sends a radio ring across the board.
+  - The producer's portrait answers with a pose. Each moment runs 600-1000 ms; reduced motion keeps fades only.
+- **Accept:** `e2e/ability-moment.spec.ts` (P and D) uses each ability once: a `[data-moment="ability-<id>"]` node appears within 300 ms over the target hex's box and is gone by 1.4 s; no transform under reduced motion; shots mid-moment, light and dark.
+- **Size:** 2
+
+## 190. [ ] Cathnivore desktop: the board at the table's scale
+- **Why:** `plan1106b/cath-game-D`: the hexes span about 530 px of a 985 px frame (575-1110); the cloth around them is empty, Cath is squeezed into 355-470 x 490-735, and the left rail has a dead band (16-332 x 655-815). (Item 172 found the panel height-bound: this item changes the table's layout, not the map's fit.)
+- **Build:**
+  - Give the board the table: Hollowell's plan as a strip along the board's top edge instead of a column, so the map grows to the frame's height and width.
+  - Cath stands full length at the table's left edge, clear of every hex.
+  - The rail's empty foot holds the round's ledger: Trust and land changes as receipts.
+- **Accept:** at 1440x900 the hex group is 70%+ of `.table`'s width and 80%+ of its height; no empty vertical band over 80 px in the left rail; Cath 300 px+ tall, meeting no hex box; `desktop-no-scroll`, `board-tokens`, `plan-corp` pass; shots D (1440 and 1280), light and dark.
+- **Size:** 2
+
+## 191. [ ] Hedgerow 3D: a camera that directs the round
+- **Why:** `plan1106b/hedge-l21-3d-D` and `-P` are one fixed overhead view, so the 3D world never gets a hero angle: the depot, the queue (270-300 x 265-360) and Cath (150-235 x 470-610) are small and far.
+- **Build:**
+  - On Go, a slow dolly from the depot along the lane, settling back into the play view.
+  - Wheel or pinch zooms between two clamps; double-tap a plot pushes in, a second double-tap returns.
+  - A short close-up on a merge or megastructure and on the house at a leak (at most one a round).
+  - Reduced motion and the phone tier get cuts instead of moves.
+- **Accept:** `?sandbox=1` e2e: after Go the camera moves over 1.5 s then holds the play view within 1%; the zoom clamp keeps the whole lane within 2 cells of the view; under reduced motion the camera at 0 and 200 ms is equal; draw calls within +5% (`scripts/hedgerow-drawcalls.mjs`); taps and drags on the tray still work (`site.spec` tray drag); shots P and D, L.
+- **Size:** 2-3
+
+## 192. [ ] NIGHT SHIFT: a district opener from 'Walk in' to the street
+- **Why:** `plan1106b/ns-play-D`: holding Enter on the class pick cuts to play like a load. It should feel like a film's opening. (The same shot shows no Cath on the D pick: check first whether it's the scene still loading under SwiftShader, as on 2026-11-06 01:51, or a regression of items 161/180.)
+- **Build:**
+  - After the hold, the pick's panels slide off; the lens trails Cath out of the alley into the district while a typed card writes the district, the time and the name on The List.
+  - Her class weapon comes up last and the HUD fades in.
+  - Tap or Escape skips; reduced motion gets a straight fade.
+- **Accept:** e2e at D and L: `[data-cine="opener"]` runs 2.5-4.5 s, then the HUD is visible; Cath's box 25%+ of the frame's height at its middle; Escape reaches the HUD in under 300 ms (timed in the page); `cathode-perf` in budget (run alone); shots mid-opener at P, L and D.
+- **Size:** 2
+
+## 193. [ ] Runnel: a Sunday 'big valley' puzzle
+- **Why:** `plan1106b/runnel-D`/`-P`: every daily is one small board; there's no weekly showpiece worth sharing or paying for.
+- **Build:**
+  - A weekly board 2-3x the daily's, with two springs, the mill, Bea's garden and a neighbour's.
+  - The valley pans as the water reaches each field; a Sunday share card.
+  - Seeded by the week, it saves partial progress and has its own row in the almanac.
+- **Accept:** `tests/runnel-sunday.test.ts`: every seed for 52 weeks is solvable and its par within a set range; e2e at P and D: the whole board reachable with no page scroll, the save survives a reload, the win card shows; shots fresh, mid and won, light and dark.
+- **Size:** 3
+
+## 194. [ ] The bugs from the 2026-11-06 05:00 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106b`)
+  - **Cathnivore:** game-D the Injunction card under the '8 NOT YET' pile (1195-1330 x 760-880), 'Hills' on a third line; game-D 'Need N more Marks' about 11 px orange on grey (35-315 x 550-578); game-D the rail headed 'Mara Keel' with a FARM block naming 'Tomas Reed' and no label saying whose (30-320 x 225-285); setup-D unselected map cards' captions light grey on paper (680-965 x 715-760).
+  - **Hedgerow:** l21-2d-P and l34-2d-P Cath's docked line pale on cream (95-360 x 712-740; item 188 found it mid-fade once, so measure settled); l21-3d-P the 'HOLLOWELL 216 coming' plate over the depot roof under the HUD (5-200 x 93-118) and 3D Cath clipped at the left edge (20-75 x 485-560); l34-2d-P the second gate and its lane off the left edge (0-90 x 505-530); l34 the second depot's dead '0 NEXT' (95-215 x 600-715): a shuttered depot reading 'opens round N' that rolls up, with a siren, on its first round; menu-P act 4's blurb fading under the bottom nav (100-290 x 755-775).
+  - **NIGHT SHIFT:** title-D The List's captions about 11 px dark italic on grey paper (170-600 x 750-800) and its district stamps unreadable (200-590 x 705-725).
+- **Accept:** each point fixed or checked and logged here with its measurement; text 12 px+ and 4.5:1+ on its ground; a spec for each fix that fails on the old code where one can; shots before and after.
+- **Size:** 2
