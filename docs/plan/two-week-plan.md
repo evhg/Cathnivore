@@ -2201,7 +2201,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or checked and logged here with its measurement; text 12 px+ and 4.5:1+ on its ground; a spec for each fix that fails on the old code where one can; shots before and after.
 - **Size:** 2
 
-## 195. [ ] Cathnivore: Quick Game setup as a laid table *(lane A, in progress)*
+## 195. [x] Cathnivore: Quick Game setup as a laid table *(done 2026-11-06, lane A: at D the producers, maps and difficulty lie on one gingham table (`[data-setup-table]`, the largest element, 864x808 at 1440) with Cath standing at its head; a picked producer's chair is pulled in onto the cloth (`[data-seat]`, no 'Picked' ribbons); the maps are folded maps creased in thirds, the seed tag beside the Map label; difficulty is three price tags along the front edge (radios, 48 px) beside what the level changes; Start is a stall shutter that rolls up in 520 ms (a 180 ms fade under reduced motion). On an upright phone the table is a box too (bleeding into the gutter), the tags 44 px; landscape phones keep their two-column page. `e2e/setup-table.spec.ts`; shots scratchpad a1-a8 (D, D dark, 1280, every difficulty), b1-b2 (P, P dark, L))*
 - **Why:** `plan1106c/cath-setup-P` stacks form panels with no focus (mode 16-380 x 155-230, difficulty 16-380 x 520-625, maps 16-380 x 640-770); `cath-setup-D` is six bordered boxes (130-1310 x 75-870) with Cath in a corner (1100-1220 x 610-780).
 - **Build:**
   - The picked producers seated at a gingham table in the centre, Cath at its head; picking a producer pulls their chair in (the 'Picked' ribbons go).

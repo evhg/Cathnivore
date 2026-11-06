@@ -3557,9 +3557,39 @@ html.no-animations .ability-moment * { animation: none !important; }
    gingham table (`[data-setup-table]`) with Cath standing at its head; the picked pair's chairs are pulled in to it.
    Below D the table is `display: contents`, so the phone screen keeps its own designed column. */
 .setup-table { display: contents; }
-@media (max-width: 1099px) {
-  .setup .setup-seed { order: 1; }
-  .setup .setup-cath-stand, .setup > button.setup-start { order: 2; }
+/* Plan item 195 slice 2: on an upright phone the table is a real box too: the producers, the maps and the price tags
+   lie on its cloth as paper, the tags pinned along its front edge. */
+@media (max-width: 1099px) and (orientation: portrait) {
+  .setup .setup-table {
+    display: flex; flex-direction: column; gap: 5px; margin: 0 -10px; padding: 5px 5px 7px; border: 4px solid var(--wood); border-radius: 14px;
+    box-shadow: inset 0 0 0 1.5px var(--wood-lo), 0 6px 12px color-mix(in srgb, var(--ink) 16%, transparent);
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--sea) 15%, transparent) 0 12px, transparent 12px 24px),
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--sea) 15%, transparent) 0 12px, transparent 12px 24px),
+      var(--paper-hi);
+  }
+  .setup .setup-table > .settings-card { padding: 6px 8px; border: 0; background: color-mix(in srgb, var(--paper-hi) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 14%, transparent); }
+  .setup .setup-table > .setup-difficulty { background: color-mix(in srgb, var(--paper-hi) 94%, transparent); }
+  /* Hollowell's price tags: three kraft tags with an eyelet; the picked one in Hollowell's orange. */
+  .setup .setup-table .setup-difficulty .segmented { gap: 8px; padding: 0; border: 0; border-radius: 0; background: none; }
+  .setup .setup-table .setup-difficulty .segmented label.price-tag {
+    min-height: 44px; border-radius: 0 8px 8px 0; color: var(--ink);
+    background:
+      radial-gradient(circle at 11px 50%, var(--paper-hi) 0 3.5px, var(--wood-lo) 3.5px 5px, transparent 5.5px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wheat) 45%, var(--paper-hi)), color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)));
+    clip-path: polygon(11px 0, 100% 0, 100% 100%, 11px 100%, 0 50%);
+    font-family: var(--font-voice); font-style: italic; font-size: var(--fs-body);
+    filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--ink) 22%, transparent));
+  }
+  .setup .setup-table .price-tag > span { left: 16px; }
+  .setup .setup-table .setup-difficulty .segmented label.price-tag:has(input:checked) {
+    color: var(--paper-on-fixed-fill);
+    background:
+      radial-gradient(circle at 11px 50%, var(--paper-hi) 0 3.5px, var(--wood-lo) 3.5px 5px, transparent 5.5px),
+      linear-gradient(180deg, color-mix(in srgb, var(--hollowell) 70%, var(--clay-deep)), var(--clay-deep));
+  }
+  .setup .setup-table .price-tag:has(input:focus-visible) { clip-path: none; }
+  .setup .setup-table .setup-difficulty { order: 2; }
 }
 /* Start: the stall's shutter, lettered OPEN; pressing it rolls the shutter up over the lit stall, then the game opens. */
 .setup > button.setup-start { padding: 0; overflow: hidden; isolation: isolate; }

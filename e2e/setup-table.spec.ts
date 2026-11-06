@@ -50,3 +50,28 @@ test('the shutter fades instead of rolling under reduced motion', async ({ page 
   expect(await shutter.evaluate((e) => getComputedStyle(e).transform)).toBe('none')
   await page.locator('.game').waitFor()
 })
+
+test('the phone Setup is a laid table too, with no scroll and nothing overlapping', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the upright phone')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const table = page.locator('[data-setup-table]')
+  await expect(table).toBeVisible()
+  const largest = await page.evaluate(() => {
+    const area = (e: Element) => { const r = e.getBoundingClientRect(); return r.width * r.height }
+    return [...document.querySelectorAll('main.setup *')].sort((a, b) => area(b) - area(a))[0]?.hasAttribute('data-setup-table')
+  })
+  expect(largest).toBe(true)
+  await expect(table.locator('[data-seat]')).toHaveCount(2)
+  const tags = table.getByRole('radio', { name: /easy|normal|hard/i })
+  await expect(tags).toHaveCount(3)
+  const boxes = await Promise.all((await tags.all()).map(async (t) => (await t.boundingBox())!))
+  for (const b of boxes) expect(b.height).toBeGreaterThanOrEqual(44)
+  for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x).toBeGreaterThanOrEqual(boxes[i - 1]!.x + boxes[i - 1]!.width)
+  // The table's sections don't overlap each other, and the table ends above Start.
+  const secs = await table.locator(':scope > section').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => [r.top, r.bottom] as const))
+  for (let i = 1; i < secs.length; i++) expect(secs[i]![0]).toBeGreaterThanOrEqual(secs[i - 1]![1] - 0.5)
+  const tableBottom = (await table.boundingBox())!
+  expect(tableBottom.y + tableBottom.height).toBeLessThanOrEqual((await page.locator('.setup-start').boundingBox())!.y + 0.5)
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+})
