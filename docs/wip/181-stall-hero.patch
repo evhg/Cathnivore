@@ -1,0 +1,168 @@
+diff --git a/e2e-site/games-stall.spec.ts b/e2e-site/games-stall.spec.ts
+new file mode 100644
+index 0000000..34ce88c
+--- /dev/null
++++ b/e2e-site/games-stall.spec.ts
+@@ -0,0 +1,40 @@
++import { expect, test } from '@playwright/test'
++
++// Plan item 181: the /games/ landing as Cath's market stall: the hero holds Cath and today's Runnel on a slate
++// ([data-cta="daily"]); her feet on the awning's rail (no floating figure); the posters 280 px or more at D, and a
++// poster pointed at swings 3 degrees or less (none under reduced motion).
++test('the landing is Cath\'s stall, the games hung from its awning', async ({ page }) => {
++  await page.goto('/games/')
++  const hero = page.locator('.stall-hero')
++  await expect(hero).toBeVisible()
++  await expect(hero.locator('[data-cta="daily"]')).toBeVisible()
++  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
++  const vp = page.viewportSize()!
++  const m = await page.evaluate(() => {
++    const cath = document.getElementById(innerWidth < 600 ? 'hero-cath-mini' : 'hero-cath')!.getBoundingClientRect()
++    const games = document.querySelector('.hero-games')!
++    const rail = games.getBoundingClientRect().top + parseFloat(getComputedStyle(games, '::after').top)
++    return { feet: cath.bottom, rail, widths: [...document.querySelectorAll('.hero-game')].map((e) => e.getBoundingClientRect().width) }
++  })
++  if (vp.width >= 900) {
++    expect(Math.abs(m.feet - m.rail)).toBeLessThanOrEqual(10)
++    for (const w of m.widths) expect(w).toBeGreaterThanOrEqual(280)
++    const first = page.locator('.hero-game').first()
++    await first.hover()
++    await page.waitForTimeout(300)
++    const deg = await first.evaluate((e) => parseFloat(getComputedStyle(e).rotate) || 0)
++    expect(Math.abs(deg)).toBeGreaterThan(0)
++    expect(Math.abs(deg)).toBeLessThanOrEqual(3)
++  }
++})
++
++test.describe('reduced motion', () => {
++  test.use({ reducedMotion: 'reduce' })
++  test('a poster pointed at stays still', async ({ page }) => {
++    await page.goto('/games/')
++    const first = page.locator('.hero-game').first()
++    await expect(first).toBeVisible()
++    await first.hover()
++    expect(await first.evaluate((e) => getComputedStyle(e).rotate)).toBe('none')
++  })
++})
+diff --git a/site/index.html b/site/index.html
+index fd07043..7f026b6 100644
+--- a/site/index.html
++++ b/site/index.html
+@@ -19,7 +19,7 @@
+     <div class="shade" aria-hidden="true"></div>
+ 
+     <div class="page">
+-      <header class="hero">
++      <header class="hero stall-hero">
+         <div class="hero-cath" id="hero-cath" aria-hidden="true"></div>
+         <div class="hero-stall" aria-hidden="true">
+           <svg viewBox="-20 0 260 284">
+@@ -46,7 +46,7 @@
+           <h1 class="title" aria-label="Cathnivore"><span class="title-text" data-t="Cathnivore">Cathnivore</span></h1>
+           <p class="lede reveal">Cath grows things, shares them, and keeps the corporations out. Come and help.</p>
+           <p class="cta-row reveal">
+-            <a class="btn-cta btn-cta-gold" id="cta-today" href="/runnel/"><span id="cta-today-label">Play today's Runnel</span></a>
++            <a class="btn-cta btn-cta-gold btn-cta-slate" id="cta-today" data-cta="daily" href="/runnel/"><span id="cta-today-label">Play today's Runnel</span></a>
+             <a class="btn-cta btn-cta-glass" href="#games">Browse the games</a>
+           </p>
+           <p class="hero-meta reveal">Free <span aria-hidden="true">·</span> No ads <span aria-hidden="true">·</span> No accounts</p>
+diff --git a/site/src/styles.css b/site/src/styles.css
+index 4f582d1..da09f95 100644
+--- a/site/src/styles.css
++++ b/site/src/styles.css
+@@ -1635,3 +1635,77 @@ body {
+   transition: opacity 400ms ease;
+ }
+ .poster-loop.on { opacity: 1; }
++
++/* Plan item 181: the landing as Cath's market stall. A striped awning runs the length of the posters, its top the
++   counter line Cath stands on; the four games hang from it as posters that sway a little when pointed at; today's
++   Runnel is chalked on a slate in a wooden frame. */
++.stall-hero .hero-games {
++  position: relative;
++  padding-top: 30px;
++}
++.stall-hero .hero-games::before {
++  content: "";
++  position: absolute;
++  top: -12px;
++  left: -14px;
++  right: -14px;
++  height: 42px;
++  background:
++    linear-gradient(180deg, color-mix(in srgb, white 22%, transparent), transparent 40%, color-mix(in srgb, var(--awning-red-lo) 35%, transparent)),
++    repeating-linear-gradient(90deg, var(--awning-red) 0 40px, var(--awning-cream) 40px 80px);
++  /* scalloped foot: a row of half-discs */
++  -webkit-mask: linear-gradient(black 0 0) top / 100% 32px no-repeat, radial-gradient(circle 10px at 20px 0, black 98%, transparent) 0 32px / 40px 10px repeat-x;
++  mask: linear-gradient(black 0 0) top / 100% 32px no-repeat, radial-gradient(circle 10px at 20px 0, black 98%, transparent) 0 32px / 40px 10px repeat-x;
++  filter: drop-shadow(0 4px 4px var(--shadow-deep));
++  pointer-events: none;
++}
++/* the awning's wooden rail */
++.stall-hero .hero-games::after {
++  content: "";
++  position: absolute;
++  /* the counter Cath stands on: the rail sits at her feet */
++  top: -17px;
++  left: -20px;
++  right: -20px;
++  height: 7px;
++  border-radius: 4px;
++  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
++  box-shadow: 0 2px 3px var(--shadow-deep);
++  pointer-events: none;
++}
++.stall-hero .hero-game {
++  transform-origin: 50% 0;
++  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), rotate 200ms var(--ease-out);
++}
++/* each hangs straight, and swings a little from its pegs when pointed at (a tilted card at rest left one poster
++   unpainted over the WebGL scene) */
++.stall-hero .hero-game:nth-child(odd) { --sway: -1.6deg; }
++.stall-hero .hero-game:nth-child(even) { --sway: 1.6deg; }
++.stall-hero .hero-game:hover,
++.stall-hero .hero-game:focus-visible {
++  transform: none;
++  rotate: var(--sway);
++}
++/* today's Runnel, chalked on a slate */
++.btn-cta-slate {
++  position: relative;
++  border-radius: 6px;
++  color: var(--chalk);
++  background:
++    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--chalk) 9%, transparent), transparent 60%),
++    linear-gradient(180deg, var(--slate-hi), var(--slate));
++  box-shadow: inset 0 0 0 4px var(--wood-mid), inset 0 0 0 5px var(--wood-lo), 0 8px 20px var(--shadow-deep);
++  font-family: var(--font-voice, inherit);
++  font-style: italic;
++  font-weight: 600;
++  letter-spacing: 0.02em;
++}
++.btn-cta-slate #cta-today-label {
++  padding-bottom: 1px;
++  border-bottom: 2px solid color-mix(in srgb, var(--gold-hi) 80%, transparent);
++}
++@media (prefers-reduced-motion: reduce) {
++  .stall-hero .hero-game,
++  .stall-hero .hero-game:hover,
++  .stall-hero .hero-game:focus-visible { rotate: none; transition: none; }
++}
+diff --git a/site/src/tokens.css b/site/src/tokens.css
+index 4409693..df4618f 100644
+--- a/site/src/tokens.css
++++ b/site/src/tokens.css
+@@ -14,6 +14,13 @@
+   --rn-water: #3b8db0;
+   --night: #1a1119;
+   --cream: #fbf1df;
++  /* Plan item 181: Cath's market stall: its awning's stripes and the slate today's Runnel is chalked on */
++  --awning-red: #c8553d;
++  --awning-red-lo: #9a3a27;
++  --awning-cream: #f3e3c3;
++  --slate: #2b3330;
++  --slate-hi: #3c4642;
++  --chalk: #f4efe2;
+   --cream-muted: rgba(251, 241, 223, 0.74);
+   --card-ink: #3a2d22;
+   --shadow-card: 0 10px 22px rgba(0, 0, 0, 0.35);
