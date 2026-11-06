@@ -2318,6 +2318,9 @@ html.no-animations .cath-companion .cameo {
     text-overflow: ellipsis;
     max-width: 100%;
     font-size: var(--fs-caption);
+    /* Plan item 183: the pile's greyed card lightens the pill's ground; the shelf's deeper ink keeps 4.5:1. */
+    color: var(--short-ink-shelf);
+    border-color: var(--short-ink-shelf);
   }
   /* Plan item 104: the card is about 130 px, so 'Need 2 more Goodwill' and 'No Outlets left to remove' cut; the
      dock drops the lead and tail words ('2 more Goodwill', 'No Outlets left'), and the full reason stays the title. */
