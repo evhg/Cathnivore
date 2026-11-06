@@ -20,15 +20,15 @@ test('the lesson board fills its frame, with the lesson card and Cath beside it'
   // Plan item 122: one Cath. At D the valley figure speaks the lesson (the portrait goes) and points at the
   // glowing tile. Plan item 165: a phone's one Cath stands in the valley (the card's portrait goes).
   if (hasTouch) {
-    await expect(page.locator('#valley-cath[data-cath-figure] svg')).toBeVisible()
+    await expect(page.locator('#valley-cath[data-cath-figure] svg.cath')).toBeVisible()
     await expect(page.locator('#host-face')).toBeHidden()
   } else {
-    await expect(page.locator('#valley-cath svg')).toBeVisible()
+    await expect(page.locator('#valley-cath svg.cath')).toBeVisible()
     await expect(page.locator('#valley-say')).toBeVisible()
     await expect(page.locator('#valley-cath')).toHaveAttribute('data-pose', 'point')
     const off = await page.evaluate(() => {
       const cath = document.getElementById('valley-cath')!
-      const m = cath.querySelector('svg')!.getScreenCTM()!
+      const m = cath.querySelector<SVGSVGElement>('svg.cath')!.getScreenCTM()!
       const s = new DOMPoint(266, 300).matrixTransform(m)
       const t = document.querySelector('.tiles > g.cell.lesson-target')!.getBoundingClientRect()
       const want = (Math.atan2(t.top + t.height / 2 - s.y, t.left + t.width / 2 - s.x) * 180) / Math.PI

@@ -38,6 +38,17 @@ export interface HostView {
   aim(degrees: number | null, always?: boolean): void
 }
 
+/** Plan item 188: the half-length figure ends flat at the hips, so in the valley she stands behind a drystone wall
+ *  on a grass verge: the wall's coping sits above that cut, and the verge runs down to the frame. */
+const VALLEY_WALL = `<svg class="valley-wall" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+<path class="vw-verge" d="M0 60 L0 47 Q18 38 46 40 L154 40 Q184 38 200 47 L200 60 Z"/>
+<path class="vw-wall" d="M12 48 L15 16 Q16 11 24 11 L176 11 Q184 11 185 16 L188 48 Z"/>
+<path class="vw-joint" d="M15 24 H185 M14 36 H186 M40 11 V24 M78 11 V24 M120 11 V24 M158 11 V24 M24 24 V36 M60 24 V36 M100 24 V36 M140 24 V36 M174 24 V36 M42 36 V48 M82 36 V48 M122 36 V48 M162 36 V48"/>
+<path class="vw-cope" d="M14 13 Q14 5 22 5 L178 5 Q186 5 186 13 Z"/>
+<path class="vw-joint" d="M30 5 V12 M46 5 V12 M62 5 V12 M78 5 V12 M94 5 V12 M110 5 V12 M126 5 V12 M142 5 V12 M158 5 V12 M172 5 V12"/>
+<path class="vw-tuft" d="M8 50 l4 -9 l2 9 l4 -11 l3 11 Z M30 50 l3 -7 l3 7 Z M92 50 l3 -8 l2 8 l4 -6 l2 6 Z M150 50 l3 -7 l3 7 Z M178 50 l3 -10 l3 10 l4 -8 l2 8 Z"/>
+</svg>`
+
 export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null, onLine?: () => void): HostView {
   let current: CathExpression | null = null
   let fieldsWet = 0
@@ -57,7 +68,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     const pointAt = p === 'point' && aimAt !== null ? aimAt : undefined
     // What the art draws (cath.ts clamps the arm to -85..15 degrees), so a test reads the real aim.
     stage.dataset.aim = pointAt === undefined ? '' : Math.min(Math.max(pointAt, -85), 15).toFixed(1)
-    stage.innerHTML = cathSvg({ framing: 'half', expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+    stage.innerHTML = cathSvg({ framing: 'half', expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true }) + VALLEY_WALL
   }
   const look = () => {
     if (!stage) return

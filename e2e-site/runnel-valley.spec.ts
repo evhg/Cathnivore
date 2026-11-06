@@ -40,7 +40,7 @@ for (const date of ['2026-11-03', '2026-11-08']) {
     const statsH = (await page.locator('.hud-stats').boundingBox())!.height
     expect(statsH).toBeLessThan(40)
     const cath = page.locator('#valley-cath')
-    await expect(cath.locator('svg')).toBeVisible()
+    await expect(cath.locator('svg.cath')).toBeVisible()
     const clash = await page.evaluate(() => {
       const r = document.getElementById('valley-cath')!.getBoundingClientRect()
       return [...document.querySelectorAll('#board polygon.tile')].some((t) => {
@@ -67,5 +67,5 @@ test('the stream fills to the garden at a solve, with Cath still in the valley',
   await expect(page.locator('.bed-today .bed-sprout')).toBeVisible()
   await page.locator('[data-last]').click()
   await expect.poll(wet).toBe(1)
-  await expect(page.locator('#valley-cath svg')).toBeVisible()
+  await expect(page.locator('#valley-cath svg.cath')).toBeVisible()
 })

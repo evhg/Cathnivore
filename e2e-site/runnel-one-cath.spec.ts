@@ -119,3 +119,26 @@ test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
   await page.locator('#board [data-last]').click()
   await expect(page.locator('#valley-cath')).not.toHaveAttribute('data-expression', before ?? '')
 })
+
+// Plan item 188: the half-length figure ends flat at the hips; a drystone wall on a verge stands in front of that
+// cut and runs down to the valley's frame, so she never floats cut off (D and the phone's standing figure).
+test('she stands behind a wall that hides the figure cut and meets the frame', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  await expect.poll(() => visibleCaths(page)).toEqual(['valley-cath'])
+  const m = await page.evaluate(() => {
+    const c = document.getElementById('valley-cath')!
+    const fig = c.querySelector('svg.cath')!.getBoundingClientRect()
+    const wall = c.querySelector('svg.valley-wall')!
+    const w = wall.getBoundingClientRect()
+    const cope = wall.querySelector('.vw-cope')!.getBoundingClientRect()
+    const valley = document.querySelector('.valley')!.getBoundingClientRect()
+    return { shown: getComputedStyle(wall).display !== 'none', copeTop: cope.top, figBottom: fig.bottom, wallBottom: w.bottom, valleyBottom: valley.bottom, wider: w.width >= fig.width }
+  })
+  expect(m.shown).toBe(true)
+  // The coping sits at least 12 px above the figure's cut, and the verge reaches the valley's foot.
+  expect(m.copeTop).toBeLessThanOrEqual(m.figBottom - 12)
+  expect(m.wallBottom).toBeGreaterThanOrEqual(m.valleyBottom - 2)
+  expect(m.wider).toBe(true)
+})
