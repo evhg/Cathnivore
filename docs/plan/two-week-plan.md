@@ -2082,7 +2082,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the stage's `data-class` drives `scene().figurePose()` (a different pose per class); her head box 90 px or more tall at D and 70 at P; her body box meets no panel; the blend ends within 600 ms (a cut under reduced motion); `cathode-classpick`, `cathode-classstage` and `cathode-perf` pass; shots P and D for every class.
 - **Size:** 3
 
-## 181. [ ] Site: the /games/ landing as Cath's market stall *(lane B, in progress)*
+## 181. [x] Site: the /games/ landing as Cath's market stall *(done 2026-11-06, lane B, 3296b32: `.stall-hero` with a striped scalloped awning along the posters, its rail the counter Cath stands on (feet within 10 px at D); the posters hang from it and swing 1.6 deg on hover or focus (none under reduced motion; they hang straight at rest, since a tilted poster went unpainted over the WebGL scene); today's Runnel chalked on a slate (`[data-cta="daily"]`); posters stay 294 px wide at D and all four on the first screen. The phone keeps its 2x2 posters under the awning; its 'stall front as the header' was cut (the hero text and Cath's half figure already fill that band). `e2e-site/games-stall.spec.ts`; shots `t181` P and D, light and dark)*
 - **Why:** `plan1105g/games-D` (270-385 x 60-430): Cath stands alone on the horizon and a small stall floats far right (1190-1360 x 220-400); the game cards (110-1330 x 460-810) are a plain row. On `games-P` (290-370 x 255-390) she is squeezed beside the buttons.
 - **Build:**
   - One staged scene: Cath behind a full-width awning stall, today's Runnel chalked on a slate as the main call to action.
