@@ -282,6 +282,13 @@ test('plan item 119: each packet shows its tower large, its name on a printed ba
         return { art: Math.min(art.width, art.height), price: parseFloat(getComputedStyle(c.querySelector('.build-cost')!).fontSize), band: getComputedStyle(name).backgroundColor !== 'rgba(0, 0, 0, 0)', bandH: name.getBoundingClientRect().height }
       }),
     )
+    // Plan item 220: the rack's last row fills the row, so no cell sits empty.
+    const ends = await page.evaluate(() => {
+      const t = document.querySelector('.tray-wrap .tray')!.getBoundingClientRect()
+      const last = document.querySelector('.tray-wrap .tray > .tray-tower:last-child')!.getBoundingClientRect()
+      return { tray: t.right, last: last.right }
+    })
+    expect(Math.abs(ends.tray - ends.last), `level ${level} last row`).toBeLessThanOrEqual(6)
     // Plan item 211: four to a row, a two-line name (Market Stall) sits on a band the same height as a one-line one.
     if (r.length >= 10) expect(Math.max(...r.map((p) => p.bandH)) - Math.min(...r.map((p) => p.bandH)), `level ${level} bands`).toBeLessThanOrEqual(1)
     // 56 px for up to six packets, 52 for seven to nine, 44 for ten or more (item 87's column budget).

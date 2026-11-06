@@ -3920,6 +3920,36 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower {
     padding-inline: 2px;
   }
+  /* Plan item 220: twelve tracks, so a short last row widens its packets to fill the row (no empty cell). */
+  .play .tray-wrap .tray,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .play .tray-wrap .tray > .tray-tower {
+    grid-column: span 4;
+  }
+  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 1):last-child {
+    grid-column: span 12;
+  }
+  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 1):nth-last-child(2),
+  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 2):last-child {
+    grid-column: span 6;
+  }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower {
+    grid-column: span 3;
+  }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):last-child {
+    grid-column: span 12;
+  }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):nth-last-child(2),
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 2):last-child {
+    grid-column: span 6;
+  }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):nth-last-child(3),
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 2):nth-last-child(2),
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 3):last-child {
+    grid-column: span 4;
+  }
 }
 /* Plan item 87: a round too long for the column (fitPreview's last resort before the tabbed card goes): shorter packets. */
 @media (min-width: 900px) and (min-height: 521px) {

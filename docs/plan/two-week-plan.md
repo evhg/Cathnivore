@@ -2398,7 +2398,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 every interactive box inside x 16-374; Start visible without scrolling; tap targets 44 px or more; text 12 px or more; setup specs pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 220. [ ] Hedgerow desktop: a side column with one headline *(lane B, in progress)*
+## 220. [ ] Hedgerow desktop: a side column with one headline *(lane B, in progress)* *(slice 1, 2026-11-06 20:40 lane B: the rack on twelve tracks, a short last row's packets widen to fill it (no empty cell at l12/21/34/40, 1440 and 1280; tray spec checks it))*
 - **Why:** `plan1106g/hedge-l21-2d-D`, `hedge-l34-2d-D` (1095-1425 x 75-890): rack, round ticket, Coming up/Notebook tabs, the chip timeline and the dock stack as five equal panels; at l34 the rack's last row leaves about 40% empty (1260-1410 x 280-370).
 - **Build:** the round ticket is the column's headline with the round chips (item 168) folded into it; the rack's last row stretches its packets so no cell is empty; the dock pinned at the column's foot. Three visual groups: shop, round, controls.
 - **Accept:** at 1440x900 and 1280x800 the column shows three groups at most; no empty rack cell; every label 12 px or more; Go 56 px or more tall; tray, round-chips and critique specs pass; shots D and P (P unchanged).
