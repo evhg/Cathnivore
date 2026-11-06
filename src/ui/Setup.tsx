@@ -3,8 +3,8 @@ import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/produc
 import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
 import BoardMiniature from './BoardMiniature'
 import type { GameConfig, ProducerId } from '../engine/types'
-import { earnedPins, pinForEvent } from '../../shared/cath/pins'
-import { marketEventFor } from '../engine/marketEvent'
+import { earnedPins, pinForEvent, pinSvg, PINS, type CathPin } from '../../shared/cath/pins'
+import { MARKET_EVENTS, marketEventFor, type MarketEventId } from '../engine/marketEvent'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
@@ -97,6 +97,7 @@ export default function Setup({ onStart }: Props) {
       </section>
 
       <section className="settings-card setup-mode">
+        <PinTin week={marketEvent.id} />
         <h2>Mode</h2>
         {/* Plan item 204: at D each mode is a tent place card standing on a ledge, the picked one upright, the other
             laid flat; the phone keeps its chairs. */}
@@ -222,6 +223,35 @@ export default function Setup({ onStart }: Props) {
         </span>
       </button>
     </main>
+  )
+}
+
+/**
+ * Plan item 204: Cath's market pins in a tin on the stall (D only): one enamel badge per Marrow Market event, earned
+ * ones in colour, the rest dimmed with the week that awards them; this week's pin is ringed.
+ */
+function PinTin({ week }: { week: MarketEventId }) {
+  const earned = earnedPins()
+  const pins = Object.keys(PINS) as CathPin[]
+  return (
+    <div className="pin-tin" role="group" aria-label="Cath's market pins">
+      <p className="pin-tin-head" aria-hidden="true">
+        Cath's pins <span>{earned.length} of {pins.length}</span>
+      </p>
+      <ul>
+        {pins.map((pin) => {
+          const ev = PINS[pin].event as MarketEventId
+          const has = earned.includes(pin)
+          return (
+            <li key={pin} data-pin={pin} data-earned={has || undefined} data-week={ev === week || undefined}>
+              <svg viewBox="-16 -16 32 32" aria-hidden="true" dangerouslySetInnerHTML={{ __html: pinSvg(pin) }} />
+              <span className="pin-name">{PINS[pin].name}</span>
+              <span className="pin-when">{has ? 'Earned' : ev === week ? 'Win this week' : MARKET_EVENTS[ev].name}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 

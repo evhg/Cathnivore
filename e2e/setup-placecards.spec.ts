@@ -50,3 +50,18 @@ test('phone Setup keeps its chairs: no place-card words', async ({ page }, info)
   await expect(page.locator('[data-place-card] .place-word').first()).toBeHidden()
   await expect(page.locator('[data-place-card]')).toHaveCount(2)
 })
+
+test("desktop Setup: Cath's pin tin shows the pins earned and this week's", async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'the desktop spread')
+  await page.addInitScript(() => localStorage.setItem('cath:pins', JSON.stringify(['bunting'])))
+  await open(page)
+  const tin = page.getByRole('group', { name: "Cath's market pins" })
+  await expect(tin).toBeVisible()
+  await expect(tin.locator('li')).toHaveCount(3)
+  await expect(tin.locator('li[data-earned]')).toHaveCount(1)
+  await expect(tin.locator('li[data-pin="bunting"]')).toContainText('Earned')
+  await expect(tin.locator('li[data-week]')).toHaveCount(1)
+  await expect(tin).toContainText('1 of 3')
+  const b = (await tin.boundingBox())!
+  expect(b.height).toBeLessThanOrEqual(200)
+})
