@@ -57,7 +57,8 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
   const button = buyable.first()
   const cardId = (await button.locator('xpath=ancestor::*[@data-buy-card][1]').getAttribute('data-buy-card'))!
   const inFarm = async () => {
-    if (desktop) return page.locator(`.farm-inline .stall-item[data-card="${cardId}"]`).count()
+    // Plan item 196: the buy can end the turn; the buyer is then the partner, whose card fills a slot on their mat.
+    if (desktop) return page.locator(`.farm-inline .stall-item[data-card="${cardId}"], .farm-inline .partner-slot[data-card="${cardId}"]`).count()
     await page.getByRole('button', { name: /^Farm/ }).first().click()
     const n = await page.locator(`.farm-sheet .farmstead-card[data-card="${cardId}"]`).count()
     await page.getByRole('button', { name: 'Close', exact: true }).click()
@@ -73,6 +74,7 @@ test('a buy flies the card into the farmstead and the tableau gains it', async (
   // Plan item 62: on the stall the crate sits on its tag's shelf (fields, sea or town).
   if (!desktop) await page.getByRole('button', { name: /^Farm/ }).first().click()
   const crate = page.locator(`${desktop ? '.farm-inline' : '.farm-sheet'} .stall-item[data-card="${cardId}"]`).first()
+  if (desktop && !(await crate.count())) return
   const [tag, shelf] = [await crate.getAttribute('data-tag'), await crate.getAttribute('data-shelf')]
   const want = { pasture: 'fields', crop: 'fields', coast: 'sea' }[tag ?? ''] ?? 'town'
   expect(shelf).toBe(want)

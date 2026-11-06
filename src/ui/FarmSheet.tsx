@@ -7,6 +7,7 @@ import Portrait from './portraits/Portrait'
 import Vignette from './Vignette'
 import { vignetteFor } from './vignetteKind'
 import { SHELVES, SLOT_W, stallLayout, tagTallies } from './stallLayout'
+import { MatCoins, MatCrate, MatRosette } from './PlayerMat'
 import type { GameState, ProducerId } from '../engine/types'
 
 const TAG_LABEL = { pasture: 'Pasture', crop: 'Crop', coast: 'Coast', community: 'Community', media: 'Media', science: 'Science' }
@@ -29,11 +30,18 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
     return (
       <section className="farm-sheet farm-inline" aria-labelledby="farm-inline-title">
         <h2 className="farm-inline-title" id="farm-inline-title">{partnerOnly ? 'Partner’s farm' : 'Farm'}</h2>
-        {shown
-          .map((id) => (
-            <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} compact />
-          ))}
-        {state.config.producers.every((id) => state.producers[id].improvements.length === 0) && (
+        {/* Plan item 196: the partner's mat first, so it never scrolls out of the block under the active stall. */}
+        {[...shown]
+          .sort((a, b) => Number(a === state.activeProducer) - Number(b === state.activeProducer))
+          .map((id) =>
+            // Plan item 196: the partner's farm is a small wooden mat (their seat, three stores, the Improvement slots).
+            id !== state.activeProducer && state.config.producers.length > 1 ? (
+              <PartnerMat key={id} state={state} producer={id} />
+            ) : (
+              <FarmColumn key={id} state={state} producer={id} hideSummary={state.config.producers.length === 1} compact />
+            ),
+          )}
+        {!shown.some((id) => id !== state.activeProducer) && state.config.producers.every((id) => state.producers[id].improvements.length === 0) && (
           <p className="farm-empty">No Improvements bought yet.</p>
         )}
       </section>
@@ -52,6 +60,60 @@ export default function FarmSheet({ state, onClose, inline }: { state: GameState
         ))}
       </div>
     </div>
+  )
+}
+
+const PARTNER_SLOTS = 5
+
+/**
+ * Plan item 196: on a desktop the partner's farm sits under the active producer's card as a small wooden mat: their
+ * seated portrait, a crate of Produce, a coin stack of Marks and a Goodwill rosette (each with its count and this
+ * round's income), and a row of Improvement slots that fill with the cards they buy.
+ */
+function PartnerMat({ state, producer }: { state: GameState; producer: ProducerId }) {
+  const p = state.producers[producer]
+  const def = PRODUCERS[producer]
+  const stores = [
+    { term: 'Produce', Art: MatCrate, value: p.resources.produce, income: p.production.produce },
+    { term: 'Marks', Art: MatCoins, value: p.resources.marks, income: p.production.marks },
+    { term: 'Goodwill', Art: MatRosette, value: p.resources.goodwill, income: p.production.goodwill },
+  ] as const
+  const shown = p.improvements.slice(-PARTNER_SLOTS)
+  const more = p.improvements.length - shown.length
+  return (
+    <section className="partner-mat" data-partner-mat={producer} aria-label={`${def.name}'s farm`}>
+      <span className={`partner-mat-seat producer-cameo pc-${producer}`} aria-hidden="true">
+        <Portrait character={producer} size={44} />
+      </span>
+      <h3 className="partner-mat-name">{def.name}</h3>
+      <ul className="partner-mat-stores">
+        {stores.map(({ term, Art, value, income }) => (
+          <li key={term} data-crate={term.toLowerCase()}>
+            <Tooltip term={term}>
+              <Art count={value} />
+              <span className="num partner-mat-count">{value}</span>
+              <span className="farm-income num" aria-hidden="true">+{income}</span>
+              <span className="visually-hidden"> {term}, plus {income} a round</span>
+            </Tooltip>
+          </li>
+        ))}
+      </ul>
+      <ol className="partner-mat-slots" aria-label={`${def.name}'s Improvements: ${p.improvements.length}`}>
+        {Array.from({ length: PARTNER_SLOTS }, (_, i) => {
+          const id = shown[i]
+          const card = id ? IMPROVEMENTS_BY_ID.get(id) : undefined
+          return card ? (
+            <li key={card.id} className="partner-slot" data-card={card.id} data-tag={card.tags[0]} title={card.name}>
+              <Vignette kind={vignetteFor(card)} seed={card.id} />
+              <span className="visually-hidden">{card.name}</span>
+            </li>
+          ) : (
+            <li key={`empty-${i}`} className="partner-slot" data-empty="" aria-hidden="true" />
+          )
+        })}
+        {more > 0 && <li className="partner-slot-more num">+{more}</li>}
+      </ol>
+    </section>
   )
 }
 
