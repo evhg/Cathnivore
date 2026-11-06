@@ -1023,6 +1023,11 @@ export function buildGround(level: Level): Ground {
   group.userData.gateSigns = gateSigns;
   const depots: THREE.Object3D[] = [];
   group.userData.depots = depots;
+  const gateAt = (path: Level["path"]) => {
+    const [c, r] = path[0]!;
+    const [c2, r2] = path[1]!;
+    return { x: c + 0.5 + Math.sign(c - c2) * 1.1, z: r + 0.5 + Math.sign(r - r2) * 1.1 };
+  };
   const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 && level.id <= 60 ? "CANDOR" : "HOLLOWELL";
   for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {
     const [c, r] = path[0]!;
@@ -1039,15 +1044,38 @@ export function buildGround(level: Level): Ground {
     sign.userData.inField = gate.position.x > 0 && gate.position.x < level.cols && gate.position.z > 0 && gate.position.z < level.rows;
     sign.userData.town = label;
     gateSigns.push(sign);
-    // Plan item 157: Hollowell's depot beside the gate, set back off the field's edge, its door turned to the lane.
+    // Plan item 157: Hollowell's depot beside the gate, set back off the field's edge.
+    // Plan item 179: its door turned to the camera (the camera looks north, so the fascia, shutter and bay read) and
+    // its spot left to the renderer, which knows the framing: these are the spots it may take, nearest the gate first,
+    // on the verge just outside the field's west, east and north edges (the south verge stands over the plots on
+    // screen), none on a gate.
     const depot = buildDepot();
-    // Small enough to stand on the verge just outside the fence, where the camera still frames it, a cell past the gate.
-    depot.scale.setScalar(0.55);
-    const out = (v: number, n: number) => (v <= 0 ? -0.9 : v >= n - 1 ? n + 0.9 : v + 0.5);
-    const along = dx !== 0 ? { x: out(c, level.cols), z: r + 0.5 - 1.6 } : { x: out(c, level.cols), z: r + 0.5 + dy * 2.4 };
-    if (dx === 0 && c > 0 && c < level.cols - 1) along.z = out(r, level.rows);
-    depot.position.set(along.x, heightAt(along.x, along.z), along.z);
-    depot.rotation.y = dx > 0 ? Math.PI : dx < 0 ? 0 : dy > 0 ? Math.PI / 2 : -Math.PI / 2;
+    // Plan item 179: big enough that the shed itself (not only its bay) reads, about 90 px wide at D.
+    depot.scale.setScalar(0.8);
+    depot.rotation.y = -Math.PI / 2;
+    const gx = gate.position.x, gz = gate.position.z;
+    const spots: Array<{ x: number; z: number }> = [];
+    for (let z = 0.5; z < level.rows; z += 1) spots.push({ x: -1.1, z }, { x: level.cols + 1.1, z });
+    for (let x = -0.5; x <= level.cols + 0.5; x += 1) spots.push({ x, z: -1.9 });
+    // Beside the gate or the lane's first six cells, where the round queues (further off, it reads as another
+    // lane's), and off every gate.
+    const queue: Array<{ x: number; z: number }> = [{ x: gx, z: gz }];
+    for (let i = 1, n = 0; i < path.length && n < 6; i++) {
+      const [ac, ar] = path[i - 1]!;
+      const [bc, br] = path[i]!;
+      const steps = Math.max(Math.abs(bc - ac), Math.abs(br - ar));
+      for (let k = 0; k < steps && n < 6; k++, n++) queue.push({ x: ac + 0.5 + ((bc - ac) * k) / steps, z: ar + 0.5 + ((br - ar) * k) / steps });
+    }
+    // The gate itself counts first: a spot by the queue's far end costs a cell more than one by the gate.
+    const dist = (sp: { x: number; z: number }) => Math.min(...queue.map((q, i) => Math.hypot(sp.x - q.x, sp.z - q.z) + (i ? 1 : 0)));
+    const near = spots
+      .filter((sp) => dist(sp) <= 4.6)
+      .filter((sp) => [level.path, level.path2].every((p) => !p || Math.hypot(sp.x - gateAt(p).x, sp.z - gateAt(p).z) > 1.3))
+      .sort((a, b) => dist(a) - dist(b));
+    depot.userData.spots = near.map((sp) => ({ ...sp, y: heightAt(sp.x, sp.z), d: dist(sp) }));
+    const first = near[0] ?? { x: -1.1, z: 0.5 };
+    depot.position.set(first.x, heightAt(first.x, first.z), first.z);
+    depot.userData.lane = depots.length;
     group.add(depot);
     depots.push(depot);
   }

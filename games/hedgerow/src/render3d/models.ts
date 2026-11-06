@@ -2170,13 +2170,14 @@ export function buildFarmhouse(): THREE.Group {
 
 /** Plan item 157: Hollowell's depot by the gate, facing +x (the renderer turns it to face the lane). About 1.6 x 1.1
  * x 1.4 world units before its scale.
- * Plan item 179: Hollowell's glossy shed, so it reads at a glance as theirs: white plastic walls, an orange fascia
+ * Plan item 179: Hollowell's glossy shed, so it reads at a glance as theirs: white plastic walls, a teal fascia
  * over a ribbed rolling shutter (its own part, `userData.shutter`, so a round can raise it), a floodlight on a pole
  * and a painted loading bay in front of the door, striped where the vans pull in. */
 export function buildDepot(): THREE.Group {
   const g = new THREE.Group();
   const white = gloss("#f3f5f7", 0.05);
-  const orange = gloss("#ef6a1c", 0.1);
+  // Hollowell's own teal (the gate's, `--corp-hi`), so the shed reads as theirs beside the gate's board.
+  const orange = gloss("#1e8c8c", 0.1);
   // The shed, on a low grey plinth.
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
@@ -2218,6 +2219,8 @@ export function buildDepot(): THREE.Group {
   g.add(lamp);
   g.add(box(0.13, 0.012, 0.09, glow("#fff1c2", 0.7), 0.82, 1.3, 0.735));
   g.userData.depot = true;
+  // Where the round's count docks: the fascia's top edge, in the depot's own frame.
+  g.userData.fascia = new THREE.Vector3(0.77, 0.94, 0);
   return g;
 }
 

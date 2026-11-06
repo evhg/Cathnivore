@@ -1251,6 +1251,8 @@ export class Renderer3D {
     this.syncBoss(game);
     this.syncSwarms(game);
     this.syncTowerMarks(game, dt);
+    this.placeDepots(game);
+    this.syncDepotShutters(game, dt);
     this.syncQueue(game);
     if (game.phase !== "wave" && this.debrisLying) {
       this.debris.clearStaying();
@@ -2288,6 +2290,20 @@ export class Renderer3D {
         el.prepend(town);
       }
       const at = this.queueAnchors[i]!;
+      // Plan item 179: the count hangs on its depot's fascia while the depot is in the frame; the plate keeps
+      // to the gate (items 72-139) only when it isn't.
+      const onDepot = this.depotDock(Number(el.dataset.lane ?? 0), w, h);
+      el.toggleAttribute("data-on-depot", !!onDepot);
+      if (onDepot) {
+        const pw = el.offsetWidth;
+        const ph = el.offsetHeight;
+        const x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
+        const y = Math.max(4, Math.min(h - ph - 4, onDepot.y - ph * 0.5));
+        el.style.opacity = String(k);
+        el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+        shown.plates.push({ x, y, w: pw, h: ph });
+        return;
+      }
       const v = this.v1.set(at.x, this.height(at.x, at.z) + at.up, at.z).project(this.camera);
       const pw = el.offsetWidth;
       const ph = el.offsetHeight;
@@ -2363,6 +2379,95 @@ export class Renderer3D {
     this.plotRectsKey = key;
     this.plotRectsCache = out;
     return out;
+  }
+
+  /** Plan item 179: the frame the depots were placed for (level, canvas size). */
+  private depotKey = "";
+  private boxRect(b: THREE.Box3, w: number, h: number): Rect {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < 8; i++) {
+      const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+      const px = (v.x * 0.5 + 0.5) * w;
+      const py = (-v.y * 0.5 + 0.5) * h;
+      x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+    }
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+  /**
+   * Plan item 179: each depot takes the spot (of the verge spots terrain.ts lists, nearest its gate first) that shows
+   * it whole in the fitted frame, covering no cell of the field, no gate's sign and not Cath where she stands, the
+   * nearest such spot to its gate. Placed once per level and canvas size, at the fitted camera.
+   */
+  private placeDepots(game: Game): void {
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const key = `${game.level.id}:${w}x${h}`;
+    if (!depots.length || !w || !h || key === this.depotKey || !this.camSettled()) return;
+    this.depotKey = key;
+    this.camera.updateMatrixWorld();
+    const lv = game.level;
+    const cells: Rect[] = [];
+    for (let r = 0; r < lv.rows; r++)
+      for (let c = 0; c < lv.cols; c++) {
+        const b = new THREE.Box3(new THREE.Vector3(c + 0.06, this.height(c + 0.5, r + 0.5), r + 0.06), new THREE.Vector3(c + 0.94, this.height(c + 0.5, r + 0.5) + 0.05, r + 0.94));
+        cells.push(this.boxRect(b, w, h));
+      }
+    const hx = game.hero.x, hz = game.hero.y, hy = this.height(hx, hz);
+    const cath = hasTwist(lv, "nocath") ? null : this.boxRect(new THREE.Box3(new THREE.Vector3(hx - 0.45, hy, hz - 0.45), new THREE.Vector3(hx + 0.45, hy + 1.8, hz + 0.45)), w, h);
+    const signs = this.gateSignRects();
+    const meet = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const taken: Rect[] = [];
+    for (const d of depots) {
+      const spots = (d.userData.spots as Array<{ x: number; y: number; z: number; d: number }> | undefined) ?? [];
+      let best: { sp: (typeof spots)[number]; score: number; r: Rect } | null = null;
+      for (const sp of spots) {
+        d.position.set(sp.x, sp.y, sp.z);
+        d.updateMatrixWorld(true);
+        const r = this.boxRect(new THREE.Box3().setFromObject(d), w, h);
+        const area = Math.max(1, r.w * r.h);
+        const inside = meet(r, { x: 0, y: 0, w, h }) / area;
+        const field = cells.reduce((a, c) => a + meet(r, c), 0) / area;
+        const blocked = [...signs, ...taken, ...(cath ? [cath] : [])].reduce((a, c) => a + meet(r, c), 0) / area;
+        // Off the frame weighs most, then over Cath, a sign or the other depot, then over the field; the gate's
+        // distance (in cells) settles the rest.
+        const score = (1 - inside) * 40 + blocked * 30 + field * 12 + sp.d * 0.6;
+        if (!best || score < best.score) best = { sp, score, r };
+      }
+      if (!best) continue;
+      d.position.set(best.sp.x, best.sp.y, best.sp.z);
+      d.updateMatrixWorld(true);
+      taken.push(best.r);
+    }
+  }
+  /** Plan item 179: the shutter rolls up as a round's convoy leaves (the first 2.5 s of a round), and down again. */
+  private depotOpen = 0;
+  private syncDepotShutters(game: Game, dt: number): void {
+    const want = game.phase === "wave" && game.waveClock < 2.5 ? 1 : 0;
+    this.depotOpen = this.reducedMotion ? want : want > this.depotOpen ? Math.min(1, this.depotOpen + dt / 0.6) : Math.max(0, this.depotOpen - dt / 0.9);
+    for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
+      const sh = d.userData.shutter as THREE.Object3D | undefined;
+      if (!sh) continue;
+      // Rolled up into the fascia: the slats shorten from the foot.
+      const k = this.depotOpen * this.depotOpen * (3 - 2 * this.depotOpen);
+      sh.scale.y = Math.max(0.04, 1 - k * 0.96);
+      sh.position.y = 0.08 + 0.6 * (1 - sh.scale.y);
+    }
+  }
+  /** Plan item 179 (tests): how far the depots' shutters are up (0 shut, 1 open). */
+  depotShutter(): number {
+    return this.depotOpen;
+  }
+  /** Plan item 179: where a lane's depot docks its count (CSS px on the canvas), or null when it isn't in the frame. */
+  private depotDock(lane: number, w: number, h: number): { x: number; y: number } | null {
+    const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[lane];
+    const f = d?.userData.fascia as THREE.Vector3 | undefined;
+    if (!d || !f) return null;
+    d.updateMatrixWorld(true);
+    const v = this.v2.copy(f).applyMatrix4(d.matrixWorld).project(this.camera);
+    const x = (v.x * 0.5 + 0.5) * w;
+    const y = (-v.y * 0.5 + 0.5) * h;
+    return x > 0 && x < w && y > 0 && y < h ? { x, y } : null;
   }
 
   /** Plan item 157: the depots by the gates as boxes on the canvas (CSS px), and their world footprint (x, z). */
@@ -2473,6 +2578,7 @@ export class Renderer3D {
       this.queueAnchors.push(hd.dx === 0 ? { x: ax + 0.85, z: az, up: 0.1, gx: tail.x, gz: tail.y } : { x: ax, z: az + 0.55, up: 0, gx: tail.x, gz: tail.y });
       const el = document.createElement("div");
       el.className = "gate-plate";
+      el.dataset.lane = String(ln.lane ?? 0);
       el.setAttribute("aria-hidden", "true");
       el.textContent = `${ln.count} coming`;
       this.overlayEl.append(el);

@@ -3764,6 +3764,18 @@ body:has(#dlg-pause[open]) .paused-note {
   letter-spacing: var(--track-label);
 }
 
+/* Plan item 179: docked on its depot the count is Hollowell's own fascia sign, white on their teal. */
+.gate-plate[data-on-depot] {
+  border-color: var(--plastic);
+  border-radius: 4px;
+  background: var(--corp);
+  color: var(--plastic);
+  box-shadow: 0 2px 0 var(--corp-ink);
+}
+.gate-plate[data-on-depot] .gate-plate-town {
+  background: var(--corp-hi);
+}
+
 /* Plan item 69: on an upright phone Cath's note covered the field's two bottom rows of plots for nine seconds; it is
    a slimmer slip now (her medallion smaller, her voice a size down), so it covers about one row. */
 @media (max-width: 600px) and (orientation: portrait) {
