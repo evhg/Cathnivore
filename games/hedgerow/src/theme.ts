@@ -891,7 +891,7 @@ export function gateSignRect(
   const x = L.offX + (c + 0.5 + dx * 0.95) * s;
   const y = L.offY + (r + 0.5 + dy * 0.95) * s;
   const label = level.id >= 81 ? "HOLLOWCANDOR" : level.id >= 41 ? "CANDOR" : "HOLLOWELL";
-  const fs = Math.max(11, Math.round(s * 0.15));
+  const fs = Math.max(12, Math.round(s * 0.17)); // plan item 211: 12 px or more (it read about 10)
   ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
   const sw = Math.max(s * 0.84, ctx.measureText(label).width + fs * 1.1);
   const sh = Math.max(s * 0.26, fs * 1.6);

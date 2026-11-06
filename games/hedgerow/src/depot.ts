@@ -19,7 +19,7 @@ export function depotSvg(): string {
     // Plan item 160: the brand on the stripe at 10 units (12 px+ on a desktop depot; it was 7.2, about 8 px), left of
     // the rep, who leans on the stripe's right end.
     `<rect x="6" y="41" width="88" height="14" fill="#ef7a2a"/>` +
-    `<text x="41" y="51.6" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="'Hedgerow UI', system-ui, sans-serif" letter-spacing="0.6" textLength="62" lengthAdjust="spacingAndGlyphs">HOLLOWELL</text>` +
+    `<text x="41" y="52.2" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="'Hedgerow UI', system-ui, sans-serif" letter-spacing="0.6" textLength="62" lengthAdjust="spacingAndGlyphs">HOLLOWELL</text>` +
     // roller door
     `<rect x="28" y="58" width="44" height="36" fill="#2a2f36"/>` +
     `<g class="depot-door"><rect x="28" y="58" width="44" height="36" rx="2" fill="#c9d0d7"/>${ribs}</g>` +
