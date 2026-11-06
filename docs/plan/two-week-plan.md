@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-06T02:10Z
-
 
 
 
@@ -2098,5 +2096,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** P menu: Act 4's teaser leaves 'it.' alone on its last line (20-370 x 735-770). D l21: the round chips' counts, 'OF 26' and 'KEEP GOING' about 10-11 px (1115-1405 x 668-685, 1340-1400 x 790-815). 3D D l21: Cath's bubble over her head (20-250 x 400-490). 3D P l21: the lane's entry and a cyan gate bar past the left edge (0-75 x 405-440).
   - **NIGHT SHIFT:** P title: the menu over Cath's body (0-185 x 205-435); the List's district stamps clipped (15-370 x 725-752). D title: the disabled CONTINUE below contrast (58-195 x 320-350); the List blurbs italic at about 11 px (60-600 x 750-800).
   - **Site:** P /games/: the 'Cathnivore' wordmark's right half blurred (230-345 x 120-170).
+- **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
+- **Size:** 2
+
+## 183. [ ] Cathnivore: the 'Not yet' shelf as a savings goal
+- **Why:** `plan1106a/cath-game-D` (30-330 x 440-860): nine greyed cards with 'Need N more' fill most of the left rail; about 60% of the producer's mat is things she can't do, and nothing turns the shortfall into a plan.
+- **Build:**
+  - The shelf folds to one row of price-tagged goods; the player pins one as 'Saving for', and a jar beside it fills with Mark and Goodwill coins at each income step.
+  - Cath's suggested move mentions the pinned goal; when it becomes affordable the card lifts off the shelf into the hand (400-800 ms).
+  - On a phone the pinned goal is a chip on the mat row (`cath-game-P` 16-380 x 612-658).
+- **Accept:** at D, 3 or fewer not-yet cards show at once; `[data-saving-for]` round-trips through the save (migration and unit test); the jar's `aria-valuenow`/`aria-valuemax` are current and cost; the card reaches the hand within 800 ms of becoming affordable (a fade under reduced motion); text 12 px+ at 4.5:1; shots P and D, light and dark.
+- **Size:** 2
+
+## 184. [ ] Cathnivore: the scoreboard as objects on the table
+- **Why:** `plan1106a/cath-game-D` (350-1335 x 12-75): Round, Trust, Land left and Rift are a flat strip of bar meters, the most web-app thing on the table; the same on `cath-game-P` (8-380 x 8-55).
+- **Build:**
+  - Round a chalk slate with tally marks, Trust a jar of glass tokens, Land a stack of deed cards, Rift a plate that cracks.
+  - Each change is staged: a token drops into the jar, a deed tears off, chalk strikes through.
+- **Accept:** each `[data-meter]` keeps its number at 16 px+ with an aria label; change animations 250-600 ms, a fade only under reduced motion; the strip is 72 px tall or less at D and 52 at P, its box meeting neither the corp cards nor the menu button; shots P and D, light and dark.
+- **Size:** 2
+
+## 185. [ ] Hedgerow 3D: a field that looks farmed
+- **Why:** `plan1106a/hedge-l21-3d-D` (240-1060 x 180-860): flat textured squares, bare lanes, no hedges between plots, no crop height, plain water rectangles (270-450 x 380-560); the same level in 2D (`hedge-l21-2d-D`) has cabbage rows, stooks, reeds and hedge lines. `hedge-l21-3d-P` reads as an empty board.
+- **Build:**
+  - Instanced crops per 2D plot type: cabbage heads, wheat about 0.3 units tall swaying in the wind, hay stooks.
+  - Hedge strips along plot borders and grass verges along the lane; reeds and lily pads on the water, from the same plot map as the 2D renderer.
+- **Accept:** every non-empty plot has an instanced crop mesh (`scene.userData.dressing`); hedges or verges along 60%+ of the lane's edge length; 12 draw calls or fewer added; the 3D frame specs pass; shots P and D.
+- **Size:** 3
+
+## 186. [ ] Runnel: the board dug into the valley
+- **Why:** `plan1106a/runnel-D` (580-1220 x 120-735): the hexes float over the valley like stickers; the valley's hedge lines run straight under them (390-1410 x 300-310). Same on `runnel-P` (40-330 x 325-590).
+- **Build:**
+  - A dug soil apron following the board's hex outline, with a turf-and-stone lip and a contact shadow.
+  - Valley hedges and furrows stop at the terrace's edge; the spring-house stream visibly enters the spring tile.
+- **Accept:** `[data-terrace]` exists; no valley hedge or furrow box meets the board's hull plus 8 px; the stream ends within 12 px of the spring tile; the Runnel site specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 187. [ ] NIGHT SHIFT: Cath's face readable on the title
+- **Why:** `plan1106a/ns-title-D` (900-1200 x 230-900): she is a 670 px figure, but her face (985-1050 x 280-360) is a 65 px oval in the umbrella's shadow, against the character bible's large bright eyes.
+- **Build:**
+  - A soft warm key on her face under the canopy as well as the pink rim; her gaze follows the focused menu row.
+  - After 6 s idle the camera pushes in slowly toward waist-up (none under reduced motion).
+- **Accept:** her face box 90 px+ at D after the push and 70 at P; the face's mean luminance 3:1 or more against the wall behind it; her gaze target changes within 300 ms of a menu focus change; `cathode-front` passes and `cathode-perf` stays in budget (run alone); shots P and D.
+- **Size:** 2
+
+## 188. [ ] The bugs from the 2026-11-06 02:15 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106a`. Checked and dropped: 'Cath missing from the D class pick' was the scene still loading at 15 s under load (`scene()` null; on stage by 30 s), and 'eyes shut on the D title' a live blink, not `?shot`)
+  - **Hedgerow:** l21-2d-P the dock's tab row a clipped 10 px strip behind Cath's line (15-230 x 686-700); l34-2d-P Cath's line pale grey on cream, about 2:1 (95-360 x 715-765); l34-2d-D the 4-column rack hyphenates 'Court-house' (1200-1245 x 335-362) and leaves a two-slot gap (1262-1412 x 280-370); menu D Act 4's teaser cut by the viewport's foot (527-912 x 850-900), its header jammed under the level card (145-440 x 805-850).
+  - **Cathnivore:** game D the Hollowell cards' region tags about 11 px orange on orange (650-805 x 163-180) and footers about 11 px grey (360-465 and 937-1075 x 165-178); game P the vertical 'PLAY' label about 9 px (165-182 x 700-740); setup P Cath a 40 px head jammed by the H1 (335-378 x 10-55).
+  - **Runnel:** her valley figure cut flat at the thighs by the board frame (D 425-505 x 830-850; P 25-85 x 755-775); 'The spring house' and 'Bea's garden' about 12 px on translucent pills (D 412-532 x 153-170, 1298-1390 x 765-781).
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
