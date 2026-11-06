@@ -1803,7 +1803,12 @@ function shotSolve(): void {
       // Not a bridge: turned, its crossing channel can still carry water, so it would not be the dry last tile.
       return c.kind !== 'stone' && c.kind !== 'spring' && !c.fixed && !c.reservoir && !c.bridge && rotateMask(c.solved, 1) !== c.solved
     })
-    .sort((a, b) => near(a) - near(b))[0]
+    .sort((a, b) => near(a) - near(b))
+    // The nearest tile that one turn back really leaves dry (on some boards a turned tile still meets the water).
+    .find((i) => {
+      puzzle.cells.forEach((c, j) => (c.rot = j === i ? 5 : 0))
+      return !computeFlow(puzzle.cells).wet.has(i)
+    })
   puzzle.cells.forEach((c, i) => {
     c.locked = false
     c.rot = i === last ? 5 : 0

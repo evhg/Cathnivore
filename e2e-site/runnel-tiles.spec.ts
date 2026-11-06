@@ -68,8 +68,9 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
             })
             edges.push(med(sides))
             // A channel: along its bed, the strongest pixel across it against the tile's fill.
-            const bed = g.querySelector<SVGLineElement>('.groove-bed')
-            if (bed) {
+            // A bridge's lower channel runs under its plank by design: a tile is judged by its best-reading channel.
+            let tileBest = 0
+            for (const bed of g.querySelectorAll<SVGLineElement>('.groove-bed')) {
               // The bed's box centre is the ditch's midpoint whatever the piece's CSS rotation (getScreenCTM leaves
               // that rotation out), so the ditch runs from the tile's centre through it to the edge.
               const bb2 = bed.getBoundingClientRect()
@@ -86,8 +87,9 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
                 for (let o = -reach; o <= reach; o++) best = Math.max(best, cr(L(F, p0.x + dx * f - (dy / dl) * o, p0.y + dy * f + (dx / dl) * o), fill))
                 along.push(best)
               }
-              chans.push(med(along))
+              tileBest = Math.max(tileBest, med(along))
             }
+            if (g.querySelector('.groove-bed')) chans.push(tileBest)
           }
           return { n: edges.length, edge: Math.min(...edges), chan: Math.min(...chans) }
         }, [full, bare] as const)
