@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-06 17:06 UTC
+
 
 
 
@@ -2340,4 +2340,48 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** P 2D l21 and l34: Cath's hint light grey on cream (97-360 x 712-765). P menu: the Act 4 note under the nav (100-290 x 740-775). D l21: the depot sign and road sign about 10 px (165-250 x 398-430, 289-357 x 480-492; P 8-88 x 365-380); the Notebook tab's dot clipped (1355-1370 x 548-560). D l34: rack labels wrapping unevenly ('Duck Pond', 'Court-house', 'Market Stall').
   - **Cathnivore:** D game: Injunction over Supply (1085-1320 x 740-865); card sublines about 11 px (1005-1055 x 806-818). P game: the Glut ticket on the board's top rim (120-270 x 160-182); intent sublines about 11 px (18-95 x 128-152); 'NOT YET' about 10 px (325-345 x 668-750). D setup: 'Two at the table' tilted and cut (265-385 x 770-870); Start over Cath's legs (1095-1295 x 775-850). D campaign: Cath small and fading at the waist (1280-1370 x 35-180); 'Kingsmarket' across the river (335-512 x 505-537).
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
+- **Size:** 2
+
+## 212. [ ] Cathnivore phone: the board gets the top of the screen
+- **Why:** `plan1106f/cath-game-P`: the HUD (10-50), three cramped Hollowell intent cards with about 11 px text (12-385 x 68-155) and the Glut chip (118-270 x 158-184) take 0-185 px before the board starts (160-530); VISION: the table is the hero.
+- **Build:**
+  - Squeeze, Expand and Scout fold into one glossy placard hung from Hollowell's portrait; a tap opens them as a sheet.
+  - The Glut chip becomes a pennant pinned to the board's frame.
+- **Accept:** `[data-intent-placard]` at P is 44 px tall or less and the board's top at y 110 or less; no intent text under 13 px (in the sheet too); nothing over the board frame; D unchanged; the tutorial's intent step still points at it; shots P and D.
+- **Size:** 2
+
+## 213. [ ] Cathnivore: a market score (music), separate from the effects
+- **Why:** VISION "Sound": organic market sound against sterile corporate synth. Item 53 gave every action a cue and an ambience, but there is no music anywhere: the title (`plan1106f/cath-title-D`) and a game are silent between cues.
+- **Build:**
+  - A generative WebAudio score from the same synth kit (plucked strings, accordion-like reed, a soft hand drum), its tempo and mode following the title's clock (item 206) and the round.
+  - Hollowell's turn ducks it under a thin corporate muzak loop that ends when the turn does.
+  - A Music slider in Settings' Sound card, saved, off when Sound is off.
+- **Accept:** `[data-music]` in Settings persists across reloads; no AudioContext before the first input; the scheduler unit-tested (bars, ducking, no notes after stop); the `sound.spec` offline render shows the score audible and under -3 dBFS; Lighthouse within budget; shots of Settings P and D.
+- **Size:** 3
+
+## 214. [ ] Hedgerow phone: Cath's powers as a labelled dock
+- **Why:** `plan1106f/hedge-l21-2d-P`, `hedge-l34-2d-P`: the phone dock is bare icon circles and an unlabelled toggle (15-215 x 780-830), while D labels each (CATH, PIE, NEIGHBOURS, KEEP GOING).
+- **Build:** illustrated power tokens with a caption under each and a cooldown pie; the toggle a captioned "Keep going" switch; same order as D.
+- **Accept:** each `[data-power]` 44 px or more with a visible label 11 px or more; the toggle has an aria-label and a caption; the dock meets neither Go nor Cath's docked line; hedgerow tray/dock specs pass; shots P and D (D unchanged).
+- **Size:** 2
+
+## 215. [ ] Hedgerow 3D phone: a default frame a phone can read
+- **Why:** `plan1106f/hedge-l21-3d-P`: the whole field fits a 390 px width, so plots are about 30 px, vehicles about 8 px (45-60 x 275-380) and Cath about 25 px; the depot plate (5-200 x 157-183) covers the top row. Pinch zoom exists but the opening frame is unreadable.
+- **Build:** on an upright phone, open on a closer three-quarter frame round the lane's busy half (the gate to the field's middle), with a "whole field" button to fit all; the directed camera (item 191) keeps working inside it.
+- **Accept:** at 390x844 the default frame shows plots 44 px or more and vehicles 16 px or more; the fit button shows every plot; the depot plate meets no plot; `?2d` unchanged; draw calls within budget; shots P and D (D unchanged).
+- **Size:** 2
+
+## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her
+- **Why:** `plan1106f/ns-title-P`: Cath is soft (210-370 x 140-640), the menu panel (8-195 x 205-435) lies over her arm, and 470-600 is dead space.
+- **Build:** the phone title renders at the device's pixel ratio (capped at 2) with depth of field off; a portrait framing puts the menu in the space under her shoulder line.
+- **Accept:** canvas backing width 780 px or more at P; the menu's box misses Cath's projected box; `cathode-perf` within budget on the phone; cathode-front passes; shots P and D (D unchanged).
+- **Size:** 2
+
+## 217. [ ] The bugs from the 2026-11-06 17:10 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1106f`; points already in 211 left out)
+  - **NIGHT SHIFT:** P pick: 'WALK IN AS THE GHOST' runs flush to x 0 (0-370 x 790-830), and a stray scrollbar thumb (353-362 x 632-650). P title: 'CONTINUE / No case open' about 3:1 (32-145 x 212-255).
+  - **Runnel:** P: the wordmark 2 px from the sound button (120-262 x 15-52).
+  - **Cathnivore:** P game: the Glut chip over the intent cards' foot and the board frame (118-270 x 158-184; may go with 212). D game: a hand card's 'Supply 1 Outlet · Brindle Hills' runs into the Injunction card (1100-1195 x 795-830). P title: the 'No sale yet' ticket over Cath's sleeve (5-135 x 445-492). P campaign: region labels past their hexes ('Brindle Hills' 75-122 x 410-442, 'Shingle Bay' 215-260 x 498-522).
+  - **Hedgerow:** D 3D l21: two signs on the depot ('216 coming' 112-218 x 232-258, 'HOLLOWELL' 165-288 x 360-388), saying what the ticker says.
+- **Accept:** each point checked in a shot before and after at P and D; the specs for each screen pass.
 - **Size:** 2
