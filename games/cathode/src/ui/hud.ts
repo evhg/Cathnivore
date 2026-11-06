@@ -1159,7 +1159,13 @@ export class Hud {
       this.heldSub = null;
       if (line) window.setTimeout(() => this.subtitle(line), 450);
     };
-    window.setTimeout(release, ms);
+    const timer = window.setTimeout(release, ms);
+    // Plan item 192: a skipped district opener lets the HUD in at once (main.ts sends this as it goes).
+    addEventListener("cathode:arrived", () => {
+      if (!this.holding) return;
+      clearTimeout(timer);
+      release();
+    }, { once: true });
   }
 
   private barks?: HTMLElement;

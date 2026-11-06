@@ -1341,3 +1341,102 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug, .mug:is(:hover, :focus) { transition: none; scale: 1; rotate: var(--tilt, 0deg); }
   .mug:is(:hover, :focus) .mug-note-type { max-width: none; transition: none; }
 }
+
+/* ---- plan item 192: the district opener. Letterbox bars close in, a typed card writes the district, the hour and
+   the name on The List over the street, then the bars open and the HUD fades in (hud.css .hud-arrive). ---- */
+.opener {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-hud-top);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.opener-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12svh;
+  background: rgb(var(--black-rgb));
+  transition: transform 450ms cubic-bezier(.2, .7, .2, 1);
+}
+.opener-bar-top { top: 0; transform: translateY(-100%); }
+.opener-bar-bottom { bottom: 0; transform: translateY(100%); }
+.opener.is-in .opener-bar { transform: none; }
+.opener.is-out .opener-bar-top { transform: translateY(-100%); }
+.opener.is-out .opener-bar-bottom { transform: translateY(100%); }
+.opener-card {
+  position: absolute;
+  left: max(var(--safe-x), calc(var(--u) * 120));
+  bottom: calc(12svh + var(--u) * 56);
+  max-width: min(86vw, calc(var(--u) * 1100));
+  padding: calc(var(--u) * 22) calc(var(--u) * 34) calc(var(--u) * 24) calc(var(--u) * 30);
+  border-left: max(2px, calc(var(--u) * 4)) solid var(--blood);
+  background: linear-gradient(90deg, rgb(var(--shade-rgb) / .86), rgb(var(--shade-rgb) / .6) 70%, transparent);
+  transition: opacity 400ms ease;
+}
+.opener.is-out .opener-card { opacity: 0; }
+.opener-card p { margin: 0; min-height: 1em; white-space: nowrap; }
+.opener-card p.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: .5em;
+  height: .08em;
+  margin-left: .08em;
+  background: currentColor;
+}
+.opener-place {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-stretch: 74%;
+  font-size: var(--fs-6);
+  line-height: 1;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: var(--hud-shadow);
+}
+.opener-time {
+  margin-top: calc(var(--u) * 12) !important;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: var(--fs-2);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.opener-target {
+  margin-top: calc(var(--u) * 8) !important;
+  font-family: var(--font-voice);
+  font-style: italic;
+  font-weight: 500;
+  font-size: var(--fs-3);
+  color: var(--ink);
+}
+.opener-skip {
+  position: fixed;
+  right: max(var(--safe-x), calc(var(--u) * 48));
+  bottom: calc(var(--u) * 28);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: var(--fs-1);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.opener[data-still] .opener-bar { transition: none; }
+.opener[data-still] { animation: opener-fade 3.6s linear forwards; }
+@keyframes opener-fade {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* An upright phone plays nothing (the rotate card is up, ui/upright.ts): the opener stays out of its way. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .opener { display: none; }
+}
+@media (max-height: 520px) {
+  .opener-bar { height: 9svh; }
+  .opener-card { bottom: calc(9svh + var(--u) * 24); padding: calc(var(--u) * 14) calc(var(--u) * 24); }
+  .opener-place { font-size: var(--fs-4); }
+}

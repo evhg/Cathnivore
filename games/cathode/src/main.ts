@@ -25,6 +25,7 @@ import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
 import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { openerHour, playOpener } from "./ui/opener";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
@@ -642,7 +643,10 @@ async function begin(fromTitle: boolean): Promise<void> {
   // skips it for screenshots.)
   const given = params.get("class") as ClassId | null;
   if (!Progress.hasSave() && (given || shot)) new Progress(given ?? "ghost").set(newCharacter(given ?? "ghost"));
+  // Plan item 192: a case opened from the case file starts on the district opener (`?opener` forces it for tests).
+  let fresh = params.has("opener");
   if (!Progress.hasSave()) {
+    fresh = true;
     $("screen-title").classList.add("is-leaving");
     // Plan item 112: a `?play` link opens the case file before the street exists, so the pick showed the static
     // poster (her back under the umbrella). Build the street now and turn her to the camera once it's up; the
@@ -778,7 +782,8 @@ async function begin(fromTitle: boolean): Promise<void> {
   // 300 ms up from black into first person, then the area title.
   fade.style.setProperty("--fade-ms", "300ms");
   fade.classList.remove("is-black");
-  showAreaTitle(district);
+  if (fresh && (!shot || params.has("opener"))) void playDistrictOpener(district);
+  else showAreaTitle(district);
   // Plan item 14: `?talk` opens the district's talk once she is in the street (tests and shots).
   if (new URLSearchParams(location.search).has("talk") && !shot) setTimeout(() => window.cathode?.talk?.(), 1500);
 }
@@ -792,6 +797,27 @@ function takeTravel(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Plan item 192: the opener in place of the area title; the HUD waits under it and fades in after. */
+async function playDistrictOpener(district: string | undefined): Promise<void> {
+  const jobsDone = Progress.load()?.jobsDone ?? [];
+  const a = areaTitle(district, jobsDone);
+  const next = THE_LIST.find((n) => !jobsDone.includes(n.job));
+  const root = document.documentElement;
+  root.classList.add("hud-banner-on", "area-arriving");
+  // The first frames of a fresh street can block the page for seconds (texture upload, and far longer under
+  // software WebGL): the opener's clock starts once the street draws, so its card isn't eaten by a stall.
+  const t0 = performance.now();
+  await new Promise<void>((resolve) => {
+    const wait = () => ((window.cathode?.stats.frames ?? 0) >= 3 || performance.now() - t0 > 8000 ? resolve() : requestAnimationFrame(wait));
+    wait();
+  });
+  const h = playOpener(document.body, { place: a.title, time: `${openerHour(district)} \u00b7 ${a.sub}`, target: next?.name ?? null }, { still: still() });
+  (window as unknown as { cathodeOpener?: typeof h }).cathodeOpener = h;
+  await h.done;
+  root.classList.remove("hud-banner-on", "area-arriving");
+  dispatchEvent(new Event("cathode:arrived"));
 }
 
 function showAreaTitle(district: string | undefined): void {

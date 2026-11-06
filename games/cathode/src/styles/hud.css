@@ -2216,3 +2216,4 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   border: calc(var(--u) * 5) solid transparent;
   border-bottom-color: var(--blood-hot);
 }
+
