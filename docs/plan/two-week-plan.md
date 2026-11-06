@@ -2074,7 +2074,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `window.hedgerow.depots3d()` length equals the 2D depot count on levels 21 and 34; its fascia count 14 px or more on screen; its screen box 90 px or more wide at D and meeting no plot, Cath or `#cath-say`; the shutter opens on `sendWave` (snaps under reduced motion); `hedgerow-depot` and `hedgerow-3dframe` pass; shots P and D in 3D, plus `?2d`.
 - **Size:** 3
 
-## 180. [ ] NIGHT SHIFT: Cath posed as each class *(lane A, in progress)*
+## 180. [ ] NIGHT SHIFT: Cath posed as each class *(lane A, in progress)* *(slice 1, 2026-11-06 01:45 lane A, not yet applied: `docs/wip/180-stance.patch` (`git apply` it) adds `FrontCath.stance(kind, instant)`, the audition's mid pose held at a weight that lets go of the old class over 200 ms and takes up the new over 200 ms (a cut under reduced motion and `?shot`), the shotgun's rack and shell on the audition's own clock, the Wirewitch rig glowing while held, and `scene().figurePose()`. Typechecks; not shot live, since `window.cathodeFront.scene()` was null on `?front=classpick` without `?shot`)*
 - **Why:** `plan1105g/ns-play-D` (480-960 x 400-900): item 161 stands her on the class pick's stage, but every class shows the same Cath in the same stance; on `ns-play-P` (130-230 x 300-560) she is a back-lit silhouette turned away. You choose a class without seeing her as it (VISION 5).
 - **Build:**
   - Per class, a coat variant, its weapon or prop in hand or on her shoulder, and a signature pose; switching blends over about 400 ms.
