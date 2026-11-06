@@ -76,6 +76,8 @@ export interface FrontScene {
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
   /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
   faceBox(): { left: number; top: number; right: number; bottom: number };
+  /** Plan item 205: the painted eyes' and cheeks' centres on screen, in CSS px (for the face's contrast check). */
+  facePoints(): { eyes: Array<{ x: number; y: number }>; cheeks: Array<{ x: number; y: number }> };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
   time: number;
   setTime(t: number): void;
@@ -162,6 +164,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   cath.group.rotation.y = Math.PI; // facing -z (south), the way the player starts
   world.scene.add(cath.group);
   world.renderer.domElement.dataset.expression = cath.expressionNow;
+  // Plan item 205: her painted face's expression (the title's is the calm smirk).
+  world.renderer.domElement.dataset.cathExpr = cath.expressionNow;
   // Plan item 147: the title's Cath is the full hero model (fingers, tailored trench, moving hair).
   world.renderer.domElement.dataset.cathLod = "hero";
   // Local frame -> world.
@@ -747,6 +751,16 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       }
       return { left, top, right, bottom };
     },
+    facePoints() {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      cath.group.updateMatrixWorld(true);
+      // The painted face's coordinates (frontcath.ts paintFace) on the skull's front surface.
+      const at = (x: number, y: number, z: number) => {
+        corner.set(x, y, z).applyMatrix4(cath.head.matrixWorld).project(cam);
+        return { x: r.left + ((corner.x + 1) / 2) * r.width, y: r.top + ((1 - corner.y) / 2) * r.height };
+      };
+      return { eyes: [at(-0.0275, 0.006, 0.09), at(0.0275, 0.006, 0.09)], cheeks: [at(-0.04, -0.022, 0.082), at(0.04, -0.022, 0.082)] };
+    },
     get time() {
       return time;
     },
@@ -811,6 +825,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const expr = cls ? CLASS_EXPRESSION[cls] ?? "smirk" : "smirk";
       cath.expression(expr);
       world.renderer.domElement.dataset.expression = expr;
+      world.renderer.domElement.dataset.cathExpr = expr;
       // Plan item 161: the class on her stage, for the pick's checks (set at once; the swap plays over it).
       // Plan item 187: the class pick has her own look to the lens; the menu gaze is the title's.
       if (cls) cath.look(null);

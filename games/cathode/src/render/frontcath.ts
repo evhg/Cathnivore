@@ -667,10 +667,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // A hazel iris: a warm amber ring round the pupil, darkening to a limbal ring at the edge.
         const ir = 0.0068 * E;
         const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
-        iris.addColorStop(0, "#8a5a2a");
-        iris.addColorStop(0.45, "#a87436");
-        iris.addColorStop(0.8, "#5a3a22");
-        iris.addColorStop(1, "#2e1c10");
+        // Plan item 205: a deeper hazel, so the eye holds as a dark shape at title distance (3:1 on the cheek).
+        iris.addColorStop(0, "#4e3016");
+        iris.addColorStop(0.45, "#6e4620");
+        iris.addColorStop(0.8, "#32200f");
+        iris.addColorStop(1, "#1e120a");
         g.fillStyle = iris;
         g.beginPath();
         g.ellipse(ix, ey + 0.0004, ir, ir * (0.072 / 0.098) * 1.36, 0, 0, Math.PI * 2);
@@ -682,11 +683,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.strokeStyle = "#24160c";
         g.stroke();
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0029 * E, 0.0029 * E, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, 0.0037 * E, 0.0037 * E, 0, 0, Math.PI * 2);
         g.fill();
         // The lid's shadow across the top of the iris.
-        g.fillStyle = "rgba(40,20,16,0.35)";
-        g.fillRect(ex - hw, ey + hh * 0.55, hw * 2, hh);
+        g.fillStyle = "rgba(40,20,16,0.6)";
+        g.fillRect(ex - hw, ey + hh * 0.5, hw * 2, hh);
         g.fillStyle = "#fffaf4";
         g.beginPath();
         g.ellipse(ix - 0.0021 * E, ey + 0.0024 * E, 0.0031 * E, 0.0025 * E, 0, 0, Math.PI * 2);
@@ -701,13 +702,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.beginPath();
         g.moveTo(ex - hw * sx * 1.02, ey - 0.0002);
         g.bezierCurveTo(ex - hw * 0.5 * sx, ey + hh * 1.55, ex + hw * 0.5 * sx, ey + hh * 1.65, ox, ey + hh * 0.25);
-        g.lineTo(ox + 0.0062 * E * sx, ey + hh * 1.25);
-        g.lineTo(ox - 0.0005 * E * sx, ey + hh * 0.85);
-        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 2.15, ex - hw * 0.5 * sx, ey + hh * 2.0, ex - hw * sx * 1.02, ey - 0.0002);
+        // Plan item 205: a heavier upper line and a longer wing (the liner is what reads at title distance).
+        g.lineTo(ox + 0.0076 * E * sx, ey + hh * 1.45);
+        g.lineTo(ox - 0.0005 * E * sx, ey + hh * 1.05);
+        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 2.9, ex - hw * 0.5 * sx, ey + hh * 2.6, ex - hw * sx * 1.02, ey - 0.0002);
         g.closePath();
         g.fill();
-        g.strokeStyle = "rgba(30,16,12,0.8)";
-        g.lineWidth = 0.001 * E;
+        g.strokeStyle = "rgba(30,16,12,0.85)";
+        g.lineWidth = 0.0016 * E;
         g.beginPath();
         g.moveTo(ex - hw * 0.7 * sx, ey - hh * 0.95);
         g.quadraticCurveTo(ex + hw * 0.3 * sx, ey - hh * 1.35, ex + hw * sx, ey + hh * 0.1);
@@ -725,11 +727,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Determined: both level, drawn down at the inner ends. A wink lowers the winking side's brow.
         const by = 0.0262 + (expr === "smirk" && sx < 0 ? 0.0026 : 0) - (expr === "wink" && sx > 0 ? 0.0018 : 0);
         const inner = expr === "determined" ? -0.0034 : 0;
-        g.fillStyle = "#24160f";
+        // Plan item 205: a fuller, darker brow, so it holds as a stroke at title distance.
+        g.fillStyle = "#1c110b";
         g.beginPath();
-        g.moveTo(0.0085 * sx, by - 0.0022 + inner);
-        g.quadraticCurveTo(0.026 * sx, by + 0.0052, 0.0445 * sx, by - 0.0024);
-        g.quadraticCurveTo(0.027 * sx, by + 0.0012, 0.0085 * sx, by - 0.0062 + inner);
+        g.moveTo(0.0085 * sx, by - 0.0018 + inner);
+        g.quadraticCurveTo(0.026 * sx, by + 0.0058, 0.0445 * sx, by - 0.0024);
+        g.quadraticCurveTo(0.027 * sx, by + 0.0004, 0.0085 * sx, by - 0.0072 + inner);
         g.closePath();
         g.fill();
       }
@@ -1419,7 +1422,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blinkT0 = t;
       blinkAt = t + 3 + ((blinks * 1.618) % 2);
     }
-    const shutNow = blinkT0 >= 0 && t >= blinkT0 && t - blinkT0 < BLINK_S;
+    // Plan item 205: a frame that outlasts the blink (a slow renderer, 90 ms+) keeps her eyes open: held for a whole
+    // slow frame, a blink reads as eyes closed, not a blink.
+    const shutNow = blinkT0 >= 0 && t >= blinkT0 && t - blinkT0 < BLINK_S && dt < 0.09;
     if ((faceMat.map === blinkTex) !== shutNow) faceMat.map = shutNow ? blinkTex : faceTex;
     idleNow.breath = br;
     idleNow.weight = w;

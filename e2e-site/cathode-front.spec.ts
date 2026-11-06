@@ -731,3 +731,47 @@ test('the title column, case file and List never meet on a desktop', async ({ pa
     expect(Number(/[\d.]+\)$/.exec(m.stampBg)?.[0].slice(0, -1) ?? 1), at).toBeGreaterThanOrEqual(0.8)
   }
 })
+
+// Plan item 205: her painted face reads at title distance: the canvas names the expression, and in the desktop face
+// (85 px or taller) each eye's darkest tenth (liner, iris, pupil) is 3:1 or more darker than the cheek beside it.
+test("her painted eyes hold 3:1 on her cheek at title distance", async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop title face is the check (the phone face is under 85 px)')
+  test.setTimeout(300_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  // The desktop's own quality: the phone tier renders the face at a lower scale.
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
+  await page.goto('/nightshift/?front=title&shot&t=1&quality=high')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  await expect(page.locator('canvas[data-cath-expr]').first()).toHaveAttribute('data-cath-expr', 'smirk')
+  // ?shot draws its held frame a moment after ready (the face canvas uploads on the first draw).
+  await page.waitForTimeout(3000)
+  type P = { x: number; y: number }
+  type B = { left: number; top: number; right: number; bottom: number }
+  const pts = await page.evaluate(() => {
+    const s = (window as unknown as { cathodeFront: { scene(): { facePoints(): { eyes: P[]; cheeks: P[] }; faceBox(): B } } }).cathodeFront.scene()
+    return { ...s.facePoints(), box: s.faceBox() }
+  })
+  expect(pts.box.bottom - pts.box.top).toBeGreaterThanOrEqual(85)
+  const buf = await page.screenshot()
+  const m = await page.evaluate(async ({ b64, pts }) => {
+    const img = new Image()
+    img.src = 'data:image/png;base64,' + b64
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const lin = (u: number) => (u /= 255) <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4
+    const win = (pt: P, r: number) => {
+      const d = g.getImageData(Math.round(pt.x - r), Math.round(pt.y - r), 2 * r + 1, 2 * r + 1).data
+      const v: number[] = []
+      for (let i = 0; i < d.length; i += 4) v.push(0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!))
+      v.sort((a, b) => a - b)
+      return { p10: v[Math.floor(v.length * 0.1)]!, med: v[Math.floor(v.length / 2)]! }
+    }
+    return pts.eyes.map((e, i) => win(pts.cheeks[i]!, 3).med / win(e, 3).p10)
+  }, { b64: buf.toString('base64'), pts })
+  for (const r of m) expect(r, 'eye vs cheek contrast').toBeGreaterThanOrEqual(3)
+})
