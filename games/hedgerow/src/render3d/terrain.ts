@@ -1119,6 +1119,75 @@ export function buildGround(level: Level): Ground {
     ])
       if (m) group.add(m);
   }
+  if (act === 4) {
+    // Oakvale: the field in a clearing, old oaks round it with bluebells carpeting the ground beneath them.
+    biome = "oakvale";
+    const trunks: Inst[] = [];
+    const crowns: Inst[] = [];
+    const bells: Inst[] = [];
+    const bark = new THREE.Color("#5e4a36");
+    const leaf = ["#4f7f37", "#5e8f41", "#3f6e33", "#6a9a48"].map((c) => new THREE.Color(c));
+    const blue = ["#7f8cf0", "#9aa4ff", "#6c78d8"].map((c) => new THREE.Color(c));
+    for (let i = 0; i < 60; i++) {
+      const x = -4 + deco() * (cols + 8);
+      const z = -4 + deco() * (rows + 8);
+      if (!outside(x, z, 1.4)) continue;
+      const y = heightAt(x, z);
+      const k = 0.85 + deco() * 0.5;
+      trunks.push({ x, y, z, ry: deco() * 6.3, s: k, sy: 1, color: bark });
+      for (let c = 0; c < 3; c++)
+        crowns.push({ x: x + (deco() - 0.5) * 0.5 * k, y: y + 0.95 * k + deco() * 0.25, z: z + (deco() - 0.5) * 0.5 * k, ry: deco() * 6.3, s: (0.38 + deco() * 0.16) * k, sy: 0.85, color: leaf[Math.floor(deco() * 4)]! });
+      for (let b = 0; b < 14; b++) {
+        const bx = x + (deco() - 0.5) * 1.6;
+        const bz = z + (deco() - 0.5) * 1.6;
+        if (!outside(bx, bz)) continue;
+        bells.push({ x: bx, y: heightAt(bx, bz) + 0.02, z: bz, ry: 0, s: 0.03 + deco() * 0.015, sy: 1, color: blue[Math.floor(deco() * 3)]! });
+      }
+    }
+    for (const m of [
+      instanced(new THREE.CylinderGeometry(0.07, 0.11, 0.95, 7).translate(0, 0.47, 0), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), trunks, true),
+      instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), crowns, true),
+      instanced(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ roughness: 0.7, flatShading: true }), bells),
+    ])
+      if (m) group.add(m);
+  }
+  if (act === 6) {
+    // The Rift: the land split by the falling-out. A dark fissure zig-zags across the country beyond the hedge, the
+    // ground beside it cracked into dry plates, and a few stumps of felled trees.
+    biome = "rift";
+    const plates: Inst[] = [];
+    const crack: Inst[] = [];
+    const stumps: Inst[] = [];
+    const dry = ["#8a6f4e", "#9a7d58", "#7a6146"].map((c) => new THREE.Color(c));
+    const dark = new THREE.Color("#0c0806");
+    const wood = new THREE.Color("#6a543c");
+    // The fissure: a zig-zag along the field's far (north) side and down its east side.
+    const pts: Array<[number, number]> = [];
+    for (let x = -3.5; x <= cols + 2.2; x += 0.5) pts.push([x, -1.6 - Math.abs(Math.sin(x * 1.3)) * 0.8]);
+    for (let z = -1.2; z <= rows + 3; z += 0.5) pts.push([cols + 1.9 + Math.abs(Math.sin(z * 1.1)) * 0.7, z]);
+    for (const [x, z] of pts) {
+      if (laneDistance(level, x, z) < 1.1) continue;
+      crack.push({ x, y: heightAt(x, z) + 0.012, z, ry: deco() * 6.3, s: 0.36 + deco() * 0.12, sy: 0.04, color: dark });
+      for (let k = 0; k < 4; k++) {
+        const px = x + (deco() - 0.5) * 1.4;
+        const pz = z + (deco() - 0.5) * 1.4;
+        if (!outside(px, pz)) continue;
+        plates.push({ x: px, y: heightAt(px, pz) + 0.01, z: pz, ry: deco() * 6.3, s: 0.16 + deco() * 0.08, sy: 0.08, color: dry[Math.floor(deco() * 3)]! });
+      }
+    }
+    for (let i = 0; i < 12; i++) {
+      const x = -3.5 + deco() * (cols + 7);
+      const z = -3.5 + deco() * (rows + 7);
+      if (!outside(x, z, 1.2)) continue;
+      stumps.push({ x, y: heightAt(x, z), z, ry: deco() * 6.3, s: 1, sy: 0.7 + deco() * 0.6, color: wood });
+    }
+    for (const m of [
+      instanced(new THREE.CylinderGeometry(1, 1, 1, 6), new THREE.MeshStandardMaterial({ roughness: 1, flatShading: true }), plates),
+      instanced(new THREE.CylinderGeometry(1, 1, 1, 5), new THREE.MeshBasicMaterial({ color: "#ffffff" }), crack),
+      instanced(new THREE.CylinderGeometry(0.06, 0.08, 0.16, 7).translate(0, 0.08, 0), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), stumps, true),
+    ])
+      if (m) group.add(m);
+  }
   group.userData.biome = biome;
 
   // Scenery out beyond the field.
