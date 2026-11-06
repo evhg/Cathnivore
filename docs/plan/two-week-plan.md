@@ -2420,7 +2420,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after; the specs for each screen pass.
 - **Size:** 2
 
-## 223. [ ] NIGHT SHIFT desktop class pick: Cath back on her stage
+## 223. [ ] NIGHT SHIFT desktop class pick: Cath back on her stage *(lane A, in progress)*
 - **Why:** `plan1106h/ns-play-D` (470-960 x 80-860): an empty alley; only her umbrella tip shows behind the sheet (935-965 x 285-330). Item 222 put an earlier report down to capture timing; it came back, so check it first with a long settle.
 - **Build:** at 1100 px wide and up she stands in the open frame between the class list and the sheet, feet about 40 px above the foot, facing the lens, in item 180's class pose with the class weapon; switching class re-poses her in place, no camera cut; `?shot` settles her deterministically so shots can't miss her.
 - **Accept:** at 1440x900 and 1280x800 her projected box lies inside x 470-960, 500 px or more tall, not touching the sheet; cycling all five classes keeps her there; cathode-front, -classpick, -classstage pass; shots D and P (P unchanged).
