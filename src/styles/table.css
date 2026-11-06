@@ -2871,7 +2871,16 @@ html.no-animations .cath-companion .cameo {
 @media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
   .game:has(.cath-dock) .map-wrap { min-height: 0; }
   /* The board lost the bubble band at its foot: the ticket rides up onto the frame's rim to clear the top plaques. */
-  .game:has(.cath-dock) .event-ticket { top: -5px; }
+  /* Plan item 212: it rode up over the plan cards' foot; it hangs inside the frame's top strip as a pennant pinned
+     to the rim (a swallowtail end each side), clear of the cards above and the plaques below. */
+  .game:has(.cath-dock) .event-ticket {
+    top: 3px;
+    padding-inline: 16px;
+    border-radius: 0;
+    rotate: 0deg;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%, 8px 50%);
+    box-shadow: inset 0 0 0 1.5px var(--rule);
+  }
   .game:has(.cath-dock) .map-wrap svg.map { translate: 0 10px; }
   .cath-dock {
     display: flex;

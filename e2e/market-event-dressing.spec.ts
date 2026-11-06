@@ -45,3 +45,22 @@ for (const [event, day, sel, says] of [
     }
   })
 }
+
+// Plan item 212: on an upright phone the market event's pennant hangs inside the board's frame, clear of
+// Hollowell's plan cards above it.
+test('the phone event pennant sits inside the frame, off the plan cards', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'an upright phone layout')
+  await page.clock.setFixedTime(new Date('2026-11-05T10:00:00Z'))
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.event-ticket')).toBeVisible()
+  const r = await page.evaluate(() => {
+    const t = document.querySelector('.event-ticket')!.getBoundingClientRect()
+    const strip = document.querySelector('.plan-strip')!.getBoundingClientRect()
+    const wrap = document.querySelector('.map-wrap')!.getBoundingClientRect()
+    return { gap: t.top - strip.bottom, inFrame: t.top >= wrap.top }
+  })
+  expect(r.gap).toBeGreaterThanOrEqual(0)
+  expect(r.inFrame).toBe(true)
+})

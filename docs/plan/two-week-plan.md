@@ -2342,7 +2342,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
 
-## 212. [ ] Cathnivore phone: the board gets the top of the screen *(lane A, in progress)*
+## 212. [ ] Cathnivore phone: the board gets the top of the screen *(lane A, in progress)* *(slice 1, 2026-11-06 17:20 lane A: the Glut ticket is a swallowtail pennant inside the frame's top strip (top 3 px; it rode up 5 px over the cards' foot); `market-event-dressing.spec` pennant test. Left: the placard and its sheet; item 47's `plan-strip.spec` phone test (target line whole) and `plan-cards.spec` chips must be rewritten for it, since the targets then live on the board's tags and in the sheet)*
 - **Why:** `plan1106f/cath-game-P`: the HUD (10-50), three cramped Hollowell intent cards with about 11 px text (12-385 x 68-155) and the Glut chip (118-270 x 158-184) take 0-185 px before the board starts (160-530); VISION: the table is the hero.
 - **Build:**
   - Squeeze, Expand and Scout fold into one glossy placard hung from Hollowell's portrait; a tap opens them as a sheet.
