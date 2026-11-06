@@ -2082,7 +2082,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the stage's `data-class` drives `scene().figurePose()` (a different pose per class); her head box 90 px or more tall at D and 70 at P; her body box meets no panel; the blend ends within 600 ms (a cut under reduced motion); `cathode-classpick`, `cathode-classstage` and `cathode-perf` pass; shots P and D for every class.
 - **Size:** 3
 
-## 181. [ ] Site: the /games/ landing as Cath's market stall
+## 181. [ ] Site: the /games/ landing as Cath's market stall *(lane B, in progress)*
 - **Why:** `plan1105g/games-D` (270-385 x 60-430): Cath stands alone on the horizon and a small stall floats far right (1190-1360 x 220-400); the game cards (110-1330 x 460-810) are a plain row. On `games-P` (290-370 x 255-390) she is squeezed beside the buttons.
 - **Build:**
   - One staged scene: Cath behind a full-width awning stall, today's Runnel chalked on a slate as the main call to action.
