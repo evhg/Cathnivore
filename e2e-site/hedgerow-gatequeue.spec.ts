@@ -18,7 +18,7 @@ async function open(page: Page, level: number): Promise<void> {
 const queue = (page: Page) => page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.gateQueue())
 const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
 
-for (const level of [1, 12, 40]) {
+for (const level of [1, 12, 34, 40]) {
   test(`level ${level}: the next round queues at the gate, inside the field, and Go clears it`, async ({ page }) => {
     test.setTimeout(90_000)
     await open(page, level)
@@ -34,6 +34,8 @@ for (const level of [1, 12, 40]) {
       expect(b.x + b.w, JSON.stringify(b)).toBeLessThanOrEqual(canvas.width + 1)
       expect(b.y + b.h, JSON.stringify(b)).toBeLessThanOrEqual(canvas.height + 1)
     }
+    // Plan item 200: the plate's text is 12 px or more (the pill is 1.5 times its font); at P it was 11 px.
+    for (const p of q.plates) expect(p.h, JSON.stringify(p)).toBeGreaterThanOrEqual(18)
     for (const p of q.plates) for (const l of q.leads) expect(overlaps(p, l), `plate ${JSON.stringify(p)} on lead ${JSON.stringify(l)}`).toBe(false)
     await page.evaluate(() => {
       const h = (window as unknown as { hedgerow: Hg }).hedgerow

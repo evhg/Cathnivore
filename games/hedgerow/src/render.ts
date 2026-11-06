@@ -1489,7 +1489,7 @@ export class Renderer {
   /** The count plate at the gate: "12 coming" on a paper pill, kept on the canvas. */
   private countPlate(ctx: CanvasRenderingContext2D, count: number, x: number, y: number, s: number, upright: boolean): Rect {
     const label = `${count} coming`;
-    const fs = Math.max(11, Math.round(s * 0.2));
+    const fs = Math.max(12, Math.round(s * 0.2));
     ctx.save();
     ctx.globalAlpha = this.queueAge;
     ctx.font = `800 ${fs}px ${FONT}`;
