@@ -2371,13 +2371,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the default frame shows plots 44 px or more and vehicles 16 px or more; the fit button shows every plot; the depot plate meets no plot; `?2d` unchanged; draw calls within budget; shots P and D (D unchanged).
 - **Size:** 2
 
-## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her
+## 216. [ ] NIGHT SHIFT phone title: Cath sharp, and the menu off her *(lane A, in progress)*
 - **Why:** `plan1106f/ns-title-P`: Cath is soft (210-370 x 140-640), the menu panel (8-195 x 205-435) lies over her arm, and 470-600 is dead space.
 - **Build:** the phone title renders at the device's pixel ratio (capped at 2) with depth of field off; a portrait framing puts the menu in the space under her shoulder line.
 - **Accept:** canvas backing width 780 px or more at P; the menu's box misses Cath's projected box; `cathode-perf` within budget on the phone; cathode-front passes; shots P and D (D unchanged).
 - **Size:** 2
 
-## 217. [ ] The bugs from the 2026-11-06 17:10 critique, fixed as one batch *(lane A, in progress)* *(slice 1, 17:25 lane A: Runnel P's wordmark 10 px clear of the sound token (signboard column gap 16 -> 10 px; `runnel-signboard.spec` gap test); the Cathnivore Glut chip went with 212 slice 1; NS P title Continue checked and left: the disabled control with no save, which WCAG 1.4.3 exempts. Handed back 17:27)*
+## 217. [x] The bugs from the 2026-11-06 17:10 critique, fixed as one batch *(done 2026-11-06 19:20, lane A: D hand names keep clear of the next card (`--lap`, 77fb4ee); NS P pick paperclip as steel wire (the "scrollbar thumb") and Walk in padded from the tape ends (720ec16); checked and left: P title ticket clears Cath, P campaign labels inside their hexes (`e2e/screenshots/s217`), Hedgerow D l21 gate boards (in-world signs at the gate, reworked by 215))* *(slice 1, 17:25 lane A: Runnel P's wordmark 10 px clear of the sound token (signboard column gap 16 -> 10 px; `runnel-signboard.spec` gap test); the Cathnivore Glut chip went with 212 slice 1; NS P title Continue checked and left: the disabled control with no save, which WCAG 1.4.3 exempts. Handed back 17:27)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1106f`; points already in 211 left out)
   - **NIGHT SHIFT:** P pick: 'WALK IN AS THE GHOST' runs flush to x 0 (0-370 x 790-830), and a stray scrollbar thumb (353-362 x 632-650). P title: 'CONTINUE / No case open' about 3:1 (32-145 x 212-255).
   - **Runnel:** P: the wordmark 2 px from the sound button (120-262 x 15-52).
