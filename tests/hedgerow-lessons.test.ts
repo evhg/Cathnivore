@@ -366,7 +366,9 @@ describe("hedgerow M3: lessons", () => {
   it("a bot without detection leaks on round 22, whichever level plays it", () => {
     // (Not level 15: its Crowds bring the stealth lorries a size smaller, and the best bot's thorn hedges, which
     // need no sight, shred them. The balanced bot's field still loses it to stealth: the acceptance test above.)
-    for (const id of [17, 18, 21]) {
+    // (Not level 18 since plan item 194: its fork now sends half of each round down a second lane, and the field
+    // without a Mast falls to damage in round 12, before stealth comes. Level 20 plays the same rounds single-lane.)
+    for (const id of [17, 20, 21]) {
       const lv = LEVELS[id - 1]!;
       // M4: the competent bot grows Lantern Eyes on its Scarecrows when stealth is coming and it has no Mast
       // (detection without a Mast now exists), so the bot with no detection at all is the balanced one.

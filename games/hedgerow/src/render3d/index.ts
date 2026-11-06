@@ -2354,7 +2354,7 @@ export class Renderer3D {
         const pw = el.offsetWidth;
         const ph = el.offsetHeight;
         const x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
-        const y = Math.max(4, Math.min(h - ph - 4, onDepot.y - ph * 0.5));
+        const y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph * 0.5));
         el.style.opacity = String(k);
         el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
         shown.plates.push({ x, y, w: pw, h: ph });
@@ -2515,7 +2515,7 @@ export class Renderer3D {
     return this.depotOpen;
   }
   /** Plan item 179: where a lane's depot docks its count (CSS px on the canvas), or null when it isn't in the frame. */
-  private depotDock(lane: number, w: number, h: number): { x: number; y: number } | null {
+  private depotDock(lane: number, w: number, h: number): { x: number; y: number; under?: number } | null {
     const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[lane];
     const f = d?.userData.fascia as THREE.Vector3 | undefined;
     if (!d || !f) return null;
@@ -2523,7 +2523,12 @@ export class Renderer3D {
     const v = this.v2.copy(f).applyMatrix4(d.matrixWorld).project(this.camera);
     const x = (v.x * 0.5 + 0.5) * w;
     const y = (-v.y * 0.5 + 0.5) * h;
-    return x > 0 && x < w && y > 0 && y < h ? { x, y } : null;
+    if (!(x > 0 && x < w && y > 0 && y < h)) return null;
+    // Plan item 194: a depot cut by the frame's top (a phone's upright view of l21) shows only its face under the
+    // HUD, and a plate on its fascia hid the rest: the plate hangs under its door instead, on the lane's mouth.
+    const r = this.depotRects()[lane];
+    if (r && r.y < 0) return { x: r.x + r.w / 2, y, under: r.y + r.h + 4 };
+    return { x, y };
   }
 
   /** Plan item 157: the depots by the gates as boxes on the canvas (CSS px), and their world footprint (x, z). */

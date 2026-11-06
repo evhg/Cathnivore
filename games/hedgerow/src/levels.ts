@@ -6320,22 +6320,25 @@ function addSecondLane(l: Level): void {
   if (!fork) return;
   {
     l.path2 = fork;
-    l.waves = l.waves.map((groups) => {
-      const out: WaveGroup[] = [];
-      groups.forEach((g, gi) => {
-        if (BOSS_MOVES[g.enemy] || g.count === 0) out.push(g);
-        else if (groups.length === 1 && g.count >= 4) {
-          const half = Math.floor(g.count / 2);
-          out.push(
-            { ...g, count: g.count - half },
-            { ...g, count: half, lane: 1 },
-          );
-        } else out.push(gi % 2 === 1 ? { ...g, lane: 1 } : g);
-      });
-      return out;
-    });
+    l.waves = l.waves.map(splitLanes);
     return;
   }
+}
+
+/** Every second group of a wave (or half of a lone big group) takes the second lane; bosses keep the first. */
+function splitLanes(groups: WaveGroup[]): WaveGroup[] {
+  const out: WaveGroup[] = [];
+  groups.forEach((g, gi) => {
+    if (BOSS_MOVES[g.enemy] || g.count === 0) out.push(g);
+    else if (groups.length === 1 && g.count >= 4) {
+      const half = Math.floor(g.count / 2);
+      out.push(
+        { ...g, count: g.count - half },
+        { ...g, count: half, lane: 1 },
+      );
+    } else out.push(gi % 2 === 1 ? { ...g, lane: 1 } : g);
+  });
+  return out;
 }
 
 // Level 94 (the Grain Exchange) stays single-lane: the level bot could not hold two doors there.
@@ -6464,7 +6467,9 @@ for (const l of LEVELS) {
   const waves: WaveGroup[][] = [];
   for (let r = book.from; r <= book.to; r++) waves.push(bookWave(r, l.id));
   if (l.id % 10 === 0) waves[waves.length - 1] = [{ enemy: boss, count: 1, gap: 1, delay: 0 }, ...waves[waves.length - 1]!.map((g) => ({ ...g, delay: g.delay + (l.id > 50 ? 1 : l.id > 30 ? 3 : 4) }))];
-  l.waves = waves;
+  // Plan item 194: the Round Book's waves replace the forked ones, so a fork level splits them again (from
+  // M2 until 2026-11-06 nothing but air-twist drones ever took the second lane, and its depot stood idle).
+  l.waves = l.path2 ? waves.map(splitLanes) : waves;
   addOaks(l);
   addBarns(l);
   addFords(l);

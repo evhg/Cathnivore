@@ -43,6 +43,7 @@ for (const level of [21, 34]) {
         say: sb && sb.width > 0 ? { x: sb.left, y: sb.top, w: sb.width, h: sb.height } : null,
         plots: h.plotBoxes(),
         font: parseFloat(getComputedStyle(document.querySelector('.gate-plate[data-on-depot]')!).fontSize),
+        plate: (() => { const b = document.querySelector('.gate-plate[data-on-depot]')!.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height } })(),
       }
     })
     // One depot a lane: the 2D field draws one by each gate wherever its margin has room (both lanes at D).
@@ -54,6 +55,11 @@ for (const level of [21, 34]) {
     // A phone's high camera puts the north verge at the frame's top edge: there the roof's ridge may be cut.
     expect(inFrame).toBeGreaterThan(hasTouch ? 0.65 : 0.85)
     if (!hasTouch) expect(d.w).toBeGreaterThanOrEqual(90)
+    // Plan item 194: a depot cut by the frame's top shows only its face; the plate hangs under its door, not on it.
+    if (d.y < r.canvas.y) {
+      const seen = { x: d.x, y: r.canvas.y, w: d.w, h: d.y + d.h - r.canvas.y }
+      expect(meet(r.plate, seen) / (seen.w * seen.h)).toBeLessThan(0.05)
+    }
     for (const dep of r.depots) {
       if (r.cath) expect(meet(dep, r.cath)).toBe(0)
       if (r.say) expect(meet(dep, r.say)).toBe(0)
