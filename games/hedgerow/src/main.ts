@@ -1614,7 +1614,7 @@ const PREVIEW_SPARE = [
   ".ticket-note:not(.wave-advice)",
   ".wave-advice",
   // Plan item 87: Coming up and the notebook share one tabbed card; when even that runs past the foot it goes.
-  ":scope > :is(.field-tabs, .field-notebook)",
+  ":scope > .round-group > :is(.field-tabs, .field-notebook)",
 ] as const;
 function fitPreview(p: HTMLElement): void {
   for (const el of p.querySelectorAll<HTMLElement>(".fit-dropped")) el.classList.remove("fit-dropped");
@@ -1623,7 +1623,9 @@ function fitPreview(p: HTMLElement): void {
   if (!matchMedia("(min-width: 900px) and (min-height: 520.02px)").matches) return;
   // The last card's foot against the column's content box (scrollHeight also counts the sticky paper fade).
   const over = () => {
-    const last = [...p.children].reverse().find((c) => c.getClientRects().length > 0);
+    // (Plan item 220: the round group is the last child; its last card is what reaches the foot.)
+    const kids = [...p.children].flatMap((c) => (c.classList.contains("round-group") ? [...c.children] : [c]));
+    const last = kids.reverse().find((c) => c.getClientRects().length > 0);
     if (!last || !p.clientHeight) return false;
     return last.getBoundingClientRect().bottom > p.getBoundingClientRect().bottom - parseFloat(getComputedStyle(p).paddingBottom) + 1;
   };
@@ -1758,6 +1760,11 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (!player && g.phase !== "won" && g.phase !== "lost") towerTray(p, g);
   const next = g.level.waves[g.wave];
   const fleet = isFleet(g.level);
+  // Plan item 220: the round's ticket, its notes and Coming up / the notebook are one group in the column (the
+  // shop above, the controls below); a phone lays them out as before (the group is display: contents there).
+  const group = document.createElement("div");
+  group.className = "round-group";
+  p.append(group);
   const ticket = document.createElement("section");
   ticket.className = "round-ticket";
   const stub = document.createElement("div");
@@ -1785,7 +1792,7 @@ function wavePreview(p: HTMLElement, g: Game): void {
     no.textContent = String(lastNo(g));
     of.textContent = Word(g);
     title.textContent = `Last ${waveWord(g)} on the lane. Hold them.`;
-    p.append(ticket);
+    group.append(ticket);
     return;
   }
   const n = waveNo(g, g.wave + 1);
@@ -1896,7 +1903,7 @@ function wavePreview(p: HTMLElement, g: Game): void {
       warn.setAttribute("role", "status");
     }
   }
-  p.append(ticket);
+  group.append(ticket);
   // Plan item 95: the longer read waits behind the ticket's (i): the locks' keys, the round's card, the twists'
   // rules, the round after, and Cath's advice in full (she says it short on the field, beside her).
   const more: HTMLElement[] = [];
@@ -1930,14 +1937,14 @@ function wavePreview(p: HTMLElement, g: Game): void {
     };
     sync();
     head.append(info);
-    p.append(box);
+    group.append(box);
   }
   // How to build is on the notebook's empty page (plan item 31); the hint keeps how to move Cath, on the first
   // fields only (by level 3 she's been moved, and the line pushed the notebook off a 900 px column).
-  if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) p.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
+  if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) group.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
   // Plan item 87: at D the seed packets take more of the column, so Coming up and Cath's notebook share one card
   // with two tabs (Coming up first). Levels without Coming up keep the notebook alone.
-  p.append(fleet ? fieldTabs(p, g) : fieldNotebook(g));
+  group.append(fleet ? fieldTabs(p, g) : fieldNotebook(g));
 }
 
 /** Which tab of the desktop's Coming up / notebook card is open, and the notebook advice last read there. */

@@ -3613,6 +3613,38 @@ body:has(#dlg-pause[open]) .paused-note {
   }
 }
 
+/* Plan item 220: the round's ticket, its notes and the Coming up / notebook card are one group in the desktop
+   column, on a sunk paper tray between the shop above and the controls below. Elsewhere the group is transparent
+   to layout. */
+.round-group {
+  display: contents;
+}
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .panel .round-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 5px 5px 3px;
+    border-radius: var(--r-m);
+    background: color-mix(in srgb, var(--paper-shade) 60%, transparent);
+    box-shadow: inset 0 1px 3px color-mix(in srgb, var(--line) 30%, transparent), inset 0 0 0 1.5px color-mix(in srgb, var(--line) 22%, transparent);
+  }
+  .play .panel .round-group > * {
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+  .play .panel .round-group > .field-tabs {
+    flex: 1 1 0;
+    margin-top: 0;
+  }
+  /* With the tabbed card fitted away (a short column), the group hugs the ticket rather than framing a gap. */
+  .play .panel .round-group:not(:has(> :is(.field-tabs, .field-notebook):not(.fit-dropped))) {
+    flex: none;
+  }
+}
+
 /* ================================================================= Coming up and the notebook, tabbed (plan item 87) */
 /* At D the seed packets take more of the column, so Coming up and Cath's notebook share the column's foot as one
    card with two tabs on top, like index tabs on a notebook. Phones keep the notebook alone in the drawer. */

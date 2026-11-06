@@ -167,6 +167,12 @@ test('plan item 84: Coming up fills its card to the foot', async ({ page, hasTou
   })
   expect(m.gap).toBeLessThanOrEqual(24)
   expect(m.gap).toBeGreaterThanOrEqual(0)
+  // Plan item 220: the column is the shop and one round group (the ticket with Coming up / the notebook), the
+  // controls under it: three groups.
+  const groups = await page.evaluate(() => [...document.getElementById('panel')!.children].filter((c) => c.getClientRects().length).map((c) => c.className.split(' ')[0]))
+  expect(groups).toEqual(['tray-wrap', 'round-group'])
+  await expect(page.locator('.round-group .round-ticket')).toBeVisible()
+  await expect(page.locator('.round-group .field-tabs')).toBeVisible()
 })
 
 // Plan item 87: the shop as seed packets: 90 px tall or more at D (90 wide up to nine towers, 70 with ten or more),
