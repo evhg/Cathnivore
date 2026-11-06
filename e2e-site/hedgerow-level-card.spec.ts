@@ -37,6 +37,10 @@ test('the level card is a catalogue page, clear of the map stops', async ({ page
     expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(40)
   }
   for (const t of await card.locator('.lcard-foe span').all()) await expect(t).not.toBeEmpty()
+  // Plan item 200: the threat lines read at 13 px or more (they were 12 px, about 11 in the critique's shot).
+  for (const t of await card.locator('.lcard-foe span').all()) expect(await t.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(13)
+  // And on a phone the tab bar's labels under it are at the 12 px floor (they were 11.5 px).
+  if (phone) for (const t of await page.locator('#screen-select .top-tools .bank-word').all()) if (await t.isVisible()) expect(await t.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)
   await expect(card.locator('[data-cath-line] p')).not.toBeEmpty()
   await expect(card.locator('.lcard-thumb svg')).toBeVisible()
   if (!phone) {
