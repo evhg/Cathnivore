@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-06 04:55 UTC
 
 
 
@@ -2148,7 +2147,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e text 12 px or more at 4.5:1 for each case, boxes inside the viewport and not intersecting, at P and D; shots before and after.
 - **Size:** 2
 
-## 189. [ ] Cathnivore: each producer's ability as a staged moment on the board
+## 189. [ ] Cathnivore: each producer's ability as a staged moment on the board *(lane A, in progress)*
 - **Why:** `plan1106b/cath-game-D`: abilities exist only as card text (1195-1330 x 760-860); nothing on the board (575-1110 x 215-725) shows what Mara, Tomas, Ines or Sol does. Items 92 and 127 staged Hollowell, liberations and the Squeeze, never the producers.
 - **Build:**
   - Mara's Injunction: a court notice nails onto the hex, a gavel lands with a wood thud, and Expand is struck through on Hollowell's card.
