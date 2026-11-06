@@ -2359,7 +2359,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-music]` in Settings persists across reloads; no AudioContext before the first input; the scheduler unit-tested (bars, ducking, no notes after stop); the `sound.spec` offline render shows the score audible and under -3 dBFS; Lighthouse within budget; shots of Settings P and D.
 - **Size:** 3
 
-## 214. [ ] Hedgerow phone: Cath's powers as a labelled dock *(lane B, in progress)*
+## 214. [x] Hedgerow phone: Cath's powers as a labelled dock *(done 2026-11-06 lane B: 11 px names under the medallions, the switch captioned; `hedgerow-powerdock.spec.ts`)*
 - **Why:** `plan1106f/hedge-l21-2d-P`, `hedge-l34-2d-P`: the phone dock is bare icon circles and an unlabelled toggle (15-215 x 780-830), while D labels each (CATH, PIE, NEIGHBOURS, KEEP GOING).
 - **Build:** illustrated power tokens with a caption under each and a cooldown pie; the toggle a captioned "Keep going" switch; same order as D.
 - **Accept:** each `[data-power]` 44 px or more with a visible label 11 px or more; the toggle has an aria-label and a caption; the dock meets neither Go nor Cath's docked line; hedgerow tray/dock specs pass; shots P and D (D unchanged).

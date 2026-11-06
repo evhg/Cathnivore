@@ -217,12 +217,12 @@
           <p class="cath-dock-line" id="cath-dock-line" role="status" aria-live="polite"></p>
         </div>
         <footer class="controls">
-          <button class="ability" id="btn-hero" type="button" aria-pressed="false">
+          <button class="ability" id="btn-hero" data-power="cath" type="button" aria-pressed="false">
             <span class="ability-face" id="hero-face" aria-hidden="true"></span>
             <span class="ability-label">Cath</span>
             <span class="ability-hp" aria-hidden="true"><span id="hero-hp"></span></span>
           </button>
-          <button class="ability" id="btn-pie" type="button" hidden aria-pressed="false">
+          <button class="ability" id="btn-pie" data-power="pie" type="button" hidden aria-pressed="false">
             <span class="ability-ring" id="pie-ring" aria-hidden="true"></span>
             <svg class="pie-icon" viewBox="0 0 32 32" aria-hidden="true">
               <ellipse cx="16" cy="19" rx="12" ry="7" fill="#e0b26a" stroke="#2b2320" stroke-width="2"/>
@@ -232,7 +232,7 @@
             <span class="auto-badge" id="pie-auto" hidden>Auto</span>
             <span class="ability-label" id="pie-label">Pie</span>
           </button>
-          <button class="ability" id="btn-neighbours" type="button" hidden>
+          <button class="ability" id="btn-neighbours" data-power="neighbours" type="button" hidden>
             <span class="ability-ring" id="neighbours-ring" aria-hidden="true"></span>
             <svg class="pie-icon" viewBox="0 0 32 32" aria-hidden="true">
               <circle cx="8" cy="11" r="4" fill="#f0c9a0" stroke="#2b2320" stroke-width="1.6"/>
@@ -245,7 +245,7 @@
             <span class="auto-badge" id="neighbours-auto" hidden>Auto</span>
             <span class="ability-label" id="neighbours-label">Neighbours</span>
           </button>
-          <button class="ability" id="btn-rally" type="button" hidden>
+          <button class="ability" id="btn-rally" data-power="rally" type="button" hidden>
             <span class="ability-ring" id="rally-ring" aria-hidden="true"></span>
             <svg class="pie-icon" viewBox="0 0 32 32" aria-hidden="true">
               <path d="M7 28V4" stroke="#2b2320" stroke-width="2.4" stroke-linecap="round"/>
