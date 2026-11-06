@@ -2108,7 +2108,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at D, 3 or fewer not-yet cards show at once; `[data-saving-for]` round-trips through the save (migration and unit test); the jar's `aria-valuenow`/`aria-valuemax` are current and cost; the card reaches the hand within 800 ms of becoming affordable (a fade under reduced motion); text 12 px+ at 4.5:1; shots P and D, light and dark.
 - **Size:** 2
 
-## 184. [ ] Cathnivore: the scoreboard as objects on the table
+## 184. [ ] Cathnivore: the scoreboard as objects on the table *(lane A, in progress)*
 - **Why:** `plan1106a/cath-game-D` (350-1335 x 12-75): Round, Trust, Land left and Rift are a flat strip of bar meters, the most web-app thing on the table; the same on `cath-game-P` (8-380 x 8-55).
 - **Build:**
   - Round a chalk slate with tally marks, Trust a jar of glass tokens, Land a stack of deed cards, Rift a plate that cracks.
