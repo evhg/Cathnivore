@@ -1075,7 +1075,7 @@ html.no-animations .board-object .bo-out, html.no-animations .board-object .bo-t
   }
   .board-head > svg.board-object {
     width: auto;
-    height: 27px;
+    height: 31px;
   }
   /* Plan item 184: the slate is the widest object and Round's figure carries '/10', so its cell takes more. */
   .market-board { grid-template-columns: 1.3fr 1fr 1fr 1fr auto; }
