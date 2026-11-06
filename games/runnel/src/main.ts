@@ -310,7 +310,115 @@ function placeWeekValley(): void {
 
 // Plan item 151: the valley's people, each at the first spot from its own whose standing box and walk meet no tile,
 // Cath, her line, the garden, the spring house, a keep or another folk. One that fits nowhere stays home (hidden).
+// Plan item 178: a dry ditch runs from the board's outlet (the field nearest the garden, from its nearest corner) to
+// Bea's garden, routed clear of every tile and of Cath; on a solve the water runs it in about 900 ms and the garden
+// turns watered (`data-garden`). Drawn in the farm layer (D and the upright phone), re-routed when the layout moves.
+let ditchKey = ''
+let ditchRun = 0
+function placeDitch(): void {
+  const deco = document.querySelector<HTMLElement>('.farm-deco')
+  const garden = document.querySelector<HTMLElement>('.bea-garden')
+  const crops = document.getElementById('bea-crops')
+  let svg = document.getElementById('runnel-ditch') as SVGSVGElement | null
+  if (!deco || !garden || !crops || !deco.offsetWidth) {
+    svg?.setAttribute('hidden', '')
+    return
+  }
+  const solved = computeFlow(puzzle.cells).solved
+  const box = deco.getBoundingClientRect()
+  const tiles = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')]
+  const cath = document.querySelector<HTMLElement>('#valley-cath:not([hidden])')?.getBoundingClientRect()
+  const c = crops.getBoundingClientRect()
+  const key = [puzzle.seed, box.width, box.height, c.left, c.top, cath?.left, cath?.top, ...tiles.slice(0, 2).map((t) => t.getBoundingClientRect().left)].join('|')
+  if (!svg) {
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.id = 'runnel-ditch'
+    svg.setAttribute('class', 'runnel-ditch-layer')
+    svg.setAttribute('aria-hidden', 'true')
+    svg.innerHTML = '<path class="runnel-ditch" /><path class="runnel-ditch-water" pathLength="100" />'
+    deco.prepend(svg)
+  }
+  if (key !== ditchKey) {
+    ditchKey = key
+    const board = document.getElementById('board') as unknown as SVGSVGElement | null
+    const pt = board?.createSVGPoint()
+    const onTile = (x: number, y: number) =>
+      !!pt &&
+      tiles.some((t) => {
+        const m = t.getScreenCTM()?.inverse()
+        if (!m) return false
+        pt.x = x
+        pt.y = y
+        return t.isPointInFill(pt.matrixTransform(m))
+      })
+    const onCath = (x: number, y: number) => !!cath && x > cath.left && x < cath.right && y > cath.top && y < cath.bottom
+    // Where the water enters the garden: the left end of its beds, at their foot.
+    const G = { x: c.left + 6, y: c.bottom - 4 }
+    const clear = (pts: Array<{ x: number; y: number }>) => {
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1]!, b = pts[i]!
+        const n = Math.max(2, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 6))
+        for (let k = 0; k <= n; k++) {
+          const x = a.x + ((b.x - a.x) * k) / n, y = a.y + ((b.y - a.y) * k) / n
+          // the ditch leaves its field's corner, so its first few px may touch it
+          if (Math.hypot(x - pts[0]!.x, y - pts[0]!.y) < 10) continue
+          if (onTile(x, y) || onCath(x, y) || x < box.left || x > box.right || y < box.top || y > box.bottom) return false
+        }
+      }
+      return true
+    }
+    // Each field's corners, nearest the garden first; from each, a straight run, then an L either way round.
+    const corners = puzzle.cells
+      .map((cell, i) => ({ cell, t: tiles[i] }))
+      .filter((x) => x.cell.kind === 'field' && x.t)
+      .flatMap(({ t }) => {
+        const m = t!.getScreenCTM()
+        if (!m) return []
+        const pts = [...t!.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(m))
+        const cx = pts.reduce((a, q) => a + q.x, 0) / pts.length, cy = pts.reduce((a, q) => a + q.y, 0) / pts.length
+        // just outside the corner, along the line from the tile's centre
+        return pts.map((q) => ({ x: q.x + (q.x - cx) * 0.06, y: q.y + (q.y - cy) * 0.06 }))
+      })
+      .sort((a, b) => Math.hypot(a.x - G.x, a.y - G.y) - Math.hypot(b.x - G.x, b.y - G.y))
+    let route: Array<{ x: number; y: number }> | null = null
+    for (const V of corners.slice(0, 24)) {
+      for (const r of [[V, G], [V, { x: V.x, y: G.y }, G], [V, { x: G.x, y: V.y }, G]]) if (!route && clear(r)) route = r
+      if (route) break
+    }
+    if (route) {
+      const rel = route.map((q) => ({ x: q.x - box.left, y: q.y - box.top }))
+      const d =
+        rel.length === 2
+          ? `M${rel[0]!.x} ${rel[0]!.y}L${rel[1]!.x} ${rel[1]!.y}`
+          : `M${rel[0]!.x} ${rel[0]!.y}Q${rel[1]!.x} ${rel[1]!.y} ${rel[2]!.x} ${rel[2]!.y}`
+      for (const path of svg.querySelectorAll('path')) path.setAttribute('d', d)
+      svg.removeAttribute('hidden')
+    } else svg.setAttribute('hidden', '')
+  }
+  // The water: dry until a solve, then it runs the ditch and the garden turns watered when it arrives.
+  const was = garden.dataset.garden
+  if (!solved) {
+    window.clearTimeout(ditchRun)
+    garden.dataset.garden = 'dry'
+    svg.removeAttribute('data-running')
+    svg.removeAttribute('data-full')
+  } else if (was === 'dry' && !svg.hasAttribute('data-running') && !svg.hasAttribute('data-full')) {
+    svg.setAttribute('data-running', '')
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+    ditchRun = window.setTimeout(() => {
+      svg!.removeAttribute('data-running')
+      svg!.setAttribute('data-full', '')
+      garden.dataset.garden = 'watered'
+    }, reduce ? 300 : 900)
+  } else if (!was) {
+    // A board opened already solved: the garden is simply watered.
+    svg.setAttribute('data-full', '')
+    garden.dataset.garden = 'watered'
+  }
+}
+
 function placeValleyFolk(): void {
+  placeDitch()
   const stage = document.querySelector<HTMLElement>('.stage')
   if (!stage) return
   let layer = document.getElementById('valley-folk')

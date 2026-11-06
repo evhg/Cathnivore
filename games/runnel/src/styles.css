@@ -4199,3 +4199,56 @@ body[data-mode='practice'] #week-slot {
   .lesson-ring { display: none; }
   .board.pull-back { animation: none; }
 }
+
+/* Plan item 178: the ditch from the board's outlet to Bea's garden: a dry, cracked bed until a solve, when the
+   water runs it (900 ms) and the garden is watered when it arrives. A cross-fade under reduced motion. */
+.runnel-ditch-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.runnel-ditch-layer[hidden] {
+  display: none;
+}
+.runnel-ditch {
+  fill: none;
+  stroke: var(--dry-edge);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* a dug groove: its dark bed shows either side of the dry lining */
+  filter: drop-shadow(0 0 1.5px var(--groove-bed)) drop-shadow(0 1px 0 var(--groove-bed));
+}
+.runnel-ditch-water {
+  fill: none;
+  stroke: var(--water);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+}
+.runnel-ditch-layer[data-running] .runnel-ditch-water {
+  opacity: 1;
+  animation: ditch-run 900ms cubic-bezier(0.4, 0.1, 0.4, 1) forwards;
+}
+.runnel-ditch-layer[data-full] .runnel-ditch-water {
+  opacity: 1;
+  stroke-dashoffset: 0;
+}
+@keyframes ditch-run {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .runnel-ditch-layer[data-running] .runnel-ditch-water {
+    animation: ditch-fade 300ms ease-out forwards;
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  @keyframes ditch-fade {
+    to { opacity: 1; }
+  }
+}
