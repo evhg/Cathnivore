@@ -523,3 +523,54 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
   }
   ctx.restore();
 }
+
+/**
+ * Plan item 202: the margins' ambient loops, drawn each frame over the painted field: a gull wheels over each
+ * flock of gulls, and the mill's wheel turns. Not drawn under reduced motion (the painted margin stays as is).
+ */
+export function drawMarginLife(ctx: CanvasRenderingContext2D, pieces: readonly Placed[], s: number, t: number): void {
+  pieces.forEach((p, i) => {
+    if (p.kind === "gulls") {
+      const a = t * 0.7 + i * 1.9;
+      const gx = p.x + Math.cos(a) * s * 0.7;
+      const gy = p.y - s * 0.35 + Math.sin(a) * s * 0.28;
+      const r = s * 0.13;
+      const flap = Math.sin(t * 6 + i) * 0.35;
+      ctx.lineCap = "round";
+      ctx.lineWidth = Math.max(1.2, s * 0.045);
+      ctx.strokeStyle = "rgba(40,60,60,0.3)";
+      ctx.beginPath();
+      ctx.moveTo(gx - r, gy + s * 0.5);
+      ctx.lineTo(gx, gy + s * 0.5 + r * 0.2);
+      ctx.lineTo(gx + r, gy + s * 0.5);
+      ctx.stroke();
+      ctx.strokeStyle = "#fbfaf4";
+      ctx.beginPath();
+      ctx.moveTo(gx - r, gy - r * flap);
+      ctx.quadraticCurveTo(gx - r / 2, gy - r * (0.5 + flap), gx, gy);
+      ctx.quadraticCurveTo(gx + r / 2, gy - r * (0.5 + flap), gx + r, gy - r * flap);
+      ctx.stroke();
+    } else if (p.kind === "mill") {
+      // Matches paintPiece's wheel: the turning spokes over the painted ones.
+      const y0 = p.y - p.h / 2;
+      const wx = p.x - p.w / 2 + p.w * 0.84;
+      const wy = y0 + p.h * 0.4 + p.h * 0.6 * 0.55;
+      const wr = p.h * 0.3;
+      ctx.fillStyle = "#6f9fb5";
+      ctx.beginPath();
+      ctx.arc(wx, wy, wr * 0.92, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#6e5236";
+      ctx.lineWidth = Math.max(1, s * 0.035);
+      for (let k = 0; k < 8; k++) {
+        const ang = (k / 8) * Math.PI * 2 + t * 0.9;
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.lineTo(wx + Math.cos(ang) * wr, wy + Math.sin(ang) * wr);
+        ctx.stroke();
+        ctx.fillStyle = "#8a6a48";
+        ctx.fillRect(wx + Math.cos(ang) * wr * 0.9 - s * 0.03, wy + Math.sin(ang) * wr * 0.9 - s * 0.03, s * 0.06, s * 0.06);
+      }
+    }
+  });
+}

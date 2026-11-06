@@ -33,6 +33,7 @@ import {
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
 import { paintBackground, rng, themeFor } from "./theme";
+import { drawMarginLife, lastMargin, type Placed } from "./margins";
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
@@ -143,6 +144,7 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private bg: HTMLCanvasElement | null = null;
   private bgKey = "";
+  private marginPieces: readonly Placed[] = [];
   /** Plan item 59: the crops drawn on the field (cached; a change cross-fades from the old layer). */
   private crops: HTMLCanvasElement | null = null;
   private cropsOld: HTMLCanvasElement | null = null;
@@ -710,6 +712,7 @@ export class Renderer {
       const bctx = this.bg.getContext("2d")!;
       bctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       paintBackground(bctx, level, { width: W, height: H, cell: s, offX, offY });
+      this.marginPieces = lastMargin?.pieces ?? [];
       this.bgKey = key;
     }
 
@@ -724,6 +727,8 @@ export class Renderer {
     }
     if (this.bg) ctx.drawImage(this.bg, 0, 0, W, H);
     this.drawCrops(game, key, dt);
+    // Plan item 202: the margins' gulls wheel and the mill's wheel turns.
+    if (!this.reducedMotion && this.marginPieces.length) drawMarginLife(ctx, this.marginPieces, s, t);
 
     // Decals: crumbs, cream, scorch.
     for (const d of this.decals) {
