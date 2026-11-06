@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 192: a new case opens on the district opener ([data-cine="opener"]): letterbox bars and a typed card
 // (district, hour, the name on The List) that runs 2.5-4.5 s while the HUD waits, then the HUD fades in. Escape
 // skips it at once (under 300 ms, timed in the page) without opening the pause menu.
-type Rec = { seen?: number; gone?: number; esc?: number; place?: string; target?: string; held?: boolean; after?: boolean; area?: boolean; hudHeld?: boolean; stall: number }
+type Rec = { shotOn?: boolean; shotAfter?: boolean; seen?: number; gone?: number; esc?: number; place?: string; target?: string; held?: boolean; after?: boolean; area?: boolean; hudHeld?: boolean; stall: number }
 type W = { rec: Rec; escAt?: number }
 
 // Under SwiftShader a Playwright round trip takes seconds, so the page records everything itself: when the opener
@@ -19,6 +19,9 @@ async function start(page: Page, touch: boolean, escAt?: number): Promise<void> 
     let last = 0
     const frame = (t: number) => {
       if (w.rec.seen !== undefined && w.rec.gone === undefined && last) w.rec.stall = Math.max(w.rec.stall, t - last)
+      // Item 192: whether the trailing shot ran.
+      const op = (window as unknown as { cathode?: { opener?: () => { on: boolean; k: number; box: { top: number; bottom: number } | null } } }).cathode?.opener?.()
+      if (op?.on) w.rec.shotOn = true
       last = t
       requestAnimationFrame(frame)
     }
@@ -43,6 +46,7 @@ async function start(page: Page, touch: boolean, escAt?: number): Promise<void> 
           w.rec.after = root().classList.contains('area-arriving')
           w.rec.area = !document.getElementById('area-title')!.hidden
           w.rec.hudHeld = !!document.querySelector('.hud-root.is-arriving')
+          w.rec.shotAfter = (window as unknown as { cathode?: { opener?: () => { on: boolean } } }).cathode?.opener?.().on ?? false
         }, 0)
       }
     }).observe(document, { childList: true, subtree: true })
@@ -70,6 +74,35 @@ test('a new case opens on the district opener, then the HUD', async ({ page, has
   expect(r.after).toBe(false)
   expect(r.area).toBe(false)
   expect(r.hudHeld).toBe(false)
+  // The lens trailed her, and after it the view is her eyes.
+  expect(r.shotOn).toBe(true)
+  expect(r.shotAfter).toBe(false)
+})
+
+test("the opener's lens frames Cath a quarter of the frame tall at its middle, then cuts to her eyes", async ({ page, hasTouch }) => {
+  test.setTimeout(400_000)
+  await start(page, hasTouch)
+  // Under software WebGL a frame can take longer than the whole shot, so its middle is held for the measurement.
+  type C = { cathode: { openerShot(ms: number, hold?: number): boolean; openerEnd(): void; opener(): { on: boolean; k: number; box: { top: number; bottom: number } | null }; stats: { frames: number } } }
+  expect(await page.evaluate(() => (window as unknown as C).cathode.openerShot(2600, 0.5))).toBe(true)
+  const f0 = await page.evaluate(() => (window as unknown as C).cathode.stats.frames)
+  await page.waitForFunction((f) => (window as unknown as C).cathode.stats.frames >= f + 2, f0, { timeout: 120_000 })
+  const mid = await page.evaluate(() => ({ ...(window as unknown as C).cathode.opener(), vh: innerHeight }))
+  expect(mid.on).toBe(true)
+  if (process.env.OPENER_SHOTS) await page.screenshot({ path: `${process.env.OPENER_SHOTS}/opener-mid-${hasTouch ? 'L' : 'D'}.png` })
+  // Her box (crown to feet) as it shows inside the frame: a medium shot may cut her below the knee.
+  const top = Math.max(0, mid.box!.top)
+  const bottom = Math.min(mid.vh, mid.box!.bottom)
+  expect((bottom - top) / mid.vh).toBeGreaterThanOrEqual(0.25)
+  // Her head is in the frame's upper half.
+  expect(mid.box!.top).toBeGreaterThanOrEqual(0)
+  expect(mid.box!.top).toBeLessThan(mid.vh * 0.5)
+  await page.evaluate(() => (window as unknown as C).cathode.openerEnd())
+  expect(await page.evaluate(() => (window as unknown as C).cathode.opener().on)).toBe(false)
+  if (process.env.OPENER_SHOTS) {
+    await page.waitForFunction((f) => (window as unknown as C).cathode.stats.frames >= f + 3, f0 + 2, { timeout: 120_000 })
+    await page.screenshot({ path: `${process.env.OPENER_SHOTS}/opener-after-${hasTouch ? 'L' : 'D'}.png` })
+  }
 })
 
 test('Escape skips the opener in under 300 ms and opens no pause menu', async ({ page, hasTouch }) => {
@@ -80,5 +113,7 @@ test('Escape skips the opener in under 300 ms and opens no pause menu', async ({
   expect(r.gone! - r.esc!).toBeLessThan(300)
   expect(r.after).toBe(false)
   expect(r.hudHeld).toBe(false)
+  // A skip cuts straight to her eyes.
+  expect(r.shotAfter).toBe(false)
   await expect(page.locator('#pause, .pause-card').filter({ visible: true })).toHaveCount(0)
 })

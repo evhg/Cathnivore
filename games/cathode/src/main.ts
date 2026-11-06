@@ -25,7 +25,7 @@ import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
 import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
-import { openerHour, playOpener } from "./ui/opener";
+import { OPENER_MS, openerHour, playOpener } from "./ui/opener";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
@@ -766,6 +766,7 @@ async function begin(fromTitle: boolean): Promise<void> {
     district,
     world,
     areaTitle: true,
+    opener: fresh && (!shot || params.has("opener")) && !still(),
     onProgress: progress,
     onExit: () => location.reload(),
     // A death while the case file is still easing out drops it: the fall is never played under the loading card.
@@ -815,7 +816,11 @@ async function playDistrictOpener(district: string | undefined): Promise<void> {
   });
   const h = playOpener(document.body, { place: a.title, time: `${openerHour(district)} \u00b7 ${a.sub}`, target: next?.name ?? null }, { still: still() });
   (window as unknown as { cathodeOpener?: typeof h }).cathodeOpener = h;
+  // The lens trails her out of the alley while the card types, then cuts to her eyes as the bars open and her gun
+  // comes up last (none under reduced motion: the card alone fades).
+  if (!still()) window.cathode?.openerShot?.(OPENER_MS - 1000);
   await h.done;
+  window.cathode?.openerEnd?.();
   root.classList.remove("hud-banner-on", "area-arriving");
   dispatchEvent(new Event("cathode:arrived"));
 }

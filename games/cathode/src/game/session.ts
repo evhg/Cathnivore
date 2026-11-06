@@ -137,6 +137,8 @@ export interface SessionOptions {
   world?: World;
   /** C13: the front door names the area itself (main.ts #area-title), so the HUD's district banner stays off. */
   areaTitle?: boolean;
+  /** Plan item 192: this job opens on the district opener, so Cath's figure is built and compiled with the street. */
+  opener?: boolean;
 }
 
 /** What a restart carries into the next session (S6.6 "Retry without a page reload"). */
@@ -179,6 +181,14 @@ export interface Session {
   boardFaces?: () => number;
   /** Plan item 42: whether the open talk is the in-world two-shot or the 2D plate. */
   talkCam?: { mode: "plate" | "two-shot"; beat: string | null };
+  /**
+   * Plan item 192: the district opener's shot. The lens trails Cath (the title's model) from behind as she stands at
+   * the mouth of the street, for `ms`, then cuts to her eyes and her gun comes up. False (no shot) under reduced
+   * motion or with no street. `openerEnd` cuts to her eyes at once (a skip); `opener` reports the shot for tests.
+   */
+  openerShot?: (ms: number, hold?: number) => boolean;
+  openerEnd?: () => void;
+  opener?: () => { on: boolean; k: number; box: { top: number; bottom: number } | null };
   /** Plan item 29: where the current objective is (tests check the compass tick's bearing against it). */
   objective?: () => THREE.Vector3 | null;
   /** Plan item 16: the office station last used, and the district the stair door is taking her to (tests). */
@@ -1687,6 +1697,76 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     talkCam.mode = "plate";
     talkCam.beat = null;
   }
+  // Plan item 192: the opener's trailing shot (see Session.openerShot).
+  let openerShot: { cath: FrontCath; her: THREE.Vector3; fwd: THREE.Vector3; side: THREE.Vector3; back: number; wide: number; t: number; last: number; ms: number; hold: number | null } | null = null;
+  let openerCath: FrontCath | null = null;
+  function buildOpenerCath(): FrontCath {
+    const cath = buildFrontCath(o.quality === "phone");
+    cath.indoors(inClinic || inTower || inVault);
+    cath.kit(cls ?? null);
+    cath.coat(new THREE.Color(armDress(progress.character.equipment).sleeveFin.color));
+    return cath;
+  }
+  s.openerShot = (ms, hold) => {
+    if (openerShot || reduceMotionOn() || inOffice) return false;
+    const her = new THREE.Vector3(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
+    const fwd = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const head = her.clone().setY(her.y + 1.5);
+    // Back off whatever is behind her (an alley wall), and to the side with more room (her right by default).
+    const back = Math.max(1.6, Math.min(3.6, clearance(head, fwd.clone().negate(), world.colliders) - 0.4));
+    let side = new THREE.Vector3(-fwd.z, 0, fwd.x);
+    const roomR = clearance(head, side, world.colliders);
+    const roomL = clearance(head, side.clone().negate(), world.colliders);
+    if (roomR < 1.4 && roomL > roomR) side = side.negate();
+    const wide = Math.max(0.3, Math.min(1.1, Math.max(roomR, roomL) - 0.35));
+    const cath = openerCath ?? buildOpenerCath();
+    openerCath = null;
+    cath.group.visible = true;
+    cath.group.position.copy(her);
+    cath.group.rotation.y = Math.atan2(fwd.x, fwd.z);
+    world.scene.add(cath.group);
+    arsenal.rig.root.visible = false;
+    openerShot = { cath, her, fwd, side, back, wide, t: 0, last: 0, ms, hold: hold ?? null };
+    return true;
+  };
+  s.openerEnd = () => {
+    if (!openerShot) return;
+    world.scene.remove(openerShot.cath.group);
+    openerShot.cath.dispose();
+    openerShot = null;
+    world.viewScene.visible = true;
+    arsenal.rig.root.visible = true;
+    // Her gun comes up last, with its draw (a staged frame has no time: it is simply up).
+    if (o.shot) arsenal.settle();
+    else arsenal.redraw();
+  };
+  /** The opener's lens at k (0..1): from low behind her, out over her shoulder, looking past her down the street. */
+  function openerLens(k: number): { from: THREE.Vector3; at: THREE.Vector3 } {
+    const sh = openerShot!;
+    const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const back = THREE.MathUtils.lerp(sh.back, 1.05, e);
+    const from = sh.her.clone().addScaledVector(sh.fwd, -back).addScaledVector(sh.side, THREE.MathUtils.lerp(sh.wide, 0.32, e));
+    from.y = sh.her.y + THREE.MathUtils.lerp(1.2, 1.7, e);
+    const at = sh.her.clone().addScaledVector(sh.fwd, THREE.MathUtils.lerp(0.6, 7, e));
+    at.y = sh.her.y + THREE.MathUtils.lerp(1.15, 1.55, e);
+    return { from, at };
+  }
+  s.opener = () => {
+    if (!openerShot) return { on: false, k: 0, box: null };
+    const k = openerShot.hold ?? Math.min(1, openerShot.t / openerShot.ms);
+    // Her box on screen: her feet and the crown of her head through the opener's lens at k (the world camera is
+    // back on her eyes between frames).
+    const lens = openerLens(k);
+    const cam = new THREE.PerspectiveCamera(50, o.canvas.clientWidth / Math.max(1, o.canvas.clientHeight), 0.05, 100);
+    cam.position.copy(lens.from);
+    cam.lookAt(lens.at);
+    cam.updateMatrixWorld();
+    const proj = (y: number) => openerShot!.her.clone().setY(openerShot!.her.y + y).project(cam).y;
+    const h = o.canvas.clientHeight;
+    const a = proj(1.78);
+    const b = proj(0);
+    return { on: true, k, box: { top: ((1 - a) / 2) * h, bottom: ((1 - b) / 2) * h } };
+  };
   s.lieutenant = () => lieutenant;
   s.objective = () => objectiveAt();
   hud.onCaseBoard = () => {
@@ -1815,6 +1895,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     last = now;
     const intent = input.read();
     // Plan item 16: the office is home. The gun is on the bench, so there's nothing to fire, aim, reload or throw.
+    // Plan item 192: she holds still while the opener's lens trails her.
+    if (openerShot) Object.assign(intent, { move: { x: 0, y: 0 }, look: { yaw: 0, pitch: 0 }, takedown: false, inspect: false, fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0, jump: false, crouch: false, sprint: false });
     if (inOffice) Object.assign(intent, { fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0 });
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
     const portrait = input.isTouch && innerHeight > innerWidth;
@@ -2914,6 +2996,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   /** The station close-up this frame (bench or wardrobe), or null for her eyes. */
   function closeUp(): { from: THREE.Vector3; at: THREE.Vector3; fov: number; up: THREE.Vector3 } | null {
     if (talkShot) return { from: talkShot.from, at: talkShot.at, fov: o.canvas.clientWidth < o.canvas.clientHeight ? 62 : 40, up: new THREE.Vector3(0, 1, 0) };
+    if (openerShot) {
+      // The shot's clock runs on drawn frames, a step capped at 250 ms: the first frame (her shaders, her cloth)
+      // can stall, and a stall mustn't jump the lens past her.
+      const now = performance.now();
+      if (openerShot.last) openerShot.t += Math.min(250, now - openerShot.last);
+      openerShot.last = now;
+      const k = openerShot.hold ?? Math.min(1, openerShot.t / openerShot.ms);
+      if (k >= 1) {
+        s.openerEnd?.();
+        return null;
+      }
+      return { ...openerLens(k), fov: 50, up: new THREE.Vector3(0, 1, 0) };
+    }
     const w = o.canvas.clientWidth;
     const aspect = Math.max(0.5, w / Math.max(1, o.canvas.clientHeight));
     const free = w < 1000 ? 0.5 : 0.56;
@@ -4204,11 +4299,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   function render(): void {
     const t0 = performance.now();
     if (officeMirror) officeMirror.update(mirrorFeet.set(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z), player.yaw, t0 / 1000);
-    if (keyArt || inOffice || talkShot) world.viewScene.visible = false;
+    if (keyArt || inOffice || talkShot || openerShot) world.viewScene.visible = false;
     // C10: the review lineups aren't in the street's enemy list: their visors, blinks and LODs still tick.
     for (const e of lineup) e.body.pose();
     if (reviewRender) reviewRender();
-    else if ((inOffice || talkShot) && closeUp()) {
+    else if ((inOffice || talkShot || openerShot) && closeUp()) {
       const cu = closeUp()!;
       const cam = world.camera;
       const q = cam.quaternion.clone();
@@ -4224,6 +4319,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       if (benchLight) benchLight.intensity = benchCam ? 6 : 0;
       if (wardCath?.group.visible) wardCath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
       if (talkShot) talkShot.cath.update(1 / 60, performance.now() / 1000, { x: 0, z: 0 });
+      if (openerShot) openerShot.cath.update(1 / 60, performance.now() / 1000, { x: 0.3, z: 0 });
         if (talkShot) talkShot.guy.feel(1 / 60, world.colliders, ground);
       // On the bench the gun is lit like a product shot: the street's neon (the window's pink key, the pooled
       // lights and the pink environment) steps back for this render so the gun keeps its own finish under a neutral key.
@@ -7314,7 +7410,20 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   }
   // Every shader the job's frame needs (the viewmodel, the enemies, the job's props) compiles in the background
   // before the first frame, not mid-fight (render/warm.ts). A checkpoint restart reuses the warm programs.
+  // Plan item 192: her figure for the opener's shot compiles with the street (on its first frame it stalled the
+  // page for the whole opener under software WebGL), then waits out of sight.
+  let prebuilt: FrontCath | null = null;
+  if (o.opener && !o.warm && !reduceMotionOn() && !inOffice) {
+    prebuilt = buildOpenerCath();
+    prebuilt.group.position.set(player.pos.x, ground(player.pos.x, player.pos.z), player.pos.z);
+    world.scene.add(prebuilt.group);
+  }
   if (!o.warm) await world.warm?.();
+  if (prebuilt) {
+    prebuilt.group.visible = false;
+    world.scene.remove(prebuilt.group);
+    openerCath = prebuilt;
+  }
   requestAnimationFrame(frame);
   return s;
 }
