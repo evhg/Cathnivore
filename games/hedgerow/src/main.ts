@@ -12,6 +12,7 @@ import { LINE_POSE } from "../../../shared/cath/screenposes";
 import { cathSceneSvg, momentForResult } from "../../../shared/cath/scene";
 import { growthPlots, harvestAt, occupiedPlots, HARVEST_SECONDS } from "./growth";
 import { burst, reducedMotion } from "../../../shared/ui/motion";
+import { lastMargin } from "./margins";
 import {
   ABILITIES,
   AUTO_AFTER_CASTS,
@@ -746,6 +747,8 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 202: what the 2D field painted in its margins (the act's set and its pieces).
+    margin2d: () => lastMargin,
     // Plan item 66: the share of the 3D frame's height that is painted sky (null in 2D).
     skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
     fieldShare: () => (renderer && is3D(renderer) ? renderer.fieldShare() : null),

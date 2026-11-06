@@ -5,6 +5,7 @@
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { plotLooks, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
+import { MARGIN_SETS, paintBoardwalk, paintMarsh, paintPiece, placeMargin, recordMargin, seeded, type Rect } from "./margins";
 
 export type Decor =
   | "oak"
@@ -337,11 +338,13 @@ export function paintBackground(
     ctx.fill();
   }
 
-  paintHinterland(ctx, level, L, theme);
+  // Plan item 202: an act with a margin set paints its own land past the hedge; the rest keep the patchwork.
+  const margin = paintMargins(ctx, level, L, theme);
+  if (!margin) paintHinterland(ctx, level, L, theme);
   paintLane(ctx, level, L, theme, rand);
   paintPlots(ctx, level, L);
   paintLandmarks(ctx, level, L);
-  paintDecor(ctx, level, L, theme, rand);
+  paintDecor(ctx, level, L, theme, rand, margin ?? undefined);
   paintGate(ctx, level, L);
   paintTwistDressing(ctx, level, L);
 
@@ -936,6 +939,59 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
 }
 
 /**
+ * Plan item 202: the act's own margins. Returns the margin rects it painted (decor keeps out of them), or null when
+ * the act has no set yet. The land is the dry sides (and the bands above and below the field on a tall screen),
+ * never the sea side; pieces keep clear of the lanes, and the placement is recorded for `margin2d()`.
+ */
+function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, theme: Theme): Rect[] | null {
+  const act = Math.min(THEMES.length - 1, Math.floor((level.id - 1) / 10));
+  const set = MARGIN_SETS[act];
+  if (!set) {
+    recordMargin({ act, set: "patchwork", pieces: [] });
+    return null;
+  }
+  const s = L.cell;
+  const gap = s * 0.9;
+  const x0 = L.offX - gap;
+  const x1 = L.offX + level.cols * s + gap;
+  const y0 = L.offY - gap;
+  const y1 = L.offY + level.rows * s + gap;
+  const side = theme.water?.side;
+  const rects: Rect[] = [];
+  if (side !== "left" && x0 > s * 1.4) rects.push({ x: 0, y: 0, w: x0, h: L.height });
+  if (side !== "right" && L.width - x1 > s * 1.4) rects.push({ x: x1, y: 0, w: L.width - x1, h: L.height });
+  const bx0 = side === "left" ? Math.max(0, x0) : 0;
+  const bx1 = side === "right" ? Math.min(L.width, x1) : L.width;
+  if (side !== "top" && y0 > s * 1.4) rects.push({ x: bx0, y: 0, w: bx1 - bx0, h: y0 });
+  if (side !== "bottom" && L.height - y1 > s * 1.4) rects.push({ x: bx0, y: y1, w: bx1 - bx0, h: L.height - y1 });
+  const rand = seeded(level.id * 7727 + 11);
+  for (const r of rects) paintMarsh(ctx, r, s, rand);
+  // The lanes run in from the edges: nothing stands on them.
+  const keepOut: Rect[] = [];
+  for (const lane of [lanePoints(level, L), ...(level.path2 ? [lanePoints(level, L, true)] : [])])
+    for (let i = 1; i < lane.length; i++) {
+      const [ax, ay] = lane[i - 1]!;
+      const [bx, by] = lane[i]!;
+      keepOut.push({ x: Math.min(ax, bx) - s * 0.6, y: Math.min(ay, by) - s * 0.6, w: Math.abs(bx - ax) + s * 1.2, h: Math.abs(by - ay) + s * 1.2 });
+    }
+  // A boardwalk down each side margin wide enough for it, toward its outer edge (the wider strip by the hedge
+  // keeps room for the salt pans).
+  if (set.boardwalk)
+    for (const r of rects) {
+      if (r.h < L.height * 0.9 || r.w < s * 2) continue;
+      const w = s * 0.42;
+      const out = r.x === 0 ? 0.28 : 0.72;
+      const bw = { x: r.x + r.w * out - w / 2, y: r.y, w, h: r.h };
+      paintBoardwalk(ctx, bw, s);
+      keepOut.push(bw);
+    }
+  const pieces = placeMargin(set, rects, s, level.id * 131 + 7, keepOut);
+  for (const p of [...pieces].sort((a, b) => a.y - b.y)) paintPiece(ctx, p, s, rand);
+  recordMargin({ act, set: set.name, pieces });
+  return rects;
+}
+
+/**
  * Plan item 120: a wide side margin (a tall level on a wide screen) shows the countryside going on past the
  * field: a patchwork of neighbours' fields, wheat, pasture and plough, each edged by a hedge. Muted so the
  * field still leads; the sea side is left to the water. Its own seed, so the decor after it is unchanged.
@@ -1008,6 +1064,8 @@ function paintDecor(
   L: Layout,
   theme: Theme,
   rand: () => number,
+  /** Plan item 202: the act's own margins, which the generic scatter keeps out of. */
+  margins: Rect[] = [],
 ): void {
   const s = L.cell;
   const gx0 = L.offX - s * 0.25;
@@ -1035,7 +1093,9 @@ function paintDecor(
     return y > gy1 + s * 0.2;
   };
   const outside = (L.width * L.height - (gx1 - gx0) * (gy1 - gy0)) / (s * s);
-  const count = Math.max(0, Math.round(outside * 0.75));
+  // Plan item 202: the act's margins carry their own pieces, so the scatter's count leaves them out.
+  const own = margins.reduce((a, r) => a + (r.w * r.h) / (s * s), 0);
+  const count = Math.max(0, Math.round((outside - own) * 0.75));
   const weights = theme.decor;
   const totalW = weights.reduce((a, [, w]) => a + w, 0);
   const items: Array<{ kind: Decor; x: number; y: number; k: number }> = [];
@@ -1045,6 +1105,7 @@ function paintDecor(
     const y = rand() * (L.height + s * 0.4);
     if (x > gx0 && x < gx1 && y > gy0 && y < gy1) continue;
     if (nearLane(x, y)) continue;
+    const inMargin = margins.some((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h);
     let pick = rand() * totalW;
     let kind: Decor = weights[0]![0];
     for (const [d, w] of weights) {
@@ -1057,6 +1118,7 @@ function paintDecor(
     if (inWater(x, y) && kind !== "boat" && kind !== "reeds") continue;
     if (!inWater(x, y) && kind === "boat" && water) continue;
     if (items.some((it) => Math.hypot(it.x - x, it.y - y) < s * 0.55)) continue;
+    if (inMargin) continue;
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
   items.sort((a, b) => a.y - b.y);
