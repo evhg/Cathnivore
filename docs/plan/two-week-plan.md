@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-07T08:52Z
+
 
 
 
@@ -2564,11 +2564,56 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a swipe changes class and pose; the title's font 40 px or more; no visible tab row at 390 px; arrows and 1-5 still work; cathode classpick, dossier and classstage specs pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 246. [ ] The bugs from the 2026-11-07 06:50 critique, fixed as one batch *(lane A, in progress)* *(slice 2, 2026-11-07 08:35 lane A: Cathnivore D setup's seat tags are ink pills on the place card (YOU filled, AI and P1/P2 outlined) so YOU no longer runs into the chair legs, and the cards' names sit clear of the ledge's rim (same card height: 1280x800 doesn't scroll); Runnel D lesson: the notebook and the hint under it are centred as one block (the hint sat loose 90 px below; lesson-frame's 100 px gap check passes). Checked and left: Cathnivore D 'Saving for' text computes 12.48 px; 'Sell 3 / Produce' wraps by item 218's design; Injunction over Supply's corner is the hand's fan overlap, as every card. setup-* (25, D and P), runnel-front, -lesson-frame, -lesson-hand, -lesson-notebook, -lesson-close (D) pass; runnel-lesson-close fails at P on HEAD too (a 1.5 s tile-count wait), not this change. Shots scratchpad b246/a246 cath-setup, runnel D and P)* *(slice 1, 2026-11-07 06:45 lane B: Hedgerow's round chip is a tick for rounds cleared ('Rounds cleared' title and spoken name), not the flag that read as the round coming beside the ticket's ROUND 11 OF 26)*
+## 246. [x] The bugs from the 2026-11-07 06:50 critique, fixed as one batch *(done 2026-11-07 09:15, lane A, slice 3 `7fd4b776`: Hedgerow P l34's second gate stands a 1.3-cell depot on the field's foot (a gate within two cells of an edge may use that margin; the rep beside its wall), so its count is on a depot, not a bare plate; the NS Ghost's held rifle stands upright beside her face (GHOST_HOLD out, RIFLE_DIR upright). Moved on: the NS P title plate over her arm (a narrowed stage threw her off screen) is item 251; the P 3D teal bar (in the canvas, not the gate) is in item 253. hedgerow-depot, -gatequeue, cathode-classpick, -classstage pass; shots scratchpad g246, h246, h246b)* *(slice 2, 2026-11-07 08:35 lane A: Cathnivore D setup's seat tags are ink pills on the place card (YOU filled, AI and P1/P2 outlined) so YOU no longer runs into the chair legs, and the cards' names sit clear of the ledge's rim (same card height: 1280x800 doesn't scroll); Runnel D lesson: the notebook and the hint under it are centred as one block (the hint sat loose 90 px below; lesson-frame's 100 px gap check passes). Checked and left: Cathnivore D 'Saving for' text computes 12.48 px; 'Sell 3 / Produce' wraps by item 218's design; Injunction over Supply's corner is the hand's fan overlap, as every card. setup-* (25, D and P), runnel-front, -lesson-frame, -lesson-hand, -lesson-notebook, -lesson-close (D) pass; runnel-lesson-close fails at P on HEAD too (a 1.5 s tile-count wait), not this change. Shots scratchpad b246/a246 cath-setup, runnel D and P)* *(slice 1, 2026-11-07 06:45 lane B: Hedgerow's round chip is a tick for rounds cleared ('Rounds cleared' title and spoken name), not the flag that read as the round coming beside the ticket's ROUND 11 OF 26)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107c`; dropped: the P 3D frame cutting the field's right (item 215's close frame, by design), Cath's outfit on /games/ following the poster in view (item 130, by design))
   - **Hedgerow:** D: the top bar's '10/26' beside the ticket's 'ROUND 11 OF 26' read as disagreeing (1200-1310 x 22-55 vs 1115-1170 x 420-495; label what each counts). P l34: the second lane has no depot, its vans stacking on '283 coming' (0-130 x 500-580). P 3D: a stray teal bar above the dock (75-170 x 673-682).
   - **NIGHT SHIFT:** D and P pick: the rifle through Cath's face and collar, and rifle and umbrella held together (D 640-800 x 100-420). P title: the menu panel over her arm (8-195 x 207-435; check it isn't capture timing). D title: Tomas Reed, a Cathnivore producer, as a case file (410-580 x 270-570): check against the cast notes.
   - **Cathnivore:** D setup: 'Two at the table' tab sheared with its label on the rim (330-495 x 135-200); 'YOU' over the chairs (198-232 x 150-168). D game: 'Saving for' text about 11 px (40-310 x 425-482); the licence card's verb on its own line (700-830 x 785-825); Injunction over Supply's corner (1185-1200 x 705-860).
   - **Runnel:** D: the hint loose 90 px below the notebook (70-290 x 845-862).
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 247. [ ] NIGHT SHIFT class pick: Cath drawn to the title's standard
+- **Why:** `plan1107d/ns-play-D` (590-850 x 110-810): on the pick she reads as a mannequin beside the title's cinematic Cath: boxy shoulders, a flat painted face about 40 px across, stick legs, the Ghost's hood a bucket. The pick is the screen a player studies longest before a job.
+- **Build:** on the pick only (the wardrobe's camera), a key light on her face and a closer framing at D; the head from the title's face work (items 140, 205: eyes, liner, lips) at the pick's size; tapered sleeves and legs with a knee and calf line, gloved hands with fingers, heeled boots; the hood shaped round her head with a brim. No prop crosses her face box in any class's held pose (item 246 moved the Ghost's rifle).
+- **Accept:** at 1440x900 her face is 70 px across or more in every class; no class's held prop overlaps the face box (projected, tested); `scripts/cathode-classpick-diff.mjs` keeps every class pair over 15%; the pick stays at or under 170 draw calls at D and within `cathode-perf` at P; classpick, classpose, classstage pass; shots D, P, L, all five classes.
+- **Size:** 3
+
+## 248. [ ] Cathnivore campaign map: a living diorama with Cath at full height
+- **Why:** `plan1107d/cath-campaign-D` (60-790 x 218-890) and `-P`: the map is flat orange hatching with tiny props, far below the game board's painted hexes; Cath is about 75 px wide in the top-right corner, faded at the waist.
+- **Build:** the chapters' regions drawn in the board's painted hex style; a freed region in full colour with bunting and a market, a region not yet freed carrying Hollowell outlets in grey and orange; Cath full-length beside the current chapter's region with her line; freeing a region (returning from a won chapter) blooms it once.
+- **Accept:** each region has `data-state` (locked, current, freed), and freed regions are measurably more saturated than locked ones; Cath 240 px tall or more at D and 120 px at P, her whole figure on screen; the bloom runs 600-1000 ms, a fade under reduced motion; no scroll at 1280x800 or 375x667; campaign specs pass; shots P and D, fresh and mid-campaign.
+- **Size:** 3
+
+## 249. [ ] Cathnivore desktop play: the board as the hero, alive
+- **Why:** `plan1107d/cath-game-D` (575-1110): the board is about 540 px wide at 1440x900 with 30-40 px pieces, and the rails, her bubble and the portraits compete with it.
+- **Build:** the board takes the room between the rails (tighten the rails' widths and the head row); pieces scale with it; each tile kind gets a small idle life (smoke from a farmhouse, a boat on a lake tile, a sheep that moves, Hollowell's sign flickering), staggered, paused when the tab is hidden, none under reduced motion.
+- **Accept:** the board 700 px wide or more at 1440x900 and 620 at 1280x800, no scroll at either; pieces 48 px or more at 1440; every tile kind has an idle animation (`data-idle`), none under reduced motion; board-scale, desktop-no-scroll, table-cath, suggest-move, critique177 pass; P unchanged; shots D, D2 (1280x800), light and dark.
+- **Size:** 3
+
+## 250. [ ] Hedgerow: Cath hosts the field and walks the map
+- **Why:** `plan1107d/hedge-l21-2d-D` (300-345 x 635-715): in 2D play she is a 40 px sprite; on the D journey map (`hedge-menu-D`, 310-340) about 25 px wide. Her advice bubble has no face beside it on the field.
+- **Build:** a portrait host card beside her round advice on the field (2D and 3D) that changes expression on a leak (worried), a clean round (delighted), a boss arrival (determined) and a tower bought (smile), from the shared `shared/cath/` faces; on the journey map she stands at the current stop, 120 px tall at D, and walks the lane to the next stop after a win (once, a fade under reduced motion).
+- **Accept:** the portrait 96 px or more at D and 64 at P; its expression changes within 250 ms of a leak (`data-expr`, tested); map Cath 120 px tall at D, 64 at P, at the current stop; the walk runs once per new win; hedgerow-map, closeframe, 3dframe pass; shots P and D, 2D and 3D, map fresh and mid.
+- **Size:** 2
+
+## 251. [ ] NIGHT SHIFT phone title: Cath clear of the menu plate
+- **Why:** `plan1107d/ns-title-P` and a 60 s shot (`g246/nst-60`): the menu plate (8-195 x 207-435) covers her left arm and elbow; the lower half under her hem is empty rain. Narrowing `setStage`'s rectangle to start at the plate's edge (tried in item 246) threw her off the right edge: `fitStage` doesn't hold a narrow box.
+- **Build:** frame her so the plate never covers her: either fix `fitStage` to fit a narrow right-hand box (her whole figure, umbrella to shoes), or lower the plate under her umbrella line with her standing above the List; keep the case line and the List whole.
+- **Accept:** at 390x844 and 375x667 the plate covers under 5% of her projected figure box (tested with `figureBox`); her figure 280 px tall or more at 390x844; nothing scrolls; cathode-front and title specs pass; shots P at 30 and 60 s.
+- **Size:** 1
+
+## 252. [ ] Runnel valley: props you can read, none twice side by side
+- **Why:** `plan1107d/runnel-D` and `-P`: the same brown trapezoid crate repeats about 8 times (1135,145; 1280,295; 1260,690) and grey ovals (520-600 x 465) read as nothing.
+- **Build:** a set of six or more painted valley props (hayrick, water trough, stile, beehive, scarecrow, laid hedge, a milk churn) in the valley's light and weather, placed by the day's seed, with no two of a kind adjacent; the grey ovals become clear stones or go.
+- **Accept:** at least 5 prop kinds in a lesson shot at D; no kind more than twice on one screen (unit test over 30 seeds); runnel-valley unit and e2e, front, board, garden pass; key art re-shot; shots P and D, day, dusk, rain.
+- **Size:** 2
+
+## 253. [ ] The bugs from the 2026-11-07 09:00 critique, fixed as one batch *(lane A, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1107d`)
+  - **Cathnivore:** D setup: the Open/Start key over Cath's legs (1095-1295 x 775-850) and her bubble against Sol's card (1090-1305 x 375-445). D game: 'Scheme: Recon-naissance' hyphenated (790-880 x 793-833).
+  - **NIGHT SHIFT:** D pick rack: Wirewitch and Fixer show the same pistol outline (375-440 x 445 and 530): give each its own weapon's line.
+  - **Hedgerow:** D: 'Lifestyle influencer' wraps inside its pill against its edges (1268-1338 x 418-448); the shop's coin before each price reads as 'O100' (1160 x 97; check at real size); P menu: the act panorama pokes above the header (260-300 x 0-50) and a ghost band of the next act under the Play sheet (690-775; may be scroll content); P 3D l21: a stray teal bar in the canvas over the bottom-left plot (80-180 x 642-650; not DOM, not the gate).
+  - **Site:** P /games/: Cath reads as a bust on a plank (85-305 x 440-458; check against item 238's design).
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
