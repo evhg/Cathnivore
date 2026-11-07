@@ -135,8 +135,11 @@ const shoot = {
     await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
     const p = await ctx.newPage()
     await p.goto(`${base}/nightshift/?shot&keyart&quality=high`, { timeout: 120_000 })
-    // Under SwiftShader the street is drawn by about 30 s (plan-shots.mjs).
-    await p.waitForTimeout(40_000)
+    // Under SwiftShader the street is drawn by about 30 s (plan-shots.mjs); a busy machine takes longer, so wait for
+    // the street's first drawn frame (`?shot` freezes it there) before the settle, not on a fixed clock alone (a
+    // fixed 40 s once shot a black frame).
+    await p.waitForFunction(() => (window.cathodeFront?.scene?.()?.stats?.frames ?? 0) >= 1, null, { timeout: 400_000 })
+    await p.waitForTimeout(8_000)
     await p.evaluate(() => {
       for (const el of document.querySelectorAll('body *')) if (el.tagName !== 'CANVAS' && !el.querySelector('canvas')) el.style.visibility = 'hidden'
     })
