@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hueSat, luminance, sceneLight, valleyLayers } from '../games/runnel/src/valley'
+import { hueSat, luminance, oklch, sceneLight, valleyLayers } from '../games/runnel/src/valley'
 
 // Plan item 77: the valley is lit by the board's time and weather, so the caption and the picture agree.
 describe('Runnel valley light', () => {
@@ -45,5 +45,22 @@ describe('Runnel valley layers', () => {
   })
   it('draws rain on a drizzly day', () => {
     expect(valleyLayers('x', 'drizzle')).toContain('class="vl-rain"')
+  })
+})
+
+// Plan item 229: whatever the hour and weather the valley stays a picture: its fields keep colour (mean OKLCH chroma
+// 0.04 or more) and light (mean L 0.45 or more), and the hedges and trees never sink to a dark hole (L 0.4 or more).
+describe('Runnel valley colour floor', () => {
+  it('every time and weather keeps chroma and light', () => {
+    for (const time of ['morning', 'noon', 'golden', 'dusk'] as const)
+      for (const weather of ['clear', 'breeze', 'clouds', 'drizzle'] as const) {
+        const l = sceneLight({ time, weather })
+        const ks = ['meadow', 'meadowLow', 'crop', 'wheat', 'fallow', 'near'] as const
+        const L = ks.reduce((a, k) => a + oklch(l[k]).L, 0) / ks.length
+        const C = ks.reduce((a, k) => a + oklch(l[k]).C, 0) / ks.length
+        expect(C, `${time} ${weather} chroma`).toBeGreaterThanOrEqual(0.04)
+        expect(L, `${time} ${weather} light`).toBeGreaterThanOrEqual(0.45)
+        expect(oklch(l.hedge).L, `${time} ${weather} hedge`).toBeGreaterThanOrEqual(0.4)
+      }
   })
 })

@@ -3762,7 +3762,8 @@ body[data-mode='practice'] #week-slot {
     stroke-dasharray: 0 7;
     vector-effect: non-scaling-stroke;
   }
-  .vl-tree { fill: color-mix(in srgb, var(--vl-hedge) var(--vk), var(--paper)); }
+  /* Plan item 229: a tree a shade lighter than its hedge, so it reads as foliage, never a dark hole. */
+  .vl-tree { fill: color-mix(in srgb, color-mix(in srgb, var(--vl-hedge) 70%, var(--vl-meadow)) var(--vk), var(--paper)); }
   .vl-tree-lit { fill: color-mix(in srgb, var(--vl-crop) 70%, var(--vl-hedge)); opacity: 0.7; }
   .vl-tree-shade { fill: color-mix(in srgb, var(--vl-hedge) 40%, transparent); }
   .vl-trail {
@@ -3977,7 +3978,8 @@ body[data-mode='practice'] #week-slot {
 /* Plan item 90: a lesson dims the valley, not the tiles, so every piece keeps its colour and rim while the target
    glows. */
 .in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }
-.in-lesson .valley { filter: brightness(.8) saturate(.75); transition: filter 400ms ease; }
+/* Plan item 229: a lesson quiets the valley without greying it (.8 brightness and .75 saturation on a rain day left slate). */
+.in-lesson .valley { filter: brightness(.92) saturate(.9); transition: filter 400ms ease; }
 
 /* ---- key art (plan item 116) ---- */
 /* `?keyart`, set on <html> by main.ts: the site poster's frame. The valley, the board and the farm fill the
@@ -4271,7 +4273,7 @@ body[data-mode='practice'] #week-slot {
   z-index: auto;
   transition: filter 400ms ease;
 }
-.in-lesson .runnel-ditch-layer { filter: brightness(.8) saturate(.75); }
+.in-lesson .runnel-ditch-layer { filter: brightness(.92) saturate(.9); }
 /* the spoil thrown up either side of the cut: a soft earth shoulder in the bank's shade */
 .runnel-ditch-bank {
   fill: none;

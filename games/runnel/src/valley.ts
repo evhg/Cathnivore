@@ -36,9 +36,10 @@ const BASE: Record<TimeOfDay, SceneLight> = {
     crop: '#b4b052', wheat: '#f0c870', fallow: '#d9a874', hedge: '#6f7434',
   },
   // Dusk: violet sky over a peach horizon, the fields gone dim and blue-grey.
+  // Plan item 229: still a picture at dusk: the greens and the wheat keep their colour under the violet.
   dusk: {
-    skyTop: '#62558a', skyLow: '#f0a98a', far: '#7a6d8a', near: '#66705e', meadow: '#8a8a78', meadowLow: '#737262',
-    crop: '#6f7a58', wheat: '#b8a07a', fallow: '#9a8070', hedge: '#455040',
+    skyTop: '#62558a', skyLow: '#f0a98a', far: '#8a789e', near: '#77866a', meadow: '#9aa07e', meadowLow: '#848b6a',
+    crop: '#7f9858', wheat: '#cfa876', fallow: '#b2896e', hedge: '#566448',
   },
 }
 
@@ -56,7 +57,8 @@ function overcast(c: string, amount: number, dim: number): string {
 export function sceneLight(sky: Pick<Sky, 'time' | 'weather'>): SceneLight {
   const base = BASE[sky.time]
   if (sky.weather === 'clear' || sky.weather === 'breeze') return { ...base }
-  const [amount, dim] = sky.weather === 'drizzle' ? [0.5, 0.1] : [0.22, 0.04]
+  // Plan item 229: rain softens the colour, it doesn't take it away (0.5 grey and 10% dark turned the valley to slate).
+  const [amount, dim] = sky.weather === 'drizzle' ? [0.3, 0.04] : [0.15, 0.02]
   const out = {} as SceneLight
   for (const k of Object.keys(base) as (keyof SceneLight)[]) out[k] = overcast(base[k], amount, dim)
   // A rain sky is a flat grey-blue whatever the hour; a cloudy one keeps a little of its colour.
@@ -85,6 +87,21 @@ export function hueSat(c: string): { hue: number; sat: number } {
   let hue = 0
   if (d) hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
   return { hue: (hue * 60 + 360) % 360, sat }
+}
+
+/** OKLCH lightness (0..1) and chroma of a #rrggbb colour (plan item 229: the valley's colour floor). */
+export function oklch(c: string): { L: number; C: number } {
+  const [r, g, b] = hex(c).map((v) => {
+    const s = v / 255
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s2 = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s2
+  const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s2
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s2
+  return { L, C: Math.hypot(A, B) }
 }
 
 /** The palette as the CSS custom properties the valley's classes read. */
