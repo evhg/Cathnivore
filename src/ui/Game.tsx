@@ -2856,7 +2856,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               )}
             </p>
             <span className="table-cath-figure" aria-hidden="true">
-              <CathArt framing="full" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
+              <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>
         )}

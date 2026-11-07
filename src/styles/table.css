@@ -3879,19 +3879,30 @@ html.no-animations .table-cath-line { animation: none; }
     height: var(--hand-h, 140px);
     margin-top: var(--sp-1);
   }
-  /* Full length: head to boots, 330 px at 1440x900 (300 at 1280x800). */
-  .table-cath { width: 150px; }
-  .table-cath-figure { height: clamp(300px, 37vh, 340px); }
+  /* Plan item 232: waist-up at the table's edge, her face 70 px or more across (item 190's full length drew it
+     about 30 px), the cloth's rim cutting her at the waist; her bubble over her head, its tail at her mouth. */
+  .table-cath { width: 208px; left: 0; }
+  .table-cath-figure { height: auto; margin-bottom: -2px; overflow: visible; }
   .table-cath-figure .cath-art,
-  .table-cath-figure svg { margin-left: -6px; }
-  /* Her line takes the cloth's top-left corner, so Bea's drawing lies on the table by her boots instead. */
-  .table-cath-line { margin-right: -24px; }
+  .table-cath-figure svg { width: 226px; height: auto; margin-left: -12px; }
+  @media (max-width: 1400px) {
+    .table-cath { width: 194px; }
+    .table-cath-figure .cath-art,
+    .table-cath-figure svg { width: 212px; }
+  }
+  .table-cath-line { margin: 0 4px 6px var(--sp-1); }
+  .table-cath-line::after { left: 46%; }
+  /* her face crossfades to each new expression (opacity only, so reduced motion keeps it) */
+  .table-cath-figure .cath-features { animation: table-cath-face 200ms var(--ease-settle); }
   .beas-drawing {
     top: auto;
     bottom: var(--sp-3);
-    left: 166px;
-    width: 84px;
+    left: 214px;
+    width: 72px;
     rotate: 7deg;
+  }
+  @media (max-width: 1400px) {
+    .beas-drawing { left: 202px; width: 56px; }
   }
 }
 
@@ -4302,3 +4313,5 @@ html.no-animations .table-cath-line { animation: none; }
 @keyframes papers-sheet-in {
   from { opacity: 0; translate: 0 -8px; }
 }
+
+@keyframes table-cath-face { from { opacity: .2; } }

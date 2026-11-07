@@ -12,12 +12,12 @@ export const CATH_REACTION_EXPRESSION: Record<CathReaction, CathExpression> = {
   liberated: 'delighted',
   expand: 'determined',
   squeezeLostLand: 'worried',
-  squeeze: 'determined',
+  squeeze: 'worried',
   riftSplit: 'determined',
   win: 'delighted',
   loss: 'worried',
   greeting: 'smirk',
-  sell: 'smirk',
+  sell: 'wink',
   invest: 'delighted',
 }
 
