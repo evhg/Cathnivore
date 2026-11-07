@@ -1722,6 +1722,20 @@ body {
   padding-bottom: 1px;
   border-bottom: 2px solid color-mix(in srgb, var(--gold-hi) 80%, transparent);
 }
+/* Plan item 222: its neighbour a wooden sign from the same stall, lettered in the same hand (a sans glass pill beside
+   the chalk slate read as two kits). Cream on the plank's darker half holds 5.9:1 or more. */
+.stall-hero .btn-cta-glass {
+  border-radius: 6px;
+  color: var(--cream);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 9px, color-mix(in srgb, var(--wood-lo) 45%, transparent) 9px 10px),
+    linear-gradient(180deg, color-mix(in srgb, var(--wood-mid) 50%, var(--wood-lo)), var(--wood-lo));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--wood-hi) 60%, transparent), 0 8px 20px var(--shadow-deep);
+  font-family: var(--font-voice, inherit);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
 @media (prefers-reduced-motion: reduce) {
   .stall-hero .hero-game,
   .stall-hero .hero-game:hover,
