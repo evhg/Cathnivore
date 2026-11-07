@@ -777,6 +777,7 @@ if (SANDBOX)
     biome3d: () => (renderer && is3D(renderer) ? renderer.biome : null),
     // Plan item 201: the far houses' boxes (canvas px); empty in 2D.
     farHouses3d: () => (renderer && is3D(renderer) ? renderer.farRects() : []),
+    moored3d: () => (renderer && is3D(renderer) ? renderer.mooredRects() : []),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
@@ -4534,7 +4535,7 @@ function syncDepots(g: Game): void {
         el.style.setProperty("--x", `${Math.round(d.x)}px`);
         el.style.setProperty("--y", `${Math.round(d.y)}px`);
         el.style.setProperty("--size", `${Math.round(Math.max(28, Math.min(56, d.w * 0.45)))}px`);
-        el.innerHTML = `<span class="depot-rep">${repSvg(depotMood)}</span>`;
+        el.innerHTML = `<span class="depot-rep">${repSvg(depotMood, true)}</span>`;
         return el;
       }),
     );

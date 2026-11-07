@@ -23,3 +23,18 @@ for (const level of [21, 5, 34]) {
     if (info.project.name === 'site-phone') expect(rects.filter((r) => r.y >= 1).length).toBeGreaterThan(0)
   })
 }
+
+// Plan item 228: Saltmarsh's moored boats likewise stand wholly in the frame or out of it (a wide frame's left edge
+// sliced two of l21's into red slabs).
+test('level 21: no moored boat is cut by the frame', async ({ page }) => {
+  test.setTimeout(150_000)
+  await page.goto('/hedgerow/?sandbox=1&level=21')
+  await page.waitForFunction(() => {
+    const h = (window as unknown as W & { hedgerow?: { moored3d?: () => Rect[] } }).hedgerow
+    return !!h?.game() && !!h.camSettled?.() && (h.moored3d?.().length ?? 0) > 0
+  }, null, { timeout: 120_000 })
+  await page.waitForTimeout(1500)
+  const rects = await page.evaluate(() => (window as unknown as { hedgerow: { moored3d: () => Rect[] } }).hedgerow.moored3d())
+  const cut = rects.filter((r) => (r.x < 1 && r.x + r.w > 1) || (r.y < 1 && r.y + r.h > 1))
+  expect(cut, JSON.stringify(rects.map((r) => [Math.round(r.x), Math.round(r.y), Math.round(r.w)]))).toEqual([])
+})

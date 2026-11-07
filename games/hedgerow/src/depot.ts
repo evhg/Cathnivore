@@ -32,18 +32,22 @@ export function depotSvg(): string {
 }
 
 /** The rep on the balcony (a small figure in a suit with an orange tie), in a 24 x 30 box. */
-export function repSvg(mood: RepMood): string {
+export function repSvg(mood: RepMood, hatch = false): string {
   const mouth =
     mood === "gleeful" ? `<path d="M9 12q3 4 6 0" fill="${INK}"/>` : mood === "rattled" ? `<path d="M9 13.5q3-3 6 0" fill="none" stroke="${INK}" stroke-width="1.2"/>` : `<path d="M9 12.5q3 1.6 6-0.8" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
   const brows = mood === "rattled" ? `<path d="M8 6.5l3 1M16 6.5l-3 1" stroke="${INK}" stroke-width="1"/>` : `<path d="M8 7l3-1M16 7l-3-1" stroke="${INK}" stroke-width="1"/>`;
   const arm = mood === "gleeful" ? `<path d="M18 19l4-7" stroke="#3a4250" stroke-width="3" stroke-linecap="round"/>` : "";
   return (
     `<svg viewBox="0 0 24 30" aria-hidden="true">` +
+    // Plan item 228: in 3D he leans out of a roof hatch, its lid up behind him and its rim across his waist,
+    // so he reads as a man on the roof rather than a bust floating on it.
+    (hatch ? `<path d="M2.5 25l2.5-11h14l2.5 11z" fill="#4b525d"/><path d="M5.6 15.5h12.8" stroke="#7b8490" stroke-width="0.8"/>` : "") +
     `<path d="M4 30v-9q8-5 16 0v9z" fill="#3a4250"/>${arm}` +
     `<path d="M11.2 20h1.6l1 6-1.8 2-1.8-2z" fill="#ef7a2a"/>` +
     `<circle cx="12" cy="10" r="6" fill="#f0c8a4"/>` +
     `<path d="M6 8q6-7 12 0" fill="#5a4636"/>${brows}` +
     `<circle cx="9.6" cy="9.6" r="0.9" fill="${INK}"/><circle cx="14.4" cy="9.6" r="0.9" fill="${INK}"/>${mouth}` +
+    (hatch ? `<rect x="1" y="24" width="22" height="6" rx="1" fill="#6b7380"/><path d="M1.6 24.7h20.8" stroke="#a3acb6" stroke-width="0.9"/><path d="M1 28.6h22" stroke="#4b525d" stroke-width="0.8"/>` : "") +
     `</svg>`
   );
 }

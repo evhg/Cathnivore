@@ -2613,7 +2613,8 @@ export class Renderer3D {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
     const key = `${game.level.id}:${w}x${h}`;
-    if (!far.length || !w || !h || key === this.farKey) return;
+    const anyMoored = !!(this.ground?.group.userData.moored as unknown[] | undefined)?.length;
+    if ((!far.length && !anyMoored) || !w || !h || key === this.farKey) return;
     this.farKey = key;
     const cam = this.fittedCamera();
     const at = (o: THREE.Object3D, z: number): Rect => {
@@ -2634,6 +2635,33 @@ export class Renderer3D {
       do r = at(o, (z -= 0.25));
       while (r.y + r.h > 0 && z > home - 8);
     }
+    // Plan item 228: Saltmarsh's moored boats, likewise across the frame's left edge: in toward the flats (no nearer
+    // than -2.3, still on the water) until wholly in, or out to sea until wholly out.
+    const moored = (this.ground?.group.userData.moored as THREE.Object3D[] | undefined) ?? [];
+    const boat = (o: THREE.Object3D, x: number): Rect => {
+      o.position.x = x;
+      o.updateMatrixWorld(true);
+      return this.boxRect(new THREE.Box3().setFromObject(o), w, h, cam);
+    };
+    const cut = (r: Rect) => (r.x < 2 && r.x + r.w > 0) || (r.y < 2 && r.y + r.h > 0);
+    for (const o of moored) {
+      const home = o.userData.home as number;
+      let x = home;
+      let r = boat(o, x);
+      if (!cut(r)) continue;
+      while (cut(r) && x + 0.1 <= -2.3) r = boat(o, (x += 0.1));
+      if (!cut(r)) continue;
+      x = home;
+      do r = boat(o, (x -= 0.25));
+      while (cut(r) && x > home - 10);
+    }
+  }
+  /** Plan item 228 (tests): the moored boats' boxes on the canvas (CSS px) at the fitted view. */
+  mooredRects(): Rect[] {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const cam = this.fittedCamera();
+    return ((this.ground?.group.userData.moored as THREE.Object3D[] | undefined) ?? []).map((o) => this.boxRect(new THREE.Box3().setFromObject(o), w, h, cam));
   }
   /** The fitted base view (no zoom, pan, gate look or directed shot), as `fieldShare` measures it. */
   private fittedCamera(): THREE.PerspectiveCamera {

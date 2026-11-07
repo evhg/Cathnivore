@@ -981,7 +981,9 @@ export function buildGround(level: Level): Ground {
     const reeds: Inst[] = [];
     const egretBody: Inst[] = [];
     const egretNeck: Inst[] = [];
-    const mud = ["#6e6146", "#7a6b4d", "#5f553f"].map((c) => new THREE.Color(c));
+    // Plan item 228: wet silt, grey-sand and silvered, with samphire greens and tide pools among it (the old browns,
+    // stacked as pebbles, read as a band of mud at the phone's left edge).
+    const mud = ["#9a9478", "#a8a184", "#8c8a72", "#8e9a68", "#7f9558", "#b7c3c4"].map((c) => new THREE.Color(c));
     const reedCols = ["#9a9a52", "#b5a35e", "#7f8a44"].map((c) => new THREE.Color(c));
     const white = new THREE.Color("#f6f4ee");
     for (let z = -2.5; z <= rows + 2.5; z += 0.34)
@@ -989,7 +991,7 @@ export function buildGround(level: Level): Ground {
         const jx = x + (deco() - 0.5) * 0.2;
         const jz = z + (deco() - 0.5) * 0.2;
         if (laneDistance(level, jx, jz) < 0.9) continue;
-        flats.push({ x: jx, y: heightAt(jx, jz) - 0.015, z: jz, ry: deco() * 6.3, s: 0.3 + deco() * 0.1, sy: 0.05, color: mud[Math.floor(deco() * mud.length)]! });
+        flats.push({ x: jx, y: heightAt(jx, jz) - 0.02, z: jz, ry: deco() * 6.3, s: 0.34 + deco() * 0.1, sy: 0.03, color: mud[Math.floor(deco() * mud.length)]! });
         if (deco() < 0.4)
           for (let k = 0; k < 8; k++)
             reeds.push({ x: jx + (deco() - 0.5) * 0.22, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.22, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
@@ -1009,13 +1011,18 @@ export function buildGround(level: Level): Ground {
       instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),
     ])
       if (m) group.add(m);
-    // Boats moored off the flats, along the shore.
+    // Boats moored off the flats, along the shore. Plan item 228: the renderer settles each wholly into the frame's
+    // side or out of it (a wide frame's left edge sliced two into red slabs).
+    const moored: THREE.Object3D[] = [];
+    group.userData.moored = moored;
     for (let i = 0; i < 4; i++) {
       const b = buildBoat(rand);
       const z = -0.5 + ((i + 0.5) / 4) * (rows + 1);
       b.position.set(-2.6 - rand() * 1.2, -0.06, z);
       b.rotation.y = Math.PI / 2 + (rand() - 0.5) * 0.6;
+      b.userData.home = b.position.x;
       group.add(b);
+      moored.push(b);
     }
   }
   if (act === 3) {
