@@ -2468,13 +2468,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a stop's land state follows its stars (unit); after a win the stop's `data-state="won"` and a patch within 80 px of it has chroma 0.05 or more; a locked stretch shows a Hollowell prop; no transform under reduced motion; hedgerow map specs pass; shots P and D, a fresh save and a mid-act save.
 - **Size:** 2
 
-## 231. [ ] Cathnivore phone title: the table is the hero, the menu sits on the counter *(lane A, in progress)*
+## 231. [x] Cathnivore phone title: the table is the hero, the menu sits on the counter *(done 2026-11-07, 33950268: the board 360 px wide on the stall with Cath behind its far edge, her line beside her head; Campaign (or Continue) the stall's painted sign with the Daily slip beside it, Quick Game and the Daily paper tags, How to Play / Settings / Credits chalked on the counter's edge; with a save the map gives up height so nothing scrolls (375x667 too); `e2e/title-counter.spec.ts` (board 320+ px and largest, entries 44+ px on screen, under 20% of the screen darker than L 0.3); shots `e2e/screenshots/t231` P light/dark fresh/mid/save, D unchanged)*
 - **Why:** `plan1107a/cath-title-P`: the board is about 225 px wide (145-370 x 255-455) while the dark chalkboard menu (20-370 x 475-745) is larger and heavier and takes the eye first (VISION: the table is the hero, menus never compete).
 - **Build:** the board runs nearly full width (about 340 px) under the bunting, Cath at its rim; the menu becomes counter objects: Campaign the painted sign, Quick Game and the Daily as hanging tags, How to Play / Settings / Credits chalked on the counter's edge; no dark panel.
 - **Accept:** at 390x844 the board's box 320 px or wider and the largest element; every entry 44 px or more tall and inside the viewport with no page scroll; no dark panel (L under 0.3) over 20% of the screen; title specs pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 232. [ ] Cathnivore desktop play: Cath's face readable, and reacting
+## 232. [ ] Cathnivore desktop play: Cath's face readable, and reacting *(lane A, in progress)*
 - **Why:** `plan1107a/cath-game-D` (375-460 x 385-690): Cath stands full-length about 85 px wide with a face about 30 px, smaller than the producers' busts beside her (1195-1330 x 238-405); her expression can't be read (VISION: Cath's character bible).
 - **Build:** at the table waist-up, her face 70 px or more wide; her bible expressions follow the game (delighted on a liberation, worried on a Squeeze or Lost Land, a wink on a combo, determined on Hollowell's turn) with a 200 ms crossfade; her bubble from her mouth. Check what the game already drives (`data-expression`) first.
 - **Accept:** at 1440x900 her face box 70 px or more wide, not covered by a card or her bubble; an autoplay e2e sees three or more `data-expression` values; crossfade only under reduced motion; shots D light and dark (P unchanged).
