@@ -4279,7 +4279,7 @@ body[data-mode='practice'] #week-slot {
   stroke-width: 20;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: .22;
+  opacity: var(--ditch-bank-opacity, .22);
 }
 /* the cut itself: its dark bed, with the near bank lit */
 .runnel-ditch {

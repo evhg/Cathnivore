@@ -119,6 +119,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
+    --ditch-bank-opacity: .55; /* plan item 226: the trench's shoulder needs more weight on the night grass */
     --ws-wood-1: #4a3626;
     --ws-wood-2: #3a2a1d;
     --ws-on-wood: #f3e9d8;
