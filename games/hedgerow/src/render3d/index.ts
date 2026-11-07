@@ -743,6 +743,8 @@ export class Renderer3D {
       // phone it steps down whatever the zoom, so the town stays on the plate as the view goes close and back.
       sign.visible = !((grow > 1 || this.openFrame) && sign.userData.inField);
       if (!sign.visible) this.plateTown = sign.userData.town as string;
+      const bar = parent.userData.bar as THREE.Object3D | undefined;
+      if (bar) bar.visible = sign.visible;
       sign.updateMatrixWorld();
     }
   }

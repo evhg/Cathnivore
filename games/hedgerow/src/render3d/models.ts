@@ -2268,7 +2268,10 @@ export function buildDepot(): THREE.Group {
 export function buildGate(label: string): THREE.Group {
   const g = new THREE.Group();
   for (const z of [-0.55, 0.55]) g.add(box(0.12, 0.9, 0.12, gloss("#cfd6dc", 0.6), 0, 0, z));
-  g.add(box(0.1, 0.22, 1.2, gloss(C.teal, 0.2), 0, 0.9, 0));
+  const bar = box(0.1, 0.22, 1.2, gloss(C.teal, 0.2), 0, 0.9, 0);
+  g.add(bar);
+  // Plan item 253: the crossbar stands down with the board (alone, from a phone's high camera, it read as a stray teal bar).
+  g.userData.bar = bar;
   // Plan item 98: the town's name read about 9 px at D. The board is taller (0.2 -> 0.34) and a little wider than the
   // crossbar, and the word is fitted to its width, so the letters stand about twice as tall.
   const W = 1.34, H = 0.34;
