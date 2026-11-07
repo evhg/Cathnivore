@@ -2642,7 +2642,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** all six chapters reachable without page scroll at 1440x900; no empty band over 120 px; locked vignettes all distinct; campaign specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 258. [ ] NIGHT SHIFT: a neon sign you can read, off her silhouette
+## 258. [ ] NIGHT SHIFT: a neon sign you can read, off her silhouette *(lane A, in progress)*
 - **Why:** `plan1107e/ns-title-D` (885-1045 x 200-330): pink neon strokes cage her head; `ns-play-D` (590-680 x 130-400) two pink arcs that read as nothing.
 - **Build:** one legible sign (a bar's name in neon script) placed clear of her figure, with an occasional flicker (none under reduced motion).
 - **Accept:** the sign's projected box meets her figure box under 5%; its word readable in the shot; cathode-front and classpick pass; shots P and D.
