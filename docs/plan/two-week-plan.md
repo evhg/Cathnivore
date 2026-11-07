@@ -2456,7 +2456,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or checked and left with the reason; shots before and after; the specs for each screen pass.
 - **Size:** 1
 
-## 229. [ ] Runnel: a rainy valley that stays a picture
+## 229. [ ] Runnel: a rainy valley that stays a picture *(lane B, in progress)*
 - **Why:** `plan1107a/runnel-D` (390-1410 x 20-880), `runnel-P` (5-385 x 195-775): under "Dusk, light drizzle" about 80% of the frame is flat slate grey, the fields have no crop colour, hedges are black dotted lines and the shrubs are near-black discs that read as holes ((585,355), (690,470), (725,620), (650,795) at D). Weather desaturates the valley instead of lighting it (VISION: warm paper, flat colour).
 - **Build:** weather as a light over a coloured valley: crops keep their hue (about 70% chroma) with a wet sheen and puddles catching the sky; rain as slanted streaks; dusk an amber-to-violet sky with warm rims and the spring house's windows lit; shrubs drawn with a highlight and a contact shadow, never a flat dark disc.
 - **Accept:** for every weather and time of day the valley layer's mean OKLCH chroma 0.04 or more and mean L 0.45 or more (unit, on the palette); no shrub fill under L 0.3; tiles keep 3:1 against the fields; runnel specs pass; shots P and D at drizzle, dusk and midday.
