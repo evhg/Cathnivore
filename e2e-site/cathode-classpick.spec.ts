@@ -9,6 +9,11 @@ type Front = { cathodeFront?: { ready: boolean; scene: () => { dressed: string |
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
 
+/** Picks a class the way the layout offers it: the names' rack at D, the page dots on an upright phone (item 245). */
+async function pick(page: Page, cls: string, hasTouch: boolean): Promise<void> {
+  await page.locator(`${hasTouch ? '.cp-dot' : '.cp-opt'}[data-cls=${cls}]`).click()
+}
+
 async function fresh(page: Page, hasTouch: boolean): Promise<void> {
   await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   await page.goto('/nightshift/?shot')
@@ -29,7 +34,7 @@ test('a ?play case file turns Cath to the camera, in a different look for each c
   // Plan item 140: her painted face changes with the class (the ghost set, the wirewitch winking).
   const faces: Record<string, string | null> = {}
   for (const cls of CLASSES) {
-    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    await pick(page, cls, hasTouch)
     await expect.poll(dressed, { timeout: 30_000 }).toBe(cls)
     faces[cls] = await page.locator('canvas[data-expression]').first().getAttribute('data-expression')
     // Each class's own kit over the coat (the rifle sling, the apron, the holster, the wire rig, the tie).
@@ -76,15 +81,19 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   expect(ratio).toBeGreaterThanOrEqual(4.5)
   await page.addStyleTag({ content: '.cp-attrs { visibility: visible !important; }' })
   if (!hasTouch) return
-  // The names: 14 px or more, none overlapping another.
-  const names = await page.locator('.cp-opt-name').evaluateAll((els) =>
-    els.map((e) => {
-      const r = e.getBoundingClientRect()
-      return { size: parseFloat(getComputedStyle(e).fontSize), left: r.left, right: r.right, top: r.top, bottom: r.bottom }
-    }),
-  )
-  for (const n of names) expect(n.size).toBeGreaterThanOrEqual(14)
-  for (let i = 1; i < names.length; i++) expect(names[i]!.left).toBeGreaterThanOrEqual(names[i - 1]!.right)
+  // Plan item 245: no row of names shows; the class is named in the display face at 40 px or more, whole on the
+  // screen, with a page dot per class (the names' row stays in the DOM for keyboards and screen readers).
+  const plate = await page.evaluate(() => {
+    const n = document.querySelector<HTMLElement>('.cp-nameplate')!
+    const r = n.getBoundingClientRect()
+    const list = document.querySelector('.cp-list')!.getBoundingClientRect()
+    return { text: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), left: r.left, right: r.right, sw: n.scrollWidth, cw: n.clientWidth, list: list.width * list.height, dots: document.querySelectorAll('.cp-dot').length }
+  })
+  expect(plate.text).toBe('Ghost')
+  expect(plate.size, JSON.stringify(plate)).toBeGreaterThanOrEqual(40)
+  expect(plate.left >= 0 && plate.right <= 390 && plate.sw <= plate.cw + 1, JSON.stringify(plate)).toBe(true)
+  expect(plate.list, JSON.stringify(plate)).toBeLessThanOrEqual(1)
+  expect(plate.dots).toBe(5)
   // Plan item 125: the whole file is one screen at 390x844 and 375x667: every stat, the weapon and the hold bar
   // inside the viewport with no scroll, text 12 px or more; her quote unfolds behind a tap.
   for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
@@ -181,10 +190,10 @@ test('a class change starts its audition at once, her face framed and her line s
   const W = hasTouch ? 390 : 1440
   const H = hasTouch ? 844 : 900
   // Plan item 138: every name in the row is whole on screen (the phone row once cut WIREWITCH and hid FIXER).
-  const tabs = await page.locator('.cp-opt').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [r.left, r.right] as [number, number] }))
+  const tabs = await page.locator(hasTouch ? '.cp-dot' : '.cp-opt').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [r.left, r.right] as [number, number] }))
   for (const [l, r] of tabs) expect(l >= 0 && r <= W, JSON.stringify(tabs)).toBe(true)
   for (const cls of [...CLASSES.slice(1), 'ghost']) {
-    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    await pick(page, cls, hasTouch)
     // Started within the click's own task: no frame needs to pass.
     const v = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette)
     expect(v?.kind, cls).toBe(cls)
@@ -273,7 +282,7 @@ test('the class weapon lies on the armoury case table and changes with the class
   await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
   const prop = page.locator('[data-armoury-prop]')
   for (const cls of CLASSES) {
-    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    await pick(page, cls, hasTouch)
     await expect(prop).toHaveAttribute('data-armoury-prop', cls)
     const w = (await prop.locator('.cp-prop').boundingBox())!.width
     expect(w, cls).toBeGreaterThanOrEqual(hasTouch ? 140 : 200)
@@ -322,4 +331,49 @@ test('at D the classes are a lit rack with no empty band under them; keys move t
   await page.locator('.cp-opt[data-cls=gunslinger]').focus()
   await page.keyboard.press('ArrowDown')
   await expect(page.locator('.cp-opt[data-cls=wirewitch]')).toHaveAttribute('aria-checked', 'true')
+})
+
+// Plan item 245: on an upright phone a swipe across her changes class and pose, the class title follows (40 px or
+// more and whole for every class, Gunslinger and Wirewitch shrunk to fit), and arrows and keys 1-5 still move it.
+test('on a phone a swipe changes the class, its title large and whole; keys still work', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone')
+  test.setTimeout(300_000)
+  await fresh(page, true)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
+  await expect.poll(() => page.evaluate(() => (window as unknown as Front).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
+  const canvas = page.locator('canvas[data-class]').first()
+  const swipe = (dx: number) =>
+    page.evaluate((dx) => {
+      const cp = document.querySelector('.cp')!
+      const at = (type: string, x: number) => cp.dispatchEvent(new PointerEvent(type, { pointerType: 'touch', pointerId: 7, clientX: x, clientY: 300, bubbles: true }))
+      at('pointerdown', 200)
+      at('pointerup', 200 + dx)
+    }, dx)
+  for (const cls of CLASSES.slice(1)) {
+    await swipe(-120)
+    await expect(page.locator('.cp')).toHaveAttribute('data-class', cls)
+    await expect(canvas).toHaveAttribute('data-class', cls, { timeout: 5000 })
+    await expect(page.locator(`.cp-dot[data-cls=${cls}]`)).toHaveClass(/is-on/)
+    await page.waitForTimeout(400) // the title's 250 ms slide in
+    const m = await page.locator('.cp-nameplate').evaluate((n) => {
+      const r = n.getBoundingClientRect()
+      return { text: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), left: r.left, right: r.right, sw: n.scrollWidth, cw: n.clientWidth }
+    })
+    const s = JSON.stringify({ cls, m })
+    expect(m.text?.toLowerCase(), s).toBe(cls)
+    expect(m.size, s).toBeGreaterThanOrEqual(40)
+    expect(m.left >= 0 && m.right <= 390 && m.sw <= m.cw + 1, s).toBe(true)
+  }
+  // A swipe the other way steps back; a short or upright drag does nothing.
+  await swipe(120)
+  await expect(page.locator('.cp')).toHaveAttribute('data-class', 'wirewitch')
+  await swipe(30)
+  await expect(page.locator('.cp')).toHaveAttribute('data-class', 'wirewitch')
+  await page.keyboard.press('2')
+  await expect(page.locator('.cp')).toHaveAttribute('data-class', 'butcher')
+  await page.locator('.cp-opt[data-cls=butcher]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.cp')).toHaveAttribute('data-class', 'gunslinger')
+  await expect(page.locator('.cp-nameplate')).toHaveText('Gunslinger')
 })

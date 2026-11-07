@@ -94,6 +94,21 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const words = el("div", "cp-words", left);
   words.setAttribute("aria-live", "polite");
   const kicker = el("p", "cp-kicker", words);
+  // Plan item 245: on an upright phone the chosen class is named large over her lower third, with a page dot per
+  // class under it (a dot tap or a swipe across her changes class); the names' row is kept for keyboards and
+  // screen readers but visually hidden there. Both are hidden elsewhere, where the names' column does this.
+  const nameplate = el("p", "cp-nameplate", words);
+  nameplate.setAttribute("aria-hidden", "true");
+  const dots = el("div", "cp-dots", words);
+  dots.setAttribute("aria-hidden", "true");
+  const dotFor = new Map<ClassId, HTMLButtonElement>();
+  for (const cls of CLASS_IDS) {
+    const d = button("cp-dot", dots);
+    d.tabIndex = -1;
+    d.dataset.cls = cls;
+    d.addEventListener("click", () => select(cls, false));
+    dotFor.set(cls, d);
+  }
   // Plan item 125: on an upright phone her quote is folded behind a tap so the whole file fits one screen; the
   // toggle is hidden elsewhere, where the quote always shows.
   const fold = button("cp-fold", words);
@@ -188,6 +203,17 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const subRO = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => placeSub());
   for (const e of [left, sheet, words]) subRO?.observe(e);
 
+  // The phone's class title is as large as the longest name allows: a long one (Gunslinger, Wirewitch) shrinks
+  // to the column's width rather than running off the screen.
+  function fitName(): void {
+    nameplate.style.removeProperty("--np-fit");
+    const w = nameplate.clientWidth;
+    const sw = nameplate.scrollWidth;
+    if (w > 0 && sw > w) nameplate.style.setProperty("--np-fit", (Math.floor((w / sw) * 1000) / 1000).toFixed(3));
+  }
+  addEventListener("resize", fitName);
+  void document.fonts?.ready.then(() => fitName());
+
   let countRaf = 0;
   function renderDetail(): void {
     const cls = selected;
@@ -204,10 +230,13 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       root.classList.add("cp-swap");
     }
     kicker.textContent = def.fantasy.replace(/\.$/, "");
+    nameplate.textContent = def.name;
+    fitName();
+    for (const [c, d] of dotFor) d.classList.toggle("is-on", c === cls);
     line.textContent = `“${copy.line}”`;
     plays.textContent = copy.playsLike;
     speak(copy.line);
-    for (const e of [kicker, line, plays]) {
+    for (const e of [kicker, nameplate, line, plays]) {
       e.classList.remove("is-in");
       void e.offsetWidth;
       e.classList.add("is-in");
@@ -377,7 +406,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   let swipe: { x: number; y: number; id: number } | null = null;
   root.addEventListener("pointerdown", (e) => {
     const t = e.target as HTMLElement;
-    swipe = e.pointerType === "touch" && !list.contains(t) && !go.contains(t) && !fold.contains(t) ? { x: e.clientX, y: e.clientY, id: e.pointerId } : null;
+    swipe = e.pointerType === "touch" && !list.contains(t) && !go.contains(t) && !fold.contains(t) && !dots.contains(t) ? { x: e.clientX, y: e.clientY, id: e.pointerId } : null;
   });
   root.addEventListener("pointerup", (e) => {
     if (!swipe || e.pointerId !== swipe.id || done) return;
@@ -404,6 +433,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);
     removeEventListener("resize", placeSub);
+    removeEventListener("resize", fitName);
     subRO?.disconnect();
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("keyup", onKeyUp, true);
