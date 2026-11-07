@@ -187,7 +187,7 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
     [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => {
       const coin = b.querySelector('.level-num')!.getBoundingClientRect()
       const mark = b.querySelector('.level-num .level-landmark')
-      return { w: coin.width, h: coin.height, mark: !!mark, badge: b.querySelector('.level-num .level-n')?.textContent, locked: b.disabled, grey: mark ? getComputedStyle(mark).filter.includes('grayscale(1)') : false }
+      return { w: coin.width, h: coin.height, mark: !!mark, art: mark?.getAttribute('data-stop-art'), next: b.classList.contains('next'), pennant: getComputedStyle(b.querySelector('.level-num')!, '::after').animationName, badge: b.querySelector('.level-num .level-n')?.textContent, locked: b.disabled, grey: mark ? getComputedStyle(mark).filter.includes('grayscale(1)') : false }
     }),
   )
   expect(nodes).toHaveLength(10)
@@ -196,7 +196,11 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
     expect(n.mark).toBe(true)
     expect(n.badge).toBe(String(i + 1))
     expect(n.grey).toBe(n.locked)
+    // Plan item 241: each stop its own painted landmark; the next one flies a bobbing pennant.
+    expect(n.art, `node ${i + 1}`).toBeTruthy()
+    if (n.next) expect(n.pennant).toBe('pennant-bob')
   })
+  expect(new Set(nodes.map((n) => n.art)).size).toBeGreaterThanOrEqual(8)
 })
 
 // Plan item 153: the journey is one painted country: every act in the one scroller, those past the last open act in

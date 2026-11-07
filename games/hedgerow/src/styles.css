@@ -4840,6 +4840,39 @@ img.act-scene {
   stroke-linejoin: round;
 }
 #screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
+/* Plan item 241: each stop's landmark is painted with its own patch of ground, so it fills more of the coin; a
+   locked one drops its shading and light (`data-sh`) and keeps the pencil line. */
+#screen-select .node .level-num.vignette .level-landmark { inset: 6% 8% 8%; }
+#screen-select .node:disabled .level-num.vignette .level-landmark [data-sh] { display: none; }
+/* The next stop flies a pennant on a pole, bobbing slowly (still under reduced motion). */
+#screen-select .node.next .level-num::before {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: 70%;
+  width: 2px;
+  height: 26px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--map-pole-lit), var(--map-pole-shade));
+}
+#screen-select .node.next .level-num::after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  bottom: calc(70% + 12px);
+  width: 18px;
+  height: 13px;
+  background: linear-gradient(180deg, var(--map-flag-gold-lit), var(--map-flag-gold));
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  #screen-select .node.next .level-num::after { animation: pennant-bob 1.2s ease-in-out infinite; }
+}
+@keyframes pennant-bob {
+  0%, 100% { transform: translateY(0) skewY(0deg); }
+  50% { transform: translateY(-2px) skewY(-6deg); }
+}
 @media (prefers-color-scheme: dark) {
   #screen-select .node:disabled .level-num.vignette .level-landmark { filter: grayscale(1); opacity: 1; }
 }
