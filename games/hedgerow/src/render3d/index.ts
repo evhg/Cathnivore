@@ -2443,12 +2443,18 @@ export class Renderer3D {
       shown.leads.push({ x: cx - half, y: top, w: half * 2, h: Math.max(8, foot - top) });
     }
     this.queuePlates.forEach((el, i) => {
-      if (this.plateTown && !el.dataset.town) {
-        el.dataset.town = this.plateTown;
-        const town = document.createElement("span");
-        town.className = "gate-plate-town";
-        town.textContent = this.plateTown;
-        el.prepend(town);
+      // Plan item 240: the plate names the town only while the gate's board is stepped down; it took the name once
+      // (say in the opening frame) and kept it, so at D the board and the plate both read HOLLOWELL, stacked.
+      if ((el.dataset.town ?? "") !== this.plateTown) {
+        el.querySelector(".gate-plate-town")?.remove();
+        delete el.dataset.town;
+        if (this.plateTown) {
+          el.dataset.town = this.plateTown;
+          const town = document.createElement("span");
+          town.className = "gate-plate-town";
+          town.textContent = this.plateTown;
+          el.prepend(town);
+        }
       }
       const at = this.queueAnchors[i]!;
       // Plan item 179: the count hangs on its depot's fascia while the depot is in the frame; the plate keeps
