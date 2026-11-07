@@ -319,6 +319,8 @@ function placeWeekValley(): void {
     const start = firstSpot(el.dataset.day ?? '')
     for (let k = 0; k < SPOTS.length && !placed; k++) {
       const [px, py] = SPOTS[(start + k) % SPOTS.length]!
+      // Plan item 259: an everyday prop stands on the fields, not on the hill crest against the sky.
+      if (el.classList.contains('valley-prop') && py < 30) continue
       const x = st.left + (st.width * px) / 100, y = st.top + (st.height * py) / 100
       const box = new DOMRect(x - size / 2, y - size, size, size)
       const meets = (r: DOMRect) => r.left < box.right && box.left < r.right && r.top < box.bottom && box.top < r.bottom

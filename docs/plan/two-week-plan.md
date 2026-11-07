@@ -2648,7 +2648,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the sign's projected box meets her figure box under 5%; its word readable in the shot; cathode-front and classpick pass; shots P and D.
 - **Size:** 1
 
-## 259. [ ] The bugs from the 2026-11-07 13:50 critique, fixed as one batch *(lane B, in progress)*
+## 259. [ ] The bugs from the 2026-11-07 13:50 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 13:40 lane B: Runnel's everyday props keep to the fields (no spot above 30% of the frame), so none floats on the hill crest)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107e`)
   - **Site:** D: the kicker touches the awning's scallops (615-1015 x 84-102).
   - **Hedgerow:** D l34: Cath's bubble over the inner lane's edge (775-860 x 370-480). P l21: '216 coming' on the first plot row (55-135 x 343-362). D 3D l21: red and yellow blocks in the far margin unreadable (35-90 x 190-240, 400-450 x 85-105; possibly capture timing).
