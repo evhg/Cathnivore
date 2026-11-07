@@ -693,9 +693,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Jaw: below the cheekbones the sides draw in, the chin comes forward.
       if (y < 0) {
         const k = -y;
-        x *= 1 - 0.32 * k * k;
+        // Plan item 260: a heart-shaped face, not an egg: the cheeks draw in sooner (k^1.5, so no crease at the
+        // cheekbone line) to a narrower, pointed chin.
+        x *= 1 - 0.5 * Math.pow(k, 1.5);
         z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
-        y *= 1.06;
+        y *= 1.03;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       const nose = Math.max(0, 1 - Math.hypot(x / 0.13, (y + 0.2) / 0.26)) * front;
@@ -762,8 +764,27 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blob(0, 0.0, 0.004, 0.02, "rgba(255,232,218,A)", 0.4); // the bridge of the nose
       blob(0, 0.05, 0.02, 0.016, "rgba(255,230,214,A)", 0.22); // the forehead
       blob(0, -0.074, 0.01, 0.006, "rgba(255,228,212,A)", 0.3); // the chin
+      // Plan item 260: the underside of the jaw in shadow, so the chin ends in a turned edge, not a pale flat.
+      blob(0, -0.1, 0.07, 0.02, "rgba(120,66,58,A)", 0.55);
       blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.4); // under the nose
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
+      // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
+      // contour under the cheekbones, so the face has planes at title distance rather than reading as a smooth egg.
+      g.strokeStyle = "rgba(128,70,58,0.55)";
+      g.lineCap = "round";
+      g.lineWidth = 0.0016;
+      g.beginPath();
+      g.moveTo(-0.0055, 0.004);
+      g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
+      g.stroke();
+      blob(0.001, -0.019, 0.006, 0.004, "rgba(255,236,222,A)", 0.45);
+      g.fillStyle = "rgba(96,48,42,0.7)";
+      for (const sx of [-1, 1]) {
+        g.beginPath();
+        g.ellipse(0.0045 * sx, -0.0245, 0.0022, 0.0011, -0.3 * sx, 0, Math.PI * 2);
+        g.fill();
+        blob(0.058 * sx, -0.052, 0.012, 0.018, "rgba(140,78,70,A)", 0.3);
+      }
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
       for (const sx of [-1, 1]) {
         // Plan item 140: at title distance (a 120 px face) item 9's eyes read as two dots; 1.3x again, set a little
@@ -801,16 +822,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
         };
         g.save();
         almond();
-        g.fillStyle = "#efe6e0";
+        // Plan item 260: a warmer white (a pure white read as a doll's stare under the toon key).
+        g.fillStyle = "#e4d4cb";
         g.fill();
         g.clip();
         const ix = ex + 0.0012 * E * sx;
         // A hazel iris: a warm amber ring round the pupil, darkening to a limbal ring at the edge.
-        const ir = 0.0068 * E;
+        // Plan item 260: a larger iris, less white round it (the bible's "large bright eyes" are the iris).
+        const ir = 0.0082 * E;
         const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
         // Plan item 205: a deeper hazel, so the eye holds as a dark shape at title distance (3:1 on the cheek).
-        iris.addColorStop(0, "#4e3016");
-        iris.addColorStop(0.45, "#6e4620");
+        // Plan item 260: a warm amber core, so the iris reads hazel under the toon flats rather than grey.
+        iris.addColorStop(0, "#6a4218");
+        iris.addColorStop(0.45, "#80521f");
         iris.addColorStop(0.8, "#32200f");
         iris.addColorStop(1, "#1e120a");
         g.fillStyle = iris;
@@ -824,7 +848,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.strokeStyle = "#24160c";
         g.stroke();
         g.beginPath();
-        g.ellipse(ix, ey + 0.0004, 0.0037 * E, 0.0037 * E, 0, 0, Math.PI * 2);
+        g.ellipse(ix, ey + 0.0004, 0.0046 * E, 0.0046 * E, 0, 0, Math.PI * 2);
         g.fill();
         // The lid's shadow across the top of the iris.
         g.fillStyle = "rgba(40,20,16,0.6)";
@@ -846,11 +870,23 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 205: a heavier upper line and a longer wing (the liner is what reads at title distance).
         g.lineTo(ox + 0.0076 * E * sx, ey + hh * 1.45);
         g.lineTo(ox - 0.0005 * E * sx, ey + hh * 1.05);
-        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 2.9, ex - hw * 0.5 * sx, ey + hh * 2.6, ex - hw * sx * 1.02, ey - 0.0002);
+        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 3.5, ex - hw * 0.5 * sx, ey + hh * 3.0, ex - hw * sx * 1.02, ey - 0.0002);
         g.closePath();
         g.fill();
-        g.strokeStyle = "rgba(30,16,12,0.85)";
+        // Plan item 260: three lashes flicked out from the outer half of the lid, so the liner reads as lashes too.
+        g.strokeStyle = "#120a08";
+        g.lineCap = "round";
         g.lineWidth = 0.0016 * E;
+        for (const [f, l] of [[0.25, 0.0042], [0.55, 0.0052], [0.82, 0.0058]] as const) {
+          const lx = ex + hw * (f * 2 - 1) * 0.9 * sx;
+          const ly = ey + hh * (1.9 - 0.9 * f * f);
+          g.beginPath();
+          g.moveTo(lx, ly);
+          g.quadraticCurveTo(lx + l * 0.35 * sx, ly + l * 0.8, lx + l * 0.9 * sx, ly + l * 0.95);
+          g.stroke();
+        }
+        g.strokeStyle = "rgba(30,16,12,0.9)";
+        g.lineWidth = 0.002 * E;
         g.beginPath();
         g.moveTo(ex - hw * 0.7 * sx, ey - hh * 0.95);
         g.quadraticCurveTo(ex + hw * 0.3 * sx, ey - hh * 1.35, ex + hw * sx, ey + hh * 0.1);
@@ -1123,6 +1159,61 @@ export function buildFrontCath(phone: boolean): FrontCath {
         }
       }
       for (let a = 0; a < ALONG; a++)
+        for (let j = 0; j < 2; j++) {
+          const p0 = base + a * 3 + j;
+          const p1 = p0 + 3;
+          lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
+        }
+    }
+    // Plan item 260: two curtains framing her face from the centre parting, over the temples, down past the cheeks
+    // and the jaw to the front of her shoulders, waved, so the hair reads as long soft waves round the face (the
+    // bible's look) rather than a cap behind it. Kept just off the skull (`skullZ`); the lower lengths sway.
+    const skullZ = (x: number, y: number): number => {
+      const k = y < 0 ? Math.min(1, -y / 0.098 / 1.03) : 0;
+      const xn = x / 0.072 / (1 - 0.5 * Math.pow(k, 1.5));
+      const yn = y / (y < 0 ? 0.098 * 1.03 : 0.098);
+      const r = 1 - xn * xn - yn * yn;
+      return r > 0 ? 0.01 + 0.088 * Math.sqrt(r) : -1;
+    };
+    for (const sx of [-1, 1]) {
+      const keys = [
+        capShape(0.1, 0.1 * sx, 0.04).applyMatrix4(capPlace),
+        capShape(0.55, 0.36 * sx, 0.05).applyMatrix4(capPlace),
+        capShape(0.97, 0.62 * sx, 0.045).applyMatrix4(capPlace),
+        V(0.07 * sx, -0.012, 0.036),
+        V(0.064 * sx, -0.07, 0.03),
+        V(0.074 * sx, -0.122, 0.034),
+        V(0.094 * sx, -0.18, 0.04),
+        V(0.104 * sx, -0.25, 0.046),
+      ];
+      const curve = new THREE.CatmullRomCurve3(keys, false, "centripetal");
+      const N = 28;
+      const base = lp.length / 3;
+      const tan = new THREE.Vector3();
+      const nrm = new THREE.Vector3();
+      const side = new THREE.Vector3();
+      for (let a = 0; a <= N; a++) {
+        const s = a / N;
+        const c = curve.getPoint(s);
+        curve.getTangent(s, tan);
+        nrm.set(c.x, c.y > 0 ? c.y * 0.6 : 0, c.z - 0.0).normalize();
+        side.crossVectors(tan, nrm).normalize();
+        // Narrow at the parting, full past the cheek, then to a point; a soft wave across the lower length.
+        const w = (0.008 + 0.016 * Math.min(1, s / 0.4)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.6) / 0.4), 2));
+        const wave = s > 0.45 ? Math.sin((s - 0.45) * 22) * 0.006 : 0;
+        for (let j = 0; j < 3; j++) {
+          const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
+          q.x += wave * sx;
+          q.addScaledVector(nrm, j === 1 ? 0.004 : 0);
+          // Off the face: never inside the skull where the curtain passes in front of it.
+          if (q.y < 0.04 && q.y > -0.11) q.z = Math.max(q.z, skullZ(q.x, q.y) + 0.005 + (j === 1 ? 0.003 : 0));
+          lp.push(q.x, q.y, q.z);
+          luv.push(0.2 + (sx + 1) * 0.6 + (j - 1) * 0.16, 1 - (0.06 + s * 0.7));
+          const r = Math.max(0, (s - 0.5) / 0.5) * hairRows * 0.7;
+          lockAtArr.push(sx > 0 ? cols : 0, r);
+        }
+      }
+      for (let a = 0; a < N; a++)
         for (let j = 0; j < 2; j++) {
           const p0 = base + a * 3 + j;
           const p1 = p0 + 3;
