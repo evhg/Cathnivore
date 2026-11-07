@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
 import { plotLooks, type PlotLook } from "../plotlook";
-import { rng } from "../theme";
+import { drawDecor, rng } from "../theme";
 import { actLight } from "./palette";
 import {
   buildBoat,
@@ -1221,6 +1221,7 @@ export function buildGround(level: Level): Ground {
     ])
       if (m) group.add(m);
   }
+  if (act === 7 || act === 8) addAdverts(group, level, cols, rows, heightAt);
   if (act === 8) {
     // The Merger: the corporations moving in. Grey glass office blocks on the skyline, and a chain-link fence of
     // grey posts where the hedge used to run thin.
@@ -1592,4 +1593,45 @@ export function buildGround(level: Level): Ground {
     }
   };
   return { group, heightAt, farmhouse, water, lamps, update };
+}
+
+/**
+ * Plan item 224: Hollowell's adverts on the far verge of its own acts (the Ballot, the Merger): three boards facing
+ * the camera, each a different face, their textures drawn by the 2D field's billboard painter (theme.ts).
+ */
+function addAdverts(group: THREE.Group, level: Level, cols: number, rows: number, heightAt: (x: number, z: number) => number): void {
+  if (typeof document === "undefined") return;
+  const W = 300;
+  const H = 150;
+  let k = 0;
+  // On the side verges (the far verge sits past the camera's top edge), turned a little towards the camera.
+  const spots: Array<[number, number, number]> = [
+    [-1.8, rows * 0.45, 0.5],
+    [cols + 1.8, rows * 0.3, -0.5],
+    [-1.8, rows * 0.8, 0.5],
+    [cols + 1.8, rows * 0.65, -0.5],
+  ];
+  for (const [x, z, ry] of spots) {
+    if (k >= 3) break;
+    if (laneDistance(level, x, z) < 1.3) continue;
+    const c = document.createElement("canvas");
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    const pick = (k++ + 0.5) / 4;
+    drawDecor(ctx, "billboard", W / 2, H - 2, 120, () => pick);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const board = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.0, 1.0).translate(0, 0.5, 0),
+      new THREE.MeshStandardMaterial({ map: tex, transparent: true, alphaTest: 0.4, roughness: 0.55, side: THREE.DoubleSide }),
+    );
+    board.position.set(x, heightAt(x, z), z);
+    board.rotation.y = ry;
+    board.name = "advert";
+    board.userData.advert = pick;
+    group.add(board);
+  }
 }
