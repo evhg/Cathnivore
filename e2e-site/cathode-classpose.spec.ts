@@ -24,7 +24,8 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
   await expect.poll(async () => (await pose())?.kind ?? null, { timeout: 200_000 }).toBe('ghost')
   const hands: Record<string, Pose['hand']> = {}
   for (const cls of [...CLASSES.slice(1), 'ghost']) {
-    await page.locator(`.cp-opt[data-cls=${cls}]`).click()
+    // An upright phone picks by page dot (item 245 hid the names' row there).
+    await page.locator(`${hasTouch ? '.cp-dot' : '.cp-opt'}[data-cls=${cls}]`).click()
     await expect(page.locator('.cp')).toHaveAttribute('data-class', cls)
     // Settled: the new class's stance at full weight. The blend's own length is measured on the loop's clock (headless
     // WebGL draws a few frames a second, so wall time says little).
