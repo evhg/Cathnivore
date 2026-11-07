@@ -2591,7 +2591,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the board 700 px wide or more at 1440x900 and 620 at 1280x800, no scroll at either; pieces 48 px or more at 1440; every tile kind has an idle animation (`data-idle`), none under reduced motion; board-scale, desktop-no-scroll, table-cath, suggest-move, critique177 pass; P unchanged; shots D, D2 (1280x800), light and dark.
 - **Size:** 3
 
-## 250. [ ] Hedgerow: Cath hosts the field and walks the map
+## 250. [ ] Hedgerow: Cath hosts the field and walks the map *(lane B, in progress)*
 - **Why:** `plan1107d/hedge-l21-2d-D` (300-345 x 635-715): in 2D play she is a 40 px sprite; on the D journey map (`hedge-menu-D`, 310-340) about 25 px wide. Her advice bubble has no face beside it on the field.
 - **Build:** a portrait host card beside her round advice on the field (2D and 3D) that changes expression on a leak (worried), a clean round (delighted), a boss arrival (determined) and a tower bought (smile), from the shared `shared/cath/` faces; on the journey map she stands at the current stop, 120 px tall at D, and walks the lane to the next stop after a win (once, a fade under reduced motion).
 - **Accept:** the portrait 96 px or more at D and 64 at P; its expression changes within 250 ms of a leak (`data-expr`, tested); map Cath 120 px tall at D, 64 at P, at the current stop; the walk runs once per new win; hedgerow-map, closeframe, 3dframe pass; shots P and D, 2D and 3D, map fresh and mid.
