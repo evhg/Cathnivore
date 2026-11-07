@@ -3700,7 +3700,8 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
       linear-gradient(90deg, transparent 32.8%, color-mix(in srgb, var(--ink) 9%, transparent) 33.3%, transparent 34%, transparent 65.8%, color-mix(in srgb, var(--paper-hi) 60%, transparent) 66.3%, transparent 67%),
       linear-gradient(90deg, color-mix(in srgb, var(--ink) 4%, transparent) 0 33.3%, transparent 33.3% 66.6%, color-mix(in srgb, var(--ink) 3%, transparent) 66.6%),
       var(--mat-paper);
-    box-shadow: 0 1px 0 var(--rule), 0 5px 9px color-mix(in srgb, var(--ink) 16%, transparent);
+    /* Plan item 266: a hairline edge, so an unpicked map reads as a card on the gingham, not a pale patch of it */
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 24%, transparent), 0 1px 0 var(--rule), 0 5px 9px color-mix(in srgb, var(--ink) 18%, transparent);
   }
   .setup .setup-table .layout-tile:has(input:checked) {
     transform: translateY(-4px) rotate(var(--lay, 0deg)) scale(1.03);
