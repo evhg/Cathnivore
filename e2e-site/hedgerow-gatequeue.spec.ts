@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 72: between rounds the next round queues at the Hollowell gate. On levels 1, 12 and 40 the field draws
 // the round's leads and a count plate inside the canvas (the plate never on a lead), Go clears the queue, and
 // Cath's notebook is never empty.
-type Box = { x: number; y: number; w: number; h: number }
+type Box = { x: number; y: number; w: number; h: number; big?: boolean }
 type Hg = { game(): { phase: string; wave: number }; gateQueue(): { leads: Box[]; plates: Box[]; names: Box[] } | null; sendWave(g: unknown): unknown }
 
 async function open(page: Page, level: number): Promise<void> {
@@ -38,9 +38,10 @@ for (const level of [1, 12, 34, 40]) {
     for (const p of q.plates) expect(p.h, JSON.stringify(p)).toBeGreaterThanOrEqual(18)
     for (const p of q.plates) for (const l of q.leads) expect(overlaps(p, l), `plate ${JSON.stringify(p)} on lead ${JSON.stringify(l)}`).toBe(false)
     // Plan item 256: queued vehicles are drawn 1.4x (40 px or more at D, 28 on a phone), and the first to pull out
-    // carries a name plate, inside the field and on no other vehicle or plate.
-    const min = (page.viewportSize()?.width ?? 0) >= 900 ? 40 : 28
-    for (const l of q.leads) expect(l.w, JSON.stringify(l)).toBeGreaterThanOrEqual(min)
+    // carries a name plate, inside the field and on no other vehicle or plate. Plan item 266: only on a lane running
+    // across (side-on sprites overhung the plots on one running up or down); there item 105's floor, 28 / 20.
+    const wide = (page.viewportSize()?.width ?? 0) >= 900
+    for (const l of q.leads) expect(l.w, JSON.stringify(l)).toBeGreaterThanOrEqual(l.big ? (wide ? 40 : 28) : wide ? 28 : 20)
     expect(q.names.length).toBeGreaterThan(0)
     for (const n of q.names) {
       expect(n.x).toBeGreaterThanOrEqual(0)

@@ -881,19 +881,29 @@ export class Renderer {
         const path = ln.lane ? level.path2! : level.path;
         // The first to pull out stands furthest down the lane; the rest wait bumper to bumper behind it, towards
         // the gate (spaced by their sprites' lengths, so lorries don't overlap).
+        // Plan item 266: the 1.4x size only where the lane runs across, straight, for the sprite's length: the sprites
+        // are drawn side-on, so on a lane running up or down, or at a bend, a bigger one overhung the plots.
+        const across = (dd: number) => [dd - 0.4, dd, dd + 0.4].every((x) => {
+          const hh = headingAt(path, Math.max(0, x));
+          return Math.abs(hh.dx) > Math.abs(hh.dy);
+        });
         const dists: number[] = [];
+        const qs: number[] = [];
         let d = 0.15;
         for (let i = ln.leads.length - 1; i >= 0; i--) {
           dists[i] = d;
-          if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * QUEUE_SCALE;
+          qs[i] = across(d) ? QUEUE_SCALE : 1;
+          // (the next one's size isn't known until it's placed: room for it at the bigger size)
+          if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) * qs[i]! + enemyScale(ln.leads[i - 1]!) * QUEUE_SCALE) + 0.06 * QUEUE_SCALE;
         }
         ln.leads.forEach((kind, i) => {
           const d = dists[i]!;
           const p = enemyPoint(level, { dist: d, ...(ln.lane ? { lane: ln.lane } : {}) });
           const hd = headingAt(path, d);
           const gy = p.y + 0.2;
-          const sc = s * QUEUE_SCALE * enemyScale(kind) * 0.55;
-          const box = { x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc };
+          const q = qs[i]!;
+          const sc = s * q * enemyScale(kind) * 0.55;
+          const box = { x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc, big: q > 1 };
           const at = shown.leads.push(box);
           // Plan item 256: the first to pull out carries its name, on its far side from the one behind it, clear of
           // the rest of the queue.
@@ -914,7 +924,7 @@ export class Renderer {
             draw: () => {
               ctx.save();
               ctx.globalAlpha = this.queueAge;
-              drawEnemy(ctx, { kind, facing: hd.dx < 0 ? -1 : 1, hit: 9, ghost: false, phase: i * 0.37, still: true }, X(p.x), Y(gy), s * QUEUE_SCALE, t);
+              drawEnemy(ctx, { kind, facing: hd.dx < 0 ? -1 : 1, hit: 9, ghost: false, phase: i * 0.37, still: true }, X(p.x), Y(gy), s * q, t);
               ctx.restore();
             },
           });
