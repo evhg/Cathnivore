@@ -1,4 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
+Planning: lane A, 2026-11-07T03:22Z
 
 
 
@@ -2480,7 +2481,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 her face box 70 px or more wide, not covered by a card or her bubble; an autoplay e2e sees three or more `data-expression` values; crossfade only under reduced motion; shots D light and dark (P unchanged).
 - **Size:** 2
 
-## 233. [ ] NIGHT SHIFT desktop class pick: the classes as a lit rack *(lane A, in progress)*
+## 233. [x] NIGHT SHIFT desktop class pick: the classes as a lit rack *(done 2026-11-07 03:20, lane A, `9af36e5e`: each row a slot on a hairline shelf, the class's starting weapon in neon outline at its end (80-110 px wide; dim on the rack, lit with a glow when picked) and a four-pip strip (Grit, Aim, Nerve, Wire) under the name; the picked row lifts 14 units on an accent wash with its red rule; rows 112 units tall so the gap from the list to her words is under 120 px at 1440x900 (was about 230). Kept: the class line and quote at the column's foot (they now meet the rack). P and L unchanged (the rack's parts hidden there). cathode-classpick (new lit-rack test), -classstage, -front pass at D; DOM and SVG only, no draw calls added. Shots scratchpad cp233 before/after D and P)*
 - **Why:** `plan1107a/ns-play-D` (0-560 x 150-660): the five classes are grey condensed words (82-330 x 160-415) above an empty black band (0-560 x 430-660); no object per row.
 - **Build:** each row carries its weapon in neon outline (the sheet's silhouette) and a four-pip stat strip; the picked row lifts with its red rule; the class line and quote move up under the list so no band stands empty.
 - **Accept:** at 1440x900 no empty band over 120 px tall in x 0-560; each row's silhouette 48 px or more wide; keys 1-5 and arrows move the pick visibly; cathode classpick, classstage and front specs pass; perf within budget; shots D and P (P unchanged).
