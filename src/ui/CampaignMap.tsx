@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES, MAP_AXIAL, currentChapterIndex, liberatedRegions } from '../content/campaignMap'
@@ -90,6 +90,7 @@ export default function CampaignMap({
   onStart,
   celebrate,
   lit,
+  host,
 }: {
   chapters: Chapter[]
   completed: string[]
@@ -97,6 +98,8 @@ export default function CampaignMap({
   celebrate?: string
   /** Plan item 113: the chapter under the pointer or focus in the list; its home regions glow (`data-lit`). */
   lit?: string
+  /** Plan item 248: on a desktop, Cath's full-length host figure stands in the map's sea beside the island. */
+  host?: ReactNode
 }) {
   const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
   // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
@@ -246,6 +249,7 @@ export default function CampaignMap({
           dangerouslySetInnerHTML={{ __html: cath }}
         />
       </svg>
+      {host && <div className="cmp-map-host">{host}</div>}
       {celebrate && (phase === 'walk' || phase === 'done') && !allDone && (
         <figcaption className="cmp-map-next" role="status">
           <span className="cmp-map-next-kicker">Next stop</span> Chapter {here + 1}: {herChapter.title}

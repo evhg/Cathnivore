@@ -1,3 +1,4 @@
+import { useMedia } from './useMedia'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import type { RegionId } from '../engine/types'
@@ -244,6 +245,35 @@ export default function CampaignScreen({
   const pointed = focused ?? hovered
   const next = chapters.find((c, i) => !completed.includes(c.id) && (i === 0 || completed.includes(chapters[i - 1]!.id)))
   const say = campaignLine(pointed ?? next?.id, done === chapters.length)
+  const wide = useMedia('(min-width: 1100px)')
+  // Plan item 248: Cath hosts the map at full height, head to boots, with her line over her head. On a desktop she
+  // stands on a jetty in the map's own sea beside the island; on a phone she stands beside her line in the header.
+  // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
+  const host = (
+    <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'} data-host={wide ? 'map' : 'header'}>
+      <p className="cmp-cath-line" aria-live="polite">
+        {say.line}
+      </p>
+      <span className="cmp-host-stand">
+        <CathArt
+          className="cmp-header-cath"
+          framing="full"
+          pose={SCREEN_POSE['cathnivore:campaign']}
+          expression={say.expression}
+          animate
+          title="Cath"
+        />
+        {wide && (
+          <svg className="cmp-host-jetty" viewBox="0 0 120 34" aria-hidden="true">
+            <path className="cmp-jetty-post" d="M14 14 V32 M106 14 V32 M60 16 V33" />
+            <path className="cmp-jetty-deck" d="M4 8 H116 L112 18 H8 Z" />
+            <path className="cmp-jetty-plank" d="M22 8 L21 18 M40 8 L39.5 18 M58 8 V18 M76 8 L76.5 18 M94 8 L95 18" />
+            <path className="cmp-jetty-ripple" d="M0 30 q6 -3 12 0 t12 0 M96 31 q6 -3 12 0 t12 0" />
+          </svg>
+        )}
+      </span>
+    </figure>
+  )
   return (
     <main className="campaign campaign-screen">
       <header className="cmp-header">
@@ -264,23 +294,9 @@ export default function CampaignScreen({
             </span>
           </p>
         </div>
-        {/* ROADMAP "Cath on the title, Campaign, setup and end screens with a matching expression":
-            delighted once every chapter is done, her default warm smirk otherwise. */}
-        <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'}>
-          <p className="cmp-cath-line" aria-live="polite">
-            {say.line}
-          </p>
-          <CathArt
-            className="cmp-header-cath"
-            framing="half"
-            pose={SCREEN_POSE['cathnivore:campaign']}
-            expression={say.expression}
-            animate
-            title="Cath"
-          />
-        </figure>
+        {!wide && host}
       </header>
-      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} lit={pointed ?? undefined} />
+      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} lit={pointed ?? undefined} host={wide ? host : undefined} />
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)

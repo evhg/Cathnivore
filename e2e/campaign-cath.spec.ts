@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-// Plan item 113 (slice 1): Cath presents the chapters on the Campaign screen: half-length, 160 px tall at D and
-// 110 on a phone (a round cameo there since item 200), with a speech bubble at 15 px or more whose line follows the chapter under the pointer or focus.
+// Plan item 113 (slice 1): Cath presents the chapters on the Campaign screen (full height since item 248), with a speech bubble at 15 px or more whose line follows the chapter under the pointer or focus.
 test('Cath speaks about the chapter under the pointer or focus', async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })),
@@ -12,11 +11,22 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   await expect(fig).toBeVisible()
   const phone = page.viewportSize()!.width <= 600
   const art = (await page.locator('.cmp-header-cath').boundingBox())!
-  expect(art.height).toBeGreaterThanOrEqual(phone ? 110 : 160)
-  // Plan item 200: on a phone she's a whole cameo (no fade into the paper), inside the viewport.
-  if (phone) {
-    expect(await page.locator('.cmp-header-cath').evaluate((e) => getComputedStyle(e).maskImage)).toBe('none')
-    expect(art.x + art.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+  // Plan item 248: she stands at full height, head to boots, whole on the first screen: 240 px or more at D, beside
+  // the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
+  expect(art.height).toBeGreaterThanOrEqual(phone ? 120 : 240)
+  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '20 20 360 800')
+  const vp = page.viewportSize()!
+  expect(art.x).toBeGreaterThanOrEqual(0)
+  expect(art.y).toBeGreaterThanOrEqual(0)
+  expect(art.x + art.width).toBeLessThanOrEqual(vp.width)
+  expect(art.y + art.height).toBeLessThanOrEqual(vp.height)
+  expect(await page.locator('.cmp-header-cath').evaluate((e) => getComputedStyle(e).maskImage)).toBe('none')
+  if (!phone) {
+    await expect(fig).toHaveAttribute('data-host', 'map')
+    const map = (await page.locator('.cmp-map').boundingBox())!
+    expect(art.x).toBeGreaterThanOrEqual(map.x)
+    expect(art.x + art.width).toBeLessThanOrEqual(map.x + map.width)
+    expect(art.y + art.height).toBeLessThanOrEqual(map.y + map.height)
   }
   const size = await page.locator('.cmp-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))
   expect(size).toBeGreaterThanOrEqual(15)

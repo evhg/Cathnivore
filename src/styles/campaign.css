@@ -54,26 +54,32 @@
   gap: 6px;
 }
 
-/* Plan item 113: Cath presents the chapters: half-length, 160 px tall at D (110 on a phone), with her speech
-   bubble (item 110's) beside her face; the line and her expression follow the chapter under the pointer or
-   focus, else the next one to play. */
+/* Plan item 113: Cath presents the chapters, her speech bubble (item 110's) beside her; the line and her expression
+   follow the chapter under the pointer or focus, else the next one to play. Plan item 248: she stands at full
+   height, head to boots: beside her line in the header on a phone (168 px), and on a desktop on a jetty in the map's
+   sea beside the island (260 px), her line over her head. */
 .cmp-cath {
   display: flex;
   align-items: flex-start;
   gap: 2px;
   margin: 0;
 }
-.cmp-header-cath {
+.cmp-host-stand {
+  position: relative;
   display: block;
   flex: none;
-  height: 160px;
-  aspect-ratio: 2 / 3;
 }
-.cmp-header-cath svg { display: block; width: 100%; height: 100%; }
-/* plan item 139: a half-length figure fades into the paper below her waist instead of stopping on a hard line */
 .cmp-header-cath {
-  -webkit-mask-image: linear-gradient(black 72%, transparent 98%);
-  mask-image: linear-gradient(black 72%, transparent 98%);
+  display: block;
+  height: 168px;
+  aspect-ratio: 360 / 800;
+}
+.cmp-header-cath svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 20%, transparent));
 }
 .cmp-cath-line {
   position: relative;
@@ -97,27 +103,59 @@
   background: inherit;
   clip-path: polygon(0 0, 100% 40%, 0 100%);
 }
-@media (max-width: 600px) {
-  .cmp-cath { width: 100%; justify-content: flex-end; }
-  /* Plan item 200: on a phone a half-length figure fading out under the bubble read as cropped and washed out; she
-     sits in a round cameo instead, head and shoulders, ringed like a portrait on a stall sign. */
-  .cmp-header-cath {
-    height: 110px;
-    aspect-ratio: 1;
-    margin-top: 4px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: radial-gradient(circle at 50% 35%, var(--paper-hi, var(--paper)) 0 55%, var(--paper-2) 100%);
-    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--pasture), 0 4px 10px color-mix(in srgb, var(--ink) 18%, transparent);
-    -webkit-mask-image: none;
-    mask-image: none;
+@media (max-width: 1099px) {
+  .cmp-header .cmp-cath { width: 100%; justify-content: flex-end; }
+  .cmp-header .cmp-cath-line { flex: 1; max-width: 420px; margin-top: 14px; }
+}
+@media (min-width: 601px) and (max-width: 1099px) {
+  .cmp-header-cath { height: 210px; }
+}
+
+/* The desktop host: a column in the map's sea, her line above her, a little jetty under her boots. */
+@media (min-width: 1100px) {
+  .campaign-screen > .cmp-map {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 184px;
+    align-items: end;
   }
-  .cmp-header-cath svg { height: 150%; filter: none; transform: translateY(4%); }
-  .cmp-cath-line { flex: 1; max-width: none; margin-top: 12px; }
+  .cmp-map-host {
+    position: relative;
+    margin-left: -44px;
+    padding-bottom: 6px;
+  }
+  .cmp-map-host .cmp-cath {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .cmp-map-host .cmp-cath-line {
+    max-width: none;
+    margin: 0;
+    font-size: var(--fs-body, 1rem);
+  }
+  .cmp-map-host .cmp-cath-line::after {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: -12px;
+    width: 18px;
+    height: 13px;
+    translate: -50% 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  .cmp-map-host .cmp-header-cath { height: 260px; position: relative; }
+  .cmp-host-jetty {
+    display: block;
+    width: 124px;
+    height: auto;
+    margin: -22px auto 0;
+    overflow: visible;
+  }
 }
-.cmp-header-cath svg {
-  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 20%, transparent));
-}
+.cmp-jetty-deck { fill: color-mix(in srgb, var(--soil) 72%, var(--paper)); stroke: var(--soil); stroke-width: 1.2; stroke-linejoin: round; }
+.cmp-jetty-plank { fill: none; stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 0.9; opacity: 0.6; }
+.cmp-jetty-post { fill: none; stroke: var(--soil); stroke-width: 4; stroke-linecap: round; }
+.cmp-jetty-ripple { fill: none; stroke: color-mix(in srgb, var(--surface) 80%, var(--sea)); stroke-width: 1.4; stroke-linecap: round; }
 
 .cmp-kicker {
   margin: 0;
@@ -935,7 +973,7 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
 @media (min-width: 1100px) {
   .campaign.campaign-screen {
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(380px, 1fr);
+    grid-template-columns: minmax(0, 1.7fr) minmax(380px, 1fr);
     column-gap: 32px;
     align-items: start;
     padding-left: max(32px, calc((100vw - 1320px) / 2));
