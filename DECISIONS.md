@@ -347,3 +347,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-07 lane A: the Role card's foot is a 'Free' pill (a role has no cost; a blank foot read unfinished); the D rail's ledger is a ruled page that fills down to Undo rather than a lone slip (item 225).
 - 2026-11-07 lane A: Runnel's ditch moved under the board (DOM order before #board) and only leaves board-edge field corners; where no route clears Cath and the tiles (Saturday's big daily at P) it stays hidden rather than crossing anything (item 226).
 - 2026-11-07 lane A: e2e-site/runnel-ditch.spec opened '?practice', which Runnel ignores (it is '?mode=practice'), so it tested the date's daily and went red on big Saturday boards; fixed the URL.
+- 2026-11-07 01:23 (lane B): closed lane B's four oldest bug batches (91, 126, 138, 182) as superseded rather than leave them claimed: each later critique re-shot every screen and re-listed what was still open.

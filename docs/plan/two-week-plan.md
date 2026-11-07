@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane B, 2026-11-07 01:23
+
 
 
 
@@ -1290,7 +1292,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** sampled in e2e: tile fill vs field 3:1 or more, channel vs tile 3:1 or more, every weather; greyscale shot readable; runnel e2e still pass; shots P and D.
 - **Size:** 1
 
-## 91. [ ] The bugs from the 2026-11-04 04:10 critique, fixed as one batch *(lane B, in progress)*
+## 91. [x] The bugs from the 2026-11-04 04:10 critique, fixed as one batch *(closed 2026-11-07 lane B: superseded; the critiques since (items 211, 222, 228 and the next) re-shot every screen and re-listed what was still open)*
 - **Build:** (check each first; plan1104a)
   - [x] **Portfolio D:** a stray pill in the stats row (1035-1062 x 780-825); the hero collage's stale shots, near-black NIGHT SHIFT tile, no Hedgerow (805-1345 x 160-650). *(Fixed 2026-11-04 lane B: the scroll cue is hidden at D; Hedgerow is a fourth print (the phone cycles four in 16 s); the NIGHT SHIFT print is brightened 1.5x. The shots are the live key art, re-shot by `npm run keyart`. Shots in `e2e/screenshots/f91/pf-*`.)*
   - [ ] **Cathnivore title D:** the bubble's tail a flat underline not pointing at Cath (650-895 x 370-418). **P:** the bubble squeezes four lines into about 110 px. *(checked 2026-11-05 06:22 lane B: at P the bubble is two lines across 290 px above Cath (item 75's table title); no change; shot `title-P`)*
@@ -1610,7 +1612,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 every stat, the weapon and the call to action fit the viewport with no scroll; text 12 px or more at 4.5:1; cathode-classpick and cathode-perf pass; shots P and L.
 - **Size:** 2
 
-## 126. [ ] The bugs from the 2026-11-04 19:26 critique, fixed as one batch *(lane B, in progress)*
+## 126. [x] The bugs from the 2026-11-04 19:26 critique, fixed as one batch *(closed 2026-11-07 lane B: superseded; the critiques since (items 211, 222, 228 and the next) re-shot every screen and re-listed what was still open)*
 - **Build:** (check each first; plan1104h)
   - [ ] **Hedgerow:** ~~the HOLLOWELL gate plate half clipped at the field's top edge (l34-2d-D 228-307 x 76-94); at P both plates touch the screen's left edge (2-83 x 100-118, 508-526)~~ *(fixed 2026-11-04 lane B: the 2D plate keeps an 8 px or larger gutter inside the field's frame; shots `m127/gate-*`)*; "N coming" plates on plots (l34-2d-D 302-395 x 130-150; l21-2d-D 355-440 x 448-467); Coming up's "22"/"16" touch the panel edge (l34-2d-D 1383-1402 x 628-646). *(Fixed 2026-11-04 lane B: each round's number sits under its vehicle, inside its column, at 1440x900 and 1280x800; shot `m127/coming-*`.)*
   - [ ] **Cathnivore game:** D Cath's bubble a 120 px column of five ragged lines (355-475 x 490-610); *(2026-11-05 04:40 lane B, tried and reverted: a wider column (136-150 px) still reads six lines, and 140 px meets Brindle Hills at 1280 (table-cath.spec); the fix is to lift the bubble into the open cloth beside Highmoor (about 355-600 x 300-430 at 1440) as a wide one- or two-line bubble with its tail down to her)* "STAGE I" about 9 px (845-895 x 103-113); the Not-yet coin chips grey on grey at about 8 px (243-280 x 640-660); P region names about 10 px (100-175 x 257-270). *(2026-11-04 lane B: "STAGE I" was a raw 10 px, now `--fs-label` (12.5 px at D); the Not-yet chip is 11.9 px dark on cream (its greyed coin is the disabled style), no change. Open: the bubble, P region names.)* *(2026-11-05 05:22 lane B: P region names 16.5 to 19.5 board units below 1024 px (text box 16 px at 360 wide, 18 at 390, 20 at 430; no plate meets another; D keeps 14 px); board, threat-badge, closeup and table-cath specs pass; shot `names-P`. Open: the bubble)*
@@ -1712,7 +1714,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** e2e from a save with one case just closed: the polaroid gets `data-struck`, the count drops, and it plays once only; reduced motion: a fade; shots P and D before and after.
 - **Size:** 2
 
-## 138. [ ] The bugs from the 2026-11-04 23:25 critique, fixed as one batch *(lane B, in progress)*
+## 138. [x] The bugs from the 2026-11-04 23:25 critique, fixed as one batch *(closed 2026-11-07 lane B: superseded; the critiques since (items 211, 222, 228 and the next) re-shot every screen and re-listed what was still open)*
 - **Build:** (check each first; plan1104j)
   - [x] **Site /games/ P:** *(checked 2026-11-05 lane A: at 1.2 s the hero has landed, the posters are on the first screen and Cath stands under the quote's end, not on it; shot `g138/games-1200-P`; no change)* the hero never finishes landing in the shot (the logotype blurred 50-280 x 115-170, the buttons at about 30%, no posters on the first screen), and Cath crowds the quote's end (295-370 x 225-260). Check against item 130 and the shot's timing.
   - [x] **NIGHT SHIFT P:** the class tab row cuts "WIREWITCH" (297-390 x 68-82) with FIXER off screen and no scroll cue. *(fixed 2026-11-05 lane A: the five names at --fs-3 on a 64% width (`--wdth-tight`), spread edge to edge, all five on screen from 375 px up, no mask; cathode-classpick asserts it; shot `g138b/after-ghost-P`)*
@@ -2091,7 +2093,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `.stall-hero` holds Cath and `[data-cta="daily"]`; her feet on the counter's line (no floating figure); posters 280 px or more wide at D; a sway of 3 degrees or less over 200 ms, none under reduced motion; `site.spec` passes; shots P and D, light and dark.
 - **Size:** 2
 
-## 182. [ ] The bugs from the 2026-11-05 22:30 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 2026-11-05 22:21 lane B: Hedgerow's round-chip counts at --fs-small; the pencil act's note `text-wrap: balance` (no lone 'it.'); 'OF 26' and 'KEEP GOING' measured at 12 px caps and left)*
+## 182. [x] The bugs from the 2026-11-05 22:30 critique, fixed as one batch *(closed 2026-11-07 lane B: superseded; the critiques since (items 211, 222, 228 and the next) re-shot every screen and re-listed what was still open)* *(slice 1, 2026-11-05 22:21 lane B: Hedgerow's round-chip counts at --fs-small; the pencil act's note `text-wrap: balance` (no lone 'it.'); 'OF 26' and 'KEEP GOING' measured at 12 px caps and left)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1105g`; points already open in 126, 138 and 177 left out)
   - **Cathnivore:** P game: the 'Glut Pasture & Crop -1' ticket over the board frame's top (120-270 x 162-186); the next hand card cut at the right edge with its 'NOT YET' about 10 px (325-385 x 675-770). D game: the Injunction card clipped under Supply (1195-1325 x 765-880); the 'Not yet' shelf's red 'Need N more' about 11 px below AA (35-320 x 545-745). P setup: the sticky Start bar cuts the map cards and hides the seed field (255-390 x 705-770); 'YOU'/'AI' over the chair art (35-105 x 198-215). D title: 'Win a Daily to hang the first pennant' about 13 px white on mid wood, crowded by NEXT (1030-1280 x 763-780).
   - **Hedgerow:** P menu: Act 4's teaser leaves 'it.' alone on its last line (20-370 x 735-770). D l21: the round chips' counts, 'OF 26' and 'KEEP GOING' about 10-11 px (1115-1405 x 668-685, 1340-1400 x 790-815). 3D D l21: Cath's bubble over her head (20-250 x 400-490). 3D P l21: the lane's entry and a cyan gate bar past the left edge (0-75 x 405-440).
