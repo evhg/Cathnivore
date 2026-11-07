@@ -1645,6 +1645,12 @@ function addAdverts(group: THREE.Group, level: Level, cols: number, rows: number
     crayonNextBillboard(k === 1 && isWonLevel(level.id));
     drawDecor(ctx, "billboard", W / 2, H - 2, 120, () => pick);
     crayonNextBillboard(false);
+    // the drawn panel's extent on the texture (the plane is wider and taller than what's painted on it)
+    let [ix0, iy0, ix1, iy1] = [W, H, 0, 0];
+    const px = ctx.getImageData(0, 0, W, H).data;
+    for (let yy = 0; yy < H; yy += 2)
+      for (let xx = 0; xx < W; xx += 2)
+        if (px[(yy * W + xx) * 4 + 3]! > 100) [ix0, iy0, ix1, iy1] = [Math.min(ix0, xx), Math.min(iy0, yy), Math.max(ix1, xx), Math.max(iy1, yy)];
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -1656,6 +1662,13 @@ function addAdverts(group: THREE.Group, level: Level, cols: number, rows: number
     board.rotation.y = ry;
     board.name = "advert";
     board.userData.advert = pick;
+    // the renderer settles it wholly into the fitted view (index.ts settleFar): in toward the field, no nearer than
+    // `inner`, or hidden
+    board.userData.home = x;
+    // the panel's corners in the plane's own units (2 wide, 1 tall, its foot at y 0)
+    board.userData.panel = ix1 > ix0 ? [-1 + (2 * ix0) / W, 1 - iy1 / H, -1 + (2 * ix1) / W, 1 - iy0 / H] : [-1, 0, 1, 1];
+    board.userData.inner = x < 0 ? -1.25 : cols + 1.25;
+    ((group.userData.adverts ??= []) as THREE.Object3D[]).push(board);
     group.add(board);
   }
 }

@@ -2557,6 +2557,21 @@ export class Renderer3D {
 
   /** Plan item 179: the frame the depots were placed for (level, canvas size). */
   private depotKey = "";
+  /** A mesh's own vertices projected (tight for a turned plane, where its world box is not). */
+  private meshRect(o: THREE.Object3D, w: number, h: number, cam: THREE.Camera): Rect {
+    // an advert board: the painted panel's four corners (terrain.ts measures them on its texture)
+    const pn = o.userData.panel as [number, number, number, number] | undefined;
+    if (!pn) return this.boxRect(new THREE.Box3().setFromObject(o), w, h, cam);
+    o.updateMatrixWorld(true);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < 4; i++) {
+      const v = this.v2.set(i & 1 ? pn[2] : pn[0], i & 2 ? pn[3] : pn[1], 0).applyMatrix4(o.matrixWorld).project(cam);
+      const px = (v.x * 0.5 + 0.5) * w;
+      const py = (-v.y * 0.5 + 0.5) * h;
+      x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+    }
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
   private boxRect(b: THREE.Box3, w: number, h: number, cam: THREE.Camera = this.camera): Rect {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (let i = 0; i < 8; i++) {
@@ -2627,7 +2642,8 @@ export class Renderer3D {
     const h = this.canvas.clientHeight;
     const key = `${game.level.id}:${w}x${h}`;
     const anyMoored = !!(this.ground?.group.userData.moored as unknown[] | undefined)?.length;
-    if ((!far.length && !anyMoored) || !w || !h || key === this.farKey) return;
+    const adverts = (this.ground?.group.userData.adverts as THREE.Object3D[] | undefined) ?? [];
+    if ((!far.length && !anyMoored && !adverts.length) || !w || !h || key === this.farKey) return;
     this.farKey = key;
     const cam = this.fittedCamera();
     const at = (o: THREE.Object3D, z: number): Rect => {
@@ -2668,6 +2684,30 @@ export class Renderer3D {
       do r = boat(o, (x -= 0.25));
       while (cut(r) && x > home - 10);
     }
+    // Plan item 224: the side verges' advert boards, likewise wholly in the frame: in toward the field (to the verge's
+    // inner edge) until whole, else not shown (a board sliced by the frame's edge read as a stray block).
+    const sliced = (r: Rect) => r.x < 2 || r.y < 2 || r.x + r.w > w - 2 || r.y + r.h > h - 2;
+    for (const o of adverts) {
+      const home = o.userData.home as number;
+      const inner = o.userData.inner as number;
+      const step = inner > home ? 0.1 : -0.1;
+      o.visible = true;
+      const board = (x: number): Rect => {
+        o.position.x = x;
+        return this.meshRect(o, w, h, cam);
+      };
+      let x = home;
+      let r = board(x);
+      while (sliced(r) && (inner - x) * Math.sign(step) >= 0.1) r = board((x += step));
+      if (sliced(r)) o.visible = false;
+    }
+  }
+  /** Plan item 224 (tests): the shown advert boards' boxes on the canvas (CSS px) at the fitted view. */
+  advertRects(): Rect[] {
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    const cam = this.fittedCamera();
+    return ((this.ground?.group.userData.adverts as THREE.Object3D[] | undefined) ?? []).filter((o) => o.visible).map((o) => this.meshRect(o, w, h, cam));
   }
   /** Plan item 228 (tests): the moored boats' boxes on the canvas (CSS px) at the fitted view. */
   mooredRects(): Rect[] {
