@@ -7,6 +7,7 @@ import { cathSvg } from "../../../shared/cath/cath";
 import { ENEMIES, TWISTS, type EnemyKind, type Level } from "./engine";
 import { enemyIcon } from "./icons";
 import { openActs } from "./unlocks";
+import { landState, stopLandSvg } from "./stopland";
 import { isUnlocked, medalsOf, remixMedalsOf, DIFFICULTY_MEDALS, REMIX_MEDALS, type SaveData } from "./store";
 
 // ---- Act scenes: one painted backdrop per act ----
@@ -1493,6 +1494,23 @@ function fogSeen(set?: number): number {
   }
 }
 
+/** Plan item 230: the stops whose won land has already bloomed, so a new win blooms once. */
+const LAND_KEY = "hedgerow:map-land-seen";
+function landSeen(): Set<number> {
+  try {
+    return new Set((localStorage.getItem(LAND_KEY) ?? "").split(",").filter(Boolean).map(Number));
+  } catch {
+    return new Set();
+  }
+}
+function saveLandSeen(seen: Set<number>): void {
+  try {
+    localStorage.setItem(LAND_KEY, [...seen].join(","));
+  } catch {
+    /* private mode: every win just shows coloured in */
+  }
+}
+
 /** Two boxes overlap (a pixel of touching doesn't count). */
 type Box = { left: number; top: number; right: number; bottom: number; width: number };
 const overlaps = (a: Box, b: Box): boolean =>
@@ -1881,6 +1899,15 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
   // reveal still plays if she closed the game after the boss). A fresh save just records where the fog is.
   const was = showAll ? shown : fogSeen();
   if (!showAll) fogSeen(shown);
+  // Plan item 230: the won stops already shown coloured in; on a save's first map nothing blooms.
+  const landFirst = (() => {
+    try {
+      return localStorage.getItem(LAND_KEY) === null;
+    } catch {
+      return true;
+    }
+  })();
+  const bloomed = landSeen();
   let current: HTMLElement | null = null;
   let card: LevelCard | null = null;
   const nextId = levels.find((lv) => isUnlocked(data, lv.id) && !data.stars[String(lv.id)])?.id ?? null;
@@ -2037,6 +2064,22 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const vrow = Math.floor(i / 2);
       const vcol = vrow % 2 === 0 ? i % 2 : 1 - (i % 2);
       item.className = `stop c${col + 1} r${row + 1} v${vrow + 1} vc${vcol + 1}`;
+      // Plan item 230: the land round the stop: coloured in once won, Hollowell's clutter until then.
+      const state = landState(stars, lv.id === nextId);
+      item.dataset.state = state;
+      const landArt = stopLandSvg(lv.id, state);
+      if (landArt) {
+        const land = document.createElement("span");
+        land.className = "stop-land";
+        land.setAttribute("aria-hidden", "true");
+        land.innerHTML = landArt;
+        if (state === "won" && !bloomed.has(lv.id)) {
+          // A first win's land blooms out from the stop; the first map ever drawn just shows it (no backlog).
+          if (!landFirst) land.classList.add("bloom");
+          bloomed.add(lv.id);
+        }
+        item.append(land);
+      }
       const b = document.createElement("button");
       b.type = "button";
       const boss = lv.id % 10 === 0;
@@ -2125,6 +2168,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       trail.append(item);
     });
     li.append(trail);
+    if (!showAll) saveLandSeen(bloomed);
     if (nextId !== null && lvs.some((lv) => lv.id === nextId)) {
       card = levelCard(data, (lv) => {
         const stop = list.querySelector<HTMLElement>(`button.node[data-level="${lv.id}"]`);

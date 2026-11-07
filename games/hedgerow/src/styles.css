@@ -272,6 +272,49 @@ button {
 .trail > .stop {
   position: relative;
 }
+/* Plan item 230: the land round each stop, behind its coin: coloured in once won, Hollowell's clutter until then. */
+.stop-land {
+  position: absolute;
+  z-index: var(--z-canvas);
+  left: 50%;
+  top: 50%;
+  width: min(176px, 112%);
+  aspect-ratio: 160 / 100;
+  translate: -50% -58%;
+  pointer-events: none;
+}
+.stop-land svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.stop > .node {
+  z-index: var(--z-raise);
+}
+.stop[data-state="held"] .stop-land {
+  opacity: 0.85;
+}
+@media (max-width: 599.98px) {
+  /* A phone's stops sit close: Hollowell's clutter steps back behind the names. */
+  .stop[data-state="held"] .stop-land {
+    opacity: 0.6;
+  }
+}
+/* A first win's land blooms out from the stop over 900 ms; under reduced motion it fades in. */
+.stop-land.bloom {
+  animation: land-bloom 900ms cubic-bezier(.2, .8, .2, 1) 300ms both;
+}
+@keyframes land-bloom {
+  from { opacity: 0; scale: 0.3; }
+  60% { opacity: 1; }
+  to { opacity: 1; scale: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stop-land.bloom { animation: land-fade 600ms ease 300ms both; }
+}
+@keyframes land-fade {
+  from { opacity: 0; }
+}
 .node .level-name {
   padding: 1px 2px;
   border-radius: var(--r-s);

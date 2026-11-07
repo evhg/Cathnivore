@@ -435,3 +435,27 @@ test('the phone map fades out above the tab bar', async ({ page }) => {
   // The fade ends at or above the tab bar's top edge.
   expect(levels.y + levels.height - 70).toBeLessThanOrEqual(nav.y + 2)
 })
+
+// Plan item 230: the land round a won stop is coloured in, a stop not yet won shows Hollowell's clutter, and a new
+// win's land blooms once.
+test('the map colours in won stops and blooms a new win once', async ({ page }) => {
+  await page.goto(URL)
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i <= 20; i++) stars[String(i)] = 2
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seen: {}, tips: { all: true }, bank: {} }))
+    localStorage.setItem('hedgerow:map-land-seen', Array.from({ length: 19 }, (_, i) => i + 1).join(','))
+  })
+  await page.reload()
+  await expect(page.locator('button.node.next')).toBeVisible()
+  const won = page.locator('.stop[data-state="won"]:has(button[data-level="20"])')
+  await expect(won).toHaveCount(1)
+  await expect(won.locator('.stop-land.bloom')).toHaveCount(1)
+  await expect(page.locator('.stop[data-state="won"] .stop-land.bloom')).toHaveCount(1)
+  await expect(page.locator('.stop[data-state="held"] .stop-land').first()).toBeAttached()
+  await expect(page.locator('.stop[data-state="next"] .stop-land')).toHaveCount(0)
+  // Seen once: the next visit draws it coloured in, without the bloom.
+  await page.reload()
+  await expect(page.locator('button.node.next')).toBeVisible()
+  await expect(page.locator('.stop-land.bloom')).toHaveCount(0)
+})
