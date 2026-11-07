@@ -2495,7 +2495,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked in a shot before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 235. [ ] NIGHT SHIFT: each class a distinct silhouette on the class pick
+## 235. [ ] NIGHT SHIFT: each class a distinct silhouette on the class pick *(lane A, in progress)*
 - **Why:** `plan1107b/ns-play-D` (880-1230 x 240-900): a subagent critique read all five classes as the same figure with a different gun; the coat, stance and kit change too little at D distance.
 - **Build:** (check the kit first: item 112 gave each class a kit) per-class stance from `cathode-classposes` exaggerated for the pick (Butcher squared and low, Gunslinger hip-shot, Ghost turned sideways, Wirewitch hands raised in the rig's light, Fixer arms folded), plus one large silhouette piece each (Butcher's apron, Ghost's hood up, Gunslinger's duster split, Wirewitch's lit cable halo, Fixer's briefcase).
 - **Accept:** the figure-region pixel difference between any two classes' D shots over 15%; her face still in the middle band (classpick spec); perf within budget; shots D and P for all five.
