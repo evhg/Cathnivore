@@ -3432,7 +3432,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup-cath-says {
     position: relative;
     margin: 0 0 14px;
-    max-width: 280px;
+    /* Plan item 253: a gutter inside the column (the bubble butted Sol's card at 1440x900). */
+    max-width: min(280px, calc(100% - 16px));
     padding: 8px 12px;
     border-radius: 14px;
     background: var(--paper-hi);

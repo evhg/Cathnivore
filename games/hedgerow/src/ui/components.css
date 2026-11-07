@@ -2779,6 +2779,8 @@ body:has(#dlg-pause[open]) .paused-note {
        not a stretched pill (18 px is still a full pill at one line, 34 px tall). */
     max-width: calc(100% - 14px);
     border-radius: 18px;
+    /* Plan item 253: a two-line name crowded the box's right edge (more height cost the shop its packets). */
+    padding-right: 14px;
   }
   .play .panel .ticket-chips .chip-name {
     min-width: 0;
