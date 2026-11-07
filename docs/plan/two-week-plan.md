@@ -2664,7 +2664,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** face 70 px or more tall on the D title, 30 on the P title; both eyes show liner and two highlights at D; hair below her shoulder line at D; face to hair luminance 3:1 or more; cathode-perf within budget; cathode-front and classpick pass; key art re-shot; shots P and D, title and pick.
 - **Size:** 3
 
-## 261. [ ] NIGHT SHIFT: the title alley as a set, with wet ground
+## 261. [ ] NIGHT SHIFT: the title alley as a set, with wet ground *(lane A, in progress)*
 - **Why:** `plan1107f/ns-title-D` (1000-1440 x 280-900): the right half is a flat brick plane with rain, no props, no readable ground; `ns-play-D` (480-960 x 600-900) she stands on black, no floor, shadow or puddle (640-760 x 780-830); `ns-title-P` (0-390 x 760-844) an empty black band. (Lane B left this out on 2026-11-07 13:55 until item 254 landed; it has.)
 - **Build:** dress the title and pick alley: a fire escape, a lit door transom, bins and steam from a grate (static under reduced motion); the asphalt wet enough to carry the LUNA sign (item 258) and her silhouette; a contact shadow under her feet.
 - **Accept:** 3 or more props in the D title shot, none touching her figure box or the sign; the sign's reflection visible on the ground at P and D; a contact shadow in the D pick shot; no 80 px empty black band on the P title; cathode-perf within budget (+8 draw calls at most); cathode-front, classpick pass; key art re-shot.
