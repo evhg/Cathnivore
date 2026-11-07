@@ -32,7 +32,9 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
       }
     })
     const at = `${width}x${height}`
-    expect(r.head, at).toBeLessThanOrEqual(72)
+    // Plan item 249: at 1400 px and up the readings fold beside the papers in one 78 px row (a memo's dial drops to
+    // its target line), so the head is one row of 78 px or less instead of two rows (about 133 px).
+    expect(r.head, at).toBeLessThanOrEqual(width >= 1400 ? 78 : 72)
     expect(r.w, at).toBeGreaterThanOrEqual(minW)
     expect(r.h, at).toBeGreaterThanOrEqual(0.9)
     expect(r.cath.height, at).toBeGreaterThanOrEqual(width >= 1440 ? 300 : 290)

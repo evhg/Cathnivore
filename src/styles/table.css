@@ -4395,7 +4395,7 @@ html.no-animations .table-cath-line { animation: none; }
     column-gap: var(--sp-2);
   }
   .game:has(.table-head.with-table-cath) :is(.game-scroll, .action-tray) > * { grid-column: 1 / -1; }
-  .game:has(.table-head.with-table-cath) .market-board { grid-column: 1; grid-row: 1; align-self: stretch; }
+  .game:has(.table-head.with-table-cath) .market-board { grid-column: 1; grid-row: 1; align-self: center; }
   .game:has(.table-head.with-table-cath) .table-head { grid-column: 2; grid-row: 1; align-self: center; }
   .game:has(.table-head.with-table-cath) .map-wrap { grid-row: 2; min-height: 0; }
   .game:has(.table-head.with-table-cath) .table-hand { grid-row: 3; }
@@ -4478,4 +4478,19 @@ html.no-animations .terrain-art .idle-sheep-head { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .terrain-art [data-idle],
   .terrain-art .idle-sheep-head { animation: none; }
+}
+@media (min-width: 1400px) and (min-height: 760px) {
+  /* The memos beside the readings are about 205 px: the dial and stage tag drop to the target's line, so the
+     headline and its effect keep the first line whole (a two-region target wraps to a third line, 77 px). */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art head eff eff"
+      "tgt tgt tgt date";
+  }
+  .game:has(.table-head.with-table-cath) .plan-strip-dateline { align-self: end; }
+}
+@media (min-width: 1240px) and (max-width: 1399px) and (min-height: 760px) {
+  /* At 1280 a memo is about 235 px: 'SQUEEZE Coast' with its dial and stage cut the effect by 2 px at .06em. */
+  .table-head.with-table-cath .plan-strip-headline { letter-spacing: .03em; }
 }
