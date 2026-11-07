@@ -2658,7 +2658,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 260. [ ] NIGHT SHIFT: Cath's head and hair sculpted to the character bible
+## 260. [ ] NIGHT SHIFT: Cath's head and hair sculpted to the character bible *(lane A, in progress)*
 - **Why:** `plan1107f/ns-title-D` (940-1010 x 260-345): after the ink pass (254) her face is still a smooth egg with dot eyes, the hair a tight helmet with no part or waves; `ns-play-D` (680-760 x 120-260) the hood reads as a space helmet; `ns-play-P` (150-215 x 160-230) the face is a blur.
 - **Build:** re-sculpt the head (cheekbones, jaw, a small nose bridge); eyes with a winged liner, two highlights and the right brow raised; a hair mesh with a centre part and long soft waves past her shoulders, keeping 254's shine band; blush and lip gloss that hold under the toon bands.
 - **Accept:** face 70 px or more tall on the D title, 30 on the P title; both eyes show liner and two highlights at D; hair below her shoulder line at D; face to hair luminance 3:1 or more; cathode-perf within budget; cathode-front and classpick pass; key art re-shot; shots P and D, title and pick.
