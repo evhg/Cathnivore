@@ -4446,6 +4446,13 @@ body[data-mode='sunday'] .rail-cal,
 body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   display: none;
 }
+/* Plan item 268: likewise on a short desktop when a daily's line comes back to the rail (1280x800 scrolled 47 px). */
+@media (max-height: 860px) {
+  .app[data-valley-say='side'] .rail-cal,
+  .app[data-valley-say='side'] .rail > .cal-title:first-of-type {
+    display: none;
+  }
+}
 #tab-weekly {
   white-space: nowrap;
 }
