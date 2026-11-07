@@ -72,3 +72,18 @@ test('desktop keeps the strip and has no placard', async ({ page }) => {
   await expect(page.locator('.plan-strip')).toBeVisible()
   await expect(page.locator('.plan-strip-item')).toHaveCount(3)
 })
+
+// Plan item 237: Pell's medallion breaks the placard's frame at 56 px, his mood following Cath's (smug at rest).
+test('the phone placard carries Pell at 56 px, clear of the hexes', async ({ page }) => {
+  const vp = page.viewportSize()!
+  test.skip(vp.width >= 600 || vp.width > vp.height, 'an upright phone')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const face = (await page.locator('.papers-placard-face').boundingBox())!
+  expect(face.width).toBeGreaterThanOrEqual(56)
+  expect(face.height).toBeGreaterThanOrEqual(56)
+  const hexTop = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.map-wrap svg [data-region], .map-wrap [data-region]')].map((e) => e.getBoundingClientRect().top)))
+  if (Number.isFinite(hexTop)) expect(face.y + face.height).toBeLessThanOrEqual(hexTop)
+})

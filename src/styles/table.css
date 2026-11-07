@@ -4169,6 +4169,31 @@ html.no-animations .table-cath-line { animation: none; }
     transform: translateX(-50%);
   }
 
+  /* Plan item 237: Pell's medallion breaks the placard's frame, 56 px across with a glossy plastic rim (the
+     corporations are over-lit plastic), so the antagonist has a face at the table on a phone. */
+  .papers-placard-face {
+    width: 56px;
+    height: 56px;
+    margin-block: -6px;
+    margin-inline-start: -2px;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--hollowell-ink) 30%, black),
+      0 0 0 4px var(--hollowell),
+      0 0 0 5px color-mix(in srgb, var(--hollowell-ink) 40%, black),
+      var(--e2);
+  }
+
+  .papers-placard-face svg { top: -18px; width: 94px; }
+
+  .papers-placard-face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(150deg, color-mix(in srgb, white 42%, transparent) 0 22%, transparent 34%);
+    pointer-events: none;
+  }
+
   .papers-placard-slot {
     display: flex;
     flex: 1 1 0;
