@@ -174,6 +174,35 @@ function openGame(): void {
 
 let wetCount = 0
 
+/**
+ * Release blocker 2026-11-07 (runnel-lesson-close): the valley's placements asked the DOM for every sample point's
+ * transform and fill, tile by tile (a few hundred ms on a phone each time a board opened). Each polygon's outline is
+ * measured in screen space once instead, and points are tested against it with an even-odd rule.
+ */
+type ScreenPoly = { pts: DOMPoint[]; x0: number; x1: number; y0: number; y1: number }
+function screenPolys(els: Iterable<SVGPolygonElement>): ScreenPoly[] {
+  return [...els].flatMap((t) => {
+    const m = t.getScreenCTM()
+    if (!m) return []
+    const pts = [...t.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(m))
+    const xs = pts.map((q) => q.x)
+    const ys = pts.map((q) => q.y)
+    return [{ pts, x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }]
+  })
+}
+function inPolys(polys: ScreenPoly[], x: number, y: number): boolean {
+  return polys.some((t) => {
+    if (x < t.x0 || x > t.x1 || y < t.y0 || y > t.y1) return false
+    let c = false
+    for (let i = 0, j = t.pts.length - 1; i < t.pts.length; j = i++) {
+      const a = t.pts[i]!
+      const b = t.pts[j]!
+      if (a.y > y !== b.y > y && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) c = !c
+    }
+    return c
+  })
+}
+
 function onTurn(index: number, clockwise: boolean): void {
   if (game.solved) return
   if (!rotateCell(puzzle.cells, index, clockwise)) {
@@ -313,8 +342,12 @@ function placeWeekValley(): void {
     .map((e) => e.getBoundingClientRect())
     .filter((r) => r.width > 0)
   const taken: DOMRect[] = []
-  for (const el of layer.querySelectorAll<HTMLElement>('.valley-feature')) {
-    const size = el.offsetWidth || 48
+  // Every size read before any position is written (release blocker 2026-11-07: a read after each write forced a
+  // layout per keep, ~250 ms on a phone each time a board opened).
+  const els = [...layer.querySelectorAll<HTMLElement>('.valley-feature')]
+  const sizes = els.map((el) => el.offsetWidth || 48)
+  for (const [n, el] of els.entries()) {
+    const size = sizes[n]!
     let placed = false
     const start = firstSpot(el.dataset.day ?? '')
     for (let k = 0; k < SPOTS.length && !placed; k++) {
@@ -374,16 +407,8 @@ function placeDitch(): void {
   }
   if (key !== ditchKey) {
     ditchKey = key
-    const board = boardEl as unknown as SVGSVGElement
-    const pt = board.createSVGPoint()
-    const onTile = (x: number, y: number) =>
-      tiles.some((t) => {
-        const m = t.getScreenCTM()?.inverse()
-        if (!m) return false
-        pt.x = x
-        pt.y = y
-        return t.isPointInFill(pt.matrixTransform(m))
-      })
+    const polys = screenPolys(tiles)
+    const onTile = (x: number, y: number) => inPolys(polys, x, y)
     const onCath = (x: number, y: number) => !!cath && x > cath.left && x < cath.right && y > cath.top && y < cath.bottom
     // Where the water enters the garden: the left end of its beds, at their foot.
     const G = { x: c.left + 6, y: c.bottom - 4 }
@@ -527,27 +552,17 @@ function placeFeeder(): void {
   const len = bed.getTotalLength()
   const stream: DOMPoint[] = []
   for (let l = 0; l <= len; l += len / 160) stream.push(bed.getPointAtLength(l).matrixTransform(m))
+  // Each lip hex in screen space, measured once (see screenPolys).
+  const polys = screenPolys(lips)
   // The lip's outline points (each enlarged hex's corners and edge midpoints), in screen space.
-  const rim = lips.flatMap((t) => {
-    const tm = t.getScreenCTM()
-    if (!tm) return []
-    const pts = [...t.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(tm))
-    return pts.flatMap((q, i) => {
+  const rim = polys.flatMap(({ pts }) =>
+    pts.flatMap((q, i) => {
       const n = pts[(i + 1) % pts.length]!
       return [q, new DOMPoint((q.x + n.x) / 2, (q.y + n.y) / 2)]
-    })
-  })
+    }),
+  )
   // Only the rim's outer points: those no other lip hex covers.
-  const covered = (x: number, y: number) =>
-    lips.some((t) => {
-      const tm = t.getScreenCTM()?.inverse()
-      if (!tm) return false
-      const q = new DOMPoint(x, y).matrixTransform(tm)
-      const pt = (t.ownerSVGElement as SVGSVGElement).createSVGPoint()
-      pt.x = q.x
-      pt.y = q.y
-      return t.isPointInFill(pt)
-    })
+  const covered = (x: number, y: number) => inPolys(polys, x, y)
   const outer = rim.filter((q) => {
     const cx = q.x + Math.sign(q.x - first.left) * 0
     return !covered(cx - 3, q.y) || !covered(cx + 3, q.y) || !covered(cx, q.y - 3) || !covered(cx, q.y + 3)
@@ -706,18 +721,8 @@ function placePhoneCath(cath: HTMLElement): void {
   const blocks = [...document.querySelectorAll<Element>('.bea-garden, .spring-house, .farm-sign, .valley-feature:not([hidden])')]
     .map((e) => e.getBoundingClientRect())
     .filter((r) => r.width > 0)
-  const svg = document.getElementById('board') as SVGSVGElement | null
-  const tiles = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')]
-  const pt = svg?.createSVGPoint()
-  const onTile = (x: number, y: number) =>
-    !!pt &&
-    tiles.some((t) => {
-      const m = t.getScreenCTM()?.inverse()
-      if (!m) return false
-      pt.x = x
-      pt.y = y
-      return t.isPointInFill(pt.matrixTransform(m))
-    })
+  const tilePolys = screenPolys(document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
+  const onTile = (x: number, y: number) => inPolys(tilePolys, x, y)
   for (const H of [140, 120, 100, 84]) {
     const W = Math.round(H * (2 / 3))
     for (let y = st.bottom - 4 - H; y >= st.top + st.height * 0.45; y -= 4)

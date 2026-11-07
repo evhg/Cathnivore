@@ -13,7 +13,9 @@ test('a joining tap fills the tile within 600 ms', async ({ page }) => {
 })
 
 test('a tap that cuts the river drains it', async ({ page }) => {
-  await page.goto('/runnel/?nohelp')
+  // Release blocker 2026-11-07: a daily can start with only its spring wet (today's did), so the board is laid out
+  // as `?shotsolve` sets it: every piece on its solution but one, a river running from the spring whatever the day.
+  await page.goto('/runnel/?nohelp&shotsolve')
   await page.waitForSelector('#board .tiles > g.cell')
   const wet = page.locator('#board .tiles > g.cell[data-wet]')
   await expect.poll(() => wet.count(), { timeout: 3_000 }).toBeGreaterThan(1)
