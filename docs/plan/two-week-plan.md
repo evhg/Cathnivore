@@ -2709,7 +2709,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each held hex's land chroma 80% or more of the same hex when free (5 samples per hex); no full-hex overlay above 15% opacity; held vs free tell apart by shape (fence or billboard); region names 4.5:1; board-scale, board-diorama, title-table, setup pass; key art re-shot; shots title and game, P and D, light and dark.
 - **Size:** 2
 
-## 268. [ ] Runnel: Cath as a host you can read, reacting to the board
+## 268. [ ] Runnel: Cath as a host you can read, reacting to the board *(lane B, in progress)*
 - **Why:** `plan1107g/runnel-D` (420-520 x 675-815): a half-length figure behind a wall in the corner, face about 35 px; `runnel-P` (35-110 x 645-750) about 25 px; one pose and one face all game.
 - **Build:** at D she stands waist-up by the spring house or the garden gate, 260 px or more, her line beside her; she reacts: delighted when a tap joins water to a new field, worried (hand to chin) when a tap cuts a flow, a wink on the solve (a pose and face swap in 150-250 ms, a fade under reduced motion); on a phone her bust in the docked line with a face 48 px or more; the market-day trench (the bible's Runnel outfit).
 - **Accept:** face 60 px or more at D, 40 at P; three moods as `data-mood`, an e2e taps a joining tile and checks it; she covers no tile; runnel e2e pass; key art re-shot; shots P and D, lesson and mid-daily.
