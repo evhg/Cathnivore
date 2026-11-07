@@ -1966,7 +1966,25 @@ export function buildFrontCath(phone: boolean): FrontCath {
     gunMetalH,
     rifle,
   );
-  add(mergeGeos([box(0.034, 0.24, 0.06, 0, -0.16, -0.008), box(0.03, 0.16, 0.035, 0, 0.22, -0.02)]), woodMat, rifle);
+  // Plan item 247: a profiled stock (it stands beside her face on the pick, where a box read as a plank): a slim
+  // wrist off the receiver, the comb rising to a cheek riser, a straight heel, the belly sweeping down to the toe,
+  // rounded edges; and a round fore-end tapering to the muzzle. +z is the scope's side, -z the grip's.
+  const stockShape = new THREE.Shape();
+  stockShape.moveTo(0.017, -0.04);
+  stockShape.lineTo(0.019, -0.11);
+  stockShape.quadraticCurveTo(0.02, -0.14, 0.026, -0.15);
+  stockShape.lineTo(0.025, -0.262);
+  stockShape.quadraticCurveTo(0.024, -0.282, 0.016, -0.284);
+  stockShape.lineTo(-0.046, -0.284);
+  stockShape.quadraticCurveTo(-0.054, -0.28, -0.052, -0.266);
+  stockShape.quadraticCurveTo(-0.03, -0.17, -0.017, -0.09);
+  stockShape.lineTo(-0.016, -0.04);
+  stockShape.closePath();
+  const stock = new THREE.ExtrudeGeometry(stockShape, { depth: 0.024, bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.004, bevelSegments: 2, curveSegments: 6 });
+  stock.translate(0, 0, -0.012);
+  stock.rotateY(-Math.PI / 2);
+  const foreEnd = limb(V(0, 0.145, -0.02), V(0, 0.3, -0.018), 0.019, 0.015, 12);
+  add(mergeGeos([stock, foreEnd]), woodMat, rifle);
   // The glint: a four-point star off the scope's lens, always to the lens of the camera.
   const glintTex = (() => {
     const c = document.createElement("canvas");
@@ -2044,8 +2062,31 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const hood = new THREE.SphereGeometry(1, seg(28), seg(18), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
     hood.scale(0.112, 0.13, 0.118);
     hood.translate(0, 0.012, -0.01);
-    const cowl = new THREE.CylinderGeometry(0.1, 0.165, 0.16, seg(24), 1, true, Math.PI * 0.5 + 0.55, Math.PI * 2 - 1.1);
-    cowl.translate(0, -0.165, -0.025);
+    // Plan item 247: the cowl was an open cylinder whose gap faced her left side, so a closed tube stood in front of
+    // her chin (the "bucket"). Now a draped lathe: snug under the jaw, rounding out over the collar, open at the
+    // front (+z) in a V that widens toward the chin, with soft folds that deepen as the cloth falls.
+    const GAP = 0.62; // half the front opening at the top, radians
+    const cowlProfile: Array<[number, number]> = [[0.098, -0.07], [0.104, -0.105], [0.118, -0.145], [0.14, -0.185], [0.16, -0.22], [0.17, -0.245]];
+    const cowl = new THREE.LatheGeometry(cowlProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg(28), GAP, Math.PI * 2 - GAP * 2);
+    {
+      const p = cowl.attributes.position as THREE.BufferAttribute;
+      const top = cowlProfile[0]![1];
+      const span = top - cowlProfile[cowlProfile.length - 1]![1];
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const z = p.getZ(i);
+        const t = (top - y) / span; // 0 at the jaw, 1 at the hem
+        const phi = Math.atan2(x, z);
+        // Folds: two beating frequencies so they read as cloth, deeper toward the hem.
+        const fold = 1 + (0.06 * Math.sin(phi * 7 + 0.8) + 0.035 * Math.sin(phi * 11 + 2.1)) * (0.25 + t);
+        // The front edges hang lower than the back (the cowl drapes forward over the chest).
+        const front = Math.max(0, Math.cos(phi));
+        p.setXYZ(i, x * fold, y - 0.03 * front * t, z * fold);
+      }
+      cowl.computeVertexNormals();
+    }
+    cowl.translate(0, 0, -0.025);
     const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
     rimify(hoodMat as THREE.MeshStandardMaterial, 0.9);
     extra("ghost", headPivot, [[[hood, cowl], hoodMat]]);

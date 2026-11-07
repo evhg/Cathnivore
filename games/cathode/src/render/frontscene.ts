@@ -337,6 +337,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const coatNow = coatBase.clone();
   const coatWant = coatBase.clone();
   let keyRemove: (() => void) | null = null;
+  // Plan item 247: a warm face key for the pick, high on the side away from the lens and just ahead of her (short lighting), so her cheek,
+  // brow and jaw take a shadow side instead of reading as one flat lit oval. Short range: it lights her head
+  // and collar only, not the coat (the class key colours that).
+  const faceKey = { pos: toWorld(-0.38, 1.95, 0.5), color: new THREE.Color(1.0, 0.84, 0.7), intensity: 0, range: 1.25 };
+  let faceKeyRemove: (() => void) | null = null;
   function wardrobeStep(dt: number): void {
     const k = 1 - Math.exp(-dt * 4.2);
     wd.w += (wd.target - wd.w) * k;
@@ -365,8 +370,14 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
-    if (wd.w > 0.002 && !keyRemove && world.liveLight) keyRemove = world.liveLight(key);
+    faceKey.intensity = (phone ? 3.2 : 3.8) * wd.w;
+    if (wd.w > 0.002 && !keyRemove && world.liveLight) {
+      keyRemove = world.liveLight(key);
+      faceKeyRemove = world.liveLight(faceKey);
+    }
     if (wd.w <= 0.002 && keyRemove) {
+      faceKeyRemove?.();
+      faceKeyRemove = null;
       keyRemove();
       keyRemove = null;
     }
@@ -908,6 +919,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       // The wardrobe's class key light leaves with her (it must not hang in the street once play starts).
       keyRemove?.();
       keyRemove = null;
+      faceKeyRemove?.();
+      faceKeyRemove = null;
       for (const c of chalk) c.removeFromParent();
       neon.dispose();
       delete world.renderer.domElement.dataset.keyLight;
