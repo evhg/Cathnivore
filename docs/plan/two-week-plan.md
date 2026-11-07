@@ -2486,7 +2486,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 no empty band over 120 px tall in x 0-560; each row's silhouette 48 px or more wide; keys 1-5 and arrows move the pick visibly; cathode classpick, classstage and front specs pass; perf within budget; shots D and P (P unchanged).
 - **Size:** 2
 
-## 234. [ ] The bugs from the 2026-11-07 01:40 critique, fixed as one batch
+## 234. [ ] The bugs from the 2026-11-07 01:40 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107a`; points already in item 222 left out)
   - **Site:** P: 'vore' of the Cathnivore heading blurred (270-345 x 120-165; possibly a backdrop-filter or capture timing). D: hero Cath's feet on nothing (265-390 x 60-435).
   - **Hedgerow:** D menu: the road leaves stop 21 upward as a curled stub ending at nothing (225-262 x 283-325). P 2D l34: Cath's tip pale on cream (95-370 x 728-760; check it isn't mid-fade).
