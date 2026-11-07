@@ -3454,7 +3454,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
     background: inherit;
     clip-path: polygon(0 0, 100% 0, 30% 100%);
   }
-  .setup-cath-stand .cath-art { display: block; width: 150px; }
+  /* Plan item 239: half length at 300 px or more tall beside Start (was 150 px wide, about 210 tall). */
+  .setup-cath-stand .cath-art { display: block; width: 214px; }
   .setup-cath-stand .cath-art svg { display: block; width: 100%; height: auto; }
   .setup > button.setup-start { grid-area: start; align-self: end; position: relative; z-index: var(--z-lift); margin-top: 0; }
   /* Plan item 132: here the sign stands on the counter in front of her, so its cord and nail (which ran across her
@@ -3463,7 +3464,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 }
 @media (min-width: 1100px) and (max-height: 860px) {
   .setup-cath-stand { margin-bottom: 40px; }
-  .setup-cath-stand .cath-art { width: 112px; }
+  /* Plan item 239: 300 px or more at 1280x800 too (she was 112 px wide, about 160 tall). */
+  .setup-cath-stand .cath-art { width: 214px; }
   .setup-cath-says { padding: 4px 8px; font-size: var(--fs-label); }
 }
 

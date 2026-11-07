@@ -2519,7 +2519,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** Cath 200 px or more at 390x844 and 375x667; quote 4.5:1; no overlap with the buttons (box test); the first poster still starts above 844; games-hero-cath and site-hero pass.
 - **Size:** 1
 
-## 239. [ ] Cathnivore desktop Setup: one market table *(lane A, in progress)*
+## 239. [ ] Cathnivore desktop Setup: one market table *(lane A, in progress)* *(slice 1, 2026-11-07 05:40 lane A: Cath 150 -> 214 px wide, 321 px tall at 1440x900 and 1280x800 (was about 210 and 160), her bubble above her, no scroll; setup-desktop now asks 300 px; setup-* pass at D and P. Shots scratchpad s239 before/a1 D, D2, P. Left: the stall rail (mode and difficulty across the top; plan: table spans the rail row, mode laid over its left end, difficulty first in the table, PinTin moved out of the mode section into the left column))*
 - **Why:** `plan1107b/cath-setup-D`: a stack of mismatched panels reading like a form; Cath squeezed into a corner (1150-1290 x 470-780).
 - **Build:** mode and difficulty on one stall rail across the top, the producers and map on the cloth, Cath half-length beside Start (300 px or more) with her line.
 - **Accept:** no control clipped by its container; Cath 300 px or more at 1440x900 and 1280x800; no page scroll at 1280x800; setup-* specs pass; shots D (P unchanged).

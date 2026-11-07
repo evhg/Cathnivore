@@ -44,7 +44,7 @@ test('desktop Setup: Cath at the stall reacts to the picks and the difficulty', 
   await page.getByText('Quick Game').click()
   const cath = page.locator('.setup-cath-stand svg')
   await expect(cath).toBeVisible()
-  expect((await cath.boundingBox())!.height).toBeGreaterThanOrEqual(200)
+  expect((await cath.boundingBox())!.height).toBeGreaterThanOrEqual(300) // plan item 239
   const says = page.locator('.setup-cath-says')
   await expect(page.locator('.setup-cath-stand svg.cath-delighted')).toHaveCount(1) // the recommended pair is picked
   const before = await says.textContent()
