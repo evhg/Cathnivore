@@ -2462,7 +2462,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** for every weather and time of day the valley layer's mean OKLCH chroma 0.04 or more and mean L 0.45 or more (unit, on the palette); no shrub fill under L 0.3; tiles keep 3:1 against the fields; runnel specs pass; shots P and D at drizzle, dusk and midday.
 - **Size:** 2
 
-## 230. [ ] Hedgerow journey map: the country changes as you win
+## 230. [ ] Hedgerow journey map: the country changes as you win *(lane B, in progress)*
 - **Why:** `plan1107a/hedge-menu-D` (0-1440 x 230-600), `hedge-menu-P` (0-390 x 170-600): between the road's rows the map is empty diagonal hatching; nothing shows progress or Hollowell's grip (VISION: choreographed moments).
 - **Build:** the land round a won stop is coloured in (crops, hedges, folk at work); unwon stretches carry Hollowell's clutter (grey flats, a van on the verge, a fenced "coming soon" plot); a first win plays a 900 ms bloom of colour out from the stop (a fade under reduced motion).
 - **Accept:** a stop's land state follows its stars (unit); after a win the stop's `data-state="won"` and a patch within 80 px of it has chroma 0.05 or more; a locked stretch shows a Hollowell prop; no transform under reduced motion; hedgerow map specs pass; shots P and D, a fresh save and a mid-act save.
