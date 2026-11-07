@@ -154,7 +154,21 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
         const px = (xa + xb) / 2 + lean * 0.5 + (rnd(810 + n) - 0.5) * (xb - xa) * 0.4
         const py = (slope(r, xa) + slope(r + 1, xa + lean)) / 2 + (rnd(820 + n) - 0.5) * 20
         const pw = 22 + r * 9 + rnd(830 + n) * 14
-        puddles.push(`<g class="vl-puddle"><ellipse cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" rx="${pw.toFixed(0)}" ry="${(pw * 0.32).toFixed(0)}"/><path class="vl-puddle-glint" d="M${(px - pw * 0.5).toFixed(0)} ${(py - pw * 0.08).toFixed(0)}h${(pw * 0.45).toFixed(0)}"/></g>`)
+        // Plan item 273: an irregular pool (eight seeded lobes, not an ellipse), its glint a curve along the far rim
+        // and a raindrop's ring on it; an ellipse with a straight dash across read as a 'minus' button.
+        const ry = pw * 0.32
+        const rim = Array.from({ length: 8 }, (_, k) => {
+          const a = (k / 8) * Math.PI * 2
+          const f = 0.78 + rnd(840 + n * 8 + k) * 0.4
+          return [px + Math.cos(a) * pw * f, py + Math.sin(a) * ry * f] as const
+        })
+        const mid = (a: readonly [number, number], b: readonly [number, number]) => `${((a[0] + b[0]) / 2).toFixed(1)} ${((a[1] + b[1]) / 2).toFixed(1)}`
+        let blob = `M${mid(rim[7]!, rim[0]!)}`
+        for (let k = 0; k < 8; k++) blob += `Q${rim[k]![0].toFixed(1)} ${rim[k]![1].toFixed(1)} ${mid(rim[k]!, rim[(k + 1) % 8]!)}`
+        const gx = px - pw * (0.15 + rnd(850 + n) * 0.3)
+        const glint = `M${(gx - pw * 0.28).toFixed(1)} ${(py - ry * 0.45).toFixed(1)}Q${gx.toFixed(1)} ${(py - ry * 0.78).toFixed(1)} ${(gx + pw * 0.3).toFixed(1)} ${(py - ry * 0.5).toFixed(1)}`
+        const rx = px + pw * (rnd(860 + n) * 0.5 - 0.1)
+        puddles.push(`<g class="vl-puddle"><path class="vl-puddle-pool" d="${blob}Z"/><path class="vl-puddle-glint" d="${glint}"/><ellipse class="vl-puddle-ring" cx="${rx.toFixed(1)}" cy="${(py + ry * 0.15).toFixed(1)}" rx="${(pw * 0.14).toFixed(1)}" ry="${(ry * 0.22).toFixed(1)}"/></g>`)
       }
       if (i > 0) hedges.push(`M${xa.toFixed(0)} ${slope(r, xa).toFixed(0)}L${(xa + lean).toFixed(0)} ${slope(r + 1, xa + lean).toFixed(0)}`)
       // An oak or two where the hedges meet.

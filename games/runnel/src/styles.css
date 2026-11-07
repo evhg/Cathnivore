@@ -3818,16 +3818,22 @@ body[data-mode='practice'] #week-slot {
     vector-effect: non-scaling-stroke;
   }
   /* Plan item 229: a rain day's puddles hold the sky's low light, a glint along their far rim. */
-  .vl-puddle ellipse {
+  .vl-puddle .vl-puddle-pool {
     /* plan item 252: water first (the sky's colour alone read as grey stones) */
     fill: color-mix(in srgb, color-mix(in srgb, var(--water) 55%, var(--vl-sky-low)) var(--vk), var(--paper));
     stroke: color-mix(in srgb, var(--vl-hedge) 35%, transparent);
     stroke-width: 2;
   }
   .vl-puddle-glint {
-    stroke: color-mix(in srgb, var(--paper) 85%, transparent);
-    stroke-width: 2.5;
+    fill: none;
+    stroke: color-mix(in srgb, var(--paper) 75%, transparent);
+    stroke-width: 2;
     stroke-linecap: round;
+  }
+  .vl-puddle-ring {
+    fill: none;
+    stroke: color-mix(in srgb, var(--paper) 45%, transparent);
+    stroke-width: 1.2;
   }
   .vl-drop {
     stroke: color-mix(in srgb, var(--paper) 55%, var(--vl-sky-top));
