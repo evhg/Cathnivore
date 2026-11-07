@@ -2676,7 +2676,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the verge in both 3D shots at most 4 flat colours plus water; reeds only in clumps of 3 or more; a clear water/land edge at P and D; draw calls +6 or fewer at P; `?2d` shots unchanged; hedgerow-biome3d, -3dframe, -closeframe pass; key art re-shot.
 - **Size:** 2
 
-## 263. [ ] Cathnivore: the "Saving for" shelf as goods worth wanting
+## 263. [ ] Cathnivore: the "Saving for" shelf as goods worth wanting *(lane B, in progress)*
 - **Why:** `plan1107f/cath-game-D` (30-320 x 360-520): the three improvements are grey dashed cards with small washed-out pictures and red "Need 2 more Marks" lines, reading disabled beside a rich board; the "4 more not yet" pill (118-230 x 538-568) is a flat control.
 - **Build:** each improvement a full-colour market good on a shelf, its picture filling the card; a Marks meter (coins filled of the cost) in place of the red sentence; a tag that lights when it is affordable; the phone Market sheet in the same look.
 - **Accept:** card art 60 px or more tall at D, no grey placeholder fill; the meter shows a count at 4.5:1; affordable cards carry a testable state (`data-affordable`); board-scale, desktop-no-scroll, plan-cards, tutorial pass; shots game D and the phone Market sheet, light and dark.
