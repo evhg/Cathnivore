@@ -2552,7 +2552,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 Cath's feet or the counter meet the awning band; the stall's box 35% or more of the hero's width; 390 px layout unchanged; site-hero, games-hero-cath, games-stall pass; shots D, 1280x800 and P.
 - **Size:** 2
 
-## 244. [ ] Cathnivore desktop: the ledger writes itself
+## 244. [ ] Cathnivore desktop: the ledger writes itself *(lane A, in progress)*
 - **Why:** `plan1107c/cath-game-D` (35-315 x 615-800): seven empty ruled lines under one entry, the play screen's biggest dead area.
 - **Build:** the ledger fills line by line in an ink hand as the round plays (each sale, Outlet and Trust change, a running Marks column), each new line a 300 ms pen stroke; Bea's doodle in the margin at round end.
 - **Accept:** after three scripted actions the ledger has three new lines in order and its total matches the HUD; reduced motion shows lines without the stroke; game specs pass; shots D light and dark (P unchanged).
