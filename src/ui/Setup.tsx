@@ -10,6 +10,7 @@ import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
 import { pairLine, setupCath } from '../content/pairLines'
+import { useMedia } from './useMedia'
 
 export type Mode = 'solo' | 'hotseat'
 
@@ -61,6 +62,58 @@ export default function Setup({ onStart }: Props) {
     onStart({ producers, difficulty, ...layoutConfig(layout, seed), marketEvent: marketEvent.id }, seed, mode)
   }
 
+  const rail = useMedia('(min-width: 1100px)')
+  const modeSection = (
+    <section className="settings-card setup-mode">
+      <h2>Mode</h2>
+      {/* Plan item 204: at D each mode is a tent place card standing on a ledge, the picked one upright, the other
+          laid flat; the phone keeps its chairs. */}
+      <div className="segmented mode-picker">
+        <label data-place-card="solo">
+          <span className="place-word" aria-hidden="true">You and an AI</span>
+          <span className="mode-name">
+            <input type="radio" name="mode" aria-label="Solo (with an AI teammate)" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo
+            <small> with an AI</small>
+          </span>
+          {/* Plan item 8: the desktop spread draws each mode as a tile (hidden on phones, whose layout stays). */}
+          <span className="mode-art" aria-hidden="true">
+            <Seat who={producers[0] ?? 'mara'} tag="You" ai={false} />
+            <Seat who={producers[1] ?? 'tomas'} tag="AI" ai={true} />
+          </span>
+        </label>
+        <label data-place-card="hotseat">
+          <span className="place-word" aria-hidden="true">Two at the table</span>
+          <span className="mode-name">
+            <input type="radio" name="mode" aria-label="Hot-seat (two humans)" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat
+            <small> two players</small>
+          </span>
+          <span className="mode-art" aria-hidden="true">
+            <Seat who={producers[0] ?? 'mara'} tag="P1" ai={false} />
+            <Seat who={producers[1] ?? 'tomas'} tag="P2" ai={false} />
+          </span>
+        </label>
+      </div>
+    </section>
+  )
+  const difficultySection = (
+    <section className="settings-card setup-difficulty">
+      <h2>
+        Difficulty<span className="threat-kicker" aria-hidden="true"> · Hollowell's threat</span>
+      </h2>
+      <div className="segmented">
+        {(['easy', 'normal', 'hard'] as const).map((d) => (
+          <label key={d} className="price-tag" data-tag={d}>
+            <span>
+              <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
+              {d}
+            </span>
+          </label>
+        ))}
+      </div>
+      <DifficultySheet key={difficulty} difficulty={difficulty} />
+    </section>
+  )
+
   return (
     <main className="setup">
       <header className="setup-header">
@@ -96,37 +149,19 @@ export default function Setup({ onStart }: Props) {
         </p>
       </section>
 
-      <section className="settings-card setup-mode">
-        <PinTin week={marketEvent.id} />
-        <h2>Mode</h2>
-        {/* Plan item 204: at D each mode is a tent place card standing on a ledge, the picked one upright, the other
-            laid flat; the phone keeps its chairs. */}
-        <div className="segmented mode-picker">
-          <label data-place-card="solo">
-            <span className="place-word" aria-hidden="true">You and an AI</span>
-            <span className="mode-name">
-              <input type="radio" name="mode" aria-label="Solo (with an AI teammate)" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo
-              <small> with an AI</small>
-            </span>
-            {/* Plan item 8: the desktop spread draws each mode as a tile (hidden on phones, whose layout stays). */}
-            <span className="mode-art" aria-hidden="true">
-              <Seat who={producers[0] ?? 'mara'} tag="You" ai={false} />
-              <Seat who={producers[1] ?? 'tomas'} tag="AI" ai={true} />
-            </span>
-          </label>
-          <label data-place-card="hotseat">
-            <span className="place-word" aria-hidden="true">Two at the table</span>
-            <span className="mode-name">
-              <input type="radio" name="mode" aria-label="Hot-seat (two humans)" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat
-              <small> two players</small>
-            </span>
-            <span className="mode-art" aria-hidden="true">
-              <Seat who={producers[0] ?? 'mara'} tag="P1" ai={false} />
-              <Seat who={producers[1] ?? 'tomas'} tag="P2" ai={false} />
-            </span>
-          </label>
+      {/* Plan item 239: Cath's pin tin stands in the left column under the flyer (D only). */}
+      <PinTin week={marketEvent.id} />
+
+      {/* Plan item 239: at D the mode and Hollowell's price tags share one stall rail across the top; below D each
+          keeps its place (the mode under the flyer, the tags on the table's cloth). One copy mounts either way. */}
+      {rail ? (
+        <div className="setup-rail" data-setup-rail>
+          {modeSection}
+          {difficultySection}
         </div>
-      </section>
+      ) : (
+        modeSection
+      )}
 
       {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
       <div className="setup-table" data-setup-table>
@@ -193,22 +228,7 @@ export default function Setup({ onStart }: Props) {
         </label>
       </section>
 
-      <section className="settings-card setup-difficulty">
-        <h2>
-          Difficulty<span className="threat-kicker" aria-hidden="true"> · Hollowell's threat</span>
-        </h2>
-        <div className="segmented">
-          {(['easy', 'normal', 'hard'] as const).map((d) => (
-            <label key={d} className="price-tag" data-tag={d}>
-              <span>
-                <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
-                {d}
-              </span>
-            </label>
-          ))}
-        </div>
-        <DifficultySheet key={difficulty} difficulty={difficulty} />
-      </section>
+      {!rail && difficultySection}
 
       </div>
 

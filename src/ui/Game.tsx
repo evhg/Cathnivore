@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
 import { rivalMood } from './portraits/rivalFace'
@@ -163,17 +164,6 @@ function isE2ETeammateShow(): boolean {
 // same button. Gating which one actually *mounts* on viewport width avoids that: there is only ever one
 // `.actions` in the DOM. Reacts to live resizes (not just the width at first render) since Playwright's
 // `setViewportSize` can change the viewport after the page has already mounted.
-function useMedia(query: string): boolean {
-  const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
-  useEffect(() => {
-    const mq = window.matchMedia(query)
-    const onChange = () => setOn(mq.matches)
-    onChange()
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [query])
-  return on
-}
 function useIsDesktopLayout(): boolean {
   return useMedia('(min-width: 1024px)')
 }
