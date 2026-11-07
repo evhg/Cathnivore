@@ -187,3 +187,4 @@ Search with grep; never read in full.
   attributes matched the expected fractions exactly, then a 4x-scale screenshot crop showed the same) and
   found it a false positive, logged in DECISIONS.md. Unreleased (cap spent). (This bar-based gauge was
   later replaced by a ring, see PROGRESS.md/DECISIONS.md 2026-09-28.)
+- **2026-11-07 05:21 lane B session:** CI: 9734c69 cancelled, c7bf267 red on key art (lane A re-shot it). Item 238 done. Passing: games-hero-cath (thresholds to item 238), site-hero, games-stall, games-cath, critique104 (phone and desktop); CSS lint. Failing on HEAD, not this change: critique103, critique79 (Cathnivore D). Shots `e2e/screenshots/i214/gh-*`.
