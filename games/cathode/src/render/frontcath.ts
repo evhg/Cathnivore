@@ -1631,8 +1631,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
             headPivot.rotation.z += 0.34 * Math.sin(ph) * e;
             headPivot.rotation.x += (0.12 + 0.16 * Math.cos(ph)) * e;
             headPivot.rotation.y += 0.18 * e;
-            chest.rotation.x += 0.06 * e;
-            chest.position.y -= 0.012 * e;
+            // Plan item 235: squared and low, hunched over the gun, shoulders square to the lens.
+            chest.rotation.x += 0.16 * e;
+            chest.position.y -= 0.03 * e;
+            headPivot.rotation.x += 0.08 * e;
             const snap = THREE.MathUtils.smoothstep(cuR, 0.42, 0.46) * (1 - THREE.MathUtils.smoothstep(cuR, 0.47, 0.54));
             tgt.copy(wristL).lerp(BUTCHER_HOLD, e);
             tgt.y -= 0.07 * snap;
@@ -1662,7 +1664,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
             umb.rotation.y += Math.PI * 2 * sp;
             headPivot.rotation.z += 0.18 * e;
             headPivot.rotation.y += 0.28 * e;
-            reach(0.4, 0.06, 0.2, 0.1, -1, -0.3, 1.2);
+            // Plan item 235: her free hand raised high into the rig's light, palm up, the halo's glow on it.
+            reach(0.3, 0.5, 0.2, 1, -0.5, -0.2, 1.2);
+            headPivot.rotation.x -= 0.12 * e;
+            chest.rotation.z -= 0.05 * e;
+            // The umbrella tipped back off her raised arm, so the halo and the hand stand clear of the canopy.
+            umb.rotation.z += 0.16 * e;
             break;
           }
           default:
@@ -2092,7 +2099,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       halo.push(spoke);
     }
     const haloG = extra("wirewitch", headPivot, [[halo, rigMat!]]);
-    haloG.position.set(0, 0.03, -0.1);
+    haloG.position.set(0, 0.04, -0.1);
+    haloG.scale.setScalar(1.3);
     // Butcher: a broad cleaver on her right hip, blade out, under the striped apron's edge.
     const blade = new THREE.BoxGeometry(0.11, 0.17, 0.006);
     blade.translate(0.015, -0.085, 0);
