@@ -74,16 +74,15 @@ test.describe('games page cards', () => {
         const b = (await t.boundingBox())!
         expect(b.y + b.height).toBeLessThanOrEqual(vp.height)
       }
-      const stall = await box('.hero-stall')
-      const cta = await box('.cta-row')
-      expect(stall.y + stall.height).toBeGreaterThan(cta.y + cta.height)
-      expect(stall.x + stall.width).toBeLessThanOrEqual(vp.width)
+      // Plan item 243: the small stall prop gave way to the stall round Cath and the words (games-stall.spec).
+      await expect(page.locator('.hero[data-booth]')).toHaveCount(1)
+      await expect(page.locator('.hero-stall')).toBeHidden()
     }
   })
 })
 
-// Plan item 85: all four games on the first screen: four hero cards wholly inside 1440x900, at least two inside
-// 390x844, none over Cath.
+// Plan item 85: all four games on the first screen: four hero cards wholly inside 1440x900, none over Cath; at
+// 390x844 the first row starts on the first screen (plan item 238).
 test('the hero shows the four games on the first screen, clear of Cath', async ({ page }) => {
   for (const [vp, need] of [[{ width: 1440, height: 900 }, 4], [{ width: 390, height: 844 }, 2]] as const) {
     await page.setViewportSize(vp)
@@ -98,7 +97,10 @@ test('the hero shows the four games on the first screen, clear of Cath', async (
       return { cards: [...document.querySelectorAll('.hero-game')].map(r).map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom })), cath: (({ left, top, right, bottom }) => ({ l: left, t: top, r: right, b: bottom }))(r(document.querySelector(innerWidth < 600 ? '#hero-cath-mini' : '#hero-cath')!)) }
     })
     const inside = m.cards.filter((c) => c.l >= 0 && c.t >= 0 && c.r <= vp.width && c.b <= vp.height)
-    expect(inside.length, `${vp.width}: ${JSON.stringify(m.cards)}`).toBeGreaterThanOrEqual(need)
+    // Plan item 238: on a phone Cath is the hero's centrepiece, so the posters start on the first screen (the top of
+    // the first row in view) rather than two whole ones.
+    if (need === 2) expect(Math.min(...m.cards.map((c) => c.t)), `${vp.width}: ${JSON.stringify(m.cards)}`).toBeLessThan(vp.height - 120)
+    else expect(inside.length, `${vp.width}: ${JSON.stringify(m.cards)}`).toBeGreaterThanOrEqual(need)
     for (const c of m.cards) expect(c.l < m.cath.r && c.r > m.cath.l && c.t < m.cath.b && c.b > m.cath.t, `a card over Cath at ${vp.width}`).toBe(false)
     await expect(links.nth(3)).toHaveAttribute('href', '/nightshift/')
   }

@@ -10,6 +10,7 @@ import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
 import { cardLines } from './cards'
+import { mountBooth } from './booth'
 import { startPosterPlay } from './posterplay'
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -299,3 +300,6 @@ startPosterPlay(
     return art && game ? [{ poster, art, game }] : []
   }),
 )
+
+// Plan item 243: at D the hero is Cath's stall, drawn round its measured layout.
+mountBooth()
