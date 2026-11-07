@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-07 17:58 UTC
+
 
 
 
@@ -2655,5 +2655,50 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Runnel:** D: the arc glyph after 'The spring house' on the board's hex lip (545-565 x 160-178); the churn and beehive on the hill crest against the sky, floating (1150-1180 x 105-155, 1325-1370 x 70-120).
   - **Cathnivore:** D title: the pennant hint straddles the cloth's corner and the counter (1022-1285 x 762-786). D setup: 'Two at the table' text after its transform (330-495 x 130-190; check 12 px).
   - **NIGHT SHIFT:** P title: '4 MORE NAMES' on rain (16-120 x 652-668; check 4.5:1).
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 260. [ ] NIGHT SHIFT: Cath's head and hair sculpted to the character bible
+- **Why:** `plan1107f/ns-title-D` (940-1010 x 260-345): after the ink pass (254) her face is still a smooth egg with dot eyes, the hair a tight helmet with no part or waves; `ns-play-D` (680-760 x 120-260) the hood reads as a space helmet; `ns-play-P` (150-215 x 160-230) the face is a blur.
+- **Build:** re-sculpt the head (cheekbones, jaw, a small nose bridge); eyes with a winged liner, two highlights and the right brow raised; a hair mesh with a centre part and long soft waves past her shoulders, keeping 254's shine band; blush and lip gloss that hold under the toon bands.
+- **Accept:** face 70 px or more tall on the D title, 30 on the P title; both eyes show liner and two highlights at D; hair below her shoulder line at D; face to hair luminance 3:1 or more; cathode-perf within budget; cathode-front and classpick pass; key art re-shot; shots P and D, title and pick.
+- **Size:** 3
+
+## 261. [ ] NIGHT SHIFT: the title alley as a set, with wet ground
+- **Why:** `plan1107f/ns-title-D` (1000-1440 x 280-900): the right half is a flat brick plane with rain, no props, no readable ground; `ns-play-D` (480-960 x 600-900) she stands on black, no floor, shadow or puddle (640-760 x 780-830); `ns-title-P` (0-390 x 760-844) an empty black band. (Lane B left this out on 2026-11-07 13:55 until item 254 landed; it has.)
+- **Build:** dress the title and pick alley: a fire escape, a lit door transom, bins and steam from a grate (static under reduced motion); the asphalt wet enough to carry the LUNA sign (item 258) and her silhouette; a contact shadow under her feet.
+- **Accept:** 3 or more props in the D title shot, none touching her figure box or the sign; the sign's reflection visible on the ground at P and D; a contact shadow in the D pick shot; no 80 px empty black band on the P title; cathode-perf within budget (+8 draw calls at most); cathode-front, classpick pass; key art re-shot.
+- **Size:** 2
+
+## 262. [ ] Hedgerow 3D: the verges as authored countryside
+- **Why:** `plan1107f/hedge-l21-3d-P` (0-100 x 60-690) and `hedge-l21-3d-D` (15-250 x 80-640): the saltmarsh verge is lumpy flat-shaded grey-green patches with single black reed sticks; from above it reads as noise, where the 2D verge (`hedge-l21-2d-D`, 15-280 x 75-890) reads as water with reeds and flowers.
+- **Build:** replace the patch mesh with authored verge pieces in the 2D palette: a water plane with lily and reed clumps, a dry-stone wall or hedge along the field fence, grouped trees and stones; per biome where the act has its own verge.
+- **Accept:** the verge in both 3D shots at most 4 flat colours plus water; reeds only in clumps of 3 or more; a clear water/land edge at P and D; draw calls +6 or fewer at P; `?2d` shots unchanged; hedgerow-biome3d, -3dframe, -closeframe pass; key art re-shot.
+- **Size:** 2
+
+## 263. [ ] Cathnivore: the "Saving for" shelf as goods worth wanting
+- **Why:** `plan1107f/cath-game-D` (30-320 x 360-520): the three improvements are grey dashed cards with small washed-out pictures and red "Need 2 more Marks" lines, reading disabled beside a rich board; the "4 more not yet" pill (118-230 x 538-568) is a flat control.
+- **Build:** each improvement a full-colour market good on a shelf, its picture filling the card; a Marks meter (coins filled of the cost) in place of the red sentence; a tag that lights when it is affordable; the phone Market sheet in the same look.
+- **Accept:** card art 60 px or more tall at D, no grey placeholder fill; the meter shows a count at 4.5:1; affordable cards carry a testable state (`data-affordable`); board-scale, desktop-no-scroll, plan-cards, tutorial pass; shots game D and the phone Market sheet, light and dark.
+- **Size:** 2
+
+## 264. [ ] Runnel: tiles as carved pieces with water you can see
+- **Why:** `plan1107f/runnel-D` (555-1240 x 95-760), `runnel-P` (35-330 x 300-630): the tiles are flat cream hexes with a dry brown groove and a grey ring, no thickness or carved depth; the spring's water stops at its own edge (720-800 x 215-275).
+- **Build:** a bevelled side per tile, a carved groove with an inner shadow, connected grooves filled with moving water carrying a highlight (static under reduced motion); the hinted tile lifts on a soft shadow.
+- **Accept:** tile side 6 px or more at D, 3 at P; connected grooves visibly wet and unconnected dry in a mid-board shot; groove 3:1 against the tile face; runnel e2e pass; shots P and D, the tutorial and a mid-daily board.
+- **Size:** 2
+
+## 265. [ ] /games/ phone hero: Cath behind her stall
+- **Why:** `plan1107f/games-P` (85-305 x 245-458): Cath is cut at the waist by a thin chequered strip floating over the sunset; the stall's awning and produce (whole at D, 150-480 x 10-440) are missing on a phone, its awning showing only under the buttons (5-385 x 548-590).
+- **Build:** at phone width the stall as one scene: the awning over Cath, a counter of produce with the FRESH · FREE board, the two buttons on the counter front; the cards below.
+- **Accept:** awning, Cath and counter in one group within 360 px at 390x844, no floating strip; Cath 190 px or more tall; both buttons above the fold; games-hero-cath, -stall, -cards pass; shots P and D (D unchanged); key art unchanged.
+- **Size:** 1
+
+## 266. [ ] The bugs from the 2026-11-07 18:00 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1107f`)
+  - **NIGHT SHIFT:** D and P pick: the Ghost's slung rifle rises through the umbrella canopy (790-845 x 0-260; P 265-300 x 0-250); D pick canopy cut by the frame's top (470-960 x 0-60). P pick: the hold bar 2 px past the card's left edge and 12 px short of its right (9-367 x 790-833); the paperclip floats off the card (352-364 x 627-652); labels SNIPER RIFLE/DAMAGE/RATE/MAGAZINE (186-352 x 690-750) and D 'STARTS WITH', 'CASE FILE', 'DAMAGE' possibly under 12 px. D title: List cards 3-4 blurbs run onto the card's bottom edge (285-490 x 795-812).
+  - **Hedgerow:** D l34: the Box Lorry queue faces east in a north-south lane, noses over the plot column, the lead over the farmer (220-318 x 105-470); Same-Day vans 3-4 leave the lane at the bend, the 4th on the willow and its tag on the plot edge (375-605 x 785-890). P menu: Act 4 header washed out and half under the tab bar (15-375 x 755-775; may be the fog teaser). P 3D l21: the depot cropped by the top bar (150-245 x 55-155).
+  - **Runnel:** the milk bottle as tall as the farmer (D 885-912 x 762-812; P 340-357 x 365-392).
+  - **Cathnivore:** P game: the hand's next card and › cut at the right edge with nothing saying how many more (355-390 x 675-770). D setup: unpicked maps 'The Long Coast' and 'The Delta' with no card edge on the cloth (660-1095 x 650-850).
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
