@@ -33,13 +33,24 @@ test('the board sits in a terrace, fed by the stream', async ({ page }) => {
     if (end) {
       for (const t of document.querySelectorAll<SVGPolygonElement>('#board .terrace-lip polygon')) {
         const m = t.getScreenCTM()!
-        for (const q of [...t.points].map((p) => new DOMPoint(p.x, p.y).matrixTransform(m))) lipGap = Math.min(lipGap, Math.hypot(q.x - end[0]!, q.y - end[1]!))
+        // the gap to the lip's outline (its edges, not just their corners: the branch may end mid-edge)
+        const pts = [...t.points].map((p) => new DOMPoint(p.x, p.y).matrixTransform(m))
+        pts.forEach((a, i) => {
+          const b = pts[(i + 1) % pts.length]!
+          const [dx, dy] = [b.x - a.x, b.y - a.y]
+          const k = Math.max(0, Math.min(1, ((end[0]! - a.x) * dx + (end[1]! - a.y) * dy) / (dx * dx + dy * dy || 1)))
+          lipGap = Math.min(lipGap, Math.hypot(a.x + dx * k - end[0]!, a.y + dy * k - end[1]!))
+        })
       }
     }
-    return { onValley, n, hidden: feeder?.hasAttribute('hidden') ?? true, lipGap }
+    // Plan item 259: the culvert is never tucked against the spring house's tag (it hid the branch there).
+    const sign = document.querySelector('.spring-sign')!.getBoundingClientRect()
+    const bySign = !!end && end[0]! > sign.left - 14 && end[0]! < sign.right + 14 && end[1]! > sign.top - 14 && end[1]! < sign.bottom + 14
+    return { onValley, n, hidden: feeder?.hasAttribute('hidden') ?? true, lipGap, bySign }
   })
   expect(r.n).toBeGreaterThan(20)
   expect(r.onValley).toBe(0)
   expect(r.hidden).toBe(false)
   expect(r.lipGap).toBeLessThanOrEqual(12)
+  expect(r.bySign).toBe(false)
 })

@@ -561,6 +561,18 @@ function placeFeeder(): void {
     run.push(st)
   }
   // Nearest the terrace, but early in the stream's run: the branch should leave it near the spring house.
+  // Plan item 259: never under the spring house's sign (its tag hid the branch, leaving the culvert a stray arc by
+  // the words), unless no route avoids it.
+  const sign = document.querySelector<HTMLElement>('.spring-sign')?.getBoundingClientRect()
+  const underSign = (p: { x: number; y: number }, q: { x: number; y: number }): boolean => {
+    if (!sign || !sign.width) return false
+    for (let k = 0; k <= 10; k++) {
+      const x = p.x + ((q.x - p.x) * k) / 10
+      const y = p.y + ((q.y - p.y) * k) / 10
+      if (x > sign.left - 14 && x < sign.right + 14 && y > sign.top - 14 && y < sign.bottom + 14) return true
+    }
+    return false
+  }
   let best: { s: DOMPoint; r: DOMPoint; d: number; score: number } | null = null
   let walked = 0
   for (let i = 0; i < run.length; i++) {
@@ -568,7 +580,7 @@ function placeFeeder(): void {
     if (i) walked += Math.hypot(st.x - run[i - 1]!.x, st.y - run[i - 1]!.y)
     for (const r of outer) {
       const d = Math.hypot(r.x - st.x, r.y - st.y)
-      const score = d + walked * 0.25
+      const score = d + walked * 0.25 + (underSign(st, r) ? 1e4 : 0)
       if (!best || score < best.score) best = { s: st, r, d, score }
     }
   }
