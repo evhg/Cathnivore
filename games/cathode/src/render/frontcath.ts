@@ -1552,11 +1552,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
     chest.rotation.x = 0;
     chest.rotation.y = 0;
     umb.rotation.y = 0;
+    pelvis.rotation.y = 0;
     // C14 (S9.5): the class idle on top, a posed 1.2 s clip: in over the first quarter, held, out over the last
     // fifth, so it starts and ends on the breathing idle (and a held screenshot at 0.5 shows the pose itself).
     // Her left arm reaches by two-bone IK; the head turns to the lens (the wardrobe sees her from the front).
     clipDraw = 0;
     let armOn = false;
+    let carryNow = false;
     let gunInHand: "rifle" | "shotgun" | null = null;
     let glint = 0;
     let rack = 0;
@@ -1615,6 +1617,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
             headPivot.rotation.y += 0.1 * e;
             headPivot.rotation.z -= 0.08 * e;
             chest.rotation.y -= 0.06 * e;
+            // Plan item 235: turned side-on, the rifle's shoulder to the lens and her face back to it.
+            pelvis.rotation.y -= 0.42 * e;
+            headPivot.rotation.y += 0.3 * e;
             // One glint mid-audition; held (the pick's first frame), it catches the light every few seconds.
             glint = clip_.held !== undefined ? Math.max(0, Math.sin(t * 1.4)) ** 12 : THREE.MathUtils.smoothstep(cu, 0.4, 0.47) * (1 - THREE.MathUtils.smoothstep(cu, 0.5, 0.62));
             break;
@@ -1647,6 +1652,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
             umb.rotation.x -= 0.32 * e;
             umb.rotation.z += 0.3 * e;
             reach(0.155, -0.2, 0.05, 1, 0.4, -0.7, 0.9);
+            // Plan item 235: hip-shot, her weight thrown onto the holster side.
+            pelvis.rotation.z -= 0.06 * e;
+            pelvis.position.x += 0.025 * e;
+            chest.rotation.z += 0.09 * e;
             break;
           case "wirewitch": {
             const sp = cu * cu * (3 - 2 * cu);
@@ -1657,17 +1666,31 @@ export function buildFrontCath(phone: boolean): FrontCath {
             break;
           }
           default:
-            // The fixer straightens her collar, eyes down to it.
-            reach(0.02, 0.31, 0.15, 1, -0.7, -0.1, -1.2);
-            headPivot.rotation.x += 0.2 * e;
-            headPivot.rotation.y += 0.22 * e;
-            chest.rotation.z += 0.04 * e;
+            {
+              // The fixer straightens her collar, eyes down to it; plan item 235: then, holding her stance, she
+              // carries her briefcase at her side, arm straight, chin up (the audition's tail lowers the arm to it).
+              // A held audition (the pick's first frame, screenshots) shows the stance it settles into.
+              const own = clip?.kind === "fixer" && stanceWant === "fixer";
+              const k = !clip ? 1 : !own ? 0 : clip.held !== undefined ? 1 : THREE.MathUtils.smoothstep(clip.u, 0.78, 1);
+              const c = 1 - k;
+              reach(0.02 * c + 0.27 * k, 0.31 * c - 0.25 * k, 0.15 * c + 0.12 * k, 1, -0.7 * c + 0.1 * k, -0.1 * c - 0.4 * k, -1.2 * c);
+              headPivot.rotation.x += (0.2 * c - 0.05 * k) * e;
+              headPivot.rotation.y += (0.22 * c + 0.1 * k) * e;
+              chest.rotation.z += (0.04 * c + 0.03 * k) * e;
+              carryNow = k > 0.5 && e > 0.5;
+            }
         }
       }
     }
     // Only the Ghost's draw and the Fixer's collar keep the cigarette in hand: in a fist (the Butcher), on the hip or
     // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
     handNow.copy(armOn ? tgt : wristL);
+    carrying = carryNow;
+    if (caseUp && caseDown && wearing === "fixer") {
+      caseUp.position.copy(handNow).add(tmpV.set(0.01, -0.3, 0.01));
+      caseUp.visible = carrying;
+      caseDown.visible = !carrying;
+    }
     const palmed = armOn && !!posing && posing.kind !== "fixer";
     poseProps(gunInHand, glint, rack, shellU);
     cigMesh.visible = !palmed;
@@ -1827,6 +1850,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const tube = (pts: Array<[number, number, number]>, r: number, segs = 24) =>
     new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => V(x, y, z))), segs, r, 6, false);
   const kits = new Map<string, THREE.Group>();
+  const kitExtras = new Map<string, THREE.Group>();
+  let caseDown: THREE.Group | null = null;
+  let caseUp: THREE.Group | null = null;
+  let carrying = false;
   const kitMats: THREE.Material[] = [];
   const kitMat = (m: THREE.Material) => (kitMats.push(m), m);
   const kitGroup = (cls: string, parts: Array<[THREE.BufferGeometry[], THREE.Material]>) => {
@@ -1856,13 +1883,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       ],
     ]);
     // Butcher: a heavy leather apron from the chest to below the knee, on a neck strap.
-    const apron = new THREE.CylinderGeometry(0.19, 0.252, 0.8, seg(16), 4, true, -0.62, 1.24);
-    apron.scale(1, 1, 0.74);
-    apron.translate(0, -0.03, 0);
     kitGroup("butcher", [
       [
         [
-          apron,
           tube([[-0.065, 0.36, 0.12], [-0.06, 0.47, 0.11], [0, 0.545, 0.06], [0.06, 0.47, 0.11], [0.065, 0.36, 0.12]], 0.007, 16),
         ],
         kitMat(new THREE.MeshStandardMaterial({ color: 0x4a2418, roughness: 0.36, metalness: 0.08, side: THREE.DoubleSide })),
@@ -1997,6 +2020,135 @@ export function buildFrontCath(phone: boolean): FrontCath {
   kits.get("butcher")!.add(hipGun);
   const backRifle = kits.get("ghost")!.children[1]!;
 
+  // ---- plan item 235: one large silhouette piece per class, so the five read apart at a glance on the class pick
+  // (a critique read them as one figure with a different gun). Head pieces ride the head, the Fixer's case stands on
+  // the street; each shows and hides with its kit. ----
+  const extra = (cls: string, parent: THREE.Object3D, parts: Array<[THREE.BufferGeometry[], THREE.Material]>) => {
+    const g = new THREE.Group();
+    g.name = `kit-${cls}-extra`;
+    for (const [geos, mat] of parts) add(mergeGeos(geos), mat, g);
+    parent.add(g);
+    kitExtras.set(cls, g);
+    g.visible = false;
+    return g;
+  };
+  {
+    // Ghost: the hood up, a deep cowl round the back and top of her head, open at the face, falling to the collar.
+    const hood = new THREE.SphereGeometry(1, seg(28), seg(18), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
+    hood.scale(0.112, 0.13, 0.118);
+    hood.translate(0, 0.012, -0.01);
+    const cowl = new THREE.CylinderGeometry(0.1, 0.165, 0.16, seg(24), 1, true, Math.PI * 0.5 + 0.55, Math.PI * 2 - 1.1);
+    cowl.translate(0, -0.165, -0.025);
+    const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
+    rimify(hoodMat as THREE.MeshStandardMaterial, 0.9);
+    extra("ghost", headPivot, [[[hood, cowl], hoodMat]]);
+    // Gunslinger: a wide-brimmed hat, the brim curled up at the sides and the crown pinched, tipped forward.
+    const brim = new THREE.LatheGeometry([0.07, 0.11, 0.15, 0.175, 0.19].map((r, i) => new THREE.Vector2(r, [0, 0.002, 0.004, 0.012, 0.03][i]!)), seg(32));
+    {
+      // The sides curl up more than the front and back.
+      const p = brim.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const z = p.getZ(i);
+        const r = Math.hypot(x, z);
+        const side = (x / Math.max(r, 1e-6)) ** 2;
+        p.setY(i, p.getY(i) * (0.2 + 1.6 * side) + Math.max(0, r - 0.12) * 0.25 * side);
+        p.setZ(i, z * 0.92);
+      }
+      brim.computeVertexNormals();
+    }
+    const crown = new THREE.CylinderGeometry(0.068, 0.088, 0.1, seg(24), 2);
+    {
+      const p = crown.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) if (p.getY(i) > 0.04) p.setY(i, p.getY(i) - 0.018 * Math.max(0, 1 - Math.abs(p.getX(i)) / 0.03));
+      crown.computeVertexNormals();
+    }
+    crown.scale(1, 1, 0.9);
+    crown.translate(0, 0.05, 0);
+    const band = new THREE.CylinderGeometry(0.087, 0.089, 0.018, seg(24), 1, true);
+    band.scale(1, 1, 0.9);
+    band.translate(0, 0.012, 0);
+    // A low rim on the hat: at full gain the brim's underside, edge-on to the lens, took the sign's Fresnel as a pale blue plate.
+    const hatMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x6a4c34, roughness: 0.78, metalness: 0, side: THREE.DoubleSide }));
+    rimify(hatMat as THREE.MeshStandardMaterial, 0.3);
+    const hat = extra("gunslinger", headPivot, [
+      [[brim, crown], hatMat],
+      [[band], kitMat(new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.35, metalness: 0.6 }))],
+    ]);
+    hat.position.set(0, 0.075, -0.004);
+    hat.rotation.set(0.14, 0, -0.06);
+    // Wirewitch: a halo of lit cable behind her head, two rings with the rig's nodes on them.
+    const halo: THREE.BufferGeometry[] = [];
+    for (const [r, t] of [[0.2, 0.004], [0.17, 0.009], [0.135, 0.005]] as const) halo.push(new THREE.TorusGeometry(r, t, 6, seg(48)));
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + 0.2;
+      const n = new THREE.BoxGeometry(0.024, 0.024, 0.012);
+      n.rotateZ(a);
+      n.translate(Math.cos(a) * 0.17, Math.sin(a) * 0.17, 0);
+      halo.push(n);
+      const spoke = new THREE.BoxGeometry(0.035, 0.003, 0.003);
+      spoke.rotateZ(a);
+      spoke.translate(Math.cos(a) * 0.1525, Math.sin(a) * 0.1525, 0);
+      halo.push(spoke);
+    }
+    const haloG = extra("wirewitch", headPivot, [[halo, rigMat!]]);
+    haloG.position.set(0, 0.03, -0.1);
+    // Butcher: a broad cleaver on her right hip, blade out, under the striped apron's edge.
+    const blade = new THREE.BoxGeometry(0.11, 0.17, 0.006);
+    blade.translate(0.015, -0.085, 0);
+    const handle = limb(V(0, 0, 0), V(0, 0.1, 0), 0.013, 0.014, 8);
+    const steel = kitMat(new THREE.MeshStandardMaterial({ color: 0xb8bcc2, roughness: 0.28, metalness: 0.9 }));
+    const cleaver = extra("butcher", pelvis, [
+      [[blade], steel],
+      [[handle], kitMat(new THREE.MeshStandardMaterial({ color: 0x3a2214, roughness: 0.55 }))],
+    ]);
+    cleaver.position.set(-0.27, -0.1, 0.06);
+    cleaver.rotation.set(0, 0.25, 0.3);
+    // Fixer: her briefcase, brass clasps and a handle. She carries it in her free hand while she holds her stance,
+    // and stands it on the street against her left boot while she straightens her collar (the audition).
+    const caseMats = [
+      kitMat(new THREE.MeshStandardMaterial({ color: 0x5a3a24, roughness: 0.38, metalness: 0.05 })),
+      kitMat(new THREE.MeshStandardMaterial({ color: 0xc9a050, roughness: 0.3, metalness: 0.85 })),
+    ] as const;
+    const briefcase = (parent: THREE.Object3D, name: string) => {
+      const body = new THREE.BoxGeometry(0.4, 0.29, 0.09);
+      body.translate(0, 0.145, 0);
+      const grip = new THREE.TorusGeometry(0.04, 0.008, 6, 14, Math.PI);
+      grip.translate(0, 0.29, 0);
+      const g = new THREE.Group();
+      g.name = name;
+      add(mergeGeos([body, grip]), caseMats[0], g);
+      add(mergeGeos([-0.11, 0.11].map((x) => box(0.026, 0.02, 0.012, x, 0.255, 0.048))), caseMats[1], g);
+      g.visible = false;
+      parent.add(g);
+      return g;
+    };
+    caseDown = briefcase(group, "kit-fixer-case");
+    caseDown.position.set(0.3, 0, 0.16);
+    caseDown.rotation.set(0, -0.55, -0.08);
+    caseUp = briefcase(chest, "kit-fixer-case-carried");
+    caseUp.rotation.set(0, -0.35, 0.04);
+  }
+  // The butcher's apron in a blue-and-cream butcher's stripe (it was a claret like her coat and vanished into it).
+  {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 8;
+    const x = c.getContext("2d")!;
+    x.fillStyle = "#cfc6b2";
+    x.fillRect(0, 0, 64, 8);
+    x.fillStyle = "#1f2c48";
+    for (let i = 0; i < 64; i += 11) x.fillRect(i + 3, 0, 5, 8);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    // Plan item 112's apron, now its own mesh: mergeGeos drops UVs, and the stripe needs them.
+    const apron = new THREE.CylinderGeometry(0.19, 0.252, 0.8, seg(16), 4, true, -0.62, 1.24);
+    apron.scale(1, 1, 0.74);
+    apron.translate(0, -0.03, 0);
+    const am = kitMat(new THREE.MeshStandardMaterial({ map: tex, color: 0xd8d0c0, roughness: 0.75, metalness: 0, side: THREE.DoubleSide }));
+    add(apron, am, kits.get("butcher")!);
+  }
+
   const GHOST_GRAB = V(0.22, 0.36, -0.1);
   const GHOST_HOLD = V(0.28, 0.17, 0.15);
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
@@ -2093,9 +2245,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
     kit(cls) {
       wearing = cls && kits.has(cls) ? cls : null;
       for (const [k, g] of kits) g.visible = k === wearing;
+      for (const [k, g] of kitExtras) g.visible = k === wearing;
+      if (caseDown && caseUp) {
+        caseDown.visible = wearing === "fixer" && !carrying;
+        caseUp.visible = wearing === "fixer" && carrying;
+      }
     },
     showAllKits(on) {
       for (const [k, g] of kits) g.visible = on || k === wearing;
+      for (const [k, g] of kitExtras) g.visible = on || k === wearing;
+      if (caseDown && caseUp) {
+        caseDown.visible = on || (wearing === "fixer" && !carrying);
+        caseUp.visible = on || (wearing === "fixer" && carrying);
+      }
       rifle.visible = shotgun.visible = shell.visible = glintSprite.visible = on;
     },
     update,
