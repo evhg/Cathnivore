@@ -91,6 +91,12 @@ test('a first win plays the chapter-complete moment: the region floods, Cath wal
   await expect(map).toHaveAttribute('data-phase', /before|flood/)
   await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-1.png` })
   await expect(map).toHaveAttribute('data-phase', 'walk', { timeout: 6000 })
+  // Plan item 248: the freed regions bloom their colour back once, in 600-1000 ms.
+  const paint = page.locator('.cmp-map [data-region="brindleHills"] .cmp-map-paint')
+  expect(await paint.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-bloom')
+  const ms = await paint.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)
+  expect(ms).toBeGreaterThanOrEqual(600)
+  expect(ms).toBeLessThanOrEqual(1000)
   await page.waitForTimeout(500)
   await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-2.png` })
   // ...and ends with them freed and Cath at chapter 2.
@@ -112,6 +118,8 @@ test('under reduced motion the moment fades instead of walking', async ({ page }
   const cath = page.locator('.cmp-map-cath')
   expect(await cath.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s')
   expect(await cath.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-fade')
+  // Plan item 248: the bloom is a plain colour fade here.
+  expect(await page.locator('.cmp-map [data-region="brindleHills"] .cmp-map-paint').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-colour-in')
   await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
 })
 
@@ -157,8 +165,8 @@ test('the map is painted country, and at desktop it spans the content width besi
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
   await expect(page.locator('.cmp-map [data-landmark]')).toHaveCount(7)
-  // Five regions still held; Cath stands at Saltmarsh's pin, in front of its post.
-  await expect(page.locator('.cmp-map .cmp-post')).toHaveCount(4)
+  // Five regions still held; Cath stands at Saltmarsh's pin, in front of its outlet (item 248: outlets, not posts).
+  await expect(page.locator('.cmp-map .cmp-outlet')).toHaveCount(4)
   await expect(page.locator('.cmp-map-river')).toHaveCount(1)
   const m = await page.evaluate(() => {
     const main = document.querySelector('.campaign-screen')!
@@ -176,4 +184,63 @@ test('the map is painted country, and at desktop it spans the content width besi
     expect(m.map / m.content).toBeGreaterThanOrEqual(0.95)
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+})
+
+// Plan item 248: the map is a diorama of the liberation: each region freed (full colour, a market stall), current
+// (the next chapter's home) or locked (Hollowell's grey country with an outlet), and freed regions measurably more
+// saturated than locked ones.
+test('regions read freed, current or locked: markets in colour, Hollowell outlets in grey', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.addInitScript(() =>
+    localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat', 'word-of-mouth', 'growing-season'], tutorialDone: true })),
+  )
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  const regions = page.locator('.cmp-map [data-region]')
+  await expect(regions).toHaveCount(7)
+  const states = await regions.evaluateAll((els) => Object.fromEntries(els.map((e) => [e.getAttribute('data-region'), e.getAttribute('data-state')])))
+  expect(Object.values(states).filter((v) => v === 'freed').length).toBe(4)
+  expect(Object.values(states)).toContain('current')
+  expect(Object.values(states)).toContain('locked')
+  expect(Object.values(states).every((v) => ['freed', 'current', 'locked'].includes(String(v)))).toBe(true)
+  await expect(page.locator('.cmp-map [data-building="stall"]')).toHaveCount(4)
+  expect(await page.locator('.cmp-map [data-building="outlet"]').count()).toBeGreaterThanOrEqual(1)
+  await page.waitForTimeout(300)
+  // Mean HSV saturation of each region's inner box, from a screenshot of the page.
+  const boxes = await regions.evaluateAll((els) =>
+    els.map((e) => {
+      const r = e.querySelector('.cmp-map-ground')!.getBoundingClientRect()
+      return { state: e.getAttribute('data-state'), x: r.x + r.width * 0.3, y: r.y + r.height * 0.3, w: r.width * 0.4, h: r.height * 0.4 }
+    }),
+  )
+  const shot = (await page.screenshot()).toString('base64')
+  const sats = await page.evaluate(
+    async ({ shot, boxes }) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${shot}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const g = c.getContext('2d')!
+      g.drawImage(img, 0, 0)
+      const k = img.width / innerWidth
+      return boxes.map((b) => {
+        const d = g.getImageData(Math.round(b.x * k), Math.round(b.y * k), Math.max(1, Math.round(b.w * k)), Math.max(1, Math.round(b.h * k))).data
+        let sum = 0
+        for (let i = 0; i < d.length; i += 4) {
+          const mx = Math.max(d[i]!, d[i + 1]!, d[i + 2]!)
+          const mn = Math.min(d[i]!, d[i + 1]!, d[i + 2]!)
+          sum += mx === 0 ? 0 : (mx - mn) / mx
+        }
+        return { state: b.state, s: sum / (d.length / 4) }
+      })
+    },
+    { shot, boxes },
+  )
+  const mean = (st: string) => {
+    const xs = sats.filter((x) => x.state === st).map((x) => x.s)
+    return xs.reduce((a, b) => a + b, 0) / xs.length
+  }
+  expect(mean('freed')).toBeGreaterThan(mean('locked') * 1.25)
 })

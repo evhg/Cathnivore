@@ -793,6 +793,8 @@ html.no-animations .campaign-screen * {
 }
 /* Hollowell's hold: an orange wash and a hatch over the region's own painted ground, not a flat fill. */
 .is-held .cmp-map-tint { fill: color-mix(in srgb, var(--hollowell) 22%, transparent); }
+/* Plan item 248: a locked region is Hollowell's grey country: a slate wash over its drained ground, the orange hatch on top. */
+.cmp-map-hex[data-state='locked'] .cmp-map-tint { fill: color-mix(in srgb, var(--corp-slate) 16%, transparent); }
 .is-free .cmp-map-tint { fill: color-mix(in srgb, var(--pasture) 10%, transparent); }
 .cmp-map-hatch { pointer-events: none; transition: opacity 600ms ease; }
 .is-free .cmp-map-hatch { opacity: 0; }
@@ -813,7 +815,31 @@ html.no-animations .campaign-screen * {
 .cmp-river-water { fill: none; stroke: color-mix(in srgb, var(--sea) 75%, var(--region-coast)); stroke-width: 3.6; stroke-linecap: round; }
 
 .cmp-landmark { filter: drop-shadow(0 1.5px 0.5px color-mix(in srgb, var(--ink) 22%, transparent)); }
-.cmp-post-board { fill: var(--hollowell); stroke: var(--hollowell-ink); stroke-width: 0.9; }
+/* Plan item 248: Hollowell's grey country and its outlets; a freed region's market stall. A held region's painted
+   ground is drained of colour (a freed one is in full colour), and freeing it blooms the colour back in 800 ms. */
+.cmp-map-paint { transition: filter 800ms ease-out; }
+.cmp-map-hex[data-state='locked'] .cmp-map-paint { filter: saturate(0.3) brightness(0.97); }
+.cmp-map-hex[data-state='current'] .cmp-map-paint { filter: saturate(0.55); }
+.cmp-map-hex.is-flooding .cmp-map-paint { animation: cmp-bloom 800ms ease-out both; }
+@keyframes cmp-bloom {
+  0% { filter: saturate(0.3) brightness(0.97); }
+  60% { filter: saturate(1.35) brightness(1.06); }
+  100% { filter: none; }
+}
+.cmp-outlet-wall { fill: color-mix(in srgb, var(--ink) 30%, var(--paper-2)); stroke: var(--hollowell-ink); stroke-width: 0.7; stroke-linejoin: round; }
+.cmp-outlet-fascia { fill: var(--hollowell); stroke: var(--hollowell-ink); stroke-width: 0.7; stroke-linejoin: round; }
+.cmp-outlet-sign { stroke: var(--paper-on-fixed-fill); stroke-width: 1.1; stroke-linecap: round; }
+.cmp-outlet-door { fill: color-mix(in srgb, var(--ink) 75%, var(--paper-2)); }
+.cmp-outlet-window { fill: color-mix(in srgb, var(--sea) 40%, var(--paper-2)); }
+.cmp-stall-post { stroke: var(--soil); stroke-width: 1.2; stroke-linecap: round; }
+.cmp-stall-awning { fill: var(--paper-hi, var(--paper)); stroke: var(--soil); stroke-width: 0.7; stroke-linejoin: round; }
+.cmp-stall-stripe { fill: var(--pasture-deep); }
+.cmp-stall-counter { fill: color-mix(in srgb, var(--soil) 70%, var(--paper)); stroke: var(--soil); stroke-width: 0.6; }
+.cmp-stall-produce { fill: var(--clay); }
+.cmp-stall-produce.is-b { fill: var(--pasture); }
+.cmp-outlet, .cmp-stall { filter: drop-shadow(0 1px 0.4px color-mix(in srgb, var(--ink) 25%, transparent)); }
+.cmp-map-dress.is-flooding .cmp-stall { animation: cmp-stall-up 700ms var(--ease-settle) both; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes cmp-stall-up { from { transform: scale(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
 .cmp-map-dress.is-held .cmp-landmark { opacity: 0.88; }
 
 .cmp-map-name {
@@ -861,7 +887,7 @@ html.no-animations .campaign-screen * {
 .cmp-map-cath svg { overflow: visible; filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 25%, transparent)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .cmp-map-tint, .cmp-map-hatch { transition: none; }
+  .cmp-map-tint, .cmp-map-hatch, .cmp-map-paint { transition: none; }
 }
 
 /* Plan item 35: the three wax seals on each chapter card. */
@@ -939,11 +965,16 @@ html.no-animations .campaign-screen * {
   .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-cath,
   .campaign-screen .cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
   .campaign-screen .cmp-map-next { animation: cmp-fade 400ms ease both !important; }
+  .campaign-screen .cmp-map-hex.is-flooding .cmp-map-paint { animation: cmp-colour-in 800ms ease both !important; }
+  .campaign-screen .cmp-map-dress.is-flooding .cmp-stall { animation: cmp-fade 800ms ease both !important; }
 }
 :root.reduce-motion .campaign-screen .cmp-map-cath { transition: none !important; }
 :root.reduce-motion .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-cath,
 :root.reduce-motion .campaign-screen .cmp-map[data-phase='flood'] .is-flooding .cmp-bunting,
 :root.reduce-motion .campaign-screen .cmp-map-next { animation: cmp-fade 400ms ease both !important; }
+:root.reduce-motion .campaign-screen .cmp-map-hex.is-flooding .cmp-map-paint { animation: cmp-colour-in 800ms ease both !important; }
+:root.reduce-motion .campaign-screen .cmp-map-dress.is-flooding .cmp-stall { animation: cmp-fade 800ms ease both !important; }
+@keyframes cmp-colour-in { from { filter: saturate(0.3) brightness(0.97); } to { filter: none; } }
 html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
 
 /* Plan item 35: the title's Campaign key shows the map's progress. */

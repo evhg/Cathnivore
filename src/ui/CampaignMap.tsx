@@ -31,13 +31,31 @@ function pinOf(chapter: Chapter): { x: number; y: number } {
   return pinCentre(CHAPTER_HOMES[chapter.id]?.[0] ?? chapter.activeRegions[0]!)
 }
 
-// Hollowell's sign post: an orange board on a stake, nailed into each region they still hold.
-function Post() {
+// Plan item 248: a region Hollowell still holds carries one of its outlets, a grey box with an orange fascia and a
+// dark door; a freed region has a market stall in its place, striped awning and produce on the counter. Both fit
+// the old sign post's box (postBox: 14 x 18 units), so the layout test's clearances still hold.
+function Outlet() {
   return (
-    <g className="cmp-post" aria-hidden="true">
-      <path d="M0 2 V-12" stroke="var(--soil)" strokeWidth={1.6} strokeLinecap="round" />
-      <path d="M-6 -15 H6 V-8 H-6 Z" className="cmp-post-board" />
-      <path d="M-3.5 -11.5 H3.5" stroke="var(--paper-on-fixed-fill)" strokeWidth={1.2} strokeLinecap="round" />
+    <g className="cmp-outlet" aria-hidden="true">
+      <path d="M-6.5 2 V-9 H6.5 V2 Z" className="cmp-outlet-wall" />
+      <path d="M-7 -9 H7 V-14 H-7 Z" className="cmp-outlet-fascia" />
+      <path d="M-4.5 -11.5 H4.5" className="cmp-outlet-sign" />
+      <path d="M-2 2 V-5 H2 V2 Z" className="cmp-outlet-door" />
+      <path d="M-5.5 -7 H-3.2 V-4.4 H-5.5 Z M3.2 -7 H5.5 V-4.4 H3.2 Z" className="cmp-outlet-window" />
+    </g>
+  )
+}
+
+function Stall() {
+  return (
+    <g className="cmp-stall" aria-hidden="true">
+      <path d="M-6 -9 V2 M6 -9 V2" className="cmp-stall-post" />
+      <path d="M-7 -9 H7 L6 -15 H-6 Z" className="cmp-stall-awning" />
+      <path d="M-3.5 -15 L-4.2 -9 H-1.4 L-1.2 -15 Z M1.2 -15 L1.4 -9 H4.2 L3.5 -15 Z" className="cmp-stall-stripe" />
+      <path d="M-6.5 -3 H6.5 V1 H-6.5 Z" className="cmp-stall-counter" />
+      <circle cx={-3.6} cy={-4.2} r={1.5} className="cmp-stall-produce" />
+      <circle cx={0} cy={-4.4} r={1.6} className="cmp-stall-produce is-b" />
+      <circle cx={3.6} cy={-4.2} r={1.5} className="cmp-stall-produce" />
     </g>
   )
 }
@@ -71,7 +89,7 @@ function Bunting() {
 // at its pin), 'flood' (they turn green and the bunting drops), 'walk' (Cath walks to the next pin and
 // the next chapter's caption slides in), then 'done'. Reduced motion fades between the same states.
 type Phase = 'before' | 'flood' | 'walk' | 'done'
-const PHASE_MS: Record<Exclude<Phase, 'done'>, number> = { before: 450, flood: 1300, walk: 1400 }
+const PHASE_MS: Record<Exclude<Phase, 'done'>, number> = { before: 450, flood: 1100, walk: 1400 }
 
 function useCelebration(celebrate: string | undefined): Phase {
   const [phase, setPhase] = useState<Phase>(celebrate ? 'before' : 'done')
@@ -170,8 +188,10 @@ export default function CampaignMap({
           const isFree = free.has(id)
           const type = REGIONS[id].type
           const cls = `cmp-map-hex cmp-map-${type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}${flooding.has(id) ? ' is-flooding' : ''}`
+          // Plan item 248: freed (full colour, a market), current (the next chapter's home), locked (Hollowell's grey).
+          const state = isFree ? 'freed' : nextHomes.has(id) ? 'current' : 'locked'
           return (
-            <g key={id} data-region={id} data-liberated={isFree ? 'true' : 'false'} data-lit={litHomes.has(id) ? 'true' : undefined} className={cls} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
+            <g key={id} data-region={id} data-state={state} data-liberated={isFree ? 'true' : 'false'} data-lit={litHomes.has(id) ? 'true' : undefined} className={cls} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
               <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-ground" />
               {/* The board's own painted ground for this region type, scaled down to the map's hex. */}
               <g transform={`scale(${GROUND_SCALE.toFixed(4)})`} className="cmp-map-paint">
@@ -197,9 +217,9 @@ export default function CampaignMap({
               <g transform={`translate(${lm.x.toFixed(1)} ${lm.y.toFixed(1)})`} className="cmp-landmark" data-landmark={LANDMARKS[id]!.kind}>
                 <Landmark kind={LANDMARKS[id]!.kind} />
               </g>
-              {showPost && (
-                <g transform={`translate(${post.x.toFixed(1)} ${post.y.toFixed(1)})`}>
-                  <Post />
+              {(showPost || isFree) && (
+                <g transform={`translate(${post.x.toFixed(1)} ${post.y.toFixed(1)})`} data-building={isFree ? 'stall' : 'outlet'}>
+                  {isFree ? <Stall /> : <Outlet />}
                 </g>
               )}
               {isFree && (
