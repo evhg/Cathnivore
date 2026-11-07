@@ -282,3 +282,44 @@ test('the class weapon lies on the armoury case table and changes with the class
   await page.emulateMedia({ reducedMotion: 'reduce' })
   expect(await page.locator('.cp-prop-turn').evaluate((e) => getComputedStyle(e).animationName)).toBe('none')
 })
+
+// Plan item 233: at D the names are a lit rack: each row carries its weapon in neon outline (48 px or more) over a
+// four-pip stat strip, the picked row lifts, and no empty band over 120 px stands in the left column.
+test('at D the classes are a lit rack with no empty band under them; keys move the pick', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'desktop layout; the phone keeps its row of names')
+  test.setTimeout(300_000)
+  await fresh(page, false)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const rack = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll<HTMLElement>('.cp-opt')]
+    return rows.map((r) => ({
+      gear: r.querySelector('.cp-opt-gear')!.getBoundingClientRect().width,
+      pips: r.querySelectorAll('.cp-pip').length,
+      bottom: r.getBoundingClientRect().bottom,
+    }))
+  })
+  expect(rack).toHaveLength(5)
+  for (const r of rack) {
+    expect(r.gear).toBeGreaterThanOrEqual(48)
+    expect(r.pips).toBe(4)
+  }
+  // The gap from the last row to the first of her words, in the left column (x 0-560).
+  const wordsTop = await page.evaluate(() => {
+    const tops = [...document.querySelectorAll<HTMLElement>('.cp-words > *')]
+      .map((e) => e.getBoundingClientRect())
+      .filter((b) => b.height > 0 && b.left < 560)
+      .map((b) => b.top)
+    return Math.min(...tops)
+  })
+  expect(wordsTop - rack[4]!.bottom).toBeLessThanOrEqual(120)
+  const lift = (cls: string) => page.evaluate((c) => new DOMMatrix(getComputedStyle(document.querySelector(`.cp-opt[data-cls=${c}]`)!).transform).m41, cls)
+  await expect.poll(() => lift('ghost')).toBeGreaterThan(4)
+  await page.keyboard.press('3')
+  await expect(page.locator('.cp-opt[data-cls=gunslinger]')).toHaveAttribute('aria-checked', 'true')
+  await expect.poll(() => lift('gunslinger')).toBeGreaterThan(4)
+  await expect.poll(() => lift('ghost')).toBe(0)
+  await page.locator('.cp-opt[data-cls=gunslinger]').focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(page.locator('.cp-opt[data-cls=wirewitch]')).toHaveAttribute('aria-checked', 'true')
+})

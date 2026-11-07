@@ -706,6 +706,54 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-opt[aria-checked="true"] .cp-opt-n { color: var(--blood-hot); }
 .cp-opt:focus, .cp-opt:focus-visible { outline: none; box-shadow: none; }
 .cp-opt[aria-checked="true"]::before { transform: none; }
+/* Plan item 233: the desktop list is a lit rack. Each row a slot on a hairline shelf: the name over a four-pip stat
+   strip, the class's weapon in neon outline at the row's end (dim on the rack, lit when picked). The picked slot
+   lifts toward Cath with a wash of the accent behind it and its red rule. The phone layouts below hide the rack's
+   parts and keep their own rows. */
+.cp-list { grid-auto-rows: max(40px, calc(var(--u) * 112)); } /* px-ok: tap target */
+.cp-opt { align-items: center; padding-right: calc(var(--u) * 8); transition: color 160ms ease, transform 200ms cubic-bezier(.2, .7, .2, 1); }
+.cp-opt::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * 6) 0 calc(var(--u) * 6) calc(var(--u) * -14);
+  z-index: calc(var(--z-lift) * -1);
+  border-bottom: max(1px, var(--u)) solid var(--line-3); /* px-ok */
+  background: linear-gradient(90deg, rgb(var(--accent-rgb, var(--blood-rgb)) / .2), rgb(var(--accent-rgb, var(--blood-rgb)) / .06) 60%, transparent);
+  background-size: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 220ms cubic-bezier(.2, .7, .2, 1);
+  pointer-events: none;
+}
+.cp-opt[aria-checked="true"] { transform: translateX(calc(var(--u) * 14)); }
+.cp-opt[aria-checked="true"]::after { background-size: 100% 100%; border-bottom-color: rgb(var(--accent-rgb, var(--blood-rgb)) / .55); }
+.cp-opt-body { display: grid; gap: calc(var(--u) * 12); min-width: 0; }
+.cp-opt-pips { display: flex; gap: calc(var(--u) * 6); }
+.cp-pip { position: relative; width: calc(var(--u) * 34); height: max(3px, calc(var(--u) * 5)); background: rgb(var(--ink-rgb) / .12); } /* px-ok */
+.cp-pip::after { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 0) * 100% / .875); max-width: 100%; background: var(--ink-2); }
+.cp-opt[aria-checked="true"] .cp-pip::after { background: var(--ink); }
+.cp-opt-gear {
+  flex: none;
+  margin-left: auto;
+  width: calc(var(--u) * 150);
+  color: rgb(var(--accent-rgb, var(--blood-rgb)) / .78);
+  filter: drop-shadow(0 0 calc(var(--u) * 3) rgb(var(--accent-rgb, var(--blood-rgb)) / .45));
+  transition: color 200ms ease, filter 200ms ease;
+}
+.cp-opt-gear svg { display: block; width: 100%; height: auto; }
+.cp-opt-gear .wa-body { fill-opacity: 0; }
+.cp-opt[aria-checked="true"] .cp-opt-gear {
+  color: var(--accent, var(--blood-hot));
+  filter: drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .9)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .5));
+}
+@media (hover: hover) { .cp-opt:hover .cp-opt-gear { color: var(--accent, var(--blood-hot)); } }
+@media (prefers-reduced-motion: reduce) { .cp-opt, .cp-opt::after { transition: none; } }
+@media (max-height: 560px), (max-width: 700px) and (orientation: portrait) {
+  .cp-list { grid-auto-rows: max(40px, calc(var(--u) * 72)); } /* px-ok: tap target */
+  .cp-opt { padding-right: 0; }
+  .cp-opt[aria-checked="true"] { transform: none; }
+  .cp-opt::after, .cp-opt-pips, .cp-opt-gear { display: none; }
+  .cp-opt-body { display: contents; }
+}
 .cp-words { margin-top: auto; padding-top: calc(var(--u) * 28); max-width: calc(var(--u) * 620); }
 .cp-words .is-in { animation: fade-in 320ms ease-out both; }
 /* Plan item 136: her line spoken over the class's audition, a film subtitle under her: centred between the

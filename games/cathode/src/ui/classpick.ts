@@ -68,7 +68,25 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     opt.setAttribute("role", "radio");
     opt.dataset.cls = cls;
     el("span", "cp-opt-n", opt, String(i + 1)).setAttribute("aria-hidden", "true");
-    el("span", "cp-opt-name", opt, CLASSES[cls].name);
+    // Plan item 233: on a desktop each row is a slot in a lit rack: the name over a four-pip stat strip (Grit,
+    // Aim, Nerve, Wire), the class's weapon in neon outline at the row's end. Decorative: the sheet carries the
+    // numbers and the weapon's name.
+    const body = el("span", "cp-opt-body", opt);
+    el("span", "cp-opt-name", body, CLASSES[cls].name);
+    const pips = el("span", "cp-opt-pips", body);
+    pips.setAttribute("aria-hidden", "true");
+    for (const a of ATTRIBUTES) {
+      const pip = el("span", "cp-pip", pips);
+      pip.dataset.attr = a;
+      pip.style.setProperty("--v", (CLASS_START_ATTRIBUTES[cls][a] / ATTR_MAX).toFixed(3));
+    }
+    const gearBase = WEAPON_BASES[STARTING_WEAPON[cls]];
+    if (gearBase) {
+      const gear = el("span", "cp-opt-gear", opt);
+      gear.setAttribute("aria-hidden", "true");
+      gear.dataset.weapon = gearBase.cls;
+      gear.innerHTML = weaponArtSvg(gearBase.cls);
+    }
     opt.addEventListener("click", () => select(cls, true));
     options.set(cls, opt);
   });
