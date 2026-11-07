@@ -31,14 +31,29 @@ for (const scheme of ['light', 'dark'] as const) {
         const pic = el.querySelector('.later-pic')
         const b = el.querySelector('button')!.getBoundingClientRect()
         // no line of the card's words runs past its edges
-        const spill = [...el.querySelectorAll<HTMLElement>('.action-label, .action-why-not')].some((t) => { const r = t.getBoundingClientRect(); return r.left < b.left - 1 || r.right > b.right + 1 })
-        return { name: el.textContent ?? '', w: el.offsetWidth, x: el.offsetLeft, y: el.offsetTop, h: el.offsetHeight, pic: !!pic && pic.getBoundingClientRect().height > 30, spill }
+        // (a hidden line, such as the reason a coin meter replaces, has no box to spill)
+        const spill = [...el.querySelectorAll<HTMLElement>('.action-label, .action-why-not, .shelf-meter')].some((t) => { const r = t.getBoundingClientRect(); return r.width > 0 && (r.left < b.left - 1 || r.right > b.right + 1) })
+        // Plan item 263: the picture fills the card in full colour (60 px or taller, no grey filter), a priced card
+        // shows its coin meter with a count, and every card says whether its price is met.
+        const ps = pic && getComputedStyle(pic)
+        const meter = el.querySelector<HTMLElement>('.shelf-meter')
+        const priced = !!el.querySelector('.action-cost') && (el.classList.contains('action-invest') || !!meter)
+        return {
+          name: el.textContent ?? '', w: el.offsetWidth, x: el.offsetLeft, y: el.offsetTop, h: el.offsetHeight, pic: !!pic && pic.getBoundingClientRect().height > 30, spill,
+          picTall: !!pic && pic.getBoundingClientRect().height >= 60, picFilter: ps ? ps.filter : 'none',
+          meterOk: !priced || !!el.hasAttribute('data-saving-goal') || (!!meter && /\d+\/\d+/.test(meter.textContent ?? '') && meter.getBoundingClientRect().height > 0),
+          affordable: !priced || el.hasAttribute('data-affordable'),
+        }
       }),
     )
     for (const c of cards) {
       expect(c.w, `${c.name} width`).toBeGreaterThanOrEqual(80)
       expect(c.pic, `${c.name} picture`).toBe(true)
       expect(c.spill, `${c.name} words run off the card`).toBe(false)
+      expect(c.picTall, `${c.name} picture 60 px`).toBe(true)
+      expect(c.picFilter, `${c.name} picture in colour`).toBe('none')
+      expect(c.meterOk, `${c.name} coin meter`).toBe(true)
+      expect(c.affordable, `${c.name} data-affordable`).toBe(true)
     }
     for (let i = 0; i < cards.length; i++)
       for (let j = i + 1; j < cards.length; j++) {

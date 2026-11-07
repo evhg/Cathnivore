@@ -56,7 +56,7 @@ export default function MarketSheet({
         const card = IMPROVEMENTS_BY_ID.get(id)
         if (!card) return null
         return (
-          <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]} data-buy-card={id}>
+          <li key={id} className={`card-enter card-framed${buying === id ? ' card-buying' : ''}`} data-tag={card.tags[0]} data-buy-card={id} data-affordable={canBuy(id) ? 'true' : 'false'}>
             {/* Plan item 36: the card's place, drawn. */}
             <Vignette kind={vignetteFor(card)} seed={card.id} />
             {/* AAA UI M4 fix: the same mini-card head as the desktop Market (tag band, name, tags line,
@@ -81,7 +81,7 @@ export default function MarketSheet({
             {canBuy(id) ? (
               <button onClick={() => buy(id)}>Buy</button>
             ) : (
-              missingMarks(id) !== undefined && <p className="card-why-not">Need {missingMarks(id)} more {missingMarks(id) === 1 ? "Mark" : "Marks"}</p>
+              missingMarks(id) !== undefined && <CoinMeter name={card.name} cost={investCost(state, state.activeProducer, card)} missing={missingMarks(id)!} />
             )}
           </li>
         )
@@ -150,5 +150,32 @@ export default function MarketSheet({
         {cards}
       </div>
     </div>
+  )
+}
+
+/** Plan item 263: what a priced card still needs, as the desktop shelf shows it: a row of coins (filled for the
+ *  Marks held toward its price) and the count, in place of a red 'Need N more Marks' sentence. */
+function CoinMeter({ name, cost, missing }: { name: string; cost: number; missing: number }) {
+  const have = Math.max(0, cost - missing)
+  const pips = Math.min(cost, 8)
+  const lit = Math.round((have / Math.max(1, cost)) * pips)
+  return (
+    <p
+      className="card-meter"
+      role="meter"
+      aria-valuemin={0}
+      aria-valuemax={cost}
+      aria-valuenow={have}
+      aria-label={`${name}: ${have} of ${cost} Marks, ${missing} more to go`}
+    >
+      <span className="shelf-pips" aria-hidden="true">
+        {Array.from({ length: pips }, (_, i) => (
+          <i key={i} className={i < lit ? 'is-held' : undefined} />
+        ))}
+      </span>
+      <span className="card-meter-count" aria-hidden="true">
+        {have} of {cost} Marks
+      </span>
+    </p>
   )
 }

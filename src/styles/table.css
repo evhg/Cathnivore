@@ -3492,6 +3492,47 @@ html.no-animations .table-cath-line { animation: none; }
     box-shadow: inset 0 0 0 1.5px var(--wheat), 0 0 0 2px color-mix(in srgb, var(--wheat) 45%, transparent);
   }
   .actions-sheet .actions[data-shelf] .action-item[data-saving-goal] .later-pic { filter: none; opacity: 1; }
+  /* Plan item 263: the shelf's goods worth wanting: a paper face (not grey), the picture in full colour filling the
+     card, and a coin meter (held of the price, and the count) where the red 'Need N more' sentence was. (Doubled
+     classes: the shelf's own rules come later in this file.) */
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item.action-item > button:first-child {
+    background:
+      linear-gradient(transparent 60%, color-mix(in srgb, var(--wheat) 10%, transparent)),
+      var(--paper-hi);
+    box-shadow: inset 0 0 0 1px var(--ink-a15), 0 2px 4px rgb(var(--shadow-ink) / .12);
+    border-style: solid;
+    border-color: var(--ink-a15);
+    color: var(--ink);
+  }
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item.action-item .later-pic {
+    width: 100%;
+    height: 64px;
+    filter: none;
+    opacity: 1;
+    border-radius: var(--r-xs);
+    box-shadow: inset 0 0 0 1px var(--ink-a15);
+  }
+  .actions-sheet .actions[data-shelf] .action-head-later ~ .action-item:has(.shelf-meter) > button:disabled .action-why-not { display: none; }
+  .actions-sheet .actions[data-shelf] .shelf-meter {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+  }
+  .actions-sheet .actions[data-shelf] .shelf-pips { display: flex; gap: 2px; }
+  .actions-sheet .actions[data-shelf] .shelf-pips > i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--ink-a35);
+    background: transparent;
+  }
+  .actions-sheet .actions[data-shelf] .shelf-pips > i.is-held { background: var(--wheat); box-shadow: inset 0 0 0 1px var(--ink-a35); }
+  .actions-sheet .actions[data-shelf] .shelf-meter[data-coin='goodwill'] .shelf-pips > i.is-held { background: var(--pasture); }
+  .actions-sheet .actions[data-shelf] .shelf-count { font: 700 var(--fs-label)/1 var(--font-num, var(--font-ui)); color: var(--ink); }
+  /* the jar on the pinned card already shows the count */
+  .actions-sheet .actions[data-shelf] .action-item[data-saving-goal] .shelf-meter { display: none; }
+  /* a card whose price is met lights its tag */
+  .actions-sheet .actions[data-shelf] .action-item[data-affordable='true'] .action-cost { background: var(--wheat); }
   .actions-sheet .actions[data-shelf] .saving-jar {
     display: flex;
     align-items: flex-end;

@@ -2041,6 +2041,34 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       return next
     })
   // The pin and, on the pinned card, the jar: the coins held toward its price.
+  // Plan item 263: on the desktop shelf a priced card shows how far its price is met as a row of coins (filled for
+  // those held) and a count, not a red 'Need N more' sentence; a card it is already met for lights its tag.
+  const shelfMeter = (name: string, cost: number, missing: number, coin: 'marks' | 'goodwill') => {
+    if (!shelf) return null
+    const have = Math.max(0, cost - missing)
+    const pips = Math.min(cost, 8)
+    const lit = Math.round((have / Math.max(1, cost)) * pips)
+    return (
+      <span
+        className="shelf-meter"
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={cost}
+        aria-valuenow={have}
+        aria-label={`${name}: ${have} of ${cost} ${coin === 'marks' ? 'Marks' : 'Goodwill'}`}
+        data-coin={coin}
+      >
+        <span className="shelf-pips" aria-hidden="true">
+          {Array.from({ length: pips }, (_, i) => (
+            <i key={i} className={i < lit ? 'is-held' : undefined} />
+          ))}
+        </span>
+        <span className="shelf-count" aria-hidden="true">
+          {have}/{cost}
+        </span>
+      </span>
+    )
+  }
   const shelfGoalBits = (key: string, cost: number, missing: number) => {
     const card = goalCard(key)
     if (!card) return null
@@ -2091,6 +2119,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 className="action-item action-invest"
                 data-later-idx={laterIdx()}
                 data-saving-goal={goal === key ? '' : undefined}
+                data-affordable={missing <= 0 ? 'true' : 'false'}
               >
                 <button
                   disabled
@@ -2105,6 +2134,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     </span>
                     <WhyNot text={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`} />
                   </span>
+                  {shelfMeter(card.name, cost, missing, 'marks')}
                   <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
                 </button>
                 <Tooltip term="Invest" label="What is Invest?">
@@ -2123,9 +2153,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 className="action-item"
                 data-later-idx={laterIdx()}
                 data-saving-goal={goal === schemeGoal(schemeId) ? '' : undefined}
+                data-affordable={missing <= 0 ? 'true' : 'false'}
               >
                 <button disabled title={`Need ${missing} more Goodwill`}>
-                  {shelfPic(<SchemeArt size={44} />)}
+                  {shelfPic(<SchemeArt size={56} />)}
                   <span className="action-label-group">
                     <span className="action-label">
                       <SchemeArt size={18} />
@@ -2135,6 +2166,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     </span>
                     <WhyNot text={`Need ${missing} more Goodwill`} />
                   </span>
+                  {shelfMeter(card.name, cost, missing, 'goodwill')}
                   <ActionCostChip cost={{ resource: 'goodwill', amount: cost }} />
                 </button>
                 <Tooltip term="Scheme" label="What is Scheme?">

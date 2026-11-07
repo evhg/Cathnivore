@@ -1105,3 +1105,21 @@ html.no-animations .meter > i.ghost-loss {
 .map .ghost-piece[data-sign="+"] path {
   stroke: var(--gain-ink);
 }
+
+/* Plan item 263: the Market sheet's coin meter (the desktop shelf's in table.css): the Marks held toward a card's
+   price as filled coins, and the count. */
+.card-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+}
+.card-meter .shelf-pips { display: flex; gap: 3px; }
+.card-meter .shelf-pips > i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--ink-a35);
+}
+.card-meter .shelf-pips > i.is-held { background: var(--wheat); }
+.card-meter-count { font: 700 var(--fs-small, .875rem)/1 var(--font-ui); color: var(--ink); }
