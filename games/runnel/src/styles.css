@@ -545,6 +545,16 @@ button {
   stroke-width: 22;
   transition: stroke 380ms ease var(--delay, 0ms);
 }
+/* Plan item 264: the cut's outer edge, 1.6 units past the lip each side, in the groove's own earth (3.3:1 or more
+   on every face, light and dark). */
+.groove-cut {
+  stroke: var(--groove);
+  stroke-width: 25.2;
+  stroke-linecap: butt;
+}
+.hub-cut {
+  fill: var(--groove);
+}
 .ground-meadow .groove-lip,
 .ground-meadow .hub-lip {
   stroke: var(--lip-meadow);
@@ -1655,6 +1665,15 @@ body {
   .won .crop {
     animation: none;
   }
+}
+
+/* Plan item 264: the hinted tile (Cath's tip, the lesson's target) stands up off the valley: its shadow falls 4 units
+   further and softens. The tile itself stays put (the board is fitted to its tiles' boxes; raising one moved the
+   board 11 px down at P). */
+.cell > .tile-shadow { transition: translate 220ms var(--ease-out, ease-out), filter 220ms; }
+.cell:is(.tip, .lesson-target) > .tile-shadow { translate: 1px 4px; filter: blur(2.5px); opacity: 0.9; }
+@media (prefers-reduced-motion: reduce) {
+  .cell > .tile-shadow { transition: none; }
 }
 
 /* Cath's tip: one tile glows until it is turned. */

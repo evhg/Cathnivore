@@ -20,8 +20,10 @@ const GREETINGS = [
   'Every field, no spills. Easy to say. Lovely to do.',
 ]
 
+// (each about the same length: a practice greeting that wrapped to a third line pushed a phone's board 11 px down,
+// past runnel-practice's 260 px, on one load in three)
 const PRACTICE = [
-  "Practice round. No one's counting. I'm counting a little.",
+  "Practice round. I'm only counting a little.",
   'Warm-up field. Stretch those tapping fingers.',
   'A spare field. Treat it like the real thing.',
 ]

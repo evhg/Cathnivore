@@ -261,6 +261,7 @@ export class Board {
 
     // Plan item 61: each opening a ditch cut into the ground: a grass or soil lip, banks lit and shaded by the
     // day's light, a dark bed with pebbles, and a stone basin at the hub.
+    const cuts = el('g', { class: 'cuts' }, piece)
     const lips = el('g', { class: 'lips' }, piece)
     const grooves = el('g', { class: 'grooves' }, piece)
     const waters = el('g', { class: 'waters' }, piece)
@@ -269,6 +270,9 @@ export class Board {
     for (let d = 0; d < 6; d++) {
       if (!(cell.solved & (1 << d))) continue
       const end = edgePoint(d, APOTHEM + 1.5)
+      // Plan item 264: the cut's outer edge, a dark line just past the lip, so the groove reads as carved into the
+      // tile (the lip alone was 2.4:1 on the face; this is 3:1 or more in light and dark).
+      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-cut' }, cuts)
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-lip' }, lips)
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove' }, grooves)
       const a = (Math.PI / 180) * 60 * d
@@ -307,6 +311,7 @@ export class Board {
       const sh = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'shimmer' }, shimmer)
       sh.dataset.dir = String(d)
     }
+    el('circle', { r: S * 0.2 + 1.6, class: 'hub-cut' }, cuts)
     el('circle', { r: S * 0.2, class: 'hub-lip' }, lips)
     el('circle', { r: S * 0.17, class: 'hub-groove' }, grooves)
     el('circle', { r: S * 0.155, class: 'hub-basin' }, grooves)
