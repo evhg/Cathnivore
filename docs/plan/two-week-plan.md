@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-07 13:25
-
 
 
 
@@ -2617,5 +2615,45 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **NIGHT SHIFT:** D pick rack: Wirewitch and Fixer show the same pistol outline (375-440 x 445 and 530): give each its own weapon's line.
   - **Hedgerow:** D: 'Lifestyle influencer' wraps inside its pill against its edges (1268-1338 x 418-448); the shop's coin before each price reads as 'O100' (1160 x 97; check at real size); P menu: the act panorama pokes above the header (260-300 x 0-50) and a ghost band of the next act under the Play sheet (690-775; may be scroll content); P 3D l21: a stray teal bar in the canvas over the bottom-left plot (80-180 x 642-650; not DOM, not the gate).
   - **Site:** P /games/: Cath reads as a bust on a plank (85-305 x 440-458; check against item 238's design).
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 254. [ ] NIGHT SHIFT: Cath shaded as an inked noir illustration
+- **Why:** `plan1107e/ns-play-D` (620-860 x 110-820), `ns-title-D` (880-1120 x 270-900), `portfolio-D` (860-960 x 440-630): a pale flat face with pinpoint features, the hood a helmet, limbs as tubes. Items 140/147/205/247 reshaped geometry and texture; no one has tried a stylised shading pass.
+- **Build:** a toon ramp (three bands and a rim) on her body, hair and coat; an inverted-hull ink outline about 1.5 px at D; a shine band on the hair; the face texture at 2x with liner, two eye highlights and rose lips.
+- **Accept:** `data-cath-shading="ink"`; face 60 px or more on the D title; cathode-perf within budget (+12 draw calls at most); cathode-front and classpick pass; key art re-shot; shots P and D, title, pick, poster at 30 s.
+- **Size:** 2
+
+## 255. [ ] Hedgerow 3D: Cath and the farmers drawn to the 2D standard
+- **Why:** `plan1107e/hedge-l21-3d-D`: Cath (150-250 x 430-640) a sphere head with a flat decal face; the farmers (805-845 x 445-520) blocky.
+- **Build:** the toon ramp and outline idea on the people only (Cath, farmers, Hollowell's rep); her face turned within 30° of the camera; an idle (weight shift, hair sway; none under reduced motion).
+- **Accept:** her face 40 px or more at D; an outline on every person; draw calls +10 or fewer at P; closeframe, 3dframe, cath3d pass; shots P and D.
+- **Size:** 2
+
+## 256. [ ] Hedgerow: the convoy as characters, not icons
+- **Why:** `plan1107e/hedge-l21-2d-D` (305-340 x 250-460), `hedge-l34-2d-D` (235-300 x 115-380): queued vehicles are 30 px flat icons stacked on the lane.
+- **Build:** each vehicle kind a livery sprite about 1.4x its size with a driver silhouette, a logo panel and an exhaust puff or wobble (none under reduced motion); the queue's lead carries a name plate.
+- **Accept:** vehicles 40 px or more at D and 28 at P; the kinds visibly distinct (unit test on sprite keys); hedgerow-threat, -gatequeue, -vehicles pass; key art re-shot; shots P and D.
+- **Size:** 2
+
+## 257. [ ] Cathnivore desktop Campaign: the whole spread used
+- **Why:** `plan1107e/cath-campaign-D`: 60-870 x 750-900 empty under the map; only 3.5 chapters show; locked thumbnails are flat grey boxes (1235-1365 x 480-570, 680-765).
+- **Build:** the map pinned beside a chapter rail that scrolls on its own; locked chapters as their own vignette in pencil (as Hedgerow's locked stops); the campaign's stats under the map (pins, best Trust, stars).
+- **Accept:** all six chapters reachable without page scroll at 1440x900; no empty band over 120 px; locked vignettes all distinct; campaign specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 258. [ ] NIGHT SHIFT: a neon sign you can read, off her silhouette
+- **Why:** `plan1107e/ns-title-D` (885-1045 x 200-330): pink neon strokes cage her head; `ns-play-D` (590-680 x 130-400) two pink arcs that read as nothing.
+- **Build:** one legible sign (a bar's name in neon script) placed clear of her figure, with an occasional flicker (none under reduced motion).
+- **Accept:** the sign's projected box meets her figure box under 5%; its word readable in the shot; cathode-front and classpick pass; shots P and D.
+- **Size:** 1
+
+## 259. [ ] The bugs from the 2026-11-07 13:50 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1107e`)
+  - **Site:** D: the kicker touches the awning's scallops (615-1015 x 84-102).
+  - **Hedgerow:** D l34: Cath's bubble over the inner lane's edge (775-860 x 370-480). P l21: '216 coming' on the first plot row (55-135 x 343-362). D 3D l21: red and yellow blocks in the far margin unreadable (35-90 x 190-240, 400-450 x 85-105; possibly capture timing).
+  - **Runnel:** D: the arc glyph after 'The spring house' on the board's hex lip (545-565 x 160-178); the churn and beehive on the hill crest against the sky, floating (1150-1180 x 105-155, 1325-1370 x 70-120).
+  - **Cathnivore:** D title: the pennant hint straddles the cloth's corner and the counter (1022-1285 x 762-786). D setup: 'Two at the table' text after its transform (330-495 x 130-190; check 12 px).
+  - **NIGHT SHIFT:** P title: '4 MORE NAMES' on rain (16-120 x 652-668; check 4.5:1).
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
