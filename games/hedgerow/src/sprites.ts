@@ -1516,6 +1516,20 @@ function vehicle(ctx: C, x: number, y: number, s: number, t: number, o: VehicleO
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+    // Plan item 256: someone at the wheel: a driver's head and shoulders in the window, in Hollowell's cap.
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = "#3a2f2a";
+    ctx.beginPath();
+    ctx.ellipse(x0 + L * 0.86, top + H * 0.58, L * 0.06, H * 0.14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e9c3a0";
+    ctx.beginPath();
+    ctx.arc(x0 + L * 0.86, top + H * 0.43, Math.min(L * 0.04, H * 0.11), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = o.stripe ?? "#1f8a8a";
+    ctx.fillRect(x0 + L * 0.82, top + H * 0.3, L * 0.08, H * 0.06);
+    ctx.restore();
     // Headlight.
     ctx.fillStyle = "#fff2a8";
     ctx.beginPath();
@@ -1534,6 +1548,14 @@ function vehicle(ctx: C, x: number, y: number, s: number, t: number, o: VehicleO
     ctx.fillText(o.label, x0 + L * 0.37, top + H * 0.38);
   }
   shine(ctx, x0 + L * 0.2, top + H * 0.18, L * 0.14, H * 0.07);
+  // Plan item 256: an exhaust puff at the tail, drifting back as it goes (still while parked in the queue: t is 0).
+  if (t > 0) {
+    const k = (t * 1.6) % 1;
+    ctx.fillStyle = `rgba(150,150,150,${(0.45 * (1 - k)).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(x0 - s * (0.04 + k * 0.12), y - wr * 1.4 - k * s * 0.05, s * (0.03 + k * 0.04), 0, Math.PI * 2);
+    ctx.fill();
+  }
   const n = o.wheels ?? 2;
   for (let i = 0; i < n; i++) {
     const wx = x0 + L * (0.18 + (i * 0.64) / Math.max(1, n - 1));

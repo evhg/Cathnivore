@@ -2630,7 +2630,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her face 40 px or more at D; an outline on every person; draw calls +10 or fewer at P; closeframe, 3dframe, cath3d pass; shots P and D.
 - **Size:** 2
 
-## 256. [ ] Hedgerow: the convoy as characters, not icons *(lane B, in progress)*
+## 256. [ ] Hedgerow: the convoy as characters, not icons *(lane B, in progress)* *(slice 1, 2026-11-07 14:50 lane B: the vehicles are already distinct per kind (sprites.ts); every cab vehicle now has a driver in its window in a cap of its livery and an exhaust puff while moving (none parked in the queue); Hedgerow key art re-shot. Left: the 1.4x size (enemyScale is shared with the field's play, so a queue-only scale) and the queue lead's name plate)*
 - **Why:** `plan1107e/hedge-l21-2d-D` (305-340 x 250-460), `hedge-l34-2d-D` (235-300 x 115-380): queued vehicles are 30 px flat icons stacked on the lane.
 - **Build:** each vehicle kind a livery sprite about 1.4x its size with a driver silhouette, a logo panel and an exhaust puff or wobble (none under reduced motion); the queue's lead carries a name plate.
 - **Accept:** vehicles 40 px or more at D and 28 at P; the kinds visibly distinct (unit test on sprite keys); hedgerow-threat, -gatequeue, -vehicles pass; key art re-shot; shots P and D.
