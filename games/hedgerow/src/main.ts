@@ -1590,6 +1590,7 @@ function renderPanelInner(force = false): void {
     b.onclick = () => {
       if (doAct({ t: "clear", col: sel.col, row: sel.row })) {
         sfx.playBuild();
+        hostFeel("smirk");
         haptic.build();
         renderPanel(true);
       }
@@ -2351,6 +2352,7 @@ function counterLine(kind: TowerKind): string {
 function plant(g: Game, kind: TowerKind, sel: { col: number; row: number }): boolean {
   if (!doAct({ t: "place", kind, col: sel.col, row: sel.row })) return false;
   sfx.playBuild();
+  hostFeel("smirk");
   haptic.build();
   const nt = g.towers[g.towers.length - 1];
   if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
@@ -2492,6 +2494,7 @@ function syncRing(): void {
           spendPacket(data, pk.id);
           save(data);
           sfx.playBuild();
+          hostFeel("smirk");
           haptic.build();
           const nt = game.towers[game.towers.length - 1];
           if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
@@ -2619,6 +2622,7 @@ function buildMenu(p: HTMLElement, g: Game, sel: { col: number; row: number }): 
           spendPacket(data, pk.id);
           save(data);
           sfx.playBuild();
+          hostFeel("smirk");
           haptic.build();
           const nt = g.towers[g.towers.length - 1];
           if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
@@ -2880,6 +2884,7 @@ function endDrag(e: PointerEvent, cancel: boolean): void {
   if (cancel || !game || !d.cell || !d.ok) return;
   if (doAct({ t: "place", kind: d.kind, col: d.cell.col, row: d.cell.row })) {
     sfx.playBuild();
+    hostFeel("smirk");
     haptic.build();
     const nt = game.towers[game.towers.length - 1];
     if (nt) renderer?.built_(nt.id, nt.col, nt.row, false);
@@ -3996,6 +4001,37 @@ function syncCathDock(g: Game, text: string): void {
   el.style.setProperty("--notch-r", `${handle && handle.height ? Math.round(handle.right - dl + 4) : -1}px`);
 }
 
+/** Plan item 250: what last happened on the field, for her host portrait: a leak worries her, a clean round delights
+ * her, a tower going up gets her smirk. It holds for the next build phase (a leak is felt at the round's end). */
+let hostEvent: { face: CathExpression; at: number } | null = null;
+function hostFeel(face: CathExpression): void {
+  hostEvent = { face, at: performance.now() };
+}
+/** Her portrait's face: the latest field event within 8 s, else a boss in the next round (determined), else the line's. */
+function hostFace(g: Game, text: string): CathExpression {
+  if (hostEvent && performance.now() - hostEvent.at < 8000) return hostEvent.face;
+  const groups = g.level.waves[g.wave] ?? [];
+  if (groups.some((gr) => isBig(gr.enemy))) return "determined";
+  return dockExpression(g, text);
+}
+let hostShown = "";
+function syncHostFace(g: Game, text: string): void {
+  const el = ui.cathSay;
+  const face = hostFace(g, text);
+  if (el.dataset.expr !== face) el.dataset.expr = face;
+  const key = `${face}:${art()}`;
+  if (key === hostShown) return;
+  hostShown = key;
+  let slot = el.querySelector<HTMLElement>(".cath-say-face");
+  if (!slot) {
+    slot = document.createElement("span");
+    slot.className = "cath-say-face";
+    slot.setAttribute("aria-hidden", "true");
+    el.prepend(slot);
+  }
+  slot.innerHTML = cathSvg({ framing: "bust", expression: face, outfit: art(), animate: true });
+}
+
 function syncCathSay(g: Game, now: number): void {
   const el = ui.cathSay;
   const quiet =
@@ -4024,6 +4060,7 @@ function syncCathSay(g: Game, now: number): void {
   sayAt = now;
   const p = el.querySelector("p")!;
   if (p.textContent !== text) p.textContent = text;
+  syncHostFace(g, text);
   if (el.hidden) {
     el.hidden = false;
     el.classList.remove("pop");
@@ -4045,17 +4082,29 @@ function syncCathSay(g: Game, now: number): void {
   // Plan item 132: and the gate's own sign, whose town name the bubble covered at D.
   const signs = (renderer as { gateSignRects?: () => Box[] }).gateSignRects?.() ?? [];
   for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...signs]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
-  const size = { w: el.offsetWidth, h: el.offsetHeight };
-  const spot = barkSpot(
-    cath,
-    size,
-    { w: field.width, h: field.height },
-    // Plan item 120: she only speaks in the build phase, when the lane is empty and an empty plot is what she
-    // tells you to tap, so those are the cells to keep clear; the lane and built plots cost little.
-    emptyPlotBoxes(g).map(shift).filter(near),
-    [...laneBoxes(g), ...builtPlotBoxes(g)].map(shift).filter(near),
-    avoid,
-  );
+  const empties = emptyPlotBoxes(g).map(shift).filter(near);
+  const place = () =>
+    barkSpot(
+      cath,
+      { w: el.offsetWidth, h: el.offsetHeight },
+      { w: field.width, h: field.height },
+      // Plan item 120: she only speaks in the build phase, when the lane is empty and an empty plot is what she
+      // tells you to tap, so those are the cells to keep clear; the lane and built plots cost little.
+      empties,
+      [...laneBoxes(g), ...builtPlotBoxes(g)].map(shift).filter(near),
+      avoid,
+    );
+  // Plan item 250: her 96 px host portrait where the field has room; on a crowded field (the bubble would cover
+  // more than 12% of itself in empty plots) the compact 64 px one, so item 120's plots stay clear.
+  el.classList.remove("compact");
+  let spot = place();
+  const over = (b: { x: number; y: number }) =>
+    empties.reduce((n, p) => n + Math.max(0, Math.min(b.x + el.offsetWidth, p.x + p.w) - Math.max(b.x, p.x)) * Math.max(0, Math.min(b.y + el.offsetHeight, p.y + p.h) - Math.max(b.y, p.y)), 0) /
+    (el.offsetWidth * el.offsetHeight);
+  if (over(spot) > 0.12) {
+    el.classList.add("compact");
+    spot = place();
+  }
   el.dataset.side = spot.side;
   el.style.setProperty("--tail", `${spot.tail}px`);
   el.style.setProperty("--at-x", `${spot.x}px`);
@@ -4075,6 +4124,7 @@ function syncCathSay(g: Game, now: number): void {
  * "Clean sweep" rosette. Reduced motion: no flight, a fade.
  */
 function roundRosette(g: Game, round: number, reward: number, clean: boolean): void {
+  hostFeel(clean ? "delighted" : "worried");
   if (!renderer || player) return;
   ui.stage.querySelector(".round-rosette")?.remove();
   const el = document.createElement("div");
@@ -4303,6 +4353,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "leak":
+        hostFeel("worried");
         if (ev.kind) runLeaks.push({ kind: ev.kind, lost: ev.lost ?? 1, round: waveNo(g, g.wave) });
         sfx.playLeak();
         haptic.leak();
