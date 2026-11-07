@@ -832,8 +832,11 @@
   .menu {
     --mark-hang: calc(var(--u) * 30);
     margin-left: calc(var(--u) * 12 - var(--safe-x));
-    padding: calc(var(--u) * 10) calc(var(--u) * 18) calc(var(--u) * 10) calc(var(--u) * 40);
+    padding: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 40);
   }
+  /* Plan item 251: the rows' trailing pad (room for nothing upright) pushed the plate's rim 15 px onto her left
+     elbow; without it the plate ends about 5 px short of her body at 390 and 375. */
+  .menu-item { padding-right: 0; }
   .menu-item:has(.menu-why:not([hidden])) { flex-direction: column; align-items: flex-start; justify-content: center; line-height: 1.05; }
   .menu-item:has(.menu-why:not([hidden])) .menu-why { margin: calc(var(--u) * 4) 0 0; }
 }
