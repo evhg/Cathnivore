@@ -1360,7 +1360,18 @@ const GROUND: Ground[] = [
   { base: "#e4dcd0", patches: ["#d5c8b3", "#d1c4c8", "#ddcfae"], hedge: "#5d4e46", leaf: "#85746a" },
 ];
 
-export function groundSvg(n: number): string {
+/** Plan item 230: a colour pushed away from its grey (k > 1 saturates), for the won land's richer fields. */
+function richer(c: string, k: number): string {
+  const v = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  const grey = 0.3 * v[0]! + 0.59 * v[1]! + 0.11 * v[2]!;
+  return "#" + v.map((x) => Math.round(Math.min(255, Math.max(0, grey + (x - grey) * k))).toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * The act's patchwork. Plan item 230: `won` (one flag per stop, in lane order) colours in the fields nearest a won
+ * stop, so the country fills with colour as the act is played; the rest keep the act's pale palette.
+ */
+export function groundSvg(n: number, won: boolean[] = []): string {
   const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
   const g = GROUND[i]!;
   const rand = mulberry(4271 * (i + 1));
@@ -1384,7 +1395,17 @@ export function groundSvg(n: number): string {
       const q = [v[r]![c]!, v[r]![c + 1]!, v[r + 1]![c + 1]!, v[r + 1]![c]!];
       const d = `M${q.map(P).join("L")}Z`;
       const k = Math.floor(rand() * 4);
-      if (k < 3) cells += `<path d="${d}" fill="${g.patches[k]}" opacity="${f(0.55 + rand() * 0.4)}"/>`;
+      const op = 0.55 + rand() * 0.4;
+      // The stop nearest this field's middle (stops sit at x 10-90% in two rows at 30% and 76%, the second row
+      // running back right to left).
+      const cx = (q[0]![0] + q[2]![0]) / 2;
+      const cy = (q[0]![1] + q[2]![1]) / 2;
+      const srow = cy < 53 ? 0 : 1;
+      const scol = Math.max(0, Math.min(4, Math.floor(cx / 20)));
+      const stop = srow * 5 + (srow === 0 ? scol : 4 - scol);
+      const lush = won[stop] === true;
+      if (k < 3) cells += `<path d="${d}" fill="${lush ? richer(g.patches[k]!, 2.4) : g.patches[k]}" opacity="${f(lush ? Math.max(op, 0.85) : op)}"/>`;
+      else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 2)}" opacity=".7"/>`;
       if (rand() < 0.3) ploughed += `<path d="${d}" fill="url(#gp${i})"/>`;
     }
   let hedges = "";
@@ -2051,7 +2072,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     }
     drawLane(path, [home ? [pts[0]![0], -26] : [-4, pts[0]![1]], ...pts]);
     // Plan item 18: the act's ground fills the whole band edge to edge, under its banner and its lane.
-    li.style.setProperty("--ground", `url("${svgImg(groundSvg(n))}")`);
+    li.style.setProperty("--ground", `url("${svgImg(groundSvg(n, lvs.map((lv) => (data.stars[String(lv.id)] ?? 0) > 0)))}")`);
     li.dataset.act = String(n);
     trail.append(path);
     if (home) trail.append(home);

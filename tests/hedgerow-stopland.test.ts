@@ -24,3 +24,17 @@ describe("stop land", () => {
     expect(new Set([1, 2, 3].map((id) => stopLandSvg(id, "held"))).size).toBe(3);
   });
 });
+
+// Plan item 230: the act's patchwork colours in round its won stops.
+import { groundSvg } from "../games/hedgerow/src/map";
+describe("act ground", () => {
+  it("is richer with won stops than without, and unchanged with none won", () => {
+    const none = groundSvg(3);
+    expect(groundSvg(3, Array(10).fill(false))).toBe(none);
+    const all = groundSvg(3, Array(10).fill(true));
+    expect(all).not.toBe(none);
+    const half = groundSvg(3, [true, true, true, true, true, false, false, false, false, false]);
+    expect(half).not.toBe(none);
+    expect(half).not.toBe(all);
+  });
+});
