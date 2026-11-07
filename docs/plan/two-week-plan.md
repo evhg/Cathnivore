@@ -2507,7 +2507,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every plot type shows at least 3 materials; draw calls at D on l21 at most +12; hedgerow 3D specs pass; shots P, D, L.
 - **Size:** 2
 
-## 237. [ ] Cathnivore phone game: Hollowell at the table *(lane A, in progress)*
+## 237. [x] Cathnivore phone game: Hollowell at the table *(done 2026-11-07 03:35, lane A: the critique missed that item 212's placard already carries Pell with his mood (smug, gloat on a Squeeze, rattled on a sale, `rivalMood`, rival.spec); his medallion now breaks the placard's frame at 56 px with a glossy plastic rim (`2f7fd526`), and at D he is 80 px over the board's top rail (was 58). **Cut:** 96 px at D: it covered the plan strip's Scout card and the stat bar, 80 keeps the head row's height. papers-placard (new 56 px test), rival, board-scale, table-cath, desktop-no-scroll, plan-strip, critique177 pass; suggest-move passes alone. Shots scratchpad r237, r237b)*
 - **Why:** `plan1107b/cath-game-P`: the antagonist has no face on a phone; at D it's a 60 px badge over a paper strip like the players' own.
 - **Build:** a 56 px Hollowell executive medallion on the phone's threat strip with a glossy plastic rim (the corporate tokens), reacting (smug on a Squeeze, rattled when an Outlet is cleared); at D the portrait 96 px.
 - **Accept:** medallion 56 px or more at P, 96 at D; two reactions reachable in an autoplay; nothing on the board covered (board-scale, critique177 pass); shots P and D.

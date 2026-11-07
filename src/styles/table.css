@@ -3870,8 +3870,19 @@ html.no-animations .table-cath-line { animation: none; }
   }
   .table-head.with-table-cath .plan-strip-item > .tooltip-trigger { bottom: auto; top: 50%; translate: 0 -50%; }
 
-  .table-head.with-table-cath .rival-frame { width: 58px; height: 58px; }
-  .table-head.with-table-cath .rival-frame svg { top: -18px; width: 96px; }
+  /* Plan item 237: Pell 80 px across at the table, hanging over the board's top rail (negative margins keep the
+     head row's height), with the same glossy plastic sheen as the phone medallion. */
+  .table-head.with-table-cath .rival { z-index: var(--z-raised); }
+  .table-head.with-table-cath .rival-frame { width: 80px; height: 80px; margin-block: -4px -18px; }
+  .table-head.with-table-cath .rival-frame svg { top: -25px; width: 132px; }
+  .table-head.with-table-cath .rival-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(150deg, color-mix(in srgb, white 40%, transparent) 0 20%, transparent 32%);
+    pointer-events: none;
+  }
   /* Plan item 234: the plate under the portrait at 13 px (12 px caps read about 10). */
   .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 8px 2px 5px; font-size: var(--fs-caption); letter-spacing: .05em; }
 
