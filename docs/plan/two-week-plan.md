@@ -2480,7 +2480,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 her face box 70 px or more wide, not covered by a card or her bubble; an autoplay e2e sees three or more `data-expression` values; crossfade only under reduced motion; shots D light and dark (P unchanged).
 - **Size:** 2
 
-## 233. [ ] NIGHT SHIFT desktop class pick: the classes as a lit rack
+## 233. [ ] NIGHT SHIFT desktop class pick: the classes as a lit rack *(lane A, in progress)*
 - **Why:** `plan1107a/ns-play-D` (0-560 x 150-660): the five classes are grey condensed words (82-330 x 160-415) above an empty black band (0-560 x 430-660); no object per row.
 - **Build:** each row carries its weapon in neon outline (the sheet's silhouette) and a four-pip stat strip; the picked row lifts with its red rule; the class line and quote move up under the list so no band stands empty.
 - **Accept:** at 1440x900 no empty band over 120 px tall in x 0-560; each row's silhouette 48 px or more wide; keys 1-5 and arrows move the pick visibly; cathode classpick, classstage and front specs pass; perf within budget; shots D and P (P unchanged).
