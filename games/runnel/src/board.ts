@@ -9,6 +9,8 @@ import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, 
 
 const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
+/** Plan item 264: how far a tile's side shows under its face (SVG units). */
+const TILE_SIDE = 5
 const APOTHEM = (S * Math.sqrt(3)) / 2
 const TURN_MS = 150
 
@@ -230,6 +232,8 @@ export class Board {
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
     // Plan item 90: each tile a solid piece casting its shadow on the valley, with a lit bevel inside its dark rim.
     el('polygon', { class: 'tile-shadow', points: hexPoints(S * 0.965), transform: 'translate(1.5 4.5)' }, root)
+    // Plan item 264: the piece's thickness: its side, a darker band of the same earth under its face.
+    el('polygon', { class: 'tile-side', points: hexPoints(S * 0.965), transform: `translate(0 ${TILE_SIDE})` }, root)
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
     if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)

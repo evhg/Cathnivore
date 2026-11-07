@@ -460,6 +460,15 @@ button {
   fill: url(#soil-grain);
   pointer-events: none;
 }
+/* Plan item 264: the tile's side, its thickness under the face: the face's earth in shade, a dark foot. */
+.tile-side {
+  fill: color-mix(in srgb, var(--dry-edge) 70%, var(--ink));
+  stroke: color-mix(in srgb, var(--dry-edge) 40%, var(--ink));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.cell.wet .tile-side { fill: color-mix(in srgb, var(--wet-edge) 70%, var(--ink)); }
 
 .grain {
   fill: var(--grain);
