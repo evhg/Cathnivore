@@ -807,6 +807,69 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
         windows.push({ pos: V(x, gf + 0.9 + k * st + 0.85, zN - 0.03), normal: V(0, 0, -1), w: 1.25, h: 1.75, tile: winTile(rand, lit), lit: lit ? r(1, 2.2) : 0 });
       }
     sign({ text: "HOLLOWELL — WE DELIVER", style: "box", color: NEON.cyan, w: 8, h: 1.1, center: V(-1.5, gf - 0.2, zN - 0.05), normal: V(0, 0, -1), flicker: 0, intensity: 2.2 });
+    // Plan item 261: the title's alley set, on the north wall just behind where she stands (the title's lens sees a
+    // strip of it beside her): a fire escape's first landing over the strip, two bins and bags at the wall's foot, a
+    // back door under a lit transom further along, and a grate breathing steam. Merged into the street's own
+    // materials, so it costs no draw call. Fixed offsets, not rand(): drawing from the street's stream here would
+    // move everything authored after it.
+    {
+      const zw = zN - 0.02;
+      const gy = (x: number, z: number) => groundHeight(x, z);
+      // The fire escape: a low first landing (3.2 m) across the wall behind her, rails, a stair up to a second one.
+      const x0 = -4.8;
+      const x1 = 0.2;
+      const depth = 1.0;
+      for (const y of [3.2, 6.5]) {
+        b.boxMinMax("grate", x0, y - 0.06, zw - depth, x1, y, zw, { uv: 1 });
+        b.boxMinMax("darkMetal", x0, y - 0.2, zw - depth, x1, y - 0.06, zw - depth + 0.06);
+        b.cylinder("darkMetal", V(x0, y + 1.0, zw - depth), V(x1, y + 1.0, zw - depth), 0.022, 4);
+        // The rail's posts are too thin to stop a round (S1.1).
+        for (const x of [x0, x1]) {
+          b.cylinder("darkMetal", V(x, y, zw - depth), V(x, y + 1.0, zw - depth), 0.022, 4);
+          b.tagLast("none");
+        }
+        for (let x = x0 + 0.35; x < x1; x += 0.35) b.cylinder("darkMetal", V(x, y, zw - depth), V(x, y + 1.0, zw - depth), 0.01, 3);
+        drips.push(V(x0 + 0.6, y - 0.06, zw - depth), V(-1.4, y - 0.06, zw - depth), V(x1 - 0.5, y - 0.06, zw - depth));
+      }
+      for (const z of [zw - 0.15, zw - 0.75]) {
+        b.cylinder("darkMetal", V(x1 - 0.3, 3.2, z), V(x0 + 0.9, 6.5, z), 0.03, 4);
+        b.tagLast("none");
+      }
+      for (let i = 1; i < 10; i++) {
+        const t = i / 10;
+        b.box("grate", x1 - 0.3 + (x0 + 1.2 - x1) * t, 3.2 + 3.3 * t, zw - 0.45, 0.25, 0.03, 0.6, { uv: 1 });
+      }
+      // The drop ladder hangs from the landing's west end to head height.
+      for (const x of [x0 + 0.3, x0 + 0.75]) b.cylinder("darkMetal", V(x, 1.9, zw - depth + 0.08), V(x, 3.2, zw - depth + 0.08), 0.018, 4);
+      for (let y = 2.0; y < 3.2; y += 0.3) b.cylinder("darkMetal", V(x0 + 0.3, y, zw - depth + 0.08), V(x0 + 0.75, y, zw - depth + 0.08), 0.012, 3);
+      // Two bins against the wall, lids askew, and bags at their feet.
+      for (const [x, lid] of [[-1.1, 0.08], [-2.5, -0.12]] as Array<[number, number]>) {
+        const y0 = gy(x, zw - 0.6);
+        b.box("rust", x, y0 + 0.55, zw - 0.55, 1.2, 1.1, 0.95, { uv: 1.5, collide: "metal" });
+        const lidG = new THREE.BoxGeometry(1.26, 0.07, 1.0);
+        lidG.rotateZ(lid);
+        b.shape("darkMetal", lidG, V(x, y0 + 1.14, zw - 0.55), 0);
+      }
+      for (const [x, dz, yaw, sy] of [[-0.1, 0.2, 0.4, 0.7], [-1.8, 0.45, 2.1, 0.82], [-3.3, 0.15, 4.0, 0.64], [-0.6, 1.1, 5.2, 0.6]] as Array<[number, number, number, number]>)
+        b.shape("bag", new THREE.SphereGeometry(0.34, 8, 6), V(x, gy(x, zw - 1) + 0.28 * sy + 0.04, zw - 1.0 - dz), yaw, V(1, sy, 1));
+      // The back door, a steel leaf under a warm transom and a caged bulb.
+      const fy = gy(-4.2, zw - 0.3);
+      b.boxMinMax("darkMetal", -4.85, fy, zw - 0.12, -3.55, fy + 2.35, zw);
+      b.boxMinMax("rust", -4.7, fy, zw - 0.16, -3.7, fy + 2.1, zw - 0.12, { uv: 1 });
+      b.boxMinMax("glowWarm", -4.65, fy + 2.16, zw - 0.15, -3.75, fy + 2.3, zw - 0.13);
+      // A caged bulb low on the wall over the bins: the strip of wall the title sees beside her is lit by it, so the
+      // set reads (unlit, the bins and bags were lost in the dark).
+      const lamp = V(-1.75, 1.55, zw - 0.16);
+      b.box("glowWarm", lamp.x, lamp.y, lamp.z, 0.13, 0.13, 0.13);
+      b.boxMinMax("darkMetal", lamp.x - 0.1, lamp.y + 0.08, zw - 0.3, lamp.x + 0.1, lamp.y + 0.11, zw);
+      bulbs.push(lamp);
+      light(V(-1.75, 1.45, zw - 0.7), "#ffb36b", 3.4, 4.5, V(0, 0, -1), 1);
+      cones.push({ top: lamp, length: 1.6, radius: 1.1, color: C("#ffb36b"), strength: 0.4 });
+      // A grate in the road breathing steam.
+      const g = V(-1.7, gy(-1.7, 61.8), 61.8);
+      b.box("grate", g.x, g.y + 0.012, g.z, 0.9, 0.03, 0.9, { uv: 1 });
+      vents.push(g);
+    }
     // South: a block with a gated underpass over the road.
     b.boxMinMax("concreteA", -40, 0, zS - 10, L.roadW, 22, zS, { uv: 3, collide: "concrete" });
     b.boxMinMax("concreteA", L.roadE, 0, zS - 10, L.quayEdge, 22, zS, { uv: 3, collide: "concrete" });
