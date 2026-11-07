@@ -2513,7 +2513,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** medallion 56 px or more at P, 96 at D; two reactions reachable in an autoplay; nothing on the board covered (board-scale, critique177 pass); shots P and D.
 - **Size:** 1
 
-## 238. [ ] The site's phone hero: Cath as the centrepiece
+## 238. [ ] The site's phone hero: Cath as the centrepiece *(lane B, in progress)*
 - **Why:** `plan1107b/games-P` (290-370 x 255-390): Cath is 80x130 px wedged beside the buttons; the stall is gone; the quote sits on bright orange.
 - **Build:** a phone composition: Cath 200 px or more tall standing at the stall behind the logotype's foot, the buttons under her, the quote on a scrim.
 - **Accept:** Cath 200 px or more at 390x844 and 375x667; quote 4.5:1; no overlap with the buttons (box test); the first poster still starts above 844; games-hero-cath and site-hero pass.
