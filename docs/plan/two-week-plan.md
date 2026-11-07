@@ -2642,7 +2642,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** all six chapters reachable without page scroll at 1440x900; no empty band over 120 px; locked vignettes all distinct; campaign specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 258. [ ] NIGHT SHIFT: a neon sign you can read, off her silhouette *(lane A, in progress)*
+## 258. [x] NIGHT SHIFT: a neon sign you can read, off her silhouette *(done 2026-11-07 18:30 lane A, d515b8f3: "LUNA" with a crescent in slanted tube capitals, placed each frame in the widest clear space beside her in its band (D title right of her, P title under the menu, the pick the wider side inside its stage), 1.2 m behind her; its stutter kept (none under reduced motion); `neonBox()`; meets her figure box 0% at D title, D pick and P pick, 4.6% at P title (her body 0%); cathode-front (new 'neon sign reads clear' test, upright test rewritten) and classpick pass at P and D; posters and key art re-shot; shots scratchpad n258b-d)*
 - **Why:** `plan1107e/ns-title-D` (885-1045 x 200-330): pink neon strokes cage her head; `ns-play-D` (590-680 x 130-400) two pink arcs that read as nothing.
 - **Build:** one legible sign (a bar's name in neon script) placed clear of her figure, with an occasional flicker (none under reduced motion).
 - **Accept:** the sign's projected box meets her figure box under 5%; its word readable in the shot; cathode-front and classpick pass; shots P and D.
