@@ -2534,7 +2534,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 241. [ ] Hedgerow journey map: each stop a little landmark, not a grey disc *(lane B, in progress)*
+## 241. [ ] Hedgerow journey map: each stop a little landmark, not a grey disc *(handed back 2026-11-07 06:45 lane B: the shot's grey discs are mostly locked stops, drawn in pencil on purpose (item 124), and won stops are coloured in by item 230; what's left is the art itself: ten generic landmarks cycle across all acts, so the work is a landmark set per act)*
 - **Why:** `plan1107c/hedge-menu-D` (210-1260 x 310-580), `hedge-menu-P` (120-280 x 215-575): every stop is the same pale coin with a thin grey line icon; locked and open stops differ little, and the painted country (items 153, 230) outclasses its own markers.
 - **Build:** each stop's coin becomes a small painted landmark of the place (a windmill, a beach hut, the blimp, the castle) in the act's palette; a locked stop a pencil sketch on paper, a played one in full colour with its stars hung on it; the next stop a pennant with a slow 1.2 s bob (none under reduced motion).
 - **Accept:** every stop has `[data-stop-art]`; a locked stop's mean saturation under 30% of an open one's; no grey glyph discs left at P or D; hedgerow map specs pass; shots P and D, fresh and mid-act saves.
@@ -2564,7 +2564,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a swipe changes class and pose; the title's font 40 px or more; no visible tab row at 390 px; arrows and 1-5 still work; cathode classpick, dossier and classstage specs pass; shots P and D (D unchanged).
 - **Size:** 2
 
-## 246. [ ] The bugs from the 2026-11-07 06:50 critique, fixed as one batch
+## 246. [ ] The bugs from the 2026-11-07 06:50 critique, fixed as one batch *(slice 1, 2026-11-07 06:45 lane B: Hedgerow's round chip is a tick for rounds cleared ('Rounds cleared' title and spoken name), not the flag that read as the round coming beside the ticket's ROUND 11 OF 26)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107c`; dropped: the P 3D frame cutting the field's right (item 215's close frame, by design), Cath's outfit on /games/ following the poster in view (item 130, by design))
   - **Hedgerow:** D: the top bar's '10/26' beside the ticket's 'ROUND 11 OF 26' read as disagreeing (1200-1310 x 22-55 vs 1115-1170 x 420-495; label what each counts). P l34: the second lane has no depot, its vans stacking on '283 coming' (0-130 x 500-580). P 3D: a stray teal bar above the dock (75-170 x 673-682).
   - **NIGHT SHIFT:** D and P pick: the rifle through Cath's face and collar, and rifle and umbrella held together (D 640-800 x 100-420). P title: the menu panel over her arm (8-195 x 207-435; check it isn't capture timing). D title: Tomas Reed, a Cathnivore producer, as a case file (410-580 x 270-570): check against the cast notes.

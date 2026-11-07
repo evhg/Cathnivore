@@ -414,8 +414,12 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .chip-wave svg {
   background: radial-gradient(circle at 35% 30%, var(--pasture-hi), var(--pasture-deep) 65%);
-  stroke: var(--line);
-  fill: var(--on-fill);
+  stroke: var(--on-fill);
+  fill: none;
+  /* plan item 246: a tick for rounds cleared (the flag read as the round coming) */
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .chip b {
   display: inline-block;
