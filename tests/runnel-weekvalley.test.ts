@@ -25,3 +25,24 @@ describe('Runnel: a valley that remembers the week (plan item 142)', () => {
     for (const k of ['mill', 'footbridge', 'orchard', 'scarecrow', 'fallow'] as const) expect(featureSvg(k)).toMatch(/^<svg/)
   })
 })
+
+// Plan item 252: the valley's props are varied and never a row of the same patch.
+import { propSvg, valleyProps } from '../games/runnel/src/weekvalley'
+describe('Runnel valley props (plan item 252)', () => {
+  it('gives distinct kinds per board, varying with the seed, over 30 seeds', () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 30; i++) {
+      const p = valleyProps(`daily-2026-11-${String(i + 1).padStart(2, '0')}`, 4)
+      expect(new Set(p).size).toBe(p.length)
+      expect(p).toHaveLength(4)
+      for (const k of p) seen.add(k)
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(5)
+    for (const k of ['hayrick', 'trough', 'stile', 'beehive', 'churn', 'barrow'] as const) expect(propSvg(k)).toMatch(/^<svg/)
+  })
+  it('a first visit shows no fallow, and at most two fallow plots ever show', () => {
+    expect(weekFeatures('2026-11-07', {})).toEqual([])
+    const f = weekFeatures('2026-11-07', { '2026-10-20': r(20) })
+    expect(f.filter((x) => x.kind === 'fallow').length).toBeLessThanOrEqual(2)
+  })
+})

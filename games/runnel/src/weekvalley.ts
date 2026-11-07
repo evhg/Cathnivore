@@ -7,6 +7,8 @@ import { weekDays } from './weekstrip'
 import type { DailyResult } from './store'
 
 export type FeatureKind = 'mill' | 'footbridge' | 'orchard' | 'scarecrow' | 'fallow'
+/** Plan item 252: the valley's everyday props, set by the day's seed (not earned). */
+export type PropKind = 'hayrick' | 'trough' | 'stile' | 'beehive' | 'churn' | 'barrow'
 
 export interface ValleyFeature {
   day: string
@@ -19,7 +21,37 @@ const KEEPS: FeatureKind[] = ['mill', 'footbridge', 'orchard', 'scarecrow']
 export function weekFeatures(today: string, results: Record<string, DailyResult>): ValleyFeature[] {
   return weekDays(today, results)
     .filter((d) => d.state === 'solved' || d.state === 'missed')
-    .map((d) => ({ day: d.day, kind: d.state === 'missed' ? 'fallow' : KEEPS[hashString(`${d.day}:keep`) % KEEPS.length]! }))
+    .map((d) => ({ day: d.day, kind: d.state === 'missed' ? 'fallow' : KEEPS[hashString(`${d.day}:keep`) % KEEPS.length]! }) as ValleyFeature)
+    // Plan item 252: a first visit has nothing to keep, so no row of fallow plots; and at most two fallow plots show
+    // (the latest), so a week of missed days never fills the margins with the same brown patch.
+    .filter((f, _i, all) => f.kind !== 'fallow' || (Object.keys(results).length > 0 && all.filter((g) => g.kind === 'fallow').slice(-2).includes(f)))
+}
+
+const PROPS: PropKind[] = ['hayrick', 'trough', 'stile', 'beehive', 'churn', 'barrow']
+
+/** Plan item 252: `n` different props for the valley, in an order set by the seed (no kind twice). */
+export function valleyProps(seed: string, n = 4): PropKind[] {
+  return [...PROPS].sort((a, b) => hashString(`${seed}:${a}`) - hashString(`${seed}:${b}`)).slice(0, Math.min(n, PROPS.length))
+}
+
+/** A prop's picture, 48 x 48 with its foot at the bottom centre, in the keeps' ink. */
+export function propSvg(kind: PropKind): string {
+  const open = '<svg viewBox="0 0 48 48" aria-hidden="true">'
+  const shade = '<ellipse cx="24" cy="45" rx="17" ry="2.6" fill="#2a2018" opacity=".22"/>'
+  switch (kind) {
+    case 'hayrick':
+      return `${open}${shade}<path d="M8 44c0-16 7-28 16-28s16 12 16 28z" fill="#e2bf62" stroke="${INK}" stroke-width="1.6"/><path d="M12 32c6-3 18-3 24 0M10 39c7-3 21-3 28 0" fill="none" stroke="#b08a34" stroke-width="1.4"/><path d="M24 16v-5" stroke="${INK}" stroke-width="1.6"/></svg>`
+    case 'trough':
+      return `${open}${shade}<path d="M6 30h36l-4 12H10z" fill="#9a7a56" stroke="${INK}" stroke-width="1.6"/><path d="M8 32h32" stroke="#6fb2cc" stroke-width="3" stroke-linecap="round"/><path d="M12 42v3M36 42v3" stroke="${INK}" stroke-width="2"/></svg>`
+    case 'stile':
+      return `${open}${shade}<path d="M10 44V18M38 44V18" stroke="#8a5a32" stroke-width="3"/><path d="M6 26h36M6 34h36" stroke="#a87444" stroke-width="3"/><path d="M14 38h20" stroke="#6b4a2b" stroke-width="3.4"/><path d="M10 18v26M38 18v26M6 26h36M6 34h36" fill="none" stroke="${INK}" stroke-width=".9" opacity=".6"/></svg>`
+    case 'beehive':
+      return `${open}${shade}<path d="M24 44v-4" stroke="${INK}" stroke-width="2"/><path d="M12 40c0-18 6-26 12-26s12 8 12 26z" fill="#e8c46a" stroke="${INK}" stroke-width="1.6"/><path d="M13 34h22M14 28h20M17 22h14" stroke="#b5902e" stroke-width="1.4"/><ellipse cx="24" cy="37" rx="3" ry="2" fill="${INK}"/><circle cx="38" cy="16" r="1.6" fill="${INK}"/><circle cx="34" cy="11" r="1.4" fill="${INK}"/></svg>`
+    case 'churn':
+      return `${open}${shade}<path d="M17 44V26l3-6h8l3 6v18z" fill="#c9ced2" stroke="${INK}" stroke-width="1.6"/><rect x="20" y="14" width="8" height="6" rx="1.5" fill="#aeb4b9" stroke="${INK}" stroke-width="1.4"/><path d="M17 32h14M17 38h14" stroke="#8e959b" stroke-width="1.4"/></svg>`
+    case 'barrow':
+      return `${open}${shade}<path d="M8 28h24l-3 10H11z" fill="#6f9a45" stroke="${INK}" stroke-width="1.6"/><circle cx="12" cy="20" r="3" fill="#c8402e"/><circle cx="20" cy="21" r="3.2" fill="#e8a53a"/><circle cx="27" cy="20" r="3" fill="#c8402e"/><circle cx="12" cy="40" r="4.5" fill="#6b4a2b" stroke="${INK}" stroke-width="1.4"/><path d="M32 30l10-4M29 38l9 6" stroke="#8a5a32" stroke-width="2.2"/></svg>`
+  }
 }
 
 /**

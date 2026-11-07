@@ -16,7 +16,7 @@ import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
 import { boardSky, skyArt } from './sky'
 import { lightVars, sceneLight, valleyLayers } from './valley'
 import { weekBeds, weekStrip } from './weekstrip'
-import { SPOTS, featureSvg, firstSpot, weekFeatures } from './weekvalley'
+import { SPOTS, featureSvg, firstSpot, propSvg, valleyProps, weekFeatures } from './weekvalley'
 import { FOLK, FOLK_SPOTS, folkStart, folkSvg } from './valleyfolk'
 import {
   arcLabel,
@@ -279,7 +279,11 @@ function placeWeekValley(): void {
     stage.querySelector('svg.valley')?.after(layer)
   }
   const feats = weekFeatures(today, data.results)
-  const key = feats.map((f) => `${f.day}:${f.kind}`).join('|')
+  // Plan item 252: the valley's everyday props (a hayrick, a trough, a stile...), different kinds set by the board, in
+  // the spots the week's keeps leave free.
+  const seed = document.getElementById('valley-paint')?.dataset.seed ?? today
+  const props = valleyProps(seed, Math.max(2, 5 - feats.length))
+  const key = feats.map((f) => `${f.day}:${f.kind}`).join('|') + `|${props.join(',')}`
   if (key !== keepsKey) {
     keepsKey = key
     layer.replaceChildren(
@@ -289,6 +293,14 @@ function placeWeekValley(): void {
         el.dataset.valleyFeature = f.kind
         el.dataset.day = f.day
         el.innerHTML = featureSvg(f.kind)
+        return el
+      }),
+      ...props.map((k, i) => {
+        const el = document.createElement('span')
+        el.className = 'valley-feature valley-prop'
+        el.dataset.valleyProp = k
+        el.dataset.day = `${seed}:prop${i}`
+        el.innerHTML = propSvg(k)
         return el
       }),
     )

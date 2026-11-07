@@ -3791,7 +3791,8 @@ body[data-mode='practice'] #week-slot {
   }
   /* Plan item 229: a rain day's puddles hold the sky's low light, a glint along their far rim. */
   .vl-puddle ellipse {
-    fill: color-mix(in srgb, color-mix(in srgb, var(--vl-sky-low) 70%, var(--vl-sky-top)) var(--vk), var(--paper));
+    /* plan item 252: water first (the sky's colour alone read as grey stones) */
+    fill: color-mix(in srgb, color-mix(in srgb, var(--water) 55%, var(--vl-sky-low)) var(--vk), var(--paper));
     stroke: color-mix(in srgb, var(--vl-hedge) 35%, transparent);
     stroke-width: 2;
   }
