@@ -32,8 +32,8 @@ test('the partner farm is a mat with three crates and slots', async ({ page }, t
   await check()
 })
 
-// Plan item 196: the ledger is a till receipt (an ol, [data-ledger]) whose new lines feed out in 200 ms, or only fade
-// under reduced motion; Undo is a 'VOID' rubber stamp whose accessible name stays "Undo".
+// Plan item 196: the ledger is a roll (an ol, [data-ledger]); plan item 244: its new lines are written in a 300 ms pen
+// stroke, or only fade under reduced motion; Undo is a 'VOID' rubber stamp whose accessible name stays "Undo".
 for (const reduced of [false, true]) {
   test(`the ledger is a receipt roll and Undo a void stamp${reduced ? ' (reduced motion)' : ''}`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'desktop rail only')
@@ -48,8 +48,8 @@ for (const reduced of [false, true]) {
       const s = getComputedStyle(e)
       return { name: s.animationName, dur: parseFloat(s.animationDuration) }
     })
-    expect(anim.dur).toBeLessThanOrEqual(0.2)
-    expect(anim.name).toBe(reduced ? 'receipt-fade' : 'receipt-print')
+    expect(anim.dur).toBeLessThanOrEqual(0.3)
+    expect(anim.name).toBe(reduced ? 'receipt-fade' : 'ink-stroke')
     const undo = page.getByRole('button', { name: 'Undo', exact: true })
     await expect(undo.locator('.rail-undo-void')).toBeVisible()
     expect(parseFloat(await undo.evaluate((e) => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)

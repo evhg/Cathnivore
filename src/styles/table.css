@@ -3951,48 +3951,77 @@ html.no-animations .table-cath-line { animation: none; }
     list-style: none;
   }
   /* Plan item 225: with room to spare (the hand on the table) the roll is a ruled ledger page that runs down to
-     Undo, its lines waiting for the game's receipts, instead of one slip over an empty band. */
+     Undo. Plan item 244: the game writes it in ink, one 22 px ruled line per entry, a red margin rule down its left
+     and a Marks column at the right. */
+  .round-ledger-title { display: flex; justify-content: space-between; padding-right: 8px; }
+  .round-ledger-col { font: inherit; }
   .actions-sheet .round-ledger-roll {
     flex: 1 1 auto;
     min-height: 0;
-    padding: 6px;
+    gap: 0;
+    padding: 4px 8px 4px 16px;
     border-radius: var(--r-xs);
     background:
-      repeating-linear-gradient(to bottom, transparent 0 21px, var(--ink-a15) 21px 22px) 0 34px / 100% calc(100% - 40px) no-repeat,
+      linear-gradient(90deg, transparent 10px, color-mix(in srgb, var(--p-mara) 40%, transparent) 10px 11px, transparent 11px) 0 0 / 100% 100% no-repeat,
+      repeating-linear-gradient(to bottom, transparent 0 21px, var(--ink-a15) 21px 22px) 0 4px / 100% calc(100% - 4px) no-repeat,
       color-mix(in srgb, var(--paper-hi) 70%, transparent);
     box-shadow: inset 0 0 0 1px var(--ink-a15);
   }
-  /* a till receipt: thin paper with a torn foot, the amount in its own ink */
+  /* an entry in an ink hand: what happened, its amount, and (a move) the running Marks */
   .receipt {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto 2.2em;
     align-items: baseline;
     column-gap: var(--sp-2);
-    padding: 5px 9px 10px;
-    background: var(--paper-hi);
-    box-shadow: inset 0 0 0 1px var(--ink-a15), 0 1px 2px rgb(var(--shadow-ink) / .14);
-    --torn-foot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 0 L3 4.5 L6 2 L9 5.5 L12 0 Z'/%3E%3C/svg%3E");
-    -webkit-mask: var(--torn-foot) bottom left / 12px 6px repeat-x, linear-gradient(black 0 0) 0 0 / 100% calc(100% - 6px) no-repeat;
-    mask: var(--torn-foot) bottom left / 12px 6px repeat-x, linear-gradient(black 0 0) 0 0 / 100% calc(100% - 6px) no-repeat;
-    font: 600 var(--fs-caption)/1.25 var(--font-text);
-    color: var(--ink);
-    /* Plan item 196: a new line feeds out of the till in 200 ms (under reduced motion it only fades in). */
-    animation: receipt-print 200ms var(--ease-settle) both;
-  }
-  .receipt-amount { white-space: nowrap; font-weight: 800; }
-  .receipt[data-sign="up"] .receipt-amount { color: var(--gain-ink); }
-  .receipt[data-sign="down"] .receipt-amount { color: var(--short-ink-shelf); }
-  .receipt-why {
-    display: -webkit-box;
+    height: 22px;
     overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    font: italic 500 var(--fs-caption)/22px var(--font-voice);
+    color: var(--ink);
+    white-space: nowrap;
+    /* a new line is written in 300 ms, a pen stroke left to right (under reduced motion it only fades in) */
+    animation: ink-stroke 300ms var(--ease-settle) both;
   }
-  .receipt-round { color: var(--ink-muted); font-size: var(--fs-label); }
-  /* the roll's first slip: the balance it started from, its words under the figures */
-  .receipt[data-kind="opening"] { grid-template-columns: minmax(0, 1fr) auto; }
-  .receipt[data-kind="opening"] .receipt-why { grid-column: 1; color: var(--ink-muted); }
-  @keyframes receipt-print { from { clip-path: inset(0 0 100% 0); translate: 0 -8px; } }
+  .receipt[data-gone] { display: none; }
+  .receipt-why { overflow: hidden; text-overflow: ellipsis; }
+  .receipt-amount,
+  .receipt-total,
+  .receipt-trust { font: 700 var(--fs-label)/22px var(--font-text); white-space: nowrap; }
+  .receipt-total { text-align: right; }
+  .receipt[data-sign="up"] .receipt-amount,
+  .receipt-trust { color: var(--gain-ink); }
+  .receipt[data-sign="down"] .receipt-amount { color: var(--short-ink-shelf); }
+  /* a move's tick in its producer's colour (two at the table share the page) */
+  .receipt[data-producer] .receipt-why::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--tick, var(--ink-muted));
+  }
+  .receipt[data-producer="mara"] { --tick: var(--p-mara); }
+  .receipt[data-producer="tomas"] { --tick: var(--p-tomas); }
+  .receipt[data-producer="ines"] { --tick: var(--p-ines); }
+  .receipt[data-producer="sol"] { --tick: var(--p-sol); }
+  .receipt[data-kind="opening"],
+  .receipt[data-kind="trust"],
+  .receipt[data-kind="land"] { grid-template-columns: minmax(0, 1fr) auto; }
+  .receipt[data-kind="opening"] .receipt-why { color: var(--ink-muted); }
+  /* a round's closing line, with Bea's crayon doodle hanging into the margin */
+  .receipt[data-kind="round"] { grid-template-columns: 18px minmax(0, 1fr); margin-left: -16px; color: var(--ink-muted); }
+  .receipt-doodle {
+    width: 16px;
+    height: 16px;
+    align-self: center;
+    fill: none;
+    stroke: var(--p-tomas);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @keyframes ink-stroke { from { clip-path: inset(0 100% 0 0); } }
   @keyframes receipt-fade { from { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .receipt { animation: receipt-fade 200ms linear both; } }
 }

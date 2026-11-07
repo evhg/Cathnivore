@@ -2,15 +2,23 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { GameState } from '../engine/types'
 import { receiptsFor, type Receipt } from './roundLedger'
 
-// Plan item 190: the round's ledger at the foot of the desktop rail. Every change to Public Trust or the land
-// left prints a till receipt: the amount, what moved it (the newest log line that explains it) and the round.
-// It is tracked from the state as the game goes (the engine logs actions, not deltas); an Undo tears off the
-// receipts its turn printed, and a new game starts a fresh roll.
-const KEEP = 6
+// Plan item 190: the round's ledger at the foot of the desktop rail. Plan item 244: a ledger page that writes itself
+// in ink as the game goes: a line per move (its Marks change and the running Marks), a line per Trust or land change
+// Hollowell makes, a closing line with Bea's doodle when a round ends. It is tracked from the state as the game goes
+// (the engine logs actions, not deltas); an Undo strikes out the lines its turn wrote, and a new game starts a page.
+const KEEP = 24
+
+// Plan item 244: Bea's doodles in the margin of each round's closing line (a flower, the sun, a heart, a star).
+const DOODLES = [
+  'M9 9m-2 0a2 2 0 104 0 2 2 0 10-4 0M9 7c-1-3 2-4 2-1M11 9c3-1 4 2 1 2M9 11c1 3-2 4-2 1M7 9c-3 1-4-2-1-2M9 11v6',
+  'M9 9m-3 0a3 3 0 106 0 3 3 0 10-6 0M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.4 1.4M12.6 12.6L14 14M4 14l1.4-1.4M12.6 5.4L14 4',
+  'M9 15C3 10 3 5 6 4.5c1.6-.3 2.6 1 3 2.3.4-1.3 1.4-2.6 3-2.3 3 .5 3 5.5-3 10.5z',
+  'M9 2l2 5h5l-4 3 1.6 5L9 12l-4.6 3L6 10 2 7h5z',
+]
 
 export default function RoundLedger({ state }: { state: GameState }) {
   const [receipts, setReceipts] = useState<Receipt[]>([])
-  // The roll's first slip: the balance it starts from (a fresh game's opening, or what a reload carried in).
+  // The page's first line: the balance it starts from (a fresh game's opening, or what a reload carried in).
   const openingOf = (g: GameState) => ({ trust: g.publicTrust, land: g.lostLandPool, round: g.round, fresh: g.round === 1 && !g.log.some((e) => e.type === 'action') })
   const [opening, setOpening] = useState(() => openingOf(state))
   const prev = useRef(state)
@@ -19,37 +27,35 @@ export default function RoundLedger({ state }: { state: GameState }) {
     const was = prev.current
     prev.current = state
     if (was === state) return
-    // A fresh game (or a reload into another one): start a new roll.
+    // A fresh game (or a reload into another one): start a new page.
     if (state.log.length === 0 || state.config !== was.config) {
       setReceipts([])
       setOpening(openingOf(state))
       return
     }
-    // Undo: the log shrank, so tear off what the undone turn printed.
+    // Undo: the log shrank, so strike out what the undone turn wrote.
     if (state.log.length < was.log.length) {
       setReceipts((rs) => rs.filter((r) => r.logLen <= state.log.length))
       return
     }
     const fresh = receiptsFor(was, state, () => ++ids.current)
-    if (fresh.length) setReceipts((rs) => [...fresh.reverse(), ...rs].slice(0, KEEP))
+    if (fresh.length) setReceipts((rs) => [...rs, ...fresh].slice(-KEEP))
   }, [state])
 
-  // The roll gives way when the hand needs the column: only whole receipts show (the newest first), and the
-  // ledger hides outright when not even its title and one line fit, so it never shows as a sliver.
+  // The page is written top down; when the column is short, the oldest lines go first, so the newest line is always
+  // on the page. The ledger hides outright when not even its title and one line fit, so it never shows as a sliver.
   const ref = useRef<HTMLElement>(null)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const fit = () => {
       const bottom = el.getBoundingClientRect().bottom
-      let shown = 0
-      for (const item of el.querySelectorAll<HTMLElement>('.receipt')) {
-        item.hidden = false
-        const fits = item.getBoundingClientRect().bottom <= bottom + 0.5
-        item.hidden = !fits
-        if (fits) shown++
-      }
-      el.dataset.room = shown > 0 ? 'yes' : 'no'
+      const items = [...el.querySelectorAll<HTMLElement>('.receipt')]
+      for (const item of items) delete item.dataset.gone
+      const newest = items.at(-1)
+      let i = 0
+      while (newest && i < items.length - 1 && newest.getBoundingClientRect().bottom > bottom + 0.5) items[i++]!.dataset.gone = ''
+      el.dataset.room = newest && newest.getBoundingClientRect().bottom <= bottom + 0.5 ? 'yes' : 'no'
     }
     fit()
     const ro = new ResizeObserver(fit)
@@ -57,31 +63,47 @@ export default function RoundLedger({ state }: { state: GameState }) {
     return () => ro.disconnect()
   }, [receipts])
 
+  const signed = (n: number) => `${n > 0 ? '+' : '−'}${Math.abs(n)}`
   return (
-    <section ref={ref} className="round-ledger" aria-label="Ledger: Trust and land this game">
-      <h3 className="round-ledger-title label">Ledger</h3>
+    <section ref={ref} className="round-ledger" aria-label="Ledger: this game's moves, Marks, Trust and land">
+      <h3 className="round-ledger-title label">
+        Ledger <span className="round-ledger-col" aria-hidden="true">Marks</span>
+      </h3>
       <ol className="round-ledger-roll" data-ledger="">
-        {receipts.map((r) => (
-          <li key={r.id} className="receipt" data-kind={r.kind} data-sign={r.delta > 0 ? 'up' : 'down'}>
-            <b className="receipt-amount num">
-              {r.delta > 0 ? '+' : '−'}
-              {Math.abs(r.delta)} {r.kind === 'trust' ? 'Trust' : 'Land'}
-            </b>
-            <span className="receipt-why">{r.caption}</span>
-            <span className="receipt-round num" aria-label={`round ${r.round}`}>
-              R{r.round}
-            </span>
-          </li>
-        ))}
         <li className="receipt" data-kind="opening">
+          <span className="receipt-why">{opening.fresh ? 'Opening balance' : `Carried in, round ${opening.round}`}</span>
           <b className="receipt-amount num">
             {opening.trust} Trust · {opening.land} Land
           </b>
-          <span className="receipt-why">{opening.fresh ? 'Opening balance.' : 'Carried in.'}</span>
-          <span className="receipt-round num" aria-label={`round ${opening.round}`}>
-            R{opening.round}
-          </span>
         </li>
+        {receipts.map((r) =>
+          r.kind === 'round' ? (
+            <li key={r.id} className="receipt" data-kind="round">
+              <svg className="receipt-doodle" viewBox="0 0 18 18" aria-hidden="true">
+                <path d={DOODLES[(r.round - 1) % DOODLES.length]} />
+              </svg>
+              <span className="receipt-why">{r.caption}</span>
+            </li>
+          ) : r.kind === 'action' || r.kind === 'harvest' ? (
+            <li key={r.id} className="receipt" data-kind={r.kind} data-producer={r.producer} data-sign={r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : 'even'} data-marks={r.marks}>
+              <span className="receipt-why">
+                {r.caption}
+                {r.trust ? <b className="receipt-trust num"> {signed(r.trust)} Trust</b> : null}
+              </span>
+              <b className="receipt-amount num">{r.delta ? signed(r.delta) : ''}</b>
+              <span className="receipt-total num" aria-label={`${r.marks} Marks`}>
+                {r.marks}
+              </span>
+            </li>
+          ) : (
+            <li key={r.id} className="receipt" data-kind={r.kind} data-sign={r.delta > 0 ? 'up' : 'down'}>
+              <span className="receipt-why">{r.caption}</span>
+              <b className="receipt-amount num">
+                {signed(r.delta)} {r.kind === 'trust' ? 'Trust' : 'Land'}
+              </b>
+            </li>
+          ),
+        )}
       </ol>
     </section>
   )

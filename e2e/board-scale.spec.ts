@@ -76,5 +76,6 @@ test('the ledger prints a receipt for a lost Trust and the board holds its size 
   }
   await expect(page.locator('.enemy-turn-playback')).toBeVisible()
   expect(Math.abs((await map.boundingBox())!.height - h0)).toBeLessThanOrEqual(4)
-  await expect(page.locator('.round-ledger .receipt:not([data-kind="opening"])').first()).toBeVisible({ timeout: 30_000 })
+  // Plan item 244: the page is written top down, so the newest line is the last one.
+  await expect(page.locator('.round-ledger .receipt:not([data-kind="opening"])').last()).toBeVisible({ timeout: 30_000 })
 })
