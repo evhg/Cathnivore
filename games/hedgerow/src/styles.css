@@ -4843,7 +4843,8 @@ img.act-scene {
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
 }
 @media (min-width: 1100px) and (min-height: 860px) {
-  #screen-select .node.next .you { right: calc(100% + 10px); width: 50px; height: 112px; }
+  /* plan item 250: 120 px at D */
+  #screen-select .node.next .you { right: calc(100% + 10px); width: 54px; height: 120px; }
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 10px); }
 }
 @media (prefers-reduced-motion: no-preference) {

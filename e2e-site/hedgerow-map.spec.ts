@@ -337,7 +337,7 @@ test('plan item 111: at D the stops are 72 px landmarks and Cath is 110 px', asy
   }))
   expect(m.coins.length).toBeGreaterThan(5)
   expect(Math.min(...m.coins)).toBeGreaterThanOrEqual(72)
-  expect(m.you).toBeGreaterThanOrEqual(110)
+  expect(m.you).toBeGreaterThanOrEqual(118) // plan item 250: 120 px at D
 })
 
 // Plan item 111: a shorter desktop keeps the smaller stops, so the level card's Play stays on screen at 1280x800.
