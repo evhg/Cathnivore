@@ -2636,7 +2636,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** vehicles 40 px or more at D and 28 at P; the kinds visibly distinct (unit test on sprite keys); hedgerow-threat, -gatequeue, -vehicles pass; key art re-shot; shots P and D.
 - **Size:** 2
 
-## 257. [ ] Cathnivore desktop Campaign: the whole spread used
+## 257. [ ] Cathnivore desktop Campaign: the whole spread used *(lane B, in progress)*
 - **Why:** `plan1107e/cath-campaign-D`: 60-870 x 750-900 empty under the map; only 3.5 chapters show; locked thumbnails are flat grey boxes (1235-1365 x 480-570, 680-765).
 - **Build:** the map pinned beside a chapter rail that scrolls on its own; locked chapters as their own vignette in pencil (as Hedgerow's locked stops); the campaign's stats under the map (pins, best Trust, stars).
 - **Accept:** all six chapters reachable without page scroll at 1440x900; no empty band over 120 px; locked vignettes all distinct; campaign specs pass; shots P and D, light and dark.
