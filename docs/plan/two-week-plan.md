@@ -2507,7 +2507,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every plot type shows at least 3 materials; draw calls at D on l21 at most +12; hedgerow 3D specs pass; shots P, D, L.
 - **Size:** 2
 
-## 237. [ ] Cathnivore phone game: Hollowell at the table
+## 237. [ ] Cathnivore phone game: Hollowell at the table *(lane A, in progress)*
 - **Why:** `plan1107b/cath-game-P`: the antagonist has no face on a phone; at D it's a 60 px badge over a paper strip like the players' own.
 - **Build:** a 56 px Hollowell executive medallion on the phone's threat strip with a glossy plastic rim (the corporate tokens), reacting (smug on a Squeeze, rattled when an Outlet is cleared); at D the portrait 96 px.
 - **Accept:** medallion 56 px or more at P, 96 at D; two reactions reachable in an autoplay; nothing on the board covered (board-scale, critique177 pass); shots P and D.
