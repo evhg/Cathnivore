@@ -887,15 +887,21 @@ export class Renderer {
           const hh = headingAt(path, Math.max(0, x));
           return Math.abs(hh.dx) > Math.abs(hh.dy);
         });
-        const dists: number[] = [];
-        const qs: number[] = [];
-        let d = 0.15;
-        for (let i = ln.leads.length - 1; i >= 0; i--) {
-          dists[i] = d;
-          qs[i] = across(d) ? QUEUE_SCALE : 1;
-          // (the next one's size isn't known until it's placed: room for it at the bigger size)
-          if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) * qs[i]! + enemyScale(ln.leads[i - 1]!) * QUEUE_SCALE) + 0.06 * QUEUE_SCALE;
-        }
+        // Plan item 273: one size per queue (a queue in two sizes at a bend read as two convoys): the bigger only when
+        // every vehicle of it stands on a straight run across.
+        const lay = (q: number) => {
+          const ds: number[] = [];
+          let d = 0.15;
+          for (let i = ln.leads.length - 1; i >= 0; i--) {
+            ds[i] = d;
+            if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * q;
+          }
+          return ds;
+        };
+        const big = lay(QUEUE_SCALE);
+        const allAcross = big.every((d) => across(d));
+        const dists = allAcross ? big : lay(1);
+        const qs = dists.map(() => (allAcross ? QUEUE_SCALE : 1));
         ln.leads.forEach((kind, i) => {
           const d = dists[i]!;
           const p = enemyPoint(level, { dist: d, ...(ln.lane ? { lane: ln.lane } : {}) });
