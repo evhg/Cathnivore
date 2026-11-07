@@ -470,12 +470,25 @@
 .cmp-vig-capital { fill: var(--region-capital); }
 .cmp-vig-frame { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 
-/* A locked chapter's postcard is a pencil sketch: graphite on paper, a lighter frame. */
+/* A locked chapter's postcard is a pencil sketch: graphite on paper, a lighter frame. Plan item 257: drawn, not a
+   greyed photo: every shape outlined in graphite on bare paper, the hills and far land shaded in hatching (the
+   patterns live once in CampaignScreen's `.cmp-defs`). */
 .cmp-vignette.is-pencil {
-  filter: grayscale(1) contrast(0.85) brightness(1.08);
   box-shadow: none;
 }
-.cmp-vignette.is-pencil .cmp-vig-frame { stroke: var(--ink-muted); stroke-dasharray: 3 2; }
+.cmp-vignette.is-pencil :is(path, rect, circle, ellipse, polygon) {
+  fill: var(--paper-hi);
+  stroke: color-mix(in srgb, var(--ink) 62%, var(--paper));
+  stroke-width: 0.7;
+}
+.cmp-vignette.is-pencil .cmp-vig-sky { fill: var(--paper-hi); stroke: none; }
+.cmp-vignette.is-pencil .cmp-vig-far { fill: url(#cmp-pencil-hatch-x); stroke-width: 0.5; }
+.cmp-vignette.is-pencil .cmp-vig-hill { fill: url(#cmp-pencil-hatch); }
+.cmp-vignette.is-pencil :is(.cmp-vig-awning, .cmp-vig-counter) { fill: url(#cmp-pencil-hatch); }
+.cmp-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.cmp-hatch-paper { fill: var(--paper-hi); }
+.cmp-hatch-line { stroke: color-mix(in srgb, var(--ink) 45%, var(--paper)); stroke-width: 0.6; }
+.cmp-vignette.is-pencil .cmp-vig-frame { fill: none; stroke: var(--ink-muted); stroke-dasharray: 3 2; }
 .cmp-vignette.is-pencil .cmp-vig-sun { opacity: 0.4; }
 
 /* Plan item 150: the chapter's producer at their stall, and a won chapter's bunting and sunshine. */
@@ -1027,3 +1040,64 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .campaign-screen > .cmp-path { grid-column: 2; grid-row: 2; margin-top: 0; }
   .campaign-screen > .cmp-back { grid-column: 2; grid-row: 3; justify-self: center; }
 }
+
+/* Plan item 257: a desktop tall enough holds the whole spread in the window: the map pinned on the left with the
+   campaign's tally under it, the chapter rail scrolling on its own on the right, so every chapter is reachable
+   without the page scrolling and no empty band opens under the map. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign.campaign-screen {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding-bottom: 16px;
+  }
+  .campaign-screen > .cmp-header { margin-bottom: 14px; }
+  .campaign-screen > .cmp-map {
+    grid-row: 2;
+    position: static;
+    align-self: stretch;
+    min-height: 0;
+  }
+  .campaign-screen > .cmp-map .cmp-map-svg { max-height: calc(100dvh - 300px); }
+  .campaign-screen > .cmp-ledger { grid-column: 1; grid-row: 3; }
+  .campaign-screen > .cmp-path {
+    grid-row: 2 / span 2;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 4px 8px 12px 0;
+    /* the rail fades out at its foot, so it reads as continuing */
+    mask-image: linear-gradient(180deg, black calc(100% - 28px), transparent);
+  }
+  .campaign-screen > .cmp-back { display: none; }
+  .campaign-screen .cmp-ledger .cmp-ledger-back { display: block; margin: 0; }
+}
+
+/* The tally under the map: three ledger cells on a paper strip. */
+.cmp-ledger-cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.cmp-ledger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--paper-hi);
+  box-shadow: 0 0 0 1px var(--rule), 0 6px 14px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.cmp-ledger-cell { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.cmp-ledger-cell + .cmp-ledger-cell { padding-left: 12px; border-left: 1px dashed var(--rule); }
+.cmp-ledger dt { font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.cmp-ledger dd { margin: 0; font-family: var(--font-display); font-size: var(--fs-body); color: var(--ink); }
+.cmp-ledger dd b { font-size: var(--fs-h3, 1.4em); color: var(--soil); }
+.cmp-ledger .cmp-ledger-back { display: none; }

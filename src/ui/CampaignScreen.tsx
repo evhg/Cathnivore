@@ -297,6 +297,48 @@ export default function CampaignScreen({
         {!wide && host}
       </header>
       <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} lit={pointed ?? undefined} host={wide ? host : undefined} />
+      {/* Plan item 257: on a desktop the campaign's tally sits under the map, filling the band the map leaves; the
+          page's own Back sits under the rail, which scrolls on a tall desktop, so there it lives here. */}
+      {wide && (
+        <div className="cmp-ledger" data-ledger>
+          <dl className="cmp-ledger-cells">
+            <div className="cmp-ledger-cell">
+              <dt>Chapters won</dt>
+              <dd>
+                <b>{done}</b> of {chapters.length}
+              </dd>
+            </div>
+            <div className="cmp-ledger-cell">
+              <dt>Regions free</dt>
+              <dd>
+                <b>{liberatedRegions(completed).size}</b> of {Object.keys(MAP_AXIAL).length}
+              </dd>
+            </div>
+            <div className="cmp-ledger-cell">
+              <dt>Seals pressed</dt>
+              <dd>
+                <b>{chapters.reduce((n, c) => n + (seals?.(c.id) ?? (completed.includes(c.id) ? ['win'] : [])).length, 0)}</b> of {chapters.length * 3}
+              </dd>
+            </div>
+          </dl>
+          <button className="cmp-ledger-back cmp-back" onClick={onBack}>
+            Back to Title
+          </button>
+        </div>
+      )}
+      {/* Plan item 257: a locked chapter's postcard is shaded in pencil hatching (shared by every locked vignette). */}
+      <svg className="cmp-defs" width="0" height="0" aria-hidden="true" focusable="false">
+        <defs>
+          <pattern id="cmp-pencil-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+            <rect width="4" height="4" className="cmp-hatch-paper" />
+            <path d="M0 0 V4" className="cmp-hatch-line" />
+          </pattern>
+          <pattern id="cmp-pencil-hatch-x" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+            <rect width="4" height="4" className="cmp-hatch-paper" />
+            <path d="M0 0 V4 M2 0 V4" className="cmp-hatch-line" />
+          </pattern>
+        </defs>
+      </svg>
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)
