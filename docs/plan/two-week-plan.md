@@ -2603,7 +2603,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 and 375x667 the plate covers under 5% of her projected figure box (tested with `figureBox`); her figure 280 px tall or more at 390x844; nothing scrolls; cathode-front and title specs pass; shots P at 30 and 60 s.
 - **Size:** 1
 
-## 252. [ ] Runnel valley: props you can read, none twice side by side
+## 252. [ ] Runnel valley: props you can read, none twice side by side *(lane B, in progress)*
 - **Why:** `plan1107d/runnel-D` and `-P`: the same brown trapezoid crate repeats about 8 times (1135,145; 1280,295; 1260,690) and grey ovals (520-600 x 465) read as nothing.
 - **Build:** a set of six or more painted valley props (hayrick, water trough, stile, beehive, scarecrow, laid hedge, a milk churn) in the valley's light and weather, placed by the day's seed, with no two of a kind adjacent; the grey ovals become clear stones or go.
 - **Accept:** at least 5 prop kinds in a lesson shot at D; no kind more than twice on one screen (unit test over 30 seeds); runnel-valley unit and e2e, front, board, garden pass; key art re-shot; shots P and D, day, dusk, rain.
