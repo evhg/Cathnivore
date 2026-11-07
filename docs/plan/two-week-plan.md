@@ -2534,7 +2534,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 241. [ ] Hedgerow journey map: each stop a little landmark, not a grey disc *(handed back 2026-11-07 06:45 lane B: the shot's grey discs are mostly locked stops, drawn in pencil on purpose (item 124), and won stops are coloured in by item 230; what's left is the art itself: ten generic landmarks cycle across all acts, so the work is a landmark set per act)*
+## 241. [ ] Hedgerow journey map: each stop a little landmark, not a grey disc *(lane A, in progress)* *(handed back 2026-11-07 06:45 lane B: the shot's grey discs are mostly locked stops, drawn in pencil on purpose (item 124), and won stops are coloured in by item 230; what's left is the art itself: ten generic landmarks cycle across all acts, so the work is a landmark set per act)*
 - **Why:** `plan1107c/hedge-menu-D` (210-1260 x 310-580), `hedge-menu-P` (120-280 x 215-575): every stop is the same pale coin with a thin grey line icon; locked and open stops differ little, and the painted country (items 153, 230) outclasses its own markers.
 - **Build:** each stop's coin becomes a small painted landmark of the place (a windmill, a beach hut, the blimp, the castle) in the act's palette; a locked stop a pencil sketch on paper, a played one in full colour with its stars hung on it; the next stop a pennant with a slow 1.2 s bob (none under reduced motion).
 - **Accept:** every stop has `[data-stop-art]`; a locked stop's mean saturation under 30% of an open one's; no grey glyph discs left at P or D; hedgerow map specs pass; shots P and D, fresh and mid-act saves.
