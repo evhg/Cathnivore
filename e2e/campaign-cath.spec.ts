@@ -71,3 +71,24 @@ test('each chapter card has a landmark vignette, locked ones in pencil', async (
   // Chapter 1 is drawn from the regions it frees: the barn and the sheepfold.
   await expect(cards.first().locator('.cmp-vignette')).toHaveAttribute('data-regions', 'brindleHills highmoor')
 })
+
+// Plan item 248: at 1280x800 and 375x667 the map and Cath stand whole on the first screen (only the chapter list
+// scrolls on), with no sideways scroll.
+for (const [w, h] of [[1280, 800], [375, 667]] as const) {
+  test(`map and Cath whole on the first screen at ${w}x${h}`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h })
+    await page.addInitScript(() =>
+      localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })),
+    )
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    await expect(page.locator('.cmp-map')).toBeVisible()
+    for (const sel of ['.cmp-map', '.cmp-header-cath', '.cmp-cath-line']) {
+      const b = (await page.locator(sel).boundingBox())!
+      expect(b.y, sel).toBeGreaterThanOrEqual(0)
+      expect(b.y + b.height, sel).toBeLessThanOrEqual(h)
+      expect(b.x + b.width, sel).toBeLessThanOrEqual(w)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+  })
+}
