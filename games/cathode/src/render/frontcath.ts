@@ -392,8 +392,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const ankle = V(0.075 * side + (side > 0 ? 0.012 : 0), 0.105, -0.005 + fwd);
     // Thigh: full at the top, slim to the knee.
     legs.push(add(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92), tightsMat));
-    // The boot shaft: knee to ankle with a calf, a turned-down cuff at the top.
-    add(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.05], [0.06, 0.05], [0.1, 0.046], [0.32, 0.05], [0.5, 0.044], [0.8, 0.031], [1, 0.029]], seg(14), 0.95), blackMat);
+    // The boot shaft: knee to ankle with a calf, a turned-down cuff at the top. Plan item 247: the calf fuller and
+    // the ankle slimmer (the old shaft was near straight and read as a stick below the hem on the class pick).
+    add(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.053], [0.06, 0.053], [0.09, 0.044], [0.27, 0.057], [0.45, 0.051], [0.72, 0.032], [0.9, 0.025], [1, 0.027]], seg(14), 0.95), blackMat);
     // The foot: a pointed toe down on the ground, the heel up on its post.
     const toe = V(ankle.x + (side > 0 ? 0.03 : 0.008) * side, 0.012, ankle.z + 0.15);
     add(turned(V(ankle.x, 0.09, ankle.z - 0.035), toe, [[0, 0.03], [0.3, 0.034], [0.7, 0.028], [0.92, 0.014], [1, 0.004]], seg(10), 0.62, Math.PI / 2), blackMat);
@@ -2142,7 +2143,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const haloG = extra("wirewitch", headPivot, [[halo, rigMat!]]);
     haloG.position.set(0, 0.04, -0.1);
     haloG.scale.setScalar(1.3);
-    // Butcher: a broad cleaver on her right hip, blade out, under the striped apron's edge.
+    // Butcher: a broad cleaver on her right hip, blade out, under the leather apron's edge.
     const blade = new THREE.BoxGeometry(0.11, 0.17, 0.006);
     blade.translate(0.015, -0.085, 0);
     const handle = limb(V(0, 0, 0), V(0, 0.1, 0), 0.013, 0.014, 8);
@@ -2178,23 +2179,86 @@ export function buildFrontCath(phone: boolean): FrontCath {
     caseUp = briefcase(chest, "kit-fixer-case-carried");
     caseUp.rotation.set(0, -0.35, 0.04);
   }
-  // The butcher's apron in a blue-and-cream butcher's stripe (it was a claret like her coat and vanished into it).
+  // The butcher's apron. It was a claret like her coat and vanished into it, then a blue-and-cream stripe that read
+  // as a barcode under the red key on the pick (plan item 247). Now heavy saddle leather that stands off her olive
+  // coat: a grain, darker worn edges, a stitched hem, a front pocket and old dark stains, hanging in soft folds.
   {
+    const W = 128;
+    const H = 256;
     const c = document.createElement("canvas");
-    c.width = 64;
-    c.height = 8;
+    c.width = W;
+    c.height = H;
     const x = c.getContext("2d")!;
-    x.fillStyle = "#cfc6b2";
-    x.fillRect(0, 0, 64, 8);
-    x.fillStyle = "#1f2c48";
-    for (let i = 0; i < 64; i += 11) x.fillRect(i + 3, 0, 5, 8);
+    const g = x.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#80502f");
+    g.addColorStop(1, "#6a3e24");
+    x.fillStyle = g;
+    x.fillRect(0, 0, W, H);
+    // The grain: small lighter and darker flecks (seeded, so every build paints the same leather).
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 1400; i++) {
+      x.fillStyle = rnd() < 0.5 ? "rgba(40,18,8,0.18)" : "rgba(170,120,80,0.12)";
+      x.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1);
+    }
+    // Worn darker edges, then the stitched hem just inside them.
+    const edge = x.createLinearGradient(0, 0, W, 0);
+    edge.addColorStop(0, "rgba(30,12,4,0.55)");
+    edge.addColorStop(0.1, "rgba(30,12,4,0)");
+    edge.addColorStop(0.9, "rgba(30,12,4,0)");
+    edge.addColorStop(1, "rgba(30,12,4,0.55)");
+    x.fillStyle = edge;
+    x.fillRect(0, 0, W, H);
+    x.fillStyle = "rgba(30,12,4,0.5)";
+    x.fillRect(0, H - 8, W, 8);
+    x.strokeStyle = "rgba(214,178,120,0.85)";
+    x.lineWidth = 1.5;
+    x.setLineDash([4, 3]);
+    x.beginPath();
+    x.moveTo(6, 0);
+    x.lineTo(6, H - 7);
+    x.lineTo(W - 6, H - 7);
+    x.lineTo(W - 6, 0);
+    x.stroke();
+    // The pocket across her middle, with its own stitching.
+    x.fillStyle = "rgba(30,12,4,0.25)";
+    x.fillRect(36, 120, 56, 44);
+    x.strokeRect(38, 122, 52, 40);
+    x.setLineDash([]);
+    // Old stains: dark, soaked in, heavier toward the hem.
+    for (let i = 0; i < 9; i++) {
+      const sx = 16 + rnd() * (W - 32);
+      const sy = 90 + rnd() * (H - 110);
+      const r = 4 + rnd() * 10;
+      const st = x.createRadialGradient(sx, sy, 0, sx, sy, r);
+      st.addColorStop(0, "rgba(48,8,6,0.55)");
+      st.addColorStop(1, "rgba(48,8,6,0)");
+      x.fillStyle = st;
+      x.beginPath();
+      x.ellipse(sx, sy, r, r * (1 + rnd()), 0, 0, Math.PI * 2);
+      x.fill();
+    }
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
-    // Plan item 112's apron, now its own mesh: mergeGeos drops UVs, and the stripe needs them.
-    const apron = new THREE.CylinderGeometry(0.19, 0.252, 0.8, seg(16), 4, true, -0.62, 1.24);
+    // Plan item 112's apron, now its own mesh: mergeGeos drops UVs, and the leather needs them.
+    const apron = new THREE.CylinderGeometry(0.19, 0.252, 0.8, seg(20), 8, true, -0.62, 1.24);
+    {
+      // Soft folds that deepen toward the hem (the leather is stiff at the bib, swings below the belt).
+      const p = apron.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const px = p.getX(i);
+        const py = p.getY(i);
+        const pz = p.getZ(i);
+        const t = Math.max(0, (0.1 - py) / 0.5);
+        const phi = Math.atan2(px, pz);
+        const f = 1 + 0.035 * t * Math.sin(phi * 9 + 0.6);
+        p.setXYZ(i, px * f, py, pz * f);
+      }
+      apron.computeVertexNormals();
+    }
     apron.scale(1, 1, 0.74);
     apron.translate(0, -0.03, 0);
-    const am = kitMat(new THREE.MeshStandardMaterial({ map: tex, color: 0xd8d0c0, roughness: 0.75, metalness: 0, side: THREE.DoubleSide }));
+    const am = kitMat(new THREE.MeshStandardMaterial({ map: tex, color: 0xffffff, roughness: 0.52, metalness: 0.02, side: THREE.DoubleSide }));
     add(apron, am, kits.get("butcher")!);
   }
 
