@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-07T03:22Z
 
 
 
@@ -2494,4 +2493,43 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Cathnivore:** D game: the HOLLOWELL badge about 10 px (1225-1335 x 130-145). D title: the pennant hint white 13 px on light wood about 3.5:1 (1033-1275 x 765-778). P setup: 'PUBLIC TRUST / starts at 10' wraps to three lines beside two-line columns (32-110 x 713-760).
   - **NIGHT SHIFT:** D title: the neon sign cut at the viewport top, only letter bottoms (845-1000 x 0-20). P title and P pick: Cath soft again (check after a long settle before fixing).
 - **Accept:** each point checked in a shot before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 235. [ ] NIGHT SHIFT: each class a distinct silhouette on the class pick
+- **Why:** `plan1107b/ns-play-D` (880-1230 x 240-900): a subagent critique read all five classes as the same figure with a different gun; the coat, stance and kit change too little at D distance.
+- **Build:** (check the kit first: item 112 gave each class a kit) per-class stance from `cathode-classposes` exaggerated for the pick (Butcher squared and low, Gunslinger hip-shot, Ghost turned sideways, Wirewitch hands raised in the rig's light, Fixer arms folded), plus one large silhouette piece each (Butcher's apron, Ghost's hood up, Gunslinger's duster split, Wirewitch's lit cable halo, Fixer's briefcase).
+- **Accept:** the figure-region pixel difference between any two classes' D shots over 15%; her face still in the middle band (classpick spec); perf within budget; shots D and P for all five.
+- **Size:** 2
+
+## 236. [ ] Hedgerow 3D: the plots as crops, not boxes
+- **Why:** `plan1107b/hedge-l21-3d-D/P`: the 2D field is illustrated, but 3D plots read as flat brown boxes, so 3D looks poorer than the fallback.
+- **Build:** per-crop instanced meshes on each plot (wheat tufts, cabbage rosettes, orchard saplings, furrow ridges), a soil material with furrow normals, kept to instancing so draw calls rise by 12 or fewer.
+- **Accept:** every plot type shows at least 3 materials; draw calls at D on l21 at most +12; hedgerow 3D specs pass; shots P, D, L.
+- **Size:** 2
+
+## 237. [ ] Cathnivore phone game: Hollowell at the table
+- **Why:** `plan1107b/cath-game-P`: the antagonist has no face on a phone; at D it's a 60 px badge over a paper strip like the players' own.
+- **Build:** a 56 px Hollowell executive medallion on the phone's threat strip with a glossy plastic rim (the corporate tokens), reacting (smug on a Squeeze, rattled when an Outlet is cleared); at D the portrait 96 px.
+- **Accept:** medallion 56 px or more at P, 96 at D; two reactions reachable in an autoplay; nothing on the board covered (board-scale, critique177 pass); shots P and D.
+- **Size:** 1
+
+## 238. [ ] The site's phone hero: Cath as the centrepiece
+- **Why:** `plan1107b/games-P` (290-370 x 255-390): Cath is 80x130 px wedged beside the buttons; the stall is gone; the quote sits on bright orange.
+- **Build:** a phone composition: Cath 200 px or more tall standing at the stall behind the logotype's foot, the buttons under her, the quote on a scrim.
+- **Accept:** Cath 200 px or more at 390x844 and 375x667; quote 4.5:1; no overlap with the buttons (box test); the first poster still starts above 844; games-hero-cath and site-hero pass.
+- **Size:** 1
+
+## 239. [ ] Cathnivore desktop Setup: one market table
+- **Why:** `plan1107b/cath-setup-D`: a stack of mismatched panels reading like a form; Cath squeezed into a corner (1150-1290 x 470-780).
+- **Build:** mode and difficulty on one stall rail across the top, the producers and map on the cloth, Cath half-length beside Start (300 px or more) with her line.
+- **Accept:** no control clipped by its container; Cath 300 px or more at 1440x900 and 1280x800; no page scroll at 1280x800; setup-* specs pass; shots D (P unchanged).
+- **Size:** 2
+
+## 240. [ ] The bugs from the 2026-11-07 03:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1107b`)
+  - **NIGHT SHIFT:** D/P title 'No case open' and 'GAMES' contrast (205, 311; 75, 53); P '4 MORE NAMES' size (16, 660); P pick perk tags LONGSHOT/SHROUD/COLD READ about 10 px (20-230, 772).
+  - **Cathnivore:** P game vertical 'PLAY' label about 10 px (175, 690-740).
+  - **Hedgerow:** 3D l21 D two stacked Hollowell labels (120-320 x 268-400); D menu 'Beyond the hedge' card clipped at the viewport foot (528-912 x 852-900).
+  - **Runnel:** rain streaks over playable tiles lower their contrast (D 900-1000 x 200-260); the footer hint 12-13 px muted.
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
