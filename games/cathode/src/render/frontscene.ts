@@ -16,7 +16,7 @@ import { createWorld } from "./world";
 import { AutoScale } from "../game/autoscale";
 import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
-import { buildFrontNeon } from "./frontneon";
+import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -74,6 +74,8 @@ export interface FrontScene {
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
   /** Her projected box; `body` leaves the umbrella out (plan item 159: what a menu plate must stay clear of). */
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
+  /** Plan item 258: the neon sign's projected box (its tubes), in CSS px. */
+  neonBox(): { left: number; top: number; right: number; bottom: number };
   /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
   faceBox(): { left: number; top: number; right: number; bottom: number };
   /** Plan item 247: the projected box of what she holds in her hands now (the rifle, the shotgun, the carried case),
@@ -99,8 +101,8 @@ const LOOP_S = 36;
 const FOV = 38;
 /** Cath stands 1.2 m north of the job's start, facing south down the street: the push passes her shoulder. */
 const CATH_BACK = 1.2;
-/** Plan item 148: on the upright title, how far past her the neon blade hangs (m). */
-const NEON_BEHIND = 4.2;
+/** Plan items 148 and 258: how far past her the neon sign hangs (m). */
+const NEON_BEHIND = 1.2;
 
 /**
  * The four framings in Cath's frame (x her left, y up, z ahead of her), metres. Plan item 117: the face of every
@@ -186,9 +188,6 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const rimDir = new THREE.Vector3();
   // Plan item 148: the neon sign that is her key and rim; the pink lights stutter with its tubes.
   const neon = buildFrontNeon(phone);
-  const neonAt = toWorld(-1.6, 1.8, -3.0);
-  neon.group.position.copy(neonAt);
-  neon.group.lookAt(toWorld(1.5, 1.8, 2.0));
   world.scene.add(neon.group);
   const neonRimI = phone ? 7 : 9;
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
@@ -491,25 +490,85 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     fitQuat.copy(cam.quaternion);
   }
 
-  // Plan item 148: on the upright title the blade (screen right of her elsewhere) would hang off the edge, so it
-  // steps in behind her: up the street on the line through her shoulders, a few metres past her, and its pink
-  // haloes her silhouette there.
-  const neonHome = neon.group.quaternion.clone();
-  const neonStaged = new THREE.Vector3();
+  // Plan item 258: the sign hangs in the street behind her but is placed on screen, in the widest clear space
+  // beside her figure for the screen she's on (right of her on the desktop title and pick, under the menu on the
+  // upright title, beside her on the upright pick), sized to that space, and eased there so it never jumps.
+  // (Item 148 hung it behind her head upright, where its tubes caged her face.)
+  const neonTubes = neon.group.getObjectByName("front-neon-tubes") as THREE.Mesh;
+  // Her projected vertices (CSS px), resampled every 0.2 s; the sign keeps clear of her within its own band.
+  const herPts: number[] = [];
+  let herAge = Infinity;
+  const neonNow = { x: 0, y: 0, s: 0, set: false };
+  const neonDir = new THREE.Vector3();
+  const neonFwd = new THREE.Vector3();
   const neonFace = new THREE.Vector3();
-  function placeNeon(k: number): void {
-    if (k <= 0.001) {
-      neon.group.position.copy(neonAt);
-      neon.group.quaternion.copy(neonHome);
-      return;
+  function measureHer(w: number, h: number): void {
+    cam.updateMatrixWorld();
+    cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
+    cath.group.updateMatrixWorld(true);
+    herPts.length = 0;
+    cath.group.traverseVisible((obj) => {
+      const m = obj as THREE.Mesh;
+      if (!m.isMesh) return;
+      const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+      if (!pos) return;
+      const step = pos.count < 64 ? 1 : 17;
+      for (let i = 0; i < pos.count; i += step) {
+        fitV.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).project(cam);
+        if (fitV.z > 1) continue;
+        herPts.push(((fitV.x + 1) / 2) * w, ((1 - fitV.y) / 2) * h);
+      }
+    });
+    herAge = 0;
+  }
+  /** Her left and right edges (CSS px) between two heights. */
+  function herSpan(y0: number, y1: number): { l: number; r: number } {
+    let l = Infinity, r = -Infinity;
+    for (let i = 0; i < herPts.length; i += 2) {
+      const y = herPts[i + 1]!;
+      if (y < y0 || y > y1) continue;
+      l = Math.min(l, herPts[i]!);
+      r = Math.max(r, herPts[i]!);
     }
-    const bx = cloudBox();
-    fitV.set(bx.l + (bx.r - bx.l) * 0.56, bx.t - (bx.t - bx.b) * 0.32, 0.5).unproject(cam).sub(cam.position).normalize();
-    neonStaged.copy(cam.position).addScaledVector(fitV, cam.position.distanceTo(feet) + NEON_BEHIND);
-    neon.group.position.lerpVectors(neonAt, neonStaged, k);
+    return { l, r };
+  }
+  function placeNeon(dt: number): void {
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
+    herAge += dt;
+    if (herAge > 0.2 || o.still || dt === 0) measureHer(w, h);
+    const pick = wd.w > 0.5;
+    const upright = cam.aspect < 1;
+    const gap = 0.012 * w;
+    // The band for this screen, then the clear space beside her in it.
+    const [y0, y1] = !upright ? (pick ? [0.2 * h, 0.48 * h] : [0.13 * h, 0.5 * h]) : pick ? [0.1 * h, 0.5 * h] : [0.555 * h, 0.715 * h];
+    const her = herSpan(y0, y1);
+    const lo = !upright && pick && pickStage ? pickStage.left + gap : 0.04 * w;
+    const hi = !upright && pick && pickStage ? pickStage.right - gap : 0.97 * w;
+    const right: [number, number] = [Math.max(lo, her.r + gap), hi];
+    const left: [number, number] = [lo, Math.min(hi, her.l - gap)];
+    // The title's menu is left of her: on the desktop the sign takes her right; upright, the space under the menu,
+    // left of her. The pick takes the wider side.
+    const [x0, x1] = !pick ? (upright ? left : right) : right[1] - right[0] >= left[1] - left[0] ? right : left;
+    const aspect = NEON_W / NEON_H;
+    const sw = Math.max(48, Math.min(x1 - x0, (y1 - y0) * aspect, 0.2 * Math.max(w, h)));
+    const tx = (x0 + x1) / 2, ty = (y0 + y1) / 2;
+    const k = !neonNow.set || o.still || dt === 0 ? 1 : 1 - Math.exp(-dt / 0.35);
+    neonNow.x += (tx - neonNow.x) * k;
+    neonNow.y += (ty - neonNow.y) * k;
+    neonNow.s += (sw - neonNow.s) * k;
+    neonNow.set = true;
+    // Through that pixel, a few metres past her.
+    neonDir.set((neonNow.x / w) * 2 - 1, 1 - (neonNow.y / h) * 2, 0.5).unproject(cam).sub(cam.position).normalize();
+    cam.getWorldDirection(neonFwd);
+    const dist = cam.position.distanceTo(feet) + NEON_BEHIND;
+    neon.group.position.copy(cam.position).addScaledVector(neonDir, dist);
+    const depth = dist * neonDir.dot(neonFwd);
+    const perPx = (2 * depth * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2))) / h;
+    neon.group.scale.setScalar((neonNow.s * perPx) / NEON_W);
     neonFace.set(cam.position.x, neon.group.position.y, cam.position.z);
     neon.group.lookAt(neonFace);
-    neon.group.quaternion.slerpQuaternions(neonHome, neon.group.quaternion, k);
+    neon.group.updateMatrixWorld(true);
   }
 
   let idleS = 0;
@@ -585,7 +644,6 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.position.copy(keepPos).lerp(fitPos, pickK);
       cam.quaternion.copy(keepQuat).slerp(fitQuat, pickK);
     }
-    placeNeon(fitK);
     // Plan item 187: left alone on the title for 6 s, the lens dollies slowly in along its line to her head (so her
     // head keeps its place on screen) toward waist-up; any input eases it back. None under reduced motion.
     const titleK = (1 - smoother(Math.min(1, lift))) * (1 - smoother(Math.min(1, wd.w))) * (pickStage || pushT >= 0 ? 0 : 1);
@@ -612,6 +670,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.rotateY(THREE.MathUtils.degToRad(-1.5 * spring.x));
       cam.rotateX(THREE.MathUtils.degToRad(-1 * spring.y - 0.5 * spring.bias));
     }
+    placeNeon(dt);
   }
 
   // ---- rain on the lens: the four lens slots in water mode, each drop sliding then fading ----
@@ -748,6 +807,23 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     world,
     cath,
     stats,
+    neonBox() {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      neonTubes.geometry.computeBoundingBox();
+      const bb = neonTubes.geometry.boundingBox!;
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+      for (let i = 0; i < 8; i++) {
+        corner.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z);
+        corner.applyMatrix4(neonTubes.matrixWorld).project(cam);
+        const x = r.left + ((corner.x + 1) / 2) * r.width;
+        const y = r.top + ((1 - corner.y) / 2) * r.height;
+        left = Math.min(left, x);
+        right = Math.max(right, x);
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+      }
+      return { left, top, right, bottom };
+    },
     figureBox(body = false) {
       // Every vertex of her (and her umbrella), projected: a box hugging what is drawn, not her 3D bounds.
       const r = world.renderer.domElement.getBoundingClientRect();

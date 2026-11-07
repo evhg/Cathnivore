@@ -227,15 +227,11 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
       mugs: [...document.querySelectorAll('#the-list-wall .mug')].map(box).filter((r) => r.right > r.left),
       fig: scene!.figureBox(),
       face: scene!.faceBox(),
-      // Plan item 148: the neon blade's middle on screen, and its backlit rain.
-      neon: (() => {
-        type V = { clone(): V; project(c: unknown): V; x: number; y: number }
-        type O = { name: string; position: V; getWorldPosition(v: V): V; geometry?: { instanceCount?: number } }
-        const w = (scene as unknown as { world: { camera: unknown; scene: { getObjectByName(n: string): O | undefined } } }).world
-        const g = w.scene.getObjectByName('front-neon')!
-        const v = g.getWorldPosition(g.position.clone()).project(w.camera)
-        const rain = w.scene.getObjectByName('front-neon-rain')
-        return { x: ((v.x + 1) / 2) * innerWidth, y: ((1 - v.y) / 2) * innerHeight, drops: rain?.geometry?.instanceCount ?? 0 }
+      // Plan item 258: the neon sign's box on screen (it was item 148's blade behind her head), and its backlit rain.
+      neon: (scene as unknown as { neonBox(): B }).neonBox(),
+      drops: (() => {
+        const w = (scene as unknown as { world: { scene: { getObjectByName(n: string): { geometry?: { instanceCount?: number } } | undefined } } }).world
+        return w.scene.getObjectByName('front-neon-rain')?.geometry?.instanceCount ?? 0
       })(),
     }
   })
@@ -249,15 +245,47 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
   for (const r of m.rows) expect(hits(m.face, r), JSON.stringify({ face: m.face, r })).toBe(false)
   // Whole, but not small: she fills most of the screen above the strip.
   expect(m.fig.bottom - m.fig.top).toBeGreaterThan(560)
-  // Plan item 148: the sign steps in behind her (it hangs off the right edge in the landscape framings), its middle
-  // inside her figure's width and her top half, off every menu entry; rain falls through its light.
-  expect(m.neon.x, JSON.stringify(m.neon)).toBeGreaterThan(m.fig.left)
-  expect(m.neon.x).toBeLessThan(m.fig.right)
-  expect(m.neon.y).toBeGreaterThan(m.fig.top)
-  expect(m.neon.y).toBeLessThan((m.fig.top + m.fig.bottom) / 2)
-  for (const r of m.rows) expect(m.neon.x > r.left && m.neon.x < r.right && m.neon.y > r.top && m.neon.y < r.bottom).toBe(false)
-  expect(m.neon.drops).toBeGreaterThan(100)
+  // Plan item 258: the sign hangs under the menu, left of her: it meets her figure box under 5%, stays off every
+  // menu entry and mugshot, on screen and big enough to read; rain falls through its light.
+  const over = (a: B, b: B) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))
+  const area = (a: B) => (a.right - a.left) * (a.bottom - a.top)
+  expect(over(m.neon, m.fig) / area(m.fig), JSON.stringify({ neon: m.neon, fig: m.fig })).toBeLessThan(0.05)
+  for (const r of [...m.rows, ...m.mugs]) expect(hits(m.neon, r), JSON.stringify({ neon: m.neon, r })).toBe(false)
+  expect(m.neon.left).toBeGreaterThanOrEqual(0)
+  expect(m.neon.right - m.neon.left).toBeGreaterThan(100)
+  expect(m.drops).toBeGreaterThan(100)
 })
+
+// Plan item 258: on the desktop title and on the class pick at both sizes the sign stands clear of her figure, on
+// screen and readable, off the pick's columns.
+test('the neon sign reads clear of her on the title and the class pick', async ({ page, hasTouch }) => {
+  test.setTimeout(300_000)
+  type B = { left: number; top: number; right: number; bottom: number }
+  const [w, h] = hasTouch ? [390, 844] : [1440, 900]
+  await page.setViewportSize({ width: w, height: h })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  for (const front of hasTouch ? ['classpick'] : ['title', 'classpick']) {
+    await page.goto(`/nightshift/?front=${front}&shot&t=8&class=ghost&quality=phone`)
+    await page.waitForFunction(() => !!(window as unknown as { cathodeFront?: { scene?(): unknown } }).cathodeFront?.scene?.(), null, { timeout: 150_000 })
+    await page.waitForTimeout(1500)
+    const m = await page.evaluate(() => {
+      const scene = (window as unknown as { cathodeFront: { scene(): { neonBox(): B; figureBox(): B } } }).cathodeFront.scene()
+      const cols = innerWidth < 600 ? [] : [...document.querySelectorAll('.cp-left, .cp-sheet')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0)
+      return { neon: scene.neonBox(), fig: scene.figureBox(), cols: cols.map((r) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom })) }
+    })
+    const over = (a: B, b: B) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))
+    const area = (a: B) => (a.right - a.left) * (a.bottom - a.top)
+    const msg = JSON.stringify({ front, ...m })
+    expect(over(m.neon, m.fig) / area(m.fig), msg).toBeLessThan(0.05)
+    expect(m.neon.left, msg).toBeGreaterThanOrEqual(0)
+    expect(m.neon.right, msg).toBeLessThanOrEqual(w)
+    expect(m.neon.top, msg).toBeGreaterThanOrEqual(0)
+    expect(m.neon.right - m.neon.left, msg).toBeGreaterThan(80)
+    for (const c of m.cols) expect(over(m.neon, c) / area(m.neon), msg).toBeLessThan(0.1)
+  }
+})
+
 
 // Plan item 159: the menu is a sign: a shut slot says why (aria-disabled, a visible reason), the lit row follows the
 // arrow keys within 250 ms, and upright the plate stays clear of her body (the umbrella's canopy aside).
