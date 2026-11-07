@@ -548,6 +548,10 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   const flip = h % 2 === 0 ? 1 : -1
   const extra = (h >> 1) % 3
+  // Plan item 249: each kind keeps a small idle life (a grazing sheep, wheat in the wind, boats on the swell, the
+  // market clock and its pennant). `data-idle` names it; `data-seed` staggers it per region so the board never moves
+  // in step. CSS runs it, pauses it when the tab is hidden and stills it under reduced motion.
+  const seed = (h >> 3) % 4
   const line = { stroke: 'var(--ink)', strokeWidth: 1.5, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
   if (type === 'pasture') {
     const bush = (cx: number) => (
@@ -562,6 +566,16 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
       <g opacity={0.85}>
         {bush(-40)}
         {bush(38)}
+        <g transform={`translate(${-30 * flip},-40) scale(${flip},1)`}>
+          <g className="idle-sheep" data-idle="sheep" data-seed={seed}>
+            <path d="M-6,3 v5 M-2,4 v4 M3,4 v4 M6,3 v5" {...line} strokeWidth={1.3} />
+            <path d="M-9,1 q-2,-6 3,-7 q2,-4 6,-2 q4,-3 7,1 q4,1 2,6 q1,4 -4,4 h-10 q-5,0 -4,-2 z" fill="var(--paper-hi)" {...line} strokeWidth={1.2} />
+            <g className="idle-sheep-head">
+              <path d="M8,-3 q6,-2 7,3 q0,4 -4,4 q-4,0 -4,-4 z" fill="var(--ink)" />
+              <path d="M9,-3 l-2,-2" {...line} strokeWidth={1.2} />
+            </g>
+          </g>
+        </g>
         {extra === 0 && (
           <g transform={`translate(${-6 * flip},-26)`}>
             <path d="M-8,2 h14 v-6 h-4 l-2,-3 h-5 z" fill="var(--paper)" {...line} strokeWidth={1.2} />
@@ -576,7 +590,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
       <g fill="none" {...line} opacity={0.75} transform={`scale(${flip},1)`}>
         {extra === 0 && <path d="M-6,-30 q6,-10 12,0 z" fill="var(--clay)" />}
         {[-1, 1].map((d) => (
-          <g key={d}>
+          <g key={d} className="idle-wheat" data-idle="wheat" data-seed={(seed + (d > 0 ? 2 : 0)) % 4}>
             <path d={`M${d * 24},-4 Q${d * 36},-16 ${d * 52},-28`} />
             <path d={`M${d * 34},0 Q${d * 46},-12 ${d * 62},-22`} />
             <path d={`M${d * 44},4 Q${d * 56},-6 ${d * 70},-14`} />
@@ -588,8 +602,10 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   if (type === 'coast') {
     const boat = (cx: number, k: number) => (
       <g key={cx} transform={`translate(${cx},-14) scale(${k})`}>
-        <path d="M-12,2 L12,2 L8,10 L-8,10 Z" fill="var(--clay)" {...line} />
-        <path d="M0,0 L0,-20 M0,-20 L11,-2 L0,-2 Z" fill="var(--paper)" {...line} />
+        <g className="idle-boat" data-idle="boat" data-seed={(seed + (k < 1 ? 1 : 0)) % 4}>
+          <path d="M-12,2 L12,2 L8,10 L-8,10 Z" fill="var(--clay)" {...line} />
+          <path d="M0,0 L0,-20 M0,-20 L11,-2 L0,-2 Z" fill="var(--paper)" {...line} />
+        </g>
       </g>
     )
     return (
@@ -603,9 +619,12 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   return (
     <g opacity={0.9}>
       <g transform="translate(0,-38)">
+        <path d="M14,30 L14,6" {...line} strokeWidth={1.2} />
+        <path className="idle-pennant" data-idle="pennant" data-seed={seed} d="M14,6 L26,9.5 L14,13 Z" fill="var(--clay)" {...line} strokeWidth={1} />
         <path d="M-7,30 L-7,4 L0,-8 L7,4 L7,30 Z" fill="var(--paper)" {...line} />
         <circle cx={0} cy={9} r={4.5} fill="var(--paper)" {...line} />
-        <path d="M0,9 L0,6 M0,9 L2,10" {...line} strokeWidth={1.2} />
+        <path d="M0,9 L2,10" {...line} strokeWidth={1.2} />
+        <path className="idle-clock" data-idle="clock" data-seed={seed} d="M0,9 L0,5.5" {...line} strokeWidth={1.2} />
       </g>
     </g>
   )
@@ -634,6 +653,14 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   const [fx, setFx] = useState<Partial<Record<RegionId, 'lib' | 'sq'>>>({})
   // Plan item 63: a Squeeze slams Hollowell's box down on its tile (the stack drops in with a thud).
   const [thud, setThud] = useState<ReadonlySet<RegionId>>(() => new Set())
+  // Plan item 249: the tiles' idle life pauses while the tab is hidden (CSS keys on html[data-tab-hidden]).
+  useEffect(() => {
+    const root = document.documentElement
+    const sync = () => { if (document.hidden) root.dataset.tabHidden = ''; else delete root.dataset.tabHidden }
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    return () => { document.removeEventListener('visibilitychange', sync); delete root.dataset.tabHidden }
+  }, [])
   useEffect(() => {
     const lib = new Set<RegionId>()
     const lost: Record<string, number> = {}

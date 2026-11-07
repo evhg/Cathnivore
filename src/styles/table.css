@@ -4441,3 +4441,41 @@ html.no-animations .table-cath-line { animation: none; }
      44 px in, so the board centres 22 px right of the cloth's middle, still clear of the portraits on the right. */
   .game:has(.table-head.with-table-cath) .map { margin-left: 44px; width: calc(100% - 44px); }
 }
+
+/* Plan item 249: the tiles' idle life (Map.tsx TerrainArt, `data-idle`): a sheep grazes along its pasture, the
+   wheat leans in the wind, the boats ride the swell, the market clock turns and its pennant flies. Slow and
+   staggered per region (`data-seed`), paused while the tab is hidden, still under reduced motion. */
+.terrain-art [data-idle] { transform-box: fill-box; }
+.idle-sheep { animation: idle-sheep 14s ease-in-out infinite; }
+.idle-sheep-head { transform-box: fill-box; transform-origin: 20% 30%; animation: idle-graze 14s ease-in-out infinite; }
+@keyframes idle-sheep {
+  0%, 12% { translate: 0 0; }
+  38%, 62% { translate: 7px 1px; }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes idle-graze {
+  0%, 14%, 36%, 64%, 86%, 100% { rotate: 0deg; }
+  20%, 30%, 70%, 80% { rotate: 28deg; }
+}
+.idle-wheat { transform-origin: 50% 100%; animation: idle-wheat 5.2s ease-in-out infinite alternate; }
+@keyframes idle-wheat { from { skew: -5deg 0deg; } to { skew: 4deg 0deg; } }
+.idle-boat { transform-origin: 50% 90%; animation: idle-boat 4.6s ease-in-out infinite; }
+@keyframes idle-boat {
+  0%, 100% { translate: 0 0; rotate: -3deg; }
+  50% { translate: 0 2px; rotate: 3deg; }
+}
+.idle-clock { transform-origin: 50% 100%; animation: idle-clock 24s linear infinite; }
+@keyframes idle-clock { to { rotate: 360deg; } }
+.idle-pennant { transform-origin: 0 50%; animation: idle-pennant 1.8s ease-in-out infinite alternate; }
+@keyframes idle-pennant { from { scale: 1 1; } to { scale: .72 .86; } }
+.terrain-art [data-idle][data-seed="1"], .terrain-art [data-idle][data-seed="1"] .idle-sheep-head { animation-delay: -3.5s; }
+.terrain-art [data-idle][data-seed="2"], .terrain-art [data-idle][data-seed="2"] .idle-sheep-head { animation-delay: -7s; }
+.terrain-art [data-idle][data-seed="3"], .terrain-art [data-idle][data-seed="3"] .idle-sheep-head { animation-delay: -10.5s; }
+html[data-tab-hidden] .terrain-art [data-idle],
+html[data-tab-hidden] .terrain-art .idle-sheep-head { animation-play-state: paused; }
+html.no-animations .terrain-art [data-idle],
+html.no-animations .terrain-art .idle-sheep-head { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .terrain-art [data-idle],
+  .terrain-art .idle-sheep-head { animation: none; }
+}
