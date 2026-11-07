@@ -2700,6 +2700,12 @@ body {
   .sh-roof { fill: var(--wheat); stroke: var(--soil); stroke-width: 2; stroke-linejoin: round; }
   .sh-thatch { fill: none; stroke: var(--soil); stroke-width: 1.5; opacity: 0.55; }
   .sh-door { fill: var(--soil); }
+  /* Plan item 229: the spring house's window; lit warm at dusk and on a rain day, someone's in. */
+  .sh-window { fill: color-mix(in srgb, var(--soil) 70%, var(--stone)); stroke: var(--soil); stroke-width: 1.5; }
+  :root:is([data-time='dusk'], [data-weather='drizzle']) .sh-window {
+    fill: var(--ga-yellow);
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--sky-golden) 80%, transparent));
+  }
   .sh-water { fill: none; stroke: var(--water); stroke-width: 4; stroke-linecap: round; }
 
   .farm-sign {
@@ -3773,6 +3779,17 @@ body[data-mode='practice'] #week-slot {
     stroke-linecap: round;
     stroke-dasharray: 1 10;
     vector-effect: non-scaling-stroke;
+  }
+  /* Plan item 229: a rain day's puddles hold the sky's low light, a glint along their far rim. */
+  .vl-puddle ellipse {
+    fill: color-mix(in srgb, color-mix(in srgb, var(--vl-sky-low) 70%, var(--vl-sky-top)) var(--vk), var(--paper));
+    stroke: color-mix(in srgb, var(--vl-hedge) 35%, transparent);
+    stroke-width: 2;
+  }
+  .vl-puddle-glint {
+    stroke: color-mix(in srgb, var(--paper) 85%, transparent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
   }
   .vl-drop {
     stroke: color-mix(in srgb, var(--paper) 55%, var(--vl-sky-top));

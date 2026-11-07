@@ -126,6 +126,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
   const parts: string[] = []
   const hedges: string[] = []
   const trees: string[] = []
+  const puddles: string[] = []
   const slope = (row: number, x: number) => rows[row]! + (rnd(row) - 0.5) * 40 * (x / 1000 - 0.5)
   let n = 0
   for (let r = 0; r < rows.length - 1; r++) {
@@ -147,6 +148,13 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
       if (kind !== 'grass') {
         const pat = rnd(500 + n) < 0.5 ? 'vl-rows-h' : rnd(600 + n) < 0.5 ? 'vl-rows-d' : 'vl-rows-a'
         parts.push(`<polygon class="vl-furrow" fill="url(#${pat})" points="${pts}"/>`)
+      }
+      // Plan item 229: on a rain day a field nearer the foot holds a puddle that catches the sky, with a glint.
+      if (weather === 'drizzle' && r >= 2 && rnd(800 + n) < 0.5) {
+        const px = (xa + xb) / 2 + lean * 0.5 + (rnd(810 + n) - 0.5) * (xb - xa) * 0.4
+        const py = (slope(r, xa) + slope(r + 1, xa + lean)) / 2 + (rnd(820 + n) - 0.5) * 20
+        const pw = 22 + r * 9 + rnd(830 + n) * 14
+        puddles.push(`<g class="vl-puddle"><ellipse cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" rx="${pw.toFixed(0)}" ry="${(pw * 0.32).toFixed(0)}"/><path class="vl-puddle-glint" d="M${(px - pw * 0.5).toFixed(0)} ${(py - pw * 0.08).toFixed(0)}h${(pw * 0.45).toFixed(0)}"/></g>`)
       }
       if (i > 0) hedges.push(`M${xa.toFixed(0)} ${slope(r, xa).toFixed(0)}L${(xa + lean).toFixed(0)} ${slope(r + 1, xa + lean).toFixed(0)}`)
       // An oak or two where the hedges meet.
@@ -176,6 +184,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     '<path class="vl-hill vl-hill-near" d="M0 170C150 130 260 165 420 150S700 120 820 150 960 160 1000 140V320H0Z"/>' +
     '<rect class="vl-ground" y="236" width="1000" height="764" fill="url(#vl-ground)"/>' +
     `<g class="vl-fields">${parts.join('')}</g>` +
+    `<g class="vl-puddles">${puddles.join('')}</g>` +
     `<path class="vl-hedge" d="${hedges.join('')}"/>` +
     `<g class="vl-trees">${trees.join('')}</g>` +
     '<path class="vl-trail" d="M160 960C330 985 560 975 700 950S860 930 900 930"/>' +

@@ -46,6 +46,10 @@ describe('Runnel valley layers', () => {
   it('draws rain on a drizzly day', () => {
     expect(valleyLayers('x', 'drizzle')).toContain('class="vl-rain"')
   })
+  it('a rain day leaves puddles in the near fields; a clear day none', () => {
+    expect((valleyLayers('daily-2026-11-07', 'drizzle').match(/class="vl-puddle"/g) ?? []).length).toBeGreaterThanOrEqual(2)
+    expect(valleyLayers('daily-2026-11-07', 'clear')).not.toContain('class="vl-puddle"')
+  })
 })
 
 // Plan item 229: whatever the hour and weather the valley stays a picture: its fields keep colour (mean OKLCH chroma
