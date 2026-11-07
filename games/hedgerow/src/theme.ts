@@ -263,6 +263,9 @@ export function paintBackground(
 ): void {
   const theme = themeFor(level);
   const rand = rng(level.id * 7919 + 17);
+  // Plan item 224: Bea's crayon on one advert of a level you've won (the first billboard painted; none if none is).
+  crayonNextBillboard(isWonLevel(level.id));
+  lastCrayon = null;
   const s = L.cell;
   const W = L.width;
   const H = L.height;
@@ -1162,6 +1165,74 @@ function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, 
   ctx.fill();
 }
 
+/**
+ * Plan item 224: on a level you've won, Bea has been at one of Hollowell's adverts with her crayons: the slogan
+ * struck out in green wax, a sun in the corner and a flower drawn over the face. The next billboard drawn gets it
+ * (paintBackground arms it for a won level; the 3D field arms it for its first board).
+ */
+let crayonNext = false;
+/** The panel Bea last drew on (tests), cleared when a field is painted without one. */
+export let lastCrayon: { x: number; y: number; w: number; h: number } | null = null;
+export function crayonNextBillboard(on: boolean): void {
+  crayonNext = on;
+}
+/** Which levels count as won (main.ts sets it from the save). */
+let wonLevel: (id: number) => boolean = () => false;
+export function setWonLevels(fn: (id: number) => boolean): void {
+  wonLevel = fn;
+}
+export function isWonLevel(id: number): boolean {
+  return wonLevel(id);
+}
+function beaCrayon(ctx: CanvasRenderingContext2D, left: number, top: number, pw: number, ph: number, fs: number): void {
+  lastCrayon = { x: left, y: top, w: pw, h: ph };
+  let seed = Math.floor(left * 13 + top * 7) | 1;
+  const j = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed / 2147483647 - 0.5) * fs * 0.18;
+  };
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  // wax: each stroke twice, the second thinner and a touch off, so it reads as crayon, not a vector line
+  const wax = (colour: string, w: number, pts: Array<[number, number]>) => {
+    for (const [k, a] of [[1, 0.9], [0.55, 0.75]] as const) {
+      ctx.strokeStyle = colour;
+      ctx.globalAlpha = a;
+      ctx.lineWidth = w * k;
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x + j(), y + j()) : ctx.moveTo(x + j(), y + j())));
+      ctx.stroke();
+    }
+  };
+  const w = Math.max(2, fs * 0.22);
+  const tx = left + fs * 0.55 + fs * 2.3;
+  const tr = left + pw - fs * 0.3;
+  // the slogan struck through, back and forth
+  wax("#5fbf3a", w, [[tx - fs * 0.1, top + ph * 0.28], [tr, top + ph * 0.36], [tx, top + ph * 0.5], [tr + fs * 0.1, top + ph * 0.6]]);
+  // a flower over the face: five petals and a middle
+  const fx = left + fs * 0.35 + fs * 1.15;
+  const fy = top + ph * 0.46;
+  const pr = fs * 0.42;
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
+    const cx = fx + Math.cos(a) * pr;
+    const cy = fy + Math.sin(a) * pr;
+    wax("#ff6fa8", w * 0.9, [[cx - pr * 0.35, cy], [cx, cy - pr * 0.35], [cx + pr * 0.35, cy], [cx, cy + pr * 0.35], [cx - pr * 0.35, cy]]);
+  }
+  wax("#ffd23a", w, [[fx - pr * 0.2, fy], [fx + pr * 0.2, fy + pr * 0.05]]);
+  wax("#5fbf3a", w * 0.8, [[fx, fy + pr * 1.2], [fx + pr * 0.1, top + ph + fs * 0.2]]);
+  // a sun peeping over the panel's top corner
+  const sx = left + pw - fs * 0.2;
+  const sy = top + fs * 0.1;
+  wax("#ffb21a", w, Array.from({ length: 10 }, (_, k): [number, number] => [sx + Math.cos((k / 9) * Math.PI * 2) * fs * 0.33, sy + Math.sin((k / 9) * Math.PI * 2) * fs * 0.33]));
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * Math.PI * 2;
+    wax("#ffb21a", w * 0.7, [[sx + Math.cos(a) * fs * 0.55, sy + Math.sin(a) * fs * 0.55], [sx + Math.cos(a) * fs * 0.85, sy + Math.sin(a) * fs * 0.85]]);
+  }
+  ctx.restore();
+}
+
 export function drawDecor(
   ctx: CanvasRenderingContext2D,
   kind: Decor,
@@ -1526,6 +1597,10 @@ export function drawDecor(
       const tx = left + fs * 0.55 + fw;
       ctx.fillText(ad.lines[0], tx, top + ph * 0.3);
       ctx.fillText(ad.lines[1], tx, top + ph * 0.62);
+      if (crayonNext) {
+        crayonNext = false;
+        beaCrayon(ctx, left, top, pw, ph, fs);
+      }
       ctx.strokeStyle = INK;
       ctx.lineWidth = lw;
       break;

@@ -33,7 +33,7 @@ import {
   type Level,
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
-import { paintBackground, rng, themeFor } from "./theme";
+import { crayonNextBillboard, isWonLevel, paintBackground, rng, themeFor } from "./theme";
 import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins";
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
@@ -707,7 +707,7 @@ export class Renderer {
     const Y = (v: number) => offY + v * s;
 
     // The painted field, cached.
-    const key = `${level.id}:${W}x${H}:${s}:${this.dpr}`;
+    const key = `${level.id}:${W}x${H}:${s}:${this.dpr}:${isWonLevel(level.id) ? "won" : ""}`;
     if (key !== this.bgKey) {
       this.bg = document.createElement("canvas");
       this.bg.width = this.canvas.width;
@@ -715,6 +715,7 @@ export class Renderer {
       const bctx = this.bg.getContext("2d")!;
       bctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       paintBackground(bctx, level, { width: W, height: H, cell: s, offX, offY });
+      crayonNextBillboard(false);
       this.marginPieces = (lastMargin?.pieces ?? []).filter((p) => LIVE_PIECES.has(p.kind));
       this.bgKey = key;
     }

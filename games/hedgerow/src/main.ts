@@ -201,7 +201,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, entrySide, nearSides, repMood, repSvg, type RepMood } from "./depot";
-import { gateSignRect } from "./theme";
+import { gateSignRect, lastCrayon, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -361,6 +361,8 @@ const art = () => wornOutfit().art;
 const cath = (expression: CathExpression) => cathSvg({ framing: "face", expression, animate: true, outfit: art() });
 
 const data = load();
+// Plan item 224: a won level's field shows Bea's crayon on one of Hollowell's adverts.
+setWonLevels((id) => (data.stars[String(id)] ?? 0) > 0);
 // Tower XP arrives with Hedgerow 2 M10: a save that already has progress opens every tier 3 (1,500 XP a kind).
 if (!data.xp && Object.keys(data.stars).length) {
   data.xp = {};
@@ -750,6 +752,8 @@ if (SANDBOX)
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
     // Plan item 202: what the 2D field painted in its margins (the act's set and its pieces).
     margin2d: () => lastMargin,
+    // Plan item 224: the advert Bea crayoned on this field (2D canvas px), or null.
+    crayon: () => lastCrayon,
     // Plan item 66: the share of the 3D frame's height that is painted sky (null in 2D).
     skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
     fieldShare: () => (renderer && is3D(renderer) ? renderer.fieldShare() : null),

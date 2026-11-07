@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
 import { plotLooks, type PlotLook } from "../plotlook";
-import { drawDecor, rng } from "../theme";
+import { crayonNextBillboard, drawDecor, isWonLevel, rng } from "../theme";
 import { actLight } from "./palette";
 import {
   buildBoat,
@@ -1641,7 +1641,10 @@ function addAdverts(group: THREE.Group, level: Level, cols: number, rows: number
     const ctx = c.getContext("2d");
     if (!ctx) return;
     const pick = (k++ + 0.5) / 4;
+    // Bea's crayon on the first board of a level you've won.
+    crayonNextBillboard(k === 1 && isWonLevel(level.id));
     drawDecor(ctx, "billboard", W / 2, H - 2, 120, () => pick);
+    crayonNextBillboard(false);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
