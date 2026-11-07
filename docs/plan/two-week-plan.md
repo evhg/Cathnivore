@@ -2694,7 +2694,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** awning, Cath and counter in one group within 360 px at 390x844, no floating strip; Cath 190 px or more tall; both buttons above the fold; games-hero-cath, -stall, -cards pass; shots P and D (D unchanged); key art unchanged.
 - **Size:** 1
 
-## 266. [ ] The bugs from the 2026-11-07 18:00 critique, fixed as one batch
+## 266. [ ] The bugs from the 2026-11-07 18:00 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107f`)
   - **NIGHT SHIFT:** D and P pick: the Ghost's slung rifle rises through the umbrella canopy (790-845 x 0-260; P 265-300 x 0-250); D pick canopy cut by the frame's top (470-960 x 0-60). P pick: the hold bar 2 px past the card's left edge and 12 px short of its right (9-367 x 790-833); the paperclip floats off the card (352-364 x 627-652); labels SNIPER RIFLE/DAMAGE/RATE/MAGAZINE (186-352 x 690-750) and D 'STARTS WITH', 'CASE FILE', 'DAMAGE' possibly under 12 px. D title: List cards 3-4 blurbs run onto the card's bottom edge (285-490 x 795-812).
   - **Hedgerow:** D l34: the Box Lorry queue faces east in a north-south lane, noses over the plot column, the lead over the farmer (220-318 x 105-470); Same-Day vans 3-4 leave the lane at the bend, the 4th on the willow and its tag on the plot edge (375-605 x 785-890). P menu: Act 4 header washed out and half under the tab bar (15-375 x 755-775; may be the fog teaser). P 3D l21: the depot cropped by the top bar (150-245 x 55-155).
