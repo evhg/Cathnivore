@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 130: on a phone /games/ has Cath in the hero: half length, 140 px or more, waving beside the buttons on
-// the first screen, meeting no text or button, the first poster still starting above 640 px. She dresses for the
+// Plan item 130: on a phone /games/ has Cath in the hero, waving on the first screen, meeting no text or button.
+// Plan item 238: she's the centrepiece, 200 px or more, the buttons under her; the first poster still starts on the
+// first screen. She dresses for the
 // poster in view and her wave settles after 3 s. At D the landscape figure stays and this one is hidden.
 for (const [w, h] of [
   [390, 844],
@@ -41,11 +42,11 @@ for (const [w, h] of [
     })
     expect(m.drawn).toBe(true)
     expect(m.pose).toBe('wave')
-    expect(m.h).toBeGreaterThanOrEqual(140)
+    expect(m.h).toBeGreaterThanOrEqual(200)
     expect(m.top).toBeGreaterThanOrEqual(0)
     expect(m.bottom).toBeLessThanOrEqual(h)
     expect(m.hits, JSON.stringify(m)).toEqual([])
-    expect(m.poster).toBeLessThanOrEqual(640)
+    expect(m.poster).toBeLessThan(h)
     // she dresses for the poster in view: Cathnivore's first, Hedgerow's once its row is scrolled up, NIGHT SHIFT's
     // when its poster is focused
     await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'market')

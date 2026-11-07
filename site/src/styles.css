@@ -1737,3 +1737,39 @@ body {
     box-shadow: 0 0 18px 10px color-mix(in srgb, var(--scrim) 70%, transparent);
   }
 }
+
+/* Plan item 238: on a phone Cath is the centrepiece: she stands at the stall's counter under the logotype and her
+   line, 210 px tall, and the buttons sit under her (she was 156 px wedged beside them). */
+@media (max-width: 599.98px) {
+  .hero-text {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-text > .hero-cath-mini {
+    grid-column: 1;
+    grid-row: 4;
+    justify-self: center;
+    position: relative;
+    height: 210px;
+    margin: 6px 0 0;
+  }
+  /* the stall's counter she stands at: a striped plank under her */
+  .hero-text > .hero-cath-mini::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 220px;
+    height: 16px;
+    translate: -50% 0;
+    border-radius: 4px;
+    background:
+      repeating-linear-gradient(90deg, var(--wood-hi) 0 28px, var(--wood-mid) 28px 56px),
+      var(--wood-mid);
+    box-shadow: 0 -1px 0 var(--wood-rim) inset, 0 6px 10px var(--shadow-deep);
+  }
+  .hero-text > .cta-row { grid-column: 1; grid-row: 5; justify-self: center; margin-top: 14px; }
+  .hero-text > .hero-meta { grid-column: 1; grid-row: 6; }
+}
+@media (max-width: 599.98px) and (max-height: 700px) {
+  .hero-text > .hero-cath-mini { height: 200px; }
+}
