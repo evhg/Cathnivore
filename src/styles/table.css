@@ -2997,6 +2997,24 @@ html.no-animations .table-cath-line { animation: none; }
     padding-bottom: 2px;
     pointer-events: none;
   }
+  /* Plan item 266: the tab counts the cards still to the right ('3 ›'); its number comes from useScrollCues */
+  .action-tray .actions-well:has(> .actions[data-more-right]:not([data-more-right='0']))::before {
+    width: auto;
+    min-width: 26px;
+    padding: 0 8px 2px 9px;
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-small, .875rem)/1 var(--font-ui);
+  }
+  .action-tray .actions-well:has(> .actions[data-more-right='1'])::before { content: "1 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='2'])::before { content: "2 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='3'])::before { content: "3 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='4'])::before { content: "4 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='5'])::before { content: "5 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='6'])::before { content: "6 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='7'])::before { content: "7 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='8'])::before { content: "8 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='9'])::before { content: "9 more \203A"; }
+  .action-tray .actions-well:has(> .actions[data-more-right='9+'])::before { content: "9+ more \203A"; }
 }
 
 /* Plan item 149: on a big desktop the cards this turn can play are a hand at the table's bottom edge, under the

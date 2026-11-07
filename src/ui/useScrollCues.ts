@@ -23,7 +23,19 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
       toggle(el, 'fadeTop', top)
       toggle(el, 'fadeBottom', bottom)
       // Critique 2026-11-03: a row that scrolls sideways (the phone's hand of action cards) says so too.
-      toggle(el, 'fadeRight', el.scrollWidth - el.clientWidth > 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
+      const right = el.scrollWidth - el.clientWidth > 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2
+      toggle(el, 'fadeRight', right)
+      // Plan item 266: and how many cards lie past the edge (a card more than half out counts), so the tab says so.
+      if (right) {
+        const edge = el.getBoundingClientRect().right
+        let n = 0
+        for (const c of Array.from(el.children)) {
+          const r = c.getBoundingClientRect()
+          if (r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head')) n++
+        }
+        const v = n > 9 ? '9+' : String(n)
+        if (el.dataset.moreRight !== v) el.dataset.moreRight = v
+      } else if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
       const owner = el.parentElement
       if (!owner) return
       let more = 0
