@@ -786,6 +786,7 @@ if (SANDBOX)
     adverts3d: () => (renderer && is3D(renderer) ? renderer.advertRects() : []),
     // Plan item 255: the 3D people's ink and toon shading.
     people3d: () => (renderer && is3D(renderer) ? renderer.people3d() : null),
+    faceToCamera: () => (renderer && is3D(renderer) ? renderer.faceToCamera() : null),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).

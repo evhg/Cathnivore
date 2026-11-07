@@ -2712,6 +2712,24 @@ export class Renderer3D {
     return ((this.ground?.group.userData.adverts as THREE.Object3D[] | undefined) ?? []).filter((o) => o.visible).map((o) => this.meshRect(o, w, h, cam));
   }
   /** Plan item 228 (tests): the moored boats' boxes on the canvas (CSS px) at the fitted view. */
+  /** Plan item 255: the signed angle (radians, seen from above) a turn of her head about +y needs to face the camera,
+   *  as she stands now. */
+  private faceError(): number | null {
+    const head = this.cath?.userData.head as THREE.Object3D | undefined;
+    const yaw = head?.children[0];
+    if (!head || !yaw) return null;
+    this.cath!.updateMatrixWorld(true);
+    const fwd = new THREE.Vector3(1, 0, 0).transformDirection(yaw.matrixWorld);
+    const at = new THREE.Vector3().setFromMatrixPosition(head.matrixWorld);
+    const to = this.camera.getWorldPosition(new THREE.Vector3()).sub(at);
+    const a = Math.atan2(fwd.z, fwd.x) - Math.atan2(to.z, to.x);
+    return Math.atan2(Math.sin(a), Math.cos(a));
+  }
+  /** Plan item 255 (tests): the angle (degrees) between where her face looks and the camera, seen from above. */
+  faceToCamera(): number | null {
+    const e = this.faceError();
+    return e === null ? null : Math.abs((e * 180) / Math.PI);
+  }
   /** Plan item 255 (tests): Cath's ink hulls, and whether the farmfolk are toon-shaded with a baked ink hull. */
   people3d(): { cathInk: number; folkToon: number; folkPlain: number } {
     let cathInk = 0;
