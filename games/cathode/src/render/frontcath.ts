@@ -1183,11 +1183,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
         V(0.07 * sx, -0.012, 0.036),
         V(0.064 * sx, -0.07, 0.03),
         V(0.074 * sx, -0.122, 0.034),
-        V(0.094 * sx, -0.18, 0.04),
-        V(0.104 * sx, -0.25, 0.046),
+        V(0.094 * sx, -0.18, 0.06),
+        V(0.106 * sx, -0.26, 0.09),
+        V(0.11 * sx, -0.34, 0.112),
+        V(0.104 * sx, -0.43, 0.122),
       ];
       const curve = new THREE.CatmullRomCurve3(keys, false, "centripetal");
-      const N = 28;
+      const N = 40;
       const base = lp.length / 3;
       const tan = new THREE.Vector3();
       const nrm = new THREE.Vector3();
@@ -1199,8 +1201,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         nrm.set(c.x, c.y > 0 ? c.y * 0.6 : 0, c.z - 0.0).normalize();
         side.crossVectors(tan, nrm).normalize();
         // Narrow at the parting, full past the cheek, then to a point; a soft wave across the lower length.
-        const w = (0.008 + 0.016 * Math.min(1, s / 0.4)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.6) / 0.4), 2));
-        const wave = s > 0.45 ? Math.sin((s - 0.45) * 22) * 0.006 : 0;
+        const w = (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 2));
+        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26) * 0.008 * Math.min(1, (s - 0.4) / 0.1) : 0;
         for (let j = 0; j < 3; j++) {
           const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
           q.x += wave * sx;
@@ -1209,7 +1211,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
           if (q.y < 0.04 && q.y > -0.11) q.z = Math.max(q.z, skullZ(q.x, q.y) + 0.005 + (j === 1 ? 0.003 : 0));
           lp.push(q.x, q.y, q.z);
           luv.push(0.2 + (sx + 1) * 0.6 + (j - 1) * 0.16, 1 - (0.06 + s * 0.7));
-          const r = Math.max(0, (s - 0.5) / 0.5) * hairRows * 0.7;
+          const r = Math.max(0, (s - 0.45) / 0.55) * hairRows * 0.8;
           lockAtArr.push(sx > 0 ? cols : 0, r);
         }
       }
@@ -2223,6 +2225,26 @@ export function buildFrontCath(phone: boolean): FrontCath {
   {
     // Ghost: the hood up, a deep cowl round the back and top of her head, open at the face, falling to the collar.
     const hood = new THREE.SphereGeometry(1, seg(28), seg(18), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
+    // Plan item 260: cloth, not a shell (it read as a space helmet): folds fall from the crown and deepen toward the
+    // collar, the back rises to a soft point, and the front edge sags a little off the brow.
+    {
+      const p = hood.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const z = p.getZ(i);
+        const polar = Math.acos(THREE.MathUtils.clamp(y, -1, 1)); // 0 at the crown
+        const az = Math.atan2(x, z); // 0 at her front (the opening), ±π at the back
+        const down = polar / 2.5;
+        const fold = 1 + (0.045 * Math.sin(az * 5 + polar * 1.6) + 0.025 * Math.sin(az * 9 + 1.3)) * down * down;
+        const back = Math.max(0, -Math.cos(az));
+        const point = Math.exp(-Math.pow((polar - 0.75) / 0.35, 2)) * back * 0.14;
+        const front = Math.max(0, Math.cos(az));
+        const sag = front * Math.exp(-Math.pow((polar - 0.5) / 0.4, 2)) * 0.05;
+        p.setXYZ(i, x * fold, y * fold + point * 0.5 - sag, z * fold - point * 0.7 + sag * 0.6);
+      }
+      hood.computeVertexNormals();
+    }
     hood.scale(0.112, 0.13, 0.118);
     hood.translate(0, 0.012, -0.01);
     // Plan item 247: the cowl was an open cylinder whose gap faced her left side, so a closed tube stood in front of
