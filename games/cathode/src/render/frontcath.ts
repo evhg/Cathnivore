@@ -114,6 +114,16 @@ function turned(a: THREE.Vector3, b: THREE.Vector3, profile: Array<[number, numb
   return g;
 }
 
+/** Plan item 227: the baked wool normal maps, by name and size (null where there is no 2D canvas). */
+const WOOL_CACHE = new Map<string, THREE.CanvasTexture | null>();
+
+/** Plan item 227: squeezes a geometry's uv.y into [v0, v1] (a sleeve part's span of the whole sleeve's map). */
+function vSpan(g: THREE.BufferGeometry, v0: number, v1: number): THREE.BufferGeometry {
+  const uv = g.attributes.uv as THREE.BufferAttribute | undefined;
+  if (uv) for (let i = 0; i < uv.count; i++) uv.setY(i, v0 + uv.getY(i) * (v1 - v0));
+  return g;
+}
+
 /** Merges non-indexed copies of geometries that share position and normal attributes. */
 function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const parts = list.map((g) => (g.index ? g.toNonIndexed() : g));
@@ -141,59 +151,115 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const seg = (n: number) => Math.max(6, Math.round(n * S));
 
   // ---- materials (4) ----
+  // Plan item 227: wool, not plastic. Matte (roughness 0.86), a low sheen and only a light clearcoat for the rain
+  // (the old 0.85 clearcoat over 0.6 roughness lit the trench like a moulded shell).
   const coatMat = phone
-    ? new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.45, metalness: 0 })
-    : new THREE.MeshPhysicalMaterial({ color: CATH_HERO.trench, roughness: 0.6, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.14, sheen: 0.5, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x6a7080) });
-  // The cloth itself (C13 review: "faceted, no wet"): a gabardine twill and rain running down the drape, baked
-  // once into a normal map, so the coat's highlights break up like wet wool instead of shading like plastic.
-  const clothNormal = (() => {
-    const W = 256;
-    const H = 256;
+    ? new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.84, metalness: 0 })
+    : new THREE.MeshPhysicalMaterial({ color: CATH_HERO.trench, roughness: 0.86, metalness: 0, clearcoat: 0.22, clearcoatRoughness: 0.5, sheen: 0.32, sheenRoughness: 0.8, sheenColor: new THREE.Color(0x6a7080) });
+  // Plan item 227: the cloth baked once into a normal map, untiled, laid on the lathe's (around, up) UV: a gabardine
+  // twill and wool's uneven nap everywhere, and the folds a real coat has where it is held, gathered under the belt,
+  // creased at the elbow, turned at the hem. `bands` is the fold height at (u, v) on top of the weave.
+  const woolNormal = (W: number, bands: (u: number, v: number) => number, seed: number) => {
+    const H = W;
     const c = document.createElement("canvas");
     c.width = W;
     c.height = H;
     const g = c.getContext("2d");
     if (!g) return null;
-    const h = new Float32Array(W * H);
-    let sd = 11;
+    let sd = seed;
     const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) h[y * W + x] = 0.5 + 0.5 * Math.sin(((x + y) / W) * Math.PI * 2 * 48);
-    // Rivulets: thin vertical runs of water, slightly wavy, raised over the weave.
-    for (let i = 0; i < 26; i++) {
-      let x = rnd() * W;
-      const y0 = Math.floor(rnd() * H);
-      const len = 40 + rnd() * 140;
-      for (let k = 0; k < len; k++) {
-        x += (rnd() - 0.5) * 0.6;
-        const y = (y0 + k) % H;
-        for (let d = -1; d <= 1; d++) {
-          const xi = ((Math.round(x) + d) % W + W) % W;
-          h[y * W + xi] = (h[y * W + xi] ?? 0) + (d === 0 ? 1.6 : 0.7);
-        }
+    // Value noise on a wrapping lattice, three octaves: the nap.
+    const lat = (n: number) => {
+      const a = new Float32Array(n * n);
+      for (let i = 0; i < a.length; i++) a[i] = rnd();
+      return (x: number, y: number) => {
+        const fx = x * n;
+        const fy = y * n;
+        const x0 = Math.floor(fx);
+        const y0 = Math.floor(fy);
+        const tx = fx - x0;
+        const ty = fy - y0;
+        const sx = tx * tx * (3 - 2 * tx);
+        const sy = ty * ty * (3 - 2 * ty);
+        const v = (i: number, j: number) => a[(((j % n) + n) % n) * n + (((i % n) + n) % n)]!;
+        const top = v(x0, y0) + (v(x0 + 1, y0) - v(x0, y0)) * sx;
+        const bot = v(x0, y0 + 1) + (v(x0 + 1, y0 + 1) - v(x0, y0 + 1)) * sx;
+        return top + (bot - top) * sy;
+      };
+    };
+    const n1 = lat(24);
+    const n2 = lat(64);
+    const n3 = lat(160);
+    const h = new Float32Array(W * H);
+    const twill = W / 4; // about 4 px a rib
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const u = x / W;
+        const v = y / H;
+        const nap = n1(u, v) * 0.9 + n2(u, v) * 0.55 + n3(u, v) * 0.35;
+        const rib = 0.5 + 0.5 * Math.sin(((x + y * 0.6) / W) * Math.PI * 2 * twill);
+        h[y * W + x] = rib * 0.35 + nap * 1.1 + bands(u, v) * 6;
       }
-    }
     const img = g.createImageData(W, H);
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
-        const at = (xx: number, yy: number) => h[((yy + H) % H) * W + ((xx + W) % W)]!;
+        const at = (xx: number, yy: number) => h[Math.min(H - 1, Math.max(0, yy)) * W + ((xx + W) % W)]!;
         const dx = (at(x + 1, y) - at(x - 1, y)) * 0.5;
         const dy = (at(x, y + 1) - at(x, y - 1)) * 0.5;
-        const n = new THREE.Vector3(-dx, -dy, 1).normalize();
+        const il = 1 / Math.sqrt(dx * dx + dy * dy + 1);
         const o = (y * W + x) * 4;
-        img.data[o] = (n.x * 0.5 + 0.5) * 255;
-        img.data[o + 1] = (n.y * 0.5 + 0.5) * 255;
-        img.data[o + 2] = (n.z * 0.5 + 0.5) * 255;
+        img.data[o] = (-dx * il * 0.5 + 0.5) * 255;
+        img.data[o + 1] = (-dy * il * 0.5 + 0.5) * 255;
+        img.data[o + 2] = (il * 0.5 + 0.5) * 255;
         img.data[o + 3] = 255;
       }
     g.putImageData(img, 0, 0);
     const t = new THREE.CanvasTexture(c);
-    t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(6, 3);
+    t.wrapS = THREE.RepeatWrapping;
+    t.anisotropy = 4;
     return t;
-  })();
+  };
+  // Baked once a page (the title, the pick and the warm-up build her more than once).
+  const woolCached = (key: string, W: number, bands: (u: number, v: number) => number, seed: number) => {
+    const k = `${key}:${W}`;
+    if (!WOOL_CACHE.has(k)) WOOL_CACHE.set(k, woolNormal(W, bands, seed));
+    return WOOL_CACHE.get(k) ?? null;
+  };
+  const bump = (d: number, w: number) => Math.exp(-(d * d) / (w * w));
+  // The coat's lathe runs hem (v 0) to collar (v 1) over 15 profile rows: the belt is row 6, the hem fold row 1.
+  const BELT_V = 6 / 14;
+  const HEM_V = 1 / 14;
+  const coatBands = (u: number, v: number) => {
+    const a = u * Math.PI * 2;
+    // Gathered under the belt: short vertical ridges above and below it, fading out from the belt.
+    // Irregular (two beating frequencies), and only a hand's width either side, so they read as cloth, not ribs.
+    const gather = (Math.sin(a * 31 + Math.sin(a * 7) * 2.2) * 0.6 + Math.sin(a * 53 + 1.1) * 0.4) * bump(v - BELT_V, 0.03) * (1 - bump(v - BELT_V, 0.01));
+    // Drape: long soft folds falling from the belt, wider and deeper toward the hem.
+    const below = Math.max(0, Math.min(1, (BELT_V - v) / BELT_V));
+    const drape = Math.sin(a * 9 + 1.7 + Math.sin(a * 3 + v * 5) * 0.9) * below * below * 0.8;
+    // Drag lines across the back and chest above the belt (the cloth pulled to the shoulders).
+    const drag = v > BELT_V ? Math.sin(a * 5 + v * 26) * bump(v - 0.7, 0.12) * 0.25 : 0;
+    // The turned hem: a ridge at the fold and its stitch line a finger above.
+    const hem = bump(v - HEM_V, 0.012) * 0.9 - bump(v - (HEM_V + 0.03), 0.004) * 0.35;
+    return gather * 0.45 + drape * 2.2 + drag + hem;
+  };
+  // A sleeve's UV runs shoulder (v 0) to cuff (v 1) with the elbow at v 0.5, whether it is one tube (her umbrella
+  // arm) or two bones (her left): creases bunch at the elbow, a seam turns the cuff back.
+  const sleeveBands = (u: number, v: number) => {
+    const a = u * Math.PI * 2;
+    // Elbow creases: rings that wander, deepest on the inside of the bend and fading round the outside.
+    const inner = 0.4 + 0.6 * Math.pow(0.5 + 0.5 * Math.cos(a - Math.PI), 2);
+    const crease = (Math.sin(v * 90 + Math.sin(a * 2) * 1.8) * 0.5 + 0.5) * bump(v - 0.5, 0.08) * inner;
+    // Drag lines from the elbow down the forearm, and the cuff's turn-back seam.
+    const drag = Math.sin(a * 3 + v * 30) * bump(v - 0.68, 0.08) * 0.3;
+    const seam = -bump(v - 0.93, 0.006) * 0.5;
+    return crease * 1.4 + drag + seam;
+  };
+  const clothNormal = woolCached("coat", phone ? 256 : 512, coatBands, 11);
+  const sleeveNormal = woolCached("sleeve", phone ? 128 : 256, sleeveBands, 29);
   if (clothNormal) {
     coatMat.normalMap = clothNormal;
-    coatMat.normalScale.set(0.32, 0.32);
+    coatMat.normalScale.set(0.75, 0.75);
   }
   // Gloves, boots, hair and the umbrella: near-black with a wet sheen.
   const blackMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.32, metalness: 0.05 });
@@ -284,6 +350,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
     m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}`;
   };
   rimify(coatMat, 1);
+  // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
+  const sleeveMat = coatMat.clone();
+  if (sleeveNormal) sleeveMat.normalMap = sleeveNormal;
+  coatMats.push(sleeveMat);
+  rimify(sleeveMat, 1);
+  mats.push(sleeveMat);
   rimify(blackMat, 0.8);
   rimify(hairMat, 1.2);
   rimify(skinMat, 0.35, 0.8);
@@ -1032,13 +1104,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const upLen = sh.distanceTo(el);
     const past = 0.012;
     const k = upLen / (upLen + past);
-    add(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), coatMat, parent);
+    // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
+    add(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), 0, 0.5), sleeveMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
     const elb = new THREE.SphereGeometry(0.041, seg(12), seg(8));
     elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
-    add(elb, coatMat, fore);
-    add(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), coatMat, fore);
+    add(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
+    add(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
@@ -1052,7 +1125,52 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const elbowR = V(-0.192, 0.0, 0.07);
   const handR = V(-0.085, 0.12, 0.185);
   const wristR = handR.clone().add(V(-0.012, -0.045, -0.03));
-  sleeve(shoulderR, elbowR, wristR, chest);
+  // Plan item 227: her umbrella arm never moves against her chest, so it is one sleeve: a single tube along a curve
+  // through shoulder, elbow and wrist (the elbow a soft bend, not a ball between two cylinders), full at the
+  // shoulder, easing to the elbow, then a turned-back cuff over the glove.
+  {
+    const curve = new THREE.CatmullRomCurve3([shoulderR, shoulderR.clone().lerp(elbowR, 0.55), elbowR, elbowR.clone().lerp(wristR, 0.5), wristR], false, "centripetal");
+    const T = seg(28);
+    const R = seg(12);
+    const tube = new THREE.TubeGeometry(curve, T, 1, R, false);
+    const upLen = shoulderR.distanceTo(elbowR);
+    const sE = upLen / (upLen + elbowR.distanceTo(wristR));
+    const prof = (x: number, pts: Array<[number, number]>) => {
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [t0, r0] = pts[i]!;
+        const [t1, r1] = pts[i + 1]!;
+        if (x <= t1) return r0 + ((r1 - r0) * (x - t0)) / (t1 - t0 || 1);
+      }
+      return pts[pts.length - 1]![1];
+    };
+    const radius = (s: number) =>
+      s < sE
+        ? prof(s / sE, [[0, 0.052], [0.3, 0.05], [0.8, 0.043], [1, 0.0415]])
+        : prof((s - sE) / (1 - sE), [[0, 0.0415], [0.2, 0.0405], [0.5, 0.0385], [0.78, 0.041], [0.84, 0.0455], [0.93, 0.0465], [0.96, 0.042], [1, 0.03]]);
+    const pos = tube.attributes.position as THREE.BufferAttribute;
+    const uv = tube.attributes.uv as THREE.BufferAttribute;
+    const c = new THREE.Vector3();
+    for (let i = 0; i <= T; i++) {
+      const s = i / T;
+      curve.getPointAt(s, c);
+      const r = radius(s);
+      const v = s < sE ? (0.5 * s) / sE : 0.5 + (0.5 * (s - sE)) / (1 - sE);
+      for (let j = 0; j <= R; j++) {
+        const o = i * (R + 1) + j;
+        pos.setXYZ(o, c.x + (pos.getX(o) - c.x) * r, c.y + (pos.getY(o) - c.y) * r, c.z + (pos.getZ(o) - c.z) * r);
+        uv.setXY(o, j / R, v);
+      }
+    }
+    tube.computeVertexNormals();
+    add(tube, sleeveMat, chest).name = "cath-sleeve-r";
+    // The cuff strap, on the turn-back.
+    const d = curve.getTangentAt(0.93);
+    const strap = new THREE.TorusGeometry(0.046, 0.005, 4, seg(14));
+    strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
+    const at = curve.getPointAt(0.9);
+    strap.translate(at.x, at.y, at.z);
+    add(strap, blackMat, chest);
+  }
   // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
   // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the
   // thumb over the index. Built round the shaft's rest axis in the chest frame (the umbrella twirls in its own
