@@ -3107,7 +3107,7 @@ html.no-animations .table-cath-line { animation: none; }
   /* Plan item 177: a card whose name would run past its face (fan() measures it) is dealt wider. */
   .game-layout .table-hand .action-item[data-wide] { width: 156px; }
   .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 196px; }
-  .game-layout .table-hand .action-item[data-dense] .action-label { font-size: var(--fs-label); line-height: 1.02; }
+  .game-layout .table-hand .action-item[data-dense] .action-label { font-size: var(--fs-label); line-height: 1.15; }
   .game-layout .table-hand .action-item[data-dense] .action-label > svg { width: 22px; height: 22px; }
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
   .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding: 6px 8px 6px; }
