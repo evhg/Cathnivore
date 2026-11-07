@@ -3883,6 +3883,8 @@ body[data-mode='practice'] #week-slot {
     bottom: 26px;
     /* Plan item 122: a little smaller than item 70's 170 px, so her bubble fits above her head under the tiles. */
     width: clamp(104px, 8.6vw, 128px);
+    /* Plan item 268: main.ts sets the largest that clears the tiles */
+    width: var(--cath-w, clamp(104px, 8.6vw, 128px));
     aspect-ratio: 2 / 3;
     filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--soil) 30%, transparent));
   }

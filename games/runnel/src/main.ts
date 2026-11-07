@@ -764,13 +764,46 @@ function placeValleyCath(): void {
     return
   }
   cath.hidden = false
-  const r = cath.getBoundingClientRect()
-  if (!r.width) return
-  const clash = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')].some((t) => {
-    const b = t.getBoundingClientRect()
-    return b.left < r.right - 12 && r.left + 12 < b.right && b.top < r.bottom - 12 && r.top + 12 < b.bottom
-  })
-  cath.hidden = clash
+  // Plan item 268: she stands as large as the valley's corner allows (her face 60 px at 300 px tall), down to the old
+  // 128 px; the tiles are measured once as screen outlines, and her shape (head narrower than her shoulders) tested.
+  const tilePolys = screenPolys(document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
+  const meets = (r: DOMRect) => {
+    for (let y = r.top + 8; y < r.bottom - 8; y += 8)
+      for (let x = r.left + r.width * 0.18; x < r.right - r.width * 0.18; x += 8) {
+        if (y < r.top + r.height * 0.3 && (x < r.left + r.width * 0.32 || x > r.right - r.width * 0.32)) continue
+        if (inPolys(tilePolys, x, y)) return true
+      }
+    return false
+  }
+  // ...and her line still finds a spot beside her (a bigger figure that sent it back to the rail pushed the page into
+  // a scroll at D): the largest size that clears the tiles and keeps her bubble, else the largest that clears them.
+  const app = document.querySelector<HTMLElement>('.app')
+  const sizes = [200, 184, 168, 152, 140, 128]
+  let fits: number | null = null
+  for (const w of sizes) {
+    cath.style.setProperty('--cath-w', `${w}px`)
+    const r = cath.getBoundingClientRect()
+    if (!r.width) return
+    if (meets(r)) continue
+    // each try measured as the valley stands with her line in it (a previous try's fallback to the rail grows the
+    // page and moves the stage)
+    if (app && app.dataset.valleySay === 'side') app.dataset.valleySay = ''
+    cath.hidden = false
+    aimValleyCath(cath)
+    placeValleySay()
+    if (app?.dataset.valleySay !== 'side') {
+      fits = w
+      break
+    }
+  }
+  // none keeps her line beside her: the old size (8.6vw, 104-128 px), hidden only if that meets a tile
+  if (fits === null) {
+    cath.style.removeProperty('--cath-w')
+    if (app && app.dataset.valleySay === 'side') app.dataset.valleySay = ''
+  } else cath.style.setProperty('--cath-w', `${fits}px`)
+  const r0 = cath.getBoundingClientRect()
+  cath.dataset.cathW = String(Math.round(r0.width))
+  cath.hidden = fits === null && meets(r0)
   aimValleyCath(cath)
   placeValleySay()
 }
