@@ -4078,10 +4078,10 @@ function syncCathSay(g: Game, now: number): void {
   }
   // The gate queue's leads and "N coming" plate (canvas px; the canvas sits at the field's corner).
   const canvas = ui.canvas.getBoundingClientRect();
-  const q = (renderer as { shownQueue?: { leads: Box[]; plates: Box[] } | null }).shownQueue;
+  const q = (renderer as { shownQueue?: { leads: Box[]; plates: Box[]; names?: Box[] } | null }).shownQueue;
   // Plan item 132: and the gate's own sign, whose town name the bubble covered at D.
   const signs = (renderer as { gateSignRects?: () => Box[] }).gateSignRects?.() ?? [];
-  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...signs]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
+  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...(q?.names ?? []), ...signs]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
   const empties = emptyPlotBoxes(g).map(shift).filter(near);
   const place = () =>
     barkSpot(

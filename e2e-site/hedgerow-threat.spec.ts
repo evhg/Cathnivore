@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 // (i)) and Cath's advice said in a bubble beside her on the field, before Go, clear of the lane's tiles.
 type Box = { x: number; y: number; w: number; h: number }
 type Say = { text: string; box: Box; cath: Box; lanes: Box[]; empty: Box[] }
-type Hg = { game(): { phase: string; wave: number }; cathSay(): Say | null; gateQueue(): { leads: Box[]; plates: Box[] } | null; sendWave(g: unknown): unknown }
+type Hg = { game(): { phase: string; wave: number }; cathSay(): Say | null; gateQueue(): { leads: Box[]; plates: Box[]; names?: Box[] } | null; sendWave(g: unknown): unknown }
 
 async function open(page: Page, level: number): Promise<void> {
   const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true, move: true }
@@ -56,7 +56,7 @@ for (const level of [3, 12, 21]) {
     expect(covered, 'bubble over empty plots').toBeLessThanOrEqual(s.box.w * s.box.h * (hasTouch ? 0.3 : 0.15))
     // Never over the round's threat waiting at the gate (canvas px; the canvas fills the field).
     const q = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.gateQueue())
-    for (const b of [...(q?.leads ?? []), ...(q?.plates ?? [])]) expect(hit(s.box, b), `bubble ${JSON.stringify(s.box)} on the queue ${JSON.stringify(b)}`).toBe(false)
+    for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...(q?.names ?? [])]) expect(hit(s.box, b), `bubble ${JSON.stringify(s.box)} on the queue ${JSON.stringify(b)}`).toBe(false)
     await page.evaluate(() => {
       const h = (window as unknown as { hedgerow: Hg }).hedgerow
       h.sendWave(h.game())

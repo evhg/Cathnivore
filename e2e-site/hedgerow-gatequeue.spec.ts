@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 // the round's leads and a count plate inside the canvas (the plate never on a lead), Go clears the queue, and
 // Cath's notebook is never empty.
 type Box = { x: number; y: number; w: number; h: number }
-type Hg = { game(): { phase: string; wave: number }; gateQueue(): { leads: Box[]; plates: Box[] } | null; sendWave(g: unknown): unknown }
+type Hg = { game(): { phase: string; wave: number }; gateQueue(): { leads: Box[]; plates: Box[]; names: Box[] } | null; sendWave(g: unknown): unknown }
 
 async function open(page: Page, level: number): Promise<void> {
   const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
@@ -37,6 +37,19 @@ for (const level of [1, 12, 34, 40]) {
     // Plan item 200: the plate's text is 12 px or more (the pill is 1.5 times its font); at P it was 11 px.
     for (const p of q.plates) expect(p.h, JSON.stringify(p)).toBeGreaterThanOrEqual(18)
     for (const p of q.plates) for (const l of q.leads) expect(overlaps(p, l), `plate ${JSON.stringify(p)} on lead ${JSON.stringify(l)}`).toBe(false)
+    // Plan item 256: queued vehicles are drawn 1.4x (40 px or more at D, 28 on a phone), and the first to pull out
+    // carries a name plate, inside the field and on no other vehicle or plate.
+    const min = (page.viewportSize()?.width ?? 0) >= 900 ? 40 : 28
+    for (const l of q.leads) expect(l.w, JSON.stringify(l)).toBeGreaterThanOrEqual(min)
+    expect(q.names.length).toBeGreaterThan(0)
+    for (const n of q.names) {
+      expect(n.x).toBeGreaterThanOrEqual(0)
+      expect(n.y).toBeGreaterThanOrEqual(0)
+      expect(n.x + n.w).toBeLessThanOrEqual(canvas.width)
+      expect(n.y + n.h).toBeLessThanOrEqual(canvas.height)
+      expect(n.h).toBeGreaterThanOrEqual(18)
+      for (const b of [...q.leads, ...q.plates]) expect(overlaps(n, b), `name ${JSON.stringify(n)} on ${JSON.stringify(b)}`).toBe(false)
+    }
     await page.evaluate(() => {
       const h = (window as unknown as { hedgerow: Hg }).hedgerow
       h.sendWave(h.game())

@@ -79,6 +79,8 @@ const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter
 /** Gold floaters from fleet knocks merge over this many seconds. */
 const GOLD_WINDOW = 0.15;
 /** Classic levels' vehicles have no rung colour: a tint per type for the swarm badge's make-up bar. */
+/** Plan item 256: queued vehicles at the gate drawn larger than on the lane (they're parked, the round's cast). */
+const QUEUE_SCALE = 1.4;
 const SWARM_TINT: Partial<Record<EnemyKind, string>> = { hatchback: "#e0b13a", courier: "#d2694a", quad: "#7a9c4a", lorry: "#4f6fa0", drone: "#9a8fb5" };
 
 interface Particle {
@@ -858,7 +860,7 @@ export class Renderer {
     const queue = this.nextQueue(game);
     if (queue) {
       this.queueAge = Math.min(1, this.queueAge + dt / 0.4);
-      const shown: { leads: Rect[]; plates: Rect[] } = { leads: [], plates: [] };
+      const shown: { leads: Rect[]; plates: Rect[]; names: Rect[] } = { leads: [], plates: [], names: [] };
       this.shownQueue = shown;
       const lanes: Array<{ leads: GateQueue["leads"]; count: number; lane?: 1 }> = [{ leads: queue.leads, count: queue.count }];
       if (level.path2) lanes.push({ leads: queue.leads2, count: queue.count2, lane: 1 });
@@ -871,21 +873,33 @@ export class Renderer {
         let d = 0.15;
         for (let i = ln.leads.length - 1; i >= 0; i--) {
           dists[i] = d;
-          if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06;
+          if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * QUEUE_SCALE;
         }
         ln.leads.forEach((kind, i) => {
           const d = dists[i]!;
           const p = enemyPoint(level, { dist: d, ...(ln.lane ? { lane: ln.lane } : {}) });
           const hd = headingAt(path, d);
           const gy = p.y + 0.2;
-          const sc = s * enemyScale(kind) * 0.55;
-          shown.leads.push({ x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc });
+          const sc = s * QUEUE_SCALE * enemyScale(kind) * 0.55;
+          const box = { x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc };
+          const at = shown.leads.push(box);
+          // Plan item 256: the first to pull out carries its name, on its far side from the one behind it, clear of
+          // the rest of the queue.
+          if (i === 0)
+            items.push({
+              y: 99.5,
+              draw: () => {
+                const behind = ln.leads.length > 1 ? shown.leads[at] : undefined;
+                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates], behind);
+                if (r) shown.names.push(r);
+              },
+            });
           items.push({
             y: gy,
             draw: () => {
               ctx.save();
               ctx.globalAlpha = this.queueAge;
-              drawEnemy(ctx, { kind, facing: hd.dx < 0 ? -1 : 1, hit: 9, ghost: false, phase: i * 0.37, still: true }, X(p.x), Y(gy), s, t);
+              drawEnemy(ctx, { kind, facing: hd.dx < 0 ? -1 : 1, hit: 9, ghost: false, phase: i * 0.37, still: true }, X(p.x), Y(gy), s * QUEUE_SCALE, t);
               ctx.restore();
             },
           });
@@ -1473,7 +1487,7 @@ export class Renderer {
   /** Layer-pop shard bursts thrown so far (none under reduced motion), for tests. */
   private shardBursts = 0;
   /** Plan item 72: the queue drawn last frame (CSS px from the canvas corner), for the e2e tests; null when nothing waits at the gate. */
-  shownQueue: { leads: Rect[]; plates: Rect[] } | null = null;
+  shownQueue: { leads: Rect[]; plates: Rect[]; names: Rect[] } | null = null;
   /** Plan item 157: the lanes (0, 1) whose gate has a depot on screen, which shows the count. */
   depotLanes = new Set<number>();
   private queueAge = 0;
@@ -1492,6 +1506,47 @@ export class Renderer {
     return this.queueMemo;
   }
   /** The count plate at the gate: "12 coming" on a paper pill, kept on the canvas. */
+  /** Plan item 256: a Hollowell name tag by the queue's lead, on the first side (above, below, beside) that clears
+   *  the other leads and plates and stays in the canvas; none if no side does. */
+  private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect): Rect | null {
+    const fs = Math.max(12, Math.round(s * 0.18));
+    ctx.save();
+    ctx.font = `700 ${fs}px ${FONT}`;
+    const w = ctx.measureText(name).width + fs * 1.2;
+    const h = fs * 1.55;
+    const g = 3;
+    const cx = lead.x + lead.w / 2;
+    const cy = lead.y + lead.h / 2;
+    const tries: Rect[] = [
+      { x: cx - w / 2, y: lead.y - h - g, w, h },
+      { x: cx - w / 2, y: lead.y + lead.h + g, w, h },
+      { x: lead.x + lead.w + g, y: cy - h / 2, w, h },
+      { x: lead.x - w - g, y: cy - h / 2, w, h },
+    ];
+    if (behind) {
+      const far = (c: Rect) => -Math.hypot(c.x + c.w / 2 - behind.x - behind.w / 2, c.y + c.h / 2 - behind.y - behind.h / 2);
+      tries.sort((a, b) => far(a) - far(b));
+    }
+    const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const r = tries.find((c) => c.x >= 2 && c.y >= 2 && c.x + c.w <= this.cssW - 2 && c.y + c.h <= this.cssH - 2 && !avoid.some((b) => hit(c, b)));
+    if (!r) {
+      ctx.restore();
+      return null;
+    }
+    ctx.globalAlpha = this.queueAge;
+    ctx.fillStyle = "#1e2b34";
+    ctx.beginPath();
+    ctx.roundRect(r.x, r.y, r.w, r.h, 3);
+    ctx.fill();
+    ctx.fillStyle = "#ff7a1a";
+    ctx.fillRect(r.x + 3, r.y + r.h - 3, r.w - 6, 2);
+    ctx.fillStyle = "#f4fbfb";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name, r.x + r.w / 2, r.y + r.h / 2 - 0.5);
+    ctx.restore();
+    return r;
+  }
   private countPlate(ctx: CanvasRenderingContext2D, count: number, x: number, y: number, s: number, upright: boolean): Rect {
     const label = `${count} coming`;
     const fs = Math.max(12, Math.round(s * 0.2));
