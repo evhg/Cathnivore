@@ -1766,22 +1766,64 @@ body {
     height: 210px;
     margin: 6px 0 0;
   }
-  /* the stall's counter she stands at: a striped plank under her */
-  .hero-text > .hero-cath-mini::after {
+  /* Plan item 265: her stall as one scene: a striped awning over her head on two posts, and in front of her a counter
+     heaped with produce, lettered FRESH · FREE (it was a thin striped plank floating over the sunset). */
+  .hero-text > .hero-cath-mini { margin-top: 40px; }
+  .hero-text > .hero-cath-mini::before {
     content: "";
     position: absolute;
     left: 50%;
-    bottom: -4px;
-    width: 220px;
-    height: 16px;
+    top: -34px;
+    width: 300px;
+    height: 220px;
     translate: -50% 0;
-    border-radius: 4px;
     background:
-      repeating-linear-gradient(90deg, var(--wood-hi) 0 28px, var(--wood-mid) 28px 56px),
-      var(--wood-mid);
-    box-shadow: 0 -1px 0 var(--wood-rim) inset, 0 6px 10px var(--shadow-deep);
+      /* the awning: stripes, a scalloped hem */
+      radial-gradient(circle 12px at 15px 0, var(--awning-red) 97%, transparent) 0 30px / 60px 12px repeat-x,
+      radial-gradient(circle 12px at 15px 0, var(--awning-cream) 97%, transparent) 30px 30px / 60px 12px repeat-x,
+      repeating-linear-gradient(90deg, var(--awning-red) 0 30px, var(--awning-cream) 30px 60px) 0 0 / 100% 30px no-repeat,
+      /* its two posts */
+      linear-gradient(var(--wood-mid), var(--wood-lo)) 10px 30px / 8px 100% no-repeat,
+      linear-gradient(var(--wood-mid), var(--wood-lo)) calc(100% - 10px) 30px / 8px 100% no-repeat;
+    filter: drop-shadow(0 4px 4px var(--shadow-deep));
+    z-index: var(--z-booth);
+    pointer-events: none;
   }
-  .hero-text > .cta-row { grid-column: 1; grid-row: 5; justify-self: center; margin-top: 14px; }
+  /* she stands under the awning and behind the counter */
+  .hero-text > .hero-cath-mini > * { position: relative; z-index: var(--z-booth-cath); }
+  .hero-text > .hero-cath-mini::after {
+    content: "FRESH \00B7  FREE";
+    position: absolute;
+    left: 50%;
+    bottom: -16px;
+    width: 300px;
+    height: 62px;
+    translate: -50% 0;
+    display: grid;
+    place-items: end center;
+    padding-bottom: 8px;
+    box-sizing: border-box;
+    border-radius: 6px 6px 4px 4px;
+    font: 700 0.9375rem/1 var(--font-display);
+    letter-spacing: 0.12em;
+    color: var(--cream);
+    background:
+      /* produce heaped along the counter's top */
+      radial-gradient(circle 8px at 11px 9px, var(--awning-red) 96%, transparent) 0 0 / 34px 18px repeat-x,
+      radial-gradient(circle 8px at 11px 9px, var(--gold-mid) 96%, transparent) 17px 1px / 34px 18px repeat-x,
+      /* the counter's top board and its planked front */
+      linear-gradient(var(--wood-hi), var(--wood-hi)) 0 14px / 100% 8px no-repeat,
+      repeating-linear-gradient(90deg, transparent 0 46px, var(--wood-lo) 46px 48px) 0 22px / 100% 100% no-repeat,
+      linear-gradient(var(--wood-mid), var(--wood-lo)) 0 22px / 100% 100% no-repeat;
+    box-shadow: 0 8px 14px var(--shadow-deep);
+    text-shadow: 0 1px 2px var(--shadow-deep);
+    z-index: var(--z-booth-counter);
+  }
+  .hero-text > .cta-row { grid-column: 1; grid-row: 5; justify-self: center; margin-top: 24px; }
+  /* the posters' awning belongs to the desktop stall; on a phone the stall is hers, above */
+  .stall-hero .hero-games { padding-top: 0; }
+  .stall-hero .hero-games::before,
+  .stall-hero .hero-games::after { display: none; }
   .hero-text > .hero-meta { grid-column: 1; grid-row: 6; }
 }
 @media (max-width: 599.98px) and (max-height: 700px) {

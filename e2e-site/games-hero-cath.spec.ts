@@ -64,3 +64,36 @@ test('at D the hero keeps its landscape Cath', async ({ page }, testInfo) => {
   await expect(page.locator('#hero-cath svg')).toBeVisible()
   await expect(page.locator('#hero-cath-mini')).toBeHidden()
 })
+
+// Plan item 265: on a phone Cath stands in her stall: an awning over her, a counter of produce lettered FRESH · FREE
+// in front, the whole within 360 px, her figure 190 px or more, both buttons above the fold, and the posters' own
+// awning (the desktop stall's) gone.
+test('phone hero: Cath behind her stall', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/games/')
+  const cath = page.locator('.hero-cath-mini')
+  await expect(cath).toBeVisible()
+  const m = await page.evaluate(() => {
+    const c = document.querySelector('.hero-cath-mini')!
+    const r = c.getBoundingClientRect()
+    const before = getComputedStyle(c, '::before')
+    const after = getComputedStyle(c, '::after')
+    const top = r.top + parseFloat(before.top)
+    const bottom = r.bottom - parseFloat(after.bottom)
+    const cta = [...document.querySelectorAll('.cta-row > *')].map((e) => e.getBoundingClientRect().bottom)
+    return {
+      h: r.height,
+      span: bottom - top,
+      counter: after.content,
+      awning: before.content !== 'none' && parseFloat(before.width) > 200,
+      ctaBottom: Math.max(...cta),
+      postersAwning: getComputedStyle(document.querySelector('.stall-hero .hero-games')!, '::before').display,
+    }
+  })
+  expect(m.h).toBeGreaterThanOrEqual(190)
+  expect(m.awning).toBe(true)
+  expect(m.counter).toContain('FRESH')
+  expect(m.span).toBeLessThanOrEqual(360)
+  expect(m.ctaBottom).toBeLessThanOrEqual(844)
+  expect(m.postersAwning).toBe('none')
+})

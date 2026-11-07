@@ -2688,7 +2688,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** tile side 6 px or more at D, 3 at P; connected grooves visibly wet and unconnected dry in a mid-board shot; groove 3:1 against the tile face; runnel e2e pass; shots P and D, the tutorial and a mid-daily board.
 - **Size:** 2
 
-## 265. [ ] /games/ phone hero: Cath behind her stall *(lane B, in progress)*
+## 265. [x] /games/ phone hero: Cath behind her stall *(done 2026-11-07 20:45 lane B: under 600 px her stall is one scene drawn round her (`.hero-cath-mini`'s pseudo-elements, the booth's z tokens): a striped awning with a scalloped hem on two posts over her head, and in front a planked counter heaped with produce, lettered FRESH · FREE (was a thin chequered plank over the sunset); the posters' awning, the desktop stall's, is gone on a phone. 390x844: the group 260 px, Cath 210 px, buttons end at 560; 360x640: buttons end at 604. D unchanged; key art unchanged. games-hero-cath (new 'behind her stall' test), -stall, -cards pass; shots scratchpad gp2-P/P2/D)*
 - **Why:** `plan1107f/games-P` (85-305 x 245-458): Cath is cut at the waist by a thin chequered strip floating over the sunset; the stall's awning and produce (whole at D, 150-480 x 10-440) are missing on a phone, its awning showing only under the buttons (5-385 x 548-590).
 - **Build:** at phone width the stall as one scene: the awning over Cath, a counter of produce with the FRESH · FREE board, the two buttons on the counter front; the cards below.
 - **Accept:** awning, Cath and counter in one group within 360 px at 390x844, no floating strip; Cath 190 px or more tall; both buttons above the fold; games-hero-cath, -stall, -cards pass; shots P and D (D unchanged); key art unchanged.
