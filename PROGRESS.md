@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (14:51): item 251 slice 2 (fit counts only her drawn kit; short-phone case line clear of The List); unclaimed, tick once CI is green on it. **Today's 19:51 session releases** (run the full site suite first).
+- Lane A (15:51): item 254 (NS Cath ink shading). Item 251 slice 2 awaits CI (760da46 cancelled, superseded), tick once green. **Today's 19:51 session releases** (run the full site suite first).
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (14:22): item 256 slice 1 (drivers and exhaust on Hedgerow's vehicles; key art re-shot). Items 211, 222, 224, 236, 256, 259 claimed.
 - Critique bugs from the 2026-11-05 09:30 shots (`e2e/screenshots/plan1105c/`, lane B): `cath-title-D` pennant hint ~13 px white on brown (1030-1280 x 800-818) and footer ~12 px (310-1130 x 872-886); `cath-title-P` small keys' labels ~12 px (85-305 x 692-735); `cath-setup-D` seed 'random' low contrast (655-840 x 795-835); `hedge-l34-2d-D` '485 coming' over a farmer (300-395 x 128-150); `hedge-menu-P` 'Brand Ambassador' (closed 2026-11-07 06:35 lane A: on its own label pill beside stop 30, off the road); `ns-title-D` neon sign clipped at the top (790-1150 x 0-45); `ns-play-P` FIXER tab cut (340-390 x 68-82); `games-P` hero ghosted (likely shot mid-entrance: check before fixing).

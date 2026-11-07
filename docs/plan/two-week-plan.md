@@ -2618,7 +2618,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 254. [ ] NIGHT SHIFT: Cath shaded as an inked noir illustration
+## 254. [ ] NIGHT SHIFT: Cath shaded as an inked noir illustration *(lane A, in progress)*
 - **Why:** `plan1107e/ns-play-D` (620-860 x 110-820), `ns-title-D` (880-1120 x 270-900), `portfolio-D` (860-960 x 440-630): a pale flat face with pinpoint features, the hood a helmet, limbs as tubes. Items 140/147/205/247 reshaped geometry and texture; no one has tried a stylised shading pass.
 - **Build:** a toon ramp (three bands and a rim) on her body, hair and coat; an inverted-hull ink outline about 1.5 px at D; a shine band on the hair; the face texture at 2x with liner, two eye highlights and rose lips.
 - **Accept:** `data-cath-shading="ink"`; face 60 px or more on the D title; cathode-perf within budget (+12 draw calls at most); cathode-front and classpick pass; key art re-shot; shots P and D, title, pick, poster at 30 s.
