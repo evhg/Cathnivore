@@ -2558,7 +2558,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** after three scripted actions the ledger has three new lines in order and its total matches the HUD; reduced motion shows lines without the stroke; game specs pass; shots D light and dark (P unchanged).
 - **Size:** 2
 
-## 245. [ ] NIGHT SHIFT phone class pick: the class name and Cath as the hero
+## 245. [ ] NIGHT SHIFT phone class pick: the class name and Cath as the hero *(lane A, in progress)*
 - **Why:** `plan1107c/ns-play-P`: the classes are a plain text tab row (16-375 x 80-100); the class is named only in small dossier text.
 - **Build:** swipe between classes; the class title large in the display face over Cath's lower third, her pose changing in 250 ms; page dots in place of the text tabs (the tabs stay for keyboard and screen readers).
 - **Accept:** a swipe changes class and pose; the title's font 40 px or more; no visible tab row at 390 px; arrows and 1-5 still work; cathode classpick, dossier and classstage specs pass; shots P and D (D unchanged).
