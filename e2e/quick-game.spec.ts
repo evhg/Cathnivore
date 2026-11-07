@@ -6,6 +6,8 @@ import { test, expect } from '@playwright/test'
 // enemy-turn caption playback instantly, so the whole game (at most 10 rounds, SPEC 4.8) finishes in a
 // handful of seconds instead of requiring the test to know which button to click each turn.
 test('a full Solo Quick Game reaches the end screen', async ({ page }) => {
+  // A whole autoplayed game takes 10-15 s on a busy machine: the 30 s default leaves no margin.
+  test.setTimeout(90_000)
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(String(err)))
 
@@ -37,6 +39,8 @@ test('a full Solo Quick Game reaches the end screen', async ({ page }) => {
 
 // Plan item 8: "Play again" replays the same seed, so an autoplayed game ends exactly the same way.
 test('Play again starts the same seed', async ({ page }) => {
+  // Two whole autoplayed games: the 30 s default ran out at the last step in the 2026-11-07 release run.
+  test.setTimeout(90_000)
   await page.goto('/?e2eAutoplay=1')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
