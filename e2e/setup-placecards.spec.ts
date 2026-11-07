@@ -26,6 +26,10 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     const upright = (sel: string) => page.locator(sel).evaluate((el) => getComputedStyle(el).transform === 'none')
     expect(await upright('[data-place-card="solo"]')).toBe(true)
     expect(await upright('[data-place-card="hotseat"]')).toBe(false)
+    // Plan item 259: the card laid flat still reads: its words foreshortened to 0.8 of their height or more (at 48 deg
+    // 'Two at the table' read under 12 px).
+    const squash = await page.locator('[data-place-card="hotseat"] .place-word').evaluate((el) => el.getBoundingClientRect().height / (el as HTMLElement).offsetHeight)
+    expect(squash).toBeGreaterThanOrEqual(0.8)
     await page.locator('[data-place-card="hotseat"]').click()
     await expect(page.locator('[data-place-card="hotseat"] input')).toBeChecked()
     await expect.poll(() => upright('[data-place-card="hotseat"]')).toBe(true)

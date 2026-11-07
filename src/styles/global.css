@@ -3788,9 +3788,9 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
     min-height: 150px; padding: 20px 8px 12px; border: 0; border-radius: 3px 3px 0 0;
     background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px);
     box-shadow: 0 0 0 1px var(--rule); color: var(--ink);
-    transform-origin: 50% 100%; transform: rotateX(48deg); transition: transform 320ms var(--ease-settle), box-shadow 320ms;
+    transform-origin: 50% 100%; transform: rotateX(32deg); transition: transform 320ms var(--ease-settle), box-shadow 320ms;
   }
-  .setup .setup-mode .segmented.mode-picker label[data-place-card]:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px); transform: rotateX(36deg); }
+  .setup .setup-mode .segmented.mode-picker label[data-place-card]:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px); transform: rotateX(22deg); }
   /* Upright: its back half leans away behind it, and it throws a shadow on the ledge. */
   .setup .setup-mode .segmented.mode-picker label[data-place-card]:has(input:checked) {
     transform: none; background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 9%, var(--paper-hi)) 0 9px, var(--paper-hi) 9px);
