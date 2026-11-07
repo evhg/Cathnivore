@@ -31,7 +31,7 @@ import type { ImprovementCard } from '../content/improvements'
 import { PlanArt } from './icons/HollowellArt'
 import { splitTarget } from './planTarget'
 import { usePlanArming } from './usePlanArming'
-import { ArtSceneContext } from './icons/artScene'
+import { ArtSceneContext, RoleProducerContext } from './icons/artScene'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
@@ -378,6 +378,13 @@ function SellGainChip({ count }: { count: number }) {
 
 // A role card's face names just the ability and its effect ("On Air: +1 Trust"); the full label, with
 // the producer's role title, stays in its accessible name. The long form ran off the foot of a phone card.
+// Plan item 225: a role costs nothing, so its card's foot says so in the cost chip's place (a blank foot read as unfinished).
+const ROLE_FREE_CHIP = (
+  <span className="action-cost action-free" aria-hidden="true">
+    Free
+  </span>
+)
+
 function roleCardText(action: Extract<Action, { kind: 'role' }>, state: GameState): string {
   const roleName = PRODUCERS[state.activeProducer].roleName
   const ability = roleName.split(', ').pop() ?? roleName
@@ -474,7 +481,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
         {Icon && <Icon size={18} />}
         {action.kind === 'role' ? roleCardText(action, state) : <BuyVerb text={text} />}
       </span>
-      <ActionCostChip cost={cost} />
+      {action.kind === 'role' ? ROLE_FREE_CHIP : <ActionCostChip cost={cost} />}
     </button>
   )
 }
@@ -1783,7 +1790,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 149: the cards this turn can play. On a big desktop they are a hand at the table's bottom edge
   // (`.table-hand`, under the map); elsewhere they lead the Actions list.
   const showHand = handOnTable && pendingEnemyTurn.length === 0 && !(waitingOnAi && teammatePick) && !selectedGroup
-  const playableCards = (
+  const playableCardFaces = (
     <>
           {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
           {sellEntries.map(({ index, action: a }) => {
@@ -1924,7 +1931,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                       </>
                     )}
                   </span>
-                  <ActionCostChip cost={cost} />
+                  {!short && firstAction.kind === 'role' && !cost ? ROLE_FREE_CHIP : <ActionCostChip cost={cost} />}
                 </button>
               )
             }
@@ -1994,6 +2001,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           })()}
     </>
   )
+  const playableCards = <RoleProducerContext.Provider value={state.activeProducer}>{playableCardFaces}</RoleProducerContext.Provider>
 
   // Plan item 167: on a big desktop what can't be played yet is a shelf of small cards, each with its picture.
   const shelf = handOnTable && isDesktop
@@ -2315,7 +2323,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
           disabledOpenStall ||
           (disabledSupplyBuyoutReason && !groups.has('supplyBuyout')) ? (
-            <span className="action-head action-head-later" aria-hidden="true">Not yet</span>
+            <span className="action-head action-head-later" aria-hidden="true">
+              {/* Plan item 225: with the hand on the table the rail's shelf is what she is saving for. */}
+              {handOnTable ? 'Saving for' : 'Not yet'}
+            </span>
           ) : null}
           {pinnedInvest && investLater(pinnedInvest)}
           {pinnedScheme && schemeLater(pinnedScheme)}

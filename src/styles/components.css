@@ -402,6 +402,17 @@ button.btn-quiet {
   color: var(--gain-ink, var(--ink));
 }
 
+/* Plan item 225: a role is free; its foot is a plain pill in the gain chip's dashed hand, in small caps */
+.action-free {
+  padding: 0 9px;
+  border-radius: var(--r-pill);
+  border-style: dashed;
+  color: var(--gain-ink, var(--ink));
+  font-family: var(--font-ui, inherit);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
 .action-gain-arrow {
   color: var(--ink-muted);
   font-weight: 600;

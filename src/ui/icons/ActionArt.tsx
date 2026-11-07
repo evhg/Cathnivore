@@ -1,5 +1,5 @@
 import { useContext, type ReactNode } from 'react'
-import { ArtSceneContext } from './artScene'
+import { ArtSceneContext, RoleProducerContext } from './artScene'
 
 // Plan item 83: each action card carries its own small painted picture (a 40x40 tile: a sky-and-ground
 // wash and the subject in flat colour with a soft ink line), in place of the 24px glyph from
@@ -171,8 +171,75 @@ export function RebutArt({ size }: { size?: number }) {
   )
 }
 
-/** A producer's role: a rosette with ribbons. */
+/** A producer's role, as the producer's own ability: Mara's injunction nailed to a post with her gavel, Tomas's
+ * market-day bunting over a stall, Ines's doctor's bag, Sol's microphone on air. A rosette when no producer is known. */
 export function RoleArt({ size }: { size?: number }) {
+  const producer = useContext(RoleProducerContext)
+  if (producer === 'mara') {
+    return (
+      <Tile size={size} kind="role" ground={WHEAT}>
+        <g data-role-scene="mara">
+          <rect x="18.2" y="6" width="3.6" height="29" rx="0.8" fill={WOOD} {...LINE} />
+          <path d="M10 10.5 L30 9.5 L30.5 25.5 L10.5 26.5 Z" fill={CREAM} {...LINE} />
+          <path d="M13 14 H27 M13 17.2 H25 M13 20.4 H22" stroke={INK} strokeOpacity={0.45} strokeWidth={1} strokeLinecap="round" />
+          <circle cx="20" cy="9.9" r="1.1" fill={INK} />
+          <circle cx="26.2" cy="22.6" r="2.3" fill={APPLE} {...LINE} />
+          <g transform="rotate(-24 27 31)">
+            <rect x="24.5" y="30.4" width="13" height="2.4" rx="1.1" fill={WOOD_LO} {...LINE} />
+            <rect x="21" y="27.4" width="5.6" height="8.4" rx="1.4" fill={WOOD} {...LINE} />
+          </g>
+        </g>
+      </Tile>
+    )
+  }
+  if (producer === 'tomas') {
+    return (
+      <Tile size={size} kind="role" ground={PASTURE}>
+        <g data-role-scene="tomas">
+          <path d="M5 34 V9 M35 34 V9" stroke={WOOD_LO} strokeWidth={1.8} strokeLinecap="round" />
+          <path d="M5 10 Q 20 16 35 10" fill="none" stroke={INK} strokeOpacity={0.6} strokeWidth={0.9} />
+          <path d="M8 11.2 l2 4.2 2.2 -3.2 Z M14 12.9 l2 4.1 2.2 -3.3 Z M20.5 13.4 l2 4 2.2 -3.6 Z M27 12.4 l1.9 4 2.3 -3.5 Z" fill={APPLE} stroke={INK} strokeWidth={0.7} strokeLinejoin="round" />
+          <path d="M11 22 H29 L31 26 H9 Z" fill={CREAM} {...LINE} />
+          <path d="M13.5 22 L12.6 26 M18 22 L17.6 26 M22 22 L22.4 26 M26.5 22 L27.4 26" stroke={APPLE} strokeWidth={2.2} />
+          <rect x="11" y="26" width="18" height="8" fill={WOOD} {...LINE} />
+          <circle cx="15" cy="25.6" r="1.6" fill={APPLE} {...LINE} />
+          <circle cx="19.6" cy="25.4" r="1.6" fill={LEAF} {...LINE} />
+          <circle cx="24.4" cy="25.6" r="1.6" fill={WHEAT} {...LINE} />
+        </g>
+      </Tile>
+    )
+  }
+  if (producer === 'ines') {
+    return (
+      <Tile size={size} kind="role" ground={SEA}>
+        <g data-role-scene="ines">
+          <path d="M15 17 Q 15 11.5 20 11.5 Q 25 11.5 25 17" fill="none" stroke={INK} strokeWidth={2.4} strokeLinecap="round" />
+          <path d="M15 17 Q 15 11.5 20 11.5 Q 25 11.5 25 17" fill="none" stroke={WOOD_LO} strokeWidth={1.2} strokeLinecap="round" />
+          <path d="M8 18.5 Q 8 16.5 10 16.5 H30 Q 32 16.5 32 18.5 L33 32 Q 33 34 31 34 H9 Q 7 34 7 32 Z" fill={WOOD_LO} {...LINE} />
+          <path d="M7.6 22 H32.4" stroke={INK} strokeOpacity={0.5} strokeWidth={0.9} />
+          <rect x="16.5" y="23.5" width="7" height="7" rx="1" fill={CREAM} {...LINE} />
+          <path d="M20 24.6 V29.4 M17.6 27 H22.4" stroke={APPLE} strokeWidth={1.8} strokeLinecap="round" />
+          <circle cx="31" cy="12" r="2.2" fill="none" stroke={INK} strokeWidth={1.1} />
+          <path d="M31 14.2 Q 31 18 28 19" fill="none" stroke={INK} strokeWidth={1.1} strokeLinecap="round" />
+        </g>
+      </Tile>
+    )
+  }
+  if (producer === 'sol') {
+    return (
+      <Tile size={size} kind="role" ground={CLAY}>
+        <g data-role-scene="sol">
+          <path d="M20 26 V33 M14.5 34 H25.5" stroke={INK} strokeWidth={1.6} strokeLinecap="round" />
+          <path d="M14.5 19 Q 14.5 26.5 20 26.5 Q 25.5 26.5 25.5 19" fill="none" stroke={INK} strokeWidth={1.3} strokeLinecap="round" />
+          <rect x="16.2" y="8" width="7.6" height="14" rx="3.8" fill={WOOD_LO} {...LINE} />
+          <path d="M16.6 12 H23.4 M16.4 15 H23.6 M16.6 18 H23.4" stroke={CREAM} strokeOpacity={0.55} strokeWidth={0.8} />
+          <path d="M10.5 11 Q 8 15 10.5 19 M7 9 Q 3.5 15 7 21 M29.5 11 Q 32 15 29.5 19 M33 9 Q 36.5 15 33 21" fill="none" stroke={APPLE} strokeWidth={1.2} strokeLinecap="round" />
+          <circle cx="31.5" cy="30" r="2.6" fill={APPLE} {...LINE} />
+          <circle cx="31.5" cy="30" r="1" fill={CREAM} opacity={0.8} />
+        </g>
+      </Tile>
+    )
+  }
   return (
     <Tile size={size} kind="role" ground={WHEAT}>
       <path d="M15 22 L11 33 L14.5 31.5 L16.5 34.5 L19.5 24 M25 22 L29 33 L25.5 31.5 L23.5 34.5 L20.5 24" fill={CLAY} {...LINE} />
