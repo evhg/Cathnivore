@@ -34,3 +34,18 @@ test('she points as she gives a hint', async ({ page }) => {
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', 'point', { timeout: 60_000 })
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 60_000 })
 })
+
+// Plan item 255: the 3D people drawn to the 2D field's standard: Cath inked on her largest parts, and every
+// farmfolk mesh toon-shaded (their ink is baked into the same geometry).
+test('Cath and the farmfolk are inked and toon-shaded in 3D', async ({ page }) => {
+  test.setTimeout(150_000)
+  await page.goto('/hedgerow/?sandbox=1&level=21')
+  type P = { hedgerow?: { game: () => unknown; people3d?: () => { cathInk: number; folkToon: number; folkPlain: number } | null } }
+  await page.waitForFunction(() => {
+    const p = (window as unknown as P).hedgerow?.people3d?.()
+    return !!p && p.folkToon > 0
+  }, null, { timeout: 120_000 })
+  const p = await page.evaluate(() => (window as unknown as P).hedgerow!.people3d!()!)
+  expect(p.cathInk).toBeGreaterThanOrEqual(6)
+  expect(p.folkPlain).toBe(0)
+})

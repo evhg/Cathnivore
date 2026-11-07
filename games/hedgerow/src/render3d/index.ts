@@ -2712,6 +2712,22 @@ export class Renderer3D {
     return ((this.ground?.group.userData.adverts as THREE.Object3D[] | undefined) ?? []).filter((o) => o.visible).map((o) => this.meshRect(o, w, h, cam));
   }
   /** Plan item 228 (tests): the moored boats' boxes on the canvas (CSS px) at the fitted view. */
+  /** Plan item 255 (tests): Cath's ink hulls, and whether the farmfolk are toon-shaded with a baked ink hull. */
+  people3d(): { cathInk: number; folkToon: number; folkPlain: number } {
+    let cathInk = 0;
+    this.cath?.traverse((o) => {
+      if (o.userData.ink) cathInk++;
+    });
+    let folkToon = 0;
+    let folkPlain = 0;
+    this.folkMeshes.group.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      if ((m.material as THREE.Material).type === "MeshToonMaterial") folkToon++;
+      else folkPlain++;
+    });
+    return { cathInk, folkToon, folkPlain };
+  }
   mooredRects(): Rect[] {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
