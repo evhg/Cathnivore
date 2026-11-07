@@ -2682,7 +2682,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** card art 60 px or more tall at D, no grey placeholder fill; the meter shows a count at 4.5:1; affordable cards carry a testable state (`data-affordable`); board-scale, desktop-no-scroll, plan-cards, tutorial pass; shots game D and the phone Market sheet, light and dark.
 - **Size:** 2
 
-## 264. [ ] Runnel: tiles as carved pieces with water you can see
+## 264. [ ] Runnel: tiles as carved pieces with water you can see *(lane B, in progress)*
 - **Why:** `plan1107f/runnel-D` (555-1240 x 95-760), `runnel-P` (35-330 x 300-630): the tiles are flat cream hexes with a dry brown groove and a grey ring, no thickness or carved depth; the spring's water stops at its own edge (720-800 x 215-275).
 - **Build:** a bevelled side per tile, a carved groove with an inner shadow, connected grooves filled with moving water carrying a highlight (static under reduced motion); the hinted tile lifts on a soft shadow.
 - **Accept:** tile side 6 px or more at D, 3 at P; connected grooves visibly wet and unconnected dry in a mid-board shot; groove 3:1 against the tile face; runnel e2e pass; shots P and D, the tutorial and a mid-daily board.
