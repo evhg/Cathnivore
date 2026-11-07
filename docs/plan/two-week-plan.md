@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-07 06:23
-
 
 
 
@@ -2533,5 +2531,44 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Cathnivore:** P game vertical 'PLAY' label about 10 px (175, 690-740).
   - **Hedgerow:** 3D l21 D two stacked Hollowell labels (120-320 x 268-400); D menu 'Beyond the hedge' card clipped at the viewport foot (528-912 x 852-900).
   - **Runnel:** rain streaks over playable tiles lower their contrast (D 900-1000 x 200-260); the footer hint 12-13 px muted.
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 241. [ ] Hedgerow journey map: each stop a little landmark, not a grey disc *(lane B, in progress)*
+- **Why:** `plan1107c/hedge-menu-D` (210-1260 x 310-580), `hedge-menu-P` (120-280 x 215-575): every stop is the same pale coin with a thin grey line icon; locked and open stops differ little, and the painted country (items 153, 230) outclasses its own markers.
+- **Build:** each stop's coin becomes a small painted landmark of the place (a windmill, a beach hut, the blimp, the castle) in the act's palette; a locked stop a pencil sketch on paper, a played one in full colour with its stars hung on it; the next stop a pennant with a slow 1.2 s bob (none under reduced motion).
+- **Accept:** every stop has `[data-stop-art]`; a locked stop's mean saturation under 30% of an open one's; no grey glyph discs left at P or D; hedgerow map specs pass; shots P and D, fresh and mid-act saves.
+- **Size:** 2
+
+## 242. [ ] Hedgerow 3D: the field sits in a world that runs to a horizon
+- **Why:** `plan1107c/hedge-l21-3d-D` (0-1080 x 72-170 roofs and boats cut flat by the frame; 0-110 x 300-880 grey untextured slabs), `hedge-l21-3d-P` (0-390 x 50-180): the scene ends in clipped houses and flat slabs, a diorama on a void.
+- **Build:** a far ring of low terrain cards and a sky dome to the horizon with the act's silhouettes (Saltmarsh: dunes, the lighthouse, the sea line), fog fading the edge; the far houses set back so no mesh shows a cut underside at the default frame.
+- **Accept:** at the default camera no mesh's underside shows at the frame's top; no flat grey (#808080 within 10) region over 2,000 px² at the edges; draw calls +4 or fewer; hedgerow 3D specs pass; shots P and D, three acts.
+- **Size:** 2
+
+## 243. [ ] /games/ desktop hero: Cath working her stall as one scene
+- **Why:** `plan1107c/games-D`: Cath floats at 265-390 x 60-440 with nothing round her; the stall is a small separate prop at 1190-1360 x 220-400 across dead dusk.
+- **Build:** Cath behind a full-height stall counter at the hero's centre-left, its top level with the awning; the headline and buttons on the stall's hanging board; she gestures at today's pick.
+- **Accept:** at 1440x900 Cath's feet or the counter meet the awning band; the stall's box 35% or more of the hero's width; 390 px layout unchanged; site-hero, games-hero-cath, games-stall pass; shots D, 1280x800 and P.
+- **Size:** 2
+
+## 244. [ ] Cathnivore desktop: the ledger writes itself
+- **Why:** `plan1107c/cath-game-D` (35-315 x 615-800): seven empty ruled lines under one entry, the play screen's biggest dead area.
+- **Build:** the ledger fills line by line in an ink hand as the round plays (each sale, Outlet and Trust change, a running Marks column), each new line a 300 ms pen stroke; Bea's doodle in the margin at round end.
+- **Accept:** after three scripted actions the ledger has three new lines in order and its total matches the HUD; reduced motion shows lines without the stroke; game specs pass; shots D light and dark (P unchanged).
+- **Size:** 2
+
+## 245. [ ] NIGHT SHIFT phone class pick: the class name and Cath as the hero
+- **Why:** `plan1107c/ns-play-P`: the classes are a plain text tab row (16-375 x 80-100); the class is named only in small dossier text.
+- **Build:** swipe between classes; the class title large in the display face over Cath's lower third, her pose changing in 250 ms; page dots in place of the text tabs (the tabs stay for keyboard and screen readers).
+- **Accept:** a swipe changes class and pose; the title's font 40 px or more; no visible tab row at 390 px; arrows and 1-5 still work; cathode classpick, dossier and classstage specs pass; shots P and D (D unchanged).
+- **Size:** 2
+
+## 246. [ ] The bugs from the 2026-11-07 06:50 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1107c`; dropped: the P 3D frame cutting the field's right (item 215's close frame, by design), Cath's outfit on /games/ following the poster in view (item 130, by design))
+  - **Hedgerow:** D: the top bar's '10/26' beside the ticket's 'ROUND 11 OF 26' read as disagreeing (1200-1310 x 22-55 vs 1115-1170 x 420-495; label what each counts). P l34: the second lane has no depot, its vans stacking on '283 coming' (0-130 x 500-580). P 3D: a stray teal bar above the dock (75-170 x 673-682).
+  - **NIGHT SHIFT:** D and P pick: the rifle through Cath's face and collar, and rifle and umbrella held together (D 640-800 x 100-420). P title: the menu panel over her arm (8-195 x 207-435; check it isn't capture timing). D title: Tomas Reed, a Cathnivore producer, as a case file (410-580 x 270-570): check against the cast notes.
+  - **Cathnivore:** D setup: 'Two at the table' tab sheared with its label on the rim (330-495 x 135-200); 'YOU' over the chairs (198-232 x 150-168). D game: 'Saving for' text about 11 px (40-310 x 425-482); the licence card's verb on its own line (700-830 x 785-825); Injunction over Supply's corner (1185-1200 x 705-860).
+  - **Runnel:** D: the hint loose 90 px below the notebook (70-290 x 845-862).
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
