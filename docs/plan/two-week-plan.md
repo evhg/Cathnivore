@@ -2624,7 +2624,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `data-cath-shading="ink"`; face 60 px or more on the D title; cathode-perf within budget (+12 draw calls at most); cathode-front and classpick pass; key art re-shot; shots P and D, title, pick, poster at 30 s.
 - **Size:** 2
 
-## 255. [ ] Hedgerow 3D: Cath and the farmers drawn to the 2D standard
+## 255. [ ] Hedgerow 3D: Cath and the farmers drawn to the 2D standard *(lane B, in progress)*
 - **Why:** `plan1107e/hedge-l21-3d-D`: Cath (150-250 x 430-640) a sphere head with a flat decal face; the farmers (805-845 x 445-520) blocky.
 - **Build:** the toon ramp and outline idea on the people only (Cath, farmers, Hollowell's rep); her face turned within 30° of the camera; an idle (weight shift, hair sway; none under reduced motion).
 - **Accept:** her face 40 px or more at D; an outline on every person; draw calls +10 or fewer at P; closeframe, 3dframe, cath3d pass; shots P and D.
