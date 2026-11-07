@@ -4266,19 +4266,43 @@ body[data-mode='practice'] #week-slot {
 .runnel-ditch-layer[hidden] {
   display: none;
 }
-.runnel-ditch {
+.runnel-ditch-layer {
+  /* Plan item 226: dug through the valley, under the board (it is placed before #board, which paints over it) */
+  z-index: auto;
+  transition: filter 400ms ease;
+}
+.in-lesson .runnel-ditch-layer { filter: brightness(.8) saturate(.75); }
+/* the spoil thrown up either side of the cut: a soft earth shoulder in the bank's shade */
+.runnel-ditch-bank {
   fill: none;
-  stroke: var(--dry-edge);
-  stroke-width: 9;
+  stroke: var(--bank-shade);
+  stroke-width: 20;
   stroke-linecap: round;
   stroke-linejoin: round;
-  /* a dug groove: its dark bed shows either side of the dry lining */
-  filter: drop-shadow(0 0 1.5px var(--groove-bed)) drop-shadow(0 1px 0 var(--groove-bed));
+  opacity: .22;
+}
+/* the cut itself: its dark bed, with the near bank lit */
+.runnel-ditch {
+  fill: none;
+  stroke: var(--groove-bed);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .85;
+  filter: drop-shadow(0 1.5px 0 var(--bank-sun));
+}
+/* the dry floor, cracked into clods */
+.runnel-ditch-crust {
+  fill: none;
+  stroke: var(--dry-edge);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 9 2.5 4 2;
 }
 .runnel-ditch-water {
   fill: none;
   stroke: var(--water);
-  stroke-width: 6;
+  stroke-width: 7;
   stroke-linecap: round;
   stroke-dasharray: 100 100;
   stroke-dashoffset: 100;
@@ -4286,7 +4310,7 @@ body[data-mode='practice'] #week-slot {
 }
 .runnel-ditch-layer[data-running] .runnel-ditch-water {
   opacity: 1;
-  animation: ditch-run 900ms cubic-bezier(0.4, 0.1, 0.4, 1) forwards;
+  animation: ditch-run 400ms cubic-bezier(0.4, 0.1, 0.4, 1) forwards;
 }
 .runnel-ditch-layer[data-full] .runnel-ditch-water {
   opacity: 1;

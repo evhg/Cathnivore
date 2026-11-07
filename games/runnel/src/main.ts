@@ -323,20 +323,26 @@ function placeWeekValley(): void {
 // Plan item 151: the valley's people, each at the first spot from its own whose standing box and walk meet no tile,
 // Cath, her line, the garden, the spring house, a keep or another folk. One that fits nowhere stays home (hidden).
 // Plan item 178: a dry ditch runs from the board's outlet (the field nearest the garden, from its nearest corner) to
-// Bea's garden, routed clear of every tile and of Cath; on a solve the water runs it in about 900 ms and the garden
-// turns watered (`data-garden`). Drawn in the farm layer (D and the upright phone), re-routed when the layout moves.
+// Bea's garden, routed clear of every tile and of Cath. Plan item 226: it is dug through the valley, not laid over the
+// board: its layer sits under the board (so it leaves the field from under the terrace lip) and is dimmed with the
+// valley in a lesson; the route bends round the board's foot as a smooth curve, sampled exactly, so it never cuts a
+// tile; it is a dry earth trench until its own field is watered, then the water fills it front-first in 400 ms
+// (a fade under reduced motion), and the garden turns watered on a solve once the water has arrived.
 let ditchKey = ''
 let ditchRun = 0
+let ditchField = -1
 function placeDitch(): void {
   const deco = document.querySelector<HTMLElement>('.farm-deco')
   const garden = document.querySelector<HTMLElement>('.bea-garden')
   const crops = document.getElementById('bea-crops')
+  const boardEl = document.getElementById('board')
   let svg = document.getElementById('runnel-ditch') as SVGSVGElement | null
-  if (!deco || !garden || !crops || !deco.offsetWidth) {
+  if (!deco || !garden || !crops || !boardEl || !deco.offsetWidth) {
     svg?.setAttribute('hidden', '')
     return
   }
-  const solved = computeFlow(puzzle.cells).solved
+  const flow = computeFlow(puzzle.cells)
+  const solved = flow.solved
   const box = deco.getBoundingClientRect()
   const tiles = [...document.querySelectorAll<SVGPolygonElement>('#board polygon.tile')]
   const cath = document.querySelector<HTMLElement>('#valley-cath:not([hidden])')?.getBoundingClientRect()
@@ -347,15 +353,16 @@ function placeDitch(): void {
     svg.id = 'runnel-ditch'
     svg.setAttribute('class', 'runnel-ditch-layer')
     svg.setAttribute('aria-hidden', 'true')
-    svg.innerHTML = '<path class="runnel-ditch" /><path class="runnel-ditch-water" pathLength="100" />'
-    deco.prepend(svg)
+    svg.innerHTML =
+      '<path class="runnel-ditch-bank" /><path class="runnel-ditch" /><path class="runnel-ditch-crust" />' +
+      '<path class="runnel-ditch-water" pathLength="100" />'
+    boardEl.before(svg)
   }
   if (key !== ditchKey) {
     ditchKey = key
-    const board = document.getElementById('board') as unknown as SVGSVGElement | null
-    const pt = board?.createSVGPoint()
+    const board = boardEl as unknown as SVGSVGElement
+    const pt = board.createSVGPoint()
     const onTile = (x: number, y: number) =>
-      !!pt &&
       tiles.some((t) => {
         const m = t.getScreenCTM()?.inverse()
         if (!m) return false
@@ -366,67 +373,113 @@ function placeDitch(): void {
     const onCath = (x: number, y: number) => !!cath && x > cath.left && x < cath.right && y > cath.top && y < cath.bottom
     // Where the water enters the garden: the left end of its beds, at their foot.
     const G = { x: c.left + 6, y: c.bottom - 4 }
-    const clear = (pts: Array<{ x: number; y: number }>) => {
-      for (let i = 1; i < pts.length; i++) {
-        const a = pts[i - 1]!, b = pts[i]!
-        const n = Math.max(2, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 6))
-        for (let k = 0; k <= n; k++) {
-          const x = a.x + ((b.x - a.x) * k) / n, y = a.y + ((b.y - a.y) * k) / n
-          // the ditch leaves its field's corner, so its first few px may touch it
-          if (Math.hypot(x - pts[0]!.x, y - pts[0]!.y) < 10) continue
-          if (onTile(x, y) || onCath(x, y) || x < box.left || x > box.right || y < box.top || y > box.bottom) return false
-        }
+    // A route's drawn shape: a polyline whose bends are rounded (a quadratic over at most 36 px either side), so it
+    // reads as a dug channel following the land, and stays near the line it was checked along.
+    const shape = (rel: Array<{ x: number; y: number }>) => {
+      let d = `M${rel[0]!.x} ${rel[0]!.y}`
+      for (let i = 1; i < rel.length - 1; i++) {
+        const p = rel[i - 1]!, a = rel[i]!, n = rel[i + 1]!
+        const lp = Math.hypot(p.x - a.x, p.y - a.y) || 1, ln = Math.hypot(n.x - a.x, n.y - a.y) || 1
+        const rp = Math.min(36, lp / 2) / lp, rn = Math.min(36, ln / 2) / ln
+        d += `L${a.x + (p.x - a.x) * rp} ${a.y + (p.y - a.y) * rp}Q${a.x} ${a.y} ${a.x + (n.x - a.x) * rn} ${a.y + (n.y - a.y) * rn}`
       }
-      return true
+      const z = rel[rel.length - 1]!
+      return d + `L${z.x} ${z.y}`
     }
-    // Each field's corners, nearest the garden first; from each, a straight run, then an L either way round.
+    const probe = svg.querySelector<SVGPathElement>('.runnel-ditch')!
+    // Clear when every point along the drawn curve, past its first few px (it leaves its field from under the lip),
+    // is off every tile, off Cath and inside the valley.
+    const clear = (route: Array<{ x: number; y: number }>) => {
+      const rel = route.map((q) => ({ x: q.x - box.left, y: q.y - box.top }))
+      const d = shape(rel)
+      probe.setAttribute('d', d)
+      const len = probe.getTotalLength()
+      for (let l = 0; l <= len; l += 4) {
+        const q = probe.getPointAtLength(l)
+        const x = q.x + box.left, y = q.y + box.top
+        if (Math.hypot(x - route[0]!.x, y - route[0]!.y) < 12) continue
+        if (onTile(x, y) || onCath(x, y) || x < box.left || x > box.right || y < box.top || y > box.bottom) return null
+      }
+      return d
+    }
+    const tileBottom = Math.max(...tiles.map((t) => t.getBoundingClientRect().bottom))
+    // Each field's corners, nearest the garden first, with the field they belong to.
     const corners = puzzle.cells
-      .map((cell, i) => ({ cell, t: tiles[i] }))
+      .map((cell, i) => ({ cell, t: tiles[i], i }))
       .filter((x) => x.cell.kind === 'field' && x.t)
-      .flatMap(({ t }) => {
+      .flatMap(({ t, i }) => {
         const m = t!.getScreenCTM()
         if (!m) return []
         const pts = [...t!.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(m))
         const cx = pts.reduce((a, q) => a + q.x, 0) / pts.length, cy = pts.reduce((a, q) => a + q.y, 0) / pts.length
         // just outside the corner, along the line from the tile's centre
-        return pts.map((q) => ({ x: q.x + (q.x - cx) * 0.06, y: q.y + (q.y - cy) * 0.06 }))
+        return pts.map((q) => {
+          const u = 1 / Math.max(1, Math.hypot(q.x - cx, q.y - cy))
+          const out = (px: number) => ({ x: q.x + (q.x - cx) * u * px, y: q.y + (q.y - cy) * u * px })
+          const o = out(16)
+          return { x: q.x + (q.x - cx) * 0.06, y: q.y + (q.y - cy) * 0.06, field: i, ox: o.x, oy: o.y, open: [8, 16, 28, 40].every((px) => !onTile(out(px).x, out(px).y)) }
+        })
       })
+      // only corners on the board's edge (open valley straight out from them, not a neighbouring tile)
+      .filter((q) => q.open && !onTile(q.x, q.y))
       .sort((a, b) => Math.hypot(a.x - G.x, a.y - G.y) - Math.hypot(b.x - G.x, b.y - G.y))
-    let route: Array<{ x: number; y: number }> | null = null
-    for (const V of corners.slice(0, 24)) {
-      for (const r of [[V, G], [V, { x: V.x, y: G.y }, G], [V, { x: G.x, y: V.y }, G]]) if (!route && clear(r)) route = r
-      if (route) break
+    let found: { d: string; field: number } | null = null
+    for (const V of corners.slice(0, 30)) {
+      const P = { x: V.x, y: V.y }
+      const O = { x: V.ox, y: V.oy } // a step straight out from the corner, so it leaves the field square
+      // Under the board's foot, then along the valley floor to the garden, like the footpath.
+      const floors = [Math.max(tileBottom + 22, G.y), (Math.max(tileBottom + 22, G.y) + box.bottom) / 2].map((f) => Math.min(box.bottom - 8, f))
+      const routes: Array<Array<{ x: number; y: number }>> = [
+        [P, G],
+        [P, O, G],
+        [P, { x: V.x, y: G.y }, G],
+        [P, { x: G.x, y: V.y }, G],
+        ...floors.flatMap((floor) => [
+          [P, O, { x: O.x, y: floor }, { x: G.x - 24, y: floor }, G],
+          [P, O, { x: O.x + (G.x - O.x) * 0.2, y: floor }, { x: G.x - 24, y: floor }, G],
+        ]),
+      ]
+      for (const r of routes) {
+        const d = clear(r)
+        if (d) {
+          found = { d, field: V.field }
+          break
+        }
+      }
+      if (found) break
     }
-    if (route) {
-      const rel = route.map((q) => ({ x: q.x - box.left, y: q.y - box.top }))
-      const d =
-        rel.length === 2
-          ? `M${rel[0]!.x} ${rel[0]!.y}L${rel[1]!.x} ${rel[1]!.y}`
-          : `M${rel[0]!.x} ${rel[0]!.y}Q${rel[1]!.x} ${rel[1]!.y} ${rel[2]!.x} ${rel[2]!.y}`
-      for (const path of svg.querySelectorAll('path')) path.setAttribute('d', d)
+    if (found) {
+      for (const path of svg.querySelectorAll('path')) path.setAttribute('d', found.d)
+      ditchField = found.field
       svg.removeAttribute('hidden')
-    } else svg.setAttribute('hidden', '')
+    } else {
+      ditchField = -1
+      svg.setAttribute('hidden', '')
+    }
   }
-  // The water: dry until a solve, then it runs the ditch and the garden turns watered when it arrives.
-  const was = garden.dataset.garden
-  if (!solved) {
+  // The water: the trench stays dry until its own field is watered, then fills front-first; the garden turns watered
+  // on a solve once it has arrived.
+  const fieldWet = ditchField >= 0 && flow.wet.has(ditchField)
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!fieldWet && !solved) {
     window.clearTimeout(ditchRun)
-    garden.dataset.garden = 'dry'
+    ditchRun = 0
     svg.removeAttribute('data-running')
     svg.removeAttribute('data-full')
-  } else if (was === 'dry' && !svg.hasAttribute('data-running') && !svg.hasAttribute('data-full')) {
-    svg.setAttribute('data-running', '')
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-    ditchRun = window.setTimeout(() => {
-      svg!.removeAttribute('data-running')
-      svg!.setAttribute('data-full', '')
-      garden.dataset.garden = 'watered'
-    }, reduce ? 300 : 900)
-  } else if (!was) {
-    // A board opened already solved: the garden is simply watered.
-    svg.setAttribute('data-full', '')
-    garden.dataset.garden = 'watered'
+  } else if (!svg.hasAttribute('data-running') && !svg.hasAttribute('data-full')) {
+    if (garden.dataset.garden === undefined) svg.setAttribute('data-full', '') // a board opened already watered
+    else {
+      svg.setAttribute('data-running', '')
+      ditchRun = window.setTimeout(() => {
+        ditchRun = 0
+        svg!.removeAttribute('data-running')
+        svg!.setAttribute('data-full', '')
+        if (computeFlow(puzzle.cells).solved) garden.dataset.garden = 'watered'
+      }, reduce ? 300 : 400)
+    }
   }
+  if (!solved) garden.dataset.garden = 'dry'
+  else if (svg.hasAttribute('data-full') || svg.hasAttribute('hidden')) garden.dataset.garden = 'watered'
 }
 
 // Plan item 186: the spring-house stream feeds the board: a short branch leaves the valley stream where it runs

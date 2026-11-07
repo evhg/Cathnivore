@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 // Plan item 178: a ditch runs from the board's outlet to Bea's garden, meeting no tile; on a solve the water runs it
 // and the garden turns watered within 1.2 s.
 test('the water runs a ditch to Bea\'s garden on a solve', async ({ page }) => {
-  await page.goto('/runnel/?nohelp&practice')
+  await page.goto('/runnel/?nohelp&mode=practice') // plan item 226: the practice board (`?practice` was ignored, so this tested the day's daily)
   await page.waitForSelector('#board .tiles > g.cell')
   await page.waitForTimeout(400)
   const garden = page.locator('.bea-garden')
@@ -40,4 +40,17 @@ test('the water runs a ditch to Bea\'s garden on a solve', async ({ page }) => {
   await expect(garden).toHaveAttribute('data-garden', 'watered', { timeout: 1_500 })
   expect(Date.now() - t0).toBeLessThanOrEqual(1_300)
   await expect(page.locator('#runnel-ditch')).toHaveAttribute('data-full', '')
+})
+
+// Plan item 226: the ditch is dug through the valley, under the board: its layer comes before the board.
+test('the ditch lies under the board, in the valley layer', async ({ page }) => {
+  await page.goto('/runnel/?nohelp&mode=practice')
+  await page.waitForSelector('#board .tiles > g.cell')
+  await page.waitForTimeout(400)
+  const order = await page.evaluate(() => {
+    const ditch = document.getElementById('runnel-ditch')!
+    const board = document.getElementById('board')!
+    return { sameParent: ditch.parentElement === board.parentElement, before: !!(ditch.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING) }
+  })
+  expect(order).toEqual({ sameParent: true, before: true })
 })
