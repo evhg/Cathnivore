@@ -1371,3 +1371,134 @@ html.no-animations .title-screen * {
   40% { opacity: .78; }
   70% { opacity: .92; }
 }
+
+/* ---- Plan item 231: on a phone the table is the hero, the menu sits on the counter ----
+   The board lies nearly full width on the stall, Cath stands behind its far edge (head, shoulders and her wave
+   over it, her line beside her), and the menu is no dark panel but things on the counter: Campaign the stall's
+   painted sign, Quick Game and the Daily paper tags, the minor links chalked on the counter's front edge. */
+@media (max-width: 600px) {
+  .title-art.title-table {
+    display: block;
+    position: relative;
+    padding-top: 0;
+  }
+  .title-art.title-table .title-cath {
+    position: absolute;
+    left: -10px;
+    top: 0;
+    width: 152px;
+    margin: 0;
+    z-index: var(--z-raised);
+  }
+  .title-art.title-table .title-board {
+    margin: 88px -4px -10px;
+    z-index: var(--z-lift);
+  }
+  .title-art.title-table .title-board .map { max-height: 30dvh; }
+  /* with a save, Continue takes the sign's row and Campaign becomes a tag of its own: the map gives up the room */
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-board .map { max-height: 24dvh; }
+  .title-art .title-bea { right: 6px; top: 4px; }
+  .title-art.title-table .title-cath-line {
+    left: 106px;
+    top: 0;
+    width: min(290px, calc(100vw - 114px));
+    padding: 6px 9px;
+  }
+  /* the Daily's receipt lies on the counter beside the painted sign */
+  .daily-ritual.is-compact {
+    position: absolute;
+    right: -6px;
+    top: calc(100% + 24px);
+    margin: 0;
+  }
+  .daily-ritual.is-compact .ritual-receipt { rotate: 3deg; }
+
+  .title-menu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 10px;
+    margin-top: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .title-menu::before,
+  .title-menu::after { content: none; }
+  .title-menu > .title-cta:first-child { grid-column: 1 / -1; margin-right: 136px; }
+  .title-menu > .title-cta:first-child + .title-cta:not(.title-daily):not(:nth-last-child(3)) { grid-column: 1 / -1; }
+  /* the painted sign: a plank with paper-white lettering and two nails */
+  .title-menu .title-cta.primary,
+  .title-menu > .title-cta:first-child {
+    min-height: 54px;
+    border: 0;
+    border-radius: 6px;
+    background:
+      radial-gradient(circle at 10px 50%, var(--wood-lo) 0 2.5px, transparent 3.5px),
+      radial-gradient(circle at calc(100% - 10px) 50%, var(--wood-lo) 0 2.5px, transparent 3.5px),
+      repeating-linear-gradient(180deg, transparent 0 9px, color-mix(in srgb, var(--wood-lo) 22%, transparent) 9px 10px),
+      linear-gradient(180deg, var(--wood), color-mix(in srgb, var(--wood) 80%, var(--wood-lo)));
+    color: var(--paper-on-fixed-fill);
+    font: 700 1.375rem / 1 var(--font-display, serif);
+    letter-spacing: 0.01em;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--wood-lo) 70%, transparent), 0 4px 0 var(--wood-lo), 0 8px 12px color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+  /* the tags: paper with a punched hole on a string, hung slightly askew */
+  .title-menu .title-cta:not(.primary):not(:first-child) {
+    position: relative;
+    min-height: 56px;
+    padding: 8px 8px 8px 24px;
+    border: 0;
+    border-radius: 3px 10px 10px 3px;
+    background:
+      radial-gradient(circle at 12px 50%, var(--wood) 0 3.5px, color-mix(in srgb, var(--wood-lo) 60%, transparent) 3.5px 4.5px, transparent 5px),
+      var(--paper-on-fixed-fill);
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+    color: var(--ink-on-fixed-fill);
+    font-size: 1.0625rem;
+    box-shadow: none;
+    filter: drop-shadow(0 3px 0 var(--rule)) drop-shadow(0 6px 6px color-mix(in srgb, var(--ink) 18%, transparent));
+    rotate: -1.5deg;
+  }
+  .title-menu .title-cta.title-daily:not(.primary) { rotate: 1.5deg; }
+  .title-menu .title-daily small,
+  .title-menu .title-daily .title-daily-no { line-height: 1.2; color: color-mix(in srgb, var(--ink-on-fixed-fill) 78%, var(--paper-on-fixed-fill)); }
+  /* chalked on the counter's front edge */
+  .title-menu .title-minor {
+    grid-column: 1 / -1;
+    margin: 4px -20px 0;
+    padding: 0 12px;
+    gap: 0;
+    justify-content: space-around;
+    background: linear-gradient(180deg, var(--wood-lo), color-mix(in srgb, var(--wood-lo) 80%, var(--wood)));
+    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--wood) 70%, var(--paper-on-fixed-fill));
+  }
+  .title-menu .title-minor .quiet {
+    min-height: 44px;
+    padding: 0 10px;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--paper-on-fixed-fill);
+    font: italic 600 var(--fs-body) / 1 var(--font-display, serif);
+    text-decoration: underline dashed color-mix(in srgb, var(--paper-on-fixed-fill) 55%, transparent);
+    text-underline-offset: 5px;
+    text-decoration-thickness: 1px;
+  }
+  .title-menu .title-minor .quiet:hover { color: var(--paper-on-fixed-fill); transform: none; }
+  .title-footer { margin-top: 0; padding-top: 6px; }
+}
+@media (max-width: 600px) and (max-height: 720px) {
+  .title-art.title-table .title-board .map { max-height: 24dvh; }
+  .title-art.title-table .title-board { margin-top: 84px; margin-inline: 40px; }
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-board .map { max-height: 18dvh; }
+  .title-art.title-table { padding-top: 8px; }
+  .title-menu { gap: 8px; margin-top: 18px; }
+  .title-menu .title-cta:not(.primary):not(:first-child) { min-height: 46px; padding-block: 5px; }
+  .title-menu > .title-cta:first-child { min-height: 48px; }
+}
+@media (max-width: 380px) {
+  .title-art.title-table .title-cath { left: -18px; }
+  .title-art.title-table .title-cath-line { left: 102px; width: calc(100vw - 98px); }
+}
