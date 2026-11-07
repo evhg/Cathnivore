@@ -4176,6 +4176,12 @@ body[data-mode='practice'] #week-slot {
 @media (max-width: 1099.98px) {
   .valley-feature { width: 40px; height: 40px; }
 }
+/* Plan item 266: the everyday props (item 252) at the folk's scale, not the landmarks': a churn stood as tall as the
+   farmer (64 px). Half that, so it comes to his waist. */
+.valley-feature.valley-prop { width: 36px; height: 36px; }
+@media (max-width: 1099.98px) {
+  .valley-feature.valley-prop { width: 24px; height: 24px; }
+}
 
 /* Plan item 151: the valley's people. Each paces its spot (--range either side), the sheep graze, the cart's wheel
    turns; water on a field sets the farmer hoeing, and a solve makes everyone hop. */
