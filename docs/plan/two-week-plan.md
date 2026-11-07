@@ -2597,7 +2597,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the portrait 96 px or more at D and 64 at P; its expression changes within 250 ms of a leak (`data-expr`, tested); map Cath 120 px tall at D, 64 at P, at the current stop; the walk runs once per new win; hedgerow-map, closeframe, 3dframe pass; shots P and D, 2D and 3D, map fresh and mid.
 - **Size:** 2
 
-## 251. [ ] NIGHT SHIFT phone title: Cath clear of the menu plate
+## 251. [ ] NIGHT SHIFT phone title: Cath clear of the menu plate *(lane B, in progress)*
 - **Why:** `plan1107d/ns-title-P` and a 60 s shot (`g246/nst-60`): the menu plate (8-195 x 207-435) covers her left arm and elbow; the lower half under her hem is empty rain. Narrowing `setStage`'s rectangle to start at the plate's edge (tried in item 246) threw her off the right edge: `fitStage` doesn't hold a narrow box.
 - **Build:** frame her so the plate never covers her: either fix `fitStage` to fit a narrow right-hand box (her whole figure, umbrella to shoes), or lower the plate under her umbrella line with her standing above the List; keep the case line and the List whole.
 - **Accept:** at 390x844 and 375x667 the plate covers under 5% of her projected figure box (tested with `figureBox`); her figure 280 px tall or more at 390x844; nothing scrolls; cathode-front and title specs pass; shots P at 30 and 60 s.
