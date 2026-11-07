@@ -2546,7 +2546,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at the default camera no mesh's underside shows at the frame's top; no flat grey (#808080 within 10) region over 2,000 px² at the edges; draw calls +4 or fewer; hedgerow 3D specs pass; shots P and D, three acts.
 - **Size:** 2
 
-## 243. [ ] /games/ desktop hero: Cath working her stall as one scene
+## 243. [ ] /games/ desktop hero: Cath working her stall as one scene *(lane A, in progress)*
 - **Why:** `plan1107c/games-D`: Cath floats at 265-390 x 60-440 with nothing round her; the stall is a small separate prop at 1190-1360 x 220-400 across dead dusk.
 - **Build:** Cath behind a full-height stall counter at the hero's centre-left, its top level with the awning; the headline and buttons on the stall's hanging board; she gestures at today's pick.
 - **Accept:** at 1440x900 Cath's feet or the counter meet the awning band; the stall's box 35% or more of the hero's width; 390 px layout unchanged; site-hero, games-hero-cath, games-stall pass; shots D, 1280x800 and P.
