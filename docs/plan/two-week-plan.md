@@ -2585,7 +2585,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each region has `data-state` (locked, current, freed), and freed regions are measurably more saturated than locked ones; Cath 240 px tall or more at D and 120 px at P, her whole figure on screen; the bloom runs 600-1000 ms, a fade under reduced motion; no scroll at 1280x800 or 375x667; campaign specs pass; shots P and D, fresh and mid-campaign.
 - **Size:** 3
 
-## 249. [ ] Cathnivore desktop play: the board as the hero, alive
+## 249. [ ] Cathnivore desktop play: the board as the hero, alive *(lane A, in progress)*
 - **Why:** `plan1107d/cath-game-D` (575-1110): the board is about 540 px wide at 1440x900 with 30-40 px pieces, and the rails, her bubble and the portraits compete with it.
 - **Build:** the board takes the room between the rails (tighten the rails' widths and the head row); pieces scale with it; each tile kind gets a small idle life (smoke from a farmhouse, a boat on a lake tile, a sheep that moves, Hollowell's sign flickering), staggered, paused when the tab is hidden, none under reduced motion.
 - **Accept:** the board 700 px wide or more at 1440x900 and 620 at 1280x800, no scroll at either; pieces 48 px or more at 1440; every tile kind has an idle animation (`data-idle`), none under reduced motion; board-scale, desktop-no-scroll, table-cath, suggest-move, critique177 pass; P unchanged; shots D, D2 (1280x800), light and dark.
