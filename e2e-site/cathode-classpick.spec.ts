@@ -151,7 +151,7 @@ test('the class pick shows her face clear of the stats sheet', async ({ page, ha
 test('every class frames her face in the middle band, and each has an audible rack stinger', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop class pick')
   test.setTimeout(400_000)
-  type F = { cathodeFront?: { ready: boolean; rack(c: string): Promise<{ peak: number; rms: number; seconds: number }>; scene: () => { faceBox(): Box } | null } }
+  type F = { cathodeFront?: { ready: boolean; rack(c: string): Promise<{ peak: number; rms: number; seconds: number }>; scene: () => { faceBox(): Box; propBox(): (Box & { inFace: number }) | null } | null } }
   const db = (d: number) => Math.pow(10, d / 20)
   for (const cls of CLASSES) {
     await fresh(page, false)
@@ -162,10 +162,14 @@ test('every class frames her face in the middle band, and each has an audible ra
         const r = document.querySelector(s)!.getBoundingClientRect()
         return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
       }
-      return { face: (window as unknown as F).cathodeFront!.scene()!.faceBox(), sheet: b('.cp-sheet'), list: b('.cp-left') }
+      const sc = (window as unknown as F).cathodeFront!.scene()!
+      return { face: sc.faceBox(), prop: sc.propBox(), sheet: b('.cp-sheet'), list: b('.cp-left') }
     })
     const s = JSON.stringify({ cls, m })
     const { face } = m
+    // Plan item 247: her face 70 px across or more, and nothing she holds (rifle, shotgun, case) crosses it.
+    expect(face.right - face.left, s).toBeGreaterThanOrEqual(70)
+    expect(m.prop?.inFace ?? 0, s).toBe(0)
     expect(face.left >= 470 && face.right <= 960 && face.top >= 100 && face.bottom <= 500, s).toBe(true)
     // Plan item 161: she stands whole between the columns now, so her face is 85 px or more (was 110 at a closer cut).
     expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(85)

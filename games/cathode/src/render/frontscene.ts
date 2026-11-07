@@ -76,6 +76,10 @@ export interface FrontScene {
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
   /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
   faceBox(): { left: number; top: number; right: number; bottom: number };
+  /** Plan item 247: the projected box of what she holds in her hands now (the rifle, the shotgun, the carried case),
+   *  or null when her hands are empty, and how many of its projected vertices fall inside her face box (0: the prop
+   *  stays off her face; a rifle held upright beside her cheek may share the face box's bounds but not its pixels). */
+  propBox(): { left: number; top: number; right: number; bottom: number; inFace: number } | null;
   /** Plan item 205: the painted eyes' and cheeks' centres on screen, in CSS px (for the face's contrast check). */
   facePoints(): { eyes: Array<{ x: number; y: number }>; cheeks: Array<{ x: number; y: number }> };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
@@ -340,7 +344,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 247: a warm face key for the pick, high on the side away from the lens and just ahead of her (short lighting), so her cheek,
   // brow and jaw take a shadow side instead of reading as one flat lit oval. Short range: it lights her head
   // and collar only, not the coat (the class key colours that).
-  const faceKey = { pos: toWorld(-0.38, 1.95, 0.5), color: new THREE.Color(1.0, 0.84, 0.7), intensity: 0, range: 1.25 };
+  // Plan item 247, slice 3: at 3.8 it washed her face to a pale, flat white at high quality; softer and warmer, her
+  // skin keeps its colour and the shadow side its modelling.
+  const faceKey = { pos: toWorld(-0.38, 1.95, 0.5), color: new THREE.Color(1.0, 0.72, 0.52), intensity: 0, range: 1.25 };
   let faceKeyRemove: (() => void) | null = null;
   function wardrobeStep(dt: number): void {
     const k = 1 - Math.exp(-dt * 4.2);
@@ -370,7 +376,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
-    faceKey.intensity = (phone ? 3.2 : 3.8) * wd.w;
+    faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w;
     if (wd.w > 0.002 && !keyRemove && world.liveLight) {
       keyRemove = world.liveLight(key);
       faceKeyRemove = world.liveLight(faceKey);
@@ -759,6 +765,36 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         }
       });
       return { left, top, right, bottom };
+    },
+    propBox() {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      const f = scene.faceBox();
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity, inFace = 0;
+      cath.group.updateMatrixWorld(true);
+      const held = (o: THREE.Object3D | null): boolean => {
+        for (; o; o = o.parent) {
+          if (!o.visible) return false;
+          if (o.name === "prop-rifle" || o.name === "prop-shotgun" || o.name === "kit-fixer-case-carried") return true;
+        }
+        return false;
+      };
+      cath.group.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !held(m)) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+        if (!pos) return;
+        for (let i = 0; i < pos.count; i++) {
+          corner.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).project(cam);
+          const x = r.left + ((corner.x + 1) / 2) * r.width;
+          const y = r.top + ((1 - corner.y) / 2) * r.height;
+          left = Math.min(left, x);
+          right = Math.max(right, x);
+          top = Math.min(top, y);
+          bottom = Math.max(bottom, y);
+          if (x > f.left && x < f.right && y > f.top && y < f.bottom) inFace++;
+        }
+      });
+      return left === Infinity ? null : { left, top, right, bottom, inFace };
     },
     faceBox() {
       const r = world.renderer.domElement.getBoundingClientRect();

@@ -7,6 +7,7 @@
 // Feet on y = 0 at the group's origin, facing +z, +x her left. The group is placed by render/frontscene.ts.
 
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { CATH_HERO } from "../game/armdress";
 
 /** Plan item 140: the painted face's expressions (the title's smirk, the class pick's). */
@@ -369,6 +370,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
     tris += (geo.index ? geo.index.count : geo.attributes.position!.count) / 3;
     return m;
   };
+  // Plan item 247: parts that never move against their bone and are never touched again (no name, no live
+  // geometry) are added with addS and merged per bone and material once she is built: 68 meshes were 68 draw calls
+  // (twice over with her shadow), most of them small pieces of black leather riding the same bone.
+  const statics: THREE.Mesh[] = [];
+  const addS = (geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D = group): void => {
+    statics.push(add(geo, mat, parent));
+  };
 
   // A pelvis pivot carries the body above the legs (the weight shift sways it); the chest carries breathing.
   const pelvis = new THREE.Group();
@@ -384,6 +392,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const tightsMat = new THREE.MeshStandardMaterial({ color: 0x3a2c2a, roughness: 0.5, metalness: 0 });
   mats.push(tightsMat);
   rimify(tightsMat, 0.9);
+  // Plan item 247: both thighs are one mesh (they sway together with the weight shift: one draw call, not two).
+  const thighs: THREE.BufferGeometry[] = [];
   const legs: THREE.Mesh[] = [];
   for (const side of [1, -1]) {
     const fwd = side > 0 ? 0.05 : 0; // her left leg forward
@@ -391,17 +401,18 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const knee = V(0.07 * side, 0.5, 0.012 + fwd * 0.6);
     const ankle = V(0.075 * side + (side > 0 ? 0.012 : 0), 0.105, -0.005 + fwd);
     // Thigh: full at the top, slim to the knee.
-    legs.push(add(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92), tightsMat));
+    thighs.push(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92));
     // The boot shaft: knee to ankle with a calf, a turned-down cuff at the top. Plan item 247: the calf fuller and
     // the ankle slimmer (the old shaft was near straight and read as a stick below the hem on the class pick).
-    add(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.053], [0.06, 0.053], [0.09, 0.044], [0.27, 0.057], [0.45, 0.051], [0.72, 0.032], [0.9, 0.025], [1, 0.027]], seg(14), 0.95), blackMat);
+    addS(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.053], [0.06, 0.053], [0.09, 0.044], [0.27, 0.057], [0.45, 0.051], [0.72, 0.032], [0.9, 0.025], [1, 0.027]], seg(14), 0.95), blackMat);
     // The foot: a pointed toe down on the ground, the heel up on its post.
     const toe = V(ankle.x + (side > 0 ? 0.03 : 0.008) * side, 0.012, ankle.z + 0.15);
-    add(turned(V(ankle.x, 0.09, ankle.z - 0.035), toe, [[0, 0.03], [0.3, 0.034], [0.7, 0.028], [0.92, 0.014], [1, 0.004]], seg(10), 0.62, Math.PI / 2), blackMat);
+    addS(turned(V(ankle.x, 0.09, ankle.z - 0.035), toe, [[0, 0.03], [0.3, 0.034], [0.7, 0.028], [0.92, 0.014], [1, 0.004]], seg(10), 0.62, Math.PI / 2), blackMat);
     const heel = new THREE.CylinderGeometry(0.007, 0.012, 0.072, 8);
     heel.translate(ankle.x, 0.036, ankle.z - 0.04);
-    add(heel, blackMat);
+    addS(heel, blackMat);
   }
+  legs.push(add(mergeGeometries(thighs)!, tightsMat));
 
   // A contact shadow under her: soft, darkest under the boots (ambient occlusion the street's lights can't give).
   const shadowTex = (() => {
@@ -421,17 +432,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   })();
   const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: 0x000000, opacity: 0.8, polygonOffset: true, polygonOffsetFactor: -2 });
   mats.push(shadowMat);
-  const contact = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.5), shadowMat);
-  contact.rotation.x = -Math.PI / 2;
-  contact.position.set(0.005, 0.004, 0.04);
+  // The contact shadow and the two shoe blobs, baked into one mesh (plan item 247: one draw call, not three); the
+  // blobs come after the pool in the index, so they still darken over it.
+  const shadowGeo = mergeGeometries([
+    new THREE.PlaneGeometry(0.62, 0.5).rotateX(-Math.PI / 2).translate(0.005, 0.004, 0.04),
+    ...[1, -1].map((side) => new THREE.PlaneGeometry(0.13, 0.26).rotateX(-Math.PI / 2).translate(0.08 * side, 0.005, 0.06 + (side > 0 ? 0.05 : 0))),
+  ]);
+  const contact = new THREE.Mesh(shadowGeo!, shadowMat);
   contact.renderOrder = -1;
   group.add(contact);
-  for (const side of [1, -1]) {
-    const blob = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.26), shadowMat);
-    blob.rotation.x = -Math.PI / 2;
-    blob.position.set(0.08 * side, 0.005, 0.06 + (side > 0 ? 0.05 : 0));
-    group.add(blob);
-  }
 
   // ---- the trench: body lathe from collar to hem (belted waist), hem rows driven by the Verlet ring ----
   // Profile in the pelvis frame (y up from the pelvis pivot at 0.92 m).
@@ -477,7 +486,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // A back vent: the two skirts part a little at the back below the hips.
       const vent = Math.max(0, 1 - Math.abs(Math.atan2(x, -z / 0.7)) / 0.18) * Math.max(0, (-0.12 - y) / 0.35);
       const k = 1 + fold * 0.11 * depth - vent * 0.05;
-      p.setXYZ(i, x * k, y, z * k);
+      // Plan item 247: the hem was a flat ring (one height all round). Cloth hangs lower at a fold's crest and rides
+      // up in its trough, the front overlap drops a little past the skirt and the vent lifts where it parts.
+      const hemK = THREE.MathUtils.smoothstep(-y, 0.33, 0.46);
+      const front = Math.max(0, Math.sin(a));
+      const dy = hemK * (-0.014 * fold - 0.016 * front * front * front + 0.03 * vent);
+      p.setXYZ(i, x * k, y + dy, z * k);
     }
     coatGeo.computeVertexNormals();
   }
@@ -489,7 +503,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   belt.rotateX(Math.PI / 2);
   belt.scale(1, 1, 0.72);
   belt.translate(0, 0.12, 0);
-  add(belt, blackMat, pelvis);
+  addS(belt, blackMat, pelvis);
   // The popped collar: open at the throat (a gap at the front), flaring out as it rises, and the notched lapels
   // folded back over the chest; double-breasted buttons; epaulettes on the shoulders; a buckle on the belt.
   {
@@ -526,7 +540,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     coatMats.push(collarMat);
     rimify(collarMat, 1);
     mats.push(collarMat);
-    add(collar, collarMat, pelvis);
+    addS(collar, collarMat, pelvis);
   }
   // The coat's radius at a height in the pelvis frame, from its profile (for laying things on its surface).
   const rAtCoat = (y: number) => {
@@ -569,7 +583,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       }
       lap.computeVertexNormals();
     }
-    add(lap, coatMat, pelvis);
+    addS(lap, coatMat, pelvis);
     // Buttons: two columns of three down the front.
     for (let i = 0; i < 3; i++) {
       const bt = new THREE.SphereGeometry(0.009, 8, 6);
@@ -578,27 +592,27 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const by = 0.25 - i * 0.075;
       const br = rAtCoat(by);
       bt.translate(0.06 * side, by, 0.7 * Math.sqrt(Math.max(0, br * br - 0.0036)) + 0.004);
-      add(bt, blackMat, pelvis);
+      addS(bt, blackMat, pelvis);
     }
     // Epaulette: a flat strap across the shoulder to the collar.
     const ep = new THREE.BoxGeometry(0.1, 0.012, 0.045);
     ep.rotateZ(-0.38 * side);
     ep.translate(0.135 * side, 0.488, -0.004);
-    add(ep, coatMat, pelvis);
+    addS(ep, coatMat, pelvis);
   }
   const buckle = new THREE.TorusGeometry(0.022, 0.005, 4, 4);
   buckle.rotateZ(Math.PI / 4);
   buckle.scale(1.3, 1, 1);
   buckle.translate(0.0, 0.12, 0.09);
-  add(buckle, blackMat, pelvis);
+  addS(buckle, blackMat, pelvis);
   // Belt tails hanging at her right hip.
-  add(limb(V(-0.1, 0.1, 0.09), V(-0.115, -0.08, 0.1), 0.012, 0.01, 6), blackMat, pelvis);
+  addS(limb(V(-0.1, 0.1, 0.09), V(-0.115, -0.08, 0.1), 0.012, 0.01, 6), blackMat, pelvis);
 
   // ---- neck, head, the low knot ----
   // Plan item 9: a neck with a shape (slimmer under the jaw, flaring into the shoulders, set a little forward and
   // narrower front to back), not a plain cylinder.
   const neck = turned(V(0, 0.27, -0.004), V(0, 0.43, 0.01), [[0, 0.046], [0.25, 0.038], [0.6, 0.033], [1, 0.034]], seg(16), 0.86);
-  add(neck, skinMat, chest);
+  addS(neck, skinMat, chest);
   const headPivot = new THREE.Group();
   headPivot.position.set(0, 0.455, 0.012);
   chest.add(headPivot);
@@ -849,7 +863,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.5, metalness: 0 });
   rimify(faceMat, 0.25, 1, 4);
   mats.push(faceMat);
-  add(skull, faceMat, headPivot);
+  addS(skull, faceMat, headPivot);
   // Hair: a glossy shell over the crown, swept back from a centre parting, full at the sides over the tops of the
   // ears, gathered at the nape into a low twisted knot (CATHODE's work look).
   // Plan item 9: the cap's rows are laid out between the crown and a hairline that depends on the azimuth (high at the
@@ -910,7 +924,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   cap.rotateX(-0.2);
   cap.translate(0, 0.012, -0.004);
   cap.computeVertexNormals();
-  add(cap, hairMat, headPivot);
+  addS(cap, hairMat, headPivot);
   // Plan item 147: the long hair's rest positions, so the update can sway its lower lengths in the wind.
   let hairRest: Float32Array | null = null;
   let hairGeo: THREE.BufferGeometry | null = null;
@@ -1077,7 +1091,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     ear.scale(0.008, 0.02, 0.013);
     ear.rotateY(side * 0.35);
     ear.translate(0.07 * side, -0.012, -0.004);
-    add(ear, skinMat, headPivot);
+    addS(ear, skinMat, headPivot);
   }
   // Pearl studs catch the back light.
   const pearlMat = new THREE.MeshStandardMaterial({ color: 0xf2ebe2, roughness: 0.18, metalness: 0.1, emissive: 0x2a2624 });
@@ -1085,7 +1099,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   for (const side of [1, -1]) {
     const p = new THREE.SphereGeometry(0.0075, 8, 6);
     p.translate(0.074 * side, -0.03, 0.0);
-    add(p, pearlMat, headPivot);
+    addS(p, pearlMat, headPivot);
   }
   const head = new THREE.Object3D();
   headPivot.add(head);
@@ -1106,13 +1120,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const past = 0.012;
     const k = upLen / (upLen + past);
     // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
-    add(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), 0, 0.5), sleeveMat, parent);
+    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), 0, 0.5), sleeveMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
     const elb = new THREE.SphereGeometry(0.041, seg(12), seg(8));
     elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
-    add(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
-    add(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), 0.5, 1), sleeveMat, fore);
+    addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
+    addS(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
@@ -1120,7 +1134,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
     const at = wr.clone().addScaledVector(d, -0.04);
     strap.translate(at.x, at.y, at.z);
-    add(strap, blackMat, parent);
+    addS(strap, blackMat, parent);
   };
   const shoulderR = V(-0.15, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
@@ -1170,7 +1184,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
     const at = curve.getPointAt(0.9);
     strap.translate(at.x, at.y, at.z);
-    add(strap, blackMat, chest);
+    addS(strap, blackMat, chest);
   }
   // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
   // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the
@@ -1224,6 +1238,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     for (const g of parts) g.dispose();
     const fistMesh = add(fist, blackMat, chest);
     fistMesh.name = "cath-fist-r";
+    statics.push(fistMesh); // merged with its strap; the merged mesh keeps the name
   }
 
   const shoulderL = V(0.15, 0.25, -0.005);
@@ -1267,7 +1282,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     finger([V(0.166, -0.258, 0.06), V(0.167, -0.276, 0.072), V(0.171, -0.293, 0.079)], 0.0088);
     const hand = mergeGeos(parts);
     for (const g of parts) g.dispose();
-    add(hand, blackMat, foreL).name = "cath-hand-l";
+    const handMesh = add(hand, blackMat, foreL);
+    handMesh.name = "cath-hand-l";
+    statics.push(handMesh); // merged with its strap; the merged mesh keeps the name
   }
   // The cigarette between two fingers, the ember at its tip.
   const cig = new THREE.CylinderGeometry(0.0035, 0.0035, 0.075, 6);
@@ -1327,11 +1344,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
   chest.add(umb);
   const shaft = new THREE.CylinderGeometry(0.0075, 0.0075, 0.82, 8);
   shaft.translate(0, 0.41, 0);
-  add(shaft, blackMat, umb);
+  addS(shaft, blackMat, umb);
   const crook = new THREE.TorusGeometry(0.035, 0.009, 6, 12, Math.PI);
   crook.rotateZ(Math.PI);
   crook.translate(0.035, -0.04, 0);
-  add(crook, blackMat, umb);
+  addS(crook, blackMat, umb);
   // The canopy: a lathe whose rim scallops between the 8 ribs (the cloth sags up between them).
   const R = 0.5;
   const canopyProfile: Array<[number, number]> = [];
@@ -1363,7 +1380,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
   const canopyMat = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: 0.22, metalness: 0.0, side: THREE.DoubleSide });
   mats.push(canopyMat);
-  add(canopy, canopyMat, umb);
+  addS(canopy, canopyMat, umb);
   // Ribs and their tips.
   const tips: THREE.Vector3[] = [];
   for (let k = 0; k < 8; k++) {
@@ -1371,14 +1388,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const tip = V(Math.cos(a) * R * 1.005, 0.55 - 0.004, Math.sin(a) * R * 1.005);
     tips.push(tip);
     const mid = V(Math.cos(a) * R * 0.6, 0.78, Math.sin(a) * R * 0.6);
-    add(limb(mid, tip, 0.0035, 0.004, 5), blackMat, umb);
+    addS(limb(mid, tip, 0.0035, 0.004, 5), blackMat, umb);
     const ferrule = new THREE.SphereGeometry(0.008, 6, 4);
     ferrule.translate(tip.x, tip.y - 0.004, tip.z);
-    add(ferrule, blackMat, umb);
+    addS(ferrule, blackMat, umb);
   }
   const finial = new THREE.CylinderGeometry(0.004, 0.009, 0.07, 8);
   finial.translate(0, 0.89, 0);
-  add(finial, blackMat, umb);
+  addS(finial, blackMat, umb);
   const umbrellaTop = new THREE.Object3D();
   umbrellaTop.position.set(0, 0.88, 0);
   umb.add(umbrellaTop);
@@ -1392,10 +1409,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   {
     const fShaft = new THREE.CylinderGeometry(0.0075, 0.0075, 0.86, 8);
     fShaft.translate(0, -0.4, 0);
-    add(fShaft, blackMat, furled);
+    addS(fShaft, blackMat, furled);
     const fCrook = new THREE.TorusGeometry(0.035, 0.009, 6, 12, Math.PI);
     fCrook.translate(0.035, 0.035, 0);
-    add(fCrook, blackMat, furled);
+    addS(fCrook, blackMat, furled);
     // The wrapped cloth: full under the runner, tapering to the ferrule, with a few soft folds.
     const prof: Array<[number, number]> = [];
     for (let i = 0; i <= 10; i++) {
@@ -1412,14 +1429,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
       cp.setXYZ(i, x * k, cp.getY(i), z * k);
     }
     cloth.computeVertexNormals();
-    add(cloth, canopyMat, furled);
+    addS(cloth, canopyMat, furled);
     const strapF = new THREE.TorusGeometry(0.027, 0.004, 4, 14);
     strapF.rotateX(Math.PI / 2);
     strapF.translate(0, -0.5, 0);
-    add(strapF, blackMat, furled);
+    addS(strapF, blackMat, furled);
     const tipF = new THREE.CylinderGeometry(0.009, 0.004, 0.06, 8);
     tipF.translate(0, -0.87, 0);
-    add(tipF, blackMat, furled);
+    addS(tipF, blackMat, furled);
   }
 
   // ---- rain running off the rib tips: short falling streaks (Points would be square; thin quads read as water) ----
@@ -1953,7 +1970,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   };
   const rifle = new THREE.Group();
   rifle.name = "prop-rifle";
-  add(
+  addS(
     mergeGeos([
       box(0.03, 0.2, 0.05, 0, 0.06, 0), // the receiver
       rod(0.009, 0.16, 0.68), // the barrel
@@ -1985,7 +2002,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   stock.translate(0, 0, -0.012);
   stock.rotateY(-Math.PI / 2);
   const foreEnd = limb(V(0, 0.145, -0.02), V(0, 0.3, -0.018), 0.019, 0.015, 12);
-  add(mergeGeos([stock, foreEnd]), woodMat, rifle);
+  addS(mergeGeos([stock, foreEnd]), woodMat, rifle);
   // The glint: a four-point star off the scope's lens, always to the lens of the camera.
   const glintTex = (() => {
     const c = document.createElement("canvas");
@@ -2012,7 +2029,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   chest.add(rifle);
 
   const shotgunGeo = (parent: THREE.Object3D) => {
-    add(
+    addS(
       mergeGeos([
         box(0.034, 0.14, 0.05, 0, 0.04, 0), // the receiver
         rod(0.011, 0.1, 0.46, 0.008), // the barrel
@@ -2022,7 +2039,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       gunMetalH,
       parent,
     );
-    add(box(0.03, 0.17, 0.05, 0, -0.13, -0.015), woodMat, parent);
+    addS(box(0.03, 0.17, 0.05, 0, -0.13, -0.015), woodMat, parent);
     const fore = add(box(0.03, 0.11, 0.032, 0, 0.21, -0.016), woodMat, parent);
     return fore;
   };
@@ -2033,8 +2050,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   chest.add(shotgun);
   // The shell: a red hull on a brass head, flung from the port.
   const shell = new THREE.Group();
-  add(rod(0.0075, 0, 0.05, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0x9a1c1c, roughness: 0.5 })), shell);
-  add(rod(0.008, -0.008, 0.002, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0xc9a050, roughness: 0.3, metalness: 0.8 })), shell);
+  addS(rod(0.0075, 0, 0.05, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0x9a1c1c, roughness: 0.5 })), shell);
+  addS(rod(0.008, -0.008, 0.002, 0, 8), kitMat(new THREE.MeshStandardMaterial({ color: 0xc9a050, roughness: 0.3, metalness: 0.8 })), shell);
   shell.visible = false;
   chest.add(shell);
   // The Butcher's shotgun on her left hip (the pelvis frame), muzzle down, until she draws it.
@@ -2090,7 +2107,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
     cowl.translate(0, 0, -0.025);
     const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
     rimify(hoodMat as THREE.MeshStandardMaterial, 0.9);
-    extra("ghost", headPivot, [[[hood, cowl], hoodMat]]);
+    // Plan item 247: a rolled brim round the face opening (the hood's cut edge read as a paper shell): a soft tube
+    // down one edge of the opening, over the brow and down the other, a little proud of the cloth.
+    const rimPts: THREE.Vector3[] = [];
+    const onHood = (phi: number, theta: number) =>
+      new THREE.Vector3(-Math.cos(phi) * Math.sin(theta) * 0.112, Math.cos(theta) * 0.13 + 0.012, Math.sin(phi) * Math.sin(theta) * 0.118 - 0.01).multiplyScalar(1.03);
+    for (let i = 0; i <= 8; i++) rimPts.push(onHood(Math.PI - 0.62, 2.45 - (i / 8) * 2.2));
+    for (let i = 0; i <= 8; i++) rimPts.push(onHood(0.62, 0.25 + (i / 8) * 2.2));
+    const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), seg(40), 0.009, 6, false);
+    extra("ghost", headPivot, [[[hood, cowl, rim], hoodMat]]);
     // Gunslinger: a wide-brimmed hat, the brim curled up at the sides and the crown pinched, tipped forward.
     const brim = new THREE.LatheGeometry([0.07, 0.11, 0.15, 0.175, 0.19].map((r, i) => new THREE.Vector2(r, [0, 0.002, 0.004, 0.012, 0.03][i]!)), seg(32));
     {
@@ -2167,8 +2192,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       grip.translate(0, 0.29, 0);
       const g = new THREE.Group();
       g.name = name;
-      add(mergeGeos([body, grip]), caseMats[0], g);
-      add(mergeGeos([-0.11, 0.11].map((x) => box(0.026, 0.02, 0.012, x, 0.255, 0.048))), caseMats[1], g);
+      addS(mergeGeos([body, grip]), caseMats[0], g);
+      addS(mergeGeos([-0.11, 0.11].map((x) => box(0.026, 0.02, 0.012, x, 0.255, 0.048))), caseMats[1], g);
       g.visible = false;
       parent.add(g);
       return g;
@@ -2259,11 +2284,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     apron.scale(1, 1, 0.74);
     apron.translate(0, -0.03, 0);
     const am = kitMat(new THREE.MeshStandardMaterial({ map: tex, color: 0xffffff, roughness: 0.52, metalness: 0.02, side: THREE.DoubleSide }));
-    add(apron, am, kits.get("butcher")!);
+    addS(apron, am, kits.get("butcher")!);
   }
 
   const GHOST_GRAB = V(0.22, 0.36, -0.1);
-  const GHOST_HOLD = V(0.38, 0.15, 0.15);
+  const GHOST_HOLD = V(0.42, 0.15, 0.15); // plan item 247: 4 cm further out, the rifle clear of her face box
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
@@ -2280,7 +2305,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     pX.crossVectors(pY, pZ);
     o.quaternion.setFromRotationMatrix(pBasis.makeBasis(pX, pY, pZ));
   };
-  const RIFLE_DIR = V(0.12, 1, -0.04);
+  // Plan item 247: leaned a little further out (0.12 -> 0.2) so the scope clears her face box, not only her cheek.
+  const RIFLE_DIR = V(0.2, 1, -0.04);
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);
   const SHOT_TOP = V(0.2, 0.1, -1);
@@ -2321,6 +2347,42 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
 
   let wearing: string | null = null;
+
+  // Plan item 247: merge the static parts per bone and material (see addS).
+  {
+    const groups = new Map<string, THREE.Mesh[]>();
+    for (const m of statics) {
+      const k = `${m.parent!.uuid}|${(m.material as THREE.Material).uuid}`;
+      const list = groups.get(k);
+      if (list) list.push(m);
+      else groups.set(k, [m]);
+    }
+    for (const list of groups.values()) {
+      if (list.length < 2) continue;
+      const mat = list[0]!.material as THREE.MeshStandardMaterial;
+      const names = list.map((m) => Object.keys(m.geometry.attributes));
+      const common = names[0]!.filter((a) => names.every((n) => n.includes(a)));
+      if (!common.includes("normal") || (mat.map && !common.includes("uv"))) continue;
+      const indexed = list.every((m) => m.geometry.index);
+      const geos = list.map((m) => {
+        const g = indexed ? m.geometry.clone() : m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+        for (const a of Object.keys(g.attributes)) if (!common.includes(a)) g.deleteAttribute(a);
+        g.morphAttributes = {};
+        return g;
+      });
+      const merged = mergeGeometries(geos);
+      for (const g of geos) g.dispose();
+      if (!merged) continue;
+      const parent = list[0]!.parent!;
+      // (Their geometries are left to the collector: a part's geometry may be shared with a mesh outside the merge.)
+      for (const m of list) m.removeFromParent();
+      const one = new THREE.Mesh(merged, mat);
+      one.name = list.find((m) => m.name)?.name ?? "";
+      one.castShadow = true;
+      one.receiveShadow = true;
+      parent.add(one);
+    }
+  }
 
   return {
     group,
