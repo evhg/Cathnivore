@@ -2439,10 +2439,20 @@ export function buildLighthouse(): THREE.Group {
 export function buildBoat(rand: () => number): THREE.Group {
   const g = new THREE.Group();
   g.add(box(0.8, 0.18, 0.3, matte(["#c4433a", "#3f6fb5", "#f2c94c"][Math.floor(rand() * 3)]!, 0.6)));
-  g.add(cyl(0.015, 0.015, 0.8, matte(C.woodDark), 0, 0.18, 0, 4));
-  const sail = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.6), matte("#f4ede1", 0.8, false));
+  // Plan item 259: a mast that holds the sail (it stopped short of it), and a triangular mainsail with a jib turned
+  // across it in one mesh, so the rig reads as a boat from any heading (a lone plane edge-on left a red block).
+  g.add(cyl(0.018, 0.018, 0.85, matte(C.woodDark), 0, 0.5, 0, 4));
+  const sails = geo("boat-sails", () => {
+    const b = new THREE.BufferGeometry();
+    const jx = Math.cos(1.1) * 0.32;
+    const jz = Math.sin(1.1) * 0.32;
+    // mainsail: luff up the mast, foot along the boom aft; jib: from the masthead down to the bow, swung across.
+    b.setAttribute("position", new THREE.Float32BufferAttribute([0, 0.15, 0, 0, 0.9, 0, 0.38, 0.17, 0, 0, 0.82, 0, 0, 0.2, 0, -jx, 0.16, jz], 3));
+    b.computeVertexNormals();
+    return b;
+  });
+  const sail = new THREE.Mesh(sails, matte("#f4ede1", 0.8, false));
   (sail.material as THREE.Material).side = THREE.DoubleSide;
-  sail.position.set(0.15, 0.6, 0);
   g.add(sail);
   return g;
 }
