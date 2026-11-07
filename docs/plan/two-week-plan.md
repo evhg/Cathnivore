@@ -2739,7 +2739,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no two cards show the same pose or outfit; no figure cut by a card's edge; the NIGHT SHIFT card's mean luminance 0.12 or more with LUNA wholly inside; games-cards, games-stall, posterplay pass; key art re-shot; shots portfolio and games, P and D.
 - **Size:** 2
 
-## 273. [ ] The bugs from the 2026-11-07 22:40 critique, fixed as one batch
+## 273. [ ] The bugs from the 2026-11-07 22:40 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107g`; dropped: 'Kingsmarket' across the river, checked 2026-11-07 (10 px clear); points already in 259, 261, 266)
   - **Cathnivore:** P game: the '9 more ›' pill on the NOT YET deck's vertical label (310-385 x 700-740). D game: Partner's farm '+1/+2' about 11 px grey (90-290 x 268-292); ACTIONS' three plain discs with no label or state (220-315 x 42-68). D and P title: 'Today's Daily is open' about 11 px grey (852-965 x 778-796; P 265-360 x 578-594). D campaign: chapter 4's card cut by the rail's foot with letter fragments (975-1357 x 843-900): a whole-card fade or snap. D setup: the pins' grey captions (160-285 x 712-742), check 4.5:1.
   - **Runnel:** the rain puddles read as 'minus' pills (D 520-600 x 458-482 and others; P 50-190 x 490-510): varied shapes, a sky glint, no dash. D: the barrow on the board's top rim against the sky (860-910 x 75-112). D legend's second words grey at 13 px (110-300 x 400-436), check 4.5:1.
