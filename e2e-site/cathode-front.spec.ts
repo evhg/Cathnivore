@@ -790,3 +790,30 @@ test('the upright phone title renders at the device pixel ratio, 780 px or more 
   expect(w).toBeGreaterThanOrEqual(780)
   await ctx.close()
 })
+
+// Plan item 251: upright, through the title loop's later frames too, the menu plate covers under 5% of her body (the
+// fit measures only her drawn kit), and on a short phone the case line under the menu stays clear of The List.
+test('upright, the menu plate stays off her through the loop, and the case line off The List', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright title')
+  test.setTimeout(300_000)
+  type B = { left: number; top: number; right: number; bottom: number }
+  for (const vp of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/nightshift/?shot')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    for (const t of [30, 60]) {
+      await page.goto(`/nightshift/?front=title&shot&t=${t}&quality=phone`)
+      await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+      const m = await page.evaluate(() => {
+        const box = (s: string) => { const r = document.querySelector(s)!.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }
+        const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(body?: boolean): B } | null } }).cathodeFront.scene()
+        return { menu: box('#menu'), hint: box('#menu-hint'), list: box('.the-list'), body: scene!.figureBox(true) }
+      })
+      const s = JSON.stringify({ vp, t, m })
+      const w = Math.max(0, Math.min(m.menu.right, m.body.right) - Math.max(m.menu.left, m.body.left))
+      const h = Math.max(0, Math.min(m.menu.bottom, m.body.bottom) - Math.max(m.menu.top, m.body.top))
+      expect((w * h) / ((m.body.right - m.body.left) * (m.body.bottom - m.body.top)), s).toBeLessThan(0.05)
+      expect(m.hint.bottom, s).toBeLessThanOrEqual(m.list.top)
+    }
+  }
+})

@@ -409,7 +409,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const mm = new THREE.Matrix4();
     const skip = new Set<THREE.Object3D>();
     if (cloudBody) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
-    cath.group.traverse((obj) => {
+    // Plan item 251: on the title, only what is drawn. The other classes' kits hang hidden on her (a hidden group,
+    // visible meshes), and the Fixer's case and the Butcher's extras widened her box, so the title framed her left,
+    // under the menu. The class pick (centred) keeps measuring every kit: its framings were tuned on that box.
+    const walk = cloudBody ? cath.group.traverse.bind(cath.group) : cath.group.traverseVisible.bind(cath.group);
+    walk((obj) => {
       const m = obj as THREE.Mesh;
       if (!m.isMesh || !m.visible || skip.has(m)) return;
       const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
@@ -749,7 +753,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cath.group.updateMatrixWorld(true);
       const skip = new Set<THREE.Object3D>();
       if (body) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
-      cath.group.traverse((o) => {
+      cath.group.traverseVisible((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh || !m.visible || skip.has(m)) return;
         const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;

@@ -1445,3 +1445,11 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .opener-card { bottom: calc(9svh + var(--u) * 24); padding: calc(var(--u) * 14) calc(var(--u) * 24); }
   .opener-place { font-size: var(--fs-4); }
 }
+/* Plan item 251: on a short upright phone (375x667, 360x640) The List's heading ran into the case line under the
+   menu. The rows keep the 40 px tap floor, the case line sits closer under them, and the List drops toward the foot
+   (upright there is no letterbox bar under it). */
+@media (max-width: 600px) and (orientation: portrait) and (max-height: 700px) {
+  .menu { grid-auto-rows: 40px; } /* px-ok: tap target */
+  .menu-hint { margin-top: calc(var(--u) * 10); }
+  .the-list { bottom: max(var(--safe-y), calc(3svh + var(--u) * 8)); }
+}
