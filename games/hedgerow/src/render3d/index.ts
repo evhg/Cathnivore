@@ -551,8 +551,13 @@ export class Renderer3D {
       // field itself stands in clear air and the haze gathers over the hills beyond it.
       const farEdge = this.camera.position.distanceTo(this.v1.set(cols / 2, 0, -0.5));
       const near = farEdge + (L.fogNear - 14) * 0.5 + clear;
-      this.scene.fog.near = near * dim;
-      this.scene.fog.far = (near + (L.fogFar - L.fogNear)) * dim;
+      // Plan item 242: the country past the far verge fades into the act's air within a few cells, so the far
+      // houses, boats and slabs at the frame's top read as distance, not as props sliced by the frame. The field
+      // itself (to its far edge) stays in clear air.
+      const hazeNear = Math.min(near, farEdge + 0.8);
+      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + 4.5);
+      this.scene.fog.near = hazeNear * dim;
+      this.scene.fog.far = hazeFar * dim;
     }
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
