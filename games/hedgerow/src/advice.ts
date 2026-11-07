@@ -59,7 +59,9 @@ export function roundAdvice(
     const up = needsUpgrade(kind, tower);
     if (built.includes(tower))
       line = up ? `Upgrade your ${tn} before Go: once upgraded ${why}.` : `Your ${tn} answers the ${name}: ${why}. Another near the gate helps.`;
-    else line = `Build a ${tn}${up ? " and upgrade it" : ""}: ${why}.${built.length ? "" : " Tap a plot to build."}`;
+    // Plan item 228: the line names the round's threat, so it never reads as a generic tip carried over from
+    // another level ("Build a Scarecrow: it hits them hard." on a Box Lorry round).
+    else line = `Build a ${tn}${up ? " and upgrade it" : ""} for the ${name}: ${why}.${built.length ? "" : " Tap a plot to build."}`;
   }
   return { kind, count, total: spawns.length, tower, line };
 }

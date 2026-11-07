@@ -36,3 +36,19 @@ describe("Hedgerow round advice", () => {
     expect(roundAdvice([], ["scarecrow"], [])).toBeNull();
   });
 });
+
+// Plan item 228: a build line names the round's threat (it read as a generic tip on a Box Lorry round).
+describe("roundAdvice names the threat", () => {
+  it("says what a new tower is for, on every round of every level", () => {
+    for (const lv of LEVELS) {
+      const game = newGame(lv);
+      lv.waves.forEach((groups, w) => {
+        const a = roundAdvice(waveSpawns(game, groups, w + 1), lv.towers, [])!;
+        if (a.tower) expect(a.line, `level ${lv.id} round ${w + 1}`).toMatch(/^Build a .* for the /);
+      });
+    }
+    const l34 = LEVELS.find((l) => l.id === 34)!;
+    const a = roundAdvice(waveSpawns(newGame(l34), l34.waves[16]!, 17), l34.towers, [])!;
+    expect(a.line).not.toMatch(/^Build a [^:]*: it hits them hard/);
+  });
+});
