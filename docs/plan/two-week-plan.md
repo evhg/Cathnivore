@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-07 01:23
-
 
 
 
@@ -2457,3 +2455,42 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **NIGHT SHIFT:** P pick: Cath soft (150-300 x 200-560); item 216 sharpened the title's P resolution, not the pick's.
 - **Accept:** each point fixed or checked and left with the reason; shots before and after; the specs for each screen pass.
 - **Size:** 1
+
+## 229. [ ] Runnel: a rainy valley that stays a picture
+- **Why:** `plan1107a/runnel-D` (390-1410 x 20-880), `runnel-P` (5-385 x 195-775): under "Dusk, light drizzle" about 80% of the frame is flat slate grey, the fields have no crop colour, hedges are black dotted lines and the shrubs are near-black discs that read as holes ((585,355), (690,470), (725,620), (650,795) at D). Weather desaturates the valley instead of lighting it (VISION: warm paper, flat colour).
+- **Build:** weather as a light over a coloured valley: crops keep their hue (about 70% chroma) with a wet sheen and puddles catching the sky; rain as slanted streaks; dusk an amber-to-violet sky with warm rims and the spring house's windows lit; shrubs drawn with a highlight and a contact shadow, never a flat dark disc.
+- **Accept:** for every weather and time of day the valley layer's mean OKLCH chroma 0.04 or more and mean L 0.45 or more (unit, on the palette); no shrub fill under L 0.3; tiles keep 3:1 against the fields; runnel specs pass; shots P and D at drizzle, dusk and midday.
+- **Size:** 2
+
+## 230. [ ] Hedgerow journey map: the country changes as you win
+- **Why:** `plan1107a/hedge-menu-D` (0-1440 x 230-600), `hedge-menu-P` (0-390 x 170-600): between the road's rows the map is empty diagonal hatching; nothing shows progress or Hollowell's grip (VISION: choreographed moments).
+- **Build:** the land round a won stop is coloured in (crops, hedges, folk at work); unwon stretches carry Hollowell's clutter (grey flats, a van on the verge, a fenced "coming soon" plot); a first win plays a 900 ms bloom of colour out from the stop (a fade under reduced motion).
+- **Accept:** a stop's land state follows its stars (unit); after a win the stop's `data-state="won"` and a patch within 80 px of it has chroma 0.05 or more; a locked stretch shows a Hollowell prop; no transform under reduced motion; hedgerow map specs pass; shots P and D, a fresh save and a mid-act save.
+- **Size:** 2
+
+## 231. [ ] Cathnivore phone title: the table is the hero, the menu sits on the counter
+- **Why:** `plan1107a/cath-title-P`: the board is about 225 px wide (145-370 x 255-455) while the dark chalkboard menu (20-370 x 475-745) is larger and heavier and takes the eye first (VISION: the table is the hero, menus never compete).
+- **Build:** the board runs nearly full width (about 340 px) under the bunting, Cath at its rim; the menu becomes counter objects: Campaign the painted sign, Quick Game and the Daily as hanging tags, How to Play / Settings / Credits chalked on the counter's edge; no dark panel.
+- **Accept:** at 390x844 the board's box 320 px or wider and the largest element; every entry 44 px or more tall and inside the viewport with no page scroll; no dark panel (L under 0.3) over 20% of the screen; title specs pass; shots P and D (D unchanged).
+- **Size:** 2
+
+## 232. [ ] Cathnivore desktop play: Cath's face readable, and reacting
+- **Why:** `plan1107a/cath-game-D` (375-460 x 385-690): Cath stands full-length about 85 px wide with a face about 30 px, smaller than the producers' busts beside her (1195-1330 x 238-405); her expression can't be read (VISION: Cath's character bible).
+- **Build:** at the table waist-up, her face 70 px or more wide; her bible expressions follow the game (delighted on a liberation, worried on a Squeeze or Lost Land, a wink on a combo, determined on Hollowell's turn) with a 200 ms crossfade; her bubble from her mouth. Check what the game already drives (`data-expression`) first.
+- **Accept:** at 1440x900 her face box 70 px or more wide, not covered by a card or her bubble; an autoplay e2e sees three or more `data-expression` values; crossfade only under reduced motion; shots D light and dark (P unchanged).
+- **Size:** 2
+
+## 233. [ ] NIGHT SHIFT desktop class pick: the classes as a lit rack
+- **Why:** `plan1107a/ns-play-D` (0-560 x 150-660): the five classes are grey condensed words (82-330 x 160-415) above an empty black band (0-560 x 430-660); no object per row.
+- **Build:** each row carries its weapon in neon outline (the sheet's silhouette) and a four-pip stat strip; the picked row lifts with its red rule; the class line and quote move up under the list so no band stands empty.
+- **Accept:** at 1440x900 no empty band over 120 px tall in x 0-560; each row's silhouette 48 px or more wide; keys 1-5 and arrows move the pick visibly; cathode classpick, classstage and front specs pass; perf within budget; shots D and P (P unchanged).
+- **Size:** 2
+
+## 234. [ ] The bugs from the 2026-11-07 01:40 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1107a`; points already in item 222 left out)
+  - **Site:** P: 'vore' of the Cathnivore heading blurred (270-345 x 120-165; possibly a backdrop-filter or capture timing). D: hero Cath's feet on nothing (265-390 x 60-435).
+  - **Hedgerow:** D menu: the road leaves stop 21 upward as a curled stub ending at nothing (225-262 x 283-325). P 2D l34: Cath's tip pale on cream (95-370 x 728-760; check it isn't mid-fade).
+  - **Cathnivore:** D game: the HOLLOWELL badge about 10 px (1225-1335 x 130-145). D title: the pennant hint white 13 px on light wood about 3.5:1 (1033-1275 x 765-778). P setup: 'PUBLIC TRUST / starts at 10' wraps to three lines beside two-line columns (32-110 x 713-760).
+  - **NIGHT SHIFT:** D title: the neon sign cut at the viewport top, only letter bottoms (845-1000 x 0-20). P title and P pick: Cath soft again (check after a long settle before fixing).
+- **Accept:** each point checked in a shot before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
