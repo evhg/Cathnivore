@@ -1154,6 +1154,9 @@ html.no-animations .title-screen * {
 .ritual-bunting { flex: 1 1 auto; min-width: 0; display: grid; align-content: start; justify-items: center; gap: 4px; padding-top: 14px; }
 .ritual-bunting svg { flex: none; max-width: 100%; height: auto; overflow: visible; }
 .ritual-bunting[data-pennants="0"] svg { opacity: .5; }
+/* Plan item 259: with no rope yet the hint drops onto the counter's planks (at 14 px it straddled the cloth's corner
+   and the counter's lip). */
+.ritual-bunting[data-pennants="0"] { padding-top: 30px; }
 .ritual-rope { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.4; opacity: .8; }
 .ritual-pennant { stroke: color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent); stroke-width: .8; stroke-linejoin: round; }
 .ritual-pennant.p0 { fill: var(--clay); }
