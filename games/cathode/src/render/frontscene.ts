@@ -172,6 +172,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   world.renderer.domElement.dataset.cathExpr = cath.expressionNow;
   // Plan item 147: the title's Cath is the full hero model (fingers, tailored trench, moving hair).
   world.renderer.domElement.dataset.cathLod = "hero";
+  // Plan item 254: she is drawn as an inked illustration (toon bands and an ink line on her biggest parts).
+  if (cath.inkParts > 0) world.renderer.domElement.dataset.cathShading = "ink";
   // Local frame -> world.
   const toWorld = (x: number, y: number, z: number, out = new THREE.Vector3()) => out.set(-x, y, -z).add(feet);
   // The back light: pink, high and ahead of her (the camera is always behind or beside her, so it rims her

@@ -9,6 +9,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { CATH_HERO } from "../game/armdress";
+import { LAYER_NO_REFLECT } from "./reflection";
 
 /** Plan item 140: the painted face's expressions (the title's smirk, the class pick's). */
 export type FaceExpression = "smirk" | "determined" | "wink";
@@ -66,6 +67,8 @@ export interface FrontCath {
   readonly blinkMap: THREE.Texture;
   dispose(): void;
   readonly triangles: number;
+  /** Plan item 254: how many of her parts carry the ink line. */
+  readonly inkParts: number;
 }
 
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -144,6 +147,44 @@ function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   g.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
   return g;
 }
+
+/**
+ * Plan item 254: the toon ramp. Three flats (shadow, mid, light) with a soft edge a few hundredths wide, so the band
+ * lines are drawn, not stair-stepped, at any size.
+ */
+const INK_BAND = /* glsl */ `
+float inkBand( float x ) {
+  return mix( 0.4 * smoothstep( 0.08, 0.14, x ), 0.9, smoothstep( 0.45, 0.52, x ) );
+}`;
+const TOON_PHYSICAL = THREE.ShaderChunk.lights_physical_pars_fragment.replace(
+  "float dotNL = saturate( dot( geometryNormal, directLight.direction ) );",
+  "float dotNL = inkBand( saturate( dot( geometryNormal, directLight.direction ) ) );",
+);
+
+/**
+ * Plan item 254: the ink line, an inverted hull. Each outlined part draws once more, back faces only, pushed out
+ * along its normal by a fixed width in screen pixels (in clip space, so it is the same line at any distance), in
+ * near-black ink. Where her arm crosses her coat the hull shows between them too: the drawn contour of a figure.
+ */
+const INK_VERT = /* glsl */ `
+uniform vec2 uInk;
+void main() {
+  vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  vec4 clip = projectionMatrix * mv;
+  vec2 d = ( projectionMatrix * vec4( normalize( normalMatrix * normal ), 0.0 ) ).xy;
+  float l = length( d );
+  clip.xy += ( l > 1e-5 ? d / l : vec2( 0.0 ) ) * uInk * clip.w;
+  gl_Position = clip;
+}`;
+const INK_FRAG = /* glsl */ `
+uniform vec3 uInkColor;
+void main() {
+  gl_FragColor = vec4( uInkColor, 1.0 );
+}`;
+/** The line's width in CSS pixels at a 900 px tall view (1.5 px at D, as the plan asks), scaled with the view. */
+const INK_PX = 1.5;
+/** The outlined parts: her largest body meshes, at most this many (the draw-call budget: +12). */
+const INK_MAX = 12;
 
 export function buildFrontCath(phone: boolean): FrontCath {
   const group = new THREE.Group();
@@ -334,14 +375,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;")
+        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + INK_BAND)
+        // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
+        // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
+        .replace("#include <lights_physical_pars_fragment>", TOON_PHYSICAL)
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
           {
             float facing = saturate( dot( normal, normalize( vViewPosition ) ) );
             // A wide, soft Fresnel (C13 review: the narrow pow-4 edge drew as one-pixel pink stair-steps).
-            float fr = smoothstep( 0.0, 1.0, pow( 1.0 - facing, 2.2 ) );
+            float fr0 = pow( 1.0 - facing, 2.2 );
+            // Plan item 254: most of the rim is a hard-edged flat (an inked illustration's back-light shape), a
+            // little of the soft falloff kept so the band's edge is drawn, not stair-stepped.
+            float fr = mix( smoothstep( 0.0, 1.0, fr0 ), smoothstep( 0.26, 0.34, fr0 ), 0.7 );
             float side = dot( normal, uRimDir );
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
             ${keyTerm}
@@ -2384,7 +2431,46 @@ export function buildFrontCath(phone: boolean): FrontCath {
     }
   }
 
+  // Plan item 254: the ink line on her biggest body parts (coat, sleeves, hair, head, legs, boots and gloves), not
+  // her kit or the umbrella's open canopy (a hull of an open shell blacks its underside). One shared material; the
+  // hulls are on the no-reflect layer (the mirror's street doesn't need them) and cast no shadow.
+  const inkU = { uInk: { value: new THREE.Vector2(0.002, 0.003) }, uInkColor: { value: new THREE.Color(0x07050a) } };
+  const inkMat = new THREE.ShaderMaterial({ uniforms: inkU, vertexShader: INK_VERT, fragmentShader: INK_FRAG, side: THREE.BackSide });
+  mats.push(inkMat);
+  const bodyMats = new Set<THREE.Material>([coatMat, sleeveMat, blackMat, hairMat, skinMat, tightsMat, faceMat]);
+  const inked: THREE.Mesh[] = [];
+  {
+    const cands: Array<{ m: THREE.Mesh; n: number }> = [];
+    group.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh || !bodyMats.has(m.material as THREE.Material)) return;
+      for (let p: THREE.Object3D | null = m.parent; p && p !== group; p = p.parent) if (p.name.startsWith("kit-")) return;
+      if (!m.geometry.attributes.normal) return;
+      cands.push({ m, n: m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count });
+    });
+    cands.sort((a, b) => b.n - a.n);
+    const setInk = (r: THREE.WebGLRenderer) => {
+      const el = r.domElement;
+      const w = el.clientWidth || el.width;
+      const h = el.clientHeight || el.height;
+      const px = INK_PX * THREE.MathUtils.clamp(h / 900, 0.7, 1.6);
+      inkU.uInk.value.set((2 * px) / w, (2 * px) / h);
+    };
+    for (const { m } of cands.slice(0, INK_MAX)) {
+      const hull = new THREE.Mesh(m.geometry, inkMat);
+      hull.name = "ink";
+      hull.castShadow = false;
+      hull.receiveShadow = false;
+      hull.layers.set(LAYER_NO_REFLECT);
+      hull.renderOrder = -1;
+      hull.onBeforeRender = setInk;
+      m.add(hull);
+      inked.push(m);
+    }
+  }
+
   return {
+    inkParts: inked.length,
     group,
     head,
     ember,
