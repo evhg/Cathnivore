@@ -2525,7 +2525,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no control clipped by its container; Cath 300 px or more at 1440x900 and 1280x800; no page scroll at 1280x800; setup-* specs pass; shots D (P unchanged).
 - **Size:** 2
 
-## 240. [ ] The bugs from the 2026-11-07 03:30 critique, fixed as one batch
+## 240. [ ] The bugs from the 2026-11-07 03:30 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1107b`)
   - **NIGHT SHIFT:** D/P title 'No case open' and 'GAMES' contrast (205, 311; 75, 53); P '4 MORE NAMES' size (16, 660); P pick perk tags LONGSHOT/SHROUD/COLD READ about 10 px (20-230, 772).
   - **Cathnivore:** P game vertical 'PLAY' label about 10 px (175, 690-740).
