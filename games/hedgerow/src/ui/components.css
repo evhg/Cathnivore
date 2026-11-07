@@ -1507,7 +1507,11 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .build-cost::before {
   width: 12px;
   height: 12px;
-  background: radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 50%, var(--brass-mid));
+  /* Plan item 253: a struck centre and a hair of room before the digits, so '(coin)100' never reads as 'O100'. */
+  margin-right: 2px;
+  background:
+    radial-gradient(circle, var(--brass-mid) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 50%, var(--brass-mid));
   box-shadow: 0 0 0 1.5px var(--line);
 }
 .play .btn-build {
