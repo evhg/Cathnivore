@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-07 22:35 UTC
 
 
 
@@ -2701,5 +2700,51 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** D l34: the Box Lorry queue faces east in a north-south lane, noses over the plot column, the lead over the farmer (220-318 x 105-470); Same-Day vans 3-4 leave the lane at the bend, the 4th on the willow and its tag on the plot edge (375-605 x 785-890). P menu: Act 4 header washed out and half under the tab bar (15-375 x 755-775; may be the fog teaser). P 3D l21: the depot cropped by the top bar (150-245 x 55-155).
   - **Runnel:** the milk bottle as tall as the farmer (D 885-912 x 762-812; P 340-357 x 365-392).
   - **Cathnivore:** P game: the hand's next card and › cut at the right edge with nothing saying how many more (355-390 x 675-770). D setup: unpicked maps 'The Long Coast' and 'The Delta' with no card edge on the cloth (660-1095 x 650-850).
+- **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 267. [ ] Cathnivore: Hollowell's held land looks occupied, not faded
+- **Why:** `plan1107g/cath-title-D` (875-1315 x 340-735): every hex a pale wash over the gingham, the title's hero board a ghost; `cath-game-D` (570-1160 x 120-690) and `cath-game-P` (20-360 x 170-505): hex interiors are low-saturation hatching, and the most saturated things on the board are Hollowell's Outlets and '?' discs. VISION: warm hand-made land for the players, glossy plastic for the corporations.
+- **Build:** every region's land in full colour (the campaign map's painted ground, `cath-campaign-D` 90-650 x 225-770); Hollowell's hold drawn as glossy additions on it (an orange-and-white plastic fence along a held hex's edge, a small glossy billboard per Outlet), not a white overlay; liberation strips the plastic (item 127's moment).
+- **Accept:** each held hex's land chroma 80% or more of the same hex when free (5 samples per hex); no full-hex overlay above 15% opacity; held vs free tell apart by shape (fence or billboard); region names 4.5:1; board-scale, board-diorama, title-table, setup pass; key art re-shot; shots title and game, P and D, light and dark.
+- **Size:** 2
+
+## 268. [ ] Runnel: Cath as a host you can read, reacting to the board
+- **Why:** `plan1107g/runnel-D` (420-520 x 675-815): a half-length figure behind a wall in the corner, face about 35 px; `runnel-P` (35-110 x 645-750) about 25 px; one pose and one face all game.
+- **Build:** at D she stands waist-up by the spring house or the garden gate, 260 px or more, her line beside her; she reacts: delighted when a tap joins water to a new field, worried (hand to chin) when a tap cuts a flow, a wink on the solve (a pose and face swap in 150-250 ms, a fade under reduced motion); on a phone her bust in the docked line with a face 48 px or more; the market-day trench (the bible's Runnel outfit).
+- **Accept:** face 60 px or more at D, 40 at P; three moods as `data-mood`, an e2e taps a joining tile and checks it; she covers no tile; runnel e2e pass; key art re-shot; shots P and D, lesson and mid-daily.
+- **Size:** 2
+
+## 269. [ ] Hedgerow 3D: the lane as a rutted farm track, and water with shores
+- **Why:** `plan1107g/hedge-l21-3d-D` (300-1000 x 215-890): the lane is pale planks with seams and radial parquet at the bends, a boardwalk, where the 2D lane (`hedge-l21-2d-D` 295-735 x 175-890) is a rutted sandy track; ponds and channels are flat blue rectangles with hard edges (300-580 x 385-640, 745-1070 x 565-630); `hedge-l21-3d-P` (100-390 x 300-345) the same.
+- **Build:** a packed-earth track (two wheel ruts, a grass crown, a soil lip each side, the odd puddle), continuous at bends; water cells with a soft shore (a mud and reed margin, a shallow band, depth toward the middle); item 94's banks and bridges kept.
+- **Accept:** no straight seam across the lane at D (a pixel check along its centreline); every water body a shore band 6 px or wider at D; draw calls +4 or fewer at P; `?2d` unchanged; hedgerow-3dframe, -closeframe, -biome3d pass; key art re-shot; shots P and D, l21 and l34 in 3D.
+- **Size:** 2
+
+## 270. [ ] NIGHT SHIFT: the List's withheld names as silhouettes you can read
+- **Why:** `plan1107g/ns-title-D` (170-600 x 595-705): the four withheld prints are near-identical black squares with a red bar (item 99's redacted heads sit at about 10% luminance on 8%); `ns-title-P` (88-372 x 678-752) four identical black tiles: four fifths of the game's promise show nothing.
+- **Build:** each withheld target a distinct backlit silhouette (a hat brim, a bob, a bald head with glasses, a hood) with a cold rim light and its district's prop in shadow behind (a clinic drip stand, a plaza statue, tower blinds, vault bars); the red bar becomes a REDACTED stamp across the eyes.
+- **Accept:** silhouette against its ground 3:1 or more on every withheld print; four distinct outlines (mask IoU below 0.8 for every pair); readable at P (prints 56 px); cathode-front and List specs pass; posters re-shot; shots title P and D.
+- **Size:** 1
+
+## 271. [ ] NIGHT SHIFT: Cath's whole figure, boots and a stance
+- **Why:** `plan1107g/ns-play-D` (655-755 x 660-830): her legs are two flat black tubes with pointed tips, no knee, ankle or boot; the coat below the waist one flat cone (640-810 x 400-750); `ns-title-D` (900-1150 x 620-900) and `ns-title-P` (215-300 x 560-700) the same. Items 227, 254 and 260 brought the arm, shading and head to the bible; the lower body is still a placeholder.
+- **Build:** heeled ankle boots with a sole and a highlight; dark tights with a sheen and a shaped knee and calf; weight on one hip on the title and pick; the trench skirt with 3-5 folds, the back pleat's split and a hem that sways in the idle.
+- **Accept:** boots read at D (heel and sole distinct, 12 px or more tall); a visible knee bend on the free leg; 3 or more coat folds at 2:1 on the coat; cathode-perf within budget (+4 calls at most); cathode-front and classpick pass; key art re-shot; shots title and pick, P and D.
+- **Size:** 2
+
+## 272. [ ] Site: four game cards, four Caths
+- **Why:** `plan1107g/games-D`: the Cathnivore, Runnel and Hedgerow cards carry the same small sticker Cath at the right edge (340-400, 650-710, 960-1012 x 590-690), same outfit and scale, cut by the card; the NIGHT SHIFT card (1040-1330 x 490-690) is two-thirds black rain and LUNA is cut by its right edge (1290-1330 x 543-562); `portfolio-D` the collage's Cath (1000-1190 x 340-690) fades out at the knees with no ground.
+- **Build:** in each card Cath in that game's role and outfit, inside the scene (Cathnivore: olive jacket at the table with a basket; Runnel: market-day trench with a watering can; Hedgerow: wellies with a flag on the lane; NIGHT SHIFT: the 3D noir trench); the NIGHT SHIFT frame recomposed so she and the sign sit inside the 16:10 card on lit wet ground; the portfolio collage's Cath on a ground or counter.
+- **Accept:** no two cards show the same pose or outfit; no figure cut by a card's edge; the NIGHT SHIFT card's mean luminance 0.12 or more with LUNA wholly inside; games-cards, games-stall, posterplay pass; key art re-shot; shots portfolio and games, P and D.
+- **Size:** 2
+
+## 273. [ ] The bugs from the 2026-11-07 22:40 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1107g`; dropped: 'Kingsmarket' across the river, checked 2026-11-07 (10 px clear); points already in 259, 261, 266)
+  - **Cathnivore:** P game: the '9 more ›' pill on the NOT YET deck's vertical label (310-385 x 700-740). D game: Partner's farm '+1/+2' about 11 px grey (90-290 x 268-292); ACTIONS' three plain discs with no label or state (220-315 x 42-68). D and P title: 'Today's Daily is open' about 11 px grey (852-965 x 778-796; P 265-360 x 578-594). D campaign: chapter 4's card cut by the rail's foot with letter fragments (975-1357 x 843-900): a whole-card fade or snap. D setup: the pins' grey captions (160-285 x 712-742), check 4.5:1.
+  - **Runnel:** the rain puddles read as 'minus' pills (D 520-600 x 458-482 and others; P 50-190 x 490-510): varied shapes, a sky glint, no dash. D: the barrow on the board's top rim against the sky (860-910 x 75-112). D legend's second words grey at 13 px (110-300 x 400-436), check 4.5:1.
+  - **Hedgerow:** D l34: one van queue in two sizes at the bend (item 266's straight-only 1.4x; 385-430 x 800-832); the 'Same-Day van' tag on the plot row (490-595 x 818-836). P l34: the HOLLOWELL sign over the lead vans (8-110 x 505-550). D menu: vans and office blocks crowd stop labels (413-465 x 378-405 by 'Going Live'; 995-1020 x 350-405; 270-320 x 490-545); enemy blurbs about 12 px grey (648-985 x 632-708), check 4.5:1. D l21 2D: the 'HOLLOWELL' and queue tags about 11-12 px (280-462 x 235-494). P 3D l21: the right plot column cut by the frame at the default view (365-390 x 235-690).
+  - **NIGHT SHIFT:** D title: '‹ GAMES' about 11 px grey (60-115 x 48-60); 'THE LIST' about 11 px red, check 4.5:1 (57-105 x 569-580). D pick: index numbers 1-5 about 11 px, '1' red on the selected row about 3:1 (60-75 x 190-560); 'STARTS WITH', 'SNIPER RIFLE', 'DAMAGE / RATE / MAGAZINE' 10-11 px (998-1210 x 82-447); the LUNA sign hangs in mid-air by her elbow (500-605 x 285-327). P pick and title: Cath soft (check against item 260's P face accept); P pick chips and stat labels 10-11 px (16-345 x 672-781).
+  - **Site:** P /games/ the logotype blurred (55-340 x 112-168; possibly its fade-in): recheck after 2 s.
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
