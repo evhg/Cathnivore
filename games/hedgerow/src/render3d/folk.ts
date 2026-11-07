@@ -26,7 +26,100 @@ function part(shape: keyof NonNullable<typeof geo>, colour: string, sx: number, 
   return m;
 }
 
-let bakedMat: THREE.MeshStandardMaterial | null = null;
+let bakedMat: THREE.Material | null = null;
+
+/**
+ * Plan item 255: the people drawn to the 2D field's standard: a toon ramp (three flat bands of light, like the 2D
+ * sprites' cel shading) and an ink outline. The outline is an inverted hull baked into the same vertex-coloured
+ * geometry (pushed out along the normals, wound the other way, coloured ink), so it costs no draw call.
+ */
+let toonRamp: THREE.DataTexture | null = null;
+export function toonGradient(): THREE.DataTexture {
+  if (toonRamp) return toonRamp;
+  const t = new THREE.DataTexture(new Uint8Array([110, 110, 110, 255, 190, 190, 190, 255, 255, 255, 255, 255]), 3, 1, THREE.RGBAFormat);
+  t.minFilter = t.magFilter = THREE.NearestFilter;
+  t.generateMipmaps = false;
+  t.needsUpdate = true;
+  return (toonRamp = t);
+}
+const INK = new THREE.Color("#2b2320");
+let inkMat: THREE.MeshBasicMaterial | null = null;
+/**
+ * Plan item 255: an ink outline on a figure built from separate meshes (Cath, Hollowell's rep): on its `n` largest
+ * meshes, each a child hull of its mesh (so it moves with it), drawn in flat ink. `w` is the line's width in the
+ * figure's own units. Returns the hulls added.
+ */
+export function inkFigure(root: THREE.Object3D, n: number, w: number): THREE.Mesh[] {
+  root.updateMatrixWorld(true);
+  const meshes: Array<{ m: THREE.Mesh; r: number }> = [];
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || !m.geometry.attributes.normal || (m.material as THREE.Material).transparent || o.userData.ink) return;
+    m.geometry.computeBoundingSphere();
+    const s = new THREE.Vector3().setFromMatrixScale(m.matrixWorld);
+    meshes.push({ m, r: m.geometry.boundingSphere!.radius * Math.max(s.x, s.y, s.z) });
+  });
+  inkMat ??= Object.assign(new THREE.MeshBasicMaterial({ color: INK }), { shared: true });
+  const out: THREE.Mesh[] = [];
+  // the largest parts, but at most two of one material (her long hair's layers would otherwise take every line)
+  const per = new Map<THREE.Material, number>();
+  const picked = meshes
+    .sort((a, b) => b.r - a.r)
+    .filter(({ m }) => {
+      const k = per.get(m.material as THREE.Material) ?? 0;
+      per.set(m.material as THREE.Material, k + 1);
+      return k < 2;
+    })
+    .slice(0, n);
+  for (const { m } of picked) {
+    const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+    // the line's width in the mesh's own units (its world scale divided out)
+    const s = new THREE.Vector3().setFromMatrixScale(m.matrixWorld);
+    // a lathe's normals can face in: push the hull the way most normals point away from the part's centre
+    g.computeBoundingSphere();
+    const c = g.boundingSphere!.center;
+    const pos = g.attributes.position!;
+    const nor = g.attributes.normal!;
+    let outward = 0;
+    for (let i = 0; i < pos.count; i++) outward += (pos.getX(i) - c.x) * nor.getX(i) + (pos.getY(i) - c.y) * nor.getY(i) + (pos.getZ(i) - c.z) * nor.getZ(i) >= 0 ? 1 : -1;
+    const hull = new THREE.Mesh(inkHull(g, (outward >= 0 ? 1 : -1) * (w / Math.max(1e-6, (s.x + s.y + s.z) / 3))), inkMat);
+    g.dispose();
+    hull.userData.ink = true;
+    hull.castShadow = false;
+    m.add(hull);
+    out.push(hull);
+  }
+  return out;
+}
+/** An inverted hull of a non-indexed geometry with normals and colours: each triangle pushed out by `w` and turned
+ *  inside out, coloured ink. Merged with the original, it draws as an outline round the figure. */
+export function inkHull(geom: THREE.BufferGeometry, w: number): THREE.BufferGeometry {
+  const pos = geom.attributes.position!;
+  const nor = geom.attributes.normal!;
+  const n = pos.count;
+  const p = new Float32Array(n * 3);
+  const nn = new Float32Array(n * 3);
+  const c = new Float32Array(n * 3);
+  for (let i = 0; i < n; i += 3)
+    for (const [k, src] of [[0, 0], [1, 2], [2, 1]] as const) {
+      const j = i + src;
+      const o = (i + k) * 3;
+      p[o] = pos.getX(j) + nor.getX(j) * w;
+      p[o + 1] = pos.getY(j) + nor.getY(j) * w;
+      p[o + 2] = pos.getZ(j) + nor.getZ(j) * w;
+      nn[o] = -nor.getX(j);
+      nn[o + 1] = -nor.getY(j);
+      nn[o + 2] = -nor.getZ(j);
+      c[o] = INK.r;
+      c[o + 1] = INK.g;
+      c[o + 2] = INK.b;
+    }
+  const h = new THREE.BufferGeometry();
+  h.setAttribute("position", new THREE.BufferAttribute(p, 3));
+  h.setAttribute("normal", new THREE.BufferAttribute(nn, 3));
+  h.setAttribute("color", new THREE.BufferAttribute(c, 3));
+  return h;
+}
 /**
  * Merge every mesh directly under `o` (and under its plain groups, recursively, unless they are a pivot listed in
  * `keep`) into one vertex-coloured mesh, so a figure costs a draw call per moving part, not per primitive.
@@ -57,9 +150,12 @@ function bake(o: THREE.Object3D, keep: Set<THREE.Object3D>, shadow: boolean): vo
   };
   collect(o, new THREE.Matrix4());
   if (!parts.length) return;
-  const merged = mergeGeometries(parts.map((p) => (p.index ? p.toNonIndexed() : p)));
+  const body = mergeGeometries(parts.map((p) => (p.index ? p.toNonIndexed() : p)));
   for (const p of parts) p.dispose();
-  bakedMat ??= Object.assign(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }), { shared: true });
+  // Plan item 255: the ink outline, a hull about 1.2 cm out at the field's scale
+  const merged = mergeGeometries([body, inkHull(body, 0.012)])!;
+  body.dispose();
+  bakedMat ??= Object.assign(new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: toonGradient() }), { shared: true });
   const mesh = new THREE.Mesh(merged, bakedMat);
   mesh.castShadow = shadow;
   o.add(mesh);

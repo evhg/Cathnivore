@@ -55,7 +55,7 @@ import { COLUMN_TIERS, layOutField, placeOnLane, type Convoy, type ConvoyColumn 
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
-import { FolkMeshes } from "./folk";
+import { FolkMeshes, inkFigure } from "./folk";
 
 interface TowerView {
   obj: THREE.Group;
@@ -488,6 +488,8 @@ export class Renderer3D {
     this.sun.shadow.map = null;
     this.cath = buildCath(this.faceTex);
     liftCath(this.cath);
+    // Plan item 255: her figure inked like the 2D field's people, on her eight largest parts.
+    inkFigure(this.cath, 8, 0.02);
     this.dynamic.add(this.cath);
   }
 
