@@ -183,6 +183,8 @@ void main() {
 }`;
 /** The line's width in CSS pixels at a 900 px tall view (1.5 px at D, as the plan asks), scaled with the view. */
 const INK_PX = 1.5;
+/** Plan item 254: the hair shine band's strength (times the face key and the strands' colour). */
+const HAIR_SHINE = 2.4;
 /** The outlined parts: her largest body meshes, at most this many (the draw-call budget: +12). */
 const INK_MAX = 12;
 
@@ -367,11 +369,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0) => {
     let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 );` : "";
     // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
     // the eyes hold a bright point under the street's grade.
     if (glint > 0) keyTerm += `\ntotalEmissiveRadiance += ${glint.toFixed(2)} * uKey * smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) );`;
+    // Plan item 254: the hair's shine band, an illustrator's highlight: a hard-edged band across the crown where the
+    // hair turns to face the lens and the key (view-space normal half way up), broken by the strands' own map, so
+    // her hair reads as glossy dark hair under the flats rather than a matte brown shell.
+    if (shine > 0)
+      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.78, 0.82, up ) * ( 1.0 - smoothstep( 0.92, 0.95, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.05, 0.035, 0.03 ) ); }`;
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
@@ -395,7 +402,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}`;
   };
   rimify(coatMat, 1);
   // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
@@ -405,7 +412,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   rimify(sleeveMat, 1);
   mats.push(sleeveMat);
   rimify(blackMat, 0.8);
-  rimify(hairMat, 1.2);
+  rimify(hairMat, 1.2, 0, 0, HAIR_SHINE);
   rimify(skinMat, 0.35, 0.8);
 
   let tris = 0;
@@ -1036,7 +1043,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     sheet.computeVertexNormals();
     const hairSheetMat = hairMat.clone();
     hairSheetMat.side = THREE.DoubleSide;
-    rimify(hairSheetMat, 1.2);
+    rimify(hairSheetMat, 1.2, 0, 0, HAIR_SHINE);
     mats.push(hairSheetMat);
     add(sheet, hairSheetMat, headPivot);
 
