@@ -2501,7 +2501,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the figure-region pixel difference between any two classes' D shots over 15%; her face still in the middle band (classpick spec); perf within budget; shots D and P for all five.
 - **Size:** 2
 
-## 236. [ ] Hedgerow 3D: the plots as crops, not boxes *(lane B, in progress)*
+## 236. [ ] Hedgerow 3D: the plots as crops, not boxes *(lane B, in progress)* *(slice 1, 2026-11-07 04:40 lane B: no new meshes (instances on the existing ones, so draw calls unchanged; D l21 648): bare-earth beds get four ridges with seedlings along the outer two, stubble a standing strip of wheat along its far edge, clover seven clumps; the bed's middle kept clear for a tower. Left: a wheat-ear look per act's crop on stubble, and furrow normals)*
 - **Why:** `plan1107b/hedge-l21-3d-D/P`: the 2D field is illustrated, but 3D plots read as flat brown boxes, so 3D looks poorer than the fallback.
 - **Build:** per-crop instanced meshes on each plot (wheat tufts, cabbage rosettes, orchard saplings, furrow ridges), a soil material with furrow normals, kept to instancing so draw calls rise by 12 or fewer.
 - **Accept:** every plot type shows at least 3 materials; draw calls at D on l21 at most +12; hedgerow 3D specs pass; shots P, D, L.

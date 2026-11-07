@@ -787,15 +787,29 @@ export function buildGround(level: Level): Ground {
         if (base === "earth") {
           // Two ridges either side of the middle, along the bed's grain.
           const soil = new THREE.Color(bedTint.earth).multiplyScalar(0.8);
-          for (const o of [-0.22, 0.22])
+          // Plan item 236: a planted bed, not a box: four ridges, seedlings coming up along two of them.
+          const sprout = new THREE.Color("#7fb84e");
+          for (const [k, o] of [-0.27, -0.09, 0.09, 0.27].entries()) {
             ridges.push({ x: c + 0.5 + (turn ? o : 0), y: h + 0.03, z: r + 0.5 + (turn ? 0 : o), ry: turn, s: 1, sy: 1, color: soil });
+            // (the outer two, so a tower at the bed's middle stands clear)
+            if (k === 0 || k === 3)
+              for (const a of [-0.24, 0, 0.24])
+                clumps.push({ x: c + 0.5 + (turn ? o : a), y: h + 0.055, z: r + 0.5 + (turn ? a : o), ry: deco() * 6.3, s: 0.55 + deco() * 0.2, sy: 1.2, color: sprout.clone().multiplyScalar(0.88 + deco() * 0.24) });
+          }
         } else if (base === "stubble") {
           const hay = new THREE.Color("#d9b45a");
           for (const [dx, dz] of corners.filter(() => deco() < 0.6).slice(0, 3).concat([corners[(c + r) % 4]!]).slice(0, 3))
             stooks.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 0.85 + deco() * 0.35, sy: 1, color: hay.clone().multiplyScalar(0.9 + deco() * 0.2) });
+          // Plan item 236: a standing strip of uncut wheat along the bed's far edge (the middle kept for a tower).
+          const ear = new THREE.Color("#e8c25a");
+          for (let k = 0; k < 5; k++) {
+            const a = -0.28 + k * 0.14;
+            tufts.push({ x: c + 0.5 + (turn ? 0.3 : a), y: h + 0.03, z: r + 0.5 + (turn ? a : -0.3), ry: deco() * 6.3, s: 1, sy: 1.6, color: ear.clone().multiplyScalar(0.9 + deco() * 0.2) });
+          }
         } else {
           const leaf = new THREE.Color("#5f9a3a");
-          for (const [dx, dz] of corners)
+          // Plan item 236: clover thick across the bed, not four lone clumps.
+          for (const [dx, dz] of [...corners, [0.5, 0.17], [0.17, 0.5], [0.83, 0.5]] as Array<[number, number]>)
             clumps.push({ x: c + dx + (deco() - 0.5) * 0.06, y: h + 0.03, z: r + dz + (deco() - 0.5) * 0.06, ry: deco() * 6.3, s: 0.9 + deco() * 0.3, sy: 1, color: leaf.clone().multiplyScalar(0.85 + deco() * 0.3) });
         }
         dressedCount++;
