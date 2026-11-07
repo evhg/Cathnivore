@@ -50,14 +50,12 @@ test('Cath and the farmfolk are inked and toon-shaded in 3D', async ({ page }) =
   expect(p.folkPlain).toBe(0)
 })
 
-// Plan item 255: at D her face is turned within 30 deg of the camera (seen from above; 11 deg on l21).
-test('her face is turned toward the camera at D', async ({ page, hasTouch }) => {
-  test.skip(hasTouch, 'an upright phone looks down from her side (44-120 deg): open in item 255')
+// Plan item 255: standing, she turns to the camera, her face within 30 deg of it seen from above (an upright phone's
+// lens looked from her side, 44-120 deg off; the turn eases in, slowly at SwiftShader's few frames a second).
+test('her face is turned toward the camera', async ({ page }) => {
   test.setTimeout(150_000)
   await page.goto('/hedgerow/?sandbox=1&level=21')
   type F = { hedgerow?: { game: () => unknown; camSettled?: () => boolean; faceToCamera?: () => number | null } }
   await page.waitForFunction(() => !!(window as unknown as F).hedgerow?.game() && !!(window as unknown as F).hedgerow!.camSettled?.(), null, { timeout: 120_000 })
-  const a = await page.evaluate(() => (window as unknown as F).hedgerow!.faceToCamera!())
-  expect(a).not.toBeNull()
-  expect(a!).toBeLessThanOrEqual(30)
+  await expect.poll(() => page.evaluate(() => (window as unknown as F).hedgerow!.faceToCamera!() ?? 999), { timeout: 40_000 }).toBeLessThanOrEqual(30)
 })

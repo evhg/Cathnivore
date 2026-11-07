@@ -234,6 +234,8 @@ export class Renderer3D {
   private heroCheer = 9;
   /** Seconds since a tower went in (she stoops to plant it), and the tower count she last saw. */
   private heroPlant = 9;
+  /** Plan item 255: her turn about world y toward the camera while she stands (radians, eased). */
+  private rootYaw = 0;
   /** Plan item 208: seconds since she last gave a hint (she points out over the field while it is fresh). */
   private heroPoint = 9;
   private towersSeen = -1;
@@ -1831,6 +1833,17 @@ export class Renderer3D {
     const elev = Math.atan2(this.camera.position.y - y, Math.hypot(this.camera.position.x - h.x, this.camera.position.z - h.y));
     c.rotation.x = -Math.min(0.55, Math.max(0, (elev - CATH_LEAN_FROM) * 1.1));
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
+    // Plan item 255: standing, she turns to face the camera (her figure is drawn for a lens on +z; an upright phone's
+    // looks from her side, 44-120 deg off her face); walking she faces her path. The lean back stays toward the lens.
+    {
+      const cam = this.camera.getWorldPosition(this.v2);
+      const az = Math.atan2(cam.x - h.x, cam.z - h.y);
+      // (her face is set three-quarters, 30 deg toward her facing side of the lens, so that much less)
+      const want = walking || h.down > 0 ? 0 : Math.max(-2.2, Math.min(2.2, az - h.facing * 0.52));
+      this.rootYaw += (want - this.rootYaw) * Math.min(1, this.reducedMotion ? 1 : dt * 4);
+      c.rotation.order = "YXZ";
+      c.rotation.y = this.rootYaw;
+    }
     const ud = c.userData;
     const fig = ud.fig as THREE.Group;
     const head = ud.head as THREE.Object3D | undefined;
