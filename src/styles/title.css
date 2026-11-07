@@ -1160,7 +1160,9 @@ html.no-animations .title-screen * {
 .ritual-pennant.p1 { fill: var(--wheat); }
 .ritual-pennant.p2 { fill: var(--pasture); }
 .ritual-pennant.p3 { fill: var(--paper-on-fixed-fill); }
-.ritual-streak { font-family: var(--font-text); font-size: var(--fs-caption); font-weight: 700; color: var(--paper-on-fixed-fill); text-align: center; text-shadow: 0 1px 0 color-mix(in srgb, var(--ink-on-fixed-fill) 50%, transparent); }
+/* Plan item 234: the hint is chalked on a dark slate tag, so it reads at 4.5:1 on the counter's light wood too
+   (white on the wood measured about 3.5:1). */
+.ritual-streak { padding: 2px 10px; border-radius: 4px; background: color-mix(in srgb, var(--ink-on-fixed-fill) 82%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink-on-fixed-fill) 30%, transparent); font-family: var(--font-text); font-size: var(--fs-caption); font-weight: 700; color: var(--paper-on-fixed-fill); text-align: center; }
 .ritual-card {
   position: relative;
   flex: none;

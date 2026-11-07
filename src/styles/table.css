@@ -3872,7 +3872,8 @@ html.no-animations .table-cath-line { animation: none; }
 
   .table-head.with-table-cath .rival-frame { width: 58px; height: 58px; }
   .table-head.with-table-cath .rival-frame svg { top: -18px; width: 96px; }
-  .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 7px 2px 5px; }
+  /* Plan item 234: the plate under the portrait at 13 px (12 px caps read about 10). */
+  .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 8px 2px 5px; font-size: var(--fs-caption); letter-spacing: .05em; }
 
   .game-layout .table-hand-spacer {
     flex: none;

@@ -1621,7 +1621,10 @@ function layoutLanes(list: HTMLElement): void {
     });
     if (!pts.length) continue;
     const door = trail.querySelector<HTMLElement>(".home-art");
-    const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [pts[0]![0], -8];
+    // Plan item 234: without the cottage the lane comes in from the band's left edge at the first stop's height (it
+    // used to rise 8% above the stop and end in the air under the act's banner).
+    const band = (trail.closest(".act") ?? trail).getBoundingClientRect();
+    const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [Math.round(((band.left - 4 - box.left) / box.width) * 1000) / 10, pts[0]![1]];
     // Plan item 138: at the turn from row 1 to row 2, and on the way out under the last stop, the lane ran straight
     // down through that stop's name; it swings round the name's outer side instead.
     // Plan item 177: names are measured by layout offsets (boxIn), not client rects, since the stops pop in scaled
@@ -2046,7 +2049,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       pl.setAttribute("vector-effect", "non-scaling-stroke");
       path.append(pl);
     }
-    drawLane(path, [[pts[0]![0], home ? -26 : -8], ...pts]);
+    drawLane(path, [home ? [pts[0]![0], -26] : [-4, pts[0]![1]], ...pts]);
     // Plan item 18: the act's ground fills the whole band edge to edge, under its banner and its lane.
     li.style.setProperty("--ground", `url("${svgImg(groundSvg(n))}")`);
     li.dataset.act = String(n);

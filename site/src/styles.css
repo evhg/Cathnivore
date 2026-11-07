@@ -1576,6 +1576,20 @@ body {
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
   .hero { align-items: end; padding-top: 2vh; }
   .hero-cath { height: min(44vh, 420px); margin-bottom: 0; }
+  /* Plan item 234: she stands on a low market crate, not on the sky over the horizon: two wood slats under her
+     boots with a dark gap between and a lit top edge. */
+  .hero-cath::after {
+    display: block;
+    left: 32%;
+    right: 28%;
+    bottom: -16px;
+    height: 18px;
+    border-radius: 2px;
+    background:
+      linear-gradient(90deg, transparent 0 48%, var(--wood-lo) 48% 52%, transparent 52%),
+      linear-gradient(180deg, var(--wood-hi) 0%, var(--wood-mid) 45%, var(--wood-lo) 100%);
+    box-shadow: 0 -1px 0 var(--wood-rim) inset, 0 6px 10px var(--shadow-deep);
+  }
   .hero-text { padding-bottom: 0; }
   .hero .title { font-size: clamp(3rem, 6.4vw, 6rem); }
 }
