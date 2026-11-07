@@ -1630,7 +1630,13 @@ function layoutLanes(list: HTMLElement): void {
     // Plan item 234: without the cottage the lane comes in from the band's left edge at the first stop's height (it
     // used to rise 8% above the stop and end in the air under the act's banner).
     const band = (trail.closest(".act") ?? trail).getBoundingClientRect();
-    const start: [number, number] = door ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14) : [Math.round(((band.left - 4 - box.left) / box.width) * 1000) / 10, pts[0]![1]];
+    // On the vertical road the first stop's name sits beside its coin, on the left: a lane in from the left edge at
+    // the coin's height ran through it (critique177 at P), so there it comes down from the band's top instead.
+    const start: [number, number] = door
+      ? at(door.getBoundingClientRect(), door.getBoundingClientRect().bottom - 14)
+      : vertical
+        ? [pts[0]![0], Math.max(0, Math.round(((band.top - box.top) / box.height) * 1000) / 10)]
+        : [Math.round(((band.left - 4 - box.left) / box.width) * 1000) / 10, pts[0]![1]];
     // Plan item 138: at the turn from row 1 to row 2, and on the way out under the last stop, the lane ran straight
     // down through that stop's name; it swings round the name's outer side instead.
     // Plan item 177: names are measured by layout offsets (boxIn), not client rects, since the stops pop in scaled
