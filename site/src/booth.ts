@@ -102,7 +102,10 @@ export function drawBooth(): void {
   // The stall: from left of Cath to right of the words; the roof's hem just over her head.
   const x1 = c.l - 64
   const x2 = words.r + 56
-  const roof = c.t + ch * 0.03
+  // Plan item 259: ...and its scallops 14 px clear of the kicker (at 1440 their hem touched its caps).
+  const hw = (x2 - x1 + 16) / Math.max(6, Math.round((x2 - x1) / 44))
+  // (its sloped top band, 52 px over the hem's top, stays under the page's top edge)
+  const roof = Math.max(56 - o.top - window.scrollY, Math.min(c.t + ch * 0.03, words.t - 14 - (hw / 2.4 - 8)))
   const board = { l: words.l - 30, t: words.t - 20, r: words.r + 30, b: words.b + 20 }
   let s = ''
   // the stall's back cloth, a dark canvas that also holds the words' contrast
