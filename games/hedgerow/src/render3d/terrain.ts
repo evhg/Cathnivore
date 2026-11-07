@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
 import { plotLooks, type PlotLook } from "../plotlook";
+import { cropOf, type Crop } from "../growth";
 import { crayonNextBillboard, drawDecor, isWonLevel, rng } from "../theme";
 import { actLight } from "./palette";
 import {
@@ -200,6 +201,43 @@ const bedTex = new Map<string, THREE.Texture>();
  * Plan item 52: the top of a soil bed, by what lies under it. Greyscale (the instance colour tints it): furrows for
  * bare earth, rows of cut stalks for stubble, leaf clumps with white heads for clover.
  */
+/** Plan item 236: the earth bed's furrows as a normal map (its colour map shades them; this makes them catch the
+ *  sun): five ridges across the bed's grain, matching bedTexture's five dark troughs. */
+let furrowTex: THREE.Texture | null = null;
+function furrowNormals(): THREE.Texture {
+  if (furrowTex) return furrowTex;
+  const S = 64;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const ctx = c.getContext("2d")!;
+  const img = ctx.createImageData(S, S);
+  for (let y = 0; y < S; y++) {
+    const v = (y + 0.5) / S - 0.5;
+    // the slope of the furrow's height (the trough where bedTexture is darkest), turned to a tangent-space normal
+    const slope = -Math.sin(v * Math.PI * 2 * 5) * 0.9;
+    const len = Math.hypot(slope, 1);
+    for (let x = 0; x < S; x++) {
+      const i = (y * S + x) * 4;
+      img.data[i] = 128;
+      img.data[i + 1] = Math.round(((slope / len) * 0.5 + 0.5) * 255);
+      img.data[i + 2] = Math.round(((1 / len) * 0.5 + 0.5) * 255);
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  furrowTex = new THREE.CanvasTexture(c);
+  return furrowTex;
+}
+
+/** Plan item 236: the stubble bed's standing strip, as the act's crop (growth.ts `cropOf`). */
+const STANDING: Record<Crop, { colour: string; s: number; sy: number }> = {
+  wheat: { colour: "#e8c25a", s: 1, sy: 1.6 },
+  cabbage: { colour: "#6f9a7a", s: 1.35, sy: 0.8 },
+  sunflower: { colour: "#f2c230", s: 0.9, sy: 2.3 },
+  pumpkin: { colour: "#e08a2e", s: 1.4, sy: 0.7 },
+  lavender: { colour: "#9a7fc8", s: 1, sy: 1.4 },
+};
+
 function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
   const hit = bedTex.get(look);
   if (hit) return hit;
@@ -722,6 +760,7 @@ export function buildGround(level: Level): Ground {
   const bedGeo = new THREE.BoxGeometry(0.78, 0.05, 0.78).translate(0, 0.005, 0);
   const boardGeo = new THREE.BoxGeometry(0.86, 0.07, 0.05);
   const timberCols = ["#8a6a44", "#7a5c3a", "#94744c"].map((c) => new THREE.Color(c));
+  const standing = STANDING[cropOf(level)];
   const lookOf = (c: number, r: number): PlotLook => looks.get(`${c},${r}`) ?? "earth";
   const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.22, depthWrite: false });
   const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
@@ -800,11 +839,12 @@ export function buildGround(level: Level): Ground {
           const hay = new THREE.Color("#d9b45a");
           for (const [dx, dz] of corners.filter(() => deco() < 0.6).slice(0, 3).concat([corners[(c + r) % 4]!]).slice(0, 3))
             stooks.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 0.85 + deco() * 0.35, sy: 1, color: hay.clone().multiplyScalar(0.9 + deco() * 0.2) });
-          // Plan item 236: a standing strip of uncut wheat along the bed's far edge (the middle kept for a tower).
-          const ear = new THREE.Color("#e8c25a");
+          // Plan item 236: a standing strip of the act's uncut crop along the bed's far edge (the middle kept for a
+          // tower): wheat ears, kale, sunflowers, pumpkin vines or lavender, each its own colour and height.
+          const ear = new THREE.Color(standing.colour);
           for (let k = 0; k < 5; k++) {
             const a = -0.28 + k * 0.14;
-            tufts.push({ x: c + 0.5 + (turn ? 0.3 : a), y: h + 0.03, z: r + 0.5 + (turn ? a : -0.3), ry: deco() * 6.3, s: 1, sy: 1.6, color: ear.clone().multiplyScalar(0.9 + deco() * 0.2) });
+            tufts.push({ x: c + 0.5 + (turn ? 0.3 : a), y: h + 0.03, z: r + 0.5 + (turn ? a : -0.3), ry: deco() * 6.3, s: standing.s, sy: standing.sy, color: ear.clone().multiplyScalar(0.9 + deco() * 0.2) });
           }
         } else {
           const leaf = new THREE.Color("#5f9a3a");
@@ -935,7 +975,7 @@ export function buildGround(level: Level): Ground {
   const stoneMat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true });
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
   for (const m of [
-    ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l) }), beds[l], false)),
+    ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l), ...(l === "earth" ? { normalMap: furrowNormals() } : {}) }), beds[l], false)),
     instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards),
     instanced(new THREE.CircleGeometry(0.15, 14).scale(1, 0.62, 1).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#8fb8d4", roughness: 0.08, metalness: 0.3 }), puddles),
     instanced(flowerGeo, flowerMat, cloverHeads),
