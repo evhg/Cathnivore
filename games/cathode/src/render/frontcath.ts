@@ -2158,7 +2158,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
 
   const GHOST_GRAB = V(0.22, 0.36, -0.1);
-  const GHOST_HOLD = V(0.28, 0.17, 0.15);
+  const GHOST_HOLD = V(0.38, 0.15, 0.15);
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
@@ -2175,7 +2175,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     pX.crossVectors(pY, pZ);
     o.quaternion.setFromRotationMatrix(pBasis.makeBasis(pX, pY, pZ));
   };
-  const RIFLE_DIR = V(0.32, 1, -0.04);
+  const RIFLE_DIR = V(0.12, 1, -0.04);
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);
   const SHOT_TOP = V(0.2, 0.1, -1);

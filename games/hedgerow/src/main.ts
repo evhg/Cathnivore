@@ -200,7 +200,7 @@ import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
-import { depotSvg, entrySide, repMood, repSvg, type RepMood } from "./depot";
+import { depotSvg, entrySide, nearSides, repMood, repSvg, type RepMood } from "./depot";
 import { gateSignRect } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
@@ -4555,31 +4555,37 @@ function syncDepots(g: Game): void {
   const counts = [0, 0];
   if (betweenRounds(g) && L.waves[g.wave]) for (const q of waveSpawns(g, L.waves[g.wave]!, g.wave + 1)) counts[(q as { lane?: number }).lane ? 1 : 0]!++;
   const lanes = [L.path, L.path2].map((path, i) => ({ path, i })).filter((l) => !!l.path);
-  const spots: Array<{ x: number; y: number; count: number; lane: number }> = [];
-  for (const { path, i } of lanes) {
+  const spots: Array<{ x: number; y: number; count: number; lane: number; size: number }> = [];
+  // Plan item 246: where no margin holds the full two-cell depot, a smaller one (1.3 cells, 48 px at least) is tried.
+  const sizes = [size, Math.max(48, Math.round(cell * 1.3))].filter((v, k, a) => k === 0 || v < a[0]!);
+  for (const { path, i } of lanes) for (const dsz of sizes) {
+    if (spots.some((sp) => sp.lane === i)) break;
     const start = path![0] as unknown as [number, number];
     const gate = r.cellCenter(start[0], start[1]);
     if (!gate) continue;
-    for (const side of entrySide(start, L.cols, L.rows)) {
+    // Plan item 246: an upright phone's level 34 has no margin left of the field, so its second gate (two rows off
+    // the foot) had no depot and its vans stacked on a bare plate; a gate within two cells of another edge may
+    // stand its depot on that edge's margin, beside the gate.
+    for (const side of [...entrySide(start, L.cols, L.rows), ...nearSides(start, L.cols, L.rows)]) {
       const room = side === "left" ? fieldL - canvas.left : side === "right" ? canvas.right - fieldR : side === "top" ? fieldT - canvas.top : canvas.bottom - fieldB;
       // Only where the margin outside the field holds the whole depot: it never stands on a plot.
-      if (room < size + 12) continue;
-      const x = side === "left" ? fieldL - 8 - size : side === "right" ? fieldR + 8 : gate.x - size / 2;
-      const y = side === "top" ? fieldT - 8 - size : side === "bottom" ? fieldB + 8 : gate.y - size / 2;
+      if (room < dsz + 12) continue;
+      const x = side === "left" ? fieldL - 8 - dsz : side === "right" ? fieldR + 8 : gate.x - dsz / 2;
+      const y = side === "top" ? fieldT - 8 - dsz : side === "bottom" ? fieldB + 8 : gate.y - dsz / 2;
       // Plan item 160: the gate's town sign (painted by theme.ts's paintOneGate) stays readable: the depot slides
       // along the margin to clear it (it hid all but '…WELL' of the second gate's sign on level 34).
       const sr = gateSignRect(L, path!, { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY }, signMeasure());
       const sign = { left: canvas.left + sr.sx, top: canvas.top + sr.sy, right: canvas.left + sr.sx + sr.sw, bottom: canvas.top + sr.sy + sr.sh };
-      const tries = side === "left" || side === "right" ? [y, sign.top - 6 - size, sign.bottom + 6] : [x, sign.left - 6 - size, sign.right + 6];
+      const tries = side === "left" || side === "right" ? [y, sign.top - 6 - dsz, sign.bottom + 6] : [x, sign.left - 6 - dsz, sign.right + 6];
       let placed = false;
       for (const t of tries) {
-        const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - size - 4, side === "left" || side === "right" ? t : y));
-        const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - size - 4, side === "left" || side === "right" ? x : t));
+        const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - dsz - 4, side === "left" || side === "right" ? t : y));
+        const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - dsz - 4, side === "left" || side === "right" ? x : t));
         // A clamp that pulls it onto the field (a top margin shorter than the depot) rules the spot out.
-        const meetsField = clampX < fieldR && clampX + size > fieldL && clampY < fieldB && clampY + size > fieldT;
-        const meetsSign = clampX < sign.right && clampX + size > sign.left && clampY < sign.bottom && clampY + size > sign.top;
+        const meetsField = clampX < fieldR && clampX + dsz > fieldL && clampY < fieldB && clampY + dsz > fieldT;
+        const meetsSign = clampX < sign.right && clampX + dsz > sign.left && clampY < sign.bottom && clampY + dsz > sign.top;
         if (meetsField || meetsSign) continue;
-        spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i });
+        spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i, size: dsz });
         placed = true;
         break;
       }
@@ -4587,7 +4593,7 @@ function syncDepots(g: Game): void {
     }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
-  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count}`).join(";")}`;
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;
   let layer = layer0;
@@ -4607,9 +4613,10 @@ function syncDepots(g: Game): void {
       el.toggleAttribute("data-door-open", doorOpen);
       el.style.setProperty("--x", `${Math.round(sp.x)}px`);
       el.style.setProperty("--y", `${Math.round(sp.y)}px`);
-      el.style.setProperty("--size", `${size}px`);
+      el.style.setProperty("--size", `${sp.size}px`);
       // Plan item 160: a phone's small depot shows the count alone ('485 NEXT' overflowed its board at 12 px).
-      el.toggleAttribute("data-small", size < 100);
+      el.toggleAttribute("data-small", sp.size < 100);
+      el.toggleAttribute("data-tiny", sp.size < 72);
       // Plan item 166: a quiet gate reads "0 next" (a bare dash read as a broken board).
       el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
       return el;

@@ -64,6 +64,18 @@ export function entrySide(start: readonly [number, number], cols: number, rows: 
   return out;
 }
 
+/** The other field edges within two cells of a gate (not those it enters from): a fallback home for its depot. */
+export function nearSides(start: readonly [number, number], cols: number, rows: number): Side[] {
+  const [c, r] = start;
+  const enter = entrySide(start, cols, rows);
+  const near: Side[] = [];
+  if (c <= 2) near.push("left");
+  if (c >= cols - 3) near.push("right");
+  if (r <= 2) near.push("top");
+  if (r >= rows - 3) near.push("bottom");
+  return near.filter((s) => !enter.includes(s));
+}
+
 /** The rep's mood once a round is over: gleeful if anything got through it, rattled if it went clean. */
 export function repMood(leaksAtStart: number, leaksAtEnd: number): RepMood {
   return leaksAtEnd > leaksAtStart ? "gleeful" : "rattled";

@@ -4978,6 +4978,9 @@ img.act-scene {
   height: 28%;
 }
 .depot-rep svg { display: block; width: 100%; height: 100%; }
+/* Plan item 246: a fallback depot (1.3 cells, an upright phone's second gate) is too narrow for the 12 px board and
+   the rep side by side; he stands just outside its wall instead. */
+.depot[data-tiny] .depot-rep { left: 100%; width: 26%; }
 .depot[data-rep-mood="gleeful"] .depot-rep { animation: rep-gloat 600ms ease-in-out 3 alternate; }
 .depot[data-rep-mood="rattled"] .depot-rep { animation: rep-shake 120ms linear 6 alternate; }
 @keyframes rep-gloat { to { translate: 0 -12%; } }
