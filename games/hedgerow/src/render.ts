@@ -23,6 +23,7 @@ import {
   towerAt,
   towerStats,
   plotKind,
+  isPlot,
   oakAt,
   type EnemyKind,
   type Game,
@@ -864,6 +865,16 @@ export class Renderer {
       this.shownQueue = shown;
       const lanes: Array<{ leads: GateQueue["leads"]; count: number; lane?: 1 }> = [{ leads: queue.leads, count: queue.count }];
       if (level.path2) lanes.push({ leads: queue.leads2, count: queue.count2, lane: 1 });
+      // Plan item 259: the plots' boxes (as drawn, inset in their cells), so the count plate keeps off them.
+      let plotRects: Rect[] | null = null;
+      const plots = (): Rect[] => {
+        if (plotRects) return plotRects;
+        plotRects = [];
+        for (let r = 0; r < level.rows; r++)
+          for (let c = 0; c < level.cols; c++)
+            if (isPlot(level, c, r)) plotRects.push({ x: X(c) + s * 0.1, y: Y(r) + s * 0.1, w: s * 0.8, h: s * 0.8 });
+        return plotRects;
+      };
       for (const ln of lanes) {
         if (!ln.count) continue;
         const path = ln.lane ? level.path2! : level.path;
@@ -890,7 +901,10 @@ export class Renderer {
               y: 99.5,
               draw: () => {
                 const behind = ln.leads.length > 1 ? shown.leads[at] : undefined;
-                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates], behind);
+                // ...and off Cath's figure.
+                const hp = this.heroPx();
+                const cath = { x: X(game.hero.x) - hp.w / 2, y: Y(game.hero.y) - hp.h, w: hp.w, h: hp.h + s * 0.3 };
+                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind);
                 if (r) shown.names.push(r);
               },
             });
@@ -908,7 +922,7 @@ export class Renderer {
         const upright = headingAt(path, 0).dx === 0;
         // Plan item 157: where Hollowell's depot stands by this gate its departures board carries the count instead.
         if (!this.depotLanes.has(ln.lane ?? 0))
-          items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright)) });
+          items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright, plots(), shown.leads)) });
       }
     } else this.queueAge = 0;
     for (const e of game.enemies) {
@@ -1547,7 +1561,7 @@ export class Renderer {
     ctx.restore();
     return r;
   }
-  private countPlate(ctx: CanvasRenderingContext2D, count: number, x: number, y: number, s: number, upright: boolean): Rect {
+  private countPlate(ctx: CanvasRenderingContext2D, count: number, x: number, y: number, s: number, upright: boolean, plots: Rect[] = [], leads: Rect[] = []): Rect {
     const label = `${count} coming`;
     const fs = Math.max(12, Math.round(s * 0.2));
     ctx.save();
@@ -1558,14 +1572,28 @@ export class Renderer {
     const pad = 4;
     // Beside the lane at the queue's tail, never on it: under a lane that runs across, to the roomier side of
     // one that runs up or down.
-    let px = x - w / 2;
-    let py = y + s * 0.5;
-    if (upright) {
-      px = x + s * 0.5 + w <= this.cssW - pad ? x + s * 0.5 : x - s * 0.5 - w;
-      py = y - h / 2;
-    }
-    const cx = Math.max(pad, Math.min(this.cssW - w - pad, px));
-    const cy = Math.max(pad, Math.min(this.cssH - h - pad, py));
+    // Plan item 259: of those spots (clamped into the canvas) the one that covers least plot, never a queued lead.
+    const right = { x: x + s * 0.5, y: y - h / 2 };
+    const left = { x: x - s * 0.5 - w, y: y - h / 2 };
+    const below = { x: x - w / 2, y: y + s * 0.5 };
+    const above = { x: x - w / 2, y: y - s * 0.5 - h };
+    const near = upright ? (right.x + w <= this.cssW - pad ? [right, left] : [left, right]).concat(below, above) : [below, above, right, left];
+    // and a lane's width further out, where the near spots all sit on plots or the queue
+    const far = [
+      { x: below.x, y: below.y + s },
+      { x: above.x, y: above.y - s },
+      { x: right.x + s, y: right.y },
+      { x: left.x - s, y: left.y },
+    ];
+    const order = near.concat(far);
+    const clamp = (p: { x: number; y: number }) => ({ x: Math.max(pad, Math.min(this.cssW - w - pad, p.x)), y: Math.max(pad, Math.min(this.cssH - h - pad, p.y)) });
+    const cover = (p: { x: number; y: number }, bs: Rect[]) =>
+      bs.reduce((a, b) => a + Math.max(0, Math.min(p.x + w, b.x + b.w) - Math.max(p.x, b.x)) * Math.max(0, Math.min(p.y + h, b.y + b.h) - Math.max(p.y, b.y)), 0);
+    const cost = (p: { x: number; y: number }) => cover(p, plots) + 50 * cover(p, leads);
+    const spots = order.map(clamp);
+    const spot = spots.reduce((a, b) => (cost(b) < cost(a) - 1 ? b : a));
+    const cx = spot.x;
+    const cy = spot.y;
     ctx.fillStyle = "rgba(255,250,238,0.96)";
     ctx.strokeStyle = "rgba(70,48,30,0.85)";
     ctx.lineWidth = Math.max(1.5, s * 0.03);

@@ -80,3 +80,20 @@ for (const level of [1, 12, 34, 40]) {
     await expect(advice.locator('.nb-advice-line')).not.toBeEmpty()
   })
 }
+
+// Plan item 259: on level 21's phone field the lane by the gate is lined with plots; the count plate found the lane
+// under the gate sign instead of the first plot row.
+test('level 21: the count plate keeps off the plots', async ({ page }) => {
+  test.setTimeout(90_000)
+  await open(page, 21)
+  await expect.poll(async () => (await queue(page))?.leads.length ?? 0).toBeGreaterThan(0)
+  const q = (await queue(page))!
+  const canvas = (await page.locator('canvas').first().boundingBox())!
+  const plots = (await page.evaluate(() => (window as unknown as { hedgerow: { plotBoxes(): Box[] } }).hedgerow.plotBoxes()))
+    .map((b) => ({ x: b.x - canvas.x + b.w * 0.1, y: b.y - canvas.y + b.h * 0.1, w: b.w * 0.8, h: b.h * 0.8 }))
+  const area = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
+  for (const p of q.plates) {
+    const on = plots.reduce((s, b) => s + area(p, b), 0)
+    expect(on, `plate ${JSON.stringify(p)} on plots`).toBeLessThanOrEqual(p.w * p.h * 0.15)
+  }
+})
