@@ -1077,7 +1077,7 @@ export function buildGround(level: Level): Ground {
     const reedCols = ["#aaa65c", "#c4b26a", "#8f9a4c"].map((c) => new THREE.Color(c));
     const white = new THREE.Color("#f6f4ee");
     for (let z = -2.5; z <= rows + 2.5; z += 0.34)
-      for (let x = -2.3; x <= -0.45; x += 0.34) {
+      for (let x = -1.96; x <= -0.45; x += 0.34) {
         const jx = x + (deco() - 0.5) * 0.2;
         const jz = z + (deco() - 0.5) * 0.2;
         if (laneDistance(level, jx, jz) < 0.9) continue;
@@ -1148,7 +1148,8 @@ export function buildGround(level: Level): Ground {
     for (let i = 0; i < 4; i++) {
       const b = buildBoat(rand);
       const z = -0.5 + ((i + 0.5) / 4) * (rows + 1);
-      b.position.set(-2.6 - rand() * 1.2, -0.06, z);
+      // Plan item 304: clear of the flats (which reach about -2.3 with their spread; the hulls were sliced by them).
+      b.position.set(-3.2 - rand() * 1.0, -0.06, z);
       b.rotation.y = Math.PI / 2 + (rand() - 0.5) * 0.6;
       b.userData.home = b.position.x;
       group.add(b);
