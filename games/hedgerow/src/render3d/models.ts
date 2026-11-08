@@ -3118,7 +3118,42 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
   const long = w >= d;
   switch (kind) {
     case "green": {
-      pad("#93c86a");
+      // Plan item 262: a kept village green, not a flat pad: mown stripes, a low white rail with a gap, flowers.
+      {
+        const iw = w - 0.16;
+        const id = d - 0.16;
+        const n = Math.max(4, Math.round((long ? iw : id) * 4));
+        const stripe = [matte("#8fc566"), matte("#a2d277")];
+        for (let k = 0; k < n; k++) {
+          const t = -(long ? iw : id) / 2 + ((k + 0.5) * (long ? iw : id)) / n;
+          const sw = (long ? iw : id) / n;
+          g.add(long ? box(sw, 0.03, id, stripe[k % 2]!, t, 0, 0) : box(iw, 0.03, sw, stripe[k % 2]!, 0, 0, t));
+        }
+        const rail = matte("#efe9dc");
+        const hw = iw / 2 - 0.03;
+        const hd = id / 2 - 0.03;
+        for (const [ax, az, bx2, bz] of [
+          [-hw, -hd, hw, -hd],
+          [-hw, hd, -0.2, hd],
+          [0.2, hd, hw, hd],
+          [-hw, -hd, -hw, hd],
+          [hw, -hd, hw, hd],
+        ] as const) {
+          const len = Math.hypot(bx2 - ax, bz - az);
+          const along = Math.abs(bx2 - ax) > Math.abs(bz - az);
+          g.add(box(along ? len : 0.025, 0.025, along ? 0.025 : len, rail, (ax + bx2) / 2, 0.11, (az + bz) / 2));
+          const posts = Math.max(2, Math.round(len / 0.3));
+          for (let k = 0; k <= posts; k++) g.add(box(0.035, 0.14, 0.035, rail, ax + ((bx2 - ax) * k) / posts, 0.02, az + ((bz - az) * k) / posts));
+        }
+        const bloom = ["#f2c94c", "#e8e4f2", "#d9667a"];
+        for (let k = 0; k < 7; k++) {
+          const fx = (rand() - 0.5) * (iw - 0.4);
+          const fz = (rand() - 0.5) * (id - 0.4);
+          if (Math.hypot(fx, fz) < 0.35) continue;
+          g.add(ball(0.045, matte(bloom[k % 3]!), fx, 0.05, fz, 0));
+        }
+        tree(-w * 0.32, -d * 0.28, 0.14, "#4f8f3c");
+      }
       const wellStone = matte("#bdb3a2");
       g.add(cyl(0.2, 0.22, 0.2, wellStone, 0, 0.03, 0, 12));
       g.add(cyl(0.15, 0.15, 0.02, matte("#24343c", 0.2), 0, 0.22, 0, 12));
