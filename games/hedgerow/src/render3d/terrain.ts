@@ -1064,18 +1064,24 @@ export function buildGround(level: Level): Ground {
     const egretNeck: Inst[] = [];
     // Plan item 228: wet silt, grey-sand and silvered, with samphire greens and tide pools among it (the old browns,
     // stacked as pebbles, read as a band of mud at the phone's left edge).
-    const mud = ["#9a9478", "#a8a184", "#8c8a72", "#8e9a68", "#7f9558", "#b7c3c4"].map((c) => new THREE.Color(c));
-    const reedCols = ["#9a9a52", "#b5a35e", "#7f8a44"].map((c) => new THREE.Color(c));
+    // Plan item 262: three colours in broad patches (silt, samphire, tide pool), not six speckled cell by cell.
+    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#b7c3c4"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
+    const patchOf = (x: number, z: number): THREE.Color => {
+      const v = 0.55 * Math.sin(z * 1.1 + x * 1.7) + 0.45 * Math.sin(z * 0.43 - x * 0.9 + 1.3);
+      return v > 0.3 ? samphire : v < -0.5 ? pool : silt;
+    };
+    const reedCols = ["#aaa65c", "#c4b26a", "#8f9a4c"].map((c) => new THREE.Color(c));
     const white = new THREE.Color("#f6f4ee");
     for (let z = -2.5; z <= rows + 2.5; z += 0.34)
       for (let x = -1.65; x <= -0.45; x += 0.34) {
         const jx = x + (deco() - 0.5) * 0.2;
         const jz = z + (deco() - 0.5) * 0.2;
         if (laneDistance(level, jx, jz) < 0.9) continue;
-        flats.push({ x: jx, y: heightAt(jx, jz) - 0.02, z: jz, ry: deco() * 6.3, s: 0.34 + deco() * 0.1, sy: 0.03, color: mud[Math.floor(deco() * mud.length)]! });
+        flats.push({ x: jx, y: heightAt(jx, jz) - 0.02, z: jz, ry: deco() * 6.3, s: 0.36 + deco() * 0.08, sy: 0.03, color: patchOf(jx, jz) });
+        // Reeds stand in tight clumps (item 262: loose ones read as scattered black sticks from above).
         if (deco() < 0.4)
-          for (let k = 0; k < 8; k++)
-            reeds.push({ x: jx + (deco() - 0.5) * 0.22, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.22, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
+          for (let k = 0; k < 9; k++)
+            reeds.push({ x: jx + (deco() - 0.5) * 0.12, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.12, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
       }
     for (let i = 0; i < 5; i++) {
       const x = -1.4 + deco() * 0.8;
