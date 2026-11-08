@@ -2654,6 +2654,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
 
   let wearing: string | null = null;
+  // Plan item 278: the Ghost walks in with the umbrella furled (her rifle stands where the canopy was, and the
+  // hood keeps the rain off), so her silhouette loses the canopy the other four keep. Indoors furls it for all.
+  let inside = false;
+  const furl = () => {
+    const f = inside || wearing === "ghost";
+    umb.visible = !f;
+    furled.visible = f;
+    dropLines.visible = !f;
+  };
 
   // Plan item 247: merge the static parts per bone and material (see addS).
   {
@@ -2778,6 +2787,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         caseDown.visible = wearing === "fixer" && !carrying;
         caseUp.visible = wearing === "fixer" && carrying;
       }
+      furl();
     },
     showAllKits(on) {
       for (const [k, g] of kits) g.visible = on || k === wearing;
@@ -2821,9 +2831,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const m of coatMats) m.color.copy(c ?? coat0);
     },
     indoors(on) {
-      umb.visible = !on;
-      furled.visible = on;
-      dropLines.visible = !on;
+      inside = on;
+      furl();
     },
     dispose() {
       group.traverse((o) => {
