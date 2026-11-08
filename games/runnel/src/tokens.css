@@ -15,6 +15,8 @@
   --clover: #8fae62;
   --flower: #f6f1e4;
   --wet: #b8d98c;
+  /* Plan item 277: a watered field is a deep crop green, 3:1 or more against a dry one (tests/runnel-contrast). */
+  --wet-field: #4f7e33;
   --wet-edge: #7fae52;
   --groove: #96693b;
   --groove-wet: #7f5c35;
@@ -146,6 +148,7 @@
     --clover: #6f8a4c;
     --flower: #cfc3ad;
     --wet: #3f5b2f;
+    --wet-field: #86b35a;
     --wet-edge: #5f8445;
     /* Plan item 30: at night the channels are pale sand cut into dark soil (3:1 or more, tests/runnel-contrast). */
     --groove: #d0ab7c;

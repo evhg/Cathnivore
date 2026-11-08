@@ -61,3 +61,12 @@ describe('Runnel ditch contrast (plan item 61)', () => {
     })
   }
 })
+
+// Plan item 277: a watered field answers the water: 3:1 or more in luminance against a dry field, in every palette.
+describe('Runnel watered fields (plan item 277)', () => {
+  for (const [name, p] of Object.entries(palettes))
+    it(`${name}: a watered field stands 3:1 against a dry one`, () => {
+      expect(p['--wet-field'], 'declared').toBeDefined()
+      expect(contrast(p['--wet-field']!, p['--dry-field']!)).toBeGreaterThanOrEqual(3)
+    })
+})
