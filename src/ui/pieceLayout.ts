@@ -70,8 +70,8 @@ const LABEL_H = 21
 /** The threat badge's box under the name plate (Map.tsx draws it 60 x 14). */
 /** Plan item 139: 4 units under the plate (was 2: its stroke met the pill on a phone, reading as one piece). */
 export const BADGE = { x0: -31, y0: LABEL_Y + 10, x1: 31, y1: LABEL_Y + 24 }
-/** Plan item 121: the badge's text on screen at the least (it was about 7 px on a phone). */
-export const MIN_BADGE_PX = 11
+/** Plan item 121: the badge's text on screen at the least (it was about 7 px on a phone); item 304: 12 (was 11). */
+export const MIN_BADGE_PX = 12
 /** A producer stall's least height on screen while the badge grows (plan item 2's 24 px on a phone). */
 const MIN_STALL_PX = 25
 /** The badge's box at scale k, grown from its top centre (Map.tsx scales the drawn badge the same way). */

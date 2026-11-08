@@ -212,7 +212,7 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
       {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
       {/* plan item 172: a chunky token, its moulded side showing under the face */}
       {/* plan item 282: a hard, clinical drop shadow (no blur), then the moulded side, the gloss face and its streak */}
-      <polygon className="corp-shadow" points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(2.2 2.4)" fill="var(--ink)" opacity={0.28} />
+      <polygon className="corp-shadow" points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
       <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <path className="corp-specular" d="M 1.2,10.5 V 4 L 2.4,3" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
@@ -232,7 +232,7 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
 export function Buyout({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-buyout">
-      <polygon className="corp-shadow" points="6,0 12,4 12,12 0,12 0,4" transform="translate(2.2 2.4)" fill="var(--ink)" opacity={0.28} />
+      <polygon className="corp-shadow" points="6,0 12,4 12,12 0,12 0,4" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
       <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <polygon points="6,0 12,4 12,12 0,12 0,4" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <path className="corp-specular" d="M 1.2,10.5 V 4.6 L 5.6,1.6" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
@@ -251,7 +251,7 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
-      <circle className="corp-shadow" cx={8.2} cy={8.4} r={6} fill="var(--ink)" opacity={0.28} />
+      <circle className="corp-shadow" cx={7.4} cy={7.7} r={6} fill="var(--ink)" opacity={0.28} />
       <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--ink)" strokeWidth={1} />
       <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
       <circle cx={6} cy={6} r={6} fill="url(#candor-gloss)" stroke="var(--ink)" strokeWidth={1} />
