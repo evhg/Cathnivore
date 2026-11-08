@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 38: on a phone the portfolio hero leads with Cath in front of one print that cross-fades between
-// the games (she's at least 40% of the width); she's in the page from the first paint (built in, not drawn
+// Plan item 38: on a phone the portfolio hero leads with Cath in front of the games' prints (item 303: a swiped
+// strip, was one print cross-fading) (she's at least 40% of the width); she's in the page from the first paint (built in, not drawn
 // by the script); reduced motion keeps the first print still.
-test('the phone hero shows Cath at 40% or more of the width, in front of a cycling print', async ({ page }) => {
+test('the phone hero shows Cath at 40% or more of the width, in front of a strip of the four prints', async ({ page }) => {
   const vw = page.viewportSize()!.width
   await page.goto('/')
   const cath = page.locator('#hero-cath')
@@ -15,9 +15,16 @@ test('the phone hero shows Cath at 40% or more of the width, in front of a cycli
     const h1 = (await page.locator('#hero-title').boundingBox())!
     expect(box.y).toBeLessThan(h1.y)
     expect(box.y).toBeGreaterThanOrEqual(0)
-    // The four prints share one spot and take turns (plan item 91 added Hedgerow).
-    const names = await page.locator('.hero-show .show-card').evaluateAll((els) => els.map((e) => getComputedStyle(e).animationName))
-    expect(names).toEqual(['show-cycle', 'show-cycle', 'show-cycle', 'show-cycle'])
+    // Plan item 303: the four prints are a swiped strip, each labelled, and every one scrolls into view.
+    const strip = page.locator('.hero-show .show-strip')
+    expect(await strip.evaluate((el) => getComputedStyle(el).scrollSnapType)).toContain('x')
+    await expect(page.locator('.hero-show .show-label')).toHaveText(['Cathnivore', 'Runnel', 'NIGHT SHIFT', 'Hedgerow'])
+    for (const card of await page.locator('.hero-show .show-card').all()) {
+      await card.evaluate((el) => el.scrollIntoView({ inline: 'start', block: 'nearest' }))
+      const r = (await card.boundingBox())!
+      expect(r.x).toBeGreaterThanOrEqual(-1)
+      expect(r.x + r.width).toBeLessThanOrEqual(vw + 1)
+    }
   }
   // Phone-sized prints are offered.
   expect(await page.locator('.show-a img').getAttribute('srcset')).toContain('640w')
@@ -31,12 +38,12 @@ test('Cath is in the hero before any script runs', async ({ browser }) => {
   await ctx.close()
 })
 
-test('reduced motion keeps the first print still on a phone', async ({ page }) => {
+test('reduced motion keeps every print showing on a phone', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   if (page.viewportSize()!.width >= 1100) return
   const ops = await page.locator('.hero-show .show-card').evaluateAll((els) => els.map((e) => getComputedStyle(e).opacity))
-  expect(ops).toEqual(['1', '0', '0', '0'])
+  expect(ops).toEqual(['1', '1', '1', '1'])
 })
 
 /** Plan item 98: the stats row's labels and numerals read at AA on the hero once its entrance has run. */

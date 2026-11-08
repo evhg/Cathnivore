@@ -274,6 +274,8 @@ main,
 .hero-show {
   display: none;
 }
+/* Plan item 303: the four frames sit in a strip that is only a box on a phone (a swiped row); at D it steps aside. */
+.show-strip { display: contents; }
 .show-label { display: none; }
 @media (max-width: 1099.98px) {
   .hero {
@@ -311,13 +313,46 @@ main,
     height: 100%;
     object-fit: cover;
   }
-  .show-a { opacity: 1; }
-  /* Plan item 203: Cath's sticker covers the print's right half, so NIGHT SHIFT's zooms onto her in the left. */
-  .show-c img { width: 160%; height: 160%; max-width: none; margin: -18.75% 0 0 -75%; filter: brightness(1.1); }
-  .ready .hero-show .show-card { animation: show-cycle 16s var(--ease-io) infinite both; }
-  .ready .hero-show .show-b { animation-delay: 4s; }
-  .ready .hero-show .show-c { animation-delay: 8s; }
-  .ready .hero-show .show-d { animation-delay: 12s; }
+  /* Plan item 303: the four prints are a swiped strip (snapping print by print, the next one peeking at the
+     edge), each labelled, in place of one print cross-fading between them; Cath stands in front at the right. */
+  .show-strip {
+    display: flex;
+    position: absolute;
+    left: 0;
+    top: 4%;
+    width: 100%;
+    gap: var(--sp-3);
+    padding: 2% 3% 6%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 3%;
+    scrollbar-width: none;
+    pointer-events: auto;
+  }
+  .show-strip::-webkit-scrollbar { display: none; }
+  .show-strip .show-card {
+    position: relative;
+    left: auto;
+    top: auto;
+    flex: none;
+    width: 66%;
+    rotate: none;
+    opacity: 1;
+    scroll-snap-align: start;
+  }
+  .show-label {
+    display: block;
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    padding: 3px 9px 4px;
+    border-radius: 999px;
+    background: var(--glass-solid);
+    color: var(--text);
+    font: 600 0.75rem/1.2 var(--font-ui);
+    letter-spacing: 0.04em;
+  }
+  .show-c img { filter: brightness(1.1); }
   .show-cath {
     position: absolute;
     right: 0;
