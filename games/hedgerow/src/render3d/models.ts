@@ -1922,11 +1922,12 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   root.add(fig);
   const legs: THREE.Object3D[] = [];
   const o = wornOutfit();
-  const trousersM = matte(o.trousers, 0.7).clone();
+  // Plan item 284: smooth-shaded cloth (flat facets read as a boxy mannequin at the field camera).
+  const trousersM = matte(o.trousers, 0.7, false).clone();
   const bootsM = matte(o.boots, 0.5).clone();
-  const jacketM = matte(o.jacket, 0.7).clone();
+  const jacketM = matte(o.jacket, 0.7, false).clone();
   const blouseM = matte(o.blouse, 0.5).clone();
-  const sleeveM = matte(o.sleeve, 0.7).clone();
+  const sleeveM = matte(o.sleeve, 0.7, false).clone();
   const skinM = matte(SKIN, 0.6, false);
   // Plan item 102: her parts are named (the materials survive the merges and her lift), so tests and shots can find them.
   jacketM.name = "jacket";
