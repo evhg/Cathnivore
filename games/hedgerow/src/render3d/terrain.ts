@@ -1077,7 +1077,7 @@ export function buildGround(level: Level): Ground {
     const reedCols = ["#aaa65c", "#c4b26a", "#8f9a4c"].map((c) => new THREE.Color(c));
     const white = new THREE.Color("#f6f4ee");
     for (let z = -2.5; z <= rows + 2.5; z += 0.34)
-      for (let x = -1.65; x <= -0.45; x += 0.34) {
+      for (let x = -2.3; x <= -0.45; x += 0.34) {
         const jx = x + (deco() - 0.5) * 0.2;
         const jz = z + (deco() - 0.5) * 0.2;
         if (laneDistance(level, jx, jz) < 0.9) continue;
