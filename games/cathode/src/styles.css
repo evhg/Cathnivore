@@ -740,7 +740,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   transition: color 200ms ease, filter 200ms ease;
 }
 .cp-opt-gear svg { display: block; width: 100%; height: auto; }
-.cp-opt-gear .wa-body { fill-opacity: 0; }
+/* Plan item 278: the list's guns are solid stencils, not hairlines: a filled body under a heavier line, lit full when
+   chosen (the detail lines then cut dark into the lit body). */
+.cp-opt-gear .wa-body { fill-opacity: .3; stroke-width: 2.6; }
+.cp-opt[aria-checked="true"] .cp-opt-gear .wa-body { fill-opacity: .8; }
+.cp-opt[aria-checked="true"] .cp-opt-gear .wa-detail { stroke: rgb(var(--black-rgb)); opacity: .8; }
 .cp-opt[aria-checked="true"] .cp-opt-gear {
   color: var(--accent, var(--blood-hot));
   filter: drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .9)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .5));
