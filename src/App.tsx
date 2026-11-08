@@ -513,7 +513,8 @@ function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mo
         )}
       </span>
       <small>
-        {LAYOUTS[daily.layout].name} · {pair} · {MARKET_EVENTS[daily.marketEvent].name}
+        {/* Plan item 296: each '·' binds to the word before it, so a wrap never opens a line on a lone dot. */}
+        {LAYOUTS[daily.layout].name}{'\u00a0· '}{pair}{'\u00a0· '}{MARKET_EVENTS[daily.marketEvent].name}
       </small>
     </button>
   )
