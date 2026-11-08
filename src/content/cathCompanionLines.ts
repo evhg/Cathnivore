@@ -1,4 +1,4 @@
-import type { CathExpression } from '../../shared/cath/cath'
+import type { CathExpression, CathPoseId } from '../../shared/cath/cath'
 import { REGIONS } from './map'
 import type { RegionId } from '../engine/types'
 
@@ -19,6 +19,22 @@ export const CATH_REACTION_EXPRESSION: Record<CathReaction, CathExpression> = {
   greeting: 'smirk',
   sell: 'wink',
   invest: 'delighted',
+}
+
+/** Plan item 276: the pose she strikes with each reaction at the table (a few seconds, then back to rest): a cheer for
+ *  freed land and a win, a point at the region she means to expand into, a hand to her chin when a Squeeze lands or
+ *  the game is lost, arms crossed when the Rift splits, a wave hello, the basket when she sells. */
+export const CATH_REACTION_POSE: Record<CathReaction, CathPoseId> = {
+  liberated: 'cheer',
+  expand: 'point',
+  squeezeLostLand: 'thinking',
+  squeeze: 'thinking',
+  riftSplit: 'crossed',
+  win: 'cheer',
+  loss: 'thinking',
+  greeting: 'wave',
+  sell: 'basket',
+  invest: 'point',
 }
 
 const LINES: Record<CathReaction, string[]> = {

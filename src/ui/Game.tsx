@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
@@ -61,8 +61,8 @@ import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import CathCompanion, { CathDock } from './CathCompanion'
 import Tooltip from './Tooltip'
-import { CATH_REACTION_EXPRESSION, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
-import type { CathExpression } from '../../shared/cath/cath'
+import { CATH_REACTION_EXPRESSION, CATH_REACTION_POSE, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
+import type { CathExpression, CathPoseId } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import {
   GoodwillIcon,
@@ -573,6 +573,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const marksIncomeTick = useIncomeTick(state.activeProducer, activeProduction?.marks ?? 0)
   const goodwillIncomeTick = useIncomeTick(state.activeProducer, activeProduction?.goodwill ?? 0)
   const cathLogSeenRef = useRef(0)
+  // Plan item 276: the pose she strikes with a reaction, held a few seconds, then back to her resting pose.
+  const [cathPose, setCathPose] = useState<CathPoseId | null>(null)
+  const poseTimerRef = useRef(0)
+  const strikePose = useCallback((reaction: CathReaction) => {
+    setCathPose(CATH_REACTION_POSE[reaction])
+    window.clearTimeout(poseTimerRef.current)
+    poseTimerRef.current = window.setTimeout(() => setCathPose(null), 5000)
+  }, [])
+  useEffect(() => () => window.clearTimeout(poseTimerRef.current), [])
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
     // Plan item 144: a game in a market week opens on Cath naming it (the event's own line, in her voice).
@@ -933,7 +942,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const candidate = cathReactionFor(event)
       if (candidate && (!best || candidate.rank >= best.rank)) best = candidate
     }
-    if (best) setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
+    if (best) {
+      setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
+      strikePose(best.reaction)
+    }
     // Plan item 80: the producers react too, for a few seconds.
     const moods = producerMoods(newEvents, moodRegionsRef.current)
     moodRegionsRef.current = state.regions
@@ -942,7 +954,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions])
+  }, [state.log, state.regions, strikePose])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -950,6 +962,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const d = (e as CustomEvent<{ kind: 'liberate' | 'squeeze'; region: RegionId }>).detail
       const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
+      strikePose(reaction)
       // Plan item 155: the seated producers react as to a real one: worried with a Stall under a Squeeze, the
       // region's first Stall-holder delighted at a liberation.
       {
@@ -971,7 +984,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     window.addEventListener('cathnivore-moment', on)
     return () => window.removeEventListener('cathnivore-moment', on)
-  }, [])
+  }, [strikePose])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -2868,7 +2881,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
         {/* Plan item 171: on an upright phone she speaks from the dock above the hand instead (CathDock), off the board. */}
         {deskTableCath && (
-          <section className="table-cath" data-expression={cathReaction.expression} aria-label="Cath">
+          <section className="table-cath" data-expression={cathReaction.expression} data-pose={cathPose ?? SCREEN_POSE['cathnivore:game']} aria-label="Cath">
             <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
               {cathReaction.line}
               {bubbleSuggest && suggestBody && (
@@ -2877,8 +2890,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 </span>
               )}
             </p>
-            <span className="table-cath-figure" aria-hidden="true">
-              <CathArt framing="half" pose={SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
+            <span className="table-cath-figure" aria-hidden="true" key={cathPose ?? 'rest'}>
+              <CathArt framing="half" pose={cathPose ?? SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>
         )}

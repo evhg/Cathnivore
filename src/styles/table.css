@@ -3971,6 +3971,9 @@ html.no-animations .table-cath-line { animation: none; }
   .table-cath-line::after { left: 46%; }
   /* her face crossfades to each new expression (opacity only, so reduced motion keeps it) */
   .table-cath-figure .cath-features { animation: table-cath-face 200ms var(--ease-settle); }
+  /* Plan item 276: a new pose (a reaction, then back to rest) settles in over 450 ms: a small lift and a fade; under
+     reduced motion, the fade alone. */
+  .table-cath-figure { animation: table-cath-pose 450ms var(--ease-settle); }
   .beas-drawing {
     top: auto;
     bottom: var(--sp-3);
@@ -4446,6 +4449,10 @@ html.no-animations .table-cath-line { animation: none; }
 }
 
 @keyframes table-cath-face { from { opacity: .2; } }
+@keyframes table-cath-pose { from { opacity: .35; translate: 0 6px; } }
+@media (prefers-reduced-motion: reduce) {
+  @keyframes table-cath-pose { from { opacity: .35; } }
+}
 
 /* Plan item 249: at 1400 px and up (the table's widest sizes) the board is the hero. The Market Board folds to a 2x2 block of readings
    and shares one row with tomorrow's papers and Pell, so the cloth takes that row's height back and the hexes
