@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 17: the morning-after debrief. With the clinic register taken, she's in the clinic for Vane; the test
 // closes the case through the job's own hook, and the debrief comes up on the cork: the print crossed out, a

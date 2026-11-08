@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // CATHODE C1 (docs/design/cathode-combat.md): cover tells the truth. A guard behind a steel crate gives the
 // "blocked" brackets and no hit marker; his head over the crate is a hit. Driven through the screenshot

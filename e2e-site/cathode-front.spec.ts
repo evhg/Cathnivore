@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // CATHODE C13 (docs/design/cathode-combat.md S9): the front door. One focus for every input, fixed slots with a
 // tick on each move, and starting the game is a camera move into the street: no navigation, no reload.
@@ -805,7 +805,7 @@ test("her painted eyes hold 3:1 on her cheek at title distance", async ({ page, 
 })
 
 // Plan item 216: an upright phone's title renders at the device's pixel ratio (capped at 2), so her face is sharp.
-test('the upright phone title renders at the device pixel ratio, 780 px or more across at 390', async ({ browser }, testInfo) => {
+test('the upright phone title renders at the device pixel ratio, 780 px or more across at 390', async ({ ownBrowser: browser }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-phone', 'an upright phone')
   test.setTimeout(180_000)
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true })

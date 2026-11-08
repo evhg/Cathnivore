@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 14: a talk in the clinic. The orderly's Pay choice spends Scrip and records a weakness; his Press
 // choice is locked for a Ghost (Nerve 25 of 30). Opened with `?talk` in the clinic district.

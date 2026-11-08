@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 26: the weapon inspect is a real input. `input.forced = {inspect: true}` (the I key's intent) plays
 // it, aiming cancels it, and on a phone a long press on the weapon's name asks for it.

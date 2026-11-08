@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 137: the first title visit after a boss case closes crosses the name off The List: its print gets
 // `data-struck="fresh"` (a red marker draws across it), the next target's photo develops in, and the count under

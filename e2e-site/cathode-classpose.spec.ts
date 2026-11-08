@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 180: Cath posed as each class. On the class pick she keeps each class's signature pose once its audition
 // is done (the stage's data-class drives scene().figurePose()); a change of class blends over 400 ms of the loop's

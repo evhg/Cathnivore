@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 57: the Drowned Market has people on it (walkers under umbrellas, vendors at the stalls, people in the
 // doorways, riders), and they scatter when shooting starts: duck, then run for the exits, away from the shooter.
@@ -17,7 +17,7 @@ type C = {
 }
 
 test.describe('NIGHT SHIFT street life (plan item 57)', () => {
-  test('at D, a dozen people on screen at the market spawn; one shot and they move away from Cath', async ({ browser, hasTouch, baseURL }) => {
+  test('at D, a dozen people on screen at the market spawn; one shot and they move away from Cath', async ({ ownBrowser: browser, hasTouch, baseURL }) => {
     test.skip(hasTouch, 'the desktop view (D)')
     test.setTimeout(400_000)
     const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
@@ -70,7 +70,7 @@ test.describe('NIGHT SHIFT street life (plan item 57)', () => {
     await ctx.close()
   })
 
-  test('at D, the Plaza rally scatters too: a shot among them and they run', async ({ browser, hasTouch, baseURL }) => {
+  test('at D, the Plaza rally scatters too: a shot among them and they run', async ({ ownBrowser: browser, hasTouch, baseURL }) => {
     test.skip(hasTouch, 'the desktop view (D)')
     test.setTimeout(400_000)
     const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })

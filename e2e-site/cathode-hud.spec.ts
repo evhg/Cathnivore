@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 29: the HUD guides without clutter. The compass tape's objective tick sits at the objective's true
 // bearing, the weapon block's round count drops when she fires, and Cath's subtitle never meets the central 30%

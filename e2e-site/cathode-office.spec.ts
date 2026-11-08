@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 16: Cath's office, the hub between cases. Continue from the title lands in it once the first job is
 // done; each station opens its screen from its spot; she walks to the stair door and the water taxi loads the

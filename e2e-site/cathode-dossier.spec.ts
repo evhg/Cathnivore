@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 210: on an upright phone the class sheet is a paper dossier: four stat dials, text 12 px or more, the
 // card clear of the class tabs, and the file on one screen.

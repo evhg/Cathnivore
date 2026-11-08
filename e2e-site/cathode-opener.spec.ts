@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 192: a new case opens on the district opener ([data-cine="opener"]): letterbox bars and a typed card
 // (district, hour, the name on The List) that runs 2.5-4.5 s while the HUD waits, then the HUD fades in. Escape

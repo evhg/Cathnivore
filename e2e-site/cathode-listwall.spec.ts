@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 169: at D The List is a living case wall: every print carries a rumour in Cath's hand (12 px or more) and
 // its own district, red string runs from the other four prints to the open case, a hovered print comes forward

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 112: the class pick shows Cath's face. A `?play` link on a fresh save builds the street behind the
 // case file and turns her to the camera in each class's look; the stats sit on a dark dossier plate; on an

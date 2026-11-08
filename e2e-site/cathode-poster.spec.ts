@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 65: the front door is a scene from the first frame. The baked poster of the street is showing within a
 // second of load, with WebGL or without it; with WebGL it hands over to the live street (never a frame with neither).

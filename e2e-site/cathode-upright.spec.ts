@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 44: a phone held upright gets a designed screen, not a dead-end card: Cath, a phone turning on its
 // side, Back to the title, and the office's case board, wardrobe and gun bench, each usable upright.
 
 test.describe('NIGHT SHIFT upright (plan item 44)', () => {
-  test('the case board and wardrobe open upright at P, and close back to the screen', async ({ browser, hasTouch, baseURL }) => {
+  test('the case board and wardrobe open upright at P, and close back to the screen', async ({ ownBrowser: browser, hasTouch, baseURL }) => {
     test.skip(!hasTouch, 'a phone held upright')
     test.setTimeout(300_000)
     const ctx = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './own-gpu'
 
 // Plan item 175: Cath alive on the front door. Standing still she breathes, shifts her weight, the umbrella sways in
 // the wind, and she blinks every 3 to 5 s.

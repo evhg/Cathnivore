@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './own-gpu'
 
 // Plan item 161: the class pick puts Cath on its stage. At D her figure stands 300 px or taller between the list and
 // the sheet, meeting neither; keys 1 to 5 change the stage's data-class within 650 ms, each with a rim-light flash;
