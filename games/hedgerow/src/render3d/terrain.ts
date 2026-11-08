@@ -1095,6 +1095,45 @@ export function buildGround(level: Level): Ground {
       egretBody.push({ x, y: heightAt(x, z) + 0.12, z, ry, s: 0.07, sy: 0.75, color: white });
       egretNeck.push({ x: x + Math.cos(ry) * 0.05, y: heightAt(x, z) + 0.16, z: z - Math.sin(ry) * 0.05, ry, s: 1, sy: 1, color: white });
     }
+    // Plan item 290: inland (east, the wide frame's empty side) grazing marsh: drainage ditches ruled through the
+    // grass with reeds along them, a few cattle and a line of telegraph poles to the horizon.
+    const ditches: Inst[] = [];
+    const cattle: Inst[] = [];
+    const heads: Inst[] = [];
+    const poles: Inst[] = [];
+    const ditchCol = new THREE.Color("#6e9aa8");
+    const hide = ["#2b2623", "#f1ece2", "#7a4e30"].map((c) => new THREE.Color(c));
+    const timberPole = new THREE.Color("#5e4a36");
+    for (const dx of [1.15, 2.1, 3.2])
+      for (let z = -3; z <= rows + 3; z += 1) {
+        const x = cols + dx + Math.sin(z * 0.7 + dx) * 0.06;
+        if (laneDistance(level, x, z) < 1.1) continue;
+        ditches.push({ x, y: heightAt(x, z) + 0.006, z, ry: Math.sin(z + dx) * 0.04, s: 1, sy: 1, color: ditchCol });
+        if (deco() < 0.55)
+          for (let k = 0; k < 6; k++)
+            reeds.push({ x: x + (deco() < 0.5 ? -0.1 : 0.1) + (deco() - 0.5) * 0.05, y: heightAt(x, z), z: z + (deco() - 0.5) * 0.5, ry: deco() * 6.3, s: 0.8 + deco() * 0.4, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
+      }
+    for (let i = 0; i < 9; i++) {
+      const x = cols + 0.9 + deco() * 2.6;
+      const z = -1 + deco() * (rows + 2);
+      if (laneDistance(level, x, z) < 1.2 || Math.min(...[1.15, 2.1, 3.2].map((d) => Math.abs(x - cols - d))) < 0.25) continue;
+      const ry = deco() * 6.3;
+      const c = hide[i % 3]!;
+      cattle.push({ x, y: heightAt(x, z) + 0.06, z, ry, s: 1, sy: 1, color: c });
+      heads.push({ x: x + Math.cos(ry) * 0.12, y: heightAt(x, z) + 0.07, z: z - Math.sin(ry) * 0.12, ry, s: 1, sy: 1, color: c });
+    }
+    for (let z = -3; z <= rows + 3; z += 1.6) {
+      const x = cols + 2.65;
+      if (laneDistance(level, x, z) < 1.1) continue;
+      poles.push({ x, y: heightAt(x, z), z, ry: 0, s: 1, sy: 1, color: timberPole });
+    }
+    for (const m of [
+      instanced(new THREE.BoxGeometry(0.13, 0.012, 1.02), new THREE.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1 }), ditches),
+      instanced(new THREE.BoxGeometry(0.2, 0.09, 0.09), new THREE.MeshStandardMaterial({ roughness: 0.8 }), cattle, true),
+      instanced(new THREE.BoxGeometry(0.07, 0.06, 0.06), new THREE.MeshStandardMaterial({ roughness: 0.8 }), heads),
+      instanced(new THREE.CylinderGeometry(0.018, 0.024, 0.75, 5).translate(0, 0.375, 0), new THREE.MeshStandardMaterial({ roughness: 0.9 }), poles, true),
+    ])
+      if (m) group.add(m);
     for (const m of [
       instanced(new THREE.SphereGeometry(1, 10, 5), new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.08 }), flats),
       instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
