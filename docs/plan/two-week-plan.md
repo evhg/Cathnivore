@@ -2764,7 +2764,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** eyes 6 px+ tall at P title; the right brow visibly higher; at least two expressions seen on the title; cathode-front face tests and classpick pass; cathode-perf within budget; shots title and pick, P and D; key art re-shot.
 - **Size:** 2
 
-## 276. [ ] Cathnivore: Cath reacts at the table
+## 276. [ ] Cathnivore: Cath reacts at the table *(lane B, in progress)*
 - **Why:** `plan1108a/cath-game-D` (360-550 x 390-690): she stands with clasped hands while the turn plays out; on P she is a 60 px bust (10-75 x 545-605). VISION asks for a host who reacts.
 - **Build:** her poses and expressions from `shared/cath/` (delighted, worried, determined, wink, pointing at a region) tied to the game's events: a Squeeze lands, a region freed, Trust drops, a card bought, a round ends; each 400-900 ms with a short line; on P a pop-in at about 140 px over the board's corner that never shifts layout.
 - **Accept:** 6+ events mapped to 5+ distinct poses (unit test on the map); swaps 400-900 ms, reduced motion fades only; no layout shift (e2e); the play specs pass; shots P and D mid-reaction.
