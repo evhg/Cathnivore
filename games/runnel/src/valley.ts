@@ -185,7 +185,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     if (r > 0) hedges.push(`M-20 ${slope(r, -20).toFixed(0)}L1020 ${slope(r, 1020).toFixed(0)}`)
   }
   const rain =
-    weather === 'drizzle' ? '<rect class="vl-rain" x="0" y="0" width="1000" height="1000" fill="url(#vl-rain)"/>' : ''
+    weather === 'drizzle' ? '<rect class="vl-rain" x="0" y="0" width="1000" height="1000" fill="url(#vl-rain)" mask="url(#vl-rain-mask)"/>' : ''
   return (
     '<defs>' +
     '<linearGradient id="vl-sky" x1="0" y1="0" x2="0" y2="1"><stop class="vl-sky-top" offset="0"/><stop class="vl-sky-low" offset="1"/></linearGradient>' +
@@ -193,7 +193,10 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     '<pattern id="vl-rows-h" width="24" height="12" patternUnits="userSpaceOnUse"><path class="vl-row" d="M0 6h24"/></pattern>' +
     '<pattern id="vl-rows-d" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><path class="vl-row" d="M0 9h18"/></pattern>' +
     '<pattern id="vl-rows-a" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)"><path class="vl-row" d="M0 9h18"/></pattern>' +
-    '<pattern id="vl-rain" width="40" height="60" patternUnits="userSpaceOnUse" patternTransform="rotate(14)"><path class="vl-drop" d="M8 4v14M28 34v14"/></pattern>' +
+    // Plan item 298: a light drizzle: half the drops of before, and a sunbreak where the rain thins out (the mask).
+    '<pattern id="vl-rain" width="56" height="84" patternUnits="userSpaceOnUse" patternTransform="rotate(14)"><path class="vl-drop" d="M10 6v12M38 48v12"/></pattern>' +
+    '<linearGradient id="vl-break" x1="0" y1="0" x2="1" y2="0.35"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".9"/><stop offset=".62" stop-color="#fff" stop-opacity=".25"/><stop offset=".8" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff"/></linearGradient>' +
+    '<mask id="vl-rain-mask"><rect x="0" y="0" width="1000" height="1000" fill="url(#vl-break)"/></mask>' +
     '</defs>' +
     '<rect class="vl-sky" width="1000" height="320" fill="url(#vl-sky)"/>' +
     '<path class="vl-hill vl-hill-far" d="M0 120C120 70 220 90 330 105S560 60 700 85 900 110 1000 70V300H0Z"/>' +
