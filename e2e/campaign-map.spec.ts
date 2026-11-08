@@ -244,3 +244,17 @@ test('regions read freed, current or locked: markets in colour, Hollowell outlet
   }
   expect(mean('freed')).toBeGreaterThan(mean('locked') * 1.25)
 })
+
+// Plan item 279: each region's landmark reads at a glance: 48 px or more on a desktop, 28 px or more on a phone.
+test("every region's landmark is large enough to read", async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  const marks = page.locator('.cmp-map .cmp-landmark')
+  await expect(marks).toHaveCount(7)
+  const sizes = await marks.evaluateAll((els) => els.map((e) => {
+    const r = e.getBoundingClientRect()
+    return { kind: e.getAttribute('data-landmark'), px: Math.max(r.width, r.height) }
+  }))
+  const min = page.viewportSize()!.width < 600 ? 28 : 48
+  for (const s of sizes) expect(s.px, `${s.kind} ${s.px.toFixed(1)} px`).toBeGreaterThanOrEqual(min)
+})

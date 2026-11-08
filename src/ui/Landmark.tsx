@@ -10,10 +10,11 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
     case 'cross':
       return (
         <g {...INK}>
-          <path d="M-10 11 H10 V7 H-10 Z M-7 7 V3 H7 V7" fill="var(--region-capital)" />
-          <path d="M-1.6 3 V-9 H1.6 V3 Z" fill="var(--paper)" />
-          <path d="M-5 -6 H5" strokeWidth={2.2} stroke="var(--soil)" />
-          <circle cx={0} cy={-11} r={1.8} fill="var(--wheat)" />
+          {/* Plan item 279: a broader stepped plinth and a taller shaft, so it holds 28 px on a phone like the rest. */}
+          <path d="M-12 11 H12 V7 H-12 Z M-8.5 7 V3 H8.5 V7" fill="var(--region-capital)" />
+          <path d="M-1.8 3 V-10 H1.8 V3 Z" fill="var(--paper)" />
+          <path d="M-6 -6.5 H6" strokeWidth={2.4} stroke="var(--soil)" />
+          <circle cx={0} cy={-12} r={2} fill="var(--wheat)" />
         </g>
       )
     case 'mill':
