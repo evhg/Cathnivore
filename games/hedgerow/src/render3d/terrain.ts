@@ -1160,13 +1160,21 @@ export function buildGround(level: Level): Ground {
     const heathCols = ["#8a5a9a", "#9b6fb8", "#7a4f88"].map((c) => new THREE.Color(c));
     const gorseCol = new THREE.Color("#d9b02e");
     const granite = ["#8e8a82", "#a09a90", "#7c786f"].map((c) => new THREE.Color(c));
-    for (let i = 0; i < 420; i++) {
-      const x = -4 + deco() * (cols + 8);
-      const z = -4 + deco() * (rows + 8);
-      if (!outside(x, z)) continue;
-      const y = heightAt(x, z);
-      if (deco() < 0.78) heather.push({ x, y: y + 0.02, z, ry: deco() * 6.3, s: 0.11 + deco() * 0.08, sy: 0.55, color: heathCols[Math.floor(deco() * 3)]! });
-      else gorse.push({ x, y: y + 0.05, z, ry: deco() * 6.3, s: 0.12 + deco() * 0.06, sy: 0.8, color: gorseCol });
+    // Plan item 262: in clumps of one plant and one colour (single bushes strewn evenly read as purple confetti).
+    for (let i = 0; i < 75; i++) {
+      const cx = -4 + deco() * (cols + 8);
+      const cz = -4 + deco() * (rows + 8);
+      const isHeather = deco() < 0.78;
+      const col = heathCols[Math.floor(deco() * 3)]!;
+      const n = 4 + Math.floor(deco() * 4);
+      for (let k = 0; k < n; k++) {
+        const x = cx + (deco() - 0.5) * 0.5;
+        const z = cz + (deco() - 0.5) * 0.5;
+        if (!outside(x, z)) continue;
+        const y = heightAt(x, z);
+        if (isHeather) heather.push({ x, y: y + 0.02, z, ry: deco() * 6.3, s: 0.11 + deco() * 0.08, sy: 0.55, color: col });
+        else gorse.push({ x, y: y + 0.05, z, ry: deco() * 6.3, s: 0.12 + deco() * 0.06, sy: 0.8, color: gorseCol });
+      }
     }
     // A few tors: stacked slabs of granite out beyond the hedge.
     for (let t = 0; t < 4; t++) {
