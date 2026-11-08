@@ -1959,6 +1959,18 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   collar.rotation.y = Math.PI / 2;
   (collar.material as THREE.Material).side = THREE.DoubleSide;
   fig.add(collar);
+  // Plan item 284: the jacket tailored, not a tube: notched lapels a shade darker rolling from the collar to the
+  // waist, two pocket flaps at the hip, and a leather belt with a brass buckle nipping the waist. One mesh per
+  // material, none casting shadows (+3 draw calls).
+  const lapelM = jacketM.clone();
+  lapelM.name = "lapel";
+  lapelM.color.multiplyScalar(0.6);
+  lapelM.side = THREE.DoubleSide;
+  const tailoring = mesh(geo("cathTailoring284", () => cathTailoringGeo(pts, CATH_HIP_Y - 0.06)), lapelM, 0, 0, 0);
+  const beltM = matte("#4a3226", 0.55, false);
+  const belt = mesh(geo("cathBelt284", () => new THREE.CylinderGeometry(0.0855, 0.0855, 0.02, 16, 1, true)), beltM, 0, CATH_HIP_Y + 0.1, 0);
+  const buckle = bx(0.008, 0.026, 0.03, matte("#d6b25a", 0.3, false), 0.087, CATH_HIP_Y + 0.1, 0);
+  fig.add(tailoring, belt, buckle);
   // Her neck, from the collar up to her head (which rides on it, and moves with her lean).
   fig.add(cyl(0.028, 0.032, 0.14, skinM, 0, CATH_SHOULDER_Y, 0, 8));
   // The blouse in the jacket's open front, and a short string of pearls at her neckline.
@@ -2034,6 +2046,8 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   fig.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
+  for (const m of [tailoring, belt, buckle]) m.castShadow = false;
+  (root.userData.dress as { lapel?: THREE.MeshStandardMaterial }).lapel = lapelM;
   // Merge each limb segment's static pieces per material (fewer draw calls), keeping the joints movable.
   root.updateMatrixWorld(true);
   for (const a of [right, left]) {
@@ -2057,6 +2071,63 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     pie,
   });
   return root;
+}
+
+/**
+ * Plan item 284: the lapels and pocket flaps, laid on the jacket's lathe surface (`pts`, from `y0`) just proud of it.
+ * The lathe has 14 segments, so its front (+x) is a flat face at cos(pi/14) of the profile radius.
+ */
+function cathTailoringGeo(pts: readonly THREE.Vector2[], y0: number): THREE.BufferGeometry {
+  const radius = (y: number): number => {
+    const h = y - y0;
+    for (let i = 1; i < pts.length; i++)
+      if (h <= pts[i]!.y) {
+        const a = pts[i - 1]!;
+        const b = pts[i]!;
+        return a.x + ((b.x - a.x) * (h - a.y)) / (b.y - a.y);
+      }
+    return pts[pts.length - 1]!.x;
+  };
+  const onJacket = (y: number, z: number, lift = 0.004): [number, number, number] => {
+    const r = radius(y) * Math.cos(Math.PI / 14);
+    return [Math.sqrt(Math.max(0, r * r - z * z)) + lift, y, z];
+  };
+  const parts: THREE.BufferGeometry[] = [];
+  const N = 8;
+  const top = CATH_SHOULDER_Y - 0.03;
+  const bottom = CATH_HIP_Y + 0.11;
+  for (const side of [-1, 1]) {
+    const position: number[] = [];
+    const uv: number[] = [];
+    const index: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const y = top + (bottom - top) * t;
+      const zIn = 0.006 + 0.016 * (1 - t);
+      // The outer edge: out from the collar to the lapel's point a quarter of the way down, then back to the waist.
+      const zOut = t < 0.25 ? 0.046 + 0.026 * (t / 0.25) : 0.072 - 0.066 * ((t - 0.25) / 0.75);
+      position.push(...onJacket(y, side * zIn), ...onJacket(y, side * Math.max(zOut, zIn + 0.002)));
+      uv.push(0, t, 1, t);
+      if (i > 0) {
+        const a = (i - 1) * 2;
+        index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(position, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(index);
+    g.computeVertexNormals();
+    parts.push(g.toNonIndexed());
+    // A pocket flap on each hip, turned to follow the jacket round.
+    const th = side * 0.75;
+    const y = CATH_HIP_Y + 0.0;
+    const r = radius(y) * Math.cos(Math.PI / 14) + 0.004;
+    const flap = new THREE.BoxGeometry(0.007, 0.022, 0.05).toNonIndexed();
+    flap.applyMatrix4(new THREE.Matrix4().makeRotationY(-th).setPosition(r * Math.cos(th), y, r * Math.sin(th)));
+    parts.push(flap);
+  }
+  return mergeGeometries(parts)!;
 }
 
 /** Plan item 284: her face, an oval that narrows below the eyes to a soft, pointed chin and flattens a little at the front. */
@@ -2187,6 +2258,8 @@ export function dressCath(root: THREE.Group): void {
     d.mats[k].color.set(o[k]);
     liftColour(d.mats[k].emissive.set(o[k]));
   }
+  const lapel = (d as { lapel?: THREE.MeshStandardMaterial }).lapel;
+  if (lapel) liftColour(lapel.emissive.copy(lapel.color.set(o.jacket).multiplyScalar(0.6)));
 }
 
 /** Plan item 66: how much of her own colour Cath gives off, so her dark jacket never reads as a blob on the grass. */
@@ -2202,7 +2275,8 @@ function liftColour(c: THREE.Color): THREE.Color {
  * always reads against the field. Shared, cached materials are cloned first so nothing else on the field glows.
  */
 export function liftCath(root: THREE.Group): void {
-  const own = new Set(Object.values((root.userData.dress as { mats: Record<string, THREE.Material> } | undefined)?.mats ?? {}));
+  const dress = root.userData.dress as { mats: Record<string, THREE.Material>; lapel?: THREE.Material } | undefined;
+  const own = new Set([...Object.values(dress?.mats ?? {}), ...(dress?.lapel ? [dress.lapel] : [])]);
   const done = new Map<THREE.Material, THREE.Material>();
   root.traverse((o) => {
     const m = o as THREE.Mesh;
