@@ -1771,7 +1771,8 @@ body {
   }
   /* Plan item 265: her stall as one scene: a striped awning over her head on two posts, and in front of her a counter
      heaped with produce, lettered FRESH · FREE (it was a thin striped plank floating over the sunset). */
-  .hero-text > .hero-cath-mini { margin-top: 40px; }
+  /* Plan item 296: 18 px clear of the quote's box (at 40 the awning's top met it). */
+  .hero-text > .hero-cath-mini { margin-top: 52px; }
   .hero-text > .hero-cath-mini::before {
     content: "";
     position: absolute;
