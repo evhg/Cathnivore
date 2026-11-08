@@ -3147,6 +3147,12 @@ html.no-animations .table-cath-line { animation: none; }
      land, ActionArt's scene), the name under it, the price at its foot. The window runs under the next card's
      edge, but the subject sits in its middle, clear of it; the 'i' rides the window's top-left corner. */
   .game-layout .table-hand:not([data-rows]) .action-item { height: 148px; }
+  /* Plan item 291: on a tall desktop a single row of cards stands 160 px (the picture window taller with it); at
+     800 px the board needs that height (board-scale's 50%). */
+  @media (min-height: 861px) {
+    .game-layout .table-hand:not([data-rows]) .action-item { height: 160px; }
+    .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label > svg.action-art[data-scene] { height: 68px; }
+  }
   .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
   .game-layout .table-hand:not([data-rows]) .action-item .action-card-draggable { padding: 6px 6px 6px; justify-content: flex-start; }
   .game-layout .table-hand:not([data-rows]) .action-item .action-cost { margin-top: auto; }
