@@ -348,3 +348,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 14:25 lane A (item 284): closed with "farmers' faces at P" left to the camera: at P the fitted frame leaves Cath and most folk out on l21 and l95, so model detail can't help there.
 - 2026-11-08 14:40 lane A (item 287): the ledger became a chalk slate first (look only); whether the empty rail room goes to the shelf or the slate shrinks is the next slice's call.
 - 2026-11-08 14:35 lane B (item 291): the hand's 160 px cards apply only at 861 px+ tall (at 1280x800 the board needs the height, board-scale's 50%); the deal grows cards in by scale, not a rise, so the table never scrolls mid-deal.
+- 2026-11-08 15:25 lane B: with two unclaimed items left (292, 294) and four lane-B items still open, took 292 rather than planning again four hours after plan1108c; the next session with fewer than 3 unclaimed and no open lane-B slices plans.

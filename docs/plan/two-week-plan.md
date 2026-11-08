@@ -2859,7 +2859,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** cards 120x160 px+ at D and 96x128+ at P; no card clipped mid-art at 390 px; card text 12 px+ at 4.5:1; reduced motion fades only; action-hand, table-hand, play specs pass; shots P and D, start and round 5.
 - **Size:** 2
 
-## 292. [ ] Shared Cath: a full-body pose set
+## 292. [ ] Shared Cath: a full-body pose set *(lane B, in progress)*
 - **Why:** `plan1108c/cath-campaign-D` (700-790 x 505-770), `cath-campaign-P` (315-360 x 145-305), `hedge-menu-D` (310-345 x 265-380): full-length Cath is stiff, frontal and doll-proportioned where her waist-up art is expressive.
 - **Build:** in `shared/cath/`, full-body framing at about 7.5 heads with a weight shift, and poses stand, walk, cheer, point and wave; used on the Cathnivore campaign map, the Hedgerow map token and Runnel's valley.
 - **Accept:** legs 45%+ of figure height; the same face and outfit as the bust; a unit test per pose; campaign, hedgerow map and runnel specs pass; shots of the three screens at P and D.
