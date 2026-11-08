@@ -945,13 +945,18 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     set time(v: number) {
       time = v;
     },
+    // Plan item 294: a screenshot run draws only on `setTime`, so a stage that arrives after the first draw (the
+    // List's wall lays out after the scene opens) redraws the frozen frame; the phone title's shots showed her
+    // cropped at the List under a framing no live frame ever drew.
     setStage(r) {
       stage = r;
       cloudAge = Infinity;
+      if (o.shot) frame(0);
     },
     setPickStage(r) {
       pickStage = r;
       cloudAge = Infinity;
+      if (o.shot) frame(0);
     },
     setLift(k) {
       liftWant = THREE.MathUtils.clamp(k, 0, 1);

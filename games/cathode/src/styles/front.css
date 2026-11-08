@@ -830,6 +830,9 @@
   .the-list { bottom: max(var(--safe-y), calc(3svh + var(--u) * 8)); }
   /* Plan item 126: over the photo --ink-3 falls under AA; the hint is her case line, so it reads at --ink-2. */
   .menu-hint { color: var(--ink-2); font-weight: 600; }
+  /* Plan item 294: upright she stands whole beside the menu (from 42% of the width), so the case line keeps to the
+     menu's column and wraps rather than running across her coat with no shade behind it. */
+  .menu-hint { max-width: 40vw; line-height: 1.3; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
      shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon

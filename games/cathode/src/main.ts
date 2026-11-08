@@ -459,7 +459,9 @@ function stageTitle(): void {
   }
   const m = Math.round(Math.min(innerWidth, innerHeight) * 0.02);
   // The top leaves the umbrella room under the screen's edge so her face falls below the logotype's subtitle.
-  scene?.setStage({ left: m, top: Math.round(innerHeight * 0.03), right: innerWidth - m, bottom: wall.top - Math.max(4, m / 2) });
+  // Plan item 294: from 11% down, not 3%, so she stands ~10% smaller and her coat clears the menu plate (at 3% the
+  // right-aligned figure's left edge ran 13 px under the plate at 390x844).
+  scene?.setStage({ left: m, top: Math.round(innerHeight * 0.11), right: innerWidth - m, bottom: wall.top - Math.max(4, m / 2) });
 }
 addEventListener("resize", () => {
   stageTitle();
