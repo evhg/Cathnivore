@@ -344,3 +344,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 13:30 lane B (item 290): the far haze runs 8 cells deep on wide canvases (phones keep 4.5), so the frame's top shows the far country softened rather than item 242's blank band; props cut by the frame's top read as distance.
 - 2026-11-08 13:40 lane B (item 295): the 2D depot's gloss comes from gradients, chrome trim and a glass window inside the same 100x100 box, so placement, the shutter and the count are untouched.
 - 2026-11-08 14:30 lane B (item 293): the phone's shop art stays 30 px (the build ring's 52 px packets and the 66 px tray cards hold a name band and price; bigger art overlaps the ring or eats field height); the desktop packets carry the 64 px art.
+- 2026-11-08 14:10 lane A (item 284): the jacket's tailoring (lapels, pocket flaps, belt, buckle) is three unshadowed meshes, the lapels a darker shade of whatever jacket the wardrobe dresses her in; +4 draw calls at D l21.
+- 2026-11-08 14:25 lane A (item 284): closed with "farmers' faces at P" left to the camera: at P the fitted frame leaves Cath and most folk out on l21 and l95, so model detail can't help there.
+- 2026-11-08 14:40 lane A (item 287): the ledger became a chalk slate first (look only); whether the empty rail room goes to the shelf or the slate shrinks is the next slice's call.
