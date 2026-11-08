@@ -168,7 +168,8 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     await expect(tip).toHaveClass(/gone/)
   })
 
-  test('plan item 44: a used button rests as a ring with no word, and controls cover 18% or less at rest', async ({ page, hasTouch }) => {
+  // Owner (iPhone, 2026-11-08): the wordless rings left her guessing which one fires, so a used button keeps its word, quieter.
+  test('plan item 44: a used button rests as a ring with its word quieter, and controls cover 18% or less at rest', async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'touch layout only')
     test.setTimeout(400_000)
     await boot(page)
@@ -186,7 +187,8 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     const box = (await aim.boundingBox())!
     await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
     await expect(aim).toHaveClass(/used/, { timeout: 5_000 })
-    await expect.poll(() => aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 5_000 }).toBeLessThan(0.05)
+    await expect.poll(() => aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 5_000 }).toBeLessThan(0.9)
+    expect(await aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeGreaterThan(0.5)
     expect(await page.evaluate(() => localStorage.getItem('cathode:touch-used:v1'))).toContain('aim')
     // At rest (no moment's button up), the controls' boxes cover 18% of the screen or less.
     const cover = await page.evaluate(() => {
