@@ -35,6 +35,8 @@ export interface JobHost {
   arm(id: string): void;
   say(text: string): void;
   teach(text: string | null): void;
+  /** Touch: the buttons the lesson names glow until pressed (absent in tests and on desktop hosts). */
+  coach?(buttons: readonly string[]): void;
   banner(title: string, sub: string, kind?: "boss"): void;
   /** Rolls the ending credits (vault finale); absent in tests. */
   finale?(): void;
@@ -288,15 +290,18 @@ export function reach(from: THREE.Vector3, to: THREE.Vector3): number {
 export const TAKE_RANGE = 3;
 
 const KEYS = {
-  move: ["WASD to move, mouse to look.", "Left thumb: move. Right thumb: look."],
+  move: ["WASD to move, mouse to look.", "Drag your left thumb to walk. Drag your right thumb to look around."],
   takedown: [
     "Follow the marker. C to crouch, creep up right behind him, then F for a silent takedown.",
-    "Follow the marker. Flick the left thumb down to crouch, creep up right behind him, then tap Takedown.",
+    "Follow the marker. Flick your left thumb down to crouch, sneak up behind him, then tap TAKEDOWN.",
   ],
-  fire: ["Left click to fire, right click to aim, R to reload.", "Fire to shoot, Aim to aim. Cath fires on her own at anyone shooting at her."],
-  focus: ["Right click to aim. Hold X to slow time and steady your breath.", "Aim, then hold Focus to slow time and steady your breath."],
-  done: ["K opens Cath's sheet: spend skill points there.", "The Cath button opens her sheet: spend skill points there."],
+  fire: ["Left click to fire, right click to aim, R to reload.", "Two men ahead: follow the marker. Tap AIM, put the dot on one, hold FIRE."],
+  focus: ["Right click to aim. Hold X to slow time and steady your breath.", "Tap AIM, then hold FOCUS to slow time and steady your aim."],
+  done: ["K opens Cath's sheet: spend skill points there.", "Tap CATH, top right, to spend your skill points."],
 };
+
+/** The touch buttons each lesson names (input.ts `coach`). */
+const COACH: Record<keyof typeof KEYS, readonly string[]> = { move: [], takedown: ["takedown"], fire: ["aim", "fire"], focus: ["aim", "focus"], done: ["sheet"] };
 
 export class FirstJob {
   stage = 0;
@@ -309,6 +314,7 @@ export class FirstJob {
   private spent: Case[] = [];
   private lamp: Lamp | null = null;
   private wait = 0;
+  private seen = false;
 
   constructor(private readonly h: JobHost) {
     const owned = h.progress.unlocks.weapons;
@@ -321,6 +327,12 @@ export class FirstJob {
 
   private key(k: keyof typeof KEYS): string {
     return KEYS[k][this.h.touch ? 1 : 0]!;
+  }
+
+  /** Teaches a step: the line, and on a phone the buttons it names glow until pressed. */
+  private lesson(k: keyof typeof KEYS | null): void {
+    this.h.teach(k ? this.key(k) : null);
+    this.h.coach?.(k ? COACH[k] : []);
   }
 
   private teachFeatures(...fs: Feature[]): void {
@@ -382,7 +394,7 @@ export class FirstJob {
       case 0:
         this.objective = "Walk down the street.";
         this.target = this.P(-2, FIRST_GUARD.z + FIRST_CONTACT_M);
-        h.teach(this.key("move"));
+        this.lesson("move");
         break;
       case 1: {
         this.objective = "A Hollowell guard under the lamp ahead. Take him down quietly.";
@@ -392,7 +404,7 @@ export class FirstJob {
         this.lamp = new Lamp(this.P(FIRST_GUARD.x, FIRST_GUARD.z), h.scene, h.light);
         // The marker sits on him, so he can be found in the rain (owner, iPhone: "I don't see anyone").
         this.target = g.position.clone().setY(g.position.y + 1.9);
-        h.teach(this.key("takedown"));
+        this.lesson("takedown");
         h.say("One of Hollowell's, under the lamp. Back to me. Let's keep this quiet.");
         break;
       }
@@ -400,7 +412,7 @@ export class FirstJob {
         this.objective = "Tomas kept a pistol by his stall. Get it.";
         this.pickup = new Case(this.P(FIRST_CASE.x, FIRST_CASE.z), h.scene, h.light, "kestrel", Math.atan2(TAKEDOWN_POSE.x - FIRST_CASE.x, TAKEDOWN_POSE.z - FIRST_CASE.z), h.block);
         this.target = this.pickup.gunAt;
-        h.teach(null);
+        this.lesson(null);
         h.say("Tomas kept a pistol by the stall. Said it was for rats.");
         break;
       case 3: {
@@ -416,7 +428,7 @@ export class FirstJob {
           enter(h.spawn, "rifle", ENTRIES.market.flyoverVan, [this.P(5, 18)]),
         ];
         this.target = this.P(-1, 12);
-        h.teach(this.key("fire"));
+        this.lesson("fire");
         if (!resumed) h.say("The Kestrel. Quiet, and it'll do.");
         break;
       }
@@ -429,7 +441,7 @@ export class FirstJob {
           // No collider on the walkway: the trestle would close it off.
           this.pickup = new Case(at, h.scene, h.light, w, Math.atan2(-1 - at.x, 20 - at.z));
           this.target = this.pickup.gunAt;
-          h.teach(null);
+          this.lesson(null);
           h.say("I left a case with Tomas, years ago. He kept it up on the walkway.");
         } else this.goto(5, resumed);
         break;
@@ -449,7 +461,7 @@ export class FirstJob {
           h.spawn("shield", [this.P(-8, -42.5), this.P(1.5, -54)]),
         ];
         this.target = h.markers.extract?.[0]?.clone() ?? null;
-        h.teach(this.key("focus"));
+        this.lesson("focus");
         if (!resumed) h.say(cls === "ghost" ? "The Widowmaker. Still zeroed." : "Still oiled. Tomas looked after it.");
         break;
       }
@@ -461,7 +473,7 @@ export class FirstJob {
         if (!h.progress.jobsDone.includes("fishMarket")) h.progress.jobsDone.push("fishMarket");
         h.progress.save();
         h.banner("Job done", "The Fish Market");
-        h.teach(this.key("done"));
+        this.lesson("done");
         h.say("A water taxi, and a name left on the seat: Julian Crisp.");
         break;
     }
@@ -503,13 +515,18 @@ export class FirstJob {
       case 2.5:
         this.goto(3);
         break;
-      case 3:
+      case 3: {
+        // Owner (iPhone): "very hard to see the enemy". The marker rides the nearest man still standing.
+        let best: Enemy | null = null;
+        for (const e of this.wave) if (e.alive && (!best || reach(h.player.pos, e.position) < reach(h.player.pos, best.position))) best = e;
+        if (best) (this.target ??= new THREE.Vector3()).copy(best.position).setY(best.position.y + 1.9);
         if (cleared) {
           this.wave = [];
           this.wait = 1.5;
           this.goto(4);
         }
         break;
+      }
       case 4:
         if (this.pickup?.taken) {
           this.wait = 0.22;
@@ -523,7 +540,10 @@ export class FirstJob {
         if (near(this.target, 3)) this.goto(6);
         break;
     }
-    if (this.stage === 1 && this.wave[0] && this.wave[0].alive && this.wave[0].state === "combat")
-      h.teach(this.h.touch ? "He's seen you. Tap Fire to hit him with the Pin." : "He's seen you. Left click to hit him with the Pin.");
+    if (this.stage === 1 && this.wave[0] && this.wave[0].alive && this.wave[0].state === "combat" && !this.seen) {
+      this.seen = true;
+      h.teach(this.h.touch ? "He's seen you. Tap FIRE to hit him with the Pin." : "He's seen you. Left click to hit him with the Pin.");
+      h.coach?.(["fire"]);
+    }
   }
 }

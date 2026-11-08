@@ -1675,9 +1675,17 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
 }
 /* Plan item 44: once used, an always-there button rests as a 30% ring with no word; a press fills it again. */
 .tbtn.used { background-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .3); }
-.tbtn.used .tbtn-label { opacity: 0; transition: opacity 600ms var(--ease-out); }
+/* Owner (iPhone, 2026-11-08): unlabelled rings left her guessing which one fires. The word stays, a step quieter. */
+.tbtn.used .tbtn-label { opacity: .72; transition: opacity 600ms var(--ease-out); }
 .tbtn.used:active { background-color: rgb(var(--ink-rgb) / .2); box-shadow: none; }
-.tbtn-fire.used .tbtn-label { opacity: 1; color: transparent; text-shadow: none; }
+/* The lesson's button: the tutorial names it and it glows until it has been pressed (FirstJob.coach). */
+.tbtn.coach { background-color: rgb(var(--ink-rgb) / .22); color: var(--ink); animation: tbtn-coach 1.4s var(--ease-out) infinite; }
+.tbtn.coach .tbtn-label { opacity: 1; }
+@keyframes tbtn-coach {
+  0% { box-shadow: 0 0 0 0 rgb(var(--ink-rgb) / .55), inset 0 0 0 2px var(--ink); }
+  100% { box-shadow: 0 0 0 18px rgb(var(--ink-rgb) / 0), inset 0 0 0 2px var(--ink); }
+}
+:root.reduce-motion .tbtn.coach { animation: none; box-shadow: 0 0 0 4px rgb(var(--ink-rgb) / .4), inset 0 0 0 2px var(--ink); }
 /* Plan item 44: a moment's button (Takedown, Focus, Skill) is gone until it can be used. */
 .tbtn.idle { opacity: 0; transform: scale(.8); pointer-events: none; }
 .tbtn:active { transform: scale(.94); background-color: rgb(var(--ink-rgb) / .2); color: var(--ink); }

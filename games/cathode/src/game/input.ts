@@ -248,6 +248,7 @@ export class Input {
           this.touchTapped.add(btn);
           this.btnTouches.set(t.identifier, btn);
           this.markUsed(btn);
+          this.uncoach(btn);
           // Fire and aim double as look: keep turning while the thumb drags off the button.
           if (btn === "fire" || btn === "aim") this.lookTouch = { id: t.identifier, x: t.clientX, y: t.clientY };
         } else if (t.clientX < innerWidth * 0.45 && this.stick.id < 0) {
@@ -348,6 +349,16 @@ export class Input {
     }
   }
   private allowedKey = "";
+  /** The tutorial's buttons right now: they glow until pressed (owner, iPhone: "a really simple tutorial"). */
+  private coached = new Set<string>();
+  coach(buttons: readonly string[]): void {
+    this.coached = new Set(buttons);
+    for (const b of this.touchLayer.querySelectorAll<HTMLElement>("[data-btn]")) b.classList.toggle("coach", this.coached.has(b.dataset.btn!));
+  }
+  private uncoach(b: string): void {
+    if (!this.coached.delete(b)) return;
+    this.touchLayer.querySelector<HTMLElement>(`[data-btn="${b}"]`)?.classList.remove("coach");
+  }
 
   /**
    * Plan item 44: the buttons that only make sense in a moment (Takedown beside an unaware guard, Focus with

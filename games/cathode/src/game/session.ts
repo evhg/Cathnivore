@@ -789,6 +789,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         arm,
         say: (t) => hud.subtitle(t),
         teach: (t) => hud.teach(t),
+        coach: (b) => input.coach(b),
         banner: (a, b, k) => hud.showBanner(a, b, k),
         light: worldLight,
         view: () => ({ cam: world.camera, w: innerWidth, h: innerHeight, scale: hudScale }),
@@ -1105,16 +1106,19 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   const renderScaleParam = Math.max(0.25, Math.min(1, Number(new URLSearchParams(location.search).get("rs") ?? 1) || 1));
   const ambColor = new THREE.Color();
   const resize = () => {
-    // Phones: 1.5x keeps them cool. 5K desktops cap the 3D at 1.5x (the DOM HUD stays at native DPR, S8).
-    const cap = input.isTouch ? 1.5 : innerHeight * devicePixelRatio > 2000 ? 1.5 : o.quality === "ultra" ? 3 : 2;
+    // Phones: 2x (owner, iPhone 2026-11-08: "very hard to see the enemy, looks blurry" at 1.5x, which on a 3x
+    // screen drew the street at 40% and, under dynamic resolution, 24%). Dynamic resolution and the thermal
+    // rescue still pull it down when a phone can't hold the frame. 5K desktops cap the 3D at 1.5x (the DOM HUD
+    // stays at native DPR, S8).
+    const cap = input.isTouch ? 2 : innerHeight * devicePixelRatio > 2000 ? 1.5 : o.quality === "ultra" ? 3 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
     // ?rs=0.5 forces the 3D render scale (5K screenshot runs under SwiftShader); it scales the world only.
     // Cath's hands and gun, and the post chain (HDR target, bloom, grade), render at `post` x the DPR, the world
     // at `scale` x the DPR (C4). Dynamic resolution and thermal rescue (auto.scale) scale BOTH: at rest a phone's
-    // post runs at 0.9 (1.35x, the viewmodel crisp), and under rescue it falls with the world, so the fill-rate
+    // post runs at 1 (2x, the viewmodel crisp), and under rescue it falls with the world, so the fill-rate
     // lever still works (C4 review: post had been pinned at the full 1.5x, ~10x the pixels under rescue).
-    const post = (o.quality === "phone" ? 0.9 : 1) * auto.scale;
-    const scale = (o.quality === "phone" ? 0.8 : 1) * auto.scale * renderScaleParam;
+    const post = auto.scale;
+    const scale = (o.quality === "phone" ? 0.85 : 1) * auto.scale * renderScaleParam;
     world.resize(o.canvas.clientWidth, o.canvas.clientHeight, dpr * post, Math.min(1, scale / post));
   };
   addEventListener("resize", resize, lifeOpt);
