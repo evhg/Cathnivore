@@ -2721,7 +2721,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no straight seam across the lane at D (a pixel check along its centreline); every water body a shore band 6 px or wider at D; draw calls +4 or fewer at P; `?2d` unchanged; hedgerow-3dframe, -closeframe, -biome3d pass; key art re-shot; shots P and D, l21 and l34 in 3D.
 - **Size:** 2
 
-## 270. [ ] NIGHT SHIFT: the List's withheld names as silhouettes you can read
+## 270. [ ] NIGHT SHIFT: the List's withheld names as silhouettes you can read *(lane B, in progress)*
 - **Why:** `plan1107g/ns-title-D` (170-600 x 595-705): the four withheld prints are near-identical black squares with a red bar (item 99's redacted heads sit at about 10% luminance on 8%); `ns-title-P` (88-372 x 678-752) four identical black tiles: four fifths of the game's promise show nothing.
 - **Build:** each withheld target a distinct backlit silhouette (a hat brim, a bob, a bald head with glasses, a hood) with a cold rim light and its district's prop in shadow behind (a clinic drip stand, a plaza statue, tower blinds, vault bars); the red bar becomes a REDACTED stamp across the eyes.
 - **Accept:** silhouette against its ground 3:1 or more on every withheld print; four distinct outlines (mask IoU below 0.8 for every pair); readable at P (prints 56 px); cathode-front and List specs pass; posters re-shot; shots title P and D.
