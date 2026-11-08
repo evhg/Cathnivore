@@ -4744,3 +4744,22 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 .gloss-candor-top { stop-color: color-mix(in srgb, var(--candor) 55%, white); }
 .gloss-candor-mid { stop-color: var(--candor); }
 .gloss-candor-base { stop-color: color-mix(in srgb, var(--candor) 70%, var(--candor-ink)); }
+
+/* Plan item 302: on a phone every playable card stays in reach. Each is sticky on both sides (offsets from
+   Game.tsx), so a card swiped past waits at the left edge and one not reached yet at the right, each showing a
+   24 px strip: the hand reads as cards held fanned, never as 'n more' hidden off the edge. A tap on a strip brings
+   that card forward (Game.tsx), and a touched card (focus rises it, item 164) stands in front of its neighbours. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions > .action-item[data-peek] {
+    position: sticky;
+    left: var(--stick-l, 0px);
+    right: var(--stick-r, 0px);
+    border-radius: var(--r-card);
+    z-index: var(--peek-z, auto);
+    box-shadow: 0 0 6px rgb(var(--shadow-ink) / .24);
+  }
+  .action-tray .actions > .action-item[data-peek][data-measure] { position: relative; left: 0; right: auto; }
+  /* The fan's stacking stays inside the row (its z-indexes run to the hand's size). */
+  .action-tray .actions:has(> .action-item[data-peek]) { isolation: isolate; }
+  .action-tray .actions > .action-item[data-peek]:focus-within { z-index: var(--z-sticky); }
+}

@@ -152,6 +152,36 @@ function isE2EAiWorkerCrash(): boolean {
 function isE2EWebdriver(): boolean {
   return typeof navigator !== 'undefined' && navigator.webdriver === true
 }
+const HAND_PEEK = 24
+// The held fan's stacking: the front card (the first not pinned to the left stack) on top, the left stack rising
+// toward it and the right stack falling away from it, so each card off the front shows the strip on its far side.
+function stackHand(row: HTMLElement) {
+  const cards = [...row.querySelectorAll<HTMLElement>(':scope > .action-item[data-peek]')]
+  if (cards.length === 0) return
+  const edge = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft || '0')
+  let front = cards.findIndex((c, i) => c.getBoundingClientRect().left > edge + i * HAND_PEEK + 1.5)
+  if (front < 0) front = cards.length - 1
+  cards.forEach((c, i) => c.style.setProperty('--peek-z', String(cards.length - Math.abs(i - front))))
+}
+// Scrolls the phone's held fan so `card` (the i-th sticky card) stands whole between the two stacks. Its
+// unstuck spot is read with the stickiness off for one layout.
+function bringToFront(row: HTMLElement, card: HTMLElement, i: number) {
+  card.dataset.measure = ''
+  const natural = card.offsetLeft
+  delete card.dataset.measure
+  const lo = i * HAND_PEEK
+  const hi = row.clientWidth - (parseFloat(card.style.getPropertyValue('--stick-r')) || 0) - card.offsetWidth
+  const want = natural - (lo + Math.max(0, hi - lo) / 2)
+  const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches && !document.documentElement.classList.contains('no-animations')
+  row.scrollTo({ left: Math.max(0, want), behavior: smooth ? 'smooth' : 'auto' })
+  card.querySelector<HTMLElement>('button:not([disabled])')?.focus({ preventScroll: true })
+}
+
+// Plan item 302: the phone's held fan covers every card's middle but the front one's, where Playwright aims its
+// clicks, so under webdriver the hand stays a plain swiped row unless `?e2eHandFan=1` (e2e/phone-hand-held.spec).
+function isE2EHandFanOff(): boolean {
+  return isE2EWebdriver() && new URLSearchParams(window.location.search).get('e2eHandFan') !== '1'
+}
 function isE2ETeammateShow(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eTeammateShow') === '1'
 }
@@ -618,6 +648,79 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const bubbleSuggest = useMedia(TABLE_CATH_TALL_QUERY)
   // Plan item 149: the same sizes hold the hand of cards at the table's edge.
   const handOnTable = deskTableCath
+  // Plan item 302: on a phone every playable card stays in reach. The row still swipes, but each card is sticky on
+  // both sides: one swiped past waits at the left edge and one not reached yet at the right, each showing a 24 px
+  // strip of itself (`--stick-l`, `--stick-r`, read by table.css), so the whole hand is in view at once. The NOT
+  // YET deck after them scrolls as before. A tap on a strip brings that card to the front; it doesn't play it.
+  useLayoutEffect(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')
+    if (!row) return
+    const cards: HTMLElement[] = []
+    if (!handOnTable && !isE2EHandFanOff() && matchMedia('(max-width: 1023.98px)').matches) {
+      for (const c of Array.from(row.children) as HTMLElement[]) {
+        if (c.matches('.action-head-later')) break
+        if (c.matches('.action-item')) cards.push(c)
+      }
+    }
+    for (const c of Array.from(row.querySelectorAll<HTMLElement>(':scope > [data-peek]'))) if (!cards.includes(c)) delete c.dataset.peek
+    if (cards.length < 2) {
+      for (const c of cards) delete c.dataset.peek
+      return
+    }
+    // The right stack's offsets come from each card's width, so cards a few px wider or narrower still show even strips.
+    const widths = cards.map((c) => c.offsetWidth)
+    let inset = 0
+    for (let i = cards.length - 1; i >= 0; i--) {
+      const c = cards[i]!
+      c.dataset.peek = ''
+      c.style.setProperty('--stick-l', `${i * HAND_PEEK}px`)
+      c.style.setProperty('--stick-r', `${inset}px`)
+      if (i > 0) inset += HAND_PEEK + widths[i]! - widths[i - 1]!
+    }
+    stackHand(row)
+  })
+  useEffect(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')
+    if (!row) return
+    // A card that isn't the front one is only brought forward: its press, release and click all stop here (hand
+    // cards also drag, on pointer events), so it is never played or armed from its strip.
+    let held: HTMLElement | null = null
+    const covered = (e: Event) => {
+      const card = (e.target as HTMLElement | null)?.closest<HTMLElement>('.action-item[data-peek]')
+      if (!card || card.parentElement !== row) return null
+      const r = card.getBoundingClientRect()
+      return card.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)) ? null : card
+    }
+    const swallow = (e: Event) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const onDown = (e: PointerEvent) => {
+      held = covered(e)
+      if (held) swallow(e)
+    }
+    const onUpOrClick = (e: Event) => {
+      const card = held ?? covered(e)
+      if (!card) return
+      swallow(e)
+      if (e.type === 'click') {
+        held = null
+        const peers = [...row.querySelectorAll<HTMLElement>(':scope > .action-item[data-peek]')]
+        bringToFront(row, card, peers.indexOf(card))
+      }
+    }
+    const onScroll = () => stackHand(row)
+    row.addEventListener('pointerdown', onDown, true)
+    row.addEventListener('pointerup', onUpOrClick, true)
+    row.addEventListener('click', onUpOrClick, true)
+    row.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      row.removeEventListener('pointerdown', onDown, true)
+      row.removeEventListener('pointerup', onUpOrClick, true)
+      row.removeEventListener('click', onUpOrClick, true)
+      row.removeEventListener('scroll', onScroll)
+    }
+  })
   // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.
   useLayoutEffect(() => {
     if (!handOnTable) return
