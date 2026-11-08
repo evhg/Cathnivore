@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-08T11:21:55Z
 
 
 
@@ -2841,3 +2840,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:** a portrait camera that fits the lane from depot to home (pinch to zoom in); terrain skirts so nothing stray shows past the field; fewer particles on a phone; the incoming tag docked off the lane.
 - **Accept:** at P the whole lane from depot to home in frame (projected points within the canvas, e2e); no geometry outside the field mesh in frame; the tag clear of the lane; hedgerow 3D specs pass; shots P and D, l5 and l21.
 - **Size:** 1
+
+## 289. [ ] NIGHT SHIFT: Cath's head and hair to the character bible, round three
+- **Why:** `plan1108c/ns-title-D` (950-1030 x 265-370), `ns-play-D` (670-720 x 120-200), `ns-title-P` (235-275 x 270-330): after items 260 and 275 her face still reads as a pale, flat oval at title distance (liner, catchlights, the raised right brow and rose lips don't carry), and the hair as a stiff helmet with no shine band. She is the 18+ title's hero image.
+- **Build:** stronger face read at distance (liner and lip colour weight, a brow decal, cheek warmth), layered hair cards with waves and an anisotropic shine band, a key and rim light on her face in the title and pick scenes; at least a smirk and a determined look.
+- **Accept:** face 90 px+ tall at D on the title and 60 px+ at P; side by side with `shared/cath` she reads as the same person (subagent check); cathode-perf within budget; NIGHT SHIFT specs pass; shots P and D.
+- **Size:** 3
+
+## 290. [ ] Hedgerow 3D: the desktop frame filled, a world beyond the fence
+- **Why:** `plan1108c/hedge-l21-3d-D`: an empty fog band across the top (100-1080 x 80-200) and flat grass on the right (860-1080 x 200-880). (Item 288 handled the phone.)
+- **Build:** the D camera fitted to the field's bounds per aspect; a per-act backdrop diorama past the fence (Saltmarsh: the shore, dunes, a far village; other acts their own) and a sky gradient instead of fog.
+- **Accept:** at D no band over 80 px between field and canvas edge is plain fog or flat grass; draw calls up 10% at most; hedgerow-3dframe, -biome3d, -closeframe pass; shots D l5, l21, l34; key art re-shot.
+- **Size:** 2
+
+## 291. [ ] Cathnivore: the action hand as a fanned, tactile hand of cards
+- **Why:** `plan1108c/cath-game-D` (395-1280 x 720-880): a flat row of same-weight cards, affordable and not barely told apart; `cath-game-P` (325-390 x 675-790): the third card cut, the NOT YET label and the 'more' pill crowd the tray's edge.
+- **Build:** at D a gently fanned hand with a lift on hover/press, unaffordable cards dimmed with a padlock and their cost chip at the corner; at P a single-height swipeable hand that ends on a whole card or a clear count tab; a 120-200 ms deal and play.
+- **Accept:** cards 120x160 px+ at D and 96x128+ at P; no card clipped mid-art at 390 px; card text 12 px+ at 4.5:1; reduced motion fades only; action-hand, table-hand, play specs pass; shots P and D, start and round 5.
+- **Size:** 2
+
+## 292. [ ] Shared Cath: a full-body pose set
+- **Why:** `plan1108c/cath-campaign-D` (700-790 x 505-770), `cath-campaign-P` (315-360 x 145-305), `hedge-menu-D` (310-345 x 265-380): full-length Cath is stiff, frontal and doll-proportioned where her waist-up art is expressive.
+- **Build:** in `shared/cath/`, full-body framing at about 7.5 heads with a weight shift, and poses stand, walk, cheer, point and wave; used on the Cathnivore campaign map, the Hedgerow map token and Runnel's valley.
+- **Accept:** legs 45%+ of figure height; the same face and outfit as the bust; a unit test per pose; campaign, hedgerow map and runnel specs pass; shots of the three screens at P and D.
+- **Size:** 3
+
+## 293. [ ] Hedgerow: the tower shop as illustrated market crates
+- **Why:** `plan1108c/hedge-l21-2d-D` (1108-1412 x 85-370): about 40 px tower icons on half-empty cards with no role or reach shown.
+- **Build:** larger illustrated tower portraits on crate-style cards, role and range pips, the cost on a price tag; a placement ghost with its range ring; the phone's sheet the same cards.
+- **Accept:** tower art 64 px+ at D and 48 px+ at P; labels 12 px+ at 4.5:1; placement e2e in ?2d passes; shots P and D.
+- **Size:** 2
+
+## 294. [ ] NIGHT SHIFT: the phone title and operative pick recomposed
+- **Why:** `plan1108c/ns-title-P` (10-180 x 205-435): the menu plate lies over Cath's body at similar brightness; `ns-play-P` (160-240 x 225-420): the operative is small and the clipped HOLLOWELL sign meets the heading (190-390 x 0-60).
+- **Build:** at P the figure large in the upper 55% with a scrim behind the menu; operatives swiped with the figure turning; the stats card as a drawer.
+- **Accept:** figure 300 px+ tall at P; no text over the figure without a scrim, 4.5:1; NIGHT SHIFT specs pass; shots P and D.
+- **Size:** 2
+
+## 295. [ ] Hedgerow 2D: Hollowell's depots as glossy megastores
+- **Why:** `plan1108c/hedge-l34-2d-D` (90-220 x 120-240, 90-220 x 595-715), `hedge-l21-2d-D` (160-280 x 355-470): the 2D depot is a plain white shed with a pasted label; VISION wants the corporations glossy and over-lit. (Item 280 did the 3D depot.)
+- **Build:** a chrome and orange storefront with a lit logo, a roller shutter that opens as a round launches, a countdown screen for the NEXT number, the sign on the building and off the road.
+- **Accept:** the countdown 16 px+ at P at 4.5:1; the shutter 600 ms or less (fade under reduced motion); no label over the road or the vans; depot, gatequeue specs pass; shots P and D, l21 and l34; key art re-shot.
+- **Size:** 2
+
+## 296. [ ] The bugs from the 2026-11-08 11:30 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1108c`)
+  - **Cathnivore:** D setup Start button over Cath's legs (1095-1295 x 775-850); D game 'Saving for' names and '2/4' about 11 px (55-300 x 445-495), partner '+1/+2' about 12 px (90-290 x 275-290), the Glut card crowding Pell (1110-1320 x 15-180); P title Daily card subtitle wraps a lone '·' (225-345 x 655-685).
+  - **Hedgerow:** D l21 2D HOLLOWELL tag on the road by the first van (280-365 x 478-494), the tutorial bubble over the lane's mouth (20-320 x 495-620); P l34 HOLLOWELL sign over the road (8-95 x 97-117), the lower depot cut by the tutorial panel (5-55 x 615-660); P l21 3D 'WHOLE FIELD' over the field (240-385 x 610-650); D l21 3D flood water squared at the joins (300-500 x 400-560); P menu Act 4 fog through the level panel (30-360 x 700-770).
+  - **NIGHT SHIFT:** D pick GRIT/AIM/NERVE/WIRE (1030-1350 x 190-202) and 'CASE FILE' (58-236 x 76-88) measure 10-11 px rendered; P title 'No case open' and '4 MORE NAMES' 11 px grey (30-110 x 242-252, 15-105 x 709-719).
+  - **Site:** P /games/ quote meets the awning scallops (20-370 x 180-240).
+- **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
+- **Size:** 2
