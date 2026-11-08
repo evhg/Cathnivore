@@ -373,7 +373,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
   const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0) => {
-    let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 );` : "";
+    // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
+    // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
+    // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
+    const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.4, 0.62, dot( normal, uKeyDir ) ) )" : "";
+    let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 )${planes};` : "";
     // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
     // the eyes hold a bright point under the street's grade.
     if (glint > 0) keyTerm += `\ntotalEmissiveRadiance += ${glint.toFixed(2)} * uKey * smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) );`;
@@ -746,6 +750,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         dz -= 0.07 * Math.pow(bump(x, y, 0.36 * sx, 0.06, 0.2, 0.13), 1.5);
         dz += 0.035 * bump(x, y, 0.33 * sx, 0.24, 0.26, 0.08);
         dz += 0.05 * bump(x, y, 0.5 * sx, -0.2, 0.26, 0.2);
+        // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
+        // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
+        dz += 0.03 * bump(x, y, 0.52 * sx, -0.08, 0.2, 0.07);
+        dz -= 0.045 * Math.pow(bump(x, y, 0.5 * sx, -0.4, 0.17, 0.13), 1.2);
       }
       dz += 0.035 * bump(x, y, 0, -0.5, 0.24, 0.1);
       z += dz * front;
