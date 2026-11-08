@@ -1345,12 +1345,15 @@ function GripProps({ stage, edge }: { stage: GripStage; edge: boolean }) {
           <rect x={4.5} y={-12.5} width={9} height={6.5} rx={0.8} fill="var(--hollowell)" />
           <path d="M5.5 -10.5 H12.5" stroke="var(--paper)" strokeWidth={1.2} />
           <path d="M5.5 -8 H10" stroke="var(--paper)" strokeWidth={0.8} />
+          {/* Plan item 267: glossy plastic (VISION: the corporations are glossy, the players' land hand-made). */}
+          <path className="grip-gloss" d="M5.4 -12 L8.4 -12 L5.4 -9 Z" fill="var(--paper-hi, var(--paper))" stroke="none" opacity={0.55} />
         </g>
       )}
       {stage >= 2 && (
         <g className="grip-van" data-grip-prop="van" {...ink}>
           <path d="M-12.5 11 V5 H-5 L-3 8 V11 Z" fill="var(--paper-hi, var(--paper))" />
           <path d="M-12.5 7.5 H-5" stroke="var(--hollowell)" strokeWidth={1.4} />
+          <path className="grip-gloss" d="M-11.8 5.7 H-6.2" stroke="var(--paper-hi, var(--paper))" strokeWidth={0.7} strokeLinecap="round" opacity={0.8} />
           <circle cx={-10} cy={11.4} r={1.6} fill="var(--ink)" />
           <circle cx={-5.4} cy={11.4} r={1.6} fill="var(--ink)" />
         </g>

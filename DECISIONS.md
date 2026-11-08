@@ -308,3 +308,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 05:30 lane A (item 275): the title turns Cath's look between smirk and determined every 10 s by the scene clock (a held `?shot` frame shows the one due at t); each look's map is painted once and kept, so the turn swaps a texture instead of re-uploading 2048x1024 (a phone hitch the owner's stutter note warns against).
 - 2026-11-08 05:30 lane A: the owner's head-to-toe class-pick framing (46925228) wins over the old knees-up checks: classpick's D face top band is 90 px (was 100) and the P audition face 45 px (was 70).
 - 2026-11-08 05:30 lane A (item 275): her right brow is raised in every look (smirk most), per the character bible, not only in the smirk.
+- 2026-11-08 05:30 lane B (FEEDBACK, NIGHT SHIFT phone): enemies' rim lifted toward white on phones only (0.38), not a new faction colour: the orange rim matched the sodium lamps; desktop keeps the faction orange.
+- 2026-11-08 05:40 lane B (item 281): the phone hand's 'N more' pill moved to the row's foot (the dock edge) rather than shrunk; the Hedgerow phone menu's held clutter stays where it is (moving it covered the coins).
+- Note: a site-config Playwright run starts its own :4175 preview from dist-site, so ad-hoc shots on :4175 during it see a stale build; use another port.
