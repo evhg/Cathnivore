@@ -227,6 +227,9 @@ export class Body {
   /** S3.5: the raise to aim flares the visor from x1.0 to x1.6 (set by the brain from its aim). */
   visorAim = 1;
   private readonly facRim = new THREE.Color();
+  /** FEEDBACK 2026-11-08 (owner, iPhone: 'very hard to see the enemy'): on a phone the rim runs hot, toward white, so it
+   *  doesn't sink into the street's warm lamp glow (the faction orange matched the sodium lamps behind him). */
+  private readonly phoneRim = new THREE.Color();
   /** S3.1 rim state: 0 at rest .. 1 in combat, set by the brain; and takedown eligibility (the 3 Hz pulse). */
   alert = 0;
   eligible = false;
@@ -245,6 +248,7 @@ export class Body {
     }
     this.visor.set(look.visor);
     rimTint(look.faction ?? look.visor, this.facRim);
+    this.phoneRim.copy(this.facRim).lerp(new THREE.Color(1, 1, 1), LOOK.rim.phoneWhite);
     const bones: THREE.Bone[] = [];
     for (const def of SEGMENTS) {
       const len = REST[def.from].distanceTo(REST[def.to]) * scale;
@@ -575,7 +579,8 @@ export class Body {
     // outline against wet neon and doesn't sink into a 40 px smudge.
     const farK = THREE.MathUtils.smoothstep(dEye, R.far[0], R.far[1]);
     const k = this.rimLevel(now) * rimNear * (bodyView.phone ? R.phoneGain : R.gain) * (1 + R.farBoost * farK);
-    setFx(P, 2, this.facRim.r * k, this.facRim.g * k, this.facRim.b * k, (bodyView.phone ? R.phonePow : R.pow) * (1 - R.farWiden * farK));
+    const rc = bodyView.phone ? this.phoneRim : this.facRim;
+    setFx(P, 2, rc.r * k, rc.g * k, rc.b * k, (bodyView.phone ? R.phonePow : R.pow) * (1 - R.farWiden * farK));
     const fade = Math.min(1, (now - this.lodAt) / LOOK.lod.fadeMs);
     const blink = this.visorLevel > 0.05 && Math.floor(((now / 1000) * LOOK.blinkHz * 2) % 2) === 0 ? 1 : 0.06;
     setFx(P, 3, this.lodFrom, this.lod, fade, blink * Math.min(1, this.visorLevel * 1.5));
