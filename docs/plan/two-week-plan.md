@@ -2865,7 +2865,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** legs 45%+ of figure height; the same face and outfit as the bust; a unit test per pose; campaign, hedgerow map and runnel specs pass; shots of the three screens at P and D.
 - **Size:** 3
 
-## 293. [ ] Hedgerow: the tower shop as illustrated market crates *(lane B, in progress)*
+## 293. [ ] Hedgerow: the tower shop as illustrated market crates *(lane B, in progress)* *(slice 1, 2026-11-08 13:45 lane B: on a tall desktop (861 px+) the packet's tower art is 64 px (was 52-56; four-to-a-row packets keep 44); cards 90 -> 94 px tall. Checked, already there: item 119's seed-packet face with a role band, the role glyph, a price stamp; range/damage pips exist (hidden on the packets). rack, tray, critique, closeframe pass (41); shots scratchpad shop. Left: the Beehive's top under its price stamp, the phone sheet's art (30 px, needs 48), a placement ghost with its range ring, the pips shown)*
 - **Why:** `plan1108c/hedge-l21-2d-D` (1108-1412 x 85-370): about 40 px tower icons on half-empty cards with no role or reach shown.
 - **Build:** larger illustrated tower portraits on crate-style cards, role and range pips, the cost on a price tag; a placement ghost with its range ring; the phone's sheet the same cards.
 - **Accept:** tower art 64 px+ at D and 48 px+ at P; labels 12 px+ at 4.5:1; placement e2e in ?2d passes; shots P and D.

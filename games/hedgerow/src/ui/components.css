@@ -4089,6 +4089,12 @@ body:has(#dlg-pause[open]) .paused-note {
 /* Plan item 211: four to a row on a tall desktop, every band holds two lines with its name centred, so Market
    Stall and Duck Pond sit on bands the same height as Hedgerow's (a shorter desktop keeps its art instead). */
 @media (min-width: 900px) and (min-height: 861px) {
+  /* Plan item 293: on a tall desktop the tower is the packet's picture at 64 px (it was 52-56 with paper to spare);
+     four-to-a-row packets keep 44. */
+  .play .tray-wrap .tray .tray-tower img,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img { width: 64px; height: 64px; margin-top: -2px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { width: 44px; height: 44px; margin-top: auto; }
+  .play .tray-wrap .tray .tray-tower { padding-top: 4px; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
     display: grid;
     place-items: center;
