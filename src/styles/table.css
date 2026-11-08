@@ -4762,4 +4762,6 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   /* The fan's stacking stays inside the row (its z-indexes run to the hand's size). */
   .action-tray .actions:has(> .action-item[data-peek]) { isolation: isolate; }
   .action-tray .actions > .action-item[data-peek]:focus-within { z-index: var(--z-sticky); }
+  /* Pressed, a card keeps its place in the stack (item 164's press lift would drop it behind its neighbours). */
+  .action-tray .actions > .action-item[data-peek]:active:not(:focus-within) { z-index: var(--peek-z, auto); }
 }
