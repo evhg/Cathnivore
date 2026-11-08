@@ -214,6 +214,8 @@ export class Renderer {
   aim: { x: number; y: number; r: number } | null = null;
   /** The tower being considered for the selected plot: its range is previewed. */
   preview: TowerKind | null = null;
+  /** Plan item 297: the plot Cath's coaching points at, and the tower she advises there (null when none). */
+  coach: { col: number; row: number; kind: TowerKind } | null = null;
   /** Plan item 31: the range ring drawn last frame (cells and pixels), for tests; null when none. */
   shownRing: { range: number; px: number; cell: number } | null = null;
   private darkCanvas: HTMLCanvasElement | null = null;
@@ -752,6 +754,26 @@ export class Renderer {
     this.decals = this.decals.filter((d) => d.age < d.life);
 
     this.drawSelection(game, X, Y, s, t);
+    // Plan item 297: the plot her line means: a pulsing dashed ring and a ghost of the tower she advises.
+    if (this.coach && !this.selected && game.phase === "build") {
+      const cx = X(this.coach.col + 0.5);
+      const cy = Y(this.coach.row + 0.5);
+      const pulse = this.reducedMotion ? 0.5 : (Math.sin(t * 4) + 1) / 2;
+      ctx.save();
+      ctx.globalAlpha = 0.42;
+      drawTower(ctx, { kind: this.coach.kind, tier: 1, spec: null, fired: 9, dazed: false, still: true }, cx, cy, s, 0);
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = Math.max(2.5, s * 0.05);
+      ctx.setLineDash([s * 0.12, s * 0.08]);
+      ctx.lineDashOffset = this.reducedMotion ? 0 : -t * s * 0.4;
+      ctx.strokeStyle = `rgba(255, 236, 160, ${0.75 + pulse * 0.25})`;
+      ctx.shadowColor = "rgba(255, 210, 90, 0.8)";
+      ctx.shadowBlur = 6 + pulse * 6;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * (0.48 + pulse * 0.03), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Sprites in depth order.
     const items: Array<{ y: number; draw: () => void }> = [];

@@ -146,6 +146,7 @@ function webglSupported(): boolean {
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
 import { gapAdvice, roundAdvice } from "./advice";
+import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
 import { enemySilhouette, towerSilhouette, towerTier } from "./sprites";
@@ -4041,6 +4042,26 @@ function syncHostFace(g: Game, text: string): void {
   slot.innerHTML = cathSvg({ framing: "bust", expression: face, outfit: art(), animate: true });
 }
 
+/** Plan item 297: the tower her advice tells you to build (one not yet on the field), or null. */
+function coachTower(g: Game): TowerKind | null {
+  if (!betweenRounds(g) || g.towers.length >= 3) return null;
+  const groups = g.level.waves[g.wave];
+  if (!groups) return null;
+  if (gapAdvice(unanswered(g, roundProps(g.level, groups)), g.level.towers, (k) => towerCost(g, k))) return null;
+  const tower = roundAdvice(waveSpawns(g, groups, g.wave + 1), g.level.towers, g.towers.map((x) => x.kind))?.tower ?? null;
+  return tower && !g.towers.some((t) => t.kind === tower) ? tower : null;
+}
+let coachKey = "";
+function syncCoach(g: Game, kind: TowerKind | null): void {
+  const r = renderer as { coach?: { col: number; row: number; kind: TowerKind } | null } | null;
+  if (!r || !("coach" in r)) return;
+  const key = kind ? `${g.level.id}:${g.wave}:${g.towers.length}:${kind}` : "";
+  if (key === coachKey) return;
+  coachKey = key;
+  const at = kind ? suggestedPlot(g, kind) : null;
+  r.coach = kind && at ? { col: at[0], row: at[1], kind } : null;
+}
+
 function syncCathSay(g: Game, now: number): void {
   const el = ui.cathSay;
   const quiet =
@@ -4051,6 +4072,8 @@ function syncCathSay(g: Game, now: number): void {
     debriefGhost = null;
   }
   const said = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
+  // Plan item 297: when her line says to build a tower not yet on the field, the field marks the plot for it.
+  syncCoach(g, quiet || !!sayOverride ? null : coachTower(g));
   const docked = DOCK_QUERY.matches && !document.documentElement.hasAttribute("data-keyart");
   const build = `${g.level.id}:${g.wave}`;
   if (docked && g.phase === "build" && (!!selected || posting || aiming)) dockQuietFor = build;

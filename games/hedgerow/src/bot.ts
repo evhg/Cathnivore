@@ -172,6 +172,11 @@ function bestPlot(game: Game, kind: TowerKind, samples: ReturnType<typeof laneSa
   return best;
 }
 
+/** Plan item 297: the plot Cath's coaching points at for a tower: the one the bot would build it on. */
+export function suggestedPlot(game: Game, kind: TowerKind): [number, number] | null {
+  return bestPlot(game, kind, laneSamples(game));
+}
+
 function count(game: Game, kind: TowerKind): number {
   return game.towers.filter((t) => t.kind === kind).length;
 }
