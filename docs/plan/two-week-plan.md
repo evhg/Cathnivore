@@ -2923,7 +2923,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** text 13 px+ at P and D at 4.5:1; targets highlight on hover/tap; plan-strip and rival specs pass; shots P and D.
 - **Size:** 2
 
-## 302. [ ] Cathnivore phone: every card in the hand within reach *(lane B, in progress)*
+## 302. [ ] Cathnivore phone: every card in the hand within reach *(lane B, in progress)* *(slice 1, 2026-11-08 19:47 lane B, tried and reverted: each playable card `position: sticky` on both sides (`left: i*24px`, `right: (n-1-i)*24px` set from Game.tsx; the NOT YET deck after them unchanged) draws a true held fan at P: every playable card a 24 px strip either side of a whole front card, and 'n more' then counts only the deck (shot scratchpad hand-P, patch scratchpad item302-sticky.patch). It broke 12 phone specs: clicks on a covered card's centre time out (disabled-actions, turn-show), and action-hand's 'one card peeks' and phone-map-hero encode the old row. Next: a tap on a peek scrolls that card to the front (it doesn't play), the specs click the front card or scroll first, then the sticky stack)*
 - **Why:** `plan1108d/cath-game-P` (0-390 x 668-790): two cards show, the third peeks as a back, the rest wait behind 'N more' (items 266, 281, 287); desktop has a fan (291).
 - **Build:** a phone fan showing every card with a 24 px+ peek, swipe to cycle, tap to lift one to full size; unaffordable cards dim in place.
 - **Accept:** every card reachable without page scroll; a lifted card 150 px+ wide; the board keeps its height (board-scales); hand and table specs pass; shots P and D.
