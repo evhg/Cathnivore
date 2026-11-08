@@ -20,8 +20,8 @@ export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half' | 'full'
 /** Her arms (plan item 23). 'clasped' is the classic hands-at-the-waist pose; each screen picks its own. */
-export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed'
-export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed']
+export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'can' | 'flag'
+export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag']
 
 export interface CathOptions {
   expression?: CathExpression
@@ -922,6 +922,29 @@ ${apple(178, 418, 11)}${apple(160, 424, 9)}${apple(242, 420, 10)}
 <path fill="#5C3E1E" opacity="0.25" d="M138 494 C172 502 228 502 262 494 L264 484 C228 492 172 492 136 484 Z"/>`
 }
 
+/** Plan item 272: Runnel's galvanised watering can, held at her side by its top handle, the spout and rose to the
+ *  viewer's right. Handle top at about (250, 396). */
+function wateringCan(): string {
+  const body = 'M206 418 C206 410 214 406 226 406 L270 406 C282 406 290 410 290 418 L292 486 C292 494 284 498 272 498 L224 498 C212 498 204 494 204 486 Z'
+  return `<path fill="none" stroke="#3E4E52" stroke-width="6" stroke-linecap="round" d="M222 408 C222 384 278 384 278 408"/>
+<path fill="none" stroke="#B9C9CC" stroke-width="3" stroke-linecap="round" d="M222 408 C222 384 278 384 278 408"/>
+<path fill="#8FA4A8" stroke="#3E4E52" stroke-width="2" stroke-linejoin="round" d="M288 470 L340 420 L346 426 L294 482 Z"/>
+<ellipse cx="344" cy="420" rx="8" ry="11" transform="rotate(-42 344 420)" fill="#B9C9CC" stroke="#3E4E52" stroke-width="1.8"/>
+<path fill="none" stroke="#3E4E52" stroke-width="1" d="M340 418 l2 2 M345 415 l2 2 M346 422 l2 2"/>
+<path fill="#9FB4B8" stroke="#3E4E52" stroke-width="2" stroke-linejoin="round" d="${body}"/>
+<path fill="#D6E3E4" opacity="0.7" d="M214 418 C214 414 218 412 222 412 L226 412 L226 490 L222 490 C218 490 214 488 214 484 Z"/>
+<path fill="none" stroke="#6E8488" stroke-width="2" d="M205 432 L291 432 M204 476 L292 476"/>
+<ellipse cx="248" cy="407" rx="40" ry="4" fill="#6E8488" opacity="0.6"/>`
+}
+
+/** Plan item 272: Hedgerow's lane pennant, a swallowtail flag in hedge green with a gold leaf, on a pole held aloft. */
+function lanePennant(): string {
+  return `<path fill="none" stroke="#5C3E1E" stroke-width="4" stroke-linecap="round" d="M310 62 L310 300"/>
+<circle cx="310" cy="60" r="4" fill="#E2B04A" stroke="#7A5226" stroke-width="1.2"/>
+<path fill="${C.leaf}" stroke="${C.leafDeep}" stroke-width="1.8" stroke-linejoin="round" d="M312 68 C326 64 342 70 356 66 L346 88 L356 110 C342 114 326 108 312 112 Z"/>
+<path fill="#E2B04A" stroke="#7A5226" stroke-width="1" d="M326 90 C328 80 336 76 340 78 C340 86 334 92 326 90 Z"/>`
+}
+
 function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
   const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 8, cl)
@@ -988,6 +1011,16 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
             hand('rest', 254, 390, -88, cl) +
             sleeve('M272 304 Q282 362 252 392 Q244 316 234 258', 22, cl, 'M236 266 Q235 262 234 256') +
             hand('chin', 224, 236, -64, cl)
+        : ''
+    case 'can':
+      // Plan item 272: Runnel's morning round: the watering can at her side in her left hand, the other at rest.
+      return layer === 'back'
+        ? restLeft
+        : sleeve('M272 306 Q286 350 262 384 Q256 392 252 396', 24, cl, 'M256 391 Q254 394 252 397') + wateringCan() + hand('grip', 250, 394, 20, cl)
+    case 'flag':
+      // Plan item 272: Hedgerow's lane: a pennant held up on its pole, the other hand at rest.
+      return layer === 'back'
+        ? restLeft + lanePennant() + sleeve('M264 298 Q292 278 298 248 Q304 216 308 192', 24, cl, 'M307 200 Q308 194 308 188') + hand('fist', 310, 172, 12, cl)
         : ''
     case 'crossed':
       // Arms folded: the far forearm tucked under, the near one on top with its hand on her other arm.
