@@ -4145,7 +4145,7 @@ html.no-animations .table-cath-line { animation: none; }
 }
 .partner-mat-stores .mat-art { width: 24px; height: auto; aspect-ratio: 64 / 60; flex: none; }
 .partner-mat-count { font-weight: 760; font-size: var(--fs-small); }
-.partner-mat-stores .farm-income { margin-left: auto; font-size: var(--fs-label); color: var(--ink-muted); }
+.partner-mat-stores .farm-income { margin-left: auto; font-size: var(--fs-label); font-weight: 700; color: var(--ink); } /* plan item 273: it read faint on the small chip */
 .partner-mat-slots { grid-area: slots; display: flex; gap: 3px; margin: 0; padding: 0; list-style: none; }
 .partner-slot {
   width: 20px;

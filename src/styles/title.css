@@ -1128,7 +1128,7 @@ html.no-animations .title-screen * {
 }
 .ritual-receipt[data-won] .ritual-pin { background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--pasture) 40%, var(--paper-on-fixed-fill)), var(--pasture) 55%, var(--pasture-deep)); }
 .ritual-receipt-head { font-family: var(--font-display); font-size: var(--fs-small); font-weight: 700; }
-.ritual-receipt-when { color: color-mix(in srgb, var(--ink-on-fixed-fill) 72%, var(--paper-on-fixed-fill)); border-bottom: 1px dashed color-mix(in srgb, var(--ink-on-fixed-fill) 35%, transparent); padding-bottom: 2px; margin-bottom: 1px; }
+.ritual-receipt-when { /* plan item 273: 4.3:1 on the receipt's darker foot at 72% */ color: color-mix(in srgb, var(--ink-on-fixed-fill) 85%, var(--paper-on-fixed-fill)); border-bottom: 1px dashed color-mix(in srgb, var(--ink-on-fixed-fill) 35%, transparent); padding-bottom: 2px; margin-bottom: 1px; }
 .ritual-receipt-row { display: flex; gap: 6px; }
 .ritual-receipt-row span { width: 50px; }
 .ritual-receipt-row b { font-variant-numeric: tabular-nums; }

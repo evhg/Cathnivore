@@ -1071,8 +1071,12 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
     scrollbar-gutter: stable;
     padding: 4px 8px 12px 0;
     /* the rail fades out at its foot, so it reads as continuing */
-    mask-image: linear-gradient(180deg, black calc(100% - 28px), transparent);
+    /* plan item 273: a 64 px fade (28 px left a cut card's letter tops showing), and the rail settles on a card */
+    mask-image: linear-gradient(180deg, black calc(100% - 64px), transparent);
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 4px;
   }
+  .campaign-screen > .cmp-path > .cmp-stop { scroll-snap-align: start; }
   .campaign-screen > .cmp-back { display: none; }
   .campaign-screen .cmp-ledger .cmp-ledger-back { display: block; margin: 0; }
 }
