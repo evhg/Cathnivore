@@ -634,6 +634,7 @@ export function buildGround(level: Level): Ground {
   const d0 = new THREE.Color(light.dirt[0]);
   const d1 = new THREE.Color(light.dirt[1]);
   const sand = new THREE.Color("#c9b88a");
+  const shingleGround = new THREE.Color("#b9ae99");
   const bankTop = new THREE.Color("#d6c77a");
   const plinthWall = new THREE.Color(light.dirt[0]).lerp(new THREE.Color("#cfc5af"), 0.45);
   const tmp = new THREE.Color();
@@ -671,6 +672,9 @@ export function buildGround(level: Level): Ground {
     // A soft, darker verge where the track meets the grass (trodden earth and shade).
     if (d >= 0.42 && d < 0.8) tmp.multiplyScalar(1 - 0.16 * smooth(1 - (d - 0.42) / 0.38));
     if (wet.has(`${Math.floor(x)},${Math.floor(y)}`)) tmp.lerp(sand, 0.6);
+    // Plan item 262: Shingle Bay's beach is one pale band of shingle ground under its pebbles (pebbles alone on the
+    // grass read as white confetti), fading into the grass along its landward edge.
+    if (act === 5 && x < -0.55 && d > 0.75) tmp.lerp(shingleGround, 0.85 * smooth(Math.min(1, (-0.55 - x) / 0.3)) * smooth(Math.min(1, (d - 0.75) / 0.2)));
     // Raised plots read as a built plinth: pale earthen walls with a lit, mown top.
     const up = plinth(x, y);
     if (up > 0) {
@@ -1198,7 +1202,7 @@ export function buildGround(level: Level): Ground {
     biome = "shingle";
     const pebbles: Inst[] = [];
     const posts: Inst[] = [];
-    const shingle = ["#c9bfae", "#b2a794", "#d8d0c0", "#9f9584"].map((c) => new THREE.Color(c));
+    const shingle = ["#c9bfae", "#b2a794", "#d3cab8", "#c9bfae"].map((c) => new THREE.Color(c));
     const timber = new THREE.Color("#6e5a44");
     // (on the west, where the camera looks: the field's south edge sits under the HUD)
     for (let z = -3; z <= rows + 3; z += 0.16)

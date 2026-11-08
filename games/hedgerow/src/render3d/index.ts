@@ -2149,9 +2149,28 @@ export class Renderer3D {
             sc.set(1, 1, 1);
           }
         });
+        // Plan item 262: pale shallows fading in from both banks of the ford (it was a hard blue band), as round the ponds.
+        const SW = 0.3;
+        const rim = new THREE.InstancedMesh(
+          new THREE.PlaneGeometry(0.3, SW).rotateX(-Math.PI / 2),
+          new THREE.MeshStandardMaterial({ color: "#c6dbd3", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
+          steps.length * 2,
+        );
+        const flip = new THREE.Quaternion().setFromAxisAngle(up, Math.PI);
+        steps.forEach((st, i) => {
+          q4.setFromAxisAngle(up, -st.a);
+          for (const side of [-1, 1]) {
+            const off = (0.49 - SW / 2) * side;
+            const x = st.x - Math.sin(st.a) * off;
+            const z = st.y + Math.cos(st.a) * off;
+            const q = side < 0 ? q4 : q4.clone().multiply(flip);
+            rim.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.compose(v.set(x, this.height(st.x, st.y) + 0.044, z), q, sc.set(1, 1, 1)));
+          }
+        });
+        rim.renderOrder = 3;
         water.renderOrder = 2;
         stones.castShadow = true;
-        grp.add(water, stones);
+        grp.add(water, rim, stones);
         this.dynamic.add(grp);
         this.oakObjs.set(`ford${f.from}`, grp);
       }
