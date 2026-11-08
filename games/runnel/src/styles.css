@@ -490,6 +490,17 @@ button {
 /* Plan item 277: a watered field answers: it turns a deep crop green, its furrows the rows of a crop, where a dry
    one stays pale tilled earth (3:1 in luminance). */
 .cell.wet.ground-field .tile { fill: var(--wet-field); }
+.field-cracks {
+  fill: none;
+  stroke: var(--furrow);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 380ms ease var(--delay, 0ms);
+}
+.cell.wet .field-cracks { opacity: 0; }
 .cell.wet.ground-field .tile-dress { opacity: 0.6; }
 
 .stone .tile {

@@ -237,6 +237,8 @@ export class Board {
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)
     el('polygon', { class: 'tile-grain', points: hexPoints(S * 0.965) }, root)
     if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)
+    // Plan item 277: a dry field cracks in the sun (three jagged lines from near its middle); water closes them (CSS).
+    if (ground === 'field') el('path', { class: 'field-cracks', d: fieldCracks(`${this.puzzle.seed}:${cell.q},${cell.r}`) }, root)
     else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
 
     el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
@@ -706,4 +708,36 @@ export class Board {
   get focusedIndex(): number {
     return this.focusIndex
   }
+}
+
+/** Plan item 277: a dry field's cracks, seeded by the cell so a board always draws the same: three jagged lines that
+ *  start near the tile's middle and run out most of the way to its rim, each with two kinks and a short fork. */
+function fieldCracks(key: string): string {
+  let h = hashString(`cracks:${key}`) || 1
+  const rnd = () => {
+    h ^= h << 13
+    h ^= h >>> 17
+    h ^= h << 5
+    return ((h >>> 0) % 1000) / 1000
+  }
+  let d = ''
+  const base = rnd() * Math.PI * 2
+  for (let k = 0; k < 3; k++) {
+    const a = base + (k * Math.PI * 2) / 3 + (rnd() - 0.5) * 0.8
+    let x = Math.cos(a) * S * 0.08
+    let y = Math.sin(a) * S * 0.08
+    d += `M${x.toFixed(1)} ${y.toFixed(1)}`
+    for (let j = 1; j <= 3; j++) {
+      const r = S * (0.08 + 0.2 * j)
+      const t = a + (rnd() - 0.5) * 0.7
+      x = Math.cos(t) * r
+      y = Math.sin(t) * r
+      d += `L${x.toFixed(1)} ${y.toFixed(1)}`
+      if (j === 2) {
+        const f = t + (rnd() < 0.5 ? -0.9 : 0.9)
+        d += `l${(Math.cos(f) * S * 0.14).toFixed(1)} ${(Math.sin(f) * S * 0.14).toFixed(1)}M${x.toFixed(1)} ${y.toFixed(1)}`
+      }
+    }
+  }
+  return d
 }
