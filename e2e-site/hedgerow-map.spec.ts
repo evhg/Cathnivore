@@ -463,3 +463,34 @@ test('the map colours in won stops and blooms a new win once', async ({ page }) 
   await expect(page.locator('button.node.next')).toBeVisible()
   await expect(page.locator('.stop-land.bloom')).toHaveCount(0)
 })
+
+// Plan item 274: the map is a painted overworld: each act's country carries its own landmark props, settled on open
+// ground, never on a stop, its name, its stars or Cath.
+test('plan item 274: each act shows its landmark props, clear of every stop and name', async ({ page }) => {
+  await seed(page, 24)
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
+  await page.waitForTimeout(300)
+  const acts = await page.evaluate(() => {
+    const ov = (a: DOMRect, b: DOMRect) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+    return [1, 2, 3, 4].map((n) => {
+      const li = document.querySelector(`li.act[data-act="${n}"]`)!
+      const props = [...li.querySelectorAll<HTMLElement>('.scenery .prop:not([hidden])')]
+      const solids = [...li.querySelectorAll<HTMLElement>('.stop .level-name, .stop .level-num, .stop .level-stars, .stop .you, .home-spot')]
+      const hits: string[] = []
+      for (const p of props) {
+        const pr = p.getBoundingClientRect()
+        for (const s of solids) if (s.offsetWidth > 0 && ov(pr, s.getBoundingClientRect())) hits.push(`${p.dataset.prop} on ${s.className} ${s.textContent?.slice(0, 20)}`)
+      }
+      return { n, count: props.length, kinds: new Set(props.map((p) => p.dataset.prop)).size, hits }
+    })
+  })
+  const wide = page.viewportSize()!.width >= 1000
+  for (const a of acts) {
+    expect(a.hits, `act ${a.n}`).toEqual([])
+    if (wide) {
+      // Act 4 is still in pencil: a short band (no card, no Cath), so fewer props find open ground.
+      expect(a.count, `act ${a.n} props`).toBeGreaterThanOrEqual(a.n === 4 ? 6 : 12)
+      expect(a.kinds, `act ${a.n} kinds`).toBeGreaterThanOrEqual(8)
+    } else expect(a.count, `act ${a.n} props`).toBeGreaterThanOrEqual(3)
+  }
+})

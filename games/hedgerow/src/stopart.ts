@@ -3,10 +3,10 @@
 // (the coin's vignette), each on its own patch of the act's ground, with a lit face and a shaded one. Shading and
 // highlights carry `data-sh` so a locked stop (pencil on paper, styles.css) drops them and keeps the line drawing.
 
-type Pal = { ground: string; leaf: string; wall: string; roof: string; accent: string; wood: string; water: string };
+export type Pal = { ground: string; leaf: string; wall: string; roof: string; accent: string; wood: string; water: string };
 
 /** One palette per act, from its painted banner (map.ts ACTS). */
-const PALS: Pal[] = [
+export const PALS: Pal[] = [
   { ground: "#9cc068", leaf: "#5f9a3e", wall: "#f1e2bd", roof: "#b5533c", accent: "#d9a53a", wood: "#7a5232", water: "#7fb8d6" },
   { ground: "#a8a46e", leaf: "#6e7f45", wall: "#ddd0b4", roof: "#5e5872", accent: "#9a4a8a", wood: "#6b4a2b", water: "#8aaec0" },
   { ground: "#d8cc9a", leaf: "#7f9a58", wall: "#f6f0e2", roof: "#3f7fa6", accent: "#e8743a", wood: "#8a6a4a", water: "#6fb0cf" },

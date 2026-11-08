@@ -9,6 +9,7 @@ import { enemyIcon } from "./icons";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
 import { stopArtKey, stopArtSvg } from "./stopart";
+import { actProps, scenerySpots, settle } from "./scenery";
 import { isUnlocked, medalsOf, remixMedalsOf, DIFFICULTY_MEDALS, REMIX_MEDALS, type SaveData } from "./store";
 
 // ---- Act scenes: one painted backdrop per act ----
@@ -1607,6 +1608,7 @@ function layoutLanes(list: HTMLElement): void {
     const n = lastNum.getBoundingClientRect();
     if (f.width > 0) fog.style.setProperty("--lane-x", `${Math.round(n.left + n.width / 2 - f.left)}px`);
   }
+  const scenery: [HTMLElement, SVGSVGElement, boolean][] = [];
   for (const svg of list.querySelectorAll<SVGSVGElement>(".trail-path")) {
     const box = svg.getBoundingClientRect();
     if (box.width < 1 || box.height < 1) continue;
@@ -1685,7 +1687,79 @@ function layoutLanes(list: HTMLElement): void {
       li.style.setProperty("--gate-x", `${Math.round(box.left + (pts[pts.length - 1]![0] / 100) * box.width - lb.left)}px`);
     }
     drawLane(svg, [start, ...pts], detours);
+    scenery.push([trail, svg, vertical]);
   }
+  // Every lane is drawn before any prop is measured, so the layout is read once rather than once an act.
+  const places = scenery.map(([trail, svg, vertical]) => placeScenery(trail, svg, vertical));
+  for (const place of places) place();
+}
+
+/**
+ * Plan item 274: settles the act's props on the open ground of its band: clear of every stop's coin, name, stars,
+ * land and tag, Cath, the cottage, the level card and the lane (sampled along its bed). Returns the write.
+ */
+function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): () => void {
+  const none = (): void => {};
+  const layer = trail.querySelector<HTMLElement>(".scenery");
+  if (!layer) return none;
+  const props = [...layer.querySelectorAll<HTMLElement>(".prop")];
+  const w = trail.offsetWidth;
+  const h = trail.offsetHeight;
+  if (w < 1 || h < 1) return none;
+  const k = phone ? 0.72 : w < 1000 ? 0.95 : 1.4;
+  const sizes = props.map((el) => {
+    const pw = Math.round(Number(el.dataset.w) * k);
+    return { w: pw, h: Math.round((pw * 24) / 32) };
+  });
+  const obstacles: Box[] = [];
+  const tb = trail.getBoundingClientRect();
+  for (const el of trail.querySelectorAll<HTMLElement>(".stop .level-num, .stop .level-name, .stop .level-stars, .stop .level-medals, .stop .start-tag, .stop .you, .home-spot")) {
+    if (el.offsetWidth > 0) obstacles.push(boxIn(el, trail));
+  }
+  // The land round each coin: its middle (the outer fade may sit under a prop).
+  for (const el of trail.querySelectorAll<HTMLElement>(".stop .stop-land")) {
+    const r = el.getBoundingClientRect();
+    if (r.width < 1) continue;
+    const cx = r.left - tb.left + r.width / 2;
+    const cy = r.top - tb.top + r.height / 2;
+    const hw = r.width * 0.42;
+    const hh = r.height * 0.42;
+    obstacles.push({ left: cx - hw, top: cy - hh, right: cx + hw, bottom: cy + hh, width: hw * 2 });
+  }
+  const li = trail.closest(".act");
+  for (const el of li?.querySelectorAll<HTMLElement>(".level-card, .act-pencil-note") ?? []) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0) obstacles.push({ left: r.left - tb.left, top: r.top - tb.top, right: r.right - tb.left, bottom: r.bottom - tb.top, width: r.width });
+  }
+  const bed = svg.querySelector<SVGPathElement>(".lane-bed");
+  const lane: [number, number][] = [];
+  const box = svg.getBoundingClientRect();
+  if (bed?.getAttribute("d")) {
+    // About 80 points along the bed (getPointAtLength is slow), with the straight runs between filled in every 4 px.
+    const len = bed.getTotalLength();
+    let last: [number, number] | null = null;
+    for (let i = 0; i <= 80; i++) {
+      const p = bed.getPointAtLength((len * i) / 80);
+      const q: [number, number] = [box.left - tb.left + (p.x / 100) * box.width, box.top - tb.top + (p.y / 100) * box.height];
+      if (last) {
+        const steps = Math.ceil(Math.hypot(q[0] - last[0], q[1] - last[1]) / 4);
+        for (let t = 1; t < steps; t++) lane.push([last[0] + ((q[0] - last[0]) * t) / steps, last[1] + ((q[1] - last[1]) * t) / steps]);
+      }
+      lane.push(q);
+      last = q;
+    }
+  }
+  const at = settle(sizes, scenerySpots(Number(layer.dataset.act) || 1), w, h, obstacles, lane, 10);
+  // Measured; the caller writes every act's props after all are measured.
+  return () =>
+    props.forEach((el, i) => {
+      const p = at[i];
+      el.hidden = !p;
+      if (!p) return;
+      el.style.setProperty("left", `${p[0]}px`);
+      el.style.setProperty("top", `${p[1]}px`);
+      el.style.setProperty("width", `${p[2]}px`);
+    });
 }
 
 let laneObserver: ResizeObserver | null = null;
@@ -2066,6 +2140,21 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     li.style.setProperty("--ground", `url("${svgImg(groundSvg(n, lvs.map((lv) => (data.stars[String(lv.id)] ?? 0) > 0)))}")`);
     li.dataset.act = String(n);
     trail.append(path);
+    // Plan item 274: the act's landmark props, settled on open ground once the stops are laid out (layoutLanes).
+    const scenery = document.createElement("div");
+    scenery.className = "scenery";
+    scenery.setAttribute("aria-hidden", "true");
+    scenery.dataset.act = String(n);
+    for (const pr of actProps(n)) {
+      const el = document.createElement("i");
+      el.className = "prop";
+      el.dataset.prop = pr.key;
+      el.dataset.w = String(pr.w);
+      el.innerHTML = pr.svg;
+      el.hidden = true;
+      scenery.append(el);
+    }
+    trail.append(scenery);
     if (home) trail.append(home);
 
     lvs.forEach((lv, i) => {

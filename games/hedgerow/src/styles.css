@@ -272,6 +272,31 @@ button {
 .trail > .stop {
   position: relative;
 }
+/* Plan item 274: the act's landmark props on open ground (placed by map.ts), behind the stops and the lane's Cath. */
+.scenery {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+}
+.scenery .prop {
+  position: absolute;
+  display: block;
+  aspect-ratio: 32 / 24;
+}
+.scenery .prop[hidden] {
+  display: none;
+}
+.scenery .prop svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.act-pencil .scenery .prop {
+  filter: grayscale(1) contrast(0.8);
+  opacity: 0.45;
+}
 /* Plan item 230: the land round each stop, behind its coin: coloured in once won, Hollowell's clutter until then. */
 .stop-land {
   position: absolute;
