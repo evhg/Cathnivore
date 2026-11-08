@@ -322,3 +322,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 08:20 lane A (planning): items 282-285, 287, 288 from a subagent critique of `plan1108b`; its Runnel channels item (286) dropped as item 277 just did it, and its umbrella point left to item 278.
 - 2026-11-08 08:20 lane A (item 279): a locked chapter's postcard is its scene at dusk under a wax seal, replacing item 257's pencil sketch (the item's build line); landmarks in silhouette, land in colour.
 - 2026-11-08 08:30 lane A (item 279): atlas landmarks grow 1.25x, not 2-3x: the hex also holds a two-line name, a pin, a Hollowell post and Cath, and 1.25x is the largest that keeps them clear (layout test); the 48 px D / 28 px P acceptance holds except the cross at 26 px on P.
+- 2026-11-08 08:35 lane B (item 280): the 3D gate queue stands at 1.2x, not the 2D queue's 1.4x: at 1.3 the vans crowded each other at l34's bend.
+- 2026-11-08 08:52 lane B (item 288): the phone's default 3D camera stays item 215's close frame (bigger plots to tap); 'whole lane in frame' is met by its Whole field view, one tap away.
