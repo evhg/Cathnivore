@@ -166,6 +166,18 @@ function RegionTextureDefs() {
       {/* Plan item 20 (the board as a diorama): each tile is a painted board piece. The light falls from the
           top left across the face (a wash over the flat region colour), the tile has a thickness (its edge
           drawn below the face) and it casts a soft shadow onto the table. */}
+      {/* Plan item 282: the corporations' pieces are moulded plastic, lit hard from above: a bright top easing into
+          a deep base, against the players' flat ink and paper. */}
+      <linearGradient id="hollowell-gloss" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" style={{ stopColor: 'color-mix(in srgb, var(--hollowell) 55%, white)' }} />
+        <stop offset="0.45" style={{ stopColor: 'var(--hollowell)' }} />
+        <stop offset="1" style={{ stopColor: 'color-mix(in srgb, var(--hollowell) 70%, var(--hollowell-ink))' }} />
+      </linearGradient>
+      <linearGradient id="candor-gloss" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" style={{ stopColor: 'color-mix(in srgb, var(--candor) 55%, white)' }} />
+        <stop offset="0.5" style={{ stopColor: 'var(--candor)' }} />
+        <stop offset="1" style={{ stopColor: 'color-mix(in srgb, var(--candor) 70%, var(--candor-ink))' }} />
+      </linearGradient>
       <linearGradient id="tile-light" x1="0.15" y1="0" x2="0.75" y2="1">
         <stop offset="0" stopColor="white" stopOpacity={0.34} />
         <stop offset="0.42" stopColor="white" stopOpacity={0} />
@@ -199,8 +211,11 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
     <g className="enemy-piece enemy-outlet">
       {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
       {/* plan item 172: a chunky token, its moulded side showing under the face */}
+      {/* plan item 282: a hard, clinical drop shadow (no blur), then the moulded side, the gloss face and its streak */}
+      <polygon className="corp-shadow" points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(2.2 2.4)" fill="var(--ink)" opacity={0.28} />
       <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <path className="corp-specular" d="M 1.2,10.5 V 4 L 2.4,3" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(7,9) rotate(18)">
         <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -217,8 +232,10 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
 export function Buyout({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-buyout">
+      <polygon className="corp-shadow" points="6,0 12,4 12,12 0,12 0,4" transform="translate(2.2 2.4)" fill="var(--ink)" opacity={0.28} />
       <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <path className="corp-specular" d="M 1.2,10.5 V 4.6 L 5.6,1.6" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(1,7) rotate(-6)">
         <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
@@ -234,9 +251,11 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
+      <circle className="corp-shadow" cx={8.2} cy={8.4} r={6} fill="var(--ink)" opacity={0.28} />
       <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--ink)" strokeWidth={1} />
       <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <circle cx={6} cy={6} r={6} fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} />
+      <circle cx={6} cy={6} r={6} fill="url(#candor-gloss)" stroke="var(--ink)" strokeWidth={1} />
+      <path className="corp-specular" d="M 1.6,6.5 A 4.6,4.6 0 0 1 4.2,1.9" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <path d="M 3.4,10.4 L 6.2,10.4 L 3.8,12.6 Z" fill="var(--candor)" />
       <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
       <text x={6} y={9} textAnchor="middle" className="doubt-mark">
