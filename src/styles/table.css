@@ -4604,3 +4604,26 @@ html.no-animations .terrain-art .idle-sheep-head { animation: none; }
   }
 }
 html.no-animations .cath-pop { animation: none; }
+
+/* Plan item 287: the stall's ledger is a chalk slate in a wooden frame (it was a ruled form page): chalk lines on a
+   dark board, the game's moves written in a chalk hand, gains and losses in coloured chalk. */
+@media (min-width: 1024px) {
+  .actions-sheet .round-ledger-roll {
+    --chalk: var(--wood-ink);
+    padding: 6px 10px 6px 18px;
+    border: 4px solid var(--wood);
+    border-radius: var(--r-xs);
+    background:
+      linear-gradient(90deg, transparent 10px, color-mix(in srgb, var(--chalk) 22%, transparent) 10px 11px, transparent 11px) 0 0 / 100% 100% no-repeat,
+      repeating-linear-gradient(to bottom, transparent 0 21px, color-mix(in srgb, var(--chalk) 9%, transparent) 21px 22px) 0 6px / 100% calc(100% - 6px) no-repeat,
+      radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--chalk) 7%, transparent), transparent 70%),
+      color-mix(in srgb, var(--wood-lo) 45%, var(--ink-on-fixed-fill));
+    box-shadow: inset 0 0 0 1px var(--wood-lo), inset 0 2px 6px color-mix(in srgb, var(--ink-on-fixed-fill) 60%, transparent);
+  }
+  .actions-sheet .round-ledger-roll .receipt { color: var(--chalk); }
+  .actions-sheet .round-ledger-roll .receipt-total { color: color-mix(in srgb, var(--chalk) 80%, transparent); }
+  .actions-sheet .round-ledger-roll .receipt[data-sign="up"] .receipt-amount,
+  .actions-sheet .round-ledger-roll .receipt-trust { color: color-mix(in srgb, var(--chalk) 45%, var(--gain-ink)); }
+  .actions-sheet .round-ledger-roll .receipt[data-sign="down"] .receipt-amount { color: color-mix(in srgb, var(--chalk) 40%, var(--short-ink-shelf)); }
+  .actions-sheet .round-ledger-roll .receipt-doodle { stroke: var(--chalk); }
+}
