@@ -2727,7 +2727,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** silhouette against its ground 3:1 or more on every withheld print; four distinct outlines (mask IoU below 0.8 for every pair); readable at P (prints 56 px); cathode-front and List specs pass; posters re-shot; shots title P and D.
 - **Size:** 1
 
-## 271. [ ] NIGHT SHIFT: Cath's whole figure, boots and a stance
+## 271. [ ] NIGHT SHIFT: Cath's whole figure, boots and a stance *(lane A, in progress)*
 - **Why:** `plan1107g/ns-play-D` (655-755 x 660-830): her legs are two flat black tubes with pointed tips, no knee, ankle or boot; the coat below the waist one flat cone (640-810 x 400-750); `ns-title-D` (900-1150 x 620-900) and `ns-title-P` (215-300 x 560-700) the same. Items 227, 254 and 260 brought the arm, shading and head to the bible; the lower body is still a placeholder.
 - **Build:** heeled ankle boots with a sole and a highlight; dark tights with a sheen and a shaped knee and calf; weight on one hip on the title and pick; the trench skirt with 3-5 folds, the back pleat's split and a hem that sways in the idle.
 - **Accept:** boots read at D (heel and sole distinct, 12 px or more tall); a visible knee bend on the free leg; 3 or more coat folds at 2:1 on the coat; cathode-perf within budget (+4 calls at most); cathode-front and classpick pass; key art re-shot; shots title and pick, P and D.
