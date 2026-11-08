@@ -2770,7 +2770,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** 6+ events mapped to 5+ distinct poses (unit test on the map); swaps 400-900 ms, reduced motion fades only; no layout shift (e2e); the play specs pass; shots P and D mid-reaction.
 - **Size:** 2
 
-## 277. [ ] Runnel: water that runs and fields that answer
+## 277. [ ] Runnel: water that runs and fields that answer *(lane B, in progress)*
 - **Why:** `plan1108a/runnel-D` (900-1240 x 330-750): tiles are cream with a brown groove and the water stops at the spring (620-800 x 200-290); no wet soil, no crop payoff; the rain day greys the whole valley (390-1420 x 20-880). (Item 264 made the tiles carved; this is the water and the fields.)
 - **Build:** a connected channel fills tile by tile (about 250 ms a tile) with a moving shimmer; a watered field darkens and sprouts in three stages, a dry one cracks; the solve sets off a 1 s bloom across the valley; the rain day's grade keeps the land's colour.
 - **Accept:** watered against dry fields 3:1 or more in luminance; the fill seen in an e2e frame; Runnel's perf spec holds; runnel site specs pass; shots P and D of the lesson, a part-solved daily and a solve; key art re-shot.
