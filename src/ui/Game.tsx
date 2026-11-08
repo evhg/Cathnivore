@@ -161,7 +161,11 @@ function stackHand(row: HTMLElement) {
   const edge = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft || '0')
   let front = cards.findIndex((c, i) => c.getBoundingClientRect().left > edge + i * HAND_PEEK + 1.5)
   if (front < 0) front = cards.length - 1
-  cards.forEach((c, i) => c.style.setProperty('--peek-z', String(cards.length - Math.abs(i - front))))
+  cards.forEach((c, i) => {
+    c.style.setProperty('--peek-z', String(cards.length - Math.abs(i - front)))
+    const side = i < front ? 'l' : i > front ? 'r' : 'f'
+    if (c.dataset.stack !== side) c.dataset.stack = side
+  })
 }
 // Scrolls the phone's held fan so `card` (the i-th sticky card) stands whole between the two stacks. Its
 // unstuck spot is read with the stickiness off for one layout.
@@ -662,9 +666,17 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         if (c.matches('.action-item')) cards.push(c)
       }
     }
-    for (const c of Array.from(row.querySelectorAll<HTMLElement>(':scope > [data-peek]'))) if (!cards.includes(c)) delete c.dataset.peek
+    for (const c of Array.from(row.querySelectorAll<HTMLElement>(':scope > [data-peek]'))) {
+      if (!cards.includes(c)) {
+        delete c.dataset.peek
+        delete c.dataset.stack
+      }
+    }
     if (cards.length < 2) {
-      for (const c of cards) delete c.dataset.peek
+      for (const c of cards) {
+        delete c.dataset.peek
+        delete c.dataset.stack
+      }
       return
     }
     // The right stack's offsets come from each card's width, so cards a few px wider or narrower still show even strips.
@@ -673,6 +685,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     for (let i = cards.length - 1; i >= 0; i--) {
       const c = cards[i]!
       c.dataset.peek = ''
+      // The name a strip shows down its edge while the card is off the front (table.css).
+      const name = (c.querySelector('.action-label')?.textContent ?? '').replace(/\s+/g, ' ').trim()
+      if (c.dataset.spine !== name) c.dataset.spine = name
       c.style.setProperty('--stick-l', `${i * HAND_PEEK}px`)
       c.style.setProperty('--stick-r', `${inset}px`)
       if (i > 0) inset += HAND_PEEK + widths[i]! - widths[i - 1]!

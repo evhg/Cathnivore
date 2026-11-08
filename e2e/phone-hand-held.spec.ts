@@ -37,6 +37,15 @@ test('phone: every playable card is in view, and a tap on a strip brings it forw
     expect(c.width).toBeGreaterThanOrEqual(148)
   }
   expect(before.filter((c) => c.mid).length).toBe(1)
+  // Every card off the front names itself down its strip.
+  const spines = await page.locator('.action-tray .actions > .action-item[data-peek]:is([data-stack="l"], [data-stack="r"])').evaluateAll((els) =>
+    els.map((el) => ({ name: (el as HTMLElement).dataset.spine ?? '', shown: getComputedStyle(el, '::before').content !== 'none' })),
+  )
+  expect(spines.length).toBe(before.length - 1)
+  for (const sp of spines) {
+    expect(sp.name.length).toBeGreaterThan(2)
+    expect(sp.shown).toBe(true)
+  }
   // The last card is a strip off the front: tap the strip.
   const last = before.length - 1
   expect(before[last]!.mid).toBe(false)
