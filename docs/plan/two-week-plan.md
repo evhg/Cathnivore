@@ -2733,7 +2733,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** boots read at D (heel and sole distinct, 12 px or more tall); a visible knee bend on the free leg; 3 or more coat folds at 2:1 on the coat; cathode-perf within budget (+4 calls at most); cathode-front and classpick pass; key art re-shot; shots title and pick, P and D.
 - **Size:** 2
 
-## 272. [ ] Site: four game cards, four Caths
+## 272. [ ] Site: four game cards, four Caths *(lane A, in progress)*
 - **Why:** `plan1107g/games-D`: the Cathnivore, Runnel and Hedgerow cards carry the same small sticker Cath at the right edge (340-400, 650-710, 960-1012 x 590-690), same outfit and scale, cut by the card; the NIGHT SHIFT card (1040-1330 x 490-690) is two-thirds black rain and LUNA is cut by its right edge (1290-1330 x 543-562); `portfolio-D` the collage's Cath (1000-1190 x 340-690) fades out at the knees with no ground.
 - **Build:** in each card Cath in that game's role and outfit, inside the scene (Cathnivore: olive jacket at the table with a basket; Runnel: market-day trench with a watering can; Hedgerow: wellies with a flag on the lane; NIGHT SHIFT: the 3D noir trench); the NIGHT SHIFT frame recomposed so she and the sign sit inside the 16:10 card on lit wet ground; the portfolio collage's Cath on a ground or counter.
 - **Accept:** no two cards show the same pose or outfit; no figure cut by a card's edge; the NIGHT SHIFT card's mean luminance 0.12 or more with LUNA wholly inside; games-cards, games-stall, posterplay pass; key art re-shot; shots portfolio and games, P and D.
