@@ -17,3 +17,13 @@ test('a watered field sprouts and a dry one is cracked', async ({ page }) => {
   await expect.poll(async () => wet.locator('.sprout').evaluateAll((s) => s.filter((e) => Number(getComputedStyle(e).opacity) > 0.9).length), { timeout: 5000 }).toBe(12)
   await expect(wet.locator('.field-cracks')).toHaveCSS('opacity', '0')
 })
+
+test('the solve blooms across the valley', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
+  await page.locator('#board [data-last]').click()
+  await expect(page.locator('#board')).toHaveClass(/\bwon\b/)
+  await expect(page.locator('.valley')).toHaveCSS('animation-name', 'valley-bloom')
+})

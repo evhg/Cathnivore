@@ -1130,6 +1130,15 @@ button {
 
 /* solved */
 
+/* Plan item 277: the solve blooms across the valley too: its land lifts in light and colour for a second and settles,
+   just after the board's own ring-by-ring bloom starts (no movement, so reduced motion keeps it). */
+.stage:has(.board.won) .valley { animation: valley-bloom 1000ms ease-out 150ms both; }
+@keyframes valley-bloom {
+  0% { filter: none; }
+  40% { filter: brightness(1.14) saturate(1.35); }
+  100% { filter: brightness(1.03) saturate(1.08); }
+}
+
 .won .tile {
   transform-box: fill-box;
   transform-origin: center;
