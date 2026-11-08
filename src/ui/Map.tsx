@@ -925,7 +925,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             </g>
             {/* Plan item 55: Hollowell dug in (grip stage 2+) glazes the ground cold; a region the last enemy turn
                 Squeezed wilts (greyed, the crops drooping) until the next. */}
-            {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--sea)" opacity={gripStage(r) >= 3 ? 0.14 : 0.1} pointerEvents="none" />}
+            {/* Plan item 267: as a cold band just inside the hex's edge, not a wash over the whole of it, so held land
+                keeps its colour (the wash left held hexes hazy beside a freed one). */}
+            {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.9)} fill="none" stroke="var(--sea)" strokeWidth={HEX_R * 0.12} strokeLinejoin="round" opacity={gripStage(r) >= 3 ? 0.42 : 0.3} pointerEvents="none" />}
             {wilted.has(id) && !r.liberated && <polygon className="grip-wilt" data-wilt="true" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--ink)" opacity={0.14} pointerEvents="none" />}
             {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
                 map's art, on the first flank of the tile its pieces leave clear. */}
