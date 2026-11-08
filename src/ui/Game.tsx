@@ -2726,7 +2726,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   )
 
   return (
-    <div className="game-layout" ref={layoutRef}>
+    // Gate 7: the wide left column for a big turn is an attribute here, not a `:has()` on the layout (each
+    // hand-over re-matched it across the table).
+    <div className="game-layout" ref={layoutRef} data-big-turn={foldFarm ? '' : undefined}>
       {(lostLandTick > 0 || riftTick > 0) && (
         <div key={`${lostLandTick}-${riftTick}`} className={riftTick > 0 && (state.rift === 3 || state.rift === 6) ? 'danger-flash danger-flash-deep' : 'danger-flash'} aria-hidden="true" />
       )}

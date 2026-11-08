@@ -2672,7 +2672,7 @@ html.no-animations .cath-companion .cameo {
 /* Plan item 83: a big desktop turn widens the left column (the board is bound by the frame's height, so it keeps its
    size) and stands Invest and Play three to a row; Supply's and Rebut's cards put their name beside their keys. */
 @media (min-width: 1024px) {
-  .game-layout:has(.desktop-col-left[data-big-turn]) { grid-template-columns: clamp(372px, 28vw, 420px) minmax(0, 1fr) 72px; }
+  .game-layout[data-big-turn] { grid-template-columns: clamp(372px, 28vw, 420px) minmax(0, 1fr) 72px; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item[data-group='play']:not(.action-family):has(> button:not(:disabled)),
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-item[data-group='invest']:has(> button:not(:disabled)) { grid-column: span 2; }
   .desktop-col-left[data-big-turn] .actions-sheet .actions > .action-family { flex-direction: row; align-items: center; gap: 6px; padding-block: 4px; }

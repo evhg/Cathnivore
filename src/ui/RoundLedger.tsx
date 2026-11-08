@@ -52,13 +52,21 @@ export default function RoundLedger({ state }: { state: GameState }) {
       const bottom = el.getBoundingClientRect().bottom
       const items = [...el.querySelectorAll<HTMLElement>('.receipt')]
       for (const item of items) delete item.dataset.gone
+      // Gate 7 (the hand-over render under 4x throttling): one layout for the whole fit, not one per hidden line.
+      // The lines stack in a column, so hiding the oldest lifts the newest by the step to the next line's top.
+      const tops = items.map((item) => item.getBoundingClientRect().top)
       const newest = items.at(-1)
+      let newestBottom = newest ? newest.getBoundingClientRect().bottom : 0
       let i = 0
-      while (newest && i < items.length - 1 && newest.getBoundingClientRect().bottom > bottom + 0.5) items[i++]!.dataset.gone = ''
-      el.dataset.room = newest && newest.getBoundingClientRect().bottom <= bottom + 0.5 ? 'yes' : 'no'
+      while (newest && i < items.length - 1 && newestBottom > bottom + 0.5) {
+        newestBottom -= tops[i + 1]! - tops[i]!
+        i++
+      }
+      for (let k = 0; k < i; k++) items[k]!.dataset.gone = ''
+      el.dataset.room = newest && newestBottom <= bottom + 0.5 ? 'yes' : 'no'
       // Plan item 287: while the page is mostly blank its free room holds Bea's chalk sketch of the stall, sized to
       // the room left under the newest line (it goes once the lines need the space).
-      const free = newest ? bottom - newest.getBoundingClientRect().bottom : 0
+      const free = newest ? bottom - newestBottom : 0
       el.dataset.sketch = free >= 96 ? 'yes' : 'no'
       el.style.setProperty('--sketch-room', `${Math.max(0, Math.round(free))}px`)
     }

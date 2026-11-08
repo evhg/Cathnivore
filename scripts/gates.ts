@@ -43,7 +43,11 @@ const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/p
 // DECISIONS.md — so it's back in the real regression suite instead of being left out as a no-op skip.
 const GATE_5_SPECS =
   'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/crash-recovery.spec.ts e2e/csp.spec.ts e2e/desktop-no-scroll.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
-run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS}`)
+// Gate 7's AI-teammate timing (the throttled test in e2e/ai-teammate.spec.ts) runs on its own after gate 5, not among
+// gate 5's parallel workers: beside three other browsers its wall-clock reading measured the machine's load (the same
+// build read about 520 ms alone and 1092-1215 ms in the 2026-11-08 release run). The 1 s budget is unchanged.
+const GATE_7_TIMING = 'SPEC 11.4 gate 7'
+run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS} --grep-invert "${GATE_7_TIMING}"`)
 // The website as a whole (games landing page at /, Runnel at /runnel/, Cathnivore under /cathnivore/),
 // built exactly as Vercel builds it. Part of gate 5: main must not move if the site around the game breaks.
 run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
@@ -57,7 +61,7 @@ run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx
 // SPEC 11.4 gate 7: "Lighthouse mobile performance score of 85 or more on the production build served
 // locally." (The gate's other half, "each AI teammate decision takes at most 1 second with 4x CPU
 // throttling," is now covered too — the real MCTS-in-Worker AI teammate exists (see DECISIONS.md) and
-// `e2e/ai-teammate.spec.ts`'s throttled test, run as part of Gate 5 above, measures it directly with a
+// `e2e/ai-teammate.spec.ts`'s throttled test, run on its own after the Lighthouse half, measures it directly with a
 // real CDP `Emulation.setCPUThrottlingRate` session rather than just asserting it.)
 async function waitForServer(url: string, timeoutMs: number): Promise<void> {
   const start = Date.now()
@@ -110,7 +114,7 @@ async function runLighthouseGate(): Promise<void> {
     }
     console.log(
       'Gate 7 (Lighthouse half) passed. The AI-teammate-under-throttling half is checked by ' +
-        'e2e/ai-teammate.spec.ts as part of Gate 5, not here.',
+        'e2e/ai-teammate.spec.ts, run alone right after this.',
     )
   } finally {
     killServer(server)
@@ -118,6 +122,10 @@ async function runLighthouseGate(): Promise<void> {
 }
 
 await runLighthouseGate()
+run(
+  'Gate 7: AI teammate decision under 1 s at 4x CPU throttling (alone)',
+  `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test --project=desktop-chromium --workers 1 e2e/ai-teammate.spec.ts --grep "${GATE_7_TIMING}"`,
+)
 
 // SPEC 11.4 gate 8: "capture screenshots of every screen at both sizes, plus one map screenshot in
 // greyscale. A subagent reviews them against STYLE.md and section 10 and lists problems." A script can
