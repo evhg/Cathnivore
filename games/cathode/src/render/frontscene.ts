@@ -658,7 +658,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.quaternion.copy(keepQuat).slerp(fitQuat, fitK);
     }
     // Plan item 161: a landscape class pick stands her whole between the list and the sheet, key-lit, centred.
-    const pickK = pickStage && cam.aspect >= 1 ? smoother(Math.min(1, wd.w)) : 0;
+    // Plan item 294: and an upright one stands her whole between the heading and her name.
+    const pickK = pickStage ? smoother(Math.min(1, wd.w)) : 0;
     if (pickK > 0.001) {
       keepPos.copy(cam.position);
       keepQuat.copy(cam.quaternion);

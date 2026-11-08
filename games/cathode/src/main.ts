@@ -475,8 +475,28 @@ addEventListener("resize", () => {
 function stagePick(): void {
   const left = document.querySelector(".cp .cp-left")?.getBoundingClientRect();
   const sheet = document.querySelector(".cp .cp-sheet");
-  if (!left || !sheet || innerWidth < innerHeight) {
+  if (!left || !sheet) {
     scene?.setPickStage(null);
+    return;
+  }
+  // Plan item 294: upright, she stands whole and large between the heading and her name (she was a small figure
+  // from the wardrobe's step-back framing), across the screen's width.
+  if (innerWidth < innerHeight) {
+    const head = document.querySelector(".cp .cp-title")?.getBoundingClientRect();
+    const words = Array.from(document.querySelectorAll(".cp .cp-kicker, .cp .cp-nameplate"))
+      .map((e) => e.getBoundingClientRect())
+      .filter((b) => b.height > 0);
+    if (!head || !words.length) {
+      scene?.setPickStage(null);
+      return;
+    }
+    const gap = Math.round(innerHeight * 0.012);
+    scene?.setPickStage({
+      left: Math.round(innerWidth * 0.06),
+      top: head.bottom + gap,
+      right: Math.round(innerWidth * 0.94),
+      bottom: Math.min(...words.map((b) => b.top)) - gap,
+    });
     return;
   }
   // The sheet's dark plate (its ::before) runs past the type on the left; she clears the plate, not just the words.
