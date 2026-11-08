@@ -303,3 +303,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 03:55 lane B: left NIGHT SHIFT's stale key art to lane A (its item 271 changed the source and its lock was live).
 - 2026-11-08 04:25 lane B: re-shot NIGHT SHIFT's stale key art myself (a failing CI check comes first; key-art files only, no NIGHT SHIFT source touched).
 - 2026-11-08 04:45 lane B (item 281): critique points already meeting the rules (12 px+, 4.5:1) were checked and recorded rather than changed.
+- 2026-11-08 04:10 lane A (item 271): the skirt's fold shade is a vertex colour on the coat's own material that scales all of its light (the sheen and rim carry the dark trench, so a diffuse tint barely showed); the lapels and epaulettes keep the plain coat material.
+- 2026-11-08 04:25 lane A (item 271): her weight on one hip is a pelvis tilt with the chest countering and the head held level, not a sideways hip slide: the tilted hem already swings 2 cm out, and a slide put it 7 px into the P title's menu.
