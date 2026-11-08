@@ -190,47 +190,95 @@ function hinge(colour: string, w: number, len: number, x: number, y: number, z: 
   return p;
 }
 
+/**
+ * Plan item 284: the farmers and neighbours in Cath's proportions (about five heads tall; they were chibi boxes with
+ * a ball for a head): tapered legs in work trousers and boots, a shirt under dungarees or a gilet, sleeves with
+ * hands, a neck, and a head with hair, eyes, cheeks and a nose under a straw hat, a flat cap or a headscarf. Bea
+ * stays a child (about four heads), in her pink dress and bunches. Everything bakes into one mesh per moving part.
+ */
+const SHIRTS = ["#c4433a", "#4f7fb0", "#d9a441", "#7a9a52", "#b5657a"];
+const HAIRS = ["#5b3a26", "#2e211c", "#a9a39a", "#b8642e", "#d8c08a"];
+const SKINS = ["#f0c9a0", "#e2b08a", "#c98f66", "#f3d3b6"];
 function person(f: Folk): Rig {
   const bea = f.kind === "bea";
-  const h = bea ? 0.53 : 0.72;
-  const shirt = bea ? "#e8748b" : f.id % 2 ? "#c4433a" : "#4f7fb0";
-  const legC = bea ? "#f6efe4" : "#5b4a3a";
-  const skin = "#f0c9a0";
+  const h = bea ? 0.6 : 0.86;
+  const v = f.id;
+  const shirt = bea ? "#e8748b" : SHIRTS[v % SHIRTS.length]!;
+  const skin = SKINS[(v * 3 + 1) % SKINS.length]!;
+  const hairC = bea ? "#2e211c" : HAIRS[(v * 7 + 2) % HAIRS.length]!;
+  const look = bea ? -1 : v % 3; // 0 straw hat, 1 flat cap, 2 headscarf
+  const legC = bea ? "#f6efe4" : v % 2 ? "#3f5a7a" : "#6b5843";
+  const over = bea ? "#e8748b" : v % 2 ? "#3f5a7a" : "#56603f"; // dungarees, or a waxed gilet
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  const hip = h * 0.4;
-  const legs = [hinge(legC, h * 0.1, hip, 0, hip, -h * 0.06), hinge(legC, h * 0.1, hip, 0, hip, h * 0.06)];
+  const hip = h * (bea ? 0.4 : 0.47);
+  const shoulder = h * (bea ? 0.7 : 0.8);
+  const legs = [-1, 1].map((z) => {
+    const leg = hinge(legC, h * 0.075, hip * 0.86, 0, hip, z * h * 0.05);
+    leg.add(part("box", "#3a2a20", h * 0.11, h * 0.06, h * 0.075, h * 0.02, -hip * 0.93, 0));
+    return leg;
+  });
   body.add(...legs);
-  body.add(part("box", shirt, h * 0.2, h * 0.34, h * 0.28, 0, hip + h * 0.16, 0));
-  const shoulder = hip + h * 0.3;
-  const arms = [hinge(skin, h * 0.08, h * 0.3, 0, shoulder, -h * 0.17), hinge(skin, h * 0.08, h * 0.3, 0, shoulder, h * 0.17)];
+  // The torso: a shirt, narrower at the waist, and the bib or gilet over its front.
+  const tw = h * (bea ? 0.15 : 0.13);
+  body.add(part("disc", shirt, tw * 1.6, shoulder - hip + h * 0.02, tw * 2.3, 0, (hip + shoulder) / 2, 0));
+  if (bea) body.add(part("cone", shirt, h * 0.42, h * 0.26, h * 0.42, 0, hip + h * 0.04, 0));
+  else {
+    body.add(part("box", over, h * 0.06, (shoulder - hip) * 0.62, tw * 1.5, tw * 0.62, hip + (shoulder - hip) * 0.33, 0));
+    body.add(part("disc", over, tw * 1.7, h * 0.12, tw * 2.4, 0, hip + h * 0.02, 0));
+    // Straps (dungarees) or the gilet's open front.
+    for (const z of [-1, 1]) body.add(part("box", over, h * 0.03, (shoulder - hip) * 0.45, h * 0.03, tw * 0.7, shoulder - (shoulder - hip) * 0.25, z * tw * 0.55));
+  }
+  const arms = [-1, 1].map((z) => {
+    const arm = hinge(shirt, h * 0.06, h * 0.3, 0, shoulder - h * 0.02, z * (tw * 1.15 + h * 0.03));
+    arm.add(part("ball", skin, h * 0.065, h * 0.075, h * 0.065, 0, -h * 0.32, 0));
+    return arm;
+  });
   body.add(...arms);
+  body.add(part("rod", skin, h * 0.055, h * 0.05, h * 0.055, 0, shoulder + h * 0.04, 0));
   const head = new THREE.Group();
-  head.position.set(0, shoulder + h * 0.14, 0);
-  const hr = bea ? h * 0.32 : h * 0.26;
-  head.add(part("ball", skin, hr, hr, hr));
+  const hr = h * (bea ? 0.13 : 0.095);
+  head.position.set(0, shoulder + h * 0.02 + hr, 0);
+  head.add(part("ball", skin, hr * 1.9, hr * 2.15, hr * 1.85));
+  // Hair round the back and crown, then the face on the side the figure faces (+x).
+  head.add(part("ball", hairC, hr * 1.95, hr * 1.9, hr * 2.0, -hr * 0.22, hr * 0.22, 0));
+  for (const z of [-1, 1]) {
+    head.add(part("ball", "#2b2320", hr * 0.36, hr * 0.46, hr * 0.32, hr * 0.84, hr * 0.08, z * hr * 0.36));
+    head.add(part("ball", "#ffffff", hr * 0.14, hr * 0.14, hr * 0.14, hr * 0.98, hr * 0.2, z * hr * 0.32));
+    head.add(part("ball", "#e88d82", hr * 0.34, hr * 0.22, hr * 0.3, hr * 0.8, -hr * 0.26, z * hr * 0.5));
+    head.add(part("box", hairC, hr * 0.12, hr * 0.1, hr * 0.42, hr * 0.86, hr * 0.42, z * hr * 0.36));
+  }
+  head.add(part("ball", skin, hr * 0.32, hr * 0.36, hr * 0.3, hr * 0.98, -hr * 0.1, 0));
+  head.add(part("box", "#a8564e", hr * 0.1, hr * 0.08, hr * 0.42, hr * 0.88, -hr * 0.48, 0));
   if (bea) {
-    head.add(part("ball", "#2e211c", hr * 1.04, hr * 0.8, hr * 1.04, -hr * 0.06, hr * 0.14, 0));
+    head.add(part("ball", hairC, hr * 2.08, hr * 1.6, hr * 2.08, -hr * 0.12, hr * 0.28, 0));
     for (const z of [-1, 1]) {
-      head.add(part("ball", "#2e211c", hr * 0.42, hr * 0.42, hr * 0.42, -hr * 0.1, 0, z * hr * 0.58));
-      head.add(part("ball", "#f2c94c", hr * 0.18, hr * 0.18, hr * 0.18, -hr * 0.1, hr * 0.22, z * hr * 0.52));
+      head.add(part("ball", hairC, hr * 0.84, hr * 0.84, hr * 0.84, -hr * 0.2, 0, z * hr * 1.16));
+      head.add(part("ball", "#f2c94c", hr * 0.36, hr * 0.36, hr * 0.36, -hr * 0.2, hr * 0.44, z * hr * 1.04));
     }
+  } else if (look === 0) {
+    // A straw hat: a wide brim, a crown and a band in the shirt's colour.
+    head.add(part("disc", "#e3c26a", hr * 3.6, hr * 0.14, hr * 3.6, 0, hr * 0.78, 0));
+    head.add(part("disc", "#e3c26a", hr * 2.0, hr * 0.8, hr * 2.0, 0, hr * 1.14, 0));
+    head.add(part("disc", shirt, hr * 2.06, hr * 0.2, hr * 2.06, 0, hr * 0.92, 0));
+  } else if (look === 1) {
+    // A tweed flat cap, its peak over the eyes.
+    head.add(part("ball", "#7a6a55", hr * 2.08, hr * 0.9, hr * 2.08, 0, hr * 0.74, 0));
+    head.add(part("box", "#6a5b48", hr * 0.8, hr * 0.12, hr * 1.5, hr * 0.98, hr * 0.68, 0));
   } else {
-    head.add(part("disc", "#e3c26a", hr * 1.55, hr * 0.1, hr * 1.55, 0, hr * 0.42, 0));
-    head.add(part("disc", "#e3c26a", hr * 0.9, hr * 0.36, hr * 0.9, 0, hr * 0.62, 0));
-    head.add(part("disc", shirt, hr * 0.92, hr * 0.1, hr * 0.92, 0, hr * 0.5, 0));
-    // Eyes on the side the figure faces, so a face reads under the brim.
-    for (const z of [-1, 1]) head.add(part("ball", "#2b2320", hr * 0.16, hr * 0.16, hr * 0.16, hr * 0.42, hr * 0.05, z * hr * 0.2));
+    // A headscarf tied at the nape, in a print colour.
+    head.add(part("ball", "#d65f5f", hr * 2.06, hr * 1.5, hr * 2.08, -hr * 0.1, hr * 0.44, 0));
+    head.add(part("ball", "#d65f5f", hr * 0.6, hr * 0.5, hr * 0.6, -hr * 1.04, -hr * 0.1, 0));
   }
   body.add(head);
   let tool: THREE.Group | undefined;
   if (!bea) {
     // A hoe in the near hand: handle and blade, pivoting at the hand.
     tool = new THREE.Group();
-    tool.add(part("rod", "#8a6238", h * 0.04, h * 0.75, h * 0.04));
-    tool.add(part("box", "#7d8a92", h * 0.16, h * 0.04, h * 0.1, h * 0.06, -h * 0.75, 0));
-    tool.position.set(h * 0.12, shoulder - h * 0.2, h * 0.2);
+    tool.add(part("rod", "#8a6238", h * 0.035, h * 0.8, h * 0.035));
+    tool.add(part("box", "#7d8a92", h * 0.15, h * 0.035, h * 0.09, h * 0.06, -h * 0.8, 0));
+    tool.position.set(h * 0.1, shoulder - h * 0.3, tw * 1.15 + h * 0.08);
     body.add(tool);
   }
   return { root, body, legs, arms, head, tool, h };
