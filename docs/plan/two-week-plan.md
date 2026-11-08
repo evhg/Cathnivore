@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-08 08:02 UTC
+
 
 
 
@@ -2782,7 +2782,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** thresholded silhouettes differ pairwise (IoU under 0.85, a test); no weapon/umbrella intersection; classpick passes; cathode-perf within budget; shots P and D of all five.
 - **Size:** 2
 
-## 279. [ ] Cathnivore: Campaign chapters as authored scenes
+## 279. [ ] Cathnivore: Campaign chapters as authored scenes *(lane A, in progress)*
 - **Why:** `plan1108a/cath-campaign-D`: the atlas is flat hexes with numbered circles (90-660 x 225-775), Cath stands on a pier in the sea (690-805 x 505-770), locked chapters are grey line thumbnails (1210-1345 x 485-780).
 - **Build:** each region's landmark at 2-3x today's size, roads, Hollowell signage over unfreed land and the chapter path in dotted ink; Cath on the current chapter's region (walking the path on a win); the locked cards as coloured, silhouetted scenes under a wax seal, one per chapter.
 - **Accept:** landmarks 48 px+ at D and 28 px+ at P; 6 distinct chapter scenes; locked card text 4.5:1; campaign, -map, -spread, -vignettes specs pass; save format unchanged; shots P and D at 0, 3 and 6 chapters won.
@@ -2802,4 +2802,40 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Runnel:** D hint 'Tap a tile to turn it, hold to pin it' grey on cream (74-288 x 782-795): measure.
   - **Site:** D /games/ kicker touching the awning scallops (615-1015 x 86-100).
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass; ui-css-lint and cathode-type pass.
+- **Size:** 1
+
+## 282. [ ] Cathnivore: Hollowell's pieces as glossy plastic miniatures, and Hollowell at the table
+- **Why:** `plan1108b/cath-game-D` (670-1160 x 190-650) and `cath-game-P` (120-330 x 200-460): Outlets, Buyouts and Doubts are flat orange icon stacks (~40 px) in the players' ink-and-paper style, so VISION's contrast (glossy, plastic, over-lit, clinical for the corporations) is missing from the table. Hollowell is a 90 px badge (D 1230-1320 x 10-95) whose HOLLOWELL label covers the mouth (1215-1325 x 65-82).
+- **Build:** corporate miniatures in SVG (an Outlet kiosk, a Buyout tower, a Doubt totem) with specular highlights, a hard drop shadow and a clinical palette; a hard snap on entry, no overshoot (players' pieces keep theirs); a Hollowell portrait card at the board edge with three reactions (smug, rattled, defeated) tied to a Squeeze, an expansion and a liberation; the label clear of the face.
+- **Accept:** corporate pieces 56 px+ tall at D and 36 px+ at P; every piece a distinct shape without colour (greyscale shot); the card 120 px+ at D and 64 px+ at P, label clear of the face; reduced motion fades only; ui-css-lint, board-scale, board-diorama and the play specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 283. [ ] NIGHT SHIFT: the title street as a lit diorama, not a void
+- **Why:** `plan1108b/ns-title-D`: 0-900 x 560-900 and 580-900 x 0-230 are flat black, so Cath stands in a void; a ghost "CREDIT" billboard sits behind the wordmark (0-420 x 170-240) and muddies it. `ns-title-P`: the menu (8-178 x 205-435) sits over her body and the LUNA sign (30-195 x 505-560) crosses her coat. `ns-play-P` (15-280 x 15-55): the case-file header sits on the bright HOLLOWELL sign at low contrast.
+- **Build:** the title set dressed in three depth layers (wet cobbles taking the neon, a sodium lamp with its cone, steam from a grate, a far tram or traffic); the billboard behind the wordmark dimmed or moved; per-breakpoint cameras so on a phone the menu sits beside or below her, never over her; a scrim under the class pick's header. (The umbrella and rifle clash is item 278's.)
+- **Accept:** no 200x200 px region of the D title under 3% luminance; at P the menu box clear of her projected silhouette (e2e); wordmark and case-file header 4.5:1+ against what's behind; cathode-perf within budget; cathode-front and classpick pass; shots P and D, title and pick.
+- **Size:** 3
+
+## 284. [ ] Hedgerow 3D: Cath and the farmers as character-bible models
+- **Why:** `plan1108b/hedge-l21-3d-D` (190-290 x 450-680): Cath is a low-poly mannequin, flat face, smudged eyes, block hair, no jacket, pearls or leaf clip; the farmers (850-890 x 455-520) are boxes. The 2D Cath in her bubble beside her is far better, so 3D reads as a downgrade.
+- **Build:** a stylised Cath for the 3D field with a modelled head and painted face (the NIGHT SHIFT round-two face work as reference), hair with a shine band, the olive jacket with the collar up, pearls and the leaf clip; idle, point and cheer tied to game events (a wave cleared, a leak); farmers and neighbours re-modelled in the same proportions.
+- **Accept:** at D her face 40 px+ tall at the default camera, eyes, liner and the raised right brow visible; a cheer on a wave clear (e2e hook); draw calls +30 or fewer; gate 1 holds; hedgerow 3D specs pass; shots P and D, 3D and `?2d`.
+- **Size:** 2
+
+## 285. [ ] Hedgerow 2D: the fleet as characterful, animated sprites
+- **Why:** `plan1108b/hedge-l21-2d-D` (305-340 x 270-460): the Lifestyle influencers are ~30 px pink car glyphs; `hedge-l34-2d-D` (235-300 x 110-380): Box Lorries are flat blue boxes. In a Kingdom Rush-type game the enemies are stars; here they read as icons (item 280 covers only 3D).
+- **Build:** a drawn sprite per enemy type: a driver in the cab, a Hollowell livery, a bounce on the wheels and exhaust puffs; a hit flash, a slowed state (mud on the wheels), a defeat where the van tips and its parcels scatter; a health pip bar.
+- **Accept:** enemies 44 px+ long at D and 28 px+ at P; each type told apart in a greyscale shot; a unit test that every enemy id has a sprite; reduced motion no bounce; Hedgerow level tests and 2D specs pass; shots P and D, l21 and l34.
+- **Size:** 2
+
+## 287. [ ] Cathnivore: the player panel as Mara's farm stall, not a form
+- **Why:** `plan1108b/cath-game-D` (16-332 x 12-875): the left column is a stack of form panels; the ledger (35-315 x 625-800) is ~175 px of empty ruled lines; "Saving for" is three small cards and a "6 more not yet" pill. `cath-game-P` (330-390 x 670-770): the third hand card is cut to a "NOT YET" sliver that reads as a render error.
+- **Build:** the column drawn as a wooden market stall: Produce, Marks and Goodwill as objects that animate on change (crates, a coin tin, rosettes); "Saving for" as price-tagged goods on a rail; the ledger a chalk slate that appears once it has entries; the partner's farm a smaller stall beside it; on the phone, the hand's last card either whole or clearly a scroll edge.
+- **Accept:** no empty block 120 px+ at D; resource changes animate within 250 ms (fade only under reduced motion); every value keeps its screen-reader label and focus; ui-css-lint, player-mat, action-hand and the play specs pass; shots P and D at the start and at round 5.
+- **Size:** 2
+
+## 288. [ ] Hedgerow 3D: the phone camera frames the whole lane, clean field edges
+- **Why:** `plan1108b/hedge-l21-3d-P`: the lane's entry and Hollowell's depot are off the top (0-390 x 55-120); white fragments like broken geometry fill 0-110 x 60-680, and snow-like particles cover the field; the "216 coming" tag (10-205 x 425-450) floats over the lane.
+- **Build:** a portrait camera that fits the lane from depot to home (pinch to zoom in); terrain skirts so nothing stray shows past the field; fewer particles on a phone; the incoming tag docked off the lane.
+- **Accept:** at P the whole lane from depot to home in frame (projected points within the canvas, e2e); no geometry outside the field mesh in frame; the tag clear of the lane; hedgerow 3D specs pass; shots P and D, l5 and l21.
 - **Size:** 1
