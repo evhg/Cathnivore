@@ -2899,7 +2899,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** on l5, l21 and l34 the bubble covers no plot or lane cell at P or D; the ring 44 px+ at P; text 4.5:1; hedgerow specs pass; shots P and D.
 - **Size:** 2
 
-## 298. [ ] Runnel: the valley lit as the day promises
+## 298. [ ] Runnel: the valley lit as the day promises *(lane B, in progress)*
 - **Why:** `plan1108d/runnel-D` (375-1425 x 10-890): the card says 'Golden hour, light drizzle' but the valley is a flat grey-olive wash under heavy rain strokes; `runnel-P` (0-390 x 195-775): the tiles barely stand off the ground.
 - **Build:** a light grade per weather and hour (dawn, golden hour, overcast, drizzle): a warm low sun with long shadows at golden hour, sparse drizzle with sunbreaks; the tiles' rims kept 3:1 against the valley in every grade.
 - **Accept:** shots of four skies read as four different palettes; runnel-tiles' edge checks pass in each; reduced motion stills the rain; runnel specs pass; shots P and D, two weathers.
