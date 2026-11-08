@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (16:51, 11-08): item 289 slice 3 (NIGHT SHIFT's Cath: rounder, warmer face, bigger eyes, lighter higher brows, shorter neck; key art re-shot). Same-person re-check: mostly; its remaining gaps are in the plan item. **The 19:51 session releases.**
+- Lane A (17:51, 11-08): CI red on bcf7e40 (keyart-fresh: Hedgerow's poster after item 297) fixed by a re-shoot; item 289 closed; item 294 claimed (NIGHT SHIFT phone title and pick). **The 19:51 session releases.**
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (17:21, 11-08): item 297 claimed, slices 1-2 (Hedgerow 2D: Cath's coaching marks the plot with a pulsing ring and a ghost of the advised tower; the bubble keeps off it). Seen: hedgerow-threat's D l12 'bubble over empty plots' fails locally on HEAD, green in CI. Lane B's open items: 267, 268, 282, 285, 297.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
