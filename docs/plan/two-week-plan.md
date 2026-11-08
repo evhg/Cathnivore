@@ -2758,7 +2758,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** 12 or more distinct landmark props per act; no two stops drawn alike; names never overlap props (a box test in the map spec); stops 44 px or more to tap; names 12 px+ at 4.5:1; map and critique specs pass; shots P and D, acts 1, 3 and 4; key art re-shot.
 - **Size:** 3
 
-## 275. [ ] NIGHT SHIFT: Cath's face that holds up close, round two
+## 275. [ ] NIGHT SHIFT: Cath's face that holds up close, round two *(lane A, in progress)*
 - **Why:** `plan1108a/ns-title-D` (930-1040 x 255-385): after item 260 the face still reads as a mannequin (pasted eyes, little nose, brow or lip modelling, the hair a solid shell); `ns-play-D` (680-760 x 120-230) and `ns-play-P` (150-215 x 230-300) soften into the collar.
 - **Build:** a nose bridge and tip, lips with a lit upper edge, a brow ridge, cheek planes that take the key; winged liner and two catchlights per eye; hair with strand cards at the temples and the knot, the shine band kept; the bible's raised right brow and half smile; the title cycling smirk and determined.
 - **Accept:** eyes 6 px+ tall at P title; the right brow visibly higher; at least two expressions seen on the title; cathode-front face tests and classpick pass; cathode-perf within budget; shots title and pick, P and D; key art re-shot.
