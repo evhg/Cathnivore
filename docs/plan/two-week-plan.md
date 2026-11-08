@@ -2703,7 +2703,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 267. [ ] Cathnivore: Hollowell's held land looks occupied, not faded
+## 267. [ ] Cathnivore: Hollowell's held land looks occupied, not faded *(lane B, in progress)*
 - **Why:** `plan1107g/cath-title-D` (875-1315 x 340-735): every hex a pale wash over the gingham, the title's hero board a ghost; `cath-game-D` (570-1160 x 120-690) and `cath-game-P` (20-360 x 170-505): hex interiors are low-saturation hatching, and the most saturated things on the board are Hollowell's Outlets and '?' discs. VISION: warm hand-made land for the players, glossy plastic for the corporations.
 - **Build:** every region's land in full colour (the campaign map's painted ground, `cath-campaign-D` 90-650 x 225-770); Hollowell's hold drawn as glossy additions on it (an orange-and-white plastic fence along a held hex's edge, a small glossy billboard per Outlet), not a white overlay; liberation strips the plastic (item 127's moment).
 - **Accept:** each held hex's land chroma 80% or more of the same hex when free (5 samples per hex); no full-hex overlay above 15% opacity; held vs free tell apart by shape (fence or billboard); region names 4.5:1; board-scale, board-diorama, title-table, setup pass; key art re-shot; shots title and game, P and D, light and dark.
