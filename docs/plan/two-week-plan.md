@@ -2929,7 +2929,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every card reachable without page scroll; a lifted card 150 px+ wide; the board keeps its height (board-scales); hand and table specs pass; shots P and D.
 - **Size:** 2
 
-## 303. [ ] Portfolio: the hero shows all four products
+## 303. [ ] Portfolio: the hero shows all four products *(lane B, in progress)*
 - **Why:** `plan1108d/portfolio-D` (930-1215 x 340-700, 790-1000 x 425-640): Cath and her stall cover half of the Runnel and Hedgerow frames and most of NIGHT SHIFT's; `portfolio-P` (20-280 x 125-300) shows only Cathnivore.
 - **Build:** a deliberate fan of four labelled frames with Cath beside them, not on top; at P a swipeable strip of the four.
 - **Accept:** each frame 60%+ visible at D; all four reachable at P; labels 4.5:1; portfolio tests and e2e:site pass; shots P and D.
