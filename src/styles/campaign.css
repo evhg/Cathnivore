@@ -470,26 +470,23 @@
 .cmp-vig-capital { fill: var(--region-capital); }
 .cmp-vig-frame { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 
-/* A locked chapter's postcard is a pencil sketch: graphite on paper, a lighter frame. Plan item 257: drawn, not a
-   greyed photo: every shape outlined in graphite on bare paper, the hills and far land shaded in hatching (the
-   patterns live once in CampaignScreen's `.cmp-defs`). */
-.cmp-vignette.is-pencil {
-  box-shadow: none;
+/* Plan item 279 (replacing 257's pencil): a locked chapter's postcard is its scene at dusk under the co-op's wax seal:
+   the land keeps its region colours under an evening grade, the landmarks and the stall stand in silhouette. */
+.cmp-vignette.is-sealed { box-shadow: 0 2px 0 var(--rule); }
+.cmp-vignette.is-sealed .cmp-vig-sky { fill: color-mix(in srgb, var(--sea) 70%, var(--p-sol)); }
+.cmp-vignette.is-sealed .cmp-vig-sun { fill: var(--paper-on-fixed-fill); opacity: 0.9; }
+.cmp-vignette.is-sealed .cmp-vig-far { fill: color-mix(in srgb, var(--pasture-deep) 60%, var(--sea)); }
+.cmp-vignette.is-sealed .cmp-vig-hill { filter: brightness(0.78) saturate(0.85); stroke: var(--ink-on-fixed-fill); }
+.cmp-vignette.is-sealed :is(.cmp-vig-mark, .cmp-vig-stall) :is(path, rect, circle, ellipse, polygon, line) {
+  fill: var(--ink-on-fixed-fill);
+  stroke: var(--ink-on-fixed-fill);
 }
-.cmp-vignette.is-pencil :is(path, rect, circle, ellipse, polygon) {
-  fill: var(--paper-hi);
-  stroke: color-mix(in srgb, var(--ink) 62%, var(--paper));
-  stroke-width: 0.7;
-}
-.cmp-vignette.is-pencil .cmp-vig-sky { fill: var(--paper-hi); stroke: none; }
-.cmp-vignette.is-pencil .cmp-vig-far { fill: url(#cmp-pencil-hatch-x); stroke-width: 0.5; }
-.cmp-vignette.is-pencil .cmp-vig-hill { fill: url(#cmp-pencil-hatch); }
-.cmp-vignette.is-pencil :is(.cmp-vig-awning, .cmp-vig-counter) { fill: url(#cmp-pencil-hatch); }
-.cmp-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-.cmp-hatch-paper { fill: var(--paper-hi); }
-.cmp-hatch-line { stroke: color-mix(in srgb, var(--ink) 45%, var(--paper)); stroke-width: 0.6; }
-.cmp-vignette.is-pencil .cmp-vig-frame { fill: none; stroke: var(--ink-muted); stroke-dasharray: 3 2; }
-.cmp-vignette.is-pencil .cmp-vig-sun { opacity: 0.4; }
+.cmp-vignette.is-sealed .cmp-vig-stall image { opacity: 0; }
+.cmp-vignette.is-sealed .cmp-vig-frame { stroke: var(--ink-on-fixed-fill); }
+.cmp-vseal-wax { fill: var(--clay-deep); stroke: color-mix(in srgb, var(--clay-deep) 60%, var(--ink-on-fixed-fill)); stroke-width: 0.8; stroke-linejoin: round; }
+.cmp-vseal-rim { fill: none; stroke: color-mix(in srgb, var(--clay-deep) 55%, var(--ink-on-fixed-fill)); stroke-width: 1; }
+.cmp-vseal-leaf { fill: color-mix(in srgb, var(--clay) 80%, var(--paper-on-fixed-fill)); stroke: color-mix(in srgb, var(--clay-deep) 50%, var(--ink-on-fixed-fill)); stroke-width: 0.7; stroke-linejoin: round; }
+.cmp-vseal-shine { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.2; stroke-linecap: round; opacity: 0.45; }
 
 /* Plan item 150: the chapter's producer at their stall, and a won chapter's bunting and sunshine. */
 .cmp-vig-awning { fill: var(--clay); stroke: var(--ink); stroke-width: 0.8; stroke-linejoin: round; }

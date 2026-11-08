@@ -138,7 +138,7 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
   const slot = VIG_W / n
   return (
     <svg
-      className={locked ? 'cmp-vignette is-pencil' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette'}
+      className={locked ? 'cmp-vignette is-sealed' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette'}
       viewBox={`0 0 ${VIG_W} ${VIG_H}`}
       data-regions={regions.join(' ')}
       data-chapter-art={state}
@@ -202,6 +202,23 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
             const a = (k / 8) * Math.PI * 2
             return <path key={`ray-${k}`} className="cmp-vig-ray" d={`M${(18 + Math.cos(a) * 9).toFixed(1)} ${(15 + Math.sin(a) * 9).toFixed(1)} L${(18 + Math.cos(a) * 12).toFixed(1)} ${(15 + Math.sin(a) * 12).toFixed(1)}`} />
           })}
+        </g>
+      )}
+      {/* Plan item 279: a locked chapter's scene waits at dusk under the co-op's wax seal: its land in colour, its
+          landmarks and stall in silhouette, a seal pressed with a leaf at its heart. */}
+      {locked && (
+        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2 - 8} ${VIG_H / 2 + 2})`}>
+          <path
+            className="cmp-vseal-wax"
+            d={Array.from({ length: 12 }, (_, k) => {
+              const a = (k / 12) * Math.PI * 2
+              const r = k % 2 ? 12.5 : 14
+              return `${k ? 'L' : 'M'}${(Math.cos(a) * r).toFixed(1)} ${(Math.sin(a) * r).toFixed(1)}`
+            }).join(' ') + ' Z'}
+          />
+          <circle className="cmp-vseal-rim" r={9.5} />
+          <path className="cmp-vseal-leaf" d="M-5 4 C-5 -3 0 -7 6 -6 C6 0 2 5 -5 4 Z M-5 4 L3 -3" />
+          <path className="cmp-vseal-shine" d="M-9 -6 A11 11 0 0 1 -3 -10.5" />
         </g>
       )}
       <rect className="cmp-vig-frame" x={0.75} y={0.75} width={VIG_W - 1.5} height={VIG_H - 1.5} rx={9} />
@@ -326,19 +343,6 @@ export default function CampaignScreen({
           </button>
         </div>
       )}
-      {/* Plan item 257: a locked chapter's postcard is shaded in pencil hatching (shared by every locked vignette). */}
-      <svg className="cmp-defs" width="0" height="0" aria-hidden="true" focusable="false">
-        <defs>
-          <pattern id="cmp-pencil-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-            <rect width="4" height="4" className="cmp-hatch-paper" />
-            <path d="M0 0 V4" className="cmp-hatch-line" />
-          </pattern>
-          <pattern id="cmp-pencil-hatch-x" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
-            <rect width="4" height="4" className="cmp-hatch-paper" />
-            <path d="M0 0 V4 M2 0 V4" className="cmp-hatch-line" />
-          </pattern>
-        </defs>
-      </svg>
       <ol className="chapter-list cmp-path">
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 // Plan item 257: on a desktop the campaign holds the whole spread in the window: the map with the campaign's tally
 // under it, the chapter rail scrolling on its own (every chapter reachable without the page scrolling), no empty band
-// under the map, and each locked chapter's postcard a pencil sketch (outlines and hatching, not a greyed picture).
+// under the map, and each locked chapter's postcard its scene at dusk under a wax seal (item 279).
 for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
   test(`campaign at ${width}x${height}: the spread fits the window and the rail scrolls`, async ({ page }, info) => {
     test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
@@ -34,14 +34,15 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await expect(last).toBeInViewport()
     expect(await page.evaluate(() => document.scrollingElement!.scrollTop)).toBe(0)
     await expect(page.getByRole('button', { name: 'Back to Title' })).toBeInViewport()
-    // locked postcards: drawn in outline with hatching, no greyscale filter
-    const pencil = await page.locator('.cmp-vignette.is-pencil').evaluateAll((els) =>
-      els.map((e) => ({ filter: getComputedStyle(e).filter, hatch: getComputedStyle(e.querySelector('.cmp-vig-hill')!).fill })),
+    // Plan item 279: locked postcards are their scenes at dusk under a wax seal, the land in colour, no greyscale
+    const sealed = await page.locator('.cmp-vignette.is-sealed').evaluateAll((els) =>
+      els.map((e) => ({ filter: getComputedStyle(e).filter, seal: !!e.querySelector('.cmp-vig-seal'), hill: getComputedStyle(e.querySelector('.cmp-vig-hill')!).fill })),
     )
-    expect(pencil.length).toBe(4)
-    for (const p of pencil) {
+    expect(sealed.length).toBe(4)
+    for (const p of sealed) {
       expect(p.filter).toBe('none')
-      expect(p.hatch).toContain('cmp-pencil-hatch')
+      expect(p.seal).toBe(true)
+      expect(p.hill).toMatch(/^rgb/)
     }
   })
 }

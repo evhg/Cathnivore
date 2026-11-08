@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 // Plan item 150: each chapter card is a painted scene of its regions with its producer at a stall; a won chapter's
-// scene is coloured in (the co-op's bunting and the sun's rays), a locked one stays a pencil sketch.
-test('chapter scenes: the producer at a stall, bunting once won, pencil while locked', async ({ page }) => {
+// scene is coloured in (the co-op's bunting and the sun's rays), a locked one waits at dusk under a wax seal (item 279).
+test('chapter scenes: the producer at a stall, bunting once won, sealed while locked', async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })))
   await page.goto('/')
@@ -15,7 +15,7 @@ test('chapter scenes: the producer at a stall, bunting once won, pencil while lo
       shapes: e.querySelectorAll('path, rect, circle, ellipse, polygon').length,
       stall: e.querySelectorAll('.cmp-vig-stall').length,
       bunting: e.querySelectorAll('.cmp-vig-bunting .cmp-vig-flag').length,
-      pencil: e.classList.contains('is-pencil'),
+      sealed: e.classList.contains('is-sealed') && !!e.querySelector('.cmp-vig-seal'),
     })),
   )
   expect(states.length).toBe(6)
@@ -24,6 +24,6 @@ test('chapter scenes: the producer at a stall, bunting once won, pencil while lo
     expect(s.shapes).toBeGreaterThanOrEqual(5)
     expect(s.stall).toBe(1)
     expect(s.bunting).toBe(s.state === 'done' ? 7 : 0)
-    expect(s.pencil).toBe(s.state === 'locked')
+    expect(s.sealed).toBe(s.state === 'locked')
   }
 })
