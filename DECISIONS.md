@@ -298,3 +298,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 lane B: Hedgerow pond shores are an alpha-ramped pale strip on the water per dry-facing edge (`palette.ts` `shoreFade`), shared by ponds, the reeds/ford landmarks and the flood; the canal lock keeps its built edge.
 - 2026-11-08 lane B: Cathnivore's dug-in glaze became an inner edge band, not a full-hex wash (item 267 Accept: no full-hex overlay over 15%, held land at full colour).
 - 2026-11-08 lane B: critique-batch items 222, 259, 266, 273 closed with only NIGHT SHIFT points left; those belong to lane A's NIGHT SHIFT screens.
+- 2026-11-08 03:40 lane A (item 271): her boots are ankle boots (the item's build line) over sheer tights, not the old knee boots; the free foot turns out 25 degrees so the heel reads from the pick's front-on camera.
