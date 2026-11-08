@@ -815,7 +815,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       };
       // Shading: warm cheeks, a cooler shadow under the cheekbones and the brow, the lids a touch smoky.
       for (const sx of [-1, 1]) {
-        blob(0.038 * sx, -0.018, 0.018, 0.013, "rgba(222,104,116,A)", 0.62);
+        // Plan item 289: more cheek warmth, so the face isn't a pale flat oval at title distance.
+        blob(0.038 * sx, -0.018, 0.021, 0.015, "rgba(222,100,112,A)", 0.74);
         blob(0.045 * sx, -0.034, 0.016, 0.01, "rgba(120,70,62,A)", 0.22);
         blob(0.026 * sx, 0.011, 0.016, 0.009, "rgba(92,58,62,A)", 0.45);
       }
@@ -985,8 +986,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fillStyle = "#170d08";
         g.beginPath();
         g.moveTo(0.0085 * sx, by - 0.0012 + inner);
-        g.quadraticCurveTo(0.028 * sx, by + 0.0074, 0.0455 * sx, by - 0.0026);
-        g.quadraticCurveTo(0.028 * sx, by - 0.0006, 0.0085 * sx, by - 0.0088 + inner);
+        g.quadraticCurveTo(0.028 * sx, by + 0.0086, 0.0465 * sx, by - 0.0026);
+        // Plan item 289: a deeper brow body (the lower edge bowed down), so the brows hold as strokes at title distance.
+        g.quadraticCurveTo(0.028 * sx, by - 0.0046, 0.0085 * sx, by - 0.0108 + inner);
         g.closePath();
         g.fill();
       }
@@ -997,7 +999,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.translate(0, my);
       // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
       const [lc, rc] = expr === "determined" ? [-0.0004, -0.0002] : expr === "wink" ? [0.0024, 0.0036] : [0.0005, 0.0026];
-      g.scale(1.3, expr === "determined" ? 1.15 : 1.4);
+      // Plan item 289: a little wider again (1.3 -> 1.42), so the rose mouth carries at title distance.
+      g.scale(1.42, expr === "determined" ? 1.18 : 1.45);
       g.translate(0, -my);
       g.fillStyle = "#b02a4c";
       g.beginPath();
