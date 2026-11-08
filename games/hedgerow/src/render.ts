@@ -230,6 +230,11 @@ export class Renderer {
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
+    // Sandbox only: shot scripts stage a moment (plan item 285: a van tipping with its parcels) through this hook.
+    if (new URLSearchParams(location.search).has("sandbox"))
+      (window as unknown as { hedgerow2d: { tip(kind: EnemyKind, x: number, y: number): void } }).hedgerow2d = {
+        tip: (kind, x, y) => this.fallen.push({ kind, x, y, facing: 1, age: 0 }),
+      };
     // A shrinking ring or a pulse a frame past its end can ask for a hair under zero radius, which throws
     // (IndexSizeError) and drops the frame: clamp every arc and ellipse on this canvas (sprites.ts draws on it too).
     const arc = this.ctx.arc.bind(this.ctx);
@@ -847,6 +852,31 @@ export class Renderer {
           ctx.translate(-fx, -fy);
           drawEnemy(ctx, { kind: f.kind, facing: f.facing, hit: 9, ghost: false, phase: 0 }, fx, fy, s, 0);
           ctx.restore();
+          // Plan item 285: as it tips, its parcels spill out of the back and tumble across the lane (not under
+          // reduced motion: the tip alone tells it).
+          if (!this.reducedMotion) {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, Math.min(1, (0.7 - f.age) / 0.3));
+            const u = Math.min(1, f.age / 0.5);
+            for (let i = 0; i < 3; i++) {
+              const dir = -f.facing * (0.5 + i * 0.35);
+              const px = fx + dir * s * 0.7 * u;
+              const py = fy - s * 0.18 - Math.sin(u * Math.PI) * s * (0.22 + i * 0.07);
+              const b = s * (0.17 - i * 0.025);
+              ctx.save();
+              ctx.translate(px, py);
+              ctx.rotate(dir * u * 2.4);
+              ctx.fillStyle = "#c79a62";
+              ctx.strokeStyle = INK;
+              ctx.lineWidth = Math.max(1, s * 0.015);
+              ctx.fillRect(-b / 2, -b / 2, b, b * 0.8);
+              ctx.strokeRect(-b / 2, -b / 2, b, b * 0.8);
+              ctx.fillStyle = "#e6d3a6";
+              ctx.fillRect(-b * 0.08, -b / 2, b * 0.16, b * 0.8);
+              ctx.restore();
+            }
+            ctx.restore();
+          }
         },
       });
     }
