@@ -2129,7 +2129,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     const walkedTo = nextIdx >= 0 ? nextIdx + 1 : lvs.every((lv) => data.stars[String(lv.id)]) ? lvs.length + 1 : 0;
     path.dataset.walked = String(walkedTo);
     path.dataset.exit = lvs.length === 10 ? "1" : "";
-    for (const cls of ["lane-edge", "lane-bed", "lane-walked", "lane-ruts"]) {
+    for (const cls of ["lane-hedge", "lane-hedge-lit", "lane-edge", "lane-bed", "lane-walked", "lane-ruts"]) {
       const pl = document.createElementNS(svgNS, "path");
       pl.setAttribute("class", cls);
       pl.setAttribute("vector-effect", "non-scaling-stroke");

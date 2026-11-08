@@ -247,6 +247,19 @@ button {
   stroke-linejoin: round;
 }
 /* The lane: a packed-earth road with a darker verge, wheel ruts, and the stretch Cath has walked trodden in. */
+/* Plan item 274: the lane is a hedged track: a scalloped verge of leafy crowns either side (round-capped dots wider
+   than the road, so only their edges show), lit on top. */
+.trail-path .lane-hedge {
+  stroke: color-mix(in srgb, var(--pasture-ink) 70%, transparent);
+  stroke-width: 27;
+  stroke-dasharray: 0 10;
+}
+.trail-path .lane-hedge-lit {
+  stroke: color-mix(in srgb, var(--pasture-hi) 75%, transparent);
+  stroke-width: 22;
+  stroke-dasharray: 0 10;
+  stroke-dashoffset: 5;
+}
 .trail-path .lane-edge {
   stroke: color-mix(in srgb, var(--soil) 55%, transparent);
   stroke-width: 17;
