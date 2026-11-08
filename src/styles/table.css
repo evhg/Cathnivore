@@ -3871,19 +3871,6 @@ html.no-animations .table-cath-line { animation: none; }
     text-transform: uppercase;
   }
 }
-/* Plan item 301: a card arriving in its slot flips in edge-on, like a roadside billboard turning over. The first
-   render of the table skips it (the strip mounts with the page, html.no-animations covers tests). */
-.plan-strip[data-corp] .plan-strip-item > button:first-child {
-  transform-origin: 50% 0;
-  animation: plan-flip 360ms var(--ease-settle) both;
-}
-@keyframes plan-flip {
-  from { transform: perspective(500px) rotateX(-88deg); opacity: .3; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .plan-strip[data-corp] .plan-strip-item > button:first-child { animation-name: reduced-motion-fade; }
-}
-html.no-animations .plan-strip[data-corp] .plan-strip-item > button:first-child { animation: none; }
 .plan-strip[data-corp] .plan-strip-item:has(.plan-strip-active) {
   filter: drop-shadow(0 0 2px var(--candor-highlight)) drop-shadow(0 0 5px var(--candor)) drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .25));
 }
