@@ -293,6 +293,31 @@ button {
   height: 100%;
   overflow: visible;
 }
+/* Plan item 274: a locked stop stands in a drift of morning mist that the stop before it has to clear: two soft
+   paper-white banks low across its coin, slowly drifting (still under reduced motion). */
+.stop:has(> .node:disabled)::before {
+  content: "";
+  position: absolute;
+  z-index: var(--z-raise); /* over the stop's land (Hollowell's clutter in the mist), under its coin */
+  left: 50%;
+  top: 50%;
+  width: min(190px, 120%);
+  aspect-ratio: 190 / 90;
+  translate: -50% -42%;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 82%, transparent), transparent) 0 60% / 64% 62% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 74%, transparent), transparent) 100% 40% / 60% 56% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 50%, transparent), transparent) 50% 100% / 100% 50% no-repeat;
+  animation: mist-drift 9s ease-in-out infinite alternate;
+}
+@keyframes mist-drift {
+  from { transform: translateX(-4%); }
+  to { transform: translateX(4%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stop:has(> .node:disabled)::before { animation: none; }
+}
 .act-pencil .scenery .prop {
   filter: grayscale(1) contrast(0.8);
   opacity: 0.45;
