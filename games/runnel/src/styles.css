@@ -3390,6 +3390,8 @@ body[data-mode='practice'] #week-slot {
   .lc-next > span:last-child {
     display: grid;
     gap: 2px;
+    /* Item 311: the sky's label wraps in balanced lines ('drizzle' was left alone on its own). */
+    text-wrap: balance;
   }
   .lc-next small {
     font-size: 0.72rem;
