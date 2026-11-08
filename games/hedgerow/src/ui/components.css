@@ -4092,7 +4092,8 @@ body:has(#dlg-pause[open]) .paused-note {
   /* Plan item 293: on a tall desktop the tower is the packet's picture at 64 px (it was 52-56 with paper to spare);
      four-to-a-row packets keep 44. */
   .play .tray-wrap .tray .tray-tower img,
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img { width: 64px; height: 64px; margin-top: -2px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img { width: 64px; height: 64px; margin-top: -2px; translate: -7px 5px; }
+  /* (shifted down and left of the price stamp in the top-right corner, which the taller art met) */
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { width: 44px; height: 44px; margin-top: auto; }
   .play .tray-wrap .tray .tray-tower { padding-top: 4px; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
