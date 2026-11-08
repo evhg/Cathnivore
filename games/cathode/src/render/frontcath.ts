@@ -187,7 +187,8 @@ void main() {
 /** The line's width in CSS pixels at a 900 px tall view (1.5 px at D, as the plan asks), scaled with the view. */
 const INK_PX = 1.5;
 /** Plan item 254: the hair shine band's strength (times the face key and the strands' colour). */
-const HAIR_SHINE = 2.4;
+// Plan item 289: 2.4 -> 1.6, the crown's band a gloss line rather than a pale patch by the parting.
+const HAIR_SHINE = 1.6;
 /** The outlined parts: her largest body meshes, at most this many (the draw-call budget: +12). */
 const INK_MAX = 12;
 
@@ -386,7 +387,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // hair turns to face the lens and the key (view-space normal half way up), broken by the strands' own map, so
     // her hair reads as glossy dark hair under the flats rather than a matte brown shell.
     if (shine > 0)
-      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.78, 0.82, up ) * ( 1.0 - smoothstep( 0.92, 0.95, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.11, 0.085, 0.08 ) ); }`;
+      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.82, 0.85, up ) * ( 1.0 - smoothstep( 0.89, 0.92, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.07, 0.065, 0.075 ) ); }`;
+    // Plan item 289: a narrower, cooler band (the wide warm one lit a pale blotch beside the parting at the title).
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
@@ -733,10 +735,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // ---- neck, head, the low knot ----
   // Plan item 9: a neck with a shape (slimmer under the jaw, flaring into the shoulders, set a little forward and
   // narrower front to back), not a plain cylinder.
-  const neck = turned(V(0, 0.27, -0.004), V(0, 0.43, 0.01), [[0, 0.046], [0.25, 0.038], [0.6, 0.033], [1, 0.034]], seg(16), 0.86);
+  // Plan item 289: shorter and tapered (the same-person check: a long tube under the head read as a lollipop).
+  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.048], [0.3, 0.04], [0.7, 0.036], [1, 0.035]], seg(16), 0.86);
   addS(neck, skinMat, chest);
   const headPivot = new THREE.Group();
-  headPivot.position.set(0, 0.455, 0.012);
+  // Plan item 289: the head a step larger (1.08) and set lower, so the neck shows ~30% less above the collar.
+  headPivot.position.set(0, 0.428, 0.014);
+  headPivot.scale.setScalar(1.08);
   chest.add(headPivot);
   // The head: an egg with a jaw. The lower front narrows to a chin, the cheekbones sit high, a small nose; C14 (S9.5,
   // the wardrobe sees her from the front): shallow eye sockets under a soft brow, full cheekbones, a lip line.
@@ -768,9 +773,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 260: a heart-shaped face, not an egg: the cheeks draw in sooner (k^1.5, so no crease at the
         // cheekbone line) to a narrower, pointed chin.
         // Plan item 275: a softer point and a shorter chin (the long V read as a mannequin's at title distance).
-        x *= 1 - 0.42 * Math.pow(k, 1.6);
+        // Plan item 289: 0.42 -> 0.48, a narrower chin (the shorter face read wide at the jaw).
+        x *= 1 - 0.48 * Math.pow(k, 1.6);
         z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
-        y *= 0.95;
+        // Plan item 289: the lower face shorter (0.95 -> 0.86), a rounder face, not a long flat egg.
+        y *= 0.86;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       const nose = Math.max(0, 1 - Math.hypot(x / 0.13, (y + 0.2) / 0.26)) * front;
@@ -821,7 +828,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Shading: warm cheeks, a cooler shadow under the cheekbones and the brow, the lids a touch smoky.
       for (const sx of [-1, 1]) {
         // Plan item 289: more cheek warmth, so the face isn't a pale flat oval at title distance.
-        blob(0.038 * sx, -0.018, 0.021, 0.015, "rgba(222,100,112,A)", 0.74);
+        // Plan item 289: the blush higher, on the apples of the cheeks.
+        blob(0.039 * sx, -0.01, 0.02, 0.013, "rgba(222,100,112,A)", 0.74);
         blob(0.045 * sx, -0.034, 0.016, 0.01, "rgba(120,70,62,A)", 0.22);
         blob(0.026 * sx, 0.011, 0.016, 0.009, "rgba(92,58,62,A)", 0.45);
       }
@@ -866,8 +874,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const sx of [-1, 1]) {
         // Plan item 140: at title distance (a 120 px face) item 9's eyes read as two dots; 1.3x again, set a little
         // wider, every part of the eye scaled with them (E), the catch-lights larger still.
-        const E = 1.3;
-        const ex = 0.0275 * sx;
+        // Plan item 289: larger again (1.3 -> 1.5): small eyes under heavy brows read stern.
+        const E = 1.5;
+        const ex = 0.0285 * sx;
         const ey = 0.006;
         // Plan item 9: larger, brighter eyes (the bible's "large bright eyes"), about a fifth up on C14's.
         const hw = 0.0135 * E;
@@ -910,8 +919,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
         // Plan item 205: a deeper hazel, so the eye holds as a dark shape at title distance (3:1 on the cheek).
         // Plan item 260: a warm amber core, so the iris reads hazel under the toon flats rather than grey.
-        iris.addColorStop(0, "#5c3814");
-        iris.addColorStop(0.45, "#6e461a");
+        // Plan item 289: a brighter amber core (the same-person check read the iris as dull grey-brown).
+        iris.addColorStop(0, "#8a561c");
+        iris.addColorStop(0.45, "#9a6424");
         iris.addColorStop(0.8, "#32200f");
         iris.addColorStop(1, "#1e120a");
         g.fillStyle = iris;
@@ -984,16 +994,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Determined: both level, drawn down at the inner ends. A wink lowers the winking side's brow.
         // Plan item 275: the bible's raised right brow, there in every look (most in the smirk), and clear at title distance.
         const raise = sx < 0 ? (expr === "smirk" ? 0.0068 : expr === "wink" ? 0.0042 : 0.0026) : 0;
-        const by = 0.0262 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0);
+        // Plan item 289: set higher over the larger eyes, lighter and arched.
+        const by = 0.0315 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0);
         const inner = expr === "determined" ? -0.0034 : 0;
         // Plan item 205: a fuller, darker brow, so it holds as a stroke at title distance.
         // Plan item 275: fuller at the head, tapering to the tail, peaking two-thirds out.
         g.fillStyle = "#170d08";
         g.beginPath();
         g.moveTo(0.0085 * sx, by - 0.0012 + inner);
-        g.quadraticCurveTo(0.028 * sx, by + 0.0086, 0.0465 * sx, by - 0.0026);
+        g.quadraticCurveTo(0.03 * sx, by + 0.0102, 0.0475 * sx, by - 0.0036);
         // Plan item 289: a deeper brow body (the lower edge bowed down), so the brows hold as strokes at title distance.
-        g.quadraticCurveTo(0.028 * sx, by - 0.0046, 0.0085 * sx, by - 0.0108 + inner);
+        g.quadraticCurveTo(0.03 * sx, by + 0.0012, 0.0085 * sx, by - 0.0074 + inner);
         g.closePath();
         g.fill();
       }
@@ -1003,7 +1014,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.save();
       g.translate(0, my);
       // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
-      const [lc, rc] = expr === "determined" ? [-0.0004, -0.0002] : expr === "wink" ? [0.0024, 0.0036] : [0.0005, 0.0026];
+      const [lc, rc] = expr === "determined" ? [0.0006, 0.0008] : expr === "wink" ? [0.0028, 0.004] : [0.0022, 0.0038];
       // Plan item 289: a little wider again (1.3 -> 1.42), so the rose mouth carries at title distance.
       g.scale(1.42, expr === "determined" ? 1.18 : 1.45);
       g.translate(0, -my);
@@ -1290,9 +1301,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // bible's look) rather than a cap behind it. Kept just off the skull (`skullZ`); the lower lengths sway.
     const skullZ = (x: number, y: number): number => {
       // The skull's jaw (plan item 275: 0.42 k^1.6, the chin at 0.95).
-      const k = y < 0 ? Math.min(1, -y / 0.098 / 0.95) : 0;
-      const xn = x / 0.072 / (1 - 0.42 * Math.pow(k, 1.6));
-      const yn = y / (y < 0 ? 0.098 * 0.95 : 0.098);
+      const k = y < 0 ? Math.min(1, -y / 0.098 / 0.86) : 0;
+      const xn = x / 0.072 / (1 - 0.48 * Math.pow(k, 1.6));
+      const yn = y / (y < 0 ? 0.098 * 0.86 : 0.098);
       const r = 1 - xn * xn - yn * yn;
       return r > 0 ? 0.01 + 0.088 * Math.sqrt(r) : -1;
     };
@@ -1355,7 +1366,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         V(0.11 * sx, -0.34, 0.112),
         V(0.104 * sx, -0.43, 0.122),
       ];
-      strand(keys, sx, 1, 1, true);
+      strand(keys, sx, 1.4, 1, true); // plan item 289: thicker front locks
     }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
