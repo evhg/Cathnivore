@@ -2810,7 +2810,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** corporate pieces 56 px+ tall at D and 36 px+ at P; every piece a distinct shape without colour (greyscale shot); the card 120 px+ at D and 64 px+ at P, label clear of the face; reduced motion fades only; ui-css-lint, board-scale, board-diorama and the play specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 283. [ ] NIGHT SHIFT: the title street as a lit diorama, not a void
+## 283. [ ] NIGHT SHIFT: the title street as a lit diorama, not a void *(lane A, in progress)*
 - **Why:** `plan1108b/ns-title-D`: 0-900 x 560-900 and 580-900 x 0-230 are flat black, so Cath stands in a void; a ghost "CREDIT" billboard sits behind the wordmark (0-420 x 170-240) and muddies it. `ns-title-P`: the menu (8-178 x 205-435) sits over her body and the LUNA sign (30-195 x 505-560) crosses her coat. `ns-play-P` (15-280 x 15-55): the case-file header sits on the bright HOLLOWELL sign at low contrast.
 - **Build:** the title set dressed in three depth layers (wet cobbles taking the neon, a sodium lamp with its cone, steam from a grate, a far tram or traffic); the billboard behind the wordmark dimmed or moved; per-breakpoint cameras so on a phone the menu sits beside or below her, never over her; a scrim under the class pick's header. (The umbrella and rifle clash is item 278's.)
 - **Accept:** no 200x200 px region of the D title under 3% luminance; at P the menu box clear of her projected silhouette (e2e); wordmark and case-file header 4.5:1+ against what's behind; cathode-perf within budget; cathode-front and classpick pass; shots P and D, title and pick.
