@@ -57,8 +57,11 @@ export interface FrontCath {
   showAllKits(on: boolean): void;
   /** The kit she's wearing (null for none). */
   readonly wearing: string | null;
-  /** Plan item 140: repaints her face with this expression (a no-op when it's already showing). */
-  expression(e: FaceExpression): void;
+  /** Plan item 140: repaints her face with this expression (a no-op when it's already showing). Plan item 275:
+   *  each expression's map is painted once and kept; `keepBlink` leaves the blink frame as it is (the title's turn). */
+  expression(e: FaceExpression, keepBlink?: boolean): void;
+  /** Plan item 275: the title's two faces and the blink, for the scene to upload up front. */
+  faceMaps(): THREE.Texture[];
   readonly expressionNow: FaceExpression;
   /** Plan item 175: the idle loop now: breath (-1..1), the weight shift (-1..1), the umbrella's sway (rad), blinks so
    *  far and whether the lids are shut this frame. */
@@ -751,9 +754,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const k = -y;
         // Plan item 260: a heart-shaped face, not an egg: the cheeks draw in sooner (k^1.5, so no crease at the
         // cheekbone line) to a narrower, pointed chin.
-        x *= 1 - 0.5 * Math.pow(k, 1.5);
+        // Plan item 275: a softer point and a shorter chin (the long V read as a mannequin's at title distance).
+        x *= 1 - 0.42 * Math.pow(k, 1.6);
         z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
-        y *= 1.03;
+        y *= 0.95;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       const nose = Math.max(0, 1 - Math.hypot(x / 0.13, (y + 0.2) / 0.26)) * front;
@@ -776,8 +780,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const blinkCanvas = document.createElement("canvas");
   blinkCanvas.width = faceCanvas.width;
   blinkCanvas.height = faceCanvas.height;
-  const paintFace = (expr: FaceExpression, shut = false): void => {
-    const canvas = shut ? blinkCanvas : faceCanvas;
+  const paintFace = (expr: FaceExpression, shut = false, into?: HTMLCanvasElement): void => {
+    const canvas = into ?? (shut ? blinkCanvas : faceCanvas);
     const W = canvas.width;
     const H = canvas.height;
     const g = canvas.getContext("2d");
@@ -811,7 +815,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // of the face to the jaw, a highlight down the bridge of the nose and on the brow bone and chin, soft shadow
       // either side of the nose and under the jaw line.
       for (const sx of [-1, 1]) {
-        blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.32); // the side planes of the face
+        blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.42); // the side planes of the face
         blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.3); // along the jaw
         blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
         blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
@@ -826,9 +830,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
       // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
       // contour under the cheekbones, so the face has planes at title distance rather than reading as a smooth egg.
-      g.strokeStyle = "rgba(128,70,58,0.55)";
+      // Plan item 275: the shadow side of the bridge darker and wider, and a shadow under the tip, so the nose holds.
+      blob(-0.0062, -0.008, 0.0035, 0.014, "rgba(132,74,62,A)", 0.45);
+      blob(0, -0.0225, 0.0085, 0.0032, "rgba(104,56,48,A)", 0.5);
+      g.strokeStyle = "rgba(118,62,52,0.8)";
       g.lineCap = "round";
-      g.lineWidth = 0.0016;
+      g.lineWidth = 0.0022;
       g.beginPath();
       g.moveTo(-0.0055, 0.004);
       g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
@@ -839,7 +846,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.beginPath();
         g.ellipse(0.0045 * sx, -0.0245, 0.0022, 0.0011, -0.3 * sx, 0, Math.PI * 2);
         g.fill();
-        blob(0.058 * sx, -0.052, 0.012, 0.018, "rgba(140,78,70,A)", 0.3);
+        blob(0.052 * sx, -0.04, 0.012, 0.02, "rgba(140,78,70,A)", 0.42);
       }
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
       for (const sx of [-1, 1]) {
@@ -889,8 +896,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const iris = g.createRadialGradient(ix, ey + 0.0004, 0, ix, ey + 0.0004, ir);
         // Plan item 205: a deeper hazel, so the eye holds as a dark shape at title distance (3:1 on the cheek).
         // Plan item 260: a warm amber core, so the iris reads hazel under the toon flats rather than grey.
-        iris.addColorStop(0, "#6a4218");
-        iris.addColorStop(0.45, "#80521f");
+        iris.addColorStop(0, "#5c3814");
+        iris.addColorStop(0.45, "#6e461a");
         iris.addColorStop(0.8, "#32200f");
         iris.addColorStop(1, "#1e120a");
         g.fillStyle = iris;
@@ -907,14 +914,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.ellipse(ix, ey + 0.0004, 0.0046 * E, 0.0046 * E, 0, 0, Math.PI * 2);
         g.fill();
         // The lid's shadow across the top of the iris.
-        g.fillStyle = "rgba(40,20,16,0.6)";
-        g.fillRect(ex - hw, ey + hh * 0.5, hw * 2, hh);
+        // Plan item 275: a heavier lid: its shadow lies across the top third of the iris, so the look is hers, not a
+        // doll's stare.
+        g.fillStyle = "rgba(40,20,16,0.78)";
+        g.fillRect(ex - hw, ey + hh * 0.35, hw * 2, hh * 1.4);
         g.fillStyle = "#fffaf4";
         g.beginPath();
-        g.ellipse(ix - 0.0021 * E, ey + 0.0024 * E, 0.0031 * E, 0.0025 * E, 0, 0, Math.PI * 2);
+        // Plan item 275: two small, sharp catchlights (item 9's broad ones washed the iris to grey at title distance).
+        g.ellipse(ix - 0.0026 * E, ey + 0.0026 * E, 0.0019 * E, 0.0016 * E, 0, 0, Math.PI * 2);
         g.fill();
         g.beginPath();
-        g.ellipse(ix + 0.0024 * E, ey - 0.0021 * E, 0.0015 * E, 0.0012 * E, 0, 0, Math.PI * 2);
+        g.ellipse(ix + 0.0026 * E, ey - 0.0024 * E, 0.0009 * E, 0.0008 * E, 0, 0, Math.PI * 2);
         g.fill();
         g.restore();
         // The liner: heavier on the upper lid, out to a wing that lifts past the outer corner.
@@ -958,14 +968,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Soft brows, her right (sx -1) a touch higher at the arch.
         // Plan item 140: higher over the larger eyes, a little fuller and longer.
         // Determined: both level, drawn down at the inner ends. A wink lowers the winking side's brow.
-        const by = 0.0262 + (expr === "smirk" && sx < 0 ? 0.0026 : 0) - (expr === "wink" && sx > 0 ? 0.0018 : 0);
+        // Plan item 275: the bible's raised right brow, there in every look (most in the smirk), and clear at title distance.
+        const raise = sx < 0 ? (expr === "smirk" ? 0.0068 : expr === "wink" ? 0.0042 : 0.0026) : 0;
+        const by = 0.0262 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0);
         const inner = expr === "determined" ? -0.0034 : 0;
         // Plan item 205: a fuller, darker brow, so it holds as a stroke at title distance.
-        g.fillStyle = "#1c110b";
+        // Plan item 275: fuller at the head, tapering to the tail, peaking two-thirds out.
+        g.fillStyle = "#170d08";
         g.beginPath();
-        g.moveTo(0.0085 * sx, by - 0.0018 + inner);
-        g.quadraticCurveTo(0.026 * sx, by + 0.0058, 0.0445 * sx, by - 0.0024);
-        g.quadraticCurveTo(0.027 * sx, by + 0.0004, 0.0085 * sx, by - 0.0072 + inner);
+        g.moveTo(0.0085 * sx, by - 0.0012 + inner);
+        g.quadraticCurveTo(0.028 * sx, by + 0.0074, 0.0455 * sx, by - 0.0026);
+        g.quadraticCurveTo(0.028 * sx, by - 0.0006, 0.0085 * sx, by - 0.0088 + inner);
         g.closePath();
         g.fill();
       }
@@ -986,6 +999,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.bezierCurveTo(0.009, my - 0.0072, -0.009, my - 0.0078, -0.0165, my + lc);
       g.closePath();
       g.fill();
+      // Plan item 275: the upper lip turned from the light (deeper rose) under a lit edge along the cupid's bow.
+      g.fillStyle = "#86203c";
+      g.beginPath();
+      g.moveTo(-0.0165, my + lc);
+      g.bezierCurveTo(-0.009, my + 0.0058, -0.003, my + 0.0072, 0, my + 0.0048);
+      g.bezierCurveTo(0.003, my + 0.0072, 0.009, my + 0.0062, 0.0168, my + rc);
+      g.bezierCurveTo(0.008, my + 0.0018, -0.008, my + 0.0012, -0.0165, my + lc);
+      g.closePath();
+      g.fill();
+      g.strokeStyle = "rgba(255,226,214,0.75)";
+      g.lineWidth = 0.0009;
+      g.beginPath();
+      g.moveTo(-0.012, my + 0.0058);
+      g.bezierCurveTo(-0.006, my + 0.0084, -0.0025, my + 0.0088, 0, my + 0.0064);
+      g.bezierCurveTo(0.0025, my + 0.0088, 0.006, my + 0.0086, 0.0124, my + 0.0062);
+      g.stroke();
       g.strokeStyle = "#5e1e28";
       g.lineWidth = 0.0011;
       g.beginPath();
@@ -1000,9 +1029,26 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let faceExpr: FaceExpression = "smirk";
   paintFace(faceExpr);
   paintFace(faceExpr, true);
-  const faceTex = new THREE.CanvasTexture(faceCanvas);
+  let faceTex = new THREE.CanvasTexture(faceCanvas);
   faceTex.colorSpace = THREE.SRGBColorSpace;
   faceTex.anisotropy = 4;
+  // Plan item 275: one open-faced map per expression, painted once and kept, so the title's turn between two looks
+  // swaps a map instead of repainting and re-uploading 2048x1024 every 10 s (a frame hitch on a phone).
+  const faceTexes = new Map<FaceExpression, THREE.CanvasTexture>([[faceExpr, faceTex]]);
+  const faceMap = (e: FaceExpression): THREE.CanvasTexture => {
+    let tex = faceTexes.get(e);
+    if (!tex) {
+      const c = document.createElement("canvas");
+      c.width = faceCanvas.width;
+      c.height = faceCanvas.height;
+      paintFace(e, false, c);
+      tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 4;
+      faceTexes.set(e, tex);
+    }
+    return tex;
+  };
   const blinkTex = new THREE.CanvasTexture(blinkCanvas);
   blinkTex.colorSpace = THREE.SRGBColorSpace;
   blinkTex.anisotropy = 4;
@@ -2686,13 +2732,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
         gazeW = gazeWant === null ? 0 : 1;
       }
     },
-    expression(e) {
+    expression(e, keepBlink) {
       if (e === faceExpr) return;
       faceExpr = e;
-      paintFace(e);
-      paintFace(e, true);
-      faceTex.needsUpdate = true;
-      blinkTex.needsUpdate = true;
+      const shut = faceMat.map === blinkTex;
+      faceTex = faceMap(e);
+      if (!shut) faceMat.map = faceTex;
+      // The blink's frame shows only shut lids; the title's turn keeps it (a brow off for 130 ms doesn't show).
+      if (!keepBlink) {
+        paintFace(e, true);
+        blinkTex.needsUpdate = true;
+      }
+    },
+    faceMaps() {
+      return [...(["smirk", "determined"] as const).map(faceMap), blinkTex];
     },
     kit(cls) {
       wearing = cls && kits.has(cls) ? cls : null;
@@ -2759,7 +2812,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       smokeTex.dispose();
       glintTex.dispose();
       strands.dispose();
-      faceTex.dispose();
+      for (const t of faceTexes.values()) t.dispose();
       blinkTex.dispose();
       group.removeFromParent();
     },

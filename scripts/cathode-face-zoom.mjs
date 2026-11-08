@@ -9,7 +9,7 @@ for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, 
   const p = await ctx.newPage()
   await p.goto('http://localhost:4190/nightshift/?shot')
   await p.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-  await p.goto(`http://localhost:4190/nightshift/?front=${front}&shot&t=8&quality=phone${front==='classpick'?'&class=ghost':''}`)
+  await p.goto(`http://localhost:4190/nightshift/?front=${front}&shot&t=${process.env.T||8}&quality=phone${front==='classpick'?'&class=ghost':''}`)
   await p.waitForFunction(() => window.cathodeFront?.ready === true, null, { timeout: 200000 })
   await p.waitForTimeout(3000)
   const f = await p.evaluate(() => window.cathodeFront.scene().faceBox())

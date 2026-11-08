@@ -152,6 +152,8 @@ const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f33
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
 /** Plan item 140: the face each class shows in the pick: the ghost and the butcher set, the wirewitch winks. */
+/** Plan item 275: how long the title holds each of her two looks (s). */
+export const TITLE_EXPR_S = 10;
 const CLASS_EXPRESSION: Record<string, FaceExpression> = { ghost: "determined", butcher: "determined", gunslinger: "smirk", wirewitch: "wink", fixer: "smirk" };
 
 export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOptions): Promise<FrontScene> {
@@ -758,6 +760,16 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       wardrobeStep(dt);
       aim(time, dt);
     }
+    // Plan item 275: on the title (no class worn) her look turns every 10 s between the smirk and a determined set of
+    // the jaw, by the scene's clock (so a frozen shot at t shows one of them); the class pick keeps the class's face.
+    if (!wd.cls) {
+      const want: FaceExpression = Math.floor(time / TITLE_EXPR_S) % 2 === 1 ? "determined" : "smirk";
+      if (want !== cath.expressionNow) {
+        cath.expression(want, true);
+        world.renderer.domElement.dataset.expression = want;
+        world.renderer.domElement.dataset.cathExpr = want;
+      }
+    }
     cath.update(dt, time, world.wind);
     // The rain round the sign dims as the wardrobe's class key takes over.
     neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
@@ -809,6 +821,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   frame(1 / 60);
   // Plan item 175: the blink's shut-eyed face uploads now, with the first frame's textures, not on her first blink.
   world.renderer.initTexture(cath.blinkMap);
+  // Plan item 275: and the title's second face, so its first turn swaps a map without an upload.
+  for (const t of cath.faceMaps()) world.renderer.initTexture(t);
   raf = requestAnimationFrame(loop);
 
   const corner = new THREE.Vector3();

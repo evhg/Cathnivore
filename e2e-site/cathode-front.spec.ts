@@ -804,6 +804,24 @@ test("her painted eyes hold 3:1 on her cheek at title distance", async ({ page, 
   for (const r of m) expect(r, 'eye vs cheek contrast').toBeGreaterThanOrEqual(3)
 })
 
+// Plan item 275: the title turns her look every 10 s between the smirk and a determined set (by the scene's clock,
+// so a held frame at t shows the one due then); the class pick keeps its class's face.
+test('the title shows her two looks, the smirk and determined', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'one viewport is enough: the turn is the scene clock, not the layout')
+  test.setTimeout(300_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  const seen: string[] = []
+  for (const t of [8, 12]) {
+    await page.goto(`/nightshift/?front=title&shot&t=${t}&quality=phone`)
+    await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+    await page.waitForTimeout(500)
+    seen.push((await page.locator('canvas[data-cath-expr]').first().getAttribute('data-cath-expr')) ?? '')
+  }
+  expect(seen).toEqual(['smirk', 'determined'])
+})
+
 // Plan item 216: an upright phone's title renders at the device's pixel ratio (capped at 2), so her face is sharp.
 test('the upright phone title renders at the device pixel ratio, 780 px or more across at 390', async ({ ownBrowser: browser }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-phone', 'an upright phone')

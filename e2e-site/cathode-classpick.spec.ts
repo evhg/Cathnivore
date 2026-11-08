@@ -170,7 +170,8 @@ test('every class frames her face in the middle band, and each has an audible ra
     // Plan item 247: her face 70 px across or more, and nothing she holds (rifle, shotgun, case) crosses it.
     expect(face.right - face.left, s).toBeGreaterThanOrEqual(70)
     expect(m.prop?.inFace ?? 0, s).toBe(0)
-    expect(face.left >= 470 && face.right <= 960 && face.top >= 100 && face.bottom <= 500, s).toBe(true)
+    // Owner, 2026-11-08: the pick frames her head to toe under the umbrella, so her face sits higher (90 px from the top).
+    expect(face.left >= 470 && face.right <= 960 && face.top >= 90 && face.bottom <= 500, s).toBe(true)
     // Plan item 161: she stands whole between the columns now, so her face is 85 px or more (was 110 at a closer cut).
     expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(85)
     for (const o of [m.sheet, m.list]) expect(face.left < o.right && face.right > o.left && face.top < o.bottom && face.bottom > o.top, s).toBe(false)
@@ -217,10 +218,11 @@ test('a class change starts its audition at once, her face framed and her line s
     const s = JSON.stringify({ cls, m })
     const meets = (a: Box, o: Box) => a.left < o.right && a.right > o.left && a.top < o.bottom && a.bottom > o.top
     const { face } = m
-    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(hasTouch ? 70 : 85)
+    // Owner, 2026-11-08: head to toe on the pick, so an upright phone's face is 45 px or more (was 70 knees-up).
+    expect(face.bottom - face.top, s).toBeGreaterThanOrEqual(hasTouch ? 45 : 85)
     expect(face.left >= 0 && face.top >= 0 && face.right <= W && face.bottom <= H, s).toBe(true)
     if (!hasTouch) {
-      expect(face.left >= 470 && face.right <= 960 && face.top >= 100 && face.bottom <= 500, s).toBe(true)
+      expect(face.left >= 470 && face.right <= 960 && face.top >= 90 && face.bottom <= 500, s).toBe(true)
       for (const o of [m.sheet, m.list]) expect(meets(face, o), s).toBe(false)
     }
     expect(m.on, s).toBe(true)
