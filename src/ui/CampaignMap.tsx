@@ -85,6 +85,27 @@ function Bunting() {
   )
 }
 
+// Plan item 279: Hollowell's signage over the land it still holds: its orange-and-white tape strung taut across
+// the hex's upper edge (where a freed region's bunting hangs), three branded placards on it. Freeing the region
+// takes the tape down and the bunting goes up in its place.
+function HollowellTape() {
+  const x0 = -BUNTING.halfSpan
+  const y = BUNTING.top - 1
+  const placards = [-0.55, 0, 0.55].map((t) => t * BUNTING.halfSpan)
+  return (
+    <g className="cmp-tape" aria-hidden="true">
+      <path d={`M${x0} ${y} Q0 ${y + 3} ${-x0} ${y}`} className="cmp-tape-band" />
+      <path d={`M${x0} ${y} Q0 ${y + 3} ${-x0} ${y}`} className="cmp-tape-stripe" />
+      {placards.map((x) => (
+        <g key={x} transform={`translate(${x.toFixed(1)} ${(y + 0.5 + (1 - (x / BUNTING.halfSpan) ** 2) * 1.5).toFixed(1)})`}>
+          <rect x={-4.5} y={0} width={9} height={7} rx={1.3} className="cmp-tape-card" />
+          <path d="M-2 1.7 V5.3 M2 1.7 V5.3 M-2 3.5 H2" className="cmp-tape-h" />
+        </g>
+      ))}
+    </g>
+  )
+}
+
 // The chapter-complete moment (plan item 35), in phases: 'before' (the chapter's regions still held, Cath
 // at its pin), 'flood' (they turn green and the bunting drops), 'walk' (Cath walks to the next pin and
 // the next chapter's caption slides in), then 'done'. Reduced motion fades between the same states.
@@ -235,11 +256,7 @@ export default function CampaignMap({
                   {isFree ? <Stall /> : <Outlet />}
                 </g>
               )}
-              {isFree && (
-                <g transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>
-                  <Bunting />
-                </g>
-              )}
+              <g transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>{isFree ? <Bunting /> : <HollowellTape />}</g>
               {/* Plan item 47: a two-word name goes on two lines, so it stays inside its own hex. */}
               <text x={c.x.toFixed(1)} y={(c.y + nameBaseline(id)).toFixed(1)} className="cmp-map-name">
                 {nameLines(id).length > 1

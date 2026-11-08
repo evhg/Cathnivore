@@ -862,6 +862,12 @@ html.no-animations .campaign-screen * {
   pointer-events: none;
 }
 
+/* Plan item 279: Hollowell's tape and placards over held land (its orange, a white H). */
+.cmp-tape { filter: drop-shadow(0 1px 0.4px color-mix(in srgb, var(--ink) 25%, transparent)); }
+.cmp-tape-band { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 2.6; stroke-linecap: round; }
+.cmp-tape-stripe { fill: none; stroke: var(--hollowell); stroke-width: 2.6; stroke-dasharray: 3 3; }
+.cmp-tape-card { fill: var(--hollowell); stroke: var(--hollowell-ink); stroke-width: 0.6; }
+.cmp-tape-h { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.3; stroke-linecap: round; }
 .cmp-bunting-line { fill: none; stroke: var(--soil); stroke-width: 1; }
 .cmp-flag { stroke: none; }
 .cmp-flag-0 { fill: var(--pasture-deep); }

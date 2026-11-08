@@ -120,6 +120,8 @@ export interface MapLayout {
   landmarks: { id: RegionId; box: Box }[]
   posts: { id: RegionId; box: Box }[]
   bunting: { id: RegionId; box: Box }[]
+  /** Plan item 279: Hollowell's branded tape over each region it still holds, in the slot the bunting takes once freed. */
+  tape: { id: RegionId; box: Box }[]
 }
 
 /** The whole map's layout for a campaign at this point (chapter ids in order, the ones won). */
@@ -140,6 +142,7 @@ export function campaignMapLayout(chapterIds: readonly string[], completed: read
     names: regions.map((id) => ({ id, box: nameBox(id) })),
     landmarks: regions.map((id) => ({ id, box: landmarkBox(id) })),
     bunting: [...free].map((id) => ({ id, box: buntingBox(id) })),
+    tape: regions.filter((id) => !free.has(id)).map((id) => ({ id, box: buntingBox(id) })),
     posts: regions.filter((id) => !free.has(id) && id !== cathHome).map((id) => ({ id, box: postBox(id) })),
   }
 }

@@ -23,6 +23,8 @@ describe('the campaign map layout', () => {
         ...m.posts.map((p) => ({ what: `post ${p.id}`, box: p.box })),
         ...m.pins.map((p, i) => ({ what: `pin ${i + 1}`, box: pinBox(p) })),
         ...m.bunting.map((b) => ({ what: `bunting ${b.id}`, box: b.box })),
+        // Plan item 279: Hollowell's tape hangs where the bunting will, so it gets the same rule.
+        ...m.tape.map((b) => ({ what: `bunting ${b.id}`, box: b.box })),
       ]
       for (const n of m.names) {
         // A region's own bunting hangs over its name like a banner, on purpose; anyone else's may not.
