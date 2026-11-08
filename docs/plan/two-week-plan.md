@@ -2981,7 +2981,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at the l21 D camera her eyes and lips show and her silhouette reads as Cath in greyscale; 2,000 triangles or fewer; hedgerow-3dframe passes; shots P and D.
 - **Size:** 2
 
-## 311. [ ] The bugs from the 2026-11-08 21:45 critique, fixed as one batch
+## 311. [ ] The bugs from the 2026-11-08 21:45 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1108e`)
   - **Site:** D /games/ eyebrow 'FREE GAMES FROM THE REPUBLIC OF MARROW' under the awning scallops (615-1015 x 86-102); P /games/ Cath's italic quote low contrast on the sunset (20-370 x 185-235); P portfolio Cath's head over the second print's label (263-390 x 130-160).
   - **Cathnivore:** D title 'NEXT #8 in 2h 19m' sticker over the footer, 'in 2h 19m' about 11 px (1318-1400 x 768-862); D title footer about 12 px light on wood (308-1131 x 872-886); D setup pin captions about 11 px grey (160-290 x 712-742); D game Cath's bust cut hard at the board's foot (370-505 x 600-690); P campaign bunting letters about 8 px (120-150 x 372-382).
