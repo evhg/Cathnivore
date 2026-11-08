@@ -24,6 +24,12 @@
   --show-shadow: rgba(0, 0, 0, 0.7);
   --show-ring: rgba(255, 255, 255, 0.03);
   --show-ground: #15131c;
+  /* Plan item 272: the collage's counter, the /games/ stall's wood and produce. */
+  --counter-hi: #d9a15f;
+  --counter-mid: #a8693a;
+  --counter-lo: #6b3f24;
+  --counter-rim: rgba(255, 226, 170, 0.55);
+  --produce-red: #c9503a;
   --mask-solid: #000;
   --white-08: rgba(255, 255, 255, 0.08);
   --white-16: rgba(255, 255, 255, 0.16);
