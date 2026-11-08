@@ -155,5 +155,13 @@ for (const width of [360, 390, 430]) {
     expect(whole.length, 'two whole cards').toBeGreaterThanOrEqual(2)
     expect(shown.length - whole.length, 'one card peeks').toBe(1)
     expect(boxes.right - shown[shown.length - 1]!.left, 'the peek').toBeGreaterThanOrEqual(24)
+    // Plan item 287: a peek under half a card shows as a card back (its face hidden), never a cut face.
+    const slivers = () => page.evaluate(() => {
+      const edge = Math.min(document.querySelector('.action-tray .actions')!.getBoundingClientRect().right, window.innerWidth)
+      return [...document.querySelectorAll<HTMLElement>('.action-tray .actions > .action-item')]
+        .filter((el) => { const r = el.getBoundingClientRect(); return r.left < edge && r.left + r.width / 2 > edge })
+        .map((el) => ({ cut: el.hasAttribute('data-cut-right'), face: getComputedStyle(el.firstElementChild!).opacity }))
+    })
+    await expect.poll(slivers, { message: 'a sliver shows its back' }).toEqual((await slivers()).map(() => ({ cut: true, face: '0' })))
   })
 }

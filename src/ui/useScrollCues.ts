@@ -31,11 +31,17 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
         let n = 0
         for (const c of Array.from(el.children)) {
           const r = c.getBoundingClientRect()
-          if (r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head')) n++
+          const past = r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head')
+          if (past) n++
+          // Plan item 287: a card counted as past the edge but still showing a sliver is faded out whole (the tab
+          // counts it), so the edge never shows a cut card; scrolling it in past half brings it back.
+          const cut = past && r.left < edge
+          if (cut !== c.hasAttribute('data-cut-right')) c.toggleAttribute('data-cut-right', cut)
         }
         const v = n > 9 ? '9+' : String(n)
         if (el.dataset.moreRight !== v) el.dataset.moreRight = v
       } else if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
+      if (!right) for (const c of Array.from(el.querySelectorAll(':scope > [data-cut-right]'))) c.removeAttribute('data-cut-right')
       const owner = el.parentElement
       if (!owner) return
       let more = 0

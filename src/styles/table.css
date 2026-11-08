@@ -4712,3 +4712,24 @@ html.no-animations .game-layout .table-hand .action-item { animation: none; }
   .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; }
 }
 html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; }
+
+/* Plan item 287: on the phone's sideways hand a card that shows less than half at the right edge (the 'n more ›' tab
+   counts it) turns face down: the wooden back of the NOT YET deck, so the edge reads as more cards in the hand (item
+   83's peek), never as a card cut by broken layout. It turns face up as it scrolls in past half, and keyboard focus
+   turns it at once. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions > .action-item { position: relative; }
+  .action-tray .actions > .action-item > * { transition: opacity 160ms linear; }
+  .action-tray .actions > .action-item[data-cut-right]:not(:focus-within) > * { opacity: 0; }
+  .action-tray .actions > .action-item[data-cut-right]:not(:focus-within) { pointer-events: none; }
+  .action-tray .actions > .action-item[data-cut-right]:not(:focus-within)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-card);
+    background:
+      repeating-linear-gradient(45deg, color-mix(in srgb, var(--wood-lo) 45%, transparent) 0 4px, transparent 4px 9px),
+      var(--wood);
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--wood-ink) 70%, transparent), inset 0 0 0 4px var(--wood-lo), 0 2px 3px rgb(var(--shadow-ink) / .25);
+  }
+}
