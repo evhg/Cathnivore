@@ -3937,7 +3937,7 @@ html.no-animations .table-cath-line { animation: none; }
 
   /* Plan item 237: Pell 80 px across at the table, hanging over the board's top rail (negative margins keep the
      head row's height), with the same glossy plastic sheen as the phone medallion. */
-  .table-head.with-table-cath .rival { z-index: var(--z-raised); }
+  .table-head.with-table-cath .rival { z-index: var(--z-raised); min-width: 122px; }
   .table-head.with-table-cath .rival-frame { width: 80px; height: 80px; margin-block: -4px -18px; }
   .table-head.with-table-cath .rival-frame svg { top: -25px; width: 132px; }
   .table-head.with-table-cath .rival-frame::after {
@@ -3949,7 +3949,12 @@ html.no-animations .table-cath-line { animation: none; }
     pointer-events: none;
   }
   /* Plan item 234: the plate under the portrait at 13 px (12 px caps read about 10). */
-  .table-head.with-table-cath .rival-plate { margin-top: -12px; padding: 2px 8px 2px 5px; font-size: var(--fs-caption); letter-spacing: .05em; }
+  /* Plan item 282: it hangs on the portrait's rim, under his chin (at -12 px it covered his mouth); out of the flow,
+     so the head row keeps its height (item 249's 78 px). */
+  .table-head.with-table-cath .rival-plate {
+    position: absolute; top: 70px; left: 50%; translate: -50% 0; white-space: nowrap;
+    margin-top: 0; padding: 2px 8px 2px 5px; font-size: var(--fs-caption); letter-spacing: .05em;
+  }
 
   .game-layout .table-hand-spacer {
     flex: none;
