@@ -19,10 +19,10 @@
   --clay: #B5523B;
   --clay-deep: #9E4430;
 
-  --region-pasture: #CFE0B4;
-  --region-crop: #EBD9A6;
-  --region-coast: #BFD6DA;
-  --region-capital: #E2C9A0;
+  --region-pasture: #BCD79A; /* plan item 267: deeper land (was #CFE0B4) */
+  --region-crop: #E8CC84; /* was #EBD9A6 */
+  --region-coast: #A6CBD4; /* was #BFD6DA */
+  --region-capital: #DDB987; /* was #E2C9A0 */
 
   --p-mara: #8C2F39;
   --p-tomas: #C9962B;
