@@ -3054,6 +3054,15 @@ html.no-animations .table-cath-line { animation: none; }
     filter: drop-shadow(-2px 3px 4px rgb(var(--shadow-ink) / .28));
   }
   .game-layout .table-hand .action-family { width: 164px; }
+  /* Plan item 291: cards are dealt into the hand, each growing in a beat after the one before (the `scale`
+     property, so the fan's transform is untouched, and never past the card's box: a rise made the table scroll); a
+     fade only under reduced motion. */
+  .game-layout .table-hand .action-item { animation: hand-deal 180ms var(--ease-settle) both; }
+  .game-layout .table-hand .action-item:nth-child(2) { animation-delay: 30ms; }
+  .game-layout .table-hand .action-item:nth-child(3) { animation-delay: 60ms; }
+  .game-layout .table-hand .action-item:nth-child(4) { animation-delay: 90ms; }
+  .game-layout .table-hand .action-item:nth-child(5) { animation-delay: 120ms; }
+  .game-layout .table-hand .action-item:nth-child(n+6) { animation-delay: 150ms; }
   /* Cath's suggested card stands a little proud of the fan. */
   .game-layout .table-hand .action-item[data-suggested] { --pick-rise: -10px; }
   /* Plan item 177: only a pointer or keyboard focus lifts a card; a card focused by a click stays in the fan, so
@@ -4633,3 +4642,10 @@ html.no-animations .cath-pop { animation: none; }
   .actions-sheet .round-ledger-roll .receipt[data-sign="down"] .receipt-amount { color: color-mix(in srgb, var(--chalk) 40%, var(--short-ink-shelf)); }
   .actions-sheet .round-ledger-roll .receipt-doodle { stroke: var(--chalk); }
 }
+
+/* Plan item 291: the hand's deal (see .table-hand .action-item). */
+@keyframes hand-deal { from { scale: .9; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  @keyframes hand-deal { from { opacity: 0; } }
+}
+html.no-animations .game-layout .table-hand .action-item { animation: none; }
