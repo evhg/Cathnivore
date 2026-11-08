@@ -49,9 +49,9 @@ for (const [w, h] of [
     expect(m.poster).toBeLessThan(h)
     // she dresses for the poster in view: Cathnivore's first, Hedgerow's once its row is scrolled up, NIGHT SHIFT's
     // when its poster is focused
-    await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'market')
+    await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'field')
     await page.evaluate(() => window.scrollTo(0, document.querySelector('.hero-game-hedgerow')!.getBoundingClientRect().top + scrollY - 200))
-    await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'field', { timeout: 2000 })
+    await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'wax', { timeout: 2000 })
     await page.locator('.hero-game-nightshift').focus()
     await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'trench', { timeout: 2000 })
     // and the wave settles
