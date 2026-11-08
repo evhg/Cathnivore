@@ -2162,9 +2162,15 @@ export class Renderer3D {
           steps.length * 2,
         );
         const flip = new THREE.Quaternion().setFromAxisAngle(up, Math.PI);
+        // Plan item 296: no rim on a bend's steps (turning with the lane, they stacked into pale squares at the joins).
+        const bend = (i: number) => [i - 1, i + 1].some((j) => steps[j] && Math.abs(Math.atan2(Math.sin(steps[j]!.a - steps[i]!.a), Math.cos(steps[j]!.a - steps[i]!.a))) > 0.15);
         steps.forEach((st, i) => {
           q4.setFromAxisAngle(up, -st.a);
           for (const side of [-1, 1]) {
+            if (bend(i)) {
+              rim.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.makeScale(0, 0, 0));
+              continue;
+            }
             const off = (0.49 - SW / 2) * side;
             const x = st.x - Math.sin(st.a) * off;
             const z = st.y + Math.cos(st.a) * off;
