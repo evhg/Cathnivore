@@ -474,17 +474,24 @@ export function buildFrontCath(phone: boolean): FrontCath {
     thighs.push(turned(knee.clone().add(V(0, 0.02, 0)), ankle.clone().add(V(0, 0.04, 0)), [[0, 0.043], [0.06, 0.045], [0.14, 0.04], [0.32, 0.05], [0.5, 0.045], [0.78, 0.03], [1, 0.025]], seg(14), 0.9));
     // The ankle boot: a shaft from above the ankle bone with a turned cuff, the instep down to the ball, a pointed
     // toe box flat on the ground.
-    const ball = V(ankle.x + (free ? 0.018 : 0.005) * side, 0.03, ankle.z + 0.1);
-    const toe = V(ankle.x + (free ? 0.03 : 0.008) * side, 0.016, ankle.z + 0.165);
+    // The free foot turns out about 25 degrees, so its heel and the sole's arch show in profile to the camera.
+    const out = free ? 0.42 : 0.08;
+    const along = (d: number, y: number) => V(ankle.x + Math.sin(out) * d * side, y, ankle.z + Math.cos(out) * d);
+    const ball = along(0.1, 0.03);
+    const toe = along(0.165, 0.016);
     addS(turned(V(ankle.x, 0.205, ankle.z - 0.004), V(ankle.x, 0.08, ankle.z - 0.01), [[0, 0.036], [0.08, 0.036], [0.12, 0.031], [0.6, 0.029], [1, 0.034]], seg(12), 0.95), bootMat);
-    addS(turned(V(ankle.x, 0.1, ankle.z - 0.03), ball, [[0, 0.034], [0.4, 0.034], [1, 0.03]], seg(10), 0.7, Math.PI / 2), bootMat);
+    addS(turned(along(-0.03, 0.1), ball, [[0, 0.034], [0.4, 0.034], [1, 0.03]], seg(10), 0.7, Math.PI / 2), bootMat);
     addS(turned(ball, toe, [[0, 0.03], [0.5, 0.026], [0.85, 0.014], [1, 0.004]], seg(10), 0.55, Math.PI / 2), bootMat);
-    // The sole: a thin lighter slab under the toe box and the arch, its edge showing past the upper.
-    addS(turned(V(ball.x, 0.008, ball.z - 0.05), V(toe.x, 0.006, toe.z + 0.004), [[0, 0.03], [0.4, 0.033], [0.85, 0.018], [1, 0.006]], seg(10), 0.22), soleMat);
+    // The sole: a lighter slab under the toe box, its edge standing proud of the upper, and the arch's welt rising
+    // from the ball to the heel's top.
+    addS(turned(along(0.05, 0.009), along(0.17, 0.007), [[0, 0.031], [0.4, 0.035], [0.85, 0.02], [1, 0.007]], seg(10), 0.32), soleMat);
+    addS(turned(along(0.06, 0.02), along(-0.045, 0.08), [[0, 0.026], [1, 0.024]], seg(8), 0.22), soleMat);
     // The stacked heel: a tapered block, 7 cm, under the back of the boot.
-    const heel = new THREE.CylinderGeometry(0.014, 0.01, 0.075, 8);
+    const heel = new THREE.CylinderGeometry(0.016, 0.011, 0.075, 8);
     heel.scale(1, 1, 1.3);
-    heel.translate(ankle.x, 0.0375, ankle.z - 0.04);
+    heel.rotateY(out * side);
+    const hp = along(-0.04, 0.0375);
+    heel.translate(hp.x, hp.y, hp.z);
     addS(heel, soleMat);
   }
   legs.push(add(mergeGeometries(thighs)!, tightsMat));
@@ -539,7 +546,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     [0.262, -0.475],
   ];
   const HEM_FROM = 10; // profile rows from here down follow the hem particles
-  const coatSegs = seg(32);
+  const coatSegs = seg(48); // plan item 271: enough segments to carry the skirt's folds in the silhouette
   // LatheGeometry faces outward when the profile climbs: hem first.
   coatProfile.reverse();
   const HEM_ROWS = coatProfile.length - HEM_FROM;
@@ -560,7 +567,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const fold = Math.sin(a * 7 + 0.6) * 0.5 + Math.sin(a * 13 + 2.1) * 0.3 + Math.pow(Math.abs(Math.sin(a * 5 + 1.3)), 6) * 0.55;
       // A back vent: the two skirts part a little at the back below the hips.
       const vent = Math.max(0, 1 - Math.abs(Math.atan2(x, -z / 0.7)) / 0.18) * Math.max(0, (-0.12 - y) / 0.35);
-      const k = 1 + fold * 0.11 * depth - vent * 0.05;
+      // Plan item 271: deeper at the hem, and a pinched trough between crests so each fold casts its own shade.
+      const trough = -Math.pow(Math.max(0, -Math.sin(a * 7 + 0.6)), 3) * 0.6;
+      const k = 1 + (fold + trough) * 0.2 * depth * depth - vent * 0.05;
       // Plan item 247: the hem was a flat ring (one height all round). Cloth hangs lower at a fold's crest and rides
       // up in its trough, the front overlap drops a little past the skirt and the vent lifts where it parts.
       const hemK = THREE.MathUtils.smoothstep(-y, 0.33, 0.46);
