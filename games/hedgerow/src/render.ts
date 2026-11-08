@@ -921,7 +921,7 @@ export class Renderer {
                 // ...and off Cath's figure.
                 const hp = this.heroPx();
                 const cath = { x: X(game.hero.x) - hp.w / 2, y: Y(game.hero.y) - hp.h, w: hp.w, h: hp.h + s * 0.3 };
-                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind);
+                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind, plots());
                 if (r) shown.names.push(r);
               },
             });
@@ -1539,7 +1539,7 @@ export class Renderer {
   /** The count plate at the gate: "12 coming" on a paper pill, kept on the canvas. */
   /** Plan item 256: a Hollowell name tag by the queue's lead, on the first side (above, below, beside) that clears
    *  the other leads and plates and stays in the canvas; none if no side does. */
-  private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect): Rect | null {
+  private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect, plots: Rect[] = []): Rect | null {
     const fs = Math.max(12, Math.round(s * 0.18));
     ctx.save();
     ctx.font = `700 ${fs}px ${FONT}`;
@@ -1559,7 +1559,12 @@ export class Renderer {
       tries.sort((a, b) => far(a) - far(b));
     }
     const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    const r = tries.find((c) => c.x >= 2 && c.y >= 2 && c.x + c.w <= this.cssW - 2 && c.y + c.h <= this.cssH - 2 && !avoid.some((b) => hit(c, b)));
+    // Plan item 273: of the sides that clear the queue, the plates and Cath, the one covering least plot (the tag lay on
+    // D l34's plot row), ties kept in the order above.
+    const cover = (c: Rect) =>
+      plots.reduce((a, b) => a + Math.max(0, Math.min(c.x + c.w, b.x + b.w) - Math.max(c.x, b.x)) * Math.max(0, Math.min(c.y + c.h, b.y + b.h) - Math.max(c.y, b.y)), 0);
+    const ok = tries.filter((c) => c.x >= 2 && c.y >= 2 && c.x + c.w <= this.cssW - 2 && c.y + c.h <= this.cssH - 2 && !avoid.some((b) => hit(c, b)));
+    const r = ok.reduce<Rect | undefined>((best, c) => (!best || cover(c) < cover(best) - 1 ? c : best), undefined);
     if (!r) {
       ctx.restore();
       return null;
