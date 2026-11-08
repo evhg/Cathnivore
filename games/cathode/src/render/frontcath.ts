@@ -30,7 +30,7 @@ export interface FrontCath {
   play(kind: string, u?: number, seconds?: number): void;
   /**
    * Plan item 180: the class's signature pose, held while she wears it (the audition's pose, kept): a change of class
-   * lets the old one go and takes up the new over 400 ms; `instant` cuts (reduced motion, screenshots). null: none.
+   * lets the old one go and takes up the new over 300 ms (plan item 278); `instant` cuts (reduced motion, screenshots). null: none.
    */
   stance(kind: string | null, instant?: boolean): void;
   /** Plan item 180: the stance she holds now, its weight (0..1; 1 once the blend is done), how long the last blend took (loop s) and her posing hand. */
@@ -1861,13 +1861,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
     let glint = 0;
     let rack = 0;
     let shellU = -1;
-    // Plan item 180: the stance lets go of the old class (200 ms) and takes up the new (200 ms).
+    // Plan item 180: the stance lets go of the old class and takes up the new; plan item 278: 150 ms each, a 300 ms
+    // cut between operatives rather than a drift.
     if (stanceNow !== stanceWant || (stanceNow && stanceW < 1)) blendClock += step;
     if (stanceNow !== stanceWant) {
-      stanceW = Math.max(0, stanceW - step / 0.2);
+      stanceW = Math.max(0, stanceW - step / 0.15);
       if (stanceW === 0) stanceNow = stanceWant;
     } else if (stanceNow && stanceW < 1) {
-      stanceW = Math.min(1, stanceW + step / 0.2);
+      stanceW = Math.min(1, stanceW + step / 0.15);
       if (stanceW === 1) blendS = blendClock;
     }
     let cu = 0;

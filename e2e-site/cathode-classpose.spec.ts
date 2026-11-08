@@ -1,8 +1,8 @@
 import { expect, test } from './own-gpu'
 
 // Plan item 180: Cath posed as each class. On the class pick she keeps each class's signature pose once its audition
-// is done (the stage's data-class drives scene().figurePose()); a change of class blends over 400 ms of the loop's
-// time; her face reads (90 px+ tall at D, 70 at P) and her body meets neither the list nor the sheet at D.
+// is done (the stage's data-class drives scene().figurePose()); a change of class blends over 300 ms (item 278) of the loop's
+// time; her face reads (90 px+ tall at D, 45 at P) and her body meets neither the list nor the sheet at D.
 type Box = { left: number; top: number; right: number; bottom: number }
 type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number] }
 type S = { time: number; dressed: string | null; figurePose(): Pose; faceBox(): Box; figureBox(body?: boolean): Box }
@@ -42,7 +42,7 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     const p = (await pose())!
     expect(p.kind).toBe(cls)
     hands[cls] = p.hand
-    // The blend takes 400 ms of loop time (a long frame can overshoot a step; 600 ms is the line).
+    // The blend takes 300 ms of loop time (plan item 278; a long frame can overshoot a step; 600 ms is the line).
     expect(blend, cls).toBeGreaterThan(0)
     expect(blend, cls).toBeLessThanOrEqual(0.6)
     const m = await page.evaluate(() => {
@@ -56,7 +56,9 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
       return { face: s.faceBox(), body: s.figureBox(true), list: b('.cp-left'), sheet: b('.cp-sheet') }
     })
     const msg = JSON.stringify(m)
-    expect(m.face.bottom - m.face.top, msg).toBeGreaterThanOrEqual(hasTouch ? 70 : 90)
+    // Owner, 2026-11-08: head to toe on the pick, so an upright phone's face is 45 px or more (was 70 knees-up), as
+    // cathode-classpick.spec has it.
+    expect(m.face.bottom - m.face.top, msg).toBeGreaterThanOrEqual(hasTouch ? 45 : 90)
     if (!hasTouch) for (const o of [m.list, m.sheet]) if (o) expect(m.body.left < o.right && m.body.right > o.left, msg).toBe(false)
   }
   // A different pose per class: her posing hand in a different place for each (5 cm apart at least).
