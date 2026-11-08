@@ -8,26 +8,41 @@ const INK = "#2b2320";
 /** The depot's picture in a 100 x 100 box, its door facing down (towards the lane). */
 export function depotSvg(): string {
   const ribs = Array.from({ length: 6 }, (_, i) => `<path d="M30 ${62 + i * 5}h40" stroke="#9aa3ad" stroke-width="1.2"/>`).join("");
+  // Plan item 295: a glossy megastore, not a shed: a lit white-and-chrome front under an orange canopy with a lit
+  // logo, glass windows either side of the shutter, a chrome plinth. Door and board keep their boxes (main.ts and the
+  // CSS place the count and roll the shutter by them).
   return (
     `<svg viewBox="0 0 100 100" aria-hidden="true">` +
-    `<ellipse cx="50" cy="96" rx="46" ry="4" fill="rgba(0,0,0,0.22)"/>` +
-    // body: glossy grey-white plastic with a single highlight, no outline (STYLE.md: the enemies are glossy)
-    `<rect x="6" y="30" width="88" height="64" rx="6" fill="#e9edf1"/>` +
-    `<rect x="10" y="33" width="80" height="6" rx="3" fill="#ffffff" opacity="0.8"/>` +
-    // roof and brand stripe
-    `<path d="M2 32 50 10l48 22z" fill="#d7dde3"/>` +
-    // Plan item 160: the brand on the stripe at 10 units (12 px+ on a desktop depot; it was 7.2, about 8 px), left of
-    // the rep, who leans on the stripe's right end.
-    // Plan item 281: a deeper stripe and 14-unit letters (12 read about 11 px on D l21's 2D depot).
-    `<rect x="6" y="40" width="88" height="16" fill="#ef7a2a"/>` +
-    `<text x="40" y="53.2" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" font-family="'Hedgerow UI', system-ui, sans-serif" letter-spacing="0.6" textLength="66" lengthAdjust="spacingAndGlyphs">HOLLOWELL</text>` +
-    // roller door
-    `<rect x="28" y="58" width="44" height="36" fill="#2a2f36"/>` +
+    `<defs>` +
+    `<linearGradient id="dp-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6ebf0"/><stop offset="1" stop-color="#c3ccd5"/></linearGradient>` +
+    `<linearGradient id="dp-canopy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb066"/><stop offset=".5" stop-color="#ef7a2a"/><stop offset="1" stop-color="#c85a14"/></linearGradient>` +
+    `<linearGradient id="dp-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset=".5" stop-color="#5f9fc8"/><stop offset="1" stop-color="#2f5f80"/></linearGradient>` +
+    `<linearGradient id="dp-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7fa"/><stop offset=".5" stop-color="#9aa6b2"/><stop offset="1" stop-color="#dfe5ea"/></linearGradient>` +
+    `</defs>` +
+    `<ellipse cx="50" cy="96" rx="47" ry="4" fill="rgba(0,0,0,0.3)"/>` +
+    // the block, lit from above, on a chrome plinth
+    `<rect x="5" y="22" width="90" height="72" rx="3" fill="url(#dp-wall)"/>` +
+    `<rect x="4" y="90" width="92" height="5" rx="1.5" fill="url(#dp-chrome)"/>` +
+    // a flat roof's chrome cornice with a hard sheen
+    `<rect x="3" y="18" width="94" height="6" rx="1.5" fill="url(#dp-chrome)"/>` +
+    `<rect x="5" y="19" width="90" height="1.4" fill="#ffffff" opacity=".9"/>` +
+    // Plan items 160/281: the brand on the canopy at 14 units, now lit: a glow behind the letters.
+    `<rect x="4" y="38" width="92" height="19" rx="2" fill="url(#dp-canopy)"/>` +
+    `<rect x="6" y="39.2" width="88" height="2.2" rx="1" fill="#ffffff" opacity=".55"/>` +
+    `<text x="40" y="53.2" text-anchor="middle" font-size="14" font-weight="800" fill="#fff6d6" stroke="#ffd59a" stroke-width="2.4" stroke-opacity=".45" paint-order="stroke" font-family="'Hedgerow UI', system-ui, sans-serif" letter-spacing="0.6" textLength="66" lengthAdjust="spacingAndGlyphs">HOLLOWELL</text>` +
+    // glass shop windows either side of the shutter, with a diagonal glare
+    `<rect x="74" y="60" width="18" height="26" rx="1" fill="url(#dp-glass)" stroke="#c3ccd5" stroke-width="1.2"/>` +
+    `<path d="M76 84 90 62" stroke="#ffffff" stroke-width="2" opacity=".45"/>` +
+    // the roller shutter in a chrome frame
+    `<rect x="26.5" y="57" width="47" height="37" rx="1.5" fill="url(#dp-chrome)"/>` +
+    `<rect x="28" y="58" width="44" height="36" fill="#1a1f25"/>` +
+    `<rect x="31" y="80" width="38" height="14" fill="#ffd27a" opacity=".35"/>` +
     `<g class="depot-door"><rect x="28" y="58" width="44" height="36" rx="2" fill="#c9d0d7"/>${ribs}</g>` +
-    // departures board on the left wall
-    `<rect x="9" y="56" width="17" height="22" rx="2" fill="#1d2228"/>` +
-    // balcony rail on the right
-    `<path d="M74 58h18" stroke="#9aa3ad" stroke-width="2"/>` +
+    // the countdown screen on the left wall (main.ts lays the count over it)
+    `<rect x="8" y="55" width="19" height="24" rx="2" fill="url(#dp-chrome)"/>` +
+    `<rect x="9" y="56" width="17" height="22" rx="2" fill="#11161c"/>` +
+    // balcony rail on the right, chrome
+    `<path d="M74 58h18" stroke="#c3ccd5" stroke-width="2"/>` +
     `</svg>`
   );
 }
