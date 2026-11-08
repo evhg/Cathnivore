@@ -2853,7 +2853,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at D no band over 80 px between field and canvas edge is plain fog or flat grass; draw calls up 10% at most; hedgerow-3dframe, -biome3d, -closeframe pass; shots D l5, l21, l34; key art re-shot.
 - **Size:** 2
 
-## 291. [ ] Cathnivore: the action hand as a fanned, tactile hand of cards
+## 291. [ ] Cathnivore: the action hand as a fanned, tactile hand of cards *(lane B, in progress)*
 - **Why:** `plan1108c/cath-game-D` (395-1280 x 720-880): a flat row of same-weight cards, affordable and not barely told apart; `cath-game-P` (325-390 x 675-790): the third card cut, the NOT YET label and the 'more' pill crowd the tray's edge.
 - **Build:** at D a gently fanned hand with a lift on hover/press, unaffordable cards dimmed with a padlock and their cost chip at the corner; at P a single-height swipeable hand that ends on a whole card or a clear count tab; a 120-200 ms deal and play.
 - **Accept:** cards 120x160 px+ at D and 96x128+ at P; no card clipped mid-art at 390 px; card text 12 px+ at 4.5:1; reduced motion fades only; action-hand, table-hand, play specs pass; shots P and D, start and round 5.
