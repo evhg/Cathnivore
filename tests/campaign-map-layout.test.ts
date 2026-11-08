@@ -29,6 +29,8 @@ describe('the campaign map layout', () => {
         for (const o of others) if (o.what !== `bunting ${n.id}`) expect(boxesMeet(n.box, o.box), `${n.id} vs ${o.what}`).toBe(false)
         for (const n2 of m.names) if (n2.id !== n.id) expect(boxesMeet(n.box, n2.box), `${n.id} vs ${n2.id}`).toBe(false)
       }
+      // Plan item 279: the chapter pins stand clear of the (larger) landmarks.
+      for (const l of m.landmarks) for (const p of m.pins) expect(boxesMeet(l.box, pinBox(p)), `pin vs landmark ${l.id}`).toBe(false)
       // Cath stands clear of every landmark and post too, and nothing sits on another region's name.
       for (const o of others.slice(1)) expect(boxesMeet(m.cath, o.box), `Cath vs ${o.what}`).toBe(false)
       // Landmarks and posts stay inside their own hex's face (within the inscribed circle).

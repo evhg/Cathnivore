@@ -28,7 +28,8 @@ export function regionCentre(id: RegionId): { x: number; y: number } {
 /** A chapter's pin: on its first home region, below the name. */
 export function pinCentre(home: RegionId): { x: number; y: number } {
   const c = regionCentre(home)
-  return { x: c.x, y: c.y + MAP_R * 0.42 }
+  // Plan item 279: a step right of centre, clear of the larger landmark on its left.
+  return { x: c.x + 7, y: c.y + MAP_R * 0.42 }
 }
 export const PIN_R = 11
 
