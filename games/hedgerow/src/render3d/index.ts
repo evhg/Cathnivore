@@ -76,6 +76,8 @@ interface BuildUp {
 }
 
 /** How long each part of a tower takes to rise into place, and the spread of their start times. */
+/** Plan item 280: how much larger the gate queue's models stand than the lane's traffic. */
+const QUEUE_SCALE_3D = 1.2;
 const RISE = 0.24;
 const RISE_SPREAD = 0.22;
 /** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
@@ -2468,7 +2470,7 @@ export class Renderer3D {
   /** Plan item 103: the town named on the gate plate when its 3D board steps down on a phone. */
   private plateTown = "";
   private queueAnchors: Array<{ x: number; z: number; up: number; gx: number; gz: number }> = [];
-  private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number }> = [];
+  private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number; s: number }> = [];
   private gateHold = 0;
   private gateEase = 0;
   /** Plan item 160 (tests): the gate's look has let go and the boss push has eased out. */
@@ -2498,7 +2500,7 @@ export class Renderer3D {
     const h = this.canvas.clientHeight;
     const shown: { leads: Rect[]; plates: Rect[] } = { leads: [], plates: [] };
     for (const m of this.queueModels) {
-      m.obj.scale.setScalar(Math.max(0.001, k));
+      m.obj.scale.setScalar(Math.max(0.001, k) * m.s);
       const a = this.v1.set(m.x, this.height(m.x, m.z) + m.up, m.z).project(this.camera);
       const b = this.v2.set(m.x, this.height(m.x, m.z), m.z).project(this.camera);
       const cx = (a.x * 0.5 + 0.5) * w;
@@ -2960,17 +2962,20 @@ export class Renderer3D {
       let d = 0.15;
       for (let i = ln.leads.length - 1; i >= 0; i--) {
         dists[i] = d;
-        if (i > 0) d += 0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06;
+        if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * QUEUE_SCALE_3D;
       }
       ln.leads.forEach((kind, i) => {
         const p = enemyPoint(level, { dist: dists[i]!, ...(ln.lane ? { lane: ln.lane } : {}) });
         const hd = headingAt(path, dists[i]!);
         const obj = buildRung(kind) ?? buildEnemy(kind);
-        const lift = enemyLift(kind);
+        // Plan item 280: the queue stands larger than the lane's traffic (as the 2D queue does, item 256), so its
+        // models read as cars, vans and lorries from the field camera, not coloured boxes.
+        obj.scale.multiplyScalar(QUEUE_SCALE_3D);
+        const lift = enemyLift(kind) * QUEUE_SCALE_3D;
         obj.position.set(p.x, this.height(p.x, p.y) + lift, p.y);
         obj.rotation.y = Math.atan2(-hd.dy, hd.dx);
         group.add(obj);
-        this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind), r: enemyScale(kind) });
+        this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind) * QUEUE_SCALE_3D, r: enemyScale(kind) * QUEUE_SCALE_3D, s: obj.scale.x });
       });
       const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
       const hd = headingAt(path, 0);
