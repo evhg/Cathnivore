@@ -1717,6 +1717,11 @@ body {
    board 11 px down at P). */
 .cell > .tile-shadow { transition: translate 220ms var(--ease-out, ease-out), filter 220ms; }
 .cell:is(.tip, .lesson-target) > .tile-shadow { translate: 1px 4px; filter: blur(2.5px); opacity: 0.9; }
+/* Plan item 298: a low sun casts long shadows: at golden hour it sits low on the right (the day card's sun), so the
+   tiles' shadows stretch to the left; in the early morning it is low on the left. Noon keeps the short drop. */
+:root[data-time='golden'] .cell:not(.tip, .lesson-target) > .tile-shadow { translate: -7px 1px; opacity: 0.85; }
+:root[data-time='morning'] .cell:not(.tip, .lesson-target) > .tile-shadow { translate: 6px 1px; opacity: 0.8; }
+:root:is([data-time='golden'], [data-time='morning'])[data-weather='drizzle'] .cell:not(.tip, .lesson-target) > .tile-shadow { opacity: 0.6; }
 @media (prefers-reduced-motion: reduce) {
   .cell > .tile-shadow { transition: none; }
 }
