@@ -2923,7 +2923,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** text 13 px+ at P and D at 4.5:1; targets highlight on hover/tap; plan-strip and rival specs pass; shots P and D.
 - **Size:** 2
 
-## 302. [ ] Cathnivore phone: every card in the hand within reach
+## 302. [ ] Cathnivore phone: every card in the hand within reach *(lane B, in progress)*
 - **Why:** `plan1108d/cath-game-P` (0-390 x 668-790): two cards show, the third peeks as a back, the rest wait behind 'N more' (items 266, 281, 287); desktop has a fan (291).
 - **Build:** a phone fan showing every card with a 24 px+ peek, swipe to cycle, tap to lift one to full size; unaffordable cards dim in place.
 - **Accept:** every card reachable without page scroll; a lifted card 150 px+ wide; the board keeps its height (board-scales); hand and table specs pass; shots P and D.
