@@ -612,7 +612,7 @@ export function settle(
   const used = new Set<number>();
   // Full size first; a prop with no room tries again smaller (a crowded phone band, a short pencil act).
   return props.map((full) => {
-    for (const scale of [1, 0.78, 0.6])
+    for (const scale of [1, 0.78, 0.6, 0.45])
       for (let k = 0; k < spots.length; k++) {
         const p = {
           w: Math.round(full.w * scale),

@@ -1363,7 +1363,7 @@ function richer(c: string, k: number): string {
  * The act's patchwork. Plan item 230: `won` (one flag per stop, in lane order) colours in the fields nearest a won
  * stop, so the country fills with colour as the act is played; the rest keep the act's pale palette.
  */
-export function groundSvg(n: number, won: boolean[] = []): string {
+export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
   const g = GROUND[i]!;
   const rand = mulberry(4271 * (i + 1));
@@ -1423,11 +1423,11 @@ export function groundSvg(n: number, won: boolean[] = []): string {
     `<defs>${clips}</defs>` +
     `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
     // Plan item 274: field hedges as hedgerows, not ruled lines: a dark root band, rounded crowns along it and lit
-    // leaves on every other crown.
-    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="7" opacity=".55" ${ve}/>` +
-    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="11" stroke-dasharray="0 9" opacity=".7" ${ve}/>` +
-    `<path d="${hedges}" stroke="${g.leaf}" stroke-width="8.5" stroke-dasharray="0 9" ${ve}/>` +
-    `<path d="${hedges}" stroke="${lift(g.leaf, 0.35)}" stroke-width="4" stroke-dasharray="0 18" opacity=".8" ${ve}/>` +
+    // leaves on every other crown. `wt` scales them (a phone's 390 px band takes about 0.6).
+    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="${f(7 * wt)}" opacity=".55" ${ve}/>` +
+    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="${f(11 * wt)}" stroke-dasharray="0 ${f(9 * wt)}" opacity=".7" ${ve}/>` +
+    `<path d="${hedges}" stroke="${g.leaf}" stroke-width="${f(8.5 * wt)}" stroke-dasharray="0 ${f(9 * wt)}" ${ve}/>` +
+    `<path d="${hedges}" stroke="${lift(g.leaf, 0.35)}" stroke-width="${f(4 * wt)}" stroke-dasharray="0 ${f(18 * wt)}" opacity=".8" ${ve}/>` +
     `</svg>`
   );
 }
@@ -1729,7 +1729,8 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
   const w = trail.offsetWidth;
   const h = trail.offsetHeight;
   if (w < 1 || h < 1) return none;
-  const k = phone ? 0.72 : w < 1000 ? 0.95 : 1.4;
+  // Plan item 274: phone props near their small-desktop size (0.72 drew a sheep at 12 px); crowded ones still shrink.
+  const k = phone ? 0.95 : w < 1000 ? 0.95 : 1.4;
   const sizes = props.map((el) => {
     const pw = Math.round(Number(el.dataset.w) * k);
     return { w: pw, h: Math.round((pw * 24) / 32) };
@@ -2160,7 +2161,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     }
     drawLane(path, [home ? [pts[0]![0], -26] : [-4, pts[0]![1]], ...pts]);
     // Plan item 18: the act's ground fills the whole band edge to edge, under its banner and its lane.
-    li.style.setProperty("--ground", `url("${svgImg(groundSvg(n, lvs.map((lv) => (data.stars[String(lv.id)] ?? 0) > 0)))}")`);
+    li.style.setProperty("--ground", `url("${svgImg(groundSvg(n, lvs.map((lv) => (data.stars[String(lv.id)] ?? 0) > 0), matchMedia("(max-width: 599px)").matches ? 0.6 : 1))}")`);
     li.dataset.act = String(n);
     trail.append(path);
     // Plan item 274: the act's landmark props, settled on open ground once the stops are laid out (layoutLanes).
