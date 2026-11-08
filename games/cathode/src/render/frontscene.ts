@@ -17,6 +17,7 @@ import { AutoScale } from "../game/autoscale";
 import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
 import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
+import { buildFrontWet } from "./frontwet";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -189,6 +190,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 148: the neon sign that is her key and rim; the pink lights stutter with its tubes.
   const neon = buildFrontNeon(phone);
   world.scene.add(neon.group);
+  // Plan item 261: the wet street carries the sign's light, and she stands on it with a contact shadow.
+  const wet = buildFrontWet();
+  world.scene.add(wet.group);
+  const groundAt = (x: number, z: number) => world.floorAt?.(x, feet.y + 1, z) ?? world.groundHeight(x, z);
   const neonRimI = phone ? 7 : 9;
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
   world.renderer.domElement.dataset.keyLight = "neon";
@@ -569,6 +574,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     neonFace.set(cam.position.x, neon.group.position.y, cam.position.z);
     neon.group.lookAt(neonFace);
     neon.group.updateMatrixWorld(true);
+    wet.update(neon.group.position, NEON_W * neon.group.scale.x, cam.position, neon.level(time, o.still), groundAt);
+    wet.feet(feet, cath.group.rotation.y);
   }
 
   let idleS = 0;
@@ -1041,6 +1048,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       faceKeyRemove = null;
       for (const c of chalk) c.removeFromParent();
       neon.dispose();
+      wet.dispose();
       delete world.renderer.domElement.dataset.keyLight;
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });

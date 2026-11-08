@@ -823,6 +823,9 @@
      small lines under the menu and in the List step up from the 12 px caption size. */
   .menu-item { opacity: .94; }
   .menu-hint, .the-list-h, .the-list-names li.is-more { font-size: var(--fs-2); }
+  /* Plan item 261: upright there is no letterbox bar under The List (item 82), so it sits at the foot; the 9svh
+     clearance left an empty black band under the prints (critique plan1107f, ns-title-P 760-844). */
+  .the-list { bottom: max(var(--safe-y), calc(3svh + var(--u) * 8)); }
   /* Plan item 126: over the photo --ink-3 falls under AA; the hint is her case line, so it reads at --ink-2. */
   .menu-hint { color: var(--ink-2); font-weight: 600; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
@@ -1451,5 +1454,4 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
 @media (max-width: 600px) and (orientation: portrait) and (max-height: 700px) {
   .menu { grid-auto-rows: 40px; } /* px-ok: tap target */
   .menu-hint { margin-top: calc(var(--u) * 10); }
-  .the-list { bottom: max(var(--safe-y), calc(3svh + var(--u) * 8)); }
 }
