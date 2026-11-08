@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES, MAP_AXIAL, currentChapterIndex, liberatedRegions } from '../content/campaignMap'
-import { BUNTING, CATH_SIZE, LANDMARKS, cathBox, MAP_FACE_R, MAP_R, landmarkAt, nameBaseline, nameLines, pinCentre, postAt, regionCentre, riverPath } from '../content/campaignMapLayout'
+import { BUNTING, CATH_SIZE, LANDMARK_SCALE, LANDMARKS, cathBox, MAP_FACE_R, MAP_R, landmarkAt, nameBaseline, nameLines, pinCentre, postAt, regionCentre, riverPath } from '../content/campaignMapLayout'
 import { BOARD_FACE_R, GroundArt } from './Map'
 import type { RegionId } from '../engine/types'
 import { Landmark } from './Landmark'
@@ -214,7 +214,7 @@ export default function CampaignMap({
           const showPost = !isFree && id !== herHome
           return (
             <g key={id} className={`cmp-map-dress ${isFree ? 'is-free' : 'is-held'}${flooding.has(id) ? ' is-flooding' : ''}`} aria-hidden="true">
-              <g transform={`translate(${lm.x.toFixed(1)} ${lm.y.toFixed(1)})`} className="cmp-landmark" data-landmark={LANDMARKS[id]!.kind}>
+              <g transform={`translate(${lm.x.toFixed(1)} ${lm.y.toFixed(1)}) scale(${LANDMARK_SCALE})`} className="cmp-landmark" data-landmark={LANDMARKS[id]!.kind}>
                 <Landmark kind={LANDMARKS[id]!.kind} />
               </g>
               {(showPost || isFree) && (

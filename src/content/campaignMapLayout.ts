@@ -74,10 +74,12 @@ export const LANDMARKS: Record<string, { kind: LandmarkKind; name: string }> = {
   brindleHills: { kind: 'barn', name: 'the barn' },
   highmoor: { kind: 'fold', name: 'the sheepfold' },
 }
-export const LANDMARK_SIZE = 24
+// Plan item 279: each region's landmark drawn 1.25x its old 24 units and a little further in (48 px+ at D, 28 px+ at P).
+export const LANDMARK_SCALE = 1.25
+export const LANDMARK_SIZE = 24 * LANDMARK_SCALE
 export function landmarkAt(id: RegionId): { x: number; y: number } {
   const c = regionCentre(id)
-  return { x: c.x - MAP_R * 0.5, y: c.y + MAP_R * 0.2 }
+  return { x: c.x - MAP_R * 0.4, y: c.y + MAP_R * 0.2 }
 }
 export function landmarkBox(id: RegionId): Box {
   const p = landmarkAt(id)
