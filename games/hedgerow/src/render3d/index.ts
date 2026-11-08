@@ -643,6 +643,13 @@ export class Renderer3D {
   }
 
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
+  /** Plan item 284: her whole figure's box on the page in CSS px, so shot scripts can crop round her on any level. */
+  cathScreenBox(): Rect | null {
+    if (!this.cath?.visible) return null;
+    const r = this.canvas.getBoundingClientRect();
+    const b = this.boxRect(new THREE.Box3().setFromObject(this.cath), r.width, r.height);
+    return { x: b.x + r.left, y: b.y + r.top, w: b.w, h: b.h };
+  }
   /** Plan item 102: her face's box on screen in CSS px (the modelled head's face sphere), for the size checks. */
   faceBox(): { w: number; h: number } | null {
     const face = this.faceMesh();

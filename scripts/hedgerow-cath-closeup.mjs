@@ -25,9 +25,13 @@ for (const size of ['P', 'D']) {
   await page.waitForTimeout(8000)
   // Her box on screen from the renderer's projection of her figure.
   const box = await page.evaluate(() => window.hedgerow3d.cathScreenBox?.() ?? null)
-  const clip = box
-    ? { x: Math.max(0, box.x - box.w * 0.5), y: Math.max(0, box.y - box.h * 0.15), width: box.w * 2, height: box.h * 1.3 }
-    : size === 'D' ? { x: 120, y: 410, width: 160, height: 230 } : { x: 30, y: 470, width: 70, height: 100 }
+  const onScreen = box && box.x + box.w > 0 && box.y + box.h > 0 && box.x < w && box.y < h
+  if (!onScreen) console.log(size, 'Cath is out of the fitted frame', box)
+  const x = onScreen ? Math.max(0, box.x - box.w * 0.5) : 0
+  const y = onScreen ? Math.max(0, box.y - box.h * 0.15) : 0
+  const clip = onScreen
+    ? { x, y, width: Math.min(w - x, box.w * 2), height: Math.min(h - y, box.h * 1.3) }
+    : { x: 0, y: 0, width: w, height: h }
   await page.screenshot({ path: `${out}/cath-${size}-L${level}.png`, clip })
   await ctx.close()
 }

@@ -2022,7 +2022,9 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const locks: THREE.Group[] = [];
   for (const z of [-1, 1]) {
     const p = new THREE.Group();
-    p.position.set(0.1, CATH_HEAD_Y - 0.11, z * 0.065);
+    // Plan item 284: out over the shoulders (they were at 0.065 and lay across her chest as a dark bib, hiding the
+    // lapels and the pearls).
+    p.position.set(0.085, CATH_HEAD_Y - 0.11, z * 0.088);
     // Both locks in one geometry, so a side stays one draw call.
     const both = geo(`cathFrontLocks284${z}`, () => {
       const outer = hairLock(0.23, 0.05, 0.02, 0.012, -0.03, 0.26).clone();
