@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-08T02:55Z
+
 
 
 
@@ -2748,3 +2748,58 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Site:** P /games/ the logotype blurred (55-340 x 112-168; possibly its fade-in): recheck after 2 s.
 - **Accept:** each point checked before and after at P and D; text 12 px or more at 4.5:1; the specs for each screen pass.
 - **Size:** 2
+
+---
+*Items 274-281: planned 2026-11-08 03:20 lane A from a subagent critique of `e2e/screenshots/plan1108a` (P and D of every game) against VISION.md. Check each point against HEAD first: a shot can catch an entrance mid-way.*
+
+## 274. [ ] Hedgerow: the map as a painted overworld
+- **Why:** `plan1108a/hedge-menu-D` (0-1440 x 60-600): a beige ground ruled with thin green lines and ten near-identical grey roundels (210-1260 x 320-500); the act-4 band below (790-900) is a washed-out grey strip. `hedge-menu-P` (0-390 x 170-690) the same, with names meeting props. Kingdom Rush's map is a painted world; this reads as a level list.
+- **Build:** each act's stretch of map authored as countryside (Saltmarsh dunes, a tidal creek and a lighthouse headland; Rivermead willows and a ford; and so on); every stop a small diorama of its level's twist on a raised mound, locked stops under mist; the lane a hedged track; Hollowell billboards on unbeaten ground; acts parted by a painted horizon, not a band. Cath's walk (item 250) kept.
+- **Accept:** 12 or more distinct landmark props per act; no two stops drawn alike; names never overlap props (a box test in the map spec); stops 44 px or more to tap; names 12 px+ at 4.5:1; map and critique specs pass; shots P and D, acts 1, 3 and 4; key art re-shot.
+- **Size:** 3
+
+## 275. [ ] NIGHT SHIFT: Cath's face that holds up close, round two
+- **Why:** `plan1108a/ns-title-D` (930-1040 x 255-385): after item 260 the face still reads as a mannequin (pasted eyes, little nose, brow or lip modelling, the hair a solid shell); `ns-play-D` (680-760 x 120-230) and `ns-play-P` (150-215 x 230-300) soften into the collar.
+- **Build:** a nose bridge and tip, lips with a lit upper edge, a brow ridge, cheek planes that take the key; winged liner and two catchlights per eye; hair with strand cards at the temples and the knot, the shine band kept; the bible's raised right brow and half smile; the title cycling smirk and determined.
+- **Accept:** eyes 6 px+ tall at P title; the right brow visibly higher; at least two expressions seen on the title; cathode-front face tests and classpick pass; cathode-perf within budget; shots title and pick, P and D; key art re-shot.
+- **Size:** 2
+
+## 276. [ ] Cathnivore: Cath reacts at the table
+- **Why:** `plan1108a/cath-game-D` (360-550 x 390-690): she stands with clasped hands while the turn plays out; on P she is a 60 px bust (10-75 x 545-605). VISION asks for a host who reacts.
+- **Build:** her poses and expressions from `shared/cath/` (delighted, worried, determined, wink, pointing at a region) tied to the game's events: a Squeeze lands, a region freed, Trust drops, a card bought, a round ends; each 400-900 ms with a short line; on P a pop-in at about 140 px over the board's corner that never shifts layout.
+- **Accept:** 6+ events mapped to 5+ distinct poses (unit test on the map); swaps 400-900 ms, reduced motion fades only; no layout shift (e2e); the play specs pass; shots P and D mid-reaction.
+- **Size:** 2
+
+## 277. [ ] Runnel: water that runs and fields that answer
+- **Why:** `plan1108a/runnel-D` (900-1240 x 330-750): tiles are cream with a brown groove and the water stops at the spring (620-800 x 200-290); no wet soil, no crop payoff; the rain day greys the whole valley (390-1420 x 20-880). (Item 264 made the tiles carved; this is the water and the fields.)
+- **Build:** a connected channel fills tile by tile (about 250 ms a tile) with a moving shimmer; a watered field darkens and sprouts in three stages, a dry one cracks; the solve sets off a 1 s bloom across the valley; the rain day's grade keeps the land's colour.
+- **Accept:** watered against dry fields 3:1 or more in luminance; the fill seen in an e2e frame; Runnel's perf spec holds; runnel site specs pass; shots P and D of the lesson, a part-solved daily and a solve; key art re-shot.
+- **Size:** 2
+
+## 278. [ ] NIGHT SHIFT: five operatives, five silhouettes
+- **Why:** `plan1108a/ns-play-D`: all five classes stand in the same coat and pose; only the gun and item 112's kit change, and the Ghost's rifle runs through the umbrella (790-850 x 40-200). The list's gun icons are thin outlines (360-470 x 185-560).
+- **Build:** per class a pose and a light key (the Ghost hooded with the rifle slung and the umbrella furled, the Butcher squared up in the apron, the Gunslinger hip-shot with a hand on the holster, the Wirewitch with cable coiled at the wrist, the Fixer with a case); the switch as a 300 ms cut; no gun through the umbrella.
+- **Accept:** thresholded silhouettes differ pairwise (IoU under 0.85, a test); no weapon/umbrella intersection; classpick passes; cathode-perf within budget; shots P and D of all five.
+- **Size:** 2
+
+## 279. [ ] Cathnivore: Campaign chapters as authored scenes
+- **Why:** `plan1108a/cath-campaign-D`: the atlas is flat hexes with numbered circles (90-660 x 225-775), Cath stands on a pier in the sea (690-805 x 505-770), locked chapters are grey line thumbnails (1210-1345 x 485-780).
+- **Build:** each region's landmark at 2-3x today's size, roads, Hollowell signage over unfreed land and the chapter path in dotted ink; Cath on the current chapter's region (walking the path on a win); the locked cards as coloured, silhouetted scenes under a wax seal, one per chapter.
+- **Accept:** landmarks 48 px+ at D and 28 px+ at P; 6 distinct chapter scenes; locked card text 4.5:1; campaign, -map, -spread, -vignettes specs pass; save format unchanged; shots P and D at 0, 3 and 6 chapters won.
+- **Size:** 2
+
+## 280. [ ] Hedgerow 3D: Hollowell's fleet and depot modelled
+- **Why:** `plan1108a/hedge-l21-3d-D`: the delivery vans are pink boxes (280-320 x 260-360), the depot a grey box (110-245 x 140-300) with a floating sign (190-315 x 365-395); the 2D sprites have far more character. (Cath's 3D face was item 255.)
+- **Build:** a modelled vehicle per enemy type (the influencer van with its ring light, the box lorry, the drone, the bikes), a branded glossy Hollowell depot, signs on posts.
+- **Accept:** every enemy type of acts 1-4 its own mesh and named in a D shot; draw calls up 15% at most; biome3d, 3dframe, vehicles specs pass; shots P and D of l21 and l34 in 3D; key art re-shot.
+- **Size:** 2
+
+## 281. [ ] The bugs from the 2026-11-08 03:10 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1108a`)
+  - **Hedgerow:** D l21 2D 'Lifestyle influencer' (182-302 x 271-286) and 'HOLLOWELL' (280-365 x 478-494) tags about 11 px; P menu: 'The Unboxing', 'Golden Hour', 'Discount Code' names against props (10-110 x 312-480); D menu 'Beyond the hedge' card cut by the foot (527-913 x 852-900; maybe scroll); D 3D l21 water a flat blue slab (280-540 x 380-550; recheck item 269 under swiftshader).
+  - **NIGHT SHIFT:** D pick stat names GRIT/AIM/NERVE/WIRE (1030-1352 x 192-202) and 'CASE FILE · HOLLOWELL PROPER' (58-236 x 76-86) read about 10 px (item 273 measured `--fs-1`: check rendered size); P title LUNA a doubled smear (30-190 x 500-560); P title menu plate over her torso (8-176 x 205-435; item 251).
+  - **Cathnivore:** D setup Cath's Pins captions about 11 px (150-370 x 712-742); Ines and Sol's portrait arches above their cards (775-1090 x 262-285); P game: the NOT YET deck cut at the right edge (355-390 x 672-770), the 'more' pill over the Injunction art (270-355 x 708-735).
+  - **Runnel:** D hint 'Tap a tile to turn it, hold to pin it' grey on cream (74-288 x 782-795): measure.
+  - **Site:** D /games/ kicker touching the awning scallops (615-1015 x 86-100).
+- **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass; ui-css-lint and cathode-type pass.
+- **Size:** 1
