@@ -352,3 +352,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 15:00 lane A (item 287): the empty slate's spare room holds a chalk sketch of the stall, measured under the newest line, rather than a second shelf row: at 1440x900 a shelf row (~178 px) would leave the ledger no room once the game writes it.
 - 2026-11-08 15:20 lane A (item 287): the phone hand's sub-half peek shows as a card back, not hidden: item 83 wants a 24 px+ peek as the scroll cue, so the peek stays and only its face goes.
 - 2026-11-08 15:30 lane A (item 289): the face's read starts with the brows (they nearly vanished at title distance), cheeks and mouth; the face size already passes (131 px D, 79 px P), so no rescale.
+- 2026-11-08 15:35 lane B (item 292): full-length Cath's viewBox grew (800 -> 870) for longer legs rather than shrinking the head; consumers size by width, so the figure grows a little taller in place.
