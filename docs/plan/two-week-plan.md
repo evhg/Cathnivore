@@ -2752,7 +2752,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 ---
 *Items 274-281: planned 2026-11-08 03:20 lane A from a subagent critique of `e2e/screenshots/plan1108a` (P and D of every game) against VISION.md. Check each point against HEAD first: a shot can catch an entrance mid-way.*
 
-## 274. [ ] Hedgerow: the map as a painted overworld
+## 274. [ ] Hedgerow: the map as a painted overworld *(lane A, in progress)*
 - **Why:** `plan1108a/hedge-menu-D` (0-1440 x 60-600): a beige ground ruled with thin green lines and ten near-identical grey roundels (210-1260 x 320-500); the act-4 band below (790-900) is a washed-out grey strip. `hedge-menu-P` (0-390 x 170-690) the same, with names meeting props. Kingdom Rush's map is a painted world; this reads as a level list.
 - **Build:** each act's stretch of map authored as countryside (Saltmarsh dunes, a tidal creek and a lighthouse headland; Rivermead willows and a ford; and so on); every stop a small diorama of its level's twist on a raised mound, locked stops under mist; the lane a hedged track; Hollowell billboards on unbeaten ground; acts parted by a painted horizon, not a band. Cath's walk (item 250) kept.
 - **Accept:** 12 or more distinct landmark props per act; no two stops drawn alike; names never overlap props (a box test in the map spec); stops 44 px or more to tap; names 12 px+ at 4.5:1; map and critique specs pass; shots P and D, acts 1, 3 and 4; key art re-shot.
