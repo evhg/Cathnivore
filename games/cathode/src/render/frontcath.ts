@@ -411,6 +411,24 @@ export function buildFrontCath(phone: boolean): FrontCath {
   coatMats.push(sleeveMat);
   rimify(sleeveMat, 1);
   mats.push(sleeveMat);
+  // Plan item 271: the coat itself (its skirt carries the fold shade as vertex colours; the lapels and epaulettes,
+  // merged with no colour attribute, stay on coatMat).
+  const skirtMat = coatMat.clone();
+  skirtMat.vertexColors = true;
+  coatMats.push(skirtMat);
+  rimify(skirtMat, 1);
+  {
+    // The coat reads by its sheen and rim more than its dark diffuse, so the shade darkens all of its light, once.
+    const rimOnly = skirtMat.onBeforeCompile;
+    skirtMat.onBeforeCompile = (sh, r) => {
+      rimOnly.call(skirtMat, sh, r);
+      sh.fragmentShader = sh.fragmentShader
+        .replace("#include <color_fragment>", "")
+        .replace("#include <opaque_fragment>", "outgoingLight *= vColor.rgb;\n#include <opaque_fragment>");
+    };
+    skirtMat.customProgramCacheKey = () => "front-rim-skirt";
+  }
+  mats.push(skirtMat);
   rimify(blackMat, 0.8);
   rimify(hairMat, 1.2, 0, 0, HAIR_SHINE);
   rimify(skinMat, 0.35, 0.8);
@@ -554,6 +572,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   {
     // Folds: the skirt falls in soft pleats below the belt (more at the hem), a back vent and a front overlap.
     const p = coatGeo.attributes.position as THREE.BufferAttribute;
+    // Plan item 271: each fold's trough in its own shade (an illustrator's fold shadow: the street's flats alone left
+    // crest and trough within 1.3:1), and the back pleat's split a dark line.
+    const shade = new Float32Array(p.count * 3).fill(1);
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i);
       if (y > 0.08) continue;
@@ -576,10 +597,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const front = Math.max(0, Math.sin(a));
       const dy = hemK * (-0.014 * fold - 0.016 * front * front * front + 0.03 * vent);
       p.setXYZ(i, x * k, y + dy, z * k);
+      const lit = THREE.MathUtils.smoothstep(fold + trough, -0.75, 0.55);
+      const fade = Math.min(1, (0.08 - y) / 0.14);
+      const c = 1 + fade * (0.5 * lit - 0.68 * (1 - lit) - 0.5 * vent);
+      shade.fill(Math.max(0.3, c), i * 3, i * 3 + 3);
     }
+    coatGeo.setAttribute("color", new THREE.BufferAttribute(shade, 3));
     coatGeo.computeVertexNormals();
   }
-  const coat = add(coatGeo, coatMat, pelvis);
+  const coat = add(coatGeo, skirtMat, pelvis);
   coat.name = "coat";
   const coatRest = (coatGeo.attributes.position!.array as Float32Array).slice();
   // The belt and its buckle, and a popped collar.
@@ -1658,6 +1684,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
 
   // Weight shift: 7 to 11 s apart, deterministic.
   let shiftAt = 7;
+  let hemHipX = 0;
+  let hemT = -1;
   let shiftFrom = 0;
   let shiftTo = 1;
   let shiftT0 = 0;
@@ -1713,10 +1741,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const u = Math.min(1, (t - shiftT0) / 1.4);
     const e = u * u * (3 - 2 * u);
     const w = shiftFrom + (shiftTo - shiftFrom) * e;
-    pelvis.position.x = w * 0.022;
-    pelvis.rotation.z = -w * 0.035;
-    chest.rotation.z = w * 0.05;
-    headPivot.rotation.z = -w * 0.03 + Math.sin(t * 0.31) * 0.015;
+    // Plan item 271: her weight sits on one hip: the hips held over the standing leg (her right, -x), its side
+    // raised and the free knee's side dropped, the chest countering; the idle's shift sways a quarter either way.
+    const hipW = -0.75 + 0.25 * w;
+    // The tilt carries the stance. The hips don't slide out over the standing leg: tilted, the hem's low corner
+    // already swings 2 cm out that way, and the phone title's menu sits just beside it; they move 6 mm in the idle.
+    pelvis.position.x = 0.004 + w * 0.006;
+    pelvis.rotation.z = hipW * 0.055;
+    chest.rotation.z = -hipW * 0.07;
+    // Her head stays level over the countered chest (pelvis and chest rolls cancel to hipW * -0.015 at the neck).
+    headPivot.rotation.z = -w * 0.03 + Math.sin(t * 0.31) * 0.015 + hipW * 0.015;
     headPivot.rotation.y = Math.sin(t * 0.17) * 0.12 * (1 - 0.6 * gazeW);
     // Plan item 187: toward the menu (her right, +y turns her head that way as she faces the lens) and down its rows.
     headPivot.rotation.y += gazeW * 0.22;
@@ -1916,8 +1950,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const wx = (wind.x * 0.004 + 0.012) * gust;
     const wz = (wind.z * 0.004 + 0.006) * gust;
     const k = 1 - Math.exp(-step * 9);
+    // Plan item 271: the hem lags the hips (it hangs from them), so a weight shift swings it and it settles back.
+    // A held screenshot clock (a jump of more than a frame) only re-seats it.
+    const hipDx = Math.abs(t - hemT) < 0.25 ? pelvis.position.x - hemHipX : 0;
+    hemHipX = pelvis.position.x;
+    hemT = t;
     for (let i = 0; i < HEM; i++) {
       const p = hem[i]!;
+      p.x -= hipDx * 0.9;
+      p.px -= hipDx * 0.9;
       const vx = (p.x - p.px) * 0.94;
       const vz = (p.z - p.pz) * 0.94;
       p.px = p.x;
@@ -2587,7 +2628,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const inkU = { uInk: { value: new THREE.Vector2(0.002, 0.003) }, uInkColor: { value: new THREE.Color(0x07050a) } };
   const inkMat = new THREE.ShaderMaterial({ uniforms: inkU, vertexShader: INK_VERT, fragmentShader: INK_FRAG, side: THREE.BackSide });
   mats.push(inkMat);
-  const bodyMats = new Set<THREE.Material>([coatMat, sleeveMat, blackMat, hairMat, skinMat, tightsMat, faceMat]);
+  const bodyMats = new Set<THREE.Material>([coatMat, skirtMat, sleeveMat, blackMat, hairMat, skinMat, tightsMat, faceMat]);
   const inked: THREE.Mesh[] = [];
   {
     const cands: Array<{ m: THREE.Mesh; n: number }> = [];
