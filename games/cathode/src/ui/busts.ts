@@ -300,7 +300,7 @@ const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair,
  * so the slate, the bar and the stamp stay as shapes and the caption under the print names it. Plan item 121: the
  * small slate carries chalk strokes, so it reads as a lettered slate, not an empty black bar.
  */
-export function mugshotSvg(who: BustId | null, slate: string, small = false): string {
+export function mugshotSvg(who: BustId | null, slate: string, small = false, variant = 0): string {
   uid += 1;
   const id = `mug${uid}`;
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
@@ -310,14 +310,46 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false): st
     const inner = DRAW[who](id).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
     return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}">${inner}${chart}${slateG}</svg>`;
   }
-  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld">
-<defs><radialGradient id="r${id}" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#3a3833"/><stop offset="1" stop-color="#121317"/></radialGradient></defs>
-<rect width="200" height="240" fill="url(#r${id})"/>${chart}
-<path d="M24 240 L30 198 C46 180 70 172 84 168 L100 176 L116 168 C130 172 154 180 170 198 L176 240 Z" fill="#26262b"/>
-<path d="M74 88 C74 60 86 46 100 46 C114 46 126 60 126 88 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 88 Z" fill="#2c2c31"/>
-<path d="M74 84 C74 58 86 46 100 46 C114 46 126 58 126 84" stroke="#55534d" stroke-width="1.4" fill="none"/>
-<rect x="-6" y="84" width="212" height="22" fill="#b3122a" transform="rotate(-6 100 95)"/>
-${small ? "" : `<text x="100" y="100" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="13" font-weight="800" letter-spacing="3" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
+  // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, a bob, a bald head with glasses, a
+  // hood), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
+  // (A grey head at 10% luminance on 8% read as four identical black squares.)
+  const v = ((variant % 4) + 4) % 4;
+  const RIM = "#9fbcd8";
+  const FIG = "#08090c";
+  const heads = [
+    // a hat brim
+    `<path d="M76 92 C76 70 86 60 100 60 C114 60 124 70 124 92 C124 114 119 132 111 143 C106 150 103 152 100 152 C97 152 94 150 89 143 C81 132 76 114 76 92 Z"/><path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70 C140 74 126 74 120 72 L118 40 C110 34 90 34 82 40 L80 72 C74 74 60 74 48 70 Z"/>`,
+    // a bob
+    `<path d="M66 108 C62 70 78 44 100 44 C122 44 138 70 134 108 C132 126 126 132 118 134 C114 146 106 152 100 152 C94 152 86 146 82 134 C74 132 68 126 66 108 Z"/>`,
+    // a bald head with glasses
+    `<path d="M74 86 C74 58 86 46 100 46 C114 46 126 58 126 86 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 86 Z"/>`,
+    // a hood
+    `<path d="M62 150 C58 110 66 66 100 36 C134 66 142 110 138 150 C126 158 112 160 100 160 C88 160 74 158 62 150 Z"/>`,
+  ];
+  const rims = [
+    `<path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M118 40 C110 34 90 34 82 40" stroke="${RIM}" stroke-width="1.6" fill="none"/>`,
+    `<path d="M66 108 C62 70 78 44 100 44 C122 44 138 70 134 108" stroke="${RIM}" stroke-width="2" fill="none"/>`,
+    `<path d="M74 84 C74 58 86 46 100 46 C114 46 126 58 126 84" stroke="${RIM}" stroke-width="2" fill="none"/><g stroke="${RIM}" stroke-width="1.6" fill="none"><circle cx="88" cy="96" r="8"/><circle cx="112" cy="96" r="8"/><path d="M96 96 h8"/></g>`,
+    `<path d="M62 150 C58 110 66 66 100 36 C134 66 142 110 138 150" stroke="${RIM}" stroke-width="2" fill="none"/>`,
+  ];
+  // (by the List's order: 1 the clinic, 2 the plaza, 3 the tower, 4 the vault)
+  const props = [
+    // vault bars
+    `<g fill="#151a21">${Array.from({ length: 7 }, (_, k) => `<rect x="${22 + k * 26}" y="20" width="7" height="200"/>`).join("")}</g>`,
+    // a clinic drip stand
+    `<g stroke="#151a21" stroke-width="4" fill="none"><path d="M156 200 V40 M140 40 h32"/></g><path d="M146 44 h20 v34 a10 10 0 0 1 -20 0 Z" fill="#151a21"/>`,
+    // a plaza statue on its plinth
+    `<g fill="#151a21"><rect x="140" y="150" width="44" height="60"/><path d="M152 150 v-40 c0 -10 6 -18 10 -18 s10 8 10 18 v40 Z"/><circle cx="162" cy="84" r="9"/><path d="M172 108 l14 -22" stroke="#151a21" stroke-width="5"/></g>`,
+    // tower blinds
+    `<g fill="#151a21">${Array.from({ length: 9 }, (_, k) => `<rect x="28" y="${30 + k * 14}" width="144" height="8"/>`).join("")}</g>`,
+  ];
+  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld" data-silhouette="${v}">
+<defs><radialGradient id="r${id}" cx="50%" cy="36%" r="62%"><stop offset="0" stop-color="#7f93a8"/><stop offset=".6" stop-color="#3e4a58"/><stop offset="1" stop-color="#0e1014"/></radialGradient></defs>
+<rect width="200" height="240" fill="url(#r${id})"/>${props[v]}${chart}
+<g fill="${FIG}"><path d="M24 240 L30 198 C46 180 70 172 84 168 L100 176 L116 168 C130 172 154 180 170 198 L176 240 Z"/>${heads[v]}</g>
+${rims[v]}
+<g transform="rotate(-6 100 95)"><rect x="62" y="86" width="76" height="18" fill="#b3122a" opacity=".92"/><rect x="62" y="86" width="76" height="18" fill="none" stroke="#f3ede2" stroke-width="1.2" opacity=".55"/></g>
+${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
 <g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
 ${slateG}
 </svg>`;

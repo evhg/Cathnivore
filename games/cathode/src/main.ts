@@ -378,7 +378,7 @@ function fillTitle(): void {
     photo.setAttribute("aria-hidden", "true");
     // Plan item 99: a noir mugshot for every name; one not reached yet is a redacted silhouette, never a black square.
     const who = r.redacted ? undefined : BUST_FOR_CASE[THE_LIST[i]!.job];
-    photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`, true);
+    photo.innerHTML = mugshotSvg(who ?? null, `NO. ${i + 1}`, true, i);
     el("span", "mug-stamp", photo, file.stamp);
     el("b", "mug-name", li, r.redacted ? "Withheld" : r.name).setAttribute("aria-hidden", "true");
     el("span", "rumour", li, file.rumour).setAttribute("aria-hidden", "true");
