@@ -1,9 +1,9 @@
 // The lane's surface in each act: packed earth with ruts and a grass crown in Brindle Hills, a peaty track
-// set with stones on Highmoor, a timber boardwalk over the Saltmarsh mud, a puddled track at Rivermead,
+// set with stones on Highmoor, a sandy track across the Saltmarsh (item 269; it was a boardwalk), a puddled track at Rivermead,
 // a leaf-littered path through Oakvale, shingle at Shingle Bay, a tyre-marked haul road through the Rift,
 // a village lane with a painted line for the Ballot, concrete slabs at the Merger and cobbles in
 // Kingsmarket. Each is one ribbon mesh laid along the lane's centreline with a painted canvas texture
-// (one draw call), plus at most one instanced mesh of edge detail (boardwalk posts, puddles).
+// (one draw call), plus at most one instanced mesh of edge detail (puddles; the posts mesh is unused since item 269).
 
 import * as THREE from "three";
 import type { Level } from "../engine";
@@ -20,7 +20,7 @@ interface LaneStyle {
 const STYLES: LaneStyle[] = [
   { half: 0.46, fade: 0.3, rough: 0.95, looseStones: true }, // Brindle Hills: packed earth
   { half: 0.46, fade: 0.3, rough: 0.95, looseStones: true }, // Highmoor: peat and stones
-  { half: 0.4, fade: 0.06, rough: 0.85, looseStones: false }, // Saltmarsh: boardwalk
+  { half: 0.46, fade: 0.3, rough: 0.9, looseStones: true }, // Saltmarsh: sandy track (plan item 269; was a boardwalk)
   { half: 0.47, fade: 0.32, rough: 0.6, looseStones: true }, // Rivermead: wet mud
   { half: 0.46, fade: 0.34, rough: 0.95, looseStones: true }, // Oakvale: leaf litter
   { half: 0.47, fade: 0.28, rough: 0.9, looseStones: true }, // Shingle Bay: shingle
@@ -134,32 +134,34 @@ const PAINT: Paint[] = [
     stones(ctx, r, 42, ["#b3aa9a", "#9e9688", "#c8bfb0", "#8c8478"], 4, 0.55);
     speckle(ctx, r, 60, ["#9a6aa0", "#b07ab0"], 2.5, 0.8);
   },
-  // Saltmarsh: a timber boardwalk, wide sun-bleached planks laid tight across the way, weathered honey and
-  // silver, nails at the ends. Plan item 66: no dark gaps or runners showing through, which read as a railway.
+  // Saltmarsh: a sandy coastal track, as the 2D field draws it (plan item 269: the plank boardwalk read as decking,
+  // its seams and the bends' radial planks a parquet floor): pale packed sand, two wheel ruts, a crown of marram
+  // tufts, shell grit and the odd damp patch where the tide seeps up.
   (ctx, r) => {
-    ctx.fillStyle = "#7a6a52";
+    ctx.fillStyle = "#cbb489";
     ctx.fillRect(0, 0, TW, TH);
-    const plank = TH / 11;
-    for (let i = 0; i < 11; i++) {
-      const y = i * plank;
-      const x0 = 1 + r() * 4;
-      const x1 = TW - 1 - r() * 4;
-      const tone = ["#c4ad86", "#b8a07a", "#cdb894", "#b09a76", "#c0aa84"][Math.floor(r() * 5)]!;
-      ctx.fillStyle = tone;
-      ctx.fillRect(x0, y + 0.75, x1 - x0, plank - 1.5);
-      // Grain and weathering.
-      for (let k = 0; k < 9; k++) {
-        ctx.globalAlpha = 0.22;
-        ctx.fillStyle = r() < 0.5 ? "#8a7658" : "#e2d4b4";
-        ctx.fillRect(x0 + r() * (x1 - x0) * 0.6, y + 2 + r() * (plank - 4), 18 + r() * 46, 1);
-      }
-      ctx.globalAlpha = 0.35;
-      ctx.fillStyle = "#fff6e0";
-      ctx.fillRect(x0, y + 0.75, x1 - x0, 1);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = "#5a5048";
-      for (const x of [x0 + 6, x1 - 6]) ctx.fillRect(x, y + plank / 2 - 1, 2, 2);
+    for (let i = 0; i < 22; i++) ellipse(ctx, r() * TW, r() * TH, 8 + r() * 16, 5 + r() * 9, r() * 3, `rgba(${150 + r() * 20},${132 + r() * 14},${100 + r() * 10},0.35)`);
+    speckle(ctx, r, 900, ["#b89f74", "#ddc79c", "#a88f66"], 2, 0.5);
+    for (const u of [0.3, 0.7]) {
+      streak(ctx, u, 11, "#9c8258", 0.6);
+      streak(ctx, u - 0.07, 3, "#e6d4ac", 0.4);
+      streak(ctx, u + 0.07, 3, "#e6d4ac", 0.4);
     }
+    for (let i = 0; i < 160; i++) {
+      const x = TW * (0.5 + (r() - 0.5) * 0.12);
+      const y = r() * TH;
+      ctx.strokeStyle = ["#9aa86a", "#b0b878", "#8a9a5a"][i % 3]!;
+      ctx.globalAlpha = 0.75;
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + (r() - 0.5) * 5, y - 3 - r() * 5);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // shell grit, pale and pink
+    speckle(ctx, r, 120, ["#f4ece0", "#ecd6cc", "#fbf6ee"], 1.6, 0.85);
+    stones(ctx, r, 10, ["#c8c0b0", "#a8a090"], 1.6);
   },
   // Rivermead: churned wet mud, deep ruts holding water, darker damp patches.
   (ctx, r) => {
@@ -473,17 +475,8 @@ export function buildLanes(
     let next = 0;
     for (const p of line) {
       if (!onField(p.x, p.z) || p.s < next) continue;
-      if (act === 2) {
-        // Boardwalk posts, a pair every half cell.
-        next = p.s + 0.5;
-        for (const side of [-1, 1]) {
-          const x = p.x + p.nx * side * (st.half + 0.015);
-          const z = p.z + p.nz * side * (st.half + 0.015);
-          const h = heightAt(x, z);
-          posts.push(new THREE.Matrix4().compose(v.set(x, h + 0.02, z), q.setFromEuler(e.set((rand() - 0.5) * 0.12, rand() * 3, (rand() - 0.5) * 0.12)), sc.set(1, 0.8 + rand() * 0.5, 1)));
-        }
-      } else if (act === 3) {
-        // Puddles in the ruts.
+      if (act === 3 || act === 2) {
+        // Puddles in the ruts (plan item 269: on Saltmarsh's sandy track, damp patches where the tide seeps up).
         next = p.s + 0.35 + rand() * 0.6;
         if (rand() < 0.45) continue;
         const side = rand() < 0.5 ? -1 : 1;
