@@ -1271,25 +1271,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // and the jaw to the front of her shoulders, waved, so the hair reads as long soft waves round the face (the
     // bible's look) rather than a cap behind it. Kept just off the skull (`skullZ`); the lower lengths sway.
     const skullZ = (x: number, y: number): number => {
-      const k = y < 0 ? Math.min(1, -y / 0.098 / 1.03) : 0;
-      const xn = x / 0.072 / (1 - 0.5 * Math.pow(k, 1.5));
-      const yn = y / (y < 0 ? 0.098 * 1.03 : 0.098);
+      // The skull's jaw (plan item 275: 0.42 k^1.6, the chin at 0.95).
+      const k = y < 0 ? Math.min(1, -y / 0.098 / 0.95) : 0;
+      const xn = x / 0.072 / (1 - 0.42 * Math.pow(k, 1.6));
+      const yn = y / (y < 0 ? 0.098 * 0.95 : 0.098);
       const r = 1 - xn * xn - yn * yn;
       return r > 0 ? 0.01 + 0.088 * Math.sqrt(r) : -1;
     };
-    for (const sx of [-1, 1]) {
-      const keys = [
-        capShape(0.1, 0.1 * sx, 0.04).applyMatrix4(capPlace),
-        capShape(0.55, 0.36 * sx, 0.05).applyMatrix4(capPlace),
-        capShape(0.97, 0.62 * sx, 0.045).applyMatrix4(capPlace),
-        V(0.07 * sx, -0.012, 0.036),
-        V(0.064 * sx, -0.07, 0.03),
-        V(0.074 * sx, -0.122, 0.034),
-        V(0.094 * sx, -0.18, 0.06),
-        V(0.106 * sx, -0.26, 0.09),
-        V(0.11 * sx, -0.34, 0.112),
-        V(0.104 * sx, -0.43, 0.122),
-      ];
+    // Plan item 275: one waved strand of the given width (wk) and wave (wa) along `keys`; the curtains, and the loose
+    // wisps at the temples, all in the one lock mesh (no draw call).
+    const strand = (keys: THREE.Vector3[], sx: number, wk: number, wa: number, sway: boolean): void => {
       const curve = new THREE.CatmullRomCurve3(keys, false, "centripetal");
       const N = 40;
       const base = lp.length / 3;
@@ -1303,18 +1294,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         nrm.set(c.x, c.y > 0 ? c.y * 0.6 : 0, c.z - 0.0).normalize();
         side.crossVectors(tan, nrm).normalize();
         // Narrow at the parting, full past the cheek, then to a point; a soft wave across the lower length.
-        const w = (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 2));
-        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26) * 0.008 * Math.min(1, (s - 0.4) / 0.1) : 0;
+        const w = wk * (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 2));
+        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26) * 0.008 * wa * Math.min(1, (s - 0.4) / 0.1) : 0;
         for (let j = 0; j < 3; j++) {
           const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
           q.x += wave * sx;
-          q.addScaledVector(nrm, j === 1 ? 0.004 : 0);
-          // Off the face: never inside the skull where the curtain passes in front of it.
+          q.addScaledVector(nrm, j === 1 ? 0.004 * wk : 0);
           if (q.y < 0.04 && q.y > -0.11) q.z = Math.max(q.z, skullZ(q.x, q.y) + 0.005 + (j === 1 ? 0.003 : 0));
           lp.push(q.x, q.y, q.z);
-          luv.push(0.2 + (sx + 1) * 0.6 + (j - 1) * 0.16, 1 - (0.06 + s * 0.7));
-          const r = Math.max(0, (s - 0.45) / 0.55) * hairRows * 0.8;
-          lockAtArr.push(sx > 0 ? cols : 0, r);
+          luv.push(0.2 + (sx + 1) * 0.6 + (j - 1) * 0.16 * wk, 1 - (0.06 + s * 0.7));
+          const r = sway ? Math.max(0, (s - 0.45) / 0.55) * hairRows * 0.8 : 0;
+          lockAtArr.push(sway ? (sx > 0 ? cols : 0) : 0, r);
         }
       }
       for (let a = 0; a < N; a++)
@@ -1323,6 +1313,31 @@ export function buildFrontCath(phone: boolean): FrontCath {
           const p1 = p0 + 3;
           lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
         }
+    };
+    for (const sx of [-1, 1]) {
+      // Plan item 275: two loose wisps per side, out of the hairline at the temple, down past the outer eye to the
+      // jaw, so the face is framed by strands, not the shell's edge.
+      for (const [dz, dx, len] of [[0, 0, 1], [0.004, 0.008, 0.8]] as const)
+        strand([
+          capShape(0.78, (0.42 + dx * 4) * sx, 0.05).applyMatrix4(capPlace),
+          V((0.066 + dx) * sx, 0.012, 0.05 + dz),
+          V((0.068 + dx) * sx, -0.03 * len, 0.046 + dz),
+          V((0.06 + dx) * sx, -0.07 * len, 0.044 + dz),
+          V((0.064 + dx) * sx, -0.1 * len, 0.04 + dz),
+        ], sx, 0.28, 0.5, false);
+      const keys = [
+        capShape(0.1, 0.1 * sx, 0.04).applyMatrix4(capPlace),
+        capShape(0.55, 0.36 * sx, 0.05).applyMatrix4(capPlace),
+        capShape(0.97, 0.62 * sx, 0.045).applyMatrix4(capPlace),
+        V(0.07 * sx, -0.012, 0.036),
+        V(0.064 * sx, -0.07, 0.03),
+        V(0.074 * sx, -0.122, 0.034),
+        V(0.094 * sx, -0.18, 0.06),
+        V(0.106 * sx, -0.26, 0.09),
+        V(0.11 * sx, -0.34, 0.112),
+        V(0.104 * sx, -0.43, 0.122),
+      ];
+      strand(keys, sx, 1, 1, true);
     }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
