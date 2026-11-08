@@ -299,3 +299,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 lane B: Cathnivore's dug-in glaze became an inner edge band, not a full-hex wash (item 267 Accept: no full-hex overlay over 15%, held land at full colour).
 - 2026-11-08 lane B: critique-batch items 222, 259, 266, 273 closed with only NIGHT SHIFT points left; those belong to lane A's NIGHT SHIFT screens.
 - 2026-11-08 03:40 lane A (item 271): her boots are ankle boots (the item's build line) over sheer tights, not the old knee boots; the free foot turns out 25 degrees so the heel reads from the pick's front-on camera.
+- 2026-11-08 03:40 lane B (item 262): verge dressing is grouped, not strewn: colour by a smooth field into broad patches, plants in clumps of one kind and colour, so verges read as places from above, not noise.
+- 2026-11-08 03:55 lane B: left NIGHT SHIFT's stale key art to lane A (its item 271 changed the source and its lock was live).
