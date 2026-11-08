@@ -1345,6 +1345,8 @@ function hatchback(body: string, trim: string): THREE.Group {
   g.add(mesh(extrude("hatchBody", [[-0.215, 0.04], [0.215, 0.04], [0.225, 0.12], [0.12, 0.16], [-0.2, 0.2], [-0.222, 0.18]], w - 0.024), bodyMat, 0, 0, 0));
   g.add(mesh(extrude("hatchGlass", [[0.11, 0.165], [0.015, 0.255], [-0.15, 0.255], [-0.19, 0.198]], w - 0.05), glass(), 0, 0, 0));
   g.add(box(0.17, 0.018, w - 0.03, bodyMat, -0.065, 0.268, 0));
+  // Plan item 280: a dark glass roof panel, so from the field camera (which sees roofs) it reads as a car, not a box.
+  g.add(box(0.13, 0.006, w - 0.07, glass(), -0.06, 0.286, 0));
   // A trim line along each flank, the pillars between screen and side glass, and the lights.
   for (const side of [-1, 1]) {
     g.add(box(0.4, 0.016, 0.004, glow(trim, 0.6), -0.005, 0.12, side * (w / 2 + 0.001)));
@@ -2242,7 +2244,8 @@ export function buildDepot(): THREE.Group {
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
   // A shallow pitched roof with an overhang, the ridge along the door's width.
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#8d97a1", 0.2));
+  // Plan item 280: the roof in Hollowell's teal (grey, it read as a grey box from the camera, which mostly sees roof).
+  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#1e8c8c", 0.15));
   roof.rotation.y = Math.PI / 4;
   roof.scale.set(1.1, 1, 1.25);
   roof.position.y = 1.07;
