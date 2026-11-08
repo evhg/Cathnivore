@@ -2787,6 +2787,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           return (
             <span key={slot} className="plan-strip-item">
               <button
+                // Plan item 301: keyed by the card, so a card moving into this slot (a Scout arming as Expand, an
+                // Expand as Squeeze) flips in like a billboard turning over.
+                key={card?.id ?? 'empty'}
                 type="button"
                 aria-pressed={planHighlightSlot === slot}
                 className={planHighlightSlot === slot ? 'plan-strip-active' : ''}
