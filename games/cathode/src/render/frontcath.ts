@@ -441,30 +441,51 @@ export function buildFrontCath(phone: boolean): FrontCath {
   pelvis.add(chest);
 
   // ---- legs and heeled boots (in the group: the feet stay planted) ----
-  // Contrapposto: her weight on the right leg, the left a half step forward and turned out. Dark sheer tights to
-  // the knee (a warm skin under charcoal), then knee boots with a shaped calf, a pointed toe and a 7 cm heel.
-  const tightsMat = new THREE.MeshStandardMaterial({ color: 0x3a2c2a, roughness: 0.5, metalness: 0 });
+  // Contrapposto: her weight on the right leg, the left a half step forward, turned out, its knee bent. Plan item
+  // 271: dark sheer tights to the ankle (a warm skin under charcoal, with a sheen down the shin that shapes the knee
+  // and calf), then heeled ankle boots in glossy leather on a lighter sole and a stacked heel, so the foot reads as
+  // a boot with a heel and a sole at the class pick, not as two black tubes on spikes.
+  const tightsMat = phone
+    ? new THREE.MeshStandardMaterial({ color: 0x33231f, roughness: 0.38, metalness: 0 })
+    : new THREE.MeshPhysicalMaterial({ color: 0x33231f, roughness: 0.42, metalness: 0, sheen: 0.6, sheenRoughness: 0.35, sheenColor: new THREE.Color(0x8a6050) });
   mats.push(tightsMat);
-  rimify(tightsMat, 0.9);
-  // Plan item 247: both thighs are one mesh (they sway together with the weight shift: one draw call, not two).
+  rimify(tightsMat, 0.8);
+  const bootMat = phone
+    ? new THREE.MeshStandardMaterial({ color: 0x120e0d, roughness: 0.22, metalness: 0.08 })
+    : new THREE.MeshPhysicalMaterial({ color: 0x120e0d, roughness: 0.3, metalness: 0.05, clearcoat: 0.9, clearcoatRoughness: 0.18 });
+  mats.push(bootMat);
+  rimify(bootMat, 1);
+  // The sole's edge and the stacked heel: a worn tan leather, a step lighter than the upper.
+  const soleMat = new THREE.MeshStandardMaterial({ color: 0x4a3a30, roughness: 0.6, metalness: 0 });
+  mats.push(soleMat);
+  rimify(soleMat, 0.7);
+  // Plan item 247: both legs' tights are one mesh (one draw call, not two).
   const thighs: THREE.BufferGeometry[] = [];
   const legs: THREE.Mesh[] = [];
   for (const side of [1, -1]) {
-    const fwd = side > 0 ? 0.05 : 0; // her left leg forward
+    const free = side > 0; // her left leg: forward, the knee bent
+    const fwd = free ? 0.05 : 0;
     const hip = V(0.078 * side, 0.92, 0.0);
-    const knee = V(0.07 * side, 0.5, 0.012 + fwd * 0.6);
-    const ankle = V(0.075 * side + (side > 0 ? 0.012 : 0), 0.105, -0.005 + fwd);
+    const knee = V(0.068 * side, 0.5, 0.012 + fwd * 0.6 + (free ? 0.03 : 0));
+    const ankle = V(0.075 * side + (free ? 0.012 : 0), 0.105, -0.005 + fwd);
     // Thigh: full at the top, slim to the knee.
     thighs.push(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92));
-    // The boot shaft: knee to ankle with a calf, a turned-down cuff at the top. Plan item 247: the calf fuller and
-    // the ankle slimmer (the old shaft was near straight and read as a stick below the hem on the class pick).
-    addS(turned(knee.clone().add(V(0, 0.03, 0)), ankle, [[0, 0.053], [0.06, 0.053], [0.09, 0.044], [0.27, 0.057], [0.45, 0.051], [0.72, 0.032], [0.9, 0.025], [1, 0.027]], seg(14), 0.95), blackMat);
-    // The foot: a pointed toe down on the ground, the heel up on its post.
-    const toe = V(ankle.x + (side > 0 ? 0.03 : 0.008) * side, 0.012, ankle.z + 0.15);
-    addS(turned(V(ankle.x, 0.09, ankle.z - 0.035), toe, [[0, 0.03], [0.3, 0.034], [0.7, 0.028], [0.92, 0.014], [1, 0.004]], seg(10), 0.62, Math.PI / 2), blackMat);
-    const heel = new THREE.CylinderGeometry(0.007, 0.012, 0.072, 8);
-    heel.translate(ankle.x, 0.036, ankle.z - 0.04);
-    addS(heel, blackMat);
+    // The knee cap and the shin: a knee that swells a little, a full calf high on the back, a slim ankle.
+    thighs.push(turned(knee.clone().add(V(0, 0.02, 0)), ankle.clone().add(V(0, 0.04, 0)), [[0, 0.043], [0.06, 0.045], [0.14, 0.04], [0.32, 0.05], [0.5, 0.045], [0.78, 0.03], [1, 0.025]], seg(14), 0.9));
+    // The ankle boot: a shaft from above the ankle bone with a turned cuff, the instep down to the ball, a pointed
+    // toe box flat on the ground.
+    const ball = V(ankle.x + (free ? 0.018 : 0.005) * side, 0.03, ankle.z + 0.1);
+    const toe = V(ankle.x + (free ? 0.03 : 0.008) * side, 0.016, ankle.z + 0.165);
+    addS(turned(V(ankle.x, 0.205, ankle.z - 0.004), V(ankle.x, 0.08, ankle.z - 0.01), [[0, 0.036], [0.08, 0.036], [0.12, 0.031], [0.6, 0.029], [1, 0.034]], seg(12), 0.95), bootMat);
+    addS(turned(V(ankle.x, 0.1, ankle.z - 0.03), ball, [[0, 0.034], [0.4, 0.034], [1, 0.03]], seg(10), 0.7, Math.PI / 2), bootMat);
+    addS(turned(ball, toe, [[0, 0.03], [0.5, 0.026], [0.85, 0.014], [1, 0.004]], seg(10), 0.55, Math.PI / 2), bootMat);
+    // The sole: a thin lighter slab under the toe box and the arch, its edge showing past the upper.
+    addS(turned(V(ball.x, 0.008, ball.z - 0.05), V(toe.x, 0.006, toe.z + 0.004), [[0, 0.03], [0.4, 0.033], [0.85, 0.018], [1, 0.006]], seg(10), 0.22), soleMat);
+    // The stacked heel: a tapered block, 7 cm, under the back of the boot.
+    const heel = new THREE.CylinderGeometry(0.014, 0.01, 0.075, 8);
+    heel.scale(1, 1, 1.3);
+    heel.translate(ankle.x, 0.0375, ankle.z - 0.04);
+    addS(heel, soleMat);
   }
   legs.push(add(mergeGeometries(thighs)!, tightsMat));
 

@@ -20,7 +20,7 @@ for (const s of sizes) {
   await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
   for (const cls of classes) {
     const page = await ctx.newPage()
-    await page.goto(`${base}?front=classpick&shot&t=8&quality=${q}&class=${cls}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
+    await page.goto(`${base}?front=classpick&shot&t=${process.env.T ?? 8}&quality=${q}&class=${cls}`, { waitUntil: 'domcontentloaded', timeout: 180_000 })
     await page.waitForFunction(() => window.cathodeFront?.ready, null, { timeout: 400_000 })
     await page.waitForTimeout(2500)
     // Plan item 161: her projected box against the list's names and the sheet's plate.
