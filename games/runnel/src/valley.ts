@@ -58,13 +58,15 @@ export function sceneLight(sky: Pick<Sky, 'time' | 'weather'>): SceneLight {
   const base = BASE[sky.time]
   if (sky.weather === 'clear' || sky.weather === 'breeze') return { ...base }
   // Plan item 229: rain softens the colour, it doesn't take it away (0.5 grey and 10% dark turned the valley to slate).
-  const [amount, dim] = sky.weather === 'drizzle' ? [0.3, 0.04] : [0.15, 0.02]
+  // Plan item 298: a *light* drizzle with sunbreaks: the land keeps most of the hour's colour (0.3 grey read as a wash
+  // over golden hour) and the sky keeps its hour's tint low down, where the sun breaks through.
+  const [amount, dim] = sky.weather === 'drizzle' ? [0.18, 0.03] : [0.15, 0.02]
   const out = {} as SceneLight
   for (const k of Object.keys(base) as (keyof SceneLight)[]) out[k] = overcast(base[k], amount, dim)
-  // A rain sky is a flat grey-blue whatever the hour; a cloudy one keeps a little of its colour.
   if (sky.weather === 'drizzle') {
-    out.skyTop = overcast(base.skyTop, 0.75, 0.12)
-    out.skyLow = overcast(base.skyLow, 0.6, 0.04)
+    const warm = sky.time === 'golden' || sky.time === 'morning'
+    out.skyTop = overcast(base.skyTop, warm ? 0.45 : 0.6, 0.08)
+    out.skyLow = overcast(base.skyLow, warm ? 0.2 : 0.4, 0.02)
   }
   return out
 }
