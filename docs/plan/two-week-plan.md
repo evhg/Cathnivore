@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-08 21:40 UTC
-
 
 
 
@@ -2944,5 +2942,51 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Cathnivore:** P game EXPAND ribbons about 10 px (105-160 x 196-209); P title Cath cut at the chest by the board (40-150 x 195-305).
   - **Runnel:** D notebook's empty band above 'Your first field' (15-345 x 100-185); the last tile's channel meets the hex edge with no inlet (1015-1100 x 585-625).
   - **Site:** P /games/ logotype 'ore' blurred (270-345 x 120-165).
+- **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 305. [ ] Shared Cath: one full-length Cath who matches her portrait
+- **Why:** `plan1108e/cath-campaign-D` (690-805 x 505-770): the full-length Cath (item 292) still reads as a thin figure with a small head and long dark legs on a pier floating in open water, unlike the bust beside her; `hedge-menu-D` (312-340 x 265-382) the same figure is smaller than a level badge; `cath-campaign-P` (295-365 x 140-305) she floats with no ground.
+- **Build:** the full figure in `shared/cath/` carries the bust's proportions down (head about a sixth of her height), the olive jacket to the hip, tailored trousers in cream or olive rather than near-black, ankle boots and a ground shadow; three poses (stand, point, cheer); the campaign stands her on the board's edge or the stall's plinth, not a floating pier.
+- **Accept:** head 15%+ of figure height in every use; 200 px+ tall on campaign-D, 90 px+ on hedge-menu-D; a ground contact or shadow in each; cath-full-body and shared Cath tests, campaign and Hedgerow menu specs pass; key art re-shot; shots P and D.
+- **Size:** 2
+
+## 306. [ ] NIGHT SHIFT: Cath's face lit and readable on the title and the pick
+- **Why:** `plan1108e/ns-play-D` (650-720 x 160-225): under the rim light her face blows out to a flat white mask with no eyes, liner or lips; `ns-play-P` (175-205 x 120-160) a white blob; `ns-title-D` (970-1050 x 290-380) the face is the least finished thing in a well-lit frame.
+- **Build:** a sculpted face on the 3D head (a face decal with the bible's winged liner, eye highlights, raised right brow, rose lips), a key light on the face apart from the cyan rim, and exposure that never clips skin; the pick's camera at chest height on a phone so her face gets the pixels.
+- **Accept:** face 60 px+ wide on ns-play-D, 40 px+ on ns-play-P; skin mean luminance 55-85% with eyes and lips 3:1 against it; cathode-perf in budget; cathode specs pass; shots of title and pick at P and D.
+- **Size:** 2
+
+## 307. [ ] Hedgerow 3D: a finished world edge, and a phone camera that frames the field
+- **Why:** `plan1108e/hedge-l21-3d-D` (0-130 x 80-560): the left edge is grey faceted rock with no water surface; objects sliced by the top edge (870-940 x 72-85, trees 400-500 x 72-140); white out-of-focus blobs over the field (220-260 x 815-860, 600-650 x 710-745). `hedge-l21-3d-P` (0-100 x 60-680) the same cliff, and the field's right column is cut at x=390, the depot roof at the top (150-250 x 55-110).
+- **Build:** the diorama's edge as a crafted base: marsh water with a foam line and reeds, a soil skirt under the field; on a phone the camera fits the field's bounds in portrait (Whole Field stays a toggle); motes never sit between the camera and a plot.
+- **Accept:** no untextured grey geometry in either l21 3D shot; every plot column inside the phone frame; nothing cut by the canvas top; no mote over 12 px across a plot; hedgerow-3dframe, -closeframe, -biome3d pass; key art re-shot; shots P and D.
+- **Size:** 2
+
+## 308. [ ] Runnel: a solved valley greens over
+- **Why:** `plan1108e/runnel-D` (790-1240 x 120-740) and `runnel-P` (130-330 x 320-620): the board's payoff is invisible: the fields around the board stay the same muted olive stripes (390-1420 x 300-880) whether the water reaches them or not. (Tiles already crack dry and sprout wet, item 255 / `--wet-field`.)
+- **Build:** watered tiles sprout along the channel in a 600-900 ms stagger with a sparkle where the water enters; when every field is watered, the valley's patchwork fields green over in a wave from the spring house to Bea's garden.
+- **Accept:** a solved board's fields differ from the dry ones by 30 degrees of hue and by pattern in greyscale; reduced motion shows the end state with a fade; runnel unit and site specs pass; key art re-shot; shots of a solved board at P and D beside the dry one.
+- **Size:** 2
+
+## 309. [ ] Cathnivore: illustrated chapter plates on the campaign
+- **Why:** `plan1108e/cath-campaign-D` (1210-1340 x 485-575, 695-782): locked chapters 2 and 3 are flat brown-and-black silhouettes with a red blob beside chapter 1's finished scene (1210-1340 x 242-330); the stats strip (60-870 x 810-885) is a plain form; `cath-campaign-P` (238-330 x 825-844) the chapter plate is pushed off the first screen.
+- **Build:** one SVG vignette per chapter in the market-poster style; a locked chapter is its plate under a kraft-paper 'coming soon' wrapper (30%+ of the art showing), not a silhouette; the stats as a small chalk tally under the map.
+- **Accept:** every chapter a distinct full-colour plate; locked ones show their line art through the wrapper; the first chapter plate in the first screen at P; campaign specs and ui-css-lint pass; shots P and D.
+- **Size:** 2
+
+## 310. [ ] Hedgerow 3D: a 3D Cath worthy of the 2D portrait
+- **Why:** `plan1108e/hedge-l21-3d-D` (140-215 x 430-620): the 3D Cath on the lane is a boxy doll with a flat pale face, a dark smear for a mouth and blob hands, right above the 2D bust in her bubble (250-315 x 620-690) that shows how she should look.
+- **Build:** a Hedgerow-scale 3D Cath: a stylised head with the shared face (it can share item 306's work), long glossy hair with a shine band, the olive jacket and cream blouse, and a wave/point idle driven by the coaching state; 2,000 triangles or fewer.
+- **Accept:** at the l21 D camera her eyes and lips show and her silhouette reads as Cath in greyscale; 2,000 triangles or fewer; hedgerow-3dframe passes; shots P and D.
+- **Size:** 2
+
+## 311. [ ] The bugs from the 2026-11-08 21:45 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1108e`)
+  - **Site:** D /games/ eyebrow 'FREE GAMES FROM THE REPUBLIC OF MARROW' under the awning scallops (615-1015 x 86-102); P /games/ Cath's italic quote low contrast on the sunset (20-370 x 185-235); P portfolio Cath's head over the second print's label (263-390 x 130-160).
+  - **Cathnivore:** D title 'NEXT #8 in 2h 19m' sticker over the footer, 'in 2h 19m' about 11 px (1318-1400 x 768-862); D title footer about 12 px light on wood (308-1131 x 872-886); D setup pin captions about 11 px grey (160-290 x 712-742); D game Cath's bust cut hard at the board's foot (370-505 x 600-690); P campaign bunting letters about 8 px (120-150 x 372-382).
+  - **Runnel:** P Cath about 60 px, cut by the wall, bubble over the left column (12-212 x 545-750); D 'Up next' card's 'drizzle' alone on a line (167-312 x 628-725).
+  - **Hedgerow:** D menu act-4 card cut at the viewport foot (527-913 x 850-900); P menu labels colliding with billboards (10-60 x 372-396, 450-470); D 2D 'Still unanswered' icons about 16 px (1250-1378 x 597-615); P 3D 'WHOLE FIELD' over plots (240-385 x 605-650); P 2D l34 a depot under the coaching panel (5-55 x 618-660).
+  - **NIGHT SHIFT:** D title 'THE LIST' about 10 px and 'GAMES' 11 px (57-115 x 48-580); D title 'CONTINUE' low contrast (55-195 x 295-325); P title case line 12 px grey (15-150 x 455-480); D pick 'HOLLOWELL' sign cut by the top (460-560 x 0-35); D the rifle strap a bright line through her body (635-700 x 230-560); P pick tags about 10 px (15-230 x 765-782).
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
 - **Size:** 2
