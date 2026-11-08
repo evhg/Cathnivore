@@ -412,10 +412,12 @@
 .screen.title::before {
   background:
     /* Plan item 79: a tight pool behind the logotype itself, so no street sign reads through the name. */
-    radial-gradient(34% 17% at 25% 18%, rgb(var(--shade-rgb) / .82) 0%, rgb(var(--shade-rgb) / .62) 60%, transparent 100%),
-    radial-gradient(60% 46% at 18% 26%, rgb(var(--shade-rgb) / .72) 0%, rgb(var(--shade-rgb) / .5) 50%, transparent 100%),
-    linear-gradient(90deg, rgb(var(--shade-rgb) / .86) 0%, rgb(var(--shade-rgb) / .74) 24%, rgb(var(--shade-rgb) / .46) 42%, rgb(var(--shade-rgb) / .12) 58%, transparent 70%),
-    linear-gradient(0deg, rgb(var(--shade-rgb) / .6) 0%, transparent 34%);
+    radial-gradient(34% 17% at 25% 18%, rgb(var(--shade-rgb) / .78) 0%, rgb(var(--shade-rgb) / .56) 60%, transparent 100%),
+    radial-gradient(60% 46% at 18% 26%, rgb(var(--shade-rgb) / .5) 0%, rgb(var(--shade-rgb) / .3) 50%, transparent 100%),
+    /* Plan item 283: the street behind is dressed now (a tenement, a sodium lamp, its pool), so the falloff
+       lifts and lets it through; the logotype's pools above and the menu's own panel keep the type's contrast. */
+    linear-gradient(90deg, rgb(var(--shade-rgb) / .64) 0%, rgb(var(--shade-rgb) / .52) 24%, rgb(var(--shade-rgb) / .28) 42%, rgb(var(--shade-rgb) / .08) 58%, transparent 70%),
+    linear-gradient(0deg, rgb(var(--shade-rgb) / .42) 0%, transparent 30%);
 }
 .front-back {
   position: absolute;

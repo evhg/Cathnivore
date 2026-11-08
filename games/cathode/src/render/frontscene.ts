@@ -18,6 +18,7 @@ import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
 import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
 import { buildFrontWet } from "./frontwet";
+import { buildFrontDiorama, SODIUM } from "./frontdiorama";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -199,6 +200,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 261: the wet street carries the sign's light, and she stands on it with a contact shadow.
   const wet = buildFrontWet();
   world.scene.add(wet.group);
+  // Plan item 283: the street round her as a lit diorama (a sodium lamp, its cone and pool, steam from a grate) on
+  // the far side of the frame from her, where the menus sit over what was black.
+  const lampFoot = toWorld(-5.0, 0, -5.5);
+  lampFoot.y = world.groundHeight(lampFoot.x, lampFoot.z);
+  const diorama = buildFrontDiorama(lampFoot, toWorld(-2.4, 0, -4.2), toWorld(-1.9, 0, -1.9), toWorld(-2.9, 0, 0.4), { at: new THREE.Vector3(9.8, lampFoot.y, 61), yaw: -Math.PI / 2, w: 22, h: 13 }, phone);
+  world.scene.add(diorama.group);
   const groundAt = (x: number, z: number) => world.floorAt?.(x, feet.y + 1, z) ?? world.groundHeight(x, z);
   const neonRimI = phone ? 7 : 9;
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
@@ -207,6 +214,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (world.liveLight) removers.push(world.liveLight(pink));
     else removers.push(world.light(toWorld(0.4, 2.7, 2.2), new THREE.Color(1.0, 0.09, 0.42), pinkI, 6));
     removers.push(world.light(toWorld(-2.4, 1.9, -1.6), new THREE.Color(0.08, 0.62, 0.85), phone ? 3.5 : 4, 6));
+    // Plan item 283: the sodium lamp lights the cobbles and walls round its pool.
+    removers.push(world.light(diorama.lampAt.clone().add(new THREE.Vector3(0, -0.3, 0)), SODIUM, phone ? 5 : 6, 7));
     // Plan item 148: the neon blade behind her rims her from behind in its own pink.
     if (world.liveLight) removers.push(world.liveLight(neonRim));
     // Plan item 117: a soft face key, warm white, low and ahead of her left cheek, under the umbrella's edge, so
@@ -775,6 +784,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     cath.update(dt, time, world.wind);
     // The rain round the sign dims as the wardrobe's class key takes over.
     neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
+    diorama.update(time, o.still, cam.position);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
     rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);
@@ -1067,6 +1077,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       for (const c of chalk) c.removeFromParent();
       neon.dispose();
       wet.dispose();
+      diorama.dispose();
       delete world.renderer.domElement.dataset.keyLight;
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });

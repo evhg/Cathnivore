@@ -17,7 +17,7 @@ export interface FrontWet {
 
 const PINK = new THREE.Color(1.0, 0.09, 0.42);
 
-function streakTexture(): THREE.CanvasTexture {
+export function streakTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 128;
   c.height = 256;

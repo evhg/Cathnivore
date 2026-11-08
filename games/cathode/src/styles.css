@@ -1022,6 +1022,15 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-fold { display: none; }
 @media (max-width: 700px) and (orientation: portrait) {
   .cp { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+  /* Plan item 283: the header sits where the street's brightest sign (HOLLOWELL) hangs on an upright phone, so a
+     band of shade runs under it, full width, and fades out above her head. */
+  .cp {
+    background:
+      linear-gradient(180deg, rgb(var(--shade-rgb) / .84) 0%, rgb(var(--shade-rgb) / .74) calc(var(--top-band) * .7), transparent var(--top-band)),
+      linear-gradient(90deg, rgb(var(--shade-rgb) / .9) 0%, rgb(var(--shade-rgb) / .7) 24%, rgb(var(--shade-rgb) / .12) 40%, transparent 50%, rgb(var(--shade-rgb) / .14) 62%, rgb(var(--shade-rgb) / .74) 74%, rgb(var(--shade-rgb) / .9) 100%),
+      linear-gradient(0deg, rgb(var(--shade-rgb) / .55) 0%, transparent 30%);
+    --top-band: calc(max(20px, env(safe-area-inset-top)) + 96px); /* px-ok: the header's two lines and their gap */
+  }
   .cp-left { display: contents; }
   .cp-head { margin-bottom: 4px; } /* px-ok */
   .cp-eyebrow { margin-bottom: 4px; } /* px-ok */
