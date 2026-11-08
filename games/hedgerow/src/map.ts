@@ -1346,6 +1346,12 @@ const GROUND: Ground[] = [
   { base: "#e4dcd0", patches: ["#d5c8b3", "#d1c4c8", "#ddcfae"], hedge: "#5d4e46", leaf: "#85746a" },
 ];
 
+/** Plan item 274: a colour mixed toward a warm white by k (0 to 1), for a hedge's lit leaves. */
+function lift(c: string, k: number): string {
+  const w = [255, 251, 226];
+  return `#${[1, 3, 5].map((i, j) => Math.round(parseInt(c.slice(i, i + 2), 16) * (1 - k) + w[j]! * k).toString(16).padStart(2, "0")).join("")}`;
+}
+
 /** Plan item 230: a colour pushed away from its grey (k > 1 saturates), for the won land's richer fields. */
 function richer(c: string, k: number): string {
   const v = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
@@ -1376,6 +1382,7 @@ export function groundSvg(n: number, won: boolean[] = []): string {
   const P = (p: Pt): string => `${f(p[0])} ${f(p[1])}`;
   let cells = "";
   let ploughed = "";
+  let clips = "";
   for (let r = 0; r < R; r++)
     for (let c = 0; c < C; c++) {
       const q = [v[r]![c]!, v[r]![c + 1]!, v[r + 1]![c + 1]!, v[r + 1]![c]!];
@@ -1392,7 +1399,19 @@ export function groundSvg(n: number, won: boolean[] = []): string {
       const lush = won[stop] === true;
       if (k < 3) cells += `<path d="${d}" fill="${lush ? richer(g.patches[k]!, 2.4) : g.patches[k]}" opacity="${f(lush ? Math.max(op, 0.85) : op)}"/>`;
       else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 2)}" opacity=".7"/>`;
-      if (rand() < 0.3) ploughed += `<path d="${d}" fill="url(#gp${i})"/>`;
+      // Plan item 274: a ploughed field's furrows are drawn lines at a steady 1.4 px (non-scaling), clipped to the
+      // field; a stretched pattern drew them as broad ruled stripes on a wide screen.
+      if (rand() < 0.3) {
+        const a = ((20 + rand() * 50) * Math.PI) / 180;
+        const [dx, dy] = [Math.cos(a), Math.sin(a)];
+        let rows = "";
+        for (let t = -12; t <= 12; t += 1.3) {
+          const [ox, oy] = [cx - dy * t, cy + dx * t];
+          rows += `M${f(ox - dx * 14)} ${f(oy - dy * 14)}L${f(ox + dx * 14)} ${f(oy + dy * 14)}`;
+        }
+        clips += `<clipPath id="pc${i}-${r}-${c}"><path d="${d}"/></clipPath>`;
+        ploughed += `<path clip-path="url(#pc${i}-${r}-${c})" d="${rows}" stroke="${g.hedge}" stroke-width="1.4" opacity=".2" vector-effect="non-scaling-stroke" fill="none"/>`;
+      }
     }
   let hedges = "";
   for (let r = 0; r <= R; r++)
@@ -1401,10 +1420,14 @@ export function groundSvg(n: number, won: boolean[] = []): string {
   const ve = 'vector-effect="non-scaling-stroke" fill="none" stroke-linecap="round" stroke-linejoin="round"';
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
-    `<defs><pattern id="gp${i}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(${f(20 + rand() * 50)})"><path d="M0 1.5h3" stroke="${g.hedge}" stroke-width=".5" opacity=".22"/></pattern></defs>` +
+    `<defs>${clips}</defs>` +
     `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
-    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="5" opacity=".45" ${ve}/>` +
-    `<path d="${hedges}" stroke="${g.leaf}" stroke-width="6" stroke-dasharray="0 6" opacity=".75" ${ve}/>` +
+    // Plan item 274: field hedges as hedgerows, not ruled lines: a dark root band, rounded crowns along it and lit
+    // leaves on every other crown.
+    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="7" opacity=".55" ${ve}/>` +
+    `<path d="${hedges}" stroke="${g.hedge}" stroke-width="11" stroke-dasharray="0 9" opacity=".7" ${ve}/>` +
+    `<path d="${hedges}" stroke="${g.leaf}" stroke-width="8.5" stroke-dasharray="0 9" ${ve}/>` +
+    `<path d="${hedges}" stroke="${lift(g.leaf, 0.35)}" stroke-width="4" stroke-dasharray="0 18" opacity=".8" ${ve}/>` +
     `</svg>`
   );
 }
