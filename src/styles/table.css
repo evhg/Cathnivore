@@ -4566,3 +4566,36 @@ html.no-animations .terrain-art .idle-sheep-head { animation: none; }
   /* At 1280 a memo is about 235 px: 'SQUEEZE Coast' with its dial and stage cut the effect by 2 px at .06em. */
   .table-head.with-table-cath .plan-strip-headline { letter-spacing: .03em; }
 }
+
+/* Plan item 276: on an upright phone Cath's reaction pops up over the board's lower-left corner, about 140 px tall, rises
+   in, holds and sinks away within 2.6 s (the dock keeps her line). Absolutely placed in the board's frame: no layout shift,
+   and pointer-events none so the hexes under her stay tappable. Reduced motion: a fade in and out only. */
+.cath-pop {
+  position: absolute;
+  left: 2px;
+  bottom: 0;
+  z-index: var(--z-map-fx);
+  width: 104px;
+  height: 140px;
+  overflow: hidden;
+  pointer-events: none;
+  animation: cath-pop 2600ms var(--ease-settle) both;
+  filter: drop-shadow(0 3px 4px var(--ink-a35));
+}
+.cath-pop .cath-art,
+.cath-pop svg { display: block; width: 104px; height: auto; }
+@keyframes cath-pop {
+  0% { opacity: 0; translate: 0 40px; }
+  16% { opacity: 1; translate: 0 0; }
+  82% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: 0 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes cath-pop {
+    0% { opacity: 0; }
+    16% { opacity: 1; }
+    82% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+html.no-animations .cath-pop { animation: none; }

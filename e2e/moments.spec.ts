@@ -29,6 +29,8 @@ for (const kind of ['liberate', 'squeeze'] as const) {
     await expect(page.locator('.table-cath, .cath-companion, .cath-dock').first()).toHaveAttribute('data-expression', kind === 'liberate' ? 'delighted' : 'worried')
     // Plan item 276: and with her body at D: a cheer for freed land, a hand to her chin at a Squeeze.
     if (await page.locator('.table-cath').count()) await expect(page.locator('.table-cath')).toHaveAttribute('data-pose', kind === 'liberate' ? 'cheer' : 'thinking')
+    // ...and on an upright phone her figure pops up over the board's corner, in the board's frame (the box check below).
+    if (await page.locator('.cath-dock').count()) await expect(page.locator('.cath-pop')).toHaveAttribute('data-pose', kind === 'liberate' ? 'cheer' : 'thinking')
     expect(r.ms).toBeGreaterThanOrEqual(700)
     expect(r.ms).toBeLessThanOrEqual(1200)
     const after = await box()

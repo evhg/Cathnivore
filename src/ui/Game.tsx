@@ -576,8 +576,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 276: the pose she strikes with a reaction, held a few seconds, then back to her resting pose.
   const [cathPose, setCathPose] = useState<CathPoseId | null>(null)
   const poseTimerRef = useRef(0)
+  const [poseTick, setPoseTick] = useState(0)
   const strikePose = useCallback((reaction: CathReaction) => {
     setCathPose(CATH_REACTION_POSE[reaction])
+    setPoseTick((t) => t + 1)
     window.clearTimeout(poseTimerRef.current)
     poseTimerRef.current = window.setTimeout(() => setCathPose(null), 5000)
   }, [])
@@ -2863,6 +2865,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       <section className="map-wrap" data-light={lightFor(state.round)}>
         {/* Plan item 28: as the round turns, the new light sweeps across the table once. */}
         {roundTick > 0 && <div key={`sweep-${roundTick}`} className="table-sweep" aria-hidden="true" />}
+        {/* Plan item 276: on an upright phone her reaction pops in over the board's lower-left corner (about 140 px tall)
+            for a moment, as she strikes the pose; absolutely placed, so nothing moves, and taps go through her. */}
+        {phoneTableCath && cathPose && (
+          <span key={`pop-${poseTick}`} className="cath-pop" data-pose={cathPose} aria-hidden="true">
+            <CathArt framing="half" pose={cathPose} expression={cathReaction.expression} />
+          </span>
+        )}
         <BeasDrawing />
         <ProduceCrates />
         {/* Plan item 144: the week's market event pinned to the table: its name and its rule. */}
