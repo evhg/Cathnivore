@@ -1540,7 +1540,7 @@ export class Renderer {
   /** Plan item 256: a Hollowell name tag by the queue's lead, on the first side (above, below, beside) that clears
    *  the other leads and plates and stays in the canvas; none if no side does. */
   private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect, plots: Rect[] = []): Rect | null {
-    const fs = Math.max(12, Math.round(s * 0.18));
+    const fs = Math.max(13, Math.round(s * 0.19));
     ctx.save();
     ctx.font = `700 ${fs}px ${FONT}`;
     const w = ctx.measureText(name).width + fs * 1.2;

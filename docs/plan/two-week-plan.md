@@ -2794,7 +2794,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every enemy type of acts 1-4 its own mesh and named in a D shot; draw calls up 15% at most; biome3d, 3dframe, vehicles specs pass; shots P and D of l21 and l34 in 3D; key art re-shot.
 - **Size:** 2
 
-## 281. [ ] The bugs from the 2026-11-08 03:10 critique, fixed as one batch *(lane B, in progress)*
+## 281. [ ] The bugs from the 2026-11-08 03:10 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 2026-11-08 04:45 lane B: **Hedgerow** D 3D l21's 'flat blue slab' was the lane ford: its banks now fade in as shallows (item 262 slice 4, shot scratchpad r21c); the 2D depot's HOLLOWELL on a deeper stripe at 14 units (was 12) and the queue lead's name tag 13 px (was 12); depot, gatequeue, vehicles pass (27); key art re-shot; shot scratchpad cmpt21)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1108a`)
   - **Hedgerow:** D l21 2D 'Lifestyle influencer' (182-302 x 271-286) and 'HOLLOWELL' (280-365 x 478-494) tags about 11 px; P menu: 'The Unboxing', 'Golden Hour', 'Discount Code' names against props (10-110 x 312-480); D menu 'Beyond the hedge' card cut by the foot (527-913 x 852-900; maybe scroll); D 3D l21 water a flat blue slab (280-540 x 380-550; recheck item 269 under swiftshader).
   - **NIGHT SHIFT:** D pick stat names GRIT/AIM/NERVE/WIRE (1030-1352 x 192-202) and 'CASE FILE · HOLLOWELL PROPER' (58-236 x 76-86) read about 10 px (item 273 measured `--fs-1`: check rendered size); P title LUNA a doubled smear (30-190 x 500-560); P title menu plate over her torso (8-176 x 205-435; item 251).
