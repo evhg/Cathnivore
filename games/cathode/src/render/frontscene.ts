@@ -130,7 +130,9 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
  */
 // Plan item 42: now her face is sculpted (plan item 9), the wardrobe turns to her: a front three-quarter from
 // knees up, so the class pick shows who's walking back in.
-const WARDROBE = { pos: [1.05, 1.5, 2.45] as [number, number, number], look: [0.05, 1.28, 0] as [number, number, number] };
+// Owner (iPhone, 2026-11-08: "is this a nice graphic? looks weird?"): the knees-up close-up put the simple figure's
+// face at the centre of an upright phone. Pulled back to head to toe under the umbrella, the street and sign behind.
+const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
 const CLASS_KEY: Record<string, [number, number, number]> = {
   // The Ghost's cyan is pushed hard: at the same energy as the Butcher's red it read as neutral on her (C14 review).
