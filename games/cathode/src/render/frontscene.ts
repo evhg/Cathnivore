@@ -133,14 +133,16 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
 // Owner (iPhone, 2026-11-08: "is this a nice graphic? looks weird?"): the knees-up close-up put the simple figure's
 // face at the centre of an upright phone. Pulled back to head to toe under the umbrella, the street and sign behind.
 const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
-/** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger tungsten, Wirewitch violet, Fixer amber. */
-const CLASS_KEY: Record<string, [number, number, number]> = {
+/** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger gold, Wirewitch violet, Fixer green.
+ *  Plan item 278: the Gunslinger's tungsten and the Fixer's amber sat at the same hue and both sank into brown
+ *  coats (`scripts/cathode-keylight.mjs`), so the Gunslinger went a saloon gold and the Fixer a banker's-lamp green (jade turned her midnight coat teal, beside the Ghost's cyan). */
+export const CLASS_KEY: Record<string, [number, number, number]> = {
   // The Ghost's cyan is pushed hard: at the same energy as the Butcher's red it read as neutral on her (C14 review).
   ghost: [0.18, 1.1, 1.8],
   butcher: [1.0, 0.04, 0.07],
-  gunslinger: [1.0, 0.7, 0.36],
+  gunslinger: [1.7, 1.15, 0.12],
   wirewitch: [0.55, 0.18, 1.0],
-  fixer: [1.0, 0.5, 0.1],
+  fixer: [0.3, 1.05, 0.06],
 };
 /**
  * Plan item 42: each class's coat in the pick (the outfit swap, 400 ms with the turn). The Ghost keeps her black
