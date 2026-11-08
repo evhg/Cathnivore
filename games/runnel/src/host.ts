@@ -66,6 +66,8 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     if (!stage) return
     const p: CathPoseId = aimAlways && aimAt !== null && pose !== 'wave' ? 'point' : pose
     stage.dataset.expression = expression
+    // Plan item 268: her mood as a word a test (and the CSS) can read: delighted, worried, wink or calm.
+    stage.dataset.mood = expression === 'delighted' || expression === 'worried' || expression === 'wink' ? expression : 'calm'
     stage.dataset.pose = p
     const pointAt = p === 'point' && aimAt !== null ? aimAt : undefined
     // What the art draws (cath.ts clamps the arm to -85..15 degrees), so a test reads the real aim.
@@ -126,7 +128,9 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
       wet = fraction
       const reached = fields > fieldsWet
       fieldsWet = fields
-      const nextPose: CathPoseId = solved ? 'wave' : fraction >= 0.4 ? 'point' : 'clasped'
+      // Plan item 268: her body reacts with her face: a hand to her chin while a channel spills, a cheer as the water
+      // reaches a new field, a wave on the solve; otherwise pointing along the flow once it's under way.
+      const nextPose: CathPoseId = solved ? 'wave' : spilling ? 'thinking' : reached ? 'cheer' : fraction >= 0.4 ? 'point' : 'clasped'
       if (nextPose !== pose) {
         pose = nextPose
         drawStage(current ?? 'smirk')

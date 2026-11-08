@@ -70,9 +70,14 @@ test('her face follows the water: worried on a spill, a wink on the solve', asyn
   const tile = page.locator('.tiles > g.cell:not(.stone):not(.fixed):not([data-last])').nth(2)
   await tile.click()
   await expect(cath).toHaveAttribute('data-expression', 'worried')
+  // Plan item 268: her body too: a hand to her chin while it spills, a wave on the solve.
+  await expect(cath).toHaveAttribute('data-mood', 'worried')
+  await expect(cath).toHaveAttribute('data-pose', 'thinking')
   for (let k = 0; k < 5; k++) await tile.click()
   await page.locator('[data-last]').click()
   await expect(cath).toHaveAttribute('data-expression', 'wink')
+  await expect(cath).toHaveAttribute('data-mood', 'wink')
+  await expect(cath).toHaveAttribute('data-pose', 'wave')
 })
 
 for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
