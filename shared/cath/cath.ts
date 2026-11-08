@@ -107,7 +107,8 @@ const VIEWBOX: Record<CathFraming, string> = {
   bust: '80 36 240 288',
   half: '40 20 320 480',
   // Plan item 85: head to boots, standing on the ground (a contact shadow under her feet).
-  full: '20 20 360 800',
+  // Plan item 292: longer legs (45%+ of her height, about 7.5 heads) standing with a weight shift.
+  full: '20 20 360 870',
 }
 
 /** Plan item 85: what she wears below the jacket's hem (the waist-up framings never show it). Trousers and boots
@@ -129,10 +130,13 @@ function lowerBody(outfit: CathOutfit): string {
     ? `<path fill="${o.skirt.fill}" stroke="${o.skirt.line}" stroke-width="2" stroke-linejoin="round" d="M118 490 C114 ${490 + (o.skirt.to - 490) * 0.4} ${108 - (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} ${104 - (o.skirt.to - 490) * 0.03} ${o.skirt.to} L${296 + (o.skirt.to - 490) * 0.03} ${o.skirt.to} C${292 + (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} 286 ${490 + (o.skirt.to - 490) * 0.4} 282 490 Z"/>
 <path fill="none" stroke="${o.skirt.line}" stroke-width="1.2" opacity="0.5" d="M170 500 C166 ${o.skirt.to - 80} 160 ${o.skirt.to - 30} 158 ${o.skirt.to} M232 500 C236 ${o.skirt.to - 80} 240 ${o.skirt.to - 30} 242 ${o.skirt.to}"/>`
     : ''
-  return `<ellipse cx="200" cy="800" rx="86" ry="10" fill="#120A0E" opacity="0.32"/>
-${leg('M150 490 L198 490 L193 758 L159 758 Z')}${leg('M202 490 L250 490 L241 758 L207 758 Z')}
-<path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 L176 750 M224 520 L224 750"/>
-${boot('M157 746 L195 746 L197 788 Q197 798 187 798 L146 798 Q137 798 140 789 L157 776 Z')}${boot('M205 746 L243 746 L243 776 L260 789 Q263 798 254 798 L213 798 Q203 798 203 788 Z')}
+  // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
+  // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
+  return `<ellipse cx="203" cy="878" rx="80" ry="9" fill="#120A0E" opacity="0.32"/>
+${leg('M150 490 L198 490 C197 565 193 630 191 700 C193 745 190 800 187 846 L168 846 C164 800 160 750 162 700 C157 630 151 565 150 490 Z')}${leg('M202 490 L250 490 C247 565 238 640 231 708 C236 760 239 808 239 852 L221 852 C219 808 213 762 206 708 C203 640 202 565 202 490 Z')}
+<path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
+${boot('M161 812 L195 812 L196 862 Q196 878 182 878 L144 878 Q132 878 139 867 L161 850 Z')}${boot('M214 818 L247 818 L248 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 Z')}
+<path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
 ${skirt}`
 }
 

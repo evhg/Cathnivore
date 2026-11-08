@@ -14,7 +14,7 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   // Plan item 248: she stands at full height, head to boots, whole on the first screen: 240 px or more at D, beside
   // the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
   expect(art.height).toBeGreaterThanOrEqual(phone ? 120 : 240)
-  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '20 20 360 800')
+  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '20 20 360 870')
   const vp = page.viewportSize()!
   expect(art.x).toBeGreaterThanOrEqual(0)
   expect(art.y).toBeGreaterThanOrEqual(0)
