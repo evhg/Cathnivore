@@ -274,6 +274,7 @@ main,
 .hero-show {
   display: none;
 }
+.show-label { display: none; }
 @media (max-width: 1099.98px) {
   .hero {
     justify-content: flex-start;
@@ -378,20 +379,34 @@ main,
     height: 100%;
     object-fit: cover;
   }
-  .show-a { left: 4%; top: 6%; rotate: -7deg; }
-  .show-b { right: 0; top: 24%; rotate: 5deg; }
-  .show-c { left: 0; bottom: 10%; rotate: -3deg; }
+  /* Plan item 303: a deliberate fan of the four, two by two and staggered, each wholly in view and labelled, with
+     Cath beside them at the lower left (she meets one corner, never a frame's middle). */
+  .show-card { width: 45%; }
+  .show-a { left: 28%; top: 2%; rotate: -4deg; }
+  .show-b { right: -2%; top: 10%; rotate: 3deg; }
+  .show-c { left: 30%; top: 38%; rotate: 2.5deg; }
+  .show-label {
+    display: block;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 3px 10px 4px;
+    border-radius: 999px;
+    background: var(--glass-solid);
+    color: var(--text);
+    font: 600 0.75rem/1.2 var(--font-ui);
+    letter-spacing: 0.04em;
+  }
   /* Plan item 91: Hedgerow in the collage too, and the night shot lifted so it doesn't read as a black tile. */
-  .show-d { right: 2%; bottom: 2%; rotate: 4deg; }
+  .show-d { right: -1%; top: 46%; rotate: -3deg; }
   /* Plan item 203: the key art is lit now (a 1.5 lift washed her coat out), and Hedgerow's print and Cath cover the
      right of this one, so it zooms 1.6x onto her (umbrella to waist) in its open left half. */
-  .show-c img { filter: brightness(1.1) saturate(1.1); width: 160%; height: 160%; max-width: none; margin: -18.75% 0 0 -75%; }
+  .show-c img { filter: brightness(1.1) saturate(1.1); width: 100%; height: 100%; margin: 0; }
   .show-cath {
     position: absolute;
-    left: 50%;
+    left: -12%;
     bottom: 0;
-    width: 46%;
-    translate: -40% 0;
+    width: 40%;
     filter: drop-shadow(0 24px 30px var(--shadow));
     /* Half-length art ends at her waist: fade it out rather than show a cut edge. Item 79: the fade starts below
        her resting hand (about 86% down the art), which the old 80% start left a stub. */
