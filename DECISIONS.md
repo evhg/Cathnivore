@@ -354,3 +354,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-08 15:30 lane A (item 289): the face's read starts with the brows (they nearly vanished at title distance), cheeks and mouth; the face size already passes (131 px D, 79 px P), so no rescale.
 - 2026-11-08 15:35 lane B (item 292): full-length Cath's viewBox grew (800 -> 870) for longer legs rather than shrinking the head; consumers size by width, so the figure grows a little taller in place.
 - 2026-11-08 16:15 lane A (item 289): hair keeps a silhouette-only rim and no shine ring on the long hair: a raycast probe showed both lit a whole front lock as a pale ribbon; the crown keeps its ring.
+- 2026-11-08 16:30 lane B (planning): items 297-304 from a subagent critique of plan1108d; item 302 reopens the phone hand that 291 left on its count tab, as a whole feature of its own.

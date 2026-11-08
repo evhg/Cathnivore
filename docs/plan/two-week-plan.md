@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-08T16:22:01Z
 
 
 
@@ -2891,5 +2890,57 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** D l21 2D HOLLOWELL tag on the road by the first van (280-365 x 478-494), the tutorial bubble over the lane's mouth (20-320 x 495-620); P l34 HOLLOWELL sign over the road (8-95 x 97-117), the lower depot cut by the tutorial panel (5-55 x 615-660); P l21 3D 'WHOLE FIELD' over the field (240-385 x 610-650); D l21 3D flood water squared at the joins (300-500 x 400-560); P menu Act 4 fog through the level panel (30-360 x 700-770).
   - **NIGHT SHIFT:** D pick GRIT/AIM/NERVE/WIRE (1030-1350 x 190-202) and 'CASE FILE' (58-236 x 76-88) measure 10-11 px rendered; P title 'No case open' and '4 MORE NAMES' 11 px grey (30-110 x 242-252, 15-105 x 709-719).
   - **Site:** P /games/ quote meets the awning scallops (20-370 x 180-240).
+- **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 297. [ ] Hedgerow: Cath's coaching points at the field, not over it
+- **Why:** `plan1108d/hedge-l21-2d-D` (20-320 x 495-620) and `hedge-l34-2d-D` (775-1070 x 370-480): her bubble lies over live plots, and 'Tap a plot to build' marks no plot.
+- **Build:** the suggested plot gets a pulsing ring and a translucent ghost of the advised tower, with a pointer from her line; at D the bubble docks off the field (the verge or the side panel), at P it stays in the bottom card; the ring clears on the first build.
+- **Accept:** on l5, l21 and l34 the bubble covers no plot or lane cell at P or D; the ring 44 px+ at P; text 4.5:1; hedgerow specs pass; shots P and D.
+- **Size:** 2
+
+## 298. [ ] Runnel: the valley lit as the day promises
+- **Why:** `plan1108d/runnel-D` (375-1425 x 10-890): the card says 'Golden hour, light drizzle' but the valley is a flat grey-olive wash under heavy rain strokes; `runnel-P` (0-390 x 195-775): the tiles barely stand off the ground.
+- **Build:** a light grade per weather and hour (dawn, golden hour, overcast, drizzle): a warm low sun with long shadows at golden hour, sparse drizzle with sunbreaks; the tiles' rims kept 3:1 against the valley in every grade.
+- **Accept:** shots of four skies read as four different palettes; runnel-tiles' edge checks pass in each; reduced motion stills the rain; runnel specs pass; shots P and D, two weathers.
+- **Size:** 2
+
+## 299. [ ] /games/: a market street at dusk behind the stall, not a hex floor
+- **Why:** `plan1108d/games-D` (0-1440 x 440-900) and `games-P` (0-390 x 330-640): the lower page is an orange-and-green hex floor that matches nothing else on the site.
+- **Build:** a painted Marrow market street behind the cards (stalls, lanterns, rooftops, bunting echoing Cathnivore's title), two parallax layers; the hex floor goes.
+- **Accept:** card text 4.5:1 on the backdrop; first paint under 2 s and gate 1 in budget; e2e:site passes; shots P and D.
+- **Size:** 2
+
+## 300. [ ] NIGHT SHIFT: class idle poses with the weapon as the hero prop
+- **Why:** `plan1108d/ns-play-D` (775-835 x 0-330): the Ghost holds her rifle upright like a broom, through the HOLLOWELL sign and off the frame's top; `ns-play-P` (210-260 x 185-380) the same; the weapon panel (1045-1330 x 250-310) is a flat outline.
+- **Build:** an idle pose per operative (rifle shouldered across, cleaver low, pistol at the hip...), framing with head room; the panel's weapon as a small lit model turning slowly.
+- **Accept:** no weapon crosses the frame's top or the sign for any operative at P or D; five operative shots; cathode specs and cathode-perf pass.
+- **Size:** 3
+
+## 301. [ ] Cathnivore: Hollowell's plan as glossy billboards
+- **Why:** `plan1108d/cath-game-D` (565-1190 x 15-85): the Squeeze/Expand/Scout strip is three plain white form boxes with grey 12 px lines; `cath-game-P` (65-385 x 62-100) about 11 px.
+- **Build:** each plan a glossy Hollowell billboard with its round countdown; hover or tap lights its target hexes; it flips when it arms. (Item 282 did the pieces.)
+- **Accept:** text 13 px+ at P and D at 4.5:1; targets highlight on hover/tap; plan-strip and rival specs pass; shots P and D.
+- **Size:** 2
+
+## 302. [ ] Cathnivore phone: every card in the hand within reach
+- **Why:** `plan1108d/cath-game-P` (0-390 x 668-790): two cards show, the third peeks as a back, the rest wait behind 'N more' (items 266, 281, 287); desktop has a fan (291).
+- **Build:** a phone fan showing every card with a 24 px+ peek, swipe to cycle, tap to lift one to full size; unaffordable cards dim in place.
+- **Accept:** every card reachable without page scroll; a lifted card 150 px+ wide; the board keeps its height (board-scales); hand and table specs pass; shots P and D.
+- **Size:** 2
+
+## 303. [ ] Portfolio: the hero shows all four products
+- **Why:** `plan1108d/portfolio-D` (930-1215 x 340-700, 790-1000 x 425-640): Cath and her stall cover half of the Runnel and Hedgerow frames and most of NIGHT SHIFT's; `portfolio-P` (20-280 x 125-300) shows only Cathnivore.
+- **Build:** a deliberate fan of four labelled frames with Cath beside them, not on top; at P a swipeable strip of the four.
+- **Accept:** each frame 60%+ visible at D; all four reachable at P; labels 4.5:1; portfolio tests and e2e:site pass; shots P and D.
+- **Size:** 1
+
+## 304. [ ] The bugs from the 2026-11-08 16:30 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1108d`)
+  - **Hedgerow:** D 3D l21 stray red geometry (60-90 x 220-260, 5-25 x 335-360) and a red ball (438-455 x 520-540); P 3D l21 bird shadows as black blots (35-75 x 430-460, 255-300 x 545-565), a pale slab (0-110 x 150-640); P 2D l21 the HOLLOWELL sign with no depot near it (8-97 x 360-380); D 2D 'OF 26' about 11 px (1120-1162 x 495-508).
+  - **NIGHT SHIFT:** D title/pick cyan-white edge streaks along the coat (900-1110 x 300-860; 615-660 x 250-560); P pick ability chips and 'HER LINE' 10-11 px (15-230 x 612-782); D title 'THE LIST' about 10 px (55-105 x 568-581).
+  - **Cathnivore:** P game EXPAND ribbons about 10 px (105-160 x 196-209); P title Cath cut at the chest by the board (40-150 x 195-305).
+  - **Runnel:** D notebook's empty band above 'Your first field' (15-345 x 100-185); the last tile's channel meets the hex edge with no inlet (1015-1100 x 585-625).
+  - **Site:** P /games/ logotype 'ore' blurred (270-345 x 120-165).
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
 - **Size:** 2
