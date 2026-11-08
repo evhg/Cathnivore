@@ -2893,7 +2893,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 297. [ ] Hedgerow: Cath's coaching points at the field, not over it
+## 297. [ ] Hedgerow: Cath's coaching points at the field, not over it *(lane B, in progress)*
 - **Why:** `plan1108d/hedge-l21-2d-D` (20-320 x 495-620) and `hedge-l34-2d-D` (775-1070 x 370-480): her bubble lies over live plots, and 'Tap a plot to build' marks no plot.
 - **Build:** the suggested plot gets a pulsing ring and a translucent ghost of the advised tower, with a pointer from her line; at D the bubble docks off the field (the verge or the side panel), at P it stays in the bottom card; the ring clears on the first build.
 - **Accept:** on l5, l21 and l34 the bubble covers no plot or lane cell at P or D; the ring 44 px+ at P; text 4.5:1; hedgerow specs pass; shots P and D.
