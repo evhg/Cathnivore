@@ -483,6 +483,20 @@
 }
 .cmp-vignette.is-sealed .cmp-vig-stall image { opacity: 0; }
 .cmp-vignette.is-sealed .cmp-vig-frame { stroke: var(--ink-on-fixed-fill); }
+/* Each sealed chapter at its own hour: sunset over Word of Mouth, then dusk, the blue hour, deep evening and
+   night over Kingsmarket. The sun sinks toward the hills and turns to a moon; stars come out after the blue hour. */
+.cmp-vig-stars { display: none; fill: var(--paper-on-fixed-fill); }
+.cmp-vignette.is-sealed .cmp-vig-sun { transition: none; transform-box: fill-box; transform-origin: center; }
+.cmp-vignette.is-sealed[data-chapter='word-of-mouth'] .cmp-vig-sky { fill: color-mix(in srgb, var(--clay) 45%, var(--wheat)); }
+.cmp-vignette.is-sealed[data-chapter='word-of-mouth'] .cmp-vig-sun { fill: var(--wheat); transform: translate(0, 17px) scale(1.25); }
+.cmp-vignette.is-sealed[data-chapter='word-of-mouth'] .cmp-vig-far { fill: color-mix(in srgb, var(--clay-deep) 45%, var(--pasture-deep)); }
+.cmp-vignette.is-sealed[data-chapter='growing-season'] .cmp-vig-sky { fill: color-mix(in srgb, var(--clay) 50%, var(--sea)); }
+.cmp-vignette.is-sealed[data-chapter='growing-season'] .cmp-vig-sun { fill: color-mix(in srgb, var(--wheat) 70%, var(--clay)); transform: translate(4px, 22px); }
+.cmp-vignette.is-sealed[data-chapter='friends-in-low-places'] .cmp-vig-sky { fill: color-mix(in srgb, var(--sea) 55%, var(--ink-on-fixed-fill)); }
+.cmp-vignette.is-sealed[data-chapter='kingsmarket'] .cmp-vig-sky { fill: color-mix(in srgb, var(--sea) 32%, var(--ink-on-fixed-fill)); }
+.cmp-vignette.is-sealed[data-chapter='kingsmarket'] .cmp-vig-sun { transform: scale(0.7); }
+.cmp-vignette.is-sealed[data-chapter='kingsmarket'] .cmp-vig-far { fill: color-mix(in srgb, var(--pasture-deep) 45%, var(--ink-on-fixed-fill)); }
+.cmp-vignette.is-sealed:is([data-chapter='friends-in-low-places'], [data-chapter='kingsmarket']) .cmp-vig-stars { display: inline; }
 .cmp-vseal-wax { fill: var(--clay-deep); stroke: color-mix(in srgb, var(--clay-deep) 60%, var(--ink-on-fixed-fill)); stroke-width: 0.8; stroke-linejoin: round; }
 .cmp-vseal-rim { fill: none; stroke: color-mix(in srgb, var(--clay-deep) 55%, var(--ink-on-fixed-fill)); stroke-width: 1; }
 .cmp-vseal-leaf { fill: color-mix(in srgb, var(--clay) 80%, var(--paper-on-fixed-fill)); stroke: color-mix(in srgb, var(--clay-deep) 50%, var(--ink-on-fixed-fill)); stroke-width: 0.7; stroke-linejoin: round; }

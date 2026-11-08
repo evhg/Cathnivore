@@ -142,9 +142,19 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
       viewBox={`0 0 ${VIG_W} ${VIG_H}`}
       data-regions={regions.join(' ')}
       data-chapter-art={state}
+      data-chapter={chapter.id}
       aria-hidden="true"
     >
       <rect className="cmp-vig-sky" x={0} y={0} width={VIG_W} height={VIG_H} />
+      {/* Plan item 279: each locked chapter waits at its own hour of the evening (campaign.css), the later ones
+          under stars. */}
+      {locked && (
+        <g className="cmp-vig-stars">
+          {[[40, 9], [58, 20], [74, 7], [96, 16], [112, 30], [30, 30], [86, 31]].map(([x, y]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r={0.9} />
+          ))}
+        </g>
+      )}
       <circle className="cmp-vig-sun" cx={18} cy={15} r={7} />
       <path className="cmp-vig-far" d={`M0 50 Q22 36 44 46 T88 42 T${VIG_W} 44 V${VIG_H} H0 Z`} />
       {regions.map((id, i) => {
@@ -207,7 +217,7 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
       {/* Plan item 279: a locked chapter's scene waits at dusk under the co-op's wax seal: its land in colour, its
           landmarks and stall in silhouette, a seal pressed with a leaf at its heart. */}
       {locked && (
-        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2 - 8} ${VIG_H / 2 + 2})`}>
+        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2 - 4} 17) scale(0.82)`}>
           <path
             className="cmp-vseal-wax"
             d={Array.from({ length: 12 }, (_, k) => {
