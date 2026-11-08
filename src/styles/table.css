@@ -2999,8 +2999,12 @@ html.no-animations .table-cath-line { animation: none; }
   }
   /* Plan item 266: the tab counts the cards still to the right ('3 ›'); its number comes from useScrollCues */
   .action-tray .actions-well:has(> .actions[data-more-right]:not([data-more-right='0']))::before {
-    /* Plan item 273: in from the edge, clear of the NOT YET deck's upright label (and of the stat row above) */
+    /* Plan item 273: in from the edge, clear of the NOT YET deck's upright label (and of the stat row above).
+       Plan item 281: on the row's foot, in the gap above the dock, not across the last card's picture. */
     right: 30px;
+    top: auto;
+    bottom: 0;
+    translate: 0 62%;
     width: auto;
     min-width: 26px;
     padding: 0 8px 2px 9px;
