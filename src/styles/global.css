@@ -3257,13 +3257,13 @@ html.no-animations .grip-props > g { animation: none; }
 }
 html.no-animations .piece-slot { transition: none; }
 
-/* Plan item 63: a Squeeze slams Hollowell's front stack down on its tile: it falls, squashes on landing and settles,
-   and the tile jolts (.fx-squeeze). Reduced motion keeps a quick fade in. */
+/* Plan item 63: a Squeeze slams Hollowell's front stack down on its tile, and the tile jolts (.fx-squeeze).
+   Plan item 282: it lands like moulded plastic, a hard snap with no squash or rebound (the players' pieces keep
+   their soft settle). Reduced motion keeps a quick fade in. */
 @keyframes stack-thud {
-  0% { transform: translateY(-22px) scale(1.06); opacity: 0.4; }
-  55% { transform: translateY(0) scale(1.12, 0.84); opacity: 1; }
-  75% { transform: translateY(-2px) scale(0.96, 1.05); }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% { transform: translateY(-22px); opacity: 0.4; }
+  70% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 .tray-thud .piece-slot:first-child .enemy-stack {
   transform-box: fill-box;
