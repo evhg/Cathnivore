@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (15:51, 11-08): item 289 slice 2 (NIGHT SHIFT's Cath: hair reads dark and glossy; the rim on hair keeps to the outer edge, no shine ring on the long hair, which had lit a front lock as a pale ribbon down her coat; key art re-shot). Next on 289: the same-person check said "mostly"; its gaps (face shape and eyes, front locks over both shoulders, a shorter neck) are listed in the plan item. **The 19:51 session releases.**
+- Lane A (16:51, 11-08): item 289 slice 3 (NIGHT SHIFT's Cath: the same-person check's gaps: face proportions and eyes, neck, crown). **The 19:51 session releases.**
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (16:21, 11-08): planned items 297-304 from a subagent critique of `plan1108d`; item 304 done (Saltmarsh boats moored clear of the flats; Cathnivore threat badges 12 px; Hollowell piece shadows tucked in after a board-pieces overlap). Lane B's open items: 267, 268, 282, 285.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
