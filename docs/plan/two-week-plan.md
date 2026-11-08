@@ -2865,7 +2865,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** legs 45%+ of figure height; the same face and outfit as the bust; a unit test per pose; campaign, hedgerow map and runnel specs pass; shots of the three screens at P and D.
 - **Size:** 3
 
-## 293. [ ] Hedgerow: the tower shop as illustrated market crates
+## 293. [ ] Hedgerow: the tower shop as illustrated market crates *(lane B, in progress)*
 - **Why:** `plan1108c/hedge-l21-2d-D` (1108-1412 x 85-370): about 40 px tower icons on half-empty cards with no role or reach shown.
 - **Build:** larger illustrated tower portraits on crate-style cards, role and range pips, the cost on a price tag; a placement ghost with its range ring; the phone's sheet the same cards.
 - **Accept:** tower art 64 px+ at D and 48 px+ at P; labels 12 px+ at 4.5:1; placement e2e in ?2d passes; shots P and D.
@@ -2877,7 +2877,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** figure 300 px+ tall at P; no text over the figure without a scrim, 4.5:1; NIGHT SHIFT specs pass; shots P and D.
 - **Size:** 2
 
-## 295. [ ] Hedgerow 2D: Hollowell's depots as glossy megastores *(lane B, in progress)* *(slice 1, 2026-11-08 13:40 lane B: the 2D depot as a glossy megastore: a top-lit white block on a chrome plinth under a chrome cornice, the HOLLOWELL canopy in a glossy orange gradient with lit letters, a glass shop window with glare, the shutter and the countdown screen in chrome frames; door and board boxes unchanged. Checked, already there: the shutter rolls up as the round launches (500 ms, item 157), the count on the screen (P l34: 202 and 283 read about 20 px). depot, gatequeue, vehicles pass (27); key art re-shot; shots scratchpad dep295, dep295p. Left: the gate sign over the road on P l34 (the gate's own board, kept), the 3D depot is item 280's)*
+## 295. [x] Hedgerow 2D: Hollowell's depots as glossy megastores *(done 2026-11-08 13:42 lane B)* *(slice 1, 2026-11-08 13:40 lane B: the 2D depot as a glossy megastore: a top-lit white block on a chrome plinth under a chrome cornice, the HOLLOWELL canopy in a glossy orange gradient with lit letters, a glass shop window with glare, the shutter and the countdown screen in chrome frames; door and board boxes unchanged. Checked, already there: the shutter rolls up as the round launches (500 ms, item 157), the count on the screen (P l34: 202 and 283 read about 20 px). depot, gatequeue, vehicles pass (27); key art re-shot; shots scratchpad dep295, dep295p. Left: the gate sign over the road on P l34 (the gate's own board, kept), the 3D depot is item 280's)*
 - **Why:** `plan1108c/hedge-l34-2d-D` (90-220 x 120-240, 90-220 x 595-715), `hedge-l21-2d-D` (160-280 x 355-470): the 2D depot is a plain white shed with a pasted label; VISION wants the corporations glossy and over-lit. (Item 280 did the 3D depot.)
 - **Build:** a chrome and orange storefront with a lit logo, a roller shutter that opens as a round launches, a countdown screen for the NEXT number, the sign on the building and off the road.
 - **Accept:** the countdown 16 px+ at P at 4.5:1; the shutter 600 ms or less (fade under reduced motion); no label over the road or the vans; depot, gatequeue specs pass; shots P and D, l21 and l34; key art re-shot.
