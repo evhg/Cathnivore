@@ -4736,3 +4736,11 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
     box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--wood-ink) 70%, transparent), inset 0 0 0 4px var(--wood-lo), 0 2px 3px rgb(var(--shadow-ink) / .25);
   }
 }
+
+/* Plan item 282: the corporations' moulded-plastic gloss (Map.tsx's #hollowell-gloss and #candor-gloss). */
+.gloss-hollowell-top { stop-color: color-mix(in srgb, var(--hollowell) 55%, white); }
+.gloss-hollowell-mid { stop-color: var(--hollowell); }
+.gloss-hollowell-base { stop-color: color-mix(in srgb, var(--hollowell) 70%, var(--hollowell-ink)); }
+.gloss-candor-top { stop-color: color-mix(in srgb, var(--candor) 55%, white); }
+.gloss-candor-mid { stop-color: var(--candor); }
+.gloss-candor-base { stop-color: color-mix(in srgb, var(--candor) 70%, var(--candor-ink)); }

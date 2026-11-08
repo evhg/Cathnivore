@@ -167,16 +167,17 @@ function RegionTextureDefs() {
           top left across the face (a wash over the flat region colour), the tile has a thickness (its edge
           drawn below the face) and it casts a soft shadow onto the table. */}
       {/* Plan item 282: the corporations' pieces are moulded plastic, lit hard from above: a bright top easing into
-          a deep base, against the players' flat ink and paper. */}
+          a deep base, against the players' flat ink and paper. Stop colours live in table.css (the CSP allows no inline
+          style attribute). */}
       <linearGradient id="hollowell-gloss" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" style={{ stopColor: 'color-mix(in srgb, var(--hollowell) 55%, white)' }} />
-        <stop offset="0.45" style={{ stopColor: 'var(--hollowell)' }} />
-        <stop offset="1" style={{ stopColor: 'color-mix(in srgb, var(--hollowell) 70%, var(--hollowell-ink))' }} />
+        <stop offset="0" className="gloss-hollowell-top" />
+        <stop offset="0.45" className="gloss-hollowell-mid" />
+        <stop offset="1" className="gloss-hollowell-base" />
       </linearGradient>
       <linearGradient id="candor-gloss" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" style={{ stopColor: 'color-mix(in srgb, var(--candor) 55%, white)' }} />
-        <stop offset="0.5" style={{ stopColor: 'var(--candor)' }} />
-        <stop offset="1" style={{ stopColor: 'color-mix(in srgb, var(--candor) 70%, var(--candor-ink))' }} />
+        <stop offset="0" className="gloss-candor-top" />
+        <stop offset="0.5" className="gloss-candor-mid" />
+        <stop offset="1" className="gloss-candor-base" />
       </linearGradient>
       <linearGradient id="tile-light" x1="0.15" y1="0" x2="0.75" y2="1">
         <stop offset="0" stopColor="white" stopOpacity={0.34} />
