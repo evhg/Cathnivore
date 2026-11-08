@@ -39,7 +39,7 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight, actMood, matte, nightLight } from "./palette";
+import { actLight, actMood, matte, nightLight, shoreFade } from "./palette";
 import { fordMiddle } from "../landmarks";
 import { CATH_HEAD_Y, buildCath, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
@@ -2260,6 +2260,30 @@ export class Renderer3D {
         });
         water.receiveShadow = true;
         g.add(mud, water);
+        // Plan item 269: pale shallows fading in from the flood's edges, as round the ponds.
+        const wetSet = new Set(flood.cells.map(([c, r]) => `${c},${r}`));
+        const rims: THREE.Matrix4[] = [];
+        const SW = 0.34;
+        const up = new THREE.Vector3(0, 1, 0);
+        for (const [c, r] of flood.cells) {
+          const y = Math.max(this.height(c + 0.5, r + 0.5), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
+          for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+            if (wetSet.has(`${c + dc},${r + dr}`)) continue;
+            const turn = dr === -1 ? 0 : dr === 1 ? Math.PI : dc === -1 ? Math.PI / 2 : -Math.PI / 2;
+            const at = new THREE.Vector3(c + 0.5 + dc * (0.5 - SW / 2), y + 0.034, r + 0.5 + dr * (0.5 - SW / 2));
+            rims.push(new THREE.Matrix4().compose(at, new THREE.Quaternion().setFromAxisAngle(up, turn), new THREE.Vector3(1.01, 1, 1)));
+          }
+        }
+        if (rims.length) {
+          const rim = new THREE.InstancedMesh(
+            new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
+            new THREE.MeshStandardMaterial({ color: "#c9dcd4", alphaMap: shoreFade(), transparent: true, roughness: 0.5, depthWrite: false }),
+            rims.length,
+          );
+          rims.forEach((m, i) => rim.setMatrixAt(i, m));
+          rim.renderOrder = 3;
+          g.add(rim);
+        }
         g.visible = false;
         this.scene.add(g);
         this.pieces.flood = g;

@@ -11,7 +11,7 @@ import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
-import { bubble, C, chrome, glass, gloss, glow, matte, metal } from "./palette";
+import { bubble, C, chrome, glass, gloss, glow, matte, metal, shoreFade } from "./palette";
 
 type M = THREE.Material;
 
@@ -36,6 +36,25 @@ function mesh(g: THREE.BufferGeometry, mat: M, x = 0, y = 0, z = 0): THREE.Mesh 
 const boxGeo = (w: number, h: number, d: number) => geo(`box${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d));
 /** A box standing on y. */
 const box = (w: number, h: number, d: number, mat: M, x = 0, y = 0, z = 0) => mesh(boxGeo(w, h, d), mat, x, y + h / 2, z);
+/** Plan item 269: pale shallows fading in from all four edges of a w x d sheet of water whose top is at y. */
+let shoreMat: THREE.MeshStandardMaterial | null = null;
+function shallowsRim(w: number, d: number, y: number): THREE.Group {
+  shoreMat ??= new THREE.MeshStandardMaterial({ color: "#d6e8de", alphaMap: shoreFade(), transparent: true, roughness: 0.5, depthWrite: false });
+  const g = new THREE.Group();
+  const sw = Math.min(0.3, w / 2, d / 2);
+  for (const [len, turn, x, z] of [
+    [w, 0, 0, -d / 2 + sw / 2],
+    [w, Math.PI, 0, d / 2 - sw / 2],
+    [d, Math.PI / 2, -w / 2 + sw / 2, 0],
+    [d, -Math.PI / 2, w / 2 - sw / 2, 0],
+  ] as const) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(len, sw).rotateX(-Math.PI / 2).rotateY(turn), shoreMat);
+    m.position.set(x, y + 0.004, z);
+    m.renderOrder = 2;
+    g.add(m);
+  }
+  return g;
+}
 /** A box centred on y (for slabs that get rotated). */
 const bx = (w: number, h: number, d: number, mat: M, x = 0, y = 0, z = 0) => mesh(boxGeo(w, h, d), mat, x, y, z);
 const cyl = (rt: number, rb: number, h: number, mat: M, x = 0, y = 0, z = 0, seg = 10) =>
@@ -3173,7 +3192,7 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       break;
     }
     case "reeds": {
-      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#4f8ea6", 0.15), 0, 0.0, 0));
+      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#4f8ea6", 0.15), 0, 0.0, 0), shallowsRim(w - 0.12, d - 0.12, 0.02));
       const reed = [matte("#5d8a3a"), matte("#7aa84a")];
       const n = Math.round(w * d * 9);
       for (let k = 0; k < n; k++) {
@@ -3229,7 +3248,7 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       break;
     }
     case "ford": {
-      g.add(box(w - 0.2, 0.015, d - 0.2, matte("#5f96aa", 0.15), 0, 0, 0));
+      g.add(box(w - 0.2, 0.015, d - 0.2, matte("#5f96aa", 0.15), 0, 0, 0), shallowsRim(w - 0.2, d - 0.2, 0.015));
       const n = Math.max(1, Math.round(w * d));
       for (let k = 0; k < n; k++) {
         const x = -w / 2 + ((k + 0.5) * w) / n;

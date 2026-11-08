@@ -221,3 +221,22 @@ export const ACT_MOOD: ActMood[] = [
 export function actMood(levelId: number): ActMood {
   return ACT_MOOD[Math.min(ACT_MOOD.length - 1, Math.floor((levelId - 1) / 10))]!;
 }
+
+let shoreTex: THREE.Texture | null = null;
+/** Plan item 269: an alpha ramp for the pond shallows, solid at the shore (the canvas top) and clear by the far side. */
+export function shoreFade(): THREE.Texture {
+  if (shoreTex) return shoreTex;
+  const c = document.createElement("canvas");
+  c.width = 4;
+  c.height = 64;
+  const g = c.getContext("2d")!;
+  const grad = g.createLinearGradient(0, 0, 0, 64);
+  grad.addColorStop(0, "#c8c8c8");
+  grad.addColorStop(0.18, "#9a9a9a");
+  grad.addColorStop(0.5, "#3a3a3a");
+  grad.addColorStop(1, "#000");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 4, 64);
+  shoreTex = new THREE.CanvasTexture(c);
+  return shoreTex;
+}

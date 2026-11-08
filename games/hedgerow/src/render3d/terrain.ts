@@ -26,7 +26,7 @@ import {
   buildWall,
   buildWindmill,
 } from "./models";
-import { actMood, matte } from "./palette";
+import { actMood, matte, shoreFade } from "./palette";
 import { buildLanes, laneStyle } from "./lanes";
 import { laneDistance, vergeScatter } from "./verge";
 
@@ -744,6 +744,33 @@ export function buildGround(level: Level): Ground {
     }
     pos.needsUpdate = true;
     geo.computeVertexNormals();
+    // Plan item 269: a shore round each pond, on the water: a band of pale shallows that fades out from each edge where
+    // a wet cell meets dry land, so the water/land edge reads soft, not as a hard blue rectangle. One instanced mesh.
+    const shallows: THREE.Matrix4[] = [];
+    const SW = 0.34;
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const key of wet) {
+      const [c, r] = key.split(",").map(Number) as [number, number];
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        if (wet.has(`${c + dc},${r + dr}`)) continue;
+        // The strip's opaque side faces -z; turn it to face the dry neighbour.
+        const turn = dr === -1 ? 0 : dr === 1 ? Math.PI : dc === -1 ? Math.PI / 2 : -Math.PI / 2;
+        const x = c + 0.5 + dc * (0.5 - SW / 2);
+        const z = r + 0.5 + dr * (0.5 - SW / 2);
+        shallows.push(new THREE.Matrix4().compose(new THREE.Vector3(x, -0.08, z), new THREE.Quaternion().setFromAxisAngle(up, turn), new THREE.Vector3(1, 1, 1)));
+      }
+    }
+    if (shallows.length) {
+      const band = new THREE.InstancedMesh(
+        new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
+        new THREE.MeshStandardMaterial({ color: "#dcebdf", alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
+        shallows.length,
+      );
+      shallows.forEach((m, i) => band.setMatrixAt(i, m));
+      band.name = "shallows";
+      band.renderOrder = 2;
+      group.add(band);
+    }
   }
 
   // Building plots: a subtle tilled square on every plot; protected land gets a stone marker instead.
