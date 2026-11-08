@@ -2788,7 +2788,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** landmarks 48 px+ at D and 28 px+ at P; 6 distinct chapter scenes; locked card text 4.5:1; campaign, -map, -spread, -vignettes specs pass; save format unchanged; shots P and D at 0, 3 and 6 chapters won.
 - **Size:** 2
 
-## 280. [ ] Hedgerow 3D: Hollowell's fleet and depot modelled
+## 280. [ ] Hedgerow 3D: Hollowell's fleet and depot modelled *(lane B, in progress)*
 - **Why:** `plan1108a/hedge-l21-3d-D`: the delivery vans are pink boxes (280-320 x 260-360), the depot a grey box (110-245 x 140-300) with a floating sign (190-315 x 365-395); the 2D sprites have far more character. (Cath's 3D face was item 255.)
 - **Build:** a modelled vehicle per enemy type (the influencer van with its ring light, the box lorry, the drone, the bikes), a branded glossy Hollowell depot, signs on posts.
 - **Accept:** every enemy type of acts 1-4 its own mesh and named in a D shot; draw calls up 15% at most; biome3d, 3dframe, vehicles specs pass; shots P and D of l21 and l34 in 3D; key art re-shot.
