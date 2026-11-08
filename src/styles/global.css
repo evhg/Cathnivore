@@ -3680,7 +3680,7 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
   }
   .setup .setup-table .producer-card .pc-pick, .setup .setup-table .producer-card .recommended-badge { display: none; }
   .setup .setup-table .pc-portrait svg { width: 100px; height: 120px; }
-  .setup .setup-table .pc-chair { top: -2px; width: 124px; height: 149px; margin-left: -62px; }
+  .setup .setup-table .pc-chair { top: 6px; width: 124px; height: 149px; margin-left: -62px; }
   .setup .setup-table .producer-card .pc-name { font-size: var(--fs-body); line-height: 1.15; }
   .setup .setup-table .producer-card .pc-role { font-size: var(--fs-label); }
   .setup .setup-table .producer-card .pc-ability { font-size: var(--fs-small); line-height: 1.3; }
