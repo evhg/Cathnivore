@@ -151,6 +151,14 @@ export default function CampaignMap({
       return `Q${mx.toFixed(1)} ${my.toFixed(1)} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
     })
     .join(' ')
+  // Plan item 279: the lane is a sandy road with the chapter path inked along it; the stretches Cath has
+  // already walked (from a won chapter's pin to the next) are inked solid in the co-op's green.
+  const legs = pins.slice(1).map((p, j) => {
+    const a = pins[j]!
+    const mx = (a.x + p.x) / 2 + (p.y - a.y) * 0.18
+    const my = (a.y + p.y) / 2 - (p.x - a.x) * 0.18
+    return { d: `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`, walked: walked.includes(chapters[j]!.id) }
+  })
   const freedCount = free.size
   const label = allDone
     ? 'Map of Marrow: every region liberated.'
@@ -206,6 +214,11 @@ export default function CampaignMap({
           <path d={riverPath()} className="cmp-river-bank" />
           <path d={riverPath()} className="cmp-river-water" />
         </g>
+        <path d={lane} className="cmp-map-road" aria-hidden="true" />
+        <path d={lane} className="cmp-map-lane" aria-hidden="true" />
+        <g className="cmp-map-trail" aria-hidden="true">
+          {legs.map((leg, j) => (leg.walked ? <path key={j} d={leg.d} data-leg={j} /> : null))}
+        </g>
         {regionIds.map((id) => {
           const c = centre(id)
           const isFree = free.has(id)
@@ -240,7 +253,6 @@ export default function CampaignMap({
             </g>
           )
         })}
-        <path d={lane} className="cmp-map-lane" />
         {chapters.map((chapter, i) => {
           const p = pins[i]!
           const done = completed.includes(chapter.id)

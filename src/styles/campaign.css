@@ -868,14 +868,33 @@ html.no-animations .campaign-screen * {
 .cmp-flag-1 { fill: var(--wheat); }
 .cmp-flag-2 { fill: var(--clay); }
 
+/* Plan item 279: the chapter path is a sandy cart road on the ground (under landmarks and names), with the
+   way ahead in dotted ink over it and the way Cath has walked inked solid in the co-op's green. */
+.cmp-map-road {
+  fill: none;
+  stroke: color-mix(in srgb, var(--wheat) 45%, var(--surface));
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
 .cmp-map-lane {
   fill: none;
   stroke: var(--soil);
-  stroke-width: 2;
+  stroke-width: 2.4;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 6;
-  opacity: 0.7;
+  stroke-dasharray: 0.1 5.5;
 }
+.cmp-map-trail path {
+  fill: none;
+  stroke: var(--pasture-deep);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 4 3.2;
+  animation: cmp-trail-in 900ms ease-out both;
+}
+@keyframes cmp-trail-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cmp-map-trail path { animation: none; } }
 
 .cmp-pin { cursor: pointer; }
 .cmp-pin-disc {
