@@ -564,7 +564,9 @@ export class Renderer3D {
       // houses, boats and slabs at the frame's top read as distance, not as props sliced by the frame. The field
       // itself (to its far edge) stays in clear air.
       const hazeNear = Math.min(near, farEdge + 0.8);
-      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + 4.5);
+      // Plan item 290: over 8 cells, not 4.5: the far country (houses, trees, the shore) shows softened at a wide
+      // frame's top instead of a blank band of haze.
+      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + (this.w >= 900 ? 8 : 4.5));
       this.scene.fog.near = hazeNear * dim;
       this.scene.fog.far = hazeFar * dim;
     }
