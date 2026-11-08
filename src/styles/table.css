@@ -3826,7 +3826,10 @@ html.no-animations .table-cath-line { animation: none; }
 }
 .plan-strip[data-corp] .plan-strip-target {
   opacity: 1;
-  color: color-mix(in srgb, var(--corp-slate) 86%, var(--corp-acrylic));
+  /* Plan item 301: 13 px in full slate (12 px at 86% read faint on the acrylic). */
+  font-size: var(--fs-caption);
+  line-height: 1.18;
+  color: var(--corp-slate);
 }
 .plan-strip[data-corp] .plan-strip-dateline {
   border-bottom-color: color-mix(in srgb, var(--corp-chrome) 45%, transparent);

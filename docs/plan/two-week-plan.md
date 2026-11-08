@@ -2917,7 +2917,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no weapon crosses the frame's top or the sign for any operative at P or D; five operative shots; cathode specs and cathode-perf pass.
 - **Size:** 3
 
-## 301. [ ] Cathnivore: Hollowell's plan as glossy billboards *(lane B, in progress)*
+## 301. [ ] Cathnivore: Hollowell's plan as glossy billboards *(lane B, in progress)* *(slice 1, 2026-11-08 18:45 lane B: checked, already there: item 173's glossy acrylic dashboard (specular strip, chrome rim, orange rail, the Hollowell plate), the conveyor dial, a hover/tap that lights the target hexes (planHighlightSlot). The target line is 13 px (`--fs-caption`, was 12) in full slate (was 86%) at line-height 1.18 so the head row keeps item 249's 78 px. plan-strip, board-scale, papers-placard, desktop-no-scroll, screenshots pass (two batch timeouts passed alone); shots scratchpad strip, strip2. Left: a flip when a card arms, the phone strip's text (11 px))*
 - **Why:** `plan1108d/cath-game-D` (565-1190 x 15-85): the Squeeze/Expand/Scout strip is three plain white form boxes with grey 12 px lines; `cath-game-P` (65-385 x 62-100) about 11 px.
 - **Build:** each plan a glossy Hollowell billboard with its round countdown; hover or tap lights its target hexes; it flips when it arms. (Item 282 did the pieces.)
 - **Accept:** text 13 px+ at P and D at 4.5:1; targets highlight on hover/tap; plan-strip and rival specs pass; shots P and D.
