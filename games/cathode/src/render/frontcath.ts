@@ -330,16 +330,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
       }
       // Plan item 140: a shine band across the strands, a third of the way down (the crown on the cap, the
       // shoulders on the long hair), broken by the strands so it reads as glossy hair, not a painted stripe.
-      const band = g.createLinearGradient(0, 26, 0, 66);
-      band.addColorStop(0, "rgba(214,176,150,0)");
-      band.addColorStop(0.5, "rgba(214,176,150,0.62)");
-      band.addColorStop(1, "rgba(214,176,150,0)");
+      // Plan item 289: a narrow, cool gloss line (a 40-texel beige wash read as a blonde streak down her coat).
+      const band = g.createLinearGradient(0, 36, 0, 52);
+      band.addColorStop(0, "rgba(196,170,164,0)");
+      band.addColorStop(0.5, "rgba(196,170,164,0.5)");
+      band.addColorStop(1, "rgba(196,170,164,0)");
       g.fillStyle = band;
       for (let x = 0; x < 64; x += 1) {
-        const w = 0.55 + 0.45 * rnd();
-        const dy = (rnd() - 0.5) * 6;
+        const w = 0.45 + 0.55 * rnd();
+        const dy = (rnd() - 0.5) * 5;
         g.globalAlpha = w;
-        g.fillRect(x, 26 + dy, 1, 40);
+        g.fillRect(x, 36 + dy, 1, 16);
       }
       g.globalAlpha = 1;
     }
@@ -372,7 +373,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false) => {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
@@ -385,7 +386,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // hair turns to face the lens and the key (view-space normal half way up), broken by the strands' own map, so
     // her hair reads as glossy dark hair under the flats rather than a matte brown shell.
     if (shine > 0)
-      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.78, 0.82, up ) * ( 1.0 - smoothstep( 0.92, 0.95, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.05, 0.035, 0.03 ) ); }`;
+      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.78, 0.82, up ) * ( 1.0 - smoothstep( 0.92, 0.95, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.11, 0.085, 0.08 ) ); }`;
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
@@ -403,13 +404,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 254: most of the rim is a hard-edged flat (an inked illustration's back-light shape), a
             // little of the soft falloff kept so the band's edge is drawn, not stair-stepped.
             float fr = mix( smoothstep( 0.0, 1.0, fr0 ), smoothstep( 0.26, 0.34, fr0 ), 0.7 );
+            // Plan item 289: hair is thin locks whose surfaces mostly turn from the lens, so the wide flat lit whole
+            // strands pink-white (a pale ribbon down her coat, a lavender helmet): on hair the rim keeps to the outer
+            // edge, and a two-sided sheet's inside keeps little of it, so her hair reads dark and glossy.
+            ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 );" : ""}
             float side = dot( normal, uRimDir );
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
             ${keyTerm}
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}`;
   };
   rimify(coatMat, 1);
   // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
@@ -437,7 +442,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
   mats.push(skirtMat);
   rimify(blackMat, 0.8);
-  rimify(hairMat, 1.2, 0, 0, HAIR_SHINE);
+  rimify(hairMat, 1.2, 0, 0, HAIR_SHINE, true);
   rimify(skinMat, 0.35, 0.8);
 
   let tris = 0;
@@ -1192,7 +1197,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     sheet.computeVertexNormals();
     const hairSheetMat = hairMat.clone();
     hairSheetMat.side = THREE.DoubleSide;
-    rimify(hairSheetMat, 1.2, 0, 0, HAIR_SHINE);
+    // Plan item 289: no shine ring on the long hair: its locks lie over her chest facing up to the lens, so the ring lit
+    // a whole lock as a pale ribbon; the street lights' own gloss (the sheen) carries it there.
+    rimify(hairSheetMat, 1.2, 0, 0, 0, true);
     mats.push(hairSheetMat);
     add(sheet, hairSheetMat, headPivot);
 
