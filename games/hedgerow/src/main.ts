@@ -4114,6 +4114,12 @@ function syncCathSay(g: Game, now: number): void {
   // Plan item 132: and the gate's own sign, whose town name the bubble covered at D.
   const signs = (renderer as { gateSignRects?: () => Box[] }).gateSignRects?.() ?? [];
   for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...(q?.names ?? []), ...signs]) avoid.push({ x: b.x + canvas.left - field.left, y: b.y + canvas.top - field.top, w: b.w, h: b.h });
+  // Plan item 297: the plot her coaching marks is never under her bubble.
+  const coach = (renderer as { coach?: { col: number; row: number } | null } | null)?.coach;
+  if (coach) {
+    const pb = cellBoxes(g, (c, r) => c === coach.col && r === coach.row)[0];
+    if (pb) avoid.push(shift({ x: pb.x - 6, y: pb.y - 6, w: pb.w + 12, h: pb.h + 12 }));
+  }
   const empties = emptyPlotBoxes(g).map(shift).filter(near);
   const place = () =>
     barkSpot(
