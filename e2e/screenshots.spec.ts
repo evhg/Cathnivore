@@ -31,6 +31,11 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByRole('button', { name: 'Start' }).click()
 
   await page.locator('.game').waitFor()
+  // Plan item 287: the hand's deal (item 291) and the ledger's ink run for about a second after the table appears;
+  // shoot the table once they've settled, not mid-deal (a half-faded hand, a ledger line still being written).
+  await page
+    .waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getTiming().iterations ?? 1) === Infinity), null, { timeout: 4000 })
+    .catch(() => {})
   await shoot(page, project, '4-game')
 
   // AAA UI performance guardrail: the feTurbulence grain rasterises one SVG-filter tile per layer, so it

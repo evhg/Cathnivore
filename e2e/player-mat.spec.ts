@@ -96,3 +96,41 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(900)
   })
 }
+
+// Plan item 287: the stall's goods move when their counts do (a sale: the coins hop, the crate sinks), starting
+// within 250 ms; and the empty slate holds Bea's chalk sketch instead of a blank block, clear of every line.
+test('the stall goods animate on change and the empty slate holds a sketch at 1440x900', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.mouse.move(5, 5)
+
+  const ledger = page.locator('.actions-sheet .round-ledger')
+  await expect(ledger).toHaveAttribute('data-sketch', 'yes')
+  const clear = () =>
+    page.evaluate(() => {
+      const sketch = document.querySelector('.actions-sheet .ledger-sketch')!.getBoundingClientRect()
+      const lines = [...document.querySelectorAll('.actions-sheet .receipt:not([data-gone])')].map((e) => e.getBoundingClientRect())
+      return { h: sketch.height, clear: lines.every((l) => l.bottom <= sketch.top + 0.5) }
+    })
+  const before = await clear()
+  expect(before.h, 'sketch height').toBeGreaterThan(60)
+  expect(before.clear, 'sketch clear of the lines').toBe(true)
+
+  const mat = page.locator('.desktop-col-left [data-player-mat]')
+  const marks = mat.locator('.mat-store').nth(1)
+  const was = Number(await marks.locator('.ledger-value').textContent())
+  await page.getByRole('button', { name: /^Sell 1 Produce/ }).first().click()
+  const t0 = Date.now()
+  await expect(marks.locator('.mat-art-slot[data-bump="up"]')).toBeAttached({ timeout: 250 })
+  expect(Date.now() - t0).toBeLessThan(250)
+  expect(await marks.locator('.mat-art-slot').evaluate((e) => e.getAnimations().length)).toBeGreaterThan(0)
+  await expect(mat.locator('.mat-store').first().locator('.mat-art-slot[data-bump="down"]')).toBeAttached()
+  await expect(marks.locator('.ledger-value')).toHaveText(String(was + 1))
+  await page.waitForTimeout(600)
+  const after = await clear()
+  if (after.h > 0) expect(after.clear, 'sketch clear of the lines after a move').toBe(true)
+})

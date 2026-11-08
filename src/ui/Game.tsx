@@ -340,10 +340,18 @@ function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: numb
 // AAA UI M4 4.9 "Ledger chips": a resource on the active producer's ledger, icon + count, with this
 // round's income as a small "+2" rather than "(2/round)".
 function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial, delta, art }: { term: string; Icon: typeof ProduceIcon; value: number; income: number; tick: number; incomeTick?: number; tutorial?: string; delta?: number; art?: ReactNode }) {
+  // Plan item 287: the stall's goods move when their count does: a hop on a gain, a sink on a loss (a fade under
+  // reduced motion). The slot remounts on each tick, which replays its animation.
+  const last = useRef<{ value: number; dir: 'up' | 'down' }>({ value, dir: 'up' })
+  if (last.current.value !== value) last.current = { value, dir: value > last.current.value ? 'up' : 'down' }
   return (
     <Tooltip term={term}>
       <span className={art ? 'ledger-chip mat-store' : 'ledger-chip'} data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
-        {art}
+        {art ? (
+          <span key={`a${tick}`} className="mat-art-slot" data-bump={tick > 0 ? last.current.dir : undefined} aria-hidden="true">
+            {art}
+          </span>
+        ) : null}
         <Icon size={18} />
         <span key={tick} className={tick > 0 ? 'num ledger-value hud-tick' : 'num ledger-value'}>{value}</span>
         <span className="visually-hidden"> {term}, </span>

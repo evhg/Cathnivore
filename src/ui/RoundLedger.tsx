@@ -56,6 +56,11 @@ export default function RoundLedger({ state }: { state: GameState }) {
       let i = 0
       while (newest && i < items.length - 1 && newest.getBoundingClientRect().bottom > bottom + 0.5) items[i++]!.dataset.gone = ''
       el.dataset.room = newest && newest.getBoundingClientRect().bottom <= bottom + 0.5 ? 'yes' : 'no'
+      // Plan item 287: while the page is mostly blank its free room holds Bea's chalk sketch of the stall, sized to
+      // the room left under the newest line (it goes once the lines need the space).
+      const free = newest ? bottom - newest.getBoundingClientRect().bottom : 0
+      el.dataset.sketch = free >= 96 ? 'yes' : 'no'
+      el.style.setProperty('--sketch-room', `${Math.max(0, Math.round(free))}px`)
     }
     fit()
     const ro = new ResizeObserver(fit)
@@ -105,6 +110,17 @@ export default function RoundLedger({ state }: { state: GameState }) {
           ),
         )}
       </ol>
+      <div className="ledger-sketch" aria-hidden="true">
+        <svg viewBox="0 0 120 80">
+          {/* the stall: a scalloped awning on two posts, a counter, three crates and a price tag */}
+          <path d="M14 22h92l-6-12H20zM14 22q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0q5 6 10 0" />
+          <path d="M20 23v47M100 23v47M10 70h100M24 52h72v18M24 52l4-6h64l4 6" />
+          <path d="M30 46v-9h16v9M30 42h16M50 46v-11h18v11M50 41h18M72 46v-8h16v8M72 42h16" />
+          <path d="M35 37a3 3 0 106 0 3 3 0 10-6 0M55 35a3 3 0 106 0 3 3 0 10-6 0M77 38a3 3 0 106 0 3 3 0 10-6 0" />
+          <path d="M96 30l8 4-3 7-8-4zM96 30l-2-4" />
+        </svg>
+        <span className="ledger-sketch-note">Every move gets chalked up here</span>
+      </div>
     </section>
   )
 }

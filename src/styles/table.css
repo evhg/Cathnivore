@@ -3385,7 +3385,8 @@ html.no-animations .table-cath-line { animation: none; }
     background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--paper-hi) 92%, transparent), color-mix(in srgb, var(--paper) 86%, transparent) 70%);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wood-lo) 55%, transparent), 0 2px 0 var(--wood-lo);
   }
-  .player-mat .mat-art { grid-area: art; justify-self: center; width: min(76px, 100%); height: auto; aspect-ratio: 64 / 60; }
+  .player-mat .mat-art-slot { grid-area: art; justify-self: center; display: block; width: min(76px, 100%); transform-origin: 50% 100%; }
+  .player-mat .mat-art { display: block; width: 100%; height: auto; aspect-ratio: 64 / 60; }
   .player-mat .mat-store > svg:not(.mat-art) { grid-area: icon; }
   .player-mat .mat-store .ledger-value { grid-area: value; font-size: var(--fs-h3); }
   .player-mat .mat-store .ledger-income { grid-area: income; justify-self: end; }
@@ -4649,3 +4650,65 @@ html.no-animations .cath-pop { animation: none; }
   @keyframes hand-deal { from { opacity: 0; } }
 }
 html.no-animations .game-layout .table-hand .action-item { animation: none; }
+
+/* Plan item 287: an empty slate isn't a blank block. While the page is mostly blank, Bea's chalk sketch of the stall
+   sits in the room under the newest line, with a chalked note on what the slate is for; RoundLedger measures the
+   room (data-sketch, --sketch-room) so the sketch never meets a line, and it goes once the lines need the space. */
+.ledger-sketch { display: none; }
+@media (min-width: 1024px) {
+  .actions-sheet .round-ledger { position: relative; }
+  .actions-sheet .round-ledger[data-sketch="yes"] .ledger-sketch {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    height: min(calc(var(--sketch-room, 0px) - 14px), 120px);
+    pointer-events: none;
+    color: color-mix(in srgb, var(--wood-ink) 42%, transparent);
+    animation: receipt-fade 400ms linear both;
+  }
+  .ledger-sketch svg {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ledger-sketch-note {
+    flex: none;
+    font: italic var(--fs-caption)/1.2 var(--font-voice);
+    color: color-mix(in srgb, var(--wood-ink) 62%, transparent);
+  }
+}
+@media (min-width: 1024px) {
+  .actions-sheet .round-ledger-roll .receipt[data-kind="opening"] .receipt-why { color: color-mix(in srgb, var(--wood-ink) 70%, transparent); }
+}
+
+/* Plan item 287: a stall good hops when its count rises and sinks when it falls; it starts at once and peaks by
+   150 ms (only a fade under reduced motion). */
+.mat-art-slot[data-bump="up"] { animation: mat-hop 420ms var(--ease-settle); }
+.mat-art-slot[data-bump="down"] { animation: mat-sink 420ms var(--ease-settle); }
+@keyframes mat-hop {
+  0% { transform: translateY(0) scale(1, 1); }
+  15% { transform: translateY(1px) scale(1.06, .92); }
+  40% { transform: translateY(-7px) scale(.97, 1.05); }
+  70% { transform: translateY(0) scale(1.03, .97); }
+  100% { transform: none; }
+}
+@keyframes mat-sink {
+  0% { transform: none; opacity: 1; }
+  30% { transform: translateY(3px) scale(1.04, .9); opacity: .7; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes mat-fade { 0% { opacity: .35; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; }
+}
+html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; }
