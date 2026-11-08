@@ -20,7 +20,7 @@ export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half' | 'full'
 /** Her arms (plan item 23). 'clasped' is the classic hands-at-the-waist pose; each screen picks its own. */
-export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'can' | 'flag'
+export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'walk' | 'can' | 'flag'
 export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag']
 
 export interface CathOptions {
@@ -122,7 +122,7 @@ const LOWER: Record<CathOutfit, { trousers: string; line: string; boots: string;
   trench: { trousers: '#2A2A30', line: '#0E0F12', boots: '#1C1D22', skirt: { fill: '#2C2D33', line: '#0E0F12', to: 640 } },
 }
 
-function lowerBody(outfit: CathOutfit): string {
+function lowerBody(outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
   const o = LOWER[outfit]
   const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
   const boot = (d: string) => `<path fill="${o.boots}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="${d}"/>`
@@ -130,6 +130,13 @@ function lowerBody(outfit: CathOutfit): string {
     ? `<path fill="${o.skirt.fill}" stroke="${o.skirt.line}" stroke-width="2" stroke-linejoin="round" d="M118 490 C114 ${490 + (o.skirt.to - 490) * 0.4} ${108 - (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} ${104 - (o.skirt.to - 490) * 0.03} ${o.skirt.to} L${296 + (o.skirt.to - 490) * 0.03} ${o.skirt.to} C${292 + (o.skirt.to - 490) * 0.05} ${490 + (o.skirt.to - 490) * 0.75} 286 ${490 + (o.skirt.to - 490) * 0.4} 282 490 Z"/>
 <path fill="none" stroke="${o.skirt.line}" stroke-width="1.2" opacity="0.5" d="M170 500 C166 ${o.skirt.to - 80} 160 ${o.skirt.to - 30} 158 ${o.skirt.to} M232 500 C236 ${o.skirt.to - 80} 240 ${o.skirt.to - 30} 242 ${o.skirt.to}"/>`
     : ''
+  // Plan item 292: walking, mid-stride: the front leg reaches out to the viewer's left, the back one bends with its
+  // heel lifted off the ground.
+  if (pose === 'walk')
+    return `<ellipse cx="200" cy="878" rx="96" ry="9" fill="#120A0E" opacity="0.3"/>
+${leg('M202 490 L250 490 C252 570 250 640 248 700 C254 750 260 790 262 830 L244 834 C236 790 228 750 222 700 C214 640 206 570 202 490 Z')}${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}
+${leg('M150 490 L198 490 C194 570 182 640 178 700 C174 750 166 800 160 846 L141 846 C143 800 146 750 150 700 C150 630 150 560 150 490 Z')}${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
+${skirt}`
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
   return `<ellipse cx="203" cy="878" rx="80" ry="9" fill="#120A0E" opacity="0.32"/>
@@ -156,7 +163,7 @@ export function cathSvg(options: CathOptions = {}): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
-${framing === 'full' ? `<g class="cath-lower">${lowerBody(outfit)}</g>` : ''}
+${framing === 'full' ? `<g class="cath-lower">${lowerBody(outfit, pose)}</g>` : ''}
 <g class="cath-hair-back">${hairBack(id)}</g>
 <g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
 <g class="cath-head">
@@ -990,6 +997,14 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
       // A raised finger up and out to the viewer's right ("here's the thing"), kept inside the bust frame.
       return layer === 'back'
         ? restLeft + sleeve('M266 300 Q292 324 298 332 Q304 304 304 280', 24, cl, 'M304 288 Q304 284 304 278') + hand('point', 307, 262, 16, cl)
+        : ''
+    case 'walk':
+      // Plan item 292: arms swinging with the stride, her right (viewer's left) forward, her left back.
+      return layer === 'back'
+        ? sleeve('M134 300 Q118 350 116 400 Q116 418 118 428', 22, cl, 'M117 420 Q118 426 118 432') +
+            hand('rest', 119, 446, 14, cl) +
+            sleeve('M266 300 Q286 348 296 392 Q300 406 302 414', 22, cl, 'M300 406 Q302 412 303 418') +
+            hand('rest', 305, 432, -22, cl)
         : ''
     case 'cheer':
       // Both fists up in a V.

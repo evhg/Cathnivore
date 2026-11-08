@@ -1810,7 +1810,7 @@ function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void 
 }
 
 /** Plan item 124: her map figure, head to boots, in a pose (`data-pose` for the e2e). */
-function setPose(you: HTMLElement, pose: "clasped" | "wave"): void {
+function setPose(you: HTMLElement, pose: "clasped" | "wave" | "walk"): void {
   you.dataset.pose = pose;
   you.innerHTML = cathSvg({ framing: "full", expression: pose === "wave" ? "delighted" : "smirk", pose });
 }
@@ -2383,6 +2383,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     you.style.setProperty("--walk-x", `${a.left - z.left}px`);
     you.style.setProperty("--walk-y", `${a.top - z.top}px`);
     you.classList.add("walking");
+    // Plan item 292: mid-stride while she walks the trail.
+    setPose(you, "walk");
     // Plan item 124: at the newly opened stop she waves, then settles.
     window.setTimeout(() => {
       if (!you.isConnected) return;
