@@ -2476,6 +2476,35 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const haloG = extra("wirewitch", headPivot, [[halo, rigMat!]]);
     haloG.position.set(0, 0.04, -0.1);
     haloG.scale.setScalar(1.3);
+    // Plan item 278: a lit cable coiled round her free forearm above the cuff, its lead running up the sleeve, so the
+    // raised hand of her stance carries its own spiral of light (her silhouette's one coiled shape). It rides the
+    // forearm, so the arm's IK carries it.
+    {
+      const d = wristL.clone().sub(elbowL).normalize();
+      const side = new THREE.Vector3().crossVectors(d, V(0, 0, 1)).normalize();
+      const up = new THREE.Vector3().crossVectors(side, d).normalize();
+      const pts: THREE.Vector3[] = [];
+      const turns = 4.5;
+      const n = 72;
+      for (let i = 0; i <= n; i++) {
+        const u = i / n;
+        const a = u * turns * Math.PI * 2;
+        const at = elbowL.clone().lerp(wristL, 0.5 + 0.34 * u);
+        const r = 0.0475 + 0.003 * Math.sin(u * Math.PI);
+        pts.push(at.addScaledVector(side, Math.cos(a) * r).addScaledVector(up, Math.sin(a) * r * 0.92));
+      }
+      const coil = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), seg(160), 0.0052, 5, false);
+      const s0 = pts[0]!;
+      const lead = new THREE.TubeGeometry(
+        new THREE.CatmullRomCurve3([s0, s0.clone().lerp(elbowL, 0.45).addScaledVector(side, 0.012), elbowL.clone().addScaledVector(side, 0.046).addScaledVector(up, 0.01)]),
+        12,
+        0.0038,
+        5,
+        false,
+      );
+      const coilG = extra("wirewitch-coil", foreL, [[[coil, lead], rigMat!]]);
+      coilG.name = "kit-wirewitch-coil";
+    }
     // Butcher: a broad cleaver on her right hip, blade out, under the leather apron's edge.
     const blade = new THREE.BoxGeometry(0.11, 0.17, 0.006);
     blade.translate(0.015, -0.085, 0);
@@ -2783,7 +2812,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     kit(cls) {
       wearing = cls && kits.has(cls) ? cls : null;
       for (const [k, g] of kits) g.visible = k === wearing;
-      for (const [k, g] of kitExtras) g.visible = k === wearing;
+      for (const [k, g] of kitExtras) g.visible = k.split("-")[0] === wearing;
       if (caseDown && caseUp) {
         caseDown.visible = wearing === "fixer" && !carrying;
         caseUp.visible = wearing === "fixer" && carrying;
@@ -2792,7 +2821,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     },
     showAllKits(on) {
       for (const [k, g] of kits) g.visible = on || k === wearing;
-      for (const [k, g] of kitExtras) g.visible = on || k === wearing;
+      for (const [k, g] of kitExtras) g.visible = on || k.split("-")[0] === wearing;
       if (caseDown && caseUp) {
         caseDown.visible = on || (wearing === "fixer" && !carrying);
         caseUp.visible = on || (wearing === "fixer" && carrying);
