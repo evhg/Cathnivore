@@ -239,6 +239,13 @@ export class Board {
     if (ground === 'field') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-furrows)', transform: `rotate(${furrowAngle(this.puzzle.seed, cell.q, cell.r)})` }, root)
     // Plan item 277: a dry field cracks in the sun (three jagged lines from near its middle); water closes them (CSS).
     if (ground === 'field') el('path', { class: 'field-cracks', d: fieldCracks(`${this.puzzle.seed}:${cell.q},${cell.r}`) }, root)
+    // ...and once watered it sprouts, in three waves after the water arrives (CSS staggers them from --delay).
+    if (ground === 'field') {
+      const sp = el('g', { class: 'field-sprouts' }, root)
+      fieldSprouts(`${this.puzzle.seed}:${cell.q},${cell.r}`).forEach(([x, y], k) =>
+        el('path', { class: `sprout s${(k % 3) + 1}`, d: 'M0 0v-4.5M0 -2.2q-2.6 -2.8 -4.4 -2.4M0 -2.8q2.4 -3 4.2 -2.6', transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})` }, sp),
+      )
+    }
     else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
 
     el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
@@ -740,4 +747,23 @@ function fieldCracks(key: string): string {
     }
   }
   return d
+}
+
+/** Plan item 277: where a watered field's shoots come up: twelve spots spread over the tile (a seeded jittered ring
+ *  pattern), which the CSS brings up in three waves. The channel piece draws over any under its groove. */
+function fieldSprouts(key: string): Array<[number, number]> {
+  let h = hashString(`sprouts:${key}`) || 7
+  const rnd = () => {
+    h ^= h << 13
+    h ^= h >>> 17
+    h ^= h << 5
+    return ((h >>> 0) % 1000) / 1000
+  }
+  const out: Array<[number, number]> = []
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2 + rnd() * 0.5
+    const r = S * (k % 2 ? 0.34 : 0.62) + (rnd() - 0.5) * S * 0.12
+    out.push([Math.cos(a) * r, Math.sin(a) * r + 2])
+  }
+  return out
 }
