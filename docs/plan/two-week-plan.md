@@ -2817,7 +2817,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no 200x200 px region of the D title under 3% luminance; at P the menu box clear of her projected silhouette (e2e); wordmark and case-file header 4.5:1+ against what's behind; cathode-perf within budget; cathode-front and classpick pass; shots P and D, title and pick.
 - **Size:** 3
 
-## 284. [ ] Hedgerow 3D: Cath and the farmers as character-bible models
+## 284. [ ] Hedgerow 3D: Cath and the farmers as character-bible models *(lane A, in progress)*
 - **Why:** `plan1108b/hedge-l21-3d-D` (190-290 x 450-680): Cath is a low-poly mannequin, flat face, smudged eyes, block hair, no jacket, pearls or leaf clip; the farmers (850-890 x 455-520) are boxes. The 2D Cath in her bubble beside her is far better, so 3D reads as a downgrade.
 - **Build:** a stylised Cath for the 3D field with a modelled head and painted face (the NIGHT SHIFT round-two face work as reference), hair with a shine band, the olive jacket with the collar up, pearls and the leaf clip; idle, point and cheer tied to game events (a wave cleared, a leak); farmers and neighbours re-modelled in the same proportions.
 - **Accept:** at D her face 40 px+ tall at the default camera, eyes, liner and the raised right brow visible; a cheer on a wave clear (e2e hook); draw calls +30 or fewer; gate 1 holds; hedgerow 3D specs pass; shots P and D, 3D and `?2d`.

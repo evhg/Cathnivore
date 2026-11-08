@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (11:51, 11-08): item 283 done (tram dropped, perf in budget). Lane A has no open item; next unclaimed: 284. **The 19:51 session releases.**
+- Lane A (12:51, 11-08): item 284 (Hedgerow 3D Cath and farmers as character-bible models) claimed. **The 19:51 session releases.**
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (12:21, 11-08): item 296 done (the remaining points checked as already within the rules); item 290 claimed, slice 1 (Saltmarsh's inland grazing marsh: ditches, reeds, cattle, telegraph poles on the D frame's empty side). Lane B's open items: 267, 268, 282, 285, 290.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
