@@ -1068,8 +1068,8 @@ export function buildGround(level: Level): Ground {
     const egretNeck: Inst[] = [];
     // Plan item 228: wet silt, grey-sand and silvered, with samphire greens and tide pools among it (the old browns,
     // stacked as pebbles, read as a band of mud at the phone's left edge).
-    // Plan item 262: three colours in broad patches (silt, samphire, tide pool), not six speckled cell by cell.
-    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#b7c3c4"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
+    // Plan item 262: three colours in broad patches (silt, samphire, damp tide-pool grey; item 288: a pale grey read as broken white fragments on a phone), not six speckled cell by cell.
+    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#97a79b"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
     const patchOf = (x: number, z: number): THREE.Color => {
       const v = 0.55 * Math.sin(z * 1.1 + x * 1.7) + 0.45 * Math.sin(z * 0.43 - x * 0.9 + 1.3);
       return v > 0.3 ? samphire : v < -0.5 ? pool : silt;
