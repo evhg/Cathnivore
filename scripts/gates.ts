@@ -50,7 +50,15 @@ const GATE_7_TIMING = 'SPEC 11.4 gate 7'
 run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS} --grep-invert "${GATE_7_TIMING}"`)
 // The website as a whole (games landing page at /, Runnel at /runnel/, Cathnivore under /cathnivore/),
 // built exactly as Vercel builds it. Part of gate 5: main must not move if the site around the game breaks.
-run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
+// The site suite runs two browsers at once for 1.7 h; its WebGL specs (NIGHT SHIFT's opener and class pick, Hedgerow's
+// 3D camera and depot) read wall-clock timings and camera rest under SwiftShader, and beside a second browser they
+// fail by load alone: the 2026-11-09 release runs failed a different few each time, every one passing alone. So a
+// failure gets one more go, on its own (--last-failed, one worker); a test that fails alone too fails the gate.
+try {
+  run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
+} catch {
+  run('Gate 5 (site): the failures again, alone', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts --last-failed --workers 1`)
+}
 
 // CATHODE's performance budget (docs/design/cathode-combat.md S0, from C10): a staged firefight's whole-scene
 // draw calls and triangles, phone (6 enemies) and desktop (12), on the dist-site Gate 1 built.
