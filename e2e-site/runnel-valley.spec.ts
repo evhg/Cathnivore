@@ -63,7 +63,8 @@ test('the stream fills to the garden at a solve, with Cath still in the valley',
   // Today's seed packet in Bea's garden gives way to a sprout once play starts.
   await expect(page.locator('.bed-today .bed-sprout')).toBeHidden()
   // Six turns bring a hex tile back round, so the board stays one tap from solved.
-  for (let k = 0; k < 6; k++) await page.locator('.tiles > g.cell:not(.stone):not(.fixed)').nth(2).click()
+  // Not the one piece ?shotsolve leaves unsolved ([data-last]): on some days' boards turning it solves the board early.
+  for (let k = 0; k < 6; k++) await page.locator('.tiles > g.cell:not(.stone):not(.fixed):not([data-last])').nth(2).click()
   await expect(page.locator('.bed-today .bed-sprout')).toBeVisible()
   await page.locator('[data-last]').click()
   await expect.poll(wet).toBe(1)
