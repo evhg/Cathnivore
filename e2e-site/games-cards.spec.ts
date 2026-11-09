@@ -109,6 +109,8 @@ test('the hero shows the four games on the first screen, clear of Cath', async (
 // Plan item 85: the hero's words hold 4.5:1 or more against what is behind them (the 90th-percentile brightest
 // pixel behind each line's box, with the words made transparent), at P and D.
 test('the hero text reads at 4.5:1 or more against the sunset', async ({ page }) => {
+  // Two sizes, four lines, a screenshot each: more than the default 30 s on a loaded runner.
+  test.setTimeout(120_000)
   for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(vp)
     await page.goto('/games/')

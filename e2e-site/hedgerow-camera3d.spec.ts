@@ -15,17 +15,21 @@ async function open(page: import('@playwright/test').Page) {
 
 test('Go dollies from the depot, then settles back on the play view', async ({ page }) => {
   test.skip(page.viewportSize()!.width < 600, 'phones get cuts, not moves')
-  test.setTimeout(120_000)
+  test.setTimeout(150_000)
   await open(page)
   const base = await cam(page)
   await page.evaluate(() => { const h = (window as unknown as W).hedgerow!; h.sendWave(h.game()) })
   await expect.poll(async () => (await cam(page)).moving, { timeout: 10_000 }).toBe(true)
   const mid = await cam(page)
   expect(dist(mid, base)).toBeGreaterThan(0.05 * Math.hypot(base.x, base.y, base.z) * 0.1)
-  await expect.poll(async () => (await cam(page)).moving, { timeout: 15_000 }).toBe(false)
-  await page.waitForTimeout(300)
-  const after = await cam(page)
-  expect(dist(after, base) / Math.hypot(base.x, base.y, base.z)).toBeLessThanOrEqual(0.01)
+  // The round can follow the dolly with a short shot of its own (a pause between them reads as "not moving"), so
+  // wait until the camera is at rest back on the play view.
+  await expect
+    .poll(async () => {
+      const c = await cam(page)
+      return c.moving ? 1 : dist(c, base) / Math.hypot(base.x, base.y, base.z)
+    }, { timeout: 30_000 })
+    .toBeLessThanOrEqual(0.01)
 })
 
 test.describe('reduced motion', () => {
