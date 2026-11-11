@@ -1069,7 +1069,9 @@ export function buildGround(level: Level): Ground {
     // Plan item 228: wet silt, grey-sand and silvered, with samphire greens and tide pools among it (the old browns,
     // stacked as pebbles, read as a band of mud at the phone's left edge).
     // Plan item 262: three colours in broad patches (silt, samphire, damp tide-pool grey; item 288: a pale grey read as broken white fragments on a phone), not six speckled cell by cell.
-    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#97a79b"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
+    // Plan item 307: the tide pools hold water (a blue-grey that takes the light), so the flats read as wet marsh, not
+    // grey rock.
+    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#7f9fa8"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
     const patchOf = (x: number, z: number): THREE.Color => {
       const v = 0.55 * Math.sin(z * 1.1 + x * 1.7) + 0.45 * Math.sin(z * 0.43 - x * 0.9 + 1.3);
       return v > 0.3 ? samphire : v < -0.5 ? pool : silt;
@@ -1135,7 +1137,8 @@ export function buildGround(level: Level): Ground {
     ])
       if (m) group.add(m);
     for (const m of [
-      instanced(new THREE.SphereGeometry(1, 10, 5), new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.08 }), flats),
+      // Plan item 307: smooth patches (16 x 8; at 10 x 5 their facets read as broken grey rock at the field's edge).
+      instanced(new THREE.SphereGeometry(1, 16, 8), new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.08 }), flats),
       instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
       instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretBody, true),
       instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),

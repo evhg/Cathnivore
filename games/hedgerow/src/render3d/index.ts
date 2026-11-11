@@ -531,7 +531,10 @@ export class Renderer3D {
       const airK = this.canvas.clientWidth > 0 && this.canvas.clientWidth < 600 ? 0.4 : 1;
       if (!hasTwist(lv, "rain")) this.motes.push(new Motes(Math.round(70 * airK), { kind: "pollen", color: mood.mote, size: 0.05, box, wind }));
       if (weather && !this.reducedMotion) {
-        this.motes.push(new Motes(Math.round(weather.count * airK), { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : { ...box, y0: 0.1, y1: 0.9 }, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.alpha, additive: weather.additive }));
+        // Plan item 307: the coast's sea mist and spray (soft puffs a cell across) drift over the water, not the plots,
+        // where they read as white blobs in front of the field.
+        const still = weather.size >= 1 ? { ...box, x0: -5, x1: -0.7, y0: 0.1, y1: 0.9 } : { ...box, y0: 0.1, y1: 0.9 };
+        this.motes.push(new Motes(Math.round(weather.count * airK), { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : still, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.alpha, additive: weather.additive }));
       }
       const coast = lv.id > 20 && lv.id <= 30 ? true : lv.id > 50 && lv.id <= 60;
       if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#3b3540");
