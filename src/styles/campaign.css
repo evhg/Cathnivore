@@ -866,7 +866,9 @@ html.no-animations .campaign-screen * {
   fill: var(--soil);
   paint-order: stroke;
   stroke: var(--surface);
-  stroke-width: 3px;
+  /* Plan item 333: a wider halo, so the route dots stop short of the letters ('Shingle Bay' read across them at 3 px) */
+  stroke-width: 5.5px;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 
