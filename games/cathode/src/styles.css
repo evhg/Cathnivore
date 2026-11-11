@@ -2822,7 +2822,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   position: relative;
   display: block;
   width: calc(100% + var(--u) * 74);
-  height: calc(var(--u) * 190);
+  height: calc(var(--u) * 262);
   max-width: none;
   margin: calc(var(--u) * -14) 0 calc(var(--u) * 10) calc(var(--u) * -40);
   overflow: hidden;
@@ -2841,7 +2841,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 }
 /* Its shadow on the table, under the prop. */
 .cp-case::after {
-  content: ""; position: absolute; left: 16%; right: 16%; top: 64%; height: 12%;
+  content: ""; position: absolute; left: 16%; right: 16%; top: 70%; height: 12%;
   background: radial-gradient(50% 50% at 50% 50%, rgb(var(--shade-rgb) / .75), transparent);
   pointer-events: none;
 }
@@ -2873,7 +2873,10 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 }
 @keyframes cp-prop-fade { from { opacity: 0; } to { opacity: 1; } }
 /* Plan item 313: the class's own gun mesh, lit, as turntable frames (render/gunportrait.ts) in place of the layers. */
-.cp-gun { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+.cp-gun { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+/* The lit gun stands in a taller view than the layered drawing (item 313: 360 x 150 or more at D). */
+.cp-case.is-lit .cp-prop { left: 3%; right: 3%; top: 3%; height: 78%; }
+.cp-case.is-lit::after { top: 74%; }
 .cp-case.is-still .cp-prop { animation: none; }
 .cp-case.is-still .cp-prop-turn { animation: none; transform: rotateX(10deg) rotateY(-24deg); }
 @media (prefers-reduced-motion: reduce) {
@@ -2883,6 +2886,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 /* An upright phone: the case beside the weapon's name and numbers, 156 x 66. */
 @media (max-width: 700px) and (orientation: portrait) {
   .cp-weapon-art.cp-case { width: 156px; height: 66px; margin: 0; } /* px-ok */
+  .cp-weapon-art.cp-case.is-lit { width: 168px; height: 78px; } /* px-ok */
+  .cp-case.is-lit .cp-prop { left: 0; right: 0; top: 2%; height: 94%; -webkit-box-reflect: none; }
+  .cp-case.is-lit::after { top: 80%; }
   .cp-weapon-art.cp-case svg { max-width: none; }
   .cp-prop { left: 2%; right: 2%; top: 8%; height: 58%; }
   .cp-case-lamp { width: 40px; height: 3px; margin-left: -20px; } /* px-ok */

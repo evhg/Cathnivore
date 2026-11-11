@@ -325,17 +325,29 @@ test('the class weapon is lit in 3D with a specular highlight', async ({ page, h
     const d = x.getImageData(0, 0, c.width, c.height).data
     let solid = 0
     let bright = 0
+    let top = c.height
+    let bottom = 0
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3]! < 200) continue
       solid++
+      const y = Math.floor(i / 4 / c.width)
+      top = Math.min(top, y)
+      bottom = Math.max(bottom, y)
       if (0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]! > 200) bright++
     }
-    return { w: c.width, h: c.height, solid, bright }
+    const box = img.getBoundingClientRect()
+    return { w: c.width, h: c.height, solid, bright, top, bottom, view: [Math.round(box.width), Math.round(box.height)] }
   })
   const s = JSON.stringify(m)
   expect(m.w, s).toBeGreaterThanOrEqual(600)
   expect(m.solid / (m.w * m.h), s).toBeGreaterThan(0.05)
   expect(m.bright, s).toBeGreaterThan(20)
+  // The revolver stands whole in its frame (fitted by height as well as length), in a view 360 x 150 px or more at D
+  // and 156 x 70 or more on a phone.
+  expect(m.top, s).toBeGreaterThan(4)
+  expect(m.bottom, s).toBeLessThan(m.h - 5)
+  expect(m.view[0], s).toBeGreaterThanOrEqual(hasTouch ? 156 : 360)
+  expect(m.view[1], s).toBeGreaterThanOrEqual(hasTouch ? 70 : 150)
 })
 
 // Plan item 233: at D the names are a lit rack: each row carries its weapon in neon outline (48 px or more) over a

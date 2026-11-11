@@ -62,10 +62,14 @@ export class GunStudio {
     const long = Math.max(size.x, size.y, size.z, 1e-3);
     const aspect = o.width / o.height;
     this.camera = new THREE.PerspectiveCamera(24, aspect, 0.01, 50);
-    // Far enough that the longest side, broadside, fills about 86% of the frame's width (the gun turns no more than
-    // GUN_SWAY off broadside, so it never grows past it).
-    const halfW = Math.tan(THREE.MathUtils.degToRad(12)) * aspect;
-    const dist = (long * 0.5) / (halfW * 0.86);
+    // Far enough that the gun's length, broadside, fills about 92% of the frame's width (the gun turns no more than
+    // GUN_SWAY off broadside, so it never grows past it), and its height about 80% of the frame's (a revolver is
+    // tall for its length: fitted by length alone its grip ran out of the frame). Its near half stands closer to the
+    // lens, so the fits count from the near face.
+    const halfH = Math.tan(THREE.MathUtils.degToRad(12));
+    const halfW = halfH * aspect;
+    const depth = Math.min(size.x, size.z) * 0.5;
+    const dist = Math.max((long * 0.5) / (halfW * 0.92), (size.y * 0.5) / (halfH * 0.8)) + depth * 0.5;
     this.camera.position.set(0, dist * 0.22, dist);
     this.camera.lookAt(0, 0, 0);
 
