@@ -4641,3 +4641,33 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 }
 /* Plan item 315: the notebook's inked glyph size (46 px) doesn't shrink the steps' tiles. */
 .lesson-panel[data-notebook] .lc-steps .lc-step-art { width: 48px; height: 48px; }
+
+/* Plan item 329: Bea's garden's back row (a bean wigwam, sunflowers, a water butt) over its beds, so the garden reads as
+   a garden and not a plank trough. Dry, the sunflowers hang their heads in faded straw; watered, they lift and colour in
+   one after another over 600-900 ms (under reduced motion they change at once, with no turn). */
+.garden-back {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: -6px;
+  overflow: visible;
+  pointer-events: none;
+}
+.gb-pole { fill: none; stroke: var(--stake); stroke-width: 2; stroke-linecap: round; }
+.gb-vine { fill: none; stroke: var(--ga-leaf); stroke-width: 1.6; stroke-linecap: round; }
+.gb-beans circle { fill: var(--ga-leaf-2); }
+.gb-pod { fill: none; stroke: var(--ga-leaf); stroke-width: 1.8; stroke-linecap: round; }
+.gb-stem { fill: none; stroke: var(--ga-leaf); stroke-width: 2; stroke-linecap: round; }
+.gb-leaf { fill: var(--ga-leaf-2); }
+.gb-petals { fill: color-mix(in srgb, var(--gold) 40%, var(--soil)); transition: fill 600ms ease; }
+.gb-eye { fill: var(--soil); }
+.gb-head { transform-box: fill-box; transform-origin: 50% 100%; rotate: 65deg; transition: rotate 700ms cubic-bezier(.3, 1.4, .5, 1); }
+.gb-butt rect { fill: var(--stake); stroke: var(--groove); stroke-width: 1; }
+.gb-butt path { fill: none; stroke: var(--groove); stroke-width: 1.2; }
+.bea-garden[data-watered='true'] .gb-head { rotate: 0deg; }
+.bea-garden[data-watered="true"] .gb-petals { fill: var(--gold); }
+.bea-garden[data-watered='true'] .s2 :is(.gb-head, .gb-petals) { transition-delay: 100ms; }
+.bea-garden[data-watered='true'] .s3 :is(.gb-head, .gb-petals) { transition-delay: 200ms; }
+@media (prefers-reduced-motion: reduce) {
+  .gb-head { transition: none; }
+}
