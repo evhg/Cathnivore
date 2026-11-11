@@ -3089,7 +3089,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 2
 
-## 327. [ ] Cathnivore: the desktop title menu as stall signage, not form buttons
+## 327. [ ] Cathnivore: the desktop title menu as stall signage, not form buttons *(lane B, in progress)*
 - **Why:** `plan1111c/cath-title-D` (105-500 x 440-765): the menu is a chalkboard holding three rounded white form buttons (125-478 x 485-545, 558-618, 632-692) and three small white button pills (140-465 x 712-757). Meanwhile `cath-title-P` (20-375 x 540-700) already has a wooden Campaign sign and hanging price tags. Behind the menu, 0-860 x 280-440 is empty cream wall apart from the hanging sign.
 - **Build:** use the phone's language at D. Campaign becomes a carved wooden sign, and Quick Game and Daily Market become string-hung price tags with a punched hole. How to Play, Settings and Credits become chalk words on the board's foot. The chalkboard becomes an A-board standing on the counter, with a crate and the jam jar at its feet. Add a 120 ms press-in on each control.
 - **Accept:** no white rounded rectangle is left in the menu. Every control has a 44 px+ hit area, text contrast ≥ 4.5:1 and keyboard focus rings. Title and tutorial specs pass. Shots P and D, light and dark.
