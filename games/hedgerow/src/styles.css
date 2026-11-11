@@ -5216,3 +5216,19 @@ img.act-scene {
   #screen-select .trail > .stop.vc1 .node > .level-num { grid-column: 2; }
   #screen-select .trail > .stop.vc1 .node .level-name { text-align: right; }
 }
+
+/* Plan item 314: a locked stop is a warm sepia print, not a grey one: the coin a parchment wash, its landmark in
+   sepia ink over a wheat-pale fill (item 124's pencil line art kept); it still comes into colour when it opens. */
+#screen-select .node:disabled .level-num {
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--wheat) 18%, var(--paper)), color-mix(in srgb, var(--wheat) 34%, var(--paper-2)));
+}
+#screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
+#screen-select .node:disabled .level-num.vignette .level-landmark * {
+  fill: color-mix(in srgb, var(--wheat) 26%, var(--paper));
+  stroke: color-mix(in srgb, var(--soil) 78%, var(--paper));
+}
+#screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
+@media (prefers-color-scheme: dark) {
+  #screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
+}
+

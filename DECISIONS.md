@@ -401,3 +401,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 09:40 lane A (item 310): her idle point and wave use the far arm reaching out level toward her facing side and swung toward the lens (shoulder rotation.x 1.3), with the wave lifting the forearm, rather than swapping the rolling pin to the far hand.
 - 2026-11-11 09:40 lane A (item 313): the pick's lit weapon is shot by the street's own renderer into turntable frames (images), not a live second WebGL view, keeping 04:55's cut.
 - 2026-11-11 10:45 lane A (item 313): the names' rack shows lit monochrome thumbnails of the class guns (one still frame from the same studio), not a second turntable per row; the picked row gets the class's glow.
+- 2026-11-11 10:50 lane B (item 314): locked Hedgerow stops keep item 124's line art but in warm sepia (parchment coin, sepia ink), not greyscale; the hedgerow-map spec checks the shared sepia ink instead of a grayscale filter.

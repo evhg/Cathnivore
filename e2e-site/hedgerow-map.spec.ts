@@ -179,7 +179,7 @@ test('plan item 74: on a fresh farm the start tag replaces the empty stars, and 
 
 // Plan item 73: every stop is a painted vignette (its landmark on the plinth, its number a badge), 44 px or larger,
 // in colour once open and in pencil grey while locked.
-test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey while locked', async ({ page }) => {
+test('plan item 73: every stop is a landmark vignette, 44 px or larger, in sepia while locked', async ({ page }) => {
   await seed(page, 6)
   // The stops scale in as the map opens; measure them at rest.
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
@@ -187,7 +187,7 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
     [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => {
       const coin = b.querySelector('.level-num')!.getBoundingClientRect()
       const mark = b.querySelector('.level-num .level-landmark')
-      return { w: coin.width, h: coin.height, mark: !!mark, art: mark?.getAttribute('data-stop-art'), next: b.classList.contains('next'), pennant: getComputedStyle(b.querySelector('.level-num')!, '::after').animationName, badge: b.querySelector('.level-num .level-n')?.textContent, locked: b.disabled, grey: mark ? getComputedStyle(mark).filter.includes('grayscale(1)') : false }
+      return { w: coin.width, h: coin.height, mark: !!mark, art: mark?.getAttribute('data-stop-art'), next: b.classList.contains('next'), pennant: getComputedStyle(b.querySelector('.level-num')!, '::after').animationName, badge: b.querySelector('.level-num .level-n')?.textContent, locked: b.disabled, ink: mark?.querySelector('path, circle, rect, ellipse, polygon') ? getComputedStyle(mark.querySelector('path, circle, rect, ellipse, polygon')!).stroke : '' }
     }),
   )
   expect(nodes).toHaveLength(10)
@@ -195,12 +195,18 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, grey whi
     expect(Math.min(n.w, n.h), `node ${i + 1}`).toBeGreaterThanOrEqual(44)
     expect(n.mark).toBe(true)
     expect(n.badge).toBe(String(i + 1))
-    expect(n.grey).toBe(n.locked)
+    // Plan item 314: a locked stop is drawn in one sepia ink (it was greyscale); an open one keeps its own colours.
     // Plan item 241: each stop its own painted landmark; the next one flies a bobbing pennant.
     expect(n.art, `node ${i + 1}`).toBeTruthy()
     if (n.next) expect(n.pennant).toBe('pennant-bob')
   })
   expect(new Set(nodes.map((n) => n.art)).size).toBeGreaterThanOrEqual(8)
+  const lockedInk = new Set(nodes.filter((n) => n.locked).map((n) => n.ink))
+  expect(lockedInk.size).toBe(1)
+  const [sepia] = [...lockedInk]
+  const rgb = (sepia ?? '').match(/[\d.]+/g)!.map(Number)
+  expect(rgb[0]!, 'warm, not grey').toBeGreaterThan(rgb[2]! * 1.15)
+  for (const n of nodes.filter((x) => !x.locked)) expect(n.ink).not.toBe(sepia)
 })
 
 // Plan item 153: the journey is one painted country: every act in the one scroller, those past the last open act in

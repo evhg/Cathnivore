@@ -85,7 +85,9 @@ export function stopLandSvg(id: number, state: LandState): string {
   if (state === "next") return "";
   // Plan item 273: Hollowell's clutter stands up and out of the name row under the coin (a van ran into 'Going Live'):
   // lifted 16 units and pushed 8 outward, toward its own side.
+  // Plan item 314: and out past the coin's rim, so a grey block or a billboard never stands against the medallion
+  // (24 units outward; the svg lets it run past its box).
   const art =
-    state === "won" ? wonLand(id) : `<g transform="translate(${id % 3 === 1 ? -8 : 8} -16)">${heldLand(id)}</g>`;
-  return `<svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">${art}</svg>`;
+    state === "won" ? wonLand(id) : `<g transform="translate(${id % 3 === 1 ? -24 : 24} -16)">${heldLand(id)}</g>`;
+  return `<svg viewBox="0 0 160 100" aria-hidden="true" focusable="false" overflow="visible">${art}</svg>`;
 }
