@@ -2912,10 +2912,12 @@ dialog.sheet.story #story-skip {
 .field-fit[hidden] {
   display: none;
 }
-/* Plan item 222: the tray's round tab rises about 22 px into the field's foot; the pill stands clear above it. */
+/* Plan item 222: the tray's round tab rises about 22 px into the field's foot. Item 311: the pill stands at the
+   field's top corner instead, over the scenery behind the depot, not over the plots at the foot of the close frame. */
 @media (max-width: 520px) and (orientation: portrait) {
   .field-fit {
-    bottom: 34px;
+    top: 10px;
+    bottom: auto;
   }
 }
 .field-fit svg {
