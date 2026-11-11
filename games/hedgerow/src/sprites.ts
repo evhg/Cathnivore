@@ -60,6 +60,8 @@ export interface TowerLook {
   path?: readonly number[];
   /** Reduced motion: no idle breath and no squash on firing. */
   still?: boolean;
+  /** The body alone, without the ground it stands on (item 322's footing): for silhouettes. */
+  bare?: boolean;
 }
 
 const SPEC_COLOURS: [string, string] = ["#c4433a", "#3f6fb5"];
@@ -175,7 +177,7 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   groundShadow(ctx, x + s * 0.06, base + s * 0.02, s * (tier === 1 ? 0.4 : 0.48), s * (tier === 1 ? 0.13 : 0.16), 0.36);
   // ...and a tier-1 tower stands on a footing of turned earth, so it reads as set on the plot, not printed on it
   // (a pond is the ground itself).
-  if (tier === 1 && look.kind !== "pond") drawFooting(ctx, x, base, s);
+  if (tier === 1 && look.kind !== "pond" && !look.bare) drawFooting(ctx, x, base, s);
   drawPlinth(ctx, tier, x, base, s);
   // Idle: a slow breath. Fire: a quick squash and stretch as it lets go.
   const kick = !look.still && look.fired < 0.15 ? Math.sin((look.fired / 0.15) * Math.PI) : 0;
@@ -213,13 +215,6 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       const n = 3 + Math.min(tier, 3);
       const dark = spec === 0 ? "#2f5a2a" : spec === 1 ? "#4a6b2c" : "#4c7a34";
       const light = spec === 0 ? "#3f6e33" : spec === 1 ? "#5e8636" : "#5f8f3f";
-      // Plan item 322: a back row of crowns rises behind the front bushes, so the hedge stands as tall as its
-      // neighbours (it was a 50 px row of blobs at D).
-      for (let i = 0; i < n - 1; i++) {
-        const bx = x + (i - (n - 2) / 2) * s * (0.6 / n) * 1.3;
-        const by = base - s * 0.42 - (i % 2) * s * 0.05 + Math.sin(t * 1.3 + i * 1.7) * s * 0.008;
-        blob(ctx, bx, by, s * (0.17 + ((i + 1) % 2) * 0.02), dark);
-      }
       for (let i = 0; i < n; i++) {
         const bx = x + (i - (n - 1) / 2) * s * (0.6 / n) * 1.3;
         const by = base - s * 0.2 - (i % 2) * s * 0.08 + Math.sin(t * 1.5 + i) * s * 0.008;
@@ -2341,7 +2336,8 @@ export function propIconsFor(pm: number): Property[] {
 
 /**
  * Plan item 52: a tower's tier-1 silhouette at a given cell size, as a mask (1 where the body covers a pixel, the
- * soft ground shadow left out). Tests compare these pairwise so towers stay tellable apart at phone size.
+ * soft ground shadow and item 322's footing of turned earth left out: every tier-1 tower shares that ground, so it
+ * says nothing about which tower it is). Tests compare these pairwise so towers stay tellable apart at phone size.
  */
 export function towerSilhouette(kind: TowerKind, cell = 24): { w: number; h: number; mask: number[] } {
   const w = Math.round(cell * 1.5);
@@ -2350,7 +2346,7 @@ export function towerSilhouette(kind: TowerKind, cell = 24): { w: number; h: num
   c.width = w;
   c.height = h;
   const ctx = c.getContext("2d")!;
-  drawTower(ctx, { kind, tier: 1, spec: null, fired: 9, dazed: false, still: true }, w / 2, h / 2, cell, 0);
+  drawTower(ctx, { kind, tier: 1, spec: null, fired: 9, dazed: false, still: true, bare: true }, w / 2, h / 2, cell, 0);
   const d = ctx.getImageData(0, 0, w, h).data;
   const mask: number[] = [];
   for (let i = 0; i < w * h; i++) mask.push(d[i * 4 + 3]! > 160 ? 1 : 0);
