@@ -1068,6 +1068,17 @@ function render(): void {
   crops?.toggleAttribute('data-sprouting', game.taps > 0 || flow.solved)
   // Plan item 106: a solved board waters the garden: its beds go dark and wet (the e2e reads `data-watered`).
   document.querySelector('.bea-garden')?.setAttribute('data-watered', String(flow.solved))
+  // Plan item 329: Bea waits at her garden's gate with her can until the water comes (she runs out on the solve).
+  {
+    const garden = document.querySelector<HTMLElement>('.bea-garden')
+    if (garden && !garden.querySelector('.bea-waiting')) {
+      const bea = document.createElement('span')
+      bea.className = 'bea-waiting'
+      bea.setAttribute('aria-hidden', 'true')
+      bea.innerHTML = beaWateringSvg()
+      garden.append(bea)
+    }
+  }
   // Plan item 197: the garden grows with the share of fields watered: seedlings at a third, leaves at two thirds,
   // flowers and a scarecrow at the solve.
   {

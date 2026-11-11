@@ -4676,3 +4676,18 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 @media (prefers-reduced-motion: reduce) {
   .gb-head { transition: none; }
 }
+
+/* Plan item 329: Bea waits at the garden's gate (where her run starts) with her watering can, until the solve sends
+   her running to the beds; the runner takes her place. */
+.bea-waiting {
+  position: absolute;
+  left: 0;
+  bottom: 22px;
+  width: 44px;
+  height: 38px;
+  pointer-events: none;
+}
+.bea-waiting svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bea-waiting .ga-water { opacity: 0; }
+.bea-garden:has(.bea-runner) .bea-waiting,
+.bea-garden[data-watered='true'] .bea-waiting { display: none; }
