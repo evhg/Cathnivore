@@ -2957,7 +2957,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** face 60 px+ wide on ns-play-D, 40 px+ on ns-play-P; skin mean luminance 55-85% with eyes and lips 3:1 against it; cathode-perf in budget; cathode specs pass; shots of title and pick at P and D.
 - **Size:** 2
 
-## 307. [ ] Hedgerow 3D: a finished world edge, and a phone camera that frames the field
+## 307. [ ] Hedgerow 3D: a finished world edge, and a phone camera that frames the field *(lane B, in progress)*
 - **Why:** `plan1108e/hedge-l21-3d-D` (0-130 x 80-560): the left edge is grey faceted rock with no water surface; objects sliced by the top edge (870-940 x 72-85, trees 400-500 x 72-140); white out-of-focus blobs over the field (220-260 x 815-860, 600-650 x 710-745). `hedge-l21-3d-P` (0-100 x 60-680) the same cliff, and the field's right column is cut at x=390, the depot roof at the top (150-250 x 55-110).
 - **Build:** the diorama's edge as a crafted base: marsh water with a foam line and reeds, a soil skirt under the field; on a phone the camera fits the field's bounds in portrait (Whole Field stays a toggle); motes never sit between the camera and a plot.
 - **Accept:** no untextured grey geometry in either l21 3D shot; every plot column inside the phone frame; nothing cut by the canvas top; no mote over 12 px across a plot; hedgerow-3dframe, -closeframe, -biome3d pass; key art re-shot; shots P and D.
