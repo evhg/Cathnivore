@@ -389,9 +389,29 @@ export function buildFrontCath(phone: boolean): FrontCath {
     if (shine > 0)
       keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.82, 0.85, up ) * ( 1.0 - smoothstep( 0.89, 0.92, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.07, 0.065, 0.075 ) ); }`;
     // Plan item 289: a narrower, cooler band (the wide warm one lit a pale blotch beside the parting at the title).
+    // Plan item 306: the face is lit by the street's brightness, not its colour: its light is rebuilt as the skin's own
+    // albedo times the light's luminance (the pick's ice key and the cyan sign tinted her a cold blue-white), its
+    // saturation is raised by the share the noir grade drains from midtones (post.ts keeps 55%), so she grades to warm
+    // skin rather than grey, and its brightness rolls off with a soft knee so skin never clips and the painted eyes,
+    // liner and lips keep their contrast. Only the face (the material with catch-lights); the coat keeps the street.
+    const skinLight =
+      glint > 0
+        ? `{
+            const vec3 W = vec3( 0.2126, 0.7152, 0.0722 );
+            float la = max( dot( diffuseColor.rgb, W ), 1e-4 );
+            float l = dot( outgoingLight, W );
+            vec3 c = mix( outgoingLight, diffuseColor.rgb * ( l / la ), 0.8 );
+            float lc = dot( c, W );
+            c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
+            float l2 = lc / ( 1.0 + lc / 1.4 );
+            outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 );
+          }
+          #include <opaque_fragment>`
+        : "#include <opaque_fragment>";
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU);
       sh.fragmentShader = sh.fragmentShader
+        .replace("#include <opaque_fragment>", skinLight)
         .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + INK_BAND)
         // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
@@ -1079,7 +1099,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const blinkTex = new THREE.CanvasTexture(blinkCanvas);
   blinkTex.colorSpace = THREE.SRGBColorSpace;
   blinkTex.anisotropy = 4;
-  const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.5, metalness: 0 });
+  // Plan item 306: matte skin (0.5 laid a broad white sheen over the face under the pick's strong key).
+  const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.82, metalness: 0, fog: false });
   rimify(faceMat, 0.25, 1, 4);
   mats.push(faceMat);
   addS(skull, faceMat, headPivot);
