@@ -1606,3 +1606,6 @@ html.no-animations .title-screen * {
   .title-menu .title-cta:active,
   .title-menu .title-minor .quiet:active { transform: translateY(2px); }
 }
+/* Plan item 327: a tag's clip-path cut its focus ring down to a corner sliver (phone and D): while focused by keyboard
+   the tag drops its clip, so the full ring shows (as Setup's price tags do). */
+.title-menu .title-cta:not(.primary):not(:first-child):focus-visible { clip-path: none; }
