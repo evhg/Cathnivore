@@ -3009,7 +3009,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** locked medallions 3:1 against the map; no prop over a node or label (a unit test over the menu layout); P labels within 12 px of their node; text 12 px+; menu specs pass; shots P and D.
 - **Size:** 2
 
-## 315. [ ] Runnel: the lesson's steps as drawn tiles, not form tabs *(lane B, in progress)*
+## 315. [x] Runnel: the lesson's steps as drawn tiles, not form tabs *(done 2026-11-11 07:45 lane B: each step is a 48 px hand-inked tile showing its goal (a bend with a turn arrow, a channel with the water reaching in, a field the water meets), the step's number a badge on its corner where item 176's pencil tick lands when done (its shape reads in greyscale; reduced motion already stills the stamp); shots scratchpad steps-D/-P, lesson-P2; runnel-lesson*, -front, -practice, -critique91, -host-size, -one-cath pass at P and D (41). Not taken: moving the strip into the band above at D (item 304: that band is the card's centring in its column))*
 - **Why:** `plan1111a/runnel-P` (14-385 x 100-180) and `runnel-D` (55-345 x 262-360): 'Your first field' is three grey boxed tabs with a number and a sentence, a stock stepper against the painted valley; D leaves a 90 px empty band above them (16-345 x 100-185).
 - **Build:** each step a 48 px drawn hex showing its goal (a bend, a line-up, a field facing water) on a torn notebook strip; a step done gets a pencil tick drawn in over 300 ms; at D the strip moves up into the empty band.
 - **Accept:** each step 48x48 px+ with a 13 px+ label; done reads in greyscale (the tick's shape); reduced motion a fade; runnel lesson specs pass; key art re-shot if a source changes; shots P and D.
