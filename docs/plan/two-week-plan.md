@@ -3021,7 +3021,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 her figure 150 px+ with the face whole; the bubble meets neither the bunting nor the subtitle; Campaign above 600 px; title and axe specs pass; key art re-shot if a source changes; shots P light and dark.
 - **Size:** 1
 
-## 317. [ ] NIGHT SHIFT: the phone title and pick sharp, Cath clear of the menu
+## 317. [ ] NIGHT SHIFT: the phone title and pick sharp, Cath clear of the menu *(lane A, in progress)*
 - **Why:** `plan1111a/ns-title-P` (200-335 x 225-700) and `ns-play-P` (130-260 x 115-445): on a phone Cath's 3D figure is soft and upscaled (smeared coat edges, a blurred face) where D is crisp; the menu panel (8-178 x 205-435) sits over her body.
 - **Build:** the title and pick canvases at `min(devicePixelRatio, 2)`, falling back only when a measured frame budget is missed; on a phone the camera puts her in the right 55% of the frame, clear of the menu; a soft vignette behind the menu, not an opaque box.
 - **Accept:** a DPR-3 phone's backing store 2x its CSS size or more; her box meets the menu by 10% or less; cathode-perf phone budgets pass (alone); shots ns-title-P and ns-play-P before and after.
