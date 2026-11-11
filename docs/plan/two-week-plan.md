@@ -3125,7 +3125,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no two cards share a Cath pose. Each poster shows ≥ 40% mid-tone pixels. Text over the art has 4.5:1 contrast. `e2e:site` and the keyart freshness tests pass. Shots P and D.
 - **Size:** 2
 
-## 333. [ ] The bugs from the 2026-11-11 17:30 critique, fixed as one batch
+## 333. [ ] The bugs from the 2026-11-11 17:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first, measured in the page; the critique measured by eye from the shots `e2e/screenshots/plan1111c`)
   - **Cathnivore:**
     - `cath-game-D`: Supply 1 Outlet (1085-1218 x 690-860) covers Injunction's first letter ('njunction', 1200-1330 x 715-880), so item 312's rule is broken again.
