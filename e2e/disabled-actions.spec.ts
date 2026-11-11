@@ -76,7 +76,9 @@ test('Invest shows a disabled, explained placeholder for market cards the player
     await expect(item.locator('.action-why-not')).toHaveText(/^Need \d+ more Marks?$/)
     shortBy.push(Number((await item.locator('.action-why-not').innerText()).match(/\d+/)![0]))
   }
-  await expect(investItems.filter({ hasText: 'Wholesale Account' }).locator('.action-why-not')).toHaveText('Need 2 more Marks')
+  // 2 short at its full price; 1 in a week whose market discounts Community Improvements (Setup's week's event, item
+  // 204, so this read 'Need 1 more Mark' in Harvest Festival weeks)
+  await expect(investItems.filter({ hasText: 'Wholesale Account' }).locator('.action-why-not')).toHaveText(/^Need [12] more Marks?$/)
 
   // Still explained by the same "Invest" glossary tooltip a real Invest button offers (SPEC 10.5).
   const disabledTrigger = investItems.first().locator('.tooltip-trigger-button')
