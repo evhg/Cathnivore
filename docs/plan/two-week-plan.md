@@ -3101,7 +3101,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a picked and an unpicked card differ by more than the border (lift, ribbon). Power text ≥ 14 px at 4.5:1. Cath's box does not intersect Start. Setup specs pass. Shots P and D, light and dark.
 - **Size:** 2
 
-## 329. [ ] Runnel: Bea's garden as the payoff, and Cath standing in the valley
+## 329. [ ] Runnel: Bea's garden as the payoff, and Cath standing in the valley *(lane B, in progress)*
 - **Why:** `plan1111c/runnel-D` (1155-1390 x 760-840): 'Bea's garden', where the water is going, is a brown plank trough behind a fence. Cath (440-600 x 570-860) floats behind a grey block wall (390-615 x 790-860) set in the middle of the fields. `runnel-P` has the same problem: the garden (220-380 x 705-760) and the wall (10-125 x 740-770).
 - **Build:** Bea's garden as an illustrated plot: raised beds, sunflowers, a bean wigwam, a scarecrow Bea painted, and Bea (6) herself with a watering can. It wilts while the valley is dry and blooms in a 600-900 ms stagger when the daily is solved; this is Bea's own garden, item 308's valley green-over doesn't touch it. Cath stands on a garden path or a footbridge with a ground shadow instead of behind a wall.
 - **Accept:** the garden is ≥ 230 x 120 px at D and ≥ 150 x 80 px at P. Its wilted and bloomed states are visibly different in shots. Under reduced motion it fades only. Runnel specs and the keyart freshness test pass (re-shoot the keyart). Shots P and D, light and dark.
