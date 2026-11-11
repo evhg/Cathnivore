@@ -2991,7 +2991,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 312. [ ] Cathnivore: the desktop hand as a stall shelf, no card over another
+## 312. [ ] Cathnivore: the desktop hand as a stall shelf, no card over another *(lane B, in progress)*
 - **Why:** `plan1111a/cath-game-D` (368-1325 x 685-880): the hand's cards overlap: Injunction (1097-1322 x 762-860) covers Buy Letterpress Flyers' price chip (1215-1250 x 750-765), Graft's yield chip is clipped (490-555 x 848-865), 'Supply 1 Outlet · Brindle Hills' runs under the next card (848-920 x 800-833); it reads as a jam, not a stall.
 - **Build:** the desktop hand on a wooden two-shelf stall: cards at a fixed width on a grid with no overlap, free tactic cards (Injunction and the like) on their own 'Free today' peg at the shelf's end, a '+N more' crate when they don't fit, titles to two lines.
 - **Accept:** at 1440x900 and 1280x800 no card's box meets another's (a spec over every hand card), every price and yield chip whole, text 13 px+; table-hand, board-scale, desktop-no-scroll pass; shots D before and after.
