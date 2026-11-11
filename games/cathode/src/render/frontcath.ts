@@ -1251,6 +1251,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   let hairCols = 0;
   let hairRows = 0;
   let lockGeo: THREE.BufferGeometry | null = null;
+  // Plan item 319: the index count of the sheet's locks alone, before the face-framing wisps and curtains: under the
+  // Ghost's hood the draw range stops there, so the hood holds her hair back off her face.
+  let lockSheetIdx = Infinity;
   let lockRest: Float32Array | null = null;
   // Per lock vertex: its place on the sheet's grid (column, row), so it sways with the sheet under it.
   let lockAt: Float32Array | null = null;
@@ -1445,6 +1448,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
           lidx.push(p0, p0 + 1, p1, p1, p0 + 1, p1 + 1);
         }
     };
+    lockSheetIdx = lidx.length;
     for (const sx of [-1, 1]) {
       // Plan item 275: two loose wisps per side, out of the hairline at the temple, down past the outer eye to the
       // jaw, so the face is framed by strands, not the shell's edge.
@@ -2943,6 +2947,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       wearing = cls && kits.has(cls) ? cls : null;
       for (const [k, g] of kits) g.visible = k === wearing;
       for (const [k, g] of kitExtras) g.visible = k.split("-")[0] === wearing;
+      // Plan item 319: the hood up holds the face-framing locks in; on the far side of her three-quarter face a
+      // curtain lay over her outer eye as a dark glossy blob, the rim light catching it.
+      lockGeo?.setDrawRange(0, wearing === "ghost" ? lockSheetIdx : Infinity);
       if (caseDown && caseUp) {
         caseDown.visible = wearing === "fixer" && !carrying;
         caseUp.visible = wearing === "fixer" && carrying;
