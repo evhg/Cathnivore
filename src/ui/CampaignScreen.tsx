@@ -129,6 +129,75 @@ function vignetteRegions(chapter: Chapter): RegionId[] {
 // with the co-op's bunting across it and the sun out. `data-chapter-art` names the state: locked (pencil),
 // current, or done.
 const BUNTING_FLAGS = 7
+
+/** Item 309: a small scene per chapter, in the vignette's front left (vignette units, 132 x 88). */
+function ChapterMotif({ id }: { id: string }) {
+  const ink = { stroke: 'var(--ink)', strokeWidth: 0.7, strokeLinejoin: 'round' as const }
+  let art: React.ReactNode = null
+  if (id === 'word-of-mouth') {
+    // A queue chatting at the stall: three heads and shoulders, a speech bubble over them.
+    art = (
+      <>
+        {[0, 9, 18].map((x, k) => (
+          <g key={x} transform={`translate(${x} ${k === 1 ? -1 : 0})`}>
+            <path d="M0 14 Q0 7 4 7 Q8 7 8 14 Z" fill={k === 1 ? 'var(--clay)' : k === 2 ? 'var(--pasture-deep)' : 'var(--sea)'} {...ink} />
+            <circle cx={4} cy={4.5} r={2.6} fill="var(--paper-hi)" {...ink} />
+          </g>
+        ))}
+        <path d="M14 -6 h10 a2.5 2.5 0 0 1 2.5 2.5 v3 a2.5 2.5 0 0 1 -2.5 2.5 h-6 l-3 3 v-3 h-1 a2.5 2.5 0 0 1 -2.5 -2.5 v-3 a2.5 2.5 0 0 1 2.5 -2.5 z" fill="var(--paper-hi)" {...ink} />
+        <path d="M16.5 -3 h6 M16.5 -1 h4" stroke="var(--ink)" strokeWidth={0.6} />
+      </>
+    )
+  } else if (id === 'growing-season') {
+    // Rows of seedlings on dark tilled earth.
+    art = (
+      <>
+        <path d="M0 14 L30 14 L26 6 L4 6 Z" fill="var(--soil)" {...ink} />
+        {[0, 1, 2].flatMap((r) =>
+          [0, 1, 2, 3].map((c) => {
+            const x = 6 + c * 6 + r * 0.6
+            const y = 8 + r * 2.6
+            return <path key={`${r}-${c}`} d={`M${x} ${y} v-2.2 M${x} ${y - 1.4} q-1.6 -1.4 -2.2 -0.4 M${x} ${y - 1.8} q1.6 -1.6 2.2 -0.4`} stroke="var(--pasture-deep)" strokeWidth={0.8} fill="none" strokeLinecap="round" />
+          }),
+        )}
+      </>
+    )
+  } else if (id === 'the-plan') {
+    // The plan pinned to an easel: a sheet with a route drawn on it.
+    art = (
+      <>
+        <path d="M6 16 L11 -2 M20 16 L15 -2 M13 -2 V16" fill="none" {...ink} />
+        <rect x={4} y={-6} width={18} height={13} rx={0.8} fill="var(--paper-hi)" {...ink} />
+        <path d="M7 3 Q10 -3 13 1 T19 -3" fill="none" stroke="var(--clay)" strokeWidth={0.9} strokeDasharray="1.4 1" />
+        <circle cx={19} cy={-3} r={1.2} fill="var(--clay)" stroke="none" />
+      </>
+    )
+  } else if (id === 'friends-in-low-places') {
+    // A cellar door down a few steps, a lamp lit over it.
+    art = (
+      <>
+        <path d="M2 14 H28 V4 H2 Z" fill="var(--wood)" {...ink} />
+        <path d="M10 14 V7 Q15 3 20 7 V14 Z" fill="var(--soil)" {...ink} />
+        <circle cx={18} cy={11} r={0.7} fill="var(--wheat)" stroke="none" />
+        <path d="M24 4 V0 M22.5 0 h3 l-0.6 3 h-1.8 Z" fill="var(--wheat)" {...ink} />
+      </>
+    )
+  } else if (id === 'kingsmarket') {
+    // The market's crown on a hanging banner.
+    art = (
+      <>
+        <path d="M6 -4 H24 M8 -4 V14 L15 10 L22 14 V-4" fill="var(--clay)" {...ink} />
+        <path d="M10 6 L10 0 L12.5 3 L15 -1 L17.5 3 L20 0 L20 6 Z" fill="var(--wheat)" {...ink} />
+      </>
+    )
+  }
+  if (!art) return null
+  return (
+    <g className="cmp-vig-mark cmp-vig-motif" data-motif={id} transform="translate(5 68)">
+      {art}
+    </g>
+  )
+}
 function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked' | 'current' | 'done' }) {
   const locked = state === 'locked'
   const producer = chapter.producers[0]
@@ -181,6 +250,9 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
           </g>
         )
       })}
+      {/* Item 309: each chapter's own motif in the front left, so no two plates read alike (drawn as a landmark, so a
+          locked chapter shows it as line art too). */}
+      <ChapterMotif id={chapter.id} />
       {/* The producer at their stall, front right: a striped awning over a counter, their bust behind it. */}
       {producer && (
         <g className="cmp-vig-stall" transform={`translate(${VIG_W - 34} ${VIG_H - 33})`}>

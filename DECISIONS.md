@@ -383,3 +383,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 03:40 lane A (item 300): the Ghost's rifle is held by the fore-end (the group's children shifted 0.15 m) rather than re-posing the arm, so item 180's posed hand and the class-pose checks stay as they were.
 - 2026-11-11 03:35 lane B (item 267): closed on a measure, not a new prop: held land's chroma is 100% of free (the glaze is an edge band), and every held hex already carries a glossy billboard; the Outlets are glossy miniatures, so no billboard per Outlet.
 - 2026-11-11 03:40 lane B (item 297): on a phone's close 3D frame her coaching means the best plot in view (suggestedPlot's `allow`), not the field's best off-screen.
+- 2026-11-11 04:55 lane B (item 309): locked chapters keep item 279's dusk and wax seal with their scene as line art, no kraft wrapper on top; each chapter got its own foreground motif so no two plates read alike.
