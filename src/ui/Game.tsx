@@ -780,6 +780,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       for (const c of cards) if (c.dataset.wide !== undefined && overflows(c)) c.dataset.dense = ''
     }
     delete hand.dataset.rows
+    hand.style.removeProperty('--hand-card-w')
     widen()
     let widths = cards.map((c) => c.offsetWidth)
     let rows = plan(1, widths)
@@ -796,6 +797,24 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         rows = plan(r, widths)
         if (fits(rows, widths)) break
       }
+      // Plan item 312: in rows no card lies over another: every card takes the widest width that fits its row with
+      // an 8 px gap (a wide card 19% more), set as --hand-card-w (table.css), and the rows are laid out again.
+      const GAP = 8
+      let w = window.innerWidth < 1400 ? 186 : 214
+      for (const row of rows) {
+        const m = row.to - row.from
+        const wides = cards.slice(row.from, row.to).filter((c) => c.dataset.wide !== undefined).length
+        w = Math.min(w, (room - GAP * (m - 1)) / (m + 0.19 * wides))
+      }
+      hand.style.setProperty('--hand-card-w', `${Math.floor(w)}px`)
+      widths = cards.map((c) => c.offsetWidth)
+      rows = rows.map((row) => {
+        const ws = widths.slice(row.from, row.to)
+        const sum = ws.reduce((x, y) => x + y, 0)
+        const n = ws.length
+        const step = n > 1 ? Math.min(GAP, (room - sum) / (n - 1)) : 0
+        return { ...row, step, width: sum + step * (n - 1) }
+      })
     }
     const cardH = Math.max(...cards.map((c) => c.offsetHeight))
     const rowStep = cardH + 6

@@ -3065,6 +3065,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-item:nth-child(n+6) { animation-delay: 150ms; }
   /* Cath's suggested card stands a little proud of the fan. */
   .game-layout .table-hand .action-item[data-suggested] { --pick-rise: -10px; }
+  /* Plan item 312: in rows it rises only within the 6 px between rows, not over the card above. */
+  .game-layout .table-hand[data-rows] .action-item[data-suggested] { --pick-rise: -4px; }
   /* Plan item 177: only a pointer or keyboard focus lifts a card; a card focused by a click stays in the fan, so
      it never lies over its neighbour's name. */
   .game-layout .table-hand .action-item:hover,
@@ -3176,15 +3178,17 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-item[data-dense] .action-label > svg.action-art[data-scene] { height: 56px; }
   .game-layout .table-hand .action-family-name > svg.action-art[data-scene] { width: 44px; height: 24px; }
   /* Two rows: landscape cards, the window down the card's left side, the name and price beside it. */
-  .game-layout .table-hand[data-rows] .action-item { width: 214px; height: 90px; }
-  .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 254px; }
+  /* Plan item 312: the width fan() gives every card in rows so none lies over another (--hand-card-w), the picture
+     window a share of it. */
+  .game-layout .table-hand[data-rows] .action-item { --win: calc(var(--hand-card-w, 214px) * .44); width: var(--hand-card-w, 214px); height: 90px; }
+  .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 214px) * 1.19); }
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
-  .game-layout .table-hand[data-rows] .action-item .action-card-draggable { position: relative; padding-left: 112px; }
+  .game-layout .table-hand[data-rows] .action-item .action-card-draggable { position: relative; padding-left: calc(var(--win) + 12px); }
   .game-layout .table-hand[data-rows] .action-item .action-label > svg.action-art[data-scene] {
     position: absolute;
     left: 6px;
     top: 6px;
-    width: 100px;
+    width: var(--win);
     height: calc(100% - 12px);
     margin: 0;
   }
@@ -3199,11 +3203,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item > .tooltip-trigger { left: 10px; right: auto; top: 10px; scale: .85; }
   /* Under 1400 px a narrower window keeps a nine-card turn to two rows (fan() allows a fifth's overlap). */
   @media (max-width: 1399.98px) {
-    .game-layout .table-hand[data-rows] .action-item { width: 186px; }
-    .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 220px; }
-    .game-layout .table-hand[data-rows] .action-item > button:first-child,
-    .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding-left: 90px; }
-    .game-layout .table-hand[data-rows] .action-item .action-label > svg.action-art[data-scene] { width: 80px; }
+    .game-layout .table-hand[data-rows] .action-item { --win: calc(var(--hand-card-w, 186px) * .43); width: var(--hand-card-w, 186px); }
+    .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 186px) * 1.19); }
   }
 }
 @media (min-width: 1240px) and (min-height: 760px) {
