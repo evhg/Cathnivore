@@ -1873,3 +1873,68 @@ body {
   .hero-booth,
   .hero-counter { transition: none; }
 }
+
+/* Plan item 332: each poster is the game's own: its logotype across the top of the art (each lettered its own way in
+   the page's three faces: Cathnivore's market serif, Runnel's flowing italic, Hedgerow's spaced small caps, NIGHT
+   SHIFT's tracked neon caps) over a scrim that holds it at 4.5:1 on any frame, and on hover the art and Cath part a
+   little (the art drifts back, she steps forward). Reduced motion keeps them still. */
+.hero-game-art::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: var(--z-poster-scrim);
+  height: 50%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--night) 92%, transparent), color-mix(in srgb, var(--night) 80%, transparent) 42%, color-mix(in srgb, var(--night) 30%, transparent) 72%, transparent);
+  pointer-events: none;
+}
+.hero-game-logo {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  right: 12px;
+  z-index: var(--z-poster-logo);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.875rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 0 color-mix(in srgb, var(--night) 70%, transparent), 0 0 14px color-mix(in srgb, var(--night) 80%, transparent);
+  pointer-events: none;
+}
+.hero-game-runnel .hero-game-logo { font-family: var(--font-voice); font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 2.6vw, 2.25rem); letter-spacing: 0; }
+.hero-game-hedgerow .hero-game-logo { font-variant-caps: all-small-caps; font-weight: 700; letter-spacing: 0.08em; font-size: clamp(1.375rem, 2.4vw, 2rem); color: var(--gold-hi); }
+.hero-game-nightshift .hero-game-logo {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: clamp(1rem, 1.7vw, 1.375rem);
+  letter-spacing: 0.24em;
+  color: var(--cream);
+  text-shadow: 0 0 2px var(--cd-blood), 0 0 10px color-mix(in srgb, var(--cd-blood) 80%, transparent), 0 2px 0 var(--night);
+}
+.hero-game-art img,
+.hero-game-cath { transition: translate 260ms var(--ease-out), scale 260ms var(--ease-out); }
+.hero-game-art canvas.poster-loop { transition: opacity 400ms ease, translate 260ms var(--ease-out), scale 260ms var(--ease-out); }
+/* she stands in front of the scrim (it would dim her head on a short poster) */
+.hero-game-art .hero-game-cath { z-index: var(--z-poster-scrim); }
+.hero-game:hover .hero-game-art img,
+.hero-game:hover .hero-game-art canvas.poster-loop,
+.hero-game:focus-visible .hero-game-art img,
+.hero-game:focus-visible .hero-game-art canvas.poster-loop { translate: -1.5% 0; scale: 1.05; }
+.hero-game:hover .hero-game-cath,
+.hero-game:focus-visible .hero-game-cath { translate: 4px -3px; scale: 1.04; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-game-art img,
+  .hero-game-cath { transition: none; }
+  .hero-game-art canvas.poster-loop { transition: opacity 400ms ease; }
+  .hero-game:hover .hero-game-art img,
+  .hero-game:hover .hero-game-art canvas.poster-loop,
+  .hero-game:focus-visible .hero-game-art img,
+  .hero-game:focus-visible .hero-game-art canvas.poster-loop,
+  .hero-game:hover .hero-game-cath,
+  .hero-game:focus-visible .hero-game-cath { translate: none; scale: none; }
+}
+/* on a phone NIGHT SHIFT's 18+ badge holds the art's top-right corner (item 107): the logotype stops short of it */
+@media (max-width: 899.98px), (max-aspect-ratio: 1/1) {
+  .hero-game-nightshift .hero-game-logo { right: 50px; letter-spacing: 0.16em; }
+}

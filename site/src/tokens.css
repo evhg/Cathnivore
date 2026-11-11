@@ -18,6 +18,9 @@
   --z-booth-cath: 1;
   --z-booth-counter: 2;
   --z-booth-words: 3;
+  /* plan item 332: a poster's art, its loop, the scrim and its logotype, back to front */
+  --z-poster-scrim: 2;
+  --z-poster-logo: 3;
   --cream: #fbf1df;
   /* Plan item 181: Cath's market stall: its awning's stripes and the slate today's Runnel is chalked on */
   --awning-red: #c8553d;
