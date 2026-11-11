@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AutoScale, frontDynOptions } from "../games/cathode/src/game/autoscale";
+import { AutoScale, frontDynOptions, gameDynOptions } from "../games/cathode/src/game/autoscale";
 
 const run = (a: AutoScale, ms: number, n: number) => {
   let last: number | null = null;
@@ -82,6 +82,26 @@ describe("frontDynOptions", () => {
     run(a, 33, 30);
     expect(a.scale).toBe(0.9);
     run(a, 16.7, 600);
+    expect(a.scale).toBe(1);
+  });
+});
+
+// Plan item 317: the game's scale, fed rAF intervals, keeps a phone on time at 60 Hz at full scale (it fell to the 0.4
+// thermal rescue: every 16.7 ms frame read as slow against 15.5 ms).
+describe("gameDynOptions", () => {
+  it("holds full scale and no rescue while a 60 Hz screen's frames arrive on time", () => {
+    const a = new AutoScale(gameDynOptions());
+    run(a, 16.7, 3000);
+    expect(a.scale).toBe(1);
+    expect(a.rescued).toBe(false);
+  });
+  it("steps down when frames miss vsyncs, rescues only when the floor is still slow, recovers when on time", () => {
+    const a = new AutoScale(gameDynOptions());
+    run(a, 25, 60);
+    expect(a.scale).toBe(0.81);
+    run(a, 33.4, 600);
+    expect(a.rescued).toBe(true);
+    run(a, 16.7, 6000);
     expect(a.scale).toBe(1);
   });
 });

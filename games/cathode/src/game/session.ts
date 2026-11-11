@@ -95,7 +95,7 @@ import { dressGun, drawnSlots, modelForClass } from "./gunparts";
 import { exportCode, makeSave } from "../sim/save";
 import { levelUpToast } from "../ui/levelup";
 import { xpForLevel, xpToNext as simXpToNext } from "../sim/stats";
-import { AutoScale } from "./autoscale";
+import { AutoScale, gameDynOptions } from "./autoscale";
 import { DeathCam, GunDrop, deathState, resyncState } from "./death-cam";
 import { DeathScreen } from "../ui/deathcard";
 import { deathLine, type DeathCause } from "./voice";
@@ -1101,7 +1101,10 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   if (!inOffice) setTimeout(() => staged || voice.say(inVault ? "startVault" : inTower ? "startTower" : inPlaza ? "startPlaza" : inClinic ? "startClinic" : "start"), 2600);
 
   // Dynamic resolution holds the frame rate; off in screenshot and automated runs, where frames are always slow.
-  const auto = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, slowMs: 15.5, fastMs: 11, rescueMin: 0.4 });
+  // Plan item 317: fed the rAF interval, so judged against the vsync (gameDynOptions): with slow > 15.5 ms every
+  // on-time frame on a 60 Hz screen (16.7 ms; iPhone Safari's rAF rate) read as slow, and a phone that held 60 fps
+  // still fell to 0.6 and on into the 0.4 thermal rescue within seconds: the owner's blurry street (2026-11-08).
+  const auto = new AutoScale(gameDynOptions());
   const autoOn = !o.shot && !navigator.webdriver;
   const renderScaleParam = Math.max(0.25, Math.min(1, Number(new URLSearchParams(location.search).get("rs") ?? 1) || 1));
   const ambColor = new THREE.Color();

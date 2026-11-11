@@ -75,3 +75,12 @@ export function frontDynOptions(phone: boolean): AutoScaleOptions {
     ? { min: 0.6, max: 1, target: 1000 / 30, slowMs: 38, fastMs: 34.5 }
     : { min: 0.6, max: 1, target: 1000 / 60, slowMs: 18, fastMs: 17.2 };
 }
+
+/**
+ * Plan item 317: the game's dynamic resolution. It is fed the rAF interval, which can't fall under the screen's
+ * vsync (16.7 ms at 60 Hz), so the thresholds sit either side of it: slow once frames miss vsyncs (an average over
+ * 18 ms), back up while they arrive on time (17.2 ms or less). A 120 Hz screen on time reads fast throughout.
+ */
+export function gameDynOptions(): AutoScaleOptions {
+  return { min: 0.6, max: 1, target: 1000 / 60, slowMs: 18, fastMs: 17.2, rescueMin: 0.4 };
+}
