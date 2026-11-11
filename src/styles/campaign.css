@@ -1165,3 +1165,19 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   text-decoration: underline 2px color-mix(in srgb, var(--chalk) 55%, transparent);
   text-underline-offset: 4px;
 }
+
+/* Item 309: on a phone she stands beside the title, her line under it, so the map and the first chapter's card (its
+   plate and Start key) come up the screen by the height of her row. */
+@media (max-width: 600px) {
+  .cmp-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 0;
+    row-gap: 8px;
+  }
+  .cmp-header > .cmp-header-text { grid-column: 1; grid-row: 1; }
+  .cmp-header .cmp-cath { display: contents; }
+  .cmp-header .cmp-cath-line { grid-column: 1; grid-row: 2; margin: 0 12px 0 0; max-width: none; }
+  .cmp-header .cmp-host-stand { grid-column: 2; grid-row: 1 / span 2; align-self: end; }
+}
