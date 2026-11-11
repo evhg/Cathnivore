@@ -652,6 +652,17 @@ button {
   background: #8fb35c;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 6px 24px rgba(40, 30, 10, 0.18);
 }
+/* Plan item 307: in 3D the field's top edge fades into the scene's haze (its fog colour, set by the renderer), so
+   far scenery cut by the frame dissolves into distance. */
+.stage[data-haze]::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 56px;
+  background: linear-gradient(color-mix(in srgb, var(--field-haze) 92%, transparent), color-mix(in srgb, var(--field-haze) 40%, transparent) 45%, transparent);
+  pointer-events: none;
+  z-index: var(--z-fx);
+}
 #canvas {
   width: 100%;
   height: 100%;

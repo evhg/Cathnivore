@@ -464,6 +464,11 @@ export class Renderer3D {
     this.world.add(buildBackdrop(game.level.cols, L, hasTwist(game.level, "night") || game.level.id > 90, hasTwist(game.level, "fog")));
     const fogDim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
     this.scene.fog = new THREE.Fog(L.fog, L.fogNear * fogDim, L.fogFar * fogDim);
+    // Plan item 307: the frame's top edge fades into the same haze, so far scenery the frame cuts (a lighthouse, a
+    // tree, a moored mast) dissolves into distance instead of ending in a hard slice (styles.css .stage[data-haze]).
+    const stage = this.canvas.parentElement;
+    stage?.style.setProperty("--field-haze", `#${new THREE.Color(L.fog).getHexString()}`);
+    stage?.setAttribute("data-haze", "");
     const night = hasTwist(game.level, "night") || game.level.id > 90;
     this.renderer.toneMappingExposure =
       L.exposure * (game.level.id > 90 ? 1.25 : night ? 1 : 1.06) * (setPiece(game.level, "blackout") ? 0.55 : 1);
