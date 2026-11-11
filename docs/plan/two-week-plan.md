@@ -2905,7 +2905,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** shots of four skies read as four different palettes; runnel-tiles' edge checks pass in each; reduced motion stills the rain; runnel specs pass; shots P and D, two weathers.
 - **Size:** 2
 
-## 299. [ ] /games/: a market street at dusk behind the stall, not a hex floor
+## 299. [ ] /games/: a market street at dusk behind the stall, not a hex floor *(lane A, in progress)*
 - **Why:** `plan1108d/games-D` (0-1440 x 440-900) and `games-P` (0-390 x 330-640): the lower page is an orange-and-green hex floor that matches nothing else on the site.
 - **Build:** a painted Marrow market street behind the cards (stalls, lanterns, rooftops, bunting echoing Cathnivore's title), two parallax layers; the hex floor goes.
 - **Accept:** card text 4.5:1 on the backdrop; first paint under 2 s and gate 1 in budget; e2e:site passes; shots P and D.
