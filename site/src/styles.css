@@ -1865,6 +1865,9 @@ body {
   .hero[data-booth] .hero-stall,
   .hero[data-booth] .hero-cath::after { display: none; }
   .hero[data-booth] .hero-text { background: none; }
+  /* Item 311: the roof can't rise past the page's top (booth.ts), so the words start 16 px lower and the kicker clears
+     the scallops (at 1440x900 their hem sat on its caps). */
+  .hero[data-booth] .hero-text { padding-top: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-booth,
