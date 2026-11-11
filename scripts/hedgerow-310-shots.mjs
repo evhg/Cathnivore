@@ -12,6 +12,8 @@ for (const [n, w, h] of [['D', 1440, 900], ['P', 390, 844]]) {
   await page.goto(`http://localhost:4190/hedgerow/?sandbox=1&level=${level}`)
   await page.waitForFunction(() => !!window.hedgerow?.game() && !!window.hedgerow3d, null, { timeout: 90000 })
   await page.waitForTimeout(25000)
+  // At P the close frame leaves her post out (item 215): the Whole field view shows her.
+  if (n === 'P') { await page.getByRole('button', { name: /whole field/i }).click().catch(() => {}); await page.waitForTimeout(8000) }
   let box = await page.evaluate(() => window.hedgerow3d.cathScreenBox?.() ?? null)
   console.log(n, JSON.stringify(box))
   await page.screenshot({ path: `${out}/${n}.png`, timeout: 120000 })

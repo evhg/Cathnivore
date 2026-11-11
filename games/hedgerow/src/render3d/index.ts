@@ -11,7 +11,6 @@ import { BACKDROP_SKY_Y, BACKDROP_Z, buildBackdrop } from "./backdrop";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-import { cathSvg } from "../../../../shared/cath/cath";
 import {
   ENEMIES,
   MEGAS,
@@ -41,7 +40,7 @@ import {
 } from "../engine";
 import { actLight, actMood, matte, nightLight, shoreFade } from "./palette";
 import { fordMiddle } from "../landmarks";
-import { CATH_HEAD_Y, buildCath, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
+import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -376,30 +375,8 @@ export class Renderer3D {
     this.bossBar.append(this.bossName, track);
     overlay.append(this.bossBar);
 
-    // Her portrait, with its bottom edge faded out so the cut ends of her hair blend into her 3D hair.
-    const tex = (svg: string) => {
-      const c = document.createElement("canvas");
-      c.width = 312;
-      c.height = 376;
-      const t = new THREE.CanvasTexture(c);
-      t.colorSpace = THREE.SRGBColorSpace;
-      const img = new Image();
-      img.onload = () => {
-        const ctx = c.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, c.width, c.height);
-        ctx.globalCompositeOperation = "destination-in";
-        const g = ctx.createLinearGradient(0, c.height * 0.8, 0, c.height);
-        g.addColorStop(0, "rgba(0,0,0,1)");
-        g.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, c.width, c.height);
-        t.needsUpdate = true;
-      };
-      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      return t;
-    };
-    this.faceTex = tex(cathSvg({ framing: "face", expression: "determined", width: 312, height: 376 }));
+    // Plan item 310: the shared bible's face painted onto her 3D head.
+    this.faceTex = cathFaceTexture();
     // Sandbox only: a handle for screenshot scripts (zoom on Cath, freeze a swing).
     if (new URLSearchParams(location.search).has("sandbox")) (window as unknown as { hedgerow3d: Renderer3D }).hedgerow3d = this;
     try {

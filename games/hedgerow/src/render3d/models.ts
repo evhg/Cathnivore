@@ -147,7 +147,9 @@ function mergeUnder(root: THREE.Object3D, keep: Set<THREE.Object3D>): void {
     const parts: THREE.BufferGeometry[] = [];
     for (const m of list) {
       const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
-      for (const name of Object.keys(g.attributes)) if (name !== "position" && name !== "normal" && name !== "uv") g.deleteAttribute(name);
+      // Plan item 310: a vertex-coloured material keeps its colours (her hair cap's shine band was dropped here).
+      const keepColor = (mat as THREE.Material & { vertexColors?: boolean }).vertexColors && list.every((x) => !!x.geometry.attributes.color);
+      for (const name of Object.keys(g.attributes)) if (name !== "position" && name !== "normal" && name !== "uv" && !(keepColor && name === "color")) g.deleteAttribute(name);
       if (!g.attributes.uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position!.count * 2), 2));
       g.clearGroups();
       g.morphAttributes = {};
@@ -1826,6 +1828,8 @@ export const CATH_HIP_Y = 0.46;
 export const CATH_SHOULDER_Y = 0.77;
 export const CATH_HEAD_Y = 1.03;
 const CATH_HEAD_SCALE = 0.84;
+/** Plan item 310: her face sphere's radius, before cathFaceGeo shapes it (the painted features are laid out on it). */
+const FACE_R = 0.13;
 
 // Her hair, from OWNER.md and the shared Cath art (shared/cath/cath.ts): deep brown-black with a warm shine band.
 const HAIR = { deep: "#1A110E", base: "#2E211C", mid: "#4A362D", shine: "#7E5D4D" };
@@ -1840,12 +1844,14 @@ function hairLock(len: number, width: number, thick: number, wave: number, curl:
   return geo(`hairlock${len},${width},${thick},${wave},${curl},${shine}`, () => {
     // A lathe profile: rounded over the crown, full through the length, tapering to a soft tip.
     const prof: THREE.Vector2[] = [];
-    for (let i = 0; i <= 10; i++) {
-      const k = i / 10;
+    // Plan item 310: 6 rows of 5 sides (was 11 of 10; smooth-shaded and flattened, it still reads as a lock), inside
+    // her 2,000-triangle budget.
+    for (let i = 0; i <= 6; i++) {
+      const k = i / 6;
       const r = k < 0.12 ? Math.sqrt(Math.max(0.0001, k / 0.12)) : k > 0.94 ? 0.45 * Math.sqrt(Math.max(0, (1 - k) / 0.06)) : 1 - 0.55 * ((k - 0.12) / 0.82);
       prof.push(new THREE.Vector2(Math.max(0.001, r), -k * len));
     }
-    const g = new THREE.LatheGeometry(prof.reverse(), 10);
+    const g = new THREE.LatheGeometry(prof.reverse(), 5);
     const pos = g.attributes.position as THREE.BufferAttribute;
     const col = new Float32Array(pos.count * 3);
     const base = new THREE.Color(HAIR.base);
@@ -1883,28 +1889,31 @@ function hairMaterial(): THREE.MeshStandardMaterial {
 
 /** The pasture-green leaf clip she wears in her hair (VISION: "a cute touch"): a cupped leaf with a pale midrib. */
 function leafClip(): THREE.Group {
-  const leaf = scaled(ball(1, gloss("#5B7F3A", 0.05), 0, 0, 0, 1), 0.012, 0.042, 0.022);
+  const leaf = scaled(ball(1, gloss("#5B7F3A", 0.05), 0, 0, 0, 0), 0.012, 0.042, 0.022);
   const rib = scaled(ball(1, matte("#86AC5B", 0.6), 0.006, 0, 0, 0), 0.005, 0.034, 0.004);
-  const tip = scaled(ball(1, matte("#3E5C26", 0.7), 0, -0.04, 0, 0), 0.008, 0.01, 0.01);
-  return group(leaf, rib, tip);
+  return group(leaf, rib);
 }
 
 /** An arm hanging from the shoulder: the upper sleeve, an elbow joint, a rolled-up forearm and a hand. */
 function cathArm(sleeveM: M, cuffM: M, skinM: M): { shoulder: THREE.Group; elbow: THREE.Group; hand: THREE.Group } {
   const shoulder = new THREE.Group();
-  shoulder.add(ball(0.03, sleeveM, 0, -0.005, 0, 1));
+  shoulder.add(mesh(geo("cathShoulder310", () => new THREE.SphereGeometry(0.03, 7, 4)), sleeveM, 0, -0.005, 0));
   // Plan item 208: a longer upper arm, for her taller figure.
-  shoulder.add(cyl(0.026, 0.023, 0.17, sleeveM, 0, -0.17, 0, 8));
+  shoulder.add(cyl(0.026, 0.023, 0.17, sleeveM, 0, -0.17, 0, 6));
   const elbow = new THREE.Group();
   elbow.position.y = -0.17;
-  elbow.add(ball(0.023, sleeveM, 0, 0, 0, 1));
+  elbow.add(ball(0.023, sleeveM, 0, 0, 0, 0));
   // The sleeve is rolled to just below the elbow: a cuff, then her forearm.
-  elbow.add(cyl(0.023, 0.022, 0.04, sleeveM, 0, -0.04, 0, 8));
-  elbow.add(cyl(0.027, 0.027, 0.022, cuffM, 0, -0.052, 0, 8));
-  elbow.add(cyl(0.017, 0.015, 0.075, skinM, 0, -0.112, 0, 8));
+  elbow.add(cyl(0.023, 0.022, 0.04, sleeveM, 0, -0.04, 0, 6));
+  elbow.add(cyl(0.027, 0.027, 0.022, cuffM, 0, -0.052, 0, 6));
+  elbow.add(cyl(0.017, 0.014, 0.075, skinM, 0, -0.112, 0, 6));
   const hand = new THREE.Group();
   hand.position.y = -0.115;
-  hand.add(scaled(ball(0.022, skinM, 0, -0.008, 0, 1), 1, 1.15, 0.9));
+  // Plan item 310: a slim hand, not a ball: a flat palm tapering to the fingers, and a thumb set forward.
+  hand.add(scaled(mesh(geo("cathPalm310", () => new THREE.SphereGeometry(0.02, 6, 5)), skinM, 0, -0.016, 0), 0.62, 1.45, 1));
+  const thumb = scaled(mesh(geo("cathThumb310", () => new THREE.OctahedronGeometry(0.009)), skinM, 0.011, -0.01, 0), 0.9, 1.7, 0.9);
+  thumb.rotation.z = 0.5;
+  hand.add(thumb);
   elbow.add(hand);
   shoulder.add(elbow);
   return { shoulder, elbow, hand };
@@ -1938,7 +1947,8 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   for (const z of [-0.045, 0.045]) {
     const leg = new THREE.Group();
     leg.position.set(0, CATH_HIP_Y, z);
-    leg.add(cyl(0.024, 0.03, CATH_HIP_Y - 0.04, trousersM, 0, -CATH_HIP_Y + 0.04, 0, 8));
+    // Plan item 310: tailored, full at the thigh and narrowing to the ankle (they widened downward, like poles).
+    leg.add(cyl(0.036, 0.025, CATH_HIP_Y - 0.04, trousersM, 0, -CATH_HIP_Y + 0.04, 0, 7));
     leg.add(box(0.075, 0.045, 0.06, bootsM, 0.014, -CATH_HIP_Y, 0));
     fig.add(leg);
     legs.push(leg);
@@ -1976,13 +1986,14 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   // The blouse in the jacket's open front, and a short string of pearls at her neckline.
   fig.add(box(0.02, 0.14, 0.07, blouseM, 0.086, CATH_SHOULDER_Y - 0.15, 0));
   const pearlM = matte("#fbf3e4", 0.25, false);
-  for (let i = -2; i <= 2; i++) fig.add(ball(0.0085, pearlM, 0.1 - Math.abs(i) * 0.004, CATH_SHOULDER_Y - 0.004 - (2 - Math.abs(i)) * 0.006, i * 0.013, 0));
+  // Plan item 310: each pearl an octahedron (8 triangles): at the field camera it is a point of light.
+  for (let i = -2; i <= 2; i++) fig.add(mesh(geo("cathPearl310", () => new THREE.OctahedronGeometry(0.0085)), pearlM, 0.1 - Math.abs(i) * 0.004, CATH_SHOULDER_Y - 0.004 - (2 - Math.abs(i)) * 0.006, i * 0.013));
   // Arms from the shoulders. The near one (+Z) holds the rolling pin by one handle, like a club.
   const right = cathArm(sleeveM, jacketM, skinM);
   right.shoulder.position.set(0, CATH_SHOULDER_Y, 0.11);
   const wood = matte("#d9b384", 0.6, false);
   const handle = matte("#b98a5a", 0.6, false);
-  const pin = group(cyl(0.011, 0.011, 0.06, handle, 0, -0.03, 0, 6), cyl(0.028, 0.028, 0.17, wood, 0, -0.2, 0, 10), cyl(0.011, 0.011, 0.05, handle, 0, -0.25, 0, 6));
+  const pin = group(cyl(0.011, 0.011, 0.06, handle, 0, -0.03, 0, 5), cyl(0.028, 0.028, 0.17, wood, 0, -0.2, 0, 8), cyl(0.011, 0.011, 0.05, handle, 0, -0.25, 0, 5));
   pin.position.y = 0.02;
   right.hand.add(pin);
   fig.add(right.shoulder);
@@ -1990,7 +2001,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   left.shoulder.position.set(0, CATH_SHOULDER_Y, -0.11);
   fig.add(left.shoulder);
   // The pie in her free hand, shown while she winds up to throw it.
-  const pie = group(cyl(0.05, 0.042, 0.022, matte("#e0b26a", 0.7), 0, 0, 0, 12), scaled(ball(0.04, matte("#fff6e0", 0.5, false), 0, 0.02, 0, 1), 1, 0.55, 1));
+  const pie = group(cyl(0.05, 0.042, 0.022, matte("#e0b26a", 0.7), 0, 0, 0, 7), scaled(ball(0.04, matte("#fff6e0", 0.5, false), 0, 0.02, 0, 0), 1, 0.55, 1));
   pie.position.set(0, -0.035, 0);
   pie.rotation.x = Math.PI / 2;
   pie.visible = false;
@@ -2025,13 +2036,11 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
     // Plan item 284: out over the shoulders (they were at 0.065 and lay across her chest as a dark bib, hiding the
     // lapels and the pearls).
     p.position.set(0.085, CATH_HEAD_Y - 0.11, z * 0.088);
-    // Both locks in one geometry, so a side stays one draw call.
-    const both = geo(`cathFrontLocks284${z}`, () => {
-      const outer = hairLock(0.23, 0.05, 0.02, 0.012, -0.03, 0.26).clone();
-      outer.applyMatrix4(new THREE.Matrix4().makeRotationX(z * 0.1).setPosition(0, 0, z * 0.008));
-      const inner = hairLock(0.17, 0.04, 0.018, 0.016, -0.025, 0.3).clone();
-      inner.applyMatrix4(new THREE.Matrix4().makeRotationX(z * 0.14).setPosition(0.012, 0.01, -z * 0.02));
-      return mergeGeometries([outer, inner])!;
+    // Plan item 310: one wider lock a side (the inner one cost 60 triangles and hid under the outer at the field camera).
+    const both = geo(`cathFrontLocks310${z}`, () => {
+      const outer = hairLock(0.23, 0.058, 0.02, 0.012, -0.03, 0.26).clone();
+      outer.applyMatrix4(new THREE.Matrix4().makeRotationX(z * 0.1).setPosition(0, 0, z * 0.004));
+      return outer;
     });
     p.add(mesh(both, hairMaterial(), 0, 0, 0));
     fig.add(p);
@@ -2040,8 +2049,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   // Plan item 52: her head modelled (it was a portrait sprite always turned to the camera). Low-poly, from the
   // bible: an oval face turned three-quarters to the lens, centre-parted deep brown-black hair over the crown and
   // the back, warm brown eyes under soft brows, rosy cheeks and a small smile. The sync turns and mirrors it.
-  void faceTexture;
-  const head = cathHead(skinM);
+  const head = cathHead(skinM, faceTexture);
   head.position.set(0, CATH_HEAD_Y, 0);
   root.add(head);
   root.userData.head = head;
@@ -2134,8 +2142,8 @@ function cathTailoringGeo(pts: readonly THREE.Vector2[], y0: number): THREE.Buff
 
 /** Plan item 284: her face, an oval that narrows below the eyes to a soft, pointed chin and flattens a little at the front. */
 function cathFaceGeo(): THREE.BufferGeometry {
-  return geo("cathFace284", () => {
-    const g = new THREE.SphereGeometry(0.13, 20, 16);
+  return geo("cathFace310", () => {
+    const g = new THREE.SphereGeometry(FACE_R, 12, 9);
     const pos = g.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) {
       let x = pos.getX(i) * 0.95;
@@ -2154,10 +2162,163 @@ function cathFaceGeo(): THREE.BufferGeometry {
 }
 
 /**
- * Cath's head (plan item 52), facing +x and turned three-quarters toward the camera (+z). Chibi proportions to
- * match the body: about a third of her height, like the shared art's framing.
+ * Plan item 310: where a point on her finished face (the head's `turn` frame: +x out of the face, y up, z across)
+ * lands on the face texture, in canvas pixels. It undoes cathFaceGeo's stretch, then reads the sphere's own UVs
+ * (u round from -x, v down from the crown; the canvas is drawn top-down and flipped on upload).
  */
-function cathHead(skinM: M): THREE.Group {
+function faceCanvasPoint(z: number, y: number, w: number, h: number): [number, number] {
+  const yo = y / 1.1;
+  const zo = z / 0.95;
+  const xo = Math.sqrt(Math.max(0, FACE_R * FACE_R - yo * yo - zo * zo));
+  const theta = Math.acos(Math.max(-1, Math.min(1, yo / FACE_R)));
+  let phi = Math.atan2(zo, -xo);
+  if (phi < 0) phi += Math.PI * 2;
+  return [(phi / (Math.PI * 2)) * w, (theta / Math.PI) * h];
+}
+
+/**
+ * Plan item 310: the shared bible's face painted onto her 3D head (it was some twenty tiny meshes: a flat pale ball
+ * with a dark smear for a mouth at the field camera). Almond eyes with a warm brown iris, a pupil and two
+ * catchlights under a crisp winged liner; soft brows, her right one a touch higher; rosy cheeks; rose lips with a
+ * gloss. Drawn on the skin, so the texture also carries a little shading round the jaw. Needs a DOM.
+ */
+export function cathFaceTexture(): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 512;
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d")!;
+  const P = (z: number, y: number) => faceCanvasPoint(z, y, W, H);
+  // Pixels per model unit across (z) and down (y) at the front of the face.
+  const [cx, cy] = P(0, 0);
+  const sz = Math.abs(P(0.01, 0)[0] - cx) / 0.01;
+  const sy = Math.abs(P(0, -0.01)[1] - cy) / 0.01;
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(0, 0, W, H);
+  // A soft warm shade under the jaw line and toward the sides, so the face isn't one flat colour.
+  const jaw = ctx.createRadialGradient(cx, cy - 0.01 * sy, 0.05 * sz, cx, cy, 0.16 * sz);
+  jaw.addColorStop(0, "rgba(247,220,203,0)");
+  jaw.addColorStop(1, "rgba(214,160,138,0.55)");
+  ctx.fillStyle = jaw;
+  ctx.fillRect(0, 0, W, H);
+  const ell = (z: number, y: number, rz: number, ry: number, fill: string | CanvasGradient, rot = 0) => {
+    const [x, yy] = P(z, y);
+    ctx.beginPath();
+    ctx.ellipse(x, yy, rz * sz, ry * sy, rot, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  };
+  for (const s of [-1, 1]) {
+    // Cheeks: a soft blush.
+    const [bx, by] = P(s * 0.068, -0.034);
+    const blush = ctx.createRadialGradient(bx, by, 0, bx, by, 0.026 * sz);
+    blush.addColorStop(0, "rgba(236,138,134,0.75)");
+    blush.addColorStop(1, "rgba(236,138,134,0)");
+    ctx.fillStyle = blush;
+    ctx.fillRect(bx - 0.03 * sz, by - 0.03 * sy, 0.06 * sz, 0.06 * sy);
+    // The eye: an almond white, clipped so the iris sits under the lid.
+    // Big almond eyes, as the bible draws them (the field camera sees her face about 40 px tall at D).
+    const [ex, ey] = P(s * 0.05, 0.002);
+    const rw = 0.034 * sz;
+    const rh = 0.021 * sy;
+    ctx.save();
+    ctx.beginPath();
+    // Almond: a fuller upper arc and a flatter lower one, the outer corner a little higher.
+    const outer = ex - s * rw; // z grows toward smaller canvas x
+    const inner = ex + s * rw;
+    ctx.moveTo(inner, ey + rh * 0.15);
+    ctx.quadraticCurveTo(ex, ey - rh * 1.55, outer, ey - rh * 0.3);
+    ctx.quadraticCurveTo(ex, ey + rh * 1.25, inner, ey + rh * 0.15);
+    ctx.closePath();
+    ctx.fillStyle = "#fbf6f1";
+    ctx.fill();
+    ctx.clip();
+    const iris = ctx.createRadialGradient(ex, ey - rh * 0.1, 0, ex, ey, rh * 1.15);
+    iris.addColorStop(0, "#9a6238");
+    iris.addColorStop(0.7, "#6b4128");
+    iris.addColorStop(1, "#3a2216");
+    ctx.beginPath();
+    ctx.ellipse(ex, ey, rh * 1.05, rh * 1.15, 0, 0, Math.PI * 2);
+    ctx.fillStyle = iris;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(ex, ey, rh * 0.5, rh * 0.55, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#160d0a";
+    ctx.fill();
+    // The upper lid's shadow on the eye.
+    ctx.fillStyle = "rgba(60,30,20,0.25)";
+    ctx.fillRect(ex - rw * 1.2, ey - rh * 1.6, rw * 2.4, rh * 0.7);
+    ctx.restore();
+    ell(s * 0.05 + s * 0.007, 0.012, 0.0065, 0.0065, "#ffffff");
+    ell(s * 0.05 - s * 0.007, -0.008, 0.0035, 0.0035, "rgba(255,255,255,0.85)");
+    // The liner: a crisp stroke along the upper lid, flicked up and out into a wing.
+    ctx.beginPath();
+    ctx.moveTo(inner, ey + rh * 0.1);
+    ctx.quadraticCurveTo(ex, ey - rh * 1.6, outer, ey - rh * 0.35);
+    const [wx, wy] = P(s * 0.092, 0.03);
+    ctx.lineTo(wx, wy);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#120c0a";
+    ctx.lineWidth = 0.0075 * sy;
+    ctx.stroke();
+    // A fine lower lash line toward the outer corner.
+    ctx.beginPath();
+    ctx.moveTo(ex, ey + rh * 1.05);
+    ctx.quadraticCurveTo(outer + s * rw * 0.2, ey + rh * 0.6, outer, ey - rh * 0.2);
+    ctx.strokeStyle = "rgba(42,26,20,0.55)";
+    ctx.lineWidth = 0.0022 * sy;
+    ctx.stroke();
+    // Brows: tapered arcs, her right (+z) one higher and more arched (sharp, not just sweet).
+    const raised = s > 0;
+    const by0 = raised ? 0.066 : 0.058;
+    const [b1x, b1y] = P(s * 0.02, by0 - 0.004);
+    const [b2x, b2y] = P(s * 0.052, by0 + (raised ? 0.008 : 0.004));
+    const [b3x, b3y] = P(s * 0.086, by0 - 0.006);
+    ctx.beginPath();
+    ctx.moveTo(b1x, b1y);
+    ctx.quadraticCurveTo(b2x, b2y - 0.006 * sy, b3x, b3y);
+    ctx.quadraticCurveTo(b2x, b2y + 0.002 * sy, b1x, b1y + 0.006 * sy);
+    ctx.closePath();
+    ctx.fillStyle = "#2a1a14";
+    ctx.fill();
+  }
+  // The nose: only a soft shadow under its tip (the tip itself is modelled).
+  ell(0, -0.036, 0.009, 0.003, "rgba(190,120,100,0.45)");
+  // Lips: a rose upper lip with a Cupid's bow, a fuller lower lip, corners lifted in a small smile, and a gloss.
+  const [lx, ly] = P(0, -0.064);
+  const lw = 0.026 * sz;
+  const lh = 0.0075 * sy;
+  ctx.beginPath();
+  ctx.moveTo(lx - lw, ly - lh * 0.4);
+  ctx.quadraticCurveTo(lx - lw * 0.5, ly - lh * 1.5, lx - lw * 0.12, ly - lh * 1.1);
+  ctx.lineTo(lx, ly - lh * 0.8);
+  ctx.lineTo(lx + lw * 0.12, ly - lh * 1.1);
+  ctx.quadraticCurveTo(lx + lw * 0.5, ly - lh * 1.5, lx + lw, ly - lh * 0.4);
+  ctx.quadraticCurveTo(lx, ly + lh * 2, lx - lw, ly - lh * 0.4);
+  ctx.closePath();
+  ctx.fillStyle = "#c94a64";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(lx - lw * 0.95, ly - lh * 0.35);
+  ctx.quadraticCurveTo(lx, ly + lh * 0.25, lx + lw * 0.95, ly - lh * 0.35);
+  ctx.strokeStyle = "#7a2436";
+  ctx.lineWidth = 0.0018 * sy;
+  ctx.stroke();
+  ell(0.006, -0.06, 0.006, 0.0022, "rgba(255,225,230,0.8)");
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/**
+ * Cath's head (plan item 52), facing +x and turned three-quarters toward the camera (+z). Plan item 310: her
+ * features are painted on the face (`faceMap`, from cathFaceTexture; null in tests, which have no DOM), the hair
+ * cap carries the shared art's shine band, and the whole head is about 700 triangles of her 2,000.
+ */
+function cathHead(skinM: M, faceMap: THREE.Texture | null): THREE.Group {
   const g = new THREE.Group();
   const yaw = new THREE.Group();
   yaw.rotation.y = -1.05;
@@ -2175,78 +2336,67 @@ function cathHead(skinM: M): THREE.Group {
   faceM.name = "face";
   // Plan item 162: her face lit from within a little, so it reads lighter than the hair round it in any act's light.
   faceM.emissive = new THREE.Color("#f2c2a4").multiplyScalar(0.3);
-  const shineM = matte(HAIR.shine, 0.35, false);
-  const whiteM = matte("#ffffff", 0.3, false);
-  // Plan item 102, the bible's face: rose lips, warm brown eyes with a black liner and a little wing, a catchlight.
-  const lipM = matte("#d0566e", 0.4, false);
-  const linerM = matte("#120c0a", 0.4, false);
-  const cheekM = matte("#f2a9a0", 0.8, false);
+  if (faceMap) {
+    // Plan item 310: the glow follows the painted face, so her eyes, liner and lips stay dark in it.
+    faceM.map = faceMap;
+    faceM.emissiveMap = faceMap;
+    faceM.color.set("#ffffff");
+    // Less than the plain face's 0.3: on the painted skin that blew out to near white and flattened her.
+    faceM.emissive.set("#ffffff").multiplyScalar(0.14);
+  }
   // The face: a slightly long oval that narrows to a soft chin (plan item 284: it was a plain ball, a mannequin's head).
   turn.add(mesh(cathFaceGeo(), faceM, 0, 0, 0));
   // Plan item 208: a short neck; her collar stands up round the rest of it.
-  turn.add(cyl(0.035, 0.04, 0.06, skinM, 0, -0.15, 0, 8));
+  turn.add(cyl(0.035, 0.04, 0.06, skinM, 0, -0.15, 0, 7));
   // Hair: a cap over the crown and back, parted in the middle, with two side curtains framing the face.
-  // Plan item 208: the cap's opening faces her face (+x). It used to face +z, her side toward the camera, so the
-  // skin of her head showed as a pale patch over her ear; a shallow front piece makes the hairline above her brows.
-  const cap = mesh(geo("cathHairCap3", () => new THREE.SphereGeometry(0.144, 18, 10, Math.PI * 1.28, Math.PI * 1.44, 0, Math.PI * 0.5)), hairM, -0.012, 0.012, 0);
+  // Plan item 310: the cap shaded from the part down to the nape, with the shared art's warm shine band across the
+  // crown (it was one flat dark colour with an ink rim: a helmet).
+  const capM = Object.assign(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.36, metalness: 0.05 }), { name: "hairCap" });
+  const cap = mesh(geo("cathHairCap310", () => shinyCap(new THREE.SphereGeometry(0.144, 11, 6, Math.PI * 1.28, Math.PI * 1.44, 0, Math.PI * 0.5))), capM, -0.012, 0.012, 0);
   turn.add(cap);
-  turn.add(mesh(geo("cathHairFront", () => new THREE.SphereGeometry(0.146, 10, 6, Math.PI * 0.7, Math.PI * 0.6, 0, Math.PI * 0.34)), hairM, -0.012, 0.012, 0));
-  turn.add(scaled(ball(0.14, hairM, -0.075, -0.03, 0, 2), 0.72, 0.95, 1));
+  turn.add(mesh(geo("cathHairFront310", () => shinyCap(new THREE.SphereGeometry(0.146, 6, 3, Math.PI * 0.7, Math.PI * 0.6, 0, Math.PI * 0.34))), capM, -0.012, 0.012, 0));
+  turn.add(scaled(mesh(geo("cathHairBack310", () => new THREE.SphereGeometry(0.14, 7, 5)), hairM, -0.075, -0.03, 0), 0.72, 0.95, 1));
   // Plan item 162: hair over each temple, where the wider face opening showed the skin of her head's side.
-  for (const z of [-1, 1]) turn.add(scaled(ball(0.06, hairM, -0.005, 0.03, z * 0.112, 1), 0.9, 1.25, 0.6));
+  for (const z of [-1, 1]) turn.add(scaled(ball(0.06, hairM, -0.005, 0.03, z * 0.112, 0), 0.9, 1.25, 0.6));
   for (const z of [-1, 1]) {
     // A sweep from the part down over each temple, and a curtain past the cheek.
-    const sweep = scaled(ball(0.05, hairM, 0.03, 0.125, z * 0.075, 1), 0.5, 0.32, 0.9);
+    const sweep = scaled(ball(0.05, hairM, 0.03, 0.125, z * 0.075, 0), 0.5, 0.32, 0.9);
     sweep.rotation.x = z * 0.5;
     turn.add(sweep);
-    turn.add(scaled(ball(0.055, hairM, 0.0, -0.05, z * 0.125, 1), 0.75, 1.9, 0.5));
+    turn.add(scaled(mesh(geo("cathCurtain310", () => new THREE.SphereGeometry(0.055, 7, 5)), hairM, 0.0, -0.05, z * 0.125), 0.75, 1.9, 0.5));
   }
-  turn.add(scaled(ball(0.034, shineM, -0.02, 0.122, 0.045, 1), 1.4, 0.22, 1.4));
-  // Plan item 284, the bible's face at field scale: large almond eyes (white, a warm brown iris, a dark pupil and two
-  // catchlights) under a crisp liner with a wing, soft brows with her right one a touch raised, rosy cheeks, a small
-  // nose and glossy rose lips with a highlight; pearl studs at her ears.
-  const irisM = matte("#6b4128", 0.3, false);
-  const pupilM = matte("#160d0a", 0.3, false);
-  const glossM = matte("#ffd7dd", 0.2, false);
+  // A small nose: a soft ridge and tip, a shade warmer than the face so the light finds it; pearl studs at her ears.
   const pearlM = matte("#fbf3e4", 0.2, false);
   const noseM = matte("#e9b9a2", 0.6, false);
-  // Her brows in their own material: merged into the hair, they took the hair's ink outline and read as scribbles.
-  const browM = matte("#2a1a14", 0.5, false);
-  for (const z of [-1, 1]) {
-    const ez = z * 0.047;
-    turn.add(scaled(ball(0.03, whiteM, 0.108, 0.002, ez, 1), 0.36, 0.72, 1));
-    turn.add(scaled(ball(0.02, irisM, 0.117, 0.0, ez, 1), 0.36, 1.08, 0.9));
-    turn.add(scaled(ball(0.011, pupilM, 0.122, 0.0, ez, 1), 0.36, 1.05, 0.95));
-    turn.add(scaled(ball(0.0075, whiteM, 0.127, 0.011, ez + 0.006, 0), 0.4, 1, 1));
-    turn.add(scaled(ball(0.004, whiteM, 0.126, -0.008, ez - 0.006, 0), 0.4, 1, 1));
-    // The liner along the upper lid, a thin arc, flicked up and out at the outer corner.
-    const lid = scaled(ball(0.031, linerM, 0.112, 0.019, ez, 1), 0.3, 0.13, 1.05);
-    turn.add(lid);
-    const wing = scaled(ball(0.012, linerM, 0.104, 0.024, z * 0.077, 0), 0.25, 0.22, 1.5);
-    wing.rotation.x = z * 0.65;
-    turn.add(wing);
-    // Her right brow (+z) sits higher and arches a little more: she's sharp, not just sweet.
-    const raised = z > 0;
-    const brow = scaled(ball(0.026, browM, 0.113, raised ? 0.06 : 0.05, z * 0.048, 1), 0.28, 0.17, 1.15);
-    // Outer ends level or a little up (tipped the other way they read as worry).
-    brow.rotation.x = -z * (raised ? 0.22 : 0.08);
-    turn.add(brow);
-    turn.add(scaled(ball(0.022, cheekM, 0.103, -0.036, z * 0.07, 1), 0.3, 0.6, 1));
-    turn.add(ball(0.009, pearlM, -0.005, -0.04, z * 0.124, 1));
-  }
-  // A small nose: a soft ridge and tip, a shade warmer than the face so the light finds it.
-  turn.add(scaled(ball(0.016, noseM, 0.124, -0.026, 0, 1), 0.7, 1.1, 0.75));
-  // A small closed smile: the lips wide and thin, the corners lifted.
-  turn.add(scaled(ball(0.017, lipM, 0.119, -0.064, 0, 1), 0.42, 0.3, 1.6));
-  for (const z of [-1, 1]) turn.add(scaled(ball(0.006, lipM, 0.115, -0.059, z * 0.025, 0), 0.5, 0.6, 1));
-  turn.add(scaled(ball(0.006, glossM, 0.125, -0.06, 0.006, 0), 0.4, 0.5, 1.4));
-  // Only the face and the hair cast shadows: the features are too small to shadow anything, and each would cost a
-  // shadow-pass draw call.
-  const casters = new Set<THREE.Material>([faceM, hairM, skinM as THREE.Material]);
+  turn.add(scaled(ball(0.016, noseM, 0.124, -0.026, 0, 0), 0.7, 1.1, 0.75));
+  for (const z of [-1, 1]) turn.add(ball(0.009, pearlM, -0.005, -0.04, z * 0.124, 0));
+  // Only the face and the hair cast shadows: the small parts are too small to shadow anything.
+  const casters = new Set<THREE.Material>([faceM, hairM, capM, skinM as THREE.Material]);
   g.traverse((o) => {
     const m = o as THREE.Mesh;
     if (m.isMesh) m.castShadow = casters.has(m.material as THREE.Material);
   });
+  return g;
+}
+
+/** Plan item 310: vertex colours for her hair cap: her hair's base colour, deep toward the nape, a narrow warm shine band across the crown. */
+function shinyCap(g: THREE.BufferGeometry): THREE.BufferGeometry {
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  const col = new Float32Array(pos.count * 3);
+  const deep = new THREE.Color(HAIR.deep);
+  const base = new THREE.Color(HAIR.base);
+  const sh = new THREE.Color(HAIR.shine);
+  const c = new THREE.Color();
+  const r = 0.145;
+  for (let i = 0; i < pos.count; i++) {
+    const k = 1 - Math.max(0, Math.min(1, pos.getY(i) / r)); // 0 at the crown, 1 at the cap's rim
+    c.copy(base).lerp(deep, Math.max(0, k - 0.5) * 1.6);
+    // The band: a little below the crown, brightest toward the front (+x, where the light and the camera are).
+    const band = Math.max(0, 1 - Math.abs(k - 0.3) / 0.07) * (0.55 + 0.45 * Math.max(0, pos.getX(i) / r + 0.3));
+    c.lerp(sh, Math.min(0.85, band));
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
   return g;
 }
 
