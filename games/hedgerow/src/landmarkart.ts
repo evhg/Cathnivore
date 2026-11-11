@@ -405,6 +405,48 @@ const PAINT: Record<LandmarkKind, Painter> = {
     g.addColorStop(1, "#5a9db5");
     ctx.fillStyle = g;
     ctx.fillRect(cx + s * 0.05, cy + s * 0.05, cw - s * 0.1, ch - s * 0.1);
+    // Plan item 333: masonry, not glass. The coping is laid in blocks (joints across the rim); the near wall throws its
+    // shadow on the water; a few ripples run along the channel (it read as a navy tank).
+    ctx.strokeStyle = "rgba(70,60,45,0.55)";
+    ctx.lineWidth = Math.max(1, s * 0.018);
+    const len = across ? cw : ch;
+    for (let k = 1; k < Math.round(len / (s * 0.28)); k++) {
+      const t = (k * len) / Math.round(len / (s * 0.28));
+      for (const side of [0, 1]) {
+        ctx.beginPath();
+        if (across) {
+          const yy = side ? cy + ch - s * 0.05 : cy;
+          ctx.moveTo(cx + t, yy);
+          ctx.lineTo(cx + t, yy + s * 0.05);
+        } else {
+          const xx = side ? cx + cw - s * 0.05 : cx;
+          ctx.moveTo(xx, cy + t);
+          ctx.lineTo(xx + s * 0.05, cy + t);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.fillStyle = "rgba(15,30,40,0.28)";
+    if (across) ctx.fillRect(cx + s * 0.05, cy + s * 0.05, cw - s * 0.1, (ch - s * 0.1) * 0.22);
+    else ctx.fillRect(cx + s * 0.05, cy + s * 0.05, (cw - s * 0.1) * 0.22, ch - s * 0.1);
+    ctx.strokeStyle = "rgba(225,242,248,0.55)";
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    for (let k = 0; k < 4; k++) {
+      const u = 0.12 + k * 0.22;
+      const v = 0.45 + (k % 2) * 0.22;
+      const px = across ? cx + cw * u : cx + cw * v;
+      const py = across ? cy + ch * v : cy + ch * u;
+      const d = s * 0.09;
+      ctx.beginPath();
+      if (across) {
+        ctx.moveTo(px - d, py);
+        ctx.quadraticCurveTo(px, py - d * 0.35, px + d, py);
+      } else {
+        ctx.moveTo(px, py - d);
+        ctx.quadraticCurveTo(px - d * 0.35, py, px, py + d);
+      }
+      ctx.stroke();
+    }
     for (const f of [0.18, 0.82]) {
       ctx.save();
       if (across) ctx.translate(x + w * f, cy + ch / 2);
