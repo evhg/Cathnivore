@@ -3095,7 +3095,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no white rounded rectangle is left in the menu. Every control has a 44 px+ hit area, text contrast ≥ 4.5:1 and keyboard focus rings. Title and tutorial specs pass. Shots P and D, light and dark.
 - **Size:** 1
 
-## 328. [ ] Cathnivore: the Quick Game producers as character cards
+## 328. [ ] Cathnivore: the Quick Game producers as character cards *(lane A, in progress)*
 - **Why:** `plan1111c/cath-setup-D` (440-1090 x 275-555): the four producers are white form cards: a 100 px portrait ring, then four lines of 13 px grey text. A picked card (Mara, Tomas) differs only by its border colour. Cath (1135-1290 x 490-775) is cut at the thighs by the Start button (1095-1295 x 775-850).
 - **Build:** each producer gets a half-length portrait on a tinted card in their colour, with the name in Fraunces and the power as an ink stamp with its icon. A picked card lifts and gets a 'Picked' ribbon over 200 ms; item 326 set the lift at 10 px, keep that or less. The recommended pair gets Cath's pin. Cath stands fully clear of Start, or the button moves to sit under the cards.
 - **Accept:** a picked and an unpicked card differ by more than the border (lift, ribbon). Power text ≥ 14 px at 4.5:1. Cath's box does not intersect Start. Setup specs pass. Shots P and D, light and dark.
