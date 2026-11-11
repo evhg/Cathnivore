@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { criticalCss } from './scripts/critical-css.ts'
 
 // `npm run build` (the iPhone app, e2e and gates) builds the game at `/` into `dist/`. The website build
 // (`scripts/build-site.ts`) builds it again under `/cathnivore/` into `dist-site/cathnivore/`, because the site
@@ -59,6 +60,7 @@ export default defineConfig({
     react(),
     versionFile(),
     pageFonts(),
+    criticalCss(),
     // SPEC 11.1: offline play and home-screen install on the web. The SW is never bundled into the
     // iPhone app (Capacitor never serves this dist output through vite-plugin-pwa's registration
     // script — main.tsx only calls registerSW() when Capacitor.isNativePlatform() is false).

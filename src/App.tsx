@@ -41,16 +41,19 @@ import { dailyMarket, dailyRecord, dailyStreak } from './content/daily'
 import { LAYOUTS } from './content/layouts'
 import { PRODUCERS } from './content/producers'
 import { MARKET_EVENTS } from './engine/marketEvent'
+import { loadFullCss } from './platform/fullCss'
 
 // Gate 7 (Lighthouse mobile >= 85): the title paints from the first chunk; every other screen loads on demand
 // (the service worker precaches every chunk, so offline play is unchanged).
-const Setup = lazy(() => import('./ui/Setup'))
-const Game = lazy(() => import('./ui/Game'))
+const Setup = lazy(() => (void loadFullCss(), import('./ui/Setup')))
+// The table's rules ship in the full stylesheet (platform/fullCss.ts): Setup and the campaign start loading it on
+// the way to the table, and the Game screen waits for it. The title never pays for it.
+const Game = lazy(() => Promise.all([import('./ui/Game'), loadFullCss()]).then(([m]) => m))
 const Scene = lazy(() => import('./ui/Scene'))
 const RulesReference = lazy(() => import('./ui/RulesReference'))
 const Settings = lazy(() => import('./ui/Settings'))
 const Credits = lazy(() => import('./ui/Credits'))
-const CampaignScreen = lazy(() => import('./ui/CampaignScreen'))
+const CampaignScreen = lazy(() => (void loadFullCss(), import('./ui/CampaignScreen')))
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
