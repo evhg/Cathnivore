@@ -1058,6 +1058,8 @@ function render(): void {
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length
   ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
   ui.progress.classList.toggle('done', flow.solved)
+  // Plan item 308: a solved board greens the valley's fields over, in a wave (styles.css).
+  document.getElementById('valley-paint')?.toggleAttribute('data-greened', flow.solved)
   const wetShare = flow.solved ? 1 : flow.wet.size / playable
   for (const path of document.querySelectorAll<SVGPathElement>('.vl-water, .vl-trickle')) path.style.setProperty('--wet', String(wetShare))
   // Plan item 70: today's seed in Bea's garden sprouts as the stream reaches the fields (a full plant at a solve).

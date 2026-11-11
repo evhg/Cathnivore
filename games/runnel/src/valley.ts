@@ -146,7 +146,10 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
       const pts = [
         [xa, slope(r, xa)], [xb, slope(r, xb)], [xb + lean, slope(r + 1, xb + lean)], [xa + lean, slope(r + 1, xa + lean)],
       ].map(([x, y]) => `${x!.toFixed(0)},${y!.toFixed(0)}`).join(' ')
-      parts.push(`<polygon class="vl-f vl-f-${kind}" points="${pts}"/>`)
+      // Plan item 308: each field's place in the wave that greens the valley on a solve (far rows first, then left to
+      // right), as a delay bucket 0-9 (styles.css).
+      const wave = Math.min(9, r * 2 + Math.floor((i * 2) / count))
+      parts.push(`<polygon class="vl-f vl-f-${kind} vl-w${wave}" points="${pts}"/>`)
       if (kind !== 'grass') {
         const pat = rnd(500 + n) < 0.5 ? 'vl-rows-h' : rnd(600 + n) < 0.5 ? 'vl-rows-d' : 'vl-rows-a'
         parts.push(`<polygon class="vl-furrow" fill="url(#${pat})" points="${pts}"/>`)

@@ -3845,6 +3845,19 @@ body[data-mode='practice'] #week-slot {
   .vl-f-wheat { fill: color-mix(in srgb, var(--vl-wheat) var(--vk), var(--paper)); }
   .vl-f-fallow { fill: color-mix(in srgb, var(--vl-fallow) var(--vk), var(--paper)); }
   .vl-f-grass { fill: color-mix(in srgb, var(--vl-meadow) var(--vk), var(--paper)); }
+  /* Plan item 308: when the board is solved every field in the valley greens over, a wave from the far rows to the
+     near ones (each field's delay bucket from valley.ts), the crop rows still drawn over the new green. */
+  .vl-f { transition: fill 650ms var(--ease-out, ease-out); }
+  #valley-paint[data-greened] .vl-f { fill: color-mix(in srgb, var(--wet-field) var(--vk), var(--paper)); }
+  #valley-paint[data-greened] .vl-w1 { transition-delay: 90ms; }
+  #valley-paint[data-greened] .vl-w2 { transition-delay: 180ms; }
+  #valley-paint[data-greened] .vl-w3 { transition-delay: 270ms; }
+  #valley-paint[data-greened] .vl-w4 { transition-delay: 360ms; }
+  #valley-paint[data-greened] .vl-w5 { transition-delay: 450ms; }
+  #valley-paint[data-greened] .vl-w6 { transition-delay: 540ms; }
+  #valley-paint[data-greened] .vl-w7 { transition-delay: 630ms; }
+  #valley-paint[data-greened] .vl-w8 { transition-delay: 720ms; }
+  #valley-paint[data-greened] .vl-w9 { transition-delay: 810ms; }
   .vl-row {
     stroke: color-mix(in srgb, var(--vl-hedge) 30%, transparent);
     stroke-width: 3;
@@ -4594,4 +4607,9 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
     background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--stake-hi) 80%, var(--paper)), var(--stake) 70%);
     box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--soil) 55%, transparent), inset 0 2px 2px color-mix(in srgb, var(--soil) 30%, transparent);
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Plan item 308: the valley greens in one short fade, no wave. */
+  .vl-f { transition-duration: 300ms; }
+  #valley-paint[data-greened] .vl-f { transition-delay: 0ms; }
 }
