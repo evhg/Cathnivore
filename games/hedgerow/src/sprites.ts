@@ -185,7 +185,9 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   ctx.translate(x, base - lift);
   ctx.scale(k * (1 + kick * 0.06), k * (1 + breath - kick * 0.09));
   ctx.translate(-x, -base);
-  drawTowerBody(ctx, look, x, y, s, t);
+  // Plan item 322: under reduced motion the idles hold still too (the sails, bees, lamps and ripples froze only the
+  // breath before); a firing tower still shows its kick, which is driven by `fired`, not the clock.
+  drawTowerBody(ctx, look, x, y, s, look.still ? 0 : t);
   ctx.restore();
 }
 
