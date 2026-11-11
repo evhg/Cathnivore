@@ -388,8 +388,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 254: the hair's shine band, an illustrator's highlight: a hard-edged band across the crown where the
     // hair turns to face the lens and the key (view-space normal half way up), broken by the strands' own map, so
     // her hair reads as glossy dark hair under the flats rather than a matte brown shell.
+    // Plan item 319: the band is the strands' own colour brightened (it was that plus a flat grey, which where the
+    // cap shows between the front locks drew a smooth pale-grey arc by the parting), so it reads as warm brown gloss.
     if (shine > 0)
-      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.82, 0.85, up ) * ( 1.0 - smoothstep( 0.89, 0.92, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * ( diffuseColor.rgb + vec3( 0.07, 0.065, 0.075 ) ); }`;
+      keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.82, 0.85, up ) * ( 1.0 - smoothstep( 0.89, 0.92, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * diffuseColor.rgb * 2.2; }`;
     // Plan item 289: a narrower, cooler band (the wide warm one lit a pale blotch beside the parting at the title).
     // Plan item 306: the face is lit by the street's brightness, not its colour: its light is rebuilt as the skin's own
     // albedo times the light's luminance (the pick's ice key and the cyan sign tinted her a cold blue-white), its
@@ -1428,7 +1430,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         for (let j = 0; j < 2; j++) {
           const p0 = base + a * 3 + j;
           const p1 = p0 + 3;
-          lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
+          // Plan item 319: wound to face out (they faced the skull, so the lens saw their insides, with a quarter rim).
+          lidx.push(p0, p0 + 1, p1, p1, p0 + 1, p1 + 1);
         }
     };
     for (const sx of [-1, 1]) {
