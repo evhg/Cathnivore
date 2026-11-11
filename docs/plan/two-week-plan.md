@@ -2975,7 +2975,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every chapter a distinct full-colour plate; locked ones show their line art through the wrapper; the first chapter plate in the first screen at P; campaign specs and ui-css-lint pass; shots P and D.
 - **Size:** 2
 
-## 310. [ ] Hedgerow 3D: a 3D Cath worthy of the 2D portrait
+## 310. [ ] Hedgerow 3D: a 3D Cath worthy of the 2D portrait *(lane A, in progress)*
 - **Why:** `plan1108e/hedge-l21-3d-D` (140-215 x 430-620): the 3D Cath on the lane is a boxy doll with a flat pale face, a dark smear for a mouth and blob hands, right above the 2D bust in her bubble (250-315 x 620-690) that shows how she should look.
 - **Build:** a Hedgerow-scale 3D Cath: a stylised head with the shared face (it can share item 306's work), long glossy hair with a shine band, the olive jacket and cream blouse, and a wave/point idle driven by the coaching state; 2,000 triangles or fewer.
 - **Accept:** at the l21 D camera her eyes and lips show and her silhouette reads as Cath in greyscale; 2,000 triangles or fewer; hedgerow-3dframe passes; shots P and D.
