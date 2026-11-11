@@ -1978,7 +1978,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       const top = [...kinds.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
       const esc = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
       body.innerHTML =
-        `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""} · ${lv.waves.length} rounds</p>` +
+        `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""}<span class="lcard-rounds"> · ${lv.waves.length} rounds</span></p>` +
         `<h3 class="lcard-name">${esc(lv.name)}</h3>` +
         (lv.twists?.length ? `<p class="lcard-twist">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</p>` : "") +
         `<p class="lcard-stars" aria-label="${stars} of 3 stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</p>`;

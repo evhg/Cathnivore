@@ -4852,8 +4852,9 @@ img.act-scene {
   #screen-select .level-card {
     position: sticky;
     bottom: 8px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: "grip grip" "body play";
+    /* Plan item 324: the peek shows the field's plate beside the name, a glimpse of what you'll defend */
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "grip grip grip" "thumb body play";
     gap: 6px 12px;
     width: calc(100% - 16px);
     margin: 8px auto;
@@ -4886,10 +4887,14 @@ img.act-scene {
     border-radius: 3px;
     background: color-mix(in srgb, var(--ink) 30%, transparent);
   }
-  .level-card:not(.open) :is(.lcard-thumb, .lcard-cath, .lcard-enemies, .lcard-stars, .lcard-twist) { display: none; }
+  .level-card:not(.open) :is(.lcard-cath, .lcard-enemies, .lcard-stars, .lcard-twist) { display: none; }
+  .level-card:not(.open) .lcard-thumb svg { width: auto; height: 48px; } /* Play's height: the peek keeps its height */
   .lcard-thumb svg { width: 96px; }
   .lcard-body { align-self: center; }
   .level-card:not(.open) .lcard-play { min-width: 160px; min-height: 48px; }
+  /* the peek's kicker names the level only (the rounds wait in the open sheet), so it never runs under Play */
+  .level-card:not(.open) .lcard-kicker { white-space: nowrap; }
+  .level-card:not(.open) .lcard-rounds { display: none; }
   .level-card.open .lcard-play { width: 100%; min-height: 48px; }
   .lcard-cath { padding-top: 0; border-top: 0; }
   .lcard-enemies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 0 0; border-left: 0; border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); }
