@@ -1598,13 +1598,15 @@ export class Renderer {
     const w = ctx.measureText(name).width + fs * 1.2;
     const h = fs * 1.55;
     const g = 3;
+    const gs = g + lead.w * 0.25;
     const cx = lead.x + lead.w / 2;
     const cy = lead.y + lead.h / 2;
     const tries: Rect[] = [
       { x: cx - w / 2, y: lead.y - h - g, w, h },
       { x: cx - w / 2, y: lead.y + lead.h + g, w, h },
-      { x: lead.x + lead.w + g, y: cy - h / 2, w, h },
-      { x: lead.x - w - g, y: cy - h / 2, w, h },
+      // Plan item 326: beside it, clear of the drawn body, which runs past the box (a lorry's cab under the tag at P l34).
+      { x: lead.x + lead.w + gs, y: cy - h / 2, w, h },
+      { x: lead.x - w - gs, y: cy - h / 2, w, h },
     ];
     if (behind) {
       const far = (c: Rect) => -Math.hypot(c.x + c.w / 2 - behind.x - behind.w / 2, c.y + c.h / 2 - behind.y - behind.h / 2);
