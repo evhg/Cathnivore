@@ -9,6 +9,8 @@ import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import Portrait from './portraits/Portrait'
+import { RoleArt } from './icons/ActionArt'
+import { RoleProducerContext } from './icons/artScene'
 import { pairLine, setupCath } from '../content/pairLines'
 import { useMedia } from './useMedia'
 
@@ -193,8 +195,24 @@ export default function Setup({ onStart }: Props) {
               {/* Plan item 80: on a phone the four are small toggles by first name; the picked pair are drawn big below. */}
               <span className="pc-short" aria-hidden="true">{shortName(PRODUCERS[id].name)}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
+              {/* Plan item 328: at D the power is an ink stamp with its own picture (the hand's role card art). */}
+              <span className="pc-stamp" aria-hidden="true">
+                <RoleProducerContext.Provider value={id}>
+                  <RoleArt size={22} />
+                </RoleProducerContext.Provider>
+                {powerName(PRODUCERS[id].roleName)}
+              </span>
               <span className="pc-ability">{PRODUCERS[id].roleAbility}</span>
-              {RECOMMENDED_PAIR.includes(id) && <span className="recommended-badge">Recommended</span>}
+              {RECOMMENDED_PAIR.includes(id) && (
+                <span className="recommended-badge">
+                  {/* Plan item 328: at D Cath's own leaf pin marks the pair she'd pick */}
+                  <svg className="pc-leaf-pin" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M3 13C3 7 7 3 13 3c0 6-4 10-10 10Z" />
+                    <path className="pc-leaf-vein" d="M3.5 12.5 10 6" />
+                  </svg>
+                  <span className="pc-rec-word">Recommended</span>
+                </span>
+              )}
               <span className="pc-pick" aria-hidden="true">
                 ✓<span className="pc-pick-word"> Picked</span>
               </span>
@@ -273,6 +291,11 @@ function PinTin({ week }: { week: MarketEventId }) {
       </ul>
     </div>
   )
+}
+
+/** 'Litigator, Injunction' -> 'Injunction': the power's own name, for the producer card's stamp (plan item 328). */
+function powerName(roleName: string): string {
+  return roleName.split(', ').pop() ?? roleName
 }
 
 /** Plan item 54: a seat at the table: a drawn chair, the producer sitting in it, and who plays them. */
