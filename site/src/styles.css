@@ -35,7 +35,7 @@ body {
   display: none;
   background:
     radial-gradient(60% 30% at 62% 40%, rgba(255, 196, 120, 0.75), transparent 70%),
-    linear-gradient(to bottom, #1a1119 0%, #5b2733 38%, #e59a5c 55%, #6c7a3a 62%, #3b4a22 100%);
+    linear-gradient(to bottom, #1a1119 0%, #5b2733 30%, #2c171b 40%, #e59a5c 55%, #4a342c 58%, #1e1416 100%);
 }
 
 .no-webgl .scene {
