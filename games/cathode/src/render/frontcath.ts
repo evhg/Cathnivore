@@ -1014,6 +1014,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
           g.bezierCurveTo(ex + hw * 0.5, ey - hh * 1.3, ex - hw * 0.5, ey - hh * 1.25, ex - hw, ey);
           g.closePath();
         };
+        // Plan item 319 slice 10: a soft warm taupe on the lid under the brow, so the liner sits in make-up, not on bare
+        // skin (the critique read a black band over a doll's eye).
+        blob(ex + hw * 0.2 * sx, ey + hh * 1.9, hw * 1.15, hh * 1.25, "rgba(118,72,66,A)", 0.34);
         g.save();
         almond();
         // Plan item 260: a warmer white (a pure white read as a doll's stare under the toon key).
@@ -1048,8 +1051,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // The lid's shadow across the top of the iris.
         // Plan item 275: a heavier lid: its shadow lies across the top third of the iris, so the look is hers, not a
         // doll's stare.
-        g.fillStyle = "rgba(40,20,16,0.78)";
-        g.fillRect(ex - hw, ey + hh * 0.35, hw * 2, hh * 1.4);
+        // Plan item 319 slice 10: lighter (0.78 -> 0.55), so the iris's top reads as shaded hazel, not a black bar.
+        g.fillStyle = "rgba(40,20,16,0.55)";
+        g.fillRect(ex - hw, ey + hh * 0.45, hw * 2, hh * 1.3);
         g.fillStyle = "#fffaf4";
         g.beginPath();
         // Plan item 275: two small, sharp catchlights (item 9's broad ones washed the iris to grey at title distance).
@@ -1066,9 +1070,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.moveTo(ex - hw * sx * 1.02, ey - 0.0002);
         g.bezierCurveTo(ex - hw * 0.5 * sx, ey + hh * 1.55, ex + hw * 0.5 * sx, ey + hh * 1.65, ox, ey + hh * 0.25);
         // Plan item 205: a heavier upper line and a longer wing (the liner is what reads at title distance).
-        g.lineTo(ox + 0.0076 * E * sx, ey + hh * 1.45);
-        g.lineTo(ox - 0.0005 * E * sx, ey + hh * 1.05);
-        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 3.5, ex - hw * 0.5 * sx, ey + hh * 3.0, ex - hw * sx * 1.02, ey - 0.0002);
+        // Plan item 319 slice 10: a slim line that thickens outward to a sharp, lifted wing (the critique: a heavy band
+        // over the lid, no visible wing). The line is about two-thirds of item 205's depth; the wing runs further out and up.
+        g.lineTo(ox + 0.0118 * E * sx, ey + hh * 2.45);
+        g.lineTo(ox - 0.0004 * E * sx, ey + hh * 1.0);
+        g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 3.0, ex - hw * 0.5 * sx, ey + hh * 2.2, ex - hw * sx * 1.02, ey - 0.0002);
         g.closePath();
         g.fill();
         // Plan item 260: three lashes flicked out from the outer half of the lid, so the liner reads as lashes too.
