@@ -1144,3 +1144,24 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
 .cmp-ledger dd { margin: 0; font-family: var(--font-display); font-size: var(--fs-body); color: var(--ink); }
 .cmp-ledger dd b { font-size: var(--fs-h3, 1.4em); color: var(--soil); }
 .cmp-ledger .cmp-ledger-back { display: none; }
+/* Item 309: the tally is chalked on a small slate in a wooden frame (it was a plain form strip), as the stall's ledger
+   is in the game (item 287): chalk figures, a chalk underline under each count, the Back key on paper beside it. */
+.cmp-ledger-cells {
+  --chalk: var(--wood-ink);
+  padding: 8px 14px 10px;
+  border: 4px solid var(--wood);
+  border-radius: var(--r-xs, 4px);
+  background:
+    radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--chalk) 8%, transparent), transparent 70%),
+    color-mix(in srgb, var(--wood-lo) 45%, var(--ink-on-fixed-fill));
+  box-shadow: inset 0 0 0 1px var(--wood-lo), inset 0 2px 6px color-mix(in srgb, var(--ink-on-fixed-fill) 60%, transparent);
+}
+.cmp-ledger-cells .cmp-ledger-cell + .cmp-ledger-cell { border-left-color: color-mix(in srgb, var(--chalk) 30%, transparent); }
+.cmp-ledger-cells dt { color: color-mix(in srgb, var(--chalk) 82%, transparent); }
+.cmp-ledger-cells dd { color: var(--chalk); font-style: italic; }
+.cmp-ledger-cells dd b {
+  color: var(--chalk);
+  font-style: normal;
+  text-decoration: underline 2px color-mix(in srgb, var(--chalk) 55%, transparent);
+  text-underline-offset: 4px;
+}
