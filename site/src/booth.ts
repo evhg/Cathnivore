@@ -118,7 +118,8 @@ export function drawBooth(): void {
   s += `<rect x="${r(board.l)}" y="${r(board.t)}" width="${r(board.r - board.l)}" height="${r(board.b - board.t)}" rx="3" fill="#232b28"/>`
   s += awning(x1, x2, roof)
   // The counter: in front of Cath from the left post to just past her, its top at her hips, its foot on the rail.
-  const top = c.t + ch * 0.6
+  // Plan item 326: 58% (was 60%), so the fruit meets her jacket hem and no trouser band shows above it.
+  const top = c.t + ch * 0.58
   const cr = Math.min(c.r + 70, board.l - 22)
   let f = ''
   f += produce(x1 - 6, cr, top + 2)

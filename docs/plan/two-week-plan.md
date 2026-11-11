@@ -3079,7 +3079,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her face 60 px+ at D and 40 px+ at P; the bubble's tail within 30 px of her mouth; the six chapters each a different `data-pose` or `data-expression`; no plinth; nothing new over the chapter list; campaign specs pass; shots P and D, light and dark.
 - **Size:** 1
 
-## 326. [ ] The bugs from the 2026-11-11 12:40 critique, fixed as one batch *(lane B, in progress)*
+## 326. [ ] The bugs from the 2026-11-11 12:40 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 2026-11-11 12:55 lane B, measured in the page: **Site** D /games/ a 6 px trouser band showed between her jacket hem and the fruit: the counter's top at 58% of her height (was 60%), so the fruit meets the hem (P's stall unchanged); **Runnel** D Up next's day on its own line under the kicker with no dot (the 148 px column can't hold one line). games-stall, games-cards, runnel-lesson* pass at P and D (30); shots scratchpad g326-games-*, r326-next-D. Left: the Cathnivore, Hedgerow and NIGHT SHIFT points)*
 - **Build:** (check each first, measured in the page; shots `e2e/screenshots/plan1111b`)
   - **Site:** D /games/ the stall Cath's trousers show over the fruit row (265-305 x 260-305): the counter should cut her at the hip.
   - **Cathnivore:** D setup the producer cards' tops and feet about 20 px apart between picked and unpicked (440-1090 x 262-562); 'Hard' tag lower and more rotated, its pin off the tag (770-875 x 110-160); P game Pell's and Tomas's medallions over the Saltmarsh and Shingle Bay rims (320-385 x 130-525), EXPAND against the Brindle Hills plate (40-115 x 293-313); D game the ledger's empty state the largest blank on screen (35-315 x 625-800).

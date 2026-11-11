@@ -1968,7 +1968,8 @@ function markLessonCard(step: number): void {
   const next = document.getElementById('lc-next')
   if (next && step >= 0 && !next.dataset.filled) {
     next.dataset.filled = '1'
-    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next · ${new Date(`${today}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })}</small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
+    // Plan item 326: the day on its own line under "Up next" (no dot: the column is too narrow for one line, and a wrap left the dot dangling).
+    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next <span class="lc-next-day">${new Date(`${today}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })}</span></small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
   }
   card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
     const done = i < step || step >= LESSON_STEPS.length

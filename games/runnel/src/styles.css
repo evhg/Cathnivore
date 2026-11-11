@@ -4265,6 +4265,10 @@ body[data-mode='practice'] #week-slot {
 .daily-fly .unt-rest {
   display: block;
 }
+/* Plan item 326: Up next's day on its own line under the kicker, so no line starts or ends on a dot. */
+.lc-next .lc-next-day {
+  display: block;
+}
 
 /* Plan item 142: the week's keeps in the valley's margins: a mill, a footbridge, an orchard row, Bea's scarecrow,
    or a fallow plot for a day missed. Each stands on its spot (its foot at the spot), under the board. */
