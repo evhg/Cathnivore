@@ -1547,6 +1547,8 @@ html.no-animations .title-screen * {
     margin: 0 -4px -10px 0;
     z-index: var(--z-raised);
   }
+  /* Bea's drawing pins the cloth lower, clear of her line even while the line fades up into place */
+  .title-art.title-table .title-bea { top: 22px; }
 }
 @media (max-width: 600px) and (max-height: 720px) {
   .title-art.title-table .title-board { margin: 0 -4px -10px 0; }
