@@ -1,8 +1,8 @@
 /* Cathnivore type ("Market Day Press", docs/design/aaa-ui.md): Marrow Display (Fraunces opsz + wght, with
    the wght italic for Cath's voice and the Agenda headlines), Marrow Text (Atkinson Hyperlegible Next)
    and Marrow Figures (Figtree, digits, x and minus only, composed in front of Marrow Text by
-   unicode-range so no slashed zero reaches the screen). Latin files only. The Display normal and Text
-   files are preloaded by the vite.config.ts fontPreload() plugin; the fallbacks are metric-matched. */
+   unicode-range so no slashed zero reaches the screen). Latin files only. Nothing is preloaded (see
+   vite.config.ts): the fallbacks are metric-matched, so the swap moves nothing. */
 @font-face {
   font-family: "Marrow Display";
   src: url("../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2") format("woff2");
