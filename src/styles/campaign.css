@@ -1174,3 +1174,23 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   /* item 318: her head is above the bubble here, so the tail leaves its top corner and points up at her */
   .cmp-header .cmp-cath-line::after { top: 2px; right: -13px; clip-path: polygon(0 45%, 100% 0, 0 100%); }
 }
+
+/* Plan item 333: Back to Title is a painted plank, like the title's Campaign sign (item 327), not a plain form button. */
+.cmp-back {
+  min-height: 46px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 12px 50%, var(--wood-lo) 0 3px, transparent 4px),
+    radial-gradient(circle at calc(100% - 12px) 50%, var(--wood-lo) 0 3px, transparent 4px),
+    repeating-linear-gradient(180deg, transparent 0 11px, color-mix(in srgb, var(--wood-lo) 22%, transparent) 11px 12px),
+    linear-gradient(180deg, var(--wood), color-mix(in srgb, var(--wood) 80%, var(--wood-lo)));
+  color: var(--wood-ink);
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--wood-lo) 70%, transparent), 0 3px 0 var(--wood-lo), 0 6px 10px color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: transform 120ms ease;
+}
+.cmp-back:hover { color: var(--wood-ink); background-color: transparent; }
+.cmp-back:active { transform: translateY(2px); }
