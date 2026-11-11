@@ -3015,7 +3015,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each step 48x48 px+ with a 13 px+ label; done reads in greyscale (the tick's shape); reduced motion a fade; runnel lesson specs pass; key art re-shot if a source changes; shots P and D.
 - **Size:** 1
 
-## 316. [ ] Cathnivore: the phone title as a scene with Cath at the stall
+## 316. [ ] Cathnivore: the phone title as a scene with Cath at the stall *(lane B, in progress)*
 - **Why:** `plan1111a/cath-title-P` (40-150 x 185-285): on a phone Cath is a head and a raised hand behind the board, cut at the shoulders by the cloth, her bubble (115-390 x 172-222) against the bunting; at D (`cath-title-D` 595-830 x 415-760) she is the half-length centrepiece with props. (Item 304 left this as item 112's composition; the second critique in a row names it, so it gets its own item.)
 - **Build:** at P Cath half-length at the counter in the left third, waving, 150 px+ tall, the board smaller and tucked behind her shoulder at the right, her bubble in a clear band under the bunting; the desktop's props (crates, jam jar) at phone scale.
 - **Accept:** at 390x844 her figure 150 px+ with the face whole; the bubble meets neither the bunting nor the subtitle; Campaign above 600 px; title and axe specs pass; key art re-shot if a source changes; shots P light and dark.
