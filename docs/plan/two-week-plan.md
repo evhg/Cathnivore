@@ -3119,7 +3119,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the whole billboard word is in frame at P and D. The left half's mean luminance is ≥ 1.5x the current shot. Menu text contrast ≥ 7:1. `cathode-perf` is within budget when run alone. Cathode specs pass. Shots P and D.
 - **Size:** 2
 
-## 332. [ ] /games/: each game card as its own poster, not a screenshot with the same Cath pasted in
+## 332. [ ] /games/: each game card as its own poster, not a screenshot with the same Cath pasted in *(lane A, in progress)*
 - **Why:** `plan1111c/games-D` (110-1330 x 490-690): three cards are game screenshots with the same Cath bust in the corner (340-400, 650-705, 955-1015 x 585-690). NIGHT SHIFT's frame (1040-1330 x 490-690) is about 75% black. `games-P` (20-370 x 625-740) has the same problem.
 - **Build:** a poster per game from its `?keyart` frame, each with a different Cath: market trench for Cathnivore, watering can for Runnel, a Hedgerow flag for Hedgerow, lit noir trench for NIGHT SHIFT. The game's logotype in its own display face goes across the art. On hover, the poster's two layers move apart slightly (parallax), and it fades only under reduced motion.
 - **Accept:** no two cards share a Cath pose. Each poster shows ≥ 40% mid-tone pixels. Text over the art has 4.5:1 contrast. `e2e:site` and the keyart freshness tests pass. Shots P and D.
