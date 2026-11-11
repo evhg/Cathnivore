@@ -88,6 +88,6 @@ export function stopLandSvg(id: number, state: LandState): string {
   // Plan item 314: and out past the coin's rim, so a grey block or a billboard never stands against the medallion
   // (24 units outward; the svg lets it run past its box).
   const art =
-    state === "won" ? wonLand(id) : `<g transform="translate(${id % 3 === 1 ? -24 : 24} -16)">${heldLand(id)}</g>`;
+    state === "won" ? wonLand(id) : `<g class="held" transform="translate(${id % 3 === 1 ? -24 : 24} -16)">${heldLand(id)}</g>`;
   return `<svg viewBox="0 0 160 100" aria-hidden="true" focusable="false" overflow="visible">${art}</svg>`;
 }

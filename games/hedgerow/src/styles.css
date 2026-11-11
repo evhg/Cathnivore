@@ -362,6 +362,11 @@ button {
   .stop[data-state="held"] .stop-land {
     opacity: 0.6;
   }
+  /* Plan item 326: on the phone's two-column road, outward is the screen's edge, so the clutter stays over its own stop (only
+     lifted), not cut by the edge behind the names. */
+  .stop-land .held {
+    transform: translate(0px, -16px);
+  }
 }
 /* A first win's land blooms out from the stop over 900 ms; under reduced motion it fades in. */
 .stop-land.bloom {
