@@ -10,7 +10,16 @@ const dist = (a: Cam, b: Cam) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z)
 async function open(page: import('@playwright/test').Page) {
   await page.goto('/hedgerow/?sandbox=1&level=3')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.cam3d?.(), null, { timeout: 90_000 })
-  await page.waitForTimeout(1500)
+  // The camera eases in after load: wait until it holds still, so the play view it must return to is the settled one.
+  let last = await cam(page)
+  await expect
+    .poll(async () => {
+      const c = await cam(page)
+      const d = dist(c, last) / Math.hypot(c.x, c.y, c.z)
+      last = c
+      return !c.moving && d < 0.0005
+    }, { intervals: [1000], timeout: 30_000 })
+    .toBe(true)
 }
 
 test('Go dollies from the depot, then settles back on the play view', async ({ page }) => {

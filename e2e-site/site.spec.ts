@@ -194,6 +194,16 @@ test.describe('Runnel', () => {
     await expect(page.locator('#hud-taps')).toHaveText('0')
     const puzzle = dailyPuzzle(utcDateString(new Date()))
     const turnable = puzzle.cells.findIndex((c) => tapsToSolve(c) > 0)
+    // Today's field flies in after the lesson (the tile starts above the screen): tap once it has landed under the finger.
+    await expect
+      .poll(() =>
+        page.evaluate((i) => {
+          const g = document.querySelectorAll('.tiles > g.cell')[i]!
+          const r = g.getBoundingClientRect()
+          return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('g.cell') === g
+        }, turnable),
+      )
+      .toBe(true)
     await page.locator('.tiles > g.cell').nth(turnable).click({ force: true })
     await expect(page.locator('#hud-taps')).toHaveText('1')
     // It doesn't come back, and the full rules still sit behind "?".

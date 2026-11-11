@@ -203,6 +203,10 @@ test('a class change starts its audition at once, her face framed and her line s
     // Started within the click's own task: no frame needs to pass.
     const v = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette)
     expect(v?.kind, cls).toBe(cls)
+    // Her line comes up with the cut. Read it here: under swiftshader the pick's lit gun reel (item 313) can hold the
+    // page for seconds, past the line's 3.2 s, before the wait below returns.
+    const subOn = await page.evaluate(() => document.querySelector('.cp-sub')!.classList.contains('is-on'))
+    expect(subOn, cls).toBe(true)
     await page.waitForTimeout(1200)
     const m = await page.evaluate(() => {
       const b = (s: string) => {
@@ -226,7 +230,6 @@ test('a class change starts its audition at once, her face framed and her line s
       expect(face.left >= 470 && face.right <= 960 && face.top >= 90 && face.bottom <= 500, s).toBe(true)
       for (const o of [m.sheet, m.list]) expect(meets(face, o), s).toBe(false)
     }
-    expect(m.on, s).toBe(true)
     expect(m.text.length, s).toBeGreaterThan(10)
     expect(m.size, s).toBeGreaterThanOrEqual(13)
     expect(m.sub.left >= 0 && m.sub.top >= 0 && m.sub.right <= W && m.sub.bottom <= H, s).toBe(true)
