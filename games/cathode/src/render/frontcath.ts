@@ -785,7 +785,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
       let dz = 0;
       for (const sx of [-1, 1]) {
         dz -= 0.07 * Math.pow(bump(x, y, 0.36 * sx, 0.06, 0.2, 0.13), 1.5);
-        dz += 0.035 * bump(x, y, 0.33 * sx, 0.24, 0.26, 0.08);
+        // Plan item 319 slice 2: the brow ridge under the painted brow (it sat a brow's width below it, so the brow
+        // was painted on a slope), carried out to the brow's tail.
+        dz += 0.04 * bump(x, y, 0.38 * sx, 0.29, 0.3, 0.09);
+        // Plan item 319 slice 2: the eye modelled in its socket: a rounded ball under the painted almond, and the upper
+        // lid a fold above it, so the eye catches the key along the lid and turns away at the corners.
+        dz += 0.032 * bump(x, y, 0.39 * sx, 0.055, 0.22, 0.12);
+        dz += 0.018 * bump(x, y, 0.4 * sx, 0.155, 0.27, 0.065);
         dz += 0.05 * bump(x, y, 0.5 * sx, -0.2, 0.26, 0.2);
         // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
         // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
@@ -794,7 +800,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // grey smudge beside each corner of her mouth.
         dz -= 0.015 * Math.pow(bump(x, y, 0.5 * sx, -0.4, 0.17, 0.13), 1.2);
       }
-      dz += 0.035 * bump(x, y, 0, -0.5, 0.24, 0.1);
+      // Plan item 319 slice 2: the lips modelled, not one blob: the upper lip a forward band along the painted bow, the
+      // lower lip fuller under it, and the hollow between the lower lip and the chin, so the mouth has a lit lower lip
+      // and a shaded upper one from the mesh, as the paint has.
+      dz += 0.028 * bump(x, y, 0, -0.425, 0.3, 0.07);
+      dz += 0.036 * bump(x, y, 0, -0.53, 0.27, 0.075);
+      dz -= 0.014 * bump(x, y, 0, -0.62, 0.2, 0.05);
       z += dz * front;
       // Jaw: below the cheekbones the sides draw in, the chin comes forward.
       if (y < 0) {
@@ -1519,11 +1530,6 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Toward the wrist, across the shaft: where the back of her hand sits.
     const back = wristR.clone().sub(handR).setY(0).normalize();
     const tb = Math.atan2(back.z, back.x);
-    const ring = (y: number, rr: number, a0: number, a1: number) =>
-      Array.from({ length: 7 }, (_, i) => {
-        const a = tb + a0 + ((a1 - a0) * i) / 6;
-        return at(V(Math.cos(a) * rr, y - i * 0.0012, Math.sin(a) * rr));
-      });
     const parts: THREE.BufferGeometry[] = [];
     // The back of the hand: a flattened pad outside the shaft, knuckles up.
     const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
@@ -1539,14 +1545,21 @@ export function buildFrontCath(phone: boolean): FrontCath {
       [-0.009, 0.008, 1.45],
       [-0.023, 0.007, 1.3],
     ];
-    for (const [y, r, wrap] of fingers) {
-      const curve = new THREE.CatmullRomCurve3(ring(y, 0.0075 + r + 0.0008, -0.55, Math.PI * wrap - 0.55));
-      parts.push(new THREE.TubeGeometry(curve, seg(10), r, seg(6), false));
-      // A rounded tip.
-      const tip = new THREE.SphereGeometry(r * 0.98, seg(6), seg(5));
-      const e = curve.getPoint(1);
-      tip.translate(e.x, e.y, e.z);
-      parts.push(tip);
+    // Plan item 319 slice 2: each finger three tapering bones with knuckles between them, not one smooth tube (four
+    // equal rings round the shaft read as a stack of washers close up). The joints stand out from the shaft so the
+    // straight bones clear it, the knuckles of the fist proud; the index wraps furthest and each finger sits a little
+    // further round than the one below, so the grip reads as a hand.
+    for (const [fi, [y, r, wrap]] of fingers.entries()) {
+      const R = 0.0075 + r + 0.0008;
+      const a0 = -0.55 + fi * 0.06;
+      const a1 = Math.PI * wrap - 0.55;
+      const joint = (u: number, out: number) => {
+        const a = tb + a0 + (a1 - a0) * u;
+        return at(V(Math.cos(a) * R * out, y - u * 0.0072, Math.sin(a) * R * out));
+      };
+      const pts = [joint(0, 1.08), joint(0.37, 1.3), joint(0.7, 1.24), joint(1, 1.02)];
+      const rad = [r * 1.06, r * 0.98, r * 0.9, r * 0.8];
+      for (let k = 0; k < 3; k++) parts.push(limb(pts[k]!, pts[k + 1]!, rad[k]!, rad[k + 1]!, seg(8)));
     }
     // The thumb: from the base of the palm, across over the index finger's middle joint.
     const thumbA = at(V(Math.cos(tb - 1.2) * 0.022, -0.006, Math.sin(tb - 1.2) * 0.022));
