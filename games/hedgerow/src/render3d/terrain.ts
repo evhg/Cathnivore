@@ -1083,7 +1083,9 @@ export function buildGround(level: Level): Ground {
         const jx = x + (deco() - 0.5) * 0.2;
         const jz = z + (deco() - 0.5) * 0.2;
         if (laneDistance(level, jx, jz) < 0.9) continue;
-        flats.push({ x: jx, y: heightAt(jx, jz) - 0.02, z: jz, ry: deco() * 6.3, s: 0.36 + deco() * 0.08, sy: 0.03, color: patchOf(jx, jz) });
+        // Plan item 307: flat discs a hair over the ground, each a fraction higher than the last, so same-coloured
+        // neighbours merge into one wet sheet (a sphere cap's shaded rim outlined every one).
+        flats.push({ x: jx, y: heightAt(jx, jz) + 0.012 + deco() * 0.006, z: jz, ry: deco() * 6.3, s: 0.36 + deco() * 0.08, sy: 1, color: patchOf(jx, jz) });
         // Reeds stand in tight clumps (item 262: loose ones read as scattered black sticks from above).
         if (deco() < 0.4)
           for (let k = 0; k < 9; k++)
@@ -1137,8 +1139,8 @@ export function buildGround(level: Level): Ground {
     ])
       if (m) group.add(m);
     for (const m of [
-      // Plan item 307: smooth patches (16 x 8; at 10 x 5 their facets read as broken grey rock at the field's edge).
-      instanced(new THREE.SphereGeometry(1, 16, 8), new THREE.MeshStandardMaterial({ roughness: 0.18, metalness: 0.08 }), flats),
+      // Plan item 307: flat wet patches (sphere caps, faceted, read as broken grey rock at the field's edge).
+      instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.06 }), flats),
       instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
       instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretBody, true),
       instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),
