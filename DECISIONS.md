@@ -394,3 +394,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 06:55 lane B (item 312): the desktop hand's rows size their cards to fit with a gap (no overlap); the one-row fan keeps item 154's small held overlap for now (rows at 800 px tall would cost the board height).
 - 2026-11-11 07:40 lane A (item 306): the neck and ears share the face's warm skin light at 0.72 brightness (the throat in the jaw's shade), rather than a separate chin-shadow mesh.
 - 2026-11-11 07:50 lane B (item 316): the phone title puts Cath half-length beside the board (desktop's composition at phone scale), replacing item 231's head over the board's far edge; title-counter's 'board 320 px' became 'board 240 px+, Cath 150 px+, face whole'.
+- 2026-11-11 08:35 lane B (item 318): critique sizes read off a 1x shot are measured in the page before any change; most 'about 10-11 px' labels measured 12 px+ and were left.

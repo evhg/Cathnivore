@@ -479,6 +479,9 @@ main,
     linear-gradient(var(--counter-hi), var(--counter-hi)) 0 14px / 100% 7px no-repeat,
     repeating-linear-gradient(90deg, transparent 0 40px, var(--counter-lo) 40px 42px) 0 21px / 100% 100% no-repeat,
     linear-gradient(var(--counter-mid), var(--counter-lo)) 0 21px / 100% 100% no-repeat;
+  /* item 318: it stands on something: a warm pool of its own lamplight on the floor under its foot (it floated in the
+     dark; a shadow doesn't show on near-black) */
+  box-shadow: 0 18px 26px -6px color-mix(in srgb, var(--counter-hi) 26%, transparent), 0 6px 0 -2px color-mix(in srgb, var(--counter-lo) 70%, transparent);
 }
 h1 {
   margin: 0;
