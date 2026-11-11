@@ -36,7 +36,7 @@ import { ArtSceneContext, RoleProducerContext } from './icons/artScene'
 import { GraftArt, InvestArt, OpenStallArt, RebutArt, RoleArt, SchemeArt, SellArt, SupplyArt } from './icons/ActionArt'
 import { actionCardLabel, actionCost, actionLabel, actionFamily, actionGroupKey, actionGroupLabel, actionTermFor, actionTermForKind, familyOptionLabel, regionOf } from './actionLabel'
 import { investCost, schemeCost, supplyOutletCostPerOutlet, supplyBuyoutCost, rebutCost } from '../engine/actions'
-import { IMPROVEMENTS_BY_ID } from '../content/improvements'
+import { IMPROVEMENTS, IMPROVEMENTS_BY_ID } from '../content/improvements'
 import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
@@ -511,7 +511,7 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
     <button aria-label={aria ?? (action.kind === 'scheme' ? text : undefined)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {action.kind === 'invest' ? (
-          <InvestArt size={18} motif={investMotif(action.improvementId)} />
+          <InvestArt size={18} motif={investMotif(action.improvementId)} variant={INVEST_VARIANT.get(action.improvementId)} />
         ) : (
           Icon && <Icon size={18} />
         )}
@@ -522,11 +522,23 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
   )
 }
 
-// Plan item 320: an invest card's picture is the Improvement's own vignette scene.
+// Plan item 320: an invest card's picture is the Improvement's own vignette scene, varied by its place among the
+// Improvements that share its tag (InvestArt).
 function investMotif(improvementId: string) {
   const card = IMPROVEMENTS_BY_ID.get(improvementId)
   return card ? vignetteFor(card) : undefined
 }
+const INVEST_VARIANT: Map<string, number> = (() => {
+  const seen = new Map<string, number>()
+  const out = new Map<string, number>()
+  for (const card of IMPROVEMENTS) {
+    const kind = vignetteFor(card)
+    const n = seen.get(kind) ?? 0
+    out.set(card.id, n)
+    seen.set(kind, n + 1)
+  }
+  return out
+})()
 
 // AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.2): a label that ends in its own cost ("Invest: buy Cold
 // Store (5 Marks)") shows the cost once, in the price-tag chip; the button keeps the full label as its
@@ -1054,8 +1066,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }, [state, isDesktop, bigTurn, tightTurn, turnKey, pendingEnemyTurn.length, selectedGroup, teammatePick])
   // Plan item 123: a phone card whose name and price don't fit beside its 56 px picture (a region's name, a long
   // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
+  // Plan item 320: on the desktop table's hand the same measure lets a card whose name fits take a 60% window (table.css);
+  // there it reads layout offsets, since the fan's tilt inflates on-screen boxes into each other.
   useLayoutEffect(() => {
-    if (isDesktop) return
+    if (isDesktop) {
+      for (const b of document.querySelectorAll<HTMLElement>('.table-hand .action-item:not(.action-family) > button:first-child:not(:disabled)')) {
+        b.removeAttribute('data-tight')
+        if ([...b.children].some((c) => c instanceof HTMLElement && c.offsetTop + c.offsetHeight > b.clientHeight - 2)) b.setAttribute('data-tight', '')
+      }
+      return
+    }
     for (const b of document.querySelectorAll<HTMLElement>('.action-tray .actions .action-item > button:first-child:not(:disabled)')) {
       b.removeAttribute('data-tight')
       if (b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > b.getBoundingClientRect().bottom + 1)) b.setAttribute('data-tight', '')

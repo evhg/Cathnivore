@@ -20,7 +20,7 @@ const LEAF = 'var(--art-leaf, #6E9A44)'
 
 const LINE = { stroke: INK, strokeWidth: 1.2, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
 
-function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; kind: string; ground?: string; children: ReactNode }) {
+function Tile({ size = 32, kind, ground = PASTURE, sky = SEA, children }: { size?: number; kind: string; ground?: string; sky?: string; children: ReactNode }) {
   // Plan item 218: in the desktop hand the tile opens out into a wide window: the same subject, centred, standing
   // in its land (a sky wash, a far ridge and the near ground running the window's width).
   // Plan item 320: the window is full-bleed (`slice`: the land runs to the card's edges at any shape, the card's own
@@ -34,8 +34,8 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
       <>
       <svg viewBox={wide ? '-25 1 90 36' : '-2 1 44 40'} preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
         <rect x="-40" y="-10" width="120" height="60" fill={CREAM} />
-        <rect x="-40" y="-10" width="120" height="20" fill={SEA} opacity={0.2} />
-        <rect x="-40" y="-10" width="120" height="31.5" fill={SEA} opacity={0.1} />
+        <rect x="-40" y="-10" width="120" height="20" fill={sky} opacity={0.2} />
+        <rect x="-40" y="-10" width="120" height="31.5" fill={sky} opacity={0.1} />
         <circle cx="35" cy="8.5" r="3.4" fill={WHEAT} opacity={0.7} />
         <path d="M-40 25 Q -24 18 -12 24 Q -6 19 4 23 T 24 21 T 44 22 T 64 20 T 80 22 L80 50 L-40 50 Z" fill={ground} opacity={0.26} />
         <path d="M-40 23.6 Q -30 21.5 -20 23 M-2 22.6 q 2 -2.4 4 0 q 2 -2.4 4 0 M30 21.8 q 2 -2.2 4 0 q 2 -2.2 4 0" fill="none" stroke={ground} strokeOpacity={0.45} strokeWidth={1} strokeLinecap="round" />
@@ -162,15 +162,20 @@ export function SellArt({ size, count = 2 }: { size?: number; count?: number }) 
   )
 }
 
+const INVEST_SKY = [SEA, WHEAT, CLAY, LEAF]
+
 /** A shopfront with a hanging sign and a stack of coins: buying an Improvement. Plan item 320: in a hand card's
  * painted window (`motif` given) the picture is what the card buys, the Improvement's own vignette scene (a sheep
  * at the fence, a jetty, a lab; the pinned price tag says it's bought), so no two invest cards share one shopfront. */
-export function InvestArt({ size, motif }: { size?: number; motif?: VignetteKind }) {
+export function InvestArt({ size, motif, variant = 0 }: { size?: number; motif?: VignetteKind; variant?: number }) {
   const scene = useContext(ArtSceneContext)
   if (scene && motif) {
+    // Improvements of one tag share a motif: the card's place in its tag (`variant`, Game.tsx) picks the motif's
+    // facing and the sky's colour, eight pictures per tag, so no two invest cards look the same
+    const transform = variant & 1 ? 'translate(43 10) scale(-0.4 0.4)' : 'translate(-3 10) scale(0.4)'
     return (
-      <Tile size={size} kind="invest" ground={SEA}>
-        <g transform="translate(-4 10) scale(0.4)" data-motif={motif}>
+      <Tile size={size} kind="invest" ground={SEA} sky={INVEST_SKY[(variant >> 1) % INVEST_SKY.length]}>
+        <g transform={transform} data-motif={motif}>
           <VignetteMotif kind={motif} />
         </g>
       </Tile>
