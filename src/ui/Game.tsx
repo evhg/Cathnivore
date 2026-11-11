@@ -510,12 +510,22 @@ function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action
   return (
     <button aria-label={aria ?? (action.kind === 'scheme' ? text : undefined)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
-        {Icon && <Icon size={18} />}
+        {action.kind === 'invest' ? (
+          <InvestArt size={18} motif={investMotif(action.improvementId)} />
+        ) : (
+          Icon && <Icon size={18} />
+        )}
         {action.kind === 'role' ? roleCardText(action, state) : <BuyVerb text={text} />}
       </span>
       {action.kind === 'role' ? ROLE_FREE_CHIP : <ActionCostChip cost={cost} />}
     </button>
   )
+}
+
+// Plan item 320: an invest card's picture is the Improvement's own vignette scene.
+function investMotif(improvementId: string) {
+  const card = IMPROVEMENTS_BY_ID.get(improvementId)
+  return card ? vignetteFor(card) : undefined
 }
 
 // AAA UI M4 (aaa-ui-specs.md "cathnivore" 4.2): a label that ends in its own cost ("Invest: buy Cold

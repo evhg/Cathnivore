@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import { Children, cloneElement, isValidElement, type JSX, type ReactElement, type ReactNode } from 'react'
 import { vignetteHash, type VignetteKind } from './vignetteKind'
 
 // Plan item 36: every Market and Plan card carries a small code-drawn scene keyed by its first tag, so a
@@ -112,6 +112,19 @@ const MOTIF: Record<VignetteKind, JSX.Element> = {
       <path d="M84 48 L100 18 L104 20 L88 50 L84 52Z" {...solid('var(--wheat)')} />
     </>
   ),
+}
+
+/** Plan item 320: the motif alone (its ground band and subject, no sky or sun), in the vignette's own 120x60 frame, so
+ * an invest card's painted window can show what the card buys rather than one shopfront for every Improvement. */
+export function VignetteMotif({ kind }: { kind: VignetteKind }) {
+  // its ground band (the first part) washes into the card's own land instead of standing as a hard bar
+  const [band, ...rest] = Children.toArray((MOTIF[kind].props as { children: ReactNode }).children)
+  return (
+    <>
+      {isValidElement(band) ? cloneElement(band as ReactElement<{ opacity?: number; stroke?: string }>, { opacity: 0.4, stroke: 'none' }) : band}
+      {rest}
+    </>
+  )
 }
 
 export default function Vignette({ kind, seed }: { kind: VignetteKind; seed: string }) {

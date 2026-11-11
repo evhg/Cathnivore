@@ -1,5 +1,7 @@
 import { useContext, type ReactNode } from 'react'
 import { ArtSceneContext, RoleProducerContext } from './artScene'
+import { VignetteMotif } from '../Vignette'
+import type { VignetteKind } from '../vignetteKind'
 
 // Plan item 83: each action card carries its own small painted picture (a 40x40 tile: a sky-and-ground
 // wash and the subject in flat colour with a soft ink line), in place of the 24px glyph from
@@ -22,13 +24,14 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
   // Plan item 218: in the desktop hand the tile opens out into a wide window: the same subject, centred, standing
   // in its land (a sky wash, a far ridge and the near ground running the window's width).
   // Plan item 320: the window is full-bleed (`slice`: the land runs to the card's edges at any shape, the card's own
-  // frame clips it), and its top-left corner carries the card family's seal, so families tell apart in greyscale.
+  // frame clips it), and the card's top-left corner carries the family's seal, so families tell apart in greyscale.
   const scene = useContext(ArtSceneContext)
   if (scene) {
-    // 'wide': the phone card's 3:1 window shows the whole subject with its land either side (the seal moves out to
-    // the window's corner); the desktop's taller window crops in on the subject.
+    // 'wide': the phone card's 3:1 window shows the whole subject with its land either side; the desktop's taller
+    // window crops in on the subject.
     const wide = scene === 'wide'
     return (
+      <>
       <svg viewBox={wide ? '-25 1 90 36' : '-2 1 44 40'} preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
         <rect x="-40" y="-10" width="120" height="60" fill={CREAM} />
         <rect x="-40" y="-10" width="120" height="20" fill={SEA} opacity={0.2} />
@@ -39,8 +42,9 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
         <path d="M-40 30 Q -20 26 -4 28 Q 0 26 8 28.5 T 30 27 T 52 28 T 80 27 L80 50 L-40 50 Z" fill={ground} opacity={0.42} />
         <path d="M2 36 l0.8 -2 M4 36.4 l-0.6 -2.2 M34 35.6 l0.8 -2 M36 36 l-0.6 -2.2" stroke={ground} strokeOpacity={0.7} strokeWidth={0.8} strokeLinecap="round" />
         {children}
-        <FamilySeal kind={kind} wide={wide} />
       </svg>
+      <FamilySeal kind={kind} />
+      </>
     )
   }
   return (
@@ -74,14 +78,16 @@ const SEAL_GLYPH: Record<string, ReactNode> = {
   rebut: <path d="M-2 -2.4 H2 V-0.2 L1 0.6 L1.6 1.4 L0.8 2.4 H-2 Z" fill={CREAM} />,
   role: <path d="M0 -2.6 L0.75 -0.8 L2.5 -0.8 L1.1 0.4 L1.6 2.3 L0 1.2 L-1.6 2.3 L-1.1 0.4 L-2.5 -0.8 L-0.75 -0.8 Z" fill={CREAM} />,
 }
-function FamilySeal({ kind, wide = false }: { kind: string; wide?: boolean }) {
+function FamilySeal({ kind }: { kind: string }) {
+  // its own small badge pinned to the card's corner (table.css), not drawn inside the window: a sliced window crops
+  // its top by the card's shape, which cut a seal in the corner on wide cards
   const glyph = SEAL_GLYPH[kind]
   if (!glyph) return null
   return (
-    <g transform={wide ? 'translate(-20 7) scale(1.05)' : 'translate(8.6 7.6)'} className="action-seal" data-seal={kind}>
+    <svg viewBox="-5 -5 10 10" aria-hidden="true" className="action-seal" data-seal={kind}>
       <circle r="4" fill={SEAL_FILL[kind]} stroke={CREAM} strokeWidth={0.9} />
       {glyph}
-    </g>
+    </svg>
   )
 }
 
@@ -156,8 +162,20 @@ export function SellArt({ size, count = 2 }: { size?: number; count?: number }) 
   )
 }
 
-/** A shopfront with a hanging sign and a stack of coins: buying an Improvement. */
-export function InvestArt({ size }: { size?: number }) {
+/** A shopfront with a hanging sign and a stack of coins: buying an Improvement. Plan item 320: in a hand card's
+ * painted window (`motif` given) the picture is what the card buys, the Improvement's own vignette scene (a sheep
+ * at the fence, a jetty, a lab; the pinned price tag says it's bought), so no two invest cards share one shopfront. */
+export function InvestArt({ size, motif }: { size?: number; motif?: VignetteKind }) {
+  const scene = useContext(ArtSceneContext)
+  if (scene && motif) {
+    return (
+      <Tile size={size} kind="invest" ground={SEA}>
+        <g transform="translate(-4 10) scale(0.4)" data-motif={motif}>
+          <VignetteMotif kind={motif} />
+        </g>
+      </Tile>
+    )
+  }
   return (
     <Tile size={size} kind="invest" ground={SEA}>
       <path d="M8 31 V17 L17 11 L26 17 V31 Z" fill={CREAM} {...LINE} />

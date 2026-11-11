@@ -4938,3 +4938,18 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
      edge onto the next strip; a card off the front takes no 'i' taps (a tap there brings the card forward, item 302). */
   .action-tray .actions > .action-item[data-peek]:is([data-stack='l'], [data-stack='r']):not(:focus-within) > .tooltip-trigger { pointer-events: none; }
 }
+/* Plan item 320: a hand card's family seal is a badge pinned to the card's top-left corner, over its window. */
+:is(.table-hand, .action-tray .actions) .action-item .action-label > svg.action-seal {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: var(--z-raised);
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  filter: drop-shadow(0 1px 1px rgb(var(--shadow-ink) / .3));
+}
+@media (min-width: 1240px) and (min-height: 760px) {
+  :is(.table-hand, .action-tray .actions) .action-item .action-label > svg.action-seal { width: 22px; height: 22px; }
+}
+:is(.table-hand, .action-tray .actions) .action-family-name > svg.action-seal { display: none; }

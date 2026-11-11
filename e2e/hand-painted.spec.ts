@@ -22,8 +22,9 @@ test('desktop hand cards carry a picture window, the name and the price apart', 
         const label = c.querySelector('.action-label')!
         const range = document.createRange()
         range.selectNodeContents(label)
-        const svg = label.querySelector(':scope > svg')
-        if (svg) range.setStartAfter(svg)
+        // the name follows the label's pictures (the window, and item 320's family seal pinned to the corner)
+        const svgs = label.querySelectorAll(':scope > svg')
+        if (svgs.length) range.setStartAfter(svgs[svgs.length - 1]!)
         const name = range.getBoundingClientRect()
         const cost = c.querySelector('.action-cost')?.getBoundingClientRect()
         const meet = (a?: DOMRect, b?: DOMRect) => !!a && !!b && Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1
