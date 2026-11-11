@@ -378,7 +378,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
-    const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.4, 0.62, dot( normal, uKeyDir ) ) )" : "";
+    // Plan item 319: a softer step (0.4-0.62 -> 0.3-0.68) on the denser skull, whose finer curves the hard step cut
+    // into dark bands beside the mouth.
+    const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.3, 0.68, dot( normal, uKeyDir ) ) )" : "";
     let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 )${planes};` : "";
     // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
     // the eyes hold a bright point under the street's grade.
@@ -768,7 +770,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   chest.add(headPivot);
   // The head: an egg with a jaw. The lower front narrows to a chin, the cheekbones sit high, a small nose; C14 (S9.5,
   // the wardrobe sees her from the front): shallow eye sockets under a soft brow, full cheekbones, a lip line.
-  const skull = new THREE.SphereGeometry(1, seg(40), seg(28));
+  // Plan item 319: dense enough that the jaw, chin and cheek planes hold their own curves (40x28, and 24x17 on a
+  // phone, drew the jaw as straight facets at a 70 px+ face); a phone keeps 64x44 however low its segment scale.
+  const skull = new THREE.SphereGeometry(1, Math.max(64, seg(80)), Math.max(44, seg(56)));
   {
     const p = skull.attributes.position as THREE.BufferAttribute;
     const bump = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) => Math.max(0, 1 - Math.hypot((x - cx) / rx, (y - cy) / ry));
@@ -786,7 +790,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
         // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
         dz += 0.03 * bump(x, y, 0.52 * sx, -0.08, 0.2, 0.07);
-        dz -= 0.045 * Math.pow(bump(x, y, 0.5 * sx, -0.4, 0.17, 0.13), 1.2);
+        // Plan item 319: shallower (0.045 -> 0.015) now the denser skull resolves it: at full depth it lit as a
+        // grey smudge beside each corner of her mouth.
+        dz -= 0.015 * Math.pow(bump(x, y, 0.5 * sx, -0.4, 0.17, 0.13), 1.2);
       }
       dz += 0.035 * bump(x, y, 0, -0.5, 0.24, 0.1);
       z += dz * front;
