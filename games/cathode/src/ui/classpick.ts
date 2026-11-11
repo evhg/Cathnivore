@@ -33,6 +33,8 @@ export interface ClassPickHooks {
    * it is shot). null (or no hook) keeps item 199's extruded line-art prop.
    */
   gunReel?(weaponCls: string, cls: ClassId, still: boolean): { readonly total: number; readonly frames: string[] } | null;
+  /** Plan item 313: a weapon class's lit thumbnail for the names' rack, from the same meshes. null keeps the stencil. */
+  gunIcon?(weaponCls: string): string | null;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -97,6 +99,32 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     opt.addEventListener("click", () => select(cls, true));
     options.set(cls, opt);
   });
+  // Plan item 313: the rack's stencils become the guns themselves, shot from the same meshes as the case table's
+  // (monochrome until picked, then lit in the class's colour). One per animation frame, after the pick's first
+  // frames, so opening the pick doesn't wait on five renders; at once for a still.
+  let iconRaf = 0;
+  const gears = [...list.querySelectorAll<HTMLElement>(".cp-opt-gear")];
+  const swapIcon = () => {
+    const gear = gears.shift();
+    if (!gear) return;
+    const url = hooks.gunIcon?.(gear.dataset.weapon ?? "");
+    if (url) {
+      const img = document.createElement("img");
+      img.className = "cp-opt-gun";
+      img.alt = "";
+      img.decoding = "sync";
+      img.src = url;
+      gear.classList.add("is-lit");
+      gear.replaceChildren(img);
+    }
+    if (still) swapIcon();
+    else iconRaf = requestAnimationFrame(swapIcon);
+  };
+  let iconTimer = 0;
+  if (hooks.gunIcon) {
+    if (still) swapIcon();
+    else iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapIcon)), 600);
+  }
 
   const words = el("div", "cp-words", left);
   words.setAttribute("aria-live", "polite");
@@ -460,6 +488,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   function cleanup(): void {
     cancelAnimationFrame(countRaf);
     clearInterval(reelTimer);
+    clearTimeout(iconTimer);
+    cancelAnimationFrame(iconRaf);
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);

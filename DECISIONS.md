@@ -400,3 +400,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 09:45 lane B (item 312): no 'Free today' peg: free cards already carry a FREE chip, and a peg would cost a row a card's width; the rows stand on wooden shelf planks instead.
 - 2026-11-11 09:40 lane A (item 310): her idle point and wave use the far arm reaching out level toward her facing side and swung toward the lens (shoulder rotation.x 1.3), with the wave lifting the forearm, rather than swapping the rolling pin to the far hand.
 - 2026-11-11 09:40 lane A (item 313): the pick's lit weapon is shot by the street's own renderer into turntable frames (images), not a live second WebGL view, keeping 04:55's cut.
+- 2026-11-11 10:45 lane A (item 313): the names' rack shows lit monochrome thumbnails of the class guns (one still frame from the same studio), not a second turntable per row; the picked row gets the class's glow.

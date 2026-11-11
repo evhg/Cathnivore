@@ -71,6 +71,7 @@ const still = (): boolean => reducedMotion();
 let scene: FrontScene | null = null;
 /** Plan item 313: the pick's class weapon, lit by the street's renderer in the class's key colour. */
 const pickGunReel = (weaponCls: string, cls: ClassId, still: boolean) => scene?.gunReel(weaponCls, cls, still) ?? null;
+const pickGunIcon = (weaponCls: string) => scene?.gunIcon(weaponCls) ?? null;
 let sceneReady: Promise<FrontScene | null> = Promise.resolve(null);
 function webgl2(): boolean {
   try {
@@ -692,7 +693,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           resolve(c);
         },
         "ghost",
-        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump(), gunReel: pickGunReel },
+        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump(), gunReel: pickGunReel, gunIcon: pickGunIcon },
       );
       stagePick();
       // Escape from the case file goes back to the title.
@@ -1017,7 +1018,7 @@ async function boot(): Promise<void> {
       $("screen-title").hidden = true;
       const cls = (params.get("class") as ClassId | null) ?? "ghost";
       s?.wardrobe(cls, true);
-      openClassPick(document.body, () => undefined, cls, { still: true, gunReel: pickGunReel });
+      openClassPick(document.body, () => undefined, cls, { still: true, gunReel: pickGunReel, gunIcon: pickGunIcon });
       stagePick();
       s?.wardrobe(cls, true);
     }

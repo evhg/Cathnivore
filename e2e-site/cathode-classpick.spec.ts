@@ -315,6 +315,8 @@ test('the class weapon is lit in 3D with a specular highlight', async ({ page, h
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
   const gun = page.locator('.cp-weapon-art.is-lit .cp-gun')
   await expect(gun).toHaveCount(1)
+  // The rack's guns are thumbnails of the same meshes (desktop; the phone hides the rack).
+  await expect(page.locator('.cp-opt-gear.is-lit .cp-opt-gun')).toHaveCount(5)
   const m = await gun.evaluate(async (img: HTMLImageElement) => {
     await img.decode()
     const c = document.createElement('canvas')

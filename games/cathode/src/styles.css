@@ -750,6 +750,15 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   filter: drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .9)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .5));
 }
 @media (hover: hover) { .cp-opt:hover .cp-opt-gear { color: var(--accent, var(--blood-hot)); } }
+/* Plan item 313: the rack's guns as lit thumbnails of the same meshes as the case table's: monochrome gunmetal
+   at rest, the picked one at full light with the class's glow round it. */
+.cp-opt-gear.is-lit { filter: none; }
+.cp-opt-gun { display: block; width: 100%; height: auto; aspect-ratio: 5 / 2; object-fit: contain; filter: grayscale(1) brightness(1.25); opacity: .72; transition: opacity 200ms ease, filter 200ms ease; }
+.cp-opt[aria-checked="true"] .cp-opt-gun {
+  opacity: 1;
+  filter: grayscale(.2) brightness(1.15) drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .8)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .4));
+}
+@media (hover: hover) { .cp-opt:hover .cp-opt-gun { opacity: .9; } }
 @media (prefers-reduced-motion: reduce) { .cp-opt, .cp-opt::after { transition: none; } }
 @media (max-height: 560px), (max-width: 700px) and (orientation: portrait) {
   .cp-list { grid-auto-rows: max(40px, calc(var(--u) * 72)); } /* px-ok: tap target */

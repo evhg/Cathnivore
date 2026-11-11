@@ -134,6 +134,23 @@ export interface GunReel {
 const GUN_MODELS: ReadonlySet<string> = new Set<GunModel>(["pistol", "shotgun", "sniper", "revolver", "smg", "rifle", "launcher"]);
 const reels = new Map<string, GunReel>();
 
+/** Plan item 313: the names' rack thumbnails: the same meshes at the still three-quarter, lit white (the rack's CSS
+ * makes them monochrome and lights the picked one in the class's colour). */
+export const GUN_ICON = { width: 300, height: 120 };
+const icons = new Map<string, string>();
+
+/** One still thumbnail of a weapon class's gun (cached), or null for a class with no gun model. */
+export function gunIcon(renderer: THREE.WebGLRenderer, weaponCls: string): string | null {
+  if (!GUN_MODELS.has(weaponCls)) return null;
+  const had = icons.get(weaponCls);
+  if (had) return had;
+  const studio = new GunStudio(renderer, weaponCls as GunModel, { ...GUN_ICON, frames: 1, rim: [0.9, 0.92, 1] });
+  const url = studio.shoot(0);
+  studio.dispose();
+  icons.set(weaponCls, url);
+  return url;
+}
+
 /** The frames per turn and their size (device px; the case table shows them at 360x150 CSS px or more at D). */
 export const GUN_REEL = { frames: 48, width: 720, height: 300 };
 /** How long after a reel's first frame the rest start being shot (ms). */
