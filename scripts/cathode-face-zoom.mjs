@@ -15,10 +15,10 @@ for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, 
   const f = await p.evaluate(() => window.cathodeFront.scene().faceBox())
   const g = await p.evaluate(() => window.cathodeFront.scene().figureBox(true))
   console.log(n, front, 'face', Math.round(f.right-f.left), Math.round(f.bottom-f.top), 'fig', JSON.stringify(g))
-  await p.screenshot({ path: `${out}/${tag}-${front}-${n}.png`, scale: 'css' })
+  await p.screenshot({ path: `${out}/${tag}-${front}-${n}.png`, scale: "css", timeout: 180000 })
   const w = (f.right-f.left), h=(f.bottom-f.top)
-  await p.screenshot({ path: `${out}/${tag}-${front}-${n}-zoom.png`, clip: { x: f.left - w*0.8, y: f.top - h*0.5, width: w*2.6, height: h*3.2 } })
-  await p.screenshot({ path: `${out}/${tag}-${front}-${n}-face.png`, clip: { x: f.left, y: f.top, width: w, height: h } })
+  await p.screenshot({ path: `${out}/${tag}-${front}-${n}-zoom.png`, clip: { x: f.left - w*0.8, y: f.top - h*0.5, width: w*2.6, height: h*3.2 }, timeout: 180000 })
+  await p.screenshot({ path: `${out}/${tag}-${front}-${n}-face.png`, clip: { x: f.left, y: f.top, width: w, height: h }, timeout: 180000 })
   await ctx.close()
 }
 await b.close()

@@ -374,7 +374,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0) => {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
@@ -394,8 +394,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // saturation is raised by the share the noir grade drains from midtones (post.ts keeps 55%), so she grades to warm
     // skin rather than grey, and its brightness rolls off with a soft knee so skin never clips and the painted eyes,
     // liner and lips keep their contrast. Only the face (the material with catch-lights); the coat keeps the street.
+    // Plan item 306 slice 2: the neck and ears (skin) take the same warm, colour-free light at \`skin\` of the face's
+    // brightness, so the throat sits in the jaw's shade under the face instead of a grey-teal band below a warm face.
+    const skinTone = glint > 0 ? 1 : skin;
     const skinLight =
-      glint > 0
+      skinTone > 0
         ? `{
             const vec3 W = vec3( 0.2126, 0.7152, 0.0722 );
             float la = max( dot( diffuseColor.rgb, W ), 1e-4 );
@@ -404,7 +407,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             float lc = dot( c, W );
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
-            outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 );
+            outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
           }
           #include <opaque_fragment>`
         : "#include <opaque_fragment>";
@@ -465,7 +468,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   mats.push(skirtMat);
   rimify(blackMat, 0.8);
   rimify(hairMat, 1.2, 0, 0, HAIR_SHINE, true);
-  rimify(skinMat, 0.35, 0.8);
+  rimify(skinMat, 0.35, 0.8, 0, 0, false, 0.72);
 
   let tris = 0;
   const add = (geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D = group) => {
