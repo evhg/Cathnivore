@@ -2945,7 +2945,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
 - **Size:** 2
 
-## 305. [ ] Shared Cath: one full-length Cath who matches her portrait
+## 305. [ ] Shared Cath: one full-length Cath who matches her portrait *(lane A, in progress)*
 - **Why:** `plan1108e/cath-campaign-D` (690-805 x 505-770): the full-length Cath (item 292) still reads as a thin figure with a small head and long dark legs on a pier floating in open water, unlike the bust beside her; `hedge-menu-D` (312-340 x 265-382) the same figure is smaller than a level badge; `cath-campaign-P` (295-365 x 140-305) she floats with no ground.
 - **Build:** the full figure in `shared/cath/` carries the bust's proportions down (head about a sixth of her height), the olive jacket to the hip, tailored trousers in cream or olive rather than near-black, ankle boots and a ground shadow; three poses (stand, point, cheer); the campaign stands her on the board's edge or the stall's plinth, not a floating pier.
 - **Accept:** head 15%+ of figure height in every use; 200 px+ tall on campaign-D, 90 px+ on hedge-menu-D; a ground contact or shadow in each; cath-full-body and shared Cath tests, campaign and Hedgerow menu specs pass; key art re-shot; shots P and D.
