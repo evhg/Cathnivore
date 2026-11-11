@@ -1,6 +1,6 @@
 {
   "workflow": "ci",
-  "commit": "a1dc85aeaaa603343744113bedd3c66ac7823f32",
-  "success": true,
-  "time": "2026-11-11T02:54:07Z"
+  "commit": "5ebf83223e5950a463f9c3b1a1cfb1b6e53ca400",
+  "success": false,
+  "time": "2026-11-11T03:18:36Z"
 }
