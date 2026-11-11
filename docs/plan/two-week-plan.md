@@ -3043,7 +3043,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at P (390x844) and D (1440x900) the title and pick shots read her face (eyes, brows, mouth) at 70 px+ with no visible faceting; a subagent critique against VISION's bible passes; cathode-perf phone and desktop budgets pass (run alone); the cathode front, pick and entrance specs pass; shots before and after.
 - **Size:** 3
 
-## 320. [ ] Cathnivore: the action cards as illustrated market cards, a look per card family
+## 320. [ ] Cathnivore: the action cards as illustrated market cards, a look per card family *(lane A, in progress)*
 - **Why:** `plan1111b/cath-game-D` (355-1330 x 705-885): every hand card is the same mustard stock, a pale 100x55 icon window and about 75% flat yellow; Sell 1/2/3 share one crate picture; nothing says at a glance which family a card is (sell, scheme, grow, stall, a producer's ability); `cath-game-P` (5-330 x 670-775) mostly a name and a 40 px icon.
 - **Build:** each card full-bleed painted art (60%+ of the face) in the board's ink-and-flat-colour style (a barrow piled higher for Sell 1/2/3, a memo under a magnifier for Scheme, hands grafting, a stall opening); a frame colour and corner glyph per family; name and price on a paper band at the foot.
 - **Accept:** art 60%+ of the face at D, 50%+ at P; no two cards share a picture; in greyscale the families tell apart by frame or glyph; names 12 px+ at 4.5:1; hand-shelf, phone-hand-held, ui-css-lint pass; shots P and D, light and dark.
