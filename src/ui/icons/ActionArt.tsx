@@ -27,10 +27,13 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
     return (
       <svg viewBox="-2 1 44 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
         <rect x="-40" y="-10" width="120" height="60" fill={CREAM} />
-        <rect x="-40" y="-10" width="120" height="31.5" fill={SEA} opacity={0.12} />
-        <path d="M-40 25 Q -24 18 -12 24 Q -6 19 4 23 T 24 21 T 44 22 T 64 20 T 80 22 L80 50 L-40 50 Z" fill={ground} opacity={0.18} />
-        <path d="M-40 30 Q -20 26 -4 28 Q 0 26 8 28.5 T 30 27 T 52 28 T 80 27 L80 50 L-40 50 Z" fill={ground} opacity={0.32} />
-        <circle cx="38" cy="9.5" r="3.2" fill={WHEAT} opacity={0.55} />
+        <rect x="-40" y="-10" width="120" height="20" fill={SEA} opacity={0.2} />
+        <rect x="-40" y="-10" width="120" height="31.5" fill={SEA} opacity={0.1} />
+        <circle cx="35" cy="8.5" r="3.4" fill={WHEAT} opacity={0.7} />
+        <path d="M-40 25 Q -24 18 -12 24 Q -6 19 4 23 T 24 21 T 44 22 T 64 20 T 80 22 L80 50 L-40 50 Z" fill={ground} opacity={0.26} />
+        <path d="M-40 23.6 Q -30 21.5 -20 23 M-2 22.6 q 2 -2.4 4 0 q 2 -2.4 4 0 M30 21.8 q 2 -2.2 4 0 q 2 -2.2 4 0" fill="none" stroke={ground} strokeOpacity={0.45} strokeWidth={1} strokeLinecap="round" />
+        <path d="M-40 30 Q -20 26 -4 28 Q 0 26 8 28.5 T 30 27 T 52 28 T 80 27 L80 50 L-40 50 Z" fill={ground} opacity={0.42} />
+        <path d="M2 36 l0.8 -2 M4 36.4 l-0.6 -2.2 M34 35.6 l0.8 -2 M36 36 l-0.6 -2.2" stroke={ground} strokeOpacity={0.7} strokeWidth={0.8} strokeLinecap="round" />
         {children}
         <FamilySeal kind={kind} />
       </svg>
