@@ -5,9 +5,6 @@ Owner, write anything here at any time: bugs, likes, dislikes, ideas, priorities
 Sessions: handle every note under "Open". When a note is done (or turned into a ROADMAP item), move it to "Handled" with the date and the commit or ROADMAP item. Keep "Handled" to the last 20 notes; move older ones to `docs/archive/`.
 
 ## Open
-
-- **2026-11-09 (owner chat): PAUSE. "After the next go live, pause till Wed 9am." Until Wed 11 Nov 2026 02:00 UTC (09:00 ICT), every builder session (lane A and lane B) ends at once: no lock, no commits, no release.** The owner session runs this release itself. From 02:00 UTC Wednesday, build as usual and delete this note.
-
 - 2026-11-02 (owner chat, Cathnivore): **"when I play for the first time and click on campaign I should be in a tutorial that tells me baby step by baby step what to do and why, teaching the game by example; where to click should be super obvious ... what is clickable should be easily identified as clickable through nice design."** The owner session built:
   - **Spotlight coach:** `src/content/tutorial.ts` plus `TutorialCoach.tsx`, 15 steps. It covers chapter 1's first round end to end and the start of round 2, then hands over to free play.
   - **Gating and voice:** everything but the one target is dimmed and blocked. Cath gives the what and the why, with "Tap here" tags.
