@@ -125,8 +125,10 @@ for (const [W, H] of [
         .toBeGreaterThanOrEqual(7);
       if (!(await page.locator(".end-screen").isVisible())) break;
     }
+    // The turn is dealt once a card shows: on the rail, or in the hand on the table (where a deal can leave the rail's
+    // 'Saving for' shelf empty, so waiting on the rail alone timed out in the 2026-11-11 release gates).
     await expect(
-      page.locator(".actions-sheet .action-item").first(),
+      page.locator(".actions-sheet .action-item, .table-hand [data-hand-card]").first(),
     ).toBeVisible({ timeout: 60_000 });
     await page.waitForTimeout(800);
     const r = await page.evaluate(() => {
