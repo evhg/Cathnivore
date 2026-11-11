@@ -2231,6 +2231,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       st.className = "level-stars";
       st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "🔒";
       if (!unlocked) st.classList.add("level-lock");
+      // Plan item 314: a cleared stop wears its stars on a rosette ribbon (styles.css).
+      else if (stars > 0) st.classList.add("won");
       const medals = document.createElement("span");
       medals.className = "level-medals";
       const won = medalsOf(data, lv.id);

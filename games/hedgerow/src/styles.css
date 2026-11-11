@@ -5232,3 +5232,27 @@ img.act-scene {
   #screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
 }
 
+/* Plan item 314: a cleared stop wears its stars on a rosette: a gold badge with a ring, two notched ribbon tails
+   under it (a stop still to win keeps the plain pill). */
+#screen-select .node .level-stars.won {
+  padding: 1px 9px 2px;
+  border-radius: 999px;
+  background: radial-gradient(ellipse 80% 70% at 50% 30%, color-mix(in srgb, var(--wheat) 55%, var(--paper)), var(--wheat));
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--soil) 55%, transparent), 0 2px 0 color-mix(in srgb, var(--soil) 40%, transparent);
+  color: var(--soil);
+  letter-spacing: 1px;
+}
+#screen-select .node .level-stars.won::before,
+#screen-select .node .level-stars.won::after {
+  content: "";
+  position: absolute;
+  z-index: var(--z-canvas);
+  top: 86%;
+  width: 8px;
+  height: 9px;
+  background: var(--map-flag-red);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%);
+}
+#screen-select .node .level-stars.won::before { left: 22%; rotate: 14deg; }
+#screen-select .node .level-stars.won::after { right: 22%; rotate: -14deg; }
+
