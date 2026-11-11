@@ -4811,6 +4811,16 @@ img.act-scene {
 .lcard-foe { display: grid; gap: 1px; min-width: 0; }
 .lcard-foe b { overflow: hidden; font: 800 var(--fs-small) / 1.15 var(--font-ui); color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
 .lcard-foe span { font: 600 0.8125rem / 1.2 var(--font-ui); color: var(--ink-2); } /* plan item 200: the threat lines at 13 px, up from 12 */
+/* Plan item 324 (slice 1): at D the card reads as a briefing: the field's plan larger (156 px tall, was about 115), Cath's
+   face beside her line at 48 px (was a 32 px coin), the vehicles' art at 44 px in 48 px portraits (was 38 in 46). */
+@media (min-width: 900px) {
+  /* inside the card (pinned over its top edge it covered the stop above's name; a taller card pushes Play off a
+     1280x800 screen) */
+  .lcard-thumb svg { width: auto; height: 156px; max-height: none; }
+  .lcard-cath-face { width: 48px; height: 48px; margin: -8px 0; }
+  .lcard-enemies .enemy-portrait { width: 48px; height: 48px; }
+  .lcard-enemies .enemy-portrait img { width: 44px; height: 44px; }
+}
 .lcard-play { grid-area: play; }
 .lcard-play {
   min-width: 168px;
