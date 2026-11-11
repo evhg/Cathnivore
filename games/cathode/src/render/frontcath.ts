@@ -374,7 +374,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0, edge: "flat" | "wool" | "leather" = "flat") => {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
@@ -437,27 +437,33 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // strands pink-white (a pale ribbon down her coat, a lavender helmet): on hair the rim keeps to the outer
             // edge, and a two-sided sheet's inside keeps little of it, so her hair reads dark and glossy.
             ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 );" : ""}
+            // Plan item 319: the coat is wool, which takes a back light as a soft, dim bloom along its turn, not item
+            // 254's hard flat (a bright white band down the coat's edge read as vinyl); its own weave normal breaks it.
+            ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.62;" : ""}
+            // Plan item 319: gloves, belt and umbrella are thin black leather: the flat lit whole fingers pale (the
+            // umbrella fist read as a skeleton's bones), so leather keeps a narrow gloss line on its outer edge only.
+            ${edge === "leather" ? "fr = smoothstep( 0.46, 0.6, fr0 );" : ""}
             float side = dot( normal, uRimDir );
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
             ${keyTerm}
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}-${edge}`;
   };
-  rimify(coatMat, 1);
+  rimify(coatMat, 1, 0, 0, 0, false, 0, "wool");
   // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
   const sleeveMat = coatMat.clone();
   if (sleeveNormal) sleeveMat.normalMap = sleeveNormal;
   coatMats.push(sleeveMat);
-  rimify(sleeveMat, 1);
+  rimify(sleeveMat, 1, 0, 0, 0, false, 0, "wool");
   mats.push(sleeveMat);
   // Plan item 271: the coat itself (its skirt carries the fold shade as vertex colours; the lapels and epaulettes,
   // merged with no colour attribute, stay on coatMat).
   const skirtMat = coatMat.clone();
   skirtMat.vertexColors = true;
   coatMats.push(skirtMat);
-  rimify(skirtMat, 1);
+  rimify(skirtMat, 1, 0, 0, 0, false, 0, "wool");
   {
     // The coat reads by its sheen and rim more than its dark diffuse, so the shade darkens all of its light, once.
     const rimOnly = skirtMat.onBeforeCompile;
@@ -470,7 +476,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     skirtMat.customProgramCacheKey = () => "front-rim-skirt";
   }
   mats.push(skirtMat);
-  rimify(blackMat, 0.8);
+  rimify(blackMat, 0.8, 0, 0, 0, false, 0, "leather");
   rimify(hairMat, 1.2, 0, 0, HAIR_SHINE, true);
   rimify(skinMat, 0.35, 0.8, 0, 0, false, 0.72);
 
@@ -689,7 +695,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const collarMat = coatMat.clone();
     collarMat.side = THREE.DoubleSide;
     coatMats.push(collarMat);
-    rimify(collarMat, 1);
+    rimify(collarMat, 1, 0, 0, 0, false, 0, "wool");
     mats.push(collarMat);
     addS(collar, collarMat, pelvis);
   }
@@ -2546,7 +2552,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     }
     cowl.translate(0, 0, -0.025);
     const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
-    rimify(hoodMat as THREE.MeshStandardMaterial, 0.9);
+    rimify(hoodMat as THREE.MeshStandardMaterial, 0.9, 0, 0, 0, false, 0, "wool");
     // Plan item 247: a rolled brim round the face opening (the hood's cut edge read as a paper shell): a soft tube
     // down one edge of the opening, over the brow and down the other, a little proud of the cloth.
     const rimPts: THREE.Vector3[] = [];
