@@ -20,17 +20,19 @@ const LINE = { stroke: INK, strokeWidth: 1.2, strokeLinejoin: 'round' as const, 
 
 function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; kind: string; ground?: string; children: ReactNode }) {
   // Plan item 218: in the desktop hand the tile opens out into a wide window: the same subject, centred, standing
-  // in its land (a sky wash, a far ridge and the near ground running the window's width) inside a painted frame.
+  // in its land (a sky wash, a far ridge and the near ground running the window's width).
+  // Plan item 320: the window is full-bleed (`slice`: the land runs to the card's edges at any shape, the card's own
+  // frame clips it), and its top-left corner carries the card family's seal, so families tell apart in greyscale.
   if (useContext(ArtSceneContext)) {
     return (
-      <svg viewBox="-12 4 64 36" preserveAspectRatio="xMidYMid meet" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
-        <rect x="-11.5" y="4.5" width="63" height="35" rx="4" fill={CREAM} />
-        <rect x="-11.5" y="4.5" width="63" height="17" rx="4" fill={SEA} opacity={0.1} />
-        <path d="M-12 25 Q -6 19 4 23 T 24 21 T 44 22 T 52 20 L52 40 L-12 40 Z" fill={ground} opacity={0.16} />
-        <path d="M-12 30 Q -4 26 8 28.5 T 30 27 T 52 28 L52 40 L-12 40 Z" fill={ground} opacity={0.3} />
-        <circle cx="43" cy="10.5" r="3.2" fill={WHEAT} opacity={0.55} />
+      <svg viewBox="-2 1 44 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
+        <rect x="-40" y="-10" width="120" height="60" fill={CREAM} />
+        <rect x="-40" y="-10" width="120" height="31.5" fill={SEA} opacity={0.12} />
+        <path d="M-40 25 Q -24 18 -12 24 Q -6 19 4 23 T 24 21 T 44 22 T 64 20 T 80 22 L80 50 L-40 50 Z" fill={ground} opacity={0.18} />
+        <path d="M-40 30 Q -20 26 -4 28 Q 0 26 8 28.5 T 30 27 T 52 28 T 80 27 L80 50 L-40 50 Z" fill={ground} opacity={0.32} />
+        <circle cx="38" cy="9.5" r="3.2" fill={WHEAT} opacity={0.55} />
         {children}
-        <rect x="-11.5" y="4.5" width="63" height="35" rx="4" fill="none" stroke={INK} strokeOpacity={0.35} strokeWidth={1} />
+        <FamilySeal kind={kind} />
       </svg>
     )
   }
@@ -43,6 +45,39 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
   )
 }
 
+// Plan item 320: each card family's seal, a shape of its own (a coin, a house, a pin, a leaf, an awning, a wheel, a
+// torn page, a star) in cream on the family's colour (table.css sets `--fam` on the card; these are fallbacks).
+const SEAL_FILL: Record<string, string> = {
+  sell: 'var(--fam, #3F5F27)',
+  invest: 'var(--fam, #4F7F8C)',
+  scheme: 'var(--fam, #8E3B28)',
+  graft: 'var(--fam, #5B7F3A)',
+  openStall: 'var(--fam, #9A6A3F)',
+  supply: 'var(--fam, #6E4A2B)',
+  rebut: 'var(--fam, #4A3A33)',
+  role: 'var(--fam, #B5523B)',
+}
+const SEAL_GLYPH: Record<string, ReactNode> = {
+  sell: <><circle cx="0" cy="0" r="2.2" fill="none" stroke={CREAM} strokeWidth={1} /><circle cx="0" cy="0" r="0.7" fill={CREAM} /></>,
+  invest: <path d="M-2.3 2.2 V-0.4 L0 -2.4 L2.3 -0.4 V2.2 Z" fill={CREAM} />,
+  scheme: <><circle cx="0" cy="-0.9" r="1.5" fill={CREAM} /><path d="M0 0.4 V2.6" stroke={CREAM} strokeWidth={0.9} strokeLinecap="round" /></>,
+  graft: <path d="M-2.2 2.2 Q -2.4 -2.2 2.3 -2.4 Q 2.4 2.2 -2.2 2.2 Z" fill={CREAM} />,
+  openStall: <path d="M-2.6 -1.6 H2.6 L2.1 0.2 Q 1.2 1.2 0.4 0.2 Q -0.5 1.2 -1.3 0.2 Q -2.1 1.2 -2.6 0.2 Z M-2 0.8 V2.4 M2 0.8 V2.4" fill={CREAM} stroke={CREAM} strokeWidth={0.6} strokeLinejoin="round" />,
+  supply: <><circle cx="0" cy="0" r="2.1" fill="none" stroke={CREAM} strokeWidth={0.9} /><path d="M0 -2.1 V2.1 M-2.1 0 H2.1" stroke={CREAM} strokeWidth={0.7} /></>,
+  rebut: <path d="M-2 -2.4 H2 V-0.2 L1 0.6 L1.6 1.4 L0.8 2.4 H-2 Z" fill={CREAM} />,
+  role: <path d="M0 -2.6 L0.75 -0.8 L2.5 -0.8 L1.1 0.4 L1.6 2.3 L0 1.2 L-1.6 2.3 L-1.1 0.4 L-2.5 -0.8 L-0.75 -0.8 Z" fill={CREAM} />,
+}
+function FamilySeal({ kind }: { kind: string }) {
+  const glyph = SEAL_GLYPH[kind]
+  if (!glyph) return null
+  return (
+    <g transform="translate(8.6 7.6)" className="action-seal" data-seal={kind}>
+      <circle r="4" fill={SEAL_FILL[kind]} stroke={CREAM} strokeWidth={0.9} />
+      {glyph}
+    </g>
+  )
+}
+
 function Coin({ x, y, r = 4.2 }: { x: number; y: number; r?: number }) {
   return (
     <g>
@@ -52,25 +87,64 @@ function Coin({ x, y, r = 4.2 }: { x: number; y: number; r?: number }) {
   )
 }
 
-/** A crate of apples, one to three of them on top (the count sold), and the coin it earns. */
+function Apple({ x, y, r = 3.4 }: { x: number; y: number; r?: number }) {
+  return (
+    <g>
+      <circle cx={x} cy={y} r={r} fill={APPLE} {...LINE} />
+      <path d={`M${x} ${y - r * 0.95} q 1 -2 2.6 -2.2`} fill="none" stroke={LEAF} strokeWidth={1.4} strokeLinecap="round" />
+    </g>
+  )
+}
+
+/** Selling, a picture per size of sale (plan item 320: Sell 1, 2 and 3 never share one): one apple in a trug
+ * basket, a crate of them, a barrow piled high; the coin it earns beside each. */
 export function SellArt({ size, count = 2 }: { size?: number; count?: number }) {
-  const apples = [
-    [15, 19],
-    [21, 18],
-    [27, 19.5],
-  ].slice(0, Math.max(1, Math.min(3, count)))
+  const n = Math.max(1, Math.min(3, count))
+  if (n === 1) {
+    return (
+      <Tile size={size} kind="sell">
+        <g data-sell="1">
+          <path d="M12 22 Q 19 9 26 22" fill="none" stroke={WOOD_LO} strokeWidth={1.6} strokeLinecap="round" />
+          <Apple x={19} y={19.5} />
+          <path d="M10 22 H28 L25.5 30 Q 19 32 12.5 30 Z" fill={WOOD} {...LINE} />
+          <path d="M11.2 25 Q 19 26.6 26.8 25 M12.2 28 Q 19 29.4 25.8 28" fill="none" stroke={WOOD_LO} strokeWidth={0.9} />
+          <Coin x={31} y={12} r={3.6} />
+        </g>
+      </Tile>
+    )
+  }
+  if (n === 3) {
+    return (
+      <Tile size={size} kind="sell">
+        <g data-sell="3">
+          <path d="M26 24 L35 30 M26.5 27.5 L35.5 31" stroke={WOOD_LO} strokeWidth={1.6} strokeLinecap="round" />
+          <Apple x={10} y={18.2} r={3} />
+          <Apple x={15.6} y={17.6} r={3} />
+          <Apple x={21.2} y={18} r={3} />
+          <Apple x={12.8} y={13.2} r={3} />
+          <Apple x={18.4} y={12.8} r={3} />
+          <Apple x={15.6} y={8.4} r={2.8} />
+          <path d="M5 20 H27 L24 27.5 H8.5 Z" fill={WOOD} {...LINE} />
+          <path d="M6.6 23.6 H25.6" stroke={WOOD_LO} strokeWidth={1} />
+          <path d="M11 27.5 L9.5 32 M21.5 27.5 L23 31" stroke={WOOD_LO} strokeWidth={1.4} strokeLinecap="round" />
+          <circle cx="9.5" cy="31.5" r="2.8" fill={INK} />
+          <circle cx="9.5" cy="31.5" r="1" fill={CREAM} />
+          <Coin x={32} y={13} />
+          <Coin x={30} y={18.5} r={3.4} />
+        </g>
+      </Tile>
+    )
+  }
   return (
     <Tile size={size} kind="sell">
-      {apples.map(([x, y], i) => (
-        <g key={i}>
-          <circle cx={x} cy={y} r={3.6} fill={APPLE} {...LINE} />
-          <path d={`M${x} ${y! - 3.4} q 1 -2 2.6 -2.2`} fill="none" stroke={LEAF} strokeWidth={1.4} strokeLinecap="round" />
-        </g>
-      ))}
-      <path d="M9 21 L31 21 L29.5 31 L10.5 31 Z" fill={WOOD} {...LINE} />
-      <path d="M10 24.5 H30 M10.6 27.8 H29.4" stroke={WOOD_LO} strokeWidth={1} />
-      <Coin x={31} y={11} />
-      <path d="M24.5 11.5 h-4 M22.5 9.5 l-2 2 l2 2" fill="none" stroke={INK} strokeWidth={1.1} strokeLinecap="round" strokeLinejoin="round" opacity={0.7} />
+      <g data-sell="2">
+        <Apple x={16} y={18.6} r={3.6} />
+        <Apple x={23} y={18.4} r={3.6} />
+        <path d="M9 21 L31 21 L29.5 31 L10.5 31 Z" fill={WOOD} {...LINE} />
+        <path d="M10 24.5 H30 M10.6 27.8 H29.4" stroke={WOOD_LO} strokeWidth={1} />
+        <Coin x={31} y={11} />
+        <path d="M24.5 11.5 h-4 M22.5 9.5 l-2 2 l2 2" fill="none" stroke={INK} strokeWidth={1.1} strokeLinecap="round" strokeLinejoin="round" opacity={0.7} />
+      </g>
     </Tile>
   )
 }

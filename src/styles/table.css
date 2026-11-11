@@ -3224,6 +3224,78 @@ html.no-animations .table-cath-line { animation: none; }
     .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 186px) * 1.19); }
   }
 }
+/* Plan item 320: a hand card is an illustrated market card. Its family (sell, invest, scheme, graft, stall, supply,
+   rebut, a producer's role) gives it a frame colour (`--fam`) and a seal in the picture's corner (ActionArt.tsx); the
+   picture runs full-bleed across 60% of the face; the name and price sit on a paper band at its foot. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .game-layout .table-hand .action-item { --fam: var(--grp, var(--bunting)); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='sell']) { --fam: var(--pasture-deep); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='invest']) { --fam: var(--sea); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='scheme']) { --fam: var(--clay-deep); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='graft']) { --fam: color-mix(in srgb, var(--pasture-deep) 60%, var(--wheat)); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='openStall']) { --fam: color-mix(in srgb, var(--wheat) 45%, var(--bunting)); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='supply']) { --fam: var(--bunting); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='rebut']) { --fam: var(--ink-on-fixed-fill); }
+  .game-layout .table-hand .action-item:has(.action-art[data-art='role']) { --fam: var(--clay); }
+  .game-layout .table-hand .action-item > button:first-child:not(:disabled),
+  .game-layout .table-hand .action-item .action-card-draggable {
+    border-color: var(--fam);
+    background: linear-gradient(180deg, var(--paper-on-fixed-fill), color-mix(in srgb, var(--wheat-hi) 30%, var(--paper-on-fixed-fill)));
+  }
+  .game-layout .table-hand .action-family {
+    border: 2px solid var(--fam);
+    background: linear-gradient(180deg, var(--paper-on-fixed-fill), color-mix(in srgb, var(--wheat-hi) 30%, var(--paper-on-fixed-fill)));
+  }
+  /* One row: the picture is the top 60% of the face, edge to edge (the card's own corners clip it). */
+  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 86px; }
+  .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-card-draggable { position: relative; padding-top: 0; padding-bottom: 5px; gap: 3px; border-width: 3px; }
+  /* the picture already says what is sold: the band names the count alone (the accessible name keeps the word) */
+  .game-layout .table-hand .action-item .action-word { display: none; }
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-label > svg.action-art[data-scene],
+  .game-layout .table-hand:not([data-rows]) .action-item[data-dense]:not(.action-family) .action-label > svg.action-art[data-scene] {
+    position: absolute;
+    inset: 0 0 auto 0;
+    width: 100%;
+    height: var(--art-h);
+    margin: 0;
+    border-bottom: 2px solid var(--fam);
+    filter: none;
+  }
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-label { margin-top: calc(var(--art-h) + 8px); }
+  /* the price is a tag pinned over the picture's lower-left edge, so the band holds the name and its pick line */
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-cost {
+    position: absolute;
+    left: 6px;
+    top: calc(var(--art-h) - 23px);
+    margin: 0;
+    box-shadow: 0 1px 2px rgb(var(--shadow-ink) / .3);
+  }
+  /* the 'i' rides the picture's top right, clear of the strip the next card covers (the seal holds the top left) */
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) > .tooltip-trigger { left: auto; right: calc(var(--lap, 0px) + 6px); top: 6px; }
+  /* in rows the window is the card's left side: its 'i' sits at the window's foot, under the seal */
+  .game-layout .table-hand[data-rows] .action-item:not(.action-family) > .tooltip-trigger { top: auto; bottom: 10px; }
+}
+@media (min-width: 1240px) and (min-height: 861px) {
+  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 94px; }
+}
+@media (min-width: 1240px) and (min-height: 760px) {
+  /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
+  .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 16px), 104px); }
+  .game-layout .table-hand[data-rows] .action-item:not(.action-family) > button:first-child,
+  .game-layout .table-hand[data-rows] .action-item:not(.action-family) .action-card-draggable { padding-left: calc(var(--win) + 8px); }
+  .game-layout .table-hand[data-rows] .action-item:not(.action-family) .action-label > svg.action-art[data-scene] {
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-right: 2px solid var(--fam);
+    filter: none;
+  }
+  .game-layout .table-hand[data-rows] .action-item[data-dense] { --win: 52px; }
+}
+@media (min-width: 1240px) and (max-width: 1399.98px) and (min-height: 760px) {
+  .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 186px) * .5 - 16px), 84px); }
+}
 @media (min-width: 1240px) and (min-height: 760px) {
   /* The cards that can't be played yet: a face-down pile at the fan's end. */
   .game-layout .hand-later {
