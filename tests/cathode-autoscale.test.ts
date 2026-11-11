@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AutoScale } from "../games/cathode/src/game/autoscale";
+import { AutoScale, frontDynOptions } from "../games/cathode/src/game/autoscale";
 
 const run = (a: AutoScale, ms: number, n: number) => {
   let last: number | null = null;
@@ -58,5 +58,30 @@ describe("AutoScale", () => {
     run(a, 30, 30 * 8);
     expect(a.rescued).toBe(true);
     expect(a.scale).toBe(0.35);
+  });
+});
+
+// Plan item 317: the front door judges frames against the cap it runs at (a phone's title holds 30 fps).
+describe("frontDynOptions", () => {
+  it("keeps a phone's title at full scale while its 30 fps frames arrive on time", () => {
+    const a = new AutoScale(frontDynOptions(true));
+    run(a, 33.4, 600);
+    expect(a.scale).toBe(1);
+  });
+  it("steps a phone down when frames miss the cap, and back up once they are on time again", () => {
+    const a = new AutoScale(frontDynOptions(true));
+    run(a, 50, 60);
+    expect(a.scale).toBeLessThan(1);
+    run(a, 33.4, 2000);
+    expect(a.scale).toBe(1);
+  });
+  it("brings a desktop back to full scale after a hitch at the 60 fps cap", () => {
+    const a = new AutoScale(frontDynOptions(false));
+    run(a, 16.7, 300);
+    expect(a.scale).toBe(1);
+    run(a, 33, 30);
+    expect(a.scale).toBe(0.9);
+    run(a, 16.7, 600);
+    expect(a.scale).toBe(1);
   });
 });

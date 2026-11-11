@@ -845,6 +845,22 @@
   /* Plan item 251: the rows' trailing pad (room for nothing upright) pushed the plate's rim 15 px onto her left
      elbow; without it the plate ends about 5 px short of her body at 390 and 375. */
   .menu-item { padding-right: 0; }
+  /* Plan item 317: upright, the enamel plate read as an opaque box over the street and her umbrella; the words now
+     stand on a soft shade that feathers out into the scene (no rim, no screws), dark enough under the type to read. */
+  .menu {
+    isolation: isolate;
+    background: none;
+    box-shadow: none;
+  }
+  .menu::before {
+    content: "";
+    position: absolute;
+    inset: -18% -26% -18% -14%;
+    z-index: var(--z-under);
+    background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .8), rgb(var(--shade-rgb) / .55) 58%, transparent);
+    pointer-events: none;
+  }
+  .menu-item { text-shadow: 0 0 calc(var(--u) * 10) rgb(var(--shade-rgb) / .9), 0 calc(var(--u) * 1) calc(var(--u) * 2) rgb(var(--shade-rgb) / .9); }
   .menu-item:has(.menu-why:not([hidden])) { flex-direction: column; align-items: flex-start; justify-content: center; line-height: 1.05; }
   .menu-item:has(.menu-why:not([hidden])) .menu-why { margin: calc(var(--u) * 4) 0 0; }
 }

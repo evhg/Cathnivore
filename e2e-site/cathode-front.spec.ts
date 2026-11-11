@@ -834,6 +834,9 @@ test('the upright phone title renders at the device pixel ratio, 780 px or more 
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 120_000 })
   const w = await page.evaluate(() => Math.max(...[...document.querySelectorAll('canvas')].map((c) => c.width)))
   expect(w).toBeGreaterThanOrEqual(780)
+  // Plan item 317: and the street draws at that full size, not 0.85 of it upscaled (her face and coat edges smeared).
+  const scale = await page.evaluate(() => Math.max(...[...document.querySelectorAll('canvas')].map((c) => Number(c.dataset.worldScale ?? 0))))
+  expect(scale).toBe(1)
   await ctx.close()
 })
 

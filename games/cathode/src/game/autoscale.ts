@@ -63,3 +63,15 @@ export class AutoScale {
     return null;
   }
 }
+
+/**
+ * Plan item 317: the front door's dynamic resolution, judged against the frame cap it runs at (render/frontscene.ts:
+ * phones 30 fps, desktops 60). An on-time frame sits just over its cap's interval, so it never counts as slow; a
+ * missed vsync (50 ms on a phone, 33 ms on a desktop) does, and the scale steps down only then; on-time frames bring
+ * it back up (with the 60 fps thresholds of old, an on-time 16.7 ms frame never beat 12 ms, so one hitch lowered it for good).
+ */
+export function frontDynOptions(phone: boolean): AutoScaleOptions {
+  return phone
+    ? { min: 0.6, max: 1, target: 1000 / 30, slowMs: 38, fastMs: 34.5 }
+    : { min: 0.6, max: 1, target: 1000 / 60, slowMs: 18, fastMs: 17.2 };
+}

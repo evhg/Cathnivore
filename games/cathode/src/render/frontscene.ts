@@ -14,7 +14,7 @@ import { gunIcon, gunReel, type GunReel } from "./gunportrait";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
 import { createWorld } from "./world";
-import { AutoScale } from "../game/autoscale";
+import { AutoScale, frontDynOptions } from "../game/autoscale";
 import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
 import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
@@ -744,7 +744,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Dynamic resolution on the title too (owner, 2026-11-02: the umbrella scene was "very stuttery" on an M3 Max):
   // when frames run long the street renders a little smaller, so the 60 fps cap holds evenly instead of dropping
   // frames. Off in screenshot and automated runs, where every frame is slow.
-  const dyn = new AutoScale({ min: 0.6, max: 1, target: 1000 / 60, slowMs: 18, fastMs: 12 });
+  // Plan item 317: judged against the frame cap the door actually runs at. A phone holds 30 fps, so every on-time
+  // frame is ~33 ms apart; against the 60 fps thresholds each one read as slow and the phone's street fell to the
+  // 0.6 floor within seconds (her face upscaled and soft) and never came back.
+  const dyn = new AutoScale(frontDynOptions(phone));
   const dynOn = !o.shot && !(typeof navigator !== "undefined" && navigator.webdriver);
   const resize = () => {
     const w = canvas.clientWidth || innerWidth;
@@ -754,8 +757,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // cost) and the dynamic scale takes it down further when frames run long.
     const cap = phone ? 2 : innerHeight * devicePixelRatio > 2000 ? 1.5 : 2;
     const dpr = Math.min(devicePixelRatio, cap);
-    const scale = (phone ? 0.85 : 1) * o.renderScale * dyn.scale;
-    world.resize(w, h, dpr, Math.min(1, scale));
+    // Plan item 317: the front door's world renders at full scale on a phone too (it ran at 0.85, upscaled, and her
+    // coat edges and face smeared); only the dynamic scale takes it down, when frames miss the 30 fps cap.
+    const scale = Math.min(1, o.renderScale * dyn.scale);
+    world.resize(w, h, dpr, scale);
+    canvas.dataset.worldScale = scale.toFixed(2);
     cam.fov = FOV;
     cam.updateProjectionMatrix();
   };
