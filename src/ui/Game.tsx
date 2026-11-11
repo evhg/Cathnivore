@@ -822,6 +822,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // on the hand itself the spacer fell back to 140 px, and the board jumped 34 px on Hollowell's turn after the
     // painted cards (item 218) grew taller.
     ;(hand.parentElement ?? hand).style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + 12)}px`)
+    // Plan item 312: where each row's shelf plank runs (table.css .table-hand[data-rows]::before).
+    hand.style.setProperty('--row-step', `${rowStep}px`)
+    hand.style.setProperty('--pad-b', `${padB}px`)
     rows.forEach((row, r) => {
       const n = row.to - row.from
       const mid = (n - 1) / 2

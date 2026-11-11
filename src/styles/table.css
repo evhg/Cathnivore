@@ -3178,6 +3178,18 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-item[data-dense] .action-label > svg.action-art[data-scene] { height: 56px; }
   .game-layout .table-hand .action-family-name > svg.action-art[data-scene] { width: 44px; height: 24px; }
   /* Two rows: landscape cards, the window down the card's left side, the name and price beside it. */
+  /* Plan item 312: in rows the hand is a market stall's shelves: a wooden plank under each row, the cards standing
+     on it (fan() sets --row-step and --pad-b from the layout). */
+  .game-layout .table-hand[data-rows]::before {
+    content: "";
+    position: absolute;
+    inset: 0 -10px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - var(--row-step, 96px) + 4px) / 100% 9px no-repeat;
+    filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink) 25%, transparent));
+  }
   /* Plan item 312: the width fan() gives every card in rows so none lies over another (--hand-card-w), the picture
      window a share of it. */
   .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 20px), 100px); width: var(--hand-card-w, 214px); height: 90px; }
@@ -3195,8 +3207,11 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item .action-label,
   .game-layout .table-hand[data-rows] .action-item .action-label:has(.action-pick) {
     flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: 0;
-    font-size: var(--fs-label); line-height: 1.1;
+    /* item 312: 13 px+ (was the 12.5 px label size) */
+    font-size: var(--fs-caption); line-height: 1.1;
   }
+  /* a long name (fan()'s data-dense) gets a narrower window, so it wraps in three lines, not four */
+  .game-layout .table-hand[data-rows] .action-item[data-dense] { --win: 44px; }
   .game-layout .table-hand[data-rows] .action-item .action-pick { flex-basis: auto; padding-left: 0; }
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
   .game-layout .table-hand[data-rows] .action-item .action-card-draggable { padding-right: 6px; }
