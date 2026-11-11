@@ -3003,7 +3003,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the view 360x150 px+ at D and 156x70+ at P with a visible specular highlight; reduced motion a still three-quarter view; cathode-perf in budget (run alone); cathode pick specs pass; shots P and D.
 - **Size:** 2
 
-## 314. [ ] Hedgerow: painted level medallions and a map that keeps its props clear
+## 314. [ ] Hedgerow: painted level medallions and a map that keeps its props clear *(lane B, in progress)*
 - **Why:** `plan1111a/hedge-menu-D` (200-1290 x 315-590): locked levels are identical grey discs with tiny grey icons, a washed-out act; Hollowell blocks and billboards meet nodes 24 (985-1030 x 330-385), 27 (985-1030 x 470-520), 30 (295-330 x 465-525), 26 (1225-1275 x 475-525); `hedge-menu-P` (10-385 x 205-580) labels sit far from their nodes ('Discount Code' 10-110 x 312-330 for node 24 at 120-170) and billboards cover label text ('The Unboxing', 'Golden Hour').
 - **Build:** each node a small painted medallion (the level's twist or hero enemy in Hedgerow's flat ink); locked ones warm sepia with a ribbon, not grey; cleared ones their stars on a rosette; props kept 40 px from every node and label; on a phone each label anchored beside its node, away from the path.
 - **Accept:** locked medallions 3:1 against the map; no prop over a node or label (a unit test over the menu layout); P labels within 12 px of their node; text 12 px+; menu specs pass; shots P and D.
