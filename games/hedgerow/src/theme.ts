@@ -1150,7 +1150,11 @@ function paintDecor(
     }
     // Plan item 224: a billboard is a wide panel, so it keeps a wider berth.
     const berth = (k: Decor) => (k === "billboard" ? s * 1.2 : s * 0.55);
-    if (items.some((it) => Math.hypot(it.x - x, it.y - y) < Math.max(berth(kind), berth(it.kind)))) continue;
+    // Plan item 326: reeds grow in beds. Two reeds may stand closer, and a reed out in the water mostly takes root near
+    // another, so the water between beds stays open (an even spacing laid them on a visible grid).
+    const reedPair = (k: Decor) => kind === "reeds" && k === "reeds";
+    if (items.some((it) => Math.hypot(it.x - x, it.y - y) < (reedPair(it.kind) ? s * 0.3 : Math.max(berth(kind), berth(it.kind))))) continue;
+    if (kind === "reeds" && inWater(x, y) && rand() < 0.75 && !items.some((it) => it.kind === "reeds" && Math.hypot(it.x - x, it.y - y) < s * 0.8)) continue;
     if (inMargin) continue;
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
