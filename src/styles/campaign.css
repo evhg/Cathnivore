@@ -1183,4 +1183,6 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-header .cmp-cath { display: contents; }
   .cmp-header .cmp-cath-line { grid-column: 1; grid-row: 2; margin: 0 12px 0 0; max-width: none; }
   .cmp-header .cmp-host-stand { grid-column: 2; grid-row: 1 / span 2; align-self: end; }
+  /* item 318: her head is above the bubble here, so the tail leaves its top corner and points up at her */
+  .cmp-header .cmp-cath-line::after { top: 2px; right: -13px; clip-path: polygon(0 45%, 100% 0, 0 100%); }
 }

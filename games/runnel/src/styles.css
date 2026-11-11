@@ -3394,7 +3394,8 @@ body[data-mode='practice'] #week-slot {
     text-wrap: balance;
   }
   .lc-next small {
-    font-size: 0.72rem;
+    /* item 318: 12 px or more (0.72rem read about 11.5 px) */
+    font-size: max(0.75rem, 12px);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }

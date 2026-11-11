@@ -3386,7 +3386,8 @@ body:has(#dlg-pause[open]) .paused-note {
     height: auto;
     overflow: visible;
     clip-path: none;
-    font-size: 0.6875rem;
+    /* item 318: 12 px (11 read too small under the rings) */
+    font-size: var(--fs-label);
     letter-spacing: 0;
     text-transform: none;
   }
