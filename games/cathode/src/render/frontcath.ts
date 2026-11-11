@@ -811,6 +811,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // narrower front to back), not a plain cylinder.
   // Plan item 289: shorter and tapered (the same-person check: a long tube under the head read as a lollipop).
   const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.048], [0.3, 0.04], [0.7, 0.036], [1, 0.035]], seg(16), 0.86);
+  // Plan item 319: the neck in the jaw's shadow, darkest just under it and lit toward the collar (a bright, evenly
+  // lit pipe made the head float); vertex colours, so the neck and ears stay one merged draw per bone.
+  {
+    const p = neck.attributes.position as THREE.BufferAttribute;
+    const shade = new Float32Array(p.count * 3);
+    for (let i = 0; i < p.count; i++) shade.fill(1 - 0.42 * THREE.MathUtils.smoothstep(p.getY(i), 0.31, 0.4), i * 3, i * 3 + 3);
+    neck.setAttribute("color", new THREE.BufferAttribute(shade, 3));
+  }
+  skinMat.vertexColors = true;
   addS(neck, skinMat, chest);
   const headPivot = new THREE.Group();
   // Plan item 289: the head a step larger (1.08) and set lower, so the neck shows ~30% less above the collar.
@@ -1477,6 +1486,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     ear.scale(0.008, 0.02, 0.013);
     ear.rotateY(side * 0.35);
     ear.translate(0.07 * side, -0.012, -0.004);
+    ear.setAttribute("color", new THREE.BufferAttribute(new Float32Array(ear.attributes.position!.count * 3).fill(1), 3));
     addS(ear, skinMat, headPivot);
   }
   // Pearl studs catch the back light.
