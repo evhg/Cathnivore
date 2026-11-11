@@ -918,7 +918,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const sx of [-1, 1]) {
         // Plan item 289: more cheek warmth, so the face isn't a pale flat oval at title distance.
         // Plan item 289: the blush higher, on the apples of the cheeks.
-        blob(0.039 * sx, -0.01, 0.02, 0.013, "rgba(222,100,112,A)", 0.74);
+        // Plan item 319: softer, warmer and wider (0.74 rose in a 2x1.3 cm oval): after the skin light's saturation
+        // lift, the far cheek's blush in a three-quarter view read as a red blotch (a bruise on the class pick).
+        blob(0.039 * sx, -0.01, 0.025, 0.016, "rgba(228,124,124,A)", 0.5);
         blob(0.045 * sx, -0.034, 0.016, 0.01, "rgba(120,70,62,A)", 0.22);
         blob(0.026 * sx, 0.011, 0.016, 0.009, "rgba(92,58,62,A)", 0.45);
       }
