@@ -406,3 +406,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 11:15 lane A (item 317): upright, the title menu stands on a soft feathered shade instead of item 159's enamel plate; desktop keeps the plate.
 - 2026-11-11 11:30 lane A (item 319): first sculpt slice is the skull's density (80x56, phones 64x44 at least) with shallower cheek hollows and a softer face-planes step, before modelling lids, brows and lips.
 - 2026-11-11 11:40 lane B (item 314): a cleared Hedgerow stop's stars sit on a gold rosette with ribbon tails; a negative z-index can't put the tails behind the badge (they're in its own stack), so they hang from its foot.
+- 2026-11-11 12:45 lane B (planning): items 320-326 from a subagent critique of plan1111b; item 325 takes the campaign's Cath to half length while item 305's full figure stays for Hedgerow's map and the site.

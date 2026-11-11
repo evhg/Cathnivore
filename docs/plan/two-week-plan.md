@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-11 12:25 UTC
-
 
 
 
@@ -3044,3 +3042,49 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Build:** a real sculpt to the bible and `shared/cath/` (her hair, skin and proportions): a modelled face (eyes with lids and catchlights, brows, nose, lips), her dark hair up in its low knot (CATHODE's noir look) as shaped strands with a sheen, not a shell; a tailored trench with collar, lapels, belt, folds and a hem that moves; hands with fingers; smooth shading and a soft rim, no stair-stepped silhouette edges. One mesh family shared by the title, the pick (each class's coat), the entrances and cutscenes, with an LOD for phones. Item 42's close knees-up framing comes back to the pick once she holds up there.
 - **Accept:** at P (390x844) and D (1440x900) the title and pick shots read her face (eyes, brows, mouth) at 70 px+ with no visible faceting; a subagent critique against VISION's bible passes; cathode-perf phone and desktop budgets pass (run alone); the cathode front, pick and entrance specs pass; shots before and after.
 - **Size:** 3
+
+## 320. [ ] Cathnivore: the action cards as illustrated market cards, a look per card family
+- **Why:** `plan1111b/cath-game-D` (355-1330 x 705-885): every hand card is the same mustard stock, a pale 100x55 icon window and about 75% flat yellow; Sell 1/2/3 share one crate picture; nothing says at a glance which family a card is (sell, scheme, grow, stall, a producer's ability); `cath-game-P` (5-330 x 670-775) mostly a name and a 40 px icon.
+- **Build:** each card full-bleed painted art (60%+ of the face) in the board's ink-and-flat-colour style (a barrow piled higher for Sell 1/2/3, a memo under a magnifier for Scheme, hands grafting, a stall opening); a frame colour and corner glyph per family; name and price on a paper band at the foot.
+- **Accept:** art 60%+ of the face at D, 50%+ at P; no two cards share a picture; in greyscale the families tell apart by frame or glyph; names 12 px+ at 4.5:1; hand-shelf, phone-hand-held, ui-css-lint pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 321. [ ] NIGHT SHIFT: The List and the case file as booking photos of the real 3D cast
+- **Why:** `plan1111b/ns-title-D` (415-575 x 280-465): Tomas Reed's case-file mugshot is a flat vector (a grey oval, three ink lines) two steps from a lit, modelled 3D Cath (900-1120 x 260-900); The List's prints (55-600 x 590-815) are the same flat vectors, four near-identical ovals; `ns-title-P` (15-375 x 728-808) 60 px squares where one face reads.
+- **Build:** each target and Tomas rendered offscreen from the game's own models in a booking-photo set-up (hard flash, height chart, a slight dutch angle), baked once into a small texture for the title, the case board and the debrief; withheld names as backlit silhouettes of the real models.
+- **Accept:** each mugshot shaded (40%+ luminance between lit cheek and shadow side); the five silhouettes pairwise distinct (IoU 0.7 or less, as item 278); no live render on title load (baked or cached), cathode-perf in budget (alone); cathode-front, title-diorama pass; shots P and D and the case board.
+- **Size:** 2
+
+## 322. [ ] Hedgerow 2D: towers that stand on the field, with a shadow and an idle
+- **Why:** `plan1111b/hedge-l21-2d-D` (545-612 x 552-618): the Scarecrow is a 50 px flat sticker in a dashed ring, no shadow, no base, close in tone to its stubble plot, where the tray's crate art (1108-1412 x 85-380) is richer; `hedge-l34-2d-D` (520-585 x 380-450) the same.
+- **Build:** each 2D tower a standing three-quarter miniature on a small footing (turned earth or brick) with a soft contact shadow toward the scene's light, about 1.25x so it rises over the plot's edge; one cheap idle each (sails turn, bees round the skep, the coat stirs, the mast blinks), none under reduced motion; tiers dress the footing.
+- **Accept:** every tower 60 px+ tall at D and proud of its plot; a contact shadow 15%+ darker than the plot under each; each tower id's idle draws differently over two frames (a recording-canvas test like hedgerow-sprites-all); reduced motion still; tray, field, critique specs pass; key art re-shot; shots of a sandbox field with every tower at P and D.
+- **Size:** 2
+
+## 323. [ ] Runnel: tiles as small worked gardens, a wooden sluice at the hub
+- **Why:** `plan1111b/runnel-D` (900-1215 x 330-720): inside the carved rims each tile is mostly flat buff with faint hatching, the channel a plain bar, every hub the same grey washer ring (990-1020 x 415-445), hardware rather than countryside; `runnel-P` (185-305 x 340-590) the grey rings the loudest thing on each tile.
+- **Build:** each tile's inside painted by its ground (crop rows running with the channel, wildflower tufts, field stones, a dry crack pattern that darkens and greens as the water arrives); the hub a small wooden sluice gate or a mossy stone that turns with the tile; item 30's 3:1 channel rule kept.
+- **Accept:** no grey hub ring left; three or more interior details per tile type visible at P; a watered tile 10%+ apart in mean luminance from a dry one and turned toward green; channels 3:1+ (the existing test); runnel site specs pass; key art re-shot; shots P and D, lesson and daily, light, dark and drizzle.
+- **Size:** 2
+
+## 324. [ ] Hedgerow: the level card as a painted briefing
+- **Why:** `plan1111b/hedge-menu-D` (190-1250 x 605-780): the next level's card is a 1060x175 strip: an 80x115 field plate, the vehicles as 40 px icons with grey two-word captions ('Quick and flimsy.' twice), Cath's line along the foot beside an 18 px avatar; it reads as a settings row under the painted map; `hedge-menu-P` (8-382 x 600-690) the level name and Play only.
+- **Build:** at D a briefing: the level's real field large (about 240 px tall) with its lane traced, the round's vehicles at the Hollowell gate at queue size, Cath half-length beside her line as a bubble, the medal slots and the twist as stamps; at P the sheet's peek shows the field plate and the lead vehicle, a swipe opens the full briefing.
+- **Accept:** at D the field plate 200 px+, vehicles 36 px+ as their real sprites, Cath's face 40 px+, nothing under 12 px; at P the peek 150 px or less and clear of the next stop; hedgerow-map specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 325. [ ] Cathnivore: Cath presents the campaign at half length, not on a plinth
+- **Why:** `plan1111b/cath-campaign-D` (680-815 x 455-750): Cath stands full length on a stone plinth beside the map (item 305's figure), her face about 25 px, apart from the map and her bubble (635-860 x 350-435); `cath-campaign-P` (305-370 x 60-225) a 60 px figure with an 18 px face; she narrates here and is the smallest face on the screen.
+- **Build:** at D Cath half-length leaning on the map's frame, a hand toward the next chapter's region, her pose and face per chapter from the shared set, the bubble hers; at P a half-length bust in the header beside her line; the small on-map token stays as the travel marker. (The full-length figure stays for Hedgerow's map and the site.)
+- **Accept:** her face 60 px+ at D and 40 px+ at P; the bubble's tail within 30 px of her mouth; the six chapters each a different `data-pose` or `data-expression`; no plinth; nothing new over the chapter list; campaign specs pass; shots P and D, light and dark.
+- **Size:** 1
+
+## 326. [ ] The bugs from the 2026-11-11 12:40 critique, fixed as one batch
+- **Build:** (check each first, measured in the page; shots `e2e/screenshots/plan1111b`)
+  - **Site:** D /games/ the stall Cath's trousers show over the fruit row (265-305 x 260-305): the counter should cut her at the hip.
+  - **Cathnivore:** D setup the producer cards' tops and feet about 20 px apart between picked and unpicked (440-1090 x 262-562); 'Hard' tag lower and more rotated, its pin off the tag (770-875 x 110-160); P game Pell's and Tomas's medallions over the Saltmarsh and Shingle Bay rims (320-385 x 130-525), EXPAND against the Brindle Hills plate (40-115 x 293-313); D game the ledger's empty state the largest blank on screen (35-315 x 625-800).
+  - **Runnel:** D 'UP NEXT · WEDNESDAY' wraps with the '·' leading line 2 (165-260 x 632-662).
+  - **Hedgerow:** D l21 'Lifestyle influencer' label over the water 20 px from its lane (172-300 x 270-287); the margin's cattail clumps on a visible grid (15-290 x 80-880); P l34 'Box Lorry' over the last lorry's cab (50-120 x 287-305); P menu Hollowell blocks cut by the right edge against 'Beach Clean' and 'Sea Fret' (345-390 x 265-440); D 3D l21 red boats cut by the left edge (0-50 x 300-385).
+  - **NIGHT SHIFT:** D pick 'HOLLOWELL' sign cut by the top (430-860 x 0-45); D title the umbrella off the top, its tip on the title's last 'T' (680-700 x 110-180); P title The List's strip across Cath's hips, the case line loose over the umbrella (15-375 x 450-810); P pick figure soft (measure).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 2
