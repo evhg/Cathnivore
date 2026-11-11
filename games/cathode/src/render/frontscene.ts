@@ -444,6 +444,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const step = pos.count < 64 ? 1 : 7;
       for (let i = 0; i < pos.count; i += step) cloud.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(mm));
     });
+    // Plan item 300: head room on the pick, 40 cm over her head's origin (28 cm over the hair), so a class with
+    // nothing raised above her (the Ghost carries her rifle low) isn't scaled up until her hood meets the frame;
+    // her face then sits level with the other four's.
+    if (cloudBody) cloud.push(new THREE.Vector3(0, 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
     cloudAge = 0;
   }
   const fitPos = new THREE.Vector3();

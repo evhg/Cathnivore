@@ -2650,7 +2650,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
 
   const GHOST_GRAB = V(0.22, 0.36, -0.1);
-  const GHOST_HOLD = V(0.42, 0.15, 0.15); // plan item 247: 4 cm further out, the rifle clear of her face box
+  // Plan item 300: a low carry, her hand at the hip on the fore-end, so the rifle hangs muzzle-down by her leg (stood
+  // upright at her shoulder it crossed the HOLLOWELL sign and the frame's top on the pick).
+  const GHOST_HOLD = V(0.4, -0.2, 0.14);
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
@@ -2668,7 +2670,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     o.quaternion.setFromRotationMatrix(pBasis.makeBasis(pX, pY, pZ));
   };
   // Plan item 247: leaned a little further out (0.12 -> 0.2) so the scope clears her face box, not only her cheek.
-  const RIFLE_DIR = V(0.3, 1, -0.04);
+  const RIFLE_DIR = V(-0.14, -1, 0.14);
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);
   const SHOT_TOP = V(0.2, 0.1, -1);
