@@ -477,10 +477,13 @@
 .cmp-vignette.is-sealed .cmp-vig-sun { fill: var(--paper-on-fixed-fill); opacity: 0.9; }
 .cmp-vignette.is-sealed .cmp-vig-far { fill: color-mix(in srgb, var(--pasture-deep) 60%, var(--sea)); }
 .cmp-vignette.is-sealed .cmp-vig-hill { filter: brightness(0.78) saturate(0.85); stroke: var(--ink-on-fixed-fill); }
-.cmp-vignette.is-sealed :is(.cmp-vig-mark, .cmp-vig-stall) :is(path, rect, circle, ellipse, polygon, line) {
-  fill: var(--ink-on-fixed-fill);
+/* Item 309: the landmarks and the stall wait as line art (ink outlines over a pale dusk wash), not solid ink
+   silhouettes, so a locked chapter shows what's there before it opens. */
+.cmp-vignette.is-sealed :is(.cmp-vig-mark, .cmp-vig-stall) :is(path, rect, circle, ellipse, polygon) {
+  fill: color-mix(in srgb, var(--paper-on-fixed-fill) 62%, var(--sea));
   stroke: var(--ink-on-fixed-fill);
 }
+.cmp-vignette.is-sealed :is(.cmp-vig-mark, .cmp-vig-stall) line { stroke: var(--ink-on-fixed-fill); }
 .cmp-vignette.is-sealed .cmp-vig-stall image { opacity: 0; }
 .cmp-vignette.is-sealed .cmp-vig-frame { stroke: var(--ink-on-fixed-fill); }
 /* Each sealed chapter at its own hour: sunset over Word of Mouth, then dusk, the blue hour, deep evening and
