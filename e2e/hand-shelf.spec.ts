@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { fillSeed } from './setupSeed'
 
 // Plan item 312: when the desktop hand lays its cards out in rows, no card lies over another (each takes the width
-// that fits its row with a gap), so every name, price and yield chip shows whole.
+// that fits its row with a gap) and each price or yield chip stays inside its card.
 for (const [w, h] of [[1440, 900], [1280, 800]] as const) {
   test(`the hand's rows keep every card clear of the others at ${w}x${h}`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop hand')
@@ -27,11 +27,18 @@ for (const [w, h] of [[1440, 900], [1280, 800]] as const) {
             if (ox > 1 && oy > 1) over.push(`${a.t} / ${b.t}: ${Math.round(ox)}x${Math.round(oy)}`)
           }),
         )
-        return { rows: hand.dataset.rows, over }
+        // Each card's price or yield chip inside the card.
+        const cut = [...hand.querySelectorAll('.action-item')].flatMap((c) => {
+          const k = c.querySelector('.action-cost')?.getBoundingClientRect()
+          const b = c.getBoundingClientRect()
+          return k && (k.right > b.right + 0.5 || k.bottom > b.bottom + 0.5) ? [`${c.textContent?.trim().slice(0, 20)}: chip ${Math.round(k.right - b.right)} px past`] : []
+        })
+        return { rows: hand.dataset.rows, over, cut }
       })
       if (!r.rows) continue
       checked++
       expect(r.over, `seed ${seed}`).toEqual([])
+      expect(r.cut, `seed ${seed}`).toEqual([])
     }
     // These seeds deal a hand in rows at 1280 (at 1440 most hands fit one row); the 1440 check runs when one does.
     if (w === 1280) expect(checked, 'no seed dealt a hand in rows').toBeGreaterThan(0)

@@ -3180,7 +3180,7 @@ html.no-animations .table-cath-line { animation: none; }
   /* Two rows: landscape cards, the window down the card's left side, the name and price beside it. */
   /* Plan item 312: the width fan() gives every card in rows so none lies over another (--hand-card-w), the picture
      window a share of it. */
-  .game-layout .table-hand[data-rows] .action-item { --win: calc(var(--hand-card-w, 214px) * .44); width: var(--hand-card-w, 214px); height: 90px; }
+  .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 20px), 100px); width: var(--hand-card-w, 214px); height: 90px; }
   .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 214px) * 1.19); }
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
   .game-layout .table-hand[data-rows] .action-item .action-card-draggable { position: relative; padding-left: calc(var(--win) + 12px); }
@@ -3203,7 +3203,7 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item > .tooltip-trigger { left: 10px; right: auto; top: 10px; scale: .85; }
   /* Under 1400 px a narrower window keeps a nine-card turn to two rows (fan() allows a fifth's overlap). */
   @media (max-width: 1399.98px) {
-    .game-layout .table-hand[data-rows] .action-item { --win: calc(var(--hand-card-w, 186px) * .43); width: var(--hand-card-w, 186px); }
+    .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 186px) * .5 - 20px), 80px); width: var(--hand-card-w, 186px); }
     .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 186px) * 1.19); }
   }
 }
