@@ -161,6 +161,12 @@ const SHOT_COLOURS: Record<string, string> = {
 /** Plan item 310: her between-rounds gesture comes every HERO_IDLE_CYCLE seconds and lasts HERO_IDLE_GESTURE. */
 const HERO_IDLE_CYCLE = 7;
 const HERO_IDLE_GESTURE = 2.2;
+/** Plan item 310: her free shoulder's swing for a point (forward, a little over level) and a wave (forward and high),
+ * and how far it swings out toward the lens, so the far arm shows in front of her body at the field camera (tried
+ * at l21 D: raised back and up, or forward and high, it stayed behind her hair). The wave lifts the forearm. */
+const HERO_POINT_ARM = 1.7;
+const HERO_WAVE_ARM = 1.6;
+const HERO_REACH_X = 1.3;
 /** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
 export const CATH_3D_SCALE = 1.9;
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
@@ -244,6 +250,8 @@ export class Renderer3D {
   private rootYaw = 0;
   /** Plan item 208: seconds since she last gave a hint (she points out over the field while it is fresh). */
   private heroPoint = 9;
+  /** Plan item 310: how far her free arm swings out toward the lens (shoulder rotation.x) for a point or a wave. */
+  private heroReach = 0;
   private towersSeen = -1;
   /** What her body says right now (read by the sandbox e2e). */
   heroMood: "rest" | "cheer" | "worried" | "plant" | "point" | "wave" = "rest";
@@ -1893,7 +1901,7 @@ export class Renderer3D {
     arm.rotation.set(-0.08, 0, sh);
     (ud.elbow as THREE.Object3D).rotation.z = el;
     (ud.wrist as THREE.Object3D).rotation.z = wr;
-    (ud.arm2 as THREE.Object3D).rotation.set(0.08, 0, sh2 + (still ? Math.sin(t * 1.4) * 0.12 : 0));
+    (ud.arm2 as THREE.Object3D).rotation.set(0.08 + this.heroReach, 0, sh2 + (still ? Math.sin(t * 1.4) * 0.12 : 0));
     (ud.elbow2 as THREE.Object3D).rotation.z = el2;
     // A light step: a bob twice a stride, and a little forward lean while she walks.
     const idle = !walking && this.heroSwung >= 0.45 && this.heroPie >= 0.5 && !this.reducedMotion;
@@ -1950,7 +1958,9 @@ export class Renderer3D {
     // Plan item 208: a fresh hint: her free arm rises out over the field, the hand open, for about two seconds.
     const pointAge = this.heroPoint;
     const point = cheer > 0 || worry > 0 || plant > 0 ? 0 : pointAge < 0.25 ? ease(pointAge / 0.25) : pointAge < 1.9 ? 1 : pointAge < 2.3 ? 1 - ease((pointAge - 1.9) / 0.4) : 0;
-    if (point > 0) pose = mix(pose, [pose[0], pose[1], pose[2], -2.05, 0.1, -0.04, -0.6], point);
+    // Plan item 310: the free arm is her far one, so it reaches out level toward her facing side and swings toward the
+    // lens (heroReach), clear of her body; raised back and up (-2.05) it hid behind her hair.
+    if (point > 0) pose = mix(pose, [pose[0], pose[1], pose[2], HERO_POINT_ARM, 0.1, -0.04, 0], point);
     // Plan item 310: between rounds her free hand talks. Every few seconds she points out over the field again while
     // her line advises a plot (its ring glows); with nothing to advise she gives a little wave. Never mid-round, mid-swing,
     // mid-throw, on the move or under reduced motion.
@@ -1963,13 +1973,14 @@ export class Renderer3D {
       if (this.coach) {
         // Item 208's hint point, the hand beating gently. Turning her toward the plot was tried: the pointing arm is
         // on her far side, so toward a plot near the lens it hid behind her.
-        pose = mix(pose, [pose[0], pose[1], pose[2], -2.05 + Math.sin(t * 5) * 0.08, 0.1, -0.04, -0.6], gesture);
+        pose = mix(pose, [pose[0], pose[1], pose[2], HERO_POINT_ARM + Math.sin(t * 5) * 0.08, 0.1, -0.04, 0], gesture);
       } else {
         waving = true;
-        pose = mix(pose, [pose[0], pose[1], pose[2], -2.75, 0.35 + Math.sin(t * 9) * 0.35, 0, -0.2], gesture);
+        pose = mix(pose, [pose[0], pose[1], pose[2], HERO_WAVE_ARM, -1.4 + Math.sin(t * 9) * 0.35, 0, 0], gesture);
       }
     }
     const idle = gesture > 0.5 ? (waving ? "wave" : "point") : null;
+    this.heroReach = this.heroPie < 0.5 ? 0 : HERO_REACH_X * Math.max(point, gesture);
     this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : point > 0.5 ? "point" : (idle ?? "rest");
     // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
     // throwing arm (on her far side) round where it can be seen.
