@@ -247,6 +247,28 @@ export class Board {
       )
     }
     else if (ground === 'meadow') el('polygon', { class: 'tile-dress', points: hexPoints(S * 0.9), fill: 'url(#ground-meadow)' }, root)
+    // Plan item 323: fallow ground is rough pasture, not a blank tile: two field stones and a thistle, at seeded spots
+    // between hub and rim on the corner directions.
+    else if (ground === 'fallow') {
+      const h = hashString(`fallow:${this.puzzle.seed}:${cell.q},${cell.r}`)
+      const g = el('g', { class: 'fallow-dress' }, root)
+      // On three different corner directions (channels only run to edge midpoints), 0.38 out: clear of the hub and
+      // of the tile's fill toward its corners (runnel-tiles samples it at 0.6).
+      const first = h % 6
+      const at = (k: number, rad: number) => {
+        const a = (60 * ((first + k * 2) % 6) + 30) * (Math.PI / 180)
+        return { x: Math.cos(a) * S * rad, y: Math.sin(a) * S * rad }
+      }
+      for (const [k, r] of [[0, 5.6], [1, 4.4]] as const) {
+        const p = at(k, 0.38)
+        el('ellipse', { cx: (p.x + 0.8).toFixed(1), cy: (p.y + 1.2).toFixed(1), rx: r + 0.6, ry: r * 0.5, class: 'fs-shade' }, g)
+        el('ellipse', { cx: p.x.toFixed(1), cy: p.y.toFixed(1), rx: r, ry: r * 0.72, class: 'fs-stone' }, g)
+        el('path', { d: `M${(p.x - r * 0.5).toFixed(1)} ${(p.y - r * 0.25).toFixed(1)}q${(r * 0.4).toFixed(1)} ${(-r * 0.35).toFixed(1)} ${(r * 0.8).toFixed(1)} 0`, class: 'fs-lit' }, g)
+      }
+      const t = at(2, 0.38)
+      el('path', { d: `M${t.x.toFixed(1)} ${(t.y + 6).toFixed(1)}v-10m0 4l-4 -3m4 1l4 -3`, class: 'fs-thistle-stem' }, g)
+      el('circle', { cx: t.x.toFixed(1), cy: (t.y - 5).toFixed(1), r: 3.2, class: 'fs-thistle' }, g)
+    }
 
     el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
 

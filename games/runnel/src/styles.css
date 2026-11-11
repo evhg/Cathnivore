@@ -4691,3 +4691,11 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .bea-waiting .ga-water { opacity: 0; }
 .bea-garden:has(.bea-runner) .bea-waiting,
 .bea-garden[data-watered='true'] .bea-waiting { display: none; }
+
+/* Plan item 323: a fallow tile's field stones (lit on top, a shade below) and a thistle. */
+.fallow-dress { pointer-events: none; }
+.fs-stone { fill: color-mix(in srgb, var(--pebble) 80%, var(--dry)); stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 0.6; }
+.fs-shade { fill: color-mix(in srgb, var(--soil) 22%, transparent); }
+.fs-lit { fill: none; stroke: color-mix(in srgb, var(--paper) 70%, transparent); stroke-width: 0.8; stroke-linecap: round; }
+.fs-thistle-stem { fill: none; stroke: var(--ga-leaf); stroke-width: 1.6; stroke-linecap: round; }
+.fs-thistle { fill: color-mix(in srgb, var(--blossom-1, var(--clay)) 70%, var(--soil)); }
