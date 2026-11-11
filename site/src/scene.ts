@@ -107,6 +107,7 @@ vec3 paint(float h) {
 
 // The far row: low rooftops in the haze, a few chimneys, small lit windows. rgb, coverage.
 vec4 farRow(vec2 s, float aa) {
+  if (s.y > uHorizon + 0.16) return vec4(0.0);
   float x = s.x + uLook * 0.012 + uTime * 0.0015;
   float w = 0.06;
   float ci = floor(x / w);
@@ -133,6 +134,7 @@ vec4 farRow(vec2 s, float aa) {
 // The near row: gabled shopfronts with an awning, a lit shop window and upper windows. rgb, coverage.
 vec4 nearRow(vec2 s, float aa) {
   float hz = uHorizon;
+  if (s.y > hz + 0.3) return vec4(0.0);
   float x = s.x + uLook * 0.035 + uTime * 0.003;
   float w = 0.15;
   float ci = floor(x / w);
@@ -195,6 +197,9 @@ vec4 strings(vec2 s, float aa, out float glow) {
   float hz = uHorizon;
   float x = s.x + uLook * 0.035 + uTime * 0.003;
   float w = 0.15;
+  glow = 0.0;
+  // nothing hangs, and no light reaches, far above or below the strings
+  if (s.y < hz - 0.02 || s.y > hz + 0.26) return vec4(0.0);
   vec2 ps = toS(uPointer);
   vec2 ts = toS(uTap);
   vec4 o = vec4(0.0);
@@ -219,7 +224,6 @@ vec4 strings(vec2 s, float aa, out float glow) {
   o = mix(o, vec4(0.12, 0.08, 0.08, 1.0), smoothstep(aa * 1.2, 0.0, abs(s.y - y2)) * 0.85);
   float lw = w / 4.0;
   float li = floor(x / lw);
-  glow = 0.0;
   for (int k = -1; k <= 1; k++) {
     float idx = li + float(k);
     float lx = (idx + 0.5) * lw;
@@ -347,17 +351,21 @@ void main() {
   // a reflection is strongest near the houses and fades toward the viewer
   float depth = uHorizon - s.y;
   wet *= 0.3 + 0.7 * exp(-depth * 5.0);
-  vec2 m = vec2(s.x, 2.0 * uHorizon - s.y);
-  // a reflection is smeared down the wet ground, more the closer it is
-  float smear = 1.0 + 3.0 * depth;
-  vec2 mr = vec2(m.x, uHorizon + (m.y - uHorizon) / smear);
-  float rg;
-  vec4 rs = strings(mr, aa * 4.0, rg);
-  vec4 rn = nearRow(mr, aa * 4.0);
-  vec3 refl = mix(sky(vec2(frag.x, (2.0 * uHorizon - s.y) * uRes.y), -rayY), rn.rgb, rn.a);
-  refl = mix(refl, rs.rgb, rs.a) + LAMP * rg;
-  col = mix(col * 0.95, mix(col * 0.45, refl * 0.75, 0.7), wet);
-  // Even the dry stones catch a little of the lanterns' light.
+  float rg = 0.0;
+  if (wet > 0.01) {
+    vec2 m = vec2(s.x, 2.0 * uHorizon - s.y);
+    // a reflection is smeared down the wet ground, more the closer it is
+    float smear = 1.0 + 3.0 * depth;
+    vec2 mr = vec2(m.x, uHorizon + (m.y - uHorizon) / smear);
+    vec4 rs = strings(mr, aa * 4.0, rg);
+    vec4 rn = nearRow(mr, aa * 4.0);
+    vec3 refl = mix(sky(vec2(frag.x, (2.0 * uHorizon - s.y) * uRes.y), -rayY), rn.rgb, rn.a);
+    refl = mix(refl, rs.rgb, rs.a) + LAMP * rg;
+    col = mix(col * 0.95, mix(col * 0.45, refl * 0.75, 0.7), wet);
+  } else {
+    col *= 0.95;
+  }
+  // Wet edges catch a little more of the lanterns' light.
   col += LAMP * rg * 0.25 * (1.0 - wet);
 
   // The square darkens toward the viewer, and meets the houses in a warm haze.
