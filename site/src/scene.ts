@@ -5,6 +5,7 @@
 //  - two rows of houses on the horizon as parallax layers: far rooftops in the haze with lit windows, and nearer
 //    gabled shopfronts with striped awnings (Cathnivore's stall colours), lit shop windows and upper windows,
 //  - strings of bunting and paper lanterns across the square, in front of the shopfronts,
+//  - market stalls on the cobbles, the nearest layer, with fruit on their counters,
 //  - wet cobbles below, with the lanterns, shopfronts and sky mirrored in the puddles,
 //  - the pointer shifts the two rows apart (parallax) and warms the lanterns under it, a tap sends a flare along
 //    them, and on load the windows and lanterns light up outwards from the middle of the view.
@@ -236,11 +237,63 @@ vec4 strings(vec2 s, float aa, out float glow) {
     float bodyR = 0.0062;
     float lamp = smoothstep(bodyR + aa, bodyR, r);
     vec3 paper = mix(vec3(0.85, 0.24, 0.14), vec3(0.95, 0.6, 0.2), step(0.5, hl));
-    vec3 lit = mix(paper * 0.35, mix(paper, vec3(1.0, 0.9, 0.7), 0.55) * 1.35, on);
+    vec3 lit = mix(paper * 0.35, mix(paper, vec3(1.0, 0.86, 0.6), 0.3) * 1.12, on);
     lit *= 0.85 + 0.25 * smoothstep(bodyR, 0.0, abs(d.x) * 1.4); // rounder in the middle
-    o = mix(o, vec4(lit * min(warm, 1.6), 1.0), lamp);
+    // a dark cap on top of each lantern
+    lit = mix(lit, vec3(0.14, 0.08, 0.07), step(bodyR * 0.62, d.y) * step(abs(d.x), bodyR * 0.55));
+    o = mix(o, vec4(lit * min(warm, 1.35), 1.0), lamp);
     glow += on * flick * warm * (0.55 * exp(-r * 70.0) + 0.18 * exp(-r * 16.0));
   }
+  return o;
+}
+
+// The nearest layer: market stalls on the cobbles in front of the shopfronts, here and there. Each has a plank
+// counter with a row of fruit, a lit back under a striped, scalloped awning, and two posts. rgb, coverage.
+vec4 stallRow(vec2 s, float aa) {
+  float x = s.x + uLook * 0.07 + uTime * 0.0045;
+  float W = 0.42;
+  float ci = floor(x / W);
+  float fx = fract(x / W);
+  float hs = hash12(vec2(ci, 81.0));
+  if (hs < 0.22) return vec4(0.0);
+  float sw = 0.36;
+  float l0 = 0.5 - sw * 0.5 + (hs - 0.5) * 0.24;
+  float u = (fx - l0) / sw;
+  float y = s.y - (uHorizon - 0.03);
+  if (u < -0.06 || u > 1.06 || y < 0.0 || y > 0.115) return vec4(0.0);
+  float on = lightOn(hash12(vec2(ci, 82.0)) * 0.7, s.x);
+  vec4 o = vec4(0.0);
+  float inX = step(0.0, u) * step(u, 1.0);
+  // two posts up to the awning
+  float post = (step(0.02, u) * step(u, 0.05) + step(0.95, u) * step(u, 0.98)) * step(y, 0.1);
+  o = mix(o, vec4(0.2, 0.12, 0.09, 1.0), post);
+  // the lit back of the stall under the awning
+  float back = step(0.05, u) * step(u, 0.95) * step(0.04, y) * step(y, 0.086);
+  vec3 backc = mix(vec3(0.15, 0.08, 0.07), vec3(0.8, 0.45, 0.22), on) * (0.7 + 0.3 * smoothstep(0.04, 0.086, y));
+  o = mix(o, vec4(backc, 1.0), back);
+  // a row of fruit on the counter, lit from the lamp above
+  float n = 12.0;
+  float pf = u * n;
+  float pi = floor(pf);
+  float fr = sw * W / n * 0.46;
+  vec2 pd = vec2((fract(pf) - 0.5) * sw * W / n, y - 0.042 - fr * 0.8);
+  float fruit = step(0.0, u) * step(u, 1.0) * smoothstep(fr + aa, fr, length(pd));
+  vec3 fcol = paint(hash12(vec2(pi + ci * 20.0, 83.0)));
+  fcol *= 0.7 + (0.25 + 0.4 * on) * smoothstep(-fr, fr, pd.y + pd.x * 0.5);
+  o = mix(o, vec4(fcol, 1.0), fruit);
+  // the counter: planks, darker toward the cobbles, a lit lip on top
+  float counter = inX * step(y, 0.042);
+  vec3 wood = vec3(0.42, 0.26, 0.15) * (0.86 + 0.14 * step(0.5, fract(u * 9.0)));
+  wood *= 0.55 + 0.45 * smoothstep(0.0, 0.042, y);
+  wood = mix(wood, vec3(0.62, 0.4, 0.22), step(0.036, y));
+  o = mix(o, vec4(wood, 1.0), counter);
+  // the awning: stripes in the stall's paint and cream, a scalloped hem
+  float af = (u + 0.06) * 8.0;
+  float sc = 0.008 * sqrt(max(0.0, 1.0 - sq(2.0 * fract(af) - 1.0)));
+  float aw = step(0.086 - sc, y) * step(y, 0.112);
+  vec3 awc = mix(paint(hash12(vec2(ci, 84.0))), CREAM, mod(floor(af), 2.0));
+  awc *= 0.68 + 0.38 * smoothstep(0.112, 0.088, y);
+  o = mix(o, vec4(awc * 0.95, 1.0), aw);
   return o;
 }
 
@@ -265,6 +318,8 @@ void main() {
     col += LAMP * glow;
     // A warm haze where the square meets the houses.
     col = mix(col, haze, 0.18 * exp(-(s.y - uHorizon) * 60.0));
+    vec4 stall = stallRow(s, aa);
+    col = mix(col, stall.rgb, stall.a);
     outColor = vec4(col, 1.0);
     return;
   }
@@ -310,6 +365,8 @@ void main() {
   col *= 0.55 + 0.5 * near;
   float fog = exp(rayY * 9.0);
   col = mix(col, haze * 0.85, clamp(fog, 0.0, 1.0) * 0.6);
+  vec4 stall = stallRow(s, aa);
+  col = mix(col, stall.rgb, stall.a);
   outColor = vec4(col, 1.0);
 }
 `
