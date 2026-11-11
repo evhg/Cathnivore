@@ -847,6 +847,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // Plan item 312: where each row's shelf plank runs (table.css .table-hand[data-rows]::before).
     hand.style.setProperty('--row-step', `${rowStep}px`)
     hand.style.setProperty('--pad-b', `${padB}px`)
+    // a big deal takes three or four rows, each on its own plank
+    if (hand.dataset.rows !== undefined) hand.dataset.rowCount = String(rows.length)
+    else delete hand.dataset.rowCount
     rows.forEach((row, r) => {
       const n = row.to - row.from
       const mid = (n - 1) / 2

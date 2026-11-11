@@ -3192,6 +3192,20 @@ html.no-animations .table-cath-line { animation: none; }
       linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - var(--row-step, 96px) + 4px) / 100% 9px no-repeat;
     filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink) 25%, transparent));
   }
+  .game-layout .table-hand[data-rows][data-row-count='3']::before,
+  .game-layout .table-hand[data-rows][data-row-count='4']::before {
+    background:
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - var(--row-step, 96px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - 2 * var(--row-step, 96px) + 4px) / 100% 9px no-repeat;
+  }
+  .game-layout .table-hand[data-rows][data-row-count='4']::before {
+    background:
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - var(--row-step, 96px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - 2 * var(--row-step, 96px) + 4px) / 100% 9px no-repeat,
+      linear-gradient(var(--wood), var(--wood-lo)) 0 calc(100% - var(--pad-b, 12px) - 3 * var(--row-step, 96px) + 4px) / 100% 9px no-repeat;
+  }
   /* Plan item 312: the width fan() gives every card in rows so none lies over another (--hand-card-w), the picture
      window a share of it. */
   .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 20px), 100px); width: var(--hand-card-w, 214px); height: 90px; }
