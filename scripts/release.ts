@@ -172,8 +172,15 @@ export function httpSmokeTest(base: string, commit: string): boolean {
 }
 
 async function main() {
-  console.log('=== Running gates ===')
-  execSync('tsx scripts/gates.ts', { stdio: 'inherit' })
+  // RELEASE_GATES_PASSED=<sha>: every gate part (GATES_PART=a, b and c in scripts/gates.ts) already passed on exactly
+  // this build commit, run separately by a session whose tools cap one command at 2 h (owner, 2026-11-11). Any other
+  // commit runs the gates here as before.
+  const passed = process.env.RELEASE_GATES_PASSED
+  if (passed && passed === sh('git rev-parse build')) console.log(`=== Gates already passed on ${passed} (run in parts) ===`)
+  else {
+    console.log('=== Running gates ===')
+    execSync('tsx scripts/gates.ts', { stdio: 'inherit' })
+  }
 
   const buildCommit = sh('git rev-parse build')
   console.log(`\n=== Fast-forwarding main to ${buildCommit} ===`)

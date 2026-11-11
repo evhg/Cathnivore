@@ -4,7 +4,15 @@
 import { execSync, spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
 
+// GATES_PART=a|b|c runs one part (a: gates 1-5's game suite, b: the site suite, c: the rest), for sessions whose
+// tools cap one command at 2 h (the whole run passed 2 h once the site suite reached 1.7 h, 2026-11-09; owner
+// approved splitting it, 2026-11-11). Unset runs every part, as before.
+const PART = process.env.GATES_PART ?? ''
+let part = 'a'
+const inPart = () => !PART || PART === part
+
 function run(label: string, cmd: string) {
+  if (!inPart()) return
   console.log(`\n=== ${label} ===`)
   execSync(cmd, { stdio: 'inherit' })
 }
@@ -54,6 +62,7 @@ run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwrig
 // 3D camera and depot) read wall-clock timings and camera rest under SwiftShader, and beside a second browser they
 // fail by load alone: the 2026-11-09 release runs failed a different few each time, every one passing alone. So a
 // failure gets one more go, on its own (--last-failed, one worker); a test that fails alone too fails the gate.
+part = 'b'
 try {
   run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
 } catch {
@@ -62,6 +71,7 @@ try {
 
 // CATHODE's performance budget (docs/design/cathode-combat.md S0, from C10): a staged firefight's whole-scene
 // draw calls and triangles, phone (6 enemies) and desktop (12), on the dist-site Gate 1 built.
+part = 'c'
 run('Gate 5 (CATHODE): performance budget', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} node scripts/cathode-perf.mjs`)
 
 run('Gate 6: Accessibility (axe)', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} e2e/accessibility.spec.ts`)
@@ -129,7 +139,7 @@ async function runLighthouseGate(): Promise<void> {
   }
 }
 
-await runLighthouseGate()
+if (inPart()) await runLighthouseGate()
 run(
   'Gate 7: AI teammate decision under 1 s at 4x CPU throttling (alone)',
   `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test --project=desktop-chromium --workers 1 e2e/ai-teammate.spec.ts --grep "${GATE_7_TIMING}"`,
