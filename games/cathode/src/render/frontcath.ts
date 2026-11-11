@@ -446,7 +446,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // umbrella fist read as a skeleton's bones), so leather keeps a narrow gloss line on its outer edge only.
             ${edge === "leather" ? "fr = smoothstep( 0.46, 0.6, fr0 );" : ""}
             float side = dot( normal, uRimDir );
-            totalEmissiveRadiance += ${gain.toFixed(2)} * fr * ( uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side ) );
+            vec3 rimC = uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side );
+            // Plan item 319 slice 11: wool scatters the street's neon, so its rim keeps half the sign's colour and less
+            // of its strength (the critique read a pink and cyan sheen down the coat as vinyl).
+            ${edge === "wool" ? "rimC = mix( vec3( dot( rimC, vec3( 0.2126, 0.7152, 0.0722 ) ) ), rimC, 0.5 ) * 0.75;" : ""}
+            totalEmissiveRadiance += ${gain.toFixed(2)} * fr * rimC;
             ${keyTerm}
           }`,
         );
@@ -1622,11 +1626,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
     pad.translate(padAt.x, padAt.y, padAt.z);
     parts.push(pad);
     // Four fingers: each a tube from the knuckle round the shaft's front, ending curled in toward the palm.
+    // Plan item 319 slice 11: the fingers press together (a fifth fuller, set 13.5 mm apart, was 14-15) and each runs
+    // down the shaft as it wraps, so the fist reads as one gloved grip, not ribs with dark gaps between them.
     const fingers: Array<[number, number, number]> = [
-      [0.021, 0.0082, 1.45],
-      [0.006, 0.0085, 1.5],
-      [-0.009, 0.008, 1.45],
-      [-0.023, 0.007, 1.3],
+      [0.02, 0.0096, 1.45],
+      [0.0065, 0.0099, 1.5],
+      [-0.007, 0.0094, 1.45],
+      [-0.0198, 0.0082, 1.3],
     ];
     // Plan item 319 slice 2: each finger three tapering bones with knuckles between them, not one smooth tube (four
     // equal rings round the shaft read as a stack of washers close up). The joints stand out from the shaft so the
@@ -1638,7 +1644,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const a1 = Math.PI * wrap - 0.55;
       const joint = (u: number, out: number) => {
         const a = tb + a0 + (a1 - a0) * u;
-        return at(V(Math.cos(a) * R * out, y - u * 0.0072, Math.sin(a) * R * out));
+        return at(V(Math.cos(a) * R * out, y - u * 0.011, Math.sin(a) * R * out));
       };
       const pts = [joint(0, 1.08), joint(0.37, 1.3), joint(0.7, 1.24), joint(1, 1.02)];
       const rad = [r * 1.06, r * 0.98, r * 0.9, r * 0.8];
