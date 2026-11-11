@@ -2503,7 +2503,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       ) : (
         <>
           {!(handOnTable && bubbleSuggest) && suggestLine}
-          {!handOnTable && playableCards}
+          {/* Plan item 320: on a phone too each playable card's picture is its painted window, full-bleed over the face's top half. */}
+          {!handOnTable && (isDesktop ? playableCards : <ArtSceneContext.Provider value="wide">{playableCards}</ArtSceneContext.Provider>)}
           {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
           {disabledSell.length + disabledInvest.length + disabledScheme.length + disabledSupplyOutlets.length + disabledRebut.length > 0 ||
           disabledOpenStall ||

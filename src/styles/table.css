@@ -4881,3 +4881,60 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   }
   .action-tray .actions > .action-item[data-peek][data-stack='r']:not(:focus-within)::before { left: auto; right: 2px; rotate: none; }
 }
+/* Plan item 320 (phone): a playable card is the same illustrated market card as the desktop hand's. Its painted window
+   (ActionArt's scene, family seal in its top-left) runs full-bleed over the face's top half; the family colours the
+   frame; the price is a tag pinned on the window's lower-left edge and the 'i' rides its top right, so the band below
+   holds the name and its pick line. */
+@media (max-width: 1023.98px) {
+  .action-tray .actions .action-item { --fam: var(--grp, var(--bunting)); --art-h: 58px; }
+  /* a card with a pick line ('in Brindle Hills') or a long name gives the band room: the window keeps half the face */
+  .action-tray .actions .action-item:has(.action-pick, button[data-tight]) { --art-h: 50px; }
+  .action-tray .actions .action-item:has(.action-art[data-art='sell']) { --fam: var(--pasture-deep); }
+  .action-tray .actions .action-item:has(.action-art[data-art='invest']) { --fam: var(--sea); }
+  .action-tray .actions .action-item:has(.action-art[data-art='scheme']) { --fam: var(--clay-deep); }
+  .action-tray .actions .action-item:has(.action-art[data-art='graft']) { --fam: color-mix(in srgb, var(--pasture-deep) 60%, var(--wheat)); }
+  .action-tray .actions .action-item:has(.action-art[data-art='openStall']) { --fam: color-mix(in srgb, var(--wheat) 45%, var(--bunting)); }
+  .action-tray .actions .action-item:has(.action-art[data-art='supply']) { --fam: var(--bunting); }
+  .action-tray .actions .action-item:has(.action-art[data-art='rebut']) { --fam: var(--ink-on-fixed-fill); }
+  .action-tray .actions .action-item:has(.action-art[data-art='role']) { --fam: var(--clay); }
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) {
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0 7px 5px;
+    overflow: hidden;
+    border: 2px solid var(--fam);
+    background: linear-gradient(180deg, var(--paper-on-fixed-fill), color-mix(in srgb, var(--wheat-hi) 30%, var(--paper-on-fixed-fill)));
+  }
+  .action-tray .actions .action-item[data-group] > button:first-child:not(:disabled):has(svg.action-art[data-scene]) { border-top: 2px solid var(--fam); }
+  .action-tray .actions .action-item .action-word { display: none; }
+  .action-tray .actions .action-item > button:first-child:not(:disabled) .action-label > svg.action-art[data-scene],
+  .action-tray .actions .action-item > button[data-tight]:first-child:not(:disabled) .action-label > svg.action-art[data-scene],
+  .action-tray .actions .action-item > button:first-child:not(:disabled):not(:has(.action-cost)):not([data-tight]) .action-label > svg.action-art[data-scene] {
+    position: absolute;
+    inset: 0 0 auto 0;
+    float: none;
+    width: 100%;
+    height: var(--art-h);
+    margin: 0;
+    border-bottom: 2px solid var(--fam);
+    filter: none;
+  }
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label {
+    margin-top: calc(var(--art-h) + 4px);
+    font-size: 0.875rem;
+    line-height: 1.08;
+  }
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost {
+    position: absolute;
+    left: 5px;
+    top: calc(var(--art-h) - 22px);
+    margin: 0;
+    box-shadow: 0 1px 2px rgb(var(--shadow-ink) / .3);
+  }
+  .action-tray .actions .action-item:has(svg.action-art[data-scene]) > .tooltip-trigger { top: calc(var(--art-h) - 24px); right: 6px; bottom: auto; }
+}
+@media (max-width: 1023.98px) {
+  /* Plan item 320: the 'i' now rides a card's window edge at mid-height, and its touch target reaches past the card's
+     edge onto the next strip; a card off the front takes no 'i' taps (a tap there brings the card forward, item 302). */
+  .action-tray .actions > .action-item[data-peek]:is([data-stack='l'], [data-stack='r']):not(:focus-within) > .tooltip-trigger { pointer-events: none; }
+}

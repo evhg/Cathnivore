@@ -23,9 +23,13 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
   // in its land (a sky wash, a far ridge and the near ground running the window's width).
   // Plan item 320: the window is full-bleed (`slice`: the land runs to the card's edges at any shape, the card's own
   // frame clips it), and its top-left corner carries the card family's seal, so families tell apart in greyscale.
-  if (useContext(ArtSceneContext)) {
+  const scene = useContext(ArtSceneContext)
+  if (scene) {
+    // 'wide': the phone card's 3:1 window shows the whole subject with its land either side (the seal moves out to
+    // the window's corner); the desktop's taller window crops in on the subject.
+    const wide = scene === 'wide'
     return (
-      <svg viewBox="-2 1 44 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
+      <svg viewBox={wide ? '-25 1 90 36' : '-2 1 44 40'} preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="action-art" data-art={kind} data-scene="">
         <rect x="-40" y="-10" width="120" height="60" fill={CREAM} />
         <rect x="-40" y="-10" width="120" height="20" fill={SEA} opacity={0.2} />
         <rect x="-40" y="-10" width="120" height="31.5" fill={SEA} opacity={0.1} />
@@ -35,7 +39,7 @@ function Tile({ size = 32, kind, ground = PASTURE, children }: { size?: number; 
         <path d="M-40 30 Q -20 26 -4 28 Q 0 26 8 28.5 T 30 27 T 52 28 T 80 27 L80 50 L-40 50 Z" fill={ground} opacity={0.42} />
         <path d="M2 36 l0.8 -2 M4 36.4 l-0.6 -2.2 M34 35.6 l0.8 -2 M36 36 l-0.6 -2.2" stroke={ground} strokeOpacity={0.7} strokeWidth={0.8} strokeLinecap="round" />
         {children}
-        <FamilySeal kind={kind} />
+        <FamilySeal kind={kind} wide={wide} />
       </svg>
     )
   }
@@ -70,11 +74,11 @@ const SEAL_GLYPH: Record<string, ReactNode> = {
   rebut: <path d="M-2 -2.4 H2 V-0.2 L1 0.6 L1.6 1.4 L0.8 2.4 H-2 Z" fill={CREAM} />,
   role: <path d="M0 -2.6 L0.75 -0.8 L2.5 -0.8 L1.1 0.4 L1.6 2.3 L0 1.2 L-1.6 2.3 L-1.1 0.4 L-2.5 -0.8 L-0.75 -0.8 Z" fill={CREAM} />,
 }
-function FamilySeal({ kind }: { kind: string }) {
+function FamilySeal({ kind, wide = false }: { kind: string; wide?: boolean }) {
   const glyph = SEAL_GLYPH[kind]
   if (!glyph) return null
   return (
-    <g transform="translate(8.6 7.6)" className="action-seal" data-seal={kind}>
+    <g transform={wide ? 'translate(-20 7) scale(1.05)' : 'translate(8.6 7.6)'} className="action-seal" data-seal={kind}>
       <circle r="4" fill={SEAL_FILL[kind]} stroke={CREAM} strokeWidth={0.9} />
       {glyph}
     </g>
