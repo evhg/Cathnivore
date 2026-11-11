@@ -379,8 +379,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
     // Plan item 319: a softer step (0.4-0.62 -> 0.3-0.68) on the denser skull, whose finer curves the hard step cut
-    // into dark bands beside the mouth.
-    const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.3, 0.68, dot( normal, uKeyDir ) ) )" : "";
+    // into dark bands beside the mouth. Slice 9: wider again (0.1-0.85): the step still drew the jaw as a polygon.
+    const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.1, 0.85, dot( normal, uKeyDir ) ) )" : "";
     let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 )${planes};` : "";
     // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
     // the eyes hold a bright point under the street's grade.
@@ -422,7 +422,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + INK_BAND)
         // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
-        .replace("#include <lights_physical_pars_fragment>", TOON_PHYSICAL)
+        // Plan item 319: not on the face (the material with catch-lights): banded, the street's light cut her jaw and
+        // cheek into flat triangles with a hard dark wedge under the jaw (critique 17:15); the face takes it smooth.
+        .replace("#include <lights_physical_pars_fragment>", glint > 0 ? "#include <lights_physical_pars_fragment>" : TOON_PHYSICAL)
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
@@ -1105,12 +1107,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const inner = expr === "determined" ? -0.0034 : 0;
         // Plan item 205: a fuller, darker brow, so it holds as a stroke at title distance.
         // Plan item 275: fuller at the head, tapering to the tail, peaking two-thirds out.
-        g.fillStyle = "#170d08";
+        // Plan item 319 slice 9: a dark warm brown, not near-black, and a fifth slimmer at the head (the critique
+        // read thick dark bars), still a stroke at title distance.
+        g.fillStyle = "#24140c";
         g.beginPath();
-        g.moveTo(0.0085 * sx, by - 0.0012 + inner);
+        g.moveTo(0.0085 * sx, by - 0.0018 + inner);
         g.quadraticCurveTo(0.03 * sx, by + 0.0102, 0.0475 * sx, by - 0.0036);
         // Plan item 289: a deeper brow body (the lower edge bowed down), so the brows hold as strokes at title distance.
-        g.quadraticCurveTo(0.03 * sx, by + 0.0012, 0.0085 * sx, by - 0.0074 + inner);
+        g.quadraticCurveTo(0.03 * sx, by + 0.0026, 0.0085 * sx, by - 0.0068 + inner);
         g.closePath();
         g.fill();
       }
@@ -1120,7 +1124,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.save();
       g.translate(0, my);
       // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
-      const [lc, rc] = expr === "determined" ? [0.0006, 0.0008] : expr === "wink" ? [0.0028, 0.004] : [0.0022, 0.0038];
+      // Plan item 319 slice 9: the smirk's lifted corner higher (0.0038 -> 0.0056): it read as a neutral line.
+      const [lc, rc] = expr === "determined" ? [0.0006, 0.0008] : expr === "wink" ? [0.0028, 0.004] : [0.0018, 0.0056];
       // Plan item 289: a little wider again (1.3 -> 1.42), so the rose mouth carries at title distance.
       g.scale(1.42, expr === "determined" ? 1.18 : 1.45);
       g.translate(0, -my);
