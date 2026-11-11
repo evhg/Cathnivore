@@ -4005,13 +4005,18 @@ body[data-mode='practice'] #week-slot {
 /* Lit like the valley behind her: in dark mode the day shows through the night paper at the same strength. */
 .vw-verge { fill: color-mix(in srgb, var(--vl-near, var(--pasture)) var(--vk, 100%), var(--paper)); }
 .vw-tuft { fill: color-mix(in srgb, var(--tuft) var(--vk, 100%), var(--paper)); }
-.vw-wall { fill: var(--stone); stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.vw-cope { fill: var(--stone-2); stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.vw-joint { fill: none; stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* Plan item 329: the footbridge in the pin's wood (the parapet boards lit, the rail and posts darker), over the stream. */
+.vw-wall { fill: var(--stake-hi); stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.vw-cope { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.vw-joint { fill: none; stroke: color-mix(in srgb, var(--stake) 75%, var(--soil)); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.vb-post { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.vb-deck { fill: color-mix(in srgb, var(--stake) 70%, var(--soil)); }
+.vb-water { fill: color-mix(in srgb, var(--water) var(--vk, 100%), var(--paper)); }
+.vb-ripple { fill: none; stroke: color-mix(in srgb, var(--paper) 70%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 @media (prefers-color-scheme: dark) {
   .valley-cath { --vk: 32%; }
-  .vw-wall { fill: color-mix(in srgb, var(--stone) 55%, var(--paper)); }
-  .vw-cope { fill: color-mix(in srgb, var(--stone-2) 55%, var(--paper)); }
+  .vw-wall { fill: color-mix(in srgb, var(--stake-hi) 60%, var(--paper)); }
+  .vw-cope { fill: color-mix(in srgb, var(--stake) 60%, var(--paper)); }
 }
 /* Plan item 77: on an upright phone Cath watches from the valley's bottom-left corner as a framed bust, over the
    stream bed and under the board's last row (main.ts hides her if a tile reaches into her corner). */
