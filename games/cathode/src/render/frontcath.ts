@@ -1603,13 +1603,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     pad.translate(padAt.x, padAt.y, padAt.z);
     parts.push(pad);
     parts.push(turned(wristL.clone().addScaledVector(dir, -0.01), wristL.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.026]], seg(8), 0.8));
+    // Plan item 319 slice 2: jointed like the umbrella fist: a tapering bone between each pair of joints, rounded
+    // knuckles between, the tip narrowest (one even tube read as a rubber finger close up).
     const finger = (pts: THREE.Vector3[], r: number) => {
-      const curve = new THREE.CatmullRomCurve3(pts);
-      parts.push(new THREE.TubeGeometry(curve, seg(8), r, seg(6), false));
-      const tip = new THREE.SphereGeometry(r * 0.98, seg(6), seg(5));
-      const e = curve.getPoint(1);
-      tip.translate(e.x, e.y, e.z);
-      parts.push(tip);
+      const n = pts.length - 1;
+      for (let k = 0; k < n; k++) parts.push(limb(pts[k]!, pts[k + 1]!, r * (1.06 - (0.26 * k) / n), r * (1.06 - (0.26 * (k + 1)) / n), seg(8)));
     };
     finger([V(0.175, -0.292, 0.062), V(0.178, -0.304, 0.068), V(0.181, -0.311, 0.078), V(0.183, -0.318, 0.09)], 0.0078);
     finger([V(0.175, -0.294, 0.05), V(0.179, -0.314, 0.058), V(0.182, -0.327, 0.068), V(0.184, -0.334, 0.08)], 0.008);
