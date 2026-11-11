@@ -397,3 +397,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-11 08:35 lane B (item 318): critique sizes read off a 1x shot are measured in the page before any change; most 'about 10-11 px' labels measured 12 px+ and were left.
 - 2026-11-11 lane A (item 310): Hedgerow's 3D Cath's features are a painted canvas texture on the face sphere (UV-mapped with faceCanvasPoint), not meshes: crisper at field scale and inside the 2,000-triangle budget. `mergeUnder` keeps `color` for vertex-coloured materials (it silently dropped the hair cap's shine).
 - 2026-11-11 lane A (item 310): the idle point does not turn her toward the coached plot: her pointing arm is the far one, so turned toward the lens it vanished. The visible point is the next slice.
+- 2026-11-11 09:45 lane B (item 312): no 'Free today' peg: free cards already carry a FREE chip, and a peg would cost a row a card's width; the rows stand on wooden shelf planks instead.
