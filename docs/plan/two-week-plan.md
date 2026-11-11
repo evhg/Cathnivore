@@ -2951,7 +2951,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** head 15%+ of figure height in every use; 200 px+ tall on campaign-D, 90 px+ on hedge-menu-D; a ground contact or shadow in each; cath-full-body and shared Cath tests, campaign and Hedgerow menu specs pass; key art re-shot; shots P and D.
 - **Size:** 2
 
-## 306. [ ] NIGHT SHIFT: Cath's face lit and readable on the title and the pick
+## 306. [ ] NIGHT SHIFT: Cath's face lit and readable on the title and the pick *(lane A, in progress)*
 - **Why:** `plan1108e/ns-play-D` (650-720 x 160-225): under the rim light her face blows out to a flat white mask with no eyes, liner or lips; `ns-play-P` (175-205 x 120-160) a white blob; `ns-title-D` (970-1050 x 290-380) the face is the least finished thing in a well-lit frame.
 - **Build:** a sculpted face on the 3D head (a face decal with the bible's winged liner, eye highlights, raised right brow, rose lips), a key light on the face apart from the cyan rim, and exposure that never clips skin; the pick's camera at chest height on a phone so her face gets the pixels.
 - **Accept:** face 60 px+ wide on ns-play-D, 40 px+ on ns-play-P; skin mean luminance 55-85% with eyes and lips 3:1 against it; cathode-perf in budget; cathode specs pass; shots of title and pick at P and D.
