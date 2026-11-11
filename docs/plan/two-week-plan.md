@@ -3027,7 +3027,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a DPR-3 phone's backing store 2x its CSS size or more; her box meets the menu by 10% or less; cathode-perf phone budgets pass (alone); shots ns-title-P and ns-play-P before and after.
 - **Size:** 1
 
-## 318. [ ] The bugs from the 2026-11-11 06:40 critique, fixed as one batch
+## 318. [ ] The bugs from the 2026-11-11 06:40 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1111a`; already measured or decided, left out: the setup pin captions (12.48 px), NIGHT SHIFT's 'THE LIST' and 'GAMES' (12 px), the portfolio P second print's label (shows once swiped in), the /games/ kicker (clear of the awning since 11-11))
   - **Site:** D portfolio Cath's counter floats with no ground under it (697-946 x 645-697); P /games/ Cath's italic quote on the busier street backdrop (25-365 x 205-240): measure, scrim if under 4.5:1.
   - **Cathnivore:** P game the '9 more' pill over the hand's foot (280-350 x 765-790) and the NOT YET deck cut at the edge (330-390 x 680-775); D setup difficulty notes about 11 px (895-1115 x 108-158), 'OPEN' over Start about 10 px on green (1165-1225 x 795-807), 'Hard' 6 px lower than its neighbours (770-880 x 112-160); P setup YOU/AI/P1/P2 badges about 9 px (40-285 x 205-218); D campaign a stray dark post beside Cath (788-800 x 686-702); P campaign the bubble's tail points away from Cath (270-300 x 165-180).
