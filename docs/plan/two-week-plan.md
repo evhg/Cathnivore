@@ -3073,7 +3073,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at D the field plate 200 px+, vehicles 36 px+ as their real sprites, Cath's face 40 px+, nothing under 12 px; at P the peek 150 px or less and clear of the next stop; hedgerow-map specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 325. [ ] Cathnivore: Cath presents the campaign at half length, not on a plinth
+## 325. [ ] Cathnivore: Cath presents the campaign at half length, not on a plinth *(lane B, in progress)*
 - **Why:** `plan1111b/cath-campaign-D` (680-815 x 455-750): Cath stands full length on a stone plinth beside the map (item 305's figure), her face about 25 px, apart from the map and her bubble (635-860 x 350-435); `cath-campaign-P` (305-370 x 60-225) a 60 px figure with an 18 px face; she narrates here and is the smallest face on the screen.
 - **Build:** at D Cath half-length leaning on the map's frame, a hand toward the next chapter's region, her pose and face per chapter from the shared set, the bubble hers; at P a half-length bust in the header beside her line; the small on-map token stays as the travel marker. (The full-length figure stays for Hedgerow's map and the site.)
 - **Accept:** her face 60 px+ at D and 40 px+ at P; the bubble's tail within 30 px of her mouth; the six chapters each a different `data-pose` or `data-expression`; no plinth; nothing new over the chapter list; campaign specs pass; shots P and D, light and dark.
