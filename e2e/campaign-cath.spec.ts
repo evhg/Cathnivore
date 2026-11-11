@@ -11,10 +11,12 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   await expect(fig).toBeVisible()
   const phone = page.viewportSize()!.width <= 600
   const art = (await page.locator('.cmp-header-cath').boundingBox())!
-  // Plan item 248: she stands at full height, head to boots, whole on the first screen: 240 px or more at D, beside
-  // the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
+  // Plan item 325: she narrates at half length (was full height, item 248), whole on the first screen: 240 px or more at
+  // D, beside the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
   expect(art.height).toBeGreaterThanOrEqual(phone ? 120 : 240)
-  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '20 20 360 870')
+  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '40 20 320 480')
+  // Each chapter has its own pose (CHAPTER_POSE): the figure names one of them.
+  await expect(fig).toHaveAttribute('data-pose', /^(point|wave|can|thinking|crossed|flag)$/)
   const vp = page.viewportSize()!
   expect(art.x).toBeGreaterThanOrEqual(0)
   expect(art.y).toBeGreaterThanOrEqual(0)

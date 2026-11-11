@@ -9,6 +9,7 @@ import { CHAPTER_HOMES, CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions 
 import { LANDMARKS } from '../content/campaignMapLayout'
 import { Landmark } from './Landmark'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
+import type { CathPoseId } from '../../shared/cath/cath'
 import { useState } from 'react'
 import { campaignLine } from '../content/campaignLines'
 
@@ -118,6 +119,15 @@ function Medallion({ n, state }: { n: number; state: 'done' | 'current' | 'locke
 // landmark art, `Landmark.tsx`) on hills in their region colours, at full ink; a locked chapter's is in pencil.
 // The regions winning it frees come first and stand largest.
 const VIG_W = 132
+/** Plan item 325: Cath's pose as she presents each chapter (with campaignLines' expressions, no two chapters alike). */
+const CHAPTER_POSE: Record<string, CathPoseId> = {
+  'fresh-meat': 'point',
+  'word-of-mouth': 'wave',
+  'growing-season': 'can',
+  'the-plan': 'thinking',
+  'friends-in-low-places': 'crossed',
+  kingsmarket: 'flag',
+}
 const VIG_H = 88
 function vignetteRegions(chapter: Chapter): RegionId[] {
   const homes = CHAPTER_HOMES[chapter.id] ?? []
@@ -346,34 +356,24 @@ export default function CampaignScreen({
   const say = campaignLine(pointed ?? next?.id, done === chapters.length)
   const wide = useMedia('(min-width: 1100px)')
   // Plan item 248: Cath hosts the map at full height, head to boots, with her line over her head. On a desktop she
-  // stands on a stone quay at the foot of the map's sea beside the island; on a phone she stands beside her line in the header.
+  // narrates at half length in the map's sea beside the island (item 325); on a phone she stands beside her line in the header.
   // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
   const host = (
-    <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'} data-host={wide ? 'map' : 'header'}>
+    <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'} data-host={wide ? 'map' : 'header'} data-pose={CHAPTER_POSE[pointed ?? next?.id ?? ''] ?? SCREEN_POSE['cathnivore:campaign']} data-expression={say.expression}>
       <p className="cmp-cath-line" aria-live="polite">
         {say.line}
       </p>
       <span className="cmp-host-stand">
+        {/* Plan item 325: she narrates the campaign at half length (her face the size of a narrator's), her pose
+            per chapter; the full figure stays for Hedgerow's map and the site. */}
         <CathArt
           className="cmp-header-cath"
-          framing="full"
-          pose={SCREEN_POSE['cathnivore:campaign']}
+          framing="half"
+          pose={CHAPTER_POSE[pointed ?? next?.id ?? ''] ?? SCREEN_POSE['cathnivore:campaign']}
           expression={say.expression}
           animate
           title="Cath"
         />
-        {wide && (
-          // Plan item 305: she stands on a stone quay built up from the map's foot (coping, ashlar courses, a bollard,
-          // the sea lapping its base), not a little jetty floating in open water.
-          <svg className="cmp-host-quay" viewBox="0 0 140 52" aria-hidden="true">
-            <path className="cmp-quay-face" d="M8 14 H132 L136 52 H4 Z" />
-            <path className="cmp-quay-joint" d="M6 27 H134 M5 40 H135 M40 14 V27 M88 14 V27 M22 27 V40 M64 27 V40 M110 27 V40 M44 40 V52 M92 40 V52" />
-            <path className="cmp-quay-top" d="M4 8 Q4 4 8 4 H132 Q136 4 136 8 V14 H4 Z" />
-            <ellipse className="cmp-quay-contact" cx="70" cy="8" rx="30" ry="3" />
-            <path className="cmp-quay-bollard" d="M114 4 V-6 Q114 -10 119 -10 Q124 -10 124 -6 V4 Z" />
-            <path className="cmp-quay-ripple" d="M-8 49 q6 -3 12 0 t12 0 M124 50 q6 -3 12 0 t12 0" />
-          </svg>
-        )}
       </span>
     </figure>
   )

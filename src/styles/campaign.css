@@ -71,8 +71,9 @@
 }
 .cmp-header-cath {
   display: block;
-  height: 168px;
-  aspect-ratio: 360 / 800;
+  /* Plan item 325: a half-length bust beside her line (face about 40 px) */
+  height: 150px;
+  aspect-ratio: 320 / 480;
 }
 .cmp-header-cath svg {
   display: block;
@@ -111,7 +112,7 @@
   .cmp-header-cath { height: 210px; }
 }
 
-/* The desktop host: a column in the map's sea, her line above her, a stone quay under her boots. */
+/* The desktop host: a column in the map's sea, her line above her. */
 @media (min-width: 1100px) {
   .campaign-screen > .cmp-map {
     display: grid;
@@ -143,22 +144,9 @@
     translate: -50% 0;
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
-  .cmp-map-host .cmp-header-cath { height: 260px; position: relative; }
-  .cmp-host-quay {
-    display: block;
-    width: 140px;
-    height: auto;
-    margin: -10px auto 0;
-    overflow: visible;
-  }
+  /* Plan item 325: half length, 300 px: her face about 70 px (the full figure on a quay read as a statue) */
+  .cmp-map-host .cmp-header-cath { height: 300px; position: relative; aspect-ratio: 320 / 480; }
 }
-/* Plan item 305: the quay under her boots on the desktop map: stone in the paper's own tones, never raw colours. */
-.cmp-quay-face { fill: color-mix(in srgb, var(--soil) 34%, var(--paper)); stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 1.2; stroke-linejoin: round; }
-.cmp-quay-joint { fill: none; stroke: color-mix(in srgb, var(--soil) 70%, var(--ink)); stroke-width: 0.9; opacity: 0.55; }
-.cmp-quay-top { fill: color-mix(in srgb, var(--soil) 18%, var(--paper)); stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 1.2; stroke-linejoin: round; }
-.cmp-quay-contact { fill: var(--ink); opacity: 0.22; }
-.cmp-quay-bollard { fill: color-mix(in srgb, var(--ink) 80%, var(--soil)); }
-.cmp-quay-ripple { fill: none; stroke: color-mix(in srgb, var(--surface) 80%, var(--sea)); stroke-width: 1.4; stroke-linecap: round; }
 
 .cmp-kicker {
   margin: 0;
