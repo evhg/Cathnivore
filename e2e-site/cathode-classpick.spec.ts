@@ -52,7 +52,8 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   await fresh(page, hasTouch)
   await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
-  await expect(page.locator('.cp-weapon-art .cp-prop-layer.is-face svg')).toHaveCount(1)
+  // Plan item 313: with the street up, the case table shows the class's gun lit (item 199's line art is the fallback).
+  await expect(page.locator('.cp-weapon-art.is-lit .cp-gun')).toHaveCount(1)
   const box = (await page.locator('.cp-attrs').boundingBox())!
   const ink = await page.evaluate(() => getComputedStyle(document.querySelector('.cp-attr dt')!).color)
   await page.addStyleTag({ content: '.cp-attrs { visibility: hidden !important; }' })
@@ -293,9 +294,48 @@ test('the class weapon lies on the armoury case table and changes with the class
     const w = (await prop.locator('.cp-prop').boundingBox())!.width
     expect(w, cls).toBeGreaterThanOrEqual(hasTouch ? 140 : 200)
   }
+  if ((await page.locator('.cp-weapon-art.is-lit').count()) > 0) {
+    // Plan item 313: the lit gun turns by stepping its reel's frames.
+    const gun = page.locator('.cp-gun')
+    const first = await gun.getAttribute('src')
+    await expect.poll(() => gun.getAttribute('src'), { timeout: 60_000 }).not.toBe(first)
+    return
+  }
   expect(await page.locator('.cp-prop-turn').evaluate((e) => getComputedStyle(e).animationName)).toBe('cp-prop-turn')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   expect(await page.locator('.cp-prop-turn').evaluate((e) => getComputedStyle(e).animationName)).toBe('none')
+})
+
+// Plan item 313: the class's own gun mesh, lit on the case table: a bright specular highlight off the key, and its
+// rim in the class's colour (the Gunslinger's gold).
+test('the class weapon is lit in 3D with a specular highlight', async ({ page, hasTouch }) => {
+  test.setTimeout(240_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=gunslinger&rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const gun = page.locator('.cp-weapon-art.is-lit .cp-gun')
+  await expect(gun).toHaveCount(1)
+  const m = await gun.evaluate(async (img: HTMLImageElement) => {
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.naturalWidth
+    c.height = img.naturalHeight
+    const x = c.getContext('2d')!
+    x.drawImage(img, 0, 0)
+    const d = x.getImageData(0, 0, c.width, c.height).data
+    let solid = 0
+    let bright = 0
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3]! < 200) continue
+      solid++
+      if (0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]! > 200) bright++
+    }
+    return { w: c.width, h: c.height, solid, bright }
+  })
+  const s = JSON.stringify(m)
+  expect(m.w, s).toBeGreaterThanOrEqual(600)
+  expect(m.solid / (m.w * m.h), s).toBeGreaterThan(0.05)
+  expect(m.bright, s).toBeGreaterThan(20)
 })
 
 // Plan item 233: at D the names are a lit rack: each row carries its weapon in neon outline (48 px or more) over a

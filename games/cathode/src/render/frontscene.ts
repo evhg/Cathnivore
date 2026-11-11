@@ -10,6 +10,7 @@
 // person eye at the job's start. Then `handover` gives the world to the game session (Cath and the scene lights
 // leave it; the street, its build and its shaders stay warm), so no second load runs for the market.
 
+import { gunReel, type GunReel } from "./gunportrait";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
 import { createWorld } from "./world";
@@ -96,6 +97,8 @@ export interface FrontScene {
   /** Takes Cath and the scene's lights out and gives the world to the game. The scene stops for good. */
   handover(): World;
   dispose(): void;
+  /** Plan item 313: the class pick's weapon, lit by this renderer in the class's key colour, as a turntable reel. */
+  gunReel(weaponCls: string, cls: string, still: boolean): GunReel | null;
   readonly stats: { frames: number; drawCalls: number; triangles: number; cathTriangles: number; ms: number };
 }
 
@@ -1096,6 +1099,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     dispose() {
       scene.handover();
       world.dispose();
+    },
+    gunReel(weaponCls, cls, still) {
+      return gunReel(world.renderer, weaponCls, CLASS_KEY[cls] ?? [1, 1, 1], still);
     },
   };
   return scene;

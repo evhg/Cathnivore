@@ -28,6 +28,11 @@ export interface ClassPickHooks {
   onThump?(): void;
   /** Screenshots: no count-up, no fades. */
   still?: boolean;
+  /**
+   * Plan item 313: the class weapon lit in 3D, as a turntable of frames shot by the street's renderer (it fills as
+   * it is shot). null (or no hook) keeps item 199's extruded line-art prop.
+   */
+  gunReel?(weaponCls: string, cls: ClassId, still: boolean): { readonly total: number; readonly frames: string[] } | null;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -36,6 +41,8 @@ const ATTR_MAX = 40;
 export const HOLD_MS = 600;
 /** The armoury prop's depth: copies of the profile stacked front to back (plan item 199). */
 const PROP_LAYERS = 6;
+/** Plan item 313: each turntable frame's hold (48 frames: one slow sway each way in about 6.7 s). */
+const REEL_MS = 140;
 
 /**
  * Opens the class pick over `host` and calls `onPick` once with the chosen class, after the exit
@@ -215,6 +222,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   void document.fonts?.ready.then(() => fitName());
 
   let countRaf = 0;
+  let reelTimer = 0;
   function renderDetail(): void {
     const cls = selected;
     const def = CLASSES[cls];
@@ -275,12 +283,34 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       el("span", "cp-case-lamp", art).setAttribute("aria-hidden", "true");
       const prop = el("span", "cp-prop", art);
       prop.setAttribute("aria-hidden", "true");
-      const turn = el("span", "cp-prop-turn", prop);
-      const svg = weaponArtSvg(w.cls);
-      for (let i = 0; i < PROP_LAYERS; i++) {
-        const layer = el("span", i === PROP_LAYERS - 1 ? "cp-prop-layer is-face" : "cp-prop-layer", turn);
-        layer.style.setProperty("--z", String(i - (PROP_LAYERS - 1) / 2));
-        layer.innerHTML = svg;
+      clearInterval(reelTimer);
+      const reel = hooks.gunReel?.(w.cls, cls, still) ?? null;
+      if (reel && reel.frames.length > 0) {
+        // Plan item 313: the class's own gun mesh, lit (a warm key, a rim in the class's colour), turning slowly on
+        // the case table; the table's reflection is its wet top. A still three-quarter under reduced motion.
+        art.classList.add("is-lit");
+        const img = el("img", "cp-gun", prop) as HTMLImageElement;
+        img.alt = "";
+        img.decoding = "sync";
+        img.src = reel.frames[0]!;
+        let k = 0;
+        if (!still && reel.total > 1) {
+          reelTimer = window.setInterval(() => {
+            // Hold on the last shot frame while the reel is still filling; loop once it's whole.
+            const next = k + 1 >= reel.total ? 0 : k + 1;
+            if (next >= reel.frames.length) return;
+            k = next;
+            img.src = reel.frames[k]!;
+          }, REEL_MS);
+        }
+      } else {
+        const turn = el("span", "cp-prop-turn", prop);
+        const svg = weaponArtSvg(w.cls);
+        for (let i = 0; i < PROP_LAYERS; i++) {
+          const layer = el("span", i === PROP_LAYERS - 1 ? "cp-prop-layer is-face" : "cp-prop-layer", turn);
+          layer.style.setProperty("--z", String(i - (PROP_LAYERS - 1) / 2));
+          layer.innerHTML = svg;
+        }
       }
       if (still) art.classList.add("is-still");
       el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);
@@ -429,6 +459,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   addEventListener("blur", onBlur);
   function cleanup(): void {
     cancelAnimationFrame(countRaf);
+    clearInterval(reelTimer);
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);

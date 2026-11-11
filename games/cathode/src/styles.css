@@ -2872,6 +2872,8 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   to { opacity: 1; transform: none; }
 }
 @keyframes cp-prop-fade { from { opacity: 0; } to { opacity: 1; } }
+/* Plan item 313: the class's own gun mesh, lit, as turntable frames (render/gunportrait.ts) in place of the layers. */
+.cp-gun { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
 .cp-case.is-still .cp-prop { animation: none; }
 .cp-case.is-still .cp-prop-turn { animation: none; transform: rotateX(10deg) rotateY(-24deg); }
 @media (prefers-reduced-motion: reduce) {
