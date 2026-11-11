@@ -142,7 +142,7 @@
     --tile-rim: #dcb47c;
     --tile-bevel: rgb(255 236 200 / .22);
     --tile-shadow: rgb(0 0 0 / .5);
-    --dry-meadow: #4f5236;
+    --dry-meadow: #4a4c31; /* plan item 323: 10%+ off a wet tile (was #4f5236, 9%) */
     --dry-field: #6a5233;
     --furrow: #3e2f20;
     --clover: #6f8a4c;

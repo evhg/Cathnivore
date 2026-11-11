@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-11T17:21Z
-
 
 
 
@@ -3063,7 +3061,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every tower 60 px+ tall at D and proud of its plot; a contact shadow 15%+ darker than the plot under each; each tower id's idle draws differently over two frames (a recording-canvas test like hedgerow-sprites-all); reduced motion still; tray, field, critique specs pass; key art re-shot; shots of a sandbox field with every tower at P and D.
 - **Size:** 2
 
-## 323. [ ] Runnel: tiles as small worked gardens, a wooden sluice at the hub *(lane B, in progress)* *(slice 1, 2026-11-11 16:35 lane B: no grey hub ring left: the hub's rim is a ring of wooden planks (`--stake`, the dashes' gaps its seams), with a sluice gate board on two posts across it, square to the tile's first channel, turning with the piece. All 110 runnel site specs pass at P and D (including runnel-tiles' 3:1 channel check); key art not affected (board.ts isn't a source); shots e2e/screenshots/r323, scratchpad r323-D/-P. Left: three or more interior details per tile type at P, the watered tile 10%+ apart in luminance, dark and drizzle shots)* *(16:45, a note for the next slice: on a fresh visit the board is the lesson, and its only wet cell is the spring, so wet-vs-dry luminance needs a board with watered field tiles, e.g. after the lesson-hand spec's taps. By the tokens, a wet tile (`--wet` #b8d98c light, #3f5b2f dark) is far from a dry one (`--dry-meadow` #4f5236 dark), but measure it)*
+## 323. [ ] Runnel: tiles as small worked gardens, a wooden sluice at the hub *(lane B, in progress)* *(slice 1, 2026-11-11 16:35 lane B: no grey hub ring left: the hub's rim is a ring of wooden planks (`--stake`, the dashes' gaps its seams), with a sluice gate board on two posts across it, square to the tile's first channel, turning with the piece. All 110 runnel site specs pass at P and D (including runnel-tiles' 3:1 channel check); key art not affected (board.ts isn't a source); shots e2e/screenshots/r323, scratchpad r323-D/-P. Left: three or more interior details per tile type at P, the watered tile 10%+ apart in luminance, dark and drizzle shots)* *(16:45, a note for the next slice: on a fresh visit the board is the lesson, and its only wet cell is the spring, so wet-vs-dry luminance needs a board with watered field tiles, e.g. after the lesson-hand spec's taps. By the tokens, a wet tile (`--wet` #b8d98c light, #3f5b2f dark) is far from a dry one (`--dry-meadow` #4f5236 dark), but measure it)* *(slice 2, 2026-11-11 17:45 lane B, measured on a `?shotsolve` board from the tiles' computed fills (relative luminance): in light, a wet meadow or fallow is 0.58 against a dry 0.74 meadow or 0.69 fallow (15%+ apart, greener), and a wet field is 0.17 against a dry 0.65. In dark, a wet field is 0.38 against 0.09, but a wet meadow (0.087) sat only 9% off a dry one (0.080). The dark dry meadow is now #4a4c31 (0.069, 27% apart; was #4f5236); a lighter wet tile instead would drop the night wet channel to 2.7:1 (runnel-contrast). runnel-contrast and ui-css-lint (18), runnel-tiles and greened pass. Left: three interior details per tile type at P, drizzle shots)*
 - **Why:** `plan1111b/runnel-D` (900-1215 x 330-720): inside the carved rims each tile is mostly flat buff with faint hatching, the channel a plain bar, every hub the same grey washer ring (990-1020 x 415-445), hardware rather than countryside; `runnel-P` (185-305 x 340-590) the grey rings the loudest thing on each tile.
 - **Build:** each tile's inside painted by its ground (crop rows running with the channel, wildflower tufts, field stones, a dry crack pattern that darkens and greens as the water arrives); the hub a small wooden sluice gate or a mossy stone that turns with the tile; item 30's 3:1 channel rule kept.
 - **Accept:** no grey hub ring left; three or more interior details per tile type visible at P; a watered tile 10%+ apart in mean luminance from a dry one and turned toward green; channels 3:1+ (the existing test); runnel site specs pass; key art re-shot; shots P and D, lesson and daily, light, dark and drizzle.
@@ -3089,4 +3087,63 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** D l21 'Lifestyle influencer' label over the water 20 px from its lane (172-300 x 270-287); the margin's cattail clumps on a visible grid (15-290 x 80-880); P l34 'Box Lorry' over the last lorry's cab (50-120 x 287-305); P menu Hollowell blocks cut by the right edge against 'Beach Clean' and 'Sea Fret' (345-390 x 265-440); D 3D l21 red boats cut by the left edge (0-50 x 300-385).
   - **NIGHT SHIFT:** D pick 'HOLLOWELL' sign cut by the top (430-860 x 0-45); D title the umbrella off the top, its tip on the title's last 'T' (680-700 x 110-180); P title The List's strip across Cath's hips, the case line loose over the umbrella (15-375 x 450-810); P pick figure soft (measure).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 2
+
+## 327. [ ] Cathnivore: the desktop title menu as stall signage, not form buttons
+- **Why:** `plan1111c/cath-title-D` (105-500 x 440-765): the menu is a chalkboard holding three rounded white form buttons (125-478 x 485-545, 558-618, 632-692) and three small white button pills (140-465 x 712-757). Meanwhile `cath-title-P` (20-375 x 540-700) already has a wooden Campaign sign and hanging price tags. Behind the menu, 0-860 x 280-440 is empty cream wall apart from the hanging sign.
+- **Build:** use the phone's language at D. Campaign becomes a carved wooden sign, and Quick Game and Daily Market become string-hung price tags with a punched hole. How to Play, Settings and Credits become chalk words on the board's foot. The chalkboard becomes an A-board standing on the counter, with a crate and the jam jar at its feet. Add a 120 ms press-in on each control.
+- **Accept:** no white rounded rectangle is left in the menu. Every control has a 44 px+ hit area, text contrast ≥ 4.5:1 and keyboard focus rings. Title and tutorial specs pass. Shots P and D, light and dark.
+- **Size:** 1
+
+## 328. [ ] Cathnivore: the Quick Game producers as character cards
+- **Why:** `plan1111c/cath-setup-D` (440-1090 x 275-555): the four producers are white form cards: a 100 px portrait ring, then four lines of 13 px grey text. A picked card (Mara, Tomas) differs only by its border colour. Cath (1135-1290 x 490-775) is cut at the thighs by the Start button (1095-1295 x 775-850).
+- **Build:** each producer gets a half-length portrait on a tinted card in their colour, with the name in Fraunces and the power as an ink stamp with its icon. A picked card lifts and gets a 'Picked' ribbon over 200 ms; item 326 set the lift at 10 px, keep that or less. The recommended pair gets Cath's pin. Cath stands fully clear of Start, or the button moves to sit under the cards.
+- **Accept:** a picked and an unpicked card differ by more than the border (lift, ribbon). Power text ≥ 14 px at 4.5:1. Cath's box does not intersect Start. Setup specs pass. Shots P and D, light and dark.
+- **Size:** 2
+
+## 329. [ ] Runnel: Bea's garden as the payoff, and Cath standing in the valley
+- **Why:** `plan1111c/runnel-D` (1155-1390 x 760-840): 'Bea's garden', where the water is going, is a brown plank trough behind a fence. Cath (440-600 x 570-860) floats behind a grey block wall (390-615 x 790-860) set in the middle of the fields. `runnel-P` has the same problem: the garden (220-380 x 705-760) and the wall (10-125 x 740-770).
+- **Build:** Bea's garden as an illustrated plot: raised beds, sunflowers, a bean wigwam, a scarecrow Bea painted, and Bea (6) herself with a watering can. It wilts while the valley is dry and blooms in a 600-900 ms stagger when the daily is solved; this is Bea's own garden, item 308's valley green-over doesn't touch it. Cath stands on a garden path or a footbridge with a ground shadow instead of behind a wall.
+- **Accept:** the garden is ≥ 230 x 120 px at D and ≥ 150 x 80 px at P. Its wilted and bloomed states are visibly different in shots. Under reduced motion it fades only. Runnel specs and the keyart freshness test pass (re-shoot the keyart). Shots P and D, light and dark.
+- **Size:** 2
+
+## 330. [ ] Hedgerow 3D: ponds and wet plots as living water
+- **Why:** `plan1111c/hedge-l21-3d-D` (300-560 x 380-560, 630-760 x 715-810, 740-1060 x 560-625): the ponds are flat pale-blue slabs with hard edges, no bank, ripple or reflection, next to soil plots that are modelled. `hedge-l21-3d-P` (255-390 x 500-680) shows the same slabs, with grey cubes scattered over them.
+- **Build:** a cheap water material (two scrolling procedural normal layers, a fresnel tint toward the sky colour, a foam line where water meets the bank), a sunken bank and reeds on the edges, and a Duck Pond tower with ducks bobbing.
+- **Accept:** each pond shows a visible ripple and edge foam, with no single flat fill over 60% of its area. Draw calls stay ≤ the level's current count + 2. `hedgerow-3dframe` and the `?2d` specs pass. Shots P and D.
+- **Size:** 2
+
+## 331. [ ] NIGHT SHIFT: the title's left half dressed, the menu on glass
+- **Why:** `plan1111c/ns-title-D` (0-700 x 230-900): the left half is a near-black wall; the menu sits in an opaque black box (30-335 x 275-555). The Hollowell sign is cut to 'HOL' by the top edge (1110-1440 x 0-40).
+- **Build:** frame the full Hollowell billboard on the left. Add wet-kerb reflections of LUNA and the billboard under the menu, steam from a grate and a parked car's tail-lights in depth. Put the menu on a rain-streaked shop window (frosted, 40% see-through) instead of a black box.
+- **Accept:** the whole billboard word is in frame at P and D. The left half's mean luminance is ≥ 1.5x the current shot. Menu text contrast ≥ 7:1. `cathode-perf` is within budget when run alone. Cathode specs pass. Shots P and D.
+- **Size:** 2
+
+## 332. [ ] /games/: each game card as its own poster, not a screenshot with the same Cath pasted in
+- **Why:** `plan1111c/games-D` (110-1330 x 490-690): three cards are game screenshots with the same Cath bust in the corner (340-400, 650-705, 955-1015 x 585-690). NIGHT SHIFT's frame (1040-1330 x 490-690) is about 75% black. `games-P` (20-370 x 625-740) has the same problem.
+- **Build:** a poster per game from its `?keyart` frame, each with a different Cath: market trench for Cathnivore, watering can for Runnel, a Hedgerow flag for Hedgerow, lit noir trench for NIGHT SHIFT. The game's logotype in its own display face goes across the art. On hover, the poster's two layers move apart slightly (parallax), and it fades only under reduced motion.
+- **Accept:** no two cards share a Cath pose. Each poster shows ≥ 40% mid-tone pixels. Text over the art has 4.5:1 contrast. `e2e:site` and the keyart freshness tests pass. Shots P and D.
+- **Size:** 2
+
+## 333. [ ] The bugs from the 2026-11-11 17:30 critique, fixed as one batch
+- **Build:** (check each first, measured in the page; the critique measured by eye from the shots `e2e/screenshots/plan1111c`)
+  - **Cathnivore:**
+    - `cath-game-D`: Supply 1 Outlet (1085-1218 x 690-860) covers Injunction's first letter ('njunction', 1200-1330 x 715-880), so item 312's rule is broken again.
+    - `cath-game-P`: the '8 more ›' pill (280-355 x 765-790) overlaps the Injunction card and the nav bar.
+    - `cath-campaign-D`: 'Back to Title' (655-855 x 813-857) is a plain form button, and the 'Shingle Bay' label (415-500 x 565-610) sits across the route dots.
+    - `cath-setup-D`: the 'Two at the table' tab (330-495 x 115-195) has a slanted right edge that the 'You and an AI' tab doesn't have.
+  - **Runnel:** `runnel-D` the legend rows (55-345 x 385-555) are grey-ruled form rows; ink them like the step tiles.
+  - **Hedgerow:**
+    - `hedge-l34-2d-D`: the ford (655-855 x 112-165) reads as a navy glass tank, and `-P` (258-375 x 152-185) the same.
+    - `hedge-l34-2d-P`: the '283' depot (5-55 x 615-660) is clipped at the left edge.
+    - `hedge-l21-2d-P`: the 'Lifestyle influencer' tag (55-185 x 213-233) covers plots.
+  - **NIGHT SHIFT:**
+    - `ns-play-D`: the weapon panel (1030-1340 x 260-350) is still a flat pink-outline rifle and the list icons (355-470 x 185-550) are still flat red stamps, though item 313 is marked done: check whether the shot catches the fallback.
+    - `ns-play-D`: the HOLLOWELL sign (420-800 x 0-45) is cut by the top edge.
+    - `ns-title-P`: the umbrella (60-385 x 50-210) sits behind the title and lowers its contrast.
+  - **Site:**
+    - `portfolio-P`: Cath (235-375 x 135-385) hides the Runnel frame and its label (265-330 x 140-160).
+    - `portfolio-D`: the Runnel frame covers Cathnivore's right third (1105-1190 x 195-310), and Hedgerow covers NIGHT SHIFT's right half (1095-1205 x 390-505).
+    - `portfolio-D`: Cath's counter (695-945 x 650-700) floats in the dark with nothing under it (item 318 slice 2 added a pool and a plinth; check it renders).
+- **Accept:** each fix is shot at P and D, light and dark. No two labels or cards intersect, measured from the page's boxes. ui-css-lint and the specs for each game touched pass.
 - **Size:** 2
