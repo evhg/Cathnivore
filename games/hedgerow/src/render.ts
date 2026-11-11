@@ -43,6 +43,7 @@ import { gateQueue, type GateQueue } from "./gatequeue";
 import { FarmFolk, type Folk } from "./farmfolk";
 import { drawFolk } from "./folkart";
 import {
+
   INK,
   drawEnemy,
   drawPropIcon,
@@ -57,6 +58,9 @@ import {
   star,
   drawThornPile,
 } from "./sprites";
+
+/** Plan item 322: a tower on the field is drawn this much over its cell's size. */
+const FIELD_TOWER = 1.2;
 
 interface Shot {
   kind: TowerKind;
@@ -827,7 +831,8 @@ export class Renderer {
             },
             X(tw.col + 0.5),
             Y(tw.row + 0.5),
-            s,
+            // Plan item 322: on the field a tower stands 1.2x its cell, so it rises proud over the plot's edge
+            s * FIELD_TOWER,
             t + tw.id * 0.37,
           );
           if (tw.crown !== undefined) {

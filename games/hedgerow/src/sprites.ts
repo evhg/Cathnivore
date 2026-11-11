@@ -73,6 +73,27 @@ export function towerTier(look: Pick<TowerLook, "tier" | "path">): 1 | 2 | 3 {
 /** How much bigger each tier stands: a seedling, a working tower, a landmark. */
 export const TIER_SCALE = [1, 1.07, 1.15] as const;
 
+/** Plan item 322: a low mound of turned earth under a tier-1 tower, darker than any plot, with a lit top edge. */
+function drawFooting(ctx: C, x: number, base: number, s: number): void {
+  const w = s * 0.34;
+  const h = s * 0.1;
+  ctx.save();
+  ctx.fillStyle = "#4a3523";
+  ctx.beginPath();
+  ctx.ellipse(x, base + s * 0.02, w, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#6e4f33";
+  ctx.beginPath();
+  ctx.ellipse(x, base - s * 0.005, w * 0.92, h * 0.78, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,226,170,0.35)";
+  ctx.lineWidth = Math.max(1, s * 0.016);
+  ctx.beginPath();
+  ctx.ellipse(x, base - s * 0.005, w * 0.92, h * 0.78, 0, Math.PI * 1.08, Math.PI * 1.92);
+  ctx.stroke();
+  ctx.restore();
+}
+
 /**
  * Plan item 19: what a tower stands on says its tier at a glance. Tier 1 stands on the bed; tier 2 on a plank deck;
  * tier 3 on a dressed stone drum with a gold band.
@@ -150,7 +171,11 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   const base = y + s * 0.3;
   const tier = towerTier(look);
   const k = TIER_SCALE[tier - 1] ?? 1;
-  groundShadow(ctx, x, base, s * (tier === 1 ? 0.36 : 0.46), s * (tier === 1 ? 0.11 : 0.15));
+  // Plan item 322: a contact shadow cast away from the scene's light (top left), dark enough to read on any plot...
+  groundShadow(ctx, x + s * 0.06, base + s * 0.02, s * (tier === 1 ? 0.4 : 0.48), s * (tier === 1 ? 0.13 : 0.16), 0.36);
+  // ...and a tier-1 tower stands on a footing of turned earth, so it reads as set on the plot, not printed on it
+  // (a pond is the ground itself).
+  if (tier === 1 && look.kind !== "pond") drawFooting(ctx, x, base, s);
   drawPlinth(ctx, tier, x, base, s);
   // Idle: a slow breath. Fire: a quick squash and stretch as it lets go.
   const kick = !look.still && look.fired < 0.15 ? Math.sin((look.fired / 0.15) * Math.PI) : 0;
