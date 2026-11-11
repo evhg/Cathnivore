@@ -664,8 +664,21 @@ button {
 }
 .hub-basin {
   fill: var(--bank-shade);
-  stroke: var(--basin);
+  /* Plan item 323: a rim of wooden planks, the dashes' gaps its dark seams (was a grey stone washer) */
+  stroke: var(--stake);
   stroke-width: 3;
+  stroke-dasharray: 4.4 0.9;
+}
+/* ...and the sluice's gate board on its two posts, over the water */
+.sluice-board {
+  fill: var(--stake-hi);
+  stroke: var(--stake);
+  stroke-width: 0.8;
+}
+.sluice-post {
+  fill: var(--stake);
+  stroke: var(--groove);
+  stroke-width: 0.6;
 }
 .hub-bed {
   fill: var(--groove-bed);

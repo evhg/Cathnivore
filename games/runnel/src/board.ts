@@ -326,6 +326,13 @@ export class Board {
     el('circle', { r: S * 0.155, class: 'hub-basin' }, grooves)
     el('circle', { r: S * 0.1, class: 'hub-bed' }, grooves)
     el('circle', { r: S * 0.1, class: 'hub-water' }, waters)
+    // Plan item 323: the hub is a small wooden sluice, not a grey washer: a plank rim (CSS), and a gate board on two
+    // posts across it, square to the first channel, turning with the tile.
+    const first = view.spokeDirs[0] ?? 0
+    const gate = el('g', { class: 'sluice', transform: `rotate(${first * 60 + 90})` }, piece)
+    const gw = S * 0.17
+    el('rect', { x: -gw, y: -1.6, width: gw * 2, height: 3.2, rx: 0.8, class: 'sluice-board' }, gate)
+    for (const sx of [-gw, gw]) el('circle', { cx: sx, cy: 0, r: 2.1, class: 'sluice-post' }, gate)
 
     if (cell.bridge) this.drawBridge(piece)
     if (cell.kind === 'spring') this.drawSpring(root)
