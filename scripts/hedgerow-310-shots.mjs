@@ -1,5 +1,5 @@
 // Plan item 310: Hedgerow l21 in 3D at D and P (DPR 3) with a crop round Cath. A dist-site preview on :4190.
-//   OUT=<dir> node scripts/hedgerow-310-shots.mjs
+//   OUT=<dir> [POSE=point|wave] node scripts/hedgerow-310-shots.mjs  (POSE waits for that pose before the shot)
 import { chromium } from '@playwright/test'
 const out = process.env.OUT, level = 21
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'] })
@@ -16,6 +16,7 @@ for (const [n, w, h] of [['D', 1440, 900], ['P', 390, 844]]) {
   if (n === 'P') { await page.getByRole('button', { name: /whole field/i }).click().catch(() => {}); await page.waitForTimeout(8000) }
   let box = await page.evaluate(() => window.hedgerow3d.cathScreenBox?.() ?? null)
   console.log(n, JSON.stringify(box))
+  if (process.env.POSE) await page.locator('#stage[data-cath-pose="' + process.env.POSE + '"]').waitFor({ timeout: 60000 }).catch(() => console.log('no pose'))
   await page.screenshot({ path: `${out}/${n}.png`, timeout: 120000 })
   const fixed = null
   if (fixed) await page.screenshot({ path: `${out}/${n}-cath.png`, clip: fixed, timeout: 120000 })

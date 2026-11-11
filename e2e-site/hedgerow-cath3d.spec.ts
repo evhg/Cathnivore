@@ -35,6 +35,17 @@ test('she points as she gives a hint', async ({ page }) => {
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 60_000 })
 })
 
+// Plan item 310: between rounds, while her line advises a plot, she points out over the field again every few seconds.
+test('between rounds she points again while her line advises a plot', async ({ page }) => {
+  test.setTimeout(240_000)
+  await page.goto('/hedgerow/?sandbox=1&level=21')
+  await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 90_000 })
+  const stage = page.locator('#stage')
+  await expect(stage).toHaveAttribute('data-cath-pose', 'point', { timeout: 60_000 })
+  await expect(stage).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 60_000 })
+  await expect(stage).toHaveAttribute('data-cath-pose', 'point', { timeout: 90_000 })
+})
+
 // Plan item 255: the 3D people drawn to the 2D field's standard: Cath inked on her largest parts, and every
 // farmfolk mesh toon-shaded (their ink is baked into the same geometry).
 test('Cath and the farmfolk are inked and toon-shaded in 3D', async ({ page }) => {

@@ -158,6 +158,9 @@ const SHOT_COLOURS: Record<string, string> = {
   silo: "#ffcf5a",
 };
 
+/** Plan item 310: her between-rounds gesture comes every HERO_IDLE_CYCLE seconds and lasts HERO_IDLE_GESTURE. */
+const HERO_IDLE_CYCLE = 7;
+const HERO_IDLE_GESTURE = 2.2;
 /** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
 export const CATH_3D_SCALE = 1.9;
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
@@ -243,7 +246,7 @@ export class Renderer3D {
   private heroPoint = 9;
   private towersSeen = -1;
   /** What her body says right now (read by the sandbox e2e). */
-  heroMood: "rest" | "cheer" | "worried" | "plant" | "point" = "rest";
+  heroMood: "rest" | "cheer" | "worried" | "plant" | "point" | "wave" = "rest";
 
   /** Plan item 208: she has just given a hint: she points out over the field with her free hand. */
   cathPoints(): void {
@@ -1948,7 +1951,26 @@ export class Renderer3D {
     const pointAge = this.heroPoint;
     const point = cheer > 0 || worry > 0 || plant > 0 ? 0 : pointAge < 0.25 ? ease(pointAge / 0.25) : pointAge < 1.9 ? 1 : pointAge < 2.3 ? 1 - ease((pointAge - 1.9) / 0.4) : 0;
     if (point > 0) pose = mix(pose, [pose[0], pose[1], pose[2], -2.05, 0.1, -0.04, -0.6], point);
-    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : point > 0.5 ? "point" : "rest";
+    // Plan item 310: between rounds her free hand talks. Every few seconds she points out over the field again while
+    // her line advises a plot (its ring glows); with nothing to advise she gives a little wave. Never mid-round, mid-swing,
+    // mid-throw, on the move or under reduced motion.
+    let gesture = 0;
+    let waving = false;
+    // On the render clock (frame dt can be clamped or step back on a slow device).
+    const idleAt = (((t % HERO_IDLE_CYCLE) + HERO_IDLE_CYCLE) % HERO_IDLE_CYCLE) - (HERO_IDLE_CYCLE - HERO_IDLE_GESTURE);
+    if (game.phase === "build" && !walking && !this.reducedMotion && cheer + worry + plant + point === 0 && s >= 0.45 && this.heroPie >= 0.5 && idleAt >= 0) {
+      gesture = idleAt < 0.3 ? ease(idleAt / 0.3) : idleAt < HERO_IDLE_GESTURE - 0.4 ? 1 : 1 - ease((idleAt - (HERO_IDLE_GESTURE - 0.4)) / 0.4);
+      if (this.coach) {
+        // Item 208's hint point, the hand beating gently. Turning her toward the plot was tried: the pointing arm is
+        // on her far side, so toward a plot near the lens it hid behind her.
+        pose = mix(pose, [pose[0], pose[1], pose[2], -2.05 + Math.sin(t * 5) * 0.08, 0.1, -0.04, -0.6], gesture);
+      } else {
+        waving = true;
+        pose = mix(pose, [pose[0], pose[1], pose[2], -2.75, 0.35 + Math.sin(t * 9) * 0.35, 0, -0.2], gesture);
+      }
+    }
+    const idle = gesture > 0.5 ? (waving ? "wave" : "point") : null;
+    this.heroMood = cheer > 0.5 ? "cheer" : worry > 0.5 ? "worried" : plant > 0.5 ? "plant" : point > 0.5 ? "point" : (idle ?? "rest");
     // The free hand throws a pie overarm: back, over and through. She twists into it, which brings her
     // throwing arm (on her far side) round where it can be seen.
     const p = this.heroPie;
