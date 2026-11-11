@@ -3672,11 +3672,12 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
   .setup .setup-table .producer-card {
     gap: 4px; padding: 10px 10px 12px; border: 1.5px solid var(--rule); border-top: 5px solid var(--pc); border-radius: 12px;
     background: color-mix(in srgb, var(--paper-hi) 94%, transparent); box-shadow: 0 3px 6px color-mix(in srgb, var(--ink) 10%, transparent);
-    transform: translateY(-8px); transition: transform 260ms var(--ease-settle, ease), box-shadow 260ms var(--ease-settle, ease);
+    transform: translateY(-4px); transition: transform 260ms var(--ease-settle, ease), box-shadow 260ms var(--ease-settle, ease);
   }
+  /* Plan item 326: a pulled-in chair sits 10 px lower than the rest (was 22, which read as a misaligned row). */
   .setup .setup-table .producer-card[data-seat] {
     border-color: var(--pc); background: color-mix(in srgb, var(--pc) 12%, var(--paper-hi));
-    transform: translateY(14px); box-shadow: 0 0 0 2px var(--pc), 0 10px 16px color-mix(in srgb, var(--ink) 20%, transparent);
+    transform: translateY(6px); box-shadow: 0 0 0 2px var(--pc), 0 10px 16px color-mix(in srgb, var(--ink) 20%, transparent);
   }
   .setup .setup-table .producer-card .pc-pick, .setup .setup-table .producer-card .recommended-badge { display: none; }
   .setup .setup-table .pc-portrait svg { width: 100px; height: 120px; }
