@@ -209,6 +209,8 @@ export class Renderer3D {
   private postRing: THREE.Mesh;
   /** A halo on Cath while she's picked up. */
   private heroHalo: THREE.Mesh;
+  /** Plan item 297: the plot Cath's coaching points at, a glowing ring (with the advised tower's ghost). */
+  private coachRing: THREE.Mesh;
   private ghost: THREE.Group | null = null;
   private ghostKey = "";
   private bossBar: HTMLElement;
@@ -262,6 +264,8 @@ export class Renderer3D {
     boss: new THREE.MeshBasicMaterial({ color: "#ff3b30", depthTest: false }),
   };
   selected: { col: number; row: number } | null = null;
+  /** Plan item 297: the plot Cath's coaching points at, and the tower she advises there (null when none). */
+  coach: { col: number; row: number; kind: TowerKind } | null = null;
   cursor: { col: number; row: number } | null = null;
   heroSelected = false;
   /** While Cath is picked up: where she'd stand if put down here. */
@@ -351,7 +355,13 @@ export class Renderer3D {
     );
     this.heroHalo.rotation.x = -Math.PI / 2;
     this.heroHalo.visible = false;
-    this.scene.add(this.selection, this.rangeRing, this.aimDisc, this.postRing, this.heroHalo);
+    this.coachRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.4, 0.48, 48),
+      new THREE.MeshBasicMaterial({ color: "#ffe9a0", transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide }),
+    );
+    this.coachRing.rotation.x = -Math.PI / 2;
+    this.coachRing.visible = false;
+    this.scene.add(this.selection, this.rangeRing, this.aimDisc, this.postRing, this.heroHalo, this.coachRing);
 
     // Boss bar: HTML over the canvas.
     this.bossBar = document.createElement("div");
@@ -2037,7 +2047,18 @@ export class Renderer3D {
       }
       at = this.selected;
     }
-    this.rangeRing.visible = range > 0 && !!at;
+    // Plan item 297: with nothing picked, the plot her line means glows, the advised tower standing there as a ghost.
+    const coach = !this.selected && game.phase === "build" ? this.coach : null;
+    this.coachRing.visible = !!coach;
+    if (coach) {
+      const pulse = this.reducedMotion ? 0.5 : (Math.sin(t * 4) + 1) / 2;
+      this.coachRing.position.set(coach.col + 0.5, this.height(coach.col + 0.5, coach.row + 0.5) + 0.05, coach.row + 0.5);
+      this.coachRing.scale.setScalar(1 + pulse * 0.06);
+      (this.coachRing.material as THREE.MeshBasicMaterial).opacity = 0.7 + pulse * 0.3;
+      ghostKind = coach.kind;
+      at = coach;
+    }
+    this.rangeRing.visible = range > 0 && !!at && !coach;
     if (this.rangeRing.visible && at) {
       const y = this.height(at.col + 0.5, at.row + 0.5);
       this.rangeRing.position.set(at.col + 0.5, y + 0.04, at.row + 0.5);
