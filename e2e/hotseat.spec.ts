@@ -14,8 +14,14 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   await page.getByRole('button', { name: 'Start' }).click()
   await expect(page.locator('.active-producer')).toBeVisible()
 
+  // Each graft waits until the action has landed (the producer line changes, or the hand-off screen shows) before
+  // the next: under the release gates' load a quick second click could land while the first was still resolving.
   async function graft() {
+    const before = await page.locator('.active-producer').innerText()
     await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+    await expect
+      .poll(async () => (await page.getByText('Pass the device').isVisible()) || (await page.locator('.active-producer').innerText()) !== before)
+      .toBe(true)
   }
 
   // Undo: take one action, confirm it changed state, undo it, confirm it's back.
