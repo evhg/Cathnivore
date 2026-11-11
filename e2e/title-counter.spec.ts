@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Plan item 231: on a phone the table is the hero and the menu sits on the counter. At 390x844 the board is 320 px
-// or wider and the largest thing on screen; every menu entry is 44 px or taller and on screen with no page scroll;
+// Plan item 231: on a phone the menu sits on the counter. Plan item 316: Cath stands half-length at the stall
+// beside the board (150 px or taller, her face whole), the board 240 px or wider and still the largest thing on screen; every menu entry is 44 px or taller and on screen with no page scroll;
 // no dark panel: under 20% of the light-theme screen is darker than L 0.3 (the old chalkboard was about 30%).
 
 async function measure(page: Page) {
@@ -30,8 +30,12 @@ async function measure(page: Page) {
       .map(box)
       .filter((r) => r.width > 0)
     const entries = [...document.querySelectorAll('.title-menu button')].map(box)
+    const cath = box(document.querySelector('.title-cath svg')!)
+    const face = box(document.querySelector('.title-cath .cath-features')!)
     return {
       boardW: board.width,
+      cathH: cath.height,
+      faceWhole: face.top >= 0 && face.bottom <= board.bottom && face.width > 0,
       largest: others.every((r) => r.width * r.height < board.width * board.height),
       entries: entries.map((r) => ({ h: r.height, inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth })),
       scroll: document.documentElement.scrollHeight - innerHeight,
@@ -56,7 +60,9 @@ for (const withSave of [false, true]) {
     await page.waitForTimeout(1800) // the title's fade-ins
     if (withSave) await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible()
     const m = await measure(page)
-    expect(m.boardW).toBeGreaterThanOrEqual(320)
+    expect(m.boardW).toBeGreaterThanOrEqual(240)
+    expect(m.cathH).toBeGreaterThanOrEqual(150)
+    expect(m.faceWhole).toBe(true)
     expect(m.largest).toBe(true)
     expect(m.entries.length).toBeGreaterThanOrEqual(withSave ? 7 : 6)
     for (const e of m.entries) {

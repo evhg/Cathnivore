@@ -1507,3 +1507,47 @@ html.no-animations .title-screen * {
   .title-art.title-table .title-cath { left: -18px; }
   .title-art.title-table .title-cath-line { left: 102px; width: calc(100vw - 98px); }
 }
+
+/* Plan item 316: on a phone Cath is in the scene, not peeking over the board: she stands half-length at the stall
+   in the left column, waving, and the board, smaller, lies beside her on the right; her line runs across the top,
+   under the bunting, its tail down to her. (Replaces item 231's head-over-the-far-edge composition.) */
+@media (max-width: 600px) {
+  .title-art.title-table {
+    display: grid;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: end;
+    column-gap: 0;
+  }
+  .title-art.title-table { padding-top: 70px; }
+  .title-art.title-table .title-cath-line {
+    position: absolute;
+    left: 6px;
+    top: auto;
+    bottom: calc(100% + 28px);
+    width: min(340px, calc(100vw - 44px));
+    margin: 0;
+  }
+  /* the tail reaches down the gap to her head */
+  .title-art.title-table .title-cath-line::after { left: 46px; height: 26px; bottom: -25px; }
+  .title-art.title-table .title-cath {
+    position: relative;
+    left: auto;
+    top: auto;
+    grid-column: 1;
+    grid-row: 2;
+    width: 132%;
+    margin: 0 -32% -12px -6px;
+    z-index: var(--z-lift);
+  }
+  /* she stands in front of the board's near corner, so her wave shows over it */
+  .title-art.title-table .title-board {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0 -4px -10px 0;
+    z-index: var(--z-raised);
+  }
+}
+@media (max-width: 600px) and (max-height: 720px) {
+  .title-art.title-table .title-board { margin: 0 -4px -10px 0; }
+}
