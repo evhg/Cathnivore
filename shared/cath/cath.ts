@@ -114,15 +114,34 @@ const VIEWBOX: Record<CathFraming, string> = {
 /** Plan item 85: what she wears below the jacket's hem (the waist-up framings never show it). Trousers and boots
  *  per outfit (the colours Hedgerow's 3D wardrobe uses), the gown's long skirt, the trench's knee-length skirt. */
 const LOWER: Record<CathOutfit, { trousers: string; line: string; boots: string; skirt?: { fill: string; line: string; to: number } }> = {
-  field: { trousers: '#3A3340', line: '#1E1A22', boots: '#5A3A28' },
+  // Plan item 305: tailored cream trousers under the olive jacket (near-black legs read as a thin dark stalk at a
+  // distance and pulled the eye away from her face).
+  field: { trousers: '#D3BE98', line: '#6E5A3C', boots: '#5A3A28' },
   market: { trousers: '#E9CDBE', line: '#8A6A5A', boots: '#7A3A4A' },
   wax: { trousers: '#5B5446', line: '#2C2820', boots: '#2F6B3A' },
-  pinny: { trousers: '#4A4250', line: '#231F28', boots: '#6B4A2B' },
+  pinny: { trousers: '#6E7C4B', line: '#2E3520', boots: '#6B4A2B' },
   gown: { trousers: '#5A1829', line: '#2A0A12', boots: '#2A1A1E', skirt: { fill: '#6E1F33', line: '#2A0A12', to: 772 } },
   trench: { trousers: '#2A2A30', line: '#0E0F12', boots: '#1C1D22', skirt: { fill: '#2C2D33', line: '#0E0F12', to: 640 } },
 }
 
-function lowerBody(outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
+/** Plan item 305: her ground contact, a soft two-tone pool under her boots so she stands on whatever she's drawn
+ *  over (map, header, stall) instead of floating. */
+function groundShadow(cx: number, rx: number): string {
+  return `<ellipse class="cath-ground" cx="${cx}" cy="878" rx="${rx + 34}" ry="14" fill="#120A0E" opacity="0.18"/><ellipse cx="${cx}" cy="878" rx="${rx}" ry="9" fill="#120A0E" opacity="0.4"/>`
+}
+
+/** Plan item 305: the shadow side (the viewer's left) of each trouser leg, a band where the leg, shifted right, is cut
+ *  away, so pale cloth still reads as two round legs. */
+function legShade(id: string, legs: readonly string[], fill: string): string {
+  return legs
+    .map(
+      (d, i) =>
+        `<mask id="${id}-leg${i}" maskUnits="userSpaceOnUse" x="80" y="480" width="240" height="420"><path fill="#fff" d="${d}"/><path fill="#000" transform="translate(9 0)" d="${d}"/></mask><path fill="${fill}" opacity="0.32" mask="url(#${id}-leg${i})" d="${d}"/>`,
+    )
+    .join('')
+}
+
+function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
   const o = LOWER[outfit]
   const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
   const boot = (d: string) => `<path fill="${o.boots}" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round" d="${d}"/>`
@@ -132,15 +151,20 @@ function lowerBody(outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
     : ''
   // Plan item 292: walking, mid-stride: the front leg reaches out to the viewer's left, the back one bends with its
   // heel lifted off the ground.
-  if (pose === 'walk')
-    return `<ellipse cx="200" cy="878" rx="96" ry="9" fill="#120A0E" opacity="0.3"/>
-${leg('M202 490 L250 490 C252 570 250 640 248 700 C254 750 260 790 262 830 L244 834 C236 790 228 750 222 700 C214 640 206 570 202 490 Z')}${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}
-${leg('M150 490 L198 490 C194 570 182 640 178 700 C174 750 166 800 160 846 L141 846 C143 800 146 750 150 700 C150 630 150 560 150 490 Z')}${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
+  if (pose === 'walk') {
+    const front = 'M202 490 L250 490 C252 570 250 640 248 700 C254 750 260 790 262 830 L244 834 C236 790 228 750 222 700 C214 640 206 570 202 490 Z'
+    const back = 'M150 490 L198 490 C194 570 182 640 178 700 C174 750 166 800 160 846 L141 846 C143 800 146 750 150 700 C150 630 150 560 150 490 Z'
+    return `${groundShadow(200, 96)}
+${leg(front)}${legShade(id, [front], o.line)}${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}
+${leg(back)}${legShade(id + 'b', [back], o.line)}${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
 ${skirt}`
+  }
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
-  return `<ellipse cx="203" cy="878" rx="80" ry="9" fill="#120A0E" opacity="0.32"/>
-${leg('M150 490 L198 490 C197 565 193 630 191 700 C193 745 190 800 187 846 L168 846 C164 800 160 750 162 700 C157 630 151 565 150 490 Z')}${leg('M202 490 L250 490 C247 565 238 640 231 708 C236 760 239 808 239 852 L221 852 C219 808 213 762 206 708 C203 640 202 565 202 490 Z')}
+  const right = 'M150 490 L198 490 C197 565 193 630 191 700 C193 745 190 800 187 846 L168 846 C164 800 160 750 162 700 C157 630 151 565 150 490 Z'
+  const left = 'M202 490 L250 490 C247 565 238 640 231 708 C236 760 239 808 239 852 L221 852 C219 808 213 762 206 708 C203 640 202 565 202 490 Z'
+  return `${groundShadow(203, 80)}
+${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
 ${boot('M161 812 L195 812 L196 862 Q196 878 182 878 L144 878 Q132 878 139 867 L161 850 Z')}${boot('M214 818 L247 818 L248 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 Z')}
 <path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
@@ -163,7 +187,7 @@ export function cathSvg(options: CathOptions = {}): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
-${framing === 'full' ? `<g class="cath-lower">${lowerBody(outfit, pose)}</g>` : ''}
+${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 <g class="cath-hair-back">${hairBack(id)}</g>
 <g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
 <g class="cath-head">

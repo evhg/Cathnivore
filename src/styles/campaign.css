@@ -111,7 +111,7 @@
   .cmp-header-cath { height: 210px; }
 }
 
-/* The desktop host: a column in the map's sea, her line above her, a little jetty under her boots. */
+/* The desktop host: a column in the map's sea, her line above her, a stone quay under her boots. */
 @media (min-width: 1100px) {
   .campaign-screen > .cmp-map {
     display: grid;
@@ -121,7 +121,7 @@
   .cmp-map-host {
     position: relative;
     margin-left: -44px;
-    padding-bottom: 6px;
+    padding-bottom: 0;
   }
   .cmp-map-host .cmp-cath {
     flex-direction: column;
@@ -144,18 +144,21 @@
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
   .cmp-map-host .cmp-header-cath { height: 260px; position: relative; }
-  .cmp-host-jetty {
+  .cmp-host-quay {
     display: block;
-    width: 124px;
+    width: 140px;
     height: auto;
-    margin: -22px auto 0;
+    margin: -10px auto 0;
     overflow: visible;
   }
 }
-.cmp-jetty-deck { fill: color-mix(in srgb, var(--soil) 72%, var(--paper)); stroke: var(--soil); stroke-width: 1.2; stroke-linejoin: round; }
-.cmp-jetty-plank { fill: none; stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 0.9; opacity: 0.6; }
-.cmp-jetty-post { fill: none; stroke: var(--soil); stroke-width: 4; stroke-linecap: round; }
-.cmp-jetty-ripple { fill: none; stroke: color-mix(in srgb, var(--surface) 80%, var(--sea)); stroke-width: 1.4; stroke-linecap: round; }
+/* Plan item 305: the quay under her boots on the desktop map: stone in the paper's own tones, never raw colours. */
+.cmp-quay-face { fill: color-mix(in srgb, var(--soil) 34%, var(--paper)); stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 1.2; stroke-linejoin: round; }
+.cmp-quay-joint { fill: none; stroke: color-mix(in srgb, var(--soil) 70%, var(--ink)); stroke-width: 0.9; opacity: 0.55; }
+.cmp-quay-top { fill: color-mix(in srgb, var(--soil) 18%, var(--paper)); stroke: color-mix(in srgb, var(--soil) 80%, var(--ink)); stroke-width: 1.2; stroke-linejoin: round; }
+.cmp-quay-contact { fill: var(--ink); opacity: 0.22; }
+.cmp-quay-bollard { fill: color-mix(in srgb, var(--ink) 80%, var(--soil)); }
+.cmp-quay-ripple { fill: none; stroke: color-mix(in srgb, var(--surface) 80%, var(--sea)); stroke-width: 1.4; stroke-linecap: round; }
 
 .cmp-kicker {
   margin: 0;

@@ -35,7 +35,7 @@ export const OUTFITS: Outfit[] = [
     how: "Hers from the start.",
     jacket: "#6E7C4B",
     sleeve: "#56623A",
-    trousers: "#3a3340",
+    trousers: "#d3be98",
     boots: "#5a3a28",
     blouse: "#F7F0E3",
     brooch: "#86AC5B",

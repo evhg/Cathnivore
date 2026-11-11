@@ -346,7 +346,7 @@ export default function CampaignScreen({
   const say = campaignLine(pointed ?? next?.id, done === chapters.length)
   const wide = useMedia('(min-width: 1100px)')
   // Plan item 248: Cath hosts the map at full height, head to boots, with her line over her head. On a desktop she
-  // stands on a jetty in the map's own sea beside the island; on a phone she stands beside her line in the header.
+  // stands on a stone quay at the foot of the map's sea beside the island; on a phone she stands beside her line in the header.
   // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
   const host = (
     <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'} data-host={wide ? 'map' : 'header'}>
@@ -363,11 +363,15 @@ export default function CampaignScreen({
           title="Cath"
         />
         {wide && (
-          <svg className="cmp-host-jetty" viewBox="0 0 120 34" aria-hidden="true">
-            <path className="cmp-jetty-post" d="M14 14 V32 M106 14 V32 M60 16 V33" />
-            <path className="cmp-jetty-deck" d="M4 8 H116 L112 18 H8 Z" />
-            <path className="cmp-jetty-plank" d="M22 8 L21 18 M40 8 L39.5 18 M58 8 V18 M76 8 L76.5 18 M94 8 L95 18" />
-            <path className="cmp-jetty-ripple" d="M0 30 q6 -3 12 0 t12 0 M96 31 q6 -3 12 0 t12 0" />
+          // Plan item 305: she stands on a stone quay built up from the map's foot (coping, ashlar courses, a bollard,
+          // the sea lapping its base), not a little jetty floating in open water.
+          <svg className="cmp-host-quay" viewBox="0 0 140 52" aria-hidden="true">
+            <path className="cmp-quay-face" d="M8 14 H132 L136 52 H4 Z" />
+            <path className="cmp-quay-joint" d="M6 27 H134 M5 40 H135 M40 14 V27 M88 14 V27 M22 27 V40 M64 27 V40 M110 27 V40 M44 40 V52 M92 40 V52" />
+            <path className="cmp-quay-top" d="M4 8 Q4 4 8 4 H132 Q136 4 136 8 V14 H4 Z" />
+            <ellipse className="cmp-quay-contact" cx="70" cy="8" rx="30" ry="3" />
+            <path className="cmp-quay-bollard" d="M114 4 V-6 Q114 -10 119 -10 Q124 -10 124 -6 V4 Z" />
+            <path className="cmp-quay-ripple" d="M-8 49 q6 -3 12 0 t12 0 M124 50 q6 -3 12 0 t12 0" />
           </svg>
         )}
       </span>
