@@ -213,6 +213,13 @@ function drawTowerBody(ctx: C, look: TowerLook, x: number, y: number, s: number,
       const n = 3 + Math.min(tier, 3);
       const dark = spec === 0 ? "#2f5a2a" : spec === 1 ? "#4a6b2c" : "#4c7a34";
       const light = spec === 0 ? "#3f6e33" : spec === 1 ? "#5e8636" : "#5f8f3f";
+      // Plan item 322: a back row of crowns rises behind the front bushes, so the hedge stands as tall as its
+      // neighbours (it was a 50 px row of blobs at D).
+      for (let i = 0; i < n - 1; i++) {
+        const bx = x + (i - (n - 2) / 2) * s * (0.6 / n) * 1.3;
+        const by = base - s * 0.42 - (i % 2) * s * 0.05 + Math.sin(t * 1.3 + i * 1.7) * s * 0.008;
+        blob(ctx, bx, by, s * (0.17 + ((i + 1) % 2) * 0.02), dark);
+      }
       for (let i = 0; i < n; i++) {
         const bx = x + (i - (n - 1) / 2) * s * (0.6 / n) * 1.3;
         const by = base - s * 0.2 - (i % 2) * s * 0.08 + Math.sin(t * 1.5 + i) * s * 0.008;
