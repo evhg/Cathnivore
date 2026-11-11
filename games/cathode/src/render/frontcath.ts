@@ -704,16 +704,18 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // A lapel. Plan item 147: a notched lapel with a bevelled edge, laid on the chest's curve (it was one flat
     // triangle pair, which caught the light as a pale wedge and showed on one side only): from the collar's
     // corner it widens to the notch under the shoulder, a pointed peak, then narrows down to the top button.
+    // Plan item 319: the lapels open into a V over her cream silk blouse (VISION's bible), their inner edges
+    // meeting low at the top button (they ran straight down at x 0.04 over a closed front, two pale-edged flaps).
     const outline: Array<[number, number]> = [
-      [0.044, 0.5],
+      [0.036, 0.505],
       [0.1, 0.462],
       [0.112, 0.425], // the notch
       [0.098, 0.418],
       [0.138, 0.398], // the peak
       [0.118, 0.35],
-      [0.08, 0.3],
-      [0.054, 0.268],
-      [0.04, 0.32],
+      [0.078, 0.296],
+      [0.03, 0.268],
+      [0.004, 0.276],
     ];
     const shape = new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x * side, y)));
     const lap = new THREE.ExtrudeGeometry(shape, { depth: 0.004, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.0035, bevelSegments: 2, curveSegments: 1 });
@@ -728,7 +730,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const r = rAt(y);
         const surf = 0.7 * Math.sqrt(Math.max(0, r * r - x * x));
         const roll = 0.006 * (1 - Math.min(1, Math.abs(x) / 0.13));
-        p.setZ(i, surf + 0.002 + roll + p.getZ(i));
+        p.setZ(i, surf + 0.0055 + roll + p.getZ(i));
       }
       lap.computeVertexNormals();
     }
@@ -748,6 +750,51 @@ export function buildFrontCath(phone: boolean): FrontCath {
     ep.rotateZ(-0.38 * side);
     ep.translate(0.135 * side, 0.488, -0.004);
     addS(ep, coatMat, pelvis);
+  }
+  {
+    // Plan item 319: the cream silk blouse in the lapels' V, and the fine gold chain with its small leaf pendant
+    // (VISION's character bible), laid on the coat's front surface.
+    const onCoat = (x: number, y: number, lift: number) => {
+      const r = rAtCoat(y);
+      return 0.7 * Math.sqrt(Math.max(0, r * r - x * x)) + lift;
+    };
+    const blouse = new THREE.BufferGeometry();
+    {
+      // Subdivide down the V so the panel follows the chest's curve, then lay each vertex on the surface. The rows
+      // include the coat profile's own heights: a chord across its widest row (0.47) dipped under the coat.
+      // Its top runs up over the coat's shoulder line to the throat (a band of coat showed under her neck).
+      const TOP = 0.542;
+      const ys = [...Array.from({ length: 14 }, (_, j) => TOP - ((TOP - 0.272) * j) / 13), ...coatProfile.map(([, y]) => y).filter((y) => y < TOP && y > 0.272)];
+      ys.sort((a, b) => b - a);
+      const verts: number[] = [];
+      for (let j = 0; j < ys.length - 1; j++) {
+        const y0 = ys[j]!;
+        const y1 = ys[j + 1]!;
+        const w0 = (0.052 * (y0 - 0.272)) / 0.248;
+        const w1 = (0.052 * (y1 - 0.272)) / 0.248;
+        const q = [[-w0, y0], [w1, y1], [w0, y0], [-w0, y0], [-w1, y1], [w1, y1]];
+        for (const [x, y] of q) verts.push(x!, y!, onCoat(x!, y!, 0.0035));
+      }
+      blouse.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+      blouse.computeVertexNormals();
+    }
+    const silkMat = new THREE.MeshStandardMaterial({ color: 0xe6dccb, roughness: 0.42, metalness: 0, emissive: 0x2c241c });
+    rimify(silkMat, 0.5);
+    mats.push(silkMat);
+    addS(blouse, silkMat, pelvis);
+    // Under her chin and the collar the V fell into shadow as dark as the coat; silk keeps its own soft light.
+    statics[statics.length - 1]!.receiveShadow = false;
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xd8b25c, roughness: 0.3, metalness: 0.35, emissive: 0x3a2a0c });
+    mats.push(goldMat);
+    const chainPts = [[-0.034, 0.512], [-0.02, 0.468], [0, 0.444], [0.02, 0.468], [0.034, 0.512]].map(
+      ([x, y]) => new THREE.Vector3(x!, y!, onCoat(x!, y!, 0.006)),
+    );
+    addS(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(chainPts), seg(20), 0.0016, 4, false), goldMat, pelvis);
+    const leaf = new THREE.SphereGeometry(1, 8, 6);
+    leaf.scale(0.0065, 0.012, 0.0025);
+    leaf.rotateZ(0.35);
+    leaf.translate(0.002, 0.432, onCoat(0, 0.432, 0.007));
+    addS(leaf, goldMat, pelvis);
   }
   const buckle = new THREE.TorusGeometry(0.022, 0.005, 4, 4);
   buckle.rotateZ(Math.PI / 4);
