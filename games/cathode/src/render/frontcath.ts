@@ -2277,6 +2277,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     g.translate(0, (y0 + y1) / 2, z);
     return g;
   };
+  const RIFLE_HOLD = 0.15;
   const rifle = new THREE.Group();
   rifle.name = "prop-rifle";
   addS(
@@ -2334,6 +2335,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   glintSprite.position.set(0, 0.36, 0.045);
   glintSprite.scale.setScalar(0.001);
   rifle.add(glintSprite);
+  // Plan item 300: she carries it by the fore-end, not the pistol grip, so the muzzle stands 0.15 m lower and clears
+  // the sign and the frame's top on the pick.
+  for (const c of rifle.children) c.position.y -= RIFLE_HOLD;
   rifle.visible = false;
   chest.add(rifle);
 
@@ -2664,7 +2668,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     o.quaternion.setFromRotationMatrix(pBasis.makeBasis(pX, pY, pZ));
   };
   // Plan item 247: leaned a little further out (0.12 -> 0.2) so the scope clears her face box, not only her cheek.
-  const RIFLE_DIR = V(0.2, 1, -0.04);
+  const RIFLE_DIR = V(0.3, 1, -0.04);
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);
   const SHOT_TOP = V(0.2, 0.1, -1);

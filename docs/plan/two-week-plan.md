@@ -2911,7 +2911,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** card text 4.5:1 on the backdrop; first paint under 2 s and gate 1 in budget; e2e:site passes; shots P and D.
 - **Size:** 2
 
-## 300. [ ] NIGHT SHIFT: class idle poses with the weapon as the hero prop *(lane A, in progress)*
+## 300. [ ] NIGHT SHIFT: class idle poses with the weapon as the hero prop *(lane A, in progress)* *(slice 1, 2026-11-11 03:40 lane A: the Ghost carries the Widowmaker by the fore-end (`RIFLE_HOLD` 0.15 m) at a little more lean (0.2 -> 0.3): the muzzle ends under the sign and the frame's top at D and P; shots scratchpad ns300-before/-a. Left: a thin rod from her raised hand to the frame's top at D (likely the furled umbrella), the other four operatives' idles, the panel's weapon as a lit turning model)*
 - **Why:** `plan1108d/ns-play-D` (775-835 x 0-330): the Ghost holds her rifle upright like a broom, through the HOLLOWELL sign and off the frame's top; `ns-play-P` (210-260 x 185-380) the same; the weapon panel (1045-1330 x 250-310) is a flat outline.
 - **Build:** an idle pose per operative (rifle shouldered across, cleaver low, pistol at the hip...), framing with head room; the panel's weapon as a small lit model turning slowly.
 - **Accept:** no weapon crosses the frame's top or the sign for any operative at P or D; five operative shots; cathode specs and cathode-perf pass.
