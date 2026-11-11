@@ -135,13 +135,13 @@ function canBuildAt(game: Game, kind: TowerKind, col: number, row: number): bool
   return ground !== "water" || kind === "pond";
 }
 
-function bestPlot(game: Game, kind: TowerKind, samples: ReturnType<typeof laneSamples>): [number, number] | null {
+function bestPlot(game: Game, kind: TowerKind, samples: ReturnType<typeof laneSamples>, allow?: (col: number, row: number) => boolean): [number, number] | null {
   const st = towerStats({ kind, tier: 1, spec: null });
   let best: [number, number] | null = null;
   let bestScore = -Infinity;
   for (let r = 0; r < game.level.rows; r++)
     for (let c = 0; c < game.level.cols; c++) {
-      if (!canBuildAt(game, kind, c, r)) continue;
+      if (!canBuildAt(game, kind, c, r) || (allow && !allow(c, r))) continue;
       const high = plotKind(game.level, c, r) === "high" ? 1.25 : 1;
       let score: number;
       if (kind === "hall") score = -coverage(samples, c, r, 2); // anywhere: keep the good plots
@@ -172,9 +172,10 @@ function bestPlot(game: Game, kind: TowerKind, samples: ReturnType<typeof laneSa
   return best;
 }
 
-/** Plan item 297: the plot Cath's coaching points at for a tower: the one the bot would build it on. */
-export function suggestedPlot(game: Game, kind: TowerKind): [number, number] | null {
-  return bestPlot(game, kind, laneSamples(game));
+/** Plan item 297: the plot Cath's coaching points at for a tower: the one the bot would build it on (among the plots
+ *  `allow` keeps, e.g. those in view, when given). */
+export function suggestedPlot(game: Game, kind: TowerKind, allow?: (col: number, row: number) => boolean): [number, number] | null {
+  return bestPlot(game, kind, laneSamples(game), allow);
 }
 
 function count(game: Game, kind: TowerKind): number {

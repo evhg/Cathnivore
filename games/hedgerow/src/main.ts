@@ -4055,10 +4055,14 @@ let coachKey = "";
 function syncCoach(g: Game, kind: TowerKind | null): void {
   const r = renderer as { coach?: { col: number; row: number; kind: TowerKind } | null } | null;
   if (!r || !("coach" in r)) return;
-  const key = kind ? `${g.level.id}:${g.wave}:${g.towers.length}:${kind}` : "";
+  // On a phone's close 3D frame she means a plot you can see: the best one in view (rechecked each second while the
+  // camera settles or pans), else the best on the field.
+  const close = !!renderer && is3D(renderer) && renderer.zoomed;
+  const key = kind ? `${g.level.id}:${g.wave}:${g.towers.length}:${kind}:${close ? Math.floor(performance.now() / 1000) : "all"}` : "";
   if (key === coachKey) return;
   coachKey = key;
-  const at = kind ? suggestedPlot(g, kind) : null;
+  let at = kind && close ? suggestedPlot(g, kind, inViewCells()) : null;
+  if (kind && !at) at = suggestedPlot(g, kind);
   r.coach = kind && at ? { col: at[0], row: at[1], kind } : null;
 }
 
@@ -4287,6 +4291,15 @@ function builtPlotBoxes(g: Game): Box[] {
 function laneBoxes(g: Game): Box[] {
   const lane = laneCellsOf(g.level);
   return cellBoxes(g, (c, r) => lane.has(`${c},${r}`));
+}
+
+/** Plan item 297: a test for the cells whose centre is well inside the field's canvas (40 px clear of its edges). */
+function inViewCells(): (col: number, row: number) => boolean {
+  const c = ui.canvas.getBoundingClientRect();
+  return (col, row) => {
+    const p = renderer?.cellCenter(col, row);
+    return !!p && p.x > c.left + 40 && p.x < c.right - 40 && p.y > c.top + 40 && p.y < c.bottom - 40;
+  };
 }
 
 function cellBoxes(g: Game, keep: (col: number, row: number) => boolean): Box[] {
