@@ -3055,7 +3055,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each mugshot shaded (40%+ luminance between lit cheek and shadow side); the five silhouettes pairwise distinct (IoU 0.7 or less, as item 278); no live render on title load (baked or cached), cathode-perf in budget (alone); cathode-front, title-diorama pass; shots P and D and the case board.
 - **Size:** 2
 
-## 322. [ ] Hedgerow 2D: towers that stand on the field, with a shadow and an idle
+## 322. [ ] Hedgerow 2D: towers that stand on the field, with a shadow and an idle *(lane B, in progress)*
 - **Why:** `plan1111b/hedge-l21-2d-D` (545-612 x 552-618): the Scarecrow is a 50 px flat sticker in a dashed ring, no shadow, no base, close in tone to its stubble plot, where the tray's crate art (1108-1412 x 85-380) is richer; `hedge-l34-2d-D` (520-585 x 380-450) the same.
 - **Build:** each 2D tower a standing three-quarter miniature on a small footing (turned earth or brick) with a soft contact shadow toward the scene's light, about 1.25x so it rises over the plot's edge; one cheap idle each (sails turn, bees round the skep, the coat stirs, the mast blinks), none under reduced motion; tiers dress the footing.
 - **Accept:** every tower 60 px+ tall at D and proud of its plot; a contact shadow 15%+ darker than the plot under each; each tower id's idle draws differently over two frames (a recording-canvas test like hedgerow-sprites-all); reduced motion still; tray, field, critique specs pass; key art re-shot; shots of a sandbox field with every tower at P and D.
