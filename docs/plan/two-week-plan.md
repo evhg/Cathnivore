@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-11 06:25 UTC
-
 
 
 
@@ -2991,4 +2989,50 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** D menu act-4 card cut at the viewport foot (527-913 x 850-900); P menu labels colliding with billboards (10-60 x 372-396, 450-470); D 2D 'Still unanswered' icons about 16 px (1250-1378 x 597-615); P 3D 'WHOLE FIELD' over plots (240-385 x 605-650); P 2D l34 a depot under the coaching panel (5-55 x 618-660).
   - **NIGHT SHIFT:** D title 'THE LIST' about 10 px and 'GAMES' 11 px (57-115 x 48-580); D title 'CONTINUE' low contrast (55-195 x 295-325); P title case line 12 px grey (15-150 x 455-480); D pick 'HOLLOWELL' sign cut by the top (460-560 x 0-35); D the rifle strap a bright line through her body (635-700 x 230-560); P pick tags about 10 px (15-230 x 765-782).
 - **Accept:** each point checked before and after at P and D; text 12 px+ at 4.5:1; the specs for each screen pass.
+- **Size:** 2
+
+## 312. [ ] Cathnivore: the desktop hand as a stall shelf, no card over another
+- **Why:** `plan1111a/cath-game-D` (368-1325 x 685-880): the hand's cards overlap: Injunction (1097-1322 x 762-860) covers Buy Letterpress Flyers' price chip (1215-1250 x 750-765), Graft's yield chip is clipped (490-555 x 848-865), 'Supply 1 Outlet · Brindle Hills' runs under the next card (848-920 x 800-833); it reads as a jam, not a stall.
+- **Build:** the desktop hand on a wooden two-shelf stall: cards at a fixed width on a grid with no overlap, free tactic cards (Injunction and the like) on their own 'Free today' peg at the shelf's end, a '+N more' crate when they don't fit, titles to two lines.
+- **Accept:** at 1440x900 and 1280x800 no card's box meets another's (a spec over every hand card), every price and yield chip whole, text 13 px+; table-hand, board-scale, desktop-no-scroll pass; shots D before and after.
+- **Size:** 2
+
+## 313. [ ] NIGHT SHIFT: a lit weapon inspect on the pick
+- **Why:** `plan1111a/ns-play-D` (1045-1335 x 250-310): the class's weapon is a flat pink-outline silhouette in an empty black panel; the list icons (355-470 x 185-550) are flat red stamps; `ns-play-P` (16-172 x 685-752) the same flat rifle; everything else is a lit 3D render.
+- **Build:** the class's own weapon mesh (item 300's) in a small three.js view: a slow turntable, a rim light in the class's accent, a wet-floor reflection, a 200 ms swap on a class change; the list icons rendered from the same meshes as monochrome thumbnails.
+- **Accept:** the view 360x150 px+ at D and 156x70+ at P with a visible specular highlight; reduced motion a still three-quarter view; cathode-perf in budget (run alone); cathode pick specs pass; shots P and D.
+- **Size:** 2
+
+## 314. [ ] Hedgerow: painted level medallions and a map that keeps its props clear
+- **Why:** `plan1111a/hedge-menu-D` (200-1290 x 315-590): locked levels are identical grey discs with tiny grey icons, a washed-out act; Hollowell blocks and billboards meet nodes 24 (985-1030 x 330-385), 27 (985-1030 x 470-520), 30 (295-330 x 465-525), 26 (1225-1275 x 475-525); `hedge-menu-P` (10-385 x 205-580) labels sit far from their nodes ('Discount Code' 10-110 x 312-330 for node 24 at 120-170) and billboards cover label text ('The Unboxing', 'Golden Hour').
+- **Build:** each node a small painted medallion (the level's twist or hero enemy in Hedgerow's flat ink); locked ones warm sepia with a ribbon, not grey; cleared ones their stars on a rosette; props kept 40 px from every node and label; on a phone each label anchored beside its node, away from the path.
+- **Accept:** locked medallions 3:1 against the map; no prop over a node or label (a unit test over the menu layout); P labels within 12 px of their node; text 12 px+; menu specs pass; shots P and D.
+- **Size:** 2
+
+## 315. [ ] Runnel: the lesson's steps as drawn tiles, not form tabs
+- **Why:** `plan1111a/runnel-P` (14-385 x 100-180) and `runnel-D` (55-345 x 262-360): 'Your first field' is three grey boxed tabs with a number and a sentence, a stock stepper against the painted valley; D leaves a 90 px empty band above them (16-345 x 100-185).
+- **Build:** each step a 48 px drawn hex showing its goal (a bend, a line-up, a field facing water) on a torn notebook strip; a step done gets a pencil tick drawn in over 300 ms; at D the strip moves up into the empty band.
+- **Accept:** each step 48x48 px+ with a 13 px+ label; done reads in greyscale (the tick's shape); reduced motion a fade; runnel lesson specs pass; key art re-shot if a source changes; shots P and D.
+- **Size:** 1
+
+## 316. [ ] Cathnivore: the phone title as a scene with Cath at the stall
+- **Why:** `plan1111a/cath-title-P` (40-150 x 185-285): on a phone Cath is a head and a raised hand behind the board, cut at the shoulders by the cloth, her bubble (115-390 x 172-222) against the bunting; at D (`cath-title-D` 595-830 x 415-760) she is the half-length centrepiece with props. (Item 304 left this as item 112's composition; the second critique in a row names it, so it gets its own item.)
+- **Build:** at P Cath half-length at the counter in the left third, waving, 150 px+ tall, the board smaller and tucked behind her shoulder at the right, her bubble in a clear band under the bunting; the desktop's props (crates, jam jar) at phone scale.
+- **Accept:** at 390x844 her figure 150 px+ with the face whole; the bubble meets neither the bunting nor the subtitle; Campaign above 600 px; title and axe specs pass; key art re-shot if a source changes; shots P light and dark.
+- **Size:** 1
+
+## 317. [ ] NIGHT SHIFT: the phone title and pick sharp, Cath clear of the menu
+- **Why:** `plan1111a/ns-title-P` (200-335 x 225-700) and `ns-play-P` (130-260 x 115-445): on a phone Cath's 3D figure is soft and upscaled (smeared coat edges, a blurred face) where D is crisp; the menu panel (8-178 x 205-435) sits over her body.
+- **Build:** the title and pick canvases at `min(devicePixelRatio, 2)`, falling back only when a measured frame budget is missed; on a phone the camera puts her in the right 55% of the frame, clear of the menu; a soft vignette behind the menu, not an opaque box.
+- **Accept:** a DPR-3 phone's backing store 2x its CSS size or more; her box meets the menu by 10% or less; cathode-perf phone budgets pass (alone); shots ns-title-P and ns-play-P before and after.
+- **Size:** 1
+
+## 318. [ ] The bugs from the 2026-11-11 06:40 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1111a`; already measured or decided, left out: the setup pin captions (12.48 px), NIGHT SHIFT's 'THE LIST' and 'GAMES' (12 px), the portfolio P second print's label (shows once swiped in), the /games/ kicker (clear of the awning since 11-11))
+  - **Site:** D portfolio Cath's counter floats with no ground under it (697-946 x 645-697); P /games/ Cath's italic quote on the busier street backdrop (25-365 x 205-240): measure, scrim if under 4.5:1.
+  - **Cathnivore:** P game the '9 more' pill over the hand's foot (280-350 x 765-790) and the NOT YET deck cut at the edge (330-390 x 680-775); D setup difficulty notes about 11 px (895-1115 x 108-158), 'OPEN' over Start about 10 px on green (1165-1225 x 795-807), 'Hard' 6 px lower than its neighbours (770-880 x 112-160); P setup YOU/AI/P1/P2 badges about 9 px (40-285 x 205-218); D campaign a stray dark post beside Cath (788-800 x 686-702); P campaign the bubble's tail points away from Cath (270-300 x 165-180).
+  - **Runnel:** 'Tap a tile to turn it, hold to pin it' about 12 px muted (D 73-290 x 780-796, P 95-298 x 790-803): measure 4.5:1; D 'UP NEXT' kicker about 10 px (166-315 x 625-725).
+  - **Hedgerow:** D 2D l21 the bubble's tail over the HOLLOWELL sign (280-365 x 478-493); D l34 'Same-Day van' label over the first van (383-530 x 815-835) and the '24h' livery about 6 px (255-430 x 758-780); D 'KEEP GOING' about 10 px and CATH/PIE/NEIGHBOURS about 11 px (1110-1388 x 790-815); P 'Keep Going' about 10 px (128-180 x 805-833); P menu ghosted 'Beyond the hedge' text between the sheet and the tabs (130-330 x 750-770), '60 / Seed Bank' about 11 px (310-385 x 790-833).
+  - **NIGHT SHIFT:** P title '4 MORE NAMES' about 10 px mid-grey (16-105 x 708-718), the district stamps about 9 px (20-375 x 785-805), 'No case open' about 10 px (33-105 x 242-252); P pick tags about 9 px (16-230 x 765-781), 'HOLD' about 10 px (322-345 x 803-815), the pager dots 8 px targets (10-160 x 548-555); D pick class numbers about 9 px (58-75 x 195-540).
+- **Accept:** each point checked before and after at P and D (measured, not read off a shot); text 12 px+ at 4.5:1; tap targets 44 px; the specs for each screen pass.
 - **Size:** 2
