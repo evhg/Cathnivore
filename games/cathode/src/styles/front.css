@@ -821,6 +821,11 @@
   }
   .title-col { top: calc(var(--safe-y) + 48px); width: calc(100vw - 2 * var(--safe-x)); } /* px-ok: under the back link */
   .logo-svg { width: 100%; }
+  /* Plan item 340: upright, SHIFT crosses the lit billboard; a tight ink edge under the soft shadow keeps the
+     cream letters off its pale glass. */
+  .logo-text {
+    filter: drop-shadow(0 0 calc(var(--u) * 3) rgb(var(--black-rgb) / .95)) drop-shadow(0 0 calc(var(--u) * 16) rgb(var(--black-rgb) / .9));
+  }
   /* Plan item 79: upright, the menu sits over her coat, so the resting entries stay near full ink (AA), and the
      small lines under the menu and in the List step up from the 12 px caption size. */
   .menu-item { opacity: .94; }
