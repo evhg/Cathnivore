@@ -78,6 +78,25 @@ test('at D under reduced motion her bubble is off her figure', async ({ page, ha
   expect(o).toBe(0)
 })
 
+// Plan item 268: the third mood. A tap that joins the water to the lesson's field cheers her (the solve board keeps a
+// spill after a tile turns back, so the lesson is the clean case): delighted, after a wink for the groove lined up.
+test('a tap that joins the water to the field delights her', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the valley figure is a full-length Cath at D')
+  await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
+  await page.goto('/runnel/')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  const cath = page.locator('#valley-cath')
+  await expect(cath).toHaveAttribute('data-mood', 'calm')
+  const target = page.locator('.tiles > g.cell.lesson-target')
+  for (let i = 0; i < 6 && (await target.count()); i++) {
+    await target.first().click()
+    await page.waitForTimeout(400)
+  }
+  await expect(target).toHaveCount(0)
+  await expect(cath).toHaveAttribute('data-mood', 'delighted')
+  await expect(cath).toHaveAttribute('data-expression', 'delighted')
+})
+
 test('her face follows the water: worried on a spill, a wink on the solve', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the valley figure is a full-length Cath at D')
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
