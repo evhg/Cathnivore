@@ -3931,6 +3931,9 @@ let sayOverride: { text: string; until: number } | null = null;
 
 /** Plan item 171: an upright phone docks her line over the tray instead of on the field. */
 const DOCK_QUERY = matchMedia("(max-width: 599.98px) and (orientation: portrait)");
+/** Plan item 297: the crowded-field dock is for a desktop-sized panel (D). On a landscape phone (844x390) the panel's
+ *  card sits beside a short field the eye never leaves, so her line stays a compact bubble there (item 250's 64 px). */
+const CROWD_DOCK_QUERY = matchMedia("(min-width: 900px) and (min-height: 560px)");
 /** The line a tap folded away; it stays folded until she says something else. */
 let dockFolded = "";
 /** Once folded, or once the player picks a plot, the dock stays away for that build (`level:wave`), so a new line
@@ -4181,7 +4184,7 @@ function syncCathSay(g: Game, now: number): void {
   }
   // Plan item 297: still over the plots she tells you to tap (a crowded field at D): her line docks in the panel for
   // the rest of this build phase, if its Coming up card is there to take it.
-  if (over(spot) > 0.12 && !DOCK_QUERY.matches && deskDockCard()) {
+  if (over(spot) > 0.12 && !DOCK_QUERY.matches && CROWD_DOCK_QUERY.matches && deskDockCard()) {
     crowdDock = `${g.level.id}:${g.wave}`;
     el.hidden = true;
     sayShown = null;
