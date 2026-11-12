@@ -780,17 +780,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 319: a lower stand (it rose to her chin, a lone slab beside the jaw in three-quarter view) that
     // folds over at the top and falls outward, so the collar shows a rolled edge of cloth, not a cut sheet.
     const pts = [
+      // Slice 44: the stand 1.6 cm lower and the fold rounder, so in three-quarter view the far side lies as a soft
+      // roll on the shoulder (it stood 5 cm over it, a slab with a flat top beside her neck at D).
       [0.1, 0.495],
-      [0.104, 0.53],
-      [0.112, 0.566],
-      [0.12, 0.577],
+      [0.104, 0.525],
+      [0.11, 0.55],
+      [0.117, 0.56],
+      [0.123, 0.558],
       // Plan item 319 slice 20: rounder (22 -> 32 sides). Slice 21: the fall slopes down onto the shoulder (it ended
       // at y 0.542, hanging 3 cm over the coat's shoulder slope, so in three-quarter view the far side stood as a
       // level slab with air under it); now it lies on the cloth like a turned-down collar.
-      [0.126, 0.571],
-      [0.133, 0.553],
-      [0.14, 0.532],
-      [0.146, 0.519],
+      [0.129, 0.548],
+      [0.135, 0.535],
+      [0.141, 0.524],
+      [0.147, 0.515],
     ].map(([r, y]) => new THREE.Vector2(r!, y!));
     // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
     const collar = new THREE.LatheGeometry(pts, Math.max(24, seg(32)), open / 2, Math.PI * 2 - open);
@@ -804,14 +807,18 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const z = p.getZ(i);
         const r = Math.hypot(x, z) || 1;
         const front = Math.max(0, z / r);
-        const up = Math.min(1, (y - 0.495) / 0.076);
+        const up = Math.min(1, (y - 0.495) / 0.06);
         // The front corners fall onto the lapels' tops (the gorge), joining collar and lapel.
-        const ny = 0.495 + (y - 0.495) * (1 - 0.5 * front * front);
+        // Slice 44: the back stands a fifth lower and the fall's outer edge curls down onto the coat, so in
+        // three-quarter view the far side reads as a rolled collar, not a slab with a flat top over the shoulder.
+        const back = Math.max(0, -z / r);
+        const ny = 0.495 + (y - 0.495) * (1 - 0.5 * front * front - 0.2 * back);
         const roll = 1 + 0.02 * up * up * (1 - front);
         p.setXYZ(i, x * roll, ny, z * roll);
       }
     }
-    collar.scale(1, 1, 0.82);
+    // Slice 44: squashed front to back nearer the coat's own 0.7 (0.82 stood it off the coat's back and front).
+    collar.scale(1, 1, 0.76);
     collar.computeVertexNormals();
     // Its own material: the collar is seen from inside too (double-sided), the coat is not (no shadow acne).
     const collarMat = coatMat.clone();
@@ -819,7 +826,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     coatMats.push(collarMat);
     rimify(collarMat, 1, 0, 0, 0, false, 0, "wool");
     mats.push(collarMat);
-    addS(collar, collarMat, pelvis);
+    const collarMesh = add(collar, collarMat, pelvis);
+    collarMesh.name = "collar";
+    statics.push(collarMesh);
   }
   // The coat's radius at a height in the pelvis frame, from its profile (for laying things on its surface).
   const rAtCoat = (y: number) => {
@@ -870,7 +879,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // just outside it and easing down to lie flat on the chest toward the outer edge (it was linear in x).
         const rollX = 0.036 + ((y - 0.505) / (0.268 - 0.505)) * (0.004 - 0.036);
         const d = Math.max(0, Math.abs(x) - Math.abs(rollX));
-        const roll = 0.001 + 0.007 * Math.exp(-Math.pow((d - 0.012) / 0.03, 2));
+        // Slice 43: a fuller roll (0.007 -> 0.012 proud, narrower), so the turned edge catches the light as a soft ridge.
+        const roll = 0.001 + 0.012 * Math.exp(-Math.pow((d - 0.01) / 0.024, 2));
         p.setZ(i, surf + 0.0055 + roll + p.getZ(i));
       }
       lap.computeVertexNormals();
@@ -882,7 +892,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const v = new THREE.Vector3();
       for (let i = 0; i < nr.count; i++) {
         v.fromBufferAttribute(nr, i);
-        const k = 1 - THREE.MathUtils.smoothstep(v.z, 0.6, 0.93);
+        // Slice 43: only the edge-on bevel turns (z under 0.55); the face keeps the chest's curve and the roll, which
+        // the old 0.6-0.93 window flattened to face the lens, so each lapel lit as one flat paper card.
+        const k = 1 - THREE.MathUtils.smoothstep(v.z, 0.25, 0.55);
+        if (k < 1) {
+          // Slice 43: the face turns as rolled cloth: up and in along the roll line (it catches the light), and away
+          // toward the outer edge and the peak (into shade), so the lapel reads with a lit roll and a shaded fall.
+          const px = Math.abs(p.getX(i));
+          const py = p.getY(i);
+          const rollX = Math.abs(0.036 + ((py - 0.505) / (0.268 - 0.505)) * (0.004 - 0.036));
+          const out = THREE.MathUtils.smoothstep(px - rollX, 0.01, 0.09);
+          const ridge = Math.exp(-Math.pow((px - rollX - 0.006) / 0.014, 2));
+          v.x += side * (0.55 * out - 0.25 * ridge) * (1 - k);
+          v.y += (0.3 * ridge - 0.15 * out) * (1 - k);
+          v.normalize();
+          nr.setXYZ(i, v.x, v.y, v.z);
+        }
         if (k > 0) {
           v.set(v.x * (1 - k), v.y * (1 - k), v.z + (1 - v.z) * k).normalize();
           nr.setXYZ(i, v.x, v.y, v.z);
@@ -904,7 +929,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const ep = new THREE.BoxGeometry(0.1, 0.012, 0.045);
     ep.rotateZ(-0.38 * side);
     ep.translate(0.135 * side, 0.488, -0.004);
-    addS(ep, coatMat, pelvis);
+    const epMesh = add(ep, coatMat, pelvis);
+    epMesh.name = "epaulette";
+    statics.push(epMesh);
   }
   {
     // Plan item 319: the cream silk blouse in the lapels' V, and the fine gold chain with its small leaf pendant
