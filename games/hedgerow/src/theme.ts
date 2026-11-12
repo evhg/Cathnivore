@@ -589,8 +589,9 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       ctx.fill();
       if (ground === "water") {
         const g = ctx.createRadialGradient(x + s / 2, y + s / 2, s * 0.05, x + s / 2, y + s / 2, s * 0.5);
-        g.addColorStop(0, "rgba(120,190,225,0.9)");
-        g.addColorStop(1, "rgba(50,110,160,0.85)");
+        // Plan item 330 made the 3D ponds deep water; the 2D pond follows a step deeper (item 94: the two read as one colour).
+        g.addColorStop(0, "rgba(96,166,202,0.9)");
+        g.addColorStop(1, "rgba(42,98,145,0.85)");
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.ellipse(x + s / 2, y + s / 2, s * 0.42, s * 0.36, 0, 0, Math.PI * 2);
