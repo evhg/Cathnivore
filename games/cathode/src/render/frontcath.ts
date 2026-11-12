@@ -428,7 +428,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
         // Plan item 319: not on the face (the material with catch-lights): banded, the street's light cut her jaw and
         // cheek into flat triangles with a hard dark wedge under the jaw (critique 17:15); the face takes it smooth.
-        .replace("#include <lights_physical_pars_fragment>", glint > 0 ? "#include <lights_physical_pars_fragment>" : TOON_PHYSICAL)
+        // Slice 18: nor on the rest of her skin (neck, ears): banded, the neck's turn drew a hard vertical seam under
+        // the smoothly lit jaw.
+        .replace("#include <lights_physical_pars_fragment>", glint > 0 || skin > 0 ? "#include <lights_physical_pars_fragment>" : TOON_PHYSICAL)
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
@@ -834,7 +836,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 9: a neck with a shape (slimmer under the jaw, flaring into the shoulders, set a little forward and
   // narrower front to back), not a plain cylinder.
   // Plan item 289: shorter and tapered (the same-person check: a long tube under the head read as a lollipop).
-  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.048], [0.3, 0.04], [0.7, 0.036], [1, 0.035]], seg(16), 0.86);
+  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.048], [0.3, 0.04], [0.7, 0.036], [1, 0.035]], Math.max(28, seg(32)), 0.86);
   // Plan item 319: the neck in the jaw's shadow, darkest just under it and lit toward the collar (a bright, evenly
   // lit pipe made the head float); vertex colours, so the neck and ears stay one merged draw per bone.
   {
@@ -1452,7 +1454,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     };
     // Plan item 275: one waved strand of the given width (wk) and wave (wa) along `keys`; the curtains, and the loose
     // wisps at the temples, all in the one lock mesh (no draw call).
-    const strand = (keys: THREE.Vector3[], sx: number, wk: number, wa: number, sway: boolean): void => {
+    const strand = (keys: THREE.Vector3[], sx: number, wk: number, wa: number, sway: boolean, phase = 0): void => {
       const curve = new THREE.CatmullRomCurve3(keys, false, "centripetal");
       const N = 40;
       const base = lp.length / 3;
@@ -1467,7 +1469,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         side.crossVectors(tan, nrm).normalize();
         // Narrow at the parting, full past the cheek, then to a point; a soft wave across the lower length.
         const w = wk * (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 2));
-        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26) * 0.008 * wa * Math.min(1, (s - 0.4) / 0.1) : 0;
+        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26 + phase * THREE.MathUtils.smoothstep(s, 0.62, 0.85)) * 0.008 * wa * Math.min(1, (s - 0.4) / 0.1) : 0;
         for (let j = 0; j < 3; j++) {
           const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
           q.x += wave * sx;
@@ -1514,7 +1516,19 @@ export function buildFrontCath(phone: boolean): FrontCath {
         V(0.11 * sx, -0.34, 0.112),
         V(0.104 * sx, -0.43, 0.122),
       ];
-      strand(keys, sx, 1.25, 1, true); // plan item 289: thicker front locks (319: 1.4 -> 1.25)
+      // Plan item 319 slice 18: the curtain splits below the jaw into three thinner locks that fan apart and end at
+      // different lengths (one 3.5 cm ribbon hung straight down the lapel and read as a plank on the coat front).
+      // They share the face-framing top, so round the face it still reads as one curtain.
+      for (const [k, spread, cut, wk, ph] of [[0, 0, 0, 0.62, 0], [1, 0.016, 1, 0.5, 1.7], [2, -0.012, 2, 0.46, 3.1]] as const) {
+        // Same key count for each (dropping keys re-timed each lock's wave, braiding them at the cheek); a shorter
+        // lock pulls its last key up toward the one before.
+        const ks = keys.map((q, n) => {
+          if (n === keys.length - 1 && cut > 0) q = q.clone().lerp(keys[n - 1]!, 0.45 * cut);
+          const f = Math.max(0, (n - 5) / 4);
+          return V(q.x + spread * f * sx, q.y + (k === 0 ? 0 : 0.01 * f), q.z + Math.abs(spread) * f * 0.6 + k * 0.002);
+        });
+        strand(ks, sx, 1.25 * wk, 1, true, ph);
+      }
     }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
