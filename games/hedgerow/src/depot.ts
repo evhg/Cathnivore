@@ -32,7 +32,7 @@ export function depotSvg(): string {
     `<rect x="11" y="26.5" width="78" height="9" rx="1" fill="#1a1208"/>` +
     `<path d="M8 18l-4 -5h8z M92 18l-4 -5h8z" fill="#3a4148"/>` +
     `<circle cx="8" cy="13.5" r="2.2" fill="#fff4cf"/><circle cx="92" cy="13.5" r="2.2" fill="#fff4cf"/>` +
-    `<path d="M8 15L1 40H22Z M92 15L78 40H99Z" fill="#fff4cf" opacity=".16"/>` +
+    `<path class="depot-flood" d="M8 15L1 40H22Z M92 15L78 40H99Z" fill="#fff4cf" opacity=".16"/>` +
     // Plan items 160/281: the brand on the canopy at 14 units, now lit: a glow behind the letters.
     `<rect x="4" y="38" width="92" height="19" rx="2" fill="url(#dp-canopy)"/>` +
     `<rect x="6" y="39.2" width="88" height="2.2" rx="1" fill="#ffffff" opacity=".55"/>` +

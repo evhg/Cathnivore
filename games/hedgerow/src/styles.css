@@ -5125,6 +5125,13 @@ img.act-scene {
 /* Plan item 157: the roller door rolls up as the round's convoy pulls out; in 3D the rep leans over the depot's roof. */
 .depot-door { transform-box: fill-box; transform-origin: 50% 0; transition: transform 500ms ease; }
 .depot[data-door-open] .depot-door { transform: scaleY(0.12); }
+/* Plan item 336: as the shutter rolls up on Go the floodlights flare twice over the front (a single steady glow under
+   reduced motion). */
+.depot[data-door-open] .depot-flood { animation: depot-flood 450ms ease-in-out 2 alternate; }
+@keyframes depot-flood { to { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .depot[data-door-open] .depot-flood { animation: none; opacity: 0.3; }
+}
 .depot-3d {
   width: var(--size);
   height: calc(var(--size) * 1.25);
