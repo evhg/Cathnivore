@@ -495,6 +495,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 306 slice 2: the neck and ears (skin) take the same warm, colour-free light at \`skin\` of the face's
     // brightness, so the throat sits in the jaw's shade under the face instead of a grey-teal band below a warm face.
     const skinTone = glint > 0 ? 1 : skin;
+    // Plan item 319 slice 39: the light rebuilt from the albedo's luminance cancels a grey vertex shade, so the neck's
+    // jaw shadow (its vertex colours) is applied again after it, as a brightness.
     const skinLight =
       skinTone > 0
         ? `{
@@ -506,6 +508,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
             outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
+            ${glint > 0 ? "" : "#ifdef USE_COLOR\n            outgoingLight *= dot( vColor.rgb, W );\n            #endif"}
           }
           #include <opaque_fragment>`
         : "#include <opaque_fragment>";
@@ -969,7 +972,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
   {
     const p = neck.attributes.position as THREE.BufferAttribute;
     const shade = new Float32Array(p.count * 3);
-    for (let i = 0; i < p.count; i++) shade.fill(1 - 0.42 * THREE.MathUtils.smoothstep(p.getY(i), 0.31, 0.4), i * 3, i * 3 + 3);
+    // Slice 39: deeper and closer under the jaw (0.58 -> 0.42 over the top third, was a ramp over the whole neck that
+    // left the throat as bright as the cheek, so the jaw read only as an outline), and warmer in the shade, as skin is.
+    for (let i = 0; i < p.count; i++) {
+      const d = 0.58 * THREE.MathUtils.smoothstep(p.getY(i), 0.33, 0.395);
+      shade[i * 3] = 1 - d * 0.9;
+      shade[i * 3 + 1] = 1 - d;
+      shade[i * 3 + 2] = 1 - d * 1.05;
+    }
     neck.setAttribute("color", new THREE.BufferAttribute(shade, 3));
   }
   skinMat.vertexColors = true;
