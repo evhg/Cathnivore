@@ -66,3 +66,38 @@ test("The List's rumours run 3 lines or fewer, no one-word last line", async ({ 
     expect(r.lastWidth, r.text).toBeGreaterThan(40)
   }
 })
+
+// Plan item 335: the in-game HUD holds to the same faces and the 13 px floor (D and a landscape phone).
+for (const size of [{ width: 1440, height: 900 }, { width: 844, height: 390 }]) {
+  test(`the HUD uses only the three faces, nothing under 13 px (${size.width}x${size.height})`, async ({ page, hasTouch }) => {
+    test.skip(hasTouch, 'sets its own viewport; one run is enough')
+    test.setTimeout(300_000)
+    await page.setViewportSize(size)
+    await page.goto('/nightshift/')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?play&class=gunslinger&rs=0.5')
+    await page.waitForFunction(() => {
+      const c = (window as unknown as { cathode?: { job?: unknown; stats: { frames: number } } }).cathode
+      return !!c?.job && c.stats.frames >= 3
+    }, null, { timeout: 200_000 })
+    await page.waitForTimeout(1500)
+    const r = await page.evaluate(() => {
+      const faces = new Set<string>()
+      const small: string[] = []
+      const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      for (let t = walk.nextNode(); t; t = walk.nextNode()) {
+        const e = t.parentElement
+        if (!t.textContent?.trim() || !e) continue
+        const box = e.getBoundingClientRect()
+        if (!box.width || !box.height || box.bottom < 0 || box.top > innerHeight) continue
+        const cs = getComputedStyle(e)
+        if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue
+        faces.add(cs.fontFamily.split(',')[0]!.replace(/["']/g, '').trim())
+        if (parseFloat(cs.fontSize) < 13 - 0.01) small.push(`${t.textContent.trim().slice(0, 20)} ${cs.fontSize}`)
+      }
+      return { faces: [...faces], small }
+    })
+    for (const f of r.faces) expect(FACES, `face ${f}`).toContain(f)
+    expect(r.small).toEqual([])
+  })
+}
