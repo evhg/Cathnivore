@@ -3186,7 +3186,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of l21 (3D) and l34 (2D) at P and D.
 - **Size:** 2
 
-## 337. [ ] Cathnivore: the desktop left rail as the producer's farm ledger, not three form panels
+## 337. [ ] Cathnivore: the desktop left rail as the producer's farm ledger, not three form panels *(lane B, in progress)*
 - **Why:** `plan1112a/cath-game-D`:
   - The Ledger is a 280x165 empty brown box (35-315 x 637-800) holding one placeholder line.
   - The "Saving for" cards cram a 5-line rule into ~11 px text (230-310 x 445-530).
