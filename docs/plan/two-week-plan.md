@@ -3160,7 +3160,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all five classes at P and D.
 - **Size:** 2
 
-## 335. [ ] NIGHT SHIFT: one noir type system across title, List and pick, enforced by a test
+## 335. [ ] NIGHT SHIFT: one noir type system across title, List and pick, enforced by a test *(lane B, in progress)*
 - **Why:** `plan1112a/ns-title-D`: the critique sees four voices: Bodoni display (55-690 x 100-180), heavy condensed menu caps (55-230 x 295-540), a neo-grotesque on the case file (413-540 x 485-555), and ragged ~15 px italic in 70 px columns on The List (65-600 x 735-810). `ns-play-D` adds heavy class names at about 48 px (80-330 x 170-560). VISION allows CATHODE three faces: Bodoni Moda (italic for voice), Rajdhani and JetBrains Mono.
 - **Build:** first audit the computed `font-family` of every text node on the title, pick, HUD and debrief; some of these may already be Rajdhani at weight. Map anything outside the three faces onto them. Set the type scale in `var(--u)` steps. Give The List's blurbs an 18 ch+ measure, capped at 3 lines.
 - **Accept:**
