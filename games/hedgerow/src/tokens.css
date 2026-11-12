@@ -201,6 +201,8 @@
   --map-flag-gold-lit: #f6d36a;
   --map-flag-gold: #d9a62c;
   --map-flag-red-shade: #8f2a22;
+  /* Plan item 324: the level card's twist stamp */
+  --stamp-ink: #8f2a22;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -213,6 +215,7 @@
     --soil: #d6b58c;
     --pasture: #86b15c;
     --clay: #e0775d;
+    --stamp-ink: #e0775d;
     --wheat: #e2bf68;
     --focus: #f3e9d8;
     --backdrop: rgba(0, 0, 0, 0.6);

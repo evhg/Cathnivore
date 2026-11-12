@@ -4798,7 +4798,33 @@ img.act-scene {
 .lcard-name { margin: 0; font-family: var(--font-display); font-size: var(--fs-d2); line-height: 1.1; }
 .lcard-twist { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soil); }
 /* Plan item 103: the stars at the number size (they were about 12 px). */
-.lcard-stars { margin: 0; color: var(--map-flag-gold); font-size: var(--fs-num-l); line-height: 1.1; letter-spacing: 0.08em; }
+.lcard-stars { display: flex; gap: 6px; margin: 2px 0 0; color: var(--map-flag-gold); font-size: var(--fs-num-l); line-height: 1.1; }
+/* Plan item 324: the stars as medal slots: a gold medal struck for each one won, an empty pressed ring for the rest. */
+.lcard-medal {
+  display: grid;
+  place-items: center;
+  width: 1.45em;
+  height: 1.45em;
+  border-radius: 50%;
+  font-size: 0.8em;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--soil) 30%, transparent);
+  background: color-mix(in srgb, var(--soil) 8%, transparent);
+}
+.lcard-medal.is-won {
+  color: var(--map-flag-red-shade);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--map-flag-gold) 55%, var(--paper-hi)), var(--map-flag-gold) 60%, color-mix(in srgb, var(--map-flag-gold) 70%, var(--soil)));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--map-flag-gold) 60%, var(--soil)), 0 2px 0 color-mix(in srgb, var(--ink) 25%, transparent);
+}
+/* ...and the twist as a red rubber stamp, set at a slant. */
+.lcard-stamp {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  color: var(--stamp-ink);
+  rotate: -3deg;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stamp-ink) 35%, transparent);
+}
 /* Cath's line on the field, beside her face */
 .lcard-cath { grid-area: cath; display: flex; align-items: center; gap: 8px; align-self: start; min-width: 0; padding-top: 6px; border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); }
 .lcard-cath-face { flex: none; width: 32px; height: 32px; overflow: hidden; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 2px var(--line); }
