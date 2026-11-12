@@ -577,15 +577,25 @@
   padding: calc(var(--u) * 14) calc(var(--u) * 34) calc(var(--u) * 14) calc(var(--u) * 40);
   margin-left: calc(var(--u) * -40);
   border-radius: calc(var(--u) * 6);
+  /* Plan item 331: a rain-streaked shop window, frosted and about 40% see-through (it was a black enamel plate): the
+     street blurs behind it, two runs of streaks at different pitches slant down the glass, a few beads catch the
+     light, a glint crosses its top corner, and its frame is a thin lit edge. */
   background:
-    radial-gradient(circle at calc(var(--u) * 14) calc(var(--u) * 14), color-mix(in srgb, var(--ink) 30%, transparent) 0 calc(var(--u) * 2.5), transparent calc(var(--u) * 3.5)),
-    radial-gradient(circle at calc(100% - var(--u) * 14) calc(100% - var(--u) * 14), color-mix(in srgb, var(--ink) 30%, transparent) 0 calc(var(--u) * 2.5), transparent calc(var(--u) * 3.5)),
-    linear-gradient(170deg, rgb(var(--shade-rgb) / .9), rgb(var(--shade-rgb) / .96));
+    radial-gradient(circle at 18% 22%, color-mix(in srgb, var(--ink) 30%, transparent) 0 calc(var(--u) * 2.4), transparent calc(var(--u) * 3.6)),
+    radial-gradient(circle at 71% 64%, color-mix(in srgb, var(--ink) 26%, transparent) 0 calc(var(--u) * 2), transparent calc(var(--u) * 3.2)),
+    radial-gradient(circle at 46% 88%, color-mix(in srgb, var(--ink) 26%, transparent) 0 calc(var(--u) * 2.6), transparent calc(var(--u) * 3.8)),
+    radial-gradient(circle at 88% 30%, color-mix(in srgb, var(--ink) 22%, transparent) 0 calc(var(--u) * 1.8), transparent calc(var(--u) * 3)),
+    repeating-linear-gradient(97deg, transparent 0 calc(var(--u) * 37), color-mix(in srgb, var(--ink) 12%, transparent) calc(var(--u) * 37) calc(var(--u) * 39), transparent calc(var(--u) * 38.5) calc(var(--u) * 61)),
+    repeating-linear-gradient(94deg, transparent 0 calc(var(--u) * 23), color-mix(in srgb, var(--ink) 7%, transparent) calc(var(--u) * 23) calc(var(--u) * 24.5), transparent calc(var(--u) * 24) calc(var(--u) * 53)),
+    linear-gradient(125deg, color-mix(in srgb, var(--ink) 14%, transparent) 0%, transparent 28%),
+    radial-gradient(120% 70% at 100% 110%, color-mix(in srgb, var(--blood-hot) 16%, transparent), transparent 60%),
+    linear-gradient(170deg, rgb(var(--shade-rgb) / .58), rgb(var(--shade-rgb) / .66));
+  -webkit-backdrop-filter: blur(calc(var(--u) * 9)) saturate(1.25);
+  backdrop-filter: blur(calc(var(--u) * 9)) saturate(1.25);
   box-shadow:
-    inset 0 0 0 max(1px, calc(var(--u) * 1.5)) color-mix(in srgb, var(--ink) 16%, transparent),
-    inset 0 0 0 calc(var(--u) * 5) rgb(var(--shade-rgb) / .9),
-    inset 0 0 0 calc(var(--u) * 6) color-mix(in srgb, var(--ink) 8%, transparent),
-    0 calc(var(--u) * 10) calc(var(--u) * 30) rgb(var(--black-rgb) / .55);
+    inset 0 0 0 max(1px, calc(var(--u) * 1.5)) color-mix(in srgb, var(--ink) 22%, transparent),
+    inset 0 max(1px, calc(var(--u) * 2)) 0 color-mix(in srgb, var(--ink) 14%, transparent),
+    0 calc(var(--u) * 10) calc(var(--u) * 30) rgb(var(--black-rgb) / .45);
 }
 .menu-item { color: var(--ink); opacity: 1; text-shadow: none; }
 .menu-item[data-lit] {
@@ -856,6 +866,9 @@
     isolation: isolate;
     background: none;
     box-shadow: none;
+    /* item 331's window glass is the desktop's; upright the words keep item 317's feathered shade, unblurred */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
   .menu::before {
     content: "";
