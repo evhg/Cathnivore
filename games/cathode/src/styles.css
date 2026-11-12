@@ -3017,3 +3017,6 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 @media (max-width: 700px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
   .cp-sheet[data-dossier] .cp-tree-name { rotate: none; }
 }
+
+/* Plan item 340: the menu hint's parts never break inside ('TOMAS REED · THE HARBOUR · A DEBT TAG'). */
+.mh-part { white-space: nowrap; }

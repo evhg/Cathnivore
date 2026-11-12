@@ -263,7 +263,19 @@ function hint(id: string): void {
   } catch {
     district = undefined;
   }
-  $("menu-hint").textContent = slotHint(id, { hasSave: hasSave(), jobsDone: done, district, ngPlus: hasSave() && canStartNewGamePlus(done), armed: armed && id === "new" });
+  // Plan item 340: an "A · B · C" hint wraps only between its parts (on a phone 'THE HARBOUR' split over two lines).
+  {
+    const hint = $("menu-hint");
+    const parts = slotHint(id, { hasSave: hasSave(), jobsDone: done, district, ngPlus: hasSave() && canStartNewGamePlus(done), armed: armed && id === "new" }).split(" · ");
+    hint.replaceChildren();
+    parts.forEach((part, i) => {
+      if (i) hint.append(" · ");
+      const span = document.createElement("span");
+      span.className = "mh-part";
+      span.textContent = part;
+      hint.append(span);
+    });
+  }
   showDossier(dossierFor(id, { hasSave: hasSave(), jobsDone: done, district }));
 }
 
