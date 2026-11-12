@@ -812,6 +812,20 @@ export function buildFrontCath(phone: boolean): FrontCath {
         p.setZ(i, surf + 0.0055 + roll + p.getZ(i));
       }
       lap.computeVertexNormals();
+      // Plan item 319 slice 34: the lapel's bevelled edge faces the lens like its face. Its sides turned edge-on, so
+      // the wool rim lit them full: a pale line round each lapel and down the V read as white flecks on the ink edge
+      // (critique, 11-12 08:35); the ink hull still draws the contour. (Moving the lapels onto skirtMat for a vertex
+      // shade cost 4 draw calls in a phone firefight, at its budget.)
+      const nr = lap.attributes.normal as THREE.BufferAttribute;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < nr.count; i++) {
+        v.fromBufferAttribute(nr, i);
+        const k = 1 - THREE.MathUtils.smoothstep(v.z, 0.6, 0.93);
+        if (k > 0) {
+          v.set(v.x * (1 - k), v.y * (1 - k), v.z + (1 - v.z) * k).normalize();
+          nr.setXYZ(i, v.x, v.y, v.z);
+        }
+      }
     }
     addS(lap, coatMat, pelvis);
     // Buttons: two columns of three down the front.
