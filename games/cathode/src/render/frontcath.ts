@@ -1253,7 +1253,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const part = Math.max(0, 1 - Math.abs(x) / 0.1) * Math.max(0, z) * Math.max(0, y) * 0.05;
       const crown = 1 + Math.max(0, y) * Math.max(0, -z) * 0.08 + 0.05 * (1 - Math.max(0, y)) * (1 - Math.max(0, z));
       // Combed strands from the parting: ridges that run down and back, catching the back light.
-      const ridge = 1 + 0.014 * Math.sin(az * 34 + polar * 3) * (0.4 + 0.6 * Math.max(0, y));
+      const ridge = 1 + 0.006 * Math.sin(az * 34 + polar * 3) * (0.4 + 0.6 * Math.max(0, y));
       x *= crown * ridge;
       z *= crown * ridge;
       y = y * crown - part;
@@ -1397,8 +1397,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const az1 = side * (0.55 + n * 2.3 + (rnd() - 0.5) * 0.15);
       const v0 = 0.04 + rnd() * 0.05;
       const v1 = 0.9 + rnd() * 0.12;
-      const w0 = 0.09 + rnd() * 0.05;
-      const out = 0.025 + rnd() * 0.02;
+      // Plan item 319: laid close and wide (was 0.025-0.045 proud, 0.09-0.14 wide, a 1.8% ridge), so the locks
+      // overlap into combed hair instead of standing off the cap as stepped cards.
+      const w0 = 0.13 + rnd() * 0.05;
+      const out = 0.008 + rnd() * 0.008;
       const dv = (rnd() - 0.5) * 0.06;
       const base = lp.length / 3;
       for (let a = 0; a <= ALONG; a++) {
@@ -1408,7 +1410,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const az = az0 + (az1 - az0) * Math.pow(s, 0.7);
         const w = w0 * (0.5 + 0.5 * Math.min(1, s / 0.25)) * (1 - 0.85 * Math.pow(s, 4));
         for (let j = 0; j < 3; j++) {
-          const pt = capShape(Math.min(1.02, v), az + (j - 1) * w * 0.5, out + (j === 1 ? 0.018 : 0)).applyMatrix4(capPlace);
+          const pt = capShape(Math.min(1.02, v), az + (j - 1) * w * 0.5, out + (j === 1 ? 0.007 : 0)).applyMatrix4(capPlace);
           lp.push(pt.x, pt.y, pt.z);
           luv.push(0.4 + i * 0.37 + (j - 1) * 0.16, 1 - (0.08 + v * 0.42) + dv);
           lockAtArr.push(0, 0);
@@ -1476,24 +1478,27 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (const [dz, dx, len] of [[0, 0, 1], [0.004, 0.008, 0.8]] as const)
         strand([
           capShape(0.78, (0.42 + dx * 4) * sx, 0.05).applyMatrix4(capPlace),
-          V((0.066 + dx) * sx, 0.012, 0.05 + dz),
-          V((0.068 + dx) * sx, -0.03 * len, 0.046 + dz),
-          V((0.06 + dx) * sx, -0.07 * len, 0.044 + dz),
-          V((0.064 + dx) * sx, -0.1 * len, 0.04 + dz),
+          // Plan item 319: outside the cheekbone (was 0.066, 0.068, 0.06, 0.064), so the far wisp edges her face.
+          V((0.072 + dx) * sx, 0.012, 0.046 + dz),
+          V((0.076 + dx) * sx, -0.03 * len, 0.04 + dz),
+          V((0.072 + dx) * sx, -0.07 * len, 0.036 + dz),
+          V((0.074 + dx) * sx, -0.1 * len, 0.034 + dz),
         ], sx, 0.28, 0.5, false);
       const keys = [
         capShape(0.1, 0.1 * sx, 0.04).applyMatrix4(capPlace),
         capShape(0.55, 0.36 * sx, 0.05).applyMatrix4(capPlace),
         capShape(0.97, 0.62 * sx, 0.045).applyMatrix4(capPlace),
-        V(0.07 * sx, -0.012, 0.036),
-        V(0.064 * sx, -0.07, 0.03),
-        V(0.074 * sx, -0.122, 0.034),
+        // Plan item 319: past the cheekbone (was 0.07, 0.064, 0.074 at z 0.036-0.03), so in three-quarter view the
+        // far curtain frames her cheek instead of lying across it as a dark slab.
+        V(0.079 * sx, -0.012, 0.03),
+        V(0.077 * sx, -0.07, 0.022),
+        V(0.082 * sx, -0.122, 0.03),
         V(0.094 * sx, -0.18, 0.06),
         V(0.106 * sx, -0.26, 0.09),
         V(0.11 * sx, -0.34, 0.112),
         V(0.104 * sx, -0.43, 0.122),
       ];
-      strand(keys, sx, 1.4, 1, true); // plan item 289: thicker front locks
+      strand(keys, sx, 1.25, 1, true); // plan item 289: thicker front locks (319: 1.4 -> 1.25)
     }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
