@@ -3171,7 +3171,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P and D.
 - **Size:** 2
 
-## 336. [ ] Hedgerow: Hollowell's depot as a staged corporate gate that launches each wave
+## 336. [ ] Hedgerow: Hollowell's depot as a staged corporate gate that launches each wave *(lane B, in progress)*
 - **Why:**
   - `plan1112a/hedge-l21-3d-D`: the enemy source is a flat teal box with a pasted cartoon head (130-310 x 150-330), and its HOLLOWELL board is a plain green label on a post (195-305 x 368-395).
   - `hedge-l34-2d-D`: both depots are white boxes, and each "NEXT" count sits over its own sign (90-220 x 130-240 and 90-220 x 605-715).
