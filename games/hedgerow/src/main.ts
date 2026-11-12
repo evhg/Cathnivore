@@ -4720,7 +4720,10 @@ function syncDepots(g: Game): void {
       el.toggleAttribute("data-small", sp.size < 100);
       el.toggleAttribute("data-tiny", sp.size < 72);
       // Plan item 166: a quiet gate reads "0 next" (a bare dash read as a broken board).
-      el.innerHTML = `${depotSvg()}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
+      // Plan item 336: as the shutter rolls up on Go, the round's lead vehicle noses out of the door (a fade under
+      // reduced motion), then the convoy takes over on the lane.
+      const lead = doorOpen ? (L.waves[g.wave - 1] ?? []).find((gr) => ((gr as { lane?: number }).lane ? 1 : 0) === sp.lane)?.enemy ?? L.waves[g.wave - 1]?.[0]?.enemy : undefined;
+      el.innerHTML = `${depotSvg()}${lead ? `<img class="depot-lead" src="${enemyIcon(lead)}" alt="">` : ""}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
       return el;
     }),
   );

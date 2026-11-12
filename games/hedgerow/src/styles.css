@@ -5130,6 +5130,24 @@ img.act-scene {
 .depot[data-door-open] .depot-door { transform: scaleY(0.12); }
 /* Plan item 336: as the shutter rolls up on Go the floodlights flare twice over the front (a single steady glow under
    reduced motion). */
+/* Plan item 336: the round's lead vehicle noses out of the shutter (58-94% of the box) and on toward the lane. */
+.depot-lead {
+  position: absolute;
+  left: 31%;
+  top: 60%;
+  width: 38%;
+  height: auto;
+  animation: depot-lead 900ms cubic-bezier(.3, .7, .4, 1) both;
+}
+@keyframes depot-lead {
+  from { translate: 0 -30%; opacity: 0; }
+  30% { opacity: 1; }
+  to { translate: 0 45%; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .depot-lead { animation: depot-lead-fade 400ms ease both; }
+  @keyframes depot-lead-fade { from { opacity: 0; } to { opacity: 1; } }
+}
 .depot[data-door-open] .depot-flood { animation: depot-flood 450ms ease-in-out 2 alternate; }
 @keyframes depot-flood { to { opacity: 0.55; } }
 @media (prefers-reduced-motion: reduce) {
