@@ -35,3 +35,34 @@ for (const [name, url] of [['title', '/nightshift/'], ['class pick', '/nightshif
     expect(r.small).toEqual([])
   })
 }
+
+// Plan item 335: at D each of The List's rumours reads in 3 lines or fewer, its last line more than one word.
+test("The List's rumours run 3 lines or fewer, no one-word last line", async ({ page }) => {
+  test.setTimeout(150_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.addInitScript(() =>
+    localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })),
+  )
+  await page.goto('/nightshift/')
+  await page.locator('#menu').waitFor({ state: 'visible', timeout: 90_000 })
+  await page.waitForTimeout(1500)
+  const rs = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('.rumour')]
+      .filter((e) => e.offsetParent)
+      .map((e) => {
+        const lh = parseFloat(getComputedStyle(e).lineHeight)
+        const range = document.createRange()
+        range.selectNodeContents(e)
+        const rects = [...range.getClientRects()]
+        const lastTop = Math.max(...rects.map((r) => r.top))
+        const lastWords = rects.filter((r) => Math.abs(r.top - lastTop) < 2).reduce((a, r) => a + r.width, 0)
+        return { text: e.textContent ?? '', lines: Math.round(e.getBoundingClientRect().height / lh), lastWidth: lastWords }
+      }),
+  )
+  expect(rs.length).toBeGreaterThan(0)
+  for (const r of rs) {
+    expect(r.lines, r.text).toBeLessThanOrEqual(3)
+    // a one-word last line would be a single short span; two words or more run over 40 px at this size
+    expect(r.lastWidth, r.text).toBeGreaterThan(40)
+  }
+})

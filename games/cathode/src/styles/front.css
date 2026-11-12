@@ -1309,7 +1309,9 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   }
   .title-col .menu { grid-auto-rows: max(calc(var(--u) * 56), calc(var(--u) * 70 + var(--short) / 8)); }
   .mug {
-    width: calc(var(--u) * 132);
+    /* Plan item 335: wide enough for an 18 ch measure, so a rumour is 3 lines or fewer (at 132 u they ran 4-5, one
+       word to a line). */
+    width: calc(var(--u) * 172);
     outline-offset: calc(var(--u) * 2);
     transition: scale 220ms cubic-bezier(.2, .8, .2, 1), rotate 220ms ease, box-shadow 220ms ease;
     cursor: default;
@@ -1324,6 +1326,7 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     padding-inline: calc(var(--u) * 1.5) calc(var(--u) * 3);
     font: italic 500 var(--fs-2) / 1.05 var(--font-voice);
     color: var(--card-ink);
+    text-wrap: pretty; /* plan item 335: no one-word last line */
   }
   .mug:is(:hover, :focus) {
     z-index: var(--z-lift-4);
