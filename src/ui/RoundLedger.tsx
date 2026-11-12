@@ -127,7 +127,8 @@ export default function RoundLedger({ state }: { state: GameState }) {
           <path d="M35 37a3 3 0 106 0 3 3 0 10-6 0M55 35a3 3 0 106 0 3 3 0 10-6 0M77 38a3 3 0 106 0 3 3 0 10-6 0" />
           <path d="M96 30l8 4-3 7-8-4zM96 30l-2-4" />
         </svg>
-        <span className="ledger-sketch-note">Every move gets chalked up here</span>
+        {/* Plan item 337: Cath's own tip in her hand, not a placeholder caption, until the round's first move is chalked up */}
+        <span className="ledger-sketch-note">Sell early, love: Marks buy what you're saving for, and it pays back every round. <i className="ledger-sign">— C.</i></span>
       </div>
     </section>
   )

@@ -3186,7 +3186,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of l21 (3D) and l34 (2D) at P and D.
 - **Size:** 2
 
-## 337. [ ] Cathnivore: the desktop left rail as the producer's farm ledger, not three form panels *(lane B, in progress)*
+## 337. [ ] Cathnivore: the desktop left rail as the producer's farm ledger, not three form panels *(lane B, in progress)* *(slice 1, 2026-11-12 05:35 lane B: no rail text under 13 px at D. The rail takes a 13 px `--fs-label` (its labels, the partner's incomes, the goal names and counts and the ledger's heads were 12.5); measured in the page, nothing left under 13 but the hidden '?' glyphs. The empty Ledger now shows Cath's own tip in her hand at body size and 92% ink, signed 'C.' ('Sell early, love: Marks buy what you're saving for, and it pays back every round.'), instead of the faint 'Every move gets chalked up here'. ledger, player-mat, rail, board-scale and desktop-no-scroll pass; turn-show's phone cases flake (a different case each run, clean on a rerun). Shots scratchpad rail-after-*, ledger-light. Left: the rail as one leather ledger (two pages, the partner on a tab), goal tickets as pinned tickets)*
 - **Why:** `plan1112a/cath-game-D`:
   - The Ledger is a 280x165 empty brown box (35-315 x 637-800) holding one placeholder line.
   - The "Saving for" cards cram a 5-line rule into ~11 px text (230-310 x 445-530).

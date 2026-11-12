@@ -4791,11 +4791,16 @@ html.no-animations .game-layout .table-hand .action-item { animation: none; }
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  /* Plan item 337: Cath's tip, at reading contrast (the faint caption was a placeholder), signed. */
   .ledger-sketch-note {
     flex: none;
-    font: italic var(--fs-caption)/1.2 var(--font-voice);
-    color: color-mix(in srgb, var(--wood-ink) 62%, transparent);
+    max-width: 92%;
+    font: italic var(--fs-body)/1.25 var(--font-voice);
+    text-align: center;
+    text-wrap: balance;
+    color: color-mix(in srgb, var(--wood-ink) 92%, transparent);
   }
+  .ledger-sketch-note .ledger-sign { display: block; text-align: right; font-style: normal; font-weight: 600; }
 }
 @media (min-width: 1024px) {
   .actions-sheet .round-ledger-roll .receipt[data-kind="opening"] .receipt-why { color: color-mix(in srgb, var(--wood-ink) 70%, transparent); }
@@ -4970,3 +4975,9 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   :is(.table-hand, .action-tray .actions) .action-item .action-label > svg.action-seal { width: 22px; height: 22px; }
 }
 :is(.table-hand, .action-tray .actions) .action-family-name > svg.action-seal { display: none; }
+
+/* Plan item 337: on the desktop's left rail no text is under 13 px (its labels, the partner's incomes, the goal
+   tickets' names and counts, the ledger's heads were 12.5): the rail takes a 13 px label size. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .desktop-col-left { --fs-label: 0.8125rem; }
+}
