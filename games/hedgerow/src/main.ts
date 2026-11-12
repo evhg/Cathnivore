@@ -3936,6 +3936,8 @@ let dockFolded = "";
 /** Once folded, or once the player picks a plot, the dock stays away for that build (`level:wave`), so a new line
  *  after each tower never covers the tray again mid-build. */
 let dockQuietFor = "";
+/** Plan item 297: the build phase (level:wave) whose field at D is too crowded for her bubble: her line docks in the panel. */
+let crowdDock = "";
 let dockText = "";
 let dockFace: CathExpression | null = null;
 // A tap anywhere on the dock folds it away whole, so the tray under it is free (a drag can start at once after).
@@ -3962,6 +3964,18 @@ function dockExpression(g: Game, text: string): CathExpression {
   return "determined";
 }
 
+/** Plan item 297: the panel's Coming up / notebook card at D, the space her docked line takes (null if dropped). */
+function deskDockCard(): DOMRect | null {
+  const parts = [...ui.panel.querySelectorAll<HTMLElement>(":scope > .round-group > :is(.field-tabs, .field-notebook)")].filter((e) => e.getClientRects().length > 0);
+  if (!parts.length) return null;
+  const rs = parts.map((e) => e.getBoundingClientRect());
+  const top = Math.min(...rs.map((r) => r.top));
+  const bottom = Math.max(...rs.map((r) => r.bottom));
+  const left = Math.min(...rs.map((r) => r.left));
+  const right = Math.max(...rs.map((r) => r.right));
+  return bottom - top >= 80 ? new DOMRect(left, top, right - left, bottom - top) : null;
+}
+
 function syncCathDock(g: Game, text: string): void {
   const el = ui.cathDock;
   if (!text) {
@@ -3970,8 +3984,17 @@ function syncCathDock(g: Game, text: string): void {
     return;
   }
   const panel = ui.panel.getBoundingClientRect();
+  // Plan item 297: at D on a crowded field she docks over the panel's Coming up / notebook card (the tower packets
+  // above it stay free to tap); with that card dropped for room, her bubble goes back on the field.
+  const desk = !DOCK_QUERY.matches;
+  const card = desk ? deskDockCard() : null;
+  if (desk && !card) {
+    el.hidden = true;
+    crowdDock = "";
+    return;
+  }
   // The round drawer open (the panel grown over the field's foot) is the player reading on: she folds away.
-  if (!panel.height || panel.height > 120) {
+  if (!desk && (!panel.height || panel.height > 120)) {
     el.hidden = true;
     if (panel.height) dockQuietFor = `${g.level.id}:${g.wave}`;
     return;
@@ -3996,6 +4019,14 @@ function syncCathDock(g: Game, text: string): void {
       void el.offsetWidth;
       el.classList.add("slide");
     }
+  }
+  el.toggleAttribute("data-desk", desk);
+  if (card) {
+    el.style.setProperty("--dock-top", `${Math.round(card.top)}px`);
+    el.style.setProperty("--dock-left", `${Math.round(card.left)}px`);
+    el.style.setProperty("--dock-w", `${Math.round(card.width)}px`);
+    el.style.setProperty("--dock-h", `${Math.round(Math.max(96, card.height))}px`);
+    return;
   }
   // Over the tray (never the field), under the round drawer's handle so that stays a tap away.
   const handle = ui.panel.querySelector(".drawer-handle")?.getBoundingClientRect();
@@ -4078,8 +4109,8 @@ function syncCathSay(g: Game, now: number): void {
   const said = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
   // Plan item 297: when her line says to build a tower not yet on the field, the field marks the plot for it.
   syncCoach(g, quiet || !!sayOverride ? null : coachTower(g));
-  const docked = DOCK_QUERY.matches && !document.documentElement.hasAttribute("data-keyart");
   const build = `${g.level.id}:${g.wave}`;
+  const docked = (DOCK_QUERY.matches || crowdDock === build) && !document.documentElement.hasAttribute("data-keyart");
   if (docked && g.phase === "build" && (!!selected || posting || aiming)) dockQuietFor = build;
   syncCathDock(g, docked && dockQuietFor !== build ? said : "");
   const text = docked ? "" : said;
@@ -4146,6 +4177,15 @@ function syncCathSay(g: Game, now: number): void {
   if (over(spot) > 0.12) {
     el.classList.add("compact");
     spot = place();
+  }
+  // Plan item 297: still over the plots she tells you to tap (a crowded field at D): her line docks in the panel for
+  // the rest of this build phase, if its Coming up card is there to take it.
+  if (over(spot) > 0.12 && !DOCK_QUERY.matches && deskDockCard()) {
+    crowdDock = `${g.level.id}:${g.wave}`;
+    el.hidden = true;
+    sayShown = null;
+    sayText = "";
+    return;
   }
   el.dataset.side = spot.side;
   el.style.setProperty("--tail", `${spot.tail}px`);

@@ -921,6 +921,19 @@ button {
 [data-keyart] .cath-dock {
   display: none;
 }
+/* Plan item 297: at D on a crowded field her line docks over the panel's Coming up / notebook card. */
+.cath-dock[data-desk] {
+  left: var(--dock-left, auto);
+  right: auto;
+  width: var(--dock-w, 300px);
+  padding: 8px;
+  clip-path: none;
+  align-items: flex-start;
+}
+.cath-dock[data-desk] .cath-dock-bust {
+  width: 56px;
+  height: 56px;
+}
 
 /* ---- plan item 64: a new enemy as a page of Cath's field guide ----
    The field dims and holds; a ruled notebook page carries the vehicle's sketch, its traits and the towers in

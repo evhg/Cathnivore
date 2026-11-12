@@ -38,7 +38,27 @@ for (const level of [3, 12, 21]) {
       await expect(page.locator('#cath-dock')).toBeHidden()
       return
     }
-    await expect.poll(async () => (await say(page))?.text ?? '').not.toBe('')
+    // Plan item 297: on a field too crowded for her bubble (level 12 at D) her line docks over the panel's Coming up
+    // card instead: off the field, the tower packets above it free.
+    await expect.poll(async () => ((await say(page))?.text ?? '') || ((await page.locator('#cath-dock-line').isVisible()) ? 'docked' : '')).not.toBe('')
+    if (await page.locator('#cath-dock').isVisible()) {
+      await expect(page.locator('#cath-say')).toBeHidden()
+      await expect(page.locator('#cath-dock-line')).not.toBeEmpty()
+      const m = await page.evaluate(() => {
+        const d = document.getElementById('cath-dock')!.getBoundingClientRect()
+        const p = document.getElementById('panel')!.getBoundingClientRect()
+        const packs = [...document.querySelectorAll('#panel button.tray-tower')].map((e) => e.getBoundingClientRect()).filter((r) => r.width)
+        return { inPanel: d.left >= p.left - 1 && d.right <= p.right + 1 && d.top >= p.top - 1, onPacket: packs.some((r) => r.bottom > d.top + 1 && r.top < d.bottom - 1 && r.right > d.left && r.left < d.right) }
+      })
+      expect(m.inPanel, 'docked in the panel').toBe(true)
+      expect(m.onPacket, 'docked over a tower packet').toBe(false)
+      await page.evaluate(() => {
+        const h = (window as unknown as { hedgerow: Hg }).hedgerow
+        h.sendWave(h.game())
+      })
+      await expect(page.locator('#cath-dock')).toBeHidden()
+      return
+    }
     const s = (await say(page))!
     await expect(page.locator('#cath-say')).toBeVisible()
     await expect(page.locator('#cath-say')).toHaveText(s.text)
@@ -56,7 +76,7 @@ for (const level of [3, 12, 21]) {
     // 2026-11-09: since item 250 put her portrait in the bubble (300 px wide, 76 px tall at least), level 12's dense
     // field at D has no spot within her reach that clears a plot column (21% at best), so D shares the phone's bound
     // until the placement is reworked (FEEDBACK / PROGRESS: open).
-    expect(covered, 'bubble over empty plots').toBeLessThanOrEqual(s.box.w * s.box.h * (hasTouch || level === 12 ? 0.3 : 0.15))
+    expect(covered, 'bubble over empty plots').toBeLessThanOrEqual(s.box.w * s.box.h * (hasTouch ? 0.3 : 0.15))
     // Never over the round's threat waiting at the gate (canvas px; the canvas fills the field).
     const q = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.gateQueue())
     for (const b of [...(q?.leads ?? []), ...(q?.plates ?? []), ...(q?.names ?? [])]) expect(hit(s.box, b), `bubble ${JSON.stringify(s.box)} on the queue ${JSON.stringify(b)}`).toBe(false)
