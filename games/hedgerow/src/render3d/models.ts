@@ -2587,11 +2587,24 @@ export function buildGate(label: string): THREE.Group {
   const ctx = c.getContext("2d");
   let capFrac = 0.5;
   if (ctx) {
-    ctx.fillStyle = "#1f8a8a";
+    // Plan item 336: a lit corporate board, not a flat label: a glossy teal gradient lit from above, a chrome frame,
+    // a white sheen across its top, and the orange brand stripe of the depot along its foot.
+    const gr = ctx.createLinearGradient(0, 0, 0, c.height);
+    gr.addColorStop(0, "#2fb0ac");
+    gr.addColorStop(0.55, "#1f8a8a");
+    gr.addColorStop(1, "#14605f");
+    ctx.fillStyle = gr;
     ctx.fillRect(0, 0, c.width, c.height);
-    ctx.strokeStyle = "#f4fbfb";
-    ctx.lineWidth = 5;
-    ctx.strokeRect(7, 7, c.width - 14, c.height - 14);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(10, 10, c.width - 20, c.height * 0.18);
+    ctx.fillStyle = "#ef7a2a";
+    ctx.fillRect(10, c.height - 22, c.width - 20, 12);
+    ctx.strokeStyle = "#dfe5ea";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, c.width - 8, c.height - 8);
+    ctx.strokeStyle = "#8e9aa6";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(9, 9, c.width - 18, c.height - 18);
     ctx.fillStyle = "#f4fbfb";
     let size = Math.round(c.height * 0.66);
     ctx.font = `bold ${size}px 'Hedgerow UI', system-ui, sans-serif`;
