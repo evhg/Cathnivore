@@ -4981,3 +4981,26 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 @media (min-width: 1240px) and (min-height: 760px) {
   .desktop-col-left { --fs-label: 0.8125rem; }
 }
+
+/* Plan item 337: on the desktop rail the three "Saving for" goals are tickets pinned to the board: each hangs slightly
+   askew from a brass drawing pin at its top (the pin is decoration; the card keeps its focus ring and hit area). */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx] { position: relative; }
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='0'] { rotate: -1.6deg; }
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='1'] { rotate: 0.9deg; }
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='2'] { rotate: -0.7deg; }
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx]::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--paper-hi) 0 15%, var(--wheat) 30%, color-mix(in srgb, var(--wheat) 55%, var(--soil)) 100%);
+    box-shadow: 1px 2px 2px color-mix(in srgb, var(--ink) 35%, transparent);
+    z-index: var(--z-raised);
+    pointer-events: none;
+  }
+}
