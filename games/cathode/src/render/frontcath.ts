@@ -1552,17 +1552,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const past = 0.012;
     const k = upLen / (upLen + past);
     // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
-    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(12), 0.9), 0, 0.5), sleeveMat, parent);
+    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    const elb = new THREE.SphereGeometry(0.041, seg(12), seg(8));
+    const elb = new THREE.SphereGeometry(0.041, seg(24), seg(12));
     elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
     addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
-    addS(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(12), 0.9), 0.5, 1), sleeveMat, fore);
+    addS(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(24), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
     // The cuff strap.
     const d = wr.clone().sub(el).normalize();
-    const strap = new THREE.TorusGeometry(0.044, 0.005, 4, seg(14));
+    const strap = new THREE.TorusGeometry(0.044, 0.005, 6, seg(28));
     strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
     const at = wr.clone().addScaledVector(d, -0.04);
     strap.translate(at.x, at.y, at.z);
@@ -1578,7 +1578,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   {
     const curve = new THREE.CatmullRomCurve3([shoulderR, shoulderR.clone().lerp(elbowR, 0.55), elbowR, elbowR.clone().lerp(wristR, 0.5), wristR], false, "centripetal");
     const T = seg(28);
-    const R = seg(12);
+    // Plan item 319 slice 14: 24 sides round (was 12), so the cuff's open end and its ink line are round, not an
+    // octagon beside the umbrella fist at D; the sleeves, elbow ball and cuff straps likewise.
+    const R = seg(24);
     const tube = new THREE.TubeGeometry(curve, T, 1, R, false);
     const upLen = shoulderR.distanceTo(elbowR);
     const sE = upLen / (upLen + elbowR.distanceTo(wristR));
@@ -1612,7 +1614,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     add(tube, sleeveMat, chest).name = "cath-sleeve-r";
     // The cuff strap, on the turn-back.
     const d = curve.getTangentAt(0.93);
-    const strap = new THREE.TorusGeometry(0.046, 0.005, 4, seg(14));
+    const strap = new THREE.TorusGeometry(0.046, 0.005, 6, seg(28));
     strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
     const at = curve.getPointAt(0.9);
     strap.translate(at.x, at.y, at.z);
