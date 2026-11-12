@@ -3217,7 +3217,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all five classes at P and D.
 - **Size:** 2
 
-## 339. [ ] Portfolio: the hero as a studio scene with four readable product screens *(lane B, in progress)*
+## 339. [ ] Portfolio: the hero as a studio scene with four readable product screens *(lane B, in progress)* *(slice 1, 2026-11-12 09:35 lane B: at D the four prints are a 2x2 wall of framed screens that never overlap, each 265 px wide at 1440 (236 at 1280, 203 at 1100), with its name on a centred plaque, kept on one line. Cath stands under the wall in the right third that was empty, pointing up at it, clear of every frame, the headline and the stats. The fruit counter is gone from the portfolio; her waist fades out instead. On a phone the swiped strip takes the left 56% and Cath stands beside it (44%, item 38's 40% of the screen), so she covers no print or label. portfolio tests (14), portfolio-* and site-hero pass at P and D (10); shots scratchpad port-{D,D2,D3,P390c}. Left: 260 px+ frames at 1280 (a wider wall would meet the headline), the LCP check on the throttled run)*
 - **Why:**
   - `plan1112a/portfolio-D`: Cath stands at a floating fruit-stall counter on a dark tech page (697-945 x 390-700), as if pasted in from the games site.
   - The four product prints are small and overlap (940-1350 x 145-555): NIGHT SHIFT's is half covered, and its label sits in shadow (960-1100 x 350-505).
