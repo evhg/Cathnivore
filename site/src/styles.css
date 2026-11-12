@@ -1506,6 +1506,10 @@ body {
   line-height: 1.1;
 }
 .hero-game-name .badge { font-size: 0.6875rem; vertical-align: middle; }
+/* Plan item 340: the poster's own logotype names the game (item 332); the name under it said it again. The words go
+   (font-size 0: still the link's accessible name), the badges stay, pinned to the art's corner. */
+.hero-game-name { font-size: 0; line-height: 0; }
+.hero-game-name .badge { position: absolute; top: 8px; right: 8px; line-height: 1.2; }
 .hero-game-hook {
   font-size: 0.875rem;
   line-height: 1.3;
@@ -1534,7 +1538,7 @@ body {
 @media (max-width: 899.98px), (max-aspect-ratio: 1/1) {
   .hero-games { margin-top: 16px; }
   .hero-game-text { padding: 8px 10px 2px; }
-  .hero-game-name { font-size: 1.0625rem; }
+  .hero-game-name { font-size: 0; }
   /* Plan item 107: a two-column poster has no room for the 18+ badge beside NIGHT SHIFT (it wrapped onto its own
      line), so it pins to the art's top-right corner, clear of Cath at the bottom. */
   .hero-game-name .badge-adult { position: absolute; top: 8px; right: 8px; }

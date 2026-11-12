@@ -3232,7 +3232,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P and D.
 - **Size:** 2
 
-## 340. [ ] The bugs from the 2026-11-12 01:00 critique, fixed as one batch *(lane B, in progress)*
+## 340. [ ] The bugs from the 2026-11-12 01:00 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 2026-11-12 07:50 lane B: **Site** /games/ posters name each game once, by the art's logotype; the name under it is collapsed (font-size 0, still the link's accessible name) and the New/18+ badges pin to the art's corner. games-cards, games-stall, site-hero and critique104 pass (critique104's 1 s landing check failed once in the batch and passes alone); shots scratchpad games-{D,P}. Checked, no change: the Cathnivore D hand's 'unction' is the pointer's hover lift (playwright left the mouse where Start was); unhovered at 1280 and 1440 'Injunction' reads whole, and only Supply's trailing '·' goes under. Raising the overflowing card instead made it worse, and two rows broke board-scale and table-hand's 110 px cards, so both were reverted. Hedgerow P menu labels sit on their paper pills over the buildings and read. Left: P '9+ more' over the third card, NIGHT SHIFT title P 'SHIFT' contrast and case line, play P chips ~10 px)*
 - **Why:** subagent critique of `e2e/screenshots/plan1112a/`, each to be measured in the page before fixing:
   - `cath-game-D` (1200-1330 x 715-880): the last hand card "Junction" is clipped by the deck and the screen edge, so it reads "unction".
   - `cath-game-P` (295-380 x 755-782): the "9+ more" pill sits over the third card's corner.
