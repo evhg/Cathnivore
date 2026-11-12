@@ -2688,7 +2688,22 @@ float reliefShade( vec2 uv ) {
       hood.computeVertexNormals();
     }
     hood.scale(0.112, 0.13, 0.118);
+    // Plan item 319 slice 27: the crown lies closer over her head (2.6 cm of air over the hair cap read as a helmet
+    // shell); the lower edge stays put (lifting it bared the back hair at her nape). The brim follows the same map.
+    const hoodCrown = (v: THREE.Vector3): THREE.Vector3 => {
+      const u = Math.max(0, (v.y - 0.012) / 0.13);
+      return v.set(v.x * (1 - 0.05 * u), 0.012 + (v.y - 0.012) * (1 - 0.075 * u), (v.z + 0.01) * (1 - 0.05 * u) - 0.01);
+    };
     hood.translate(0, 0.012, -0.01);
+    {
+      const p = hood.attributes.position as THREE.BufferAttribute;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < p.count; i++) {
+        hoodCrown(v.fromBufferAttribute(p, i));
+        p.setXYZ(i, v.x, v.y, v.z);
+      }
+      hood.computeVertexNormals();
+    }
     // Plan item 247: the cowl was an open cylinder whose gap faced her left side, so a closed tube stood in front of
     // her chin (the "bucket"). Now a draped lathe: snug under the jaw, rounding out over the collar, open at the
     // front (+z) in a V that widens toward the chin, with soft folds that deepen as the cloth falls.
@@ -2720,7 +2735,7 @@ float reliefShade( vec2 uv ) {
     // down one edge of the opening, over the brow and down the other, a little proud of the cloth.
     const rimPts: THREE.Vector3[] = [];
     const onHood = (phi: number, theta: number) =>
-      new THREE.Vector3(-Math.cos(phi) * Math.sin(theta) * 0.112, Math.cos(theta) * 0.13 + 0.012, Math.sin(phi) * Math.sin(theta) * 0.118 - 0.01).multiplyScalar(1.03);
+      hoodCrown(new THREE.Vector3(-Math.cos(phi) * Math.sin(theta) * 0.112, Math.cos(theta) * 0.13 + 0.012, Math.sin(phi) * Math.sin(theta) * 0.118 - 0.01).multiplyScalar(1.03));
     for (let i = 0; i <= 8; i++) rimPts.push(onHood(Math.PI - 0.62, 2.45 - (i / 8) * 2.2));
     for (let i = 0; i <= 8; i++) rimPts.push(onHood(0.62, 0.25 + (i / 8) * 2.2));
     const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), seg(40), 0.009, 6, false);
