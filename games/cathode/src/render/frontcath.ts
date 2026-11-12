@@ -122,6 +122,27 @@ function turned(a: THREE.Vector3, b: THREE.Vector3, profile: Array<[number, numb
   return g;
 }
 
+/** The radius of a `turned` profile at t (linear between its points). */
+function profR(profile: ReadonlyArray<readonly [number, number]>, t: number): number {
+  for (let i = 0; i < profile.length - 1; i++) {
+    const [t0, r0] = profile[i]!;
+    const [t1, r1] = profile[i + 1]!;
+    if (t <= t1) return r0 + ((r1 - r0) * (t - t0)) / (t1 - t0 || 1);
+  }
+  return profile[profile.length - 1]![1];
+}
+
+/**
+ * Plan item 319: a cuff strap, a 1.4 cm leather band 2.5 mm proud of a sleeve of radius `r` (squashed to `depth`
+ * like the sleeve's `turned`), centred on `at` along `dir`, its edges eased in.
+ */
+function cuffBand(at: THREE.Vector3, dir: THREE.Vector3, r: number, depth: number, segs: number): THREE.BufferGeometry {
+  const h = 0.007;
+  const a = at.clone().addScaledVector(dir, -h);
+  const b = at.clone().addScaledVector(dir, h);
+  return turned(a, b, [[0, r + 0.0006], [0.15, r + 0.0025], [0.85, r + 0.0025], [1, r + 0.0006]], segs, depth);
+}
+
 /** Plan item 227: the baked wool normal maps, by name and size (null where there is no 2D canvas). */
 const WOOL_CACHE = new Map<string, THREE.CanvasTexture | null>();
 
@@ -1780,15 +1801,15 @@ float reliefShade( vec2 uv ) {
     elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
     addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
-    addS(vSpan(turned(el.clone().addScaledVector(ud, -0.006), wr, [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]], seg(24), 0.9), 0.5, 1), sleeveMat, fore);
+    const foreA = el.clone().addScaledVector(ud, -0.006);
+    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]];
+    addS(vSpan(turned(foreA, wr, foreProf, seg(24), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
-    // The cuff strap.
-    const d = wr.clone().sub(el).normalize();
-    const strap = new THREE.TorusGeometry(0.044, 0.005, 6, seg(28));
-    strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
-    const at = wr.clone().addScaledVector(d, -0.04);
-    strap.translate(at.x, at.y, at.z);
-    addS(strap, blackMat, parent);
+    // The cuff strap. Plan item 319: a flat leather band laid on the sleeve, following its oval, not a round ring
+    // (a torus round the oval sleeve stood off it at the sides and read as a floating bracelet).
+    const d = wr.clone().sub(foreA).normalize();
+    const tAt = 1 - 0.04 / foreA.distanceTo(wr);
+    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), blackMat, parent);
   };
   const shoulderR = V(-0.15, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
@@ -1835,12 +1856,8 @@ float reliefShade( vec2 uv ) {
     tube.computeVertexNormals();
     add(tube, sleeveMat, chest).name = "cath-sleeve-r";
     // The cuff strap, on the turn-back.
-    const d = curve.getTangentAt(0.93);
-    const strap = new THREE.TorusGeometry(0.046, 0.005, 6, seg(28));
-    strap.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d));
-    const at = curve.getPointAt(0.9);
-    strap.translate(at.x, at.y, at.z);
-    addS(strap, blackMat, chest);
+    // Plan item 319: a flat band on the sleeve (see the left arm's).
+    addS(cuffBand(curve.getPointAt(0.9), curve.getTangentAt(0.9), radius(0.9), 1, seg(24)), blackMat, chest);
   }
   // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
   // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the
