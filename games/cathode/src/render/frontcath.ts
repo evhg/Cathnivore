@@ -1726,6 +1726,7 @@ float reliefShade( vec2 uv ) {
     };
     // Plan item 275: one waved strand of the given width (wk) and wave (wa) along `keys`; the curtains, and the loose
     // wisps at the temples, all in the one lock mesh (no draw call).
+    const STRAND_COLS = 5;
     const strand = (keys: THREE.Vector3[], sx: number, wk: number, wa: number, sway: boolean, phase = 0): void => {
       const curve = new THREE.CatmullRomCurve3(keys, false, "centripetal");
       const N = 40;
@@ -1744,21 +1745,26 @@ float reliefShade( vec2 uv ) {
         // cycles of 8 mm to a point), so a lock over the coat reads as a soft wave of hair, not a flame.
         const w = wk * (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.55 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 1.5));
         const wave = s > 0.4 ? Math.sin((s - 0.4) * 15 + phase * THREE.MathUtils.smoothstep(s, 0.62, 0.85)) * 0.006 * wa * Math.min(1, (s - 0.4) / 0.15) : 0;
-        for (let j = 0; j < 3; j++) {
-          const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
+        // Plan item 319 slice 41: five columns in a rounded arch whose edges sink back (was three in a shallow tent
+        // with the edges level with the base), so a lock over the coat turns round its width like a bundle of hair,
+        // with soft edges, not a flat card with a crease down it.
+        for (let j = 0; j < STRAND_COLS; j++) {
+          const t = (j - (STRAND_COLS - 1) / 2) / ((STRAND_COLS - 1) / 2);
+          const arch = 1 - t * t;
+          const q = c.clone().addScaledVector(side, t * w * 0.5);
           q.x += wave * sx;
-          q.addScaledVector(nrm, j === 1 ? 0.004 * wk : 0);
-          if (q.y < 0.04 && q.y > -0.11) q.z = Math.max(q.z, skullZ(q.x, q.y) + 0.005 + (j === 1 ? 0.003 : 0));
+          q.addScaledVector(nrm, 0.0045 * wk * arch - 0.0015 * wk * t * t);
+          if (q.y < 0.04 && q.y > -0.11) q.z = Math.max(q.z, skullZ(q.x, q.y) + 0.005 + 0.003 * arch);
           lp.push(q.x, q.y, q.z);
-          luv.push(0.2 + (sx + 1) * 0.6 + (j - 1) * 0.16 * wk, 1 - (0.06 + s * 0.7));
+          luv.push(0.2 + (sx + 1) * 0.6 + t * 0.16 * wk, 1 - (0.06 + s * 0.7));
           const r = sway ? Math.max(0, (s - 0.45) / 0.55) * hairRows * 0.8 : 0;
           lockAtArr.push(sway ? (sx > 0 ? cols : 0) : 0, r);
         }
       }
       for (let a = 0; a < N; a++)
-        for (let j = 0; j < 2; j++) {
-          const p0 = base + a * 3 + j;
-          const p1 = p0 + 3;
+        for (let j = 0; j < STRAND_COLS - 1; j++) {
+          const p0 = base + a * STRAND_COLS + j;
+          const p1 = p0 + STRAND_COLS;
           // Plan item 319: wound to face out (they faced the skull, so the lens saw their insides, with a quarter rim).
           lidx.push(p0, p0 + 1, p1, p1, p0 + 1, p1 + 1);
         }
