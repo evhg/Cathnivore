@@ -442,6 +442,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
   // Gloves, boots, hair and the umbrella: near-black with a wet sheen.
   const blackMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.32, metalness: 0.05 });
+  // Plan item 319: her gloves are soft kid leather, a touch warmer and less glossy than the belt and umbrella, so the
+  // fingers read as a hand in leather, not black clumps of patent (the critique's 'black-clump gloves').
+  const gloveMat = new THREE.MeshStandardMaterial({ color: 0x1b181c, roughness: 0.5, metalness: 0.03 });
   // Hair: combed-back strands as a streaked colour and roughness map (a shine band reads as hair, not a helmet).
   const strands = (() => {
     const c = document.createElement("canvas");
@@ -484,7 +487,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   })();
   const hairMat = new THREE.MeshPhysicalMaterial({ color: 0x9a8678, map: strands, roughness: 0.38, metalness: 0, sheen: 0.6, sheenRoughness: 0.3, sheenColor: new THREE.Color(0x7a5a48) });
   const skinMat = new THREE.MeshStandardMaterial({ color: CATH_HERO.skin, roughness: 0.55, metalness: 0 });
-  const mats: THREE.Material[] = [coatMat, blackMat, hairMat, skinMat];
+  const mats: THREE.Material[] = [coatMat, blackMat, gloveMat, hairMat, skinMat];
   const coatMats: (THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial)[] = [coatMat];
   const coat0 = coatMat.color.clone();
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
@@ -638,6 +641,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   }
   mats.push(skirtMat);
   rimify(blackMat, 0.8, 0, 0, 0, false, 0, "leather");
+  rimify(gloveMat, 0.8, 0, 0, 0, false, 0, "leather");
   rimify(hairMat, 1.2, 0, 0, HAIR_SHINE, true);
   rimify(skinMat, 0.35, 0.8, 0, 0, false, 0.72);
 
@@ -1953,7 +1957,7 @@ float reliefShade( vec2 uv ) {
     // (a torus round the oval sleeve stood off it at the sides and read as a floating bracelet).
     const d = wr.clone().sub(foreA).normalize();
     const tAt = 1 - 0.04 / foreA.distanceTo(wr);
-    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), blackMat, parent);
+    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), gloveMat, parent);
   };
   const shoulderR = V(-0.15, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
@@ -2001,7 +2005,7 @@ float reliefShade( vec2 uv ) {
     add(tube, sleeveMat, chest).name = "cath-sleeve-r";
     // The cuff strap, on the turn-back.
     // Plan item 319: a flat band on the sleeve (see the left arm's).
-    addS(cuffBand(curve.getPointAt(0.9), curve.getTangentAt(0.9), radius(0.9), 1, seg(24)), blackMat, chest);
+    addS(cuffBand(curve.getPointAt(0.9), curve.getTangentAt(0.9), radius(0.9), 1, seg(24)), gloveMat, chest);
   }
   // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
   // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the
@@ -2067,7 +2071,7 @@ float reliefShade( vec2 uv ) {
     parts.push(turned(wristR.clone(), padAt.clone().lerp(handR, 0.3), [[0, 0.024], [1, 0.022]], seg(8), 0.8));
     const fist = mergeGeos(parts);
     for (const g of parts) g.dispose();
-    const fistMesh = add(fist, blackMat, chest);
+    const fistMesh = add(fist, gloveMat, chest);
     fistMesh.name = "cath-fist-r";
     statics.push(fistMesh); // merged with its strap; the merged mesh keeps the name
   }
@@ -2111,7 +2115,7 @@ float reliefShade( vec2 uv ) {
     finger([V(0.166, -0.258, 0.06), V(0.167, -0.276, 0.072), V(0.171, -0.293, 0.079)], 0.0088);
     const hand = mergeGeos(parts);
     for (const g of parts) g.dispose();
-    const handMesh = add(hand, blackMat, foreL);
+    const handMesh = add(hand, gloveMat, foreL);
     handMesh.name = "cath-hand-l";
     statics.push(handMesh); // merged with its strap; the merged mesh keeps the name
   }
@@ -3314,7 +3318,7 @@ float reliefShade( vec2 uv ) {
   const inkU = { uInk: { value: new THREE.Vector2(0.002, 0.003) }, uInkColor: { value: new THREE.Color(0x07050a) } };
   const inkMat = new THREE.ShaderMaterial({ uniforms: inkU, vertexShader: INK_VERT, fragmentShader: INK_FRAG, side: THREE.BackSide });
   mats.push(inkMat);
-  const bodyMats = new Set<THREE.Material>([coatMat, skirtMat, sleeveMat, blackMat, hairMat, skinMat, tightsMat, faceMat]);
+  const bodyMats = new Set<THREE.Material>([coatMat, skirtMat, sleeveMat, blackMat, gloveMat, hairMat, skinMat, tightsMat, faceMat]);
   const inked: THREE.Mesh[] = [];
   {
     const cands: Array<{ m: THREE.Mesh; n: number }> = [];
