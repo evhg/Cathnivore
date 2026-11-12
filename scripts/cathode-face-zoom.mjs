@@ -5,6 +5,7 @@ const [tag, front='title'] = process.argv.slice(2)
 const out = process.env.OUT
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] })
 for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, height: 844 }]]) {
+  if (process.env.ONLY && process.env.ONLY !== n) continue
   const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: Number(process.env.DPR||(n==='D'?2:3)) })
   const p = await ctx.newPage()
   await p.goto(`http://localhost:${process.env.PORT||4190}/nightshift/?shot`)

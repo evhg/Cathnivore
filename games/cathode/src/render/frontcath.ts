@@ -595,7 +595,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 289: hair is thin locks whose surfaces mostly turn from the lens, so the wide flat lit whole
             // strands pink-white (a pale ribbon down her coat, a lavender helmet): on hair the rim keeps to the outer
             // edge, and a two-sided sheet's inside keeps little of it, so her hair reads dark and glossy.
-            ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 ) * uHairRim;" : ""}
+            // Plan item 319 slice 56: a softer, dimmer band (0.5-0.62 at full -> 0.42-0.82 at 0.45): the thin locks' turned
+            // edges flipped pixels in and out of the hard band, a jagged pale fringe down every lock at 4x.
+            ${hair ? "fr = smoothstep( 0.42, 0.82, fr0 ) * 0.45 * ( gl_FrontFacing ? 1.0 : 0.25 ) * uHairRim;" : ""}
             // Plan item 319: the coat is wool, which takes a back light as a soft, dim bloom along its turn, not item
             // 254's hard flat (a bright white band down the coat's edge read as vinyl); its own weave normal breaks it.
             ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.5;" : ""}
