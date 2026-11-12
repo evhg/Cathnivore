@@ -3113,7 +3113,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each pond shows a visible ripple and edge foam, with no single flat fill over 60% of its area. Draw calls stay ≤ the level's current count + 2. `hedgerow-3dframe` and the `?2d` specs pass. Shots P and D.
 - **Size:** 2
 
-## 331. [ ] NIGHT SHIFT: the title's left half dressed, the menu on glass *(also check, carried 2026-11-12 by lane B: the umbrella's tip on the logotype's last 'T' at D, and on the phone the umbrella behind the title and The List across her hips (from 326/333))*
+## 331. [ ] NIGHT SHIFT: the title's left half dressed, the menu on glass *(lane B, in progress)* *(also check, carried 2026-11-12 by lane B: the umbrella's tip on the logotype's last 'T' at D, and on the phone the umbrella behind the title and The List across her hips (from 326/333))*
 - **Why:** `plan1111c/ns-title-D` (0-700 x 230-900): the left half is a near-black wall; the menu sits in an opaque black box (30-335 x 275-555). The Hollowell sign is cut to 'HOL' by the top edge (1110-1440 x 0-40).
 - **Build:** frame the full Hollowell billboard on the left. Add wet-kerb reflections of LUNA and the billboard under the menu, steam from a grate and a parked car's tail-lights in depth. Put the menu on a rain-streaked shop window (frosted, 40% see-through) instead of a black box.
 - **Accept:** the whole billboard word is in frame at P and D. The left half's mean luminance is ≥ 1.5x the current shot. Menu text contrast ≥ 7:1. `cathode-perf` is within budget when run alone. Cathode specs pass. Shots P and D.
