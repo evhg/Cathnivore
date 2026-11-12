@@ -163,8 +163,8 @@
 
   /* --- the type scale (C13T): six sizes and no others (scripts/font-budget.ts lints every font size in
      games/cathode/src against these). In the HUD unit, so 5K and the phone are composed, not stretched:
-     at 1440x900 they are 12 / 15.75 / 21 / 30 / 45 / 72 px; at 5K 20 / 28 / 37 / 53 / 80 / 128 px. --- */
-  --fs-1: max(12px, calc(var(--u) * 15));  /* captions, keys, small caps labels */
+     at 1440x900 they are 13 / 15.75 / 21 / 30 / 45 / 72 px; at 5K 20 / 28 / 37 / 53 / 80 / 128 px. --- */
+  --fs-1: max(13px, calc(var(--u) * 15));  /* captions, keys, small caps labels (plan item 335: 13 px floor, was 12) */
   --fs-2: max(13px, calc(var(--u) * 21));  /* body, list rows, settings, facts */
   --fs-3: max(15px, calc(var(--u) * 28));  /* lead lines, subtitles, HUD numbers */
   --fs-4: max(19px, calc(var(--u) * 40));  /* menu items, headings */
