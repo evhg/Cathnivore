@@ -542,6 +542,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 306 slice 2: the neck and ears (skin) take the same warm, colour-free light at \`skin\` of the face's
     // brightness, so the throat sits in the jaw's shade under the face instead of a grey-teal band below a warm face.
     const skinTone = glint > 0 ? 1 : skin;
+    // Plan item 319 slice 52: on the face the knee squeezed the key's planes to almost nothing (a 2:1 key read 1.5:1),
+    // so the face read as one even peach mask (critiques 11:00 and 13:40); the turn from the key now shades it after
+    // the knee, down to 0.64 where it faces away (0.58 cost her far eye its 3:1 on the cheek), a little warmer in the shade (skin's subsurface red).
     // Plan item 319 slice 39: the light rebuilt from the albedo's luminance cancels a grey vertex shade, so the neck's
     // jaw shadow (its vertex colours) is applied again after it, as a brightness.
     const skinLight =
@@ -555,6 +558,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
             outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
+            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); }" : ""}
             ${glint > 0 ? "" : "#ifdef USE_COLOR\n            outgoingLight *= dot( vColor.rgb, W );\n            #endif"}
           }
           #include <opaque_fragment>`
@@ -1990,10 +1994,12 @@ float reliefShade( vec2 uv ) {
     addS(ear, skinMat, headPivot);
   }
   // Pearl studs catch the back light.
-  const pearlMat = new THREE.MeshStandardMaterial({ color: 0xf2ebe2, roughness: 0.18, metalness: 0.1, emissive: 0x2a2624 });
+  // Plan item 319 slice 51: a stud's size (8 mm across, was 15) and a warmer, dimmer pearl: since slice 40's jaw rose
+  // toward the ear, the big white bead stood alone between her cheek and the locks, a pale lump at D.
+  const pearlMat = new THREE.MeshStandardMaterial({ color: 0xd8cec2, roughness: 0.3, metalness: 0.1, emissive: 0x161210 });
   mats.push(pearlMat);
   for (const side of [1, -1]) {
-    const p = new THREE.SphereGeometry(0.0075, 8, 6);
+    const p = new THREE.SphereGeometry(0.004, 8, 6);
     p.translate(0.074 * side, -0.03, 0.0);
     addS(p, pearlMat, headPivot);
   }
