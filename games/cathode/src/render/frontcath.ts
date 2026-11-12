@@ -1673,6 +1673,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const rad = [r * 1.06, r * 0.98, r * 0.9, r * 0.8];
       for (let k = 0; k < 3; k++) parts.push(limb(pts[k]!, pts[k + 1]!, rad[k]!, rad[k + 1]!, seg(8)));
     }
+    // Plan item 319: the grip's mass under the fingers (the palm and the fingers' inner flesh), so the fist reads
+    // as one gloved hand with knuckle ridges, not four rings stacked on the shaft with dark gaps between them.
+    const grip = new THREE.SphereGeometry(1, seg(14), seg(10));
+    grip.scale(0.0285, 0.031, 0.0285);
+    grip.applyQuaternion(rest);
+    const gripAt = at(V(0, -0.005, 0));
+    grip.translate(gripAt.x, gripAt.y, gripAt.z);
+    parts.push(grip);
     // The thumb: from the base of the palm, across over the index finger's middle joint.
     const thumbA = at(V(Math.cos(tb - 1.2) * 0.022, -0.006, Math.sin(tb - 1.2) * 0.022));
     const thumbB = at(V(Math.cos(tb - 2.1) * 0.02, 0.026, Math.sin(tb - 2.1) * 0.02));
