@@ -684,12 +684,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
       [0.104, 0.535],
       [0.114, 0.575],
       [0.124, 0.588],
-      [0.136, 0.584],
-      [0.146, 0.565],
-      [0.152, 0.54],
+      // Plan item 319 slice 20: the fall lies closer (0.146/0.152 -> 0.136/0.138), so in three-quarter view the far
+      // side's fall doesn't stand out past her neck as a level slab at chin height; rounder (22 -> 32 sides).
+      [0.132, 0.584],
+      [0.136, 0.566],
+      [0.138, 0.542],
     ].map(([r, y]) => new THREE.Vector2(r!, y!));
     // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
-    const collar = new THREE.LatheGeometry(pts, seg(22), open / 2, Math.PI * 2 - open);
+    const collar = new THREE.LatheGeometry(pts, Math.max(24, seg(32)), open / 2, Math.PI * 2 - open);
     {
       // Plan item 9: a collar that stands tallest at the back and falls toward the front, its stand rolling out
       // over the top (it read as a uniform funnel round her neck), so her jaw and hair show at the sides.
@@ -703,7 +705,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const up = Math.min(1, (y - 0.495) / 0.093);
         // The front corners fall onto the lapels' tops (the gorge), joining collar and lapel.
         const ny = 0.495 + (y - 0.495) * (1 - 0.5 * front * front);
-        const roll = 1 + 0.035 * up * up * (1 - front);
+        const roll = 1 + 0.02 * up * up * (1 - front);
         p.setXYZ(i, x * roll, ny, z * roll);
       }
     }
