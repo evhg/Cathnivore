@@ -1426,6 +1426,13 @@ kbd {
     transition-duration: 1ms !important;
     transition-delay: 0ms !important;
   }
+  /* The valley figure and her bubble are sized and measured in the same frame (main.ts placeValleyCath/Say): with a
+     1 ms transition on every property their boxes still read the old size, so her bubble was placed against a
+     smaller figure and sat over her face at D. They change instantly instead. */
+  .valley-cath,
+  .valley-say {
+    transition-duration: 0s !important;
+  }
 }
 
 /* ---- Cath, the host ---- */

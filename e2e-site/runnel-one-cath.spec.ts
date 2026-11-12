@@ -60,6 +60,24 @@ for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
   })
 }
 
+// Under reduced motion every property ran a 1 ms transition, so her figure, re-sized and measured in one frame, read
+// its old size and her bubble was placed over her face (critique 2026-11-12, 1440x900).
+test('at D under reduced motion her bubble is off her figure', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop figure')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  await expect(page.locator('#valley-say')).toBeVisible()
+  await page.waitForTimeout(800)
+  const o = await page.evaluate(() => {
+    const s = document.getElementById('valley-say')!.getBoundingClientRect()
+    const f = document.getElementById('valley-cath')!.getBoundingClientRect()
+    return Math.max(0, Math.min(s.right, f.right - 6) - Math.max(s.left, f.left + 6)) * Math.max(0, Math.min(s.bottom, f.bottom) - Math.max(s.top, f.top + 4))
+  })
+  expect(o).toBe(0)
+})
+
 test('her face follows the water: worried on a spill, a wink on the solve', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the valley figure is a full-length Cath at D')
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
