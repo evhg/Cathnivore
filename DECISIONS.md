@@ -496,3 +496,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 lane B: item 307 closed: 'every plot column inside the phone frame' is met by Whole field; the phone's opening close frame stays on the lane, as item 215 designed it.
 - 2026-11-12 lane B: NIGHT SHIFT's phone pick targets grow to 44 px inside their old footprint (negative margins), so the swipe layout and its specs keep their geometry.
 - 2026-11-12 lane B: items 326 and 333 closed by carrying their NIGHT SHIFT points into the unclaimed items that rebuild those scenes (331 title, 334 weapons, 338 pick) instead of patching scenes about to be restaged.
+- 2026-11-12 19:30 lane A (item 319): kit straps and ties are laid on the coat's lathe surface from `rAtCoat` (a strap by angle and height, a tie bent onto the chest), standing just proud of the lapels' roll and the belt, rather than free splines in space, which stood off the coat and bowed between their points.
