@@ -2186,6 +2186,14 @@ export class Renderer3D {
           steps.length,
         );
         const stones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: "#8d8a80", roughness: 0.9, flatShading: true }), steps.length * 2);
+        /** Is (x, z) on another step's water? (On a bend the steps overlap.) */
+        const inOtherStep = (x: number, z: number, i: number): boolean =>
+          steps.some((o, j) => {
+            if (j === i) return false;
+            const dx = x - o.x;
+            const dz = z - o.y;
+            return Math.abs(dx * Math.cos(o.a) + dz * Math.sin(o.a)) < 0.24 && Math.abs(-dx * Math.sin(o.a) + dz * Math.cos(o.a)) < 0.46;
+          });
         const m4 = new THREE.Matrix4();
         const q4 = new THREE.Quaternion();
         const up = new THREE.Vector3(0, 1, 0);
@@ -2198,6 +2206,14 @@ export class Renderer3D {
             const ox = -Math.sin(st.a) * 0.47 * side;
             const oz = Math.cos(st.a) * 0.47 * side;
             const s2 = 0.8 + ((i * 7 + side * 3) % 5) * 0.1;
+            // Plan item 330: on a bend a step's edge stone lands inside the next steps' water, where the stones read as
+            // grey lumps scattered on the pond (critique, P); such a stone is left out.
+            const sx = st.x + ox;
+            const sz = st.y + oz;
+            if (inOtherStep(sx, sz, i)) {
+              stones.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.makeScale(0, 0, 0));
+              continue;
+            }
             stones.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.compose(v.set(st.x + ox, this.height(st.x + ox, st.y + oz) + 0.03, st.y + oz), q4, sc.set(s2, 0.6 * s2, s2)));
             sc.set(1, 1, 1);
           }
@@ -2222,6 +2238,11 @@ export class Renderer3D {
             const off = (0.49 - SW / 2) * side;
             const x = st.x - Math.sin(st.a) * off;
             const z = st.y + Math.cos(st.a) * off;
+            // Plan item 330: a rim lying on a neighbouring step's water drew a hard pale rectangle in the pond.
+            if (inOtherStep(x, z, i)) {
+              rim.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.makeScale(0, 0, 0));
+              continue;
+            }
             const q = side < 0 ? q4 : q4.clone().multiply(flip);
             rim.setMatrixAt(i * 2 + (side > 0 ? 1 : 0), m4.compose(v.set(x, this.height(st.x, st.y) + 0.044, z), q, sc.set(1, 1, 1)));
           }
@@ -2317,7 +2338,7 @@ export class Renderer3D {
         const sheet = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
         const water = new THREE.InstancedMesh(
           sheet,
-          new THREE.MeshStandardMaterial({ color: "#3f7fa6", roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.86, depthWrite: false }),
+          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.9, depthWrite: false }), // plan item 330: the ponds' deeper water
           flood.cells.length,
         );
         const mud = new THREE.InstancedMesh(
@@ -2341,7 +2362,7 @@ export class Renderer3D {
         // Plan item 269: pale shallows fading in from the flood's edges, as round the ponds.
         const wetSet = new Set(flood.cells.map(([c, r]) => `${c},${r}`));
         const rims: THREE.Matrix4[] = [];
-        const SW = 0.34;
+        const SW = 0.22;
         const up = new THREE.Vector3(0, 1, 0);
         for (const [c, r] of flood.cells) {
           const y = Math.max(this.height(c + 0.5, r + 0.5), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
@@ -2355,7 +2376,7 @@ export class Renderer3D {
         if (rims.length) {
           const rim = new THREE.InstancedMesh(
             new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-            new THREE.MeshStandardMaterial({ color: "#c9dcd4", alphaMap: shoreFade(), transparent: true, roughness: 0.5, depthWrite: false }),
+            new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
             rims.length,
           );
           rims.forEach((m, i) => rim.setMatrixAt(i, m));
