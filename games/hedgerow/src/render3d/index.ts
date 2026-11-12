@@ -2182,7 +2182,7 @@ export class Renderer3D {
         const grp = new THREE.Group();
         const water = new THREE.InstancedMesh(
           new THREE.PlaneGeometry(0.42, 0.98).rotateX(-Math.PI / 2),
-          new THREE.MeshStandardMaterial({ color: "#3f7fa6", roughness: 0.15, metalness: 0.1 }),
+          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.15, metalness: 0.1 }), // plan item 330: the ponds' deeper water
           steps.length,
         );
         const stones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: "#8d8a80", roughness: 0.9, flatShading: true }), steps.length * 2);
@@ -2206,7 +2206,7 @@ export class Renderer3D {
         const SW = 0.3;
         const rim = new THREE.InstancedMesh(
           new THREE.PlaneGeometry(0.3, SW).rotateX(-Math.PI / 2),
-          new THREE.MeshStandardMaterial({ color: "#c6dbd3", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
+          new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
           steps.length * 2,
         );
         const flip = new THREE.Quaternion().setFromAxisAngle(up, Math.PI);

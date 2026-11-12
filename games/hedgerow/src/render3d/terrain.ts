@@ -723,13 +723,15 @@ export function buildGround(level: Level): Ground {
     water = new THREE.Mesh(
       new THREE.PlaneGeometry(W, H),
       new THREE.MeshPhysicalMaterial({
-        color: "#3d7fa6",
-        roughness: 0.12,
+        // Plan item 330: deeper, greener water that mirrors less of the pale sky (with full clearcoat at 82% opacity the
+        // ponds read as pale-blue slabs).
+        color: "#2f6f86",
+        roughness: 0.16,
         metalness: 0.1,
         transparent: true,
-        opacity: 0.82,
-        clearcoat: 1,
-        clearcoatRoughness: 0.05,
+        opacity: 0.9,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.08,
         normalMap: ripples,
         normalScale: new THREE.Vector2(0.45, 0.45),
         clearcoatNormalMap: ripples2,
@@ -751,7 +753,8 @@ export function buildGround(level: Level): Ground {
     // Plan item 269: a shore round each pond, on the water: a band of pale shallows that fades out from each edge where
     // a wet cell meets dry land, so the water/land edge reads soft, not as a hard blue rectangle. One instanced mesh.
     const shallows: THREE.Matrix4[] = [];
-    const SW = 0.34;
+    // Plan item 330: a narrower band (it covered most of a one-cell pond), green-blue shallows rather than near-white.
+    const SW = 0.22;
     const up = new THREE.Vector3(0, 1, 0);
     for (const key of wet) {
       const [c, r] = key.split(",").map(Number) as [number, number];
@@ -767,7 +770,7 @@ export function buildGround(level: Level): Ground {
     if (shallows.length) {
       const band = new THREE.InstancedMesh(
         new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-        new THREE.MeshStandardMaterial({ color: "#dcebdf", alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
+        new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
         shallows.length,
       );
       shallows.forEach((m, i) => band.setMatrixAt(i, m));
@@ -1728,15 +1731,16 @@ export function buildGround(level: Level): Ground {
   cloudAmt.value = night ? 0 : hasTwist(level, "rain") || hasTwist(level, "fog") ? 0.1 : mood.cloud;
   const windy = hasTwist(level, "wind") ? 3 : 1;
   const waterMat = water ? (water.material as THREE.MeshPhysicalMaterial) : null;
-  const waterBase = new THREE.Color("#3d7fa6");
-  const waterLight = new THREE.Color("#5aa3c4");
+  // Plan item 330: the water's breathing colour, deeper and greener (the old pair, #3d7fa6 to #5aa3c4, read pale-blue).
+  const waterBase = new THREE.Color("#2b6578");
+  const waterLight = new THREE.Color("#3b8299");
   const update = (t: number, dt: number) => {
     timeU.value = t * windy;
     cloudOff.value.x -= dt * 0.006 * windy;
     cloudOff.value.y -= dt * 0.0025 * windy;
     if (night) flame.emissiveIntensity = 3.4 + Math.sin(t * 9) * 0.4 + Math.sin(t * 23) * 0.25;
     if (water && waterMat) {
-      waterMat.opacity = 0.8 + Math.sin(t * 1.5) * 0.03;
+      waterMat.opacity = 0.9 + Math.sin(t * 1.5) * 0.02;
       waterMat.color.copy(waterBase).lerp(waterLight, 0.25 + Math.sin(t * 0.7) * 0.15);
       waterMat.normalMap!.offset.set(t * 0.03, t * 0.017);
       waterMat.clearcoatNormalMap!.offset.set(-t * 0.021, t * 0.026);
