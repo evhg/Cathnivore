@@ -124,6 +124,30 @@ function turned(a: THREE.Vector3, b: THREE.Vector3, profile: Array<[number, numb
 /** Plan item 227: the baked wool normal maps, by name and size (null where there is no 2D canvas). */
 const WOOL_CACHE = new Map<string, THREE.CanvasTexture | null>();
 
+/**
+ * Plan item 319 slice 24: the face's lids and lips as smooth bumps on the unit skull (amp, cx, cy, rx, ry, mirrored
+ * to both sides), shared by the skull's displacement and the face shader's relief shade, so the two never drift.
+ */
+const FACE_RELIEF: ReadonlyArray<readonly [number, number, number, number, number, boolean]> = [
+  // The upper lid between the lash line (the painted eye's top, y 0.165) and the crease: a fold whose lower half,
+  // turned down toward the lashes, lies in shade, then the crease itself, then the brow bone catching the light.
+  [0.03, 0.4, 0.2, 0.24, 0.06, true],
+  [-0.014, 0.41, 0.255, 0.22, 0.032, true],
+  // The mouth's corners tuck in.
+  [-0.012, 0.235, -0.47, 0.07, 0.06, true],
+  // The upper lip leans out at its top (the philtrum's foot) and turns down into the mouth's line.
+  [0.03, 0, -0.415, 0.28, 0.07, false],
+  // The mouth's line.
+  [-0.014, 0, -0.475, 0.26, 0.03, false],
+  // The lower lip, fuller, its top turned up to the light.
+  [0.04, 0, -0.53, 0.25, 0.08, false],
+  // The hollow under the lower lip.
+  [-0.02, 0, -0.63, 0.2, 0.065, false],
+];
+/** How strongly the relief's slope (a soft top light) and its dips (cavity) shade the face. */
+const RELIEF_SLOPE = 0.75;
+const RELIEF_CAVITY = 2.2;
+
 /** Plan item 227: squeezes a geometry's uv.y into [v0, v1] (a sleeve part's span of the whole sleeve's map). */
 function vSpan(g: THREE.BufferGeometry, v0: number, v1: number): THREE.BufferGeometry {
   const uv = g.attributes.uv as THREE.BufferAttribute | undefined;
@@ -865,16 +889,32 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 319: dense enough that the jaw, chin and cheek planes hold their own curves (40x28, and 24x17 on a
   // phone, drew the jaw as straight facets at a 70 px+ face); a phone keeps 64x44 however low its segment scale.
   const skull = new THREE.SphereGeometry(1, Math.max(64, seg(80)), Math.max(44, seg(56)));
+  // Plan item 319 slice 24: the skull's lids and lips also shade it. The face's key wraps wide (slice 13), so the
+  // modelled lids and lips barely turned from it and the face read as a decal on a smooth egg (critique, 11-12
+  // 05:20). The same relief that displaces the skull is evaluated per pixel from the face's UVs (a phone's skull has
+  // rows 0.07 apart, wider than the lid's crease): a soft top light from its slope (the lid fold's underside and the
+  // upper lip turned down go darker, the lid's top and the lower lip catch it) and a little cavity where it dips.
   {
     const p = skull.attributes.position as THREE.BufferAttribute;
     const bump = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) => Math.max(0, 1 - Math.hypot((x - cx) / rx, (y - cy) / ry));
+    const shadeRelief = (x: number, y: number): number => {
+      let r = 0;
+      for (const [amp, cx, cy, rx, ry, mirror] of FACE_RELIEF) {
+        const sb = (bx: number) => {
+          const q = 1 - Math.min(1, ((x - bx) / rx) ** 2 + ((y - cy) / ry) ** 2);
+          return q * q;
+        };
+        r += amp * (mirror ? sb(cx) + sb(-cx) : sb(cx));
+      }
+      return r;
+    };
     for (let i = 0; i < p.count; i++) {
       let x = p.getX(i);
       let y = p.getY(i);
       let z = p.getZ(i);
       const front = Math.max(0, z);
       // Sockets, brow, cheekbones and lips, on the front only (normalised head units).
-      let dz = 0;
+      let dz = shadeRelief(x, y);
       for (const sx of [-1, 1]) {
         dz -= 0.07 * Math.pow(bump(x, y, 0.36 * sx, 0.06, 0.2, 0.13), 1.5);
         // Plan item 319 slice 2: the brow ridge under the painted brow (it sat a brow's width below it, so the brow
@@ -883,7 +923,6 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 319 slice 2: the eye modelled in its socket: a rounded ball under the painted almond, and the upper
         // lid a fold above it, so the eye catches the key along the lid and turns away at the corners.
         dz += 0.032 * bump(x, y, 0.39 * sx, 0.055, 0.22, 0.12);
-        dz += 0.018 * bump(x, y, 0.4 * sx, 0.155, 0.27, 0.065);
         dz += 0.05 * bump(x, y, 0.5 * sx, -0.2, 0.26, 0.2);
         // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
         // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
@@ -895,9 +934,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 319 slice 2: the lips modelled, not one blob: the upper lip a forward band along the painted bow, the
       // lower lip fuller under it, and the hollow between the lower lip and the chin, so the mouth has a lit lower lip
       // and a shaded upper one from the mesh, as the paint has.
-      dz += 0.028 * bump(x, y, 0, -0.425, 0.3, 0.07);
-      dz += 0.036 * bump(x, y, 0, -0.53, 0.27, 0.075);
-      dz -= 0.014 * bump(x, y, 0, -0.62, 0.2, 0.05);
+      // Slice 24: the lids and lips now live in shadeRelief (deeper, and shading as well as displacing).
       z += dz * front;
       // Jaw: below the cheekbones the sides draw in, the chin comes forward.
       if (y < 0) {
@@ -1235,6 +1272,41 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 306: matte skin (0.5 laid a broad white sheen over the face under the pick's strong key).
   const faceMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceTex, roughness: 0.82, metalness: 0, fog: false });
   rimify(faceMat, 0.25, 1, 4);
+  // Plan item 319 slice 24: the relief's shade multiplies the face's final light (after item 306's skin light, which
+  // rebuilds the light from the albedo's luminance and so would cancel it as an albedo or vertex colour). A touch
+  // warmer in the shade (skin's subsurface red), so the crease and the mouth's line read as skin, not grime.
+  {
+    const rim = faceMat.onBeforeCompile.bind(faceMat);
+    const f = (n: number) => n.toFixed(4);
+    const terms = FACE_RELIEF.map(([amp, cx, cy, rx, ry, mirror]) =>
+      mirror
+        ? `r += ${f(amp)} * ( rb( p, vec2( ${f(cx)}, ${f(cy)} ), vec2( ${f(rx)}, ${f(ry)} ) ) + rb( p, vec2( ${f(-cx)}, ${f(cy)} ), vec2( ${f(rx)}, ${f(ry)} ) ) );`
+        : `r += ${f(amp)} * rb( p, vec2( ${f(cx)}, ${f(cy)} ), vec2( ${f(rx)}, ${f(ry)} ) );`,
+    ).join("\n");
+    const fn = `float rb( vec2 p, vec2 c, vec2 r ) { vec2 d = ( p - c ) / r; float q = 1.0 - min( 1.0, dot( d, d ) ); return q * q; }
+float faceRelief( vec2 p ) { float r = 0.0; ${terms} return r; }
+float reliefShade( vec2 uv ) {
+  float th = ( 1.0 - uv.y ) * PI, ph = uv.x * PI2;
+  float st = sin( th );
+  vec2 p = vec2( -cos( ph ) * st, cos( th ) );
+  float front = max( 0.0, sin( ph ) * st );
+  const float e = 0.004;
+  float fy = ( faceRelief( p + vec2( 0.0, e ) ) - faceRelief( p - vec2( 0.0, e ) ) ) / ( 2.0 * e );
+  float s = 1.0 - ${f(RELIEF_SLOPE)} * clamp( fy, -0.6, 0.8 ) + ${f(RELIEF_CAVITY)} * min( 0.0, faceRelief( p ) );
+  return mix( 1.0, clamp( s, 0.55, 1.15 ), front );
+}`;
+    faceMat.onBeforeCompile = (sh, r) => {
+      rim(sh, r);
+      sh.fragmentShader = sh.fragmentShader
+        .replace("#include <common>", `#include <common>\n${fn}`)
+        .replace(
+          "#include <opaque_fragment>",
+          "{ float rs = reliefShade( vMapUv ); outgoingLight *= rs * vec3( 1.0, 1.0 - 0.05 * max( 0.0, 1.0 - rs ), 1.0 - 0.1 * max( 0.0, 1.0 - rs ) ); }\n#include <opaque_fragment>",
+        );
+    };
+    const key = faceMat.customProgramCacheKey.bind(faceMat);
+    faceMat.customProgramCacheKey = () => `${key()}-relief`;
+  }
   mats.push(faceMat);
   addS(skull, faceMat, headPivot);
   // Hair: a glossy shell over the crown, swept back from a centre parting, full at the sides over the tops of the
