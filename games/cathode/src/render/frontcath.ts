@@ -142,8 +142,9 @@ const FACE_RELIEF: ReadonlyArray<readonly [number, number, number, number, numbe
   [-0.014, 0, -0.475, 0.26, 0.03, false],
   // The lower lip, fuller, its top turned up to the light.
   [0.04, 0, -0.53, 0.25, 0.08, false],
-  // The hollow under the lower lip.
-  [-0.02, 0, -0.63, 0.2, 0.065, false],
+  // The hollow under the lower lip. Plan item 319 slice 33: half as deep (-0.02), since with the lip's underside and
+  // the painted shade it drew a grey patch under her mouth like a goatee.
+  [-0.01, 0, -0.63, 0.2, 0.065, false],
 ];
 /** How strongly the relief's slope (a soft top light) and its dips (cavity) shade the face. */
 const RELIEF_SLOPE = 0.75;
@@ -270,14 +271,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const n2 = lat(64);
     const n3 = lat(160);
     const h = new Float32Array(W * H);
-    const twill = W / 4; // about 4 px a rib
+    // Plan item 319 slice 31: a rib every 8 px at a third of its old depth. At 4 px and 0.35 the twill beat against
+    // the screen's pixels into broad diagonal moiré across the coat at D (critique, 11-12 08:35); the nap and the
+    // soft wool bands now carry the cloth, and the rib only a fine grain up close.
+    const twill = W / 8;
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
         const u = x / W;
         const v = y / H;
         const nap = n1(u, v) * 0.9 + n2(u, v) * 0.55 + n3(u, v) * 0.35;
         const rib = 0.5 + 0.5 * Math.sin(((x + y * 0.6) / W) * Math.PI * 2 * twill);
-        h[y * W + x] = rib * 0.35 + nap * 1.1 + bands(u, v) * 6;
+        h[y * W + x] = rib * 0.12 + nap * 1.1 + bands(u, v) * 6;
       }
     const img = g.createImageData(W, H);
     for (let y = 0; y < H; y++)
@@ -1059,7 +1063,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 260: the underside of the jaw in shadow, so the chin ends in a turned edge, not a pale flat.
       blob(0, -0.1, 0.07, 0.02, "rgba(120,66,58,A)", 0.55);
       blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.26); // under the nose
-      blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
+      blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.12); // under the lip (slice 33: 0.25 -> 0.12)
       // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
       // contour under the cheekbones, so the face has planes at title distance rather than reading as a smooth egg.
       // Plan item 275: the shadow side of the bridge darker and wider, and a shadow under the tip, so the nose holds.
@@ -1121,13 +1125,26 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 319 slice 10: a soft warm taupe on the lid under the brow, so the liner sits in make-up, not on bare
         // skin (the critique read a black band over a doll's eye).
         blob(ex + hw * 0.2 * sx, ey + hh * 1.9, hw * 1.15, hh * 1.25, "rgba(118,72,66,A)", 0.34);
+        // Plan item 319 slice 32: the open eye a sixth narrower (the lids, liner and lashes squashed about the eye's
+        // line; the iris stays round, so the lids cover its top and foot), and the irises turned in a touch rather
+        // than out: wide whites round both irises, each set outward, read as a blank, startled stare off camera
+        // (critique, 11-12 08:35), not the bible's knowing smirk.
+        const lidK = 0.84;
+        const squash = () => {
+          g.translate(0, ey);
+          g.scale(1, lidK);
+          g.translate(0, -ey);
+        };
         g.save();
+        g.save();
+        squash();
         almond();
+        g.restore();
         // Plan item 260: a warmer white (a pure white read as a doll's stare under the toon key).
         g.fillStyle = "#e4d4cb";
         g.fill();
         g.clip();
-        const ix = ex + 0.0012 * E * sx;
+        const ix = ex - 0.0005 * E * sx;
         // A hazel iris: a warm amber ring round the pupil, darkening to a limbal ring at the edge.
         // Plan item 260: a larger iris, less white round it (the bible's "large bright eyes" are the iris).
         const ir = 0.0082 * E;
@@ -1167,6 +1184,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.ellipse(ix + 0.0026 * E, ey - 0.0024 * E, 0.0009 * E, 0.0008 * E, 0, 0, Math.PI * 2);
         g.fill();
         g.restore();
+        g.save();
+        squash();
         // The liner: heavier on the upper lid, out to a wing that lifts past the outer corner.
         g.fillStyle = "#120a08";
         const ox = ex + hw * sx;
@@ -1206,6 +1225,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.moveTo(ex - hw * 0.8 * sx, ey + hh * 2.1);
         g.quadraticCurveTo(ex + hw * 0.1 * sx, ey + hh * 3.3, ex + hw * 1.05 * sx, ey + hh * 1.9);
         g.stroke();
+        g.restore();
         }
         // Soft brows, her right (sx -1) a touch higher at the arch.
         // Plan item 140: higher over the larger eyes, a little fuller and longer.
@@ -1306,6 +1326,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 319 slice 24: the relief's shade multiplies the face's final light (after item 306's skin light, which
   // rebuilds the light from the albedo's luminance and so would cancel it as an albedo or vertex colour). A touch
   // warmer in the shade (skin's subsurface red), so the crease and the mouth's line read as skin, not grime.
+  // Slice 33: warmer again (green and blue 0.05/0.1 -> 0.14/0.26 of the shade), so the lip's underside reads rose.
   {
     const rim = faceMat.onBeforeCompile.bind(faceMat);
     const f = (n: number) => n.toFixed(4);
@@ -1324,7 +1345,7 @@ float reliefShade( vec2 uv ) {
   const float e = 0.004;
   float fy = ( faceRelief( p + vec2( 0.0, e ) ) - faceRelief( p - vec2( 0.0, e ) ) ) / ( 2.0 * e );
   float s = 1.0 - ${f(RELIEF_SLOPE)} * clamp( fy, -0.6, 0.8 ) + ${f(RELIEF_CAVITY)} * min( 0.0, faceRelief( p ) );
-  return mix( 1.0, clamp( s, 0.55, 1.15 ), front );
+  return mix( 1.0, clamp( s, 0.78, 1.15 ), front );
 }`;
     faceMat.onBeforeCompile = (sh, r) => {
       rim(sh, r);
@@ -1332,7 +1353,7 @@ float reliefShade( vec2 uv ) {
         .replace("#include <common>", `#include <common>\n${fn}`)
         .replace(
           "#include <opaque_fragment>",
-          "{ float rs = reliefShade( vMapUv ); outgoingLight *= rs * vec3( 1.0, 1.0 - 0.05 * max( 0.0, 1.0 - rs ), 1.0 - 0.1 * max( 0.0, 1.0 - rs ) ); }\n#include <opaque_fragment>",
+          "{ float rs = reliefShade( vMapUv ); outgoingLight *= rs * vec3( 1.0, 1.0 - 0.14 * max( 0.0, 1.0 - rs ), 1.0 - 0.26 * max( 0.0, 1.0 - rs ) ); }\n#include <opaque_fragment>",
         );
     };
     const key = faceMat.customProgramCacheKey.bind(faceMat);
