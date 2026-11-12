@@ -470,7 +470,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
           {
-            float facing = saturate( dot( normal, normalize( vViewPosition ) ) );
+            // Plan item 319: wool's rim follows the cloth's own turn, with only a quarter of the weave's normal: at
+            // the grazing edge the full weave flipped texels in and out of the rim, a fringe of pale flecks down the
+            // sleeves' edges.
+            ${edge === "wool" ? "vec3 rimN = normalize( mix( nonPerturbedNormal, normal, 0.25 ) );" : "vec3 rimN = normal;"}
+            float facing = saturate( dot( rimN, normalize( vViewPosition ) ) );
             // A wide, soft Fresnel (C13 review: the narrow pow-4 edge drew as one-pixel pink stair-steps).
             float fr0 = pow( 1.0 - facing, 2.2 );
             // Plan item 254: most of the rim is a hard-edged flat (an inked illustration's back-light shape), a
@@ -482,11 +486,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
             ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 );" : ""}
             // Plan item 319: the coat is wool, which takes a back light as a soft, dim bloom along its turn, not item
             // 254's hard flat (a bright white band down the coat's edge read as vinyl); its own weave normal breaks it.
-            ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.62;" : ""}
+            ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.5;" : ""}
             // Plan item 319: gloves, belt and umbrella are thin black leather: the flat lit whole fingers pale (the
             // umbrella fist read as a skeleton's bones), so leather keeps a narrow gloss line on its outer edge only.
             ${edge === "leather" ? "fr = smoothstep( 0.46, 0.6, fr0 );" : ""}
-            float side = dot( normal, uRimDir );
+            float side = dot( rimN, uRimDir );
             vec3 rimC = uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side );
             // Plan item 319 slice 11: wool scatters the street's neon, so its rim keeps half the sign's colour and less
             // of its strength (the critique read a pink and cyan sheen down the coat as vinyl).
@@ -1657,8 +1661,10 @@ float reliefShade( vec2 uv ) {
         nrm.set(c.x, c.y > 0 ? c.y * 0.6 : 0, c.z - 0.0).normalize();
         side.crossVectors(tan, nrm).normalize();
         // Narrow at the parting, full past the cheek, then to a point; a soft wave across the lower length.
-        const w = wk * (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.9 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 2));
-        const wave = s > 0.4 ? Math.sin((s - 0.4) * 26 + phase * THREE.MathUtils.smoothstep(s, 0.62, 0.85)) * 0.008 * wa * Math.min(1, (s - 0.4) / 0.1) : 0;
+        // Plan item 319: the ends blunt (to 45%, not 10%) and the wave long and shallow (1.4 cycles, 6 mm; was 2.5
+        // cycles of 8 mm to a point), so a lock over the coat reads as a soft wave of hair, not a flame.
+        const w = wk * (0.008 + 0.02 * Math.min(1, s / 0.35)) * (1 - 0.55 * Math.pow(Math.max(0, (s - 0.7) / 0.3), 1.5));
+        const wave = s > 0.4 ? Math.sin((s - 0.4) * 15 + phase * THREE.MathUtils.smoothstep(s, 0.62, 0.85)) * 0.006 * wa * Math.min(1, (s - 0.4) / 0.15) : 0;
         for (let j = 0; j < 3; j++) {
           const q = c.clone().addScaledVector(side, (j - 1) * w * 0.5);
           q.x += wave * sx;
