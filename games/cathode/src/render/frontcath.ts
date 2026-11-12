@@ -2156,8 +2156,10 @@ float reliefShade( vec2 uv ) {
   }
 
   const shoulderL = V(0.15, 0.25, -0.005);
-  const elbowL = V(0.202, -0.02, -0.035);
-  const handL = V(0.175, -0.26, 0.05);
+  // Plan item 319 slice 55: a relaxed hang, not a straight drop: the elbow eases back and out, the forearm turns in
+  // and forward so the gloved hand rests by the front of her thigh (the front view showed one stiff line to the hip).
+  const elbowL = V(0.208, -0.012, -0.05);
+  const handL = V(0.158, -0.25, 0.078);
   const wristL = handL.clone().add(V(0, 0.04, -0.012));
   // C14: her left arm is two bones (the class idles reach with it: a draw on the cigarette, the collar, the hip).
   // Each bone is a group whose matrix moves its rest geometry; armIK() solves them toward a wrist target.
