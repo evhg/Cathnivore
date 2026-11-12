@@ -843,7 +843,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 9: a neck with a shape (slimmer under the jaw, flaring into the shoulders, set a little forward and
   // narrower front to back), not a plain cylinder.
   // Plan item 289: shorter and tapered (the same-person check: a long tube under the head read as a lollipop).
-  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.048], [0.3, 0.04], [0.7, 0.036], [1, 0.035]], Math.max(28, seg(32)), 0.86);
+  // Plan item 319 slice 23: slimmer under the jaw (0.035 -> 0.031; the 11-12 05:20 critique read it as wide as the jaw).
+  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.047], [0.3, 0.037], [0.7, 0.0315], [1, 0.031]], Math.max(28, seg(32)), 0.86);
   // Plan item 319: the neck in the jaw's shadow, darkest just under it and lit toward the collar (a bright, evenly
   // lit pipe made the head float); vertex colours, so the neck and ears stay one merged draw per bone.
   {
