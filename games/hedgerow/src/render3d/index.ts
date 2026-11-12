@@ -38,13 +38,13 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight, actMood, matte, nightLight, shoreFade } from "./palette";
+import { actLight, actMood, matte, nightLight, shoreFade, shoreFoam } from "./palette";
 import { fordMiddle } from "../landmarks";
 import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
-import { buildGround, type Ground } from "./terrain";
+import { buildGround, waterNormalTexture, type Ground } from "./terrain";
 import { Crops } from "./crops";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
@@ -2182,7 +2182,7 @@ export class Renderer3D {
         const grp = new THREE.Group();
         const water = new THREE.InstancedMesh(
           new THREE.PlaneGeometry(0.42, 0.98).rotateX(-Math.PI / 2),
-          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.15, metalness: 0.1 }), // plan item 330: the ponds' deeper water
+          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.28, metalness: 0.1, normalMap: waterNormalTexture(), normalScale: new THREE.Vector2(0.4, 0.4) }), // plan item 330: the ponds' deeper water, rippled
           steps.length,
         );
         const stones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: "#8d8a80", roughness: 0.9, flatShading: true }), steps.length * 2);
@@ -2222,7 +2222,7 @@ export class Renderer3D {
         const SW = 0.3;
         const rim = new THREE.InstancedMesh(
           new THREE.PlaneGeometry(0.3, SW).rotateX(-Math.PI / 2),
-          new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
+          new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
           steps.length * 2,
         );
         const flip = new THREE.Quaternion().setFromAxisAngle(up, Math.PI);
@@ -2376,7 +2376,7 @@ export class Renderer3D {
         if (rims.length) {
           const rim = new THREE.InstancedMesh(
             new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-            new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
+            new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
             rims.length,
           );
           rims.forEach((m, i) => rim.setMatrixAt(i, m));

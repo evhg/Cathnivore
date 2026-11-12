@@ -11,7 +11,7 @@ import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
-import { bubble, C, chrome, glass, gloss, glow, matte, metal, shoreFade } from "./palette";
+import { bubble, C, chrome, glass, gloss, glow, matte, metal, shoreFade, shoreFoam } from "./palette";
 
 type M = THREE.Material;
 
@@ -39,7 +39,7 @@ const box = (w: number, h: number, d: number, mat: M, x = 0, y = 0, z = 0) => me
 /** Plan item 269: pale shallows fading in from all four edges of a w x d sheet of water whose top is at y. */
 let shoreMat: THREE.MeshStandardMaterial | null = null;
 function shallowsRim(w: number, d: number, y: number): THREE.Group {
-  shoreMat ??= new THREE.MeshStandardMaterial({ color: "#d6e8de", alphaMap: shoreFade(), transparent: true, roughness: 0.5, depthWrite: false });
+  shoreMat ??= new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), opacity: 0.85, transparent: true, roughness: 0.5, depthWrite: false });
   const g = new THREE.Group();
   const sw = Math.min(0.3, w / 2, d / 2);
   for (const [len, turn, x, z] of [
@@ -3527,7 +3527,7 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       break;
     }
     case "reeds": {
-      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#4f8ea6", 0.15), 0, 0.0, 0), shallowsRim(w - 0.12, d - 0.12, 0.02));
+      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#2f6f86", 0.3), 0, 0.0, 0), shallowsRim(w - 0.12, d - 0.12, 0.02));
       const reed = [matte("#5d8a3a"), matte("#7aa84a")];
       const n = Math.round(w * d * 9);
       for (let k = 0; k < n; k++) {
@@ -3583,7 +3583,7 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       break;
     }
     case "ford": {
-      g.add(box(w - 0.2, 0.015, d - 0.2, matte("#5f96aa", 0.15), 0, 0, 0), shallowsRim(w - 0.2, d - 0.2, 0.015));
+      g.add(box(w - 0.2, 0.015, d - 0.2, matte("#2f6f86", 0.3), 0, 0, 0), shallowsRim(w - 0.2, d - 0.2, 0.015));
       const n = Math.max(1, Math.round(w * d));
       for (let k = 0; k < n; k++) {
         const x = -w / 2 + ((k + 0.5) * w) / n;

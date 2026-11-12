@@ -26,7 +26,7 @@ import {
   buildWall,
   buildWindmill,
 } from "./models";
-import { actMood, matte, shoreFade } from "./palette";
+import { actMood, matte, shoreFade, shoreFoam } from "./palette";
 import { buildLanes, laneStyle } from "./lanes";
 import { laneDistance, vergeScatter } from "./verge";
 
@@ -293,7 +293,7 @@ function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
 
 let waterNormal: THREE.Texture | null = null;
 /** A tileable ripple normal map (sums of whole-period sines), scrolled to make the water move. */
-function waterNormalTexture(): THREE.Texture {
+export function waterNormalTexture(): THREE.Texture {
   if (waterNormal) return waterNormal;
   const S = 128;
   const c = document.createElement("canvas");
@@ -726,11 +726,11 @@ export function buildGround(level: Level): Ground {
         // Plan item 330: deeper, greener water that mirrors less of the pale sky (with full clearcoat at 82% opacity the
         // ponds read as pale-blue slabs).
         color: "#2f6f86",
-        roughness: 0.16,
+        roughness: 0.24,
         metalness: 0.1,
         transparent: true,
         opacity: 0.9,
-        clearcoat: 0.5,
+        clearcoat: 0.3,
         clearcoatRoughness: 0.08,
         normalMap: ripples,
         normalScale: new THREE.Vector2(0.45, 0.45),
@@ -770,7 +770,7 @@ export function buildGround(level: Level): Ground {
     if (shallows.length) {
       const band = new THREE.InstancedMesh(
         new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-        new THREE.MeshStandardMaterial({ color: "#9fcbc0", alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
+        new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
         shallows.length,
       );
       shallows.forEach((m, i) => band.setMatrixAt(i, m));

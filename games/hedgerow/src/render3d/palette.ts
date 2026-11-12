@@ -240,3 +240,39 @@ export function shoreFade(): THREE.Texture {
   shoreTex = new THREE.CanvasTexture(c);
   return shoreTex;
 }
+
+let foamTex: THREE.Texture | null = null;
+/**
+ * Plan item 330: the shallows' colour, with a broken foam line along the bank (the canvas top, as in `shoreFade`): white
+ * scalloped froth over the first eighth, then the green-blue shallows. Paired with `shoreFade` as the alpha, it costs no
+ * draw call over the plain shallows. The strip is one cell wide and tiles cell to cell, so the froth repeats seamlessly.
+ */
+export function shoreFoam(): THREE.Texture {
+  if (foamTex) return foamTex;
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 64;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#9fcbc0";
+  g.fillRect(0, 0, 128, 64);
+  g.fillStyle = "#cfe6dd";
+  g.fillRect(0, 0, 128, 11);
+  g.fillStyle = "#f4f8f2";
+  g.fillRect(0, 0, 128, 3);
+  // Scallops of froth, in whole periods across the width so the strip tiles.
+  for (let x = 0; x < 128; x += 2) {
+    const h = 4 + 2.5 * Math.sin((x / 128) * Math.PI * 2 * 5) + 1.5 * Math.sin((x / 128) * Math.PI * 2 * 11 + 1.3);
+    g.fillRect(x, 0, 2, Math.max(2, h));
+  }
+  // A few loose bubbles just off the line.
+  g.fillStyle = "rgba(244, 248, 242, 0.85)";
+  for (const [x, y, r] of [[9, 9, 1.4], [30, 11, 1.1], [47, 8, 1.6], [70, 10, 1.2], [88, 9, 1.5], [109, 12, 1.1], [121, 8, 1.3]] as const) {
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fill();
+  }
+  foamTex = new THREE.CanvasTexture(c);
+  foamTex.colorSpace = THREE.SRGBColorSpace;
+  return foamTex;
+}
+
