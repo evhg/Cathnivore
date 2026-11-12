@@ -1834,7 +1834,7 @@ const CROPS = [
   ["#c9a46a", "#9c7a44"],
   ["#a7c46c", "#7f9e48"],
 ] as const;
-function fieldThumb(lv: Level): string {
+function fieldThumb(lv: Level, landscape = false): string {
   const S = 12;
   const w = lv.cols * S;
   const h = lv.rows * S;
@@ -1875,14 +1875,23 @@ function fieldThumb(lv: Level): string {
     )
     .join("");
   const pad = 6;
+  // Plan item 324: a landscape copy for the D card (the field turned a quarter so its long side runs across the card,
+  // which has width to spare and no height); the portrait one is the phone's.
+  const turned = `<g transform="translate(0 ${w}) rotate(-90)">`;
+  const open = landscape
+    ? `<svg class="lcard-plate-wide" viewBox="${-pad} ${-pad} ${h + pad * 2} ${w + pad * 2}" aria-hidden="true">`
+    : `<svg class="lcard-plate-tall" viewBox="${-pad} ${-pad} ${w + pad * 2} ${h + pad * 2}" aria-hidden="true">`;
+  const [fw, fh] = landscape ? [h, w] : [w, h];
   return (
-    `<svg viewBox="${-pad} ${-pad} ${w + pad * 2} ${h + pad * 2}" aria-hidden="true">` +
-    `<defs><radialGradient id="lcm-${lv.id}" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#b9d68a"/><stop offset=".6" stop-color="#8fb560"/><stop offset="1" stop-color="#6c9445"/></radialGradient></defs>` +
-    `<rect x="${-pad}" y="${-pad}" width="${w + pad * 2}" height="${h + pad * 2}" rx="9" fill="#3f6a2c"/>` +
-    `<rect x="${-pad + 2.5}" y="${-pad + 2.5}" width="${w + pad * 2 - 5}" height="${h + pad * 2 - 5}" rx="7" fill="none" stroke="#5d8a3a" stroke-width="3" stroke-dasharray="1 3.2" stroke-linecap="round"/>` +
-    `<rect width="${w}" height="${h}" rx="4" fill="url(#lcm-${lv.id})"/>` +
+    open +
+    `<defs><radialGradient id="lcm-${lv.id}${landscape ? "w" : ""}" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#b9d68a"/><stop offset=".6" stop-color="#8fb560"/><stop offset="1" stop-color="#6c9445"/></radialGradient></defs>` +
+    `<rect x="${-pad}" y="${-pad}" width="${fw + pad * 2}" height="${fh + pad * 2}" rx="9" fill="#3f6a2c"/>` +
+    `<rect x="${-pad + 2.5}" y="${-pad + 2.5}" width="${fw + pad * 2 - 5}" height="${fh + pad * 2 - 5}" rx="7" fill="none" stroke="#5d8a3a" stroke-width="3" stroke-dasharray="1 3.2" stroke-linecap="round"/>` +
+    `<rect width="${fw}" height="${fh}" rx="4" fill="url(#lcm-${lv.id}${landscape ? "w" : ""})"/>` +
+    (landscape ? turned : "<g>") +
     beds + lanes + barns + trees +
-    `<rect width="${w}" height="${h}" rx="4" fill="none" stroke="#fff6dc" stroke-opacity=".35" stroke-width="1"/>` +
+    "</g>" +
+    `<rect width="${fw}" height="${fh}" rx="4" fill="none" stroke="#fff6dc" stroke-opacity=".35" stroke-width="1"/>` +
     `</svg>`
   );
 }
@@ -1971,7 +1980,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
     show(lv) {
       if (shown === lv) return;
       shown = lv;
-      thumb.innerHTML = fieldThumb(lv);
+      thumb.innerHTML = fieldThumb(lv) + fieldThumb(lv, true);
       const stars = data.stars[String(lv.id)] ?? 0;
       const kinds = new Map<EnemyKind, number>();
       for (const g of lv.waves.flat()) kinds.set(g.enemy, (kinds.get(g.enemy) ?? 0) + g.count);

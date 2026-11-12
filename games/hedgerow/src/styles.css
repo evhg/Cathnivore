@@ -4791,6 +4791,7 @@ img.act-scene {
 }
 .lcard-grip { display: none; }
 .lcard-thumb { grid-area: thumb; }
+.lcard-thumb svg.lcard-plate-wide { display: none; }
 .lcard-thumb svg { display: block; width: 132px; height: auto; max-height: 116px; filter: drop-shadow(0 3px 0 color-mix(in srgb, var(--ink) 18%, transparent)); }
 .lcard-body { grid-area: body; display: grid; gap: 2px; min-width: 0; align-self: end; }
 .lcard-kicker { margin: 0; font: 800 var(--fs-label) / 1.2 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
@@ -4817,6 +4818,12 @@ img.act-scene {
   /* inside the card (pinned over its top edge it covered the stop above's name; a taller card pushes Play off a
      1280x800 screen) */
   .lcard-thumb svg { width: auto; height: 156px; max-height: none; }
+  /* the field turned so its long side runs across: 200 px or so wide in the same 156 px height */
+  .lcard-thumb svg.lcard-plate-tall { display: none; }
+  .lcard-thumb svg.lcard-plate-wide { display: block; height: 148px; }
+  /* the wider plate takes from the name column, not the vehicles (their names stay whole at 1280) */
+  #screen-select .level-card { grid-template-columns: auto minmax(196px, 1fr) auto auto; }
+  .lcard-enemies { grid-template-columns: repeat(2, minmax(0, 190px)); }
   .lcard-cath-face { width: 48px; height: 48px; margin: -8px 0; }
   .lcard-enemies .enemy-portrait { width: 48px; height: 48px; }
   .lcard-enemies .enemy-portrait img { width: 44px; height: 44px; }

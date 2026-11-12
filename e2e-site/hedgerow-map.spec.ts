@@ -304,7 +304,7 @@ test('plan item 88: the next level\'s card: Play on the first screen, a stop foc
   expect(box.y).toBeGreaterThanOrEqual(0)
   // Plan item 174: a phone's sheet peeks its name and Play; its grip pulls up the field's plate.
   if (vp.width < 900) await card.locator('.lcard-grip').click()
-  await expect(card.locator('.lcard-thumb svg')).toBeVisible()
+  await expect(card.locator('.lcard-thumb svg').filter({ visible: true })).toHaveCount(1)
   // Focusing another open stop shows it on the card.
   await page.locator('button.node[data-level="12"]').focus()
   await expect(card.locator('.lcard-name')).toHaveText('Cheap Eggs')

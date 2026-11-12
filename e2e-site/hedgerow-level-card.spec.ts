@@ -42,7 +42,7 @@ test('the level card is a catalogue page, clear of the map stops', async ({ page
   // And on a phone the tab bar's labels under it are at the 12 px floor (they were 11.5 px).
   if (phone) for (const t of await page.locator('#screen-select .top-tools .bank-word').all()) if (await t.isVisible()) expect(await t.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)
   await expect(card.locator('[data-cath-line] p')).not.toBeEmpty()
-  await expect(card.locator('.lcard-thumb svg')).toBeVisible()
+  await expect(card.locator('.lcard-thumb svg').filter({ visible: true })).toHaveCount(1)
   if (!phone) {
     const met = await page.evaluate(() => {
       const c = document.querySelector('[data-level-card]')!.getBoundingClientRect()
