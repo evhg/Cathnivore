@@ -986,7 +986,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   addS(neck, skinMat, chest);
   const headPivot = new THREE.Group();
   // Plan item 289: the head a step larger (1.08) and set lower, so the neck shows ~30% less above the collar.
-  headPivot.position.set(0, 0.428, 0.014);
+  // Plan item 319 slice 40: 4 mm lower (0.428 -> 0.424), since the jaw line's rise toward the ear bared that much
+  // more neck under it.
+  headPivot.position.set(0, 0.424, 0.014);
   headPivot.scale.setScalar(1.08);
   chest.add(headPivot);
   // The head: an egg with a jaw. The lower front narrows to a chin, the cheekbones sit high, a small nose; C14 (S9.5,
@@ -1035,7 +1037,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
         dz += 0.032 * bump(x, y, 0.39 * sx, 0.055, 0.22, 0.12);
         // Plan item 319 slice 25: the cheek's fullness lower and broader (0.05 at y -0.2, 0.26x0.2 -> 0.038 at -0.17,
         // 0.32x0.3), so it runs into the jaw's taper instead of bulging out and turning a corner at the jaw.
-        dz += 0.038 * bump(x, y, 0.5 * sx, -0.17, 0.32, 0.3);
+        // Slice 40: higher and shorter (-0.17, 0.3 tall -> -0.13, 0.25), so its foot no longer widens the jaw's side.
+        dz += 0.038 * bump(x, y, 0.5 * sx, -0.13, 0.32, 0.25);
         // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
         // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
         dz += 0.03 * bump(x, y, 0.52 * sx, -0.08, 0.2, 0.07);
@@ -1047,6 +1050,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // lower lip fuller under it, and the hollow between the lower lip and the chin, so the mouth has a lit lower lip
       // and a shaded upper one from the mesh, as the paint has.
       // Slice 24: the lids and lips now live in shadeRelief (deeper, and shading as well as displacing).
+      // Plan item 319 slice 40: the chin modelled forward. Below the mouth the egg turned down in one broad plane
+      // from the lip to the jaw's edge (view normal.y < -0.45 all the way), so the lower face read as a flat,
+      // heavy underside. A soft mound under the lip's hollow brings the chin's front up to face the lens, and its
+      // underside turns away in a shorter, quicker curve.
+      dz += 0.085 * bump(x, y, 0, -0.8, 0.3, 0.24);
       z += dz * front;
       // Jaw: below the cheekbones the sides draw in, the chin comes forward.
       if (y < 0) {
@@ -1062,11 +1070,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // drew a hard corner at the jaw in three-quarter view.
         const ks = k < 0.15 ? (k * k) / 0.3 : k - 0.075;
         // Slice 25: drawn in more gradually (0.54 k^1.6 -> 0.5 k^1.25), so the jaw's angle is a curve, not a corner.
-        x *= 1 - 0.5 * Math.pow(k, 1.25);
+        // Slice 40: the taper starts sooner and ends narrower (0.5 k^1.25 -> 0.56 k^1.1), so the jaw runs in a long
+        // convex curve from the cheekbone to a small chin, not straight down the cheek and round a corner.
+        x *= 1 - 0.56 * Math.pow(k, 1.1);
+        // Slice 40: the jaw line rises from the chin toward the ear: the lower head's sides and back lift (up to 0.11
+        // at the side, none at the chin's front), so its underside slopes up and back instead of lying as one flat
+        // shelf whose edge met the cheek in a corner.
+        const lift = 0.11 * ks * (1 - THREE.MathUtils.smoothstep(z, 0.0, 0.8));
         z = THREE.MathUtils.lerp(z * (1 - 0.45 * ks), z * (1 - 0.1 * ks) + 0.06 * ks, THREE.MathUtils.smoothstep(z, -0.25, 0.25));
         // Plan item 289: the lower face shorter (0.95 -> 0.86), a rounder face, not a long flat egg.
         // Plan item 319 slice 15: shorter again (0.86 -> 0.8), so the chin sits closer under her mouth.
-        y = -k + 0.2 * ks;
+        y = -k + 0.2 * ks + lift;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       // Plan item 319 slice 19: a rounded profile ((1 - r^2)^2.6, flat-topped with soft sides), not a cone: the cone's
