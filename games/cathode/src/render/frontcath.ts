@@ -896,7 +896,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // upper lip turned down go darker, the lid's top and the lower lip catch it) and a little cavity where it dips.
   {
     const p = skull.attributes.position as THREE.BufferAttribute;
-    const bump = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) => Math.max(0, 1 - Math.hypot((x - cx) / rx, (y - cy) / ry));
+    // Plan item 319 slice 25: smooth bumps ((1 - r^2)^2), not cones: a cone's slope breaks at its rim and its peak,
+    // and the cheek's rim drew a corner in the jaw's silhouette.
+    const bump = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) => {
+      const q = 1 - Math.min(1, ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2);
+      return q * q;
+    };
     const shadeRelief = (x: number, y: number): number => {
       let r = 0;
       for (const [amp, cx, cy, rx, ry, mirror] of FACE_RELIEF) {
@@ -923,7 +928,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 319 slice 2: the eye modelled in its socket: a rounded ball under the painted almond, and the upper
         // lid a fold above it, so the eye catches the key along the lid and turns away at the corners.
         dz += 0.032 * bump(x, y, 0.39 * sx, 0.055, 0.22, 0.12);
-        dz += 0.05 * bump(x, y, 0.5 * sx, -0.2, 0.26, 0.2);
+        // Plan item 319 slice 25: the cheek's fullness lower and broader (0.05 at y -0.2, 0.26x0.2 -> 0.038 at -0.17,
+        // 0.32x0.3), so it runs into the jaw's taper instead of bulging out and turning a corner at the jaw.
+        dz += 0.038 * bump(x, y, 0.5 * sx, -0.17, 0.32, 0.3);
         // Plan item 275: the cheek planes: a ridge along the cheekbone and a hollow below it, angled down toward the
         // mouth's corner, so the side of the face turns away from the key in a plane, not a smooth curve.
         dz += 0.03 * bump(x, y, 0.52 * sx, -0.08, 0.2, 0.07);
@@ -944,11 +951,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 275: a softer point and a shorter chin (the long V read as a mannequin's at title distance).
         // Plan item 289: 0.42 -> 0.48, a narrower chin (the shorter face read wide at the jaw).
         // Plan item 319 slice 15: 0.48 -> 0.54 (the critique, 11-12, read the jaw wide and the lower face long).
-        x *= 1 - 0.54 * Math.pow(k, 1.6);
-        z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
+        // Plan item 319 slice 25: the jaw starts without a kink: `ks` eases in over the cheekbone line (k < 0.15) so
+        // the chin's push and the face's shortening don't crease the face at eye level, and the front's push forward
+        // and the back's draw-in blend across the side (z -0.25..0.25), where the two branches met in a step that
+        // drew a hard corner at the jaw in three-quarter view.
+        const ks = k < 0.15 ? (k * k) / 0.3 : k - 0.075;
+        // Slice 25: drawn in more gradually (0.54 k^1.6 -> 0.5 k^1.25), so the jaw's angle is a curve, not a corner.
+        x *= 1 - 0.5 * Math.pow(k, 1.25);
+        z = THREE.MathUtils.lerp(z * (1 - 0.45 * ks), z * (1 - 0.1 * ks) + 0.06 * ks, THREE.MathUtils.smoothstep(z, -0.25, 0.25));
         // Plan item 289: the lower face shorter (0.95 -> 0.86), a rounder face, not a long flat egg.
         // Plan item 319 slice 15: shorter again (0.86 -> 0.8), so the chin sits closer under her mouth.
-        y *= 0.8;
+        y = -k + 0.2 * ks;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       // Plan item 319 slice 19: a rounded profile ((1 - r^2)^2.6, flat-topped with soft sides), not a cone: the cone's
