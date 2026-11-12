@@ -456,6 +456,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 319 slice 11: wool scatters the street's neon, so its rim keeps half the sign's colour and less
             // of its strength (the critique read a pink and cyan sheen down the coat as vinyl).
             ${edge === "wool" ? "rimC = mix( vec3( dot( rimC, vec3( 0.2126, 0.7152, 0.0722 ) ) ), rimC, 0.5 ) * 0.75;" : ""}
+            // Plan item 319 slice 22: dark hair lights at its edge in its own warm brown-gold, with only a trace of the
+            // signs' hue (the critique read the locks' pink and cyan edges as plastic cards, not hair).
+            ${hair ? "rimC = mix( vec3( dot( rimC, vec3( 0.2126, 0.7152, 0.0722 ) ) ) * vec3( 1.0, 0.8, 0.6 ), rimC, 0.3 ) * 0.8;" : ""}
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * rimC;
             ${keyTerm}
           }`,
@@ -681,14 +684,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // folds over at the top and falls outward, so the collar shows a rolled edge of cloth, not a cut sheet.
     const pts = [
       [0.1, 0.495],
-      [0.104, 0.535],
-      [0.114, 0.575],
-      [0.124, 0.588],
-      // Plan item 319 slice 20: the fall lies closer (0.146/0.152 -> 0.136/0.138), so in three-quarter view the far
-      // side's fall doesn't stand out past her neck as a level slab at chin height; rounder (22 -> 32 sides).
-      [0.132, 0.584],
-      [0.136, 0.566],
-      [0.138, 0.542],
+      [0.104, 0.53],
+      [0.112, 0.566],
+      [0.12, 0.577],
+      // Plan item 319 slice 20: rounder (22 -> 32 sides). Slice 21: the fall slopes down onto the shoulder (it ended
+      // at y 0.542, hanging 3 cm over the coat's shoulder slope, so in three-quarter view the far side stood as a
+      // level slab with air under it); now it lies on the cloth like a turned-down collar.
+      [0.126, 0.571],
+      [0.133, 0.553],
+      [0.14, 0.532],
+      [0.146, 0.519],
     ].map(([r, y]) => new THREE.Vector2(r!, y!));
     // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
     const collar = new THREE.LatheGeometry(pts, Math.max(24, seg(32)), open / 2, Math.PI * 2 - open);
@@ -702,7 +707,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const z = p.getZ(i);
         const r = Math.hypot(x, z) || 1;
         const front = Math.max(0, z / r);
-        const up = Math.min(1, (y - 0.495) / 0.093);
+        const up = Math.min(1, (y - 0.495) / 0.076);
         // The front corners fall onto the lapels' tops (the gorge), joining collar and lapel.
         const ny = 0.495 + (y - 0.495) * (1 - 0.5 * front * front);
         const roll = 1 + 0.02 * up * up * (1 - front);

@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
-- Lane A (03:51 11-12): item 319 slices 18-20 (the coat-front hair as three locks, the neck lit smooth, a rounded nose, a closer collar fall). `main` is 52fbfa9f; the next release is 19:51 on 11-12. Next: item 319, the far collar slab, the hair's pink/cyan rims, then a fresh critique.
+- Lane A (04:51 11-12): item 319, the far collar slab, the hair's pink/cyan rims, then a fresh critique. `main` is 52fbfa9f; the next release is 19:51 on 11-12.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (04:22, 11-12): item 336 done (the lead vehicle noses out of the 2D depot's shutter on Go). `main` is lane A's 52fbfa9f (11-12). Lane B's open items: 268, 282, 285, 297, 307, 314, 318, 323, 324, 325, 326, 330, 333.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
