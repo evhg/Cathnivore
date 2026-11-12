@@ -485,3 +485,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 lane B: item 324's 200 px plate at D comes from turning the field landscape inside the card's height (a taller card pushed Play off 1280x800); square fields reach 175 px, logged as left.
 - 2026-11-12 15:40 lane A (item 319): the hood's lining is darkened in the shader for back faces (`inside`), not made single-sided: one-sided, the hood's inside would vanish and show the street through the open hood.
 - 2026-11-12 16:35 lane A (item 319): the gloves got their own material rather than a tint of blackMat, with the cuff straps moved onto it too, so each bone's statics still merge into one mesh per material and the draw count holds.
+- 2026-11-12 lane B: item 324 closed with Cath as a 48 px face coin, not half length: half length rises into the stop labels above the card, as the pinned plate did.
+- 2026-11-12 lane B: item 337's leather cover is drawn in the rail's existing 6 px bleed, so the 320 px column and every layout spec stay as they were.
+- 2026-11-12 lane B: item 314: on a phone held stops show no Hollowell clutter (176 px across a two-column road it always met a coin or a name); D keeps it, where the new spec finds 0 hits.
