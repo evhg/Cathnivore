@@ -3232,7 +3232,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P and D.
 - **Size:** 2
 
-## 340. [ ] The bugs from the 2026-11-12 01:00 critique, fixed as one batch
+## 340. [ ] The bugs from the 2026-11-12 01:00 critique, fixed as one batch *(lane B, in progress)*
 - **Why:** subagent critique of `e2e/screenshots/plan1112a/`, each to be measured in the page before fixing:
   - `cath-game-D` (1200-1330 x 715-880): the last hand card "Junction" is clipped by the deck and the screen edge, so it reads "unction".
   - `cath-game-P` (295-380 x 755-782): the "9+ more" pill sits over the third card's corner.
