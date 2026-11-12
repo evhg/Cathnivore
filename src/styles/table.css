@@ -1275,6 +1275,25 @@ html.no-animations .board-object .bo-out, html.no-animations .board-object .bo-t
     flex: none;
   }
 
+  /* Plan item 337: the rail is one leather-bound ledger: a stitched cover in the column's own bleed (no layout change),
+     the producer, goals and ledger frames bound into it as pages (an edge, not a floating card's shadow), the cover's
+     leather showing in the gutters between them. */
+  .desktop-col-left {
+    padding-top: 6px;
+    margin-top: -6px;
+    border-radius: 16px;
+    background:
+      radial-gradient(120% 60% at 30% 0%, color-mix(in srgb, var(--wood) 88%, var(--wood-ink)), transparent 70%),
+      linear-gradient(180deg, var(--wood), var(--wood-lo));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wood-lo) 80%, transparent), var(--e3);
+    outline: 1.5px dashed color-mix(in srgb, var(--wood-ink) 40%, transparent);
+    outline-offset: -3px;
+  }
+  .desktop-col-left > .frame {
+    border-color: color-mix(in srgb, var(--wood-lo) 55%, transparent);
+    box-shadow: var(--inset-hi), 0 2px 0 color-mix(in srgb, var(--wood-lo) 70%, transparent), 0 3px 6px color-mix(in srgb, var(--wood-lo) 45%, transparent);
+  }
+
   .farm-inline {
     margin-top: var(--sp-3);
     padding-top: var(--sp-2);
