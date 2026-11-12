@@ -1255,6 +1255,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.moveTo(-0.0055, 0.004);
       g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
       g.stroke();
+      // Plan item 319 slice 48: the shadow line turns under the tip into the nostril's wing, an illustrator's nose
+      // (the critique read a lone faint stroke as a smudge at title distance), thinner as it turns.
+      g.lineWidth = 0.0017;
+      g.beginPath();
+      g.moveTo(-0.0068, -0.02);
+      g.quadraticCurveTo(-0.0066, -0.0252, -0.0018, -0.0262);
+      g.stroke();
       blob(0.001, -0.019, 0.006, 0.004, "rgba(255,236,222,A)", 0.45);
       g.fillStyle = "rgba(96,48,42,0.42)";
       for (const sx of [-1, 1]) {

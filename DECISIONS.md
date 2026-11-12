@@ -484,3 +484,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 lane B: item 339's LCP check is a script (`scripts/portfolio-lcp.mjs`), not a gate-5 spec: timings under CPU throttling swing on a loaded CI runner.
 - 2026-11-12 lane B: item 324's 200 px plate at D comes from turning the field landscape inside the card's height (a taller card pushed Play off 1280x800); square fields reach 175 px, logged as left.
 - 2026-11-12 15:40 lane A (item 319): the hood's lining is darkened in the shader for back faces (`inside`), not made single-sided: one-sided, the hood's inside would vanish and show the street through the open hood.
+- 2026-11-12 16:35 lane A (item 319): the gloves got their own material rather than a tint of blackMat, with the cuff straps moved onto it too, so each bone's statics still merge into one mesh per material and the draw count holds.
