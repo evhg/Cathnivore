@@ -4162,9 +4162,10 @@ function syncCathSay(g: Game, now: number): void {
       { w: el.offsetWidth, h: el.offsetHeight },
       { w: field.width, h: field.height },
       // Plan item 120: she only speaks in the build phase, when the lane is empty and an empty plot is what she
-      // tells you to tap, so those are the cells to keep clear; the lane and built plots cost little.
-      empties,
-      [...laneBoxes(g), ...builtPlotBoxes(g)].map(shift).filter(near),
+      // tells you to tap, so those are the cells to keep clear; built plots cost little.
+      // Plan item 297: the lane is kept clear as hard as the empty plots (it ran under her bubble on level 5).
+      [...empties, ...laneBoxes(g).map(shift).filter(near)],
+      builtPlotBoxes(g).map(shift).filter(near),
       avoid,
     );
   // Plan item 250: her 96 px host portrait where the field has room; on a crowded field (the bubble would cover

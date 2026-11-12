@@ -488,3 +488,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 lane B: item 324 closed with Cath as a 48 px face coin, not half length: half length rises into the stop labels above the card, as the pinned plate did.
 - 2026-11-12 lane B: item 337's leather cover is drawn in the rail's existing 6 px bleed, so the 320 px column and every layout spec stay as they were.
 - 2026-11-12 lane B: item 314: on a phone held stops show no Hollowell clutter (176 px across a two-column road it always met a coin or a name); D keeps it, where the new spec finds 0 hits.
+- 2026-11-12 lane B: item 297's D dock covers the panel's Coming up / notebook card, never the tower packets (the build needs them), and holds for the whole build phase so her line doesn't swing between field and panel.
+- 2026-11-12 lane B: her bubble now keeps off lane cells as hard as off empty plots; built plots stay cheap to cover.
