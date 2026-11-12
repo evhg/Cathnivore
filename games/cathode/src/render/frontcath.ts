@@ -675,11 +675,16 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // folded back over the chest; double-breasted buttons; epaulettes on the shoulders; a buckle on the belt.
   {
     const open = 1.15; // radians left open at the front
+    // Plan item 319: a lower stand (it rose to her chin, a lone slab beside the jaw in three-quarter view) that
+    // folds over at the top and falls outward, so the collar shows a rolled edge of cloth, not a cut sheet.
     const pts = [
       [0.1, 0.495],
-      [0.104, 0.54],
-      [0.118, 0.6],
-      [0.13, 0.615],
+      [0.104, 0.535],
+      [0.114, 0.575],
+      [0.124, 0.588],
+      [0.136, 0.584],
+      [0.146, 0.565],
+      [0.152, 0.54],
     ].map(([r, y]) => new THREE.Vector2(r!, y!));
     // Lathe angle 0 faces +x; +z (her front) is at π/2 in three's lathe (x = sin, z = cos): start past the gap.
     const collar = new THREE.LatheGeometry(pts, seg(22), open / 2, Math.PI * 2 - open);
@@ -693,8 +698,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const z = p.getZ(i);
         const r = Math.hypot(x, z) || 1;
         const front = Math.max(0, z / r);
-        const up = (y - 0.495) / 0.12;
-        const ny = 0.495 + (y - 0.495) * (1 - 0.32 * front * front);
+        const up = Math.min(1, (y - 0.495) / 0.093);
+        // The front corners fall onto the lapels' tops (the gorge), joining collar and lapel.
+        const ny = 0.495 + (y - 0.495) * (1 - 0.5 * front * front);
         const roll = 1 + 0.035 * up * up * (1 - front);
         p.setXYZ(i, x * roll, ny, z * roll);
       }
@@ -788,8 +794,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
       for (let j = 0; j < ys.length - 1; j++) {
         const y0 = ys[j]!;
         const y1 = ys[j + 1]!;
-        const w0 = (0.052 * (y0 - 0.272)) / 0.248;
-        const w1 = (0.052 * (y1 - 0.272)) / 0.248;
+        // Plan item 319: no wider than the lapels' inner corners (x 0.036) above them, less their roll, so no pale wedge of silk
+        // shows between a lapel's top edge and the collar (the 'white gaps at the lapels').
+        const w0 = Math.min(0.03, (0.052 * (y0 - 0.272)) / 0.248);
+        const w1 = Math.min(0.03, (0.052 * (y1 - 0.272)) / 0.248);
         const q = [[-w0, y0], [w1, y1], [w0, y0], [-w0, y0], [-w1, y1], [w1, y1]];
         for (const [x, y] of q) verts.push(x!, y!, onCoat(x!, y!, 0.0035));
       }
