@@ -490,6 +490,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
   // the light, with a cool cyan edge on the far side. The street's real lights add to it; the rim is what
   // makes her read as a silhouette against the neon at any framing.
+  // Plan item 319 slice 46: the hair's rim under a hood (1 bare-headed): the hood blocks the back light, so the
+  // hair's outline lit a pale line against the hood's dark lining.
+  const hairRimU = { uHairRim: { value: 1 } };
   const rimU = {
     uRimDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() },
     // Plan item 82: a stronger rim on a phone, where she stands small in the lower half under the menu.
@@ -505,7 +508,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0, edge: "flat" | "wool" | "leather" = "flat") => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0, edge: "flat" | "wool" | "leather" = "flat", inside = 1) => {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
@@ -553,11 +556,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
           }
           #include <opaque_fragment>`
         : "#include <opaque_fragment>";
+    // Plan item 319 slice 46: a two-sided shell's inside (the Ghost's hood) sits in its own shade: lit like the
+    // outside, the strip of lining between her hair and the brim drew a pale fringe round her face.
+    const insideShade = inside < 1 ? `if ( !gl_FrontFacing ) outgoingLight *= ${inside.toFixed(2)};\n` : "";
     m.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, rimU);
+      Object.assign(sh.uniforms, rimU, hair ? hairRimU : {});
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <opaque_fragment>", skinLight)
-        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + INK_BAND)
+        .replace("#include <opaque_fragment>", insideShade + skinLight)
+        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + (hair ? "uniform float uHairRim;\n" : "") + INK_BAND)
         // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
         // Plan item 319: not on the face (the material with catch-lights): banded, the street's light cut her jaw and
@@ -582,7 +588,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 289: hair is thin locks whose surfaces mostly turn from the lens, so the wide flat lit whole
             // strands pink-white (a pale ribbon down her coat, a lavender helmet): on hair the rim keeps to the outer
             // edge, and a two-sided sheet's inside keeps little of it, so her hair reads dark and glossy.
-            ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 );" : ""}
+            ${hair ? "fr = smoothstep( 0.5, 0.62, fr0 ) * ( gl_FrontFacing ? 1.0 : 0.25 ) * uHairRim;" : ""}
             // Plan item 319: the coat is wool, which takes a back light as a soft, dim bloom along its turn, not item
             // 254's hard flat (a bright white band down the coat's edge read as vinyl); its own weave normal breaks it.
             ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.5;" : ""}
@@ -597,12 +603,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 319 slice 22: dark hair lights at its edge in its own warm brown-gold, with only a trace of the
             // signs' hue (the critique read the locks' pink and cyan edges as plastic cards, not hair).
             ${hair ? "rimC = mix( vec3( dot( rimC, vec3( 0.2126, 0.7152, 0.0722 ) ) ) * vec3( 1.0, 0.8, 0.6 ), rimC, 0.3 ) * 0.8;" : ""}
+            // Plan item 319 slice 46: a two-sided shell's inside (the Ghost's hood) takes no rim.
+            ${inside < 1 ? "fr *= gl_FrontFacing ? 1.0 : 0.0;" : ""}
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * rimC;
             ${keyTerm}
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}-${edge}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}-${edge}-${inside}`;
   };
   rimify(coatMat, 1, 0, 0, 0, false, 0, "wool");
   // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
@@ -2982,7 +2990,7 @@ float reliefShade( vec2 uv ) {
     }
     cowl.translate(0, 0, -0.025);
     const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
-    rimify(hoodMat as THREE.MeshStandardMaterial, 0.9, 0, 0, 0, false, 0, "wool");
+    rimify(hoodMat as THREE.MeshStandardMaterial, 0.9, 0, 0, 0, false, 0, "wool", 0.35);
     // Plan item 247: a rolled brim round the face opening (the hood's cut edge read as a paper shell): a soft tube
     // down one edge of the opening, over the brow and down the other, a little proud of the cloth.
     const rimPts: THREE.Vector3[] = [];
@@ -3388,6 +3396,7 @@ float reliefShade( vec2 uv ) {
       // curtain lay over her outer eye as a dark glossy blob, the rim light catching it.
       lockGeo?.setDrawRange(0, wearing === "ghost" ? lockSheetIdx : Infinity);
       const tuck = wearing === "ghost";
+      hairRimU.uHairRim.value = tuck ? 0 : 1;
       if (hairGeo && hairRestOpen && hairRestTuck) {
         hairRest = tuck ? hairRestTuck : hairRestOpen;
         (hairGeo.attributes.position!.array as Float32Array).set(hairRest);
