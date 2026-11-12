@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-12 00:55 UTC
+
 
 
 
@@ -3146,4 +3146,99 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
     - `portfolio-D`: the Runnel frame covers Cathnivore's right third (1105-1190 x 195-310), and Hedgerow covers NIGHT SHIFT's right half (1095-1205 x 390-505).
     - `portfolio-D`: Cath's counter (695-945 x 650-700) floats in the dark with nothing under it (item 318 slice 2 added a pool and a plinth; check it renders).
 - **Accept:** each fix is shot at P and D, light and dark. No two labels or cards intersect, measured from the page's boxes. ui-css-lint and the specs for each game touched pass.
+- **Size:** 2
+
+## 334. [ ] NIGHT SHIFT: the operative pick as a lit armoury dossier, not flat icons
+- **Why:** `plan1112a/ns-play-D`: the "inspect" weapon is a flat grey vector with a pink outline (1005-1370 x 265-340), with no material and no light. The class rows use flat red clip-art guns (355-470 x 185-555), the four non-Ghost guns are near-identical pistols, and the dash pips under each name (80-200 x 222-565) say nothing. `ns-play-P`: the stat card is a cream paper slip (10-375 x 635-835) that breaks the noir palette, and its weapon thumbnail (15-170 x 690-750) is the same flat drawing.
+- **Build:** render each class's weapon once, offscreen, from the game's own 3D gun kit under a hard key light and a rim light on gunmetal. Cache the results as textures for the inspect panel and the row thumbnails. Replace the pips with a labelled 3-segment meter (range or difficulty). The P card becomes smoked glass with a red rule, like the D panel.
+- **Accept:**
+  - The inspect gun has 35%+ luminance spread between its lit and shadow faces.
+  - The five row thumbnails are pairwise distinct (silhouette IoU 0.7 or less).
+  - The P card's background luminance is 0.08 or less, with text at 7:1+.
+  - Nothing renders live when the pick loads (the art is cached).
+  - cathode-perf passes run alone, and the classpick specs pass.
+  - Shots of all five classes at P and D.
+- **Size:** 2
+
+## 335. [ ] NIGHT SHIFT: one noir type system across title, List and pick, enforced by a test
+- **Why:** `plan1112a/ns-title-D`: the critique sees four voices: Bodoni display (55-690 x 100-180), heavy condensed menu caps (55-230 x 295-540), a neo-grotesque on the case file (413-540 x 485-555), and ragged ~15 px italic in 70 px columns on The List (65-600 x 735-810). `ns-play-D` adds heavy class names at about 48 px (80-330 x 170-560). VISION allows CATHODE three faces: Bodoni Moda (italic for voice), Rajdhani and JetBrains Mono.
+- **Build:** first audit the computed `font-family` of every text node on the title, pick, HUD and debrief; some of these may already be Rajdhani at weight. Map anything outside the three faces onto them. Set the type scale in `var(--u)` steps. Give The List's blurbs an 18 ch+ measure, capped at 3 lines.
+- **Accept:**
+  - An e2e test asserts every computed font on the title, pick and HUD is one of the three faces.
+  - No text under 13 px at P or D.
+  - The List's blurbs fit in 3 lines or fewer at D, with no one-word last line.
+  - Gate 1's font budget holds; cathode-type and ui-css-lint pass.
+  - Shots at P and D.
+- **Size:** 2
+
+## 336. [ ] Hedgerow: Hollowell's depot as a staged corporate gate that launches each wave
+- **Why:**
+  - `plan1112a/hedge-l21-3d-D`: the enemy source is a flat teal box with a pasted cartoon head (130-310 x 150-330), and its HOLLOWELL board is a plain green label on a post (195-305 x 368-395).
+  - `hedge-l34-2d-D`: both depots are white boxes, and each "NEXT" count sits over its own sign (90-220 x 130-240 and 90-220 x 605-715).
+  - `hedge-l34-2d-P` (100-180 x 75-135): the same box.
+  - Overall, the thing you fight looks like a placeholder.
+- **Build:** one Hollowell distribution centre, drawn in both 2D and 3D: a glossy, over-lit loading dock with a roller shutter, a logo totem, floodlights and a queue lane. Before a wave the shutter rolls up, the floodlights pulse, and the round's lead vehicle noses out (600-900 ms). The incoming count moves onto an LED board built into the building.
+- **Accept:**
+  - The depot is 120 px+ wide at D and 64 px+ at P, in both renderers.
+  - No label overlaps the depot's sign (a box test).
+  - The shutter plays on Go, and fades instead under reduced motion.
+  - Key art is re-shot; the Hedgerow 2D and 3D specs and hedgerow-3dframe pass.
+  - Shots of l21 (3D) and l34 (2D) at P and D.
+- **Size:** 2
+
+## 337. [ ] Cathnivore: the desktop left rail as the producer's farm ledger, not three form panels
+- **Why:** `plan1112a/cath-game-D`:
+  - The Ledger is a 280x165 empty brown box (35-315 x 637-800) holding one placeholder line.
+  - The "Saving for" cards cram a 5-line rule into ~11 px text (230-310 x 445-530).
+  - The partner row shows 9 px figures in tiny pills (90-315 x 245-295).
+  - The rail reads as three bordered panels stacked like a settings page.
+- **Build:** recompose the rail as one leather-bound ledger. The left page holds the producer's portrait, with seeds and goods as drawn crates, coins and rosettes, and the partner on a tab. The right page shows "Saving for" as three pinned goal tickets at 13 px+. The ledger lines fill with the round's real moves; when there are none yet, Cath's handwritten tip shows.
+- **Accept:**
+  - No rail text under 13 px at D, and no empty region over 150x80 px.
+  - Each goal ticket is 3 lines or fewer, with text at 4.5:1+.
+  - The rail is 320 px wide or less, and the phone layout is unchanged.
+  - Cathnivore e2e and ui-css-lint pass.
+  - Shots at D (light and dark), plus a P check.
+- **Size:** 2
+
+## 338. [ ] NIGHT SHIFT: the class pick staged in a real place, with depth and a lit floor
+- **Why:**
+  - `plan1112a/ns-play-D`: Cath stands before a bare brick wall and an empty grey floor (470-960 x 380-900).
+  - The LUNA sign hangs unlit in mid-air (500-595 x 285-330), and the billboard is cut to "HOLLOWE" by the top edge (440-800 x 0-45).
+  - Her boots have no contact shadow (640-760 x 800-850).
+  - `ns-play-P`: the stage is a near-black void (0-390 x 50-470).
+- **Build:** set the pick in a defined place, such as a back-alley stoop: a door frame with a bare bulb, wet cobbles reflecting the neon, a contact shadow, and rain catching a back light, with the whole billboard in frame. Each class adds one prop to the set (a tripod for the Ghost, a meat hook for the Butcher, and so on), so switching class changes the scene too.
+- **Accept:**
+  - The stage's mean luminance at D is 1.5x+ the current shot, and Cath is still the brightest figure.
+  - The whole billboard word is in frame at D.
+  - The contact shadow is 20%+ darker than the floor 40 px away.
+  - Switching class changes 5%+ of the stage's pixels.
+  - cathode-perf passes run alone, and the cathode specs pass.
+  - Shots of all five classes at P and D.
+- **Size:** 2
+
+## 339. [ ] Portfolio: the hero as a studio scene with four readable product screens
+- **Why:**
+  - `plan1112a/portfolio-D`: Cath stands at a floating fruit-stall counter on a dark tech page (697-945 x 390-700), as if pasted in from the games site.
+  - The four product prints are small and overlap (940-1350 x 145-555): NIGHT SHIFT's is half covered, and its label sits in shadow (960-1100 x 350-505).
+  - The right third under 560 px is empty.
+  - `portfolio-P`: Cath covers the second print and its label (240-375 x 130-390).
+- **Build:** a studio desk vignette. Cath, in her olive jacket, gestures to a 2x2 wall of framed, non-overlapping product screens, each showing a key-art frame with its name on a plaque. On the phone she stands beside a swipeable strip she doesn't cover. Drop the fruit counter from the portfolio (it stays on /games/).
+- **Accept:**
+  - At D each frame is 260 px+ wide, and no frame overlaps another frame or Cath (a box test).
+  - Labels are 4.5:1+, and at P none is covered.
+  - LCP is 2 s or under on the throttled site run.
+  - tests/portfolio.test.ts and gate 5 pass.
+  - Shots at P and D.
+- **Size:** 2
+
+## 340. [ ] The bugs from the 2026-11-12 01:00 critique, fixed as one batch
+- **Why:** subagent critique of `e2e/screenshots/plan1112a/`, each to be measured in the page before fixing:
+  - `cath-game-D` (1200-1330 x 715-880): the last hand card "Junction" is clipped by the deck and the screen edge, so it reads "unction".
+  - `cath-game-P` (295-380 x 755-782): the "9+ more" pill sits over the third card's corner.
+  - `ns-title-P` (15-375 x 80-130): "SHIFT" loses contrast over the bright billboard. The case line "TOMAS REED · THE HARBOUR · A DEBT TAG" wraps awkwardly (15-160 x 450-490).
+  - `ns-play-P` (15-230 x 763-781): the LONGSHOT, SHROUD and COLD READ chips are about 10 px text.
+  - `hedge-menu-P`: "Discount Code" and "Brand Ambassador" sit on the grey Hollowell buildings (10-160 x 270-335 and 280-380 x 540-575).
+  - `games-D` (122-290 x 500-530 vs 700-722): each card names its game twice, once as the poster logotype and again as the heading below it. Keep the one that reads better, and keep an accessible name either way.
+- **Accept:** each fix is shot at P and D. ui-css-lint and the specs for each game touched pass.
 - **Size:** 2
