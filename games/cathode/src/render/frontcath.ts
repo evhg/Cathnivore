@@ -1339,9 +1339,13 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.fillStyle = "#24140c";
         g.beginPath();
         g.moveTo(0.0085 * sx, by - 0.0018 + inner);
-        g.quadraticCurveTo(0.03 * sx, by + 0.0102, 0.0475 * sx, by - 0.0036);
+        // Plan item 319 slice 42: the raised brow also arches (its peak lifts by most of the raise again, its head and
+        // tail don't), so it reads as one quizzical brow, not a level pair set at two heights (the critique: level
+        // brows, a flat expression).
+        const arch = raise * 0.8;
+        g.quadraticCurveTo(0.03 * sx, by + 0.0102 + arch, 0.0475 * sx, by - 0.0036 - arch * 0.3);
         // Plan item 289: a deeper brow body (the lower edge bowed down), so the brows hold as strokes at title distance.
-        g.quadraticCurveTo(0.03 * sx, by + 0.0026, 0.0085 * sx, by - 0.0068 + inner);
+        g.quadraticCurveTo(0.03 * sx, by + 0.0026 + arch, 0.0085 * sx, by - 0.0068 + inner);
         g.closePath();
         g.fill();
       }
