@@ -1609,11 +1609,13 @@ float reliefShade( vec2 uv ) {
         // far curtain frames her cheek instead of lying across it as a dark slab.
         V(0.079 * sx, -0.012, 0.03),
         V(0.077 * sx, -0.07, 0.022),
-        V(0.082 * sx, -0.122, 0.03),
-        V(0.094 * sx, -0.18, 0.06),
-        V(0.106 * sx, -0.26, 0.09),
-        V(0.11 * sx, -0.34, 0.112),
-        V(0.104 * sx, -0.43, 0.122),
+        V(0.086 * sx, -0.122, 0.046),
+        // Plan item 319 slice 26: below the jaw the curtain falls onto the front of the shoulder, outside the collar
+        // and the lapel (it ran down the chest at x 0.104-0.11, through the lapel's roll, to the belt).
+        V(0.11 * sx, -0.17, 0.09),
+        V(0.134 * sx, -0.23, 0.104),
+        V(0.143 * sx, -0.3, 0.096),
+        V(0.147 * sx, -0.37, 0.09),
       ];
       // Plan item 319 slice 18: the curtain splits below the jaw into three thinner locks that fan apart and end at
       // different lengths (one 3.5 cm ribbon hung straight down the lapel and read as a plank on the coat front).
