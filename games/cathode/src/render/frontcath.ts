@@ -7,7 +7,8 @@
 // Feet on y = 0 at the group's origin, facing +z, +x her left. The group is placed by render/frontscene.ts.
 
 import * as THREE from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
 import { CATH_HERO } from "../game/armdress";
 import { LAYER_NO_REFLECT } from "./reflection";
 
@@ -182,11 +183,17 @@ function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
 const INK_BAND = /* glsl */ `
 float inkBand( float x ) {
   return mix( 0.4 * smoothstep( 0.08, 0.14, x ), 0.9, smoothstep( 0.45, 0.52, x ) );
+}
+// Plan item 319: wool's flats, the same levels with wide shoulders. Its weave and nap live in the normal map, and
+// the hard steps above cut that noise into hard dark dashes all over the coat (the critique's plastic streaks).
+float inkBandWool( float x ) {
+  return mix( 0.4 * smoothstep( 0.0, 0.3, x ), 0.9, smoothstep( 0.32, 0.7, x ) );
 }`;
 const TOON_PHYSICAL = THREE.ShaderChunk.lights_physical_pars_fragment.replace(
   "float dotNL = saturate( dot( geometryNormal, directLight.direction ) );",
   "float dotNL = inkBand( saturate( dot( geometryNormal, directLight.direction ) ) );",
 );
+const TOON_WOOL = TOON_PHYSICAL.replace("inkBand(", "inkBandWool(");
 
 /**
  * Plan item 254: the ink line, an inverted hull. Each outlined part draws once more, back faces only, pushed out
@@ -454,7 +461,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // cheek into flat triangles with a hard dark wedge under the jaw (critique 17:15); the face takes it smooth.
         // Slice 18: nor on the rest of her skin (neck, ears): banded, the neck's turn drew a hard vertical seam under
         // the smoothly lit jaw.
-        .replace("#include <lights_physical_pars_fragment>", glint > 0 || skin > 0 ? "#include <lights_physical_pars_fragment>" : TOON_PHYSICAL)
+        .replace("#include <lights_physical_pars_fragment>", glint > 0 || skin > 0 ? "#include <lights_physical_pars_fragment>" : edge === "wool" ? TOON_WOOL : TOON_PHYSICAL)
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
@@ -775,7 +782,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
       [0.004, 0.276],
     ];
     const shape = new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x * side, y)));
-    const lap = new THREE.ExtrudeGeometry(shape, { depth: 0.004, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.0035, bevelSegments: 2, curveSegments: 1 });
+    // Plan item 319: tessellated before it is laid on the chest (the extrusion's face was only its nine outline
+    // points, so between them it stayed a flat card), its face welded so it shades as one rolled cloth surface.
+    const lap = mergeVertices(
+      new TessellateModifier(phone ? 0.02 : 0.011, 6).modify(
+        new THREE.ExtrudeGeometry(shape, { depth: 0.004, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.0035, bevelSegments: 2, curveSegments: 1 }),
+      ),
+      1e-5,
+    );
     {
       // Lay it on the coat: the lathe's front surface is z = 0.7 * sqrt(r(y)^2 - x^2), r from the profile. The
       // inner edge stands a touch prouder than the outer, as a lapel rolls.
@@ -786,7 +800,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         const y = p.getY(i);
         const r = rAt(y);
         const surf = 0.7 * Math.sqrt(Math.max(0, r * r - x * x));
-        const roll = 0.006 * (1 - Math.min(1, Math.abs(x) / 0.13));
+        // The roll: the cloth turns over along a line from the collar's corner to the top button, standing proudest
+        // just outside it and easing down to lie flat on the chest toward the outer edge (it was linear in x).
+        const rollX = 0.036 + ((y - 0.505) / (0.268 - 0.505)) * (0.004 - 0.036);
+        const d = Math.max(0, Math.abs(x) - Math.abs(rollX));
+        const roll = 0.001 + 0.007 * Math.exp(-Math.pow((d - 0.012) / 0.03, 2));
         p.setZ(i, surf + 0.0055 + roll + p.getZ(i));
       }
       lap.computeVertexNormals();
@@ -1395,6 +1413,42 @@ float reliefShade( vec2 uv ) {
   let lockRest: Float32Array | null = null;
   // Per lock vertex: its place on the sheet's grid (column, row), so it sways with the sheet under it.
   let lockAt: Float32Array | null = null;
+  // Plan item 319: under the Ghost's hood the long hair is tucked in: the rest positions pulled inside the hood and
+  // the cowl and gathered at its hem, so no sheet of hair hangs out over the coat behind her shoulder. `kit` swaps
+  // the rest arrays (the sway still runs on whichever is current).
+  let hairRestOpen: Float32Array | null = null;
+  let hairRestTuck: Float32Array | null = null;
+  let lockRestOpen: Float32Array | null = null;
+  let lockRestTuck: Float32Array | null = null;
+  const tuckHair = (src: Float32Array): Float32Array => {
+    // The cowl's inner wall (its lathe profile less its deepest fold and the sway), about the sheet's own axis.
+    const wall: Array<[number, number]> = [[0.09, -0.04], [0.082, -0.07], [0.086, -0.105], [0.098, -0.145], [0.114, -0.185], [0.13, -0.215]];
+    const R = (y: number): number => {
+      if (y >= wall[0]![1]) return Infinity;
+      for (let i = 1; i < wall.length; i++) {
+        const [r1, y1] = wall[i]!;
+        const [r0, y0] = wall[i - 1]!;
+        if (y >= y1) return r0 + ((r1 - r0) * (y0 - y)) / (y0 - y1);
+      }
+      return wall[wall.length - 1]![0];
+    };
+    const out = new Float32Array(src);
+    for (let i = 0; i < out.length; i += 3) {
+      let y = out[i + 1]!;
+      if (y >= -0.04) continue;
+      // Gathered at the hem: the lengths below the cowl's foot fold up inside it.
+      if (y < -0.2) y = -0.2 + (y + 0.2) * 0.06;
+      const x = out[i]!;
+      const z = out[i + 2]! + 0.02;
+      const r = Math.hypot(x, z);
+      const lim = R(y);
+      const k = r > lim ? lim / r : 1;
+      out[i] = x * k;
+      out[i + 1] = y;
+      out[i + 2] = z * k - 0.02;
+    }
+    return out;
+  };
   // The long hair (VISION's character bible: very long, glossy, centre-parted, falling in soft waves): one draped
   // sheet from under the cap, out over the collar and down her back to the shoulder blades, waved, with uneven ends.
   {
@@ -1441,7 +1495,8 @@ float reliefShade( vec2 uv ) {
       }
     const sheet = new THREE.BufferGeometry();
     sheet.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    hairRest = new Float32Array(pos);
+    hairRest = hairRestOpen = new Float32Array(pos);
+    hairRestTuck = tuckHair(hairRestOpen);
     hairGeo = sheet;
     hairCols = cols;
     hairRows = rows;
@@ -1637,7 +1692,8 @@ float reliefShade( vec2 uv ) {
     locks.setIndex(lidx);
     locks.computeVertexNormals();
     lockGeo = locks;
-    lockRest = new Float32Array(lp);
+    lockRest = lockRestOpen = new Float32Array(lp);
+    lockRestTuck = tuckHair(lockRestOpen);
     lockAt = new Float32Array(lockAtArr);
     add(locks, hairSheetMat, headPivot).name = "cath-hair-locks";
   }
@@ -3134,6 +3190,19 @@ float reliefShade( vec2 uv ) {
       // Plan item 319: the hood up holds the face-framing locks in; on the far side of her three-quarter face a
       // curtain lay over her outer eye as a dark glossy blob, the rim light catching it.
       lockGeo?.setDrawRange(0, wearing === "ghost" ? lockSheetIdx : Infinity);
+      const tuck = wearing === "ghost";
+      if (hairGeo && hairRestOpen && hairRestTuck) {
+        hairRest = tuck ? hairRestTuck : hairRestOpen;
+        (hairGeo.attributes.position!.array as Float32Array).set(hairRest);
+        hairGeo.attributes.position!.needsUpdate = true;
+        hairGeo.computeVertexNormals();
+      }
+      if (lockGeo && lockRestOpen && lockRestTuck) {
+        lockRest = tuck ? lockRestTuck : lockRestOpen;
+        (lockGeo.attributes.position!.array as Float32Array).set(lockRest);
+        lockGeo.attributes.position!.needsUpdate = true;
+        lockGeo.computeVertexNormals();
+      }
       if (caseDown && caseUp) {
         caseDown.visible = wearing === "fixer" && !carrying;
         caseUp.visible = wearing === "fixer" && carrying;
