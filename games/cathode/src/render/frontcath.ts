@@ -2802,6 +2802,66 @@ float reliefShade( vec2 uv ) {
   // draw calls (and their shadows). ----
   const tube = (pts: Array<[number, number, number]>, r: number, segs = 24) =>
     new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => V(x, y, z))), segs, r, 6, false);
+  // Plan item 319 slice 53: a flat strap laid on the coat's lathe surface. `path` is (angle from the front, toward
+  // her left; height in the pelvis frame) points, smoothed; the strap stands just proud of what lies under it (the
+  // lapels on her chest, the belt at the waist) and is `w` wide and 4 mm thick, its faces along the coat's normal.
+  const coatStrap = (path: Array<[number, number]>, w: number, samples = 64): THREE.BufferGeometry => {
+    const curve = new THREE.CatmullRomCurve3(path.map(([a, y]) => V(a, y, 0)), false, "centripetal");
+    const onSurf = (a: number, y: number, lift: number) => {
+      const r = rAtCoat(y);
+      // The outward normal of the squashed lathe at (a, y): across the ellipse, tipped by the profile's slope.
+      const dr = (rAtCoat(y + 0.005) - rAtCoat(y - 0.005)) / 0.01;
+      const n = V(Math.sin(a) * 0.7, -dr * 0.7, Math.cos(a)).normalize();
+      return { p: V(r * Math.sin(a), y, 0.7 * r * Math.cos(a)).addScaledVector(n, lift), n };
+    };
+    const liftAt = (a: number, y: number) => {
+      const front = Math.max(0, Math.cos(a));
+      // The belt (1.5 cm tube) and the lapels' roll over the chest stand off the coat; the strap rides over them.
+      const belt = 0.018 * Math.exp(-((y - 0.12) ** 2) / 0.03 ** 2);
+      const lapel = 0.015 * front * Math.max(0, Math.min(1, (y - 0.16) / 0.06));
+      return 0.004 + Math.max(belt, lapel);
+    };
+    const pos: number[] = [];
+    const nrm: number[] = [];
+    const idx: number[] = [];
+    const t = 0.004;
+    const pts = Array.from({ length: samples + 1 }, (_, i) => {
+      const c = curve.getPoint(i / samples);
+      return onSurf(c.x, c.y, liftAt(c.x, c.y));
+    });
+    for (let i = 0; i <= samples; i++) {
+      const { p, n } = pts[i]!;
+      const tan = pts[Math.min(samples, i + 1)]!.p.clone().sub(pts[Math.max(0, i - 1)]!.p).normalize();
+      const side = tan.clone().cross(n).normalize();
+      const nn = side.clone().cross(tan).normalize();
+      // Eight vertices a ring: the outer face, the inner face and the two edges, each pair with its own normal.
+      const o = p.clone().addScaledVector(nn, t);
+      const corners: Array<[THREE.Vector3, THREE.Vector3]> = [
+        [o.clone().addScaledVector(side, -w / 2), nn],
+        [o.clone().addScaledVector(side, w / 2), nn],
+        [p.clone().addScaledVector(side, w / 2), nn.clone().negate()],
+        [p.clone().addScaledVector(side, -w / 2), nn.clone().negate()],
+        [o.clone().addScaledVector(side, w / 2), side],
+        [p.clone().addScaledVector(side, w / 2), side],
+        [p.clone().addScaledVector(side, -w / 2), side.clone().negate()],
+        [o.clone().addScaledVector(side, -w / 2), side.clone().negate()],
+      ];
+      for (const [v, nv] of corners) {
+        pos.push(v.x, v.y, v.z);
+        nrm.push(nv.x, nv.y, nv.z);
+      }
+      if (i === samples) break;
+      const b = i * 8;
+      for (const [a0, a1] of [[0, 1], [2, 3], [4, 5], [6, 7]] as const) {
+        idx.push(b + a0, b + 8 + a0, b + a1, b + a1, b + 8 + a0, b + 8 + a1);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("normal", new THREE.Float32BufferAttribute(nrm, 3));
+    g.setIndex(idx);
+    return g;
+  };
   const kits = new Map<string, THREE.Group>();
   const kitExtras = new Map<string, THREE.Group>();
   let caseDown: THREE.Group | null = null;
@@ -2820,10 +2880,26 @@ float reliefShade( vec2 uv ) {
   {
     const gunMetal = kitMat(new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.75 }));
     // Ghost: the rifle's sling across her chest, the scoped barrel standing over her left shoulder.
+    // Plan item 319 slice 53: the sling is flat webbing laid on the coat (`coatStrap`), not a round tube: the tube's
+    // spline stood 3-5 cm off the coat and bowed out past her arm, so at the pick it read as a hose looping in front.
     kitGroup("ghost", [
       [
-        [tube([[-0.17, -0.05, 0.05], [-0.07, 0.14, 0.108], [0.06, 0.33, 0.132], [0.155, 0.47, 0.09], [0.15, 0.54, -0.06]], 0.016)],
-        kitMat(new THREE.MeshStandardMaterial({ color: 0x6e5038, roughness: 0.5, metalness: 0.04 })),
+        [
+          coatStrap(
+            [
+              [2.2, 0.5], // behind her left shoulder
+              [1.62, 0.522], // over its top, beside the collar
+              [0.95, 0.47],
+              [0.42, 0.32], // across the chest
+              [-0.25, 0.17],
+              [-0.95, 0.04], // her right hip
+              [-1.6, -0.02],
+              [-2.4, 0.03], // round to the rifle's butt at her back
+            ],
+            0.034,
+          ),
+        ],
+        kitMat(new THREE.MeshStandardMaterial({ color: 0x5f4632, roughness: 0.68, metalness: 0.02 })),
       ],
       [
         [
