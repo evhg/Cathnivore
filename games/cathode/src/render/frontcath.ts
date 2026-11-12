@@ -1175,10 +1175,43 @@ export function buildFrontCath(phone: boolean): FrontCath {
   skull.scale(0.072, 0.098, 0.088);
   skull.translate(0, 0.0, 0.01);
   skull.computeVertexNormals();
+  // The cap's shape before its scale and tilt: `v` 0..1 from the crown to the hairline, `az` 0 at her front.
+  // Plan item 175: shared with the locks laid over it.
+  // Plan item 319 slice 50: f^2.2 (was 3.2): the hairline falls from the parting to the temples on a rounder curve,
+  // so the forehead is a soft arch rather than flat across the top with a corner where it dropped to the temple.
+  const capReach = (az: number) => {
+    const f = Math.max(0, Math.cos(az));
+    const peak = Math.exp(-(az * az) / 0.02) * 0.025;
+    return Math.PI * (0.8 - 0.43 * Math.pow(f, 2.2)) + peak * Math.PI;
+  };
+  const capShape = (v: number, az: number, out = 0) => {
+    const polar = v * capReach(az);
+    let x = Math.sin(polar) * Math.sin(az);
+    let y = Math.cos(polar);
+    let z = Math.sin(polar) * Math.cos(az);
+    const part = Math.max(0, 1 - Math.abs(x) / 0.1) * Math.max(0, z) * Math.max(0, y) * 0.05;
+    const crown = (1 + Math.max(0, y) * Math.max(0, -z) * 0.08 + 0.05 * (1 - Math.max(0, y)) * (1 - Math.max(0, z))) * (1 + out);
+    x *= crown;
+    z *= crown;
+    y = y * crown - part;
+    return V(x, y, z);
+  };
+  const capPlace = new THREE.Matrix4().makeTranslation(0, 0.012, -0.004).multiply(new THREE.Matrix4().makeRotationX(-0.2)).multiply(new THREE.Matrix4().makeScale(0.081, 0.104, 0.1));
   // C14: her face, painted (VISION: large bright eyes with a neat winged liner and two highlights, soft brows with
   // the right one a touch raised, a little colour on the cheeks, rose lips in a half-smile). Painted on the skull's
   // own UVs in metres: u = 0.25 is her front, +x her left (the viewer's right), the canvas top is her crown.
   // Plan item 140: painted per expression (smirk on the title, determined, a wink), repainted on a change.
+  // Plan item 319 slice 49: the hair cap's front edge in the face's paint coordinates (metres, as paintFace draws),
+  // projected from the skull's centre: under it the paint lays a soft shade and fine hairs, so the forehead meets the
+  // hair in a feathered hairline instead of the cap's hard cut (the top-left of her forehead in three-quarter view).
+  const hairline: Array<[number, number]> = [];
+  for (let a = -1.5; a <= 1.5001; a += 0.025) {
+    const q = capShape(1, a).applyMatrix4(capPlace);
+    const n = V(q.x / 0.072, q.y / 0.098, (q.z - 0.01) / 0.088).normalize();
+    const phi = Math.atan2(n.z, -n.x);
+    hairline.push([0.072 * (phi - Math.PI / 2), 0.098 * (Math.PI / 2 - Math.acos(THREE.MathUtils.clamp(n.y, -1, 1)))]);
+  }
+  const hairLayer = document.createElement("canvas");
   const faceCanvas = document.createElement("canvas");
   faceCanvas.width = 2048;
   faceCanvas.height = 1024;
@@ -1269,6 +1302,63 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.ellipse(0.0045 * sx, -0.0245, 0.0022, 0.0011, -0.3 * sx, 0, Math.PI * 2);
         g.fill();
         blob(0.052 * sx, -0.04, 0.012, 0.02, "rgba(140,78,70,A)", 0.24); // slice 13: 0.42 -> 0.24, as above
+      }
+      // Plan item 319 slice 49: the feathered hairline. A soft warm shade a few millimetres deep under the cap's edge
+      // (the hair's own shadow on the forehead), then fine hairs combed back into it, denser at the edge, so the skin
+      // fades into the hair rather than ending at the cap's line.
+      {
+        // Drawn on a layer, then faded out below the brows (y 0.012 -> 0.03 m), so the forehead and temples take it
+        // and the cheeks beside the hanging locks don't.
+        hairLayer.width = W;
+        hairLayer.height = H;
+        const h = hairLayer.getContext("2d");
+        if (h) {
+          h.setTransform(g.getTransform());
+          h.lineJoin = "round";
+          h.lineCap = "round";
+          const path = (dy: number) => {
+            h.beginPath();
+            hairline.forEach(([x, y], i) => (i ? h.lineTo(x, y + dy) : h.moveTo(x, y + dy)));
+          };
+          // Layered strokes, widest and faintest first, rather than a canvas blur filter (Safari's 2D canvas ignores it).
+          for (let w = 0.014; w > 0.0015; w -= 0.0015) {
+            h.strokeStyle = w > 0.006 ? "rgba(120,66,56,0.09)" : "rgba(60,34,28,0.13)";
+            h.lineWidth = w;
+            path(w > 0.006 ? -0.002 : 0);
+            h.stroke();
+          }
+          // Fine hairs: deterministic, 1.1 mm apart, each 1.5-4.5 mm long, leaning away from the face's centre line.
+          let seed = 7;
+          const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+          for (let i = 1; i < hairline.length; i++) {
+            const [x0, y0] = hairline[i - 1]!;
+            const [x1, y1] = hairline[i]!;
+            const len = Math.hypot(x1 - x0, y1 - y0);
+            for (let t = 0; t < len; t += 0.0011) {
+              const x = x0 + ((x1 - x0) * t) / len;
+              const y = y0 + ((y1 - y0) * t) / len;
+              const l = 0.0015 + rnd() * 0.003;
+              const lean = Math.sign(x) * (0.25 + rnd() * 0.35);
+              h.strokeStyle = `rgba(40,24,20,${(0.35 + rnd() * 0.35).toFixed(2)})`;
+              h.lineWidth = 0.0005 + rnd() * 0.0004;
+              h.beginPath();
+              h.moveTo(x, y + 0.0008);
+              h.quadraticCurveTo(x + lean * l * 0.2, y - l * 0.5, x + lean * l * 0.5, y - l);
+              h.stroke();
+            }
+          }
+          h.globalCompositeOperation = "destination-in";
+          const fade = h.createLinearGradient(0, 0.012, 0, 0.03);
+          fade.addColorStop(0, "rgba(0,0,0,0)");
+          fade.addColorStop(1, "rgba(0,0,0,1)");
+          h.fillStyle = fade;
+          h.fillRect(-0.2, -0.2, 0.4, 0.4);
+          h.globalCompositeOperation = "source-over";
+          g.save();
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.drawImage(hairLayer, 0, 0);
+          g.restore();
+        }
       }
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
       for (const sx of [-1, 1]) {
@@ -1555,34 +1645,10 @@ float reliefShade( vec2 uv ) {
   // forehead with a soft peak at the centre parting, sweeping down past the temples, low over the ears and the nape),
   // so its front edge is one smooth curve instead of a deformed sphere's saw-tooth.
   const cap = new THREE.SphereGeometry(1, seg(96), seg(22), 0, Math.PI * 2, 0, 1);
-  // The cap's shape before its scale and tilt: `v` 0..1 from the crown to the hairline, `az` 0 at her front.
-  // Plan item 175: shared with the locks laid over it.
-  const capReach = (az: number) => {
-    const f = Math.max(0, Math.cos(az));
-    const peak = Math.exp(-(az * az) / 0.02) * 0.025;
-    return Math.PI * (0.8 - 0.43 * Math.pow(f, 3.2)) + peak * Math.PI;
-  };
-  const capShape = (v: number, az: number, out = 0) => {
-    const polar = v * capReach(az);
-    let x = Math.sin(polar) * Math.sin(az);
-    let y = Math.cos(polar);
-    let z = Math.sin(polar) * Math.cos(az);
-    const part = Math.max(0, 1 - Math.abs(x) / 0.1) * Math.max(0, z) * Math.max(0, y) * 0.05;
-    const crown = (1 + Math.max(0, y) * Math.max(0, -z) * 0.08 + 0.05 * (1 - Math.max(0, y)) * (1 - Math.max(0, z))) * (1 + out);
-    x *= crown;
-    z *= crown;
-    y = y * crown - part;
-    return V(x, y, z);
-  };
-  const capPlace = new THREE.Matrix4().makeTranslation(0, 0.012, -0.004).multiply(new THREE.Matrix4().makeRotationX(-0.2)).multiply(new THREE.Matrix4().makeScale(0.081, 0.104, 0.1));
   {
     const p = cap.attributes.position as THREE.BufferAttribute;
-    const reach = (az: number) => {
-      // az 0 = her front (+z). Front: 0.37π (a touch lower at the parting), temples 0.5π, sides and back 0.8π.
-      const f = Math.max(0, Math.cos(az));
-      const peak = Math.exp(-(az * az) / 0.02) * 0.025;
-      return Math.PI * (0.8 - 0.43 * Math.pow(f, 3.2)) + peak * Math.PI;
-    };
+    // az 0 = her front (+z), the hairline's polar reach (`capReach`, shared with the locks and the painted hairline).
+    const reach = capReach;
     for (let i = 0; i < p.count; i++) {
       const x0 = p.getX(i);
       const y0 = p.getY(i);
