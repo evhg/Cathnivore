@@ -906,8 +906,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
         y *= 0.8;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
-      const nose = Math.max(0, 1 - Math.hypot(x / 0.13, (y + 0.2) / 0.26)) * front;
-      z += nose * nose * 0.2 + nose * 0.04;
+      // Plan item 319 slice 19: a rounded profile ((1 - r^2)^2.6, flat-topped with soft sides), not a cone: the cone's
+      // sharp apex lit one flank and shaded the other as a hard-edged wedge once the face's key went smooth.
+      // Below the tip it falls gently (0.34, not 0.26), so the underside doesn't turn from the key into a dark dot at P.
+      const nr = Math.hypot(x / 0.12, (y + 0.2) / (y < -0.2 ? 0.34 : 0.26));
+      const nose = nr < 1 ? Math.pow(1 - nr * nr, 2.6) * front : 0;
+      z += nose * 0.13;
       p.setXYZ(i, x, y, z);
     }
   }
@@ -978,13 +982,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blob(0, -0.074, 0.01, 0.006, "rgba(255,228,212,A)", 0.3); // the chin
       // Plan item 260: the underside of the jaw in shadow, so the chin ends in a turned edge, not a pale flat.
       blob(0, -0.1, 0.07, 0.02, "rgba(120,66,58,A)", 0.55);
-      blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.4); // under the nose
+      blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.26); // under the nose
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.25); // under the lip
       // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
       // contour under the cheekbones, so the face has planes at title distance rather than reading as a smooth egg.
       // Plan item 275: the shadow side of the bridge darker and wider, and a shadow under the tip, so the nose holds.
       blob(-0.0062, -0.008, 0.0035, 0.014, "rgba(132,74,62,A)", 0.45);
-      blob(0, -0.0225, 0.0085, 0.0032, "rgba(104,56,48,A)", 0.5);
+      // Plan item 319 slice 19: the tip's shadow and the nostrils lighter (0.5/0.7 -> 0.32/0.42): at P they merged into
+      // one dark dot under a nose the rounded ridge now models.
+      blob(0, -0.0225, 0.0085, 0.0032, "rgba(104,56,48,A)", 0.32);
       g.strokeStyle = "rgba(118,62,52,0.8)";
       g.lineCap = "round";
       g.lineWidth = 0.0022;
@@ -993,7 +999,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
       g.stroke();
       blob(0.001, -0.019, 0.006, 0.004, "rgba(255,236,222,A)", 0.45);
-      g.fillStyle = "rgba(96,48,42,0.7)";
+      g.fillStyle = "rgba(96,48,42,0.42)";
       for (const sx of [-1, 1]) {
         g.beginPath();
         g.ellipse(0.0045 * sx, -0.0245, 0.0022, 0.0011, -0.3 * sx, 0, Math.PI * 2);
