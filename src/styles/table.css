@@ -2314,6 +2314,12 @@ html.no-animations .cath-companion .cameo {
 @media (min-width: 1024px) and (max-width: 1239.98px) {
   .event-ticket { display: none; }
 }
+/* Plan item 282: with Pell at 120 px over the board's top right, the ticket pins in the gap left of him (clear of the
+   hexes) and the map key drops under his plate. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .event-ticket { right: calc(var(--sp-2) + 127px); max-width: 132px; text-wrap: balance; }
+  .game-layout .map-wrap > .map-key { top: 60px; }
+}
 /* On a phone or tablet it is one line across the frame's top strip, between Bea's drawing and the map's "i". */
 @media (max-width: 1023.98px) {
   .event-ticket {
@@ -4082,9 +4088,12 @@ html.no-animations .table-cath-line { animation: none; }
 
   /* Plan item 237: Pell 80 px across at the table, hanging over the board's top rail (negative margins keep the
      head row's height), with the same glossy plastic sheen as the phone medallion. */
+  /* Plan item 282: Pell 120 px across (was 80), hanging further over the board's top rail; the negative margins keep
+     the head row's height. The board's top-right corner makes room for him: the map key steps down under his plate,
+     the week's event ticket left of him. */
   .table-head.with-table-cath .rival { z-index: var(--z-raised); min-width: 122px; }
-  .table-head.with-table-cath .rival-frame { width: 80px; height: 80px; margin-block: -4px -18px; }
-  .table-head.with-table-cath .rival-frame svg { top: -25px; width: 132px; }
+  .table-head.with-table-cath .rival-frame { width: 120px; height: 120px; margin-block: -4px -58px; margin-inline: -19px; }
+  .table-head.with-table-cath .rival-frame svg { top: -37px; width: 198px; }
   .table-head.with-table-cath .rival-frame::after {
     content: '';
     position: absolute;
@@ -4097,7 +4106,7 @@ html.no-animations .table-cath-line { animation: none; }
   /* Plan item 282: it hangs on the portrait's rim, under his chin (at -12 px it covered his mouth); out of the flow,
      so the head row keeps its height (item 249's 78 px). */
   .table-head.with-table-cath .rival-plate {
-    position: absolute; top: 70px; left: 50%; translate: -50% 0; white-space: nowrap;
+    position: absolute; top: 108px; left: 50%; translate: -50% 0; white-space: nowrap;
     margin-top: 0; padding: 2px 8px 2px 5px; font-size: var(--fs-caption); letter-spacing: .05em;
   }
 
