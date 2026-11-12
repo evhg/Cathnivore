@@ -3107,7 +3107,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the garden is ≥ 230 x 120 px at D and ≥ 150 x 80 px at P. Its wilted and bloomed states are visibly different in shots. Under reduced motion it fades only. Runnel specs and the keyart freshness test pass (re-shoot the keyart). Shots P and D, light and dark.
 - **Size:** 2
 
-## 330. [ ] Hedgerow 3D: ponds and wet plots as living water
+## 330. [ ] Hedgerow 3D: ponds and wet plots as living water *(lane B, in progress)*
 - **Why:** `plan1111c/hedge-l21-3d-D` (300-560 x 380-560, 630-760 x 715-810, 740-1060 x 560-625): the ponds are flat pale-blue slabs with hard edges, no bank, ripple or reflection, next to soil plots that are modelled. `hedge-l21-3d-P` (255-390 x 500-680) shows the same slabs, with grey cubes scattered over them.
 - **Build:** a cheap water material (two scrolling procedural normal layers, a fresnel tint toward the sky colour, a foam line where water meets the bank), a sunken bank and reeds on the edges, and a Duck Pond tower with ducks bobbing.
 - **Accept:** each pond shows a visible ripple and edge foam, with no single flat fill over 60% of its area. Draw calls stay ≤ the level's current count + 2. `hedgerow-3dframe` and the `?2d` specs pass. Shots P and D.
