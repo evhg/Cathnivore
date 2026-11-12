@@ -2511,14 +2511,16 @@ export function buildFarmhouse(): THREE.Group {
 export function buildDepot(): THREE.Group {
   const g = new THREE.Group();
   const white = gloss("#f3f5f7", 0.05);
-  // Hollowell's own teal (the gate's, `--corp-hi`), so the shed reads as theirs beside the gate's board.
-  const orange = gloss("#1e8c8c", 0.1);
+  // Plan item 336: the canopy band and fascia in Hollowell's lit orange, as the 2D megastore's (it was teal like the
+  // roof, so from the camera the depot read as one flat teal box); the roof stays teal.
+  const orange = gloss("#ef7a2a", 0.1);
   // The shed, on a low grey plinth.
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
   // A shallow pitched roof with an overhang, the ridge along the door's width.
   // Plan item 280: the roof in Hollowell's teal (grey, it read as a grey box from the camera, which mostly sees roof).
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#1e8c8c", 0.15));
+  // Plan item 336: the roof in a deeper Hollowell orange (teal, the camera saw a teal box), the 2D canopy's colour.
+  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#d2622a", 0.15));
   roof.rotation.y = Math.PI / 4;
   roof.scale.set(1.1, 1, 1.25);
   roof.position.y = 1.07;
@@ -2554,6 +2556,15 @@ export function buildDepot(): THREE.Group {
   lamp.rotation.x = -0.5;
   g.add(lamp);
   g.add(box(0.13, 0.012, 0.09, glow("#fff1c2", 0.7), 0.82, 1.3, 0.735));
+  // Plan item 336: a lit strip along the canopy's top edge, an amber LED board on the fascia (where the count docks),
+  // and glass shop windows either side of the shutter, so the front reads as a lit megastore.
+  g.add(box(0.02, 0.035, 1.64, glow("#ffd59a", 0.8), 0.78, 0.9, 0));
+  g.add(box(0.02, 0.12, 0.92, glow("#ffb547", 0.9), 0.775, 0.74, 0));
+  const pane = gloss("#5f9fc8", 0.3);
+  for (const z of [-0.67, 0.67]) {
+    g.add(box(0.02, 0.38, 0.2, matte("#c3ccd5", 0.4), 0.715, 0.12, z));
+    g.add(box(0.025, 0.34, 0.16, pane, 0.72, 0.14, z));
+  }
   g.userData.depot = true;
   // Where the round's count docks: the fascia's top edge, in the depot's own frame.
   g.userData.fascia = new THREE.Vector3(0.77, 0.94, 0);
