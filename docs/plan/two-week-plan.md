@@ -3217,7 +3217,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of all five classes at P and D.
 - **Size:** 2
 
-## 339. [ ] Portfolio: the hero as a studio scene with four readable product screens
+## 339. [ ] Portfolio: the hero as a studio scene with four readable product screens *(lane B, in progress)*
 - **Why:**
   - `plan1112a/portfolio-D`: Cath stands at a floating fruit-stall counter on a dark tech page (697-945 x 390-700), as if pasted in from the games site.
   - The four product prints are small and overlap (940-1350 x 145-555): NIGHT SHIFT's is half covered, and its label sits in shadow (960-1100 x 350-505).
