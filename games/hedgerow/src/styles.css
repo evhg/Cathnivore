@@ -5103,6 +5103,9 @@ img.act-scene {
 .depot-board b { font-size: 1.15em; }
 .depot-board .depot-next { letter-spacing: 0; }
 .depot[data-small] .depot-next { display: none; }
+/* Plan item 336: on a small depot (an upright phone) the 12 px count is taller than the drawn LED strip, so its own
+   box becomes the board: dark, a touch taller, centred on the strip, so nothing spills onto the cornice. */
+.depot[data-small] .depot-board { top: 22%; height: 17%; padding: 0 4px; background: var(--ink); border-radius: 2px; }
 .depot-rep {
   position: absolute;
   /* Plan item 201: along the rail clear of the departures board (26-74%); at 72% his shoulder sat on its end. */
