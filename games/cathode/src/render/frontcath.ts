@@ -888,10 +888,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // cheekbone line) to a narrower, pointed chin.
         // Plan item 275: a softer point and a shorter chin (the long V read as a mannequin's at title distance).
         // Plan item 289: 0.42 -> 0.48, a narrower chin (the shorter face read wide at the jaw).
-        x *= 1 - 0.48 * Math.pow(k, 1.6);
+        // Plan item 319 slice 15: 0.48 -> 0.54 (the critique, 11-12, read the jaw wide and the lower face long).
+        x *= 1 - 0.54 * Math.pow(k, 1.6);
         z = z > 0 ? z * (1 - 0.1 * k) + 0.06 * k : z * (1 - 0.45 * k);
         // Plan item 289: the lower face shorter (0.95 -> 0.86), a rounder face, not a long flat egg.
-        y *= 0.86;
+        // Plan item 319 slice 15: shorter again (0.86 -> 0.8), so the chin sits closer under her mouth.
+        y *= 0.8;
       }
       // Nose: a small, straight ridge from between the eyes, its tip a little above the lip.
       const nose = Math.max(0, 1 - Math.hypot(x / 0.13, (y + 0.2) / 0.26)) * front;
