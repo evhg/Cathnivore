@@ -500,3 +500,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 lane B: item 282's 120 px Pell takes the board's top-right corner; the map key moves 60 px down under his plate and the event ticket narrows to 132 px left of him, rather than shrinking Pell back.
 - 2026-11-12 lane B: after lane A's gates caught three lane-B regressions (axe, a landscape phone, a contrast check under another sky), lane B's targeted checks now include the site axe scans and the landscape-phone and other-sky cases of whatever it touches.
 - 2026-11-12 lane B: item 331's glass menu is the desktop's (and a sideways phone's); an upright phone keeps item 317's feathered shade, since a frosted box there read as the opaque plate 317 removed.
+- 2026-11-12 lane B: item 297's D dock also triggers when the bubble's best spot covers over 12% of the lane, so no D bubble sits on a plot or the lane; the dock covers the whole Coming up card rather than half of it.

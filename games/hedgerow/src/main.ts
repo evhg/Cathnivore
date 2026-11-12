@@ -4182,9 +4182,13 @@ function syncCathSay(g: Game, now: number): void {
     el.classList.add("compact");
     spot = place();
   }
-  // Plan item 297: still over the plots she tells you to tap (a crowded field at D): her line docks in the panel for
-  // the rest of this build phase, if its Coming up card is there to take it.
-  if (over(spot) > 0.12 && !DOCK_QUERY.matches && CROWD_DOCK_QUERY.matches && deskDockCard()) {
+  // Plan item 297: still over the plots she tells you to tap, or on the lane (a crowded field at D): her line docks in
+  // the panel for the rest of this build phase, if its Coming up card is there to take it.
+  const lanes = laneBoxes(g).map(shift).filter(near);
+  const onLane =
+    lanes.reduce((n, p) => n + Math.max(0, Math.min(spot.x + el.offsetWidth, p.x + p.w) - Math.max(spot.x, p.x)) * Math.max(0, Math.min(spot.y + el.offsetHeight, p.y + p.h) - Math.max(spot.y, p.y)), 0) /
+    (el.offsetWidth * el.offsetHeight);
+  if ((over(spot) > 0.12 || onLane > 0.12) && !DOCK_QUERY.matches && CROWD_DOCK_QUERY.matches && deskDockCard()) {
     crowdDock = `${g.level.id}:${g.wave}`;
     el.hidden = true;
     sayShown = null;
