@@ -258,10 +258,11 @@ const TOON_WOOL = TOON_PHYSICAL.replace("inkBand(", "inkBandWool(");
  */
 const INK_VERT = /* glsl */ `
 uniform vec2 uInk;
+attribute vec3 inkNormal;
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   vec4 clip = projectionMatrix * mv;
-  vec2 d = ( projectionMatrix * vec4( normalize( normalMatrix * normal ), 0.0 ) ).xy;
+  vec2 d = ( projectionMatrix * vec4( normalize( normalMatrix * inkNormal ), 0.0 ) ).xy;
   float l = length( d );
   clip.xy += ( l > 1e-5 ? d / l : vec2( 0.0 ) ) * uInk * clip.w;
   gl_Position = clip;
@@ -278,6 +279,46 @@ const INK_PX = 1.5;
 const HAIR_SHINE = 1.6;
 /** The outlined parts: her largest body meshes, at most this many (the draw-call budget: +12). */
 const INK_MAX = 12;
+
+/**
+ * Plan item 319: the hull's push direction, one normal per point in space. Where a part's normals split (a lapel's
+ * bevel, a hair lock's edge, the hood's rim, every seam of a lathe) each copy of a vertex was pushed its own way, so
+ * the hull tore open there and the lit body and the street showed through as white specks and notches along the
+ * line (critique, 11-12 13:40). Every copy at one position now takes the average of their normals.
+ */
+function inkNormals(g: THREE.BufferGeometry): void {
+  if (g.attributes.inkNormal) return;
+  const pos = g.attributes.position!;
+  const nor = g.attributes.normal!;
+  const q = (v: number) => Math.round(v * 2e4);
+  const sum = new Map<string, [number, number, number]>();
+  const keys: string[] = [];
+  for (let i = 0; i < pos.count; i++) {
+    const k = `${q(pos.getX(i))},${q(pos.getY(i))},${q(pos.getZ(i))}`;
+    keys.push(k);
+    const a = sum.get(k) ?? [0, 0, 0];
+    a[0] += nor.getX(i);
+    a[1] += nor.getY(i);
+    a[2] += nor.getZ(i);
+    sum.set(k, a);
+  }
+  const out = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const a = sum.get(keys[i]!)!;
+    const l = Math.hypot(a[0], a[1], a[2]);
+    // A knife edge whose two sides cancel (a card's front and back) keeps its own normal.
+    if (l < 1e-4) {
+      out[i * 3] = nor.getX(i);
+      out[i * 3 + 1] = nor.getY(i);
+      out[i * 3 + 2] = nor.getZ(i);
+    } else {
+      out[i * 3] = a[0] / l;
+      out[i * 3 + 1] = a[1] / l;
+      out[i * 3 + 2] = a[2] / l;
+    }
+  }
+  g.setAttribute("inkNormal", new THREE.BufferAttribute(out, 3));
+}
 
 export function buildFrontCath(phone: boolean): FrontCath {
   const group = new THREE.Group();
@@ -3285,6 +3326,7 @@ float reliefShade( vec2 uv ) {
       inkU.uInk.value.set((2 * px) / w, (2 * px) / h);
     };
     for (const { m } of cands.slice(0, INK_MAX)) {
+      inkNormals(m.geometry);
       const hull = new THREE.Mesh(m.geometry, inkMat);
       hull.name = "ink";
       hull.castShadow = false;
