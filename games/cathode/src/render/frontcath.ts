@@ -381,7 +381,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 319: a softer step (0.4-0.62 -> 0.3-0.68) on the denser skull, whose finer curves the hard step cut
     // into dark bands beside the mouth. Slice 9: wider again (0.1-0.85): the step still drew the jaw as a polygon.
     const planes = glint > 0 ? " * ( 0.45 + 0.55 * smoothstep( 0.1, 0.85, dot( normal, uKeyDir ) ) )" : "";
-    let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 )${planes};` : "";
+    // Plan item 319 slice 13: on the face the key wraps further round (a skin's soft light: 0.5 + 0.5 * n.l, power 1.2),
+    // so the cheek and jaw turned from it fall to a warm half-light instead of nothing, which drew a dirty brown band
+    // down the far cheek in three-quarter view. The rest of her keeps the narrower wrap.
+    const wrap = glint > 0 ? "pow( saturate( dot( normal, uKeyDir ) * 0.5 + 0.5 ), 1.2 )" : "pow( saturate( dot( normal, uKeyDir ) * 0.7 + 0.3 ), 1.5 )";
+    let keyTerm = key > 0 ? `totalEmissiveRadiance += ${key.toFixed(2)} * uKey * diffuseColor.rgb * ${wrap}${planes};` : "";
     // The face's catch-lights (#fffaf4, the only texels this white in linear: the sclera is 0.75) mirror the key, so
     // the eyes hold a bright point under the street's grade.
     if (glint > 0) keyTerm += `\ntotalEmissiveRadiance += ${glint.toFixed(2)} * uKey * smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) );`;
@@ -948,9 +952,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 9: modelling painted in, so the face holds its shape under a flat light: a contour down each side
       // of the face to the jaw, a highlight down the bridge of the nose and on the brow bone and chin, soft shadow
       // either side of the nose and under the jaw line.
+      // Plan item 319 slice 13: the dense skull (slice 1) models its own sides and jaw, so the painted contours there
+      // are lighter (0.42/0.3 -> 0.2/0.15): doubled with the real shade they drew a dark band down the far cheek.
       for (const sx of [-1, 1]) {
-        blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.42); // the side planes of the face
-        blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.3); // along the jaw
+        blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.2); // the side planes of the face
+        blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.15); // along the jaw
         blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
         blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
         blob(0.034 * sx, -0.006, 0.012, 0.006, "rgba(255,230,214,A)", 0.28); // top of the cheekbone
@@ -980,7 +986,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.beginPath();
         g.ellipse(0.0045 * sx, -0.0245, 0.0022, 0.0011, -0.3 * sx, 0, Math.PI * 2);
         g.fill();
-        blob(0.052 * sx, -0.04, 0.012, 0.02, "rgba(140,78,70,A)", 0.42);
+        blob(0.052 * sx, -0.04, 0.012, 0.02, "rgba(140,78,70,A)", 0.24); // slice 13: 0.42 -> 0.24, as above
       }
       // The eyes: almond whites, a hazel iris, the pupil, two highlights, a winged liner and a lower lash line.
       for (const sx of [-1, 1]) {
