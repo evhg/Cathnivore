@@ -2950,12 +2950,53 @@ float reliefShade( vec2 uv ) {
       ],
     ]);
     // Fixer: a claret tie down the open collar and a white pocket square.
-    const square = new THREE.BoxGeometry(0.045, 0.028, 0.01);
-    square.rotateZ(0.2);
-    square.translate(0.1, 0.37, 0.112);
+    // Plan item 319 slice 54: a flat silk tie, its knot under the collar and the blade widening to a point, laid on
+    // her chest's curve: a 2.4 cm round tube read as a sausage down her front at the pick.
+    const tieOn = (g: THREE.BufferGeometry, lift: number) => {
+      const p = g.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const y = p.getY(i);
+        const r = rAtCoat(y);
+        p.setZ(i, p.getZ(i) + 0.7 * Math.sqrt(Math.max(0, r * r - p.getX(i) ** 2)) + lift);
+      }
+      g.computeVertexNormals();
+      return g;
+    };
+    const tieShape = new THREE.Shape();
+    tieShape.moveTo(-0.009, 0.503);
+    tieShape.bezierCurveTo(-0.014, 0.44, -0.022, 0.36, -0.023, 0.318);
+    tieShape.lineTo(0, 0.294);
+    tieShape.lineTo(0.023, 0.318);
+    tieShape.bezierCurveTo(0.022, 0.36, 0.014, 0.44, 0.009, 0.503);
+    tieShape.closePath();
+    const knotShape = new THREE.Shape();
+    knotShape.moveTo(-0.014, 0.532);
+    knotShape.lineTo(0.014, 0.532);
+    knotShape.lineTo(0.009, 0.5);
+    knotShape.lineTo(-0.009, 0.5);
+    knotShape.closePath();
+    const extrude = (sh: THREE.Shape, depth: number, curve = 6) =>
+      new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: true, bevelThickness: depth * 0.4, bevelSize: 0.0015, bevelSegments: 2, curveSegments: curve, steps: 1 });
+    // The blade in rows down its length, so it bends with the chest instead of lying as one flat card.
+    const blade = extrude(tieShape, 0.0025, 12);
+    const knot = extrude(knotShape, 0.007, 4);
+    // Slice 54: the pocket square folded into three peaks over the breast pocket, on the coat (a box stood 2 cm off it).
+    const sqShape = new THREE.Shape();
+    sqShape.moveTo(-0.022, 0);
+    sqShape.lineTo(-0.019, 0.016);
+    sqShape.lineTo(-0.011, 0.024);
+    sqShape.lineTo(-0.004, 0.015);
+    sqShape.lineTo(0.004, 0.029);
+    sqShape.lineTo(0.012, 0.016);
+    sqShape.lineTo(0.019, 0.022);
+    sqShape.lineTo(0.022, 0);
+    sqShape.closePath();
+    const square = extrude(sqShape, 0.004, 2);
+    square.rotateZ(0.12);
+    square.translate(0.1, 0.36, 0);
     kitGroup("fixer", [
-      [[tube([[0, 0.535, 0.07], [0, 0.48, 0.118], [0, 0.4, 0.13], [0, 0.31, 0.118]], 0.012, 12)], kitMat(new THREE.MeshStandardMaterial({ color: 0x6e1f33, roughness: 0.35, metalness: 0.1 }))],
-      [[square], kitMat(new THREE.MeshStandardMaterial({ color: 0xf2ece2, roughness: 0.6, metalness: 0 }))],
+      [[tieOn(blade, 0.004), tieOn(knot, 0.003)], kitMat(new THREE.MeshStandardMaterial({ color: 0x6e1f33, roughness: 0.35, metalness: 0.1 }))],
+      [[tieOn(square, 0.013)], kitMat(new THREE.MeshStandardMaterial({ color: 0xf2ece2, roughness: 0.6, metalness: 0 }))],
     ]);
   }
   // ---- plan item 136: the auditions' guns in her left hand, in the chest frame. Each is a group built along +y from

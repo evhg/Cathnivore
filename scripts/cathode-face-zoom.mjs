@@ -1,5 +1,5 @@
 // Plan item 260: shoots the NIGHT SHIFT title or class pick at D and P with a zoom and a face crop at DPR (env DPR).
-// Needs a dist-site preview on :4190. Usage: OUT=<dir> DPR=4 node scripts/cathode-face-zoom.mjs <tag> [title|classpick]
+// Needs a dist-site preview on :4190 (env PORT). Usage: OUT=<dir> DPR=4 node scripts/cathode-face-zoom.mjs <tag> [title|classpick]
 import { chromium } from '@playwright/test'
 const [tag, front='title'] = process.argv.slice(2)
 const out = process.env.OUT
@@ -7,9 +7,9 @@ const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIU
 for (const [n, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 390, height: 844 }]]) {
   const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: Number(process.env.DPR||(n==='D'?2:3)) })
   const p = await ctx.newPage()
-  await p.goto('http://localhost:4190/nightshift/?shot')
+  await p.goto(`http://localhost:${process.env.PORT||4190}/nightshift/?shot`)
   await p.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
-  await p.goto(`http://localhost:4190/nightshift/?front=${front}&shot&t=${process.env.T||8}&quality=phone${front==='classpick'?'&class=ghost':''}`)
+  await p.goto(`http://localhost:${process.env.PORT||4190}/nightshift/?front=${front}&shot&t=${process.env.T||8}&quality=phone${front==='classpick'?`&class=${process.env.CLASS||'ghost'}`:''}`)
   await p.waitForFunction(() => window.cathodeFront?.ready === true, null, { timeout: 200000 })
   await p.waitForTimeout(3000)
   const f = await p.evaluate(() => window.cathodeFront.scene().faceBox())
