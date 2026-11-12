@@ -495,3 +495,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-12 18:30 lane A (item 319): the face's key shade is applied after the skin light's soft knee (which flattened the planes to 1.5:1), floored at 0.64 so the far eye keeps its 3:1 on the cheek.
 - 2026-11-12 lane B: item 307 closed: 'every plot column inside the phone frame' is met by Whole field; the phone's opening close frame stays on the lane, as item 215 designed it.
 - 2026-11-12 lane B: NIGHT SHIFT's phone pick targets grow to 44 px inside their old footprint (negative margins), so the swipe layout and its specs keep their geometry.
+- 2026-11-12 lane B: items 326 and 333 closed by carrying their NIGHT SHIFT points into the unclaimed items that rebuild those scenes (331 title, 334 weapons, 338 pick) instead of patching scenes about to be restaged.
