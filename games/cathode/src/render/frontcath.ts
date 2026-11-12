@@ -104,6 +104,40 @@ function limb(a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, segs =
 }
 
 /**
+ * Plan item 319 slice 38: one smooth tube through `pts` whose radius eases through `rad` (one per point), rounded
+ * at the tip. A finger built as capsules chained joint to joint showed every cap as a bead under a gloss line.
+ */
+function taperTube(pts: THREE.Vector3[], rad: number[], segs: number): THREE.BufferGeometry {
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const n = 12;
+  const g = new THREE.TubeGeometry(curve, n, 1, segs, false);
+  const pos = g.getAttribute("position") as THREE.BufferAttribute;
+  const c = new THREE.Vector3();
+  const v = new THREE.Vector3();
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
+    curve.getPointAt(u, c);
+    const f = u * (rad.length - 1);
+    const k = Math.min(rad.length - 2, Math.floor(f));
+    const r = rad[k]! + (rad[k + 1]! - rad[k]!) * (f - k);
+    for (let j = 0; j <= segs; j++) {
+      const idx = i * (segs + 1) + j;
+      v.fromBufferAttribute(pos, idx).sub(c).multiplyScalar(r).add(c);
+      pos.setXYZ(idx, v.x, v.y, v.z);
+    }
+  }
+  g.computeVertexNormals();
+  const tip = new THREE.SphereGeometry(rad[rad.length - 1]!, segs, 6);
+  const end = pts[pts.length - 1]!;
+  tip.translate(end.x, end.y, end.z);
+  const base = new THREE.SphereGeometry(rad[0]!, segs, 6);
+  base.translate(pts[0]!.x, pts[0]!.y, pts[0]!.z);
+  const out = mergeGeos([g, tip, base]);
+  g.dispose(); tip.dispose(); base.dispose();
+  return out;
+}
+
+/**
  * A body part turned along a→b with a radius profile (t from 0 at a to 1 at b), squashed to `depth` front to back
  * around `up` (a thigh is wider than deep). Closed at both ends.
  */
@@ -1898,9 +1932,11 @@ float reliefShade( vec2 uv ) {
         const a = tb + a0 + (a1 - a0) * u;
         return at(V(Math.cos(a) * R * out, y - u * 0.011, Math.sin(a) * R * out));
       };
-      const pts = [joint(0, 1.08), joint(0.37, 1.3), joint(0.7, 1.24), joint(1, 1.02)];
-      const rad = [r * 1.06, r * 0.98, r * 0.9, r * 0.8];
-      for (let k = 0; k < 3; k++) parts.push(limb(pts[k]!, pts[k + 1]!, rad[k]!, rad[k + 1]!, seg(8)));
+      // Plan item 319 slice 38: the knuckles stand only a little proud (1.3 -> 1.14) and each bone is fuller, so
+      // neighbouring fingers overlap into one gloved grip; proud joints caught the leather gloss as a string of beads.
+      const pts = [joint(0, 1.06), joint(0.37, 1.14), joint(0.7, 1.12), joint(1, 1.02)];
+      const rad = [r * 1.18, r * 1.12, r * 1.04, r * 0.9];
+      parts.push(taperTube(pts, rad, seg(8)));
     }
     // Plan item 319: the grip's mass under the fingers (the palm and the fingers' inner flesh), so the fist reads
     // as one gloved hand with knuckle ridges, not four rings stacked on the shaft with dark gaps between them.
