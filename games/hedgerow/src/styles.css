@@ -367,6 +367,12 @@ button {
   .stop-land .held {
     transform: translate(0px, -16px);
   }
+  /* Plan item 314: the two-column road leaves no open ground round a stop: the clutter, 176 px across, stood under the
+     next coin and the names beside it ('The Unboxing', 'Golden Hour'). Held stops keep their sepia coin and padlock;
+     Hollowell's blocks show at D, where they clear every coin and name. */
+  .stop[data-state="held"] .stop-land {
+    display: none;
+  }
 }
 /* A first win's land blooms out from the stop over 900 ms; under reduced motion it fades in. */
 .stop-land.bloom {

@@ -472,6 +472,51 @@ test('the map colours in won stops and blooms a new win once', async ({ page }) 
 
 // Plan item 274: the map is a painted overworld: each act's country carries its own landmark props, settled on open
 // ground, never on a stop, its name, its stars or Cath.
+// Plan item 314: Hollowell's clutter round a held stop (blocks, billboards, vans) never stands on another stop's coin or
+// on any stop's name: each solid shape (opacity .5+, 3 px+) is tested against the coins as circles and the names as
+// boxes. Its own coin may stand in front of it.
+test('plan item 314: no held-land block or billboard meets another coin or a name', async ({ page }) => {
+  await seed(page, 20)
+  await page.waitForTimeout(600)
+  const hits = await page.evaluate(() => {
+    const op = (e: Element) => {
+      let o = 1
+      for (let a: Element | null = e; a && a.tagName !== 'svg'; a = a.parentElement) {
+        const cs = getComputedStyle(a)
+        o *= Number(cs.opacity) * (a === e ? Math.max(Number(cs.fillOpacity) || 0, cs.stroke !== 'none' ? Number(cs.strokeOpacity) : 0) : 1)
+      }
+      return o
+    }
+    const stopOf = (e: Element) => e.closest('.stop')
+    const coins = [...document.querySelectorAll<HTMLElement>('.stop button.node')].filter((e) => e.offsetWidth > 0).map((e) => {
+      const r = e.getBoundingClientRect()
+      return { stop: stopOf(e), x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 }
+    })
+    const names = [...document.querySelectorAll<HTMLElement>('.stop .level-name')].filter((e) => e.offsetWidth > 0)
+    const out: string[] = []
+    for (const g of document.querySelectorAll('.stop-land .held')) {
+      if (!g.getBoundingClientRect().width) continue
+      const own = stopOf(g)
+      for (const s of g.querySelectorAll('rect, path, circle, ellipse, polygon')) {
+        const r = s.getBoundingClientRect()
+        if (r.width < 3 || r.height < 3 || op(s) < 0.5) continue
+        for (const c of coins) {
+          if (c.stop === own) continue
+          const dx = Math.max(r.left - c.x, 0, c.x - r.right)
+          const dy = Math.max(r.top - c.y, 0, c.y - r.bottom)
+          if (Math.hypot(dx, dy) < c.r - 2) out.push(`a ${s.tagName} on another coin`)
+        }
+        for (const t of names) {
+          const b = t.getBoundingClientRect()
+          if (r.left < b.right - 2 && b.left < r.right - 2 && r.top < b.bottom - 2 && b.top < r.bottom - 2) out.push(`a ${s.tagName} on '${t.textContent}'`)
+        }
+      }
+    }
+    return out
+  })
+  expect(hits).toEqual([])
+})
+
 test('plan item 274: each act shows its landmark props, clear of every stop and name', async ({ page }) => {
   await seed(page, 24)
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
