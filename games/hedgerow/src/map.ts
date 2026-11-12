@@ -1990,7 +1990,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
         `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""}<span class="lcard-rounds"> · ${lv.waves.length} rounds</span></p>` +
         `<h3 class="lcard-name">${esc(lv.name)}</h3>` +
         (lv.twists?.length ? `<p class="lcard-twist"><span class="lcard-stamp">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</span></p>` : "") +
-        `<p class="lcard-stars" aria-label="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="lcard-medal${i < stars ? " is-won" : ""}" aria-hidden="true">${i < stars ? "★" : ""}</span>`).join("")}</p>`;
+        `<p class="lcard-stars" role="img" aria-label="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="lcard-medal${i < stars ? " is-won" : ""}" aria-hidden="true">${i < stars ? "★" : ""}</span>`).join("")}</p>`;
       words.textContent = cathLine(lv);
       foes.innerHTML = top
         .map(

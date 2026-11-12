@@ -23,7 +23,13 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
         const hide = await page.addStyleTag({ content: '#board .tiles, #board .tile-shadow { visibility: hidden !important; }' })
         const bare = (await page.screenshot()).toString('base64')
         await hide.evaluate((n) => (n as Element).remove())
-        const r = await page.evaluate(async ([full, bare]) => {
+        // The tile's own fill, read with its channels and pin hidden: a curved channel, the wooden hub (plan item 323)
+        // and a pin's stake reach toward the corners, where one sample per corner landed on pale wood (2.7:1 on a
+        // daily's pinned curve, 2026-11-12) and measured the channel against itself.
+        const strip = await page.addStyleTag({ content: '#board .tiles .piece, #board .tiles .pin { visibility: hidden !important; }' })
+        const plain = (await page.screenshot()).toString('base64')
+        await strip.evaluate((n) => (n as Element).remove())
+        const r = await page.evaluate(async ([full, bare, plain]) => {
           const load = async (s: string) => {
             const i = new Image()
             i.src = `data:image/png;base64,${s}`
@@ -37,6 +43,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
           }
           const F = await load(full)
           const B = await load(bare)
+          const P = await load(plain)
           const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
           // Screenshots are in device pixels.
           const k = F.width / innerWidth
@@ -56,7 +63,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
             const corners = [...Array(t.points.numberOfItems).keys()].map((i) => t.points.getItem(i).matrixTransform(t.getScreenCTM()!))
             // The valley under the tile, and the tile's fill toward its corners (channels only run to edge midpoints).
             const field = med(corners.flatMap((q) => [0.3, 0.5].map((f) => L(B, cx + (q.x - cx) * f, cy + (q.y - cy) * f))))
-            const fill = med(corners.map((q) => L(F, cx + (q.x - cx) * 0.6, cy + (q.y - cy) * 0.6)))
+            const fill = med(corners.map((q) => L(P, cx + (q.x - cx) * 0.6, cy + (q.y - cy) * 0.6)))
             // The edge: the strongest pixel against the valley on a line from 80% of the way out to just past the rim.
             const sides = corners.map((a, i) => {
               const b = corners[(i + 1) % corners.length]!
@@ -92,7 +99,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
             if (g.querySelector('.groove-bed')) chans.push(tileBest)
           }
           return { n: edges.length, edge: Math.min(...edges), chan: Math.min(...chans) }
-        }, [full, bare] as const)
+        }, [full, bare, plain] as const)
         expect(r.n, sky).toBeGreaterThan(5)
         expect(r.edge, `tile edge vs valley, ${sky}`).toBeGreaterThanOrEqual(edgeMin)
         expect(r.chan, `channel vs tile, ${sky}`).toBeGreaterThanOrEqual(3)

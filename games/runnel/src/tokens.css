@@ -143,7 +143,7 @@
     --tile-bevel: rgb(255 236 200 / .22);
     --tile-shadow: rgb(0 0 0 / .5);
     --dry-meadow: #4a4c31; /* plan item 323: 10%+ off a wet tile (was #4f5236, 9%) */
-    --dry-field: #6a5233;
+    --dry-field: #5d482d; /* a dry field 12% darker: under the morning wash the right-edge tiles lifted to 2.7:1 under their channels (runnel-tiles) */
     --furrow: #3e2f20;
     --clover: #6f8a4c;
     --flower: #cfc3ad;
