@@ -144,6 +144,18 @@
     translate: -50% 0;
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
+  /* Plan item 325: the bubble sits over her head (beside her face it would cover Rivermead), so its tail is a long
+     slender one that runs down past the left of her hair to her cheek, its tip within 30 px of her mouth. The line
+     paints over her art for it. */
+  .cmp-map-host .cmp-cath-line { z-index: var(--z-raised); }
+  .cmp-map-host .cmp-cath-line::after {
+    left: 64px;
+    bottom: -118px;
+    width: 26px;
+    height: 120px;
+    translate: none;
+    clip-path: polygon(0 0, 62% 0, 100% 100%);
+  }
   /* Plan item 325: half length, 300 px: her face about 70 px (the full figure on a quay read as a statue) */
   .cmp-map-host .cmp-header-cath { height: 300px; position: relative; aspect-ratio: 320 / 480; }
 }
@@ -1174,7 +1186,8 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-header .cmp-cath-line { grid-column: 1; grid-row: 2; margin: 0 12px 0 0; max-width: none; }
   .cmp-header .cmp-host-stand { grid-column: 2; grid-row: 1 / span 2; align-self: end; }
   /* item 318: her head is above the bubble here, so the tail leaves its top corner and points up at her */
-  .cmp-header .cmp-cath-line::after { top: 2px; right: -13px; clip-path: polygon(0 45%, 100% 0, 0 100%); }
+  /* item 325: long enough to reach the edge of her hair, its tip within 30 px of her mouth (it stopped about 50 px off) */
+  .cmp-header .cmp-cath-line::after { top: -4px; right: -38px; width: 40px; height: 22px; clip-path: polygon(0 45%, 100% 0, 0 100%); }
 }
 
 /* Plan item 333: Back to Title is a painted plank, like the title's Campaign sign (item 327), not a plain form button. */
