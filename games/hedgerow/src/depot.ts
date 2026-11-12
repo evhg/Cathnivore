@@ -26,6 +26,13 @@ export function depotSvg(): string {
     // a flat roof's chrome cornice with a hard sheen
     `<rect x="3" y="18" width="94" height="6" rx="1.5" fill="url(#dp-chrome)"/>` +
     `<rect x="5" y="19" width="90" height="1.4" fill="#ffffff" opacity=".9"/>` +
+    // Plan item 336: the LED departures board built into the front, between cornice and canopy (main.ts lays the
+    // count over it; it used to sit over the sign and the shutter), and two floodlights on the cornice lighting the front.
+    `<rect x="9" y="25" width="82" height="12" rx="1.5" fill="#0d1116" stroke="url(#dp-chrome)" stroke-width="1.4"/>` +
+    `<rect x="11" y="26.5" width="78" height="9" rx="1" fill="#1a1208"/>` +
+    `<path d="M8 18l-4 -5h8z M92 18l-4 -5h8z" fill="#3a4148"/>` +
+    `<circle cx="8" cy="13.5" r="2.2" fill="#fff4cf"/><circle cx="92" cy="13.5" r="2.2" fill="#fff4cf"/>` +
+    `<path d="M8 15L1 40H22Z M92 15L78 40H99Z" fill="#fff4cf" opacity=".16"/>` +
     // Plan items 160/281: the brand on the canopy at 14 units, now lit: a glow behind the letters.
     `<rect x="4" y="38" width="92" height="19" rx="2" fill="url(#dp-canopy)"/>` +
     `<rect x="6" y="39.2" width="88" height="2.2" rx="1" fill="#ffffff" opacity=".55"/>` +
@@ -38,9 +45,9 @@ export function depotSvg(): string {
     `<rect x="28" y="58" width="44" height="36" fill="#1a1f25"/>` +
     `<rect x="31" y="80" width="38" height="14" fill="#ffd27a" opacity=".35"/>` +
     `<g class="depot-door"><rect x="28" y="58" width="44" height="36" rx="2" fill="#c9d0d7"/>${ribs}</g>` +
-    // the countdown screen on the left wall (main.ts lays the count over it)
-    `<rect x="8" y="55" width="19" height="24" rx="2" fill="url(#dp-chrome)"/>` +
-    `<rect x="9" y="56" width="17" height="22" rx="2" fill="#11161c"/>` +
+    // a second shop window on the left (the count moved up to the LED board)
+    `<rect x="8" y="60" width="18" height="26" rx="1" fill="url(#dp-glass)" stroke="#c3ccd5" stroke-width="1.2"/>` +
+    `<path d="M10 84 24 62" stroke="#ffffff" stroke-width="2" opacity=".45"/>` +
     // balcony rail on the right, chrome
     `<path d="M74 58h18" stroke="#c3ccd5" stroke-width="2"/>` +
     `</svg>`

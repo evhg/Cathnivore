@@ -5073,16 +5073,24 @@ img.act-scene {
 .depot > svg { display: block; width: 100%; height: 100%; }
 .depot-board {
   position: absolute;
-  /* Plan item 222: sized to its count (a three-digit count ran past a fixed 48% box onto the rep), centred. */
+  /* Plan item 222: sized to its count (a three-digit count ran past a fixed 48% box onto the rep), centred.
+     Plan item 336: in the LED board built into the front (25-37% down), amber and lit, off the sign and the shutter. */
   left: 50%;
-  top: 53%;
+  top: 25.5%;
+  height: 11%;
   min-width: 48%;
+  max-width: 82%;
   translate: -50% 0;
-  padding: 2px 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0 3px;
   box-sizing: border-box;
-  border-radius: 3px;
-  background: var(--ink);
-  color: var(--wheat, var(--cream-a45));
+  border-radius: 2px;
+  background: transparent;
+  color: var(--led-amber, var(--wheat, var(--cream-a45)));
+  text-shadow: 0 0 4px color-mix(in srgb, var(--led-amber, var(--wheat)) 70%, transparent);
   font-family: var(--font-ui, sans-serif);
   font-size: max(0.75rem, calc(var(--size) * 0.085));
   font-weight: 700;

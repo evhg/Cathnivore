@@ -3171,7 +3171,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at P and D.
 - **Size:** 2
 
-## 336. [ ] Hedgerow: Hollowell's depot as a staged corporate gate that launches each wave *(lane B, in progress)*
+## 336. [ ] Hedgerow: Hollowell's depot as a staged corporate gate that launches each wave *(lane B, in progress)* *(slice 1, 2026-11-12 01:50 lane B, 2D: the count moved onto an amber LED board built into the front between the cornice and the HOLLOWELL canopy (it sat over the sign and the shutter). The old left-wall screen is now a second shop window, and two floodlights on the cornice cast soft cones over the front. `--led-amber` is a new token. At D l34 each depot is about 130 px wide; at P about 76. depot, depot3d, gatequeue, critique166 and camera3d pass at P and D (31); shots e2e/screenshots/h336. Left: at P the 12 px count spills just above its strip, the 3D depot (a flat teal box with a pasted head), the shutter and floodlight pulse on Go, the lead vehicle nosing out)*
 - **Why:**
   - `plan1112a/hedge-l21-3d-D`: the enemy source is a flat teal box with a pasted cartoon head (130-310 x 150-330), and its HOLLOWELL board is a plain green label on a post (195-305 x 368-395).
   - `hedge-l34-2d-D`: both depots are white boxes, and each "NEXT" count sits over its own sign (90-220 x 130-240 and 90-220 x 605-715).
