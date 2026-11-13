@@ -181,6 +181,46 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
   const bulb = add(new THREE.Mesh(geo(new THREE.SphereGeometry(0.045, 14, 10)), bulbMat));
   bulb.position.set(BX, BY, z0 + 0.32);
 
+  // A fire escape's first landing over the stoop (plan item 338): the street's HOLLOWELL fascia on the far wall sat
+  // cut by the top of the pick's frame ("HOLLOWE"), and the pick can't frame higher without cropping her hat, so the
+  // landing's front channel crosses the frame's top edge in front of it. Grated deck, a deep channel beam lit warm
+  // from below by the bulb, two diagonal brackets to the wall and the rail's posts rising out of frame.
+  {
+    const LY = 2.55;
+    const LD = 1.5;
+    const x0 = -3.6;
+    const x1 = 3.4;
+    const deck = add(new THREE.Mesh(geo(new THREE.BoxGeometry(x1 - x0, 0.05, LD)), iron));
+    deck.position.set((x0 + x1) / 2, LY, z0 + LD / 2);
+    const beamMat = fade(
+      new THREE.MeshStandardMaterial({
+        color: 0x1d1a1a,
+        roughness: 0.55,
+        metalness: 0.5,
+        emissive: BULB,
+        emissiveIntensity: 0.025,
+      }),
+    );
+    const beam = add(new THREE.Mesh(geo(new THREE.BoxGeometry(x1 - x0, 0.26, 0.09)), beamMat));
+    beam.position.set((x0 + x1) / 2, LY - 0.08, z0 + LD);
+    // The channel's lower lip, a shade lighter where the bulb catches it.
+    const lip = add(new THREE.Mesh(geo(new THREE.BoxGeometry(x1 - x0, 0.03, 0.12)), stone));
+    lip.position.set((x0 + x1) / 2, LY - 0.22, z0 + LD + 0.01);
+    for (const x of [x0 + 0.25, -0.9, 1.1, x1 - 0.25]) {
+      const post = add(new THREE.Mesh(geo(new THREE.CylinderGeometry(0.018, 0.018, 1.0, 5)), iron));
+      post.position.set(x, LY + 0.5, z0 + LD - 0.02);
+    }
+    const rail = add(new THREE.Mesh(geo(new THREE.CylinderGeometry(0.02, 0.02, x1 - x0, 5)), iron));
+    rail.rotation.z = Math.PI / 2;
+    rail.position.set((x0 + x1) / 2, LY + 1.0, z0 + LD - 0.02);
+    for (const x of [x0 + 0.4, x1 - 0.4]) {
+      const len = Math.hypot(LD - 0.1, 0.8);
+      const brace = add(new THREE.Mesh(geo(new THREE.BoxGeometry(0.05, len, 0.05)), iron));
+      brace.position.set(x, LY - 0.45, z0 + (LD - 0.1) / 2);
+      brace.rotation.x = Math.atan2(LD - 0.1, 0.8);
+    }
+  }
+
   // Its light, baked: a halo round the bulb, a wash on the wall and frame, a pool on the step and cobbles.
   const glowTex = radial([
     [0, 0.9],
