@@ -3385,7 +3385,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots D (1440x900 and 1100x760) of l21 and l34; P unchanged.
 - **Size:** 2
 
-## 362. [ ] NIGHT SHIFT: the gun she carries is the gun on the inspect
+## 362. [ ] NIGHT SHIFT: the gun she carries is the gun on the inspect *(lane B, in progress)*
 - **Why:** `plan1113b/ns-play-D`: Cath's 3D Widowmaker (750-830 x 250-540) is a flat grey plank with a box for a scope, a toy prop. Beside it the inspect panel (995-1380 x 260-340) shows a detailed scoped rifle with lit edges. The two don't match, and the plank is what the player sees in play. At P (225-250 x 185-300) it's the same plank.
 - **Build:** each class's carried weapon (rifle, shotgun, revolver, the Wirewitch's sidearm, the Fixer's case) built from the same mesh family as its inspect model (item 313), with a phone LOD: the same materials and edge light at reduced detail, slung or held as item 300 posed them. Used on the pick, the title and the district entrances.
 - **Accept:**
