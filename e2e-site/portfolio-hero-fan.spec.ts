@@ -32,3 +32,37 @@ test('the desktop hero shows all four games, each mostly in view and labelled', 
     expect(s.labelShown).toBe(true)
   }
 })
+
+// Plan item 350: Cath stands behind a studio desk (not faded out at the waist): no mask or fade on her figure, the
+// desk's top within her lower fifth and wider than her, inside the page; on a phone the next print peeks 60 px+.
+test('Cath stands behind a desk, not fading out; the phone strip shows the next print', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForTimeout(2500)
+  const m = await page.evaluate(() => {
+    const c = document.querySelector<HTMLElement>('#hero-cath')!
+    const cs = getComputedStyle(c)
+    const desk = getComputedStyle(c, '::after')
+    const r = c.getBoundingClientRect()
+    let op = 1
+    for (let e: HTMLElement | null = c; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity)
+    const strip = document.querySelector('.show-strip')!.getBoundingClientRect()
+    const cards = [...document.querySelectorAll('.show-strip .show-card')].map((e) => e.getBoundingClientRect())
+    return {
+      mask: cs.maskImage,
+      op,
+      desk: desk.content !== 'none' && desk.content !== '',
+      deskTop: parseFloat(desk.top) / r.height,
+      deskWide: parseFloat(desk.width) >= r.width,
+      peek: Math.min(strip.right, cards[1]!.right) - cards[1]!.left,
+      scroll: document.scrollingElement!.scrollWidth - innerWidth,
+    }
+  })
+  expect(m.mask).toBe('none')
+  expect(m.op).toBe(1)
+  expect(m.desk).toBe(true)
+  expect(m.deskTop).toBeGreaterThanOrEqual(0.8)
+  expect(m.deskTop).toBeLessThanOrEqual(0.95)
+  expect(m.deskWide).toBe(true)
+  expect(m.scroll).toBeLessThanOrEqual(0)
+  if ((page.viewportSize()?.width ?? 0) < 1100) expect(m.peek).toBeGreaterThanOrEqual(60)
+})

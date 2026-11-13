@@ -462,13 +462,42 @@ main,
   .ready .hero-show .show-cath { animation: rise 1.1s var(--ease-out) 700ms both; }
 }
 /* Plan item 339: the market counter (the /games/ stall's) is gone from the portfolio: on a dark studio page it read as
-   a fruit stall pasted in. Her half-length figure fades out at the waist instead. */
-.show-cath { -webkit-mask-image: linear-gradient(to bottom, var(--mask-solid) 84%, transparent 100%); mask-image: linear-gradient(to bottom, var(--mask-solid) 84%, transparent 100%); }
+   a fruit stall pasted in. Plan item 350: but fading her out at the waist left her floating, so she stands behind a
+   studio desk: a dark lacquered top lit along its edge, a front panel, and its shadow on the floor; no fade. */
+.show-cath { -webkit-mask-image: none; mask-image: none; isolation: isolate; }
+.show-cath::after {
+  content: "";
+  position: absolute;
+  left: -22%;
+  right: -22%;
+  top: 86%;
+  height: 17%;
+  border-radius: 6px 6px 3px 3px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 38%, transparent) 0 2px, transparent 2px),
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 14%, var(--ink-hover)) 0 18%, var(--ink-2) 18% 22%, var(--ink-raised) 22%, var(--ink));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent) inset;
+}
+.show-cath::before {
+  content: "";
+  position: absolute;
+  left: -30%;
+  right: -30%;
+  top: 98%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--show-shadow), transparent);
+  z-index: var(--z-under);
+}
 /* Plan item 339: on a phone the swiped strip takes the left 56% (she keeps item 38's 40% of the screen) (a print and the next one's edge) and Cath stands
    beside it in the rest, so she never covers a print or its name. */
 @media (max-width: 1099.98px) {
   .show-strip { width: 56%; padding-right: 0; }
-  .show-strip .show-card { width: 90%; }
+  /* Plan item 350: the next print peeks 60 px or more, so the strip reads as one to swipe */
+  .show-strip .show-card { width: 64%; }
+  /* her desk stops at the screen's edge (past it the page scrolled sideways) */
+  .show-cath::after { right: 0; }
+  .show-cath::before { right: 0; }
   .show-cath { width: 44%; right: 0; }
 }
 /* Plan item 339: at D the work hangs as a studio wall, a 2x2 of framed screens that never overlap, each with its name on
