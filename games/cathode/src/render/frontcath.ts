@@ -1181,7 +1181,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Slice 40: the jaw line rises from the chin toward the ear: the lower head's sides and back lift (up to 0.11
         // at the side, none at the chin's front), so its underside slopes up and back instead of lying as one flat
         // shelf whose edge met the cheek in a corner.
-        const lift = 0.11 * ks * (1 - THREE.MathUtils.smoothstep(z, 0.0, 0.8));
+        // Slice 67: under the chin (k > 0.6) the lift is 0.14 and fades only at the chin's front (z 0.3-0.95): the
+        // underside behind the chin hung below it as a pale lump under the near cheek at the D pick. The cheek above
+        // keeps 0.11 over z 0-0.8 (lifting it too turned the cheek beside the eye and lost the eyes' 3:1 contrast).
+        const ss = THREE.MathUtils.smoothstep;
+        const lift = ks * THREE.MathUtils.lerp(0.11 * (1 - ss(z, 0.0, 0.8)), 0.14 * (1 - ss(z, 0.3, 0.95)), ss(k, 0.6, 0.9));
         z = THREE.MathUtils.lerp(z * (1 - 0.45 * ks), z * (1 - 0.1 * ks) + 0.06 * ks, THREE.MathUtils.smoothstep(z, -0.25, 0.25));
         // Plan item 289: the lower face shorter (0.95 -> 0.86), a rounder face, not a long flat egg.
         // Plan item 319 slice 15: shorter again (0.86 -> 0.8), so the chin sits closer under her mouth.
