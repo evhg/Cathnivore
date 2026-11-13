@@ -35,8 +35,8 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
       {r.last ? (
         <figure className="ritual-receipt" data-won={r.last.result.won || undefined}>
           <span className="ritual-pin" />
-          <span className="ritual-receipt-head">Daily #{r.last.number}</span>
-          <span className="ritual-receipt-when">{r.last.today ? 'Today' : isYesterday(r.last.date, now) ? 'Yesterday' : shortDate(r.last.date)}</span>
+          {/* Plan item 342: the slip leads with when (the menu's Daily button beside it carries today's number) */}
+          <span className="ritual-receipt-head">{r.last.today ? 'Today' : isYesterday(r.last.date, now) ? 'Yesterday' : shortDate(r.last.date)}</span>
           <span className="ritual-receipt-row">
             <span>Regions</span>
             <b>{r.last.result.regions}/5</b>
@@ -46,11 +46,11 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
             <b>{r.last.result.trust}</b>
           </span>
           {r.streak > 0 && (
-            <span className="ritual-mini-bunting" data-pennants={Math.min(r.streak, 5)}>
-              {Array.from({ length: Math.min(r.streak, 5) }, (_, i) => (
+            <span className="ritual-mini-bunting" data-pennants={Math.min(r.streak, 3)}>
+              {Array.from({ length: Math.min(r.streak, 3) }, (_, i) => (
                 <span key={i} className={`ritual-mini-pennant p${i % 4}`} data-pennant={i + 1} />
               ))}
-              {r.streak > 5 && <b>+{r.streak - 5}</b>}
+              {r.streak > 3 && <b>+{r.streak - 3}</b>}
             </span>
           )}
           <span className="ritual-stamp">{r.last.result.won ? 'Sold' : 'Held'}</span>
