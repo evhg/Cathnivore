@@ -4026,55 +4026,51 @@ body:has(#dlg-pause[open]) .paused-note {
     width: 36px;
     height: 36px;
   }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower {
     padding-inline: 2px;
   }
-  /* Plan item 220: twelve tracks, so a short last row widens its packets to fill the row (no empty cell). */
-  .play .tray-wrap .tray,
+  /* Plan item 361 (replacing item 220's stretched last row): the rack is a regular grid, every packet the same size:
+     three to a row up to nine, four from ten (the column can't hold four rows of three beside a long round at
+     1440x900: level 25's five vehicle groups were cut). A short last row's spare cells hold clay pots on the bench
+     (the rack's own ::before and ::after; with three spare, ::before is a two-cell trough), so no cell reads as
+     missing and no packet is stretched across two. */
+  .play .tray-wrap .tray {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .play .tray-wrap .tray > .tray-tower {
-    grid-column: span 4;
+    grid-column: auto;
   }
-  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 1):last-child {
-    grid-column: span 12;
+  .play .tray-wrap .tray:not(:has(> .tray-tower:nth-child(10))):has(> .tray-tower:nth-child(3n + 1):last-child)::before,
+  .play .tray-wrap .tray:not(:has(> .tray-tower:nth-child(10))):has(> .tray-tower:nth-child(3n + 1):last-child)::after,
+  .play .tray-wrap .tray:not(:has(> .tray-tower:nth-child(10))):has(> .tray-tower:nth-child(3n + 2):last-child)::after,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 1):last-child)::before,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 1):last-child)::after,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 2):last-child)::before,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 2):last-child)::after,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 3):last-child)::after {
+    content: "";
+    order: 99;
+    place-self: end center;
+    width: 46px;
+    height: 42px;
+    margin-bottom: 10px;
+    /* A clay pot: a lip over a tapered body, lit from the left, its shadow on the bench. */
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--clay-ink) 45%, transparent) 0 6%, transparent 6% 26%, color-mix(in srgb, var(--clay-ink) 30%, transparent) 26% 30%, transparent 30%),
+      linear-gradient(90deg, color-mix(in srgb, var(--clay) 70%, var(--paper-hi)), var(--clay) 45%, color-mix(in srgb, var(--clay) 70%, var(--clay-ink)));
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 42'%3E%3Cpath d='M2 2h42v9h-3l-5 29H10L5 11H2z' fill='black'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 42'%3E%3Cpath d='M2 2h42v9h-3l-5 29H10L5 11H2z' fill='black'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    pointer-events: none;
   }
-  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 1):nth-last-child(2),
-  .play .tray-wrap .tray > .tray-tower:nth-child(3n + 2):last-child {
-    grid-column: span 6;
-  }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower {
-    grid-column: span 3;
-  }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):last-child {
-    grid-column: span 12;
-  }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):nth-last-child(2),
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 2):last-child {
-    grid-column: span 6;
-  }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 1):nth-last-child(3),
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 2):nth-last-child(2),
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-tower:nth-child(4n + 3):last-child {
-    grid-column: span 4;
-  }
-}
-/* Plan item 87: a round too long for the column (fitPreview's last resort before the tabbed card goes): shorter packets. */
-@media (min-width: 900px) and (min-height: 521px) {
-  .play .panel.shop-tight .tray-wrap .tray .tray-tower {
-    min-height: 70px;
-    padding-top: 15px;
-    gap: 0;
-  }
-  .play .panel.shop-tight .tray-wrap .tray .tray-tower img {
-    width: 28px;
-    height: 28px;
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)):has(> .tray-tower:nth-child(4n + 1):last-child)::before {
+    grid-column: span 2;
+    width: 84px;
   }
 }
+
 /* Plan item 87: on a shorter desktop (1280x800) the packets are a little shorter, so the round card keeps its foot. */
 @media (min-width: 900px) and (min-height: 521px) and (max-height: 860px) {
   .play .tray-wrap .tray .tray-tower { min-height: 80px; padding-top: 16px; gap: 1px; }
@@ -4159,11 +4155,6 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img { width: 42px; height: 42px; }
   .play .tray-wrap .tray .tray-tower,
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower { padding-top: 8px; }
-}
-@media (min-width: 900px) and (min-height: 521px) {
-  /* A tight round's 70 px packets: a two-line band (Seed / Cannon) leaves the art 30 px. */
-  .play .panel.shop-tight .tray-wrap .tray .tray-tower img { width: 30px; height: 30px; }
-  .play .panel.shop-tight .tray-wrap .tray .tray-tower { padding-top: 6px; }
 }
 /* Plan item 119: each role's band colour, for the desktop band and the phone packet's foot. */
 .play .tray-wrap .tray .tray-tower { --band: var(--pasture); }
@@ -4600,5 +4591,33 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .round-banner {
     padding: 1px 0 2px;
+  }
+}
+
+/* Plan item 361: a three-to-a-row rack's tight step is gentle (82 px, the tower still 40 px), not item 87's 70 px
+   chip with 30 px art: it now comes on whenever Coming up's rounds would be cut inside their card (level 12 at
+   1440x900 cut them by 20 px before). Four-to-a-row racks keep the 70 px step. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .panel.shop-tight .tray-wrap .tray {
+    gap: 3px;
+  }
+  .play .panel.shop-tight .tray-wrap .tray .tray-tower {
+    min-height: 82px;
+    padding-top: 12px;
+    gap: 0;
+  }
+  .play .panel.shop-tight .tray-wrap .tray .tray-tower img {
+    width: 40px;
+    height: 40px;
+    margin-top: 0;
+    translate: none;
+  }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower {
+    min-height: 70px;
+    padding-top: 6px;
+  }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
+    width: 30px;
+    height: 30px;
   }
 }

@@ -1643,6 +1643,11 @@ function fitPreview(p: HTMLElement): void {
     const kids = [...p.children].flatMap((c) => (c.classList.contains("round-group") ? [...c.children] : [c]));
     const last = kids.reverse().find((c) => c.getClientRects().length > 0);
     if (!last || !p.clientHeight) return false;
+    // Plan item 361: Coming up's rounds cut inside their own card count as running past the foot too.
+    // (Its last line's foot against the card's, not scrollHeight, which counts the card's own bottom padding.)
+    const intel = p.querySelector<HTMLElement>(".field-intel");
+    const foot = intel && intel.getClientRects().length ? [...intel.children].filter((c) => c.getClientRects().length).pop() : undefined;
+    if (intel && foot && foot.getBoundingClientRect().bottom > intel.getBoundingClientRect().bottom + 1) return true;
     return last.getBoundingClientRect().bottom > p.getBoundingClientRect().bottom - parseFloat(getComputedStyle(p).paddingBottom) + 1;
   };
   const drop = (sel: string, on: boolean) => {

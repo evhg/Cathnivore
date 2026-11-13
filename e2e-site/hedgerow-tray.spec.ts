@@ -198,8 +198,11 @@ test('plan item 87: the tower shop is seed packets with names', async ({ page, h
       }),
     )
     const many = r.length >= 10
+    // Plan item 361: in the column's tight step (Coming up would be cut) a three-to-a-row packet is 82 px, a
+    // four-to-a-row one 70.
+    const tight = await page.evaluate(() => document.getElementById('panel')!.classList.contains('shop-tight'))
     for (const p of r) {
-      expect(p.h, `${width} level ${level}`).toBeGreaterThanOrEqual(hasTouch ? 64 : 90)
+      expect(p.h, `${width} level ${level}`).toBeGreaterThanOrEqual(hasTouch ? 64 : tight ? (many ? 70 : 82) : 90)
       expect(p.w, `${width} level ${level}`).toBeGreaterThanOrEqual(hasTouch ? 56 : many ? 70 : 90)
       expect(p.named).toBe(true)
       expect(p.aria).toMatch(/\d+ Marks/)
@@ -290,21 +293,68 @@ test('plan item 119: each packet shows its tower large, its name on a printed ba
         return { art: Math.min(art.width, art.height), price: parseFloat(getComputedStyle(c.querySelector('.build-cost')!).fontSize), band: getComputedStyle(name).backgroundColor !== 'rgba(0, 0, 0, 0)', bandH: name.getBoundingClientRect().height }
       }),
     )
-    // Plan item 220: the rack's last row fills the row, so no cell sits empty.
-    const ends = await page.evaluate(() => {
-      const t = document.querySelector('.tray-wrap .tray')!.getBoundingClientRect()
-      const last = document.querySelector('.tray-wrap .tray > .tray-tower:last-child')!.getBoundingClientRect()
-      return { tray: t.right, last: last.right }
-    })
-    expect(Math.abs(ends.tray - ends.last), `level ${level} last row`).toBeLessThanOrEqual(6)
-    // Plan item 211: four to a row, a two-line name (Market Stall) sits on a band the same height as a one-line one.
+    // Plan item 361 (replacing item 220's stretched last row): a regular grid, every packet the same width.
+    const widths = await page.evaluate(() => [...document.querySelectorAll('.tray-wrap .tray > .tray-tower')].map((b) => b.getBoundingClientRect().width))
+    expect(Math.max(...widths) - Math.min(...widths), `level ${level} widths`).toBeLessThanOrEqual(1)
+    // Plan item 211: a two-line name (Market Stall) sits on a band the same height as a one-line one.
     if (r.length >= 10) expect(Math.max(...r.map((p) => p.bandH)) - Math.min(...r.map((p) => p.bandH)), `level ${level} bands`).toBeLessThanOrEqual(1)
-    // 56 px for up to six packets, 52 for seven to nine, 44 for ten or more (item 87's column budget).
-    const want = r.length >= 10 ? 44 : r.length >= 7 ? 52 : 56
+    // 56 px for up to six packets, 52 for seven to nine, 44 for ten or more (item 87's column budget); 40 in the
+    // column's tight step (item 361).
+    const tight = await page.evaluate(() => document.getElementById('panel')!.classList.contains('shop-tight'))
+    const want = tight ? (r.length >= 10 ? 28 : 40) : r.length >= 10 ? 44 : r.length >= 7 ? 52 : 56
     for (const p of r) {
       expect(p.art, `level ${level}`).toBeGreaterThanOrEqual(want)
       expect(p.price).toBeGreaterThanOrEqual(13)
       expect(p.band).toBe(true)
     }
+  }
+})
+
+// Plan item 361: the side column as a bench: a regular rack (three to a row up to nine, 96 px wide; four from ten),
+// no packet across two columns, a short last row's spare cells as clay pots, every word 12 px or more, and Coming up
+// whole beside it.
+test('plan item 361: the seed rack is a regular grid with pots in spare cells, words 12 px+, Coming up whole', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the side column is a desktop layout')
+  for (const level of [21, 34]) {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto(URL)
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`${URL}&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    await page.waitForTimeout(500)
+    const r = await page.evaluate(() => {
+      const tray = document.querySelector('.tray-wrap .tray')!
+      const packets = [...tray.querySelectorAll(':scope > .tray-tower')].map((b) => b.getBoundingClientRect())
+      const pots = [getComputedStyle(tray, '::before').content, getComputedStyle(tray, '::after').content].filter((c) => c !== 'none').length
+      const small: string[] = []
+      for (const el of document.querySelectorAll<HTMLElement>('#panel *, footer.controls *')) {
+        if (!el.getClientRects().length) continue
+        const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim())
+        if (own && parseFloat(getComputedStyle(el).fontSize) < 12) small.push(`${el.className}:${getComputedStyle(el).fontSize}`)
+      }
+      const intel = document.querySelector('.panel .field-intel')
+      const tl = document.querySelector('.panel .field-intel .intel-timeline')
+      return {
+        n: packets.length,
+        cols: new Set(packets.map((b) => Math.round(b.left))).size,
+        widths: packets.map((b) => b.width),
+        pots,
+        small,
+        intel: intel && tl && intel.getClientRects().length ? intel.getBoundingClientRect().bottom - tl.getBoundingClientRect().bottom : null,
+      }
+    })
+    const per = r.n >= 10 ? 4 : 3
+    expect(r.cols, `level ${level}`).toBe(Math.min(per, r.n))
+    expect(Math.max(...r.widths) - Math.min(...r.widths)).toBeLessThanOrEqual(1)
+    if (per === 3) expect(Math.min(...r.widths)).toBeGreaterThanOrEqual(96)
+    expect(r.pots).toBe(Math.min(2, (per - (r.n % per)) % per))
+    expect(r.small).toEqual([])
+    // Coming up's rounds are on screen and whole.
+    expect(r.intel, `level ${level} Coming up`).not.toBeNull()
+    expect(r.intel!).toBeGreaterThanOrEqual(0)
   }
 })
