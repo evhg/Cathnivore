@@ -168,7 +168,9 @@ const HERO_POINT_ARM = 1.7;
 const HERO_WAVE_ARM = 1.6;
 const HERO_REACH_X = 1.3;
 /** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
-export const CATH_3D_SCALE = 1.9;
+// Plan item 346: one scale for the farm: she stands about 1.2x a farmer (1.15 model units at 1.15 against a farmer's
+// 0.86 at FOLK_3D_SCALE); at 1.9 she was a giant doll at the field's edge, 2.5x them.
+export const CATH_3D_SCALE = 1.15;
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
 const CATH_LEAN_FROM = 0.95;
 
@@ -1846,7 +1848,7 @@ export class Renderer3D {
     const h = game.hero;
     const y = this.height(h.x, h.y);
     c.position.set(h.x, y, h.y);
-    // Plan item 78: twice her old size (0.98), so she reads as the farm's hero at a glance.
+    // Plan item 78 made her twice her old size; item 346 brings her back to the farm's one scale.
     c.scale.setScalar(CATH_3D_SCALE);
     // Plan item 98: a phone's camera looks down so steeply that she read as the crown of her head (a dark blob).
     // On a steep view she leans back a little, like a paper doll on a board, so her face and coat turn up to it.

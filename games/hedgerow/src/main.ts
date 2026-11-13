@@ -4297,8 +4297,8 @@ function cathBox(g: Game, field: DOMRect): Box | null {
   if (!at) return null;
   const cell = right ? Math.max(16, Math.abs(right.x - at.x)) : 40;
   const px = is3D(renderer!) ? null : (renderer as { heroPx?: () => { h: number; w: number } }).heroPx?.();
-  // Plan item 208: her 3D figure is about five heads tall now (1.15 model units at CATH_3D_SCALE, 2.2 cells).
-  const tall = px?.h ? px.h / cell + 0.3 : is3D(renderer!) ? 2.2 : 1.25;
+  // Plan item 208: her 3D figure is about five heads tall (1.15 model units at CATH_3D_SCALE: 1.3 cells since item 346).
+  const tall = px?.h ? px.h / cell + 0.3 : is3D(renderer!) ? 1.35 : 1.25;
   const wide = px?.w ? px.w / cell : 0.8;
   return { x: at.x - field.left - cell * wide / 2, y: at.y - field.top - cell * (tall - 0.3), w: cell * wide, h: cell * tall };
 }

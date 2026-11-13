@@ -3291,7 +3291,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D of l21 and l34, normal and in build mode.
 - **Size:** 2
 
-## 346. [ ] Hedgerow 3D: one scale and one landscape (Cath at farmer scale, the river as a river) *(lane B, in progress)*
+## 346. [ ] Hedgerow 3D: one scale and one landscape (Cath at farmer scale, the river as a river) *(lane B, in progress)* *(slice 1, 2026-11-13 17:53 lane B: one scale. `CATH_3D_SCALE` 1.9 -> 1.15 and the farm's people at `FOLK_3D_SCALE` 1.25 (dogs and hens unchanged), so she stands about 1.2x a farmer (1.32 units against 1.08; she was 2.5x). main.ts's 3D bubble height 2.2 -> 1.35 cells. hedgerow-3dframe, camera3d, closeframe, depot3d and cath3d pass at P and D (35); shots scratchpad h346-a1-*. Left: her contact shadow and stand-point framed at P (she's out of frame on l21 at P), the river and ponds as one water surface with banks, the P coast haze, the measures)*
 - **Why:** `plan1113a/hedge-l21-3d-D`: Cath (140-260 x 435-625) is about 2.5x a farmer's height (780-820 x 430-500), a giant doll at the field's edge; the river is stacked cube tiles with hard vertical seams and square steps (250-500 x 375-530) and the duck pond a flat blue rectangle (650-930 x 535-590). At P (`hedge-l21-3d-P`) a white haze bank washes out 0-110 x 280-680 and Cath isn't in frame.
 - **Build:** 3D Cath at 1.1-1.2x a farmer with a contact shadow, on a stand-point on the field (a stile or gate) framed at both sizes; adjacent water cells merged into one surface with rounded, sloping banks and reeds (no vertical cube faces); ponds rimmed in mud and reeds; the coast's haze held behind the fence line at P.
 - **Accept:**

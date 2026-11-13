@@ -337,6 +337,9 @@ function hen(f: Folk): Rig {
   return { root, body, legs: [], arms: [], head, wing, h: L };
 }
 
+/** Plan item 346: the farm's people at a quarter over their model size (Cath stands about 1.2x them). */
+export const FOLK_3D_SCALE = 1.25;
+
 export class FolkMeshes {
   readonly group = new THREE.Group();
   private rigs = new Map<number, Rig>();
@@ -353,6 +356,8 @@ export class FolkMeshes {
       let r = this.rigs.get(f.id);
       if (!r) {
         r = bakeRig(f.kind === "dog" ? dog() : f.kind === "hen" ? hen(f) : person(f));
+        // Plan item 346: the farm's people a quarter larger, so Cath (scaled down to meet them) stands about 1.2x a farmer
+        if (f.kind !== "dog" && f.kind !== "hen") r.root.scale.setScalar(FOLK_3D_SCALE);
         this.rigs.set(f.id, r);
         this.group.add(r.root);
       }
