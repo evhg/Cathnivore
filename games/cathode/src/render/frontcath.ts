@@ -2032,6 +2032,19 @@ float reliefShade( vec2 uv ) {
         strand(ks, sx, 1.25 * wk, 1, true, ph);
       }
     }
+    // Plan item 319 slice 74: a soft side-swept fringe from the parting across the top of her forehead to her right
+    // temple (the side toward the lens), where it tucks into the curtain: the cap's edge met bare skin in one hard curve (the 11-13 critique's
+    // 'skull-cap hairline'). Kept above the brows (y 0.03+ until the temple) and just off the skull (`skullZ`).
+    {
+      const sk = (x: number, y: number, lift: number) => V(x, y, Math.max(skullZ(x, Math.min(y, 0.05)), 0.04) + lift);
+      strand([
+        capShape(0.84, 0.05, 0.02).applyMatrix4(capPlace),
+        sk(-0.008, 0.062, 0.005),
+        sk(-0.036, 0.053, 0.005),
+        sk(-0.058, 0.036, 0.005),
+        V(-0.073, 0.006, 0.05),
+      ], -1, 1.15, 0.25, false);
+    }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
     locks.setAttribute("uv", new THREE.Float32BufferAttribute(luv, 2));
