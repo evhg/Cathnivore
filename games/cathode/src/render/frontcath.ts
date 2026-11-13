@@ -784,9 +784,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 147: a tailored line, not a box: the shoulders slope and round off (no square corner), the
     // chest and back taper to a cinched waist, and below the belt the skirt flares to the hem.
     [0.105, 0.53], // collar base
-    [0.158, 0.505], // shoulder slope
-    [0.176, 0.47], // the rounded shoulder
-    [0.17, 0.42],
+    // Plan item 319 slice 73: 7 mm narrower at the shoulder (the 11-13 critique: wide boxy shoulders under a small head).
+    [0.151, 0.505], // shoulder slope
+    [0.168, 0.47], // the rounded shoulder
+    [0.164, 0.42],
     [0.158, 0.34], // chest
     [0.136, 0.24],
     [0.106, 0.12], // the belted waist
@@ -1003,7 +1004,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Epaulette: a flat strap across the shoulder to the collar.
     const ep = new THREE.BoxGeometry(0.1, 0.012, 0.045);
     ep.rotateZ(-0.38 * side);
-    ep.translate(0.135 * side, 0.488, -0.004);
+    ep.translate(0.129 * side, 0.488, -0.004);
     const epMesh = add(ep, coatMat, pelvis);
     epMesh.name = "epaulette";
     statics.push(epMesh);
@@ -1068,7 +1069,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // narrower front to back), not a plain cylinder.
   // Plan item 289: shorter and tapered (the same-person check: a long tube under the head read as a lollipop).
   // Plan item 319 slice 23: slimmer under the jaw (0.035 -> 0.031; the 11-12 05:20 critique read it as wide as the jaw).
-  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.047], [0.3, 0.037], [0.7, 0.0315], [1, 0.031]], Math.max(28, seg(32)), 0.86);
+  // Slice 73: a touch fuller again (0.031 -> 0.0335) now the head is 1.14: a thin neck under it read as a doll's.
+  const neck = turned(V(0, 0.27, -0.004), V(0, 0.41, 0.01), [[0, 0.049], [0.3, 0.0395], [0.7, 0.034], [1, 0.0335]], Math.max(28, seg(32)), 0.86);
   // Plan item 319: the neck in the jaw's shadow, darkest just under it and lit toward the collar (a bright, evenly
   // lit pipe made the head float); vertex colours, so the neck and ears stay one merged draw per bone.
   {
@@ -2104,7 +2106,8 @@ float reliefShade( vec2 uv ) {
     const tAt = 1 - 0.04 / foreA.distanceTo(wr);
     addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), gloveMat, parent);
   };
-  const shoulderR = V(-0.15, 0.25, -0.005);
+  // Plan item 319 slice 73: the shoulder joints 7 mm in, with the coat's narrower shoulder line.
+  const shoulderR = V(-0.143, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
   const handR = V(-0.085, 0.12, 0.185);
   const wristR = handR.clone().add(V(-0.012, -0.045, -0.03));
@@ -2221,7 +2224,7 @@ float reliefShade( vec2 uv ) {
     statics.push(fistMesh); // merged with its strap; the merged mesh keeps the name
   }
 
-  const shoulderL = V(0.15, 0.25, -0.005);
+  const shoulderL = V(0.143, 0.25, -0.005);
   // Plan item 319 slice 55: a relaxed hang, not a straight drop: the elbow eases back and out, the forearm turns in
   // and forward so the gloved hand rests by the front of her thigh (the front view showed one stiff line to the hip).
   const elbowL = V(0.208, -0.012, -0.05);
