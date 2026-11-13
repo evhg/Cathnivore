@@ -3202,7 +3202,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots at D (light and dark), plus a P check.
 - **Size:** 2
 
-## 338. [ ] NIGHT SHIFT: the class pick staged in a real place, with depth and a lit floor *(also check, carried 2026-11-12 by lane B: the pick's HOLLOWELL sign cut by the top at D (430-860 x 0-45) and the phone figure's softness (from 326/333))*
+## 338. [ ] NIGHT SHIFT: the class pick staged in a real place, with depth and a lit floor *(lane A, in progress)* *(also check, carried 2026-11-12 by lane B: the pick's HOLLOWELL sign cut by the top at D (430-860 x 0-45) and the phone figure's softness (from 326/333))*
 - **Why:**
   - `plan1112a/ns-play-D`: Cath stands before a bare brick wall and an empty grey floor (470-960 x 380-900).
   - The LUNA sign hangs unlit in mid-air (500-595 x 285-330), and the billboard is cut to "HOLLOWE" by the top edge (440-800 x 0-45).
