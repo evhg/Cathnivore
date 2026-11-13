@@ -3,7 +3,7 @@
 // the level id, so a level always looks the same and nothing needs downloading.
 
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
-import { plotLooks, type PlotLook } from "./plotlook";
+import { plotLooks, sameField, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, placeMargin, recordMargin, seeded, type Placed, type Rect } from "./margins";
 
@@ -580,7 +580,10 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       const inset = s * 0.12;
       const ground = plotKind(level, c, r);
       if (ground !== "water" && ground !== "high") {
-        if (!leadIn.has(`${c},${r}`)) paintPlot(ctx, x, y, s, looks.get(`${c},${r}`) ?? "earth", (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7);
+        // Plan item 345: a plot joins the plots of its field beside it (no gap, furrows running the run's length).
+        const join = (dc: number) => !leadIn.has(`${c + dc},${r}`) && sameField(level, c, r, c + dc, r);
+        const j: Join = { l: join(-1), r: join(1) };
+        if (!leadIn.has(`${c},${r}`)) paintPlot(ctx, x, y, s, looks.get(`${c},${r}`) ?? "earth", j.l || j.r || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, j);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -659,9 +662,20 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
 }
 
 /** Plan item 52: a plot drawn by what lies under it, so neighbouring beds differ. */
-function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number): void {
+/** Plan item 345: which sides of a plot run on into the same field. */
+interface Join { l: boolean; r: boolean }
+const NO_JOIN: Join = { l: false, r: false };
+
+/** A bed's box in a cell (inset `i` on every side not joined) and its corner radii [tl, tr, br, bl]. */
+function bedBox(x: number, y: number, s: number, i: number, rad: number, j: Join): { x: number; y: number; w: number; h: number; radii: number[] } {
+  const x0 = j.l ? x : x + i;
+  const x1 = j.r ? x + s : x + s - i;
+  return { x: x0, y: y + i, w: x1 - x0, h: s - i * 2, radii: [j.l ? 0 : rad, j.r ? 0 : rad, j.r ? 0 : rad, j.l ? 0 : rad] };
+}
+
+function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, j: Join = NO_JOIN): void {
   if (look === "earth" || look === "puddle") {
-    paintBed(ctx, x, y, s, across);
+    paintBed(ctx, x, y, s, across, j);
     if (look === "puddle") {
       // A puddle in one corner of the bed, catching the sky.
       const r01 = rng(seed);
@@ -694,10 +708,11 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   const w = s - i * 2;
   const rad = s * 0.18;
   const r01 = rng(seed);
+  const b = bedBox(x, y, s, i, rad, j);
   ctx.save();
   ctx.fillStyle = "rgba(40,30,10,0.14)";
   ctx.beginPath();
-  ctx.roundRect(x + i, y + i + s * 0.025, w, w, rad);
+  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, b.radii);
   ctx.fill();
   const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
   if (look === "stubble") {
@@ -711,7 +726,7 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   }
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.roundRect(b.x, b.y, b.w, b.h, b.radii);
   ctx.fill();
   ctx.clip();
   ctx.lineCap = "round";
@@ -769,11 +784,14 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
     }
   }
   ctx.restore();
-  ctx.strokeStyle = "rgba(255,255,230,0.18)";
-  ctx.lineWidth = Math.max(1, s * 0.02);
-  ctx.beginPath();
-  ctx.roundRect(x + i, y + i, w, w, rad);
-  ctx.stroke();
+  // Item 345: a lone bed keeps its pale rim; a field's beds run on with no seam between them.
+  if (!j.l && !j.r) {
+    ctx.strokeStyle = "rgba(255,255,230,0.18)";
+    ctx.lineWidth = Math.max(1, s * 0.02);
+    ctx.beginPath();
+    ctx.roundRect(x + i, y + i, w, w, rad);
+    ctx.stroke();
+  }
   // Plan item 78: about a third of the stubble beds have a stook or two of last year's sheaves standing in them,
   // so a block of plots reads as a farm at harvest's end, not a repeating tile.
   if (look === "stubble" && r01() < 0.38) {
@@ -822,22 +840,23 @@ function paintStook(ctx: CanvasRenderingContext2D, cx: number, base: number, h: 
  * Plan item 19: a plot is a tilled bed. A soft rim of turned earth, then furrows (a shadow under each ridge, a lit
  * crest on top), turned one way or the other so a block of plots reads as a patchwork, not a grid.
  */
-function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean): void {
+function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean, j: Join = NO_JOIN): void {
   const i = s * 0.1;
   const w = s - i * 2;
   const rad = s * 0.18;
+  const b = bedBox(x, y, s, i, rad, j);
   ctx.save();
   // Shadow where the bed sits a touch below the grass, then the soil.
   ctx.fillStyle = "rgba(40,30,10,0.16)";
   ctx.beginPath();
-  ctx.roundRect(x + i, y + i + s * 0.025, w, w, rad);
+  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, b.radii);
   ctx.fill();
   const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
   g.addColorStop(0, "rgba(128,92,52,0.26)");
   g.addColorStop(1, "rgba(96,66,36,0.32)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.roundRect(b.x, b.y, b.w, b.h, b.radii);
   ctx.fill();
   ctx.clip();
   const n = 3;
@@ -847,8 +866,9 @@ function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number
     const seg = (dx: number, dy: number) => {
       ctx.beginPath();
       if (across) {
-        ctx.moveTo(x + i + s * 0.06, y + p + dy);
-        ctx.lineTo(x + i + w - s * 0.06, y + p + dy);
+        // A field's furrows run on through the joined sides.
+        ctx.moveTo(j.l ? x - 1 : x + i + s * 0.06, y + p + dy);
+        ctx.lineTo(j.r ? x + s + 1 : x + i + w - s * 0.06, y + p + dy);
       } else {
         ctx.moveTo(x + p + dx, y + i + s * 0.06);
         ctx.lineTo(x + p + dx, y + i + w - s * 0.06);
