@@ -87,10 +87,10 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
   group.rotation.y = yaw;
   group.visible = false;
   const disposables: Array<{ dispose(): void }> = [];
-  const fading: Array<{ mat: THREE.Material & { opacity: number }; base: number }> = [];
-  const fade = <M extends THREE.Material & { opacity: number }>(mat: M): M => {
+  const fading: Array<{ mat: THREE.Material & { opacity: number }; base: number; decal?: boolean }> = [];
+  const fade = <M extends THREE.Material & { opacity: number }>(mat: M, decal = false): M => {
     mat.transparent = true;
-    fading.push({ mat, base: mat.opacity });
+    fading.push({ mat, base: mat.opacity, decal });
     disposables.push(mat);
     return mat;
   };
@@ -162,15 +162,37 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
     fade(new THREE.MeshBasicMaterial({ map, color, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   const halo = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(0.9, 0.9)), additive(glowTex, BULB.clone().multiplyScalar(1.6), 0.85)));
   halo.position.set(BX, BY, z0 + 0.36);
-  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), additive(washTex, BULB, 0.8)));
+  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), additive(washTex, BULB, 1.0)));
   wash.position.set(BX - 0.3, BY - 0.2, z0 + 0.25);
-  const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), additive(washTex, BULB, 0.6)));
+  const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), additive(washTex, BULB, 0.85)));
   pool.rotation.x = -Math.PI / 2;
   pool.position.set(BX - 0.4, 0.02, z0 + 1.1);
-  const stepLit = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(DW + 0.7, 0.5)), additive(washTex, BULB, 0.5)));
+  const stepLit = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(DW + 0.7, 0.5)), additive(washTex, BULB, 0.85)));
   stepLit.rotation.x = -Math.PI / 2;
   stepLit.position.set(side, 0.165, z0 + 0.3);
-  for (const m of [halo, wash, pool, stepLit]) m.renderOrder = 2;
+  // A broad, soft warm fill on the cobbles toward the lens, so the near floor she stands on isn't black. Kept dim
+  // and set back from her feet, so her contact shadow lands on floor the fill doesn't wash out.
+  const nearPool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(5.0, 3.0)), additive(washTex, BULB.clone().lerp(new THREE.Color(1, 1, 1), 0.2), 0.22)));
+  nearPool.rotation.x = -Math.PI / 2;
+  nearPool.position.set(-0.4, 0.015, z0 + 2.4);
+  for (const m of [halo, wash, pool, stepLit, nearPool]) m.renderOrder = 2;
+
+  // Her contact shadow: an ambient-occlusion blot right under her boots, darker than the lit floor round it, so she
+  // meets the ground instead of floating. Multiplied onto the floor (a dark normal-blend decal drawn last).
+  const aoTex = radial([
+    [0, 0.7],
+    [0.3, 0.42],
+    [0.55, 0.16],
+    [0.8, 0.03],
+    [1, 0],
+  ]);
+  disposables.push(aoTex);
+  const ao = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(0.72, 0.42)), fade(new THREE.MeshBasicMaterial({ map: aoTex, color: 0x000000, transparent: true, opacity: 0.55, depthWrite: false, fog: false }), true)));
+  ao.rotation.x = -Math.PI / 2;
+  // Tucked right under her boots (slightly back), so her coat and boots hide its body and only the forward contact
+  // fringe reads — a soft shadow at her feet, not a mat laid in front of her.
+  ao.position.set(0, 0.02, -0.08);
+  ao.renderOrder = 3;
 
   let shown = -1;
   return {
@@ -182,8 +204,9 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
       shown = k;
       for (const f of fading) {
         f.mat.opacity = f.base * k;
-        // Settled, the solid parts draw opaque (sorted and depth-written like the street).
-        if (f.mat.blending !== THREE.AdditiveBlending && f.mat.transparent !== k < 0.999) {
+        // Settled, the solid parts draw opaque (sorted and depth-written like the street); the additive glows and
+        // the normal-blend decals (the contact shadow) must always stay transparent, or they draw as solid panels.
+        if (!f.decal && f.mat.blending !== THREE.AdditiveBlending && f.mat.transparent !== k < 0.999) {
           f.mat.transparent = k < 0.999;
           f.mat.depthWrite = k >= 0.999;
           f.mat.needsUpdate = true;
