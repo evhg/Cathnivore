@@ -3311,7 +3311,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D, locked and just unlocked.
 - **Size:** 1
 
-## 348. [ ] Hedgerow: "Coming up" as a readable forecast, not a strip of micro-icons
+## 348. [ ] Hedgerow: "Coming up" as a readable forecast, not a strip of micro-icons *(lane B, in progress)*
 - **Why:** `plan1113a/hedge-l21-2d-D` (1120-1410 x 595-695): the next five rounds are 20 px vehicle discs with unlabelled numbers (433, 245, 381...) and thin coloured bars; "Still unanswered" is five unlabelled 18 px glyphs (1250-1380 x 595-617); same at `hedge-l34-2d-D` (1120-1410 x 545-670); at P the forecast isn't shown (`hedge-l21-2d-P`).
 - **Build:** each coming round a small card: its number, the lead vehicle's sprite at 32 px+, its name, a count with its unit ("433 parcels"), its trait as a word chip (Fast, Flies, Armoured) in the bar's colour; each "Still unanswered" glyph a labelled chip naming the threat and its answer ("Flyers · Radio Mast"); at P the NEXT tab opens the same forecast as a sheet.
 - **Accept:**
