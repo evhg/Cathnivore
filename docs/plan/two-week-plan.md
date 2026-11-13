@@ -3330,7 +3330,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D, light and dark.
 - **Size:** 2
 
-## 350. [ ] Portfolio: Cath grounded in the hero, not a cut-out fading at the waist
+## 350. [ ] Portfolio: Cath grounded in the hero, not a cut-out fading at the waist *(lane B, in progress)*
 - **Why:** `plan1113b/portfolio-D` (1175-1290 x 530-760): Cath floats in empty black below the product tiles, her body dissolving into a gradient from about y 700, standing on and touching nothing. The four tiles (795-1340 x 155-502) are small, 263x163 each. In `portfolio-P` she floats the same way (245-355 x 160-380), and the strip shows one card plus a 10 px sliver of the next (205-215 x 130-235).
 - **Build:** stage her in the studio, at full length or at a desk or easel holding the product screens, with a floor line, a contact shadow and a hand pointing at a screen. At D the screens grow to 340 px+ wide. At P she stands in front of the strip, which shows 1.4 cards (a clear peek) or a whole second card.
 - **Accept:**
