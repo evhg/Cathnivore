@@ -103,11 +103,19 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   // (monochrome until picked, then lit in the class's colour). One per animation frame, after the pick's first
   // frames, so opening the pick doesn't wait on five renders; at once for a still.
   let iconRaf = 0;
+  let iconTries = 0;
   const gears = [...list.querySelectorAll<HTMLElement>(".cp-opt-gear")];
   const swapIcon = () => {
     const gear = gears.shift();
     if (!gear) return;
     const url = hooks.gunIcon?.(gear.dataset.weapon ?? "");
+    // Plan item 334: the pick opens before the street's renderer is up, so a gun that can't be shot yet waits its
+    // turn again (it kept the flat stencil for good).
+    if (!url && iconTries++ < 40) {
+      gears.unshift(gear);
+      iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapIcon)), 500);
+      return;
+    }
     if (url) {
       const img = document.createElement("img");
       img.className = "cp-opt-gun";
@@ -251,6 +259,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
 
   let countRaf = 0;
   let reelTimer = 0;
+  let reelRetry = 0;
+  let reelTries = 0;
   function renderDetail(): void {
     const cls = selected;
     const def = CLASSES[cls];
@@ -332,6 +342,19 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
           }, REEL_MS);
         }
       } else {
+        // Plan item 334: no reel yet (the street's renderer comes up after the pick opens): the stencil stands in and
+        // the panel redraws with the lit gun as soon as it can be shot, if the class is still the one shown.
+        if (hooks.gunReel) {
+          const want = cls;
+          const wait = () => {
+            if (done || selected !== want || reelTries++ >= 40) return;
+            // A reel once the renderer can shoot it (cached, so the redraw takes the same one), else try again.
+            if (hooks.gunReel?.(w.cls, cls, still)) renderDetail();
+            else reelRetry = window.setTimeout(wait, 500);
+          };
+          clearTimeout(reelRetry);
+          reelRetry = window.setTimeout(wait, 500);
+        }
         const turn = el("span", "cp-prop-turn", prop);
         const svg = weaponArtSvg(w.cls);
         for (let i = 0; i < PROP_LAYERS; i++) {
@@ -488,6 +511,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   function cleanup(): void {
     cancelAnimationFrame(countRaf);
     clearInterval(reelTimer);
+    clearTimeout(reelRetry);
     clearTimeout(iconTimer);
     cancelAnimationFrame(iconRaf);
     clearTimeout(holdTimer);

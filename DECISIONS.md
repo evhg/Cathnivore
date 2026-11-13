@@ -523,3 +523,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-13 lane B: item 282's shared hexes put Hollowell's stacks beside the producer when that lets them grow, rather than shrinking the producers below their 25 px floor (board-scales).
 - 2026-11-13 lane B: Runnel's phone Cath is clipped with a polygon, not inset(): runnel-one-cath's visibility check treats an inset clip on an ancestor as the sidebar's hidden portrait.
 - 2026-11-13 09:20 lane A (item 319): the D pick's jaw seam is fixed in the painted shade (lighter jaw band, wider under-jaw shade), not the mesh: three mesh changes to the chin and lift showed nothing visible, and the fuller lower cheek that rounds the far jaw widens it.
+- 2026-11-13 lane B: NIGHT SHIFT's pick retries its lit gun shots (500 ms, up to 20 s) rather than shooting them when the scene signals ready: the retry is local to classpick.ts and needs no new hook on the scene.
