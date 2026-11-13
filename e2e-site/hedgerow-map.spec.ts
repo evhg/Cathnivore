@@ -548,3 +548,57 @@ test('plan item 274: each act shows its landmark props, clear of every stop and 
     } else expect(a.count, `act ${a.n} props`).toBeGreaterThanOrEqual(3)
   }
 })
+
+// Plan item 347: the next act is a misty vista in its own colours, not a graphite smear: its banner's mean saturation
+// half the open act's or more, its sign (with Cath's face) whole on the screen and its words at 4.5:1.
+test('plan item 347: the next act keeps its colours under the mist, its sign readable', async ({ page }) => {
+  await seed(page, 20)
+  await page.evaluate(() => document.fonts.ready)
+  const sat = async (sel: string) => {
+    await page.evaluate((s) => document.querySelector(s)!.scrollIntoView({ block: 'center' }), sel)
+    await page.waitForTimeout(400)
+    const b = (await page.locator(sel).boundingBox())!
+    const png = (await page.screenshot({ clip: { x: b.x, y: b.y + b.height * 0.25, width: b.width, height: b.height * 0.5 } })).toString('base64')
+    return page.evaluate(async (png) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${png}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, c.width, c.height).data
+      let s = 0
+      for (let i = 0; i < d.length; i += 4) {
+        const mx = Math.max(d[i]!, d[i + 1]!, d[i + 2]!)
+        const mn = Math.min(d[i]!, d[i + 1]!, d[i + 2]!)
+        s += mx ? (mx - mn) / mx : 0
+      }
+      return s / (d.length / 4)
+    }, png)
+  }
+  const open = await sat('#levels li[data-act="2"] .act-head')
+  const next = await sat('#levels li[data-next] .act-head')
+  expect(next / open, `${next} vs ${open}`).toBeGreaterThanOrEqual(0.5)
+  const sign = page.locator('#levels li[data-next] .act-next-note')
+  await expect(sign.locator('.act-fog-face svg')).toHaveCount(1)
+  await sign.scrollIntoViewIfNeeded()
+  const vp = page.viewportSize()!
+  const r = (await sign.boundingBox())!
+  expect(r.x >= 0 && r.y >= 0 && r.x + r.width <= vp.width && r.y + r.height <= vp.height).toBe(true)
+  const ratio = await sign.evaluate((e) => {
+    const lin = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    // rgb(...) in 0-255 or color(srgb ...) in 0-1
+    const lum = (c: string) => {
+      const n = c.match(/[\d.]+/g)!.map(Number)
+      const k = c.startsWith('color(') ? 1 : 255
+      return 0.2126 * lin(n[0]! / k) + 0.7152 * lin(n[1]! / k) + 0.0722 * lin(n[2]! / k)
+    }
+    const words = e.querySelector('.act-fog-words')!
+    const a = lum(getComputedStyle(words).color)
+    const b = lum(getComputedStyle(e).backgroundColor)
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+  })
+  expect(ratio).toBeGreaterThanOrEqual(4.5)
+})
