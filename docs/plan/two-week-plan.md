@@ -3405,7 +3405,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D before and after.
 - **Size:** 1
 
-## 364. [ ] The bugs from the 2026-11-13 18:30 critique, fixed as one batch *(lane B, in progress)*
+## 364. [ ] The bugs from the 2026-11-13 18:30 critique, fixed as one batch *(lane B, in progress)* *(slice 1, 2026-11-13 18:40 lane B: /games/'s 18+ badge sat under the poster's scrim (z 2), so it read dark on dark; it now stands at the logotype's layer and at 12 px (was 11), cream on red at P and D. Runnel's Up next card no longer repeats the day: 'Up next · Friday' keeps its line and the title drops 'Fri, Nov 13' ('Daily #48', 'Hard'); its body text is 15 px at D. The runnel lesson specs and the /games/ poster, stall and cards specs pass (47; critique104's 1 s 'landed' check failed once under load and passed alone). Shots scratchpad badge-*, upnext-*. Not reproduced yet: the cut 'Late Harvest Fa' (a random hand))*
 - **Build:** (check each first; shots `e2e/screenshots/plan1113b`)
   - **Cathnivore:**
     - `cath-game-D`: the hand's "Buy / Late Harvest Fa" cut off (685-780 x 838-855); the Injunction card under Supply, "njunction" and "FREE" clipped (1215-1285 x 800-845), possibly an item 312 regression.

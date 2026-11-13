@@ -1510,6 +1510,8 @@ body {
    (font-size 0: still the link's accessible name), the badges stay, pinned to the art's corner. */
 .hero-game-name { font-size: 0; line-height: 0; }
 .hero-game-name .badge { position: absolute; top: 8px; right: 8px; line-height: 1.2; }
+/* Plan item 364: the badge stands over the art's scrim (under it the 18+ read dark on dark), at 12 px */
+.hero-game-name .badge { z-index: var(--z-poster-logo); font-size: 0.75rem; }
 .hero-game-hook {
   font-size: 0.875rem;
   line-height: 1.3;
