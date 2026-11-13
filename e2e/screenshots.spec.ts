@@ -12,6 +12,8 @@ async function shoot(page: import('@playwright/test').Page, projectName: string,
 
 test('title, setup, game, scene, end and rules screens', async ({ page }, testInfo) => {
   const project = testInfo.project.name
+  // Ten screens in one test: 26 s alone, so 30 s ran out under the gates' parallel load (2026-11-13). A timing budget.
+  test.setTimeout(90_000)
 
   await page.goto('/')
   // .title-cath fades/rises in (title.css's title-fade-rise, a 500ms delay + 900ms animation) — wait for
