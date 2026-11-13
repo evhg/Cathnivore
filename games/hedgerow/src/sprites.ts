@@ -1519,7 +1519,7 @@ interface VehicleOpts {
 /** Plan item 285: set while a vehicle on an up/down run is drawn, so `vehicle` draws it from above. */
 let fromAbove = false;
 /** The kinds drawn by `vehicle` alone, which have a from-above view; the rest keep their side view on any run. */
-export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter"]);
+export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter", "wrapped", "influencer"]);
 
 /** A vehicle seen from above, nose to the right, centred on (x, y): its roof, cab and windscreen, the livery down
  *  both sides, the label on the roof, wheels at the corners and headlights at the nose. */
@@ -1702,14 +1702,16 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
         // Bubble wrap: a glossy, lumpy shell over the van.
         ctx.fillStyle = "rgba(210,236,255,0.38)";
         ctx.strokeStyle = "rgba(120,170,210,0.9)";
+        // Plan item 285: from above, the shell is an oval over the roof (centred on the body, not over it).
+        const wy = fromAbove ? 0 : -s * 0.2;
         ctx.beginPath();
-        ctx.ellipse(0, -s * 0.2, s * 0.38, s * 0.24, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, wy, s * 0.38, fromAbove ? s * 0.2 : s * 0.24, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = "rgba(255,255,255,0.7)";
         for (let i = 0; i < 9; i++) {
           ctx.beginPath();
-          ctx.arc(-s * 0.28 + (i % 5) * s * 0.14, -s * 0.3 + Math.floor(i / 5) * s * 0.14, s * 0.035, 0, Math.PI * 2);
+          ctx.arc(-s * 0.28 + (i % 5) * s * 0.14, wy - s * 0.1 + Math.floor(i / 5) * s * 0.14, s * 0.035, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.strokeStyle = INK;
@@ -1934,22 +1936,26 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       // Plan item 81: a pink hatchback with a ring light on a pole through the sunroof, as in 3D and in the round's
       // copy (fleet.ts); it was a rider on an e-scooter, which is the courier that scoots out when it pops.
       vehicle(ctx, 0, 0, s, tt, { len: 0.46, h: 0.24, body: "#f27ab0", stripe: "#ffd6ea", wheels: 2 });
-      ctx.strokeStyle = INK;
-      ctx.lineWidth = Math.max(1.5, s * 0.025);
-      ctx.beginPath();
-      ctx.moveTo(-s * 0.04, -s * 0.36);
-      ctx.lineTo(-s * 0.04, -s * 0.56);
-      ctx.stroke();
+      // Plan item 285: from above, the pole is hidden under its ring light, glowing over the sunroof.
+      const ry = fromAbove ? 0 : -s * 0.66;
+      if (!fromAbove) {
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = Math.max(1.5, s * 0.025);
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.04, -s * 0.36);
+        ctx.lineTo(-s * 0.04, -s * 0.56);
+        ctx.stroke();
+      }
       ctx.strokeStyle = "rgba(255,240,200,0.95)";
       ctx.lineWidth = Math.max(2, s * 0.04);
       ctx.beginPath();
-      ctx.arc(-s * 0.04, -s * 0.66, s * 0.1, 0, Math.PI * 2);
+      ctx.arc(-s * 0.04, ry, s * 0.1, 0, Math.PI * 2);
       ctx.stroke();
-      const glow = ctx.createRadialGradient(-s * 0.04, -s * 0.66, 0, -s * 0.04, -s * 0.66, s * 0.42);
+      const glow = ctx.createRadialGradient(-s * 0.04, ry, 0, -s * 0.04, ry, s * 0.42);
       glow.addColorStop(0, "rgba(255,200,230,0.45)");
       glow.addColorStop(1, "rgba(255,200,230,0)");
       ctx.fillStyle = glow;
-      ctx.fillRect(-s * 0.46, -s * 1.08, s * 0.84, s * 0.84);
+      ctx.fillRect(-s * 0.46, ry - s * 0.42, s * 0.84, s * 0.84);
       break;
     }
     case "blimp": {

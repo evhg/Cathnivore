@@ -511,3 +511,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-13 01:50 lane A (item 319): the neck's shade gains a side falloff from the vertex's angle round the neck's own axis (not the view), so it rounds from every framing and stays one merged draw.
 - 2026-11-13 02:15 lane A (item 319): the long hair sheet's inside takes the hood lining's shade (x0.4 on back faces): the side of the curtain toward her neck is in shadow, and lit like the outside it drew grey jagged strands beside her cheek.
 - 2026-11-13 lane B: item 285's from-above vehicles are a variant of the shared `vehicle` drawing (same length, colours and livery), not 39 new sprites; kinds with side-view extras keep the side view until each gets its own from-above detail.
+- 2026-11-13 lane B: don't run prettier on game sources: the repo isn't prettier-formatted (lint is eslint only), and one run reflowed 1,400 lines of sprites.ts (caught and reverted before commit).
