@@ -3301,7 +3301,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hedgerow-3dframe, camera3d, closeframe, depot3d pass; shots P and D of l21 and l34 in 3D.
 - **Size:** 2
 
-## 347. [ ] Hedgerow: the next act as a painted reveal, not a greyed smear
+## 347. [ ] Hedgerow: the next act as a painted reveal, not a greyed smear *(lane B, in progress)*
 - **Why:** `plan1113a/hedge-menu-P`: the locked next act under the sheet (0-390 x 695-770) is a washed-out band whose banner and props are illegible ghosts. `hedge-menu-D`: the "Beyond the hedge · Act 4" card is cut by the bottom edge (527-912 x 853-900) and the Rivermead header (145-440 x 810-855) sits over the same grey wash.
 - **Build:** each locked act a misty vista in its own palette at 60-70% saturation behind a soft fog, a closed five-bar gate where the lane enters it, its name on a hanging sign at full contrast and a one-line tease in Cath's voice with her small portrait; on unlock the gate swings open and the fog lifts over 800 ms (a fade under reduced motion); the "Beyond the hedge" card laid out fully on screen.
 - **Accept:**
