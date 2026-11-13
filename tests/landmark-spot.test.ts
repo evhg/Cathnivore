@@ -42,3 +42,27 @@ describe('event dressing spot', () => {
                 }
       })
 })
+
+// Plan item 341: the campaign map and the board draw one landmark per region, and a roomy hex keeps room for it at
+// about a quarter of its height.
+import { LANDMARKS } from '../src/content/campaignMapLayout'
+import { BOARD_LANDMARKS as BL, LANDMARK_ART_H, landmarkMinScale } from '../src/ui/landmarkSpot'
+import { pieceLayout as layout341 } from '../src/ui/pieceLayout'
+import { pickSpot as pick341 } from '../src/ui/landmarkSpot'
+describe('item 341', () => {
+  it('the board and the campaign map agree on every region they share', () => {
+    for (const [id, lm] of Object.entries(LANDMARKS)) expect(BL[id as keyof typeof BL]).toBe(lm.kind)
+  })
+  it('the readable size is 56 px+ at D and 26 px+ on a phone', () => {
+    for (const hexPx of [112, 120]) expect(landmarkMinScale(hexPx) * LANDMARK_ART_H * (hexPx / 92)).toBeGreaterThanOrEqual(55.9)
+    for (const hexPx of [55, 66, 75]) expect(landmarkMinScale(hexPx) * LANDMARK_ART_H * (hexPx / 92)).toBeGreaterThanOrEqual(25.9)
+  })
+  it('a typical held hex leaves the landmark its readable size', () => {
+    for (const hexPx of [66, 112]) {
+      const t = layout341({ outlets: 3, buyouts: 0, doubt: 0, producers: 1, stallCounts: [1], scheme: false, labelWidth: 11 * 8.6 + 16, badge: true }, hexPx)
+      const s = pick341(t.rects)
+      expect(s).not.toBeNull()
+      expect(s!.scale).toBeGreaterThanOrEqual(landmarkMinScale(hexPx) - 1e-9)
+    }
+  })
+})

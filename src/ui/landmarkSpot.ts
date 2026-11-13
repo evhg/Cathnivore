@@ -32,7 +32,10 @@ const FACE = R * 0.96 - 3
 /** Half the landmark art's extent (24-unit box, its strokes and the mill's sails to 13) at scale 1. */
 const ART_HALF = 13
 /** Sizes tried, largest first: a crowded tile takes a smaller landmark rather than none. */
-export const LANDMARK_SCALES = [1.5, 1.25, 1.0, 0.8] as const
+// Plan item 341: up to 2.4x, so a landmark stands about a quarter of the hex tall, as the campaign map draws it.
+export const LANDMARK_SCALES = [2.4, 2.2, 2, 1.8, 1.6, 1.4, 1.25, 1.0, 0.8] as const
+/** The art's drawn height at scale 1 (its 24-unit box, the strokes and the ground shadow), in tile units. */
+export const LANDMARK_ART_H = 26
 const PAD = 2
 /** Flank spots round the middle column, best first: low on each side, then the upper flanks, then the sides. */
 export const SPOTS: ReadonlyArray<{ x: number; y: number }> = [
@@ -94,14 +97,34 @@ export function landmarkSpot(kinds: number, stalls: number): { x: number; y: num
   return pickSpot([clusterBox(kinds), stallBox(stalls)].filter((b): b is Box => !!b))
 }
 
-/** The same choice against measured boxes (tile units round the hex centre): Map.tsx refines with the real pieces. */
-export function pickSpot(taken: readonly Box[]): { x: number; y: number; scale: number } | null {
-  for (const scale of LANDMARK_SCALES)
-    for (const s of SPOTS) {
+/** Plan item 341: past the named flanks, every point of a grid over the face, outermost first, so a large
+ *  landmark finds the free sector the pieces leave wherever it is. */
+const GRID: ReadonlyArray<{ x: number; y: number }> = (() => {
+  const out: { x: number; y: number }[] = []
+  for (let y = -64; y <= 64; y += 8) for (let x = -72; x <= 72; x += 8) if (insideHex(x, y)) out.push({ x, y })
+  return out.sort((a, b) => Math.hypot(b.x, b.y) - Math.hypot(a.x, a.y) || a.x - b.x || a.y - b.y)
+})()
+const CANDIDATES = [...SPOTS, ...GRID]
+
+/** The same choice against measured boxes (tile units round the hex centre): Map.tsx refines with the real pieces.
+ *  `minScale` (plan item 341) refuses a landmark drawn smaller than that. */
+export function pickSpot(taken: readonly Box[], minScale = 0): { x: number; y: number; scale: number } | null {
+  for (const scale of LANDMARK_SCALES) {
+    if (scale < minScale - 1e-9) break
+    for (const s of CANDIDATES) {
       const b = boxAt(s, scale)
       if (boxInside(b) && !taken.some((t) => overlaps(b, t))) return { ...s, scale }
     }
+  }
   return null
+}
+
+/** Plan item 341: the smallest landmark scale that reads at a glance on a hex drawn `hexPx` CSS px centre to
+ *  vertex: about a quarter of the hex's height, 26 px at least. */
+export function landmarkMinScale(hexPx: number): number {
+  const pxPerUnit = Math.max(1, hexPx) / R
+  const target = Math.max(26, Math.min(58, hexPx * 0.5))
+  return target / (LANDMARK_ART_H * pxPerUnit)
 }
 
 /** The market event's dressing (Map.tsx, plan item 144) round its anchor at scale 1: the Great Glut's heap and the

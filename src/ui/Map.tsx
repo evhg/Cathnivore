@@ -949,20 +949,6 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 keeps its colour (the wash left held hexes hazy beside a freed one). */}
             {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.9)} fill="none" stroke="var(--sea)" strokeWidth={HEX_R * 0.12} strokeLinejoin="round" opacity={gripStage(r) >= 3 ? 0.42 : 0.3} pointerEvents="none" />}
             {wilted.has(id) && !r.liberated && <polygon className="grip-wilt" data-wilt="true" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--ink)" opacity={0.14} pointerEvents="none" />}
-            {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
-                map's art, on the first flank of the tile its pieces leave clear. */}
-            {(() => {
-              const spot = pickSpot(tray.rects)
-              if (!spot) return null
-              const grip = gripStage(r)
-              const edge = atTheEdge(r)
-              return (
-                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
-                  <Landmark kind={BOARD_LANDMARKS[id]} />
-                  <GripProps stage={grip} edge={edge} />
-                </g>
-              )
-            })()}
             {r.liberated && (
               <polygon
                 className="liberate-bloom"
@@ -1000,6 +986,21 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 />
               </g>
             )}
+            {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign
+                map's art, on the first flank of the tile its pieces leave clear. Plan item 341: over the plastic film, so a
+                held region's landmark keeps its full ink. */}
+            {(() => {
+              const spot = pickSpot(tray.rects)
+              if (!spot) return null
+              const grip = gripStage(r)
+              const edge = atTheEdge(r)
+              return (
+                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
+                  <Landmark kind={BOARD_LANDMARKS[id]} />
+                  <GripProps stage={grip} edge={edge} />
+                </g>
+              )
+            })()}
             <PressureRing
               x={x}
               y={y}

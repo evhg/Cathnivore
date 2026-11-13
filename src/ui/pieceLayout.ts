@@ -4,7 +4,7 @@
 // to the hex as it renders on screen: ornaments (the .99 tag, the SOLD sign) go first, then the pieces shrink, and
 // a count never renders under 11 px. Pure, so a unit test proves no two slots overlap; Map.tsx draws from it.
 
-import { pickSpot } from './landmarkSpot'
+import { landmarkMinScale, pickSpot } from './landmarkSpot'
 
 export const TILE_R = 92
 /** The tile face less a margin, as landmarkSpot.ts measures it. */
@@ -138,13 +138,16 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   return { rects: out, enemyY, producerY }
 }
 
-function fits(rects: PieceRect[]): boolean {
+function fits(rects: PieceRect[], lmMin = 0): boolean {
   const pieces = rects.filter((r) => r.kind !== 'label' && r.kind !== 'badge')
   if (!pieces.every(rectInside)) return false
   for (let a = 0; a < rects.length; a++) for (let b = a + 1; b < rects.length; b++) if (rectsOverlap(rects[a]!, rects[b]!)) return false
-  // Plan item 172: the pieces grow only while the tile's landmark still has a spot (Map.tsx's pickSpot).
-  return pickSpot(rects) !== null
+  // Plan item 172: the pieces grow only while the tile's landmark still has a spot (Map.tsx's pickSpot); item 341:
+  // a spot for it at its readable size (`lmMin`) when the pieces can keep their own floors beside it.
+  return pickSpot(rects, lmMin) !== null
 }
+
+const memo = new Map<string, PieceTray>()
 
 /**
  * The tray for a tile drawn `hexPx` CSS px from centre to vertex. Tries full size with ornaments (only on a hex
@@ -152,6 +155,18 @@ function fits(rects: PieceRect[]): boolean {
  * MIN_COUNT_PX on screen whatever the scale.
  */
 export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
+  const key = `${JSON.stringify(input)}@${hexPx.toFixed(2)}`
+  const hit = memo.get(key)
+  if (hit) return hit
+  if (memo.size > 400) memo.clear()
+  // Plan item 341: first with room for the landmark at its readable size, the pieces kept to their floors; then as
+  // before, the landmark taking whatever size is left.
+  const t = layout(input, hexPx, landmarkMinScale(hexPx)) ?? layout(input, hexPx, 0)!
+  memo.set(key, t)
+  return t
+}
+
+function layout(input: PieceInput, hexPx: number, lmMin: number): PieceTray | null {
   const unitsPerPx = TILE_R / Math.max(1, hexPx)
   const countR = Math.max(4.6, (MIN_COUNT_PX * unitsPerPx) / 1.25)
   const badgeK = Math.max(1, (MIN_BADGE_PX * unitsPerPx) / 10)
@@ -166,28 +181,31 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   // The largest badge that fits, each tried with the largest pieces that still fit beside it.
   if (input.badge)
     for (let k = badgeK; k > 1 + 1e-9; k = Math.round((k - 0.05) * 100) / 100)
-      for (let scale = start; scale >= stallFloor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
+      for (let scale = start; scale >= (lmMin > 0 ? Math.max(1, stallFloor) : stallFloor) - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
         for (const ornaments of tryOrnaments) {
           const p = place(input, scale, ornaments, countR, k)
-          if (fits(p.rects)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start)
+          if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin)
         }
-  for (let scale = start; scale >= 0.35 - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
+  // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
+  const floor = lmMin > 0 ? Math.max(1, stallFloor) : 0.35
+  for (let scale = start; scale >= floor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
     for (const ornaments of tryOrnaments) {
       const p = place(input, scale, ornaments, countR)
-      if (fits(p.rects)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start)
+      if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin)
     }
+  if (lmMin > 0) return null
   const scale = 0.35
   return { ...place(input, scale, false, countR), scale, enemyScale: scale, ornaments: false, countR, badgeK: 1 }
 }
 
 /** Plan item 282: with the producers placed at the tray's scale, Hollowell's stacks take the largest scale up to
  *  `start` (the hex's own ceiling) that still fits beside them. */
-function grow(input: PieceInput, t: PieceTray, start: number): PieceTray {
+function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number): PieceTray {
   if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return t
   for (let e = start; e > t.scale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
     for (const side of [false, true]) {
       const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side)
-      if (fits(p.rects)) return { ...t, ...p, enemyScale: e }
+      if (fits(p.rects, lmMin)) return { ...t, ...p, enemyScale: e }
     }
   return t
 }

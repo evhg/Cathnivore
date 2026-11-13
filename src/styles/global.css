@@ -3472,6 +3472,8 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
   .setup-cath-says { padding: 4px 8px; font-size: var(--fs-label); }
 }
 
+/* Plan item 341: the board's landmark stands on the tile as the campaign map's does, on a soft ground shadow. */
+.board-landmark { filter: drop-shadow(0 1.5px 0.5px color-mix(in srgb, var(--ink) 26%, transparent)); }
 /* Plan item 76: the board lives quietly: the mill's sails turn, the boat at the docks bobs, the lighthouse lamp
    breathes, gulls glide, reeds and bunting sway. Board only (the campaign map stays still); parked under reduced
    motion and the no-animations setting. */
