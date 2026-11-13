@@ -11,6 +11,7 @@ import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometr
 import { TessellateModifier } from "three/addons/modifiers/TessellateModifier.js";
 import { CATH_HERO } from "../game/armdress";
 import { LAYER_NO_REFLECT } from "./reflection";
+import { buildGunDisplay } from "../game/viewmodel";
 
 /** Plan item 140: the painted face's expressions (the title's smirk, the class pick's). */
 export type FaceExpression = "smirk" | "determined" | "wink";
@@ -3114,39 +3115,22 @@ float reliefShade( vec2 uv ) {
   const RIFLE_HOLD = 0.15;
   const rifle = new THREE.Group();
   rifle.name = "prop-rifle";
-  addS(
-    mergeGeos([
-      box(0.03, 0.2, 0.05, 0, 0.06, 0), // the receiver
-      rod(0.009, 0.16, 0.68), // the barrel
-      rod(0.014, 0.6, 0.72, 0, 10), // the suppressor
-      rod(0.017, 0.16, 0.34, 0.045, 12), // the scope tube
-      rod(0.022, 0.32, 0.36, 0.045, 12), // its objective bell
-      box(0.012, 0.03, 0.035, 0, 0.21, 0.025), // the mounts
-      box(0.012, 0.03, 0.035, 0, 0.3, 0.025),
-      box(0.022, 0.06, 0.04, 0, -0.02, -0.035), // the pistol grip
-    ]),
-    gunMetalH,
-    rifle,
-  );
-  // Plan item 247: a profiled stock (it stands beside her face on the pick, where a box read as a plank): a slim
-  // wrist off the receiver, the comb rising to a cheek riser, a straight heel, the belly sweeping down to the toe,
-  // rounded edges; and a round fore-end tapering to the muzzle. +z is the scope's side, -z the grip's.
-  const stockShape = new THREE.Shape();
-  stockShape.moveTo(0.017, -0.04);
-  stockShape.lineTo(0.019, -0.11);
-  stockShape.quadraticCurveTo(0.02, -0.14, 0.026, -0.15);
-  stockShape.lineTo(0.025, -0.262);
-  stockShape.quadraticCurveTo(0.024, -0.282, 0.016, -0.284);
-  stockShape.lineTo(-0.046, -0.284);
-  stockShape.quadraticCurveTo(-0.054, -0.28, -0.052, -0.266);
-  stockShape.quadraticCurveTo(-0.03, -0.17, -0.017, -0.09);
-  stockShape.lineTo(-0.016, -0.04);
-  stockShape.closePath();
-  const stock = new THREE.ExtrudeGeometry(stockShape, { depth: 0.024, bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.004, bevelSegments: 2, curveSegments: 6 });
-  stock.translate(0, 0, -0.012);
-  stock.rotateY(-Math.PI / 2);
-  const foreEnd = limb(V(0, 0.145, -0.02), V(0, 0.3, -0.018), 0.019, 0.015, 12);
-  addS(mergeGeos([stock, foreEnd]), woodMat, rifle);
+  // Plan item 362: the rifle she carries is the inspect's own (the case table and the rack shoot `buildGunDisplay`),
+  // not a hand-built stand-in (a grey plank with a box for a scope beside the lit inspect rifle). The display model
+  // runs muzzle -z, top +y, at true scale; a quarter turn about x stands it muzzle up, its top (the scope) to +z.
+  {
+    const gun = buildGunDisplay("sniper", phone);
+    gun.rotation.x = Math.PI / 2;
+    gun.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      const g = m.geometry;
+      tris += (g.index ? g.index.count : g.attributes.position!.count) / 3;
+    });
+    rifle.add(gun);
+  }
   // The glint: a four-point star off the scope's lens, always to the lens of the camera.
   const glintTex = (() => {
     const c = document.createElement("canvas");
