@@ -1421,6 +1421,8 @@ export interface EnemyLook {
   still?: boolean;
   /** Bubble wrap left (0 = popped; undefined = whole). */
   shield?: number;
+  /** Plan item 285: on an up or down run of the lane a vehicle is drawn from above, nose along the lane. */
+  heading?: "up" | "down";
 }
 
 /** How big each enemy is drawn, relative to a van. */
@@ -1514,8 +1516,62 @@ interface VehicleOpts {
   cabFront?: boolean;
 }
 
+/** Plan item 285: set while a vehicle on an up/down run is drawn, so `vehicle` draws it from above. */
+let fromAbove = false;
+/** The kinds drawn by `vehicle` alone, which have a from-above view; the rest keep their side view on any run. */
+export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival"]);
+
+/** A vehicle seen from above, nose to the right, centred on (x, y): its roof, cab and windscreen, the livery down
+ *  both sides, the label on the roof, wheels at the corners and headlights at the nose. */
+function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): void {
+  const L = s * o.len;
+  const W = s * Math.min(0.34, o.h * 1.05);
+  const x0 = x - L / 2;
+  const y0 = y - W / 2;
+  // Wheels first, poking out at the corners (three axles on the long ones).
+  ctx.fillStyle = "#2a2522";
+  const n = Math.max(2, o.wheels ?? 2);
+  for (let i = 0; i < n; i++) {
+    const wx = x0 + L * (0.16 + (i * 0.66) / (n - 1));
+    for (const side of [-1, 1]) ctx.fillRect(wx - s * 0.04, y + side * W * 0.5 - s * 0.025 + (side < 0 ? -s * 0.012 : 0), s * 0.08, s * 0.05);
+  }
+  // The body and roof.
+  rr(ctx, x0, y0, L, W, s * 0.06, o.body);
+  const cabFront = o.cabFront !== false;
+  if (cabFront) {
+    rr(ctx, x0 + L * 0.74, y0, L * 0.26, W, s * 0.06, o.cab ?? o.body);
+    // Windscreen across the cab.
+    ctx.fillStyle = "#a9d4e6";
+    ctx.fillRect(x0 + L * 0.8, y0 + W * 0.16, L * 0.07, W * 0.68);
+    ctx.strokeRect(x0 + L * 0.8, y0 + W * 0.16, L * 0.07, W * 0.68);
+    // Headlights at the nose.
+    ctx.fillStyle = "#fff2a8";
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(x0 + L - s * 0.02, y + side * W * 0.32, s * 0.022, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (o.stripe) {
+    ctx.fillStyle = o.stripe;
+    for (const side of [-1, 1]) ctx.fillRect(x0 + s * 0.03, y + side * W * 0.36 - W * 0.06, L * (cabFront ? 0.68 : 0.94), W * 0.12);
+  }
+  if (o.label) {
+    ctx.fillStyle = o.labelColor ?? "#1f8a8a";
+    ctx.font = `800 ${Math.max(6, Math.round(W * 0.42))}px 'Hedgerow UI', system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(o.label, x0 + L * (cabFront ? 0.37 : 0.5), y);
+  }
+  shine(ctx, x0 + L * 0.12, y0 + W * 0.14, L * 0.3, W * 0.12);
+}
+
 /** A side-on vehicle facing right, its wheels on the ground at y. */
 function vehicle(ctx: C, x: number, y: number, s: number, t: number, o: VehicleOpts): void {
+  if (fromAbove) {
+    vehicleTop(ctx, x, y, s, o);
+    return;
+  }
   const L = s * o.len;
   const H = s * o.h;
   const wr = s * 0.075;
@@ -1620,7 +1676,14 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   ctx.translate(x, y - lift + hover);
   // Plan item 19: a hit squashes the body down and out, then it springs back past rest and settles.
   const q = !look.still && look.hit < 0.24 ? Math.sin((look.hit / 0.24) * Math.PI * 1.5) * (1 - look.hit / 0.24) : 0;
-  ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
+  // Plan item 285: up or down the lane a vehicle is seen from above, nose along the lane, centred over its ground
+  // point (the side view stands on it).
+  fromAbove = !!look.heading && TOP_DOWN.has(kind);
+  if (fromAbove) {
+    ctx.translate(0, -s * 0.2);
+    ctx.rotate(look.heading === "down" ? Math.PI / 2 : -Math.PI / 2);
+    ctx.scale(1 + q * 0.16, 1 - q * 0.2);
+  } else ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
   // Hit flash: the sprite itself brightens for a moment (no effect where canvas filters are unsupported).
   if (look.hit < 0.08) ctx.filter = "brightness(1.7)";
   ctx.lineWidth = lw(s0);
@@ -1985,6 +2048,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     }
   }
+  fromAbove = false;
   ctx.filter = "none";
   ctx.restore();
 }

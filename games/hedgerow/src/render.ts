@@ -46,6 +46,7 @@ import {
 
   INK,
   drawEnemy,
+  TOP_DOWN,
   drawPropIcon,
   propIconsFor,
   drawFarmhouse,
@@ -145,6 +146,15 @@ function popScale(k: number): number {
   const c = 1.9;
   const x = k - 1;
   return 1 + (c + 1) * x * x * x + c * x * x;
+}
+
+/** Plan item 285: which way the lane runs where this enemy is: "up" or "down" on a vertical run (drawn from
+ *  above), else undefined (the side view). */
+function runOf(level: Level, e: { dist: number; lane?: number | null }): "up" | "down" | undefined {
+  const path = e.lane && level.path2 ? level.path2 : level.path;
+  const h = headingAt(path, e.dist);
+  if (h.dy === 0 || Math.abs(h.dx) >= Math.abs(h.dy)) return undefined;
+  return h.dy > 0 ? "down" : "up";
 }
 
 export class Renderer {
@@ -1009,6 +1019,7 @@ export class Renderer {
       const since = this.hitAt.get(e.id) ?? 9;
       this.hitAt.set(e.id, since + dt);
       const gy = p.y + 0.2;
+      const heading = runOf(level, e);
       items.push({
         y: gy,
         draw: () => {
@@ -1022,6 +1033,7 @@ export class Renderer {
               phase: (e.id % 7) * 0.31,
               shield: e.shield,
               still: this.reducedMotion,
+              heading,
             },
             X(p.x),
             Y(gy),
@@ -1029,10 +1041,21 @@ export class Renderer {
             e.stun > 0 || e.held ? t * 0.15 : t,
           );
           this.drawStatus(e, X(p.x), Y(gy), s, t);
+          // Plan item 285: from above (an up/down run, `drawEnemy` turns the body a quarter about its centre), the
+          // body's overlays turn with it.
+          const run = TOP_DOWN.has(e.kind) ? heading : undefined;
+          if (run) {
+            const cy = Y(gy) - s * enemyScale(e.kind) * 0.2;
+            ctx.save();
+            ctx.translate(X(p.x), cy);
+            ctx.rotate(run === "down" ? Math.PI / 2 : -Math.PI / 2);
+            ctx.translate(-X(p.x), -cy);
+          }
           // Fleet properties (Hedgerow 2 section 2): each lock tints the body in its own material.
           if (e.pm) this.drawMaterial(ctx, e.pm, e.kind, X(p.x), Y(gy), s);
           const crack = crackStage(e.kind, e.hp, maxHpOf(e));
           if (crack) this.drawCracks(ctx, crack, e.kind, X(p.x), Y(gy), s, t);
+          if (run) ctx.restore();
         },
       });
     }
