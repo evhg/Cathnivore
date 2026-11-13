@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
-- Lane A (08:51 11-13): item 319 slices 75-76 (the D pick's jaw seam softened in paint; the neck in the chin's shadow). Next: the far jaw's corner at the D title, arms, hands, then the critique. `main` is 9097a68d; **the next release is 19:51 on 11-13**.
+- Lane A (09:51 11-13): item 319 critique point 4 (arms: shaped sleeves, not stacked tubes), then (5) hands, then the critique. `main` is 9097a68d; **the next release is 19:51 on 11-13**.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (09:21, 11-13): item 268 done (Runnel's phone Cath a step closer in her box, face 47-54 px). Lane B's open items: 282, 331. Unclaimed: 321, 334, 338.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
