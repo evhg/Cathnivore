@@ -509,3 +509,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-13 lane B: NIGHT SHIFT title placements are judged from the untouched page only: hiding or fading the title's UI changes the 3D framing (cause still to find), so DOM-altering probes mislead.
 - 2026-11-13 01:30 lane A (item 319): the acceptance's 70 px face doesn't apply to the upright phone pick: the owner asked for head to toe there on 11-08 (the spec holds 45 px), so that line is 45 px; the title and D pick keep 70.
 - 2026-11-13 01:50 lane A (item 319): the neck's shade gains a side falloff from the vertex's angle round the neck's own axis (not the view), so it rounds from every framing and stays one merged draw.
+- 2026-11-13 02:15 lane A (item 319): the long hair sheet's inside takes the hood lining's shade (x0.4 on back faces): the side of the curtain toward her neck is in shadow, and lit like the outside it drew grey jagged strands beside her cheek.
