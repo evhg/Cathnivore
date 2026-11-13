@@ -1426,7 +1426,37 @@ export interface EnemyLook {
 }
 
 /** How big each enemy is drawn, relative to a van. */
+/**
+ * Plan item 285: the small vehicles' side-view lengths (cells), so the shortest reads 44 px long at D (28 on a phone).
+ * Lengths from the hatchback's (0.44) up to a lorry's (0.9) map onto 0.69-1.1 of a cell: every one grows, the gaps
+ * between kinds stay wide enough to keep their silhouettes apart (hedgerow-vehicles), the order holds (a hatchback is still the smallest, a truck still longer than a van), and the big ones keep
+ * their size.
+ */
+const VEHICLE_LEN: Partial<Record<EnemyKind, number>> = {
+  hatchback: 0.46,
+  influencer: 0.46,
+  rival: 0.5,
+  pickup: 0.6,
+  van: 0.62,
+  phantom: 0.62,
+  wrapped: 0.62,
+  sprinter: 0.66,
+  tender: 0.7,
+  truck: 0.76,
+  director: 0.8,
+};
+const SHORT = 0.437;
+const LONG = 0.9;
 export function enemyScale(kind: EnemyKind): number {
+  const base = baseEnemyScale(kind);
+  const len = VEHICLE_LEN[kind];
+  if (len === undefined) return base;
+  const L = len * base;
+  if (L >= LONG) return base;
+  return (base * (0.69 + ((L - SHORT) * (1.1 - 0.69)) / (LONG - SHORT))) / L;
+}
+
+function baseEnemyScale(kind: EnemyKind): number {
   switch (kind) {
     case "drone":
       return 0.75;
@@ -1826,6 +1856,10 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
     }
     case "sprinter":
       vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", label: "24h", labelColor: "#ffd23f", wheels: 2 });
+      // Plan item 285: a high-roof van, so its outline isn't a longer copy of the delivery van's: a raised roof pod
+      // over the load bed (from above, a roof light bar across it).
+      if (fromAbove) rr(ctx, -s * 0.2, -s * 0.13, s * 0.06, s * 0.26, s * 0.02, "#ffd23f");
+      else rr(ctx, -s * 0.31, -s * 0.56, s * 0.4, s * 0.1, s * 0.04, "#8a4fd0");
       break;
     case "lorry":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#24345e", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });
