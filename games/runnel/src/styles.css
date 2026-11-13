@@ -4656,6 +4656,67 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
     box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--soil) 55%, transparent), inset 0 2px 2px color-mix(in srgb, var(--soil) 30%, transparent);
   }
 }
+/* Plan item 343: the controls' words show only where the signboard has room for them (the desktop plank). */
+.icon-label { display: none; }
+/* Plan item 343: on a desktop the left column hangs the same carved signboard: the back link and the wordmark on
+   the plank, and sound, stats and help as wooden tokens nailed to it, each with its word under it. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .top[data-signboard] {
+    padding: 0 12px 4px;
+    row-gap: 0;
+    border-radius: 12px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 13px, color-mix(in srgb, var(--soil) 30%, transparent) 13px 14px),
+      linear-gradient(180deg, var(--stake-hi), var(--stake));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper) 35%, transparent), inset 0 -2px 0 color-mix(in srgb, var(--soil) 45%, transparent), 0 6px 14px color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .top[data-signboard] .wordmark {
+    color: var(--paper);
+    text-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 70%, transparent);
+  }
+  .top[data-signboard] .back {
+    color: var(--paper);
+  }
+  .top[data-signboard] .top-actions {
+    gap: 8px;
+    align-self: end;
+  }
+  .top[data-signboard] .icon-btn {
+    width: auto;
+    height: auto;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0 4px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    color: var(--paper);
+    background: none;
+  }
+  .top[data-signboard] .icon-btn svg {
+    box-sizing: content-box;
+    padding: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--stake-hi) 80%, var(--paper)), var(--stake) 70%);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--soil) 55%, transparent), inset 0 2px 2px color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .top[data-signboard] .icon-btn:hover svg,
+  .top[data-signboard] .icon-btn:focus-visible svg {
+    background: radial-gradient(circle at 40% 35%, var(--paper), var(--stake-hi) 70%);
+    color: var(--soil);
+  }
+  /* ...and nothing in the column under 13 px (the shared Cath's Week chip sits at the 12 px floor elsewhere). */
+  .app .week-chip { font-size: var(--fs-label); }
+  .top[data-signboard] .icon-label {
+    display: block;
+    font: 700 var(--fs-label) / 1 var(--font-ui);
+    letter-spacing: 0.04em;
+    color: var(--paper);
+    text-shadow: 0 1px 0 color-mix(in srgb, var(--soil) 70%, transparent);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   /* Plan item 308: the valley greens in one short fade, no wave. */
   .vl-f { transition-duration: 300ms; }
