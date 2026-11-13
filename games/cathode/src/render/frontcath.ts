@@ -2114,7 +2114,9 @@ float reliefShade( vec2 uv ) {
     // Plan item 319 slice 58: the forearm stays inside the upper sleeve's gathered end (0.037) for its first 3 cm
     // and only then eases out, so a straight arm's outline runs on from the upper sleeve: at 0.0405 just below the
     // elbow it stood wider than the sleeve's end, two stacked tubes with a ring between them (critique, D pick).
-    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.034], [0.12, 0.0362], [0.2, 0.0375], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]];
+    // Plan item 319 slice 77: the forearm tapers from the elbow to the wrist, with only a slim turn-back at the cuff
+    // (it widened 0.0385 -> 0.044 toward a bell cuff: the critique's 'stacked cylinders', a tube on a wider tube).
+    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.034], [0.12, 0.0362], [0.2, 0.037], [0.5, 0.0355], [0.8, 0.0335], [0.87, 0.0355], [0.96, 0.0362], [1, 0.028]];
     addS(vSpan(turned(foreA, wr, foreProf, seg(24), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
     // The cuff strap. Plan item 319: a flat leather band laid on the sleeve, following its oval, not a round ring
@@ -2151,7 +2153,8 @@ float reliefShade( vec2 uv ) {
     const radius = (s: number) =>
       s < sE
         ? prof(s / sE, [[0, 0.052], [0.3, 0.05], [0.8, 0.043], [1, 0.0415]])
-        : prof((s - sE) / (1 - sE), [[0, 0.0415], [0.2, 0.0405], [0.5, 0.0385], [0.78, 0.041], [0.84, 0.0455], [0.93, 0.0465], [0.96, 0.042], [1, 0.03]]);
+        : // Plan item 319 slice 77: the forearm tapers to the wrist under a slim cuff (it flared to 0.0465, a bell).
+          prof((s - sE) / (1 - sE), [[0, 0.0415], [0.2, 0.0395], [0.5, 0.0362], [0.78, 0.0345], [0.85, 0.0375], [0.93, 0.038], [0.96, 0.036], [1, 0.028]]);
     const pos = tube.attributes.position as THREE.BufferAttribute;
     const uv = tube.attributes.uv as THREE.BufferAttribute;
     const c = new THREE.Vector3();
