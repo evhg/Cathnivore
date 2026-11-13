@@ -551,6 +551,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // the knee, down to 0.64 where it faces away (0.58 cost her far eye its 3:1 on the cheek), a little warmer in the shade (skin's subsurface red).
     // Plan item 319 slice 39: the light rebuilt from the albedo's luminance cancels a grey vertex shade, so the neck's
     // jaw shadow (its vertex colours) is applied again after it, as a brightness.
+    // Plan item 319 slice 68: after it, the face's very edge (grazing the lens) falls to 0.8, so the cheek turns into
+    // the hair and hood instead of ending at them as a pale plate's rim (critique 11-13 03:35, point 1). Narrow, so the
+    // far cheek beside the eye keeps its light (the eyes' 3:1); a jaw-underside shade tried with it cost that too.
     const skinLight =
       skinTone > 0
         ? `{
@@ -562,7 +565,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
             outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
-            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); }" : ""}
+            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); float fe = saturate( dot( normal, normalize( vViewPosition ) ) ); float sh = mix( 0.8, 1.0, smoothstep( 0.02, 0.22, fe ) ); outgoingLight *= sh * vec3( 1.0, 1.0 - 0.1 * ( 1.0 - sh ), 1.0 - 0.2 * ( 1.0 - sh ) ); }" : ""}
             ${glint > 0 ? "" : "#ifdef USE_COLOR\n            outgoingLight *= dot( vColor.rgb, W );\n            #endif"}
           }
           #include <opaque_fragment>`
