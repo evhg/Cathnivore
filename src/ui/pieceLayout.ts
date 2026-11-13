@@ -152,7 +152,8 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   const tryOrnaments = hexPx >= ORNAMENT_PX ? [true, false] : [false]
   // Plan item 172: pieces worth holding. Every hex starts its pieces large (up to 1.7x on a roomy desktop hex)
   // and shrinks them only as far as the tile's pieces need to fit.
-  const start = Math.round(Math.min(1.7, Math.max(1.35, hexPx / 52)) * 20) / 20
+  // Plan item 282: up to 2x on a roomy desktop hex (1440 wide), so a corporation's piece stands 56 px+ tall there.
+  const start = Math.round(Math.min(2, Math.max(1.35, hexPx / 52)) * 20) / 20
   // First the badge at a legible size, letting the pieces shrink only while a stall stays MIN_STALL_PX tall on
   // screen (board-scales.spec); then the old order with the badge at its drawn size.
   const stallFloor = Math.max(0.6, (MIN_STALL_PX * unitsPerPx) / PRODUCER_H)
