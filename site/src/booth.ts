@@ -148,7 +148,18 @@ export function drawBooth(): void {
   back.innerHTML = s
   front.innerHTML = f
   hero.dataset.booth = ''
+  drawnAt = signature()
 }
+
+/** Where the parts the stall is drawn from stand now (page px), to tell when a drawn stall has gone stale. */
+function signature(): string {
+  const at = (sel: string): string => {
+    const b = document.querySelector(sel)?.getBoundingClientRect()
+    return b ? `${Math.round(b.top + window.scrollY)},${Math.round(b.left)},${Math.round(b.height)}` : '-'
+  }
+  return ['.stall-hero', '.stall-hero p.kicker', '.stall-hero .hero-games', '#hero-cath svg'].map(at).join('|')
+}
+let drawnAt = ''
 
 /** Draw now, after the entrance settles and the fonts land, and on every resize. */
 export function mountBooth(): void {
@@ -158,4 +169,11 @@ export function mountBooth(): void {
   // the words and Cath rise in over about 1.5 s; draw again once they rest
   setTimeout(drawBooth, 1800)
   setTimeout(drawBooth, 3200)
+  // ...and for the first 6 s, again whenever what it was drawn from has moved: on a loaded machine the timed draws
+  // can run mid-entrance, which left the counter 18 px past the posters' rail and the roof 18 px low (seen at 1920).
+  let checks = 0
+  const watch = setInterval(() => {
+    if (++checks > 20) clearInterval(watch)
+    if (drawnAt && signature() !== drawnAt) drawBooth()
+  }, 300)
 }
