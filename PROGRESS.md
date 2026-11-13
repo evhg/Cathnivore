@@ -4,7 +4,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 
 ## Now
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
-- Lane A (06:51 11-13): item 319 slices 69-72 (calves, the curtain one fuller lock, domed sleeve heads, the head 1.14); critique FAILED again (proportions, hairline, jaw seam, arms, mitten hands, lapels). `main` is 9097a68d; **the next release is 19:51 on 11-13**. Next: shoulders narrower and neck fuller, then the hairline and the jaw seam.
+- Lane A (07:51 11-13): item 319 (NIGHT SHIFT Cath sculpt) slice 73+: shoulders narrower, neck fuller, then the hairline and jaw seam. `main` is 9097a68d; **the next release is 19:51 on 11-13**.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (07:21, 11-13): item 282 slices (Hollowell's pieces up to 2x on a roomy D hex, 61 px; the phone's Pell 64 px in the boardroom strip). Lane B's open items: 268, 282, 331. Unclaimed: 321, 334, 338.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
