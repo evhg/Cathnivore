@@ -3264,7 +3264,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - title, title-counter, title-fit, title-table, daily-ritual pass at P and D; shots P and D, light and dark.
 - **Size:** 1
 
-## 343. [ ] Runnel: the desktop header as the phone's carved signboard, with real labelled buttons
+## 343. [ ] Runnel: the desktop header as the phone's carved signboard, with real labelled buttons *(lane B, in progress)*
 - **Why:** `plan1113a/runnel-D` (15-340 x 20-100): the header is plain text on paper, a grey "< Games" link, the wordmark and three bare 14-18 px glyphs (sound, stats, help at 218-235, 268-284, 318-330 x 68-88) with no button shape or labels. `runnel-P` (22-362 x 22-62) carries the same controls on a carved plank with 44 px wooden buttons, so desktop is the less finished. Below the notebook the "Tap a tile to turn it, hold to pin it." hint floats over 100 px of empty paper (60-345 x 790-900).
 - **Build:** at 1024 px+ the left column hangs the phone's signboard: a carved plank with the back link and wordmark; sound, stats and help as 44 px+ wooden buttons with visible labels; the tap/hold hint a chalk line on the plank's foot or a note pinned into the notebook. Reuse the phone's plank component and tokens.
 - **Accept:**
