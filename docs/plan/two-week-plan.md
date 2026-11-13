@@ -3350,7 +3350,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D.
 - **Size:** 1
 
-## 352. [ ] /games/: the desktop stall hero composed, Cath framed and the sign off the awning
+## 352. [ ] /games/: the desktop stall hero composed, Cath framed and the sign off the awning *(lane B, in progress)*
 - **Why:** `plan1113b/games-D`: Cath is jammed into the stall's top-left corner (270-380 x 60-300), her head almost touching the awning scallops (60-78), while the counter below her (160-465 x 300-440) is empty wood. The eyebrow "FREE GAMES FROM THE REPUBLIC OF MARROW" (615-1015 x 76-90) collides with the awning's scalloped edge. The chalkboard (580-1110 x 70-440) squeezes the stall into a narrow column. She reads as a pasted sprite, not a shopkeeper.
 - **Build:** recompose the desktop hero: Cath at half length behind the counter in a wider stall (about 420 px), 40 px+ under the awning, produce on the counter at her hands; the chalkboard on the stall's side wall, starting below the awning. P is unchanged.
 - **Accept:**
