@@ -3050,7 +3050,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** art 60%+ of the face at D, 50%+ at P; no two cards share a picture; in greyscale the families tell apart by frame or glyph; names 12 px+ at 4.5:1; hand-shelf, phone-hand-held, ui-css-lint pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 321. [ ] NIGHT SHIFT: The List and the case file as booking photos of the real 3D cast
+## 321. [ ] NIGHT SHIFT: The List and the case file as booking photos of the real 3D cast *(lane A, in progress)*
 - **Why:** `plan1111b/ns-title-D` (415-575 x 280-465): Tomas Reed's case-file mugshot is a flat vector (a grey oval, three ink lines) two steps from a lit, modelled 3D Cath (900-1120 x 260-900); The List's prints (55-600 x 590-815) are the same flat vectors, four near-identical ovals; `ns-title-P` (15-375 x 728-808) 60 px squares where one face reads.
 - **Build:** each target and Tomas rendered offscreen from the game's own models in a booking-photo set-up (hard flash, height chart, a slight dutch angle), baked once into a small texture for the title, the case board and the debrief; withheld names as backlit silhouettes of the real models.
 - **Accept:** each mugshot shaded (40%+ luminance between lit cheek and shadow side); the five silhouettes pairwise distinct (IoU 0.7 or less, as item 278); no live render on title load (baked or cached), cathode-perf in budget (alone); cathode-front, title-diorama pass; shots P and D and the case board.
