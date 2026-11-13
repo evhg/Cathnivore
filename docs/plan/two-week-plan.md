@@ -3340,7 +3340,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D.
 - **Size:** 1
 
-## 351. [ ] Runnel: Cath on a drawn footbridge in the valley, not behind a brown box
+## 351. [ ] Runnel: Cath on a drawn footbridge in the valley, not behind a brown box *(lane B, in progress)*
 - **Why:** `plan1113b/runnel-D` (385-620 x 785-865): Cath stands behind two plain brown rectangles, a placeholder crate with no grain, ink or perspective, the flattest object in a painted valley. `runnel-P` has the same box (10-120 x 740-778). Her bubble (P 12-212 x 545-640) covers the field's lower-left plots.
 - **Build:** replace the wall/crate with a hand-inked timber footbridge or sluice rail over the runnel by the spring (plank grain, rail posts, water under it), Cath leaning on it. Anchor the bubble so it never covers a tile.
 - **Accept:**
