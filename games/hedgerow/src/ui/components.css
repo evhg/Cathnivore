@@ -2966,9 +2966,10 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 /* Plan item 103: each round ahead's lead vehicle big enough to tell apart (it was 16 px over a bare number) */
 .play .panel .intel-timeline .chip-icon {
-  width: 30px;
-  height: 30px;
-  padding: 3px;
+  /* plan item 348: 32 px of vehicle inside its plate */
+  width: 36px;
+  height: 36px;
+  padding: 2px;
   border-radius: 50%;
   background: var(--mat-plastic);
   box-shadow: 0 0 0 1.5px var(--line);
@@ -4341,15 +4342,17 @@ body:has(#dlg-pause[open]) .paused-note {
   position: relative;
   display: grid;
   flex: 1;
+  /* Plan item 348: a card: 'Round 12' over the lead and its count with a unit, the mix bar, the trait as a word */
   grid-template-columns: auto auto;
-  grid-template-areas: "no icon" "bar bar" "count count";
+  grid-template-areas: "no no" "icon count" "trait trait";
   justify-content: center;
   align-content: center;
   align-items: center;
   column-gap: 4px;
-  row-gap: 3px;
+  row-gap: 0;
   width: 100%;
-  padding: 4px;
+  padding: 2px 4px 6px;
+  overflow: hidden;
   border: 0;
   border-radius: var(--r-note);
   background: color-mix(in srgb, var(--line) 22%, transparent);
@@ -4374,21 +4377,28 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .round-chip-btn .round-no {
   grid-area: no;
-  font: 700 var(--fs-small) / 1.1 var(--font-num);
+  text-align: center;
+  font: 800 var(--fs-rack) / 1.1 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ink);
 }
 .round-chip-btn .chip-icon {
   grid-area: icon;
-  width: 30px;
-  height: 30px;
-  padding: 2px;
+  width: 34px;
+  height: 34px;
+  padding: 1px;
 }
 .round-chip-btn .mix-bar {
-  grid-area: bar;
+  /* the round's mix as a strip along the card's foot (plan item 348: the card's rows are its words) */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   width: 100%;
-  height: 9px;
-  border-radius: 5px;
+  height: 4px;
+  border-radius: 0;
   overflow: hidden;
   box-shadow: 0 0 0 1px var(--ink-a14);
   background: var(--paper-shade);
@@ -4405,11 +4415,37 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .round-chip-btn .round-count {
   grid-area: count;
-  text-align: center;
+  display: grid;
+  justify-items: start;
+  text-align: left;
   /* Plan item 182: a step up from the 12 px label size (its figures read about 10 px at D) */
   font: 700 var(--fs-small) / 1 var(--font-num);
   /* Plan item 177: --ink-2 was 4.41:1 on a chip's grey face (axe, site.spec's Hedgerow story); full ink reads. */
   color: var(--ink);
+}
+.round-chip-btn .round-unit {
+  font: 600 var(--fs-rack) / 1.1 var(--font-ui);
+  color: var(--ink);
+}
+/* The round's trait as a word on a chip edged in its colour (the lead's name when it has none) */
+.round-chip-btn .round-trait {
+  grid-area: trait;
+  justify-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 1px 6px 1px 5px;
+  border-left: 4px solid var(--trait, var(--ink-3));
+  border-radius: 3px;
+  background: var(--paper-hi);
+  font: 700 var(--fs-rack) / 1.2 var(--font-ui);
+  color: var(--ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.round-chip-btn .round-lead {
+  border-left-color: transparent;
+  background: none;
+  font-weight: 600;
 }
 /* The painted banner: a ribbon across the chip's top with swallow-tailed ends, the round's number under it. */
 /* (it overhangs the chip's top, so the vehicles stay level along the strip) */
@@ -4511,7 +4547,7 @@ body:has(#dlg-pause[open]) .paused-note {
     height: 24px;
   }
   .round-chip-btn .mix-bar {
-    height: 7px;
+    height: 4px;
   }
   .round-banner {
     padding: 1px 0 2px;

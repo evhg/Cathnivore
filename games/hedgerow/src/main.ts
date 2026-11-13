@@ -2157,9 +2157,11 @@ function fieldIntel(g: Game): HTMLElement {
     else row.append(propRow(locks, "chip-props"));
     box.append(row);
   }
-  // Plan item 168: the next five rounds after this one as chips: the round, its lead vehicle, a stacked bar of its
-  // mix in each vehicle's livery and its count; a boss or flood round under a painted banner. A tap opens its vehicles.
-  const ahead = g.level.waves.slice(g.wave + 1, g.wave + 6);
+  // Plan item 168: the rounds after this one as chips: the round, its lead vehicle, a stacked bar of its mix in each
+  // vehicle's livery and its count; a boss or flood round under a painted banner. A tap opens its vehicles.
+  // Plan item 348: three readable cards rather than five micro-chips: 'Round 12', the lead at 32 px, '433 vehicles'
+  // and the round's trait as a word ('Stealth'), or the lead's name when it has none.
+  const ahead = g.level.waves.slice(g.wave + 1, g.wave + 4);
   if (ahead.length) {
     const tl = document.createElement("ol");
     tl.className = "intel-timeline round-strip";
@@ -2226,7 +2228,7 @@ function fieldIntel(g: Game): HTMLElement {
       }
       const no = document.createElement("span");
       no.className = "round-no";
-      no.textContent = String(n);
+      no.textContent = `${Word(g)} ${n}`;
       b.append(no, img(enemyIcon(lead), "chip-icon"));
       const bar = document.createElement("span");
       bar.className = "mix-bar";
@@ -2239,8 +2241,16 @@ function fieldIntel(g: Game): HTMLElement {
       }
       const count = document.createElement("span");
       count.className = "round-count";
-      count.textContent = String(total);
-      b.append(bar, count);
+      const unit = document.createElement("span");
+      unit.className = "round-unit";
+      unit.textContent = total === 1 ? "vehicle" : "vehicles";
+      count.append(String(total), unit);
+      const trait = propsOf(roundProps(g.level, groups))[0];
+      const word = document.createElement("span");
+      word.className = trait ? "round-trait" : "round-trait round-lead";
+      if (trait) word.style.setProperty("--trait", PROPERTIES[trait].colour);
+      word.textContent = trait ? PROPERTIES[trait].name : ENEMIES[lead].name;
+      b.append(bar, count, word);
       b.onclick = () => open(openRound === b.dataset.key ? null : b.dataset.key!);
       chips.push(b);
       li.append(b);
