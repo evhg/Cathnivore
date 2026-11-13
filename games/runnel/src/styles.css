@@ -4018,6 +4018,9 @@ body[data-mode='practice'] #week-slot {
 .vw-wall { fill: var(--stake-hi); stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .vw-cope { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .vw-joint { fill: none; stroke: color-mix(in srgb, var(--stake) 75%, var(--soil)); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* Plan item 351: the rail and spindles under the top board, the valley between them */
+.vb-rail,
+.vb-spindle { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 75%, transparent); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
 .vb-post { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .vb-deck { fill: color-mix(in srgb, var(--stake) 70%, var(--soil)); }
 .vb-water { fill: color-mix(in srgb, var(--water) var(--vk, 100%), var(--paper)); }
@@ -4026,6 +4029,7 @@ body[data-mode='practice'] #week-slot {
   .valley-cath { --vk: 32%; }
   .vw-wall { fill: color-mix(in srgb, var(--stake-hi) 60%, var(--paper)); }
   .vw-cope { fill: color-mix(in srgb, var(--stake) 60%, var(--paper)); }
+  .vb-rail, .vb-spindle { fill: color-mix(in srgb, var(--stake) 60%, var(--paper)); }
 }
 /* Plan item 77: on an upright phone Cath watches from the valley's bottom-left corner as a framed bust, over the
    stream bed and under the board's last row (main.ts hides her if a tile reaches into her corner). */

@@ -163,7 +163,8 @@ test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
 })
 
 // Plan item 188: the half-length figure ends flat at the hips; a drystone wall on a verge stands in front of that
-// cut and runs down to the valley's frame, so she never floats cut off (D and the phone's standing figure).
+// cut and runs down to the valley's frame, so she never floats cut off (D and the phone's standing figure). Plan item
+// 351: it is a footbridge's open railing (a top board, a rail, spindles), no solid board 40 px+ on both sides.
 test('she stands behind a wall that hides the figure cut and meets the frame', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
   await page.goto('/runnel/?nohelp')
@@ -179,6 +180,16 @@ test('she stands behind a wall that hides the figure cut and meets the frame', a
     return { shown: getComputedStyle(wall).display !== 'none', copeTop: cope.top, figBottom: fig.bottom, wallBottom: w.bottom, valleyBottom: valley.bottom, wider: w.width >= fig.width }
   })
   expect(m.shown).toBe(true)
+  // Plan item 351: an open railing, not a flat box: no solid board 40 px or more on both sides.
+  const boards = await page.evaluate(() =>
+    [...document.querySelectorAll('#valley-cath svg.valley-wall :is(.vw-wall, .vb-rail, .vw-cope)')].map((e) => {
+      const r = e.getBoundingClientRect()
+      return Math.min(r.width, r.height)
+    }),
+  )
+  expect(boards.length).toBeGreaterThanOrEqual(3)
+  for (const b of boards) expect(b).toBeLessThan(40)
+  expect(await page.locator('#valley-cath .vb-spindle').count()).toBe(1)
   // The coping sits at least 12 px above the figure's cut, and the verge reaches the valley's foot.
   expect(m.copeTop).toBeLessThanOrEqual(m.figBottom - 12)
   expect(m.wallBottom).toBeGreaterThanOrEqual(m.valleyBottom - 2)

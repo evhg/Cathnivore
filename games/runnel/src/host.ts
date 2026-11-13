@@ -43,13 +43,16 @@ export interface HostView {
 /** Plan item 188: the half-length figure ends flat at the hips, so in the valley something stands in front of that
  *  cut. Plan item 329: a wooden footbridge over the stream (it was a grey drystone wall in mid-field): she leans on its
  *  handrail (`vw-cope`, above the cut), its boarded parapet (`vw-wall`) on posts, the deck's edge, the stream running
- *  under it, and the verge down to the frame. */
+ *  under it, and the verge down to the frame. Plan item 351: the parapet is a grained top board over the cut, then
+ *  open spindles and a mid rail with the valley showing between (it read as a flat brown box). */
 const VALLEY_WALL = `<svg class="valley-wall" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path class="vw-verge" d="M0 60 L0 47 Q18 38 46 40 L154 40 Q184 38 200 47 L200 60 Z"/>
 <path class="vb-water" d="M0 51 Q40 47 90 50 T200 49 L200 57 Q150 54 100 56 T0 56 Z"/>
 <path class="vb-ripple" d="M24 53 q6 -2 12 0 M118 52 q6 -2 12 0 M164 53 q5 -2 10 0"/>
-<path class="vw-wall" d="M12 47 L14 12 L186 12 L188 47 Z"/>
-<path class="vw-joint" d="M32 12 V47 M50 12 V47 M68 12 V47 M86 12 V47 M114 12 V47 M132 12 V47 M150 12 V47 M168 12 V47"/>
+<path class="vw-wall" d="M13 28 L14 12 L186 12 L187 28 Z"/>
+<path class="vw-joint" d="M18 17 H60 M70 21 H120 M132 16 H182 M24 24 H92 M110 25 H176"/>
+<path class="vb-rail" d="M12 34 H188 V38 H12 Z"/>
+<path class="vb-spindle" d="M27 28 h4 v18 h-4 Z M44 28 h4 v18 h-4 Z M61 28 h4 v18 h-4 Z M78 28 h4 v18 h-4 Z M116 28 h4 v18 h-4 Z M133 28 h4 v18 h-4 Z M150 28 h4 v18 h-4 Z M167 28 h4 v18 h-4 Z"/>
 <path class="vb-deck" d="M6 45 H194 L192 51 H8 Z"/>
 <path class="vb-post" d="M10 4 h8 v44 h-8 Z M96 4 h8 v44 h-8 Z M182 4 h8 v44 h-8 Z"/>
 <path class="vw-cope" d="M8 10 Q8 5 14 5 L186 5 Q192 5 192 10 L192 12 L8 12 Z"/>
