@@ -5305,6 +5305,14 @@ img.act-scene {
 .act-hedge .hedge-r { left: calc(var(--gate-x, 10%) + 36px); right: 0; background: var(--hedge) left bottom / 360px 48px repeat-x; }
 .act-hedge .hedge-gate { left: calc(var(--gate-x, 10%) - 36px); width: 72px; }
 .act-hedge .hedge-gate svg { display: block; width: 100%; height: 100%; }
+/* Plan item 347: the gate's leaf turns on its hinge post: shut across the lane before a locked act, swung back
+   against the hedge once it's open (over 800 ms when the act has just opened; at once under reduced motion). */
+.act-hedge .gate-leaf { transform-box: view-box; transform-origin: 15px 31px; }
+.act-hedge .hedge-gate[data-open] .gate-leaf { transform: scaleX(-0.33) skewY(-12deg); }
+.act-hedge .hedge-gate[data-swing] .gate-leaf { transition: transform 800ms cubic-bezier(0.3, 0, 0.3, 1) 300ms; }
+@media (prefers-reduced-motion: reduce) {
+  .act-hedge .hedge-gate[data-swing] .gate-leaf { transition: none; }
+}
 @media (prefers-color-scheme: dark) {
   .act-hedge { filter: brightness(0.82); }
   #screen-select .act.act-pencil { background-image: linear-gradient(var(--shade-a62), var(--shade-a62)), var(--ground); }

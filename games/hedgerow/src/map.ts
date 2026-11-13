@@ -1474,7 +1474,9 @@ const HEDGE_GATE =
   '<svg viewBox="0 0 72 48" aria-hidden="true">' +
   '<rect x="9" y="16" width="6" height="32" rx="1" fill="#6b4a2b"/><rect x="57" y="16" width="6" height="32" rx="1" fill="#6b4a2b"/>' +
   '<path d="M9.5 17h5M57.5 17h5" stroke="#b08a5c" stroke-width="2"/>' +
-  '<g stroke="#d9b47c" stroke-width="2.4" stroke-linecap="round"><path d="M15 21L1 27M15 26L1 31M15 31L1 35M15 36L1 39M15 41L1 43M15 21L1 43"/></g>' +
+  // Plan item 347: a five-bar leaf hinged on the left post: shut across the gap before a locked act, swung back to
+  // the hedge once the act is open (styles turn it on its hinge).
+  '<g class="gate-leaf" stroke="#d9b47c" stroke-width="2.4" stroke-linecap="round"><path d="M15 21H57M15 26H57M15 31H57M15 36H57M15 41H57M15 41L57 21M33 21V41"/></g>' +
   "</svg>";
 
 const svgImg = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -2122,6 +2124,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const gate = document.createElement("i");
       gate.className = "hedge-gate";
       gate.innerHTML = HEDGE_GATE;
+      // Shut before the next act while it's locked; when that act has just opened, it swings open as the mist lifts.
+      const opensNext = n + 1 <= shown;
+      if (opensNext && was > 0 && n + 1 > was) {
+        gate.dataset.swing = "";
+        requestAnimationFrame(() => requestAnimationFrame(() => (gate.dataset.open = "")));
+      } else if (opensNext) gate.dataset.open = "";
       const r = document.createElement("i");
       r.className = "hedge-r";
       hedge.append(l, gate, r);
