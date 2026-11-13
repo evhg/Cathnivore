@@ -4,7 +4,7 @@ import type { LandmarkKind } from '../content/campaignMapLayout'
 
 
 // Plan item 49: each region's landmark, drawn in a 24-unit box round its centre in the board's ink style.
-const INK = { stroke: 'var(--ink)', strokeWidth: 1.1, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
+const INK = { stroke: 'var(--ink)', strokeWidth: 1.4, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
 export function Landmark({ kind }: { kind: LandmarkKind }) {
   switch (kind) {
     case 'cross':

@@ -4,7 +4,7 @@ import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
 import { BADGE, COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
-import { BOARD_LANDMARKS, boxAt, dressingSpot, pickSpot } from './landmarkSpot'
+import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
@@ -995,7 +995,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const grip = gripStage(r)
               const edge = atTheEdge(r)
               return (
-                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
+                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-full={spot.scale >= landmarkMinScale(hexPx) - 1e-9 || undefined} data-target={Math.round(landmarkMinScale(hexPx) * LANDMARK_ART_H * (hexPx / HEX_R))} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
                   <Landmark kind={BOARD_LANDMARKS[id]} />
                   <GripProps stage={grip} edge={edge} />
                 </g>
