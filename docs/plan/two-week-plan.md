@@ -3148,7 +3148,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fix is shot at P and D, light and dark. No two labels or cards intersect, measured from the page's boxes. ui-css-lint and the specs for each game touched pass.
 - **Size:** 2
 
-## 334. [ ] NIGHT SHIFT: the operative pick as a lit armoury dossier, not flat icons *(also check, carried 2026-11-12 by lane B: the weapon panel's flat pink-outline fallback rifle at D in headless shots (from 333))*
+## 334. [ ] NIGHT SHIFT: the operative pick as a lit armoury dossier, not flat icons *(lane B, in progress)* *(also check, carried 2026-11-12 by lane B: the weapon panel's flat pink-outline fallback rifle at D in headless shots (from 333))*
 - **Why:** `plan1112a/ns-play-D`: the "inspect" weapon is a flat grey vector with a pink outline (1005-1370 x 265-340), with no material and no light. The class rows use flat red clip-art guns (355-470 x 185-555), the four non-Ghost guns are near-identical pistols, and the dash pips under each name (80-200 x 222-565) say nothing. `ns-play-P`: the stat card is a cream paper slip (10-375 x 635-835) that breaks the noir palette, and its weapon thumbnail (15-170 x 690-750) is the same flat drawing.
 - **Build:** render each class's weapon once, offscreen, from the game's own 3D gun kit under a hard key light and a rim light on gunmetal. Cache the results as textures for the inspect panel and the row thumbnails. Replace the pips with a labelled 3-segment meter (range or difficulty). The P card becomes smoked glass with a red rule, like the D panel.
 - **Accept:**
