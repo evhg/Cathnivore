@@ -720,8 +720,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const ankle = V(0.075 * side + (free ? 0.012 : 0), 0.105, -0.005 + fwd);
     // Thigh: full at the top, slim to the knee.
     thighs.push(turned(hip, knee, [[0, 0.066], [0.15, 0.068], [0.45, 0.06], [0.8, 0.047], [1, 0.042]], seg(14), 0.92));
-    // The knee cap and the shin: a knee that swells a little, a full calf high on the back, a slim ankle.
-    thighs.push(turned(knee.clone().add(V(0, 0.02, 0)), ankle.clone().add(V(0, 0.04, 0)), [[0, 0.043], [0.06, 0.045], [0.14, 0.04], [0.32, 0.05], [0.5, 0.045], [0.78, 0.03], [1, 0.025]], seg(14), 0.9));
+    // The knee cap and the shin: a knee that swells a little, a full calf high on the back, a slim ankle. Plan item
+    // 319 slice 69: a fuller calf and ankle (0.05/0.025 -> 0.055/0.029), so below the hem at P she stands on legs
+    // with a shape, not two straight sticks.
+    thighs.push(turned(knee.clone().add(V(0, 0.02, 0)), ankle.clone().add(V(0, 0.04, 0)), [[0, 0.044], [0.06, 0.046], [0.14, 0.043], [0.3, 0.055], [0.46, 0.052], [0.7, 0.038], [0.88, 0.031], [1, 0.029]], seg(14), 0.9));
     // The ankle boot: a shaft from above the ankle bone with a turned cuff, the instep down to the ball, a pointed
     // toe box flat on the ground.
     // The free foot turns out about 25 degrees, so its heel and the sole's arch show in profile to the camera.
@@ -2013,7 +2015,9 @@ float reliefShade( vec2 uv ) {
       // Plan item 319 slice 18: the curtain splits below the jaw into three thinner locks that fan apart and end at
       // different lengths (one 3.5 cm ribbon hung straight down the lapel and read as a plank on the coat front).
       // They share the face-framing top, so round the face it still reads as one curtain.
-      for (const [k, spread, cut, wk, ph] of [[0, 0, 0, 0.62, 0], [1, 0.016, 1, 0.5, 1.7], [2, -0.012, 2, 0.46, 3.1]] as const) {
+      // Plan item 319 slice 70: the three lie closer (spread 0.016/-0.012 -> 0.008/-0.006) and fuller (x1.2), so over
+      // the coat they read as one waved curtain parting at its ends, not three thin strings ('stringy ribbons').
+      for (const [k, spread, cut, wk, ph] of [[0, 0, 0, 0.74, 0], [1, 0.008, 1, 0.6, 1.7], [2, -0.006, 2, 0.55, 3.1]] as const) {
         // Same key count for each (dropping keys re-timed each lock's wave, braiding them at the cheek); a shorter
         // lock pulls its last key up toward the one before.
         const ks = keys.map((q, n) => {
@@ -2073,7 +2077,9 @@ float reliefShade( vec2 uv ) {
     const past = 0.012;
     const k = upLen / (upLen + past);
     // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
-    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.0425], [0.93 * k, 0.0405], [k, 0.0395], [k + (1 - k) * 0.5, 0.038], [1, 0.0365]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
+    // Plan item 319 slice 71: the sleeve head domes over the shoulder point (it started as a 3 cm flat cap that
+    // swelled to 5.2 cm in 1.5 cm, a square corner where the shoulder met the sleeve: 'a boxy shoulder').
+    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.014], [0.025 * k, 0.036], [0.06 * k, 0.047], [0.12 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.0425], [0.93 * k, 0.0405], [k, 0.0395], [k + (1 - k) * 0.5, 0.038], [1, 0.0365]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
     // Plan item 319 slice 63: 0.041 -> 0.0375, inside the sleeve's gathered end (0.037) and the forearm's (0.0375 at
     // 0.2): wider than both, it stood out below the sleeve's end as a ring round the elbow (critique, D pick). The
