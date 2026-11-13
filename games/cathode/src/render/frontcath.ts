@@ -2266,17 +2266,21 @@ float reliefShade( vec2 uv ) {
     const dir = V(0, -1, 0.15).normalize();
     const parts: THREE.BufferGeometry[] = [];
     const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
-    pad.scale(0.015, 0.042, 0.03);
+    // Plan item 319 slice 78: the back of the hand 7.6 cm long, not 8.4 (a paddle from the cuff: 'mittens'), its
+    // knuckle end where it was.
+    pad.scale(0.016, 0.038, 0.028);
     pad.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
-    const padAt = wristL.clone().addScaledVector(dir, 0.045);
+    const padAt = wristL.clone().addScaledVector(dir, 0.049);
     pad.translate(padAt.x, padAt.y, padAt.z);
     parts.push(pad);
     parts.push(turned(wristL.clone().addScaledVector(dir, -0.01), wristL.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.026]], seg(8), 0.8));
     // Plan item 319 slice 2: jointed like the umbrella fist: a tapering bone between each pair of joints, rounded
     // knuckles between, the tip narrowest (one even tube read as a rubber finger close up).
+    // Plan item 319 slice 78: each finger one smooth tapering tube through its joints (a capsule per bone overlapped
+    // at every knuckle, and each overlap drew its own ink crease: the curled fingers read as a chain's links).
     const finger = (pts: THREE.Vector3[], r: number) => {
       const n = pts.length - 1;
-      for (let k = 0; k < n; k++) parts.push(limb(pts[k]!, pts[k + 1]!, r * (1.06 - (0.26 * k) / n), r * (1.06 - (0.26 * (k + 1)) / n), seg(8)));
+      parts.push(taperTube(pts, pts.map((_, k) => r * (1.06 - (0.26 * k) / n)), seg(8)));
     };
     finger([V(0.175, -0.292, 0.062), V(0.178, -0.304, 0.068), V(0.181, -0.311, 0.078), V(0.183, -0.318, 0.09)], 0.0078);
     finger([V(0.175, -0.294, 0.05), V(0.179, -0.314, 0.058), V(0.182, -0.327, 0.068), V(0.184, -0.334, 0.08)], 0.008);
