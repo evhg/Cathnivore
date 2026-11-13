@@ -1583,8 +1583,10 @@ body {
 }
 /* Plan item 96: at D the posters take the hero's lower third, so Cath and the words above them are shorter. */
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-  .hero { align-items: end; padding-top: 2vh; }
-  .hero-cath { height: min(44vh, 420px); margin-bottom: 0; }
+  /* Plan item 352: the stall stands 48 px lower and Cath a little shorter, so the awning clears her head by 40 px under
+     the page's top and the posters still end on the first screen. */
+  .hero { align-items: end; padding-top: calc(2vh + clamp(0px, 24vh - 168px, 48px)); }
+  .hero-cath { height: min(40vh, 400px); margin-bottom: 0; }
   /* Plan item 234: she stands on a low market crate, not on the sky over the horizon: two wood slats under her
      boots with a dark gap between and a lit top edge. */
   .hero-cath::after {
