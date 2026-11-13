@@ -581,9 +581,16 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       const ground = plotKind(level, c, r);
       if (ground !== "water" && ground !== "high") {
         // Plan item 345: a plot joins the plots of its field beside it (no gap, furrows running the run's length).
-        const join = (dc: number) => !leadIn.has(`${c + dc},${r}`) && sameField(level, c, r, c + dc, r);
-        const j: Join = { l: join(-1), r: join(1) };
-        if (!leadIn.has(`${c},${r}`)) paintPlot(ctx, x, y, s, looks.get(`${c},${r}`) ?? "earth", j.l || j.r || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, j);
+        // The field's first plot paints the whole run as one bed (no seam between its plots); a puddle is its own.
+        const join = (cc: number, dc: number) => !leadIn.has(`${cc + dc},${r}`) && sameField(level, cc, r, cc + dc, r);
+        if (leadIn.has(`${c},${r}`)) continue;
+        const look = looks.get(`${c},${r}`) ?? "earth";
+        if (!join(c, -1)) {
+          let n = 1;
+          while (join(c + n - 1, 1)) n++;
+          paintPlot(ctx, x, y, s, look, n > 1 || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, n);
+        }
+        if (look === "puddle") paintPuddle(ctx, x, y, s, c * 131 + r * 71 + level.id * 7);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -662,57 +669,52 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
 }
 
 /** Plan item 52: a plot drawn by what lies under it, so neighbouring beds differ. */
-/** Plan item 345: which sides of a plot run on into the same field. */
-interface Join { l: boolean; r: boolean }
-const NO_JOIN: Join = { l: false, r: false };
-
-/** A bed's box in a cell (inset `i` on every side not joined) and its corner radii [tl, tr, br, bl]. */
-function bedBox(x: number, y: number, s: number, i: number, rad: number, j: Join): { x: number; y: number; w: number; h: number; radii: number[] } {
-  const x0 = j.l ? x : x + i;
-  const x1 = j.r ? x + s : x + s - i;
-  return { x: x0, y: y + i, w: x1 - x0, h: s - i * 2, radii: [j.l ? 0 : rad, j.r ? 0 : rad, j.r ? 0 : rad, j.l ? 0 : rad] };
+/** A bed's box over `n` cells of a row (inset on its outer sides), in a cell of side `s`. */
+function bedBox(x: number, y: number, s: number, i: number, n: number): { x: number; y: number; w: number; h: number } {
+  return { x: x + i, y: y + i, w: n * s - i * 2, h: s - i * 2 };
 }
 
-function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, j: Join = NO_JOIN): void {
+/** A puddle in one corner of an earth bed, catching the sky. */
+function paintPuddle(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, seed: number): void {
+  const r01 = rng(seed);
+  const px = x + s * (0.34 + r01() * 0.32);
+  const py = y + s * (0.36 + r01() * 0.28);
+  ctx.save();
+  ctx.fillStyle = "rgba(60,40,18,0.3)";
+  ctx.beginPath();
+  ctx.ellipse(px, py + s * 0.015, s * 0.19, s * 0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const g = ctx.createLinearGradient(px, py - s * 0.1, px, py + s * 0.1);
+  g.addColorStop(0, "rgba(196,226,240,0.92)");
+  g.addColorStop(1, "rgba(104,150,182,0.9)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(px, py, s * 0.17, s * 0.095, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = Math.max(1, s * 0.022);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(px - s * 0.09, py - s * 0.03);
+  ctx.lineTo(px - s * 0.02, py - s * 0.05);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** Plan item 52: a plot drawn by what lies under it; item 345: `n` plots of one field along a row as one bed. */
+function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, n = 1): void {
   if (look === "earth" || look === "puddle") {
-    paintBed(ctx, x, y, s, across, j);
-    if (look === "puddle") {
-      // A puddle in one corner of the bed, catching the sky.
-      const r01 = rng(seed);
-      const px = x + s * (0.34 + r01() * 0.32);
-      const py = y + s * (0.36 + r01() * 0.28);
-      ctx.save();
-      ctx.fillStyle = "rgba(60,40,18,0.3)";
-      ctx.beginPath();
-      ctx.ellipse(px, py + s * 0.015, s * 0.19, s * 0.11, 0, 0, Math.PI * 2);
-      ctx.fill();
-      const g = ctx.createLinearGradient(px, py - s * 0.1, px, py + s * 0.1);
-      g.addColorStop(0, "rgba(196,226,240,0.92)");
-      g.addColorStop(1, "rgba(104,150,182,0.9)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.ellipse(px, py, s * 0.17, s * 0.095, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.7)";
-      ctx.lineWidth = Math.max(1, s * 0.022);
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(px - s * 0.09, py - s * 0.03);
-      ctx.lineTo(px - s * 0.02, py - s * 0.05);
-      ctx.stroke();
-      ctx.restore();
-    }
+    paintBed(ctx, x, y, s, across, n);
     return;
   }
   const i = s * 0.1;
   const w = s - i * 2;
   const rad = s * 0.18;
-  const r01 = rng(seed);
-  const b = bedBox(x, y, s, i, rad, j);
+  const b = bedBox(x, y, s, i, n);
   ctx.save();
   ctx.fillStyle = "rgba(40,30,10,0.14)";
   ctx.beginPath();
-  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, b.radii);
+  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, rad);
   ctx.fill();
   const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
   if (look === "stubble") {
@@ -726,10 +728,12 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   }
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.roundRect(b.x, b.y, b.w, b.h, b.radii);
+  ctx.roundRect(b.x, b.y, b.w, b.h, rad);
   ctx.fill();
   ctx.clip();
   ctx.lineCap = "round";
+  // Each plot of the field gets its own scatter, from its own seed.
+  const scatter = (x: number, r01: () => number): void => {
   if (look === "stubble") {
     const rows = 4;
     for (let k = 0; k < rows; k++) {
@@ -783,9 +787,11 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
       ctx.fill();
     }
   }
+  };
+  for (let cell = 0; cell < n; cell++) scatter(x + cell * s, rng(seed + cell * 131));
   ctx.restore();
-  // Item 345: a lone bed keeps its pale rim; a field's beds run on with no seam between them.
-  if (!j.l && !j.r) {
+  // Item 345: a lone bed keeps its pale rim; a field runs on with no seam between its plots.
+  if (n === 1) {
     ctx.strokeStyle = "rgba(255,255,230,0.18)";
     ctx.lineWidth = Math.max(1, s * 0.02);
     ctx.beginPath();
@@ -794,10 +800,13 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   }
   // Plan item 78: about a third of the stubble beds have a stook or two of last year's sheaves standing in them,
   // so a block of plots reads as a farm at harvest's end, not a repeating tile.
-  if (look === "stubble" && r01() < 0.38) {
-    const n = r01() < 0.4 ? 2 : 1;
-    for (let k = 0; k < n; k++) paintStook(ctx, x + s * (0.3 + 0.4 * k + (r01() - 0.5) * 0.12), y + s * (0.7 + (r01() - 0.5) * 0.1), s * 0.3);
-  }
+  if (look === "stubble")
+    for (let cell = 0; cell < n; cell++) {
+      const r01 = rng(seed + cell * 131 + 7);
+      if (r01() >= 0.38) continue;
+      const k2 = r01() < 0.4 ? 2 : 1;
+      for (let k = 0; k < k2; k++) paintStook(ctx, x + cell * s + s * (0.3 + 0.4 * k + (r01() - 0.5) * 0.12), y + s * (0.7 + (r01() - 0.5) * 0.1), s * 0.3);
+    }
 }
 
 /** A stook: four sheaves leant together, a cone of straw tied at the waist, its shadow falling right. */
@@ -840,35 +849,35 @@ function paintStook(ctx: CanvasRenderingContext2D, cx: number, base: number, h: 
  * Plan item 19: a plot is a tilled bed. A soft rim of turned earth, then furrows (a shadow under each ridge, a lit
  * crest on top), turned one way or the other so a block of plots reads as a patchwork, not a grid.
  */
-function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean, j: Join = NO_JOIN): void {
+function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean, n = 1): void {
   const i = s * 0.1;
   const w = s - i * 2;
   const rad = s * 0.18;
-  const b = bedBox(x, y, s, i, rad, j);
+  const b = bedBox(x, y, s, i, n);
   ctx.save();
   // Shadow where the bed sits a touch below the grass, then the soil.
   ctx.fillStyle = "rgba(40,30,10,0.16)";
   ctx.beginPath();
-  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, b.radii);
+  ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, rad);
   ctx.fill();
   const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
   g.addColorStop(0, "rgba(128,92,52,0.26)");
   g.addColorStop(1, "rgba(96,66,36,0.32)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.roundRect(b.x, b.y, b.w, b.h, b.radii);
+  ctx.roundRect(b.x, b.y, b.w, b.h, rad);
   ctx.fill();
   ctx.clip();
-  const n = 3;
+  const rows = 3;
   ctx.lineCap = "round";
-  for (let k = 0; k < n; k++) {
-    const p = i + w * ((k + 0.5) / n);
+  for (let k = 0; k < rows; k++) {
+    const p = i + w * ((k + 0.5) / rows);
     const seg = (dx: number, dy: number) => {
       ctx.beginPath();
       if (across) {
-        // A field's furrows run on through the joined sides.
-        ctx.moveTo(j.l ? x - 1 : x + i + s * 0.06, y + p + dy);
-        ctx.lineTo(j.r ? x + s + 1 : x + i + w - s * 0.06, y + p + dy);
+        // A field's furrows run the run's whole length.
+        ctx.moveTo(x + i + s * 0.06, y + p + dy);
+        ctx.lineTo(x + n * s - i - s * 0.06, y + p + dy);
       } else {
         ctx.moveTo(x + p + dx, y + i + s * 0.06);
         ctx.lineTo(x + p + dx, y + i + w - s * 0.06);
@@ -883,11 +892,11 @@ function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number
     seg(-s * 0.012, -s * 0.012);
   }
   ctx.restore();
-  // A lip of grass over the bed's top edge.
+  // A lip of grass round the bed (the whole field's).
   ctx.strokeStyle = "rgba(255,255,230,0.18)";
   ctx.lineWidth = Math.max(1, s * 0.02);
   ctx.beginPath();
-  ctx.roundRect(x + i, y + i, w, w, rad);
+  ctx.roundRect(b.x, b.y, b.w, b.h, rad);
   ctx.stroke();
 }
 
