@@ -2042,6 +2042,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     if (pencil) {
       li.classList.add("act-pencil");
       li.dataset.pencil = "";
+      if (n === shown + 1) li.dataset.next = "";
     }
     const got = lvs.reduce((a, lv) => a + (data.stars[String(lv.id)] ?? 0), 0);
     const head = document.createElement("div");
@@ -2088,7 +2089,18 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const kicker = document.createElement("span");
       kicker.className = "act-fog-kicker";
       kicker.textContent = n === shown + 1 ? `Beyond the hedge · Act ${n}` : `Further on · Act ${n}`;
-      veil.append(kicker, n === shown + 1 ? `Beat ${levels[(n - 1) * 10 - 1]?.name ?? "the boss"} and the lane runs on into it.` : "Still in pencil: the lane gets there.");
+      if (n === shown + 1) {
+        // Plan item 347: the next act's sign speaks in Cath's voice, her face beside it.
+        veil.classList.add("act-next-note");
+        const face = document.createElement("span");
+        face.className = "act-fog-face";
+        face.setAttribute("aria-hidden", "true");
+        face.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+        const words = document.createElement("span");
+        words.className = "act-fog-words";
+        words.append(kicker, `${lvs[0]!.place} is past that gate. Beat ${levels[(n - 1) * 10 - 1]?.name ?? "the boss"} and I'll open it.`);
+        veil.append(face, words);
+      } else veil.append(kicker, "Still in pencil: the lane gets there.");
       // Beside the banner, not in it: on a phone it would sit on the act's title (and the banner's top fades).
       pencilNote = veil;
     } else if (!firstUnlocked) {

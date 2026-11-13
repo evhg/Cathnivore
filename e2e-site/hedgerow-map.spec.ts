@@ -62,7 +62,7 @@ test('plan item 18: no banner overlaps another stop, its padlock or its banner (
 })
 
 for (const reduced of [false, true]) {
-  // Plan item 153 (was item 18's fog): a newly opened act inks in from its pencil drawing, once.
+  // Plan item 153 (was item 18's fog): a newly opened act inks in from its pencil drawing, once (item 347: its mist lifts).
   test(`plan item 153: a newly opened act inks in from pencil once${reduced ? ' (a fade under reduced motion)' : ''}`, async ({ page }) => {
     if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
     await seed(page, 9)
@@ -79,7 +79,10 @@ for (const reduced of [false, true]) {
     await expect(wash).toHaveCount(1)
     await expect(page.locator('li.act-unveil')).toHaveAttribute('data-act', '2')
     await expect(page.locator('li[data-act="2"]')).not.toHaveAttribute('data-pencil', '')
-    await expect(wash).toHaveCSS('animation-name', reduced ? 'ink-fade' : 'ink-in')
+    // Plan item 347: the mist lifts over 600-1000 ms (a fade under reduced motion)
+    await expect(wash).toHaveCSS('animation-name', reduced ? 'ink-fade' : 'fog-lift')
+    const ms = parseFloat(await wash.evaluate((e) => getComputedStyle(e).animationDuration)) * 1000
+    if (!reduced) expect(ms >= 600 && ms <= 1000, `${ms} ms`).toBe(true)
     // It clears itself, and doesn't play again.
     await expect(wash).toHaveCount(0, { timeout: 8000 })
     await expect(page.locator('li.act-unveil')).toHaveCount(0)

@@ -4203,21 +4203,23 @@ img.act-scene {
   #screen-select > .top .back { min-height: 40px; }
   #screen-select .top-tools { padding-top: 4px; }
 }
-/* Plan item 153: a newly opened act inks in from its pencil drawing, top to bottom: a graphite layer over it (a
-   backdrop filter) is wiped away down the act. A fade under reduced motion. */
+/* Plan item 153, reworked by item 347: a newly opened act comes out of its mist: the misty layer it wore while locked
+   (65% saturation, a paper fog) lifts off over 800 ms, rising as it thins. A fade under reduced motion. */
 .act-unveil { position: relative; }
 .unveil-wash {
   position: absolute;
   inset: 0;
   z-index: var(--z-fx);
   pointer-events: none;
-  backdrop-filter: grayscale(1) sepia(0.22) contrast(1.08);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--paper-hi) 40%, transparent), color-mix(in srgb, var(--paper-hi) 40%, transparent) 92%, transparent);
-  animation: ink-in 2.6s cubic-bezier(0.45, 0, 0.35, 1) 0.4s both;
+  backdrop-filter: saturate(0.65);
+  background:
+    radial-gradient(60% 50% at 50% 20%, color-mix(in srgb, var(--paper-hi) 55%, transparent), transparent 75%),
+    linear-gradient(180deg, color-mix(in srgb, var(--paper-hi) 30%, transparent), color-mix(in srgb, var(--paper-hi) 30%, transparent) 92%, transparent);
+  animation: fog-lift 0.8s cubic-bezier(0.3, 0, 0.3, 1) 0.3s both;
 }
-@keyframes ink-in {
-  from { clip-path: inset(0 0 0 0); }
-  to { clip-path: inset(100% 0 0 0); }
+@keyframes fog-lift {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-4%); }
 }
 @keyframes ink-fade { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -5245,6 +5247,44 @@ img.act-scene {
   text-wrap: balance;
 }
 #screen-select .act-pencil-note .act-fog-kicker { color: var(--ink-2); }
+/* Plan item 347: the next act is a misty vista in its own colours (it was greyed to graphite): the country at about
+   65% saturation behind a soft fog over its banner, its sign a hanging board with Cath's face and her line. */
+#screen-select .act.act-pencil[data-next] {
+  filter: saturate(0.65);
+  background-image: linear-gradient(color-mix(in srgb, var(--paper-hi) 30%, transparent), color-mix(in srgb, var(--paper-hi) 30%, transparent)), var(--ground);
+}
+#screen-select .act.act-pencil[data-next] .act-scene { filter: none; opacity: 1; }
+#screen-select .act.act-pencil[data-next] .scenery .prop { filter: none; opacity: 0.8; }
+#screen-select .act.act-pencil[data-next] .act-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 70% at 50% 60%, color-mix(in srgb, var(--paper-hi) 55%, transparent), transparent 75%),
+    linear-gradient(180deg, transparent 30%, color-mix(in srgb, var(--paper-hi) 45%, transparent));
+  pointer-events: none;
+}
+#screen-select .act-next-note {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 8px;
+  border: 2px solid var(--wood, var(--ink-2));
+  background: var(--paper-hi);
+  box-shadow: var(--sh-2);
+  text-align: left;
+}
+#screen-select .act-next-note .act-fog-face {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-shade);
+  box-shadow: 0 0 0 2px var(--line);
+}
+#screen-select .act-next-note .act-fog-face svg { display: block; width: 100%; height: 100%; }
+#screen-select .act-next-note .act-fog-words { display: flex; flex-direction: column; gap: 2px; }
 
 /* Plan item 153: one country, act running into act. A hedge with a field gate runs along each act's foot (the lane
    leaves through the gate), and the next act's banner rises out of its own ground instead of starting on a hard edge. */
