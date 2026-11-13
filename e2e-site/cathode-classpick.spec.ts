@@ -356,7 +356,7 @@ test('the class weapon is lit in 3D with a specular highlight', async ({ page, h
 })
 
 // Plan item 233: at D the names are a lit rack: each row carries its weapon in neon outline (48 px or more) over a
-// four-pip stat strip, the picked row lifts, and no empty band over 120 px stands in the left column.
+// labelled range meter (plan item 334), the picked row lifts, and no empty band over 120 px stands in the left column.
 test('at D the classes are a lit rack with no empty band under them; keys move the pick', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'desktop layout; the phone keeps its row of names')
   test.setTimeout(300_000)
@@ -367,14 +367,19 @@ test('at D the classes are a lit rack with no empty band under them; keys move t
     const rows = [...document.querySelectorAll<HTMLElement>('.cp-opt')]
     return rows.map((r) => ({
       gear: r.querySelector('.cp-opt-gear')!.getBoundingClientRect().width,
-      pips: r.querySelectorAll('.cp-pip').length,
+      segs: r.querySelectorAll('.cp-opt-meter .cp-seg').length,
+      label: r.querySelector('.cp-meter-k')?.textContent,
+      word: r.querySelector('.cp-meter-v')?.textContent,
       bottom: r.getBoundingClientRect().bottom,
     }))
   })
   expect(rack).toHaveLength(5)
   for (const r of rack) {
     expect(r.gear).toBeGreaterThanOrEqual(48)
-    expect(r.pips).toBe(4)
+    // Plan item 334: a labelled three-step range meter, not four bare pips.
+    expect(r.segs).toBe(3)
+    expect(r.label).toBe('Range')
+    expect(['Close', 'Mid', 'Long']).toContain(r.word)
   }
   // The gap from the last row to the first of her words, in the left column (x 0-560).
   const wordsTop = await page.evaluate(() => {

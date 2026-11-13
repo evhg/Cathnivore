@@ -727,10 +727,14 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-opt[aria-checked="true"] { transform: translateX(calc(var(--u) * 14)); }
 .cp-opt[aria-checked="true"]::after { background-size: 100% 100%; border-bottom-color: rgb(var(--accent-rgb, var(--blood-rgb)) / .55); }
 .cp-opt-body { display: grid; gap: calc(var(--u) * 12); min-width: 0; }
-.cp-opt-pips { display: flex; gap: calc(var(--u) * 6); }
-.cp-pip { position: relative; width: calc(var(--u) * 34); height: max(3px, calc(var(--u) * 5)); background: rgb(var(--ink-rgb) / .12); } /* px-ok */
-.cp-pip::after { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 0) * 100% / .875); max-width: 100%; background: var(--ink-2); }
-.cp-opt[aria-checked="true"] .cp-pip::after { background: var(--ink); }
+.cp-opt-meter { display: flex; align-items: center; gap: calc(var(--u) * 10); font: 700 var(--fs-1)/1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .05em; text-transform: uppercase; }
+.cp-meter-k { color: var(--ink-3); }
+.cp-meter-v { color: var(--ink-2); }
+.cp-meter-segs { display: flex; gap: calc(var(--u) * 4); }
+.cp-seg { width: calc(var(--u) * 26); height: max(4px, calc(var(--u) * 7)); transform: skewX(-18deg); background: rgb(var(--ink-rgb) / .14); } /* px-ok */
+.cp-seg.is-on { background: var(--ink-2); }
+.cp-opt[aria-checked="true"] .cp-seg.is-on { background: rgb(var(--accent-rgb, var(--blood-rgb))); box-shadow: 0 0 calc(var(--u) * 6) rgb(var(--accent-rgb, var(--blood-rgb)) / .6); }
+.cp-opt[aria-checked="true"] .cp-meter-v { color: var(--ink); }
 .cp-opt-gear {
   flex: none;
   margin-left: auto;
@@ -764,7 +768,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-list { grid-auto-rows: max(40px, calc(var(--u) * 72)); } /* px-ok: tap target */
   .cp-opt { padding-right: 0; }
   .cp-opt[aria-checked="true"] { transform: none; }
-  .cp-opt::after, .cp-opt-pips, .cp-opt-gear { display: none; }
+  .cp-opt::after, .cp-opt-meter, .cp-opt-gear { display: none; }
   .cp-opt-body { display: contents; }
 }
 .cp-words { margin-top: auto; padding-top: calc(var(--u) * 28); max-width: calc(var(--u) * 620); }

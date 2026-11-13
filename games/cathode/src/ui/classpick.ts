@@ -40,6 +40,11 @@ export interface ClassPickHooks {
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
 /** The stat sheet's full bar (no class starts above 35). */
 const ATTR_MAX = 40;
+/** Plan item 334: a gun's effective range as one of three steps (shotguns close, sidearms mid, rifles long). */
+export function rangeStep(range: number): 1 | 2 | 3 {
+  return range <= 50 ? 1 : range <= 150 ? 2 : 3;
+}
+const RANGE_WORD = ["Close", "Mid", "Long"] as const;
 export const HOLD_MS = 600;
 /** The armoury prop's depth: copies of the profile stacked front to back (plan item 199). */
 const PROP_LAYERS = 6;
@@ -82,14 +87,17 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     // numbers and the weapon's name.
     const body = el("span", "cp-opt-body", opt);
     el("span", "cp-opt-name", body, CLASSES[cls].name);
-    const pips = el("span", "cp-opt-pips", body);
-    pips.setAttribute("aria-hidden", "true");
-    for (const a of ATTRIBUTES) {
-      const pip = el("span", "cp-pip", pips);
-      pip.dataset.attr = a;
-      pip.style.setProperty("--v", (CLASS_START_ATTRIBUTES[cls][a] / ATTR_MAX).toFixed(3));
-    }
+    // Plan item 334: the four unlabelled pips said nothing; a labelled three-step range meter says how close she
+    // fights (from her starting gun's effective range).
     const gearBase = WEAPON_BASES[STARTING_WEAPON[cls]];
+    const reach = rangeStep(gearBase?.range ?? 0);
+    const meter = el("span", "cp-opt-meter", body);
+    meter.dataset.step = String(reach);
+    el("span", "cp-meter-k", meter, "Range");
+    const segs = el("span", "cp-meter-segs", meter);
+    segs.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < 3; i++) el("span", i < reach ? "cp-seg is-on" : "cp-seg", segs);
+    el("span", "cp-meter-v", meter, RANGE_WORD[reach - 1]);
     if (gearBase) {
       const gear = el("span", "cp-opt-gear", opt);
       gear.setAttribute("aria-hidden", "true");
