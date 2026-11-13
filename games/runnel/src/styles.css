@@ -2630,12 +2630,14 @@ body {
     rotate: 2deg;
   }
   .al-sky-art svg { display: block; width: 100%; height: 100%; }
-  /* The weather's words under the picture, on one line. */
+  /* The weather's words under the picture, kept to the picture's width: a long one ('Golden hour, a warm breeze')
+     ran 45 px past the rail into the board at 1440 (critique 2026-11-13), so it wraps, balanced. */
   .al-sky figcaption {
     font-size: var(--fs-label, 0.75rem);
     font-style: italic;
     line-height: 1.2;
-    white-space: nowrap;
+    max-width: 120px;
+    text-wrap: balance;
     text-align: center;
     color: var(--ink);
   }
