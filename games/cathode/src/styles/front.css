@@ -702,7 +702,8 @@
   font-size: var(--fs-1);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  /* plan item 364: ink-2 (ink-3 read low against the street's brick on a phone) */
+  color: var(--ink-2);
 }
 /* The build stamp: a quiet line under Settings' Done (C13T: off the front door). */
 .build-ver {
