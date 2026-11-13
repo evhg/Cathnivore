@@ -503,6 +503,38 @@ test('the List and the dossier are painted mugshots', async ({ page, hasTouch })
     expect(sd, `photo ${i}`).toBeGreaterThan(12)
   }
   if (!hasTouch) expect((await page.locator('#dossier .dossier-photo').boundingBox())!.width).toBeGreaterThanOrEqual(140)
+  // Plan item 321: the dossier's print is a booking photo under a hard flash: the shadow cheek is 40%+ darker (relative
+  // luminance) than the lit one. The cheeks sit at (84, 110) and (117, 110) in the print's 200x240 box, under its 2.4
+  // degree dutch turn and 1.07 scale about the centre.
+  if (!hasTouch) {
+    const ph = page.locator('#dossier .dossier-photo')
+    await expect(ph.locator('svg[data-booking]')).toHaveCount(1)
+    const box = (await ph.boundingBox())!
+    const png = (await page.screenshot({ clip: box })).toString('base64')
+    const [lit, dark] = await page.evaluate(async (b64) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      const a = (-2.4 * Math.PI) / 180
+      return [84, 117].map((vx) => {
+        const dx = (vx - 100) * 1.07
+        const dy = (110 - 120) * 1.07
+        const px = ((100 + dx * Math.cos(a) - dy * Math.sin(a)) / 200) * c.width
+        const py = ((120 + dx * Math.sin(a) + dy * Math.cos(a)) / 240) * c.height
+        const d = x.getImageData(Math.round(px) - 2, Math.round(py) - 2, 5, 5).data
+        let s = 0
+        for (let k = 0; k < d.length; k += 4) s += 0.2126 * lin(d[k]!) + 0.7152 * lin(d[k + 1]!) + 0.0722 * lin(d[k + 2]!)
+        return s / 25
+      })
+    }, png)
+    expect(1 - dark! / lit!, `lit ${lit} shadow ${dark}`).toBeGreaterThanOrEqual(0.4)
+  }
 })
 
 // Plan item 99: the List's and the dossier's captions read at 4.5:1 or more against their print (shot with the

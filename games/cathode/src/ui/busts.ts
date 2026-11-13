@@ -71,8 +71,8 @@ function face(shape: string, shadow: string): string {
 <g fill="${SKIN_DK}" opacity=".13"><ellipse cx="88" cy="89" rx="10" ry="5.5"/><ellipse cx="112" cy="89" rx="10" ry="5.5"/></g>`;
 }
 
-function crisp(id: string): string {
-  return frame(
+function crisp(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
 <!-- double-breasted pinstripe, wide peaked lapels -->
@@ -119,8 +119,8 @@ ${face(
   );
 }
 
-function vane(id: string): string {
-  return frame(
+function vane(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
 <!-- white coat with a high collar over dark scrubs -->
@@ -162,8 +162,8 @@ ${face(
   );
 }
 
-function pell(id: string): string {
-  return frame(
+function pell(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
 <!-- navy suit, broad and soft, with the chain of office across it -->
@@ -211,15 +211,15 @@ ${face(
   );
 }
 
-function chair(id: string): string {
-  return frame(
+function chair(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
-<!-- backlit: a window of the Spire behind him, his face lost in shadow -->
+<!-- backlit: a window of the Spire behind him, his face lost in shadow --><!--set-->
 <rect x="22" y="14" width="156" height="150" fill="#1b1e26"/>
 <g stroke="#2c303b" stroke-width="2">${[48, 74, 100, 126, 152].map((x) => `<line x1="${x}" y1="14" x2="${x}" y2="164"/>`).join("")}${[44, 74, 104, 134].map((y) => `<line x1="22" y1="${y}" x2="178" y2="${y}"/>`).join("")}</g>
 <g fill="#6a645a">${[30, 58, 84, 110, 136, 162].map((x, i) => `<rect x="${x}" y="${120 + (i % 3) * 8}" width="${6 + (i % 2) * 4}" height="${44 - (i % 3) * 8}"/>`).join("")}</g>
-<!-- high-backed chair -->
+<!--/set--><!-- high-backed chair -->
 <path d="M36 240 L40 70 C40 52 52 44 68 44 L132 44 C148 44 160 52 160 70 L164 240 Z" fill="#1a1c23"/>
 <path d="M44 236 L46 72 C46 58 56 52 68 52 L132 52 C144 52 154 58 154 72 L156 236" stroke="#353945" stroke-width="1.5" fill="none"/>
 <!-- the man: shoulders and head in silhouette with a cold rim -->
@@ -244,8 +244,8 @@ function chair(id: string): string {
 }
 
 /** Plan item 99: Tomas Reed, the harbour man the first case is after: a rain slicker, a knit cap, stubble. */
-function reed(id: string): string {
-  return frame(
+function reed(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
 <path d="M0 240 L6 194 C22 176 52 168 74 164 L100 176 L126 164 C148 168 178 176 194 194 L200 240 Z" fill="#2f3a2a"/>
@@ -274,8 +274,8 @@ ${face(
 }
 
 /** Plan item 99: the Mind Under the River: a figure of cold light in the dark, cables where the shoulders end. */
-function mind(id: string): string {
-  return frame(
+function mind(id: string, wrap: Wrap = frame): string {
+  return wrap(
     id,
     `
 <g stroke="#3a3f44" stroke-width="2" fill="none" opacity=".7">${[30, 52, 74, 126, 148, 170].map((x, i) => `<path d="M${x} 240 C${x + (i < 3 ? 10 : -10)} 210 ${x + (i < 3 ? 30 : -30)} 196 ${i < 3 ? 80 : 120} 176"/>`).join("")}</g>
@@ -291,7 +291,54 @@ function mind(id: string): string {
   );
 }
 
-const DRAW: Record<BustId, (id: string) => string> = { crisp, vane, pell, chair, reed, mind };
+const DRAW: Record<BustId, (id: string, wrap?: Wrap) => string> = { crisp, vane, pell, chair, reed, mind };
+
+type Wrap = (id: string, body: string, glow?: number) => string;
+
+/**
+ * Plan item 321: a named target's print is a booking photo, not a flat drawing: the bust stands against a pale wall
+ * with a height chart, lit by one hard flash a little left of the lens, so the face takes a lit cheek and a deep
+ * shadow side and the head throws a hard shadow on the wall beside it; the frame sits at a slight dutch angle, with
+ * the flash's falloff into the corners and film grain. (The named cast has no 3D models of its own: in the game every
+ * boss fights in a scaled Enforcer rig, so a render of "the real model" would print the same helmet five times.)
+ */
+function booking(id: string, who: BustId, small: boolean, slateG: string): string {
+  // A bust's own set (the Chair's Spire window) stays out of the booking room.
+  const body = DRAW[who](id, (_i, b) => b).replace(/<!--set-->[\s\S]*?<!--\/set-->/g, "");
+  // Feet and inches up the wall: a line every 18 units (half a foot), heavier and lettered at each foot.
+  const chart = Array.from({ length: 13 }, (_, i) => {
+    const y = 6 + i * 18;
+    const foot = i % 2 === 0;
+    const label = 7 - i / 2;
+    return `<line x1="0" y1="${y}" x2="200" y2="${y}" stroke="#4a4740" stroke-width="${foot ? 1.1 : 0.5}" opacity="${foot ? 0.5 : 0.32}"/>${
+      foot && !small && label > 0 ? `<text x="6" y="${y - 2}" font-family="Archivo, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text><text x="194" y="${y - 2}" text-anchor="end" font-family="Archivo, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text>` : ""
+    }`;
+  }).join("");
+  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}" data-booking="1">
+<defs>
+<radialGradient id="w${id}" cx="44%" cy="36%" r="78%"><stop offset="0" stop-color="#e4e0d4"/><stop offset=".5" stop-color="#b3aea1"/><stop offset="1" stop-color="#4b4842"/></radialGradient>
+<linearGradient id="d${id}" x1="0" x2="1"><stop offset=".36" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity=".42"/><stop offset=".85" stop-color="#000" stop-opacity=".62"/></linearGradient>
+<radialGradient id="h${id}" cx="41%" cy="37%" r="24%"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="v${id}" cx="46%" cy="40%" r="74%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".62"/></radialGradient>
+<filter id="c${id}" x="-10%" y="-10%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.6"/><feOffset dx="10" dy="5" result="o"/><feFlood flood-color="#17161a" flood-opacity=".62"/><feComposite in2="o" operator="in"/></filter>
+<filter id="f${id}"><feComponentTransfer><feFuncR type="linear" slope="1.28" intercept="-.07"/><feFuncG type="linear" slope="1.28" intercept="-.07"/><feFuncB type="linear" slope="1.28" intercept="-.07"/></feComponentTransfer></filter>
+<filter id="a${id}"><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
+<mask id="m${id}"><use href="#b${id}" filter="url(#a${id})"/></mask>
+<filter id="n${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="11"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .2 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+</defs>
+<rect width="200" height="240" fill="#0b0c10"/>
+<g transform="translate(100 120) rotate(-2.4) scale(1.07) translate(-100 -120)">
+<rect width="200" height="240" fill="url(#w${id})"/>
+${chart}
+<use href="#b${id}" filter="url(#c${id})"/>
+<g id="b${id}" filter="url(#f${id})">${body}</g>
+<g mask="url(#m${id})"><rect width="200" height="240" fill="url(#d${id})"/><rect width="200" height="240" fill="url(#h${id})"/></g>
+${slateG}
+</g>
+<rect width="200" height="240" fill="#fff" filter="url(#n${id})"/>
+<rect width="200" height="240" fill="url(#v${id})"/>
+</svg>`;
+}
 
 /**
  * Plan item 99: a mugshot. The bust in front of a height chart, with the slate held at the chest; a withheld
@@ -306,10 +353,7 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
-  if (who) {
-    const inner = DRAW[who](id).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
-    return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}">${inner}${chart}${slateG}</svg>`;
-  }
+  if (who) return booking(id, who, small, slateG);
   // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, a bob, a bald head with glasses, a
   // hood), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
   // (A grey head at 10% luminance on 8% read as four identical black squares.)
@@ -325,6 +369,14 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<path d="M74 86 C74 58 86 46 100 46 C114 46 126 58 126 86 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 86 Z"/>`,
     // a hood
     `<path d="M62 150 C58 110 66 66 100 36 C134 66 142 110 138 150 C126 158 112 160 100 160 C88 160 74 158 62 150 Z"/>`,
+  ];
+  // Plan item 321: each its own build under the head (one shared pair of shoulders made any two prints overlap
+  // 0.86): a trench with its collar turned up, narrow shoulders, a heavy man's broad ones, a cloak falling from the hood.
+  const bodies = [
+    `<path d="M30 240 L34 200 C44 186 58 178 74 174 L68 134 L86 150 L100 160 L114 150 L132 134 L126 174 C142 178 156 186 166 200 L170 240 Z"/>`,
+    `<path d="M36 240 L40 206 C52 190 74 184 88 182 L92 150 L108 150 L112 182 C126 184 148 190 160 206 L164 240 Z"/>`,
+    `<path d="M0 240 L2 188 C16 170 48 162 76 158 L100 166 L124 158 C152 162 184 170 198 188 L200 240 Z"/>`,
+    `<path d="M54 240 C56 206 62 178 68 150 L132 150 C138 178 144 206 146 240 Z"/>`,
   ];
   const rims = [
     `<path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M118 40 C110 34 90 34 82 40" stroke="${RIM}" stroke-width="1.6" fill="none"/>`,
@@ -345,13 +397,16 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   ];
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld" data-silhouette="${v}">
 <defs><radialGradient id="r${id}" cx="50%" cy="36%" r="62%"><stop offset="0" stop-color="#7f93a8"/><stop offset=".6" stop-color="#3e4a58"/><stop offset="1" stop-color="#0e1014"/></radialGradient></defs>
+<rect width="200" height="240" fill="#0e1014"/>
+<g transform="translate(100 120) rotate(${v % 2 ? 2.2 : -2.2}) scale(1.07) translate(-100 -120)">
 <rect width="200" height="240" fill="url(#r${id})"/>${props[v]}${chart}
-<g fill="${FIG}"><path d="M24 240 L30 198 C46 180 70 172 84 168 L100 176 L116 168 C130 172 154 180 170 198 L176 240 Z"/>${heads[v]}</g>
+<g fill="${FIG}">${bodies[v]}${heads[v]}</g>
 ${rims[v]}
 <g transform="rotate(-6 100 95)"><rect x="62" y="86" width="76" height="18" fill="#b3122a" opacity=".92"/><rect x="62" y="86" width="76" height="18" fill="none" stroke="#f3ede2" stroke-width="1.2" opacity=".55"/></g>
 ${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
 <g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
 ${slateG}
+</g>
 </svg>`;
 }
 

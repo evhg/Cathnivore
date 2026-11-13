@@ -2,7 +2,7 @@ import { cathSceneSvg } from "../../../../shared/cath/scene";
 import { intelLine, talksHeld } from "../sim/talk";
 import { caseBoard, type CaseEntry } from "../sim/casefile";
 import { MODS, activeMods, broadcastLadder, deckBests } from "../sim/newgameplus";
-import { BUST_FOR_CASE, BUST_NAMES, bustSvg } from "./busts";
+import { BUST_FOR_CASE, BUST_NAMES, mugshotSvg } from "./busts";
 import { button, cssVar, el, svg } from "./dom";
 
 // Plan item 12: the case board is a cork wall. The List runs across the top as polaroids (Bea's surveillance
@@ -30,9 +30,10 @@ function polaroid(parent: Element, entry: CaseEntry | undefined, name: string, i
   const photo = el("figure", "case-photo", li);
   const who = entry ? BUST_FOR_CASE[entry.id] : undefined;
   if (who && state !== "locked") {
-    photo.innerHTML = bustSvg(who);
+    // Plan item 321: the same booking photo as the title's List (item 107's wordless slate at a print's size).
+    photo.innerHTML = mugshotSvg(who, name, true);
     photo.setAttribute("role", "img");
-    photo.setAttribute("aria-label", `Surveillance still of ${name}`);
+    photo.setAttribute("aria-label", `Booking photo of ${name}`);
   } else {
     // No still yet: a blank print with a question mark in grease pencil.
     el("span", "case-blank", photo, "?");

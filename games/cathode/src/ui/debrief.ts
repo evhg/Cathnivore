@@ -12,7 +12,7 @@ import {
   GRADE_WORD,
   type DebriefLedger,
 } from "../sim/debrief";
-import { BUST_FOR_CASE, bustSvg } from "./busts";
+import { BUST_FOR_CASE, mugshotSvg } from "./busts";
 import { button, cssVar, el, reducedMotion, trapTab } from "./dom";
 
 export interface DebriefStill {
@@ -58,7 +58,8 @@ export function openDebrief(parent: Element, info: DebriefInfo, onClose: () => v
   el("i", "case-pin", print);
   const photo = el("div", "case-photo", print);
   const who = BUST_FOR_CASE[info.caseId];
-  if (who) photo.innerHTML = bustSvg(who);
+  // Plan item 321: the List's booking photo, crossed out.
+  if (who) photo.innerHTML = mugshotSvg(who, "", true);
   else el("span", "case-blank", photo, "?");
   photo.insertAdjacentHTML(
     "beforeend",
