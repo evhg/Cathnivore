@@ -35,8 +35,10 @@ function polaroid(parent: Element, entry: CaseEntry | undefined, name: string, i
     photo.setAttribute("role", "img");
     photo.setAttribute("aria-label", `Booking photo of ${name}`);
   } else {
-    // No still yet: a blank print with a question mark in grease pencil.
-    el("span", "case-blank", photo, "?");
+    // Plan item 321: no still yet: the same backlit, redacted silhouette the title's List pins for this name.
+    photo.innerHTML = mugshotSvg(null, "", true, i);
+    photo.setAttribute("role", "img");
+    photo.setAttribute("aria-label", "Name withheld: a silhouette");
   }
   const caption = el("b", "case-name", li, state === "locked" ? "Name withheld" : name);
   if (state === "done") caption.setAttribute("aria-label", `${name}, closed`);
