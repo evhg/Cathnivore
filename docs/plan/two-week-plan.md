@@ -3360,7 +3360,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D.
 - **Size:** 1
 
-## 360. [ ] Hedgerow 3D: the field as continuous farmland under real light, not a tray of boxed plots
+## 360. [ ] Hedgerow 3D: the field as continuous farmland under real light, not a tray of boxed plots *(lane A, in progress)* *(slice 1, 2026-11-13 23:20 lane A: the 3D beds use item 345's fields: furrows along the field's long way, each plot's bed bridged to the next plot of its field, and timber edges only where the field meets other ground (none toward its own plots, the lane's hedge or the outer hedge): l21's boards 212 -> 64 (`dressing3d().boards`, checked at half or less in hedgerow-dressing3d). Same draw calls (instanced). dressing3d/3dframe/camera3d/closeframe/depot3d pass (27). Shots scratchpad h360 before/after, l21 and l34 at P and D. Left: barn, house and yard behind one fence; the warm key light with cast shadows and the sky gradient; the shadow-strip measure)*
 - **Why:** `plan1113b/hedge-l21-3d-D` (260-1060 x 180-860): every plot is a separate square ringed with box hedge on all four sides, about 40 identical hedged trays with bare dirt lanes between them. It reads as a seed tray. The light is flat and pale with no sky, and the hedges and plots cast no shadows (530-1000 x 600-860). `hedge-l21-3d-P` (110-390 x 260-680) is the same, cropped. Item 345 fixes this in 2D only, so the two views would disagree.
 - **Build:** reuse item 345's run and farmyard data (deterministic per level) in `render3d/`:
   - Touching plots of one crop become one bed, item 236's furrow normal map running the length of the run.

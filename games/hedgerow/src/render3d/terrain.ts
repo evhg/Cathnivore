@@ -6,7 +6,7 @@
 import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
-import { plotLooks, type PlotLook } from "../plotlook";
+import { fieldAt, plotLooks, sameField, type PlotLook } from "../plotlook";
 import { cropOf, type Crop } from "../growth";
 import { crayonNextBillboard, drawDecor, isWonLevel, rng } from "../theme";
 import { actLight } from "./palette";
@@ -847,9 +847,27 @@ export function buildGround(level: Level): Ground {
       {
         const look = lookOf(c, r);
         const base = look === "puddle" ? "earth" : look;
-        const turn = (c * 31 + r * 17 + level.id) % 2 === 0 ? 0 : Math.PI / 2;
-        beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: new THREE.Color(bedTint[base]).multiplyScalar(0.92 + deco() * 0.16) });
-        for (let side = 0; side < 4; side++) {
+        // Plan item 360: the plot belongs to a field (item 345's blocks, as in 2D): its furrows run the field's long
+        // way, its bed reaches across to the field's next plot, and its timber edge stands only where it meets other ground.
+        const field = fieldAt(level, c, r);
+        const fn = field ? field.c1 - field.c0 + 1 : 1;
+        const fm = field ? field.r1 - field.r0 + 1 : 1;
+        const across = fn > fm || (fn === fm && (c * 31 + r * 17 + level.id) % 2 === 0);
+        const turn = across ? 0 : Math.PI / 2;
+        const tint = new THREE.Color(bedTint[base]).multiplyScalar(0.92 + deco() * 0.16);
+        beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
+        const joins = (dc: number, dr: number) => sameField(level, c, r, c + dc, r + dr);
+        // The 0.22 gap to the next plot of the field: three small squares of the same bed over it, and a fourth at
+        // a corner shared by four plots of the field.
+        if (joins(1, 0)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 1, y: h, z: r + 0.5 + o, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
+        if (joins(0, 1)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 0.5 + o, y: h, z: r + 1, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
+        if (joins(1, 0) && joins(0, 1) && joins(1, 1)) beds[base].push({ x: c + 1, y: h, z: r + 1, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
+        const sides: Array<[number, number]> = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        for (const [side, [dc, dr]] of sides.entries()) {
+          // (none toward the next plot of its field, the lane, whose hedge edges it, or the field's outer hedge)
+          const nc = c + dc;
+          const nr = r + dr;
+          if (joins(dc, dr) || lane.has(`${nc},${nr}`) || nc < 0 || nr < 0 || nc >= cols || nr >= rows) continue;
           const along = side < 2;
           const off = (side % 2 ? 1 : -1) * 0.41;
           boards.push({ x: c + 0.5 + (along ? 0 : off), y: h + 0.015, z: r + 0.5 + (along ? off : 0), ry: along ? 0 : Math.PI / 2, s: 1, sy: 1, color: timberCols[Math.floor(deco() * timberCols.length)]! });
@@ -1057,7 +1075,7 @@ export function buildGround(level: Level): Ground {
       m.userData.dressing = true;
       group.add(m);
     }
-  group.userData.dressing = { plots: plotCount, dressed: dressedCount, laneEdges, hedgedEdges, meshes: 4 };
+  group.userData.dressing = { plots: plotCount, dressed: dressedCount, laneEdges, hedgedEdges, meshes: 4, boards: boards.length };
 
   // Plan item 198: each act's biome in 3D, from the 2D field's set. Saltmarsh first: tidal flats between the field
   // and the sea, reed beds on them, egrets wading, and boats moored out on the water. Four instanced meshes (the

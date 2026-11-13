@@ -1098,9 +1098,12 @@ function render(): void {
     host.react(flow.wet.size / playable, flow.solved, fields, flow.leaks.size > 0)
   }
 
+  // Plan item 68's strip shows the solve's time; the foot keeps what it doesn't (the next puzzle), and at D sits the
+  // note and its button side by side so the column doesn't grow past the screen (it ran 30 px over at 1440x900).
+  document.querySelector('.foot')?.toggleAttribute('data-solved', game.solved)
   if (game.solved) {
     ui.hint.textContent = isDaily
-      ? `Solved in ${formatTime(game.elapsedMs)}. Next puzzle in ${untilTomorrow()}.`
+      ? `Next puzzle in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
       : `Solved in ${formatTime(game.elapsedMs)}.`
     ui.btnNew.hidden = false
     ui.btnNew.textContent = isDaily || isOrchard || mode === 'sunday' ? 'See result' : 'New puzzle'

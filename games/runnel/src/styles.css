@@ -4807,3 +4807,23 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .fs-lit { fill: none; stroke: color-mix(in srgb, var(--paper) 70%, transparent); stroke-width: 0.8; stroke-linecap: round; }
 .fs-thistle-stem { fill: none; stroke: var(--ga-leaf); stroke-width: 1.6; stroke-linecap: round; }
 .fs-thistle { fill: color-mix(in srgb, var(--blossom-1, var(--clay)) 70%, var(--soil)); }
+
+/* A solved puzzle at D: the foot's note and its "See result" key share one row (stacked, they ran the column 30 px
+   past a 1440x900 screen). */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .foot[data-solved] {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .foot[data-solved] .hint {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .foot[data-solved] .btn {
+    flex: none;
+    min-height: 40px;
+    padding-inline: 14px;
+  }
+}
