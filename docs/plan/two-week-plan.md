@@ -3273,7 +3273,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - runnel-signboard, runnel-front, runnel-lesson-notebook, runnel-lesson-frame and ui-css-lint pass at P and D; shots P and D, light and dark.
 - **Size:** 1
 
-## 344. [ ] The bugs from the 2026-11-13 11:30 critique, fixed as one batch *(lane B, in progress)*
+## 344. [x] The bugs from the 2026-11-13 11:30 critique, fixed as one batch *(checked 2026-11-13 lane B, no change: NIGHT SHIFT's 'second copy' is the pick's own subtitle mid-reveal (the line dim before its words light, ns-play-D 565-900 x 780-830), not a duplicate; Hedgerow l34's second depot stands whole at the phone's left edge, its sign readable (hedge-l34-2d-P 5-110 x 615-660); the gate's HOLLOWELL sign stays: it marks where the lane enters the field, and the depot, off the field, is placed to keep clear of it (main.ts's depot spots use gateSignRect); shots scratchpad b344a, b344n)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1113a`)
   - **NIGHT SHIFT:** `ns-play-D` a faint second copy of the Ghost's line ("Nobody hears the shot...") over Cath's boots (565-900 x 780-830).
   - **Hedgerow:** `hedge-l34-2d-P` the second depot cut off at the bottom-left edge (0-55 x 615-660); `hedge-l21-2d-D` the gate's teal "HOLLOWELL" post label (280-365 x 475-520) repeats the depot's own sign.
