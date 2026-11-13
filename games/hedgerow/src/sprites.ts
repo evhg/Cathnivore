@@ -1549,7 +1549,7 @@ interface VehicleOpts {
 /** Plan item 285: set while a vehicle on an up/down run is drawn, so `vehicle` draws it from above. */
 let fromAbove = false;
 /** The kinds drawn by `vehicle` alone, which have a from-above view; the rest keep their side view on any run. */
-export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter", "wrapped", "influencer"]);
+export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter", "wrapped", "influencer", "bulldozer", "megadozer", "courier", "borer", "ship"]);
 
 /** A vehicle seen from above, nose to the right, centred on (x, y): its roof, cab and windscreen, the livery down
  *  both sides, the label on the roof, wheels at the corners and headlights at the nose. */
@@ -1594,6 +1594,64 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
     ctx.fillText(o.label, x0 + L * (cabFront ? 0.37 : 0.5), y);
   }
   shine(ctx, x0 + L * 0.12, y0 + W * 0.14, L * 0.3, W * 0.12);
+}
+
+/** Plan item 285: from-above views of the ground vehicles not drawn by `vehicle`, nose to the right, centred on the
+ *  body. (The Candor spheres read the same from any side; the quads, carriers, drones, blimp and swarm fly.) */
+const TOP_VIEW: Partial<Record<EnemyKind, (ctx: C, s: number, t: number) => void>> = {
+  bulldozer: (ctx, s, t) => dozerTop(ctx, s, t, false),
+  megadozer: (ctx, s, t) => dozerTop(ctx, s, t, true),
+  courier: (ctx, s) => {
+    // The deck and the bars, the rider's shoulders and helmet, the parcel box on the back.
+    rr(ctx, -s * 0.18, -s * 0.03, s * 0.36, s * 0.06, s * 0.03, "#2b2b30");
+    ctx.beginPath();
+    ctx.moveTo(s * 0.15, -s * 0.09);
+    ctx.lineTo(s * 0.15, s * 0.09);
+    ctx.stroke();
+    rr(ctx, -s * 0.24, -s * 0.08, s * 0.14, s * 0.16, s * 0.02, "#c79a62");
+    rr(ctx, -s * 0.08, -s * 0.11, s * 0.13, s * 0.22, s * 0.05, "#5ec0a8");
+    blob(ctx, 0, 0, s * 0.065, "#3a3a3a");
+  },
+  borer: (ctx, s) => {
+    rr(ctx, -s * 0.4, -s * 0.15, s * 0.7, s * 0.3, s * 0.04, "#7a828c");
+    ctx.fillStyle = "#c43b2f";
+    ctx.beginPath();
+    ctx.ellipse(s * 0.33, 0, s * 0.07, s * 0.19, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  },
+  ship: (ctx, s) => {
+    // The hull to a point at the bow, a deck of containers, the white bridge at the stern.
+    ctx.fillStyle = "#2f5a7a";
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.45, -s * 0.16);
+    ctx.lineTo(s * 0.3, -s * 0.16);
+    ctx.lineTo(s * 0.47, 0);
+    ctx.lineTo(s * 0.3, s * 0.16);
+    ctx.lineTo(-s * 0.45, s * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    const cols = ["#d93a2f", "#1f8a8a", "#f2c94c", "#5b6f8a"];
+    for (let i = 0; i < 6; i++) rr(ctx, -s * 0.22 + (i % 3) * s * 0.16, -s * 0.12 + Math.floor(i / 3) * s * 0.12, s * 0.15, s * 0.11, s * 0.01, cols[i % 4]!);
+    rr(ctx, -s * 0.42, -s * 0.11, s * 0.14, s * 0.22, s * 0.02, "#f4f6f8");
+  },
+};
+
+function dozerTop(ctx: C, s: number, t: number, big: boolean): void {
+  // Tracks down both sides, the yellow body, the cab's glass roof, the blade across the nose.
+  for (const side of [-1, 1]) rr(ctx, -s * 0.3, side * s * 0.13 - s * 0.05, s * 0.52, s * 0.1, s * 0.03, "#3a3a3a");
+  rr(ctx, -s * 0.27, -s * 0.12, s * 0.42, s * 0.24, s * 0.04, "#f2b51f");
+  rr(ctx, -s * 0.2, -s * 0.08, s * 0.16, s * 0.16, s * 0.03, "#a9d4e6");
+  rr(ctx, s * 0.26, -s * 0.22, s * 0.07, s * 0.44, s * 0.02, "#9aa0a6");
+  if (big) crown(ctx, -s * 0.12, s * 0.04, s * 0.1);
+  if (t > 0) {
+    ctx.fillStyle = "rgba(90,90,90,0.35)";
+    const ph = (t * 1.5) % 1;
+    ctx.beginPath();
+    ctx.arc(-s * (0.32 + ph * 0.12), -s * 0.06, s * (0.03 + ph * 0.05), 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 /** A side-on vehicle facing right, its wheels on the ground at y. */
@@ -1719,6 +1777,9 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   ctx.lineWidth = lw(s0);
   ctx.strokeStyle = INK;
   ctx.lineJoin = "round";
+  const topView = fromAbove ? TOP_VIEW[kind] : undefined;
+  if (topView) topView(ctx, s, tt);
+  else
   switch (kind) {
     case "van":
       vehicle(ctx, 0, 0, s, tt, { len: 0.62, h: 0.32, body: "#f4f6f8", stripe: "#1f8a8a", label: "H", wheels: 2 });
