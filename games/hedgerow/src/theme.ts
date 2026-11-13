@@ -591,6 +591,10 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
           paintPlot(ctx, x, y, s, look, n > 1 || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, n);
         }
         if (look === "puddle") paintPuddle(ctx, x, y, s, c * 131 + r * 71 + level.id * 7);
+        // Item 345: where this field meets a different crop below, a low hedge runs along the grass between them.
+        const below = leadIn.has(`${c},${r + 1}`) ? undefined : looks.get(`${c},${r + 1}`);
+        const flat = (l: PlotLook | undefined) => (l === "puddle" ? "earth" : l);
+        if (below && flat(below) !== flat(look)) paintFieldHedge(ctx, x, y + s, s, c * 37 + r * 11 + level.id);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -669,6 +673,31 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
 }
 
 /** Plan item 52: a plot drawn by what lies under it, so neighbouring beds differ. */
+/** Plan item 345: a cell's length of low hedge along the grass between two fields, centred on `y`: a dark base
+ *  line and a crown of leafy bumps, seeded so the run of hedge doesn't repeat. */
+function paintFieldHedge(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, seed: number): void {
+  const r01 = rng(seed);
+  ctx.save();
+  ctx.fillStyle = "rgba(40,30,10,0.2)";
+  ctx.fillRect(x, y + s * 0.02, s, s * 0.06);
+  ctx.fillStyle = "rgb(58,96,46)";
+  ctx.fillRect(x, y - s * 0.03, s, s * 0.06);
+  const bumps = 8;
+  for (let k = 0; k <= bumps; k++) {
+    const bx = x + (s * k) / bumps + (r01() - 0.5) * s * 0.03;
+    const br = s * (0.045 + r01() * 0.02);
+    ctx.fillStyle = "rgb(58,96,46)";
+    ctx.beginPath();
+    ctx.arc(bx, y, br, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(150,196,104,0.75)";
+    ctx.beginPath();
+    ctx.arc(bx - br * 0.25, y - br * 0.35, br * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 /** A bed's box over `n` cells of a row (inset on its outer sides), in a cell of side `s`. */
 function bedBox(x: number, y: number, s: number, i: number, n: number): { x: number; y: number; w: number; h: number } {
   return { x: x + i, y: y + i, w: n * s - i * 2, h: s - i * 2 };
