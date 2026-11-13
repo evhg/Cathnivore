@@ -3580,6 +3580,15 @@ html.no-animations .ability-moment * { animation: none !important; }
   }
   .setup .setup-table > .settings-card { padding: 6px 8px; border: 0; background: color-mix(in srgb, var(--paper-hi) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 14%, transparent); }
   .setup .setup-table > .setup-difficulty { background: color-mix(in srgb, var(--paper-hi) 94%, transparent); }
+  /* Plan item 349: one paper ground, no frames inside frames (borders ran three deep round the producers): the table
+     loses its wood frame and cloth, its sections lie on the page divided by a ruled line, and the mode pair loses
+     its card (its two choices keep their own edges). */
+  .setup .setup-table { margin: 0; padding: 0; gap: 0; border: 0; border-radius: 0; box-shadow: none; background: none; }
+  .setup .setup-table > .settings-card { padding: 10px 2px 12px; border-radius: 0; background: none; box-shadow: none; }
+  .setup .setup-table > .settings-card + .settings-card {
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--ink) 24%, transparent) 0 5px, transparent 5px 10px) top / 100% 1px no-repeat;
+  }
+  .setup .setup-mode.settings-card { border: 0; background: none; box-shadow: none; padding-inline: 2px; }
   /* Hollowell's price tags: three kraft tags with an eyelet; the picked one in Hollowell's orange. */
   .setup .setup-table .setup-difficulty .segmented { gap: 8px; padding: 0; border: 0; border-radius: 0; background: none; }
   .setup .setup-table .setup-difficulty .segmented label.price-tag {

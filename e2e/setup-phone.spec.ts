@@ -114,3 +114,27 @@ test('Cath speaks her setup line from a bust beside it', async ({ page }, testIn
   expect(m.line.top, s).toBeGreaterThanOrEqual(m.h1.bottom - 1)
   expect(m.fs, s).toBeGreaterThanOrEqual(12)
 })
+
+// Plan item 349: one paper ground on a phone, no frames inside frames: every control has at most one bordered
+// ancestor (the table, its sections and the mode pair lost their frames; a choice keeps its own edge).
+test('the phone setup has no nested frames round its controls', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 600, 'an upright phone')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.locator('.setup').waitFor()
+  const deep = await page.evaluate(() => {
+    const bordered = (e: Element) => {
+      const cs = getComputedStyle(e)
+      return (['Top', 'Right', 'Bottom', 'Left'] as const).some((s) => parseFloat(cs.getPropertyValue(`border-${s.toLowerCase()}-width`)) > 0 && cs.getPropertyValue(`border-${s.toLowerCase()}-style`) !== 'none')
+    }
+    return [...document.querySelectorAll('.setup button, .setup label, .setup input')]
+      .filter((c) => c.getClientRects().length)
+      .map((c) => {
+        let n = 0
+        for (let a = c.parentElement; a && a !== document.body; a = a.parentElement) if (bordered(a)) n++
+        return { n, what: (c.textContent ?? '').trim().slice(0, 20) }
+      })
+      .filter((x) => x.n > 1)
+  })
+  expect(deep).toEqual([])
+})
