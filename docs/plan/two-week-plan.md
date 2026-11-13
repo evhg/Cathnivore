@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-13T11:22Z
 
 
 
@@ -3244,3 +3243,79 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - `games-D` (122-290 x 500-530 vs 700-722): each card names its game twice, once as the poster logotype and again as the heading below it. Keep the one that reads better, and keep an accessible name either way.
 - **Accept:** each fix is shot at P and D. ui-css-lint and the specs for each game touched pass.
 - **Size:** 2
+
+## 341. [ ] Cathnivore: every region drawn as its place, with landmarks at the campaign map's scale on the play board
+- **Why:** `plan1113a/cath-game-D` (570-1160 x 115-690): each region is a pale, low-contrast wash and its landmark a faint 20-40 px line sketch at about 35-50% ink (Saltmarsh's lighthouse 1030-1050 x 180-220, Kingsmarket's clock tower 855-875 x 340-375, Rivermead's mill 1105-1145 x 350-385, Highmoor's sheep 780-845 x 165-205); only Hollowell's orange pieces read at a glance. `cath-campaign-D` draws the same places as bold, full-ink set pieces about 60 px tall (the lighthouse 405-435 x 310-370), so the style exists and the play board doesn't use it; the two even disagree on Kingsmarket (a monument on the campaign, 305-365 x 455-520, a clock tower on the board). At P (`cath-game-P` 20-370 x 165-500) the landmarks barely show.
+- **Build:** each region's landmark on the play board in the campaign map's language (full ink outline, flat colour, a ground shadow) at about a quarter of the hex's height, in the hex's free sector (the existing landmark/piece clear-box logic); richer ground per terrain (furrows, marsh reeds and ripples, Kingsmarket cobbles, Oakvale orchard dots) at a readable contrast under the pieces; one landmark per region shared by the campaign and the board from one module.
+- **Accept:**
+  - Each region's landmark 56 px+ tall at D (1440x900) and 26 px+ at P (390x844), at full opacity; its ink 3:1+ against its tile ground (measured from pixels in a spec).
+  - No landmark box overlaps a piece through round 7 (board-landmarks, board-scales, board-pieces pass).
+  - The campaign map and the board draw the same landmark per region (a shared id or a unit test).
+  - board-scale, board-diorama, region-closeup and ui-css-lint pass at P and D; shots P and D, light and dark.
+- **Size:** 2
+
+## 342. [ ] Cathnivore: the title's Daily as one chalk price board on the stall counter, not three stray widgets
+- **Why:** `plan1113a/cath-title-D` (0-1440 x 755-900): the counter band holds three separate small Daily widgets: the "No sale yet / Today's Daily is open" ticket (840-990 x 745-805), a dark pill "Win a Daily to hang the first pennant" (1022-1285 x 778-802, about 13 px), the green "NEXT #13 in 12h 37m" stamp (1318-1398 x 768-858), with a fourth Daily entry in the menu (125-478 x 630-695). The crates (515-605 x 715-765) and the jar (695-780 x 740-765) float on the plank, and most of the band is empty brown: no focal point (VISION 1.1).
+- **Build:** the ticket, pennant hint and countdown merged into one wooden-framed Daily chalkboard standing on the counter, Cath's chalk hand writing today's number, the status, the pennant goal and the next-in time, one object with one focal number; the crates and jar seated as props on the same counter line; on the phone the "No sale yet" tag becomes the same board in miniature.
+- **Accept:**
+  - At D exactly one Daily element in the counter band (a DOM count), its text 15 px+ at 4.5:1+.
+  - Today's number and the countdown from the same source as the menu's Daily button (a unit test or spec).
+  - No prop or board overlaps the menu, Cath or the board's frame (a box test at 1280 and 1440).
+  - title, title-counter, title-fit, title-table, daily-ritual pass at P and D; shots P and D, light and dark.
+- **Size:** 1
+
+## 343. [ ] Runnel: the desktop header as the phone's carved signboard, with real labelled buttons
+- **Why:** `plan1113a/runnel-D` (15-340 x 20-100): the header is plain text on paper, a grey "< Games" link, the wordmark and three bare 14-18 px glyphs (sound, stats, help at 218-235, 268-284, 318-330 x 68-88) with no button shape or labels. `runnel-P` (22-362 x 22-62) carries the same controls on a carved plank with 44 px wooden buttons, so desktop is the less finished. Below the notebook the "Tap a tile to turn it, hold to pin it." hint floats over 100 px of empty paper (60-345 x 790-900).
+- **Build:** at 1024 px+ the left column hangs the phone's signboard: a carved plank with the back link and wordmark; sound, stats and help as 44 px+ wooden buttons with visible labels; the tap/hold hint a chalk line on the plank's foot or a note pinned into the notebook. Reuse the phone's plank component and tokens.
+- **Accept:**
+  - At D the three controls 44x44 px+ each, with a visible label and an accessible name.
+  - The back link and controls inside the plank's box (a box test at 1280 and 1440); no left-column text under 13 px.
+  - runnel-signboard, runnel-front, runnel-lesson-notebook, runnel-lesson-frame and ui-css-lint pass at P and D; shots P and D, light and dark.
+- **Size:** 1
+
+## 344. [ ] The bugs from the 2026-11-13 11:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1113a`)
+  - **NIGHT SHIFT:** `ns-play-D` a faint second copy of the Ghost's line ("Nobody hears the shot...") over Cath's boots (565-900 x 780-830).
+  - **Hedgerow:** `hedge-l34-2d-P` the second depot cut off at the bottom-left edge (0-55 x 615-660); `hedge-l21-2d-D` the gate's teal "HOLLOWELL" post label (280-365 x 475-520) repeats the depot's own sign.
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 345. [ ] Hedgerow 2D: the field as a working farm, not a grid of identical tiles
+- **Why:** `plan1113a/hedge-l21-2d-D` (380-1000 x 100-880) and `hedge-l34-2d-D` (300-1000 x 90-880): every non-lane cell is the same rounded square with the same gap, cycling lettuce, wheat, furrows and stubble; the barns, mounds and house sit in single cells (`l21-2d-D` 610-670 x 300-355, 545-610 x 680-740). It reads as a board-game tile sheet, not a place (VISION 2).
+- **Build:** each run of touching plots (along rows between lanes) as one continuous field: one crop texture with rows running the length of the run, hedgerow or dry-stone boundaries only where the crop changes, grass verges by the lane; buildings grouped into farmyards (barn, house, yard, fence) over 2-3 cells with hens in the yard; each buildable cell a faint stitched outline only on hover, selection and in build mode; deterministic per level so key art and the tuner are unaffected.
+- **Accept:**
+  - At D l21 the field-edge outlines drawn outside build mode drop by 60%+ (counted in the render).
+  - Adjacent cells in one crop run within 5% hue of each other.
+  - In build mode every valid plot shows a 2 px+ outline at 3:1+ against its crop.
+  - Hedgerow placement, 2D tower and gatequeue specs pass at P and D; keyart-fresh passes after `npm run keyart hedgerow`.
+  - Shots P and D of l21 and l34, normal and in build mode.
+- **Size:** 2
+
+## 346. [ ] Hedgerow 3D: one scale and one landscape (Cath at farmer scale, the river as a river)
+- **Why:** `plan1113a/hedge-l21-3d-D`: Cath (140-260 x 435-625) is about 2.5x a farmer's height (780-820 x 430-500), a giant doll at the field's edge; the river is stacked cube tiles with hard vertical seams and square steps (250-500 x 375-530) and the duck pond a flat blue rectangle (650-930 x 535-590). At P (`hedge-l21-3d-P`) a white haze bank washes out 0-110 x 280-680 and Cath isn't in frame.
+- **Build:** 3D Cath at 1.1-1.2x a farmer with a contact shadow, on a stand-point on the field (a stile or gate) framed at both sizes; adjacent water cells merged into one surface with rounded, sloping banks and reeds (no vertical cube faces); ponds rimmed in mud and reeds; the coast's haze held behind the fence line at P.
+- **Accept:**
+  - Cath's on-screen height over a farmer's 1.0-1.25 at P and D, her box fully in frame at P on l21 and l34.
+  - No water-mesh face above the waterline within 10 deg of vertical (a geometry test).
+  - The P left band (0-110 x 280-680) at most 1.15x the field's mean luminance.
+  - hedgerow-3dframe, camera3d, closeframe, depot3d pass; shots P and D of l21 and l34 in 3D.
+- **Size:** 2
+
+## 347. [ ] Hedgerow: the next act as a painted reveal, not a greyed smear
+- **Why:** `plan1113a/hedge-menu-P`: the locked next act under the sheet (0-390 x 695-770) is a washed-out band whose banner and props are illegible ghosts. `hedge-menu-D`: the "Beyond the hedge · Act 4" card is cut by the bottom edge (527-912 x 853-900) and the Rivermead header (145-440 x 810-855) sits over the same grey wash.
+- **Build:** each locked act a misty vista in its own palette at 60-70% saturation behind a soft fog, a closed five-bar gate where the lane enters it, its name on a hanging sign at full contrast and a one-line tease in Cath's voice with her small portrait; on unlock the gate swings open and the fog lifts over 800 ms (a fade under reduced motion); the "Beyond the hedge" card laid out fully on screen.
+- **Accept:**
+  - The locked act's name 4.5:1+ at P and D; the band's mean saturation 0.5x+ the current act's.
+  - The "Beyond the hedge" card fully inside 1440x900 and 390x844.
+  - The unlock 600-1000 ms, a fade only under reduced motion; hedgerow map and medallion specs pass.
+  - Shots P and D, locked and just unlocked.
+- **Size:** 1
+
+## 348. [ ] Hedgerow: "Coming up" as a readable forecast, not a strip of micro-icons
+- **Why:** `plan1113a/hedge-l21-2d-D` (1120-1410 x 595-695): the next five rounds are 20 px vehicle discs with unlabelled numbers (433, 245, 381...) and thin coloured bars; "Still unanswered" is five unlabelled 18 px glyphs (1250-1380 x 595-617); same at `hedge-l34-2d-D` (1120-1410 x 545-670); at P the forecast isn't shown (`hedge-l21-2d-P`).
+- **Build:** each coming round a small card: its number, the lead vehicle's sprite at 32 px+, its name, a count with its unit ("433 parcels"), its trait as a word chip (Fast, Flies, Armoured) in the bar's colour; each "Still unanswered" glyph a labelled chip naming the threat and its answer ("Flyers · Radio Mast"); at P the NEXT tab opens the same forecast as a sheet.
+- **Accept:**
+  - Every number in the forecast carries a unit or label; vehicle art 32 px+ at D, 28 at P; chips 13 px+ at 4.5:1.
+  - At P the NEXT tab shows 3+ round cards without covering Go.
+  - Hedgerow forecast/rounds, gatequeue, critique and ui-css-lint pass at P and D; shots P (sheet open) and D on l21 and l34.
+- **Size:** 1
