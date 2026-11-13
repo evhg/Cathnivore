@@ -1,5 +1,3 @@
-Planning: lane B, 2026-11-13 18:22 UTC
-
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
 
@@ -3320,4 +3318,107 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Every number in the forecast carries a unit or label; vehicle art 32 px+ at D, 28 at P; chips 13 px+ at 4.5:1.
   - At P the NEXT tab shows 3+ round cards without covering Go.
   - Hedgerow forecast/rounds, gatequeue, critique and ui-css-lint pass at P and D; shots P (sheet open) and D on l21 and l34.
+- **Size:** 1
+
+## 349. [ ] Cathnivore phone: Quick Game setup as Cath's stall, not six stacked form panels
+- **Why:** `plan1113b/cath-setup-P` (0-390 x 0-844): six bordered boxes nested inside each other, borders three deep at 8-380 x 255-775 (event 16-372 x 82-150, mode 160-240, producers 268-540, map 548-640, difficulty 650-770, Start 16-374 x 785-835). It reads as a settings form. Cath is only a 50 px avatar (15-70 x 8-60), and the producer chips "Ines"/"Sol" (205-368 x 300-348) are tilted tags crammed against the panel edge.
+- **Build:** one scrolling scene. A short stall header with Cath at half length (reuse the title's P stall, item 316), her bubble carrying the event line. Then three numbered steps on one paper ground with no nested borders: Who (the mode and item 328's producer cards, two-up with a swipe), Where (the map thumbnails), How hard (the difficulty tags). The Start plank docks at the foot over a soft fade. Every existing control and test id stays.
+- **Accept:**
+  - At P, at most one visible border level around any control (a spec counts bordered ancestors).
+  - Cath 160 px+ tall at P, in view at scroll 0.
+  - All text 12 px+ at P and D. The setup, quick-game and ui-css-lint specs pass.
+  - Shots P and D, light and dark.
+- **Size:** 2
+
+## 350. [ ] Portfolio: Cath grounded in the hero, not a cut-out fading at the waist
+- **Why:** `plan1113b/portfolio-D` (1175-1290 x 530-760): Cath floats in empty black below the product tiles, her body dissolving into a gradient from about y 700, standing on and touching nothing. The four tiles (795-1340 x 155-502) are small, 263x163 each. In `portfolio-P` she floats the same way (245-355 x 160-380), and the strip shows one card plus a 10 px sliver of the next (205-215 x 130-235).
+- **Build:** stage her in the studio, at full length or at a desk or easel holding the product screens, with a floor line, a contact shadow and a hand pointing at a screen. At D the screens grow to 340 px+ wide. At P she stands in front of the strip, which shows 1.4 cards (a clear peek) or a whole second card.
+- **Accept:**
+  - Her lowest drawn pixel sits on a drawn surface; her figure has no fade (computed mask and opacity in a spec).
+  - Product screens 340 px+ wide at D; at P the second card shows 60 px+.
+  - Headline contrast 7:1+. The portfolio specs and e2e:site pass; LCP within 10% of today.
+  - Shots P and D.
+- **Size:** 1
+
+## 351. [ ] Runnel: Cath on a drawn footbridge in the valley, not behind a brown box
+- **Why:** `plan1113b/runnel-D` (385-620 x 785-865): Cath stands behind two plain brown rectangles, a placeholder crate with no grain, ink or perspective, the flattest object in a painted valley. `runnel-P` has the same box (10-120 x 740-778). Her bubble (P 12-212 x 545-640) covers the field's lower-left plots.
+- **Build:** replace the wall/crate with a hand-inked timber footbridge or sluice rail over the runnel by the spring (plank grain, rail posts, water under it), Cath leaning on it. Anchor the bubble so it never covers a tile.
+- **Accept:**
+  - No flat-fill rectangle over 40x40 px in her prop (an SVG check).
+  - Her bubble's box meets no tile at P or D, through the lesson and a daily (spec).
+  - runnel-one-cath (its wall test updated to the bridge) and the lesson and daily specs pass; key art re-shot if the valley art changes.
+  - Shots P and D.
+- **Size:** 1
+
+## 352. [ ] /games/: the desktop stall hero composed, Cath framed and the sign off the awning
+- **Why:** `plan1113b/games-D`: Cath is jammed into the stall's top-left corner (270-380 x 60-300), her head almost touching the awning scallops (60-78), while the counter below her (160-465 x 300-440) is empty wood. The eyebrow "FREE GAMES FROM THE REPUBLIC OF MARROW" (615-1015 x 76-90) collides with the awning's scalloped edge. The chalkboard (580-1110 x 70-440) squeezes the stall into a narrow column. She reads as a pasted sprite, not a shopkeeper.
+- **Build:** recompose the desktop hero: Cath at half length behind the counter in a wider stall (about 420 px), 40 px+ under the awning, produce on the counter at her hands; the chalkboard on the stall's side wall, starting below the awning. P is unchanged.
+- **Accept:**
+  - 40 px+ between her head and the awning at D; the eyebrow's top 16 px+ below the awning's lowest pixel.
+  - Cath 300 px+ tall at D.
+  - e2e:site (gate 5) passes; key art unchanged or re-shot.
+  - Shots P and D.
+- **Size:** 1
+
+## 360. [ ] Hedgerow 3D: the field as continuous farmland under real light, not a tray of boxed plots
+- **Why:** `plan1113b/hedge-l21-3d-D` (260-1060 x 180-860): every plot is a separate square ringed with box hedge on all four sides, about 40 identical hedged trays with bare dirt lanes between them. It reads as a seed tray. The light is flat and pale with no sky, and the hedges and plots cast no shadows (530-1000 x 600-860). `hedge-l21-3d-P` (110-390 x 260-680) is the same, cropped. Item 345 fixes this in 2D only, so the two views would disagree.
+- **Build:** reuse item 345's run and farmyard data (deterministic per level) in `render3d/`:
+  - Touching plots of one crop become one bed, item 236's furrow normal map running the length of the run.
+  - Hedges only where the crop changes or the field meets the lane.
+  - Barn, house and yard grouped behind one fence.
+  - A low warm key from one side with soft cast shadows from hedges, buildings, towers and folk, and a sky gradient behind item 66's backdrop card.
+  - P's draw calls stay within item 215's budget.
+- **Accept:**
+  - Hedge segments on l21 drop by 50%+ (counted in the scene graph); no plot is hedged on all four sides unless it stands alone.
+  - Hedges, buildings and towers cast shadows; at D a shadowed strip's mean luminance is 0.8x or less of the lit plot beside it.
+  - hedgerow-3dframe, camera3d, closeframe and depot3d pass; P's draw calls on l21 are no higher than today.
+  - Shots P and D of l21 and l34 in 3D, before and after.
+- **Size:** 2
+
+## 361. [ ] Hedgerow desktop: the side column as one potting-shed bench, not three form boxes
+- **Why:** `plan1113b/hedge-l21-2d-D` (1095-1425 x 75-890) is three cream boxes and a wooden bar stacked on each other: a 3x3 grid of identical seed cards, the round card, the Coming up/Notebook tabs, then round keys with 10-11 px caps labels (CATH/PIE/NEIGHBOURS/KEEP GOING, 1110-1410 x 795-815). It competes with the field (VISION 2) and reads as a settings panel. `hedge-l34-2d-D` (1105-1415 x 85-370) adds a ragged fourth row of seed cards, with "Courthouse" stretched over two columns.
+- **Build:** one wooden bench frame (the top bar's wood) holding three zones split by painted dividers, not boxes: the seed packets leaning in a rack (item 119's art, the price on a string tag), the round card pinned on as a paper notice, Coming up (item 348) hung as a clipboard, and the action keys as labelled wooden tokens in the bench's lip. One type scale, from the game's tokens.
+- **Accept:**
+  - At D no text in the column under 12 px (DOM scan); its bordered boxes drop from 4 to 1.
+  - Each packet 96x88 px+ at D in a regular grid; no packet spans two columns on l34.
+  - Text 4.5:1+; the hedgerow tray, round-chips and gatequeue specs and ui-css-lint pass.
+  - Shots D (1440x900 and 1100x760) of l21 and l34; P unchanged.
+- **Size:** 2
+
+## 362. [ ] NIGHT SHIFT: the gun she carries is the gun on the inspect
+- **Why:** `plan1113b/ns-play-D`: Cath's 3D Widowmaker (750-830 x 250-540) is a flat grey plank with a box for a scope, a toy prop. Beside it the inspect panel (995-1380 x 260-340) shows a detailed scoped rifle with lit edges. The two don't match, and the plank is what the player sees in play. At P (225-250 x 185-300) it's the same plank.
+- **Build:** each class's carried weapon (rifle, shotgun, revolver, the Wirewitch's sidearm, the Fixer's case) built from the same mesh family as its inspect model (item 313), with a phone LOD: the same materials and edge light at reduced detail, slung or held as item 300 posed them. Used on the pick, the title and the district entrances.
+- **Accept:**
+  - The carried and inspect models share their geometry source (a unit test); the carried silhouette shows 3+ distinct parts at D (barrel, sight, stock).
+  - cathode-perf within budget at phone and desktop, run alone.
+  - The classpick, classpose and armoury specs pass.
+  - Shots P and D of all five classes.
+- **Size:** 2
+
+## 363. [ ] NIGHT SHIFT title: Cath lit as the hero, her coat readable against the night
+- **Why:** `plan1113b/ns-title-D` (860-1140 x 380-900): her coat merges into the dark street. No rim or key light touches her shoulders, arms or hem, and her legs and lower coat are a black mass: a lit face on a hole. `ns-title-P` (195-330 x 290-700) is the same, the coat lost against the brick and LUNA's glow. Item 319 covers her sculpt and 331 the left half; neither lights her figure.
+- **Build:** a cool rim light from LUNA's side and a warm low key from a streetlamp; a faint satin sheen on the coat so its folds and belt read; a wet-ground reflection of her silhouette and the umbrella; a little separation haze behind her.
+- **Accept:**
+  - Her coat's 8 px edge band against the background just outside it: mean luminance 2:1+ at P and D.
+  - Her silhouette traceable from shoulder to hem, with 3+ fold or belt highlights at D.
+  - cathode-perf within budget, run alone; the cathode-front title specs pass.
+  - Shots P and D before and after.
+- **Size:** 1
+
+## 364. [ ] The bugs from the 2026-11-13 18:30 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1113b`)
+  - **Cathnivore:**
+    - `cath-game-D`: the hand's "Buy / Late Harvest Fa" cut off (685-780 x 838-855); the Injunction card under Supply, "njunction" and "FREE" clipped (1215-1285 x 800-845), possibly an item 312 regression.
+    - `cath-game-P`: the "9+ more" pill (298-380 x 755-782) over the Injunction card's corner.
+    - `cath-setup-D`: the Start plank (1095-1295 x 775-850) over Cath's lower body and hand; the pins' captions ("Dry Spell", "Win this week", 155-370 x 770-798) about 11 px.
+    - `cath-setup-P`: the "Hard" tag (258-385 x 676-718) past the panel's inner edge; "OPEN" on Start (170-215 x 797-806) about 9 px; "starts at 10" / "10 tokens to lose" (30-370 x 740-760) about 11 px.
+  - **Site:** `games-D` the "18+" badge (1290-1318 x 500-515) dark on dark, under 3:1.
+  - **Runnel:** `runnel-D` the Up next card repeats the day ("FRIDAY" then "Fri, Nov 13", 165-290 x 635-700), its body text under 13 px (165-290 x 710-745); the hint line under the board (P 95-300 x 790-805) small grey on cream.
+  - **Hedgerow:**
+    - `hedge-l34-2d-D` the gate queue's Same-Day vans stacked on each other (245-490 x 735-850), its tag on the last one; at P (15-160 x 515-585) over the HOLLOWELL sign.
+    - `hedge-l34-2d-D` Cath's coach bubble over the top-right plots and the pier (775-1070 x 95-205), against item 297.
+  - **NIGHT SHIFT:**
+    - `ns-play-P` Cath soft and low-resolution, her face a smear (175-215 x 120-165).
+    - `ns-title-P` "No case open" (32-104 x 241-253) and "4 MORE NAMES" (15-104 x 708-719) about 10-11 px, low-contrast grey on black.
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
