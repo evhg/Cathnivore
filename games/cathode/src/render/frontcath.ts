@@ -495,7 +495,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // makes her read as a silhouette against the neon at any framing.
   // Plan item 319 slice 46: the hair's rim under a hood (1 bare-headed): the hood blocks the back light, so the
   // hair's outline lit a pale line against the hood's dark lining.
-  const hairRimU = { uHairRim: { value: 1 } };
+  const hairRimU = { uHairRim: { value: 1 }, uHairHood: { value: 0 } };
   const rimU = {
     uRimDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() },
     // Plan item 82: a stronger rim on a phone, where she stands small in the lower half under the menu.
@@ -566,11 +566,18 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 319 slice 46: a two-sided shell's inside (the Ghost's hood) sits in its own shade: lit like the
     // outside, the strip of lining between her hair and the brim drew a pale fringe round her face.
     const insideShade = inside < 1 ? `if ( !gl_FrontFacing ) outgoingLight *= ${inside.toFixed(2)};\n` : "";
+    // Plan item 319 slice 62: under the Ghost's hood her hair takes the street's light only through the face opening,
+    // so it keeps its own warm brown: the gloss and sheen of the cyan sign behind her drew a teal streak down the
+    // hair's outline between her cheek and the hood's lining. Hooded, the hair's light goes to its luminance in a warm
+    // brown (a quarter of the hue kept) and a step darker, the hood's shade.
+    const hoodShade = hair
+      ? "{ float hl = dot( outgoingLight, vec3( 0.2126, 0.7152, 0.0722 ) ); outgoingLight = mix( outgoingLight, mix( vec3( hl ) * vec3( 1.06, 0.95, 0.82 ), outgoingLight, 0.25 ) * 0.8, uHairHood ); }\n"
+      : "";
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU, hair ? hairRimU : {});
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <opaque_fragment>", insideShade + skinLight)
-        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + (hair ? "uniform float uHairRim;\n" : "") + INK_BAND)
+        .replace("#include <opaque_fragment>", insideShade + hoodShade + skinLight)
+        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + (hair ? "uniform float uHairRim;\nuniform float uHairHood;\n" : "") + INK_BAND)
         // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
         // Plan item 319: not on the face (the material with catch-lights): banded, the street's light cut her jaw and
@@ -2050,9 +2057,13 @@ float reliefShade( vec2 uv ) {
     const past = 0.012;
     const k = upLen / (upLen + past);
     // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
-    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.043], [0.93 * k, 0.0415], [k, 0.042], [k + (1 - k) * 0.5, 0.0405], [1, 0.037]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
+    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.03], [0.06 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.0425], [0.93 * k, 0.0405], [k, 0.0395], [k + (1 - k) * 0.5, 0.038], [1, 0.0365]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
     // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    const elb = new THREE.SphereGeometry(0.041, seg(24), seg(12));
+    // Plan item 319 slice 63: 0.041 -> 0.0375, inside the sleeve's gathered end (0.037) and the forearm's (0.0375 at
+    // 0.2): wider than both, it stood out below the sleeve's end as a ring round the elbow (critique, D pick). The
+    // upper sleeve's last 6 cm taper to it as well (0.042 -> 0.0395 at the elbow, 0.0365 at its end), so the outline
+    // runs on into the forearm instead of stepping in under a wider tube's end.
+    const elb = new THREE.SphereGeometry(0.0375, seg(24), seg(12));
     elb.scale(1, 1, 0.92);
     elb.translate(el.x, el.y, el.z);
     addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
@@ -3630,6 +3641,7 @@ float reliefShade( vec2 uv ) {
       lockGeo?.setDrawRange(0, wearing === "ghost" ? lockSheetIdx : Infinity);
       const tuck = wearing === "ghost";
       hairRimU.uHairRim.value = tuck ? 0 : 1;
+      hairRimU.uHairHood.value = tuck ? 1 : 0;
       if (hairGeo && hairRestOpen && hairRestTuck) {
         hairRest = tuck ? hairRestTuck : hairRestOpen;
         (hairGeo.attributes.position!.array as Float32Array).set(hairRest);
