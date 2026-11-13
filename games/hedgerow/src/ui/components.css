@@ -2939,6 +2939,55 @@ body:has(#dlg-pause[open]) .paused-note {
   font: 700 var(--fs-small) / 1.2 var(--font-ui);
   color: var(--ink);
 }
+/* Plan item 348: the soonest unanswered lock as a chip naming its answer, edged in the lock's colour; the rest as
+   a '+N more' chip (its title lists each with its answer) */
+.play .panel .intel-locks .lock-chip,
+.play .panel .intel-locks .lock-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: var(--paper-hi);
+  font: 700 var(--fs-rack) / 1.2 var(--font-ui);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.play .panel .intel-locks:has(.lock-chip) {
+  flex-wrap: nowrap;
+  gap: 3px;
+}
+.play .panel .intel-locks:has(.lock-chip) .intel-label {
+  flex: none;
+  font-size: var(--fs-rack);
+}
+.play .panel .intel-locks .lock-chip {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 2px;
+  border-left: 3px solid color-mix(in srgb, var(--trait, var(--ink-3)) 75%, var(--ink));
+}
+.play .panel .intel-locks .lock-chip .prop-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+/* At D the column is narrower than the phone's drawer: the chip's coloured edge marks the lock, its words the answer */
+@media (min-width: 900px) and (min-height: 520.02px) {
+  .play .panel .intel-locks .lock-chip .prop-icon {
+    display: none;
+  }
+}
+.play .panel .intel-locks .lock-more {
+  flex: none;
+}
+.play .panel .intel-locks .lock-more {
+  padding-inline: 4px;
+  background: color-mix(in srgb, var(--line) 22%, transparent);
+  cursor: help;
+}
 /* Plan item 115: the locks still unanswered big enough to tell apart (they were 16 px) */
 .play .panel .intel-locks .chip-props {
   gap: 4px;
@@ -4434,7 +4483,7 @@ body:has(#dlg-pause[open]) .paused-note {
   max-width: 100%;
   overflow: hidden;
   padding: 1px 6px 1px 5px;
-  border-left: 4px solid var(--trait, var(--ink-3));
+  border-left: 4px solid color-mix(in srgb, var(--trait, var(--ink-3)) 75%, var(--ink));
   border-radius: 3px;
   background: var(--paper-hi);
   font: 700 var(--fs-rack) / 1.2 var(--font-ui);

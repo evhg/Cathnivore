@@ -43,6 +43,16 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
     })
     expect(Math.abs(sum - 1)).toBeLessThanOrEqual(0.01)
   }
+  // Plan item 348: the soonest unanswered lock as a chip naming its answer, whole (not cut), 13 px or more; the row
+  // names every lock with its answer for a reader.
+  const lock = page.locator('.intel-locks .lock-chip')
+  if (await lock.count()) {
+    await expect(lock).toHaveText(/^\S+\s·\s\S/)
+    const l = await lock.evaluate((e) => ({ sw: e.scrollWidth, cw: e.clientWidth, fs: parseFloat(getComputedStyle(e).fontSize) }))
+    expect(l.sw).toBeLessThanOrEqual(l.cw + 1)
+    expect(l.fs).toBeGreaterThanOrEqual(13)
+    await expect(page.locator('.intel-locks')).toHaveAttribute('aria-label', /^Still unanswered: .+ · .+/)
+  }
   const flood = page.locator('.round-chip[data-twist="flood"]')
   await expect(flood).toHaveCount(1)
   const banner = flood.locator('.round-banner')

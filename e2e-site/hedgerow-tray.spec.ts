@@ -243,7 +243,7 @@ test('plan item 87: Coming up and the notebook are tabs of one card', async ({ p
   await expect(page.getByRole('tab', { name: 'Coming up' })).toBeFocused()
 })
 
-// Plan item 115: the locks still unanswered are 20 px or more, and a two-line vehicle pill keeps clear of the
+// Plan item 115: the locks still unanswered are 20 px or more (as words since item 348), and a two-line vehicle pill keeps clear of the
 // ticket's edge (level 21's 'x119 Lifestyle influencer').
 test('plan item 115: lock icons read and the vehicle pills keep inside the ticket', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the side column is a desktop layout')
@@ -256,11 +256,13 @@ test('plan item 115: lock icons read and the vehicle pills keep inside the ticke
   })
   await page.goto(`${URL}&level=21`)
   await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
-  await expect(page.locator('.panel .intel-locks .prop-icon').first()).toBeVisible()
+  // Plan item 348: at D the soonest lock reads as words ('Airborne · Scarecrow'), not an icon; any icon still shown
+  // is 20 px or more.
+  await expect(page.locator('.panel .intel-locks .lock-chip')).toBeVisible()
   const r = await page.evaluate(() => {
     const t = document.querySelector('.panel .round-ticket')!.getBoundingClientRect()
     return {
-      icons: [...document.querySelectorAll('.panel .intel-locks .prop-icon')].map((i) => i.getBoundingClientRect().width),
+      icons: [...document.querySelectorAll('.panel .intel-locks .prop-icon')].filter((i) => i.getClientRects().length).map((i) => i.getBoundingClientRect().width),
       over: [...document.querySelectorAll('.panel .ticket-chips .preview-chip')].map((c) => c.getBoundingClientRect().right - (t.right - 4)),
     }
   })

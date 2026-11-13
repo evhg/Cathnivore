@@ -113,7 +113,7 @@ import {
 } from "./engine";
 import { livery, roundBanner, roundLead, roundMix } from "./roundchips";
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf, type Property } from "./fleet";
-import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName } from "./counters";
+import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCauses, roundProps, towerBadges, unanswered, vehicleName, type Lock } from "./counters";
 import { roundFor } from "./rounds";
 import { fieldCards, initUnlocks, isOpen, markFieldCardSeen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
 import { LEVELS } from "./levels";
@@ -2151,10 +2151,39 @@ function fieldIntel(g: Game): HTMLElement {
     row.className = "intel-locks";
     const lab = document.createElement("span");
     lab.className = "intel-label";
-    lab.textContent = gaps.length ? "Still unanswered" : "Every lock answered";
+    lab.textContent = gaps.length ? "Unanswered" : "Every lock answered";
     row.append(lab);
-    if (gaps.length) row.append(propRow(gaps.reduce((a, m) => a | P[m], 0), "chip-props"));
-    else row.append(propRow(locks, "chip-props"));
+    if (gaps.length) {
+      // Plan item 348: the soonest unanswered lock in the coming rounds as a labelled chip naming its answer
+      // ('Stealth · Radio Mast'); the rest as one '+4 more' chip that lists each with its answer on hover and to a
+      // reader (the column's row has room for one labelled chip).
+      const soon = g.level.waves
+        .slice(g.wave + 1)
+        .map((w) => propsOf(roundProps(g.level, w)).find((p): p is Lock => (gaps as readonly string[]).includes(p)))
+        .find((p) => p) ?? gaps[0]!;
+      const answer = (lock: Lock) => {
+        const keys = g.level.towers.filter((k) => towerBadges({ kind: k, tier: 1, spec: null }).find((b) => b.prop === lock)?.ok);
+        const k = [...keys].sort((a, b) => towerCost(g, a) - towerCost(g, b))[0];
+        return k ? TOWERS[k].name : null;
+      };
+      const say = (lock: Lock) => `${PROPERTIES[lock].name} · ${answer(lock) ?? "no answer in this kit"}`;
+      const chip = document.createElement("span");
+      chip.className = "lock-chip";
+      chip.style.setProperty("--trait", PROPERTIES[soon].colour);
+      chip.title = `${say(soon)}: ${PROPERTIES[soon].lock}`;
+      // thin spaces round the dot: at 1440 the column's row is two pixels short of the full answer
+      chip.append(img(propIcon(soon), "prop-icon"), `${PROPERTIES[soon].name}\u2009·\u2009${answer(soon) ?? "no answer"}`);
+      row.append(chip);
+      const rest = gaps.filter((x) => x !== soon);
+      if (rest.length) {
+        const more = document.createElement("span");
+        more.className = "lock-more";
+        more.textContent = `+${rest.length} more`;
+        more.title = rest.map(say).join("\n");
+        row.append(more);
+      }
+      row.setAttribute("aria-label", `Still unanswered: ${gaps.map(say).join("; ")}`);
+    } else row.append(propRow(locks, "chip-props"));
     box.append(row);
   }
   // Plan item 168: the rounds after this one as chips: the round, its lead vehicle, a stacked bar of its mix in each
