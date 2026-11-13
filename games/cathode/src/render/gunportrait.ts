@@ -74,13 +74,15 @@ export class GunStudio {
     this.camera.lookAt(0, 0, 0);
 
     const rimColour = new THREE.Color(o.rim[0], o.rim[1], o.rim[2]);
-    const key = new THREE.DirectionalLight(0xfff1e0, 4.6);
+    // Plan item 334: a harder key over a lower fill, so the lit and shadow faces part by 35%+ in lightness (they
+    // parted by 30%: the gunmetal read as one dark slab).
+    const key = new THREE.DirectionalLight(0xfff1e0, 9.5);
     key.position.set(0.6, 1.4, 1.0);
     const rim = new THREE.DirectionalLight(rimColour, 4.5);
     rim.position.set(-0.8, 0.5, -1.2);
     const kick = new THREE.DirectionalLight(rimColour, 1.6);
     kick.position.set(1.2, 0.1, -0.6);
-    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x141418, 1.1);
+    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.4);
     this.scene.add(key, rim, kick, fill);
 
     this.target = new THREE.WebGLRenderTarget(o.width, o.height, { samples: 4 });
