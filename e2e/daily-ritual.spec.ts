@@ -95,3 +95,69 @@ test("tomorrow's card flips face up as the new Daily opens at 00:00 UTC", async 
   await expect(card.locator('.ritual-card-up .ritual-card-no')).toHaveText(next!)
   await expect(card.locator('.ritual-card-event')).not.toBeEmpty()
 })
+
+// Plan item 342: at D the Daily is one chalk board on the counter: one Daily element in the band, its words 15 px or
+// more at 4.5:1 on the slate, every line whole, today's number the menu's own, and the board off the menu, Cath, the
+// game board's frame and the footer's links at 1024, 1280 and 1440.
+test('at D the Daily is one chalk board with the menu’s number, clear of the stall', async ({ page }) => {
+  test.skip(page.viewportSize()!.width < 1024, 'the desktop counter')
+  for (const [width, height] of [[1440, 900], [1280, 800], [1024, 768]] as const) {
+    await page.setViewportSize({ width, height })
+    await seed(page, 3)
+    const board = page.locator('.ritual-board')
+    // every chalk line whole (none cut to an ellipsis)
+    const cut = await board.evaluate((b) => [...b.querySelectorAll<HTMLElement>('.ritual-streak, .ritual-receipt-when, .ritual-card-in, .ritual-kicker')].filter((e) => e.getClientRects().length && e.scrollWidth > e.clientWidth + 1).map((e) => e.textContent))
+    expect(cut, `${width}`).toEqual([])
+    await expect(board).toHaveCount(1)
+    await expect(page.locator('.daily-ritual:visible')).toHaveCount(1)
+    // Its one focal number is today's, read from the menu's Daily button.
+    await expect(board.locator('.ritual-today-no')).toHaveText((await page.locator('.title-daily-no').textContent())!)
+    const m = await page.evaluate(() => {
+      const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+      // rgb(246, 235, 216) or color(srgb 0.96 0.92 0.85 / 0.88): its luminance and its alpha
+      const lum = (c: string) => {
+        const n = c.match(/[\d.]+/g)!.map(Number)
+        const k = c.startsWith('color(') ? 255 : 1
+        return { l: 0.2126 * lin(n[0]! * k) + 0.7152 * lin(n[1]! * k) + 0.0722 * lin(n[2]! * k), a: n[3] ?? 1 }
+      }
+      const b = document.querySelector('.ritual-board')!
+      // Its words: the leaf text, but not the card's face-down back (the face-up side waits for midnight).
+      const words = [...b.querySelectorAll<HTMLElement>('*')].filter((e) => e.childElementCount === 0 && e.textContent!.trim() && e.getClientRects().length && !e.closest('.ritual-card-up'))
+      return {
+        small: words.filter((e) => parseFloat(getComputedStyle(e).fontSize) < 15).map((e) => e.textContent),
+        lums: words.map((e) => lum(getComputedStyle(e).color)),
+        box: b.getBoundingClientRect().toJSON() as Box,
+      }
+    })
+    expect(m.small, `${width}`).toEqual([])
+    const box = m.box
+    for (const sel of ['.title-menu', '.title-cath svg', '.title-board', '.title-footer a']) {
+      for (const el of await page.locator(sel).all()) {
+        const o = await el.boundingBox()
+        if (o) expect(meet(box, o), `${sel} at ${width}`).toBe(false)
+      }
+    }
+    // The chalk reads at 4.5:1 or more on the slate: sampled from a shot of the board with its words hidden.
+    await page.addStyleTag({ content: '.ritual-board * { visibility: hidden !important; }' })
+    const png = (await page.screenshot({ clip: { x: box.x + 8, y: box.y + 8, width: box.width - 16, height: box.height - 16 } })).toString('base64')
+    await page.addStyleTag({ content: '.ritual-board * { visibility: visible !important; }' })
+    const slate = await page.evaluate(async (png) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${png}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, c.width, c.height).data
+      const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+      const ls: number[] = []
+      for (let i = 0; i < d.length; i += 4) ls.push(0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!))
+      ls.sort((a, b) => a - b)
+      return ls[Math.floor(ls.length * 0.95)]!
+    }, png)
+    // a translucent chalk line blends toward the slate
+    for (const { l, a } of m.lums) expect((a * l + (1 - a) * slate + 0.05) / (slate + 0.05), `${width}`).toBeGreaterThanOrEqual(4.5)
+  }
+})
