@@ -506,3 +506,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-13 lane A: Hedgerow's crowded-field dock (item 297) is limited to D-sized viewports (min 900x560); on a landscape phone her line stays item 250's compact bubble beside a field the eye never leaves.
 - 2026-11-13 lane A: the 2D pond follows item 330's deeper 3D water (centre 96,166,202) instead of lightening the 3D water back, so item 94's one-colour check holds in the new direction.
 - 2026-11-13 lane A (item 319): her hair's rim is a soft, dim band (smoothstep 0.42-0.82 at 0.45): the hard 0.5-0.62 band flipped thin lock edges in and out, a jagged pale fringe at 4x; the probe that first "ruled it out" was wrong because `kit()` (which sets uHairRim) isn't called on the title.
+- 2026-11-13 lane B: NIGHT SHIFT title placements are judged from the untouched page only: hiding or fading the title's UI changes the 3D framing (cause still to find), so DOM-altering probes mislead.
