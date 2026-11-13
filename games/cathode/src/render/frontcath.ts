@@ -3000,16 +3000,29 @@ float reliefShade( vec2 uv ) {
         ],
         kitMat(new THREE.MeshStandardMaterial({ color: 0x5f4632, roughness: 0.68, metalness: 0.02 })),
       ],
-      [
-        [
-          // The barrel along her back, its muzzle and scope standing clear of her hair over the left shoulder.
-          limb(V(0.02, 0.05, -0.19), V(0.31, 1.02, -0.12), 0.018, 0.011, 10),
-          limb(V(0.2, 0.66, -0.17), V(0.245, 0.83, -0.155), 0.026, 0.026, 12),
-          limb(V(0.3, 0.99, -0.122), V(0.318, 1.06, -0.118), 0.017, 0.017, 8),
-        ],
-        gunMetal,
-      ],
     ]);
+    // Plan item 362: the rifle slung on her back is the inspect's own model too (it was three rods). It lies along the
+    // old line, butt at her right hip, muzzle and scope clear of her hair over the left shoulder, its top (the scope)
+    // facing out from her back. Kept as the kit's second child: the pick hides it while the rifle is in her hand.
+    {
+      const sling = buildGunDisplay("sniper", phone);
+      sling.name = "kit-ghost-back-rifle";
+      const muzzle = V(0.318, 1.06, -0.118);
+      const along = V(0.31, 1.02, -0.12).sub(V(0.02, 0.05, -0.19)).normalize();
+      const zAxis = along.clone().negate(); // the model's muzzle runs -z
+      const yAxis = V(0, 0, -1).addScaledVector(zAxis, zAxis.z).normalize(); // its top, out from her back
+      const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis);
+      sling.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
+      // the model's muzzle sits 0.74 m along -z from its origin
+      sling.position.copy(muzzle).addScaledVector(along, -0.74);
+      sling.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.castShadow = true;
+        tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
+      });
+      kits.get("ghost")!.add(sling);
+    }
     // Butcher: a heavy leather apron from the chest to below the knee, on a neck strap.
     kitGroup("butcher", [
       [
