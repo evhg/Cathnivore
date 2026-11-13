@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test'
 // phone), never a faint sketch, its ink 3:1+ against its own tile's ground (sampled from pixels).
 test('landmarks stand at the campaign scale in full ink', async ({ page }, info) => {
   const phone = info.project.name.startsWith('phone')
-  await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=7')
+  await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=4')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await expect
@@ -14,6 +14,19 @@ test('landmarks stand at the campaign scale in full ink', async ({ page }, info)
   test.skip(await page.locator('.end-screen').isVisible(), 'the game ended early')
   await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; }' })
   await expect.poll(() => page.locator('.map-wrap .board-landmark').count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(7)
+  // The autoplay stops as round 4 begins; wait out its banner so nothing lies over the board.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() =>
+          Array.from(document.querySelectorAll('.map-wrap .board-landmark')).every((g) => {
+            const r = g.getBoundingClientRect()
+            return !!document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('.map-wrap')
+          }),
+        ),
+      { timeout: 15_000 },
+    )
+    .toBe(true)
   await page.waitForTimeout(800)
   const lms = await page.evaluate(() =>
     Array.from(document.querySelectorAll<SVGGElement>('.map-wrap .board-landmark')).map((g, i) => {
@@ -59,7 +72,8 @@ test('landmarks stand at the campaign scale in full ink', async ({ page }, info)
   // Held landmarks wear Hollowell's props (boards, the SOLD sign) over them; judge the ones still free.
   for (const l of full.filter((l) => l.grip < 3)) {
     const clip = { x: l.x, y: l.y, width: Math.max(4, l.w), height: Math.max(4, l.h) }
-    const ink = await lum(await page.screenshot({ clip }), 0.03)
+    const shot = await page.screenshot({ clip })
+    const ink = await lum(shot, 0.03)
     await page.addStyleTag({ content: `.board-landmark[data-probe="${l.i}"] { visibility: hidden !important; }` })
     const ground = await lum(await page.screenshot({ clip }), 0.5)
     await page.addStyleTag({ content: `.board-landmark[data-probe="${l.i}"] { visibility: visible !important; }` })

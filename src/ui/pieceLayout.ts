@@ -161,12 +161,22 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   if (memo.size > 400) memo.clear()
   // Plan item 341: first with room for the landmark at its readable size, the pieces kept to their floors; then as
   // before, the landmark taking whatever size is left.
-  const t = layout(input, hexPx, landmarkMinScale(hexPx)) ?? layout(input, hexPx, 0)!
+  // A crowded hex (stacks and stalls across the face) tries tiers in between: the landmark a little smaller and the
+  // pieces a little under nominal, so neither is squeezed to a sketch.
+  const full = landmarkMinScale(hexPx)
+  const t = LANDMARK_TIERS.reduce<PieceTray | null>((acc, [k, f]) => acc ?? layout(input, hexPx, full * k, f), null) ?? layout(input, hexPx, 0, 0)!
   memo.set(key, t)
   return t
 }
 
-function layout(input: PieceInput, hexPx: number, lmMin: number): PieceTray | null {
+/** Plan item 341: [the landmark's share of its readable size, the pieces' least scale] tried in order. */
+export const LANDMARK_TIERS: ReadonlyArray<readonly [number, number]> = [
+  [1, 1],
+  [0.8, 0.9],
+  [0.65, 0.8],
+]
+
+function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: number): PieceTray | null {
   const unitsPerPx = TILE_R / Math.max(1, hexPx)
   const countR = Math.max(4.6, (MIN_COUNT_PX * unitsPerPx) / 1.25)
   const badgeK = Math.max(1, (MIN_BADGE_PX * unitsPerPx) / 10)
@@ -181,18 +191,21 @@ function layout(input: PieceInput, hexPx: number, lmMin: number): PieceTray | nu
   // The largest badge that fits, each tried with the largest pieces that still fit beside it.
   if (input.badge)
     for (let k = badgeK; k > 1 + 1e-9; k = Math.round((k - 0.05) * 100) / 100)
-      for (let scale = start; scale >= (lmMin > 0 ? Math.max(1, stallFloor) : stallFloor) - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
+      for (let scale = start; scale >= (lmMin > 0 ? Math.max(pieceFloor, stallFloor) : stallFloor) - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
         for (const ornaments of tryOrnaments) {
           const p = place(input, scale, ornaments, countR, k)
           if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin)
         }
   // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
-  const floor = lmMin > 0 ? Math.max(1, stallFloor) : 0.35
+  const floor = lmMin > 0 ? Math.max(pieceFloor, stallFloor) : 0.35
   for (let scale = start; scale >= floor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
-    for (const ornaments of tryOrnaments) {
-      const p = place(input, scale, ornaments, countR)
-      if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin)
-    }
+    for (const ornaments of tryOrnaments)
+      // Item 341: with a landmark to keep room for, the stacks and stalls may also stand in one row across the
+      // hex's wide middle, which frees its lower half for the landmark.
+      for (const side of lmMin > 0 && input.producers && (input.outlets || input.buyouts || input.doubt) ? [false, true] : [false]) {
+        const p = place(input, scale, ornaments, countR, 1, scale, side)
+        if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin)
+      }
   if (lmMin > 0) return null
   const scale = 0.35
   return { ...place(input, scale, false, countR), scale, enemyScale: scale, ornaments: false, countR, badgeK: 1 }

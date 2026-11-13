@@ -65,4 +65,14 @@ describe('item 341', () => {
       expect(s!.scale).toBeGreaterThanOrEqual(landmarkMinScale(hexPx) - 1e-9)
     }
   })
+  it('a crowded desktop hex (stacks, a scheme, stalls) stands its pieces in one row and keeps the landmark 80%+', () => {
+    for (const input of [
+      { outlets: 2, buyouts: 0, doubt: 1, producers: 3, stallCounts: [1, 1, 1], scheme: false, labelWidth: 80, badge: false },
+      { outlets: 3, buyouts: 1, doubt: 0, producers: 2, stallCounts: [1, 1], scheme: true, labelWidth: 90, badge: true },
+    ]) {
+      const t = layout341(input, 112)
+      expect(pick341(t.rects)!.scale).toBeGreaterThanOrEqual(landmarkMinScale(112) * 0.8 - 1e-9)
+      expect(t.scale).toBeGreaterThanOrEqual(0.8)
+    }
+  })
 })
