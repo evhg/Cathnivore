@@ -3375,7 +3375,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D of l21 and l34 in 3D, before and after.
 - **Size:** 2
 
-## 361. [ ] Hedgerow desktop: the side column as one potting-shed bench, not three form boxes
+## 361. [ ] Hedgerow desktop: the side column as one potting-shed bench, not three form boxes *(lane A, in progress)*
 - **Why:** `plan1113b/hedge-l21-2d-D` (1095-1425 x 75-890) is three cream boxes and a wooden bar stacked on each other: a 3x3 grid of identical seed cards, the round card, the Coming up/Notebook tabs, then round keys with 10-11 px caps labels (CATH/PIE/NEIGHBOURS/KEEP GOING, 1110-1410 x 795-815). It competes with the field (VISION 2) and reads as a settings panel. `hedge-l34-2d-D` (1105-1415 x 85-370) adds a ragged fourth row of seed cards, with "Courthouse" stretched over two columns.
 - **Build:** one wooden bench frame (the top bar's wood) holding three zones split by painted dividers, not boxes: the seed packets leaning in a rack (item 119's art, the price on a string tag), the round card pinned on as a paper notice, Coming up (item 348) hung as a clipboard, and the action keys as labelled wooden tokens in the bench's lip. One type scale, from the game's tokens.
 - **Accept:**
