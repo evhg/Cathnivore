@@ -1519,7 +1519,7 @@ interface VehicleOpts {
 /** Plan item 285: set while a vehicle on an up/down run is drawn, so `vehicle` draws it from above. */
 let fromAbove = false;
 /** The kinds drawn by `vehicle` alone, which have a from-above view; the rest keep their side view on any run. */
-export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival"]);
+export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter"]);
 
 /** A vehicle seen from above, nose to the right, centred on (x, y): its roof, cab and windscreen, the livery down
  *  both sides, the label on the roof, wheels at the corners and headlights at the nose. */
@@ -1730,23 +1730,30 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "boss":
       vehicle(ctx, 0, 0, s, tt, { len: 0.7, h: 0.36, body: "#1c1d22", cab: "#2a2b31", stripe: "#d4ae58", label: "ACQ", labelColor: "#d4ae58", wheels: 3 });
-      crown(ctx, -s * 0.06, -s * 0.52, s * 0.14);
+      if (fromAbove) crown(ctx, -s * 0.2, s * 0.05, s * 0.11);
+      else crown(ctx, -s * 0.06, -s * 0.52, s * 0.14);
       break;
     case "convoy":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.38, body: "#d93a2f", label: "0.99", labelColor: "#ffe66b", wheels: 4 });
-      crown(ctx, -s * 0.06, -s * 0.54, s * 0.14);
+      if (fromAbove) crown(ctx, -s * 0.24, s * 0.05, s * 0.11);
+      else crown(ctx, -s * 0.06, -s * 0.54, s * 0.14);
       break;
-    case "bus":
+    case "bus": {
       vehicle(ctx, 0, 0, s, tt, { len: 0.86, h: 0.4, body: "#f2f4f7", stripe: "#d93a2f", label: "PELL", labelColor: "#2a4f9a", wheels: 3 });
+      // From above, the flag flies off the roof's tail.
+      const fy = fromAbove ? -s * 0.03 : -s * 0.66;
       ctx.fillStyle = "#2a4f9a";
-      ctx.fillRect(-s * 0.4, -s * 0.66, s * 0.03, s * 0.12);
+      ctx.fillRect(-s * 0.4, fy, s * 0.03, fromAbove ? s * 0.06 : s * 0.12);
       ctx.fillStyle = "#d93a2f";
-      ctx.fillRect(-s * 0.37, -s * 0.66 + Math.sin(tt * 6) * s * 0.01, s * 0.1, s * 0.06);
+      ctx.fillRect(fromAbove ? -s * 0.5 : -s * 0.37, fy + Math.sin(tt * 6) * s * 0.01, s * 0.1, s * 0.06);
       break;
+    }
     case "board":
       vehicle(ctx, 0, 0, s, tt, { len: 0.92, h: 0.26, body: "#1d1f24", cab: "#1d1f24", stripe: "#d4ae58", wheels: 3 });
-      for (let i = 0; i < 4; i++) blob(ctx, -s * 0.3 + i * s * 0.13, -s * 0.44, s * 0.05, "#e9d7c7");
-      crown(ctx, 0, -s * 0.56, s * 0.12);
+      // From above, the four directors' heads through the sunroof.
+      for (let i = 0; i < 4; i++) blob(ctx, -s * 0.3 + i * s * 0.13, fromAbove ? 0 : -s * 0.44, s * 0.05, "#e9d7c7");
+      if (fromAbove) crown(ctx, -s * 0.36, s * 0.05, s * 0.1);
+      else crown(ctx, 0, -s * 0.56, s * 0.12);
       break;
     case "ship": {
       ctx.fillStyle = "#2f5a7a";
@@ -1811,7 +1818,8 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "pickup": {
       vehicle(ctx, 0, 0, s, tt, { len: 0.6, h: 0.2, body: "#4a7fc4", stripe: "#f4f6f8", wheels: 2 });
-      rr(ctx, -s * 0.2, -s * 0.36, s * 0.13, s * 0.1, s * 0.01, "#c79a62");
+      if (fromAbove) rr(ctx, -s * 0.22, -s * 0.06, s * 0.14, s * 0.12, s * 0.01, "#c79a62");
+      else rr(ctx, -s * 0.2, -s * 0.36, s * 0.13, s * 0.1, s * 0.01, "#c79a62");
       break;
     }
     case "sprinter":
@@ -1824,11 +1832,13 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       // The Plated Lorry: riveted steel, rivets along the top.
       vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.44, body: "#7d8894", cab: "#5a636d", stripe: "#c9d0d6", wheels: 3 });
       ctx.fillStyle = "#dfe4e8";
-      for (let i = 0; i < 5; i++) {
-        ctx.beginPath();
-        ctx.arc((-0.36 + i * 0.13) * s, -s * 0.44, s * 0.018, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // From above, the rivets run down both sides of the roof.
+      for (const ry of fromAbove ? [-s * 0.11, s * 0.11] : [-s * 0.44])
+        for (let i = 0; i < 5; i++) {
+          ctx.beginPath();
+          ctx.arc((-0.36 + i * 0.13) * s, ry, s * 0.018, 0, Math.PI * 2);
+          ctx.fill();
+        }
       break;
     case "artic":
       // The Artic: a frost-box trailer behind a bubble-wrapped cab.
@@ -1836,15 +1846,17 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "skip":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.3, body: "#e0a82e", cab: "#b9831a", stripe: "#3b3f44", wheels: 3 });
-      rr(ctx, -s * 0.34, -s * 0.5, s * 0.5, s * 0.16, s * 0.03, "#9a6b12");
+      if (fromAbove) rr(ctx, -s * 0.36, -s * 0.12, s * 0.46, s * 0.24, s * 0.03, "#9a6b12");
+      else rr(ctx, -s * 0.34, -s * 0.5, s * 0.5, s * 0.16, s * 0.03, "#9a6b12");
       break;
     case "crane":
       vehicle(ctx, 0, 0, s, tt, { len: 0.9, h: 0.3, body: "#d9a21b", cab: "#2a2b31", stripe: "#2a2b31", wheels: 4 });
       ctx.strokeStyle = "#8a96a3";
       ctx.lineWidth = s * 0.04;
       ctx.beginPath();
-      ctx.moveTo(-s * 0.1, -s * 0.2);
-      ctx.lineTo(s * 0.4, -s * 0.7);
+      // From above, the boom lies folded along the body.
+      ctx.moveTo(-s * 0.1, fromAbove ? 0 : -s * 0.2);
+      ctx.lineTo(s * 0.4, fromAbove ? 0 : -s * 0.7);
       ctx.stroke();
       break;
     case "execcar":
@@ -1859,14 +1871,19 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "plantdozer":
       vehicle(ctx, 0, 0, s, tt, { len: 0.84, h: 0.36, body: "#f2c230", cab: "#2a2b31", stripe: "#2a2b31", wheels: 4 });
-      rr(ctx, s * 0.36, -s * 0.5, s * 0.1, s * 0.5, s * 0.02, "#8a96a3");
+      if (fromAbove) rr(ctx, s * 0.42, -s * 0.2, s * 0.08, s * 0.4, s * 0.02, "#8a96a3");
+      else rr(ctx, s * 0.36, -s * 0.5, s * 0.1, s * 0.5, s * 0.02, "#8a96a3");
       break;
-    case "transporter":
+    case "transporter": {
       // The Car Transporter: a red cab and a two-deck rack of cars.
       vehicle(ctx, 0, 0, s, tt, { len: 0.96, h: 0.2, body: "#3b3f44", cab: "#b23a3a", wheels: 3 });
-      for (const [x, y, c] of [[-0.3, -0.3, "#e8b23a"], [0.02, -0.3, "#4a7fc4"], [-0.3, -0.52, "#f4f6f8"], [0.02, -0.52, "#e8b23a"]] as const)
-        rr(ctx, x * s, y * s, s * 0.26, s * 0.12, s * 0.03, c);
+      // From above, the top deck's two cars nose to tail on the rack.
+      const cars = fromAbove
+        ? ([[-0.42, -0.07, "#f4f6f8"], [-0.12, -0.07, "#e8b23a"]] as const)
+        : ([[-0.3, -0.3, "#e8b23a"], [0.02, -0.3, "#4a7fc4"], [-0.3, -0.52, "#f4f6f8"], [0.02, -0.52, "#e8b23a"]] as const);
+      for (const [x, y, c] of cars) rr(ctx, x * s, y * s, s * 0.26, s * (fromAbove ? 0.14 : 0.12), s * 0.03, c);
       break;
+    }
     case "quad": {
       rr(ctx, -s * 0.2, -s * 0.14, s * 0.4, s * 0.12, s * 0.04, "#f08a3c");
       for (const sx of [-0.34, -0.12, 0.12, 0.34]) {
