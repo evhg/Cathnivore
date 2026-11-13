@@ -1289,6 +1289,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // are lighter (0.42/0.3 -> 0.2/0.15): doubled with the real shade they drew a dark band down the far cheek.
       for (const sx of [-1, 1]) {
         blob(0.062 * sx, -0.02, 0.016, 0.05, "rgba(150,88,78,A)", 0.2); // the side planes of the face
+        // Plan item 319 slice 65: the hanging hair's shadow on the face's outer edge, temple to jaw, so the cheek
+        // turns into the hair rather than ending at it as a hard pale edge (the critique: 'a plate').
+        blob(0.074 * sx, -0.012, 0.01, 0.048, "rgba(112,64,58,A)", 0.34);
         blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.15); // along the jaw
         blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
         blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
