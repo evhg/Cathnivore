@@ -3350,7 +3350,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D.
 - **Size:** 1
 
-## 352. [ ] /games/: the desktop stall hero composed, Cath framed and the sign off the awning *(lane B, in progress)*
+## 352. [ ] /games/: the desktop stall hero composed, Cath framed and the sign off the awning *(handed back 2026-11-13 19:47 by lane B. Found: `site/src/booth.ts` draws the awning with its hem at Cath's top + 3% of her height (`roof`), clamped below the page's top (56 px). At 1440 she starts at y 46, so headroom needs her and the words lower by about 60 px (the hero's top padding), and the poster row must rebalance to stay on the first screen (e2e:site gate 5). The eyebrow's 14 px clearance is in the same `roof` formula)*
 - **Why:** `plan1113b/games-D`: Cath is jammed into the stall's top-left corner (270-380 x 60-300), her head almost touching the awning scallops (60-78), while the counter below her (160-465 x 300-440) is empty wood. The eyebrow "FREE GAMES FROM THE REPUBLIC OF MARROW" (615-1015 x 76-90) collides with the awning's scalloped edge. The chalkboard (580-1110 x 70-440) squeezes the stall into a narrow column. She reads as a pasted sprite, not a shopkeeper.
 - **Build:** recompose the desktop hero: Cath at half length behind the counter in a wider stall (about 420 px), 40 px+ under the awning, produce on the counter at her hands; the chalkboard on the stall's side wall, starting below the awning. P is unchanged.
 - **Accept:**
