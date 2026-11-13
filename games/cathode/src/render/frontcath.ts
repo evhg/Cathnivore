@@ -1086,7 +1086,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const zc = THREE.MathUtils.lerp(-0.004, 0.01, THREE.MathUtils.clamp((y - 0.27) / 0.14, 0, 1));
       const x = p.getX(i), z = (p.getZ(i) - zc) / 0.86;
       const side = THREE.MathUtils.smoothstep(Math.abs(x) / Math.max(1e-5, Math.hypot(x, z)), 0.2, 0.97);
-      const jaw = 0.58 * THREE.MathUtils.smoothstep(y, 0.33, 0.395);
+      // Slice 76: the jaw's shadow starts lower (0.33..0.395 -> 0.3..0.385): since slice 72 lowered the head, its jaw
+      // hid the shaded top and the bare neck under the chin lit as bright as the cheek (a pale pipe at the title).
+      const jaw = 0.58 * THREE.MathUtils.smoothstep(y, 0.3, 0.385);
       const d = Math.min(0.72, jaw + side * (0.36 + 0.14 * THREE.MathUtils.smoothstep(y, 0.3, 0.38)) * (1 - jaw * 0.5));
       shade[i * 3] = 1 - d * 0.9;
       shade[i * 3 + 1] = 1 - d;
@@ -1305,7 +1307,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 319 slice 65: the hanging hair's shadow on the face's outer edge, temple to jaw, so the cheek
         // turns into the hair rather than ending at it as a hard pale edge (the critique: 'a plate').
         blob(0.074 * sx, -0.012, 0.01, 0.048, "rgba(112,64,58,A)", 0.34);
-        blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.15); // along the jaw
+        blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.06); // along the jaw (slice 75: 0.15 -> 0.06)
         blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
         blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
         blob(0.034 * sx, -0.006, 0.012, 0.006, "rgba(255,230,214,A)", 0.28); // top of the cheekbone
@@ -1314,7 +1316,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       blob(0, 0.05, 0.02, 0.016, "rgba(255,230,214,A)", 0.22); // the forehead
       blob(0, -0.074, 0.01, 0.006, "rgba(255,228,212,A)", 0.3); // the chin
       // Plan item 260: the underside of the jaw in shadow, so the chin ends in a turned edge, not a pale flat.
-      blob(0, -0.1, 0.07, 0.02, "rgba(120,66,58,A)", 0.55);
+      // Plan item 319 slice 75: wider (0.07x0.02 -> 0.095x0.026), so it reaches the near jaw's underside, which the
+      // pick's low fill lit as a pale step under a painted jaw band (the 'mask' seam at the D pick).
+      blob(0, -0.1, 0.095, 0.026, "rgba(120,66,58,A)", 0.55);
       blob(0, -0.024, 0.008, 0.004, "rgba(110,62,54,A)", 0.26); // under the nose
       blob(0, -0.06, 0.016, 0.006, "rgba(120,72,62,A)", 0.12); // under the lip (slice 33: 0.25 -> 0.12)
       // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
