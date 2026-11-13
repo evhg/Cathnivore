@@ -68,3 +68,25 @@ test('plan item 69: on an upright phone Cath\'s note is a slim slip clear of the
   })
   if (tab !== null) expect(b.y + b.height).toBeLessThanOrEqual(tab + 1)
 })
+
+test('plan item 345: the plots\' outlines show only while building, every free plot stitched 2 px+', async ({ page }) => {
+  await open(page, 21, { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true })
+  const hg = () => page.evaluate(() => (window as unknown as { hedgerow: { outlines(): Array<{ col: number; row: number; width: number }> } }).hedgerow.outlines())
+  // Nothing picked: no plot outlines, the field reads as fields.
+  await page.waitForTimeout(500)
+  expect(await hg()).toHaveLength(0)
+  const boxes = await page.evaluate(() => (window as unknown as { hedgerow: { plotBoxes(): Array<{ x: number; y: number; w: number; h: number }> } }).hedgerow.plotBoxes())
+  const { towers, barns } = await page.evaluate(() => {
+    const g = (window as unknown as { hedgerow: { game(): { towers: unknown[]; level: { barns?: Array<[number, number]> } } } }).hedgerow.game()
+    return { towers: g.towers.length, barns: g.level.barns ?? [] }
+  })
+  const mid = boxes[Math.floor(boxes.length / 2)]!
+  await page.mouse.click(mid.x + mid.w / 2, mid.y + mid.h / 2)
+  await expect.poll(async () => (await hg()).length).toBeGreaterThan(0)
+  const shown = await hg()
+  // Every other plot a tower could go on is outlined (the picked one has its own ring); a barn's never is.
+  expect(shown.length).toBeLessThanOrEqual(boxes.length - towers - 1)
+  expect(shown.length).toBeGreaterThanOrEqual((boxes.length - towers - 1 - barns.length) * 0.8)
+  for (const o of shown) expect(o.width).toBeGreaterThanOrEqual(2)
+  for (const [c, r] of barns) expect(shown.some((o) => o.col === c && o.row === r)).toBe(false)
+})

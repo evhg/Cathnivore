@@ -5,6 +5,7 @@
 // times here are short and only for show.
 
 import { P, PROPERTIES, RUNGS, crackStage } from "./fleet";
+import { PLOT_STITCH, PLOT_STITCH_UNDER } from "./plotlook";
 import {
   ENEMIES,
   MEGAS,
@@ -23,7 +24,9 @@ import {
   towerAt,
   towerStats,
   plotKind,
+  barnAt,
   isPlot,
+  isProtected,
   oakAt,
   type EnemyKind,
   type Game,
@@ -232,6 +235,8 @@ export class Renderer {
   coach: { col: number; row: number; kind: TowerKind } | null = null;
   /** Plan item 31: the range ring drawn last frame (cells and pixels), for tests; null when none. */
   shownRing: { range: number; px: number; cell: number } | null = null;
+  /** Plan item 345: the free plots outlined last frame while building (their cells and stroke width, CSS px), for tests. */
+  shownOutlines: Array<{ col: number; row: number; width: number }> = [];
   private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
   /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
@@ -1468,6 +1473,35 @@ export class Renderer {
       ctx.shadowBlur = 0;
       ctx.shadowColor = "transparent";
     };
+    this.shownOutlines = [];
+    // Plan item 345: the field reads as fields, so the plots' own edges show only while building: with an empty plot
+    // picked, every other plot a tower could go on gets a faint stitched outline (a dark under-stroke under a cream dash, 3:1+ on
+    // any crop), so the next place to plant is plain without a tile grid the rest of the time.
+    if (this.selected && game.phase === "build" && !towerAt(game, this.selected.col, this.selected.row)) {
+      const pad = s * 0.1;
+      const w = Math.max(2, s * 0.035);
+      ctx.save();
+      for (let r = 0; r < game.level.rows; r++)
+        for (let c = 0; c < game.level.cols; c++) {
+          if ((c === this.selected.col && r === this.selected.row) || !isPlot(game.level, c, r) || towerAt(game, c, r)) continue;
+          if (isProtected(game.level, c, r) || barnAt(game.level, c, r) || oakAt(game, c, r)) continue;
+          const x = X(c) + pad;
+          const y = Y(r) + pad;
+          const d = s - pad * 2;
+          ctx.beginPath();
+          ctx.roundRect(x, y, d, d, s * 0.14);
+          ctx.setLineDash([]);
+          ctx.lineWidth = w + 2;
+          ctx.strokeStyle = PLOT_STITCH_UNDER;
+          ctx.stroke();
+          ctx.setLineDash([s * 0.09, s * 0.06]);
+          ctx.lineWidth = w;
+          ctx.strokeStyle = PLOT_STITCH;
+          ctx.stroke();
+          this.shownOutlines.push({ col: c, row: r, width: w });
+        }
+      ctx.restore();
+    }
     if (this.selected) {
       const { col, row } = this.selected;
       const tw = towerAt(game, col, row);

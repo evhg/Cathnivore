@@ -3,7 +3,7 @@
 // the level id, so a level always looks the same and nothing needs downloading.
 
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
-import { plotLooks, sameField, type PlotLook } from "./plotlook";
+import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, placeMargin, recordMargin, seeded, type Placed, type Rect } from "./margins";
 
@@ -582,10 +582,23 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       if (ground !== "water" && ground !== "high") {
         // Plan item 345: a plot joins the plots of its field beside it (no gap, furrows running the run's length).
         // The field's first plot paints the whole run as one bed (no seam between its plots); a puddle is its own.
+        // A field several rows deep is one block, painted by its top-left plot; a field the lead-in cuts through
+        // falls back to its runs along each row.
         const join = (cc: number, dc: number) => !leadIn.has(`${cc + dc},${r}`) && sameField(level, cc, r, cc + dc, r);
         if (leadIn.has(`${c},${r}`)) continue;
         const look = looks.get(`${c},${r}`) ?? "earth";
-        if (!join(c, -1)) {
+        const f = fieldAt(level, c, r);
+        let whole = !!f;
+        if (f) for (let fr = f.r0; fr <= f.r1 && whole; fr++) for (let fc = f.c0; fc <= f.c1; fc++) if (leadIn.has(`${fc},${fr}`)) { whole = false; break; }
+        if (f && whole) {
+          if (c === f.c0 && r === f.r0) {
+            const n = f.c1 - f.c0 + 1;
+            const m = f.r1 - f.r0 + 1;
+            // Furrows run the field's long way (a square field picks by seed).
+            const across = n > m || (n === m && (c * 31 + r * 17 + level.id) % 2 === 0);
+            paintPlot(ctx, x, y, s, look, across, c * 131 + r * 71 + level.id * 7, n, m);
+          }
+        } else if (!join(c, -1)) {
           let n = 1;
           while (join(c + n - 1, 1)) n++;
           paintPlot(ctx, x, y, s, look, n > 1 || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, n);
@@ -594,7 +607,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         // Item 345: where this field meets a different crop below, a low hedge runs along the grass between them.
         const below = leadIn.has(`${c},${r + 1}`) ? undefined : looks.get(`${c},${r + 1}`);
         const flat = (l: PlotLook | undefined) => (l === "puddle" ? "earth" : l);
-        if (below && flat(below) !== flat(look)) paintFieldHedge(ctx, x, y + s, s, c * 37 + r * 11 + level.id);
+        if (below && !sameField(level, c, r, c, r + 1) && flat(below) !== flat(look)) paintFieldHedge(ctx, x, y + s, s, c * 37 + r * 11 + level.id);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -698,9 +711,9 @@ function paintFieldHedge(ctx: CanvasRenderingContext2D, x: number, y: number, s:
   ctx.restore();
 }
 
-/** A bed's box over `n` cells of a row (inset on its outer sides), in a cell of side `s`. */
-function bedBox(x: number, y: number, s: number, i: number, n: number): { x: number; y: number; w: number; h: number } {
-  return { x: x + i, y: y + i, w: n * s - i * 2, h: s - i * 2 };
+/** A bed's box over `n` cells by `m` rows (inset on its outer sides), in a cell of side `s`. */
+function bedBox(x: number, y: number, s: number, i: number, n: number, m = 1): { x: number; y: number; w: number; h: number } {
+  return { x: x + i, y: y + i, w: n * s - i * 2, h: m * s - i * 2 };
 }
 
 /** A puddle in one corner of an earth bed, catching the sky. */
@@ -730,22 +743,22 @@ function paintPuddle(ctx: CanvasRenderingContext2D, x: number, y: number, s: num
   ctx.restore();
 }
 
-/** Plan item 52: a plot drawn by what lies under it; item 345: `n` plots of one field along a row as one bed. */
-function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, n = 1): void {
+/** Plan item 52: a plot drawn by what lies under it; item 345: a field of `n` by `m` plots as one bed. */
+function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, n = 1, m = 1): void {
   if (look === "earth" || look === "puddle") {
-    paintBed(ctx, x, y, s, across, n);
+    paintBed(ctx, x, y, s, across, n, m);
     return;
   }
   const i = s * 0.1;
   const w = s - i * 2;
   const rad = s * 0.18;
-  const b = bedBox(x, y, s, i, n);
+  const b = bedBox(x, y, s, i, n, m);
   ctx.save();
   ctx.fillStyle = "rgba(40,30,10,0.14)";
   ctx.beginPath();
   ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, rad);
   ctx.fill();
-  const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
+  const g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
   if (look === "stubble") {
     // Last year's stubble: a pale straw bed, cut stalks standing in rows.
     g.addColorStop(0, "rgba(232,204,130,0.62)");
@@ -762,7 +775,7 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   ctx.clip();
   ctx.lineCap = "round";
   // Each plot of the field gets its own scatter, from its own seed.
-  const scatter = (x: number, r01: () => number): void => {
+  const scatter = (x: number, y: number, r01: () => number): void => {
   if (look === "stubble") {
     const rows = 4;
     for (let k = 0; k < rows; k++) {
@@ -817,10 +830,10 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
     }
   }
   };
-  for (let cell = 0; cell < n; cell++) scatter(x + cell * s, rng(seed + cell * 131));
+  for (let row = 0; row < m; row++) for (let cell = 0; cell < n; cell++) scatter(x + cell * s, y + row * s, rng(seed + cell * 131 + row * 977));
   ctx.restore();
   // Item 345: a lone bed keeps its pale rim; a field runs on with no seam between its plots.
-  if (n === 1) {
+  if (n === 1 && m === 1) {
     ctx.strokeStyle = "rgba(255,255,230,0.18)";
     ctx.lineWidth = Math.max(1, s * 0.02);
     ctx.beginPath();
@@ -830,11 +843,12 @@ function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   // Plan item 78: about a third of the stubble beds have a stook or two of last year's sheaves standing in them,
   // so a block of plots reads as a farm at harvest's end, not a repeating tile.
   if (look === "stubble")
+    for (let row = 0; row < m; row++)
     for (let cell = 0; cell < n; cell++) {
-      const r01 = rng(seed + cell * 131 + 7);
+      const r01 = rng(seed + cell * 131 + row * 977 + 7);
       if (r01() >= 0.38) continue;
       const k2 = r01() < 0.4 ? 2 : 1;
-      for (let k = 0; k < k2; k++) paintStook(ctx, x + cell * s + s * (0.3 + 0.4 * k + (r01() - 0.5) * 0.12), y + s * (0.7 + (r01() - 0.5) * 0.1), s * 0.3);
+      for (let k = 0; k < k2; k++) paintStook(ctx, x + cell * s + s * (0.3 + 0.4 * k + (r01() - 0.5) * 0.12), y + row * s + s * (0.7 + (r01() - 0.5) * 0.1), s * 0.3);
     }
 }
 
@@ -878,18 +892,17 @@ function paintStook(ctx: CanvasRenderingContext2D, cx: number, base: number, h: 
  * Plan item 19: a plot is a tilled bed. A soft rim of turned earth, then furrows (a shadow under each ridge, a lit
  * crest on top), turned one way or the other so a block of plots reads as a patchwork, not a grid.
  */
-function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean, n = 1): void {
+function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, across: boolean, n = 1, m = 1): void {
   const i = s * 0.1;
-  const w = s - i * 2;
   const rad = s * 0.18;
-  const b = bedBox(x, y, s, i, n);
+  const b = bedBox(x, y, s, i, n, m);
   ctx.save();
   // Shadow where the bed sits a touch below the grass, then the soil.
   ctx.fillStyle = "rgba(40,30,10,0.16)";
   ctx.beginPath();
   ctx.roundRect(b.x, b.y + s * 0.025, b.w, b.h, rad);
   ctx.fill();
-  const g = ctx.createLinearGradient(0, y + i, 0, y + i + w);
+  const g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
   g.addColorStop(0, "rgba(128,92,52,0.26)");
   g.addColorStop(1, "rgba(96,66,36,0.32)");
   ctx.fillStyle = g;
@@ -897,19 +910,20 @@ function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number
   ctx.roundRect(b.x, b.y, b.w, b.h, rad);
   ctx.fill();
   ctx.clip();
-  const rows = 3;
+  // Three furrows a cell, running the field's whole length.
+  const rows = 3 * (across ? m : n);
+  const span = across ? b.h : b.w;
   ctx.lineCap = "round";
   for (let k = 0; k < rows; k++) {
-    const p = i + w * ((k + 0.5) / rows);
+    const p = i + span * ((k + 0.5) / rows);
     const seg = (dx: number, dy: number) => {
       ctx.beginPath();
       if (across) {
-        // A field's furrows run the run's whole length.
-        ctx.moveTo(x + i + s * 0.06, y + p + dy);
-        ctx.lineTo(x + n * s - i - s * 0.06, y + p + dy);
+        ctx.moveTo(b.x + s * 0.06, y + p + dy);
+        ctx.lineTo(b.x + b.w - s * 0.06, y + p + dy);
       } else {
-        ctx.moveTo(x + p + dx, y + i + s * 0.06);
-        ctx.lineTo(x + p + dx, y + i + w - s * 0.06);
+        ctx.moveTo(x + p + dx, b.y + s * 0.06);
+        ctx.lineTo(x + p + dx, b.y + b.h - s * 0.06);
       }
       ctx.stroke();
     };

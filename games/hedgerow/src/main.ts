@@ -792,6 +792,8 @@ if (SANDBOX)
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),
+    // Plan item 345: the free plots the 2D field outlined last frame (only while an empty plot is picked); [] in 3D.
+    outlines: () => (renderer && "shownOutlines" in renderer ? renderer.shownOutlines : []),
     // Plan item 156: a tower's tier-1 range (cells) on the selected plot's ground, to check the build ring's preview.
     towerRange: (kind: TowerKind) =>
       towerStats({ kind, tier: 1, spec: null, high: !!game && !!selected && plotKind(game.level, selected.col, selected.row) === "high" }).range,
