@@ -1098,8 +1098,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 289: the head a step larger (1.08) and set lower, so the neck shows ~30% less above the collar.
   // Plan item 319 slice 40: 4 mm lower (0.428 -> 0.424), since the jaw line's rise toward the ear bared that much
   // more neck under it.
-  headPivot.position.set(0, 0.424, 0.014);
-  headPivot.scale.setScalar(1.08);
+  // Plan item 319 slice 72: a step larger again (1.08 -> 1.14) and 6 mm lower: the 11-13 critique read a small head
+  // on a long thin neck over wide shoulders, a doll's head on a mannequin.
+  headPivot.position.set(0, 0.418, 0.014);
+  headPivot.scale.setScalar(1.14);
   chest.add(headPivot);
   // The head: an egg with a jaw. The lower front narrows to a chin, the cheekbones sit high, a small nose; C14 (S9.5,
   // the wardrobe sees her from the front): shallow eye sockets under a soft brow, full cheekbones, a lip line.
