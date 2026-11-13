@@ -867,6 +867,19 @@ html.no-animations .title-screen * {
   .title-table-props { display: block; position: absolute; inset: 0; pointer-events: none; }
   .title-prop { position: absolute; top: 12px; display: block; translate: 0 -100%; }
   .title-prop svg { position: static; display: block; width: 100%; height: auto; }
+  /* Plan item 342: each prop seated on the counter's top by a soft contact shadow (they floated over the plank) */
+  .title-prop::after {
+    content: '';
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    bottom: -4px;
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink-on-fixed-fill) 45%, transparent), transparent);
+    z-index: var(--z-under);
+  }
+  .title-prop { isolation: isolate; }
   /* Plan item 166: the crates stand in the gap between the menu board and Cath, not on the board's edge. */
   .title-prop-crates { left: calc(50% - 208px); width: clamp(80px, 6.6vw, 96px); }
   .title-prop-jam { left: calc(50% - 30px); width: 34px; }
