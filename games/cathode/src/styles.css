@@ -2935,17 +2935,23 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-attr-n { font-size: var(--fs-3); text-align: center; }
 }
 
-/* Plan item 210: on an upright phone the class sheet is a paper dossier clipped over the street: the four stats as
+/* Plan item 210 (glass since item 334): on an upright phone the class sheet is a dossier over the street: the four stats as
    the desktop's ring dials in a row, the weapon on a felt strip, the skill trees as rubber stamps, Walk in as red tape. */
 @media (max-width: 700px) and (orientation: portrait) {
   .cp-sheet[data-dossier] {
     margin: 0 calc(var(--u) * -8);
     padding: calc(var(--u) * 10) calc(var(--u) * 8) 0;
     border-radius: calc(var(--u) * 3);
-    background: var(--card-paper);
-    color: var(--card-ink);
+    /* Plan item 334: smoked glass with a red rule, like the desktop's panel; the cream slip broke the noir palette. */
+    border-top: max(2px, calc(var(--u) * 2)) solid rgb(var(--blood-rgb)); /* px-ok */
+    background: linear-gradient(180deg, rgb(var(--black-rgb) / .9), rgb(var(--black-rgb) / .95));
+    -webkit-backdrop-filter: blur(calc(var(--u) * 10));
+    backdrop-filter: blur(calc(var(--u) * 10));
+    color: var(--ink);
     box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .6);
   }
+  .cp-sheet[data-dossier]::before,
+  .cp-sheet[data-dossier]::after { display: none; }
   /* the paperclip: a steel wire's outer loop and the inner loop inside it, read as wire, not a dark pill
      (item 217: the 6 x 16 loop read as a stray scrollbar thumb) */
   .cp-sheet[data-dossier]::before,
@@ -2975,8 +2981,8 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
     border-radius: calc(var(--u) * 4);
     border-top-color: transparent;
   }
-  .cp-sheet[data-dossier] :is(.cp-label, .cp-attr dt, .cp-weapon-nums dt, .cp-tree-name, .cp-hold-how) { color: var(--card-ink-2); }
-  .cp-sheet[data-dossier] :is(.cp-attr-n, .cp-weapon-name, .cp-weapon-nums dd, .cp-hold-label) { color: var(--card-ink); }
+  .cp-sheet[data-dossier] :is(.cp-label, .cp-attr dt, .cp-weapon-nums dt, .cp-tree-name, .cp-hold-how) { color: var(--ink-2); }
+  .cp-sheet[data-dossier] :is(.cp-attr-n, .cp-weapon-name, .cp-weapon-nums dd, .cp-hold-label) { color: var(--ink); }
   .cp-sheet[data-dossier] .cp-attrs {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: calc(var(--u) * 6);
@@ -2990,7 +2996,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
     width: calc(var(--u) * 46);
     height: calc(var(--u) * 46);
     border-radius: 50%;
-    background: conic-gradient(from 225deg, var(--stamp-red) 0 calc(var(--v, 0) * 270deg), var(--card-rule) calc(var(--v, 0) * 270deg) 270deg, transparent 270deg);
+    background: conic-gradient(from 225deg, rgb(var(--blood-rgb)) 0 calc(var(--v, 0) * 270deg), var(--line-2) calc(var(--v, 0) * 270deg) 270deg, transparent 270deg);
     -webkit-mask: radial-gradient(closest-side, transparent 76%, var(--ink) 78% 99%, transparent);
     mask: radial-gradient(closest-side, transparent 76%, var(--ink) 78% 99%, transparent);
   }
@@ -3007,9 +3013,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-tree-name {
     display: inline-block;
     padding: 0 calc(var(--u) * 4);
-    border: max(1.5px, calc(var(--u) * 1.5)) solid var(--stamp-red); /* px-ok */
+    border: max(1.5px, calc(var(--u) * 1.5)) solid rgb(var(--blood-rgb)); /* px-ok */
     border-radius: calc(var(--u) * 2);
-    color: var(--stamp-red);
+    color: var(--ink);
     rotate: -2deg;
   }
   /* Walk in, on red tape */
