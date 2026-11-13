@@ -1061,7 +1061,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Slice 39: deeper and closer under the jaw (0.58 -> 0.42 over the top third, was a ramp over the whole neck that
     // left the throat as bright as the cheek, so the jaw read only as an outline), and warmer in the shade, as skin is.
     for (let i = 0; i < p.count; i++) {
-      const d = 0.58 * THREE.MathUtils.smoothstep(p.getY(i), 0.33, 0.395);
+      const y = p.getY(i);
+      // Slice 57: the sides turn away too (the critique: a wide, straight-sided, evenly lit neck read as a cylinder
+      // plugged into the collar): the throat's front stays lit and the sides fall off past half the radius, most
+      // under the jaw, so the neck rounds and narrows to the eye.
+      const zc = THREE.MathUtils.lerp(-0.004, 0.01, THREE.MathUtils.clamp((y - 0.27) / 0.14, 0, 1));
+      const x = p.getX(i), z = (p.getZ(i) - zc) / 0.86;
+      const side = THREE.MathUtils.smoothstep(Math.abs(x) / Math.max(1e-5, Math.hypot(x, z)), 0.2, 0.97);
+      const jaw = 0.58 * THREE.MathUtils.smoothstep(y, 0.33, 0.395);
+      const d = Math.min(0.72, jaw + side * (0.36 + 0.14 * THREE.MathUtils.smoothstep(y, 0.3, 0.38)) * (1 - jaw * 0.5));
       shade[i * 3] = 1 - d * 0.9;
       shade[i * 3 + 1] = 1 - d;
       shade[i * 3 + 2] = 1 - d * 1.05;
@@ -1519,16 +1527,18 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 275: fuller at the head, tapering to the tail, peaking two-thirds out.
         // Plan item 319 slice 9: a dark warm brown, not near-black, and a fifth slimmer at the head (the critique
         // read thick dark bars), still a stroke at title distance.
-        g.fillStyle = "#24140c";
+        // Plan item 319 slice 57: a third deeper again, its lower edge bowed further and the head fuller, and a
+        // shade darker, so the brows hold as strokes on a 57 px phone face (the critique: brows gone at P).
+        g.fillStyle = "#1e0f08";
         g.beginPath();
-        g.moveTo(0.0085 * sx, by - 0.0018 + inner);
+        g.moveTo(0.0085 * sx, by - 0.0012 + inner);
         // Plan item 319 slice 42: the raised brow also arches (its peak lifts by most of the raise again, its head and
         // tail don't), so it reads as one quizzical brow, not a level pair set at two heights (the critique: level
         // brows, a flat expression).
         const arch = raise * 0.8;
         g.quadraticCurveTo(0.03 * sx, by + 0.0102 + arch, 0.0475 * sx, by - 0.0036 - arch * 0.3);
         // Plan item 289: a deeper brow body (the lower edge bowed down), so the brows hold as strokes at title distance.
-        g.quadraticCurveTo(0.03 * sx, by + 0.0026 + arch, 0.0085 * sx, by - 0.0068 + inner);
+        g.quadraticCurveTo(0.03 * sx, by + 0.0002 + arch, 0.0085 * sx, by - 0.0084 + inner);
         g.closePath();
         g.fill();
       }
@@ -1573,6 +1583,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.moveTo(-0.0165, my + lc);
       g.bezierCurveTo(-0.008, my + 0.0012, 0.008, my + 0.0018, 0.0168, my + rc);
       g.stroke();
+      // Plan item 319 slice 59: the smirk's lifted corner tucks into a short soft crease that curls up past it (the
+      // critique read the lifted corner alone as a blank look; the bible's default is a confident half-smile).
+      if (expr === "smirk" || expr === "wink") {
+        g.strokeStyle = "rgba(94,30,40,0.6)";
+        g.lineWidth = 0.0012;
+        g.lineCap = "round";
+        g.beginPath();
+        g.moveTo(0.0158, my + rc - 0.0006);
+        g.quadraticCurveTo(0.0196, my + rc + 0.0004, 0.0204, my + rc + 0.0034);
+        g.stroke();
+      }
       // The gloss on the lower lip.
       blob(0.003, my - 0.0032, 0.0062, 0.0017, "rgba(255,232,236,A)", 0.8);
       g.restore();
@@ -2031,7 +2052,10 @@ float reliefShade( vec2 uv ) {
     elb.translate(el.x, el.y, el.z);
     addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
     const foreA = el.clone().addScaledVector(ud, -0.006);
-    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.038], [0.12, 0.0405], [0.2, 0.0405], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]];
+    // Plan item 319 slice 58: the forearm stays inside the upper sleeve's gathered end (0.037) for its first 3 cm
+    // and only then eases out, so a straight arm's outline runs on from the upper sleeve: at 0.0405 just below the
+    // elbow it stood wider than the sleeve's end, two stacked tubes with a ring between them (critique, D pick).
+    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.034], [0.12, 0.0362], [0.2, 0.0375], [0.5, 0.0385], [0.86, 0.042], [0.96, 0.044], [1, 0.03]];
     addS(vSpan(turned(foreA, wr, foreProf, seg(24), 0.9), 0.5, 1), sleeveMat, fore);
     parent = fore;
     // The cuff strap. Plan item 319: a flat leather band laid on the sleeve, following its oval, not a round ring
