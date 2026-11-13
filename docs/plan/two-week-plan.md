@@ -3395,7 +3395,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D of all five classes.
 - **Size:** 2
 
-## 363. [ ] NIGHT SHIFT title: Cath lit as the hero, her coat readable against the night *(lane B, in progress)*
+## 363. [ ] NIGHT SHIFT title: Cath lit as the hero, her coat readable against the night *(handed back 2026-11-13 20:46 by lane B, two tries reverted. (1) Title-only live lights, a warm low key (3.8, range 3.4) and a cool rim behind her right (3.6, range 3), made no visible change: the LightPool streams a fixed number of real lights by intensity x range x distance, and the pink sign (10, range 6), cyan, sodium and neon rim outrank them. (2) A title-only lift of the coat's wool rim (`uWoolRim` 2.6x in frontcath's shader) changed the D frame by a mean 0.3/255: the coat reads black from its own cloth colour and item 319's wool rim, not for want of rim. Next: the cloth (coat base colour or a sheen term) on the title only, or one of the existing pooled lights moved low and warm; measure with the item's 2:1 edge-band test)*
 - **Why:** `plan1113b/ns-title-D` (860-1140 x 380-900): her coat merges into the dark street. No rim or key light touches her shoulders, arms or hem, and her legs and lower coat are a black mass: a lit face on a hole. `ns-title-P` (195-330 x 290-700) is the same, the coat lost against the brick and LUNA's glow. Item 319 covers her sculpt and 331 the left half; neither lights her figure.
 - **Build:** a cool rim light from LUNA's side and a warm low key from a streetlamp; a faint satin sheen on the coat so its folds and belt read; a wet-ground reflection of her silhouette and the umbrella; a little separation haze behind her.
 - **Accept:**
