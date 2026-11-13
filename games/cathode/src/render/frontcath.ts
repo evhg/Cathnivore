@@ -1193,10 +1193,12 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // Plan item 175: shared with the locks laid over it.
   // Plan item 319 slice 50: f^2.2 (was 3.2): the hairline falls from the parting to the temples on a rounder curve,
   // so the forehead is a soft arch rather than flat across the top with a corner where it dropped to the temple.
+  // Slice 60: the front reaches a little further (0.43 -> 0.415), so the forehead is shorter and the cap's edge sits
+  // lower on the skull, not a skull-cap above a tall, bare brow.
   const capReach = (az: number) => {
     const f = Math.max(0, Math.cos(az));
     const peak = Math.exp(-(az * az) / 0.02) * 0.025;
-    return Math.PI * (0.8 - 0.43 * Math.pow(f, 2.2)) + peak * Math.PI;
+    return Math.PI * (0.8 - 0.415 * Math.pow(f, 2.2)) + peak * Math.PI;
   };
   const capShape = (v: number, az: number, out = 0) => {
     const polar = v * capReach(az);
@@ -1334,9 +1336,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
             h.beginPath();
             hairline.forEach(([x, y], i) => (i ? h.lineTo(x, y + dy) : h.moveTo(x, y + dy)));
           };
+          // Slice 60: a deeper shade (0.09/0.13 -> 0.14/0.2), so the edge reads as hair's shadow at D, not a cut.
           // Layered strokes, widest and faintest first, rather than a canvas blur filter (Safari's 2D canvas ignores it).
           for (let w = 0.014; w > 0.0015; w -= 0.0015) {
-            h.strokeStyle = w > 0.006 ? "rgba(120,66,56,0.09)" : "rgba(60,34,28,0.13)";
+            h.strokeStyle = w > 0.006 ? "rgba(110,60,50,0.14)" : "rgba(56,32,26,0.2)";
             h.lineWidth = w;
             path(w > 0.006 ? -0.002 : 0);
             h.stroke();
@@ -1809,7 +1812,9 @@ float reliefShade( vec2 uv ) {
     hairSheetMat.side = THREE.DoubleSide;
     // Plan item 289: no shine ring on the long hair: its locks lie over her chest facing up to the lens, so the ring lit
     // a whole lock as a pale ribbon; the street lights' own gloss (the sheen) carries it there.
-    rimify(hairSheetMat, 1.2, 0, 0, 0, true);
+    // Plan item 319 slice 61: the sheet's inside (the curtain's side toward her neck and cheek) sits in its own shade,
+    // as the hood's lining does: lit like the outside it drew grey, jagged strands beside her far cheek.
+    rimify(hairSheetMat, 1.2, 0, 0, 0, true, 0, "flat", 0.4);
     mats.push(hairSheetMat);
     add(sheet, hairSheetMat, headPivot);
 
