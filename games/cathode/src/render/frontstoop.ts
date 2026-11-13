@@ -464,9 +464,10 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
     );
   }
   {
-    // Fixer: an open case of banded cash on a crate by the step.
+    // Fixer: an open case of banded cash on a crate by the step, tipped toward the lens so the money reads (flat,
+    // only a green edge of it showed over the case's rim).
     const g = prop("fixer");
-    const H = 0.5;
+    const H = 0.72;
     put(
       g,
       new THREE.Mesh(geo(new THREE.BoxGeometry(0.7, H, 0.5)), fade(new THREE.MeshStandardMaterial({ color: 0x9a7650, roughness: 0.85, emissive: 0x2a1a0c, emissiveIntensity: 0.5 }))),
@@ -474,6 +475,10 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
       H / 2,
       z0 + 0.5,
     );
+    const tilt = new THREE.Group();
+    tilt.position.set(-PX, H + 0.02, z0 + 0.5);
+    tilt.rotation.x = 0.55;
+    g.add(tilt);
     const caseMat = fade(
       new THREE.MeshStandardMaterial({
         color: 0x2a1c14,
@@ -481,19 +486,54 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
         metalness: 0.2,
       }),
     );
-    put(g, new THREE.Mesh(geo(new THREE.BoxGeometry(0.62, 0.1, 0.42)), caseMat), -PX, H + 0.05, z0 + 0.5);
-    const lid = put(g, new THREE.Mesh(geo(new THREE.BoxGeometry(0.62, 0.42, 0.04)), caseMat), -PX, H + 0.3, z0 + 0.27);
-    lid.rotation.x = -0.25;
-    const cash = fade(
-      new THREE.MeshStandardMaterial({
-        color: 0x9fd08a,
-        roughness: 0.8,
-        emissive: 0x2e5a26,
-        emissiveIntensity: 0.9,
-      }),
+    const inTilt = (m: THREE.Mesh, x: number, y: number, z: number) => {
+      m.position.set(x, y, z);
+      m.layers.enable(LAYER_NO_REFLECT);
+      tilt.add(m);
+      return m;
+    };
+    inTilt(new THREE.Mesh(geo(new THREE.BoxGeometry(0.62, 0.1, 0.42)), caseMat), 0, 0.05, 0);
+    const lid = inTilt(new THREE.Mesh(geo(new THREE.BoxGeometry(0.62, 0.42, 0.04)), caseMat), 0, 0.27, -0.23);
+    lid.rotation.x = -0.2;
+    // The money: rows of green bricks, each with a pale paper band, drawn on the case's open face.
+    const c = document.createElement("canvas");
+    c.width = 128;
+    c.height = 88;
+    const x = c.getContext("2d");
+    if (x) {
+      x.fillStyle = "#1a120c";
+      x.fillRect(0, 0, 128, 88);
+      for (let r = 0; r < 3; r++)
+        for (let k = 0; k < 4; k++) {
+          const bx = 5 + k * 30;
+          const by = 5 + r * 27;
+          x.fillStyle = (r + k) % 2 ? "#4f8f3e" : "#5ea24a";
+          x.fillRect(bx, by, 28, 25);
+          x.fillStyle = "#f2ead2";
+          x.fillRect(bx + 10, by, 8, 25);
+        }
+    }
+    const cashTex = new THREE.CanvasTexture(c);
+    cashTex.colorSpace = THREE.SRGBColorSpace;
+    disposables.push(cashTex);
+    const cash = inTilt(
+      new THREE.Mesh(
+        geo(new THREE.PlaneGeometry(0.56, 0.38)),
+        fade(
+          new THREE.MeshStandardMaterial({
+            map: cashTex,
+            roughness: 0.8,
+            emissive: 0xffffff,
+            emissiveMap: cashTex,
+            emissiveIntensity: 0.35,
+          }),
+        ),
+      ),
+      0,
+      0.101,
+      0,
     );
-    for (let i = 0; i < 4; i++)
-      put(g, new THREE.Mesh(geo(new THREE.BoxGeometry(0.13, 0.05, 0.3)), cash), -PX - 0.22 + i * 0.147, H + 0.12, z0 + 0.52);
+    cash.rotation.x = -Math.PI / 2;
   }
 
   let shown = -1;
