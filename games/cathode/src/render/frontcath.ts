@@ -261,6 +261,10 @@ uniform vec2 uInk;
 attribute vec3 inkNormal;
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  // Plan item 319 slice 64: the hull sits 6 mm behind its part, so it shows only where the part ends against
+  // something farther (its silhouette), not in a crease inside it: the nose's far flank pushed its back faces out
+  // over the near cheek as a dotted dark line beside the nose (the critique's 'slash' at P).
+  mv.xyz += normalize( mv.xyz ) * 0.006;
   vec4 clip = projectionMatrix * mv;
   vec2 d = ( projectionMatrix * vec4( normalize( normalMatrix * inkNormal ), 0.0 ) ).xy;
   float l = length( d );
@@ -1300,15 +1304,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 260: a drawn nose (the shadow side of the bridge, a lit tip and two small nostrils) and a deeper
       // contour under the cheekbones, so the face has planes at title distance rather than reading as a smooth egg.
       // Plan item 275: the shadow side of the bridge darker and wider, and a shadow under the tip, so the nose holds.
-      blob(-0.0062, -0.008, 0.0035, 0.014, "rgba(132,74,62,A)", 0.45);
+      // Plan item 319 slice 64: on a phone the shadow side is softer and wider (0.45 -> 0.28) and its stroke starts
+      // below the eyes' line at two-thirds strength: at a 57 px face both read as one dark slash between the eyes.
+      blob(-0.0062, phone ? -0.011 : -0.008, phone ? 0.0045 : 0.0035, phone ? 0.011 : 0.014, "rgba(132,74,62,A)", phone ? 0.28 : 0.45);
       // Plan item 319 slice 19: the tip's shadow and the nostrils lighter (0.5/0.7 -> 0.32/0.42): at P they merged into
       // one dark dot under a nose the rounded ridge now models.
       blob(0, -0.0225, 0.0085, 0.0032, "rgba(104,56,48,A)", 0.32);
-      g.strokeStyle = "rgba(118,62,52,0.8)";
+      g.strokeStyle = phone ? "rgba(118,62,52,0.5)" : "rgba(118,62,52,0.8)";
       g.lineCap = "round";
       g.lineWidth = 0.0022;
       g.beginPath();
-      g.moveTo(-0.0055, 0.004);
+      g.moveTo(-0.0055, phone ? -0.006 : 0.004);
       g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
       g.stroke();
       // Plan item 319 slice 48: the shadow line turns under the tip into the nostril's wing, an illustrator's nose
