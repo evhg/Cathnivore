@@ -3244,7 +3244,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each fix is shot at P and D. ui-css-lint and the specs for each game touched pass.
 - **Size:** 2
 
-## 341. [ ] Cathnivore: every region drawn as its place, with landmarks at the campaign map's scale on the play board
+## 341. [ ] Cathnivore: every region drawn as its place, with landmarks at the campaign map's scale on the play board *(lane A, in progress)*
 - **Why:** `plan1113a/cath-game-D` (570-1160 x 115-690): each region is a pale, low-contrast wash and its landmark a faint 20-40 px line sketch at about 35-50% ink (Saltmarsh's lighthouse 1030-1050 x 180-220, Kingsmarket's clock tower 855-875 x 340-375, Rivermead's mill 1105-1145 x 350-385, Highmoor's sheep 780-845 x 165-205); only Hollowell's orange pieces read at a glance. `cath-campaign-D` draws the same places as bold, full-ink set pieces about 60 px tall (the lighthouse 405-435 x 310-370), so the style exists and the play board doesn't use it; the two even disagree on Kingsmarket (a monument on the campaign, 305-365 x 455-520, a clock tower on the board). At P (`cath-game-P` 20-370 x 165-500) the landmarks barely show.
 - **Build:** each region's landmark on the play board in the campaign map's language (full ink outline, flat colour, a ground shadow) at about a quarter of the hex's height, in the hex's free sector (the existing landmark/piece clear-box logic); richer ground per terrain (furrows, marsh reeds and ripples, Kingsmarket cobbles, Oakvale orchard dots) at a readable contrast under the pieces; one landmark per region shared by the campaign and the board from one module.
 - **Accept:**
