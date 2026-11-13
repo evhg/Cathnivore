@@ -551,6 +551,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // the knee, down to 0.64 where it faces away (0.58 cost her far eye its 3:1 on the cheek), a little warmer in the shade (skin's subsurface red).
     // Plan item 319 slice 39: the light rebuilt from the albedo's luminance cancels a grey vertex shade, so the neck's
     // jaw shadow (its vertex colours) is applied again after it, as a brightness.
+    // Plan item 319 slice 66: after it, a view-space form shade: the jaw's underside (normal turned down) a step into
+    // shadow, so seen from the class pick's low camera the jaw's near underside no longer reads as a pale lump below the
+    // chin, and the face's edge (grazing the lens) falls to 0.72, so the cheek turns into the hair instead of ending
+    // at it as a pale plate's rim (critique 11-13 03:35, points 1 and 2).
     const skinLight =
       skinTone > 0
         ? `{
@@ -562,7 +566,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
             outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
-            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); }" : ""}
+            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); float fe = saturate( dot( normal, normalize( vViewPosition ) ) ); float sh = ( 1.0 - 0.42 * smoothstep( -0.3, -0.72, normal.y ) ) * mix( 0.72, 1.0, smoothstep( 0.04, 0.42, fe ) ); outgoingLight *= sh * vec3( 1.0, 1.0 - 0.1 * ( 1.0 - sh ), 1.0 - 0.2 * ( 1.0 - sh ) ); }" : ""}
             ${glint > 0 ? "" : "#ifdef USE_COLOR\n            outgoingLight *= dot( vColor.rgb, W );\n            #endif"}
           }
           #include <opaque_fragment>`
