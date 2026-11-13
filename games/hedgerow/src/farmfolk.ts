@@ -123,7 +123,10 @@ export function makeFolk(level: Level, count = CAST.length): FolkWorld {
       cells.filter(([c, r]) => !taken.some(([a, b]) => a === c && b === r)).sort((a, b) => Math.hypot(a[0] - to[0], a[1] - to[1]) - Math.hypot(b[0] - to[0], b[1] - to[1]) || rng(world) - 0.5)[0];
     const firstHen = world.folk.find((f) => f.kind === "hen");
     const beaF = world.folk.find((f) => f.kind === "bea");
+    // Plan item 345: the first hen settles by the first barn, so the hens peck about its farmyard.
+    const barn = level.barns?.[0];
     if (kind === "hen" && firstHen) pick = near(firstHen.anchor);
+    else if (kind === "hen" && barn) pick = near(barn);
     else if (kind === "dog" && beaF) pick = near(beaF.anchor);
     if (!pick) {
       let best = -1;

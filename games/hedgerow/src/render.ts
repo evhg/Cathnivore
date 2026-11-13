@@ -1264,17 +1264,8 @@ export class Renderer {
       }
     }
 
-    for (const [c, r] of level.barns ?? []) {
-      const w = X(1) - X(0);
-      ctx.fillStyle = "#a8402f";
-      ctx.fillRect(X(c) + w * 0.1, Y(r) + w * 0.25, w * 0.8, w * 0.6);
-      ctx.fillStyle = "#4a4540";
-      ctx.beginPath();
-      ctx.moveTo(X(c) + w * 0.04, Y(r) + w * 0.3);
-      ctx.lineTo(X(c) + w * 0.5, Y(r) + w * 0.06);
-      ctx.lineTo(X(c) + w * 0.96, Y(r) + w * 0.3);
-      ctx.fill();
-    }
+    // Plan item 345: each barn stands in its own farmyard (packed earth, a rail fence, a bale), where the hens peck.
+    for (const [c, r] of level.barns ?? []) drawFarmyard(ctx, X(c), Y(r), X(1) - X(0), c * 7 + r * 13 + level.id);
     // Fallen oaks lie across their plots until cleared.
     for (const [c, r] of level.oaks ?? []) {
       if (!oakAt(game, c, r)) continue;
@@ -2268,3 +2259,139 @@ function svgImage(svg: string): HTMLImageElement {
 
 // Keep theme exports reachable for the level-select art.
 export { themeFor };
+
+/**
+ * Plan item 345: a barn in its farmyard, drawn over its one cell (the barn's footprint in the rules) with the yard
+ * spilling a little into the grass round it: packed earth with wheel ruts, a post-and-rail fence along the yard's
+ * open sides, a round bale, and the barn itself (a gambrel roof, a hay-loft door, the big doors braced in white).
+ */
+function drawFarmyard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, seed: number): void {
+  const r01 = rng(seed);
+  const flip = r01() < 0.5;
+  ctx.save();
+  // The yard: packed earth, a soft edge, two ruts.
+  ctx.fillStyle = "rgba(40,30,10,0.16)";
+  ctx.beginPath();
+  ctx.roundRect(x + w * 0.02, y + w * 0.06, w * 0.96, w * 0.96, w * 0.2);
+  ctx.fill();
+  ctx.fillStyle = "rgb(168,138,92)";
+  ctx.beginPath();
+  ctx.roundRect(x + w * 0.02, y + w * 0.04, w * 0.96, w * 0.94, w * 0.2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(96,70,40,0.35)";
+  ctx.lineWidth = Math.max(1, w * 0.025);
+  for (const k of [0.62, 0.74]) {
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.05, y + w * (k + 0.12));
+    ctx.quadraticCurveTo(x + w * 0.5, y + w * (k - 0.02), x + w * 0.98, y + w * (k + 0.08));
+    ctx.stroke();
+  }
+  // The fence: posts and two rails along the front and one side.
+  const fx = flip ? x + w * 0.02 : x + w * 0.98;
+  ctx.strokeStyle = "#6b4b2c";
+  ctx.lineCap = "round";
+  ctx.lineWidth = Math.max(1, w * 0.03);
+  for (const k of [0.84, 0.95]) {
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.02, y + w * (k + 0.02));
+    ctx.lineTo(x + w * 0.98, y + w * (k + 0.02));
+    ctx.moveTo(fx, y + w * (k - 0.42));
+    ctx.lineTo(fx, y + w * (k + 0.02));
+    ctx.stroke();
+  }
+  ctx.lineWidth = Math.max(1.5, w * 0.045);
+  for (let i = 0; i <= 4; i++) {
+    const px = x + w * (0.02 + i * 0.24);
+    ctx.beginPath();
+    ctx.moveTo(px, y + w * 0.8);
+    ctx.lineTo(px, y + w * 1.0);
+    ctx.stroke();
+  }
+  for (const k of [0.45, 0.65]) {
+    ctx.beginPath();
+    ctx.moveTo(fx, y + w * k);
+    ctx.lineTo(fx, y + w * (k + 0.16));
+    ctx.stroke();
+  }
+  // A round bale in the yard's open corner.
+  const bx = flip ? x + w * 0.8 : x + w * 0.2;
+  const by = y + w * 0.72;
+  ctx.fillStyle = "rgba(60,40,12,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(bx + w * 0.03, by + w * 0.07, w * 0.11, w * 0.04, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#e0bd68";
+  ctx.strokeStyle = "rgba(120,86,30,0.9)";
+  ctx.lineWidth = Math.max(1, w * 0.02);
+  ctx.beginPath();
+  ctx.ellipse(bx, by, w * 0.1, w * 0.085, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(bx, by, w * 0.05, w * 0.042, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  // The barn, set to the back of the yard, its shadow falling right.
+  const bw = w * 0.56;
+  const left = flip ? x + w * 0.36 : x + w * 0.08;
+  const top = y + w * 0.12;
+  const wallTop = top + w * 0.2;
+  const base = y + w * 0.62;
+  ctx.fillStyle = "rgba(40,28,10,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(left + bw * 0.6, base + w * 0.015, bw * 0.62, w * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#b5432f";
+  ctx.strokeStyle = "#5a2418";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(1, w * 0.022);
+  ctx.beginPath();
+  ctx.moveTo(left, base);
+  ctx.lineTo(left, wallTop);
+  ctx.lineTo(left + bw * 0.16, top + w * 0.06);
+  ctx.lineTo(left + bw * 0.5, top - w * 0.02);
+  ctx.lineTo(left + bw * 0.84, top + w * 0.06);
+  ctx.lineTo(left + bw, wallTop);
+  ctx.lineTo(left + bw, base);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  // The roof's slate edge over the gambrel.
+  ctx.strokeStyle = "#4a4540";
+  ctx.lineWidth = Math.max(1.5, w * 0.05);
+  ctx.beginPath();
+  ctx.moveTo(left - w * 0.02, wallTop + w * 0.01);
+  ctx.lineTo(left + bw * 0.16, top + w * 0.06);
+  ctx.lineTo(left + bw * 0.5, top - w * 0.02);
+  ctx.lineTo(left + bw * 0.84, top + w * 0.06);
+  ctx.lineTo(left + bw + w * 0.02, wallTop + w * 0.01);
+  ctx.stroke();
+  // The big doors, braced in white, and the hay-loft door above.
+  const dw = bw * 0.46;
+  const dx = left + (bw - dw) / 2;
+  const dTop = base - w * 0.24;
+  ctx.fillStyle = "#8e3424";
+  ctx.fillRect(dx, dTop, dw, base - dTop);
+  ctx.strokeStyle = "#fbf3e2";
+  ctx.lineWidth = Math.max(1, w * 0.02);
+  ctx.strokeRect(dx, dTop, dw, base - dTop);
+  ctx.beginPath();
+  ctx.moveTo(dx, dTop);
+  ctx.lineTo(dx + dw, base);
+  ctx.moveTo(dx + dw, dTop);
+  ctx.lineTo(dx, base);
+  ctx.moveTo(dx + dw / 2, dTop);
+  ctx.lineTo(dx + dw / 2, base);
+  ctx.stroke();
+  ctx.fillStyle = "#3c2a1c";
+  ctx.fillRect(left + bw * 0.4, top + w * 0.08, bw * 0.2, w * 0.08);
+  ctx.strokeRect(left + bw * 0.4, top + w * 0.08, bw * 0.2, w * 0.08);
+  // A wisp of hay at the loft door.
+  ctx.strokeStyle = "#e7c46a";
+  ctx.beginPath();
+  ctx.moveTo(left + bw * 0.44, top + w * 0.16);
+  ctx.lineTo(left + bw * 0.4, top + w * 0.2);
+  ctx.moveTo(left + bw * 0.54, top + w * 0.16);
+  ctx.lineTo(left + bw * 0.58, top + w * 0.21);
+  ctx.stroke();
+  ctx.restore();
+}

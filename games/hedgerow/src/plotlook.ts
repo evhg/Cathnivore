@@ -44,7 +44,10 @@ function build(level: Level): { looks: Map<string, PlotLook>; field: Map<string,
   const field = new Map<string, Field>();
   let ids = 0;
   const used = new Map<PlotLook, number>();
-  const plain = (c: number, r: number) => !lane.has(`${c},${r}`) && !scenery.has(`${c},${r}`) && plotKind(level, c, r) === "plain";
+  // A barn's cell is its farmyard, not part of a field (item 345); a fallen oak lies across a field until cleared.
+  const barns = new Set((level.barns ?? []).map(([c, r]) => `${c},${r}`));
+  const plain = (c: number, r: number) =>
+    !lane.has(`${c},${r}`) && !scenery.has(`${c},${r}`) && !barns.has(`${c},${r}`) && plotKind(level, c, r) === "plain";
   for (let r = 0; r < level.rows; r++) {
     let prev: PlotLook | undefined;
     for (let c = 0; c < level.cols; ) {
