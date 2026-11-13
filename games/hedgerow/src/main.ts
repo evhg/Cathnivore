@@ -1629,6 +1629,9 @@ const PREVIEW_SPARE = [
   ".field-warn .warn-key",
   ".ticket-note:not(.wave-advice)",
   ".wave-advice",
+  // Plan item 361: on a short desktop the rounds ahead keep their cards before the "still unanswered" line (the
+  // round cards carry each round's trait).
+  ".field-tabs .intel-locks",
   // Plan item 87: Coming up and the notebook share one tabbed card; when even that runs past the foot it goes.
   ":scope > .round-group > :is(.field-tabs, .field-notebook)",
 ] as const;
@@ -1665,7 +1668,7 @@ function fitPreview(p: HTMLElement): void {
     gone.push(sel);
     // Plan item 87: a long round (five vehicle groups on a ten-tower level) still runs past the foot with only the
     // tabbed card left, so the seed packets go shorter first, and the card goes only if the ticket still won't fit.
-    if (sel === PREVIEW_SPARE[PREVIEW_SPARE.length - 2] && over()) p.classList.add("shop-tight");
+    if (sel === ".wave-advice" && over()) p.classList.add("shop-tight");
   }
   // With the last card gone, give back whatever fits again, latest first.
   if (!gone.includes(PREVIEW_SPARE[PREVIEW_SPARE.length - 1]!)) return;
