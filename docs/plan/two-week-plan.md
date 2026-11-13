@@ -3254,7 +3254,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - board-scale, board-diorama, region-closeup and ui-css-lint pass at P and D; shots P and D, light and dark.
 - **Size:** 2
 
-## 342. [ ] Cathnivore: the title's Daily as one chalk price board on the stall counter, not three stray widgets
+## 342. [ ] Cathnivore: the title's Daily as one chalk price board on the stall counter, not three stray widgets *(lane B, in progress)*
 - **Why:** `plan1113a/cath-title-D` (0-1440 x 755-900): the counter band holds three separate small Daily widgets: the "No sale yet / Today's Daily is open" ticket (840-990 x 745-805), a dark pill "Win a Daily to hang the first pennant" (1022-1285 x 778-802, about 13 px), the green "NEXT #13 in 12h 37m" stamp (1318-1398 x 768-858), with a fourth Daily entry in the menu (125-478 x 630-695). The crates (515-605 x 715-765) and the jar (695-780 x 740-765) float on the plank, and most of the band is empty brown: no focal point (VISION 1.1).
 - **Build:** the ticket, pennant hint and countdown merged into one wooden-framed Daily chalkboard standing on the counter, Cath's chalk hand writing today's number, the status, the pennant goal and the next-in time, one object with one focal number; the crates and jar seated as props on the same counter line; on the phone the "No sale yet" tag becomes the same board in miniature.
 - **Accept:**
