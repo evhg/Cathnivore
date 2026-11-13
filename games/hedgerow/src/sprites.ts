@@ -1817,6 +1817,19 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     case "director":
       vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.24, body: "#1d1f24", cab: "#1d1f24", stripe: "#d4ae58", wheels: 2 });
+      // Plan item 285: a pennant on the bonnet (the longer exec car has none), so it reads apart in greyscale.
+      if (fromAbove) rr(ctx, s * 0.3, -s * 0.02, s * 0.1, s * 0.04, s * 0.01, "#f4f6f8");
+      else {
+        rr(ctx, s * 0.28, -s * 0.5, s * 0.015, s * 0.22, s * 0.005, "#c9d0d6");
+        ctx.fillStyle = "#f4f6f8";
+        ctx.beginPath();
+        ctx.moveTo(s * 0.295, -s * 0.5);
+        ctx.lineTo(s * 0.43, -s * 0.45);
+        ctx.lineTo(s * 0.295, -s * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
       break;
     case "clinic":
       vehicle(ctx, 0, 0, s, tt, { len: 0.72, h: 0.36, body: "#f7fbfa", stripe: "#7fd1b9", label: "+", labelColor: "#2f9a7c", wheels: 3 });
@@ -2097,6 +2110,10 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
         ctx.beginPath();
         ctx.arc(hx, hy - s * 0.03, s * 0.08, Math.PI, 0);
         ctx.fill();
+        // Plan item 285: a clipboard held up beside the head (the lawyer carries a briefcase low), so the two read
+        // apart in greyscale and in outline.
+        rr(ctx, -s * 0.26, hy - s * 0.1, s * 0.13, s * 0.17, s * 0.015, "#f4f6f8");
+        rr(ctx, -s * 0.22, hy - s * 0.12, s * 0.05, s * 0.03, s * 0.01, "#3a3d44");
       });
       break;
     case "carrier": {

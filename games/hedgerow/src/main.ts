@@ -799,6 +799,8 @@ if (SANDBOX)
     silhouette: towerSilhouette,
     // Plan item 105: a vehicle's 2D silhouette and drawn length at a cell size.
     enemySilhouette,
+    // Plan item 285: every vehicle's icon, for the greyscale contact sheet.
+    enemyIcon,
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
     rosette: (round: number, reward: number, clean: boolean) => game && roundRosette(game, round, reward, clean),
     plotBoxes: () => (game ? plotBoxes(game) : []),
