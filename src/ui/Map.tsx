@@ -1038,7 +1038,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                       const [k, n] = icons[rect.kind]
                       return (
                         <g key={k} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece={k} data-count={n} data-silhouette={SILHOUETTE[rect.kind]}>
-                          <EnemyStack kind={rect.kind} n={n} scale={s} ornaments={tray.ornaments} countR={tray.countR} cy={tray.enemyY} />
+                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} countR={tray.countR} cy={tray.enemyY} />
                         </g>
                       )
                     }

@@ -46,6 +46,9 @@ export interface PieceTray {
   rects: PieceRect[]
   /** The pieces' scale (1 at full size). */
   scale: number
+  /** Plan item 282: Hollowell's stacks' own scale (at least `scale`): on a hex shared with producers they grow on
+   *  their own once the producers have their size. */
+  enemyScale: number
   /** Whether the stacks wear their ornaments (the .99 tag, the SOLD sign). */
   ornaments: boolean
   /** A count badge's radius in tile units (its text is 1.25 x this). */
@@ -102,7 +105,7 @@ function row(ws: number[]): number[] {
   return out
 }
 
-function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1): { rects: PieceRect[]; enemyY: number; producerY: number } {
+function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1, eScale = scale, side = false): { rects: PieceRect[]; enemyY: number; producerY: number } {
   const out: PieceRect[] = []
   const lw = input.labelWidth / 2
   out.push({ kind: 'label', x0: -lw, y0: LABEL_Y - 15, x1: lw, y1: LABEL_Y - 15 + LABEL_H })
@@ -113,19 +116,22 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   // A stack's slot holds its body, its ornament above and, from COUNT_FROM up, its count badge (half over the
   // body's empty top right corner, half outside). Plan item 172: two or three stand as a pile with no badge.
   const counted = (k: PieceKind) => (k === 'outlets' || k === 'buyouts' || k === 'doubt') && input[k] >= COUNT_FROM
-  const ws = slots.map((k) => STACK_W * scale + (counted(k) ? countR * 0.5 : 0))
+  const ws = slots.map((k) => STACK_W * eScale + (counted(k) ? countR * 0.5 : 0))
   // Plan item 172: the row steps down the tile, rather than shrinking, when the plate or a badge sits over it.
   const ceil = out.reduce((a, r) => Math.max(a, r.y1), -Infinity) + GAP
-  const highest = (STACK_H * scale) / 2 + (ornaments ? ORNAMENT_H * scale : 0) + (slots.some(counted) ? countR * 0.5 : 0)
+  const highest = (STACK_H * eScale) / 2 + (ornaments ? ORNAMENT_H * eScale : 0) + (slots.some(counted) ? countR * 0.5 : 0)
   const enemyY = slots.length ? Math.max(ENEMY_Y, ceil + highest) : ENEMY_Y
-  const bottom = enemyY + (STACK_H * scale) / 2
-  row(ws).forEach((x, k) => {
-    const top = enemyY - (STACK_H * scale) / 2 - (ornaments ? ORNAMENT_H * scale : 0) - (counted(slots[k]!) ? countR * 0.5 : 0)
+  const bottom = enemyY + (STACK_H * eScale) / 2
+  const pws = Array.from({ length: input.producers }, (_, k) => PRODUCER_W * scale + ((input.stallCounts?.[k] ?? COUNT_FROM) >= COUNT_FROM ? countR * 0.35 : 0))
+  // Plan item 282: side by side, Hollowell's stacks and the producers share one row across the hex's wide middle,
+  // standing on one ground line (the stacks' feet are the producers' baseline).
+  const xs = side ? row([...ws, ...pws]) : row(ws)
+  xs.slice(0, ws.length).forEach((x, k) => {
+    const top = enemyY - (STACK_H * eScale) / 2 - (ornaments ? ORNAMENT_H * eScale : 0) - (counted(slots[k]!) ? countR * 0.5 : 0)
     out.push({ kind: slots[k]!, x0: x, y0: top, x1: x + ws[k]!, y1: bottom })
   })
-  const producerY = Math.max(PRODUCER_Y, (slots.length ? bottom : ceil) + GAP + PRODUCER_H * scale * 0.6)
-  const pws = Array.from({ length: input.producers }, (_, k) => PRODUCER_W * scale + ((input.stallCounts?.[k] ?? COUNT_FROM) >= COUNT_FROM ? countR * 0.35 : 0))
-  row(pws).forEach((x, k) =>
+  const producerY = side && slots.length ? bottom - PRODUCER_H * scale * 0.4 : Math.max(PRODUCER_Y, (slots.length ? bottom : ceil) + GAP + PRODUCER_H * scale * 0.6)
+  ;(side ? xs.slice(ws.length) : row(pws)).forEach((x, k) =>
     // The art's base shadow reaches 2.2 units past the slot's foot (ProducerMini), so the slot reaches it too.
     out.push({ kind: 'producer', i: k, x0: x, y0: producerY - PRODUCER_H * scale * 0.6, x1: x + pws[k]!, y1: producerY + PRODUCER_H * scale * 0.4 + 2.4 * scale }),
   )
@@ -163,13 +169,25 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
       for (let scale = start; scale >= stallFloor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
         for (const ornaments of tryOrnaments) {
           const p = place(input, scale, ornaments, countR, k)
-          if (fits(p.rects)) return { ...p, scale, ornaments, countR, badgeK: k }
+          if (fits(p.rects)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start)
         }
   for (let scale = start; scale >= 0.35 - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
     for (const ornaments of tryOrnaments) {
       const p = place(input, scale, ornaments, countR)
-      if (fits(p.rects)) return { ...p, scale, ornaments, countR, badgeK: 1 }
+      if (fits(p.rects)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start)
     }
   const scale = 0.35
-  return { ...place(input, scale, false, countR), scale, ornaments: false, countR, badgeK: 1 }
+  return { ...place(input, scale, false, countR), scale, enemyScale: scale, ornaments: false, countR, badgeK: 1 }
+}
+
+/** Plan item 282: with the producers placed at the tray's scale, Hollowell's stacks take the largest scale up to
+ *  `start` (the hex's own ceiling) that still fits beside them. */
+function grow(input: PieceInput, t: PieceTray, start: number): PieceTray {
+  if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return t
+  for (let e = start; e > t.scale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
+    for (const side of [false, true]) {
+      const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side)
+      if (fits(p.rects)) return { ...t, ...p, enemyScale: e }
+    }
+  return t
 }
