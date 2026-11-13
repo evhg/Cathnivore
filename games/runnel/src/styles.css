@@ -4073,6 +4073,16 @@ body[data-mode='practice'] #week-slot {
     height: 100%;
     margin: 0;
   }
+  /* Plan item 268: the board leaves no room for a taller figure, so she steps closer in the same box: 1.25x about her
+     head, so her face reads (about 46 px across her hair, was 37); the box clips her at its foot (sides and top stay
+     open for her gestures), where the footbridge stands anyway. */
+  .valley-cath[data-cath-figure]:not([hidden]) {
+    clip-path: polygon(-40% -30%, 140% -30%, 140% calc(100% + 6px), -40% calc(100% + 6px));
+  }
+  .valley-cath[data-cath-figure] svg:not(.valley-wall) {
+    transform: scale(1.25);
+    transform-origin: 50% 22%;
+  }
   .valley-cath[data-cath-figure] svg.valley-wall {
     display: block;
     bottom: -4px;
