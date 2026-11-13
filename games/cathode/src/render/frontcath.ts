@@ -1188,7 +1188,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Slice 25: drawn in more gradually (0.54 k^1.6 -> 0.5 k^1.25), so the jaw's angle is a curve, not a corner.
         // Slice 40: the taper starts sooner and ends narrower (0.5 k^1.25 -> 0.56 k^1.1), so the jaw runs in a long
         // convex curve from the cheekbone to a small chin, not straight down the cheek and round a corner.
-        x *= 1 - 0.56 * Math.pow(k, 1.1);
+        // Slice 79: the taper's slope eases off toward the chin (1.25 k^1.1 - 0.25 k^3: the same 0.56 at the chin, a
+        // little narrower mid-jaw), so the jaw line rounds into the chin instead of meeting it in a square corner on the
+        // far side at the D title.
+        x *= 1 - 0.56 * (1.25 * Math.pow(k, 1.1) - 0.25 * k * k * k);
         // Slice 40: the jaw line rises from the chin toward the ear: the lower head's sides and back lift (up to 0.11
         // at the side, none at the chin's front), so its underside slopes up and back instead of lying as one flat
         // shelf whose edge met the cheek in a corner.
