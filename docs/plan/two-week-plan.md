@@ -3395,7 +3395,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P and D of all five classes.
 - **Size:** 2
 
-## 363. [ ] NIGHT SHIFT title: Cath lit as the hero, her coat readable against the night
+## 363. [ ] NIGHT SHIFT title: Cath lit as the hero, her coat readable against the night *(lane B, in progress)*
 - **Why:** `plan1113b/ns-title-D` (860-1140 x 380-900): her coat merges into the dark street. No rim or key light touches her shoulders, arms or hem, and her legs and lower coat are a black mass: a lit face on a hole. `ns-title-P` (195-330 x 290-700) is the same, the coat lost against the brick and LUNA's glow. Item 319 covers her sculpt and 331 the left half; neither lights her figure.
 - **Build:** a cool rim light from LUNA's side and a warm low key from a streetlamp; a faint satin sheen on the coat so its folds and belt read; a wet-ground reflection of her silhouette and the umbrella; a little separation haze behind her.
 - **Accept:**
