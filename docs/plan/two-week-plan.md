@@ -3320,7 +3320,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Hedgerow forecast/rounds, gatequeue, critique and ui-css-lint pass at P and D; shots P (sheet open) and D on l21 and l34.
 - **Size:** 1
 
-## 349. [ ] Cathnivore phone: Quick Game setup as Cath's stall, not six stacked form panels
+## 349. [ ] Cathnivore phone: Quick Game setup as Cath's stall, not six stacked form panels *(lane B, in progress)*
 - **Why:** `plan1113b/cath-setup-P` (0-390 x 0-844): six bordered boxes nested inside each other, borders three deep at 8-380 x 255-775 (event 16-372 x 82-150, mode 160-240, producers 268-540, map 548-640, difficulty 650-770, Start 16-374 x 785-835). It reads as a settings form. Cath is only a 50 px avatar (15-70 x 8-60), and the producer chips "Ines"/"Sol" (205-368 x 300-348) are tilted tags crammed against the panel edge.
 - **Build:** one scrolling scene. A short stall header with Cath at half length (reuse the title's P stall, item 316), her bubble carrying the event line. Then three numbered steps on one paper ground with no nested borders: Who (the mode and item 328's producer cards, two-up with a swipe), Where (the map thumbnails), How hard (the difficulty tags). The Start plank docks at the foot over a soft fade. Every existing control and test id stays.
 - **Accept:**
