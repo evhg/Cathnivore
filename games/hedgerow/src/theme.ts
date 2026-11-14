@@ -79,8 +79,9 @@ export const THEMES: Theme[] = [
   },
   {
     name: "Saltmarsh",
-    grass: ["#9fbf88", "#86a978"],
-    blade: "#5f8a6a",
+    // Plan item 370: coastal daylight, not a grey wash: a cool, clean green (sat ~0.4, Rivermead's is 0.45).
+    grass: ["#9cc67c", "#82b06a"],
+    blade: "#4f8a5a",
     dirt: ["#8a7454", "#d3c39c", "#ad9b74"],
     flowers: ["#f4f1e8", "#b9d7e2", "#e9d27a"],
     decor: [
@@ -92,7 +93,7 @@ export const THEMES: Theme[] = [
     light: "#d9f0f4",
     lightAlpha: 0.14,
     vignette: "rgba(30,60,70,0.33)",
-    water: { color: "#7fb3c4", foam: "#e3f2f2", side: "left" },
+    water: { color: "#5fa9c2", foam: "#e3f2f2", side: "left" },
   },
   {
     name: "Rivermead",
