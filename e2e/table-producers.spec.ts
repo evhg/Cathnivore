@@ -156,3 +156,33 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     }
   })
 }
+
+// Plan item 390: a producer lifted behind the other stands behind a stack of crates that reaches the board's rim, so
+// their body never ends (or fades) in mid-air; their name plate stays whole above it. Seed 1 at 1440x900 lifts Tomas.
+test('a lifted producer stands behind crates down to the rim', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'D only')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await expect(page.locator('.map-wrap [data-table-producer]:not([data-unseated]) svg.fig')).toHaveCount(2)
+  await page.waitForTimeout(500)
+  const m = await page.evaluate(() => {
+    const p = document.querySelector('.map-wrap [data-table-producer][data-lifted]')
+    if (!p) return null
+    const r = (e: Element) => e.getBoundingClientRect()
+    return { stack: r(p.querySelector('.producer-stack')!).toJSON(), svg: r(p.querySelector('svg.fig')!).toJSON(), plate: r(p.querySelector('.table-producer-name')!).toJSON(), mask: getComputedStyle(p.querySelector('svg.fig')!).maskImage }
+  })
+  test.skip(!m, 'no producer lifted at this table')
+  const { stack, svg, plate, mask } = m!
+  expect(mask).toBe('none')
+  expect(stack.width).toBeGreaterThan(svg.width * 0.7)
+  expect(stack.top, 'the stack starts under the plate').toBeGreaterThanOrEqual(plate.bottom)
+  expect(stack.top, 'and covers the figure foot').toBeLessThan(svg.bottom)
+  const rim = await page.evaluate(() => {
+    const p = document.querySelector('.map-wrap [data-table-producer][data-depth="front"] svg.fig')!
+    return p.getBoundingClientRect().bottom
+  })
+  // (the active one leans in, 6 px up)
+  expect(Math.abs(stack.bottom - rim), 'the stack stands on the rim').toBeLessThanOrEqual(8)
+})

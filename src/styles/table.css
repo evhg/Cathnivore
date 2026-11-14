@@ -3623,8 +3623,40 @@ html.no-animations .table-cath-line { animation: none; }
 .table-producers-desk .table-producer[data-active] { translate: 0 -6px; rotate: -1deg; box-shadow: none; }
 .table-producers-desk .table-producer[data-active] > svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wheat) 70%, transparent)) drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28)); }
 .table-producers-desk:has(.table-producer[data-active]) .table-producer:not([data-active]) > svg { filter: saturate(.8) brightness(.85) drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28)); }
-.table-producers-desk .table-producer[data-lifted] > svg {
-  mask-image: linear-gradient(to bottom, var(--ink) 62%, transparent 86%);
+/* Plan item 390: a producer lifted behind the front one stands behind a stack of their crates, its top just under the
+   name plate and its foot on the board's rim, so their body never ends in mid-air (the fade it replaces left a ghost
+   from the waist down). Inside their own stacking context: over their figure, under the front producer. */
+.producer-stack { display: none; }
+.table-producers-desk .table-producer[data-lifted] .producer-stack {
+  --fw: calc(var(--fig-h, 240px) * 2 / 3);
+  --slat: calc(var(--fig-h, 240px) * .075);
+  display: block;
+  position: absolute;
+  z-index: var(--z-raised);
+  left: calc(var(--fw) * .1);
+  width: calc(var(--fw) * .8);
+  top: calc(var(--fig-h, 240px) * .79);
+  height: calc(var(--fig-h, 240px) * .21 + var(--lift, 0px));
+  border: 1.5px solid var(--wood-lo);
+  border-radius: 3px 3px 0 0;
+  background:
+    linear-gradient(to right, var(--wood-lo) 0 4px, transparent 4px calc(100% - 4px), var(--wood-lo) calc(100% - 4px)),
+    repeating-linear-gradient(to bottom, var(--wood) 0 calc(var(--slat) - 2px), var(--wood-lo) calc(var(--slat) - 2px) var(--slat)),
+    var(--wood);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--paper-hi) 35%, transparent), 0 3px 6px rgb(var(--shadow-ink) / .3);
+}
+/* The produce heaped along the stack's top edge, in the producer's colour and the market's. */
+.table-producers-desk .table-producer[data-lifted] .producer-stack::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 100%;
+  height: calc(var(--fig-h, 240px) * .05);
+  background:
+    radial-gradient(circle at 10% 100%, var(--clay) 0 46%, transparent 50%) 0 0 / 22% 200% repeat-x,
+    radial-gradient(circle at 60% 100%, var(--cameo-ring, var(--pasture)) 0 44%, transparent 48%) 0 0 / 22% 200% repeat-x,
+    radial-gradient(circle at 35% 100%, var(--wheat) 0 40%, transparent 44%) 0 0 / 15% 200% repeat-x;
 }
 .table-producers-desk .table-producer-name { top: calc(var(--fig-h, 240px) * .62); bottom: auto; left: calc(50% + var(--plate-shift, 0px)); }
 .table-producers-desk ~ .produce-crates, .map-wrap:has(.table-producers-desk) .produce-crates { z-index: calc(var(--z-raised) + 2); }

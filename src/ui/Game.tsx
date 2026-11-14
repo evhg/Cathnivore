@@ -347,6 +347,9 @@ function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box
     if (people[1]) {
       place(people[1], best.bx, best.by, 'back', best.shift)
       // Lifted behind the front one, their foot would end in mid-air: it fades into the table instead.
+      // Plan item 390: lifted, they stand behind a stack of their crates that reaches down to the rim (a fade left a
+      // ghost from the waist down, the name plate on the faded band).
+      people[1].style.setProperty('--lift', `${Math.max(0, y - best.by).toFixed(0)}px`)
       if (y - best.by > h * 0.04) people[1].dataset.lifted = ''
       else delete people[1].dataset.lifted
     }
@@ -3312,6 +3315,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 )}
                 {/* Plan item 374: at a desktop table each seat carries its producer's name on a plate in their colour. */}
                 {!phoneTableCath && <span className="table-producer-name">{PRODUCERS[id].name.split(' ')[0]}</span>}
+                {!phoneTableCath && <span className="producer-stack" />}
               </span>
             ))}
           </div>
