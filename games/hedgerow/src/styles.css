@@ -3904,6 +3904,20 @@ img.act-scene {
   #screen-select .top-tools .almanac-btn .bank-word {
     display: block;
   }
+  /* Plan item 398: the Seed Bank's count sits beside its star, so its word holds one line like every other tab
+     (it took two: '60' over 'Seed Bank'). */
+  #screen-select .top-tools #btn-bank {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "ico num" "word word";
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    column-gap: 3px;
+  }
+  #screen-select .top-tools #btn-bank .chip-ico { grid-area: ico; }
+  #screen-select .top-tools #btn-bank .num { grid-area: num; }
+  #screen-select .top-tools #btn-bank .bank-word { grid-area: word; white-space: nowrap; }
   #screen-select .levels {
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
     /* Plan item 211: the map fades out above the tab bar, so the next act's banner isn't sliced by it (the fade
