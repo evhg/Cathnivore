@@ -3838,7 +3838,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - cathode-classpick and cathode-front specs, ui-css-lint and cathode-type pass; shots P and D before and after.
 - **Size:** 2
 
-## 398. [ ] The bugs from the 2026-11-14 21:35 critique, fixed as one batch *(lane B, in progress)*
+## 398. [ ] The bugs from the 2026-11-14 21:35 critique, fixed as one batch *(handed back 2026-11-14 22:05 by lane B, slice 1: fixed: the portfolio's '1 Human in the loop'; Runnel's idle hint waits for the first tap under the lesson (`data-idle`, hidden under `body.in-lesson`; Cath's bubble already says it), runnel specs and site.spec's Runnel cases pass (140); Hedgerow's phone tabs: Modes' glyph on a chip so its label lines up, the Seed Bank's count beside its star, 'Seed Bank' on one line (hedgerow-map, level-card, fonts and site.spec pass, 153). Left: everything else in the list)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114f`)
   - **Hedgerow:** `hedge-l21-2d-D` Cath's figure and ring stand on the convoy's lane (295-350 x 635-725; the pink vans drive 300-350 x 180-450), `hedge-l34-2d-D` the same on a road bend (800-855 x 280-375); `hedge-menu-D` the level card's three empty rings (1138-1235 x 318-347) unlabelled; `hedge-menu-P` the Modes label about 6 px above Daily and Almanac (235-310 x 795-808), '60 Seed Bank' on two lines where every other tab has one, a blank fogged strip under the hedge gate (0-390 x 720-770).
   - **Runnel:** `runnel-D` the hint 'Tap a tile to turn it, hold to pin it.' floating grey on bare cream (73-290 x 793-808) over an empty band (0-370 x 815-900), `runnel-P` the same (95-300 x 785-844); the spring house's stream stops at its culvert (545-560 x 240-250), short of the spring tile (~580).

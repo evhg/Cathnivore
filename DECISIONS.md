@@ -306,3 +306,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 20:30 lane B (item 349): the phone setup scrolls a little (77 px at 390x844) so Cath stands at half length in its header; item 54's 'no scroll' became 'Start always in view, every control reached clear of it, 220 px of scroll at most'.
 - 2026-11-14 20:55 lane B: producer-faces' autoplay check plays a fixed seed (3), since unseeded it sometimes ran 70 s with no reaction; the check still needs a worried or delighted face and a board face.
 - 2026-11-14 21:31 lane B: a planning pass though 4 items are unclaimed: 319 and 363 need GPU poster renders (tried many times), 392 and 394's leftovers each wait on a layout decision noted in the plan, so fewer than 3 are workable.
+- 2026-11-14 21:30 lane B (item 282): closed with a shortfall: three of Hollowell's stacks can't stand 36 px across a phone hex; drawing fewer stacks per hex is a rules-display change left for a later item.
+- 2026-11-14 21:37 lane B (planning): the critique's portfolio 'studio' proposal wasn't added (item 350 just finished that hero); its phone strip point went into 398.
