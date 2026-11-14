@@ -1140,6 +1140,48 @@ export function depotSides(level: Level, path: Level["path"], L: Layout): Side[]
   return [...sides.filter((side) => side !== water), ...sides.filter((side) => side === water)];
 }
 
+/**
+ * Plan item 391: a gate with no margin for a depot (an upright phone's l21 and l40, the field edge to edge) gets a small
+ * one stood on the lane's mouth, its gate cell or the next, on no plot and inside the canvas (Layout px, canvas
+ * origin). Its own sign names the gate there too, so the painted town sign is left off.
+ */
+export function mouthDepot(level: Level, path: Level["path"], L: Layout): { x: number; y: number; size: number } | null {
+  if (depotSides(level, path, L).length) return null;
+  const s = L.cell;
+  const size = Math.max(48, Math.round(s * 1.15));
+  const lane = new Set<string>();
+  for (const p of [level.path, level.path2]) {
+    if (!p) continue;
+    for (let k = 1; k < p.length; k++) {
+      const [ac, ar] = p[k - 1] as unknown as [number, number];
+      const [bc, br] = p[k] as unknown as [number, number];
+      const n = Math.max(Math.abs(bc - ac), Math.abs(br - ar));
+      for (let t = 0; t <= n; t++) lane.add(`${ac + Math.sign(bc - ac) * t},${ar + Math.sign(br - ar) * t}`);
+    }
+  }
+  const onPlot = (x: number, y: number) => {
+    for (let r = 0; r < level.rows; r++)
+      for (let c = 0; c < level.cols; c++) {
+        if (lane.has(`${c},${r}`)) continue;
+        const cx = L.offX + c * s, cy = L.offY + r * s;
+        // A sliver (its kerb) may lie over a plot's edge.
+        if (Math.min(x + size, cx + s) - Math.max(x, cx) > 6 && Math.min(y + size, cy + s) - Math.max(y, cy) > 6) return true;
+      }
+    return false;
+  };
+  const [g0c, g0r] = path[0] as unknown as [number, number];
+  const [g1c, g1r] = (path[1] ?? path[0]) as unknown as [number, number];
+  // The gate's cell, then the next (further in, it stood mid-road among the queue: l40 at P).
+  for (let k = 0; k < 2; k++) {
+    const c = g0c + Math.sign(g1c - g0c) * Math.min(k, Math.abs(g1c - g0c));
+    const r = g0r + Math.sign(g1r - g0r) * Math.min(k, Math.abs(g1r - g0r));
+    const x = Math.max(4, Math.min(L.width - size - 4, L.offX + (c + 0.5) * s - size / 2));
+    const y = Math.max(4, Math.min(L.height - size - 4, L.offY + (r + 0.5) * s - size / 2));
+    if (!onPlot(x, y)) return { x, y, size };
+  }
+  return null;
+}
+
 /** Plan item 391: whether a depot on this side stands over the act's water (a jetty warehouse on piles). */
 export function isJettySide(level: Level, side: Side): boolean {
   return themeFor(level).water?.side === side;
@@ -1169,7 +1211,7 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
     ctx.stroke();
   }
   // Plan item 380: a gate with a depot beside it is named by the depot's sign alone.
-  if (depotSides(level, path, L).length) return;
+  if (depotSides(level, path, L).length || mouthDepot(level, path, L)) return;
   const { label, fs, sx, sy, sw, sh } = gateSignRect(level, path, L, ctx);
   ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
   ctx.fillStyle = "#1f8a8a";
@@ -1397,7 +1439,7 @@ function paintDecor(
   // under level 21's HOLLOWELL sign.
   ctx.save();
   const signs = (level.path2 ? [level.path, level.path2] : [level.path])
-    .filter((pth) => !depotSides(level, pth, L).length)
+    .filter((pth) => !depotSides(level, pth, L).length && !mouthDepot(level, pth, L))
     .map((pth) => gateSignRect(level, pth, L, ctx));
   ctx.restore();
   const onSign = (x: number, y: number) =>

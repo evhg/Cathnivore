@@ -202,7 +202,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
-import { depotSides, gateSignRect, isJettySide, lastCrayon, setWonLevels } from "./theme";
+import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -4803,49 +4803,11 @@ function syncDepots(g: Game): void {
     }
   }
   // Plan item 391: a gate with no margin wide enough (an upright phone's l21, its field edge to edge) still gets its
-  // depot: a small one stood on the lane's mouth, over the lane's first cells (the convoy leaves from its door), on
-  // no plot and clear of the gate's sign, inside the canvas.
+  // depot: a small one on the lane's mouth (theme.ts's mouthDepot, which also leaves the painted sign off there).
   for (const { path, i } of lanes) {
     if (spots.some((sp) => sp.lane === i)) continue;
-    const dsz = Math.max(48, Math.round(cell * 1.15));
-    const lane = new Set<string>();
-    for (let k = 1; k < path!.length; k++) {
-      const [ac, ar] = path![k - 1] as unknown as [number, number];
-      const [bc, br] = path![k] as unknown as [number, number];
-      const n = Math.max(Math.abs(bc - ac), Math.abs(br - ar));
-      for (let t = 0; t <= n; t++) lane.add(`${ac + Math.sign(bc - ac) * t},${ar + Math.sign(br - ar) * t}`);
-    }
-    const layout = { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY };
-    const sr = gateSignRect(L, path!, layout, signMeasure());
-    const sign = { left: canvas.left + sr.sx, top: canvas.top + sr.sy, right: canvas.left + sr.sx + sr.sw, bottom: canvas.top + sr.sy + sr.sh };
-    const plotHit = (x: number, y: number) => {
-      for (let rr = 0; rr < L.rows; rr++)
-        for (let cc = 0; cc < L.cols; cc++) {
-          if (lane.has(`${cc},${rr}`)) continue;
-          const cx = fieldL + cc * cell, cy = fieldT + rr * cell;
-          // A sliver (its kerb) may lie over a plot's edge.
-          if (Math.min(x + dsz, cx + cell) - Math.max(x, cx) > 6 && Math.min(y + dsz, cy + cell) - Math.max(y, cy) > 6) return true;
-        }
-      return false;
-    };
-    // The lane's first two cells, from the gate (further in, it stood mid-road among the queue: l40 at P).
-    const [g0c, g0r] = path![0] as unknown as [number, number];
-    const [g1c, g1r] = (path![1] ?? path![0]) as unknown as [number, number];
-    for (let k = 0; k < 2 && !spots.some((sp) => sp.lane === i); k++) {
-      const c0 = g0c + Math.sign(g1c - g0c) * Math.min(k, Math.abs(g1c - g0c));
-      const r0 = g0r + Math.sign(g1r - g0r) * Math.min(k, Math.abs(g1r - g0r));
-      const at = r.cellCenter(c0, r0);
-      if (!at) continue;
-      const x = Math.max(canvas.left + 4, Math.min(canvas.right - dsz - 4, at.x - dsz / 2));
-      // On the cell, or stepped just above or below the gate's sign where it stands on the cell (l40's at P).
-      for (const y0 of [at.y - dsz / 2, sign.top - 4 - dsz, sign.bottom + 4]) {
-        const y = Math.max(canvas.top + 4, Math.min(canvas.bottom - dsz - 4, y0));
-        const meetsSign = x < sign.right && x + dsz > sign.left && y < sign.bottom && y + dsz > sign.top;
-        if (meetsSign || plotHit(x, y)) continue;
-        spots.push({ x: x - stage.left, y: y - stage.top, count: counts[i]!, lane: i, size: dsz, jetty: false });
-        break;
-      }
-    }
+    const m = mouthDepot(L, path!, { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY });
+    if (m) spots.push({ x: canvas.left + m.x - stage.left, y: canvas.top + m.y - stage.top, count: counts[i]!, lane: i, size: m.size, jetty: false });
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
   const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
