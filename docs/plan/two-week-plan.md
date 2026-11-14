@@ -3748,7 +3748,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - runnel-one-cath, lesson and daily specs pass; key art re-shot; shots of the lesson and a daily at P and D, before and after.
 - **Size:** 3
 
-## 390. [ ] The bugs from the 2026-11-14 15:40 critique, fixed as one batch
+## 390. [ ] The bugs from the 2026-11-14 15:40 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114d`)
   - **Cathnivore:** `cath-game-D` (1215-1335 x 430-520) Tomas fades to transparency at the waist behind Mara, his plate on the faded band; the Sell card's count coin "3" (462-478 x 848-866) and price coin (440-455 x 735-750) half under the Buy Roadside Stand card; `cath-game-P` (245-355 x 670-775) the Supply 1 Outlet card at about 40% opacity (an entrance fade caught, or a wrong disabled state?); `cath-setup-D` Cath's one bubble (1062-1362 x 325-450) packs two quotes; `cath-title-P` (20-270 x 760-835) the satire/privacy/support lines plain small print on the brown band.
   - **/games/:** `games-D` the stall Cath about 190 px tall (280-375 x 108-300; item 352 set about 360); the poster logotypes 4 px under the valance's scallops (122-290 x 505-540, 1050-1215 x 508-532); a dead band under the posters (0-1440 x 832-900).
