@@ -3629,7 +3629,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - cathode-front and critique79 pass; D unchanged; shots P before and after.
 - **Size:** 2
 
-## 380. [ ] Hedgerow 2D: each gate staged on dry ground with one sign, and its waiting convoy spaced along the lane
+## 380. [ ] Hedgerow 2D: each gate staged on dry ground with one sign, and its waiting convoy spaced along the lane *(lane B, in progress)*
 - **Why:** `plan1114c/hedge-l21-2d-D`: the depot stands half in the sea (160-280 x 385-490), a sailboat under its posts (225-270 x 520-545), and the gate is named twice: on the depot's sign (160-280 x 415-440) and a tag under it (145-280 x 500-518). `hedge-l21-2d-P`: no depot; a HOLLOWELL tag (8-97 x 378-398) and a "216 coming" chip (4-84 x 420-438) float on grass with the vans queued above them (15-55 x 150-355). `hedge-l34-2d-D`: the Same-Day vans overlap each other at the bend (245-490 x 735-850); P the same (15-160 x 515-590). (Items 364 and 369 read the l34 queue as nose to tail round the bend; at the bend the third and fourth vans now overlap by about a third.)
 - **Build:**
   - The depot on dry ground in every layout (a shore cell or the lane's own end, never on water), drawn at the phone's size too (item 336's gate).
