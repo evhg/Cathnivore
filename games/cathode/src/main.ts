@@ -292,7 +292,9 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   box.id = "dossier";
   box.setAttribute("aria-hidden", "true");
   box.classList.toggle("is-open", !!d);
-  box.style.setProperty("--dossier-top", `${$("menu").offsetTop}px`);
+  // Plan item 379: on an upright phone the case file stands in the menu hint's place, under the menu.
+  const phone = innerWidth <= 600 && innerHeight > innerWidth;
+  box.style.setProperty("--dossier-top", `${phone ? $("menu-hint").offsetTop : $("menu").offsetTop}px`);
   if (!d) return;
   box.replaceChildren();
   el("i", "dossier-pin", box);

@@ -1235,6 +1235,41 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .dossier-place, .dossier-tag { font: 500 var(--fs-2) / 1.25 var(--font-ui); }
   .dossier-tag { font-style: italic; }
 }
+/* Plan item 379: on an upright phone the open case is a small pinned card in the menu hint's place (it was three
+   loose caps lines): the target's photo beside CASE FILE, the name, the place and the tag. The hint steps back. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .dossier {
+    position: absolute;
+    top: var(--dossier-top, 0);
+    left: 0;
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr); /* px-ok: --u floors at .62 px on a phone */
+    align-content: start;
+    column-gap: 8px; /* px-ok */
+    width: min(48vw, 178px); /* px-ok */
+    padding: 5px 8px 6px 5px; /* px-ok */
+    background: rgb(var(--white-rgb) / .93);
+    box-shadow: 0 6px 16px rgb(var(--black-rgb) / .6); /* px-ok */
+    color: var(--card-ink);
+    rotate: -2deg;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+  .dossier.is-open { opacity: 1; }
+  .dossier-pin { position: absolute; top: -5px; left: 26px; width: 10px; height: 10px; border-radius: 50%; background: var(--blood); } /* px-ok */
+  .dossier-photo { grid-row: 1 / span 4; position: relative; margin: 0; width: 100%; height: 66px; overflow: hidden; background: var(--card-ink); } /* px-ok: the photo 64 px or more (plan item 379) */
+  .dossier-photo svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .dossier-kicker { margin: 0; font: 700 var(--fs-1) / 1.15 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .05em; text-transform: uppercase; color: var(--blood); }
+  .dossier-target { font: 700 var(--fs-1) / 1.15 var(--font-ui); }
+  .dossier-place, .dossier-tag { font: 500 var(--fs-1) / 1.2 var(--font-ui); }
+  .dossier-tag { font-style: italic; }
+  .title-col:has(.dossier.is-open) #menu-hint { visibility: hidden; }
+}
+@media (max-width: 600px) and (orientation: portrait) and (max-height: 720px) {
+  /* a short phone: the card's foot clears The List's label under it */
+  .dossier { padding-block: 2px 3px; } /* px-ok */
+}
 @media (prefers-reduced-motion: reduce) {
   .dossier { transition: opacity 120ms ease; translate: 0 0; }
 }
