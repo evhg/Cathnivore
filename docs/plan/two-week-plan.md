@@ -3675,7 +3675,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The phone game, counter and HUD specs pass; D unchanged; shots P before and after.
 - **Size:** 1
 
-## 384. [ ] Cathnivore desktop hand: Sell as one barrow card with a 1-2-3 count, not three near-identical cards *(lane A, in progress)*
+## 384. [x] Cathnivore desktop hand: Sell as one barrow card with a 1-2-3 count, not three near-identical cards *(done 2026-11-14 13:25 lane A, 2 slices: one Sell card on every hand (desktop table, phone row and fan); its face plays the picked count ('Sell 2 Produce for 2 Marks' to a screen reader), three count coins on its foot (aria-pressed, named '2 to sell'), arrows on the face step the count, counts the farm can't afford dashed and inert with a 'Need N more Produce' title; it opens on Cath's suggested count, whose coin keeps a dotted ring when another is picked; with 0 Produce one shelf strip, not three. Seed 11's opening hand is 6 cards at D (was 8: the plan's '8' counted from 10). The engine is untouched (the same Sell(n) actions). The phone fan's strips widen to share a short hand's room (the first card off the front showed half its face). New e2e sell-card; disabled-actions, saving-goal, play-lift and hand-shelf (seeds 13 and 39 still deal two rows) follow the one card; 13 related specs pass at P and D. Shots scratchpad s384 before/after, `scripts/cathnivore-384-shots.mjs`)*
 - **Why:** `plan1114c/cath-game-D`: Sell 1, Sell 2 and Sell 3 (370-935 x 690-780) take the first half of the top shelf with the same crate art and "→ 1/2/3", 3 of the hand's 10 slots, so the distinct choices (Graft, Open Stall, Supply, Injunction) drop to the second shelf. Item 320 noted they share one picture but kept three cards.
 - **Build:**
   - One Sell card with a 1/2/3 count on its face; counts above the player's produce greyed; arrow keys change the count.
@@ -3687,7 +3687,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - table-hand, board-scale and a sell-flow e2e pass; shots P and D before and after.
 - **Size:** 2
 
-## 385. [ ] The bugs from the 2026-11-14 12:30 critique, fixed as one batch
+## 385. [ ] The bugs from the 2026-11-14 12:30 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114c`)
   - **Cathnivore:**
     - `cath-title-P` (200-372 x 605-695): the Daily tag crams "The Ring · Ines & Sol · Harvest Festival" into three centred lines at about 12 px, with no status or countdown.
