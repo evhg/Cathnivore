@@ -3105,7 +3105,7 @@ html.no-animations .table-cath-line { animation: none; }
     position: absolute;
     left: var(--x, 0px);
     bottom: var(--y, 0px);
-    width: 124px;
+    width: var(--hand-card-w1, 124px);
     height: 114px;
     transform-origin: 50% 140%;
     transform: rotate(var(--fan)) translateY(calc(var(--rise) + var(--pick-rise, 0px)));
@@ -3200,7 +3200,7 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item { width: 156px; height: 84px; }
   .game-layout .table-hand[data-rows] .action-family { width: 196px; }
   /* Plan item 177: a card whose name would run past its face (fan() measures it) is dealt wider. */
-  .game-layout .table-hand .action-item[data-wide] { width: 156px; }
+  .game-layout .table-hand .action-item[data-wide] { width: max(156px, calc(var(--hand-card-w1, 124px) * 1.12)); }
   .game-layout .table-hand[data-rows] .action-item[data-wide] { width: 196px; }
   .game-layout .table-hand .action-item[data-dense] .action-label { font-size: var(--fs-label); line-height: 1.15; }
   .game-layout .table-hand .action-item[data-dense] .action-label > svg { width: 22px; height: 22px; }
@@ -3376,7 +3376,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .hand-later {
     /* It stands at the rail's foot, beside the hand, so the cards keep the table's width. */
     position: absolute;
-    left: 4px;
+    /* Plan item 393: the draw pile at the fan's right end, a short step from the last card. */
+    left: -6px;
     bottom: var(--sp-3);
     width: 64px;
     height: 88px;

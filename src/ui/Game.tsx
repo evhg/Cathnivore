@@ -937,6 +937,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     delete hand.dataset.rows
     hand.style.removeProperty('--hand-card-w')
+    // Plan item 393: one row's cards are dealt as wide as the row allows at about an eighth's overlap (124 to 168 px), so a
+    // short hand reads as full-size cards on the table's edge, not a strip of 125 px tiles.
+    const n1 = cards.length
+    hand.style.setProperty('--hand-card-w1', `${Math.max(124, Math.min(168, Math.floor(room / (n1 - 0.12 * (n1 - 1)))))}px`)
     widen()
     let widths = cards.map((c) => c.offsetWidth)
     let rows = plan(1, widths)
@@ -987,7 +991,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     rows.forEach((row, r) => {
       const n = row.to - row.from
       const mid = (n - 1) / 2
-      let x = padL + Math.max(0, (room - row.width) / 2)
+      // Plan item 393: one row is held to the right, its last card a short step from the face-down pile at the rail's
+      // foot (centred, a short deal left a gap of 80 px or more before the pile).
+      let x = padL + Math.max(0, rows.length === 1 ? room - row.width : (room - row.width) / 2)
       // The first row is the upper one; the last sits at the table's edge.
       const y = padB + (rows.length - 1 - r) * rowStep
       for (let i = row.from; i < row.to; i++) {
