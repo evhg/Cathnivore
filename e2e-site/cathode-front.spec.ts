@@ -898,3 +898,42 @@ test('upright, the menu plate stays off her through the loop, and the case line 
     }
   }
 })
+
+// Plan item 379: on an upright phone the open case is a pinned card in the hint's place (photo 64 px+, text 12 px+),
+// clear of the menu and The List, and each of the List's prints carries its line (the name or 'Withheld').
+test('upright, the open case is a pinned card and the List names each print', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone')
+  test.setTimeout(200_000)
+  for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(size)
+    await page.goto('/nightshift/?shot')
+    await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    await page.goto('/nightshift/?shot')
+    await expect(page.locator('#dossier.is-open')).toBeVisible({ timeout: 120_000 })
+    const m = await page.evaluate(() => {
+      const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+      const card = r('#dossier')
+      const menu = [...document.querySelectorAll('#menu .menu-label')].map((e) => e.getBoundingClientRect())
+      return {
+        card: { top: card.top, bottom: card.bottom, left: card.left, right: card.right },
+        menuBottom: Math.max(...menu.map((b) => b.bottom)),
+        listTop: r('.the-list').top,
+        photo: r('.dossier-photo').height,
+        text: [...document.querySelectorAll('#dossier .dossier-kicker, #dossier .dossier-target, #dossier .dossier-place, #dossier .dossier-tag')].map((e) => parseFloat(getComputedStyle(e).fontSize)),
+        names: [...document.querySelectorAll('.mug-name')].map((e) => ({ t: e.textContent, size: parseFloat(getComputedStyle(e).fontSize), h: (e as HTMLElement).offsetHeight })),
+      }
+    })
+    const s = JSON.stringify({ size, m })
+    expect(m.card.top, s).toBeGreaterThanOrEqual(m.menuBottom)
+    expect(m.card.bottom, s).toBeLessThanOrEqual(m.listTop)
+    expect(m.card.left >= 0 && m.card.right <= size.width, s).toBe(true)
+    expect(m.photo, s).toBeGreaterThanOrEqual(64)
+    for (const f of m.text) expect(f, s).toBeGreaterThanOrEqual(12)
+    expect(m.names, s).toHaveLength(5)
+    for (const n of m.names) {
+      expect(n.t, s).toBeTruthy()
+      expect(n.size, s).toBeGreaterThanOrEqual(12)
+      expect(n.h, s).toBeGreaterThan(0)
+    }
+  }
+})
