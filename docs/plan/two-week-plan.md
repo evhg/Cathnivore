@@ -3617,7 +3617,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 379. [ ] NIGHT SHIFT phone title: the open case as a pinned case file, and the List with its lines
+## 379. [ ] NIGHT SHIFT phone title: the open case as a pinned case file, and the List with its lines *(lane B, in progress)*
 - **Why:** `plan1114c/ns-title-P` (2x pixels): on a phone the open case is three loose grey caps lines on the umbrella's canopy (30-195 x 900-995): no label, no photo, no card. At D the same case is a pinned Polaroid with Tomas Reed's photo, name, place and tag (`ns-title-D` 415-580 x 270-570). The phone's List names only Julian Crisp (30-180 x 1370-1395) and its five photos carry no lines, the last one on Cath's coat (610-740 x 1455-1610), where D gives each target a line (60-750 x 740-810). The phone title is a phone player's first screen and holds the least story.
 - **Build:**
   - The phone's case line as a small case-file card: the target's photo (`ui/busts.ts`, item 371's sculpts) with CASE FILE, name, place and tag, clipped under the menu at 150-170 CSS px wide, angled like D's.
