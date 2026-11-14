@@ -412,8 +412,11 @@ export function buildBarn(seed = 0): THREE.Group {
   yard.add(g);
   const earth = matte("#a8895c");
   const rail = matte("#7a5a3a");
-  yard.add(box(0.94, 0.012, 0.94, earth, 0, -0.006, 0));
-  for (const z of [0.22, 0.33]) yard.add(box(0.82, 0.004, 0.035, matte("#8d7048"), 0, 0.006, z));
+  // The yard's flat earth and ruts take shadows but cast none (a flat slab's shadow is never seen, and each caster
+  // is one more draw in the shadow pass: item 360 keeps P's draw calls at item 215's count).
+  const flat: THREE.Object3D[] = [box(0.94, 0.012, 0.94, earth, 0, -0.006, 0)];
+  for (const z of [0.22, 0.33]) flat.push(box(0.82, 0.004, 0.035, matte("#8d7048"), 0, 0.006, z));
+  yard.add(...flat);
   const side = seed % 2 ? -1 : 1;
   for (let i = 0; i <= 4; i++) {
     yard.add(box(0.03, 0.13, 0.03, rail, -0.44 + i * 0.22, 0, 0.44));
@@ -427,7 +430,7 @@ export function buildBarn(seed = 0): THREE.Group {
   bale.rotation.z = Math.PI / 2;
   yard.add(bale);
   yard.traverse((o) => {
-    if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+    if ((o as THREE.Mesh).isMesh) o.castShadow = !flat.includes(o);
   });
   bake(yard);
   return yard;
