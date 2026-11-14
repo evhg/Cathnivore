@@ -36,7 +36,7 @@ test("a locked act's banner title is whole ink on a paper plate, not faded with 
   expect(r.bg.startsWith('color(') ? first * 255 : first).toBeGreaterThan(200)
 })
 
-test("on an upright phone the round grip straddles the tray's edge, and the packet under the 'more' tab fades", async ({ page, hasTouch }) => {
+test("on an upright phone the round grip straddles the tray's edge (or stands on Cath's dock), and the packet under the 'more' tab fades", async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'phone layout')
   await page.goto('/hedgerow/?2d&sandbox=1&level=21')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
@@ -46,8 +46,16 @@ test("on an upright phone the round grip straddles the tray's edge, and the pack
     const h = document.querySelector('.drawer-handle')!.getBoundingClientRect()
     const panel = document.querySelector('.drawer-handle')!.parentElement!.getBoundingClientRect()
     const wrap = document.querySelector('.tray-wrap')!
-    return { above: panel.top - h.top, more: wrap.classList.contains('more-shown'), mask: getComputedStyle(wrap.querySelector('.tray')!).maskImage }
+    // Plan item 385: while Cath's line is docked over the tray's top, the grip stands on the dock instead
+    const dock = document.querySelector<HTMLElement>('.cath-dock:not([hidden])')?.getBoundingClientRect()
+    return {
+      above: panel.top - h.top,
+      onDock: dock ? Math.abs(dock.top - h.bottom) : null,
+      more: wrap.classList.contains('more-shown'),
+      mask: getComputedStyle(wrap.querySelector('.tray')!).maskImage,
+    }
   })
-  expect(m.above).toBeLessThanOrEqual(12)
+  if (m.onDock !== null) expect(m.onDock, 'the grip stands on the dock, clear of its bubble').toBeLessThanOrEqual(3)
+  else expect(m.above).toBeLessThanOrEqual(12)
   if (m.more) expect(m.mask).toContain('gradient')
 })

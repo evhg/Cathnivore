@@ -3376,6 +3376,11 @@ body:has(#dlg-pause[open]) .paused-note {
     text-transform: uppercase;
     cursor: pointer;
   }
+  /* Plan item 385: while Cath's line is docked over the tray's top, the grip stands just above the dock, not over
+     the bubble's top edge */
+  .play:has(.cath-dock:not([hidden])) .panel:not(.open) .drawer-handle {
+    top: -24px;
+  }
   .play .drawer-handle::after {
     content: " ▴";
   }
