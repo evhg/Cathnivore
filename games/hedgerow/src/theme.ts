@@ -1437,6 +1437,8 @@ function paintDecor(
     if (!inWater(x, y) && kind === "boat" && water) continue;
     // Plan item 388: reeds root in the shallows along the shore, not out in open water; boats ride clear of them.
     if (kind === "reeds" && inWater(x, y) && (depth(x, y) > s * 1.5 || (water?.shelf && depth(x, y) < s * 0.62))) continue;
+    // Plan item 388: nothing of the land (ponds, bushes) stands on the beach.
+    if (water?.shelf && kind !== "boat" && kind !== "reeds" && depth(x, y) > -s * 0.45) continue;
     if (kind === "boat" && (depth(x, y) < s * 1.1 || x < s * 0.8 || x > L.width - s * 0.8 || y < s * 0.9)) continue;
     // Plan item 224: a billboard is a wide panel standing above its foot: the whole panel keeps off the field.
     if (kind === "billboard") {
