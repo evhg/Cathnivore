@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-14 18:22 UTC
 
 
 
@@ -3757,5 +3756,50 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** `hedge-l21-3d-D` Cath's line takes over the side column, Coming up and Notebook gone, an empty slab under her bubble (1110-1410 x 630-705); `hedge-l21-2d-D` a moored sailboat under the HOLLOWELL sign (195-290 x 498-545).
   - **Runnel:** `runnel-D` the spring's outflow a translucent blue ellipse across hex 1 and 2's rims (765-805 x 215-275).
   - **NIGHT SHIFT:** `ns-title-D`/`ns-title-P` Reed's case-file bust and Crisp's print still the old faceted faces (420-570 x 280-465, 60-185 x 595-735): the headless title is the static front poster, so item 371's sculpts need `scripts/cathode-poster.mjs` re-run on a GPU (or a check that the dossier and List aren't baked into the poster).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 391. [ ] Hedgerow: Hollowell's depot one gleaming fulfilment centre in every view, not a glass box, a bare tag or a puppet head
+- **Why:** VISION's joke is the hand-made farm against glossy clinical corporations, and the enemy's source is drawn four ways and never as a designed building. `plan1114e/hedge-l34-2d-D` two stock glass boxes with orange signs (88-220 x 100-215, 88-220 x 725-835); `hedge-l21-2d-D` no building, a teal HOLLOWELL tag (195-290 x 498-520) and a floating '216 coming' pill (205-290 x 448-468) on bare lane (item 380 drops the depot at a sea-side gate); `hedge-l21-3d-D` a cartoon head on a till in an orange box (130-250 x 165-300), the biggest thing in `hedge-l21-3d-P` (160-235 x 85-200); `hedge-l34-2d-P` the lower depot a 50 px stamp cut by the field's edge (5-55 x 615-660).
+- **Build:**
+  - One depot design for 2D (`render.ts`/`sprites.ts`) and 3D (`render3d/`): a white over-lit loading bay, roller doors, a backlit Hollowell logotype, a count board, a forecourt the lane leaves from. At a sea-side gate it is a jetty warehouse on piles, not nothing.
+  - The doors roll up as a round starts and the vehicles leave from them (400-800 ms, no overshoot: corporate).
+  - Whole on its ground inside the frame, at farm-building scale (about the barn's footprint x1.3); the 'N coming' count painted on its board, not a floating pill.
+- **Accept:**
+  - Every level with a gate draws a depot in 2D and 3D; a spec checks its box lies inside the field canvas at P and D (levels 1, 21, 34, 40).
+  - Depot area 1.0-1.6x the barn's; no face; `window.hedgerow` exposes the doors' state during a wave.
+  - hedgerow depot, gatequeue and field specs pass; key art re-shot; shots l21 and l34, 2D and 3D, at P and D, before and after.
+- **Size:** 2
+
+## 392. [ ] Hedgerow: Cath's coaching on one plate on the bench, not a bubble over the field or in place of the forecast
+- **Why:** the tip lands somewhere new with each level and view, covers play and hides information. `plan1114e/hedge-l21-2d-D` over the field's lower-left lane and a farmer (20-320 x 750-875); `hedge-l34-2d-D` over the top crop row and the water tank (770-1070 x 95-205); `hedge-l21-3d-D` in place of Coming up and Notebook (1110-1410 x 520-705, item 390's host card), so the 3D player loses the forecast the 2D player has; P a 70 px strip above the dock (`hedge-l21-2d-P` 10-385 x 688-765).
+- **Build:**
+  - D: a fixed 'Cath says' plate seated between the round card and the tabs, her portrait at 72 px or more and her expression from the advice (warm, worried when lives drop, delighted on a clean round; `shared/cath` moods).
+  - P: the same plate in the dock above Go, collapsing to her portrait after 6 s or a tap (a tap reopens it).
+  - The tip never overlays the field canvas and never replaces Coming up, 2D or 3D; tapping a tip pulses the plot or tower it names.
+- **Accept:**
+  - The tip's box doesn't meet the field canvas's at P and D, 2D and 3D, levels 21 and 34; the Coming up tab is present in all eight.
+  - The plate's `data-mood` turns worried after a life is lost.
+  - hedgerow tips/tutorial, field and 3D frame specs pass; shots at P and D, 2D and 3D, before and after.
+- **Size:** 2
+
+## 393. [ ] Cathnivore desktop play: the hand as a fan of full-size cards on the table's edge, not a strip of 125 px tiles with 11 px captions
+- **Why:** `plan1114e/cath-game-D` the hand (460-1225 x 705-880) is six tiles about 125 px wide, their second lines about 11 px ('Pick a region' 865-950 x 840-855, '· Brindle Hills' 990-1075 x 830-845, 'in Brindle Hills' 1105-1200 x 845-860), art crops about 60 px tall; the raised Supply card (980-1100 x 700-860) overlaps Injunction's edge; a dead band (1230-1340 x 700-880) between the hand and the deck. VISION 2 ('big, rich, legible') fails where every turn's decision is made.
+- **Build:**
+  - Fan the hand on a shallow arc set into the table's lower edge, about 170 px a card at 1440, overlapping; the hovered or focused card rises to full size with its rules at 14 px or more.
+  - Each card one cost chip and one target line; no line under 13 px. Item 384's Sell barrow card kept.
+  - The deck ('N not yet') a draw pile at the fan's right end, inside the table frame; unplayable cards dimmed and lowered, the reason on hover.
+- **Accept:**
+  - At 1440x900 every card text's computed size 13 px or more; each card 150 px wide or more, or 96 px or more showing with its title whole; no card over the next card's title.
+  - The hovered card's box holds all its text; the deck 24 px or less from the last card.
+  - hand, sell, table and tutorial specs pass at P and D (P unchanged); shots at D (and P) before and after.
+- **Size:** 2
+
+## 394. [ ] The bugs from the 2026-11-14 18:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1114e`)
+  - **Cathnivore:** `cath-game-P` a blank gap in the hand (115-235 x 670-775) between Graft and Supply, the third card cut at the right edge (355-390 x 670-780), the '9+ more' pill (293-372 x 650-668) straddling the counter's foot and the hand; `cath-game-D` the intent tags (785-875 x 47-80) about 12 px and an unlabelled dark 'I' square (937-950 x 62-78), the Harvest Festival note (1070-1200 x 105-220) over the board frame's top-right corner; `cath-setup-D` the 'This week at the market' note (1055-1215 x 540-765) over Cath's torso, 'Two at the table' (115-265 x 340-445) narrower and offset from 'You and an AI', the locked pins (785-830, 920-960 x 740-785) pale grey; `cath-setup-P` a stray brown bar (15-375 x 630-637), the difficulty stats (25-370 x 750-775) about 12 px; `cath-title-D` the Daily board (852-1395 x 758-852) over the map board's foot (855-1340 x 735-752); `cath-title-P` the Daily tag's 'Open · 5h 38m left' about 12 px (200-370 x 605-690); `cath-campaign-D` an empty block under the rail (900-1360 x 690-900).
+  - **/games/:** `games-D` the hero's H1 'Cathnivore' (615-1020 x 160-235) while the line and button sell Runnel.
+  - **Hedgerow:** `hedge-l21-2d-D` the forecast's three round cards clipped at their foot (1120-1405 x 685-700), 'vehicles' and 'Unanswered · Airborne · Scarecrow' about 11 px (1130-1200 x 625-650), '10/26' beside 'ROUND 11 OF 26' unlabelled; `hedge-l21-3d-P` the highlighted scarecrow plot cut at the right edge (340-390 x 410-470); `hedge-l21-3d-D` trees sliced by the canvas top (400-500 x 75-130); `hedge-menu-D` the act title a plain grey pill (145-435 x 78-123).
+  - **NIGHT SHIFT:** `ns-title-D` the T of SHIFT into the umbrella's rim (640-690 x 100-175); `ns-title-P` (2x) the case file on the umbrella canopy with LUNA poking out under it (30-390 x 890-1090); `ns-play-D` the unselected classes' gun icons grey on near-black (375-465 x 270-540) under 3:1; the rifle on her back taller than her torso (750-860 x 220-560).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
