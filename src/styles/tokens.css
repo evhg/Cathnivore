@@ -66,6 +66,9 @@
   --corp-acrylic-lo: #D9E4EA;
   --corp-chrome: #8E9CA6;
   --corp-slate: #1E2B34;
+  /* Plan item 366: the gantry's backlit billboards (desktop): a cool lit face, well off the warm paper */
+  --corp-lightbox: #DDEEF8;
+  --corp-lightbox-lo: #C6DDEC;
   --bunting: #6B4A2B;           /* the round banner's soil cloth: a fixed object, the same in both themes */
   --bunting-lo: #573B21;
   --kraft: #CFAE7E;            /* market tray, tab rail: a fill only, never under bare text */
@@ -245,6 +248,8 @@
     --corp-acrylic: #CDD6DC;
     --corp-acrylic-lo: #AAB7BF;
     --corp-chrome: #66737C;
+    --corp-lightbox: #C9DCE8;
+    --corp-lightbox-lo: #A7BECD;
     --newsprint: #C2B9A8;        /* aged grey-cream: still an object, no longer the brightest thing on the table */
     --newsprint-lo: #B5AB99;
     --btn-edge: rgb(241 233 220 / .42);
@@ -314,6 +319,8 @@
   --corp-acrylic: #CDD6DC;
   --corp-acrylic-lo: #AAB7BF;
   --corp-chrome: #66737C;
+  --corp-lightbox: #C9DCE8;
+  --corp-lightbox-lo: #A7BECD;
   --newsprint: #C2B9A8;
   --newsprint-lo: #B5AB99;
   --btn-edge: rgb(241 233 220 / .42);

@@ -5126,8 +5126,86 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
     position: static; width: auto; height: auto; overflow: visible; clip: auto;
     letter-spacing: 0;
     line-height: 1;
-    color: var(--ink);
+    color: var(--chalk-dim);
   }
   .game:has(.table-head.with-table-cath) .market-board .board-label-more { display: none; }
   .game:has(.table-head.with-table-cath) .board-num { line-height: 1; }
+}
+
+/* Plan item 366 slice 3: the tally is a chalk slate in a wooden frame (the players' own reckoning, chalked up), and
+   Hollowell's papers hang from its gantry: one glossy orange-and-chrome beam behind the three cards, each card a
+   backlit billboard (a cool lit face, well off the warm paper) in a chrome bezel, its conveyor chevrons lit pips.
+   Desktop only: a phone keeps its papers sheet and readings strip. Nothing here moves a box: the beam is a pseudo
+   element behind the cards, and the frame is drawn inside the board's own edge. */
+@media (min-width: 1024px) {
+  .market-board {
+    --chalk: var(--paper-on-fixed-fill);
+    --chalk-dim: color-mix(in srgb, var(--paper-on-fixed-fill) 80%, var(--corp-slate));
+    --chalk-line: color-mix(in srgb, var(--paper-on-fixed-fill) 18%, transparent);
+    border-color: var(--wood-lo);
+    background:
+      radial-gradient(55% 90% at 26% 30%, color-mix(in srgb, var(--paper-on-fixed-fill) 8%, transparent), transparent 72%),
+      radial-gradient(45% 70% at 74% 78%, color-mix(in srgb, var(--paper-on-fixed-fill) 6%, transparent), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--corp-slate) 84%, var(--pasture)), var(--corp-slate));
+    box-shadow:
+      inset 0 0 0 3px var(--wood),
+      inset 0 0 0 4px var(--wood-lo),
+      inset 0 3px 6px 3px rgb(var(--shadow-ink) / .35),
+      var(--e3);
+  }
+  .market-board .board-label { color: var(--chalk-dim); }
+  .market-board .board-cell--danger .board-label { color: color-mix(in srgb, var(--clay) 45%, var(--paper-on-fixed-fill)); }
+  .market-board .board-num { color: var(--chalk); font-variant-numeric: tabular-nums lining-nums; }
+  .market-board .board-of { color: var(--chalk-dim); }
+  .market-board .board-cell + .board-cell { box-shadow: inset 1px 0 0 var(--chalk-line); }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:nth-child(3) { box-shadow: inset 0 1px 0 var(--chalk-line); }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:nth-child(4) { box-shadow: inset 1px 0 0 var(--chalk-line), inset 0 1px 0 var(--chalk-line); }
+  .market-board .board-cell:first-child { padding-left: 9px; }
+
+  /* the gantry: one beam through the cards' middle, out past both ends */
+  .plan-strip[data-corp] { position: relative; }
+  .plan-strip[data-corp]::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -3px;
+    left: -3px;
+    height: 16px;
+    translate: 0 -50%;
+    border-radius: 4px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, white 80%, transparent) 0 1px, color-mix(in srgb, white 34%, transparent) 1px 5px, transparent 5px),
+      linear-gradient(180deg, var(--corp-chrome) 0 3px, transparent 3px 13px, var(--corp-chrome) 13px),
+      linear-gradient(180deg, var(--hollowell-highlight), var(--hollowell) 45%, var(--hollowell-lo));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hollowell-ink) 55%, transparent), 0 4px 5px -1px rgb(var(--shadow-ink) / .32);
+    pointer-events: none;
+  }
+  /* each billboard: a lit face in a chrome bezel, the specular strip across its top, the orange rail at its foot */
+  .plan-strip[data-corp] .plan-strip-item > button:first-child {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, white 70%, transparent) 0 2px, color-mix(in srgb, white 22%, transparent) 2px 30%, transparent 30%),
+      linear-gradient(var(--hollowell), var(--hollowell-lo)) bottom / 100% 3px no-repeat,
+      radial-gradient(70% 90% at 50% 40%, color-mix(in srgb, white 16%, transparent), transparent 75%),
+      linear-gradient(180deg, var(--corp-lightbox), var(--corp-lightbox-lo));
+    box-shadow:
+      inset 0 0 0 2px var(--corp-chrome),
+      inset 0 0 0 3px color-mix(in srgb, white 55%, transparent),
+      inset 0 -3px 0 color-mix(in srgb, var(--corp-chrome) 60%, transparent),
+      inset 0 0 10px 2px color-mix(in srgb, white 30%, transparent);
+  }
+  /* the conveyor as lit pips: dark lamps, the ones it has passed glowing Hollowell orange */
+  .plan-strip[data-corp] .plan-strip-dial i {
+    width: 7px;
+    height: 7px;
+    clip-path: none;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--corp-slate) 60%, var(--corp-chrome));
+    box-shadow: inset 0 1px 1px rgb(var(--shadow-ink) / .45);
+  }
+  .plan-strip[data-corp] .plan-strip-dial[data-step="1"] i:nth-child(-n + 1),
+  .plan-strip[data-corp] .plan-strip-dial[data-step="2"] i:nth-child(-n + 2),
+  .plan-strip[data-corp] .plan-strip-dial[data-step="3"] i {
+    background: radial-gradient(circle at 40% 35%, var(--hollowell-highlight), var(--hollowell) 60%);
+    box-shadow: 0 0 4px 1px color-mix(in srgb, var(--hollowell) 70%, transparent), inset 0 0 0 .5px var(--hollowell-lo);
+  }
 }
