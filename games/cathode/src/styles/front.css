@@ -1377,7 +1377,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     --short: min(0px, 100svh - var(--u) * 1200); /* px-ok: zero */
     top: calc(var(--safe-y) + clamp(var(--u) * 60, var(--u) * 120 + var(--short) - 24px, var(--u) * 120)); /* px-ok: type floors */
   }
-  .title-col .menu { grid-auto-rows: max(calc(var(--u) * 56), calc(var(--u) * 70 + var(--short) / 8)); }
+  /* Plan item 385: rows 66 u (were 70), so the panel's foot stands 16 px+ clear of THE LIST's heading (it was 5 px). */
+  .title-col .menu { grid-auto-rows: max(calc(var(--u) * 54), calc(var(--u) * 66 + var(--short) / 8)); }
   .mug {
     /* Plan item 335: wide enough for an 18 ch measure, so a rumour is 3 lines or fewer (at 132 u they ran 4-5, one
        word to a line). */
