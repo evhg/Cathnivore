@@ -4882,3 +4882,7 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .stage[data-tile-e] { --sh: clamp(42px, calc(var(--tile-e) * 1.2), 60px); }
   .stage[data-tile-e] .spring-house { left: calc(66px - var(--sh)); top: calc(52px - var(--sh) * .8); }
 }
+/* Plan item 389: the terrace's turf lip a soft bank of earth under grass, not a dark green frame round a plate, and
+   no ledge shadow under it: the cut is the apron's own inner shade. */
+.terrace-lip { filter: none; }
+.terrace-lip polygon { fill: color-mix(in srgb, var(--pasture-deep) 50%, var(--furrow)); opacity: .75; }

@@ -124,7 +124,9 @@ const KINDS = ['crop', 'wheat', 'grass', 'fallow', 'crop', 'grass'] as const
  */
 export function valleyLayers(seed: string, weather: Sky['weather']): string {
   const rnd = (k: number) => (hashString(`${seed}:valley:${k}`) % 10000) / 10000
-  const rows = [250, 330, 450, 610, 800, 1010]
+  // Plan item 389: the valley seen from the board's own top-down angle: rows of even depth under a thin horizon band
+  // (the ground from 118 of 1000), not a perspective that grew from 80 to 210 toward the foot.
+  const rows = [118, 296, 474, 652, 830, 1010]
   const parts: string[] = []
   const hedges: string[] = []
   const trees: string[] = []
@@ -139,7 +141,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     cuts.push(1040)
     const lean = (rnd(300 + r) - 0.5) * 80 * (r + 1) / 3
     // Atmospheric depth: the far rows fade into the hills, so the horizon is soft.
-    parts.push(`<g opacity="${[0.35, 0.6, 0.8, 0.92, 1][r]}">`)
+    parts.push(`<g opacity="${[0.82, 0.9, 0.95, 1, 1][r]}">`)
     for (let i = 0; i < count; i++) {
       const xa = cuts[i]!, xb = cuts[i + 1]!
       const kind = KINDS[Math.floor(rnd(400 + n) * KINDS.length)]!
@@ -179,7 +181,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
       // An oak or two where the hedges meet.
       if (i > 0 && rnd(700 + n) < 0.55) {
         const tx = xa + lean * 0.5, ty = (slope(r, xa) + slope(r + 1, xa + lean)) / 2
-        const s = 0.6 + r * 0.25
+        const s = 0.9
         trees.push(`<g class="vl-tree"><ellipse class="vl-tree-shade" cx="${(tx + 10 * s).toFixed(0)}" cy="${(ty + 14 * s).toFixed(0)}" rx="${(18 * s).toFixed(0)}" ry="${(6 * s).toFixed(0)}"/><ellipse cx="${tx.toFixed(0)}" cy="${ty.toFixed(0)}" rx="${(16 * s).toFixed(0)}" ry="${(15 * s).toFixed(0)}"/><ellipse class="vl-tree-lit" cx="${(tx - 5 * s).toFixed(0)}" cy="${(ty - 5 * s).toFixed(0)}" rx="${(8 * s).toFixed(0)}" ry="${(7 * s).toFixed(0)}"/></g>`)
       }
       n++
@@ -201,10 +203,10 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     '<linearGradient id="vl-break" x1="0" y1="0" x2="1" y2="0.35"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".9"/><stop offset=".62" stop-color="#fff" stop-opacity=".25"/><stop offset=".8" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff"/></linearGradient>' +
     '<mask id="vl-rain-mask"><rect x="0" y="0" width="1000" height="1000" fill="url(#vl-break)"/></mask>' +
     '</defs>' +
-    '<rect class="vl-sky" width="1000" height="320" fill="url(#vl-sky)"/>' +
-    '<path class="vl-hill vl-hill-far" d="M0 120C120 70 220 90 330 105S560 60 700 85 900 110 1000 70V300H0Z"/>' +
-    '<path class="vl-hill vl-hill-near" d="M0 170C150 130 260 165 420 150S700 120 820 150 960 160 1000 140V320H0Z"/>' +
-    '<rect class="vl-ground" y="236" width="1000" height="764" fill="url(#vl-ground)"/>' +
+    '<rect class="vl-sky" width="1000" height="140" fill="url(#vl-sky)"/>' +
+    '<path class="vl-hill vl-hill-far" d="M0 62C120 40 220 50 330 56S560 34 700 46 900 58 1000 38V130H0Z"/>' +
+    '<path class="vl-hill vl-hill-near" d="M0 90C150 72 260 88 420 81S700 66 820 80 960 86 1000 76V140H0Z"/>' +
+    '<rect class="vl-ground" y="110" width="1000" height="890" fill="url(#vl-ground)"/>' +
     `<g class="vl-fields">${parts.join('')}</g>` +
     `<g class="vl-puddles">${puddles.join('')}</g>` +
     `<path class="vl-hedge" d="${hedges.join('')}"/>` +

@@ -31,7 +31,7 @@ for (const [n, o] of SIZES) {
       })
       const people = folk.filter((f) => f.k === 'farmer' || f.k === 'bea')
       const sw = (() => { const t = document.querySelector('#board .cell:not(.stone) polygon.tile'); if (!t) return 0; const cs = getComputedStyle(t); if (cs.vectorEffect === 'non-scaling-stroke') return parseFloat(cs.strokeWidth); const m = t.ownerSVGElement.getScreenCTM(); return +(parseFloat(cs.strokeWidth) * m.a).toFixed(2) })()
-      return { tiles: tiles.length, edge: Math.round(edge), folk, ratio: people.map((f) => +(f.h * 0.81 / edge).toFixed(2)), stroke: sw }
+      const g = document.querySelector('.valley .vl-ground')?.getBoundingClientRect(); const v = document.querySelector('svg.valley')?.getBoundingClientRect(); const bh = tiles.length ? Math.max(...tiles.map((r) => r.bottom)) - Math.min(...tiles.map((r) => r.top)) : 0; const bd = document.getElementById('board').getBoundingClientRect(); const horizon = g && v ? [+((g.top - v.top) / bh).toFixed(3), +((g.top - v.top) / bd.height).toFixed(3)] : null; return { horizon, tiles: tiles.length, edge: Math.round(edge), folk, ratio: people.map((f) => +(f.h * 0.81 / edge).toFixed(2)), stroke: sw }
     })
     await ctx.close()
   }
