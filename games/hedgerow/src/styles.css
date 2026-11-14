@@ -5473,6 +5473,13 @@ img.act-scene {
      to the top the next act's banner starts below the fold */
   #screen-select .map-hud-row + li.act.act-has-card { min-height: calc(100dvh - 64px); grid-template-rows: auto auto 1fr; }
   #screen-select .map-hud-row + li.act.act-has-card > .trail { align-content: normal; }
+  /* Plan item 377: act 1's cottage row rises into the act's sky band, and the room it frees goes between the two
+     rows of stops (more on a taller screen), so act 1's stops span half the map too, the second row still above
+     the fold on load */
+  #screen-select .map-hud-row + li.act.act-has-card > .trail.has-home {
+    margin-top: -136px;
+    row-gap: clamp(8px, calc((100dvh - 700px) / 2 + 16px), 120px);
+  }
   #screen-select li.act.act-has-card > .level-card {
     grid-column: 2;
     grid-row: 1 / span 2;
