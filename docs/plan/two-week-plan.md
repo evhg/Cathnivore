@@ -3804,7 +3804,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 395. [ ] Cathnivore Campaign: the locked chapters as sealed postcards of their regions, not blank pills and bare number tabs
+## 395. [ ] Cathnivore Campaign: the locked chapters as sealed postcards of their regions, not blank pills and bare number tabs *(lane B, in progress)*
 - **Why:** `plan1114f/cath-campaign-D` chapters 2-6 (975-1355 x 418-870) are thin outlined pills holding a title only, with about 60 px of cream between them since item 394 spread the rail: the one plain list on a designed screen (VISION 1), beside chapter 1's rich card (975-1355 x 157-362). `cath-campaign-P` tabs 2-6 (77-375 x 528-570) are number-only beige squares that look like the playable one, with no lock or hint of where they lead. The map numbers the stops 2-6, but the rail never links back to them.
 - **Build:**
   - Each locked chapter a sepia postcard (about 92 px tall at D): a muted crop of its region's vignette (item 279's art), number and name, the producer it brings as a greyed portrait, a wax-seal lock, and one line of Cath's teaser.
