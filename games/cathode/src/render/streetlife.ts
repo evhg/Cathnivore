@@ -56,6 +56,9 @@ export interface StreetLifeHandle {
   /** A gunshot at (x, z); suppressed rounds are heard only close by. */
   shot(x: number, z: number, suppressed?: boolean): void;
   update(dt: number, time: number): void;
+  /** Plan item 364: a point no walker is drawn within `r` of (the title and pick's still camera: a passer-by
+   * crossing a metre from the lens filled the phone's frame for seconds); null lets them all show. */
+  keepClear(at: { x: number; z: number; r: number } | null): void;
   /** Where everyone is, for tests (`window.cathode` reads it through world.street). */
   snapshot(): Array<{ x: number; y: number; z: number; mood: string; role: string }>;
 }
@@ -141,11 +144,12 @@ export function addStreetLife(
   const wet = lo ? null : addStreetWet(scene, plan.agents.length * (RIM_DRIPS + 1));
   const wetPeople: WetPerson[] = plan.agents.map((a) => ({ x: 0, z: 0, y: 0, yaw: 0, body: null, umbrella: a.umbrella, gait: null, seed: a.seed }));
 
+  let clear: { x: number; z: number; r: number } | null = null;
   const pose = (t: number) => {
     plan.agents.forEach((a, i) => {
       const st = states[i]!;
       const w = wetPeople[i]!;
-      if (!visible(st)) {
+      if (!visible(st) || (clear && Math.hypot(st.x - clear.x, st.z - clear.z) < clear.r)) {
         body[i]!.copy(zero);
         bike[i]!.copy(zero);
         w.body = null;
@@ -213,6 +217,9 @@ export function addStreetLife(
       quiet += dt;
       stepStreet(plan, states, Math.min(dt, 0.1), quiet);
       pose(time);
+    },
+    keepClear(at) {
+      clear = at;
     },
     snapshot() {
       return states.map((s, i) => ({ x: s.x, y: ground(s.x, s.z), z: s.z, mood: s.mood, role: plan.agents[i]!.role }));

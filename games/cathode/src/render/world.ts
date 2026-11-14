@@ -307,6 +307,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
         street?.shot(x, z, suppressed);
         standing?.shot(x, z, suppressed);
       },
+      keepClear: (at: { x: number; z: number; r: number } | null) => street?.keepClear(at),
     } : undefined,
     wind,
     perf,

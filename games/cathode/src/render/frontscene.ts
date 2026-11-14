@@ -811,6 +811,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);
     cath.setRim(rimDir);
     lens(time);
+    // Plan item 364: no passer-by walks through the lens of the title or the pick (one crossing a metre from the still
+    // camera filled the phone's frame for seconds, hiding her).
+    world.street?.keepClear?.({ x: cam.position.x, z: cam.position.z, r: 1.6 });
     world.update(dt, time);
     world.render();
     stats.frames++;
@@ -1091,6 +1094,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       frozen = true;
     },
     handover() {
+      // the street is the job's now: everyone shows again
+      world.street?.keepClear?.(null);
       running = false;
       cancelAnimationFrame(raf);
       removeEventListener("resize", resize);
@@ -1111,6 +1116,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       return world;
     },
     dispose() {
+      world.street?.keepClear?.(null);
       scene.handover();
       world.dispose();
     },
