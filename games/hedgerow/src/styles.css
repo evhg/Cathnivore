@@ -5497,6 +5497,9 @@ img.act-scene {
     border-left: 0;
     border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent);
   }
+  /* stops stand about 220 px apart here, so a long name (Brand Ambassador) runs on one line, centred on its coin,
+     instead of wrapping onto a second line across the lane leaving for the gate */
+  #screen-select li.act .node .level-name { white-space: nowrap; max-width: none; }
   #screen-select li.act.act-has-card .lcard-cath-face { margin: 0; }
   #screen-select li.act.act-has-card .lcard-foe b { white-space: normal; }
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; }
