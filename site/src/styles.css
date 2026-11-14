@@ -1672,6 +1672,9 @@ body {
   position: relative;
   padding-top: 30px;
 }
+/* Plan item 390: the posters hang from the awning, so each logotype sits a little further into its poster, clear of
+   the scallops' tips (it was 8 px under them) */
+.stall-hero .hero-game-logo { top: 16px; }
 .stall-hero .hero-games::before {
   content: "";
   position: absolute;
