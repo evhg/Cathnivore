@@ -1,18 +1,10 @@
 import type { TitleSky as Sky } from './tableLight'
+import { rng } from './seededRng'
 
 // Plan item 206: Marrow's street behind the title's stall, under a sky that follows the player's clock (dawn, day,
 // golden hour, evening). Purely decorative (aria-hidden). Colours are tokens (tokens.css `--sky-*`, `--street-*`);
 // the sky's state is `[data-sky]` on the title root, so the CSS picks the light, the sun or moon, lit windows and
 // the lanterns. Nothing here moves except the lanterns' flicker, which reduced motion stills.
-
-/** A small seeded generator, so the street is the same on every visit. */
-function rng(seed: number): () => number {
-  let s = seed >>> 0
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 4294967296
-  }
-}
 
 interface House {
   x: number

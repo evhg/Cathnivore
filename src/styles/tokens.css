@@ -191,11 +191,25 @@
   --sky-sun-glow: rgb(255 214 150 / .55);
   --sky-moon: #FBF3DE;
   --sky-star: rgb(255 250 236 / 0);
-  --street-far: #D9CCBA;
-  --street-near: #C9B49A;
+  --street-far: #D3B996;
+  --street-near: #C49A72;
   --street-trim: #A88A6A;
   --street-window: #EFE6D6;
   --street-window-lit: #FFD98C;
+  /* plan item 382: Marrow's market square behind the title's counter, morning-washed facades */
+  --square-wall-1: #E9C98E;
+  --square-wall-2: #B8CDA6;
+  --square-wall-3: #E6B4A0;
+  --square-wall-4: #AFC4D6;
+  --square-wall-5: #F0DBB4;
+  --square-roof: #A8614A;
+  --square-roof-2: #6F7E8E;
+  --square-trim: #8A6548;
+  --square-glass: #7F97A8;
+  --square-shutter: #5F8A6C;
+  --square-cobble: #D6C3A4;
+  --square-cobble-line: #B49A78;
+  --square-shade: rgb(70 50 40 / .12);
   --lamp-glow: rgb(255 178 84 / .55);
 }
 
@@ -221,6 +235,19 @@
     --street-trim: #3A3346;
     --street-window: #2B2A3A;
     --street-window-lit: #F6B860;
+    --square-wall-1: #4A3E3A;
+    --square-wall-2: #333D3E;
+    --square-wall-3: #4A3242;
+    --square-wall-4: #2E3650;
+    --square-wall-5: #45403C;
+    --square-roof: #2A1F2C;
+    --square-roof-2: #22243A;
+    --square-trim: #1A1520;
+    --square-glass: #262636;
+    --square-shutter: #2A3530;
+    --square-cobble: #2E2830;
+    --square-cobble-line: #221D26;
+    --square-shade: rgb(8 6 16 / .3);
     --lamp-glow: rgb(255 168 72 / .5);
     --focus: #8EC5F5;
     --focus-halo: #1E1A17;
@@ -291,6 +318,19 @@
   --street-trim: #3A3346;
   --street-window: #2B2A3A;
   --street-window-lit: #F6B860;
+  --square-wall-1: #4A3E3A;
+  --square-wall-2: #333D3E;
+  --square-wall-3: #4A3242;
+  --square-wall-4: #2E3650;
+  --square-wall-5: #45403C;
+  --square-roof: #2A1F2C;
+  --square-roof-2: #22243A;
+  --square-trim: #1A1520;
+  --square-glass: #262636;
+  --square-shutter: #2A3530;
+  --square-cobble: #2E2830;
+  --square-cobble-line: #221D26;
+  --square-shade: rgb(8 6 16 / .3);
   --lamp-glow: rgb(255 168 72 / .5);
   --hem-check: rgb(150 60 48 / .45);
   --focus: #8EC5F5;

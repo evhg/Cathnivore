@@ -3,6 +3,7 @@ import { createGame, replay } from './engine/api'
 import type { Mode } from './ui/Setup'
 import TitleArt from './ui/TitleArt'
 import TitleSky from './ui/TitleSky'
+import TitleSquare from './ui/TitleSquare'
 import { skyForHour } from './ui/tableLight'
 import { effectiveIsDark } from './platform/statusBar'
 import { loadSettings } from './platform/settings'
@@ -266,6 +267,7 @@ function Screens() {
     return (
       <main className="title title-screen" data-sky={sky}>
         <TitleSky sky={sky} />
+        <TitleSquare />
         <div className="title-hero">
           <TitleArt />
           <div className="title-copy">
