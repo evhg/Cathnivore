@@ -4590,6 +4590,18 @@ img.act-scene {
     max-width: calc(100% - 28px);
     gap: 14px;
     padding: 4px 16px 6px;
+    /* Plan item 394: an enamel sign hung in the sky, cream with a brass rim, not a grey glass pill on the painting. */
+    border: 2px solid var(--brass);
+    border-radius: 10px;
+    background: var(--paper-hi);
+    box-shadow: inset 0 0 0 2px var(--paper-hi), inset 0 0 0 3px color-mix(in srgb, var(--brass) 55%, transparent), 0 3px 8px var(--ink-a14);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--ink);
+    text-shadow: none;
+  }
+  #screen-select .act-title :is(.act-num, .act-tally) {
+    color: var(--ink-2);
   }
   #screen-select .act-head::after {
     top: 0;
