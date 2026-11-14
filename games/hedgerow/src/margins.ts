@@ -366,7 +366,7 @@ function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
   ctx.clip();
   ctx.lineCap = "round";
   ctx.lineWidth = Math.max(1, s * 0.022);
-  const n = ((r.w * r.h) / (s * s)) * 9;
+  const n = ((r.w * r.h) / (s * s)) * 13;
   const tufts: Array<[number, number, number]> = [];
   for (let i = 0; i < n; i++) tufts.push([r.x + rand() * r.w, r.y + rand() * r.h, s * (0.07 + rand() * 0.06)]);
   // Each tuft three blades fanned from one root, dark; then a sunlit blade on its lee side.
