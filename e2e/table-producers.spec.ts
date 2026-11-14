@@ -60,3 +60,41 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
   }, regions)
   expect(delighted, 'a liberation delights a producer with a Stall there').toBe(true)
 })
+
+// Plan item 374: at a desktop table each seat is named on a plate in its producer's colour (13 px+, 4.5:1), and
+// exactly one seat, the producer whose turn it is, is marked active.
+test('the seated producers are named, and the active seat matches the turn', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'D only')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  const plates = page.locator('.map-wrap .table-producer-name')
+  await expect(plates).toHaveCount(2)
+  await expect(page.locator('.map-wrap [data-table-producer][data-active]')).toHaveCount(1)
+  const active = await page.locator('.map-wrap [data-table-producer][data-active]').getAttribute('data-table-producer')
+  await expect(page.locator(`.map-wrap [data-table-producer="${active}"] .table-producer-name`)).toBeVisible()
+  const looks = await plates.evaluateAll((els) =>
+    els.map((e) => {
+      const cs = getComputedStyle(e)
+      const rgb = (c: string) => {
+        const k = document.createElement('canvas').getContext('2d')!
+        k.fillStyle = c
+        k.fillRect(0, 0, 1, 1)
+        return [...k.getImageData(0, 0, 1, 1).data].slice(0, 3)
+      }
+      const lum = (c: number[]) => {
+        const [r, g, b] = c.map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+      }
+      const a = lum(rgb(cs.color))
+      const b = lum(rgb(cs.backgroundColor))
+      return { text: e.textContent, fs: parseFloat(cs.fontSize), contrast: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) }
+    }),
+  )
+  for (const l of looks) {
+    expect(l.fs, `${l.text} size`).toBeGreaterThanOrEqual(13)
+    expect(l.contrast, `${l.text} contrast`).toBeGreaterThanOrEqual(4.5)
+  }
+})

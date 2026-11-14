@@ -3568,6 +3568,24 @@ html.no-animations .table-cath-line { animation: none; }
 .table-producers-phone .table-producer { --seat-w: 54px; }
 .table-producer[data-active] { translate: 0 -4px; filter: none; box-shadow: inset 0 0 0 3px var(--wood), inset 0 0 0 4.5px var(--wood-lo), 0 0 0 3px var(--cameo-ring, var(--wheat)), 0 6px 10px rgb(var(--shadow-ink) / .3); }
 .table-producer[data-unseated] { display: none; }
+/* Plan item 374: a name plate on the frame's foot in the producer's colour; the seat whose turn it is sits up lit with
+   a wheat underline, the other sits back, dimmed. */
+.table-producer-name {
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  translate: -50% 0;
+  padding: 2px 10px 3px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--cameo-ring, var(--wheat)) 50%, var(--ink-on-fixed-fill));
+  box-shadow: 0 1px 0 rgb(var(--shadow-ink) / .35), var(--inset-hi);
+  color: var(--paper-on-fixed-fill);
+  font: 700 var(--fs-small)/1.1 var(--font-text);
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.table-producer[data-active] .table-producer-name { box-shadow: 0 3px 0 var(--wheat), 0 4px 3px rgb(var(--shadow-ink) / .35); }
+.table-producers:has(.table-producer[data-active]) .table-producer:not([data-active]) > svg { filter: saturate(.8) brightness(.85); }
 .table-producer.pc-mara { --cameo-ring: var(--p-mara); }
 .table-producer.pc-tomas { --cameo-ring: var(--p-tomas); }
 .table-producer.pc-ines { --cameo-ring: var(--p-ines); }

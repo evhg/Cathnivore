@@ -3115,6 +3115,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             {state.config.producers.map((id) => (
               <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-active={id === state.activeProducer ? '' : undefined}>
                 <Portrait character={id} size={phoneTableCath ? 54 : 134} expression={faceExpression(producerFaces[id])} />
+                {/* Plan item 374: at a desktop table each seat carries its producer's name on a plate in their colour. */}
+                {!phoneTableCath && <span className="table-producer-name">{PRODUCERS[id].name.split(' ')[0]}</span>}
               </span>
             ))}
           </div>
