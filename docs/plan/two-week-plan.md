@@ -3795,7 +3795,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hand, sell, table and tutorial specs pass at P and D (P unchanged); shots at D (and P) before and after.
 - **Size:** 2
 
-## 394. [ ] The bugs from the 2026-11-14 18:30 critique, fixed as one batch
+## 394. [ ] The bugs from the 2026-11-14 18:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114e`)
   - **Cathnivore:** `cath-game-P` a blank gap in the hand (115-235 x 670-775) between Graft and Supply, the third card cut at the right edge (355-390 x 670-780), the '9+ more' pill (293-372 x 650-668) straddling the counter's foot and the hand; `cath-game-D` the intent tags (785-875 x 47-80) about 12 px and an unlabelled dark 'I' square (937-950 x 62-78), the Harvest Festival note (1070-1200 x 105-220) over the board frame's top-right corner; `cath-setup-D` the 'This week at the market' note (1055-1215 x 540-765) over Cath's torso, 'Two at the table' (115-265 x 340-445) narrower and offset from 'You and an AI', the locked pins (785-830, 920-960 x 740-785) pale grey; `cath-setup-P` a stray brown bar (15-375 x 630-637), the difficulty stats (25-370 x 750-775) about 12 px; `cath-title-D` the Daily board (852-1395 x 758-852) over the map board's foot (855-1340 x 735-752); `cath-title-P` the Daily tag's 'Open · 5h 38m left' about 12 px (200-370 x 605-690); `cath-campaign-D` an empty block under the rail (900-1360 x 690-900).
   - **/games/:** `games-D` the hero's H1 'Cathnivore' (615-1020 x 160-235) while the line and button sell Runnel.
