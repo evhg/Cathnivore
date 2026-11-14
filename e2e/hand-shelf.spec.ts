@@ -8,7 +8,7 @@ for (const [w, h] of [[1440, 900], [1280, 800]] as const) {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop hand')
     await page.setViewportSize({ width: w, height: h })
     let checked = 0
-    for (const seed of ['3', '17', '44', '102', '555']) {
+    for (const seed of ['3', '13', '17', '39', '555']) {
       await page.goto('/')
       await page.getByText('Quick Game').click()
       await fillSeed(page, seed)
@@ -40,7 +40,7 @@ for (const [w, h] of [[1440, 900], [1280, 800]] as const) {
       expect(r.over, `seed ${seed}`).toEqual([])
       expect(r.cut, `seed ${seed}`).toEqual([])
     }
-    // These seeds deal a hand in rows at 1280 (at 1440 most hands fit one row); the 1440 check runs when one does.
+    // These seeds deal a hand in rows at 1280 (13 and 39 since item 384 made Sell one card) (at 1440 most hands fit one row); the 1440 check runs when one does.
     if (w === 1280) expect(checked, 'no seed dealt a hand in rows').toBeGreaterThan(0)
   })
 }

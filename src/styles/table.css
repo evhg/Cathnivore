@@ -5462,6 +5462,7 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   box-shadow: none;
   cursor: not-allowed;
 }
+.action-item.action-sell .sell-count-pip[data-leaf]:not([aria-pressed='true']) { border: 2px dotted var(--pasture-deep); }
 .action-item.action-sell .sell-count-pip:focus-visible { outline: 2px solid var(--ink-on-fixed-fill); outline-offset: 1px; }
 @media (max-width: 1023.98px) {
   .action-item.action-sell .sell-count { right: 5px; bottom: 6px; gap: 2px; }

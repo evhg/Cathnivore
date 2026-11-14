@@ -76,7 +76,10 @@ test('a goal that becomes affordable lifts into the hand within 800 ms and the p
   const id = (await target.locator('.shelf-pin').getAttribute('aria-label'))!.replace(/^Save for /, '')
   await target.locator('.shelf-pin').click()
   await expect(page.locator('[data-goal-line]')).toContainText(`Still saving for ${id}: ${short} more`)
-  await page.locator('.table-hand [data-group="sell"]').filter({ hasText: `Sell ${short} Produce` }).locator('button').first().click()
+  // Plan item 384: one Sell card; pick the count on its coins, then play its face.
+  const sell = page.locator('.table-hand [data-group="sell"]')
+  await sell.getByRole('button', { name: `${short} to sell` }).click()
+  await sell.getByRole('button', { name: new RegExp(`^Sell ${short} Produce`) }).click()
   const t0 = Date.now()
   const lifted = page.locator('.table-hand [data-group="invest"][data-goal-lift]')
   await expect(lifted).toBeVisible({ timeout: 800 })

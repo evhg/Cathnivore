@@ -30,17 +30,12 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
   await page.getByRole('button', { name: /^Sell 3 Produce/ }).click()
   await page.locator('.actions').waitFor()
 
-  // Produce is now 0: all 3 Sell counts render as disabled placeholders, each with its own reason and
-  // a cost chip still showing the amount it would take.
+  // Produce is now 0. Plan item 384: the one Sell card waits on the shelf as a single disabled strip, with its
+  // reason and a chip still showing what it would give.
   const disabledSell1 = page.getByRole('button', { name: /^Sell 1 Produce/ })
-  const disabledSell2 = page.getByRole('button', { name: /^Sell 2 Produce/ })
-  const disabledSell3 = page.getByRole('button', { name: /^Sell 3 Produce/ })
   await expect(disabledSell1).toBeDisabled()
-  await expect(disabledSell2).toBeDisabled()
-  await expect(disabledSell3).toBeDisabled()
+  await expect(page.getByRole('button', { name: /^Sell [23] Produce/ })).toHaveCount(0)
   await expect(page.locator('.action-item', { hasText: 'Sell 1 Produce' }).locator('.action-why-not')).toHaveText('Need 1 more Produce')
-  await expect(page.locator('.action-item', { hasText: 'Sell 2 Produce' }).locator('.action-why-not')).toHaveText('Need 2 more Produce')
-  await expect(page.locator('.action-item', { hasText: 'Sell 3 Produce' }).locator('.action-why-not')).toHaveText('Need 3 more Produce')
 
   // Still explained by the same "Sell" glossary tooltip a real Sell button offers (SPEC 10.5).
   const disabledTrigger = page.locator('.action-item', { hasText: 'Sell 1 Produce' }).locator('.tooltip-trigger-button')

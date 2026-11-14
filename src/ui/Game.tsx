@@ -1884,10 +1884,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   })()
   const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
   if (rules.sell && !gatedNow && sellEntries.length === 0) {
-    const affordable = Math.min(3, active.resources.produce)
-    for (let n = affordable + 1; n <= 3; n++) {
-      disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
-    }
+    // Plan item 384: with no Produce at all the one Sell card waits on the shelf as a single strip.
+    disabledSell.push({ count: 1, missing: 1 - active.resources.produce })
   }
 
   // ROADMAP 9 why-not, continued: Invest is the other action whose legality is a single resource
@@ -2153,7 +2151,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 data-group="sell"
                 data-hand-card=""
                 data-sell-count={count}
-                data-suggested={leafIndex && leafIndex.index === index ? '' : undefined}
+                data-suggested={leafIndex ? '' : undefined}
                 {...previewProps([index])}
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step(1)
