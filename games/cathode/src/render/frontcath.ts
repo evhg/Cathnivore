@@ -3124,8 +3124,6 @@ float reliefShade( vec2 uv ) {
   }
   // ---- plan item 136: the auditions' guns in her left hand, in the chest frame. Each is a group built along +y from
   // the grip (muzzle up), its top (the scope, the rib) along +z; poseProps() stands it in her palm each frame. ----
-  const gunMetalH = kitMat(new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.75 }));
-  const woodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x5a3220, roughness: 0.45, metalness: 0.05 }));
   const box = (w: number, h: number, d: number, x: number, y: number, z: number) => {
     const g = new THREE.BoxGeometry(w, h, d);
     g.translate(x, y, z);
@@ -3183,24 +3181,25 @@ float reliefShade( vec2 uv ) {
   rifle.visible = false;
   chest.add(rifle);
 
+  // Plan item 362: the Butcher's shotgun, in her hand and on her hip, is the inspect's own model (it was boxes and
+  // rods), stood muzzle up like the rifle. Its pump is the model's own `pump` group, which the rack slides back.
   const shotgunGeo = (parent: THREE.Object3D) => {
-    addS(
-      mergeGeos([
-        box(0.034, 0.14, 0.05, 0, 0.04, 0), // the receiver
-        rod(0.011, 0.1, 0.46, 0.008), // the barrel
-        rod(0.008, 0.1, 0.4, -0.016), // the magazine tube
-        box(0.024, 0.06, 0.036, 0, -0.03, -0.034), // the pistol grip
-      ]),
-      gunMetalH,
-      parent,
-    );
-    addS(box(0.03, 0.17, 0.05, 0, -0.13, -0.015), woodMat, parent);
-    const fore = add(box(0.03, 0.11, 0.032, 0, 0.21, -0.016), woodMat, parent);
-    return fore;
+    const gun = buildGunDisplay("shotgun", phone);
+    gun.rotation.x = Math.PI / 2;
+    gun.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
+    });
+    parent.add(gun);
+    return gun.getObjectByName("pump") ?? new THREE.Group();
   };
   const shotgun = new THREE.Group();
   shotgun.name = "prop-shotgun";
   const forend = shotgunGeo(shotgun);
+  const forendZ = forend.position.z;
   shotgun.visible = false;
   chest.add(shotgun);
   // The shell: a red hull on a brass head, flung from the port.
@@ -3545,7 +3544,8 @@ float reliefShade( vec2 uv ) {
     }
     if (inHand === "shotgun") {
       stand(shotgun, SHOT_DIR, SHOT_TOP);
-      forend.position.y = -0.075 * rackK;
+      // the rack draws the pump back toward the receiver (the model's +z)
+      forend.position.z = forendZ + 0.075 * rackK;
       if (shellT >= 0) {
         // Thrown from the port out past her left side, under gravity, tumbling; gone below her knees.
         if (!shellLive) {
