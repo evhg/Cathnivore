@@ -73,6 +73,57 @@ const WINDOWS = FACADES.flatMap((f, i) => {
 /** Each house's ground floor: a shopfront under a striped awning, the door on the side away from the sun. */
 const SHOPS = FACADES.map((f, i) => ({ x: f.x + 10, w: f.w - 20, tone: i % 3 }))
 
+const box = (x: number, y: number, w: number, h: number) => `M${x} ${y}h${w}v${h}h${-w}Z`
+
+/** Every house, window and shop as a few merged path strings, one per paint. */
+const L = (() => {
+  const walls = ['', '', '', '', '']
+  let steps = ''
+  let roofs = ''
+  let roofs2 = ''
+  let chimneys = ''
+  let shades = ''
+  let cornices = ''
+  FACADES.forEach((f, i) => {
+    walls[f.tone] += box(f.x, f.top, f.w, GROUND - f.top)
+    if (f.roof === 'step') {
+      walls[f.tone] += roofPath(f)
+      steps += roofPath(f)
+    } else if (i % 3 === 1) roofs2 += roofPath(f)
+    else roofs += roofPath(f)
+    if (f.roof !== 'step' && i % 2 === 0) chimneys += box(f.x + f.w * 0.7, f.top - 46, 12, 34)
+    shades += box(f.x, f.top, 10, GROUND - f.top)
+    cornices += box(f.x - 3, f.top - 2, f.w + 6, 6) + box(f.x, 438, f.w, 5)
+  })
+  let shutters = ''
+  let glass = ''
+  let glassLit = ''
+  let mullions = ''
+  let sills = ''
+  for (const w of WINDOWS) {
+    if (w.shut) shutters += box(w.x - 6, w.y, 28, 28)
+    if (w.lit) glassLit += box(w.x, w.y, 16, 28)
+    else glass += box(w.x, w.y, 16, 28)
+    mullions += `M${w.x + 8} ${w.y}v28M${w.x} ${w.y + 12}h16`
+    sills += box(w.x - 3, w.y + 28, 22, 3)
+  }
+  let shopfronts = ''
+  let shopGlass = ''
+  let shopGlassLit = ''
+  let doors = ''
+  let stripes = ''
+  const awnings = ['', '', '']
+  SHOPS.forEach((s, i) => {
+    shopfronts += box(s.x, 470, s.w, GROUND - 470)
+    if (i % 4 === 1) shopGlassLit += box(s.x + 6, 478, s.w * 0.55, 50)
+    else shopGlass += box(s.x + 6, 478, s.w * 0.55, 50)
+    doors += box(s.x + s.w * 0.66, 480, s.w * 0.26, GROUND - 480)
+    awnings[s.tone] += `M${s.x - 4} 446H${s.x + s.w + 4}L${s.x + s.w + 12} 470H${s.x - 12}Z`
+    for (let k = 0; k < Math.floor(s.w / 24); k++) stripes += `M${s.x + 8 + k * 24} 447l-4 22`
+  })
+  return { walls, steps, roofs, roofs2, chimneys, shades, cornices, shutters, glass, glassLit, mullions, sills, shopfronts, shopGlass, shopGlassLit, doors, awnings, stripes }
+})()
+
 const TOWER_X = 530
 /** Cobbles: short staggered strokes in rows that widen toward the viewer. */
 const COBBLES = Array.from({ length: 4 }, (_, row) => {
@@ -121,9 +172,9 @@ export default function TitleSquare() {
             <stop offset="0" className="sq-haze-in" />
             <stop offset="1" className="sq-haze-out" />
           </radialGradient>
-          <radialGradient id="sq-haze-cath" cx="0.495" cy="0.66" r="0.2">
-            <stop offset="0" className="sq-haze-in" />
-            <stop offset="1" className="sq-haze-out" />
+          <radialGradient id="sq-haze-cath" cx="0.495" cy="0.54" r="0.24">
+            <stop offset="0" className="sq-haze-in sq-glow-in" />
+            <stop offset="1" className="sq-haze-out sq-glow-out" />
           </radialGradient>
           <radialGradient id="sq-haze-board" cx="0.76" cy="0.62" r="0.28">
             <stop offset="0" className="sq-haze-in" />
@@ -134,40 +185,30 @@ export default function TitleSquare() {
             <stop offset="1" className="sq-sun-out" />
           </linearGradient>
         </defs>
-        <g className="sq-houses">
-          {FACADES.map((f, i) => (
-            <g key={i}>
-              <rect className={`sq-wall w${f.tone}`} x={f.x} y={f.top} width={f.w} height={GROUND - f.top} />
-              <path className={f.roof === 'step' ? `sq-wall w${f.tone} sq-step` : i % 3 === 1 ? 'sq-roof2' : 'sq-roof'} d={roofPath(f)} />
-              {f.roof !== 'step' && i % 2 === 0 && <rect className="sq-chimney" x={f.x + f.w * 0.7} y={f.top - 46} width={12} height={34} />}
-              {/* the sun is to the right: each house's left edge falls into its neighbour's shade */}
-              <rect className="sq-shade" x={f.x} y={f.top} width={10} height={GROUND - f.top} />
-              <rect className="sq-cornice" x={f.x - 3} y={f.top - 2} width={f.w + 6} height={6} />
-              <rect className="sq-cornice" x={f.x} y={438} width={f.w} height={5} />
-            </g>
-          ))}
-        </g>
-        <g className="sq-windows">
-          {WINDOWS.map((w, i) => (
-            <g key={i}>
-              {w.shut && <rect className="sq-shutter" x={w.x - 6} y={w.y} width={28} height={28} rx={1} />}
-              <rect className={w.lit ? 'sq-glass is-lit' : 'sq-glass'} x={w.x} y={w.y} width={16} height={28} rx={1.5} />
-              <path className="sq-mullion" d={`M${w.x + 8} ${w.y}v28M${w.x} ${w.y + 12}h16`} />
-              <rect className="sq-sill" x={w.x - 3} y={w.y + 28} width={22} height={3} />
-            </g>
-          ))}
-        </g>
-        <g className="sq-shops">
-          {SHOPS.map((s, i) => (
-            <g key={i}>
-              <rect className="sq-shopfront" x={s.x} y={470} width={s.w} height={GROUND - 470} />
-              <rect className={i % 4 === 1 ? 'sq-glass is-lit' : 'sq-glass'} x={s.x + 6} y={478} width={s.w * 0.55} height={50} />
-              <rect className="sq-door" x={s.x + s.w * 0.66} y={480} width={s.w * 0.26} height={GROUND - 480} rx={2} />
-              <path className={`sq-awning t${s.tone}`} d={`M${s.x - 4} 446H${s.x + s.w + 4}L${s.x + s.w + 12} 470H${s.x - 12}Z`} />
-              <path className="sq-awning-stripe" d={Array.from({ length: Math.floor(s.w / 24) }, (_, k) => `M${s.x + 8 + k * 24} 447l-4 22`).join('')} />
-            </g>
-          ))}
-        </g>
+        {/* the houses, windows and shops, each layer one path per paint (about 40 nodes, not a thousand) */}
+        {[0, 1, 2, 3, 4].map((t) => (
+          <path key={t} className={`sq-wall w${t}`} d={L.walls[t]} />
+        ))}
+        <path className="sq-step" d={L.steps} />
+        <path className="sq-roof" d={L.roofs} />
+        <path className="sq-roof2" d={L.roofs2} />
+        <path className="sq-chimney" d={L.chimneys} />
+        {/* the sun is to the right: each house's left edge falls into its neighbour's shade */}
+        <path className="sq-shade" d={L.shades} />
+        <path className="sq-cornice" d={L.cornices} />
+        <path className="sq-shutter" d={L.shutters} />
+        <path className="sq-glass" d={L.glass} />
+        <path className="sq-glass is-lit" d={L.glassLit} />
+        <path className="sq-mullion" d={L.mullions} />
+        <path className="sq-sill" d={L.sills} />
+        <path className="sq-shopfront" d={L.shopfronts} />
+        <path className="sq-glass" d={L.shopGlass} />
+        <path className="sq-glass is-lit" d={L.shopGlassLit} />
+        <path className="sq-door" d={L.doors} />
+        {[0, 1, 2].map((t) => (
+          <path key={t} className={`sq-awning t${t}`} d={L.awnings[t]} />
+        ))}
+        <path className="sq-awning-stripe" d={L.stripes} />
         {/* Marrow's clock tower, between the price-board and Cath */}
         <g className="sq-tower">
           <rect className="sq-wall w4" x={TOWER_X} y={60} width={64} height={GROUND - 60} />

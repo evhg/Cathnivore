@@ -1767,7 +1767,7 @@ html.no-animations .title-screen * {
 .sq-wall.w2 { fill: var(--square-wall-3); }
 .sq-wall.w3 { fill: var(--square-wall-4); }
 .sq-wall.w4 { fill: var(--square-wall-5); }
-.sq-step { stroke: var(--square-trim); stroke-width: 2; }
+.sq-step { fill: none; stroke: var(--square-trim); stroke-width: 2; }
 .sq-roof { fill: var(--square-roof); }
 .sq-roof2 { fill: var(--square-roof-2); }
 .sq-chimney { fill: color-mix(in srgb, var(--square-roof) 70%, var(--square-trim)); }
@@ -1803,6 +1803,9 @@ html.no-animations .title-screen * {
 .title-screen[data-sky='evening'] .sq-glass.is-lit { fill: var(--street-window-lit); }
 .title-screen[data-sky='evening'] .sq-sunwash { display: none; }
 .title-screen[data-sky='evening'] .sq-haze-in { stop-opacity: .5; }
+/* at dusk a lamp behind Cath: her dark hair and coat read against the lit square, not the dark facades */
+.title-screen[data-sky='evening'] .sq-glow-in { stop-color: var(--street-window-lit); stop-opacity: .85; }
+.title-screen[data-sky='evening'] .sq-glow-out { stop-color: var(--street-window-lit); stop-opacity: 0; }
 @media (min-width: 1024px) {
   .title-square { top: clamp(150px, 21vh, 200px); height: auto; bottom: calc(var(--table-h) - 10px); }
 }
