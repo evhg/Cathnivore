@@ -2976,7 +2976,11 @@ export class Renderer3D {
       }
       // Plan item 200: the roof's centre on screen. The box's far top corners project well above the roof itself
       // (40 px at D on l21), so a figure stood on the box's top floated over the depot.
-      const roof = this.v2.set((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2).project(this.camera);
+      // Plan item 369: and the box's centre isn't the roof's: the loading bay and the floodlight's pole pull it off the
+      // shed, so the rep's hatch hung past the roof's edge and read as a head poking up behind it. The hatch sits on
+      // the shed's own roof, just under its ridge (buildDepot: the pyramid roof's apex at 1.22 over the shed's centre).
+      d.updateMatrixWorld(true);
+      const roof = d.localToWorld(this.v2.set(0, 1.14, 0)).project(this.camera);
       out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h });
     }
     return out;

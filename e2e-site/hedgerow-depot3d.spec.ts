@@ -73,7 +73,9 @@ for (const level of [21, 34]) {
     const rep = (await repEl.count()) ? await repEl.boundingBox() : null
     if (rep && d.y >= r.canvas.y) {
       const feet = rep.y + rep.height
-      expect(feet, `rep's feet ${feet} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y + d.h * 0.2)
+      // Plan item 369: on the shed's own roof, not hung past its far edge (the box's centre, pulled off the shed by
+      // the bay and the floodlight, put his hatch at 0.31 of the box at D on l21: a head poking up behind the roof).
+      expect(feet, `rep's feet ${feet} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y + d.h * 0.33)
       expect(feet).toBeLessThan(d.y + d.h)
     }
     // ...and is never a headless suit under the top bar (an upright phone's l21 cuts the depot's roof).
