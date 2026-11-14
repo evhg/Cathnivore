@@ -3688,8 +3688,10 @@ html.no-animations .table-cath-line { animation: none; }
 
 /* Plan item 166: on the table's fanned hand the leaf sits on the card's top edge, centred, so it never hangs
    over the neighbouring card (cards overlap by up to a fifth at their sides), nor over its own 'i'. */
+/* Plan item 385: inside the card's top edge, between its corner icons (above the card it straddled the shelf's plank
+   and met the price pill of the card on the row above) */
 .table-hand .action-item > .suggest-leaf {
-  top: -22px;
+  top: 5px;
   left: 50%;
   translate: -50% 0;
 }
