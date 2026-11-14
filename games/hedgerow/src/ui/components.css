@@ -3893,16 +3893,37 @@ body:has(#dlg-pause[open]) .paused-note {
   letter-spacing: var(--track-label);
 }
 
-/* Plan item 179: docked on its depot the count is Hollowell's own fascia sign, white on their teal. */
+/* Plan item 179: docked on its depot the count is Hollowell's own sign.
+   Plan item 391: the 2D depot's departures board, not a floating pill: dark glass in a chrome frame, the count in lit
+   amber caps, stood on two posts on the roof's front edge (the plate's foot is the fascia's top, see depotDock). */
 .gate-plate[data-on-depot] {
-  border-color: var(--plastic);
-  border-radius: 4px;
-  background: var(--corp);
-  color: var(--plastic);
-  box-shadow: 0 2px 0 var(--corp-ink);
+  padding: 2px 8px 1px;
+  border: 2px solid var(--plastic-shade);
+  border-radius: 3px;
+  background: linear-gradient(color-mix(in srgb, var(--corp-ink) 80%, var(--stage-night)), var(--corp-ink));
+  color: var(--led-amber);
+  text-shadow: 0 0 5px color-mix(in srgb, var(--led-amber) 65%, transparent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--plastic) 30%, transparent), 0 2px 3px var(--black-a35);
 }
+.gate-plate[data-on-depot]::before,
+.gate-plate[data-on-depot]::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  width: 3px;
+  height: 7px;
+  background: var(--plastic-shade);
+}
+.gate-plate[data-on-depot]::before { left: 18%; }
+.gate-plate[data-on-depot]::after { right: 18%; }
+.gate-plate[data-on-depot][data-under]::before,
+.gate-plate[data-on-depot][data-under]::after { display: none; }
 .gate-plate[data-on-depot] .gate-plate-town {
   background: var(--corp-hi);
+  color: var(--plastic);
+  text-shadow: none;
 }
 
 /* Plan item 69: on an upright phone Cath's note covered the field's two bottom rows of plots for nine seconds; it is

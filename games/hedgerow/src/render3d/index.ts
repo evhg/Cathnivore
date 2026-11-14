@@ -2614,7 +2614,9 @@ export class Renderer3D {
         const pw = el.offsetWidth;
         const ph = el.offsetHeight;
         let x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
-        let y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph * 0.5));
+        // Plan item 391: the board stands on its posts on the roof's front edge (7 px legs under it, components.css).
+        el.toggleAttribute("data-under", onDepot.under !== undefined);
+        let y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph - 7));
         // Plan item 391: a docked plate never covers the gate's sign (the flat-roofed depot stands nearer it on a
         // phone's l13): it steps right of the sign, or else under it.
         for (const sg of this.gateSignRects()) {
