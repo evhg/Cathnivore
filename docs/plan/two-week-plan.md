@@ -3583,17 +3583,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - classpick, classpose and armoury pass at P and D; D unchanged; shots P and D before and after.
 - **Size:** 2
 
-## 376. [ ] Hedgerow desktop: the tower shop as one seed rack, the same grid on every level, towers drawn large *(lane B, in progress)*
-- **Why:** `plan1114b/hedge-l21-2d-D` shows the shop in 3 columns (1108-1412 x 85-380) and `hedge-l34-2d-D` in 4, where names wrap or hyphenate ("Court-house" 1195-1250 x 335-360; "Duck Pond", "Radio Mast" and "Market Stall" on two lines) and two unexplained empty terracotta pots fill the last row (1275-1400 x 315-360). The tower art fills about 35% of each card (Beehive 1335-1390 x 100-150 in a 100x95 card).
-- **Build:**
-  - One 3-column rack at every level, sized to the bench column, scrolling inside the bench if a level brings more towers.
-  - Tower art at 55%+ of the card's height.
-  - A slot not yet open is a seed packet with the level it opens at printed on it, not an empty pot.
-- **Accept:**
-  - No tower name wraps or hyphenates at 1440x900 or 1280x800 on levels 1, 21 and 34.
-  - Every empty slot carries text; card art 55%+ of the card's height.
-  - The Hedgerow shop/HUD specs and ui-css-lint pass; P untouched; shots at D before and after.
-- **Size:** 1
+## 376. [x] *(withdrawn 2026-11-14 08:40 by lane B: the critique's 'one 3-column rack, no empty pots' undoes item 361's deliberate grid (four to a row from ten towers, because three a row cut level 25's round card at 1440x900) and its clay pots in a short row's spare cells, and item 211's two-line bands at four a row)*
 
 ## 377. [ ] Hedgerow map (D): the land between an act's two rows painted as the act's country, the stops at a size the screen can read
 - **Why:** `plan1114b/hedge-menu-D`: item 372 made the act in play a screen tall, and the band between its two rows (0-1120 x 430-750) is now pale empty patchwork with a few 20-40 px props (boats, beach huts, a pier) scattered on it. The stops themselves are 44-52 px coins with 13 px names (60-1060 x 340-420 and 740-830) across a 1440 px screen, so the act reads as a diagram, not a place. Act 1 (Brindle Hills) is the exception and still packs its rows under Cath's line (stops 0.4 of the map).
@@ -3608,7 +3598,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of acts 1 and 3 at D before and after.
 - **Size:** 2
 
-## 378. [ ] The bugs from the 2026-11-14 08:30 critique, fixed as one batch
+## 378. [ ] The bugs from the 2026-11-14 08:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114b`)
   - **Cathnivore:**
     - `cath-campaign-P` (262-375 x 85-225): Cath ends flat at her hem in mid-air above the map card, with no ground or counter under her.
