@@ -157,13 +157,21 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const d = button("cp-dot", dots);
     d.tabIndex = -1;
     d.dataset.cls = cls;
+    // Plan item 375: each page dot is a named tab, its gun's silhouette over the class's name, so the four classes
+    // not shown still say who they are.
+    const base = WEAPON_BASES[STARTING_WEAPON[cls]];
+    if (base) el("span", "cp-dot-gun", d).innerHTML = weaponArtSvg(base.cls);
+    el("span", "cp-dot-name", d, CLASSES[cls].name);
     d.addEventListener("click", () => select(cls, false));
     dotFor.set(cls, d);
   }
   // Plan item 125: on an upright phone her quote is folded behind a tap so the whole file fits one screen; the
   // toggle is hidden elsewhere, where the quote always shows.
   const fold = button("cp-fold", words);
-  fold.setAttribute("aria-expanded", "false");
+  // Plan item 375: her line shows from the start (the smaller class name and the named tabs leave it room); the
+  // fold still tucks it away.
+  root.classList.add("cp-quote-open");
+  fold.setAttribute("aria-expanded", "true");
   fold.setAttribute("aria-controls", "cp-line");
   el("span", "cp-fold-label", fold, "Her line");
   fold.addEventListener("click", () => {

@@ -119,11 +119,12 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
     for (const b of [m.attrs, m.weapon, m.hold]) expect(b.top >= 0 && b.bottom <= size.height && b.left >= 0 && b.right <= size.width, s).toBe(true)
     expect(m.art.bottom - m.art.top, s).toBeGreaterThanOrEqual(44)
     expect(m.hold.w, s).toBeGreaterThan(size.width - 40)
-    await expect(page.locator('.cp-line')).toBeHidden()
+    // Plan item 375: her line shows from the start (it was folded behind a tap, item 125).
+    await expect(page.locator('.cp-line')).toBeVisible()
   }
   await page.locator('.cp-fold').click()
-  await expect(page.locator('.cp-fold')).toHaveAttribute('aria-expanded', 'true')
-  await expect(page.locator('.cp-line')).toBeVisible()
+  await expect(page.locator('.cp-fold')).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('.cp-line')).toBeHidden()
   const hold = (await page.locator('.cp-hold').boundingBox())!
   expect(hold.y + hold.height).toBeLessThanOrEqual(667)
 })
@@ -444,4 +445,37 @@ test('on a phone a swipe changes the class, its title large and whole; keys stil
   await page.keyboard.press('ArrowRight')
   await expect(page.locator('.cp')).toHaveAttribute('data-class', 'gunslinger')
   await expect(page.locator('.cp-nameplate')).toHaveText('Gunslinger')
+})
+
+// Plan item 375: on an upright phone the five classes are named tabs (each its gun and its name at 14 px or more,
+// all in view), the class title no taller than 80 px, her line shown without a tap, and the hold bar's gutters even.
+test('the phone class pick names every class on a tab', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone')
+  test.setTimeout(300_000)
+  await fresh(page, true)
+  await page.goto('/nightshift/?play&rs=0.5')
+  await expect(page.locator('.cp-dot').first()).toBeVisible({ timeout: 120_000 })
+  for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(size)
+    await page.waitForTimeout(600)
+    const m = await page.evaluate(() => {
+      const box = (e: Element) => e.getBoundingClientRect()
+      const tabs = [...document.querySelectorAll('.cp-dot')].map((d) => {
+        const n = d.querySelector('.cp-dot-name')!
+        const r = box(d)
+        return { name: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), whole: n.scrollWidth <= (n as HTMLElement).offsetWidth + 1 && box(n).right <= r.right + 1 && box(n).left >= r.left - 1, inView: r.left >= 0 && r.right <= innerWidth, gun: !!d.querySelector('.cp-dot-gun svg') }
+      })
+      const hold = box(document.querySelector('.cp-hold')!)
+      return { tabs, title: box(document.querySelector('.cp-nameplate')!).height, line: (document.querySelector('.cp-line') as HTMLElement).offsetHeight, gutters: [hold.left, innerWidth - hold.right] }
+    })
+    const s = JSON.stringify({ size, m })
+    expect(m.tabs.map((t) => t.name), s).toEqual(['Ghost', 'Butcher', 'Gunslinger', 'Wirewitch', 'Fixer'])
+    for (const t of m.tabs) {
+      expect(t.size, s).toBeGreaterThanOrEqual(14)
+      expect(t.whole && t.inView && t.gun, s).toBe(true)
+    }
+    expect(m.title, s).toBeLessThanOrEqual(80)
+    expect(m.line, s).toBeGreaterThan(0)
+    expect(Math.abs(m.gutters[0]! - m.gutters[1]!), s).toBeLessThanOrEqual(2)
+  }
 })

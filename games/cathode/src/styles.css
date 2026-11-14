@@ -1125,6 +1125,39 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ink-2); transition: width 200ms ease, background-color 200ms ease; } /* px-ok */
   .cp-dot.is-on::before { width: 22px; border-radius: 4px; background: var(--accent, var(--blood-hot)); box-shadow: none; } /* px-ok */
 }
+/* Plan item 375: on an upright phone the page dots are five named tabs across the width: each the class's gun in
+   silhouette over its name (14 px), the chosen one lit in its colour; the class title above them a size down (60%),
+   so her line has room to show without a tap. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-nameplate { font-size: calc(max(48px, calc(var(--fs-6) * 1.3)) * var(--np-fit, 1) * .6); } /* fs-ok px-ok: 60% of item 245's title */
+  .cp-dots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 4); align-self: stretch; margin: calc(var(--u) * 4) 0 calc(var(--u) * 6); }
+  .cp-dot {
+    display: grid;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    gap: calc(var(--u) * 2);
+    width: auto;
+    height: auto;
+    min-height: 44px; /* px-ok: tap target */
+    padding: calc(var(--u) * 4) 0 calc(var(--u) * 3);
+    border-bottom: calc(var(--u) * 3) solid rgb(var(--ink-rgb) / .18);
+    color: var(--ink-2);
+  }
+  .cp-dot::before { content: none; }
+  .cp-dot-gun { display: block; width: 92%; height: calc(var(--u) * 24); opacity: .75; }
+  .cp-dot-gun svg { display: block; width: 100%; height: 100%; }
+  .cp-dot-name {
+    font: 700 max(14px, var(--fs-1))/1 var(--font-ui); /* fs-ok px-ok: the tab names at 14 px (plan item 375) */
+    font-stretch: var(--wdth-tight);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .cp-dot.is-on { color: var(--ink); border-bottom-color: var(--accent, var(--blood-hot)); }
+  /* the hold bar centred on the sheet, its gutters even (it hung 9 px in on the left and 23 on the right) */
+  .cp-sheet[data-dossier] .cp-foot .cp-hold { margin-inline: 0; width: 100%; }
+  .cp-dot.is-on .cp-dot-gun { opacity: 1; filter: drop-shadow(0 0 calc(var(--u) * 4) var(--accent, var(--blood-hot))); }
+}
 @keyframes cp-name-in {
   from { opacity: 0; transform: translateX(calc(var(--u) * 40)); }
   to { opacity: 1; transform: none; }
