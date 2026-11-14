@@ -19,7 +19,8 @@ const jobs = {
   async site(p, s) {
     // Plan item 146: the entrance (kinetic title, Cath and the prints rising) runs about 3 s; shoot it settled.
     await p.goto(`${base}/`); await p.waitForTimeout(3500); await p.screenshot({ path: `${out}/portfolio-${s}.png` })
-    await p.goto(`${base}/games/`); await p.waitForTimeout(1200); await p.screenshot({ path: `${out}/games-${s}.png` })
+    // (the intro letters settle by about 3 s on a phone: at 1.2 s the wordmark was a blurred "Ca", plan1114c)
+    await p.goto(`${base}/games/`); await p.waitForTimeout(4000); await p.screenshot({ path: `${out}/games-${s}.png` })
   },
   async cathnivore(p, s) {
     await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/cath-title-${s}.png` })

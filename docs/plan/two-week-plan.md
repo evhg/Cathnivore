@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-14T12:22Z
-
 
 
 
@@ -3616,5 +3614,90 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
     - `hedge-l21-2d-P` (5-95 x 358-440) and `hedge-l21-3d-P` (10-205 x 415-440): the HOLLOWELL sign and the "216 coming" pill sit over the road and its queued vans.
     - `hedge-menu-D` (65-180 x 822-858): "Brand Ambassador" wraps to two lines and its pill crosses the act's gate road.
   - **Runnel:** `runnel-P` (95-295 x 780-795): the hint under the board, grey on paper; check it reaches 4.5:1.
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 379. [ ] NIGHT SHIFT phone title: the open case as a pinned case file, and the List with its lines
+- **Why:** `plan1114c/ns-title-P` (2x pixels): on a phone the open case is three loose grey caps lines on the umbrella's canopy (30-195 x 900-995): no label, no photo, no card. At D the same case is a pinned Polaroid with Tomas Reed's photo, name, place and tag (`ns-title-D` 415-580 x 270-570). The phone's List names only Julian Crisp (30-180 x 1370-1395) and its five photos carry no lines, the last one on Cath's coat (610-740 x 1455-1610), where D gives each target a line (60-750 x 740-810). The phone title is a phone player's first screen and holds the least story.
+- **Build:**
+  - The phone's case line as a small case-file card: the target's photo (`ui/busts.ts`, item 371's sculpts) with CASE FILE, name, place and tag, clipped under the menu at 150-170 CSS px wide, angled like D's.
+  - The List as a swipeable row of photos, each with its one-line hint under it ("Withheld" and the line), clear of Cath's figure.
+  - The whole title still one screen at 390x844 and 375x667.
+- **Accept:**
+  - The case card's photo 64 CSS px+, its text 4.5:1+, meeting neither the menu nor Cath's face box.
+  - Every List photo has a line of text 12 px+; no photo meets Cath's body box (new e2e).
+  - cathode-front and critique79 pass; D unchanged; shots P before and after.
+- **Size:** 2
+
+## 380. [ ] Hedgerow 2D: each gate staged on dry ground with one sign, and its waiting convoy spaced along the lane
+- **Why:** `plan1114c/hedge-l21-2d-D`: the depot stands half in the sea (160-280 x 385-490), a sailboat under its posts (225-270 x 520-545), and the gate is named twice: on the depot's sign (160-280 x 415-440) and a tag under it (145-280 x 500-518). `hedge-l21-2d-P`: no depot; a HOLLOWELL tag (8-97 x 378-398) and a "216 coming" chip (4-84 x 420-438) float on grass with the vans queued above them (15-55 x 150-355). `hedge-l34-2d-D`: the Same-Day vans overlap each other at the bend (245-490 x 735-850); P the same (15-160 x 515-590). (Items 364 and 369 read the l34 queue as nose to tail round the bend; at the bend the third and fourth vans now overlap by about a third.)
+- **Build:**
+  - The depot on dry ground in every layout (a shore cell or the lane's own end, never on water), drawn at the phone's size too (item 336's gate).
+  - One name per gate: where a depot is drawn its sign carries HOLLOWELL and the count, and the separate tag goes.
+  - The waiting convoy spaced along the lane's path by each vehicle's length plus a gap, following bends; a queue that doesn't fit ends in a "+N" plate.
+- **Accept:**
+  - Levels 1-40 at P and D: no depot pixel on water, one HOLLOWELL text per gate, waiting vehicles 0 px overlap with each other and with labels (new e2e on the vehicle boxes).
+  - The Hedgerow gate-queue, depot and field specs pass; keyart re-shot if its sources change.
+  - Shots l21 and l34 at P and D before and after.
+- **Size:** 2
+
+## 381. [ ] NIGHT SHIFT phone pick: Cath at hero size on the stage, the tab guns readable
+- **Why:** `plan1114c/ns-play-P` (2x): Cath is about 180x585 (290-470 x 245-830), some 290 CSS px tall and under a quarter of the width, in an empty dark stage either side (0-290 and 520-780 x 150-830). Item 375's tab guns are grey 25x6 CSS px silhouettes on black (935-948 band), too small and faint to tell apart, so the tabs read as text only (they were cut to keep her face at 45 px).
+- **Build:**
+  - The stage camera in so her figure fills 330-360 CSS px of the stage at 390x844 (cropped at mid-shin if needed), her face 50 px+.
+  - The tab guns at about 36x12 CSS px with a lit rim, 3:1 against the dark, the chosen one red; any height taken from the stage's empty top band, not the dossier.
+- **Accept:**
+  - Her figure 330 CSS px+ at 390x844 and 290+ at 375x667, no page scroll; each tab gun 32 px+ wide at 3:1+.
+  - cathode-classpick, classpose and armoury pass; D unchanged; shots P before and after.
+- **Size:** 2
+
+## 382. [ ] Cathnivore title: Marrow's market square in morning light behind the counter, not a blank cream wall
+- **Why:** `plan1114c/cath-title-D`: behind the bunting the town skyline (0-1440 x 180-290) is a ghost at about 15% contrast, and everything between the bunting and the counter (0-1440 x 290-750) is flat cream, so Cath (600-830 x 400-760) and the board on its cloth (850-1340 x 315-750) stand in an empty room. /games/ has a full dusk market street (item 299); the game's own front door has none. `cath-title-P` the same faded strip (0-390 x 195-300) over cream.
+- **Build:**
+  - A painted morning market square behind the counter: far rooftops and the clock tower in colour, a near row of two or three stall awnings and crates, low sun from the existing sun disc, in the board's ink-and-flat-colour language.
+  - Kept back: lower chroma and value behind the menu, Cath and the board (a soft vignette), so she stays the focus.
+  - Dark: the same square at dusk with lit windows, designed, not inverted. No parallax under reduced motion. P: a crop of the same scene behind Cath.
+- **Accept:**
+  - The backdrop's mean chroma behind the bunting 2x+ today's (a 200x100 sample at D); every title text 4.5:1+, Cath's silhouette 3:1+ against what is behind her.
+  - LCP within 10% of today's; gate 1's asset budget passes.
+  - The title specs pass; shots P and D, light and dark, before and after.
+- **Size:** 2
+
+## 383. [ ] Cathnivore phone play: a labelled tally and Hollowell's intents readable, matching desktop item 366 *(lane B, in progress)*
+- **Why:** `plan1114c/cath-game-P`: the tally (10-330 x 15-50) reads "1/10 · 10 · 10 · 0" with no words (item 366 labelled D's; a new player can't tell Trust from Land), the Rift plate blank at 0. Hollowell's three intents are cramped chips (68-380 x 62-112), each word about 12 px behind a chevron; his portrait (8-68 x 50-120) is jammed against the chips and over the tally's foot; the Festival line (105-345 x 115-130) about 11 px.
+- **Build:**
+  - The tally as D's chalk slate, a small-caps word under each figure (Round, Trust, Land, Rift), item 184's objects kept as icons.
+  - Hollowell's portrait at the left end of a slim gantry rail carrying the three intent plates (verb over target) at 13 px+, with the threat dots.
+  - The event line a pinned note under the gantry at 13 px+.
+- **Accept:**
+  - Every tally figure has a visible label 12 px+ at 4.5:1; intent text 13 px+; no box overlaps (a box test at 375x667 and 390x844).
+  - The board's top no more than 12 px lower than today.
+  - The phone game, counter and HUD specs pass; D unchanged; shots P before and after.
+- **Size:** 1
+
+## 384. [ ] Cathnivore desktop hand: Sell as one barrow card with a 1-2-3 count, not three near-identical cards
+- **Why:** `plan1114c/cath-game-D`: Sell 1, Sell 2 and Sell 3 (370-935 x 690-780) take the first half of the top shelf with the same crate art and "→ 1/2/3", 3 of the hand's 10 slots, so the distinct choices (Graft, Open Stall, Supply, Injunction) drop to the second shelf. Item 320 noted they share one picture but kept three cards.
+- **Build:**
+  - One Sell card with a 1/2/3 count on its face; counts above the player's produce greyed; arrow keys change the count.
+  - The rules engine unchanged: the card dispatches the same Sell(n) action; undo, Cath's "I'd play…" hint and the leaf badge target the chosen count.
+  - The phone hand the same where it shows all three.
+- **Accept:**
+  - The hand at seed 11's opening shows 8 cards, every one reachable by keyboard; Sell 1/2/3 each yield the same state as before (a unit test).
+  - Screen readers hear "Sell, 2 produce for 2 Marks".
+  - table-hand, board-scale and a sell-flow e2e pass; shots P and D before and after.
+- **Size:** 2
+
+## 385. [ ] The bugs from the 2026-11-14 12:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1114c`)
+  - **Cathnivore:**
+    - `cath-title-P` (200-372 x 605-695): the Daily tag crams "The Ring · Ines & Sol · Harvest Festival" into three centred lines at about 12 px, with no status or countdown.
+    - `cath-setup-D` (1027-1050 x 550-770): the market sign Cath holds overhangs the table's frame; its body text rotated about -8° at about 12 px (1045-1185 x 670-760).
+    - `cath-game-D` (1022-1045 x 758-781): the leaf "suggested" badge on Supply 1 Outlet straddles the shelf plank and touches Buy Wagon Wheel Press's price pill.
+    - `cath-game-D`: "No Outlets left to remove" / "No Buyout to remove" three lines at about 11 px (140-305 x 493-522); card subtitles "Pick a region" (835-915 x 806-820) and "in Brindle Hills" (1217-1305 x 806-820) about 11-12 px.
+    - `cath-campaign-D`: progress twice, the header's line and bar (60-470 x 115-130) and the ledger (80-640 x 800-870).
+  - **Portfolio:** `portfolio-P` (155-215 x 130-245): the print strip hard-cut mid-Runnel at x 215 by Cath's column, no fade or scroll cue.
+  - **Hedgerow:** P: the "NEXT: ROUND 11" tab (222-368 x 680-702) over the coach bubble's top edge (l21 2D/3D, l34); `hedge-l34-2d-D` the "Box Lorry" label (233-300 x 385-400) on the fourth lorry's wheels.
+  - **NIGHT SHIFT:** `ns-title-D` "THE LIST" (57-110 x 563-577) squeezed 6 px under the menu panel's foot, touching the red string; `ns-title-P` a mirrored, cropped "CLUNA" neon (20-115 x 1055-1090) under the case lines; `ns-play-P` uneven spacing round HER LINE (1050-1240).
+  - **Runnel:** `runnel-P` Cath's bubble (12-268 x 545-640) within a few px of the fourth hex's left corner (about 245 x 615); check they don't meet.
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
