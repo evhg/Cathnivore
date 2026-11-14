@@ -61,7 +61,10 @@ import {
   enemyScale,
   star,
   drawThornPile,
+  castShadow,
+  setShadowSun,
 } from "./sprites";
+import { shadowDir } from "./sunlight";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 const FIELD_TOWER = 1.2;
@@ -703,6 +706,8 @@ export class Renderer {
   draw(game: Game, dt: number): void {
     const { ctx } = this;
     const { cellSize: s, offX, offY } = this.view;
+    // Plan item 370: cast shadows fall away from this act's sun, as in the 3D view.
+    setShadowSun(shadowDir(game.level.id));
     this.clock += dt;
     this.cheer = Math.max(0, this.cheer - dt);
     this.gold.age += dt;
@@ -2265,7 +2270,7 @@ export { themeFor };
  * spilling a little into the grass round it: packed earth with wheel ruts, a post-and-rail fence along the yard's
  * open sides, a round bale, and the barn itself (a gambrel roof, a hay-loft door, the big doors braced in white).
  */
-function drawFarmyard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, seed: number): void {
+export function drawFarmyard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, seed: number): void {
   const r01 = rng(seed);
   const flip = r01() < 0.5;
   ctx.save();
@@ -2336,9 +2341,11 @@ function drawFarmyard(ctx: CanvasRenderingContext2D, x: number, y: number, w: nu
   const top = y + w * 0.12;
   const wallTop = top + w * 0.2;
   const base = y + w * 0.62;
+  // Plan item 370: the barn's cast shadow falls away from the act's sun, like the 3D view's; the contact shadow stays.
+  castShadow(ctx, left + bw / 2, base, bw / 2, w * 0.14, w * 0.5, 0.2);
   ctx.fillStyle = "rgba(40,28,10,0.28)";
   ctx.beginPath();
-  ctx.ellipse(left + bw * 0.6, base + w * 0.015, bw * 0.62, w * 0.05, 0, 0, Math.PI * 2);
+  ctx.ellipse(left + bw * 0.5, base + w * 0.015, bw * 0.56, w * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#b5432f";
   ctx.strokeStyle = "#5a2418";

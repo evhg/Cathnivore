@@ -23,6 +23,59 @@ export function groundShadow(ctx: C, x: number, y: number, w: number, h = w * 0.
   ctx.fill();
 }
 
+/** Plan item 370: where the 2D sun throws shadows (screen x right, y down); `setShadowSun` follows the level's act. */
+let sun2d = { x: 0.94, y: 0.34 };
+export function setShadowSun(dir: { x: number; y: number }): void {
+  sun2d = dir;
+}
+export function shadowSun(): { x: number; y: number } {
+  return sun2d;
+}
+
+/**
+ * Plan item 370: a short cast shadow on the ground, matching the 3D key: the footprint (half-width `hw`, depth `d`,
+ * front edge at `base`) swept away from the sun by a length set by the object's `height`. The board is seen from a
+ * tilt, so the sweep's screen-y part is foreshortened. Drawn before the object, so the object covers its own foot.
+ */
+export function castShadow(ctx: C, x: number, base: number, hw: number, d: number, height: number, a = 0.2): void {
+  const len = height * 0.6;
+  const vx = sun2d.x * len;
+  const vy = sun2d.y * len * 0.55;
+  const pts: Array<[number, number]> = [];
+  for (const [px, py] of [
+    [x - hw, base - d],
+    [x + hw, base - d],
+    [x + hw, base],
+    [x - hw, base],
+  ] as const) {
+    pts.push([px, py], [px + vx, py + vy]);
+  }
+  const hull = convexHull(pts);
+  ctx.save();
+  ctx.fillStyle = `rgba(20,25,10,${a})`;
+  ctx.beginPath();
+  hull.forEach(([px, py], i) => (i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function convexHull(pts: Array<[number, number]>): Array<[number, number]> {
+  const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: [number, number], a: [number, number], b: [number, number]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower: Array<[number, number]> = [];
+  for (const q of p) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2]!, lower[lower.length - 1]!, q) <= 0) lower.pop();
+    lower.push(q);
+  }
+  const upper: Array<[number, number]> = [];
+  for (const q of p.reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2]!, upper[upper.length - 1]!, q) <= 0) upper.pop();
+    upper.push(q);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
 function blob(ctx: C, x: number, y: number, r: number, fill: string): void {
   ctx.fillStyle = fill;
   ctx.beginPath();
@@ -175,6 +228,8 @@ export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: numb
   const k = TIER_SCALE[tier - 1] ?? 1;
   // Plan item 322: a contact shadow cast away from the scene's light (top left), dark enough to read on any plot...
   groundShadow(ctx, x + s * 0.06, base + s * 0.02, s * (tier === 1 ? 0.4 : 0.48), s * (tier === 1 ? 0.13 : 0.16), 0.36);
+  // Plan item 370: and a short cast shadow away from the act's sun, like the 3D view's.
+  if (!look.bare && look.kind !== "pond") castShadow(ctx, x, base, s * 0.22 * k, s * 0.12 * k, s * (0.7 + tier * 0.15) * k, 0.16);
   // ...and a tier-1 tower stands on a footing of turned earth, so it reads as set on the plot, not printed on it
   // (a pond is the ground itself).
   if (tier === 1 && look.kind !== "pond" && !look.bare) drawFooting(ctx, x, base, s);
@@ -2378,6 +2433,7 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
   ctx.lineJoin = "round";
   const base = y + s * 0.34;
   groundShadow(ctx, x, base, s * 0.5, s * 0.12);
+  castShadow(ctx, x, base, s * 0.4, s * 0.2, s * 0.85, 0.24);
   // Walls and roof.
   rr(ctx, x - s * 0.36, base - s * 0.48, s * 0.72, s * 0.48, s * 0.02, "#f4ede1");
   ctx.fillStyle = "#b5523b";
