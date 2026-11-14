@@ -3469,7 +3469,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots D light and dark, before and after.
 - **Size:** 2
 
-## 368. [ ] Cathnivore phone play: one counter under the board, not four stacked strips, with the hand in view *(lane A, in progress)*
+## 368. [ ] Cathnivore phone play: one counter under the board, not four stacked strips, with the hand in view *(read 2026-11-14 06:35 by lane A, handed back: the 'N more ›' pill is `.actions-well::before` (table.css, item 333) at the well's right foot, 70-79 px wide over a 35 px NOT YET sliver, so it meets the last card whenever that card ends past about 310 px; action-hand pins its 'N more' wording. Fold it into the counter's 'Saving for' tab rather than move it a fifth time)*
 - **Why:** `plan1114a/cath-game-P`: four separately framed strips sit under the board: Cath's line (8-380 x 537-605), the farm stats (8-380 x 612-660), the hand (0-390 x 668-782) and the tab bar (785-844), about 300 px (35% of the screen) of stacked chrome. The hand shows two whole cards plus a 30 px "NOT YET" sliver (355-390 x 670-780), and the "9 more" pill (305-380 x 755-782) sits on the Injunction card. It reads as an app's panels, not a table edge.
 - **Build:**
   - One wooden counter at the board's foot: Cath's portrait at its left end with her line chalked on the lip; the farm goods (crates, coins, rosette) as objects on its back edge.
