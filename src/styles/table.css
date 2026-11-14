@@ -2355,17 +2355,23 @@ html.no-animations .cath-companion .cameo {
     display: flex;
     gap: 6px;
     align-items: baseline;
-    max-width: calc(100% - 156px);
-    padding: 3px 9px 4px;
+    max-width: calc(100% - 140px);
+    padding: 3px 8px 4px;
     translate: -50% 0;
     rotate: -1deg;
-    font-size: var(--fs-label);
+    /* plan item 383: the week's event at 13 px (it read at 12 under the gantry; 14 cut its rule between Bea's
+       drawing and the map key) */
+    font-size: .8125rem;
     white-space: nowrap;
   }
-  .event-ticket b { font-size: var(--fs-label); }
+  .event-ticket b { font-size: .8125rem; }
   .event-ticket .event-rule, .event-ticket .event-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .event-ticket .event-rule-short { overflow: hidden; text-overflow: ellipsis; }
   .event-ticket::before { display: none; }
+}
+/* A narrower phone (under 385 px) keeps the ticket's 12 px, so its rule reads whole rather than cut. */
+@media (max-width: 384.98px) {
+  .event-ticket, .event-ticket b { font-size: var(--fs-label); }
 }
 /* A short phone's board fills the frame's top strip: no room for it there. */
 @media (max-width: 1023.98px) and (max-height: 699.98px) {
