@@ -4803,6 +4803,17 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .bea-garden:has(.bea-runner) .bea-waiting,
 .bea-garden[data-watered='true'] .bea-waiting { display: none; }
 
+/* Plan item 365: the lesson's big tiles drawn up close: stakes by the rim, stones and wildflower tufts, sprigs that
+   green when the water comes. */
+.near-dress { pointer-events: none; }
+.nd-stake { fill: none; stroke: color-mix(in srgb, var(--stake) 85%, var(--soil)); stroke-width: 1.6; stroke-linecap: round; }
+.nd-blade { fill: none; stroke: var(--ga-leaf); stroke-width: 1.1; stroke-linecap: round; }
+.nd-bloom { fill: color-mix(in srgb, var(--blossom-1, var(--clay)) 85%, var(--paper)); }
+.nd-tuft.b1 .nd-bloom { fill: color-mix(in srgb, var(--paper) 85%, var(--wheat, var(--clay))); }
+.nd-tuft.b2 .nd-bloom { fill: color-mix(in srgb, var(--wheat, var(--clay)) 80%, var(--paper)); }
+.nd-sprig { fill: none; stroke: color-mix(in srgb, var(--ga-leaf) 55%, var(--dry)); stroke-width: 1.2; stroke-linecap: round; transition: stroke 400ms ease var(--delay, 0ms); }
+.cell.wet .nd-sprig { stroke: var(--wet); }
+
 /* Plan item 323: a fallow tile's field stones (lit on top, a shade below) and a thistle. */
 .fallow-dress { pointer-events: none; }
 .fs-stone { fill: color-mix(in srgb, var(--pebble) 80%, var(--dry)); stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 0.6; }

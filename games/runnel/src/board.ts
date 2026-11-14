@@ -270,6 +270,39 @@ export class Board {
       el('circle', { cx: t.x.toFixed(1), cy: (t.y - 5).toFixed(1), r: 3.2, class: 'fs-thistle' }, g)
     }
 
+    // Plan item 365: on the lesson's few big tiles (shown about 230 px across at D) the ground is drawn up close, on the
+    // six corner directions channels never run to: a field stone, a stake, a wildflower tuft and a sprig each, so the
+    // player's first close look at the game isn't empty paper. The daily's small tiles keep their own dressing.
+    if (this.puzzle.frameRadius !== undefined && cell.kind !== 'spring' && cell.kind !== 'stone') {
+      const h = hashString(`near:${this.puzzle.seed}:${cell.q},${cell.r}`)
+      const g = el('g', { class: 'near-dress' }, root)
+      for (let k = 0; k < 6; k++) {
+        const a = (60 * k + 30) * (Math.PI / 180)
+        const c = Math.cos(a)
+        const s = Math.sin(a)
+        const j = ((h >> (k * 3)) & 7) / 7
+        // a stake near the rim, leaning a little
+        const sx = c * S * 0.8
+        const sy = s * S * 0.8
+        el('path', { d: `M${sx.toFixed(1)} ${(sy + 3).toFixed(1)}l${(0.8 - j * 1.6).toFixed(1)} -8`, class: 'nd-stake', 'data-detail': '' }, g)
+        // a field stone or a wildflower tuft between hub and rim, alternating round the tile
+        const fx = c * S * (0.56 + j * 0.06)
+        const fy = s * S * (0.56 + j * 0.06)
+        if (k % 2 === 0) {
+          el('ellipse', { cx: (fx + 0.6).toFixed(1), cy: (fy + 1).toFixed(1), rx: 3.6, ry: 1.8, class: 'fs-shade' }, g)
+          el('ellipse', { cx: fx.toFixed(1), cy: fy.toFixed(1), rx: 3, ry: 2.2, class: 'fs-stone', 'data-detail': '' }, g)
+        } else {
+          const t = el('g', { class: `nd-tuft b${k % 3}`, transform: `translate(${fx.toFixed(1)} ${fy.toFixed(1)})`, 'data-detail': '' }, g)
+          el('path', { d: 'M0 2v-5M-2.4 2l1.2 -4M2.4 2l-1.2 -4', class: 'nd-blade' }, t)
+          el('circle', { cx: 0, cy: -5.4, r: 1.5, class: 'nd-bloom' }, t)
+        }
+        // a sprig nearer the hub
+        const px = c * S * 0.34
+        const py = s * S * 0.34
+        el('path', { d: `M${px.toFixed(1)} ${(py + 2).toFixed(1)}v-3.6m0 1.6q-2 -2 -3.4 -1.6m3.4 0.8q1.8 -2.2 3.2 -1.8`, class: 'nd-sprig', 'data-detail': '' }, g)
+      }
+    }
+
     el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
 
     const view: CellView = { root, piece: null, water: [], spokeDirs: [], banks: [], angle: cell.rot * 60 }
