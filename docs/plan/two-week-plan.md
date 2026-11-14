@@ -3598,7 +3598,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of acts 1 and 3 at D before and after.
 - **Size:** 2
 
-## 378. [ ] The bugs from the 2026-11-14 08:30 critique, fixed as one batch *(lane B, in progress)*
+## 378. [ ] The bugs from the 2026-11-14 08:30 critique, fixed as one batch *(handed back 2026-11-14 09:02 by lane B, slice 1: Runnel's hint checked, no change (5.2:1 light, 7.9:1 dark); Hedgerow's desktop map names run on one line at 1200 px+ (Brand Ambassador no longer wraps across the gate road; no name overlaps on acts 1-4); NIGHT SHIFT's upright-phone case line stacks TOMAS REED / THE HARBOUR / A DEBT TAG with its dots in a hidden `mh-sep` span. hedgerow-map, level-card, cathode-front and critique79 pass at P and D. Left: the Cathnivore points, the portfolio prints, ns-play-P's telescope, Hedgerow's forecast and HOLLOWELL sign)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114b`)
   - **Cathnivore:**
     - `cath-campaign-P` (262-375 x 85-225): Cath ends flat at her hem in mid-air above the map card, with no ground or counter under her.
