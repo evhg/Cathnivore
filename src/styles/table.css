@@ -4517,10 +4517,13 @@ html.no-animations .table-cath-line { animation: none; }
 
   /* Plan item 237: Pell's medallion breaks the placard's frame, 56 px across with a glossy plastic rim (the
      corporations are over-lit plastic), so the antagonist has a face at the table on a phone. */
+  /* Plan item 383: the medallion hangs from the rail's left end: its top 4 px under the rail's, so its ring clears
+     the tally's foot (centred, it stood 6 px proud and its ring sat 7 px over the tally), its foot over the board's
+     corner. */
   .papers-placard-face {
     width: 56px;
     height: 56px;
-    margin-block: -6px;
+    margin-block: 12px -12px;
     margin-inline-start: -2px;
     box-shadow:
       0 0 0 2px color-mix(in srgb, var(--hollowell-ink) 30%, black),
@@ -4530,6 +4533,9 @@ html.no-animations .table-cath-line { animation: none; }
   }
 
   .papers-placard-face svg { top: -18px; width: 94px; }
+
+  /* Bea's drawing steps down out from under the hanging medallion. */
+  .beas-drawing { top: calc(var(--sp-2) + 10px); }
 
   .papers-placard-face::after {
     content: '';
