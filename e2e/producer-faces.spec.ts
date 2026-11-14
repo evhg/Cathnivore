@@ -7,13 +7,16 @@ test('the active producer reacts to the turn', async ({ page }) => {
   await page.goto('/?e2eAutoplay=1')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await expect(page.locator(':is(.producer-cameo, .producer-seat, .table-producer[data-active]) svg.producer-art:visible').first()).toBeVisible()
+  await expect(page.locator(':is(.producer-cameo, .producer-seat, .table-producer[data-active]) :is(svg.producer-art, svg.fig):visible').first()).toBeVisible()
   const seen = new Set<string>()
   const deadline = Date.now() + 70_000
   const board = new Set<string>()
   while (Date.now() < deadline && !((seen.has('worried') || seen.has('delighted')) && board.size > 0)) {
-    const face = await page.locator(':is(.producer-cameo, .producer-seat, .table-producer[data-active]) svg.producer-art:visible').first().getAttribute('data-face').catch(() => null)
+    const face = await page.locator(':is(.producer-cameo, .producer-seat, .table-producer[data-active]) svg.producer-art:visible').first().getAttribute('data-face', { timeout: 50 }).catch(() => null)
     if (face) seen.add(face)
+    // Plan item 374: on a desktop table the active producer stands half length; their face is on the seat.
+    const standing = await page.locator('.table-producers-desk .table-producer[data-active]:not([data-unseated])').getAttribute('data-expression', { timeout: 50 }).catch(() => null)
+    if (standing) seen.add(standing)
     // The board's miniatures react with them: the art drawn inside a standee swaps its face.
     for (const f of await page.locator('.producer-mini svg.producer-art').evaluateAll((els) => els.map((e) => e.getAttribute('data-face')))) if (f && f !== 'neutral') board.add(f)
     await page.waitForTimeout(60)

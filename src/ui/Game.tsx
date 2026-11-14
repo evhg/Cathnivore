@@ -247,6 +247,109 @@ function eventRule(id: keyof typeof MARKET_EVENTS, short = false): string {
 }
 
 // Plan item 80: a producer's face as the expression name Portrait takes.
+// Plan item 374: at a desktop table the producers stand half length behind the board's far rim, at 80% of Cath's
+// drawn height (the same `half` framing as hers, so one scale of people): the first in front with their foot on the
+// rim, the second behind their shoulder, lifted only as far as the free space needs. Collisions are tested on the
+// drawn parts (head and hair, shoulders and arms), not the figure's transparent box, so they can stand in the
+// corner beside the hexes; an outer arm may pass behind the frame's edge, as at a table's corner. Each tries 84% of Cath's height down to 60%; with no room, both stay unseated and the
+// rail keeps the active producer's portrait.
+type Box = { left: number; top: number; right: number; bottom: number }
+const FIG_ASPECT = 320 / 480
+type Parts = { head: Box; body: Box }
+/** Where a Figure's head (with hair) and body (with arms and prop) sit in its box, as fractions, measured once. */
+function figFractions(p: HTMLElement): Parts {
+  const svg = p.querySelector('svg')!.getBoundingClientRect()
+  const frac = (els: Element[], fallback: Box): Box => {
+    const rs = els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0)
+    if (rs.length === 0 || svg.width === 0) return fallback
+    return {
+      left: (Math.min(...rs.map((r) => r.left)) - svg.left) / svg.width,
+      top: (Math.min(...rs.map((r) => r.top)) - svg.top) / svg.height,
+      right: (Math.max(...rs.map((r) => r.right)) - svg.left) / svg.width,
+      bottom: (Math.max(...rs.map((r) => r.bottom)) - svg.top) / svg.height,
+    }
+  }
+  const head = frac([...p.querySelectorAll('.fig-head, .fig-hair-back')], { left: 0.26, top: 0.12, right: 0.74, bottom: 0.58 })
+  // The torso and arms; a held prop (Mara's staff, Tomas's carrots) may cross an edge, as a hand would.
+  const body = frac([...p.querySelectorAll('.fig-body > path')], { left: 0.1, top: 0.54, right: 0.9, bottom: 1 })
+  return { head: { ...head, bottom: Math.min(head.bottom, body.top) }, body }
+}
+const PLATE: Box = { left: 0.3, top: 0.6, right: 0.7, bottom: 0.74 }
+function figPart(x: number, y: number, h: number, f: Box): Box {
+  const fw = h * FIG_ASPECT
+  return { left: x + f.left * fw, top: y + f.top * h, right: x + f.right * fw, bottom: y + f.bottom * h }
+}
+const meets = (a: Box, b: Box, gap = 3) => a.left < b.right + gap && b.left - gap < a.right && a.top < b.bottom + gap && b.top - gap < a.bottom
+function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box[], cathH: number): void {
+  const w = wrap.getBoundingClientRect()
+  const PAD = 4
+  const STEP = 3
+  // 7 px clear: the active one leans in (1 degree about the foot, ~5 px at the head).
+  const clear = (b: Box) => !obstacles.some((o) => meets(b, o, 7))
+  // The hair's back may run above the box (a bun): the head part's top is clamped to the frame below.
+  for (const p of people) p.style.setProperty('--fig-h', '240px')
+  const parts = people.map(figFractions)
+  const fits = (x: number, y: number, h: number, f: Parts) => {
+    const head = figPart(x, y, h, f.head)
+    return x >= w.left + PAD && x + h * FIG_ASPECT * 0.76 <= w.right - PAD && head.top >= w.top + PAD && clear(head) && clear(figPart(x, y, h, f.body))
+  }
+  const unseat = () => people.forEach((p) => (p.dataset.unseated = ''))
+  for (const k of [0.84, 0.81, 0.76, 0.7, 0.64, 0.6]) {
+    const h = Math.round(cathH * k)
+    const fw = h * FIG_ASPECT
+    const y = w.bottom - h
+    let best: { fx: number; bx: number; by: number; shift: number; score: number } | null = null
+    // Where the second one could stand at all, found once per scale (it doesn't depend on the first one's spot).
+    const spots: { bx: number; by: number; lift: number }[] = []
+    if (people.length > 1)
+      for (let lift = 0; lift <= h * 0.6; lift += STEP)
+        for (let bx = w.left + PAD; bx + fw * 0.76 <= w.right - PAD; bx += STEP) if (fits(bx, y - lift, h, parts[1]!)) spots.push({ bx, by: y - lift, lift })
+    for (let fx = w.right - PAD - fw * 0.76; fx >= w.left + PAD; fx -= STEP) {
+      if (!fits(fx, y, h, parts[0]!)) continue
+      if (people.length === 1) {
+        best = { fx, bx: 0, by: 0, shift: 0, score: 0 }
+        break
+      }
+      const fHead = figPart(fx, y, h, parts[0]!.head)
+      const fBody = figPart(fx, y, h, parts[0]!.body)
+      for (const { bx, by, lift } of spots) {
+        if (Math.abs(bx - fx) < fw * 0.28) continue
+        // Least lift, then the pair kept together and toward the far right corner.
+        const score = lift * 2 + Math.abs(bx - fx) * 0.5 + (w.right - Math.max(fx, bx) - fw) * 0.3
+        if (best && score >= best.score) continue
+        if (meets(figPart(bx, by, h, parts[1]!.head), fHead, 6)) continue
+        // The back one's name plate sits on their chest, or slides toward their outer shoulder to clear the front one.
+        const side = bx > fx ? 1 : -1
+        const shift = [0, 0.16 * side].find((sh) => {
+          const plate = figPart(bx + sh * fw, by, h, PLATE)
+          return !meets(plate, fHead, 2) && !meets(plate, fBody, 2) && plate.right <= w.right - PAD - 8 && plate.left >= w.left + PAD + 8
+        })
+        if (shift === undefined) continue
+        best = { fx, bx, by, shift, score: score + (shift ? 4 : 0) }
+      }
+    }
+    if (!best) continue
+    const place = (p: HTMLElement, x: number, top: number, depth: 'front' | 'back', shift = 0) => {
+      p.style.setProperty('--plate-shift', `${(shift * fw).toFixed(0)}px`)
+      p.style.setProperty('--seat-x', `${(x - w.left).toFixed(0)}px`)
+      p.style.setProperty('--seat-y', `${(top - w.top).toFixed(0)}px`)
+      p.style.setProperty('--fig-h', `${h}px`)
+      p.dataset.depth = depth
+      delete p.dataset.unseated
+    }
+    place(people[0]!, best.fx, y, 'front')
+    if (people[1]) {
+      place(people[1], best.bx, best.by, 'back', best.shift)
+      // Lifted behind the front one, their foot would end in mid-air: it fades into the table instead.
+      if (y - best.by > h * 0.04) people[1].dataset.lifted = ''
+      else delete people[1].dataset.lifted
+    }
+    for (const p of people.slice(2)) p.dataset.unseated = ''
+    return
+  }
+  unseat()
+}
+
 const faceExpression = (f?: ProducerFace) => (f === 'delighted' ? 'delighted' : f === 'worried' ? 'worried' : undefined)
 
 // The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
@@ -894,6 +997,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         ...[...wrap.querySelectorAll('.region-plaque, .table-prop, .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
       ].filter((r) => r.width > 0 && r.height > 0)
       const cath = wrap.querySelector('.table-cath-figure')
+      if (!phoneTableCath) {
+        // The crates stay on the rim in front of them, so they are no obstacle here.
+        const standing = [
+          ...[...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)),
+          ...[...wrap.querySelectorAll('.region-plaque, .table-prop:not(.produce-crates), .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
+        ].filter((r) => r.width > 0 && r.height > 0)
+        standProducers(wrap, people, standing, cath ? rect(cath).height : 300)
+        return
+      }
       const cathX = cath ? rect(cath).left + rect(cath).width / 2 : w.left
       const PAD = 6
       const taken: { x: number; y: number; w: number; h: number }[] = []
@@ -3111,10 +3223,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* Plan item 155: the producers sit at the table too, opposite Cath, their faces following the turn (an
             ability firing, a Squeeze on their Stall). Placed by `seatProducers` in the map's free corners. */}
         {tableCath && (
-          <div className={phoneTableCath ? 'table-producers table-producers-phone' : 'table-producers'} aria-hidden="true">
+          <div className={phoneTableCath ? 'table-producers table-producers-phone' : 'table-producers table-producers-desk'} aria-hidden="true">
             {state.config.producers.map((id) => (
               <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-active={id === state.activeProducer ? '' : undefined}>
-                <Portrait character={id} size={phoneTableCath ? 54 : 134} expression={faceExpression(producerFaces[id])} />
+                {/* Plan item 374: at a desktop table they stand half length at Cath's scale (the cast's Figure, drawn in
+                    her `half` framing), behind the board's far rim; a phone keeps the small busts. */}
+                {phoneTableCath ? (
+                  <Portrait character={id} size={54} expression={faceExpression(producerFaces[id])} />
+                ) : (
+                  <Figure character={id} expression={faceExpression(producerFaces[id])} />
+                )}
                 {/* Plan item 374: at a desktop table each seat carries its producer's name on a plate in their colour. */}
                 {!phoneTableCath && <span className="table-producer-name">{PRODUCERS[id].name.split(' ')[0]}</span>}
               </span>

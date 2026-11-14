@@ -3590,6 +3590,32 @@ html.no-animations .table-cath-line { animation: none; }
 .table-producer.pc-tomas { --cameo-ring: var(--p-tomas); }
 .table-producer.pc-ines { --cameo-ring: var(--p-ines); }
 .table-producer.pc-sol { --cameo-ring: var(--p-sol); }
+/* Plan item 374: at a desktop table they stand half length behind the far rim at Cath's scale (Game.tsx's
+   `standProducers` sets --fig-h), no frame: the front one on the rim, the second behind their shoulder. The crates sit
+   on the rim in front of them. The one whose turn it is leans in, lit; the other sits back about 15% dimmer. */
+.table-producers-desk .table-producer {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+  filter: none;
+  transform-origin: 50% 100%;
+  transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out), filter var(--dur-2);
+}
+.table-producers-desk .table-producer[data-depth="front"] { z-index: calc(var(--z-raised) + 1); }
+.table-producers-desk .table-producer > svg {
+  width: calc(var(--fig-h, 240px) * 2 / 3);
+  height: var(--fig-h, 240px);
+  filter: drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28));
+}
+.table-producers-desk .table-producer[data-active] { translate: 0 -6px; rotate: -1deg; box-shadow: none; }
+.table-producers-desk .table-producer[data-active] > svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wheat) 70%, transparent)) drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28)); }
+.table-producers-desk:has(.table-producer[data-active]) .table-producer:not([data-active]) > svg { filter: saturate(.8) brightness(.85) drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28)); }
+.table-producers-desk .table-producer[data-lifted] > svg {
+  mask-image: linear-gradient(to bottom, var(--ink) 62%, transparent 86%);
+}
+.table-producers-desk .table-producer-name { top: calc(var(--fig-h, 240px) * .62); bottom: auto; left: calc(50% + var(--plate-shift, 0px)); }
+.table-producers-desk ~ .produce-crates, .map-wrap:has(.table-producers-desk) .produce-crates { z-index: calc(var(--z-raised) + 2); }
 @media (prefers-reduced-motion: reduce) { .table-producer { transition: none; } }
 
 /* ---- Plan item 164: the phone hand as a fanned deck ----

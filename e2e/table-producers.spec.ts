@@ -23,9 +23,10 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
     ].map((r) => ({ x: r.left, y: r.top, width: r.width, height: r.height })),
   )
   for (const person of await people.all()) {
+    if (!phone) break // a desktop table stands them half length: the next test checks it
     const b = (await person.boundingBox())!
     const id = await person.getAttribute('data-table-producer')
-    expect(b.height, `${id} height`).toBeGreaterThanOrEqual(phone ? 64 : 160)
+    expect(b.height, `${id} height`).toBeGreaterThanOrEqual(64)
     expect(b.x).toBeGreaterThanOrEqual(wrap.x - 1)
     expect(b.y).toBeGreaterThanOrEqual(wrap.y - 5)
     expect(b.x + b.width).toBeLessThanOrEqual(wrap.x + wrap.width + 1)
@@ -98,3 +99,51 @@ test('the seated producers are named, and the active seat matches the turn', asy
     expect(l.contrast, `${l.text} contrast`).toBeGreaterThanOrEqual(4.5)
   }
 })
+
+// Plan item 374: at a desktop table they stand half length at Cath's scale behind the far rim: each figure 80%+ of her
+// drawn height at 1440x900 and 1280x800, their drawn parts (head, torso and arms; a held prop may cross an edge) meeting no hex, name plaque, the
+// event ticket or the map key, and every name plate inside the frame.
+for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  test(`the producers stand at Cath's scale at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'D only')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await fillSeed(page, '7')
+    await page.getByRole('button', { name: 'Start' }).click()
+    await expect(page.locator('.map-wrap [data-table-producer]:not([data-unseated]) svg.fig')).toHaveCount(2)
+    await page.waitForTimeout(500)
+    const m = await page.evaluate(() => {
+      const box = (e: Element) => {
+        const r = e.getBoundingClientRect()
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
+      }
+      const wrap = document.querySelector('.map-wrap')!
+      return {
+        wrap: box(wrap),
+        cathH: document.querySelector('.table-cath-figure svg')!.getBoundingClientRect().height,
+        people: [...wrap.querySelectorAll('[data-table-producer]')].map((p) => ({
+          id: p.getAttribute('data-table-producer')!,
+          h: p.querySelector('svg.fig')!.getBoundingClientRect().height,
+          parts: [box(p.querySelector('.fig-head')!), ...[...p.querySelectorAll('.fig-body > path')].map(box)],
+          plate: box(p.querySelector('.table-producer-name')!),
+        })),
+        blockers: [
+          ...[...wrap.querySelectorAll('.region-hex')].map((h) => box(h.querySelector('polygon')!)),
+          ...[...wrap.querySelectorAll('.region-plaque, .event-ticket, .map-key')].map(box),
+        ],
+      }
+    })
+    for (const p of m.people) {
+      expect(p.h / m.cathH, `${p.id} at Cath's scale`).toBeGreaterThanOrEqual(0.8)
+      for (const part of p.parts)
+        for (const o of m.blockers) {
+          const meets = part.left < o.right && o.left < part.right && part.top < o.bottom && o.top < part.bottom
+          expect(meets, `${p.id} meets ${JSON.stringify(o)}`).toBe(false)
+        }
+      expect(p.plate.left, `${p.id} plate in the frame`).toBeGreaterThanOrEqual(m.wrap.left)
+      expect(p.plate.right).toBeLessThanOrEqual(m.wrap.right)
+      expect(p.plate.bottom).toBeLessThanOrEqual(m.wrap.bottom)
+    }
+  })
+}
