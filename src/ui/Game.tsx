@@ -1005,6 +1005,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         card.style.setProperty('--y', `${y}px`)
         // Item 217: the name keeps clear of the strip the next card covers (a card's face never runs under it).
         card.style.setProperty('--lap', i < row.to - 1 ? `${Math.max(0, Math.round(-row.step))}px` : '0px')
+        // Plan item 398: the 'i' keeps clear of the next card even when the name takes the strip back (below).
+        card.style.setProperty('--lap-i', i < row.to - 1 ? `${Math.max(0, Math.round(-row.step))}px` : '0px')
         x += widths[i]! + row.step
       }
     })

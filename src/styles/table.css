@@ -3347,7 +3347,7 @@ html.no-animations .table-cath-line { animation: none; }
     box-shadow: 0 1px 2px rgb(var(--shadow-ink) / .3);
   }
   /* the 'i' rides the picture's top right, clear of the strip the next card covers (the seal holds the top left) */
-  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) > .tooltip-trigger { left: auto; right: calc(var(--lap, 0px) + 6px); top: 6px; }
+  .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) > .tooltip-trigger { left: auto; right: calc(var(--lap-i, var(--lap, 0px)) + 6px); top: 6px; }
   /* in rows the window is the card's left side: its 'i' sits at the window's foot, under the seal */
   .game-layout .table-hand[data-rows] .action-item:not(.action-family) > .tooltip-trigger { top: auto; bottom: 10px; }
 }
