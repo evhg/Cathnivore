@@ -682,7 +682,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const row = document.querySelector<HTMLElement>('.action-tray .actions')
     if (!row) return
     const cards: HTMLElement[] = []
-    if (!handOnTable && !isE2EHandFanOff() && matchMedia('(max-width: 1023.98px)').matches) {
+    // Plan item 368: on the phone counter (390x844 and taller) the hand is a plain row of narrow cards, three whole
+    // faces in view, not one face and a run of spines.
+    if (!handOnTable && !isE2EHandFanOff() && matchMedia('(max-width: 1023.98px)').matches && !matchMedia(PHONE_TABLE_CATH_QUERY).matches) {
       for (const c of Array.from(row.children) as HTMLElement[]) {
         if (c.matches('.action-head-later')) break
         if (c.matches('.action-item')) cards.push(c)
@@ -1096,8 +1098,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const s = strip.getBoundingClientRect()
     const r = item.getBoundingClientRect()
     if (r.left >= s.left - 1 && r.right <= s.right + 1) return
-    // Lands on the card's own snap point (the strip snaps to card starts).
-    const left = strip.scrollLeft + (r.left - s.left) - (parseFloat(getComputedStyle(strip).scrollPaddingInlineStart) || 0)
+    // Lands on the card's own snap point (the strip snaps to card starts). Plan item 368: on the phone counter, which
+    // holds three whole cards, it lands two cards earlier, so her card is the third and the two before it stay in view.
+    let anchor = item
+    if (matchMedia(PHONE_TABLE_CATH_QUERY).matches) {
+      const hand = Array.from(item.parentElement?.querySelectorAll<HTMLElement>(':scope > .action-item[data-hand-card]') ?? [])
+      anchor = hand[Math.max(0, hand.indexOf(item) - 2)] ?? item
+    }
+    const left = strip.scrollLeft + (anchor.getBoundingClientRect().left - s.left) - (parseFloat(getComputedStyle(strip).scrollPaddingInlineStart) || 0)
     strip.scrollTo({ left: Math.max(0, left), behavior: loadSettings().animations ? 'smooth' : 'auto' })
   }, [state, isDesktop])
   // The teammate's picks this turn, for the ledger beside the card.
@@ -2109,7 +2117,19 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 >
                   <span className="action-label">
                     {!short && Icon && <Icon size={18} />}
-                    {short ? text : <BuyVerb text={face} />}
+                    {short ? text : face.includes('\u00a0· ') ? (
+                      // Plan item 368: the region after the name ('Supply 1 Outlet · Brindle Hills') is its own span, so the
+                      // phone counter's narrow card can set it on a small line of its own, as a pick line.
+                      <>
+                        <BuyVerb text={face.slice(0, face.indexOf('\u00a0· '))} />
+                        <span className="action-region">
+                          <span className="action-region-dot">{'\u00a0· '}</span>
+                          {face.slice(face.indexOf('\u00a0· ') + 3)}
+                        </span>
+                      </>
+                    ) : (
+                      <BuyVerb text={face} />
+                    )}
                     {pick && (
                       <>
                         <span className="action-more" aria-hidden="true">…</span>
@@ -2544,7 +2564,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           (disabledSupplyBuyoutReason && !groups.has('supplyBuyout')) ? (
             <span className="action-head action-head-later" aria-hidden="true">
               {/* Plan item 225: with the hand on the table the rail's shelf is what she is saving for. */}
-              {handOnTable ? 'Saving for' : 'Not yet'}
+              {handOnTable || !isDesktop ? 'Saving for' : 'Not yet'}
             </span>
           ) : null}
           {pinnedInvest && investLater(pinnedInvest)}

@@ -5253,3 +5253,52 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .cath-dock + .active-producer .ledger-value { color: var(--wood-ink); }
   .action-tray .cath-dock + .active-producer .ledger-income { color: var(--wheat); }
 }
+
+/* Plan item 368 slice 2: on the counter the hand holds three whole cards at 390 wide (was two and a sliver): each card
+   about 100 px, its painted window a little shorter, its name in the band below. The not-yet deck is "Saving for". */
+@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+  .action-tray .actions { height: 116px; padding-top: 12px; padding-bottom: 4px; }
+  /* three whole cards and the next one's 30 px peek at 360 to 430 wide (gutter 8, gaps 8). The group spines between
+     them (Sell, Play) step aside for screen readers only: each card's frame is its family's colour already, and a
+     spine cost the next card its peek. The Saving for spine stays, the deck's label. */
+  .action-tray .actions { --cw: clamp(88px, calc((100vw - 64px) / 3 - 1px), 124px); }
+  .action-tray .actions > .action-head:not(.action-head-later) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .action-tray .actions .action-item,
+  .action-tray .actions .action-item:has(.action-pick, button[data-tight]) { --art-h: 53px; width: var(--cw); height: 100px; }
+  /* a card's region ('· Brindle Hills') takes the pick line's small line under the name */
+  .action-tray .actions .action-item[data-hand-card] > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label {
+    margin-top: calc(var(--art-h) + 1px);
+    line-height: 1.05;
+  }
+  .action-tray .actions .action-item[data-hand-card] .action-region {
+    display: block;
+    margin-top: 0;
+    font-size: var(--fs-label);
+    font-weight: 600;
+    color: color-mix(in srgb, currentColor 72%, transparent);
+  }
+  .action-tray .actions .action-item[data-hand-card] .action-region-dot { display: none; }
+  /* as on a big turn's tiles (item 83), the scheme's clay frame and picture say "Scheme"; the button's name keeps it */
+  .action-tray .actions .action-item[data-hand-card] .action-prefix { display: none; }
+  /* the Saving for deck keeps its full-size cards (its face-up card's reason and price need the width), set 2 px lower */
+  .action-tray .actions .action-head-later ~ .action-item.action-item { width: 152px; height: 96px; }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]) { translate: 0 3px; }
+  /* the count of cards to the right hangs from the counter's lip as a tab, above the cards, not on one */
+  .action-tray .actions-well:has(> .actions[data-more-right]:not([data-more-right='0']))::before {
+    top: -13px;
+    bottom: auto;
+    right: 8px;
+    translate: none;
+    height: 18px;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    background: var(--wheat);
+    box-shadow: 0 2px 3px rgb(var(--shadow-ink) / .3), inset 0 0 0 1px var(--wood-lo);
+    color: var(--ink-on-fixed-fill);
+  }
+}
