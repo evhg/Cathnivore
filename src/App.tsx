@@ -39,6 +39,7 @@ import { SCENES as FRIENDS_IN_LOW_PLACES_SCENES } from './content/story/friends-
 import { SCENES as KINGSMARKET_SCENES } from './content/story/kingsmarket'
 import type { GameConfig, GameState } from './engine/types'
 import { dailyMarket, dailyRecord, dailyStreak } from './content/daily'
+import { countdownText, dailyRitual } from './content/dailyRitual'
 import { LAYOUTS } from './content/layouts'
 import { PRODUCERS } from './content/producers'
 import { MARKET_EVENTS } from './engine/marketEvent'
@@ -518,8 +519,23 @@ function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mo
         )}
       </span>
       <small>
-        {/* Plan item 296: each '·' binds to the word before it, so a wrap never opens a line on a lone dot. */}
-        {LAYOUTS[daily.layout].name}{'\u00a0· '}{pair}{'\u00a0· '}{MARKET_EVENTS[daily.marketEvent].name}
+        {/* Plan item 296: each '·' binds to the word before it, so a wrap never opens a line on a lone dot. Plan item
+            385: on a phone the tag keeps the map's name and gives its status and countdown (the desktop's ritual slip
+            says those); the pair and event stay for screen readers. */}
+        <span className="title-daily-where">
+          {LAYOUTS[daily.layout].name}
+          <span className="title-daily-more">
+            {'\u00a0· '}
+            {pair}
+            {'\u00a0· '}
+            {MARKET_EVENTS[daily.marketEvent].name}
+          </span>
+        </span>
+        <span className="title-daily-when">
+          {played ? (played.won ? 'Won · new in\u00a0' : 'Played · new in\u00a0') : 'Open · '}
+          {countdownText(dailyRitual(new Date(), rec).nextInMs).replace(' ', '\u00a0')}
+          {played ? '' : '\u00a0left'}
+        </span>
       </small>
     </button>
   )

@@ -488,6 +488,14 @@ html.no-animations .title-screen * {
   color: var(--ink-muted);
 }
 
+.title-daily small > span { display: block; }
+.title-daily-more { display: inline; }
+.title-daily-when { display: none; }
+/* Plan item 385: a phone's half-width tag says where and when, two short lines (the pair and event for screen readers) */
+@media (max-width: 600px) {
+  .title-daily small > .title-daily-when { display: block; margin-top: 2px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .title-daily-more { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 .title-daily-no {
   font-variant-numeric: tabular-nums;
   color: var(--ink-muted);
