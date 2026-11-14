@@ -5312,3 +5312,35 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .cath-dock-line { padding: 4px 8px; line-height: 1.16; }
   .action-tray .cath-dock + .active-producer { padding-block: 5px 6px; }
 }
+
+/* Plan item 368 slice 4: the Saving for pile names its cards. Under the face-up card each tucked card shows only its
+   left 34 px edge, which was a blank dashed strip; now its name runs up that edge like a book's spine, so the deck
+   says what it holds without a swipe. The rest of the face stays hidden until the card is lifted out. */
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group { opacity: 1; }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label {
+    opacity: 1;
+    position: absolute;
+    inset: 6px auto 6px 2px;
+    width: 30px;
+    margin: 0;
+    overflow: hidden;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    /* two lines at most, a longer name ends in an ellipsis on the second */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    text-align: start;
+    /* two lines across the 32 px edge, so 'Supply: remove 1 Outlet' isn't cut to 'Supply: rem…' */
+    text-wrap: balance;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    line-height: 15px;
+    color: var(--ink-muted);
+  }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label :is(.action-verb, .action-region, .action-prefix) { display: none; }
+  /* the card's picture keeps its box (it is the card's art) but stays out of the spine */
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label > svg { position: absolute; inset: 0 auto auto 0; width: 20px; height: 20px; visibility: hidden; }
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-why-not { display: none; }
+}

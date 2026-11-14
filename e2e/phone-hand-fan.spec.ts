@@ -13,7 +13,8 @@ for (const seed of ['103', '2103']) {
     await page.locator('.action-tray [data-hand-card]').first().waitFor()
     await page.waitForTimeout(600)
     const cards = await page.evaluate(() =>
-      [...document.querySelectorAll('.action-tray .action-item > button:first-child .action-label')].map((el) => ({
+      // Plan item 368: a tucked Saving for card's name is a two-line spine, clamped by design; the face-up card counts.
+      [...document.querySelectorAll('.action-tray .action-item > button:first-child .action-label')].filter((el) => !el.closest('.action-head-later ~ .action-item:not([data-hand-card]):not(:last-child)')).map((el) => ({
         name: el.textContent?.trim() ?? '',
         over: el.scrollWidth - el.clientWidth,
         fs: parseFloat(getComputedStyle(el).fontSize),

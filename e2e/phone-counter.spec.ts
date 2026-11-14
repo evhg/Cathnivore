@@ -118,3 +118,40 @@ test('a 375x667 phone has the counter, three whole cards and the board above it'
   expect(m.whole).toBeGreaterThanOrEqual(3)
   expect(m.cardsBottom).toBeLessThanOrEqual(m.tabsTop + 1)
 })
+
+// Plan item 368 slice 4: the Saving for pile names its tucked cards on their edges (a spine each), legible (AA),
+// inside the 34 px strip that shows, and the face-up card keeps its full face.
+for (const scheme of ['light', 'dark'] as const) {
+  test(`the Saving for pile's tucked cards show their names on the spine (${scheme})`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone', 'the upright phone')
+    await page.emulateMedia({ colorScheme: scheme })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.game .cath-dock').waitFor()
+    await page.evaluate(() => {
+      const a = document.querySelector<HTMLElement>('.action-tray .actions')!
+      a.style.scrollBehavior = 'auto'
+      a.scrollLeft = document.querySelector<HTMLElement>('.action-head-later')!.offsetLeft - 16
+    })
+    await page.waitForTimeout(400)
+    const spines = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.action-head-later ~ .action-item:not([data-hand-card]):not(:last-child)')].map((c) => {
+        const label = c.querySelector<HTMLElement>('.action-label')!
+        const r = label.getBoundingClientRect()
+        const cr = c.getBoundingClientRect()
+        // the strip that shows runs from this card's left to the next card's (+3 px for the pile's 2 degree tilt)
+        const next = (c.nextElementSibling as HTMLElement).getBoundingClientRect()
+        return { box: [r.left, r.right, cr.left, next.left], text: label.innerText.trim(), opacity: getComputedStyle(label.closest('.action-label-group')!).opacity, w: r.width, inEdge: r.left >= cr.left - 1 && r.right <= next.left + 3 }
+      }),
+    )
+    expect(spines.length).toBeGreaterThanOrEqual(3)
+    for (const s of spines) {
+      expect(s.text.length).toBeGreaterThan(0)
+      expect(s.opacity).toBe('1')
+      expect(s.inEdge, JSON.stringify(s.box)).toBe(true)
+    }
+    const axe = await new AxeBuilder({ page }).include('.action-head-later ~ .action-item:not(:last-child) .action-label').withRules(['color-contrast']).analyze()
+    expect(axe.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([])
+  })
+}
