@@ -46,3 +46,23 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     }
   })
 }
+
+// Plan item 394: a short rail (a fresh campaign, one card open) spreads its stops down the column: no empty block
+// under chapter 6 beside the map's tally.
+test('campaign at 1440x900: a short rail reaches the tally strip', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Campaign', { exact: false }).first().click()
+  await expect(page.locator('[data-ledger]')).toBeVisible()
+  const m = await page.evaluate(() => {
+    const rail = document.querySelector('.campaign-screen > .cmp-path')!
+    const stops = rail.querySelectorAll(':scope > .cmp-stop')
+    const last = stops[stops.length - 1]!.getBoundingClientRect()
+    const led = document.querySelector('[data-ledger]')!.getBoundingClientRect()
+    return { scrolls: rail.scrollHeight > rail.clientHeight + 1, gap: led.bottom - last.bottom }
+  })
+  if (m.scrolls) return // a rail that already fills its column scrolls instead
+  expect(m.gap).toBeLessThanOrEqual(72)
+  expect(m.gap).toBeGreaterThanOrEqual(-4)
+})
