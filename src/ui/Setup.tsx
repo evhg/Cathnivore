@@ -458,9 +458,10 @@ function SetupCath({ producers, difficulty, event }: { producers: readonly Produ
   const cath = setupCath(producers, difficulty, PRODUCER_NAMES)
   return (
     <div className="setup-cath-stand">
-      {/* Plan item 367: her bubble carries the week's event, then her advice on the pick. */}
+      {/* Plan item 367: her bubble carries the week's event, then her advice on the pick. Plan item 390: as one thing
+          she says (two quoted lines in one bubble read as two speakers). */}
       <p className="setup-cath-says">
-        <span className="says-event">“{event}”</span> <span className="says-pick" aria-live="polite">“{cath.line}”</span>
+        “<span className="says-event">{event}</span> <span className="says-pick" aria-live="polite">{cath.line}</span>”
       </p>
       <CathArt framing="half" expression={cath.expression} pose={SCREEN_POSE['cathnivore:setup']} animate />
     </div>

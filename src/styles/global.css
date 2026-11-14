@@ -4115,7 +4115,7 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
     align-self: stretch; min-height: 0; margin: 0; overflow: hidden; pointer-events: none;
   }
   .setup[data-steps] .setup-cath-says { position: relative; z-index: var(--z-raised); margin: 0 0 -14px; max-width: 100%; padding: 10px 14px; font-size: var(--fs-small); line-height: 1.35; }
-  .setup[data-steps] .setup-cath-says .says-event { display: block; margin-bottom: 4px; color: var(--soil); }
+  .setup[data-steps] .setup-cath-says .says-event { color: var(--soil); }
   .setup[data-steps] .setup-cath-stand .cath-art { width: 226px; margin-bottom: -6px; }
   /* The week's poster, held up at her side, over the counter's back edge. */
   .setup[data-steps] .market-event[data-flyer] {
