@@ -280,6 +280,15 @@ export function paintMarsh(ctx: CanvasRenderingContext2D, r: Rect, s: number, ra
   ctx.clip();
   ctx.fillStyle = "rgba(104,156,84,0.4)"; // Plan item 370: a living marsh green (was a grey 112,140,104).
   ctx.fillRect(r.x, r.y, r.w, r.h);
+  // Plan item 388: tussocks and wet hollows, darker and lighter clumps, so the marsh has the field's range of value
+  // (a flat fill read at half its contrast).
+  for (let i = 0; i < (r.w * r.h) / (s * s) * 0.7; i++) {
+    const dark = rand() < 0.55;
+    ctx.fillStyle = dark ? "rgba(46,88,40,0.3)" : "rgba(196,222,140,0.32)";
+    ctx.beginPath();
+    ctx.ellipse(r.x + rand() * r.w, r.y + rand() * r.h, s * (0.25 + rand() * 0.45), s * (0.12 + rand() * 0.2), rand() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
   // Samphire and sea lavender speckle.
   for (let i = 0; i < (r.w * r.h) / (s * s) * 14; i++) {
     ctx.fillStyle = rand() > 0.72 ? "rgba(168,128,214,0.55)" : "rgba(70,122,58,0.4)";
