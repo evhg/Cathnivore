@@ -301,3 +301,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 19:32 lane B (item 393): the one-row card width caps the overlap at about an eighth (a fifth covered the Sell card's coin at 1280); the hover lift stays 1.06x, as the cards' words are already 13-14 px.
 - 2026-11-14 19:50 lane B (item 392): handed back unstarted rather than half-built: the D plate needs panel height the 900 px panel doesn't have, and the phone fold needs the quiet-build logic reworked.
 - 2026-11-14 19:42 lane B: released the lock at 19:41 thinking it near :10; re-locked and reclaimed 392 for its phone half. Read `date -u` before wrapping up.
+- 2026-11-14 19:50 lane B (item 350): the portfolio's D wall widened to 702 px (340 px screens) at the cost of a smaller h1 (7.4rem cap) and a narrower lede; item 23's 'right half' rule in site.spec gave way to item 350's acceptance.
