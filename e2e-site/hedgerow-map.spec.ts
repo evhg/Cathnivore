@@ -663,3 +663,22 @@ test('plan item 372: on a phone each name sits by its coin with its padlock insi
     }
   }
 })
+
+// Plan item 372 (phone): at the end of the act with the level sheet, the gate the lane leaves by shows below the sheet.
+test('plan item 372: on a phone the sheet stops above the act gate', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
+  await seed(page, 20)
+  await page.locator('li.act-has-card .level-card').waitFor()
+  await page.evaluate(() => {
+    const li = document.querySelector('li.act-has-card')!
+    li.scrollIntoView({ block: 'end' })
+  })
+  await page.waitForTimeout(600)
+  const m = await page.evaluate(() => {
+    const li = document.querySelector('li.act-has-card')!
+    const gate = li.querySelector('.hedge-gate')!.getBoundingClientRect()
+    const card = li.querySelector('.level-card')!.getBoundingClientRect()
+    return { gateTop: gate.top, gateBottom: gate.bottom, cardBottom: card.bottom, vh: innerHeight }
+  })
+  expect(m.gateTop).toBeGreaterThanOrEqual(m.cardBottom)
+})

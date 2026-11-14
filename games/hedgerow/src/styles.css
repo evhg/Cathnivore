@@ -5509,3 +5509,10 @@ img.act-scene {
     font-size: 0.8em;
   }
 }
+
+/* Plan item 372 (phone): the sheet rides the act down to its end but stops above the hedge, so the gate the lane
+   leaves by is always in view at the act's foot (it used to end on the sheet, over the gate). */
+@media (max-width: 899.98px) {
+  #screen-select li.act.act-has-card:has(> .act-hedge) { padding-bottom: 48px; }
+  #screen-select li.act.act-has-card:has(> .act-hedge) > .level-card { margin-bottom: 0; }
+}
