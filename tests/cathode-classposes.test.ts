@@ -40,5 +40,5 @@ describe("NIGHT SHIFT class-pick poses (plan item 42)", () => {
         const d = poses[i]!.reduce((s, x, k) => s + Math.abs(x - (poses[j]![k] ?? 0)), 0);
         expect(d, `${CLASSES[i]} vs ${CLASSES[j]}`).toBeGreaterThan(0.05);
       }
-  });
+  }, 20_000); // about 2.5 s alone; it timed out at 5 s with the gates and e2e sharing the machine (2026-11-14)
 });
