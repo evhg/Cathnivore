@@ -1130,7 +1130,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
    so her line has room to show without a tap. */
 @media (max-width: 700px) and (orientation: portrait) {
   .cp-nameplate { font-size: calc(max(48px, calc(var(--fs-6) * 1.3)) * var(--np-fit, 1) * .6); } /* fs-ok px-ok: 60% of item 245's title */
-  .cp-dots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 4); align-self: stretch; margin: calc(var(--u) * 4) 0 calc(var(--u) * 6); }
+  .cp-dots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 4); align-self: stretch; margin: calc(var(--u) * 2) 0 calc(var(--u) * 2); }
   .cp-dot {
     display: grid;
     grid-template-rows: auto auto;
@@ -1139,12 +1139,12 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
     width: auto;
     height: auto;
     min-height: 44px; /* px-ok: tap target */
-    padding: calc(var(--u) * 4) 0 calc(var(--u) * 3);
+    padding: calc(var(--u) * 2) 0 calc(var(--u) * 3);
     border-bottom: calc(var(--u) * 3) solid rgb(var(--ink-rgb) / .18);
     color: var(--ink-2);
   }
   .cp-dot::before { content: none; }
-  .cp-dot-gun { display: block; width: 92%; height: calc(var(--u) * 24); opacity: .75; }
+  .cp-dot-gun { display: block; width: 92%; height: calc(var(--u) * 15); opacity: .75; }
   .cp-dot-gun svg { display: block; width: 100%; height: 100%; }
   .cp-dot-name {
     font: 700 max(14px, var(--fs-1))/1 var(--font-ui); /* fs-ok px-ok: the tab names at 14 px (plan item 375) */
