@@ -940,6 +940,42 @@ html.no-animations .campaign-screen * {
 }
 .cmp-pin-done .cmp-pin-n { fill: var(--paper-on-fixed-fill); }
 .cmp-pin-current .cmp-pin-n { fill: var(--ink-on-fixed-fill); }
+/* Plan item 373: the map's stops say where the campaign stands. A chapter not yet open is a sealed wax disc (a
+   muted seal with a crimped edge), the open one a lit gold pin with a slow pulse, a won one the co-op's green. */
+.cmp-pin-ahead .cmp-pin-disc {
+  fill: color-mix(in srgb, color-mix(in srgb, var(--clay-deep) 50%, var(--ink-muted)) 62%, var(--surface));
+  stroke: color-mix(in srgb, var(--clay-deep) 80%, var(--ink));
+  stroke-width: 2.4;
+  stroke-dasharray: 2.2 1.1;
+}
+.cmp-pin-ahead .cmp-pin-n { fill: color-mix(in srgb, var(--clay-deep) 55%, var(--ink)); }
+.cmp-pin-current .cmp-pin-disc { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wheat) 80%, transparent)); }
+.cmp-pin-pulse {
+  fill: none;
+  stroke: var(--wheat);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cmp-pin-pulse 2.4s ease-out infinite;
+}
+@keyframes cmp-pin-pulse {
+  from { transform: scale(0.75); opacity: 0.9; }
+  to { transform: scale(1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-pin-pulse { animation: cmp-pin-glow 2.4s ease-in-out infinite alternate; }
+}
+:root.reduce-motion .cmp-pin-pulse { animation: cmp-pin-glow 2.4s ease-in-out infinite alternate; }
+@keyframes cmp-pin-glow {
+  from { opacity: 0.25; }
+  to { opacity: 0.85; }
+}
+.cmp-map-lane .is-ahead { opacity: 0.35; }
+/* her marker when the presenter stands beside the map: a leaf pin, not a second Cath */
+.cmp-leaf-body { fill: var(--pasture-deep); stroke: var(--paper-on-fixed-fill); stroke-width: 1.2; }
+.cmp-leaf-leaf { fill: color-mix(in srgb, var(--wheat) 70%, var(--paper-on-fixed-fill)); }
+.cmp-leaf-vein { fill: none; stroke: var(--pasture-deep); stroke-width: 0.9; stroke-linecap: round; }
+.cmp-leaf-shadow { fill: color-mix(in srgb, var(--ink) 28%, transparent); }
 
 .cmp-map-cath svg { overflow: visible; filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 25%, transparent)); }
 

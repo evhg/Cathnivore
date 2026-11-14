@@ -157,9 +157,14 @@ export default function CampaignMap({
   const regionIds = Object.keys(MAP_AXIAL) as RegionId[]
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
   const litHomes = new Set(lit ? (CHAPTER_HOMES[lit] ?? []) : [])
+  // Plan item 373: on a desktop the large presenter stands beside the map, so her marker on it is a small leaf pin
+  // (one Cath on the screen); the phone, with her in the header, keeps the figure on the map.
   const cath = useMemo(
-    () => cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: CATH_SIZE.w, height: CATH_SIZE.h, animate: true }),
-    [allDone],
+    () =>
+      host
+        ? `<svg width="${CATH_SIZE.w}" height="${CATH_SIZE.h}" viewBox="0 0 28 42" class="cmp-leaf-pin" data-cath-marker=""><ellipse cx="10" cy="33" rx="5" ry="1.6" class="cmp-leaf-shadow"/><path d="M10 32 C4.5 24 2 19.5 2 14 A8 8 0 0 1 18 14 C18 19.5 15.5 24 10 32 Z" class="cmp-leaf-body"/><path d="M10 8.5 C6.6 10.8 6.6 16 10 18.8 C13.4 16 13.4 10.8 10 8.5 Z" class="cmp-leaf-leaf"/><path d="M10 10 V18" class="cmp-leaf-vein"/></svg>`
+        : cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: CATH_SIZE.w, height: CATH_SIZE.h, animate: true }),
+    [allDone, host],
   )
   const pins = chapters.map(pinOf)
   // The lane: a gentle curve from each pin to the next.
@@ -236,7 +241,12 @@ export default function CampaignMap({
           <path d={riverPath()} className="cmp-river-water" />
         </g>
         <path d={lane} className="cmp-map-road" aria-hidden="true" />
-        <path d={lane} className="cmp-map-lane" aria-hidden="true" />
+        {/* Plan item 373: the route's dots run bright up to the open stop and dim after it. */}
+        <g className="cmp-map-lane" aria-hidden="true">
+          {legs.map((leg, j) => (
+            <path key={j} d={leg.d} className={j >= here ? 'is-ahead' : undefined} />
+          ))}
+        </g>
         <g className="cmp-map-trail" aria-hidden="true">
           {legs.map((leg, j) => (leg.walked ? <path key={j} d={leg.d} data-leg={j} /> : null))}
         </g>
@@ -276,6 +286,7 @@ export default function CampaignMap({
           const state = done ? 'done' : i === here ? 'current' : 'ahead'
           return (
             <g key={chapter.id} className={`cmp-pin cmp-pin-${state}`} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`} onClick={() => onStart(chapter)} aria-hidden="true">
+              {state === 'current' && <circle r={15} className="cmp-pin-pulse" />}
               <circle r={11} className="cmp-pin-disc" />
               <text y={4} className="cmp-pin-n">
                 {i + 1}

@@ -258,3 +258,27 @@ test("every region's landmark is large enough to read", async ({ page }) => {
   const min = page.viewportSize()!.width < 600 ? 28 : 48
   for (const s of sizes) expect(s.px, `${s.kind} ${s.px.toFixed(1)} px`).toBeGreaterThanOrEqual(min)
 })
+
+// Plan item 373: at a desktop the map's stops say where the campaign stands (locked, open and won differ by 20%+ in
+// luminance), and Cath appears once: the presenter beside the map, her marker on it a leaf pin.
+test('desktop: the map stops show locked, open and won apart, and one Cath', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
+  await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })), KEY)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.locator('.cmp-map-cath [data-cath-marker]')).toHaveCount(1)
+  const lum = await page.evaluate(() => {
+    const L = (c: string) => {
+      const v = (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number)
+      const s = c.startsWith('color(') ? v : v.map((x) => x / 255)
+      const lin = s.map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4))
+      return 0.2126 * lin[0]! + 0.7152 * lin[1]! + 0.0722 * lin[2]!
+    }
+    const of = (state: string) => L(getComputedStyle(document.querySelector(`.cmp-pin-${state} .cmp-pin-disc`)!).fill)
+    return { done: of('done'), current: of('current'), ahead: of('ahead') }
+  })
+  const apart = (a: number, b: number) => Math.abs(a - b) / Math.max(a, b)
+  expect(apart(lum.done, lum.current), JSON.stringify(lum)).toBeGreaterThanOrEqual(0.2)
+  expect(apart(lum.done, lum.ahead), JSON.stringify(lum)).toBeGreaterThanOrEqual(0.2)
+  expect(apart(lum.current, lum.ahead), JSON.stringify(lum)).toBeGreaterThanOrEqual(0.2)
+})
