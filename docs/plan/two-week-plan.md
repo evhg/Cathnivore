@@ -3725,7 +3725,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hand-phone, phone-counter, board-scale and quick-game specs pass; shots P (390x844, 375x667) light and dark, before and after.
 - **Size:** 2
 
-## 388. [ ] Hedgerow 2D: the margins painted to the field's standard, not stamps on a flat fill
+## 388. [ ] Hedgerow 2D: the margins painted to the field's standard, not stamps on a flat fill *(lane B, in progress)*
 - **Why:** items 345 and 370 lifted the field; item 202's margins now read a generation behind it. `plan1114d/hedge-l34-2d-D`: the same lollipop willow stamped about 9 times down the left (20-230 x 110-890), punts at odd angles cut by the board's edge (980-1075 x 355-385, 970-1060 x 650-680, 965-1045 x 860-885); `hedge-l21-2d-D` right margin (800-1080 x 75-890): salt pans drawn as upright framed pictures (885-980 x 100-160, 325-400, 645-705), a creek that starts and ends nowhere (895-960 x 160-500), beach huts with no ground; the left sea flat with identical reed clumps and boats. `hedge-l34-2d-P` (140-390 x 595-650) the same. The margins are about half the D board.
 - **Build:**
   - Ground under every margin: shore with wet sand, foam and a tide line; banks with shoulders and reflections; Saltmarsh's pans flat in the ground with clay rims.
