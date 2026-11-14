@@ -3497,7 +3497,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** one e2e case per fix at P and D where measurable; shots before and after.
 - **Size:** 2
 
-## 370. [ ] Hedgerow 2D: Saltmarsh's field in daylight, matching the 3D view *(lane A, in progress)*
+## 370. [ ] Hedgerow 2D: Saltmarsh's field in daylight, matching the 3D view *(lane A, in progress)* *(notes, 2026-11-14 04:35 lane A: level 21 has no twist (levels.ts's twist table skips 20-21), and Saltmarsh's theme grass (#9fbf88/#86a978, theme.ts) is lighter than Rivermead's, so the grey comes after the theme: suspects are item 202's Saltmarsh margin set (margins.ts `saltmarsh`), the plot looks for act 3 (plotlook.ts) and the light/vignette pass at the end of `paintBackground` (theme.ts: a #d9f0f4 wash at 0.14 and a teal vignette at 0.33). Start by painting l21 with each of those off and measuring the field's mean saturation at D)*
 - **Why:** `plan1114a/hedge-l21-2d-D` (20-1080 x 75-890): the whole board sits under a flat grey-green veil: olive crops, a putty lane, and a sea (20-280 x 75-890) of one slate tone with sailboat stickers on it. The same level in 3D (`hedge-l21-3d-D`) is bright and lit, so the two views disagree, and the 2D board looks dimmed rather than "the table is the hero". `hedge-l21-2d-P` (0-390 x 50-680) is the same. Rivermead (`hedge-l34-2d-D`) is lit, so it's the act's palette, not the 2D renderer. The veil also flattens the value steps between plot, lane and verge (360-800 x 230-420).
 - **Build:**
   - Find what greys out act 3 in 2D (a weather tint, the biome palette or an overlay) and give Saltmarsh a daylight palette: the coast in colour (cool sky light, sand and sea-lavender verges), not a grey wash.
