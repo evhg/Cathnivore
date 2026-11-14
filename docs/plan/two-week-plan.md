@@ -3483,7 +3483,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots P (390x844 and 375x667) light and dark, before and after.
 - **Size:** 2
 
-## 369. [ ] The bugs from the 2026-11-14 04:25 critique, fixed as one batch
+## 369. [ ] The bugs from the 2026-11-14 04:25 critique, fixed as one batch *(lane A, in progress)*
 - **Why:** small faults from `plan1114a` (check each against the DOM before fixing; the pixel boxes are estimates):
   - `games-D` (280-375 x 110-300): the stall Cath about 190 px tall where item 352 gave 360 px (or the shot caught the entrance mid-draw); the lower valance (95-1345 x 455-505) overlaps the posters' tops, the Cathnivore logotype and 18+ badge a few px under the scallops.
   - `games-P` (20-370 x 180-235): Cath's grey italic quote over the lit town looks under 4.5:1.
