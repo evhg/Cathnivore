@@ -5394,6 +5394,8 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .actions .action-item[data-hand-card] > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label {
     margin-top: calc(var(--art-h) + 1px);
     line-height: 1.05;
+    /* the 1.05 lines' glyphs ran 2 px past a two-line name's box ('Price War in Brindle Hills'; critique103) */
+    padding-bottom: 2px;
   }
   .action-tray .actions .action-item[data-hand-card] .action-region {
     display: block;

@@ -5529,8 +5529,11 @@ img.act-scene {
   #screen-select li.act.act-has-card .lcard-thumb { justify-self: center; }
   #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { height: 120px; }
   #screen-select li.act.act-has-card .lcard-body { align-self: start; }
+  /* one vehicle a row in the 300 px docked card: in two 130 px columns 'Same-Day van' and 'Cargo quadcopter' wrapped
+     (critique103 keeps each name on one line) */
   #screen-select li.act.act-has-card .lcard-enemies {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
     padding: 8px 0 0;
     border-left: 0;
     border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent);
@@ -5545,7 +5548,6 @@ img.act-scene {
   #screen-select li.act .node.level-boss .level-num { width: 84px; height: 84px; }
   #screen-select li.act .node .level-name { font-size: var(--fs-body); }
   #screen-select li.act.act-has-card .lcard-cath-face { margin: 0; }
-  #screen-select li.act.act-has-card .lcard-foe b { white-space: normal; }
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; }
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
   #screen-select li.act.act-has-card .lcard-play { width: 100%; }

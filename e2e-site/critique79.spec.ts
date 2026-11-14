@@ -43,7 +43,12 @@ test('Cathnivore Setup P: no dead band pooled above Start', async ({ page, hasTo
   await page.goto('/cathnivore/')
   await page.getByText('Quick Game').click()
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
-  const gap = await page.evaluate(() => {
+  const gap = await page.evaluate(async () => {
+    // Plan item 349: the phone setup scrolls a little under its docked (sticky) Start; at the scroll's end Start stands
+    // in its own place after the last block, which is where a dead band would show.
+    for (let e: Element | null = document.querySelector('.setup'); e; e = e.parentElement) e.scrollTop = e.scrollHeight
+    document.scrollingElement!.scrollTop = document.scrollingElement!.scrollHeight
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
     const start = document.querySelector('.setup > button.setup-start')!.getBoundingClientRect()
     // The seed folds under the map's Advanced toggle now, so measure from the last block drawn above Start.
     const above = [...document.querySelectorAll('.setup > *')].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0 && r.bottom <= start.top + 1)

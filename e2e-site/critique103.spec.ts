@@ -22,8 +22,10 @@ test("Hedgerow map: the level card's stars read at 18 px or more, and no vehicle
   )
   expect(rows.length).toBeGreaterThan(0)
   for (const r of rows) expect(r.h, r.text ?? '').toBeLessThanOrEqual(22)
-  // A fourth vehicle sits in the grid's second column, never alone on a row of its own.
-  if (rows.length === 4) expect(Math.abs(rows[3]!.top - rows[2]!.top)).toBeLessThanOrEqual(1)
+  // A fourth vehicle sits in the grid's second column, never alone on a row of its own (in a two-column grid; the
+  // 300 px card docked beside the act lists one vehicle a row).
+  const cols = await card.locator('.lcard-enemies').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
+  if (rows.length === 4 && cols === 2) expect(Math.abs(rows[3]!.top - rows[2]!.top)).toBeLessThanOrEqual(1)
 })
 
 test('Cathnivore game: no playable action card cuts its label', async ({ page }) => {
