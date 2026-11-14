@@ -85,5 +85,5 @@ describe("NIGHT SHIFT class-pick silhouettes (plan item 278)", () => {
         expect(iou, `${CLASSES[i]} vs ${CLASSES[j]}`).toBeLessThan(0.85);
       }
     console.log(ious.join(", "));
-  });
+  }, 20_000); // about 3 s alone; it timed out at 5 s in the 2026-11-14 release gates on a loaded machine
 });
