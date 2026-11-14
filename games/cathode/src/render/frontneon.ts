@@ -72,15 +72,11 @@ export function buildFrontNeon(phone: boolean): FrontNeon {
     [[[0, 0], [0.31, 1], [0.62, 0]], [[0.13, 0.36], [0.49, 0.36]]],
   ];
   const adv = 0.86;
-  const x0 = -0.31;
+  // The word's ink runs from x0 to x0 + (3 * adv + 0.62 + SLANT) * CAP: centred on the sign.
+  const x0 = -((3 * adv + 0.62 + SLANT) * CAP) / 2;
   glyphs.forEach((g, i) => g.forEach((stroke) => line(stroke, x0 + i * adv * CAP, -CAP / 2)));
-  // The crescent, left of the word: two arcs meeting at the horns.
-  const arc = (cx: number, cy: number, rad: number, a0: number, a1: number, n = 14): Array<[number, number]> =>
-    Array.from({ length: n + 1 }, (_, i) => {
-      const a = a0 + ((a1 - a0) * i) / n;
-      return [cx + Math.cos(a) * rad, cy + Math.sin(a) * rad];
-    });
-  tube([...arc(-0.48, 0, 0.13, Math.PI * 0.3, Math.PI * 1.7), ...arc(-0.42, 0, 0.1, Math.PI * 1.5, Math.PI * 0.5, 12)]);
+  // Plan item 385: no crescent before the word. Small beside the capitals it read as a letter whichever way it
+  // faced ('CLUNA' opening onto the L, 'DLUNA' turned round), so the word stands alone, centred in its border.
   // The border: a rounded rectangle.
   const rr: Array<[number, number]> = [];
   const W2 = 0.65, H2 = 0.25, R = 0.08;
