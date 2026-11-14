@@ -791,6 +791,9 @@ if (SANDBOX)
     people3d: () => (renderer && is3D(renderer) ? renderer.people3d() : null),
     faceToCamera: () => (renderer && is3D(renderer) ? renderer.faceToCamera() : null),
     depotShutter3d: () => (renderer && is3D(renderer) ? renderer.depotShutter() : null),
+    // Plan item 391: the depots' doors in either view: 'open' while a round's convoy leaves, else 'shut'.
+    depotDoors: () =>
+      renderer && is3D(renderer) ? (renderer.depotShutter() > 0.5 ? "open" : "shut") : document.querySelector(".depot[data-door-open]") ? "open" : "shut",
     gateSignBoxes: () => (renderer as { gateSignRects?: () => unknown[] } | null)?.gateSignRects?.() ?? [],
     // Plan item 31: the range ring the 2D field drew last frame (tests compare it with the tower's range).
     ring: () => (renderer && "shownRing" in renderer ? renderer.shownRing : null),

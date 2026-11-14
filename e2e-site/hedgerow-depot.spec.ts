@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 // larger and on no plot; its departures board carries the next round's count (no 'N coming' pill there); the rep
 // on its balcony is smug, gleeful after a round that leaked and rattled after a clean one.
 type G = { wave: number; phase: string; leaks?: number; level: { cols: number; rows: number; path: number[][] } }
-type W = { hedgerow?: { game: () => G | null; cellCenter: (c: number, r: number) => { x: number; y: number } | null; gateQueue: () => { plates: unknown[] } | null } }
+type W = { hedgerow?: { depotDoors?: () => string; sendWave?: (g: unknown, b: boolean) => void; game: () => G | null; cellCenter: (c: number, r: number) => { x: number; y: number } | null; gateQueue: () => { plates: unknown[] } | null } }
 
 test('the depot stands by the gate with the next round on its board, and the rep reacts to the round', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the phone field leaves no dry margin for a full depot')
@@ -113,5 +113,11 @@ test('a sea-side gate has its depot on a jetty, whole inside the canvas', async 
     return { inside: d.left >= c.left && d.right <= c.right && d.top >= c.top && d.bottom <= c.bottom, plates }
   })
   expect(m.inside).toBe(true)
-  expect(m.plates).toBe(0)
+  expect(m.plates).toBe(0)  // The doors roll up as a round's convoy leaves.
+  expect(await page.evaluate(() => (window as unknown as W).hedgerow!.depotDoors!())).toBe('shut')
+  await page.evaluate(() => {
+    const h = (window as unknown as W).hedgerow!
+    h.sendWave!(h.game(), true)
+  })
+  await expect.poll(() => page.evaluate(() => (window as unknown as W).hedgerow!.depotDoors!()), { timeout: 20_000 }).toBe('open')
 })
