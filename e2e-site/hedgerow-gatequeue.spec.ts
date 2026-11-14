@@ -18,7 +18,7 @@ async function open(page: Page, level: number): Promise<void> {
 const queue = (page: Page) => page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.gateQueue())
 const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
 
-for (const level of [1, 12, 34, 40]) {
+for (const level of [1, 12, 21, 34, 40]) {
   test(`level ${level}: the next round queues at the gate, inside the field, and Go clears it`, async ({ page }) => {
     test.setTimeout(90_000)
     await open(page, level)
@@ -37,6 +37,8 @@ for (const level of [1, 12, 34, 40]) {
     // Plan item 200: the plate's text is 12 px or more (the pill is 1.5 times its font); at P it was 11 px.
     for (const p of q.plates) expect(p.h, JSON.stringify(p)).toBeGreaterThanOrEqual(18)
     for (const p of q.plates) for (const l of q.leads) expect(overlaps(p, l), `plate ${JSON.stringify(p)} on lead ${JSON.stringify(l)}`).toBe(false)
+    // Plan item 380: the waiting vehicles never overlap one another, round a bend too (level 34's Same-Day vans did).
+    q.leads.forEach((a, i) => q.leads.slice(i + 1).forEach((b) => expect(overlaps(a, b), `lead ${JSON.stringify(a)} on lead ${JSON.stringify(b)}`).toBe(false)))
     // Plan item 256: queued vehicles are drawn 1.4x (40 px or more at D, 28 on a phone), and the first to pull out
     // carries a name plate, inside the field and on no other vehicle or plate. Plan item 266: only on a lane running
     // across (side-on sprites overhung the plots on one running up or down); there item 105's floor, 28 / 20.
