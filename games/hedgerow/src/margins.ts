@@ -602,13 +602,15 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
         ctx.quadraticCurveTo(l + j(), (t + btm) / 2, l + s * 0.06 + j(), t + j());
         ctx.closePath();
       };
-      // The bank: trodden mud, darker at its outer foot.
-      ctx.fillStyle = "#9c8f74";
+      // The bank: trodden mud, feathered into the marsh round it (plan item 388: a hard dark outline round a solid
+      // bank framed each pan like a picture standing on the grass).
+      ctx.save();
+      ctx.shadowColor = "rgba(120,108,82,0.7)";
+      ctx.shadowBlur = s * 0.16;
+      ctx.fillStyle = "rgba(146,134,106,0.78)";
       pan(0);
       ctx.fill();
-      ctx.strokeStyle = "rgba(60,50,35,0.45)";
-      ctx.lineWidth = Math.max(1, s * 0.025);
-      ctx.stroke();
+      ctx.restore();
       // The brine, sunk below the bank (a shadow along its top edge).
       const g = ctx.createLinearGradient(x0, y0, x0 + p.w, y0 + p.h);
       g.addColorStop(0, "#86b9c4");
