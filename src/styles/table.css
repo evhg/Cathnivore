@@ -3162,7 +3162,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand .action-item .action-more { display: none; }
   .game-layout .table-hand .action-item .action-pick {
     display: block;
-    font-size: var(--fs-label);
+    /* Item 385: 'Pick a region' and 'in Brindle Hills' were the hand's smallest print (12.5 px); 13 px at least. */
+    font-size: max(var(--fs-label), .8125rem);
     font-weight: 600;
     color: color-mix(in srgb, var(--ink-on-fixed-fill) 72%, var(--wheat));
   }
