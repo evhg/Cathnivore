@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-14 04:14 UTC
-
 
 
 
@@ -3424,3 +3422,123 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
     - `ns-title-P` "No case open" (32-104 x 241-253) and "4 MORE NAMES" (15-104 x 708-719) about 10-11 px, low-contrast grey on black.
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
+
+## 365. [ ] Runnel: the lesson field painted at the size it is shown, under a morning sky
+- **Why:** `plan1114a/runnel-D`: the lesson draws four tiles about 230 px wide (575-1220 x 120-735), but each has only a 60 px daily tile's detail. Tile 3 (905-1105 x 320-530) is a blank buff hex with one log channel, three tiny arrows and one sprout; tile 4 (1010-1215 x 500-720) is buff with faint hatching. The player's first close look at the game is empty paper. Behind it the valley is murky dusk: a mauve-grey sky (390-1410 x 25-250) over low-chroma olive fields. `runnel-P` has the same sparse tiles (150-300 x 340-630) and grey-purple sky (0-390 x 225-330).
+- **Build:**
+  - Detail tiers by drawn tile size (under 80, 80-160, over 160 px). In the large tier: furrow rows along the channel with a sprig each, field stones, a stake fence on dry edges, wildflower tufts; channels with plank edges and pebbles; the sluice hub with grain and bolts.
+  - A watered big tile fills its furrows with glinting water and its sprouts rise in a 400-800 ms stagger (a fade under reduced motion).
+  - The lesson runs at a golden morning (warm sky, saturated greens); the daily's dusk and weather start after the pull-back (item 170).
+  - The daily's small tiles stay as they are.
+- **Accept:**
+  - At D each non-spring lesson tile has 15+ `[data-detail]` elements; at P 8+.
+  - A watered big tile's mean luminance differs 10%+ from a dry one.
+  - Mean OKLCH chroma of the valley outside the board in the lesson up 30%+ against plan1114a at P and D.
+  - Channels stay 3:1+ (runnel-tiles); the daily's board SVG node count at most 1.6x today's.
+  - The runnel lesson, lesson-hand, one-cath and front specs pass; key art re-shot if its sources change.
+  - Shots P and D, lesson and daily, light and dark, before and after.
+- **Size:** 2
+
+## 366. [ ] Cathnivore desktop play: the head of the table as Hollowell's gantry and a labelled tally, not three white form boxes
+- **Why:** `plan1114a/cath-game-D`: the scoreboard (350-555 x 20-80) is four bare numbers ("1/10", "10", "10", "0") beside 20 px icons; a new player can't tell Trust from Land. The three plan cards (565-1190 x 15-85) are paper-white boxes with a thin grey border, the players' material: items 173 and 301's acrylic doesn't read at this size, and VISION's two-materials contrast is lost. The tab rail (1355-1420 x 15-245) is grey app pills with about 11 px caps. The table's top 90 px reads as a web toolbar.
+- **Build:**
+  - A chalk tally slate in the top-left: each figure with its word ("Round 1 of 10", "Trust 10", "Land 10", "Goodwill 0"), tabular figures, small-caps labels.
+  - Hollowell's gantry: one glossy orange-and-chrome bar with a specular strip and a drop shadow on the paper, holding three backlit billboards, each with a 32 px+ icon, its region chips and its countdown as lit pips; no overshoot in its motion.
+  - The right rail as three wooden drawer tabs on the table frame, 13 px+ labels and a stamped count badge.
+  - The board's box doesn't move.
+- **Accept:**
+  - Every tally figure has a visible label 12 px+ at 4.5:1; tab labels 13 px+ at 4.5:1.
+  - The plan card fill 12+ ΔE2000 from the paper token, with a gradient in its computed background-image.
+  - The board's bounding box within 8 px of today's at 1440x900 and 1280x800; no page scroll.
+  - plan-strip, plan-cards, rival, board-scale, desktop-no-scroll and ui-css-lint pass; P unchanged.
+  - Shots D at 1440x900 and 1280x800, light and dark, before and after.
+- **Size:** 2
+
+## 367. [ ] Cathnivore desktop: Quick Game setup as one table in three steps, with Cath behind the counter
+- **Why:** `plan1114a/cath-setup-D` is still a framed settings form (120-1320 x 60-890): five pill-tag labels ("MODE", "DIFFICULTY · HOLLOWELL'S THREAT", "PRODUCERS (PICK 2)", "MAP", "SEED (OPTIONAL)"); a header strip (130-1305 x 70-190) cramming mode, difficulty, a three-row threat table and a quote into 120 px; the producer cards (440-1090 x 265-560) leave an empty well (1095-1295 x 265-560); Cath (1135-1280 x 470-770) stands on bare gingham with the Start plank (1095-1295 x 775-850) over her lower body and hand; the market event is a separate column (130-390 x 210-615), away from the Cath who voices it. Item 349 reworks only the phone.
+- **Build:**
+  - The D counterpart of item 349: three numbered steps across the table: Who (mode as two chairs, then the producers with the picked pair raised), Where (the map miniatures), How hard (difficulty tags, the threat lines under the chosen one only).
+  - Cath at half length behind a counter on the right, holding the market event as a poster; her line carries the event and the pick advice.
+  - Start as a plank on the counter in front of her, never over her; Seed behind "Advanced", as at P.
+  - Every control and test id stays.
+- **Accept:**
+  - No pill-tag form labels; headings are step numerals plus words.
+  - Start's box doesn't meet Cath's figure box; Cath 300 px+ tall.
+  - All text 13 px+; fits at 1440x900 and 1280x800 with no scroll.
+  - setup-desktop, quick-game, setup-maps, setup-placecards and ui-css-lint pass; P untouched.
+  - Shots D light and dark, before and after.
+- **Size:** 2
+
+## 368. [ ] Cathnivore phone play: one counter under the board, not four stacked strips, with the hand in view
+- **Why:** `plan1114a/cath-game-P`: four separately framed strips sit under the board: Cath's line (8-380 x 537-605), the farm stats (8-380 x 612-660), the hand (0-390 x 668-782) and the tab bar (785-844), about 300 px (35% of the screen) of stacked chrome. The hand shows two whole cards plus a 30 px "NOT YET" sliver (355-390 x 670-780), and the "9 more" pill (305-380 x 755-782) sits on the Injunction card. It reads as an app's panels, not a table edge.
+- **Build:**
+  - One wooden counter at the board's foot: Cath's portrait at its left end with her line chalked on the lip; the farm goods (crates, coins, rosette) as objects on its back edge.
+  - The hand fanned across the counter's front, every playable card's face and name in view; the not-yet cards behind a "Saving for" tab, the count pill off the cards.
+  - The tab bar unchanged; the board doesn't shrink.
+- **Accept:**
+  - At most 2 bordered containers between the board and the tab bar.
+  - With 3+ playable cards, 3+ card names fully visible at 390x844 without a swipe; no pill or badge meets a card box.
+  - The board at least today's height (about 420 px); tap targets 44 px+.
+  - hand-phone, fanned-hand, scoreboard and quick-game specs pass.
+  - Shots P (390x844 and 375x667) light and dark, before and after.
+- **Size:** 2
+
+## 369. [ ] The bugs from the 2026-11-14 04:25 critique, fixed as one batch
+- **Why:** small faults from `plan1114a` (check each against the DOM before fixing; the pixel boxes are estimates):
+  - `games-D` (280-375 x 110-300): the stall Cath about 190 px tall where item 352 gave 360 px (or the shot caught the entrance mid-draw); the lower valance (95-1345 x 455-505) overlaps the posters' tops, the Cathnivore logotype and 18+ badge a few px under the scallops.
+  - `games-P` (20-370 x 180-235): Cath's grey italic quote over the lit town looks under 4.5:1.
+  - `cath-game-D` (1200-1330 x 715-880): Injunction still under the Supply card, "njunction" clipped (item 364 listed it).
+  - `cath-setup-P` (258-372 x 680-722): the "Hard" tag runs to the screen's right edge.
+  - `runnel-P` (95-300 x 790-805): the hint line small grey on cream; the footbridge reads as a crate front at a glance (`runnel-D` 385-620 x 785-870).
+  - `ns-play-D`: Cath's line twice at rest (70-440 x 705-765 and as a subtitle 565-900 x 780-830); the Pin baton (625-660 x 330-765) longer than her leg; the slung Widowmaker crosses her right arm (750-865 x 215-475).
+  - `ns-title-D` (470-900 x 90-620): a soft grey disc behind Cath reads as a balloon, not a lamp glow; `ns-title-P` (25-200 x 500-575) LUNA sign 2x its D size with no wall, under the case-file lines; her hem vanishes under the List strip (170-330 x 640-760).
+  - `hedge-l34-2d-P`: queued vans half-transparent (10-130 x 195-330); `hedge-l21-3d-P`: gulls as big as a plot (220-250 x 315-355); `hedge-l21-3d-D`: the fallen oaks bigger than the farmhouse (470-525 x 255-330), a head through the depot roof (175-215 x 128-180).
+- **Build:** fix each at the root, or check and leave it with a reason here.
+- **Accept:** one e2e case per fix at P and D where measurable; shots before and after.
+- **Size:** 2
+
+## 370. [ ] Hedgerow 2D: Saltmarsh's field in daylight, matching the 3D view *(lane A, in progress)*
+- **Why:** `plan1114a/hedge-l21-2d-D` (20-1080 x 75-890): the whole board sits under a flat grey-green veil: olive crops, a putty lane, and a sea (20-280 x 75-890) of one slate tone with sailboat stickers on it. The same level in 3D (`hedge-l21-3d-D`) is bright and lit, so the two views disagree, and the 2D board looks dimmed rather than "the table is the hero". `hedge-l21-2d-P` (0-390 x 50-680) is the same. Rivermead (`hedge-l34-2d-D`) is lit, so it's the act's palette, not the 2D renderer. The veil also flattens the value steps between plot, lane and verge (360-800 x 230-420).
+- **Build:**
+  - Find what greys out act 3 in 2D (a weather tint, the biome palette or an overlay) and give Saltmarsh a daylight palette: the coast in colour (cool sky light, sand and sea-lavender verges), not a grey wash.
+  - The sea with depth: a shallow sand-to-teal shelf at the shore, drifting wave lines, boat wakes.
+  - A short cast shadow in 2D from the same side as item 360's 3D key: barns, the farmhouse, hedges, folk and towers.
+  - Value steps between lane, bed and verge from tokens.
+  - If sea-fret stays as a level twist, it is a moving fog layer on that level only.
+- **Accept:**
+  - On l21 at D the field's mean HSV saturation is 1.3x today's or more, and its mean luminance within 10% of the 3D shot's.
+  - Lane-to-bed luminance contrast 1.25:1 or more at 6 sampled points.
+  - Barns, the house and placed towers each have a shadow on the same side (read from the 2D draw, unit or e2e).
+  - l34's 2D shots change by 3% of pixels or less; hedgerow field/folk/twist specs and ui-css-lint pass; keyart re-shot.
+  - Shots of l21, l25 and l34 at P and D, before and after.
+- **Size:** 2
+
+## 371. [ ] NIGHT SHIFT: the named targets sculpted to Cath's standard
+- **Why:** `plan1114a/ns-title-D`: the only targets with faces are crude. Tomas Reed's case-file photo (420-565 x 285-460) and Julian Crisp's booking photo (60-185 x 595-735) are faceted grey primitives: flat skin, eyes and mouth as lines, a box for a beanie. They sit 150 px from Cath (900-1100 x 260-900), who has had 20+ sculpt and shading items, so the antagonists read as mannequins next to her. `ns-title-P` (15-150 x 730-805) is the same at thumbnail size. These are the people the game asks you to hunt (VISION 5).
+- **Build:**
+  - Each named target's head from the same pipeline as Cath's: cheek and brow planes, real eye geometry, hair or hat meshes, a jaw and age that suit the character, shaded with her ink shader.
+  - A signature wardrobe read in the booking crop (Reed's pea coat and wool beanie, Crisp's apron and rubber collar, the clinic target's coat and green-ink pen).
+  - The booking photos (item 321) rebuilt with a flash key, a height-chart backdrop, grain and flash falloff. Withheld targets keep their bar; their silhouettes come from the new sculpts.
+  - The same models in the missions, so the photo matches the man you meet.
+- **Accept:**
+  - Each target head has 3x today's vertex count or more; its face crop's luminance standard deviation is 2x today's or more.
+  - Pairwise silhouette IoU of the booking photos 0.7 or less.
+  - A unit test that the photo and the mission model share their builder.
+  - cathode-perf within budget, run alone; the listwall, list-strike, dossier and front specs pass.
+  - Shots of the title and the List at P and D, and a mission encounter, before and after.
+- **Size:** 3
+
+## 372. [ ] Hedgerow map: the act framed whole, the level card docked beside the land, not over it
+- **Why:** `plan1114a/hedge-menu-D`: the level card (190-1250 x 603-785) covers the act's lower third; the act's ten stops are packed into two rows (200-1260 x 315-585) while the top 40% of the panel (0-1440 x 60-300) is pale empty sky. The next act's banner and its "Beyond the hedge" card are cut at the fold (145-995 x 810-900). Locked stops are a row of identical beige medallions with the same padlock. `hedge-menu-P`: names sit on the far side of the road from their stops and padlocks float apart from both ("Golden Hour" 15-100 x 465-480 belongs to stop 28 at 125-180 x 455-505); the bottom sheet (5-385 x 600-690) hides the act's end and the gate.
+- **Build:**
+  - At D, one act per screen with scroll-snap: the stops fill the panel from about 18% to 72% of its height; the sky cropped to a band that holds the act's landmarks.
+  - The level card docked in a right-hand column at 1200 px and wider (or a slim bar under the land), so no stop or road sits under it.
+  - Locked stops in Hollowell grey with a corporate seal; the next playable stop in full colour with a slow pulse; won stops with a tilled-earth ring and their stars.
+  - On the phone, each name and lock one tag on the stop's side with a leader; the sheet never hides the gate (the map scrolls the gate above it).
+- **Accept:**
+  - At D no stop's rect meets the level card's; the act's stops span 50%+ of the visible map height.
+  - The next-act banner is wholly in view or wholly out (a scroll-snap e2e check).
+  - At P each label within 12 px of its stop, the lock inside the tag, the gate visible above the sheet at the map's end.
+  - Locked and playable stops differ in mean saturation 2x or more.
+  - hedgerow-map, level-card and catdock specs and the axe scans pass; shots of acts 1 and 3 at P and D, before and after.
+- **Size:** 2
