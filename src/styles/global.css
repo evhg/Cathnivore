@@ -2201,7 +2201,8 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .difficulty-sheet dl > div { display: block; padding: 2px 0 0 10px; border-bottom: 0; }
   .setup .difficulty-sheet .is-changed::before { left: 0; top: 9px; width: 6px; height: 6px; margin-top: 0; background: var(--hollowell); }
   .setup .difficulty-sheet dt { font-size: var(--fs-label); letter-spacing: 0.02em; }
-  .setup .difficulty-sheet dd { font-size: var(--fs-label); line-height: 1.2; }
+  /* Plan item 394: the values at 13 px (12 px read small under their caps labels on a phone). */
+  .setup .difficulty-sheet dd { font-size: .8125rem; line-height: 1.2; }
 
   /* Map: three miniature boards on a shelf; the seed folds behind Advanced. */
   .setup .layout-picker { margin: 4px 0 0; padding-bottom: 8px; gap: 6px; position: relative; }

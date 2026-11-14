@@ -427,7 +427,7 @@ function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] 
   const n = DIFFICULTY_SETTINGS.normal
   const rows: Array<[string, string, boolean]> = [
     ['Public Trust', `starts at ${s.publicTrust}`, s.publicTrust !== n.publicTrust],
-    ['Lost Land', `${s.lostLandPool} tokens to lose`, s.lostLandPool !== n.lostLandPool],
+    ['Lost Land', `${s.lostLandPool} to lose`, s.lostLandPool !== n.lostLandPool],
     [
       'Kingsmarket',
       `${s.kingsmarketOutlets} Outlet${s.kingsmarketOutlets === 1 ? '' : 's'}${s.kingsmarketBuyouts ? `, ${s.kingsmarketBuyouts} Buyout` : ', no Buyout'}`,
