@@ -60,9 +60,8 @@ test('campaign at 1440x900: a short rail reaches the tally strip', async ({ page
     const stops = rail.querySelectorAll(':scope > .cmp-stop')
     const last = stops[stops.length - 1]!.getBoundingClientRect()
     const led = document.querySelector('[data-ledger]')!.getBoundingClientRect()
-    return { scrolls: rail.scrollHeight > rail.clientHeight + 1, gap: led.bottom - last.bottom }
+    return { gap: led.bottom - last.bottom }
   })
-  if (m.scrolls) return // a rail that already fills its column scrolls instead
   expect(m.gap).toBeLessThanOrEqual(72)
   expect(m.gap).toBeGreaterThanOrEqual(-4)
 })
