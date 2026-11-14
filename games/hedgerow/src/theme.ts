@@ -1299,6 +1299,15 @@ function paintDecor(
     }
     return false;
   };
+  // Plan item 390: a painted gate sign (a gate with no depot) keeps its patch of margin clear: a moored sailboat sat
+  // under level 21's HOLLOWELL sign.
+  ctx.save();
+  const signs = (level.path2 ? [level.path, level.path2] : [level.path])
+    .filter((pth) => !depotSides(level, pth, L).length)
+    .map((pth) => gateSignRect(level, pth, L, ctx));
+  ctx.restore();
+  const onSign = (x: number, y: number) =>
+    signs.some((g) => x > g.sx - s * 0.5 && x < g.sx + g.sw + s * 0.5 && y > g.sy - s * 0.3 && y < g.sy + g.sh + s * 0.9);
   const water = theme.water;
   const inWater = (x: number, y: number) => {
     if (!water) return false;
@@ -1319,7 +1328,7 @@ function paintDecor(
     const x = rand() * L.width;
     const y = rand() * (L.height + s * 0.4);
     if (x > gx0 && x < gx1 && y > gy0 && y < gy1) continue;
-    if (nearLane(x, y)) continue;
+    if (nearLane(x, y) || onSign(x, y)) continue;
     const inMargin = margins.some((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h);
     let pick = rand() * totalW;
     let kind: Decor = weights[0]![0];
