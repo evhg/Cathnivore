@@ -1607,8 +1607,10 @@ export function buildGround(level: Level): Ground {
     depot.scale.setScalar(0.8);
     depot.rotation.y = -Math.PI / 2;
     const gx = gate.position.x, gz = gate.position.z;
-    const spots: Array<{ x: number; z: number }> = [];
-    for (let z = 0.5; z < level.rows; z += 1) spots.push({ x: -1.1, z }, { x: level.cols + 1.1, z });
+    const spots: Array<{ x: number; z: number; near?: number }> = [];
+    // Plan item 391: and hard by the field's west and east edges (0.75 out, its flank on the verge's first strip), for
+    // a frame that crops the verge (at D level 1's east depot stood a fifth past the canvas's edge); a cell dearer.
+    for (let z = 0.5; z < level.rows; z += 1) spots.push({ x: -1.1, z }, { x: level.cols + 1.1, z }, { x: -0.75, z, near: 1 }, { x: level.cols + 0.75, z, near: 1 });
     for (let x = -0.5; x <= level.cols + 0.5; x += 1) spots.push({ x, z: -1.9 });
     // Beside the gate or the lane's first six cells, where the round queues (further off, it reads as another
     // lane's), and off every gate.
@@ -1624,8 +1626,8 @@ export function buildGround(level: Level): Ground {
     const near = spots
       .filter((sp) => dist(sp) <= 4.6)
       .filter((sp) => [level.path, level.path2].every((p) => !p || Math.hypot(sp.x - gateAt(p).x, sp.z - gateAt(p).z) > 1.3))
-      .sort((a, b) => dist(a) - dist(b));
-    depot.userData.spots = near.map((sp) => ({ ...sp, y: heightAt(sp.x, sp.z), d: dist(sp) }));
+      .sort((a, b) => dist(a) + (a.near ?? 0) - dist(b) - (b.near ?? 0));
+    depot.userData.spots = near.map((sp) => ({ x: sp.x, z: sp.z, y: heightAt(sp.x, sp.z), d: dist(sp) + (sp.near ?? 0) }));
     const first = near[0] ?? { x: -1.1, z: 0.5 };
     depot.position.set(first.x, heightAt(first.x, first.z), first.z);
     depot.userData.lane = depots.length;

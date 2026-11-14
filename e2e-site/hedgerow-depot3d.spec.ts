@@ -15,7 +15,8 @@ type HG = {
 }
 const meet = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
 
-for (const level of [21, 34]) {
+// Plan item 391: levels 1 and 40 too (the first level's gate, the last act's).
+for (const level of [1, 21, 34, 40]) {
   test(`the 3D depot stands in frame with the count on its fascia (level ${level})`, async ({ page, hasTouch }) => {
     test.setTimeout(150_000)
     await page.goto('/hedgerow/?sandbox=1')
@@ -59,6 +60,14 @@ for (const level of [21, 34]) {
     if (d.y < r.canvas.y) {
       const seen = { x: d.x, y: r.canvas.y, w: d.w, h: d.y + d.h - r.canvas.y }
       expect(meet(r.plate, seen) / (seen.w * seen.h)).toBeLessThan(0.05)
+    }
+    // Plan item 391: the count is the depot's own board, stood on its roof's front edge: its posts' foot inside
+    // the depot's box, not a pill floating beside it.
+    if (d.y >= r.canvas.y) {
+      const foot = r.plate.y + r.plate.h + 7
+      expect(foot, `board ${JSON.stringify(r.plate)} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y)
+      expect(foot).toBeLessThan(d.y + d.h)
+      expect(meet(r.plate, d)).toBeGreaterThan(0)
     }
     for (const dep of r.depots) {
       if (r.cath) expect(meet(dep, r.cath)).toBe(0)

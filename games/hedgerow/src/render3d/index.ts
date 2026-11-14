@@ -2771,7 +2771,9 @@ export class Renderer3D {
         const blocked = [...signs, ...taken, ...(cath ? [cath] : [])].reduce((a, c) => a + meet(r, c), 0) / area;
         // Off the frame weighs most, then over Cath, a sign or the other depot, then over the field; the gate's
         // distance (in cells) settles the rest.
-        const score = (1 - inside) * 40 + blocked * 30 + field * 12 + sp.d * 0.6;
+        // Plan item 391: off the frame weighs double what it did (40): at D on level 1 a fifth of the depot stood past
+        // the canvas's right edge (8) rather than lean its roof over the lane's first row from the north verge.
+        const score = (1 - inside) * 90 + blocked * 30 + field * 12 + sp.d * 0.6;
         if (!best || score < best.score) best = { sp, score, r };
       }
       if (!best) continue;
