@@ -3641,7 +3641,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots l21 and l34 at P and D before and after.
 - **Size:** 2
 
-## 381. [ ] NIGHT SHIFT phone pick: Cath at hero size on the stage, the tab guns readable
+## 381. [ ] NIGHT SHIFT phone pick: Cath at hero size on the stage, the tab guns readable *(lane B, in progress)*
 - **Why:** `plan1114c/ns-play-P` (2x): Cath is about 180x585 (290-470 x 245-830), some 290 CSS px tall and under a quarter of the width, in an empty dark stage either side (0-290 and 520-780 x 150-830). Item 375's tab guns are grey 25x6 CSS px silhouettes on black (935-948 band), too small and faint to tell apart, so the tabs read as text only (they were cut to keep her face at 45 px).
 - **Build:**
   - The stage camera in so her figure fills 330-360 CSS px of the stage at 390x844 (cropped at mid-shin if needed), her face 50 px+.
