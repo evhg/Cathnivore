@@ -7,8 +7,9 @@ type G = { wave: number; phase: string; leaks?: number; level: { cols: number; r
 type W = { hedgerow?: { game: () => G | null; cellCenter: (c: number, r: number) => { x: number; y: number } | null; gateQueue: () => { plates: unknown[] } | null } }
 
 test('the depot stands by the gate with the next round on its board, and the rep reacts to the round', async ({ page, hasTouch }) => {
-  test.skip(hasTouch, 'level 21 has no margin for a depot on a phone')
-  await page.goto('/hedgerow/?2d&sandbox=1&level=21')
+  test.skip(hasTouch, 'the phone field leaves no dry margin for a full depot')
+  // Plan item 380: level 21's gate faces the sea, where no depot stands now; level 34's first gate is on dry ground.
+  await page.goto('/hedgerow/?2d&sandbox=1&level=34')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   const depot = page.locator('[data-depot]').first()
   await expect(depot).toBeAttached()
