@@ -6,7 +6,7 @@ import { entrySide, nearSides, type Side } from "./depot";
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
-import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, placeMargin, recordMargin, seeded, type Placed, type Rect } from "./margins";
+import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, pieceLook, placeMargin, recordMargin, seeded, withLooks, type Look, type Placed, type Rect } from "./margins";
 
 export type Decor =
   | "oak"
@@ -1196,13 +1196,14 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
     const wr = { x: wx0, y: wy0, w: wx1 - wx0, h: wy1 - wy0 };
     if (wr.w > s * 1.3 && wr.h > s * 1.3) pieces.push(...placeMargin(set, [wr], s, level.id * 977 + 5, keepOut, set.water));
   }
+  withLooks(pieces, level.id * 313 + 3);
   for (const p of [...pieces].sort((a, b) => a.y - b.y)) paintMarginPiece(ctx, p, s, rand);
   recordMargin({ act, set: set.name, pieces });
   return rects;
 }
 
 function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
-  varied(ctx, p.kind, p.x, p.y + p.h / 2, rand, () => {
+  varied(ctx, p.x, p.y + p.h / 2, p.look ?? pieceLook(p.kind, rand), () => {
     // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
     if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
     else if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
@@ -1210,20 +1211,9 @@ function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, r
   });
 }
 
-/** Plan item 388: what grows may face either way and lean a little; built things stand square. */
-const GROWN = new Set<string>(["willow", "oak", "heather", "deadtree", "tree", "reeds", "bush", "hedge", "pine", "birch", "orchard", "gorse", "tuft"]);
-const LEANS = new Set<string>(["willow", "oak", "deadtree", "tree", "pine", "birch", "orchard"]);
-
-/**
- * Plan item 388: no two copies of a piece drawn alike (the same lollipop willow ran nine times down level 34's
- * margin): each is seeded a flip (what grows), a lean of up to 4 degrees about its foot (trees) and a small shift in
- * brightness and saturation, all about its foot (x, footY).
- */
-function varied(ctx: CanvasRenderingContext2D, kind: string, x: number, footY: number, rand: () => number, draw: () => void): void {
-  const flip = GROWN.has(kind) && rand() < 0.5 ? -1 : 1;
-  const lean = LEANS.has(kind) ? (rand() - 0.5) * 0.14 : 0;
-  const light = 0.9 + rand() * 0.2;
-  const sat = 0.85 + rand() * 0.3;
+/** Plan item 388: draws a piece with its look (flip, lean, tint) about its foot (x, footY). */
+function varied(ctx: CanvasRenderingContext2D, x: number, footY: number, look: Look, draw: () => void): void {
+  const { flip, lean, light, sat } = look;
   ctx.save();
   ctx.translate(x, footY);
   if (lean) ctx.rotate(lean);
@@ -1386,7 +1376,7 @@ function paintDecor(
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
   items.sort((a, b) => a.y - b.y);
-  for (const it of items) varied(ctx, it.kind, it.x, it.y, rand, () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
+  for (const it of items) varied(ctx, it.x, it.y, pieceLook(it.kind, rand), () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
 }
 
 function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {

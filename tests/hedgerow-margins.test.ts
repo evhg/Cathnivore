@@ -1,7 +1,7 @@
 // Plan item 202: Hedgerow 2D's margin placer: seeded, inside its rects, clear of keep-outs and of each other, and
 // never two identical pieces within 200 px.
 import { describe, expect, it } from "vitest";
-import { LIVE_PIECES, MARGIN_SETS, SAME_GAP, placeMargin } from "../games/hedgerow/src/margins";
+import { LIVE_PIECES, MARGIN_SETS, SAME_GAP, placeMargin, withLooks } from "../games/hedgerow/src/margins";
 
 const set = MARGIN_SETS[2]!;
 const cases = [
@@ -98,4 +98,25 @@ describe("margin billboards", () => {
     }
     expect(MARGIN_SETS[2]!.pieces.some((p) => p.kind === "saltpan")).toBe(true);
   });
+  // Plan item 388: the same lollipop willow ran nine times down level 34's margin. No sprite drawn more than twice
+  // with an identical transform (kind, size, flip, lean, tint), and what grows faces both ways.
+  for (const [si, m] of Object.entries(MARGIN_SETS))
+    if (m)
+      it(`set ${si} (${m.name}): no piece drawn alike more than twice`, () => {
+        const counts = new Map<string, number>();
+        let flipped = 0;
+        let grown = 0;
+        for (const [i, c] of cases.entries()) {
+          const out = withLooks(placeMargin(m, c.rects, c.cell, 31 + i, []), 5 + i);
+          for (const p of out) {
+            const l = p.look!;
+            const key = [p.kind, p.w.toFixed(1), p.h.toFixed(1), l.flip, l.lean.toFixed(3), l.light.toFixed(2), l.sat.toFixed(2)].join();
+            counts.set(key, (counts.get(key) ?? 0) + 1);
+            if (l.lean !== 0 || l.flip === -1) grown++;
+            if (l.flip === -1) flipped++;
+          }
+        }
+        expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
+        if (grown > 4) expect(flipped).toBeGreaterThan(0);
+      });
 });

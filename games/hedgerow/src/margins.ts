@@ -188,6 +188,28 @@ export interface Rect {
   h: number;
 }
 
+/** Plan item 388: a piece's seeded variation: a flip (what grows), a lean about its foot (trees), a tint. */
+export interface Look {
+  flip: 1 | -1;
+  lean: number;
+  light: number;
+  sat: number;
+}
+/** What grows may face either way and lean a little; built things stand square. */
+const GROWN = new Set<string>(["willow", "oak", "heather", "deadtree", "tree", "reeds", "bush", "hedge", "pine", "birch", "orchard", "gorse", "tuft"]);
+const LEANS = new Set<string>(["willow", "oak", "deadtree", "tree", "pine", "birch", "orchard"]);
+export function pieceLook(kind: string, rand: () => number): Look {
+  const flip = GROWN.has(kind) && rand() < 0.5 ? -1 : 1;
+  const lean = LEANS.has(kind) ? (rand() - 0.5) * 0.14 : 0;
+  return { flip, lean, light: 0.9 + rand() * 0.2, sat: 0.85 + rand() * 0.3 };
+}
+/** Gives each placed piece its look, from its own seed (so the ground and decor streams are unchanged). */
+export function withLooks(pieces: Placed[], seed: number): Placed[] {
+  const rand = seeded(seed);
+  for (const p of pieces) p.look = pieceLook(p.kind, rand);
+  return pieces;
+}
+
 export interface Placed {
   kind: MarginPiece;
   /** Centre, CSS px. */
@@ -195,6 +217,8 @@ export interface Placed {
   y: number;
   w: number;
   h: number;
+  /** Plan item 388: how this copy is drawn (flip, lean, tint), set by `withLooks`. */
+  look?: Look;
 }
 
 /** No two identical pieces closer than this (centre to centre, CSS px). */
