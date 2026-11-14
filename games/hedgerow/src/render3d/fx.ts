@@ -594,7 +594,8 @@ export class Birds {
       // Rooks flap in bursts and glide; bats never stop.
       const burst = this.bats ? 1 : Math.max(0, Math.sin(t * 0.6 + ph));
       const flap = Math.sin(t * (this.bats ? 22 : 9) + ph) * (0.25 + 0.75 * burst);
-      const s = this.bats ? 0.9 : 1.4;
+      // Plan item 369: gulls and rooks at a 0.34-cell span (1.4 drew them as big as a plot in the phone's close frame).
+      const s = this.bats ? 0.9 : 1.0;
       this.m.compose(this.pv, this.q, this.sv.set(s, s * flap, s));
       this.flock.setMatrixAt(i, this.m);
       // Its shadow on the field, a little down-sun, turned with it; it softens as the bird climbs.
