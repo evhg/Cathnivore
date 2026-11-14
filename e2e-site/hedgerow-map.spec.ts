@@ -711,3 +711,33 @@ test('plan item 372: the act in play fills the screen and the next banner is nev
     }
   }
 })
+
+// Plan item 377: at 1200 px+ the stops are drawn at a size the screen reads (72 px coins, 15 px names) and the band
+// between an act's rows holds the act's landmarks at scene scale (3+ props 100 px or wider).
+test('plan item 377: big stops, and landmarks at scene scale between the rows', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    for (const upTo of [13, 20]) {
+      await seed(page, upTo)
+      await page.locator('.level-card').waitFor()
+      await page.waitForTimeout(800)
+      const m = await page.evaluate(() => {
+        const li = document.querySelector('li.act-has-card')!
+        const coins = [...li.querySelectorAll('.stop .level-num')].map((e) => e.getBoundingClientRect().width)
+        const names = [...li.querySelectorAll('.stop .level-name')].map((e) => parseFloat(getComputedStyle(e).fontSize))
+        const stops = [...li.querySelectorAll('.stop')].map((e) => e.getBoundingClientRect())
+        const top = Math.max(...stops.slice(0, 5).map((r) => r.bottom))
+        const bottom = Math.min(...stops.slice(5).map((r) => r.top))
+        const big = [...li.querySelectorAll('.scenery .prop:not([hidden])')]
+          .map((e) => e.getBoundingClientRect())
+          .filter((r) => r.top >= top - 10 && r.bottom <= bottom + 10 && r.width >= 100).length
+        return { coin: Math.min(...coins), name: Math.min(...names), big }
+      })
+      const what = `${width}x${height} upTo ${upTo}`
+      expect(m.coin, what).toBeGreaterThanOrEqual(72)
+      expect(m.name, what).toBeGreaterThanOrEqual(15)
+      expect(m.big, what).toBeGreaterThanOrEqual(3)
+    }
+  }
+})

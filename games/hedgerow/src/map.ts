@@ -1606,11 +1606,17 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
   you.style.removeProperty("--you-dy");
   const own = you.closest(".node");
   const r = boxIn(you, trail);
-  const others = placed.filter((p) => p.node !== own).map((p) => boxIn(p.el, trail)).filter((b) => b.width > 0);
+  // Each name with 6 px to spare: it can still widen a little as the web font settles after this runs.
+  const others = placed
+    .filter((p) => p.node !== own)
+    .map((p) => boxIn(p.el, trail))
+    .filter((b) => b.width > 0)
+    .map((b) => ({ left: b.left - 6, right: b.right + 6, top: b.top - 6, bottom: b.bottom + 6, width: b.width + 12 }));
   const out = you.dataset.side === "right" ? 1 : -1;
   const step = Math.max(4, Math.round(r.width / 4));
   const tries: { dx: number; dy: number }[] = [];
-  for (let i = 0; i <= 8; i++) for (let j = 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
+  // (up to 14 steps out: item 377's larger desktop coins and one-line names leave her less room close in)
+  for (let i = 0; i <= 14; i++) for (let j = 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
   tries.sort((a, b) => a.dx + 1.5 * a.dy - (b.dx + 1.5 * b.dy));
   for (const { dx, dy } of tries) {
     const left = r.left + out * dx;
@@ -1732,7 +1738,10 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
   const h = trail.offsetHeight;
   if (w < 1 || h < 1) return none;
   // Plan item 274: phone props near their small-desktop size (0.72 drew a sheep at 12 px); crowded ones still shrink.
-  const k = phone ? 0.95 : w < 1000 ? 0.95 : 1.4;
+  // Plan item 377: in a desktop act a screen tall (item 372) the band between the rows holds the act's landmarks at
+  // scene scale (100-140 px), not scattered 60 px tokens (an ordinary act's trail is about 300 px); settle() still
+  // shrinks one with no room.
+  const k = phone ? 0.95 : h > 440 && w >= 880 ? 2.2 : w < 1000 ? 0.95 : 1.4;
   const sizes = props.map((el) => {
     const pw = Math.round(Number(el.dataset.w) * k);
     return { w: pw, h: Math.round((pw * 24) / 32) };

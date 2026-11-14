@@ -5500,6 +5500,12 @@ img.act-scene {
   /* stops stand about 220 px apart here, so a long name (Brand Ambassador) runs on one line, centred on its coin,
      instead of wrapping onto a second line across the lane leaving for the gate */
   #screen-select li.act .node .level-name { white-space: nowrap; max-width: none; }
+  /* Plan item 377: across a 1440 px act the stops are drawn at a size the screen reads, not 52 px dots: the coin
+     72 px (a boss 84) with its vignette scaled in, the name 15 px */
+  #screen-select li.act .node { max-width: 150px; }
+  #screen-select li.act .node .level-num { width: 72px; height: 72px; }
+  #screen-select li.act .node.level-boss .level-num { width: 84px; height: 84px; }
+  #screen-select li.act .node .level-name { font-size: var(--fs-body); }
   #screen-select li.act.act-has-card .lcard-cath-face { margin: 0; }
   #screen-select li.act.act-has-card .lcard-foe b { white-space: normal; }
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; }
