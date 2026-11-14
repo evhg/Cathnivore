@@ -3702,7 +3702,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 386. [ ] Cathnivore phone Campaign: the chapters picked on the map, one Cath, the open chapter above the fold *(lane A, in progress)*
+## 386. [x] Cathnivore phone Campaign: the chapters picked on the map, one Cath, the open chapter above the fold *(done 2026-11-14 16:10 lane A, 3ede8fcd: on a phone (600 px and under) a map stop or one of six 44 px chapter tabs opens its chapter in a one-card sheet under the map (a scroll-snap carousel of the cards, so a swipe works too); the stop's hit circle is 44 px at any map scale; the open card is compact (vignette 108x72, seals and Play on one row), so Play stands whole at 375x667 (586-630) and 390x844; the map marker is the leaf pin and Cath presents from the header behind the map's wooden lip; the progress bar hidden, the count kept. New campaign-map phone case at both sizes; campaign specs, accessibility, tutorial, chapter-resume pass at P and D; D unchanged; shots scratchpad c386)*
 - **Why:** `plan1114d/cath-campaign-P`: two Caths, the presenter a waist-cut figure floating beside her bubble with nothing under her (265-345 x 130-245) and a full-figure marker at Kingsmarket (123-147 x 415-453) (item 373 gave D a leaf pin; P kept the figure). Only chapter 1's card shows, cut at the fold (70-375 x 600-844); chapters 2-6 need a scroll, so the map's 22 px stops (e.g. 235-262 x 345-372) read as decoration, not a picker. Progress said twice: "0 of 6 chapters · 0 of 7 regions free" (16-235 x 95-110) over the segmented bar (16-195 x 118-132).
 - **Build:**
   - Item 373's language at P: a stop (44 px hit target) opens its chapter as a docked sheet under the map (plate, goal, cast, seals, Start), with a row of six chapter tabs in place of the scrolled list.
@@ -3713,7 +3713,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Hit targets 44 px+; the campaign specs and axe pass; D unchanged; shots P (390x844, 375x667) light and dark, before and after.
 - **Size:** 2
 
-## 387. [ ] Cathnivore phone play: the producers seated at the counter, named, the active one lit (P counterpart of 374)
+## 387. [ ] Cathnivore phone play: the producers seated at the counter, named, the active one lit (P counterpart of 374) *(lane A, in progress)*
 - **Why:** `plan1114d/cath-game-P`: Mara and Tomas are 60 px medallions pinned on the board's right edge, Mara's (320-380 x 150-215) over Saltmarsh's flank and Tomas's (322-380 x 455-520) over Shingle Bay's corner and the board's trim; no names, nothing says whose turn it is; Mara a third time as a 40 px disc on the counter (15-60 x 612-655). `cath-game-D` gives them half-length figures with name plates (item 374); on a phone they are tokens (VISION 5).
 - **Build:**
   - The medallions off the board: the two producers seated at the counter's right end opposite Cath, busts 72 px+ with a name plate, the active seat lit as item 374 does.
