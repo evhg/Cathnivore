@@ -492,7 +492,8 @@ main,
 /* Plan item 339: on a phone the swiped strip takes the left 56% (she keeps item 38's 40% of the screen) (a print and the next one's edge) and Cath stands
    beside it in the rest, so she never covers a print or its name. */
 @media (max-width: 1099.98px) {
-  .show-strip { width: 56%; padding-right: 0; }
+  /* Plan item 385: the strip's right edge fades out before Cath's column, a cue there's more to swipe, not a hard cut */
+  .show-strip { width: 56%; padding-right: 0; mask-image: linear-gradient(90deg, currentColor 0 80%, transparent 100%); }
   /* Plan item 350: the next print peeks 60 px or more, so the strip reads as one to swipe */
   .show-strip .show-card { width: 64%; }
   /* her desk stops at the screen's edge (past it the page scrolled sideways) */
