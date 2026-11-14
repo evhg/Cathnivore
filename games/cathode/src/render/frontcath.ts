@@ -2977,7 +2977,6 @@ float reliefShade( vec2 uv ) {
     kits.set(cls, g);
   };
   {
-    const gunMetal = kitMat(new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.75 }));
     // Ghost: the rifle's sling across her chest, the scoped barrel standing over her left shoulder.
     // Plan item 319 slice 53: the sling is flat webbing laid on the coat (`coatStrap`), not a round tube: the tube's
     // spline stood 3-5 cm off the coat and bowed out past her arm, so at the pick it read as a hose looping in front.
@@ -3041,13 +3040,25 @@ float reliefShade( vec2 uv ) {
     const holster = new THREE.BoxGeometry(0.06, 0.17, 0.045);
     holster.rotateZ(-0.12);
     holster.translate(-0.215, -0.19, 0.03);
-    const grip = new THREE.BoxGeometry(0.03, 0.075, 0.03);
-    grip.rotateZ(0.5);
-    grip.translate(-0.23, -0.07, 0.04);
     kitGroup("gunslinger", [
       [[gunbelt, holster], kitMat(new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.48, metalness: 0.04 }))],
-      [[grip, limb(V(-0.215, -0.1, 0.035), V(-0.2, -0.05, 0.035), 0.016, 0.016, 8)], gunMetal],
     ]);
+    // Plan item 362: the revolver in the holster is the inspect's own (it was a grip box and a stub): muzzle down in
+    // the leather, its grip, hammer and cylinder standing out of the top, the grip to her back, leaning with the holster.
+    {
+      const rev = buildGunDisplay("revolver", phone);
+      rev.name = "kit-gunslinger-revolver";
+      // the model's muzzle runs -z and its top +y: muzzle down (-y), grip to her back (-z), at the holster's lean
+      rev.rotation.set(-Math.PI / 2, Math.PI, -0.12, "ZYX");
+      rev.position.set(-0.222, -0.075, 0.03);
+      rev.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.castShadow = true;
+        tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
+      });
+      kits.get("gunslinger")!.add(rev);
+    }
     // Wirewitch: lit cables from her spine over both shoulders, down the coat's front to a deck on her belt.
     const deck = new THREE.BoxGeometry(0.07, 0.045, 0.022);
     deck.translate(0.06, 0.1, 0.098);
