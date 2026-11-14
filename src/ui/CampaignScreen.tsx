@@ -429,7 +429,21 @@ export default function CampaignScreen({
           </button>
         </div>
       )}
-      <ol className="chapter-list cmp-path">
+      <ol
+        className="chapter-list cmp-path"
+        onKeyDown={(e) => {
+          // Plan item 373: the arrow keys step between the chapters (Enter or Space then starts the focused one).
+          if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+          const cards = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('.cmp-card')]
+          const at = cards.indexOf(document.activeElement as HTMLButtonElement)
+          if (at < 0) return
+          const to = cards[Math.max(0, Math.min(cards.length - 1, at + (e.key === 'ArrowDown' ? 1 : -1)))]
+          if (to && to !== cards[at]) {
+            e.preventDefault()
+            to.focus()
+          }
+        }}
+      >
         {chapters.map((chapter, i) => {
           const isDone = completed.includes(chapter.id)
           const previous = chapters[i - 1]

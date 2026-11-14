@@ -309,3 +309,18 @@ test('desktop: every chapter fits the rail, the open one whole', async ({ page }
     }
   }
 })
+
+// Plan item 373: the arrow keys step between the chapters in the rail; Enter starts the focused one.
+test('the arrow keys step between chapters', async ({ page }) => {
+  await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })), KEY)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  const cards = page.locator('.cmp-card')
+  await cards.first().focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(cards.nth(1)).toBeFocused()
+  await page.keyboard.press('ArrowDown')
+  await expect(cards.nth(2)).toBeFocused()
+  await page.keyboard.press('ArrowUp')
+  await expect(cards.nth(1)).toBeFocused()
+})
