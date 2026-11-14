@@ -4161,3 +4161,26 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
 @media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
   .setup[data-steps] .setup-difficulty .segmented label.price-tag { transition: none; }
 }
+/* Plan item 367: a narrow desktop (1100-1279 px) gives the table more of the width; a short one (under 800 px tall,
+   a 1366x768 laptop) lets the pins drop their names (each keeps its week) so the table still fits. */
+@media (min-width: 1100px) and (max-width: 1279px) {
+  .setup[data-steps] { padding-inline: 18px; column-gap: 16px; grid-template-columns: minmax(0, 1fr) 236px; }
+  .setup[data-steps] .setup-table { padding-inline: 16px; column-gap: 20px; }
+  .setup[data-steps] .step-who { grid-template-columns: 128px minmax(0, 1fr); gap: 12px; }
+  .setup[data-steps] .step-hint { display: none; }
+  .setup[data-steps] .setup-table .producer-grid { gap: 8px; }
+  .setup[data-steps] .setup-table .producer-card .pc-stamp { white-space: normal; }
+  .setup[data-steps] .setup-difficulty .segmented label.price-tag { min-width: 0; padding-right: 10px; font-size: var(--fs-body); }
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 214px; }
+  .setup[data-steps] .market-event[data-flyer] { width: 136px; margin-left: -8px; }
+}
+@media (min-width: 1100px) and (max-height: 799px), (min-width: 1100px) and (max-width: 1279px) {
+  .setup[data-steps] .pin-tin .pin-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup[data-steps] .setup-table .producer-grid { padding-top: 24px; }
+}
+/* Plan item 367: on a tall desktop (1080 px+) the table ends at its content and the whole stall sits centred, rather
+   than stretching the cloth into an empty band. */
+@media (min-width: 1100px) and (min-height: 980px) {
+  .setup[data-steps] { min-height: 0; height: calc(50vh + 460px); padding-top: calc(50vh - 450px); }
+  .setup[data-steps] .setup-table { padding-block: 20px 22px; }
+}
