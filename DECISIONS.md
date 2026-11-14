@@ -300,3 +300,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 19:30 lane B (item 393): one row of the desktop hand is held to the right (centred, a short deal left 80+ px before the face-down pile); a deal too big for one row keeps item 312's centred shelves.
 - 2026-11-14 19:32 lane B (item 393): the one-row card width caps the overlap at about an eighth (a fifth covered the Sell card's coin at 1280); the hover lift stays 1.06x, as the cards' words are already 13-14 px.
 - 2026-11-14 19:50 lane B (item 392): handed back unstarted rather than half-built: the D plate needs panel height the 900 px panel doesn't have, and the phone fold needs the quiet-build logic reworked.
+- 2026-11-14 19:42 lane B: released the lock at 19:41 thinking it near :10; re-locked and reclaimed 392 for its phone half. Read `date -u` before wrapping up.
