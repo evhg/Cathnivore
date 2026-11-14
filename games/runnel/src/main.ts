@@ -1103,7 +1103,7 @@ function render(): void {
   document.querySelector('.foot')?.toggleAttribute('data-solved', game.solved)
   if (game.solved) {
     ui.hint.textContent = isDaily
-      ? `Next puzzle in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
+      ? `Solved. Next in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
       : `Solved in ${formatTime(game.elapsedMs)}.`
     ui.btnNew.hidden = false
     ui.btnNew.textContent = isDaily || isOrchard || mode === 'sunday' ? 'See result' : 'New puzzle'

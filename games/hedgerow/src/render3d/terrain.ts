@@ -843,6 +843,8 @@ export function buildGround(level: Level): Ground {
         for (let i = 0; i < 6; i++) tuft(c + 0.15 + deco() * 0.7, r + 0.15 + deco() * 0.7, 1.15);
         continue;
       }
+      // Plan item 360: a barn's cell is its farmyard (models.ts), not a bed.
+      if (level.barns?.some(([bc, br]) => bc === c && br === r)) continue;
       plots.push({ x: c + 0.5, y: h + 0.04, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
       {
         const look = lookOf(c, r);

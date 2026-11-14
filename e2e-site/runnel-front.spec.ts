@@ -10,12 +10,16 @@ test('a spill is marked, and a tap that opens one splashes', async ({ page }) =>
   await page.waitForSelector(cells)
   await page.waitForTimeout(600)
   const all = await page.locator(turnable).evaluateAll((gs) => gs.map((g) => [...g.parentElement!.children].indexOf(g)))
+  // (each tile through its turns, not one tap each: whether one tap opens a spill depends on the day's board, and
+  // on 2026-11-14 none of the first 24 single taps did)
   let splashed = false
-  for (const i of all.slice(0, 24)) {
-    await page.locator(cells).nth(i).click()
-    if (await page.locator('#board .puddle.splash[data-spill]').count()) {
-      splashed = true
-      break
+  outer: for (const i of all.slice(0, 24)) {
+    for (let turn = 0; turn < 3; turn++) {
+      await page.locator(cells).nth(i).click()
+      if (await page.locator('#board .puddle.splash[data-spill]').count()) {
+        splashed = true
+        break outer
+      }
     }
   }
   expect(splashed).toBe(true)

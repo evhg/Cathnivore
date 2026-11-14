@@ -2303,7 +2303,7 @@ export class Renderer3D {
         this.oakObjs.set("footbridge", fb);
       }
       for (const [c, r] of game.level.barns ?? []) {
-        const b = buildBarn();
+        const b = buildBarn(c * 7 + r * 13 + game.level.id);
         b.position.set(c + 0.5, this.height(c + 0.5, r + 0.5) + 0.02, r + 0.5);
         this.dynamic.add(b);
         this.oakObjs.set(`barn${c},${r}`, b);

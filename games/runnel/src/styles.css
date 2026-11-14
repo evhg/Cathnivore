@@ -3880,6 +3880,9 @@ body[data-mode='practice'] #week-slot {
      near ones (each field's delay bucket from valley.ts), the crop rows still drawn over the new green. */
   .vl-f { transition: fill 650ms var(--ease-out, ease-out); }
   #valley-paint[data-greened] .vl-f { fill: color-mix(in srgb, var(--wet-field) var(--vk), var(--paper)); }
+  /* (the crop rows deepen a shade past the fields, lush rather than merely green: under a golden-hour sky the crops
+     start darker, and greening them only to the field green left them barely changed) */
+  #valley-paint[data-greened] .vl-f-crop { fill: color-mix(in srgb, color-mix(in srgb, var(--wet-field) 76%, var(--tile-rim)) var(--vk), var(--paper)); }
   #valley-paint[data-greened] .vl-w1 { transition-delay: 90ms; }
   #valley-paint[data-greened] .vl-w2 { transition-delay: 180ms; }
   #valley-paint[data-greened] .vl-w3 { transition-delay: 270ms; }

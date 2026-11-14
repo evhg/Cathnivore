@@ -375,7 +375,7 @@ function pathSpecLook(kind: TowerKind, path: readonly number[]): 0 | 1 | null {
 
 /** A heap of cut thorn on the lane (a Blackthorn hedge's pile). */
 /** A red barn on a plot (H12): walls, a pitched roof and a pale door. */
-export function buildBarn(): THREE.Group {
+export function buildBarn(seed = 0): THREE.Group {
   // Plan item 81: boards, not a flat box: battens down each long wall, gable ends under the roof, a white-trimmed
   // door with its cross brace, a hayloft hatch and a ridge cap.
   const wall = matte("#a8402f");
@@ -404,11 +404,33 @@ export function buildBarn(): THREE.Group {
   const r2 = rot(box(0.7, 0.04, 0.34, roof, 0, 0, 0), -0.62, 0, 0);
   r2.position.set(0, 0.44, -0.1);
   g.add(r, r2, box(0.72, 0.03, 0.05, matte("#2f2c29"), 0, 0.535, 0));
-  g.traverse((o) => {
+  // Plan item 360 (as item 345 in 2D): the barn stands at the back of its own farmyard: packed earth over the whole
+  // cell, a post-and-rail fence along its front and one side, and a round bale by the gate.
+  g.scale.setScalar(0.84);
+  g.position.z = -0.13;
+  const yard = new THREE.Group();
+  yard.add(g);
+  const earth = matte("#a8895c");
+  const rail = matte("#7a5a3a");
+  yard.add(box(0.94, 0.012, 0.94, earth, 0, -0.006, 0));
+  for (const z of [0.22, 0.33]) yard.add(box(0.82, 0.004, 0.035, matte("#8d7048"), 0, 0.006, z));
+  const side = seed % 2 ? -1 : 1;
+  for (let i = 0; i <= 4; i++) {
+    yard.add(box(0.03, 0.13, 0.03, rail, -0.44 + i * 0.22, 0, 0.44));
+    if (i > 0) yard.add(box(0.03, 0.13, 0.03, rail, side * 0.44, 0, 0.44 - i * 0.22));
+  }
+  for (const y of [0.05, 0.1]) {
+    yard.add(box(0.9, 0.016, 0.016, rail, 0, y, 0.44));
+    yard.add(box(0.016, 0.016, 0.9, rail, side * 0.44, y, 0));
+  }
+  const bale = cyl(0.075, 0.075, 0.11, matte("#e0bd68"), -side * 0.3, 0.02, 0.28, 12);
+  bale.rotation.z = Math.PI / 2;
+  yard.add(bale);
+  yard.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
-  bake(g);
-  return g;
+  bake(yard);
+  return yard;
 }
 
 /** A fallen oak across a plot (H12): a long trunk with a split stump end and a tangle of leafy boughs. */
