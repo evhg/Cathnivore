@@ -350,8 +350,9 @@ function chair(id: string, wrap: Wrap = frame): string {
 <path d="M73 78 C72.6 100 75 118 81 130" stroke="${P}" stroke-width=".9" fill="none" opacity=".4"/>
 <!-- the Candor pin in red -->
 <path d="M70 196 L76 190 L82 196 L76 202 Z" fill="${RED}"/>
-<!--set--><!-- the window behind him throws his front into shadow: only the rim and the glasses keep the light -->
-<g fill="#06070a" opacity=".9"><path d="M18 240 L22 200 C36 180 60 172 76 168 L100 182 L124 168 C140 172 164 180 178 200 L182 240 Z"/><path d="M84 124 L116 124 L118 160 L100 184 L82 160 Z"/><path d="M72 84 C72 54 84 40 100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 72 84 Z"/><path d="M73 84 C64 80 61 100 65 111 C67 118 74 118 76 112 Z M127 84 C136 80 139 100 135 111 C133 118 126 118 124 112 Z"/><path d="M69 84 C65 52 80 31 102 31 C124 31 137 52 131 84 Z"/></g>
+<!-- the window behind him throws his front into shadow: only the rim and the glasses keep the light. The booking
+     flash doesn't lift it either (his file says "No face on file"): the face under it shows only as faint planes. -->
+<g fill="#06070a" opacity=".8"><path d="M18 240 L22 200 C36 180 60 172 76 168 L100 182 L124 168 C140 172 164 180 178 200 L182 240 Z"/><path d="M84 124 L116 124 L118 160 L100 184 L82 160 Z"/><path d="M72 84 C72 54 84 40 100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 72 84 Z"/><path d="M73 84 C64 80 61 100 65 111 C67 118 74 118 76 112 Z M127 84 C136 80 139 100 135 111 C133 118 126 118 124 112 Z"/><path d="M69 84 C65 52 80 31 102 31 C124 31 137 52 131 84 Z"/></g>
 <path d="M100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C107 140 112 126 113 108 C114 88 115 62 110 42 Z" fill="#2a2f3a" opacity=".35"/>
 <path d="M72 80 C72 56 84 44 100 44 C116 44 128 56 128 80" stroke="#a9adb6" stroke-width="1.6" fill="none" opacity=".75"/>
 <path d="M128 72 C130 96 126 124 114 142" stroke="#a9adb6" stroke-width="2" fill="none" opacity=".8"/>
@@ -359,7 +360,7 @@ function chair(id: string, wrap: Wrap = frame): string {
 <path d="M83 89.6 L92 89.6" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round"/>
 <path d="M106 89.6 L115 89.6" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round" opacity=".7"/>
 <path d="M70 196 L76 190 L82 196 L76 202 Z" fill="${RED}"/>
-<!--/set-->
+
 `,
     0.35,
   );

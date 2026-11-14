@@ -38,11 +38,11 @@ describe("NIGHT SHIFT villain busts (plan item 9)", () => {
     for (const who of ["crisp", "vane", "pell", "chair", "reed"] as const) expect(detail(bustSvg(who)), who).toBeGreaterThan(900);
   });
 
-  it("shows the Chair's face in his booking photo, his backlit shadow kept to his own frame", () => {
-    const bust = bustSvg("chair");
+  it("keeps the Chair's face in shadow, even in his booking photo, with the sculpt under it", () => {
     const booking = mugshotSvg("chair", "CASE 05");
-    expect(bust).toContain('fill="#06070a" opacity=".9"');
-    expect(booking).not.toContain('fill="#06070a" opacity=".9"');
+    expect(booking).toContain('fill="#06070a" opacity=".8"');
     expect(booking).toMatch(/url\(#hk/);
+    // His window and chair stay out of the booking room.
+    expect(booking).not.toContain('fill="#1a1c23"');
   });
 });
