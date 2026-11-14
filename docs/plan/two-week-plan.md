@@ -3759,7 +3759,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 391. [ ] Hedgerow: Hollowell's depot one gleaming fulfilment centre in every view, not a glass box, a bare tag or a puppet head
+## 391. [ ] Hedgerow: Hollowell's depot one gleaming fulfilment centre in every view, not a glass box, a bare tag or a puppet head *(lane A, in progress)*
 - **Why:** VISION's joke is the hand-made farm against glossy clinical corporations, and the enemy's source is drawn four ways and never as a designed building. `plan1114e/hedge-l34-2d-D` two stock glass boxes with orange signs (88-220 x 100-215, 88-220 x 725-835); `hedge-l21-2d-D` no building, a teal HOLLOWELL tag (195-290 x 498-520) and a floating '216 coming' pill (205-290 x 448-468) on bare lane (item 380 drops the depot at a sea-side gate); `hedge-l21-3d-D` a cartoon head on a till in an orange box (130-250 x 165-300), the biggest thing in `hedge-l21-3d-P` (160-235 x 85-200); `hedge-l34-2d-P` the lower depot a 50 px stamp cut by the field's edge (5-55 x 615-660).
 - **Build:**
   - One depot design for 2D (`render.ts`/`sprites.ts`) and 3D (`render3d/`): a white over-lit loading bay, roller doors, a backlit Hollowell logotype, a count board, a forecourt the lane leaves from. At a sea-side gate it is a jetty warehouse on piles, not nothing.
