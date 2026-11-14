@@ -269,7 +269,14 @@ function hint(id: string): void {
     const parts = slotHint(id, { hasSave: hasSave(), jobsDone: done, district, ngPlus: hasSave() && canStartNewGamePlus(done), armed: armed && id === "new" }).split(" · ");
     hint.replaceChildren();
     parts.forEach((part, i) => {
-      if (i) hint.append(" · ");
+      if (i) {
+        // Plan item 378: the dot is its own span, so an upright phone can stack the parts as lines without one
+        // dangling at each line's end.
+        const sep = document.createElement("span");
+        sep.className = "mh-sep";
+        sep.textContent = " · ";
+        hint.append(sep);
+      }
       const span = document.createElement("span");
       span.className = "mh-part";
       span.textContent = part;

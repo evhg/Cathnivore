@@ -849,6 +849,9 @@
   /* Plan item 294: upright she stands whole beside the menu (from 42% of the width), so the case line keeps to the
      menu's column and wraps rather than running across her coat with no shade behind it. */
   .menu-hint { max-width: 40vw; line-height: 1.3; }
+  /* Plan item 378: wrapped this narrow, each part a line of its own; the dots between them only read in one line. */
+  .menu-hint .mh-part { display: block; }
+  .menu-hint .mh-sep { display: none; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
      shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon
