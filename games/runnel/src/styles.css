@@ -4037,6 +4037,8 @@ body[data-mode='practice'] #week-slot {
   .vw-wall { fill: color-mix(in srgb, var(--stake-hi) 60%, var(--paper)); }
   .vw-cope { fill: color-mix(in srgb, var(--stake) 60%, var(--paper)); }
   .vb-rail, .vb-spindle { fill: color-mix(in srgb, var(--stake) 60%, var(--paper)); }
+  /* The shade under the arch: soil is the light ink at night, so the dark paper shades it instead. */
+  .vb-arch { fill: color-mix(in srgb, var(--paper) 75%, transparent); }
 }
 /* Plan item 77: on an upright phone Cath watches from the valley's bottom-left corner as a framed bust, over the
    stream bed and under the board's last row (main.ts hides her if a tile reaches into her corner). */
