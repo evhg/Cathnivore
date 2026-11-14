@@ -4897,3 +4897,11 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .stage[data-tile-e] .bea-garden { --gw: clamp(148px, calc(var(--tile-e) * 2.6), 164px); }
   .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(20px, calc((var(--gw) - 24px) / 8)); height: min(20px, calc((var(--gw) - 24px) / 8)); }
 }
+/* Plan item 389: the folk and the week's keeps belong to the valley, so they go where it goes: a landscape phone or a
+   narrow desktop draws the board on paper, where they stood about on nothing. */
+.valley-folk,
+.valley-keeps { display: none; }
+@media (min-width: 1100px) and (min-height: 640px), (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .valley-folk,
+  .valley-keeps { display: block; }
+}
