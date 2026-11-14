@@ -5479,3 +5479,65 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-item.action-sell .sell-count { right: 5px; bottom: 6px; gap: 2px; }
   .action-item.action-sell .sell-count-pip { width: 22px; height: 22px; font-size: .75rem; }
 }
+
+/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, in the dock's row
+   (Game.tsx's counter-bench inside CathDock): two busts side by side, cropped at the shoulders to 56 x 72 so both
+   faces show whole beside her line; a name plate in their colour on each; whoever's turn it is sits up, lit, the other
+   back in the counter's shade. The goods' own cameo is gone, so each producer shows once. */
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
+  .action-tray .cath-dock { gap: 8px; }
+  .action-tray .cath-dock + .active-producer .producer-cameo { display: none; }
+  /* the goods' row gives back the height the seats add to the dock's row, so the board keeps its 418 px */
+  .action-tray .cath-dock + .active-producer { padding-block: 4px 5px; }
+  .action-tray .cath-dock-line { padding: 4px 9px; line-height: 1.18; }
+  .table-producers.counter-bench {
+    flex: none;
+    display: flex;
+    gap: 3px;
+    align-self: end;
+    margin-bottom: 1px;
+  }
+  .counter-bench .table-producer {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 56px;
+    height: 72px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px 12px 4px 4px;
+    overflow: hidden;
+    pointer-events: auto;
+    cursor: pointer;
+    translate: none;
+    transform: none;
+    transition: none;
+    filter: none;
+  }
+  /* the dimming on the art, not the seat, so the seat makes no stacking context and its plate can stand in front */
+  .counter-bench .table-producer:not([data-active]) > svg { filter: saturate(.7) brightness(.66); }
+  .counter-bench .table-producer[data-active] { filter: none; box-shadow: inset 0 0 0 3px var(--wood), inset 0 0 0 4.5px var(--wood-lo), inset 0 0 0 7px var(--cameo-ring, var(--wheat)); }
+  .counter-bench .table-producer > svg { position: absolute; left: -8px; top: 0; width: 72px; }
+  .counter-bench .table-producer-name {
+    bottom: 3px;
+    padding: 1px 5px 2px;
+    font-size: 0.8125rem;
+  }
+}
+/* Plan item 387 on a short phone (375x667 up to 829 px tall): the board is the limit there (item 368 slice 3), so the
+   seats are 50 x 60, level with her 52 px bust, and the board keeps its height. */
+@media (max-width: 599.98px) and (min-height: 640px) and (max-height: 829.98px) and (orientation: portrait) {
+  .counter-bench .table-producer { width: 48px; height: 58px; }
+  /* the second sits half behind the first, so her line keeps three lines' width; whoever's turn it is in front */
+  .table-producers.counter-bench { gap: 0; }
+  .counter-bench .table-producer + .table-producer { margin-left: -22px; }
+  .counter-bench .table-producer { z-index: auto; }
+  .counter-bench .table-producer[data-active] { z-index: var(--z-raised); }
+  .counter-bench .table-producer:not([data-active]) .table-producer-name { z-index: var(--z-lift); }
+  .counter-bench .table-producer + .table-producer .table-producer-name { top: 2px; bottom: auto; }
+  .counter-bench .table-producer:first-child .table-producer-name { left: 2px; translate: 0 0; }
+  .counter-bench .table-producer + .table-producer .table-producer-name { left: auto; right: 2px; translate: 0 0; }
+  .counter-bench .table-producer > svg { left: -6px; width: 60px; }
+  .counter-bench .table-producer-name { font-size: 0.75rem; padding: 0 4px 1px; }
+}

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import type { CathExpression } from '../../shared/cath/cath'
 import CathArt from './CathArt'
 
@@ -36,7 +36,7 @@ export default function CathCompanion({ expression, line }: { expression: CathEx
 // Plan item 171: on an upright phone her line docks above the hand, beside a 64 px bust, so nothing of hers lies on
 // the board (the table is the hero). A new line slides in over 200 ms; a tap folds it away until she next speaks
 // (the dock keeps its height, so the board never jumps), and a tap on the folded dock brings it back.
-export function CathDock({ expression, line }: { expression: CathExpression; line: string }) {
+export function CathDock({ expression, line, children }: { expression: CathExpression; line: string; children?: ReactNode }) {
   const [folded, setFolded] = useState<string | null>(null)
   const isFolded = folded === line
   return (
@@ -55,6 +55,7 @@ export function CathDock({ expression, line }: { expression: CathExpression; lin
       <p className="cath-dock-line voice" role="status" aria-live="polite" key={line} onClick={() => setFolded(line)}>
         {line}
       </p>
+      {children}
     </section>
   )
 }

@@ -1011,7 +1011,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 155: each seated producer takes the free spot in the map frame furthest from Cath (and from the
   // other producer), clear of every hex, name plaque, prop, the event ticket, the map key and Cath herself.
   useLayoutEffect(() => {
-    if (!tableCath) return
+    // Plan item 387: a phone seats them at the counter (CathDock), not in the map frame.
+    if (!deskTableCath) return
     const seat = () => {
       const wrap = document.querySelector<HTMLElement>('.map-wrap')
       const people = [...document.querySelectorAll<HTMLElement>('.table-producers .table-producer')]
@@ -1069,7 +1070,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const wrap = document.querySelector('.map-wrap')
     if (wrap) ro.observe(wrap)
     return () => ro.disconnect()
-  }, [tableCath, phoneTableCath, state.config.producers])
+  }, [deskTableCath, phoneTableCath, state.config.producers])
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared
@@ -3298,8 +3299,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )}
         {/* Plan item 155: the producers sit at the table too, opposite Cath, their faces following the turn (an
             ability firing, a Squeeze on their Stall). Placed by `seatProducers` in the map's free corners. */}
-        {tableCath && (
-          <div className={phoneTableCath ? 'table-producers table-producers-phone' : 'table-producers table-producers-desk'} aria-hidden="true">
+        {deskTableCath && (
+          <div className="table-producers table-producers-desk" aria-hidden="true">
             {state.config.producers.map((id) => (
               <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-active={id === state.activeProducer ? '' : undefined}>
                 {/* Plan item 374: at a desktop table they stand half length at Cath's scale (the cast's Figure, drawn in
@@ -3448,7 +3449,30 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
           buttons, always on screen — see the `.game-scroll` comment above for how. */}
       <div className="action-tray">
-      {phoneTableCath && <CathDock expression={cathReaction.expression} line={cathReaction.line} />}
+      {phoneTableCath && (
+        <CathDock expression={cathReaction.expression} line={cathReaction.line}>
+          {/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, off the
+              board: 72 px busts side by side with a name plate in their colour; whoever's turn it is sits up, lit, the
+              other back in the counter's shade. A tap opens the Farm. (They were medallions pinned on the board's edge.) */}
+          <span className="table-producers table-producers-phone counter-bench">
+            {state.config.producers.map((id) => (
+              <button
+                type="button"
+                key={id}
+                className={`table-producer pc-${id}`}
+                data-table-producer={id}
+                data-expression={producerFaces[id] ?? 'neutral'}
+                data-active={id === state.activeProducer ? '' : undefined}
+                aria-label={`${PRODUCERS[id].name}${id === state.activeProducer ? ', playing now' : ''}: open the Farm`}
+                onClick={() => setShowFarm(true)}
+              >
+                <Portrait character={id} size={72} expression={faceExpression(producerFaces[id])} />
+                <span className="table-producer-name" aria-hidden="true">{PRODUCERS[id].name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </span>
+        </CathDock>
+      )}
       {!isDesktop && producerPanel}
 
       {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when

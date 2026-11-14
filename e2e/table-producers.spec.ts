@@ -11,7 +11,8 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
-  const people = page.locator('.map-wrap [data-table-producer]')
+  // Plan item 387: on a phone they sit at the counter (Cath's dock), off the board.
+  const people = page.locator(phone ? '.cath-dock [data-table-producer]' : '.map-wrap [data-table-producer]')
   await expect(people).toHaveCount(2)
   await expect(people.nth(1)).toBeVisible()
   await page.waitForTimeout(400)
@@ -26,15 +27,23 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
     if (!phone) break // a desktop table stands them half length: the next test checks it
     const b = (await person.boundingBox())!
     const id = await person.getAttribute('data-table-producer')
-    expect(b.height, `${id} height`).toBeGreaterThanOrEqual(64)
-    expect(b.x).toBeGreaterThanOrEqual(wrap.x - 1)
-    expect(b.y).toBeGreaterThanOrEqual(wrap.y - 5)
-    expect(b.x + b.width).toBeLessThanOrEqual(wrap.x + wrap.width + 1)
-    expect(b.y + b.height).toBeLessThanOrEqual(wrap.y + wrap.height + 1)
+    // Plan item 387: seated at the counter, 72 px tall at 390x844, below the board and inside the screen.
+    expect(b.height, `${id} height`).toBeGreaterThanOrEqual(page.viewportSize()!.height >= 830 ? 72 : 56)
+    expect(b.y).toBeGreaterThanOrEqual(wrap.y + wrap.height)
+    expect(b.x + b.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+    await expect(person.locator('.table-producer-name')).toHaveCSS('font-size', /^(1[3-9]|[2-9]\d)(\.\d+)?px$/)
     for (const o of blockers) {
       const meets = b.x < o.x + o.width && o.x < b.x + b.width && b.y < o.y + o.height && o.y < b.y + b.height
       expect(meets, `${id} meets a hex or plaque`).toBe(false)
     }
+  }
+  if (phone) {
+    // Plan item 387: the seat whose turn it is is lit, the other sits back dimmed; a tap on a seat opens the Farm.
+    await expect(page.locator('.cath-dock [data-table-producer][data-active]')).toHaveCount(1)
+    await people.first().click()
+    await expect(page.getByRole('dialog', { name: 'Farm' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog', { name: 'Farm' })).toBeHidden()
   }
   // A Squeeze on each region in turn until one lands on a Stall: that producer's face turns worried.
   await expect(people.first()).toHaveAttribute('data-expression', 'neutral')
@@ -43,7 +52,7 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
   for (const region of regions) {
     await page.evaluate((r) => (window as unknown as { cathnivoreMoment(k: string, id: string): void }).cathnivoreMoment('squeeze', r), region)
     await page.waitForTimeout(150)
-    if ((await page.locator('.map-wrap [data-table-producer][data-expression="worried"]').count()) > 0) {
+    if ((await page.locator('[data-table-producer][data-expression="worried"]').count()) > 0) {
       worried = true
       break
     }
@@ -55,7 +64,7 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
     for (const r of regions) {
       ;(window as unknown as { cathnivoreMoment(k: string, id: string): void }).cathnivoreMoment('liberate', r)
       await new Promise((res) => setTimeout(res, 150))
-      if (document.querySelector('.map-wrap [data-table-producer][data-expression="delighted"]')) return true
+      if (document.querySelector('[data-table-producer][data-expression="delighted"]')) return true
     }
     return false
   }, regions)
