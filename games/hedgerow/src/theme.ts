@@ -1334,6 +1334,14 @@ function paintDecor(
     if (water.side === "top") return y < gy0 - s * 0.2;
     return y > gy1 + s * 0.2;
   };
+  // Plan item 388: how far out from the shore a spot is (the water's edge sits half a cell off the field).
+  const depth = (x: number, y: number) => {
+    if (!water) return 0;
+    if (water.side === "left") return gx0 - s * 0.5 - x;
+    if (water.side === "right") return x - gx1 - s * 0.5;
+    if (water.side === "top") return gy0 - s * 0.5 - y;
+    return y - gy1 - s * 0.5;
+  };
   const outside = (L.width * L.height - (gx1 - gx0) * (gy1 - gy0)) / (s * s);
   // Plan item 202: the act's margins carry their own pieces, so the scatter's count leaves them out.
   const own = margins.reduce((a, r) => a + (r.w * r.h) / (s * s), 0);
@@ -1359,6 +1367,9 @@ function paintDecor(
     }
     if (inWater(x, y) && kind !== "boat" && kind !== "reeds") continue;
     if (!inWater(x, y) && kind === "boat" && water) continue;
+    // Plan item 388: reeds root in the shallows along the shore, not out in open water; boats ride clear of them.
+    if (kind === "reeds" && inWater(x, y) && depth(x, y) > s * 1.5) continue;
+    if (kind === "boat" && (depth(x, y) < s * 1.1 || x < s * 0.8 || x > L.width - s * 0.8 || y < s * 0.9)) continue;
     // Plan item 224: a billboard is a wide panel standing above its foot: the whole panel keeps off the field.
     if (kind === "billboard") {
       const half = Math.max(s * 1.15, 80);
@@ -1376,7 +1387,16 @@ function paintDecor(
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
   items.sort((a, b) => a.y - b.y);
-  for (const it of items) varied(ctx, it.x, it.y, pieceLook(it.kind, rand), () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
+  for (const it of items) {
+    // Plan item 388: a boat at anchor sits in its own shadow on the water.
+    if (it.kind === "boat" && inWater(it.x, it.y)) {
+      ctx.fillStyle = "rgba(12,40,58,0.24)";
+      ctx.beginPath();
+      ctx.ellipse(it.x + s * it.k * 0.06, it.y + s * it.k * 0.04, s * it.k * 0.42, s * it.k * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    varied(ctx, it.x, it.y, pieceLook(it.kind, rand), () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
+  }
 }
 
 function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
