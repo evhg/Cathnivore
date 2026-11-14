@@ -3783,7 +3783,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hedgerow tips/tutorial, field and 3D frame specs pass; shots at P and D, 2D and 3D, before and after.
 - **Size:** 2
 
-## 393. [ ] Cathnivore desktop play: the hand as a fan of full-size cards on the table's edge, not a strip of 125 px tiles with 11 px captions
+## 393. [ ] Cathnivore desktop play: the hand as a fan of full-size cards on the table's edge, not a strip of 125 px tiles with 11 px captions *(lane B, in progress)*
 - **Why:** `plan1114e/cath-game-D` the hand (460-1225 x 705-880) is six tiles about 125 px wide, their second lines about 11 px ('Pick a region' 865-950 x 840-855, '· Brindle Hills' 990-1075 x 830-845, 'in Brindle Hills' 1105-1200 x 845-860), art crops about 60 px tall; the raised Supply card (980-1100 x 700-860) overlaps Injunction's edge; a dead band (1230-1340 x 700-880) between the hand and the deck. VISION 2 ('big, rich, legible') fails where every turn's decision is made.
 - **Build:**
   - Fan the hand on a shallow arc set into the table's lower edge, about 170 px a card at 1440, overlapping; the hovered or focused card rises to full size with its rules at 14 px or more.
