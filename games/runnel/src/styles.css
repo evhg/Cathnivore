@@ -4865,8 +4865,20 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .tile-bevel { stroke-width: 1.5px; }
 .keyboard .cell:focus .tile { stroke: var(--focus); stroke-width: 3.5px; }
 @media (max-width: 600px) { .cell:not(.stone) .tile { stroke-width: 2.5px; } .tile-bevel { stroke-width: 1.5px; } }
-/* Plan item 389: the folk at the tiles' grain (--grain is a tile's edge in px, set by placeValleyFolk): a person's
-   48-unit box 0.38 of an edge (the figure itself about 0.31), a sheep 0.3, the cart 0.44. */
-.valley-folk[data-grain] .valley-folk-one { --fw: calc(var(--grain) * .38); width: var(--fw); height: var(--fw); margin: calc(var(--fw) * -1) 0 0 calc(var(--fw) * -.5); filter: drop-shadow(0 1px 0.5px color-mix(in srgb, var(--ink) 25%, transparent)); }
-.valley-folk[data-grain] .valley-folk-one[data-valley-folk="sheep"] { --fw: calc(var(--grain) * .3); }
-.valley-folk[data-grain] .valley-folk-one[data-valley-folk="cart"] { --fw: calc(var(--grain) * .44); }
+/* Plan item 389: the valley at the tiles' grain (--tile-e on the stage is a tile's edge in px, set by setGrain): a
+   person's 48-unit box 0.38 of an edge (the figure itself about 0.31), a sheep 0.3, the cart 0.44; Bea waiting at
+   her garden and running out to it the same; the spring house 1.2 edges wide (a cottage about four people tall, at
+   most its old 116 px), anchored at its outlet so the valley's stream still leaves its door; a keep (a hive, a barn)
+   0.8 and a prop 0.24. */
+[data-tile-e] .valley-folk-one { --fw: calc(var(--tile-e) * .38); width: var(--fw); height: var(--fw); margin: calc(var(--fw) * -1) 0 0 calc(var(--fw) * -.5); filter: drop-shadow(0 1px 0.5px color-mix(in srgb, var(--ink) 25%, transparent)); }
+[data-tile-e] .valley-folk-one[data-valley-folk="sheep"] { --fw: calc(var(--tile-e) * .3); }
+[data-tile-e] .valley-folk-one[data-valley-folk="cart"] { --fw: calc(var(--tile-e) * .44); }
+[data-tile-e] :is(.bea-waiting, .bea-runner) { width: calc(var(--tile-e) * .44); height: calc(var(--tile-e) * .38); }
+.stage[data-tile-e] { --sh: clamp(40px, calc(var(--tile-e) * 1.2), 116px); }
+.stage[data-tile-e] .spring-house { width: var(--sh); left: calc(134px - var(--sh)); top: calc(106.8px - var(--sh) * .8); }
+[data-tile-e] .valley-feature { width: calc(var(--tile-e) * .8); height: calc(var(--tile-e) * .8); }
+[data-tile-e] .valley-feature.valley-prop { width: calc(var(--tile-e) * .24); height: calc(var(--tile-e) * .24); }
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .stage[data-tile-e] { --sh: clamp(42px, calc(var(--tile-e) * 1.2), 60px); }
+  .stage[data-tile-e] .spring-house { left: calc(66px - var(--sh)); top: calc(52px - var(--sh) * .8); }
+}

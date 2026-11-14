@@ -620,6 +620,22 @@ function placeFeeder(): void {
   svg.removeAttribute('hidden')
 }
 
+/**
+ * Plan item 389: the valley at the tiles' grain. `--tile-e` on the stage is a tile's edge in CSS px (a hex's edge is
+ * its circumradius, half its drawn height); the folk, the spring house and the valley's keeps size from it, so a
+ * person stands about 0.3 of a tile's edge on any board. Returns 0 (and leaves the fixed sizes) before the board draws.
+ */
+function setGrain(): number {
+  const stage = document.querySelector<HTMLElement>('.stage')
+  const tile = document.querySelector('#board polygon.tile')?.getBoundingClientRect()
+  if (!stage || !tile?.height || !stage.offsetWidth) return 0
+  const zoom = stage.getBoundingClientRect().width / stage.offsetWidth || 1
+  const grain = tile.height / 2 / zoom
+  stage.setAttribute('data-tile-e', '')
+  stage.style.setProperty('--tile-e', `${grain.toFixed(1)}px`)
+  return grain
+}
+
 function placeValleyFolk(): void {
   placeDitch()
   placeFeeder()
@@ -647,14 +663,7 @@ function placeValleyFolk(): void {
   // The layer's own box: it sits inside the stage's frame, and the % positions are of the layer, not the stage.
   const st = layer.getBoundingClientRect()
   if (!st.width) return
-  // Plan item 389: the folk at the tiles' grain. A person stands about 0.3 of a tile's edge (a hex's edge is its
-  // circumradius, half its drawn height), a sheep and the cart in proportion, whatever the board's size.
-  const tile = document.querySelector('#board polygon.tile')?.getBoundingClientRect()
-  const edge = tile && tile.height ? tile.height / 2 : 0
-  const zoom = layer.offsetWidth ? st.width / layer.offsetWidth : 1
-  const grain = edge ? edge / (zoom || 1) : 0
-  layer.toggleAttribute('data-grain', grain > 0)
-  if (grain) layer.style.setProperty('--grain', `${grain.toFixed(1)}px`)
+  const grain = setGrain()
   const walk = grain ? Math.min(1, grain / 110) : 1
   const blocks = [
     ...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .farm-sign, .valley-say:not([hidden]), .valley-feature:not([hidden])'),
@@ -765,6 +774,7 @@ function placePhoneCath(cath: HTMLElement): void {
 }
 
 function placeValleyCath(): void {
+  setGrain()
   placeWeekValley()
   const cath = document.getElementById('valley-cath')
   if (!cath) return
