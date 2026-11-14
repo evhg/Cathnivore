@@ -3641,7 +3641,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots l21 and l34 at P and D before and after.
 - **Size:** 2
 
-## 381. [ ] NIGHT SHIFT phone pick: Cath at hero size on the stage, the tab guns readable *(lane B, in progress)*
+## 381. [x] NIGHT SHIFT phone pick: Cath at hero size on the stage, the tab guns readable *(done 2026-11-14 14:42 lane B, with one shortfall: main.ts stagePick's upright stage runs 6% of the screen down behind her name (her shins under its shade) and across 2-98% of the width, so the fit is no longer capped by her slung gun: her figure 347 CSS px at 390x844 (was about 290). At 375x667 she is 229 px, short of the 290 asked: the name starts at y 265 there and the file must stay one screen. The tab guns are solid silhouettes in the tab's ink with a soft rim (the hairline outline vanished at that size), the chosen one in its colour, handguns drawn up 1.8x: every gun 32-40 px wide. cathode-classpick, classpose and armoury pass at P (9); D unchanged)*
 - **Why:** `plan1114c/ns-play-P` (2x): Cath is about 180x585 (290-470 x 245-830), some 290 CSS px tall and under a quarter of the width, in an empty dark stage either side (0-290 and 520-780 x 150-830). Item 375's tab guns are grey 25x6 CSS px silhouettes on black (935-948 band), too small and faint to tell apart, so the tabs read as text only (they were cut to keep her face at 45 px).
 - **Build:**
   - The stage camera in so her figure fills 330-360 CSS px of the stage at 390x844 (cropped at mid-shin if needed), her face 50 px+.
