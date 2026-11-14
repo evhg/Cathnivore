@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-14 21:31 UTC
 
 
 
@@ -3802,5 +3801,49 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **/games/:** `games-D` the hero's H1 'Cathnivore' (615-1020 x 160-235) while the line and button sell Runnel.
   - **Hedgerow:** `hedge-l21-2d-D` the forecast's three round cards clipped at their foot (1120-1405 x 685-700), 'vehicles' and 'Unanswered · Airborne · Scarecrow' about 11 px (1130-1200 x 625-650), '10/26' beside 'ROUND 11 OF 26' unlabelled; `hedge-l21-3d-P` the highlighted scarecrow plot cut at the right edge (340-390 x 410-470); `hedge-l21-3d-D` trees sliced by the canvas top (400-500 x 75-130); `hedge-menu-D` the act title a plain grey pill (145-435 x 78-123).
   - **NIGHT SHIFT:** `ns-title-D` the T of SHIFT into the umbrella's rim (640-690 x 100-175); `ns-title-P` (2x) the case file on the umbrella canopy with LUNA poking out under it (30-390 x 890-1090); `ns-play-D` the unselected classes' gun icons grey on near-black (375-465 x 270-540) under 3:1; the rifle on her back taller than her torso (750-860 x 220-560).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 395. [ ] Cathnivore Campaign: the locked chapters as sealed postcards of their regions, not blank pills and bare number tabs
+- **Why:** `plan1114f/cath-campaign-D` chapters 2-6 (975-1355 x 418-870) are thin outlined pills holding a title only, with about 60 px of cream between them since item 394 spread the rail: the one plain list on a designed screen (VISION 1), beside chapter 1's rich card (975-1355 x 157-362). `cath-campaign-P` tabs 2-6 (77-375 x 528-570) are number-only beige squares that look like the playable one, with no lock or hint of where they lead. The map numbers the stops 2-6, but the rail never links back to them.
+- **Build:**
+  - Each locked chapter a sepia postcard (about 92 px tall at D): a muted crop of its region's vignette (item 279's art), number and name, the producer it brings as a greyed portrait, a wax-seal lock, and one line of Cath's teaser.
+  - Hover or focus on a postcard pulses its stop on the map, and the reverse; a tap on a locked card says 'Win chapter N-1 first' (a shake, not a dead click).
+  - P: the tabs carry a mini seal and a 4 px band of the region's colour; a tap on a locked tab shows its postcard in the card slot with Start disabled.
+- **Accept:**
+  - At 1440 each locked card 80 px+ tall, holding a picture 60x60+ and its teaser at 13 px+; hovering card N gives map stop N `is-linked`.
+  - At 390 a tap on tab 3 shows its postcard and a disabled Start; locked tabs differ from playable ones (a seal).
+  - campaign, campaign-spread, campaign-map and chapter-resume specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 396. [ ] Hedgerow: the tower rack says what each tower answers, not nine small stamps with price tags
+- **Why:** every coaching line is a counter-pick ('Build a Scarecrow for the Box Lorry: it hits them hard') and Coming up names locks ('Unanswered · Airborne · Scarecrow'), but the rack never says what a tower hits. `plan1114f/hedge-l21-2d-D` rack (1110-1410 x 85-340): tower art about 30-40 px in 100x80 cards (about 60% of each card blank), the Duck Pond a 40x15 blot (1235-1285 x 200-215), the only role marks 8 px corner glyphs (1113-1125 x 92-100) with no key; `hedge-l34-2d-D` (1110-1410 x 85-370) the same. At P the rack is in the tray, so the tip names towers the player can't see.
+- **Build:**
+  - Each tower drawn at 56 px+ as the piece it becomes on the plot, its cost at the card's foot.
+  - The corner glyph becomes one or two labelled role chips (Ground, Air, Stealth, Slows: Coming up's lock words and icons).
+  - A tower that answers the next round's unanswered lock wears a seed-tag ribbon ('Answers round 12'); the tower Cath's tip names pulses in the rack; on P the tray opens to it.
+- **Accept:**
+  - Each rack card's art 56 px+ at D and 44 px+ at P; every card a `[data-role]` chip with 12 px+ text; on level 21's round 11 the Scarecrow card carries `[data-answers]`.
+  - hedgerow field, tips, gatequeue and panel specs pass; shots l21 and l34 at P and D, before and after.
+- **Size:** 2
+
+## 397. [ ] NIGHT SHIFT phone pick: the kit as a readable dossier page, not a stack of chips and rings
+- **Why:** `plan1114f/ns-play-P` (2x shot) names GHOST twice (the 64 px name 33-280 x 850-915 and the tab label 65-140 x 965-995); the three skills are outlined chips with no meaning (30-490 x 1520-1560) where D explains each in two lines (`ns-play-D` 1000-1270 x 595-735); the four stat rings (85-700 x 1250-1335) have no scale; the gun a 336x155 thumbnail with a lamp's white bar across its top (160-240 x 1330-1345); six bands stack under the stage and read as a form (VISION 1).
+- **Build:**
+  - The big name goes; the open tab carries the name and class line.
+  - The three skills as rows, each its name and one-line effect, as at D.
+  - The stats as four labelled bars against the classes' average (a tick for each class); the gun full width on a dark felt slab with no lamp artefact; the Hold button pinned at the foot.
+- **Accept:**
+  - At 390x844 three `.skill-row`s, each with effect text 12 px+ (written in px with `/* px-ok */` on the phone, per cathode-type); no visible 'GHOST' twice; the gun's box 80%+ of its panel's width; Hold in view while scrolling.
+  - cathode-classpick and cathode-front specs, ui-css-lint and cathode-type pass; shots P and D before and after.
+- **Size:** 2
+
+## 398. [ ] The bugs from the 2026-11-14 21:35 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1114f`)
+  - **Hedgerow:** `hedge-l21-2d-D` Cath's figure and ring stand on the convoy's lane (295-350 x 635-725; the pink vans drive 300-350 x 180-450), `hedge-l34-2d-D` the same on a road bend (800-855 x 280-375); `hedge-menu-D` the level card's three empty rings (1138-1235 x 318-347) unlabelled; `hedge-menu-P` the Modes label about 6 px above Daily and Almanac (235-310 x 795-808), '60 Seed Bank' on two lines where every other tab has one, a blank fogged strip under the hedge gate (0-390 x 720-770).
+  - **Runnel:** `runnel-D` the hint 'Tap a tile to turn it, hold to pin it.' floating grey on bare cream (73-290 x 793-808) over an empty band (0-370 x 815-900), `runnel-P` the same (95-300 x 785-844); the spring house's stream stops at its culvert (545-560 x 240-250), short of the spring tile (~580).
+  - **NIGHT SHIFT:** `ns-play-P` (2x) the MAGAZINE heading 4 px from the panel's right edge (625-752 x 1437-1460); `ns-title-P` the List's district stamps over the faces' mouths and chins (35-160 x 1525-1565 and the rest).
+  - **Cathnivore:** `cath-game-P` Graft's dashed '+1 +1' chip into its 'i' (30-110 x 700-725); `cath-game-D` the Harbour Stall Licence card's 'i' (765-780 x 715-735) half under Graft's edge; `cath-setup-D` the flyer's top-right corner on Cath's chin (1170-1205 x 540-560) and a loose green square on her lapel (1215-1230 x 615-635); `cath-campaign-D` Cath cut at the thigh by the map frame's foot (685-830 x 700-755), the progress bar under the title unlabelled (60-240 x 113-125); `cath-title-P` her waving hand over the map board's edge (120-150 x 400-430).
+  - **Portfolio:** `portfolio-D` '1 Humans in the loop' (778-905 x 745-830) should be singular; `portfolio-P` only Cathnivore's print whole, Runnel fading under Cath (155-215 x 130-245).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
