@@ -3571,7 +3571,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - board-diorama, the play specs and ui-css-lint pass; P unchanged; shots at D and 1280x800, light and dark, before and after.
 - **Size:** 2
 
-## 375. [ ] NIGHT SHIFT phone: the operative pick as a dossier with five named tabs, not a giant name and five dots
+## 375. [ ] NIGHT SHIFT phone: the operative pick as a dossier with five named tabs, not a giant name and five dots *(lane B, in progress)*
 - **Why:** `plan1114b/ns-play-P` (2x pixels): the five operatives are told apart only by unlabelled dots (25-410 x 1050-1065), so the four you can't see have no name, gun or range, where D shows a labelled list with a gun and a range bar each (45-470 x 165-575). "GHOST" (35-480 x 900-1010) is the biggest thing on the screen while her line is folded behind "HER LINE" (32-180 x 1185-1215); D shows the quote (60-470 x 695-775).
 - **Build:**
   - A tab strip of the five classes in place of the dots: each tab its name and gun silhouette, the chosen one lit red; a swipe on Cath or a tap on a tab changes class.
