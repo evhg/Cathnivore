@@ -1809,6 +1809,10 @@ html.no-animations .title-screen * {
 @media (min-width: 1024px) {
   .title-square { top: clamp(150px, 21vh, 200px); height: auto; bottom: calc(var(--table-h) - 10px); }
 }
+/* a tablet: the table stands lower than the square's foot, so the square fades into the morning haze at both ends */
+@media (min-width: 761px) and (max-width: 1023px) {
+  .title-square { mask-image: linear-gradient(180deg, transparent 0, var(--ink) 7%, var(--ink) 62%, transparent 100%); }
+}
 @media (max-width: 1023px) and (max-height: 500px) {
   .title-square { display: none; }
 }
