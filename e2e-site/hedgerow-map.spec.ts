@@ -247,9 +247,13 @@ test('plan item 153: every act is on one map, the locked ones in pencil', async 
       }
       return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
     })
-    return { into: Math.min(innerHeight, list.bottom) - nextTop, names }
+    const headH = document.querySelector('#levels li[data-act="3"] .act-head')!.getBoundingClientRect().height
+    return { into: Math.min(innerHeight, list.bottom) - nextTop, names, headH, wide: innerWidth >= 1200 && innerHeight >= 700 }
   })
-  expect(m.into).toBeGreaterThanOrEqual(60)
+  // Plan item 372: at 1200 px+ the act in play fills the screen, so the next act's banner is wholly in view or wholly
+  // below the fold, never cut by it; narrower, the next act still peeks onto the first screen (item 153).
+  if (m.wide) expect(m.into <= 0 || m.into >= m.headH, `into ${m.into}`).toBe(true)
+  else expect(m.into).toBeGreaterThanOrEqual(60)
   for (const c of m.names) expect(c).toBeGreaterThanOrEqual(4.5)
 })
 
@@ -681,4 +685,29 @@ test('plan item 372: on a phone the sheet stops above the act gate', async ({ pa
     return { gateTop: gate.top, gateBottom: gate.bottom, cardBottom: card.bottom, vh: innerHeight }
   })
   expect(m.gateTop).toBeGreaterThanOrEqual(m.cardBottom)
+})
+
+// Plan item 372: at 1200 px+ an act past the first fills the screen: its stops span half the visible map or more,
+// and the next act's banner is wholly in view or wholly below the fold, never cut by it.
+test('plan item 372: the act in play fills the screen and the next banner is never cut', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    for (const upTo of [13, 20]) {
+      await seed(page, upTo)
+      await page.locator('.level-card').waitFor()
+      await page.waitForTimeout(600)
+      const m = await page.evaluate(() => {
+        const top = document.querySelector('#screen-select > .top, #screen-select > header')!.getBoundingClientRect().bottom
+        const li = document.querySelector('li.act-has-card')!
+        const nodes = [...li.querySelectorAll('.stop .node')].map((e) => e.getBoundingClientRect())
+        const span = (Math.max(...nodes.map((r) => r.bottom)) - Math.min(...nodes.map((r) => r.top))) / (innerHeight - top)
+        const head = li.nextElementSibling?.querySelector('.act-head')?.getBoundingClientRect()
+        return { span, next: head ? [head.top, head.bottom] : null, vh: innerHeight }
+      })
+      const what = `${width}x${height} upTo ${upTo}`
+      expect(m.span, what).toBeGreaterThanOrEqual(0.5)
+      if (m.next) expect(m.next[0]! >= m.vh || m.next[1]! <= m.vh, what).toBe(true)
+    }
+  }
 })

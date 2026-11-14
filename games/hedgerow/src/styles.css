@@ -5464,13 +5464,23 @@ img.act-scene {
   #screen-select li.act.act-has-card > * { grid-column: 1; }
   #screen-select li.act.act-has-card > .act-head { grid-column: 1 / -1; grid-row: 1; }
   #screen-select li.act.act-has-card > .trail { grid-row: 2; width: calc(100% - 16px); max-width: 1120px; }
+  /* The act in play fills the screen under the header, its two rows of stops spread down the land (the lane is
+     laid out from where they land), so the next act's banner starts below the fold instead of cut by it. */
+  #screen-select li.act.act-has-card { min-height: calc(100dvh - 56px); }
+  #screen-select li.act.act-has-card > .trail { align-content: space-between; }
+  /* except the first act, under Cath's line and kit: a fresh farm opens on all its stops, not a row cut at the fold */
+  #screen-select .map-hud-row + li.act.act-has-card { min-height: 0; }
+  #screen-select .map-hud-row + li.act.act-has-card > .trail { align-content: normal; }
   #screen-select li.act.act-has-card > .level-card {
     grid-column: 2;
     grid-row: 1 / span 2;
-    align-self: end;
+    /* at the top of its column and held there while the act scrolls, so it stays whole on the screen */
+    align-self: start;
+    position: sticky;
+    top: 64px;
     z-index: var(--z-raise);
     width: auto;
-    margin: 0 16px 20px 0;
+    margin: 8px 16px 20px 0;
     padding: 12px 14px 14px;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "thumb" "body" "cath" "foes" "play";
