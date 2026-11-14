@@ -3663,7 +3663,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The title specs pass; shots P and D, light and dark, before and after.
 - **Size:** 2
 
-## 383. [ ] Cathnivore phone play: a labelled tally and Hollowell's intents readable, matching desktop item 366 *(lane B, in progress)*
+## 383. [ ] Cathnivore phone play: a labelled tally and Hollowell's intents readable, matching desktop item 366 *(handed back 2026-11-14 12:50 by lane B, slices 1-2: the phone tally names each figure (Round, Trust, Land left, Rift) on a line under its object and figure, 12 px, whole at 390 and 375 (new e2e in phone-counter); the cell's padding pays for most of it, the board 3 px lower and the map still 415 px+. The intent chips were measured at 13 px already (no change). The week's event ticket is 13 px on a phone 385 px+ wide (12 below, where 13 cut its rule; hidden under 700 px tall). Left: Hollowell's portrait over the tally's foot and the first chip as a gantry rail. Note: phone-map-hero's 'every hex above the hand' fails locally with 8 px of scroll at 4cfc04b too, before this item: lane A's 368/374 area)*
 - **Why:** `plan1114c/cath-game-P`: the tally (10-330 x 15-50) reads "1/10 · 10 · 10 · 0" with no words (item 366 labelled D's; a new player can't tell Trust from Land), the Rift plate blank at 0. Hollowell's three intents are cramped chips (68-380 x 62-112), each word about 12 px behind a chevron; his portrait (8-68 x 50-120) is jammed against the chips and over the tally's foot; the Festival line (105-345 x 115-130) about 11 px.
 - **Build:**
   - The tally as D's chalk slate, a small-caps word under each figure (Round, Trust, Land, Rift), item 184's objects kept as icons.
