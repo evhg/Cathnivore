@@ -379,8 +379,6 @@ button {
   text-align: center;
   transition: color 200ms;
 }
-/* Plan item 398: under the lesson, Cath's bubble says how to turn a tile; the hint waits for the first tap. */
-body.in-lesson .hint[data-idle] { visibility: hidden; }
 
 .hint.flash {
   color: var(--clay);
