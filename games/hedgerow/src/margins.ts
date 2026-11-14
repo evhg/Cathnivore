@@ -302,13 +302,13 @@ export function paintMarsh(ctx: CanvasRenderingContext2D, r: Rect, s: number, ra
   ctx.beginPath();
   ctx.rect(r.x, r.y, r.w, r.h);
   ctx.clip();
-  ctx.fillStyle = "rgba(104,156,84,0.4)"; // Plan item 370: a living marsh green (was a grey 112,140,104).
+  ctx.fillStyle = "rgba(92,162,64,0.5)"; // Plan items 370, 388: a living marsh green (was a grey 112,140,104), at the field's saturation.
   ctx.fillRect(r.x, r.y, r.w, r.h);
   // Plan item 388: tussocks and wet hollows, darker and lighter clumps, so the marsh has the field's range of value
   // (a flat fill read at half its contrast).
   for (let i = 0; i < (r.w * r.h) / (s * s) * 0.7; i++) {
     const dark = rand() < 0.55;
-    ctx.fillStyle = dark ? "rgba(46,88,40,0.3)" : "rgba(196,222,140,0.32)";
+    ctx.fillStyle = dark ? "rgba(34,86,26,0.5)" : "rgba(210,236,130,0.48)";
     ctx.beginPath();
     ctx.ellipse(r.x + rand() * r.w, r.y + rand() * r.h, s * (0.25 + rand() * 0.45), s * (0.12 + rand() * 0.2), rand() * Math.PI, 0, Math.PI * 2);
     ctx.fill();
@@ -350,7 +350,7 @@ export function paintMarsh(ctx: CanvasRenderingContext2D, r: Rect, s: number, ra
 /** A water meadow: lush grass in strips, cut by a mill race; or a moor: heather, bracken and dry-stone walls. */
 export function paintGround(ctx: CanvasRenderingContext2D, ground: MarginSet["ground"], r: Rect, s: number, rand: () => number): void {
   paintGroundBase(ctx, ground, r, s, rand);
-  if (ground === "marsh" || ground === "meadow" || ground === "green") paintBlades(ctx, r, s);
+  if (ground === "marsh" || ground === "meadow" || ground === "green") paintBlades(ctx, r, s, ground === "marsh" ? 24 : 13);
   paintGroundLight(ctx, r, s);
 }
 
@@ -358,7 +358,7 @@ export function paintGround(ctx: CanvasRenderingContext2D, ground: MarginSet["gr
  * Plan item 388: grass in blades, short dark and sunlit strokes leaning one way, so the margin's grass has the fine
  * grain of the field's crops (a speckle on a flat fill had about three quarters of the field's local contrast).
  */
-function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
+function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number, density: number): void {
   const rand = seeded(Math.round(r.x * 5 + r.y * 11 + r.w + r.h * 2));
   ctx.save();
   ctx.beginPath();
@@ -366,11 +366,11 @@ function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
   ctx.clip();
   ctx.lineCap = "round";
   ctx.lineWidth = Math.max(1, s * 0.022);
-  const n = ((r.w * r.h) / (s * s)) * 13;
+  const n = ((r.w * r.h) / (s * s)) * density;
   const tufts: Array<[number, number, number]> = [];
   for (let i = 0; i < n; i++) tufts.push([r.x + rand() * r.w, r.y + rand() * r.h, s * (0.07 + rand() * 0.06)]);
   // Each tuft three blades fanned from one root, dark; then a sunlit blade on its lee side.
-  ctx.strokeStyle = "rgba(30,62,28,0.72)";
+  ctx.strokeStyle = "rgba(24,70,20,0.75)";
   ctx.beginPath();
   for (const [x, y, len] of tufts)
     for (const a of [-0.45, 0, 0.4]) {
@@ -378,7 +378,7 @@ function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
       ctx.quadraticCurveTo(x + Math.sin(a) * len * 0.4, y - len * 0.6, x + Math.sin(a) * len, y - Math.cos(a) * len);
     }
   ctx.stroke();
-  ctx.strokeStyle = "rgba(226,240,170,0.72)";
+  ctx.strokeStyle = "rgba(222,244,136,0.75)";
   ctx.beginPath();
   for (const [x, y, len] of tufts) {
     ctx.moveTo(x + len * 0.12, y);
@@ -422,7 +422,7 @@ function paintGroundBase(ctx: CanvasRenderingContext2D, ground: MarginSet["groun
   ctx.rect(r.x, r.y, r.w, r.h);
   ctx.clip();
   if (ground === "meadow") {
-    ctx.fillStyle = "rgba(96,150,70,0.3)";
+    ctx.fillStyle = "rgba(86,158,56,0.42)";
     ctx.fillRect(r.x, r.y, r.w, r.h);
     // Buttercups and lady's smock in the long grass.
     for (let i = 0; i < (r.w * r.h) / (s * s) * 16; i++) {
