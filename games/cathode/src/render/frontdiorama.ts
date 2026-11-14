@@ -71,17 +71,28 @@ function poolTexture(): THREE.CanvasTexture {
   return t;
 }
 
+/** Plan item 369: a ragged billow, not a disc: one round gradient grown to 2.5 m read as a grey balloon behind her
+ *  on the D title. Overlapping soft blobs (seeded, so every load and shot match), thinning towards the edge. */
 function steamTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
-  c.width = c.height = 64;
+  c.width = c.height = 128;
   const g = c.getContext("2d");
   if (g) {
-    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-    r.addColorStop(0, "rgba(255,255,255,0.55)");
-    r.addColorStop(0.5, "rgba(255,255,255,0.22)");
-    r.addColorStop(1, "rgba(255,255,255,0)");
-    g.fillStyle = r;
-    g.fillRect(0, 0, 64, 64);
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+    for (let i = 0; i < 14; i++) {
+      const a = rnd() * Math.PI * 2;
+      const d = Math.sqrt(rnd()) * 30;
+      const x = 64 + Math.cos(a) * d;
+      const y = 64 + Math.sin(a) * d * 1.25;
+      const rad = 14 + rnd() * 18;
+      const r = g.createRadialGradient(x, y, 0, x, y, rad);
+      r.addColorStop(0, `rgba(255,255,255,${(0.16 + rnd() * 0.12).toFixed(2)})`);
+      r.addColorStop(0.6, "rgba(255,255,255,0.06)");
+      r.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = r;
+      g.fillRect(0, 0, 128, 128);
+    }
   }
   return new THREE.CanvasTexture(c);
 }
@@ -351,6 +362,8 @@ export function buildFrontDiorama(lamp: THREE.Vector3, toward: THREE.Vector3, gr
     const s = new THREE.Sprite(m);
     s.renderOrder = 5;
     group.add(s);
+    // Each puff turned its own way, so no two read as the same shape.
+    m.rotation = i * 2.39;
     puffs.push({ s, m, o: i / PUFFS });
   }
   const grateMat = new THREE.MeshStandardMaterial({ color: 0x0b0c0d, roughness: 0.6, metalness: 0.6 });
