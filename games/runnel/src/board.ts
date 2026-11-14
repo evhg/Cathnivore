@@ -296,6 +296,15 @@ export class Board {
           el('path', { d: 'M0 2v-5M-2.4 2l1.2 -4M2.4 2l-1.2 -4', class: 'nd-blade' }, t)
           el('circle', { cx: 0, cy: -5.4, r: 1.5, class: 'nd-bloom' }, t)
         }
+        // a furrow across the corner between the sprig and the tuft: dry, a soft groove; watered, it fills and glints
+        const ux = -s * S * 0.1
+        const uy = c * S * 0.1
+        const mx = c * S * 0.46
+        const my = s * S * 0.46
+        const row = `M${(mx - ux).toFixed(1)} ${(my - uy).toFixed(1)}L${(mx + ux).toFixed(1)} ${(my + uy).toFixed(1)}`
+        el('path', { d: row, class: 'nd-furrow', 'data-detail': '' }, g)
+        el('path', { d: row, class: 'nd-furrow-water' }, g)
+        el('path', { d: `M${(mx - ux * 0.5).toFixed(1)} ${(my - uy * 0.5 - 0.5).toFixed(1)}l${(ux * 0.35).toFixed(1)} ${(uy * 0.35).toFixed(1)}`, class: 'nd-glint' }, g)
         // a sprig nearer the hub
         const px = c * S * 0.34
         const py = s * S * 0.34

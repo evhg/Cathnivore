@@ -4813,6 +4813,16 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .nd-tuft.b2 .nd-bloom { fill: color-mix(in srgb, var(--wheat, var(--clay)) 80%, var(--paper)); }
 .nd-sprig { fill: none; stroke: color-mix(in srgb, var(--ga-leaf) 55%, var(--dry)); stroke-width: 1.2; stroke-linecap: round; transition: stroke 400ms ease var(--delay, 0ms); }
 .cell.wet .nd-sprig { stroke: var(--wet); }
+/* Plan item 365: a watered big tile reads wet at a glance: its ground deepens and its furrows fill and glint. */
+.cell.wet:has(> .near-dress) .tile { fill: var(--wet-big); }
+.nd-furrow { fill: none; stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 3.2; stroke-linecap: round; }
+.nd-furrow-water {
+  fill: none; stroke: var(--water); stroke-width: 1.8; stroke-linecap: round;
+  opacity: 0; transition: opacity 500ms ease var(--delay, 0ms);
+}
+.nd-glint { fill: none; stroke: var(--paper); stroke-width: 0.9; stroke-linecap: round; opacity: 0; transition: opacity 500ms ease calc(var(--delay, 0ms) + 300ms); }
+.cell.wet .nd-furrow-water { opacity: 0.9; }
+.cell.wet .nd-glint { opacity: 0.85; }
 
 /* Plan item 323: a fallow tile's field stones (lit on top, a shade below) and a thistle. */
 .fallow-dress { pointer-events: none; }
