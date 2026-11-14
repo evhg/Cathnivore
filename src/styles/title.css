@@ -1068,8 +1068,13 @@ html.no-animations .title-screen * {
       repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 30%, transparent) 46px 48px),
       linear-gradient(180deg, var(--wood), var(--wood-lo));
     color: color-mix(in srgb, var(--paper-on-fixed-fill) 88%, var(--wood));
+    /* Plan item 390: printed on the table's front in the chalk links' hand, centred, not default small print */
+    justify-content: center;
+    text-align: center;
+    font-family: var(--font-display);
+    font-style: italic;
   }
-  .title-footer a { color: var(--paper-on-fixed-fill); }
+  .title-footer a { color: var(--paper-on-fixed-fill); text-decoration-style: dotted; text-underline-offset: 3px; }
   .title-bunting {
     display: block;
     position: absolute;
