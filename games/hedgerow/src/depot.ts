@@ -1,10 +1,9 @@
 // Plan item 157: Hollowell's depot at each gate. A glossy plastic shed with a roller door and the brand stripe, a
-// departures board with the next round's count, and the rep on the balcony: smug by default, gleeful when something
+// departures board with the next round's count, and the rep on the balcony (a faceless shop mannequin since item 391): smug by default, gleeful when something
 // got through last round, rattled when the round went clean. Pure picture and placement; main.ts positions it.
 
 export type RepMood = "smug" | "gleeful" | "rattled";
 
-const INK = "#2b2320";
 /** The depot's picture in a 100 x 100 box, its door facing down (towards the lane). */
 export function depotSvg(): string {
   const ribs = Array.from({ length: 6 }, (_, i) => `<path d="M30 ${62 + i * 5}h40" stroke="#9aa3ad" stroke-width="1.2"/>`).join("");
@@ -77,20 +76,28 @@ export function jettySvg(): string {
 
 /** The rep on the balcony (a small figure in a suit with an orange tie), in a 24 x 30 box. */
 export function repSvg(mood: RepMood, hatch = false): string {
-  const mouth =
-    mood === "gleeful" ? `<path d="M9 12q3 4 6 0" fill="${INK}"/>` : mood === "rattled" ? `<path d="M9 13.5q3-3 6 0" fill="none" stroke="${INK}" stroke-width="1.2"/>` : `<path d="M9 12.5q3 1.6 6-0.8" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
-  const brows = mood === "rattled" ? `<path d="M8 6.5l3 1M16 6.5l-3 1" stroke="${INK}" stroke-width="1"/>` : `<path d="M8 7l3-1M16 7l-3-1" stroke="${INK}" stroke-width="1"/>`;
-  const arm = mood === "gleeful" ? `<path d="M18 19l4-7" stroke="#3a4250" stroke-width="3" stroke-linecap="round"/>` : "";
+  // Plan item 391: no face. The rep is a glossy white shop mannequin in Hollowell's suit (smooth head, a hard
+  // highlight, no features), so the joke is corporate rather than a cartoon head; the mood is in the pose:
+  // smug arms folded, gleeful one arm punched up, rattled both hands clutching the head.
+  const suit = "#3a4250";
+  const arms =
+    mood === "gleeful"
+      ? `<path d="M18 21l4-9" stroke="${suit}" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="11.2" r="1.6" fill="url(#rep-gloss)"/>`
+      : mood === "rattled"
+        ? `<path d="M5.5 22l-1.5-8 3.2-4M18.5 22l1.5-8-3.2-4" fill="none" stroke="${suit}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.2" cy="9.6" r="1.4" fill="url(#rep-gloss)"/><circle cx="16.8" cy="9.6" r="1.4" fill="url(#rep-gloss)"/>`
+        : `<path d="M6.5 24.5q5.5 2.6 11 0" stroke="#2a303b" stroke-width="2.8" stroke-linecap="round"/>`;
   return (
     `<svg viewBox="0 0 24 30" aria-hidden="true">` +
+    `<defs><radialGradient id="rep-gloss" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e3e8ee"/><stop offset="1" stop-color="#9aa6b2"/></radialGradient></defs>` +
     // Plan item 228: in 3D he leans out of a roof hatch, its lid up behind him and its rim across his waist,
-    // so he reads as a man on the roof rather than a bust floating on it.
+    // so he reads as a figure on the roof rather than a bust floating on it.
     (hatch ? `<path d="M2.5 25l2.5-11h14l2.5 11z" fill="#4b525d"/><path d="M5.6 15.5h12.8" stroke="#7b8490" stroke-width="0.8"/>` : "") +
-    `<path d="M4 30v-9q8-5 16 0v9z" fill="#3a4250"/>${arm}` +
+    `<path d="M4 30v-9q8-5 16 0v9z" fill="${suit}"/>` +
     `<path d="M11.2 20h1.6l1 6-1.8 2-1.8-2z" fill="#ef7a2a"/>` +
-    `<circle cx="12" cy="10" r="6" fill="#f0c8a4"/>` +
-    `<path d="M6 8q6-7 12 0" fill="#5a4636"/>${brows}` +
-    `<circle cx="9.6" cy="9.6" r="0.9" fill="${INK}"/><circle cx="14.4" cy="9.6" r="0.9" fill="${INK}"/>${mouth}` +
+    `<rect x="10.6" y="15" width="2.8" height="3.6" fill="#b8c2cc"/>` +
+    `<ellipse cx="12" cy="10" rx="5.2" ry="6" fill="url(#rep-gloss)"/>` +
+    `<path d="M9.4 6.4q1.4-1.6 3.4-1.4" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round" opacity=".9"/>` +
+    arms +
     (hatch ? `<rect x="1" y="24" width="22" height="6" rx="1" fill="#6b7380"/><path d="M1.6 24.7h20.8" stroke="#a3acb6" stroke-width="0.9"/><path d="M1 28.6h22" stroke="#4b525d" stroke-width="0.8"/>` : "") +
     `</svg>`
   );
