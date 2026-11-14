@@ -135,10 +135,12 @@ ${sculptedEye(id, 87, true)}${sculptedEye(id, 113, false)}
   );
 }
 
+// Plan item 371: Vane sculpted like Reed and Crisp: face planes, real eyes behind her wire glasses, a green-ink pen.
 function vane(id: string, wrap: Wrap = frame): string {
   return wrap(
     id,
     `
+<defs><linearGradient id="vk${id}" x1="0" x2="1"><stop offset="0" stop-color="#dcd4c7"/><stop offset=".5" stop-color="${SKIN}"/><stop offset=".72" stop-color="${SKIN_MID}"/><stop offset="1" stop-color="#6e665c"/></linearGradient></defs>
 <!-- white coat with a high collar over dark scrubs -->
 <path d="M0 240 L6 194 C24 176 52 170 74 168 L100 196 L126 168 C148 170 176 176 194 194 L200 240 Z" fill="#b9b3a8"/>
 <path d="M120 170 C148 172 176 178 194 194 L200 240 L130 240 Z" fill="#8b857b"/>
@@ -153,27 +155,45 @@ function vane(id: string, wrap: Wrap = frame): string {
 <path d="M88 134 L112 134 L114 160 C106 165 94 165 86 160 Z" fill="${SKIN_MID}"/>
 <path d="M80 148 C88 160 112 160 120 148 L122 160 C110 170 90 170 78 160 Z" fill="#a9b1ad"/>
 <path d="M84 156 L116 156" stroke="#86908b" stroke-width="1"/>
-${face(
-  "M74 86 C74 58 86 44 100 44 C114 44 126 58 126 86 C126 106 122 122 114 134 C109 142 104 146 100 146 C96 146 91 142 86 134 C78 122 74 106 74 86 Z",
-  "M108 46 C120 50 126 64 126 86 C126 106 122 122 114 134 C109 142 104 146 100 146 C105 138 110 126 111 110 C112 92 112 64 108 46 Z",
-)}
-<!-- severe bob with a blunt fringe -->
+<!-- a green-ink pen clipped in the breast pocket -->
+<path d="M131 186 L133 210" stroke="#2e3a33" stroke-width="3.2" stroke-linecap="round"/><path d="M131 186 L131.6 194" stroke="#9aa39c" stroke-width="1.2"/>
+<!-- ears under the bob, the near one lit -->
+<path d="M75 94 C69 92 68 104 72 110 L76 108 Z" fill="${SKIN_MID}"/>
+<!-- a fine, narrow face: high cheekbones, a small pointed chin -->
+<path d="M74 86 C74 58 86 44 100 44 C114 44 126 58 126 86 C126 106 122 122 114 134 C109 142 104 146 100 146 C96 146 91 142 86 134 C78 122 74 106 74 86 Z" fill="url(#vk${id})"/>
+<path d="M108 46 C120 50 126 64 126 86 C126 106 122 122 114 134 C109 142 104 146 100 146 C105 138 110 126 111 110 C112 92 112 64 108 46 Z" fill="${SKIN_DK}" opacity=".5"/>
+<path d="M79 108 C82 118 87 126 92 130 C87 120 84 114 82 104 Z" fill="${SKIN_MID}" opacity=".7"/>
+<path d="M121 108 C118 118 113 126 108 130 C113 120 116 114 118 104 Z" fill="${SKIN_DK}" opacity=".7"/>
+<ellipse cx="84" cy="104" rx="6" ry="2.8" fill="#efe8db" opacity=".55" transform="rotate(-22 84 104)"/>
+<ellipse cx="99" cy="141" rx="4" ry="2" fill="#efe8db" opacity=".35"/>
+<!-- thin, level brows -->
+<path d="M79 82 C84 79.6 90 79.4 96 81 C90 81 84 81.6 79.6 83.4 Z" fill="${INK}"/>
+<path d="M104 81 C110 79.4 116 79.6 121 82 C116 81.6 110 81 104.4 82.6 Z" fill="${INK}"/>
+<!-- cold, level eyes (the shared sculpted eye, set higher in her face), a fine lash line -->
+<g transform="translate(88 92) scale(.84) translate(-87 -100)">${sculptedEye(id, 87, true)}</g><g transform="translate(112 92) scale(.84) translate(-113 -100)">${sculptedEye(id, 113, false)}</g>
+<path d="M78 92 l-2.4 -1.6 M122 92 l2.4 -1.6" stroke="${INK}" stroke-width="1.2" stroke-linecap="round"/>
+<!-- a straight, fine nose -->
+<path d="M100 96 C99.4 104 98.4 109 97 113 C98 115 101 115.6 103.6 114" stroke="${SKIN_DK}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+<path d="M97.6 98 C97.2 104 96.8 108 96 111" stroke="#efe8db" stroke-width="1.6" fill="none" opacity=".6" stroke-linecap="round"/>
+<path d="M102 98 C104.6 105 106 110 105.6 113.6 C103 115 100.6 115.2 99 114.6 Z" fill="${SKIN_MID}" opacity=".7"/>
+<!-- a thin mouth in dark lipstick, the upper lip's bow, a lit lower lip -->
+<path d="M89 123.6 C93 121.6 97 121.2 100 122.6 C103 121.2 107 121.6 111 123.6 C106 124.6 103 124.8 100 124.6 C97 124.8 94 124.6 89 123.6 Z" fill="#3b2a2c"/>
+<path d="M90 124.2 C95 128 105 128 110 124.2 C105 125.6 95 125.6 90 124.2 Z" fill="#5a4044"/>
+<path d="M95 126.4 C98 127.2 101 127.2 104 126.4" stroke="#8a7a76" stroke-width=".8" fill="none" opacity=".7"/>
+<!-- severe bob with a blunt fringe: the hair's sheen and its cut edge -->
 <path d="M70 132 C64 104 64 70 76 52 C86 38 114 36 126 50 C138 66 138 104 130 132 L124 132 C126 110 126 92 124 76 L76 76 C74 92 74 112 76 132 Z" fill="${INK}"/>
 <path d="M74 78 C76 58 88 46 100 46 C112 46 124 56 126 78 Z" fill="${INK}"/>
-<path d="M80 60 C88 50 104 48 116 52" stroke="#5e5b55" stroke-width="2" fill="none" stroke-linecap="round"/>
-<!-- round wire glasses -->
-<g fill="none" stroke="#aaa59b" stroke-width="1.4"><circle cx="88" cy="92" r="9"/><circle cx="112" cy="92" r="9"/><path d="M97 91 C99 89 101 89 103 91 M79 90 L74 88 M121 90 L126 88"/></g>
-<path d="M82 86 L86 84" stroke="${P}" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
-<!-- level, cold eyes -->
-<path d="M82 85 C86 83 91 83 94 85" stroke="${INK}" stroke-width="1.8" fill="none"/>
-<path d="M106 85 C109 83 114 83 118 85" stroke="${INK}" stroke-width="1.8" fill="none"/>
-<path d="M83 93 C86 90.5 90 90.5 93 93 C90 94.5 86 94.5 83 93 Z" fill="${INK}"/><circle cx="88" cy="92.4" r=".9" fill="${P}"/>
-<path d="M107 93 C110 90.5 114 90.5 117 93 C114 94.5 110 94.5 107 93 Z" fill="${INK}"/>
-<!-- nose and a thin closed mouth, dark lipstick -->
-<path d="M100 96 C99 104 97 110 96 113 C99 115 102 115 105 113" stroke="${SKIN_DK}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-<path d="M90 124 C95 122 105 122 110 124 C105 126.5 95 126.5 90 124 Z" fill="#3b2a2c"/>
-<path d="M76 104 C78 118 84 130 94 138" stroke="${SKIN_MID}" stroke-width="2.6" fill="none" opacity=".5"/>
-<path d="M75 82 C74 100 77 118 86 134" stroke="${P}" stroke-width="1" fill="none" opacity=".45"/>
+<path d="M74 77 L126 77" stroke="#3b3c42" stroke-width="1.4"/>
+<g stroke="#2a2b31" stroke-width="1" fill="none">${[0, 1, 2, 3, 4].map((k) => `<path d="M${80 + k * 9} 76 C${80 + k * 9} 64 ${84 + k * 7} 52 ${92 + k * 4} 46"/>`).join("")}</g>
+<path d="M80 60 C88 50 104 48 116 52" stroke="#6e6b64" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<path d="M68 104 C67 116 68 126 71 132" stroke="#5e5b55" stroke-width="1.4" fill="none" opacity=".8"/>
+<!-- round wire glasses: the near lens catches the flash -->
+<g fill="none" stroke="#b9b4aa" stroke-width="1.3"><circle cx="88" cy="92" r="9.4"/><circle cx="112" cy="92" r="9.4"/><path d="M97.4 91 C99 89 101 89 102.6 91 M78.6 90 L74 88 M121.4 90 L126 88"/></g>
+<circle cx="88" cy="92" r="9.4" fill="#fff" opacity=".07"/>
+<path d="M81 87 C83 85 85 84 87 84" stroke="${P}" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+<path d="M106 87.6 C107.6 86 109 85.4 110.6 85.4" stroke="${P}" stroke-width="1" stroke-linecap="round" opacity=".5"/>
+<!-- rim light on the lit side -->
+<path d="M75 86 C74.6 100 77 116 84 128" stroke="${P}" stroke-width=".9" fill="none" opacity=".4"/>
 `,
   );
 }
