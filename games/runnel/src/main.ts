@@ -1125,6 +1125,7 @@ function render(): void {
   // note and its button side by side so the column doesn't grow past the screen (it ran 30 px over at 1440x900).
   document.querySelector('.foot')?.toggleAttribute('data-solved', game.solved)
   if (game.solved) {
+    ui.hint.removeAttribute('data-idle')
     ui.hint.textContent = isDaily
       ? `Solved. Next in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
       : `Solved in ${formatTime(game.elapsedMs)}.`
@@ -1138,6 +1139,10 @@ function render(): void {
           `${document.getElementById('lesson-card')?.hidden === false || almanacShown() ? '' : `${boardSky(puzzle.seed).label}. `}Tap a tile to turn it, hold to pin it.`
         : `${wet} of ${playable - 1} fields watered. Hold a tile to pin it.`
     ui.btnNew.hidden = mode !== 'practice'
+    // Plan item 398: under the lesson Cath's bubble already says how to turn a tile; until the first tap the hint
+    // would only repeat her, a grey line floating on the paper, so it waits for the count of watered fields
+    // (styles.css hides an idle hint under `body.in-lesson`).
+    ui.hint.toggleAttribute('data-idle', game.taps === 0)
     ui.btnNew.textContent = 'New puzzle'
   }
   ui.btnTip.hidden = isDaily || game.solved
