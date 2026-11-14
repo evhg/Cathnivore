@@ -349,6 +349,72 @@ export function paintMarsh(ctx: CanvasRenderingContext2D, r: Rect, s: number, ra
 
 /** A water meadow: lush grass in strips, cut by a mill race; or a moor: heather, bracken and dry-stone walls. */
 export function paintGround(ctx: CanvasRenderingContext2D, ground: MarginSet["ground"], r: Rect, s: number, rand: () => number): void {
+  paintGroundBase(ctx, ground, r, s, rand);
+  if (ground === "marsh" || ground === "meadow" || ground === "green") paintBlades(ctx, r, s);
+  paintGroundLight(ctx, r, s);
+}
+
+/**
+ * Plan item 388: grass in blades, short dark and sunlit strokes leaning one way, so the margin's grass has the fine
+ * grain of the field's crops (a speckle on a flat fill had about three quarters of the field's local contrast).
+ */
+function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
+  const rand = seeded(Math.round(r.x * 5 + r.y * 11 + r.w + r.h * 2));
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.w, r.h);
+  ctx.clip();
+  ctx.lineCap = "round";
+  ctx.lineWidth = Math.max(1, s * 0.022);
+  const n = ((r.w * r.h) / (s * s)) * 9;
+  const tufts: Array<[number, number, number]> = [];
+  for (let i = 0; i < n; i++) tufts.push([r.x + rand() * r.w, r.y + rand() * r.h, s * (0.07 + rand() * 0.06)]);
+  // Each tuft three blades fanned from one root, dark; then a sunlit blade on its lee side.
+  ctx.strokeStyle = "rgba(30,62,28,0.5)";
+  ctx.beginPath();
+  for (const [x, y, len] of tufts)
+    for (const a of [-0.45, 0, 0.4]) {
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + Math.sin(a) * len * 0.4, y - len * 0.6, x + Math.sin(a) * len, y - Math.cos(a) * len);
+    }
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(226,240,170,0.5)";
+  ctx.beginPath();
+  for (const [x, y, len] of tufts) {
+    ctx.moveTo(x + len * 0.12, y);
+    ctx.lineTo(x + len * 0.3, y - len * 0.75);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * Plan item 388: the field's light carried onto the margins: broad pools of shade and sun, a cell or two across, and
+ * a darkening toward the table's edge, so the margin's values span the field's range (a flat fill read at half the
+ * field's contrast). Its own seed, so the ground and pieces drawn after it are unchanged.
+ */
+function paintGroundLight(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
+  const rand = seeded(Math.round(r.x * 7 + r.y * 13 + r.w * 3 + r.h));
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.w, r.h);
+  ctx.clip();
+  const n = Math.max(2, Math.round(((r.w * r.h) / (s * s)) * 0.35));
+  for (let i = 0; i < n; i++) {
+    const x = r.x + rand() * r.w;
+    const y = r.y + rand() * r.h;
+    const rr = s * (0.9 + rand() * 1.3);
+    const shade = rand() < 0.55;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
+    g.addColorStop(0, shade ? "rgba(24,46,22,0.22)" : "rgba(255,248,214,0.16)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+  }
+  ctx.restore();
+}
+
+function paintGroundBase(ctx: CanvasRenderingContext2D, ground: MarginSet["ground"], r: Rect, s: number, rand: () => number): void {
   if (ground === "marsh") return paintMarsh(ctx, r, s, rand);
   if (ground !== "meadow" && ground !== "moor") return paintLand(ctx, ground, r, s, rand);
   ctx.save();
