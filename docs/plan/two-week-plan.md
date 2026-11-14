@@ -3737,7 +3737,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hedgerow field, gatequeue and depot specs pass; key art re-shot (`npm run keyart hedgerow`); shots l21 and l34 at P and D, before and after.
 - **Size:** 2
 
-## 389. [ ] Runnel: the board set into the valley at one scale, not hex plates over a model railway
+## 389. [ ] Runnel: the board set into the valley at one scale, not hex plates over a model railway *(lane A, in progress)*
 - **Why:** `plan1114d/runnel-D`: the four lesson hexes (560-1240 x 95-740) are raised plates with thick borders seen from straight above, while the valley behind is drawn in perspective with a horizon and sky; the scale doesn't hold: a tile about 210 px wide beside a 55 px farmer (745-785 x 790-845), a 30 px sheep (1330-1365 x 555-585), a 100 px spring house (415-515 x 50-135) and a 20 px Bea (1165-1185 x 785-810). The puzzle reads as a toy laid on a diorama. `runnel-P` the same (hexes 35-345 x 330-650, folk 10-20 px).
 - **Build:**
   - One projection: the board as plots cut into the valley floor (a soft earth lip, no plate border or drop shadow), the valley from the same top-down three-quarter angle, the horizon a thin band.
