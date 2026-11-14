@@ -3816,7 +3816,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - campaign, campaign-spread, campaign-map and chapter-resume specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 396. [ ] Hedgerow: the tower rack says what each tower answers, not nine small stamps with price tags
+## 396. [ ] Hedgerow: the tower rack says what each tower answers, not nine small stamps with price tags *(lane B, in progress)*
 - **Why:** every coaching line is a counter-pick ('Build a Scarecrow for the Box Lorry: it hits them hard') and Coming up names locks ('Unanswered · Airborne · Scarecrow'), but the rack never says what a tower hits. `plan1114f/hedge-l21-2d-D` rack (1110-1410 x 85-340): tower art about 30-40 px in 100x80 cards (about 60% of each card blank), the Duck Pond a 40x15 blot (1235-1285 x 200-215), the only role marks 8 px corner glyphs (1113-1125 x 92-100) with no key; `hedge-l34-2d-D` (1110-1410 x 85-370) the same. At P the rack is in the tray, so the tip names towers the player can't see.
 - **Build:**
   - Each tower drawn at 56 px+ as the piece it becomes on the plot, its cost at the card's foot.
