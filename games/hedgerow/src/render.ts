@@ -36,7 +36,7 @@ import {
   type Level,
 } from "./engine";
 import { cathSvg } from "../../../shared/cath/cath";
-import { crayonNextBillboard, isWonLevel, paintBackground, rng, themeFor } from "./theme";
+import { crayonNextBillboard, gateSignRect, isWonLevel, paintBackground, rng, themeFor } from "./theme";
 import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins";
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
@@ -953,6 +953,18 @@ export class Renderer {
             if (isPlot(level, c, r)) plotRects.push({ x: X(c) + s * 0.1, y: Y(r) + s * 0.1, w: s * 0.8, h: s * 0.8 });
         return plotRects;
       };
+      // Plan item 378: and off the gate's sign (item 259 keeps it on the lane by the gate rather than on plots).
+      let signRects: Rect[] | null = null;
+      const signs = (): Rect[] => {
+        if (signRects) return signRects;
+        ctx.save();
+        signRects = (level.path2 ? [level.path, level.path2] : [level.path]).map((pth) => {
+          const g = gateSignRect(level, pth, { width: this.cssW, height: this.cssH, cell: s, offX: X(0), offY: Y(0) }, ctx);
+          return { x: g.sx, y: g.sy, w: g.sw, h: g.sh };
+        });
+        ctx.restore();
+        return signRects;
+      };
       for (const ln of lanes) {
         if (!ln.count) continue;
         const path = ln.lane ? level.path2! : level.path;
@@ -1016,7 +1028,7 @@ export class Renderer {
         const upright = headingAt(path, 0).dx === 0;
         // Plan item 157: where Hollowell's depot stands by this gate its departures board carries the count instead.
         if (!this.depotLanes.has(ln.lane ?? 0))
-          items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright, plots(), shown.leads)) });
+          items.push({ y: 99, draw: () => shown.plates.push(this.countPlate(ctx, ln.count, X(tail.x), Y(tail.y), s, upright, plots(), [...shown.leads, ...signs()])) });
       }
     } else this.queueAge = 0;
     for (const e of game.enemies) {

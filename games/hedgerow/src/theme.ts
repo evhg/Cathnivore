@@ -1049,8 +1049,29 @@ export function gateSignRect(
   const sh = Math.max(s * 0.26, fs * 1.6);
   // Plan item 126: a gutter clear of the field's rounded frame (at 2 px it sat flush under the frame's edge).
   const pad = Math.max(8, s * 0.1);
-  const sx = Math.max(pad, Math.min(L.width - sw - pad, x - sw / 2));
-  const sy = Math.max(pad, Math.min(L.height - sh - pad, y - s * 0.36 - sh));
+  const clampX = (v: number) => Math.max(pad, Math.min(L.width - sw - pad, v));
+  const clampY = (v: number) => Math.max(pad, Math.min(L.height - sh - pad, v));
+  // Plan item 378: over the gate, unless that lays the plate across a lane (a gate mid-field on a lane that runs up or
+  // down, as on a phone's level 21, put HOLLOWELL over the road); then beside the posts, else under them.
+  const lanes = laneCellsOf(level);
+  const onLane = (px: number, py: number) => {
+    const c0 = Math.floor((px - L.offX) / s);
+    const c1 = Math.floor((px + sw - 1 - L.offX) / s);
+    const r0 = Math.floor((py - L.offY) / s);
+    const r1 = Math.floor((py + sh - 1 - L.offY) / s);
+    for (let cc = c0; cc <= c1; cc++) for (let rr = r0; rr <= r1; rr++) if (lanes.has(`${cc},${rr}`)) return true;
+    return false;
+  };
+  const tries: Array<[number, number]> = [
+    [clampX(x - sw / 2), clampY(y - s * 0.36 - sh)],
+    ...(dy !== 0
+      ? ([
+          [clampX(x + s * 0.6), clampY(y - sh / 2 - s * 0.14)],
+          [clampX(x - s * 0.6 - sw), clampY(y - sh / 2 - s * 0.14)],
+        ] as Array<[number, number]>)
+      : []),
+  ];
+  const [sx, sy] = tries.find(([px, py]) => !onLane(px, py)) ?? tries[0]!;
   return { label, fs, sx, sy, sw, sh };
 }
 
