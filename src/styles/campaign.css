@@ -1157,6 +1157,10 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
     scroll-padding-top: 4px;
   }
   .campaign-screen > .cmp-path > .cmp-stop { scroll-snap-align: start; }
+  /* Plan item 394: the stops spread down the rail's full height (a short rail left an empty block under chapter 6);
+     space-between falls back to the top once they overflow and scroll, and the foot's padding keeps the last stop
+     clear of the fade. */
+  .campaign-screen > .cmp-path { align-self: stretch; justify-content: space-between; padding-bottom: 52px; }
   .campaign-screen > .cmp-back { display: none; }
   .campaign-screen .cmp-ledger .cmp-ledger-back { display: block; margin: 0; }
 }
