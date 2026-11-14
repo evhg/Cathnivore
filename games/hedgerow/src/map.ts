@@ -2381,14 +2381,17 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     // top, so Cath's line isn't scrolled under the glass header.
     const atTop = list.scrollTop === 0;
     const headBottom = document.querySelector("#screen-select > header, #screen-select .select-head")?.getBoundingClientRect().bottom ?? lr.top;
-    const fits = hr.top >= headBottom && hr.bottom <= lr.top + list.clientHeight - 96;
+    // The phone's level sheet covers the map's foot (96 px kept clear); a card docked beside the act (plan item 372,
+    // 1200 px+) covers none of it, so a whole act a screen tall still counts as showing her stop.
+    const foot = matchMedia("(min-width: 1200px) and (min-height: 700px)").matches ? 8 : 96;
+    const fits = hr.top >= headBottom && hr.bottom <= lr.top + list.clientHeight - foot;
     if (!(atTop && fits)) {
       // Plan item 79: start her act's painted head just under the glass header when her stop still shows in full
       // below it, so the screen opens on whole rows, not the last act's row cut by the header; else centre her.
       const act = here.closest<HTMLElement>("li.act")?.querySelector<HTMLElement>(".act-head");
       const ar = act?.getBoundingClientRect();
       const shift = ar ? ar.top - headBottom - 8 : NaN;
-      const viewBottom = lr.top + list.clientHeight - 96;
+      const viewBottom = lr.top + list.clientHeight - foot;
       if (ar && act && hr.bottom - shift <= viewBottom && shift + list.scrollTop >= 0) {
         list.scrollTo({ top: list.scrollTop + shift, behavior: "instant" });
         // The web fonts reflow the rows above once they load: keep her act's head where it was put, unless the
