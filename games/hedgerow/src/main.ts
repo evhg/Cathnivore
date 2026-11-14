@@ -4828,19 +4828,23 @@ function syncDepots(g: Game): void {
         }
       return false;
     };
-    // The lane's first three cells, from the gate (further in, it would stand mid-field over the queue).
+    // The lane's first two cells, from the gate (further in, it stood mid-road among the queue: l40 at P).
     const [g0c, g0r] = path![0] as unknown as [number, number];
     const [g1c, g1r] = (path![1] ?? path![0]) as unknown as [number, number];
-    for (let k = 0; k < 3 && !spots.some((sp) => sp.lane === i); k++) {
+    for (let k = 0; k < 2 && !spots.some((sp) => sp.lane === i); k++) {
       const c0 = g0c + Math.sign(g1c - g0c) * Math.min(k, Math.abs(g1c - g0c));
       const r0 = g0r + Math.sign(g1r - g0r) * Math.min(k, Math.abs(g1r - g0r));
       const at = r.cellCenter(c0, r0);
       if (!at) continue;
       const x = Math.max(canvas.left + 4, Math.min(canvas.right - dsz - 4, at.x - dsz / 2));
-      const y = Math.max(canvas.top + 4, Math.min(canvas.bottom - dsz - 4, at.y - dsz / 2));
-      const meetsSign = x < sign.right && x + dsz > sign.left && y < sign.bottom && y + dsz > sign.top;
-      if (meetsSign || plotHit(x, y)) continue;
-      spots.push({ x: x - stage.left, y: y - stage.top, count: counts[i]!, lane: i, size: dsz, jetty: false });
+      // On the cell, or stepped just above or below the gate's sign where it stands on the cell (l40's at P).
+      for (const y0 of [at.y - dsz / 2, sign.top - 4 - dsz, sign.bottom + 4]) {
+        const y = Math.max(canvas.top + 4, Math.min(canvas.bottom - dsz - 4, y0));
+        const meetsSign = x < sign.right && x + dsz > sign.left && y < sign.bottom && y + dsz > sign.top;
+        if (meetsSign || plotHit(x, y)) continue;
+        spots.push({ x: x - stage.left, y: y - stage.top, count: counts[i]!, lane: i, size: dsz, jetty: false });
+        break;
+      }
     }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
