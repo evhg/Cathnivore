@@ -1134,7 +1134,15 @@ export function depotSides(level: Level, path: Level["path"], L: Layout): Side[]
   const fieldR = L.offX + level.cols * s;
   const fieldB = L.offY + level.rows * s;
   const room: Record<Side, number> = { left: L.offX, right: L.width - fieldR, top: L.offY, bottom: L.height - fieldB };
-  return [...entrySide(start, level.cols, level.rows), ...nearSides(start, level.cols, level.rows)].filter((side) => side !== water && room[side] >= dsz + 12);
+  const sides = [...entrySide(start, level.cols, level.rows), ...nearSides(start, level.cols, level.rows)].filter((side) => room[side] >= dsz + 12);
+  // Plan item 391: the water side last, where the depot stands as a jetty warehouse on piles (a sea-side gate had no
+  // building at all, only a bare sign and a floating count).
+  return [...sides.filter((side) => side !== water), ...sides.filter((side) => side === water)];
+}
+
+/** Plan item 391: whether a depot on this side stands over the act's water (a jetty warehouse on piles). */
+export function isJettySide(level: Level, side: Side): boolean {
+  return themeFor(level).water?.side === side;
 }
 
 function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["path"], L: Layout): void {

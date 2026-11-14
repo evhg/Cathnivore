@@ -54,6 +54,27 @@ export function depotSvg(): string {
   );
 }
 
+/**
+ * Plan item 391: the jetty under a depot that stands over water: a plank deck under its plinth and piles down into the
+ * water, each with a ripple ring, in a 120 x 40 box laid under the depot's foot (the CSS places it).
+ */
+export function jettySvg(): string {
+  const piles = [8, 30, 52, 74, 96, 112]
+    .map((x) => `<rect x="${x - 2}" y="12" width="4" height="22" rx="1" fill="#5a4330"/><rect x="${x - 2}" y="12" width="1.3" height="22" fill="#8a6a4c"/><ellipse cx="${x}" cy="34" rx="6" ry="1.8" fill="none" stroke="#eaf6f6" stroke-width="1" opacity=".7"/>`)
+    .join("");
+  const planks = Array.from({ length: 15 }, (_, i) => `<path d="M${4 + i * 8} 4v10" stroke="#6e5238" stroke-width=".8"/>`).join("");
+  return (
+    `<svg class="depot-jetty" viewBox="0 0 120 40" aria-hidden="true">` +
+    `<ellipse cx="60" cy="33" rx="58" ry="5" fill="rgba(20,50,70,0.35)"/>` +
+    piles +
+    `<rect x="2" y="3" width="116" height="11" rx="1.5" fill="#a78160"/>` +
+    `<rect x="2" y="3" width="116" height="2" rx="1" fill="#d2b08a"/>` +
+    planks +
+    `<rect x="2" y="12.5" width="116" height="1.5" fill="#4a3626"/>` +
+    `</svg>`
+  );
+}
+
 /** The rep on the balcony (a small figure in a suit with an orange tie), in a 24 x 30 box. */
 export function repSvg(mood: RepMood, hatch = false): string {
   const mouth =

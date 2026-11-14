@@ -5140,6 +5140,8 @@ img.act-scene {
   height: var(--size);
 }
 .depot > svg { display: block; width: 100%; height: 100%; }
+/* Plan item 391: a depot over the water stands on a jetty: the deck under its plinth, piles down into the sea. */
+.depot > .depot-jetty { position: absolute; left: -10%; top: 86%; width: 120%; height: 40%; }
 .depot-board {
   position: absolute;
   /* Plan item 222: sized to its count (a three-digit count ran past a fixed 48% box onto the rep), centred.

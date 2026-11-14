@@ -201,8 +201,8 @@ import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
-import { depotSvg, repMood, repSvg, type RepMood } from "./depot";
-import { depotSides, gateSignRect, lastCrayon, setWonLevels } from "./theme";
+import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
+import { depotSides, gateSignRect, isJettySide, lastCrayon, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -4758,7 +4758,7 @@ function syncDepots(g: Game): void {
   const counts = [0, 0];
   if (betweenRounds(g) && L.waves[g.wave]) for (const q of waveSpawns(g, L.waves[g.wave]!, g.wave + 1)) counts[(q as { lane?: number }).lane ? 1 : 0]!++;
   const lanes = [L.path, L.path2].map((path, i) => ({ path, i })).filter((l) => !!l.path);
-  const spots: Array<{ x: number; y: number; count: number; lane: number; size: number }> = [];
+  const spots: Array<{ x: number; y: number; count: number; lane: number; size: number; jetty: boolean }> = [];
   // Plan item 246: where no margin holds the full two-cell depot, a smaller one (1.3 cells, 48 px at least) is tried.
   const sizes = [size, Math.max(48, Math.round(cell * 1.3))].filter((v, k, a) => k === 0 || v < a[0]!);
   for (const { path, i } of lanes) for (const dsz of sizes) {
@@ -4792,7 +4792,7 @@ function syncDepots(g: Game): void {
         const meetsField = clampX < fieldR && clampX + dsz > fieldL && clampY < fieldB && clampY + dsz > fieldT;
         const meetsSign = clampX < sign.right && clampX + dsz > sign.left && clampY < sign.bottom && clampY + dsz > sign.top;
         if (meetsField || meetsSign) continue;
-        spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i, size: dsz });
+        spots.push({ x: clampX - stage.left, y: clampY - stage.top, count: counts[i]!, lane: i, size: dsz, jetty: isJettySide(L, side) });
         placed = true;
         break;
       }
@@ -4800,7 +4800,7 @@ function syncDepots(g: Game): void {
     }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
-  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size}`).join(";")}`;
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;
   let layer = layer0;
@@ -4824,11 +4824,12 @@ function syncDepots(g: Game): void {
       // Plan item 160: a phone's small depot shows the count alone ('485 NEXT' overflowed its board at 12 px).
       el.toggleAttribute("data-small", sp.size < 100);
       el.toggleAttribute("data-tiny", sp.size < 72);
+      el.toggleAttribute("data-jetty", sp.jetty);
       // Plan item 166: a quiet gate reads "0 next" (a bare dash read as a broken board).
       // Plan item 336: as the shutter rolls up on Go, the round's lead vehicle noses out of the door (a fade under
       // reduced motion), then the convoy takes over on the lane.
       const lead = doorOpen ? (L.waves[g.wave - 1] ?? []).find((gr) => ((gr as { lane?: number }).lane ? 1 : 0) === sp.lane)?.enemy ?? L.waves[g.wave - 1]?.[0]?.enemy : undefined;
-      el.innerHTML = `${depotSvg()}${lead ? `<img class="depot-lead" src="${enemyIcon(lead)}" alt="">` : ""}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
+      el.innerHTML = `${sp.jetty ? jettySvg() : ""}${depotSvg()}${lead ? `<img class="depot-lead" src="${enemyIcon(lead)}" alt="">` : ""}<span class="depot-board" data-depot-count="${sp.count}"><b>${sp.count}</b><span class="depot-next"> next</span></span><span class="depot-rep">${repSvg(depotMood)}</span>`;
       return el;
     }),
   );

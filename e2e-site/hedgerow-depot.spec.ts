@@ -8,7 +8,7 @@ type W = { hedgerow?: { game: () => G | null; cellCenter: (c: number, r: number)
 
 test('the depot stands by the gate with the next round on its board, and the rep reacts to the round', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the phone field leaves no dry margin for a full depot')
-  // Plan item 380: level 21's gate faces the sea, where no depot stands now; level 34's first gate is on dry ground.
+  // Plan item 380: level 34's first gate is on dry ground (level 21's sea-side depot is a jetty, item 391's case below).
   await page.goto('/hedgerow/?2d&sandbox=1&level=34')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   const depot = page.locator('[data-depot]').first()
@@ -95,4 +95,23 @@ test('the depot keeps clear of the gate sign and its board fits', async ({ page 
     return n
   })
   expect(covered).toBe(0)
+})
+
+// Plan item 391: a gate that faces the sea gets its depot as a jetty warehouse on piles, inside the field canvas, with
+// the count on its board (no bare gate sign and no floating 'N coming' pill).
+test('a sea-side gate has its depot on a jetty, whole inside the canvas', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the phone field leaves no margin for a full depot (item 391 slice 2)')
+  await page.goto('/hedgerow/?2d&sandbox=1&level=21')
+  await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
+  const depot = page.locator('[data-depot][data-jetty]').first()
+  await expect(depot).toBeAttached()
+  await expect(depot.locator('.depot-jetty')).toBeAttached()
+  const m = await page.evaluate(() => {
+    const c = document.querySelector('canvas')!.getBoundingClientRect()
+    const d = document.querySelector('[data-depot]')!.getBoundingClientRect()
+    const plates = (window as unknown as W).hedgerow!.gateQueue()?.plates.length ?? 0
+    return { inside: d.left >= c.left && d.right <= c.right && d.top >= c.top && d.bottom <= c.bottom, plates }
+  })
+  expect(m.inside).toBe(true)
+  expect(m.plates).toBe(0)
 })
