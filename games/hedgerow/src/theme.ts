@@ -1184,11 +1184,19 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
       paintBoardwalk(ctx, bw, s);
       keepOut.push(bw);
     }
-  const pieces = placeMargin(set, rects, s, level.id * 131 + 7, keepOut);
+  // Plan item 388: pieces stand clear of the board's frame (a beach hut was cut by it at the screen's edge).
+  const rim = s * 0.45;
+  const inset = rects.map((r) => {
+    const x0 = r.x <= 0.5 ? rim : r.x;
+    const y0 = r.y <= 0.5 ? rim : r.y;
+    const x1 = r.x + r.w >= L.width - 0.5 ? L.width - rim : r.x + r.w;
+    const y1 = r.y + r.h >= L.height - 0.5 ? L.height - rim : r.y + r.h;
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  });
+  const pieces = placeMargin(set, inset, s, level.id * 131 + 7, keepOut);
   // The water margin's own pieces (punts on the river), wholly on the water.
   if (set.water && side) {
     // Plan item 388: clear of the board's frame too (punts were cut by it at the screen's edge).
-    const rim = s * 0.45;
     const wx0 = side === "left" ? rim : side === "right" ? x1 + s * 0.3 : rim;
     const wx1 = side === "left" ? x0 - s * 0.3 : L.width - rim;
     const wy0 = side === "top" ? rim : side === "bottom" ? y1 + s * 0.3 : rim;
@@ -1202,7 +1210,23 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
   return rects;
 }
 
+/** Plan item 388: built and standing margin pieces cast the field's shadow (down and right, away from the light). */
+const CASTS = new Set<string>(["hut", "post", "mill", "tor", "cairn", "logpile", "kiln", "nets", "pots", "barrier", "digger", "marquee", "hustings", "crane", "cabin", "cart", "cars", "deer", "flock"]);
+
 function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
+  if (CASTS.has(p.kind)) {
+    const foot = p.y + p.h / 2;
+    const g = ctx.createRadialGradient(p.x + p.w * 0.14, foot, 0, p.x + p.w * 0.14, foot, p.w * 0.62);
+    g.addColorStop(0, "rgba(20,32,12,0.42)");
+    g.addColorStop(1, "rgba(20,32,12,0)");
+    ctx.save();
+    ctx.fillStyle = g;
+    ctx.translate(p.x + p.w * 0.14, foot);
+    ctx.scale(1, 0.3);
+    ctx.translate(-(p.x + p.w * 0.14), -foot);
+    ctx.fillRect(p.x - p.w, foot - p.w, p.w * 2.4, p.w * 2);
+    ctx.restore();
+  }
   varied(ctx, p.x, p.y + p.h / 2, p.look ?? pieceLook(p.kind, rand), () => {
     // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
     if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
