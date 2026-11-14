@@ -3208,7 +3208,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   <span className="plan-strip-plate">Hollowell</span>
                   {card && (
                     <span className="plan-strip-card-meta">
-                      <span className="plan-strip-stage"><span className="plan-strip-stage-word">Stage </span>{romanStage(card.stage)}</span>
+                      <span className="plan-strip-stage" title={`Pressure stage ${romanStage(card.stage)}`}><span className="plan-strip-stage-word">Stage </span>{romanStage(card.stage)}</span>
                       {pressureIconTypes(card).map((type) => (
                         <RegionTypeIcon key={type} type={type} size={13} />
                       ))}
