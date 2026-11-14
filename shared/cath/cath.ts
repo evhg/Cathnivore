@@ -49,6 +49,9 @@ export interface CathOptions {
 const HAIR = '#2E211C'
 const SKIN = '#F7DCCB'
 
+/** Her skin tones, for props drawn outside the figure that she touches (plan item 367: her hand on the setup poster). */
+export const CATH_SKIN = { base: SKIN, line: '#A0614F', shade: '#EDBBA6' } as const
+
 const C = {
   ink: '#3A2A24',
   hairLine: '#170E0B',

@@ -8,6 +8,7 @@ import { MARKET_EVENTS, marketEventFor, type MarketEventId } from '../engine/mar
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
+import { CATH_SKIN } from '../../shared/cath/cath'
 import Portrait from './portraits/Portrait'
 import { RoleArt } from './icons/ActionArt'
 import { RoleProducerContext } from './icons/artScene'
@@ -216,6 +217,17 @@ export default function Setup({ onStart }: Props) {
         <span className="market-event-name">{marketEvent.name}</span>
       </h2>
       <p className="market-event-line">“{marketEvent.banner}”</p>
+      {/* Plan item 367: at D Cath holds the poster up by its edge: her fingers curl over it, her coat cuff behind. */}
+      {rail && (
+        <svg className="poster-grip" viewBox="0 0 40 52" aria-hidden="true" focusable="false">
+          <path className="grip-cuff" d="M22 0h16v22l-16 3Z" />
+          <path d="M24 20c-6 0-12 3-15 7v22c4 2 9 2 13 0l4-12Z" fill={CATH_SKIN.base} stroke={CATH_SKIN.line} strokeWidth="1.2" strokeLinejoin="round" />
+          {[27, 34, 41].map((y) => (
+            <path key={y} d={`M9 ${y}h-6a3.2 3.2 0 0 0 0 6.4h6`} fill={CATH_SKIN.base} stroke={CATH_SKIN.line} strokeWidth="1.2" />
+          ))}
+          <path d="M10 26c4 0 7 1 9 3" fill="none" stroke={CATH_SKIN.shade} strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+      )}
       {/* Plan item 204: at D the rule is a stamped line on the flyer; on a phone the two run on as one line. */}
       <p className="market-event-deal">
         <span className="market-event-rule" data-stamp>{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week.</span>{' '}

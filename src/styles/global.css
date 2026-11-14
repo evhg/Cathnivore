@@ -4128,7 +4128,8 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-steps] .market-event[data-flyer] .market-event-line,
   .setup[data-steps] .market-event[data-flyer] .market-event-pin { display: none; }
   .setup[data-steps] .market-event[data-flyer] .market-event-deal { padding: 0 8px; }
-  .setup[data-steps] .market-event-rule[data-stamp] { margin-top: 8px; padding: 4px 6px; font-size: var(--fs-caption); letter-spacing: 0; text-transform: none; }
+  .setup[data-steps] .market-event-rule[data-stamp]::first-letter { text-transform: uppercase; }
+  .setup[data-steps] .market-event-rule[data-stamp] { display: block; margin-top: 8px; padding: 4px 6px; font-size: var(--fs-caption); letter-spacing: 0; text-transform: none; }
   .setup[data-steps] .setup-step > .pin-tin { display: block; margin: 14px 0 0; transform: rotate(-1deg); }
   .setup[data-steps] .pin-tin-head { font-size: var(--fs-caption); }
   .setup[data-steps] .pin-tin .pin-name, .setup[data-steps] .pin-tin .pin-when { font-size: var(--fs-caption); }
@@ -4136,7 +4137,7 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
 
   /* The counter: a timber top she stands behind, its front panel carrying Start. */
   .setup[data-steps] .setup-counter {
-    grid-area: start; position: relative; z-index: var(--z-lift); margin: 0 -10px; border-radius: 6px 6px 3px 3px;
+    grid-area: start; position: relative; z-index: var(--z-lift); margin: -8px -10px 0; border-radius: 6px 6px 3px 3px;
     border-top: 12px solid var(--wood);
     background:
       repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 30%, transparent) 46px 48px),
@@ -4183,4 +4184,10 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
 @media (min-width: 1100px) and (min-height: 980px) {
   .setup[data-steps] { min-height: 0; height: calc(50vh + 460px); padding-top: calc(50vh - 450px); }
   .setup[data-steps] .setup-table { padding-block: 20px 22px; }
+}
+/* Plan item 367: her hand holding the poster up by its right edge, her green cuff behind it. */
+.setup .poster-grip { display: none; }
+@media (min-width: 1100px) {
+  .setup[data-steps] .poster-grip { display: block; position: absolute; top: 34%; right: -22px; width: 34px; height: 44px; z-index: var(--z-raised); pointer-events: none; filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--ink) 25%, transparent)); }
+  .setup[data-steps] .poster-grip .grip-cuff { fill: var(--pasture-deep); }
 }
