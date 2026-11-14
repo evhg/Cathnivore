@@ -3543,7 +3543,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hedgerow-map, level-card and catdock specs and the axe scans pass; shots of acts 1 and 3 at P and D, before and after.
 - **Size:** 2
 
-## 373. [ ] Cathnivore desktop Campaign: the chapters as stops on the map, the chosen one open beside it
+## 373. [ ] Cathnivore desktop Campaign: the chapters as stops on the map, the chosen one open beside it *(lane B, in progress)*
 - **Why:** `plan1114b/cath-campaign-D`: the map's chapter stops 2-6 (455-490 x 345-385, 370-405 x 495-530, 285-320 x 645-680, 455-490 x 645-680, 540-575 x 480-515) are the same cream discs, with only stop 1 in colour, so the map never says which chapter is open, locked or won. The rail (975-1355 x 165-885) is a scrolling list of white cards in which chapters 2 and 3 look almost alike (a grey lock, three outline seals, a dim plate), and chapter 4 is cut at the fold (975-1355 x 843-885). There are two Caths on one screen: a 30 px marker on the map (250-280 x 470-545) and the 260 px presenter (690-830 x 470-750).
 - **Build:**
   - The map's stops are the chapter picker. A locked stop is a sealed wax disc, the open one a lit gold pin with a slow pulse (a fade under reduced motion), and a won one wears its seals.
