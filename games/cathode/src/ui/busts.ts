@@ -71,10 +71,12 @@ function face(shape: string, shadow: string): string {
 <g fill="${SKIN_DK}" opacity=".13"><ellipse cx="88" cy="89" rx="10" ry="5.5"/><ellipse cx="112" cy="89" rx="10" ry="5.5"/></g>`;
 }
 
+// Plan item 371: Crisp's head sculpted like Reed's: a lean, sly face with cheek planes, hooded eyes and a groomed shine.
 function crisp(id: string, wrap: Wrap = frame): string {
   return wrap(
     id,
     `
+<defs><linearGradient id="ck${id}" x1="0" x2="1"><stop offset="0" stop-color="#d8d0c3"/><stop offset=".5" stop-color="${SKIN}"/><stop offset=".72" stop-color="${SKIN_MID}"/><stop offset="1" stop-color="#6e665c"/></linearGradient></defs>
 <!-- double-breasted pinstripe, wide peaked lapels -->
 <path d="M0 240 L4 196 C20 178 50 170 72 166 L100 182 L128 166 C150 170 180 178 196 196 L200 240 Z" fill="${CLOTH}"/>
 <g stroke="${CLOTH_HI}" stroke-width=".8" opacity=".7">${[14, 26, 38, 50, 150, 162, 174, 186].map((x) => `<line x1="${x}" y1="${x < 100 ? 240 : 240}" x2="${x < 100 ? x + 8 : x - 8}" y2="182"/>`).join("")}</g>
@@ -86,35 +88,49 @@ function crisp(id: string, wrap: Wrap = frame): string {
 <rect x="94" y="196" width="12" height="2.4" fill="${SKIN}"/>
 <!-- pocket square -->
 <path d="M146 208 L160 204 L163 212 L149 216 Z" fill="${RED}"/><path d="M148 206 L152 199 L156 205 Z" fill="${RED}"/>
-<!-- neck -->
-<path d="M86 132 L114 132 L116 158 C108 164 92 164 84 158 Z" fill="${SKIN_MID}"/>
-${face(
-  "M70 86 C70 56 84 42 100 42 C116 42 130 56 130 86 C130 108 126 126 117 138 C111 146 105 150 100 150 C95 150 89 146 83 138 C74 126 70 108 70 86 Z",
-  "M108 44 C122 48 130 62 130 86 C130 108 126 126 117 138 C111 146 105 150 100 150 C106 140 112 128 113 110 C114 92 114 64 108 44 Z",
-)}
-<path d="M74 110 C78 124 86 136 96 142" stroke="${SKIN_MID}" stroke-width="3" fill="none" opacity=".5"/>
-<!-- ears -->
-<path d="M70 88 C64 86 63 100 70 106" fill="${SKIN_MID}"/><path d="M130 88 C136 86 137 100 130 106" fill="${SKIN_DK}"/>
-<!-- slicked hair, swept back with a shine band -->
-<path d="M68 84 C64 50 80 28 104 28 C128 28 140 48 132 84 C131 70 127 62 120 60 C106 56 86 58 76 66 C71 72 69 78 68 84 Z" fill="${INK}"/>
-<path d="M74 56 C86 40 110 36 128 48" stroke="#6b6860" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-<path d="M80 54 C92 44 110 42 120 46" stroke="#4a4842" stroke-width="1.2" fill="none"/>
-<!-- brows: one arched -->
-<path d="M80 82 C86 78 92 78 96 80" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-<path d="M104 80 C110 76 116 76 121 80" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-<!-- hooded eyes -->
-<path d="M81 90 C85 87 91 87 95 90 C91 92 85 92 81 90 Z" fill="${INK}"/><circle cx="88.5" cy="89.6" r="1.1" fill="${P}"/>
-<path d="M105 90 C109 87 115 87 119 90 C115 92 109 92 105 90 Z" fill="${INK}"/><circle cx="112" cy="89.6" r="1" fill="#8d877d"/>
-<path d="M81 89 C85 85 91 85 95 88" stroke="${SKIN_DK}" stroke-width="1.2" fill="none"/>
-<!-- nose -->
-<path d="M100 92 C99 102 96 110 95 114 C98 117 103 117 106 114" stroke="${SKIN_DK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-<path d="M103 94 C106 102 108 110 107 114" fill="${SKIN_MID}" opacity=".7"/>
-<!-- pencil moustache and the smirk, higher on the right -->
-<path d="M89 123 C95 120 104 120 112 121" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-<path d="M89 129 C96 131 104 130 113 125" stroke="${SKIN_DK}" stroke-width="2" fill="none" stroke-linecap="round"/>
-<path d="M92 134 C97 136 103 136 107 134" stroke="${SKIN_MID}" stroke-width="1.4" fill="none"/>
+<!-- neck: lean, the far side in shadow -->
+<path d="M87 130 L113 130 L115 158 C108 164 92 164 85 158 Z" fill="${SKIN_MID}"/>
+<path d="M104 134 L113 130 L115 158 C111 161 108 162 105 162 Z" fill="${SKIN_DK}" opacity=".6"/>
+<!-- ears, the near one lit -->
+<path d="M72 92 C65 88 63 104 67 112 C69 117 72 116 74 112 Z" fill="${SKIN_MID}"/>
+<path d="M70 97 C67 100 67 107 70 110" stroke="${SKIN_DK}" stroke-width="1.1" fill="none"/>
+<path d="M128 92 C135 88 137 104 133 112 C131 117 128 116 126 112 Z" fill="${SKIN_DK}"/>
+<!-- a lean face: high cheekbones, hollow cheeks, a narrow pointed chin -->
+<path d="M72 88 C72 60 85 48 100 48 C115 48 128 60 128 88 C129 104 127 116 121 128 C115 140 107 150 100 151 C93 150 85 140 79 128 C73 116 71 104 72 88 Z" fill="url(#ck${id})"/>
+<path d="M110 50 C122 56 128 68 128 88 C129 104 127 116 121 128 C115 140 107 150 100 151 C107 140 112 126 113 110 C114 92 115 70 110 50 Z" fill="${SKIN_DK}" opacity=".55"/>
+<path d="M77 112 C80 122 86 130 92 134 C86 124 82 118 80 108 Z" fill="${SKIN_MID}" opacity=".8"/>
+<path d="M123 112 C120 122 114 130 108 134 C114 124 118 118 120 108 Z" fill="${SKIN_DK}" opacity=".8"/>
+<ellipse cx="82" cy="106" rx="6.5" ry="3" fill="#ece5d8" opacity=".55" transform="rotate(-24 82 106)"/>
+<ellipse cx="92" cy="80" rx="12" ry="4.4" fill="#ece5d8" opacity=".4"/>
+<ellipse cx="99" cy="145" rx="4.5" ry="2.2" fill="#ece5d8" opacity=".35"/>
+<!-- a close shave's shadow on the jaw -->
+<path d="M78 124 C84 140 92 149 100 151 C108 149 116 140 122 124 C118 140 110 148 100 149 C90 148 82 140 78 124 Z" fill="#4a4e58" opacity=".25"/>
+<!-- brows: the left one cocked -->
+<path d="M77 92 C82 85 90 84 97 88 C90 87.4 83 88.6 78 93 Z" fill="${INK}"/>
+<path d="M103 90 C108 88 115 88 123 91 C116 90 109 90.4 103 92 Z" fill="${INK}"/>
+${sculptedEye(id, 87, true)}${sculptedEye(id, 113, false)}
+<!-- hoods over the eyes: half-shut, amused -->
+<path d="M76 99.4 C80 95.2 94 95 98 99.6 L98 98 C94 93.6 80 94 76 98 Z" fill="${SKIN_MID}"/>
+<path d="M102 99.6 C106 95.6 120 95.6 124 99.6 L124 98 C120 94 106 94 102 98 Z" fill="${SKIN_DK}"/>
+<!-- a long straight nose: the lit bridge, the tip, the nostrils -->
+<path d="M99 98 C98.6 106 97.6 114 96 120 C95 122 95 124 97 124.6" stroke="${SKIN_DK}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<path d="M96.4 100 C96 108 95.6 114 94.8 118" stroke="#ece5d8" stroke-width="1.8" fill="none" opacity=".6" stroke-linecap="round"/>
+<path d="M102 100 C105 108 107 116 107 121 C104 124 100 124.6 98 124 Z" fill="${SKIN_MID}" opacity=".8"/>
+<path d="M92 121 C92.4 124.6 95 125.6 97.6 124.4 M102.4 124.4 C105 125.6 107.6 124.6 108 121" stroke="${SKIN_DK}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<!-- the pencil moustache and the smirk, higher on his left -->
+<path d="M89 129.4 C94 127.2 99 127.6 100 128.4 C101 127.6 106 127 112 128.2" stroke="${INK}" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+<path d="M90 133.4 C95 134.6 103 134.4 108 132.4 C110 131.4 112 130 113.4 128.8" stroke="#2c2622" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M92 134.6 C96 137.6 104 137.4 108 133.6 C104 135.4 96 135.6 92 134.6 Z" fill="#a39a8e"/>
+<path d="M113.6 128.4 C115 127.6 116 128.4 116 129.6" stroke="${SKIN_DK}" stroke-width="1" fill="none"/>
+<path d="M87 120 C85 126 85 130 87 134" stroke="${SKIN_DK}" stroke-width="1" fill="none" opacity=".5"/>
+<!-- slicked hair, swept straight back: the comb's grooves and a hard shine band -->
+<path d="M70 88 C66 50 82 30 104 30 C128 30 140 50 132 88 C131 76 128 70 121 68 C108 63 88 64 78 71 C73 76 71 82 70 88 Z" fill="${INK}"/>
+<g stroke="#3d3f47" stroke-width="1.1" fill="none" stroke-linecap="round">${[0, 1, 2, 3, 4, 5].map((k) => `<path d="M${80 + k * 8} ${66 - k * 0.6} C${84 + k * 6} ${52 - k} ${98 + k * 3} ${40 + k * 0.4} ${116 + k * 2} ${40 + k * 1.6}"/>`).join("")}</g>
+<path d="M76 56 C88 40 110 35 128 47" stroke="#8a877e" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".85"/>
+<path d="M80 52 C92 43 108 40 120 44" stroke="#5a5852" stroke-width="1.2" fill="none"/>
+<path d="M71 88 C70 84 70 78 72 74" stroke="#3e3f46" stroke-width="2" fill="none"/>
 <!-- rim light on the lit side -->
-<path d="M71 70 C69 92 72 116 82 136" stroke="${P}" stroke-width="1.2" fill="none" opacity=".55"/>
+<path d="M72.6 90 C72.4 104 74.4 118 80 128" stroke="${P}" stroke-width=".9" fill="none" opacity=".4"/>
 `,
   );
 }
@@ -244,6 +260,20 @@ function chair(id: string, wrap: Wrap = frame): string {
 }
 
 /** Plan item 99: Tomas Reed, the harbour man the first case is after: a rain slicker, a knit cap, stubble. */
+/** Plan item 371: an eye drawn as one, for the sculpted busts: the white under a heavy upper lid, iris, pupil and a
+ * catchlight clipped to the opening, the lid's crease and the bag under it. Centred at (cx, 100); `lit` on the key side. */
+function sculptedEye(id: string, cx: number, lit: boolean): string {
+  return `
+<path d="M${cx - 10} ${100} C${cx - 6} ${97} ${cx + 6} ${97} ${cx + 10} ${100} C${cx + 6} ${102.6} ${cx - 6} ${102.6} ${cx - 10} ${100} Z" fill="${lit ? "#cfc8bb" : "#a39b8f"}"/>
+<clipPath id="re${id}${cx}"><path d="M${cx - 10} ${100} C${cx - 6} ${97} ${cx + 6} ${97} ${cx + 10} ${100} C${cx + 6} ${102.6} ${cx - 6} ${102.6} ${cx - 10} ${100} Z"/></clipPath>
+<g clip-path="url(#re${id}${cx})"><circle cx="${cx + 0.5}" cy="100.2" r="3.4" fill="#5c5a55" stroke="#2a2a2c" stroke-width=".8"/><circle cx="${cx + 0.5}" cy="100.2" r="1.6" fill="#0d0e11"/><path d="M${cx - 10} 97 H${cx + 10} V99.4 H${cx - 10} Z" fill="#000" opacity=".22"/></g>
+<circle cx="${cx - 0.6}" cy="99.2" r="${lit ? 0.8 : 0.6}" fill="#fbf8f0"/>
+<path d="M${cx - 11} ${99.8} C${cx - 6} ${96.2} ${cx + 6} ${96.2} ${cx + 11} ${99.6}" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M${cx - 10} ${96.6} C${cx - 5} ${92.6} ${cx + 5} ${92.6} ${cx + 10} ${96.4}" stroke="${SKIN_DK}" stroke-width="1" fill="none" opacity=".7"/>
+<path d="M${cx - 8} ${103.2} C${cx - 3} ${105.2} ${cx + 4} ${105.2} ${cx + 9} ${102.6}" stroke="${SKIN_DK}" stroke-width=".9" fill="none" opacity=".6"/>
+<path d="M${cx - 7} ${107} C${cx - 2} ${109.4} ${cx + 4} ${109.2} ${cx + 8} ${106.4}" stroke="${SKIN_DK}" stroke-width=".9" fill="none" opacity=".45"/>`;
+}
+
 /**
  * Plan item 371: Tomas Reed sculpted to Cath's standard: a weathered harbour man in his fifties with a broad jaw,
  * cheek and brow planes lit from the left (the forehead and cheekbone take the key, the temple, the hollow under
@@ -278,15 +308,7 @@ function reed(id: string, wrap: Wrap = frame): string {
     const lip = y < 134 && y > 128 && Math.abs(x - 100) < 11;
     return (y > 136 && y < 152) || lip ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(0.35 + (i % 3) * 0.12).toFixed(2)}"/>` : "";
   }).join("");
-  const eye = (cx: number, lit: boolean) => `
-<path d="M${cx - 10} ${100} C${cx - 6} ${97} ${cx + 6} ${97} ${cx + 10} ${100} C${cx + 6} ${102.6} ${cx - 6} ${102.6} ${cx - 10} ${100} Z" fill="${lit ? "#cfc8bb" : "#a39b8f"}"/>
-<clipPath id="re${id}${cx}"><path d="M${cx - 10} ${100} C${cx - 6} ${97} ${cx + 6} ${97} ${cx + 10} ${100} C${cx + 6} ${102.6} ${cx - 6} ${102.6} ${cx - 10} ${100} Z"/></clipPath>
-<g clip-path="url(#re${id}${cx})"><circle cx="${cx + 0.5}" cy="100.2" r="3.4" fill="#5c5a55" stroke="#2a2a2c" stroke-width=".8"/><circle cx="${cx + 0.5}" cy="100.2" r="1.6" fill="#0d0e11"/><path d="M${cx - 10} 97 H${cx + 10} V99.4 H${cx - 10} Z" fill="#000" opacity=".22"/></g>
-<circle cx="${cx - 0.6}" cy="99.2" r="${lit ? 0.8 : 0.6}" fill="#fbf8f0"/>
-<path d="M${cx - 11} ${99.8} C${cx - 6} ${96.2} ${cx + 6} ${96.2} ${cx + 11} ${99.6}" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-<path d="M${cx - 10} ${96.6} C${cx - 5} ${92.6} ${cx + 5} ${92.6} ${cx + 10} ${96.4}" stroke="${SKIN_DK}" stroke-width="1" fill="none" opacity=".7"/>
-<path d="M${cx - 8} ${103.2} C${cx - 3} ${105.2} ${cx + 4} ${105.2} ${cx + 9} ${102.6}" stroke="${SKIN_DK}" stroke-width=".9" fill="none" opacity=".6"/>
-<path d="M${cx - 7} ${107} C${cx - 2} ${109.4} ${cx + 4} ${109.2} ${cx + 8} ${106.4}" stroke="${SKIN_DK}" stroke-width=".9" fill="none" opacity=".45"/>`;
+  const eye = (cx: number, lit: boolean) => sculptedEye(id, cx, lit);
   const brow = (cx: number, dir: 1 | -1) =>
     Array.from({ length: 9 }, (_, i) => {
       const x = cx - dir * 10 + dir * i * 2.6;
