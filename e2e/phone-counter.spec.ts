@@ -180,3 +180,31 @@ test('the phone tally names each figure', async ({ page }, info) => {
     }
   }
 })
+
+// Plan item 383: Pell's medallion hangs from the papers rail's left end, its ring clear of the tally's foot and of
+// Bea's drawing on the table; the rail's plates read at 13 px or more.
+test("the rail's medallion clears the tally and the table's drawing", async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the upright phone')
+  for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(size)
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.papers-placard-face').waitFor()
+    const m = await page.evaluate(() => {
+      const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+      const face = r('.papers-placard-face')
+      const ring = 5 // the medallion's outer ring (box-shadow)
+      const drawing = document.querySelector('.beas-drawing')?.getBoundingClientRect()
+      return {
+        gapTally: face.top - ring - r('.market-board').bottom,
+        drawingGap: drawing ? drawing.top - (face.bottom + ring) : 99,
+        overlapsX: drawing ? drawing.left < face.right + ring : false,
+        plates: [...document.querySelectorAll('.papers-placard-words > *')].map((e) => parseFloat(getComputedStyle(e).fontSize)),
+      }
+    })
+    expect(m.gapTally, JSON.stringify(m)).toBeGreaterThanOrEqual(0)
+    if (m.overlapsX) expect(m.drawingGap, JSON.stringify(m)).toBeGreaterThanOrEqual(0)
+    for (const f of m.plates) expect(f).toBeGreaterThanOrEqual(13)
+  }
+})
