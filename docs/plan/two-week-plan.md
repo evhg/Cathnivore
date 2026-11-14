@@ -3687,7 +3687,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - table-hand, board-scale and a sell-flow e2e pass; shots P and D before and after.
 - **Size:** 2
 
-## 385. [ ] The bugs from the 2026-11-14 12:30 critique, fixed as one batch *(lane A, in progress)*
+## 385. [ ] The bugs from the 2026-11-14 12:30 critique, fixed as one batch *(handed back 2026-11-14 13:40 by lane A, slices 1-2: the desktop hand's 'Pick a region'/'in <region>' lines at 13 px (were 12.5); `cath-campaign-D`'s header keeps its bar alone, the counts in the ledger only (visually hidden in the header, kept for screen readers). 'No Outlets left to remove' didn't show on the rail's shelf at 1440 for seeds 1-6: check with the plan's random-seed shot. Left: the rest of the list)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1114c`)
   - **Cathnivore:**
     - `cath-title-P` (200-372 x 605-695): the Daily tag crams "The Ring · Ines & Sol · Harvest Festival" into three centred lines at about 12 px, with no status or countdown.
