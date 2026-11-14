@@ -1408,6 +1408,20 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-tab-done { background: var(--pasture-deep); border-color: var(--pasture-deep); }
   .cmp-tab-current { background: var(--wheat); border-color: var(--soil); color: var(--ink-on-fixed-fill); }
   .cmp-tab-locked { background: var(--paper-2); color: color-mix(in srgb, var(--clay-deep) 55%, var(--ink)); }
+  /* Plan item 395: a locked tab wears the co-op's wax seal on its corner (it looked the same as a playable one); the
+     chapter stays playable (SPEC 8.1: the lock is a hint). */
+  .cmp-tab-locked { position: relative; }
+  .cmp-tab-locked::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+    background: radial-gradient(circle at 36% 34%, color-mix(in srgb, var(--clay-deep) 55%, var(--paper-hi)) 0 18%, var(--clay-deep) 60%);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--clay-deep) 70%, var(--ink)), 0 1px 1px color-mix(in srgb, var(--ink) 30%, transparent);
+  }
   .cmp-tab.is-open { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink), 0 4px 0 var(--rule); }
   /* The sheet: the chapter cards side by side, one in view, snapping as they are swiped. */
   .campaign-screen > .cmp-path {
