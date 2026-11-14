@@ -11,6 +11,8 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await page.getByText('Quick Game').click()
     await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+    // Plan item 367: the seed waits behind Advanced at D too.
+    await page.getByRole('button', { name: 'Advanced' }).click()
     const sels = ['.setup-mode label', '.producer-card', '.setup-difficulty label', '.layout-tile', '.setup-seed-field input', '.setup-start', '.setup-recommend']
     for (const sel of sels)
       for (const el of await page.locator(sel).all()) {

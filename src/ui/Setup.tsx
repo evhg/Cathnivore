@@ -116,57 +116,7 @@ export default function Setup({ onStart }: Props) {
     </section>
   )
 
-  return (
-    <main className="setup">
-      <header className="setup-header">
-        <div className="setup-header-text">
-          <h1>Quick Game</h1>
-          <p className="setup-cath-line">
-            <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
-            {/* Plan item 80: on a phone, once a pair is picked, Cath's line on them is said up here, beside her. */}
-            {producers.length === 2 && (
-              <span className="cath-line-pair" aria-hidden="true">
-                “{pairLine(producers[0]!, producers[1]!)}”
-              </span>
-            )}
-          </p>
-        </div>
-        {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
-            no game state exists yet to react to here. */}
-        <CathArt className="setup-header-cath" framing="bust" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate width={80} height={80} title="Cath" />
-      </header>
-
-      <section className="settings-card market-event" data-event={marketEvent.id} data-flyer>
-        <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
-        <h2>
-          <span className="market-event-kicker">Market event: </span>
-          {/* Plan item 201: the name breaks as a whole ('Great / Glut' left one word on a line). */}
-          <span className="market-event-name">{marketEvent.name}</span>
-        </h2>
-        <p className="market-event-line">“{marketEvent.banner}”</p>
-        {/* Plan item 204: at D the rule is a stamped line on the flyer; on a phone the two run on as one line. */}
-        <p className="market-event-deal">
-          <span className="market-event-rule" data-stamp>{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week.</span>{' '}
-          <span className="market-event-pin">Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</span>
-        </p>
-      </section>
-
-      {/* Plan item 239: Cath's pin tin stands in the left column under the flyer (D only). */}
-      <PinTin week={marketEvent.id} />
-
-      {/* Plan item 239: at D the mode and Hollowell's price tags share one stall rail across the top; below D each
-          keeps its place (the mode under the flyer, the tags on the table's cloth). One copy mounts either way. */}
-      {rail ? (
-        <div className="setup-rail" data-setup-rail>
-          {modeSection}
-          {difficultySection}
-        </div>
-      ) : (
-        modeSection
-      )}
-
-      {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
-      <div className="setup-table" data-setup-table>
+  const producersSection = (
       <section className="settings-card setup-producers">
         <div className="setup-producers-head">
           <h2>Producers (pick 2)</h2>
@@ -221,7 +171,8 @@ export default function Setup({ onStart }: Props) {
         </div>
         <PairPanel producers={producers} />
       </section>
-
+  )
+  const mapSection = (
       <section className="settings-card setup-seed" data-advanced={advanced || undefined}>
         <div className="setup-map-head">
           <h2>Map</h2>
@@ -245,21 +196,108 @@ export default function Setup({ onStart }: Props) {
           <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
         </label>
       </section>
+  )
+  const startButton = (
+    <button className="primary setup-start" disabled={!canStart} onClick={rollUp} data-opening={opening || undefined}>
+      <span className="shutter">
+        <span className="open-sign-kicker" aria-hidden="true">
+          {canStart ? 'Open' : 'Closed · pick two'}
+        </span>
+        <span className="open-sign-word">Start</span>
+      </span>
+    </button>
+  )
+  const eventFlyer = (
+    <section className="settings-card market-event" data-event={marketEvent.id} data-flyer>
+      <p className="market-event-eyebrow" aria-hidden="true">This week at the market</p>
+      <h2>
+        <span className="market-event-kicker">Market event: </span>
+        {/* Plan item 201: the name breaks as a whole ('Great / Glut' left one word on a line). */}
+        <span className="market-event-name">{marketEvent.name}</span>
+      </h2>
+      <p className="market-event-line">“{marketEvent.banner}”</p>
+      {/* Plan item 204: at D the rule is a stamped line on the flyer; on a phone the two run on as one line. */}
+      <p className="market-event-deal">
+        <span className="market-event-rule" data-stamp>{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week.</span>{' '}
+        <span className="market-event-pin">Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</span>
+      </p>
+    </section>
+  )
 
-      {!rail && difficultySection}
+  // Plan item 367: at D the Setup is one table in three numbered steps (who, where, how hard), with Cath behind a
+  // counter on its right holding the week's poster, and Start a plank on the counter in front of her. The phone
+  // keeps its own screen (item 349), below.
+  if (rail)
+    return (
+      <main className="setup" data-steps>
+        <header className="setup-header">
+          <div className="setup-header-text">
+            <h1>Quick Game</h1>
+            <p className="setup-cath-line">
+              <span className="cath-line-ask">Three steps, then open the stall.</span>
+            </p>
+          </div>
+        </header>
+        <div className="setup-table" data-setup-table>
+          <section className="setup-step" data-step="1">
+            <StepHead n={1} words="Who's at the stall" hint="you, and two producers who cover each other" />
+            <div className="step-who">
+              {modeSection}
+              {producersSection}
+            </div>
+          </section>
+          <section className="setup-step" data-step="2">
+            <StepHead n={2} words="Where you trade" />
+            {mapSection}
+          </section>
+          <section className="setup-step" data-step="3">
+            <StepHead n={3} words="How hard Hollowell pushes" />
+            {difficultySection}
+            {/* Plan item 367: Cath's pins, the prize for winning an event week, lie by Hollowell's tags. */}
+            <PinTin week={marketEvent.id} />
+          </section>
+        </div>
+        <SetupCath producers={producers} difficulty={difficulty} event={marketEvent.banner} />
+        {eventFlyer}
+        <div className="setup-counter" aria-hidden="true" />
+        {startButton}
+      </main>
+    )
+
+  return (
+    <main className="setup">
+      <header className="setup-header">
+        <div className="setup-header-text">
+          <h1>Quick Game</h1>
+          <p className="setup-cath-line">
+            <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
+            {/* Plan item 80: on a phone, once a pair is picked, Cath's line on them is said up here, beside her. */}
+            {producers.length === 2 && (
+              <span className="cath-line-pair" aria-hidden="true">
+                “{pairLine(producers[0]!, producers[1]!)}”
+              </span>
+            )}
+          </p>
+        </div>
+        {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
+            no game state exists yet to react to here. */}
+        <CathArt className="setup-header-cath" framing="bust" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate width={80} height={80} title="Cath" />
+      </header>
+
+      {eventFlyer}
+
+      {modeSection}
+
+      {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
+      <div className="setup-table" data-setup-table>
+      {producersSection}
+      {mapSection}
+
+      {difficultySection}
 
       </div>
 
-      {/* Plan item 75: at D Cath stands at the stall behind its OPEN sign, reacting to the picks and the difficulty. */}
-      <SetupCath producers={producers} difficulty={difficulty} />
-      <button className="primary setup-start" disabled={!canStart} onClick={rollUp} data-opening={opening || undefined}>
-        <span className="shutter">
-          <span className="open-sign-kicker" aria-hidden="true">
-            {canStart ? 'Open' : 'Closed · pick two'}
-          </span>
-          <span className="open-sign-word">Start</span>
-        </span>
-      </button>
+      {startButton}
     </main>
   )
 }
@@ -290,6 +328,17 @@ function PinTin({ week }: { week: MarketEventId }) {
         })}
       </ul>
     </div>
+  )
+}
+
+/** Plan item 367: a step's heading at D: its numeral, its words and a quiet hint. */
+function StepHead({ n, words, hint }: { n: number; words: string; hint?: string }) {
+  return (
+    <h2 className="step-head">
+      <span className="step-num" aria-hidden="true">{n}</span>
+      <span className="step-words">{words}</span>
+      {hint && <small className="step-hint">{hint}</small>}
+    </h2>
   )
 }
 
@@ -393,12 +442,13 @@ function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] 
 const PRODUCER_NAMES = Object.fromEntries(ALL_PRODUCER_IDS.map((id) => [id, PRODUCERS[id].name])) as Record<ProducerId, string>
 
 /** Plan item 75: the desktop Setup's half-length Cath, her line and face following the picks (`setupCath`). */
-function SetupCath({ producers, difficulty }: { producers: readonly ProducerId[]; difficulty: GameConfig['difficulty'] }) {
+function SetupCath({ producers, difficulty, event }: { producers: readonly ProducerId[]; difficulty: GameConfig['difficulty']; event: string }) {
   const cath = setupCath(producers, difficulty, PRODUCER_NAMES)
   return (
     <div className="setup-cath-stand">
-      <p className="setup-cath-says" aria-live="polite">
-        “{cath.line}”
+      {/* Plan item 367: her bubble carries the week's event, then her advice on the pick. */}
+      <p className="setup-cath-says">
+        <span className="says-event">“{event}”</span> <span className="says-pick" aria-live="polite">“{cath.line}”</span>
       </p>
       <CathArt framing="half" expression={cath.expression} pose={SCREEN_POSE['cathnivore:setup']} animate />
     </div>

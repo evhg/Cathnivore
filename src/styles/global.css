@@ -3992,3 +3992,172 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
   .setup .setup-table .producer-card[data-seat] .pc-pick { animation: none; }
 }
 html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { animation: none; }
+
+/* Plan item 367: the desktop Quick Game as one table in three numbered steps. Who (the mode as two place cards
+   beside the four producers), Where (the maps) and How hard (Hollowell's tags, the threat lines under the chosen
+   one) lie on one gingham table; Cath stands behind a counter on its right, the week's poster in her hand and her
+   bubble carrying the event and her advice; Start is a plank on the counter's front, below her. No pill-tag labels:
+   each step is headed by its numeral and words, and the old section labels are kept for screen readers only. */
+@media (min-width: 1100px) {
+  .setup[data-steps] {
+    max-width: 1340px; padding: 10px 28px 10px; min-height: 100vh; align-content: stretch;
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 21vw, 300px); column-gap: 26px; row-gap: 8px;
+    grid-template-areas:
+      "head  head"
+      "table cath"
+      "table start";
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .setup[data-steps]::before { display: none; }
+  .setup[data-steps] .setup-header { padding-bottom: 0; }
+  .setup[data-steps] .cath-line-ask { font-family: var(--font-voice); font-style: italic; }
+
+  /* The table: one gingham cloth in a timber rim, the steps laid on it. */
+  .setup[data-steps] .setup-table {
+    grid-area: table; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: auto auto;
+    grid-template-areas: "who who" "where how"; gap: 18px 30px; align-content: space-evenly;
+    margin: 0; padding: 16px 22px 18px;
+  }
+  .setup[data-steps] .setup-step { position: relative; min-width: 0; margin: 0; }
+  .setup[data-steps] .setup-step .settings-card { grid-area: auto; grid-row: auto; grid-column: auto; align-self: stretch; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .setup[data-steps] .setup-step[data-step='1'] { grid-area: who; }
+  .setup[data-steps] .setup-step[data-step='2'] { grid-area: where; display: flex; flex-direction: column; }
+  .setup[data-steps] .setup-step[data-step='3'] { grid-area: how; }
+  .setup[data-steps] .step-head {
+    display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; padding: 0; border: 0; background: none; box-shadow: none;
+    font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 650; letter-spacing: 0; text-transform: none; color: var(--ink);
+  }
+  .setup[data-steps] .step-num {
+    flex: none; display: grid; place-items: center; width: 34px; height: 34px; align-self: center; border-radius: 50%;
+    background: var(--wood); color: var(--paper-on-fixed-fill); font-size: var(--fs-lead); font-weight: 700;
+    box-shadow: inset 0 0 0 2px var(--wood-lo), 0 2px 3px color-mix(in srgb, var(--ink) 25%, transparent);
+  }
+  .setup[data-steps] .step-hint { font-family: var(--font-voice); font-style: italic; font-weight: 400; font-size: var(--fs-small); color: var(--soil); }
+  /* The old section labels: for screen readers only. */
+  .setup[data-steps] .setup-table .settings-card > h2,
+  .setup[data-steps] .setup-producers-head h2,
+  .setup[data-steps] .setup-map-head h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; padding: 0; margin: 0; box-shadow: none; }
+
+  /* Step 1: the two place cards stand in a column beside the four producers. */
+  .setup[data-steps] .step-who { display: grid; grid-template-columns: 156px minmax(0, 1fr); gap: 18px; align-items: stretch; }
+  .setup[data-steps] .setup-mode { display: flex; flex-direction: column; justify-content: flex-end; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+  .setup[data-steps] .setup-mode .segmented.mode-picker {
+    flex: 0 0 auto; flex-direction: column; align-items: stretch; gap: 14px; padding: 0 0 2px; border: 0; box-shadow: none; perspective: 520px;
+  }
+  .setup[data-steps] .setup-mode .segmented.mode-picker label[data-place-card] {
+    flex: none; width: auto; min-height: 112px; padding: 14px 8px 10px; gap: 6px;
+    border-bottom: 6px solid var(--wood);
+  }
+  .setup[data-steps] .setup-mode label[data-place-card] .mode-art .mode-sit svg { width: 42px; height: 50.4px; }
+  .setup[data-steps] .setup-mode label[data-place-card] .mode-art .mode-chair { top: -5px; width: 54px; height: 65px; margin-left: -27px; }
+  .setup[data-steps] .setup-mode .segmented.mode-picker label[data-place-card] span.place-word { font-size: var(--fs-small); }
+  .setup[data-steps] .setup-mode label[data-place-card] .mode-tag { padding: 0 6px; border: 1px solid var(--ink); border-radius: 999px; background: var(--paper-hi); font-size: var(--fs-caption); line-height: 1.1; }
+  .setup[data-steps] .setup-mode label[data-place-card] .mode-tag.is-you { background: var(--ink); color: var(--paper-hi); }
+  .setup[data-steps] .setup-table .setup-producers { margin: 0; position: static; }
+  .setup[data-steps] .setup-table .setup-producers-head { position: absolute; top: 0; right: 0; left: auto; display: block; }
+  .setup[data-steps] .setup-table .producer-grid { padding-top: 30px; }
+  .setup[data-steps] .setup-table .producer-card .pc-stamp,
+  .setup[data-steps] .setup-table .producer-card[data-seat] .pc-pick { font-size: var(--fs-caption); }
+
+  /* Step 2: the maps; the seed waits behind Advanced, as on a phone. */
+  .setup[data-steps] .setup-table .setup-seed { display: block; margin: 0; flex: none; }
+  .setup[data-steps] .setup-map-head { position: absolute; top: 0; right: 0; }
+  .setup[data-steps] .setup-advanced {
+    display: inline-block; min-height: 32px; padding: 4px 12px; border: 1.5px solid var(--soil); border-radius: 999px;
+    background: var(--paper-hi); color: var(--ink); font-size: var(--fs-small); font-weight: 700;
+  }
+  .setup[data-steps] .setup-advanced[aria-expanded='true'] { background: var(--wheat); }
+  .setup[data-steps] .setup-seed .setup-seed-field { display: none; margin-top: 8px; }
+  .setup[data-steps] .setup-seed[data-advanced] .setup-seed-field { display: flex; align-items: center; }
+  .setup[data-steps] .setup-seed .setup-seed-field > span { font-size: var(--fs-caption); }
+  .setup[data-steps] .setup-table .layout-picker { margin: 4px 0 0; gap: 14px; }
+  .setup[data-steps] .setup-table .board-mini { max-height: 150px; }
+
+  /* Step 3: Hollowell's three price tags on a string, the threat lines under the chosen one only. */
+  .setup[data-steps] .setup-step[data-step='3'] .setup-difficulty { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+  .setup[data-steps] .setup-difficulty .segmented { flex: none; gap: 8px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .setup[data-steps] .setup-difficulty .segmented label.price-tag {
+    position: relative; flex: none; width: auto; min-width: 104px; min-height: 48px; padding: 6px 14px 6px 30px; justify-content: flex-start;
+    border-radius: 0 8px 8px 0; opacity: 1; color: var(--ink);
+    background:
+      radial-gradient(circle at 12px 50%, var(--paper-hi) 0 4px, var(--wood-lo) 4px 5.5px, transparent 6px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wheat) 45%, var(--paper-hi)), color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)));
+    clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
+    font-family: var(--font-voice); font-style: italic; font-size: var(--fs-lead); text-transform: capitalize;
+    transform: rotate(var(--hang, 0deg)); transform-origin: 12px 50%;
+    filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--ink) 22%, transparent));
+    transition: transform 200ms var(--ease-settle, ease);
+  }
+  .setup[data-steps] .price-tag[data-tag='easy'] { --hang: -1.5deg; }
+  .setup[data-steps] .price-tag[data-tag='hard'] { --hang: 1.5deg; }
+  .setup[data-steps] .setup-difficulty .segmented label.price-tag:has(input:checked) {
+    --hang: 0deg; color: var(--paper-on-fixed-fill); box-shadow: none; transform: translateY(-3px);
+    background:
+      radial-gradient(circle at 12px 50%, var(--paper-hi) 0 4px, var(--wood-lo) 4px 5.5px, transparent 6px),
+      linear-gradient(180deg, color-mix(in srgb, var(--hollowell) 70%, var(--clay-deep)), var(--clay-deep));
+  }
+  .setup[data-steps] .price-tag > span { position: static; left: auto; }
+  .setup[data-steps] .price-tag input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .setup[data-steps] .price-tag:has(input:focus-visible) { outline: var(--focus-w, 3px) solid var(--focus); outline-offset: 3px; clip-path: none; }
+  .setup[data-steps] .difficulty-sheet {
+    display: grid; gap: 4px; margin: 0; padding: 8px 12px 10px; border-radius: 4px; background: color-mix(in srgb, var(--paper-hi) 94%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 16%, transparent), 0 4px 8px color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .setup[data-steps] .difficulty-line { display: block; margin: 0; font-family: var(--font-voice); font-style: italic; font-size: var(--fs-body); line-height: 1.3; color: var(--ink); }
+  .setup[data-steps] .difficulty-sheet dl { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 0; margin: 0; }
+  .setup[data-steps] .difficulty-sheet dl > div { display: contents; }
+  .setup[data-steps] .difficulty-sheet dt, .setup[data-steps] .difficulty-sheet dd { padding: 1px 0; border: 0; font-size: var(--fs-caption); line-height: 1.35; }
+  .setup[data-steps] .difficulty-sheet dt { font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--soil); }
+
+  /* Cath behind the counter: her bubble over her, half length, cut by the counter's top. */
+  .setup[data-steps] .setup-cath-stand {
+    grid-area: cath; position: relative; z-index: var(--z-raised); display: grid; justify-items: center; align-content: end;
+    align-self: stretch; min-height: 0; margin: 0; overflow: hidden; pointer-events: none;
+  }
+  .setup[data-steps] .setup-cath-says { position: relative; z-index: var(--z-raised); margin: 0 0 -14px; max-width: 100%; padding: 10px 14px; font-size: var(--fs-small); line-height: 1.35; }
+  .setup[data-steps] .setup-cath-says .says-event { display: block; margin-bottom: 4px; color: var(--soil); }
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 226px; margin-bottom: -6px; }
+  /* The week's poster, held up at her side, over the counter's back edge. */
+  .setup[data-steps] .market-event[data-flyer] {
+    grid-area: cath; align-self: end; justify-self: start; position: relative; z-index: var(--z-lift);
+    width: 150px; margin: 0 0 -4px -18px; padding: 0 0 10px; transform: rotate(-5deg); transform-origin: 50% 100%;
+  }
+  .setup[data-steps] .market-event[data-flyer] .market-event-eyebrow { margin: 0 0 8px; padding: 8px 8px 6px; font-size: var(--fs-caption); letter-spacing: 0.08em; line-height: 1.2; }
+  .setup[data-steps] .market-event[data-flyer] .market-event-kicker { display: none; }
+  .setup[data-steps] .market-event[data-flyer] .market-event-name { font-size: var(--fs-h3); }
+  .setup[data-steps] .market-event[data-flyer] .market-event-line,
+  .setup[data-steps] .market-event[data-flyer] .market-event-pin { display: none; }
+  .setup[data-steps] .market-event[data-flyer] .market-event-deal { padding: 0 8px; }
+  .setup[data-steps] .market-event-rule[data-stamp] { margin-top: 8px; padding: 4px 6px; font-size: var(--fs-caption); letter-spacing: 0; text-transform: none; }
+  .setup[data-steps] .setup-step > .pin-tin { display: block; margin: 14px 0 0; transform: rotate(-1deg); }
+  .setup[data-steps] .pin-tin-head { font-size: var(--fs-caption); }
+  .setup[data-steps] .pin-tin .pin-name, .setup[data-steps] .pin-tin .pin-when { font-size: var(--fs-caption); }
+  .setup[data-steps] .pin-tin svg { width: 44px; height: 44px; }
+
+  /* The counter: a timber top she stands behind, its front panel carrying Start. */
+  .setup[data-steps] .setup-counter {
+    grid-area: start; position: relative; z-index: var(--z-lift); margin: 0 -10px; border-radius: 6px 6px 3px 3px;
+    border-top: 12px solid var(--wood);
+    background:
+      repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 30%, transparent) 46px 48px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wood) 55%, var(--paper)), color-mix(in srgb, var(--wood) 75%, var(--paper)));
+    box-shadow: inset 0 2px 0 var(--wood-lo), 0 12px 22px color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+  .setup[data-steps] > button.setup-start {
+    grid-area: start; position: relative; z-index: var(--z-sticky); align-self: center; justify-self: center;
+    width: calc(100% - 28px); min-height: 72px; margin: 26px 0 16px; transform: rotate(-1deg); transform-origin: 50% 50%;
+  }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup[data-steps] .setup-table { gap: 12px 26px; padding: 12px 20px 14px; }
+  .setup[data-steps] .setup-mode .segmented.mode-picker label[data-place-card] { min-height: 96px; padding-top: 10px; }
+  .setup[data-steps] .difficulty-line { display: none; }
+  .setup[data-steps] .difficulty-sheet { padding: 6px 10px 7px; }
+  .setup[data-steps] .setup-step > .pin-tin { margin-top: 6px; padding-top: 6px; padding-bottom: 6px; }
+  .setup[data-steps] .pin-tin svg { width: 34px; height: 34px; }
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 214px; }
+  .setup[data-steps] > button.setup-start { min-height: 64px; margin: 20px 0 12px; }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .setup[data-steps] .setup-difficulty .segmented label.price-tag { transition: none; }
+}

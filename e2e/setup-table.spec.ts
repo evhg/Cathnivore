@@ -28,18 +28,15 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await expect(table.locator('[data-seat]')).toHaveCount(2)
     await expect(table.locator('[data-seat="sol"]')).toHaveCount(1)
     await expect(page.locator('.producer-card .pc-pick').first()).toBeHidden() // no 'Picked' ribbons at the table
-    // Hollowell's price tags: three radios, 44 px tall or more, hung on the stall rail across the top with the mode
-    // place cards (plan item 239), above the table.
-    const rail = page.locator('[data-setup-rail]')
-    const tags = rail.getByRole('radio', { name: /easy|normal|hard/i })
+    // Hollowell's price tags: three radios, 44 px tall or more, laid on the table as its third step (plan item 367;
+    // item 239 hung them on a rail above it with the mode cards, which are now step 1's).
+    const how = table.locator('.setup-step[data-step="3"]')
+    const tags = how.getByRole('radio', { name: /easy|normal|hard/i })
     await expect(tags).toHaveCount(3)
-    await expect(rail.getByRole('radio', { name: /solo|hot-seat/i })).toHaveCount(2)
+    await expect(table.locator('.setup-step[data-step="1"]').getByRole('radio', { name: /solo|hot-seat/i })).toHaveCount(2)
     for (const t of await tags.all()) expect((await t.boundingBox())!.height).toBeGreaterThanOrEqual(44)
-    const railBox = (await rail.boundingBox())!
-    expect(railBox.y + railBox.height).toBeLessThanOrEqual((await table.boundingBox())!.y + 0.5)
-    expect(railBox.width).toBeGreaterThan(width * 0.8)
-    await rail.locator('.price-tag[data-tag="hard"]').click()
-    await expect(rail.getByRole('radio', { name: /hard/i })).toBeChecked()
+    await how.locator('.price-tag[data-tag="hard"]').click()
+    await expect(how.getByRole('radio', { name: /hard/i })).toBeChecked()
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
     // Start rolls the shutter up, then the game opens.
     await page.getByRole('button', { name: 'Start' }).click()
