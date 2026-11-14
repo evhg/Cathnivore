@@ -473,9 +473,12 @@ main,
   top: 86%;
   height: 17%;
   border-radius: 6px 6px 3px 3px;
+  /* Plan item 350: a desk seen from a little above: its lit top (lighter toward the far edge, where the studio light
+     falls) narrowing away from us, a bright front edge, then the darker front panel (it read as a flat grey slab). */
+  clip-path: polygon(5% 0, 95% 0, 100% 36%, 100% 100%, 0 100%, 0 36%);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--text) 38%, transparent) 0 2px, transparent 2px),
-    linear-gradient(180deg, color-mix(in srgb, var(--text) 14%, var(--ink-hover)) 0 18%, var(--ink-2) 18% 22%, var(--ink-raised) 22%, var(--ink));
+    linear-gradient(180deg, transparent 0 34%, color-mix(in srgb, var(--text) 42%, transparent) 34% calc(34% + 2px), transparent calc(34% + 2px)),
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 26%, var(--ink-hover)) 0, color-mix(in srgb, var(--text) 12%, var(--ink-hover)) 34%, var(--ink-raised) 34%, var(--ink-2) 70%, var(--ink));
   box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent) inset;
 }
 .show-cath::before {
