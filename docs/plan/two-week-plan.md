@@ -3528,7 +3528,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots of the title and the List at P and D, and a mission encounter, before and after.
 - **Size:** 3
 
-## 372. [ ] Hedgerow map: the act framed whole, the level card docked beside the land, not over it
+## 372. [ ] Hedgerow map: the act framed whole, the level card docked beside the land, not over it *(lane B, in progress)*
 - **Why:** `plan1114a/hedge-menu-D`: the level card (190-1250 x 603-785) covers the act's lower third; the act's ten stops are packed into two rows (200-1260 x 315-585) while the top 40% of the panel (0-1440 x 60-300) is pale empty sky. The next act's banner and its "Beyond the hedge" card are cut at the fold (145-995 x 810-900). Locked stops are a row of identical beige medallions with the same padlock. `hedge-menu-P`: names sit on the far side of the road from their stops and padlocks float apart from both ("Golden Hour" 15-100 x 465-480 belongs to stop 28 at 125-180 x 455-505); the bottom sheet (5-385 x 600-690) hides the act's end and the gate.
 - **Build:**
   - At D, one act per screen with scroll-snap: the stops fill the panel from about 18% to 72% of its height; the sky cropped to a band that holds the act's landmarks.
