@@ -415,11 +415,15 @@ function paintWater(
   ctx.save();
   ctx.beginPath();
   const wob = (n: number) => Math.sin(n * 0.9) * s * 0.18 + (rand() - 0.5) * s * 0.06;
+  const shoreline: Array<[number, number]> = [];
   if (w.side === "left" || w.side === "right") {
     const edge = w.side === "left" ? x1 : x0;
     const out = w.side === "left" ? x0 : x1;
     ctx.moveTo(out, y0);
-    for (let y = y0, n = 0; y <= y1 + s; y += s * 0.5, n++) ctx.lineTo(edge + wob(n), y);
+    for (let y = y0, n = 0; y <= y1 + s; y += s * 0.5, n++) {
+      shoreline.push([edge + wob(n), y]);
+      ctx.lineTo(shoreline[shoreline.length - 1]![0], y);
+    }
     ctx.lineTo(out, y1);
   } else {
     const edge = w.side === "top" ? y1 : y0;
@@ -431,18 +435,58 @@ function paintWater(
   ctx.closePath();
   ctx.fillStyle = w.color;
   ctx.fill();
-  if (w.shelf && (w.side === "left" || w.side === "right")) paintShelf(ctx, w.shelf, w.foam, w.side, x0, x1, y0, y1, s);
+  // Plan item 388: the water's outline kept, because the shelf's crests replace the current path (the shore's foam
+  // and the clip below took the last crest, not the sea).
+  const waterPath = typeof Path2D === "function" ? new Path2D() : null;
+  if (waterPath && shoreline.length > 1) {
+    const out = w.side === "left" ? x0 : x1;
+    waterPath.moveTo(out, y0);
+    for (const [x, y] of shoreline) waterPath.lineTo(x, y);
+    waterPath.lineTo(out, y1);
+    waterPath.closePath();
+  }
+  const shelved = !!w.shelf && (w.side === "left" || w.side === "right");
+  if (shelved) paintShelf(ctx, w.shelf!, w.foam, w.side as "left" | "right", x0, x1, y0, y1, s);
   ctx.strokeStyle = w.foam;
   ctx.lineWidth = Math.max(2, s * 0.06);
   ctx.globalAlpha = 0.8;
-  ctx.stroke();
-  ctx.clip();
+  if (shelved && waterPath && shoreline.length > 1) {
+    ctx.stroke(waterPath);
+    ctx.clip(waterPath);
+  } else {
+    ctx.stroke();
+    ctx.clip();
+  }
+  // Plan item 388: the beach follows the waterline (a straight band of sand left the sea showing between it and the
+  // grass where the shore bulged): dry sand, a darker band of wet sand, a wrack line of weed and a line of foam.
+  if (w.shelf && shoreline.length > 1) {
+    const dir = w.side === "left" ? -1 : 1;
+    const line = (off: number, width: number, color: string, dash?: number[]) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.setLineDash(dash ?? []);
+      ctx.beginPath();
+      shoreline.forEach(([x, y], i) => (i ? ctx.lineTo(x + dir * off, y) : ctx.moveTo(x + dir * off, y)));
+      ctx.stroke();
+    };
+    ctx.globalAlpha = 0.9;
+    line(0, s * 1.05, "rgba(196,176,128,0.75)");
+    line(0, s * 0.62, w.shelf.sand);
+    ctx.globalAlpha = 0.7;
+    line(s * 0.31, Math.max(1, s * 0.035), "rgba(92,90,56,0.7)", [s * 0.05, s * 0.07, s * 0.02, s * 0.09]);
+    ctx.globalAlpha = 0.85;
+    line(s * 0.55, Math.max(1, s * 0.05), w.foam);
+    ctx.setLineDash([]);
+  }
   ctx.globalAlpha = 0.35;
   ctx.strokeStyle = w.foam;
   ctx.lineWidth = Math.max(1, s * 0.025);
   for (let i = 0; i < 40; i++) {
     const x = x0 + rand() * (x1 - x0);
     const y = y0 + rand() * (y1 - y0);
+    if (shelved) continue; // the shelf draws its own crests (these were clipped away before item 388)
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.quadraticCurveTo(x + s * 0.15, y - s * 0.06, x + s * 0.3, y);
@@ -1392,7 +1436,7 @@ function paintDecor(
     if (inWater(x, y) && kind !== "boat" && kind !== "reeds") continue;
     if (!inWater(x, y) && kind === "boat" && water) continue;
     // Plan item 388: reeds root in the shallows along the shore, not out in open water; boats ride clear of them.
-    if (kind === "reeds" && inWater(x, y) && depth(x, y) > s * 1.5) continue;
+    if (kind === "reeds" && inWater(x, y) && (depth(x, y) > s * 1.5 || (water?.shelf && depth(x, y) < s * 0.62))) continue;
     if (kind === "boat" && (depth(x, y) < s * 1.1 || x < s * 0.8 || x > L.width - s * 0.8 || y < s * 0.9)) continue;
     // Plan item 224: a billboard is a wide panel standing above its foot: the whole panel keeps off the field.
     if (kind === "billboard") {
