@@ -647,6 +647,15 @@ function placeValleyFolk(): void {
   // The layer's own box: it sits inside the stage's frame, and the % positions are of the layer, not the stage.
   const st = layer.getBoundingClientRect()
   if (!st.width) return
+  // Plan item 389: the folk at the tiles' grain. A person stands about 0.3 of a tile's edge (a hex's edge is its
+  // circumradius, half its drawn height), a sheep and the cart in proportion, whatever the board's size.
+  const tile = document.querySelector('#board polygon.tile')?.getBoundingClientRect()
+  const edge = tile && tile.height ? tile.height / 2 : 0
+  const zoom = layer.offsetWidth ? st.width / layer.offsetWidth : 1
+  const grain = edge ? edge / (zoom || 1) : 0
+  layer.toggleAttribute('data-grain', grain > 0)
+  if (grain) layer.style.setProperty('--grain', `${grain.toFixed(1)}px`)
+  const walk = grain ? Math.min(1, grain / 110) : 1
   const blocks = [
     ...document.querySelectorAll<Element>('#board polygon.tile, #valley-cath:not([hidden]), .bea-garden, .spring-house, .farm-sign, .valley-say:not([hidden]), .valley-feature:not([hidden])'),
   ]
@@ -661,7 +670,7 @@ function placeValleyFolk(): void {
     const size = el.offsetWidth || 40
     // A phone's frame is half as wide, so each walk is half as long; where a walk won't fit anywhere, a shorter one
     // (or standing still) is tried before staying home.
-    const full = st.width < 600 ? Math.round(f.range / 2) : f.range
+    const full = Math.round((st.width < 600 ? f.range / 2 : f.range) * walk)
     let placed = false
     for (const range of [full, Math.round(full / 2), 0]) {
       for (let k = 0; k < FOLK_SPOTS.length && !placed; k++) {
