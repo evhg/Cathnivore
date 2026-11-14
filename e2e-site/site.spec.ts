@@ -30,7 +30,7 @@ test.describe('portfolio', () => {
     const errors = trackErrors(page)
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Products, grown by AI.' })).toBeVisible()
-    for (const id of ['games', 'kicksmash', 'kinetiq', 'sleeplab']) {
+    for (const id of ['games', 'kicksmash', 'kinetiq', 'jarvis', 'dailyritual']) {
       await expect(page.locator(`a[data-app="${id}"]`)).toBeVisible()
       await expect(page.locator(`a[data-app="${id}"]`)).toHaveAttribute('href', `/work/${id}/`)
     }
@@ -87,7 +87,7 @@ test.describe('portfolio', () => {
     test.setTimeout(90_000)
     const ctx = await browser.newContext({ reducedMotion: 'reduce' })
     const page = await ctx.newPage()
-    for (const path of ['/', '/work/sleeplab/']) {
+    for (const path of ['/', '/work/jarvis/']) {
       await page.goto(path)
       await expect(page.locator('[data-app]').first()).toBeVisible()
       await assertNoSeriousIssues(page)

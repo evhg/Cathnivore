@@ -44,7 +44,8 @@ describe('portfolio cards', () => {
   })
 
   it('links each app at its own domain, never an old *.vercel.app deployment', () => {
-    expect(APPS.find((a) => a.id === 'sleeplab')!.href).toBe('https://sleep.cathnivore.com')
+    expect(APPS.find((a) => a.id === 'jarvis')!.href).toBe('https://jarvis.cathnivore.com')
+    expect(APPS.find((a) => a.id === 'dailyritual')!.href).toBe('https://dailyritual.cathnivore.com')
     expect(appsHtml() + APPS.map(caseHtml).join('')).not.toMatch(/vercel\.app/)
   })
 

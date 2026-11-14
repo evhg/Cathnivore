@@ -10,6 +10,16 @@
   "outputDirectory": "dist-site",
   "redirects": [
     {
+      "source": "/work/sleeplab",
+      "destination": "/work/jarvis/",
+      "permanent": true
+    },
+    {
+      "source": "/work/sleeplab/:path*",
+      "destination": "/work/jarvis/:path*",
+      "permanent": true
+    },
+    {
       "source": "/games",
       "destination": "/games/",
       "permanent": true

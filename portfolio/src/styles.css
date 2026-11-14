@@ -688,6 +688,14 @@ h1 {
 .cell-square {
   grid-column: span 5;
 }
+.cell-full {
+  grid-column: span 12;
+}
+@media (min-width: 1001px) {
+  .cell-full .visual {
+    min-height: 480px;
+  }
+}
 
 .accent-gold {
   --accent: var(--accent-gold);

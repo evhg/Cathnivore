@@ -26,7 +26,7 @@ export interface PortfolioApp {
   /** The accent, one of the --accent-* tokens in tokens.css. */
   accent: 'gold' | 'lime' | 'violet' | 'teal'
   /** The card's place in the bento grid. */
-  size: 'hero' | 'tall' | 'wide' | 'square'
+  size: 'hero' | 'tall' | 'wide' | 'square' | 'full'
   /** The product visual: screenshots (served from /work/) or a drawn interface. */
   visual: { kind: 'image'; src: string[]; alt: string } | { kind: 'ui'; ui: 'kicksmash' | 'sleeplab' | 'kinetiq' }
   /** The case study. */
@@ -102,30 +102,30 @@ export const APPS: PortfolioApp[] = [
     ],
   },
   {
-    id: 'sleeplab',
-    name: 'Sleep Lab',
-    tagline: 'A bedroom sleep lab on SwitchBot sensors',
+    id: 'jarvis',
+    name: 'Jarvis',
+    tagline: 'A personal health scientist and home manager',
     blurb:
-      'Room climate, CO2 and light from SwitchBot devices, matched with sleep data from a wearable, in a home-screen dashboard with sleep-science targets.',
+      'Sleep, room air, the aircon, food and steps for a household of two, in one home-screen app that turns sensor data and sleep-science targets into what to change tonight.',
     status: 'live',
-    href: 'https://sleep.cathnivore.com',
-    cta: 'Open the demo',
+    href: 'https://jarvis.cathnivore.com',
+    cta: 'Open Jarvis',
     tags: ['Health', 'Home automation', 'PWA'],
     accent: 'teal',
     size: 'wide',
     visual: { kind: 'ui', ui: 'sleeplab' },
     year: '2026',
     problem:
-      'Sleep trackers tell you how you slept, but not why. The bedroom itself, its air, warmth and light, is the missing half of the data.',
+      'Sleep trackers tell you how you slept, but not why. The bedroom itself, its air, warmth and light, is the missing half of the data, and nobody acts on a chart.',
     built: [
       'SwitchBot hub, CO2 meter and camera feeding a Supabase backend, joined night by night with wearable sleep stages.',
-      'A home-screen app with Today, Room, Body and Lab views, and sleep-science targets from verified research.',
+      'One app for two people: sleep, air and aircon, food and steps, with sleep-science targets from verified research.',
       'A simulator that generates 90 realistic nights, so the demo runs without anyone\'s real data.',
     ],
     stack: ['Next.js', 'Supabase', 'Edge Functions', 'PWA', 'SwitchBot API'],
     facts: [
       ['Sensors', '3 in the room'],
-      ['Demo data', '90 nights'],
+      ['People', '2'],
       ['Install', 'Home screen'],
     ],
   },
@@ -151,6 +151,39 @@ export const APPS: PortfolioApp[] = [
     facts: [
       ['Status', 'Under NDA'],
       ['Access', 'By password'],
+    ],
+  },
+  {
+    id: 'dailyritual',
+    name: 'The Daily Ritual',
+    tagline: 'A scroll-told launch for four electrolyte sticks',
+    blurb:
+      'Four drink-mix sticks, one for each part of the day. The launch site tells it as a story: Blender renders scrubbed by your scroll, a day that runs from sunrise to dusk, and real-time 3D sticks at the checkout.',
+    status: 'live',
+    href: 'https://dailyritual.cathnivore.com',
+    cta: 'Visit the site',
+    tags: ['Brand', 'E-commerce', '3D'],
+    accent: 'gold',
+    size: 'full',
+    visual: {
+      kind: 'image',
+      src: ['/work/dailyritual-hero.webp', '/work/dailyritual-ritual.webp', '/work/dailyritual-climax.webp'],
+      alt: 'The Daily Ritual site: the four sticks assembled under Rise. Pump. Glow. Snooze., a stick panel from the day cycle, and the 3D sticks under Start your ritual',
+    },
+    year: '2026',
+    problem:
+      'A new range of electrolyte sticks has to explain four products, six minerals and a daily habit before anyone is bored, and make a shopper want the whole set, not one flavour.',
+    built: [
+      'A pinned, scroll-driven story: the problem in a fog, then a day that runs from 07:00 to 20:00 while the page shifts colour with each stick.',
+      'Cinematic image sequences rendered in Blender on a remote Mac and scrubbed frame by frame on a canvas.',
+      'A WebGL particle field that reacts to every chapter, and live three.js sticks wearing the real label art at the climax.',
+      'A headless Shopify cart, built and switched off until launch.',
+    ],
+    stack: ['Next.js', 'GSAP', 'three.js', 'Blender', 'Shopify'],
+    facts: [
+      ['Sticks', '4'],
+      ['Chapters', '8'],
+      ['Rendered frames', '528'],
     ],
   },
 ]
