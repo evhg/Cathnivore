@@ -370,7 +370,7 @@ function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
   const tufts: Array<[number, number, number]> = [];
   for (let i = 0; i < n; i++) tufts.push([r.x + rand() * r.w, r.y + rand() * r.h, s * (0.07 + rand() * 0.06)]);
   // Each tuft three blades fanned from one root, dark; then a sunlit blade on its lee side.
-  ctx.strokeStyle = "rgba(30,62,28,0.5)";
+  ctx.strokeStyle = "rgba(30,62,28,0.72)";
   ctx.beginPath();
   for (const [x, y, len] of tufts)
     for (const a of [-0.45, 0, 0.4]) {
@@ -378,7 +378,7 @@ function paintBlades(ctx: CanvasRenderingContext2D, r: Rect, s: number): void {
       ctx.quadraticCurveTo(x + Math.sin(a) * len * 0.4, y - len * 0.6, x + Math.sin(a) * len, y - Math.cos(a) * len);
     }
   ctx.stroke();
-  ctx.strokeStyle = "rgba(226,240,170,0.5)";
+  ctx.strokeStyle = "rgba(226,240,170,0.72)";
   ctx.beginPath();
   for (const [x, y, len] of tufts) {
     ctx.moveTo(x + len * 0.12, y);
