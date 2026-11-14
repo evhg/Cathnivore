@@ -1187,10 +1187,12 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
   const pieces = placeMargin(set, rects, s, level.id * 131 + 7, keepOut);
   // The water margin's own pieces (punts on the river), wholly on the water.
   if (set.water && side) {
-    const wx0 = side === "left" ? 0 : side === "right" ? x1 + s * 0.3 : 0;
-    const wx1 = side === "left" ? x0 - s * 0.3 : L.width;
-    const wy0 = side === "top" ? 0 : side === "bottom" ? y1 + s * 0.3 : 0;
-    const wy1 = side === "top" ? y0 - s * 0.3 : L.height;
+    // Plan item 388: clear of the board's frame too (punts were cut by it at the screen's edge).
+    const rim = s * 0.45;
+    const wx0 = side === "left" ? rim : side === "right" ? x1 + s * 0.3 : rim;
+    const wx1 = side === "left" ? x0 - s * 0.3 : L.width - rim;
+    const wy0 = side === "top" ? rim : side === "bottom" ? y1 + s * 0.3 : rim;
+    const wy1 = side === "top" ? y0 - s * 0.3 : L.height - rim;
     const wr = { x: wx0, y: wy0, w: wx1 - wx0, h: wy1 - wy0 };
     if (wr.w > s * 1.3 && wr.h > s * 1.3) pieces.push(...placeMargin(set, [wr], s, level.id * 977 + 5, keepOut, set.water));
   }
@@ -1200,10 +1202,36 @@ function paintMargins(ctx: CanvasRenderingContext2D, level: Level, L: Layout, th
 }
 
 function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, rand: () => number): void {
-  // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
-  if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
-  else if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
-  else paintPiece(ctx, p, s, rand);
+  varied(ctx, p.kind, p.x, p.y + p.h / 2, rand, () => {
+    // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
+    if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
+    else if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
+    else paintPiece(ctx, p, s, rand);
+  });
+}
+
+/** Plan item 388: what grows may face either way and lean a little; built things stand square. */
+const GROWN = new Set<string>(["willow", "oak", "heather", "deadtree", "tree", "reeds", "bush", "hedge", "pine", "birch", "orchard", "gorse", "tuft"]);
+const LEANS = new Set<string>(["willow", "oak", "deadtree", "tree", "pine", "birch", "orchard"]);
+
+/**
+ * Plan item 388: no two copies of a piece drawn alike (the same lollipop willow ran nine times down level 34's
+ * margin): each is seeded a flip (what grows), a lean of up to 4 degrees about its foot (trees) and a small shift in
+ * brightness and saturation, all about its foot (x, footY).
+ */
+function varied(ctx: CanvasRenderingContext2D, kind: string, x: number, footY: number, rand: () => number, draw: () => void): void {
+  const flip = GROWN.has(kind) && rand() < 0.5 ? -1 : 1;
+  const lean = LEANS.has(kind) ? (rand() - 0.5) * 0.14 : 0;
+  const light = 0.9 + rand() * 0.2;
+  const sat = 0.85 + rand() * 0.3;
+  ctx.save();
+  ctx.translate(x, footY);
+  if (lean) ctx.rotate(lean);
+  if (flip < 0) ctx.scale(-1, 1);
+  ctx.translate(-x, -footY);
+  if ("filter" in ctx) ctx.filter = `brightness(${light.toFixed(2)}) saturate(${sat.toFixed(2)})`;
+  draw();
+  ctx.restore();
 }
 
 /**
@@ -1358,7 +1386,7 @@ function paintDecor(
     items.push({ kind, x, y, k: 0.75 + rand() * 0.5 });
   }
   items.sort((a, b) => a.y - b.y);
-  for (const it of items) drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand);
+  for (const it of items) varied(ctx, it.kind, it.x, it.y, rand, () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
 }
 
 function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
