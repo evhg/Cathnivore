@@ -3675,7 +3675,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - The phone game, counter and HUD specs pass; D unchanged; shots P before and after.
 - **Size:** 1
 
-## 384. [ ] Cathnivore desktop hand: Sell as one barrow card with a 1-2-3 count, not three near-identical cards
+## 384. [ ] Cathnivore desktop hand: Sell as one barrow card with a 1-2-3 count, not three near-identical cards *(lane A, in progress)*
 - **Why:** `plan1114c/cath-game-D`: Sell 1, Sell 2 and Sell 3 (370-935 x 690-780) take the first half of the top shelf with the same crate art and "→ 1/2/3", 3 of the hand's 10 slots, so the distinct choices (Graft, Open Stall, Supply, Injunction) drop to the second shelf. Item 320 noted they share one picture but kept three cards.
 - **Build:**
   - One Sell card with a 1/2/3 count on its face; counts above the player's produce greyed; arrow keys change the count.
