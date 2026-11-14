@@ -5209,3 +5209,47 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
     box-shadow: 0 0 4px 1px color-mix(in srgb, var(--hollowell) 70%, transparent), inset 0 0 0 .5px var(--hollowell-lo);
   }
 }
+
+/* Plan item 368 slice 1: on an upright phone Cath's line and the farm's goods are one wooden counter at the board's
+   foot, not two framed strips: her bust at its left end, her line chalked on a slate set into the counter's back,
+   the goods (crates, coins, rosette) and the action pips standing on its front lip. */
+@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+  .action-tray .cath-dock {
+    --counter: linear-gradient(180deg, color-mix(in srgb, var(--wood) 88%, white), var(--wood));
+    position: relative;
+    padding: 4px 6px 2px 4px;
+    border-radius: 12px 12px 0 0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lo) 22%, transparent) 46px 47px),
+      var(--counter);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 30%, transparent), inset 0 0 0 1px var(--wood-lo);
+  }
+  .action-tray .cath-dock-line {
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 6px;
+    background:
+      radial-gradient(60% 90% at 30% 30%, color-mix(in srgb, var(--paper-on-fixed-fill) 8%, transparent), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--corp-slate) 84%, var(--pasture)), var(--corp-slate));
+    box-shadow: inset 0 0 0 2px var(--wood-lo), inset 0 2px 4px 2px rgb(var(--shadow-ink) / .35);
+    color: var(--paper-on-fixed-fill);
+  }
+  .action-tray .cath-dock-line::after { display: none; }
+  .action-tray .cath-dock + .active-producer {
+    margin-top: -6px;
+    padding-block: 7px 8px;
+    border: 0;
+    border-radius: 0 0 12px 12px;
+    background:
+      linear-gradient(180deg, rgb(var(--shadow-ink) / .28), transparent 4px),
+      linear-gradient(180deg, var(--wood), var(--wood-lo));
+    box-shadow: inset 0 0 0 1px var(--wood-lo), 0 3px 4px -1px rgb(var(--shadow-ink) / .35);
+  }
+  /* the goods stand on the dark lip: light figures in the wood's own lettering, the income in wheat */
+  .action-tray .cath-dock + .active-producer .ledger-chip {
+    background: rgb(var(--shadow-ink) / .3);
+    box-shadow: inset 0 1px 1px rgb(var(--shadow-ink) / .35), 0 1px 0 color-mix(in srgb, white 14%, transparent);
+  }
+  .action-tray .cath-dock + .active-producer .ledger-value { color: var(--wood-ink); }
+  .action-tray .cath-dock + .active-producer .ledger-income { color: var(--wheat); }
+}
