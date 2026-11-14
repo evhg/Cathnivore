@@ -38,7 +38,7 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight, actMood, matte, nightLight, shoreFade, shoreFoam } from "./palette";
+import { actLight, actMood, dayKey, matte, nightLight, shoreFade, shoreFoam } from "./palette";
 import { fordMiddle } from "../landmarks";
 import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
@@ -465,20 +465,22 @@ export class Renderer3D {
     this.hemi.color.set(L.hemiSky);
     this.hemi.groundColor.set(L.hemiGround);
     // Plan item 66: a warm key and a soft, warm bounce by day (the 2D field's sunny poster), not overcast fill.
-    this.hemi.intensity = L.hemiIntensity * (night ? 1.4 : 0.8);
+    // Plan item 360: a low warm key and less sky fill by day, so hedges, barns and towers cast shadows that read.
+    const key = dayKey(L, night);
+    this.hemi.intensity = L.hemiIntensity * key.hemi;
     if (!night) this.hemi.groundColor.lerp(new THREE.Color("#c8a46a"), 0.35);
     this.sun.color.set(L.sun);
-    if (!night) this.sun.color.lerp(new THREE.Color("#ffd9a0"), 0.3);
-    this.sun.intensity = L.sunIntensity * (night ? 1.25 : 1.4) * (hasTwist(game.level, "rain") ? 0.7 : 1);
+    if (!night) this.sun.color.lerp(new THREE.Color("#ffd9a0"), key.warm);
+    this.sun.intensity = L.sunIntensity * key.sun * (hasTwist(game.level, "rain") ? 0.7 : 1);
     // Night: a cool moon fills in from the back so everything still reads.
     this.rim.color.set(night ? "#8fb0ff" : "#9fc4ff");
     this.rim.position.set(game.level.cols / 2, 6, -8);
     this.rim.target = this.sun.target;
-    this.rim.intensity = night ? 2.2 : 0.8;
+    this.rim.intensity = key.rim;
     const cx = game.level.cols / 2;
     const cz = game.level.rows / 2;
     const az = (L.sunAz * Math.PI) / 180;
-    const el = (L.sunEl * Math.PI) / 180;
+    const el = (key.el * Math.PI) / 180;
     const d = 20;
     this.sun.position.set(cx + Math.cos(az) * Math.cos(el) * d, Math.sin(el) * d, cz + Math.sin(az) * Math.cos(el) * d);
     this.sun.target.position.set(cx, 0, cz);
@@ -2949,6 +2951,12 @@ export class Renderer3D {
   }
 
   /** Plan item 185: the field's standing dressing (plots dressed, lane edges hedged), for the e2e. */
+  /** Plan item 360: the sun's cast shadows off or on, so a check can measure how dark a shadow reads against the
+   * same pixels lit. */
+  setShadows(on: boolean): void {
+    this.sun.castShadow = on;
+  }
+
   dressing(): { plots: number; dressed: number; laneEdges: number; hedgedEdges: number; meshes: number } | null {
     return (this.ground?.group.userData.dressing as ReturnType<Renderer3D["dressing"]>) ?? null;
   }

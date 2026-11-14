@@ -778,6 +778,8 @@ if (SANDBOX)
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
+    // Plan item 360: the 3D sun's cast shadows off or on (false in 2D).
+    shadows3d: (on: boolean) => (renderer && is3D(renderer) ? (renderer.setShadows(on), true) : false),
     cam3d: () => (renderer && is3D(renderer) ? renderer.camState() : null),
     biome3d: () => (renderer && is3D(renderer) ? renderer.biome : null),
     // Plan item 201: the far houses' boxes (canvas px); empty in 2D.

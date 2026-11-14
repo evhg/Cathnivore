@@ -176,6 +176,15 @@ export function nightLight(L: ActLight): ActLight {
   };
 }
 
+/** Plan item 360: the day's key light. A low warm sun from one side (elevation at most 32 degrees, so hedges,
+ * barns and towers throw shadows a plot long) and less sky fill, so a shadowed strip reads at 0.8x or less of the
+ * lit plot beside it. Returns the sun's elevation, its colour pull toward warm, and the hemisphere and back-rim
+ * multipliers the renderer applies. Night keeps its own moonlit set. */
+export function dayKey(L: ActLight, night: boolean): { el: number; warm: number; sun: number; hemi: number; rim: number } {
+  if (night) return { el: L.sunEl, warm: 0, sun: 1.25, hemi: 1.4, rim: 2.2 };
+  return { el: Math.min(L.sunEl, 32), warm: 0.42, sun: 1.5, hemi: 0.58, rim: 0.45 };
+}
+
 export function actLight(levelId: number): ActLight {
   return ACT_LIGHT[Math.min(ACT_LIGHT.length - 1, Math.floor((levelId - 1) / 10))]!;
 }
