@@ -295,3 +295,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 18:45 lane B (item 394): the phone difficulty sheet's 'tokens to lose' became 'to lose' (under the LOST LAND label) so its values hold one line at 13 px; widening columns overflowed the row at 360 and the page at 320.
 - 2026-11-14 18:55 lane B (item 394): /games/'s H1 stays 'Cathnivore' (the studio's name, also a game's): renaming it is the owner's call.
 - 2026-11-14 19:05 lane A (item 388): its contrast acceptance is judged as 24 px local contrast on land margins (marsh -13%, meadow -5%); water margins are judged by eye (open water is smoother than plots) and global contrast is dropped (the field box's bright paths dominate it).
+- 2026-11-14 18:54 lane B: released the lock at 18:53 by misreading the clock as near the hour's end; re-locked at once and worked on (item 394 slice 2).
