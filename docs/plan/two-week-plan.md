@@ -3702,7 +3702,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 386. [ ] Cathnivore phone Campaign: the chapters picked on the map, one Cath, the open chapter above the fold
+## 386. [ ] Cathnivore phone Campaign: the chapters picked on the map, one Cath, the open chapter above the fold *(lane A, in progress)*
 - **Why:** `plan1114d/cath-campaign-P`: two Caths, the presenter a waist-cut figure floating beside her bubble with nothing under her (265-345 x 130-245) and a full-figure marker at Kingsmarket (123-147 x 415-453) (item 373 gave D a leaf pin; P kept the figure). Only chapter 1's card shows, cut at the fold (70-375 x 600-844); chapters 2-6 need a scroll, so the map's 22 px stops (e.g. 235-262 x 345-372) read as decoration, not a picker. Progress said twice: "0 of 6 chapters · 0 of 7 regions free" (16-235 x 95-110) over the segmented bar (16-195 x 118-132).
 - **Build:**
   - Item 373's language at P: a stop (44 px hit target) opens its chapter as a docked sheet under the map (plate, goal, cast, seals, Start), with a row of six chapter tabs in place of the scrolled list.
