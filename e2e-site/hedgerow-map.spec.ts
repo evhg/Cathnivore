@@ -632,3 +632,34 @@ test('plan item 372: the level card docks beside the act, clear of every stop', 
     }
   }
 })
+
+// Plan item 372 (phone): each stop's name is one tag beside its own coin, within 12 px, and a locked stop's padlock
+// rides in that tag (no separate lock pill).
+test('plan item 372: on a phone each name sits by its coin with its padlock inside', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
+  await seed(page, 20)
+  await page.waitForTimeout(800)
+  const m = await page.evaluate(() => {
+    const act = [...document.querySelectorAll('li.act')].find((l) => l.querySelector('.node.next'))!
+    return [...act.querySelectorAll<HTMLButtonElement>('.node')].map((n) => {
+      const c = n.querySelector('.level-num')!.getBoundingClientRect()
+      const t = n.querySelector('.level-name')!.getBoundingClientRect()
+      const lock = n.querySelector<HTMLElement>('.level-lock')
+      return {
+        id: n.dataset.level,
+        gap: Math.max(0, t.left - c.right, c.left - t.right),
+        locked: n.disabled,
+        lockPill: !!lock && lock.getBoundingClientRect().width > 0,
+        tagLock: getComputedStyle(n.querySelector('.level-name')!, '::after').content,
+      }
+    })
+  })
+  expect(m).toHaveLength(10)
+  for (const s of m) {
+    expect(s.gap, `stop ${s.id}`).toBeLessThanOrEqual(12)
+    if (s.locked) {
+      expect(s.lockPill, `stop ${s.id}`).toBe(false)
+      expect(s.tagLock, `stop ${s.id}`).toContain('🔒')
+    }
+  }
+})

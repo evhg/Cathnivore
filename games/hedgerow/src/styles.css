@@ -5491,3 +5491,21 @@ img.act-scene {
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
   #screen-select li.act.act-has-card .lcard-play { width: 100%; }
 }
+
+/* Plan item 372 (phone): each stop's name is one tag hard by its coin on the coin's outer side (it was centred in
+   its column, 15-44 px off, so a name read as the stop across the road), and a locked stop's padlock rides inside
+   that tag instead of floating on its own pill above it. */
+@media (max-width: 599px) {
+  #screen-select .trail .node { grid-template-columns: 50px minmax(0, 1fr); column-gap: 4px; }
+  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 50px; }
+  #screen-select .trail .node .level-name { justify-self: start; }
+  #screen-select .trail > .stop.vc1 .node .level-name { justify-self: end; }
+  #screen-select .trail .node:disabled .level-stars.level-lock { display: none; }
+  #screen-select .trail .node:disabled .level-lock + .level-medals + .level-name,
+  #screen-select .trail .node:disabled .level-lock + .level-name { margin-top: 0; }
+  #screen-select .trail .node:disabled .level-name::after {
+    /* a no-break space ties the padlock to the last word, so it never wraps onto a line of its own */
+    content: "\00a0🔒";
+    font-size: 0.8em;
+  }
+}
