@@ -691,14 +691,26 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
       // image icon from across the field). A low mud bank of uneven sides, brine pink where it's strongest with a
       // few ripples and a crust at its edge, small salt heaps on the bank and a rake leaning on one.
       const j = () => (rand() - 0.5) * s * 0.07;
+      // Plan item 388: an irregular dug pool (ten seeded lobes round an oval, a smooth curve through them), not a
+      // near-rectangle: from across the field the squared bank and dashed crust read as a framed panel.
+      const lobes = Array.from({ length: 10 }, () => 0.86 + rand() * 0.16);
+      const cx = p.x, cy = p.y;
       const pan = (inset: number) => {
-        const l = x0 + inset, r = x0 + p.w - inset, t = y0 + inset * 0.8, btm = y0 + p.h - inset * 0.8;
+        const rx = p.w / 2 - inset, ry = p.h / 2 - inset * 0.8;
+        const pts = lobes.map((f, k) => {
+          const a = (k / lobes.length) * Math.PI * 2;
+          // a squarer oval (|cos|^0.7), so the pool still fills its plot
+          const c = Math.cos(a), sn = Math.sin(a);
+          return [cx + Math.sign(c) * Math.abs(c) ** 0.7 * rx * f, cy + Math.sign(sn) * Math.abs(sn) ** 0.7 * ry * f] as const;
+        });
+        const mid = (a: readonly [number, number], b: readonly [number, number]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] as const;
         ctx.beginPath();
-        ctx.moveTo(l + s * 0.06 + j(), t + j());
-        ctx.lineTo(r - s * 0.04 + j(), t + s * 0.02 + j());
-        ctx.quadraticCurveTo(r + j(), (t + btm) / 2, r - s * 0.03 + j(), btm + j());
-        ctx.lineTo(l + s * 0.03 + j(), btm - s * 0.02 + j());
-        ctx.quadraticCurveTo(l + j(), (t + btm) / 2, l + s * 0.06 + j(), t + j());
+        const m0 = mid(pts[pts.length - 1]!, pts[0]!);
+        ctx.moveTo(m0[0], m0[1]);
+        pts.forEach((pt, k) => {
+          const m = mid(pt, pts[(k + 1) % pts.length]!);
+          ctx.quadraticCurveTo(pt[0], pt[1], m[0], m[1]);
+        });
         ctx.closePath();
       };
       // The bank: trodden mud, feathered into the marsh round it (plan item 388: a hard dark outline round a solid
@@ -734,12 +746,10 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
       }
       ctx.restore();
       // The salt crust where the brine meets the bank.
-      ctx.strokeStyle = "rgba(250,248,240,0.8)";
-      ctx.lineWidth = Math.max(1, s * 0.03);
-      ctx.setLineDash([s * 0.08, s * 0.05]);
+      ctx.strokeStyle = "rgba(250,248,240,0.55)";
+      ctx.lineWidth = Math.max(1, s * 0.035);
       pan(s * 0.11);
       ctx.stroke();
-      ctx.setLineDash([]);
       // Salt heaps along the bank's top, raked up out of the pan, and the rake.
       const heaps = 2 + Math.floor(rand() * 2);
       for (let k = 0; k < heaps; k++) {
