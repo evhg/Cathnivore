@@ -3454,7 +3454,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Shots D at 1440x900 and 1280x800, light and dark, before and after.
 - **Size:** 2
 
-## 367. [ ] Cathnivore desktop: Quick Game setup as one table in three steps, with Cath behind the counter
+## 367. [ ] Cathnivore desktop: Quick Game setup as one table in three steps, with Cath behind the counter *(lane A, in progress)*
 - **Why:** `plan1114a/cath-setup-D` is still a framed settings form (120-1320 x 60-890): five pill-tag labels ("MODE", "DIFFICULTY · HOLLOWELL'S THREAT", "PRODUCERS (PICK 2)", "MAP", "SEED (OPTIONAL)"); a header strip (130-1305 x 70-190) cramming mode, difficulty, a three-row threat table and a quote into 120 px; the producer cards (440-1090 x 265-560) leave an empty well (1095-1295 x 265-560); Cath (1135-1280 x 470-770) stands on bare gingham with the Start plank (1095-1295 x 775-850) over her lower body and hand; the market event is a separate column (130-390 x 210-615), away from the Cath who voices it. Item 349 reworks only the phone.
 - **Build:**
   - The D counterpart of item 349: three numbered steps across the table: Who (mode as two chairs, then the producers with the picked pair raised), Where (the map miniatures), How hard (difficulty tags, the threat lines under the chosen one only).
