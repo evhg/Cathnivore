@@ -499,6 +499,11 @@ main,
   .show-cath::after { right: 0; }
   .show-cath::before { right: 0; }
   .show-cath { width: 44%; right: 0; }
+  /* Plan item 378: each print is a framed photo with its name on the frame's foot, not a pill over the top third of
+     the picture, and the picture is cropped 4:3 so the small print reads taller. */
+  .show-strip .show-card { aspect-ratio: auto; display: flex; flex-direction: column; background: var(--glass-solid); }
+  .show-strip .show-card img { height: auto; aspect-ratio: 4 / 3; }
+  .show-strip .show-label { position: static; border-radius: 0; background: none; padding: 5px 9px 6px; }
 }
 /* Plan item 339: at D the work hangs as a studio wall, a 2x2 of framed screens that never overlap, each with its name on
    a plaque, and Cath stands under the wall at its right (the empty third) pointing up at it, never in front of a frame or the words. */
