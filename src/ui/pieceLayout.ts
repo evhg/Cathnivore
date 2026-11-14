@@ -186,7 +186,9 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
   // Plan item 282: up to 2x on a roomy desktop hex (1440 wide), so a corporation's piece stands 56 px+ tall there.
   // Plan item 282: a phone's hex (about 53 px) starts at 1.85 too (it was 1.35, its stacks 24-31 px against 36): the
   // layout below still shrinks them to fit beside the landmark and the producers.
-  const start = Math.round(Math.min(2, Math.max(1.85, hexPx / 52)) * 20) / 20
+  // A smaller hex than a phone's (40 px, a squeezed board) keeps 1.35: at 1.85 a crowded one left the week's festival
+  // dressing no room (landmark-spot.test).
+  const start = Math.round(Math.min(2, Math.max(hexPx >= 50 ? 1.85 : 1.35, hexPx / 52)) * 20) / 20
   // First the badge at a legible size, letting the pieces shrink only while a stall stays MIN_STALL_PX tall on
   // screen (board-scales.spec); then the old order with the badge at its drawn size.
   const stallFloor = Math.max(0.6, (MIN_STALL_PX * unitsPerPx) / PRODUCER_H)
