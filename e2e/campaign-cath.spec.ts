@@ -63,9 +63,12 @@ test('each chapter card has a landmark vignette, locked ones sealed', async ({ p
       await expect(vig).toBeHidden()
       continue
     }
+    // Plan item 386: the phone's one-card sheet draws it at 108 x 72, so the open chapter's Play key fits at 375x667.
+    await card.scrollIntoViewIfNeeded()
     const box = (await vig.boundingBox())!
-    expect(box.width).toBeGreaterThanOrEqual(120)
-    expect(box.height).toBeGreaterThanOrEqual(80)
+    const phone = page.viewportSize()!.width <= 600
+    expect(box.width).toBeGreaterThanOrEqual(phone ? 104 : 120)
+    expect(box.height).toBeGreaterThanOrEqual(phone ? 70 : 80)
     expect(await vig.locator('.cmp-vig-mark').count()).toBeGreaterThanOrEqual(2)
     const locked = await card.evaluate((e) => e.classList.contains('chapter-locked'))
     await expect(vig).toHaveClass(locked ? /is-sealed/ : /^cmp-vignette( is-won)?$/)

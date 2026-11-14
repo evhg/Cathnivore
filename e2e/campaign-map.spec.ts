@@ -27,12 +27,66 @@ test('chapter 1 won: its regions are freed and Cath moves to chapter 2, across a
   await expect(page.locator('.cmp-map-cath')).toHaveAttribute('data-at', 'word-of-mouth')
 })
 
-test('a map pin starts its chapter', async ({ page }) => {
+test('a map pin starts its chapter (on a phone it opens the chapter first)', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
   await page.locator('.cmp-pin').nth(1).click()
+  if (page.viewportSize()!.width <= 600) {
+    // Plan item 386: the stop opens its chapter in the sheet under the map; its card starts it.
+    await expect(page.locator('.cmp-stop.is-open')).toHaveAttribute('data-chapter', 'word-of-mouth')
+    await page.locator('.cmp-stop.is-open .cmp-card').click()
+  }
   await expect(page.locator('.scene')).toBeVisible()
 })
+
+// Plan item 386: the phone's Campaign is one screen: the open chapter's Play key whole with no scroll, all six chapters
+// reachable by the map's stops or a row of tabs (44 px+), one Cath (the presenter; the map marks her stop with a leaf).
+for (const [w, h] of [[390, 844], [375, 667]] as const) {
+  test(`phone ${w}x${h}: the chapters picked on the map or the tabs, the open one's Play above the fold, one Cath`, async ({ page }) => {
+    test.skip(page.viewportSize()!.width > 600, 'phone layout')
+    await page.setViewportSize({ width: w, height: h })
+    await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })), KEY)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    const open = page.locator('.cmp-stop.is-open')
+    await expect(open).toHaveAttribute('data-chapter', 'word-of-mouth')
+    await expect(page.locator('.cmp-tab.is-open')).toHaveAttribute('data-chapter', 'word-of-mouth')
+    const cta = (await open.locator('.cmp-cta').boundingBox())!
+    expect(cta.y).toBeGreaterThanOrEqual(0)
+    expect(cta.y + cta.height).toBeLessThanOrEqual(h)
+    expect(cta.x + cta.width).toBeLessThanOrEqual(w)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+    // One Cath: the presenter in the header, and a leaf pin (not a figure) on the map.
+    await expect(page.locator('.cmp-header-cath')).toHaveCount(1)
+    await expect(page.locator('.cmp-map-cath .cmp-leaf-pin')).toHaveCount(1)
+    // Hit targets: six tabs and six stops, 44 px or more.
+    const tabs = page.locator('.cmp-tab')
+    await expect(tabs).toHaveCount(6)
+    for (const b of await tabs.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect))) {
+      expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(44)
+    }
+    for (const b of await page.locator('.cmp-pin-hit').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect))) {
+      expect(b.width).toBeGreaterThanOrEqual(44)
+    }
+    // A tab opens its chapter; a stop on the map opens another; Cath speaks about the open one.
+    await tabs.nth(4).click()
+    await expect(open).toHaveAttribute('data-chapter', 'friends-in-low-places')
+    await expect(page.locator('.cmp-cath')).toHaveAttribute('data-chapter', 'friends-in-low-places')
+    await page.locator('.cmp-pin').nth(0).click()
+    await expect(open).toHaveAttribute('data-chapter', 'fresh-meat')
+    // The sheet slides to it (a smooth scroll).
+    await expect
+      .poll(async () => {
+        const b = (await page.locator('.cmp-stop[data-chapter="fresh-meat"] .cmp-card').boundingBox())!
+        return b.x >= 0 && b.x + b.width <= w
+      }, { timeout: 5000 })
+      .toBe(true)
+    await expect(open).toHaveAttribute('data-chapter', 'fresh-meat')
+    const card = (await open.locator('.cmp-card').boundingBox())!
+    expect(card.x + card.width).toBeLessThanOrEqual(w)
+    expect(card.y + card.height).toBeLessThanOrEqual(h)
+  })
+}
 
 test('winning chapter 1 presses its seals, and they persist across a reload', async ({ page }) => {
   // Autoplay (HeuristicBot) wins chapter 1 by round 4: the win and the feat, not the swift round-3 seal.

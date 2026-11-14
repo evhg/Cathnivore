@@ -10,7 +10,7 @@ import { LANDMARKS } from '../content/campaignMapLayout'
 import { Landmark } from './Landmark'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import type { CathPoseId } from '../../shared/cath/cath'
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { campaignLine } from '../content/campaignLines'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -353,13 +353,42 @@ export default function CampaignScreen({
   const [focused, setFocused] = useState<string | null>(null)
   const pointed = focused ?? hovered
   const next = chapters.find((c, i) => !completed.includes(c.id) && (i === 0 || completed.includes(chapters[i - 1]!.id)))
-  const say = campaignLine(pointed ?? next?.id, done === chapters.length)
   const wide = useMedia('(min-width: 1100px)')
+  // Plan item 386: on a phone one chapter is open at a time, in a sheet under the map: a map stop or a tab opens it,
+  // and the sheet is a carousel of the chapter cards (a swipe opens the next). It opens on the next chapter to play.
+  const phone = useMedia('(max-width: 600px)')
+  const [picked, setPicked] = useState<string | null>(null)
+  const open = picked ?? next?.id ?? chapters[chapters.length - 1]!.id
+  const listRef = useRef<HTMLOListElement>(null)
+  const scrollTo = (id: string, smooth: boolean) => {
+    const list = listRef.current
+    const i = chapters.findIndex((c) => c.id === id)
+    const li = list?.children[i] as HTMLElement | undefined
+    if (!list || !li) return
+    const left = list.scrollLeft + li.getBoundingClientRect().left - list.getBoundingClientRect().left
+    list.scrollTo({ left, behavior: smooth ? 'smooth' : 'instant' })
+  }
+  const pick = (id: string) => {
+    setPicked(id)
+    scrollTo(id, !matchMedia('(prefers-reduced-motion: reduce)').matches)
+  }
+  useLayoutEffect(() => {
+    if (phone) scrollTo(open, false)
+    // Only when the layout changes to the phone's carousel: later picks scroll it themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone])
+  const say = campaignLine(pointed ?? (phone ? open : next?.id), done === chapters.length)
+  const stateOf = (i: number): 'done' | 'locked' | 'current' => {
+    const c = chapters[i]!
+    if (completed.includes(c.id)) return 'done'
+    const previous = chapters[i - 1]
+    return i > 0 && !!previous && !completed.includes(previous.id) ? 'locked' : 'current'
+  }
   // Plan item 248: Cath hosts the map at full height, head to boots, with her line over her head. On a desktop she
   // narrates at half length in the map's sea beside the island (item 325); on a phone she stands beside her line in the header.
   // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
   const host = (
-    <figure className="cmp-cath" data-chapter={pointed ?? next?.id ?? 'done'} data-host={wide ? 'map' : 'header'} data-pose={CHAPTER_POSE[pointed ?? next?.id ?? ''] ?? SCREEN_POSE['cathnivore:campaign']} data-expression={say.expression}>
+    <figure className="cmp-cath" data-chapter={pointed ?? (phone ? open : next?.id) ?? 'done'} data-host={wide ? 'map' : 'header'} data-pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']} data-expression={say.expression}>
       <p className="cmp-cath-line" aria-live="polite">
         {say.line}
       </p>
@@ -369,7 +398,7 @@ export default function CampaignScreen({
         <CathArt
           className="cmp-header-cath"
           framing="half"
-          pose={CHAPTER_POSE[pointed ?? next?.id ?? ''] ?? SCREEN_POSE['cathnivore:campaign']}
+          pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']}
           expression={say.expression}
           animate
           title="Cath"
@@ -400,7 +429,46 @@ export default function CampaignScreen({
         </div>
         {!wide && host}
       </header>
-      <CampaignMap chapters={chapters} completed={completed} onStart={onStart} celebrate={celebrate} lit={pointed ?? undefined} host={wide ? host : undefined} />
+      <CampaignMap
+        chapters={chapters}
+        completed={completed}
+        onStart={onStart}
+        celebrate={celebrate}
+        lit={pointed ?? (phone ? open : undefined)}
+        host={wide ? host : undefined}
+        onPick={phone ? (c) => pick(c.id) : undefined}
+        picked={phone ? open : undefined}
+      />
+      {/* Plan item 386: on a phone a row of six chapter tabs opens each chapter in the sheet below. */}
+      {phone && (
+        <nav className="cmp-tabs" aria-label="Chapters">
+          {chapters.map((c, i) => {
+            const st = stateOf(i)
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className={`cmp-tab cmp-tab-${st}${open === c.id ? ' is-open' : ''}`}
+                data-chapter={c.id}
+                aria-current={open === c.id ? 'true' : undefined}
+                // The tab's name is its number and state; the chapter's title is its description (so a search for a
+                // chapter's title finds its card, the button that starts it).
+                aria-label={`Chapter ${i + 1}${st === 'done' ? ', won' : st === 'locked' ? ', not yet open' : ''}`}
+                title={c.title}
+                onClick={() => pick(c.id)}
+              >
+                {st === 'done' ? (
+                  <svg viewBox="-8 -8 16 16" aria-hidden="true">
+                    <path d="M-4.5 0.5 L-1.2 3.8 L4.8 -3.2" />
+                  </svg>
+                ) : (
+                  <span aria-hidden="true">{i + 1}</span>
+                )}
+              </button>
+            )
+          })}
+        </nav>
+      )}
       {/* Plan item 257: on a desktop the campaign's tally sits under the map, filling the band the map leaves; the
           page's own Back sits under the rail, which scrolls on a tall desktop, so there it lives here. */}
       {wide && (
@@ -432,6 +500,15 @@ export default function CampaignScreen({
       )}
       <ol
         className="chapter-list cmp-path"
+        ref={listRef}
+        onScroll={(e) => {
+          // Plan item 386: a swipe through the phone's carousel opens the card it settles on.
+          if (!phone) return
+          const list = e.currentTarget
+          const i = Math.round(list.scrollLeft / Math.max(1, list.clientWidth))
+          const id = chapters[Math.max(0, Math.min(chapters.length - 1, i))]!.id
+          if (id !== open && Math.abs(list.scrollLeft - i * list.clientWidth) < 4) setPicked(id)
+        }}
         onKeyDown={(e) => {
           // Plan item 373: the arrow keys step between the chapters (Enter or Space then starts the focused one).
           if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
@@ -456,7 +533,7 @@ export default function CampaignScreen({
           const coached = first ? tutorialDone : (coachDone?.(chapter.id) ?? true)
           const state = isDone ? 'done' : locked ? 'locked' : 'current'
           return (
-            <li key={chapter.id} className={`cmp-stop cmp-stop-${state}${current ? ' cmp-stop-next' : ''}`}>
+            <li key={chapter.id} className={`cmp-stop cmp-stop-${state}${current ? ' cmp-stop-next' : ''}${phone && open === chapter.id ? ' is-open' : ''}`} data-chapter={chapter.id}>
               <Medallion n={i + 1} state={state} />
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Chapter } from '../content/chapters'
 import { REGIONS } from '../content/map'
 import { CHAPTER_HOMES, MAP_AXIAL, currentChapterIndex, liberatedRegions } from '../content/campaignMap'
@@ -130,6 +130,8 @@ export default function CampaignMap({
   celebrate,
   lit,
   host,
+  onPick,
+  picked,
 }: {
   chapters: Chapter[]
   completed: string[]
@@ -139,6 +141,10 @@ export default function CampaignMap({
   lit?: string
   /** Plan item 248: on a desktop, Cath's full-length host figure stands in the map's sea beside the island. */
   host?: ReactNode
+  /** Plan item 386: on a phone a stop opens its chapter in the sheet under the map instead of starting it. */
+  onPick?(chapter: Chapter): void
+  /** Plan item 386: the chapter open in the phone's sheet; its stop wears a ring. */
+  picked?: string
 }) {
   const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
   // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
@@ -158,15 +164,29 @@ export default function CampaignMap({
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
   const litHomes = new Set(lit ? (CHAPTER_HOMES[lit] ?? []) : [])
   // Plan item 373: on a desktop the large presenter stands beside the map, so her marker on it is a small leaf pin
-  // (one Cath on the screen); the phone, with her in the header, keeps the figure on the map.
+  // (one Cath on the screen). Plan item 386: the phone too, where she presents from the header.
   const cath = useMemo(
     () =>
-      host
+      host || onPick
         ? `<svg width="${CATH_SIZE.w}" height="${CATH_SIZE.h}" viewBox="0 0 28 42" class="cmp-leaf-pin" data-cath-marker=""><ellipse cx="10" cy="33" rx="5" ry="1.6" class="cmp-leaf-shadow"/><path d="M10 32 C4.5 24 2 19.5 2 14 A8 8 0 0 1 18 14 C18 19.5 15.5 24 10 32 Z" class="cmp-leaf-body"/><path d="M10 8.5 C6.6 10.8 6.6 16 10 18.8 C13.4 16 13.4 10.8 10 8.5 Z" class="cmp-leaf-leaf"/><path d="M10 10 V18" class="cmp-leaf-vein"/></svg>`
         : cathSvg({ framing: 'half', pose: allDone ? 'cheer' : 'wave', expression: allDone ? 'delighted' : 'smirk', width: CATH_SIZE.w, height: CATH_SIZE.h, animate: true }),
-    [allDone, host],
+    [allDone, host, onPick],
   )
   const pins = chapters.map(pinOf)
+  // Plan item 386: the stops' hit circles are 44 px across whatever the map's drawn scale (its viewBox is 320 wide),
+  // capped so neighbouring stops don't swallow each other.
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [hitR, setHitR] = useState(21)
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg || !onPick || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      const scale = Math.min(svg.clientWidth / 320, svg.clientHeight / 296)
+      if (scale > 0) setHitR(Math.min(36, Math.max(21, 22.5 / scale)))
+    })
+    ro.observe(svg)
+    return () => ro.disconnect()
+  }, [onPick])
   // The lane: a gentle curve from each pin to the next.
   const lane = pins
     .map((p, i) => {
@@ -192,7 +212,7 @@ export default function CampaignMap({
 
   return (
     <figure className="cmp-map" data-free={freedCount} data-phase={phase}>
-      <svg className="cmp-map-svg" viewBox="-160 -150 320 296" role="img" aria-label={label}>
+      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" role="img" aria-label={label}>
         <defs>
           <pattern id="cmp-hold-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />
@@ -285,7 +305,17 @@ export default function CampaignMap({
           const done = completed.includes(chapter.id)
           const state = done ? 'done' : i === here ? 'current' : 'ahead'
           return (
-            <g key={chapter.id} className={`cmp-pin cmp-pin-${state}`} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`} onClick={() => onStart(chapter)} aria-hidden="true">
+            <g
+              key={chapter.id}
+              className={`cmp-pin cmp-pin-${state}${picked === chapter.id ? ' is-picked' : ''}`}
+              data-chapter={chapter.id}
+              transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}
+              onClick={() => (onPick ? onPick(chapter) : onStart(chapter))}
+              aria-hidden="true"
+            >
+              {/* Plan item 386: a 44 px+ hit target round the stop on a phone (the disc draws about 24 px). */}
+              <circle r={hitR} className="cmp-pin-hit" />
+              {picked === chapter.id && <circle r={15.5} className="cmp-pin-ring" />}
               {state === 'current' && <circle r={15} className="cmp-pin-pulse" />}
               <circle r={11} className="cmp-pin-disc" />
               <text y={4} className="cmp-pin-n">
