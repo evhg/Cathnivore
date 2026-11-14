@@ -513,11 +513,14 @@ function stagePick(): void {
       return;
     }
     const gap = Math.round(innerHeight * 0.012);
+    // Plan item 381: at hero size: the stage runs on behind her name (cut at about mid-shin, the name's shade over
+    // her feet) and across nearly the screen's width, so her slung gun no longer caps her height (she stood about
+    // 290 px of a 390x844 screen).
     scene?.setPickStage({
-      left: Math.round(innerWidth * 0.06),
+      left: Math.round(innerWidth * 0.02),
       top: head.bottom + gap,
-      right: Math.round(innerWidth * 0.94),
-      bottom: Math.min(...words.map((b) => b.top)) - gap,
+      right: Math.round(innerWidth * 0.98),
+      bottom: Math.min(...words.map((b) => b.top)) + Math.round(innerHeight * 0.06),
     });
     return;
   }

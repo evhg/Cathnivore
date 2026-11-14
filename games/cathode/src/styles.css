@@ -1146,7 +1146,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
     color: var(--ink-2);
   }
   .cp-dot::before { content: none; }
-  .cp-dot-gun { display: block; width: 92%; height: calc(var(--u) * 15); opacity: .75; }
+  .cp-dot-gun { display: block; width: 92%; height: calc(var(--u) * 20); }
   .cp-dot-gun svg { display: block; width: 100%; height: 100%; }
   .cp-dot-name {
     font: 700 max(14px, var(--fs-1))/1 var(--font-ui); /* fs-ok px-ok: the tab names at 14 px (plan item 375) */
@@ -1156,6 +1156,12 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
     white-space: nowrap;
   }
   .cp-dot.is-on { color: var(--ink); border-bottom-color: var(--accent, var(--blood-hot)); }
+  /* Plan item 381: at tab size the gun's hairline outline vanished; it is a solid silhouette in the tab's ink with
+     a soft rim, the chosen one in its colour */
+  .cp-dot-gun { opacity: 1; filter: drop-shadow(0 0 calc(var(--u) * 1.5) rgb(var(--ink-rgb) / .35)); }
+  .cp-dot-gun .wa-body { fill-opacity: .92; stroke-width: 4; }
+  .cp-dot-gun .wa-detail { display: none; }
+  .cp-dot.is-on .cp-dot-gun { color: var(--accent, var(--blood-hot)); }
   /* the hold bar centred on the sheet, its gutters even (it hung 9 px in on the left and 23 on the right) */
   .cp-sheet[data-dossier] .cp-foot .cp-hold { margin-inline: 0; width: 100%; }
   .cp-dot.is-on .cp-dot-gun { opacity: 1; filter: drop-shadow(0 0 calc(var(--u) * 4) var(--accent, var(--blood-hot))); }
