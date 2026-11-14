@@ -5435,7 +5435,9 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 .action-item.action-sell { position: relative; }
 .action-item.action-sell .sell-count {
   position: absolute;
-  right: 7px;
+  /* Plan item 390: in the fanned hand the next card overlaps this one's right edge by --lap (item 217), so the coins
+     keep that clear (the "3" sat under Buy Roadside Stand) */
+  right: calc(7px + var(--lap, 0px));
   bottom: 8px;
   z-index: var(--z-raised, 1);
   display: flex;
