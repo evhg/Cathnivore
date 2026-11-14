@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test'
 type Box = { x: number; y: number; w: number; h: number }
 type HG = {
   game(): { level: { path2?: unknown } } | null
-  depots3d(): Box[]
+  depots3d(): Array<Box & { roofY: number }>
   depotShutter3d(): number | null
   cathBox(): Box | null
   plotBoxes(): Box[]
@@ -84,8 +84,11 @@ for (const level of [1, 21, 34, 40]) {
       const feet = rep.y + rep.height
       // Plan item 369: on the shed's own roof, not hung past its far edge (the box's centre, pulled off the shed by
       // the bay and the floodlight, put his hatch at 0.31 of the box at D on l21: a head poking up behind the roof).
-      expect(feet, `rep's feet ${feet} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y + d.h * 0.33)
+      expect(feet, `rep's feet ${feet} on depot ${JSON.stringify(d)}`).toBeGreaterThan(d.y + d.h * 0.25)
       expect(feet).toBeLessThan(d.y + d.h)
+      // Plan item 391: and on the roof's own centre (a depot by the field's edge, nearer the camera, is seen more from
+      // above, so its roof sits higher in its box than the 0.33 the check used to ask).
+      expect(Math.abs(feet - (d.roofY + r.canvas.y)), `rep's feet ${feet} against the roof's centre`).toBeLessThan(Math.max(14, d.h * 0.1))
     }
     // ...and is never a headless suit under the top bar (an upright phone's l21 cuts the depot's roof).
     const hud = (await page.locator('#screen-play .hud').boundingBox())!
