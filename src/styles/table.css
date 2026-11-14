@@ -2320,6 +2320,27 @@ html.no-animations .cath-companion .cameo {
   .event-ticket { right: calc(var(--sp-2) + 127px); max-width: 132px; text-wrap: balance; }
   .game-layout .map-wrap > .map-key { top: 60px; }
 }
+.map-key-word { display: none; }
+/* Plan item 378: a lone "i" between the event note and the producers read as nobody's button. At a desktop table it is
+   a labelled tab under Pell's plate, the key's own word beside its "i". */
+@media (min-width: 1024px) {
+  .game-layout .map-wrap > .map-key > summary {
+    display: flex;
+    gap: 6px;
+    width: auto;
+    padding: 0 12px 0 4px;
+    border-radius: 16px;
+  }
+  .game-layout .map-wrap > .map-key > summary > span:first-child {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink-a60);
+  }
+  .map-key-word { display: inline; font: 700 var(--fs-label)/1 var(--font-text); font-style: normal; letter-spacing: .04em; text-transform: uppercase; }
+}
 /* On a phone or tablet it is one line across the frame's top strip, between Bea's drawing and the map's "i". */
 @media (max-width: 1023.98px) {
   .event-ticket {

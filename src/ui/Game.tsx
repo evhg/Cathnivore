@@ -3143,6 +3143,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <details className="map-key">
           <summary aria-label="Map key">
             <span aria-hidden="true">i</span>
+            {/* Plan item 378: at a desktop table the "i" carries its word, so it reads as the map's key, not a stray button. */}
+            <span className="map-key-word" aria-hidden="true">Map key</span>
           </summary>
           <section className="map-legend">
             <span className="map-key-title label">Map key</span>
