@@ -3651,7 +3651,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - cathode-classpick, classpose and armoury pass; D unchanged; shots P before and after.
 - **Size:** 2
 
-## 382. [ ] Cathnivore title: Marrow's market square in morning light behind the counter, not a blank cream wall
+## 382. [ ] Cathnivore title: Marrow's market square in morning light behind the counter, not a blank cream wall *(lane A, in progress)*
 - **Why:** `plan1114c/cath-title-D`: behind the bunting the town skyline (0-1440 x 180-290) is a ghost at about 15% contrast, and everything between the bunting and the counter (0-1440 x 290-750) is flat cream, so Cath (600-830 x 400-760) and the board on its cloth (850-1340 x 315-750) stand in an empty room. /games/ has a full dusk market street (item 299); the game's own front door has none. `cath-title-P` the same faded strip (0-390 x 195-300) over cream.
 - **Build:**
   - A painted morning market square behind the counter: far rooftops and the clock tower in colour, a near row of two or three stall awnings and crates, low sun from the existing sun disc, in the board's ink-and-flat-colour language.
