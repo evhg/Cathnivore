@@ -1178,7 +1178,18 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .mug-photo { position: relative; margin: 0; width: 100%; aspect-ratio: 200 / 240; overflow: hidden; background: var(--card-ink); }
   .mug-photo svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
   .mug-blank { display: grid; place-items: center; width: 100%; height: 100%; font: 800 var(--fs-2) var(--font-ui); color: rgb(var(--white-rgb) / .25); }
-  .mug-name { display: none; }
+  /* Plan item 379: each print carries its line on the frame's foot, the name or 'Withheld' (it was a row of bare
+     photos, only the first named above them) */
+  .mug-name {
+    display: block;
+    overflow: hidden;
+    font: 700 var(--fs-1) / 1.1 var(--font-ui);
+    font-stretch: var(--wdth-tight);
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--card-ink);
+  }
   .mug.is-done .mug-photo svg { filter: grayscale(1) brightness(.7); }
   .mug.is-done .mug-photo::after {
     content: "";
