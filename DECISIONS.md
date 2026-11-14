@@ -242,3 +242,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 06:05 lane A (item 369): the D game shot's 'Injunction under Supply' (three critiques) was the pointer left over Start lifting a hand card; plan-shots now parks the mouse, and the hand's layout is unchanged.
 - 2026-11-14 06:50 lane A (item 369): Hollowell's 3D rep stays a DOM bust in a roof hatch (item 228); only its anchor moved, to the shed's roof under the ridge, rather than replacing him with a 3D figure.
 - 2026-11-14 06:27 lane A (item 369): the NIGHT SHIFT title's steam keeps its six puffs and their motion; only the texture changed (a seeded billow of soft blobs, each puff rotated), since the round gradient alone made the 'balloon'.
+- 2026-11-14 06:40 lane B (item 372): locked Hedgerow stops are Hollowell's plastic (cool grey, a gloss line, a teal 'H' seal) in place of item 314's warm sepia, which out-saturated the playable stop; hedgerow-map's item 73 test now pins cool grey and the seal.
+- 2026-11-14 06:50 lane B (item 372): the level card docks beside the act only at 1200 px+ and 700 px tall; narrower desktops keep it under the act, phones keep the sheet.
