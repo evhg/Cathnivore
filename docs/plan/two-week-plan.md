@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-14T15:29Z
-
 
 
 
@@ -3701,5 +3699,62 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Hedgerow:** P: the "NEXT: ROUND 11" tab (222-368 x 680-702) over the coach bubble's top edge (l21 2D/3D, l34); `hedge-l34-2d-D` the "Box Lorry" label (233-300 x 385-400) on the fourth lorry's wheels.
   - **NIGHT SHIFT:** `ns-title-D` "THE LIST" (57-110 x 563-577) squeezed 6 px under the menu panel's foot, touching the red string; `ns-title-P` a mirrored, cropped "CLUNA" neon (20-115 x 1055-1090) under the case lines; `ns-play-P` uneven spacing round HER LINE (1050-1240).
   - **Runnel:** `runnel-P` Cath's bubble (12-268 x 545-640) within a few px of the fourth hex's left corner (about 245 x 615); check they don't meet.
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 386. [ ] Cathnivore phone Campaign: the chapters picked on the map, one Cath, the open chapter above the fold
+- **Why:** `plan1114d/cath-campaign-P`: two Caths, the presenter a waist-cut figure floating beside her bubble with nothing under her (265-345 x 130-245) and a full-figure marker at Kingsmarket (123-147 x 415-453) (item 373 gave D a leaf pin; P kept the figure). Only chapter 1's card shows, cut at the fold (70-375 x 600-844); chapters 2-6 need a scroll, so the map's 22 px stops (e.g. 235-262 x 345-372) read as decoration, not a picker. Progress said twice: "0 of 6 chapters · 0 of 7 regions free" (16-235 x 95-110) over the segmented bar (16-195 x 118-132).
+- **Build:**
+  - Item 373's language at P: a stop (44 px hit target) opens its chapter as a docked sheet under the map (plate, goal, cast, seals, Start), with a row of six chapter tabs in place of the scrolled list.
+  - One Cath: the map marker the leaf pin; the presenter grounded at hero scale on a counter lip, her bubble beside her.
+  - One progress line (the text or the bar).
+- **Accept:**
+  - At 390x844 and 375x667 the open chapter's Start whole with no scroll; all six chapters reachable by the map or the tabs; exactly one Cath figure, standing on a drawn surface.
+  - Hit targets 44 px+; the campaign specs and axe pass; D unchanged; shots P (390x844, 375x667) light and dark, before and after.
+- **Size:** 2
+
+## 387. [ ] Cathnivore phone play: the producers seated at the counter, named, the active one lit (P counterpart of 374)
+- **Why:** `plan1114d/cath-game-P`: Mara and Tomas are 60 px medallions pinned on the board's right edge, Mara's (320-380 x 150-215) over Saltmarsh's flank and Tomas's (322-380 x 455-520) over Shingle Bay's corner and the board's trim; no names, nothing says whose turn it is; Mara a third time as a 40 px disc on the counter (15-60 x 612-655). `cath-game-D` gives them half-length figures with name plates (item 374); on a phone they are tokens (VISION 5).
+- **Build:**
+  - The medallions off the board: the two producers seated at the counter's right end opposite Cath, busts 72 px+ with a name plate, the active seat lit as item 374 does.
+  - Mara's counter disc merged into her seat, so each producer shows once; a tap on a producer opens their farm, as the medallion does.
+  - The board and the hand keep their heights.
+- **Accept:**
+  - No portrait box meets a region hex or the board's frame; each producer once, named at 13 px+, the active one 20%+ apart in luminance.
+  - Board height at least today's (about 420 px); 3+ hand-card names still in view (item 368's check).
+  - hand-phone, phone-counter, board-scale and quick-game specs pass; shots P (390x844, 375x667) light and dark, before and after.
+- **Size:** 2
+
+## 388. [ ] Hedgerow 2D: the margins painted to the field's standard, not stamps on a flat fill
+- **Why:** items 345 and 370 lifted the field; item 202's margins now read a generation behind it. `plan1114d/hedge-l34-2d-D`: the same lollipop willow stamped about 9 times down the left (20-230 x 110-890), punts at odd angles cut by the board's edge (980-1075 x 355-385, 970-1060 x 650-680, 965-1045 x 860-885); `hedge-l21-2d-D` right margin (800-1080 x 75-890): salt pans drawn as upright framed pictures (885-980 x 100-160, 325-400, 645-705), a creek that starts and ends nowhere (895-960 x 160-500), beach huts with no ground; the left sea flat with identical reed clumps and boats. `hedge-l34-2d-P` (140-390 x 595-650) the same. The margins are about half the D board.
+- **Build:**
+  - Ground under every margin: shore with wet sand, foam and a tide line; banks with shoulders and reflections; Saltmarsh's pans flat in the ground with clay rims.
+  - Every repeated piece varied (size, flip, lean, tint, seeded), in clusters and gaps, not rows.
+  - Props seated and clipped by the scenery, never the board's edge (punts moored along the bank, boats at anchor with a shadow); the field's light on the margins (direction, cast shadows, a vignette to the edge).
+- **Accept:**
+  - No margin sprite drawn more than twice with an identical transform (a unit test on the margin layout); no prop's box crosses the board's clip.
+  - The margins' mean saturation and contrast within 15% of the field's at D.
+  - hedgerow field, gatequeue and depot specs pass; key art re-shot (`npm run keyart hedgerow`); shots l21 and l34 at P and D, before and after.
+- **Size:** 2
+
+## 389. [ ] Runnel: the board set into the valley at one scale, not hex plates over a model railway
+- **Why:** `plan1114d/runnel-D`: the four lesson hexes (560-1240 x 95-740) are raised plates with thick borders seen from straight above, while the valley behind is drawn in perspective with a horizon and sky; the scale doesn't hold: a tile about 210 px wide beside a 55 px farmer (745-785 x 790-845), a 30 px sheep (1330-1365 x 555-585), a 100 px spring house (415-515 x 50-135) and a 20 px Bea (1165-1185 x 785-810). The puzzle reads as a toy laid on a diorama. `runnel-P` the same (hexes 35-345 x 330-650, folk 10-20 px).
+- **Build:**
+  - One projection: the board as plots cut into the valley floor (a soft earth lip, no plate border or drop shadow), the valley from the same top-down three-quarter angle, the horizon a thin band.
+  - Folk, the spring house, hives and Bea's garden at the tile's grain (a person about a quarter of a tile edge), on paths between the plots; the spring house's stream meets the spring tile, the outflow ends at Bea's garden.
+  - Items 365's detail tiers, 351's bridge and 329's payoff kept.
+- **Accept:**
+  - Person height to tile edge 0.2-0.35 at P and D (measured in the page); no tile border over 4 px at D; the horizon band at most 15% of the board's height.
+  - runnel-one-cath, lesson and daily specs pass; key art re-shot; shots of the lesson and a daily at P and D, before and after.
+- **Size:** 3
+
+## 390. [ ] The bugs from the 2026-11-14 15:40 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1114d`)
+  - **Cathnivore:** `cath-game-D` (1215-1335 x 430-520) Tomas fades to transparency at the waist behind Mara, his plate on the faded band; the Sell card's count coin "3" (462-478 x 848-866) and price coin (440-455 x 735-750) half under the Buy Roadside Stand card; `cath-game-P` (245-355 x 670-775) the Supply 1 Outlet card at about 40% opacity (an entrance fade caught, or a wrong disabled state?); `cath-setup-D` Cath's one bubble (1062-1362 x 325-450) packs two quotes; `cath-title-P` (20-270 x 760-835) the satire/privacy/support lines plain small print on the brown band.
+  - **/games/:** `games-D` the stall Cath about 190 px tall (280-375 x 108-300; item 352 set about 360); the poster logotypes 4 px under the valance's scallops (122-290 x 505-540, 1050-1215 x 508-532); a dead band under the posters (0-1440 x 832-900).
+  - **Portfolio:** `portfolio-P` (152-215 x 130-245) the Runnel tile cut at the screen edge mid-word (or fold into item 350).
+  - **Hedgerow:** `hedge-l21-3d-D` Cath's line takes over the side column, Coming up and Notebook gone, an empty slab under her bubble (1110-1410 x 630-705); `hedge-l21-2d-D` a moored sailboat under the HOLLOWELL sign (195-290 x 498-545).
+  - **Runnel:** `runnel-D` the spring's outflow a translucent blue ellipse across hex 1 and 2's rims (765-805 x 215-275).
+  - **NIGHT SHIFT:** `ns-title-D`/`ns-title-P` Reed's case-file bust and Crisp's print still the old faceted faces (420-570 x 280-465, 60-185 x 595-735): the headless title is the static front poster, so item 371's sculpts need `scripts/cathode-poster.mjs` re-run on a GPU (or a check that the dossier and List aren't baked into the poster).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
