@@ -50,6 +50,12 @@ test('the desktop title keeps its crates off the menu board and the NEXT card on
 test("the phone title's Daily slip stays off the board and Cath's figure, on two lines", async ({ page }) => {
   // Plan item 200: at 390 it hung over her jacket's hem and hand (top 424); it is pinned low on the counter's front,
   // which hides her figure's last 50 px or so.
+  // Plan item 378: a phone shows the slip once a Daily has been played (yesterday's, here).
+  await page.goto('/')
+  await page.evaluate(() => {
+    const day = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+    localStorage.setItem('cathnivore:daily', JSON.stringify({ results: { [day]: { won: true, rounds: 9, regions: 5, trust: 7 } } }))
+  })
   for (const width of [390, 430]) {
     await page.setViewportSize({ width, height: 844 })
     await page.goto('/')
