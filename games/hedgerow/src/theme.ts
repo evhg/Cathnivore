@@ -2,6 +2,7 @@
 // per level and size into an offscreen canvas by `paintBackground`. Everything is procedural and seeded by
 // the level id, so a level always looks the same and nothing needs downloading.
 
+import { entrySide, nearSides, type Side } from "./depot";
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
@@ -1075,6 +1076,23 @@ export function gateSignRect(
   return { label, fs, sx, sy, sw, sh };
 }
 
+/**
+ * Plan item 380: the field edges beside a gate where Hollowell's depot can stand (main.ts syncDepots): the edge its
+ * lane enters from, or one within two cells, with a margin that holds at least the small depot, and never the act's
+ * water side (on Saltmarsh it stood half in the sea, a sailboat under its posts). Where one exists the depot's own
+ * sign names the gate, so the painted town sign is left off (the gate read HOLLOWELL twice).
+ */
+export function depotSides(level: Level, path: Level["path"], L: Layout): Side[] {
+  const s = L.cell;
+  const start = path[0] as unknown as [number, number];
+  const water = themeFor(level).water?.side;
+  const dsz = Math.max(48, Math.round(s * 1.3));
+  const fieldR = L.offX + level.cols * s;
+  const fieldB = L.offY + level.rows * s;
+  const room: Record<Side, number> = { left: L.offX, right: L.width - fieldR, top: L.offY, bottom: L.height - fieldB };
+  return [...entrySide(start, level.cols, level.rows), ...nearSides(start, level.cols, level.rows)].filter((side) => side !== water && room[side] >= dsz + 12);
+}
+
 function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["path"], L: Layout): void {
   // Where they come from: a glossy depot sign just off the field.
   const s = L.cell;
@@ -1098,6 +1116,8 @@ function paintOneGate(ctx: CanvasRenderingContext2D, level: Level, path: Level["
     ctx.fill();
     ctx.stroke();
   }
+  // Plan item 380: a gate with a depot beside it is named by the depot's sign alone.
+  if (depotSides(level, path, L).length) return;
   const { label, fs, sx, sy, sw, sh } = gateSignRect(level, path, L, ctx);
   ctx.font = `700 ${fs}px 'Hedgerow UI', system-ui, sans-serif`;
   ctx.fillStyle = "#1f8a8a";

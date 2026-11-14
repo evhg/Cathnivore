@@ -978,10 +978,23 @@ export class Renderer {
         });
         // Plan item 273: one size per queue (a queue in two sizes at a bend read as two convoys): the bigger only when
         // every vehicle of it stands on a straight run across.
+        // Plan item 380: spaced along the path, two side-on sprites round a bend stood closer in a straight line than
+        // their length and overlapped (level 34's Same-Day vans); each is pushed on along the lane until the straight
+        // gap to the one behind it holds too.
+        const at = (dd: number) => enemyPoint(level, { dist: dd, ...(ln.lane ? { lane: ln.lane } : {}) });
         const lay = (q: number) => {
           const ds: number[] = [];
           let d = 0.15;
           for (let i = ln.leads.length - 1; i >= 0; i--) {
+            if (i < ln.leads.length - 1) {
+              const need = (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i + 1]!)) + 0.06) * q;
+              const prev = at(ds[i + 1]!);
+              for (let k = 0; k < 30; k++) {
+                const p = at(d);
+                if (Math.hypot(p.x - prev.x, p.y - prev.y) >= need * 0.98) break;
+                d += 0.05;
+              }
+            }
             ds[i] = d;
             if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * q;
           }

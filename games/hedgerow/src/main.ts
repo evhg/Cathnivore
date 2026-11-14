@@ -201,8 +201,8 @@ import { towerRole, type TowerRole } from "./roles";
 import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
-import { depotSvg, entrySide, nearSides, repMood, repSvg, type RepMood } from "./depot";
-import { gateSignRect, lastCrayon, setWonLevels } from "./theme";
+import { depotSvg, repMood, repSvg, type RepMood } from "./depot";
+import { depotSides, gateSignRect, lastCrayon, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -4769,7 +4769,10 @@ function syncDepots(g: Game): void {
     // Plan item 246: an upright phone's level 34 has no margin left of the field, so its second gate (two rows off
     // the foot) had no depot and its vans stacked on a bare plate; a gate within two cells of another edge may
     // stand its depot on that edge's margin, beside the gate.
-    for (const side of [...entrySide(start, L.cols, L.rows), ...nearSides(start, L.cols, L.rows)]) {
+    // Plan item 380: only the dry margins (never the act's water side) that theme.ts left the town sign off for.
+    const layout = { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY };
+    const dry = depotSides(L, path!, layout);
+    for (const side of dry) {
       const room = side === "left" ? fieldL - canvas.left : side === "right" ? canvas.right - fieldR : side === "top" ? fieldT - canvas.top : canvas.bottom - fieldB;
       // Only where the margin outside the field holds the whole depot: it never stands on a plot.
       if (room < dsz + 12) continue;
@@ -4777,7 +4780,8 @@ function syncDepots(g: Game): void {
       const y = side === "top" ? fieldT - 8 - dsz : side === "bottom" ? fieldB + 8 : gate.y - dsz / 2;
       // Plan item 160: the gate's town sign (painted by theme.ts's paintOneGate) stays readable: the depot slides
       // along the margin to clear it (it hid all but '…WELL' of the second gate's sign on level 34).
-      const sr = gateSignRect(L, path!, { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY }, signMeasure());
+      // (Plan item 380: with a dry margin the sign isn't painted, so there is nothing to clear: an empty box.)
+      const sr = dry.length ? { sx: -1e4, sy: -1e4, sw: 0, sh: 0 } : gateSignRect(L, path!, layout, signMeasure());
       const sign = { left: canvas.left + sr.sx, top: canvas.top + sr.sy, right: canvas.left + sr.sx + sr.sw, bottom: canvas.top + sr.sy + sr.sh };
       const tries = side === "left" || side === "right" ? [y, sign.top - 6 - dsz, sign.bottom + 6] : [x, sign.left - 6 - dsz, sign.right + 6];
       let placed = false;
