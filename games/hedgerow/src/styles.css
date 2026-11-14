@@ -5449,3 +5449,45 @@ img.act-scene {
 #screen-select .node .level-stars.won::before { left: 22%; rotate: 14deg; }
 #screen-select .node .level-stars.won::after { right: 22%; rotate: -14deg; }
 
+
+/* Plan item 372: at 1200 px and wider the level card is docked in a column beside the land, not laid across the
+   act's foot over its fields: the act is two columns, the stops in the left, the card restacked down the right,
+   rising into the sky band; no stop or lane runs under it. */
+@media (min-width: 1200px) and (min-height: 700px) {
+  #screen-select li.act.act-has-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 316px;
+    grid-template-rows: auto 1fr;
+  }
+  /* the card no longer stands over the hedge, so the act keeps the hedge's own room at its foot */
+  #screen-select li.act.act-has-card:has(> .act-hedge) { padding-bottom: 36px; }
+  #screen-select li.act.act-has-card > * { grid-column: 1; }
+  #screen-select li.act.act-has-card > .act-head { grid-column: 1 / -1; grid-row: 1; }
+  #screen-select li.act.act-has-card > .trail { grid-row: 2; width: calc(100% - 16px); max-width: 1120px; }
+  #screen-select li.act.act-has-card > .level-card {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: end;
+    z-index: var(--z-raise);
+    width: auto;
+    margin: 0 16px 20px 0;
+    padding: 12px 14px 14px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "thumb" "body" "cath" "foes" "play";
+    gap: 8px;
+  }
+  #screen-select li.act.act-has-card .lcard-thumb { justify-self: center; }
+  #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { height: 120px; }
+  #screen-select li.act.act-has-card .lcard-body { align-self: start; }
+  #screen-select li.act.act-has-card .lcard-enemies {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 8px 0 0;
+    border-left: 0;
+    border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  #screen-select li.act.act-has-card .lcard-cath-face { margin: 0; }
+  #screen-select li.act.act-has-card .lcard-foe b { white-space: normal; }
+  #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; }
+  #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
+  #screen-select li.act.act-has-card .lcard-play { width: 100%; }
+}

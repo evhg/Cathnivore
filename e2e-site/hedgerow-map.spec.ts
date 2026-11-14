@@ -606,3 +606,29 @@ test('plan item 347: the next act keeps its colours under the mist, its sign rea
   })
   expect(ratio).toBeGreaterThanOrEqual(4.5)
 })
+
+// Plan item 372: at 1200 px and wider the level card is docked in a column beside the land: no stop's coin or name
+// meets it, and it sits whole on the screen.
+test('plan item 372: the level card docks beside the act, clear of every stop', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    for (const upTo of [3, 20]) {
+      await seed(page, upTo)
+      await page.locator('.level-card').waitFor()
+      await page.waitForTimeout(600)
+      const m = await page.evaluate(() => {
+        const card = document.querySelector('.level-card')!
+        const c = card.getBoundingClientRect()
+        const act = card.closest('li.act')!
+        const hit = [...act.querySelectorAll('.stop .level-num, .stop .level-name')].filter((e) => {
+          const r = e.getBoundingClientRect()
+          return r.width > 0 && r.right > c.left && r.left < c.right && r.bottom > c.top && r.top < c.bottom
+        })
+        return { hits: hit.map((e) => e.textContent), top: c.top, bottom: c.bottom, vh: innerHeight }
+      })
+      expect(m.hits, `${width}x${height} upTo ${upTo}`).toEqual([])
+      expect(m.bottom, `${width}x${height} upTo ${upTo}`).toBeLessThanOrEqual(m.vh)
+    }
+  }
+})
