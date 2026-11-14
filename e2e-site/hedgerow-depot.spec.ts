@@ -121,3 +121,46 @@ test('a sea-side gate has its depot on a jetty, whole inside the canvas', async 
   })
   await expect.poll(() => page.evaluate(() => (window as unknown as W).hedgerow!.depotDoors!()), { timeout: 20_000 }).toBe('open')
 })
+
+// Plan item 391: an upright phone's l21 has no margin at all (the field runs edge to edge), so its depot stands small
+// on the lane's mouth: inside the canvas, on no plot, the count on its board and no floating pill.
+test('a phone gate with no margin gets a depot on the lane mouth', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the phone case')
+  await page.goto('/hedgerow/?2d&sandbox=1&level=21')
+  await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
+  await expect(page.locator('[data-depot]').first()).toBeAttached()
+  const m = await page.evaluate(() => {
+    const hg = (window as unknown as W).hedgerow!
+    const g = hg.game()!
+    const a = hg.cellCenter(0, 0)!, b = hg.cellCenter(1, 1)!
+    const cell = b.x - a.x
+    const lane = new Set<string>()
+    const p = g.level.path
+    for (let k = 1; k < p.length; k++) {
+      const [ac, ar] = p[k - 1]!, [bc, br] = p[k]!
+      const n = Math.max(Math.abs(bc! - ac!), Math.abs(br! - ar!))
+      for (let t = 0; t <= n; t++) lane.add(`${ac! + Math.sign(bc! - ac!) * t},${ar! + Math.sign(br! - ar!) * t}`)
+    }
+    const d = document.querySelector('[data-depot]')!.getBoundingClientRect()
+    const c = document.querySelector('canvas')!.getBoundingClientRect()
+    let onPlot = 0
+    for (let r = 0; r < g.level.rows; r++)
+      for (let col = 0; col < g.level.cols; col++) {
+        if (lane.has(`${col},${r}`)) continue
+        const q = hg.cellCenter(col, r)!
+        const w = Math.min(d.right, q.x + cell / 2) - Math.max(d.left, q.x - cell / 2)
+        const h = Math.min(d.bottom, q.y + cell / 2) - Math.max(d.top, q.y - cell / 2)
+        if (w > 6 && h > 6) onPlot++
+      }
+    return {
+      inside: d.left >= c.left && d.right <= c.right && d.top >= c.top && d.bottom <= c.bottom,
+      onPlot,
+      count: Number(document.querySelector('[data-depot] [data-depot-count]')!.getAttribute('data-depot-count')),
+      plates: hg.gateQueue()?.plates.length ?? 0,
+    }
+  })
+  expect(m.inside).toBe(true)
+  expect(m.onPlot).toBe(0)
+  expect(m.count).toBeGreaterThan(0)
+  expect(m.plates).toBe(0)
+})
