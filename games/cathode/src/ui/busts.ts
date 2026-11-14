@@ -65,12 +65,6 @@ ${body}
 </svg>`;
 }
 
-/** A face lit from the left: base, the right-hand shadow plane, cheek and jaw modelling. */
-function face(shape: string, shadow: string): string {
-  return `<path d="${shape}" fill="${SKIN}"/><path d="${shadow}" fill="${SKIN_MID}"/>
-<g fill="${SKIN_DK}" opacity=".13"><ellipse cx="88" cy="89" rx="10" ry="5.5"/><ellipse cx="112" cy="89" rx="10" ry="5.5"/></g>`;
-}
-
 // Plan item 371: Crisp's head sculpted like Reed's: a lean, sly face with cheek planes, hooded eyes and a groomed shine.
 function crisp(id: string, wrap: Wrap = frame): string {
   return wrap(
@@ -198,82 +192,174 @@ function vane(id: string, wrap: Wrap = frame): string {
   );
 }
 
+// Plan item 371: Pell sculpted like Reed, Crisp and Vane: a heavy, jowly councillor in his sixties, the campaign
+// smile pushing up round cheeks and creasing the eyes, a silver comb-over, the chain of office over a soft navy suit.
 function pell(id: string, wrap: Wrap = frame): string {
   return wrap(
     id,
     `
-<!-- navy suit, broad and soft, with the chain of office across it -->
+<defs><linearGradient id="pk${id}" x1="0" x2="1"><stop offset="0" stop-color="#ddd3c4"/><stop offset=".48" stop-color="${SKIN}"/><stop offset=".72" stop-color="${SKIN_MID}"/><stop offset="1" stop-color="#6a6258"/></linearGradient>
+<radialGradient id="pa${id}" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#f1e9dc" stop-opacity=".75"/><stop offset="1" stop-color="#f1e9dc" stop-opacity="0"/></radialGradient></defs>
+<!-- navy suit, broad and soft, notched lapels, with the chain of office across it -->
 <path d="M0 240 L0 192 C18 172 48 164 72 162 L100 184 L128 162 C152 164 182 172 200 192 L200 240 Z" fill="${CLOTH}"/>
-<path d="M72 162 L100 184 L88 240 L60 240 L54 198 Z" fill="${CLOTH_HI}"/><path d="M128 162 L100 184 L112 240 L140 240 L146 198 Z" fill="#2c303a"/>
-<path d="M82 156 L100 184 L118 156 Z" fill="${P}"/>
-<path d="M95 166 L105 166 L108 240 L92 240 Z" fill="#4b4f5c"/>
-<g fill="#a69c88" stroke="#5f584b" stroke-width=".6">${Array.from({ length: 13 }, (_, i) => {
+<path d="M136 166 C160 170 184 178 200 192 L200 240 L150 240 Z" fill="#1a1d24"/>
+<path d="M72 162 L100 184 L88 240 L60 240 L54 198 L64 194 Z" fill="${CLOTH_HI}"/><path d="M128 162 L100 184 L112 240 L140 240 L146 198 L136 194 Z" fill="#2c303a"/>
+<path d="M72 162 L64 194 L54 198" stroke="#4a4f5c" stroke-width="1" fill="none"/>
+<path d="M82 156 L100 184 L118 156 C110 160 90 160 82 156 Z" fill="${P}"/><path d="M106 160 L100 184 L118 156 Z" fill="#c9c2b5"/>
+<path d="M95 166 L105 166 L108 240 L92 240 Z" fill="#4b4f5c"/><path d="M95 166 L105 166 L103 174 L97 174 Z" fill="#5d6272"/>
+<g stroke="#5d6272" stroke-width="1.4" opacity=".6">${[0, 1, 2, 3, 4].map((k) => `<line x1="93" y1="${182 + k * 12}" x2="107" y2="${176 + k * 12}"/>`).join("")}</g>
+<g fill="#b8ad96" stroke="#5f584b" stroke-width=".6">${Array.from({ length: 13 }, (_, i) => {
       const t = i / 12;
       const x = 40 + t * 120;
       const y = 186 + Math.sin(t * Math.PI) * 30;
-      return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="4.4" ry="3" transform="rotate(${((t - 0.5) * -50).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+      return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="4.4" ry="3" transform="rotate(${((t - 0.5) * -50).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/><ellipse cx="${(x - 1).toFixed(1)}" cy="${(y - 1).toFixed(1)}" rx="1.6" ry="1" fill="#efe6d2" stroke="none"/>`;
     }).join("")}</g>
-<circle cx="100" cy="222" r="9" fill="#c2b79f" stroke="#5f584b" stroke-width="1"/><circle cx="100" cy="222" r="4.5" fill="none" stroke="#5f584b" stroke-width="1"/>
+<circle cx="100" cy="222" r="9" fill="#c2b79f" stroke="#5f584b" stroke-width="1"/><circle cx="100" cy="222" r="4.5" fill="none" stroke="#5f584b" stroke-width="1"/><path d="M94 217 C96 215 99 214 101 214" stroke="#f3ead6" stroke-width="1.2" fill="none"/>
 <!-- the red rosette on his lapel -->
 <g transform="translate(66 196)"><circle r="9" fill="${RED}"/><circle r="5.5" fill="#8c0b20"/><circle r="2.4" fill="${RED}"/><path d="M-4 7 L-7 20 L-2 16 L1 21 L3 8 Z" fill="${RED}"/></g>
-<!-- thick neck and jowls -->
-<path d="M82 128 L118 128 L122 156 C110 164 90 164 78 156 Z" fill="${SKIN_MID}"/>
-${face(
-  "M68 86 C68 54 82 40 100 40 C118 40 132 54 132 86 C132 108 130 126 122 138 C114 148 106 152 100 152 C94 152 86 148 78 138 C70 126 68 108 68 86 Z",
-  "M110 42 C124 48 132 62 132 86 C132 108 130 126 122 138 C114 148 106 152 100 152 C108 142 114 128 115 110 C116 92 116 64 110 42 Z",
-)}
-<path d="M72 118 C76 134 88 146 100 148 M128 118 C124 134 112 146 100 148" stroke="${SKIN_DK}" stroke-width="1.6" fill="none" opacity=".55"/>
-<path d="M68 88 C61 86 60 102 68 108" fill="${SKIN_MID}"/><path d="M132 88 C139 86 140 102 132 108" fill="${SKIN_DK}"/>
-<!-- silver hair, side-parted and combed over, grey at the temples -->
-<path d="M66 84 C64 54 80 34 102 34 C124 34 138 52 134 84 C132 70 128 62 122 58 C108 54 84 52 76 62 C70 68 67 76 66 84 Z" fill="#9b968c"/>
-<path d="M84 40 C96 34 118 34 130 48 C116 44 100 44 86 50 Z" fill="#d3cec4"/>
-<path d="M82 44 L84 52" stroke="#6e6a62" stroke-width="1.4"/>
-<path d="M90 44 C104 40 118 42 128 50" stroke="#ece6da" stroke-width="1.2" fill="none" opacity=".7"/>
-<!-- heavy brows, crinkled eyes -->
-<path d="M78 80 C84 76 92 76 96 79" stroke="#5c5850" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-<path d="M104 79 C108 76 116 76 122 80" stroke="#5c5850" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-<path d="M80 90 C84 86.5 90 86.5 94 90 C90 91.5 84 91.5 80 90 Z" fill="${INK}"/><circle cx="87" cy="89.2" r="1" fill="${P}"/>
-<path d="M106 90 C110 86.5 116 86.5 120 90 C116 91.5 110 91.5 106 90 Z" fill="${INK}"/>
-<path d="M76 92 L72 90 M76 95 L72 96 M124 92 L128 90 M124 95 L128 96" stroke="${SKIN_DK}" stroke-width="1" />
-<path d="M82 96 C86 98 90 98 93 96 M107 96 C110 98 114 98 118 96" stroke="${SKIN_DK}" stroke-width="1" fill="none"/>
-<!-- broad nose -->
-<path d="M100 92 C99 102 95 110 93 114 C97 119 104 119 108 114" stroke="${SKIN_DK}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-<!-- the campaign smile, all teeth -->
-<path d="M84 122 C92 132 108 132 116 122 C108 126 92 126 84 122 Z" fill="${P}" stroke="${SKIN_DK}" stroke-width="1.6" stroke-linejoin="round"/>
-<path d="M90 124.6 L90 127.6 M96 125.4 L96 129 M102 125.4 L102 129 M108 124.8 L108 128" stroke="#b1aa9e" stroke-width=".7"/>
-<path d="M80 118 C82 122 83 125 84 128 M120 118 C118 122 117 125 116 128" stroke="${SKIN_DK}" stroke-width="1.4" fill="none"/>
-<path d="M69 70 C67 94 70 118 80 136" stroke="${P}" stroke-width="1.2" fill="none" opacity=".5"/>
+<!-- a thick neck over the collar, the far side in shadow, a soft double chin -->
+<path d="M80 126 L120 126 L124 156 C112 164 88 164 76 156 Z" fill="${SKIN_MID}"/>
+<path d="M108 128 L120 126 L124 156 C118 160 112 161 108 161 Z" fill="${SKIN_DK}" opacity=".6"/>
+<path d="M82 146 C90 156 110 156 118 146 C114 154 106 158 100 158 C94 158 86 154 82 146 Z" fill="${SKIN_DK}" opacity=".35"/>
+<!-- ears, the near one lit -->
+<path d="M68 86 C60 82 58 100 63 108 C65 112 69 112 70 108 Z" fill="${SKIN_MID}"/>
+<path d="M66 91 C63 95 63 102 66 105" stroke="${SKIN_DK}" stroke-width="1.1" fill="none"/>
+<path d="M132 86 C140 82 142 100 137 108 C135 112 131 112 130 108 Z" fill="${SKIN_DK}"/>
+<!-- a broad, fleshy face: full cheeks, heavy jowls, a soft jaw -->
+<path d="M68 84 C68 54 82 40 100 40 C118 40 132 54 132 84 C133 100 134 112 131 124 C128 136 120 144 110 148 C106 150 103 151 100 151 C97 151 94 150 90 148 C80 144 72 136 69 124 C66 112 67 100 68 84 Z" fill="url(#pk${id})"/>
+<path d="M110 42 C124 48 132 62 132 84 C133 100 134 112 131 124 C128 136 120 144 110 148 C106 150 103 151 100 151 C108 144 114 132 116 116 C118 96 118 64 110 42 Z" fill="${SKIN_DK}" opacity=".5"/>
+<!-- the jowls hanging past the smile, shaded under -->
+<path d="M72 120 C74 134 82 142 92 146 C86 140 80 132 78 120 Z" fill="${SKIN_MID}" opacity=".85"/>
+<path d="M128 120 C126 134 118 142 108 146 C114 140 120 132 122 120 Z" fill="${SKIN_DK}" opacity=".85"/>
+<!-- the apples of the cheeks, pushed up by the smile and catching the flash -->
+<ellipse cx="83" cy="106" rx="11" ry="8" fill="url(#pa${id})"/>
+<ellipse cx="117" cy="106" rx="9" ry="7" fill="${SKIN_MID}" opacity=".55"/>
+<path d="M74 110 C76 116 80 118 84 118" stroke="${SKIN_MID}" stroke-width="1.6" fill="none" opacity=".7"/>
+<!-- the forehead's lit dome and two lines across it -->
+<ellipse cx="92" cy="60" rx="15" ry="7" fill="#efe7da" opacity=".45"/>
+<path d="M82 66 C92 63 104 63 116 66 M84 72 C94 69.6 104 69.6 114 72" stroke="${SKIN_MID}" stroke-width="1" fill="none" opacity=".75"/>
+<!-- heavy grey brows, raised in the middle -->
+<path d="M76 82 C80 76 88 74 96 78 C90 77.6 84 78.6 77 84 Z" fill="#5c5850"/>
+<path d="M104 78 C112 74 120 76 124 82 C118 78.6 110 77.6 104 79.6 Z" fill="#4a463f"/>
+<g stroke="#8d877c" stroke-width=".8" opacity=".8"><path d="M80 79 l3 -1.6 M86 77 l3 -1 M110 76.6 l3 1 M116 78 l3 1.6"/></g>
+<!-- eyes narrowed by the smile: the shared eye under a lowered lid, crow's feet -->
+<g transform="translate(87 90) scale(.9 .8) translate(-87 -100)">${sculptedEye(id, 87, true)}</g><g transform="translate(113 90) scale(.9 .8) translate(-113 -100)">${sculptedEye(id, 113, false)}</g>
+<path d="M77 88.6 C81 85.6 93 85.4 97 88.6 L97 87.2 C93 84 81 84.2 77 87.4 Z" fill="${SKIN_MID}"/>
+<path d="M103 88.6 C107 85.4 119 85.6 123 88.6 L123 87.4 C119 84.2 107 84 103 87.2 Z" fill="${SKIN_DK}"/>
+<g stroke="${SKIN_DK}" stroke-width=".9" fill="none" opacity=".7" stroke-linecap="round"><path d="M76 90 l-5 -2.4 M76 92.4 l-5.4 .4 M76.4 94.6 l-4.6 2.6 M124 90 l5 -2.4 M124 92.4 l5.4 .4 M123.6 94.6 l4.6 2.6"/></g>
+<!-- a broad, bulbous nose: the lit bridge and tip, the shadowed wing, the nostrils -->
+<path d="M99 92 C98.4 100 97 106 95 110" stroke="${SKIN_DK}" stroke-width="1.1" fill="none" opacity=".7" stroke-linecap="round"/>
+<path d="M96.6 94 C96.2 100 95.6 104 94.6 107" stroke="#efe7da" stroke-width="2" fill="none" opacity=".55" stroke-linecap="round"/>
+<path d="M103 94 C106 102 109 108 109 113 C106 116 102 116.6 99 116 Z" fill="${SKIN_MID}" opacity=".85"/>
+<ellipse cx="99" cy="112" rx="6" ry="4.6" fill="#d9cfc0"/><ellipse cx="97.6" cy="110.6" rx="2.6" ry="1.6" fill="#f1e9dc" opacity=".8"/>
+<path d="M90 110 C89 114.6 92 117 95.6 116.4 M104.4 116.4 C108 117 111 114.6 110 110" stroke="${SKIN_DK}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<path d="M93.6 115.6 C95 116.6 96.6 116.6 97.4 115.8 M102.6 115.8 C103.4 116.6 105 116.6 106.4 115.6" stroke="#2c2622" stroke-width="1.3" fill="none"/>
+<!-- the smile's deep folds from the nose's wings -->
+<path d="M88 112 C82 118 80 124 82 130" stroke="${SKIN_DK}" stroke-width="1.6" fill="none" opacity=".65" stroke-linecap="round"/>
+<path d="M112 112 C118 118 120 124 118 130" stroke="${SKIN_DK}" stroke-width="1.8" fill="none" opacity=".8" stroke-linecap="round"/>
+<path d="M86.6 113 C82.6 118 81.6 123 82.4 127" stroke="#efe7da" stroke-width="1.2" fill="none" opacity=".4"/>
+<!-- the campaign smile: the upper lip, all the teeth, the lower lip with its shine -->
+<path d="M84 122 C92 120 97 120.6 100 121.4 C103 120.6 108 120 116 122 C110 133 90 133 84 122 Z" fill="#3a2826"/>
+<path d="M86 122.6 C92 121.6 108 121.6 114 122.6 C112 125.6 88 125.6 86 122.6 Z" fill="${P}"/>
+<path d="M88 124.6 C94 126 106 126 112 124.6 C109 128.4 91 128.4 88 124.6 Z" fill="#cfc7b8"/>
+<g stroke="#a59d90" stroke-width=".6">${[90, 94, 98, 102, 106, 110].map((x) => `<line x1="${x}" y1="122.2" x2="${x}" y2="125"/>`).join("")}</g>
+<path d="M84 122 C92 119.6 97 120 100 121 C103 120 108 119.6 116 122 C108 120.8 103 121.6 100 122.4 C97 121.6 92 120.8 84 122 Z" fill="#7c6660"/>
+<path d="M86 124.6 C92 132 108 132 114 124.6 C110 133.6 90 133.6 86 124.6 Z" fill="#8f7670"/>
+<path d="M93 130.6 C97 131.6 103 131.6 107 130.6" stroke="#c9b4ac" stroke-width="1" fill="none" opacity=".7" stroke-linecap="round"/>
+<path d="M83 121 C82.6 123 83.4 124.6 84.6 125 M117 121 C117.4 123 116.6 124.6 115.4 125" stroke="${SKIN_DK}" stroke-width="1.2" fill="none"/>
+<!-- the chin under it and its shadow -->
+<ellipse cx="99" cy="141" rx="7" ry="3.4" fill="#efe7da" opacity=".35"/>
+<path d="M90 136 C94 138 106 138 110 136" stroke="${SKIN_MID}" stroke-width="1.2" fill="none" opacity=".7"/>
+<!-- silver hair, side-parted and combed over a thinning crown, grey at the temples -->
+<path d="M66 84 C64 54 80 34 102 34 C124 34 138 52 134 84 C133 72 129 64 123 59 C110 52 88 52 78 60 C71 66 67 74 66 84 Z" fill="#8f8a80"/>
+<path d="M81 49 C92 36 116 34 131 50 C126 54 120 56 112 54 C102 52 92 52 84 56 C82 54 81 52 81 49 Z" fill="#cdc8be"/>
+<g stroke="#a9a397" stroke-width="1.1" fill="none" stroke-linecap="round">${[0, 1, 2, 3, 4].map((k) => `<path d="M${84 + k * 2} ${50 - k * 1.4} C${96 + k * 3} ${42 - k} ${112 + k * 2} ${42 + k * 0.4} ${128 - k} ${50 + k * 0.6}"/>`).join("")}</g>
+<path d="M88 41 C100 35 116 36 126 43" stroke="#f1ece2" stroke-width="2" fill="none" opacity=".8" stroke-linecap="round"/>
+<path d="M82 44 C81 47 81 50 82 53" stroke="#5f5b54" stroke-width="1.4" fill="none"/>
+<path d="M67 82 C66 76 67 68 70 63" stroke="#c3beb4" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M133 82 C134 76 133 68 130 63" stroke="#6d6961" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<!-- rim light on the lit side -->
+<path d="M69 70 C67 94 70 118 80 136" stroke="${P}" stroke-width="1.1" fill="none" opacity=".45"/>
 `,
   );
 }
 
+// Plan item 371: the Chair sculpted like the others: a gaunt, patrician man in his seventies, white hair swept back
+// from a high forehead, deep-set eyes behind rimless glasses, a long nose, a thin unsmiling mouth, a high collar and
+// the Candor pin. In his own frame the Spire window backlights him and his face sinks into shadow (only the rim and
+// the glasses catch the light); the booking room's flash drops that set and shows the face.
 function chair(id: string, wrap: Wrap = frame): string {
   return wrap(
     id,
     `
-<!-- backlit: a window of the Spire behind him, his face lost in shadow --><!--set-->
+<defs><linearGradient id="hk${id}" x1="0" x2="1"><stop offset="0" stop-color="#d6cec2"/><stop offset=".46" stop-color="${SKIN}"/><stop offset=".7" stop-color="${SKIN_MID}"/><stop offset="1" stop-color="#5e574e"/></linearGradient></defs>
+<!-- backlit: a window of the Spire behind him and the high back of his chair --><!--set-->
 <rect x="22" y="14" width="156" height="150" fill="#1b1e26"/>
 <g stroke="#2c303b" stroke-width="2">${[48, 74, 100, 126, 152].map((x) => `<line x1="${x}" y1="14" x2="${x}" y2="164"/>`).join("")}${[44, 74, 104, 134].map((y) => `<line x1="22" y1="${y}" x2="178" y2="${y}"/>`).join("")}</g>
 <g fill="#6a645a">${[30, 58, 84, 110, 136, 162].map((x, i) => `<rect x="${x}" y="${120 + (i % 3) * 8}" width="${6 + (i % 2) * 4}" height="${44 - (i % 3) * 8}"/>`).join("")}</g>
-<!--/set--><!-- high-backed chair -->
 <path d="M36 240 L40 70 C40 52 52 44 68 44 L132 44 C148 44 160 52 160 70 L164 240 Z" fill="#1a1c23"/>
 <path d="M44 236 L46 72 C46 58 56 52 68 52 L132 52 C144 52 154 58 154 72 L156 236" stroke="#353945" stroke-width="1.5" fill="none"/>
-<!-- the man: shoulders and head in silhouette with a cold rim -->
-<path d="M18 240 L22 200 C36 180 60 172 76 168 L100 180 L124 168 C140 172 164 180 178 200 L182 240 Z" fill="#08090c"/>
-<path d="M86 130 L114 130 L116 168 L84 168 Z" fill="#0a0b0e"/>
-<path d="M72 88 C72 58 84 44 100 44 C116 44 128 58 128 88 C128 110 124 128 116 140 C110 148 104 152 100 152 C96 152 90 148 84 140 C76 128 72 110 72 88 Z" fill="#0a0b0e"/>
+<!--/set-->
+<!-- a charcoal suit cut close, a high white collar, a dark silk tie -->
+<path d="M18 240 L22 200 C36 180 60 172 76 168 L100 182 L124 168 C140 172 164 180 178 200 L182 240 Z" fill="#14161b"/>
+<path d="M76 168 L100 182 L90 240 L64 240 L58 200 L68 196 Z" fill="#23262e"/><path d="M124 168 L100 182 L110 240 L136 240 L142 200 L132 196 Z" fill="#1b1d23"/>
+<path d="M84 160 L100 182 L116 160 L114 150 L86 150 Z" fill="#ddd8ce"/><path d="M104 158 L100 182 L116 160 L114 150 Z" fill="#b8b2a7"/>
+<path d="M96 170 L104 170 L106 240 L94 240 Z" fill="#2a1a22"/><path d="M96 170 L104 170 L102.4 177 L97.6 177 Z" fill="#3c2730"/>
+<!-- a thin neck, its cords, the far side in shadow -->
+<path d="M88 128 L112 128 L114 156 C106 160 94 160 86 156 Z" fill="${SKIN_MID}"/>
+<path d="M104 130 L112 128 L114 156 C110 158 107 159 104 159 Z" fill="${SKIN_DK}" opacity=".65"/>
+<path d="M93 136 C94 144 95 150 95 156" stroke="${SKIN_DK}" stroke-width="1" fill="none" opacity=".5"/>
+<!-- ears, long-lobed -->
+<path d="M72 86 C65 82 63 100 66 110 C68 116 72 116 74 112 Z" fill="${SKIN_MID}"/>
+<path d="M70 91 C67 95 67 104 69 108" stroke="${SKIN_DK}" stroke-width="1.1" fill="none"/>
+<path d="M128 86 C135 82 137 100 134 110 C132 116 128 116 126 112 Z" fill="${SKIN_DK}"/>
+<!-- a long, gaunt face: a high forehead, sharp cheekbones over hollows, a long jaw -->
+<path d="M72 84 C72 54 84 40 100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 72 84 Z" fill="url(#hk${id})"/>
+<path d="M110 42 C122 48 128 62 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C107 140 112 126 113 108 C114 88 115 62 110 42 Z" fill="${SKIN_DK}" opacity=".55"/>
+<path d="M76 106 C78 118 84 128 90 132 C86 122 82 114 80 104 Z" fill="${SKIN_MID}" opacity=".9"/>
+<path d="M124 106 C122 118 116 128 110 132 C114 122 118 114 120 104 Z" fill="${SKIN_DK}" opacity=".9"/>
+<ellipse cx="82" cy="101" rx="7" ry="2.8" fill="#ece5d8" opacity=".6" transform="rotate(-20 82 101)"/>
+<ellipse cx="94" cy="56" rx="14" ry="7" fill="#ece5d8" opacity=".45"/>
+<path d="M84 62 C94 60 106 60 116 62" stroke="${SKIN_MID}" stroke-width=".9" fill="none" opacity=".7"/>
+<!-- the temples sunk, deep sockets under a heavy brow ridge -->
+<path d="M74 74 C76 80 76 86 74 92" stroke="${SKIN_MID}" stroke-width="2.6" fill="none" opacity=".6"/>
+<ellipse cx="88" cy="93" rx="11" ry="6.4" fill="${SKIN_DK}" opacity=".32"/><ellipse cx="112" cy="93" rx="11" ry="6.4" fill="${SKIN_DK}" opacity=".45"/>
+<path d="M77 84 C82 80.6 90 80.2 97 83 C90 82.6 84 83.4 78 85.6 Z" fill="#cfc9be"/>
+<path d="M103 83 C110 80.2 118 80.6 123 84 C118 83.4 110 82.6 103 84.6 Z" fill="#a8a296"/>
+<g transform="translate(88 93) scale(.82 .76) translate(-87 -100)">${sculptedEye(id, 87, true)}</g><g transform="translate(112 93) scale(.82 .76) translate(-113 -100)">${sculptedEye(id, 113, false)}</g>
+<!-- a long, thin, hooked nose -->
+<path d="M100 92 C100.6 102 101.6 110 102.4 116 C101 119.4 98 120 96 119" stroke="${SKIN_DK}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<path d="M97.6 94 C97.6 102 97.8 108 98.4 113" stroke="#ece5d8" stroke-width="1.8" fill="none" opacity=".6" stroke-linecap="round"/>
+<path d="M102 94 C105 104 107 112 106 118 C104 120 101.6 120.4 100 120 Z" fill="${SKIN_MID}" opacity=".8"/>
+<path d="M93.4 116.6 C93.6 119.6 96 120.6 98 119.8 M103.4 119.6 C105.4 120.4 107 119 107 116.6" stroke="${SKIN_DK}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+<path d="M90 118 C87 124 87 130 89 134 M110 118 C113 124 113 130 111 134" stroke="${SKIN_DK}" stroke-width="1.1" fill="none" opacity=".55"/>
+<!-- a thin, level, unsmiling mouth -->
+<path d="M90 130 C94 128.8 98 128.6 100 129.2 C102 128.6 106 128.8 110 130 C106 130.8 94 130.8 90 130 Z" fill="#5c4a46"/>
+<path d="M89.6 130.2 C96 131.4 104 131.4 110.4 130.2" stroke="#2a201e" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<path d="M93 132.4 C97 134 103 134 107 132.4 C103 133 97 133 93 132.4 Z" fill="#9a8a84"/>
+<ellipse cx="99" cy="144" rx="5" ry="2.4" fill="#ece5d8" opacity=".35"/>
+<!-- white hair swept straight back from the forehead, silver over the ears -->
+<path d="M70 82 C66 52 80 32 102 32 C124 32 136 52 130 82 C129 70 126 60 120 54 C112 47 90 47 80 54 C75 60 71 70 70 82 Z" fill="#c9c5bd"/>
+<g stroke="#8f8b84" stroke-width="1" fill="none" stroke-linecap="round">${[0, 1, 2, 3, 4, 5].map((k) => `<path d="M${80 + k * 7} ${52 - k * 0.6} C${82 + k * 6} ${42 - k * 0.4} ${92 + k * 4} ${35} ${104 + k * 3} ${34 + k * 0.6}"/>`).join("")}</g>
+<path d="M78 46 C88 36 106 33 120 40" stroke="#f3efe6" stroke-width="2.2" fill="none" opacity=".85" stroke-linecap="round"/>
+<path d="M71 80 C70 74 70 68 72 62" stroke="#9c978e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<!-- rimless glasses: only the lenses' edges and a glint -->
+<g fill="none" stroke="#7e8189" stroke-width=".9"><rect x="79" y="87" width="18" height="11" rx="2.4"/><rect x="103" y="87" width="18" height="11" rx="2.4"/><path d="M97 91 C99 89.6 101 89.6 103 91 M79 90 L73 88 M121 90 L127 88"/></g>
+<rect x="79" y="87" width="18" height="11" rx="2.4" fill="#fff" opacity=".06"/>
+<!-- rim light on the lit side -->
+<path d="M73 78 C72.6 100 75 118 81 130" stroke="${P}" stroke-width=".9" fill="none" opacity=".4"/>
+<!-- the Candor pin in red -->
+<path d="M70 196 L76 190 L82 196 L76 202 Z" fill="${RED}"/>
+<!--set--><!-- the window behind him throws his front into shadow: only the rim and the glasses keep the light -->
+<g fill="#06070a" opacity=".9"><path d="M18 240 L22 200 C36 180 60 172 76 168 L100 182 L124 168 C140 172 164 180 178 200 L182 240 Z"/><path d="M84 124 L116 124 L118 160 L100 184 L82 160 Z"/><path d="M72 84 C72 54 84 40 100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 72 84 Z"/><path d="M73 84 C64 80 61 100 65 111 C67 118 74 118 76 112 Z M127 84 C136 80 139 100 135 111 C133 118 126 118 124 112 Z"/><path d="M69 84 C65 52 80 31 102 31 C124 31 137 52 131 84 Z"/></g>
+<path d="M100 40 C116 40 128 54 128 84 C128 104 126 118 121 130 C116 142 108 150 100 151 C107 140 112 126 113 108 C114 88 115 62 110 42 Z" fill="#2a2f3a" opacity=".35"/>
 <path d="M72 80 C72 56 84 44 100 44 C116 44 128 56 128 80" stroke="#a9adb6" stroke-width="1.6" fill="none" opacity=".75"/>
 <path d="M128 72 C130 96 126 124 114 142" stroke="#a9adb6" stroke-width="2" fill="none" opacity=".8"/>
-<path d="M120 50 C126 56 129 64 129 72" stroke="#8b8f99" stroke-width="1.4" fill="none" opacity=".6"/>
 <path d="M124 168 C142 172 164 180 178 200" stroke="#6d717b" stroke-width="1.6" fill="none" opacity=".7"/>
-<path d="M76 168 C60 172 36 180 22 200" stroke="#3c3f47" stroke-width="1.2" fill="none" opacity=".7"/>
-<!-- only the glasses catch the light -->
-<g fill="none" stroke="#3a3d45" stroke-width="1.2"><rect x="80" y="88" width="17" height="10" rx="2"/><rect x="103" y="88" width="17" height="10" rx="2"/><path d="M97 92 L103 92"/></g>
-<path d="M83 90 L92 90" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round"/>
-<path d="M106 90 L115 90" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round" opacity=".7"/>
-<!-- a white collar and the Candor pin in red -->
-<path d="M86 166 L100 180 L114 166" stroke="#2e3038" stroke-width="2" fill="none"/>
+<path d="M83 89.6 L92 89.6" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round"/>
+<path d="M106 89.6 L115 89.6" stroke="#d9d4ca" stroke-width="2" stroke-linecap="round" opacity=".7"/>
 <path d="M70 196 L76 190 L82 196 L76 202 Z" fill="${RED}"/>
+<!--/set-->
 `,
     0.35,
   );
@@ -503,8 +589,8 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
   if (who) return booking(id, who, small, slateG);
-  // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, a bob, a bald head with glasses, a
-  // hood), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
+  // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, and
+  // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
   // (A grey head at 10% luminance on 8% read as four identical black squares.)
   const v = ((variant % 4) + 4) % 4;
   const RIM = "#9fbcd8";
@@ -512,26 +598,32 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   const heads = [
     // a hat brim
     `<path d="M76 92 C76 70 86 60 100 60 C114 60 124 70 124 92 C124 114 119 132 111 143 C106 150 103 152 100 152 C97 152 94 150 89 143 C81 132 76 114 76 92 Z"/><path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70 C140 74 126 74 120 72 L118 40 C110 34 90 34 82 40 L80 72 C74 74 60 74 48 70 Z"/>`,
-    // a bob
-    `<path d="M66 108 C62 70 78 44 100 44 C122 44 138 70 134 108 C132 126 126 132 118 134 C114 146 106 152 100 152 C94 152 86 146 82 134 C74 132 68 126 66 108 Z"/>`,
-    // a bald head with glasses
-    `<path d="M74 86 C74 58 86 46 100 46 C114 46 126 58 126 86 C126 112 120 130 112 142 C106 150 103 152 100 152 C97 152 94 150 88 142 C80 130 74 112 74 86 Z"/>`,
-    // a hood
-    `<path d="M62 150 C58 110 66 66 100 36 C134 66 142 110 138 150 C126 158 112 160 100 160 C88 160 74 158 62 150 Z"/>`,
+    // Plan item 371: the three below are cut from the sculpted heads. Vane: her blunt bob over a narrow chin.
+    `<path d="M70 132 C64 104 64 70 76 52 C86 38 114 36 126 50 C138 66 138 104 130 132 L114 134 C109 142 104 146 100 146 C96 146 91 142 86 134 Z"/>`,
+    // Pell: a broad, jowly head, the comb-over's swell, his ears
+    `<path d="M66 84 C64 54 80 34 102 34 C124 34 138 52 134 84 C133 100 134 112 131 124 C128 136 120 144 110 148 C106 150 103 151 100 151 C97 151 94 150 90 148 C80 144 72 136 69 124 C66 112 67 100 66 84 Z"/><path d="M68 86 C60 82 58 100 63 108 C65 112 69 112 70 108 Z M132 86 C140 82 142 100 137 108 C135 112 131 112 130 108 Z"/>`,
+    // the Chair: a long, gaunt head with its hair swept back high off the forehead
+    `<path d="M70 82 C66 52 80 30 102 30 C124 30 136 52 130 82 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 70 82 Z"/><path d="M73 84 C66 80 64 100 67 110 C69 116 74 116 76 112 Z M127 84 C134 80 136 100 133 110 C131 116 126 116 124 112 Z"/>`,
   ];
   // Plan item 321: each its own build under the head (one shared pair of shoulders made any two prints overlap
   // 0.86): a trench with its collar turned up, narrow shoulders, a heavy man's broad ones, a cloak falling from the hood.
   const bodies = [
     `<path d="M30 240 L34 200 C44 186 58 178 74 174 L68 134 L86 150 L100 160 L114 150 L132 134 L126 174 C142 178 156 186 166 200 L170 240 Z"/>`,
     `<path d="M36 240 L40 206 C52 190 74 184 88 182 L92 150 L108 150 L112 182 C126 184 148 190 160 206 L164 240 Z"/>`,
-    `<path d="M0 240 L2 188 C16 170 48 162 76 158 L100 166 L124 158 C152 162 184 170 198 188 L200 240 Z"/>`,
-    `<path d="M54 240 C56 206 62 178 68 150 L132 150 C138 178 144 206 146 240 Z"/>`,
+    `<path d="M0 240 L2 188 C16 170 48 162 76 158 L80 126 L120 126 L124 158 C152 162 184 170 198 188 L200 240 Z"/>`,
+    `<path d="M42 240 L46 64 C46 46 58 38 74 38 L126 38 C142 38 154 46 154 64 L158 240 Z"/><path d="M10 240 L14 224 C30 208 62 200 86 196 L88 128 L112 128 L114 196 C138 200 170 208 186 224 L190 240 Z"/>`,
   ];
   const rims = [
     `<path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M118 40 C110 34 90 34 82 40" stroke="${RIM}" stroke-width="1.6" fill="none"/>`,
-    `<path d="M66 108 C62 70 78 44 100 44 C122 44 138 70 134 108" stroke="${RIM}" stroke-width="2" fill="none"/>`,
-    `<path d="M74 84 C74 58 86 46 100 46 C114 46 126 58 126 84" stroke="${RIM}" stroke-width="2" fill="none"/><g stroke="${RIM}" stroke-width="1.6" fill="none"><circle cx="88" cy="96" r="8"/><circle cx="112" cy="96" r="8"/><path d="M96 96 h8"/></g>`,
-    `<path d="M62 150 C58 110 66 66 100 36 C134 66 142 110 138 150" stroke="${RIM}" stroke-width="2" fill="none"/>`,
+    // Vane's bob and the wire rims of her glasses catching the light
+    `<path d="M70 132 C64 104 64 70 76 52 C86 38 114 36 126 50 C138 66 138 104 130 132" stroke="${RIM}" stroke-width="2" fill="none"/><g stroke="${RIM}" stroke-width="1.2" fill="none" opacity=".8"><circle cx="88" cy="92" r="9.4"/><circle cx="112" cy="92" r="9.4"/></g>`,
+    // Pell's comb-over, his ears and the links of his chain of office
+    `<path d="M66 84 C64 54 80 34 102 34 C124 34 138 52 134 84" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M84 46 C96 40 116 40 130 50" stroke="${RIM}" stroke-width="1.2" fill="none" opacity=".7"/><g fill="${RIM}" opacity=".75">${Array.from({ length: 13 }, (_, i) => {
+      const t = i / 12;
+      return `<ellipse cx="${(40 + t * 120).toFixed(1)}" cy="${(186 + Math.sin(t * Math.PI) * 30).toFixed(1)}" rx="3.4" ry="2.2"/>`;
+    }).join("")}</g>`,
+    // the Chair's swept hair and, as in his own file, only the glasses catch the light
+    `<path d="M46 120 L46 64 C46 46 58 38 74 38 L126 38 C142 38 154 46 154 64 L154 120" stroke="${RIM}" stroke-width="2" fill="none" opacity=".8"/><path d="M70 82 C72 104 74 118 79 130 C84 142 92 150 100 151" stroke="${RIM}" stroke-width="1.2" fill="none" opacity=".45"/><path d="M70 82 C66 52 80 30 102 30 C124 30 136 52 130 82" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M130 82 C129 106 125 124 114 142" stroke="${RIM}" stroke-width="1.4" fill="none" opacity=".7"/><g stroke="#e6eef6" stroke-width="2" stroke-linecap="round"><path d="M83 89.6 L92 89.6"/><path d="M106 89.6 L115 89.6" opacity=".7"/></g>`,
   ];
   // (by the List's order: 1 the clinic, 2 the plaza, 3 the tower, 4 the vault)
   const props = [
@@ -541,7 +633,7 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<g stroke="#151a21" stroke-width="4" fill="none"><path d="M156 200 V40 M140 40 h32"/></g><path d="M146 44 h20 v34 a10 10 0 0 1 -20 0 Z" fill="#151a21"/>`,
     // a plaza statue on its plinth
     `<g fill="#151a21"><rect x="140" y="150" width="44" height="60"/><path d="M152 150 v-40 c0 -10 6 -18 10 -18 s10 8 10 18 v40 Z"/><circle cx="162" cy="84" r="9"/><path d="M172 108 l14 -22" stroke="#151a21" stroke-width="5"/></g>`,
-    // tower blinds
+    // tower blinds (his chair's high back is part of his silhouette)
     `<g fill="#151a21">${Array.from({ length: 9 }, (_, k) => `<rect x="28" y="${30 + k * 14}" width="144" height="8"/>`).join("")}</g>`,
   ];
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld" data-silhouette="${v}">
