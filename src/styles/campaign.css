@@ -1185,9 +1185,14 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-header .cmp-cath { display: contents; }
   .cmp-header .cmp-cath-line { grid-column: 1; grid-row: 2; margin: 0 12px 0 0; max-width: none; }
   .cmp-header .cmp-host-stand { grid-column: 2; grid-row: 1 / span 2; align-self: end; }
+  /* item 378: her half-length bust ended flat at the hem in mid-air above the map; it tucks 20 px behind the map's top
+     edge (the map comes later and is positioned, so it paints over her), so she stands behind it as at a table */
+  .cmp-header .cmp-host-stand { margin-bottom: -44px; }
   /* item 318: her head is above the bubble here, so the tail leaves its top corner and points up at her */
   /* item 325: long enough to reach the edge of her hair, its tip within 30 px of her mouth (it stopped about 50 px off) */
-  .cmp-header .cmp-cath-line::after { top: -4px; right: -38px; width: 40px; height: 22px; clip-path: polygon(0 45%, 100% 0, 0 100%); }
+  /* item 378: with her bust tucked behind the map her mouth is level with the bubble's upper half, so the tail leaves
+     its right side and points across at it */
+  .cmp-header .cmp-cath-line::after { top: 22px; right: -38px; width: 40px; height: 20px; clip-path: polygon(0 0, 100% 60%, 0 100%); }
 }
 
 /* Plan item 333: Back to Title is a painted plank, like the title's Campaign sign (item 327), not a plain form button. */
