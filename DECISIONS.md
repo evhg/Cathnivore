@@ -303,3 +303,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-14 19:42 lane B: released the lock at 19:41 thinking it near :10; re-locked and reclaimed 392 for its phone half. Read `date -u` before wrapping up.
 - 2026-11-14 19:50 lane B (item 350): the portfolio's D wall widened to 702 px (340 px screens) at the cost of a smaller h1 (7.4rem cap) and a narrower lede; item 23's 'right half' rule in site.spec gave way to item 350's acceptance.
 - 2026-11-14 20:25 lane A (item 391): depot area is judged as the 3D shed's walls (1.43 cells) against the barn's one-cell farmyard; the 2D depot stays 2 x 2 cells (item 157) because its board's count needs the room to read at 12 px+.
+- 2026-11-14 20:30 lane B (item 349): the phone setup scrolls a little (77 px at 390x844) so Cath stands at half length in its header; item 54's 'no scroll' became 'Start always in view, every control reached clear of it, 220 px of scroll at most'.
+- 2026-11-14 20:55 lane B: producer-faces' autoplay check plays a fixed seed (3), since unseeded it sometimes ran 70 s with no reaction; the check still needs a worried or delighted face and a board face.
