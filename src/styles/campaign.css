@@ -1365,6 +1365,9 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
    the map's wooden lip, and the map marks her stop with the leaf pin. */
 .cmp-pin-hit { fill: transparent; }
 .cmp-pin-ring { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+/* Plan item 395: the stop and the rail's card point at each other: a gold ring on the stop, a gold edge on the card. */
+.cmp-pin-link { stroke: var(--wheat); stroke-width: 3; }
+.cmp-stop.is-linked > .cmp-card { box-shadow: 0 0 0 2px var(--wheat), 0 3px 8px color-mix(in srgb, var(--ink) 14%, transparent); }
 @media (max-width: 600px) {
   .campaign.campaign-screen { padding-top: max(14px, env(safe-area-inset-top)); }
   .cmp-header { margin-bottom: 8px; row-gap: 6px; }

@@ -132,6 +132,7 @@ export default function CampaignMap({
   host,
   onPick,
   picked,
+  onPoint,
 }: {
   chapters: Chapter[]
   completed: string[]
@@ -145,6 +146,8 @@ export default function CampaignMap({
   onPick?(chapter: Chapter): void
   /** Plan item 386: the chapter open in the phone's sheet; its stop wears a ring. */
   picked?: string
+  /** Plan item 395: a stop under the pointer points at its chapter in the rail (null when it leaves). */
+  onPoint?(id: string | null): void
 }) {
   const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
   // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
@@ -307,15 +310,19 @@ export default function CampaignMap({
           return (
             <g
               key={chapter.id}
-              className={`cmp-pin cmp-pin-${state}${picked === chapter.id ? ' is-picked' : ''}`}
+              className={`cmp-pin cmp-pin-${state}${picked === chapter.id ? ' is-picked' : ''}${lit === chapter.id ? ' is-linked' : ''}`}
               data-chapter={chapter.id}
               transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}
               onClick={() => (onPick ? onPick(chapter) : onStart(chapter))}
+              onPointerEnter={onPoint ? () => onPoint(chapter.id) : undefined}
+              onPointerLeave={onPoint ? () => onPoint(null) : undefined}
               aria-hidden="true"
             >
               {/* Plan item 386: a 44 px+ hit target round the stop on a phone (the disc draws about 24 px). */}
               <circle r={hitR} className="cmp-pin-hit" />
               {picked === chapter.id && <circle r={15.5} className="cmp-pin-ring" />}
+              {/* Plan item 395: the stop of the chapter pointed at in the rail (or this stop under the pointer). */}
+              {lit === chapter.id && picked !== chapter.id && <circle r={15.5} className="cmp-pin-ring cmp-pin-link" />}
               {state === 'current' && <circle r={15} className="cmp-pin-pulse" />}
               <circle r={11} className="cmp-pin-disc" />
               <text y={4} className="cmp-pin-n">

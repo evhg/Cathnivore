@@ -438,6 +438,7 @@ export default function CampaignScreen({
         host={wide ? host : undefined}
         onPick={phone ? (c) => pick(c.id) : undefined}
         picked={phone ? open : undefined}
+        onPoint={phone ? undefined : setHovered}
       />
       {/* Plan item 386: on a phone a row of six chapter tabs opens each chapter in the sheet below. */}
       {phone && (
@@ -533,7 +534,7 @@ export default function CampaignScreen({
           const coached = first ? tutorialDone : (coachDone?.(chapter.id) ?? true)
           const state = isDone ? 'done' : locked ? 'locked' : 'current'
           return (
-            <li key={chapter.id} className={`cmp-stop cmp-stop-${state}${current ? ' cmp-stop-next' : ''}${phone && open === chapter.id ? ' is-open' : ''}`} data-chapter={chapter.id}>
+            <li key={chapter.id} className={`cmp-stop cmp-stop-${state}${current ? ' cmp-stop-next' : ''}${phone && open === chapter.id ? ' is-open' : ''}${!phone && pointed === chapter.id ? ' is-linked' : ''}`} data-chapter={chapter.id}>
               <Medallion n={i + 1} state={state} />
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
