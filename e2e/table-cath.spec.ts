@@ -111,8 +111,10 @@ test('Cath speaks from a dock above the hand on a phone', async ({ page }, testI
     await dock.locator('.cath-dock-btn').click()
     await expect(lineEl).toBeVisible()
   }
-  // A shorter phone keeps the header strip.
+  // Plan item 368: a 375x667 phone has the counter too; a shorter one (under 640 px) keeps the header strip.
   await page.setViewportSize({ width: 375, height: 667 })
+  await expect(page.locator('.cath-dock')).toHaveCount(1)
+  await page.setViewportSize({ width: 375, height: 600 })
   await expect(page.locator('.cath-dock')).toHaveCount(0)
   await expect(page.locator('.table-head .cath-companion')).toHaveCount(1)
 })

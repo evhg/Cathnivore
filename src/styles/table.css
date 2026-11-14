@@ -2909,7 +2909,7 @@ html.no-animations .cath-companion .cameo {
 /* Plan item 171 (was item 131's standing figure and bubble on the cloth): on an upright phone Cath's line docks
    above the hand, beside a 64 px bust, so nothing of hers lies on the board. The dock keeps its height when the
    line is folded away, so the board never jumps. */
-@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
   .game:has(.cath-dock) .map-wrap { min-height: 0; }
   /* The board lost the bubble band at its foot: the ticket rides up onto the frame's rim to clear the top plaques. */
   /* Plan item 212: it rode up over the plan cards' foot; it hangs inside the frame's top strip as a pennant pinned
@@ -5213,7 +5213,7 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 /* Plan item 368 slice 1: on an upright phone Cath's line and the farm's goods are one wooden counter at the board's
    foot, not two framed strips: her bust at its left end, her line chalked on a slate set into the counter's back,
    the goods (crates, coins, rosette) and the action pips standing on its front lip. */
-@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
   .action-tray .cath-dock {
     --counter: linear-gradient(180deg, color-mix(in srgb, var(--wood) 88%, white), var(--wood));
     position: relative;
@@ -5256,7 +5256,7 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 
 /* Plan item 368 slice 2: on the counter the hand holds three whole cards at 390 wide (was two and a sliver): each card
    about 100 px, its painted window a little shorter, its name in the band below. The not-yet deck is "Saving for". */
-@media (max-width: 599.98px) and (min-height: 830px) and (orientation: portrait) {
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
   .action-tray .actions { height: 116px; padding-top: 12px; padding-bottom: 4px; }
   /* three whole cards and the next one's 30 px peek at 360 to 430 wide (gutter 8, gaps 8). The group spines between
      them (Sell, Play) step aside for screen readers only: each card's frame is its family's colour already, and a
@@ -5301,4 +5301,14 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
     box-shadow: 0 2px 3px rgb(var(--shadow-ink) / .3), inset 0 0 0 1px var(--wood-lo);
     color: var(--ink-on-fixed-fill);
   }
+}
+
+/* Plan item 368 slice 3: the counter on a short phone (375x667 up to 829 px tall). The board is the screen's limit
+   there, so the counter gives it room: a 52 px bust and a tighter slate. The cards keep the tall phone's 100 px, the
+   least that holds a painted window over half the face and a two-line name with its region. */
+@media (max-width: 599.98px) and (min-height: 640px) and (max-height: 829.98px) and (orientation: portrait) {
+  .cath-dock { min-height: 52px; gap: 8px; }
+  .cath-dock-btn, .cath-dock-bust { width: 52px; height: 52px; }
+  .action-tray .cath-dock-line { padding: 4px 8px; line-height: 1.16; }
+  .action-tray .cath-dock + .active-producer { padding-block: 5px 6px; }
 }

@@ -21,9 +21,9 @@ async function strips(page: Page) {
 
 test('phone: every playable card is in view, and a tap on a strip brings it forward unplayed', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the held fan is the phone layout')
-  // Plan item 368: at 390x844 and taller the phone counter holds a plain row of three whole cards; the fan is the
-  // shorter phone's (Safari's 390-wide viewport with its bars).
-  await page.setViewportSize({ width: 390, height: 760 })
+  // Plan item 368: at 640 px tall and up the phone counter holds a plain row of three whole cards; the fan is the
+  // shorter phone's (a 375 or 390 wide phone in Safari with its bars, under 640 px).
+  await page.setViewportSize({ width: 390, height: 620 })
   await page.goto('/?e2eHandFan=1')
   await page.getByText('Quick Game').click()
   await fillSeed(page, '103')

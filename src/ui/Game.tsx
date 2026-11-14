@@ -207,7 +207,7 @@ const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
 // Plan item 225: her bubble carries the suggestion too only where the table is tall enough for both lines (at
 // 1280x800 the two-part bubble rose over the plan strip); shorter desktops keep the suggestion in the rail.
 const TABLE_CATH_TALL_QUERY = '(min-width: 1240px) and (min-height: 880px)'
-const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 830px) and (orientation: portrait)'
+const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 640px) and (orientation: portrait)'
 
 
 // Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with

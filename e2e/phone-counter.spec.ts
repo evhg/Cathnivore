@@ -91,3 +91,30 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(m.small).toBe(0)
   })
 }
+
+// Plan item 368 slice 3: a 375x667 phone (and any upright phone 640 px tall or more) gets the counter too: Cath's line
+// and the goods under the board, three whole card names in the hand, and the whole board 260 px+ tall above them.
+test('a 375x667 phone has the counter, three whole cards and the board above it', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the upright phone')
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.goto('/?e2eHandFan=1')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game .cath-dock').waitFor()
+  await page.waitForTimeout(600)
+  const m = await page.evaluate(() => {
+    const map = document.querySelector<HTMLElement>('.map-wrap')!.getBoundingClientRect()
+    const dock = document.querySelector<HTMLElement>('.action-tray .cath-dock')!.getBoundingClientRect()
+    const tabs = document.querySelector<HTMLElement>('.tab-bar, nav[aria-label]')?.getBoundingClientRect()
+    const whole = [...document.querySelectorAll<HTMLElement>('[data-hand-card] .action-label')].filter((el) => {
+      const r = el.getBoundingClientRect()
+      return r.left >= 0 && r.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1
+    }).length
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-hand-card]')].map((c) => c.getBoundingClientRect())
+    return { mapH: map.height, mapBottom: map.bottom, dockTop: dock.top, whole, cardsBottom: Math.max(...cards.map((r) => r.bottom)), tabsTop: tabs?.top ?? innerHeight }
+  })
+  expect(m.mapH).toBeGreaterThanOrEqual(255)
+  expect(m.dockTop).toBeGreaterThanOrEqual(m.mapBottom - 1)
+  expect(m.whole).toBeGreaterThanOrEqual(3)
+  expect(m.cardsBottom).toBeLessThanOrEqual(m.tabsTop + 1)
+})
