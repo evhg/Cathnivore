@@ -1051,22 +1051,27 @@ html.no-animations .board-object .bo-out, html.no-animations .board-object .bo-t
     scroll-padding-block: 4px;
   }
 
+  /* Plan item 383: each figure carries its word on a phone too (as item 366 gave the desktop): a small-caps line
+     under the cell's object and figure, so a new player can tell Trust from Land. The cell's padding gives most of
+     the line's height back. */
   .market-board .board-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
+    justify-self: center;
+    max-width: none;
+    overflow: visible;
+    font-size: var(--fs-label);
+    letter-spacing: .02em;
+    line-height: 1;
   }
 
   .board-cell {
-    padding: 7px var(--sp-2) 8px;
+    padding: 3px var(--sp-2) 2px;
     gap: 6px;
   }
 
   .board-head {
-    grid-template-areas: "icon num";
+    grid-template-areas: "icon num" "label label";
     column-gap: 5px;
+    row-gap: 0;
   }
 
   .board-head > svg {

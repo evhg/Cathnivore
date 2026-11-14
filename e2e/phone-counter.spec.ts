@@ -155,3 +155,28 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(axe.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([])
   })
 }
+
+// Plan item 383: on a phone each tally figure carries its word (Round, Trust, Land left, Rift), 12 px or more and
+// whole, as item 366 gave the desktop.
+test('the phone tally names each figure', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the upright phone')
+  for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(size)
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.market-board .board-label').first().waitFor()
+    const labels = await page.locator('.market-board .board-label').evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect()
+        const cell = e.closest('.board-cell')!.getBoundingClientRect()
+        return { text: e.textContent, size: parseFloat(getComputedStyle(e).fontSize), w: r.width, whole: e.scrollWidth <= e.clientWidth + 1 && r.left >= cell.left - 1 && r.right <= cell.right + 1 }
+      }),
+    )
+    expect(labels.map((l) => l.text)).toEqual(['Round', 'Trust', 'Land left', 'Rift'])
+    for (const l of labels) {
+      expect(l.size, JSON.stringify(l)).toBeGreaterThanOrEqual(12)
+      expect(l.w > 10 && l.whole, JSON.stringify(l)).toBe(true)
+    }
+  }
+})
