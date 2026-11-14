@@ -157,3 +157,25 @@ test('the phone setup has no nested frames round its controls', async ({ page })
   })
   expect(deep).toEqual([])
 })
+
+// Plan item 349: no word on the Setup under 12 px, at P and D.
+test('the Setup prints nothing under 12 px', async ({ page }, testInfo) => {
+  test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
+  const small = await page.evaluate(() => {
+    const out: string[] = []
+    for (const e of document.querySelectorAll<HTMLElement>('main.setup *')) {
+      if (e.closest('svg') || e.childElementCount > 0) continue
+      const t = (e.textContent ?? '').trim()
+      if (!/[A-Za-z0-9]/.test(t)) continue
+      const cs = getComputedStyle(e)
+      if (cs.display === 'none' || cs.visibility === 'hidden' || e.getClientRects().length === 0) continue
+      if (cs.position === 'absolute' && cs.width === '1px') continue
+      if (parseFloat(cs.fontSize) < 12) out.push(`${t.slice(0, 24)} ${cs.fontSize}`)
+    }
+    return out
+  })
+  expect(small).toEqual([])
+})
