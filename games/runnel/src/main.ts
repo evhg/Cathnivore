@@ -284,12 +284,12 @@ function finish(): void {
 /** Plan item 77: the valley painted for this board (its fields seeded by it) and lit by its time and weather. */
 function paintValley(daily: string): void {
   const slot = document.getElementById('valley-paint')
-  // Plan item 365: the lesson plays over the daily's HUD but opens on its own clear, bright morning (the daily's sky
+  // Plan item 365: the lesson plays over the daily's HUD but opens on its own clear golden morning (the daily's sky
   // could be a violet dusk or a drizzle, and the first field read murky); the daily's own sky returns after it.
   const lesson = document.body.classList.contains('in-lesson')
   const seed = lesson ? 'lesson' : daily
   if (!slot || slot.dataset.seed === seed) return
-  const sky = lesson ? { time: 'morning' as const, weather: 'clear' as const } : boardSky(seed)
+  const sky = lesson ? { time: 'golden' as const, weather: 'clear' as const } : boardSky(seed)
   slot.dataset.seed = seed
   slot.innerHTML = valleyLayers(seed, sky.weather)
   const stage = slot.closest<HTMLElement>('.stage')
