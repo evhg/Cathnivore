@@ -30,6 +30,9 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
   const fresh = dailyMarket(now)
   const today = dailyMarket(opened)
   if (!compact) return <RitualBoard r={r} live={live} flipped={flipped} fresh={fresh} today={today.number} now={now} />
+  // Plan item 378: on a phone a never-played Daily has no slip. 'No sale yet / The Daily is open' only repeated the
+  // Daily Market button under it; the slip comes once there is a result to pin.
+  if (!r.last) return null
   return (
     <div className="daily-ritual is-compact" aria-hidden="true" data-status={r.status} data-streak={r.streak}>
       {r.last ? (
@@ -55,13 +58,7 @@ export default function DailyRitual({ compact = false }: { compact?: boolean }) 
           )}
           <span className="ritual-stamp">{r.last.result.won ? 'Sold' : 'Held'}</span>
         </figure>
-      ) : (
-        <figure className="ritual-receipt is-blank">
-          <span className="ritual-pin" />
-          <span className="ritual-receipt-head">No sale yet</span>
-          <span className="ritual-receipt-when">The Daily is open</span>
-        </figure>
-      )}
+      ) : null}
     </div>
   )
 }

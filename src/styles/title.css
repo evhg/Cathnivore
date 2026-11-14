@@ -1362,7 +1362,6 @@ html.no-animations .title-screen * {
   .daily-ritual.is-compact .ritual-receipt-when { grid-column: 2 / -1; border: 0; padding: 0; margin: 0; }
   .daily-ritual.is-compact .ritual-receipt-row { gap: 3px; }
   .daily-ritual.is-compact .ritual-receipt-row span { width: auto; }
-  .daily-ritual.is-compact .ritual-receipt.is-blank .ritual-receipt-when { grid-column: 1 / -1; padding-left: 10px; }
   .daily-ritual.is-compact .ritual-stamp { top: -9px; bottom: auto; right: -12px; font-size: var(--fs-label); background: var(--paper-on-fixed-fill); mix-blend-mode: normal; }
   .ritual-mini-bunting { display: flex; gap: 2px; align-items: center; }
   .ritual-mini-pennant { width: 10px; height: 12px; clip-path: polygon(0 0, 100% 0, 50% 100%); }
@@ -1392,7 +1391,6 @@ html.no-animations .title-screen * {
   .daily-ritual.is-compact .ritual-mini-bunting { grid-row: 1; grid-column: 2; justify-self: end; }
   .daily-ritual.is-compact .ritual-receipt-row { grid-row: 2; }
   .daily-ritual.is-compact .ritual-receipt-head,
-  .daily-ritual.is-compact .ritual-receipt.is-blank .ritual-receipt-when { padding-left: 0; }
   .daily-ritual.is-compact .ritual-receipt-when { color: var(--chalk); }
   .daily-ritual.is-compact .ritual-stamp { top: -15px; color: var(--chalk); border-color: color-mix(in srgb, var(--pasture) 70%, var(--chalk)); background: color-mix(in srgb, var(--wood-lo) 70%, var(--ink-on-fixed-fill)); }
   .daily-ritual.is-compact .ritual-receipt:not([data-won]) .ritual-stamp { color: var(--chalk); border-color: color-mix(in srgb, var(--clay) 70%, var(--chalk)); }

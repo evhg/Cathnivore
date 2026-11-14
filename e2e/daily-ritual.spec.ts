@@ -79,7 +79,9 @@ test('a broken streak changes her face and her line; a kept one names the days',
 test('a player who never played the Daily keeps the campaign line and sees a blank receipt', async ({ page }) => {
   await seed(page, 'none')
   await expect(page.locator('.title-cath-line')).toContainText('Brindle Hills')
-  await expect(visibleRitual(page).locator('.ritual-receipt.is-blank')).toBeVisible()
+  // Plan item 378: the desktop board shows the blank slip; a phone shows none (its Daily button says the same).
+  if (page.viewportSize()!.width >= 1024) await expect(visibleRitual(page).locator('.ritual-receipt.is-blank')).toBeVisible()
+  else await expect(page.locator('.daily-ritual.is-compact')).toHaveCount(0)
 })
 
 test("tomorrow's card flips face up as the new Daily opens at 00:00 UTC", async ({ page }) => {
