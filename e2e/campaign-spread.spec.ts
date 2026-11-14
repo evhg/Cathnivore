@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 // under it, the chapter rail scrolling on its own (every chapter reachable without the page scrolling), no empty band
 // under the map, and each locked chapter's postcard its scene at dusk under a wax seal (item 279).
 for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
-  test(`campaign at ${width}x${height}: the spread fits the window and the rail scrolls`, async ({ page }, info) => {
+  test(`campaign at ${width}x${height}: the spread fits the window and the rail reaches every chapter`, async ({ page }, info) => {
     test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
     await page.setViewportSize({ width, height })
     await page.goto('/')
@@ -19,13 +19,14 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
       const led = document.querySelector('[data-ledger]')!.getBoundingClientRect()
       return {
         pageScroll: document.scrollingElement!.scrollHeight - innerHeight,
-        railScrolls: getComputedStyle(rail).overflowY === 'auto' && rail.scrollHeight > rail.clientHeight,
+        // Plan item 395: every chapter is reached: the rail holds them all, or it scrolls on its own.
+        railReaches: rail.scrollHeight <= rail.clientHeight + 1 || getComputedStyle(rail).overflowY === 'auto',
         gapUnderMap: led.top - map.bottom,
         bandUnderLedger: innerHeight - led.bottom,
       }
     })
     expect(m.pageScroll).toBeLessThanOrEqual(1)
-    expect(m.railScrolls).toBe(true)
+    expect(m.railReaches).toBe(true)
     expect(m.gapUnderMap).toBeLessThanOrEqual(120)
     expect(m.bandUnderLedger).toBeLessThanOrEqual(120)
     // the last chapter is reachable in the rail, and Back to Title is on screen

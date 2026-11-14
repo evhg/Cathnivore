@@ -59,7 +59,10 @@ test('each chapter card has a landmark vignette, locked ones sealed', async ({ p
   for (let i = 0; i < n; i++) {
     const card = cards.nth(i)
     const vig = card.locator('.cmp-vignette')
-    if (wide && !(await card.evaluate((e) => !!e.closest('.cmp-stop-next')))) {
+    const folded = wide && !(await card.evaluate((e) => !!e.closest('.cmp-stop-next')))
+    // Plan item 395: on a desktop taller than 860 px a folded locked chapter is a postcard with its sealed print.
+    const postcard = folded && (await page.evaluate(() => innerHeight >= 861)) && (await card.evaluate((e) => e.classList.contains('chapter-locked')))
+    if (folded && !postcard) {
       await expect(vig).toBeHidden()
       continue
     }
@@ -67,8 +70,8 @@ test('each chapter card has a landmark vignette, locked ones sealed', async ({ p
     await card.scrollIntoViewIfNeeded()
     const box = (await vig.boundingBox())!
     const phone = page.viewportSize()!.width <= 600
-    expect(box.width).toBeGreaterThanOrEqual(phone ? 104 : 120)
-    expect(box.height).toBeGreaterThanOrEqual(phone ? 70 : 80)
+    expect(box.width).toBeGreaterThanOrEqual(phone || postcard ? 104 : 120)
+    expect(box.height).toBeGreaterThanOrEqual(phone || postcard ? 70 : 80)
     expect(await vig.locator('.cmp-vig-mark').count()).toBeGreaterThanOrEqual(2)
     const locked = await card.evaluate((e) => e.classList.contains('chapter-locked'))
     await expect(vig).toHaveClass(locked ? /is-sealed/ : /^cmp-vignette( is-won)?$/)
