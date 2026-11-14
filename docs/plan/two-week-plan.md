@@ -3423,7 +3423,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 365. [ ] Runnel: the lesson field painted at the size it is shown, under a morning sky
+## 365. [ ] Runnel: the lesson field painted at the size it is shown, under a morning sky *(lane B, in progress)*
 - **Why:** `plan1114a/runnel-D`: the lesson draws four tiles about 230 px wide (575-1220 x 120-735), but each has only a 60 px daily tile's detail. Tile 3 (905-1105 x 320-530) is a blank buff hex with one log channel, three tiny arrows and one sprout; tile 4 (1010-1215 x 500-720) is buff with faint hatching. The player's first close look at the game is empty paper. Behind it the valley is murky dusk: a mauve-grey sky (390-1410 x 25-250) over low-chroma olive fields. `runnel-P` has the same sparse tiles (150-300 x 340-630) and grey-purple sky (0-390 x 225-330).
 - **Build:**
   - Detail tiers by drawn tile size (under 80, 80-160, over 160 px). In the large tier: furrow rows along the channel with a sprig each, field stones, a stake fence on dry edges, wildflower tufts; channels with plank edges and pebbles; the sluice hub with grain and bolts.
