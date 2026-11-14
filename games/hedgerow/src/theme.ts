@@ -41,7 +41,13 @@ export interface Theme {
   /** Wash at the edges. */
   vignette: string;
   /** Water along one edge of the field, if any. */
-  water?: { color: string; foam: string; side: "left" | "right" | "top" | "bottom" };
+  water?: {
+    color: string;
+    foam: string;
+    side: "left" | "right" | "top" | "bottom";
+    /** Plan item 370: a sea with depth: sand at the tideline, a shallow teal shelf, then the deep colour, with crests. */
+    shelf?: { sand: string; shallow: string; deep: string };
+  };
 }
 
 export const THEMES: Theme[] = [
@@ -92,8 +98,8 @@ export const THEMES: Theme[] = [
     ],
     light: "#d9f0f4",
     lightAlpha: 0.14,
-    vignette: "rgba(30,60,70,0.33)",
-    water: { color: "#5fa9c2", foam: "#e3f2f2", side: "left" },
+    vignette: "rgba(24,64,56,0.26)",
+    water: { color: "#5fa9c2", foam: "#e3f2f2", side: "left", shelf: { sand: "#e8d9a6", shallow: "#7fd0c8", deep: "#3f8fb4" } },
   },
   {
     name: "Rivermead",
@@ -304,15 +310,21 @@ export function paintBackground(
 
   if (theme.water) paintWater(ctx, theme, L, level, rand);
 
-  // Tufts and flowers.
+  // Tufts and flowers. Plan item 370: none out on a shelved sea (they speckled Saltmarsh's water like confetti);
+  // the random draws are still taken, so everything painted after keeps its place.
+  const sea = theme.water?.shelf ? theme.water.side : null;
+  const onSea = (x: number, y: number): boolean =>
+    sea === "left" ? x < L.offX - s * 0.45 : sea === "right" ? x > L.offX + level.cols * s + s * 0.45 : sea === "top" ? y < L.offY - s * 0.45 : sea === "bottom" ? y > L.offY + level.rows * s + s * 0.45 : false;
   const tufts = Math.round((W * H) / (s * s) * 10);
   ctx.lineCap = "round";
   for (let i = 0; i < tufts; i++) {
     const x = rand() * W;
     const y = rand() * H;
     const h = s * (0.05 + rand() * 0.07);
+    const alpha = 0.25 + rand() * 0.3;
+    if (onSea(x, y)) continue;
     ctx.strokeStyle = theme.blade;
-    ctx.globalAlpha = 0.25 + rand() * 0.3;
+    ctx.globalAlpha = alpha;
     ctx.lineWidth = Math.max(1, s * 0.018);
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -329,7 +341,9 @@ export function paintBackground(
     const x = rand() * W;
     const y = rand() * H;
     const r = s * (0.025 + rand() * 0.02);
-    ctx.fillStyle = theme.flowers[Math.floor(rand() * theme.flowers.length)]!;
+    const petal = theme.flowers[Math.floor(rand() * theme.flowers.length)]!;
+    if (onSea(x, y)) continue;
+    ctx.fillStyle = petal;
     for (let k = 0; k < 5; k++) {
       const a = (k / 5) * Math.PI * 2;
       ctx.beginPath();
@@ -416,6 +430,7 @@ function paintWater(
   ctx.closePath();
   ctx.fillStyle = w.color;
   ctx.fill();
+  if (w.shelf && (w.side === "left" || w.side === "right")) paintShelf(ctx, w.shelf, w.foam, w.side, x0, x1, y0, y1, s);
   ctx.strokeStyle = w.foam;
   ctx.lineWidth = Math.max(2, s * 0.06);
   ctx.globalAlpha = 0.8;
@@ -434,6 +449,66 @@ function paintWater(
   }
   ctx.restore();
   ctx.globalAlpha = 1;
+}
+
+/**
+ * Plan item 370: the sea's depth across a side margin: sand at the tideline, a shallow teal shelf, then the deep
+ * water out at the table's edge, with long crests running parallel to the shore. Painted inside the water's own path.
+ */
+function paintShelf(
+  ctx: CanvasRenderingContext2D,
+  shelf: { sand: string; shallow: string; deep: string },
+  foam: string,
+  side: "left" | "right",
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+  s: number,
+): void {
+  // Its own seed, so the painting after it (decor, margins) draws the same random sequence as before.
+  let seed = 370;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  const shore = side === "left" ? x1 + s * 0.2 : x0 - s * 0.2;
+  const out = side === "left" ? x0 : x1;
+  const span = Math.abs(shore - out);
+  const at = (d: number) => Math.min(1, Math.max(0, d / span));
+  ctx.save();
+  ctx.clip();
+  const g = ctx.createLinearGradient(shore, 0, out, 0);
+  g.addColorStop(0, shelf.sand);
+  g.addColorStop(at(s * 0.32), shelf.sand);
+  g.addColorStop(at(s * 0.5), shelf.shallow);
+  g.addColorStop(at(s * 1.6), shelf.shallow);
+  g.addColorStop(at(s * 3.2), shelf.deep);
+  g.addColorStop(1, shelf.deep);
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = g;
+  ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+  // Crests: long, gently curved lines parallel to the shore, closer together on the shelf.
+  ctx.strokeStyle = foam;
+  ctx.lineCap = "round";
+  const dir = side === "left" ? -1 : 1;
+  for (const [d, a, wdt] of [
+    [0.62, 0.7, 0.045],
+    [1.05, 0.5, 0.035],
+    [1.7, 0.32, 0.03],
+    [2.6, 0.22, 0.025],
+  ] as const) {
+    if (d * s > span) break;
+    ctx.globalAlpha = a;
+    ctx.lineWidth = Math.max(1, s * wdt);
+    for (let y = y0 - s + rand() * s; y < y1; ) {
+      const len = s * (1.2 + rand() * 1.8);
+      const x = shore + dir * (d * s + Math.sin(y * 0.013) * s * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + dir * s * 0.12, y + len / 2, x, y + len);
+      ctx.stroke();
+      y += len + s * (0.5 + rand() * 1.2);
+    }
+  }
+  ctx.restore();
 }
 
 function paintLane(
@@ -1536,6 +1611,25 @@ export function drawDecor(
       break;
     }
     case "boat": {
+      // Plan item 370: a wake trails from the stern and the hull sits in a soft darker patch of water.
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "#1f4a5a";
+      ctx.beginPath();
+      ctx.ellipse(x - s * 0.02, y + s * 0.01, s * 0.32, s * 0.06, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.75;
+      ctx.strokeStyle = "#eef7f6";
+      ctx.lineWidth = Math.max(1, s * 0.03);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x - s * 0.24, y - s * 0.02);
+      ctx.quadraticCurveTo(x - s * 0.5, y - s * 0.08, x - s * 0.8, y - s * 0.16);
+      ctx.moveTo(x - s * 0.24, y + s * 0.02);
+      ctx.quadraticCurveTo(x - s * 0.5, y + s * 0.06, x - s * 0.8, y + s * 0.12);
+      ctx.globalAlpha = 0.4;
+      ctx.stroke();
+      ctx.restore();
       ctx.fillStyle = "#c4433a";
       ctx.beginPath();
       ctx.moveTo(x - s * 0.3, y - s * 0.12);
