@@ -384,8 +384,9 @@ export default function CampaignScreen({
           <p className="cmp-kicker">The liberation of Marrow</p>
           <h1>Campaign</h1>
           <p className="cmp-progress">
-            {/* The map has seven regions and chapter 1 frees two, so the header counts both (critique 2026-11-03). */}
-            <span className="cmp-progress-text">
+            {/* The map has seven regions and chapter 1 frees two, so the header counts both (critique 2026-11-03).
+                Item 385: on a desktop the ledger under the map already says both, so the header keeps the bar alone. */}
+            <span className={wide ? 'cmp-progress-text visually-hidden' : 'cmp-progress-text'}>
               {done} of {chapters.length} chapters
               <span className="cmp-progress-regions">
                 {' · '}
