@@ -2532,7 +2532,8 @@ export function buildFarmhouse(): THREE.Group {
  * x 1.4 world units before its scale.
  * Plan item 179: Hollowell's glossy shed, so it reads at a glance as theirs: white plastic walls, a teal fascia
  * over a ribbed rolling shutter (its own part, `userData.shutter`, so a round can raise it), a floodlight on a pole
- * and a painted loading bay in front of the door, striped where the vans pull in. */
+ * and a painted loading bay in front of the door, striped where the vans pull in.
+ * Plan item 391: a flat white roof with plant, skylights and the logotype (was a pitched orange roof). */
 export function buildDepot(): THREE.Group {
   const g = new THREE.Group();
   const white = gloss("#f3f5f7", 0.05);
@@ -2542,14 +2543,47 @@ export function buildDepot(): THREE.Group {
   // The shed, on a low grey plinth.
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
-  // A shallow pitched roof with an overhang, the ridge along the door's width.
-  // Plan item 280: the roof in Hollowell's teal (grey, it read as a grey box from the camera, which mostly sees roof).
-  // Plan item 336: the roof in a deeper Hollowell orange (teal, the camera saw a teal box), the 2D canopy's colour.
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 1.0, 0.3, 4, 1), gloss("#d2622a", 0.15));
-  roof.rotation.y = Math.PI / 4;
-  roof.scale.set(1.1, 1, 1.25);
-  roof.position.y = 1.07;
-  g.add(roof);
+  // Plan item 391: a fulfilment centre's flat roof, not a pitched orange one (from the camera, which mostly sees roof,
+  // the depot read as an orange box): a white membrane inside a chrome parapet, two grey plant units, lit skylight
+  // strips and Hollowell's logotype painted large and backlit across the roof, so it reads as their building from above.
+  g.add(box(1.46, 0.05, 1.66, matte("#e9edf1", 0.7), 0, 0.92, 0));
+  const chrome = gloss("#cfd6dc", 0.6);
+  for (const x of [-0.72, 0.72]) g.add(box(0.04, 0.08, 1.66, chrome, x, 0.95, 0));
+  for (const z of [-0.81, 0.81]) g.add(box(1.46, 0.08, 0.04, chrome, 0, 0.95, z));
+  const plant = matte("#8d969f", 0.6);
+  for (const z of [-0.52, 0.52]) {
+    g.add(box(0.34, 0.14, 0.26, plant, -0.42, 0.97, z));
+    g.add(cyl(0.08, 0.08, 0.02, matte("#3b4148"), -0.42, 1.11, z));
+  }
+  for (const z of [-0.55, 0.55]) g.add(box(0.2, 0.025, 0.1, glow("#dff1ff", 0.6), -0.1, 0.97, z));
+  const logo = document.createElement("canvas");
+  logo.width = 512;
+  logo.height = 160;
+  const lc = logo.getContext("2d");
+  if (lc) {
+    lc.fillStyle = "#ef7a2a";
+    lc.beginPath();
+    lc.roundRect(6, 6, 500, 148, 22);
+    lc.fill();
+    lc.fillStyle = "rgba(255,255,255,0.35)";
+    lc.fillRect(22, 16, 468, 14);
+    lc.fillStyle = "#fff6d6";
+    lc.font = "800 96px 'Hedgerow UI', system-ui, sans-serif";
+    lc.textAlign = "center";
+    lc.textBaseline = "middle";
+    lc.fillText("HOLLOWELL", 256, 88, 470);
+  }
+  const logoTex = new THREE.CanvasTexture(logo);
+  logoTex.colorSpace = THREE.SRGBColorSpace;
+  logoTex.anisotropy = 4;
+  const roofLogo = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.3, 0.4),
+    new THREE.MeshStandardMaterial({ map: logoTex, emissive: "#ffffff", emissiveMap: logoTex, emissiveIntensity: 0.35, transparent: true }),
+  );
+  roofLogo.rotation.x = -Math.PI / 2;
+  roofLogo.rotation.z = Math.PI / 2;
+  roofLogo.position.set(0.4, 0.952, 0);
+  g.add(roofLogo);
   // The orange fascia across the front and a brand stripe round the walls under the eaves.
   g.add(box(0.07, 0.24, 1.72, orange, 0.73, 0.7, 0));
   // Plan item 179: the band runs round all four walls (the camera mostly sees a side and the roof, not the door).

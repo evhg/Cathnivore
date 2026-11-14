@@ -4717,7 +4717,7 @@ function syncDepots(g: Game): void {
       .filter((d) => d.x > 0 && d.x < canvas3.width && d.y > 0 && d.y < canvas3.height)
       // Plan item 200: on an upright phone the depot's roof can sit under the top bar; the rep stands down there
       // rather than show a headless suit under the bar.
-      .filter((d) => d.y - 1.1 * Math.max(28, Math.min(56, d.w * 0.45)) >= hudFoot - stage3.top);
+      .filter((d) => d.y - 1.1 * Math.max(24, Math.min(40, d.w * 0.28)) >= hudFoot - stage3.top);
     const key3 = `3d|${depotMood}|${reps.map((d) => `${Math.round(d.x)},${Math.round(d.y)}`).join(";")}`;
     if (key3 === depotKey) return;
     depotKey = key3;
@@ -4737,7 +4737,7 @@ function syncDepots(g: Game): void {
         el.dataset.repMood = depotMood;
         el.style.setProperty("--x", `${Math.round(d.x)}px`);
         el.style.setProperty("--y", `${Math.round(d.y)}px`);
-        el.style.setProperty("--size", `${Math.round(Math.max(28, Math.min(56, d.w * 0.45)))}px`);
+        el.style.setProperty("--size", `${Math.round(Math.max(24, Math.min(40, d.w * 0.28)))}px`);
         el.innerHTML = `<span class="depot-rep">${repSvg(depotMood, true)}</span>`;
         return el;
       }),

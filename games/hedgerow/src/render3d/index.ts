@@ -2613,8 +2613,15 @@ export class Renderer3D {
       if (onDepot) {
         const pw = el.offsetWidth;
         const ph = el.offsetHeight;
-        const x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
-        const y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph * 0.5));
+        let x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
+        let y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph * 0.5));
+        // Plan item 391: a docked plate never covers the gate's sign (the flat-roofed depot stands nearer it on a
+        // phone's l13): it steps right of the sign, or else under it.
+        for (const sg of this.gateSignRects()) {
+          if (!(x < sg.x + sg.w && x + pw > sg.x && y < sg.y + sg.h && y + ph > sg.y)) continue;
+          if (sg.x + sg.w + 6 + pw <= w - 4) x = sg.x + sg.w + 6;
+          else y = Math.min(h - ph - 4, sg.y + sg.h + 4);
+        }
         el.style.opacity = String(k);
         el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
         shown.plates.push({ x, y, w: pw, h: ph });
@@ -2980,7 +2987,8 @@ export class Renderer3D {
       // shed, so the rep's hatch hung past the roof's edge and read as a head poking up behind it. The hatch sits on
       // the shed's own roof, just under its ridge (buildDepot: the pyramid roof's apex at 1.22 over the shed's centre).
       d.updateMatrixWorld(true);
-      const roof = d.localToWorld(this.v2.set(0, 1.14, 0)).project(this.camera);
+      // Plan item 391: the roof is flat now (its membrane at 0.95); the hatch stands at its centre, behind the logotype.
+      const roof = d.localToWorld(this.v2.set(0, 0.95, 0)).project(this.camera);
       out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h });
     }
     return out;
