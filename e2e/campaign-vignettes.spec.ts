@@ -8,7 +8,8 @@ test('chapter scenes: the producer at a stall, bunting once won, sealed while lo
   await page.goto('/')
   await page.getByText('Campaign', { exact: false }).first().click()
   const arts = page.locator('[data-chapter-art]')
-  await expect(arts.first()).toBeVisible()
+  // (on a wide desktop only the open chapter's card shows its scene; item 373 folds the rest to tabs)
+  await expect(page.locator('.cmp-stop-next [data-chapter-art]')).toBeVisible()
   const states = await arts.evaluateAll((els) =>
     els.map((e) => ({
       state: (e as SVGElement).dataset.chapterArt,

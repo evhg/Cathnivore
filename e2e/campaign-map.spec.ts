@@ -282,3 +282,30 @@ test('desktop: the map stops show locked, open and won apart, and one Cath', asy
   expect(apart(lum.done, lum.ahead), JSON.stringify(lum)).toBeGreaterThanOrEqual(0.2)
   expect(apart(lum.current, lum.ahead), JSON.stringify(lum)).toBeGreaterThanOrEqual(0.2)
 })
+
+// Plan item 373: at a desktop all six chapters sit in the rail with no scroll inside it, none cut at the fold: the
+// open chapter's whole card, the others as tabs.
+test('desktop: every chapter fits the rail, the open one whole', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    for (const completed of [[], ['fresh-meat', 'word-of-mouth']]) {
+      await page.setViewportSize({ width, height })
+      await page.addInitScript(([k, c]) => localStorage.setItem(k as string, JSON.stringify({ version: 1, completed: c, tutorialDone: true })), [KEY, completed] as const)
+      await page.goto('/')
+      await page.getByRole('button', { name: 'Campaign' }).click()
+      await expect(page.locator('.cmp-stop-next .cmp-vignette')).toBeVisible()
+      // the cards rise in (600 ms); a card still moving counts toward the rail's overflow
+      await page.waitForTimeout(900)
+      const m = await page.evaluate(() => {
+        const rail = document.querySelector('.cmp-path')!
+        const r = rail.getBoundingClientRect()
+        const cards = [...rail.querySelectorAll('.cmp-card')].map((c) => c.getBoundingClientRect())
+        return { overflow: rail.scrollHeight - rail.clientHeight, cut: cards.filter((c) => c.top < r.top - 1 || c.bottom > Math.min(r.bottom, innerHeight) + 1).length, n: cards.length }
+      })
+      const what = `${width}x${height} ${completed.length} won`
+      expect(m.n, what).toBe(6)
+      expect(m.overflow, what).toBeLessThanOrEqual(1)
+      expect(m.cut, what).toBe(0)
+    }
+  }
+})

@@ -54,9 +54,15 @@ test('each chapter card has a landmark vignette, locked ones sealed', async ({ p
   await expect(cards.nth(5)).toBeVisible()
   const n = await cards.count()
   expect(n).toBeGreaterThanOrEqual(6)
+  // Plan item 373: on a wide desktop only the open chapter is a whole card; the others fold to tabs without art.
+  const wide = await page.evaluate(() => innerWidth >= 1100 && innerHeight >= 640)
   for (let i = 0; i < n; i++) {
     const card = cards.nth(i)
     const vig = card.locator('.cmp-vignette')
+    if (wide && !(await card.evaluate((e) => !!e.closest('.cmp-stop-next')))) {
+      await expect(vig).toBeHidden()
+      continue
+    }
     const box = (await vig.boundingBox())!
     expect(box.width).toBeGreaterThanOrEqual(120)
     expect(box.height).toBeGreaterThanOrEqual(80)

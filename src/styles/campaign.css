@@ -1250,3 +1250,65 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
 }
 .cmp-back:hover { color: var(--wood-ink); background-color: transparent; }
 .cmp-back:active { transform: translateY(2px); }
+
+/* Plan item 373 (slice 2): on a desktop tall enough the rail is the open chapter's page and a tab for each other
+   chapter: the next chapter keeps its whole card (plate, goal, cast, seals, Play), every other one folds to a slim
+   tab (its number, name and state; a won one keeps Play again and its replays), so all six chapters sit in the
+   rail with no scroll and none is cut at the fold. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign-screen > .cmp-path { mask-image: none; overflow-y: auto; gap: 6px; padding-bottom: 2px; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .chapter-goal,
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-art,
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-cast,
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-seals { display: none; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 0;
+    padding-block: 6px;
+  }
+  /* the open chapter's page: its cast, seals and Play on one row under the text and plate */
+  .campaign-screen > .cmp-path > .cmp-stop-next .cmp-card { grid-template-areas: "head art" "foot foot"; padding-block: 14px; }
+  .campaign-screen > .cmp-path > .cmp-stop-next .cmp-card-foot { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+  .campaign-screen > .cmp-path > .cmp-stop-next .cmp-card-foot .cmp-cta { margin: 0 0 0 auto; }
+  .campaign-screen > .cmp-path > .cmp-stop-next .cmp-seals { margin-top: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-card-text {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    align-self: center;
+    gap: 10px;
+    margin: 0 auto 0 0;
+    padding: 0;
+    text-align: left;
+  }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-title { margin: 0; font-size: var(--fs-h3, 1.125rem); line-height: 1.15; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-chapter-no { flex: none; white-space: nowrap; }
+  /* a won tab carries Play again on its row, so it drops the "Chapter n" kicker (its medallion and the map's pin
+     carry the number) and keeps its name on one line */
+  .campaign-screen > .cmp-path > .cmp-stop-done:not(.cmp-stop-next) .cmp-chapter-no { display: none; }
+  .campaign-screen > .cmp-path > .cmp-stop-done:not(.cmp-stop-next) .cmp-title { white-space: nowrap; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) { padding-block: 0; margin-block: 0 2px; min-height: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-replays { margin-top: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-card-foot {
+    display: flex;
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-cta { margin: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-replays { line-height: 1.2; }
+}
+@media (min-width: 1100px) and (min-height: 640px) and (max-height: 860px) {
+  /* a shorter desktop: the folded tabs keep their names on one line, a size down */
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-title { font-size: var(--fs-body, 1rem); white-space: nowrap; }
+  .campaign-screen > .cmp-path > .cmp-stop:not(.cmp-stop-next) .cmp-card { padding-block: 4px; }
+  .campaign-screen > .cmp-path > .cmp-stop { row-gap: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop-next .cmp-title { font-size: 1.5rem; }
+}
