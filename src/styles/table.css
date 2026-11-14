@@ -5109,3 +5109,25 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
   .drawer-key { transition: none; }
 }
+
+/* Plan item 366 slice 2: the readings beside the papers keep their words at 1400 px+ (they went to the tooltips, and a
+   new player couldn't tell Trust from Land): each label sits over its figure beside a smaller object, in the same
+   80 + 74 px columns, so the papers keep their width and the board its box. 'Land left' says 'Land' here. */
+@media (min-width: 1400px) and (min-height: 760px) {
+  .game:has(.table-head.with-table-cath) .board-cell { padding: 2px 4px; }
+  .game:has(.table-head.with-table-cath) .board-head {
+    grid-template-columns: 24px minmax(0, 1fr);
+    grid-template-areas: "icon label" "icon num";
+    column-gap: 5px;
+    row-gap: 1px;
+  }
+  .game:has(.table-head.with-table-cath) .board-head > svg.board-object { width: 24px; height: 24px; }
+  .game:has(.table-head.with-table-cath) .market-board .board-label {
+    position: static; width: auto; height: auto; overflow: visible; clip: auto;
+    letter-spacing: 0;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .game:has(.table-head.with-table-cath) .market-board .board-label-more { display: none; }
+  .game:has(.table-head.with-table-cath) .board-num { line-height: 1; }
+}

@@ -27,3 +27,27 @@ test('desktop drawer keys are drawer fronts with 13 px+ words', async ({ page },
   await expect(keys.first()).toHaveClass(/is-open/)
   expect(await keys.first().evaluate((el) => getComputedStyle(el).translate)).toContain('-6px')
 })
+
+// Plan item 366 slice 2: beside the papers at 1440x900 each reading keeps its word, 12 px+, over its figure.
+test('the readings beside the papers are labelled at 1440x900', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'the desktop table')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const labels = page.locator('.market-board .board-label')
+  await expect(labels).toHaveCount(4)
+  for (const l of await labels.all()) {
+    await expect(l).toBeVisible()
+    const m = await l.evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const num = el.parentElement!.querySelector('.board-num')!.getBoundingClientRect()
+      return { size: parseFloat(getComputedStyle(el).fontSize), w: r.width, above: r.bottom <= num.top + 2 }
+    })
+    expect(m.size).toBeGreaterThanOrEqual(12)
+    expect(m.w).toBeGreaterThan(20)
+    expect(m.above).toBe(true)
+  }
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+})
