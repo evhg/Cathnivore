@@ -63,7 +63,9 @@ const jobs = {
 for (const [name, job] of Object.entries(jobs)) {
   if (only && !only.includes(name)) continue
   for (const [s, o] of Object.entries(SIZES)) {
-    const ctx = await browser.newContext(o)
+    // Plan item 364: NIGHT SHIFT's 3D renders at the screen's DPR (capped at 2 on phones), so a DPR-1 phone shot drew
+    // Cath's 40 px face as a smear that a real phone never shows; its phone frames are shot at 2x (780 x 1688 images).
+    const ctx = await browser.newContext(name === 'nightshift' && s === 'P' ? { ...o, deviceScaleFactor: 2 } : o)
     const p = await ctx.newPage()
     try { await job(p, s) } catch (e) { console.log(name, s, 'failed:', String(e).split('\n')[0]) }
     await ctx.close()
