@@ -5375,13 +5375,50 @@ img.act-scene {
 
 /* Plan item 314: a locked stop is a warm sepia print, not a grey one: the coin a parchment wash, its landmark in
    sepia ink over a wheat-pale fill (item 124's pencil line art kept); it still comes into colour when it opens. */
+/* Plan item 372: a locked stop is still Hollowell's: a cool grey plastic coin with the enemy's hard gloss line, its
+   landmark in grey line on the plastic, and the corporate seal on its rim, so the open and won stops (the farm's
+   colours) stand clear of it at a glance. It still comes into colour when it opens. */
 #screen-select .node:disabled .level-num {
-  background: radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--wheat) 18%, var(--paper)), color-mix(in srgb, var(--wheat) 34%, var(--paper-2)));
+  background:
+    linear-gradient(170deg, transparent 22%, color-mix(in srgb, var(--plastic) 70%, transparent) 23% 27%, transparent 28%),
+    radial-gradient(ellipse 70% 60% at 50% 35%, var(--plastic), color-mix(in srgb, var(--corp-ink) 16%, var(--plastic-shade)));
+  border-color: color-mix(in srgb, var(--corp-ink) 30%, var(--plastic-shade));
+}
+#screen-select .node:disabled .level-num::after {
+  content: "H";
+  position: absolute;
+  left: -5px;
+  bottom: -3px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--corp-hi), var(--corp));
+  box-shadow: 0 0 0 2px var(--plastic), 0 1px 0 2px color-mix(in srgb, var(--corp-ink) 35%, transparent);
+  color: var(--plastic);
+  font: 800 var(--fs-label)/1 var(--font-ui, system-ui);
+}
+@media (prefers-color-scheme: dark) {
+  /* At night Hollowell's plastic is a dull grey under the map's dark, so the lit next stop outshines it. */
+  #screen-select .node:disabled .level-num {
+    background:
+      linear-gradient(170deg, transparent 22%, color-mix(in srgb, var(--plastic) 22%, transparent) 23% 27%, transparent 28%),
+      radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--corp-ink) 45%, var(--plastic-shade)), color-mix(in srgb, var(--corp-ink) 70%, var(--plastic-shade)));
+  }
+  #screen-select .node:disabled .level-num.vignette .level-landmark * {
+    fill: color-mix(in srgb, var(--corp-ink) 40%, var(--plastic-shade));
+    stroke: color-mix(in srgb, var(--corp-ink) 10%, var(--plastic-shade));
+  }
+}
+/* The next stop to play is the farm's in full colour: a sunlit wheat ground behind its landmark (and its pulse). */
+#screen-select .node.next:not(.cleared) .level-num {
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--wheat) 45%, var(--paper)), color-mix(in srgb, var(--wheat) 80%, var(--soil)));
 }
 #screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
 #screen-select .node:disabled .level-num.vignette .level-landmark * {
-  fill: color-mix(in srgb, var(--wheat) 26%, var(--paper));
-  stroke: color-mix(in srgb, var(--soil) 78%, var(--paper));
+  fill: color-mix(in srgb, var(--corp-ink) 6%, var(--plastic));
+  stroke: color-mix(in srgb, var(--corp-ink) 55%, var(--plastic-shade));
 }
 #screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
 @media (prefers-color-scheme: dark) {

@@ -182,7 +182,7 @@ test('plan item 74: on a fresh farm the start tag replaces the empty stars, and 
 
 // Plan item 73: every stop is a painted vignette (its landmark on the plinth, its number a badge), 44 px or larger,
 // in colour once open and in pencil grey while locked.
-test('plan item 73: every stop is a landmark vignette, 44 px or larger, in sepia while locked', async ({ page }) => {
+test('plan item 73: every stop is a landmark vignette, 44 px or larger, in Hollowell grey while locked', async ({ page }) => {
   await seed(page, 6)
   // The stops scale in as the map opens; measure them at rest.
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
@@ -206,10 +206,14 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, in sepia
   expect(new Set(nodes.map((n) => n.art)).size).toBeGreaterThanOrEqual(8)
   const lockedInk = new Set(nodes.filter((n) => n.locked).map((n) => n.ink))
   expect(lockedInk.size).toBe(1)
-  const [sepia] = [...lockedInk]
-  const rgb = (sepia ?? '').match(/[\d.]+/g)!.map(Number)
-  expect(rgb[0]!, 'warm, not grey').toBeGreaterThan(rgb[2]! * 1.15)
-  for (const n of nodes.filter((x) => !x.locked)) expect(n.ink).not.toBe(sepia)
+  // Plan item 372 (was 314's sepia): a locked stop is still Hollowell's, drawn in one cool grey line on plastic and
+  // wearing the corporate seal; an open one keeps its own colours.
+  const [grey] = [...lockedInk]
+  const rgb = (grey ?? '').match(/[\d.]+/g)!.map(Number)
+  expect(rgb[2]!, 'cool grey, not sepia').toBeGreaterThanOrEqual(rgb[0]!)
+  for (const n of nodes.filter((x) => !x.locked)) expect(n.ink).not.toBe(grey)
+  const seals = await page.evaluate(() => [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => [b.disabled, getComputedStyle(b.querySelector('.level-num')!, '::after').content]))
+  for (const [locked, content] of seals) if (locked) expect(content).toBe('"H"')
 })
 
 // Plan item 153: the journey is one painted country: every act in the one scroller, those past the last open act in
