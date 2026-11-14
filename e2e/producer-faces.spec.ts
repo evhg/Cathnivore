@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { fillSeed } from './setupSeed'
 
 // Plan item 80: the producers' faces follow the game. In an autoplayed game, the active producer's cameo swaps to
 // a worried face (item 154: the seat's portrait on a big desktop) after a Squeeze lands on one of their Stalls, or a delighted one when their ability fires.
@@ -6,6 +7,9 @@ test('the active producer reacts to the turn', async ({ page }) => {
   test.setTimeout(90_000)
   await page.goto('/?e2eAutoplay=1')
   await page.getByText('Quick Game').click()
+  // A fixed seed: an unseeded autoplay sometimes ran 70 s with no Squeeze or ability landing (2 of 3 runs failed on
+  // 2026-11-14); seed 3 brings one in the first rounds (8 of 8 at P and D; seed 7 still missed 1 in 3).
+  await fillSeed(page, process.env.FACES_SEED ?? '3')
   await page.getByRole('button', { name: 'Start' }).click()
   await expect(page.locator(':is(.producer-cameo, .producer-seat, .table-producer[data-active]) :is(svg.producer-art, svg.fig):visible').first()).toBeVisible()
   const seen = new Set<string>()
