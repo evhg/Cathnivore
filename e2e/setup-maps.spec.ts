@@ -47,5 +47,6 @@ test('the phone maps are boards beside their names', async ({ page }) => {
     const lh = await tile.locator('.layout-name').evaluate((e) => parseFloat(getComputedStyle(e).lineHeight))
     expect(name.height).toBeLessThanOrEqual(lh * 2 + 1)
   }
-  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+  // Plan item 349: the stall header lets the page scroll a little under the docked Start sign.
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(220)
 })

@@ -57,7 +57,7 @@ test('the shutter fades instead of rolling under reduced motion', async ({ page 
   await page.locator('.game').waitFor()
 })
 
-test('the phone Setup is a laid table too, with no scroll and nothing overlapping', async ({ page }, testInfo) => {
+test('the phone Setup is a laid table too, nothing overlapping, the table ending above Start', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the upright phone')
   await page.goto('/')
   await page.getByText('Quick Game').click()
@@ -77,7 +77,10 @@ test('the phone Setup is a laid table too, with no scroll and nothing overlappin
   // The table's sections don't overlap each other, and the table ends above Start.
   const secs = await table.locator(':scope > section').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => [r.top, r.bottom] as const))
   for (let i = 1; i < secs.length; i++) expect(secs[i]![0]).toBeGreaterThanOrEqual(secs[i - 1]![1] - 0.5)
+  // Plan item 349: the page may scroll a little under the docked Start sign (the stall header); scrolled to its end,
+  // the table ends above the sign.
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(220)
+  await page.evaluate(() => window.scrollTo(0, document.scrollingElement!.scrollHeight))
   const tableBottom = (await table.boundingBox())!
   expect(tableBottom.y + tableBottom.height).toBeLessThanOrEqual((await page.locator('.setup-start').boundingBox())!.y + 0.5)
-  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
 })

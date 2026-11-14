@@ -294,6 +294,11 @@ export default function Setup({ onStart }: Props) {
         {/* ROADMAP "Cath on the title, Campaign, setup and end screens": her default warm smirk, since
             no game state exists yet to react to here. */}
         <CathArt className="setup-header-cath" framing="bust" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate width={80} height={80} title="Cath" />
+        {/* Plan item 349: an upright phone's header is Cath's stall: her at half length (160 px+) behind its counter,
+            her bubble beside her (global.css shows this one and hides the bust there). */}
+        <div className="setup-header-stand" aria-hidden="true">
+          <CathArt framing="half" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate />
+        </div>
       </header>
 
       {eventFlyer}

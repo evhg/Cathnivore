@@ -1,7 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
-// Plan item 54: the phone Setup deals you in. At 390x844 every control is on screen with no page scroll, and the
-// two picked producers' abilities read in full. Setup also works from the keyboard alone, and every card has a name.
+// Plan item 54: the phone Setup deals you in, the two picked producers' abilities read in full. Plan item 349: its
+// header is Cath's stall (her at half length, 160 px+, in view at scroll 0), so the page may scroll a little under
+// the Start sign, which stays docked in view; every control is reached on screen, clear of the sign. Setup also works from the keyboard alone, and every card has a name.
 
 async function inView(page: Page, el: Locator, what: string) {
   const vh = page.viewportSize()!.height
@@ -11,12 +12,29 @@ async function inView(page: Page, el: Locator, what: string) {
   expect(b.y + b.height, `${what} bottom`).toBeLessThanOrEqual(vh + 0.5)
 }
 
-test('every Setup control is on a phone screen with no scroll, the pair read in full', async ({ page }, testInfo) => {
+async function reached(page: Page, el: Locator, what: string) {
+  await el.scrollIntoViewIfNeeded()
+  // As a thumb would: past the sign if it still lies under it (scrollIntoView stops at the window's foot).
+  const sign = (await page.getByRole('button', { name: 'Start' }).boundingBox())!
+  const first = (await el.boundingBox())!
+  if (what !== 'Start' && first.y + first.height > sign.y) await page.evaluate((d) => window.scrollBy(0, d), first.y + first.height - sign.y + 8)
+  await inView(page, el, what)
+  const start = (await page.getByRole('button', { name: 'Start' }).boundingBox())!
+  const b = (await el.boundingBox())!
+  if (what !== 'Start') expect(b.y + b.height, `${what} clear of the Start sign`).toBeLessThanOrEqual(start.y + 1)
+}
+
+test('every Setup control is reached on a phone screen, Start always in view, the pair read in full', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the upright phone layout')
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
-  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+  // Plan item 349: Cath at half length in the stall header, in view at scroll 0; the scroll stays short.
+  const stand = (await page.locator('.setup-header-stand').boundingBox())!
+  expect(stand.height).toBeGreaterThanOrEqual(160)
+  await inView(page, page.locator('.setup-header-stand'), 'Cath')
+  await inView(page, page.getByRole('button', { name: 'Start' }), 'Start at scroll 0')
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(220)
 
   // Pick Ines and Sol (cards 3 and 4), so the picked pair isn't simply the first two.
   await page.locator('.producer-card', { hasText: 'Mara Keel' }).click()
@@ -34,7 +52,7 @@ test('every Setup control is on a phone screen with no scroll, the pair read in 
     [page.getByRole('button', { name: 'Start' }), 'Start'],
   ]
   expect(controls.length).toBe(4 + 2 + 3 + 3 + 2)
-  for (const [el, what] of controls) await inView(page, el, what)
+  for (const [el, what] of controls) await reached(page, el, what)
 
   // The picked pair's abilities, in full: on screen and not clipped by their box.
   const abilities = page.locator('.pair-ability')
@@ -42,15 +60,15 @@ test('every Setup control is on a phone screen with no scroll, the pair read in 
   await expect(abilities.nth(0)).toContainText('Remove 1 Doubt from a region with your Stall, at no cost.')
   await expect(abilities.nth(1)).toContainText('Public Trust +1, or gain 2 Goodwill.')
   for (const i of [0, 1]) {
-    await inView(page, abilities.nth(i), `ability ${i + 1}`)
+    await reached(page, abilities.nth(i), `ability ${i + 1}`)
     expect(await abilities.nth(i).evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1)).toBe(true)
   }
   await expect(page.locator('.pair-line')).toContainText('Doubt cleared')
 
-  // Every difficulty still fits with no scroll; Advanced opens the seed.
+  // Every difficulty keeps the Start sign in view; Advanced opens the seed.
   for (const i of [0, 2, 1]) {
     await page.locator('.setup-difficulty label').nth(i).click()
-    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+    await inView(page, page.getByRole('button', { name: 'Start' }), `Start with difficulty ${i + 1}`)
   }
   await expect(page.locator('input[inputmode="numeric"]')).toBeHidden()
   await page.getByRole('button', { name: 'Advanced' }).click()
@@ -98,17 +116,18 @@ test('Setup to Start from the keyboard alone, every card named', async ({ page }
 
 // Plan item 188: on an upright phone Cath speaks her setup line: a 52 px+ bust left of the title and her bubble,
 // the bubble's text 12 px+, neither box meeting the title.
-test('Cath speaks her setup line from a bust beside it', async ({ page }, testInfo) => {
+// Plan item 349: she stands at half length in the stall header (item 188's bust grew), her line beside her.
+test('Cath speaks her setup line from the stall beside it', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the upright phone layout')
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
   const m = await page.evaluate(() => {
     const b = (q: string) => document.querySelector(q)!.getBoundingClientRect()
-    return { cath: b('.setup-header-cath'), h1: b('.setup-header h1'), line: b('.setup-cath-line'), fs: parseFloat(getComputedStyle(document.querySelector('.setup-cath-line')!).fontSize) }
+    return { cath: b('.setup-header-stand'), h1: b('.setup-header h1'), line: b('.setup-cath-line'), fs: parseFloat(getComputedStyle(document.querySelector('.setup-cath-line')!).fontSize) }
   })
   const s = JSON.stringify(m)
-  expect(m.cath.height, s).toBeGreaterThanOrEqual(52)
+  expect(m.cath.height, s).toBeGreaterThanOrEqual(160)
   expect(m.cath.right, s).toBeLessThanOrEqual(m.line.left)
   expect(m.cath.right, s).toBeLessThanOrEqual(m.h1.left)
   expect(m.line.top, s).toBeGreaterThanOrEqual(m.h1.bottom - 1)

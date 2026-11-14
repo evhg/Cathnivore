@@ -26,7 +26,7 @@ test('the active producer reacts to the turn', async ({ page }) => {
 })
 
 // Plan item 80: the Setup draws the producers big: each card's portrait at D, the picked pair's at P, at least
-// 120 px tall, with the page still not scrolling.
+// 120 px tall, with the page not scrolling (a phone a little, item 349).
 test('Setup producer portraits are at least 120 px tall', async ({ page }, testInfo) => {
   test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
   const sizes: Array<[number, number]> = testInfo.project.name === 'phone' ? [[390, 844]] : [[1440, 900], [1280, 800]]
@@ -39,6 +39,8 @@ test('Setup producer portraits are at least 120 px tall', async ({ page }, testI
     const boxes = await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))
     expect(boxes.length, `${width}x${height} portraits`).toBe(testInfo.project.name === 'phone' ? 2 : 4)
     for (const h of boxes) expect(h, `${width}x${height}`).toBeGreaterThanOrEqual(120)
-    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
+    // Plan item 349: the phone's stall header lets the page scroll a little under the docked Start sign.
+    const slack = testInfo.project.name === 'phone' ? 220 : 1
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(slack)
   }
 })
