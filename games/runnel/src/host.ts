@@ -44,7 +44,8 @@ export interface HostView {
  *  cut. Plan item 329: a wooden footbridge over the stream (it was a grey drystone wall in mid-field): she leans on its
  *  handrail (`vw-cope`, above the cut), its boarded parapet (`vw-wall`) on posts, the deck's edge, the stream running
  *  under it, and the verge down to the frame. Plan item 351: the parapet is a grained top board over the cut, then
- *  open spindles and a mid rail with the valley showing between (it read as a flat brown box). */
+ *  open spindles and a mid rail with the valley showing between (it read as a flat brown box). Plan item 369: the deck
+ *  arches over the stream between stone abutments, so at a glance it reads as a bridge, not a crate front. */
 const VALLEY_WALL = `<svg class="valley-wall" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path class="vw-verge" d="M0 60 L0 47 Q18 38 46 40 L154 40 Q184 38 200 47 L200 60 Z"/>
 <path class="vb-water" d="M0 51 Q40 47 90 50 T200 49 L200 57 Q150 54 100 56 T0 56 Z"/>
@@ -52,9 +53,12 @@ const VALLEY_WALL = `<svg class="valley-wall" viewBox="0 0 200 60" preserveAspec
 <path class="vw-wall" d="M13 28 L14 12 L186 12 L187 28 Z"/>
 <path class="vw-joint" d="M18 17 H60 M70 21 H120 M132 16 H182 M24 24 H92 M110 25 H176"/>
 <path class="vb-rail" d="M12 34 H188 V38 H12 Z"/>
-<path class="vb-spindle" d="M27 28 h4 v18 h-4 Z M44 28 h4 v18 h-4 Z M61 28 h4 v18 h-4 Z M78 28 h4 v18 h-4 Z M116 28 h4 v18 h-4 Z M133 28 h4 v18 h-4 Z M150 28 h4 v18 h-4 Z M167 28 h4 v18 h-4 Z"/>
-<path class="vb-deck" d="M6 45 H194 L192 51 H8 Z"/>
-<path class="vb-post" d="M10 4 h8 v44 h-8 Z M96 4 h8 v44 h-8 Z M182 4 h8 v44 h-8 Z"/>
+<path class="vb-spindle" d="M27 28 h4 v17.5 h-4 Z M44 28 h4 v16.2 h-4 Z M61 28 h4 v15.3 h-4 Z M78 28 h4 v14.7 h-4 Z M116 28 h4 v14.7 h-4 Z M133 28 h4 v15.2 h-4 Z M150 28 h4 v16.1 h-4 Z M167 28 h4 v17.3 h-4 Z"/>
+<path class="vb-arch" d="M14 52 Q100 41 186 52 Q100 55 14 52 Z"/>
+<path class="vb-deck" d="M4 47 Q100 36 196 47 L194 52 Q100 41 6 52 Z"/>
+<path class="vb-stone" d="M0 45 L15 46 L17 58 L0 58 Z M200 45 L185 46 L183 58 L200 58 Z"/>
+<path class="vb-course" d="M1 50 H15 M2 54 H16 M8 46 V50 M10 54 V58 M199 50 H185 M198 54 H184 M192 46 V50 M190 54 V58"/>
+<path class="vb-post" d="M10 4 h8 v42 h-8 Z M96 4 h8 v34 h-8 Z M182 4 h8 v42 h-8 Z"/>
 <path class="vw-cope" d="M8 10 Q8 5 14 5 L186 5 Q192 5 192 10 L192 12 L8 12 Z"/>
 <path class="vw-tuft" d="M2 52 l3 -9 l2 9 l3 -10 l3 10 Z M192 52 l3 -10 l2 10 l3 -8 l2 8 Z"/>
 </svg>`

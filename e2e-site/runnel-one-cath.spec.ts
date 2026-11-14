@@ -190,6 +190,15 @@ test('she stands behind a wall that hides the figure cut and meets the frame', a
   expect(boards.length).toBeGreaterThanOrEqual(3)
   for (const b of boards) expect(b).toBeLessThan(40)
   expect(await page.locator('#valley-cath .vb-spindle').count()).toBe(1)
+  // Plan item 369: a bridge, not a crate front: the deck arches (its middle stands above its ends) between stone abutments.
+  const deck = await page.evaluate(() => {
+    const d = document.querySelector<SVGPathElement>('#valley-cath .vb-deck')!
+    const len = d.getTotalLength()
+    const ys = [0, 0.25].map((f) => d.getPointAtLength(len * f).y)
+    return { endY: ys[0]!, midY: ys[1]!, stones: document.querySelectorAll('#valley-cath .vb-stone').length }
+  })
+  expect(deck.midY).toBeLessThan(deck.endY - 3)
+  expect(deck.stones).toBe(1)
   // The coping sits at least 12 px above the figure's cut, and the verge reaches the valley's foot.
   expect(m.copeTop).toBeLessThanOrEqual(m.figBottom - 12)
   expect(m.wallBottom).toBeGreaterThanOrEqual(m.valleyBottom - 2)

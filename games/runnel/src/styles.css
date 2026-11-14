@@ -4025,7 +4025,11 @@ body[data-mode='practice'] #week-slot {
 .vb-rail,
 .vb-spindle { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 75%, transparent); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
 .vb-post { fill: var(--stake); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
-.vb-deck { fill: color-mix(in srgb, var(--stake) 70%, var(--soil)); }
+.vb-deck { fill: color-mix(in srgb, var(--stake) 70%, var(--soil)); stroke: color-mix(in srgb, var(--soil) 80%, transparent); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
+/* Plan item 369: the shade under the arch, and the stone abutments the deck springs from. */
+.vb-arch { fill: color-mix(in srgb, var(--soil) 55%, transparent); }
+.vb-stone { fill: var(--stone); stroke: color-mix(in srgb, var(--soil) 70%, transparent); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
+.vb-course { fill: none; stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .vb-water { fill: color-mix(in srgb, var(--water) var(--vk, 100%), var(--paper)); }
 .vb-ripple { fill: none; stroke: color-mix(in srgb, var(--paper) 70%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 @media (prefers-color-scheme: dark) {

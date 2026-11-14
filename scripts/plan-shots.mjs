@@ -24,7 +24,11 @@ const jobs = {
   async cathnivore(p, s) {
     await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/cath-title-${s}.png` })
     await p.getByText('Quick Game').click(); await p.waitForTimeout(800); await p.screenshot({ path: `${out}/cath-setup-${s}.png` })
-    await p.getByRole('button', { name: 'Start' }).click(); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/cath-game-${s}.png` })
+    await p.getByRole('button', { name: 'Start' }).click()
+    // Item 369: the pointer left over Start lifts whichever hand card lands under it (the 'Injunction under Supply'
+    // seen in three critiques was that hover); park it off the table.
+    if (s === 'D') await p.mouse.move(2, 2)
+    await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/cath-game-${s}.png` })
     try {
       await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1200)
       await p.getByText('Campaign', { exact: false }).first().click(); await p.waitForTimeout(1500)
