@@ -4486,6 +4486,10 @@ body:has(#dlg-pause[open]) .paused-note {
   border-left-color: transparent;
   background: none;
   font-weight: 600;
+  /* Plan item 378: a vehicle's name wraps onto a second line rather than ending "Same-Day…" */
+  white-space: normal;
+  text-align: center;
+  line-height: 1.1;
 }
 /* The painted banner: a ribbon across the chip's top with swallow-tailed ends, the round's number under it. */
 /* (it overhangs the chip's top, so the vehicles stay level along the strip) */
