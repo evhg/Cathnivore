@@ -4886,3 +4886,14 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
    no ledge shadow under it: the cut is the apron's own inner shade. */
 .terrace-lip { filter: none; }
 .terrace-lip polygon { fill: color-mix(in srgb, var(--pasture-deep) 50%, var(--furrow)); opacity: .75; }
+/* Plan item 389: Bea's kitchen garden at the grain too: about two and a half tile edges wide (it was 236 px, three
+   and a half of a daily's tiles at D), within its old size; the beds, the fence and the back row draw to its width,
+   each bed an equal share of the row (square, up to its old size). */
+.stage[data-tile-e] .bea-garden { --gw: clamp(150px, calc(var(--tile-e) * 2.6), 236px); width: var(--gw); }
+.stage[data-tile-e] .bea-fence { width: 100%; }
+.stage[data-tile-e] .bea-crops:not(.bare) { align-self: stretch; justify-content: space-between; }
+.stage[data-tile-e] .bea-crops:not(.bare) i { width: min(28px, calc((var(--gw) - 40px) / 8)); height: min(28px, calc((var(--gw) - 40px) / 8)); }
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .stage[data-tile-e] .bea-garden { --gw: clamp(148px, calc(var(--tile-e) * 2.6), 164px); }
+  .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(20px, calc((var(--gw) - 24px) / 8)); height: min(20px, calc((var(--gw) - 24px) / 8)); }
+}
