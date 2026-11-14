@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-14T08:21Z
-
 
 
 
@@ -3544,3 +3542,87 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - Locked and playable stops differ in mean saturation 2x or more.
   - hedgerow-map, level-card and catdock specs and the axe scans pass; shots of acts 1 and 3 at P and D, before and after.
 - **Size:** 2
+
+## 373. [ ] Cathnivore desktop Campaign: the chapters as stops on the map, the chosen one open beside it
+- **Why:** `plan1114b/cath-campaign-D`: the map's chapter stops 2-6 (455-490 x 345-385, 370-405 x 495-530, 285-320 x 645-680, 455-490 x 645-680, 540-575 x 480-515) are the same cream discs, with only stop 1 in colour, so the map never says which chapter is open, locked or won. The rail (975-1355 x 165-885) is a scrolling list of white cards in which chapters 2 and 3 look almost alike (a grey lock, three outline seals, a dim plate), and chapter 4 is cut at the fold (975-1355 x 843-885). There are two Caths on one screen: a 30 px marker on the map (250-280 x 470-545) and the 260 px presenter (690-830 x 470-750).
+- **Build:**
+  - The map's stops are the chapter picker. A locked stop is a sealed wax disc, the open one a lit gold pin with a slow pulse (a fade under reduced motion), and a won one wears its seals.
+  - A stop, clicked or reached with the arrow keys, opens its chapter as one storybook page in the right column: the plate at 320 px+, the goal, the cast and Start. A strip of six chapter tabs sits under it in place of the long list.
+  - The route's dots run bright up to the open stop and dim after it.
+  - One Cath: the presenter stays, and the map marker becomes a small leaf pin.
+- **Accept:**
+  - At 1440x900 and 1280x800 all six chapters are reachable with no scroll in the rail, and no chapter text is cut at the fold.
+  - Locked, open and won stops differ by 20%+ in luminance.
+  - Exactly one Cath figure at D.
+  - Arrow keys move between stops; Enter starts the open chapter.
+  - The campaign specs and axe pass; P untouched; shots at D, light and dark, before and after.
+- **Size:** 2
+
+## 374. [ ] Cathnivore desktop play: the producers seated at Cath's scale, named, with the active one lit
+- **Why:** `plan1114b/cath-game-D`: Mara and Tomas are two arched frames hung on the right edge (1195-1330 x 220-385 and 1195-1330 x 445-605) with no names, and neither is marked as the active seat although the rail says "Mara Keel" (35-135 x 35-60). Tomas's crates float under his frame (1215-1325 x 610-670), resting on nothing. Cath is drawn at half length (about 140x310, 360-500 x 380-690) while the producers are framed busts (about 135x165), so the table has two scales of people (VISION 5). Hollowell's medallion (1210-1335 x 15-145) makes a third stacked head in that column.
+- **Build:**
+  - Mara and Tomas at half length with the `shared/cath` proportions, standing behind the board's far right rim the way Cath stands on the left, each with a name plate in the producer's colour.
+  - The active producer is lit (a wheat underline, a short lean in over 120-250 ms); the other is dimmed about 15%.
+  - Tomas's crates on the rim in front of him, or gone.
+  - Their faces react through the existing ProducerArt expressions.
+- **Accept:**
+  - At 1440x900 and 1280x800 each producer's figure is 80%+ of Cath's drawn height; name plates 13 px+ at 4.5:1.
+  - Exactly one seat has `data-active` and it matches the rail; no figure meets a hex, a card or Hollowell's medallion (a box test).
+  - board-diorama, the play specs and ui-css-lint pass; P unchanged; shots at D and 1280x800, light and dark, before and after.
+- **Size:** 2
+
+## 375. [ ] NIGHT SHIFT phone: the operative pick as a dossier with five named tabs, not a giant name and five dots
+- **Why:** `plan1114b/ns-play-P` (2x pixels): the five operatives are told apart only by unlabelled dots (25-410 x 1050-1065), so the four you can't see have no name, gun or range, where D shows a labelled list with a gun and a range bar each (45-470 x 165-575). "GHOST" (35-480 x 900-1010) is the biggest thing on the screen while her line is folded behind "HER LINE" (32-180 x 1185-1215); D shows the quote (60-470 x 695-775).
+- **Build:**
+  - A tab strip of the five classes in place of the dots: each tab its name and gun silhouette, the chosen one lit red; a swipe on Cath or a tap on a tab changes class.
+  - The class name in the display face at about 60% of today's size, with her line in Bodoni italic under it, shown by default.
+  - The commit bar and the stats panel on one 16 px gutter.
+- **Accept:**
+  - At P all five tabs are in view with names 14 CSS px+; the class name is no taller than 80 CSS px; the quote shows without a tap.
+  - The commit bar's left and right gutters within 2 px of each other, lined up with the stats panel.
+  - classpick, classpose and armoury pass at P and D; D unchanged; shots P and D before and after.
+- **Size:** 2
+
+## 376. [ ] Hedgerow desktop: the tower shop as one seed rack, the same grid on every level, towers drawn large *(lane B, in progress)*
+- **Why:** `plan1114b/hedge-l21-2d-D` shows the shop in 3 columns (1108-1412 x 85-380) and `hedge-l34-2d-D` in 4, where names wrap or hyphenate ("Court-house" 1195-1250 x 335-360; "Duck Pond", "Radio Mast" and "Market Stall" on two lines) and two unexplained empty terracotta pots fill the last row (1275-1400 x 315-360). The tower art fills about 35% of each card (Beehive 1335-1390 x 100-150 in a 100x95 card).
+- **Build:**
+  - One 3-column rack at every level, sized to the bench column, scrolling inside the bench if a level brings more towers.
+  - Tower art at 55%+ of the card's height.
+  - A slot not yet open is a seed packet with the level it opens at printed on it, not an empty pot.
+- **Accept:**
+  - No tower name wraps or hyphenates at 1440x900 or 1280x800 on levels 1, 21 and 34.
+  - Every empty slot carries text; card art 55%+ of the card's height.
+  - The Hedgerow shop/HUD specs and ui-css-lint pass; P untouched; shots at D before and after.
+- **Size:** 1
+
+## 377. [ ] Hedgerow map (D): the land between an act's two rows painted as the act's country, the stops at a size the screen can read
+- **Why:** `plan1114b/hedge-menu-D`: item 372 made the act in play a screen tall, and the band between its two rows (0-1120 x 430-750) is now pale empty patchwork with a few 20-40 px props (boats, beach huts, a pier) scattered on it. The stops themselves are 44-52 px coins with 13 px names (60-1060 x 340-420 and 740-830) across a 1440 px screen, so the act reads as a diagram, not a place. Act 1 (Brindle Hills) is the exception and still packs its rows under Cath's line (stops 0.4 of the map).
+- **Build:**
+  - At 1200 px+ the stop coins at 72 px+ (bosses 84) with their vignettes redrawn at that size (stopart already scales), names 15 px.
+  - The middle band carries the act's own landmarks at scene scale (a farmhouse, a mill or a lighthouse at 120-200 px, item 274's props scaled with the act), and the lane between the rows runs as a proper bend through them, not a straight drop.
+  - Act 1: Cath's cottage row tucked into the act's head (the sky band) so act 1's stops also span half the map.
+- **Accept:**
+  - At 1440x900 and 1280x800 every stop coin 72 px+ and names 15 px+; no stop, name or prop meets another (hedgerow-map's overlap checks).
+  - The middle band (between the rows' rects) holds 3+ props at 100 px+ wide; act 1's stops span 0.5+ of the visible map.
+  - hedgerow-map, level-card, catdock and critique specs pass; P untouched.
+  - Shots of acts 1 and 3 at D before and after.
+- **Size:** 2
+
+## 378. [ ] The bugs from the 2026-11-14 08:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1114b`)
+  - **Cathnivore:**
+    - `cath-campaign-P` (262-375 x 85-225): Cath ends flat at her hem in mid-air above the map card, with no ground or counter under her.
+    - `cath-game-P` (262-292 x 18-45): the fourth tally icon (Rift) is a blank white plate and reads as an empty slot.
+    - `cath-game-D` (1297-1325 x 162-190): a lone "i" button floats on the cloth with no clear owner, between the Festival note and Mara's frame.
+    - `cath-title-P` (248-375 x 540-585 and 200-375 x 605-690): the Daily is announced twice side by side ("No sale yet / The Daily is open" beside a "Daily Market #13" tag).
+  - **Portfolio:** `portfolio-P` (22-215 x 130-205): the product prints are about 125x75 px and the name pill covers the top third of the Cathnivore print.
+  - **NIGHT SHIFT:**
+    - `ns-title-P` (30-210 x 900-995): the case file falls apart into stray lines with dangling separators ("TOMAS REED · / THE HARBOUR · / A DEBT TAG").
+    - `ns-play-P` (30-300 x 425-700): the telescope and the LUNA sign float over Cath's left side, the tripod's legs across her coat.
+  - **Hedgerow:**
+    - `hedge-l21-2d-D` (1320-1395 x 676-690): the forecast's third card cuts to "Same-Day…"; its "Unanswered … +4 more" line about 12 px (1120-1395 x 598-614).
+    - `hedge-l21-2d-P` (5-95 x 358-440) and `hedge-l21-3d-P` (10-205 x 415-440): the HOLLOWELL sign and the "216 coming" pill sit over the road and its queued vans.
+    - `hedge-menu-D` (65-180 x 822-858): "Brand Ambassador" wraps to two lines and its pill crosses the act's gate road.
+  - **Runnel:** `runnel-P` (95-295 x 780-795): the hint under the board, grey on paper; check it reaches 4.5:1.
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
