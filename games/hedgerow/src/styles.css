@@ -926,13 +926,16 @@ button {
   left: var(--dock-left, auto);
   right: auto;
   width: var(--dock-w, 300px);
-  padding: 8px;
+  padding: 8px 10px;
   clip-path: none;
-  align-items: flex-start;
+  /* Plan item 390: centred in the card it covers, her portrait at host size, so the card reads as her taking the
+     panel, not a short line over an empty slab. */
+  align-items: center;
+  gap: 14px;
 }
 .cath-dock[data-desk] .cath-dock-bust {
-  width: 56px;
-  height: 56px;
+  width: 88px;
+  height: 88px;
 }
 
 /* ---- plan item 64: a new enemy as a page of Cath's field guide ----
