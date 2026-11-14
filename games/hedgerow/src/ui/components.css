@@ -40,7 +40,7 @@
 .win-actions .btn:first-child,
 #story-next,
 .pause-card .btn-primary {
-  --fill: var(--pasture-deep);
+  --fill: var(--pasture-ink);
   --fg: var(--on-fill);
   --edge: var(--pasture-ink);
 }
@@ -413,7 +413,7 @@ body:has(#dlg-pause[open]) .paused-note {
   stroke-width: 1.8;
 }
 .chip-wave svg {
-  background: radial-gradient(circle at 35% 30%, var(--pasture-hi), var(--pasture-deep) 65%);
+  background: radial-gradient(circle at 35% 30%, var(--pasture-hi), var(--pasture-ink) 65%);
   stroke: var(--on-fill);
   fill: none;
   /* plan item 246: a tick for rounds cleared (the flag read as the round coming) */
@@ -596,7 +596,7 @@ body:has(#dlg-pause[open]) .paused-note {
   padding: var(--sp-3) calc(var(--sp-7) + 4px);
   border-radius: 0;
   color: var(--on-fill);
-  background: linear-gradient(var(--white-a18), transparent 40%, var(--black-a18)), var(--pasture-deep);
+  background: linear-gradient(var(--white-a18), transparent 40%, var(--black-a18)), var(--pasture-ink);
   clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 50%, 100% 100%, 0 100%, 22px 50%);
   filter: drop-shadow(0 4px 0 var(--line)) drop-shadow(0 14px 18px var(--black-a35));
   box-shadow: none;
@@ -1071,7 +1071,7 @@ body:has(#dlg-pause[open]) .paused-note {
   padding: 3px 6px 2px;
   border-radius: 4px;
   rotate: 8deg;
-  background: var(--pasture-deep);
+  background: var(--pasture-ink);
   color: var(--on-fill);
   font: 900 0.6875rem / 1 var(--font-ui);
   letter-spacing: 0.06em;
@@ -1149,7 +1149,7 @@ body:has(#dlg-pause[open]) .paused-note {
   transition: translate var(--dur-3) var(--spring);
 }
 .play .auto-btn[aria-pressed="true"]::before {
-  background: linear-gradient(var(--black-a25), transparent), var(--pasture-deep);
+  background: linear-gradient(var(--black-a25), transparent), var(--pasture-ink);
 }
 .play .auto-btn[aria-pressed="true"]::after {
   translate: 11px 0;
@@ -1187,7 +1187,7 @@ body:has(#dlg-pause[open]) .paused-note {
   overflow: hidden;
 }
 .play .btn.send {
-  --fill: var(--pasture-deep);
+  --fill: var(--pasture-ink);
   --fg: var(--on-fill);
   --edge: var(--pasture-ink);
   flex: 1;
@@ -2082,7 +2082,7 @@ body:has(#dlg-pause[open]) .paused-note {
   color: var(--ink);
 }
 .panel-paths .stats dd.up {
-  color: var(--pasture-deep);
+  color: var(--pasture-ink);
 }
 .panel-paths .stats dd.up::before {
   content: "";
@@ -4700,4 +4700,65 @@ body:has(#dlg-pause[open]) .paused-note {
     box-shadow: 1px 1px 1px color-mix(in srgb, var(--oak-ink) 45%, transparent);
     pointer-events: none;
   }
+}
+
+/* Plan item 396: at D each packet draws its tower larger (the piece it becomes on the plot) in the same packet
+   height, and its band names its role in words under the tower's name ('Shoots', 'Slows'), so the rack says what
+   each tower does. */
+.tray-role-word { display: none; }
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray .tray-tower img,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img {
+    width: 56px;
+    height: 56px;
+    /* drawn up into the corner row but left of the price tag, so a tall tower's top (the Scarecrow's hat) shows */
+    margin: -10px 0 -8px;
+    translate: -12px 0;
+  }
+  /* four to a row (72 px packets, two-line names): the art and height stay as item 361 drew them (a larger tower was
+     cut by the corner row, and a role line made level 25's column overrun); the corner glyph names the role there */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
+    width: 44px;
+    height: 44px;
+    margin: auto 0 0;
+    translate: none;
+  }
+  .play .tray-wrap .tray .tray-tower .tray-role-word {
+    display: block;
+    margin-top: -1px;
+    font: 700 var(--fs-label) / 1.05 var(--font-ui);
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+  }
+}
+
+/* Plan item 396: a tower that answers the soonest unanswered lock wears a green seed tag on its corner (the lock's
+   icon and a tick, 'Answers Airborne' as its title), and the packet is edged in green. */
+.tray-answers { display: none; }
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray .tray-tower[data-answers] { box-shadow: 0 0 0 2px var(--pasture-ink); }
+  .play .tray-wrap .tray .tray-tower .tray-answers {
+    position: absolute;
+    left: -3px;
+    top: -3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    height: 20px;
+    padding: 0 5px 0 3px;
+    border-radius: 3px 10px 10px 3px;
+    background: var(--pasture-ink);
+    color: var(--paper-hi);
+    font: 800 var(--fs-label) / 1 var(--font-ui);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 25%, transparent);
+    pointer-events: none;
+  }
+  .play .tray-wrap .tray .tray-tower .tray-answers img.prop-icon,
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower .tray-answers img.prop-icon { width: 14px; height: 14px; margin: 0; translate: none; }
+  .play .tray-wrap .tray .tray-tower[data-answers] .tray-role { visibility: hidden; }
+}
+
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
 }

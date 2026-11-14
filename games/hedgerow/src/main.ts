@@ -2152,6 +2152,18 @@ function fieldNotebook(g: Game): HTMLElement {
 let openRound: string | null = null;
 
 /** Desktop side panel: which locks the field answers and the rounds ahead (styles hide it on a phone). */
+/** Plan item 396: the soonest lock the coming rounds bring that the field can't yet answer (Coming up's chip). */
+function soonestGap(g: Game): Lock | null {
+  const gaps = unanswered(g, levelLocks(g.level));
+  if (!gaps.length) return null;
+  return (
+    g.level.waves
+      .slice(g.wave + 1)
+      .map((w) => propsOf(roundProps(g.level, w)).find((p): p is Lock => (gaps as readonly string[]).includes(p)))
+      .find((p) => p) ?? gaps[0]!
+  );
+}
+
 function fieldIntel(g: Game): HTMLElement {
   // Plan item 19: condensed to what's coming (the field itself shows what stands on it).
   const box = document.createElement("section");
@@ -2738,6 +2750,7 @@ function towerTray(p: HTMLElement, g: Game): void {
   tray.className = "tray";
   tray.setAttribute("role", "group");
   tray.setAttribute("aria-label", "Towers: drag one onto a plot");
+  const gap = soonestGap(g);
   for (const kind of g.level.towers) {
     if (!towerAllowed(g.level, kind)) continue;
     const cost = towerCost(g, kind);
@@ -2767,8 +2780,24 @@ function towerTray(p: HTMLElement, g: Game): void {
     glyph.className = `tray-role role-${role}`;
     glyph.title = ROLE_NAMES[role];
     glyph.innerHTML = ROLE_GLYPHS[role];
+    // Plan item 396: the role in words under the name ('Shoots', 'Slows'), so the rack says what each tower does.
+    const roleWord = document.createElement("span");
+    roleWord.className = "tray-role-word";
+    roleWord.dataset.role = role;
+    roleWord.textContent = ROLE_NAMES[role];
     const pips = trayPips(g, kind);
-    b.append(img(towerIcon(kind), "tray-icon"), glyph, name, pips, price);
+    b.append(img(towerIcon(kind), "tray-icon"), glyph, name, roleWord, pips, price);
+    // Plan item 396: a tower that answers the soonest unanswered lock wears a seed-tag ribbon saying so.
+    if (gap && towerBadges({ kind, tier: 1, spec: null }).find((x) => x.prop === gap)?.ok) {
+      b.dataset.answers = gap;
+      const tag = document.createElement("span");
+      tag.className = "tray-answers";
+      tag.title = `Answers ${PROPERTIES[gap].name}, which nothing on your field can yet`;
+      // The lock's own icon (Coming up's chip shows it) and a tick, a seed tag on the packet's corner.
+      tag.append(img(propIcon(gap), "prop-icon"), "✓");
+      b.append(tag);
+      b.setAttribute("aria-label", `${b.getAttribute("aria-label")} Answers ${PROPERTIES[gap].name}, which nothing on your field can yet.`);
+    }
     b.addEventListener("pointerdown", (e) => startDrag(e, kind));
     b.addEventListener("pointerenter", (e) => {
       if (e.pointerType !== "mouse" || !HOVER) return;
