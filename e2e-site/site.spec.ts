@@ -45,8 +45,12 @@ test.describe('portfolio', () => {
     const show = page.locator('.hero-show')
     await expect(show).toBeVisible()
     const box = (await show.boundingBox())!
-    expect(box.x).toBeGreaterThanOrEqual(720)
-    expect(box.width).toBeGreaterThan(400)
+    // Plan item 350: the wall takes 700 px so each screen is 340 px+ (it was the right half, 560 px); the words beside
+    // it step in, the lede ending clear of the wall.
+    expect(box.x).toBeGreaterThanOrEqual(600)
+    expect(box.width).toBeGreaterThan(680)
+    expect(((await page.locator('.show-a').boundingBox())!).width).toBeGreaterThanOrEqual(340)
+    expect(((await page.locator('.hero .lede').boundingBox())!).x + ((await page.locator('.hero .lede').boundingBox())!).width).toBeLessThanOrEqual(box.x)
     await expect(show.locator('img')).toHaveCount(4) // item 91 added Hedgerow as a fourth print
     const cath = show.locator('svg.cath')
     await expect(cath).toHaveClass(/cath-pose-point/)

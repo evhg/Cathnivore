@@ -383,8 +383,9 @@ main,
     z-index: var(--z-canvas);
     right: 0;
     top: var(--sp-8);
-    /* Ends above the stats row (which runs to about 980 px wide) at 1440x900. */
-    width: min(38vw, 560px);
+    /* Ends above the stats row (which runs to about 980 px wide) at 1440x900. Plan item 350: the screens 340 px+ at
+       1440 (they were 265): the wall takes 700 px and the words beside it step in (h1 and lede capped below). */
+    width: min(48.8vw, 702px);
     aspect-ratio: 1 / 1;
     pointer-events: none;
   }
@@ -392,6 +393,8 @@ main,
     position: relative;
     z-index: var(--z-page);
   }
+  .hero h1 { font-size: min(var(--fs-h1), 7.4rem); }
+  .hero .lede { max-width: min(600px, calc(100vw - min(48.8vw, 702px) - 220px)); }
   .hero > .scroll-cue {
     z-index: var(--z-page);
   }
@@ -518,7 +521,8 @@ main,
   .show-c { left: 0; right: auto; top: calc(2% + 48.5% * 10 / 16 + 3%); }
   .show-d { right: 0; left: auto; top: calc(2% + 48.5% * 10 / 16 + 3%); }
   .show-label { left: 50%; bottom: 8px; translate: -50% 0; font-size: 0.8125rem; white-space: nowrap; }
-  .show-cath { left: auto; right: 6%; bottom: auto; top: calc(2% + 2 * 48.5% * 10 / 16 + 5%); width: 30%; }
+  /* Plan item 350: 21% of the wider wall (30% of the old one), so she and her desk end above the fold */
+  .show-cath { left: auto; right: 6%; bottom: auto; top: calc(2% + 2 * 48.5% * 10 / 16 + 4%); width: 21%; }
 }
 h1 {
   margin: 0;
