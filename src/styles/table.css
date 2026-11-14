@@ -5420,3 +5420,50 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label > svg { position: absolute; inset: 0 auto auto 0; width: 20px; height: 20px; visibility: hidden; }
   .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-why-not { display: none; }
 }
+
+/* Plan item 384: Sell is one barrow card; its 1-2-3 count sits as three coins on the card's foot, right of the word.
+   The chosen count is filled pasture green, a count the farm can't afford is greyed and inert. */
+.action-item.action-sell { position: relative; }
+.action-item.action-sell .sell-count {
+  position: absolute;
+  right: 7px;
+  bottom: 8px;
+  z-index: var(--z-raised, 1);
+  display: flex;
+  gap: 3px;
+}
+.action-item.action-sell .sell-count-pip {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--pasture-deep) 70%, var(--ink));
+  border-radius: 50%;
+  background: var(--paper-on-fixed-fill);
+  color: var(--ink-on-fixed-fill);
+  font: 760 .8125rem/1 var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  box-shadow: 0 1px 0 var(--ink-a15);
+  cursor: pointer;
+}
+.action-item.action-sell .sell-count-pip[aria-pressed='true'] {
+  border-color: var(--pasture-deep);
+  background: var(--pasture-deep);
+  color: var(--paper-on-fixed-fill);
+}
+.action-item.action-sell .sell-count-pip:disabled {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--ink-on-fixed-fill) 55%, transparent);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.action-item.action-sell .sell-count-pip:focus-visible { outline: 2px solid var(--ink-on-fixed-fill); outline-offset: 1px; }
+@media (max-width: 1023.98px) {
+  .action-item.action-sell .sell-count { right: 5px; bottom: 6px; gap: 2px; }
+  .action-item.action-sell .sell-count-pip { width: 22px; height: 22px; font-size: .75rem; }
+}

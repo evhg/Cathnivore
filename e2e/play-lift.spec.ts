@@ -12,7 +12,7 @@ for (const reduced of [false, true]) {
     await page.getByRole('button', { name: 'Start' }).click()
     await page.locator('.game').waitFor()
     const scope = testInfo.project.name === 'phone' ? '.action-tray .actions' : '.table-hand'
-    const sell = page.locator(`${scope} .action-item > button:first-child`, { hasText: 'Sell 1 Produce' }).first()
+    const sell = page.locator(`${scope} .action-sell > button:first-child`).first()
     await sell.scrollIntoViewIfNeeded()
     // Plan item 149: a desktop hand card lifts out of the fan under the pointer; measure it there, as it's clicked.
     await sell.hover()

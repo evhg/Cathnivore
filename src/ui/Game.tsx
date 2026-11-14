@@ -153,13 +153,19 @@ function isE2EWebdriver(): boolean {
   return typeof navigator !== 'undefined' && navigator.webdriver === true
 }
 const HAND_PEEK = 24
+// Plan item 384: a short hand (one Sell card, not three) left slack in the fan, so the first card off the front
+// showed half its face. Each strip widens to share the row's room, never under 24 px.
+function handPeek(row: HTMLElement): number {
+  return parseFloat(row.dataset.peekPx ?? '') || HAND_PEEK
+}
 // The held fan's stacking: the front card (the first not pinned to the left stack) on top, the left stack rising
 // toward it and the right stack falling away from it, so each card off the front shows the strip on its far side.
 function stackHand(row: HTMLElement) {
   const cards = [...row.querySelectorAll<HTMLElement>(':scope > .action-item[data-peek]')]
   if (cards.length === 0) return
   const edge = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft || '0')
-  let front = cards.findIndex((c, i) => c.getBoundingClientRect().left > edge + i * HAND_PEEK + 1.5)
+  const peek = handPeek(row)
+  let front = cards.findIndex((c, i) => c.getBoundingClientRect().left > edge + i * peek + 1.5)
   if (front < 0) front = cards.length - 1
   cards.forEach((c, i) => {
     c.style.setProperty('--peek-z', String(cards.length - Math.abs(i - front)))
@@ -173,7 +179,7 @@ function bringToFront(row: HTMLElement, card: HTMLElement, i: number) {
   card.dataset.measure = ''
   const natural = card.offsetLeft
   delete card.dataset.measure
-  const lo = i * HAND_PEEK
+  const lo = i * handPeek(row)
   const hi = row.clientWidth - (parseFloat(card.style.getPropertyValue('--stick-r')) || 0) - card.offsetWidth
   const want = natural - (lo + Math.max(0, hi - lo) / 2)
   const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches && !document.documentElement.classList.contains('no-animations')
@@ -578,14 +584,29 @@ function BuyVerb({ text: raw }: { text: string }) {
   )
 }
 
-function ActionButton({ action, state, Icon, tutorialTarget, onClick }: { action: Action; state: GameState; Icon?: typeof OpenStallIcon; tutorialTarget?: boolean; onClick(): void }) {
+function ActionButton({
+  action,
+  state,
+  Icon,
+  tutorialTarget,
+  sellCount,
+  onClick,
+}: {
+  action: Action
+  state: GameState
+  Icon?: typeof OpenStallIcon
+  tutorialTarget?: boolean
+  sellCount?: boolean
+  onClick(): void
+}) {
   if (action.kind === 'sell') {
+    // Plan item 384: on the one Sell card the count sits on the 1-2-3 pips; the face just says Sell.
     return (
-      <button aria-label={actionLabel(action, state)} onClick={onClick}>
+      <button aria-label={actionLabel(action, state)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
         <span className="action-label">
           <SellArt size={18} count={action.count} />
-          {`Sell ${action.count}`}
-          <span className="action-word"> Produce</span>
+          {sellCount ? 'Sell' : `Sell ${action.count}`}
+          {!sellCount && <span className="action-word"> Produce</span>}
         </span>
         <SellGainChip count={action.count} />
       </button>
@@ -721,6 +742,7 @@ function TargetLine({ line, names }: { line: string; names: string[] }) {
 
 export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGame, onChapterEnd, tutorialSteps, guided, onTutorialDone, midGameScenes, chapterId, initialDismissedMidScenes, initialSavingFor }: Props) {
   const [state, setState] = useState(initial)
+  const [sellPick, setSellPick] = useState<{ key: string; count: 1 | 2 | 3 } | null>(null)
   const layoutRef = useScrollCues()
   // The tutorial step whose note the player folded away (phone); a new step opens again.
   const [tipCollapsedAt, setTipCollapsedAt] = useState<number | null>(null)
@@ -808,6 +830,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     // The right stack's offsets come from each card's width, so cards a few px wider or narrower still show even strips.
     const widths = cards.map((c) => c.offsetWidth)
+    const rcs = getComputedStyle(row)
+    const inner = row.clientWidth - parseFloat(rcs.paddingLeft || '0') - parseFloat(rcs.paddingRight || '0')
+    const peek = Math.max(HAND_PEEK, Math.floor((inner - Math.max(...widths)) / (cards.length - 1)))
+    if (row.dataset.peekPx !== String(peek)) row.dataset.peekPx = String(peek)
     let inset = 0
     for (let i = cards.length - 1; i >= 0; i--) {
       const c = cards[i]!
@@ -815,9 +841,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       // The name a strip shows down its edge while the card is off the front (table.css).
       const name = (c.querySelector('.action-label')?.textContent ?? '').replace(/\s+/g, ' ').trim()
       if (c.dataset.spine !== name) c.dataset.spine = name
-      c.style.setProperty('--stick-l', `${i * HAND_PEEK}px`)
+      c.style.setProperty('--stick-l', `${i * peek}px`)
       c.style.setProperty('--stick-r', `${inset}px`)
-      if (i > 0) inset += HAND_PEEK + widths[i]! - widths[i - 1]!
+      if (i > 0) inset += peek + widths[i]! - widths[i - 1]!
     }
     stackHand(row)
   })
@@ -1846,8 +1872,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const sellEntries = standalone.filter((e) => e.action.kind === 'sell')
   const otherStandalone = standalone.filter((e) => e.action.kind !== 'sell' && e.action.kind !== 'invest')
   const investEntries = standalone.filter((e) => e.action.kind === 'invest')
+  // Plan item 384: the Sell card's chosen count. It defaults to the count Cath suggests, else 1, and resets
+  // whenever the turn's actions change (keyed by them), so a pick never carries into another turn.
+  const sellKey = sellEntries.map((e) => actionKeys[e.index]).join('|') + `#${state.activeProducer}`
+  const sellCard = (() => {
+    if (sellEntries.length === 0) return undefined
+    const countOf = (e: (typeof sellEntries)[number]) => (e.action as { count: 1 | 2 | 3 }).count
+    const picked = sellPick && sellPick.key === sellKey ? sellEntries.find((e) => countOf(e) === sellPick.count) : undefined
+    const chosen = picked ?? sellEntries.find((e) => isSuggested([e.index]) !== undefined) ?? sellEntries[0]!
+    return { index: chosen.index, count: countOf(chosen) }
+  })()
   const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
-  if (rules.sell && !gatedNow) {
+  if (rules.sell && !gatedNow && sellEntries.length === 0) {
     const affordable = Math.min(3, active.resources.produce)
     for (let n = affordable + 1; n <= 3; n++) {
       disabledSell.push({ count: n as 1 | 2 | 3, missing: n - active.resources.produce })
@@ -2099,13 +2135,55 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const playableCardFaces = (
     <>
           {sellEntries.length > 0 && <span className="action-head" aria-hidden="true">Sell</span>}
-          {sellEntries.map(({ index, action: a }) => {
+          {sellCard && (() => {
+            // Plan item 384: Sell is one barrow card with a 1-2-3 count on its face, not three near-identical cards.
+            const { index, count } = sellCard
+            const a = actions[index]!
             const term = actionTermFor(a)
-            const Icon = ACTION_ICON[a.kind]
+            const leafIndex = sellEntries.find((e) => isSuggested([e.index]) !== undefined)
+            const step = (dir: 1 | -1) => {
+              const counts = sellEntries.map((e) => (e.action as { count: 1 | 2 | 3 }).count)
+              const next = counts[counts.indexOf(count) + dir]
+              if (next) setSellPick({ key: sellKey, count: next })
+            }
             return (
-              <span key={index} className="action-item action-sell" data-group="sell" data-hand-card="" data-suggested={isSuggested([index])} {...previewProps([index])}>
-                <ActionButton action={a} state={state} Icon={Icon} onClick={() => act(index)} />
-                {isSuggested([index]) !== undefined && SUGGEST_LEAF}
+              <span
+                key="sell"
+                className="action-item action-sell"
+                data-group="sell"
+                data-hand-card=""
+                data-sell-count={count}
+                data-suggested={leafIndex && leafIndex.index === index ? '' : undefined}
+                {...previewProps([index])}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step(1)
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') step(-1)
+                  else return
+                  e.preventDefault()
+                }}
+              >
+                <ActionButton action={a} state={state} sellCount onClick={() => act(index)} />
+                <span className="sell-count" role="group" aria-label="How many Produce to sell">
+                  {([1, 2, 3] as const).map((n) => {
+                    const short = n - active.resources.produce
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        className="sell-count-pip"
+                        aria-pressed={n === count}
+                        aria-label={`${n} to sell`}
+                        disabled={!sellEntries.some((e) => (e.action as { count: number }).count === n)}
+                        title={short > 0 ? `Need ${short} more Produce` : undefined}
+                        data-leaf={leafIndex && (leafIndex.action as { count: number }).count === n ? '' : undefined}
+                        onClick={() => setSellPick({ key: sellKey, count: n })}
+                      >
+                        {n}
+                      </button>
+                    )
+                  })}
+                </span>
+                {leafIndex && SUGGEST_LEAF}
                 {term && (
                   <Tooltip term={term} label={`What is ${term}?`}>
                     ?
@@ -2113,7 +2191,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 )}
               </span>
             )
-          })}
+          })()}
           {investEntries.length > 0 && <span className="action-head" aria-hidden="true">Invest</span>}
           {investEntries.map(({ index, action: a }, position) => {
             const term = actionTermFor(a)

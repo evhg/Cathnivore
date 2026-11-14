@@ -21,7 +21,9 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
   await page.getByRole('button', { name: 'Start' }).click()
   await page.locator('.game').waitFor()
 
-  // All 3 Sell counts are legal, real buttons at the start — no disabled Sell placeholder yet.
+  // All 3 Sell counts are legal at the start — no disabled Sell placeholder yet. Plan item 384: one Sell card
+  // carries the count; picking 3 makes its face Sell 3.
+  await page.getByRole('button', { name: '3 to sell' }).click()
   await expect(page.getByRole('button', { name: /^Sell 3 Produce/ })).toBeEnabled()
   await expect(page.locator('.action-item', { hasText: 'Sell' }).locator('.action-why-not')).toHaveCount(0)
 
@@ -178,6 +180,7 @@ test('Open Stall shows a disabled, explained placeholder when Produce is 0', asy
   // button (not a disabled placeholder) as long as Produce is affordable.
   await expect(page.locator('.action-item', { hasText: 'Open Stall' }).locator('.action-why-not')).toHaveCount(0)
 
+  await page.getByRole('button', { name: '3 to sell' }).click()
   await page.getByRole('button', { name: /^Sell 3 Produce/ }).click()
   await page.locator('.actions').waitFor()
 
