@@ -124,9 +124,9 @@ test('a sea-side gate has its depot on a jetty, whole inside the canvas', async 
 
 // Plan item 391: an upright phone's l21 has no margin at all (the field runs edge to edge), so its depot stands small
 // on the lane's mouth: inside the canvas, on no plot, the count on its board and no floating pill.
-test('a phone gate with no margin gets a depot on the lane mouth', async ({ page, hasTouch }) => {
-  test.skip(!hasTouch, 'the phone case')
-  await page.goto('/hedgerow/?2d&sandbox=1&level=21')
+// Every level's first gate has its depot at P and D (levels 1, 21, 34, 40).
+for (const level of [1, 21, 34, 40]) test(`level ${level}'s gate has its depot inside the canvas, on no plot`, async ({ page }) => {
+  await page.goto(`/hedgerow/?2d&sandbox=1&level=${level}`)
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   await expect(page.locator('[data-depot]').first()).toBeAttached()
   const m = await page.evaluate(() => {
@@ -141,7 +141,7 @@ test('a phone gate with no margin gets a depot on the lane mouth', async ({ page
       const n = Math.max(Math.abs(bc! - ac!), Math.abs(br! - ar!))
       for (let t = 0; t <= n; t++) lane.add(`${ac! + Math.sign(bc! - ac!) * t},${ar! + Math.sign(br! - ar!) * t}`)
     }
-    const d = document.querySelector('[data-depot]')!.getBoundingClientRect()
+    const d = document.querySelector('[data-depot="0"]')!.getBoundingClientRect()
     const c = document.querySelector('canvas')!.getBoundingClientRect()
     let onPlot = 0
     for (let r = 0; r < g.level.rows; r++)
