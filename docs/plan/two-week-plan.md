@@ -3585,7 +3585,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 
 ## 376. [x] *(withdrawn 2026-11-14 08:40 by lane B: the critique's 'one 3-column rack, no empty pots' undoes item 361's deliberate grid (four to a row from ten towers, because three a row cut level 25's round card at 1440x900) and its clay pots in a short row's spare cells, and item 211's two-line bands at four a row)*
 
-## 377. [ ] Hedgerow map (D): the land between an act's two rows painted as the act's country, the stops at a size the screen can read
+## 377. [ ] Hedgerow map (D): the land between an act's two rows painted as the act's country, the stops at a size the screen can read *(lane B, in progress)*
 - **Why:** `plan1114b/hedge-menu-D`: item 372 made the act in play a screen tall, and the band between its two rows (0-1120 x 430-750) is now pale empty patchwork with a few 20-40 px props (boats, beach huts, a pier) scattered on it. The stops themselves are 44-52 px coins with 13 px names (60-1060 x 340-420 and 740-830) across a 1440 px screen, so the act reads as a diagram, not a place. Act 1 (Brindle Hills) is the exception and still packs its rows under Cath's line (stops 0.4 of the map).
 - **Build:**
   - At 1200 px+ the stop coins at 72 px+ (bosses 84) with their vignettes redrawn at that size (stopart already scales), names 15 px.
