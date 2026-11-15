@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-15 01:40 UTC
 
 
 
@@ -3846,5 +3845,38 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **NIGHT SHIFT:** `ns-play-P` (2x) the MAGAZINE heading 4 px from the panel's right edge (625-752 x 1437-1460); `ns-title-P` the List's district stamps over the faces' mouths and chins (35-160 x 1525-1565 and the rest).
   - **Cathnivore:** `cath-game-P` Graft's dashed '+1 +1' chip into its 'i' (30-110 x 700-725); `cath-game-D` the Harbour Stall Licence card's 'i' (765-780 x 715-735) half under Graft's edge; `cath-setup-D` the flyer's top-right corner on Cath's chin (1170-1205 x 540-560) and a loose green square on her lapel (1215-1230 x 615-635); `cath-campaign-D` Cath cut at the thigh by the map frame's foot (685-830 x 700-755), the progress bar under the title unlabelled (60-240 x 113-125); `cath-title-P` her waving hand over the map board's edge (120-150 x 400-430).
   - **Portfolio:** `portfolio-D` '1 Humans in the loop' (778-905 x 745-830) should be singular; `portfolio-P` only Cathnivore's print whole, Runnel fading under Cath (155-215 x 130-245).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 399. [ ] Hedgerow 2D: each act's field furnished as its own country, not the same barn, cottage and haystacks every time
+- **Why:** items 345, 370 and 388 made the margins act-specific, but the board's inside is one kit: `plan1115a/hedge-l21-2d-D` (Saltmarsh) a red barn (610-655 x 295-345), a white cottage (550-610 x 675-740), straw cones, chickens, round blue ponds; `hedge-l34-2d-D` (Rivermead) the same barn twice (515-580 x 455-525, 725-790 x 530-595), the same cottage, cones and ponds. Margins hidden, the acts can't be told apart; P the same.
+- **Build:** a field set per act in `theme.ts`/`plotlook.ts`/`landmarks.ts`: buildings, crop beds, livestock, water shapes (Saltmarsh: a tarred net shed, samphire and sea-lavender beds, sheep on salt grazing, item 388's pans; Rivermead: a mill-race cottage, water-meadow strips, an orchard row, willow-ringed ponds). Plot types and gameplay unchanged; key art re-shot.
+- **Accept:** a unit test that no building or bed sprite is shared between acts' kits; the mean hue of l21's and l34's field interiors differs by 15 deg+; hedgerow field, cath2d, gatequeue and keyart-fresh pass; shots acts 1, 3 and 4 at P and D, before and after.
+- **Size:** 3
+
+## 400. [ ] NIGHT SHIFT desktop pick: five classes told apart at a glance, not five names over the same MID meter
+- **Why:** `plan1115a/ns-play-D` Gunslinger, Wirewitch and Fixer (45-470 x 330-575) all read 'RANGE ▬▬ MID' with near-identical dim grey pistols (375-440 x 345-550); a row differs only by its name; the role and skills appear only in the right panel (990-1390 x 590-730), which has an empty band (990-1400 x 360-420).
+- **Build:** under each row's name its one-line role and signature skill ('Wire traps · close control'); a second meter beside RANGE that differs per class (Stealth / Loud / Support); unselected guns at 70% brightness; the empty band holds the class's two strongest stats against the five classes' average.
+- **Accept:** the five rows' text pairwise distinct; row guns 3:1+ against the panel; role text 14 px+ (in `var(--u)`, cathode-type); no empty band over 40 px in the right panel; cathode-classpick, cathode-armoury and type tests pass; shots P and D before and after.
+- **Size:** 2
+
+## 401. [ ] /games/: each card's foot as its game's stall board, not four identical dark web cards
+- **Why:** the posters (item 332) and the stall hero (352) are drawn in the market's world, but under each poster `plan1115a/games-D` (110-1330 x 700-830) is the same near-black web card (sans copy, a yellow line, a plain yellow Play pill); NIGHT SHIFT's noir and Runnel's garden read alike; `games-P` (20-370 x 740-844) the same.
+- **Build:** each foot a hanging board in its game's material (Cathnivore gingham-painted wood, Runnel a carved plank, Hedgerow a seed-packet card, NIGHT SHIFT smoked enamel with neon) in the game's display face; the daily line a chalk or enamel price line with its live countdown; Play a painted sign 44 px+ with a pressed state; posters, logotypes and badges kept.
+- **Accept:** the four feet with four different computed backgrounds and display fonts; each Play 44 px+; text 4.5:1+; games-cards, games-stall and site-hero pass; shots P and D before and after.
+- **Size:** 2
+
+## 402. [ ] Cathnivore play: Cath's tip drawn on the table, not a sentence and a 20 px leaf
+- **Why:** `plan1115a/cath-game-D` (365-550 x 280-340) her note 'I'd play the leaf, love. Clearing Outlets out of Brindle Hills'; the only link is a 20 px leaf badge on Supply (1072-1090 x 712-730), and nothing marks Brindle Hills on the board (575-760 x 300-470); `cath-game-P` the same (leaf 325-345 x 680-700, hex 20-140 x 270-380).
+- **Build:** the suggested card wears a leaf ribbon (item 177's lift kept); its target region gets a chalk ring with a green 'Cath's pick' stake, and at D a dashed chalk line from the card to the region (an SVG overlay); hovering or focusing the card brightens the ring; any play clears both; reduced motion fades only.
+- **Accept:** in a seeded game a `[data-cath-pick]` ring inside the target hex's box; gone after one play; keyboard focus lights it; table-hand, suggest-move and phone hand specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 403. [ ] The bugs from the 2026-11-15 01:50 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each first; shots `e2e/screenshots/plan1115a`)
+  - **Hedgerow:** `hedge-menu-D` Pickup's line 'Quick and flimsy.' repeats Same-Day van's (1185-1290 x 590-625); `hedge-l21-2d-D` Coming up's three round cards inconsistent (a pill, plain text, a header 7 px higher; 'Same-Day van' on two lines; 1120-1400 x 610-695); the 2D depot plate says 'NEXT' where 3D says 'COMING'; `hedge-l34-2d-P` the second depot on grass touching no lane (5-55 x 615-660); `hedge-l21-2d-P` the depot over the last queued van (10-60 x 330-395); queued convoys drawn side-on on vertical lanes (`hedge-l34-2d-D` 235-300 x 115-380).
+  - **NIGHT SHIFT:** `ns-play-D` an empty band between the rifle and its heading (990-1400 x 360-420).
+  - **Cathnivore:** `cath-game-D` 'MARKET' wider than its rail tile (1358-1418 x 65-82), five unlabelled squares after 'Tomas Reed' (195-310 x 248-263); `cath-game-P` three unlabelled green dots (318-362 x 628-642), Graft's '+1 +1' chip on its name (15-115 x 700-735); `cath-title-P` the Daily tag's '#14' on a line of its own (200-370 x 605-690).
+  - **/games/:** `games-P` the awning with a post only at its right (138-345 x 255-300); `games-D` Tomas cut by the Cathnivore poster's edge (380-400 x 600-700).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
