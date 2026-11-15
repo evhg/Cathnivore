@@ -5207,7 +5207,8 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   }
   .drawer-key svg { width: 24px; height: 24px; }
   .drawer-key-word {
-    font: 760 var(--fs-caption)/1.05 var(--font-text);
+    /* Plan item 403: 13 px, so 'MARKET' keeps a margin inside its 58 px drawer (at 14 px it ran edge to edge) */
+    font: 760 min(var(--fs-caption), .8125rem)/1.05 var(--font-text);
     letter-spacing: 0;
     color: var(--ink);
     text-shadow: 0 1px 0 color-mix(in srgb, var(--paper-hi) 70%, transparent);
