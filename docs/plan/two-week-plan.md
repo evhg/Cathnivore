@@ -3933,7 +3933,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** `[data-outflow]` in the board, its stroke-dashoffset non-zero before and 0 within 1.2 s of the solve; its end point inside the garden's box at P and D; after the solve the garden `data-watered` and Cath's portrait `data-expression="delighted"`; runnel specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 412. [ ] NIGHT SHIFT: The List and the case file as real noir mugshots, five people told apart
+## 412. [ ] NIGHT SHIFT: The List and the case file as real noir mugshots, five people told apart *(lane B, in progress)*
 - **Why:** `plan1115c/ns-title-D` the case file's portrait (420-570 x 285-460) a flat clay head with a white face slab; Julian Crisp (60-185 x 595-735) a grey bust with drawn-on features; the four 'Withheld' cards (200-745 x 590-735) identical silhouettes; at P they are the first thing under the menu (`ns-title-P` 20-370 x 710-805). Placeholder-looking against the lit street and the R-rated noir tone.
 - **Build:** each named target a lit bust before a height chart (hard key, rim light, grain, a booking placard), baked to WebP like the posters; each withheld card its own silhouette prop (stethoscope, microphone, hat, lit window) under redaction tape on a torn photo edge; the case file on paper with a typed case number.
 - **Accept:** five distinct mugshot images (pairwise pixel difference over 10%); each mugshot's luminance spans 70% of the range or more; every List image has alt text and is at least 2x its drawn size; cathode-front specs and cathode-type pass; shots P and D before and after.
