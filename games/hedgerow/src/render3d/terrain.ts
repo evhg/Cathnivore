@@ -397,7 +397,7 @@ type BorderStyle = "hedge" | "dark-hedge" | "wall" | "rubble" | "fence" | "reeds
 export const COUNTRY: readonly (readonly [string, string, string])[] = [
   ["#b4bf5c", "#6f9a48", "#9c7a52"],
   ["#8e6a84", "#a6743e", "#8c9460"],
-  ["#d6c48e", "#7e9a5a", "#a090c0"],
+  ["#c4b07a", "#7e9a5a", "#9686b4"],
   ["#82ac4e", "#d0c45a", "#4f7a5e"],
   ["#4f7a3a", "#8e6a3e", "#6c70b0"],
   ["#c88a9c", "#7c9a5c", "#bcb09a"],
@@ -1541,7 +1541,7 @@ export function buildGround(level: Level): Ground {
     // hedge (the 2D margin's dunes, item 388), one instanced call.
     if (act === 2) {
       const dunes: Inst[] = [];
-      const sandC = [new THREE.Color("#dccb94"), new THREE.Color("#d2be86"), new THREE.Color("#e4d6a6")];
+      const sandC = [new THREE.Color("#c8b47e"), new THREE.Color("#bea972"), new THREE.Color("#d0bd8a")];
       for (let y = -MARGIN + 0.6; y < rows + MARGIN - 0.6; y += 0.55 + deco() * 0.35) {
         const x = -1.25 + (deco() - 0.5) * 0.5;
         if (laneDistance(level, x, y) < 1.2 || nearWater(x, y, 0.3)) continue;
