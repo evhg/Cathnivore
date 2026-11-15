@@ -4199,8 +4199,13 @@ function syncCathDock(g: Game, text: string): void {
   // Plan item 188: the dock reaches the panel's top either side of the handle (a notch round it), so no strip of the
   // tray's cards shows above it; its content stays below the handle.
   const notch = Math.round(top - panel.top);
+  // Plan item 424: the tray can run a few px past the panel's foot (its packets' shadows and the overflow cue); the
+  // dock reaches its foot too, short of the controls bar, so no sliver of the rack shows under her line.
+  const trayFoot = ui.panel.querySelector(".tray-wrap")?.getBoundingClientRect().bottom ?? 0;
+  const barTop = document.querySelector<HTMLElement>(".screen.play footer.controls")?.getBoundingClientRect().top ?? Infinity;
+  const foot = Math.min(Math.max(panel.bottom, trayFoot), barTop);
   el.style.setProperty("--dock-top", `${Math.round(panel.top)}px`);
-  el.style.setProperty("--dock-h", `${Math.round(Math.max(66, panel.bottom - top)) + notch}px`);
+  el.style.setProperty("--dock-h", `${Math.round(Math.max(66, foot - top)) + notch}px`);
   el.style.setProperty("--notch-h", `${notch}px`);
   const dl = 8;
   el.style.setProperty("--notch-l", `${handle && handle.height ? Math.round(handle.left - dl - 4) : -1}px`);
