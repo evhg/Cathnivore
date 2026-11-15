@@ -423,9 +423,12 @@ export default function CampaignScreen({
                 {liberatedRegions(completed).size} of {Object.keys(MAP_AXIAL).length} regions free
               </span>
             </span>
-            <span className="cmp-progress-bar" aria-hidden="true">
-              <span className={`cmp-progress-fill cmp-fill-${done}`} />
-            </span>
+            {/* Plan item 415: at D the ledger under the map is the one progress mark (the bar said '0 of 6' twice). */}
+            {!wide && (
+              <span className="cmp-progress-bar" aria-hidden="true">
+                <span className={`cmp-progress-fill cmp-fill-${done}`} />
+              </span>
+            )}
           </p>
         </div>
         {!wide && host}
