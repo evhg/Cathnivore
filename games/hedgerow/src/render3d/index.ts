@@ -76,7 +76,27 @@ interface BuildUp {
 
 /** How long each part of a tower takes to rise into place, and the spread of their start times. */
 /** Plan item 280: how much larger the gate queue's models stand than the lane's traffic. */
-const QUEUE_SCALE_3D = 1.2;
+const QUEUE_SCALE_3D = 1.45;
+/** Plan item 410: the queue's contact shadow, a radial fade on a unit disc (shared by every queued model). */
+const QUEUE_SHADOW_GEO = new THREE.CircleGeometry(1, 20);
+QUEUE_SHADOW_GEO.userData.shared = true;
+let shadowMat: THREE.MeshBasicMaterial | null = null;
+function queueShadowMat(): THREE.MeshBasicMaterial {
+  if (shadowMat) return shadowMat;
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const ctx = c.getContext("2d");
+  if (ctx) {
+    const gr = ctx.createRadialGradient(32, 32, 4, 32, 32, 32);
+    gr.addColorStop(0, "rgba(20,16,14,0.55)");
+    gr.addColorStop(0.6, "rgba(20,16,14,0.3)");
+    gr.addColorStop(1, "rgba(20,16,14,0)");
+    ctx.fillStyle = gr;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  shadowMat = Object.assign(new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }), { shared: true });
+  return shadowMat;
+}
 const RISE = 0.24;
 const RISE_SPREAD = 0.22;
 /** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
@@ -3068,9 +3088,17 @@ export class Renderer3D {
         // Plan item 280: the queue stands larger than the lane's traffic (as the 2D queue does, item 256), so its
         // models read as cars, vans and lorries from the field camera, not coloured boxes.
         obj.scale.multiplyScalar(QUEUE_SCALE_3D);
+        const foot = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
         const lift = enemyLift(kind) * QUEUE_SCALE_3D;
         obj.position.set(p.x, this.height(p.x, p.y) + lift, p.y);
         obj.rotation.y = Math.atan2(-hd.dy, hd.dx);
+        // Plan item 410: a soft contact shadow under each, so the glossy fleet stands on the dirt, not floats over it.
+        const shadow = new THREE.Mesh(QUEUE_SHADOW_GEO, queueShadowMat());
+        shadow.rotation.x = -Math.PI / 2;
+        shadow.scale.set((foot.x * 0.62) / obj.scale.x, (foot.z * 0.7) / obj.scale.z, 1);
+        shadow.position.y = (0.012 - lift) / obj.scale.y;
+        shadow.renderOrder = 2;
+        obj.add(shadow);
         group.add(obj);
         this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind) * QUEUE_SCALE_3D, r: enemyScale(kind) * QUEUE_SCALE_3D, s: obj.scale.x });
       });

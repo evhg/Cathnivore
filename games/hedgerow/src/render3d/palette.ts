@@ -37,6 +37,18 @@ export function gloss(color: string, metal = 0.35): THREE.MeshPhysicalMaterial {
   return m;
 }
 
+/** Plan item 410: Hollowell's plastic: clear-coated, barely metal (metal muddied the pinks to mauve), and faintly
+ * self-lit, so the corporations stay over-lit even in a hedge's shade (VISION "Art direction"). */
+export function plastic(color: string, lit = 0.14): THREE.MeshPhysicalMaterial {
+  const k = key({ m: "plastic", color, lit });
+  let m = cache.get(k) as THREE.MeshPhysicalMaterial | undefined;
+  if (!m) {
+    m = shared(new THREE.MeshPhysicalMaterial({ color, roughness: 0.22, metalness: 0.03, clearcoat: 1, clearcoatRoughness: 0.08, emissive: color, emissiveIntensity: lit }));
+    cache.set(k, m);
+  }
+  return m;
+}
+
 export function chrome(color = "#dfe6ee"): THREE.MeshStandardMaterial {
   const k = key({ m: "chrome", color });
   let m = cache.get(k) as THREE.MeshStandardMaterial | undefined;

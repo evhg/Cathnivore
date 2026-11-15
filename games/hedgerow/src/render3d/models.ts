@@ -11,7 +11,7 @@ import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
-import { bubble, C, chrome, glass, gloss, glow, matte, metal, shoreFade, shoreFoam } from "./palette";
+import { bubble, C, chrome, glass, gloss, glow, matte, metal, plastic, shoreFade, shoreFoam } from "./palette";
 
 type M = THREE.Material;
 
@@ -1322,9 +1322,9 @@ function wheel(r: number, x: number, z: number): THREE.Group {
 function vehicle(o: VehicleOpts): THREE.Group {
   const g = new THREE.Group();
   const w = o.w ?? 0.3;
-  const bodyMat = o.matteBody ? matte(o.body, 0.7, false) : gloss(o.body);
+  const bodyMat = o.matteBody ? matte(o.body, 0.7, false) : plastic(o.body);
   const wr = 0.07;
-  const cabMat = o.cab ? gloss(o.cab) : bodyMat;
+  const cabMat = o.cab ? plastic(o.cab) : bodyMat;
   g.add(box(o.len * 0.72, o.h, w, bodyMat, -o.len * 0.14, wr, 0));
   g.add(box(o.len * 0.26, o.h * 0.78, w * 0.96, cabMat, o.len * 0.36, wr, 0));
   // Skirt under the body, so the wheels sit in arches rather than floating beside a box.
@@ -1347,7 +1347,7 @@ function vehicle(o: VehicleOpts): THREE.Group {
   const wheels: THREE.Object3D[] = [];
   for (let i = 0; i < n; i++)
     for (const side of [-1, 1]) {
-      const wh = wheel(wr, -o.len * 0.32 + (i * o.len * 0.66) / Math.max(1, n - 1), (side * w) / 2);
+      const wh = wheel(wr, -o.len * 0.32 + (i * o.len * 0.66) / Math.max(1, n - 1), side * (w / 2 + 0.012));
       g.add(wh);
       wheels.push(wh);
     }
@@ -1368,12 +1368,15 @@ function hatchback(body: string, trim: string): THREE.Group {
       e.translate(0, 0, -depth / 2);
       return e;
     });
-  const bodyMat = gloss(body);
+  const bodyMat = plastic(body);
   g.add(mesh(extrude("hatchBody", [[-0.215, 0.04], [0.215, 0.04], [0.225, 0.12], [0.12, 0.16], [-0.2, 0.2], [-0.222, 0.18]], w - 0.024), bodyMat, 0, 0, 0));
   g.add(mesh(extrude("hatchGlass", [[0.11, 0.165], [0.015, 0.255], [-0.15, 0.255], [-0.19, 0.198]], w - 0.05), glass(), 0, 0, 0));
-  g.add(box(0.17, 0.018, w - 0.03, bodyMat, -0.065, 0.268, 0));
+  // Plan item 410: the roof in the livery's second colour (the 2D sprite's stripe), so from the field camera, which
+  // sees roofs, each car is two-tone glossy plastic rather than one pink lozenge.
+  g.add(box(0.17, 0.018, w - 0.03, plastic(trim), -0.065, 0.268, 0));
   // Plan item 280: a dark glass roof panel, so from the field camera (which sees roofs) it reads as a car, not a box.
-  g.add(box(0.13, 0.006, w - 0.07, glass(), -0.06, 0.286, 0));
+  // Plan item 410: now a small sunroof, so the roof's livery colour shows round it.
+  g.add(box(0.07, 0.006, w - 0.12, glass(), -0.06, 0.286, 0));
   // A trim line along each flank, the pillars between screen and side glass, and the lights.
   for (const side of [-1, 1]) {
     g.add(box(0.4, 0.016, 0.004, glow(trim, 0.6), -0.005, 0.12, side * (w / 2 + 0.001)));
@@ -1382,9 +1385,10 @@ function hatchback(body: string, trim: string): THREE.Group {
   }
   g.add(box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), 0.23, 0.05, 0), box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), -0.23, 0.05, 0));
   const wheels: THREE.Object3D[] = [];
+  // Plan item 410: the tyres stand a little proud of the body, so from above a black edge marks each wheel.
   for (const x of [-0.14, 0.14])
     for (const side of [-1, 1]) {
-      const wh = wheel(wr, x, (side * w) / 2);
+      const wh = wheel(wr, x, side * (w / 2 + 0.014));
       g.add(wh);
       wheels.push(wh);
     }
@@ -2536,17 +2540,18 @@ export function buildFarmhouse(): THREE.Group {
  * Plan item 391: a flat white roof with plant, skylights and the logotype (was a pitched orange roof). */
 export function buildDepot(): THREE.Group {
   const g = new THREE.Group();
-  const white = gloss("#f3f5f7", 0.05);
+  const white = plastic("#f3f5f7", 0.22);
   // Plan item 336: the canopy band and fascia in Hollowell's lit orange, as the 2D megastore's (it was teal like the
   // roof, so from the camera the depot read as one flat teal box); the roof stays teal.
-  const orange = gloss("#ef7a2a", 0.1);
+  const orange = plastic("#ef7a2a", 0.3);
   // The shed, on a low grey plinth.
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));
   // Plan item 391: a fulfilment centre's flat roof, not a pitched orange one (from the camera, which mostly sees roof,
   // the depot read as an orange box): a white membrane inside a chrome parapet, two grey plant units, lit skylight
   // strips and Hollowell's logotype painted large and backlit across the roof, so it reads as their building from above.
-  g.add(box(1.46, 0.05, 1.66, matte("#e9edf1", 0.7), 0, 0.92, 0));
+  // Plan item 410: a glossy white membrane (it was matte and read as a grey box from the field camera).
+  g.add(box(1.46, 0.05, 1.66, plastic("#eef2f5", 0.18), 0, 0.92, 0));
   const chrome = gloss("#cfd6dc", 0.6);
   for (const x of [-0.72, 0.72]) g.add(box(0.04, 0.08, 1.66, chrome, x, 0.95, 0));
   for (const z of [-0.81, 0.81]) g.add(box(1.46, 0.08, 0.04, chrome, 0, 0.95, z));
@@ -2584,6 +2589,15 @@ export function buildDepot(): THREE.Group {
   roofLogo.rotation.z = Math.PI / 2;
   roofLogo.position.set(0.4, 0.952, 0);
   g.add(roofLogo);
+  // Plan item 410: the logotype backlit on the brand band's two long sides too (the camera sees a side and the
+  // roof), so the depot reads as Hollowell's lit fascia, not a plain box with an orange stripe.
+  const sideMat = new THREE.MeshStandardMaterial({ map: logoTex, emissive: "#ffffff", emissiveMap: logoTex, emissiveIntensity: 0.9, roughness: 0.25, transparent: true });
+  for (const side of [-1, 1]) {
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.19), sideMat);
+    sign.position.set(-0.05, 0.7, side * 0.823);
+    if (side < 0) sign.rotation.y = Math.PI;
+    g.add(sign);
+  }
   // The orange fascia across the front and a brand stripe round the walls under the eaves.
   g.add(box(0.07, 0.24, 1.72, orange, 0.73, 0.7, 0));
   // Plan item 179: the band runs round all four walls (the camera mostly sees a side and the roof, not the door).

@@ -88,12 +88,30 @@ function bakeModel(root: THREE.Object3D): THREE.BufferGeometry {
     const cols = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) colour.toArray(cols, i * 3);
     g.setAttribute("color", new THREE.BufferAttribute(cols, 3));
+    // Plan item 410: each part keeps its own roughness (glossy paint and glass, matte tyres), so the fleet reads
+    // as Hollowell's glossy plastic against the hand-made farm rather than one satin finish.
+    g.setAttribute("rough", new THREE.BufferAttribute(new Float32Array(n).fill((mat as THREE.MeshStandardMaterial).roughness ?? 0.5), 1));
     if (!g.attributes.normal) g.computeVertexNormals();
     parts.push(g);
   });
   const merged = mergeGeometries(parts, false)!;
   for (const p of parts) p.dispose();
   return merged;
+}
+
+/** Plan item 410: the rungs' material reads each vertex's baked roughness (`rough`) instead of one value. */
+export function glossyRungMaterial(): THREE.MeshStandardMaterial {
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0.12 });
+  mat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute float rough;\nvarying float vRough;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvRough = rough;");
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying float vRough;")
+      .replace("float roughnessFactor = roughness;", "float roughnessFactor = roughness * vRough;");
+  };
+  mat.customProgramCacheKey = () => "rung-gloss";
+  return mat;
 }
 
 /** The outline's ink and its thickness in world units (a cell is 1). */
@@ -124,7 +142,7 @@ export class RungInstances {
   private right = new THREE.Vector3(1, 0, 0);
 
   constructor() {
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.08 });
+    const mat = glossyRungMaterial();
     const inkMat = new THREE.MeshBasicMaterial({ color: OUTLINE_INK, side: THREE.BackSide });
     const ghostMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, metalness: 0, transparent: true, opacity: GHOST_ALPHA, depthWrite: false });
     for (const kind of INSTANCED_RUNGS) {
