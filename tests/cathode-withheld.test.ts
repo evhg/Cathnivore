@@ -1,23 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import { mugshotSvg } from '../games/cathode/src/ui/busts'
 
-// Plan item 270: the List's withheld prints are four distinct backlit silhouettes, each with its district's prop,
-// and the red bar a stamp across the eyes (not a full-width bar).
+// Plan item 270: the List's withheld prints are distinct backlit silhouettes, each with its district's prop, and the
+// red stamp across the eyes only. Plan item 412: five of them (one a district), each lit in its district's own colour,
+// the stamp a strip of torn redaction tape.
 describe('withheld mugshots', () => {
-  const svgs = [0, 1, 2, 3].map((v) => mugshotSvg(null, `NO. ${v + 1}`, true, v))
-  it('draws four different silhouettes', () => {
+  const svgs = [0, 1, 2, 3, 4].map((v) => mugshotSvg(null, `NO. ${v + 1}`, true, v))
+  it('draws five different silhouettes', () => {
     const heads = svgs.map((s) => s.match(/<g fill="#08090c">([\s\S]*?)<\/g>/)![1])
-    expect(new Set(heads).size).toBe(4)
-    for (const [i, s] of svgs.entries()) expect(s).toContain(`data-silhouette="${i}"`)
+    expect(new Set(heads).size).toBe(5)
+    expect(new Set(svgs.map((s) => /data-silhouette="(\d)"/.exec(s)![1])).size).toBe(5)
   })
-  it('backlights each: a light glow at the head behind a near-black figure, and a rim', () => {
+  it('backlights each: a light glow at the head behind a near-black figure, and a rim in that light', () => {
     for (const s of svgs) {
-      expect(s).toContain('stop-color="#7f93a8"')
-      expect(s).toContain('stroke="#9fbcd8"')
+      const glow = /<radialGradient id="r\w+"[^>]*><stop offset="0" stop-color="(#\w+)"/.exec(s)![1]!
+      // the glow is light: its brightest channel over half way
+      expect(Math.max(...[1, 3, 5].map((k) => parseInt(glow.slice(k, k + 2), 16)))).toBeGreaterThan(128)
+      expect(s).toMatch(/stroke="#[0-9a-f]{6}" stroke-width="2" fill="none"/)
     }
   })
   it('keeps the stamp to the face', () => {
-    for (const s of svgs) expect(s).toMatch(/<rect x="62" y="86" width="76"/)
+    for (const s of svgs) expect(s).toMatch(/<path d="M60 87 [^"]* L138 104.4 [^"]*Z" fill="#b3122a"/)
   })
 })
 
@@ -74,7 +77,7 @@ function fill(paths: string[]): Uint8Array {
 }
 describe('withheld silhouettes', () => {
   it('overlap pairwise at 0.7 or less', () => {
-    const sils = [0, 1, 2, 3].map((v) => {
+    const sils = [0, 1, 2, 3, 4].map((v) => {
       const fig = mugshotSvg(null, 'X', true, v).match(/<g fill="#08090c">([\s\S]*?)<\/g>/)![1]!
       return fill([...fig.matchAll(/ d="([^"]+)"/g)].map((m) => m[1]!))
     })
