@@ -650,6 +650,13 @@ export function buildGround(level: Level): Ground {
     // Plan item 66: behind the far edge the country stays low, so the painted backdrop's hills and sky show.
     if (y < 0) h *= 1 - 0.65 * smooth(Math.min(1, -y / 4));
     h += 0.32 * plinth(x, y);
+    // Plan item 429: Saltmarsh's dunes are the ground itself, soft sand ridges along the shore band between the beach
+    // and the hedge (they were instanced hemispheres that read as boulders).
+    if (act === 2 && x < -0.55 && x > -2.6) {
+      const across = Math.sin(Math.PI * Math.min(1, Math.max(0, (-0.55 - x) / 2.05)));
+      const along = 0.55 + 0.45 * Math.sin(y * 1.9 + level.id) * Math.sin(y * 0.73 + 1.3);
+      h += 0.22 * across * across * Math.max(0, along);
+    }
     const d = laneDistance(level, x, y);
     if (d < 0.5) h -= 0.035 * smooth(1 - d / 0.5);
     return h;
@@ -1511,7 +1518,11 @@ export function buildGround(level: Level): Ground {
     if (laneDistance(level, x, y) < 1.1) continue;
     const h = heightAt(x, y);
     if (h < -0.05 || nearWater(x, y, 0.4)) continue;
-    const o = rand() < treeShare ? buildTree(rand() < 0.25 ? "pine" : treeKind, rand, leaves) : buildRock(rand);
+    const tree = rand() < treeShare;
+    const o = tree ? buildTree(rand() < 0.25 ? "pine" : treeKind, rand, leaves) : buildRock(rand);
+    // Plan item 429: a salt marsh has no boulders (its low-poly rocks read as rubble on the shore); the rock is
+    // still built so the shared random stream, and everything placed after it, doesn't move.
+    if (!tree && act === 2) continue;
     o.position.set(x, h, y);
     group.add(o);
     marginProps++;
@@ -1532,26 +1543,12 @@ export function buildGround(level: Level): Ground {
       if (h < -0.05 || nearWater(x, y, 0.35)) continue;
       const s = 0.1 + deco() * 0.16;
       const color = pal[Math.floor(deco() * 3)]!.clone().multiplyScalar(0.88 + deco() * 0.2);
-      clumps.push({ x, y: h + s * 0.15, z: y, ry: deco() * 6.3, s: s * 1.15, sy: 0.38 + deco() * 0.2, color });
+      clumps.push({ x, y: h - s * 0.05, z: y, ry: deco() * 6.3, s: s * 1.15, sy: 0.32 + deco() * 0.16, color });
     }
-    const m = instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), clumps, true);
+    // Plan item 429: smooth low mounds of growth (24 segments round), not faceted lumps that read as rocks.
+    const m = instanced(new THREE.SphereGeometry(1, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), matte("#ffffff"), clumps, true);
     if (m) group.add(m);
     marginProps += clumps.length;
-    // Plan item 419: Saltmarsh's dunes, a row of low sand hummocks along the shore band between the beach and the
-    // hedge (the 2D margin's dunes, item 388), one instanced call.
-    if (act === 2) {
-      const dunes: Inst[] = [];
-      const sandC = [new THREE.Color("#c8b47e"), new THREE.Color("#bea972"), new THREE.Color("#d0bd8a")];
-      for (let y = -MARGIN + 0.6; y < rows + MARGIN - 0.6; y += 0.55 + deco() * 0.35) {
-        const x = -1.25 + (deco() - 0.5) * 0.5;
-        if (laneDistance(level, x, y) < 1.2 || nearWater(x, y, 0.3)) continue;
-        const s = 0.32 + deco() * 0.22;
-        dunes.push({ x, y: heightAt(x, y) - s * 0.12, z: y, ry: deco() * 6.3, s, sy: 0.32 + deco() * 0.12, color: sandC[Math.floor(deco() * 3)]! });
-      }
-      const dm = instanced(new THREE.SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), matte("#ffffff"), dunes, true);
-      if (dm) group.add(dm);
-      marginProps += dunes.length;
-    }
     group.userData.margin = { land: marginLand, plain: marginPlain, props: marginProps };
   }
   // Hedgerows along the field's edge (the game's namesake), broken where the lanes run out.
