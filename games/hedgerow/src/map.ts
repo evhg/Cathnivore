@@ -1919,7 +1919,9 @@ function threatLine(kind: EnemyKind): string {
   if (e.jam) return "Slows nearby towers with paperwork.";
   if (e.heal) return "Patches up whatever rolls beside it.";
   if (e.splits) return `Pops open into ${ENEMIES[e.splits.kind].name.toLowerCase()}s.`;
-  if (e.speed >= 1.3) return "Quick and flimsy.";
+  // Plan item 403: the two fast ones read differently (the Pickup and the Same-Day van both said 'Quick and flimsy').
+  if (e.speed >= 1.55) return "The fastest thing on the lane.";
+  if (e.speed >= 1.3) return e.hp >= 100 ? "Quick, and tougher than it looks." : "Quick and flimsy.";
   if (e.hp >= 150) return "Slow, and takes some stopping.";
   return "Steady, and full of parcels.";
 }
