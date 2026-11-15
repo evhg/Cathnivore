@@ -3905,7 +3905,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 her bubble's box doesn't intersect the board's; the board 20%+ taller than before; runnel lesson, lesson-close and daily specs pass; shots P and D before and after.
 - **Size:** 1
 
-## 408. [ ] Hedgerow tray: every tower card names its role, and empty slots say what they are
+## 408. [ ] Hedgerow tray: every tower card names its role, and empty slots say what they are *(lane B, in progress)*
 - **Why:** `plan1115b/hedge-l21-2d-D` the rack's cards say each tower's role ('Shoots / Splash', 1110-1410 x 85-345), but `hedge-l34-2d-D`'s four-to-a-row grid drops the role and shows two empty terracotta pots (1265-1410 x 255-300) with no meaning; `hedge-l21-3d-P` truncates 'Market St' (278-345 x 735-765). Item 361's four-to-a-row grid stays (item 376 was withdrawn for undoing it).
 - **Build:** a short role line on every card in both grids (an icon plus one word where four share a row); an empty slot is a labelled padlock ('Unlocks at level N') or is not drawn; no truncated name at P.
 - **Accept:** a role element on every rack card at l21 and l34, P and D; no unlabelled empty slot; no name with an ellipsis; hedgerow rack, rack-roles, tray and critique specs pass; shots before and after.
