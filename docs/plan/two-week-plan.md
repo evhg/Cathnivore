@@ -3887,7 +3887,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390 no print clipped by another column; headline top under y=200 on P; her feet on a lit surface with a shadow at D; a 30 px+ peek of the next print; site.spec and the portfolio specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 405. [ ] Cathnivore phone: the hand as a fanned dock above the nav, every card reachable
+## 405. [ ] Cathnivore phone: the hand as a fanned dock above the nav, every card reachable *(lane A, in progress)*
 - **Why:** `plan1115b/cath-game-P` shows about one and a half cards, cut by the nav (0-120 x 672-775, 238-390 x 668-770), and a '9+ more' pill (293-372 x 650-668) is the only way to the rest; at D the hand is a highlight (490-1330 x 700-880), on a phone an afterthought.
 - **Build:** a bottom dock with every card in hand as an overlapped fan (rotated up to 6 deg), each showing its icon and cost strip; a tap lifts a card to 140 px+ wide with its cost and 'i'; a sideways swipe scrolls the fan; the nav sits below it and never overlaps. Keep item 177's suggested-card lift and item 402's ring.
 - **Accept:** every card's icon and cost strip visible and none under the nav at 390x844; the lifted card 140 px+ wide; the phone hand, tutorial, cath-pick and suggest-move specs pass; shots P before and after, plus a lifted card.
