@@ -3,7 +3,7 @@ import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilit
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
-import { BADGE, COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
+import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -217,12 +217,13 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
       {/* plan item 172: a chunky token, its moulded side showing under the face */}
       {/* plan item 282: a hard, clinical drop shadow (no blur), then the moulded side, the gloss face and its streak */}
       <polygon className="corp-shadow" points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={0.6} strokeLinejoin="round" />
+      {/* plan item 413: corporate plastic has no ink line (the players' hand-drawn style); a hairline of its own lit edge */}
+      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" className="corp-face" fill="url(#hollowell-gloss)" stroke="var(--hollowell-highlight)" strokeWidth={0.45} strokeLinejoin="round" />
       <path className="corp-specular" d="M 1.2,10.5 V 4 L 2.4,3" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(7,9) rotate(18)">
-        <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
+        <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--corp-acrylic)" stroke="var(--corp-chrome)" strokeWidth={0.5} />
         <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
         {/* plan item 139: printed lines, not '.99' (the text drew at 7 px on a desktop board, under the 11 px floor) */}
         <path d="M 2.6,2.2 h 3.2 M 2.6,3.5 h 2.2" className="tag-print" stroke="var(--ink)" strokeWidth={0.55} strokeLinecap="round" />
@@ -237,12 +238,12 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-buyout">
       <polygon className="corp-shadow" points="6,0 12,4 12,12 0,12 0,4" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
-      <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <polygon points="6,0 12,4 12,12 0,12 0,4" fill="url(#hollowell-gloss)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={0.6} strokeLinejoin="round" />
+      <polygon points="6,0 12,4 12,12 0,12 0,4" className="corp-face" fill="url(#hollowell-gloss)" stroke="var(--hollowell-highlight)" strokeWidth={0.45} strokeLinejoin="round" />
       <path className="corp-specular" d="M 1.2,10.5 V 4.6 L 5.6,1.6" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
       {ornament && <g transform="translate(1,7) rotate(-6)">
-        <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.6} />
+        <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--corp-acrylic)" stroke="var(--corp-chrome)" strokeWidth={0.5} />
         {/* plan item 139: a lettered stroke, not 'SOLD' (about 6 px on screen); the sign's shape carries it */}
         <path d="M 2,2 h 6" className="tag-print" stroke="var(--hollowell)" strokeWidth={1.1} strokeLinecap="round" />
       </g>}
@@ -256,9 +257,9 @@ export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
       <circle className="corp-shadow" cx={7.4} cy={7.7} r={6} fill="var(--ink)" opacity={0.28} />
-      <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--ink)" strokeWidth={1} />
-      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor)" stroke="var(--ink)" strokeWidth={1} strokeLinejoin="round" />
-      <circle cx={6} cy={6} r={6} fill="url(#candor-gloss)" stroke="var(--ink)" strokeWidth={1} />
+      <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--candor-ink)" strokeWidth={0.6} />
+      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor-ink)" stroke="var(--candor-ink)" strokeWidth={0.6} strokeLinejoin="round" />
+      <circle cx={6} cy={6} r={6} className="corp-face" fill="url(#candor-gloss)" stroke="var(--candor-highlight)" strokeWidth={0.45} />
       <path className="corp-specular" d="M 1.6,6.5 A 4.6,4.6 0 0 1 4.2,1.9" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
       <path d="M 3.4,10.4 L 6.2,10.4 L 3.8,12.6 Z" fill="var(--candor)" />
       <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
@@ -269,26 +270,28 @@ export function Doubt() {
   )
 }
 
-// Plan item 20: every piece stands on a turned wooden base, a game token with a thickness, so the board
-// reads as a diorama. The base sits under the piece's footprint (cx, w wide, at y) and casts a contact shadow.
-function TokenBase({ cx, y, w }: { cx: number; y: number; w: number }) {
-  const rx = w / 2 + 1.4
+// Plan item 413: Hollowell's pieces stand on a moulded acrylic plinth, cold and clinical, not the producers' turned
+// wood: a hard drop shadow, a chrome side and a lit top with a specular line, no ink outline.
+function CorpBase({ cx, y, w }: { cx: number; y: number; w: number }) {
+  const hw = w / 2 + 2.6
   return (
-    <g className="token-base" pointerEvents="none">
-      <ellipse cx={cx + 0.8} cy={y + 2.6} rx={rx + 0.6} ry={2.6} className="token-shadow" />
-      <ellipse cx={cx} cy={y + 1.4} rx={rx} ry={2.5} className="token-side" stroke="var(--ink)" strokeWidth={0.6} />
-      <ellipse cx={cx} cy={y} rx={rx} ry={2.5} className="token-top" stroke="var(--ink)" strokeWidth={0.6} />
+    <g className="corp-base" pointerEvents="none">
+      <rect x={cx - hw + 1} y={y - 0.2} width={hw * 2} height={3.8} rx={1.2} className="corp-base-shadow" />
+      <rect x={cx - hw} y={y - 1.4} width={hw * 2} height={3.8} rx={1.2} className="corp-base-side" />
+      <rect x={cx - hw} y={y - 2.2} width={hw * 2} height={2.2} rx={1} className="corp-base-top" />
+      <path d={`M ${cx - hw + 1.2} ${y - 1.7} h ${hw * 0.9}`} className="corp-base-shine" strokeWidth={0.5} strokeLinecap="round" />
     </g>
   )
 }
 
 // Plan item 63: a stack's count, a dark disc sized by the tray so its number never renders under 11 px.
-function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: number }) {
+function CountBadge({ cx, cy, r, n, corp = false }: { cx: number; cy: number; r: number; n: number; corp?: boolean }) {
   const fs = r * 1.25
+  // Plan item 413: Hollowell's count is its own slate-and-acrylic chip, not the players' ink disc.
   return (
-    <g className="piece-count" pointerEvents="none">
-      <circle cx={cx} cy={cy} r={r} fill="var(--ink, #1b1712)" stroke="var(--paper, #f4ead8)" strokeWidth={Math.max(0.8, r * 0.16)} />
-      <text x={cx} y={cy + fs * 0.36} textAnchor="middle" fontSize={fs} fontWeight={700} fill="var(--paper, #f4ead8)">
+    <g className={`piece-count${corp ? ' corp-count' : ''}`} pointerEvents="none">
+      <circle cx={cx} cy={cy} r={r} fill={corp ? 'var(--corp-slate)' : 'var(--ink, #1b1712)'} stroke={corp ? 'var(--corp-acrylic)' : 'var(--paper, #f4ead8)'} strokeWidth={Math.max(0.8, r * 0.16)} />
+      <text x={cx} y={cy + fs * 0.36} textAnchor="middle" fontSize={fs} fontWeight={700} fill={corp ? 'var(--corp-acrylic)' : 'var(--paper, #f4ead8)'}>
         {n}
       </text>
     </g>
@@ -310,21 +313,15 @@ function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind:
   const bottom = cy + (STACK_H * scale) / 2
   const bodyTop = cy - (STACK_H * scale) / 2
   const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
-  const copies = Math.min(n, 3)
+  // Plan item 413: one piece a kind (item 172's pile of copies cluttered every hex); the count says how many.
   return (
     <g className={`enemy-stack enemy-stack-${kind}`}>
       <g transform={`translate(${1.4 * k}, ${bottom - 17.4 * k}) scale(${k})`}>
-        <TokenBase cx={6} y={12.2} w={12} />
-        {/* plan item 172: two or three of a kind stand as a pile, each copy whole and outlined */}
-        {Array.from({ length: copies - 1 }).map((_, j) => (
-          <g key={j} className="pile-copy" transform={`translate(${(copies - 1 - j) * 2.2}, ${-(copies - 1 - j) * 2.4})`}>
-            {icon}
-          </g>
-        ))}
+        <CorpBase cx={6} y={13.4} w={12} />
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {n >= COUNT_FROM && <CountBadge cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
+      {n >= CORP_COUNT_FROM && <CountBadge corp cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
     </g>
   )
 }

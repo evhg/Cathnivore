@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test'
 // Plan item 172: pieces worth holding. An autoplayed Quick Game stopped at round 6 (`e2eAutoplayUntil`): every
 // `[data-piece]` names its outline (`data-silhouette`, one per kind); the median piece is 36 px or more on a desktop
 // board and 24 px on a phone, and none is under 32 / 20 px (a tile crowded with three kinds, a threat badge and two
-// producers); two or three of a kind stand as a pile with no number; the hexes fill the board panel's height.
+// producers); a producer's two or three stalls stand as a pile with no number, while Hollowell's pieces are one
+// glossy piece a kind with a count from two (plan item 413); the hexes fill the board panel's height.
 const KINDS: Record<string, string> = { o: 'sawtooth', b: 'peak', d: 'bubble', stall: 'standee' }
 
 test('board pieces are chunky tokens with their own outlines', async ({ page }, info) => {
@@ -36,9 +37,15 @@ test('board pieces are chunky tokens with their own outlines', async ({ page }, 
   for (const p of r.pieces) {
     expect(p.sil, p.kind).toBe(KINDS[p.kind])
     expect(p.tall, `${p.kind} x${p.n} (${info.project.name})`).toBeGreaterThanOrEqual(floor)
-    // A number only above three; two or three stand as a pile.
-    expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 4 ? 1 : 0)
-    expect(p.copies, `${p.kind} x${p.n}`).toBe(Math.min(p.n, 3) - 1)
+    if (p.kind === 'stall') {
+      // A number only above three; two or three stand as a pile.
+      expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 4 ? 1 : 0)
+      expect(p.copies, `${p.kind} x${p.n}`).toBe(Math.min(p.n, 3) - 1)
+    } else {
+      // Plan item 413: one Hollowell piece a kind, a count badge from two.
+      expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 2 ? 1 : 0)
+      expect(p.copies, `${p.kind} x${p.n}`).toBe(0)
+    }
   }
   if (desktop) expect(r.fill).toBeGreaterThanOrEqual(0.85)
 })

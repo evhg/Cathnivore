@@ -5006,6 +5006,11 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 }
 
 /* Plan item 282: the corporations' moulded-plastic gloss (Map.tsx's #hollowell-gloss and #candor-gloss). */
+/* Plan item 413: Hollowell's pieces on a cold acrylic plinth (no ink line), against the producers' turned wood. */
+.corp-base-shadow { fill: rgb(var(--shadow-ink) / .32); }
+.corp-base-side { fill: var(--corp-chrome); }
+.corp-base-top { fill: var(--corp-acrylic-lo); }
+.corp-base-shine { stroke: var(--corp-acrylic); fill: none; }
 .gloss-hollowell-top { stop-color: color-mix(in srgb, var(--hollowell) 55%, white); }
 .gloss-hollowell-mid { stop-color: var(--hollowell); }
 .gloss-hollowell-base { stop-color: color-mix(in srgb, var(--hollowell) 70%, var(--hollowell-ink)); }

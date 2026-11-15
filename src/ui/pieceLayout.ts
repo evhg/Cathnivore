@@ -13,6 +13,8 @@ const FACE = TILE_R * 0.96 - 3
 export const MIN_COUNT_PX = 11
 /** Plan item 172: two or three of a kind stand as an offset pile; a number badge only from this many. */
 export const COUNT_FROM = 4
+/** Plan item 413: Hollowell's stacks are one glossy piece a kind, with a count badge from two (no pile). */
+export const CORP_COUNT_FROM = 2
 /** Below this rendered hex radius the stacks drop their ornaments (tags and signs) before anything shrinks. */
 export const ORNAMENT_PX = 64
 
@@ -115,7 +117,7 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   const slots: PieceKind[] = [...stacks, ...(input.scheme ? (['scheme'] as const) : [])]
   // A stack's slot holds its body, its ornament above and, from COUNT_FROM up, its count badge (half over the
   // body's empty top right corner, half outside). Plan item 172: two or three stand as a pile with no badge.
-  const counted = (k: PieceKind) => (k === 'outlets' || k === 'buyouts' || k === 'doubt') && input[k] >= COUNT_FROM
+  const counted = (k: PieceKind) => (k === 'outlets' || k === 'buyouts' || k === 'doubt') && input[k] >= CORP_COUNT_FROM
   const ws = slots.map((k) => STACK_W * eScale + (counted(k) ? countR * 0.5 : 0))
   // Plan item 172: the row steps down the tile, rather than shrinking, when the plate or a badge sits over it.
   const ceil = out.reduce((a, r) => Math.max(a, r.y1), -Infinity) + GAP
