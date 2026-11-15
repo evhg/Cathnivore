@@ -4677,10 +4677,16 @@ body:has(#dlg-pause[open]) .paused-note {
     min-height: 70px;
     padding-top: 6px;
   }
+  /* Plan item 431: a tight panel keeps the tower's picture at 40 px and gives up the role word instead (at 30 px the
+     rack read as text tiles); the corner glyph says the role again. */
   .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
-    width: 30px;
-    height: 30px;
+    align-self: center;
+    width: 40px;
+    height: 40px;
+    margin: 11px 0 -7px;
   }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role { display: revert; }
 }
 
 /* Plan item 361 (slice 2): at D the side column is one potting-shed bench, not boxes in boxes. The column's paper sits
@@ -4758,7 +4764,9 @@ body:has(#dlg-pause[open]) .paused-note {
   /* Plan item 416: there the role is in words, so the corner glyph stands down and the tower takes its corner, left
      of the price tag (centred, the tag hid its top half), and the role word keeps 3 px off the packet's rounded foot. */
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role { display: none; }
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { align-self: flex-start; width: 34px; height: 34px; margin: -6px 0 -2px 2px; }
+  /* Plan item 431: the tower 42 px, its picture (at 34 px in the corner the rack read as text tiles); it rides up
+     under the price tag's row and the name band below it keeps its two lines. */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { align-self: flex-start; width: 42px; height: 42px; margin: -10px 0 -6px 0; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower { padding-bottom: 3px; }
   .play .tray-wrap .tray .tray-tower .tray-role-word {
     display: block;
