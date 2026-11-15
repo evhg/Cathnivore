@@ -1605,19 +1605,25 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
   you.style.removeProperty("--you-dx");
   you.style.removeProperty("--you-dy");
   const own = you.closest(".node");
+  // Plan item 406: on a phone's vertical road her own stop's name and 'Next' tag sit on the coin's outer side, where
+  // she stood over them; there she stands on the road side of her coin and keeps clear of her own labels too.
+  const vertical = matchMedia("(max-width: 599px)").matches;
+  if (vertical) you.dataset.side = own?.closest(".stop")?.classList.contains("vc1") ? "right" : "left";
   const r = boxIn(you, trail);
   // Each name with 6 px to spare: it can still widen a little as the web font settles after this runs.
+  // (Coins keep 3 px on a phone, so she fits on the road between two coins, 38 px apart, beside her own.)
   const others = placed
-    .filter((p) => p.node !== own)
-    .map((p) => boxIn(p.el, trail))
-    .filter((b) => b.width > 0)
-    .map((b) => ({ left: b.left - 6, right: b.right + 6, top: b.top - 6, bottom: b.bottom + 6, width: b.width + 12 }));
+    .filter((p) => p.node !== own || vertical)
+    .map((p) => ({ b: boxIn(p.el, trail), m: vertical && p.el.classList.contains("level-num") ? 3 : 6 }))
+    .filter(({ b }) => b.width > 0)
+    .map(({ b, m }) => ({ left: b.left - m, right: b.right + m, top: b.top - m, bottom: b.bottom + m, width: b.width + 2 * m }));
   const out = you.dataset.side === "right" ? 1 : -1;
   const step = Math.max(4, Math.round(r.width / 4));
   const tries: { dx: number; dy: number }[] = [];
   // (up to 14 steps out: item 377's larger desktop coins and one-line names leave her less room close in)
-  for (let i = 0; i <= 14; i++) for (let j = 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
-  tries.sort((a, b) => a.dx + 1.5 * a.dy - (b.dx + 1.5 * b.dy));
+  // (on a phone at most two steps along, or she reads as the next coin's; then lower, or up past her coin's top)
+  for (let i = 0; i <= (vertical ? 2 : 14); i++) for (let j = vertical ? -6 : 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
+  tries.sort((a, b) => a.dx + 1.5 * Math.abs(a.dy) - (b.dx + 1.5 * Math.abs(b.dy)));
   for (const { dx, dy } of tries) {
     const left = r.left + out * dx;
     const box: Box = { left, right: left + r.width, top: r.top + dy, bottom: r.bottom + dy, width: r.width };
