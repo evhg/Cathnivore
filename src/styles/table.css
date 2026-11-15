@@ -4435,9 +4435,11 @@ html.no-animations .table-cath-line { animation: none; }
   box-shadow: inset 0 0 0 1px var(--wood-lo);
 }
 .partner-slot svg { display: block; width: 100%; height: 100%; }
+/* Plan item 403: an empty slot is a dashed socket on the wood (five solid dark tiles read as unlabelled buttons) */
 .partner-slot[data-empty] {
-  background: color-mix(in srgb, var(--wood-lo) 40%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper-hi) 55%, transparent);
+  background: none;
+  box-shadow: none;
+  border: 1.5px dashed color-mix(in srgb, var(--wood-ink) 55%, transparent);
 }
 .partner-slot-more { align-self: center; font: 760 var(--fs-label)/1 var(--font-text); color: var(--paper-hi); }
 

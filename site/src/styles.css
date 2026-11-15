@@ -1476,6 +1476,9 @@ body {
 /* Plan item 203: the key art carries its own light now (1.45 turned her trench silver). */
 /* Plan item 272: framed on Cath and the LUNA sign (the key art's right two thirds), not the dark wall at its left: the
    sign was cut by the card's right edge and two thirds of the card was black rain. */
+/* Plan item 403: the 16:10 key art in a 16:11 frame is cut at its sides; held right, so the table's last producer
+   (Tomas, at the art's right edge) stands whole rather than sliced by the card. */
+.hero-game-cathnivore .hero-game-art img { object-position: 100% 50%; }
 .hero-game-nightshift .hero-game-art img { filter: brightness(1.05) saturate(1.1); object-position: 100% 50%; transform: scale(1.3); transform-origin: 100% 30%; }
 .hero-game-cath {
   position: absolute;
