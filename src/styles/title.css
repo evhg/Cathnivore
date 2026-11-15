@@ -495,6 +495,8 @@ html.no-animations .title-screen * {
 @media (max-width: 600px) {
   .title-daily small > .title-daily-when { display: block; margin-top: 2px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .title-daily-more { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* Plan item 403: the day's number goes to screen readers only on a half-width tag ('#14' took a line of its own) */
+  .title-daily .title-daily-no { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 .title-daily-no {
   font-variant-numeric: tabular-nums;
