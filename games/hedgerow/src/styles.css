@@ -5596,6 +5596,9 @@ img.act-scene {
   #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 50px; }
   #screen-select .trail .node .level-name { justify-self: start; }
   #screen-select .trail > .stop.vc1 .node .level-name { justify-self: end; }
+  /* Plan item 406: a long name (to 152 px at 14 px) can't fit the 117 px beside its coin, so its two lines split
+     evenly ('The Board / of Directors'), never one word left alone on the second. */
+  #screen-select .trail .node .level-name { text-wrap: balance; }
   #screen-select .trail .node:disabled .level-stars.level-lock { display: none; }
   #screen-select .trail .node:disabled .level-lock + .level-medals + .level-name,
   #screen-select .trail .node:disabled .level-lock + .level-name { margin-top: 0; }
