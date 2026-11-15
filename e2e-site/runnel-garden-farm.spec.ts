@@ -18,7 +18,11 @@ async function farm(page: Page) {
       return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, w: r.width, h: r.height }
     }
     const tiles = [...document.querySelectorAll('#board polygon.tile')].map((t) => t.getBoundingClientRect().bottom)
-    return { spring: box('.spring-house'), garden: box('.bea-garden'), crops: box('#bea-crops'), foot: box('.foot'), tilesBottom: Math.max(...tiles), vh: innerHeight }
+    // Plan item 407: on an upright phone Cath's dock (.host) stands between the board and the foot.
+    const host = document.querySelector('.app > .host')
+    const hb = host && host.getClientRects().length ? host.getBoundingClientRect() : null
+    const foot = box('.foot')
+    return { spring: box('.spring-house'), garden: box('.bea-garden'), crops: box('#bea-crops'), foot, hostBottom: hb && hb.bottom <= foot.top + 1 ? hb.bottom : 0, tilesBottom: Math.max(...tiles), vh: innerHeight }
   })
 }
 
@@ -37,8 +41,8 @@ for (const where of ['the lesson', "today's daily"]) {
     // The garden's beds are a plot you can see: at least 140 px wide and 20 px tall.
     expect(f.crops.w).toBeGreaterThanOrEqual(140)
     expect(f.crops.h).toBeGreaterThanOrEqual(20)
-    // Whatever is lowest of the board and the garden, the foot follows within 80 px.
-    expect(f.foot.top - Math.max(f.tilesBottom, f.garden.bottom)).toBeLessThanOrEqual(80)
+    // Whatever is lowest of the board, the garden and (on a phone) Cath's dock under them, the foot follows within 80 px.
+    expect(f.foot.top - Math.max(f.tilesBottom, f.garden.bottom, f.hostBottom)).toBeLessThanOrEqual(80)
   })
 }
 
