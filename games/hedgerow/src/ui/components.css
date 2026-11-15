@@ -4956,3 +4956,13 @@ body:has(#dlg-pause[open]) .paused-note {
   pointer-events: none;
   will-change: transform, opacity;
 }
+
+/* Plan item 431: no side-panel text under 13 px at D (the role words, the round ticket's labels, the twist tag and
+   the 'more seeds' note were 12): the panel's labels take the rack's 13 px. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play #panel {
+    --fs-label: var(--fs-rack);
+  }
+  /* (the ticket's ROUND keeps inside its stub at the larger size) */
+  .play #panel .ticket-label { letter-spacing: 0.02em; }
+}
