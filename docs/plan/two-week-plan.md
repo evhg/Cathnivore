@@ -3881,7 +3881,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 404. [ ] Portfolio: Cath presents the work, not parked on a grey slab beside it
+## 404. [ ] Portfolio: Cath presents the work, not parked on a grey slab beside it *(lane A, in progress)*
 - **Why:** planning shots `plan1115b` (lane A, 2026-11-15): `portfolio-D` Cath stands on an unlit grey slab (1118-1330 x 625-835) unrelated to the card grid, parked rather than presenting; `portfolio-P` the game prints cut hard at x=215 by her column (153-215 x 130-247), and the slab (182-374 x 345-387) pushes the headline below y=455 (VISION: Cath is the face of every page).
 - **Build:** check item 350's desk and item 385's swipe cue first and keep what works. D: Cath lit beside the cards (a soft key light and a floor shadow, no slab), one hand gesturing toward the hovered card. P: the headline first, then Cath at half height above a swipeable row of prints, one whole plus a 30 px+ peek, no print clipped by her.
 - **Accept:** at 390 no print clipped by another column; headline top under y=200 on P; her feet on a lit surface with a shadow at D; a 30 px+ peek of the next print; site.spec and the portfolio specs pass; shots P and D before and after.
