@@ -32,6 +32,26 @@ export default function Setup({ onStart }: Props) {
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
   const [difficulty, setDifficulty] = useState<GameConfig['difficulty']>('normal')
   const [seedInput, setSeedInput] = useState('')
+  // Plan item 409: on a phone the open sign is pinned over the foot of the page, so while there is more below it (step
+  // 3's cards sat hidden under it with nothing saying so) a small 'More below' tag rides just above the sign.
+  const [moreBelow, setMoreBelow] = useState(false)
+  useEffect(() => {
+    const check = () => {
+      const el = document.querySelector<HTMLElement>('.setup')
+      if (!el) return
+      let sc: HTMLElement | null = el
+      while (sc && !(sc.scrollHeight > sc.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement
+      const box = sc ?? (document.scrollingElement as HTMLElement)
+      setMoreBelow(box.scrollHeight - box.scrollTop - box.clientHeight > 48)
+    }
+    check()
+    addEventListener('scroll', check, { capture: true, passive: true })
+    addEventListener('resize', check)
+    return () => {
+      removeEventListener('scroll', check, { capture: true })
+      removeEventListener('resize', check)
+    }
+  }, [])
   const [advanced, setAdvanced] = useState(false)
   const [layout, setLayout] = useState<LayoutId>('ring')
   const [marketEvent] = useState(() => marketEventFor(new Date()))
@@ -314,6 +334,11 @@ export default function Setup({ onStart }: Props) {
 
       </div>
 
+      {moreBelow && (
+        <p className="setup-more" aria-hidden="true">
+          More below
+        </p>
+      )}
       {startButton}
     </main>
   )
