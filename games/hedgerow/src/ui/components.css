@@ -4690,12 +4690,12 @@ body:has(#dlg-pause[open]) .paused-note {
       inset 0 0 0 1.5px var(--line),
       0 2px 3px color-mix(in srgb, var(--oak-ink) 22%, transparent);
   }
-  /* the pin, through the stub's empty top (clear of the title and the round number) */
+  /* the pin, through the ticket's top edge above the stub (plan item 409: at 7 px down it sat on 'ROUND''s O) */
   .play .panel .round-ticket::before {
     content: "";
     position: absolute;
     z-index: var(--z-raise);
-    top: 7px;
+    top: -4px;
     left: calc(var(--stub) / 2 - 4.5px);
     width: 9px;
     height: 9px;
