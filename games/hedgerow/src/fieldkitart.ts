@@ -807,35 +807,51 @@ export function paintKitWater(ctx: C, x: number, y: number, s: number, look: Wat
   const r01 = rng(seed);
   ctx.save();
   if (look === "saltpan") {
-    // A square pan cut into the marsh: a clay bank, still brine going pink, a white crust at its edges.
-    const i = s * 0.1;
-    ctx.fillStyle = "rgba(122,104,78,0.9)";
-    ctx.beginPath();
-    ctx.roundRect(x + i, y + i, s - i * 2, s - i * 2, s * 0.06);
-    ctx.fill();
-    const g = ctx.createLinearGradient(x, y + i, x + s, y + s - i);
-    g.addColorStop(0, "rgba(176,206,214,0.95)");
-    g.addColorStop(0.6, "rgba(196,178,196,0.95)");
-    g.addColorStop(1, "rgba(214,170,170,0.95)");
-    ctx.fillStyle = g;
-    const j = s * 0.17;
-    ctx.beginPath();
-    ctx.roundRect(x + j, y + j, s - j * 2, s - j * 2, s * 0.04);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(252,252,248,0.9)";
-    ctx.lineWidth = Math.max(1, s * 0.035);
-    // A solid crust, not dashes: a dashed pale edge reads as the build stitch (item 345).
-    ctx.stroke();
-    // Crystals drifting on the brine, and the sky's glint.
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    for (let k = 0; k < 5; k++) {
+    // Plan item 416: a brine pan dug into the marsh, not a square tile: an uneven clay bank, deep teal brine going pink
+    // at its shallow edges, crusted salt crystals along the shore, a ripple, and the raker's wooden rake laid by it.
+    const cx = x + s * 0.5, cy = y + s * 0.52;
+    const blob = (rx: number, ry: number, wob: number) => {
       ctx.beginPath();
-      ctx.rect(x + j + (s - j * 2) * (0.15 + r01() * 0.7), y + j + (s - j * 2) * (0.15 + r01() * 0.7), s * 0.03, s * 0.03);
+      for (let k = 0; k <= 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const w = 1 + Math.sin(a * 3 + seed) * wob + Math.cos(a * 5 + seed * 0.7) * wob * 0.6;
+        const px = cx + Math.cos(a) * rx * w, py = cy + Math.sin(a) * ry * w;
+        if (k === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    };
+    ctx.fillStyle = "rgba(108,88,64,0.92)";
+    blob(s * 0.43, s * 0.37, 0.05);
+    ctx.fill();
+    const g = ctx.createRadialGradient(cx - s * 0.06, cy - s * 0.05, s * 0.04, cx, cy, s * 0.38);
+    g.addColorStop(0, "rgba(64,136,150,0.97)");
+    g.addColorStop(0.7, "rgba(92,150,160,0.96)");
+    g.addColorStop(1, "rgba(196,150,162,0.95)");
+    ctx.fillStyle = g;
+    blob(s * 0.35, s * 0.29, 0.06);
+    ctx.fill();
+    // Salt crusted along the shore: small white crystals, thicker on the sunny side.
+    for (let k = 0; k < 22; k++) {
+      const a = r01() * Math.PI * 2;
+      const d = 0.9 + r01() * 0.14;
+      const px = cx + Math.cos(a) * s * 0.35 * d, py = cy + Math.sin(a) * s * 0.29 * d;
+      ctx.fillStyle = `rgba(252,252,248,${0.75 + r01() * 0.25})`;
+      ctx.beginPath();
+      ctx.rect(px - s * 0.012, py - s * 0.012, s * (0.02 + r01() * 0.015), s * (0.02 + r01() * 0.015));
       ctx.fill();
     }
-    ctx.strokeStyle = "rgba(255,255,255,0.6)";
-    ctx.lineWidth = Math.max(1, s * 0.025);
-    line(ctx, [x + s * 0.3, y + s * 0.34], [x + s * 0.48, y + s * 0.3]);
+    // A ripple catching the sky.
+    ctx.strokeStyle = "rgba(226,244,246,0.7)";
+    ctx.lineWidth = Math.max(1, s * 0.02);
+    ctx.beginPath();
+    ctx.arc(cx - s * 0.05, cy - s * 0.02, s * 0.1, Math.PI * 1.15, Math.PI * 1.7);
+    ctx.stroke();
+    // The rake, laid on the bank.
+    ctx.strokeStyle = "#7a5634";
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    line(ctx, [x + s * 0.62, y + s * 0.9], [x + s * 0.92, y + s * 0.74]);
+    line(ctx, [x + s * 0.88, y + s * 0.68], [x + s * 0.96, y + s * 0.82]);
   } else if (look === "peatpool") {
     // A peat pool: a black-brown hag of a bank, dark still water, cotton-grass nodding white along its edge.
     const cx = x + s * 0.5, cy = y + s * 0.52;
