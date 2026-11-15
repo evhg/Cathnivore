@@ -20,4 +20,8 @@ test('level 21 at D: towers drawn large, roles in words, the Airborne answers ta
   await expect(page.locator('.tray-tower[data-kind="scarecrow"]')).toHaveAttribute('data-answers', 'airborne')
   await expect(page.locator('.tray-tower[data-kind="hedge"], .tray-tower[data-kind="hedgerow"]').first()).not.toHaveAttribute('data-answers', /.+/)
   await expect(page.locator('.lock-chip')).toContainText('Airborne')
+  // The tower her line names glows in the rack.
+  await expect(page.locator('.tray-tower[data-coached]')).toHaveCount(1)
+  const named = await page.locator('.tray-tower[data-coached]').getAttribute('data-kind')
+  await expect(page.locator('#cath-say p')).toContainText(named === 'scarecrow' ? 'Scarecrow' : /./)
 })

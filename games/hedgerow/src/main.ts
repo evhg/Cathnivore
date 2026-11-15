@@ -4172,6 +4172,8 @@ function coachTower(g: Game): TowerKind | null {
 }
 let coachKey = "";
 function syncCoach(g: Game, kind: TowerKind | null): void {
+  // Plan item 396: the tower her line names pulses in the rack, so the player sees which packet she means.
+  for (const t of ui.panel.querySelectorAll<HTMLElement>(".tray-tower")) t.toggleAttribute("data-coached", !!kind && t.dataset.kind === kind);
   const r = renderer as { coach?: { col: number; row: number; kind: TowerKind } | null } | null;
   if (!r || !("coach" in r)) return;
   // On a phone's close 3D frame she means a plot you can see: the best one in view (rechecked each second while the

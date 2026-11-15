@@ -4762,3 +4762,10 @@ body:has(#dlg-pause[open]) .paused-note {
 @media (min-width: 900px) and (min-height: 521px) {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
 }
+
+/* Plan item 396: the packet Cath's line names glows gold, gently (a steady ring under reduced motion). */
+@keyframes tray-coached { 0%, 100% { box-shadow: 0 0 0 2px var(--brass); } 50% { box-shadow: 0 0 0 4px var(--brass-hi); } }
+.play .tray-wrap .tray .tray-tower[data-coached] { animation: tray-coached 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .play .tray-wrap .tray .tray-tower[data-coached] { animation: none; box-shadow: 0 0 0 3px var(--brass); }
+}
