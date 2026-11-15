@@ -171,3 +171,17 @@ test('the four games are posters on the first screen', async ({ page }) => {
     if (vp.width >= 900) for (const [l = -1, t = -1, r = 1e9, b = 1e9] of m.boxes) expect(l >= 0 && t >= 0 && r <= vp.width && b <= vp.height).toBe(true)
   }
 })
+
+// Plan item 401: each poster's foot is its own game's board: four different backgrounds, each Play 44 px+.
+test('each poster foot is its game's own board', async ({ page }) => {
+  for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(vp)
+    await page.goto('/games/')
+    const m = await page.evaluate(() => ({
+      bgs: [...document.querySelectorAll('.hero-games .hero-game')].map((e) => getComputedStyle(e).backgroundImage),
+      plays: [...document.querySelectorAll('.hero-game-play')].map((e) => e.getBoundingClientRect().height),
+    }))
+    expect(new Set(m.bgs).size).toBe(4)
+    for (const h of m.plays) expect(h).toBeGreaterThanOrEqual(44)
+  }
+})
