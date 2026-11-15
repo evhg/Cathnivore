@@ -1551,9 +1551,11 @@ export function buildGround(level: Level): Ground {
       if (laneDistance(level, x, y) < 0.9) continue;
       const h = heightAt(x, y);
       if (h < -0.05 || nearWater(x, y, 0.35)) continue;
-      const s = 0.1 + deco() * 0.16;
-      const color = pal[Math.floor(deco() * 3)]!.clone().multiplyScalar(0.88 + deco() * 0.2);
-      clumps.push({ x, y: h - s * 0.05, z: y, ry: deco() * 6.3, s: s * 1.15, sy: 0.32 + deco() * 0.16, color });
+      // Plan item 437: low tufts a shade deeper than the ground they grow on (at 0.1-0.26 wide, 0.3+ tall and the
+      // ground's own colour, they read as pale stones or blobs on the margin).
+      const s = 0.07 + deco() * 0.09;
+      const color = pal[Math.floor(deco() * 3)]!.clone().multiplyScalar(0.7 + deco() * 0.14);
+      clumps.push({ x, y: h - s * 0.05, z: y, ry: deco() * 6.3, s: s * 1.15, sy: 0.24 + deco() * 0.1, color });
     }
     // Plan item 429: smooth low mounds of growth (24 segments round), not faceted lumps that read as rocks.
     const m = instanced(new THREE.SphereGeometry(1, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), matte("#ffffff"), clumps, true);
