@@ -4967,12 +4967,18 @@ function syncDepots(g: Game): void {
   }
   // Plan item 391: a gate with no margin wide enough (an upright phone's l21, its field edge to edge) still gets its
   // depot: a small one on the lane's mouth (theme.ts's mouthDepot, which also leaves the painted sign off there).
+  const mouths = new Map<number, number>();
   for (const { path, i } of lanes) {
     if (spots.some((sp) => sp.lane === i)) continue;
     const m = mouthDepot(L, path!, { width: canvas.width, height: canvas.height, cell, offX: r.view.offX, offY: r.view.offY });
-    if (m) spots.push({ x: canvas.left + m.x - stage.left, y: canvas.top + m.y - stage.top, count: counts[i]!, lane: i, size: m.size, jetty: false });
+    if (m) {
+      spots.push({ x: canvas.left + m.x - stage.left, y: canvas.top + m.y - stage.top, count: counts[i]!, lane: i, size: m.size, jetty: false });
+      // Plan item 403: the queue waits past the depot, not under it (its last van sat half under the shed at P).
+      mouths.set(i, m.cell + (m.size / cell) / 2 + 0.2);
+    }
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
+  r.depotMouths = mouths;
   const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;

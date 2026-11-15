@@ -1159,7 +1159,7 @@ export function depotSides(level: Level, path: Level["path"], L: Layout): Side[]
  * one stood on the lane's mouth, its gate cell or the next, on no plot and inside the canvas (Layout px, canvas
  * origin). Its own sign names the gate there too, so the painted town sign is left off.
  */
-export function mouthDepot(level: Level, path: Level["path"], L: Layout): { x: number; y: number; size: number } | null {
+export function mouthDepot(level: Level, path: Level["path"], L: Layout): { x: number; y: number; size: number; cell: number } | null {
   if (depotSides(level, path, L).length) return null;
   const s = L.cell;
   const size = Math.max(48, Math.round(s * 1.15));
@@ -1191,7 +1191,7 @@ export function mouthDepot(level: Level, path: Level["path"], L: Layout): { x: n
     const r = g0r + Math.sign(g1r - g0r) * Math.min(k, Math.abs(g1r - g0r));
     const x = Math.max(4, Math.min(L.width - size - 4, L.offX + (c + 0.5) * s - size / 2));
     const y = Math.max(4, Math.min(L.height - size - 4, L.offY + (r + 0.5) * s - size / 2));
-    if (!onPlot(x, y)) return { x, y, size };
+    if (!onPlot(x, y)) return { x, y, size, cell: k };
   }
   return null;
 }

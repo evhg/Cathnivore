@@ -3096,7 +3096,8 @@ export class Renderer3D {
       el.className = "gate-plate";
       el.dataset.lane = String(ln.lane ?? 0);
       el.setAttribute("aria-hidden", "true");
-      el.textContent = `${ln.count} coming`;
+      // Plan item 403: the depot's board says what the 2D depot's says ('216 next'; it read 'coming' in 3D only).
+      el.textContent = `${ln.count} next`;
       this.overlayEl.append(el);
       this.queuePlates.push(el);
       if (!ln.lane) this.gateAt = { x: tail.x, y: tail.y };

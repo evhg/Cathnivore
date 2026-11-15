@@ -1002,7 +1002,7 @@ export class Renderer {
         const at = (dd: number) => enemyPoint(level, { dist: dd, ...(ln.lane ? { lane: ln.lane } : {}) });
         const lay = (q: number) => {
           const ds: number[] = [];
-          let d = 0.15;
+          let d = this.depotMouths.get(ln.lane ?? 0) ?? 0.15;
           for (let i = ln.leads.length - 1; i >= 0; i--) {
             if (i < ln.leads.length - 1) {
               const need = (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i + 1]!)) + 0.06) * q;
@@ -1678,6 +1678,8 @@ export class Renderer {
   shownQueue: { leads: Rect[]; plates: Rect[]; names: Rect[] } | null = null;
   /** Plan item 157: the lanes (0, 1) whose gate has a depot on screen, which shows the count. */
   depotLanes = new Set<number>();
+  /** Plan item 403: lanes whose depot stands on the lane's mouth, and how far along the lane its queue starts (cells). */
+  depotMouths = new Map<number, number>();
   private queueAge = 0;
   private queueKey = "";
   private queueMemo: GateQueue | null = null;
