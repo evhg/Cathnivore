@@ -277,13 +277,29 @@ test('at D she stands whole between the list and the sheet, and keys 1-5 change 
   await expect(page.locator('.cp')).toBeVisible({ timeout: 60_000 })
   await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.dressed ?? null), { timeout: 200_000 }).toBe('ghost')
   const canvas = page.locator('canvas[data-class]').first()
+  type W = { __kd?: number; __ch?: number }
   for (const [i, cls] of CLASSES.entries()) {
-    const t0 = Date.now()
+    // The page's own clock, from the key going down to the canvas taking the class (a wall-clock check here also
+    // counted the key press's and the polls' round trips: 859-921 ms on the release machine, 1.4-1.8 s on a loaded
+    // CI shard, with the class already changed). The first key re-picks the class she wears, so nothing changes.
+    await page.evaluate(() => {
+      const w = window as unknown as W
+      w.__kd = 0
+      w.__ch = 0
+      addEventListener('keydown', () => (w.__kd = performance.now()), { once: true, capture: true })
+      const c = document.querySelector('canvas[data-class]')!
+      new MutationObserver((_, o) => {
+        w.__ch = performance.now()
+        o.disconnect()
+      }).observe(c, { attributes: true, attributeFilter: ['data-class'] })
+    })
     await page.keyboard.press(String(i + 1))
     await expect(canvas).toHaveAttribute('data-class', cls, { timeout: 650 })
-    // The 650 ms wait above is the rule; this wall-clock check adds the key press's and the polls' round trips, which
-    // at swiftshader's few fps on the release machine read 859-921 ms (2026-11-14/15) with the class already changed.
-    expect(Date.now() - t0).toBeLessThan(650 + 400)
+    const lag = await page.evaluate(() => {
+      const w = window as unknown as W
+      return w.__ch ? w.__ch - (w.__kd ?? 0) : 0
+    })
+    expect(lag, cls).toBeLessThan(650)
     // After the audition's cut eases home (3 s), the settled framing.
     await page.waitForTimeout(3600)
     const m = await page.evaluate(() => {
