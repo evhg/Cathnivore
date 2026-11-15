@@ -72,6 +72,9 @@ for (const level of [21, 34]) {
       await expect(line).toBeHidden()
       const tab = (await page.locator('#cath-dock-bust').boundingBox())!
       expect(tab.width).toBeGreaterThanOrEqual(44)
+      // Off the field canvas (item 392's accept: her tip never meets it).
+      const canvas = (await page.locator('#canvas').boundingBox())!
+      expect(tab.y, `${scheme} folded portrait on the field`).toBeGreaterThanOrEqual(canvas.y + canvas.height - 0.5)
       const plots2 = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.plotBoxes())
       for (const p of plots2) expect(meets(p, tab), `${scheme} folded portrait on plot ${JSON.stringify(p)}`).toBe(false)
       const packs = await page.locator('#panel .tray-tower').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).filter((r) => r.width).map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height })))

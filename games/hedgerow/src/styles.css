@@ -856,9 +856,9 @@ button {
    the round drawer's handle at the right, beside the tray's packets (never over them or a plot). A tap on it opens her line again; a dot on it
    says she has a newer line. */
 .cath-dock[data-folded] {
-  /* Its top 4 px past the panel's edge (the field ends 6 px above it, so it meets no plot); the tray's packets
-     step right to clear it (components.css). */
-  top: calc(var(--dock-top, 0px) - 10px);
+  /* Just under the panel's top edge, off the field canvas (which ends 6 px above it); the tray's packets step
+     right to clear it (components.css). */
+  top: calc(var(--dock-top, 0px) - 2px);
   right: auto;
   width: 48px;
   height: 48px;
