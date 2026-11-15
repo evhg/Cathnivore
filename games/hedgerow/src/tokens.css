@@ -65,6 +65,8 @@
   --plastic: #ffffff;
   --plastic-shade: #e6eef0;
   --corp-ink: #0b2e31;
+  /* Plan item 410: the brand orange of the depot's fascia and the 2D name plate's underline. */
+  --corp-brand: #ef7a2a;
   /* Overlays */
   --scrim: rgb(28 20 14 / 0.55);
   --scrim-strong: rgb(28 20 14 / 0.72);

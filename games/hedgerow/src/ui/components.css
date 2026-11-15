@@ -4929,3 +4929,20 @@ body:has(#dlg-pause[open]) .paused-note {
     animation: none;
   }
 }
+
+/* Plan item 410: in 3D the first vehicle to pull out carries its name, as the 2D queue's lead does (item 256):
+   Hollowell's dark plate with its orange brand line underneath. */
+.queue-name {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 2px 8px 3px;
+  border-radius: 6px;
+  background: var(--corp-ink);
+  box-shadow: inset 0 -2px 0 var(--corp-brand);
+  color: var(--plastic);
+  font: 700 var(--fs-small) / 1.2 var(--font-ui);
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform, opacity;
+}

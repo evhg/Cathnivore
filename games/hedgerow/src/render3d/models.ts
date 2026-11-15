@@ -1504,7 +1504,7 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     }
     case "lorry": {
       const g = new THREE.Group();
-      g.add(box(0.62, 0.36, 0.34, matte("#24345e", 0.55), -0.1, 0.1, 0));
+      g.add(box(0.62, 0.36, 0.34, plastic("#24345e"), -0.1, 0.1, 0));
       g.add(box(0.2, 0.28, 0.32, gloss("#e9ecef"), 0.33, 0.07, 0), box(0.006, 0.12, 0.26, glass(), 0.432, 0.22, 0));
       for (const side of [-1, 1]) g.add(box(0.5, 0.05, 0.005, glow("#5ab0ff", 0.7), -0.1, 0.36, side * 0.172));
       for (const x of [-0.3, -0.12, 0.33]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
@@ -1514,7 +1514,7 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "steel": {
       // The Plated Lorry: a riveted steel box on the lorry's chassis.
       const g = new THREE.Group();
-      g.add(box(0.66, 0.38, 0.36, metal("#7d8894", 0.45), -0.1, 0.11, 0));
+      g.add(box(0.66, 0.38, 0.36, metal("#7d8894", 0.28), -0.1, 0.11, 0));
       for (const x of [-0.38, -0.24, -0.1, 0.04, 0.18]) for (const side of [-1, 1]) g.add(ball(0.014, chrome(), x, 0.42, side * 0.182, 0));
       for (const side of [-1, 1]) g.add(box(0.62, 0.03, 0.006, metal("#5a636d", 0.4), -0.1, 0.26, side * 0.182));
       g.add(box(0.2, 0.28, 0.32, metal("#5a636d", 0.4), 0.35, 0.07, 0), box(0.006, 0.1, 0.26, glass(), 0.452, 0.22, 0));
@@ -1538,7 +1538,7 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       const g = new THREE.Group();
       g.add(box(0.2, 0.3, 0.34, gloss("#e0a82e"), 0.36, 0.1, 0), box(0.006, 0.12, 0.28, glass(), 0.462, 0.24, 0));
       g.add(box(0.7, 0.04, 0.34, metal("#3b3f44", 0.5), -0.1, 0.1, 0));
-      g.add(box(0.56, 0.28, 0.32, metal("#b9831a", 0.6), -0.1, 0.26, 0), box(0.58, 0.03, 0.34, metal("#8a5f0e", 0.6), -0.1, 0.42, 0));
+      g.add(box(0.56, 0.28, 0.32, metal("#b9831a", 0.3), -0.1, 0.26, 0), box(0.58, 0.03, 0.34, metal("#8a5f0e", 0.3), -0.1, 0.42, 0));
       for (const x of [-0.4, -0.2, 0.34]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.17));
       return g;
     }
@@ -1563,7 +1563,7 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "borer": {
       // A Tunnel Borer: a segmented drum with a red cutter head.
       const g = new THREE.Group();
-      g.add(rot(cyl(0.22, 0.22, 0.7, metal("#7a828c", 0.5), -0.1, 0.25, 0, 14), Math.PI / 2));
+      g.add(rot(cyl(0.22, 0.22, 0.7, metal("#7a828c", 0.3), -0.1, 0.25, 0, 14), Math.PI / 2));
       g.add(rot(cyl(0.26, 0.04, 0.18, metal("#c43b2f", 0.4), 0.34, 0.25, 0, 14), Math.PI / 2));
       for (const side of [-1, 1]) g.add(box(0.8, 0.1, 0.1, matte("#1d1b1b", 0.9, false), 0, 0.05, side * 0.2));
       return g;

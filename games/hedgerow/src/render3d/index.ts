@@ -226,6 +226,7 @@ export class Renderer3D {
   private flashMat = Object.assign(new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#fff0dc", emissiveIntensity: 0.9, roughness: 0.6 }), { shared: true });
   private gustLeaves: string[] = ["#6ea04c", "#8fbd57", "#c9a640"];
   private v1 = new THREE.Vector3();
+  private qBox = new THREE.Box3();
   private q1 = new THREE.Quaternion();
   private v2 = new THREE.Vector3();
   private v3 = new THREE.Vector3();
@@ -808,6 +809,44 @@ export class Renderer3D {
   }
 
   /** Plan item 98: each gate sign's on-screen centre and letter cap height, in CSS px (tests hold it at 11 px). */
+  /** Plan item 410 (tests): the roughness of each queued vehicle's and depot's main surface (its biggest unlit
+   * mesh), and the median over the farm's scenery, so a spec can hold the corporations glossy against the farm. */
+  materialLook(): { queue: number[]; kinds: string[]; depots: number[]; farm: number } {
+    const size = new THREE.Vector3();
+    const scl = new THREE.Vector3();
+    // A lamp, logo or glow (three's emissiveIntensity defaults to 1, so a black emissive counts as unlit).
+    const lit = (mat: THREE.MeshStandardMaterial) => !!mat.emissive && mat.emissive.getHex() !== 0 && (mat.emissiveIntensity ?? 0) > 0.5;
+    const main = (root: THREE.Object3D): number => {
+      let best = -1;
+      let rough = 1;
+      root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        const mat = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshStandardMaterial | undefined;
+        if (!m.isMesh || !mat || mat.roughness === undefined || mat.transparent || lit(mat)) return;
+        m.geometry.computeBoundingBox();
+        m.geometry.boundingBox!.getSize(size);
+        m.getWorldScale(scl);
+        const v = size.x * scl.x * size.y * scl.y + size.y * scl.y * size.z * scl.z + size.x * scl.x * size.z * scl.z;
+        if (v > best) {
+          best = v;
+          rough = mat.roughness;
+        }
+      });
+      return rough;
+    };
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    const inDepot = new Set<THREE.Object3D>();
+    for (const d of depots) d.traverse((o) => inDepot.add(o));
+    const farm: number[] = [];
+    this.ground?.group.traverse((o) => {
+      const m = o as THREE.Mesh;
+      const mat = m.isMesh ? ((Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshStandardMaterial) : null;
+      if (mat && mat.roughness !== undefined && !inDepot.has(o) && !lit(mat) && !mat.transparent) farm.push(mat.roughness);
+    });
+    farm.sort((a, b) => a - b);
+    return { queue: this.queueModels.map((m) => main(m.obj)), kinds: this.queueModels.map((m) => String(m.obj.userData.kind)), depots: depots.map(main), farm: farm[Math.floor(farm.length / 2)] ?? 1 };
+  }
+
   gateSigns(): Array<{ x: number; y: number; cap: number }> {
     const rect = this.canvas.getBoundingClientRect();
     const out: Array<{ x: number; y: number; cap: number }> = [];
@@ -2541,7 +2580,9 @@ export class Renderer3D {
   }
 
   /** Plan item 72: the queue drawn last frame (CSS px from the canvas corner), for the e2e tests; null when nothing waits at the gate. */
-  shownQueue: { leads: Rect[]; plates: Rect[] } | null = null;
+  shownQueue: { leads: Rect[]; plates: Rect[]; names: Rect[]; boxes: Rect[] } | null = null;
+  /** Plan item 410: the lead vehicle's name chip on each lane. */
+  private queueNames: Array<{ el: HTMLElement; model: number }> = [];
   private queueKey = "";
   private queueGroup: THREE.Group | null = null;
   private queuePlates: HTMLElement[] = [];
@@ -2576,9 +2617,20 @@ export class Renderer3D {
     const k = Math.max(0, Math.min(1, (performance.now() - (this.queueGroup.userData.born as number)) / 400));
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
-    const shown: { leads: Rect[]; plates: Rect[] } = { leads: [], plates: [] };
+    const shown: { leads: Rect[]; plates: Rect[]; names: Rect[]; boxes: Rect[] } = { leads: [], plates: [], names: [], boxes: [] };
     for (const m of this.queueModels) {
       m.obj.scale.setScalar(Math.max(0.001, k) * m.s);
+      // Plan item 410 (tests): the model's true projected box, its bounding box's eight corners on the canvas.
+      m.obj.updateMatrixWorld(true);
+      const bb = this.qBox.setFromObject(m.obj, true);
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let c = 0; c < 8; c++) {
+        const v = this.v1.set(c & 1 ? bb.max.x : bb.min.x, c & 2 ? bb.max.y : bb.min.y, c & 4 ? bb.max.z : bb.min.z).project(this.camera);
+        const px = (v.x * 0.5 + 0.5) * w;
+        const py = (-v.y * 0.5 + 0.5) * h;
+        x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+      }
+      shown.boxes.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
       const a = this.v1.set(m.x, this.height(m.x, m.z) + m.up, m.z).project(this.camera);
       const b = this.v2.set(m.x, this.height(m.x, m.z), m.z).project(this.camera);
       const cx = (a.x * 0.5 + 0.5) * w;
@@ -2673,6 +2725,24 @@ export class Renderer3D {
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       shown.plates.push({ x, y, w: pw, h: ph });
     });
+    // Plan item 410: the first to pull out carries its name beside it (as in 2D, item 256), clear of the queue,
+    // the count plates, the gate signs and, where it can, the plots.
+    const signs = this.queueNames.length ? this.gateSignRects() : [];
+    for (const qn of this.queueNames) {
+      const lead = shown.leads[qn.model];
+      if (!lead) continue;
+      const nw = qn.el.offsetWidth;
+      const nh = qn.el.offsetHeight;
+      const prefer = [
+        { x: lead.x + lead.w + 6, y: lead.y + lead.h / 2 - nh / 2 },
+        { x: lead.x - nw - 6, y: lead.y + lead.h / 2 - nh / 2 },
+        { x: lead.x + lead.w / 2 - nw / 2, y: lead.y + lead.h + 4 },
+      ].map((q) => ({ x: Math.max(4, Math.min(w - nw - 4, q.x)), y: Math.max(4, Math.min(h - nh - 4, q.y)) }));
+      const { x, y } = this.clearPlateSpot({ x: prefer[0]!.x, y: prefer[0]!.y, w: nw, h: nh }, game, [...shown.leads, ...shown.plates, ...shown.names, ...signs], w, h, prefer);
+      qn.el.style.opacity = String(k);
+      qn.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+      shown.names.push({ x, y, w: nw, h: nh });
+    }
     this.shownQueue = shown;
   }
 
@@ -3081,6 +3151,15 @@ export class Renderer3D {
         dists[i] = d;
         if (i > 0) d += (0.42 * (enemyScale(ln.leads[i]!) + enemyScale(ln.leads[i - 1]!)) + 0.06) * QUEUE_SCALE_3D;
       }
+      if (ln.leads.length) {
+        const el = document.createElement("div");
+        el.className = "queue-name";
+        el.dataset.lane = String(ln.lane ?? 0);
+        el.setAttribute("aria-hidden", "true");
+        el.textContent = ENEMIES[ln.leads[0]!].name;
+        this.overlayEl.append(el);
+        this.queueNames.push({ el, model: this.queueModels.length });
+      }
       ln.leads.forEach((kind, i) => {
         const p = enemyPoint(level, { dist: dists[i]!, ...(ln.lane ? { lane: ln.lane } : {}) });
         const hd = headingAt(path, dists[i]!);
@@ -3091,6 +3170,7 @@ export class Renderer3D {
         const foot = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
         const lift = enemyLift(kind) * QUEUE_SCALE_3D;
         obj.position.set(p.x, this.height(p.x, p.y) + lift, p.y);
+        obj.userData.kind = kind;
         obj.rotation.y = Math.atan2(-hd.dy, hd.dx);
         // Plan item 410: a soft contact shadow under each, so the glossy fleet stands on the dirt, not floats over it.
         const shadow = new THREE.Mesh(QUEUE_SHADOW_GEO, queueShadowMat());
@@ -3135,6 +3215,8 @@ export class Renderer3D {
     this.queueAnchors = [];
     for (const el of this.queuePlates) el.remove();
     this.queuePlates = [];
+    for (const qn of this.queueNames) qn.el.remove();
+    this.queueNames = [];
     this.shownQueue = null;
   }
 

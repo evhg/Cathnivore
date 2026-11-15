@@ -773,6 +773,8 @@ if (SANDBOX)
     gateSigns: () => (renderer && is3D(renderer) ? renderer.gateSigns() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
+    // Plan item 410: the 3D fleet's and depot's main roughness against the farm's (null in 2D).
+    materialLook: () => (renderer && is3D(renderer) ? renderer.materialLook() : null),
     // Plan item 72: the gate queue the field drew last frame (leads and count plates, CSS px), null when none.
     gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
     // Plan item 160: true once the 3D camera has let go of the gate (a boss queue's look) and stands still; true in 2D.
