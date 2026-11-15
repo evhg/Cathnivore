@@ -4,11 +4,13 @@ import { expect, test } from './own-gpu'
 // is done (the stage's data-class drives scene().figurePose()); a change of class blends over 300 ms (item 278) of the loop's
 // time; her face reads (90 px+ tall at D, 45 at P) and her body meets neither the list nor the sheet at D.
 type Box = { left: number; top: number; right: number; bottom: number }
-type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number] }
+type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: string | null; gap: number | null; joints: string }
 type S = { time: number; dressed: string | null; figurePose(): Pose; faceBox(): Box; figureBox(body?: boolean): Box }
 type F = { cathodeFront?: { scene: () => S | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
+// Plan item 422: the signature gun each class holds in her posing hand on the pick.
+const HELD: Record<string, string> = { ghost: 'rifle', butcher: 'shotgun', gunslinger: 'revolver', wirewitch: 'smg', fixer: 'launcher' }
 
 test('each class holds its own pose on the pick, blended in 600 ms of loop time', async ({ page, hasTouch }) => {
   test.setTimeout(300_000)
@@ -23,6 +25,7 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
   const pose = () => page.evaluate(() => (window as unknown as F).cathodeFront?.scene()?.figurePose() ?? null)
   await expect.poll(async () => (await pose())?.kind ?? null, { timeout: 200_000 }).toBe('ghost')
   const hands: Record<string, Pose['hand']> = {}
+  const joints: Record<string, string> = {}
   for (const cls of [...CLASSES.slice(1), 'ghost']) {
     // An upright phone picks by page dot (item 245 hid the names' row there).
     await page.locator(`${hasTouch ? '.cp-dot' : '.cp-opt'}[data-cls=${cls}]`).click()
@@ -42,6 +45,10 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     const p = (await pose())!
     expect(p.kind).toBe(cls)
     hands[cls] = p.hand
+    joints[cls] = p.joints
+    // Plan item 422: her class's gun in her hand, its mesh within 3 cm of her palm.
+    expect(p.prop, cls).toBe(HELD[cls])
+    expect(p.gap ?? 1, cls).toBeLessThanOrEqual(0.03)
     // The blend takes 300 ms of loop time (plan item 278; a long frame can overshoot a step; 600 ms is the line).
     expect(blend, cls).toBeGreaterThan(0)
     expect(blend, cls).toBeLessThanOrEqual(0.6)
@@ -69,4 +76,6 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
       const b = hands[keys[j]!]!
       expect(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), JSON.stringify(hands)).toBeGreaterThan(0.05)
     }
+  // Plan item 422: and five different sets of joint angles (arm, chest, pelvis, head).
+  expect(new Set(Object.values(joints)).size, JSON.stringify(joints)).toBe(5)
 })

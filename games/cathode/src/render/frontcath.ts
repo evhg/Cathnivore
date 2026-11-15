@@ -15,6 +15,8 @@ import { buildGunDisplay } from "../game/viewmodel";
 
 /** Plan item 140: the painted face's expressions (the title's smirk, the class pick's). */
 export type FaceExpression = "smirk" | "determined" | "wink";
+/** Plan item 422: what her posing hand holds on the pick (each class's signature gun). */
+export type HeldProp = "rifle" | "shotgun" | "revolver" | "smg" | "launcher";
 
 export interface FrontCath {
   readonly group: THREE.Group;
@@ -36,9 +38,9 @@ export interface FrontCath {
    */
   stance(kind: string | null, instant?: boolean): void;
   /** Plan item 180: the stance she holds now, its weight (0..1; 1 once the blend is done), how long the last blend took (loop s) and her posing hand. */
-  readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
+  readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: HeldProp | null; gap: number | null; joints: string };
   /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
-  readonly clipState: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
+  readonly clipState: { kind: string; u: number; prop: HeldProp | null } | null;
   /**
    * Plan item 187: where she looks, -1..1 down the title menu (the menu sits to her right of frame): her head turns
    * toward it and tips to the focused row, easing there in about 150 ms (`instant` cuts). `gaze` is the target now.
@@ -2595,8 +2597,9 @@ float reliefShade( vec2 uv ) {
     // Her left arm reaches by two-bone IK; the head turns to the lens (the wardrobe sees her from the front).
     clipDraw = 0;
     let armOn = false;
-    let carryNow = false;
-    let gunInHand: "rifle" | "shotgun" | null = null;
+    // Plan item 422: the Fixer shoulders her launcher now; the case stays on the street.
+    const carryNow = false;
+    let gunInHand: HeldProp | null = null;
     let glint = 0;
     let rack = 0;
     let shellU = -1;
@@ -2691,7 +2694,9 @@ float reliefShade( vec2 uv ) {
             headPivot.rotation.x -= 0.06 * e;
             umb.rotation.x -= 0.32 * e;
             umb.rotation.z += 0.3 * e;
-            reach(0.155, -0.2, 0.05, 1, 0.4, -0.7, 0.9);
+            // Plan item 422: the revolver drawn and hanging at her hip, the hand a little out from the coat.
+            reach(0.24, -0.24, 0.14, 1, 0.2, -0.6, 0.5);
+            gunInHand = e > 0.3 ? "revolver" : null;
             // Plan item 235: hip-shot, her weight thrown onto the holster side.
             pelvis.rotation.z -= 0.06 * e;
             pelvis.position.x += 0.025 * e;
@@ -2703,7 +2708,10 @@ float reliefShade( vec2 uv ) {
             headPivot.rotation.z += 0.18 * e;
             headPivot.rotation.y += 0.28 * e;
             // Plan item 235: her free hand raised high into the rig's light, palm up, the halo's glow on it.
-            reach(0.3, 0.5, 0.2, 1, -0.5, -0.2, 1.2);
+            // Plan item 422: the raised hand, at her shoulder now (it was over her head, under the canopy), holds her
+            // smart SMG up into the halo's light, clear of the umbrella's shaft.
+            reach(0.33, 0.22, 0.22, 1, -0.5, -0.2, 1.2);
+            gunInHand = e > 0.3 ? "smg" : null;
             headPivot.rotation.x -= 0.12 * e;
             chest.rotation.z -= 0.05 * e;
             // The umbrella tipped back off her raised arm, so the halo and the hand stand clear of the canopy.
@@ -2718,11 +2726,13 @@ float reliefShade( vec2 uv ) {
               const own = clip?.kind === "fixer" && stanceWant === "fixer";
               const k = !clip ? 1 : !own ? 0 : clip.held !== undefined ? 1 : THREE.MathUtils.smoothstep(clip.u, 0.78, 1);
               const c = 1 - k;
-              reach(0.02 * c + 0.27 * k, 0.31 * c - 0.25 * k, 0.15 * c + 0.12 * k, 1, -0.7 * c + 0.1 * k, -0.1 * c - 0.4 * k, -1.2 * c);
+              // Plan item 422: holding her stance she shoulders the launcher, her hand on its grip at her chest; the
+              // briefcase stands on the street beside her.
+              reach(0.02 * c + 0.22 * k, 0.31 * c + 0.11 * k, 0.15 * c + 0.24 * k, 1, -0.7 * c - 0.6 * k, -0.1 * c - 0.3 * k, -1.2 * c);
               headPivot.rotation.x += (0.2 * c - 0.05 * k) * e;
               headPivot.rotation.y += (0.22 * c + 0.1 * k) * e;
               chest.rotation.z += (0.04 * c + 0.03 * k) * e;
-              carryNow = k > 0.5 && e > 0.5;
+              if (k > 0.5 && e > 0.5) gunInHand = "launcher";
             }
         }
       }
@@ -3216,6 +3226,49 @@ float reliefShade( vec2 uv ) {
   hipGun.quaternion.setFromUnitVectors(V(0, 1, 0), V(0.05, -1, 0.06).normalize());
   kits.get("butcher")!.add(hipGun);
   const backRifle = kits.get("ghost")!.children[1]!;
+  // Plan item 422: the other three classes' signature guns (the sheet's: CLASS_SIGNATURE) in her posing hand, the
+  // inspect's own meshes stood muzzle up from the grip like the rifle: the Gunslinger's revolver, the Wirewitch's
+  // smart SMG, the Fixer's launcher.
+  const sideGuns = new Map<"revolver" | "smg" | "launcher", THREE.Group>();
+  for (const k of ["revolver", "smg", "launcher"] as const) {
+    const g = new THREE.Group();
+    g.name = `prop-${k}`;
+    const gun = buildGunDisplay(k, phone);
+    gun.rotation.x = Math.PI / 2;
+    gun.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
+    });
+    g.add(gun);
+    // Seated in her palm: the gun slides so its nearest point to the grip point sits 1 cm off it (the smart SMG's
+    // origin was 3 cm off its grip, so the hand read as hovering).
+    {
+      gun.updateMatrixWorld(true);
+      const v = new THREE.Vector3();
+      const near = new THREE.Vector3();
+      let best = Infinity;
+      gun.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute;
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+          const d = v.length();
+          if (d < best) {
+            best = d;
+            near.copy(v);
+          }
+        }
+      });
+      if (best > 0.01) gun.position.addScaledVector(near, -(best - 0.01) / best);
+    }
+    g.visible = false;
+    chest.add(g);
+    sideGuns.set(k, g);
+  }
 
   // ---- plan item 235: one large silhouette piece per class, so the five read apart at a glance on the class pick
   // (a critique read them as one figure with a different gun). Head pieces ride the head, the Fixer's case stands on
@@ -3527,12 +3580,24 @@ float reliefShade( vec2 uv ) {
   };
   // Plan item 247: leaned a little further out (0.12 -> 0.2) so the scope clears her face box, not only her cheek.
   const RIFLE_DIR = V(-0.14, -1, 0.14);
+  // Plan item 422: each side gun's muzzle direction and its top, in the chest frame (+x her left, +z ahead of her).
+  // The revolver hangs drawn at her hip, muzzle down and out; the smart SMG stands raised by her shoulder into the
+  // rig's light, its magazine to the lens; the launcher rests back over her left shoulder.
+  const SIDE_DIR: Record<"revolver" | "smg" | "launcher", [THREE.Vector3, THREE.Vector3]> = {
+    revolver: [V(0.3, -0.8, 0.52), V(0, 0.6, 0.8)],
+    smg: [V(0.2, 1, 0.1), V(-0.2, 0, -1)],
+    launcher: [V(0.42, 1, -0.45), V(0, 0.4, 1)],
+  };
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);
   const SHOT_TOP = V(0.2, 0.1, -1);
-  let propNow: "rifle" | "shotgun" | null = null;
-  function poseProps(inHand: "rifle" | "shotgun" | null, glintK: number, rackK: number, shellT: number): void {
+  let propNow: HeldProp | null = null;
+  function poseProps(inHand: HeldProp | null, glintK: number, rackK: number, shellT: number): void {
     propNow = inHand;
+    for (const [k, g] of sideGuns) {
+      g.visible = inHand === k;
+      if (g.visible) stand(g, SIDE_DIR[k][0], SIDE_DIR[k][1]);
+    }
     rifle.visible = inHand === "rifle";
     backRifle.visible = inHand !== "rifle";
     shotgun.visible = inHand === "shotgun";
@@ -3747,7 +3812,26 @@ float reliefShade( vec2 uv ) {
     },
     get poseState() {
       const r = (v: number) => Math.round(v * 1000) / 1000;
-      return { kind: stanceNow, w: stanceW, blendS, hand: [r(handNow.x), r(handNow.y), r(handNow.z)] as [number, number, number] };
+      // Plan item 422: what her hand holds, the gap (m) from her palm to the nearest point of that gun's mesh, and her
+      // joints (arm, chest, pelvis, head) rounded, so a check can tell the five poses apart.
+      const held = propNow === "rifle" ? rifle : propNow === "shotgun" ? shotgun : propNow ? sideGuns.get(propNow) ?? null : null;
+      let gap: number | null = null;
+      if (held) {
+        held.updateWorldMatrix(true, true);
+        const palm = held.getWorldPosition(new THREE.Vector3());
+        const v = new THREE.Vector3();
+        let best = Infinity;
+        held.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const pos = m.geometry.attributes.position as THREE.BufferAttribute;
+          for (let i = 0; i < pos.count; i++) best = Math.min(best, v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).distanceTo(palm));
+        });
+        gap = r(best);
+      }
+      const q = (n: number) => Math.round(n * 100) / 100;
+      const joints = [...upperL.matrix.elements, ...foreL.matrix.elements, chest.rotation.x, chest.rotation.y, chest.rotation.z, pelvis.rotation.y, pelvis.rotation.z, headPivot.rotation.x, headPivot.rotation.y, headPivot.rotation.z].map(q).join(",");
+      return { kind: stanceNow, w: stanceW, blendS, hand: [r(handNow.x), r(handNow.y), r(handNow.z)] as [number, number, number], prop: propNow, gap, joints };
     },
     play(kind, u, seconds) {
       clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };

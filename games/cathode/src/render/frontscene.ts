@@ -16,7 +16,7 @@ import * as THREE from "three";
 import { createWorld } from "./world";
 import { AutoScale, frontDynOptions } from "../game/autoscale";
 import type { Quality, World } from "./types";
-import { buildFrontCath, type FaceExpression, type FrontCath } from "./frontcath";
+import { buildFrontCath, type FaceExpression, type HeldProp, type FrontCath } from "./frontcath";
 import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
 import { buildFrontStoop } from "./frontstoop";
 import { buildFrontWet } from "./frontwet";
@@ -62,7 +62,7 @@ export interface FrontScene {
    */
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
-  readonly vignette: { kind: string; u: number; prop: "rifle" | "shotgun" | null } | null;
+  readonly vignette: { kind: string; u: number; prop: HeldProp | null } | null;
   /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
   figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 140: the expression painted on her face now. */
@@ -367,6 +367,17 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const wLook = toWorld(...WARDROBE.look);
   const key = { pos: toWorld(1.35, 1.8, 1.15), color: new THREE.Color(0, 0, 0), intensity: 0, range: 7 };
   const keyWant = new THREE.Color(0, 0, 0);
+  // Plan item 422: each class's key from its own angle (her frame: +x her left, +z toward the pick's lens), eased with
+  // its colour: the Ghost's cold light high and to the side, the Butcher's low and ahead (lit from under the chin),
+  // the Gunslinger's raking from low on her left, the Wirewitch's from over her rig, the Fixer's from her right.
+  const KEY_AT: Record<string, [number, number, number]> = {
+    ghost: [1.55, 2.25, 0.55],
+    butcher: [0.85, 1.0, 1.45],
+    gunslinger: [1.6, 1.45, 0.95],
+    wirewitch: [0.35, 2.55, 0.95],
+    fixer: [-1.2, 1.85, 1.2],
+  };
+  const keyPosWant = key.pos.clone();
   const coatBase = new THREE.Color(CATH_HERO.trench);
   const coatNow = coatBase.clone();
   const coatWant = coatBase.clone();
@@ -382,8 +393,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const k = 1 - Math.exp(-dt * 4.2);
     wd.w += (wd.target - wd.w) * k;
     if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
-    // About 400 ms to the new colour.
-    key.color.lerp(keyWant, 1 - Math.exp(-dt * 9));
+    // Plan item 422: about 250 ms to the new colour and angle (95% of the way; it was 400 ms).
+    key.color.lerp(keyWant, 1 - Math.exp(-dt * 12));
+    key.pos.lerp(keyPosWant, 1 - Math.exp(-dt * 12));
     // Plan item 129: the kit-on flash, the key light at 2.6x the moment the kit goes on, easing back over 320 ms.
     if (wd.flash > 0) wd.flash = Math.max(0, wd.flash - dt);
     const flash = wd.flash > 0 ? 1.6 * Math.pow(wd.flash / FLASH_S, 2) : 0;
@@ -915,7 +927,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const held = (o: THREE.Object3D | null): boolean => {
         for (; o; o = o.parent) {
           if (!o.visible) return false;
-          if (o.name === "prop-rifle" || o.name === "prop-shotgun" || o.name === "kit-fixer-case-carried") return true;
+          if (o.name.startsWith("prop-") || o.name === "kit-fixer-case-carried") return true;
         }
         return false;
       };
@@ -1022,6 +1034,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       wd.target = cls ? 1 : 0;
       const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];
       keyWant.setRGB(c[0]!, c[1]!, c[2]!);
+      if (cls && KEY_AT[cls]) keyPosWant.copy(toWorld(...KEY_AT[cls]!));
       const coatHex = cls ? CLASS_COAT[cls] : null;
       coatWant.copy(coatHex != null ? new THREE.Color(coatHex) : coatBase);
       if (cls) cath.play(cls, instant ? 0.5 : undefined, VIGNETTE_S);
@@ -1041,6 +1054,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);
+        key.pos.copy(keyPosWant);
         coatNow.copy(coatWant);
         wardrobeStep(0);
         frame(0);
