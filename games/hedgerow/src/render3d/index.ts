@@ -2253,10 +2253,35 @@ export class Renderer3D {
           steps.push({ x: q.x, y: q.y, a: Math.atan2(a.y - q.y, a.x - q.x) });
         }
         const grp = new THREE.Group();
-        const water = new THREE.InstancedMesh(
-          new THREE.PlaneGeometry(0.42, 0.98).rotateX(-Math.PI / 2),
+        // Plan item 429: the ford's water is one ribbon along the lane whose two banks wander (a row of 0.98-wide
+        // rectangles drew the lane's straight edges, four cells long, as a box).
+        const ribbon: number[] = [];
+        const ridx: number[] = [];
+        for (let d = f.from - 0.1, k = 0; d <= f.to + 0.1 + 1e-6; d += 0.06, k++) {
+          const q = enemyPoint(game.level, { dist: d });
+          const a = enemyPoint(game.level, { dist: d + 0.05 });
+          const ang = Math.atan2(a.y - q.y, a.x - q.x);
+          const nx = -Math.sin(ang);
+          const nz = Math.cos(ang);
+          const wl = 0.47 + 0.05 * Math.sin(d * 4.1 + 0.7) + 0.025 * Math.sin(d * 9.3);
+          const wr = 0.47 + 0.05 * Math.sin(d * 3.3 + 2.1) + 0.025 * Math.sin(d * 8.1 + 1.3);
+          const y = this.height(q.x, q.y) + 0.04;
+          ribbon.push(q.x + nx * wl, y, q.y + nz * wl, q.x - nx * wr, y, q.y - nz * wr);
+          if (k > 0) {
+            const b = (k - 1) * 2;
+            ridx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+          }
+        }
+        const rgeo = new THREE.BufferGeometry();
+        rgeo.setAttribute("position", new THREE.Float32BufferAttribute(ribbon, 3));
+        rgeo.setAttribute("uv", new THREE.Float32BufferAttribute(ribbon.flatMap((_, i) => (i % 3 === 0 ? [ribbon[i]!, ribbon[i + 2]!] : [])), 2));
+        rgeo.setIndex(ridx);
+        // Flat water: every normal up (at a bend the inner edge folds over itself, and computed normals there flip and
+        // draw dark wedges).
+        rgeo.setAttribute("normal", new THREE.Float32BufferAttribute(ribbon.map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+        const water = new THREE.Mesh(
+          rgeo,
           new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.28, metalness: 0.1, normalMap: waterNormalTexture(), normalScale: new THREE.Vector2(0.4, 0.4) }), // plan item 330: the ponds' deeper water, rippled
-          steps.length,
         );
         const stones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: "#8d8a80", roughness: 0.9, flatShading: true }), steps.length * 2);
         /** Is (x, z) on another step's water? (On a bend the steps overlap.) */
@@ -2274,7 +2299,6 @@ export class Renderer3D {
         const v = new THREE.Vector3();
         steps.forEach((st, i) => {
           q4.setFromAxisAngle(up, -st.a);
-          water.setMatrixAt(i, m4.compose(v.set(st.x, this.height(st.x, st.y) + 0.04, st.y), q4, sc));
           for (const side of [-1, 1]) {
             const ox = -Math.sin(st.a) * 0.47 * side;
             const oz = Math.cos(st.a) * 0.47 * side;

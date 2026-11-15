@@ -1990,6 +1990,35 @@ function filleted(loop: Array<[number, number]>, rad: number): Array<{ x: number
  * Plan item 346: the banks round a level's ponds and river: a sloped ring of wet mud, earth and grass along each wet
  * region's rounded outline (one mesh), and a transparent fringe of shallows inside it (one mesh).
  */
+/**
+ * Plan item 429: a river's banks wander. The filleted outline runs dead straight along each cell edge (a long river
+ * read as a box with vertical walls); densified to 0.12 steps, each point is pushed in or out along its normal by a
+ * gentle two-wave meander, at most 0.085, inside the bank's 0.35 width so the ground's step under it stays hidden.
+ */
+export function meander(pts: Array<{ x: number; z: number; nx: number; nz: number }>): Array<{ x: number; z: number; nx: number; nz: number }> {
+  const out: Array<{ x: number; z: number; nx: number; nz: number }> = [];
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[i]!;
+    const b = pts[(i + 1) % n]!;
+    const len = Math.hypot(b.x - a.x, b.z - a.z);
+    const steps = Math.max(1, Math.ceil(len / 0.12));
+    for (let k = 0; k < steps; k++) {
+      const t = k / steps;
+      let nx = a.nx + (b.nx - a.nx) * t;
+      let nz = a.nz + (b.nz - a.nz) * t;
+      const nl = Math.hypot(nx, nz) || 1;
+      nx /= nl;
+      nz /= nl;
+      const x = a.x + (b.x - a.x) * t;
+      const z = a.z + (b.z - a.z) * t;
+      const w = 0.055 * Math.sin(x * 2.3 + z * 1.7) + 0.03 * Math.sin(x * 5.1 - z * 4.3 + 1.1);
+      out.push({ x: x + nx * w, z: z + nz * w, nx, nz });
+    }
+  }
+  return out;
+}
+
 function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number, grass: THREE.Color, dirt: THREE.Color): THREE.Mesh[] {
   const IN = 0.17;
   const OUT = 0.18;
@@ -2005,7 +2034,7 @@ function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number,
   const fcol: number[] = [];
   const fidx: number[] = [];
   for (const loop of wetLoops(wet)) {
-    const pts = filleted(loop, 0.32);
+    const pts = meander(filleted(loop, 0.32));
     const base = pos.length / 3;
     const fbase = fpos.length / 3;
     for (const p of pts) {

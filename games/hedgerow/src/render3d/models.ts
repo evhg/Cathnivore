@@ -38,6 +38,43 @@ const boxGeo = (w: number, h: number, d: number) => geo(`box${w},${h},${d}`, () 
 const box = (w: number, h: number, d: number, mat: M, x = 0, y = 0, z = 0) => mesh(boxGeo(w, h, d), mat, x, y + h / 2, z);
 /** Plan item 269: pale shallows fading in from all four edges of a w x d sheet of water whose top is at y. */
 let shoreMat: THREE.MeshStandardMaterial | null = null;
+/** Plan item 429: a pool of w by d as a flat rounded shape whose edge wanders (24 segments a corner, the long edges
+ *  meandering), grown by `grow`, at height `y`: a set piece's water or its mud rim. */
+function softPool(w: number, d: number, color: string, grow: number, y: number): THREE.Mesh {
+  const hw = w / 2 + grow;
+  const hd = d / 2 + grow;
+  const r = Math.min(hw, hd) * 0.45;
+  const pts: THREE.Vector2[] = [];
+  const corners: Array<[number, number, number]> = [
+    [hw - r, hd - r, 0],
+    [-hw + r, hd - r, Math.PI / 2],
+    [-hw + r, -hd + r, Math.PI],
+    [hw - r, -hd + r, (3 * Math.PI) / 2],
+  ];
+  for (const [cx, cz, a0] of corners) for (let k = 0; k <= 24; k++) {
+    const a = a0 + (k / 24) * (Math.PI / 2);
+    pts.push(new THREE.Vector2(cx + Math.cos(a) * r, cz + Math.sin(a) * r));
+  }
+  // Densify the straight runs between the corners and let the edge wander along its normal.
+  const out: THREE.Vector2[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i]!;
+    const b = pts[(i + 1) % pts.length]!;
+    const steps = Math.max(1, Math.ceil(a.distanceTo(b) / 0.1));
+    for (let k = 0; k < steps; k++) {
+      const p = a.clone().lerp(b, k / steps);
+      const len = Math.hypot(p.x, p.y) || 1;
+      const wob = 0.035 * Math.sin(p.x * 7.3 + p.y * 3.1) + 0.02 * Math.sin(p.y * 9.7 - p.x * 2.3);
+      out.push(new THREE.Vector2(p.x + (p.x / len) * wob, p.y + (p.y / len) * wob));
+    }
+  }
+  const geo = new THREE.ShapeGeometry(new THREE.Shape(out)).rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geo, matte(color, color === "#2f6f86" ? 0.3 : 0.95));
+  mesh.position.y = y;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
 function shallowsRim(w: number, d: number, y: number): THREE.Group {
   shoreMat ??= new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), opacity: 0.85, transparent: true, roughness: 0.5, depthWrite: false });
   const g = new THREE.Group();
@@ -3600,7 +3637,8 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       break;
     }
     case "reeds": {
-      g.add(box(w - 0.12, 0.02, d - 0.12, matte("#2f6f86", 0.3), 0, 0.0, 0), shallowsRim(w - 0.12, d - 0.12, 0.02));
+      // Plan item 429: a rounded, wandering pool on a mud rim, not a flat box with straight edges.
+      g.add(softPool(w - 0.12, d - 0.12, "#4a3a26", 0.06, 0.004), softPool(w - 0.2, d - 0.2, "#2f6f86", 0, 0.02));
       const reed = [matte("#5d8a3a"), matte("#7aa84a")];
       const n = Math.round(w * d * 9);
       for (let k = 0; k < n; k++) {
