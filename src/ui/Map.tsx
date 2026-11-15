@@ -110,6 +110,9 @@ interface Props {
   underNames?: ReactElement
   /** Plan item 141: the action being looked at, as a ghost piece on each region it could play into. */
   ghost?: { regions: RegionId[]; sign: '+' | '-' }
+  /** Plan item 402: the region Cath's suggestion plays into: a chalk ring with her green stake (`lit` when the
+   *  suggested card is under the pointer or focus). */
+  pick?: { region: RegionId; lit: boolean }
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -650,7 +653,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1141,6 +1144,18 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           Oakvale's and Shingle Bay's labels — the two bottom-row regions in the flower, whose top
           vertex sits against the row above rather than open background — clipped this way). */}
       {underNames}
+      {pick && active.includes(pick.region) && (() => {
+        const { x, y } = hexCenter(pick.region, layout)
+        return (
+          <g className="cath-pick" data-cath-pick={pick.region} data-lit={pick.lit ? '' : undefined} pointerEvents="none" aria-hidden="true" transform={`translate(${x} ${y})`}>
+            <circle className="cath-pick-ring" r={HEX_R * 0.7} />
+            <g className="cath-pick-stake" transform={`translate(${HEX_R * 0.5} ${HEX_R * 0.42})`}>
+              <path className="cath-pick-post" d="M0 0V-24" />
+              <path className="cath-pick-leaf" d="M0-24C9-34 20-30 22-22C13-16 4-17 0-24Z" />
+            </g>
+          </g>
+        )
+      })()}
       {ghost && (
         <g className="ghost-pieces" pointerEvents="none" aria-hidden="true">
           {ghost.regions.filter((id) => active.includes(id)).map((id) => {

@@ -1778,6 +1778,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   }
   const isSuggested = (indices: number[]) => (suggested && indices.includes(suggested.index) ? '' : undefined)
+  // Plan item 402: the region her suggestion plays into, ringed on the board; lit while that card is looked at.
+  const pickAction = suggested ? actions[suggested.index] : undefined
+  const cathPickRegion = pickAction && 'region' in pickAction && pickAction.region ? (pickAction.region as RegionId) : undefined
   // Keyed by the action itself, so a preview left over from before a move can't land on a different card.
   const actionKeys = actions.map((a) => JSON.stringify(a))
   const previewActions = (previewKeys ?? []).map((k) => actions[actionKeys.indexOf(k)]).filter((a): a is Action => !!a)
@@ -3383,6 +3386,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         <RegionMap
           state={boardState}
           ghost={selectedGroup || drag ? undefined : ghost}
+          pick={cathPickRegion && !selectedGroup && !drag ? { region: cathPickRegion, lit: previewActions.some((a) => JSON.stringify(a) === JSON.stringify(pickAction)) } : undefined}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep

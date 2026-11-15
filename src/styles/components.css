@@ -1084,6 +1084,24 @@ html.no-animations .meter > i.ghost-loss {
   color: var(--clay-deep);
 }
 
+/* Plan item 402: the region Cath's suggestion plays into: a chalk ring and her green leaf stake. The ring brightens
+   while the suggested card is under the pointer or keyboard focus. */
+.map .cath-pick-ring {
+  fill: none;
+  stroke: var(--pasture-deep);
+  stroke-width: 4;
+  stroke-dasharray: 10 7;
+  stroke-linecap: round;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 1.5px var(--paper-on-fixed-fill)) drop-shadow(0 0 1.5px var(--paper-on-fixed-fill));
+  opacity: .75;
+  transition: opacity 200ms ease-out, stroke-width 200ms ease-out;
+}
+.map .cath-pick[data-lit] .cath-pick-ring { opacity: 1; stroke-width: 6; }
+.map .cath-pick-post { stroke: var(--wood-lo); stroke-width: 3; stroke-linecap: round; }
+.map .cath-pick-leaf { fill: var(--pasture-deep); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { .map .cath-pick-ring { transition: none; } }
+
 .map .ghost-piece circle {
   fill: color-mix(in srgb, var(--paper) 70%, transparent);
   stroke: var(--ink);
