@@ -4173,7 +4173,19 @@ function coachTower(g: Game): TowerKind | null {
 let coachKey = "";
 function syncCoach(g: Game, kind: TowerKind | null): void {
   // Plan item 396: the tower her line names pulses in the rack, so the player sees which packet she means.
-  for (const t of ui.panel.querySelectorAll<HTMLElement>(".tray-tower")) t.toggleAttribute("data-coached", !!kind && t.dataset.kind === kind);
+  for (const t of ui.panel.querySelectorAll<HTMLElement>(".tray-tower")) {
+    const on = !!kind && t.dataset.kind === kind;
+    // On a phone's sideways tray, the packet she names slides into view when she first names it.
+    if (on && !t.hasAttribute("data-coached")) {
+      const tray = t.parentElement;
+      if (tray && tray.scrollWidth > tray.clientWidth + 1) {
+        const left = t.offsetLeft - tray.offsetLeft;
+        if (left < tray.scrollLeft || left + t.offsetWidth > tray.scrollLeft + tray.clientWidth)
+          tray.scrollTo({ left: Math.max(0, left - 8), behavior: REDUCED ? "auto" : "smooth" });
+      }
+    }
+    t.toggleAttribute("data-coached", on);
+  }
   const r = renderer as { coach?: { col: number; row: number; kind: TowerKind } | null } | null;
   if (!r || !("coach" in r)) return;
   // On a phone's close 3D frame she means a plot you can see: the best one in view (rechecked each second while the
