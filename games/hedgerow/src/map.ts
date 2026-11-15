@@ -1399,6 +1399,7 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
       const lush = won[stop] === true;
       if (k < 3) cells += `<path d="${d}" fill="${lush ? richer(g.patches[k]!, 2.4) : g.patches[k]}" opacity="${f(lush ? Math.max(op, 0.85) : op)}"/>`;
       else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 2)}" opacity=".7"/>`;
+
       // Plan item 274: a ploughed field's furrows are drawn lines at a steady 1.4 px (non-scaling), clipped to the
       // field; a stretched pattern drew them as broad ruled stripes on a wide screen.
       if (rand() < 0.3) {
@@ -1420,8 +1421,12 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   const ve = 'vector-effect="non-scaling-stroke" fill="none" stroke-linecap="round" stroke-linejoin="round"';
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
-    `<defs>${clips}</defs>` +
+    // Plan item 428: a paper-and-grass grain over the land (it read as flat pale squares), multiplied in faintly.
+    `<defs>${clips}<filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
     `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
+    `<rect width="100" height="100" filter="url(#gr${i})" opacity=".8"/>` +
+    // ...and each hedge throws a soft shadow just below it, so the rows stand up from the fields.
+    `<path d="${hedges}" stroke="#2a2010" stroke-width="${f(10 * wt)}" opacity=".13" transform="translate(0 1.1)" ${ve}/>` +
     // Plan item 274: field hedges as hedgerows, not ruled lines: a dark root band, rounded crowns along it and lit
     // leaves on every other crown. `wt` scales them (a phone's 390 px band takes about 0.6).
     `<path d="${hedges}" stroke="${g.hedge}" stroke-width="${f(7 * wt)}" opacity=".55" ${ve}/>` +
