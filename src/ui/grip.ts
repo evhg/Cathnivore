@@ -22,6 +22,16 @@ export function gripStage(r: Pick<RegionState, 'outlets' | 'buyouts' | 'doubt' |
 }
 
 /**
+ * Plan item 417: who holds a region, as the land itself shows it: `free` once liberated, `held` once Hollowell has
+ * dug in (grip stage 2+), `contested` between.
+ */
+export type Control = 'held' | 'contested' | 'free'
+export function regionControl(r: Pick<RegionState, 'outlets' | 'buyouts' | 'doubt' | 'liberated'>): Control {
+  if (r.liberated) return 'free'
+  return gripStage(r) >= 2 ? 'held' : 'contested'
+}
+
+/**
  * One step from Lost Land: the next Squeeze here would take ground if one more piece arrives (its damage already
  * equals the stalls defending it), so the tile flies a quiet warning flag.
  */

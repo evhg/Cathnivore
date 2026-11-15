@@ -8,6 +8,21 @@ const ink = { stroke: 'var(--ink)', strokeWidth: 1, strokeLinecap: 'round' as co
 const HEATHER = 'color-mix(in srgb, var(--clay) 55%, var(--sea))'
 
 const ART: Record<GroundKind, ReactElement> = {
+  // Plan item 417: a market stall on freed ground: a striped awning over a laden trestle, in the players' warm paper.
+  stall: (
+    <g strokeLinejoin="round">
+      <ellipse cx={0} cy={8.6} rx={10.5} ry={1.6} fill="var(--ink)" opacity={0.18} />
+      <path d="M-8,-2 V8 M8,-2 V8" {...ink} strokeWidth={1.2} />
+      <rect x={-9} y={2} width={18} height={4.2} rx={0.8} fill="var(--soil)" {...ink} strokeWidth={0.9} />
+      <circle cx={-5} cy={1.2} r={1.9} fill="var(--clay)" stroke="var(--ink)" strokeWidth={0.6} />
+      <circle cx={-1} cy={1} r={1.9} fill="var(--wheat)" stroke="var(--ink)" strokeWidth={0.6} />
+      <circle cx={3} cy={1.2} r={1.9} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={0.6} />
+      <circle cx={6.6} cy={1.4} r={1.6} fill="var(--clay)" stroke="var(--ink)" strokeWidth={0.6} />
+      <path d="M-10.5,-3 L-8,-9.5 H8 L10.5,-3 Z" fill="var(--paper-hi, var(--paper))" {...ink} strokeWidth={1} />
+      <path d="M-6.3,-9.5 L-7.4,-3 H-4.4 L-3.8,-9.5 Z M-1.3,-9.5 L-1.5,-3 H1.5 L1.3,-9.5 Z M3.8,-9.5 L4.4,-3 H7.4 L6.3,-9.5 Z" fill="var(--clay)" />
+      <path d="M-10.5,-3 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0" fill="var(--clay)" {...ink} strokeWidth={0.8} />
+    </g>
+  ),
   reeds: (
     <g>
       <path d="M-4,7 Q-5,0 -3,-5 M0,7 Q0,-1 1,-7 M4,7 Q5,1 4,-4" fill="none" {...ink} stroke="var(--pasture)" strokeWidth={1.4} />
@@ -83,9 +98,12 @@ const ART: Record<GroundKind, ReactElement> = {
 const AMBIENT: Partial<Record<GroundKind, string>> = { gull: 'amb-glide', reeds: 'amb-sway', bunting: 'amb-sway' }
 
 export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[] }) {
+  const ground = marks.filter((m) => m.kind !== 'stall')
+  const stalls = marks.filter((m) => m.kind === 'stall')
   return (
-    <g className="region-ground" pointerEvents="none" aria-hidden="true" opacity={0.75} data-marks={marks.length}>
-      {marks.map((m, i) => (
+    <>
+    <g className="region-ground" pointerEvents="none" aria-hidden="true" opacity={0.75} data-marks={ground.length}>
+      {ground.map((m, i) => (
         <g key={i} data-kind={m.kind} transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) rotate(${m.r}) scale(${m.s})`}>
           {AMBIENT[m.kind] ? (
             <g className={AMBIENT[m.kind]} data-phase={i % 4}>
@@ -97,5 +115,15 @@ export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[
         </g>
       ))}
     </g>
+    {stalls.length > 0 && (
+      <g className="free-stalls" pointerEvents="none" aria-hidden="true" data-stalls={stalls.length}>
+        {stalls.map((m, i) => (
+          <g key={i} className="free-stall" data-kind="stall" transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) scale(${m.s})`}>
+            {ART.stall}
+          </g>
+        ))}
+      </g>
+    )}
+    </>
   )
 }

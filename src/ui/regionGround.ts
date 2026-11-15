@@ -22,6 +22,7 @@ export type GroundKind =
   | 'pebbles'
   | 'groyne'
   | 'gull'
+  | 'stall'
 
 export interface GroundMark {
   kind: GroundKind
@@ -49,6 +50,7 @@ export const GROUND_SIZE: Record<GroundKind, [number, number]> = {
   pebbles: [14, 7],
   groyne: [6, 22],
   gull: [10, 5],
+  stall: [22, 19],
 }
 
 /** What each region's ground is made of, most common first; a region not named here takes its type's set. */
@@ -74,6 +76,8 @@ const BY_TYPE: Record<RegionType, GroundKind[]> = {
 /** How many marks a tile aims for, and the fewest it settles for. */
 export const GROUND_TARGET = 9
 export const GROUND_MIN = 4
+/** Plan item 417: the stalls a freed region's ground holds. */
+export const FREE_STALLS = 3
 /** The face the marks keep inside, and their clearance from the pieces and each other, in tile units. */
 const FACE = TILE_R * 0.86
 const PIECE_PAD = 3
@@ -120,18 +124,36 @@ function rng(id: string): () => number {
  * The region's ground marks, clear of every piece slot in `tray` and of each other, inside the tile face.
  * Kinds come round in the region's order, so the first (its signature) is the most common.
  */
-export function regionGround(id: string, type: RegionType, tray: readonly PieceRect[]): GroundMark[] {
+export function regionGround(id: string, type: RegionType, tray: readonly PieceRect[], free = false): GroundMark[] {
   const kinds = groundKinds(id, type)
   const rand = rng(id)
   const marks: GroundMark[] = []
   const boxes: PieceRect[] = []
+  // Plan item 417: freed land holds a market of its own: FREE_STALLS awnings placed first, where the pieces leave
+  // room (shrinking as they miss), so the players' side of the board reads as busy and theirs.
+  if (free) {
+    for (let n = 0; n < FREE_STALLS; n++) {
+      for (let attempt = 0; attempt < 160; attempt++) {
+        const s = Math.max(0.7, 1.45 - attempt * 0.005)
+        const m: GroundMark = { kind: 'stall', x: (rand() * 2 - 1) * FACE * 0.8, y: (rand() * 2 - 1) * FACE * 0.8, s: Math.round(s * 100) / 100, r: 0 }
+        const b = markRect(m)
+        if (!rectInHex(b, FACE)) continue
+        if (tray.some((p) => rectsOverlap(b, p, PIECE_PAD))) continue
+        if (boxes.some((o) => rectsOverlap(b, o, MARK_PAD))) continue
+        marks.push(m)
+        boxes.push(b)
+        break
+      }
+    }
+  }
+  const base = marks.length
   // Lines along the ground (tide lines, walls, furrows) lie nearly level; standing things (reeds, trees) upright.
   const lying = new Set<GroundKind>(['tideLine', 'drystone', 'furrows', 'bunting'])
   // Each slot tries its own kind first (so the signature, listed first and twice, leads), shrinking as it misses,
   // then falls back to the next kind: a long tide line may never fit a crowded tile.
   // Plan item 172: a tile crowded with the larger pieces gets a second, smaller pass so it keeps GROUND_MIN marks.
   for (const [k, want] of [[1, GROUND_TARGET], [0.6, GROUND_MIN]] as const)
-  for (let slot = 0; slot < GROUND_TARGET * 3 && marks.length < want; slot++) {
+  for (let slot = 0; slot < GROUND_TARGET * 3 && marks.length - base < want; slot++) {
     for (let attempt = 0; attempt < 60; attempt++) {
       const kind = kinds[(slot + Math.floor(attempt / 20)) % kinds.length]!
       const s = k * (0.8 + rand() * 0.45) * (1 - (attempt % 20) * 0.015)

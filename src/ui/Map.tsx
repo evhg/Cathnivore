@@ -2,8 +2,8 @@ import AbilityMoment from './AbilityMoment'
 import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilityUsed'
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
-import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
-import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout } from './pieceLayout'
+import { atTheEdge, gripStage, regionControl, squeezedLastTurn, type GripStage } from './grip'
+import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -187,6 +187,12 @@ function RegionTextureDefs() {
         <stop offset="0.42" stopColor="white" stopOpacity={0} />
         <stop offset="0.62" stopColor="black" stopOpacity={0} />
         <stop offset="1" stopColor="black" stopOpacity={0.16} />
+      </linearGradient>
+      {/* Plan item 417: held ground's tarmac: a cool grey sheet, lighter where the light catches its gloss. */}
+      <linearGradient id="held-tarmac" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#b9c2c9" stopOpacity={0.42} />
+        <stop offset="0.55" stopColor="#8d979f" stopOpacity={0.36} />
+        <stop offset="1" stopColor="#6f7a83" stopOpacity={0.42} />
       </linearGradient>
       <radialGradient id="tile-paint" cx="0.4" cy="0.38" r="0.7">
         <stop offset="0" stopColor="white" stopOpacity={0.14} />
@@ -422,6 +428,12 @@ function PressureRing({ x, y, ours, theirs, atRisk, liberated }: { x: number; y:
 // Plan item 28: life on a liberated region. Bunting strung across the top of the hex, a cottage chimney
 // with smoke curling up and a bird wheeling over it. The CSS drifts the smoke and the bird; reduced motion
 // leaves them still. `seed` staggers each region's timing so the board doesn't move in step.
+/** Plan item 417: the boxes (tile units, round the hex centre) LiberatedLife's bunting and cottage take. */
+const LIFE_RECTS: PieceRect[] = [
+  { kind: 'badge', x0: -HEX_R * 0.58, y0: -HEX_R * 0.64, x1: HEX_R * 0.58, y1: -HEX_R * 0.6 + HEX_R * 0.14 + 12 },
+  { kind: 'badge', x0: HEX_R * 0.42 - 14, y0: HEX_R * 0.12 - 34, x1: HEX_R * 0.42 + 14, y1: HEX_R * 0.12 + 11 },
+]
+
 function LiberatedLife({ x, y, seed }: { x: number; y: number; seed: number }) {
   const R = HEX_R
   const x0 = x - R * 0.56
@@ -839,6 +851,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         const r = state.regions[id]
         const { x, y } = hexCenter(id, layout)
         const stalls = Object.entries(r.stalls).filter(([, n]) => (n ?? 0) > 0) as [ProducerId, number][]
+        const control = regionControl(r)
         const dimmed = targeting && !highlighted.has(id)
         const glow = targeting && highlighted.has(id)
         // Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen; the landmark
@@ -888,16 +901,20 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             }
             data-tutorial={`region-${id}`}
             data-threat={threat?.regions.includes(id) ? threat.slot : undefined}
+            data-control={control}
             aria-label={def.name}
           >
+            {/* Plan item 417: the land itself shows who holds it. Its ground layers (`land-layer`) the CSS greys toward
+                tarmac when Hollowell has dug in, and warms when freed; a change cross-fades. */}
             <polygon
+              className="land-layer"
               points={hexPoints(x, y, HEX_R * GAP_SCALE)}
               fill={REGION_FILL[def.type]}
               stroke="var(--ink)"
               strokeWidth={2}
             />
-            <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
-            <polygon className="tile-paint" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#tile-paint)" pointerEvents="none" />
+            <polygon className="land-layer" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill={`url(#${REGION_PATTERN_ID[def.type]})`} />
+            <polygon className="tile-paint land-layer" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#tile-paint)" pointerEvents="none" />
             {/* Plan item 144: the week's market event dresses every region's ground, under the pieces (the band at the
                 hex's foot, below the stalls, is free on every tile). */}
             {marketEvent === 'drought' && <polygon className="ev-cracks" points={hexPoints(x, y, HEX_R * GAP_SCALE)} fill="url(#ev-cracks)" pointerEvents="none" />}
@@ -946,22 +963,33 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               strokeWidth={2}
               pointerEvents="none"
             />
-            <g transform={`translate(${x}, ${y})`} pointerEvents="none">
+            <g className="land-layer" transform={`translate(${x}, ${y})`} pointerEvents="none">
               <GroundArt type={def.type} id={id} clip={`${uid}-ground-${id}`} />
             </g>
             {/* Plan item 76: the region's own ground, where the pieces and the landmark leave the face clear. */}
-            <g transform={`translate(${x}, ${y})`}>
+            <g className="land-layer" transform={`translate(${x}, ${y})`}>
               <RegionGroundArt
                 marks={(() => {
                   const spot = pickSpot(tray.rects)
                   const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
-                  return regionGround(id, def.type, taken)
+                  // Plan item 417: a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
+                  return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, r.liberated)
                 })()}
               />
             </g>
-            <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art">
+            <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art land-layer">
               <TerrainArt type={def.type} id={id} />
             </g>
+            {control === 'held' && (
+              <g className="held-sheen" data-control-sheen="held" pointerEvents="none">
+                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="url(#held-tarmac)" />
+                <path
+                  d={`M ${x - HEX_R * 0.78},${y + HEX_R * 0.05} L ${x - HEX_R * 0.05},${y - HEX_R * 0.78} L ${x + HEX_R * 0.2},${y - HEX_R * 0.7} L ${x - HEX_R * 0.66},${y + HEX_R * 0.3} Z`}
+                  fill="#fff"
+                  opacity={0.22}
+                />
+              </g>
+            )}
             {/* Plan item 55: Hollowell dug in (grip stage 2+) glazes the ground cold; a region the last enemy turn
                 Squeezed wilts (greyed, the crops drooping) until the next. */}
             {/* Plan item 267: as a cold band just inside the hex's edge, not a wash over the whole of it, so held land

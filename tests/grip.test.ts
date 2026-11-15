@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { atTheEdge, gripStage, squeezedLastTurn } from '../src/ui/grip'
+import { atTheEdge, gripStage, regionControl, squeezedLastTurn } from '../src/ui/grip'
 import type { GameEvent } from '../src/engine/types'
 
 const r = (outlets: number, buyouts = 0, doubt = 0, liberated = false) => ({ outlets, buyouts, doubt, liberated })
@@ -42,5 +42,17 @@ describe('squeezedLastTurn', () => {
   })
   it('is empty before any Squeeze', () => {
     expect(squeezedLastTurn({ log: [act] }).size).toBe(0)
+  })
+})
+
+// Plan item 417: the land shows who holds it: free once liberated, held once Hollowell has dug in (stage 2+).
+describe('regionControl', () => {
+  it('reads free, held and contested from the pieces', () => {
+    expect(regionControl({ outlets: 4, buyouts: 2, doubt: 0, liberated: true })).toBe('free')
+    expect(regionControl({ outlets: 2, buyouts: 0, doubt: 0, liberated: false })).toBe('held')
+    expect(regionControl({ outlets: 0, buyouts: 2, doubt: 1, liberated: false })).toBe('held')
+    expect(regionControl({ outlets: 1, buyouts: 0, doubt: 0, liberated: false })).toBe('contested')
+    expect(regionControl({ outlets: 0, buyouts: 0, doubt: 0, liberated: false })).toBe('contested')
+    expect(regionControl({ outlets: 3, buyouts: 0, doubt: 2, liberated: false })).toBe('contested')
   })
 })

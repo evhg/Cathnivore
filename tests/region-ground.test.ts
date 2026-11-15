@@ -46,3 +46,23 @@ describe('regionGround', () => {
     expect(kinds.filter((k) => k === 'reeds').length).toBeGreaterThanOrEqual(kinds.filter((k) => k === 'gull').length)
   })
 })
+
+// Plan item 417: freed land holds a market of its own: 2+ stalls, clear of the pieces and the other marks.
+describe('regionGround on freed land', () => {
+  for (const def of Object.values(REGIONS)) {
+    it(`${def.name}: 2+ stalls when freed, none when not`, () => {
+      for (const producers of [0, 1, 2, 3]) {
+        const tray = pieceLayout({ outlets: 0, buyouts: 0, doubt: 0, producers, scheme: false, labelWidth: label(def.name) }, 90).rects
+        const marks = regionGround(def.id, def.type, tray, true)
+        expect(marks.filter((m) => m.kind === 'stall').length, `${producers} producers`).toBeGreaterThanOrEqual(2)
+        expect(marks.length - marks.filter((m) => m.kind === 'stall').length).toBeGreaterThanOrEqual(GROUND_MIN)
+        const boxes = marks.map(markRect)
+        for (const [i, b] of boxes.entries()) {
+          for (const p of tray) expect(rectsOverlap(b, p)).toBe(false)
+          for (const o of boxes.slice(i + 1)) expect(rectsOverlap(b, o)).toBe(false)
+        }
+        expect(regionGround(def.id, def.type, tray).some((m) => m.kind === 'stall')).toBe(false)
+      }
+    })
+  }
+})
