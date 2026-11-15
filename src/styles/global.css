@@ -3880,7 +3880,8 @@ html.no-animations .setup > button.setup-start[data-opening] .shutter { transfor
     width: 52px; height: 52px; border-radius: 50%; background: var(--paper-hi);
     border: 3px dashed color-mix(in srgb, var(--ink) 30%, transparent);
   }
-  .setup .pin-tin li:not([data-earned]) svg { filter: grayscale(1); opacity: 0.55; }
+  /* Item 424: an unearned pin is a dark pewter cast of itself (at 0.55 grey it nearly vanished on the cream, under 3:1). */
+  .setup .pin-tin li:not([data-earned]) svg { filter: grayscale(1) brightness(0.6) contrast(1.3); opacity: 0.9; }
   .setup .pin-tin li[data-earned] svg { border: 3px solid var(--wheat); box-shadow: 0 2px 4px color-mix(in srgb, var(--ink) 30%, transparent); }
   .setup .pin-tin li[data-week] svg { outline: 2px solid var(--short-ink-shelf); outline-offset: 2px; }
   .setup .pin-tin .pin-name { font-size: var(--fs-label); font-weight: 700; line-height: 1.2; color: var(--ink); text-wrap: balance; }
