@@ -29,9 +29,11 @@ export function keyartHash(game, root = '.') {
 // street draws) are rendered from the same title scene by scripts/cathode-poster.mjs, which records this hash; they
 // went 8 days stale behind the coat's relighting, and the critiques kept measuring the old dark coat.
 export const POSTER_MANIFEST = 'games/cathode/public/front-poster.json'
+/** Every file the title scene is drawn from (plan item 331 lit the facade in frontdiorama.ts, which the first list missed). */
+export const POSTER_SOURCES = ['frontscene', 'frontcath', 'frontdiorama', 'frontneon', 'frontwet', 'frontstoop'].map((f) => `games/cathode/src/render/${f}.ts`)
 export function posterHash(root = '.') {
   const h = createHash('sha256')
-  for (const f of KEYART_SOURCES.nightshift) {
+  for (const f of POSTER_SOURCES) {
     h.update(f)
     h.update(readFileSync(`${root}/${f}`, 'utf8').replace(/\r\n/g, '\n'))
   }

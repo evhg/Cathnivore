@@ -114,9 +114,12 @@ function facadeTexture(w: number, h: number): THREE.CanvasTexture {
     const Y = (m: number) => c.height - m * PX;
     // Brick, darker up high where no street light reaches.
     const sky = g.createLinearGradient(0, 0, 0, c.height);
+    // Plan item 331: lit from the street below (the lamp, the shops' spill), so the left half of the title reads as
+    // a lived-in street, not a black wall; the top stays dark behind the wordmark.
     sky.addColorStop(0, "#07080b");
-    sky.addColorStop(0.6, "#141217");
-    sky.addColorStop(1, "#211a1a");
+    sky.addColorStop(0.45, "#18141a");
+    sky.addColorStop(0.75, "#2e2428");
+    sky.addColorStop(1, "#43302c");
     g.fillStyle = sky;
     g.fillRect(0, 0, c.width, c.height);
     g.fillStyle = "rgba(0,0,0,0.35)";
@@ -131,11 +134,20 @@ function facadeTexture(w: number, h: number): THREE.CanvasTexture {
         g.fillRect(x0 - 0.4 * PX, Y(2.3), 2.2 * PX, 2.3 * PX);
         g.fillStyle = "rgba(0,0,0,0.5)";
         for (let y = Y(2.3); y < Y(0.1); y += 4) g.fillRect(x0 - 0.4 * PX, y, 2.2 * PX, 1);
-        const glow = g.createLinearGradient(0, Y(0.35), 0, Y(0));
+        const glow = g.createLinearGradient(0, Y(0.9), 0, Y(0));
         glow.addColorStop(0, "rgba(255,170,90,0)");
-        glow.addColorStop(1, "rgba(255,170,90,0.9)");
+        glow.addColorStop(1, "rgba(255,170,90,0.95)");
         g.fillStyle = glow;
-        g.fillRect(x0 - 0.4 * PX, Y(0.35), 2.2 * PX, 0.35 * PX);
+        g.fillRect(x0 - 0.4 * PX, Y(0.9), 2.2 * PX, 0.9 * PX);
+        // ...and its light fans up the brick round the shutter, a warm pool per shop (not the whole wall lit flat).
+        const pool = g.createRadialGradient(x0 + 0.7 * PX, Y(0.2), 0.2 * PX, x0 + 0.7 * PX, Y(0.2), 3.4 * PX);
+        pool.addColorStop(0, "rgba(255,170,100,0.42)");
+        pool.addColorStop(0.5, "rgba(230,140,90,0.16)");
+        pool.addColorStop(1, "rgba(200,120,80,0)");
+        g.globalCompositeOperation = "lighter";
+        g.fillStyle = pool;
+        g.fillRect(x0 - 3 * PX, Y(4), 7.4 * PX, 4 * PX);
+        g.globalCompositeOperation = "source-over";
       }
       // First floor: most windows lit, warm or TV blue, a few dark.
       const win = (fy: number, lit: number, tone: string) => {
@@ -154,7 +166,7 @@ function facadeTexture(w: number, h: number): THREE.CanvasTexture {
         g.fillRect(x0 - 3, Y(fy) , 1.4 * PX + 6, 4);
       };
       const r = rnd();
-      win(2.9, r < 0.2 ? 0 : 0.85, r < 0.45 ? "#5f8fb8" : "#e9a35b");
+      win(2.9, r < 0.1 ? 0 : 1, r < 0.4 ? "#7aa6cc" : "#f2b46a");
       const r2 = rnd();
       win(6.0, r2 < 0.75 ? 0 : 0.35, "#c98a4e");
       win(9.1, rnd() < 0.6 ? 0 : 0.5, "#e9a35b");
@@ -234,7 +246,7 @@ export function buildFrontDiorama(lamp: THREE.Vector3, toward: THREE.Vector3, gr
   const iron = new THREE.MeshStandardMaterial({ color: 0x2a2c30, roughness: 0.4, metalness: 0.7 });
 
   // ---- far: the tenement across the way (the frame looked past the market's edge into nothing) ----
-  const facadeMat = new THREE.MeshBasicMaterial({ map: facadeTexture(facade.w, facade.h), color: new THREE.Color(0.8, 0.78, 0.82), fog: false });
+  const facadeMat = new THREE.MeshBasicMaterial({ map: facadeTexture(facade.w, facade.h), color: new THREE.Color(0.86, 0.82, 0.82), fog: false });
   const front = new THREE.Mesh(new THREE.PlaneGeometry(facade.w, facade.h).translate(0, facade.h / 2, 0), facadeMat);
   front.name = "front-facade";
   front.position.copy(facade.at);
