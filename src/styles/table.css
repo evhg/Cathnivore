@@ -5586,3 +5586,33 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .counter-bench .table-producer > svg { left: -6px; width: 60px; }
   .counter-bench .table-producer-name { font-size: 0.75rem; padding: 0 4px 1px; }
 }
+
+/* Plan item 405: the phone counter's hand is a fanned dock (Game.tsx's layFan). Each playable card lies over the one
+   before it, so a strip of each shows on its left: its family seal and its price. One card is lifted whole, wider,
+   with its name and 'i'; a tap on a strip lifts that card. The fan tilts a little from its middle, as held cards do. */
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
+  .action-tray .actions[data-fan] > .action-item[data-fan] {
+    margin-inline-start: var(--fan-ml, 0px);
+    z-index: var(--fan-z, auto);
+    rotate: var(--fan-tilt, 0deg);
+    transform-origin: 50% 100%;
+    border-radius: var(--r-card);
+    box-shadow: -3px 0 5px rgb(var(--shadow-ink) / .22);
+    transition: margin-inline-start 180ms var(--ease-settle), width 180ms var(--ease-settle), rotate 180ms var(--ease-settle), translate 180ms var(--ease-settle);
+  }
+  .action-tray .actions[data-fan][data-fan-measure] > .action-item[data-fan] { transition: none; }
+  .action-tray .actions[data-fan] > .action-item[data-fan][data-lifted] {
+    width: var(--fan-w);
+    translate: 0 -5px;
+    box-shadow: 0 4px 10px rgb(var(--shadow-ink) / .32), 0 0 0 2px var(--wheat);
+  }
+  /* a strip shows its seal, picture and price; its name would read as a cut word ('Sel', 'Gra'), so it waits for the lift */
+  .action-tray .actions[data-fan] > .action-item[data-fan]:not([data-lifted]):not(:focus-within) :is(.action-label, .action-region, .action-pick) { color: transparent; }
+  /* a strip's 'i' would sit under the next card: only the lifted card's answers */
+  .action-tray .actions[data-fan] > .action-item[data-fan]:not([data-lifted]) > .tooltip-trigger { visibility: hidden; }
+  .action-tray .actions[data-fan] > .action-item[data-fan] > button:first-child { cursor: pointer; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .action-tray .actions[data-fan] > .action-item[data-fan] { transition: none; }
+}
+html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { transition: none; }

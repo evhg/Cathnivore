@@ -187,6 +187,67 @@ function bringToFront(row: HTMLElement, card: HTMLElement, i: number) {
   card.querySelector<HTMLElement>('button:not([disabled])')?.focus({ preventScroll: true })
 }
 
+// Plan item 405: the phone counter's fanned dock (see the layout effect in Game). The playable cards, in order.
+function fanCards(row: HTMLElement): HTMLElement[] {
+  const out: HTMLElement[] = []
+  for (const c of Array.from(row.children) as HTMLElement[]) {
+    if (c.matches('.action-head-later')) break
+    if (c.matches('.action-item[data-hand-card]')) out.push(c)
+  }
+  return out
+}
+function clearFan(c: HTMLElement) {
+  delete c.dataset.fan
+  delete c.dataset.lifted
+  for (const p of ['--fan-ml', '--fan-w', '--fan-z', '--fan-tilt']) c.style.removeProperty(p)
+}
+const FAN_STRIP_MIN = 30
+const FAN_LIFT_W = 144
+// Lays the fan out: every card at its rest width except the lifted one (FAN_LIFT_W), each later card over the one
+// before so a strip of each shows on its left (seal and price), the lifted card above them all and whole.
+function layFan(row: HTMLElement, cards: HTMLElement[]) {
+  if (cards.length < 2) return
+  row.dataset.fan = ''
+  const keys = cards.map((c) => (c.querySelector('.action-label')?.textContent ?? '').replace(/\s+/g, ' ').trim())
+  let lifted = row.dataset.lift !== undefined ? keys.indexOf(row.dataset.lift) : -1
+  if (lifted < 0) lifted = Math.max(0, cards.findIndex((c) => c.dataset.suggested === 'true' || c.dataset.suggested === ''))
+  // rest widths, read with every card unlifted and the fan's transitions off for one layout
+  row.dataset.fanMeasure = ''
+  for (const c of cards) {
+    delete c.dataset.lifted
+    c.style.removeProperty('--fan-w')
+  }
+  const rest = cards.map((c) => c.offsetWidth)
+  delete row.dataset.fanMeasure
+  const W = Math.max(FAN_LIFT_W, rest[lifted]!)
+  const rs = getComputedStyle(row)
+  const inner = row.clientWidth - parseFloat(rs.paddingLeft || '0') - parseFloat(rs.paddingRight || '0')
+  const gap = parseFloat(rs.columnGap || '0') || 0
+  const n = cards.length
+  const last = n - 1
+  // the room the strips share: the lifted card whole (and a 2 px breath after it), the last card whole
+  const whole = W + (lifted === last ? 0 : 2 + rest[last]!)
+  const strips = lifted === last ? n - 1 : n - 2
+  const step = Math.max(FAN_STRIP_MIN, Math.min(Math.min(...rest), Math.floor((inner - whole) / Math.max(1, strips))))
+  const mid = (n - 1) / 2
+  cards.forEach((c, i) => {
+    c.dataset.fan = keys[i]!
+    if (i === lifted) {
+      c.dataset.lifted = ''
+      c.style.setProperty('--fan-w', `${W}px`)
+    } else delete c.dataset.lifted
+    if (i > 0) {
+      // how far this card starts after the previous card's left edge, less what the flex row already puts between them
+      const advance = i - 1 === lifted ? W + 2 : step
+      const prevW = i - 1 === lifted ? W : rest[i - 1]!
+      c.style.setProperty('--fan-ml', `${Math.round(advance - prevW - gap)}px`)
+    }
+    c.style.setProperty('--fan-z', String(i === lifted ? n + 1 : i + 1))
+    const off = (i - mid) / Math.max(mid, 1)
+    c.style.setProperty('--fan-tilt', i === lifted ? '0deg' : `${(off * 3).toFixed(2)}deg`)
+  })
+}
+
 // Plan item 302: the phone's held fan covers every card's middle but the front one's, where Playwright aims its
 // clicks, so under webdriver the hand stays a plain swiped row unless `?e2eHandFan=1` (e2e/phone-hand-held.spec).
 function isE2EHandFanOff(): boolean {
@@ -892,6 +953,78 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       row.removeEventListener('scroll', onScroll)
     }
   })
+  // Plan item 405: on the phone counter (390x844 and taller) the playable cards are a fanned dock: each lies over the
+  // one before, showing its left strip (family seal and price), and one card is lifted whole, 140 px+ wide with its
+  // name, price and 'i'. A tap on a strip lifts that card (it doesn't play it); a tap on the lifted card plays it.
+  // Cath's suggested card is the one lifted after each move (item 177). Where the row can't hold every strip at
+  // 30 px the fan scrolls sideways; the Saving for deck follows it.
+  const fanStateRef = useRef<unknown>(null)
+  useLayoutEffect(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')
+    if (!row) return
+    const on = !isDesktop && phoneTableCath && !isE2EHandFanOff()
+    const cards = on ? fanCards(row) : []
+    if (cards.length < 2) {
+      for (const c of row.querySelectorAll<HTMLElement>(':scope > [data-fan]')) clearFan(c)
+      delete row.dataset.fan
+      return
+    }
+    if (fanStateRef.current !== state) {
+      fanStateRef.current = state
+      delete row.dataset.lift
+      layFan(row, cards)
+      // a new turn's fan starts at its first card (the plain row had scrolled her card into view)
+      row.scrollTo({ left: 0, behavior: 'auto' })
+      return
+    }
+    layFan(row, cards)
+  })
+  useEffect(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')
+    if (!row || row.dataset.fan === undefined) return
+    let held: HTMLElement | null = null
+    const strip = (e: Event) => {
+      const card = (e.target as HTMLElement | null)?.closest<HTMLElement>('.action-item[data-fan]')
+      return card && card.parentElement === row && card.dataset.lifted === undefined ? card : null
+    }
+    const swallow = (e: Event) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const lift = (card: HTMLElement) => {
+      row.dataset.lift = card.dataset.fan ?? ''
+      layFan(row, fanCards(row))
+    }
+    const onDown = (e: PointerEvent) => {
+      held = strip(e)
+      if (held) swallow(e)
+    }
+    const onUpOrClick = (e: Event) => {
+      const card = held ?? strip(e)
+      if (!card) return
+      swallow(e)
+      if (e.type === 'click') {
+        held = null
+        lift(card)
+        card.querySelector<HTMLElement>('button:not([disabled])')?.focus({ preventScroll: true })
+      }
+    }
+    // Keyboard: a card's button taking focus lifts it, so Tab walks the fan card by card.
+    const onFocus = (e: FocusEvent) => {
+      const card = strip(e)
+      if (card) lift(card)
+    }
+    row.addEventListener('pointerdown', onDown, true)
+    row.addEventListener('pointerup', onUpOrClick, true)
+    row.addEventListener('click', onUpOrClick, true)
+    row.addEventListener('focusin', onFocus)
+    return () => {
+      row.removeEventListener('pointerdown', onDown, true)
+      row.removeEventListener('pointerup', onUpOrClick, true)
+      row.removeEventListener('click', onUpOrClick, true)
+      row.removeEventListener('focusin', onFocus)
+    }
+  })
   // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.
   useLayoutEffect(() => {
     if (!handOnTable) return
@@ -1241,7 +1374,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   useEffect(() => {
     if (isDesktop) return
     const item = document.querySelector<HTMLElement>('.action-tray .actions [data-suggested]')
-    if (!item) return
+    // Plan item 405: in the counter's fan her card is the lifted one, already in view
+    if (!item || item.dataset.fan !== undefined) return
     let strip: HTMLElement | null = item.parentElement
     while (strip && strip.scrollWidth <= strip.clientWidth + 1) strip = strip.parentElement
     if (!strip) return

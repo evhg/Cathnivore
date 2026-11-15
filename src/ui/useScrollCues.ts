@@ -31,8 +31,9 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
         let n = 0
         for (const c of Array.from(el.children)) {
           const r = c.getBoundingClientRect()
-          const past = r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head')
+          const past = r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head, [data-fan]')
           if (past) n++
+          // (Plan item 405: the counter fan's cards are all in the dock, mid-lift too: never counted.)
           // Plan item 287: a card counted as past the edge but still showing a sliver is faded out whole (the tab
           // counts it), so the edge never shows a cut card; scrolling it in past half brings it back.
           const cut = past && r.left < edge
