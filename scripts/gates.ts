@@ -3,6 +3,7 @@
 // on every gates run.
 import { execSync, spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
+import { GATE_7_TIMING, chromiumPath, ciE2E, gameSuite, siteSuite } from './gates-e2e'
 
 // GATES_PART=a|b|c runs one part (a: gates 1-5's game suite, b: the site suite, c: the rest), for sessions whose
 // tools cap one command at 2 h (the whole run passed 2 h once the site suite reached 1.7 h, 2026-11-09; owner
@@ -44,30 +45,23 @@ if (!hasWebkit) {
   )
 }
 const projects = hasWebkit ? '' : '--project=phone --project=desktop-chromium'
-const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : '')
-// e2e/screenshots.spec.ts and e2e/store-screenshots.spec.ts are gate 8's material (visual review/App
-// Store assets), not gate 5's pass/fail regression suite, so they're deliberately left out here.
-// e2e/desktop-no-scroll.spec.ts (SPEC 10.3's "no scrolling at 1280x800") is now genuinely fixed — see
-// DECISIONS.md — so it's back in the real regression suite instead of being left out as a no-op skip.
-const GATE_5_SPECS =
-  'e2e/ai-teammate.spec.ts e2e/campaign.spec.ts e2e/carry-over.spec.ts e2e/crash-recovery.spec.ts e2e/csp.spec.ts e2e/desktop-no-scroll.spec.ts e2e/hotseat.spec.ts e2e/offline.spec.ts e2e/plan-strip.spec.ts e2e/quick-game.spec.ts e2e/save-recovery.spec.ts e2e/title.spec.ts e2e/tooltip.spec.ts e2e/tutorial.spec.ts'
-// Gate 7's AI-teammate timing (the throttled test in e2e/ai-teammate.spec.ts) runs on its own after gate 5, not among
-// gate 5's parallel workers: beside three other browsers its wall-clock reading measured the machine's load (the same
-// build read about 520 ms alone and 1092-1215 ms in the 2026-11-08 release run). The 1 s budget is unchanged.
-const GATE_7_TIMING = 'SPEC 11.4 gate 7'
-run('Gate 5: Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test ${projects} ${GATE_5_SPECS} --grep-invert "${GATE_7_TIMING}"`)
+// The browser suites live in scripts/gates-e2e.ts, shared with GitHub's E2E workflow. When that workflow has already
+// passed them on this commit, or on one that differs from it only in notes (status/e2e/<sha>.json on ci-status), they
+// aren't run a second time (owner, 2026-11-15: "speed up the release"; the site suite alone was 1.7 h here and about
+// 20 min across GitHub's 8 shards). Any other case runs them here as before. GATES_LOCAL_E2E=1 forces the local run.
+const ci = process.env.GATES_LOCAL_E2E ? null : ciE2E()
+const ciPassed = ci?.state === 'passed' ? ci.commit : null
+function e2e(label: string, fn: () => void) {
+  if (!inPart()) return
+  console.log(`\n=== ${label} ===`)
+  if (ciPassed) console.log(`Passed in GitHub's E2E workflow on ${ciPassed} (status/e2e/<sha>.json on ci-status; only notes changed since): not run again here.`)
+  else fn()
+}
+e2e('Gate 5: Playwright', () => gameSuite(projects))
 // The website as a whole (games landing page at /, Runnel at /runnel/, Cathnivore under /cathnivore/),
 // built exactly as Vercel builds it. Part of gate 5: main must not move if the site around the game breaks.
-// The site suite runs two browsers at once for 1.7 h; its WebGL specs (NIGHT SHIFT's opener and class pick, Hedgerow's
-// 3D camera and depot) read wall-clock timings and camera rest under SwiftShader, and beside a second browser they
-// fail by load alone: the 2026-11-09 release runs failed a different few each time, every one passing alone. So a
-// failure gets one more go, on its own (--last-failed, one worker); a test that fails alone too fails the gate.
 part = 'b'
-try {
-  run('Gate 5 (site): Playwright', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts`)
-} catch {
-  run('Gate 5 (site): the failures again, alone', `PLAYWRIGHT_CHROMIUM_PATH=${chromiumPath} npx playwright test -c playwright.site.config.ts --last-failed --workers 1`)
-}
+e2e('Gate 5 (site): Playwright', () => siteSuite())
 
 // CATHODE's performance budget (docs/design/cathode-combat.md S0, from C10): a staged firefight's whole-scene
 // draw calls and triangles, phone (6 enemies) and desktop (12), on the dist-site Gate 1 built.

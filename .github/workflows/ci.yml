@@ -29,25 +29,4 @@ jobs:
       - run: npm run check
       - name: Report status to ci-status
         if: always()
-        run: |
-          STATUS=${{ job.status }}
-          COMMIT=${{ github.sha }}
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin ci-status 2>/dev/null || true
-          git checkout ci-status 2>/dev/null || git checkout --orphan ci-status
-          mkdir -p status
-          # Stop Vercel building this branch: status pushes were using up the Hobby plan's 100 deployments a day.
-          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
-          git add vercel.json
-          cat > status/ci.json <<EOF
-          {
-            "workflow": "ci",
-            "commit": "$COMMIT",
-            "success": $( [ "$STATUS" = "success" ] && echo true || echo false ),
-            "time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-          EOF
-          git add status/ci.json
-          git commit -m "ci status for $COMMIT" --allow-empty
-          git push --force origin ci-status
+        run: scripts/ci/write-status.sh ci ${{ github.sha }} ${{ job.status }}

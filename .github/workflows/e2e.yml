@@ -1,0 +1,65 @@
+name: E2E
+
+# The release's browser suites, run on GitHub's runners in parallel (owner, 2026-11-15: "speed up the release"):
+# the Cathnivore game suite (gate 5) and the whole-site suite in 8 shards (gate 5, site). The result for each commit
+# lands in ci-status as status/e2e/<sha>.json; `npm run release` skips running these suites again locally only when that
+# file says they passed on the commit being released (or one that differs from it only in notes). Timing gates (CATHODE perf, Lighthouse, the AI teammate
+# under throttling) stay local in the release: shared runners are too uneven to time on.
+
+on:
+  push:
+    branches: [build]
+    paths-ignore: ["**/*.md", "*.md", ".build-lock", ".build-lock-b", "docs/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/gates-e2e.ts game
+
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/gates-e2e.ts site ${{ matrix.shard }}/8
+
+  report:
+    needs: [game, site]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report status to ci-status
+        run: |
+          # A run superseded by a newer push records nothing.
+          if [ "${{ needs.game.result }}" = cancelled ] || [ "${{ needs.site.result }}" = cancelled ]; then exit 0; fi
+          OK=failure
+          if [ "${{ needs.game.result }}" = success ] && [ "${{ needs.site.result }}" = success ]; then OK=success; fi
+          scripts/ci/write-status.sh e2e ${{ github.sha }} $OK

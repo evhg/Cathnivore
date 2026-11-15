@@ -1,6 +1,7 @@
 // Implements SPEC 11.5 "Releasing": run gates, fast-forward main to the current build commit,
 // poll the live version.json, run a live smoke test, tag deploy-<n>, and log it in PROGRESS.md.
 // On smoke-test failure, revert main to the previous deploy tag (never force-push) and log it.
+import { ciE2E } from './gates-e2e'
 import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -178,6 +179,14 @@ async function main() {
   const passed = process.env.RELEASE_GATES_PASSED
   if (passed && passed === sh('git rev-parse build')) console.log(`=== Gates already passed on ${passed} (run in parts) ===`)
   else {
+    // GitHub's E2E workflow runs the browser suites in about 20 min (scripts/gates-e2e.ts); gates.ts skips them when it
+    // has passed on this commit. Give a run still going on the build head up to 40 min before falling back to running
+    // them here (a failure stops the wait at once: gates.ts then runs them locally, which shows the failure).
+    for (let waited = 0; waited < 40 && ciE2E().state === 'none'; waited++) {
+      if (waited === 0) console.log("=== Waiting for GitHub's E2E workflow on this commit (up to 40 min) ===")
+      await new Promise((r) => setTimeout(r, 60_000))
+    }
+    console.log(`GitHub's E2E workflow: ${ciE2E().state}`)
     console.log('=== Running gates ===')
     execSync('tsx scripts/gates.ts', { stdio: 'inherit' })
   }
