@@ -53,7 +53,7 @@ describe('regionGround on freed land', () => {
     it(`${def.name}: 2+ stalls when freed, none when not`, () => {
       for (const producers of [0, 1, 2, 3]) {
         const tray = pieceLayout({ outlets: 0, buyouts: 0, doubt: 0, producers, scheme: false, labelWidth: label(def.name) }, 90).rects
-        const marks = regionGround(def.id, def.type, tray, true)
+        const marks = regionGround(def.id, def.type, tray, 'free')
         expect(marks.filter((m) => m.kind === 'stall').length, `${producers} producers`).toBeGreaterThanOrEqual(2)
         expect(marks.length - marks.filter((m) => m.kind === 'stall').length).toBeGreaterThanOrEqual(GROUND_MIN)
         const boxes = marks.map(markRect)
@@ -62,7 +62,21 @@ describe('regionGround on freed land', () => {
           for (const o of boxes.slice(i + 1)) expect(rectsOverlap(b, o)).toBe(false)
         }
         expect(regionGround(def.id, def.type, tray).some((m) => m.kind === 'stall')).toBe(false)
+        expect(regionGround(def.id, def.type, tray, 'contested').some((m) => m.kind === 'stall' || m.kind === 'hsign')).toBe(false)
       }
+    })
+  }
+})
+
+// Plan item 417: held land carries Hollowell's signboard wherever two stacks leave room, clear of them.
+describe('regionGround on held land', () => {
+  for (const def of Object.values(REGIONS)) {
+    it(`${def.name}: a signboard when held`, () => {
+      const tray = pieceLayout({ outlets: 2, buyouts: 1, doubt: 0, producers: 1, scheme: false, labelWidth: label(def.name) }, 90).rects
+      const marks = regionGround(def.id, def.type, tray, 'held')
+      const signs = marks.filter((m) => m.kind === 'hsign')
+      expect(signs.length).toBe(1)
+      for (const p of tray) expect(rectsOverlap(markRect(signs[0]!), p)).toBe(false)
     })
   }
 })

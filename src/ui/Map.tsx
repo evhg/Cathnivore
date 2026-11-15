@@ -879,6 +879,13 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 return dressingSpot(marketEvent, taken, { x: 0, y: HEX_R * (marketEvent === 'glut' ? 0.8 : 0.72) })
               })()
             : null
+        // Plan item 76: the region's own ground, where the pieces and the landmark leave the face clear; plan item 417:
+        // a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
+        const ground = (() => {
+          const spot = pickSpot(tray.rects)
+          const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
+          return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, control)
+        })()
         return (
           <g
             key={id}
@@ -967,15 +974,8 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               <GroundArt type={def.type} id={id} clip={`${uid}-ground-${id}`} />
             </g>
             {/* Plan item 76: the region's own ground, where the pieces and the landmark leave the face clear. */}
-            <g className="land-layer" transform={`translate(${x}, ${y})`}>
-              <RegionGroundArt
-                marks={(() => {
-                  const spot = pickSpot(tray.rects)
-                  const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
-                  // Plan item 417: a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
-                  return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, r.liberated)
-                })()}
-              />
+            <g transform={`translate(${x}, ${y})`}>
+              <RegionGroundArt marks={ground.filter((m) => m.kind !== 'hsign')} />
             </g>
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art land-layer">
               <TerrainArt type={def.type} id={id} />
@@ -988,6 +988,12 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                   fill="#fff"
                   opacity={0.22}
                 />
+              </g>
+            )}
+            {/* Plan item 417: Hollowell's signboard stands over its tarmac, in full gloss. */}
+            {control === 'held' && (
+              <g transform={`translate(${x}, ${y})`}>
+                <RegionGroundArt marks={ground.filter((m) => m.kind === 'hsign')} />
               </g>
             )}
             {/* Plan item 55: Hollowell dug in (grip stage 2+) glazes the ground cold; a region the last enemy turn

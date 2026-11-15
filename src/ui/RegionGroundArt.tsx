@@ -8,6 +8,20 @@ const ink = { stroke: 'var(--ink)', strokeWidth: 1, strokeLinecap: 'round' as co
 const HEATHER = 'color-mix(in srgb, var(--clay) 55%, var(--sea))'
 
 const ART: Record<GroundKind, ReactElement> = {
+  // Plan item 417: Hollowell's signboard on held ground: a glossy orange board on steel posts, their H on white, a
+  // hard highlight (VISION: the corporations glossy and clinical against the players' paper).
+  hsign: (
+    <g strokeLinejoin="round">
+      <ellipse cx={0} cy={10.4} rx={9} ry={1.4} fill="var(--ink)" opacity={0.2} />
+      <path d="M-6,1 V10.4 M6,1 V10.4" stroke="var(--ink)" strokeWidth={2.4} strokeLinecap="round" />
+      <path d="M-6,1 V10.4 M6,1 V10.4" stroke="var(--corp-chrome)" strokeWidth={1.2} strokeLinecap="round" />
+      <rect x={-10.5} y={-10.5} width={21} height={12.5} rx={1.6} fill="var(--hollowell)" stroke="var(--ink)" strokeWidth={1} />
+      <rect x={-8.6} y={-8.6} width={8.6} height={8.6} rx={1.2} fill="var(--paper-hi, var(--paper))" />
+      <path d="M-6.6,-6.8 V-1.8 M-2,-6.8 V-1.8 M-6.6,-4.3 H-2" stroke="var(--hollowell)" strokeWidth={1.4} strokeLinecap="round" />
+      <path d="M1.6,-7 H8.2 M1.6,-4.3 H6.4 M1.6,-1.6 H7.4" stroke="var(--paper-hi, var(--paper))" strokeWidth={1.1} strokeLinecap="round" opacity={0.9} />
+      <path d="M-9.6,-9.6 L-3.6,-9.6 L-9.6,-4.6 Z" fill="#fff" opacity={0.4} />
+    </g>
+  ),
   // Plan item 417: a market stall on freed ground: a striped awning over a laden trestle, in the players' warm paper.
   stall: (
     <g strokeLinejoin="round">
@@ -98,11 +112,12 @@ const ART: Record<GroundKind, ReactElement> = {
 const AMBIENT: Partial<Record<GroundKind, string>> = { gull: 'amb-glide', reeds: 'amb-sway', bunting: 'amb-sway' }
 
 export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[] }) {
-  const ground = marks.filter((m) => m.kind !== 'stall')
+  const ground = marks.filter((m) => m.kind !== 'stall' && m.kind !== 'hsign')
   const stalls = marks.filter((m) => m.kind === 'stall')
+  const signs = marks.filter((m) => m.kind === 'hsign')
   return (
     <>
-    <g className="region-ground" pointerEvents="none" aria-hidden="true" opacity={0.75} data-marks={ground.length}>
+    {ground.length > 0 && <g className="region-ground land-layer" pointerEvents="none" aria-hidden="true" opacity={0.75} data-marks={ground.length}>
       {ground.map((m, i) => (
         <g key={i} data-kind={m.kind} transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) rotate(${m.r}) scale(${m.s})`}>
           {AMBIENT[m.kind] ? (
@@ -114,7 +129,7 @@ export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[
           )}
         </g>
       ))}
-    </g>
+    </g>}
     {stalls.length > 0 && (
       <g className="free-stalls" pointerEvents="none" aria-hidden="true" data-stalls={stalls.length}>
         {stalls.map((m, i) => (
@@ -124,6 +139,11 @@ export default function RegionGroundArt({ marks }: { marks: readonly GroundMark[
         ))}
       </g>
     )}
+    {signs.map((m, i) => (
+      <g key={`s${i}`} className="held-sign" data-kind="hsign" pointerEvents="none" aria-hidden="true" transform={`translate(${m.x.toFixed(1)},${m.y.toFixed(1)}) scale(${m.s})`}>
+        {ART.hsign}
+      </g>
+    ))}
     </>
   )
 }

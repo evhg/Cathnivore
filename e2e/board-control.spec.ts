@@ -29,6 +29,8 @@ test('held land greys, freed land warms and holds stalls', async ({ page }) => {
   for (const g of await page.locator('.map-wrap .region-hex[data-control="free"]').all()) {
     expect(await g.locator('.free-stall').count()).toBeGreaterThanOrEqual(2)
   }
+  // Held ground carries Hollowell's signboard where the pieces leave room (a crowded tile may have none).
+  expect(await page.locator('.map-wrap .region-hex[data-control="held"] .held-sign').count()).toBeGreaterThanOrEqual(1)
   await page.addStyleTag({
     content:
       '*, *::before, *::after { animation: none !important; transition: none !important; } .piece-tray, .board-landmark, .pressure-ring, .threat-badge, .liberated-life, .free-stalls, .region-label, .map-wrap text, .map-wrap .region-hex > g:not(.land-layer):not(.held-sheen), .table-producer, .table-cath, .cath-bubble { visibility: hidden !important; }',
