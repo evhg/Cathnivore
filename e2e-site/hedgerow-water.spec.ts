@@ -1,16 +1,19 @@
 import { expect, test, type Page } from '@playwright/test'
 
 // Plan item 94: the 3D water is the 2D water's colour (sampled at a pond plot's middle, within ΔE 15).
+// Item 399 gave each act its own water plot in 2D; Saltmarsh's is a salt pan (pink brine under a white crust, not open
+// water), so the check samples Rivermead's willow pond (level 31), the first act whose water plot is open water.
+const LEVEL = 31
 type HG = { game(): { level: { terrain?: { water: Array<[number, number]> } } } | null; cellCenter(c: number, r: number): { x: number; y: number } | null }
 
 async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, number, number]> {
   const q = mode === '2d' ? '&2d' : ''
   await page.goto(`/hedgerow/?sandbox=1${q}`)
-  await page.evaluate(() => {
-    const stars = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), 3]))
-    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 21: true }, tips: { all: true } }))
-  })
-  await page.goto(`/hedgerow/?sandbox=1${q}&level=21`)
+  await page.evaluate((LEVEL) => {
+    const stars = Object.fromEntries(Array.from({ length: LEVEL - 1 }, (_, i) => [String(i + 1), 3]))
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [LEVEL]: true }, tips: { all: true } }))
+  }, LEVEL)
+  await page.goto(`/hedgerow/?sandbox=1${q}&level=${LEVEL}`)
   await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 120_000 })
   await page.addStyleTag({ content: '#intro { display: none !important; }' })
   await page.waitForTimeout(mode === '3d' ? 12_000 : 1500)

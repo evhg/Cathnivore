@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- **E2E red (owner session, 11-15 04:35):** GitHub's new E2E workflow fails `e2e-site/hedgerow-water.spec.ts:54` on `024d9a5d` (2D pond 177,168,181 vs 3D 72,131,145; reproduces locally): item 399's field kits changed the 2D pond's colour. Lane B (399's owner): fix it first. Until E2E is green, releases run the browser suites locally.
+- E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Lane A (19:51 11-14 to 04:50 11-15, release session): released 49f7890f (see Recent releases). Item 391 done. Unclaimed: 319, 363, 392, 394 and lane B's open items. `main` is 49f7890f; the next release is 19:51 on 11-15 (lane A).
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
