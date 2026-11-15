@@ -890,12 +890,18 @@ export function paintPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, 
       ctx.fill();
       ctx.fillStyle = "#c9a06c";
       ctx.fillRect(x0 + p.w * 0.08, y0 + p.h * 0.22, p.w * 0.84, p.h * 0.56);
-      ctx.strokeStyle = "#5a3a22";
+      // Two thwarts across the deck, and the pole laid lengthwise along it with its tip past the stern (plan item
+      // 430: drawn corner to corner over the hull, the pole read as a strike-through).
+      ctx.fillStyle = "#8a5a36";
+      for (const t of [0.3, 0.68]) ctx.fillRect(x0 + p.w * t, y0 + p.h * 0.22, Math.max(1, p.w * 0.05), p.h * 0.56);
+      ctx.strokeStyle = "#e3c896";
       ctx.lineWidth = Math.max(1, s * 0.03);
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(x0 - p.w * 0.1, y0 - p.h * 0.6);
-      ctx.lineTo(x0 + p.w * 1.05, y0 + p.h * 1.4);
+      ctx.moveTo(x0 + p.w * 0.14, y0 + p.h * 0.42);
+      ctx.lineTo(x0 + p.w * 1.12, y0 + p.h * 0.34);
       ctx.stroke();
+      ctx.lineCap = "butt";
       break;
     }
     case "tor": {
