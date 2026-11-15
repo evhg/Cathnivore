@@ -4062,6 +4062,6 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - `cath-setup-P`: 'MORE' chip (285-365 x 755-778) over the Difficulty heading; the difficulty tags behind Start (15-375 x 770-790).
   - `runnel-D`: Cath's footbridge a flat plank box cutting her at the hip (385-620 x 790-870); the left column empty below 820.
   - `portfolio-D`: Cath about 70x225 px alone in the bottom-right void with no ground (1195-1265 x 615-840).
-  - `games-D`: the hero headline says 'Cathnivore' while the quote and primary button sell Runnel (615-1115 x 160-400).
+  - `games-D`: the hero headline says 'Cathnivore' while the quote and primary button sell Runnel (615-1115 x 160-400). *(kept 2026-11-15 20:40 lane A: 'Cathnivore' is the site's name (the domain, the collection; the kicker says 'Free games from the Republic of Marrow') and the gold button is the daily ritual (today's Runnel); renaming the site is the owner's call)*
 - **Accept:** each point fixed or logged as kept with a reason; specs for what changed pass; shots P and D before and after.
 - **Size:** 2
