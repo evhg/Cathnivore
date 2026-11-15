@@ -46,6 +46,12 @@ const FILL: Partial<Record<BedLook, [string, string]>> = {
   lazybed: ["rgba(104,84,62,0.82)", "rgba(86,70,52,0.86)"],
   // Thrift: short cliff turf studded with pink cushions.
   thrift: ["rgba(128,166,104,0.7)", "rgba(110,148,92,0.74)"],
+  // Oilseed rape in flower: a hard chemical yellow.
+  rape: ["rgba(238,214,58,0.82)", "rgba(220,192,40,0.86)"],
+  // Sugar beet: glossy leaf rows on grey-brown soil.
+  beet: ["rgba(122,110,92,0.82)", "rgba(104,94,80,0.86)"],
+  // Fallow: rough grass gone to ragwort and dock.
+  fallow: ["rgba(150,158,104,0.7)", "rgba(130,138,90,0.74)"],
   // Water meadow: lush green ridges between drains.
   meadow: ["rgba(132,186,64,0.68)", "rgba(110,164,54,0.72)"],
   // Mown swathes: fresh pale green, the cut rows darker.
@@ -83,7 +89,7 @@ export function paintKitBed(ctx: C, x: number, y: number, s: number, look: BedLo
   ctx.clip();
   ctx.lineCap = "round";
   // Long-way rows (drains, swathes, cress channels) run the whole field, not plot by plot.
-  if (look === "meadow" || look === "swathe" || look === "cress" || look === "turnips" || look === "lazybed") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
+  if (look === "meadow" || look === "swathe" || look === "cress" || look === "turnips" || look === "lazybed" || look === "beet") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
   for (let row = 0; row < m; row++) for (let cell = 0; cell < n; cell++) scatter(ctx, look, x + cell * s, y + row * s, s, rng(seed + cell * 131 + row * 977));
   ctx.restore();
   if (n === 1 && m === 1) {
@@ -153,6 +159,21 @@ function rows(ctx: C, look: BedLook, bx: number, by: number, bw: number, bh: num
         ctx.fillStyle = "rgba(240,236,250,0.95)";
         ctx.beginPath();
         ctx.arc(tx + s * 0.012, ty - s * 0.012, s * 0.009, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (look === "beet") {
+      // Beet in drilled rows: glossy dark leaves with red stalks.
+      for (let q = s * 0.1 + r01() * s * 0.06; q < len - s * 0.1; q += s * 0.16) {
+        const [tx, ty] = at(q);
+        for (const a of [-0.7, 0, 0.7]) {
+          ctx.fillStyle = a ? "rgba(60,110,52,0.97)" : "rgba(80,134,62,0.97)";
+          ctx.beginPath();
+          ctx.ellipse(tx + Math.sin(a) * s * 0.03, ty - s * 0.02, s * 0.022, s * 0.04, a, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = "rgba(170,60,70,0.9)";
+        ctx.beginPath();
+        ctx.arc(tx, ty + s * 0.012, s * 0.012, 0, Math.PI * 2);
         ctx.fill();
       }
     } else if (look === "turnips") {
@@ -323,6 +344,35 @@ function scatter(ctx: C, look: BedLook, x: number, y: number, s: number, r01: ()
         ctx.arc(cx + (k - 1.5) * s * 0.022, cy - s * (0.025 + (k % 2) * 0.012), s * 0.016, 0, Math.PI * 2);
         ctx.fill();
       }
+    }
+  } else if (look === "rape") {
+    // A sea of small yellow heads over green stems.
+    for (let j = 0; j < 22; j++) {
+      ctx.fillStyle = j % 4 ? "rgba(250,232,80,0.97)" : "rgba(120,150,60,0.8)";
+      ctx.beginPath();
+      ctx.arc(px(), py(), s * 0.018, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (look === "fallow") {
+    // Rough tussocks, ragwort's flat yellow heads and rusty dock spikes.
+    for (let j = 0; j < 8; j++) {
+      const tx = px(), ty = py();
+      ctx.strokeStyle = "rgba(110,120,64,0.85)";
+      ctx.lineWidth = Math.max(1, s * 0.018);
+      for (const dx of [-0.025, 0, 0.025]) line(ctx, [tx, ty], [tx + s * dx, ty - s * 0.05]);
+    }
+    for (let j = 0; j < 3; j++) {
+      const tx = px(), ty = py();
+      ctx.fillStyle = "rgba(236,190,40,0.97)";
+      for (let k = 0; k < 3; k++) {
+        ctx.beginPath();
+        ctx.arc(tx + (k - 1) * s * 0.02, ty - s * 0.05, s * 0.014, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "rgba(150,74,44,0.95)";
+      ctx.lineWidth = Math.max(1, s * 0.02);
+      const dx = px();
+      line(ctx, [dx, ty], [dx, ty - s * 0.08]);
     }
   } else if (look === "garlic") {
     // Broad leaves in clumps and white star-heads held over them.
@@ -544,6 +594,34 @@ export function paintKitWater(ctx: C, x: number, y: number, s: number, look: Wat
       ctx.arc(fx, fy - s * 0.08, s * 0.025, 0, Math.PI * 2);
       ctx.fill();
     }
+  } else if (look === "gravelpit") {
+    // A flooded gravel pit: a hard-edged grey bank, cold blue water, a warning sign on a post.
+    const i = s * 0.1;
+    ctx.fillStyle = "rgba(170,166,156,0.95)";
+    ctx.beginPath();
+    ctx.roundRect(x + i, y + i, s - i * 2, s - i * 2, s * 0.08);
+    ctx.fill();
+    ctx.fillStyle = "rgba(60,112,150,0.97)";
+    ctx.beginPath();
+    ctx.roundRect(x + s * 0.18, y + s * 0.2, s * 0.64, s * 0.6, s * 0.05);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(220,236,246,0.6)";
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    line(ctx, [x + s * 0.3, y + s * 0.36], [x + s * 0.5, y + s * 0.33]);
+    const sx = x + s * (0.72 + r01() * 0.06);
+    ctx.strokeStyle = "#5c4126";
+    ctx.lineWidth = Math.max(1, s * 0.02);
+    line(ctx, [sx, y + s * 0.3], [sx, y + s * 0.14]);
+    ctx.fillStyle = "#e8c22e";
+    ctx.strokeStyle = "#2a2420";
+    ctx.lineWidth = Math.max(0.75, s * 0.01);
+    ctx.beginPath();
+    ctx.moveTo(sx, y + s * 0.06);
+    ctx.lineTo(sx + s * 0.06, y + s * 0.16);
+    ctx.lineTo(sx - s * 0.06, y + s * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   } else if (look === "rockpool") {
     // A rock pool: grey boulders round clear green-blue water, weed and an anemone.
     const cx = x + s * 0.5, cy = y + s * 0.52;
@@ -735,6 +813,46 @@ export function drawKitBarn(ctx: C, x: number, y: number, w: number, look: BarnL
     ctx.strokeStyle = "#efe6cf";
     ctx.lineWidth = Math.max(1, w * 0.014);
     ctx.strokeRect(left + bw * 0.38, eave + w * 0.03, bw * 0.24, w * 0.08);
+  } else if (look === "dutchbarn") {
+    // A steel Dutch barn on concrete: a green hooped roof on girders, round bales wrapped in black plastic.
+    ctx.fillStyle = "rgba(40,36,24,0.16)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.02, y + w * 0.06, w * 0.96, w * 0.96, w * 0.1);
+    ctx.fill();
+    ctx.fillStyle = "rgb(184,182,174)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.02, y + w * 0.04, w * 0.96, w * 0.94, w * 0.1);
+    ctx.fill();
+    const left = x + w * 0.1, bw = w * 0.8, top = y + w * 0.14, base = y + w * 0.64;
+    castShadow(ctx, left + bw / 2, base, bw / 2, w * 0.14, w * 0.5, 0.2);
+    // Bales under the roof.
+    for (let k = 0; k < 4; k++) {
+      ctx.fillStyle = "#26282a";
+      ctx.beginPath();
+      ctx.arc(left + bw * (0.15 + k * 0.23), base - w * 0.09, w * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.beginPath();
+      ctx.arc(left + bw * (0.13 + k * 0.23), base - w * 0.12, w * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = "#4a4e52";
+    ctx.lineWidth = Math.max(1.5, w * 0.03);
+    for (const k of [0, 0.5, 1]) line(ctx, [left + bw * k, base], [left + bw * k, top + w * 0.1]);
+    ctx.fillStyle = "#4f7d5a";
+    ctx.strokeStyle = "#2a3e30";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.04, top + w * 0.14);
+    ctx.quadraticCurveTo(left + bw / 2, top - w * 0.1, left + bw + w * 0.04, top + w * 0.14);
+    ctx.lineTo(left + bw + w * 0.04, top + w * 0.2);
+    ctx.quadraticCurveTo(left + bw / 2, top - w * 0.04, left - w * 0.04, top + w * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(200,220,200,0.35)";
+    ctx.lineWidth = Math.max(0.75, w * 0.008);
+    for (let k = 1; k < 8; k++) line(ctx, [left + (bw * k) / 8, top + w * 0.02], [left + (bw * k) / 8, top + w * 0.12]);
   } else if (look === "boathut") {
     // An old boat turned keel-up for a store, a door cut in its stern, on the shingle, with a capstan by it.
     ctx.fillStyle = "rgba(40,36,24,0.16)";
