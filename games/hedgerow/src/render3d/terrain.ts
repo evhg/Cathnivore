@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "../plotlook";
+import { bedBase } from "../fieldkit";
 import { cropOf, type Crop } from "../growth";
 import { crayonNextBillboard, drawDecor, isWonLevel, rng } from "../theme";
 import { actLight } from "./palette";
@@ -848,7 +849,7 @@ export function buildGround(level: Level): Ground {
       plots.push({ x: c + 0.5, y: h + 0.04, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
       {
         const look = lookOf(c, r);
-        const base = look === "puddle" ? "earth" : look;
+        const base = bedBase(look);
         // Plan item 360: the plot belongs to a field (item 345's blocks, as in 2D): its furrows run the field's long
         // way, its bed reaches across to the field's next plot, and its timber edge stands only where it meets other ground.
         const field = fieldAt(level, c, r);
@@ -907,7 +908,7 @@ export function buildGround(level: Level): Ground {
             clumps.push({ x: c + dx + (deco() - 0.5) * 0.06, y: h + 0.03, z: r + dz + (deco() - 0.5) * 0.06, ry: deco() * 6.3, s: 0.9 + deco() * 0.3, sy: 1, color: leaf.clone().multiplyScalar(0.85 + deco() * 0.3) });
         }
         dressedCount++;
-        if (look === "clover")
+        if (base === "clover")
           for (let k = 0; k < 4; k++) cloverHeads.push({ x: c + 0.18 + deco() * 0.64, y: h + 0.02, z: r + 0.18 + deco() * 0.64, ry: deco() * 6.3, s: 0.7, sy: 1, color: new THREE.Color(k % 3 ? "#fffaf0" : "#f0b8d0") });
       }
       // Grass and flowers grow around the plot's edges, clear of where a tower stands.

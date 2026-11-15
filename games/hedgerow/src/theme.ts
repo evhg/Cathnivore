@@ -5,6 +5,8 @@
 import { entrySide, nearSides, type Side } from "./depot";
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
+import { kitFor, type BedLook } from "./fieldkit";
+import { isKitBed, paintKitBed, paintKitWater } from "./fieldkitart";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, pieceLook, placeMargin, recordMargin, seeded, withLooks, type Look, type Placed, type Rect } from "./margins";
 
@@ -735,6 +737,10 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
       ctx.beginPath();
       ctx.roundRect(x + inset, y + inset, s - inset * 2, s - inset * 2, s * 0.14);
       ctx.fill();
+      if (ground === "water" && kitFor(level).water !== "pond") {
+        paintKitWater(ctx, x, y, s, kitFor(level).water, c * 131 + r * 71 + level.id * 7);
+        continue;
+      }
       if (ground === "water") {
         const g = ctx.createRadialGradient(x + s / 2, y + s / 2, s * 0.05, x + s / 2, y + s / 2, s * 0.5);
         // Plan item 330 made the 3D ponds deep water; the 2D pond follows a step deeper (item 94: the two read as one colour).
@@ -866,6 +872,11 @@ function paintPuddle(ctx: CanvasRenderingContext2D, x: number, y: number, s: num
 
 /** Plan item 52: a plot drawn by what lies under it; item 345: a field of `n` by `m` plots as one bed. */
 function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, n = 1, m = 1): void {
+  // Plan item 399: an act's own beds (Saltmarsh's samphire, Rivermead's drains...) have their own art.
+  if (isKitBed(look)) {
+    paintKitBed(ctx, x, y, s, look as BedLook, across, seed, n, m);
+    return;
+  }
   if (look === "earth" || look === "puddle") {
     paintBed(ctx, x, y, s, across, n, m);
     return;

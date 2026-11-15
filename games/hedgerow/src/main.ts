@@ -1,3 +1,4 @@
+import { plotLooks } from "./plotlook";
 import { LANDMARKS, landmarkKinds } from "./landmarks";
 import "../../../shared/ui/base.css";
 import "../../../shared/ui/palette.css";
@@ -751,6 +752,8 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 399: the plain plots (keys "c,r") and the look each is sown with, in the act's field kit.
+    plotLooks: () => (game ? [...plotLooks(game.level)] : []),
     // Plan item 202: what the 2D field painted in its margins (the act's set and its pieces).
     margin2d: () => lastMargin,
     // Plan item 224: the advert Bea crayoned on this field (2D canvas px), or null.

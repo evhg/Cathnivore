@@ -3,14 +3,15 @@
 // Drawing only: the rules never read this.
 
 import { isPlot, laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
+import { kitFor, type BedLook } from "./fieldkit";
 
-export type PlotLook = "earth" | "stubble" | "clover" | "puddle";
+/** Plan item 399: an act's kit names its three bed looks (Brindle's earth, stubble and clover by default). */
+export type PlotLook = BedLook | "puddle";
 
 /** Plan item 345: the build-mode plot outline, a cream stitch over a dark under-stroke (3:1+ on any crop). */
 export const PLOT_STITCH = "rgba(255, 246, 214, 0.95)";
 export const PLOT_STITCH_UNDER = "rgba(48, 34, 18, 0.55)";
 
-const BASE: readonly PlotLook[] = ["earth", "stubble", "clover"];
 /** About one earth bed in seven holds a puddle. */
 const PUDDLE_RATE = 0.15;
 
@@ -39,6 +40,8 @@ function build(level: Level): { looks: Map<string, PlotLook>; field: Map<string,
   const lane = laneCellsOf(level);
   const scenery = sceneryCells(level);
   const r01 = rng(level.id * 7919 + 52);
+  const kit = kitFor(level);
+  const BASE: readonly PlotLook[] = kit.beds;
   const out = new Map<string, PlotLook>();
   const base = new Map<string, PlotLook>();
   const field = new Map<string, Field>();
@@ -81,7 +84,7 @@ function build(level: Level): { looks: Map<string, PlotLook>; field: Map<string,
       for (let k = c; k <= end; k++) {
         base.set(`${k},${r}`, look);
         field.set(`${k},${r}`, f);
-        out.set(`${k},${r}`, look === "earth" && r01() < PUDDLE_RATE ? "puddle" : look);
+        out.set(`${k},${r}`, look === kit.puddle && r01() < PUDDLE_RATE ? "puddle" : look);
       }
       prev = look;
       c = end + 1;

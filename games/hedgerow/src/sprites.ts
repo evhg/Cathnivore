@@ -2427,7 +2427,19 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
 
 // ---- the farmhouse ----
 
-export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number, health: number): void {
+/**
+ * Plan item 399: the farmhouse in each act's field kit: Brindle's red-tiled farmhouse, Saltmarsh's whitewashed
+ * fisher's cottage under grey slate with a blue door and a lifebuoy, Rivermead's pink-washed cottage under thatch.
+ */
+export type HouseLook = "farm" | "fisher" | "thatch";
+const HOUSE: Record<HouseLook, { wall: string; roof: string; door: string; thatch?: boolean }> = {
+  farm: { wall: "#f4ede1", roof: "#b5523b", door: "#4f7f37" },
+  fisher: { wall: "#fbfaf4", roof: "#5d6670", door: "#2f6c9a" },
+  thatch: { wall: "#f1d3c4", roof: "#c4a262", door: "#5a4a7a", thatch: true },
+};
+
+export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number, health: number, look: HouseLook = "farm"): void {
+  const H = HOUSE[look];
   ctx.lineWidth = lw(s);
   ctx.strokeStyle = INK;
   ctx.lineJoin = "round";
@@ -2435,16 +2447,45 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
   groundShadow(ctx, x, base, s * 0.5, s * 0.12);
   castShadow(ctx, x, base, s * 0.4, s * 0.2, s * 0.85, 0.24);
   // Walls and roof.
-  rr(ctx, x - s * 0.36, base - s * 0.48, s * 0.72, s * 0.48, s * 0.02, "#f4ede1");
-  ctx.fillStyle = "#b5523b";
+  rr(ctx, x - s * 0.36, base - s * 0.48, s * 0.72, s * 0.48, s * 0.02, H.wall);
+  ctx.fillStyle = H.roof;
   ctx.beginPath();
-  ctx.moveTo(x - s * 0.46, base - s * 0.44);
-  ctx.lineTo(x - s * 0.3, base - s * 0.82);
-  ctx.lineTo(x + s * 0.3, base - s * 0.82);
-  ctx.lineTo(x + s * 0.46, base - s * 0.44);
+  if (H.thatch) {
+    // Thatch: a deep, rounded hood down over the eaves.
+    ctx.moveTo(x - s * 0.48, base - s * 0.4);
+    ctx.quadraticCurveTo(x - s * 0.44, base - s * 0.86, x, base - s * 0.86);
+    ctx.quadraticCurveTo(x + s * 0.44, base - s * 0.86, x + s * 0.48, base - s * 0.4);
+  } else {
+    ctx.moveTo(x - s * 0.46, base - s * 0.44);
+    ctx.lineTo(x - s * 0.3, base - s * 0.82);
+    ctx.lineTo(x + s * 0.3, base - s * 0.82);
+    ctx.lineTo(x + s * 0.46, base - s * 0.44);
+  }
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
+  if (H.thatch) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(244,224,160,0.7)";
+    ctx.lineWidth = Math.max(1, s * 0.015);
+    for (let k = -2; k <= 2; k++) {
+      ctx.beginPath();
+      ctx.moveTo(x + k * s * 0.12, base - s * 0.8);
+      ctx.lineTo(x + k * s * 0.17, base - s * 0.46);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (look === "fisher") {
+    // A lifebuoy on the wall by the door.
+    ctx.save();
+    ctx.lineWidth = Math.max(1.5, s * 0.035);
+    ctx.strokeStyle = "#e0573e";
+    ctx.beginPath();
+    ctx.arc(x + s * 0.27, base - s * 0.14, s * 0.055, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
   // Chimney with smoke.
   rr(ctx, x + s * 0.14, base - s * 0.96, s * 0.1, s * 0.2, s * 0.01, "#8a5a35");
   for (let i = 0; i < 3; i++) {
@@ -2455,7 +2496,7 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
     ctx.fill();
   }
   // Door and windows (lit and warm).
-  rr(ctx, x - s * 0.07, base - s * 0.26, s * 0.14, s * 0.26, s * 0.06, "#4f7f37");
+  rr(ctx, x - s * 0.07, base - s * 0.26, s * 0.14, s * 0.26, s * 0.06, H.door);
   for (const wx of [-0.24, 0.16]) {
     rr(ctx, x + wx * s, base - s * 0.36, s * 0.1, s * 0.1, s * 0.01, "#ffe39a");
   }

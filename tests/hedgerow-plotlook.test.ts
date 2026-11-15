@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { PLOT_STITCH, PLOT_STITCH_UNDER, fieldAt, plotLooks, sameField } from "../games/hedgerow/src/plotlook";
+import { BRINDLE_KIT, FIELD_KITS, kitFor } from "../games/hedgerow/src/fieldkit";
 
 describe("plot looks", () => {
   it("are the same every time for a level", () => {
@@ -38,10 +39,12 @@ describe("plot looks", () => {
       for (const l of looks.values()) all.add(l);
       if (looks.size >= 20) {
         const kinds = new Set(looks.values());
-        for (const l of ["earth", "stubble", "clover"]) expect(kinds.has(l as never), `level ${level.id}`).toBe(true);
+        for (const l of kitFor(level).beds) expect(kinds.has(l), `level ${level.id}`).toBe(true);
       }
     }
-    expect([...all].sort()).toEqual(["clover", "earth", "puddle", "stubble"]);
+    // Plan item 399: every act's kit, and the farm's puddle.
+    const kits = [BRINDLE_KIT, ...Object.values(FIELD_KITS)].flatMap((k) => [...k!.beds]);
+    expect([...all].sort()).toEqual([...new Set([...kits, "puddle"])].sort());
   });
 
   // Plan item 345's measure: every plot used to paint its own rimmed bed; a field (a block up to three rows deep,

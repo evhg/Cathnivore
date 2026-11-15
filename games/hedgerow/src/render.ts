@@ -6,6 +6,8 @@
 
 import { P, PROPERTIES, RUNGS, crackStage } from "./fleet";
 import { PLOT_STITCH, PLOT_STITCH_UNDER } from "./plotlook";
+import { kitFor } from "./fieldkit";
+import { drawKitBarn } from "./fieldkitart";
 import {
   ENEMIES,
   MEGAS,
@@ -804,7 +806,7 @@ export class Renderer {
     const end = level.path[level.path.length - 1]!;
     items.push({
       y: end[1] + 0.84,
-      draw: () => drawFarmhouse(ctx, X(end[0] + 0.5), Y(end[1] + 0.5), s, t, game.goodwill / game.maxGoodwill),
+      draw: () => drawFarmhouse(ctx, X(end[0] + 0.5), Y(end[1] + 0.5), s, t, game.goodwill / game.maxGoodwill, kitFor(level).house),
     });
     for (const tw of game.towers) {
       const since = this.fired.get(tw.id) ?? 9;
@@ -1295,7 +1297,11 @@ export class Renderer {
     }
 
     // Plan item 345: each barn stands in its own farmyard (packed earth, a rail fence, a bale), where the hens peck.
-    for (const [c, r] of level.barns ?? []) drawFarmyard(ctx, X(c), Y(r), X(1) - X(0), c * 7 + r * 13 + level.id);
+    // Plan item 399: or the act's own building (Saltmarsh's net shed, Rivermead's mill house).
+    const barnLook = kitFor(level).barn;
+    for (const [c, r] of level.barns ?? [])
+      if (barnLook === "barn") drawFarmyard(ctx, X(c), Y(r), X(1) - X(0), c * 7 + r * 13 + level.id);
+      else drawKitBarn(ctx, X(c), Y(r), X(1) - X(0), barnLook, c * 7 + r * 13 + level.id, t);
     // Fallen oaks lie across their plots until cleared.
     for (const [c, r] of level.oaks ?? []) {
       if (!oakAt(game, c, r)) continue;
