@@ -4018,7 +4018,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or logged as kept with a reason; the specs for what changed pass; shots P and D before and after.
 - **Size:** 1
 
-## 425. [ ] Cathnivore: Hollowell's pieces as glossy miniatures standing on the land
+## 425. [ ] Cathnivore: Hollowell's pieces as glossy miniatures standing on the land *(lane A, in progress)*
 - **Why:** `plan1115e/cath-game-D`: every region carries rounded orange cubes with white chips, a cyan '?' bubble, a tiny 'H' billboard, flag strings and floating '2' badges (Saltmarsh 900-1010 x 190-250, Kingsmarket 780-940 x 360-420); at `cath-game-P` (130-330 x 300-470) they are 20-24 px blobs. They read as UI stickers, not pieces on a table (VISION 2: the map and its pieces are the most beautiful thing; STYLE 2.2-2.3: glossy corporate material, shape before colour).
 - **Build:** an Outlet as a glossy mini storefront (awning, H mark, one highlight, no outline); the '?' marker a corporate speech bubble on a stake; the billboard a hoarding on legs. Each piece casts a soft contact shadow and drops in on arrival (corporate easing, no overshoot). Counts sit on the piece's own base, not a floating badge.
 - **Accept:**
