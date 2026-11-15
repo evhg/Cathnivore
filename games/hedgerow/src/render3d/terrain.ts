@@ -1535,6 +1535,21 @@ export function buildGround(level: Level): Ground {
     const m = instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), clumps, true);
     if (m) group.add(m);
     marginProps += clumps.length;
+    // Plan item 419: Saltmarsh's dunes, a row of low sand hummocks along the shore band between the beach and the
+    // hedge (the 2D margin's dunes, item 388), one instanced call.
+    if (act === 2) {
+      const dunes: Inst[] = [];
+      const sandC = [new THREE.Color("#dccb94"), new THREE.Color("#d2be86"), new THREE.Color("#e4d6a6")];
+      for (let y = -MARGIN + 0.6; y < rows + MARGIN - 0.6; y += 0.55 + deco() * 0.35) {
+        const x = -1.25 + (deco() - 0.5) * 0.5;
+        if (laneDistance(level, x, y) < 1.2 || nearWater(x, y, 0.3)) continue;
+        const s = 0.32 + deco() * 0.22;
+        dunes.push({ x, y: heightAt(x, y) - s * 0.12, z: y, ry: deco() * 6.3, s, sy: 0.32 + deco() * 0.12, color: sandC[Math.floor(deco() * 3)]! });
+      }
+      const dm = instanced(new THREE.SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), matte("#ffffff"), dunes, true);
+      if (dm) group.add(dm);
+      marginProps += dunes.length;
+    }
     group.userData.margin = { land: marginLand, plain: marginPlain, props: marginProps };
   }
   // Hedgerows along the field's edge (the game's namesake), broken where the lanes run out.
