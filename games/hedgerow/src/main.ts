@@ -2336,7 +2336,9 @@ function fieldIntel(g: Game): HTMLElement {
       const trait = propsOf(roundProps(g.level, groups))[0];
       const word = document.createElement("span");
       word.className = trait ? "round-trait" : "round-trait round-lead";
-      if (trait) word.style.setProperty("--trait", PROPERTIES[trait].colour);
+      // Plan item 403: a round without a trait names its lead on the same pill, edged in that vehicle's livery
+      // (it was bare text beside its neighbours' pills).
+      word.style.setProperty("--trait", trait ? PROPERTIES[trait].colour : livery(lead));
       word.textContent = trait ? PROPERTIES[trait].name : ENEMIES[lead].name;
       b.append(bar, count, word);
       b.onclick = () => open(openRound === b.dataset.key ? null : b.dataset.key!);

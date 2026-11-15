@@ -4417,7 +4417,8 @@ body:has(#dlg-pause[open]) .paused-note {
   grid-template-columns: auto auto;
   grid-template-areas: "no no" "icon count" "trait trait";
   justify-content: center;
-  align-content: center;
+  /* Plan item 403: rows from the top, so every card's 'Round N' sits on one line however its word wraps */
+  align-content: start;
   align-items: center;
   column-gap: 4px;
   row-gap: 0;
@@ -4514,9 +4515,7 @@ body:has(#dlg-pause[open]) .paused-note {
   text-overflow: ellipsis;
 }
 .round-chip-btn .round-lead {
-  border-left-color: transparent;
-  background: none;
-  font-weight: 600;
+  /* Plan item 403: the same pill as a trait's (edged in the lead's livery), not bare text */
   /* Plan item 378: a vehicle's name wraps onto a second line rather than ending "Same-Day…" */
   white-space: normal;
   text-align: center;
