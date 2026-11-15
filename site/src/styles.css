@@ -1729,15 +1729,22 @@ body {
   background:
     radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--chalk) 9%, transparent), transparent 60%),
     linear-gradient(180deg, var(--slate-hi), var(--slate));
-  box-shadow: inset 0 0 0 4px var(--wood-mid), inset 0 0 0 5px var(--wood-lo), 0 8px 20px var(--shadow-deep);
+  /* Plan item 409: the primary call read weaker than the wooden 'Browse' beside it; the slate's frame is brass-lit
+     and it glows warm, the chalk a size up and bolder, so today's game leads. */
+  box-shadow:
+    inset 0 0 0 4px var(--wood-mid), inset 0 0 0 5px var(--gold-hi),
+    0 0 0 1px color-mix(in srgb, var(--gold-hi) 55%, transparent),
+    0 0 26px color-mix(in srgb, var(--gold-hi) 32%, transparent),
+    0 8px 20px var(--shadow-deep);
   font-family: var(--font-voice, inherit);
+  font-size: 1.1em;
   font-style: italic;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 .btn-cta-slate #cta-today-label {
   padding-bottom: 1px;
-  border-bottom: 2px solid color-mix(in srgb, var(--gold-hi) 80%, transparent);
+  border-bottom: 3px solid var(--gold-hi);
 }
 /* Plan item 222: its neighbour a wooden sign from the same stall, lettered in the same hand (a sans glass pill beside
    the chalk slate read as two kits). Cream on the plank's darker half holds 5.9:1 or more. */
