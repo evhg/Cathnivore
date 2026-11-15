@@ -2893,9 +2893,10 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   position: relative;
   display: block;
   width: calc(100% + var(--u) * 74);
-  height: calc(var(--u) * 262);
+  /* Plan item 400: a shallower table under the lit gun (262u left a 60 px bare band over her edge at D) */
+  height: calc(var(--u) * 240);
   max-width: none;
-  margin: calc(var(--u) * -14) 0 calc(var(--u) * 10) calc(var(--u) * -40);
+  margin: calc(var(--u) * -14) 0 calc(var(--u) * 4) calc(var(--u) * -40);
   overflow: hidden;
   perspective: calc(var(--u) * 900);
   color: var(--ink);
@@ -2946,8 +2947,8 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 /* Plan item 313: the class's own gun mesh, lit, as turntable frames (render/gunportrait.ts) in place of the layers. */
 .cp-gun { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 /* The lit gun stands in a taller view than the layered drawing (item 313: 360 x 150 or more at D). */
-.cp-case.is-lit .cp-prop { left: 3%; right: 3%; top: 3%; height: 78%; }
-.cp-case.is-lit::after { top: 74%; }
+.cp-case.is-lit .cp-prop { left: 3%; right: 3%; top: 2%; height: 86%; }
+.cp-case.is-lit::after { top: 82%; }
 .cp-case.is-still .cp-prop { animation: none; }
 .cp-case.is-still .cp-prop-turn { animation: none; transform: rotateX(10deg) rotateY(-24deg); }
 @media (prefers-reduced-motion: reduce) {
