@@ -5653,13 +5653,16 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
 /* Plan item 417: who holds each region shows in the land itself. Held ground (Hollowell dug in) greys toward
    tarmac under a glossy sheen; freed ground runs at full warm saturation with its own stalls; a change of hands
    cross-fades in 750 ms, eased with no overshoot (the corporations never bounce). */
-.region-hex .land-layer {
+.region-hex .land-layer,
+.closeup-land .land-layer {
   transition: filter 750ms ease-in-out;
 }
-.region-hex[data-control='held'] .land-layer {
+.region-hex[data-control='held'] .land-layer,
+.closeup-land[data-control='held'] .land-layer {
   filter: saturate(0.32) brightness(0.96);
 }
-.region-hex[data-control='free'] .land-layer {
+.region-hex[data-control='free'] .land-layer,
+.closeup-land[data-control='free'] .land-layer {
   filter: saturate(1.18) sepia(0.06);
 }
 .held-sheen {

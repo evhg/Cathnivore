@@ -5,7 +5,12 @@ import type { GameState, ProducerId, RegionId, RegionType } from '../engine/type
 import { Buyout, Doubt, GAP_SCALE, GroundArt, HEX_R, Outlet, REGION_FILL, TerrainArt, hexPoints } from './Map'
 import RegionGroundArt from './RegionGroundArt'
 import { regionGround } from './regionGround'
+import { regionControl } from './grip'
+import type { PieceRect } from './pieceLayout'
 import { useSheetDismiss } from './useSheetDismiss'
+
+/** Plan item 417: the row Hollowell's pieces stand in (tile units), which the ground's stalls and sign keep clear of. */
+const PIECE_ROW: PieceRect[] = [{ kind: 'badge', x0: -60, y0: 30, x1: 60, y1: 68 }]
 
 const TYPE_NAME: Record<RegionType, string> = { capital: 'The capital', pasture: 'Pasture', crop: 'Cropland', coast: 'Coast' }
 
@@ -21,7 +26,9 @@ export default function RegionCloseUp({ state, region, onClose, actions = [] }: 
   const r = state.regions[region]
   const type = regionType(state, region)
   const stalls = (Object.entries(r.stalls).filter(([, n]) => (n ?? 0) > 0) as [ProducerId, number][]).map(([id, n]) => ({ id, n }))
-  const holder = r.liberated ? 'Freed: the co-op holds it' : r.outlets + r.buyouts > 0 ? 'Hollowell has its hooks in it' : 'Open ground'
+  // Plan item 417: the close-up's ground shows who holds it, as the board's does.
+  const control = regionControl(r)
+  const holder = r.liberated ? 'Freed: the co-op holds it' : control === 'held' ? 'Held: Hollowell has dug in' : r.outlets + r.buyouts > 0 ? 'Hollowell has its hooks in it' : 'Open ground'
   const pieces: Array<{ key: string; label: string; n: number; art: JSX.Element }> = [
     { key: 'outlet', label: r.outlets === 1 ? 'Outlet' : 'Outlets', n: r.outlets, art: <Outlet /> },
     { key: 'buyout', label: r.buyouts === 1 ? 'Buyout' : 'Buyouts', n: r.buyouts, art: <Buyout /> },
@@ -53,11 +60,16 @@ export default function RegionCloseUp({ state, region, onClose, actions = [] }: 
           <button onClick={onClose}>Close</button>
         </header>
         <svg className="region-closeup-hex" viewBox={`${-HEX_R - 4} ${-HEX_R - 4} ${HEX_R * 2 + 8} ${HEX_R * 2 + 8}`} aria-hidden="true">
-          <polygon points={hexPoints(0, 0, HEX_R * GAP_SCALE)} fill={REGION_FILL[type]} stroke="var(--ink)" strokeWidth={3} />
-          <GroundArt type={type} id={region} clip={`${uid}-cu`} />
-          <RegionGroundArt marks={regionGround(region, type, [])} />
-          <g className="terrain-art">
-            <TerrainArt type={type} id={region} />
+          <g className="closeup-land" data-control={control}>
+            <polygon className="land-layer" points={hexPoints(0, 0, HEX_R * GAP_SCALE)} fill={REGION_FILL[type]} stroke="var(--ink)" strokeWidth={3} />
+            <g className="land-layer">
+              <GroundArt type={type} id={region} clip={`${uid}-cu`} />
+            </g>
+            {control === 'held' && <polygon className="held-sheen" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} fill="var(--corp-chrome)" opacity={0.22} />}
+            <RegionGroundArt marks={regionGround(region, type, PIECE_ROW, control)} />
+            <g className="terrain-art land-layer">
+              <TerrainArt type={type} id={region} />
+            </g>
           </g>
           {/* Hollowell's pieces standing on the ground, each about 32 px across on a 320 px hex. */}
           {(() => {
