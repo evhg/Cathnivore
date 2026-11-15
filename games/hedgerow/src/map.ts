@@ -1360,6 +1360,43 @@ function richer(c: string, k: number): string {
 }
 
 /**
+ * Plan item 428: what an act's land carries beyond its fields: Saltmarsh and Shingle Bay's creeks winding through
+ * mudflats with samphire along them, Rivermead's drains, Highmoor's peat hags. Painted under the hedges, seeded.
+ */
+function LAND_FEATURES(i: number): string {
+  const rand = mulberry(9157 * (i + 1));
+  const creek = (y0: number, amp: number, col: string, w: number): string => {
+    let d = `M-2 ${f(y0)}`;
+    for (let x = 0; x <= 104; x += 8) d += ` Q${f(x + 4)} ${f(y0 + (rand() - 0.5) * amp * 2)} ${f(x + 8)} ${f(y0 + (rand() - 0.5) * amp)}`;
+    return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" vector-effect="non-scaling-stroke" opacity=".85"/>`;
+  };
+  const blobs = (n: number, col: string, rx: number, ry: number, a: number): string => {
+    let o = "";
+    for (let k = 0; k < n; k++) o += `<ellipse cx="${f(4 + rand() * 92)}" cy="${f(8 + rand() * 84)}" rx="${f(rx * (0.6 + rand() * 0.8))}" ry="${f(ry * (0.6 + rand() * 0.8))}" fill="${col}" opacity="${f(a)}"/>`;
+    return o;
+  };
+  // act index i is 0-based: 2 Saltmarsh, 5 Shingle Bay, 3 Rivermead, 1 Highmoor
+  if (i === 2 || i === 5)
+    return blobs(9, "#b9ad8e", 7, 5, 0.45) + blobs(14, "#7e9a5a", 2.4, 1.8, 0.5) + blobs(10, "#a090c0", 1.6, 1.2, 0.45) + creek(40, 6, "#8fb3bf", 5) + creek(64, 5, "#8fb3bf", 3.5) + creek(40, 6, "#cfe2e6", 1.4);
+  if (i === 3) return creek(38, 3, "#8fb7c4", 3) + creek(70, 3, "#8fb7c4", 3) + blobs(10, "#a8c47a", 5, 3, 0.35);
+  if (i === 1) return blobs(16, "#6e5a44", 2.6, 1.4, 0.4) + blobs(12, "#8e6a84", 4, 2.6, 0.35);
+  // Oakvale: a woodland floor, drifts of bluebells and wild garlic as clusters of small flowers, leaf litter.
+  if (i === 4) {
+    const drift = (n: number, col: string): string => {
+      let o = "";
+      for (let k = 0; k < n; k++) {
+        const cx = 4 + rand() * 92;
+        const cy = 8 + rand() * 84;
+        for (let j = 0; j < 22; j++) o += `<circle cx="${f(cx + (rand() - 0.5) * 9)}" cy="${f(cy + (rand() - 0.5) * 6)}" r=".55" fill="${col}" opacity=".7"/>`;
+      }
+      return o;
+    };
+    return blobs(10, "#a07a4a", 4, 2.6, 0.22) + drift(7, "#6f74c4") + drift(5, "#f4f4e6");
+  }
+  return blobs(12, "#ffffff", 3, 2, 0.12) + blobs(10, "#5e7a3a", 3, 2, 0.12);
+}
+
+/**
  * The act's patchwork. Plan item 230: `won` (one flag per stop, in lane order) colours in the fields nearest a won
  * stop, so the country fills with colour as the act is played; the rest keep the act's pale palette.
  */
@@ -1399,6 +1436,10 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
       const lush = won[stop] === true;
       if (k < 3) cells += `<path d="${d}" fill="${lush ? richer(g.patches[k]!, 2.4) : g.patches[k]}" opacity="${f(lush ? Math.max(op, 0.85) : op)}"/>`;
       else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 2)}" opacity=".7"/>`;
+      // Plan item 428: the fourth kind is rough grazing, a deeper tone of the act's hedge green, not the bare card.
+      else cells += `<path d="${d}" fill="${g.leaf}" opacity="${f(0.22 + rand() * 0.12)}"/>`;
+      // Plan item 428: each field shaded by a soft light across it, at its own angle, so a big field isn't one tone.
+      cells += `<path d="${d}" fill="url(#sh${i}-${Math.floor(rand() * 4)})"/>`;
 
       // Plan item 274: a ploughed field's furrows are drawn lines at a steady 1.4 px (non-scaling), clipped to the
       // field; a stretched pattern drew them as broad ruled stripes on a wide screen.
@@ -1422,9 +1463,10 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
     // Plan item 428: a paper-and-grass grain over the land (it read as flat pale squares), multiplied in faintly.
-    `<defs>${clips}<filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
+    `<defs>${[0, 1, 2, 3].map((a) => `<linearGradient id="sh${i}-${a}" gradientTransform="rotate(${a * 45 + 20} .5 .5)"><stop offset="0" stop-color="#fffbe8" stop-opacity=".3"/><stop offset=".5" stop-color="#fffbe8" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></linearGradient>`).join("")}${clips}<filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
     `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
-    `<rect width="100" height="100" filter="url(#gr${i})" opacity=".8"/>` +
+
+    LAND_FEATURES(i) +
     // ...and each hedge throws a soft shadow just below it, so the rows stand up from the fields.
     `<path d="${hedges}" stroke="#2a2010" stroke-width="${f(10 * wt)}" opacity=".13" transform="translate(0 1.1)" ${ve}/>` +
     // Plan item 274: field hedges as hedgerows, not ruled lines: a dark root band, rounded crowns along it and lit
