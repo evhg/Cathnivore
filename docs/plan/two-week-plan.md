@@ -3854,7 +3854,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a unit test that no building or bed sprite is shared between acts' kits; the mean hue of l21's and l34's field interiors differs by 15 deg+; hedgerow field, cath2d, gatequeue and keyart-fresh pass; shots acts 1, 3 and 4 at P and D, before and after.
 - **Size:** 3
 
-## 400. [ ] NIGHT SHIFT desktop pick: five classes told apart at a glance, not five names over the same MID meter
+## 400. [ ] NIGHT SHIFT desktop pick: five classes told apart at a glance, not five names over the same MID meter *(lane B, in progress)*
 - **Why:** `plan1115a/ns-play-D` Gunslinger, Wirewitch and Fixer (45-470 x 330-575) all read 'RANGE ▬▬ MID' with near-identical dim grey pistols (375-440 x 345-550); a row differs only by its name; the role and skills appear only in the right panel (990-1390 x 590-730), which has an empty band (990-1400 x 360-420).
 - **Build:** under each row's name its one-line role and signature skill ('Wire traps · close control'); a second meter beside RANGE that differs per class (Stealth / Loud / Support); unselected guns at 70% brightness; the empty band holds the class's two strongest stats against the five classes' average.
 - **Accept:** the five rows' text pairwise distinct; row guns 3:1+ against the panel; role text 14 px+ (in `var(--u)`, cathode-type); no empty band over 40 px in the right panel; cathode-classpick, cathode-armoury and type tests pass; shots P and D before and after.
