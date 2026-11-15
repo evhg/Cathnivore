@@ -37,8 +37,11 @@ for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
       const cs = getComputedStyle(s)
       const tail = getComputedStyle(s, '::after')
       const r = s.getBoundingClientRect()
-      const f = document.getElementById('valley-cath')!.getBoundingClientRect()
-      const face = { l: f.left + f.width * 0.3, r: f.left + f.width * 0.7, t: f.top + f.height * 0.1, b: f.top + f.height * 0.42 }
+      const c = document.getElementById('valley-cath')!
+      const f = c.getBoundingClientRect()
+      // (plan item 430: full length at D, her face the box's top quarter)
+      const full = c.dataset.framing === 'full'
+      const face = { l: f.left + f.width * 0.3, r: f.left + f.width * 0.7, t: f.top + f.height * (full ? 0.04 : 0.1), b: f.top + f.height * (full ? 0.25 : 0.42) }
       const a = parseFloat(cs.getPropertyValue('--tail-a'))
       const len = parseFloat(tail.width)
       const ex = r.left + parseFloat(tail.left) + Math.cos(a) * len
@@ -155,46 +158,39 @@ test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
   await expect(page.locator('#host-face')).not.toHaveAttribute('data-expression', before ?? '')
 })
 
-// Plan item 188: the half-length figure ends flat at the hips; a drystone wall on a verge stands in front of that
-// cut and runs down to the valley's frame, so she never floats cut off (D and the phone's standing figure). Plan item
-// 351: it is a footbridge's open railing (a top board, a rail, spindles), no solid board 40 px+ on both sides.
-test('she stands behind a wall that hides the figure cut and meets the frame', async ({ page, hasTouch }) => {
+// Plan item 188 hid the half-length figure's cut at the hips behind a wall, then a footbridge (items 329, 351, 369),
+// which still read as a box over her hips. Plan item 430: at D she stands full length in the meadow, her boots on the
+// valley's grass with a few tufts in front of them; no board or wall crosses her.
+test('at D she stands full length in the meadow, nothing across her hips', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the phone docks her under the board (item 407)')
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
   await page.goto('/runnel/?nohelp')
   await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
   await expect.poll(() => visibleCaths(page)).toEqual(['valley-cath'])
+  await expect(page.locator('#valley-cath')).toHaveAttribute('data-framing', 'full')
   const m = await page.evaluate(() => {
     const c = document.getElementById('valley-cath')!
-    const fig = c.querySelector('svg.cath')!.getBoundingClientRect()
-    const wall = c.querySelector('svg.valley-wall')!
-    const w = wall.getBoundingClientRect()
-    const cope = wall.querySelector('.vw-cope')!.getBoundingClientRect()
+    const fig = c.querySelector('svg.cath')!
+    const r = fig.getBoundingClientRect()
+    const boots = c.querySelector('.cath-lower')!.getBoundingClientRect()
+    const bank = c.querySelector('svg.valley-bank')!.getBoundingClientRect()
     const valley = document.querySelector('.valley')!.getBoundingClientRect()
-    return { shown: getComputedStyle(wall).display !== 'none', copeTop: cope.top, figBottom: fig.bottom, wallBottom: w.bottom, valleyBottom: valley.bottom, wider: w.width >= fig.width }
+    return {
+      viewBox: fig.getAttribute('viewBox'),
+      walls: c.querySelectorAll('svg.valley-wall').length,
+      bootsBottom: boots.bottom,
+      bankTop: bank.top,
+      bankBottom: bank.bottom,
+      valleyBottom: valley.bottom,
+      figTop: r.top,
+      valleyTop: valley.top,
+    }
   })
-  expect(m.shown).toBe(true)
-  // Plan item 351: an open railing, not a flat box: no solid board 40 px or more on both sides.
-  const boards = await page.evaluate(() =>
-    [...document.querySelectorAll('#valley-cath svg.valley-wall :is(.vw-wall, .vb-rail, .vw-cope)')].map((e) => {
-      const r = e.getBoundingClientRect()
-      return Math.min(r.width, r.height)
-    }),
-  )
-  expect(boards.length).toBeGreaterThanOrEqual(3)
-  for (const b of boards) expect(b).toBeLessThan(40)
-  expect(await page.locator('#valley-cath .vb-spindle').count()).toBe(1)
-  // Plan item 369: a bridge, not a crate front: the deck arches (its middle stands above its ends) between stone abutments.
-  const deck = await page.evaluate(() => {
-    const d = document.querySelector<SVGPathElement>('#valley-cath .vb-deck')!
-    const len = d.getTotalLength()
-    const ys = [0, 0.25].map((f) => d.getPointAtLength(len * f).y)
-    return { endY: ys[0]!, midY: ys[1]!, stones: document.querySelectorAll('#valley-cath .vb-stone').length }
-  })
-  expect(deck.midY).toBeLessThan(deck.endY - 3)
-  expect(deck.stones).toBe(1)
-  // The coping sits at least 12 px above the figure's cut, and the verge reaches the valley's foot.
-  expect(m.copeTop).toBeLessThanOrEqual(m.figBottom - 12)
-  expect(m.wallBottom).toBeGreaterThanOrEqual(m.valleyBottom - 2)
-  expect(m.wider).toBe(true)
+  expect(m.viewBox).toBe('20 20 360 870')
+  expect(m.walls).toBe(0)
+  // Her boots stand inside the valley, the tufts round them (no higher than her shins), the whole of her in view.
+  expect(m.bootsBottom).toBeLessThanOrEqual(m.valleyBottom - 4)
+  expect(m.bankBottom).toBeGreaterThanOrEqual(m.bootsBottom - 2)
+  expect(m.bankTop).toBeGreaterThanOrEqual(m.bootsBottom - 40)
+  expect(m.figTop).toBeGreaterThanOrEqual(m.valleyTop)
 })

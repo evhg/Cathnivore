@@ -38,6 +38,8 @@ export interface HostView {
   /** Plan item 122: the angle (SVG degrees) from the valley figure's shoulder to the glowing tile; with
    *  `always`, she points at it whatever the water is doing (the lesson's target). */
   aim(degrees: number | null, always?: boolean): void
+  /** Plan item 430: redraw the valley figure if the layout's framing changed (full length at D, half on a phone). */
+  frame(): void
 }
 
 /** Plan item 188: the half-length figure ends flat at the hips, so in the valley something stands in front of that
@@ -63,6 +65,18 @@ const VALLEY_WALL = `<svg class="valley-wall" viewBox="0 0 200 60" preserveAspec
 <path class="vw-tuft" d="M2 52 l3 -9 l2 9 l3 -10 l3 10 Z M192 52 l3 -10 l2 10 l3 -8 l2 8 Z"/>
 </svg>`
 
+/** Plan item 430: at D she stands full length in the meadow by the stream (the footbridge over her hips read as a box
+ *  however it was drawn: items 329, 351, 369). The valley's own grass is her ground: in front of her boots only a
+ *  few tufts of uneven height, two seed heads and a poppy, so she stands in the grass, not on a ledge. The phone's
+ *  half figure keeps the footbridge. */
+const VALLEY_BANK = `<svg class="valley-bank" viewBox="0 0 120 24" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+<ellipse class="vk-shade" cx="60" cy="20" rx="44" ry="3.4"/>
+<path class="vk-stem" d="M14 22 q1 -9 -1 -15 M104 22 q-1 -8 2 -14 M97 22 q1 -6 -1 -10"/>
+<path class="vk-head" d="M10.5 6 a2.6 2.1 0 1 0 5.2 0 a2.6 2.1 0 1 0 -5.2 0 M103.5 7 a2.6 2.1 0 1 0 5.2 0 a2.6 2.1 0 1 0 -5.2 0"/>
+<path class="vk-bloom" d="M94.6 11 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0"/>
+<path class="vw-tuft" d="M4 23 l3 -11 l2 11 l3 -13 l3 13 Z M20 23 l2 -7 l2 7 l2 -9 l2 9 Z M36 23 l2 -5 l2 5 l2 -7 l2 7 Z M48 23 l2 -6 l1.5 6 l2 -4 l1.5 4 Z M66 23 l1.5 -4 l1.5 4 l2 -6 l2 6 Z M78 23 l2 -7 l2 7 l2 -5 l2 5 Z M90 23 l2 -9 l2 9 l2 -6 l2 6 Z M106 23 l3 -12 l2 12 l3 -9 l2 9 Z"/>
+</svg>`
+
 export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLElement | null, onLine?: () => void): HostView {
   let current: CathExpression | null = null
   let fieldsWet = 0
@@ -74,8 +88,13 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   let aimAlways = false
   // Plan item 70: Cath stands in the valley too, half length by the stream. She looks round when the water
   // reaches a new field, and waves at a solve.
+  const fullAtD = () => matchMedia('(min-width: 1100px) and (min-height: 640px)').matches
+  let framed: 'full' | 'half' | '' = ''
   const drawStage = (expression: CathExpression) => {
     if (!stage) return
+    const framing = fullAtD() ? 'full' : 'half'
+    framed = framing
+    stage.dataset.framing = framing
     const p: CathPoseId = aimAlways && aimAt !== null && pose !== 'wave' ? 'point' : pose
     stage.dataset.expression = expression
     // Plan item 268: her mood as a word a test (and the CSS) can read: delighted, worried, wink or calm.
@@ -84,7 +103,9 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     const pointAt = p === 'point' && aimAt !== null ? aimAt : undefined
     // What the art draws (cath.ts clamps the arm to -85..15 degrees), so a test reads the real aim.
     stage.dataset.aim = pointAt === undefined ? '' : Math.min(Math.max(pointAt, -85), 15).toFixed(1)
-    stage.innerHTML = cathSvg({ framing: 'half', expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true }) + VALLEY_WALL
+    stage.innerHTML =
+      cathSvg({ framing, expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true }) +
+      (framing === 'full' ? VALLEY_BANK : VALLEY_WALL)
   }
   const look = () => {
     if (!stage) return
@@ -129,6 +150,9 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     },
     say(expression, text) {
       show(expression, text)
+    },
+    frame() {
+      if (framed && framed !== (fullAtD() ? 'full' : 'half')) drawStage(current ?? 'smirk')
     },
     aim(degrees, always = false) {
       const moved = degrees === null || aimAt === null ? degrees !== aimAt : Math.abs(degrees - aimAt) > 3

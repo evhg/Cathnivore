@@ -791,6 +791,8 @@ function placeValleyCath(): void {
     return
   }
   cath.hidden = false
+  // Plan item 430: full length on the bank at D (the layout may have just crossed from the phone's half figure).
+  host.frame()
   // Plan item 268: she stands as large as the valley's corner allows (her face 60 px at 300 px tall), down to the old
   // 128 px; the tiles are measured once as screen outlines, and her shape (head narrower than her shoulders) tested.
   const tilePolys = screenPolys(document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
@@ -805,7 +807,8 @@ function placeValleyCath(): void {
   // ...and her line still finds a spot beside her (a bigger figure that sent it back to the rail pushed the page into
   // a scroll at D): the largest size that clears the tiles and keeps her bubble, else the largest that clears them.
   const app = document.querySelector<HTMLElement>('.app')
-  const sizes = [200, 184, 168, 152, 140, 128]
+  // (Plan item 430: the full-length figure is 2.4x as tall as it is wide, so its widths are narrower: 360 to 230 px tall.)
+  const sizes = cath.dataset.framing === 'full' ? [150, 140, 130, 120, 112, 104, 96] : [200, 184, 168, 152, 140, 128]
   let fits: number | null = null
   for (const w of sizes) {
     cath.style.setProperty('--cath-w', `${w}px`)
@@ -889,7 +892,9 @@ function placeValleySay(): void {
   const key = [text, fig.left, fig.top, fig.height, st.width, st.height, board?.left, board?.top, board?.width, puzzle.seed].join('|')
   if (key === sayKey && app.dataset.valleySay !== undefined) return
   sayKey = key
-  const face = { left: fig.left + fig.width * 0.3, right: fig.left + fig.width * 0.7, top: fig.top + fig.height * 0.1, bottom: fig.top + fig.height * 0.42 }
+  // (Plan item 430: in the full-length framing her face is the top quarter of the box.)
+  const full = cath.dataset.framing === 'full'
+  const face = { left: fig.left + fig.width * 0.3, right: fig.left + fig.width * 0.7, top: fig.top + fig.height * (full ? 0.04 : 0.1), bottom: fig.top + fig.height * (full ? 0.25 : 0.42) }
   const fx = (face.left + face.right) / 2
   const fy = (face.top + face.bottom) / 2
   // Each tile's hexagon in screen space (its bounding box would rule out the empty corners beside her head).
