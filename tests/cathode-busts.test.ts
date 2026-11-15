@@ -45,4 +45,26 @@ describe("NIGHT SHIFT villain busts (plan item 9)", () => {
     // His window and chair stay out of the booking room.
     expect(booking).not.toContain('fill="#1a1c23"');
   });
+
+  it("lights each withheld print by its own district, with its own giveaway prop (plan item 412)", () => {
+    const prints = [1, 2, 3, 4].map((i) => mugshotSvg(null, "", true, i));
+    const ground = (s: string) => /<radialGradient id="r\w+"[^>]*><stop offset="0" stop-color="(#\w+)"/.exec(s)?.[1];
+    expect(new Set(prints.map(ground)).size).toBe(4);
+    expect(new Set(prints.map((s) => /data-silhouette="(\d)"/.exec(s)?.[1])).size).toBe(4);
+    for (const s of prints) {
+      // torn redaction tape, never a plain bar, and a torn corner off the photo
+      expect(s).not.toContain('<rect x="62" y="86" width="76" height="18"');
+      expect(s).toMatch(/<path d="M60 87 L64 85.6/);
+      expect(s).toContain('fill="#e9e2d3"');
+    }
+  });
+
+  it("prints a named target under a hard key with a cold rim, not a flat pale face (plan item 412)", () => {
+    for (const who of ["crisp", "vane", "pell", "chair", "reed"] as const) {
+      const s = mugshotSvg(who, "NO. 1", true);
+      expect(s).toMatch(/<filter id="e\w+"[^>]*><feOffset in="SourceAlpha"/);
+      expect(s).not.toContain('slope="1.28"');
+    }
+  });
 });
+

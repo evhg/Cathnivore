@@ -552,12 +552,13 @@ function booking(id: string, who: BustId, small: boolean, slateG: string): strin
   }).join("");
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}" data-booking="1">
 <defs>
-<radialGradient id="w${id}" cx="44%" cy="36%" r="78%"><stop offset="0" stop-color="#e4e0d4"/><stop offset=".5" stop-color="#b3aea1"/><stop offset="1" stop-color="#4b4842"/></radialGradient>
-<linearGradient id="d${id}" x1="0" x2="1"><stop offset=".36" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity=".42"/><stop offset=".85" stop-color="#000" stop-opacity=".62"/></linearGradient>
+<radialGradient id="w${id}" cx="30%" cy="30%" r="85%"><stop offset="0" stop-color="#b9b2a2"/><stop offset=".38" stop-color="#6e685c"/><stop offset=".75" stop-color="#2a2824"/><stop offset="1" stop-color="#121110"/></radialGradient>
+<linearGradient id="d${id}" x1="0" x2="1"><stop offset=".34" stop-color="#000" stop-opacity="0"/><stop offset=".54" stop-color="#000" stop-opacity=".55"/><stop offset=".8" stop-color="#000" stop-opacity=".82"/></linearGradient>
 <radialGradient id="h${id}" cx="41%" cy="37%" r="24%"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
 <radialGradient id="v${id}" cx="46%" cy="40%" r="74%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".62"/></radialGradient>
 <filter id="c${id}" x="-10%" y="-10%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.6"/><feOffset dx="10" dy="5" result="o"/><feFlood flood-color="#17161a" flood-opacity=".62"/><feComposite in2="o" operator="in"/></filter>
-<filter id="f${id}"><feComponentTransfer><feFuncR type="linear" slope="1.28" intercept="-.07"/><feFuncG type="linear" slope="1.28" intercept="-.07"/><feFuncB type="linear" slope="1.28" intercept="-.07"/></feComponentTransfer></filter>
+<filter id="f${id}"><feComponentTransfer><feFuncR type="gamma" amplitude="1.08" exponent="1.35"/><feFuncG type="gamma" amplitude="1.06" exponent="1.35"/><feFuncB type="gamma" amplitude="1.02" exponent="1.35"/></feComponentTransfer></filter>
+<filter id="e${id}" x="-5%" y="-5%" width="110%" height="110%"><feOffset in="SourceAlpha" dx="-1.8" dy=".6" result="s"/><feComposite in="SourceAlpha" in2="s" operator="out" result="edge"/><feGaussianBlur in="edge" stdDeviation=".7" result="b"/><feFlood flood-color="#a9c6e6"/><feComposite in2="b" operator="in"/></filter>
 <filter id="a${id}"><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>
 <mask id="m${id}"><use href="#b${id}" filter="url(#a${id})"/></mask>
 <filter id="n${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="11"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .2 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
@@ -569,6 +570,7 @@ ${chart}
 <use href="#b${id}" filter="url(#c${id})"/>
 <g id="b${id}" filter="url(#f${id})">${body}</g>
 <g mask="url(#m${id})"><rect width="200" height="240" fill="url(#d${id})"/><rect width="200" height="240" fill="url(#h${id})"/></g>
+<use href="#b${id}" filter="url(#e${id})" opacity=".6"/>
 ${slateG}
 </g>
 <rect width="200" height="240" fill="#fff" filter="url(#n${id})"/>
@@ -594,7 +596,16 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
   // (A grey head at 10% luminance on 8% read as four identical black squares.)
   const v = ((variant % 4) + 4) % 4;
-  const RIM = "#9fbcd8";
+  // Plan item 412: each withheld print is lit by its own district (the vault's red work light, the clinic's cold
+  // fluorescent, the plaza's sodium lamps, the tower's lit window behind the blinds), so four silhouettes stop
+  // reading as one; the rim takes the light's colour.
+  const RIM = ["#f0a090", "#c4f0dc", "#ffd08a", "#fff4d8"][v]!;
+  const GROUND = [
+    ["#8a4a44", "#3a1e1c", "#0e0a0a"],
+    ["#a6cfc0", "#3d5c55", "#0c1312"],
+    ["#d6a868", "#5a3e22", "#120d08"],
+    ["#f4ecd0", "#9a8a64", "#16130d"],
+  ][v]!;
   const FIG = "#08090c";
   const heads = [
     // a hat brim
@@ -637,17 +648,33 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     // tower blinds (his chair's high back is part of his silhouette)
     `<g fill="#151a21">${Array.from({ length: 9 }, (_, k) => `<rect x="28" y="${30 + k * 14}" width="144" height="8"/>`).join("")}</g>`,
   ];
+  // What gives each away in its own light: the vault man's cigarette, the doctor's stethoscope, the councillor's
+  // microphone, the Chair's glasses (in `rims`).
+  const fore = [
+    `<path d="M106 128 L124 124" stroke="#e9e2d3" stroke-width="3" stroke-linecap="round"/><circle cx="125" cy="123.8" r="2.6" fill="#ff7a3a"/><circle cx="125" cy="123.8" r="6" fill="#ff7a3a" opacity=".25"/><path d="M127 120 C134 110 124 102 132 90 C138 82 132 74 138 66" stroke="${RIM}" stroke-width="1.4" fill="none" opacity=".55"/>`,
+    `<g fill="none" stroke="${RIM}" stroke-linecap="round"><path d="M88 150 C78 168 80 186 92 194" stroke-width="2.6"/><path d="M112 150 C124 166 126 178 122 190" stroke-width="2.6"/><path d="M92 194 C100 198 110 196 116 192"  stroke-width="1.6" opacity=".7"/></g><circle cx="122" cy="194" r="6.4" fill="${FIG}" stroke="${RIM}" stroke-width="2"/><circle cx="120.4" cy="192.4" r="1.6" fill="${RIM}"/>`,
+    `<path d="M140 240 L128 160" stroke="${FIG}" stroke-width="5"/><path d="M142 240 L130 160" stroke="${RIM}" stroke-width="1.2" opacity=".7"/><g transform="rotate(-20 126 146)"><rect x="118" y="124" width="16" height="30" rx="8" fill="${FIG}" stroke="${RIM}" stroke-width="2.2"/><g stroke="${RIM}" stroke-width="1" opacity=".6"><line x1="119" y1="131" x2="133" y2="131"/><line x1="119" y1="136" x2="133" y2="136"/><line x1="119" y1="141" x2="133" y2="141"/></g><rect x="121" y="154" width="10" height="6" fill="${FIG}" stroke="${RIM}" stroke-width="1"/></g>`,
+    `<rect x="26" y="24" width="148" height="132" fill="none" stroke="${RIM}" stroke-width="1.4" opacity=".35"/><line x1="100" y1="24" x2="100" y2="40" stroke="${RIM}" stroke-width="1.4" opacity=".35"/>`,
+  ];
+  // Redaction tape torn by hand at both ends, each print's at its own angle; a torn corner off each photo.
+  const tilt = [-6, 4, -3, 7][v]!;
+  const tape = "M60 87 L64 85.6 L62 89 L65 92 L61 95 L64 99 L61 102 L65 105 L138 104.4 L135 101 L139 98 L136 94.6 L140 91 L136 88 L139 85 Z";
+  const tear = v % 2
+    ? `<path d="M0 0 L46 0 L40 6 L44 12 L34 16 L30 26 L22 24 L16 36 L8 34 L0 44 Z" fill="#e9e2d3"/><path d="M46 0 L40 6 L44 12 L34 16 L30 26 L22 24 L16 36 L8 34 L0 44" fill="none" stroke="#8a8274" stroke-width="1" opacity=".7"/>`
+    : `<path d="M200 0 L152 0 L158 7 L154 13 L164 18 L168 28 L176 26 L182 38 L190 35 L200 46 Z" fill="#e9e2d3"/><path d="M152 0 L158 7 L154 13 L164 18 L168 28 L176 26 L182 38 L190 35 L200 46" fill="none" stroke="#8a8274" stroke-width="1" opacity=".7"/>`;
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-withheld" data-silhouette="${v}">
-<defs><radialGradient id="r${id}" cx="50%" cy="36%" r="62%"><stop offset="0" stop-color="#7f93a8"/><stop offset=".6" stop-color="#3e4a58"/><stop offset="1" stop-color="#0e1014"/></radialGradient></defs>
+<defs><radialGradient id="r${id}" cx="50%" cy="36%" r="62%"><stop offset="0" stop-color="${GROUND[0]}"/><stop offset=".6" stop-color="${GROUND[1]}"/><stop offset="1" stop-color="${GROUND[2]}"/></radialGradient></defs>
 <rect width="200" height="240" fill="#0e1014"/>
 <g transform="translate(100 120) rotate(${v % 2 ? 2.2 : -2.2}) scale(1.07) translate(-100 -120)">
 <rect width="200" height="240" fill="url(#r${id})"/>${props[v]}${chart}
 <g fill="${FIG}">${bodies[v]}${heads[v]}</g>
 ${rims[v]}
-<g transform="rotate(-6 100 95)"><rect x="62" y="86" width="76" height="18" fill="#b3122a" opacity=".92"/><rect x="62" y="86" width="76" height="18" fill="none" stroke="#f3ede2" stroke-width="1.2" opacity=".55"/></g>
-${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(-6 100 95)">REDACTED</text>
+${fore[v]}
+<g transform="rotate(${tilt} 100 95)"><path d="${tape}" fill="#b3122a" opacity=".94"/><path d="${tape}" fill="none" stroke="#f3ede2" stroke-width=".8" opacity=".35"/><rect x="66" y="88" width="68" height="3" fill="#fff" opacity=".14"/></g>
+${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(${tilt} 100 95)">REDACTED</text>
 <g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
 ${slateG}
+${tear}
 </g>
 </svg>`;
 }
