@@ -4066,7 +4066,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or logged as kept with a reason; specs for what changed pass; shots P and D before and after.
 - **Size:** 2
 
-## 431. [ ] Hedgerow desktop play: the field is the hero, the towers worth looking at
+## 431. [ ] Hedgerow desktop play: the field is the hero, the towers worth looking at *(lane B, in progress)*
 - **Why:** `plan1115f/hedge-l21-2d-D`: the playfield fills only about x300-800 of the 1080 px board, with sea and river decor across x15-300 and x800-1080; the side panel (x1090-1430) carries 10-12 px sublabels ('Slows', 'vehicles', '+4 more'). `hedge-l34-2d-D`: the shop tiles (1108-1410 x 88-330) show text but no tower art, and 'Court-house' wraps. On `hedge-l21-2d-P` towers barely register (one scarecrow at 195-240 x 420-465). VISION 2 (the table is the hero).
 - **Build:** frame the desktop 2D board to the field (the margins' painted country kept, but cropped to a frame); every shop tile shows its tower's art at every rack size; towers drawn 1.3x larger on a plinth with a contact shadow; a 13 px floor in the side panel with its sublabels in the ink token.
 - **Accept:** at 1440x900 the field's plots span 70%+ of the board canvas width on l21 and l34; every shop tile shows a 40 px+ tower image; no side-panel text under 13 px, sublabels 4.5:1+; tower sprites 1.3x today's drawn height; hedgerow-tray, rack, field and 2D specs pass; shots P and D before and after.
