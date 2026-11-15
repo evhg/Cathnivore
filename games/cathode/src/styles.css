@@ -1004,7 +1004,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
     right: -16px; /* px-ok */
     pointer-events: none;
   }
-  .cp-words::before { top: -40px; bottom: 0; background: linear-gradient(180deg, transparent 0, rgb(var(--shade-rgb) / .93) 56px); } /* px-ok */
+  /* Plan item 437: dark from the first line of words (her boots showed through the class line at .93 by 56 px) */
+  .cp-words::before { top: -40px; bottom: 0; background: linear-gradient(180deg, transparent 0, rgb(var(--shade-rgb) / .97) 36px); } /* px-ok */
   .cp-sheet { position: relative; margin-top: 0; padding-top: 30px; } /* px-ok */
   .cp-sheet::before { top: 0; bottom: -16px; background: rgb(var(--shade-rgb) / .93); } /* px-ok */
   .cp-words, .cp-sheet { max-width: none; }

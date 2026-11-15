@@ -275,10 +275,11 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-stretch: var(--wdth-label);
-  font-size: var(--fs-1);
+  /* Plan item 437: a step larger and in the second ink (it was 11 px in the third, a dim smudge in the corner) */
+  font-size: var(--fs-2);
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 /* A choice is a line of type: the name and what it means. Chosen = full ink and weight; the marker is focus. */
 .gate-tile {
