@@ -3991,7 +3991,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the token 64 px tall or more, its foot within 8 px of the current stop; the walk 800-1200 ms, in place under reduced motion; no trail segment meets the card's box at 1440x900 or 1280x800; map specs pass; shots P and D.
 - **Size:** 1-2
 
-## 421. [ ] Runnel: water you can read, from dry ditch to running channel to greened field
+## 421. [ ] Runnel: water you can read, from dry ditch to running channel to greened field *(lane B, in progress)*
 - **Why:** `plan1115d/runnel-D` the dry channels are dark brown bars that read as mud or wood (900-1105 x 400-440, 1015-1135 x 580-650); water shows only at the spring (640-800 x 200-290); `runnel-P` the same (195-295 x 395-440). You can't tell which grooves will carry water. VISION 2 and 3. (Item 411 dug the outflow to Bea's garden; this is the board's own channels.)
 - **Build:** channels as stone-lined ditches: a pale sandy bed when dry, a blue flow when connected that advances tile by tile after a move (about 150 ms a tile); fields from straw to green when watered, a small sprout pop.
 - **Accept:** each channel carries `data-wet`; wet water against its bed at 3:1 or more; the flow advances in tile order at about 150 ms a tile; watered ground in the green hue range (token unit test); an instant fill under reduced motion; runnel specs pass; shots P and D.
