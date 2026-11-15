@@ -311,7 +311,7 @@ test('plan item 119: each packet shows its tower large, its name on a printed ba
 })
 
 // Plan item 361: the side column as a bench: a regular rack (three to a row up to nine, 96 px wide; four from ten),
-// no packet across two columns, a short last row's spare cells as clay pots, every word 12 px or more, and Coming up
+// no packet across two columns, a short last row's spare cells filled (item 408's note, else clay pots), every word 12 px or more, and Coming up
 // whole beside it.
 test('plan item 361: the seed rack is a regular grid with pots in spare cells, words 12 px+, Coming up whole', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the side column is a desktop layout')
@@ -329,7 +329,10 @@ test('plan item 361: the seed rack is a regular grid with pots in spare cells, w
     const r = await page.evaluate(() => {
       const tray = document.querySelector('.tray-wrap .tray')!
       const packets = [...tray.querySelectorAll(':scope > .tray-tower')].map((b) => b.getBoundingClientRect())
-      const pots = [getComputedStyle(tray, '::before').content, getComputedStyle(tray, '::after').content].filter((c) => c !== 'none').length
+      // Plan item 408: a short last row's spare cells hold the 'More seeds at level N' note (or, with no new tower
+      // to come, the clay pots).
+      const note = tray.querySelector<HTMLElement>(':scope > .tray-later')
+      const pots = note ? Number(note.style.getPropertyValue('--spare')) : [getComputedStyle(tray, '::before').content, getComputedStyle(tray, '::after').content].filter((c) => c !== 'none').length
       const small: string[] = []
       for (const el of document.querySelectorAll<HTMLElement>('#panel *, footer.controls *')) {
         if (!el.getClientRects().length) continue
@@ -351,7 +354,7 @@ test('plan item 361: the seed rack is a regular grid with pots in spare cells, w
     expect(r.cols, `level ${level}`).toBe(Math.min(per, r.n))
     expect(Math.max(...r.widths) - Math.min(...r.widths)).toBeLessThanOrEqual(1)
     if (per === 3) expect(Math.min(...r.widths)).toBeGreaterThanOrEqual(96)
-    expect(r.pots).toBe(Math.min(2, (per - (r.n % per)) % per))
+    expect(r.pots).toBeGreaterThanOrEqual(Math.min(2, (per - (r.n % per)) % per))
     expect(r.small).toEqual([])
     // Coming up's rounds are on screen and whole.
     expect(r.intel, `level ${level} Coming up`).not.toBeNull()

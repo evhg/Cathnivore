@@ -4102,6 +4102,30 @@ body:has(#dlg-pause[open]) .paused-note {
   }
 }
 
+/* Plan item 408: the spare cells hold a note of the next field with a new tower, a seed label pinned to the bench, in
+   place of the clay pots; with every tower here they stand empty. Only the desktop rack is a grid. */
+.tray-later { display: none; }
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray:has(> .tray-later)::before,
+  .play .tray-wrap .tray:has(> .tray-later)::after,
+  .play .tray-wrap .tray.tray-all-seeds::before,
+  .play .tray-wrap .tray.tray-all-seeds::after { content: none; }
+  .play .tray-wrap .tray > .tray-later {
+    display: grid;
+    place-items: center;
+    grid-column: span var(--spare, 1);
+    order: 99;
+    margin: 6px 4px;
+    padding: 6px 8px;
+    border: 2px dashed color-mix(in srgb, var(--soil) 45%, transparent);
+    border-radius: 8px;
+    color: var(--ink-2);
+    font: 700 var(--fs-label) / 1.2 var(--font-ui);
+    text-align: center;
+    text-wrap: balance;
+  }
+}
+
 /* Plan item 87: on a shorter desktop (1280x800) the packets are a little shorter, so the round card keeps its foot. */
 @media (min-width: 900px) and (min-height: 521px) and (max-height: 860px) {
   .play .tray-wrap .tray .tray-tower { min-height: 80px; padding-top: 16px; gap: 1px; }

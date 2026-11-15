@@ -2872,6 +2872,21 @@ function towerTray(p: HTMLElement, g: Game): void {
     };
     tray.append(b);
   }
+  // Plan item 408: a short last row's spare cells (at D) say what's coming, not empty clay pots: the next field that
+  // brings a tower this one hasn't, or nothing at all when every tower is here.
+  const shown = tray.childElementCount;
+  const cols = shown >= 10 ? 4 : 3;
+  const spare = (cols - (shown % cols)) % cols;
+  const later = LEVELS.find((lv) => lv.id > g.level.id && lv.towers.some((k) => !g.level.towers.includes(k)));
+  if (spare && later && !player) {
+    const note = document.createElement("p");
+    note.className = "tray-later";
+    note.style.setProperty("--spare", String(spare));
+    const kind = later.towers.find((k) => !g.level.towers.includes(k))!;
+    note.textContent = `More seeds at level ${later.id}`;
+    note.title = `${TOWERS[kind].name} joins the rack at level ${later.id}.`;
+    tray.append(note);
+  } else if (spare) tray.classList.add("tray-all-seeds");
   const more = document.createElement("button");
   more.type = "button";
   more.className = "tray-more";
