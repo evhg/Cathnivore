@@ -3893,7 +3893,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** every card's icon and cost strip visible and none under the nav at 390x844; the lifted card 140 px+ wide; the phone hand, tutorial, cath-pick and suggest-move specs pass; shots P before and after, plus a lifted card.
 - **Size:** 2
 
-## 406. [ ] Hedgerow act map: the level stops show progress (locked, current, won), with a path that inks in
+## 406. [ ] Hedgerow act map: the level stops show progress (locked, current, won), with a path that inks in *(lane B, in progress)*
 - **Why:** `plan1115b/hedge-menu-D` the act's stops are identical white domes with grey icons (300-1030 x 320-440, 90-1030 x 725-850), so the map says nothing of progress; the middle (200-1100 x 450-720) is scattered scenery; `hedge-menu-P` labels alternate sides and wrap ('Brand Ambassador', 266-380 x 510-545).
 - **Build:** check the existing stop states first (items 111, 282 and 287 touched the map). Three distinct stop states: locked (a sketched sepia plot), current (a lit little plot with a flag and Cath), won (a coloured farm with its stars); the road between stops inks in up to the clear count; the scenery grouped into larger set pieces.
 - **Accept:** a seeded save shows all three states, told apart by computed style; the inked path's length matches the clears; on P no stop label wraps or overlaps a stop; hedgerow-map, level-card and critique specs pass; shots P and D fresh and mid-act.
