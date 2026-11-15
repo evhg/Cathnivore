@@ -3950,6 +3950,11 @@ float reliefShade( vec2 uv ) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
       // The class's own key lights her face in the wardrobe: the face key steps back so it keeps its modelling.
       rimU.uKey.value.copy(key0).multiplyScalar(1 - 0.55 * w);
+      // Plan item 427: the title's coat key (item 363's warm fill on the wool) steps back too: in the pick it lifted
+      // the Ghost's black trench to a flat pale grey (coat luma 111 against 35 without it) and drowned the class's
+      // own key; at 0.15 the trench reads black with its folds, its cloth and the class's coloured rim.
+      // (The pick tints at w 0.6, more in the kit-on flash.)
+      rimU.uCoatKey.value = 1 - 0.85 * Math.min(1, w / 0.6);
     },
     coat(c) {
       for (const m of coatMats) m.color.copy(c ?? coat0);
