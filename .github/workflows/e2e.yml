@@ -12,9 +12,11 @@ on:
     paths-ignore: ["**/*.md", "*.md", ".build-lock", ".build-lock-b", "docs/**"]
   workflow_dispatch:
 
+# The lanes push code every few minutes: cancelling superseded runs meant no run ever finished. Runs queue instead
+# (GitHub keeps only the newest waiting run), so the latest code is always tested within a run or two.
 concurrency:
   group: e2e-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -32,6 +34,13 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npx tsx scripts/gates-e2e.ts game
+      - name: Keep the failures' screenshots and page snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-game
+          path: test-results/
+          retention-days: 7
 
   site:
     runs-on: ubuntu-latest
@@ -49,6 +58,13 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npx tsx scripts/gates-e2e.ts site ${{ matrix.shard }}/8
+      - name: Keep the failures' screenshots and page snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-site-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7
 
   report:
     needs: [game, site]
