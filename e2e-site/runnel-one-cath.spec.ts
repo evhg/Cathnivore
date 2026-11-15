@@ -97,7 +97,7 @@ test('a tap that joins the water to the field delights her', async ({ page, hasT
   await expect(cath).toHaveAttribute('data-expression', 'delighted')
 })
 
-test('her face follows the water: worried on a spill, a wink on the solve', async ({ page, hasTouch }) => {
+test('her face follows the water: worried on a spill, delighted on the solve', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the valley figure is a full-length Cath at D')
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
   await page.goto('/runnel/?nohelp&shotsolve')
@@ -112,8 +112,9 @@ test('her face follows the water: worried on a spill, a wink on the solve', asyn
   await expect(cath).toHaveAttribute('data-pose', 'thinking')
   for (let k = 0; k < 5; k++) await tile.click()
   await page.locator('[data-last]').click()
-  await expect(cath).toHaveAttribute('data-expression', 'wink')
-  await expect(cath).toHaveAttribute('data-mood', 'wink')
+  // Plan item 411: delighted on the solve (it was a wink), as the water runs on to Bea's garden.
+  await expect(cath).toHaveAttribute('data-expression', 'delighted')
+  await expect(cath).toHaveAttribute('data-mood', 'delighted')
   await expect(cath).toHaveAttribute('data-pose', 'wave')
 })
 

@@ -69,3 +69,26 @@ test('the stream rises as fields are watered, and a solve waters the garden', as
   await page.waitForTimeout(1000)
   expect(lum(await soil())).toBeLessThan(lum(drySoil))
 })
+
+// Plan item 411: the field's ditch runs on to Bea's garden; on a solve its water runs down it (dry, then full within
+// 1.2 s), its end in the garden, and Cath is delighted.
+test('a solve sends the water down the ditch into Bea’s garden, and Cath is delighted', async ({ page }) => {
+  await seen(page)
+  await page.goto('/runnel/?shotsolve')
+  await expect(page.locator('[data-last]')).toBeVisible()
+  const ditch = page.locator('[data-outflow]')
+  await expect(ditch).toBeAttached()
+  await expect(ditch).not.toHaveAttribute('data-full', '')
+  const r = await page.evaluate(() => {
+    const p = document.querySelector<SVGPathElement>('[data-outflow] .runnel-ditch')!
+    const end = p.getPointAtLength(p.getTotalLength())
+    const m = p.getScreenCTM()!
+    const at = { x: end.x * m.a + end.y * m.c + m.e, y: end.x * m.b + end.y * m.d + m.f }
+    const g = document.querySelector('.bea-garden')!.getBoundingClientRect()
+    return { inGarden: at.x >= g.left - 4 && at.x <= g.right + 4 && at.y >= g.top - 4 && at.y <= g.bottom + 4 }
+  })
+  expect(r.inGarden, 'the ditch ends in the garden').toBe(true)
+  await page.locator('[data-last]').click()
+  await expect(ditch).toHaveAttribute('data-full', '', { timeout: 2500 })
+  await expect(page.locator('#host-face')).toHaveAttribute('data-expression', 'delighted')
+})

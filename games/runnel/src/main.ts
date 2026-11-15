@@ -403,6 +403,7 @@ function placeDitch(): void {
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.id = 'runnel-ditch'
     svg.setAttribute('class', 'runnel-ditch-layer')
+    svg.setAttribute('data-outflow', '')
     svg.setAttribute('aria-hidden', 'true')
     svg.innerHTML =
       '<path class="runnel-ditch-bank" /><path class="runnel-ditch" /><path class="runnel-ditch-crust" />' +
@@ -518,7 +519,7 @@ function placeDitch(): void {
         svg!.removeAttribute('data-running')
         svg!.setAttribute('data-full', '')
         if (computeFlow(puzzle.cells).solved) garden.dataset.garden = 'watered'
-      }, reduce ? 300 : 400)
+      }, reduce ? 300 : 900)
     }
   }
   if (!solved) garden.dataset.garden = 'dry'

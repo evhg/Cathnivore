@@ -4470,33 +4470,34 @@ body[data-mode='practice'] #week-slot {
 .runnel-ditch-bank {
   fill: none;
   stroke: var(--bank-shade);
-  stroke-width: 20;
+  /* Plan item 411: a dug channel the eye follows to the garden, not a hairline (its shoulder 26, the cut 16) */
+  stroke-width: 26;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: var(--ditch-bank-opacity, .22);
+  opacity: var(--ditch-bank-opacity, .38);
 }
 /* the cut itself: its dark bed, with the near bank lit */
 .runnel-ditch {
   fill: none;
   stroke: var(--groove-bed);
-  stroke-width: 12;
+  stroke-width: 16;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: .85;
+  opacity: .9;
   filter: drop-shadow(0 1.5px 0 var(--bank-sun));
 }
 /* the dry floor, cracked into clods */
 .runnel-ditch-crust {
   fill: none;
   stroke: var(--dry-edge);
-  stroke-width: 6;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-dasharray: 9 2.5 4 2;
 }
 .runnel-ditch-water {
   fill: none;
   stroke: var(--water);
-  stroke-width: 7;
+  stroke-width: 10;
   stroke-linecap: round;
   stroke-dasharray: 100 100;
   stroke-dashoffset: 100;
@@ -4504,7 +4505,8 @@ body[data-mode='practice'] #week-slot {
 }
 .runnel-ditch-layer[data-running] .runnel-ditch-water {
   opacity: 1;
-  animation: ditch-run 400ms cubic-bezier(0.4, 0.1, 0.4, 1) forwards;
+  /* Plan item 411: the run down to the garden is the solve's last beat, slow enough to follow */
+  animation: ditch-run 900ms cubic-bezier(0.4, 0.1, 0.4, 1) forwards;
 }
 .runnel-ditch-layer[data-full] .runnel-ditch-water {
   opacity: 1;

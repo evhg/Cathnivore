@@ -109,7 +109,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     onLine?.()
   }
   // Plan item 122: the valley figure's face follows the water between her lines: a smirk on a tap, delight as
-  // the front reaches a new field, worry while a channel spills, a wink on the solve.
+  // the front reaches a new field, worry while a channel spills, delight on the solve.
   const mood = (expression: CathExpression) => {
     if (expression === current) return
     current = expression
@@ -150,7 +150,8 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
         drawStage(current ?? 'smirk')
       }
       if (solved) {
-        show('wink', 'Every field watered, not a drop spilled. Beautiful work.')
+        // Plan item 411: delighted, and the water on its way down the ditch to Bea's garden.
+        show('delighted', "Every field watered, not a drop spilled. There it goes, down to Bea's beds.")
         milestone = 3
       } else if (fraction >= 0.75 && milestone < 2) {
         show(spilling ? 'worried' : 'delighted', "Nearly there. I can hear the lettuces cheering.")
