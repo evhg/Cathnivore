@@ -1254,6 +1254,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
       repeating-linear-gradient(to bottom, transparent 0 calc(var(--u) * 21), rgb(var(--black-rgb) / .07) calc(var(--u) * 21) calc(var(--u) * 22)),
       color-mix(in srgb, var(--card-paper) 86%, var(--amber-deep));
   }
+  /* ...the red kicker deepened toward the ink so it keeps 4.5:1 on the manila (the white tile carried it before) */
+  .dossier .dossier-kicker { color: color-mix(in srgb, var(--blood) 72%, var(--card-ink)); }
   .dossier-no {
     position: absolute;
     top: calc(var(--u) * -20);
