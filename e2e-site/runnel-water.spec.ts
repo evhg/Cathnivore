@@ -35,3 +35,19 @@ test('a tap that cuts the river drains it', async ({ page }) => {
   }
   expect(drained).toBe(true)
 })
+
+// Plan item 421: dry channels carry no `data-wet`, joined ones do, and under reduced motion a joining tap fills the
+// tile at once: no delay, and no transition on the water.
+test('under reduced motion a joining tap fills the channel at once', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/runnel/?nohelp&practice')
+  await page.waitForSelector('#board .tiles > g.cell')
+  await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
+  const last = page.locator('#board [data-last]')
+  await expect(last).not.toHaveAttribute('data-wet', '1')
+  await last.click()
+  await expect(last).toHaveAttribute('data-wet', '1', { timeout: 150 })
+  const t = await last.locator('.water').first().evaluate((w) => getComputedStyle(w).transitionDuration)
+  // (the site's reduced-motion rule sets every transition to 1 ms)
+  expect(t.split(',').every((d) => parseFloat(d) <= 0.01), t).toBe(true)
+})
