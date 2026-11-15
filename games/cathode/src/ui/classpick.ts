@@ -87,6 +87,10 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     // numbers and the weapon's name.
     const body = el("span", "cp-opt-body", opt);
     el("span", "cp-opt-name", body, CLASSES[cls].name);
+    // Plan item 400: the row names her signature skill tree beside its range ('Longshot', 'Meat'), so five rows no
+    // longer read alike; its theme is the tooltip.
+    const sig = TREES[CLASSES[cls].trees[0]!];
+    el("span", "cp-opt-role", body, sig.name).title = sig.theme;
     // Plan item 334: the four unlabelled pips said nothing; a labelled three-step range meter says how close she
     // fights (from her starting gun's effective range).
     const gearBase = WEAPON_BASES[STARTING_WEAPON[cls]];

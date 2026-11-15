@@ -3090,3 +3090,11 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 
 /* Plan item 340: the menu hint's parts never break inside ('TOMAS REED · THE HARBOUR · A DEBT TAG'). */
 .mh-part { white-space: nowrap; }
+
+/* Plan item 400: each class row's signature tree under its name, so the five rows read apart (the phone's tabs carry
+   their own names, item 375). */
+.cp-opt-body:has(.cp-opt-role) { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "name name" "meter role"; column-gap: calc(var(--u) * 8); }
+.cp-opt-body:has(.cp-opt-role) > .cp-opt-name { grid-area: name; }
+.cp-opt-body:has(.cp-opt-role) > .cp-opt-meter { grid-area: meter; }
+.cp-opt-role { grid-area: role; align-self: center; font: 600 var(--fs-1) / 1 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 700px) and (orientation: portrait) { .cp-opt-role { display: none; } }
