@@ -3899,7 +3899,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a seeded save shows all three states, told apart by computed style; the inked path's length matches the clears; on P no stop label wraps or overlaps a stop; hedgerow-map, level-card and critique specs pass; shots P and D fresh and mid-act.
 - **Size:** 2
 
-## 407. [ ] Runnel phone: Cath docked under the board, off the field
+## 407. [ ] Runnel phone: Cath docked under the board, off the field *(lane A, in progress)*
 - **Why:** `plan1115b/runnel-P` Cath and her bubble stand on the field (10-215 x 545-760), over board tiles and the bridge; Hedgerow's phone solved the same problem with a dock (item 392).
 - **Build:** on a phone Cath's portrait and line move to a dock under the board (her expressions kept, the lesson's steps in order); the board takes the full width. At D she stays in the scene, clear of the tiles.
 - **Accept:** at 390x844 her bubble's box doesn't intersect the board's; the board 20%+ taller than before; runnel lesson, lesson-close and daily specs pass; shots P and D before and after.
