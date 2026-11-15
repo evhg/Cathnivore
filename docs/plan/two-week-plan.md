@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-15T22:25Z
+
 
 
 
@@ -4065,3 +4065,48 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - `games-D`: the hero headline says 'Cathnivore' while the quote and primary button sell Runnel (615-1115 x 160-400). *(kept 2026-11-15 20:40 lane A: 'Cathnivore' is the site's name (the domain, the collection; the kicker says 'Free games from the Republic of Marrow') and the gold button is the daily ritual (today's Runnel); renaming the site is the owner's call)*
 - **Accept:** each point fixed or logged as kept with a reason; specs for what changed pass; shots P and D before and after.
 - **Size:** 2
+
+## 431. [ ] Hedgerow desktop play: the field is the hero, the towers worth looking at
+- **Why:** `plan1115f/hedge-l21-2d-D`: the playfield fills only about x300-800 of the 1080 px board, with sea and river decor across x15-300 and x800-1080; the side panel (x1090-1430) carries 10-12 px sublabels ('Slows', 'vehicles', '+4 more'). `hedge-l34-2d-D`: the shop tiles (1108-1410 x 88-330) show text but no tower art, and 'Court-house' wraps. On `hedge-l21-2d-P` towers barely register (one scarecrow at 195-240 x 420-465). VISION 2 (the table is the hero).
+- **Build:** frame the desktop 2D board to the field (the margins' painted country kept, but cropped to a frame); every shop tile shows its tower's art at every rack size; towers drawn 1.3x larger on a plinth with a contact shadow; a 13 px floor in the side panel with its sublabels in the ink token.
+- **Accept:** at 1440x900 the field's plots span 70%+ of the board canvas width on l21 and l34; every shop tile shows a 40 px+ tower image; no side-panel text under 13 px, sublabels 4.5:1+; tower sprites 1.3x today's drawn height; hedgerow-tray, rack, field and 2D specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 432. [ ] Hedgerow phone play: the board's foot and edges clear
+- **Why:** `plan1115f/hedge-l21-2d-P` and `-3d-P`: the 'NEXT: ROUND 11' pill (222-365 x 666-690) sits over the board's foot, over the 3D scarecrow's tutorial ring (170-240 x 590-680); the base (8-60 x 330-395) is squeezed against the left edge with its '216' tag on the queued van; `hedge-l34-2d-P` the vans (15-185 x 510-590) run under tree canopies and the second base (5-55 x 610-660) touches the edge; `hedge-l21-3d-P` the field is cut at the right (330-390) and the shoreline (0-110 x 140-680) is a dark-striped noise.
+- **Build:** the round pill docked to the tray's top edge, outside the board; the 2D phone field inset so the depots and their tags stand 8 px+ inside the canvas; vehicles drawn above canopies; the 3D phone close frame clamped so the field's right edge stays in view, and the shore's reed stripes thinned at phone scale.
+- **Accept:** at 390x844 the round pill overlaps no plot, ring or vehicle (bounding boxes); every depot box 8 px+ inside the canvas and its tag off every vehicle; no vehicle under a canopy (draw order); the 3D phone frame shows the field's right edge on l21 and l34; hedgerow phone specs, closeframe and depot specs pass; shots P before and after.
+- **Size:** 1-2
+
+## 433. [ ] NIGHT SHIFT phone title: Cath and her umbrella as one figure, the List clear of her
+- **Why:** `plan1115f/ns-title-P` (2x): the umbrella's canopy (190-780 x 720-1100) floats far above her head (1100-1270), so she reads small and apart from it; the case file card (30-390 x 890-1055) lies over the canopy; The List's cards (460-740 x 1420-1610) cross her body; the HOLLOWELL sign is cut at the right edge (360-780 x 560-760). Item 331 covers the desktop's left half, 363 her lighting; this is the phone's composition.
+- **Build:** a phone framing that holds her and the umbrella as one unit in the lower 55% of the stage; The List as a strip clear of her silhouette (or her stood clear of it); the case file beside, not over, the canopy; the sign either whole or out of frame.
+- **Accept:** at 390x844 the canopy's lowest point within 40 px (1x) of her head's top; UI cards overlap her silhouette by 5% or less (mask from a white render, as `scripts/cathode-coatband.mjs`); no sign cut by a frame edge; menu text 7:1+; cathode-front's upright specs pass; posters re-rendered; shots P before and after.
+- **Size:** 2
+
+## 434. [ ] NIGHT SHIFT class pick: five classes that look like five people, and a primary action that reads
+- **Why:** `plan1115f/ns-play-D`/`-P`: every class wears the same grey coat, so the pick changes a gun and a light but not her; at D the primary action 'WALK IN AS THE GHOST' (998-1382 x 795-835) is plain text on a hairline where the phone has a solid red button, its 'HOLD ENTER' hint grey at 12 px; the tripod prop (430-570 x 400-690) reads as clutter; the rack's gun thumbnails (360-470) grey on dark. VISION 5 and 6.
+- **Build:** each class's wardrobe distinct in silhouette and colour (the Ghost's dark hood, the Butcher's apron and rolled sleeves, the Gunslinger's long duster, the Wirewitch's cable-wrapped jacket, the Fixer's utility vest) on the existing coat rig; the desktop primary action a solid button in the phone's style; the set's stray props cleared; the rack's thumbnails lit in their class key.
+- **Accept:** the five pick frames' mean outfit colour (her coat mask) differ pairwise by 15%+; silhouette IoU between any two classes' figure masks under 0.9; the D primary button 44 px+ tall with 4.5:1 text; rack thumbnails 3:1+ on their tile; classpick and classpose specs pass; cathode-perf within budget run alone; shots P and D before and after.
+- **Size:** 2-3
+
+## 435. [ ] Cathnivore campaign: six chapters you can tell apart at a glance
+- **Why:** `plan1115f/cath-campaign-D`: chapters 2-6 (975-1355 x 360-880) are near-identical rows, their thumbnails (1230-1345) the same village scene with the sky's colour changed; locked chapters a grey padlock on a dashed line; `cath-campaign-P` the six tabs (12-385 x 522-580) indistinguishable at a glance; 'Back to Title' cut by the viewport foot (95-295 x 812-844); Cath over the map's top frame (285-360 x 80-185). Item 415 made the prints pairwise 8%+ apart; at a glance they still read as one scene.
+- **Build:** each chapter's vignette its own subject (its landmark, its season, its story beat in the foreground), locked ones as a sealed envelope with the chapter's silhouette; the phone page's foot and Cath's place fixed.
+- **Accept:** the six vignettes pairwise under 70% similarity on a 16x12 greyscale thumbnail (not only colour); locked labels 4.5:1+; at 390x844 Back to Title whole after a scroll and Cath clear of the map frame; campaign specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 436. [ ] Cathnivore table: Cath reacts to the game, and stands clear on setup
+- **Why:** `plan1115f/cath-game-D`: she stands hands clasped (360-510 x 380-690) whatever happens on the board; `cath-game-P` she is a 70 px avatar (10-78 x 545-612); `cath-setup-D` half her figure (1150-1300 x 460-770) is behind the 'This week at the market' note (1058-1215 x 545-765). VISION's bible gives her five expressions and the table is where she should react.
+- **Build:** her pose and expression on the table follow events (a purchase, a Squeeze, a region freed, a loss, idle) from the shared `shared/cath/` poses, with a short beat (300-600 ms) and reduced-motion stills; on setup the market note set beside her, not over her.
+- **Accept:** a scripted round shows 4+ distinct expressions on her (data attribute per beat); each beat within 400 ms of its event; at 1440x900 setup her figure 80%+ unobstructed; table and setup specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 437. [ ] The bugs from the 2026-11-15 22:30 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1115f`; earlier batches kept some as by design, so re-check before changing)
+  - **Cathnivore:** `cath-setup-P` the 'MORE' pill over the Difficulty heading (285-363 x 762-784) and the Start bar over the difficulty options (16-374 x 786-836); the Sol producer chip cut at the right (290-390 x 380-425); `cath-game-P` the '8 more' tab over the hand's top (300-372 x 648-668); Hollowell's portrait over the SQUEEZE pill (5-68 x 62-125); `cath-title-D` the Daily sign over the board tray's foot (852-1396 x 755-770); `cath-setup-D` the unearned pins at about 2:1 (650-1000 x 740-840); `cath-game-D` the deck stack against the screen edge (1340-1410 x 790-870).
+  - **Site:** `games-P` the Play buttons cut at the fold (30-90 x 820-844), the italic blurb low contrast (212-360 x 785-800); `games-D` the four cards' four type systems (110-1330 x 505-845) and the 11 px condensed blurb (430-690 x 725-742).
+  - **Hedgerow:** `hedge-menu-P` the level sheet over the trail and nodes (8-382 x 585-680); `hedge-l21-3d-D` lilac clumps and long fence posts outside the field (880-1080 x 280-880) read as artefacts; the fog band over the top (15-1080 x 75-210).
+  - **NIGHT SHIFT:** `ns-play-P` the description and 'Her line' over her legs with no scrim (30-750 x 910-1120, 2x); `ns-title-D` the 'GAMES' back link about 11 px and dim (60-120 x 45-60).
+- **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
+- **Size:** 1-2
