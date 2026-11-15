@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-15 06:52 UTC
+
 
 
 
@@ -3878,5 +3878,45 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **NIGHT SHIFT:** `ns-play-D` an empty band between the rifle and its heading (990-1400 x 360-420).
   - **Cathnivore:** `cath-game-D` 'MARKET' wider than its rail tile (1358-1418 x 65-82), five unlabelled squares after 'Tomas Reed' (195-310 x 248-263); `cath-game-P` three unlabelled green dots (318-362 x 628-642), Graft's '+1 +1' chip on its name (15-115 x 700-735); `cath-title-P` the Daily tag's '#14' on a line of its own (200-370 x 605-690).
   - **/games/:** `games-P` the awning with a post only at its right (138-345 x 255-300); `games-D` Tomas cut by the Cathnivore poster's edge (380-400 x 600-700).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 404. [ ] Portfolio: Cath presents the work, not parked on a grey slab beside it
+- **Why:** planning shots `plan1115b` (lane A, 2026-11-15): `portfolio-D` Cath stands on an unlit grey slab (1118-1330 x 625-835) unrelated to the card grid, parked rather than presenting; `portfolio-P` the game prints cut hard at x=215 by her column (153-215 x 130-247), and the slab (182-374 x 345-387) pushes the headline below y=455 (VISION: Cath is the face of every page).
+- **Build:** check item 350's desk and item 385's swipe cue first and keep what works. D: Cath lit beside the cards (a soft key light and a floor shadow, no slab), one hand gesturing toward the hovered card. P: the headline first, then Cath at half height above a swipeable row of prints, one whole plus a 30 px+ peek, no print clipped by her.
+- **Accept:** at 390 no print clipped by another column; headline top under y=200 on P; her feet on a lit surface with a shadow at D; a 30 px+ peek of the next print; site.spec and the portfolio specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 405. [ ] Cathnivore phone: the hand as a fanned dock above the nav, every card reachable
+- **Why:** `plan1115b/cath-game-P` shows about one and a half cards, cut by the nav (0-120 x 672-775, 238-390 x 668-770), and a '9+ more' pill (293-372 x 650-668) is the only way to the rest; at D the hand is a highlight (490-1330 x 700-880), on a phone an afterthought.
+- **Build:** a bottom dock with every card in hand as an overlapped fan (rotated up to 6 deg), each showing its icon and cost strip; a tap lifts a card to 140 px+ wide with its cost and 'i'; a sideways swipe scrolls the fan; the nav sits below it and never overlaps. Keep item 177's suggested-card lift and item 402's ring.
+- **Accept:** every card's icon and cost strip visible and none under the nav at 390x844; the lifted card 140 px+ wide; the phone hand, tutorial, cath-pick and suggest-move specs pass; shots P before and after, plus a lifted card.
+- **Size:** 2
+
+## 406. [ ] Hedgerow act map: the level stops show progress (locked, current, won), with a path that inks in
+- **Why:** `plan1115b/hedge-menu-D` the act's stops are identical white domes with grey icons (300-1030 x 320-440, 90-1030 x 725-850), so the map says nothing of progress; the middle (200-1100 x 450-720) is scattered scenery; `hedge-menu-P` labels alternate sides and wrap ('Brand Ambassador', 266-380 x 510-545).
+- **Build:** check the existing stop states first (items 111, 282 and 287 touched the map). Three distinct stop states: locked (a sketched sepia plot), current (a lit little plot with a flag and Cath), won (a coloured farm with its stars); the road between stops inks in up to the clear count; the scenery grouped into larger set pieces.
+- **Accept:** a seeded save shows all three states, told apart by computed style; the inked path's length matches the clears; on P no stop label wraps or overlaps a stop; hedgerow-map, level-card and critique specs pass; shots P and D fresh and mid-act.
+- **Size:** 2
+
+## 407. [ ] Runnel phone: Cath docked under the board, off the field
+- **Why:** `plan1115b/runnel-P` Cath and her bubble stand on the field (10-215 x 545-760), over board tiles and the bridge; Hedgerow's phone solved the same problem with a dock (item 392).
+- **Build:** on a phone Cath's portrait and line move to a dock under the board (her expressions kept, the lesson's steps in order); the board takes the full width. At D she stays in the scene, clear of the tiles.
+- **Accept:** at 390x844 her bubble's box doesn't intersect the board's; the board 20%+ taller than before; runnel lesson, lesson-close and daily specs pass; shots P and D before and after.
+- **Size:** 1
+
+## 408. [ ] Hedgerow tray: every tower card names its role, and empty slots say what they are
+- **Why:** `plan1115b/hedge-l21-2d-D` the rack's cards say each tower's role ('Shoots / Splash', 1110-1410 x 85-345), but `hedge-l34-2d-D`'s four-to-a-row grid drops the role and shows two empty terracotta pots (1265-1410 x 255-300) with no meaning; `hedge-l21-3d-P` truncates 'Market St' (278-345 x 735-765). Item 361's four-to-a-row grid stays (item 376 was withdrawn for undoing it).
+- **Build:** a short role line on every card in both grids (an icon plus one word where four share a row); an empty slot is a labelled padlock ('Unlocks at level N') or is not drawn; no truncated name at P.
+- **Accept:** a role element on every rack card at l21 and l34, P and D; no unlabelled empty slot; no name with an ellipsis; hedgerow rack, rack-roles, tray and critique specs pass; shots before and after.
+- **Size:** 1
+
+## 409. [ ] The bugs from the 2026-11-15 07:00 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1115b`)
+  - **Cathnivore:** `cath-setup-P` the docked Start bar over step 3's cards (15-375 x 760-835) with no scroll cue; `cath-setup-D` '0 OF 3' about 11 px (950-1000 x 712-724), grey pin captions low contrast (770-850 x 825-840); `cath-title-P` the footer italic about 12 px, cream on brown (40-350 x 760-835); `cath-game-D` the 'Shingle Bay / Saltmarsh' tags cramped in the Expand pill (787-870 x 46-78).
+  - **Hedgerow:** `hedge-l21-2d-P` the 'NEXT: ROUND 11' tab over the top edge of her line (222-368 x 666-690), chips peeking under it (100-360 x 760-768); `hedge-l21-2d-D` the sun icon on 'ROUND''s O (1113-1165 x 373-386), a blank strip in Coming up (1120-1400 x 685-705); `hedge-l21-3d-P` the depot board floats over the road (5-185 x 405-430).
+  - **Runnel:** `runnel-D` the Up next card's text tight against its thumbnail (165-265 x 633-745), the hint 13 px grey on cream (70-290 x 803-818).
+  - **NIGHT SHIFT:** `ns-play-D` '25 · 18 avg' about 11 px grey (1030-1095 x 435-448); `ns-title-D` 'No case open' low contrast (205-295 x 302-318), the case-file card unanchored between the menu and Cath (415-580 x 268-570).
+  - **Site:** `games-D` 'Play today's Runnel' weaker than 'Browse' though it's the primary call (615-790 x 355-405); `portfolio-D` the gold 'AI.' dot nearly on the Cathnivore card (605-630 x 375-395).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
