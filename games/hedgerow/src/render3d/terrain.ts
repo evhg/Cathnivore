@@ -1484,6 +1484,27 @@ export function buildGround(level: Level): Ground {
     o.position.set(x, h, y);
     group.add(o);
   }
+  // Plan item 419: the country's own growth beyond the hedge, in its three colours (Saltmarsh's sea lavender and
+  // samphire on sandy hummocks, Highmoor's heather and bracken, ...): low clumps in one instanced draw call, on the
+  // decoration seed so the scenery already placed doesn't move.
+  {
+    const pal = COUNTRY[Math.max(0, Math.min(COUNTRY.length - 1, act))]!.map((c) => new THREE.Color(c));
+    const clumps: Inst[] = [];
+    for (let i = 0; i < 160 && clumps.length < 90; i++) {
+      const x = -MARGIN + deco() * W;
+      const y = -MARGIN + deco() * H;
+      const out = Math.max(0, -x, x - cols, -y, y - rows);
+      if (out < 0.9 || out > 7) continue;
+      if (laneDistance(level, x, y) < 0.9) continue;
+      const h = heightAt(x, y);
+      if (h < -0.05 || nearWater(x, y, 0.35)) continue;
+      const s = 0.1 + deco() * 0.16;
+      const color = pal[Math.floor(deco() * 3)]!.clone().multiplyScalar(0.88 + deco() * 0.2);
+      clumps.push({ x, y: h + s * 0.15, z: y, ry: deco() * 6.3, s: s * 1.15, sy: 0.38 + deco() * 0.2, color });
+    }
+    const m = instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), clumps, true);
+    if (m) group.add(m);
+  }
   // Hedgerows along the field's edge (the game's namesake), broken where the lanes run out.
   // (Instanced: hundreds of bushes in two draw calls instead of one each.)
   const hedgeCols = ["#3f6e33", "#4a7a3a", "#355e2c"].map((c) => new THREE.Color(c));
