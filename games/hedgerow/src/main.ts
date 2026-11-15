@@ -1225,6 +1225,24 @@ function tip(id: string, text: string, expression: CathExpression = "smirk", for
     pendingTip = { id, text, expression };
     return;
   }
+  // Plan item 392: at D in a build her tip goes on the panel's plate, like her coaching, not in a bubble on the field,
+  // as long as the column still keeps Coming up (or the notebook) with it; a long tip that would push that out keeps
+  // the bubble. Mid-round, with no plate, the bubble stays.
+  if (game && game.phase === "build" && !player && cathPlate.isConnected && !cathPlate.hidden && deskPlate() && !hasTwist(game.level, "nocath")) {
+    const before = sayOverride;
+    const kept = () => !ui.panel.querySelector(":scope > .round-group > :is(.field-tabs, .field-notebook).fit-dropped");
+    const keptBefore = kept();
+    sayOverride = { text, until: performance.now() + Math.max(5000, text.length * 70) };
+    fillCathPlate(game, text);
+    refit();
+    if (kept() || !keptBefore) {
+      say(`Cath: ${text}`);
+      return;
+    }
+    sayOverride = before;
+    fillCathPlate(game, before?.text ?? adviceLine(game));
+    refit();
+  }
   bubbleTip = id;
   bubbleFace = expression;
   ui.bubbleFace.innerHTML = cath(expression);
