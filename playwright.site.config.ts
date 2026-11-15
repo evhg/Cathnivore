@@ -5,6 +5,10 @@ import { defineConfig, devices } from '@playwright/test'
 // is covered in depth by playwright.config.ts against its own build.
 export default defineConfig({
   testDir: 'e2e-site',
+  // SITE_GROUP splits the suite for GitHub's E2E shards: NIGHT SHIFT's WebGL specs run about 10x slower than the rest
+  // under SwiftShader, so they shard on their own (count-based shards put them all in two shards of an hour each).
+  ...(process.env.SITE_GROUP === 'cathode' ? { testMatch: /cathode-.*\.spec\.ts$/ } : {}),
+  ...(process.env.SITE_GROUP === 'rest' ? { testIgnore: /cathode-.*\.spec\.ts$/ } : {}),
   fullyParallel: true,
   retries: 0,
   reporter: 'list',
