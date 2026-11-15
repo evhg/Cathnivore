@@ -578,6 +578,9 @@ function fieldGround(act: number, c: THREE.Color, x: number, y: number, seed: nu
   }
 }
 
+/** Plan item 346: the farmhouse model's scale on the field (1.33 units tall, a little over a farmer). */
+export const FARMHOUSE_3D_SCALE = 1.6;
+
 export function buildGround(level: Level): Ground {
   const light = actLight(level.id);
   const rand = rng(level.id * 7919 + 17);
@@ -1619,6 +1622,9 @@ export function buildGround(level: Level): Ground {
   // The farmhouse at the end of the lane.
   const [ec, er] = level.path[level.path.length - 1]!;
   const farmhouse = buildFarmhouse();
+  // Plan item 346: one scale: the house a storey and a roof over the farm's people (it was 0.83 units, under a
+  // farmer's 1.08 at FOLK_3D_SCALE: a doll's house beside them).
+  farmhouse.scale.setScalar(FARMHOUSE_3D_SCALE);
   farmhouse.position.set(ec + 0.5, heightAt(ec + 0.5, er + 0.5), er + 0.5);
   const [pc, pr] = level.path[level.path.length - 2]!;
   farmhouse.rotation.y = Math.atan2(pc - ec, pr - er);
