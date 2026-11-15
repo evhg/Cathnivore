@@ -7,12 +7,14 @@ import { plotLooks } from "../games/hedgerow/src/plotlook";
 const kits = [BRINDLE_KIT, ...Object.values(FIELD_KITS).map((k) => k!)];
 
 describe("field kits", () => {
-  it("share no building, bed or water look between acts' kits", () => {
+  it("share no building, bed, water, house or knoll look between acts' kits", () => {
     for (let i = 0; i < kits.length; i++)
       for (let j = i + 1; j < kits.length; j++) {
         const [a, b] = [kits[i]!, kits[j]!];
         expect(a.barn, `${a.name} / ${b.name}`).not.toBe(b.barn);
         expect(a.water, `${a.name} / ${b.name}`).not.toBe(b.water);
+        expect(a.house, `${a.name} / ${b.name}`).not.toBe(b.house);
+        expect(a.knoll.top, `${a.name} / ${b.name}`).not.toBe(b.knoll.top);
         for (const bed of a.beds) expect(b.beds, `${a.name} / ${b.name}`).not.toContain(bed);
       }
   });

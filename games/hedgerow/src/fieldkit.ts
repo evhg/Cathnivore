@@ -52,6 +52,8 @@ export type BarnLook = "barn" | "netshed" | "millhouse" | "fold" | "timberbarn" 
 /** A water plot: a round farm pond, a salt pan, a willow-ringed pond. */
 export type WaterLook = "pond" | "saltpan" | "willowpond" | "peatpool" | "lilypool" | "rockpool" | "gravelpit" | "duckpond" | "lagoon" | "basin";
 
+export type KnollDress = "rocks" | "marram" | "willow" | "bracken" | "pebbles" | "spoil" | "daisies" | "sprinkler" | "path";
+
 export interface FieldKit {
   name: string;
   /** The three looks the fields take turns with (plotlook.ts keeps neighbours apart). */
@@ -60,23 +62,25 @@ export interface FieldKit {
   puddle?: BedLook;
   barn: BarnLook;
   water: WaterLook;
+  /** High ground: the mound's colours (top, foot, contour) and what grows or lies on it; the trig pillar stays. */
+  knoll: { top: string; foot: string; contour: string; dress?: KnollDress };
   /** The farmhouse at the lane's end (sprites.ts's drawFarmhouse). */
   house: "farm" | "fisher" | "thatch" | "longhouse" | "lodge" | "flint" | "bungalow" | "rectory" | "showhome" | "townhouse";
 }
 
-export const BRINDLE_KIT: FieldKit = { name: "farm", beds: ["earth", "stubble", "clover"], puddle: "earth", barn: "barn", water: "pond", house: "farm" };
+export const BRINDLE_KIT: FieldKit = { name: "farm", beds: ["earth", "stubble", "clover"], puddle: "earth", barn: "barn", water: "pond", house: "farm", knoll: { top: "rgb(150,176,92)", foot: "rgb(92,120,56)", contour: "rgba(60,80,30,0.45)" } };
 
 /** Acts by index (0 Brindle .. 9 Kingsmarket) with a kit of their own; the rest keep the farm's. */
 export const FIELD_KITS: Partial<Record<number, FieldKit>> = {
-  1: { name: "hill farm", beds: ["oats", "turnips", "inbye"], barn: "fold", water: "peatpool", house: "longhouse" },
-  2: { name: "saltmarsh", beds: ["samphire", "lavender", "saltgrass"], barn: "netshed", water: "saltpan", house: "fisher" },
-  4: { name: "woodland holding", beds: ["garlic", "litter", "bluebell"], barn: "timberbarn", water: "lilypool", house: "lodge" },
-  5: { name: "shingle croft", beds: ["seakale", "lazybed", "thrift"], barn: "boathut", water: "rockpool", house: "flint" },
-  6: { name: "agribusiness", beds: ["rape", "beet", "fallow"], barn: "dutchbarn", water: "gravelpit", house: "bungalow" },
-  7: { name: "allotments", beds: ["allotment", "sweetpea", "marrow"], barn: "marquee", water: "duckpond", house: "rectory" },
-  8: { name: "agri-tech", beds: ["polytunnel", "lettuce", "turf"], barn: "warehouse", water: "lagoon", house: "showhome" },
-  9: { name: "market garden", beds: ["salad", "rhubarb", "strawberry"], barn: "granary", water: "basin", house: "townhouse" },
-  3: { name: "water meadow", beds: ["meadow", "swathe", "cress"], barn: "millhouse", water: "willowpond", house: "thatch" },
+  1: { name: "hill farm", beds: ["oats", "turnips", "inbye"], barn: "fold", water: "peatpool", house: "longhouse", knoll: { top: "rgb(160,150,120)", foot: "rgb(110,100,84)", contour: "rgba(70,60,46,0.45)", dress: "rocks" } },
+  2: { name: "saltmarsh", beds: ["samphire", "lavender", "saltgrass"], barn: "netshed", water: "saltpan", house: "fisher", knoll: { top: "rgb(222,212,160)", foot: "rgb(132,156,100)", contour: "rgba(110,120,70,0.45)", dress: "marram" } },
+  3: { name: "water meadow", beds: ["meadow", "swathe", "cress"], barn: "millhouse", water: "willowpond", house: "thatch", knoll: { top: "rgb(140,186,96)", foot: "rgb(90,140,64)", contour: "rgba(50,90,40,0.45)", dress: "willow" } },
+  4: { name: "woodland holding", beds: ["garlic", "litter", "bluebell"], barn: "timberbarn", water: "lilypool", house: "lodge", knoll: { top: "rgb(120,150,74)", foot: "rgb(74,100,48)", contour: "rgba(50,70,30,0.45)", dress: "bracken" } },
+  5: { name: "shingle croft", beds: ["seakale", "lazybed", "thrift"], barn: "boathut", water: "rockpool", house: "flint", knoll: { top: "rgb(190,186,174)", foot: "rgb(146,142,132)", contour: "rgba(96,92,84,0.45)", dress: "pebbles" } },
+  6: { name: "agribusiness", beds: ["rape", "beet", "fallow"], barn: "dutchbarn", water: "gravelpit", house: "bungalow", knoll: { top: "rgb(140,124,100)", foot: "rgb(100,88,72)", contour: "rgba(60,50,40,0.45)", dress: "spoil" } },
+  7: { name: "allotments", beds: ["allotment", "sweetpea", "marrow"], barn: "marquee", water: "duckpond", house: "rectory", knoll: { top: "rgb(156,190,100)", foot: "rgb(104,140,64)", contour: "rgba(60,90,36,0.45)", dress: "daisies" } },
+  8: { name: "agri-tech", beds: ["polytunnel", "lettuce", "turf"], barn: "warehouse", water: "lagoon", house: "showhome", knoll: { top: "rgb(120,186,96)", foot: "rgb(84,150,70)", contour: "rgba(40,90,40,0.45)", dress: "sprinkler" } },
+  9: { name: "market garden", beds: ["salad", "rhubarb", "strawberry"], barn: "granary", water: "basin", house: "townhouse", knoll: { top: "rgb(160,170,96)", foot: "rgb(112,124,64)", contour: "rgba(70,80,36,0.45)", dress: "path" } },
 };
 
 export function actIndex(level: Pick<Level, "id">): number {

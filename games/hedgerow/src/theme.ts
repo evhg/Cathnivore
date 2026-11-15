@@ -6,7 +6,7 @@ import { entrySide, nearSides, type Side } from "./depot";
 import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
 import { kitFor, type BedLook } from "./fieldkit";
-import { isKitBed, paintKitBed, paintKitWater } from "./fieldkitart";
+import { isKitBed, paintKitBed, paintKitWater, paintKnollDress } from "./fieldkitart";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, pieceLook, placeMargin, recordMargin, seeded, withLooks, type Look, type Placed, type Rect } from "./margins";
 
@@ -774,13 +774,15 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         mound.bezierCurveTo(x + s * 0.66, y + s * 0.26, x + s * 0.82, y + s * 0.44, x + s * 0.96, base);
         mound.closePath();
         const g = ctx.createLinearGradient(x + s * 0.2, y + s * 0.26, x + s * 0.8, base);
-        g.addColorStop(0, "rgb(150,176,92)");
-        g.addColorStop(1, "rgb(92,120,56)");
+        // Plan item 399: the act's own mound (a tor, a dune, a spoil heap...), the trig pillar on every one.
+        const knoll = kitFor(level).knoll;
+        g.addColorStop(0, knoll.top);
+        g.addColorStop(1, knoll.foot);
         ctx.fillStyle = g;
         ctx.fill(mound);
         ctx.save();
         ctx.clip(mound);
-        ctx.strokeStyle = "rgba(60,80,30,0.45)";
+        ctx.strokeStyle = knoll.contour;
         ctx.lineWidth = Math.max(1, s * 0.022);
         for (const k of [0.5, 0.66]) {
           ctx.beginPath();
@@ -791,6 +793,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         ctx.beginPath();
         ctx.ellipse(x + s * 0.4, y + s * 0.42, s * 0.16, s * 0.08, -0.4, 0, Math.PI * 2);
         ctx.fill();
+        if (knoll.dress) paintKnollDress(ctx, x, y, s, knoll.dress, c * 131 + r * 71 + level.id * 7);
         ctx.restore();
         // the trig pillar
         ctx.fillStyle = "rgb(244,238,224)";

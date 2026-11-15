@@ -3,7 +3,7 @@
 // watercress, its mill house on the leat and willow-ringed ponds. Brindle's farm kit stays in theme.ts/render.ts.
 
 import { castShadow } from "./sprites";
-import type { BarnLook, BedLook, WaterLook } from "./fieldkit";
+import type { BarnLook, BedLook, KnollDress, WaterLook } from "./fieldkit";
 
 type C = CanvasRenderingContext2D;
 
@@ -1373,6 +1373,124 @@ export function drawKitBarn(ctx: C, x: number, y: number, w: number, look: BarnL
       const a = t * 0.8 + (k / 8) * Math.PI * 2;
       line(ctx, [wx, wy], [wx + Math.cos(a) * wr, wy + Math.sin(a) * wr]);
     }
+  }
+  ctx.restore();
+}
+
+/**
+ * What lies on an act's high ground (drawn clipped to the mound, under the trig pillar): granite on Highmoor's tor,
+ * marram on Saltmarsh's dune, a pollard willow on Rivermead's bank, bracken in Oakvale, a pebble ridge at Shingle
+ * Bay, The Rift's spoil heap, daisies on The Ballot's barrow, a sprinkler on The Merger's berm, a worn path up
+ * Kingsmarket's motte.
+ */
+export function paintKnollDress(ctx: C, x: number, y: number, s: number, dress: KnollDress, seed: number): void {
+  const r01 = rng(seed);
+  const cx = x + s / 2;
+  const on = (): [number, number] => {
+    const t = r01();
+    const u = 0.3 + r01() * 0.5;
+    return [x + s * (0.18 + t * 0.64), y + s * u];
+  };
+  ctx.save();
+  ctx.lineCap = "round";
+  switch (dress) {
+    case "rocks":
+      for (let k = 0; k < 4; k++) {
+        const [px, py] = on();
+        const g = 120 + Math.floor(r01() * 40);
+        ctx.fillStyle = `rgb(${g},${g - 2},${g - 6})`;
+        ctx.strokeStyle = "rgba(60,58,54,0.8)";
+        ctx.lineWidth = Math.max(0.75, s * 0.01);
+        ctx.beginPath();
+        ctx.roundRect(px - s * 0.06, py - s * 0.035, s * 0.12, s * 0.07, s * 0.02);
+        ctx.fill();
+        ctx.stroke();
+      }
+      break;
+    case "marram":
+    case "bracken":
+      for (let k = 0; k < (dress === "marram" ? 14 : 10); k++) {
+        const [px, py] = on();
+        ctx.strokeStyle = dress === "marram" ? "rgba(96,140,70,0.97)" : k % 2 ? "rgba(176,110,50,0.95)" : "rgba(96,140,60,0.95)";
+        ctx.lineWidth = Math.max(1, s * 0.016);
+        for (const dx of [-0.03, 0, 0.03]) {
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.quadraticCurveTo(px + s * dx, py - s * 0.04, px + s * dx * 1.8, py - s * 0.07);
+          ctx.stroke();
+        }
+      }
+      break;
+    case "willow": {
+      const tx = cx + s * 0.12, ty = y + s * 0.46;
+      ctx.fillStyle = "#6b5236";
+      ctx.fillRect(tx - s * 0.025, ty - s * 0.1, s * 0.05, s * 0.12);
+      ctx.strokeStyle = "rgba(122,170,80,0.95)";
+      ctx.lineWidth = Math.max(1, s * 0.03);
+      for (let k = 0; k < 7; k++) {
+        const fx = tx + (k - 3) * s * 0.035;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty - s * 0.1);
+        ctx.quadraticCurveTo(fx, ty - s * 0.16, fx, ty);
+        ctx.stroke();
+      }
+      break;
+    }
+    case "pebbles":
+    case "spoil":
+      for (let k = 0; k < 18; k++) {
+        const [px, py] = on();
+        const g = dress === "pebbles" ? 150 + Math.floor(r01() * 70) : 90 + Math.floor(r01() * 40);
+        ctx.fillStyle = dress === "pebbles" ? `rgb(${g},${g - 4},${g - 12})` : `rgb(${g + 10},${g},${g - 14})`;
+        ctx.beginPath();
+        ctx.ellipse(px, py, s * 0.025, s * 0.017, r01() * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (dress === "spoil") {
+        ctx.fillStyle = "rgba(200,60,40,0.9)";
+        ctx.fillRect(cx - s * 0.2, y + s * 0.62, s * 0.06, s * 0.015);
+      }
+      break;
+    case "daisies":
+      for (let k = 0; k < 10; k++) {
+        const [px, py] = on();
+        ctx.fillStyle = "rgba(255,255,250,0.97)";
+        ctx.beginPath();
+        ctx.arc(px, py, s * 0.016, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(240,196,60,0.97)";
+        ctx.beginPath();
+        ctx.arc(px, py, s * 0.007, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    case "sprinkler": {
+      // Mown stripes across the berm and a sprinkler's arc of spray.
+      ctx.fillStyle = "rgba(200,240,160,0.25)";
+      for (let k = 0; k < 4; k++) ctx.fillRect(x, y + s * (0.3 + k * 0.14), s, s * 0.07);
+      const sx = cx - s * 0.18, sy = y + s * 0.62;
+      ctx.fillStyle = "#3a3e42";
+      ctx.fillRect(sx - s * 0.01, sy - s * 0.04, s * 0.02, s * 0.04);
+      ctx.fillStyle = "rgba(220,240,252,0.85)";
+      for (let k = 0; k < 8; k++) {
+        const a = -Math.PI * (0.15 + k * 0.09);
+        ctx.beginPath();
+        ctx.arc(sx + Math.cos(a) * s * 0.1, sy - s * 0.04 + Math.sin(a) * s * 0.07, s * 0.01, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
+    case "path":
+      // A worn path zig-zagging up to the top.
+      ctx.strokeStyle = "rgba(220,196,140,0.9)";
+      ctx.lineWidth = Math.max(1.5, s * 0.03);
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.3, y + s * 0.84);
+      ctx.lineTo(x + s * 0.62, y + s * 0.62);
+      ctx.lineTo(x + s * 0.4, y + s * 0.46);
+      ctx.lineTo(cx, y + s * 0.3);
+      ctx.stroke();
+      break;
   }
   ctx.restore();
 }
