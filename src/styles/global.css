@@ -2238,7 +2238,9 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.14em; color: var(--ink); }
   /* Plan item 409: while the page runs on under the pinned sign, a tag just above it says so. */
   .setup > .setup-more {
-    position: sticky; bottom: 66px; z-index: var(--z-raised); justify-self: center; align-self: center; width: max-content; margin: 0 auto -28px;
+    /* Plan item 416: a short 'More' at the sign's right corner (the steps' headings run from the left; 'More below',
+       centred, hid step 3's) */
+    position: sticky; bottom: 66px; z-index: var(--z-raised); justify-self: end; align-self: end; width: max-content; margin: 0 10px -28px auto;
     padding: 3px 12px; border-radius: 999px; background: var(--ink); color: var(--paper);
     font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none;
   }

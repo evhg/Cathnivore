@@ -336,7 +336,7 @@ export default function Setup({ onStart }: Props) {
 
       {moreBelow && (
         <p className="setup-more" aria-hidden="true">
-          More below
+          More
         </p>
       )}
       {startButton}

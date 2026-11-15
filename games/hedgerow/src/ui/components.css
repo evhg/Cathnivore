@@ -4753,6 +4753,11 @@ body:has(#dlg-pause[open]) .paused-note {
     margin: auto 0 0;
     translate: none;
   }
+  /* Plan item 416: there the role is in words, so the corner glyph stands down and the tower takes its corner, left
+     of the price tag (centred, the tag hid its top half), and the role word keeps 3 px off the packet's rounded foot. */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role { display: none; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { align-self: flex-start; width: 34px; height: 34px; margin: -6px 0 -2px 2px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower { padding-bottom: 3px; }
   .play .tray-wrap .tray .tray-tower .tray-role-word {
     display: block;
     margin-top: -1px;
