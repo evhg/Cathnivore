@@ -99,6 +99,7 @@ const DRAW: Record<string, Draw> = {
     SH("M16 10c5 1 8 6 8 13h-6c1-5 0-10-2-13z", 0.14) +
     L("M16 10v-2", p.wood, 0.9),
   pond: (p) =>
+    shadow(16, 28) +
     `<ellipse cx="16" cy="18" rx="14" ry="5" fill="${p.water}" ${S}/>` +
     HI("M8 17c3-2 9-2.4 13-1.6c-4 0-9 .6-13 1.6z", 0.6) +
     E(23, 19.4, 2, 0.8, "#6f9a48") +
@@ -222,6 +223,7 @@ const DRAW: Record<string, Draw> = {
     P("#b08a5c", "M24.6 15l2.8-1v2z"),
   // Saltmarsh
   dunes: (p) =>
+    shadow(16, 28) +
     `<path d="M0 23c3-6 7-8 11-8c4 0 6 3 9 3c4-3 8-4 12 5z" fill="${p.ground}" ${S}/>` +
     HI("M3 21c2-3 5-5 8-5c-3 1-5 3-6 5z", 0.5) +
     L(
@@ -230,6 +232,7 @@ const DRAW: Record<string, Draw> = {
       0.6,
     ),
   creek: (p) =>
+    shadow(16, 28) +
     `<path d="M0 21c5-3 9 1 14-1s8-5 13-3c2 1 4 2 5 2v4H0z" fill="${p.water}" ${S}/>` +
     HI("M4 21c3-1 6 0 8 0", 0.6) +
     L(
@@ -287,6 +290,7 @@ const DRAW: Record<string, Draw> = {
     L("M26 19v-3", INK, 0.4) +
     L("M1 23h30", p.wood, 0.6),
   posts: (p) =>
+    shadow(16, 28) +
     `<path d="M0 22c6 1 26 1 32 0" stroke="${p.water}" stroke-width="2" fill="none"/>` +
     [3, 9, 15, 21, 27]
       .map((x, i) => R(x, 12 + (i % 2) * 2, 2.2, 10 - (i % 2) * 2, p.wood))
@@ -304,12 +308,14 @@ const DRAW: Record<string, Draw> = {
     L("M10 12c-1 3-1 6 0 9M21 12c1 3 1 6 0 8", "#3e6a2a", 0.5) +
     HI("M10 9c2-2 5-3 8-2c-3 0-6 1-8 2z", 0.5),
   ford: (p) =>
+    shadow(16, 28) +
     `<path d="M0 17c8-2 24-2 32 0v6H0z" fill="${p.water}" ${S}/>` +
     [4, 10, 16, 22, 28]
       .map((x, i) => E(x, 20 - (i % 2) * 0.6, 2.4, 1.2, "#b8b09c"))
       .join("") +
     HI("M2 18.4c4-.6 8-.6 12 0", 0.6),
   millwheel: (p) =>
+    shadow(16, 28) +
     `<path d="M0 21c8-1 24-1 32 0v2H0z" fill="${p.water}"/>` +
     R(14, 8, 16, 15, p.wall) +
     P(p.roof, "M13 8l8.5-6 9.5 6z") +
@@ -320,6 +326,7 @@ const DRAW: Record<string, Draw> = {
     C(10, 15, 1.2, INK) +
     SH("M21.5 2l9.5 6h-9z", 0.15),
   rowboat: (p) =>
+    shadow(16, 28) +
     `<path d="M2 21.4c5 1.2 23 1.2 28 0" stroke="${p.water}" stroke-width="2.4" fill="none" stroke-linecap="round"/>` +
     P("#3f7fa6", "M5 17h22l-3 4H8z") +
     P("#fbf3e0", "M7 17h18l-.6 1H7.6z") +
@@ -495,6 +502,10 @@ const SETS: string[][] = [
   ["stalls", "bunting", "marquee", "stalls", "oak", "pond", "poplars", "crane", "huts", "boat", "orchard", "bales", "stalls", "bunting", "oak"],
 ];
 
+/** Plan item 428: one scale per act: the tall buildings stand over the cottages and boats (the lighthouse stood no
+ *  taller than a sailboat beside the beach huts), and a boat sits smaller than the huts on its shore. */
+const REAL: Record<string, number> = { lighthouse: 1.6, windmill: 1.35, millwheel: 1.15, crane: 1.5, pylon: 1.45, marquee: 1.1, boat: 0.72, rowboat: 0.8 };
+
 /** Nominal widths (px, desktop): a broad scene wider than a single figure. */
 const WIDE = new Set([
   "orchard",
@@ -531,7 +542,7 @@ export function actProps(act: number): Prop[] {
   const pal = PALS[i % PALS.length]!;
   return SETS[i]!.map((key) => ({
     key,
-    w: WIDE.has(key) ? 64 : 46,
+    w: Math.round((WIDE.has(key) ? 64 : 46) * (REAL[key] ?? 1)),
     svg: `<svg viewBox="0 0 32 24" aria-hidden="true">${DRAW[key]!(pal)}</svg>`,
   }));
 }
@@ -586,6 +597,7 @@ export function settle(
   lane: [number, number][],
   laneR: number,
   cluster = 1,
+  steps: readonly number[] = [1, 0.85],
 ): ([number, number, number] | null)[] {
   // The lane as a grid of 8 px cells it covers (widened by laneR), so each spot's test is a few lookups.
   const G = 8;
@@ -620,7 +632,9 @@ export function settle(
     // The prop's art fills its lower part; the lane may pass over the empty sky above it, not its body.
     return !onLane({ left: b.left + 2, top: b.top + ph * 0.25, right: b.right - 2, bottom: b.bottom });
   };
-  // Full size first; a prop with no room tries again smaller (a crowded phone band, a short pencil act).
+  // Full size first; a prop with no room tries again a little smaller (a crowded phone band, a short pencil act).
+  // Plan item 428: never below 0.85 (it went to 0.45, so one act's huts stood at half its boat's size): one scale per
+  // act, and a prop with no room is left out rather than drawn as a miniature.
   return props.map((full, i) => {
     const g = Math.floor(i / Math.max(1, cluster));
     const mates = groups.get(g) ?? [];
@@ -629,11 +643,11 @@ export function settle(
       groups.set(g, [...mates, b]);
       return [b.left, b.top, b.right - b.left];
     };
-    for (const scale of [1, 0.78, 0.6, 0.45]) {
+    for (const scale of steps) {
       const p = { w: Math.round(full.w * scale), h: Math.round(full.h * scale) };
       // Plan item 406: beside a groupmate first (to its right, its left, or just below it), so the act's
       // props stand as a few set pieces (a farmyard, a pond with its geese) rather than tokens strewn across the band.
-      if (scale >= 0.78)
+      if (scale >= 0.85)
         for (const m of mates)
           for (const [left, top] of [
             [m.right + 8, m.bottom - p.h],

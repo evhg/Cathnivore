@@ -1791,7 +1791,21 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
     }
   }
   // Plan item 406: the act's props in threes, each three one set piece.
-  const at = settle(sizes, scenerySpots(Number(layer.dataset.act) || 1), w, h, obstacles, lane, 10, 3);
+  // Plan item 428: one scale for the whole act: the largest that seats a full set (12 props, or all of a short list);
+  // settle() no longer shrinks props one by one, which set one act's huts at half its boat's size.
+  const spots = scenerySpots(Number(layer.dataset.act) || 1);
+  const want = Math.min(12, props.length);
+  let at = settle(sizes, spots, w, h, obstacles, lane, 10, 3);
+  for (const f of [0.85, 0.72, 0.6]) {
+    if (at.filter(Boolean).length >= want) break;
+    at = settle(sizes.map((z) => ({ w: Math.round(z.w * f), h: Math.round(z.h * f) })), spots, w, h, obstacles, lane, 10, 3);
+  }
+  // A band too crowded for a full set at any one scale (open ground, not size, runs out) falls back to shrinking
+  // the props that don't fit one by one, as before.
+  if (at.filter(Boolean).length < want) {
+    const loose = settle(sizes, spots, w, h, obstacles, lane, 10, 3, [1, 0.78, 0.6, 0.45]);
+    if (loose.filter(Boolean).length > at.filter(Boolean).length) at = loose;
+  }
   // Measured; the caller writes every act's props after all are measured.
   return () =>
     props.forEach((el, i) => {
