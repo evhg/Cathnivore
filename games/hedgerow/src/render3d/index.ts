@@ -2600,6 +2600,16 @@ export class Renderer3D {
           if (sg.x + sg.w + 6 + pw <= w - 4) x = sg.x + sg.w + 6;
           else y = Math.min(h - ph - 4, sg.y + sg.h + 4);
         }
+        // Plan item 409: nor under the field's own buttons (a phone's 'Whole field' over the depot's right): it steps
+        // left of them, clamped to the frame.
+        const cr = this.canvas.getBoundingClientRect();
+        for (const bt of document.querySelectorAll<HTMLElement>(".field-fit")) {
+          const b = bt.getBoundingClientRect();
+          if (!b.width) continue;
+          const bx = b.left - cr.left;
+          const by = b.top - cr.top;
+          if (x < bx + b.width && x + pw > bx && y < by + b.height && y + ph > by) x = Math.max(4, bx - pw - 6);
+        }
         el.style.opacity = String(k);
         el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
         shown.plates.push({ x, y, w: pw, h: ph });
@@ -2927,7 +2937,12 @@ export class Renderer3D {
     // Plan item 194: a depot cut by the frame's top (a phone's upright view of l21) shows only its face under the
     // HUD, and a plate on its fascia hid the rest: the plate hangs under its door instead, on the lane's mouth.
     const r = this.depotRects()[lane];
-    if (r && r.y < 0) return { x: r.x + r.w / 2, y, under: r.y + r.h + 4 };
+    if (r && r.y < 0) {
+      // Plan item 409: hung from the depot's own foot (its base, projected), on two chains (components.css), not
+      // 4 px under the box, which takes in the forecourt and left the board floating over the road on a phone.
+      const under = r.footY > 0 && r.footY < r.y + r.h ? r.footY + 10 : r.y + r.h + 4;
+      return { x: r.x + r.w / 2, y, under };
+    }
     return { x, y };
   }
 
@@ -2948,10 +2963,10 @@ export class Renderer3D {
     return (this.ground?.group.userData.dressing as ReturnType<Renderer3D["dressing"]>) ?? null;
   }
 
-  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number }> {
+  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number }> {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
-    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number }> = [];
+    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number }> = [];
     for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
       const b = new THREE.Box3().setFromObject(d);
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -2969,7 +2984,9 @@ export class Renderer3D {
       d.updateMatrixWorld(true);
       // Plan item 391: the roof is flat now (its membrane at 0.95); the hatch stands at its centre, behind the logotype.
       const roof = d.localToWorld(this.v2.set(0, 0.95, 0)).project(this.camera);
-      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h });
+      // Plan item 409: the depot's foot (its origin, at its door) on screen, where a board hung under it starts.
+      const foot = this.v2.set(0, 0, 0).applyMatrix4(d.matrixWorld).project(this.camera);
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h, footY: (-foot.y * 0.5 + 0.5) * h });
     }
     return out;
   }

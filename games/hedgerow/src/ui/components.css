@@ -3923,8 +3923,9 @@ body:has(#dlg-pause[open]) .paused-note {
 }
 .gate-plate[data-on-depot]::before { left: 18%; }
 .gate-plate[data-on-depot]::after { right: 18%; }
+/* Plan item 409: hung under the door of a depot cut by the frame's top, it hangs on two chains from the depot's foot. */
 .gate-plate[data-on-depot][data-under]::before,
-.gate-plate[data-on-depot][data-under]::after { display: none; }
+.gate-plate[data-on-depot][data-under]::after { top: auto; bottom: 100%; width: 2px; height: 10px; }
 .gate-plate[data-on-depot] .gate-plate-town {
   background: var(--corp-hi);
   color: var(--plastic);

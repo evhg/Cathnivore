@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test'
 type Box = { x: number; y: number; w: number; h: number }
 type HG = {
   game(): { level: { path2?: unknown } } | null
-  depots3d(): Array<Box & { roofY: number }>
+  depots3d(): Array<Box & { roofY: number; footY: number }>
   depotShutter3d(): number | null
   cathBox(): Box | null
   plotBoxes(): Box[]
@@ -39,7 +39,7 @@ for (const level of [1, 21, 34, 40]) {
       return {
         lanes: h.game()!.level.path2 ? 2 : 1,
         canvas: { x: c.left, y: c.top, w: c.width, h: c.height },
-        depots: h.depots3d().map((d) => ({ ...d, x: d.x + c.left, y: d.y + c.top })),
+        depots: h.depots3d().map((d) => ({ ...d, x: d.x + c.left, y: d.y + c.top, footY: d.footY + c.top })),
         cath: h.cathBox(),
         say: sb && sb.width > 0 ? { x: sb.left, y: sb.top, w: sb.width, h: sb.height } : null,
         plots: h.plotBoxes(),
@@ -57,8 +57,11 @@ for (const level of [1, 21, 34, 40]) {
     expect(inFrame).toBeGreaterThan(hasTouch ? 0.65 : 0.85)
     if (!hasTouch) expect(d.w).toBeGreaterThanOrEqual(90)
     // Plan item 194: a depot cut by the frame's top shows only its face; the plate hangs under its door, not on it.
+    // Plan item 409: measured against the face down to the depot's foot (its box also takes in the forecourt, and a
+    // plate under all of that floated over the road): the plate hangs from the foot, on chains.
     if (d.y < r.canvas.y) {
-      const seen = { x: d.x, y: r.canvas.y, w: d.w, h: d.y + d.h - r.canvas.y }
+      const bottom = d.footY > r.canvas.y && d.footY < d.y + d.h ? d.footY : d.y + d.h
+      const seen = { x: d.x, y: r.canvas.y, w: d.w, h: bottom - r.canvas.y }
       expect(meet(r.plate, seen) / (seen.w * seen.h)).toBeLessThan(0.05)
     }
     // Plan item 391: the count is the depot's own board, stood on its roof's front edge: its posts' foot inside
