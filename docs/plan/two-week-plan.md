@@ -4090,7 +4090,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the five pick frames' mean outfit colour (her coat mask) differ pairwise by 15%+; silhouette IoU between any two classes' figure masks under 0.9; the D primary button 44 px+ tall with 4.5:1 text; rack thumbnails 3:1+ on their tile; classpick and classpose specs pass; cathode-perf within budget run alone; shots P and D before and after.
 - **Size:** 2-3
 
-## 435. [ ] Cathnivore campaign: six chapters you can tell apart at a glance
+## 435. [ ] Cathnivore campaign: six chapters you can tell apart at a glance *(lane A, in progress)*
 - **Why:** `plan1115f/cath-campaign-D`: chapters 2-6 (975-1355 x 360-880) are near-identical rows, their thumbnails (1230-1345) the same village scene with the sky's colour changed; locked chapters a grey padlock on a dashed line; `cath-campaign-P` the six tabs (12-385 x 522-580) indistinguishable at a glance; 'Back to Title' cut by the viewport foot (95-295 x 812-844); Cath over the map's top frame (285-360 x 80-185). Item 415 made the prints pairwise 8%+ apart; at a glance they still read as one scene.
 - **Build:** each chapter's vignette its own subject (its landmark, its season, its story beat in the foreground), locked ones as a sealed envelope with the chapter's silhouette; the phone page's foot and Cath's place fixed.
 - **Accept:** the six vignettes pairwise under 70% similarity on a 16x12 greyscale thumbnail (not only colour); locked labels 4.5:1+; at 390x844 Back to Title whole after a scroll and Cath clear of the map frame; campaign specs pass; shots P and D before and after.
