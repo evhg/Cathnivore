@@ -3973,7 +3973,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each region group carries `data-control` (held, contested or free); a held region's mean ground saturation at least 30% under a free one's (pixel sample); a freed region draws 2+ stall props; the change runs 400-1200 ms, a fade only under reduced motion; board specs pass; shots P and D before and after.
 - **Size:** 2-3
 
-## 418. [ ] Cathnivore desktop: the left rail as Mara's stall, not a form of boxed numbers
+## 418. [ ] Cathnivore desktop: the left rail as Mara's stall, not a form of boxed numbers *(lane A, in progress)*
 - **Why:** `plan1115d/cath-game-D` the rail (10-338 x 8-888) is stacked bordered boxes: goods tiles (35-315 x 80-195) with 11-12 px captions, the partner row's empty dashed boxes (195-310 x 248-264), a Saving-for grid. VISION 1 (designed, not laid out) and 6.
 - **Build:** the rail drawn as her stall: goods in crates and jars whose fill shows the count, the numbers large on the crates; the partner's farm a smaller stall behind; the Saving-for cards price tags pegged on a string. Keep item 337's ledger binding and every control.
 - **Accept:** no rail text under 13 px; goods counts 22 px tall or more; a crate's fill height proportional to its count (unit test); no empty dashed placeholders; rail text at 4.5:1; board-scale and table specs pass; shots D (light and dark) before and after.
