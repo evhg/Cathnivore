@@ -4520,16 +4520,20 @@ html.no-animations .table-cath-line { animation: none; }
     padding: 0 26px 0 2px;
     border: 0;
     border-radius: 22px 12px 12px 22px;
+    /* Plan item 414: Hollowell's boardroom rail, not the players' newsprint: a backlit acrylic bar in a chrome
+       bezel, a hard specular band across its top, its orange rail along the foot, slate sans caps. */
     background:
-      linear-gradient(112deg, transparent 0 30%, color-mix(in srgb, white 45%, transparent) 38%, transparent 46%),
-      linear-gradient(var(--hollowell), var(--hollowell-lo)) top / 100% 3px no-repeat,
-      linear-gradient(180deg, color-mix(in srgb, var(--newsprint) 80%, white), color-mix(in srgb, var(--newsprint-lo) 90%, var(--candor-highlight)));
+      linear-gradient(180deg, color-mix(in srgb, white 72%, transparent) 0 1px, color-mix(in srgb, white 30%, transparent) 1px 36%, transparent 36%),
+      linear-gradient(var(--hollowell), var(--hollowell-lo)) bottom / 100% 3px no-repeat,
+      radial-gradient(60% 120% at 55% 30%, color-mix(in srgb, white 18%, transparent), transparent 72%),
+      linear-gradient(180deg, var(--corp-lightbox), var(--corp-lightbox-lo));
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--hollowell-ink) 18%, transparent),
-      inset 0 1px 0 color-mix(in srgb, white 70%, transparent),
+      inset 0 0 0 1.5px var(--corp-chrome),
+      inset 0 0 0 2.5px color-mix(in srgb, white 55%, transparent),
+      inset 0 0 8px 1px color-mix(in srgb, white 28%, transparent),
       var(--e2);
-    color: var(--newsprint-ink);
-    font: 600 var(--fs-caption)/1.1 var(--font-text);
+    color: var(--corp-slate);
+    font: 600 var(--fs-caption)/1.1 var(--font-ui);
     text-align: left;
     transform: none;
   }
@@ -4637,12 +4641,22 @@ html.no-animations .table-cath-line { animation: none; }
   }
 
   .papers-placard-words b {
-    font: italic 780 var(--fs-caption)/1.1 var(--font-voice);
+    font: 800 var(--fs-caption)/1.15 var(--font-ui);
+    letter-spacing: .05em;
+    text-transform: uppercase;
   }
 
   .papers-placard-words span {
     font-weight: 700;
     text-transform: capitalize;
+  }
+
+  .papers-placard-slot + .papers-placard-slot {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--corp-chrome) 70%, transparent);
+  }
+
+  .papers-placard-caret {
+    border-color: var(--corp-slate);
   }
 
   /* A chevron that turns over when the sheet is open. */
