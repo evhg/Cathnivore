@@ -4072,7 +4072,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 the field's plots span 70%+ of the board canvas width on l21 and l34; every shop tile shows a 40 px+ tower image; no side-panel text under 13 px, sublabels 4.5:1+; tower sprites 1.3x today's drawn height; hedgerow-tray, rack, field and 2D specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 432. [ ] Hedgerow phone play: the board's foot and edges clear
+## 432. [ ] Hedgerow phone play: the board's foot and edges clear *(lane B, in progress)*
 - **Why:** `plan1115f/hedge-l21-2d-P` and `-3d-P`: the 'NEXT: ROUND 11' pill (222-365 x 666-690) sits over the board's foot, over the 3D scarecrow's tutorial ring (170-240 x 590-680); the base (8-60 x 330-395) is squeezed against the left edge with its '216' tag on the queued van; `hedge-l34-2d-P` the vans (15-185 x 510-590) run under tree canopies and the second base (5-55 x 610-660) touches the edge; `hedge-l21-3d-P` the field is cut at the right (330-390) and the shoreline (0-110 x 140-680) is a dark-striped noise.
 - **Build:** the round pill docked to the tray's top edge, outside the board; the 2D phone field inset so the depots and their tags stand 8 px+ inside the canvas; vehicles drawn above canopies; the 3D phone close frame clamped so the field's right edge stays in view, and the shore's reed stripes thinned at phone scale.
 - **Accept:** at 390x844 the round pill overlaps no plot, ring or vehicle (bounding boxes); every depot box 8 px+ inside the canvas and its tag off every vehicle; no vehicle under a canopy (draw order); the 3D phone frame shows the field's right edge on l21 and l34; hedgerow phone specs, closeframe and depot specs pass; shots P before and after.
