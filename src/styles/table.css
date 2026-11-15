@@ -4447,11 +4447,15 @@ html.no-animations .table-cath-line { animation: none; }
   box-shadow: inset 0 0 0 1px var(--wood-lo);
 }
 .partner-slot svg { display: block; width: 100%; height: 100%; }
-/* Plan item 403: an empty slot is a dashed socket on the wood (five solid dark tiles read as unlabelled buttons) */
+/* Plan item 403: an empty slot is a socket in the wood (five solid dark tiles read as unlabelled buttons). Item 424:
+   a recess carved into the plank (shadowed at its top, lit along its lower lip), not a dashed outline, which read as
+   an unfinished form field. */
 .partner-slot[data-empty] {
-  background: none;
-  box-shadow: none;
-  border: 1.5px dashed color-mix(in srgb, var(--wood-ink) 55%, transparent);
+  background: rgb(var(--shadow-ink) / .32);
+  box-shadow:
+    inset 0 2px 3px rgb(var(--shadow-ink) / .55),
+    inset 0 -1px 0 color-mix(in srgb, var(--paper-hi) 22%, transparent),
+    0 1px 0 color-mix(in srgb, var(--paper-hi) 18%, transparent);
 }
 .partner-slot-more { align-self: center; font: 760 var(--fs-label)/1 var(--font-text); color: var(--paper-hi); }
 
