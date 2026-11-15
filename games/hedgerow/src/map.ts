@@ -1380,19 +1380,20 @@ function LAND_FEATURES(i: number): string {
     return blobs(9, "#b9ad8e", 7, 5, 0.45) + blobs(14, "#7e9a5a", 2.4, 1.8, 0.5) + blobs(10, "#a090c0", 1.6, 1.2, 0.45) + creek(40, 6, "#8fb3bf", 5) + creek(64, 5, "#8fb3bf", 3.5) + creek(40, 6, "#cfe2e6", 1.4);
   if (i === 3) return creek(38, 3, "#8fb7c4", 3) + creek(70, 3, "#8fb7c4", 3) + blobs(10, "#a8c47a", 5, 3, 0.35);
   if (i === 1) return blobs(16, "#6e5a44", 2.6, 1.4, 0.4) + blobs(12, "#8e6a84", 4, 2.6, 0.35);
-  // Oakvale: a woodland floor, drifts of bluebells and wild garlic as clusters of small flowers, leaf litter.
-  if (i === 4) {
-    const drift = (n: number, col: string): string => {
-      let o = "";
-      for (let k = 0; k < n; k++) {
-        const cx = 4 + rand() * 92;
-        const cy = 8 + rand() * 84;
-        for (let j = 0; j < 22; j++) o += `<circle cx="${f(cx + (rand() - 0.5) * 9)}" cy="${f(cy + (rand() - 0.5) * 6)}" r=".55" fill="${col}" opacity=".7"/>`;
-      }
-      return o;
-    };
-    return blobs(10, "#a07a4a", 4, 2.6, 0.22) + drift(7, "#6f74c4") + drift(5, "#f4f4e6");
-  }
+  // Drifts of small flowers in clusters.
+  const drift = (n: number, col: string, per = 22): string => {
+    let o = "";
+    for (let k = 0; k < n; k++) {
+      const cx = 4 + rand() * 92;
+      const cy = 8 + rand() * 84;
+      for (let j = 0; j < per; j++) o += `<circle cx="${f(cx + (rand() - 0.5) * 9)}" cy="${f(cy + (rand() - 0.5) * 6)}" r=".55" fill="${col}" opacity=".7"/>`;
+    }
+    return o;
+  };
+  // Oakvale: a woodland floor, drifts of bluebells and wild garlic over leaf litter.
+  if (i === 4) return blobs(22, "#a07a4a", 4, 2.6, 0.3) + blobs(12, "#4e6e34", 3, 2, 0.25) + drift(10, "#6f74c4", 28) + drift(7, "#f4f4e6", 26);
+  // Brindle: a hay meadow, buttercups and clover in drifts, darker tussocks.
+  if (i === 0) return blobs(14, "#6f8e3e", 3.2, 2, 0.22) + drift(9, "#f2c63a", 26) + drift(6, "#f6f2e2", 24);
   return blobs(12, "#ffffff", 3, 2, 0.12) + blobs(10, "#5e7a3a", 3, 2, 0.12);
 }
 
