@@ -3860,7 +3860,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the five rows' text pairwise distinct; row guns 3:1+ against the panel; role text 14 px+ (in `var(--u)`, cathode-type); no empty band over 40 px in the right panel; cathode-classpick, cathode-armoury and type tests pass; shots P and D before and after.
 - **Size:** 2
 
-## 401. [ ] /games/: each card's foot as its game's stall board, not four identical dark web cards
+## 401. [ ] /games/: each card's foot as its game's stall board, not four identical dark web cards *(lane B, in progress)*
 - **Why:** the posters (item 332) and the stall hero (352) are drawn in the market's world, but under each poster `plan1115a/games-D` (110-1330 x 700-830) is the same near-black web card (sans copy, a yellow line, a plain yellow Play pill); NIGHT SHIFT's noir and Runnel's garden read alike; `games-P` (20-370 x 740-844) the same.
 - **Build:** each foot a hanging board in its game's material (Cathnivore gingham-painted wood, Runnel a carved plank, Hedgerow a seed-packet card, NIGHT SHIFT smoked enamel with neon) in the game's display face; the daily line a chalk or enamel price line with its live countdown; Play a painted sign 44 px+ with a pressed state; posters, logotypes and badges kept.
 - **Accept:** the four feet with four different computed backgrounds and display fonts; each Play 44 px+; text 4.5:1+; games-cards, games-stall and site-hero pass; shots P and D before and after.
