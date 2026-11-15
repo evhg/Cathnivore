@@ -3,6 +3,7 @@ import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
 import { rivalMood } from './portraits/rivalFace'
+import ExecPortrait from './portraits/ExecPortrait'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
@@ -41,7 +42,7 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
-import { EXECS, MOOD_EXPRESSION, execFor, flightsFor, stagedRegions, stripDock, type ExecMood } from './boardroom'
+import { EXECS, execFor, flightsFor, stagedRegions, stripDock, type ExecMood } from './boardroom'
 import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
 import RoundLedger from './RoundLedger'
@@ -285,7 +286,7 @@ function Rival({ mood }: { mood: ExecMood }) {
   return (
     <aside className="rival" data-rival data-mood={mood} aria-label={`${who}, ${mood}`}>
       <span className="rival-frame">
-        <Figure character="pell" expression={MOOD_EXPRESSION[mood]} title={EXECS.pell.name} />
+        <ExecPortrait mood={mood} title={EXECS.pell.name} />
       </span>
       <span className="rival-plate" aria-hidden="true">
         <HollowellLogo size={11} />
@@ -3298,7 +3299,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         onClick={() => setPapersOpen((o) => !o)}
       >
         <span className="papers-placard-face" aria-hidden="true">
-          <Figure character="pell" expression={MOOD_EXPRESSION[rivalMood(cathReaction.expression)]} />
+          <ExecPortrait mood={rivalMood(cathReaction.expression)} />
         </span>
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => (
           // Keyed on the card, so a card the conveyor moves in re-mounts and stamps (the strip's arming can't show while folded).

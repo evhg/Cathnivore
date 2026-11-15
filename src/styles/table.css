@@ -4210,6 +4210,9 @@ html.no-animations .table-cath-line { animation: none; }
   .table-head.with-table-cath .rival { z-index: var(--z-raised); min-width: 122px; }
   .table-head.with-table-cath .rival-frame { width: 120px; height: 120px; margin-block: -4px -58px; margin-inline: -19px; }
   .table-head.with-table-cath .rival-frame svg { top: -37px; width: 198px; }
+  /* Plan item 414: his own corporate portrait is drawn head and shoulders for the round frame: it fills it. */
+  .rival-frame svg.exec-portrait,
+  .table-head.with-table-cath .rival-frame svg.exec-portrait { inset: 0; top: 0; left: 0; width: 100%; height: 100%; transform: none; }
   .table-head.with-table-cath .rival-frame::after {
     content: '';
     position: absolute;
@@ -4572,6 +4575,7 @@ html.no-animations .table-cath-line { animation: none; }
   }
 
   .papers-placard-face svg { top: -18px; width: 94px; }
+  .papers-placard-face svg.exec-portrait { inset: 0; top: 0; left: 0; width: 100%; height: 100%; transform: none; }
 
   /* Bea's drawing steps down out from under the hanging medallion. */
   .beas-drawing { top: calc(var(--sp-2) + 16px); }
