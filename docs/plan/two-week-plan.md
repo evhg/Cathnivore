@@ -3997,7 +3997,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each channel carries `data-wet`; wet water against its bed at 3:1 or more; the flow advances in tile order at about 150 ms a tile; watered ground in the green hue range (token unit test); an instant fill under reduced motion; runnel specs pass; shots P and D.
 - **Size:** 2
 
-## 422. [ ] NIGHT SHIFT pick: Cath posed with each class's weapon in hand, under its light
+## 422. [ ] NIGHT SHIFT pick: Cath posed with each class's weapon in hand, under its light *(lane A, in progress)*
 - **Why:** `plan1115d/ns-play-D` Cath stands in a stiff A-pose, the Widowmaker floating off her right shoulder (740-830 x 225-700) with a second barrel showing (625-660 x 340-640); `ns-play-P` (2x) she is small and dim (290-500 x 220-680). Pose and staging, not her face sculpt (item 319). VISION 5.
 - **Build:** a rest pose per class on the existing rig (rifle shouldered, cleaver low, revolver drawn, wire spool, a charge in hand), each weapon parented to her hand; each class its own key-light colour and angle, crossfading in 250 ms when the pick changes.
 - **Accept:** each weapon parented to a hand bone, within 3 cm of it, for all five; the pose differs per class (joint-angle hash); the key colour unique per class; the crossfade 200-300 ms; Cath's box 45% of the viewport height or more at P; classpick specs pass; shots P and D.
