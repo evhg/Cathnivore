@@ -3564,7 +3564,8 @@ html.no-animations .table-cath-line { animation: none; }
   .player-mat .mat-art-slot { grid-area: art; justify-self: center; display: block; width: min(76px, 100%); transform-origin: 50% 100%; }
   .player-mat .mat-art { display: block; width: 100%; height: auto; aspect-ratio: 64 / 60; }
   .player-mat .mat-store > svg:not(.mat-art) { grid-area: icon; }
-  .player-mat .mat-store .ledger-value { grid-area: value; font-size: var(--fs-h3); }
+  /* Plan item 418: the count is the crate's chalked price board: large (26 px+), the income tucked beside it. */
+  .player-mat .mat-store .ledger-value { grid-area: value; font-size: var(--fs-h2); line-height: 1; letter-spacing: -0.01em; }
   .player-mat .mat-store .ledger-income { grid-area: income; justify-self: end; }
 }
 
@@ -5177,17 +5178,24 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='0'] { rotate: -1.6deg; }
   .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='1'] { rotate: 0.9deg; }
   .desktop-col-left .actions[data-shelf] .action-item[data-later-idx='2'] { rotate: -0.7deg; }
+  /* Plan item 418: the goals are price tags pegged on a length of twine across the stall, not tickets on a ledge:
+     each tag's own length of twine (overlapping its neighbours', as the ledge did) and a wooden clothes peg at its
+     top; the tag swings from the peg. */
+  .desktop-col-left .actions[data-shelf] .action-item[data-later-idx] { transform-origin: 50% 0; }
+  .desktop-col-left .actions[data-shelf] .action-head-later ~ .action-item[data-later-idx]::after { display: none; }
   .desktop-col-left .actions[data-shelf] .action-item[data-later-idx]::before {
     content: "";
     position: absolute;
-    top: -5px;
-    left: 50%;
-    width: 11px;
-    height: 11px;
-    translate: -50% 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--paper-hi) 0 15%, var(--wheat) 30%, color-mix(in srgb, var(--wheat) 55%, var(--soil)) 100%);
-    box-shadow: 1px 2px 2px color-mix(in srgb, var(--ink) 35%, transparent);
+    top: -9px;
+    left: calc(var(--sp-2) / -2 - 2px);
+    right: calc(var(--sp-2) / -2 - 2px);
+    height: 18px;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 1px), color-mix(in srgb, var(--wood-lo) 80%, var(--ink)) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 50% 3px / 100% 13px no-repeat,
+      linear-gradient(90deg, color-mix(in srgb, var(--wood) 70%, var(--paper-hi)), var(--wood) 45%, var(--wood-lo)) 50% 0 / 9px 18px no-repeat,
+      linear-gradient(color-mix(in srgb, var(--wheat) 55%, var(--soil)), color-mix(in srgb, var(--wheat) 55%, var(--soil))) 0 5px / 100% 2px no-repeat;
+    border-radius: 0;
+    filter: drop-shadow(1px 2px 1px color-mix(in srgb, var(--ink) 30%, transparent));
     z-index: var(--z-raised);
     pointer-events: none;
   }

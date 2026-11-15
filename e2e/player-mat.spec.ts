@@ -134,3 +134,39 @@ test('the stall goods animate on change and the empty slate holds a sketch at 14
   const after = await clear()
   if (after.h > 0) expect(after.clear, 'sketch clear of the lines after a move').toBe(true)
 })
+
+// Plan item 418: the rail is Mara's stall: the goods' counts large on their stores (22 px+), no rail text under
+// 13 px, no dashed placeholders, and the Saving-for goals pegged on twine (no ledge under them).
+test('the rail reads as her stall at 1440x900', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.mouse.move(5, 5)
+  const rail = page.locator('.desktop-col-left')
+  await expect(rail.locator('[data-player-mat] .mat-store')).toHaveCount(3)
+  for (const v of await rail.locator('[data-player-mat] .mat-store .ledger-value').all()) expect((await v.boundingBox())!.height).toBeGreaterThanOrEqual(22)
+  const found = await page.evaluate(() => {
+    const col = document.querySelector('.desktop-col-left')!
+    const small: string[] = []
+    const w = document.createTreeWalker(col, NodeFilter.SHOW_TEXT)
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      const e = n.parentElement!
+      if (!n.textContent!.trim() || e.closest('.visually-hidden, svg') || e.getBoundingClientRect().width === 0) continue
+      const cs = getComputedStyle(e)
+      if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue
+      // font-size 0 is an icon-only button's hidden glyph (its icon draws instead)
+      if (parseFloat(cs.fontSize) > 0 && parseFloat(cs.fontSize) < 13) small.push(`${cs.fontSize} ${n.textContent!.trim().slice(0, 20)}`)
+    }
+    const dashed = [...col.querySelectorAll('*')].filter((e) => getComputedStyle(e).borderTopStyle === 'dashed').length
+    const goals = [...col.querySelectorAll('.action-item[data-later-idx]')]
+    return { small, dashed, goals: goals.length, ledge: goals.filter((g) => getComputedStyle(g, '::after').display !== 'none').length, peg: goals.filter((g) => getComputedStyle(g, '::before').content !== 'none').length }
+  })
+  expect(found.small).toEqual([])
+  expect(found.dashed).toBe(0)
+  expect(found.goals).toBeGreaterThan(0)
+  expect(found.ledge).toBe(0)
+  expect(found.peg).toBe(found.goals)
+})

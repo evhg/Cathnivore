@@ -4,9 +4,15 @@
 
 const VEG = ['var(--clay)', 'var(--pasture)', 'var(--wheat)', 'var(--clay-deep)']
 
+/** Plan item 418: how many pieces each store shows (one a unit, so the fill is the count, up to its cap). */
+export const MAT_CAP = { crate: 9, coins: 8, rosette: 8 } as const
+export function matFill(kind: keyof typeof MAT_CAP, count: number): number {
+  return Math.max(0, Math.min(MAT_CAP[kind], Math.floor(count)))
+}
+
 /** A crate of produce: one piece of veg showing per Produce, up to 9, heaped over the rim. */
 export function MatCrate({ count }: { count: number }) {
-  const n = Math.max(0, Math.min(9, count))
+  const n = matFill('crate', count)
   // a heap: the bottom row first (4), then 3, then 2
   const spots = [
     [14, 30], [26, 31], [38, 30], [50, 31],
@@ -32,7 +38,7 @@ export function MatCrate({ count }: { count: number }) {
 
 /** A stack of Marks: one coin per Mark, up to 8, a second short stack beside it past 4. */
 export function MatCoins({ count }: { count: number }) {
-  const n = Math.max(0, Math.min(8, count))
+  const n = matFill('coins', count)
   const coin = (x: number, y: number, k: number) => (
     <g key={`${x}-${k}`}>
       <ellipse cx={x} cy={y + 2.2} rx="12" ry="4.4" fill="var(--clay-deep)" stroke="var(--ink)" strokeWidth=".9" />
@@ -54,7 +60,7 @@ export function MatCoins({ count }: { count: number }) {
 
 /** Goodwill as a ribbon rosette: the petals ring fills, one petal a point, up to 8. */
 export function MatRosette({ count }: { count: number }) {
-  const n = Math.max(0, Math.min(8, count))
+  const n = matFill('rosette', count)
   return (
     <svg className="mat-art mat-rosette" viewBox="0 0 64 60" aria-hidden="true" focusable="false">
       <ellipse cx="32" cy="57" rx="20" ry="2.4" fill="var(--ink-a15)" />
