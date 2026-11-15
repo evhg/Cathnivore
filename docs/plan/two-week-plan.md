@@ -3848,7 +3848,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 399. [ ] Hedgerow 2D: each act's field furnished as its own country, not the same barn, cottage and haystacks every time
+## 399. [ ] Hedgerow 2D: each act's field furnished as its own country, not the same barn, cottage and haystacks every time *(lane B, in progress)*
 - **Why:** items 345, 370 and 388 made the margins act-specific, but the board's inside is one kit: `plan1115a/hedge-l21-2d-D` (Saltmarsh) a red barn (610-655 x 295-345), a white cottage (550-610 x 675-740), straw cones, chickens, round blue ponds; `hedge-l34-2d-D` (Rivermead) the same barn twice (515-580 x 455-525, 725-790 x 530-595), the same cottage, cones and ponds. Margins hidden, the acts can't be told apart; P the same.
 - **Build:** a field set per act in `theme.ts`/`plotlook.ts`/`landmarks.ts`: buildings, crop beds, livestock, water shapes (Saltmarsh: a tarred net shed, samphire and sea-lavender beds, sheep on salt grazing, item 388's pans; Rivermead: a mill-race cottage, water-meadow strips, an orchard row, willow-ringed ponds). Plot types and gameplay unchanged; key art re-shot.
 - **Accept:** a unit test that no building or bed sprite is shared between acts' kits; the mean hue of l21's and l34's field interiors differs by 15 deg+; hedgerow field, cath2d, gatequeue and keyart-fresh pass; shots acts 1, 3 and 4 at P and D, before and after.
