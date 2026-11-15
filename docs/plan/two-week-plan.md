@@ -4003,7 +4003,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each weapon parented to a hand bone, within 3 cm of it, for all five; the pose differs per class (joint-angle hash); the key colour unique per class; the crossfade 200-300 ms; Cath's box 45% of the viewport height or more at P; classpick specs pass; shots P and D.
 - **Size:** 2-3
 
-## 423. [ ] NIGHT SHIFT: five weapons told apart at a glance
+## 423. [ ] NIGHT SHIFT: five weapons told apart at a glance *(lane A, in progress)*
 - **Why:** `plan1115d/ns-play-D` Gunslinger, Wirewitch and Fixer show near-identical grey pistols about 60 px wide (375-445 x 385-625); `ns-play-P` (2x) the Wirewitch and Fixer tab icons (500-710 x 700-735) share a silhouette. Class identity rests on words alone.
 - **Build:** each class a signature silhouette (the long-cylinder revolver, the Wirewitch's wired taser, the Fixer's charge launcher), the rows' icons 110 px wide or more with a class-colour rim light.
 - **Accept:** icon silhouettes pairwise IoU under 0.6; desktop icons 110 px wide or more; the phone tab icons pairwise distinct (image diff); every weapon name matches the sim data; classpick specs pass; shots P and D.
