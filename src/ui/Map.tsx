@@ -3,7 +3,7 @@ import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilit
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, squeezedLastTurn, type GripStage } from './grip'
-import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, ORNAMENT_H, pieceLayout } from './pieceLayout'
+import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -311,7 +311,6 @@ function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind:
   // base's shadow below).
   const k = Math.min((STACK_W * scale) / 18, (STACK_H * scale) / 22.6)
   const bottom = cy + (STACK_H * scale) / 2
-  const bodyTop = cy - (STACK_H * scale) / 2
   const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
   // Plan item 413: one piece a kind (item 172's pile of copies cluttered every hex); the count says how many.
   return (
@@ -321,7 +320,7 @@ function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind:
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {n >= CORP_COUNT_FROM && <CountBadge corp cx={STACK_W * scale - countR * 0.5} cy={bodyTop - (ornaments ? ORNAMENT_H * scale : 0) + countR * 0.5} r={countR} n={n} />}
+      {n >= CORP_COUNT_FROM && <CountBadge corp cx={Math.min(13.6 * k, STACK_W * scale - countR)} cy={bottom - 17.4 * k + countR * 0.15} r={countR} n={n} />}
     </g>
   )
 }
@@ -960,8 +959,10 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             )}
             {r.lostLand > 0 && (
               <g className="lostland-overlay">
-                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="var(--clay)" opacity={0.18} />
-                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} fill="url(#texture-lostland)" />
+                {/* Plan item 413: the hatch and clay tint are a band eaten in from the tile's edge, not a sheet over the
+                    whole face: the terrain art reads in the middle, the cracks still run across it. */}
+                <path className="lostland-band" fillRule="evenodd" d={`M ${hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} Z M ${hexPoints(x, y, HEX_R * GAP_SCALE * 0.7)} Z`} fill="var(--clay)" opacity={0.22} />
+                <path className="lostland-band" fillRule="evenodd" d={`M ${hexPoints(x, y, HEX_R * GAP_SCALE * 0.98)} Z M ${hexPoints(x, y, HEX_R * GAP_SCALE * 0.7)} Z`} fill="url(#texture-lostland)" />
                 <path
                   d={`M ${x - HEX_R * 0.4},${y - HEX_R * 0.3} L ${x - HEX_R * 0.1},${y} L ${x - HEX_R * 0.3},${y + HEX_R * 0.35} M ${x - HEX_R * 0.1},${y} L ${x + HEX_R * 0.25},${y + HEX_R * 0.15}`}
                   fill="none"
@@ -977,7 +978,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 <polygon
                   points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)}
                   fill="#dff3ff"
-                  opacity={Math.min(0.1 + r.outlets * 0.05, 0.3)}
+                  opacity={Math.min(0.06 + r.outlets * 0.03, 0.16)}
                 />
                 <path
                   d={`M ${x - HEX_R * 0.7},${y - HEX_R * 0.2} L ${x - HEX_R * 0.15},${y - HEX_R * 0.75} L ${x + HEX_R * 0.05},${y - HEX_R * 0.7} L ${x - HEX_R * 0.6},${y + HEX_R * 0.05} Z`}

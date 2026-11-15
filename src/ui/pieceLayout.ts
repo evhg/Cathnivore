@@ -118,7 +118,8 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   // A stack's slot holds its body, its ornament above and, from COUNT_FROM up, its count badge (half over the
   // body's empty top right corner, half outside). Plan item 172: two or three stand as a pile with no badge.
   const counted = (k: PieceKind) => (k === 'outlets' || k === 'buyouts' || k === 'doubt') && input[k] >= CORP_COUNT_FROM
-  const ws = slots.map((k) => STACK_W * eScale + (counted(k) ? countR * 0.5 : 0))
+  // Plan item 413: with no pile of copies the slot's right edge is free, so the count sits inside it (no extra width).
+  const ws = slots.map(() => STACK_W * eScale)
   // Plan item 172: the row steps down the tile, rather than shrinking, when the plate or a badge sits over it.
   const ceil = out.reduce((a, r) => Math.max(a, r.y1), -Infinity) + GAP
   const highest = (STACK_H * eScale) / 2 + (ornaments ? ORNAMENT_H * eScale : 0) + (slots.some(counted) ? countR * 0.5 : 0)
