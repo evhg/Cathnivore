@@ -584,6 +584,41 @@ test('the mugshot captions read at 4.5:1 or more', async ({ page, hasTouch }) =>
 
 // Plan item 107: the List's prints carry no words under 11 px (their slates and REDACTED bars were 4-5 px), and a
 // withheld print fades only its photo, so 'Withheld' isn't dimmed with it.
+// Plan item 412: five people told apart. The four withheld prints were near-identical blue silhouettes; each is
+// now lit by its own district with its own prop, so every pair of the List's prints differs by over 10% per pixel.
+test('the five List prints are told apart', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'one check at D is enough: the prints are the same SVGs on a phone')
+  test.setTimeout(240_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/?shot')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const photos = page.locator('#the-list-wall .mug-photo')
+  expect(await photos.count()).toBe(5)
+  const thumbs: number[][] = []
+  for (let i = 0; i < 5; i++) {
+    const png = (await page.screenshot({ clip: (await photos.nth(i).boundingBox())! })).toString('base64')
+    thumbs.push(await page.evaluate(async (b64) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = 20
+      c.height = 24
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0, 20, 24)
+      return [...x.getImageData(0, 0, 20, 24).data].filter((_, k) => k % 4 !== 3)
+    }, png))
+  }
+  for (let a = 0; a < 5; a++) {
+    for (let b = a + 1; b < 5; b++) {
+      const d = thumbs[a]!.reduce((s, v, k) => s + Math.abs(v - thumbs[b]![k]!), 0) / thumbs[a]!.length / 255
+      expect(d, `prints ${a + 1} and ${b + 1}`).toBeGreaterThan(0.1)
+    }
+  }
+})
+
 test('the List prints have no unreadable words, and Withheld is not faded', async ({ page, hasTouch }) => {
   test.setTimeout(240_000)
   await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })

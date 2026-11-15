@@ -596,12 +596,12 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
   // (A grey head at 10% luminance on 8% read as four identical black squares.)
   const v = ((variant % 4) + 4) % 4;
-  // Plan item 412: each withheld print is lit by its own district (the vault's red work light, the clinic's cold
+  // Plan item 412: each withheld print is lit by its own district (the vault's cold light under the river, the clinic's cold
   // fluorescent, the plaza's sodium lamps, the tower's lit window behind the blinds), so four silhouettes stop
   // reading as one; the rim takes the light's colour.
-  const RIM = ["#f0a090", "#c4f0dc", "#ffd08a", "#fff4d8"][v]!;
+  const RIM = ["#b4c4ff", "#c4f0dc", "#ffd08a", "#fff4d8"][v]!;
   const GROUND = [
-    ["#8a4a44", "#3a1e1c", "#0e0a0a"],
+    ["#5a6cb0", "#222a50", "#08090f"],
     ["#a6cfc0", "#3d5c55", "#0c1312"],
     ["#d6a868", "#5a3e22", "#120d08"],
     ["#f4ecd0", "#9a8a64", "#16130d"],
