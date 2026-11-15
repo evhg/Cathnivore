@@ -1549,6 +1549,26 @@ export function buildGround(level: Level): Ground {
     const m = instanced(new THREE.SphereGeometry(1, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), matte("#ffffff"), clumps, true);
     if (m) group.add(m);
     marginProps += clumps.length;
+    // Plan item 429: marram grass on Saltmarsh's dunes: tufts of thin pale blades along the shore band (one instanced
+    // call, its own random stream so nothing placed before it moves).
+    if (act === 2) {
+      const mr = rng(level.id * 7919 + 11);
+      const blades: Inst[] = [];
+      const straw = [new THREE.Color("#b9b47a"), new THREE.Color("#9fa86a"), new THREE.Color("#c8c08a")];
+      for (let i = 0; i < 260 && blades.length < 420; i++) {
+        const cx = -2.35 + mr() * 1.7;
+        const cz = -MARGIN + 0.5 + mr() * (H - 1);
+        if (laneDistance(level, cx, cz) < 1.1 || nearWater(cx, cz, 0.3)) continue;
+        for (let k = 0; k < 4; k++) {
+          const x = cx + (mr() - 0.5) * 0.12;
+          const z = cz + (mr() - 0.5) * 0.12;
+          blades.push({ x, y: heightAt(x, z), z, ry: mr() * 6.3, s: 0.012, sy: 14 + mr() * 9, color: straw[Math.floor(mr() * 3)]! });
+        }
+      }
+      const bm = instanced(new THREE.ConeGeometry(1, 1, 5).translate(0, 0.5, 0), matte("#ffffff"), blades);
+      if (bm) group.add(bm);
+      marginProps += Math.round(blades.length / 4);
+    }
     group.userData.margin = { land: marginLand, plain: marginPlain, props: marginProps };
   }
   // Hedgerows along the field's edge (the game's namesake), broken where the lanes run out.
