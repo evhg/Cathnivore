@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MAT_CAP, MatCrate, matFill } from '../src/ui/PlayerMat'
+import { MatCrate } from '../src/ui/PlayerMat'
+import { MAT_CAP, matFill } from '../src/ui/matFill'
 
 // Plan item 418: the stall's stores fill with their count: one piece a unit, so the fill is proportional to the
 // count up to the store's cap (the figure beside it is exact past that).
