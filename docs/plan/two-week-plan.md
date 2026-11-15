@@ -4027,7 +4027,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - board and piece-layout specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 426. [ ] Cathnivore desktop campaign: the map as a drawn atlas of Marrow on the table *(lane A, in progress)*
+## 426. [x] Cathnivore desktop campaign: the map as a drawn atlas of Marrow on the table *(done 2026-11-15 20:30 lane A: a deckled paper sheet with a drop shadow; the sea a wash with engraved swell lines, paler shallows round the coast and a ruled border; a compass rose, a 'The Republic of / Marrow' cartouche (the title alone on a phone, the sub-line would be under 11 px), three boats and gulls; Hollowell's glass tower over Kingsmarket while it is held; at D Cath stands beside the sheet. New campaign-atlas spec: one flat colour under 15% of a 24x24 grid, Cath clear of the sea; campaign specs pass P and D; shots scratchpad a426)*
 - **Why:** `plan1115e/cath-campaign-D`: the map is a flat slate rounded box (60-870 x 140-760), about 45% empty sea with a few ticks, and Cath stands in the sea inside the frame (690-820 x 470-750). The chapters are well dressed; the map is the weakest thing on the screen (VISION 1: a focal scene, not a box).
 - **Build:** a paper map sheet with deckled edges lying on the gingham; a drawn coastline with shallows, a compass rose, a cartouche ('The Republic of Marrow'), boats and gulls; Hollowell's tower over Kingsmarket. Cath stands beside the sheet on the table, not on the water. A stop still opens its chapter.
 - **Accept:** no flat fill over 15% of the map's box (grid sample); Cath's box clear of the sheet's sea; campaign specs pass; shots P and D before and after.

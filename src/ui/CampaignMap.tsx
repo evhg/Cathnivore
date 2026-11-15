@@ -106,6 +106,118 @@ function HollowellTape() {
   )
 }
 
+// Plan item 426: the map is a drawn atlas sheet lying on the table, not a flat sea box. The paper is deckled
+// (a seeded wobble along each edge, so it never changes between renders); the sea is a wash with engraved
+// swell lines and paler shallows round the coast; a compass rose, a cartouche, boats and gulls dress it.
+const SHEET = { x0: -158, y0: -148, x1: 158, y1: 144 }
+function wobble(i: number): number {
+  const v = Math.sin(i * 12.9898 + 4.1) * 43758.5453
+  return (v - Math.floor(v) - 0.5) * 2.2
+}
+function deckled({ x0, y0, x1, y1 }: typeof SHEET): string {
+  const pts: string[] = []
+  let i = 0
+  const run = (ax: number, ay: number, bx: number, by: number, nx: number, ny: number) => {
+    const n = Math.max(2, Math.round(Math.hypot(bx - ax, by - ay) / 3.5))
+    for (let k = 0; k < n; k++) {
+      const t = k / n
+      const w = wobble(i++)
+      pts.push(`${(ax + (bx - ax) * t + nx * w).toFixed(1)},${(ay + (by - ay) * t + ny * w).toFixed(1)}`)
+    }
+  }
+  run(x0, y0, x1, y0, 0, 1)
+  run(x1, y0, x1, y1, 1, 0)
+  run(x1, y1, x0, y1, 0, 1)
+  run(x0, y1, x0, y0, 1, 0)
+  return pts.join(' ')
+}
+const SHEET_EDGE = deckled(SHEET)
+const SEA = { x0: -150, y0: -140, x1: 150, y1: 136 }
+// Engraved swell: short parallel strokes in the open water, clear of the island (|x| past the coast or the corners).
+const SWELL: [number, number, number][] = [
+  [-148, -128, 22], [-140, -116, 16], [-150, -104, 26], [-144, -92, 14], [-152, -80, 18],
+  [104, -132, 30], [116, -120, 22], [110, -108, 26], [124, -96, 18], [130, -84, 14],
+  [-150, 60, 14], [-146, 74, 22], [-150, 98, 30], [-136, 110, 20], [-118, 124, 26],
+  [112, 70, 24], [120, 84, 20], [104, 124, 32], [126, 108, 18], [-40, -144, 24], [60, 128, 16], [-24, 130, 20],
+]
+const GULLS: [number, number, number][] = [[-120, -64, 1], [-104, -72, 0.8], [138, -56, 0.9], [-30, 124, 0.85], [92, -138, 0.8]]
+const BOATS: [number, number, number][] = [[128, -122, 1], [-100, 128, -1], [118, 126, 1]]
+
+function AtlasSheet() {
+  return (
+    <g className="cmp-atlas" aria-hidden="true">
+      <defs>
+        <radialGradient id="cmp-sea-wash" cx="50%" cy="48%" r="62%">
+          <stop offset="0" className="cmp-sea-in" />
+          <stop offset="0.7" className="cmp-sea-mid" />
+          <stop offset="1" className="cmp-sea-out" />
+        </radialGradient>
+      </defs>
+      <polygon points={SHEET_EDGE} className="cmp-sheet-shadow" transform="translate(2.5 4)" />
+      <polygon points={SHEET_EDGE} className="cmp-sheet" />
+      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={SEA.y1 - SEA.y0} rx={3} className="cmp-sea" fill="url(#cmp-sea-wash)" />
+      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={SEA.y1 - SEA.y0} rx={3} className="cmp-sea-rule" />
+      <g className="cmp-swell">
+        {SWELL.map(([x, y, w]) => (
+          <path key={`${x},${y}`} d={`M${x} ${y} q${w / 4} -2 ${w / 2} 0 t${w / 2} 0`} />
+        ))}
+      </g>
+      {BOATS.map(([x, y, f]) => (
+        <g key={`${x},${y}`} className="cmp-boat" transform={`translate(${x} ${y}) scale(${f} 1)`}>
+          <path d="M-7 0 H7 L4.5 3.4 H-4.5 Z" className="cmp-boat-hull" />
+          <path d="M0 -0.5 V-12" className="cmp-boat-mast" />
+          <path d="M0.8 -11 L7 -1.6 H0.8 Z" className="cmp-boat-sail" />
+          <path d="M-0.8 -8.5 L-4.6 -1.6 H-0.8 Z" className="cmp-boat-jib" />
+          <path d="M-9 5.4 q2 -1.2 4 0 M5 5.4 q2 -1.2 4 0" className="cmp-boat-wake" />
+        </g>
+      ))}
+      <g className="cmp-gulls">
+        {GULLS.map(([x, y, k]) => (
+          <path key={`${x},${y}`} transform={`translate(${x} ${y}) scale(${k})`} d="M-5 0 q2.5 -3 5 0 q2.5 -3 5 0" />
+        ))}
+      </g>
+    </g>
+  )
+}
+
+// Plan item 426: the compass rose and the cartouche sit over the coast's shallows, so they're drawn after them.
+function AtlasMarks() {
+  return (
+    <g className="cmp-atlas-marks" aria-hidden="true">
+      {/* the compass rose, bottom left */}
+      <g className="cmp-compass" transform="translate(-128 116)">
+        <circle r={11} className="cmp-compass-ring" />
+        <circle r={8.4} className="cmp-compass-ring is-inner" />
+        <path d="M0 -14 L2.4 -2.4 L14 0 L2.4 2.4 L0 14 L-2.4 2.4 L-14 0 L-2.4 -2.4 Z" className="cmp-compass-star" />
+        <path d="M0 -14 L2.4 -2.4 L0 0 Z M14 0 L2.4 2.4 L0 0 Z M0 14 L-2.4 2.4 L0 0 Z M-14 0 L-2.4 -2.4 L0 0 Z" className="cmp-compass-shade" />
+        <path d="M0 -8 L1.4 -1.4 L8 0 L1.4 1.4 L0 8 L-1.4 1.4 L-8 0 L-1.4 -1.4 Z" transform="rotate(45)" className="cmp-compass-star is-minor" />
+        <text y={-16.5} className="cmp-compass-n">N</text>
+      </g>
+      {/* the cartouche, top left */}
+      <g className="cmp-cartouche" transform="translate(-114 -124)">
+        <path d="M-30 -15 H30 q4 0 4 4 V11 q0 4 -4 4 H-30 q-4 0 -4 -4 V-11 q0 -4 4 -4 Z" className="cmp-cartouche-card" />
+        <path d="M-27 -12 H27 V12 H-27 Z" className="cmp-cartouche-rule" />
+        <path d="M-34 -6 q-6 2 -5 9 q2 -3 5 -3 M34 -6 q6 2 5 9 q-2 -3 -5 -3" className="cmp-cartouche-scroll" />
+        <text y={-3} className="cmp-cartouche-sub">The Republic of</text>
+        <text y={9.5} className="cmp-cartouche-title">Marrow</text>
+      </g>
+    </g>
+  )
+}
+
+// Plan item 426: Hollowell's glass tower rises over Kingsmarket while the capital is held.
+function HollowellTower() {
+  return (
+    <g className="cmp-tower" aria-hidden="true" transform="translate(-37 27)">
+      <ellipse cx={1} cy={1} rx={6} ry={1.6} className="cmp-tower-shadow" />
+      <path d="M-4 0 V-30 L0 -35 L4 -30 V0 Z" className="cmp-tower-body" />
+      <path d="M0 -35 V0" className="cmp-tower-edge" />
+      <path d="M-4 -24 H4 M-4 -18 H4 M-4 -12 H4 M-4 -6 H4" className="cmp-tower-floors" />
+      <rect x={-2.6} y={-31} width={5.2} height={4} rx={0.8} className="cmp-tower-sign" />
+    </g>
+  )
+}
+
 // The chapter-complete moment (plan item 35), in phases: 'before' (the chapter's regions still held, Cath
 // at its pin), 'flood' (they turn green and the bunting drops), 'walk' (Cath walks to the next pin and
 // the next chapter's caption slides in), then 'done'. Reduced motion fades between the same states.
@@ -221,8 +333,16 @@ export default function CampaignMap({
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />
           </pattern>
         </defs>
+        <AtlasSheet />
         {/* Plan item 49: Marrow is an island. The coast is every hex grown outward and merged (round joins
             soften it): first the surf, then the sand. */}
+        {/* Plan item 426: paler shallows round the coast, drawn on the atlas's sea */}
+        <g className="cmp-map-shallows" aria-hidden="true">
+          {regionIds.map((id) => {
+            const c = centre(id)
+            return <polygon key={id} points={hexPoints(R * 1.34)} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`} />
+          })}
+        </g>
         <g className="cmp-map-waves" aria-hidden="true">
           {WAVES.map(([x, y]) => (
             <path key={`${x}${y}`} d={`M${x} ${y} q3 -3 6 0 t6 0`} />
@@ -240,6 +360,7 @@ export default function CampaignMap({
             return <polygon key={id} points={hexPoints(R * 1.06)} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`} />
           })}
         </g>
+        <AtlasMarks />
         {regionIds.map((id) => {
           const c = centre(id)
           const isFree = free.has(id)
@@ -303,6 +424,11 @@ export default function CampaignMap({
             </g>
           )
         })}
+        {!free.has('kingsmarket') && (
+          <g transform={`translate(${centre('kingsmarket').x.toFixed(1)} ${centre('kingsmarket').y.toFixed(1)})`}>
+            <HollowellTower />
+          </g>
+        )}
         {chapters.map((chapter, i) => {
           const p = pins[i]!
           const done = completed.includes(chapter.id)

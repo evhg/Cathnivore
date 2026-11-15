@@ -121,7 +121,8 @@
   }
   .cmp-map-host {
     position: relative;
-    margin-left: -44px;
+    /* plan item 426: she stands on the table beside the atlas, not on its sea */
+    margin-left: -16px;
     padding-bottom: 0;
   }
   .cmp-map-host .cmp-cath {
@@ -784,6 +785,54 @@ html.no-animations .campaign-screen * {
   background:
     radial-gradient(70% 60% at 50% 45%, color-mix(in srgb, var(--region-coast) 80%, var(--paper-2)) 0%, color-mix(in srgb, var(--sea) 34%, var(--paper-2)) 100%);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sea) 30%, transparent), 0 10px 24px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* Plan item 426: the map is an atlas sheet on the table; the figure itself is no longer a sea box. */
+.campaign-screen .cmp-map {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+.cmp-sheet { fill: color-mix(in srgb, var(--surface) 82%, var(--wheat)); stroke: color-mix(in srgb, var(--soil) 22%, transparent); stroke-width: 0.6; }
+.cmp-sheet-shadow { fill: color-mix(in srgb, var(--ink) 16%, transparent); }
+.cmp-sea-in { stop-color: color-mix(in srgb, var(--region-coast) 62%, var(--surface)); }
+.cmp-sea-mid { stop-color: color-mix(in srgb, var(--region-coast) 82%, var(--surface)); }
+.cmp-sea-out { stop-color: color-mix(in srgb, var(--sea) 46%, var(--region-coast)); }
+.cmp-sea-rule { fill: none; stroke: color-mix(in srgb, var(--sea) 55%, var(--soil)); stroke-width: 0.9; }
+.cmp-swell path { fill: none; stroke: color-mix(in srgb, var(--sea) 60%, var(--surface)); stroke-width: 0.7; stroke-linecap: round; opacity: 0.8; }
+.cmp-map-shallows polygon {
+  fill: color-mix(in srgb, var(--region-coast) 50%, var(--surface));
+  stroke: color-mix(in srgb, var(--region-coast) 50%, var(--surface));
+  stroke-width: 10;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+.cmp-boat-hull { fill: var(--soil); }
+.cmp-boat-mast { stroke: var(--soil); stroke-width: 0.8; }
+.cmp-boat-sail { fill: var(--surface); stroke: color-mix(in srgb, var(--soil) 60%, transparent); stroke-width: 0.5; }
+.cmp-boat-jib { fill: color-mix(in srgb, var(--clay) 70%, var(--surface)); }
+.cmp-boat-wake { fill: none; stroke: var(--surface); stroke-width: 0.7; stroke-linecap: round; }
+.cmp-gulls path { fill: none; stroke: color-mix(in srgb, var(--ink) 70%, var(--sea)); stroke-width: 0.8; stroke-linecap: round; stroke-linejoin: round; }
+.cmp-compass-ring { fill: color-mix(in srgb, var(--surface) 60%, transparent); stroke: var(--soil); stroke-width: 0.6; }
+.cmp-compass-ring.is-inner { fill: none; stroke-dasharray: 1 1.2; }
+.cmp-compass-star { fill: var(--surface); stroke: var(--soil); stroke-width: 0.5; stroke-linejoin: round; }
+.cmp-compass-star.is-minor { fill: color-mix(in srgb, var(--wheat) 60%, var(--surface)); }
+.cmp-compass-shade { fill: var(--soil); opacity: 0.75; }
+.cmp-compass-n { font: 700 7px/1 var(--font-display); text-anchor: middle; fill: var(--soil); }
+.cmp-cartouche-card { fill: var(--surface); stroke: var(--soil); stroke-width: 0.8; }
+.cmp-cartouche-rule { fill: none; stroke: color-mix(in srgb, var(--soil) 45%, transparent); stroke-width: 0.4; }
+.cmp-cartouche-scroll { fill: none; stroke: var(--soil); stroke-width: 0.8; stroke-linecap: round; }
+.cmp-cartouche-sub { font: italic 600 6.5px/1 var(--font-display); text-anchor: middle; fill: var(--soil); }
+.cmp-cartouche-title { font: 700 11px/1 var(--font-display); letter-spacing: 0.06em; text-anchor: middle; fill: var(--soil); }
+.cmp-tower-shadow { fill: color-mix(in srgb, var(--ink) 25%, transparent); }
+.cmp-tower-body { fill: color-mix(in srgb, var(--corp-slate) 70%, var(--sea)); stroke: var(--corp-slate); stroke-width: 0.6; stroke-linejoin: round; }
+.cmp-tower-edge { stroke: color-mix(in srgb, var(--surface) 55%, transparent); stroke-width: 0.6; }
+.cmp-tower-floors { stroke: color-mix(in srgb, var(--surface) 30%, transparent); stroke-width: 0.4; }
+.cmp-tower-sign { fill: var(--hollowell); }
+@media (max-width: 600px) {
+  /* under 11 px on a phone's map: the title alone */
+  .cmp-cartouche-sub { display: none; }
+  .cmp-cartouche-title { transform: translateY(-3px); }
 }
 
 .cmp-map-svg {
