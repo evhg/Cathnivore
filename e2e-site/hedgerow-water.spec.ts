@@ -14,6 +14,9 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
   await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 120_000 })
   await page.addStyleTag({ content: '#intro { display: none !important; }' })
   await page.waitForTimeout(mode === '3d' ? 12_000 : 1500)
+  // The 3D camera eases in for longer than 12 s on a loaded machine; sampled mid-ease, the pond's middle read from a
+  // moving frame. Sample it settled.
+  if (mode === '3d') await page.waitForFunction(() => (window as unknown as { hedgerow: { camSettled(): boolean } }).hedgerow.camSettled(), null, { timeout: 180_000 })
   const at = await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: HG }).hedgerow
     const [c, r] = hg.game()!.level.terrain!.water[0]!

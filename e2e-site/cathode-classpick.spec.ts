@@ -264,7 +264,9 @@ test('at D she stands whole between the list and the sheet, and keys 1-5 change 
     const t0 = Date.now()
     await page.keyboard.press(String(i + 1))
     await expect(canvas).toHaveAttribute('data-class', cls, { timeout: 650 })
-    expect(Date.now() - t0).toBeLessThan(650 + 200)
+    // The 650 ms wait above is the rule; this wall-clock check adds the key press's and the polls' round trips, which
+    // at swiftshader's few fps on the release machine read 859-921 ms (2026-11-14/15) with the class already changed.
+    expect(Date.now() - t0).toBeLessThan(650 + 400)
     // After the audition's cut eases home (3 s), the settled framing.
     await page.waitForTimeout(3600)
     const m = await page.evaluate(() => {

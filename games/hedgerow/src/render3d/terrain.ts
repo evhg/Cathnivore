@@ -1754,8 +1754,10 @@ export function buildGround(level: Level): Ground {
   const windy = hasTwist(level, "wind") ? 3 : 1;
   const waterMat = water ? (water.material as THREE.MeshPhysicalMaterial) : null;
   // Plan item 330: the water's breathing colour, deeper and greener (the old pair, #3d7fa6 to #5aa3c4, read pale-blue).
-  const waterBase = new THREE.Color("#2b6578");
-  const waterLight = new THREE.Color("#3b8299");
+  // Release 2026-11-15: a shade lighter and bluer (were #2b6578 and #3b8299): item 360's day key (less sky fill, a
+  // lower sun) left the lit water ΔE 18 darker than the 2D pond (hedgerow-water.spec allows 15).
+  const waterBase = new THREE.Color("#3a809a");
+  const waterLight = new THREE.Color("#4d9ab6");
   const update = (t: number, dt: number) => {
     timeU.value = t * windy;
     cloudOff.value.x -= dt * 0.006 * windy;
