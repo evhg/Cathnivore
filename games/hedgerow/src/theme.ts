@@ -1189,8 +1189,9 @@ export function mouthDepot(level: Level, path: Level["path"], L: Layout): { x: n
   for (let k = 0; k < 2; k++) {
     const c = g0c + Math.sign(g1c - g0c) * Math.min(k, Math.abs(g1c - g0c));
     const r = g0r + Math.sign(g1r - g0r) * Math.min(k, Math.abs(g1r - g0r));
-    const x = Math.max(4, Math.min(L.width - size - 4, L.offX + (c + 0.5) * s - size / 2));
-    const y = Math.max(4, Math.min(L.height - size - 4, L.offY + (r + 0.5) * s - size / 2));
+    // Plan item 432: 8 px inside the canvas edge (at 4 it read as squeezed against the phone's edge).
+    const x = Math.max(8, Math.min(L.width - size - 8, L.offX + (c + 0.5) * s - size / 2));
+    const y = Math.max(8, Math.min(L.height - size - 8, L.offY + (r + 0.5) * s - size / 2));
     if (!onPlot(x, y)) return { x, y, size, cell: k };
   }
   return null;

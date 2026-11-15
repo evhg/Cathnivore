@@ -4976,8 +4976,8 @@ function syncDepots(g: Game): void {
       const tries = side === "left" || side === "right" ? [y, sign.top - 6 - dsz, sign.bottom + 6] : [x, sign.left - 6 - dsz, sign.right + 6];
       let placed = false;
       for (const t of tries) {
-        const clampY = Math.max(canvas.top + 4, Math.min(canvas.bottom - dsz - 4, side === "left" || side === "right" ? t : y));
-        const clampX = Math.max(canvas.left + 4, Math.min(canvas.right - dsz - 4, side === "left" || side === "right" ? x : t));
+        const clampY = Math.max(canvas.top + 8, Math.min(canvas.bottom - dsz - 8, side === "left" || side === "right" ? t : y));
+        const clampX = Math.max(canvas.left + 8, Math.min(canvas.right - dsz - 8, side === "left" || side === "right" ? x : t));
         // A clamp that pulls it onto the field (a top margin shorter than the depot) rules the spot out.
         const meetsField = clampX < fieldR && clampX + dsz > fieldL && clampY < fieldB && clampY + dsz > fieldT;
         const meetsSign = clampX < sign.right && clampX + dsz > sign.left && clampY < sign.bottom && clampY + dsz > sign.top;
