@@ -101,7 +101,7 @@ export interface FrontScene {
   /** Plan item 313: the class pick's weapon, lit by this renderer in the class's key colour, as a turntable reel. */
   gunReel(weaponCls: string, cls: string, still: boolean): GunReel | null;
   /** Plan item 313: the names' rack thumbnail of a weapon class, from the same meshes. */
-  gunIcon(weaponCls: string): string | null;
+  gunIcon(weaponCls: string, cls?: string): string | null;
   readonly stats: { frames: number; drawCalls: number; triangles: number; cathTriangles: number; ms: number };
 }
 
@@ -1123,8 +1123,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     gunReel(weaponCls, cls, still) {
       return gunReel(world.renderer, weaponCls, CLASS_KEY[cls] ?? [1, 1, 1], still);
     },
-    gunIcon(weaponCls) {
-      return gunIcon(world.renderer, weaponCls);
+    gunIcon(weaponCls, cls) {
+      return gunIcon(world.renderer, weaponCls, cls ? CLASS_KEY[cls] : undefined);
     },
   };
   return scene;

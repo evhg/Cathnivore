@@ -509,3 +509,53 @@ test('the phone class pick names every class on a tab', async ({ page, hasTouch 
     expect(Math.abs(m.gutters[0]! - m.gutters[1]!), s).toBeLessThanOrEqual(2)
   }
 })
+
+// Plan item 423: five weapons told apart at a glance: each class shows its own gun (the Wirewitch's smart SMG and
+// the Fixer's launcher, not the sidearm both start the sheet with), their drawn silhouettes overlap little, the
+// desktop rack's guns are 110 px wide or more, and each name is the sim's.
+test('the five classes show five different guns, by name and silhouette', async ({ page, hasTouch }) => {
+  test.setTimeout(300_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const sel = hasTouch ? '.cp-dot-gun .wa-body' : '.cp-opt-gear'
+  if (!hasTouch) {
+    const widths = await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width))
+    expect(widths).toHaveLength(5)
+    for (const w of widths) expect(w).toBeGreaterThanOrEqual(110)
+  }
+  // Pairwise IoU of the drawn profiles (the phone tabs' silhouettes; the same art stands in on the desktop rack).
+  const iou = await page.evaluate(async () => {
+    const ds = [...document.querySelectorAll<HTMLElement>('.cp-dot-gun')].map((g) => g.querySelector('.wa-body')!.getAttribute('d')!)
+    const masks = ds.map((d) => {
+      const c = document.createElement('canvas')
+      c.width = 240
+      c.height = 80
+      const x = c.getContext('2d')!
+      x.fill(new Path2D(d))
+      const px = x.getImageData(0, 0, 240, 80).data
+      const m = new Uint8Array(240 * 80)
+      for (let i = 0; i < m.length; i++) m[i] = px[i * 4 + 3]! > 127 ? 1 : 0
+      return m
+    })
+    let worst = 0
+    for (let a = 0; a < masks.length; a++)
+      for (let b = a + 1; b < masks.length; b++) {
+        let i = 0
+        let u = 0
+        for (let k = 0; k < masks[a]!.length; k++) {
+          i += masks[a]![k]! & masks[b]![k]!
+          u += masks[a]![k]! | masks[b]![k]!
+        }
+        worst = Math.max(worst, i / u)
+      }
+    return { n: masks.length, worst }
+  })
+  expect(iou.n).toBe(5)
+  expect(iou.worst).toBeLessThan(0.6)
+  const names: Record<string, string> = { ghost: 'Widowmaker', butcher: 'Street Sweeper', gunslinger: 'Old Testament', wirewitch: 'Candor Seeker', fixer: 'Bargain Bin' }
+  for (const cls of CLASSES) {
+    await pick(page, cls, hasTouch)
+    await expect(page.locator('.cp-weapon-name')).toHaveText(new RegExp(names[cls]!, 'i'))
+  }
+})

@@ -69,6 +69,20 @@ export const STARTING_WEAPON: Record<ClassId, string> = {
   fixer: "kestrel",
 };
 
+/**
+ * Plan item 423: each class's signature weapon, the one the class pick shows and the first job hands over on the
+ * walkway (`CLASS_WEAPON` in game/progress.ts names the same guns: a unit test keeps their weapon classes equal).
+ * The sheet's level-1 STARTING_WEAPON stays a sidearm for the Wirewitch and the Fixer, but the pick showed that
+ * sidearm as their gun, so three of the five classes read as the same grey pistol.
+ */
+export const CLASS_SIGNATURE: Record<ClassId, string> = {
+  ghost: "widowmaker",
+  butcher: "streetSweeper",
+  gunslinger: "oldTestament",
+  wirewitch: "candorSeeker",
+  fixer: "bargainBin",
+};
+
 /** A fresh level-1 Cath of a class: coat, gloves, boots, a fedora, her class weapon and the Pin. */
 export function newCharacter(cls: ClassId, difficulty: Difficulty = "noir"): Character {
   return {

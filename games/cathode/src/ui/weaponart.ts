@@ -14,9 +14,11 @@ const ART: Record<WeaponClass, { body: string; detail: string }> = {
     body: "M70 30 L78 24 H96 V22 H104 V26 H206 Q210 26 210 30 V34 Q210 36 206 36 H140 V40 Q140 48 132 48 H112 L104 52 L96 74 Q94 78 88 78 H72 Q64 78 66 70 L74 46 Q70 42 70 36 Z",
     detail: "M104 28 H138 V46 H104 Z M110 30 V44 M121 30 V44 M132 30 V44 M112 48 Q110 60 122 62 L126 48 M200 26 V21 H205 V26 M78 52 H94 M76 60 H92",
   },
+  // Plan item 423: the Butcher's Street Sweeper as a short, fat drum-fed street gun (a skeleton stock, a drum
+  // under the barrel), not a long gun with the Ghost's rifle's outline.
   shotgun: {
-    body: "M10 40 L64 30 H220 V38 H178 V46 H112 L100 50 L92 62 Q88 66 82 64 L70 58 L22 60 Q10 60 10 50 Z",
-    detail: "M64 38 H220 M128 38 V46 M140 38 V46 M152 38 V46 M164 38 V46 M100 50 Q104 60 114 58 L116 50 M220 32 H228 V36 H220",
+    body: "M22 30 H38 V35 H74 V30 H196 V44 H120 L112 50 H104 L96 70 Q94 74 88 74 H78 Q72 74 74 68 L82 46 H74 V42 H38 V60 H22 Z M126 44 Q126 74 150 74 Q174 74 174 50 V44 Z",
+    detail: "M30 40 V52 M74 37 H196 M150 52 m-12 0 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 M104 50 Q106 60 114 58 M196 32 H204 V36 H196",
   },
   sniper: {
     body: "M8 42 L60 34 H226 V40 H136 V46 H102 L94 50 L88 64 Q85 68 79 66 L68 60 L24 62 Q8 62 8 52 Z",
@@ -30,13 +32,18 @@ const ART: Record<WeaponClass, { body: string; detail: string }> = {
     body: "M10 40 L56 30 H204 V40 H160 V64 Q160 68 156 68 H146 Q142 68 142 64 V40 H118 L110 64 Q108 70 102 70 H90 Q84 70 85 64 L92 44 L22 58 Q10 58 10 48 Z",
     detail: "M118 40 Q118 52 130 52 L134 40 M96 22 H140 V30 M204 33 H222 V37 H204",
   },
+  // Plan item 423: the Fixer's Bargain Bin as a launcher you can't take for a bar: a fat tube with a flared venturi
+  // behind and a belled muzzle, a pistol grip, a foregrip and a raised sight block.
   launcher: {
-    body: "M20 26 H210 Q216 26 216 32 V44 Q216 50 210 50 H20 Q14 50 14 44 V32 Q14 26 20 26 Z",
-    detail: "M100 50 L94 70 Q92 74 86 74 H78 L84 50 M140 50 L136 64 H124 M60 26 V50 M180 26 V50 M110 16 H150 V26",
+    body: "M26 26 H194 L214 18 V58 L194 50 H26 L10 56 V20 Z M90 50 L83 72 Q82 76 87 76 H97 L104 50 Z M140 50 V68 Q140 70 142 70 H150 Q152 70 152 68 V50 Z M108 26 V14 Q108 12 110 12 H134 Q136 12 136 14 V26 Z",
+    detail: "M60 26 V50 M64 26 V50 M180 26 V50 M184 26 V50 M104 50 Q104 62 114 62 L118 50 M114 19 H130 M26 38 H50",
   },
+  // Plan item 423: the Wirewitch's Candor Seeker as a smart SMG, not a pistol with a sight: a boxy receiver with a
+  // sensor block on top and its aerial, a long magazine ahead of the grip, a short wire stock, the cable looping
+  // from the stock to the sensor.
   smart: {
-    body: "M54 26 H186 V42 H160 L156 46 H118 L112 68 Q110 74 103 74 H86 Q79 74 80 67 L86 46 H66 Q54 46 54 36 Z",
-    detail: "M118 46 Q118 58 132 58 H140 L144 46 M96 16 H134 V26 M120 34 H176 M186 30 H196 V38 H186",
+    body: "M44 36 Q44 30 50 30 H68 V26 H172 V34 H188 V40 H172 V48 H136 V76 H124 V48 H112 L106 70 Q104 74 98 74 H88 Q82 74 84 68 L90 48 H72 L64 54 H50 Q44 54 44 48 Z M98 26 V14 Q98 12 100 12 H140 Q142 12 142 14 V26 Z",
+    detail: "M150 26 L164 6 M112 48 Q112 60 122 60 M104 19 H136 M54 36 V48 M60 36 V48 M100 14 Q80 4 70 18 Q66 26 56 30 M172 30 H180 M124 56 H136 M124 64 H136",
   },
   melee: {
     body: "M30 36 H170 L200 40 L170 44 H30 Q24 44 24 40 Q24 36 30 36 Z",

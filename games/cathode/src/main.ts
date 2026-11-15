@@ -71,7 +71,7 @@ const still = (): boolean => reducedMotion();
 let scene: FrontScene | null = null;
 /** Plan item 313: the pick's class weapon, lit by the street's renderer in the class's key colour. */
 const pickGunReel = (weaponCls: string, cls: ClassId, still: boolean) => scene?.gunReel(weaponCls, cls, still) ?? null;
-const pickGunIcon = (weaponCls: string) => scene?.gunIcon(weaponCls) ?? null;
+const pickGunIcon = (weaponCls: string, cls?: ClassId) => scene?.gunIcon(weaponCls, cls) ?? null;
 let sceneReady: Promise<FrontScene | null> = Promise.resolve(null);
 function webgl2(): boolean {
   try {

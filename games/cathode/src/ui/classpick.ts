@@ -7,7 +7,7 @@
 // (or Enter, or Space) for 600 ms while the heartbeat thumps twice; letting go early cancels.
 
 import { CLASSES, TREES } from "../sim/classes";
-import { STARTING_WEAPON, newCharacter } from "../sim/character";
+import { CLASS_SIGNATURE, newCharacter } from "../sim/character";
 import { CLASS_START_ATTRIBUTES } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId } from "../sim/types";
 import { WEAPON_BASES } from "../sim/weapons";
@@ -34,7 +34,8 @@ export interface ClassPickHooks {
    */
   gunReel?(weaponCls: string, cls: ClassId, still: boolean): { readonly total: number; readonly frames: string[] } | null;
   /** Plan item 313: a weapon class's lit thumbnail for the names' rack, from the same meshes. null keeps the stencil. */
-  gunIcon?(weaponCls: string): string | null;
+  /** Plan item 423: `cls` rims the thumbnail in that class's key colour. */
+  gunIcon?(weaponCls: string, cls?: ClassId): string | null;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -99,7 +100,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     el("span", "cp-opt-role", body, sig.name).title = sig.theme;
     // Plan item 334: the four unlabelled pips said nothing; a labelled three-step range meter says how close she
     // fights (from her starting gun's effective range).
-    const gearBase = WEAPON_BASES[STARTING_WEAPON[cls]];
+    const gearBase = WEAPON_BASES[CLASS_SIGNATURE[cls]];
     const reach = rangeStep(gearBase?.range ?? 0);
     const meter = el("span", "cp-opt-meter", body);
     meter.dataset.step = String(reach);
@@ -120,6 +121,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       const gear = el("span", "cp-opt-gear", opt);
       gear.setAttribute("aria-hidden", "true");
       gear.dataset.weapon = gearBase.cls;
+      gear.dataset.cls = cls;
       gear.innerHTML = weaponArtSvg(gearBase.cls);
     }
     opt.addEventListener("click", () => select(cls, true));
@@ -134,7 +136,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const swapIcon = () => {
     const gear = gears.shift();
     if (!gear) return;
-    const url = hooks.gunIcon?.(gear.dataset.weapon ?? "");
+    const url = hooks.gunIcon?.(gear.dataset.weapon ?? "", gear.dataset.cls as ClassId | undefined);
     // Plan item 334: the pick opens before the street's renderer is up, so a gun that can't be shot yet waits its
     // turn again (it kept the flat stencil for good).
     if (!url && iconTries++ < 40) {
@@ -177,7 +179,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     d.dataset.cls = cls;
     // Plan item 375: each page dot is a named tab, its gun's silhouette over the class's name, so the four classes
     // not shown still say who they are.
-    const base = WEAPON_BASES[STARTING_WEAPON[cls]];
+    const base = WEAPON_BASES[CLASS_SIGNATURE[cls]];
     if (base) el("span", "cp-dot-gun", d).innerHTML = weaponArtSvg(base.cls);
     el("span", "cp-dot-name", d, CLASSES[cls].name);
     d.addEventListener("click", () => select(cls, false));
@@ -357,7 +359,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
 
     weapon.replaceChildren();
     const fresh = newCharacter(cls);
-    const w = WEAPON_BASES[STARTING_WEAPON[cls]];
+    const w = WEAPON_BASES[CLASS_SIGNATURE[cls]];
     if (w) {
       // Plan item 199: the class weapon as a prop on the armoury's rain-wet case table, under a lamp: its profile
       // (item 112's line art) extruded in layers so it has a body, turning slowly; a class change slides the new
@@ -431,7 +433,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       }
       el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);
     }
-    el("span", "cp-weapon-name", weapon, fresh.equipment.weapon1?.name ?? w?.name ?? "");
+    el("span", "cp-weapon-name", weapon, w?.name ?? fresh.equipment.weapon1?.name ?? "");
     if (w) {
       const nums = el("dl", "cp-weapon-nums", weapon);
       const pair = (k: string, v: string) => {

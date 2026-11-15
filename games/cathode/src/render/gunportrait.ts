@@ -134,6 +134,13 @@ export interface GunReel {
 }
 
 const GUN_MODELS: ReadonlySet<string> = new Set<GunModel>(["pistol", "shotgun", "sniper", "revolver", "smg", "rifle", "launcher"]);
+/** Plan item 423: weapon classes drawn with another class's mesh (the Candor Seeker is an SMG with a brain: game/weapons.ts
+ * gives it the smg model), so the Wirewitch's case table shows her gun, not a stencil. */
+const MODEL_OF: Readonly<Record<string, GunModel>> = { smart: "smg" };
+/** The display mesh for a weapon class, or null for one with none (melee). */
+export function gunModelFor(weaponCls: string): GunModel | null {
+  return GUN_MODELS.has(weaponCls) ? (weaponCls as GunModel) : MODEL_OF[weaponCls] ?? null;
+}
 const reels = new Map<string, GunReel>();
 
 /** Plan item 313: the names' rack thumbnails: the same meshes at the still three-quarter, lit white (the rack's CSS
@@ -141,15 +148,18 @@ const reels = new Map<string, GunReel>();
 export const GUN_ICON = { width: 300, height: 120 };
 const icons = new Map<string, string>();
 
-/** One still thumbnail of a weapon class's gun (cached), or null for a class with no gun model. */
-export function gunIcon(renderer: THREE.WebGLRenderer, weaponCls: string): string | null {
-  if (!GUN_MODELS.has(weaponCls)) return null;
-  const had = icons.get(weaponCls);
+/** One still thumbnail of a weapon class's gun (cached), or null for a class with no gun model. Plan item 423: rimmed
+ * in its class's key colour when one is given (white otherwise), so the rack's guns carry their class's light. */
+export function gunIcon(renderer: THREE.WebGLRenderer, weaponCls: string, rim: [number, number, number] = [0.9, 0.92, 1]): string | null {
+  const model = gunModelFor(weaponCls);
+  if (!model) return null;
+  const id = `${weaponCls}:${rim.join(",")}`;
+  const had = icons.get(id);
   if (had) return had;
-  const studio = new GunStudio(renderer, weaponCls as GunModel, { ...GUN_ICON, frames: 1, rim: [0.9, 0.92, 1] });
+  const studio = new GunStudio(renderer, model, { ...GUN_ICON, frames: 1, rim });
   const url = studio.shoot(0);
   studio.dispose();
-  icons.set(weaponCls, url);
+  icons.set(id, url);
   return url;
 }
 
@@ -163,12 +173,13 @@ const GUN_REEL_DELAY_MS = 1200;
  * at once; with `still` (reduced motion, screenshots) it is the only one. The rest are shot from GUN_REEL_DELAY_MS on. null for a class with no gun model.
  */
 export function gunReel(renderer: THREE.WebGLRenderer, weaponCls: string, rim: [number, number, number], still: boolean): GunReel | null {
-  if (!GUN_MODELS.has(weaponCls)) return null;
+  const model = gunModelFor(weaponCls);
+  if (!model) return null;
   const total = still ? 1 : GUN_REEL.frames;
   const id = `${weaponCls}:${rim.join(",")}:${total}`;
   const had = reels.get(id);
   if (had) return had;
-  const studio = new GunStudio(renderer, weaponCls as GunModel, { ...GUN_REEL, frames: GUN_REEL.frames, rim });
+  const studio = new GunStudio(renderer, model, { ...GUN_REEL, frames: GUN_REEL.frames, rim });
   const reel: GunReel = { total, frames: [studio.shoot(0)] };
   reels.set(id, reel);
   if (total <= 1) {
