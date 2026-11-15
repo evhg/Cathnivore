@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error: a plain ES module shared with the Node script
-import { KEYART_MANIFEST, KEYART_SOURCES, keyartHash } from '../scripts/keyart-sources.mjs'
+import { KEYART_MANIFEST, KEYART_SOURCES, keyartHash, POSTER_MANIFEST, posterHash } from '../scripts/keyart-sources.mjs'
 
 const manifest = JSON.parse(readFileSync(KEYART_MANIFEST, 'utf8')) as Record<string, string>
 
@@ -15,6 +15,12 @@ describe('site key art is fresh', () => {
       expect(manifest[game], `re-shoot it: npm run build:site, preview on :4186, npm run keyart ${game}`).toBe(keyartHash(game))
     })
   }
+
+  // Plan item 363: NIGHT SHIFT's front-door posters, rendered from the same title scene.
+  it("NIGHT SHIFT's front-door posters were rendered after the title scene last changed", () => {
+    const m = JSON.parse(readFileSync(POSTER_MANIFEST, 'utf8')) as { hash: string }
+    expect(m.hash, 're-render them: build:site, preview on :4186, CATHODE_URL=http://localhost:4186/nightshift/ node scripts/cathode-poster.mjs').toBe(posterHash())
+  })
 
   it('tells a changed art file from the shot one', () => {
     const files = (KEYART_SOURCES as Record<string, string[]>).runnel!

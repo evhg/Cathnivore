@@ -5,6 +5,7 @@
 //   CATHODE_URL=http://localhost:4186/nightshift/ node scripts/cathode-poster.mjs
 import { chromium } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
+import { POSTER_MANIFEST, posterHash } from './keyart-sources.mjs'
 const base = process.env.CATHODE_URL ?? 'http://localhost:4186/nightshift/'
 const out = process.env.OUT ?? 'games/cathode/public'
 const b = await chromium.launch({
@@ -52,3 +53,5 @@ for (const [name, vw, vh, widths] of [['front-poster', 1440, 900, [1440, 960, 64
   await ctx.close()
 }
 await b.close()
+// Plan item 363: record what the posters were rendered from (tests/keyart-fresh.test.ts fails once it changes).
+if (out === 'games/cathode/public') writeFileSync(POSTER_MANIFEST, `${JSON.stringify({ hash: posterHash() }, null, 2)}\n`)
