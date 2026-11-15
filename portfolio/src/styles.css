@@ -393,7 +393,8 @@ main,
     position: relative;
     z-index: var(--z-page);
   }
-  .hero h1 { font-size: min(var(--fs-h1), 7.4rem); }
+  /* Plan item 409: 7rem (was 7.4) so the gold full stop keeps a 30 px+ gutter from the wall of work at 1440. */
+  .hero h1 { font-size: min(var(--fs-h1), 7rem); }
   .hero .lede { max-width: min(600px, calc(100vw - min(48.8vw, 702px) - 220px)); }
   .hero > .scroll-cue {
     z-index: var(--z-page);
