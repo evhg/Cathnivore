@@ -3939,7 +3939,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** five distinct mugshot images (pairwise pixel difference over 10%); each mugshot's luminance spans 70% of the range or more; every List image has alt text and is at least 2x its drawn size; cathode-front specs and cathode-type pass; shots P and D before and after.
 - **Size:** 2
 
-## 413. [ ] Cathnivore desktop: the board is the hero (bigger, deeper, less token clutter)
+## 413. [ ] Cathnivore desktop: the board is the hero (bigger, deeper, less token clutter) *(lane A, in progress)*
 - **Why:** `plan1115c/cath-game-D` the board (575-1155 x 120-685) is about 40% of the width, flanked by Cath (370-505 x 380-690) and the producers (1135-1330 x 310-690); every hex wears the same orange Outlet stacks and blue discs (Kingsmarket 790-950 x 340-470), washing out the terrain art; `cath-game-P` (20-370 x 170-520) the same clutter. VISION 2: big, rich, legible; and the corporate tokens should be glossy plastic against the ink farm art, not the same style.
 - **Build:** one glossy Hollowell building per region with a count badge in place of the loose Outlet stacks (cold palette, a specular highlight, no ink outline); the terrain richer and the tiles bevelled with a board shadow; at D the board at 52% of the width or more, the producers on a narrower rail.
 - **Accept:** at 1440x900 the board 750 px wide or more (360 at 390x844); at most one Outlet element per region, a badge from 2; corporate fills from `--corp-*` tokens (ui-css-lint passes); no hex meets Cath's or a producer's box; table and board specs pass; shots P and D before and after.
