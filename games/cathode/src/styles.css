@@ -3083,6 +3083,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-tree { display: grid; grid-template-columns: 96px 1fr; gap: 8px; align-items: center; } /* px-ok */
   .cp-sheet[data-dossier] .cp-tree-name { justify-self: start; }
   .cp-sheet[data-dossier] .cp-tree-theme { display: block; font-size: var(--fs-1); line-height: 1.25; color: var(--ink-2); text-wrap: pretty; }
+  /* Plan item 398: the weapon's three numbers keep clear of the panel's edge (MAGAZINE ended 4 px from it) */
+  .cp-sheet[data-dossier] .cp-weapon-nums { gap: 12px; } /* px-ok */
+  .cp-sheet[data-dossier] .cp-weapon-nums dt { letter-spacing: .02em; }
 }
 
 /* Plan item 340: the menu hint's parts never break inside ('TOMAS REED · THE HARBOUR · A DEBT TAG'). */
