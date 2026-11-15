@@ -2039,7 +2039,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     return { index: chosen.index, count: countOf(chosen) }
   })()
   const disabledSell: { count: 1 | 2 | 3; missing: number }[] = []
-  if (rules.sell && !gatedNow && sellEntries.length === 0) {
+  // Plan item 418 (bug seen in the shots): only when Produce is what's missing; with Produce in hand Sell can be off for
+  // another reason (a decision pending), and the strip read 'Need -2 more Produce'.
+  if (rules.sell && !gatedNow && sellEntries.length === 0 && active.resources.produce < 1) {
     // Plan item 384: with no Produce at all the one Sell card waits on the shelf as a single strip.
     disabledSell.push({ count: 1, missing: 1 - active.resources.produce })
   }

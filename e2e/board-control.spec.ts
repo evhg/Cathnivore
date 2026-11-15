@@ -12,6 +12,9 @@ test('held land greys, freed land warms and holds stalls', async ({ page }) => {
     .poll(() => page.evaluate(() => (document.querySelector('.end-screen') ? 99 : Number(document.querySelector('.map-wrap svg.map[data-round]')?.getAttribute('data-round') ?? 0))), { timeout: 90_000 })
     .toBeGreaterThanOrEqual(5)
   test.skip(await page.locator('.end-screen').isVisible(), 'the game ended early')
+  // Plan item 418's bug: no why-not ever asks for a negative amount (a Sell strip read 'Need -2 more Produce' while a
+  // decision was pending).
+  expect(await page.evaluate(() => /Need\s*[-\u2212]\d/.test(document.body.innerText))).toBe(false)
   const hexes = page.locator('.map-wrap .region-hex')
   await expect.poll(() => hexes.count()).toBeGreaterThanOrEqual(7)
   const controls = await hexes.evaluateAll((gs) => gs.map((g) => g.getAttribute('data-control')))
