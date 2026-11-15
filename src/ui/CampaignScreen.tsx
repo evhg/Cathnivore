@@ -412,7 +412,8 @@ export default function CampaignScreen({
         <div className="cmp-header-text">
           <p className="cmp-kicker">The liberation of Marrow</p>
           <h1>Campaign</h1>
-          <p className="cmp-progress">
+          {/* Plan item 398: at D the bar's words are hidden (the ledger says them), so the bar says them on hover. */}
+          <p className="cmp-progress" title={`${done} of ${chapters.length} chapters won`}>
             {/* The map has seven regions and chapter 1 frees two, so the header counts both (critique 2026-11-03).
                 Item 385: on a desktop the ledger under the map already says both, so the header keeps the bar alone. */}
             <span className={wide ? 'cmp-progress-text visually-hidden' : 'cmp-progress-text'}>
