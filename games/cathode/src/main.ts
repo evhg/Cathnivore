@@ -507,7 +507,7 @@ function stagePick(): void {
   // from the wardrobe's step-back framing), across the screen's width.
   if (innerWidth < innerHeight) {
     const head = document.querySelector(".cp .cp-title")?.getBoundingClientRect();
-    const words = Array.from(document.querySelectorAll(".cp .cp-kicker, .cp .cp-nameplate"))
+    const words = Array.from(document.querySelectorAll(".cp .cp-kicker, .cp .cp-nameplate, .cp .cp-dots"))
       .map((e) => e.getBoundingClientRect())
       .filter((b) => b.height > 0);
     if (!head || !words.length) {
@@ -515,6 +515,7 @@ function stagePick(): void {
       return;
     }
     const gap = Math.round(innerHeight * 0.012);
+    // Plan item 397: the class title is gone on a phone, so the tabs under her are the stage's foot.
     // Plan item 381: at hero size: the stage runs on behind her name (cut at about mid-shin, the name's shade over
     // her feet) and across nearly the screen's width, so her slung gun no longer caps her height (she stood about
     // 290 px of a 390x844 screen).
@@ -522,7 +523,8 @@ function stagePick(): void {
       left: Math.round(innerWidth * 0.02),
       top: head.bottom + gap,
       right: Math.round(innerWidth * 0.98),
-      bottom: Math.min(...words.map((b) => b.top)) + Math.round(innerHeight * 0.06),
+      // Over the tabs (item 397), her shins run a little further down behind them than behind the old title.
+      bottom: Math.min(...words.map((b) => b.top)) + Math.round(innerHeight * (document.querySelector(".cp .cp-nameplate")?.getBoundingClientRect().height ? 0.06 : 0.09)),
     });
     return;
   }

@@ -207,6 +207,11 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   // Plan item 210: on an upright phone the sheet is a paper dossier clipped over the street (styles.css).
   sheet.dataset.dossier = "";
   el("p", "cp-label", sheet, "Starts with");
+  // Plan item 397: the phone's key to the bars' marks (hidden at D).
+  const key = el("p", "cp-attrs-key", sheet);
+  key.setAttribute("aria-hidden", "true");
+  el("span", "cp-key-avg", key, "Average");
+  el("span", "cp-key-cls", key, "Other classes");
   const attrs = el("dl", "cp-attrs", sheet);
   const bars = new Map<AttributeId, { row: HTMLElement; n: HTMLElement; v: number }>();
   for (const a of ATTRIBUTES) {
@@ -217,6 +222,15 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     bar.setAttribute("aria-hidden", "true");
     el("span", "cp-bar-fill", bar);
     for (let t = 1; t < ATTR_MAX / 5; t++) el("span", "cp-tick", bar).style.setProperty("--t", String(t / (ATTR_MAX / 5)));
+    // Plan item 397: on an upright phone each stat is a bar read against the field: a tick where each other class
+    // starts and a notch at the five classes' average (hidden at D, where the dials and her edge do this).
+    for (const c of CLASS_IDS) {
+      const m = el("span", "cp-mark", bar);
+      m.dataset.cls = c;
+      m.style.setProperty("--t", String(CLASS_START_ATTRIBUTES[c][a] / ATTR_MAX));
+    }
+    const mean = CLASS_IDS.reduce((t, c) => t + CLASS_START_ATTRIBUTES[c][a], 0) / CLASS_IDS.length;
+    el("span", "cp-avg", bar).style.setProperty("--t", String(mean / ATTR_MAX));
     const n = el("span", "cp-attr-n", dd, "0");
     bars.set(a, { row, n, v: 0 });
   }
@@ -313,6 +327,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     nameplate.textContent = def.name;
     fitName();
     for (const [c, d] of dotFor) d.classList.toggle("is-on", c === cls);
+    for (const m of attrs.querySelectorAll<HTMLElement>(".cp-mark")) m.classList.toggle("is-own", m.dataset.cls === cls);
     line.textContent = `“${copy.line}”`;
     plays.textContent = copy.playsLike;
     speak(copy.line);
@@ -432,7 +447,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
 
     trees.replaceChildren();
     for (const t of def.trees) {
-      const li = el("li", "cp-tree", trees);
+      const li = el("li", "cp-tree skill-row", trees);
       el("span", "cp-tree-name", li, TREES[t].name);
       el("span", "cp-tree-theme", li, TREES[t].theme);
     }

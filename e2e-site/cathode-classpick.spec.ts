@@ -82,19 +82,36 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   expect(ratio).toBeGreaterThanOrEqual(4.5)
   await page.addStyleTag({ content: '.cp-attrs { visibility: visible !important; }' })
   if (!hasTouch) return
-  // Plan item 245: no row of names shows; the class is named in the display face at 40 px or more, whole on the
-  // screen, with a page dot per class (the names' row stays in the DOM for keyboards and screen readers).
+  // Plan item 245: no row of names shows; a page tab per class (the names' row stays in the DOM for keyboards and
+  // screen readers). Plan item 397: the class is named once, on the open tab (the big title went); the three skill
+  // trees are rows with their effect; the stats are bars marked with the other classes and the average; the gun's
+  // slab spans the panel.
   const plate = await page.evaluate(() => {
-    const n = document.querySelector<HTMLElement>('.cp-nameplate')!
+    const n = document.querySelector<HTMLElement>('.cp-dot.is-on .cp-dot-name')!
     const r = n.getBoundingClientRect()
     const list = document.querySelector('.cp-list')!.getBoundingClientRect()
-    return { text: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), left: r.left, right: r.right, sw: n.scrollWidth, cw: n.clientWidth, list: list.width * list.height, dots: document.querySelectorAll('.cp-dot').length }
+    const shown = (e: Element) => (e as HTMLElement).offsetParent !== null && e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== 'hidden'
+    const ghosts = [...document.querySelectorAll('.cp *')].filter((e) => !e.closest('.cp-list') && shown(e) && [...e.childNodes].some((c) => c.nodeType === 3 && c.textContent!.trim().toLowerCase() === 'ghost')).length
+    const rows = [...document.querySelectorAll('.cp-sheet .skill-row')].map((row) => {
+      const fx = row.querySelector<HTMLElement>('.cp-tree-theme')!
+      return { text: fx.textContent!.trim(), size: parseFloat(getComputedStyle(fx).fontSize), shown: shown(fx) }
+    })
+    const art = document.querySelector('.cp-weapon-art')!.getBoundingClientRect()
+    const panel = document.querySelector('.cp-weapon')!.getBoundingClientRect()
+    const marks = [...document.querySelectorAll('.cp-attr')].map((a) => ({ marks: [...a.querySelectorAll('.cp-mark')].filter(shown).length, avg: shown(a.querySelector('.cp-avg')!) }))
+    return { text: n.textContent, left: r.left, right: r.right, list: list.width * list.height, dots: document.querySelectorAll('.cp-dot').length, title: shown(document.querySelector('.cp-nameplate')!), ghosts, rows, art: art.width / panel.width, marks }
   })
+  const ps = JSON.stringify(plate)
   expect(plate.text).toBe('Ghost')
-  expect(plate.size, JSON.stringify(plate)).toBeGreaterThanOrEqual(40)
-  expect(plate.left >= 0 && plate.right <= 390 && plate.sw <= plate.cw + 1, JSON.stringify(plate)).toBe(true)
-  expect(plate.list, JSON.stringify(plate)).toBeLessThanOrEqual(1)
+  expect(plate.left >= 0 && plate.right <= 390, ps).toBe(true)
+  expect(plate.list, ps).toBeLessThanOrEqual(1)
   expect(plate.dots).toBe(5)
+  expect(plate.title, ps).toBe(false)
+  expect(plate.ghosts, ps).toBe(1)
+  expect(plate.rows.length, ps).toBe(3)
+  for (const r of plate.rows) expect(r.shown && r.text.length > 8 && r.size >= 12, ps).toBe(true)
+  expect(plate.art, ps).toBeGreaterThanOrEqual(0.8)
+  expect(plate.marks, ps).toEqual(Array(4).fill({ marks: 4, avg: true }))
   // Plan item 125: the whole file is one screen at 390x844 and 375x667: every stat, the weapon and the hold bar
   // inside the viewport with no scroll, text 12 px or more; her quote unfolds behind a tap.
   for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
@@ -438,13 +455,13 @@ test('on a phone a swipe changes the class, its title large and whole; keys stil
     await expect(canvas).toHaveAttribute('data-class', cls, { timeout: 5000 })
     await expect(page.locator(`.cp-dot[data-cls=${cls}]`)).toHaveClass(/is-on/)
     await page.waitForTimeout(400) // the title's 250 ms slide in
-    const m = await page.locator('.cp-nameplate').evaluate((n) => {
+    // Plan item 397: the open tab names the class (the big title went).
+    const m = await page.locator('.cp-dot.is-on .cp-dot-name').evaluate((n) => {
       const r = n.getBoundingClientRect()
-      return { text: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), left: r.left, right: r.right, sw: n.scrollWidth, cw: n.clientWidth }
+      return { text: n.textContent, left: r.left, right: r.right, sw: n.scrollWidth, cw: n.clientWidth }
     })
     const s = JSON.stringify({ cls, m })
     expect(m.text?.toLowerCase(), s).toBe(cls)
-    expect(m.size, s).toBeGreaterThanOrEqual(40)
     expect(m.left >= 0 && m.right <= 390 && m.sw <= m.cw + 1, s).toBe(true)
   }
   // A swipe the other way steps back; a short or upright drag does nothing.
@@ -457,7 +474,7 @@ test('on a phone a swipe changes the class, its title large and whole; keys stil
   await page.locator('.cp-opt[data-cls=butcher]').focus()
   await page.keyboard.press('ArrowRight')
   await expect(page.locator('.cp')).toHaveAttribute('data-class', 'gunslinger')
-  await expect(page.locator('.cp-nameplate')).toHaveText('Gunslinger')
+  await expect(page.locator('.cp-dot.is-on .cp-dot-name')).toHaveText('Gunslinger')
 })
 
 // Plan item 375: on an upright phone the five classes are named tabs (each its gun and its name at 14 px or more,
