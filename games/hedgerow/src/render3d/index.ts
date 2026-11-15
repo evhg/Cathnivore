@@ -2272,6 +2272,23 @@ export class Renderer3D {
             ridx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
           }
         }
+        // Plan item 432: the pale shallows follow the same wandering banks (the old straight rim planes read as boxes):
+        // a ribbon 0.07 wider each side, just under the water.
+        const fringe: number[] = [];
+        for (let k = 0; k < ribbon.length; k += 6) {
+          const lx = ribbon[k]!, lz = ribbon[k + 2]!, rx = ribbon[k + 3]!, rz = ribbon[k + 5]!;
+          const mx = (lx + rx) / 2, mz = (lz + rz) / 2;
+          const hw = Math.hypot(lx - mx, lz - mz) || 1;
+          const hr = Math.hypot(rx - mx, rz - mz) || 1;
+          const y = ribbon[k + 1]! - 0.006;
+          fringe.push(mx + ((lx - mx) * (hw + 0.07)) / hw, y, mz + ((lz - mz) * (hw + 0.07)) / hw, mx + ((rx - mx) * (hr + 0.07)) / hr, y, mz + ((rz - mz) * (hr + 0.07)) / hr);
+        }
+        const fgeo = new THREE.BufferGeometry();
+        fgeo.setAttribute("position", new THREE.Float32BufferAttribute(fringe, 3));
+        fgeo.setAttribute("normal", new THREE.Float32BufferAttribute(fringe.map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+        fgeo.setIndex(ridx);
+        const shallows = new THREE.Mesh(fgeo, new THREE.MeshStandardMaterial({ color: "#a9d2c8", roughness: 0.4, transparent: true, opacity: 0.75, depthWrite: false }));
+        shallows.renderOrder = 1;
         const rgeo = new THREE.BufferGeometry();
         rgeo.setAttribute("position", new THREE.Float32BufferAttribute(ribbon, 3));
         rgeo.setAttribute("uv", new THREE.Float32BufferAttribute(ribbon.flatMap((_, i) => (i % 3 === 0 ? [ribbon[i]!, ribbon[i + 2]!] : [])), 2));
@@ -2347,7 +2364,8 @@ export class Renderer3D {
         rim.renderOrder = 3;
         water.renderOrder = 2;
         stones.castShadow = true;
-        grp.add(water, rim, stones);
+        void rim;
+        grp.add(shallows, water, stones);
         this.dynamic.add(grp);
         this.oakObjs.set(`ford${f.from}`, grp);
       }
