@@ -3561,7 +3561,9 @@ float reliefShade( vec2 uv ) {
   const GHOST_GRAB = V(0.22, 0.36, -0.1);
   // Plan item 300: a low carry, her hand at the hip on the fore-end, so the rifle hangs muzzle-down by her leg (stood
   // upright at her shoulder it crossed the HOLLOWELL sign and the frame's top on the pick).
-  const GHOST_HOLD = V(0.4, -0.2, 0.14);
+  // Plan item 422: drawn in to her thigh (x 0.4 -> 0.33), so the rifle hangs against the coat in her hand, not
+  // beside her in the air.
+  const GHOST_HOLD = V(0.33, -0.2, 0.17);
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();

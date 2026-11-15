@@ -66,6 +66,9 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     // Owner, 2026-11-08: head to toe on the pick, so an upright phone's face is 45 px or more (was 70 knees-up), as
     // cathode-classpick.spec has it.
     expect(m.face.bottom - m.face.top, msg).toBeGreaterThanOrEqual(hasTouch ? 45 : 90)
+    // Plan item 422: an upright phone stands her 45% of the screen's height or more (her box, head to the feet behind
+    // the tabs; she stood 34-38% before the gun's plate went compact).
+    if (hasTouch) expect(m.body.bottom - m.body.top, msg).toBeGreaterThanOrEqual(0.45 * 844)
     if (!hasTouch) for (const o of [m.list, m.sheet]) if (o) expect(m.body.left < o.right && m.body.right > o.left, msg).toBe(false)
   }
   // A different pose per class: her posing hand in a different place for each (5 cm apart at least).

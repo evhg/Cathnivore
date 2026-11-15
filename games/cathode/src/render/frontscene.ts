@@ -151,6 +151,18 @@ export const CLASS_KEY: Record<string, [number, number, number]> = {
   wirewitch: [0.55, 0.18, 1.0],
   fixer: [0.3, 1.05, 0.06],
 };
+/** Plan item 422: where each class's key stands in her frame (m: +x her left, +y up from her feet, +z toward the
+ *  pick's lens): the Ghost's cold light high and to the side, the Butcher's low and ahead (lit from under the chin),
+ *  the Gunslinger's raking from low on her left, the Wirewitch's from over her rig, the Fixer's from her right. */
+export const CLASS_KEY_AT: Record<string, [number, number, number]> = {
+  ghost: [1.55, 2.25, 0.55],
+  butcher: [0.85, 1.0, 1.45],
+  gunslinger: [1.6, 1.45, 0.95],
+  wirewitch: [0.35, 2.55, 0.95],
+  fixer: [-1.2, 1.85, 1.2],
+};
+/** Plan item 422: the key's colour and angle ease at this rate (1/s): 95% of the way in ln(20)/12 = 250 ms. */
+export const KEY_EASE = 12;
 /**
  * Plan item 42: each class's coat in the pick (the outfit swap, 400 ms with the turn). The Ghost keeps her black
  * trench; the Butcher wears the olive field jacket, the Gunslinger the oxblood duster, the Wirewitch a waxed teal
@@ -370,13 +382,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 422: each class's key from its own angle (her frame: +x her left, +z toward the pick's lens), eased with
   // its colour: the Ghost's cold light high and to the side, the Butcher's low and ahead (lit from under the chin),
   // the Gunslinger's raking from low on her left, the Wirewitch's from over her rig, the Fixer's from her right.
-  const KEY_AT: Record<string, [number, number, number]> = {
-    ghost: [1.55, 2.25, 0.55],
-    butcher: [0.85, 1.0, 1.45],
-    gunslinger: [1.6, 1.45, 0.95],
-    wirewitch: [0.35, 2.55, 0.95],
-    fixer: [-1.2, 1.85, 1.2],
-  };
+  const KEY_AT = CLASS_KEY_AT;
   const keyPosWant = key.pos.clone();
   const coatBase = new THREE.Color(CATH_HERO.trench);
   const coatNow = coatBase.clone();
@@ -394,8 +400,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     wd.w += (wd.target - wd.w) * k;
     if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
     // Plan item 422: about 250 ms to the new colour and angle (95% of the way; it was 400 ms).
-    key.color.lerp(keyWant, 1 - Math.exp(-dt * 12));
-    key.pos.lerp(keyPosWant, 1 - Math.exp(-dt * 12));
+    key.color.lerp(keyWant, 1 - Math.exp(-dt * KEY_EASE));
+    key.pos.lerp(keyPosWant, 1 - Math.exp(-dt * KEY_EASE));
     // Plan item 129: the kit-on flash, the key light at 2.6x the moment the kit goes on, easing back over 320 ms.
     if (wd.flash > 0) wd.flash = Math.max(0, wd.flash - dt);
     const flash = wd.flash > 0 ? 1.6 * Math.pow(wd.flash / FLASH_S, 2) : 0;
@@ -468,7 +474,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Plan item 300: head room on the pick, 40 cm over her head's origin (28 cm over the hair), so a class with
     // nothing raised above her (the Ghost carries her rifle low) isn't scaled up until her hood meets the frame;
     // her face then sits level with the other four's.
-    if (cloudBody) cloud.push(new THREE.Vector3(0, 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
+    // Plan item 422: an upright phone keeps 20 cm (8 over the hair): its stage is short, and the 40 held her to about
+    // 35% of the screen's height; the faces still sit level, a little higher.
+    if (cloudBody) cloud.push(new THREE.Vector3(0, cam.aspect < 1 ? 0.2 : 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
     cloudAge = 0;
   }
   const fitPos = new THREE.Vector3();

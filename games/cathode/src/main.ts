@@ -528,7 +528,7 @@ function stagePick(): void {
       top: head.bottom + gap,
       right: Math.round(innerWidth * 0.98),
       // Over the tabs (item 397), her shins run a little further down behind them than behind the old title.
-      bottom: Math.min(...words.map((b) => b.top)) + Math.round(innerHeight * (document.querySelector(".cp .cp-nameplate")?.getBoundingClientRect().height ? 0.06 : 0.09)),
+      bottom: Math.min(...words.map((b) => b.top)) + Math.round(innerHeight * (document.querySelector(".cp .cp-nameplate")?.getBoundingClientRect().height ? 0.06 : 0.13)),
     });
     return;
   }

@@ -84,8 +84,7 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   if (!hasTouch) return
   // Plan item 245: no row of names shows; a page tab per class (the names' row stays in the DOM for keyboards and
   // screen readers). Plan item 397: the class is named once, on the open tab (the big title went); the three skill
-  // trees are rows with their effect; the stats are bars marked with the other classes and the average; the gun's
-  // slab spans the panel.
+  // trees are rows with their effect; the stats are bars marked with the other classes and the average.
   const plate = await page.evaluate(() => {
     const n = document.querySelector<HTMLElement>('.cp-dot.is-on .cp-dot-name')!
     const r = n.getBoundingClientRect()
@@ -110,7 +109,9 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   expect(plate.ghosts, ps).toBe(1)
   expect(plate.rows.length, ps).toBe(3)
   for (const r of plate.rows) expect(r.shown && r.text.length > 8 && r.size >= 12, ps).toBe(true)
-  expect(plate.art, ps).toBeGreaterThanOrEqual(0.8)
+  // Plan item 422: she holds the gun on the stage, so its slab is a plate beside the name and numbers (about 40% of
+  // the panel; it spanned the panel, item 397), its height given to her figure.
+  expect(plate.art, ps).toBeGreaterThanOrEqual(0.36)
   expect(plate.marks, ps).toEqual(Array(4).fill({ marks: 4, avg: true }))
   // Plan item 125: the whole file is one screen at 390x844 and 375x667: every stat, the weapon and the hold bar
   // inside the viewport with no scroll, text 12 px or more; her quote unfolds behind a tap.
