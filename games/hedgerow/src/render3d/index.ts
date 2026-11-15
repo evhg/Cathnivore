@@ -44,7 +44,7 @@ import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnem
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
-import { buildGround, waterNormalTexture, type Ground } from "./terrain";
+import { buildGround, regionShapes, waterNormalTexture, type Ground } from "./terrain";
 import { Crops } from "./crops";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
@@ -2343,54 +2343,26 @@ export class Renderer3D {
         // selection overlay): a sheet of deep water flush with the ground, the cells meeting without seams, over a
         // margin of wet, darkened earth where it spills onto the grass. Two instanced meshes, two draw calls.
         const g = new THREE.Group();
-        const sheet = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-        const water = new THREE.InstancedMesh(
-          sheet,
-          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.9, depthWrite: false }), // plan item 330: the ponds' deeper water
-          flood.cells.length,
+        // Plan item 346: one rounded sheet over the flooded cells (its extent exact, so the drowned plots read), over a
+        // rounded margin of wet earth, not a square per cell with pale bands at each edge.
+        const wetSet = new Set(flood.cells.map(([c, r]) => `${c},${r}`));
+        // Level with the highest ground under the flood, so no grass pokes through the sheet.
+        let y = -Infinity;
+        for (const [c, r] of flood.cells) y = Math.max(y, this.height(c + 0.5, r + 0.5), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
+        const water = new THREE.Mesh(
+          new THREE.ShapeGeometry(regionShapes(wetSet, 0.005, 0.28), 4).rotateX(-Math.PI / 2),
+          new THREE.MeshStandardMaterial({ color: "#2f6f86", roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.9, depthWrite: false, normalMap: waterNormalTexture(), normalScale: new THREE.Vector2(0.35, 0.35) }), // plan item 330: the ponds' deeper water
         );
-        const mud = new THREE.InstancedMesh(
-          sheet,
+        const mud = new THREE.Mesh(
+          new THREE.ShapeGeometry(regionShapes(wetSet, 0.09, 0.36), 4).rotateX(-Math.PI / 2),
           new THREE.MeshStandardMaterial({ color: "#4a3a26", roughness: 0.9, transparent: true, opacity: 0.55, depthWrite: false }),
-          flood.cells.length,
         );
+        water.position.y = y + 0.03;
+        mud.position.y = y + 0.015;
         water.renderOrder = 2;
         mud.renderOrder = 1;
-        const mat = new THREE.Matrix4();
-        flood.cells.forEach(([c, r], i) => {
-          const x = c + 0.5;
-          const z = r + 0.5;
-          // Level with the highest ground under the cell, so no grass pokes through the sheet.
-          const y = Math.max(this.height(x, z), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
-          water.setMatrixAt(i, mat.makeScale(1.01, 1, 1.01).setPosition(x, y + 0.03, z));
-          mud.setMatrixAt(i, mat.makeScale(1.16, 1, 1.16).setPosition(x, y + 0.015, z));
-        });
         water.receiveShadow = true;
         g.add(mud, water);
-        // Plan item 269: pale shallows fading in from the flood's edges, as round the ponds.
-        const wetSet = new Set(flood.cells.map(([c, r]) => `${c},${r}`));
-        const rims: THREE.Matrix4[] = [];
-        const SW = 0.22;
-        const up = new THREE.Vector3(0, 1, 0);
-        for (const [c, r] of flood.cells) {
-          const y = Math.max(this.height(c + 0.5, r + 0.5), this.height(c + 0.1, r + 0.1), this.height(c + 0.9, r + 0.9), this.height(c + 0.1, r + 0.9), this.height(c + 0.9, r + 0.1));
-          for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-            if (wetSet.has(`${c + dc},${r + dr}`)) continue;
-            const turn = dr === -1 ? 0 : dr === 1 ? Math.PI : dc === -1 ? Math.PI / 2 : -Math.PI / 2;
-            const at = new THREE.Vector3(c + 0.5 + dc * (0.5 - SW / 2), y + 0.034, r + 0.5 + dr * (0.5 - SW / 2));
-            rims.push(new THREE.Matrix4().compose(at, new THREE.Quaternion().setFromAxisAngle(up, turn), new THREE.Vector3(1.01, 1, 1)));
-          }
-        }
-        if (rims.length) {
-          const rim = new THREE.InstancedMesh(
-            new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-            new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), transparent: true, opacity: 0.75, roughness: 0.5, depthWrite: false }),
-            rims.length,
-          );
-          rims.forEach((m, i) => rim.setMatrixAt(i, m));
-          rim.renderOrder = 3;
-          g.add(rim);
-        }
         g.visible = false;
         this.scene.add(g);
         this.pieces.flood = g;

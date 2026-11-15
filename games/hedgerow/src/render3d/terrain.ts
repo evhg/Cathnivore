@@ -1944,3 +1944,14 @@ function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number,
   fringe.renderOrder = 2;
   return [bank, fringe];
 }
+
+/**
+ * Plan item 346: a wet region as flat shapes with rounded corners, pushed out by `offset` (negative pulls in), for a
+ * sheet laid on the field in x-z (rotate the geometry by -90 degrees about x; shape y is -z).
+ */
+export function regionShapes(wet: Set<string>, offset: number, rad = 0.3): THREE.Shape[] {
+  return wetLoops(wet).map((loop) => {
+    const pts = filleted(loop, rad).map((p) => new THREE.Vector2(p.x + p.nx * offset, -(p.z + p.nz * offset)));
+    return new THREE.Shape(pts);
+  });
+}
