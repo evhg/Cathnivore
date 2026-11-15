@@ -1,20 +1,28 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 38: on a phone the portfolio hero leads with Cath in front of the games' prints (item 303: a swiped
-// strip, was one print cross-fading) (she's at least 40% of the width); she's in the page from the first paint (built in, not drawn
-// by the script); reduced motion keeps the first print still.
-test('the phone hero shows Cath at 40% or more of the width, in front of a strip of the four prints', async ({ page }) => {
+// Plan item 38: on a phone the portfolio hero shows Cath with the games' prints (item 303: a swiped strip); she's in the
+// page from the first paint (built in, not drawn by the script); reduced motion keeps the first print still. Plan item
+// 404: the headline leads (its top under y=200), then Cath standing behind a full-width row of prints, none clipped by her.
+test('the phone hero leads with the headline, then Cath behind a strip of the four prints', async ({ page }) => {
   const vw = page.viewportSize()!.width
   await page.goto('/')
   const cath = page.locator('#hero-cath')
   await expect(cath.locator('svg')).toHaveCount(1)
   const box = (await cath.boundingBox())!
   if (vw < 1100) {
-    expect(box.width / vw).toBeGreaterThanOrEqual(0.4)
-    // Above the headline, inside the first screen.
     const h1 = (await page.locator('#hero-title').boundingBox())!
-    expect(box.y).toBeLessThan(h1.y)
-    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(h1.y).toBeLessThan(200)
+    expect(box.y).toBeGreaterThan(h1.y + h1.height)
+    // she stands behind the prints: the strip draws over her (it is above her in the stacking order)
+    const over = await page.evaluate(() => {
+      const strip = document.querySelector('.hero-show .show-strip')!
+      const c = document.getElementById('hero-cath')!.getBoundingClientRect()
+      const s = strip.getBoundingClientRect()
+      const y = Math.max(s.top + 10, Math.min(c.bottom - 10, s.bottom - 10))
+      const hit = document.elementFromPoint(c.left + c.width / 2, y)
+      return { overlaps: c.bottom > s.top, strip: !!hit && strip.contains(hit) }
+    })
+    if (over.overlaps) expect(over.strip).toBe(true)
     // Plan item 303: the four prints are a swiped strip, each labelled, and every one scrolls into view.
     const strip = page.locator('.hero-show .show-strip')
     expect(await strip.evaluate((el) => getComputedStyle(el).scrollSnapType)).toContain('x')

@@ -1759,3 +1759,67 @@ h1 {
   transition: opacity 400ms ease;
 }
 .poster-loop.on { opacity: 1; }
+
+/* Plan item 404: Cath presents the work. She stands full length (head to boots), no desk: at D on a floor lit by a
+   soft pool of light with her contact shadow, a warm key light behind her shoulders, pointing up at the wall. On a
+   phone the headline leads; she stands behind a full-width row of prints (one whole and the next one's edge), her
+   top half above it, so no print is clipped by her column. */
+.show-cath::after {
+  left: -70%;
+  right: -70%;
+  top: auto;
+  bottom: -5%;
+  height: 12%;
+  border-radius: 50%;
+  clip-path: none;
+  box-shadow: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent-gold) 16%, transparent), color-mix(in srgb, var(--text) 6%, transparent) 60%, transparent);
+  z-index: var(--z-under);
+}
+.show-cath::before {
+  left: -90%;
+  right: -90%;
+  top: -12%;
+  bottom: -3%;
+  height: auto;
+  border-radius: 0;
+  background:
+    radial-gradient(28% 3.2% at 50% 97.5%, var(--show-shadow), transparent),
+    radial-gradient(42% 30% at 50% 26%, color-mix(in srgb, var(--accent-gold) 12%, transparent), transparent);
+}
+@media (min-width: 1100px) {
+  /* full length under the wall's right third, her boots above the fold at 900 */
+  .show-cath { width: 14%; right: 9%; top: calc(2% + 2 * 48.5% * 10 / 16 + 3%); filter: drop-shadow(0 10px 14px var(--shadow)); }
+}
+@media (max-width: 1099.98px) {
+  .hero .stats, .hero .scroll-cue { order: 2; }
+  .hero-show {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: auto;
+    margin: var(--sp-6) auto 0;
+  }
+  .show-cath {
+    position: relative;
+    order: -1;
+    right: auto;
+    bottom: auto;
+    align-self: flex-end;
+    width: 120px;
+    margin: 0 12% -150px 0;
+    /* her top half shows above the prints; the rest stands behind them */
+    clip-path: inset(-10% -40% 46% -40%);
+    filter: none;
+  }
+  .show-cath::after, .show-cath::before { display: none; }
+  .show-strip {
+    position: relative;
+    top: auto;
+    z-index: var(--z-1);
+    width: 100%;
+    padding: 0 0 4%;
+    mask-image: none;
+  }
+  .show-strip .show-card { width: 78%; }
+}

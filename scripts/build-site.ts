@@ -132,7 +132,7 @@ async function main(): Promise<void> {
               .replace('<!--apps-->', appsHtml())
               .replace(
                 '<div class="show-cath" id="hero-cath"></div>',
-                `<div class="show-cath" id="hero-cath">${cathSvg({ framing: 'half', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: true })}</div>`,
+                `<div class="show-cath" id="hero-cath">${cathSvg({ framing: 'full', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: true })}</div>`,
               ),
         },
       ],

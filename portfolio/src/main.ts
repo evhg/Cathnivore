@@ -23,7 +23,7 @@ if (field && (!navigator.webdriver || location.search.includes('field'))) startF
 // Plan item 23: the hero's right half is the studio's work, with Cath (the face of every game) in front.
 const heroCath = document.querySelector<HTMLElement>('#hero-cath')
 // Built into the page at build time (scripts/build-site.ts); drawn here only if it isn't there.
-if (heroCath && !heroCath.firstElementChild) heroCath.innerHTML = cathSvg({ framing: 'half', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: !reduced })
+if (heroCath && !heroCath.firstElementChild) heroCath.innerHTML = cathSvg({ framing: 'full', expression: 'smirk', pose: SCREEN_POSE['site:portfolio'], animate: !reduced })
 // Reduced motion: the built-in drawing stops her idle (blink, breath, sway).
 if (reduced) heroCath?.querySelector('svg.cath')?.classList.remove('cath-animate')
 

@@ -33,36 +33,46 @@ test('the desktop hero shows all four games, each mostly in view and labelled', 
   }
 })
 
-// Plan item 350: Cath stands behind a studio desk (not faded out at the waist): no mask or fade on her figure, the
-// desk's top within her lower fifth and wider than her, inside the page; on a phone the next print peeks 60 px+.
-test('Cath stands behind a desk, not fading out; the phone strip shows the next print', async ({ page }) => {
+// Plan item 350 (desk) replaced by plan item 404: Cath stands full length, no desk: at D her boots on a lit floor
+// pool with her contact shadow under her; no mask or fade on her figure; on a phone the next print peeks 30 px+.
+test('Cath stands full length on a lit floor, not fading out; the phone strip shows the next print', async ({ page }) => {
   await page.goto('/')
   await page.waitForTimeout(2500)
   const m = await page.evaluate(() => {
     const c = document.querySelector<HTMLElement>('#hero-cath')!
     const cs = getComputedStyle(c)
-    const desk = getComputedStyle(c, '::after')
+    const floor = getComputedStyle(c, '::after')
+    const light = getComputedStyle(c, '::before')
     const r = c.getBoundingClientRect()
     let op = 1
     for (let e: HTMLElement | null = c; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity)
     const strip = document.querySelector('.show-strip')!.getBoundingClientRect()
     const cards = [...document.querySelectorAll('.show-strip .show-card')].map((e) => e.getBoundingClientRect())
+    const boots = c.querySelector('.cath-ground')?.getBoundingClientRect()
+    const floorTop = r.top + parseFloat(floor.top)
     return {
       mask: cs.maskImage,
       op,
-      desk: desk.content !== 'none' && desk.content !== '',
-      deskTop: parseFloat(desk.top) / r.height,
-      deskWide: parseFloat(desk.width) >= r.width,
+      full: !!boots && boots.height > 0,
+      floor: floor.display !== 'none' && floor.backgroundImage.includes('radial'),
+      shadow: light.display !== 'none' && light.backgroundImage.includes('radial'),
+      floorUnderBoots: !!boots && floorTop <= boots.bottom && floorTop + parseFloat(floor.height) >= boots.bottom,
+      floorWide: parseFloat(floor.width) >= r.width,
       peek: Math.min(strip.right, cards[1]!.right) - cards[1]!.left,
       scroll: document.scrollingElement!.scrollWidth - innerWidth,
+      bottom: r.bottom,
     }
   })
   expect(m.mask).toBe('none')
   expect(m.op).toBe(1)
-  expect(m.desk).toBe(true)
-  expect(m.deskTop).toBeGreaterThanOrEqual(0.8)
-  expect(m.deskTop).toBeLessThanOrEqual(0.95)
-  expect(m.deskWide).toBe(true)
+  expect(m.full).toBe(true)
   expect(m.scroll).toBeLessThanOrEqual(0)
-  if ((page.viewportSize()?.width ?? 0) < 1100) expect(m.peek).toBeGreaterThanOrEqual(60)
+  if ((page.viewportSize()?.width ?? 0) >= 1100) {
+    expect(m.floor).toBe(true)
+    expect(m.shadow).toBe(true)
+    expect(m.floorUnderBoots).toBe(true)
+    expect(m.floorWide).toBe(true)
+    expect(m.bottom).toBeLessThanOrEqual(900)
+  }
+  if ((page.viewportSize()?.width ?? 0) < 1100) expect(m.peek).toBeGreaterThanOrEqual(30)
 })
