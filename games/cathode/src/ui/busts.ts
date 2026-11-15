@@ -595,16 +595,19 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, and
   // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
   // (A grey head at 10% luminance on 8% read as four identical black squares.)
-  const v = ((variant % 4) + 4) % 4;
+  // Plan item 412: five withheld prints, one a district, by the List's order (0 the market .. 4 the vault); the
+  // arrays below keep their older order (0 the vault, 1 the clinic, 2 the plaza, 3 the tower, 4 the market).
+  const v = [4, 1, 2, 3, 0][((variant % 5) + 5) % 5]!;
   // Plan item 412: each withheld print is lit by its own district (the vault's cold light under the river, the clinic's cold
   // fluorescent, the plaza's sodium lamps, the tower's lit window behind the blinds), so four silhouettes stop
   // reading as one; the rim takes the light's colour.
-  const RIM = ["#b4c4ff", "#c4f0dc", "#ffd08a", "#fff4d8"][v]!;
+  const RIM = ["#b4c4ff", "#c4f0dc", "#ffd08a", "#fff4d8", "#ff9ad4"][v]!;
   const GROUND = [
     ["#5a6cb0", "#222a50", "#08090f"],
     ["#a6cfc0", "#3d5c55", "#0c1312"],
     ["#d6a868", "#5a3e22", "#120d08"],
     ["#f4ecd0", "#9a8a64", "#16130d"],
+    ["#c45a92", "#4a1a36", "#0f070c"],
   ][v]!;
   const FIG = "#08090c";
   const heads = [
@@ -616,6 +619,8 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<path d="M66 84 C64 54 80 34 102 34 C124 34 138 52 134 84 C133 100 134 112 131 124 C128 136 120 144 110 148 C106 150 103 151 100 151 C97 151 94 150 90 148 C80 144 72 136 69 124 C66 112 67 100 66 84 Z"/><path d="M68 86 C60 82 58 100 63 108 C65 112 69 112 70 108 Z M132 86 C140 82 142 100 137 108 C135 112 131 112 130 108 Z"/>`,
     // the Chair: a long, gaunt head with its hair swept back high off the forehead
     `<path d="M70 82 C66 52 80 30 102 30 C124 30 136 52 130 82 C128 104 126 118 121 130 C116 142 108 150 100 151 C92 150 84 142 79 130 C74 118 72 104 70 82 Z"/><path d="M73 84 C66 80 64 100 67 110 C69 116 74 116 76 112 Z M127 84 C134 80 136 100 133 110 C131 116 126 116 124 112 Z"/>`,
+    // the market: Crisp's lean head under his slicked hair
+    `<path d="M72 88 C72 60 85 48 100 48 C115 48 128 60 128 88 C129 104 127 116 121 128 C115 140 107 150 100 151 C93 150 85 140 79 128 C73 116 71 104 72 88 Z"/><path d="M70 88 C66 50 82 30 104 30 C128 30 140 50 132 88 C131 76 128 70 121 68 C108 63 88 64 78 71 C73 76 71 82 70 88 Z"/>`,
   ];
   // Plan item 321: each its own build under the head (one shared pair of shoulders made any two prints overlap
   // 0.86): a trench with its collar turned up, narrow shoulders, a heavy man's broad ones, a cloak falling from the hood.
@@ -624,6 +629,7 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<path d="M36 240 L40 206 C52 190 74 184 88 182 L92 150 L108 150 L112 182 C126 184 148 190 160 206 L164 240 Z"/>`,
     `<path d="M0 240 L2 188 C16 170 48 162 76 158 L80 126 L120 126 L124 158 C152 162 184 170 198 188 L200 240 Z"/>`,
     `<path d="M42 240 L46 64 C46 46 58 38 74 38 L126 38 C142 38 154 46 154 64 L158 240 Z"/><path d="M10 240 L14 224 C30 208 62 200 86 196 L88 128 L112 128 L114 196 C138 200 170 208 186 224 L190 240 Z"/>`,
+    `<path d="M0 240 L4 196 C20 178 50 170 72 166 L86 130 L114 130 L128 166 C150 170 180 178 196 196 L200 240 Z"/>`,
   ];
   const rims = [
     `<path d="M48 70 C64 62 84 60 100 60 C116 60 136 62 152 70" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M118 40 C110 34 90 34 82 40" stroke="${RIM}" stroke-width="1.6" fill="none"/>`,
@@ -636,6 +642,8 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     }).join("")}</g>`,
     // the Chair's swept hair and, as in his own file, only the glasses catch the light
     `<path d="M46 120 L46 64 C46 46 58 38 74 38 L126 38 C142 38 154 46 154 64 L154 120" stroke="${RIM}" stroke-width="2" fill="none" opacity=".8"/><path d="M70 82 C72 104 74 118 79 130 C84 142 92 150 100 151" stroke="${RIM}" stroke-width="1.2" fill="none" opacity=".45"/><path d="M70 82 C66 52 80 30 102 30 C124 30 136 52 130 82" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M130 82 C129 106 125 124 114 142" stroke="${RIM}" stroke-width="1.4" fill="none" opacity=".7"/><g stroke="#e6eef6" stroke-width="2" stroke-linecap="round"><path d="M83 89.6 L92 89.6"/><path d="M106 89.6 L115 89.6" opacity=".7"/></g>`,
+    // Crisp's slicked hair and his peaked lapels in the market's neon
+    `<path d="M70 88 C66 50 82 30 104 30 C128 30 140 50 132 88" stroke="${RIM}" stroke-width="2" fill="none"/><path d="M72 166 L100 182 L128 166" stroke="${RIM}" stroke-width="1.4" fill="none" opacity=".7"/>`,
   ];
   // (by the List's order: 1 the clinic, 2 the plaza, 3 the tower, 4 the vault)
   const props = [
@@ -647,6 +655,8 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<g fill="#151a21"><rect x="140" y="150" width="44" height="60"/><path d="M152 150 v-40 c0 -10 6 -18 10 -18 s10 8 10 18 v40 Z"/><circle cx="162" cy="84" r="9"/><path d="M172 108 l14 -22" stroke="#151a21" stroke-width="5"/></g>`,
     // tower blinds (his chair's high back is part of his silhouette)
     `<g fill="#151a21">${Array.from({ length: 9 }, (_, k) => `<rect x="28" y="${30 + k * 14}" width="144" height="8"/>`).join("")}</g>`,
+    // the fish market: the catch hung on hooks from a rail
+    `<g fill="#1a1016"><rect x="10" y="26" width="180" height="4"/>${[24, 48, 160].map((x, k) => `<path d="M${x} 30 v10"/><rect x="${x - 1}" y="30" width="2" height="12"/><path d="M${x} 42 C${x + 9} 54 ${x + 9} ${78 + k * 6} ${x} ${92 + k * 6} C${x - 9} ${78 + k * 6} ${x - 9} 54 ${x} 42 Z"/><path d="M${x} ${90 + k * 6} l-7 12 h14 Z"/>`).join("")}</g>`,
   ];
   // What gives each away in its own light: the vault man's cigarette, the doctor's stethoscope, the councillor's
   // microphone, the Chair's glasses (in `rims`).
@@ -655,9 +665,11 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
     `<g fill="none" stroke="${RIM}" stroke-linecap="round"><path d="M88 150 C78 168 80 186 92 194" stroke-width="2.6"/><path d="M112 150 C124 166 126 178 122 190" stroke-width="2.6"/><path d="M92 194 C100 198 110 196 116 192"  stroke-width="1.6" opacity=".7"/></g><circle cx="122" cy="194" r="6.4" fill="${FIG}" stroke="${RIM}" stroke-width="2"/><circle cx="120.4" cy="192.4" r="1.6" fill="${RIM}"/>`,
     `<path d="M140 240 L128 160" stroke="${FIG}" stroke-width="5"/><path d="M142 240 L130 160" stroke="${RIM}" stroke-width="1.2" opacity=".7"/><g transform="rotate(-20 126 146)"><rect x="118" y="124" width="16" height="30" rx="8" fill="${FIG}" stroke="${RIM}" stroke-width="2.2"/><g stroke="${RIM}" stroke-width="1" opacity=".6"><line x1="119" y1="131" x2="133" y2="131"/><line x1="119" y1="136" x2="133" y2="136"/><line x1="119" y1="141" x2="133" y2="141"/></g><rect x="121" y="154" width="10" height="6" fill="${FIG}" stroke="${RIM}" stroke-width="1"/></g>`,
     `<rect x="26" y="24" width="148" height="132" fill="none" stroke="${RIM}" stroke-width="1.4" opacity=".35"/><line x1="100" y1="24" x2="100" y2="40" stroke="${RIM}" stroke-width="1.4" opacity=".35"/>`,
+    // the market (Crisp): his red pocket square, the one thing the neon picks out
+    `<path d="M144 206 L160 202 L163 211 L147 215 Z" fill="#c8102e"/><path d="M146 204 L151 196 L156 203 Z" fill="#c8102e"/><path d="M76 56 C88 40 110 35 128 47" stroke="${RIM}" stroke-width="2" fill="none" opacity=".8"/>`,
   ];
   // Redaction tape torn by hand at both ends, each print's at its own angle; a torn corner off each photo.
-  const tilt = [-6, 4, -3, 7][v]!;
+  const tilt = [-6, 4, -3, 7, -4][v]!;
   const tape = "M60 87 L64 85.6 L62 89 L65 92 L61 95 L64 99 L61 102 L65 105 L138 104.4 L135 101 L139 98 L136 94.6 L140 91 L136 88 L139 85 Z";
   const tear = v % 2
     ? `<path d="M0 0 L46 0 L40 6 L44 12 L34 16 L30 26 L22 24 L16 36 L8 34 L0 44 Z" fill="#e9e2d3"/><path d="M46 0 L40 6 L44 12 L34 16 L30 26 L22 24 L16 36 L8 34 L0 44" fill="none" stroke="#8a8274" stroke-width="1" opacity=".7"/>`

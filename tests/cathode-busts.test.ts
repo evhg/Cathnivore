@@ -47,10 +47,10 @@ describe("NIGHT SHIFT villain busts (plan item 9)", () => {
   });
 
   it("lights each withheld print by its own district, with its own giveaway prop (plan item 412)", () => {
-    const prints = [1, 2, 3, 4].map((i) => mugshotSvg(null, "", true, i));
+    const prints = [0, 1, 2, 3, 4].map((i) => mugshotSvg(null, "", true, i));
     const ground = (s: string) => /<radialGradient id="r\w+"[^>]*><stop offset="0" stop-color="(#\w+)"/.exec(s)?.[1];
-    expect(new Set(prints.map(ground)).size).toBe(4);
-    expect(new Set(prints.map((s) => /data-silhouette="(\d)"/.exec(s)?.[1])).size).toBe(4);
+    expect(new Set(prints.map(ground)).size).toBe(5);
+    expect(new Set(prints.map((s) => /data-silhouette="(\d)"/.exec(s)?.[1])).size).toBe(5);
     for (const s of prints) {
       // torn redaction tape, never a plain bar, and a torn corner off the photo
       expect(s).not.toContain('<rect x="62" y="86" width="76" height="18"');
