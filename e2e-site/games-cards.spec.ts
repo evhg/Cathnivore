@@ -173,7 +173,7 @@ test('the four games are posters on the first screen', async ({ page }) => {
 })
 
 // Plan item 401: each poster's foot is its own game's board: four different backgrounds, each Play 44 px+.
-test('each poster foot is its game's own board', async ({ page }) => {
+test("each poster foot is its game's own board", async ({ page }) => {
   for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(vp)
     await page.goto('/games/')
