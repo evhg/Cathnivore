@@ -3866,7 +3866,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the four feet with four different computed backgrounds and display fonts; each Play 44 px+; text 4.5:1+; games-cards, games-stall and site-hero pass; shots P and D before and after.
 - **Size:** 2
 
-## 402. [ ] Cathnivore play: Cath's tip drawn on the table, not a sentence and a 20 px leaf
+## 402. [ ] Cathnivore play: Cath's tip drawn on the table, not a sentence and a 20 px leaf *(lane B, in progress)*
 - **Why:** `plan1115a/cath-game-D` (365-550 x 280-340) her note 'I'd play the leaf, love. Clearing Outlets out of Brindle Hills'; the only link is a 20 px leaf badge on Supply (1072-1090 x 712-730), and nothing marks Brindle Hills on the board (575-760 x 300-470); `cath-game-P` the same (leaf 325-345 x 680-700, hex 20-140 x 270-380).
 - **Build:** the suggested card wears a leaf ribbon (item 177's lift kept); its target region gets a chalk ring with a green 'Cath's pick' stake, and at D a dashed chalk line from the card to the region (an SVG overlay); hovering or focusing the card brightens the ring; any play clears both; reduced motion fades only.
 - **Accept:** in a seeded game a `[data-cath-pick]` ring inside the target hex's box; gone after one play; keyboard focus lights it; table-hand, suggest-move and phone hand specs pass; shots P and D before and after.
