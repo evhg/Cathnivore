@@ -554,7 +554,7 @@ function booking(id: string, who: BustId, small: boolean, slateG: string): strin
 <defs>
 <radialGradient id="w${id}" cx="30%" cy="30%" r="85%"><stop offset="0" stop-color="#b9b2a2"/><stop offset=".38" stop-color="#6e685c"/><stop offset=".75" stop-color="#2a2824"/><stop offset="1" stop-color="#121110"/></radialGradient>
 <linearGradient id="d${id}" x1="0" x2="1"><stop offset=".34" stop-color="#000" stop-opacity="0"/><stop offset=".54" stop-color="#000" stop-opacity=".55"/><stop offset=".8" stop-color="#000" stop-opacity=".82"/></linearGradient>
-<radialGradient id="h${id}" cx="41%" cy="37%" r="24%"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="h${id}" cx="41%" cy="37%" r="24%"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
 <radialGradient id="v${id}" cx="46%" cy="40%" r="74%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".62"/></radialGradient>
 <filter id="c${id}" x="-10%" y="-10%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.6"/><feOffset dx="10" dy="5" result="o"/><feFlood flood-color="#17161a" flood-opacity=".62"/><feComposite in2="o" operator="in"/></filter>
 <filter id="f${id}"><feComponentTransfer><feFuncR type="gamma" amplitude="1.08" exponent="1.35"/><feFuncG type="gamma" amplitude="1.06" exponent="1.35"/><feFuncB type="gamma" amplitude="1.02" exponent="1.35"/></feComponentTransfer></filter>

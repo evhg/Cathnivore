@@ -1247,6 +1247,26 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .dossier-target { font: 700 var(--fs-3) / 1.15 var(--font-ui); }
   .dossier-place, .dossier-tag { font: 500 var(--fs-2) / 1.25 var(--font-ui); }
   .dossier-tag { font-style: italic; }
+  /* Plan item 412: the case file is a manila file card, not a white tile: warm paper with faint typed rules, the
+     typed case number on a folder tab over its top-right corner. */
+  .dossier {
+    background:
+      repeating-linear-gradient(to bottom, transparent 0 calc(var(--u) * 21), rgb(var(--black-rgb) / .07) calc(var(--u) * 21) calc(var(--u) * 22)),
+      color-mix(in srgb, var(--card-paper) 86%, var(--amber-deep));
+  }
+  .dossier-no {
+    position: absolute;
+    top: calc(var(--u) * -20);
+    right: calc(var(--u) * 10);
+    padding: calc(var(--u) * 3) calc(var(--u) * 8) calc(var(--u) * 2);
+    border-radius: calc(var(--u) * 4) calc(var(--u) * 4) 0 0;
+    background: color-mix(in srgb, var(--card-paper) 80%, var(--amber-deep));
+    font: 700 var(--fs-1) / 1.2 var(--font-ui);
+    font-variant-numeric: tabular-nums;
+    font-stretch: var(--wdth-label);
+    letter-spacing: .06em;
+    color: color-mix(in srgb, var(--card-ink) 85%, var(--blood));
+  }
 }
 /* Plan item 379: on an upright phone the open case is a small pinned card in the menu hint's place (it was three
    loose caps lines): the target's photo beside CASE FILE, the name, the place and the tag. The hint steps back. */
@@ -1277,6 +1297,7 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .dossier-target { font: 700 var(--fs-1) / 1.15 var(--font-ui); }
   .dossier-place, .dossier-tag { font: 500 var(--fs-1) / 1.2 var(--font-ui); }
   .dossier-tag { font-style: italic; }
+  .dossier-no { display: none; }
   .title-col:has(.dossier.is-open) #menu-hint { visibility: hidden; }
 }
 @media (max-width: 600px) and (orientation: portrait) and (max-height: 720px) {

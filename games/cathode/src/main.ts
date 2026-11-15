@@ -305,6 +305,10 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   // item 107's lettered shapes instead, and the name stands in type under the print.
   photo.innerHTML = mugshotSvg(who ?? null, who ? d.target.toUpperCase().slice(0, 16) : "CASE FILE", true);
   el("p", "dossier-kicker", box, "Case file");
+  // Plan item 412: the file's typed number, steady for a name (Hollowell Police, the year, four digits).
+  let h = 7;
+  for (const c of d.target) h = (h * 31 + c.charCodeAt(0)) % 9973;
+  el("span", "dossier-no", box, `HPD 2079 \u00B7 ${String(1000 + (h % 9000)).padStart(4, "0")}`);
   el("b", "dossier-target", box, d.target);
   el("span", "dossier-place", box, d.place);
   el("span", "dossier-tag", box, d.tag);
