@@ -585,6 +585,7 @@ export function settle(
   obstacles: Box[],
   lane: [number, number][],
   laneR: number,
+  cluster = 1,
 ): ([number, number, number] | null)[] {
   // The lane as a grid of 8 px cells it covers (widened by laneR), so each spot's test is a few lookups.
   const G = 8;
@@ -610,35 +611,50 @@ export function settle(
   };
   const taken: Box[] = [];
   const used = new Set<number>();
+  /** Plan item 406: each group's placed boxes (props in runs of `cluster` make one set piece). */
+  const groups = new Map<number, Box[]>();
+  const fits = (b: Box, ph: number): boolean => {
+    if (b.left < 2 || b.top < 2 || b.right > w - 2 || b.bottom > h - 2) return false;
+    if (obstacles.some((o) => hit(b, o, 4))) return false;
+    if (taken.some((o) => hit(b, o, 6))) return false;
+    // The prop's art fills its lower part; the lane may pass over the empty sky above it, not its body.
+    return !onLane({ left: b.left + 2, top: b.top + ph * 0.25, right: b.right - 2, bottom: b.bottom });
+  };
   // Full size first; a prop with no room tries again smaller (a crowded phone band, a short pencil act).
-  return props.map((full) => {
-    for (const scale of [1, 0.78, 0.6, 0.45])
+  return props.map((full, i) => {
+    const g = Math.floor(i / Math.max(1, cluster));
+    const mates = groups.get(g) ?? [];
+    const keep = (b: Box): [number, number, number] => {
+      taken.push(b);
+      groups.set(g, [...mates, b]);
+      return [b.left, b.top, b.right - b.left];
+    };
+    for (const scale of [1, 0.78, 0.6, 0.45]) {
+      const p = { w: Math.round(full.w * scale), h: Math.round(full.h * scale) };
+      // Plan item 406: beside a groupmate first (to its right, its left, or just below it), so the act's
+      // props stand as a few set pieces (a farmyard, a pond with its geese) rather than tokens strewn across the band.
+      if (scale >= 0.78)
+        for (const m of mates)
+          for (const [left, top] of [
+            [m.right + 8, m.bottom - p.h],
+            [m.left - 8 - p.w, m.bottom - p.h],
+            [m.left + (m.right - m.left) * 0.5, m.bottom + 8],
+            [m.right - (m.right - m.left) * 0.5 - p.w, m.bottom + 8],
+          ]) {
+            const b: Box = { left: Math.round(left!), top: Math.round(top!), right: Math.round(left!) + p.w, bottom: Math.round(top!) + p.h };
+            if (fits(b, p.h)) return keep(b);
+          }
       for (let k = 0; k < spots.length; k++) {
-        const p = {
-          w: Math.round(full.w * scale),
-          h: Math.round(full.h * scale),
-        };
         if (used.has(k)) continue;
         const [fx, fy] = spots[k]!;
         const left = Math.round(fx * w - p.w / 2);
         const top = Math.round(fy * h - p.h);
         const b: Box = { left, top, right: left + p.w, bottom: top + p.h };
-        if (b.left < 2 || b.top < 2 || b.right > w - 2 || b.bottom > h - 2)
-          continue;
-        if (obstacles.some((o) => hit(b, o, 4))) continue;
-        if (taken.some((o) => hit(b, o, 6))) continue;
-        // The prop's art fills its lower part; the lane may pass over the empty sky above it, not its body.
-        const body: Box = {
-          left: b.left + 2,
-          top: b.top + p.h * 0.25,
-          right: b.right - 2,
-          bottom: b.bottom,
-        };
-        if (onLane(body)) continue;
+        if (!fits(b, p.h)) continue;
         used.add(k);
-        taken.push(b);
-        return [left, top, p.w];
+        return keep(b);
       }
+    }
     return null;
   });
 }

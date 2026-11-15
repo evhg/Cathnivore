@@ -1790,7 +1790,8 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
       last = q;
     }
   }
-  const at = settle(sizes, scenerySpots(Number(layer.dataset.act) || 1), w, h, obstacles, lane, 10);
+  // Plan item 406: the act's props in threes, each three one set piece.
+  const at = settle(sizes, scenerySpots(Number(layer.dataset.act) || 1), w, h, obstacles, lane, 10, 3);
   // Measured; the caller writes every act's props after all are measured.
   return () =>
     props.forEach((el, i) => {
