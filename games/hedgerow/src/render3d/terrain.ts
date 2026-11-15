@@ -675,6 +675,8 @@ export function buildGround(level: Level): Ground {
   const d1 = new THREE.Color(light.dirt[1]);
   const sand = new THREE.Color("#c9b88a");
   const shingleGround = new THREE.Color("#b9ae99");
+  const mudflat = new THREE.Color("#8a7e66");
+  const tidePool = new THREE.Color("#6f9aa4");
   const bankTop = new THREE.Color("#d6c77a");
   const plinthWall = new THREE.Color(light.dirt[0]).lerp(new THREE.Color("#cfc5af"), 0.45);
   const tmp = new THREE.Color();
@@ -718,6 +720,14 @@ export function buildGround(level: Level): Ground {
     // Plan item 262: Shingle Bay's beach is one pale band of shingle ground under its pebbles (pebbles alone on the
     // grass read as white confetti), fading into the grass along its landward edge.
     if (act === 5 && x < -0.55 && d > 0.75) tmp.lerp(shingleGround, 0.85 * smooth(Math.min(1, (-0.55 - x) / 0.3)) * smooth(Math.min(1, (d - 0.75) / 0.2)));
+    // Plan item 429: Saltmarsh's mudflats along the tideline (between the dunes and the sea), wet grey-brown silt
+    // with shallow tidal pools where the low noise dips.
+    if (act === 2 && x < -1.25 && d > 0.9) {
+      const k = smooth(Math.min(1, (-1.25 - x) / 0.35)) * smooth(Math.min(1, (d - 0.9) / 0.3));
+      tmp.lerp(mudflat, 0.8 * k);
+      const pool = Math.sin(x * 4.3 + y * 2.1 + level.id) * Math.sin(y * 3.7 - x * 1.3) + 0.35 * Math.sin(x * 9.1 - y * 7.7);
+      if (pool > 0.55) tmp.lerp(tidePool, k * smooth(Math.min(1, (pool - 0.55) / 0.25)));
+    }
     // Raised plots read as a built plinth: pale earthen walls with a lit, mown top.
     const up = plinth(x, y);
     if (up > 0) {
