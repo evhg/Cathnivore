@@ -342,6 +342,78 @@ const COAT_KEY = `{
   totalEmissiveRadiance += uCoatKey * ( 5.0 * kw * diffuseColor.rgb * vec3( 1.0, 0.9, 0.8 ) + 0.1 * sat * vec3( 1.0, 0.93, 0.86 ) );
 }`
 
+/**
+ * Plan item 427: the coat as cloth, not clay. Wool lit evenly read as one flat grey: real cloth in rain is uneven.
+ * Its nap catches light in soft patches (two octaves of value noise in the part's own space, so the pattern rides
+ * on the cloth as she moves, 9-21 cycles a metre: coarse enough not to shimmer the way item 227's fine rib did),
+ * the hem is darker where the rain has wicked up from the street to an uneven tide line about 0.65 m up, with wet fingers reaching higher (wet wool
+ * is darker and glossier), and the tops of her shoulders catch the street's top light as a soft sheen.
+ * `vClothH` is height above her feet in her own frame; `uClothInv` is her group's inverse world matrix.
+ */
+const CLOTH_VERT_PARS = /* glsl */ `
+uniform mat4 uClothInv;
+varying vec3 vClothP;
+varying float vClothH;`;
+const CLOTH_VERT = /* glsl */ `
+vClothP = position;
+vClothH = ( uClothInv * modelMatrix * vec4( transformed, 1.0 ) ).y;`;
+const CLOTH_FRAG_PARS = /* glsl */ `
+uniform float uCloth;
+varying vec3 vClothP;
+varying float vClothH;
+float clothHash( vec3 p ) { return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 ); }
+float clothNoise( vec3 p ) {
+  vec3 i = floor( p ), f = fract( p );
+  f = f * f * ( 3.0 - 2.0 * f );
+  return mix(
+    mix( mix( clothHash( i ), clothHash( i + vec3( 1, 0, 0 ) ), f.x ), mix( clothHash( i + vec3( 0, 1, 0 ) ), clothHash( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+    mix( mix( clothHash( i + vec3( 0, 0, 1 ) ), clothHash( i + vec3( 1, 0, 1 ) ), f.x ), mix( clothHash( i + vec3( 0, 1, 1 ) ), clothHash( i + vec3( 1, 1, 1 ) ), f.x ), f.y ),
+    f.z );
+}`;
+const CLOTH_FRAG = /* glsl */ `
+float clothWet = 0.0;
+float clothShade = 1.0;
+{
+  // Soft patches of nap, contrast-stretched (raw value noise sits near its middle).
+  float mott = smoothstep( 0.2, 0.8, clothNoise( vClothP * 8.0 ) * 0.65 + clothNoise( vClothP * 19.0 + 7.1 ) * 0.35 );
+  // Rain wicking up from the street: an uneven tide line with wet fingers reaching up the skirt.
+  float finger = smoothstep( 0.45, 0.9, clothNoise( vClothP * vec3( 30.0, 2.2, 30.0 ) + 3.3 ) );
+  float tide = 0.64 + ( clothNoise( vClothP * vec3( 12.0, 2.0, 12.0 ) ) - 0.5 ) * 0.14 + finger * 0.3;
+  clothWet = 1.0 - smoothstep( tide - 0.1, tide + 0.02, vClothH );
+  float shade = mix( 0.6, 1.35, mott ) * mix( 1.0, 0.36, clothWet );
+  #ifdef CLOTH_SKIRT
+  {
+    // Topstitched panel seams down the skirt (the lathe's axis is her spine): the back and side seams and two
+    // princess seams in front, each a soft groove with a stitch line of short dashes a few millimetres beside it.
+    float ang = atan( vClothP.x, vClothP.z );
+    float r = length( vClothP.xz );
+    float best = 9.0;
+    for ( int i = 0; i < 5; i++ ) {
+      float sa = i == 0 ? 3.14159 : i == 1 ? 1.62 : i == 2 ? -1.62 : i == 3 ? 0.52 : -0.52;
+      float d = abs( mod( ang - sa + 3.14159, 6.28318 ) - 3.14159 ) * r;
+      best = min( best, d );
+    }
+    float aa = max( fwidth( best ), 1e-4 );
+    float groove = 1.0 - smoothstep( 0.0015, 0.0015 + aa * 1.5, best );
+    float stitchLine = 1.0 - smoothstep( 0.0008, 0.0008 + aa * 1.5, abs( best - 0.006 ) );
+    float dash = step( 0.45, fract( vClothP.y * 160.0 ) );
+    float below = 1.0 - smoothstep( 0.02, 0.05, vClothP.y );
+    shade *= 1.0 - below * ( 0.45 * groove - 0.35 * stitchLine * dash );
+  }
+  #endif
+  clothShade = mix( 1.0, shade, uCloth );
+}`;
+/** The coat's albedo is near black: its look is the sheen, rim and key, so the cloth scales all of its light. */
+const CLOTH_OUT = "outgoingLight *= clothShade;\n#include <opaque_fragment>";
+/** Plan item 427: wet wool's gloss on the hem and the shoulders' top light, added with the coat's key. */
+const CLOTH_SHEEN = `{
+  vec3 upV = normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
+  vec3 cn2 = normalize( mix( nonPerturbedNormal, normal, 0.5 ) );
+  float top = smoothstep( 0.3, 0.85, dot( cn2, upV ) ) * smoothstep( 1.22, 1.38, vClothH );
+  float gl = smoothstep( 0.55, 0.95, dot( cn2, normalize( normalize( vViewPosition ) + upV ) ) );
+  totalEmissiveRadiance += uCloth * ( 0.16 * top * vec3( 1.0, 0.95, 0.88 ) + 0.12 * clothWet * gl * vec3( 0.9, 0.93, 1.0 ) );
+}`;
+
 export function buildFrontCath(phone: boolean): FrontCath {
   const group = new THREE.Group();
   group.name = "front-cath";
@@ -532,6 +604,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Plan item 363: the coat's own key, a warm low light on the wool from the lens's left and a satin sheen on the
     // folds that face it, so her shoulders, arms, belt and hem read against the night instead of one black mass.
     uCoatKey: { value: 1 },
+    // Plan item 427: the cloth's nap, wet hem and shoulder sheen (0 turns it off), and her frame for its heights.
+    uCloth: { value: 1 },
+    uClothInv: { value: new THREE.Matrix4() },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
@@ -603,6 +678,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
       : "";
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, rimU, hair ? hairRimU : {});
+      if (edge === "wool") {
+        sh.vertexShader = sh.vertexShader
+          .replace("#include <common>", "#include <common>\n" + CLOTH_VERT_PARS)
+          .replace("#include <project_vertex>", "#include <project_vertex>\n" + CLOTH_VERT);
+        sh.fragmentShader = sh.fragmentShader
+          .replace("#include <common>", "#include <common>\n" + CLOTH_FRAG_PARS)
+          .replace("#include <map_fragment>", "#include <map_fragment>\n" + CLOTH_FRAG)
+          .replace("#include <opaque_fragment>", CLOTH_OUT);
+      }
       sh.fragmentShader = sh.fragmentShader
         .replace("#include <opaque_fragment>", insideShade + hoodShade + skinLight)
         .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\nuniform float uCoatKey;\n" + (hair ? "uniform float uHairRim;\nuniform float uHairHood;\n" : "") + INK_BAND)
@@ -650,7 +734,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 319 slice 46: a two-sided shell's inside (the Ghost's hood) takes no rim.
             ${inside < 1 ? "fr *= gl_FrontFacing ? 1.0 : 0.0;" : ""}
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * rimC;
-            ${edge === "wool" ? COAT_KEY : ""}
+            ${edge === "wool" ? COAT_KEY + CLOTH_SHEEN : ""}
             ${keyTerm}
           }`,
         );
@@ -675,7 +759,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const rimOnly = skirtMat.onBeforeCompile;
     skirtMat.onBeforeCompile = (sh, r) => {
       rimOnly.call(skirtMat, sh, r);
-      sh.fragmentShader = sh.fragmentShader
+      sh.fragmentShader = "#define CLOTH_SKIRT\n" + sh.fragmentShader
         .replace("#include <color_fragment>", "")
         .replace("#include <opaque_fragment>", "outgoingLight *= vColor.rgb;\n#include <opaque_fragment>");
     };
@@ -2551,6 +2635,8 @@ float reliefShade( vec2 uv ) {
   let gazeW = 0;
   function update(dt: number, t: number, wind: { x: number; z: number }): void {
     const step = Math.min(dt, 1 / 20);
+    // Plan item 427: the cloth's heights in her own frame (last frame's matrix is near enough).
+    rimU.uClothInv.value.copy(group.matrixWorld).invert();
     const gk = 1 - Math.exp(-dt / 0.06);
     gazeNow += ((gazeWant ?? 0) - gazeNow) * gk;
     gazeW += ((gazeWant === null ? 0 : 1) - gazeW) * gk;
