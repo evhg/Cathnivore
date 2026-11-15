@@ -3569,7 +3569,10 @@ svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-ou
   .setup:not([data-steps]) .setup-map-head > h2::before { content: '2'; }
   .setup:not([data-steps]) .setup-difficulty > h2::before { content: '3'; }
   /* the page scrolls under the docked sign: a soft fade of paper above it, so what passes under reads as going under */
-  .setup > button.setup-start { box-shadow: 0 -22px 16px -4px var(--paper); }
+  /* Plan item 430 (cath-setup-P): a solid paper band first (the tops of the next step's tags showed through the soft
+     fade as slivers behind the sign), then the soft fade above it; the 'More' tag sits on that band. */
+  .setup > button.setup-start { box-shadow: 0 -16px 0 -2px var(--paper), 0 -32px 16px -6px var(--paper); }
+  .setup > .setup-more { bottom: 60px; z-index: calc(var(--z-sticky) + 1); }
 }
 
 /* Plan item 189: each producer's role ability staged over its hex for about a second (AbilityMoment.tsx). The
