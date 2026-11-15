@@ -751,6 +751,12 @@ export class Renderer3D {
     return this.faceCache;
   }
 
+  /** Plan item 419: the share of the land past the hedge still in the field's plain grass, and the props on it. */
+  margin3d(): { plainShare: number; props: number } | null {
+    const m = this.ground?.group.userData.margin as { land: number; plain: number; props: number } | undefined;
+    return m ? { plainShare: m.land ? m.plain / m.land : 0, props: m.props } : null;
+  }
+
   fieldShare(): number {
     const { x: cols, y: rows } = this.fieldSize;
     // The fitted base view, not the live camera (which carries the player's zoom and pan and the gate's ease).

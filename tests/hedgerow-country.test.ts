@@ -18,7 +18,7 @@ describe('Hedgerow 3D country (plan item 419)', () => {
     expect(new Set(COUNTRY.map((p) => p.join())).size).toBe(10)
     COUNTRY.forEach((pal, act) => {
       const grass = ACT_LIGHT[act]!.grass[0]
-      expect(pal.filter((c) => far(c, grass) > 10).length, `act ${act}`).toBeGreaterThanOrEqual(2)
+      expect(pal.filter((c) => far(c, grass) > 14).length, `act ${act}`).toBe(3)
     })
   })
 

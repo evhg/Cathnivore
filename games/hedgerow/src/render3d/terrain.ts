@@ -398,12 +398,12 @@ export const COUNTRY: readonly (readonly [string, string, string])[] = [
   ["#b4bf5c", "#6f9a48", "#9c7a52"],
   ["#8e6a84", "#a6743e", "#8c9460"],
   ["#d6c48e", "#7e9a5a", "#a090c0"],
-  ["#62a046", "#d0c45a", "#56784a"],
+  ["#82ac4e", "#d0c45a", "#4f7a5e"],
   ["#4f7a3a", "#8e6a3e", "#6c70b0"],
   ["#c88a9c", "#7c9a5c", "#bcb09a"],
-  ["#dcc63e", "#8e7050", "#a29c5e"],
+  ["#dcc63e", "#8e7050", "#c2a446"],
   ["#68a046", "#7e5e3c", "#cc88a6"],
-  ["#7ac05a", "#d2d6ce", "#9a9a8e"],
+  ["#7ac05a", "#d2d6ce", "#5c605e"],
   ["#ac5c4a", "#76a454", "#ccb26e"],
 ];
 
@@ -414,7 +414,7 @@ export function countryTone(act: number, x: number, y: number, out: number, seed
   const a = Math.sin(x * 0.42 + seed * 0.7) * Math.cos(y * 0.37 - seed * 0.3) + 0.5 * Math.sin((x + y) * 0.21 + seed);
   const b = Math.sin(x * 0.29 - y * 0.33 + seed * 1.3);
   const color = new THREE.Color(a > 0.35 ? pal[0] : b > 0.1 ? pal[1] : pal[2]);
-  const k = out <= 0.3 ? 0 : 0.72 * smooth(Math.min(1, (out - 0.3) / 1.4));
+  const k = out <= 0.3 ? 0 : 0.8 * smooth(Math.min(1, (out - 0.3) / 0.7));
   return { color, k };
 }
 
@@ -671,6 +671,9 @@ export function buildGround(level: Level): Ground {
   const bankTop = new THREE.Color("#d6c77a");
   const plinthWall = new THREE.Color(light.dirt[0]).lerp(new THREE.Color("#cfc5af"), 0.45);
   const tmp = new THREE.Color();
+  // Plan item 419: how much of the land past the hedge still wears the field's plain grass (the sandbox reads it).
+  let marginLand = 0;
+  let marginPlain = 0;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i) + cols / 2;
     const y = pos.getZ(i) + rows / 2;
@@ -727,6 +730,10 @@ export function buildGround(level: Level): Ground {
     colors[i * 3] = tmp.r;
     colors[i * 3 + 1] = tmp.g;
     colors[i * 3 + 2] = tmp.b;
+    if (out > 1 && h > -0.05) {
+      marginLand++;
+      if (Math.max(Math.abs(tmp.r - g0.r), Math.abs(tmp.g - g0.g), Math.abs(tmp.b - g0.b)) * 255 <= 10) marginPlain++;
+    }
   }
   geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geo.computeVertexNormals();
@@ -1493,6 +1500,7 @@ export function buildGround(level: Level): Ground {
   const leaves = (SCENERY_LEAVES[act] ?? [light.grass[1], "#4f7f37", "#5e8f41", "#6ea04c"]).slice();
   const treeKind = act === 6 ? "dead" : act === 1 || act === 4 ? "pine" : "oak";
   const nDecor = SCENERY_COUNT[act] ?? 70;
+  let marginProps = 0;
   const treeShare = SCENERY_TREES[act] ?? 0.7;
   for (let i = 0; i < nDecor; i++) {
     const x = -MARGIN + rand() * W;
@@ -1504,6 +1512,7 @@ export function buildGround(level: Level): Ground {
     const o = rand() < treeShare ? buildTree(rand() < 0.25 ? "pine" : treeKind, rand, leaves) : buildRock(rand);
     o.position.set(x, h, y);
     group.add(o);
+    marginProps++;
   }
   // Plan item 419: the country's own growth beyond the hedge, in its three colours (Saltmarsh's sea lavender and
   // samphire on sandy hummocks, Highmoor's heather and bracken, ...): low clumps in one instanced draw call, on the
@@ -1525,6 +1534,8 @@ export function buildGround(level: Level): Ground {
     }
     const m = instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff"), clumps, true);
     if (m) group.add(m);
+    marginProps += clumps.length;
+    group.userData.margin = { land: marginLand, plain: marginPlain, props: marginProps };
   }
   // Hedgerows along the field's edge (the game's namesake), broken where the lanes run out.
   // (Instanced: hundreds of bushes in two draw calls instead of one each.)
