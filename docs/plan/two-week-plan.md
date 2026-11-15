@@ -3945,7 +3945,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 1440x900 the board 750 px wide or more (360 at 390x844); at most one Outlet element per region, a badge from 2; corporate fills from `--corp-*` tokens (ui-css-lint passes); no hex meets Cath's or a producer's box; table and board specs pass; shots P and D before and after.
 - **Size:** 3
 
-## 414. [ ] Cathnivore: Hollowell gets its own face and a boardroom rail
+## 414. [ ] Cathnivore: Hollowell gets its own face and a boardroom rail *(lane B, in progress)*
 - **Why:** `plan1115c/cath-game-D` Hollowell's plan cards (565-1190 x 15-90) are pale paper tiles in the players' style, and its portrait (1210-1335 x 15-145; P 5-65 x 65-125) a warm hand-drawn grey-haired woman who reads as Mara (1135-1270 x 440-690): the villain looks like a player. VISION's corporate style (glossy, clinical, synth blips, no overshoot) has no home on the main screen.
 - **Build:** a Hollowell executive portrait in the corporate style (glossy gradients, hard highlights, no ink outline), smug and rattled expressions; the plan strip a boardroom rail (frosted acrylic, sans labels, cold light); card reveals linear or ease-in with a synth blip; the portrait rattled on a Squeeze or a liberated region.
 - **Accept:** the portrait SVG has no stroke in the ink token and differs from Mara's by over 40% (image diff); the rail's background from `--corp-*` tokens or a backdrop filter; reveal timing functions without overshoot; the expression swaps within 400 ms of a Squeeze; plan-strip/-cards/-corp specs pass; shots P and D before and after.
