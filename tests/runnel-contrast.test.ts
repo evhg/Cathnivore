@@ -70,3 +70,15 @@ describe('Runnel watered fields (plan item 277)', () => {
       expect(contrast(p['--wet-field']!, p['--dry-field']!)).toBeGreaterThanOrEqual(3)
     })
 })
+
+// Plan item 421: in daylight a dry ditch is a pale sandy bed between stone banks, so a channel waiting for water
+// reads as a channel, and the water that fills it stands 3:1 or more off that sand.
+describe('Runnel readable water (plan item 421)', () => {
+  for (const name of ['summer', 'spring', 'autumn', 'winter'] as const) {
+    it(`${name}: the dry bed is pale sand and the water reads 3:1 against it`, () => {
+      const p = palettes[name]!
+      expect(lum(p['--groove-bed']!)).toBeGreaterThan(0.4)
+      expect(contrast(p['--water']!, p['--groove-bed']!)).toBeGreaterThanOrEqual(3)
+    })
+  }
+})

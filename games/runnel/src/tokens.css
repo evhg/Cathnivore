@@ -22,11 +22,13 @@
   --wet-big: #6c9848;
   --groove: #96693b;
   --groove-wet: #7f5c35;
-  /* Plan item 61: a ditch's dark bed, its sunlit and shaded banks, pebbles, a stone basin and each ground's lip. */
-  --groove-bed: #3f2a17;
+  /* Plan item 61: a ditch's bed, its sunlit and shaded banks, pebbles, a stone basin and each ground's lip.
+     Plan item 421: a dry ditch is stone-lined with a pale sandy bed (it was a dark brown bar that read as mud or a
+     plank), so a groove waiting for water reads as a channel; the water runs deep blue against the sand. */
+  --groove-bed: #dcc493;
   --groove-bed-wet: #3a2a1a;
-  --bank-sun: #b98a55;
-  --bank-shade: #5f3f22;
+  --bank-sun: #d6ccb4;
+  --bank-shade: #2c2720;
   --pebble: #cfc4b0;
   --basin: #a89f90;
   --lip-fallow: #a8844f;
@@ -36,7 +38,7 @@
   --stake: #8a5a2e;
   --stake-hi: #b9814a;
   --twine: #e6d3a6;
-  --water: #3b8db0;
+  --water: #2a6f9a;
   --water-hi: #bfeaf4;
   --tuft-dry: #c2a170;
   --tuft: #5f9a3a;
@@ -229,6 +231,6 @@
     --dry-field: #e9dfc8;
     --wet: #c2dcb0;
     --wet-edge: #86a581;
-    --water: #4a86a8;
+    --water: #2c6688;
   }
 }
