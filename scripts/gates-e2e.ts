@@ -71,6 +71,28 @@ export function ciE2E(): CiE2E {
   }
 }
 
+/**
+ * The newest commit on `ref` (and not yet on origin/main) that GitHub's E2E workflow passed, or null. The lanes push
+ * code faster than the workflow finishes a run, so the build head is often still waiting while an earlier commit has
+ * passed: the release ships that one (owner, 2026-11-15), and the head goes out in the next release.
+ */
+export function newestPassed(ref = 'build'): string | null {
+  const sh = (c: string) => execSync(c, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  try {
+    sh('git fetch -q origin ci-status')
+    const files = sh('git ls-tree --name-only origin/ci-status status/e2e/').split('\n')
+    const recorded = new Set(files.map((f) => f.replace(/^status\/e2e\//, '').replace(/\.json$/, '')))
+    for (const commit of sh(`git rev-list ${ref} ^origin/main`).split('\n').filter(Boolean)) {
+      if (!recorded.has(commit)) continue
+      const st = JSON.parse(sh(`git show origin/ci-status:status/e2e/${commit}.json`)) as { success: boolean }
+      if (st.success) return commit
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [which, shard] = process.argv.slice(2)
   if (which === 'game') gameSuite()

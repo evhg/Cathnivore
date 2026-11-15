@@ -1,7 +1,7 @@
 // Implements SPEC 11.5 "Releasing": run gates, fast-forward main to the current build commit,
 // poll the live version.json, run a live smoke test, tag deploy-<n>, and log it in PROGRESS.md.
 // On smoke-test failure, revert main to the previous deploy tag (never force-push) and log it.
-import { ciE2E } from './gates-e2e'
+import { ciE2E, newestPassed } from './gates-e2e'
 import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -176,8 +176,19 @@ async function main() {
   // RELEASE_GATES_PASSED=<sha>: every gate part (GATES_PART=a, b and c in scripts/gates.ts) already passed on exactly
   // this build commit, run separately by a session whose tools cap one command at 2 h (owner, 2026-11-11). Any other
   // commit runs the gates here as before.
+  // What ships: the build head, unless GitHub's E2E hasn't passed it yet but has passed an earlier unreleased commit;
+  // then that commit ships (checked out detached, gated here like any other), and the head waits for the next release.
+  let target = sh('git rev-parse build')
+  if (!process.env.RELEASE_GATES_PASSED && ciE2E().state !== 'passed') {
+    const green = newestPassed('build')
+    if (green && green !== target) {
+      console.log(`=== The build head ${target} isn't through GitHub's E2E yet: releasing ${green}, the newest commit it passed ===`)
+      sh(`git checkout -q --detach ${green}`)
+      target = green
+    }
+  }
   const passed = process.env.RELEASE_GATES_PASSED
-  if (passed && passed === sh('git rev-parse build')) console.log(`=== Gates already passed on ${passed} (run in parts) ===`)
+  if (passed && passed === target) console.log(`=== Gates already passed on ${passed} (run in parts) ===`)
   else {
     // GitHub's E2E workflow runs the browser suites in about 20 min (scripts/gates-e2e.ts); gates.ts skips them when it
     // has passed on this commit. Give a run still going on the build head up to 40 min before falling back to running
@@ -191,7 +202,7 @@ async function main() {
     execSync('tsx scripts/gates.ts', { stdio: 'inherit' })
   }
 
-  const buildCommit = sh('git rev-parse build')
+  const buildCommit = target
   console.log(`\n=== Fast-forwarding main to ${buildCommit} ===`)
   sh('git fetch origin main build')
   // Captured before the fast-forward so a smoke-test failure can always revert to main's actual last
@@ -208,7 +219,7 @@ async function main() {
   // `origin/main` unconditionally, which is always safe here (this script never had local commits on
   // `main` to lose) and is the same fix every session has applied by hand until now.
   sh('git checkout -B main origin/main')
-  sh('git merge --ff-only build')
+  sh(`git merge --ff-only ${buildCommit}`)
   sh('git push origin main')
 
   console.log('\n=== Polling live version.json ===')

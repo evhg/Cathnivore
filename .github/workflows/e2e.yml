@@ -12,9 +12,12 @@ on:
     paths-ignore: ["**/*.md", "*.md", ".build-lock", ".build-lock-b", "docs/**"]
   workflow_dispatch:
 
-# No concurrency group: every code commit gets its own run (a release needs a result for exactly the commit it
-# ships, and the lanes push code every few minutes; a group cancelled or replaced nearly every run). Runs past the
-# account's runner limit wait for a runner instead.
+# One run at a time, plus the newest waiting one (GitHub drops older waiting runs; a run in progress always finishes).
+# The lanes push code faster than a run takes, so not every commit gets a run: `npm run release` ships the newest
+# commit that passed (scripts/gates-e2e.ts newestPassed), and later commits go out in the next release.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
