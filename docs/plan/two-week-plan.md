@@ -4102,7 +4102,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a scripted round shows 4+ distinct expressions on her (data attribute per beat); each beat within 400 ms of its event; at 1440x900 setup her figure 80%+ unobstructed; table and setup specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 437. [ ] The bugs from the 2026-11-15 22:30 critique, fixed as one batch
+## 437. [ ] The bugs from the 2026-11-15 22:30 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1115f`; earlier batches kept some as by design, so re-check before changing)
   - **Cathnivore:** `cath-setup-P` the 'MORE' pill over the Difficulty heading (285-363 x 762-784) and the Start bar over the difficulty options (16-374 x 786-836); the Sol producer chip cut at the right (290-390 x 380-425); `cath-game-P` the '8 more' tab over the hand's top (300-372 x 648-668); Hollowell's portrait over the SQUEEZE pill (5-68 x 62-125); `cath-title-D` the Daily sign over the board tray's foot (852-1396 x 755-770); `cath-setup-D` the unearned pins at about 2:1 (650-1000 x 740-840); `cath-game-D` the deck stack against the screen edge (1340-1410 x 790-870).
   - **Site:** `games-P` the Play buttons cut at the fold (30-90 x 820-844), the italic blurb low contrast (212-360 x 785-800); `games-D` the four cards' four type systems (110-1330 x 505-845) and the 11 px condensed blurb (430-690 x 725-742).
