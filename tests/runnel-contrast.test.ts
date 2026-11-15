@@ -82,3 +82,21 @@ describe('Runnel readable water (plan item 421)', () => {
     })
   }
 })
+
+// ...and watered ground is green: a hue between yellow-green and green in every palette.
+describe('Runnel watered ground (plan item 421)', () => {
+  const hue = (hex: string): number => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [number, number, number]
+    const mx = Math.max(r, g, b)
+    const d = mx - Math.min(r, g, b)
+    if (!d) return -1
+    const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4
+    return (h * 60 + 360) % 360
+  }
+  for (const [name, p] of Object.entries(palettes)) {
+    it(`${name}: a watered field and tile are green`, () => {
+      for (const t of ['--wet-field', '--wet']) expect(hue(p[t]!), t).toBeGreaterThanOrEqual(70)
+      for (const t of ['--wet-field', '--wet']) expect(hue(p[t]!), t).toBeLessThanOrEqual(150)
+    })
+  }
+})

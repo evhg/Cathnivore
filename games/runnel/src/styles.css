@@ -713,15 +713,15 @@ button {
   stroke-dashoffset: -1;
 }
 
-/* Water crosses a tile in two halves of the cascade step (water.ts CASCADE_MS = 250 ms, plan item 97): it runs
+/* Water crosses a tile in two halves of the cascade step (water.ts CASCADE_MS = 160 ms, plan items 97 and 421): it runs
    in along the inflow spoke, fills the hub, then runs out along the others, so the front can be followed. */
 .wet .water {
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 120ms linear calc(var(--delay, 0ms) + 125ms);
+  transition: stroke-dashoffset 78ms linear calc(var(--delay, 0ms) + 80ms);
 }
 
 .wet .water.in {
-  transition-duration: 115ms;
+  transition-duration: 74ms;
   transition-delay: var(--delay, 0ms);
 }
 
@@ -732,7 +732,7 @@ button {
 
 .wet .hub-water {
   opacity: 1;
-  transition: opacity 90ms linear calc(var(--delay, 0ms) + 90ms);
+  transition: opacity 58ms linear calc(var(--delay, 0ms) + 58ms);
 }
 
 .shimmer {
@@ -745,7 +745,7 @@ button {
 
 .wet .shimmer {
   opacity: 0.75;
-  transition: opacity 300ms linear calc(var(--delay, 0ms) + 220ms);
+  transition: opacity 300ms linear calc(var(--delay, 0ms) + 140ms);
   animation: flow 1.3s linear infinite;
 }
 
