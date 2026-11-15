@@ -758,7 +758,8 @@ test.describe('Hedgerow', () => {
     if (w < 600) {
       await expect(page.locator('#cath-dock')).toBeVisible()
       await page.locator('#cath-dock-line').click()
-      await expect(page.locator('#cath-dock')).toBeHidden()
+      // Plan item 392: folded to her portrait on the panel's corner, off the tray.
+      await expect(page.locator('#cath-dock-line')).toBeHidden()
     }
     // The tray is a real row of towers, not a squeezed sliver, and the preview chips under it aren't crushed.
     expect((await page.locator('#panel .tray').boundingBox())!.height).toBeGreaterThanOrEqual(48)

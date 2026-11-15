@@ -852,8 +852,40 @@ button {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 18%, transparent);
   pointer-events: none;
 }
+/* Plan item 392: folded (a tap, or 6 s open), only her portrait stays: a tab on the panel's top-left corner, like
+   the round drawer's handle at the right, beside the tray's packets (never over them or a plot). A tap on it opens her line again; a dot on it
+   says she has a newer line. */
 .cath-dock[data-folded] {
+  /* Its top 4 px past the panel's edge (the field ends 6 px above it, so it meets no plot); the tray's packets
+     step right to clear it (components.css). */
+  top: calc(var(--dock-top, 0px) - 10px);
+  right: auto;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  gap: 0;
+  clip-path: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 50%;
+}
+.cath-dock[data-folded] .cath-dock-line {
   display: none;
+}
+.cath-dock[data-folded] .cath-dock-bust {
+  width: 48px;
+  height: 48px;
+}
+.cath-dock[data-folded][data-news]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gold, var(--accent));
+  border: 2px solid var(--line);
 }
 .cath-dock[hidden] {
   display: none;

@@ -2588,6 +2588,11 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .tray-wrap.overflows .tray {
   padding-inline-end: 44px;
 }
+/* Plan item 392: her folded portrait sits on the panel's top-left corner; the packets start clear of it. */
+.play:has(.cath-dock[data-folded]:not([hidden])) .panel:not(.open) .tray-wrap .tray {
+  padding-inline-start: 52px;
+  scroll-padding-inline-start: 52px;
+}
 /* Plan item 166: the packet under the brass tab fades out beneath it rather than being cut by it. */
 .play .tray-wrap.more-shown .tray {
   -webkit-mask: linear-gradient(to left, transparent 0 26px, var(--ink) 64px);
@@ -3378,7 +3383,7 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   /* Plan item 385: while Cath's line is docked over the tray's top, the grip stands just above the dock, not over
      the bubble's top edge */
-  .play:has(.cath-dock:not([hidden])) .panel:not(.open) .drawer-handle {
+  .play:has(.cath-dock:not([hidden]):not([data-folded])) .panel:not(.open) .drawer-handle {
     top: -24px;
   }
   .play .drawer-handle::after {

@@ -1637,14 +1637,15 @@ const PREVIEW_SPARE = [
   ".field-warn .warn-key",
   ".ticket-note:not(.wave-advice)",
   ".wave-advice",
-  // Plan item 361: on a short desktop the rounds ahead keep their cards before the "still unanswered" line (the
-  // round cards carry each round's trait).
-  ".field-tabs .intel-locks",
   // Plan item 392: with Cath's plate in the column, the round's name goes before Coming up does (kept as the
-  // ticket's hover text); the number, the vehicles and her line stay.
+  // ticket's hover text); the number, the vehicles and her line stay. (Before the "still unanswered" line, item
+  // 348's lock words, which say what the round needs.)
   ".round-group:has(> .cath-plate:not([hidden])) .ticket-title",
   // then the vehicles' names (each chip keeps its icon and count, its name as hover text; Coming up names them too)
   ".round-group:has(> .cath-plate:not([hidden])) .ticket-chips .chip-name",
+  // Plan item 361: on a short desktop the rounds ahead keep their cards before the "still unanswered" line (the
+  // round cards carry each round's trait).
+  ".field-tabs .intel-locks",
   // Plan item 87: Coming up and the notebook share one tabbed card; when even that runs past the foot it goes.
   ":scope > .round-group > :is(.field-tabs, .field-notebook)",
 ] as const;
@@ -4032,8 +4033,12 @@ const DOCK_QUERY = matchMedia("(max-width: 599.98px) and (orientation: portrait)
 /** Plan item 297: the crowded-field dock is for a desktop-sized panel (D). On a landscape phone (844x390) the panel's
  *  card sits beside a short field the eye never leaves, so her line stays a compact bubble there (item 250's 64 px). */
 const CROWD_DOCK_QUERY = matchMedia("(min-width: 900px) and (min-height: 560px)");
-/** The line a tap folded away; it stays folded until she says something else. */
-let dockFolded = "";
+/** Plan item 392: the build (`level:wave`) her dock is folded for: folded, only her portrait shows, as a tab on the
+ *  panel's top edge (off the tray and the field), and new lines in that build wait behind it until a tap reopens. */
+let dockFoldedFor = "";
+/** When her line last opened (shown, or reopened by a tap): it folds to her portrait by itself after DOCK_OPEN_MS. */
+let dockOpenAt = 0;
+const DOCK_OPEN_MS = 6000;
 /** Once folded, or once the player picks a plot, the dock stays away for that build (`level:wave`), so a new line
  *  after each tower never covers the tray again mid-build. */
 let dockQuietFor = "";
@@ -4041,20 +4046,37 @@ let dockQuietFor = "";
 let crowdDock = "";
 let dockText = "";
 let dockFace: CathExpression | null = null;
-// A tap anywhere on the dock folds it away whole, so the tray under it is free (a drag can start at once after).
+// A tap on her open line folds it to her portrait, so the tray under it is free (a drag can start at once after);
+// a tap on the portrait opens it again.
+const dockBuild = () => (game ? `${game.level.id}:${game.wave}` : "");
 const foldDock = () => {
-  dockFolded = dockText;
-  if (game) dockQuietFor = `${game.level.id}:${game.wave}`;
+  dockFoldedFor = dockBuild();
   syncDockFold();
+};
+const toggleDock = () => {
+  if (ui.cathDock.hasAttribute("data-folded")) {
+    dockFoldedFor = "";
+    dockOpenAt = performance.now();
+    ui.cathDock.removeAttribute("data-news");
+    syncDockFold();
+  } else {
+    // Folding it by a tap on the line also shows where she means (on the phone the line is the plate).
+    pingCoached();
+    foldDock();
+  }
 };
 ui.cathDock.addEventListener("pointerdown", (e) => {
   e.preventDefault();
-  foldDock();
+  toggleDock();
 });
-ui.cathDockBust.addEventListener("click", foldDock);
+// A keyboard press on her portrait (no pointer) does the same.
+ui.cathDockBust.addEventListener("click", (e) => {
+  if (e.detail === 0) toggleDock();
+});
 function syncDockFold(): void {
-  const folded = !!dockText && dockFolded === dockText;
+  const folded = !!dockText && !!dockFoldedFor && dockFoldedFor === dockBuild();
   ui.cathDock.toggleAttribute("data-folded", folded);
+  ui.cathDockBust.setAttribute("aria-label", folded ? "Show Cath's line" : "Fold Cath's line away and show the tray");
 }
 
 /** Her face follows the line: a gap nothing answers worries her, a closing word is a smirk, advice is determined. */
@@ -4100,9 +4122,14 @@ function syncCathDock(g: Game, text: string): void {
     if (panel.height) dockQuietFor = `${g.level.id}:${g.wave}`;
     return;
   }
-  if (text === dockText && dockFolded === text) return;
+  const folded = dockFoldedFor === `${g.level.id}:${g.wave}`;
+  // Plan item 392: open, her line folds to her portrait by itself after a few seconds.
+  if (!folded && !el.hidden && text === dockText && performance.now() - dockOpenAt > DOCK_OPEN_MS) foldDock();
   const fresh = text !== dockText || el.hidden;
   if (fresh) {
+    if (!folded) dockOpenAt = performance.now();
+    // A new line while folded: a dot on her portrait says she has something to say.
+    el.toggleAttribute("data-news", folded && !!dockText && text !== dockText);
     dockText = text;
     ui.cathDockLine.textContent = text;
     const face = dockExpression(g, text);
@@ -4114,8 +4141,8 @@ function syncCathDock(g: Game, text: string): void {
     el.hidden = false;
     syncDockFold();
     // Plan item 208: the 3D Cath on the field points as her docked line arrives, as she does for a field bubble.
-    (renderer as { cathPoints?: () => void } | null)?.cathPoints?.();
-    if (!REDUCED) {
+    if (!folded) (renderer as { cathPoints?: () => void } | null)?.cathPoints?.();
+    if (!REDUCED && !folded) {
       el.classList.remove("slide");
       void el.offsetWidth;
       el.classList.add("slide");
@@ -4225,7 +4252,8 @@ cathPlate.hidden = true;
 cathPlate.innerHTML =
   '<span class="cath-plate-face" aria-hidden="true"></span><span class="cath-plate-body"><span class="cath-plate-who">Cath says</span><span class="cath-plate-line" id="cath-plate-line" role="status" aria-live="polite"></span></span>';
 let plateFaceKey = "";
-cathPlate.addEventListener("click", () => {
+/** Plan item 392: a tap on her tip rings the plot she means on the field and pings the packet she names. */
+function pingCoached(): void {
   const r = renderer as { coachPulseAt?: number } | null;
   if (r && "coachPulseAt" in r) r.coachPulseAt = performance.now();
   for (const t of ui.panel.querySelectorAll<HTMLElement>(".tray-tower[data-coached]")) {
@@ -4233,6 +4261,9 @@ cathPlate.addEventListener("click", () => {
     void t.offsetWidth;
     t.classList.add("coach-ping");
   }
+}
+cathPlate.addEventListener("click", () => {
+  pingCoached();
   if (!REDUCED) {
     cathPlate.classList.remove("ping");
     void cathPlate.offsetWidth;

@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 
 // Plan item 171: on an upright phone Cath's advice docks over the tray beside her 64 px bust instead of a bubble on
-// the field: it meets no plot, says who's speaking (role=status), her face follows the line, a tap folds it away
-// whole, freeing the tray under it. A desktop keeps the bubble beside her on the field.
+// the field: it meets no plot, says who's speaking (role=status), her face follows the line, a tap (or 6 s) folds it
+// to her portrait on the panel's corner, freeing the tray under it (item 392), and a tap on the portrait reopens it. A desktop keeps the bubble beside her on the field.
 type Box = { x: number; y: number; w: number; h: number }
 type Hg = { game(): unknown; plotBoxes(): Box[]; sendWave(g: unknown): unknown }
 
@@ -61,19 +61,42 @@ for (const level of [21, 34]) {
         h.sendWave(h.game())
       })
       await expect(dock).toBeHidden()
-      // A tap folds it away whole, and the tray under it takes taps again.
+      // Plan item 392: a tap folds it to her portrait, a tab on the panel's corner: off every plot and every tower
+      // packet, the tray under it taking taps again; a tap on the portrait opens her line again.
       await open(page, level)
       await expect(line).toBeVisible()
       await line.click()
-      await expect(dock).toBeHidden()
+      await expect(dock).toHaveAttribute('data-folded', '')
+      await expect(line).toBeHidden()
       await page.waitForTimeout(600)
-      await expect(dock).toBeHidden()
+      await expect(line).toBeHidden()
+      const tab = (await page.locator('#cath-dock-bust').boundingBox())!
+      expect(tab.width).toBeGreaterThanOrEqual(44)
+      const plots2 = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.plotBoxes())
+      for (const p of plots2) expect(meets(p, tab), `${scheme} folded portrait on plot ${JSON.stringify(p)}`).toBe(false)
+      const packs = await page.locator('#panel .tray-tower').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).filter((r) => r.width).map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height })))
+      for (const p of packs) expect(meets(p, tab), `${scheme} folded portrait over a packet`).toBe(false)
       const card = page.locator('#panel .tray-tower').first()
       const c = (await card.boundingBox())!
       expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest("#panel"), { x: c.x + c.width / 2, y: c.y + c.height / 2 })).toBe(true)
+      await page.locator('#cath-dock-bust').click()
+      await expect(line).toBeVisible()
+      await expect(dock).not.toHaveAttribute('data-folded', '')
     }
   })
 }
+
+test("plan item 392: open on a phone, her line folds to her portrait by itself after 6 s", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 600, 'upright phone only')
+  test.setTimeout(60_000)
+  await open(page, 21)
+  const line = page.locator('#cath-dock-line')
+  await expect(line).toBeVisible()
+  await page.waitForTimeout(3000)
+  await expect(line).toBeVisible()
+  await expect(page.locator('#cath-dock')).toHaveAttribute('data-folded', '', { timeout: 6000 })
+  await expect(page.locator('#cath-dock-bust')).toBeVisible()
+})
 
 test('a desktop has her line on the panel plate, not the field or the dock', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) < 600, 'desktop only')
