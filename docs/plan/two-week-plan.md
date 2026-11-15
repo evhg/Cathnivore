@@ -3827,7 +3827,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - hedgerow field, tips, gatequeue and panel specs pass; shots l21 and l34 at P and D, before and after.
 - **Size:** 2
 
-## 397. [ ] NIGHT SHIFT phone pick: the kit as a readable dossier page, not a stack of chips and rings *(lane B, in progress)*
+## 397. [ ] NIGHT SHIFT phone pick: the kit as a readable dossier page, not a stack of chips and rings *(handed back 2026-11-15 00:40 by lane B, slice 1: on an upright phone the three skill trees are rows, each its stamp and its one-line effect at `--fs-1` (13 px); cathode-type and css lint pass; classpick's phone cases pass (its D 'keys 1-5' case times out at 1.3-1.5 s on this machine on the base commit too). Not done, and why: the big name stays (items 245 and 375's specs require the 40 px+ nameplate and every tab's name); the stats stay dials (four bar rows add height on a page already at its limit, and item 375's 45 px face floor goes first); the gun's lamp bar is the 3D render's. Shots `p397a`)*
 - **Why:** `plan1114f/ns-play-P` (2x shot) names GHOST twice (the 64 px name 33-280 x 850-915 and the tab label 65-140 x 965-995); the three skills are outlined chips with no meaning (30-490 x 1520-1560) where D explains each in two lines (`ns-play-D` 1000-1270 x 595-735); the four stat rings (85-700 x 1250-1335) have no scale; the gun a 336x155 thumbnail with a lamp's white bar across its top (160-240 x 1330-1345); six bands stack under the stage and read as a form (VISION 1).
 - **Build:**
   - The big name goes; the open tab carries the name and class line.
