@@ -794,6 +794,26 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     <svg ref={svgRef} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
+      {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
+          its own thickness and shadow, so the board reads as one object on the cloth, not loose tiles. The edge layer
+          is stroked and the face layer covers the inner strokes, so only the outline is inked. */}
+      <g className="board-plate" pointerEvents="none" aria-hidden="true">
+        <g className="board-plate-shadow" filter="url(#tile-shadow)">
+          {active.map((id) => { const { x, y } = hexCenter(id, layout); return <polygon key={id} points={hexPoints(x + 6, y + TILE_DEPTH + 14, HEX_R * 1.07)} /> })}
+        </g>
+        <g className="board-plate-side">
+          {active.map((id) => { const { x, y } = hexCenter(id, layout); return <polygon key={id} points={hexPoints(x, y + TILE_DEPTH + 5, HEX_R * 1.07)} strokeWidth={2.4} strokeLinejoin="round" /> })}
+        </g>
+        <g className="board-plate-side-fill">
+          {active.map((id) => { const { x, y } = hexCenter(id, layout); return <polygon key={id} points={hexPoints(x, y + TILE_DEPTH + 5, HEX_R * 1.07)} /> })}
+        </g>
+        <g className="board-plate-edge">
+          {active.map((id) => { const { x, y } = hexCenter(id, layout); return <polygon key={id} points={hexPoints(x, y + 2, HEX_R * 1.07)} strokeWidth={2.4} strokeLinejoin="round" /> })}
+        </g>
+        <g className="board-plate-face">
+          {active.map((id) => { const { x, y } = hexCenter(id, layout); return <polygon key={id} points={hexPoints(x, y + 2, HEX_R * 1.07)} /> })}
+        </g>
+      </g>
       <g className="tile-shadows" filter="url(#tile-shadow)" pointerEvents="none" aria-hidden="true">
         {active.map((id) => {
           const { x, y } = hexCenter(id, layout)

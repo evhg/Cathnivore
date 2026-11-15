@@ -659,6 +659,12 @@ html.no-animations .board-object .bo-out, html.no-animations .board-object .bo-t
   aspect-ratio: auto;
 }
 
+/* plan item 413: the die-cut board plate under the tiles (Map.tsx), kraft card with a darker cut edge */
+.board-plate-shadow polygon { fill: rgb(var(--shadow-ink) / .3); }
+.board-plate-side polygon, .board-plate-edge polygon { fill: none; stroke: var(--ink); }
+.board-plate-side-fill polygon { fill: color-mix(in srgb, var(--kraft-lo) 70%, var(--ink)); }
+.board-plate-face polygon { fill: var(--kraft); }
+
 /* plan item 20: each tile casts its own soft shadow onto the table (Map.tsx draws them under the tiles) */
 .tile-shadows polygon {
   fill: rgb(var(--shadow-ink) / .34);
