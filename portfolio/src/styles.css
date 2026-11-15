@@ -1808,8 +1808,9 @@ h1 {
     align-self: flex-end;
     width: 120px;
     margin: 0 12% -150px 0;
-    /* her top half shows above the prints; the rest stands behind them */
-    clip-path: inset(-10% -40% 46% -40%);
+    /* her top half shows above the prints; the rest stands behind them (plan item 424: cut at the prints' top
+       edge, not 12 px into the first print's corner and its note) */
+    clip-path: inset(-10% -40% 51% -40%);
     filter: none;
   }
   .show-cath::after, .show-cath::before { display: none; }
