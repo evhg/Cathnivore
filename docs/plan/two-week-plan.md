@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-15 09:30
 
 
 
@@ -3919,5 +3918,51 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Runnel:** `runnel-D` the Up next card's text tight against its thumbnail (165-265 x 633-745), the hint 13 px grey on cream (70-290 x 803-818).
   - **NIGHT SHIFT:** `ns-play-D` '25 · 18 avg' about 11 px grey (1030-1095 x 435-448); `ns-title-D` 'No case open' low contrast (205-295 x 302-318), the case-file card unanchored between the menu and Cath (415-580 x 268-570).
   - **Site:** `games-D` 'Play today's Runnel' weaker than 'Browse' though it's the primary call (615-790 x 355-405); `portfolio-D` the gold 'AI.' dot nearly on the Cathnivore card (605-630 x 375-395).
+- **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 410. [ ] Hedgerow 3D: Hollowell's convoy and depot read as the glossy fleet, not pink blobs and a grey box
+- **Why:** `plan1115c/hedge-l21-3d-D` the queued vans are small pink blobs (285-310 x 255-370) where 2D shows liveried vans (`hedge-l21-2d-D` 300-350 x 180-460); the depot (150-260 x 175-265) a matte grey box; at P (`hedge-l21-3d-P` 115-150 x 320-550) pale lozenges with no wheels or livery. VISION's corporations are glossy, plastic and over-lit against the hand-made farm; the 3D view loses that contrast.
+- **Build:** each enemy kind's 3D model in its 2D sprite's livery with wheels/rotors and a glossy material (low roughness, a clearcoat sheen), scaled to about 0.8 of the lane's width with a contact shadow and a soft rim so it stands off the dirt; the depot a white-and-glass unit with a lit HOLLOWELL fascia; the lead vehicle of each kind keeps a name chip as in 2D.
+- **Accept:** at 1440x900 each queued vehicle's projected box is 28x16 px or more (20x12 at 390x844); each kind in the round a distinct geometry; enemy and depot materials roughness 0.3 or less, farm 0.6 or more; hedgerow-3dframe, depot3d, gatequeue and the 3D perf budget pass; shots P and D before and after.
+- **Size:** 3
+
+## 411. [ ] Runnel: the water visibly reaches Bea's garden, and a solve is a staged moment
+- **Why:** `plan1115c/runnel-D` the field's last hex (1000-1230 x 500-740) ends at a dry edge with no channel to Bea's garden (1150-1390 x 720-840); at P the tiles end at 330 x 580 and the garden (230-380 x 600-670) is unconnected; the spring house's stream (P 45-60 x 260-600) wanders down the side and fades. The story's payoff, spring to field to garden, is never drawn (VISION 4).
+- **Build:** an outflow channel from the field's exit to the garden, dry until solved and filled by an animated water stroke on the solve; about 900 ms of choreography (water runs tile by tile, the garden sprouts, Bea waves, Cath's portrait delighted with a line); the spring house's stream joined to the source tile so the route reads end to end; reduced motion fades only.
+- **Accept:** `[data-outflow]` in the board, its stroke-dashoffset non-zero before and 0 within 1.2 s of the solve; its end point inside the garden's box at P and D; after the solve the garden `data-watered` and Cath's portrait `data-expression="delighted"`; runnel specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 412. [ ] NIGHT SHIFT: The List and the case file as real noir mugshots, five people told apart
+- **Why:** `plan1115c/ns-title-D` the case file's portrait (420-570 x 285-460) a flat clay head with a white face slab; Julian Crisp (60-185 x 595-735) a grey bust with drawn-on features; the four 'Withheld' cards (200-745 x 590-735) identical silhouettes; at P they are the first thing under the menu (`ns-title-P` 20-370 x 710-805). Placeholder-looking against the lit street and the R-rated noir tone.
+- **Build:** each named target a lit bust before a height chart (hard key, rim light, grain, a booking placard), baked to WebP like the posters; each withheld card its own silhouette prop (stethoscope, microphone, hat, lit window) under redaction tape on a torn photo edge; the case file on paper with a typed case number.
+- **Accept:** five distinct mugshot images (pairwise pixel difference over 10%); each mugshot's luminance spans 70% of the range or more; every List image has alt text and is at least 2x its drawn size; cathode-front specs and cathode-type pass; shots P and D before and after.
+- **Size:** 2
+
+## 413. [ ] Cathnivore desktop: the board is the hero (bigger, deeper, less token clutter)
+- **Why:** `plan1115c/cath-game-D` the board (575-1155 x 120-685) is about 40% of the width, flanked by Cath (370-505 x 380-690) and the producers (1135-1330 x 310-690); every hex wears the same orange Outlet stacks and blue discs (Kingsmarket 790-950 x 340-470), washing out the terrain art; `cath-game-P` (20-370 x 170-520) the same clutter. VISION 2: big, rich, legible; and the corporate tokens should be glossy plastic against the ink farm art, not the same style.
+- **Build:** one glossy Hollowell building per region with a count badge in place of the loose Outlet stacks (cold palette, a specular highlight, no ink outline); the terrain richer and the tiles bevelled with a board shadow; at D the board at 52% of the width or more, the producers on a narrower rail.
+- **Accept:** at 1440x900 the board 750 px wide or more (360 at 390x844); at most one Outlet element per region, a badge from 2; corporate fills from `--corp-*` tokens (ui-css-lint passes); no hex meets Cath's or a producer's box; table and board specs pass; shots P and D before and after.
+- **Size:** 3
+
+## 414. [ ] Cathnivore: Hollowell gets its own face and a boardroom rail
+- **Why:** `plan1115c/cath-game-D` Hollowell's plan cards (565-1190 x 15-90) are pale paper tiles in the players' style, and its portrait (1210-1335 x 15-145; P 5-65 x 65-125) a warm hand-drawn grey-haired woman who reads as Mara (1135-1270 x 440-690): the villain looks like a player. VISION's corporate style (glossy, clinical, synth blips, no overshoot) has no home on the main screen.
+- **Build:** a Hollowell executive portrait in the corporate style (glossy gradients, hard highlights, no ink outline), smug and rattled expressions; the plan strip a boardroom rail (frosted acrylic, sans labels, cold light); card reveals linear or ease-in with a synth blip; the portrait rattled on a Squeeze or a liberated region.
+- **Accept:** the portrait SVG has no stroke in the ink token and differs from Mara's by over 40% (image diff); the rail's background from `--corp-*` tokens or a backdrop filter; reveal timing functions without overshoot; the expression swaps within 400 ms of a Squeeze; plan-strip/-cards/-corp specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 415. [ ] Cathnivore campaign: the chapters as an illustrated storybook path
+- **Why:** `plan1115c/cath-campaign-D` the right column (975-1355 x 155-880) a plain list; the five locked thumbnails (1230-1345 x 375-870) near-identical dusk scenes; the lock rail (910-950) identical grey circles; the progress bar (60-240 x 115-125) and the stats strip (80-640 x 800-870) both say '0 of 6'; map numbers don't link to the list; at P the chapter tabs (15-385 x 525-570) bare number chips. VISION 1 and 4.
+- **Build:** each chapter its own vignette with Cath in a story pose, locked ones a silhouette teaser; hovering or picking a chapter lights its map pin and route, a pin scrolls to its card (item 204's link kept); one progress mark (a wax seal per chapter) in place of the bar and strip; an unlock a 600-900 ms ribbon-cut (opacity only under reduced motion).
+- **Accept:** the six thumbnails pairwise distinct (image hash); hovering chapter N outlines pin N (computed style); exactly one progress indicator; campaign specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 416. [ ] The bugs from the 2026-11-15 09:40 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1115c`)
+  - **Hedgerow:** `hedge-l21-2d-D` the rack's role words cut at each card's foot (1110-1410 x 160-168, 250-256, 338-345: item 408); `hedge-l34-2d-D` 'Market Stall' on two lines pushing 'Earns' off its card, 'Court-house' hyphenated; Saltmarsh's salt pans read as pale glassy UI squares (`hedge-l21-2d-D` 750-795 x 305-355, P 60-100 x 470-505; item 399) and should read as water; `hedge-*-P` a sliver of rack between Cath's dock and the bar (30-330 x 752-764); `hedge-l21-3d-D` the farmers taller than the farmhouse (765-800 x 420-500; 560-625 x 545-640); `hedge-menu-D` 'Brand Ambassador' under node 30's office block (50-215 x 750-858).
+  - **Cathnivore:** `cath-setup-P` the 'More below' tag over step 3's heading (130-260 x 755-778: item 409); `cath-game-P` a gap in the hand dock and the third card cut at the right (120-390 x 670-775); `cath-setup-D` the market note over Cath's torso (1055-1215 x 540-765); `cath-setup-D` 'Two at the table' tile unframed (105-265 x 340-445); `cath-game-D` the Ledger mostly empty paper (30-315 x 630-800); the MARKET '2' badge clipped (1290-1330 x 15-40).
+  - **Runnel:** `runnel-D` Cath's bubble over the field's bottom-left hex (385-685 x 475-548); `runnel-P` the hint low contrast (75-325 x 790-802).
+  - **NIGHT SHIFT:** `ns-play-D` the gun render dark grey on black (1020-1400 x 240-350); 'and the Pin, her steel baton.' unlabelled (998-1190 x 580-596).
+  - **Site:** `portfolio-P` Cath cut by the first card's top edge (240-310 x 515-660); `games-D` the chalk 'Cathnivore' headline read as the game's name (610-1020 x 160-230).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
