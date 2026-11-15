@@ -780,6 +780,27 @@ export function buildGround(level: Level): Ground {
     water.position.set(cols / 2, -0.09, rows / 2);
     water.receiveShadow = true;
     group.add(water);
+    // Plan item 419: surf along the coastal acts' shore: a broken line of flat foam patches just off the beach,
+    // where the sea meets the land (none where a lane runs into the water).
+    const coastX = act === 2 ? -1.7 : act === 3 ? cols + 1.6 : act === 5 ? -1.8 : null;
+    if (coastX !== null) {
+      const sea = act === 3 ? 1 : -1;
+      const foam: Inst[] = [];
+      const white = new THREE.Color("#f4f8f6");
+      for (let y = -MARGIN + 0.3; y < rows + MARGIN - 0.3; y += 0.16) {
+        const x = coastX + sea * (0.12 + deco() * 0.14);
+        if (!sunk(x, y) || laneDistance(level, x, y) < 1.3) continue;
+        if (deco() < 0.18) continue;
+        const s = 0.07 + deco() * 0.08;
+        foam.push({ x, y: -0.075, z: y, ry: deco() * 6.3, s, sy: 0.12, color: white });
+        if (deco() < 0.5) foam.push({ x: x + sea * (0.12 + deco() * 0.1), y: -0.078, z: y + (deco() - 0.5) * 0.1, ry: deco() * 6.3, s: s * 0.6, sy: 0.1, color: white });
+      }
+      const fm = instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85 }), foam);
+      if (fm) {
+        fm.userData.foam = true;
+        group.add(fm);
+      }
+    }
     // Lower the ground under water areas so the plane shows through.
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i) + cols / 2;
