@@ -3985,13 +3985,13 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** 12+ margin props in view at 1440x900; under 5% of margin pixels within 10 of the base ground colour; draw calls within the 3D budget; the water's time uniform advances; the key light's colour differs per act (unit test); 3D specs pass; shots P and D.
 - **Size:** 2-3
 
-## 420. [ ] Hedgerow act map: Cath walks the trail, and the level card stops covering it
+## 420. [ ] Hedgerow act map: Cath walks the trail, and the level card stops covering it *(lane B, in progress)*
 - **Why:** `plan1115d/hedge-menu-D` Cath is a ~25 px figure (183-210 x 272-390) beside the trail, not on it; the level card (1125-1425 x 128-708) hides the trail's east bend (1040-1125 x 340-760). VISION 4 and 5.
 - **Build:** Cath a 64 px+ token standing on the current stop; after a win she walks the inked path to the next stop (800-1200 ms) leaving footprints; at D the trail is laid clear of the docked card (or the card slides over a dimmed margin).
 - **Accept:** the token 64 px tall or more, its foot within 8 px of the current stop; the walk 800-1200 ms, in place under reduced motion; no trail segment meets the card's box at 1440x900 or 1280x800; map specs pass; shots P and D.
 - **Size:** 1-2
 
-## 421. [ ] Runnel: water you can read, from dry ditch to running channel to greened field *(lane B, in progress)*
+## 421. [x] Runnel: water you can read, from dry ditch to running channel to greened field *(done 2026-11-15 12:37 lane B, 3 slices: a dry ditch a pale sandy bed between stone banks (the shaded wall dark slate, the sunlit pale stone), the water a deeper blue 3:1 or more off the sand in every daylight palette; the run 160 ms a tile (was 250: item 97's reason for slowing it holds at 160); `data-wet`, the depth-ordered arrival, the straw-to-green field and its sprouts were already there (items 61, 97, 277); runnel-contrast checks the sand, the water and the green hue, runnel-water the reduced-motion fill; tiles, water, ditch, board, fields, greened, win, lesson-hand, garden-farm pass. Shots `b421`)*
 - **Why:** `plan1115d/runnel-D` the dry channels are dark brown bars that read as mud or wood (900-1105 x 400-440, 1015-1135 x 580-650); water shows only at the spring (640-800 x 200-290); `runnel-P` the same (195-295 x 395-440). You can't tell which grooves will carry water. VISION 2 and 3. (Item 411 dug the outflow to Bea's garden; this is the board's own channels.)
 - **Build:** channels as stone-lined ditches: a pale sandy bed when dry, a blue flow when connected that advances tile by tile after a move (about 150 ms a tile); fields from straw to green when watered, a small sprout pop.
 - **Accept:** each channel carries `data-wet`; wet water against its bed at 3:1 or more; the flow advances in tile order at about 150 ms a tile; watered ground in the green hue range (token unit test); an instant fill under reduced motion; runnel specs pass; shots P and D.
