@@ -327,6 +327,21 @@ function inkNormals(g: THREE.BufferGeometry): void {
   g.setAttribute("inkNormal", new THREE.BufferAttribute(out, 3));
 }
 
+/**
+ * Plan item 363: the coat's key and satin. Wool lit by the street alone read as a black hole under her lit face
+ * (her coat's albedo is near black, so the street's lamps barely touch it). A warm, wide key from the lens's upper
+ * left lifts the cloth by its own colour, and a satin sheen (a soft half-vector highlight on the weave's broad
+ * normal, not its fine nap) catches the crests of the folds, the belt's roll and the shoulders that face that key.
+ * The skirt's fold shade (its vertex colours) darkens it again in the folds' troughs, so the folds read.
+ */
+const COAT_KEY = `{
+  vec3 cn = normalize( mix( nonPerturbedNormal, normal, 0.35 ) );
+  vec3 kd = normalize( vec3( -0.8, 0.25, 0.4 ) );
+  float kw = pow( saturate( dot( cn, kd ) * 0.75 + 0.25 ), 1.4 );
+  float sat = smoothstep( 0.8, 0.97, dot( cn, normalize( kd + vec3( 0.0, 0.0, 1.0 ) ) ) );
+  totalEmissiveRadiance += uCoatKey * ( 5.0 * kw * diffuseColor.rgb * vec3( 1.0, 0.9, 0.8 ) + 0.1 * sat * vec3( 1.0, 0.93, 0.86 ) );
+}`
+
 export function buildFrontCath(phone: boolean): FrontCath {
   const group = new THREE.Group();
   group.name = "front-cath";
@@ -514,6 +529,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     uKeyDir: { value: new THREE.Vector3(-0.45, 0.5, 0.75).normalize() },
     // Plan item 148: a step brighter, the noir poster's lit face (mean luminance 0.22 -> 0.25 at D).
     uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 1.45 : 1.3) },
+    // Plan item 363: the coat's own key, a warm low light on the wool from the lens's left and a satin sheen on the
+    // folds that face it, so her shoulders, arms, belt and hem read against the night instead of one black mass.
+    uCoatKey: { value: 1 },
   };
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
@@ -587,7 +605,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       Object.assign(sh.uniforms, rimU, hair ? hairRimU : {});
       sh.fragmentShader = sh.fragmentShader
         .replace("#include <opaque_fragment>", insideShade + hoodShade + skinLight)
-        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\n" + (hair ? "uniform float uHairRim;\nuniform float uHairHood;\n" : "") + INK_BAND)
+        .replace("#include <common>", "#include <common>\nuniform vec3 uRimDir;\nuniform vec3 uRimA;\nuniform vec3 uRimB;\nuniform vec3 uKeyDir;\nuniform vec3 uKey;\nuniform float uCoatKey;\n" + (hair ? "uniform float uHairRim;\nuniform float uHairHood;\n" : "") + INK_BAND)
         // Plan item 254: the street's direct lights fall on her in three bands (an inked illustration's flats), not
         // a smooth Lambert falloff; the ambient and the reflections stay smooth, so the dark band still models.
         // Plan item 319: not on the face (the material with catch-lights): banded, the street's light cut her jaw and
@@ -632,6 +650,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             // Plan item 319 slice 46: a two-sided shell's inside (the Ghost's hood) takes no rim.
             ${inside < 1 ? "fr *= gl_FrontFacing ? 1.0 : 0.0;" : ""}
             totalEmissiveRadiance += ${gain.toFixed(2)} * fr * rimC;
+            ${edge === "wool" ? COAT_KEY : ""}
             ${keyTerm}
           }`,
         );
