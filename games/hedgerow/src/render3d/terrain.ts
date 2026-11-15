@@ -27,7 +27,7 @@ import {
   buildWall,
   buildWindmill,
 } from "./models";
-import { actMood, matte, shoreFade, shoreFoam } from "./palette";
+import { actMood, matte } from "./palette";
 import { buildLanes, laneStyle } from "./lanes";
 import { laneDistance, vergeScatter } from "./verge";
 
@@ -751,33 +751,13 @@ export function buildGround(level: Level): Ground {
     }
     pos.needsUpdate = true;
     geo.computeVertexNormals();
-    // Plan item 269: a shore round each pond, on the water: a band of pale shallows that fades out from each edge where
-    // a wet cell meets dry land, so the water/land edge reads soft, not as a hard blue rectangle. One instanced mesh.
-    const shallows: THREE.Matrix4[] = [];
-    // Plan item 330: a narrower band (it covered most of a one-cell pond), green-blue shallows rather than near-white.
-    const SW = 0.22;
-    const up = new THREE.Vector3(0, 1, 0);
-    for (const key of wet) {
-      const [c, r] = key.split(",").map(Number) as [number, number];
-      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-        if (wet.has(`${c + dc},${r + dr}`)) continue;
-        // The strip's opaque side faces -z; turn it to face the dry neighbour.
-        const turn = dr === -1 ? 0 : dr === 1 ? Math.PI : dc === -1 ? Math.PI / 2 : -Math.PI / 2;
-        const x = c + 0.5 + dc * (0.5 - SW / 2);
-        const z = r + 0.5 + dr * (0.5 - SW / 2);
-        shallows.push(new THREE.Matrix4().compose(new THREE.Vector3(x, -0.08, z), new THREE.Quaternion().setFromAxisAngle(up, turn), new THREE.Vector3(1, 1, 1)));
-      }
-    }
-    if (shallows.length) {
-      const band = new THREE.InstancedMesh(
-        new THREE.PlaneGeometry(1, SW).rotateX(-Math.PI / 2),
-        new THREE.MeshStandardMaterial({ map: shoreFoam(), alphaMap: shoreFade(), transparent: true, roughness: 0.55, depthWrite: false }),
-        shallows.length,
-      );
-      shallows.forEach((m, i) => band.setMatrixAt(i, m));
-      band.name = "shallows";
-      band.renderOrder = 2;
-      group.add(band);
+    // Plan item 346: each pond and river a rounded water shape with a sloped bank, not a stepped rectangle. The wet
+    // cells' outline is traced into loops, every corner filleted, and a bank ring laid along it: wet mud just above
+    // the water 0.17 in from the cell edge (past the ground's step), earth at the edge, grass 0.18 out; inside it a
+    // fringe of shallows fades into the water. (Item 269's square shallows band left hard corners.)
+    if (wet.size) {
+      const banks = pondBanks(wet, heightAt, new THREE.Color(light.grass[0]).lerp(new THREE.Color(light.grass[1]), 0.5), new THREE.Color(light.dirt[1]));
+      for (const m of banks) group.add(m);
     }
   }
 
@@ -1830,4 +1810,137 @@ function addAdverts(group: THREE.Group, level: Level, cols: number, rows: number
     ((group.userData.adverts ??= []) as THREE.Object3D[]).push(board);
     group.add(board);
   }
+}
+
+/** A wet region's outline as loops of corner points (cells' outer edges, chained, collinear points merged). */
+export function wetLoops(wet: Set<string>): Array<Array<[number, number]>> {
+  const next = new Map<string, [number, number]>();
+  const add = (a: [number, number], b: [number, number]) => next.set(`${a[0]},${a[1]}`, b);
+  for (const key of wet) {
+    const [c, r] = key.split(",").map(Number) as [number, number];
+    if (!wet.has(`${c},${r - 1}`)) add([c, r], [c + 1, r]);
+    if (!wet.has(`${c + 1},${r}`)) add([c + 1, r], [c + 1, r + 1]);
+    if (!wet.has(`${c},${r + 1}`)) add([c + 1, r + 1], [c, r + 1]);
+    if (!wet.has(`${c - 1},${r}`)) add([c, r + 1], [c, r]);
+  }
+  const loops: Array<Array<[number, number]>> = [];
+  const seen = new Set<string>();
+  for (const k0 of next.keys()) {
+    if (seen.has(k0)) continue;
+    const loop: Array<[number, number]> = [];
+    let k = k0;
+    while (!seen.has(k) && next.has(k)) {
+      seen.add(k);
+      const p = k.split(",").map(Number) as [number, number];
+      loop.push(p);
+      const n = next.get(k)!;
+      k = `${n[0]},${n[1]}`;
+    }
+    // Keep the corners only.
+    const corners = loop.filter((p, i) => {
+      const a = loop[(i + loop.length - 1) % loop.length]!;
+      const b = loop[(i + 1) % loop.length]!;
+      return (p[0] - a[0]) * (b[1] - p[1]) - (p[1] - a[1]) * (b[0] - p[0]) !== 0;
+    });
+    if (corners.length >= 3) loops.push(corners);
+  }
+  return loops;
+}
+
+/** A loop with each corner rounded (radius up to `rad`, at most half each edge), sampled as points with outward normals. */
+function filleted(loop: Array<[number, number]>, rad: number): Array<{ x: number; z: number; nx: number; nz: number }> {
+  const pts: Array<[number, number]> = [];
+  const n = loop.length;
+  for (let i = 0; i < n; i++) {
+    const v = loop[i]!;
+    const a = loop[(i + n - 1) % n]!;
+    const b = loop[(i + 1) % n]!;
+    const la = Math.hypot(a[0] - v[0], a[1] - v[1]);
+    const lb = Math.hypot(b[0] - v[0], b[1] - v[1]);
+    const r = Math.min(rad, la / 2, lb / 2);
+    const A: [number, number] = [v[0] + ((a[0] - v[0]) / la) * r, v[1] + ((a[1] - v[1]) / la) * r];
+    const B: [number, number] = [v[0] + ((b[0] - v[0]) / lb) * r, v[1] + ((b[1] - v[1]) / lb) * r];
+    for (let k = 0; k <= 6; k++) {
+      const t = k / 6;
+      const u = 1 - t;
+      pts.push([u * u * A[0] + 2 * u * t * v[0] + t * t * B[0], u * u * A[1] + 2 * u * t * v[1] + t * t * B[1]]);
+    }
+  }
+  // Outward normals: the loops run clockwise on screen (x right, z down), so outward is (dz, -dx) of the direction.
+  return pts.map((p, i) => {
+    const a = pts[(i + pts.length - 1) % pts.length]!;
+    const b = pts[(i + 1) % pts.length]!;
+    let dx = b[0] - a[0];
+    let dz = b[1] - a[1];
+    const l = Math.hypot(dx, dz) || 1;
+    dx /= l;
+    dz /= l;
+    return { x: p[0], z: p[1], nx: dz, nz: -dx };
+  });
+}
+
+/**
+ * Plan item 346: the banks round a level's ponds and river: a sloped ring of wet mud, earth and grass along each wet
+ * region's rounded outline (one mesh), and a transparent fringe of shallows inside it (one mesh).
+ */
+function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number, grass: THREE.Color, dirt: THREE.Color): THREE.Mesh[] {
+  const IN = 0.17;
+  const OUT = 0.18;
+  const FRINGE = 0.14;
+  const WATER = -0.085;
+  const mud = new THREE.Color("#7d6a4c");
+  const earth = grass.clone().lerp(dirt, 0.3);
+  const shallow = new THREE.Color("#7fb7a6");
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const fpos: number[] = [];
+  const fcol: number[] = [];
+  const fidx: number[] = [];
+  for (const loop of wetLoops(wet)) {
+    const pts = filleted(loop, 0.32);
+    const base = pos.length / 3;
+    const fbase = fpos.length / 3;
+    for (const p of pts) {
+      const ix = p.x - p.nx * IN;
+      const iz = p.z - p.nz * IN;
+      const ox = p.x + p.nx * OUT;
+      const oz = p.z + p.nz * OUT;
+      pos.push(ix, WATER, iz, p.x, Math.max(WATER, heightAt(p.x, p.z)) + 0.012, p.z, ox, heightAt(ox, oz) + 0.006, oz);
+      col.push(mud.r, mud.g, mud.b, earth.r, earth.g, earth.b, grass.r, grass.g, grass.b);
+      const fx = ix - p.nx * FRINGE;
+      const fz = iz - p.nz * FRINGE;
+      fpos.push(fx, WATER - 0.002, fz, ix, WATER - 0.002, iz);
+      fcol.push(shallow.r, shallow.g, shallow.b, 0, shallow.r, shallow.g, shallow.b, 0.6);
+    }
+    const n = pts.length;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      for (let row = 0; row < 2; row++) {
+        const a = base + i * 3 + row;
+        const b = base + j * 3 + row;
+        idx.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+      const fa = fbase + i * 2;
+      const fb = fbase + j * 2;
+      fidx.push(fa, fb, fa + 1, fb, fb + 1, fa + 1);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  // Rows are wound either way round a loop; draw both sides.
+  const bank = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: THREE.DoubleSide }));
+  bank.receiveShadow = true;
+  bank.name = "banks";
+  const fgeo = new THREE.BufferGeometry();
+  fgeo.setAttribute("position", new THREE.Float32BufferAttribute(fpos, 3));
+  fgeo.setAttribute("color", new THREE.Float32BufferAttribute(fcol, 4));
+  fgeo.setIndex(fidx);
+  const fringe = new THREE.Mesh(fgeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  fringe.name = "shallows";
+  fringe.renderOrder = 2;
+  return [bank, fringe];
 }
