@@ -4009,7 +4009,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** icon silhouettes pairwise IoU under 0.6; desktop icons 110 px wide or more; the phone tab icons pairwise distinct (image diff); every weapon name matches the sim data; classpick specs pass; shots P and D.
 - **Size:** 1-2
 
-## 424. [ ] The bugs from the 2026-11-15 12:20 critique, fixed as one batch
+## 424. [ ] The bugs from the 2026-11-15 12:20 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1115d`; item 416 kept some of these as by design, so re-check before changing)
   - **Cathnivore:** `cath-game-P` a gap in the hand fan between Graft and Supply (120-235 x 668-772) and the third card cut at the right (357-390; 416 could not reproduce: shoot at 1, 2.5 and 5 s); `cath-campaign-P` 'Back to Title' cut by the viewport foot (95-295 x 812-844: a scroll, or a real overflow since 415's taller tabs?); `cath-setup-P` the difficulty options under the More pill and the Start bar (20-370 x 740-790); `cath-setup-D` unearned pin icons pale grey on cream (785-830 x 740-785, 918-962 x 740-780: 3:1 for graphics); `cath-game-D` the partner row's empty dashed boxes (195-310 x 248-264; or in item 418).
   - **Hedgerow:** `hedge-l21-2d-P` a sliver of rack under Cath's plate (20-330 x 750-765; item 392's dock); `hedge-l34-2d-P` the lower depot squeezed into the corner, its '283' plate over the building (5-55 x 612-660); `hedge-l21-3d-P` 'HOLLOWELL 216 next' floating over the sea with no depot in view (10-185 x 395-418); `hedge-menu-D` the card hiding the trail's east bend (or in item 420).
