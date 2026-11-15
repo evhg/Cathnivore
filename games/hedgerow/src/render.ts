@@ -69,7 +69,9 @@ import {
 import { shadowDir } from "./sunlight";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
-const FIELD_TOWER = 1.2;
+// Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
+// 1.56, the item's 1.3x, neighbours on adjacent plots overlapped and the top row met the frame).
+const FIELD_TOWER = 1.4;
 
 interface Shot {
   kind: TowerKind;
