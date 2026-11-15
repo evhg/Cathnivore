@@ -45,6 +45,12 @@ export function rangeStep(range: number): 1 | 2 | 3 {
   return range <= 50 ? 1 : range <= 150 ? 2 : 3;
 }
 const RANGE_WORD = ["Close", "Mid", "Long"] as const;
+/**
+ * Plan item 400: how loud her way of working is, the second meter on a desktop row. Hand-set per class rather than
+ * from the gun (the Ghost's rifle is loud, but she kills from where nobody hears; Wirewitch and Fixer share a gun).
+ */
+export const NOISE_STEP: Record<ClassId, 1 | 2 | 3> = { ghost: 1, wirewitch: 1, gunslinger: 2, butcher: 3, fixer: 3 };
+const NOISE_WORD = ["Quiet", "Mixed", "Loud"] as const;
 export const HOLD_MS = 600;
 /** The armoury prop's depth: copies of the profile stacked front to back (plan item 199). */
 const PROP_LAYERS = 6;
@@ -102,6 +108,14 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     segs.setAttribute("aria-hidden", "true");
     for (let i = 0; i < 3; i++) el("span", i < reach ? "cp-seg is-on" : "cp-seg", segs);
     el("span", "cp-meter-v", meter, RANGE_WORD[reach - 1]);
+    const loud = NOISE_STEP[cls];
+    const noise = el("span", "cp-opt-meter is-noise", body);
+    noise.dataset.step = String(loud);
+    el("span", "cp-meter-k", noise, "Noise");
+    const nsegs = el("span", "cp-meter-segs", noise);
+    nsegs.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < 3; i++) el("span", i < loud ? "cp-seg is-on" : "cp-seg", nsegs);
+    el("span", "cp-meter-v", noise, NOISE_WORD[loud - 1]);
     if (gearBase) {
       const gear = el("span", "cp-opt-gear", opt);
       gear.setAttribute("aria-hidden", "true");

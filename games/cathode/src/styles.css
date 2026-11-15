@@ -3103,8 +3103,14 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 
 /* Plan item 400: each class row's signature tree under its name, so the five rows read apart (the phone's tabs carry
    their own names, item 375). */
-.cp-opt-body:has(.cp-opt-role) { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "name name" "meter role"; column-gap: calc(var(--u) * 8); }
+/* Plan item 400 slice 4: three lines: the name, her signature tree at body size, then range and noise side by side. */
+.cp-opt-body:has(.cp-opt-role) { grid-template-columns: calc(var(--u) * 200) minmax(0, 1fr); grid-template-areas: "name name" "role role" "meter noise"; column-gap: calc(var(--u) * 22); row-gap: calc(var(--u) * 8); }
+.cp-opt-body:has(.cp-opt-role) > .cp-opt-meter.is-noise { grid-area: noise; }
+@media (min-height: 561px) and (min-width: 701px), (min-height: 561px) and (orientation: landscape) {
+  .cp-list:has(.cp-opt-role) { grid-auto-rows: max(40px, calc(var(--u) * 132)); } /* px-ok: tap target */
+}
+.cp-opt-body:has(.cp-opt-role) .cp-seg { width: calc(var(--u) * 18); }
 .cp-opt-body:has(.cp-opt-role) > .cp-opt-name { grid-area: name; }
 .cp-opt-body:has(.cp-opt-role) > .cp-opt-meter { grid-area: meter; }
-.cp-opt-role { grid-area: role; align-self: center; font: 600 var(--fs-1) / 1 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-opt-role { grid-area: role; align-self: center; font: 600 var(--fs-2) / 1 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 700px) and (orientation: portrait) { .cp-opt-role { display: none; } }

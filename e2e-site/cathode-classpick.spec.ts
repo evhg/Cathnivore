@@ -370,9 +370,14 @@ test('at D the classes are a lit rack with no empty band under them; keys move t
     const rows = [...document.querySelectorAll<HTMLElement>('.cp-opt')]
     return rows.map((r) => ({
       gear: r.querySelector('.cp-opt-gear')!.getBoundingClientRect().width,
-      segs: r.querySelectorAll('.cp-opt-meter .cp-seg').length,
+      segs: r.querySelectorAll('.cp-opt-meter:not(.is-noise) .cp-seg').length,
       label: r.querySelector('.cp-meter-k')?.textContent,
       word: r.querySelector('.cp-meter-v')?.textContent,
+      noise: r.querySelector('.cp-opt-meter.is-noise .cp-meter-v')?.textContent,
+      noiseSegs: r.querySelectorAll('.cp-opt-meter.is-noise .cp-seg').length,
+      role: r.querySelector('.cp-opt-role')?.textContent,
+      roleFont: parseFloat(getComputedStyle(r.querySelector('.cp-opt-role')!).fontSize),
+      text: (r.querySelector('.cp-opt-body') as HTMLElement).innerText,
       bottom: r.getBoundingClientRect().bottom,
     }))
   })
@@ -383,7 +388,13 @@ test('at D the classes are a lit rack with no empty band under them; keys move t
     expect(r.segs).toBe(3)
     expect(r.label).toBe('Range')
     expect(['Close', 'Mid', 'Long']).toContain(r.word)
+    // Plan item 400: a second, per-class Noise meter, and her signature tree on its own line at 14 px+.
+    expect(r.noiseSegs).toBe(3)
+    expect(['Quiet', 'Mixed', 'Loud']).toContain(r.noise)
+    expect(r.role?.length).toBeGreaterThan(2)
+    expect(r.roleFont).toBeGreaterThanOrEqual(14)
   }
+  expect(new Set(rack.map((r) => r.text)).size).toBe(5)
   // The gap from the last row to the first of her words, in the left column (x 0-560).
   const wordsTop = await page.evaluate(() => {
     const tops = [...document.querySelectorAll<HTMLElement>('.cp-words > *')]
