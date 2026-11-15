@@ -296,8 +296,10 @@ test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its n
       name: r('button.node[data-level="30"] .level-name').top,
     }
   })
-  // Plan item 124: she stands beside it on the road, not on it.
-  expect(m.you.right <= m.coin.left || m.you.left >= m.coin.right, JSON.stringify(m)).toBe(true)
+  // Plan item 124: she stands beside it on the road, not over its face. Plan item 420: at its edge, her foot on the
+  // stop (hedgerow-map-you), so her near side may overlap the coin's rim, but her middle stays off it.
+  const mid = (m.you.left + m.you.right) / 2
+  expect(mid <= m.coin.left || mid >= m.coin.right, JSON.stringify(m)).toBe(true)
   if ((page.viewportSize()?.width ?? 0) >= 600) expect(m.name - m.lock).toBeGreaterThanOrEqual(3)
 })
 

@@ -2435,6 +2435,19 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     you.style.setProperty("--walk-x", `${a.left - z.left}px`);
     you.style.setProperty("--walk-y", `${a.top - z.top}px`);
     you.classList.add("walking");
+    // Plan item 420: footprints along her way, each pressed as she passes (she walks for a second from 0.3 s).
+    const node = here as HTMLElement;
+    for (let k = 1; k <= 6; k++) {
+      const t = k / 7;
+      const f = document.createElement("i");
+      f.className = "footprint";
+      f.setAttribute("aria-hidden", "true");
+      f.style.setProperty("--fx", `${Math.round((a.left - z.left) * (1 - t) + z.width / 2 + (k % 2 ? -3 : 3))}px`);
+      f.style.setProperty("--fy", `${Math.round((a.top - z.top) * (1 - t) + z.height * 0.55)}px`);
+      f.style.setProperty("--at", `${300 + Math.round(t * 1000)}ms`);
+      node.append(f);
+      window.setTimeout(() => f.remove(), 4200);
+    }
     // Plan item 292: mid-stride while she walks the trail.
     setPose(you, "walk");
     // Plan item 124: at the newly opened stop she waves, then settles.
@@ -2442,6 +2455,6 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       if (!you.isConnected) return;
       setPose(you, "wave");
       window.setTimeout(() => you.isConnected && setPose(you, "clasped"), 2200);
-    }, 1750);
+    }, 1350);
   }
 }
