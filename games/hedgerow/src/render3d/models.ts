@@ -3638,7 +3638,7 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
     }
     case "reeds": {
       // Plan item 429: a rounded, wandering pool on a mud rim, not a flat box with straight edges.
-      g.add(softPool(w - 0.12, d - 0.12, "#4a3a26", 0.06, 0.004), softPool(w - 0.2, d - 0.2, "#2f6f86", 0, 0.02));
+      g.add(softPool(w - 0.12, d - 0.12, "#4a3a26", 0.06, 0.004), softPool(w - 0.16, d - 0.16, "#cfe2dc", 0.02, 0.012), softPool(w - 0.2, d - 0.2, "#2f6f86", 0, 0.02));
       const reed = [matte("#5d8a3a"), matte("#7aa84a")];
       const n = Math.round(w * d * 9);
       for (let k = 0; k < n; k++) {
