@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-15 12:11 UTC
-
 
 
 
@@ -3967,4 +3965,54 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **NIGHT SHIFT:** `ns-play-D` the gun render dark grey on black (1020-1400 x 240-350); 'and the Pin, her steel baton.' unlabelled (998-1190 x 580-596).
   - **Site:** `portfolio-P` Cath cut by the first card's top edge (240-310 x 515-660); `games-D` the chalk 'Cathnivore' headline read as the game's name (610-1020 x 160-230).
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
+- **Size:** 1
+
+## 417. [ ] Cathnivore: who holds each region shows in the land itself
+- **Why:** `plan1115d/cath-game-D` every region wears the same orange Outlet blocks and '?' bubbles (Highmoor 700-850 x 160-300, Saltmarsh 880-1040 x 170-290, Shingle Bay 880-1040 x 520-660): nothing says at a glance who holds which ground. VISION's art direction: hand-made paper for the players' world, glossy and clinical for the corporations; VISION 2, the table is the hero.
+- **Build:** three per-region ground treatments driven by the existing control state: held by Hollowell (the ground greyed toward tarmac under a glossy plastic sheen, a small Hollowell signboard), contested (today's look), freed (the ground at full warm saturation with bunting and a cluster of stalls). A change of state cross-fades in a 600-900 ms moment (no overshoot on the corporate side).
+- **Accept:** each region group carries `data-control` (held, contested or free); a held region's mean ground saturation at least 30% under a free one's (pixel sample); a freed region draws 2+ stall props; the change runs 400-1200 ms, a fade only under reduced motion; board specs pass; shots P and D before and after.
+- **Size:** 2-3
+
+## 418. [ ] Cathnivore desktop: the left rail as Mara's stall, not a form of boxed numbers
+- **Why:** `plan1115d/cath-game-D` the rail (10-338 x 8-888) is stacked bordered boxes: goods tiles (35-315 x 80-195) with 11-12 px captions, the partner row's empty dashed boxes (195-310 x 248-264), a Saving-for grid. VISION 1 (designed, not laid out) and 6.
+- **Build:** the rail drawn as her stall: goods in crates and jars whose fill shows the count, the numbers large on the crates; the partner's farm a smaller stall behind; the Saving-for cards price tags pegged on a string. Keep item 337's ledger binding and every control.
+- **Accept:** no rail text under 13 px; goods counts 22 px tall or more; a crate's fill height proportional to its count (unit test); no empty dashed placeholders; rail text at 4.5:1; board-scale and table specs pass; shots D (light and dark) before and after.
+- **Size:** 2
+
+## 419. [ ] Hedgerow 3D: the field set in its act's country, at golden hour
+- **Why:** `plan1115d/hedge-l21-3d-D` the field sits on flat grey-olive ground (900-1080 x 150-880, 15-260 x 600-880) and the sea (15-120 x 80-560) is a flat slate: the 2D margins were painted up (items 388, 399) but the 3D view reads as a tabletop on an empty floor. VISION 2 and 9.
+- **Build:** item 388/399's per-act margin props in 3D as instanced low-poly sets (Saltmarsh: dunes, reeds, moored boats, the lighthouse), water with a moving surface and shore foam, a warm low key light with long shadows whose colour varies by act.
+- **Accept:** 12+ margin props in view at 1440x900; under 5% of margin pixels within 10 of the base ground colour; draw calls within the 3D budget; the water's time uniform advances; the key light's colour differs per act (unit test); 3D specs pass; shots P and D.
+- **Size:** 2-3
+
+## 420. [ ] Hedgerow act map: Cath walks the trail, and the level card stops covering it
+- **Why:** `plan1115d/hedge-menu-D` Cath is a ~25 px figure (183-210 x 272-390) beside the trail, not on it; the level card (1125-1425 x 128-708) hides the trail's east bend (1040-1125 x 340-760). VISION 4 and 5.
+- **Build:** Cath a 64 px+ token standing on the current stop; after a win she walks the inked path to the next stop (800-1200 ms) leaving footprints; at D the trail is laid clear of the docked card (or the card slides over a dimmed margin).
+- **Accept:** the token 64 px tall or more, its foot within 8 px of the current stop; the walk 800-1200 ms, in place under reduced motion; no trail segment meets the card's box at 1440x900 or 1280x800; map specs pass; shots P and D.
+- **Size:** 1-2
+
+## 421. [ ] Runnel: water you can read, from dry ditch to running channel to greened field
+- **Why:** `plan1115d/runnel-D` the dry channels are dark brown bars that read as mud or wood (900-1105 x 400-440, 1015-1135 x 580-650); water shows only at the spring (640-800 x 200-290); `runnel-P` the same (195-295 x 395-440). You can't tell which grooves will carry water. VISION 2 and 3. (Item 411 dug the outflow to Bea's garden; this is the board's own channels.)
+- **Build:** channels as stone-lined ditches: a pale sandy bed when dry, a blue flow when connected that advances tile by tile after a move (about 150 ms a tile); fields from straw to green when watered, a small sprout pop.
+- **Accept:** each channel carries `data-wet`; wet water against its bed at 3:1 or more; the flow advances in tile order at about 150 ms a tile; watered ground in the green hue range (token unit test); an instant fill under reduced motion; runnel specs pass; shots P and D.
+- **Size:** 2
+
+## 422. [ ] NIGHT SHIFT pick: Cath posed with each class's weapon in hand, under its light
+- **Why:** `plan1115d/ns-play-D` Cath stands in a stiff A-pose, the Widowmaker floating off her right shoulder (740-830 x 225-700) with a second barrel showing (625-660 x 340-640); `ns-play-P` (2x) she is small and dim (290-500 x 220-680). Pose and staging, not her face sculpt (item 319). VISION 5.
+- **Build:** a rest pose per class on the existing rig (rifle shouldered, cleaver low, revolver drawn, wire spool, a charge in hand), each weapon parented to her hand; each class its own key-light colour and angle, crossfading in 250 ms when the pick changes.
+- **Accept:** each weapon parented to a hand bone, within 3 cm of it, for all five; the pose differs per class (joint-angle hash); the key colour unique per class; the crossfade 200-300 ms; Cath's box 45% of the viewport height or more at P; classpick specs pass; shots P and D.
+- **Size:** 2-3
+
+## 423. [ ] NIGHT SHIFT: five weapons told apart at a glance
+- **Why:** `plan1115d/ns-play-D` Gunslinger, Wirewitch and Fixer show near-identical grey pistols about 60 px wide (375-445 x 385-625); `ns-play-P` (2x) the Wirewitch and Fixer tab icons (500-710 x 700-735) share a silhouette. Class identity rests on words alone.
+- **Build:** each class a signature silhouette (the long-cylinder revolver, the Wirewitch's wired taser, the Fixer's charge launcher), the rows' icons 110 px wide or more with a class-colour rim light.
+- **Accept:** icon silhouettes pairwise IoU under 0.6; desktop icons 110 px wide or more; the phone tab icons pairwise distinct (image diff); every weapon name matches the sim data; classpick specs pass; shots P and D.
+- **Size:** 1-2
+
+## 424. [ ] The bugs from the 2026-11-15 12:20 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1115d`; item 416 kept some of these as by design, so re-check before changing)
+  - **Cathnivore:** `cath-game-P` a gap in the hand fan between Graft and Supply (120-235 x 668-772) and the third card cut at the right (357-390; 416 could not reproduce: shoot at 1, 2.5 and 5 s); `cath-campaign-P` 'Back to Title' cut by the viewport foot (95-295 x 812-844: a scroll, or a real overflow since 415's taller tabs?); `cath-setup-P` the difficulty options under the More pill and the Start bar (20-370 x 740-790); `cath-setup-D` unearned pin icons pale grey on cream (785-830 x 740-785, 918-962 x 740-780: 3:1 for graphics); `cath-game-D` the partner row's empty dashed boxes (195-310 x 248-264; or in item 418).
+  - **Hedgerow:** `hedge-l21-2d-P` a sliver of rack under Cath's plate (20-330 x 750-765; item 392's dock); `hedge-l34-2d-P` the lower depot squeezed into the corner, its '283' plate over the building (5-55 x 612-660); `hedge-l21-3d-P` 'HOLLOWELL 216 next' floating over the sea with no depot in view (10-185 x 395-418); `hedge-menu-D` the card hiding the trail's east bend (or in item 420).
+  - **Site:** `portfolio-P` Cath over the Cathnivore print's corner and its note (238-300 x 600-665; 416 kept item 404's layout: check the note is whole).
+- **Accept:** each point fixed or logged as kept with a reason; the specs for what changed pass; shots P and D before and after.
 - **Size:** 1
