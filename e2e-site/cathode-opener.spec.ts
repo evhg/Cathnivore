@@ -14,11 +14,12 @@ async function start(page: Page, touch: boolean, escAt?: number): Promise<void> 
     const w = window as unknown as W
     w.rec = { stall: 0 }
     const root = () => document.documentElement
-    // The longest gap between frames while the opener is up: a timer can't fire inside a stalled frame, so that
-    // much over its schedule is the page's (software WebGL), not the opener's.
+    // The time lost to stalled frames while the opener is up (every gap's excess over two vsyncs, summed): a timer
+    // can't fire inside a stalled frame, so that much over its schedule is the page's (software WebGL), not the
+    // opener's. (The longest single gap undercounted it: CI 2026-11-15 read 4.5 s + one stall with several.)
     let last = 0
     const frame = (t: number) => {
-      if (w.rec.seen !== undefined && w.rec.gone === undefined && last) w.rec.stall = Math.max(w.rec.stall, t - last)
+      if (w.rec.seen !== undefined && w.rec.gone === undefined && last) w.rec.stall += Math.max(0, t - last - 34)
       // Item 192: whether the trailing shot ran.
       const op = (window as unknown as { cathode?: { opener?: () => { on: boolean; k: number; box: { top: number; bottom: number } | null } } }).cathode?.opener?.()
       if (op?.on) w.rec.shotOn = true

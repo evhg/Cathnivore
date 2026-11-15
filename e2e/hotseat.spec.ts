@@ -18,9 +18,13 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
   // the next: under the release gates' load a quick second click could land while the first was still resolving.
   async function graft() {
     const before = await page.locator('.active-producer').innerText()
-    await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+    // dispatchEvent, not a forced click: right after the hand-off the new hand is still dealing in, and a forced
+    // click lands on the button's moving coordinates (CI 2026-11-15: the first graft after 'I'm ready' never landed).
+    const button = page.getByRole('button', { name: /^Graft:/ })
+    await expect(button).toBeEnabled()
+    await button.dispatchEvent('click')
     await expect
-      .poll(async () => (await page.getByText('Pass the device').isVisible()) || (await page.locator('.active-producer').innerText()) !== before)
+      .poll(async () => (await page.getByText('Pass the device').isVisible()) || (await page.locator('.active-producer').innerText()) !== before, { timeout: 10_000 })
       .toBe(true)
   }
 
