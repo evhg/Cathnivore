@@ -3911,7 +3911,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a role element on every rack card at l21 and l34, P and D; no unlabelled empty slot; no name with an ellipsis; hedgerow rack, rack-roles, tray and critique specs pass; shots before and after.
 - **Size:** 1
 
-## 409. [ ] The bugs from the 2026-11-15 07:00 critique, fixed as one batch
+## 409. [ ] The bugs from the 2026-11-15 07:00 critique, fixed as one batch *(lane A, in progress)*
 - **Build:** (check each first; shots `e2e/screenshots/plan1115b`)
   - **Cathnivore:** `cath-setup-P` the docked Start bar over step 3's cards (15-375 x 760-835) with no scroll cue; `cath-setup-D` '0 OF 3' about 11 px (950-1000 x 712-724), grey pin captions low contrast (770-850 x 825-840); `cath-title-P` the footer italic about 12 px, cream on brown (40-350 x 760-835); `cath-game-D` the 'Shingle Bay / Saltmarsh' tags cramped in the Expand pill (787-870 x 46-78).
   - **Hedgerow:** `hedge-l21-2d-P` the 'NEXT: ROUND 11' tab over the top edge of her line (222-368 x 666-690), chips peeking under it (100-360 x 760-768); `hedge-l21-2d-D` the sun icon on 'ROUND''s O (1113-1165 x 373-386), a blank strip in Coming up (1120-1400 x 685-705); `hedge-l21-3d-P` the depot board floats over the road (5-185 x 405-430).
