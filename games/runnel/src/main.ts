@@ -728,6 +728,7 @@ if (typeof ResizeObserver !== 'undefined') {
 // a board's corners leave room its boxes don't), the garden, the spring house, a sign or a keep. Her line stays in
 // the card above the valley, its tail down to her, and the card's portrait goes, so one Cath shows. No room: the
 // portrait keeps the line, as before.
+const PHONE_DOCK = true
 function placePhoneCath(cath: HTMLElement): void {
   const app = document.querySelector<HTMLElement>('.app')
   const stage = document.querySelector<HTMLElement>('.stage')
@@ -737,7 +738,9 @@ function placePhoneCath(cath: HTMLElement): void {
     delete cath.dataset.cathFigure
     if (app?.dataset.valleySay === 'phone') delete app.dataset.valleySay
   }
-  if (!app || !stage || !phone) return none()
+  // Plan item 407: on an upright phone her portrait and line are a dock under the board (styles.css), off the field,
+  // so the valley figure stands down there: one Cath, and no tile or bridge under her.
+  if (!app || !stage || !phone || PHONE_DOCK) return none()
   const st = stage.getBoundingClientRect()
   if (!st.width) return none()
   const blocks = [...document.querySelectorAll<Element>('.bea-garden, .spring-house, .farm-sign, .valley-feature:not([hidden])')]

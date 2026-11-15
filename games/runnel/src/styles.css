@@ -4905,3 +4905,15 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .valley-folk,
   .valley-keeps { display: block; }
 }
+
+/* Plan item 407: on an upright phone Cath is docked under the board, off the field: her portrait and line follow the
+   valley (the valley figure and its bubble stand down, main.ts), then the hint. The column is a flex column there so
+   the order holds whether or not the modes row shows (the lesson hides it). */
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .app { display: flex; flex-direction: column; }
+  .app > .stage { flex: 1 1 0; }
+  .app > .host { order: 1; }
+  .app > .foot { order: 2; }
+  .app > .rail { order: 3; }
+  .app > .host .host-line::before { left: -6px; top: 50%; bottom: auto; transform: translateY(-50%) rotate(45deg); }
+}

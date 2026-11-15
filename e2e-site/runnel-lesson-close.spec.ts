@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 // Plan item 170: the lesson framed close with Cath beside it. At D its tiles span 55% or more of the valley; at P
-// and D her bubble's tail ends within 40 px of her figure (on a phone it left the card above the valley); a ring
+// D her bubble's tail ends within 40 px of her figure (plan item 407: on a phone her line is docked under the board); a ring
 // breaks on each tile the water reaches; then the daily board shows within 1.5 s in the same page, pulling back
 // (cut under reduced motion).
 const tailGap = (page: Page) =>
@@ -19,10 +19,23 @@ const tailGap = (page: Page) =>
 test('the lesson is framed close, her bubble by her, then the daily pulls back into view', async ({ page }, info) => {
   await page.goto('/runnel/?lesson')
   await page.waitForSelector('#board .tiles > g.cell.lesson-target')
-  const say = page.locator('#valley-say')
-  await expect(say).toBeVisible({ timeout: 5_000 })
-  await expect(say).toContainText("Hi, I'm Cath")
-  expect(await tailGap(page)).toBeLessThanOrEqual(40)
+  if (info.project.name.includes('phone')) {
+    // Plan item 407: on an upright phone her line is in the dock under the board, off the tiles.
+    const line = page.locator('#host-line')
+    await expect(line).toContainText("Hi, I'm Cath", { timeout: 5_000 })
+    const m = await page.evaluate(() => {
+      const h = document.querySelector('.host')!.getBoundingClientRect()
+      const ts = [...document.querySelectorAll('#board polygon.tile')].map((t) => t.getBoundingClientRect())
+      return { meets: ts.some((t) => t.left < h.right && h.left < t.right && t.top < h.bottom && h.top < t.bottom), visible: h.height > 40 }
+    })
+    expect(m.visible).toBe(true)
+    expect(m.meets).toBe(false)
+  } else {
+    const say = page.locator('#valley-say')
+    await expect(say).toBeVisible({ timeout: 5_000 })
+    await expect(say).toContainText("Hi, I'm Cath")
+    expect(await tailGap(page)).toBeLessThanOrEqual(40)
+  }
   if (!info.project.name.includes('phone')) {
     const ratio = await page.evaluate(() => {
       const st = document.querySelector('.stage')!.getBoundingClientRect()

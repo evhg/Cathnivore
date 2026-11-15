@@ -117,55 +117,48 @@ test('her face follows the water: worried on a spill, a wink on the solve', asyn
   await expect(cath).toHaveAttribute('data-pose', 'wave')
 })
 
+// Plan item 407: on an upright phone she is docked under the board, her portrait and line in one card, off the field.
 for (const date of ['2026-11-03', '2026-11-04', '2026-11-08']) {
-  test(`one Cath on a phone: standing in the valley (${date})`, async ({ page, hasTouch }) => {
+  test(`one Cath on a phone: docked under the board (${date})`, async ({ page, hasTouch }) => {
     test.skip(!hasTouch, 'the phone')
     await page.clock.setFixedTime(new Date(`${date}T10:00:00Z`))
     await page.goto('/runnel/?nohelp')
     await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
-    await expect.poll(() => visibleCaths(page)).toEqual(['valley-cath'])
+    await expect.poll(() => visibleCaths(page)).toEqual(['host-face'])
     const m = await page.evaluate(() => {
-      const c = document.getElementById('valley-cath')!
-      const r = c.getBoundingClientRect()
+      const host = document.querySelector('.host')!.getBoundingClientRect()
+      const board = document.getElementById('board')!.getBoundingClientRect()
       const st = document.querySelector('.stage')!.getBoundingClientRect()
-      const svg = document.getElementById('board') as unknown as SVGSVGElement
-      const pt = svg.createSVGPoint()
-      let hit = false
-      for (const t of document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
-        for (let y = r.top + r.height / 3; y <= r.bottom - 4 && !hit; y += 6)
-          for (let x = r.left + r.width * 0.2; x <= r.right - r.width * 0.2 && !hit; x += 6) {
-            pt.x = x
-            pt.y = y
-            hit = t.isPointInFill(pt.matrixTransform(t.getScreenCTM()!.inverse()))
-          }
       const line = getComputedStyle(document.getElementById('host-line')!)
-      return { h: r.height, inside: r.left >= st.left - 1 && r.right <= st.right + 1 && r.top >= st.top - 1 && r.bottom <= st.bottom + 1, hit, font: parseFloat(line.fontSize) }
+      const meets = host.left < board.right && board.left < host.right && host.top < board.bottom && board.top < host.bottom
+      return { below: host.top >= st.bottom - 1, meets, font: parseFloat(line.fontSize), onScreen: host.bottom <= innerHeight }
     })
-    expect(m.h).toBeGreaterThanOrEqual(120)
-    expect(m.inside).toBe(true)
-    expect(m.hit).toBe(false)
+    expect(m.below).toBe(true)
+    expect(m.meets).toBe(false)
+    expect(m.onScreen).toBe(true)
     expect(m.font).toBeGreaterThanOrEqual(15)
-    // Still one after a tap, and her face follows the water: a wink on the solve.
+    // Still one after a tap.
     await page.locator('.tiles > g.cell:not(.stone):not(.fixed)').first().click()
     await page.waitForTimeout(300)
-    expect(await visibleCaths(page)).toEqual(['valley-cath'])
+    expect(await visibleCaths(page)).toEqual(['host-face'])
   })
 }
 
 test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'the phone')
   await page.goto('/runnel/?nohelp&practice')
-  await expect(page.locator('#valley-cath[data-cath-figure]')).toBeVisible()
-  const before = await page.locator('#valley-cath').getAttribute('data-expression')
+  await expect(page.locator('#host-face svg')).toBeVisible()
+  const before = await page.locator('#host-face').getAttribute('data-expression')
   await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
   await page.locator('#board [data-last]').click()
-  await expect(page.locator('#valley-cath')).not.toHaveAttribute('data-expression', before ?? '')
+  await expect(page.locator('#host-face')).not.toHaveAttribute('data-expression', before ?? '')
 })
 
 // Plan item 188: the half-length figure ends flat at the hips; a drystone wall on a verge stands in front of that
 // cut and runs down to the valley's frame, so she never floats cut off (D and the phone's standing figure). Plan item
 // 351: it is a footbridge's open railing (a top board, a rail, spindles), no solid board 40 px+ on both sides.
-test('she stands behind a wall that hides the figure cut and meets the frame', async ({ page }) => {
+test('she stands behind a wall that hides the figure cut and meets the frame', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the phone docks her under the board (item 407)')
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
   await page.goto('/runnel/?nohelp')
   await expect(page.locator('.tiles > g.cell').first()).toBeVisible()

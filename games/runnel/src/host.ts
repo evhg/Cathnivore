@@ -95,6 +95,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
       face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+      face.dataset.expression = expression
       current = expression
       drawStage(expression)
     }
@@ -113,6 +114,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     if (expression === current) return
     current = expression
     face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+    face.dataset.expression = expression
     drawStage(expression)
   }
   return {
