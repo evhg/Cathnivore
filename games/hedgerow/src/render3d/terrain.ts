@@ -1876,8 +1876,10 @@ export function buildGround(level: Level): Ground {
   // Plan item 330: the water's breathing colour, deeper and greener (the old pair, #3d7fa6 to #5aa3c4, read pale-blue).
   // Release 2026-11-15: a shade lighter and bluer (were #2b6578 and #3b8299): item 360's day key (less sky fill, a
   // lower sun) left the lit water ΔE 18 darker than the 2D pond (hedgerow-water.spec allows 15).
-  const waterBase = new THREE.Color("#3a809a");
-  const waterLight = new THREE.Color("#4d9ab6");
+  // 2026-11-15 22:51: greener, toward the 2D pond's teal (#6da6b0): the sky's reflection on the clear coat adds blue,
+  // and the lit water read (97-128, 142-165, 175-201), ΔE 16-17 off the 2D pond on CI.
+  const waterBase = new THREE.Color("#3a8a92");
+  const waterLight = new THREE.Color("#4ea4aa");
   const update = (t: number, dt: number) => {
     timeU.value = t * windy;
     cloudOff.value.x -= dt * 0.006 * windy;
