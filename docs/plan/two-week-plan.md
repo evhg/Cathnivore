@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-15T18:55Z
 
 
 
@@ -4018,3 +4017,51 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Site:** `portfolio-P` Cath over the Cathnivore print's corner and its note (238-300 x 600-665; 416 kept item 404's layout: check the note is whole).
 - **Accept:** each point fixed or logged as kept with a reason; the specs for what changed pass; shots P and D before and after.
 - **Size:** 1
+
+## 425. [ ] Cathnivore: Hollowell's pieces as glossy miniatures standing on the land
+- **Why:** `plan1115e/cath-game-D`: every region carries rounded orange cubes with white chips, a cyan '?' bubble, a tiny 'H' billboard, flag strings and floating '2' badges (Saltmarsh 900-1010 x 190-250, Kingsmarket 780-940 x 360-420); at `cath-game-P` (130-330 x 300-470) they are 20-24 px blobs. They read as UI stickers, not pieces on a table (VISION 2: the map and its pieces are the most beautiful thing; STYLE 2.2-2.3: glossy corporate material, shape before colour).
+- **Build:** an Outlet as a glossy mini storefront (awning, H mark, one highlight, no outline); the '?' marker a corporate speech bubble on a stake; the billboard a hoarding on legs. Each piece casts a soft contact shadow and drops in on arrival (corporate easing, no overshoot). Counts sit on the piece's own base, not a floating badge.
+- **Accept:**
+  - each piece type distinct in greyscale (the map's greyscale test);
+  - 28 px+ tall at D, 20 px+ at P; a shadow under every piece; no count badge more than 4 px off its piece;
+  - board and piece-layout specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 426. [ ] Cathnivore desktop campaign: the map as a drawn atlas of Marrow on the table
+- **Why:** `plan1115e/cath-campaign-D`: the map is a flat slate rounded box (60-870 x 140-760), about 45% empty sea with a few ticks, and Cath stands in the sea inside the frame (690-820 x 470-750). The chapters are well dressed; the map is the weakest thing on the screen (VISION 1: a focal scene, not a box).
+- **Build:** a paper map sheet with deckled edges lying on the gingham; a drawn coastline with shallows, a compass rose, a cartouche ('The Republic of Marrow'), boats and gulls; Hollowell's tower over Kingsmarket. Cath stands beside the sheet on the table, not on the water. A stop still opens its chapter.
+- **Accept:** no flat fill over 15% of the map's box (grid sample); Cath's box clear of the sheet's sea; campaign specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 427. [ ] NIGHT SHIFT: Cath's coat as real cloth, her boots made
+- **Why:** `plan1115e/ns-title-D` (880-1140 x 380-900) and `ns-play-D` (610-800 x 330-840): the trench is one flat grey-white with no weave, seams or rain sheen, untextured clay against the wet street; the boots (650-760 x 690-840 in ns-play-D) are blocks (VISION 6, craft in the details; the bible's classy look). Item 363 lit the coat and 319 covers her face; this is the cloth itself.
+- **Build:** a procedural twill normal and a rain-dark gradient from the shoulders down with a wet specular sheen; topstitched seams and a darker lapel lining; metal buckle and buttons; fold geometry at the belt and hem; boots with a heel, a sole and a polish highlight.
+- **Accept:** the coat's luminance standard deviation 2x today's in the same box; a specular band on the shoulders (pixels 25%+ over the coat's median); cathode-perf within budget run alone; posters re-rendered (keyart-fresh); shots P and D (title and pick) before and after.
+- **Size:** 2
+
+## 428. [ ] Hedgerow act map: one painted country at one scale
+- **Why:** `plan1115e/hedge-menu-D`: the land between the rows (0-1120 x 440-720) is pale empty squares crossed by bead hedges; props at clashing scales with no ground or shadow (the sailboat 300-440 x 620-705 bigger than the beach huts 160-275 x 650-705 and the lighthouse 590-640 x 610-680); dunes and pools flat cut-outs (675-1040 x 490-680). VISION 1 and the art direction's hand-made poster.
+- **Build:** one prop scale per act; every prop seated on painted ground with a shadow; Saltmarsh's creeks, mudflats and samphire painted into the land; the bead lines drawn as hedges with depth; the same pass on every act's map.
+- **Accept:** heights within 1.5x for each kind of building or boat; a shadow under every prop; under 30% of the inter-row land within 10 of one flat colour; shots P and D (acts 1, 3 and 5) before and after.
+- **Size:** 2
+
+## 429. [ ] Hedgerow 3D Saltmarsh: soft marsh and water, not rubble and boxes
+- **Why:** `plan1115e/hedge-l21-3d-D`: the shore dunes are beige low-poly boulders (15-170 x 280-880), the far ground lilac rock lumps (890-1080 x 80-310); the field's water still straight-edged boxes with vertical walls (285-550 x 380-550, 720-1030 x 555-620); at P the boulders take 0-110 x 60-680. Item 419 gave the margin its country; this is its shapes (VISION 2, 7).
+- **Build:** dunes as smooth displaced terrain with marram grass, mud flats with tidal pools; rocks smoothed and recoloured to the act's palette; water cells meshed with curved banks, a reed fringe and a foam line. New props take their own random stream (DECISIONS 11-15).
+- **Accept:** no margin mesh outline under 24 segments; no straight water edge longer than one cell; draw calls and triangles within budget; hedgerow-country3d and the water specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 430. [ ] The bugs from the 2026-11-15 19:20 critique, fixed as one batch
+- **Build:** (check each first; shots `e2e/screenshots/plan1115e`)
+  - `ns-title-P` (2x): the bright 'HOLL' sign (470-780 x 75-260) behind 'SHIFT' takes its cream letters' contrast; LUNA's reflection pokes out under the case file card (70-410 x 1040-1140).
+  - `ns-play-D`: three dark rods cross Cath's silhouette (rifle 740-830 x 230-690, a rod 630-660 x 330-620, the tripod telescope 465-600 x 345-690 meeting her elbow).
+  - `ns-play-P`: the class text runs over her boots (400-460 x 900-1000).
+  - `hedge-l34-2d-D`: a black diagonal stroke across each rowing boat (955-1050 x 90-140, 350-400, 625-670), reads as a strike-through.
+  - `hedge-l21-3d-P`: the 'HOLLOWELL 216 next' label over the third van (5-185 x 435-460); the top bar cuts the depot (165-235 x 55-120).
+  - `hedge-menu-D`: a brown sliver under the header (270-290 x 56-63); the wordmark off-centre (370-515).
+  - `cath-setup-P`: 'MORE' chip (285-365 x 755-778) over the Difficulty heading; the difficulty tags behind Start (15-375 x 770-790).
+  - `runnel-D`: Cath's footbridge a flat plank box cutting her at the hip (385-620 x 790-870); the left column empty below 820.
+  - `portfolio-D`: Cath about 70x225 px alone in the bottom-right void with no ground (1195-1265 x 615-840).
+  - `games-D`: the hero headline says 'Cathnivore' while the quote and primary button sell Runnel (615-1115 x 160-400).
+- **Accept:** each point fixed or logged as kept with a reason; specs for what changed pass; shots P and D before and after.
+- **Size:** 2
