@@ -36,7 +36,7 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     expect(await page.evaluate(() => document.scrollingElement!.scrollTop)).toBe(0)
     await expect(page.getByRole('button', { name: 'Back to Title' })).toBeInViewport()
     // Plan item 279: locked postcards are their scenes at dusk under a wax seal, the land in colour, no greyscale
-    const sealed = await page.locator('.cmp-vignette.is-sealed').evaluateAll((els) =>
+    const sealed = await page.locator('.cmp-vignette.is-sealed:not(.is-mini)').evaluateAll((els) =>
       els.map((e) => ({ filter: getComputedStyle(e).filter, seal: !!e.querySelector('.cmp-vig-seal'), hill: getComputedStyle(e.querySelector('.cmp-vig-hill')!).fill })),
     )
     expect(sealed.length).toBe(4)

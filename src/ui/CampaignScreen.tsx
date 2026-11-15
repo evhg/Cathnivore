@@ -208,7 +208,7 @@ function ChapterMotif({ id }: { id: string }) {
     </g>
   )
 }
-function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked' | 'current' | 'done' }) {
+function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; state: 'locked' | 'current' | 'done'; mini?: boolean }) {
   const locked = state === 'locked'
   const producer = chapter.producers[0]
   const regions = vignetteRegions(chapter)
@@ -217,10 +217,11 @@ function ChapterVignette({ chapter, state }: { chapter: Chapter; state: 'locked'
   const slot = VIG_W / n
   return (
     <svg
-      className={locked ? 'cmp-vignette is-sealed' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette'}
+      className={(locked ? 'cmp-vignette is-sealed' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette') + (mini ? ' is-mini' : '')}
       viewBox={`0 0 ${VIG_W} ${VIG_H}`}
+      preserveAspectRatio={mini ? 'xMidYMax slice' : undefined}
       data-regions={regions.join(' ')}
-      data-chapter-art={state}
+      data-chapter-art={mini ? undefined : state}
       data-chapter={chapter.id}
       aria-hidden="true"
     >
@@ -462,13 +463,18 @@ export default function CampaignScreen({
                 title={c.title}
                 onClick={() => pick(c.id)}
               >
-                {st === 'done' ? (
-                  <svg viewBox="-8 -8 16 16" aria-hidden="true">
-                    <path d="M-4.5 0.5 L-1.2 3.8 L4.8 -3.2" />
-                  </svg>
-                ) : (
-                  <span aria-hidden="true">{i + 1}</span>
-                )}
+                {/* Plan item 415: each tab is a print of its chapter's own scene (dusk for a locked one), the number
+                    on a medallion at its foot, so the six read as six places, not six chips. */}
+                <ChapterVignette chapter={c} state={st} mini />
+                <span className="cmp-tab-num" aria-hidden="true">
+                  {st === 'done' ? (
+                    <svg viewBox="-8 -8 16 16">
+                      <path d="M-4.5 0.5 L-1.2 3.8 L4.8 -3.2" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
+                </span>
               </button>
             )
           })}

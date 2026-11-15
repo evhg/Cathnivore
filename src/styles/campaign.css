@@ -1407,10 +1407,38 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
     font-size: 1.125rem;
     box-shadow: 0 2px 0 var(--rule);
   }
-  .cmp-tab svg { width: 20px; height: 20px; fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-  .cmp-tab-done { background: var(--pasture-deep); border-color: var(--pasture-deep); }
-  .cmp-tab-current { background: var(--wheat); border-color: var(--soil); color: var(--ink-on-fixed-fill); }
-  .cmp-tab-locked { background: var(--paper-2); color: color-mix(in srgb, var(--clay-deep) 55%, var(--ink)); }
+  /* Plan item 415: each tab is a print of its chapter's scene, cropped to the land and its landmarks (the stall and
+     the scene's own seal stand down at this size), its number on a medallion in the tab's state colour. */
+  .cmp-tab { position: relative; min-height: 52px; overflow: visible; isolation: isolate; }
+  .cmp-tab > .cmp-vignette.is-mini {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-under);
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .cmp-vignette.is-mini :is(.cmp-vig-seal, .cmp-vig-stall, .cmp-vig-frame) { display: none; }
+  .cmp-tab-num {
+    display: grid;
+    place-items: center;
+    align-self: end;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1.5px var(--rule), 0 1px 2px color-mix(in srgb, var(--ink) 35%, transparent);
+    font-size: var(--fs-body);
+    line-height: 1;
+  }
+  .cmp-tab-num svg { width: 16px; height: 16px; fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .cmp-tab-done { border-color: var(--pasture-deep); }
+  .cmp-tab-done .cmp-tab-num { background: var(--pasture-deep); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 35%, transparent); }
+  .cmp-tab-current { border-color: var(--soil); color: var(--ink-on-fixed-fill); }
+  .cmp-tab-current .cmp-tab-num { background: var(--wheat); box-shadow: inset 0 0 0 1.5px var(--soil); }
+  .cmp-tab-locked { color: color-mix(in srgb, var(--clay-deep) 55%, var(--ink)); }
   /* Plan item 395: a locked tab wears the co-op's wax seal on its corner (it looked the same as a playable one); the
      chapter stays playable (SPEC 8.1: the lock is a hint). */
   .cmp-tab-locked { position: relative; }
