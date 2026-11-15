@@ -4039,7 +4039,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the coat's luminance standard deviation 2x today's in the same box; a specular band on the shoulders (pixels 25%+ over the coat's median); cathode-perf within budget run alone; posters re-rendered (keyart-fresh); shots P and D (title and pick) before and after.
 - **Size:** 2
 
-## 428. [ ] Hedgerow act map: one painted country at one scale
+## 428. [ ] Hedgerow act map: one painted country at one scale *(lane B, in progress)*
 - **Why:** `plan1115e/hedge-menu-D`: the land between the rows (0-1120 x 440-720) is pale empty squares crossed by bead hedges; props at clashing scales with no ground or shadow (the sailboat 300-440 x 620-705 bigger than the beach huts 160-275 x 650-705 and the lighthouse 590-640 x 610-680); dunes and pools flat cut-outs (675-1040 x 490-680). VISION 1 and the art direction's hand-made poster.
 - **Build:** one prop scale per act; every prop seated on painted ground with a shadow; Saltmarsh's creeks, mudflats and samphire painted into the land; the bead lines drawn as hedges with depth; the same pass on every act's map.
 - **Accept:** heights within 1.5x for each kind of building or boat; a shadow under every prop; under 30% of the inter-row land within 10 of one flat colour; shots P and D (acts 1, 3 and 5) before and after.
