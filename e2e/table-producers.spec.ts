@@ -109,9 +109,10 @@ test('the seated producers are named, and the active seat matches the turn', asy
   }
 })
 
-// Plan item 374: at a desktop table they stand half length at Cath's scale behind the far rim: each figure 80%+ of her
-// drawn height at 1440x900 and 1280x800, their drawn parts (head, torso and arms; a held prop may cross an edge) meeting no hex, name plaque, the
-// event ticket or the map key, and every name plate inside the frame.
+// Plan item 374: at a desktop table they stand half length at Cath's scale behind the far rim: each figure 75%+ of her
+// drawn height at 1440x900 and 1280x800 (80% until item 413 put them on a narrower rail), their drawn parts (head, torso
+// and arms) meeting no hex, name plaque, the event ticket or the map key, their held prop (Mara's crook) meeting no hex
+// (item 413: it crossed Rivermead's corner), and every name plate inside the frame.
 for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
   test(`the producers stand at Cath's scale at ${width}x${height}`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'D only')
@@ -135,8 +136,10 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
           id: p.getAttribute('data-table-producer')!,
           h: p.querySelector('svg.fig')!.getBoundingClientRect().height,
           parts: [box(p.querySelector('.fig-head')!), ...[...p.querySelectorAll('.fig-body > path')].map(box)],
+          props: [...p.querySelectorAll('.fig-body > g:not([clip-path])')].map(box).filter((b) => b.right > b.left),
           plate: box(p.querySelector('.table-producer-name')!),
         })),
+        hexes: [...wrap.querySelectorAll('.region-hex')].map((h) => box(h.querySelector('polygon')!)),
         blockers: [
           ...[...wrap.querySelectorAll('.region-hex')].map((h) => box(h.querySelector('polygon')!)),
           ...[...wrap.querySelectorAll('.region-plaque, .event-ticket, .map-key')].map(box),
@@ -144,7 +147,12 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
       }
     })
     for (const p of m.people) {
-      expect(p.h / m.cathH, `${p.id} at Cath's scale`).toBeGreaterThanOrEqual(0.8)
+      expect(p.h / m.cathH, `${p.id} at Cath's scale`).toBeGreaterThanOrEqual(0.75)
+      for (const part of p.props)
+        for (const o of m.hexes) {
+          const meets = part.left < o.right && o.left < part.right && part.top < o.bottom && o.top < part.bottom
+          expect(meets, `${p.id}'s prop meets a hex ${JSON.stringify(o)}`).toBe(false)
+        }
       for (const part of p.parts)
         for (const o of m.blockers) {
           const meets = part.left < o.right && o.left < part.right && part.top < o.bottom && o.top < part.bottom

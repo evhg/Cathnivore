@@ -323,7 +323,7 @@ function eventRule(id: keyof typeof MARKET_EVENTS, short = false): string {
 // rail keeps the active producer's portrait.
 type Box = { left: number; top: number; right: number; bottom: number }
 const FIG_ASPECT = 320 / 480
-type Parts = { head: Box; body: Box }
+type Parts = { head: Box; body: Box; prop?: Box }
 /** Where a Figure's head (with hair) and body (with arms and prop) sit in its box, as fractions, measured once. */
 function figFractions(p: HTMLElement): Parts {
   const svg = p.querySelector('svg')!.getBoundingClientRect()
@@ -340,7 +340,10 @@ function figFractions(p: HTMLElement): Parts {
   const head = frac([...p.querySelectorAll('.fig-head, .fig-hair-back')], { left: 0.26, top: 0.12, right: 0.74, bottom: 0.58 })
   // The torso and arms; a held prop (Mara's staff, Tomas's carrots) may cross an edge, as a hand would.
   const body = frac([...p.querySelectorAll('.fig-body > path')], { left: 0.1, top: 0.54, right: 0.9, bottom: 1 })
-  return { head: { ...head, bottom: Math.min(head.bottom, body.top) }, body }
+  // Plan item 413: the held prop (Mara's crook) too, so it no longer crosses a hex corner as clutter on the board.
+  const propEls = [...p.querySelectorAll('.fig-body > g:not([clip-path]) *')]
+  const prop = propEls.length ? frac(propEls, body) : undefined
+  return { head: { ...head, bottom: Math.min(head.bottom, body.top) }, body, prop }
 }
 const PLATE: Box = { left: 0.3, top: 0.6, right: 0.7, bottom: 0.74 }
 function figPart(x: number, y: number, h: number, f: Box): Box {
@@ -348,18 +351,20 @@ function figPart(x: number, y: number, h: number, f: Box): Box {
   return { left: x + f.left * fw, top: y + f.top * h, right: x + f.right * fw, bottom: y + f.bottom * h }
 }
 const meets = (a: Box, b: Box, gap = 3) => a.left < b.right + gap && b.left - gap < a.right && a.top < b.bottom + gap && b.top - gap < a.bottom
-function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box[], cathH: number): void {
+function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box[], cathH: number, hexes: Box[] = obstacles): void {
   const w = wrap.getBoundingClientRect()
   const PAD = 4
   const STEP = 3
   // 7 px clear: the active one leans in (1 degree about the foot, ~5 px at the head).
   const clear = (b: Box) => !obstacles.some((o) => meets(b, o, 7))
+  // A prop may pass behind the frame's edge or a crate, but not over a hex (3 px clear).
+  const clearHex = (b: Box) => !hexes.some((o) => meets(b, o, 3))
   // The hair's back may run above the box (a bun): the head part's top is clamped to the frame below.
   for (const p of people) p.style.setProperty('--fig-h', '240px')
   const parts = people.map(figFractions)
   const fits = (x: number, y: number, h: number, f: Parts) => {
     const head = figPart(x, y, h, f.head)
-    return x >= w.left + PAD && x + h * FIG_ASPECT * 0.76 <= w.right - PAD && head.top >= w.top + PAD && clear(head) && clear(figPart(x, y, h, f.body))
+    return x >= w.left + PAD && x + h * FIG_ASPECT * 0.76 <= w.right - PAD && head.top >= w.top + PAD && clear(head) && clear(figPart(x, y, h, f.body)) && (!f.prop || clearHex(figPart(x, y, h, f.prop)))
   }
   const unseat = () => people.forEach((p) => (p.dataset.unseated = ''))
   for (const k of [0.84, 0.81, 0.76, 0.7, 0.64, 0.6]) {
@@ -1175,7 +1180,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           ...[...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)),
           ...[...wrap.querySelectorAll('.region-plaque, .table-prop:not(.produce-crates), .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
         ].filter((r) => r.width > 0 && r.height > 0)
-        standProducers(wrap, people, standing, cath ? rect(cath).height : 300)
+        const hexBoxes = [...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)).filter((r) => r.width > 0 && r.height > 0)
+        standProducers(wrap, people, standing, cath ? rect(cath).height : 300, hexBoxes)
         return
       }
       const cathX = cath ? rect(cath).left + rect(cath).width / 2 : w.left
