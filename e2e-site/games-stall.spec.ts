@@ -21,10 +21,13 @@ test('the landing is Cath\'s stall, the games hung from its awning', async ({ pa
     for (const w of m.widths) expect(w).toBeGreaterThanOrEqual(280)
     const first = page.locator('.hero-game').first()
     await first.hover()
-    await page.waitForTimeout(300)
-    const deg = await first.evaluate((e) => parseFloat(getComputedStyle(e).rotate) || 0)
-    expect(Math.abs(deg)).toBeGreaterThan(0)
-    expect(Math.abs(deg)).toBeLessThanOrEqual(3)
+    // poll: on a loaded CI runner the swing can start well after 300 ms (2026-11-15, E2E on 00d8a485)
+    const rot = () => first.evaluate((e) => Math.abs(parseFloat(getComputedStyle(e).rotate) || 0))
+    await expect.poll(rot, { timeout: 4000 }).toBeGreaterThan(0)
+    for (let i = 0; i < 5; i++) {
+      expect(await rot()).toBeLessThanOrEqual(3)
+      await page.waitForTimeout(150)
+    }
   }
 })
 
