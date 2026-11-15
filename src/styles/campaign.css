@@ -1485,3 +1485,43 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .campaign-screen > .cmp-path .cmp-stop-next .cmp-title { font-size: 1.375rem; }
   .campaign-screen > .cmp-path .cmp-replays { margin-top: 4px; }
 }
+
+/* Plan item 415: the unlock's ribbon-cut. The co-op's red ribbon is tied across the chapter a win just opened; as
+   Cath walks to its stop (the map's moment, about 1.5 s in) it is cut at the middle and its two ends spring apart and
+   drop away in 800 ms, no overshoot. Under reduced motion it only fades. */
+.cmp-card:has(> .cmp-ribbon) { position: relative; }
+.cmp-ribbon {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-lift);
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.cmp-ribbon-end {
+  position: absolute;
+  top: calc(50% - 9px);
+  width: 52%;
+  height: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 30%, transparent) 0 2px, transparent 2px 15px, color-mix(in srgb, var(--ink) 25%, transparent) 15px),
+    linear-gradient(180deg, var(--clay), var(--clay-deep));
+  box-shadow: 0 2px 3px color-mix(in srgb, var(--ink) 30%, transparent);
+  animation: cmp-ribbon-l 800ms cubic-bezier(.5, 0, .75, .2) 1500ms both;
+}
+.cmp-ribbon-end.is-l { left: 0; clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%); transform-origin: 0 50%; }
+.cmp-ribbon-end.is-r { right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 4% 50%); transform-origin: 100% 50%; animation-name: cmp-ribbon-r; }
+@keyframes cmp-ribbon-l {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate(-30%, 40px) rotate(-14deg); }
+}
+@keyframes cmp-ribbon-r {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate(30%, 40px) rotate(14deg); }
+}
+/* (the campaign screen's blanket reduced-motion rule strips every animation, so the fade opts back in, as the map's do) */
+@media (prefers-reduced-motion: reduce) {
+  .campaign-screen .cmp-ribbon-end { animation: cmp-ribbon-fade 600ms linear 1500ms both !important; }
+}
+:root.reduce-motion .campaign-screen .cmp-ribbon-end { animation: cmp-ribbon-fade 600ms linear 1500ms both !important; }
+@keyframes cmp-ribbon-fade { from { opacity: 1; } to { opacity: 0; } }

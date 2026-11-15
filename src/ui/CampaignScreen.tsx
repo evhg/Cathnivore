@@ -554,6 +554,14 @@ export default function CampaignScreen({
                 onFocus={() => setFocused(chapter.id)}
                 onBlur={() => setFocused(null)}
               >
+                {/* Plan item 415: the chapter a win just opened is tied with the co-op's ribbon, cut as Cath walks to its
+                    stop (the map's moment): its two ends spring apart and drop away (a fade under reduced motion). */}
+                {celebrate && current && completed.includes(celebrate) && (
+                  <span className="cmp-ribbon" data-ribbon={chapter.id} aria-hidden="true">
+                    <i className="cmp-ribbon-end is-l" />
+                    <i className="cmp-ribbon-end is-r" />
+                  </span>
+                )}
                 <span className="cmp-card-text">
                   <span className="cmp-chapter-no" aria-hidden="true">Chapter {i + 1}</span>
                   <strong className="cmp-title">

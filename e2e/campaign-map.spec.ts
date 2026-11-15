@@ -151,6 +151,12 @@ test('a first win plays the chapter-complete moment: the region floods, Cath wal
   const ms = await paint.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)
   expect(ms).toBeGreaterThanOrEqual(600)
   expect(ms).toBeLessThanOrEqual(1000)
+  // Plan item 415: the chapter it opened is tied with the co-op's ribbon, cut in 600-900 ms as Cath walks on.
+  const end = page.locator('.cmp-ribbon[data-ribbon="word-of-mouth"] .cmp-ribbon-end.is-l')
+  expect(await end.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-ribbon-l')
+  const cut = await end.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)
+  expect(cut).toBeGreaterThanOrEqual(600)
+  expect(cut).toBeLessThanOrEqual(900)
   await page.waitForTimeout(500)
   await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-2.png` })
   // ...and ends with them freed and Cath at chapter 2.
@@ -163,6 +169,7 @@ test('a first win plays the chapter-complete moment: the region floods, Cath wal
   await page.getByRole('button', { name: 'Campaign' }).click()
   await expect(map).toHaveAttribute('data-phase', 'done')
   await expect(page.locator('.cmp-map-next')).toHaveCount(0)
+  await expect(page.locator('.cmp-ribbon')).toHaveCount(0)
 })
 
 test('under reduced motion the moment fades instead of walking', async ({ page }) => {
@@ -174,6 +181,8 @@ test('under reduced motion the moment fades instead of walking', async ({ page }
   expect(await cath.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-fade')
   // Plan item 248: the bloom is a plain colour fade here.
   expect(await page.locator('.cmp-map [data-region="brindleHills"] .cmp-map-paint').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-colour-in')
+  // Plan item 415: the ribbon only fades.
+  expect(await page.locator('.cmp-ribbon-end.is-r').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-ribbon-fade')
   await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
 })
 
