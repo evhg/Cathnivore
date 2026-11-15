@@ -2724,10 +2724,13 @@ export class Renderer3D {
       let y = Math.max(4, Math.min(h - ph - 4, (-v.y * 0.5 + 0.5) * h));
       // Plan item 115: a wide plate (a phone's, with the town's name) clamped at the field's edge could land on the
       // queue itself; it steps clear of the vehicles, to their right or else below them.
-      const hits = (px: number, py: number) => shown.leads.some((l) => px < l.x + l.w && px + pw > l.x && py < l.y + l.h && py + ph > l.y);
-      if (shown.leads.length && hits(x, y)) {
-        const right = Math.max(...shown.leads.map((l) => l.x + l.w)) + 6;
-        const below = Math.max(...shown.leads.map((l) => l.y + l.h)) + 4;
+      // Item 430: against the vehicles' true projected boxes too: from a phone's high camera a van's lead rect (its
+      // height on screen) is a sliver, so the plate settled on the third van's roof.
+      const cars = [...shown.leads, ...shown.boxes];
+      const hits = (px: number, py: number) => cars.some((l) => px < l.x + l.w && px + pw > l.x && py < l.y + l.h && py + ph > l.y);
+      if (cars.length && hits(x, y)) {
+        const right = Math.max(...cars.map((l) => l.x + l.w)) + 6;
+        const below = Math.max(...cars.map((l) => l.y + l.h)) + 4;
         if (right + pw <= w - 4 && !hits(right, y)) x = right;
         else y = Math.min(h - ph - 4, below);
       }
@@ -2750,7 +2753,7 @@ export class Renderer3D {
           ]
         : [];
       for (const d of dock) d.x = Math.max(4, Math.min(w - pw - 4, d.x));
-      ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...shown.leads, ...shown.plates, ...signs], w, h, dock));
+      ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...cars, ...shown.plates, ...signs], w, h, dock));
       el.style.opacity = String(k);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       shown.plates.push({ x, y, w: pw, h: ph });
