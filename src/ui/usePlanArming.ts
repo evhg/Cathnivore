@@ -1,10 +1,14 @@
 import { useEffect, useRef } from 'react'
+import { playCues } from '../platform/sound'
 
 // Plan item 100: when Hollowell's conveyor moves a new card into a slot, that card slides in from the right
 // (the way the conveyor runs, Scout -> Expand -> Squeeze) and stamps down: a hard settle with no overshoot,
 // because corporations don't bounce. Reduced motion (the OS or the game's setting) gets a plain fade.
+// Plan item 414: each card lands on a synth blip (Hollowell's sounds are clean synth, never paper), timed to its
+// slide, and the slide's curve never overshoots (ARM_EASING's control points stay within 0..1).
 
 export const ARM_SLIDE_MS = 420
+export const ARM_EASING = 'cubic-bezier(.2,.7,.3,1)'
 
 function reduced(): boolean {
   if (document.documentElement.classList.contains('reduce-motion')) return true
@@ -23,6 +27,7 @@ export function usePlanArming(ids: readonly string[]) {
     if (!before || !root || typeof Element.prototype.animate !== 'function') return
     const cards = root.querySelectorAll<HTMLElement>('.plan-strip-item > button:first-child')
     let order = 0
+    const timers: ReturnType<typeof setTimeout>[] = []
     ids.forEach((id, i) => {
       const card = cards[i]
       if (!card || !id || id === before[i]) return
@@ -36,9 +41,10 @@ export function usePlanArming(ids: readonly string[]) {
               { transform: 'translateX(0) scale(1.06)', opacity: 1, offset: 0.62 },
               { transform: 'translateX(0) scale(1)', opacity: 1, offset: 1 },
             ],
-            { duration: ARM_SLIDE_MS, delay, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'backwards' },
+            { duration: ARM_SLIDE_MS, delay, easing: ARM_EASING, fill: 'backwards' },
           )
       anim.onfinish = anim.oncancel = () => delete card.dataset.arming
+      timers.push(setTimeout(() => playCues(['synthBlip']), delay + 60))
       // Plan item 173: once it's in, the regions it targets light once (no pulse under reduced motion).
       if (!reduced())
         for (const chip of card.querySelectorAll<HTMLElement>('.plan-chip'))
@@ -50,6 +56,7 @@ export function usePlanArming(ids: readonly string[]) {
             { duration: 520, delay: delay + ARM_SLIDE_MS, easing: 'ease-out' },
           )
     })
+    return () => timers.forEach(clearTimeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
   return ref
