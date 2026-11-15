@@ -4719,12 +4719,12 @@ body:has(#dlg-pause[open]) .paused-note {
     margin: -10px 0 -8px;
     translate: -12px 0;
   }
-  /* four to a row (72 px packets, two-line names): the art and height stay as item 361 drew them (a larger tower was
-     cut by the corner row, and a role line made level 25's column overrun); the corner glyph names the role there */
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
+  /* four to a row (72 px packets, two-line names): the packet's height stays as item 361 drew it (a role line under
+     a 44 px tower made level 25's column overrun), so plan item 408 draws the tower at 32 px and gives the 12 px to
+     its role word, as the three-a-row packets have */
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     margin: auto 0 0;
     translate: none;
   }
@@ -4761,10 +4761,6 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray .tray-tower .tray-answers img.prop-icon,
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower .tray-answers img.prop-icon { width: 14px; height: 14px; margin: 0; translate: none; }
   .play .tray-wrap .tray .tray-tower[data-answers] .tray-role { visibility: hidden; }
-}
-
-@media (min-width: 900px) and (min-height: 521px) {
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
 }
 
 /* Plan item 396: the packet Cath's line names glows gold, gently (a steady ring under reduced motion). */
