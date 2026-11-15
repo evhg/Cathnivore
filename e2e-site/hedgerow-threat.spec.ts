@@ -38,6 +38,31 @@ for (const level of [3, 12, 21]) {
       await expect(page.locator('#cath-dock')).toBeHidden()
       return
     }
+    // Plan item 392: at D her line is on the panel's plate, between the round card and Coming up: never on the field,
+    // never over a tower packet, Coming up kept; it goes on Go.
+    if (await page.evaluate(() => matchMedia('(min-width: 900px) and (min-height: 560px)').matches)) {
+      await expect(page.locator('#cath-plate-line')).not.toBeEmpty()
+      await expect(page.locator('#cath-say')).toBeHidden()
+      await expect(page.locator('#cath-dock')).toBeHidden()
+      const m = await page.evaluate(() => {
+        const d = document.getElementById('cath-plate')!.getBoundingClientRect()
+        const f = document.getElementById('stage')!.getBoundingClientRect()
+        const t = document.querySelector('#panel .field-tabs:not(.fit-dropped)')?.getBoundingClientRect()
+        const packs = [...document.querySelectorAll('#panel button.tray-tower')].map((e) => e.getBoundingClientRect()).filter((r) => r.width)
+        const meet = (a: DOMRect, b: DOMRect) => a.right > b.left && b.right > a.left && a.bottom > b.top && b.bottom > a.top
+        return { onField: meet(d, f), onPacket: packs.some((r) => meet(r, d)), tabs: !!t && t.height > 80, onTabs: !!t && meet(d, t) }
+      })
+      expect(m.onField, 'plate on the field').toBe(false)
+      expect(m.onPacket, 'plate over a tower packet').toBe(false)
+      expect(m.tabs, 'Coming up kept').toBe(true)
+      expect(m.onTabs, 'plate over Coming up').toBe(false)
+      await page.evaluate(() => {
+        const h = (window as unknown as { hedgerow: Hg }).hedgerow
+        h.sendWave(h.game())
+      })
+      await expect(page.locator('#cath-plate')).toBeHidden()
+      return
+    }
     // Plan item 297: on a field too crowded for her bubble (level 12 at D) her line docks over the panel's Coming up
     // card instead: off the field, the tower packets above it free.
     await expect.poll(async () => ((await say(page))?.text ?? '') || ((await page.locator('#cath-dock-line').isVisible()) ? 'docked' : '')).not.toBe('')
@@ -106,7 +131,7 @@ test('level 23: the round ticket is a poster: few words, big trait icons, a stam
     const b = document.getElementById('bubble')
     if (b) b.hidden = true
   })
-  if (wide) await expect(page.locator('#cath-say')).toContainText('air')
+  if (wide) await expect(page.locator('#cath-plate-line')).toContainText('air')
   else await expect(page.locator('#cath-dock-line')).toContainText('air')
   if (wide) {
     // The words a sighted player reads on the card (the stub's screen-reader copy aside).

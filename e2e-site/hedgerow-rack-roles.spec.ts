@@ -23,7 +23,7 @@ test('level 21 at D: towers drawn large, roles in words, the Airborne answers ta
   // The tower her line names glows in the rack.
   await expect(page.locator('.tray-tower[data-coached]')).toHaveCount(1)
   const named = await page.locator('.tray-tower[data-coached]').getAttribute('data-kind')
-  await expect(page.locator('#cath-say p')).toContainText(named === 'scarecrow' ? 'Scarecrow' : /./)
+  await expect(page.locator('#cath-plate-line')).toContainText(named === 'scarecrow' ? 'Scarecrow' : /./)
 })
 
 // Plan item 396: on a phone the packets draw their towers 40 px+, the Airborne answers are tagged, and the tower

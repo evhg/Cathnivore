@@ -238,6 +238,8 @@ export class Renderer {
   preview: TowerKind | null = null;
   /** Plan item 297: the plot Cath's coaching points at, and the tower she advises there (null when none). */
   coach: { col: number; row: number; kind: TowerKind } | null = null;
+  /** Plan item 392: when the player last tapped Cath's plate (ms, performance.now()): the plot she means rings out. */
+  coachPulseAt = -1e9;
   /** Plan item 31: the range ring drawn last frame (cells and pixels), for tests; null when none. */
   shownRing: { range: number; px: number; cell: number } | null = null;
   /** Plan item 345: the free plots outlined last frame while building (their cells and stroke width, CSS px), for tests. */
@@ -798,6 +800,20 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(cx, cy, s * (0.48 + pulse * 0.03), 0, Math.PI * 2);
       ctx.stroke();
+      // Plan item 392: a tap on her plate sends two rings out from the plot she means.
+      const since = (performance.now() - this.coachPulseAt) / 1000;
+      if (since >= 0 && since < 1.2) {
+        ctx.setLineDash([]);
+        for (const k of [0, 0.35]) {
+          const f = (since - k) / 0.85;
+          if (f < 0 || f > 1) continue;
+          ctx.strokeStyle = `rgba(255, 236, 160, ${1 - f})`;
+          ctx.lineWidth = Math.max(3, s * 0.07) * (1 - f * 0.5);
+          ctx.beginPath();
+          ctx.arc(cx, cy, s * (0.5 + f * (this.reducedMotion ? 0.2 : 0.9)), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
       ctx.restore();
     }
 

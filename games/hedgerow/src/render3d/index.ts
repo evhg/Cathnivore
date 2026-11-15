@@ -278,6 +278,8 @@ export class Renderer3D {
   selected: { col: number; row: number } | null = null;
   /** Plan item 297: the plot Cath's coaching points at, and the tower she advises there (null when none). */
   coach: { col: number; row: number; kind: TowerKind } | null = null;
+  /** Plan item 392: when the player last tapped Cath's plate (ms): the plot she means swells and flares. */
+  coachPulseAt = -1e9;
   cursor: { col: number; row: number } | null = null;
   heroSelected = false;
   /** While Cath is picked up: where she'd stand if put down here. */
@@ -2075,7 +2077,9 @@ export class Renderer3D {
     if (coach) {
       const pulse = this.reducedMotion ? 0.5 : (Math.sin(t * 4) + 1) / 2;
       this.coachRing.position.set(coach.col + 0.5, this.height(coach.col + 0.5, coach.row + 0.5) + 0.05, coach.row + 0.5);
-      this.coachRing.scale.setScalar(1 + pulse * 0.06);
+      const since = (performance.now() - this.coachPulseAt) / 1000;
+      const flare = since >= 0 && since < 0.9 ? Math.sin((since / 0.9) * Math.PI) : 0;
+      this.coachRing.scale.setScalar(1 + pulse * 0.06 + flare * 0.45);
       (this.coachRing.material as THREE.MeshBasicMaterial).opacity = 0.7 + pulse * 0.3;
       ghostKind = coach.kind;
       at = coach;

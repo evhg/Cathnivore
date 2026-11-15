@@ -75,10 +75,11 @@ for (const level of [21, 34]) {
   })
 }
 
-test('a desktop keeps her bubble on the field', async ({ page }) => {
+test('a desktop has her line on the panel plate, not the field or the dock', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) < 600, 'desktop only')
   test.setTimeout(90_000)
   await open(page, 21)
-  await expect(page.locator('#cath-say')).toBeVisible()
+  await expect(page.locator('#cath-plate')).toBeVisible()
+  await expect(page.locator('#cath-say')).toBeHidden()
   await expect(page.locator('#cath-dock')).toBeHidden()
 })

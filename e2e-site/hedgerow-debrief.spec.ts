@@ -26,12 +26,14 @@ test('a leak gets a debrief: the bare stretch, a ghost tower on a free plot, and
     document.getElementById('bubble')!.hidden = true
   })
   const docked = (page.viewportSize()?.width ?? 0) < 600
+  // Plan item 392: at D her line is on the panel's plate, off the field.
+  const plated = !docked && (await page.evaluate(() => matchMedia('(min-width: 900px) and (min-height: 560px)').matches))
   const line = async (kind: string) => {
     await page.evaluate((k) => (window as unknown as { hedgerow: HG }).hedgerow.debrief(k), kind)
     await expect(page.locator('#stage')).toHaveAttribute('data-leak-stretch', /\d+/)
     await expect(page.locator('.debrief-ghost')).toBeVisible()
     // Plan item 171: an upright phone docks her line over the tray, off the field.
-    const said = page.locator(docked ? '#cath-dock-line' : '#cath-say')
+    const said = page.locator(docked ? '#cath-dock-line' : plated ? '#cath-plate-line' : '#cath-say')
     await expect(said).toBeVisible()
     return (await said.textContent()) ?? ''
   }
@@ -39,7 +41,7 @@ test('a leak gets a debrief: the bare stretch, a ghost tower on a free plot, and
   const b = await line('hatchback')
   expect(a).not.toBe(b)
   // The bubble keeps off the empty plots (item 120's bounds).
-  const cover = docked ? 0 : await page.evaluate(() => {
+  const cover = docked || plated ? 0 : await page.evaluate(() => {
     const s = (window as unknown as { hedgerow: HG }).hedgerow.cathSay()!
     const on = (q: typeof s.box, p: typeof s.box) => Math.max(0, Math.min(q.x + q.w, p.x + p.w) - Math.max(q.x, p.x)) * Math.max(0, Math.min(q.y + q.h, p.y + p.h) - Math.max(q.y, p.y))
     return s.empty.reduce((n, p) => n + on(s.box, p), 0) / (s.box.w * s.box.h)

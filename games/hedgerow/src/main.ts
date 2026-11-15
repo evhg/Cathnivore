@@ -1640,6 +1640,11 @@ const PREVIEW_SPARE = [
   // Plan item 361: on a short desktop the rounds ahead keep their cards before the "still unanswered" line (the
   // round cards carry each round's trait).
   ".field-tabs .intel-locks",
+  // Plan item 392: with Cath's plate in the column, the round's name goes before Coming up does (kept as the
+  // ticket's hover text); the number, the vehicles and her line stay.
+  ".round-group:has(> .cath-plate:not([hidden])) .ticket-title",
+  // then the vehicles' names (each chip keeps its icon and count, its name as hover text; Coming up names them too)
+  ".round-group:has(> .cath-plate:not([hidden])) .ticket-chips .chip-name",
   // Plan item 87: Coming up and the notebook share one tabbed card; when even that runs past the foot it goes.
   ":scope > .round-group > :is(.field-tabs, .field-notebook)",
 ] as const;
@@ -1665,7 +1670,7 @@ function fitPreview(p: HTMLElement): void {
     for (const el of p.querySelectorAll<HTMLElement>(sel)) {
       el.classList.toggle("fit-dropped", on);
       const ticket = p.querySelector<HTMLElement>(".round-ticket");
-      if (on && el.matches(".ticket-note") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
+      if (on && el.matches(".ticket-note, .ticket-title") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
     }
   };
   p.classList.remove("shop-tight");
@@ -1976,6 +1981,11 @@ function wavePreview(p: HTMLElement, g: Game): void {
   if (g.phase === "build" && g.wave === 0 && g.level.id <= 2) group.append(line("Between waves, tap Cath, then tap the field to give her a new post.", "hint"));
   // Plan item 87: at D the seed packets take more of the column, so Coming up and Cath's notebook share one card
   // with two tabs (Coming up first). Levels without Coming up keep the notebook alone.
+  // Plan item 392: at D her coaching sits on one plate between the round card and Coming up, never on the field.
+  if (deskPlate() && g.phase === "build" && !player && !hasTwist(g.level, "nocath")) {
+    fillCathPlate(g, sayOverride?.text ?? adviceLine(g));
+    if (!cathPlate.hidden) group.append(cathPlate);
+  }
   group.append(fleet ? fieldTabs(p, g) : fieldNotebook(g));
 }
 
@@ -4202,6 +4212,51 @@ function syncCoach(g: Game, kind: TowerKind | null): void {
   r.coach = kind && at ? { col: at[0], row: at[1], kind } : null;
 }
 
+/** Plan item 392: a desktop-sized column (the side panel's fit query) takes her coaching on a plate. */
+const DESK_PLATE_QUERY = matchMedia("(min-width: 900px) and (min-height: 560px)");
+const deskPlate = () => DESK_PLATE_QUERY.matches && !DOCK_QUERY.matches && !document.documentElement.hasAttribute("data-keyart");
+/** Plan item 392: 'Cath says', one plate in the desk panel: her portrait (her face from the field's events) and her line.
+ *  A tap rings the plot she means and pulses the packet she names. */
+const cathPlate = document.createElement("button");
+cathPlate.type = "button";
+cathPlate.className = "cath-plate";
+cathPlate.id = "cath-plate";
+cathPlate.hidden = true;
+cathPlate.innerHTML =
+  '<span class="cath-plate-face" aria-hidden="true"></span><span class="cath-plate-body"><span class="cath-plate-who">Cath says</span><span class="cath-plate-line" id="cath-plate-line" role="status" aria-live="polite"></span></span>';
+let plateFaceKey = "";
+cathPlate.addEventListener("click", () => {
+  const r = renderer as { coachPulseAt?: number } | null;
+  if (r && "coachPulseAt" in r) r.coachPulseAt = performance.now();
+  for (const t of ui.panel.querySelectorAll<HTMLElement>(".tray-tower[data-coached]")) {
+    t.classList.remove("coach-ping");
+    void t.offsetWidth;
+    t.classList.add("coach-ping");
+  }
+  if (!REDUCED) {
+    cathPlate.classList.remove("ping");
+    void cathPlate.offsetWidth;
+    cathPlate.classList.add("ping");
+  }
+});
+/** Fills the plate; true when its words changed (the column refits). */
+function fillCathPlate(g: Game, text: string): boolean {
+  const line = cathPlate.querySelector<HTMLElement>(".cath-plate-line")!;
+  const changed = line.textContent !== text || cathPlate.hidden !== !text;
+  if (line.textContent !== text) line.textContent = text;
+  cathPlate.hidden = !text;
+  if (!text) return changed;
+  const face = hostFace(g, text);
+  cathPlate.dataset.mood = face;
+  const key = `${face}:${art()}`;
+  if (key !== plateFaceKey) {
+    plateFaceKey = key;
+    cathPlate.querySelector<HTMLElement>(".cath-plate-face")!.innerHTML = cathSvg({ framing: "bust", expression: face, outfit: art(), animate: true });
+  }
+  cathPlate.title = "Show me where";
+  return changed;
+}
+
 function syncCathSay(g: Game, now: number): void {
   const el = ui.cathSay;
   const quiet =
@@ -4214,6 +4269,17 @@ function syncCathSay(g: Game, now: number): void {
   const said = quiet ? "" : (sayOverride?.text ?? adviceLine(g));
   // Plan item 297: when her line says to build a tower not yet on the field, the field marks the plot for it.
   syncCoach(g, quiet || !!sayOverride ? null : coachTower(g));
+  // Plan item 392: at D her line is on the panel's plate, not on the field or over Coming up.
+  if (cathPlate.isConnected && deskPlate()) {
+    const plateText = player || hasTwist(g.level, "nocath") ? "" : (sayOverride?.text ?? adviceLine(g));
+    if (fillCathPlate(g, plateText)) refit();
+    if (plateText !== sayText && plateText && !cathPlate.hidden) (renderer as { cathPoints?: () => void } | null)?.cathPoints?.();
+    sayText = plateText;
+    syncCathDock(g, "");
+    if (!el.hidden) el.hidden = true;
+    sayShown = null;
+    return;
+  }
   const build = `${g.level.id}:${g.wave}`;
   const docked = (DOCK_QUERY.matches || crowdDock === build) && !document.documentElement.hasAttribute("data-keyart");
   if (docked && g.phase === "build" && (!!selected || posting || aiming)) dockQuietFor = build;

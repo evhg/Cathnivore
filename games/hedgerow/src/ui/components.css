@@ -4792,3 +4792,110 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray .tray-tower .tray-answers img.prop-icon { width: 12px; height: 12px; margin: 0; }
   .play .tray-wrap .tray .tray-tower[data-answers] .tray-role { visibility: hidden; }
 }
+
+/* ================================================================= Cath says (plan item 392) */
+/* At D her coaching is one plate in the column, between the round card and Coming up: her portrait (her face from
+   the field: worried after a leak, delighted on a clean round) and her line on cream, a brass-rimmed nameplate on the
+   bench. Never on the field, never over Coming up. A tap rings the plot she means. */
+.cath-plate {
+  display: none;
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .play .panel .cath-plate:not([hidden]) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 80px;
+    padding: 4px 10px 4px 4px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: var(--r-m);
+    background: var(--mat-paper);
+    color: var(--line);
+    text-align: left;
+    box-shadow:
+      inset 0 0 0 1.5px var(--line),
+      inset 0 0 0 4px color-mix(in srgb, var(--brass) 55%, transparent),
+      0 2px 3px color-mix(in srgb, var(--oak-ink) 22%, transparent);
+    cursor: pointer;
+    font: inherit;
+  }
+  .play .panel .cath-plate:focus-visible {
+    outline: 3px solid var(--focus-halo);
+    outline-offset: 2px;
+  }
+  .play .panel .cath-plate-face {
+    flex: none;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--paper-hi);
+    box-shadow: 0 0 0 2px var(--line), 0 0 0 4px var(--brass);
+    transition: box-shadow 300ms ease;
+  }
+  .play .panel .cath-plate-face svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .play .panel .cath-plate[data-mood="worried"] .cath-plate-face {
+    box-shadow: 0 0 0 2px var(--line), 0 0 0 4px var(--goodwill);
+  }
+  .play .panel .cath-plate[data-mood="delighted"] .cath-plate-face {
+    box-shadow: 0 0 0 2px var(--line), 0 0 0 4px var(--path-2-glow);
+  }
+  .play .panel .cath-plate-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  /* her portrait says who speaks; 'Cath says' is for screen readers, so the plate's height is all line */
+  .play .panel .cath-plate-who {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  /* the round's vehicles a little tighter while her plate shares the column */
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .ticket-chips {
+    gap: 3px;
+  }
+  /* the round's name fitted away: the chips keep clear of the (i) left in the head */
+  .play .panel .ticket-body:has(.ticket-title.fit-dropped) .ticket-chips {
+    padding-right: 30px;
+  }
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .preview-chip {
+    min-height: 0;
+    height: 28px;
+  }
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .preview-chip .chip-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .play .panel .cath-plate-line {
+    font: 600 var(--fs-small) / 1.25 var(--font-voice);
+    text-wrap: pretty;
+  }
+  .play .panel .cath-plate.ping .cath-plate-face {
+    animation: plate-ping 600ms ease-out;
+  }
+  .play .tray-wrap .tray .tray-tower.coach-ping {
+    animation: plate-ping 600ms ease-out;
+  }
+}
+@keyframes plate-ping {
+  40% {
+    scale: 1.08;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play .panel .cath-plate.ping .cath-plate-face,
+  .play .tray-wrap .tray .tray-tower.coach-ping {
+    animation: none;
+  }
+}
