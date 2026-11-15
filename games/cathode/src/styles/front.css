@@ -821,6 +821,9 @@
      shade runs across, dark under the menu column and clear over her, with bands for the logotype and The List. */
   .screen.title::before {
     background:
+      /* Item 430: a pool over the lit HOLLOWELL fascia behind SHIFT (top right), which took the cream letters'
+         contrast; it fades out above her umbrella. */
+      radial-gradient(56% 8% at 80% 12%, rgb(var(--shade-rgb) / .82) 0%, rgb(var(--shade-rgb) / .58) 55%, transparent 100%),
       linear-gradient(180deg, rgb(var(--shade-rgb) / .6) 0%, transparent 15%),
       linear-gradient(0deg, rgb(var(--shade-rgb) / .62) 0%, transparent 28%),
       linear-gradient(90deg, rgb(var(--shade-rgb) / .82) 0%, rgb(var(--shade-rgb) / .66) 40%, rgb(var(--shade-rgb) / .14) 60%, transparent 70%);

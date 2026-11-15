@@ -325,18 +325,21 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
   {
     // Ghost: a spotting scope on a tripod, left of her on the cobbles.
     const g = prop("ghost");
+    // Item 430: the scope stood at her elbow's height and its eyepiece met her elbow at D; it now stands lower (head
+    // at 1 m, below the elbow) and a touch further out (0.4 m further left put it over the class list).
+    const SX = -PX - 0.06;
     // Three legs from a head at 1.25 m to feet splayed 0.32 m out, then the scope on top, tilted up the street.
-    const head = new THREE.Vector3(-PX, 1.2, z0 + 0.55);
+    const head = new THREE.Vector3(SX, 0.98, z0 + 0.55);
     const up = new THREE.Vector3(0, 1, 0);
     for (let i = 0; i < 3; i++) {
       const a = (i / 3) * Math.PI * 2 + 0.4;
-      const foot = new THREE.Vector3(-PX + Math.cos(a) * 0.32, 0, z0 + 0.55 + Math.sin(a) * 0.32);
+      const foot = new THREE.Vector3(SX + Math.cos(a) * 0.32, 0, z0 + 0.55 + Math.sin(a) * 0.32);
       const d = head.clone().sub(foot);
       const m = put(g, new THREE.Mesh(geo(new THREE.CylinderGeometry(0.016, 0.012, d.length(), 6)), iron), 0, 0, 0);
       m.position.copy(foot).addScaledVector(d, 0.5);
       m.quaternion.setFromUnitVectors(up, d.normalize());
     }
-    const scope = put(g, new THREE.Mesh(geo(new THREE.CylinderGeometry(0.05, 0.036, 0.46, 14)), iron), -PX, 1.27, z0 + 0.55);
+    const scope = put(g, new THREE.Mesh(geo(new THREE.CylinderGeometry(0.05, 0.036, 0.46, 14)), iron), SX, 1.05, z0 + 0.55);
     scope.rotation.set(0, 0, Math.PI / 2 + 0.2);
     put(
       g,
@@ -349,8 +352,8 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
           }),
         ),
       ),
-      -PX - 0.23,
-      1.22,
+      SX - 0.23,
+      1.0,
       z0 + 0.55,
     );
   }
