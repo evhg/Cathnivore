@@ -3921,7 +3921,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point checked before and after at P and D; the specs for each screen pass.
 - **Size:** 1
 
-## 410. [ ] Hedgerow 3D: Hollowell's convoy and depot read as the glossy fleet, not pink blobs and a grey box
+## 410. [ ] Hedgerow 3D: Hollowell's convoy and depot read as the glossy fleet, not pink blobs and a grey box *(lane A, in progress)*
 - **Why:** `plan1115c/hedge-l21-3d-D` the queued vans are small pink blobs (285-310 x 255-370) where 2D shows liveried vans (`hedge-l21-2d-D` 300-350 x 180-460); the depot (150-260 x 175-265) a matte grey box; at P (`hedge-l21-3d-P` 115-150 x 320-550) pale lozenges with no wheels or livery. VISION's corporations are glossy, plastic and over-lit against the hand-made farm; the 3D view loses that contrast.
 - **Build:** each enemy kind's 3D model in its 2D sprite's livery with wheels/rotors and a glossy material (low roughness, a clearcoat sheen), scaled to about 0.8 of the lane's width with a contact shadow and a soft rim so it stands off the dirt; the depot a white-and-glass unit with a lit HOLLOWELL fascia; the lead vehicle of each kind keeps a name chip as in 2D.
 - **Accept:** at 1440x900 each queued vehicle's projected box is 28x16 px or more (20x12 at 390x844); each kind in the round a distinct geometry; enemy and depot materials roughness 0.3 or less, farm 0.6 or more; hedgerow-3dframe, depot3d, gatequeue and the 3D perf budget pass; shots P and D before and after.
