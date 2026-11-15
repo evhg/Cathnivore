@@ -792,15 +792,17 @@ export function buildGround(level: Level): Ground {
     const coastX = act === 2 ? -1.7 : act === 3 ? cols + 1.6 : act === 5 ? -1.8 : null;
     if (coastX !== null) {
       const sea = act === 3 ? 1 : -1;
+      // Its own stream, so the surf doesn't shift the decoration seed (the pond's pads and reeds stay put).
+      const surf = rng(level.id * 15485863 + 11);
       const foam: Inst[] = [];
       const white = new THREE.Color("#f4f8f6");
       for (let y = -MARGIN + 0.3; y < rows + MARGIN - 0.3; y += 0.16) {
-        const x = coastX + sea * (0.12 + deco() * 0.14);
+        const x = coastX + sea * (0.12 + surf() * 0.14);
         if (!sunk(x, y) || laneDistance(level, x, y) < 1.3) continue;
-        if (deco() < 0.18) continue;
-        const s = 0.07 + deco() * 0.08;
-        foam.push({ x, y: -0.075, z: y, ry: deco() * 6.3, s, sy: 0.12, color: white });
-        if (deco() < 0.5) foam.push({ x: x + sea * (0.12 + deco() * 0.1), y: -0.078, z: y + (deco() - 0.5) * 0.1, ry: deco() * 6.3, s: s * 0.6, sy: 0.1, color: white });
+        if (surf() < 0.18) continue;
+        const s = 0.07 + surf() * 0.08;
+        foam.push({ x, y: -0.075, z: y, ry: surf() * 6.3, s, sy: 0.12, color: white });
+        if (surf() < 0.5) foam.push({ x: x + sea * (0.12 + surf() * 0.1), y: -0.078, z: y + (surf() - 0.5) * 0.1, ry: surf() * 6.3, s: s * 0.6, sy: 0.1, color: white });
       }
       const fm = instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85 }), foam);
       if (fm) {
