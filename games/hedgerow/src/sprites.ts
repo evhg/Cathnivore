@@ -2431,11 +2431,15 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
  * Plan item 399: the farmhouse in each act's field kit: Brindle's red-tiled farmhouse, Saltmarsh's whitewashed
  * fisher's cottage under grey slate with a blue door and a lifebuoy, Rivermead's pink-washed cottage under thatch.
  */
-export type HouseLook = "farm" | "fisher" | "thatch";
-const HOUSE: Record<HouseLook, { wall: string; roof: string; door: string; thatch?: boolean }> = {
+export type HouseLook = "farm" | "fisher" | "thatch" | "longhouse" | "lodge";
+const HOUSE: Record<HouseLook, { wall: string; roof: string; door: string; thatch?: boolean; frame?: boolean }> = {
   farm: { wall: "#f4ede1", roof: "#b5523b", door: "#4f7f37" },
   fisher: { wall: "#fbfaf4", roof: "#5d6670", door: "#2f6c9a" },
   thatch: { wall: "#f1d3c4", roof: "#c4a262", door: "#5a4a7a", thatch: true },
+  // Highmoor: a grey stone longhouse under slate, a red door.
+  longhouse: { wall: "#bdb8ab", roof: "#4f5660", door: "#a3402f" },
+  // Oakvale: a black-and-white keeper's lodge under old clay tiles.
+  lodge: { wall: "#f4eedd", roof: "#8e4e36", door: "#2f2622", frame: true },
 };
 
 export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number, health: number, look: HouseLook = "farm"): void {
@@ -2474,6 +2478,25 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
       ctx.lineTo(x + k * s * 0.17, base - s * 0.46);
       ctx.stroke();
     }
+    ctx.restore();
+  }
+  if (H.frame) {
+    // Black oak framing on the white walls.
+    ctx.save();
+    ctx.strokeStyle = "#2a2420";
+    ctx.lineWidth = Math.max(1, s * 0.025);
+    for (const fx of [-0.36, -0.12, 0.12, 0.36]) {
+      ctx.beginPath();
+      ctx.moveTo(x + fx * s, base - s * 0.46);
+      ctx.lineTo(x + fx * s, base);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.36, base - s * 0.3);
+    ctx.lineTo(x - s * 0.12, base - s * 0.46);
+    ctx.moveTo(x + s * 0.36, base - s * 0.3);
+    ctx.lineTo(x + s * 0.12, base - s * 0.46);
+    ctx.stroke();
     ctx.restore();
   }
   if (look === "fisher") {

@@ -27,6 +27,19 @@ const FILL: Partial<Record<BedLook, [string, string]>> = {
   lavender: ["rgba(166,154,194,0.72)", "rgba(140,134,170,0.76)"],
   // Salt grazing: a short, blue-grey sward.
   saltgrass: ["rgba(136,198,176,0.72)", "rgba(108,174,156,0.76)"],
+  // Hill oats: a green-gold crop in ear.
+  oats: ["rgba(206,200,120,0.7)", "rgba(178,172,96,0.74)"],
+  // Turnips: dark leafy rows on red-brown hill soil.
+  turnips: ["rgba(132,96,70,0.8)", "rgba(110,80,58,0.84)"],
+  // In-bye: short sheep-bitten turf inside a dry-stone wall.
+  inbye: ["rgba(132,170,88,0.66)", "rgba(112,150,74,0.7)"],
+  // Wild garlic: deep green, starred white.
+  garlic: ["rgba(70,132,66,0.74)", "rgba(56,112,56,0.78)"],
+  // Leaf litter: last autumn's oak leaves, russet and brown.
+  litter: ["rgba(168,110,62,0.74)", "rgba(138,90,52,0.78)"],
+  // A bluebell bank: a blue haze over green.
+  // (green ground: a blue fill read as water, which can't be built on)
+  bluebell: ["rgba(104,146,96,0.72)", "rgba(88,128,84,0.76)"],
   // Water meadow: lush green ridges between drains.
   meadow: ["rgba(132,186,64,0.68)", "rgba(110,164,54,0.72)"],
   // Mown swathes: fresh pale green, the cut rows darker.
@@ -64,7 +77,7 @@ export function paintKitBed(ctx: C, x: number, y: number, s: number, look: BedLo
   ctx.clip();
   ctx.lineCap = "round";
   // Long-way rows (drains, swathes, cress channels) run the whole field, not plot by plot.
-  if (look === "meadow" || look === "swathe" || look === "cress") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
+  if (look === "meadow" || look === "swathe" || look === "cress" || look === "turnips") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
   for (let row = 0; row < m; row++) for (let cell = 0; cell < n; cell++) scatter(ctx, look, x + cell * s, y + row * s, s, rng(seed + cell * 131 + row * 977));
   ctx.restore();
   if (n === 1 && m === 1) {
@@ -74,8 +87,10 @@ export function paintKitBed(ctx: C, x: number, y: number, s: number, look: BedLo
     ctx.roundRect(bx, by, bw, bh, rad);
     ctx.stroke();
   }
-  // About a third of the salt grazing's plots have a ewe on them (Brindle's stubble has stooks).
-  if (look === "saltgrass")
+  // In-bye: a dry-stone wall along the field's top edge.
+  if (look === "inbye") paintDryWall(ctx, bx + s * 0.02, by + s * 0.01, bw - s * 0.04, s, rng(seed + 11));
+  // About a third of the salt grazing's (and in-bye's) plots have a ewe on them (Brindle's stubble has stooks).
+  if (look === "saltgrass" || look === "inbye")
     for (let row = 0; row < m; row++)
       for (let cell = 0; cell < n; cell++) {
         const r01 = rng(seed + cell * 131 + row * 977 + 7);
@@ -114,6 +129,25 @@ function rows(ctx: C, look: BedLook, bx: number, by: number, bw: number, bh: num
           else ctx.lineTo(xx, yy);
         }
         ctx.stroke();
+      }
+    } else if (look === "turnips") {
+      // A drill of turnips: leafy tops in a row, a purple-white shoulder showing at each.
+      for (let q = s * 0.12 + r01() * s * 0.08; q < len - s * 0.1; q += s * 0.2) {
+        const [tx, ty] = at(q);
+        ctx.fillStyle = "rgba(232,224,240,0.95)";
+        ctx.beginPath();
+        ctx.arc(tx, ty + s * 0.02, s * 0.03, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(150,96,160,0.9)";
+        ctx.beginPath();
+        ctx.arc(tx, ty + s * 0.008, s * 0.02, Math.PI, 0);
+        ctx.fill();
+        for (const [dx, col] of [[-0.035, "rgba(70,126,58,0.95)"], [0.035, "rgba(70,126,58,0.95)"], [0, "rgba(98,154,70,0.95)"]] as const) {
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          ctx.ellipse(tx + s * dx, ty - s * 0.025, s * 0.026, s * 0.04, dx * 12, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     } else {
       // Cress: clear water running between the rows, catching the light.
@@ -192,6 +226,97 @@ function scatter(ctx: C, look: BedLook, x: number, y: number, s: number, r01: ()
       ctx.ellipse(px(), py(), s * 0.05, s * 0.022, r01(), 0, Math.PI * 2);
       ctx.fill();
     }
+  } else if (look === "oats") {
+    // Oats in ear: slim stems, each with a drooping spray of pale spikelets.
+    for (let j = 0; j < 12; j++) {
+      const sx = px(), sy = py();
+      const h = s * (0.09 + r01() * 0.04);
+      ctx.strokeStyle = "rgba(120,124,60,0.8)";
+      ctx.lineWidth = Math.max(1, s * 0.016);
+      line(ctx, [sx, sy], [sx, sy - h]);
+      ctx.fillStyle = "rgba(246,236,176,0.95)";
+      for (const [dx, dy] of [[-0.025, 0.02], [0.025, 0.03], [-0.02, 0.05], [0.02, 0.06]] as const) {
+        ctx.beginPath();
+        ctx.ellipse(sx + s * dx, sy - h + s * dy, s * 0.012, s * 0.02, dx * 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (look === "inbye") {
+    // Sheep-bitten turf, a few thistles, and a bit of stone wall drawn after the clip.
+    for (let j = 0; j < 8; j++) {
+      const tx = px(), ty = py();
+      ctx.strokeStyle = "rgba(84,124,56,0.75)";
+      ctx.lineWidth = Math.max(1, s * 0.018);
+      for (const dx of [-0.015, 0.015]) line(ctx, [tx, ty], [tx + s * dx, ty - s * 0.04]);
+    }
+    for (let j = 0; j < 2; j++) {
+      const tx = px(), ty = py();
+      ctx.fillStyle = "rgba(178,112,196,0.95)";
+      ctx.beginPath();
+      ctx.arc(tx, ty - s * 0.03, s * 0.018, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(84,124,56,0.9)";
+      ctx.lineWidth = Math.max(1, s * 0.014);
+      line(ctx, [tx, ty], [tx, ty - s * 0.02]);
+    }
+  } else if (look === "garlic") {
+    // Broad leaves in clumps and white star-heads held over them.
+    for (let j = 0; j < 7; j++) {
+      const cx = px(), cy = py();
+      ctx.fillStyle = "rgba(96,164,80,0.95)";
+      for (const a of [-0.6, 0, 0.6]) {
+        ctx.beginPath();
+        ctx.ellipse(cx + Math.sin(a) * s * 0.03, cy, s * 0.018, s * 0.045, a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "rgba(255,255,250,0.97)";
+      for (let k = 0; k < 4; k++) {
+        ctx.beginPath();
+        ctx.arc(cx + (r01() - 0.5) * s * 0.05, cy - s * (0.05 + r01() * 0.02), s * 0.012, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (look === "litter") {
+    // Fallen leaves lying every which way, and a ring of toadstools.
+    for (let j = 0; j < 14; j++) {
+      ctx.fillStyle = ["rgba(206,132,60,0.95)", "rgba(176,92,46,0.95)", "rgba(222,176,84,0.95)"][j % 3]!;
+      ctx.beginPath();
+      ctx.ellipse(px(), py(), s * 0.03, s * 0.016, r01() * Math.PI, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (r01() < 0.5) {
+      const cx = px(), cy = py();
+      for (let k = 0; k < 3; k++) {
+        const tx = cx + (k - 1) * s * 0.05, ty = cy + (k % 2) * s * 0.02;
+        ctx.fillStyle = "rgba(240,232,214,0.95)";
+        ctx.fillRect(tx - s * 0.006, ty - s * 0.03, s * 0.012, s * 0.03);
+        ctx.fillStyle = "rgba(204,58,46,0.97)";
+        ctx.beginPath();
+        ctx.arc(tx, ty - s * 0.03, s * 0.022, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.beginPath();
+        ctx.arc(tx - s * 0.008, ty - s * 0.04, s * 0.005, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (look === "bluebell") {
+    // Strap leaves, then nodding blue bells down one side of each arching stem.
+    for (let j = 0; j < 16; j++) {
+      const sx = px(), sy = py();
+      ctx.strokeStyle = "rgba(74,120,64,0.9)";
+      ctx.lineWidth = Math.max(1, s * 0.014);
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(sx, sy - s * 0.08, sx + s * 0.035, sy - s * 0.08);
+      ctx.stroke();
+      ctx.fillStyle = j % 3 ? "rgba(96,104,214,0.97)" : "rgba(140,140,232,0.97)";
+      for (let k = 0; k < 3; k++) {
+        ctx.beginPath();
+        ctx.ellipse(sx + s * (0.008 + k * 0.012), sy - s * (0.065 - k * 0.012), s * 0.011, s * 0.016, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   } else if (look === "meadow") {
     // Buttercups and lady's smock in the ridges.
     for (let j = 0; j < 8; j++) {
@@ -232,6 +357,28 @@ function scatter(ctx: C, look: BedLook, x: number, y: number, s: number, r01: ()
       ctx.fill();
     }
   }
+}
+
+/** A dry-stone wall: grey stones laid in two courses with a coping row, along `w` px. */
+function paintDryWall(ctx: C, x: number, y: number, w: number, s: number, r01: () => number): void {
+  const h = s * 0.055;
+  ctx.save();
+  ctx.fillStyle = "rgba(40,40,36,0.25)";
+  ctx.fillRect(x, y + h * 1.6, w, h * 0.6);
+  for (let k = 0; k < 2; k++)
+    for (let q = (k ? -h * 0.6 : 0); q < w; q += h * (1.4 + r01() * 0.6)) {
+      const sw = Math.min(h * (1.3 + r01() * 0.6), w - Math.max(0, q));
+      if (sw <= 0) continue;
+      const g = 150 + Math.floor(r01() * 40);
+      ctx.fillStyle = `rgb(${g},${g - 2},${g - 10})`;
+      ctx.strokeStyle = "rgba(70,68,62,0.8)";
+      ctx.lineWidth = Math.max(0.75, s * 0.008);
+      ctx.beginPath();
+      ctx.roundRect(x + Math.max(0, q), y + k * h * 0.8, sw, h * 0.85, h * 0.25);
+      ctx.fill();
+      ctx.stroke();
+    }
+  ctx.restore();
 }
 
 /** A ewe grazing: a cloud of wool, a dark face and legs, its shadow to the right. */
@@ -298,6 +445,65 @@ export function paintKitWater(ctx: C, x: number, y: number, s: number, look: Wat
     ctx.strokeStyle = "rgba(255,255,255,0.6)";
     ctx.lineWidth = Math.max(1, s * 0.025);
     line(ctx, [x + s * 0.3, y + s * 0.34], [x + s * 0.48, y + s * 0.3]);
+  } else if (look === "peatpool") {
+    // A peat pool: a black-brown hag of a bank, dark still water, cotton-grass nodding white along its edge.
+    const cx = x + s * 0.5, cy = y + s * 0.52;
+    ctx.fillStyle = "rgba(92,66,44,0.9)";
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.4, cy);
+    ctx.bezierCurveTo(cx - s * 0.42, cy - s * 0.34, cx + s * 0.2, cy - s * 0.4, cx + s * 0.4, cy - s * 0.12);
+    ctx.bezierCurveTo(cx + s * 0.46, cy + s * 0.2, cx + s * 0.1, cy + s * 0.38, cx - s * 0.2, cy + s * 0.32);
+    ctx.closePath();
+    ctx.fill();
+    const g = ctx.createLinearGradient(cx, cy - s * 0.3, cx, cy + s * 0.3);
+    g.addColorStop(0, "rgba(120,124,128,0.95)");
+    g.addColorStop(1, "rgba(44,40,40,0.95)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.32, cy);
+    ctx.bezierCurveTo(cx - s * 0.34, cy - s * 0.26, cx + s * 0.16, cy - s * 0.32, cx + s * 0.32, cy - s * 0.1);
+    ctx.bezierCurveTo(cx + s * 0.36, cy + s * 0.14, cx + s * 0.08, cy + s * 0.3, cx - s * 0.16, cy + s * 0.25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(220,226,232,0.6)";
+    ctx.lineWidth = Math.max(1, s * 0.022);
+    line(ctx, [cx - s * 0.14, cy - s * 0.12], [cx + s * 0.06, cy - s * 0.16]);
+    for (let k = 0; k < 6; k++) {
+      const a = Math.PI * (0.1 + k * 0.32) + r01() * 0.3;
+      const fx = cx + Math.cos(a) * s * 0.36, fy = cy + Math.sin(a) * s * 0.3;
+      ctx.strokeStyle = "rgba(96,112,60,0.9)";
+      ctx.lineWidth = Math.max(1, s * 0.014);
+      line(ctx, [fx, fy], [fx, fy - s * 0.07]);
+      ctx.fillStyle = "rgba(252,252,248,0.95)";
+      ctx.beginPath();
+      ctx.arc(fx, fy - s * 0.08, s * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (look === "lilypool") {
+    // A woodland pool: mossy banks, dark green water, lily pads with one white flower.
+    const cx = x + s * 0.5, cy = y + s * 0.52;
+    ctx.fillStyle = "rgba(76,110,58,0.75)";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, s * 0.43, s * 0.37, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(48,92,82,0.95)";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, s * 0.36, s * 0.3, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    for (let k = 0; k < 4; k++) {
+      const a = r01() * Math.PI * 2, d = s * (0.08 + r01() * 0.16);
+      const lx = cx + Math.cos(a) * d, ly = cy + Math.sin(a) * d * 0.8;
+      ctx.fillStyle = "rgba(110,170,86,0.97)";
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.arc(lx, ly, s * 0.06, a + 0.3, a + Math.PI * 2 - 0.3);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = "rgba(255,250,246,0.97)";
+    ctx.beginPath();
+    ctx.arc(cx + s * 0.06, cy - s * 0.04, s * 0.03, 0, Math.PI * 2);
+    ctx.fill();
   } else if (look === "willowpond") {
     // A pond with soft banks, a pollard willow leaning over one side and kingcups at the edge.
     const cx = x + s * 0.5, cy = y + s * 0.54;
@@ -435,6 +641,105 @@ export function drawKitBarn(ctx: C, x: number, y: number, w: number, look: BarnL
     ctx.strokeStyle = "#efe6cf";
     ctx.lineWidth = Math.max(1, w * 0.014);
     ctx.strokeRect(left + bw * 0.38, eave + w * 0.03, bw * 0.24, w * 0.08);
+  } else if (look === "timberbarn") {
+    // A black-and-white timber-framed barn on a cobbled yard, a stack of cordwood by it.
+    ctx.fillStyle = "rgba(40,30,10,0.16)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.02, y + w * 0.06, w * 0.96, w * 0.96, w * 0.2);
+    ctx.fill();
+    ctx.fillStyle = "rgb(150,140,120)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.02, y + w * 0.04, w * 0.96, w * 0.94, w * 0.2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(110,100,84,0.6)";
+    for (let k = 0; k < 18; k++) {
+      ctx.beginPath();
+      ctx.arc(x + w * (0.08 + r01() * 0.84), y + w * (0.66 + r01() * 0.28), w * 0.018, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Cordwood: log ends in a stack.
+    const sx = flip ? x + w * 0.12 : x + w * 0.72;
+    for (let row = 0; row < 3; row++)
+      for (let k = 0; k < 4 - row; k++) {
+        const lx = sx + w * (k * 0.05 + row * 0.025), ly = y + w * (0.88 - row * 0.045);
+        ctx.fillStyle = "#c9a26a";
+        ctx.strokeStyle = "#6b4a2a";
+        ctx.lineWidth = Math.max(0.75, w * 0.01);
+        ctx.beginPath();
+        ctx.arc(lx, ly, w * 0.024, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+    const bw = w * 0.56;
+    const left = flip ? x + w * 0.36 : x + w * 0.08;
+    const top = y + w * 0.08;
+    const eave = top + w * 0.2;
+    const base = y + w * 0.62;
+    castShadow(ctx, left + bw / 2, base, bw / 2, w * 0.14, w * 0.5, 0.2);
+    ctx.fillStyle = "#f2ead6";
+    ctx.strokeStyle = "#2a2420";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.fillRect(left, eave, bw, base - eave);
+    ctx.strokeRect(left, eave, bw, base - eave);
+    // The frame: posts, a rail and the braces, in black oak.
+    ctx.lineWidth = Math.max(1, w * 0.022);
+    for (let k = 1; k < 4; k++) line(ctx, [left + (bw * k) / 4, eave], [left + (bw * k) / 4, base]);
+    line(ctx, [left, (eave + base) / 2], [left + bw, (eave + base) / 2]);
+    line(ctx, [left, eave], [left + bw / 4, (eave + base) / 2]);
+    line(ctx, [left + bw, eave], [left + (bw * 3) / 4, (eave + base) / 2]);
+    // A steep clay-tile roof.
+    ctx.fillStyle = "#9a5a3c";
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.04, eave + w * 0.02);
+    ctx.lineTo(left + bw * 0.5, top - w * 0.04);
+    ctx.lineTo(left + bw + w * 0.04, eave + w * 0.02);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#3a2c22";
+    ctx.fillRect(left + bw * 0.36, base - w * 0.2, bw * 0.28, w * 0.2);
+  } else if (look === "fold") {
+    // A dry-stone sheepfold: a ring of wall round trodden turf, a stone field barn under slate at its back.
+    ctx.fillStyle = "rgba(40,36,24,0.16)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.02, y + w * 0.06, w * 0.96, w * 0.96, w * 0.3);
+    ctx.fill();
+    ctx.fillStyle = "rgb(150,160,104)";
+    ctx.beginPath();
+    ctx.roundRect(x + w * 0.04, y + w * 0.06, w * 0.92, w * 0.9, w * 0.3);
+    ctx.fill();
+    const wall = rng(seed + 3);
+    paintDryWall(ctx, x + w * 0.06, y + w * 0.88, w * 0.88, w, wall);
+    // The barn: grey stone courses, a slate roof, a dark door.
+    const bw = w * 0.5;
+    const left = flip ? x + w * 0.42 : x + w * 0.08;
+    const top = y + w * 0.1;
+    const eave = top + w * 0.16;
+    const base = y + w * 0.58;
+    castShadow(ctx, left + bw / 2, base, bw / 2, w * 0.14, w * 0.5, 0.2);
+    ctx.fillStyle = "#a9a497";
+    ctx.strokeStyle = "#4e4a42";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.fillRect(left, eave, bw, base - eave);
+    ctx.strokeRect(left, eave, bw, base - eave);
+    ctx.strokeStyle = "rgba(78,74,66,0.5)";
+    ctx.lineWidth = Math.max(0.75, w * 0.01);
+    for (let k = 1; k < 5; k++) line(ctx, [left, eave + ((base - eave) * k) / 5], [left + bw, eave + ((base - eave) * k) / 5]);
+    ctx.fillStyle = "#4f5660";
+    ctx.strokeStyle = "#2c3036";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.04, eave + w * 0.02);
+    ctx.lineTo(left + bw * 0.5, top - w * 0.02);
+    ctx.lineTo(left + bw + w * 0.04, eave + w * 0.02);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#3c3226";
+    ctx.fillRect(left + bw * 0.38, base - w * 0.2, bw * 0.24, w * 0.2);
+    // Two ewes in the fold.
+    const ex = flip ? x + w * 0.22 : x + w * 0.74;
+    paintEwe(ctx, ex, y + w * 0.8, w * 0.22, flip);
   } else {
     // The leat: a channel of water across the cell's foot, the wheel's tail race.
     ctx.fillStyle = "rgba(40,30,10,0.16)";

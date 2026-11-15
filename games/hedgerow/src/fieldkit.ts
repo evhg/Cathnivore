@@ -14,15 +14,23 @@ export type BedLook =
   | "samphire"
   | "lavender"
   | "saltgrass"
+  // Highmoor: hill oats standing in ear, turnip rows for the flock, walled in-bye pasture.
+  | "oats"
+  | "turnips"
+  | "inbye"
+  // Oakvale: a woodland smallholding: wild garlic in flower, leaf litter with toadstools, a bluebell bank.
+  | "garlic"
+  | "litter"
+  | "bluebell"
   // Rivermead: water-meadow strips with their drains, a hay meadow mown into swathes, a watercress bed (no trees: an orchard reads as item 43's unbuildable orchard landmark).
   | "meadow"
   | "swathe"
   | "cress";
 
 /** The building on a barn's cell. */
-export type BarnLook = "barn" | "netshed" | "millhouse";
+export type BarnLook = "barn" | "netshed" | "millhouse" | "fold" | "timberbarn";
 /** A water plot: a round farm pond, a salt pan, a willow-ringed pond. */
-export type WaterLook = "pond" | "saltpan" | "willowpond";
+export type WaterLook = "pond" | "saltpan" | "willowpond" | "peatpool" | "lilypool";
 
 export interface FieldKit {
   name: string;
@@ -33,14 +41,16 @@ export interface FieldKit {
   barn: BarnLook;
   water: WaterLook;
   /** The farmhouse at the lane's end (sprites.ts's drawFarmhouse). */
-  house: "farm" | "fisher" | "thatch";
+  house: "farm" | "fisher" | "thatch" | "longhouse" | "lodge";
 }
 
 export const BRINDLE_KIT: FieldKit = { name: "farm", beds: ["earth", "stubble", "clover"], puddle: "earth", barn: "barn", water: "pond", house: "farm" };
 
 /** Acts by index (0 Brindle .. 9 Kingsmarket) with a kit of their own; the rest keep the farm's. */
 export const FIELD_KITS: Partial<Record<number, FieldKit>> = {
+  1: { name: "hill farm", beds: ["oats", "turnips", "inbye"], barn: "fold", water: "peatpool", house: "longhouse" },
   2: { name: "saltmarsh", beds: ["samphire", "lavender", "saltgrass"], barn: "netshed", water: "saltpan", house: "fisher" },
+  4: { name: "woodland holding", beds: ["garlic", "litter", "bluebell"], barn: "timberbarn", water: "lilypool", house: "lodge" },
   3: { name: "water meadow", beds: ["meadow", "swathe", "cress"], barn: "millhouse", water: "willowpond", house: "thatch" },
 };
 
@@ -59,10 +69,14 @@ export function bedBase(look: BedLook | "puddle"): "earth" | "stubble" | "clover
     case "puddle":
     case "cress":
     case "lavender":
+    case "turnips":
+    case "litter":
       return "earth";
     case "stubble":
     case "saltgrass":
     case "meadow":
+    case "oats":
+    case "bluebell":
       return "stubble";
     default:
       return "clover";
