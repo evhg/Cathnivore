@@ -4018,7 +4018,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or logged as kept with a reason; the specs for what changed pass; shots P and D before and after.
 - **Size:** 1
 
-## 425. [ ] Cathnivore: Hollowell's pieces as glossy miniatures standing on the land *(lane A, in progress)*
+## 425. [x] Cathnivore: Hollowell's pieces as glossy miniatures standing on the land *(done 2026-11-15 20:15 lane A, e553889a: the Outlet a sawtooth-roofed storefront with an H fascia, striped awning and plate glass; the Buyout a peaked hoarding on chrome legs; Doubt a bubble on a stake; one highlight, no outline, a soft contact shadow, the count on the plinth's end, corporate drop with no overshoot; board-tokens checks the shadow and the count's 4 px; greyscale distinct; shots scratchpad a425)*
 - **Why:** `plan1115e/cath-game-D`: every region carries rounded orange cubes with white chips, a cyan '?' bubble, a tiny 'H' billboard, flag strings and floating '2' badges (Saltmarsh 900-1010 x 190-250, Kingsmarket 780-940 x 360-420); at `cath-game-P` (130-330 x 300-470) they are 20-24 px blobs. They read as UI stickers, not pieces on a table (VISION 2: the map and its pieces are the most beautiful thing; STYLE 2.2-2.3: glossy corporate material, shape before colour).
 - **Build:** an Outlet as a glossy mini storefront (awning, H mark, one highlight, no outline); the '?' marker a corporate speech bubble on a stake; the billboard a hoarding on legs. Each piece casts a soft contact shadow and drops in on arrival (corporate easing, no overshoot). Counts sit on the piece's own base, not a floating badge.
 - **Accept:**
@@ -4027,7 +4027,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - board and piece-layout specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 426. [ ] Cathnivore desktop campaign: the map as a drawn atlas of Marrow on the table
+## 426. [ ] Cathnivore desktop campaign: the map as a drawn atlas of Marrow on the table *(lane A, in progress)*
 - **Why:** `plan1115e/cath-campaign-D`: the map is a flat slate rounded box (60-870 x 140-760), about 45% empty sea with a few ticks, and Cath stands in the sea inside the frame (690-820 x 470-750). The chapters are well dressed; the map is the weakest thing on the screen (VISION 1: a focal scene, not a box).
 - **Build:** a paper map sheet with deckled edges lying on the gingham; a drawn coastline with shallows, a compass rose, a cartouche ('The Republic of Marrow'), boats and gulls; Hollowell's tower over Kingsmarket. Cath stands beside the sheet on the table, not on the water. A stop still opens its chapter.
 - **Accept:** no flat fill over 15% of the map's box (grid sample); Cath's box clear of the sheet's sea; campaign specs pass; shots P and D before and after.
