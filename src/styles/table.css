@@ -451,6 +451,9 @@ html.no-animations .board-object .bo-out, html.no-animations .board-object .bo-t
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+/* Plan item 409: two chips wrapped onto two lines touched edge to edge ('Shingle Bay' on 'Saltmarsh'); a line with
+   chips gets the room for a 2 px gap between them. */
+.plan-strip-target:has(.plan-chip), .plan-strip[data-corp] .plan-strip-target:has(.plan-chip) { line-height: 1.4; }
 
 /* Plan item 47: a phone's plan card is about 120 px wide, so the by-region line ran past two lines and was
    cut. There it shows the short line (the regions only); the full line stays in the accessible name. */
