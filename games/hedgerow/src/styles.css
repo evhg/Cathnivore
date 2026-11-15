@@ -5240,6 +5240,9 @@ img.act-scene {
 /* Plan item 246: a fallback depot (1.3 cells, an upright phone's second gate) is too narrow for the 12 px board and
    the rep side by side; he stands just outside its wall instead. */
 .depot[data-tiny] .depot-rep { left: 100%; width: 26%; }
+/* Plan item 424: on a tiny depot (a phone's mouth depot, item 391) the 12 px count was as big as the front and hid
+   the roof and doors; it stands on the roof as a rooftop sign instead, the building whole under it. */
+.depot[data-tiny] .depot-board { top: auto; bottom: 62%; height: auto; padding: 1px 4px; }
 .depot[data-rep-mood="gleeful"] .depot-rep { animation: rep-gloat 600ms ease-in-out 3 alternate; }
 .depot[data-rep-mood="rattled"] .depot-rep { animation: rep-shake 120ms linear 6 alternate; }
 @keyframes rep-gloat { to { translate: 0 -12%; } }
