@@ -389,6 +389,35 @@ export interface Ground {
 /** What fences each act's field in: hedgerows in the hills, dry-stone on the moor, driftwood by the sea, reeds
  * on the river, orchard rows at Oakvale, rubble at the Rift, kerbs and railings in town, planters at the Merger. */
 type BorderStyle = "hedge" | "dark-hedge" | "wall" | "rubble" | "fence" | "reeds" | "orchard" | "rail" | "planters";
+/**
+ * Plan item 419: the country beyond the field, per act: three ground colours its land wears in broad patches
+ * (Brindle's buttercup meadow, clover and plough; Highmoor's heather, bracken and moor grass; Saltmarsh's sand,
+ * samphire and sea lavender ...), so the field no longer sits on one flat olive floor.
+ */
+export const COUNTRY: readonly (readonly [string, string, string])[] = [
+  ["#b4bf5c", "#6f9a48", "#9c7a52"],
+  ["#8e6a84", "#a6743e", "#8c9460"],
+  ["#d6c48e", "#7e9a5a", "#a090c0"],
+  ["#62a046", "#d0c45a", "#56784a"],
+  ["#4f7a3a", "#8e6a3e", "#6c70b0"],
+  ["#c88a9c", "#7c9a5c", "#bcb09a"],
+  ["#dcc63e", "#8e7050", "#a29c5e"],
+  ["#68a046", "#7e5e3c", "#cc88a6"],
+  ["#7ac05a", "#d2d6ce", "#9a9a8e"],
+  ["#ac5c4a", "#76a454", "#ccb26e"],
+];
+
+/** The country's colour at (x, y) beyond the field and how strongly it shows (0 in the field, rising over the
+ *  first cells out): low-frequency patches of the act's three grounds. Pure, for the unit test. */
+export function countryTone(act: number, x: number, y: number, out: number, seed: number): { color: THREE.Color; k: number } {
+  const pal = COUNTRY[Math.max(0, Math.min(COUNTRY.length - 1, act))]!;
+  const a = Math.sin(x * 0.42 + seed * 0.7) * Math.cos(y * 0.37 - seed * 0.3) + 0.5 * Math.sin((x + y) * 0.21 + seed);
+  const b = Math.sin(x * 0.29 - y * 0.33 + seed * 1.3);
+  const color = new THREE.Color(a > 0.35 ? pal[0] : b > 0.1 ? pal[1] : pal[2]);
+  const k = out <= 0.3 ? 0 : 0.72 * smooth(Math.min(1, (out - 0.3) / 1.4));
+  return { color, k };
+}
+
 /** Scenery beyond the field per act: leaf colours, how many objects, and the share that are trees (the rest rocks). */
 const SCENERY_LEAVES: string[][] = [
   ["#4f8a3a", "#5e9a43", "#6ea04c", "#7bb050"],
@@ -689,6 +718,11 @@ export function buildGround(level: Level): Ground {
     }
     // Darken the far hills a touch so the field reads.
     const out = Math.max(0, -x, x - cols, -y, y - rows);
+    // Plan item 419: beyond the hedge the act's own country, in broad patches.
+    if (out > 0.3) {
+      const ct = countryTone(act, x, y, out, level.id);
+      tmp.lerp(ct.color, ct.k * (0.85 + n * 0.3));
+    }
     if (out > 0) tmp.multiplyScalar(1 - Math.min(0.18, out * 0.03));
     colors[i * 3] = tmp.r;
     colors[i * 3 + 1] = tmp.g;
