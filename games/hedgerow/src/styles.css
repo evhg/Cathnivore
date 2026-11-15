@@ -268,10 +268,11 @@ button {
   stroke: color-mix(in srgb, var(--wheat) 45%, var(--paper));
   stroke-width: 12;
 }
+/* Plan item 406: the stretch walked (to the next field) is inked in: a trodden, darker road the bed's full width, so
+   the act reads as progress along it; the road ahead stays the pale bed. */
 .trail-path .lane-walked {
-  stroke: color-mix(in srgb, var(--wheat) 80%, var(--soil));
-  stroke-width: 6;
-  stroke-opacity: 0.55;
+  stroke: color-mix(in srgb, var(--soil) 58%, var(--wheat));
+  stroke-width: 12;
 }
 .trail-path .lane-ruts {
   stroke: color-mix(in srgb, var(--soil) 45%, transparent);

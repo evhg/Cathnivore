@@ -50,7 +50,9 @@ test('Continue lands in the office, the stations open, and the stair door takes 
   await expect(page.getByRole('button', { name: "Call Bea's line" })).toBeVisible({ timeout: 30_000 })
   await use()
   await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.lastStation === 'phone', null, { timeout: 30_000 })
-  await expect(page.locator('.hud-sub').filter({ hasText: /Candor Clinic/ })).toBeVisible({ timeout: 30_000 })
+  // Any line of the clinic call (three play in turn; on a slow runner the first, which names the clinic, can be gone
+  // before this check starts polling).
+  await expect(page.locator('.hud-sub').filter({ hasText: /Candor Clinic|A clinic\. Of course|night shift starts at ten/ })).toBeVisible({ timeout: 30_000 })
 
   // The case board, from the cork wall.
   await at(0, -2.6)
