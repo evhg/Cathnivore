@@ -322,3 +322,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-15 04:05 lane B (item 399): Rivermead's third bed is mown swathes, not the spec's orchard row: trees on a buildable plot read as item 43's unbuildable orchard landmark; Oakvale's bluebells sit on green ground for the same reason (a blue fill read as water).
 - 2026-11-15 04:05 lane B (item 399): the 3D field keeps its three beds; each act's kit maps its beds one-to-one onto them (`bedBase`), so 3D neighbours still differ. 3D kits are a later item.
 - 2026-11-15 04:05 lane B: never `git stash` + `pop` to shoot a "before": with nothing to stash, pop applies an old stash entry. Shoot before editing, or use a worktree.
+- 2026-11-15 04:45 lane A (release): item 398's Runnel lesson hint was reverted rather than reworked during the release: hiding the hint under the lesson (by attribute or plain CSS) made runnel-lesson-close's desktop hand-off miss 1.5 s; lane B owns the rework.
+- 2026-11-15 04:45 lane A (release): Hedgerow's 3D water was lifted (#3a809a/#4d9ab6) to keep within ΔE 15 of the 2D pond after item 360's darker day key, rather than loosening hedgerow-water.
