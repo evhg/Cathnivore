@@ -22,7 +22,12 @@ test('board pieces are chunky tokens with their own outlines', async ({ page }, 
     const svg = document.querySelector<SVGSVGElement>('.map-wrap svg.map[data-round]')!
     const pieces = Array.from(svg.querySelectorAll<SVGGElement>('[data-piece]')).map((el) => {
       const b = el.getBoundingClientRect()
-      return { kind: el.dataset.piece!, sil: el.dataset.silhouette ?? '', n: Number(el.dataset.count), tall: Math.max(b.width, b.height), badges: el.querySelectorAll('.piece-count').length, copies: el.querySelectorAll('.pile-copy').length }
+      // Plan item 425: Hollowell's miniatures cast a contact shadow, and a count sits on the piece (its plinth),
+      // its gap to the piece's art box (the model and its plinth) 4 px or less.
+      const art = el.querySelector('.enemy-stack > g')?.getBoundingClientRect()
+      const badge = el.querySelector('.piece-count')?.getBoundingClientRect()
+      const gap = art && badge ? Math.max(0, badge.left - art.right, art.left - badge.right, badge.top - art.bottom, art.top - badge.bottom) : 0
+      return { kind: el.dataset.piece!, sil: el.dataset.silhouette ?? '', n: Number(el.dataset.count), tall: Math.max(b.width, b.height), badges: el.querySelectorAll('.piece-count').length, copies: el.querySelectorAll('.pile-copy').length, shadow: el.querySelectorAll('.corp-base-shadow, .token-shadow').length, gap }
     })
     const hexes = Array.from(svg.querySelectorAll('.region-hex polygon')).map((p) => p.getBoundingClientRect())
     const top = Math.min(...hexes.map((h) => h.top))
@@ -42,6 +47,8 @@ test('board pieces are chunky tokens with their own outlines', async ({ page }, 
       expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 4 ? 1 : 0)
       expect(p.copies, `${p.kind} x${p.n}`).toBe(Math.min(p.n, 3) - 1)
     } else {
+      expect(p.shadow, `${p.kind} contact shadow`).toBeGreaterThan(0)
+      expect(p.gap, `${p.kind} x${p.n} count off its piece`).toBeLessThanOrEqual(4)
       // Plan item 413: one Hollowell piece a kind, a count badge from two.
       expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 2 ? 1 : 0)
       expect(p.copies, `${p.kind} x${p.n}`).toBe(0)

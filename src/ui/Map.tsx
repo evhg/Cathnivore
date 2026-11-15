@@ -213,63 +213,84 @@ function RegionTextureDefs() {
 // STYLE.md 6's exact game pieces, drawn as small self-contained SVG groups so `Map` can place one per
 // slot in the enemy-piece row / Stall row without repeating their geometry inline.
 
-// Outlet: "little shopfront box with a price tag reading 0.99" (plan item 139: the tag is wordless, its print
-// as lines: no size of the piece let '.99' reach 11 px) — a glossy Hollowell square (unchanged
-// from before) plus a small hanging price tag, the wit detail STYLE.md 2.5 asks for by name.
+// Plan item 425: Hollowell's pieces are glossy miniatures standing on the land, not stickers: each is a little
+// moulded object (the Outlet a storefront, the Buyout a hoarding on legs, Doubt a speech bubble on a stake) with
+// one specular highlight, a moulded side in the faction's deep tone and no ink outline. Each keeps item 172's
+// outline (sawtooth roof, peaked board, round bubble), so the board still reads in greyscale. The art stays inside
+// 0..12.5 x 0..13.5 so the legend's and close-up's fixed viewBoxes still hold it.
+
+// Outlet: a sawtooth-roofed chain storefront: an H on its fascia, a striped awning, a dark plate-glass window and
+// door. Item 139's wordless price tag hangs off the awning's corner when there is room (`ornament`).
+const OUTLET_ROOF = '0.4,4.4 0.4,2.6 3.1,0.6 3.1,2.6 5.9,0.6 5.9,2.6 8.7,0.6 8.7,2.6 11.6,2.6 11.6,4.4'
 export function Outlet({ ornament = true }: { ornament?: boolean }) {
   return (
     <g className="enemy-piece enemy-outlet">
-      {/* sawtooth-roofed warehouse: reads apart from Buyout's peak and Doubt's bubble in outline alone */}
-      {/* plan item 172: a chunky token, its moulded side showing under the face */}
-      {/* plan item 282: a hard, clinical drop shadow (no blur), then the moulded side, the gloss face and its streak */}
-      <polygon className="corp-shadow" points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={0.6} strokeLinejoin="round" />
-      {/* plan item 413: corporate plastic has no ink line (the players' hand-drawn style); a hairline of its own lit edge */}
-      <polygon points="0,12 0,3 3,0 3,3 6,0 6,3 9,0 9,3 12,3 12,12" className="corp-face" fill="url(#hollowell-gloss)" stroke="var(--hollowell-highlight)" strokeWidth={0.45} strokeLinejoin="round" />
-      <path className="corp-specular" d="M 1.2,10.5 V 4 L 2.4,3" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
-      <circle cx={9} cy={5.5} r={1.8} fill="var(--hollowell-highlight)" />
-      {ornament && <g transform="translate(7,9) rotate(18)">
-        <rect x={0} y={0} width={7} height={5} rx={1} fill="var(--corp-acrylic)" stroke="var(--corp-chrome)" strokeWidth={0.5} />
-        <circle cx={1.3} cy={1.3} r={0.5} fill="var(--ink)" />
+      {/* the moulded side, a deep step under the face (no ink line: plan item 413) */}
+      <g transform="translate(0.8 0.9)" className="corp-shadow" fill="var(--hollowell-ink)">
+        <polygon points={OUTLET_ROOF} />
+        <rect x={0.6} y={4} width={10.8} height={8} />
+      </g>
+      <polygon points={OUTLET_ROOF} className="corp-face" fill="url(#hollowell-gloss)" />
+      {/* the shop's body and its fascia with the H */}
+      <rect x={0.6} y={4} width={10.8} height={8} fill="url(#hollowell-gloss)" />
+      <rect x={0.6} y={4} width={10.8} height={2.1} fill="var(--hollowell-ink)" />
+      <path d="M 5,4.5 v 1.2 M 7,4.5 v 1.2 M 5,5.1 h 2" stroke="var(--corp-acrylic)" strokeWidth={0.55} strokeLinecap="round" fill="none" />
+      {/* the striped awning, scalloped along its lip */}
+      <polygon points="0,6.1 12,6.1 12.4,7.8 -0.4,7.8" fill="var(--corp-acrylic)" />
+      {[0, 2, 4].map((i) => (
+        <polygon key={i} points={`${i * 2.4},6.1 ${(i + 1) * 2.4},6.1 ${(i + 1) * 2.56 - 0.4},7.8 ${i * 2.56 - 0.4},7.8`} fill="var(--hollowell)" />
+      ))}
+      <path d="M -0.4,7.8 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0" fill="var(--hollowell-ink)" opacity={0.55} />
+      {/* plate-glass window and door, one highlight across the glass */}
+      <rect x={1.5} y={8.6} width={5.4} height={3.4} rx={0.3} fill="var(--corp-slate)" />
+      <rect x={7.7} y={8.6} width={2.8} height={3.4} rx={0.3} fill="var(--corp-slate)" />
+      <path className="corp-specular" d="M 2.4,11.4 L 4.4,9.1" stroke="white" strokeWidth={0.7} strokeLinecap="round" opacity={0.7} />
+      <path d="M 1.2,3.7 L 2.9,2.4" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
+      {ornament && <g transform="translate(9.6,7.2) rotate(14)">
+        <path d="M 0.6,0 v 0.9" stroke="var(--corp-chrome)" strokeWidth={0.35} />
+        <rect x={-0.6} y={0.9} width={3} height={2.2} rx={0.5} fill="var(--corp-acrylic)" stroke="var(--corp-chrome)" strokeWidth={0.35} />
         {/* plan item 139: printed lines, not '.99' (the text drew at 7 px on a desktop board, under the 11 px floor) */}
-        <path d="M 2.6,2.2 h 3.2 M 2.6,3.5 h 2.2" className="tag-print" stroke="var(--ink)" strokeWidth={0.55} strokeLinecap="round" />
+        <path d="M 0,1.8 h 1.6 M 0,2.5 h 1" className="tag-print" stroke="var(--ink)" strokeWidth={0.4} strokeLinecap="round" />
       </g>}
     </g>
   )
 }
 
-// Buyout: "picket-fence segment with a SOLD sign" — keeps the peaked sign-post silhouette (already
-// distinct in outline from Outlet's square, STYLE.md 2.3) and adds the sign itself.
+// Buyout: a peaked hoarding on two chrome legs, Hollowell's H in its gable and a SOLD strip pasted across it.
 export function Buyout({ ornament = true }: { ornament?: boolean }) {
+  const board = '6,0.3 12,3.4 12,9 0,9 0,3.4'
   return (
     <g className="enemy-piece enemy-buyout">
-      <polygon className="corp-shadow" points="6,0 12,4 12,12 0,12 0,4" transform="translate(1.4 1.7)" fill="var(--ink)" opacity={0.3} />
-      <polygon points="6,0 12,4 12,12 0,12 0,4" transform="translate(0.9 1.1)" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={0.6} strokeLinejoin="round" />
-      <polygon points="6,0 12,4 12,12 0,12 0,4" className="corp-face" fill="url(#hollowell-gloss)" stroke="var(--hollowell-highlight)" strokeWidth={0.45} strokeLinejoin="round" />
-      <path className="corp-specular" d="M 1.2,10.5 V 4.6 L 5.6,1.6" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
-      <circle cx={9} cy={5} r={2} fill="var(--hollowell-highlight)" />
-      {ornament && <g transform="translate(1,7) rotate(-6)">
-        <rect x={0} y={0} width={10} height={4} rx={0.5} fill="var(--corp-acrylic)" stroke="var(--corp-chrome)" strokeWidth={0.5} />
+      <path d="M 2.6,8.5 V 12.4 M 9.4,8.5 V 12.4" stroke="var(--corp-chrome)" strokeWidth={1.1} strokeLinecap="round" />
+      <path d="M 2.6,10.6 H 9.4" stroke="var(--corp-chrome)" strokeWidth={0.5} />
+      <polygon points={board} transform="translate(0.8 0.9)" className="corp-shadow" fill="var(--hollowell-ink)" />
+      <polygon points={board} className="corp-face" fill="url(#hollowell-gloss)" />
+      <circle cx={6} cy={3.3} r={1.45} fill="var(--corp-acrylic)" />
+      <path d="M 5.35,2.6 v 1.4 M 6.65,2.6 v 1.4 M 5.35,3.3 h 1.3" stroke="var(--hollowell-ink)" strokeWidth={0.45} strokeLinecap="round" fill="none" />
+      {ornament && <g transform="translate(1,5.6) rotate(-6)">
+        <rect x={0} y={0} width={10} height={2.4} rx={0.3} fill="var(--corp-acrylic)" />
         {/* plan item 139: a lettered stroke, not 'SOLD' (about 6 px on screen); the sign's shape carries it */}
-        <path d="M 2,2 h 6" className="tag-print" stroke="var(--hollowell)" strokeWidth={1.1} strokeLinecap="round" />
+        <path d="M 2.2,1.2 h 5.6" className="tag-print" stroke="var(--hollowell)" strokeWidth={0.9} strokeLinecap="round" />
       </g>}
+      <path className="corp-specular" d="M 1,8 V 4 L 4.6,2" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
     </g>
   )
 }
 
-// Doubt: "speech bubble with a '?'" — the glossy Candor circle already had the "?", but no tail, so it
-// read as a plain dot rather than a speech bubble (STYLE.md 6's literal shape).
+// Doubt: Candor's speech bubble with its '?', standing on a stake driven into the land.
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
-      <circle className="corp-shadow" cx={7.4} cy={7.7} r={6} fill="var(--ink)" opacity={0.28} />
-      <circle cx={6.9} cy={7.1} r={6} fill="var(--candor-ink)" stroke="var(--candor-ink)" strokeWidth={0.6} />
-      <path d="M 3,10.8 L 6.5,10.8 L 3.5,14 Z" fill="var(--candor-ink)" stroke="var(--candor-ink)" strokeWidth={0.6} strokeLinejoin="round" />
-      <circle cx={6} cy={6} r={6} className="corp-face" fill="url(#candor-gloss)" stroke="var(--candor-highlight)" strokeWidth={0.45} />
-      <path className="corp-specular" d="M 1.6,6.5 A 4.6,4.6 0 0 1 4.2,1.9" fill="none" stroke="white" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
-      <path d="M 3.4,10.4 L 6.2,10.4 L 3.8,12.6 Z" fill="var(--candor)" />
-      <circle cx={8} cy={4} r={1.8} fill="var(--candor-highlight)" />
-      <text x={6} y={9} textAnchor="middle" className="doubt-mark">
+      <path d="M 6.4,7.8 V 12.6" stroke="var(--candor-ink)" strokeWidth={1.3} strokeLinecap="round" />
+      <path d="M 6,7.8 V 12.4" stroke="var(--corp-chrome)" strokeWidth={0.5} strokeLinecap="round" opacity={0.7} />
+      <g className="corp-shadow" fill="var(--candor-ink)" transform="translate(0.7 0.8)">
+        <circle cx={6} cy={4.4} r={4.4} />
+        <path d="M 2.9,7.2 L 5.4,8.3 L 1.9,9.6 Z" />
+      </g>
+      <path d="M 2.9,7.2 L 5.4,8.3 L 1.9,9.6 Z" fill="var(--candor)" />
+      <circle cx={6} cy={4.4} r={4.4} className="corp-face" fill="url(#candor-gloss)" />
+      <path className="corp-specular" d="M 2.5,4.7 A 3.5,3.5 0 0 1 4.4,1.5" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
+      <text x={6.2} y={7} textAnchor="middle" className="doubt-mark">
         ?
       </text>
     </g>
@@ -282,7 +303,10 @@ function CorpBase({ cx, y, w }: { cx: number; y: number; w: number }) {
   const hw = w / 2 + 2.6
   return (
     <g className="corp-base" pointerEvents="none">
-      <rect x={cx - hw + 1} y={y - 0.2} width={hw * 2} height={3.8} rx={1.2} className="corp-base-shadow" />
+      {/* plan item 425: a soft contact shadow on the land, fainter at its edge (kept inside the plinth's old shadow
+          footprint, so a slot's box doesn't grow into its neighbour's) */}
+      <ellipse cx={cx + 0.4} cy={y + 2.5} rx={hw + 0.4} ry={1.9} className="corp-base-shadow corp-contact-soft" />
+      <ellipse cx={cx + 0.6} cy={y + 2.2} rx={hw - 0.8} ry={1.2} className="corp-base-shadow" />
       <rect x={cx - hw} y={y - 1.4} width={hw * 2} height={3.8} rx={1.2} className="corp-base-side" />
       <rect x={cx - hw} y={y - 2.2} width={hw * 2} height={2.2} rx={1} className="corp-base-top" />
       <path d={`M ${cx - hw + 1.2} ${y - 1.7} h ${hw * 0.9}`} className="corp-base-shine" strokeWidth={0.5} strokeLinecap="round" />
@@ -326,7 +350,8 @@ function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind:
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {n >= CORP_COUNT_FROM && <CountBadge corp cx={Math.min(13.6 * k, STACK_W * scale - countR)} cy={bottom - 17.4 * k + countR * 0.15} r={countR} n={n} />}
+      {/* plan item 425: the count sits on the piece's own plinth (its right end), not floating above it */}
+      {n >= CORP_COUNT_FROM && <CountBadge corp cx={Math.min(14.6 * k, STACK_W * scale - countR)} cy={Math.min(bottom - 3.6 * k, bottom - countR)} r={countR} n={n} />}
     </g>
   )
 }

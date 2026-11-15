@@ -1283,24 +1283,26 @@ html.native-app body {
 /* ROADMAP 12: each enemy piece arrives its own way, so a glance at the map says what just landed. Same
    200-260ms budget as the shared slide; the reduced-motion and no-animations rules below already cover
    `.enemy-piece`, which these classes only refine. */
+/* Plan item 425: Hollowell's miniatures drop in on corporate easing with no overshoot or squash (the players'
+   pieces keep their soft settle): the Outlet set down, the hoarding slammed in, the bubble planted on its stake. */
 @keyframes outlet-pop {
-  0% { transform: scale(0.4); opacity: 0; }
-  60% { transform: scale(1.18); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: translateY(-10px); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 @keyframes buyout-slam {
-  0% { transform: translateY(-14px) scaleY(1.2); opacity: 0; }
-  65% { transform: translateY(1px) scaleY(0.88); opacity: 1; }
-  100% { transform: translateY(0) scaleY(1); opacity: 1; }
+  0% { transform: translateY(-14px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 @keyframes doubt-float {
-  0% { transform: translateY(10px) rotate(-8deg) scale(0.6); opacity: 0; }
-  60% { transform: translateY(-2px) rotate(5deg) scale(1.05); opacity: 1; }
-  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+  0% { transform: translateY(-8px) scale(0.85); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
-.enemy-outlet { animation: outlet-pop 300ms var(--ease-pop); }
-.enemy-buyout { animation: buyout-slam 300ms var(--ease-pop); }
-.enemy-doubt { animation: doubt-float 300ms var(--ease-pop); }
+.enemy-outlet { animation: outlet-pop 300ms var(--ease-corp); }
+.enemy-buyout { animation: buyout-slam 260ms var(--ease-corp); }
+.enemy-doubt { animation: doubt-float 300ms var(--ease-corp); }
 .map-legend-icon .enemy-outlet,
 .map-legend-icon .enemy-buyout,
 .map-legend-icon .enemy-doubt { animation: none; }
