@@ -17,7 +17,8 @@ describe("field kits", () => {
       }
   });
 
-  it("give Highmoor, Saltmarsh, Rivermead, Oakvale, Shingle Bay and The Rift their own kits, and the farm's to Brindle", () => {
+  it("give every act after Brindle its own kit, and the farm's to Brindle", () => {
+    for (let act = 1; act < 10; act++) expect(kitFor({ id: act * 10 + 5 }), `act ${act + 1}`).not.toBe(BRINDLE_KIT);
     expect(kitFor({ id: 5 })).toBe(BRINDLE_KIT);
     expect(kitFor({ id: 15 }).name).toBe("hill farm");
     expect(kitFor({ id: 21 }).name).toBe("saltmarsh");
@@ -26,6 +27,9 @@ describe("field kits", () => {
     expect(kitFor({ id: 45 }).name).toBe("woodland holding");
     expect(kitFor({ id: 55 }).name).toBe("shingle croft");
     expect(kitFor({ id: 65 }).name).toBe("agribusiness");
+    expect(kitFor({ id: 75 }).name).toBe("allotments");
+    expect(kitFor({ id: 85 }).name).toBe("agri-tech");
+    expect(kitFor({ id: 95 }).name).toBe("market garden");
   });
 
   it("sow every plot of a level from its act's kit", () => {

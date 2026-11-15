@@ -30,15 +30,27 @@ export type BedLook =
   | "rape"
   | "beet"
   | "fallow"
+  // The Ballot: the village allotments: bean canes, sweet peas on pea sticks, show marrows.
+  | "allotment"
+  | "sweetpea"
+  | "marrow"
+  // The Merger: the takeover's growing: polytunnels, a lettuce grid, a turf farm.
+  | "polytunnel"
+  | "lettuce"
+  | "turf"
+  // Kingsmarket: the market garden: red and green salad rows, forced rhubarb, strawberries in straw.
+  | "salad"
+  | "rhubarb"
+  | "strawberry"
   // Rivermead: water-meadow strips with their drains, a hay meadow mown into swathes, a watercress bed (no trees: an orchard reads as item 43's unbuildable orchard landmark).
   | "meadow"
   | "swathe"
   | "cress";
 
 /** The building on a barn's cell. */
-export type BarnLook = "barn" | "netshed" | "millhouse" | "fold" | "timberbarn" | "boathut" | "dutchbarn";
+export type BarnLook = "barn" | "netshed" | "millhouse" | "fold" | "timberbarn" | "boathut" | "dutchbarn" | "marquee" | "warehouse" | "granary";
 /** A water plot: a round farm pond, a salt pan, a willow-ringed pond. */
-export type WaterLook = "pond" | "saltpan" | "willowpond" | "peatpool" | "lilypool" | "rockpool" | "gravelpit";
+export type WaterLook = "pond" | "saltpan" | "willowpond" | "peatpool" | "lilypool" | "rockpool" | "gravelpit" | "duckpond" | "lagoon" | "basin";
 
 export interface FieldKit {
   name: string;
@@ -49,7 +61,7 @@ export interface FieldKit {
   barn: BarnLook;
   water: WaterLook;
   /** The farmhouse at the lane's end (sprites.ts's drawFarmhouse). */
-  house: "farm" | "fisher" | "thatch" | "longhouse" | "lodge" | "flint" | "bungalow";
+  house: "farm" | "fisher" | "thatch" | "longhouse" | "lodge" | "flint" | "bungalow" | "rectory" | "showhome" | "townhouse";
 }
 
 export const BRINDLE_KIT: FieldKit = { name: "farm", beds: ["earth", "stubble", "clover"], puddle: "earth", barn: "barn", water: "pond", house: "farm" };
@@ -61,6 +73,9 @@ export const FIELD_KITS: Partial<Record<number, FieldKit>> = {
   4: { name: "woodland holding", beds: ["garlic", "litter", "bluebell"], barn: "timberbarn", water: "lilypool", house: "lodge" },
   5: { name: "shingle croft", beds: ["seakale", "lazybed", "thrift"], barn: "boathut", water: "rockpool", house: "flint" },
   6: { name: "agribusiness", beds: ["rape", "beet", "fallow"], barn: "dutchbarn", water: "gravelpit", house: "bungalow" },
+  7: { name: "allotments", beds: ["allotment", "sweetpea", "marrow"], barn: "marquee", water: "duckpond", house: "rectory" },
+  8: { name: "agri-tech", beds: ["polytunnel", "lettuce", "turf"], barn: "warehouse", water: "lagoon", house: "showhome" },
+  9: { name: "market garden", beds: ["salad", "rhubarb", "strawberry"], barn: "granary", water: "basin", house: "townhouse" },
   3: { name: "water meadow", beds: ["meadow", "swathe", "cress"], barn: "millhouse", water: "willowpond", house: "thatch" },
 };
 
@@ -83,6 +98,9 @@ export function bedBase(look: BedLook | "puddle"): "earth" | "stubble" | "clover
     case "litter":
     case "lazybed":
     case "beet":
+    case "allotment":
+    case "lettuce":
+    case "rhubarb":
       return "earth";
     case "stubble":
     case "saltgrass":
@@ -91,6 +109,9 @@ export function bedBase(look: BedLook | "puddle"): "earth" | "stubble" | "clover
     case "bluebell":
     case "seakale":
     case "rape":
+    case "marrow":
+    case "polytunnel":
+    case "strawberry":
       return "stubble";
     default:
       return "clover";

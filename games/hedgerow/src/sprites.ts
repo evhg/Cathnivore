@@ -2431,7 +2431,7 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
  * Plan item 399: the farmhouse in each act's field kit: Brindle's red-tiled farmhouse, Saltmarsh's whitewashed
  * fisher's cottage under grey slate with a blue door and a lifebuoy, Rivermead's pink-washed cottage under thatch.
  */
-export type HouseLook = "farm" | "fisher" | "thatch" | "longhouse" | "lodge" | "flint" | "bungalow";
+export type HouseLook = "farm" | "fisher" | "thatch" | "longhouse" | "lodge" | "flint" | "bungalow" | "rectory" | "showhome" | "townhouse";
 const HOUSE: Record<HouseLook, { wall: string; roof: string; door: string; thatch?: boolean; frame?: boolean }> = {
   farm: { wall: "#f4ede1", roof: "#b5523b", door: "#4f7f37" },
   fisher: { wall: "#fbfaf4", roof: "#5d6670", door: "#2f6c9a" },
@@ -2444,6 +2444,12 @@ const HOUSE: Record<HouseLook, { wall: string; roof: string; door: string; thatc
   flint: { wall: "#8f97a0", roof: "#c0603c", door: "#e3b33c" },
   // The Rift: a red-brick bungalow under concrete tiles, a white uPVC door.
   bungalow: { wall: "#b5644a", roof: "#6a6866", door: "#f2f2ee" },
+  // The Ballot: a Georgian rectory in soft red brick under slate, a black door.
+  rectory: { wall: "#c47a5a", roof: "#5a5f66", door: "#24262a" },
+  // The Merger: a new-build show home, grey render and grey tiles, an anthracite door.
+  showhome: { wall: "#e2e4e4", roof: "#3e4246", door: "#3a3f45" },
+  // Kingsmarket: a cream stucco town house under slate, a navy door.
+  townhouse: { wall: "#f0e4c4", roof: "#4f5660", door: "#26385e" },
 };
 
 export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number, health: number, look: HouseLook = "farm"): void {

@@ -52,6 +52,24 @@ const FILL: Partial<Record<BedLook, [string, string]>> = {
   beet: ["rgba(122,110,92,0.82)", "rgba(104,94,80,0.86)"],
   // Fallow: rough grass gone to ragwort and dock.
   fallow: ["rgba(150,158,104,0.7)", "rgba(130,138,90,0.74)"],
+  // Allotments: dug earth in strips, canes and greens.
+  allotment: ["rgba(124,92,62,0.82)", "rgba(106,78,54,0.86)"],
+  // Sweet peas: green with pink and purple flowers on pea sticks.
+  sweetpea: ["rgba(116,162,94,0.72)", "rgba(98,144,80,0.76)"],
+  // Show marrows: big green leaves over pale straw.
+  marrow: ["rgba(196,176,112,0.76)", "rgba(172,154,96,0.8)"],
+  // Polytunnels: white film over green.
+  polytunnel: ["rgba(120,160,104,0.7)", "rgba(102,140,90,0.74)"],
+  // A lettuce grid: bright heads in exact rows on grey soil.
+  lettuce: ["rgba(118,108,96,0.82)", "rgba(100,92,82,0.86)"],
+  // A turf farm: mown stripes.
+  turf: ["rgba(104,176,84,0.76)", "rgba(88,158,72,0.8)"],
+  // Market salad: alternate red and green lettuce rows.
+  salad: ["rgba(110,84,60,0.8)", "rgba(94,72,52,0.84)"],
+  // Rhubarb: dark soil, huge leaves, terracotta forcers.
+  rhubarb: ["rgba(92,70,52,0.84)", "rgba(78,60,46,0.88)"],
+  // Strawberries in straw.
+  strawberry: ["rgba(214,190,118,0.78)", "rgba(190,166,98,0.82)"],
   // Water meadow: lush green ridges between drains.
   meadow: ["rgba(132,186,64,0.68)", "rgba(110,164,54,0.72)"],
   // Mown swathes: fresh pale green, the cut rows darker.
@@ -89,7 +107,7 @@ export function paintKitBed(ctx: C, x: number, y: number, s: number, look: BedLo
   ctx.clip();
   ctx.lineCap = "round";
   // Long-way rows (drains, swathes, cress channels) run the whole field, not plot by plot.
-  if (look === "meadow" || look === "swathe" || look === "cress" || look === "turnips" || look === "lazybed" || look === "beet") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
+  if (look === "meadow" || look === "swathe" || look === "cress" || look === "turnips" || look === "lazybed" || look === "beet" || look === "lettuce" || look === "turf" || look === "salad" || look === "polytunnel" || look === "allotment") rows(ctx, look, bx, by, bw, bh, s, across, rng(seed + 5));
   for (let row = 0; row < m; row++) for (let cell = 0; cell < n; cell++) scatter(ctx, look, x + cell * s, y + row * s, s, rng(seed + cell * 131 + row * 977));
   ctx.restore();
   if (n === 1 && m === 1) {
@@ -160,6 +178,77 @@ function rows(ctx: C, look: BedLook, bx: number, by: number, bw: number, bh: num
         ctx.beginPath();
         ctx.arc(tx + s * 0.012, ty - s * 0.012, s * 0.009, 0, Math.PI * 2);
         ctx.fill();
+      }
+    } else if (look === "lettuce" || look === "salad") {
+      // Heads in an exact row (salad alternates red and green rows).
+      const red = look === "salad" && k % 2 === 1;
+      for (let q = s * 0.1; q < len - s * 0.08; q += s * 0.14) {
+        const [tx, ty] = at(q);
+        ctx.fillStyle = red ? "rgba(140,52,72,0.97)" : "rgba(118,186,74,0.97)";
+        ctx.beginPath();
+        ctx.arc(tx, ty, s * 0.045, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = red ? "rgba(190,90,110,0.97)" : "rgba(170,222,110,0.97)";
+        ctx.beginPath();
+        ctx.arc(tx - s * 0.008, ty - s * 0.008, s * 0.022, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (look === "turf") {
+      // Mown stripes: alternate light and dark the long way.
+      if (k % 2 === 0) {
+        const w = span / count;
+        ctx.fillStyle = "rgba(196,236,150,0.35)";
+        if (across) ctx.fillRect(bx, by + p - w / 2, len, w);
+        else ctx.fillRect(bx + p - w / 2, by, w, len);
+      }
+    } else if (look === "polytunnel") {
+      // A tunnel of white film on hoops, its ribs and a sheen down the crown.
+      if (k % 2 === 1) continue;
+      const w = (span / count) * 1.6;
+      const [x0, y0] = at(s * 0.04, -w / 2);
+      const tw = across ? len - s * 0.08 : w, th = across ? w : len - s * 0.08;
+      const g = across ? ctx.createLinearGradient(0, y0, 0, y0 + th) : ctx.createLinearGradient(x0, 0, x0 + tw, 0);
+      g.addColorStop(0, "rgba(206,214,214,0.95)");
+      g.addColorStop(0.45, "rgba(252,252,250,0.97)");
+      g.addColorStop(1, "rgba(178,188,190,0.95)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.roundRect(x0, y0, tw, th, s * 0.05);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(120,130,134,0.7)";
+      ctx.lineWidth = Math.max(0.75, s * 0.012);
+      for (let q = s * 0.12; q < len - s * 0.1; q += s * 0.18) {
+        const [a0, a1] = at(q, -w / 2), [b0, b1] = at(q, w / 2);
+        line(ctx, [a0, a1], [b0, b1]);
+      }
+    } else if (look === "allotment") {
+      // Strips: a row of bean canes in a wigwam, then a row of cabbages.
+      for (let q = s * 0.12 + r01() * s * 0.05; q < len - s * 0.1; q += s * 0.19) {
+        const [tx, ty] = at(q);
+        if (k % 2 === 0) {
+          ctx.strokeStyle = "rgba(196,170,110,0.97)";
+          ctx.lineWidth = Math.max(1, s * 0.012);
+          line(ctx, [tx - s * 0.03, ty + s * 0.03], [tx, ty - s * 0.06]);
+          line(ctx, [tx + s * 0.03, ty + s * 0.03], [tx, ty - s * 0.06]);
+          ctx.fillStyle = "rgba(84,146,62,0.95)";
+          ctx.beginPath();
+          ctx.arc(tx - s * 0.012, ty - s * 0.01, s * 0.016, 0, Math.PI * 2);
+          ctx.arc(tx + s * 0.014, ty + s * 0.008, s * 0.014, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "rgba(220,70,52,0.95)";
+          ctx.beginPath();
+          ctx.arc(tx + s * 0.004, ty - s * 0.03, s * 0.008, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(108,150,140,0.97)";
+          ctx.beginPath();
+          ctx.arc(tx, ty, s * 0.038, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "rgba(160,196,180,0.97)";
+          ctx.beginPath();
+          ctx.arc(tx, ty, s * 0.018, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     } else if (look === "beet") {
       // Beet in drilled rows: glossy dark leaves with red stalks.
@@ -345,6 +434,87 @@ function scatter(ctx: C, look: BedLook, x: number, y: number, s: number, r01: ()
         ctx.fill();
       }
     }
+  } else if (look === "sweetpea") {
+    // Pea sticks with sweet peas in pink, purple and white.
+    for (let j = 0; j < 4; j++) {
+      const sx = px(), sy = py();
+      ctx.strokeStyle = "rgba(140,112,74,0.9)";
+      ctx.lineWidth = Math.max(1, s * 0.012);
+      for (const dx of [-0.02, 0.02]) line(ctx, [sx + s * dx, sy], [sx + s * dx * 0.4, sy - s * 0.1]);
+      for (let k = 0; k < 5; k++) {
+        ctx.fillStyle = ["rgba(236,120,170,0.97)", "rgba(150,96,196,0.97)", "rgba(252,240,246,0.97)"][(j + k) % 3]!;
+        ctx.beginPath();
+        ctx.arc(sx + (r01() - 0.5) * s * 0.06, sy - s * (0.02 + r01() * 0.08), s * 0.016, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (look === "marrow") {
+    // A show marrow (and a pumpkin) under broad leaves.
+    for (let j = 0; j < 3; j++) {
+      const cx = px(), cy = py();
+      ctx.fillStyle = "rgba(84,140,62,0.95)";
+      for (const a of [0, 2.1, 4.2]) {
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(a) * s * 0.04, cy + Math.sin(a) * s * 0.03, s * 0.04, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (j === 0) {
+        ctx.fillStyle = "rgba(228,128,40,0.97)";
+        ctx.beginPath();
+        ctx.ellipse(cx + s * 0.05, cy + s * 0.03, s * 0.045, s * 0.035, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = "rgba(70,110,52,0.97)";
+        ctx.beginPath();
+        ctx.ellipse(cx + s * 0.04, cy + s * 0.035, s * 0.06, s * 0.022, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(200,220,140,0.8)";
+        ctx.lineWidth = Math.max(0.75, s * 0.008);
+        line(ctx, [cx - s * 0.01, cy + s * 0.025], [cx + s * 0.09, cy + s * 0.045]);
+      }
+    }
+  } else if (look === "rhubarb") {
+    // Big leaves on red stalks, and a terracotta forcing pot or two.
+    for (let j = 0; j < 3; j++) {
+      const cx = px(), cy = py();
+      ctx.strokeStyle = "rgba(196,54,66,0.97)";
+      ctx.lineWidth = Math.max(1, s * 0.016);
+      for (const a of [-0.6, 0.1, 0.8]) line(ctx, [cx, cy], [cx + Math.sin(a) * s * 0.05, cy - s * 0.04]);
+      ctx.fillStyle = "rgba(78,140,60,0.95)";
+      for (const a of [-0.6, 0.1, 0.8]) {
+        ctx.beginPath();
+        ctx.ellipse(cx + Math.sin(a) * s * 0.06, cy - s * 0.06, s * 0.045, s * 0.035, a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    const fx = px(), fy = py();
+    ctx.fillStyle = "rgba(196,104,62,0.97)";
+    ctx.strokeStyle = "rgba(110,54,30,0.9)";
+    ctx.lineWidth = Math.max(0.75, s * 0.01);
+    ctx.beginPath();
+    ctx.moveTo(fx - s * 0.04, fy);
+    ctx.lineTo(fx - s * 0.03, fy - s * 0.08);
+    ctx.lineTo(fx + s * 0.03, fy - s * 0.08);
+    ctx.lineTo(fx + s * 0.04, fy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (look === "strawberry") {
+    // Trefoil leaves on straw, red berries showing.
+    for (let j = 0; j < 8; j++) {
+      const cx = px(), cy = py();
+      ctx.fillStyle = "rgba(72,132,58,0.95)";
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(a) * s * 0.018, cy + Math.sin(a) * s * 0.018, s * 0.018, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "rgba(222,40,52,0.97)";
+      ctx.beginPath();
+      ctx.ellipse(cx + s * 0.03, cy + s * 0.02, s * 0.013, s * 0.017, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
   } else if (look === "rape") {
     // A sea of small yellow heads over green stems.
     for (let j = 0; j < 22; j++) {
@@ -496,6 +666,112 @@ function paintDryWall(ctx: C, x: number, y: number, w: number, s: number, r01: (
   ctx.restore();
 }
 
+/** The Ballot's fête marquee, The Merger's steel warehouse, Kingsmarket's granary on staddle stones. */
+function paintTownBarn(ctx: C, x: number, y: number, w: number, look: "marquee" | "warehouse" | "granary", flip: boolean, r01: () => number): void {
+  ctx.fillStyle = "rgba(40,36,24,0.16)";
+  ctx.beginPath();
+  ctx.roundRect(x + w * 0.02, y + w * 0.06, w * 0.96, w * 0.96, w * 0.14);
+  ctx.fill();
+  ctx.fillStyle = look === "warehouse" ? "rgb(150,152,150)" : look === "granary" ? "rgb(184,164,124)" : "rgb(140,184,104)";
+  ctx.beginPath();
+  ctx.roundRect(x + w * 0.02, y + w * 0.04, w * 0.96, w * 0.94, w * 0.14);
+  ctx.fill();
+  const left = flip ? x + w * 0.3 : x + w * 0.1, bw = w * 0.6, top = y + w * 0.12, base = y + w * 0.66;
+  castShadow(ctx, left + bw / 2, base, bw / 2, w * 0.14, w * 0.5, 0.2);
+  ctx.lineWidth = Math.max(1, w * 0.02);
+  if (look === "marquee") {
+    // Red-and-white striped walls, a peaked white top and its bunting.
+    for (let k = 0; k < 6; k++) {
+      ctx.fillStyle = k % 2 ? "#fbf6ea" : "#cf4a3c";
+      ctx.fillRect(left + (bw * k) / 6, top + w * 0.2, bw / 6, base - top - w * 0.2);
+    }
+    ctx.strokeStyle = "#5a2a20";
+    ctx.strokeRect(left, top + w * 0.2, bw, base - top - w * 0.2);
+    ctx.fillStyle = "#fbf6ea";
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.04, top + w * 0.22);
+    ctx.lineTo(left + bw * 0.25, top);
+    ctx.lineTo(left + bw * 0.75, top);
+    ctx.lineTo(left + bw + w * 0.04, top + w * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    const flags = ["#cf4a3c", "#2f6c9a", "#e8c22e"];
+    for (let k = 0; k < 7; k++) {
+      ctx.fillStyle = flags[k % 3]!;
+      const fx = x + w * (0.08 + k * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(fx, y + w * 0.82);
+      ctx.lineTo(fx + w * 0.08, y + w * 0.82);
+      ctx.lineTo(fx + w * 0.04, y + w * 0.9);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (look === "warehouse") {
+    // A grey cladded shed, a low-pitched roof, a roller door and yellow bollards.
+    ctx.fillStyle = "#c9ccce";
+    ctx.strokeStyle = "#4a4e52";
+    ctx.fillRect(left, top + w * 0.1, bw, base - top - w * 0.1);
+    ctx.strokeRect(left, top + w * 0.1, bw, base - top - w * 0.1);
+    ctx.strokeStyle = "rgba(90,96,100,0.45)";
+    ctx.lineWidth = Math.max(0.75, w * 0.008);
+    for (let k = 1; k < 10; k++) line(ctx, [left + (bw * k) / 10, top + w * 0.1], [left + (bw * k) / 10, base]);
+    ctx.fillStyle = "#6f777e";
+    ctx.strokeStyle = "#3a3e42";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.03, top + w * 0.12);
+    ctx.lineTo(left + bw / 2, top);
+    ctx.lineTo(left + bw + w * 0.03, top + w * 0.12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#8a9096";
+    ctx.fillRect(left + bw * 0.3, base - w * 0.26, bw * 0.4, w * 0.26);
+    ctx.strokeStyle = "rgba(50,54,58,0.6)";
+    ctx.lineWidth = Math.max(0.75, w * 0.008);
+    for (let k = 1; k < 6; k++) line(ctx, [left + bw * 0.3, base - (w * 0.26 * k) / 6], [left + bw * 0.7, base - (w * 0.26 * k) / 6]);
+    ctx.fillStyle = "#e8c22e";
+    for (const k of [0.15, 0.85]) ctx.fillRect(x + w * k, y + w * 0.76, w * 0.04, w * 0.12);
+  } else {
+    // A weatherboarded granary up on mushroom-shaped staddle stones, steps to its door.
+    ctx.fillStyle = "#8e8a80";
+    for (const k of [0.1, 0.5, 0.9]) {
+      const sx = left + bw * k;
+      ctx.fillRect(sx - w * 0.015, base - w * 0.1, w * 0.03, w * 0.1);
+      ctx.beginPath();
+      ctx.ellipse(sx, base - w * 0.1, w * 0.04, w * 0.015, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const gb = base - w * 0.11;
+    ctx.fillStyle = "#a8763e";
+    ctx.strokeStyle = "#4e3418";
+    ctx.fillRect(left, top + w * 0.16, bw, gb - top - w * 0.16);
+    ctx.strokeRect(left, top + w * 0.16, bw, gb - top - w * 0.16);
+    ctx.strokeStyle = "rgba(78,52,24,0.45)";
+    ctx.lineWidth = Math.max(0.75, w * 0.008);
+    for (let k = 1; k < 5; k++) line(ctx, [left, top + w * 0.16 + ((gb - top - w * 0.16) * k) / 5], [left + bw, top + w * 0.16 + ((gb - top - w * 0.16) * k) / 5]);
+    ctx.fillStyle = "#9a5a3c";
+    ctx.strokeStyle = "#4e2a1a";
+    ctx.lineWidth = Math.max(1, w * 0.02);
+    ctx.beginPath();
+    ctx.moveTo(left - w * 0.04, top + w * 0.18);
+    ctx.lineTo(left + bw / 2, top - w * 0.02);
+    ctx.lineTo(left + bw + w * 0.04, top + w * 0.18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#3c2a1c";
+    ctx.fillRect(left + bw * 0.4, gb - w * 0.16, bw * 0.2, w * 0.16);
+    ctx.fillStyle = "#e0bd68";
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath();
+      ctx.arc(x + w * (0.2 + r01() * 0.6), y + w * (0.8 + r01() * 0.1), w * 0.035, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
 /** A ewe grazing: a cloud of wool, a dark face and legs, its shadow to the right. */
 function paintEwe(ctx: C, cx: number, base: number, h: number, flip: boolean): void {
   const d = flip ? -1 : 1;
@@ -592,6 +868,30 @@ export function paintKitWater(ctx: C, x: number, y: number, s: number, look: Wat
       ctx.fillStyle = "rgba(252,252,248,0.95)";
       ctx.beginPath();
       ctx.arc(fx, fy - s * 0.08, s * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (look === "duckpond" || look === "lagoon" || look === "basin") {
+    // The village duck pond (with its duck house), the agri-tech lined lagoon, the town's stone basin.
+    const i = s * 0.12;
+    if (look === "duckpond") {
+      ctx.fillStyle = "rgba(70,130,160,0.95)";
+      ctx.beginPath();
+      ctx.ellipse(x + s / 2, y + s * 0.54, s * 0.4, s * 0.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#b5523b";
+      ctx.fillRect(x + s * 0.44, y + s * 0.36, s * 0.14, s * 0.1);
+      ctx.fillStyle = "#f2e6c8";
+      ctx.beginPath();
+      ctx.arc(x + s * 0.32, y + s * 0.62, s * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = look === "lagoon" ? "rgba(40,44,48,0.95)" : "rgba(200,190,170,0.95)";
+      ctx.beginPath();
+      ctx.roundRect(x + i, y + i, s - i * 2, s - i * 2, s * 0.04);
+      ctx.fill();
+      ctx.fillStyle = look === "lagoon" ? "rgba(70,96,110,0.95)" : "rgba(96,160,190,0.95)";
+      ctx.beginPath();
+      ctx.roundRect(x + i * 1.7, y + i * 1.7, s - i * 3.4, s - i * 3.4, s * 0.03);
       ctx.fill();
     }
   } else if (look === "gravelpit") {
@@ -813,6 +1113,8 @@ export function drawKitBarn(ctx: C, x: number, y: number, w: number, look: BarnL
     ctx.strokeStyle = "#efe6cf";
     ctx.lineWidth = Math.max(1, w * 0.014);
     ctx.strokeRect(left + bw * 0.38, eave + w * 0.03, bw * 0.24, w * 0.08);
+  } else if (look === "marquee" || look === "warehouse" || look === "granary") {
+    paintTownBarn(ctx, x, y, w, look, flip, r01);
   } else if (look === "dutchbarn") {
     // A steel Dutch barn on concrete: a green hooped roof on girders, round bales wrapped in black plastic.
     ctx.fillStyle = "rgba(40,36,24,0.16)";
