@@ -100,7 +100,8 @@ function PartnerMat({ state, producer }: { state: GameState; producer: ProducerI
           </li>
         ))}
       </ul>
-      <ol className="partner-mat-slots" aria-label={`${def.name}'s Improvements: ${p.improvements.length}`}>
+      {/* Plan item 403: the empty slots said nothing; the row says what it holds on hover. */}
+      <ol className="partner-mat-slots" aria-label={`${def.name}'s Improvements: ${p.improvements.length}`} title={`${def.name}'s Improvements: ${p.improvements.length} of ${PARTNER_SLOTS} slots`}>
         {Array.from({ length: PARTNER_SLOTS }, (_, i) => {
           const id = shown[i]
           const card = id ? IMPROVEMENTS_BY_ID.get(id) : undefined
