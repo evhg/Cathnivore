@@ -324,3 +324,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-15 04:05 lane B: never `git stash` + `pop` to shoot a "before": with nothing to stash, pop applies an old stash entry. Shoot before editing, or use a worktree.
 - 2026-11-15 04:45 lane A (release): item 398's Runnel lesson hint was reverted rather than reworked during the release: hiding the hint under the lesson (by attribute or plain CSS) made runnel-lesson-close's desktop hand-off miss 1.5 s; lane B owns the rework.
 - 2026-11-15 04:45 lane A (release): Hedgerow's 3D water was lifted (#3a809a/#4d9ab6) to keep within ΔE 15 of the 2D pond after item 360's darker day key, rather than loosening hedgerow-water.
+- 2026-11-15 04:55 lane B (item 399): the knolls keep the white trig pillar in every act (it is the high-ground cue); only the mound and what lies on it change per act. Acts without water plots still name a water look so kits stay distinct.
+- 2026-11-15 04:55 lane B (item 400): her 'edge' (stats above the five-class average) fills the desktop case band only; the phone dossier hides it (it squeezed the stage: classpick's phone face fell to 40 px).
