@@ -3386,9 +3386,10 @@ body:has(#dlg-pause[open]) .paused-note {
   /* Plan item 385: while Cath's line is docked over the tray's top, the grip stands just above the dock, not over
      the bubble's top edge */
   /* Plan item 432: ...but no higher than the grip's own straddle less 4 px, so it stays off the field's foot (at -24 px
-     it stood wholly over the board's last row and the tutorial ring); the dock's notch (item 188) clears it. */
+     it stood wholly over the board's last row and the tutorial ring); the dock's notch (item 188) clears it. -17, not
+     -15: at -15 its foot sat 1.8 px into the line's bubble border. */
   .play:has(.cath-dock:not([hidden]):not([data-folded])) .panel:not(.open) .drawer-handle {
-    top: -15px;
+    top: -17px;
   }
   .play .drawer-handle::after {
     content: " ▴";

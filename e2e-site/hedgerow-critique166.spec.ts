@@ -48,14 +48,22 @@ test("on an upright phone the round grip straddles the tray's edge (or stands on
     const wrap = document.querySelector('.tray-wrap')!
     // Plan item 385: while Cath's line is docked over the tray's top, the grip stands on the dock instead
     const dock = document.querySelector<HTMLElement>('.cath-dock:not([hidden])')?.getBoundingClientRect()
+    // Plan item 432: ...straddling the dock's top edge (its notch clears the grip), off the field's foot and clear of
+    // the line's bubble.
+    const line = document.querySelector<HTMLElement>('.cath-dock:not([hidden]) .cath-dock-line')?.getBoundingClientRect()
     return {
       above: panel.top - h.top,
-      onDock: dock ? Math.abs(dock.top - h.bottom) : null,
+      onDock: dock ? Math.max(0, h.top - dock.top, dock.top - h.bottom) : null,
+      intoLine: line ? h.bottom - line.top : null,
       more: wrap.classList.contains('more-shown'),
       mask: getComputedStyle(wrap.querySelector('.tray')!).maskImage,
     }
   })
-  if (m.onDock !== null) expect(m.onDock, 'the grip stands on the dock, clear of its bubble').toBeLessThanOrEqual(3)
+  if (m.onDock !== null) {
+    expect(m.onDock, "the grip straddles the dock's top edge").toBeLessThanOrEqual(3)
+    expect(m.above, "no higher than its own straddle, off the field's foot").toBeLessThanOrEqual(18)
+    if (m.intoLine !== null) expect(m.intoLine, 'clear of the bubble').toBeLessThanOrEqual(1)
+  }
   else expect(m.above).toBeLessThanOrEqual(12)
   if (m.more) expect(m.mask).toContain('gradient')
 })
