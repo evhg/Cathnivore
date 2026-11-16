@@ -4269,7 +4269,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
 - **Size:** 3
 
-## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes
+## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (885-1290 x 75-890) holds about 25 bordered boxes in 5 styles (tray, round box, tip card, tabs, three Coming-up cards, a 4-button bar, Go), all competing with the field; the Notebook teaser "Unanswered Airborne · Scarecrow +4 more" is cryptic. Same on `hedge-l34-2d-D`.
 - **Build:** three zones on one paper with ruled dividers, not borders: Seeds (the tray), This round (Cath's portrait beside the round number, vehicle counts, her tip in one row), Coming up (a hand-ruled forecast strip: round, icon, count); the Notebook teaser in plain words; Go the one strongest element.
 - **Accept:** ≤ 10 bordered containers and ≤ 3 border colours in the panel at 1440x900 (an e2e counts them); the field's share of the screen doesn't shrink; ui-css-lint holds; Hedgerow play specs pass at P and D.
