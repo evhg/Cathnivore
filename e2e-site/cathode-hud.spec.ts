@@ -187,7 +187,8 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     const box = (await aim.boundingBox())!
     await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
     await expect(aim).toHaveClass(/used/, { timeout: 5_000 })
-    await expect.poll(() => aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 5_000 }).toBeLessThan(0.9)
+    // (20 s: the word fades by a CSS transition, which a loaded CI runner's SwiftShader page can hold back; it read 1 once)
+    await expect.poll(() => aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity)), { timeout: 20_000 }).toBeLessThan(0.9)
     expect(await aim.locator('.tbtn-label').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeGreaterThan(0.5)
     expect(await page.evaluate(() => localStorage.getItem('cathode:touch-used:v1'))).toContain('aim')
     // At rest (no moment's button up), the controls' boxes cover 18% of the screen or less.

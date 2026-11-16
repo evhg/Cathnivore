@@ -61,11 +61,10 @@ test.describe('NIGHT SHIFT street life (plan item 57)', () => {
       const dir = w.camera.getWorldDirection(w.camera.position.clone())
       w.fx.muzzle(w.camera.position.clone().addScaledVector(dir, 0.6), dir, 0.7)
     })
-    const t0 = Date.now()
     await expect.poll(async () => (await census()).scared, { timeout: 10_000 }).toBeGreaterThanOrEqual(8)
-    await page.waitForTimeout(Math.max(0, 3000 - (Date.now() - t0)))
-    const after = await census()
-    expect(after.mean).toBeGreaterThan(calm.mean)
+    // Polled, not read once after 3 s of wall clock: on a loaded CI runner SwiftShader can draw no frame in those 3 s,
+    // and the street, which moves by the sim's clock, read an exact tie (18.05 > 18.05, E2E red 2026-11-16).
+    await expect.poll(async () => (await census()).mean, { timeout: 30_000 }).toBeGreaterThan(calm.mean)
     expect(errors).toEqual([])
     await ctx.close()
   })
