@@ -481,3 +481,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane A: portfolio D prints are 295 px at 1440 (item 350's 340 bound lowered to 285) so Cath stands beside the wall at its height, as item 454 asks; she steps into the page margin by up to 12% of the show, never past 12 px short of the window.
 - 2026-11-16 lane A: the portfolio's hero field draws one still frame on a software renderer (SwiftShader, llvmpipe) or when its first 12 frames run under 20 fps; `?field` still forces it to animate for the idle spec and shots.
 - 2026-11-16 lane A: the stats' live line reads the live release's version.json (its build time is the deploy), not PROGRESS.md's release list, which the deployed site can't see.
+- 2026-11-16 lane A: claimed 455 without pulling first, four minutes after lane B's claim; both fixed the same thing. Always `git pull --rebase` and re-read the item's heading immediately before writing a claim.
