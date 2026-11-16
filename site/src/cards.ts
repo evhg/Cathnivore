@@ -94,3 +94,52 @@ export function cardLines(storage: Pick<Storage, 'getItem'>, now: Date, runnelPa
 
   return { cathnivore, runnel, hedgerow, nightshift }
 }
+
+/** Plan item 452: one game's tag on today's market board. */
+export interface TodayTag {
+  game: GameId
+  /** Today's daily is played (NIGHT SHIFT has no daily: always false). */
+  done: boolean
+  label: string
+}
+
+/** Plan item 452: today's market board: a tag per game, the last seven days (oldest first, any daily played),
+ *  the run of days with a daily played ending today (or yesterday while today is still open), and a pennant at 3+. */
+export interface TodayBoard {
+  tags: TodayTag[]
+  week: boolean[]
+  streak: number
+  pennant: boolean
+  /** Anything to remember: false on a first visit (the board stays hidden). */
+  any: boolean
+}
+
+export function todayBoard(storage: Pick<Storage, 'getItem'>, now: Date): TodayBoard {
+  const iso = (t: number) => new Date(t).toISOString().slice(0, 10)
+  const rn = obj(obj(readJson(storage, 'runnel:v1')).results)
+  const hg = obj(obj(readJson(storage, 'hedgerow:v1')).daily)
+  const cn = obj(obj(readJson(storage, 'cathnivore:daily')).results)
+  const ns = obj(readJson(storage, 'cathode.save'))
+  const played = (t: number): boolean => {
+    const d = iso(t)
+    return !!rn[d] || typeof hg[String(dayOf(t))] === 'number' || !!cn[d]
+  }
+  const t0 = Date.parse(`${iso(now.getTime())}T12:00:00Z`)
+  const today = iso(t0)
+  const solved = obj(rn[today])
+  const jobs = Array.isArray(ns.jobsDone) ? Math.min(5, ns.jobsDone.length) : 0
+  const tags: TodayTag[] = [
+    { game: 'runnel', done: !!rn[today], label: rn[today] ? `Solved${typeof solved.taps === 'number' ? ` in ${solved.taps}` : ''}` : 'Runnel to play' },
+    { game: 'hedgerow', done: typeof hg[String(dayOf(t0))] === 'number', label: typeof hg[String(dayOf(t0))] === 'number' ? `Daily: best ${hg[String(dayOf(t0))] as number}` : 'Hedgerow daily to play' },
+    { game: 'cathnivore', done: !!cn[today], label: cn[today] ? (obj(cn[today]).won ? 'Market won' : 'Market played') : 'Daily Market to play' },
+    { game: 'nightshift', done: false, label: `${jobs} of 5 names crossed off` },
+  ]
+  const week = Array.from({ length: 7 }, (_, i) => played(t0 - (6 - i) * 86_400_000))
+  let cursor = played(t0) ? t0 : t0 - 86_400_000
+  let streak = 0
+  while (played(cursor) && streak < 3650) {
+    streak++
+    cursor -= 86_400_000
+  }
+  return { tags, week, streak, pennant: streak >= 3, any: week.some(Boolean) || jobs > 0 }
+}
