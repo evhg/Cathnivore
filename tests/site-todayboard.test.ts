@@ -41,3 +41,18 @@ describe('todayBoard (plan item 452)', () => {
     expect(b.any).toBe(true)
   })
 })
+
+describe('boardCath (plan item 452)', async () => {
+  const { boardCath } = await import('../site/src/cards')
+  const tag = (game: 'runnel' | 'hedgerow' | 'cathnivore' | 'nightshift', done: boolean) => ({ game, done, label: '' })
+  const board = (r: boolean, h: boolean, c: boolean, streak = 0) => ({ tags: [tag('runnel', r), tag('hedgerow', h), tag('cathnivore', c), tag('nightshift', false)], week: [], streak, pennant: streak >= 3, any: true })
+  it('says nothing on a first visit', () => expect(boardCath({ ...board(false, false, false), any: false })).toBeNull())
+  it('points at the first daily not played', () => {
+    const c = boardCath(board(true, false, false, 2))!
+    expect(c.pose).toBe('point')
+    expect(c.line).toMatch(/1 of 3 done/)
+    expect(c.line).toMatch(/Hedgerow daily/)
+    expect(c.line).toMatch(/2 days running/)
+  })
+  it('cheers once all three are done', () => expect(boardCath(board(true, true, true))!.pose).toBe('cheer'))
+})

@@ -143,3 +143,20 @@ export function todayBoard(storage: Pick<Storage, 'getItem'>, now: Date): TodayB
   }
   return { tags, week, streak, pennant: streak >= 3, any: week.some(Boolean) || jobs > 0 }
 }
+
+/** Plan item 452: Cath answers today's board: she points at the first daily not played yet and names it, and cheers
+ *  once all three are done. Null on a first visit (her rotating daily line stays). */
+export function boardCath(b: TodayBoard): { line: string; pose: 'point' | 'cheer'; expression: 'smirk' | 'delighted' } | null {
+  if (!b.any) return null
+  const dailies = b.tags.filter((t) => t.game !== 'nightshift')
+  const next = dailies.find((t) => !t.done)
+  const run = b.streak >= 2 ? ` That's ${b.streak} days running.` : ''
+  if (!next) return { line: `Every daily done today. Put your feet up, love.${run}`, pose: 'cheer', expression: 'delighted' }
+  const what: Record<string, string> = { runnel: "today's Runnel", hedgerow: "the Hedgerow daily", cathnivore: 'the Daily Market' }
+  const done = dailies.length - dailies.filter((t) => !t.done).length
+  return {
+    line: done ? `${done} of 3 done. Next, ${what[next.game]}: it's waiting for you.${run}` : `Fancy ${what[next.game]} before the corporations wake up?${run}`,
+    pose: 'point',
+    expression: done ? 'delighted' : 'smirk',
+  }
+}

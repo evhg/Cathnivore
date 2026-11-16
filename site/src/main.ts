@@ -10,7 +10,7 @@ import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
-import { cardLines, todayBoard } from './cards'
+import { boardCath, cardLines, todayBoard } from './cards'
 import { mountBooth } from './booth'
 import { startPosterPlay } from './posterplay'
 
@@ -41,9 +41,16 @@ document.querySelectorAll<HTMLElement>('.reveal').forEach((el, i) => el.style.se
 
 // Cath is the face of every game (VISION.md): she stands in the landscape and reacts to the game cards.
 const heroCath = document.getElementById('hero-cath')
+// Plan item 452: a returning visitor's Cath answers today's board (points at the next daily, cheers when all are done).
+let boardMood: ReturnType<typeof boardCath> = null
+try {
+  boardMood = boardCath(todayBoard(localStorage, new Date()))
+} catch {
+  boardMood = null
+}
 let outfit = chosenOutfit()
 function showCath(expression: CathExpression): void {
-  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'full', expression, pose: SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
+  if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'full', expression: boardMood?.expression ?? expression, pose: boardMood?.pose ?? SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
   // Plan item 96: each game's poster carries Cath in that game's dress. Plan item 108: and in its own pose and
   // mood (`data-pose`, `data-expression`), at half length, so the four cards don't repeat one smiling head.
   for (const el of document.querySelectorAll<HTMLElement>('.hero-game-cath')) {
@@ -187,7 +194,8 @@ if (lede) {
   ]
   // Plan item 126: signed as Cath's, so under the "Cathnivore" title a Runnel line doesn't read as the board game's pitch.
   const line = lines[day % lines.length]
-  if (line) lede.textContent = `\u201C${line}\u201D \u2014 Cath`
+  const said = boardMood?.line ?? line
+  if (said) lede.textContent = `\u201C${said}\u201D \u2014 Cath`
 }
 
 // U5: the poster cards lean a few degrees toward a mouse pointer. Fine pointers only, never under reduced motion.
