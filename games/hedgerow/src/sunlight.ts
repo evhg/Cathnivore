@@ -5,6 +5,16 @@
 /** Each act's sun azimuth in degrees, as in the 3D palette: the sun sits at (cos az, sin az) in (x, row) from the centre. */
 export const ACT_SUN_AZ: readonly number[] = [140, 120, 200, 230, 250, 170, 270, 210, 190, 300];
 
+/** Plan item 440: each act's sun colour, as the 3D palette's `sun` (a test keeps the two equal): the 2D grade's lit side. */
+export const ACT_SUN_COLOUR: readonly string[] = ["#fff1d0", "#ffe2a8", "#f4fbff", "#f2f6ea", "#ffe7b0", "#ffffff", "#ffad70", "#fff0d8", "#e8f0ff", "#ffb070"];
+
+/** The act's sun colour as "r,g,b" for an rgba() wash. */
+export function sunRgbFor(levelId: number): string {
+  const hex = ACT_SUN_COLOUR[Math.min(ACT_SUN_COLOUR.length - 1, Math.max(0, Math.floor((levelId - 1) / 10)))]!;
+  const n = parseInt(hex.slice(1), 16);
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+}
+
 export function sunAzFor(levelId: number): number {
   return ACT_SUN_AZ[Math.min(ACT_SUN_AZ.length - 1, Math.max(0, Math.floor((levelId - 1) / 10)))]!;
 }

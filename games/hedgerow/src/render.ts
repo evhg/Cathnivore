@@ -66,7 +66,7 @@ import {
   castShadow,
   setShadowSun,
 } from "./sprites";
-import { shadowDir } from "./sunlight";
+import { shadowDir, sunRgbFor } from "./sunlight";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
@@ -1516,7 +1516,7 @@ export class Renderer {
       ctx.setLineDash([]);
     }
 
-    this.sunGrade(W, H, shadowDir(level.id));
+    this.sunGrade(W, H, shadowDir(level.id), sunRgbFor(level.id));
     this.ambient(W, H, s, t);
 
     // Boss bar.
@@ -2306,12 +2306,13 @@ export class Renderer {
    * Plan item 440: the field lit by one sun. A warm wash on the act's sun side fading to a cool one on the shadow
    * side (the same direction the cast shadows fall), and a light vignette, so the flat tints read as one lit farm.
    */
-  private sunGrade(W: number, H: number, away: { x: number; y: number }): void {
+  private sunGrade(W: number, H: number, away: { x: number; y: number }, sun: string): void {
     const { ctx } = this;
     const cx = W / 2, cy = H / 2, R = Math.hypot(W, H) / 2;
     const g = ctx.createLinearGradient(cx - away.x * R, cy - away.y * R, cx + away.x * R, cy + away.y * R);
-    g.addColorStop(0, "rgba(255,206,128,0.13)");
-    g.addColorStop(0.5, "rgba(255,206,128,0)");
+    // the lit side takes the act's own sun (warm in most acts, Saltmarsh's cool sea light)
+    g.addColorStop(0, `rgba(${sun},0.16)`);
+    g.addColorStop(0.5, `rgba(${sun},0)`);
     g.addColorStop(0.5, "rgba(46,58,96,0)");
     g.addColorStop(1, "rgba(46,58,96,0.12)");
     ctx.fillStyle = g;

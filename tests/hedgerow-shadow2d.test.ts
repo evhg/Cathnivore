@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ACT_LIGHT } from '../games/hedgerow/src/render3d/palette'
-import { ACT_SUN_AZ, shadowDir } from '../games/hedgerow/src/sunlight'
+import { ACT_SUN_AZ, ACT_SUN_COLOUR, shadowDir } from '../games/hedgerow/src/sunlight'
 import { drawEnemy, drawFarmhouse, drawHero, drawTower, setShadowSun } from '../games/hedgerow/src/sprites'
 import { drawFarmyard } from '../games/hedgerow/src/render'
 
@@ -35,6 +35,8 @@ const centroid = (pts: Array<[number, number]>) => pts.reduce((a, [x, y]) => [a[
 describe('Hedgerow 2D cast shadows (plan item 370)', () => {
   it("each act's 2D sun is the 3D palette's", () => {
     expect(ACT_SUN_AZ).toEqual(ACT_LIGHT.map((l) => l.sunAz))
+    // Plan item 440: the 2D grade's lit side is the act's 3D sun colour
+    expect(ACT_SUN_COLOUR).toEqual(ACT_LIGHT.map((l) => l.sun))
   })
   for (const level of [5, 21, 34, 45, 65]) {
     const dir = shadowDir(level)
