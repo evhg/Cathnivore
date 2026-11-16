@@ -157,6 +157,13 @@ function bootFinish(leather: string): string {
 <ellipse cx="257" cy="870" rx="6.5" ry="2.4" transform="rotate(14 257 870)" fill="#ffffff" opacity="0.38"/>`
 }
 
+/** Plan item 442: the walking pose's boots finished like the standing ones: heels and a polish highlight on each toe. */
+function walkBootFinish(): string {
+  return `<path fill="${C.ink}" opacity="0.85" d="M237 856 L249 859 L248 872 L239 870 Z M151 869 L165 869 L164 883 L153 883 Z"/>
+<ellipse cx="275" cy="864" rx="6" ry="2.3" transform="rotate(28 275 864)" fill="#ffffff" opacity="0.38"/>
+<ellipse cx="121" cy="870" rx="6.5" ry="2.4" transform="rotate(-10 121 870)" fill="#ffffff" opacity="0.38"/>`
+}
+
 function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
   const o = LOWER[outfit]
   const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
@@ -173,6 +180,7 @@ function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped')
     return `${groundShadow(200, 96)}
 ${leg(front)}${legShade(id, [front], o.line)}${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}
 ${leg(back)}${legShade(id + 'b', [back], o.line)}${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
+${walkBootFinish()}
 ${skirt}`
   }
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
