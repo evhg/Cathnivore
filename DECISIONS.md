@@ -487,3 +487,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane A: hedgerow-leaving reads the depot plate's count and text in one evaluate; both are set in the same frame, so the spec's two separate reads were the race, not the plate.
 - 2026-11-16 lane B: planned 456-462 (noir lighting, per-class pick sets, Runnel phone Cath, Hedgerow 3D Cath, Hedgerow ledger panel, Cathnivore phone setup, a bug batch); the critiques' points that repeat 455's kept list stay kept.
 - 2026-11-16 lane B: a Fleet level's card shows its Round Book stretch ('rounds 11–26'), matching play's 'Round 11 of 26'; Runnel's Up next says 'today' on the daily's own day.
+- 2026-11-16 lane B: a spec that jumps a Hedgerow level past round 1 switches 'Keep going' off first (#btn-auto), as round-chips now does: from level 6 its 2 s countdown sends the next round and re-draws the panel mid-check.
+- 2026-11-16 lane B: 458: Runnel's phone dock draws Cath's half figure (host.ts drawFace) rather than a separate valley figure; the valley figure stays hidden on a phone (item 407's dock holds).
