@@ -84,9 +84,23 @@ void main() {
   o = vec4(col, 1.0);
 }`
 
-export function startField(canvas: HTMLCanvasElement, reduced: boolean): boolean {
+/** A software rasteriser (no GPU): the field costs about 90 ms a frame there on a phone-class CPU. */
+export function softwareRenderer(name: string): boolean {
+  return /swiftshader|llvmpipe|softpipe|software|microsoft basic render/i.test(name)
+}
+
+export function startField(canvas: HTMLCanvasElement, reduced: boolean, opts: { force?: boolean } = {}): boolean {
   const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'low-power', depth: false })
   if (!gl) return false
+  // Without a GPU (software GL) or when the first frames run slow, the field draws one still frame, like reduced motion:
+  // its animation tied up a phone's main thread (Lighthouse mobile read 1.4 s of blocking time, the field's frames).
+  // `force` (the ?field test hook) keeps it animating.
+  const dbg = gl.getExtension('WEBGL_debug_renderer_info')
+  const renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) ?? '') : ''
+  if (!opts.force && softwareRenderer(renderer)) {
+    reduced = true
+    canvas.dataset.still = 'software'
+  }
 
   const shader = (type: number, src: string) => {
     const s = gl.createShader(type)!
@@ -143,7 +157,23 @@ export function startField(canvas: HTMLCanvasElement, reduced: boolean): boolean
   const start = performance.now()
   let running = false
   let raf = 0
+  // The first frames' intervals: if they run at under about 20 fps the field goes still.
+  let slowCheck: number[] = []
+  let prevNow = 0
   const frame = (now: number) => {
+    if (!opts.force && !reduced && prevNow && slowCheck.length < 12) {
+      slowCheck.push(now - prevNow)
+      if (slowCheck.length === 12) {
+        const sorted = [...slowCheck].sort((a, b) => a - b)
+        if ((sorted[6] ?? 0) > 50) {
+          reduced = true
+          canvas.dataset.still = 'slow'
+          stop()
+        }
+        slowCheck = sorted
+      }
+    }
+    prevNow = now
     resize()
     mouse.x += (mouse.tx - mouse.x) * 0.06
     mouse.y += (mouse.ty - mouse.y) * 0.06
@@ -161,6 +191,7 @@ export function startField(canvas: HTMLCanvasElement, reduced: boolean): boolean
   const play = () => {
     if (running) return
     running = true
+    prevNow = 0 // a gap while resting is not a slow frame
     canvas.dataset.running = 'true'
     raf = requestAnimationFrame(frame)
   }

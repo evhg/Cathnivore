@@ -123,3 +123,11 @@ describe('plan item 454: the live last-shipped line', () => {
     expect(shippedLine(60_000, 'not-a-sha', new Date('2026-11-16T15:55:00Z'))).toMatch(/starts in 26 min\.$/)
   })
 })
+
+describe('plan item 454: the hero field goes still without a GPU', () => {
+  it('knows the software rasterisers', async () => {
+    const { softwareRenderer } = await import('../portfolio/src/hero')
+    for (const n of ['ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)', 'llvmpipe (LLVM 15.0.7, 256 bits)', 'Microsoft Basic Render Driver']) expect(softwareRenderer(n), n).toBe(true)
+    for (const n of ['Apple M3 Max', 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)', 'Adreno (TM) 740', 'Apple GPU', '']) expect(softwareRenderer(n), n).toBe(false)
+  })
+})
