@@ -4255,7 +4255,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** shots of all five picks at P and D show five distinct sets; dominant hue differs ≥ 30° between any two; at P Cath's box ≥ 330 px tall (about 260 now); cathode-perf phone pick within current + 10% alone; classpick/classpose/classstage specs pass.
 - **Size:** 3
 
-## 458. [ ] Runnel phone: Cath on the field, not a 50 px head
+## 458. [ ] Runnel phone: Cath on the field, not a 50 px head *(lane B, in progress)*
 - **Why:** `runnel-P` shows Cath as a 52 px head in a bubble (15-68 x 705-760) while `runnel-D` gives her a 450 px figure; VISION calls her Runnel's host.
 - **Build:** a waist-up Cath from `shared/cath/` at the board's foot-left, overlapping the frame edge, never a tile; expressions follow play (idle, pointing at the coached tile, delighted on a solve, worried at a dead end); the bubble attaches to her; reduced motion swaps expressions without movement; on a solve she turns toward Bea's garden.
 - **Accept:** at 390x844 Cath ≥ 150 px tall and her box overlaps no tile hit area; idle, coach and solve shots differ; the board's visible area shrinks ≤ 5%; Runnel specs pass at P and D.
