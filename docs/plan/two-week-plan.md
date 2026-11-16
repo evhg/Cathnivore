@@ -4245,7 +4245,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
 
 Progress (lane B, 2026-11-16 20:50, slice 1 `cc50176`): the title's coat key (item 363, `COAT_KEY_TITLE`) 1 -> 0.25 and the wool's sheen 0.32 -> 0.2: poster skirt luma 116 -> 66 at D, the phone portrait's trench reads charcoal; posters and key art re-rendered. A blind read still calls the D coat 'mid grey, charcoal in the shadows' with no clear rim. Tried and reverted: the coat key at 0.12 (skirt luma still 66: what lifts the wool now is not the coat key; look at the street's lights and environment on the wool next) and the cold rim uRimB 0.4 -> 0.7 (no visible change). Gotcha: `cathode-poster.mjs` needs `PLAYWRIGHT_CHROMIUM_PATH` set or its screenshots time out and the old posters stay.
 - **Why (critique 2026-11-16 17:30, shots `e2e/screenshots/plan1116r`):** on `ns-title-D` (880-1130 x 380-900), `ns-title-P` and `ns-play-D` (620-800 x 250-850) her trench reads as pale grey satin under a flat white key: the brightest, least noir thing on a street that is graded well. `docs/design/cathode.md` 2 asks for a charcoal trench. Lighting and materials, not the sculpt (319).
