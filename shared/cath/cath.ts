@@ -563,7 +563,6 @@ ${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.1, 0.2, C.skinLine
 ${brush(p(-14.5, y0 - 0.2), p(-1, top - 3), p(14.5, y0 - 1.5), 1.2, 3.4, 3.8, C.liner)}
 ${brush(p(12.5, y0 - 1.6), p(17.5, y0 - 4.2), p(23, y0 - 8.6), 3.8, 2.2, 0.2, C.liner)}
 ${brush(p(11, y0 - 6.5), p(13, y0 - 9.2), p(15.5, y0 - 11.2), 1.6, 1, 0.2, C.liner)}
-${brush(p(-2, y0 + 6.6), p(5, y0 + 7.6), p(12, y0 + 4.2), 0.2, 0.9, 0.5, C.skinLine, ' opacity="0.4"')}
 ${brush(p(11, y0 + 4.2), p(13, y0 + 4.6), p(15.5, y0 + 6.5), 0.9, 0.7, 0.1, C.liner, ' opacity="0.7"')}
 <path class="cath-lids" opacity="0" fill="${C.skinShade}" stroke="${C.liner}" stroke-width="2.4" d="M${n1(x(-15))} ${y0} Q${n1(x(-1))} ${top - 3} ${n1(x(15))} ${y0 - 1} Q${n1(x(1))} ${y0 + 10.5} ${n1(x(-15))} ${y0} Z"/>
 </g>`
