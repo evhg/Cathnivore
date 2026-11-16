@@ -90,3 +90,25 @@ export function gapAdvice(gaps: readonly Lock[], kit: readonly TowerKind[], cost
   if (!tower) return `Nothing on your field ${GAP[lock]}, and this kit can't: slow the ${name.toLowerCase()} ones and keep Goodwill in hand.`;
   return `Nothing on your field ${GAP[lock]}. Build a ${TOWERS[tower].name} before Go.`;
 }
+
+/**
+ * Plan item 447: the round's twist outranks every other tip. Before the flood's round (`next`, the wave Go will call)
+ * Cath warns of it, counting the towers on its plots that it will wash out; a round ahead, she says to build back
+ * from the river. Duck Ponds hold on a flooded plot, so they are neither counted nor warned about. Null otherwise.
+ */
+export function floodAdvice(
+  flood: { wave: number; cells: ReadonlyArray<readonly [number, number]> } | undefined,
+  next: number,
+  towers: ReadonlyArray<{ kind: TowerKind; col: number; row: number }>,
+  kit: readonly TowerKind[],
+): string | null {
+  if (!flood) return null;
+  const pond = kit.includes("pond");
+  if (next === flood.wave) {
+    const wet = towers.filter((t) => t.kind !== "pond" && flood.cells.some(([c, r]) => c === t.col && r === t.row)).length;
+    if (wet) return `The river comes over the ford when you call this round: ${wet === 1 ? "one of your towers" : `${wet} of your towers`} there wash${wet === 1 ? "es" : ""} out. Move ${wet === 1 ? "it" : "them"} back${pond ? ", or plant Duck Ponds there" : ""}.`;
+    return `The river floods the ford this round: the vehicles wade through it slowly${pond ? ", and only Duck Ponds hold there" : ""}.`;
+  }
+  if (next === flood.wave - 1) return "The ford floods next round: build back from the river.";
+  return null;
+}

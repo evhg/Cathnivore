@@ -146,7 +146,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
-import { gapAdvice, roundAdvice } from "./advice";
+import { floodAdvice, gapAdvice, roundAdvice } from "./advice";
 import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
@@ -4074,7 +4074,10 @@ function adviceLine(g: Game): string {
   if (!betweenRounds(g)) return "";
   const groups = g.level.waves[g.wave];
   if (!groups) return "";
-  // A lock this round brings that nothing on the field answers comes first (the ticket stamps it too).
+  // Plan item 447: the round's flood comes first (it washes towers out), then a lock this round brings that
+  // nothing on the field answers (the ticket stamps it too).
+  const flood = floodAdvice(setPiece(g.level, "flood"), g.wave + 1, g.towers, g.level.towers);
+  if (flood) return flood;
   const gap = gapAdvice(unanswered(g, roundProps(g.level, groups)), g.level.towers, (k) => towerCost(g, k));
   return gap ?? roundAdvice(waveSpawns(g, groups, g.wave + 1), g.level.towers, g.towers.map((x) => x.kind))?.line ?? "";
 }
@@ -4323,6 +4326,10 @@ function pingCoached(): void {
 }
 cathPlate.addEventListener("click", () => {
   pingCoached();
+  // Plan item 447: and opens the build ring on that plot, the tower she names pulsing in it, so her tip is one tap
+  // from done.
+  const coach = (renderer as { coach?: { col: number; row: number } | null } | null)?.coach;
+  if (coach && game && betweenRounds(game)) select(coach.col, coach.row);
   if (!REDUCED) {
     cathPlate.classList.remove("ping");
     void cathPlate.offsetWidth;
