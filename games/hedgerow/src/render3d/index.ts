@@ -481,6 +481,13 @@ export class Renderer3D {
     // tree, a moored mast) dissolves into distance instead of ending in a hard slice (styles.css .stage[data-haze]).
     const stage = this.canvas.parentElement;
     stage?.style.setProperty("--field-haze", `#${new THREE.Color(L.fog).getHexString()}`);
+    // Plan item 438: the frame's top is painted sky, not only haze: the act's own sky colour above a horizon warmed
+    // toward its low sun, with the sun's glow on its side of the frame (styles.css .stage[data-haze]). The fitted
+    // camera looks down too steeply for the backdrop's sky to reach the frame.
+    const horizon = new THREE.Color(L.skyBottom).lerp(new THREE.Color(L.sun), 0.35).lerp(new THREE.Color("#f2c98a"), hasTwist(game.level, "night") || game.level.id > 90 ? 0 : 0.3);
+    stage?.style.setProperty("--field-sky", `#${new THREE.Color(L.skyTop).getHexString()}`);
+    stage?.style.setProperty("--field-horizon", `#${horizon.getHexString()}`);
+    stage?.style.setProperty("--field-sun-x", `${Math.round(50 + 38 * Math.sin((L.sunAz * Math.PI) / 180))}%`);
     stage?.setAttribute("data-haze", "");
     const night = hasTwist(game.level, "night") || game.level.id > 90;
     this.renderer.toneMappingExposure =
