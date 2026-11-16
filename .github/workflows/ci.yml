@@ -26,7 +26,11 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
-      - run: npm run check
+      # The result goes to ci-status (status/ci/<sha>.json), which the lanes read; the run itself stays green so a red
+      # check doesn't email the owner (the lanes push as the owner's account; owner, 2026-11-16).
+      - id: check
+        continue-on-error: true
+        run: npm run check
       - name: Report status to ci-status
         if: always()
-        run: scripts/ci/write-status.sh ci ${{ github.sha }} ${{ job.status }}
+        run: scripts/ci/write-status.sh ci ${{ github.sha }} ${{ steps.check.outcome }}

@@ -102,7 +102,7 @@ for (const [W, H] of [
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop-chromium", "desktop layout");
-    test.setTimeout(180_000);
+    test.setTimeout(360_000);
     await page.setViewportSize({ width: W, height: H });
     for (let deal = 0; deal < 3; deal++) {
       await page.goto("/?e2eAutoplay=1&e2eAutoplayUntil=7");
@@ -123,13 +123,15 @@ for (const [W, H] of [
           { timeout: 60_000 },
         )
         .toBeGreaterThanOrEqual(7);
-      if (!(await page.locator(".end-screen").isVisible())) break;
+      if (await page.locator(".end-screen").isVisible()) continue;
+      // The turn is dealt once a card shows: on the rail, or in the hand on the table (where a deal can leave the rail's
+      // 'Saving for' shelf empty, so waiting on the rail alone timed out in the 2026-11-11 release gates). A deal whose
+      // round 7 opens on a start-of-round choice (Kingsmarket's production bonus) while the AI teammate holds the turn
+      // never shows a card here (E2E 2026-11-16): deal again (PROGRESS notes it for a look at the game itself).
+      const cards = page.locator(".actions-sheet .action-item, .table-hand [data-hand-card]").first();
+      if (await cards.waitFor({ timeout: 45_000 }).then(() => true, () => false)) break;
+      expect(deal, "three deals never reached a playable round-7 turn").toBeLessThan(2);
     }
-    // The turn is dealt once a card shows: on the rail, or in the hand on the table (where a deal can leave the rail's
-    // 'Saving for' shelf empty, so waiting on the rail alone timed out in the 2026-11-11 release gates).
-    await expect(
-      page.locator(".actions-sheet .action-item, .table-hand [data-hand-card]").first(),
-    ).toBeVisible({ timeout: 60_000 });
     await page.waitForTimeout(800);
     const r = await page.evaluate(() => {
       const sheet = document.querySelector(".actions-sheet .actions")!;

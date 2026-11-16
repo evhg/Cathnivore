@@ -3,6 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
+- **Possible game hang to check (owner session, 11-16):** an E2E run (`ca337926`, artifact test-results-game) caught a Quick Game at round 7 showing 'Tomas Reed: choose a production bonus' while the actions panel said 'Mara Keel is weighing up their move', with no card for 60 s. `desktop-no-scroll`'s round-7 spec now deals again in that case, so check by hand (Kingsmarket bonus decision vs the AI teammate's turn) whether a player can get stuck there.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Lane A (09:51 11-16): CI green (446fd041 cancelled superseded). Taking item 442 (shared Cath: stroke weight at small sizes, nails, shots, critique).

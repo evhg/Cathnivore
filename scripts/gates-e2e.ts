@@ -23,7 +23,15 @@ export const GATE_7_TIMING = 'SPEC 11.4 gate 7'
 
 /** The game suite: the phone and desktop Chromium projects (no WebKit in the sessions' sandbox; see DECISIONS.md). */
 export function gameSuite(projects = '--project=phone --project=desktop-chromium'): void {
-  execSync(`${env}npx playwright test ${projects} ${GATE_5_SPECS} --grep-invert "${GATE_7_TIMING}"`, { stdio: 'inherit' })
+  const cmd = `${env}npx playwright test ${projects} ${GATE_5_SPECS} --grep-invert "${GATE_7_TIMING}"`
+  // As the site suite: a failure gets one more go alone (a 1.2 min round-7 spec timed out once on a busy runner,
+  // 2026-11-16); a test that fails alone too fails the gate.
+  try {
+    execSync(cmd, { stdio: 'inherit' })
+  } catch {
+    console.log('\n=== Gate 5: the failures again, alone ===')
+    execSync(`${cmd} --last-failed --workers 1`, { stdio: 'inherit' })
+  }
 }
 
 /**

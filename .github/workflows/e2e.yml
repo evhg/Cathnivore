@@ -37,9 +37,20 @@ jobs:
       # Full Chromium, as the sessions run it (/opt/pw-browsers/chromium), not Playwright's default headless shell:
       # the shell lays out and answers hover/pointer queries differently (the first runs failed only here).
       - run: echo "PLAYWRIGHT_CHROMIUM_PATH=$(node -e "console.log(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
-      - run: npx tsx scripts/gates-e2e.ts game
+      - id: tests
+        continue-on-error: true
+        run: npx tsx scripts/gates-e2e.ts game
+      - name: Leave this shard's outcome for the report
+        if: always()
+        run: mkdir -p outcome && echo "${{ steps.tests.outcome }}" > outcome/result
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: outcome-game
+          path: outcome/
+          retention-days: 2
       - name: Keep the failures' screenshots and page snapshots
-        if: failure()
+        if: steps.tests.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: test-results-game
@@ -81,9 +92,20 @@ jobs:
       # Full Chromium, as the sessions run it (/opt/pw-browsers/chromium), not Playwright's default headless shell:
       # the shell lays out and answers hover/pointer queries differently (the first runs failed only here).
       - run: echo "PLAYWRIGHT_CHROMIUM_PATH=$(node -e "console.log(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
-      - run: npx tsx scripts/gates-e2e.ts site ${{ matrix.shard }}
+      - id: tests
+        continue-on-error: true
+        run: npx tsx scripts/gates-e2e.ts site ${{ matrix.shard }}
+      - name: Leave this shard's outcome for the report
+        if: always()
+        run: mkdir -p outcome && echo "${{ steps.tests.outcome }}" > outcome/result
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: outcome-site-${{ matrix.group }}-${{ strategy.job-index }}
+          path: outcome/
+          retention-days: 2
       - name: Keep the failures' screenshots and page snapshots
-        if: failure()
+        if: steps.tests.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: test-results-site-${{ matrix.group }}-${{ strategy.job-index }}
@@ -96,10 +118,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: outcome-*
+          path: outcomes
       - name: Report status to ci-status
+        # The result lives in ci-status (status/e2e/<sha>.json), which the lanes and the release read. The workflow
+        # itself always finishes green: the lanes push as the owner's account, and every red run emailed the owner
+        # (owner, 2026-11-16: "fix this").
         run: |
-          # A run superseded by a newer push records nothing.
-          if [ "${{ needs.game.result }}" = cancelled ] || [ "${{ needs.site.result }}" = cancelled ]; then exit 0; fi
-          OK=failure
-          if [ "${{ needs.game.result }}" = success ] && [ "${{ needs.site.result }}" = success ]; then OK=success; fi
+          EXPECTED=15
+          FOUND=$(ls outcomes 2>/dev/null | wc -l)
+          if [ "$FOUND" -lt "$EXPECTED" ]; then echo "only $FOUND of $EXPECTED shards reported (cancelled?)"; exit 0; fi
+          OK=success
+          if grep -L '^success$' outcomes/*/result | grep -q .; then OK=failure; grep -H . outcomes/*/result; fi
           scripts/ci/write-status.sh e2e ${{ github.sha }} $OK
