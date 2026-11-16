@@ -2538,11 +2538,15 @@ function syncRing(): void {
     ringArmed = null;
     el.replaceChildren();
     const wet = plotKind(g.level, sel.col, sel.row) === "water";
+    // Plan item 447: on the plot Cath means, the packet she names glows in the ring as it does in the tray.
+    const coach = (renderer as { coach?: { col: number; row: number; kind: TowerKind } | null } | null)?.coach;
+    const coached = coach && coach.col === sel.col && coach.row === sel.row ? coach.kind : null;
     for (const kind of kinds) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "ring-packet";
       b.dataset.kind = kind;
+      b.toggleAttribute("data-coached", kind === coached);
       b.dataset.role = towerRole(kind);
       if (wet && kind !== "pond") b.dataset.wet = "true";
       const price = document.createElement("span");

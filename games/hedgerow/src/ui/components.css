@@ -4809,8 +4809,11 @@ body:has(#dlg-pause[open]) .paused-note {
 /* Plan item 396: the packet Cath's line names glows gold, gently (a steady ring under reduced motion). */
 @keyframes tray-coached { 0%, 100% { box-shadow: 0 0 0 2px var(--brass); } 50% { box-shadow: 0 0 0 4px var(--brass-hi); } }
 .play .tray-wrap .tray .tray-tower[data-coached] { animation: tray-coached 1.6s ease-in-out infinite; }
+/* Plan item 447: the packet Cath names glows in the build ring too, when it opens on the plot she means. */
+.ring-packet[data-coached] { animation: tray-coached 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .play .tray-wrap .tray .tray-tower[data-coached] { animation: none; box-shadow: 0 0 0 3px var(--brass); }
+  .ring-packet[data-coached] { animation: none; box-shadow: 0 0 0 3px var(--brass); }
 }
 
 /* Plan item 396: on a phone the packet's tower is drawn larger (40 px, was 30) and a tower that answers the soonest

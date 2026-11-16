@@ -21,4 +21,6 @@ test('a tap on her tip opens the build ring on the plot she means', async ({ pag
   await plate.click()
   await expect(page.locator('.ring-packet').first()).toBeVisible({ timeout: 3_000 })
   expect(await page.locator('.ring-packet').count()).toBeGreaterThan(1)
+  // the packet she names glows among them
+  await expect(page.locator('.ring-packet[data-coached]')).toHaveCount(1)
 })
