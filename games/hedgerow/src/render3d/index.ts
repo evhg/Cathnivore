@@ -2739,8 +2739,22 @@ export class Renderer3D {
     const h = this.canvas.clientHeight;
     const shown: { leads: Rect[]; plates: Rect[]; names: Rect[]; boxes: Rect[] } = { leads: [], plates: [], names: [], boxes: [] };
     const tilt = this.steepTilt();
+    const now = performance.now() / 1000;
+    let qi = 0;
     for (const m of this.queueModels) {
       m.obj.scale.setScalar(Math.max(0.001, k) * m.s);
+      // Plan item 450: the queue idles with its engines running: a small shiver, each van out of step with the
+      // next, and now and then a puff of exhaust from its tail (still under reduced motion).
+      const baseY = (m.obj.userData.baseY as number | undefined) ?? (m.obj.userData.baseY = m.obj.position.y);
+      if (!this.reducedMotion) {
+        const ph = qi * 1.7;
+        m.obj.position.y = baseY + Math.abs(Math.sin(now * 14 + ph)) * 0.012 * m.r + Math.sin(now * 2.2 + ph) * 0.006 * m.r;
+        if (Math.random() < 0.012) {
+          const back = this.v2.set(-0.45 * m.r, 0.12 * m.r, 0).applyAxisAngle(this.v1.set(0, 1, 0), m.yaw);
+          this.sparks.emit(m.x + back.x, this.height(m.x, m.z) + back.y + 0.05, m.z + back.z, "#cfcac0", 2, 0.35, 0.08, 0.9, 0.4);
+        }
+      }
+      qi++;
       // Item 439: the steep-view lean (yaw, then a tilt about the world's x); the contact shadow stays flat.
       m.obj.rotation.set(-tilt, m.yaw, 0, "XYZ");
       m.shadow.quaternion.copy(m.obj.quaternion).invert().multiply(this.flatQ);

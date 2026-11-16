@@ -3931,8 +3931,9 @@ body:has(#dlg-pause[open]) .paused-note {
 /* Plan item 409: hung under the door of a depot cut by the frame's top, it hangs on two chains from the depot's foot. */
 .gate-plate[data-on-depot][data-under]::before,
 .gate-plate[data-on-depot][data-under]::after { top: auto; bottom: 100%; width: 2px; height: 10px; }
+/* Plan item 450: the town's tag in the deeper corporate teal (white on --corp-hi read 4.05:1; on --corp 7:1+). */
 .gate-plate[data-on-depot] .gate-plate-town {
-  background: var(--corp-hi);
+  background: var(--corp);
   color: var(--plastic);
   text-shadow: none;
 }
