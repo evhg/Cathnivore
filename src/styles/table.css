@@ -5688,3 +5688,21 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Plan item 436: her reaction beats at the table, 300-600 ms on her figure, replayed per reaction (Game.tsx keys the
+   figure on the beat): freed land and a sale's win a hop, a Squeeze a flinch back, an expansion or a split a lean in,
+   a sale a tilt; quiet for 30 s she shifts her weight. Stills under reduced motion. */
+.table-cath-figure > * { transform-origin: 50% 100%; }
+.table-cath[data-beat-mood='delighted'] .table-cath-figure > * { animation: cath-beat-hop 480ms cubic-bezier(.3, .7, .3, 1) both; }
+.table-cath[data-beat-mood='worried'] .table-cath-figure > * { animation: cath-beat-flinch 420ms ease-out both; }
+.table-cath[data-beat-mood='determined'] .table-cath-figure > * { animation: cath-beat-lean 460ms ease-in-out both; }
+.table-cath[data-beat-mood='wink'] .table-cath-figure > * { animation: cath-beat-tilt 360ms ease-in-out both; }
+.table-cath[data-beat-mood='idle'] .table-cath-figure > * { animation: cath-beat-idle 600ms ease-in-out both; }
+@keyframes cath-beat-hop { 0% { translate: 0 0; } 40% { translate: 0 -10px; } 70% { translate: 0 1px; } 100% { translate: 0 0; } }
+@keyframes cath-beat-flinch { 0% { rotate: 0deg; translate: 0 0; } 35% { rotate: -3deg; translate: -4px 0; } 100% { rotate: 0deg; translate: 0 0; } }
+@keyframes cath-beat-lean { 0% { rotate: 0deg; } 45% { rotate: 3.5deg; } 100% { rotate: 0deg; } }
+@keyframes cath-beat-tilt { 0% { rotate: 0deg; } 50% { rotate: -2deg; } 100% { rotate: 0deg; } }
+@keyframes cath-beat-idle { 0% { translate: 0 0; } 50% { translate: 2px 0; } 100% { translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .table-cath[data-beat-mood] .table-cath-figure > * { animation: none; }
+}

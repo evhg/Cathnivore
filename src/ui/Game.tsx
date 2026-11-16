@@ -843,6 +843,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     poseTimerRef.current = window.setTimeout(() => setCathPose(null), 5000)
   }, [])
   useEffect(() => () => window.clearTimeout(poseTimerRef.current), [])
+  // Plan item 436: each reaction plays a short visible beat on her table figure (a hop, a flinch, a lean, a tilt),
+  // keyed so the same reaction twice replays it; after a quiet spell she settles into an idle beat.
+  const [cathBeat, setCathBeat] = useState<{ kind: CathReaction | 'idle'; n: number }>({ kind: 'greeting', n: 0 })
+  const beat = useCallback((kind: CathReaction | 'idle') => setCathBeat((b) => ({ kind, n: b.n + 1 })), [])
+  useEffect(() => {
+    if (cathBeat.kind === 'idle') return
+    const t = window.setTimeout(() => beat('idle'), 30000)
+    return () => window.clearTimeout(t)
+  }, [cathBeat, beat])
   const [cathReaction, setCathReaction] = useState<{ expression: CathExpression; line: string }>(() => ({
     expression: CATH_REACTION_EXPRESSION.greeting,
     // Plan item 144: a game in a market week opens on Cath naming it (the event's own line, in her voice).
@@ -1427,6 +1436,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     if (best) {
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
       strikePose(best.reaction)
+      beat(best.reaction)
     }
     // Plan item 80: the producers react too, for a few seconds.
     const moods = producerMoods(newEvents, moodRegionsRef.current)
@@ -1436,7 +1446,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions, strikePose])
+  }, [state.log, state.regions, strikePose, beat])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -1445,6 +1455,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
       strikePose(reaction)
+      beat(reaction)
       // Plan item 155: the seated producers react as to a real one: worried with a Stall under a Squeeze, the
       // region's first Stall-holder delighted at a liberation.
       {
@@ -1466,7 +1477,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     window.addEventListener('cathnivore-moment', on)
     return () => window.removeEventListener('cathnivore-moment', on)
-  }, [strikePose])
+  }, [strikePose, beat])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -3440,7 +3451,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
         {/* Plan item 171: on an upright phone she speaks from the dock above the hand instead (CathDock), off the board. */}
         {deskTableCath && (
-          <section className="table-cath" data-expression={cathReaction.expression} data-pose={cathPose ?? SCREEN_POSE['cathnivore:game']} aria-label="Cath">
+          <section
+            className="table-cath"
+            data-expression={cathReaction.expression}
+            data-pose={cathPose ?? SCREEN_POSE['cathnivore:game']}
+            data-beat={cathBeat.kind}
+            data-beat-mood={cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind]}
+            aria-label="Cath"
+          >
             <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
               {cathReaction.line}
               {bubbleSuggest && suggestBody && (
@@ -3449,7 +3467,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 </span>
               )}
             </p>
-            <span className="table-cath-figure" aria-hidden="true" key={cathPose ?? 'rest'}>
+            <span className="table-cath-figure" aria-hidden="true" key={`${cathPose ?? 'rest'}-${cathBeat.n}`}>
               <CathArt framing="half" pose={cathPose ?? SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>
