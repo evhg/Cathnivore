@@ -2248,7 +2248,9 @@ dialog.sheet.story #story-skip {
   }
   .play {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
+    /* the 2D renderer sizes the board's column to the field (render.ts frameStage) and the grid centres */
+    grid-template-columns: minmax(0, var(--stage-w, 1fr)) var(--panel-w, 320px);
+    justify-content: center;
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "hud hud"

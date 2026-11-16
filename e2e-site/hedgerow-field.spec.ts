@@ -26,8 +26,9 @@ const voices = (page: Page) =>
 test('plan item 19: Cath\'s bubble and the "new on the lane" card never show together, and the side panel has no voice', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await open(page, 12, {})
-  // A fresh tip list: Cath speaks as the field opens.
-  await expect(page.locator('#bubble')).toBeVisible({ timeout: 8000 })
+  // A fresh tip list: Cath speaks as the field opens (on her desk plate when the side panel has room, item 392,
+  // which the field-framed board of item 431 gives at 1440x900; else in her bubble).
+  await expect(page.locator('#bubble:visible, #cath-plate:visible').first()).toBeVisible({ timeout: 8000 })
   // Nothing has been seen yet, so the first round brings a "new on the lane" card while she is talking.
   await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: { game(): unknown; sendWave(g: unknown, early: boolean): void; refresh(): void } }).hedgerow
@@ -46,11 +47,18 @@ test('plan item 19: Cath\'s bubble and the "new on the lane" card never show tog
   await expect(page.locator('#panel .cath-tip')).toHaveCount(0)
 })
 
-test('plan item 19: at 1440x900 the field takes at least 70% of the width, and the side panel is a wave card', async ({ page }) => {
+// Plan item 431 (was item 19's 70% of the window): the board is framed to the field, so its plots span 70%+ of the
+// canvas width on l21 and l34 at 1440x900, and the side panel is a wave card.
+for (const level of [21, 34]) test(`plan item 431: at 1440x900 level ${level}'s field spans 70%+ of the board, the side panel a wave card`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  await open(page, 12, { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true })
-  const w = await page.locator('#canvas').evaluate((c) => c.getBoundingClientRect().width / innerWidth)
-  expect(w).toBeGreaterThanOrEqual(0.7)
+  await open(page, level, { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true })
+  const share = await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: { game(): { level: { cols: number } }; cellCenter(c: number, r: number): { x: number } } }).hedgerow
+    const g = hg.game()
+    const a = hg.cellCenter(0, 0), b = hg.cellCenter(1, 0)
+    return ((b.x - a.x) * g.level.cols) / document.querySelector('#canvas')!.getBoundingClientRect().width
+  })
+  expect(share).toBeGreaterThanOrEqual(0.7)
   await expect(page.locator('#panel .round-ticket')).toBeVisible()
   await expect(page.locator('#panel .intel-towers')).toHaveCount(0)
 })

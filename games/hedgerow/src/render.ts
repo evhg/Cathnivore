@@ -137,6 +137,15 @@ interface PieFlight {
   landed: boolean;
 }
 
+/** Desktop framing (item 431): the field's share of the board's width, the side panel's range and the grid gap. */
+const FIELD_SHARE = 0.705;
+const PANEL_MIN = 320;
+const PANEL_MAX = 400;
+const STAGE_GAP = 14;
+/** Margin, in cells, beside a gate (room for its depot) and on a side with none. */
+const DEPOT_ROOM = 2.5;
+const EDGE_ROOM = 0.7;
+
 export interface View {
   cellSize: number;
   offX: number;
@@ -228,6 +237,8 @@ export class Renderer {
   /** Seconds of victory confetti still to fall. */
   private parade = 0;
   view: View = { cellSize: 40, offX: 0, offY: 0 };
+  /** The share of the canvas's spare width left of the field (frameStage: the depot's side gets the room). */
+  private frameLeft = 0.5;
   selected: { col: number; row: number } | null = null;
   cursor: { col: number; row: number } | null = null;
   /** Cath is selected: the next tap moves her. */
@@ -283,6 +294,7 @@ export class Renderer {
   }
 
   resize(game: Game): void {
+    this.frameStage(game);
     const rect = this.canvas.getBoundingClientRect();
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.cssW = Math.max(1, rect.width);
@@ -295,10 +307,49 @@ export class Renderer {
     );
     this.view = {
       cellSize: cell,
-      offX: Math.floor((rect.width - cell * game.level.cols) / 2),
+      offX: Math.floor((rect.width - cell * game.level.cols) * this.frameLeft),
       offY: Math.floor((rect.height - cell * game.level.rows) / 2 + cell * 0.15),
     };
     this.bgKey = "";
+  }
+
+  /**
+   * Desktop (item 431): the board's column is sized to the field, so its plots span 70%+ of the canvas width
+   * instead of a portrait field standing in a wide strip of margin; the side panel takes the room it frees (to
+   * PANEL_MAX) and the play grid centres what is left. The field's size is unchanged (it is bound by the height).
+   */
+  private frameStage(game: Game): void {
+    const play = this.canvas.closest<HTMLElement>(".play");
+    const stage = this.canvas.parentElement;
+    if (!play || !stage) return;
+    let wide = false;
+    try {
+      wide = window.matchMedia("(min-width: 900px) and (min-height: 600px)").matches;
+    } catch {
+      /* no matchMedia */
+    }
+    this.frameLeft = 0.5;
+    if (!wide) {
+      play.style.removeProperty("--stage-w");
+      play.style.removeProperty("--panel-w");
+      return;
+    }
+    const { cols, rows } = game.level;
+    const room = play.clientWidth - STAGE_GAP;
+    const cell = stage.getBoundingClientRect().height / (rows + 0.6);
+    // The depot stands beside its gate (depot.ts): a side within two cells of a gate keeps DEPOT_ROOM cells of
+    // margin, the other a slim edge of country.
+    const gates = [game.level.path[0], game.level.path2?.[0]].filter((g): g is [number, number] => !!g);
+    const near = (left: boolean) => gates.some(([c]) => (left ? c <= 1 : c >= cols - 2));
+    let mL = near(true) ? DEPOT_ROOM : EDGE_ROOM;
+    let mR = near(false) ? DEPOT_ROOM : EDGE_ROOM;
+    if (mL === EDGE_ROOM && mR === EDGE_ROOM) mL = mR = (cols / FIELD_SHARE - cols) / 2;
+    const fit = Math.ceil(cell * (cols + mL + mR));
+    this.frameLeft = mL / (mL + mR);
+    const panel = Math.max(PANEL_MIN, Math.min(PANEL_MAX, room - fit));
+    const w = Math.max(0, Math.min(fit, room - panel));
+    play.style.setProperty("--stage-w", `${w}px`);
+    play.style.setProperty("--panel-w", `${panel}px`);
   }
 
   /** Clears effects when a level starts. */

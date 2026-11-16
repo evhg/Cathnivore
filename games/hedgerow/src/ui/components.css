@@ -2178,7 +2178,9 @@ body:has(#dlg-pause[open]) .paused-note {
 @media (min-width: 1200px) and (min-height: 521px) {
   .play {
     max-width: 1680px;
-    grid-template-columns: minmax(0, 1fr) clamp(320px, 23vw, 400px);
+    /* item 431: in 2D the board's column is sized to the field (render.ts frameStage), the grid centred */
+    grid-template-columns: minmax(0, var(--stage-w, 1fr)) var(--panel-w, clamp(320px, 23vw, 400px));
+    justify-content: center;
   }
 }
 
