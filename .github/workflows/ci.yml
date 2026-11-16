@@ -31,6 +31,7 @@ jobs:
       - id: check
         continue-on-error: true
         run: npm run check
+      # A run cancelled by a newer push records nothing (it read as a failure in ci-status).
       - name: Report status to ci-status
-        if: always()
+        if: ${{ !cancelled() && steps.check.outcome != 'skipped' }}
         run: scripts/ci/write-status.sh ci ${{ github.sha }} ${{ steps.check.outcome }}
