@@ -2238,15 +2238,6 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   .setup .open-sign-kicker { display: block; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; opacity: 1; line-height: 1; }
   .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
   .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.14em; color: var(--ink); }
-  /* Plan item 409: while the page runs on under the pinned sign, a tag just above it says so. */
-  .setup > .setup-more {
-    /* Plan item 416: a short 'More' at the sign's right corner (the steps' headings run from the left; 'More below',
-       centred, hid step 3's) */
-    position: sticky; bottom: 66px; z-index: var(--z-raised); justify-self: end; align-self: end; width: max-content; margin: 0 10px -28px auto;
-    padding: 3px 12px; border-radius: 999px; background: var(--ink); color: var(--paper);
-    font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none;
-  }
-  .setup > .setup-more::after { content: ' ▾'; }
 }
 /* A short landscape phone: two columns so less hides under the sign. */
 @media (max-width: 1099px) and (orientation: landscape) and (max-height: 560px) {
@@ -3560,7 +3551,7 @@ svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-ou
   .setup-cath-line::before { top: 14px; }
   /* Plan item 349: three numbered steps, as the desktop's table has: who (the producers), where (the map), how hard. */
   .setup:not([data-steps]) :is(.setup-producers-head, .setup-map-head, .setup-difficulty) > h2 { display: flex; align-items: center; gap: 8px; }
-  .setup:not([data-steps]) :is(.setup-producers-head, .setup-map-head, .setup-difficulty) > h2::before {
+  .setup:not([data-steps], [data-phone-steps]) :is(.setup-producers-head, .setup-map-head, .setup-difficulty) > h2::before {
     flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
     background: var(--wood); color: var(--paper-on-fixed-fill); font-size: .875rem; font-weight: 700; letter-spacing: 0;
     box-shadow: inset 0 0 0 2px var(--wood-lo);
@@ -3572,7 +3563,6 @@ svg.map[data-event='drought'] .ev-cracks { animation: ev-shimmer 3.2s ease-in-ou
   /* Plan item 430 (cath-setup-P): a solid paper band first (the tops of the next step's tags showed through the soft
      fade as slivers behind the sign), then the soft fade above it; the 'More' tag sits on that band. */
   .setup > button.setup-start { box-shadow: 0 -16px 0 -2px var(--paper), 0 -32px 16px -6px var(--paper); }
-  .setup > .setup-more { bottom: 60px; z-index: calc(var(--z-sticky) + 1); }
 }
 
 /* Plan item 189: each producer's role ability staged over its hex for about a second (AbilityMoment.tsx). The
@@ -4251,4 +4241,134 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
    ones). */
 @media (max-width: 599.98px) {
   .setup .producer-grid .producer-card:nth-child(n) { --deal: 0deg; }
+}
+
+/* Plan item 461: below D the setup is three swiped steps on the gingham table, not a scrolling form. A dot rail names
+   the steps (who, where, how hard); the track snaps a panel at a time; Start is fixed at the foot and Cath's line
+   follows the step. The page itself never scrolls: a short phone scrolls inside the panel instead. */
+.setup .setup-dots, .setup .map-stage, .setup .setup-next { display: none; }
+@media (max-width: 1099px) {
+  .setup[data-phone-steps] {
+    position: relative; isolation: isolate; height: 100dvh; min-height: 0; overflow: hidden;
+    justify-content: flex-start; gap: 6px; padding-bottom: 10px;
+  }
+  .setup[data-phone-steps]::after {
+    content: ''; position: fixed; inset: 0; z-index: var(--z-under); pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--clay) 11%, transparent) 0 14px, transparent 14px 28px),
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--clay) 11%, transparent) 0 14px, transparent 14px 28px),
+      var(--paper);
+  }
+  .setup[data-phone-steps] > * { flex: none; }
+  .setup[data-phone-steps] .setup-header-text h1,
+  .setup[data-phone-steps] .setup-cath-line { position: relative; }
+  .setup[data-phone-steps] .cath-line-step { display: inline; }
+
+  /* The dot rail: three numbered dots on one ruled line, the step showing filled in ink. */
+  .setup[data-phone-steps] .setup-dots { display: flex; position: relative; justify-content: space-between; gap: 4px; margin: 0 -4px; }
+  .setup[data-phone-steps] .setup-dots::before {
+    content: ''; position: absolute; left: 16%; right: 16%; top: 15px; height: 2px; border-radius: 1px;
+    background: color-mix(in srgb, var(--ink) 30%, transparent);
+  }
+  .setup[data-phone-steps] .setup-dot {
+    position: relative; flex: 1 1 0; min-width: 0; min-height: 44px; margin: 0; padding: 0 2px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    border: 0; border-radius: 8px; background: none; box-shadow: none; color: var(--ink); cursor: pointer;
+  }
+  .setup[data-phone-steps] .setup-dot-n {
+    display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--paper-hi); box-shadow: inset 0 0 0 2px var(--soil);
+    font-size: var(--fs-small); font-weight: 800; line-height: 1; color: var(--soil);
+  }
+  .setup[data-phone-steps] .setup-dot-word { font-size: var(--fs-label); font-weight: 700; line-height: 1.1; white-space: nowrap; color: var(--ink-muted); }
+  .setup[data-phone-steps] .setup-dot[aria-current='step'] .setup-dot-n { background: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--wheat) 60%, transparent); color: var(--paper-hi); }
+  .setup[data-phone-steps] .setup-dot[aria-current='step'] .setup-dot-word { color: var(--ink); font-weight: 800; }
+  .setup[data-phone-steps] .setup-dot:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
+
+  /* The track: one panel a screen wide, snapped; each panel a sheet of paper laid on the cloth. */
+  .setup[data-phone-steps] .setup-table.setup-track {
+    display: flex; flex-direction: row; flex: 1 1 0; min-height: 0; gap: 0; margin: 0 -16px; padding: 0;
+    overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+    border: 0; border-radius: 0; background: none; box-shadow: none;
+  }
+  .setup[data-phone-steps] .setup-track::-webkit-scrollbar { display: none; }
+  .setup[data-phone-steps] .setup-panel {
+    flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px; padding: 4px 16px 6px;
+  }
+  .setup[data-phone-steps] .setup-panel > .settings-card {
+    margin: 0; padding: 10px 12px 12px; border: 0; border-radius: 6px; transform: none;
+    background: color-mix(in srgb, var(--paper-hi) 96%, transparent);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 10%, transparent), 0 6px 14px color-mix(in srgb, var(--ink) 14%, transparent);
+  }
+  .setup[data-phone-steps] .setup-panel > .setup-mode.settings-card { padding: 4px 0 0; background: none; box-shadow: none; }
+
+  /* Step 2: the chosen board large between two arrows; the three names under it pick it too. */
+  .setup[data-phone-steps] .map-stage { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 4px; margin-top: 6px; }
+  .setup[data-phone-steps] .map-arrow {
+    display: grid; place-items: center; width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0; border-radius: 50%;
+    border: 2px solid var(--soil); background: var(--paper-hi); color: var(--ink); font-size: var(--fs-h3); line-height: 1; box-shadow: 0 2px 0 var(--wood-lo);
+  }
+  .setup[data-phone-steps] .map-stage-board { display: grid; justify-items: center; gap: 2px; min-width: 0; text-align: center; }
+  .setup[data-phone-steps] .map-stage .board-mini { width: 100%; max-width: 260px; height: auto; max-height: 230px; animation: map-deal var(--dur-base, 280ms) var(--ease-settle, ease) both; }
+  .setup[data-phone-steps] .map-stage-name { font-family: var(--font-display); font-size: var(--fs-h3); line-height: 1.1; color: var(--ink); }
+  .setup[data-phone-steps] .map-stage-blurb { font-size: var(--fs-small); line-height: 1.3; color: var(--ink-muted); }
+  .setup[data-phone-steps] .setup-seed .layout-picker { display: flex; gap: 6px; margin: 10px 0 0; padding: 0; }
+  .setup[data-phone-steps] .setup-seed .layout-picker::after { display: none; }
+  .setup[data-phone-steps] .setup-seed .layout-picker .layout-tile {
+    flex: 1 1 0; display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 4px 8px; border-radius: 999px; text-align: center;
+  }
+  .setup[data-phone-steps] .setup-seed .layout-tile .board-mini { display: none; }
+  .setup[data-phone-steps] .setup-seed .layout-tile .layout-name { font-size: var(--fs-label); line-height: 1.15; text-wrap: balance; }
+  .setup[data-phone-steps] .setup-seed .setup-map-head { margin-bottom: 0; }
+
+  /* Step 3: Hollowell's price tags hang on a string, the threat under them, and Cath's pins, the week's prize. */
+  .setup[data-phone-steps] .setup-panel > .pin-tin {
+    display: block; padding: 10px 12px 12px; border-radius: 12px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 5%, var(--paper-hi)), color-mix(in srgb, var(--ink) 12%, var(--paper-hi)));
+    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--paper-hi) 70%, transparent), 0 6px 12px color-mix(in srgb, var(--ink) 14%, transparent);
+    transform: rotate(-0.6deg);
+  }
+  .setup[data-phone-steps] .pin-tin-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 8px; font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soil); }
+  .setup[data-phone-steps] .pin-tin-head span { letter-spacing: 0.04em; font-weight: 700; color: var(--ink); }
+  .setup[data-phone-steps] .pin-tin ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 6px; margin: 0; padding: 0; list-style: none; }
+  .setup[data-phone-steps] .pin-tin li { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; }
+  .setup[data-phone-steps] .pin-tin svg { width: 38px; height: 38px; border-radius: 50%; }
+  .setup[data-phone-steps] .pin-tin li:not([data-earned]) svg { filter: grayscale(1) brightness(0.6) contrast(1.3); opacity: 0.9; }
+  .setup[data-phone-steps] .pin-tin li[data-earned] svg { box-shadow: 0 0 0 3px var(--wheat); }
+  .setup[data-phone-steps] .pin-tin li[data-week] svg { outline: 2px solid var(--short-ink-shelf); outline-offset: 2px; }
+  .setup[data-phone-steps] .pin-tin .pin-name { font-size: var(--fs-label); font-weight: 700; line-height: 1.15; color: var(--ink); text-wrap: balance; }
+  .setup[data-phone-steps] .pin-tin .pin-when { font-size: var(--fs-label); line-height: 1.15; color: var(--ink); }
+  .setup[data-phone-steps] .pin-tin li[data-week] .pin-when { color: var(--short-ink-shelf); font-weight: 700; }
+  .setup[data-phone-steps] .setup-difficulty .segmented { margin-top: 10px; padding-top: 6px; position: relative; }
+  .setup[data-phone-steps] .setup-panel > .setup-difficulty { order: 0; }
+  .setup[data-phone-steps] .setup-panel > .pin-tin { order: 1; }
+  .setup[data-phone-steps] .setup-producers-head h2 { white-space: nowrap; }
+  .setup[data-phone-steps] .setup-recommend { white-space: nowrap; }
+
+  /* Start: fixed at the foot, in flow (the page doesn't scroll), so it covers nothing. */
+  .setup[data-phone-steps] > button.setup-start { position: relative; bottom: auto; margin-top: 2px; box-shadow: none; outline: 0; }
+}
+@keyframes map-deal { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .setup[data-phone-steps] .map-stage .board-mini { animation: none; } }
+html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: none; }
+/* A short landscape phone: Cath, the event and the rail on the left, the steps on the right. */
+@media (max-width: 1099px) and (orientation: landscape) and (max-height: 560px) {
+  .setup[data-phone-steps] {
+    display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); grid-template-rows: auto auto auto 1fr auto;
+    grid-template-areas: "head track" "event track" "dots track" ". track" "start track"; align-content: stretch; padding-top: 8px;
+  }
+  .setup[data-phone-steps] .setup-dots { grid-area: dots; }
+  .setup[data-phone-steps] .setup-table.setup-track { grid-area: track; margin: 0; min-height: 0; }
+  .setup[data-phone-steps] .setup-panel { padding-inline: 4px; }
+  .setup[data-phone-steps] .setup-next { display: none; }
+}
+@media (max-width: 1099px) {
+  /* The rail numbers the steps, so the headings drop their own numerals. */
+  .setup[data-phone-steps] .setup-next {
+    display: block; align-self: flex-end; margin: auto 0 0; min-height: 44px; padding: 8px 18px; border-radius: 999px;
+    border: 2px solid var(--ink); background: var(--paper-hi); color: var(--ink); font-size: var(--fs-small); font-weight: 800;
+    box-shadow: 0 2px 0 var(--ink);
+  }
+  .setup[data-phone-steps] .setup-next:active { transform: translateY(2px); box-shadow: none; }
+  .setup[data-phone-steps] :is(.setup-producers-head, .setup-map-head, .setup-difficulty) > h2::before { content: none; }
 }

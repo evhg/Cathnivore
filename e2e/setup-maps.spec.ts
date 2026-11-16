@@ -28,25 +28,23 @@ for (const [w, h] of [
   })
 }
 
-// On a phone the Setup has no spare height (plan items 75 and 80), so the board stands beside its name: 44 px
-// tall or more (it was 28 px over the name), in the same no-scroll screen.
-test('the phone maps are boards beside their names', async ({ page }) => {
+// Plan item 461: on a phone the map step is one large board between two arrows (it was three 44 px boards beside
+// their names); the three names under it are the radios, each one line or two, and the page never scrolls.
+test('the phone map is one large board, the names under it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  const minis = page.locator('.layout-tile .board-mini')
-  await expect(minis).toHaveCount(3)
-  for (const box of await minis.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect))) {
-    expect(box.height).toBeGreaterThanOrEqual(44)
-  }
+  await page.locator('.setup-dot').nth(1).click()
+  const board = page.locator('.map-stage .board-mini')
+  await expect(board).toHaveCount(1)
+  const b = (await board.boundingBox())!
+  expect(b.width).toBeGreaterThanOrEqual(200)
+  expect(b.height).toBeGreaterThanOrEqual(160)
   for (const tile of await page.locator('.layout-tile').all()) {
-    const mini = (await tile.locator('.board-mini').boundingBox())!
     const name = (await tile.locator('.layout-name').boundingBox())!
-    expect(name.x).toBeGreaterThanOrEqual(mini.x + mini.width - 1)
-    // Plan item 166: two lines at most ('The Long Coast' took three).
     const lh = await tile.locator('.layout-name').evaluate((e) => parseFloat(getComputedStyle(e).lineHeight))
     expect(name.height).toBeLessThanOrEqual(lh * 2 + 1)
+    expect(name.y).toBeGreaterThanOrEqual(b.y + b.height)
   }
-  // Plan item 349: the stall header lets the page scroll a little under the docked Start sign.
-  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(220)
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })

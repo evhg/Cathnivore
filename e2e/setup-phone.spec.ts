@@ -1,40 +1,46 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
 // Plan item 54: the phone Setup deals you in, the two picked producers' abilities read in full. Plan item 349: its
-// header is Cath's stall (her at half length, 160 px+, in view at scroll 0), so the page may scroll a little under
-// the Start sign, which stays docked in view; every control is reached on screen, clear of the sign. Setup also works from the keyboard alone, and every card has a name.
+// header is Cath's stall (her at half length, 160 px+). Plan item 461: below it, three swiped steps under a dot rail
+// (who, where, how hard) and Start fixed at the foot: the page never scrolls, each step's controls show whole on the
+// screen and clear of Start, and Cath's line follows the step. Setup also works from the keyboard alone, and every
+// card has a name.
 
-async function inView(page: Page, el: Locator, what: string) {
+async function clearOfStart(page: Page, el: Locator, what: string) {
+  const vw = page.viewportSize()!.width
   const vh = page.viewportSize()!.height
   const b = (await el.boundingBox())!
   expect(b, what).not.toBeNull()
+  expect(b.x, `${what} left`).toBeGreaterThanOrEqual(-0.5)
+  expect(b.x + b.width, `${what} right`).toBeLessThanOrEqual(vw + 0.5)
   expect(b.y, `${what} top`).toBeGreaterThanOrEqual(0)
   expect(b.y + b.height, `${what} bottom`).toBeLessThanOrEqual(vh + 0.5)
-}
-
-async function reached(page: Page, el: Locator, what: string) {
-  await el.scrollIntoViewIfNeeded()
-  // As a thumb would: past the sign if it still lies under it (scrollIntoView stops at the window's foot).
-  const sign = (await page.getByRole('button', { name: 'Start' }).boundingBox())!
-  const first = (await el.boundingBox())!
-  if (what !== 'Start' && first.y + first.height > sign.y) await page.evaluate((d) => window.scrollBy(0, d), first.y + first.height - sign.y + 8)
-  await inView(page, el, what)
+  if (what === 'Start') return
   const start = (await page.getByRole('button', { name: 'Start' }).boundingBox())!
-  const b = (await el.boundingBox())!
-  if (what !== 'Start') expect(b.y + b.height, `${what} clear of the Start sign`).toBeLessThanOrEqual(start.y + 1)
+  expect(b.y + b.height, `${what} clear of Start`).toBeLessThanOrEqual(start.y + 0.5)
 }
 
-test('every Setup control is reached on a phone screen, Start always in view, the pair read in full', async ({ page }, testInfo) => {
+async function showStep(page: Page, i: number) {
+  await page.locator('.setup-dot').nth(i).click()
+  await expect(page.locator('.setup-dot').nth(i)).toHaveAttribute('aria-current', 'step')
+  // The track has settled on the panel.
+  await expect.poll(() => page.locator('.setup-panel').nth(i).evaluate((p) => Math.round(p.getBoundingClientRect().left))).toBeLessThanOrEqual(1)
+  await expect.poll(() => page.locator('.setup-panel').nth(i).evaluate((p) => Math.round(p.getBoundingClientRect().left))).toBeGreaterThanOrEqual(-1)
+}
+
+test('the phone Setup is three steps on one screen: every control whole and clear of Start, the pair read in full', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the upright phone layout')
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
-  // Plan item 349: Cath at half length in the stall header, in view at scroll 0; the scroll stays short.
+  // Plan item 349: Cath at half length in the stall header.
   const stand = (await page.locator('.setup-header-stand').boundingBox())!
   expect(stand.height).toBeGreaterThanOrEqual(160)
-  await inView(page, page.locator('.setup-header-stand'), 'Cath')
-  await inView(page, page.getByRole('button', { name: 'Start' }), 'Start at scroll 0')
-  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(220)
+  await clearOfStart(page, page.locator('.setup-header-stand'), 'Cath')
+  await clearOfStart(page, page.getByRole('button', { name: 'Start' }), 'Start')
+  // Plan item 461: no page scroll at all.
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+  await expect(page.locator('.setup-dot')).toHaveCount(3)
 
   // Pick Ines and Sol (cards 3 and 4), so the picked pair isn't simply the first two.
   await page.locator('.producer-card', { hasText: 'Mara Keel' }).click()
@@ -43,36 +49,64 @@ test('every Setup control is reached on a phone screen, Start always in view, th
   await page.locator('.producer-card', { hasText: 'Sol Abara' }).click()
   await expect(page.locator('.producer-card input:checked')).toHaveCount(2)
 
-  const controls: Array<[Locator, string]> = [
-    ...(await page.locator('.producer-card').all()).map((c, i) => [c, `producer ${i + 1}`] as [Locator, string]),
-    ...(await page.locator('.setup-mode label').all()).map((c, i) => [c, `mode ${i + 1}`] as [Locator, string]),
-    ...(await page.locator('.setup-difficulty label').all()).map((c, i) => [c, `difficulty ${i + 1}`] as [Locator, string]),
-    ...(await page.locator('.layout-tile').all()).map((c, i) => [c, `map ${i + 1}`] as [Locator, string]),
-    [page.getByRole('button', { name: 'Advanced' }), 'Advanced'],
-    [page.getByRole('button', { name: 'Start' }), 'Start'],
+  const steps: Array<Array<[Locator, string]>> = [
+    [
+      ...(await page.locator('.producer-card').all()).map((c, i) => [c, `producer ${i + 1}`] as [Locator, string]),
+      ...(await page.locator('.setup-mode label').all()).map((c, i) => [c, `mode ${i + 1}`] as [Locator, string]),
+      [page.getByRole('button', { name: 'Use recommended pair' }), 'recommended'],
+      ...(await page.locator('.pair-ability').all()).map((c, i) => [c, `ability ${i + 1}`] as [Locator, string]),
+    ],
+    [
+      ...(await page.locator('.layout-tile').all()).map((c, i) => [c, `map ${i + 1}`] as [Locator, string]),
+      [page.getByRole('button', { name: 'Previous map' }), 'previous map'],
+      [page.getByRole('button', { name: 'Next map' }), 'next map'],
+      [page.getByRole('button', { name: 'Advanced' }), 'Advanced'],
+    ],
+    (await page.locator('.setup-difficulty label').all()).map((c, i) => [c, `difficulty ${i + 1}`] as [Locator, string]),
   ]
-  expect(controls.length).toBe(4 + 2 + 3 + 3 + 2)
-  for (const [el, what] of controls) await reached(page, el, what)
+  expect(steps.flat().length).toBe(4 + 2 + 1 + 2 + 3 + 3 + 3)
+  for (const [i, controls] of steps.entries()) {
+    await showStep(page, i)
+    for (const [el, what] of controls) await clearOfStart(page, el, `step ${i + 1}: ${what}`)
+    await clearOfStart(page, page.getByRole('button', { name: 'Start' }), 'Start')
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+  }
 
-  // The picked pair's abilities, in full: on screen and not clipped by their box.
+  // The picked pair's abilities, in full: not clipped by their box.
+  await showStep(page, 0)
   const abilities = page.locator('.pair-ability')
-  await expect(abilities).toHaveCount(2)
   await expect(abilities.nth(0)).toContainText('Remove 1 Doubt from a region with your Stall, at no cost.')
   await expect(abilities.nth(1)).toContainText('Public Trust +1, or gain 2 Goodwill.')
-  for (const i of [0, 1]) {
-    await reached(page, abilities.nth(i), `ability ${i + 1}`)
-    expect(await abilities.nth(i).evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1)).toBe(true)
-  }
+  for (const i of [0, 1]) expect(await abilities.nth(i).evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1)).toBe(true)
   await expect(page.locator('.pair-line')).toContainText('Doubt cleared')
 
-  // Every difficulty keeps the Start sign in view; Advanced opens the seed.
-  for (const i of [0, 2, 1]) {
-    await page.locator('.setup-difficulty label').nth(i).click()
-    await inView(page, page.getByRole('button', { name: 'Start' }), `Start with difficulty ${i + 1}`)
-  }
+  // Step 2: one large board between the arrows; the arrows and the names pick the map; Cath names it.
+  await page.getByRole('button', { name: /Next: Where you trade/ }).click()
+  await expect(page.locator('.setup-dot').nth(1)).toHaveAttribute('aria-current', 'step')
+  const board = (await page.locator('.map-stage .board-mini').boundingBox())!
+  expect(board.width).toBeGreaterThanOrEqual(200)
+  await expect(page.locator('.setup-cath-line')).toContainText('The Ring')
+  await page.getByRole('button', { name: 'Next map' }).click()
+  await expect(page.getByRole('radio', { name: /The Long Coast/ })).toBeChecked()
+  await expect(page.locator('.map-stage-name')).toHaveText('The Long Coast')
+  await expect(page.locator('.setup-cath-line')).toContainText('The Long Coast')
+  await page.getByRole('button', { name: 'Previous map' }).click()
+  await page.getByRole('button', { name: 'Previous map' }).click()
+  await expect(page.getByRole('radio', { name: /The Delta/ })).toBeChecked()
   await expect(page.locator('input[inputmode="numeric"]')).toBeHidden()
   await page.getByRole('button', { name: 'Advanced' }).click()
   await expect(page.locator('input[inputmode="numeric"]')).toBeVisible()
+  await clearOfStart(page, page.locator('input[inputmode="numeric"]'), 'seed')
+
+  // Step 3: every difficulty keeps the screen whole; Cath speaks for the level.
+  await page.getByRole('button', { name: /Next: How hard/ }).click()
+  for (const i of [0, 2, 1]) {
+    await page.locator('.setup-difficulty label').nth(i).click()
+    await clearOfStart(page, page.locator('.difficulty-sheet'), `sheet ${i + 1}`)
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+  }
+  await expect(page.locator('.setup-cath-line')).toContainText('A fair fight')
+  await clearOfStart(page, page.locator('.setup-panel .pin-tin'), 'pins')
 })
 
 test('Setup to Start from the keyboard alone, every card named', async ({ page }, testInfo) => {

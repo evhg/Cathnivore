@@ -32,26 +32,22 @@ export default function Setup({ onStart }: Props) {
   const [producers, setProducers] = useState<ProducerId[]>(['mara', 'tomas'])
   const [difficulty, setDifficulty] = useState<GameConfig['difficulty']>('normal')
   const [seedInput, setSeedInput] = useState('')
-  // Plan item 409: on a phone the open sign is pinned over the foot of the page, so while there is more below it (step
-  // 3's cards sat hidden under it with nothing saying so) a small 'More below' tag rides just above the sign.
-  const [moreBelow, setMoreBelow] = useState(false)
-  useEffect(() => {
-    const check = () => {
-      const el = document.querySelector<HTMLElement>('.setup')
-      if (!el) return
-      let sc: HTMLElement | null = el
-      while (sc && !(sc.scrollHeight > sc.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement
-      const box = sc ?? (document.scrollingElement as HTMLElement)
-      setMoreBelow(box.scrollHeight - box.scrollTop - box.clientHeight > 48)
-    }
-    check()
-    addEventListener('scroll', check, { capture: true, passive: true })
-    addEventListener('resize', check)
-    return () => {
-      removeEventListener('scroll', check, { capture: true })
-      removeEventListener('resize', check)
-    }
-  }, [])
+  // Plan item 461: on a phone and a tablet the setup is three swiped steps (who, where, how hard) under a dot rail; the
+  // track's scroll position is the step, so a swipe, a rail tap or a keyboard focus landing in a panel all agree.
+  const [step, setStep] = useState(0)
+  const trackRef = useRef<HTMLDivElement>(null)
+  function onTrackScroll(): void {
+    const t = trackRef.current
+    if (!t || !t.clientWidth) return
+    setStep(Math.max(0, Math.min(STEP_WORDS.length - 1, Math.round(t.scrollLeft / t.clientWidth))))
+  }
+  function goStep(i: number): void {
+    const t = trackRef.current
+    if (!t) return
+    const calm = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')
+    t.scrollTo({ left: i * t.clientWidth, behavior: calm ? 'auto' : 'smooth' })
+    setStep(i)
+  }
   const [advanced, setAdvanced] = useState(false)
   const [layout, setLayout] = useState<LayoutId>('ring')
   const [marketEvent] = useState(() => marketEventFor(new Date()))
@@ -202,6 +198,8 @@ export default function Setup({ onStart }: Props) {
             Advanced
           </button>
         </div>
+        {/* Plan item 461: on a phone the chosen map is one large board between two arrows; the names below pick it too. */}
+        {!rail && <MapStage layout={layout} onPick={setLayout} />}
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
@@ -296,18 +294,25 @@ export default function Setup({ onStart }: Props) {
       </main>
     )
 
+  const stepLine = step === 1 ? MAP_LINE[layout] : step === 2 ? DIFFICULTY_LINE[difficulty] : null
   return (
-    <main className="setup">
+    <main className="setup" data-phone-steps data-step={step + 1}>
       <header className="setup-header">
         <div className="setup-header-text">
           <h1>Quick Game</h1>
-          <p className="setup-cath-line">
-            <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
-            {/* Plan item 80: on a phone, once a pair is picked, Cath's line on them is said up here, beside her. */}
-            {producers.length === 2 && (
-              <span className="cath-line-pair" aria-hidden="true">
-                “{pairLine(producers[0]!, producers[1]!)}”
-              </span>
+          <p className="setup-cath-line" aria-live="polite">
+            {stepLine ? (
+              <span className="cath-line-step">“{stepLine}”</span>
+            ) : (
+              <>
+                <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
+                {/* Plan item 80: on a phone, once a pair is picked, Cath's line on them is said up here, beside her. */}
+                {producers.length === 2 && (
+                  <span className="cath-line-pair" aria-hidden="true">
+                    “{pairLine(producers[0]!, producers[1]!)}”
+                  </span>
+                )}
+              </>
             )}
           </p>
         </div>
@@ -317,30 +322,80 @@ export default function Setup({ onStart }: Props) {
         {/* Plan item 349: an upright phone's header is Cath's stall: her at half length (160 px+) behind its counter,
             her bubble beside her (global.css shows this one and hides the bust there). */}
         <div className="setup-header-stand" aria-hidden="true">
-          <CathArt framing="half" pose={SCREEN_POSE['cathnivore:setup']} expression="smirk" animate />
+          <CathArt framing="half" pose={SCREEN_POSE['cathnivore:setup']} expression={step === 2 && difficulty === 'hard' ? 'worried' : 'smirk'} animate />
         </div>
       </header>
 
       {eventFlyer}
 
-      {modeSection}
+      <nav className="setup-dots" aria-label="Setup steps">
+        {STEP_WORDS.map((w, i) => (
+          <button key={w} type="button" className="setup-dot" aria-current={step === i ? 'step' : undefined} onClick={() => goStep(i)}>
+            <span className="setup-dot-n" aria-hidden="true">{i + 1}</span>
+            <span className="setup-dot-word">{w}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
-      <div className="setup-table" data-setup-table>
-      {producersSection}
-      {mapSection}
-
-      {difficultySection}
-
+      <div className="setup-table setup-track" data-setup-table ref={trackRef} onScroll={onTrackScroll}>
+        <section className="setup-panel" data-panel="1" aria-label={`Step 1 of 3: ${STEP_WORDS[0]}`}>
+          {modeSection}
+          {producersSection}
+          <NextStep words={STEP_WORDS[1]} onClick={() => goStep(1)} />
+        </section>
+        <section className="setup-panel" data-panel="2" aria-label={`Step 2 of 3: ${STEP_WORDS[1]}`}>
+          {mapSection}
+          <NextStep words={STEP_WORDS[2]} onClick={() => goStep(2)} />
+        </section>
+        <section className="setup-panel" data-panel="3" aria-label={`Step 3 of 3: ${STEP_WORDS[2]}`}>
+          {difficultySection}
+          <PinTin week={marketEvent.id} />
+        </section>
       </div>
 
-      {moreBelow && (
-        <p className="setup-more" aria-hidden="true">
-          More
-        </p>
-      )}
       {startButton}
     </main>
+  )
+}
+
+const STEP_WORDS = ["Who's at the stall", 'Where you trade', 'How hard'] as const
+
+/** Plan item 461: a step's foot on a phone: on to the next one (a swipe does the same). */
+function NextStep({ words, onClick }: { words: string; onClick(): void }) {
+  return (
+    <button type="button" className="setup-next" onClick={onClick}>
+      Next: {words} <span aria-hidden="true">›</span>
+    </button>
+  )
+}
+
+/** Plan item 461: Cath's line on each map, said while step 2 is showing on a phone. */
+const MAP_LINE: Record<LayoutId, string> = {
+  ring: 'The Ring: six regions round the capital. A good first market.',
+  coast: 'The Long Coast: ten regions on a long shore. Hollowell spreads thin.',
+  delta: 'The Delta: the river splits it, love. Mind the two bridges.',
+}
+
+/** Plan item 461: the phone's map step, the chosen board large between two arrows. */
+function MapStage({ layout, onPick }: { layout: LayoutId; onPick(id: LayoutId): void }) {
+  const ids = Object.keys(LAYOUTS) as LayoutId[]
+  const at = ids.indexOf(layout)
+  const step = (d: number) => onPick(ids[(at + d + ids.length) % ids.length]!)
+  return (
+    <div className="map-stage">
+      <button type="button" className="map-arrow" aria-label="Previous map" onClick={() => step(-1)}>
+        <span aria-hidden="true">‹</span>
+      </button>
+      <div className="map-stage-board" aria-hidden="true">
+        <BoardMiniature key={layout} id={layout} />
+        <span className="map-stage-name">{LAYOUTS[layout].name}</span>
+        <span className="map-stage-blurb">{LAYOUTS[layout].blurb}</span>
+      </div>
+      <button type="button" className="map-arrow" aria-label="Next map" onClick={() => step(1)}>
+        <span aria-hidden="true">›</span>
+      </button>
+    </div>
   )
 }
 
