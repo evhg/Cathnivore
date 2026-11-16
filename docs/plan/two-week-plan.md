@@ -4156,7 +4156,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** hair 3+ fills and jacket 3+ fills (unit test on the part list); at 360 px tall the head is 15-18% of her height; no stroke under 0.75 px at 96 px; key art re-shot (keyart-fresh); shots of all eight Cath screens P and D before and after; a subagent critique confirms the bible's points (shine band, winged liner, raised right brow, pearl studs, leaf pendant) read at D.
 - **Size:** 3
 
-## 443. [ ] Cathnivore phone play: the board fills its frame
+## 443. [ ] Cathnivore phone play: the board fills its frame *(lane A, in progress)*
 - **Why:** `plan1116g/cath-game-P`: under the hexes a dead paper band (about 15-375 x 470-525) sits inside the board frame, and the pieces are small: Outlet and Stall icons about 14 px, the '2' badges about 16 px, 'EXPAND' chips about 9 px text (95-160 x 195-210). Items 131 and 212 claimed the frame on phone; the table is still not the hero there (VISION 2).
 - **Build:** fit the hex cluster to the frame's real box (scale to the smaller of its width and height, no fixed padding); the event ribbon a pinned tag in the frame's corner; pieces scaled with the hex (Outlet about 0.22 of a hex's width, badges 20 px+, region labels 14 px+).
 - **Accept:** at 390x844 the hexes' box covers 85%+ of the frame's height and 92%+ of its width; piece icons 20 px+, all text 12 px+; labels 4.5:1; region targets 44 px+; phone game specs pass; shots P (and 375x667) before and after.
