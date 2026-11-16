@@ -7,6 +7,7 @@ import { laneCellsOf, plotKind, sceneryCells, type Level } from "./engine";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "./plotlook";
 import { kitFor, type BedLook } from "./fieldkit";
 import { isKitBed, paintKitBed, paintKitWater, paintKnollDress } from "./fieldkitart";
+import { shadowDir } from "./sunlight";
 import { paintLandmarks, paintTwistDressing } from "./landmarkart";
 import { DECOR_PIECES, MARGIN_SETS, paintBoardwalk, paintGround, paintPiece, pieceLook, placeMargin, recordMargin, seeded, withLooks, type Look, type Placed, type Rect } from "./margins";
 
@@ -695,6 +696,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
   }
   const scenery = sceneryCells(level);
   const looks = plotLooks(level);
+  const away = shadowDir(level.id);
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
       if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`)) continue;
@@ -720,11 +722,13 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
             // Furrows run the field's long way (a square field picks by seed).
             const across = n > m || (n === m && (c * 31 + r * 17 + level.id) % 2 === 0);
             paintPlot(ctx, x, y, s, look, across, c * 131 + r * 71 + level.id * 7, n, m);
+            if (look !== "puddle") litBed(ctx, x, y, s, n, m, away);
           }
         } else if (!join(c, -1)) {
           let n = 1;
           while (join(c + n - 1, 1)) n++;
           paintPlot(ctx, x, y, s, look, n > 1 || (c * 31 + r * 17 + level.id) % 2 === 0, c * 131 + r * 71 + level.id * 7, n);
+          if (look !== "puddle") litBed(ctx, x, y, s, n, 1, away);
         }
         if (look === "puddle") paintPuddle(ctx, x, y, s, c * 131 + r * 71 + level.id * 7);
         // Item 345: where this field meets a different crop below, a low hedge runs along the grass between them.
@@ -874,6 +878,28 @@ function paintPuddle(ctx: CanvasRenderingContext2D, x: number, y: number, s: num
 }
 
 /** Plan item 52: a plot drawn by what lies under it; item 345: a field of `n` by `m` plots as one bed. */
+/**
+ * Plan item 440: each bed lit by the act's sun: its sun-side edge catches the light and its far side falls into
+ * shade, across the whole field (the same direction the cast shadows fall), so the beds read as ground under one sun.
+ */
+function litBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, n: number, m: number, away: { x: number; y: number }): void {
+  const i = s * 0.1;
+  const bx = x + i, by = y + i, bw = n * s - i * 2, bh = m * s - i * 2;
+  const cx = bx + bw / 2, cy = by + bh / 2;
+  const R = (Math.abs(away.x) * bw + Math.abs(away.y) * bh) / 2;
+  const g = ctx.createLinearGradient(cx - away.x * R, cy - away.y * R, cx + away.x * R, cy + away.y * R);
+  g.addColorStop(0, "rgba(255,244,214,0.16)");
+  g.addColorStop(0.35, "rgba(255,244,214,0)");
+  g.addColorStop(0.6, "rgba(28,34,18,0)");
+  g.addColorStop(1, "rgba(28,34,18,0.18)");
+  ctx.save();
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, s * 0.18);
+  ctx.fill();
+  ctx.restore();
+}
+
 function paintPlot(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, look: PlotLook, across: boolean, seed: number, n = 1, m = 1): void {
   // Plan item 399: an act's own beds (Saltmarsh's samphire, Rivermead's drains...) have their own art.
   if (isKitBed(look)) {
