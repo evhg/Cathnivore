@@ -193,6 +193,8 @@ ${skirt}`
   return `${groundShadow(203, 80)}
 ${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
+<path fill="none" stroke="${o.line}" stroke-width="1.4" stroke-linecap="round" opacity="0.5" d="M166 700 Q177 708 189 700 M210 708 Q220 716 230 708"/>
+<ellipse cx="178" cy="690" rx="8" ry="11" fill="#ffffff" opacity="0.12"/><ellipse cx="220" cy="697" rx="7" ry="10" fill="#ffffff" opacity="0.1"/>
 ${boot('M162 812 L194 812 C193 828 192 846 195 862 Q196 878 182 878 L144 878 Q132 878 139 867 L159 852 C161 840 163 826 162 812 Z')}${boot('M215 818 L246 818 C245 834 244 848 247 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 C213 850 216 834 215 818 Z')}
 <path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
 ${bootFinish(o.boots)}
@@ -457,8 +459,8 @@ function hairFront(id: string): string {
   // at the part, brightest on the lit side, over a softer sheen just under it.
   const shine = [
     strand([160, 112], [168, 100], [180, 94], 2.2, C.hairShine, 0.45),
-    strand([152, 106], [166, 86], [195, 84], 3.6, C.hairGlint, 0.6),
-    strand([205, 84], [236, 86], [249, 108], 4.2, C.hairGlint, 0.85),
+    strand([152, 106], [166, 86], [195, 84], 4.6, C.hairGlint, 0.7),
+    strand([205, 84], [236, 86], [249, 108], 5.6, C.hairGlint, 0.95),
     strand([212, 92], [232, 96], [242, 112], 2.2, C.hairShine, 0.55),
     strand([214, 85], [228, 86], [238, 94], 1.1, C.white, 0.35),
   ].join('')
@@ -573,7 +575,8 @@ function brows(expression: CathExpression): string {
   // stay readable at companion/portrait scale (a gate-8 finding). Each brow is a filled brush stroke: full
   // at the inner head, tapering to a fine tail.
   const shapes: Record<CathExpression, [Pt, Pt, Pt, Pt, Pt, Pt]> = {
-    smirk: [[159, 131], [172, 124], [186, 129], [214, 127], [228, 118], [242, 124]],
+    // Plan item 442 (critique: the raised brow didn't read at title size): her viewer-right brow arches 4 units higher.
+    smirk: [[159, 131], [172, 124], [186, 129], [214, 125], [229, 113], [243, 121]],
     wink: [[159, 133], [172, 127], [186, 131], [214, 125], [228, 116], [242, 122]],
     delighted: [[159, 128], [172, 120], [186, 125], [214, 125], [228, 120], [241, 128]],
     determined: [[159, 124], [173, 130], [187, 140], [213, 140], [227, 130], [241, 124]],
