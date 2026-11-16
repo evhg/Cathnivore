@@ -32,8 +32,23 @@ const stableMask = async (p) => {
 }
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-for (const [i, cls] of ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer'].entries()) {
-  await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000); if (dir) await p.screenshot({ path: `${dir}/coat-${cls}-D.png`, timeout: 120000 })
+// COATS='butcher=4f6a24,fixer=6c2458' tries other coat colours without a rebuild (a wrapper on FrontCath.coat).
+const tryCoats = Object.fromEntries((process.env.COATS ?? '').split(',').filter(Boolean).map((s) => s.split('=')))
+const CLASSES = (process.env.CLASSES ?? 'ghost,butcher,gunslinger,wirewitch,fixer').split(',')
+const ALL = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
+// A CLASSES entry 'butcher:2f6b3a' measures that class in that coat (several tries in one run); NOFIG=1 skips the
+// silhouette masks (about half the run).
+for (const entry of CLASSES) {
+  const [cls, hexTry] = entry.split(':')
+  const i = ALL.indexOf(cls)
+  if (hexTry) tryCoats[cls] = hexTry
+  else if (CLASSES.some((e) => e.startsWith(cls + ':'))) delete tryCoats[cls]
+  await p.evaluate((hex) => {
+    const c = window.cathodeFront.scene().cath
+    c.__coat ??= c.coat.bind(c)
+    c.coat = hex ? (col) => { const x = c.coatMats[0].color.clone(); x.setHex(parseInt(hex, 16)); c.__coat(col ? x : null) } : c.__coat
+  }, tryCoats[cls] ?? null)
+  await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000); if (dir) await p.screenshot({ path: `${dir}/coat-${entry.replace(":", "-")}-D.png`, timeout: 120000 })
   const shotA = await p.screenshot({ timeout: 120000 })
   // Her coat alone, then her whole figure (coat, kit, umbrella; not the contact shadow), drawn in one shared flat
   // green (no fog, no tone mapping); shots repeat until the mask's size holds (a material still compiling is
@@ -51,12 +66,14 @@ for (const [i, cls] of ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer'].
   await paint(true)
   const coat = await stableMask(p)
   await restore()
-  await paint(false)
-  const fig = await stableMask(p)
-  if (dir) require('fs').writeFileSync(`${dir}/fig-${cls}-D.png`, fig.png)
-  await restore()
-  masks[cls] = fig.mask
-  out[cls] = await p.evaluate(async ([a, m]) => {
+  if (!process.env.NOFIG) {
+    await paint(false)
+    const fig = await stableMask(p)
+    if (dir) require('fs').writeFileSync(`${dir}/fig-${cls}-D.png`, fig.png)
+    await restore()
+    masks[entry] = fig.mask
+  }
+  out[entry] = await p.evaluate(async ([a, m]) => {
     const i = new Image(); i.src = 'data:image/png;base64,' + a; await i.decode(); const W = i.width, H = i.height; const cv = new OffscreenCanvas(W, H); const g = cv.getContext('2d'); g.drawImage(i, 0, 0); const d = g.getImageData(0, 0, W, H).data
     const at = (x, y) => m[y * W + x] === 1
     let r = 0, gg = 0, bl = 0, n = 0
@@ -78,7 +95,9 @@ const k = Object.keys(out), pr = []
 for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) { const a = lab(out[k[i]].rgb), c = lab(out[k[j]].rgb); pr.push(`${k[i]}-${k[j]} dE ${Math.hypot(a[0] - c[0], a[1] - c[1], a[2] - c[2]).toFixed(1)}`) }
 console.log(pr.join(' | '))
 const iou = []
+if (!process.env.NOFIG) {
 for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) { const a = masks[k[i]], c = masks[k[j]]; let I = 0, U = 0; for (let q = 0; q < a.length; q++) { I += a[q] & c[q]; U += a[q] | c[q] } iou.push(`${k[i]}-${k[j]} IoU ${(I / U).toFixed(3)}`) }
 console.log(Object.fromEntries(k.map((c) => [c, masks[c].reduce((s, v) => s + v, 0)])))
 console.log(iou.join(' | '))
+}
 await b.close()

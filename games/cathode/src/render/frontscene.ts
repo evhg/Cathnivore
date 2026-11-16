@@ -170,8 +170,10 @@ export const KEY_EASE = 12;
  * Plan item 434: lifted out of near-black (the five read as one grey coat, 3-11% apart): the Butcher's olive drab,
  * the Gunslinger's saddle-tan duster (the Butcher's apron already holds the oxblood), the Wirewitch's green teal, the
  * Fixer's plum wool (midnight blue sat on the Ghost's black); the Ghost alone stays in black.
+ * Slice 6: under his red key the Butcher's olive rendered brown (dE 10 from the Ghost and the Fixer), so he wears
+ * bottle green, and the Fixer's plum is a step warmer (it measured dE 9 from the Ghost); `scripts/cathode-coatcolour.mjs`.
  */
-const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x4f6a24, gunslinger: 0x7a4a26, wirewitch: 0x0f7d6c, fixer: 0x6c2458 };
+const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f6b3a, gunslinger: 0x7a4a26, wirewitch: 0x0f7d6c, fixer: 0x7a2a66 };
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
