@@ -490,3 +490,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane B: a spec that jumps a Hedgerow level past round 1 switches 'Keep going' off first (#btn-auto), as round-chips now does: from level 6 its 2 s countdown sends the next round and re-draws the panel mid-check.
 - 2026-11-16 lane B: 458: Runnel's phone dock draws Cath's half figure (host.ts drawFace) rather than a separate valley figure; the valley figure stays hidden on a phone (item 407's dock holds).
 - 2026-11-16 19:05 lane A: item 449's 'weapon does not intersect the coat' is measured by rays cast in toward the coat lathe's axis (the coat is a deformed ellipse, so bounds would flag every slung gun); 5 mm tolerance.
+- 2026-11-16 lane B: 460's '≤ 10 bordered containers' counts the panel outside the seed packets (they are the rack's items and stay cards, items 361/408); the spec allows none there.

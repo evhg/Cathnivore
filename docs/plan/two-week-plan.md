@@ -4269,7 +4269,9 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
 - **Size:** 3
 
-## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(lane B, in progress)*
+## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes
+
+Progress (lane B, 2026-11-16 19:40, slice 1, `components.css` end block): at D everything under the seed rack is one ruled ledger page: the round ticket, Cath's tip, the tabs (the open one underlined in ink), the lock row and the rounds ahead (ruled columns) lose their boxes and rings; with the ticket's frame gone its round name and vehicle names fit. The lock row's label reads 'Not covered' (no wider: its chip had 2 px spare). Spec hedgerow-ledger: no box 60 px+ with a border or ring in the panel outside the seed packets (decision: the packets are the rack's items, items 361/408, and stay cards; her portrait ring is a frame). Shots scratchpad p460-before, p460-c, p460-34. Left: Cath's portrait beside the round number in one 'This round' row; Go's weight against the bar above it; phone untouched (the drawer).
 - **Why:** `hedge-l21-2d-D` (885-1290 x 75-890) holds about 25 bordered boxes in 5 styles (tray, round box, tip card, tabs, three Coming-up cards, a 4-button bar, Go), all competing with the field; the Notebook teaser "Unanswered Airborne · Scarecrow +4 more" is cryptic. Same on `hedge-l34-2d-D`.
 - **Build:** three zones on one paper with ruled dividers, not borders: Seeds (the tray), This round (Cath's portrait beside the round number, vehicle counts, her tip in one row), Coming up (a hand-ruled forecast strip: round, icon, count); the Notebook teaser in plain words; Go the one strongest element.
 - **Accept:** ≤ 10 bordered containers and ≤ 3 border colours in the panel at 1440x900 (an e2e counts them); the field's share of the screen doesn't shrink; ui-css-lint holds; Hedgerow play specs pass at P and D.
