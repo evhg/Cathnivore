@@ -145,15 +145,15 @@
     translate: -50% 0;
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
-  /* Plan item 325: the bubble sits over her head (beside her face it would cover Rivermead), so its tail is a long
-     slender one that runs down past the left of her hair to her cheek, its tip within 30 px of her mouth. The line
-     paints over her art for it. */
+  /* Plan item 325: the bubble sits over her head (beside her face it would cover Rivermead). Plan item 442 (critique):
+     its tail is a short one pointing down at her and stopping above her hair; since item 444 set her behind the
+     crates, item 325's long tail to her cheek ran straight through her face. */
   .cmp-map-host .cmp-cath-line { z-index: var(--z-raised); }
   .cmp-map-host .cmp-cath-line::after {
-    left: 64px;
-    bottom: -118px;
-    width: 26px;
-    height: 120px;
+    left: 72px;
+    bottom: -20px;
+    width: 22px;
+    height: 22px;
     translate: none;
     clip-path: polygon(0 0, 62% 0, 100% 100%);
   }
