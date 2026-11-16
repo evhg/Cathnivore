@@ -130,6 +130,15 @@ function glow(b: Brush, x: number, y: number, r: number, color: string, a = 0.9)
   return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${b.rad([[0, color, a], [0.35, color, a * 0.45], [1, color, 0]])}"/>`;
 }
 
+/**
+ * Plan item 441: an inked sun, not an airbrushed glow: the halo as three flat rings (each a step fainter), the disc
+ * ringed by a thin warm line. The feathered radial glow read as a photograph's flare once the banner magnified it.
+ */
+function inkSun(x: number, y: number, r: number, halo: string, disc: string): string {
+  const ring = (k: number, a: number) => `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r * k)}" fill="${halo}" opacity="${a}"/>`;
+  return ring(4.6, 0.16) + ring(3, 0.22) + ring(1.9, 0.32) + `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${disc}" stroke="#e7b95c" stroke-width=".8"/>`;
+}
+
 /** A painterly cumulus: puffs under one top-lit gradient, a flat clipped base, a lit rim toward the sun. */
 function cloud(b: Brush, x: number, y: number, w: number, light: string, shade: string, opacity = 1, lx = -1, flat = true): string {
   const h = w * 0.38;
@@ -471,7 +480,7 @@ function clumps(pts: [number, number, number][], dark: string, light: string, lx
 function brindle(b: Brush): string {
   const lx = -1;
   let o = sky(b, [[0, "#7fb9e0"], [0.5, "#c3e0ec"], [0.82, "#f6ead0"], [1, "#fde3b8"]]);
-  o += glow(b, 118, 62, 160, "#fff4d0", 0.95) + `<circle cx="118" cy="62" r="13" fill="#fffbea"/>`;
+  o += inkSun(118, 62, 13, "#fff4d0", "#fffbea");
   o += cloud(b, 345, 66, 130, "#ffffff", "#c9d6e3") + cloud(b, 52, 50, 90, "#ffffff", "#d1dce6", 0.95) + cloud(b, 446, 104, 62, "#fffaf0", "#d9dfe0", 0.9);
   o += streak(b, 220, 30, 90, "#ffffff", 0.5) + streak(b, 250, 36, 50, "#ffffff", 0.4);
   const far = roll(b, 122, 9, 1.4);
@@ -589,7 +598,7 @@ function granite(b: Brush, x: number, y: number, w: number, h: number, d: number
 function highmoor(b: Brush): string {
   const lx = 1;
   let o = sky(b, [[0, "#4a82bd"], [0.4, "#8cb5d8"], [0.76, "#e3e1d4"], [1, "#f2dcbc"]]);
-  o += glow(b, 404, 52, 180, "#fff1c8", 0.9) + `<circle cx="404" cy="52" r="11" fill="#fffbec"/>`;
+  o += inkSun(404, 52, 11, "#fff1c8", "#fffbec");
   o += streak(b, 120, 20, 170, "#ffffff", 0.5) + streak(b, 330, 16, 120, "#ffffff", 0.45);
   o += bigCloud(b, 270, 70, 210, DAY_CLOUD, lx) + bigCloud(b, 68, 66, 140, DAY_CLOUD, lx, 0.95) + bigCloud(b, 456, 112, 76, DAY_CLOUD, lx, 0.9);
   o += shafts(b, 404, 52, [-0.5, -0.68, -0.86], 270, "#fff4d0", 0.13);
@@ -674,7 +683,7 @@ function egret(x: number, y: number, s: number, dir: number): string {
 
 function saltmarsh(b: Brush): string {
   let o = sky(b, [[0, "#86b8d0"], [0.45, "#d2e3e2"], [0.8, "#fbe8cc"], [1, "#ffd9ac"]]);
-  o += glow(b, 340, 104, 200, "#fff0c8", 0.95) + `<circle cx="340" cy="104" r="12" fill="#fff9e6"/>`;
+  o += inkSun(340, 104, 12, "#fff0c8", "#fff9e6");
   for (const [x, y, w] of [[110, 40, 190], [300, 26, 150], [430, 56, 130], [60, 72, 110], [210, 62, 100], [400, 84, 90]] as const) o += streak(b, x, y, w, "#ffffff", 0.55) + streak(b, x + 18, y + 5, w * 0.7, "#f8cfae", 0.5);
   // Plan item 115: the sea-fog bank sat behind the act plate as a dusky pink blob; it is a lit cumulus in the open sky.
   // Plan item 139: it still read as a flat pink smear: the banner's crop cut its top flat and its belly was the sky's
@@ -794,7 +803,7 @@ function willow(b: Brush, x: number, y: number, s: number, lx: number): string {
 function rivermead(b: Brush): string {
   const lx = -1;
   let o = sky(b, [[0, "#4f5e76"], [0.3, "#8a9bb0"], [0.62, "#e1e1d6"], [1, "#f8eacb"]]);
-  o += glow(b, 150, 92, 200, "#fff2cc", 0.95) + `<circle cx="150" cy="92" r="12" fill="#fffbec"/>`;
+  o += inkSun(150, 92, 12, "#fff2cc", "#fffbec");
   o += ["#e88a7a", "#efc46a", "#9dcf86", "#7aaedc", "#a08ad0"].map((c, i) => `<path d="M300 152A${100 - i * 4} ${104 - i * 4} 0 0 1 ${f(500 - i * 8)} 152" fill="none" stroke="${c}" stroke-width="4" opacity=".26"/>`).join("");
   // storm clouds with depth, lit where they break around the sun
   o += `<rect x="-10" y="-10" width="${SW + 20}" height="60" fill="${b.lin([[0, "#36415a"], [1, "#56647a", 0]])}"/>`;
@@ -1055,7 +1064,7 @@ function shingleBay(b: Brush): string {
 function theRift(b: Brush): string {
   const lx = -1;
   let o = sky(b, [[0, "#2f2c5c"], [0.35, "#7d4d78"], [0.62, "#e07a5f"], [0.82, "#f6b26b"], [1, "#ffd99a"]]);
-  o += glow(b, 110, 138, 200, "#ffd18a", 0.95) + `<circle cx="110" cy="138" r="18" fill="#fff0c6"/>`;
+  o += inkSun(110, 138, 18, "#ffd18a", "#fff0c6");
   for (const [x, y, w] of [[260, 70, 260], [120, 92, 200], [390, 104, 150], [60, 60, 160], [330, 44, 180]] as const) o += streak(b, x, y, w, "#f7a07a", 0.6) + `<ellipse cx="${x + 10}" cy="${y + 2.5}" rx="${f(w * 0.42)}" ry="${f(w * 0.022)}" fill="#ffd9a8" opacity=".55"/>`;
   const far = roll(b, 136, 6, 1.6);
   o += land(far, b.lin([[0, "#7d5a7a"], [1, "#8d6a7c"]]));
@@ -1111,7 +1120,7 @@ function theRift(b: Brush): string {
 function theBallot(b: Brush): string {
   const lx = -1;
   let o = sky(b, [[0, "#78b6e0"], [0.55, "#c9e1ea"], [1, "#f6ecd0"]]);
-  o += glow(b, 90, 50, 130, "#fff5d6", 0.9) + `<circle cx="90" cy="50" r="12" fill="#fffbea"/>`;
+  o += inkSun(90, 50, 12, "#fff5d6", "#fffbea");
   o += cloud(b, 360, 46, 120, "#ffffff", "#d0dce6") + cloud(b, 180, 28, 80, "#ffffff", "#d6e0e8", 0.9) + cloud(b, 460, 84, 60, "#ffffff", "#dbe2e6", 0.85);
   const far = roll(b, 132, 6, 1.6);
   o += land(far, b.lin([[0, "#a8c0c4"], [1, "#b6cbbf"]]));
