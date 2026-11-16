@@ -4269,7 +4269,9 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
 - **Size:** 3
 
-## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(lane A, in progress)*
+## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes
+
+Progress (lane A, 2026-11-16 20:30, slice 2, handed back): the rack's 'More seeds at level N' note is a pencilled line, not a dashed box; `hedgerow-ledger` now counts the panel's containers at 1440x900 on levels 21 and 34 (60x24 px+, three or four bordered sides or a ring; the seed packets counted as their one rack): 3 now (panel, rack, Cath's plate face is under 60 px), bound 10, colours 3. Left: Cath's portrait beside the round number in one 'This round' row, Go's weight, P/D play specs.
 
 Progress (lane B, 2026-11-16 19:40, slice 1, `components.css` end block): at D everything under the seed rack is one ruled ledger page: the round ticket, Cath's tip, the tabs (the open one underlined in ink), the lock row and the rounds ahead (ruled columns) lose their boxes and rings; with the ticket's frame gone its round name and vehicle names fit. The lock row's label reads 'Not covered' (no wider: its chip had 2 px spare). Spec hedgerow-ledger: no box 60 px+ with a border or ring in the panel outside the seed packets (decision: the packets are the rack's items, items 361/408, and stay cards; her portrait ring is a frame). Shots scratchpad p460-before, p460-c, p460-34. Left: Cath's portrait beside the round number in one 'This round' row; Go's weight against the bar above it; phone untouched (the drawer).
 - **Why:** `hedge-l21-2d-D` (885-1290 x 75-890) holds about 25 bordered boxes in 5 styles (tray, round box, tip card, tabs, three Coming-up cards, a 4-button bar, Go), all competing with the field; the Notebook teaser "Unanswered Airborne · Scarecrow +4 more" is cryptic. Same on `hedge-l34-2d-D`.
