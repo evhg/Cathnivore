@@ -86,8 +86,11 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
               const dx = p1.x - p0.x
               const dy = p1.y - p0.y
               const dl = Math.hypot(dx, dy)
-              // Across the whole ditch (its bed and both banks, about 11% of the tile's width), not just the bed.
-              const reach = Math.max(4, Math.round(bb.width * 0.055))
+              // Across the whole ditch (its bed and both banks: the cut's full stroke, in screen px), not just the bed.
+              // A fixed share of the tile (5.5%) stopped 1 px short of the shaded bank on a phone daily (2026-11-16),
+              // since plan item 264 widened the cut to 25.2 units.
+              const m = bed.getScreenCTM()!
+              const reach = Math.max(4, Math.ceil((25.2 / 2) * Math.hypot(m.a, m.b)) + 1)
               const along: number[] = []
               for (let f = 0.35; f <= 0.8; f += 0.05) {
                 let best = 0

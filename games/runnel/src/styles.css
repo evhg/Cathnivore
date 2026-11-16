@@ -4885,6 +4885,11 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .tile-bevel { stroke-width: 1.5px; }
 .keyboard .cell:focus .tile { stroke: var(--focus); stroke-width: 3.5px; }
 @media (max-width: 600px) { .cell:not(.stone) .tile { stroke-width: 2.5px; } .tile-bevel { stroke-width: 1.5px; } }
+/* A pinned (fixed) tile keeps the solid earth rim every tile has, so its edge reads on a pale valley (its dashed rim
+   fell to 2.4:1 where the gaps landed on a fallow tile's sides, the 2026-11-16 daily); the stitch moves inside, onto
+   the bevel line, in the rim's earth. */
+.fixed .tile { stroke-dasharray: none; }
+.fixed .tile-bevel { stroke: color-mix(in srgb, var(--tile-rim) 70%, transparent); stroke-dasharray: 4 3; }
 /* Plan item 389: the valley at the tiles' grain (--tile-e on the stage is a tile's edge in px, set by setGrain): a
    person's 48-unit box 0.38 of an edge (the figure itself about 0.31), a sheep 0.3, the cart 0.44; Bea waiting at
    her garden and running out to it the same; the spring house 1.2 edges wide (a cottage about four people tall, at
