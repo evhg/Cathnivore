@@ -4277,7 +4277,7 @@ Progress (lane B, 2026-11-16 19:40, slice 1, `components.css` end block): at D e
 - **Accept:** ≤ 10 bordered containers and ≤ 3 border colours in the panel at 1440x900 (an e2e counts them); the field's share of the screen doesn't shrink; ui-css-lint holds; Hedgerow play specs pass at P and D.
 - **Size:** 2
 
-## 461. [ ] Cathnivore phone setup: a composed stall, not a scrolling form
+## 461. [ ] Cathnivore phone setup: a composed stall, not a scrolling form *(lane A, in progress)*
 - **Why:** `cath-setup-P` is a stack of chips and boxes; Difficulty sits below the fold under the Start bar with the MORE pill over it (285-365 x 763-783); the map choice is three tiny thumbnails (y 660-710). The desktop's gingham table, market card and pins are lost on the phone.
 - **Build:** the gingham table as the phone backdrop; the three steps as swipeable panels with a dot rail (producers first, the two picks large); the map as one large hex preview with arrows; difficulty as the desktop's hanging tags with Cath's pins; Start fixed; Cath's line reacts per step.
 - **Accept:** at 390x844 every step's controls fully visible with no page scroll; Start overlaps no control (bounding-box e2e); map preview ≥ 200 px wide; all setup e2e pass on phone and desktop.
