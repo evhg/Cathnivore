@@ -141,7 +141,7 @@ function vignetteRegions(chapter: Chapter): RegionId[] {
 const BUNTING_FLAGS = 7
 
 /** Item 309: a small scene per chapter, in the vignette's front left (vignette units, 132 x 88). */
-function ChapterMotif({ id }: { id: string }) {
+function ChapterMotif({ id, at = 'translate(5 68)' }: { id: string; at?: string }) {
   const ink = { stroke: 'var(--ink)', strokeWidth: 0.7, strokeLinejoin: 'round' as const }
   let art: React.ReactNode = null
   if (id === 'word-of-mouth') {
@@ -203,11 +203,135 @@ function ChapterMotif({ id }: { id: string }) {
   }
   if (!art) return null
   return (
-    <g className="cmp-vig-mark cmp-vig-motif" data-motif={id} transform="translate(5 68)">
+    <g className="cmp-vig-mark cmp-vig-motif" data-motif={id} transform={at}>
       {art}
     </g>
   )
 }
+/**
+ * Plan item 435: each chapter's print is its own composition, not one row of landmarks with the sky recoloured:
+ * where the horizon sits, what stands largest and where the stall is all change per chapter, so the six read apart in
+ * greyscale at thumbnail size (e2e/campaign-prints.spec.ts measures it). `ground` draws the land (region-coloured,
+ * dimmed at dusk like the hills), `marks` the chapter's landmarks large, `stall` places the producer's stall.
+ */
+interface ChapterScene {
+  far: string
+  ground: React.ReactNode
+  marks: { region: RegionId; x: number; y: number; s: number }[]
+  motif: string
+  stall: { x: number; y: number; s: number }
+  sun?: [number, number]
+  front?: React.ReactNode
+  /** The phone tab's crop: which side of the scene its subject stands on. */
+  crop?: 'xMinYMax' | 'xMidYMax' | 'xMaxYMax'
+}
+const LINE = { stroke: 'var(--ink)', strokeWidth: 0.7, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
+const CHAPTER_SCENES: Record<string, ChapterScene> = {
+  // The coast: a low horizon over open sea, the lighthouse tall on its spit at the right, the queue at the stall on
+  // the beach at the left with the talk going round.
+  'word-of-mouth': {
+    crop: 'xMaxYMax',
+    far: 'M0 50 Q30 44 62 49 T132 46 V88 H0 Z',
+    ground: (
+      <>
+        <path className="cmp-vig-hill cmp-vig-coast" d="M-2 89 V55 Q34 52 66 55 T134 54 V89 Z" />
+        <path className="cmp-vig-hill cmp-vig-pasture" d="M86 89 V66 Q98 56 134 58 V89 Z" />
+        <path className="cmp-vig-hill cmp-vig-crop" d="M-2 89 V74 Q30 68 70 76 L74 89 Z" />
+      </>
+    ),
+    marks: [{ region: 'saltmarsh', x: 108, y: 38, s: 2.05 }],
+    motif: 'translate(38 52) scale(1.45)',
+    stall: { x: 4, y: 46, s: 1.05 },
+    sun: [70, 18],
+    front: (
+      <g className="cmp-vig-mark">
+        <path d="M74 62 q4 -2 8 0 M58 60 q4 -2 8 0 M80 70 q3 -1.6 6 0" fill="none" {...LINE} stroke="var(--paper-hi)" />
+      </g>
+    ),
+  },
+  // The orchard valley: ploughed rows running away to the horizon fill the foreground, the old oak huge at the
+  // right, the stall at the head of the rows.
+  'growing-season': {
+    crop: 'xMaxYMax',
+    far: 'M0 44 Q40 34 80 42 T132 40 V88 H0 Z',
+    ground: (
+      <>
+        <path className="cmp-vig-hill cmp-vig-crop" d="M-2 89 V48 Q66 44 134 48 V89 Z" />
+        {Array.from({ length: 6 }, (_, k) => {
+          const x0 = -30 + k * 36
+          return <path key={k} className="cmp-vig-furrow" d={`M${60 + k * 2.6} 48 L${63 + k * 2.6} 48 L${x0 + 20} 89 L${x0} 89 Z`} />
+        })}
+      </>
+    ),
+    marks: [
+      { region: 'oakvale', x: 104, y: 35, s: 2.05 },
+      { region: 'rivermead', x: 44, y: 38, s: 0.75 },
+    ],
+    motif: 'translate(70 70) scale(0.9)',
+    stall: { x: 4, y: 48, s: 1.1 },
+    sun: [76, 14],
+  },
+  // The plan: the river winds down from the mill at the top left, and the plan itself, pinned to its easel, stands
+  // large in the foreground at the right.
+  'the-plan': {
+    far: 'M0 30 Q30 22 64 28 T132 24 V88 H0 Z',
+    ground: (
+      <>
+        <path className="cmp-vig-hill cmp-vig-pasture" d="M-2 89 V34 Q60 28 134 34 V89 Z" />
+        <path className="cmp-vig-hill cmp-vig-coast" d="M40 34 Q30 48 52 56 T44 89 H66 Q80 64 60 54 T52 34 Z" />
+      </>
+    ),
+    marks: [
+      { region: 'rivermead', x: 22, y: 30, s: 1.7 },
+      { region: 'brindleHills', x: 100, y: 26, s: 0.75 },
+    ],
+    motif: 'translate(70 38) scale(2.3)',
+    stall: { x: 2, y: 54, s: 1.05 },
+    sun: [114, 12],
+  },
+  // A cellar lane by the harbour: a tall stone wall fills the left with its door lit, the docks and a boat on the
+  // water at the right.
+  'friends-in-low-places': {
+    crop: 'xMinYMax',
+    far: 'M0 52 Q50 46 132 50 V88 H0 Z',
+    ground: (
+      <>
+        <path className="cmp-vig-hill cmp-vig-coast" d="M-2 89 V58 Q66 54 134 58 V89 Z" />
+        <path className="cmp-vig-hill cmp-vig-capital" d="M-2 89 V16 H18 V10 H34 V18 H52 V12 H70 V89 Z" />
+        {[24, 34, 44, 54, 64, 74].map((y) => (
+          <path key={y} className="cmp-vig-course" d={`M0 ${y} H70`} />
+        ))}
+      </>
+    ),
+    marks: [{ region: 'shingleBay', x: 108, y: 56, s: 1.8 }],
+    motif: 'translate(6 50) scale(1.8)',
+    stall: { x: 58, y: 56, s: 0.95 },
+    sun: [100, 14],
+  },
+  // Market day in the capital: the cross huge in the square, a row of market awnings across the foreground, the
+  // town's roofs behind.
+  kingsmarket: {
+    far: 'M0 40 H10 L16 32 L22 40 H40 V30 H50 V40 H82 L90 30 L98 40 H112 V32 H122 V40 H132 V88 H0 Z',
+    ground: <path className="cmp-vig-hill cmp-vig-capital" d="M-2 89 V50 Q66 46 134 50 V89 Z" />,
+    marks: [{ region: 'kingsmarket', x: 62, y: 44, s: 2.1 }],
+    motif: 'translate(100 14) scale(0.9)',
+    stall: { x: 2, y: 58, s: 1 },
+    sun: [116, 50],
+    front: (
+      <g className="cmp-vig-mark">
+        {[0, 1].map((t) => (
+          <g key={t} transform={`translate(${91 + t * 21} 60)`}>
+            <path d="M1 6 V22 M19 6 V22" fill="none" {...LINE} />
+            <rect x={0} y={16} width={20} height={9} rx={1} fill="var(--wood)" {...LINE} />
+            <path d="M-2 6 H22 L19 0 H1 Z" fill={t ? 'var(--pasture)' : 'var(--sea)'} {...LINE} />
+            <path d="M4 0 H8 L9 6 H5 Z M12 0 H16 L17 6 H13 Z" fill="var(--paper-hi)" stroke="none" />
+          </g>
+        ))}
+      </g>
+    ),
+  },
+}
+
 function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; state: 'locked' | 'current' | 'done'; mini?: boolean }) {
   const locked = state === 'locked'
   const producer = chapter.producers[0]
@@ -215,11 +339,14 @@ function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; s
   const homes = new Set(CHAPTER_HOMES[chapter.id] ?? [])
   const n = regions.length
   const slot = VIG_W / n
+  const scene = CHAPTER_SCENES[chapter.id]
+  const sun = scene?.sun ?? [18, 15]
+  const stallAt = scene ? `translate(${scene.stall.x} ${scene.stall.y}) scale(${scene.stall.s})` : `translate(${VIG_W - 34} ${VIG_H - 33})`
   return (
     <svg
       className={(locked ? 'cmp-vignette is-sealed' : state === 'done' ? 'cmp-vignette is-won' : 'cmp-vignette') + (mini ? ' is-mini' : '')}
       viewBox={`0 0 ${VIG_W} ${VIG_H}`}
-      preserveAspectRatio={mini ? 'xMidYMax slice' : undefined}
+      preserveAspectRatio={mini ? `${scene?.crop ?? 'xMidYMax'} slice` : undefined}
       data-regions={regions.join(' ')}
       data-chapter-art={mini ? undefined : state}
       data-chapter={chapter.id}
@@ -235,7 +362,21 @@ function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; s
           ))}
         </g>
       )}
-      <circle className="cmp-vig-sun" cx={18} cy={15} r={7} />
+      <circle className="cmp-vig-sun" cx={sun[0]} cy={sun[1]} r={7} />
+      {scene ? (
+        <>
+          <path className="cmp-vig-far" d={scene.far} />
+          {scene.ground}
+          {scene.marks.map((m) => (
+            <g key={m.region} className="cmp-vig-mark" transform={`translate(${m.x} ${m.y}) scale(${m.s})`}>
+              <Landmark kind={LANDMARKS[m.region]!.kind} />
+            </g>
+          ))}
+          <ChapterMotif id={chapter.id} at={scene.motif} />
+          {scene.front}
+        </>
+      ) : (
+        <>
       <path className="cmp-vig-far" d={`M0 50 Q22 36 44 46 T88 42 T${VIG_W} 44 V${VIG_H} H0 Z`} />
       {regions.map((id, i) => {
         const x0 = i * slot
@@ -264,9 +405,11 @@ function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; s
       {/* Item 309: each chapter's own motif in the front left, so no two plates read alike (drawn as a landmark, so a
           locked chapter shows it as line art too). */}
       <ChapterMotif id={chapter.id} />
+        </>
+      )}
       {/* The producer at their stall, front right: a striped awning over a counter, their bust behind it. */}
       {producer && (
-        <g className="cmp-vig-stall" transform={`translate(${VIG_W - 34} ${VIG_H - 33})`}>
+        <g className="cmp-vig-stall" transform={stallAt}>
           <g transform="translate(5 -4)">
             <Portrait character={producer} size={20} />
           </g>
@@ -293,14 +436,17 @@ function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; s
           })}
           {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
             const a = (k / 8) * Math.PI * 2
-            return <path key={`ray-${k}`} className="cmp-vig-ray" d={`M${(18 + Math.cos(a) * 9).toFixed(1)} ${(15 + Math.sin(a) * 9).toFixed(1)} L${(18 + Math.cos(a) * 12).toFixed(1)} ${(15 + Math.sin(a) * 12).toFixed(1)}`} />
+            return <path key={`ray-${k}`} className="cmp-vig-ray" d={`M${(sun[0] + Math.cos(a) * 9).toFixed(1)} ${(sun[1] + Math.sin(a) * 9).toFixed(1)} L${(sun[0] + Math.cos(a) * 12).toFixed(1)} ${(sun[1] + Math.sin(a) * 12).toFixed(1)}`} />
           })}
         </g>
       )}
       {/* Plan item 279: a locked chapter's scene waits at dusk under the co-op's wax seal: its land in colour, its
           landmarks and stall in silhouette, a seal pressed with a leaf at its heart. */}
+      {/* Item 435: the locked chapter is a letter not yet opened: the envelope's flap folds down over the scene to the
+          co-op's seal at its point. */}
+      {locked && <path className="cmp-vig-flap" d={`M1 1 L${VIG_W / 2} 34 L${VIG_W - 1} 1 Z`} />}
       {locked && (
-        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2 - 4} 17) scale(0.82)`}>
+        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2} 32) scale(0.82)`}>
           <path
             className="cmp-vseal-wax"
             d={Array.from({ length: 12 }, (_, k) => {

@@ -1457,7 +1457,8 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
     box-shadow: 0 2px 0 var(--rule);
   }
   /* Plan item 415: each tab is a print of its chapter's scene, cropped to the land and its landmarks (the stall and
-     the scene's own seal stand down at this size), its number on a medallion in the tab's state colour. */
+     the scene's own seal stand down at this size), its number on a medallion in the tab's state colour
+     (item 435: in the sky's corner, so the print's subject reads below it). */
   .cmp-tab { position: relative; min-height: 52px; overflow: visible; isolation: isolate; }
   .cmp-tab > .cmp-vignette.is-mini {
     position: absolute;
@@ -1472,10 +1473,11 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-tab-num {
     display: grid;
     place-items: center;
-    align-self: end;
+    align-self: start;
+    justify-self: start;
     width: 24px;
     height: 24px;
-    margin-bottom: 3px;
+    margin: 3px 0 0 3px;
     border-radius: 50%;
     background: var(--surface);
     box-shadow: inset 0 0 0 1.5px var(--rule), 0 1px 2px color-mix(in srgb, var(--ink) 35%, transparent);
@@ -1574,3 +1576,15 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
 }
 :root.reduce-motion .campaign-screen .cmp-ribbon-end { animation: cmp-ribbon-fade 600ms linear 1500ms both !important; }
 @keyframes cmp-ribbon-fade { from { opacity: 1; } to { opacity: 0; } }
+
+/* Plan item 435: each chapter's print is its own composition (CampaignScreen's CHAPTER_SCENES). */
+.cmp-vig-furrow { fill: color-mix(in srgb, var(--soil) 70%, var(--region-crop)); stroke: var(--ink); stroke-width: 0.5; stroke-linejoin: round; }
+.cmp-vig-course { fill: none; stroke: color-mix(in srgb, var(--ink) 35%, var(--region-capital)); stroke-width: 0.5; }
+.cmp-vignette.is-sealed .cmp-vig-furrow { filter: brightness(0.78); stroke: var(--ink-on-fixed-fill); }
+.cmp-vig-flap {
+  fill: color-mix(in srgb, var(--paper-on-fixed-fill) 22%, transparent);
+  stroke: color-mix(in srgb, var(--paper-on-fixed-fill) 70%, transparent);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+.cmp-vignette.is-mini .cmp-vig-flap { display: none; }
