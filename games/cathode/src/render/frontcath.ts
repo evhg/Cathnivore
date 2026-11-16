@@ -817,8 +817,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     : new THREE.MeshPhysicalMaterial({ color: 0x120e0d, roughness: 0.3, metalness: 0.05, clearcoat: 0.9, clearcoatRoughness: 0.18 });
   mats.push(bootMat);
   rimify(bootMat, 1);
-  // The sole's edge and the stacked heel: a worn tan leather, a step lighter than the upper.
-  const soleMat = new THREE.MeshStandardMaterial({ color: 0x4a3a30, roughness: 0.6, metalness: 0 });
+  // The sole's edge and the stacked heel: a dark worn leather, a step lighter than the upper (item 427: the tan edge
+  // read as a slipper's rim from the front).
+  const soleMat = new THREE.MeshStandardMaterial({ color: 0x2c221d, roughness: 0.6, metalness: 0 });
   mats.push(soleMat);
   rimify(soleMat, 0.7);
   // Plan item 247: both legs' tights are one mesh (one draw call, not two).
@@ -843,7 +844,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const along = (d: number, y: number) => V(ankle.x + Math.sin(out) * d * side, y, ankle.z + Math.cos(out) * d);
     const ball = along(0.1, 0.03);
     const toe = along(0.165, 0.016);
-    addS(turned(V(ankle.x, 0.205, ankle.z - 0.004), V(ankle.x, 0.08, ankle.z - 0.01), [[0, 0.036], [0.08, 0.036], [0.12, 0.031], [0.6, 0.029], [1, 0.034]], seg(12), 0.95), bootMat);
+    // Plan item 427: a mid-calf boot, its shaft following the shin up to a turned cuff (the ankle-high shaft over a
+    // pale sole read from the front as a clog under bare tights).
+    const cuff = ankle.clone().lerp(knee, (0.3 - ankle.y) / (knee.y - ankle.y));
+    addS(turned(V(cuff.x, 0.3, cuff.z - 0.002), V(ankle.x, 0.08, ankle.z - 0.01), [[0, 0.054], [0.05, 0.054], [0.08, 0.05], [0.45, 0.038], [0.72, 0.031], [1, 0.034]], seg(12), 0.95), bootMat);
     addS(turned(along(-0.03, 0.1), ball, [[0, 0.034], [0.4, 0.034], [1, 0.03]], seg(10), 0.7, Math.PI / 2), bootMat);
     addS(turned(ball, toe, [[0, 0.03], [0.5, 0.026], [0.85, 0.014], [1, 0.004]], seg(10), 0.55, Math.PI / 2), bootMat);
     // The sole: a lighter slab under the toe box, its edge standing proud of the upper, and the arch's welt rising
