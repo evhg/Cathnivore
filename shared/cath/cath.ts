@@ -966,13 +966,19 @@ function hand(kind: HandKind, x: number, y: number, rot: number, cloth: Cloth): 
     ].join('')
   } else if (kind === 'fist' || kind === 'point' || kind === 'grip') {
     body = [
-      kind === 'point' ? finger(-4, -10, -4, -30, skin, line, 6.2, bare) : '',
+      // Plan item 442 (critique: a lone centred finger off a round fist read as a rude sign): the index rises from
+      // the thumb side, the thumb stands out sideways (an 'L': the idea gesture), and the three curled fingers show their knuckles.
+      kind === 'point' ? finger(-7, -10, -8.5, -30, skin, line, 6, bare) : '',
       `<path fill="${skin}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round" d="${fistD}"/>`,
       `<path fill="${shade}" opacity="0.6" d="M-12 8 C-14 0 -13 -6 -11 -9 C-9 -2 -7 4 -3 11 C-7 12 -10 11 -12 8 Z"/>`,
       kind === 'point' ? '' : brush([-8, -11], [-6, -6], [-7, -2], 0.2, 1, 0.2, crease),
       brush([-2, -12], [0, -7], [-1, -2], 0.2, 1, 0.2, crease),
       brush([4, -12], [6, -7], [5, -2], 0.2, 1, 0.2, crease),
-      `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-12 2 C-6 -1 2 0 6 3 C4 7 -4 8 -11 6 Z"/>`,
+      kind === 'point'
+        ? finger(-10, 1, -20, -6, skin, line, 5.6, false) +
+          brush([9, -11], [11, -7], [10, -2], 0.2, 1, 0.2, crease) +
+          `<path fill="none" stroke="${line}" stroke-width="1.1" stroke-linecap="round" d="M-3 -12.5 Q0 -14.5 3 -12.5 M3.5 -12.5 Q6.5 -14 9 -11.5"/>`
+        : `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-12 2 C-6 -1 2 0 6 3 C4 7 -4 8 -11 6 Z"/>`,
     ].join('')
   } else if (kind === 'chin') {
     // A loose fist under her chin, knuckles towards her (no lone finger: a raised one reads as a rude sign).
