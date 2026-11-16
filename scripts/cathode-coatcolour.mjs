@@ -9,8 +9,10 @@ const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIU
 const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 })
 await p.goto(base + '/nightshift/?shot')
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })) })
-await p.goto(base + '/nightshift/?play&rs=0.5')
-await p.waitForFunction(() => window.cathodeFront?.scene()?.dressed === 'ghost', null, { timeout: 200000 })
+if (!process.env.FROZEN) {
+  await p.goto(base + '/nightshift/?play&rs=0.5')
+  await p.waitForFunction(() => window.cathodeFront?.scene()?.dressed === 'ghost', null, { timeout: 200000 })
+}
 const out = {}
 const masks = {}
 const greenCount = async (p, png) => p.evaluate(async (c) => {
@@ -22,7 +24,9 @@ const stableMask = async (p) => {
   let last = -1, png, mask
   for (let t = 0; t < 8; t++) {
     const f = await p.evaluate(() => window.cathodeFront.scene().stats.frames)
-    await p.waitForFunction((f) => window.cathodeFront.scene().stats.frames > f + 3, f, { timeout: 60000 })
+    // A still stage draws only on setTime: redraw the same instant.
+    if (FROZEN) await p.evaluate(() => window.cathodeFront.scene().setTime(8))
+    await p.waitForFunction(([f, d]) => window.cathodeFront.scene().stats.frames > f + d, [f, FROZEN ? 0 : 3], { timeout: 60000 })
     png = await p.screenshot({ timeout: 120000 }); mask = await greenCount(p, png)
     const n = mask.reduce((s, v) => s + v, 0)
     if (last > 0 && Math.abs(n - last) < 0.01 * n) break
@@ -34,6 +38,8 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 // COATS='butcher=4f6a24,fixer=6c2458' tries other coat colours without a rebuild (a wrapper on FrontCath.coat).
 const tryCoats = Object.fromEntries((process.env.COATS ?? '').split(',').filter(Boolean).map((s) => s.split('=')))
+// FROZEN=1 measures each class on the pick's still stage (repeatable; see below).
+const FROZEN = !!process.env.FROZEN
 const CLASSES = (process.env.CLASSES ?? 'ghost,butcher,gunslinger,wirewitch,fixer').split(',')
 const ALL = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
 // A CLASSES entry 'butcher:2f6b3a' measures that class in that coat (several tries in one run); NOFIG=1 skips the
@@ -43,15 +49,32 @@ for (const entry of CLASSES) {
   const i = ALL.indexOf(cls)
   if (hexTry) tryCoats[cls] = hexTry
   else if (CLASSES.some((e) => e.startsWith(cls + ':'))) delete tryCoats[cls]
-  await p.evaluate((hex) => {
+  if (!FROZEN) await p.evaluate((hex) => {
     const c = window.cathodeFront.scene().cath
     c.__coat ??= c.coat.bind(c)
     c.coat = hex ? (col) => { const x = c.coatMats[0].color.clone(); x.setHex(parseInt(hex, 16)); c.__coat(col ? x : null) } : c.__coat
   }, tryCoats[cls] ?? null)
+  if (FROZEN) {
+    // The pick's still stage (?front=classpick&shot&t=8): one fixed pose and light per class, so runs repeat (the
+    // live audition's pose under SwiftShader timing moved the coat's mean ~18 luma run to run).
+    await p.goto(`${base}/nightshift/?front=classpick&shot&t=8&class=${cls}&rs=0.5`)
+    await p.waitForFunction((c) => window.cathodeFront?.scene()?.dressed === c, cls, { timeout: 200000 })
+    await p.evaluate((hex) => {
+      const c = window.cathodeFront.scene().cath
+      // The scene sets her coat every frame: wrap the setter, as the live path does.
+      c.__coat ??= c.coat.bind(c)
+      c.coat = hex ? (col) => { const x = c.coatMats[0].color.clone(); x.setHex(parseInt(hex, 16)); c.__coat(col ? x : null) } : c.__coat
+    }, tryCoats[cls] ?? null)
+    await p.waitForTimeout(2000)
+    await p.evaluate(() => window.cathodeFront.scene().setTime(8))
+    await p.waitForTimeout(1000)
+  } else {
   // A repeat of the class on stage wouldn't replay its audition (another pose, another light): step off it first.
   if (globalThis.__prevCls === cls) { await p.keyboard.press(String(((i + 1) % 5) + 1)); await p.waitForTimeout(3000) }
   globalThis.__prevCls = cls
-  await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000); if (dir) await p.screenshot({ path: `${dir}/coat-${entry.replace(":", "-")}-D.png`, timeout: 120000 })
+  await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000)
+  }
+  if (dir) await p.screenshot({ path: `${dir}/coat-${entry.replace(":", "-")}-D.png`, timeout: 120000 })
   const shotA = await p.screenshot({ timeout: 120000 })
   // Her coat alone, then her whole figure (coat, kit, umbrella; not the contact shadow), drawn in one shared flat
   // green (no fog, no tone mapping); shots repeat until the mask's size holds (a material still compiling is
