@@ -4169,6 +4169,9 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
     grid-area: cath; align-self: end; justify-self: start; position: relative; z-index: var(--z-lift);
     width: 150px; margin: 0 0 -4px 6px; padding: 0 0 10px; transform: rotate(-3deg); transform-origin: 50% 100%;
   }
+  /* Plan item 436: she holds the poster out at her side, over the table's edge, so 80%+ of her stands clear (it hid
+     half her figure, 32% of her box, at 1440x900). */
+  .setup[data-steps] .market-event[data-flyer] { width: 138px; margin-left: -56px; }
   .setup[data-steps] .market-event[data-flyer] .market-event-eyebrow { margin: 0 0 8px; padding: 8px 8px 6px; font-size: var(--fs-caption); letter-spacing: 0.08em; line-height: 1.2; }
   .setup[data-steps] .market-event[data-flyer] .market-event-kicker { display: none; }
   .setup[data-steps] .market-event[data-flyer] .market-event-name { font-size: var(--fs-h3); }

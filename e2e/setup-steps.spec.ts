@@ -27,6 +27,11 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     expect(cath.height).toBeGreaterThanOrEqual(300)
     const figBottom = Math.min(cath.y + cath.height, stand.y + stand.height)
     expect(start.y).toBeGreaterThanOrEqual(figBottom)
+    // Plan item 436: the week's poster is held out at her side: 80%+ of her figure (to the counter) stands clear of it.
+    const flyer = (await page.locator('.market-event[data-flyer]').boundingBox())!
+    const ox = Math.max(0, Math.min(cath.x + cath.width, flyer.x + flyer.width) - Math.max(cath.x, flyer.x))
+    const oy = Math.max(0, Math.min(figBottom, flyer.y + flyer.height) - Math.max(cath.y, flyer.y))
+    expect((ox * oy) / (cath.width * (figBottom - cath.y)), 'poster over her figure').toBeLessThanOrEqual(0.2)
     // Her bubble carries the week's event and her pick advice.
     await expect(page.locator('.setup-cath-says .says-event')).toBeVisible()
     await expect(page.locator('.setup-cath-says .says-pick')).toBeVisible()
