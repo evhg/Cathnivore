@@ -578,16 +578,17 @@ function brows(expression: CathExpression): string {
   // stay readable at companion/portrait scale (a gate-8 finding). Each brow is a filled brush stroke: full
   // at the inner head, tapering to a fine tail.
   const shapes: Record<CathExpression, [Pt, Pt, Pt, Pt, Pt, Pt]> = {
-    // Plan item 442 (critique: the raised brow didn't read at title size): her viewer-right brow arches 4 units higher.
-    smirk: [[159, 131], [172, 124], [186, 129], [214, 125], [229, 113], [243, 121]],
+    // Plan item 442 (critique: the raised brow didn't read at title size): her viewer-right brow arches 4 units higher,
+    // then 6 more (a second critique still read it as plain asymmetry), and both brows a touch slimmer.
+    smirk: [[159, 131], [172, 124], [186, 129], [214, 123], [228, 107], [243, 118]],
     wink: [[159, 133], [172, 127], [186, 131], [214, 125], [228, 116], [242, 122]],
     delighted: [[159, 128], [172, 120], [186, 125], [214, 125], [228, 120], [241, 128]],
     determined: [[159, 124], [173, 130], [187, 140], [213, 140], [227, 130], [241, 124]],
     worried: [[160, 138], [172, 130], [186, 120], [214, 120], [228, 130], [240, 138]],
   }
   const [a, b, c, d, e, f] = shapes[expression]
-  return `${brush(a, b, c, 0.8, 3.4, 3.6, C.brow, ' opacity="0.95"')}
-${brush(d, e, f, 3.6, 3.4, 0.8, C.brow, ' opacity="0.95"')}
+  return `${brush(a, b, c, 0.8, 3, 3.2, C.brow, ' opacity="0.95"')}
+${brush(d, e, f, 3.2, 3, 0.8, C.brow, ' opacity="0.95"')}
 ${brush([c[0] - 9, c[1] - 1], [c[0] - 4, c[1] - 2], [c[0], c[1]], 0.4, 1.4, 0.4, '#6A4A3C', ' opacity="0.5"')}`
 }
 
@@ -1066,7 +1067,12 @@ function lanePennant(): string {
 
 function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
-  const restLeft = sleeve('M133 386 Q130 412 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 188, cl)
+  // Plan item 442 (critique: the hanging hand read as a limp claw): her free hand in her jacket pocket, the forearm
+  // angling in to it and the cuff disappearing under the pocket's flap (redrawn over it in the outfit's cloth).
+  const restLeft =
+    sleeve('M133 386 Q131 421 145 442', 22, cl, 'M141 437 Q143 440 146 443') +
+    `<path fill="${cl.cuff}" stroke="${cl.line}" stroke-width="1.4" stroke-linejoin="round" d="M127 446 L168 451 L167 462 L128 457 Z"/>` +
+    `<path fill="${cl.shade}" opacity="0.35" d="M128 457 L167 462 L167 465 L128 460 Z"/>`
   switch (pose) {
     case 'clasped': {
       // Plan item 33: her hands folded at her waist, each on the end of its own sleeve: her right hand
