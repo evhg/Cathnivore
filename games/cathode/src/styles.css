@@ -934,6 +934,21 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-hold:focus-visible::after { transform: none; }
 .cp-hold:focus-visible .cp-hold-how { color: var(--blood-hot); }
 .cp-hold.is-holding .cp-hold-how { color: var(--blood-hot); }
+/* Plan item 434: the commit is the screen's one primary action, so it is a solid red button everywhere (it was the
+   words on a hairline at D while the phone had red tape): white on stamp red (6.6:1), 'Hold Enter' in the same
+   white, and the 600 ms hold a pale wash filling the whole button from the left. */
+.cp-hold {
+  align-items: center;
+  padding: calc(var(--u) * 16) calc(var(--u) * 20);
+  border-radius: calc(var(--u) * 3);
+  background: var(--stamp-red);
+  color: var(--on-blood);
+}
+.cp-hold::before { display: none; }
+.cp-hold-fill { top: 0; bottom: 0; height: auto; background: color-mix(in srgb, var(--on-blood) 24%, transparent); border-radius: inherit; }
+.cp-hold :is(.cp-hold-label, .cp-hold-how),
+.cp-hold:focus-visible .cp-hold-how, .cp-hold.is-holding .cp-hold-how { color: var(--on-blood); position: relative; }
+.cp-hold:hover { background: color-mix(in srgb, var(--stamp-red) 88%, var(--on-blood)); }
 
 /* Phones held sideways (844x390): the same three columns, tighter; the trees and how-it-plays step out. */
 @media (max-height: 560px) {
@@ -970,7 +985,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-edge { display: none; } /* the dossier keeps its dials; the edge fills the desktop case band */
   .cp-sheet::before { inset: -8px -10px -6px -12px; } /* px-ok */
   .cp-weapon-name { font-size: var(--fs-2); }
-  .cp-hold { padding: 10px 0 12px; } /* px-ok */
+  .cp-hold { padding: 10px 14px 12px; } /* px-ok */
   .cp-hold-label { font-size: var(--fs-2); }
 }
 /* Phones held upright: one column (the names across the top), the commit pinned to the bottom. */
@@ -1107,7 +1122,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-tree-name { font-size: var(--fs-1); color: var(--ink-2); }
   .cp-foot { position: relative; bottom: auto; margin-top: 4px; padding-top: 4px; background: none; } /* px-ok */
   .cp-cue { display: none; }
-  .cp-hold { width: 100%; padding: 14px 0 14px; } /* px-ok */
+  .cp-hold { width: 100%; padding: 14px 14px 14px; } /* px-ok */
   .cp-hold-label { font-size: var(--fs-2); }
 }
 /* Plan item 245: an upright phone names the chosen class large over her lower third, page dots under it, and
