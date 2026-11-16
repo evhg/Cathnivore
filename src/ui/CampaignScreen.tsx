@@ -333,6 +333,33 @@ const CHAPTER_SCENES: Record<string, ChapterScene> = {
   },
 }
 
+// Plan item 444: on a desktop the campaign's progress is a string of six pennants hung across the top band from the
+// signboard, one per chapter: a won chapter's flag is dyed and lifted, an unwon one is plain calico.
+const PENNANT_DYES = ['clay', 'wheat', 'pasture', 'sea', 'clay', 'wheat'] as const
+function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; completed: string[] }) {
+  const n = chapters.length
+  const W = 600
+  const won = chapters.filter((c) => completed.includes(c.id)).length
+  const sag = (t: number) => 10 + 34 * 4 * t * (1 - t)
+  return (
+    <svg className="cmp-pennants" viewBox={`0 0 ${W} 96`} role="img" aria-label={`${won} of ${n} chapters won`} data-won={won}>
+      <path className="cmp-pennants-line" d={`M0 10 Q${W / 2} 78 ${W} 10`} />
+      {chapters.map((c, i) => {
+        const t = (i + 0.5) / n
+        const x = t * W
+        const y = sag(t)
+        const isWon = completed.includes(c.id)
+        return (
+          <g key={c.id} className={isWon ? `cmp-pennant is-won is-${PENNANT_DYES[i % PENNANT_DYES.length]}` : 'cmp-pennant'} transform={`translate(${x} ${y})`} data-chapter={c.id}>
+            <path className="cmp-pennant-cloth" d="M-22 0 L22 0 L0 50 Z" />
+            <text className="cmp-pennant-num" x={0} y={20}>{i + 1}</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
 function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; state: 'locked' | 'current' | 'done'; mini?: boolean }) {
   const locked = state === 'locked'
   const producer = chapter.producers[0]
@@ -583,6 +610,31 @@ export default function CampaignScreen({
           </p>
         </div>
         {!wide && host}
+        {wide && <ProgressBunting chapters={chapters} completed={completed} />}
+        {/* Plan item 257: on a desktop the campaign's tally is chalked on a slate; plan item 444: it hangs in the top
+            band beside the pennants (the chapters won), Back to Title a small tag on its frame, so the map takes the
+            column's full height. */}
+        {wide && (
+          <div className="cmp-ledger" data-ledger>
+            <dl className="cmp-ledger-cells">
+              <div className="cmp-ledger-cell">
+                <dt>Regions free</dt>
+                <dd>
+                  <b>{liberatedRegions(completed).size}</b> of {Object.keys(MAP_AXIAL).length}
+                </dd>
+              </div>
+              <div className="cmp-ledger-cell">
+                <dt>Seals pressed</dt>
+                <dd>
+                  <b>{chapters.reduce((n, c) => n + (seals?.(c.id) ?? (completed.includes(c.id) ? ['win'] : [])).length, 0)}</b> of {chapters.length * 3}
+                </dd>
+              </div>
+            </dl>
+            <button className="cmp-ledger-back cmp-back" onClick={onBack}>
+              Back to Title
+            </button>
+          </div>
+        )}
       </header>
       <CampaignMap
         chapters={chapters}
@@ -629,35 +681,6 @@ export default function CampaignScreen({
             )
           })}
         </nav>
-      )}
-      {/* Plan item 257: on a desktop the campaign's tally sits under the map, filling the band the map leaves; the
-          page's own Back sits under the rail, which scrolls on a tall desktop, so there it lives here. */}
-      {wide && (
-        <div className="cmp-ledger" data-ledger>
-          <dl className="cmp-ledger-cells">
-            <div className="cmp-ledger-cell">
-              <dt>Chapters won</dt>
-              <dd>
-                <b>{done}</b> of {chapters.length}
-              </dd>
-            </div>
-            <div className="cmp-ledger-cell">
-              <dt>Regions free</dt>
-              <dd>
-                <b>{liberatedRegions(completed).size}</b> of {Object.keys(MAP_AXIAL).length}
-              </dd>
-            </div>
-            <div className="cmp-ledger-cell">
-              <dt>Seals pressed</dt>
-              <dd>
-                <b>{chapters.reduce((n, c) => n + (seals?.(c.id) ?? (completed.includes(c.id) ? ['win'] : [])).length, 0)}</b> of {chapters.length * 3}
-              </dd>
-            </div>
-          </dl>
-          <button className="cmp-ledger-back cmp-back" onClick={onBack}>
-            Back to Title
-          </button>
-        </div>
       )}
       <ol
         className="chapter-list cmp-path"

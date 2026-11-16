@@ -21,14 +21,15 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
         pageScroll: document.scrollingElement!.scrollHeight - innerHeight,
         // Plan item 395: every chapter is reached: the rail holds them all, or it scrolls on its own.
         railReaches: rail.scrollHeight <= rail.clientHeight + 1 || getComputedStyle(rail).overflowY === 'auto',
-        gapUnderMap: led.top - map.bottom,
-        bandUnderLedger: innerHeight - led.bottom,
+        // Plan item 444: the tally hangs in the top band beside the signboard, and the map takes the column below it
+        ledgerInBand: led.bottom <= map.top,
+        bandUnderMap: innerHeight - map.bottom,
       }
     })
     expect(m.pageScroll).toBeLessThanOrEqual(1)
     expect(m.railReaches).toBe(true)
-    expect(m.gapUnderMap).toBeLessThanOrEqual(120)
-    expect(m.bandUnderLedger).toBeLessThanOrEqual(120)
+    expect(m.ledgerInBand).toBe(true)
+    expect(m.bandUnderMap).toBeLessThanOrEqual(120)
     // the last chapter is reachable in the rail, and Back to Title is on screen
     const last = page.locator('.cmp-path .cmp-card').last()
     await last.scrollIntoViewIfNeeded()
@@ -60,9 +61,53 @@ test('campaign at 1440x900: a short rail reaches the tally strip', async ({ page
     const rail = document.querySelector('.campaign-screen > .cmp-path')!
     const stops = rail.querySelectorAll(':scope > .cmp-stop')
     const last = stops[stops.length - 1]!.getBoundingClientRect()
-    const led = document.querySelector('[data-ledger]')!.getBoundingClientRect()
-    return { gap: led.bottom - last.bottom }
+    // Plan item 444: the tally moved to the top band; the rail runs to the window's foot
+    return { gap: innerHeight - 16 - last.bottom }
   })
   expect(m.gap).toBeLessThanOrEqual(72)
   expect(m.gap).toBeGreaterThanOrEqual(-4)
+})
+
+// Plan item 444: one composed spread at D: the title a signboard, the chapters won a string of pennants beside it,
+// the map 45%+ of the window, no empty band of 300x100 px or more.
+test('campaign at 1440x900: one composed spread', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.evaluate(() => localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })))
+  await page.goto('/')
+  await page.getByText('Campaign', { exact: false }).first().click()
+  const pennants = page.locator('.cmp-pennants')
+  await expect(pennants).toHaveAttribute('aria-label', '1 of 6 chapters won')
+  await expect(page.locator('.cmp-pennant.is-won')).toHaveCount(1)
+  await page.waitForTimeout(1200)
+  const map = (await page.locator('.campaign-screen > .cmp-map').boundingBox())!
+  expect((map.width * map.height) / (1440 * 900), 'share of the window the map and its host take').toBeGreaterThanOrEqual(0.45)
+  // the variance scan: no 300x100 block of the page is one flat colour
+  const shot = await page.screenshot()
+  const empty = await page.evaluate(async (b64) => {
+    const img = new Image()
+    img.src = 'data:image/png;base64,' + b64
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const k = img.width / innerWidth
+    const flat = (x: number, y: number) => {
+      const d = g.getImageData(Math.round(x * k), Math.round(y * k), Math.round(300 * k), Math.round(100 * k)).data
+      let lo = 255, hi = 0
+      for (let i = 0; i < d.length; i += 16) {
+        const l = 0.3 * d[i]! + 0.59 * d[i + 1]! + 0.11 * d[i + 2]!
+        lo = Math.min(lo, l)
+        hi = Math.max(hi, l)
+      }
+      return hi - lo < 10
+    }
+    const hits: number[][] = []
+    for (let y = 0; y + 100 <= innerHeight; y += 20) for (let x = 0; x + 300 <= innerWidth; x += 20) if (flat(x, y)) hits.push([x, y])
+    return hits
+  }, shot.toString('base64'))
+  expect(empty, 'flat 300x100 blocks').toEqual([])
 })

@@ -1380,7 +1380,8 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
     grid-template-areas: "head art";
     align-items: center;
     gap: 12px;
-    min-height: 88px;
+    /* item 444: 84 px (was 88) so the six still fit the rail beside the wider map */
+    min-height: 84px;
     padding-block: 8px;
   }
   .campaign-screen > .cmp-path > .cmp-stop-locked:not(.cmp-stop-next) .cmp-card-text {
@@ -1600,3 +1601,85 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   stroke-linejoin: round;
 }
 .cmp-vignette.is-mini .cmp-vig-flap { display: none; }
+
+/* Plan item 444: on a desktop the campaign is one spread. The title hangs as a signboard on two ropes from the top
+   edge; the chapters won are a string of six pennants across the band beside it; the tally slate and a small Back
+   tag hang at its right, over the rail; the map takes the column's full height under them. */
+@media (min-width: 1100px) {
+  .campaign.campaign-screen {
+    grid-template-columns: minmax(0, 2.6fr) minmax(440px, 1fr);
+    padding-left: max(40px, calc((100vw - 1360px) / 2));
+    padding-right: max(40px, calc((100vw - 1360px) / 2));
+  }
+  /* the atlas and Cath stand centred in the column's height (sat at its foot, a blank band opened over the map) */
+  .campaign-screen > .cmp-map { align-items: center; }
+  .campaign-screen > .cmp-map > .cmp-map-host { align-self: end; }
+  .campaign-screen > .cmp-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 28px;
+  }
+  .cmp-header > .cmp-header-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 26px 12px;
+    border-radius: 6px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 13px, color-mix(in srgb, var(--wood-lo) 20%, transparent) 13px 14px),
+      linear-gradient(180deg, var(--wood), color-mix(in srgb, var(--wood) 80%, var(--wood-lo)));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--wood-lo) 70%, transparent), 0 4px 0 var(--wood-lo), 0 10px 16px color-mix(in srgb, var(--ink) 22%, transparent);
+    rotate: -0.6deg;
+  }
+  /* the ropes run up off the top of the screen */
+  .cmp-header > .cmp-header-text::before,
+  .cmp-header > .cmp-header-text::after {
+    content: "";
+    position: absolute;
+    bottom: calc(100% - 6px);
+    width: 4px;
+    height: 80px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(160deg, var(--kraft) 0 3px, var(--kraft-lo) 3px 6px);
+  }
+  .cmp-header > .cmp-header-text::before { left: 22%; }
+  .cmp-header > .cmp-header-text::after { right: 22%; }
+  .cmp-header > .cmp-header-text .cmp-kicker { color: color-mix(in srgb, var(--wood-ink) 82%, transparent); font-size: var(--fs-label); }
+  .cmp-header > .cmp-header-text h1 { color: var(--wood-ink); font-size: 2.75rem; text-shadow: 0 2px 0 var(--wood-lo); }
+  .cmp-header > .cmp-header-text .cmp-progress { margin: 0; }
+  .cmp-pennants { display: block; width: 100%; height: auto; max-height: 104px; margin-top: -24px; overflow: visible; }
+  .cmp-pennants-line { fill: none; stroke: var(--kraft-lo); stroke-width: 2; }
+  /* an unwon chapter's flag is undyed calico, a won one takes its dye */
+  .cmp-pennant-cloth {
+    fill: color-mix(in srgb, var(--kraft) 55%, var(--paper-hi));
+    stroke: color-mix(in srgb, var(--ink) 28%, transparent);
+    stroke-width: 1.2;
+    filter: drop-shadow(0 2px 1px color-mix(in srgb, var(--ink) 16%, transparent));
+  }
+  .cmp-pennant-num { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; text-anchor: middle; fill: var(--soil); }
+  .cmp-pennant.is-won .cmp-pennant-num { fill: var(--wood-ink); }
+  .cmp-pennant.is-clay .cmp-pennant-cloth { fill: var(--clay); }
+  .cmp-pennant.is-wheat .cmp-pennant-cloth { fill: var(--wheat); }
+  .cmp-pennant.is-wheat .cmp-pennant-num { fill: var(--soil); }
+  .cmp-pennant.is-pasture .cmp-pennant-cloth { fill: var(--pasture); }
+  .cmp-pennant.is-sea .cmp-pennant-cloth { fill: var(--sea); }
+  /* the tally hangs at the band's right, over the rail */
+  .cmp-header > .cmp-ledger { margin: 0; padding: 8px 10px; gap: 10px; rotate: 0.5deg; }
+  .cmp-header > .cmp-ledger .cmp-ledger-cells { grid-template-columns: repeat(2, auto); padding: 6px 12px 8px; }
+  .cmp-header > .cmp-ledger .cmp-ledger-back {
+    display: block;
+    min-height: 34px;
+    margin: 0;
+    padding: 0 18px;
+    font-size: 0.875rem;
+  }
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign-screen > .cmp-header { margin-bottom: 12px; }
+  .campaign-screen > .cmp-map { grid-row: 2 / span 2; }
+  /* the rail is narrower beside the wider map: a 4 px gap between stops keeps all six in it */
+  .campaign-screen > .cmp-path { gap: 4px; }
+  .campaign-screen > .cmp-map .cmp-map-svg { max-height: calc(100dvh - 170px); }
+}
