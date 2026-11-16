@@ -943,12 +943,15 @@ function hand(kind: HandKind, x: number, y: number, rot: number, cloth: Cloth): 
       `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M6 -8 C10 -4 12 2 10 8 C7 6 5 0 6 -8 Z"/>`,
     ].join('')
   } else {
-    // A relaxed hand peeking out of a cuff, fingers softly down.
+    // A relaxed hand peeking out of a cuff, fingers softly together. Plan item 442: four fingertips scalloped along
+    // its end with the creases between them and a thumb tucked along its side, so it reads as a hand, not a mitt.
     body = [
-      `<path fill="${skin}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round" d="M-9 -8 C-4 -11 5 -11 9 -7 C12 0 10 10 4 14 C-1 16 -6 14 -9 9 C-11 3 -11 -3 -9 -8 Z"/>`,
-      `<path fill="${shade}" opacity="0.6" d="M-9 -8 C-11 -2 -10 6 -6 12 C-4 6 -5 -2 -6 -9 Z"/>`,
-      brush([-1, -2], [0, 5], [-1, 11], 0.2, 0.9, 0.2, crease),
-      brush([4, -3], [5, 4], [4, 10], 0.2, 0.9, 0.2, crease),
+      `<path fill="${skin}" stroke="${line}" stroke-width="1.4" stroke-linejoin="round" d="M-8 13 C-11 5 -11 -2 -10 -6 Q-10 -11 -6 -10.5 Q-4 -13.5 -1 -11.5 Q1.5 -13.5 4 -11.5 Q7.5 -12.5 8.5 -9 C11 -3 11 5 8 11 C4 15 -4 16 -8 13 Z"/>`,
+      `<path fill="${shade}" opacity="0.55" d="M-10 -6 C-11 0 -10 7 -7 12 C-5 6 -6 -1 -6.5 -9 Z"/>`,
+      brush([-6, -10], [-5.6, -6.5], [-5.4, -3], 0.2, 0.85, 0.2, crease),
+      brush([-1, -11.5], [-0.8, -7.5], [-0.6, -4], 0.2, 0.85, 0.2, crease),
+      brush([4, -11.5], [4.2, -7.5], [4.3, -4], 0.2, 0.85, 0.2, crease),
+      `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-10 0 C-12.6 1 -13 4.5 -11 7 C-9.8 6.4 -9 4.2 -9 1.8 Z"/>`,
     ].join('')
   }
   return `<g transform="translate(${x} ${y}) rotate(${rot})">${body}</g>`
