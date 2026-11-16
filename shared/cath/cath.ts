@@ -985,15 +985,21 @@ function hand(kind: HandKind, x: number, y: number, rot: number, cloth: Cloth): 
       `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M6 -8 C10 -4 12 2 10 8 C7 6 5 0 6 -8 Z"/>`,
     ].join('')
   } else {
-    // A relaxed hand peeking out of a cuff, fingers softly together. Plan item 442: four fingertips scalloped along
-    // its end with the creases between them and a thumb tucked along its side, so it reads as a hand, not a mitt.
+    // A relaxed hand peeking out of a cuff, fingers softly together. Plan item 442 (critique: still a mitt): the back
+    // of the hand with four separate, slim fingers in a soft fan (lacquered nails on a bare hand) and the thumb along
+    // its side, the fingers' ends staggered like a real hanging hand.
+    // A hanging hand passes its rotation plus 180 deg, so the fingers fall from the wrist under the cuff.
     body = [
-      `<path fill="${skin}" stroke="${line}" stroke-width="1.4" stroke-linejoin="round" d="M-8 13 C-11 5 -11 -2 -10 -6 Q-10 -11 -6 -10.5 Q-4 -13.5 -1 -11.5 Q1.5 -13.5 4 -11.5 Q7.5 -12.5 8.5 -9 C11 -3 11 5 8 11 C4 15 -4 16 -8 13 Z"/>`,
-      `<path fill="${shade}" opacity="0.55" d="M-10 -6 C-11 0 -10 7 -7 12 C-5 6 -6 -1 -6.5 -9 Z"/>`,
-      brush([-6, -10], [-5.6, -6.5], [-5.4, -3], 0.2, 0.85, 0.2, crease),
-      brush([-1, -11.5], [-0.8, -7.5], [-0.6, -4], 0.2, 0.85, 0.2, crease),
-      brush([4, -11.5], [4.2, -7.5], [4.3, -4], 0.2, 0.85, 0.2, crease),
-      `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-10 0 C-12.6 1 -13 4.5 -11 7 C-9.8 6.4 -9 4.2 -9 1.8 Z"/>`,
+      finger(-6, -4, -7.4, -17, skin, line, 4.6, bare),
+      finger(-2, -5, -2.4, -20.5, skin, line, 4.8, bare),
+      finger(2, -5, 2.6, -20, skin, line, 4.8, bare),
+      finger(5.8, -4, 7, -16, skin, line, 4.4, bare),
+      `<path fill="${skin}" stroke="${line}" stroke-width="1.4" stroke-linejoin="round" d="M-8.5 12 C-10.5 5 -10 -2 -8.5 -6 C-4 -8 4 -8 8.5 -6 C10 -1 10 5 8 11 C4 14.5 -4 15 -8.5 12 Z"/>`,
+      `<path fill="${shade}" opacity="0.5" d="M-8.5 -6 C-10 0 -9.6 7 -7 12 C-5 6 -5.6 0 -6 -6.5 Z"/>`,
+      brush([-4, -6], [-4.2, -3], [-4.4, 0], 0.2, 0.8, 0.2, crease, ' opacity="0.6"'),
+      brush([0.2, -6.5], [0.2, -3.5], [0.2, -0.5], 0.2, 0.8, 0.2, crease, ' opacity="0.6"'),
+      brush([4.4, -6], [4.6, -3], [4.8, 0], 0.2, 0.8, 0.2, crease, ' opacity="0.6"'),
+      `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-9 1 C-12.6 1.5 -13.4 6 -11.2 9.6 C-9.6 9 -8.6 6 -8.4 3 Z"/>`,
     ].join('')
   }
   return `<g transform="translate(${x} ${y}) rotate(${rot})">${body}</g>`
@@ -1044,7 +1050,7 @@ function lanePennant(): string {
 
 function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
-  const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 8, cl)
+  const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 188, cl)
   switch (pose) {
     case 'clasped': {
       // Plan item 33: her hands folded at her waist, each on the end of its own sleeve: her right hand
@@ -1088,9 +1094,9 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
       // Plan item 292: arms swinging with the stride, her right (viewer's left) forward, her left back.
       return layer === 'back'
         ? sleeve('M134 300 Q118 350 116 400 Q116 418 118 428', 22, cl, 'M117 420 Q118 426 118 432') +
-            hand('rest', 119, 446, 14, cl) +
+            hand('rest', 119, 446, 194, cl) +
             sleeve('M266 300 Q286 348 296 392 Q300 406 302 414', 22, cl, 'M300 406 Q302 412 303 418') +
-            hand('rest', 305, 432, -22, cl)
+            hand('rest', 305, 432, 158, cl)
         : ''
     case 'cheer':
       // Both fists up in a V.
