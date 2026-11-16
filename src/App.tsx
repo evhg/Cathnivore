@@ -334,6 +334,8 @@ function Screens() {
           <p>A work of satire. All places, companies and people are fictional.</p>
           <p>No tracking. Your saves stay on your device.</p>
           <p>
+            {/* Plan item 453: a tall phone prints the footer as one line; the two sentences above say it in full. */}
+            <span className="title-footer-short">Fictional satire · No tracking ·{' '}</span>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); openExternalLink('/privacy') }}>Privacy</a> ·{' '}
             <a href="/support" onClick={(e) => { e.preventDefault(); openExternalLink('/support') }}>Support</a>
             {/* The website's root is the games landing page. The iPhone app keeps SPEC 11.6's only two links out. */}
@@ -527,6 +529,9 @@ function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mo
           <span className="title-daily-more">
             {'\u00a0· '}
             {pair}
+          </span>
+          {/* Plan item 453: the event stays on a tall phone's tag (the pair goes to screen readers there). */}
+          <span className="title-daily-event">
             {'\u00a0· '}
             {MARKET_EVENTS[daily.marketEvent].name}
           </span>

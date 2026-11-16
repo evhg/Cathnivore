@@ -49,9 +49,13 @@ test("yesterday's receipt is pinned to the table, clear of the menu", async ({ p
     if (m) expect(meet(b, m)).toBe(false)
   }
   // plan item 139: on a phone it lies on the table's front under Cath, not across her torso
-  if (vp.width < 761) {
+  // Plan item 453: a tall phone (721 px or more) pins it to the stall's wall beside her, clear of her figure.
+  if (vp.width < 761 && (vp.width > 600 || vp.height <= 720)) {
     const art = (await page.locator('.title-art').boundingBox())!
     expect(b.y).toBeGreaterThanOrEqual(art.y + art.height - 30)
+  } else if (vp.width <= 600) {
+    const cath = (await page.locator('.title-cath').boundingBox())!
+    expect(b.x).toBeGreaterThanOrEqual(cath.x + cath.width - 40)
   }
   // no scroll was added
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true)

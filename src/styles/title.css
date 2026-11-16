@@ -1832,3 +1832,103 @@ html.no-animations .title-screen * {
 @media (max-width: 1023px) and (max-height: 500px) {
   .title-square { display: none; }
 }
+
+/* Plan item 453: a tall phone's title stars Cath. She stands half-length behind the table, about half the width,
+   with the board laid before her (in front of her hip, never over her face or wave); the three choices are one set
+   of paper market tags (Campaign the clay one); the Daily's tag carries its number, event and countdown; the
+   footer is one line on the table's front. Short phones (720 px or less) keep the earlier compact layout. */
+.title-footer-short { display: none; }
+@media (max-width: 600px) {
+  .title-daily-event { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (max-width: 600px) and (min-height: 721px) {
+  .title-hero { padding-top: 14px; }
+  .title-wordmark { font-size: clamp(48px, 6.8dvh, 60px); }
+  .title-tagline { margin-top: 2px; font-size: 0.9375rem; }
+  .title-art.title-table {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    padding-top: 58px;
+  }
+  .title-art.title-table .title-cath {
+    width: min(132%, 228px, 27dvh);
+    margin: 0 -40% -20px -18px;
+    z-index: var(--z-raised);
+  }
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-cath { width: min(132%, 228px, 25.5dvh); }
+  .title-art.title-table .title-board {
+    margin: 0 -6px -12px 0;
+    z-index: var(--z-lift);
+  }
+  /* her line's tail reaches down to her (taller) head */
+  .title-art.title-table .title-cath-line::after { height: 34px; bottom: -33px; }
+  .title-art.title-table .title-board .map { max-height: 25dvh; }
+  /* yesterday's receipt is pinned to the stall's back wall, beside her wave and over the board (the counter's
+     front is the tags' now) */
+  .daily-ritual.is-compact { top: 52px; right: 18px; }
+  .daily-ritual.is-compact .ritual-receipt { rotate: 1.5deg; width: max-content; max-width: 170px; }
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-board .map { max-height: 21dvh; }
+
+  /* one set of tags: Campaign and Quick Game side by side, the Daily a wide tag under them; with a save, Continue
+     (the clay tag) leads across the top */
+  .title-menu {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 12px;
+    margin-top: 22px;
+  }
+  .title-menu > .title-cta:first-child { grid-column: auto; margin-right: 0; }
+  .title-menu > .title-cta:first-child + .title-cta:not(.title-daily):not(:nth-last-child(3)) { grid-column: auto; }
+  .title-menu > .title-cta.primary:first-child:not(:nth-last-child(4)) { grid-column: 1 / -1; }
+  .title-menu > .title-daily { grid-column: 1 / -1; }
+  .title-menu .title-cta.primary,
+  .title-menu > .title-cta:first-child,
+  .title-menu .title-cta:not(.primary):not(:first-child) {
+    position: relative;
+    min-height: 56px;
+    padding: 8px 10px 8px 26px;
+    border: 0;
+    border-radius: 3px 10px 10px 3px;
+    background:
+      radial-gradient(circle at 13px 50%, var(--wood) 0 3.5px, color-mix(in srgb, var(--wood-lo) 60%, transparent) 3.5px 4.5px, transparent 5px),
+      var(--paper-on-fixed-fill);
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+    color: var(--ink-on-fixed-fill);
+    font: 700 1.1875rem / 1.1 var(--font-display, serif);
+    box-shadow: none;
+    filter: drop-shadow(0 3px 0 var(--rule)) drop-shadow(0 6px 6px color-mix(in srgb, var(--ink) 18%, transparent));
+    rotate: -1.2deg;
+  }
+  .title-menu .title-cta:not(.title-daily) { white-space: nowrap; }
+  .title-menu .title-cta .marrow-badge { margin-left: 6px; padding: 1px 3px; }
+  .title-menu .title-cta .marrow-badge svg { width: 22px; height: 19px; }
+  .title-menu .title-cta.primary {
+    background:
+      radial-gradient(circle at 13px 50%, var(--paper-on-fixed-fill) 0 3.5px, color-mix(in srgb, var(--wood-lo) 60%, transparent) 3.5px 4.5px, transparent 5px),
+      linear-gradient(180deg, color-mix(in srgb, var(--clay) 66%, var(--ink-on-fixed-fill)), color-mix(in srgb, var(--clay) 58%, var(--ink-on-fixed-fill)));
+    color: var(--paper-on-fixed-fill);
+  }
+  .title-menu > .title-cta:nth-child(2) { rotate: 1deg; }
+  .title-menu > .title-daily.title-cta:not(.primary) {
+    rotate: -0.6deg;
+    min-height: 60px;
+    padding-block: 7px;
+    align-items: flex-start;
+    text-align: left;
+    padding-left: 30px;
+  }
+  .title-menu .title-daily .title-daily-no { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .title-menu .title-daily small { display: flex; flex-wrap: wrap; column-gap: 0.5em; font-size: 0.875rem; }
+  .title-menu .title-daily small > .title-daily-when { margin-top: 0; }
+  .title-daily-event { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+  .title-menu .title-minor { margin-top: 6px; }
+
+  /* the footer: one line printed on the table's front */
+  .title-footer { flex-wrap: nowrap; padding-top: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); font-size: 0.75rem; }
+  .title-footer p:nth-child(1),
+  .title-footer p:nth-child(2) { display: none; }
+  .title-footer p { white-space: nowrap; }
+  .title-footer-short { display: inline; }
+}
+@media (max-width: 600px) and (min-height: 721px) and (max-height: 800px) {
+  .title-menu { margin-top: 14px; gap: 8px 12px; }
+  .title-tagline { font-size: 0.875rem; }
+}
