@@ -1399,9 +1399,20 @@ function LAND_FEATURES(i: number): string {
     for (let k = 0; k < n; k++) o += `<ellipse cx="${f(4 + rand() * 92)}" cy="${f(8 + rand() * 84)}" rx="${f(rx * (0.6 + rand() * 0.8))}" ry="${f(ry * (0.6 + rand() * 0.8))}" fill="${col}" opacity="${f(a)}"/>`;
     return o;
   };
+  // Plan item 455: sea lavender as sprays of small flowers, not flat lilac ovals (they read as blotches on the land);
+  // the same seeded draws as blobs(), so everything painted after it keeps its place.
+  const sprays = (n: number, col: string, rx: number, ry: number, a: number): string => {
+    let o = "";
+    const dots: Array<[number, number]> = [[0, 0], [-0.7, 0.3], [0.65, 0.25], [-0.3, -0.6], [0.35, -0.55], [0.05, 0.75], [-0.9, -0.2], [0.9, -0.15]];
+    for (let k = 0; k < n; k++) {
+      const cx = 4 + rand() * 92, cy = 8 + rand() * 84, sx = rx * (0.6 + rand() * 0.8), sy = ry * (0.6 + rand() * 0.8);
+      for (const [dx, dy] of dots) o += `<ellipse cx="${f(cx + dx * sx)}" cy="${f(cy + dy * sy)}" rx="${f(sx * 0.16)}" ry="${f(sy * 0.16)}" fill="${col}" opacity="${f(a)}"/>`;
+    }
+    return o;
+  };
   // act index i is 0-based: 2 Saltmarsh, 5 Shingle Bay, 3 Rivermead, 1 Highmoor
   if (i === 2 || i === 5)
-    return blobs(9, "#b9ad8e", 7, 5, 0.45) + blobs(14, "#7e9a5a", 2.4, 1.8, 0.5) + blobs(10, "#a090c0", 1.6, 1.2, 0.45) + creek(40, 6, "#8fb3bf", 5) + creek(64, 5, "#8fb3bf", 3.5) + creek(40, 6, "#cfe2e6", 1.4);
+    return blobs(9, "#b9ad8e", 7, 5, 0.45) + blobs(14, "#7e9a5a", 2.4, 1.8, 0.5) + sprays(10, "#8f7cb6", 1.6, 1.2, 0.8) + creek(40, 6, "#8fb3bf", 5) + creek(64, 5, "#8fb3bf", 3.5) + creek(40, 6, "#cfe2e6", 1.4);
   if (i === 3) return creek(38, 3, "#8fb7c4", 3) + creek(70, 3, "#8fb7c4", 3) + blobs(10, "#a8c47a", 5, 3, 0.35);
   if (i === 1) return blobs(16, "#6e5a44", 2.6, 1.4, 0.4) + blobs(12, "#8e6a84", 4, 2.6, 0.35);
   // Drifts of small flowers in clusters.
