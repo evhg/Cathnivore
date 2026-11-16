@@ -45,7 +45,7 @@ export interface FrontCath {
    * Plan item 449: how deep (m) the deepest visible weapon vertex sits inside her coat (rays cast in to the coat's axis
    * from outside it), and which weapon; 0 when none goes in. A check, not drawn: sampled every few vertices.
    */
-  weaponInCoat(): { depth: number; gun: string | null };
+  weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
   /**
    * Plan item 187: where she looks, -1..1 down the title menu (the menu sits to her right of frame): her head turns
    * toward it and tips to the focused row, easing there in about 150 ms (`instant` cuts). `gaze` is the target now.
@@ -2775,8 +2775,10 @@ float reliefShade( vec2 uv ) {
     let settled = !clip;
     // Plan item 449: the Ghost's audition plays to its end (she slings the rifle again and takes the sling), so her
     // stance is the carry, not the rifle held.
-    const ghostRun = !!clip && clip.kind === "ghost" && stanceNow === "ghost" && clip.held === undefined;
-    if (clip && clip.kind === stanceNow && cu > 0.5 && !ghostRun) {
+    // The Butcher's and the Gunslinger's likewise: she shoulders the shotgun, holsters the revolver.
+    const carryRun = !!clip && (clip.kind === "ghost" || clip.kind === "butcher" || clip.kind === "gunslinger") && clip.held === undefined;
+    const ghostRun = carryRun && clip!.kind === "ghost" && stanceNow === "ghost";
+    if (clip && clip.kind === stanceNow && cu > 0.5 && !carryRun) {
       cu = 0.5;
       settled = true;
     }
@@ -2829,12 +2831,16 @@ float reliefShade( vec2 uv ) {
             chest.position.y -= 0.03 * e;
             headPivot.rotation.x += 0.08 * e;
             const snap = THREE.MathUtils.smoothstep(cuR, 0.42, 0.46) * (1 - THREE.MathUtils.smoothstep(cuR, 0.47, 0.54));
-            tgt.copy(wristL).lerp(BUTCHER_HOLD, e);
+            // Plan item 449: her carry is the shotgun on her shoulder, the barrel back over it and her hand on the grip
+            // at her chest; the audition brings it down to her hip, racks it and shoulders it again.
+            const sk = BUTCHER_SHOULDER_K * (!clip || clip.held !== undefined || settled ? 1 : 1 - THREE.MathUtils.smoothstep(cu, 0.06, 0.24) + THREE.MathUtils.smoothstep(cu, 0.74, 0.92));
+            shotK = sk;
+            tgt.copy(wristL).lerp(gsHover.copy(BUTCHER_HOLD).lerp(BUTCHER_SHOULDER, sk), e);
             tgt.y -= 0.07 * snap;
-            pole.copy(restPole).lerp(tmpV.set(1, 0.2, -0.8).normalize(), e);
-            armIK(tgt, pole, 0.5 * e);
+            pole.copy(restPole).lerp(tmpV.set(1, 0.2 - 0.9 * sk, -0.8 + 0.4 * sk).normalize(), e);
+            armIK(tgt, pole, (0.5 - 0.3 * sk) * e);
             armOn = true;
-            gunInHand = cu > 0.1 && cu < 0.92 && e > 0.3 ? "shotgun" : null;
+            gunInHand = e > 0.3 ? "shotgun" : null;
             rack = snap;
             shellU = cuR >= 0.46 && cuR < 0.8 ? (cuR - 0.46) * clip_.dur : -1;
             break;
@@ -2846,13 +2852,29 @@ float reliefShade( vec2 uv ) {
             headPivot.rotation.x -= 0.06 * e;
             umb.rotation.x -= 0.32 * e;
             umb.rotation.z += 0.3 * e;
-            // Plan item 422: the revolver drawn and hanging at her hip, the hand a little out from the coat.
-            reach(0.24, -0.24, 0.14, 1, 0.2, -0.6, 0.5);
-            gunInHand = e > 0.3 ? "revolver" : null;
             // Plan item 235: hip-shot, her weight thrown onto the holster side.
             pelvis.rotation.z -= 0.06 * e;
             pelvis.position.x += 0.025 * e;
             chest.rotation.z += 0.09 * e;
+            {
+              // Plan item 449: her carry is the revolver holstered, her hand hanging over its grip; the audition draws
+              // it (plan item 422's hold, hanging at her hip a little out from the coat), spins it on her finger and
+              // holsters it again.
+              const run = !!clip && clip.held === undefined && !settled;
+              const draw = run ? THREE.MathUtils.smoothstep(cu, 0.1, 0.26) - THREE.MathUtils.smoothstep(cu, 0.76, 0.9) : 0;
+              const grab = run ? THREE.MathUtils.smoothstep(cu, 0.02, 0.1) * (1 - THREE.MathUtils.smoothstep(cu, 0.9, 0.98)) : 0;
+              // The grip, from the pelvis frame into the chest's (the chest turns and leans over the hips).
+              pelvis.updateMatrix();
+              chest.updateMatrix();
+              const grip = tmpV.copy(holsterGrip).applyMatrix4(chestInv.copy(chest.matrix).invert());
+              const hand = gsHover.copy(grip).add(GS_HOVER).lerp(grip.add(GS_GRAB), grab).lerp(GS_SHOW, draw);
+              tgt.copy(wristL).lerp(hand, e);
+              pole.copy(restPole).lerp(tmpV.set(1, 0.2, -0.6).normalize(), e);
+              armIK(tgt, pole, 0.5 * e * Math.max(draw, 0.4));
+              armOn = true;
+              gunInHand = draw > 0.2 && e > 0.3 ? "revolver" : null;
+              revSpin = run ? Math.PI * 4 * THREE.MathUtils.smootherstep(cu, 0.36, 0.62) : 0;
+            }
             break;
           case "wirewitch": {
             const sp = cu * cu * (3 - 2 * cu);
@@ -3130,6 +3152,9 @@ float reliefShade( vec2 uv ) {
   let carrying = false;
   const kitMats: THREE.Material[] = [];
   const kitMat = (m: THREE.Material) => (kitMats.push(m), m);
+  // Plan item 449: the Gunslinger's holstered revolver and its grip point (pelvis frame), for the carry and the draw.
+  let holsterRev: THREE.Object3D | null = null;
+  const holsterGrip = new THREE.Vector3();
   const kitGroup = (cls: string, parts: Array<[THREE.BufferGeometry[], THREE.Material]>) => {
     const g = new THREE.Group();
     g.name = `kit-${cls}`;
@@ -3196,15 +3221,17 @@ float reliefShade( vec2 uv ) {
         kitMat(new THREE.MeshStandardMaterial({ color: 0x4a2418, roughness: 0.36, metalness: 0.08, side: THREE.DoubleSide })),
       ],
     ]);
-    // Gunslinger: a gunbelt slung low on her hips and the holstered revolver on her right.
+    // Gunslinger: a gunbelt slung low on her hips and the holstered revolver on her left.
     const gunbelt = new THREE.TorusGeometry(0.19, 0.016, 6, seg(28));
     gunbelt.rotateX(Math.PI / 2);
     gunbelt.scale(1, 1, 0.74);
-    gunbelt.rotateZ(0.12);
+    // Plan item 449: low on her left, the holster on the side her free hand draws from (it hung on her right, under
+    // the umbrella's hand, so the pick showed it holstered and a second revolver drawn in her other hand).
+    gunbelt.rotateZ(-0.12);
     gunbelt.translate(0, -0.08, 0);
     const holster = new THREE.BoxGeometry(0.06, 0.17, 0.045);
-    holster.rotateZ(-0.12);
-    holster.translate(-0.215, -0.19, 0.03);
+    holster.rotateZ(0.12);
+    holster.translate(0.215, -0.19, 0.03);
     kitGroup("gunslinger", [
       [[gunbelt, holster], kitMat(new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.48, metalness: 0.04 }))],
     ]);
@@ -3214,14 +3241,19 @@ float reliefShade( vec2 uv ) {
       const rev = buildGunDisplay("revolver", phone);
       rev.name = "kit-gunslinger-revolver";
       // the model's muzzle runs -z and its top +y: muzzle down (-y), grip to her back (-z), at the holster's lean
-      rev.rotation.set(-Math.PI / 2, Math.PI, -0.12, "ZYX");
-      rev.position.set(-0.222, -0.075, 0.03);
+      rev.rotation.set(-Math.PI / 2, Math.PI, 0.12, "ZYX");
+      rev.position.set(0.222, -0.075, 0.03);
       rev.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
         m.castShadow = true;
         tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
       });
+      // Plan item 449: the grip's top (the gun stands muzzle down), in the pelvis frame: where her hand rests and draws.
+      rev.updateMatrixWorld(true);
+      const gb = new THREE.Box3().setFromObject(rev);
+      holsterGrip.set((gb.min.x + gb.max.x) / 2, gb.max.y - 0.025, (gb.min.z + gb.max.z) / 2);
+      holsterRev = rev;
       kits.get("gunslinger")!.add(rev);
     }
     // Wirewitch: lit cables from her spine over both shoulders, down the coat's front to a deck on her belt.
@@ -3759,6 +3791,23 @@ float reliefShade( vec2 uv ) {
   const GHOST_SLING = V(0.2, 0.02, 0.17);
   // Plan item 449: out from her hip (x 0.26 -> 0.29, z 0.19 -> 0.21): the shotgun's stock sat 2.4 cm inside the coat.
   const BUTCHER_HOLD = V(0.29, 0.04, 0.21);
+  // Plan item 449: the shoulder carry: her hand on the grip before her left breast, the barrel back over her shoulder.
+  const BUTCHER_SHOULDER = V(0.34, 0.06, 0.28);
+  const SHOT_SHOULDER_DIR = V(0.02, 0.97, 0.12);
+  const SHOT_SHOULDER_TOP = V(-1, 0, 0.35);
+  let shotK = 0;
+  const BUTCHER_SHOULDER_K: number = 1;
+  // Plan item 449: the Gunslinger's hand over the holstered grip (offsets from the grip point, chest frame), on it to
+  // draw, and the drawn revolver's hold at her hip (plan item 422's).
+  const GS_HOVER = V(0.012, 0.06, 0.035);
+  const GS_GRAB = V(0.004, 0.035, 0.012);
+  const GS_SHOW = V(0.24, -0.24, 0.14);
+  const gsHover = new THREE.Vector3();
+  const chestInv = new THREE.Matrix4();
+  let revSpin = 0;
+  const spinQ = new THREE.Quaternion();
+  const shotDir = new THREE.Vector3();
+  const shotTop = new THREE.Vector3();
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
   const pX = new THREE.Vector3();
@@ -3794,6 +3843,13 @@ float reliefShade( vec2 uv ) {
       g.visible = inHand === k;
       if (g.visible) stand(g, SIDE_DIR[k][0], SIDE_DIR[k][1]);
     }
+    // Plan item 449: one revolver: the holster's is empty while it is drawn; drawn, it spins on her finger (about
+    // the axis through the trigger guard, the gun's side).
+    if (holsterRev) holsterRev.visible = inHand !== "revolver";
+    if (inHand === "revolver" && revSpin) {
+      const g = sideGuns.get("revolver")!;
+      g.quaternion.premultiply(spinQ.setFromAxisAngle(pX, revSpin));
+    }
     rifle.visible = inHand === "rifle";
     backRifle.visible = inHand !== "rifle";
     shotgun.visible = inHand === "shotgun";
@@ -3807,7 +3863,7 @@ float reliefShade( vec2 uv ) {
       glintSprite.visible = glintK > 0.01;
     }
     if (inHand === "shotgun") {
-      stand(shotgun, SHOT_DIR, SHOT_TOP);
+      stand(shotgun, shotDir.copy(SHOT_DIR).lerp(SHOT_SHOULDER_DIR, shotK), shotTop.copy(SHOT_TOP).lerp(SHOT_SHOULDER_TOP, shotK));
       // the rack draws the pump back toward the receiver (the model's +z)
       forend.position.z = forendZ + 0.075 * rackK;
       if (shellT >= 0) {
@@ -4050,6 +4106,7 @@ float reliefShade( vec2 uv ) {
       coatGeo.computeBoundingSphere();
       let depth = 0;
       let gun: string | null = null;
+      let at: number[] | null = null;
       for (const g of guns) {
         let shown = true;
         for (let o: THREE.Object3D | null = g; o; o = o.parent) if (!o.visible) shown = false;
@@ -4082,11 +4139,12 @@ float reliefShade( vec2 uv ) {
             if (d > depth) {
               depth = d;
               gun = g.name || "gun";
+              at = [local.x, local.y, local.z].map((n) => Math.round(n * 1000) / 1000);
             }
           }
         });
       }
-      return { depth: Math.round(depth * 1000) / 1000, gun };
+      return { depth: Math.round(depth * 1000) / 1000, gun, at };
     },
     get clipState() {
       return clip ? { kind: clip.kind, u: clip.u, prop: propNow } : null;

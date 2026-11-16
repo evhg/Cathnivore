@@ -66,7 +66,7 @@ export interface FrontScene {
   /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
   figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 449: the deepest weapon vertex inside her coat (m) and its weapon. */
-  weaponInCoat(): { depth: number; gun: string | null };
+  weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
   /** Plan item 140: the expression painted on her face now. */
   readonly expression: FaceExpression;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */

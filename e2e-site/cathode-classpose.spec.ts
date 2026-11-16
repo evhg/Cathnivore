@@ -10,8 +10,9 @@ type F = { cathodeFront?: { scene: () => S | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
 // Plan item 422: the signature gun each class holds in her posing hand on the pick.
-// Plan item 449: the Ghost's stance carries her rifle slung on her back (her hand on the sling), not in her hand.
-const HELD: Record<string, string | null> = { ghost: null, butcher: 'shotgun', gunslinger: 'revolver', wirewitch: 'smg', fixer: 'launcher' }
+// Plan item 449: the Ghost's stance carries her rifle slung on her back (her hand on the sling), not in her hand;
+// the Gunslinger's revolver rides holstered (her hand over its grip) and the Butcher's shotgun stands on her shoulder.
+const HELD: Record<string, string | null> = { ghost: null, butcher: 'shotgun', gunslinger: null, wirewitch: 'smg', fixer: 'launcher' }
 
 test('each class holds its own pose on the pick, blended in 600 ms of loop time', async ({ page, hasTouch }) => {
   test.setTimeout(300_000)
