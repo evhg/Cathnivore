@@ -4,6 +4,7 @@ import { REGIONS } from '../content/map'
 import type { RegionId } from '../engine/types'
 import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
+import { ProduceCrates } from './TableProps'
 import CampaignMap from './CampaignMap'
 import { CHAPTER_HOMES, CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
 import { LANDMARKS } from '../content/campaignMapLayout'
@@ -550,6 +551,9 @@ export default function CampaignScreen({
           animate
           title="Cath"
         />
+        {/* Plan item 444: at D she stands behind the stall's produce crates on the table's edge, so her half-length
+            figure ends behind something drawn, not in mid-air */}
+        {wide && <ProduceCrates />}
       </span>
     </figure>
   )

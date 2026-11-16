@@ -159,6 +159,18 @@
   }
   /* Plan item 325: half length, 300 px: her face about 70 px (the full figure on a quay read as a statue) */
   .cmp-map-host .cmp-header-cath { height: 300px; position: relative; aspect-ratio: 320 / 480; }
+  /* Plan item 444: the crates stand across her lower edge on the table (her half-length figure ended in mid-air) */
+  .cmp-map-host .cmp-host-stand { position: relative; display: block; }
+  .cmp-map-host .cmp-host-stand > .produce-crates {
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    z-index: var(--z-raised);
+    width: 196px;
+    height: auto;
+    translate: -50% 0;
+    filter: drop-shadow(0 2px 2px var(--ink-a15));
+  }
 }
 
 .cmp-kicker {
