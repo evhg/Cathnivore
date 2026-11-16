@@ -4973,3 +4973,42 @@ body:has(#dlg-pause[open]) .paused-note {
   /* (the ticket's ROUND keeps inside its stub at the larger size) */
   .play #panel .ticket-label { letter-spacing: 0.02em; }
 }
+
+/* Plan item 460 slice 1: at D everything under the seed rack is one ledger page: the round, Cath's tip, the tabs and
+   the rounds ahead stand on the panel's own paper, parted by ruled lines, not each in its own bordered box (the panel
+   held some 25 boxes in five styles, all competing with the field). The seed packets stay cards (items 361, 408);
+   Go stays the one strong block. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .panel .round-ticket,
+  .play .panel .cath-plate:not([hidden]),
+  .play .panel .field-intel,
+  .play .panel .ticket-chips .preview-chip,
+  .play .panel .intel-timeline.round-strip .round-chip-btn,
+  .play .panel .field-tab {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .play .panel .round-ticket {
+    -webkit-mask: none;
+    mask: none;
+    border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  }
+  .play .panel .round-ticket .ticket-stub { background: transparent; box-shadow: none; }
+  .play .panel .cath-plate:not([hidden]) { border-top: 1px dashed color-mix(in srgb, var(--line) 55%, transparent); }
+  .play .panel .ticket-chips .preview-chip { padding-inline: 2px; }
+  /* the tabs: words on the rule, the open one underlined in ink */
+  .play .panel .field-tab { border-bottom: 2px solid transparent; }
+  .play .panel .field-tab[aria-selected="true"] {
+    margin-bottom: 0;
+    background: transparent;
+    box-shadow: none;
+    border-bottom-color: var(--ink);
+  }
+  .play .panel .field-intel { border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+  /* the rounds ahead: a forecast strip, a ruled column per round */
+  .play .panel .intel-timeline.round-strip li.round-chip + li.round-chip .round-chip-btn {
+    border-left: 1px dashed color-mix(in srgb, var(--line) 55%, transparent);
+  }
+}

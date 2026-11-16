@@ -2215,7 +2215,10 @@ function fieldIntel(g: Game): HTMLElement {
     row.className = "intel-locks";
     const lab = document.createElement("span");
     lab.className = "intel-label";
-    lab.textContent = gaps.length ? "Unanswered" : "Every lock answered";
+    // Plan item 460: in plainer words ("Unanswered" read as a status, not "your towers don't cover this trait"); no
+    // wider than it was, since the chip beside it had 2 px to spare.
+    lab.textContent = gaps.length ? "Not covered" : "Every trait covered";
+    if (gaps.length) lab.title = "Vehicle traits coming that none of your towers answers yet";
     row.append(lab);
     if (gaps.length) {
       // Plan item 348: the soonest unanswered lock in the coming rounds as a labelled chip naming its answer
