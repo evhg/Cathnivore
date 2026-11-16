@@ -2016,7 +2016,7 @@ function markLessonCard(step: number): void {
   if (next && step >= 0 && !next.dataset.filled) {
     next.dataset.filled = '1'
     // Plan item 326: the day on its own line under "Up next" (no dot: the column is too narrow for one line, and a wrap left the dot dangling).
-    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next <span class="lc-next-day">${new Date(`${today}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })}</span></small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
+    next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next <span class="lc-next-day">${upNextDay(today)}</span></small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
   }
   card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
     const done = i < step || step >= LESSON_STEPS.length
@@ -2063,6 +2063,12 @@ function flyDailyCard(): void {
   card.style.setProperty('--fy', `${Math.round(from.y - innerHeight / 2)}px`)
   document.body.append(card)
   window.setTimeout(() => card.remove(), 1300)
+}
+
+/** Plan item 462: the daily under the lesson is today's, so on its own day it says 'today', not the weekday it is
+ * ('Up next Monday' read as next week on a Monday); a daily from another day keeps its weekday. */
+function upNextDay(day: string): string {
+  return day === utcDateString(new Date()) ? 'today' : new Date(`${day}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })
 }
 
 /** Critique 2026-11-04 (item 126): "Daily #37 · Wed, Nov 4" may wrap only at a dot, never inside the date. */

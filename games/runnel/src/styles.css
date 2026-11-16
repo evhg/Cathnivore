@@ -3266,6 +3266,9 @@ body[data-mode='practice'] #week-slot {
 .lc-steps li {
   display: grid;
   justify-items: center;
+  /* Plan item 462: the art and label sit at the top of every chip, so a one-line label lines up with the two-line
+     ones beside it (it centred lower in the taller row). */
+  align-content: start;
   gap: 4px;
   padding: 6px 4px;
   border-radius: 12px;
