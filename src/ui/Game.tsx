@@ -9,7 +9,7 @@ import { BeasDrawing, ProduceCrates } from './TableProps'
 import { awardPin, chosenPin, pinForEvent, PINS, type CathPin } from '../../shared/cath/pins'
 import { applyAction, currentDecision, legalActions } from '../engine/api'
 import { resolveRules } from '../engine/rules'
-import { LONG_MAX, planPreview } from '../engine/preview'
+import { LONG_MAX, actionPreview, planPreview } from '../engine/preview'
 import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
@@ -1263,7 +1263,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 109: the region opened up close on a phone (null: none).
   const [closeUp, setCloseUp] = useState<RegionId | null>(null)
   // Plan item 21: a region card can be dragged onto a glowing hex; dropping it there plays it at once.
-  const [drag, setDrag] = useState<{ label: string; x: number; y: number; regions: RegionId[] } | null>(null)
+  // Plan item 451: the card follows the finger with a lean from its speed (`tilt`), the hex it is over shows what
+  // it will do (`over`), and a drop off every glowing hex springs it back to where it was picked up (`back`).
+  const [drag, setDrag] = useState<{
+    label: string
+    x: number
+    y: number
+    x0: number
+    y0: number
+    tilt: number
+    regions: RegionId[]
+    entries: { index: number; region: RegionId }[]
+    over?: RegionId
+    back?: boolean
+  } | null>(null)
+  // Plan item 451: the keyboard's way to aim an armed card (arrows cycle the glowing regions, Enter plays).
+  const aimKeysRef = useRef<((e: KeyboardEvent) => void) | null>(null)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => aimKeysRef.current?.(e)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   const dragRef = useRef<{ x0: number; y0: number; moved: boolean; group: { label: string; entries: { index: number; region: RegionId }[] } } | null>(null)
   const dragClickGuard = useRef(false)
   // SPEC 10.2: "Tapping [a Squeeze/Expand/Scout card] highlights the matching regions on the map." A
@@ -1972,6 +1992,28 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       },
     }
   }
+  // Plan item 451: the hex a dragged card is over (or the one an armed card has staged) shows what the move does.
+  const aimEntry = drag?.over ? drag.entries.find((e) => e.region === drag.over) : selectedGroup ? pendingChoice : null
+  const aimPreview = aimEntry && actions[aimEntry.index] ? actionPreview(state, actions[aimEntry.index]!) : undefined
+  const aim = aimPreview && aimPreview.chips.length > 0 ? { region: aimPreview.region, chips: aimPreview.chips } : undefined
+  // Arrows cycle an armed card's glowing regions, Enter plays the staged one (a focused button keeps its own Enter).
+  aimKeysRef.current = (e: KeyboardEvent) => {
+    if (!selectedGroup || e.altKey || e.ctrlKey || e.metaKey) return
+    const entries = selectedGroup.entries
+    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
+    if (step !== 0) {
+      e.preventDefault()
+      const at = pendingChoice ? entries.findIndex((en) => en.region === pendingChoice.region) : step > 0 ? -1 : 0
+      setPendingChoice(entries[(at + step + entries.length) % entries.length]!)
+      return
+    }
+    if (e.key === 'Enter' && pendingChoice) {
+      const t = e.target as HTMLElement | null
+      if (t && t.closest('button, a, input, select, textarea, summary')) return
+      e.preventDefault()
+      act(pendingChoice.index)
+    }
+  }
   // A skip lasts for the rest of the teammate's turn only.
   if (!waitingOnAi) skipTeammateRef.current = false
   const active = state.producers[state.activeProducer]
@@ -2448,18 +2490,42 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     if (!d) return
                     if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 12) return
                     d.moved = true
-                    setDrag({ label: text, x: e.clientX, y: e.clientY, regions: d.group.entries.map((en) => en.region) })
+                    const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
+                    const id = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
+                    const over = d.group.entries.find((en) => en.region === id)?.region
+                    setDrag((prev) => {
+                      const dx = prev ? e.clientX - prev.x : 0
+                      const tilt = Math.max(-12, Math.min(12, (prev?.tilt ?? 0) * 0.6 + dx * 0.9))
+                      return {
+                        label: text,
+                        x: e.clientX,
+                        y: e.clientY,
+                        x0: d.x0,
+                        y0: d.y0,
+                        tilt,
+                        regions: d.group.entries.map((en) => en.region),
+                        entries: d.group.entries,
+                        over,
+                      }
+                    })
                   }}
                   onPointerUp={(e) => {
                     const d = dragRef.current
                     dragRef.current = null
                     if (!d?.moved) return
                     dragClickGuard.current = true
-                    setDrag(null)
                     const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
                     const region = hex?.getAttribute('data-tutorial')?.replace(/^region-/, '')
                     const entry = d.group.entries.find((en) => en.region === region)
-                    if (entry) act(entry.index)
+                    if (entry) {
+                      setDrag(null)
+                      act(entry.index)
+                      return
+                    }
+                    // Plan item 451: dropped off every glowing hex, the card springs back to the hand.
+                    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                    setDrag((prev) => (prev ? { ...prev, x: prev.x0, y: prev.y0, tilt: 0, over: undefined, back: true } : null))
+                    window.setTimeout(() => setDrag((prev) => (prev?.back ? null : prev)), reduce ? 160 : 320)
                   }}
                   onPointerCancel={() => {
                     dragRef.current = null
@@ -3551,6 +3617,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           state={boardState}
           ghost={selectedGroup || drag ? undefined : ghost}
           pick={cathPickRegion && !selectedGroup && !drag ? { region: cathPickRegion, lit: previewActions.some((a) => JSON.stringify(a) === JSON.stringify(pickAction)) } : undefined}
+          aim={aim}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep
@@ -3735,7 +3802,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )}
       </aside>
       {drag && (
-        <div className="drag-ghost" aria-hidden="true" style={{ left: drag.x, top: drag.y }}>
+        // Plan item 451: moved by transform only (no layout per frame), leaning with the finger's speed.
+        <div
+          className="drag-ghost"
+          aria-hidden="true"
+          data-over={drag.over ? '' : undefined}
+          data-back={drag.back ? '' : undefined}
+          style={{ transform: `translate3d(${drag.x}px, ${drag.y}px, 0) rotate(${drag.tilt - 3}deg)` }}
+        >
           {drag.label}
         </div>
       )}

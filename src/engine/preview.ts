@@ -4,7 +4,8 @@
 import { REGIONS, regionType } from '../content/map'
 import { resolveRules } from './rules'
 import { resolveExpand, resolveSqueeze } from './enemy'
-import type { GameState, GameEvent, PressureCard, RegionId } from './types'
+import { applyActionEffect } from './actions'
+import type { Action, GameState, GameEvent, PressureCard, RegionId } from './types'
 
 export type PlanSlot = 'squeeze' | 'expand' | 'scout'
 
@@ -100,4 +101,76 @@ export function planPreview(state: GameState, slot: PlanSlot): PlanPreview {
   const next = matching(state, state.scout)
   if (next.length === 0) return done(slot, [], 'Expands next round: no target')
   return done(slot, next, `Expands next round: ${next.map(name).join(', ')}`, 'Next round: ')
+}
+
+/** Plan item 451: what dropping a card on a region will do, read off the real resolver before the turn passes
+ *  (`applyActionEffect`), so the chips over the hex are the move's result and nothing else. */
+export interface RegionDelta {
+  /** The active producer's own stalls on the region. */
+  stalls: number
+  outlets: number
+  buyouts: number
+  doubt: number
+  liberated: boolean
+}
+
+export interface ActionPreview {
+  region: RegionId
+  regionDelta: RegionDelta
+  produce: number
+  marks: number
+  goodwill: number
+  trust: number
+  /** Short signed chips for the hex, in reading order ('+1 Stall', '−1 Outlet', '−1 Produce'). */
+  chips: { text: string; sign: '+' | '-' | '!' }[]
+}
+
+/** The region an action plays into, if it has one. */
+export function actionRegion(action: Action): RegionId | undefined {
+  if ('region' in action && action.region) return action.region
+  if ((action.kind === 'scheme' || action.kind === 'role') && action.targetRegion) return action.targetRegion
+  return undefined
+}
+
+function chip(n: number, one: string, many = `${one}s`): { text: string; sign: '+' | '-' } | undefined {
+  if (n === 0) return undefined
+  return { text: `${n > 0 ? '+' : '−'}${Math.abs(n)} ${Math.abs(n) === 1 ? one : many}`, sign: n > 0 ? '+' : '-' }
+}
+
+export function actionPreview(state: GameState, action: Action): ActionPreview | undefined {
+  const region = actionRegion(action)
+  if (!region) return undefined
+  let after: GameState
+  try {
+    after = applyActionEffect(structuredClone(state), action)
+  } catch {
+    return undefined
+  }
+  const me = state.activeProducer
+  const b = state.regions[region]
+  const a = after.regions[region]
+  const regionDelta: RegionDelta = {
+    stalls: (a.stalls[me] ?? 0) - (b.stalls[me] ?? 0),
+    outlets: a.outlets - b.outlets,
+    buyouts: a.buyouts - b.buyouts,
+    doubt: a.doubt - b.doubt,
+    liberated: a.liberated && !b.liberated,
+  }
+  const res = (g: GameState) => g.producers[me].resources
+  const produce = res(after).produce - res(state).produce
+  const marks = res(after).marks - res(state).marks
+  const goodwill = res(after).goodwill - res(state).goodwill
+  const trust = after.publicTrust - state.publicTrust
+  const chips = [
+    regionDelta.liberated ? { text: 'Liberated', sign: '!' as const } : undefined,
+    chip(regionDelta.stalls, 'Stall'),
+    chip(regionDelta.outlets, 'Outlet'),
+    chip(regionDelta.buyouts, 'Buyout'),
+    chip(regionDelta.doubt, 'Doubt', 'Doubt'),
+    chip(trust, 'Trust', 'Trust'),
+    chip(produce, 'Produce', 'Produce'),
+    chip(marks, 'Mark'),
+    chip(goodwill, 'Goodwill', 'Goodwill'),
+  ].filter((c): c is { text: string; sign: '+' | '-' | '!' } => !!c)
+  return { region, regionDelta, produce, marks, goodwill, trust, chips }
 }

@@ -2191,10 +2191,13 @@ html.no-animations .cath-companion .cameo {
 
 .drag-ghost {
   position: fixed;
+  left: 0;
+  top: 0;
   z-index: var(--z-toast);
   translate: -50% -110%;
-  rotate: -3deg;
   max-width: 180px;
+  transform-origin: 50% 100%;
+  will-change: transform;
   padding: 10px 12px;
   border-radius: var(--r-card);
   border: 1px solid var(--bunting);
@@ -2203,6 +2206,21 @@ html.no-animations .cath-companion .cameo {
   font: 700 var(--fs-small)/1.2 var(--font-text);
   box-shadow: var(--e5), var(--glow-select);
   pointer-events: none;
+}
+
+/* Plan item 451: over a hex it can play into, the card settles flat and its shadow tightens (about to land);
+   dropped off the glow, it springs back to the hand with a small overshoot. Reduced motion: a fade only. */
+.drag-ghost[data-over] {
+  box-shadow: var(--e3), var(--glow-select);
+}
+.drag-ghost[data-back] {
+  transition: transform 300ms cubic-bezier(.34, 1.56, .64, 1), opacity 300ms ease-in;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drag-ghost[data-back] {
+    transition: opacity 150ms ease-in;
+  }
 }
 
 .actions > .action-raised {

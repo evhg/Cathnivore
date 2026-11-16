@@ -1141,3 +1141,31 @@ html.no-animations .meter > i.ghost-loss {
 }
 .card-meter .shelf-pips > i.is-held { background: var(--wheat); }
 .card-meter-count { font: 700 var(--fs-small, .875rem)/1 var(--font-ui); color: var(--ink); }
+
+/* Plan item 451: what a dragged or armed card will do on the hex under it: a ghost piece and signed chips
+   (gain in the field's green, loss in brick, a liberation in wheat foil), set over the name plates. */
+.map .aim-chip rect {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 2px rgb(var(--shadow-ink) / .35));
+}
+.map .aim-chip text {
+  fill: var(--ink);
+  font-family: var(--font-text);
+  font-weight: 800;
+}
+.map .aim-chip[data-sign="+"] rect { stroke: var(--gain-ink); }
+.map .aim-chip[data-sign="+"] text { fill: var(--gain-ink); }
+.map .aim-chip[data-sign="-"] rect { stroke: var(--short-ink); }
+.map .aim-chip[data-sign="-"] text { fill: var(--short-ink); }
+.map .aim-chip[data-sign="!"] rect { fill: var(--wheat-hi); stroke: var(--wheat-ink); }
+.map .aim-layer {
+  animation: aim-in 160ms ease-out both;
+}
+@keyframes aim-in {
+  from { opacity: 0; translate: 0 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map .aim-layer { animation: none; }
+}

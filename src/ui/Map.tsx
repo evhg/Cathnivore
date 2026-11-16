@@ -113,6 +113,9 @@ interface Props {
   /** Plan item 402: the region Cath's suggestion plays into: a chalk ring with her green stake (`lit` when the
    *  suggested card is under the pointer or focus). */
   pick?: { region: RegionId; lit: boolean }
+  /** Plan item 451: the region a dragged (or armed) card is over, with what playing it there will do: a ghost
+   *  piece on the hex and signed chips above it, from the engine's own preview (`actionPreview`). */
+  aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[] }
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -686,7 +689,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1273,6 +1276,48 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       {ability && active.includes(ability.region) && (() => {
         const { x, y } = hexCenter(ability.region, layout)
         return <AbilityMoment key={ability.key} view={ability} x={x} y={y} r={HEX_R * GAP_SCALE} />
+      })()}
+      {aim && active.includes(aim.region) && (() => {
+        const { x, y } = hexCenter(aim.region, layout)
+        // Chips keep a readable 13 px on screen whatever the board's scale (units per screen pixel).
+        const u = HEX_R / Math.max(24, hexPx)
+        const fs = 13 * u
+        const h = 22 * u
+        const gap = 4 * u
+        const sign = aim.chips.find((c) => c.sign !== '!')?.sign ?? '+'
+        const widths = aim.chips.map((c) => (c.text.length * 7.2 + 16) * u)
+        // Two chips to a row, centred over the hex's upper half.
+        const rows: number[][] = []
+        aim.chips.forEach((_, i) => (i % 2 === 0 ? rows.push([i]) : rows[rows.length - 1]!.push(i)))
+        // Over the hex's name plate (never on it), clear of the dragged card, which rides just above the pointer.
+        const top = y - HEX_R * 0.62 - 15 - 6 * u - rows.length * (h + gap) + gap
+        return (
+          <g className="aim-layer" data-aim={aim.region} pointerEvents="none" aria-hidden="true">
+            {/* The piece on the hex's lower half: the dragged card covers the upper one. */}
+            <g className="ghost-piece aim-piece" data-sign={sign} transform={`translate(${x} ${y + HEX_R * 0.3})`}>
+              <circle r={17} />
+              <path d={sign === '+' ? 'M-7 0H7M0-7V7' : 'M-7 0H7'} />
+            </g>
+            {rows.map((row, ri) => {
+              const total = row.reduce((t, i) => t + widths[i]!, 0) + gap * (row.length - 1)
+              let cx = x - total / 2
+              return row.map((i) => {
+                const c = aim.chips[i]!
+                const w = widths[i]!
+                const left = cx
+                cx += w + gap
+                return (
+                  <g key={c.text} className="aim-chip" data-sign={c.sign} transform={`translate(${left} ${top + ri * (h + gap)})`}>
+                    <rect width={w} height={h} rx={h / 2} />
+                    <text x={w / 2} y={h / 2} fontSize={fs} dominantBaseline="central" textAnchor="middle">
+                      {c.text}
+                    </text>
+                  </g>
+                )
+              })
+            })}
+          </g>
+        )
       })()}
       </g>
       {enemyTurn && <EnemyTurnLayer view={enemyTurn} layout={layout} fit={fit} />}

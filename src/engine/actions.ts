@@ -307,6 +307,15 @@ function applyDecision(state: GameState, action: Extract<Action, { kind: 'decide
 }
 
 export function applyAction(state: GameState, action: Action): GameState {
+  const next = applyActionEffect(state, action)
+  if (action.kind === 'decide' || next.result) return next
+  return advanceTurnIfNeeded(next)
+}
+
+/** Plan item 451: the action resolved, before the turn passes (the next producer, or Hollowell's turn at the
+ *  round's end). `applyAction` is exactly this plus `advanceTurnIfNeeded`, so a drag preview built on it shows
+ *  what the move itself does and can never drift from the rules. */
+export function applyActionEffect(state: GameState, action: Action): GameState {
   assertLegal(state, action)
   if (action.kind === 'decide') {
     // Most `decide` kinds (squeeze/Kingsmarket) only swap a production track and need no refresh below.
@@ -450,9 +459,7 @@ export function applyAction(state: GameState, action: Action): GameState {
   // SPEC 4.8: "Win: the moment 5 regions are liberated..." — check right after this action, not only at
   // the next Cleanup, so a mid-round win can't be reversed by the rest of the round (e.g. the Enemy turn
   // un-liberating the winning region before Cleanup ever runs).
-  next = checkWin(next)
-  if (next.result) return next
-  return advanceTurnIfNeeded(next)
+  return checkWin(next)
 }
 
 function spend(state: GameState, producer: ProducerId, cost: { produce: number; marks: number; goodwill: number }): GameState {
