@@ -477,3 +477,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane A: Cath's free hand (wave, point, flag poses) now rests in her jacket pocket with the thumb hooked over the flap, after two critiques read the hanging hand as a claw; the gown and the pinafore have no pocket and keep the hanging hand.
 - 2026-11-16 lane A: Cath's default point is an index finger off the fist's outer edge with the thumb across the curled fingers; the slice-18 'L' still read as a rude sign in a 4x close render.
 - 2026-11-16 lane B: the dealt-hand tilt on Cathnivore's producer cards stays at tablet and desktop sizes but not on a phone, where the four are a row of tabs.
+- 2026-11-16 lane A: took item 454 over 319/331 (handed back with findings) and 449 (a size-3 NIGHT SHIFT 3D item with a draw-call budget at its limit, better started early in a session).
+- 2026-11-16 lane A: portfolio D prints are 295 px at 1440 (item 350's 340 bound lowered to 285) so Cath stands beside the wall at its height, as item 454 asks; she steps into the page margin by up to 12% of the show, never past 12 px short of the window.
+- 2026-11-16 lane A: the portfolio's hero field draws one still frame on a software renderer (SwiftShader, llvmpipe) or when its first 12 frames run under 20 fps; `?field` still forces it to animate for the idle spec and shots.
+- 2026-11-16 lane A: the stats' live line reads the live release's version.json (its build time is the deploy), not PROGRESS.md's release list, which the deployed site can't see.
