@@ -48,6 +48,9 @@ for (const entry of CLASSES) {
     c.__coat ??= c.coat.bind(c)
     c.coat = hex ? (col) => { const x = c.coatMats[0].color.clone(); x.setHex(parseInt(hex, 16)); c.__coat(col ? x : null) } : c.__coat
   }, tryCoats[cls] ?? null)
+  // A repeat of the class on stage wouldn't replay its audition (another pose, another light): step off it first.
+  if (globalThis.__prevCls === cls) { await p.keyboard.press(String(((i + 1) % 5) + 1)); await p.waitForTimeout(3000) }
+  globalThis.__prevCls = cls
   await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000); if (dir) await p.screenshot({ path: `${dir}/coat-${entry.replace(":", "-")}-D.png`, timeout: 120000 })
   const shotA = await p.screenshot({ timeout: 120000 })
   // Her coat alone, then her whole figure (coat, kit, umbrella; not the contact shadow), drawn in one shared flat
