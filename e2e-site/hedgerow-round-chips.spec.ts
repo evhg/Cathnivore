@@ -11,6 +11,10 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   await page.goto('/hedgerow/?2d&sandbox=1&level=34')
   await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
   await page.evaluate(() => {
+    // 'Keep going' is on from level 6: once past round 1 a 2 s countdown sends the next round by itself, which
+    // re-drew the strip under the checks below (E2E red 2026-11-16). Switch it off first, as a player can.
+    const auto = document.querySelector<HTMLButtonElement>('#btn-auto')!
+    if (auto.getAttribute('aria-pressed') === 'true') auto.click()
     const g = (window as unknown as W).hedgerow!.game()!
     g.wave = g.level.setPieces!.find((p) => p.kind === 'flood')!.wave! - 2
   })
