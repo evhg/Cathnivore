@@ -5144,6 +5144,9 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   /* Plan item 398: Graft's '+1 +1' chip is the widest on the window's foot; its 'i' rides the window's top corner
      instead of meeting the chip. */
   .action-tray .actions .action-item:has(svg.action-art[data-scene]):has(.action-gain-graft) > .tooltip-trigger { top: 6px; }
+  /* Plan item 455: Graft's two-value chip stands taller than a price chip, so it rides 6 px higher on the window's
+     foot (its foot met the card's name by 5 px). */
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost.action-gain-graft { top: calc(var(--art-h) - 28px); }
 }
 @media (max-width: 1023.98px) {
   /* Plan item 320: the 'i' now rides a card's window edge at mid-height, and its touch target reaches past the card's
