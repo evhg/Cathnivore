@@ -4126,7 +4126,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 438. [ ] Hedgerow 3D: a real sky and horizon at golden hour
+## 438. [ ] Hedgerow 3D: a real sky and horizon at golden hour *(lane B, in progress)*
 - **Why:** `plan1116g/hedge-l21-3d-D`: the top band (15-1080 x 75-210) is grey-lilac fog that trees and fences show through half-transparent (430-500 x 100-180, 790-830 x 110-170); the field reads as a tray in murk, and nothing in the frame is warm though item 419 set golden hour. Saltmarsh's red boats lie tilted on the beach (30-150 x 190-390).
 - **Build:** a painted sky dome per act (gradient, a low sun disc with bloom, two or three flat-shaded cloud banks, a horizon line of sea or marsh); fog coloured from the sky's horizon and starting only past the country ring; the camera eased so 10-15% of the frame is sky; the boats moored upright on the water.
 - **Accept:** the top 12% of the canvas averages hue 20-55 deg, saturation 0.25+, luminance 0.55+; no mesh in view below opacity 1 apart from water and glass; every boat's roll under 5 deg; draw calls +3 at most; hedgerow-3dframe, country3d and water specs pass; shots P and D before and after.
