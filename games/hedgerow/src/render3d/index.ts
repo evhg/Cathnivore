@@ -2728,6 +2728,7 @@ export class Renderer3D {
       const q = live ? gateQueue(waveSpawns(game, groups, game.wave + 1), isBig) : null;
       if (q) this.buildQueue(game, q);
     }
+    this.syncLeaving(game);
     if (!this.queueGroup) {
       this.shownQueue = null;
       return;
@@ -3329,6 +3330,48 @@ export class Renderer3D {
     this.dynamic.add(group);
     // A boss or other heavy plant in the round: the camera eases to the gate, then back.
     if (q.boss && !this.reducedMotion) this.gateHold = 2.6;
+  }
+
+  /** Plan item 450: during a round each depot's board counts its lane's vehicles still to leave, ticking down as
+   *  each pulls out and gone once the last has left (between rounds the queue's plate says what comes next). */
+  private leavePlates: HTMLElement[] = [];
+  private syncLeaving(game: Game): void {
+    const going = game.phase === "wave" && !!game.spawnQueue.length;
+    const depots = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []).length;
+    if (!going || !this.overlayEl) {
+      for (const el of this.leavePlates) el.remove();
+      this.leavePlates = [];
+      return;
+    }
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    for (let lane = 0; lane < depots; lane++) {
+      const left = game.spawnQueue.filter((q) => (q.lane ?? 0) === lane).length;
+      let el = this.leavePlates[lane];
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "gate-plate";
+        el.dataset.leaving = "";
+        el.dataset.onDepot = "";
+        el.setAttribute("aria-hidden", "true");
+        this.overlayEl.append(el);
+        this.leavePlates[lane] = el;
+      }
+      const dock = left ? this.depotDock(lane, w, h) : null;
+      el.hidden = !dock;
+      if (!dock) continue;
+      const text = `${left} to go`;
+      if (el.textContent !== text) el.textContent = text;
+      el.dataset.left = String(left);
+      el.toggleAttribute("data-on-depot", true);
+      el.toggleAttribute("data-under", dock.under !== undefined);
+      const pw = el.offsetWidth;
+      const ph = el.offsetHeight;
+      const x = Math.max(4, Math.min(w - pw - 4, dock.x - pw / 2));
+      const y = Math.max(4, Math.min(h - ph - 4, dock.under ?? dock.y - ph - 7));
+      el.style.opacity = "1";
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    }
   }
 
   private clearQueue(): void {
