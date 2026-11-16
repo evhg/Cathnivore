@@ -1988,11 +1988,13 @@ html.no-animations .title-screen * {
   30% { transform: rotate(-2deg) translateY(-3px); }
   65% { transform: rotate(1.5deg); }
 }
+/* Gate 7: the line and the tags move but never start invisible: a text block at opacity 0 isn't painted, so the Daily
+   tag (the phone's largest text) only counted as painted when it faded in, 0.6-0.9 s late (Lighthouse 87 -> 78). */
 @keyframes title-line-pop {
-  from { transform: scale(0.6); opacity: 0; }
+  from { transform: scale(0.6); }
 }
 @keyframes title-tag-drop {
-  from { transform: translateY(-16px); opacity: 0; }
+  from { transform: translateY(-16px); }
 }
 @keyframes title-opening-fade {
   from { opacity: 0; }

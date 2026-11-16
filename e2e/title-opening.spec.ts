@@ -14,9 +14,14 @@ test('the opening plays, ends by 1200 ms and leaves the awning over Cath', async
   await page.goto('/?opening')
   await page.locator('.title-cath svg').waitFor()
   expect(await opening(page)).toBe('run')
-  // the tags are still on their way down early on
-  const early = await page.evaluate(() => Number(getComputedStyle(document.querySelector('.title-menu > .title-cta')!).opacity))
-  expect(early).toBeLessThan(1)
+  // the tags are still on their way down early on, drawn the whole way (never at opacity 0: gate 7's LCP is the
+  // Daily tag, and an invisible tag isn't painted)
+  const early = await page.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector('.title-menu > .title-cta')!)
+    return { transform: cs.transform, opacity: Number(cs.opacity) }
+  })
+  expect(early.transform).not.toBe('none')
+  expect(early.opacity).toBe(1)
   await expect.poll(() => opening(page), { timeout: 2500 }).toBe('done')
   const awning = (await page.locator('.title-awning').boundingBox())!
   const line = (await page.locator('.title-cath-line').boundingBox())!
