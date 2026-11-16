@@ -188,8 +188,10 @@ ${skirt}`
   }
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
-  const right = 'M150 490 L198 490 C197 565 193 630 191 700 C193 745 190 800 187 846 L168 846 C164 800 160 750 162 700 C157 630 151 565 150 490 Z'
-  const left = 'M202 490 L250 490 C247 565 238 640 231 708 C236 760 239 808 239 852 L221 852 C219 808 213 762 206 708 C203 640 202 565 202 490 Z'
+  // Plan item 442 (critique: 'stick legs'): each leg's calf swells below the knee and slims to the ankle, the outer
+  // thigh rounds out from the hip.
+  const right = 'M150 490 L198 490 C198 560 194 630 191 700 C193 728 195 760 192 790 C190 815 188 832 187 846 L168 846 C166 830 162 812 160 790 C156 760 157 728 162 700 C155 640 147 565 150 490 Z'
+  const left = 'M202 490 L250 490 C250 565 241 640 231 708 C238 738 244 772 242 800 C241 825 239 840 239 852 L221 852 C220 835 216 815 211 790 C206 765 204 735 206 708 C203 640 201 565 202 490 Z'
   return `${groundShadow(203, 80)}
 ${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
@@ -1061,7 +1063,7 @@ function lanePennant(): string {
 
 function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
-  const restLeft = sleeve('M132 404 Q130 420 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 188, cl)
+  const restLeft = sleeve('M133 386 Q130 412 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 188, cl)
   switch (pose) {
     case 'clasped': {
       // Plan item 33: her hands folded at her waist, each on the end of its own sleeve: her right hand
