@@ -458,6 +458,8 @@ function hairFront(id: string): string {
   // Plan item 442 (critique: 'a smear by the parting'): the bible's shine band as one crisp arc round the crown, broken
   // at the part, brightest on the lit side, over a softer sheen just under it.
   const shine = [
+    // the band itself: one broad, soft lighter brown across the crown, under the crisp glints
+    brush([148, 112], [200, 62], [253, 112], 0.4, 14, 0.4, C.hairShine, ' opacity="0.6"'),
     strand([160, 112], [168, 100], [180, 94], 2.2, C.hairShine, 0.45),
     strand([152, 106], [166, 86], [195, 84], 4.6, C.hairGlint, 0.7),
     strand([205, 84], [236, 86], [249, 108], 5.6, C.hairGlint, 0.95),
@@ -922,7 +924,7 @@ function sleeve(d: string, w: number, cloth: Cloth, cuff: string): string {
   return `<path ${cap} stroke="${cloth.line}" stroke-width="${w + 4}" d="${d}"/>
 <path ${cap} stroke="${cloth.fill}" stroke-width="${w}" d="${d}"/>
 <path ${cap} stroke="${cloth.shade}" stroke-width="${n1(w * 0.42)}" opacity="0.45" transform="translate(${n1(-w * 0.22)} ${n1(w * 0.12)})" d="${d}"/>
-<path ${cap} stroke="${C.rim}" stroke-width="${n1(w * 0.16)}" opacity="0.35" transform="translate(${n1(w * 0.2)} ${n1(-w * 0.1)})" d="${d}"/>
+<path ${cap} stroke="${C.rim}" stroke-width="${n1(w * 0.1)}" opacity="0.16" transform="translate(${n1(w * 0.26)} ${n1(-w * 0.12)})" d="${d}"/>
 <path ${cap} stroke="${cloth.line}" stroke-width="${w + 6}" d="${cuff}"/>
 <path ${cap} stroke="${cloth.cuff}" stroke-width="${w + 2}" d="${cuff}"/>`
 }
