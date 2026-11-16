@@ -1169,3 +1169,37 @@ html.no-animations .meter > i.ghost-loss {
 @media (prefers-reduced-motion: reduce) {
   .map .aim-layer { animation: none; }
 }
+
+/* Plan item 451: a played card lands: the hex presses down under a paper-white flash and flecks of paper dust
+   puff out low to the sides (550 ms). Reduced motion: the flash alone, as a fade. */
+.map .play-stamp-press {
+  fill: var(--paper);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: play-stamp-press 420ms var(--ease-settle) both;
+}
+.map .play-dust {
+  fill: var(--paper);
+  stroke: var(--ink-a35);
+  stroke-width: .75;
+  opacity: 0;
+  animation: play-dust 560ms 60ms ease-out both;
+}
+@keyframes play-stamp-press {
+  0% { opacity: .55; transform: scale(1.06); }
+  35% { opacity: .35; transform: scale(.97); }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes play-dust {
+  0% { opacity: .95; transform: translate(0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map .play-dust { display: none; }
+  .map .play-stamp-press { animation: moment-fade 400ms linear both; }
+}
+html.no-animations .map .play-stamp { display: none; }
+
+/* Plan item 451: on the phone's counter too a Supply/Rebut group's name reads 'Supply 1 Outlet', one name. */
+.action-tray .actions .action-name :is(.action-colon, .action-remove) { display: none; }

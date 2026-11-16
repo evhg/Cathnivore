@@ -24,6 +24,8 @@ async function pickUp(page: Page) {
   const y = from.y + from.height / 2
   await page.mouse.move(x, y)
   await page.mouse.down()
+  // The hexes it can go to light the moment it's pressed, before it moves.
+  await expect(page.locator('.region-hex.glow').first()).toBeVisible({ timeout: 1000 })
   await page.mouse.move(x + 20, y - 40, { steps: 4 })
   await expect(page.locator('.drag-ghost')).toBeVisible()
   return { x, y }
@@ -58,8 +60,15 @@ test('over a glowing hex the card shows its ghost piece and what it will change'
     expect(o).toBeLessThanOrEqual(0.55)
   }
   if (process.env.SHOTS) await page.screenshot({ path: `e2e/screenshots/card-drag-aim-${testInfo.project.name}.png` })
+  const aimed = await aim.getAttribute('data-aim')
   await page.mouse.up()
+  if (process.env.SHOTS) {
+    await page.waitForTimeout(110)
+    await page.screenshot({ path: `e2e/screenshots/card-drag-land-${testInfo.project.name}.png` })
+  }
   await expect(page.locator('.drag-ghost')).toHaveCount(0)
+  // It lands with a stamp on the hex it was dropped on.
+  await expect(page.locator('.map .play-stamp')).toHaveAttribute('data-stamp', aimed!)
   await expect.poll(() => pipsOn(page)).toBe(before - 1)
 })
 

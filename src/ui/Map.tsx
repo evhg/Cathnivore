@@ -116,6 +116,8 @@ interface Props {
   /** Plan item 451: the region a dragged (or armed) card is over, with what playing it there will do: a ghost
    *  piece on the hex and signed chips above it, from the engine's own preview (`actionPreview`). */
   aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[] }
+  /** Plan item 451: a card just played into this region lands with a stamp and a puff of paper dust (`key` replays it). */
+  stamp?: { region: RegionId; key: number }
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -689,7 +691,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1315,6 +1317,32 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                   </g>
                 )
               })
+            })}
+          </g>
+        )
+      })()}
+      {stamp && active.includes(stamp.region) && (() => {
+        const { x, y } = hexCenter(stamp.region, layout)
+        return (
+          <g key={stamp.key} className="play-stamp" data-stamp={stamp.region} pointerEvents="none" aria-hidden="true" transform={`translate(${x} ${y})`}>
+            <polygon className="play-stamp-press" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.96)} />
+            {Array.from({ length: 10 }, (_, i) => {
+              // Paper flecks puff out low and to the sides, as from a card slapped on a table.
+              const a = Math.PI * (0.05 + (i / 9) * 0.9) + (i % 2 ? 0.12 : -0.12)
+              const d = HEX_R * (0.55 + (i % 3) * 0.12)
+              return (
+                <rect
+                  key={i}
+                  className="play-dust"
+                  x={-3}
+                  y={-2}
+                  width={i % 3 === 0 ? 7 : 5}
+                  height={i % 2 ? 4 : 3}
+                  rx={1}
+                  transform={`translate(0 ${HEX_R * 0.25})`}
+                  style={{ ['--dx' as string]: `${Math.cos(a) * d}px`, ['--dy' as string]: `${-Math.sin(a) * d * 0.45}px`, ['--rot' as string]: `${(i * 67) % 180 - 90}deg` }}
+                />
+              )
             })}
           </g>
         )

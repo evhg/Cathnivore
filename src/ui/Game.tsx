@@ -1277,6 +1277,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     over?: RegionId
     back?: boolean
   } | null>(null)
+  // Plan item 451: the hex a region card was just played into (it lands with a stamp), and the hexes a pressed card
+  // can go to, lit the moment it is touched (before the drag threshold or the click).
+  const [stamp, setStamp] = useState<{ region: RegionId; key: number } | null>(null)
+  const [pressRegions, setPressRegions] = useState<RegionId[] | null>(null)
   // Plan item 451: the keyboard's way to aim an armed card (arrows cycle the glowing regions, Enter plays).
   const aimKeysRef = useRef<((e: KeyboardEvent) => void) | null>(null)
   useEffect(() => {
@@ -2009,7 +2013,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     if (e.key === 'Enter' && pendingChoice) {
       const t = e.target as HTMLElement | null
-      if (t && t.closest('button, a, input, select, textarea, summary')) return
+      // A focused control (a region hex stages its choice on its own Enter, and React has re-rendered by the
+      // time this listener runs) keeps its own Enter: only Enter with nothing focused plays.
+      if (e.defaultPrevented || (t && t !== document.body && t.closest('button, a, input, select, textarea, summary, [role="button"], [tabindex]'))) return
       e.preventDefault()
       act(pendingChoice.index)
     }
@@ -2229,6 +2235,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     if (pressed && action.kind !== 'invest' && !autoplayRef.current && liftEnabled() && performance.now() - pressed.at < 15_000) {
       liftPlayedCard(pressed.el, liftTarget(regionOf(action)))
     }
+    const landed = regionOf(action)
+    if (landed && !autoplayRef.current) setStamp({ region: landed, key: Date.now() })
     advance(state, action)
   }
 
@@ -2484,6 +2492,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     if (guidedActive || e.button !== 0) return
                     dragRef.current = { x0: e.clientX, y0: e.clientY, moved: false, group }
                     e.currentTarget.setPointerCapture(e.pointerId)
+                    setPressRegions(group.entries.map((en) => en.region))
                   }}
                   onPointerMove={(e) => {
                     const d = dragRef.current
@@ -2512,6 +2521,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   onPointerUp={(e) => {
                     const d = dragRef.current
                     dragRef.current = null
+                    setPressRegions(null)
                     if (!d?.moved) return
                     dragClickGuard.current = true
                     const hex = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest('.region-hex')).find(Boolean)
@@ -2529,6 +2539,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   }}
                   onPointerCancel={() => {
                     dragRef.current = null
+                    setPressRegions(null)
                     setDrag(null)
                   }}
                   onClick={() => {
@@ -2553,6 +2564,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                           {face.slice(face.indexOf('\u00a0· ') + 3)}
                         </span>
                       </>
+                    ) : (handOnTable || !isDesktop) && /^(Rebut|Supply): /.test(face) ? (
+                      // Plan item 451 (seen mid-drag): the table hand's label is a column, so 'Supply', ':' and
+                      // 'remove 1 Outlet' each took a line and pushed 'Pick a region' off the card; one name line.
+                      <span className="action-name">
+                        <BuyVerb text={face} />
+                      </span>
                     ) : (
                       <BuyVerb text={face} />
                     )}
@@ -3618,6 +3635,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           ghost={selectedGroup || drag ? undefined : ghost}
           pick={cathPickRegion && !selectedGroup && !drag ? { region: cathPickRegion, lit: previewActions.some((a) => JSON.stringify(a) === JSON.stringify(pickAction)) } : undefined}
           aim={aim}
+          stamp={stamp ?? undefined}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep
@@ -3636,6 +3654,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 ? [pickRegion(teammatePick.action)!]
               : drag
                 ? drag.regions
+                : pressRegions && !selectedGroup
+                  ? pressRegions
                 : selectedGroup
               ? pendingChoice
                 ? [pendingChoice.region]
