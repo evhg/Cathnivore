@@ -260,6 +260,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const sub = el("p", "cp-sub", root);
   sub.setAttribute("aria-hidden", "true");
   let subTimer = 0;
+  let subToken = 0;
   function placeSub(): void {
     const portrait = innerWidth <= 700 && innerHeight > innerWidth;
     const a = left.getBoundingClientRect();
@@ -285,10 +286,17 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     sub.classList.add("is-on");
     root.dataset.speaking = "true";
     if (hooks.still) return;
-    subTimer = window.setTimeout(() => {
-      sub.classList.remove("is-on");
-      delete root.dataset.speaking;
-    }, 3200);
+    // The 3.2 s count from the line's first painted frame, not from the click: on a slow device the cut (the lit gun
+    // reel, a new class's meshes) can hold the page for seconds, and a wall-clock timer then expired before the line
+    // was ever seen.
+    const token = ++subToken;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (token !== subToken) return;
+      subTimer = window.setTimeout(() => {
+        sub.classList.remove("is-on");
+        delete root.dataset.speaking;
+      }, 3200);
+    }));
   }
   addEventListener("resize", placeSub);
   // The columns settle after the first speak (fonts, the fold, the weapon art): re-place it as they move, or a
@@ -584,6 +592,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);
+    subToken++;
     removeEventListener("resize", placeSub);
     removeEventListener("resize", fitName);
     subRO?.disconnect();
