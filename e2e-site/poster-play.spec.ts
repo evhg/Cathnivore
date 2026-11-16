@@ -42,6 +42,18 @@ test('no poster plays off-screen', async ({ page }) => {
 
 test('the portfolio prints play one at a time', async ({ page }) => {
   await page.goto('/')
+  if (page.viewportSize()!.width >= 1100) {
+    // Plan item 454: at D a print plays only while it is pointed at or focused.
+    await page.waitForTimeout(3000)
+    await expect(playing(page)).toHaveCount(0)
+    await page.locator('.show-b').hover()
+    await expect(page.locator('.show-b')).toHaveAttribute('data-playing', 'runnel')
+    await page.mouse.move(5, 880)
+    await expect(playing(page)).toHaveCount(0)
+    await page.locator('.show-d').focus()
+    await expect(page.locator('.show-d')).toHaveAttribute('data-playing', 'hedgerow')
+    return
+  }
   await expect(playing(page)).toHaveCount(1, { timeout: 8000 })
   // On a phone the prints share one spot: the one playing is the one showing.
   const op = await playing(page).evaluate((el) => Number(getComputedStyle(el).opacity))

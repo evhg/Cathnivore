@@ -49,7 +49,8 @@ test.describe('portfolio', () => {
     // it step in, the lede ending clear of the wall.
     expect(box.x).toBeGreaterThanOrEqual(600)
     expect(box.width).toBeGreaterThan(680)
-    expect(((await page.locator('.show-a').boundingBox())!).width).toBeGreaterThanOrEqual(340)
+    // Plan item 454: Cath stands beside the wall at its height now, so each screen is 285 px+ (item 350 had 340).
+    expect(((await page.locator('.show-a').boundingBox())!).width).toBeGreaterThanOrEqual(285)
     expect(((await page.locator('.hero .lede').boundingBox())!).x + ((await page.locator('.hero .lede').boundingBox())!).width).toBeLessThanOrEqual(box.x)
     await expect(show.locator('img')).toHaveCount(4) // item 91 added Hedgerow as a fourth print
     const cath = show.locator('svg.cath')

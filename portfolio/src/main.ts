@@ -7,7 +7,7 @@ import { watchCathLines } from '../../shared/cath/lines'
 import { cathSvg } from '../../shared/cath/cath'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { startField } from './hero'
-import { cards, counters, kinetic, pulse, viewTransitionNames, words } from './fx'
+import { cards, counters, kinetic, pulse, shippedLine, viewTransitionNames, words } from './fx'
 import { startPosterPlay } from '../../site/src/posterplay'
 
 // Plan item 442: her line weight at small sizes, including a figure prerendered into the page.
@@ -48,11 +48,84 @@ if (top) {
   window.addEventListener('scroll', mark, { passive: true })
 }
 
-// Plan item 145: the hero's game prints play, one at a time (they take no pointer, so they play in turn).
+// Plan item 145: the hero's game prints play. Plan item 454: at D (a pointer that hovers) only the print pointed at or
+// focused plays, and Cath turns to it, points, and names it; on a phone they play in turn.
+const wall = matchMedia('(min-width: 1100px) and (hover: hover)')
+const showCards = [...document.querySelectorAll<HTMLAnchorElement>('.hero-show .show-card')]
 startPosterPlay(
-  [...document.querySelectorAll<HTMLElement>('.hero-show .show-card')].flatMap((card) => {
-    const src = card.querySelector('img')?.getAttribute('src') ?? ''
-    const game = (['cathnivore', 'runnel', 'hedgerow', 'nightshift'] as const).find((id) => src.includes(`games-${id}`))
+  showCards.flatMap((card) => {
+    const game = (['cathnivore', 'runnel', 'hedgerow', 'nightshift'] as const).find((id) => card.dataset.game === id)
     return game ? [{ poster: card, art: card, game }] : []
   }),
+  { hoverOnly: () => wall.matches },
 )
+if (heroCath) presentWork(heroCath, showCards)
+void shipped(document.querySelector<HTMLElement>('#shipped-text'))
+
+function presentWork(cath: HTMLElement, cards: HTMLElement[]): void {
+  const say = document.querySelector<HTMLElement>('#show-say .show-say-text')
+  const rest = say?.textContent ?? ''
+  const resting = cath.innerHTML
+  let current: HTMLElement | null = null
+  let leaveTimer = 0
+  const face = (card: HTMLElement | null) => {
+    clearTimeout(leaveTimer)
+    if (card === current) return
+    current = card
+    if (!card || !wall.matches) {
+      cath.innerHTML = resting
+      delete cath.dataset.facing
+      if (say) say.textContent = rest
+      document.querySelector('#show-say')?.removeAttribute('data-game')
+      return
+    }
+    // She stands right of the wall, so she turns to face left (mirrored) and aims her arm at the print's centre from
+    // her shoulder (about a fifth of the way down her figure); the angle is in her mirrored SVG space.
+    const c = cath.getBoundingClientRect()
+    const t = card.getBoundingClientRect()
+    const dx = c.left + c.width / 2 - (t.left + t.width / 2)
+    const dy = t.top + t.height / 2 - (c.top + c.height * 0.22)
+    const pointAt = (Math.atan2(dy, Math.max(1, dx)) * 180) / Math.PI
+    cath.innerHTML = cathSvg({ framing: 'full', expression: 'delighted', pose: 'point', pointAt, animate: !reduced })
+    if (reduced) cath.querySelector('svg.cath')?.classList.remove('cath-animate')
+    cath.dataset.facing = card.dataset.game ?? ''
+    const game = card.dataset.game ?? ''
+    if (say) say.textContent = SHOW_LINES[game] ?? rest
+    document.querySelector('#show-say')?.setAttribute('data-game', game)
+  }
+  for (const card of cards) {
+    card.addEventListener('pointerenter', () => face(card))
+    card.addEventListener('focusin', () => face(card))
+    // A short grace so moving between two prints doesn't flick her back to rest in between.
+    const leave = () => {
+      clearTimeout(leaveTimer)
+      leaveTimer = window.setTimeout(() => face(null), 220)
+    }
+    card.addEventListener('pointerleave', leave)
+    card.addEventListener('focusout', leave)
+  }
+  wall.addEventListener('change', () => face(null))
+}
+
+/** Plan item 454: her one line per print, in her voice. */
+const SHOW_LINES: Record<string, string> = {
+  cathnivore: 'Cathnivore: my market. Hollowell wants it; you hold it.',
+  runnel: "Runnel: one water puzzle a day. Today's is fresh.",
+  nightshift: 'NIGHT SHIFT: me, after dark. Grown-ups only.',
+  hedgerow: 'Hedgerow: hold the lane and save the farm.',
+}
+
+/** Plan item 454: the stats' live line: when the live release shipped (its version.json) and the next build session. */
+async function shipped(el: HTMLElement | null): Promise<void> {
+  if (!el) return
+  try {
+    const res = await fetch('/version.json', { cache: 'no-store' })
+    if (!res.ok) return
+    const { buildTime, commit } = (await res.json()) as { buildTime?: string; commit?: string }
+    const at = buildTime ? Date.parse(buildTime) : NaN
+    if (!Number.isFinite(at)) return
+    el.textContent = shippedLine(Date.now() - at, commit, new Date())
+  } catch {
+    // Offline: the static line stays.
+  }
+}

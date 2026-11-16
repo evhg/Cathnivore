@@ -223,7 +223,7 @@ export type PosterEntry = {
 }
 
 /** Starts the poster loops. Returns a stop function (used by tests and page teardown). */
-export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; delay?: number; idle?: number } = {}): () => void {
+export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; delay?: number; idle?: number; hoverOnly?: () => boolean } = {}): () => void {
   if (!entries.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {}
   const turnMs = opts.turn ?? 5200
   // Like the portfolio's field (critique 2026-11-03), the loops rest when nobody is there, so the page goes idle.
@@ -277,6 +277,8 @@ export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; d
   const choose = (now: number) => {
     if (!live || document.hidden || now - lastInput > idleMs) return setPlaying(null)
     if (pointed && visible.has(pointed)) return setPlaying(pointed)
+    // Plan item 454: where the posters answer a pointer (the portfolio's desktop wall), only the one pointed at plays.
+    if (opts.hoverOnly?.()) return setPlaying(null)
     if (now - lastPick < 250 && playing) return
     lastPick = now
     // A card faded out (the portfolio's phone stack cycles its prints) counts as out of view.

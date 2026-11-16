@@ -175,3 +175,11 @@ export function ago(ms: number): string {
   if (h < 48) return `${h} h ago`
   return `${Math.round(h / 24)} days ago`
 }
+
+/** Plan item 454: the hero's live line under the stats. Build sessions start at :21 and :51 every hour. */
+export function shippedLine(sinceMs: number, commit: string | undefined, now: Date): string {
+  const m = now.getUTCMinutes()
+  const next = m < 21 ? 21 - m : m < 51 ? 51 - m : 81 - m
+  const build = commit && /^[0-9a-f]{7,}$/.test(commit) ? `, build ${commit.slice(0, 7)}` : ''
+  return `Live: last shipped ${ago(sinceMs)}${build}. The next build session starts in ${next} min.`
+}

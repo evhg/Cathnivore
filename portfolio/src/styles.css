@@ -1856,3 +1856,81 @@ h1 {
   }
   .show-strip .show-card { width: auto; }
 }
+
+/* Plan item 454: the work plays and Cath presents it. The prints are links to the games; at D the wall is a 2x2 at the
+   left of the show and Cath stands beside it, full length and as tall as the wall (into the page's right margin), on her
+   dais. Pointing at or focusing a print plays its loop (posterplay's hoverOnly) and she turns to it, points, and names
+   it in one line under the wall. A live line under the stats says when the release shipped. */
+.show-card { color: inherit; text-decoration: none; }
+.show-say { display: none; }
+.shipped {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.shipped .dot { flex: none; }
+.ready .shipped { animation: rise 1s var(--ease-out) 1000ms both; }
+/* on a phone it stays with the stats, under the prints */
+@media (max-width: 1099.98px) { .hero .shipped { order: 2; } }
+@media (min-width: 1100px) {
+  /* --hang: how far she steps into the page's right margin (up to 12% of the show, 12 px short of the window's edge);
+     --cw: one print's width, so two prints, their gaps and her column fill the show plus that step. */
+  .hero-show {
+    --hang: min(12%, (100vw - min(var(--page), 100vw - 2 * var(--gutter))) / 2 - 12px);
+    --cath-w: 23%;
+    --cw: calc((100% + var(--hang) - var(--cath-w) - 5%) / 2);
+  }
+  .hero-show .show-card { pointer-events: auto; width: var(--cw); transition: translate 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms; }
+  .show-a { left: 0; top: 2%; }
+  .show-b { left: calc(var(--cw) + 2%); right: auto; top: 2%; }
+  .show-c { left: 0; top: calc(2% + var(--cw) * 10 / 16 + 2.5%); }
+  .show-d { left: calc(var(--cw) + 2%); right: auto; top: calc(2% + var(--cw) * 10 / 16 + 2.5%); }
+  .hero-show .show-card:is(:hover, :focus-visible) {
+    translate: 0 -4px;
+    border-color: color-mix(in srgb, var(--accent-gold) 70%, transparent);
+    box-shadow: 0 34px 60px -18px var(--show-shadow), 0 0 0 4px var(--accent-gold-soft);
+  }
+  .hero-show .show-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+  /* As tall as the wall (her figure is about 0.41 as wide as tall). */
+  .show-cath { left: auto; right: calc(-1 * var(--hang)); top: 1%; width: var(--cath-w); }
+  /* her dais under her alone, clear of the wall's last print */
+  /* Her dais and light stop 8 px past her (she ends 12 px or more short of the window), so nothing scrolls sideways. */
+  .show-cath::after { left: -12%; right: -8px; }
+  .show-cath::before { left: -40%; right: -8px; }
+  /* the lede ends clear of the wall at any width (it measured against the window, and ran under NIGHT SHIFT at 1920) */
+  .hero .lede { max-width: min(600px, calc(100% - min(48.8vw, 702px) - 40px)); }
+  .show-cath[data-facing] svg { transform: scaleX(-1); animation: cath-turn 260ms var(--ease-out) both; }
+  .show-say {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: calc(100% - 2 * var(--cw) - 2%);
+    top: calc(2% + 2 * var(--cw) * 10 / 16 + 2.5% + 3%);
+    margin: 0;
+    text-align: right;
+    pointer-events: none;
+  }
+  .show-say-text {
+    display: inline-block;
+    position: relative;
+    padding: 9px 16px 10px;
+    border-radius: 14px 14px 4px 14px;
+    background: var(--glass-solid);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font: italic 400 1.0625rem/1.3 var(--font-voice);
+    letter-spacing: 0.005em;
+  }
+  .show-say[data-game] .show-say-text { border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent); animation: rise 320ms var(--ease-out) both; }
+}
+@keyframes cath-turn {
+  from { transform: scaleX(-0.15); }
+  to { transform: scaleX(-1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .show-cath[data-facing] svg, .show-say[data-game] .show-say-text { animation: none; }
+  .hero-show .show-card { transition: none; }
+}
