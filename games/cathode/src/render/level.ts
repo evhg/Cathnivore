@@ -443,7 +443,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     // A chain-link-ish fence across the alley mouth? No: alleys stay open for flanking. A dumpster:
     b.box("rust", -19.5, 0.8, al.z0 + 1.0, 1.1, 1.3, 1.9, { uv: 1.5, collide: "metal" });
     b.box("darkMetal", -19.5, 1.5, al.z0 + 1.0, 1.2, 0.08, 2.0);
-    for (let i = 0; i < 6; i++) b.shape("bag", new THREE.SphereGeometry(0.4, 8, 6), V(-21 + r(-0.6, 1.4), 0.35, al.z1 - 0.7 - r(0, 1.2)), r(0, 6), V(1, r(0.6, 0.9), r(0.8, 1.2)));
+    for (let i = 0; i < 6; i++) b.shape("bag", bagGeo(0.4), V(-21 + r(-0.6, 1.4), 0.35, al.z1 - 0.7 - r(0, 1.2)), r(0, 6), V(1, r(0.6, 0.9), r(0.8, 1.2)));
     b.box("wood", -14, 0.32, al.z1 - 0.6, 1.2, 0.35, 1.0, { uv: 1, collide: "wood" });
     // A door with a caged bulb: the only light back here (dark corners on purpose).
     b.boxMinMax("rust", -22.0, 0, zc - 0.6, -21.95, 2.3, zc + 0.6, { uv: 1 });
@@ -851,7 +851,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
         b.shape("darkMetal", lidG, V(x, y0 + 1.14, zw - 0.55), 0);
       }
       for (const [x, dz, yaw, sy] of [[-0.1, 0.2, 0.4, 0.7], [-1.8, 0.45, 2.1, 0.82], [-3.3, 0.15, 4.0, 0.64], [-0.6, 1.1, 5.2, 0.6]] as Array<[number, number, number, number]>)
-        b.shape("bag", new THREE.SphereGeometry(0.34, 8, 6), V(x, gy(x, zw - 1) + 0.28 * sy + 0.04, zw - 1.0 - dz), yaw, V(1, sy, 1));
+        b.shape("bag", bagGeo(0.34), V(x, gy(x, zw - 1) + 0.28 * sy + 0.04, zw - 1.0 - dz), yaw, V(1, sy, 1));
       // The back door, a steel leaf under a warm transom and a caged bulb.
       const fy = gy(-4.2, zw - 0.3);
       b.boxMinMax("darkMetal", -4.85, fy, zw - 0.12, -3.55, fy + 2.35, zw);
@@ -1021,7 +1021,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
   // Trash bags against the facades.
   for (let i = 0; i < 18; i++) {
     const z = r(-64, 60);
-    b.shape("bag", new THREE.SphereGeometry(0.36, 8, 6), V(W + 0.4, 0.38, z), r(0, 6), V(1, r(0.6, 0.85), r(0.8, 1.2)));
+    b.shape("bag", bagGeo(0.36), V(W + 0.4, 0.38, z), r(0, 6), V(1, r(0.6, 0.85), r(0.8, 1.2)));
   }
   // Bollards along the quay kerb.
   for (let z = -60; z < 60; z += 6) {
@@ -1086,6 +1086,36 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
 }
 
 /** Moves a horizontal plane's vertices to a height function. */
+/**
+ * Plan item 462: a bin bag, not a ball (a plain sphere with the neon in its gloss read as two black balls by the
+ * title's wall): the same 8x6 sphere settled flat where it sits, lumpy round its sides and pinched at the top into
+ * a tied neck. Same vertex count, so the merge is unchanged.
+ */
+function bagGeo(r: number): THREE.BufferGeometry {
+  const g = new THREE.SphereGeometry(r, 8, 6);
+  const p = g.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < p.count; i++) {
+    let x = p.getX(i);
+    let y = p.getY(i);
+    let z = p.getZ(i);
+    const t = y / r;
+    const a = Math.atan2(z, x);
+    const lump = 1 + 0.09 * Math.sin(3 * a + 2 * t) + 0.05 * Math.sin(5 * a - t);
+    x *= lump;
+    z *= lump;
+    if (t < -0.45) y = -0.45 * r + (t + 0.45) * 0.1 * r; // settled flat on the ground
+    if (t > 0.55) {
+      const k = (t - 0.55) / 0.45; // the neck gathered and tied
+      x *= 1 - 0.8 * k;
+      z *= 1 - 0.8 * k;
+      y += 0.22 * r * k;
+    }
+    p.setXYZ(i, x, y, z);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 function bend(g: THREE.BufferGeometry, h: (x: number, z: number) => number): void {
   const p = g.getAttribute("position") as THREE.BufferAttribute;
   for (let i = 0; i < p.count; i++) p.setY(i, h(p.getX(i), p.getZ(i)));
