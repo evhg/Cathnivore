@@ -4213,7 +4213,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** a unit test that the preview deltas equal the resolved result for every region action type; new drag specs at P and D and a keyboard spec; dimmed regions at most 55% of a valid one's luminance; the drag animates transform only; shots P and D mid-drag, before and after.
 - **Size:** 3
 
-## 452. [ ] /games/: today's market board, every daily and a streak
+## 452. [ ] /games/: today's market board, every daily and a streak *(lane B, in progress)*
 - **Why:** `plan1116h/games-D`: the hero chalkboard (580-1110 x 85-465) holds one quote and two buttons; the four dailies show only as 13 px lines on the card feet (432-680 x 770-790, 741-940 x 770-790); Cath (280-375 x 130-300) is about 19% of the viewport's height at an empty counter; `games-P` cards start at y 650, Hedgerow and NIGHT SHIFT below the fold. Nothing remembers that you played yesterday.
 - **Build:** the counter as today's board: a tag per game read from its local save (played today, result against par, streak), a chalk week of 7 dots and a pennant at a 3-day streak (NIGHT SHIFT: names crossed off The List); Cath's line and pose by state (pointing at the first game not yet played, cheering when all are done); Cath 35%+ of the hero's height.
 - **Accept:** unit tests for the save readers (empty, corrupt, old saves); an e2e that seeds saves and checks the ticks and streak; board text AA; all four tags above y 844 at P; shots P and D, fresh and seeded.
