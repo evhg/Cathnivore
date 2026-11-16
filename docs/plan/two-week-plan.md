@@ -4271,7 +4271,7 @@ Progress (lane B, 2026-11-16 20:50, slice 1 `cc50176`): the title's coat key (it
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
 - **Size:** 3
 
-## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(lane A, in progress)*
+## 460. [x] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(done 2026-11-16 21:25 lane A, slice 3, a8857ecd: 'This round' is one ledger row, the round's number above Cath's 72 px portrait in one ruled left column, the vehicles and her tip on the right (no rule between ticket and plate); the lock row in plain words, 'Round 12 · Airborne needs a Scarecrow' (was 'Not covered · Airborne · Scarecrow'); ten-packet racks at 44 px art when the column isn't tight. With slices 1-2: the ledger spec holds at most 10 bordered containers in 3 colours at levels 21 and 34; Go stays the one filled block; phone untouched. Ledger, round-chips, tray, host, rack-roles, coach-tap, critique specs pass at P and D (48). Shots scratchpad a460/before, a460/after)*
 
 Progress (lane A, 2026-11-16 20:30, slice 2, handed back): the rack's 'More seeds at level N' note is a pencilled line, not a dashed box; `hedgerow-ledger` now counts the panel's containers at 1440x900 on levels 21 and 34 (60x24 px+, three or four bordered sides or a ring; the seed packets counted as their one rack): 3 now (panel, rack, Cath's plate face is under 60 px), bound 10, colours 3. Left: Cath's portrait beside the round number in one 'This round' row, Go's weight, P/D play specs.
 
