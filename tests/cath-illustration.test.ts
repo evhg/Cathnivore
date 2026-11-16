@@ -29,3 +29,11 @@ describe('Cath is illustrated (plan item 442)', () => {
     expect(lower.match(/<ellipse[^>]+fill="#ffffff" opacity="0\.38"/g)?.length).toBe(2)
   })
 })
+
+describe('her hands are groomed (plan item 442)', () => {
+  it('the pointing hand shows a lacquered nail; the palm-out wave and a gloved hand none', () => {
+    expect(cathSvg({ framing: 'half', pose: 'point' }).match(/class="cath-nail"/g)?.length).toBe(1)
+    expect(cathSvg({ framing: 'half', pose: 'wave' })).not.toContain('cath-nail')
+    expect(cathSvg({ framing: 'half', pose: 'point', outfit: 'trench' })).not.toContain('cath-nail')
+  })
+})

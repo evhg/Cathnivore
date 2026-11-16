@@ -3,11 +3,15 @@ import './fonts.css'
 import './tokens.css'
 import './styles.css'
 import '../../shared/cath/cath.css'
+import { watchCathLines } from '../../shared/cath/lines'
 import { cathSvg } from '../../shared/cath/cath'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { startField } from './hero'
 import { cards, counters, kinetic, pulse, viewTransitionNames, words } from './fx'
 import { startPosterPlay } from '../../site/src/posterplay'
+
+// Plan item 442: her line weight at small sizes, including a figure prerendered into the page.
+watchCathLines()
 
 // Every page (the home page and each /work/<id>/ case study) runs this. The HTML is complete without
 // it; this adds the shader field, the kinetic type and the motion.

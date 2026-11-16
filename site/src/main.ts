@@ -3,6 +3,7 @@ import './fonts.css'
 import './tokens.css'
 import './styles.css'
 import '../../shared/cath/cath.css'
+import { watchCathLines } from '../../shared/cath/lines'
 import { cathSvg, type CathExpression, type CathOutfit, type CathPoseId } from '../../shared/cath/cath'
 import { WARDROBE, chooseOutfit, chosenOutfit, readProgress, unlockedOutfits } from '../../shared/cath/wardrobe'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
@@ -12,6 +13,9 @@ import { startScene } from './scene'
 import { cardLines } from './cards'
 import { mountBooth } from './booth'
 import { startPosterPlay } from './posterplay'
+
+// Plan item 442: her line weight at small sizes, including a figure prerendered into the page.
+watchCathLines()
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
 const root = document.documentElement

@@ -53,6 +53,44 @@
   }
 }
 
+/* Plan item 442: her line weight at small sizes (shared/cath/lines.ts sets --cath-s, the screen px per viewBox
+   unit, and data-cath-lod="small" below 0.45). Lines become non-scaling strokes floored at 1 px (outlines, 1.6+
+   units) or 0.75 px (detail lines, 1-1.5 units); sub-unit and dashed texture strokes (stitching, veins) drop out,
+   since at that size they only blur. Strokes of 4+ units are shapes (her arms, sleeves) and scale as drawn.
+   tests/cath-lines.test.ts checks every stroke width she draws between 1 and 3.9 has its rule here. */
+svg.cath[data-cath-lod='small'] [stroke-width^='0.']:not(pattern > *),
+svg.cath[data-cath-lod='small'] [stroke-dasharray]:not(pattern > *) { stroke: none; }
+svg.cath[data-cath-lod='small'] [stroke-width='1']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.1']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.1px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.2']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.2px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.3']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.3px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.4']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.4px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.5']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.5px * var(--cath-s, 1)), 0.75px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.6']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.6px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.7']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.7px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.8']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.8px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='1.9']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(1.9px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.1']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.1px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.2']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.2px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.3']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.3px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.4']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.4px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.5']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.5px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.6']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.6px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.7']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.7px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.8']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.8px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='2.9']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(2.9px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.1']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.1px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.2']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.2px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.3']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.3px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.4']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.4px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.5']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.5px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.6']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.6px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.7']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.7px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.8']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.8px * var(--cath-s, 1)), 1px); }
+svg.cath[data-cath-lod='small'] [stroke-width='3.9']:not(pattern > *, [stroke-dasharray]) { vector-effect: non-scaling-stroke; stroke-width: max(calc(3.9px * var(--cath-s, 1)), 1px); }
+
 /* Scene poses (shared/cath/scene.ts). Whole-figure motion, played once on mount. */
 .cath-scene { transform-origin: 50% 100%; }
 .cath-move-hop { animation: cath-hop 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) 1; }

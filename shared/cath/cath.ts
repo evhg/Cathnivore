@@ -15,6 +15,7 @@
 // ever cross her skin.
 
 import { pinSvg, type CathPin } from './pins'
+import { watchCathLines } from './lines'
 
 export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 'wink'
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
@@ -67,6 +68,8 @@ const C = {
   lip: '#C9566B',
   lipDeep: '#A63F55',
   lipLine: '#8A3447',
+  /** Plan item 442: her nails, a rose lacquer a shade under her lips. */
+  nail: '#B9506A',
   lipShine: '#F8CDD4',
   white: '#FFFFFF',
   eyeWhite: '#FFFDFB',
@@ -202,6 +205,7 @@ let uid = 0
 export const FULL_HEAD = 0.84
 
 export function cathSvg(options: CathOptions = {}): string {
+  watchCathLines()
   const expression = options.expression ?? 'smirk'
   const outfit = options.outfit ?? 'field'
   const framing = options.framing ?? 'bust'
@@ -913,10 +917,18 @@ function sleeve(d: string, w: number, cloth: Cloth, cuff: string): string {
 <path ${cap} stroke="${cloth.cuff}" stroke-width="${w + 2}" d="${cuff}"/>`
 }
 
-/** One finger as a rounded capsule from (x0,y0) to (x1,y1). */
-function finger(x0: number, y0: number, x1: number, y1: number, skin: string, line: string, w = 6.4): string {
+/** One finger as a rounded capsule from (x0,y0) to (x1,y1). Plan item 442: a bare finger ends in a lacquered nail
+ * (her lip's rose, with a glint), so a pointing hand reads as a groomed woman's hand, not a mitt. */
+function finger(x0: number, y0: number, x1: number, y1: number, skin: string, line: string, w = 6.4, nail = true): string {
   const d = `M${n1(x0)} ${n1(y0)} L${n1(x1)} ${n1(y1)}`
-  return `<path fill="none" stroke="${line}" stroke-width="${w + 2.6}" stroke-linecap="round" d="${d}"/><path fill="none" stroke="${skin}" stroke-width="${w}" stroke-linecap="round" d="${d}"/>`
+  const caps = `<path fill="none" stroke="${line}" stroke-width="${w + 2.6}" stroke-linecap="round" d="${d}"/><path fill="none" stroke="${skin}" stroke-width="${w}" stroke-linecap="round" d="${d}"/>`
+  if (!nail) return caps
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1
+  const [ux, uy] = [(x1 - x0) / len, (y1 - y0) / len]
+  const back = w * 0.3
+  const [cx, cy] = [x1 - ux * back, y1 - uy * back]
+  const deg = n1((Math.atan2(uy, ux) * 180) / Math.PI)
+  return `${caps}<g class="cath-nail" transform="translate(${n1(cx)} ${n1(cy)}) rotate(${deg})"><ellipse rx="${n1(w * 0.36)}" ry="${n1(w * 0.3)}" fill="${C.nail}" stroke="${C.lipLine}" stroke-width="0.6"/><ellipse cx="${n1(w * 0.08)}" cy="${n1(-w * 0.1)}" rx="${n1(w * 0.14)}" ry="${n1(w * 0.07)}" fill="#ffffff" opacity="0.55"/></g>`
 }
 
 type HandKind = 'open' | 'fist' | 'point' | 'chin' | 'grip' | 'rest'
@@ -927,23 +939,24 @@ function hand(kind: HandKind, x: number, y: number, rot: number, cloth: Cloth): 
   const shade = cloth.glove ? '#0E0F12' : C.skinShade
   const line = cloth.glove ? '#050506' : C.skinLine
   const crease = cloth.glove ? '#3A3C44' : C.skinDeep
+  const bare = !cloth.glove // the open hand shows its palm (no nails); the pointing hand its back
   const palm = 'M-11 10 C-13 2 -12 -6 -9 -9 C-4 -12 4 -12 9 -9 C12 -6 13 2 11 10 C6 14 -6 14 -11 10 Z'
   const fistD = 'M-12 8 C-14 0 -13 -8 -9 -11 C-3 -14 4 -14 9 -11 C13 -8 14 0 12 8 C6 13 -6 13 -12 8 Z'
   let body = ''
   if (kind === 'open') {
     body = [
-      finger(-7.5, -6, -11, -21, skin, line),
-      finger(-2.5, -8, -3.5, -26, skin, line),
-      finger(2.5, -8, 4, -25, skin, line),
-      finger(7, -6, 10, -19, skin, line, 5.8),
+      finger(-7.5, -6, -11, -21, skin, line, 6.4, false),
+      finger(-2.5, -8, -3.5, -26, skin, line, 6.4, false),
+      finger(2.5, -8, 4, -25, skin, line, 6.4, false),
+      finger(7, -6, 10, -19, skin, line, 5.8, false),
       `<path fill="${skin}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round" d="${palm}"/>`,
-      finger(-10, 2, -19, -6, skin, line, 6.2),
+      finger(-10, 2, -19, -6, skin, line, 6.2, false),
       `<path fill="${shade}" opacity="0.6" d="M-11 10 C-13 2 -12 -4 -10 -7 C-8 0 -6 6 -2 12 C-6 13 -9 12 -11 10 Z"/>`,
       brush([-4, 0], [0, 4], [5, 2], 0.2, 0.9, 0.2, crease, ' opacity="0.7"'),
     ].join('')
   } else if (kind === 'fist' || kind === 'point' || kind === 'grip') {
     body = [
-      kind === 'point' ? finger(-4, -10, -4, -30, skin, line, 6.2) : '',
+      kind === 'point' ? finger(-4, -10, -4, -30, skin, line, 6.2, bare) : '',
       `<path fill="${skin}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round" d="${fistD}"/>`,
       `<path fill="${shade}" opacity="0.6" d="M-12 8 C-14 0 -13 -6 -11 -9 C-9 -2 -7 4 -3 11 C-7 12 -10 11 -12 8 Z"/>`,
       kind === 'point' ? '' : brush([-8, -11], [-6, -6], [-7, -2], 0.2, 1, 0.2, crease),
