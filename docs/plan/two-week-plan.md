@@ -4195,7 +4195,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the transition 700-1100 ms (e2e with frame timestamps); the first visual change within 100 ms of the tap; the reduced-motion path tested; hedgerow-map specs pass; shots P and D at 0, 50 and 100%, before and after.
 - **Size:** 2
 
-## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch
+## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch *(lane A, in progress)*
 
 Progress (lane A, 2026-11-16 22:40, handed back): slice 4: the Gunslinger's carry is the revolver holstered (holster and gunbelt moved to her left hip, her free hand's side; her hand hangs over the grip; the audition draws it, spins it twice on her finger, holsters it; the holster's revolver hides while drawn, so one revolver); the Butcher shoulders the shotgun upright beside her face (the audition brings it down to her hip to rack and shoulders it again). Fixed on the way: the poses' `tgt.copy(wristL).lerp(tgt, e)` lerped toward itself, so those hands never left rest. classpose (P, D) passes with `weaponInCoat` <= 5 mm; posters re-rendered. Shots `e2e/screenshots/a449c/{before,after6}-{D,P}-{butcher,gunslinger}.png`. Open: the light swinging to the weapon on a change, shoulder-and-turn on commit, the Ghost's 'short black tube', cathode-perf alone, P/D shots of all five.
 
