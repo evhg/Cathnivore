@@ -761,6 +761,7 @@ if (SANDBOX)
     // Plan item 66: the share of the 3D frame's height that is painted sky (null in 2D).
     skyBand: () => (renderer && is3D(renderer) ? renderer.skyBand() : null),
     fieldShare: () => (renderer && is3D(renderer) ? renderer.fieldShare() : null),
+    fieldVerge: () => (renderer && is3D(renderer) ? renderer.fieldVerge() : null),
     // Plan item 419: the land past the 3D hedge (share still plain field grass) and its props (null in 2D).
     margin3d: () => (renderer && is3D(renderer) ? renderer.margin3d() : null),
     // Plan item 102: Cath's face on screen (CSS px), null in 2D.

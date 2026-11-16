@@ -767,6 +767,34 @@ export class Renderer3D {
     return m ? { plainShare: m.land ? m.plain / m.land : 0, props: m.props } : null;
   }
 
+  /** Plan item 439: the share of the canvas beside the field on the rows it spans (the verge left and right of its
+   * projected quad), through the live camera. On an upright phone it is mostly the 74 deg view's keystone. */
+  fieldVerge(): number {
+    const { x: cols, y: rows } = this.fieldSize;
+    this.camera.updateMatrixWorld();
+    const q = ([[0, 0], [cols, 0], [cols, rows], [0, rows]] as const).map(([x, z]) => {
+      const p = this.v1.set(x, 0, z).project(this.camera);
+      return { x: (p.x + 1) / 2, y: (1 - p.y) / 2 };
+    });
+    const N = 400;
+    let side = 0;
+    for (let i = 0; i < N; i++) {
+      const y = (i + 0.5) / N;
+      let lo = Infinity, hi = -Infinity;
+      for (let k = 0; k < 4; k++) {
+        const a = q[k]!, b = q[(k + 1) % 4]!;
+        if (a.y === b.y) continue;
+        const t = (y - a.y) / (b.y - a.y);
+        if (t < 0 || t > 1) continue;
+        const x = a.x + t * (b.x - a.x);
+        lo = Math.min(lo, x);
+        hi = Math.max(hi, x);
+      }
+      if (hi > lo) side += Math.max(0, Math.min(1, lo)) + Math.max(0, 1 - Math.max(0, hi));
+    }
+    return side / N;
+  }
+
   fieldShare(): number {
     const { x: cols, y: rows } = this.fieldSize;
     // The fitted base view, not the live camera (which carries the player's zoom and pan and the gate's ease).
