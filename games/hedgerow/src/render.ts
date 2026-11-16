@@ -841,6 +841,25 @@ export class Renderer {
       const cy = Y(this.coach.row + 0.5);
       const pulse = this.reducedMotion ? 0.5 : (Math.sin(t * 4) + 1) / 2;
       ctx.save();
+      // Plan item 447: a faint dotted line from Cath to the plot she means, so her tip reads as her pointing there
+      // (it stops at the ring; none when she stands on the plot itself).
+      const hx = X(game.hero.x);
+      const hy = Y(game.hero.y - 0.45);
+      const len = Math.hypot(cx - hx, cy - hy);
+      if (len > s * 0.9) {
+        const ex = cx - ((cx - hx) / len) * s * 0.52;
+        const ey = cy - ((cy - hy) / len) * s * 0.52;
+        ctx.setLineDash([s * 0.05, s * 0.11]);
+        ctx.lineDashOffset = this.reducedMotion ? 0 : -t * s * 0.3;
+        ctx.lineCap = "round";
+        ctx.lineWidth = Math.max(2, s * 0.045);
+        ctx.strokeStyle = `rgba(255, 236, 160, ${0.45 + pulse * 0.2})`;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
       ctx.globalAlpha = 0.42;
       drawTower(ctx, { kind: this.coach.kind, tier: 1, spec: null, fired: 9, dazed: false, still: true }, cx, cy, s, 0);
       ctx.globalAlpha = 1;
