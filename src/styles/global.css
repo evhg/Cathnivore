@@ -4242,3 +4242,10 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-steps] .poster-grip { display: block; position: absolute; top: 34%; right: -22px; width: 34px; height: 44px; z-index: var(--z-raised); pointer-events: none; filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--ink) 25%, transparent)); }
   .setup[data-steps] .poster-grip .grip-cuff { fill: var(--pasture-deep); }
 }
+
+/* Plan item 455: on a phone the four producers are a row of tabs, not a dealt hand: they stand square (tilted -2 to
+   2 degrees, the unpicked tabs' coloured tops ran past their neighbours' and read as a glitch beside the flat picked
+   ones). */
+@media (max-width: 599.98px) {
+  .setup .producer-grid .producer-card:nth-child(n) { --deal: 0deg; }
+}
