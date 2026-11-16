@@ -65,6 +65,8 @@ export interface FrontScene {
   readonly vignette: { kind: string; u: number; prop: HeldProp | null } | null;
   /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
   figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
+  /** Plan item 449: the deepest weapon vertex inside her coat (m) and its weapon. */
+  weaponInCoat(): { depth: number; gun: string | null };
   /** Plan item 140: the expression painted on her face now. */
   readonly expression: FaceExpression;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
@@ -1031,6 +1033,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     figurePose() {
       return cath.poseState;
+    },
+    weaponInCoat() {
+      return cath.weaponInCoat();
     },
     get kit() {
       return cath.wearing;

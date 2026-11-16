@@ -42,6 +42,11 @@ export interface FrontCath {
   /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
   readonly clipState: { kind: string; u: number; prop: HeldProp | null } | null;
   /**
+   * Plan item 449: how deep (m) the deepest visible weapon vertex sits inside her coat (rays cast in to the coat's axis
+   * from outside it), and which weapon; 0 when none goes in. A check, not drawn: sampled every few vertices.
+   */
+  weaponInCoat(): { depth: number; gun: string | null };
+  /**
    * Plan item 187: where she looks, -1..1 down the title menu (the menu sits to her right of frame): her head turns
    * toward it and tips to the focused row, easing there in about 150 ms (`instant` cuts). `gaze` is the target now.
    */
@@ -3166,6 +3171,9 @@ float reliefShade( vec2 uv ) {
       sling.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
       // the model's muzzle sits 0.74 m along -z from its origin
       sling.position.copy(muzzle).addScaledVector(along, -0.74);
+      // Plan item 449: 4 cm further out from her back: once the coat's cloth settles on the pick its butt sank 2.7 cm
+      // into the coat at her hip (`weaponInCoat`).
+      sling.position.z -= 0.04;
       sling.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
@@ -3744,7 +3752,8 @@ float reliefShade( vec2 uv ) {
   const GHOST_HOLD = V(0.33, -0.2, 0.17);
   // Plan item 449: her left hand on the rifle's sling where it crosses her chest (coatStrap's [0.42, 0.32] point, in the chest frame).
   const GHOST_SLING = V(0.2, 0.02, 0.17);
-  const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
+  // Plan item 449: out from her hip (x 0.26 -> 0.29, z 0.19 -> 0.21): the shotgun's stock sat 2.4 cm inside the coat.
+  const BUTCHER_HOLD = V(0.29, 0.04, 0.21);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
   const pX = new THREE.Vector3();
@@ -4020,6 +4029,59 @@ float reliefShade( vec2 uv ) {
     },
     play(kind, u, seconds) {
       clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };
+    },
+    weaponInCoat() {
+      group.updateMatrixWorld(true);
+      const guns: THREE.Object3D[] = [rifle, shotgun, hipGun, backRifle, ...sideGuns.values()];
+      kits.get("gunslinger")?.traverse((o) => o.name === "kit-gunslinger-revolver" && guns.push(o));
+      const ray = new THREE.Raycaster();
+      const hits: THREE.Intersection[] = [];
+      const axis = new THREE.Vector3();
+      const local = new THREE.Vector3();
+      const w = new THREE.Vector3();
+      const from = new THREE.Vector3();
+      const dir = new THREE.Vector3();
+      const box = (coatGeo.boundingBox ?? (coatGeo.computeBoundingBox(), coatGeo.boundingBox))!;
+      coatGeo.computeBoundingSphere();
+      let depth = 0;
+      let gun: string | null = null;
+      for (const g of guns) {
+        let shown = true;
+        for (let o: THREE.Object3D | null = g; o; o = o.parent) if (!o.visible) shown = false;
+        if (!shown) continue;
+        g.traverseVisible((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const pos = m.geometry.attributes.position as THREE.BufferAttribute;
+          const step = Math.max(1, Math.floor(pos.count / 120));
+          for (let i = 0; i < pos.count; i += step) {
+            w.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+            local.copy(w);
+            coat.worldToLocal(local);
+            if (local.y < box.min.y || local.y > box.max.y) continue;
+            const r = Math.hypot(local.x, local.z);
+            if (r < 1e-4) continue;
+            // From 1 m out on her side of the axis, in toward it: the first hit is the coat's outside there.
+            axis.set(0, local.y, 0);
+            coat.localToWorld(axis);
+            from.set(local.x / r, 0, local.z / r).multiplyScalar(1).setY(local.y);
+            coat.localToWorld(from);
+            dir.copy(axis).sub(from).normalize();
+            ray.set(from, dir);
+            ray.far = from.distanceTo(axis);
+            hits.length = 0;
+            coat.raycast(ray, hits);
+            if (!hits.length) continue;
+            const surf = hits.reduce((a, b) => (b.distance < a.distance ? b : a)).point.distanceTo(axis);
+            const d = surf - w.distanceTo(axis);
+            if (d > depth) {
+              depth = d;
+              gun = g.name || "gun";
+            }
+          }
+        });
+      }
+      return { depth: Math.round(depth * 1000) / 1000, gun };
     },
     get clipState() {
       return clip ? { kind: clip.kind, u: clip.u, prop: propNow } : null;

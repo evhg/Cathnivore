@@ -5,7 +5,7 @@ import { expect, test } from './own-gpu'
 // time; her face reads (90 px+ tall at D, 45 at P) and her body meets neither the list nor the sheet at D.
 type Box = { left: number; top: number; right: number; bottom: number }
 type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: string | null; gap: number | null; joints: string }
-type S = { time: number; dressed: string | null; figurePose(): Pose; faceBox(): Box; figureBox(body?: boolean): Box }
+type S = { time: number; dressed: string | null; figurePose(): Pose; weaponInCoat(): { depth: number; gun: string | null }; faceBox(): Box; figureBox(body?: boolean): Box }
 type F = { cathodeFront?: { scene: () => S | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
@@ -50,6 +50,9 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     // Plan item 422: her class's gun in her hand, its mesh within 3 cm of her palm.
     expect(p.prop, cls).toBe(HELD[cls])
     if (HELD[cls]) expect(p.gap ?? 1, cls).toBeLessThanOrEqual(0.03)
+    // Plan item 449: no weapon (in her hand, slung or holstered) goes into her coat by more than 5 mm.
+    const inCoat = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.weaponInCoat())
+    expect(inCoat.depth, `${cls} ${JSON.stringify(inCoat)}`).toBeLessThanOrEqual(0.005)
     // The blend takes 300 ms of loop time (plan item 278; a long frame can overshoot a step; 600 ms is the line).
     expect(blend, cls).toBeGreaterThan(0)
     expect(blend, cls).toBeLessThanOrEqual(0.6)
