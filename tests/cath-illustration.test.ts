@@ -31,9 +31,10 @@ describe('Cath is illustrated (plan item 442)', () => {
 })
 
 describe('her hands are groomed (plan item 442)', () => {
-  it('the pointing hand shows a lacquered nail; the palm-out wave and a gloved hand none', () => {
-    expect(cathSvg({ framing: 'half', pose: 'point' }).match(/class="cath-nail"/g)?.length).toBe(1)
-    expect(cathSvg({ framing: 'half', pose: 'wave' })).not.toContain('cath-nail')
+  // Slice 15: the resting hand shows its back, so its four fingers carry nails too.
+  it('the pointing hand and the resting hand show lacquered nails; the palm-out wave and a gloved hand none', () => {
+    expect(cathSvg({ framing: 'half', pose: 'point' }).match(/class="cath-nail"/g)?.length).toBe(1 + 4)
+    expect(cathSvg({ framing: 'half', pose: 'wave' }).match(/class="cath-nail"/g)?.length).toBe(4)
     expect(cathSvg({ framing: 'half', pose: 'point', outfit: 'trench' })).not.toContain('cath-nail')
   })
 })
