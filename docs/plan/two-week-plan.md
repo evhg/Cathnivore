@@ -4247,7 +4247,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
 
 Probe (lane B, 2026-11-16 22:45, no code change; live title frame at 1440x900, `cathodeFront.scene()`, skirt 960-1080 x 800-880 and upper coat 1000-1060 x 600-700, RGB means): base (68, 62); every coat material's colour set red or black: no red at all, same grey (the base colour barely shows); fog off on her: same; every transparent object in the scene hidden: same; Cath hidden: 32 behind her; coat `envMapIntensity` 0: same; coat `specularIntensity` 0 + clearcoat 0 + sheen 0: (56, 37) (the upper coat's lift is half specular); a red emissive does show (materials do update); the coat's output forced to `totalEmissiveRadiance` alone: (43, 34). So most of the grey is the wool's own emissive terms (rim `fr * rimC`, COAT_KEY, CLOTH_SHEEN) plus direct specular, and the diffuse barely counts. Yet narrowing the wool rim (`smoothstep(0.3, 0.9, fr0) * 0.65`), sheen 0, clearcoat 0.1 and coat key 0.12 each left the poster within noise: next taker, zero each emissive term in the live probe (rewrite `totalEmissiveRadiance` per term in onBeforeCompile, as the 'emonly' probe did) to find which one carries the 43, then cut that one. Script: scratchpad-style probe in `scripts/` with `PLAYWRIGHT_CHROMIUM_PATH` set (frames >= 4, then 2 more frames per change).
 
