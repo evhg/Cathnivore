@@ -24,8 +24,9 @@ test('the depot counts down the round as its vehicles leave', async ({ page, has
   const plate = page.locator('.gate-plate[data-leaving]:not([hidden])').first()
   await expect(plate).toBeVisible({ timeout: 30_000 })
   const left = async () => Number(await plate.getAttribute('data-left'))
-  const first = await left()
-  expect(await plate.textContent()).toBe(`${first} to go`)
+  // Read the count and its words in one go: a vehicle can leave between two separate reads.
+  const [first, words] = await plate.evaluate((el) => [Number(el.getAttribute('data-left')), el.textContent])
+  expect(words).toBe(`${first} to go`)
   await expect.poll(left, { timeout: 60_000 }).toBeLessThan(first)
   const queued = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.game()!.spawnQueue.length)
   expect(Math.abs((await left()) - queued)).toBeLessThanOrEqual(1)
