@@ -190,8 +190,8 @@ ${skirt}`
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
   // Plan item 442 (critique: 'stick legs'): each leg's calf swells below the knee and slims to the ankle, the outer
   // thigh rounds out from the hip.
-  const right = 'M150 490 L198 490 C198 560 194 630 191 700 C193 728 195 760 192 790 C190 815 188 832 187 846 L168 846 C166 830 162 812 160 790 C156 760 157 728 162 700 C155 640 147 565 150 490 Z'
-  const left = 'M202 490 L250 490 C250 565 241 640 231 708 C238 738 244 772 242 800 C241 825 239 840 239 852 L221 852 C220 835 216 815 211 790 C206 765 204 735 206 708 C203 640 201 565 202 490 Z'
+  const right = 'M150 490 L198 490 C198 560 194 630 191 700 C194 726 197 756 193 782 C190 802 188 818 187 846 L168 846 C167 818 164 802 158 782 C152 756 154 726 162 700 C155 640 147 565 150 490 Z'
+  const left = 'M202 490 L250 490 C250 565 241 640 231 708 C240 734 247 766 243 792 C240 812 239 830 239 852 L221 852 C220 832 217 812 210 790 C204 764 203 734 206 708 C203 640 201 565 202 490 Z'
   return `${groundShadow(203, 80)}
 ${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
@@ -661,13 +661,13 @@ ${mouth(id, expression)}
 const JACKET = `M183 250
 C160 256 134 262 121 280
 C111 296 109 322 111 350
-C112 384 124 402 135 418
-C131 446 126 474 123 495
+C112 372 120 390 138 406
+C132 440 125 472 123 495
 Q122 501 129 501
 L271 501
 Q278 501 277 495
-C274 474 269 446 265 418
-C276 402 288 384 289 350
+C275 472 268 440 262 406
+C280 390 288 372 289 350
 C291 322 289 296 279 280
 C266 262 240 256 217 250
 L200 404
@@ -809,9 +809,9 @@ ${garment(id, 'tr', coat, `url(#${id}-camel)`, C.camelLine, '#7E5A2E', 'gab')}
 <path fill="#7E5A2E" opacity="0.45" transform="translate(-3 4)" d="${lapel(-1)}"/>
 <path fill="${C.camel}" stroke="${C.camelLine}" stroke-width="1.6" stroke-linejoin="round" d="${lapel(1)}"/>
 <path fill="${C.camelLight}" stroke="${C.camelLine}" stroke-width="1.6" stroke-linejoin="round" d="${lapel(-1)}"/>
-<path fill="none" stroke="${C.camelShade}" stroke-width="0.9" stroke-dasharray="2.2 2" d="M178 258 L156 276 M222 258 L244 276 M120 300 C116 340 118 380 122 410 M280 300 C284 340 282 380 278 410"/>
-<path fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1.6" d="M122 412 C170 420 230 420 278 412 L278 428 C230 436 170 436 122 428 Z"/>
-<path fill="none" stroke="${C.camelLight}" stroke-width="1.2" stroke-linecap="round" opacity="0.6" d="M128 414 Q200 421 272 414"/>
+<path fill="none" stroke="${C.camelShade}" stroke-width="0.9" stroke-dasharray="2.2 2" d="M178 258 L156 276 M222 258 L244 276 M120 300 C116 336 120 372 134 400 M280 300 C284 336 280 372 266 400"/>
+<path fill="${C.camelShade}" stroke="${C.camelLine}" stroke-width="1.6" d="M135 412 C176 420 224 420 265 412 L266 428 C224 436 176 436 134 428 Z"/>
+<path fill="none" stroke="${C.camelLight}" stroke-width="1.2" stroke-linecap="round" opacity="0.6" d="M140 414 Q200 421 260 414"/>
 <rect x="191" y="410" width="18" height="24" rx="3" fill="none" stroke="url(#${id}-gold)" stroke-width="2.4"/>
 ${brush([136, 318], [142, 370], [138, 412], 0.3, 2.2, 0.3, '#7E5A2E', ' opacity="0.7"')}
 ${brush([264, 318], [258, 370], [262, 412], 0.3, 2, 0.3, '#7E5A2E', ' opacity="0.5"')}
@@ -838,8 +838,8 @@ ${garment(id, 'tn', coat, '#2C2D33', '#0E0F12', '#131418', 'gab')}
 <path fill="#41434B" stroke="#0E0F12" stroke-width="1.6" stroke-linejoin="round" d="${lapel(-1)}"/>
 <path fill="#2A2B31" stroke="#0E0F12" stroke-width="1.6" stroke-linejoin="round" d="${collar}"/>
 ${brush([222, 248], [238, 256], [246, 264], 0.3, 1.6, 0.3, '#6A6D78', ' opacity="0.8"')}
-<path fill="none" stroke="#4A4C55" stroke-width="0.9" stroke-dasharray="2.2 2" d="M178 258 L154 274 M222 258 L246 274 M120 300 C116 340 118 380 122 410 M280 300 C284 340 282 380 278 410"/>
-<path fill="#1C1D22" stroke="#0E0F12" stroke-width="1.6" d="M122 412 C170 420 230 420 278 412 L278 428 C230 436 170 436 122 428 Z"/>
+<path fill="none" stroke="#4A4C55" stroke-width="0.9" stroke-dasharray="2.2 2" d="M178 258 L154 274 M222 258 L246 274 M120 300 C116 336 120 372 134 400 M280 300 C284 336 280 372 266 400"/>
+<path fill="#1C1D22" stroke="#0E0F12" stroke-width="1.6" d="M135 412 C176 420 224 420 265 412 L266 428 C224 436 176 436 134 428 Z"/>
 <rect x="191" y="410" width="18" height="24" rx="3" fill="none" stroke="#8A8F96" stroke-width="2.4"/>
 ${brush([136, 318], [142, 370], [138, 412], 0.3, 2.2, 0.3, '#0E0F12', ' opacity="0.7"')}
 ${brush([264, 318], [258, 370], [262, 412], 0.3, 2, 0.3, '#5A5D66', ' opacity="0.5"')}
@@ -1071,10 +1071,14 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
   const cl = CLOTH[outfit]
   // Plan item 442 (critique: the hanging hand read as a limp claw): her free hand in her jacket pocket, the forearm
   // angling in to it and the cuff disappearing under the pocket's flap (redrawn over it in the outfit's cloth).
-  const restLeft =
-    sleeve('M133 386 Q131 421 145 442', 22, cl, 'M141 437 Q143 440 146 443') +
-    `<path fill="${cl.cuff}" stroke="${cl.line}" stroke-width="1.4" stroke-linejoin="round" d="M127 446 L168 451 L167 462 L128 457 Z"/>` +
-    `<path fill="${cl.shade}" opacity="0.35" d="M128 457 L167 462 L167 465 L128 460 Z"/>`
+  // The gown and the pinafore have no jacket pocket: her hand hangs at her side there.
+  const restLeft = outfit === 'gown' || outfit === 'pinny'
+    ? sleeve('M133 386 Q130 412 132 430', 22, cl, 'M131 424 Q132 428 132 431') + hand('rest', 133, 446, 188, cl)
+    : sleeve('M133 386 Q122 418 146 445', 22, cl, '') +
+    `<path fill="${cl.cuff}" stroke="${cl.line}" stroke-width="1.4" stroke-linejoin="round" d="M126 446 L169 451 L168 464 L127 459 Z"/>` +
+    `<path fill="${cl.shade}" opacity="0.35" d="M127 459 L168 464 L168 467 L127 462 Z"/>` +
+    // her thumb hooked over the pocket's edge
+    (cl.glove ? '' : finger(150, 447, 160.5, 450.5, SKIN, C.skinLine, 6, false))
   switch (pose) {
     case 'clasped': {
       // Plan item 33: her hands folded at her waist, each on the end of its own sleeve: her right hand
