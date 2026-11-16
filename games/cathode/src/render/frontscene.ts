@@ -173,7 +173,11 @@ export const KEY_EASE = 12;
  * Slice 6: under his red key the Butcher's olive rendered brown (dE 10 from the Ghost and the Fixer), so he wears
  * bottle green, and the Fixer's plum is a step warmer (it measured dE 9 from the Ghost); `scripts/cathode-coatcolour.mjs`.
  */
-const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f6b3a, gunslinger: 0x7a4a26, wirewitch: 0x0f7d6c, fixer: 0x7a2a66 };
+// Slice 7: measured run to run the same coat moves about 4 dE (the audition's timing), so every pair is set 18+
+// apart: the Butcher's green lighter (bottle green rendered olive-brown under his red key, 11-12 from the Ghost),
+// the Wirewitch's teal and the Fixer's plum a step brighter (11.5 and 12.8 from the Ghost on one run).
+// `e2e-site/cathode-coatcolour.spec.ts` holds every pair at 15+.
+const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x8aa0b4, gunslinger: 0x7a4a26, wirewitch: 0x1a9282, fixer: 0x8a2e72 };
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
