@@ -4271,7 +4271,7 @@ Progress (lane B, 2026-11-16 20:50, slice 1 `cc50176`): the title's coat key (it
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
 - **Size:** 3
 
-## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes
+## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes *(lane A, in progress)*
 
 Progress (lane A, 2026-11-16 20:30, slice 2, handed back): the rack's 'More seeds at level N' note is a pencilled line, not a dashed box; `hedgerow-ledger` now counts the panel's containers at 1440x900 on levels 21 and 34 (60x24 px+, three or four bordered sides or a ring; the seed packets counted as their one rack): 3 now (panel, rack, Cath's plate face is under 60 px), bound 10, colours 3. Left: Cath's portrait beside the round number in one 'This round' row, Go's weight, P/D play specs.
 
