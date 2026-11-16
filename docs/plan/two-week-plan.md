@@ -4078,7 +4078,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** at 390x844 the round pill overlaps no plot, ring or vehicle (bounding boxes); every depot box 8 px+ inside the canvas and its tag off every vehicle; no vehicle under a canopy (draw order); the 3D phone frame shows the field's right edge on l21 and l34; hedgerow phone specs, closeframe and depot specs pass; shots P before and after.
 - **Size:** 1-2
 
-## 433. [ ] NIGHT SHIFT phone title: Cath and her umbrella as one figure, the List clear of her
+## 433. [ ] NIGHT SHIFT phone title: Cath and her umbrella as one figure, the List clear of her *(lane B, in progress)*
 - **Why:** `plan1115f/ns-title-P` (2x): the umbrella's canopy (190-780 x 720-1100) floats far above her head (1100-1270), so she reads small and apart from it; the case file card (30-390 x 890-1055) lies over the canopy; The List's cards (460-740 x 1420-1610) cross her body; the HOLLOWELL sign is cut at the right edge (360-780 x 560-760). Item 331 covers the desktop's left half, 363 her lighting; this is the phone's composition.
 - **Build:** a phone framing that holds her and the umbrella as one unit in the lower 55% of the stage; The List as a strip clear of her silhouette (or her stood clear of it); the case file beside, not over, the canopy; the sign either whole or out of frame.
 - **Accept:** at 390x844 the canopy's lowest point within 40 px (1x) of her head's top; UI cards overlap her silhouette by 5% or less (mask from a white render, as `scripts/cathode-coatband.mjs`); no sign cut by a frame edge; menu text 7:1+; cathode-front's upright specs pass; posters re-rendered; shots P before and after.
