@@ -504,3 +504,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane B: 456 handed back with a live probe of the trench's light (emissive ~43 of ~62, specular the rest); no further lighting change shipped until the term is found.
 - 2026-11-16 23:25 lane A: E2E red on b3d78ef4 (classpick audition, Gunslinger's subtitle gone before it was read on GitHub's runner): the pick's subtitle timer now starts at the line's first painted frame (a game fix, not a spec slack), so a slow cut can't expire it unseen.
 - 2026-11-16 23:25 lane A: took 449 over 331 again (331's open points wait on its camera-framing question); 449's light-to-weapon beat swings the existing class key (no new pooled light, so no perf cost) rather than adding a spot.
+- 2026-11-16 lane B: 456's coat is at post.ts's AgX black floor; no more material tweaks: the next slice is a title-only grade, checked against the face spec and the pick's coat ΔE.
