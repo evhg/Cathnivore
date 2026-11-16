@@ -109,6 +109,26 @@ test('the phone Setup is three steps on one screen: every control whole and clea
   await clearOfStart(page, page.locator('.setup-panel .pin-tin'), 'pins')
 })
 
+// Plan item 461: a swipe moves the steps: the rail follows the track and Cath's line follows the step.
+test('a swipe across the phone Setup moves the step, the rail and Cath with it', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the upright phone layout')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const track = page.locator('.setup-track')
+  await expect(page.locator('.setup-dot').nth(0)).toHaveAttribute('aria-current', 'step')
+  for (const i of [1, 2]) {
+    await track.evaluate((t, n) => t.scrollTo({ left: n * t.clientWidth }), i)
+    await expect(page.locator('.setup-dot').nth(i)).toHaveAttribute('aria-current', 'step')
+  }
+  await expect(page.locator('.setup-cath-line')).toContainText('A fair fight')
+  await track.evaluate((t) => t.scrollTo({ left: t.clientWidth }))
+  await expect(page.locator('.setup-dot').nth(1)).toHaveAttribute('aria-current', 'step')
+  await expect(page.locator('.setup-cath-line')).toContainText('The Ring')
+  // Start opens the game from any step.
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+})
+
 test('Setup to Start from the keyboard alone, every card named', async ({ page }, testInfo) => {
   test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
   await page.goto('/')

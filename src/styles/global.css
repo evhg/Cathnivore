@@ -4341,6 +4341,17 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-phone-steps] .pin-tin li[data-week] .pin-when { color: var(--short-ink-shelf); font-weight: 700; }
   .setup[data-phone-steps] .setup-difficulty .segmented { margin-top: 10px; padding-top: 6px; position: relative; }
   .setup[data-phone-steps] .setup-panel > .setup-difficulty { order: 0; }
+  /* The tags hang off one string through their eyelets, each at its own slight angle; the chosen one pulled level. */
+  .setup[data-phone-steps] .setup-difficulty .segmented::before {
+    content: ''; position: absolute; left: -12px; right: -12px; top: calc(50% + 3px); height: 1.5px; border-radius: 1px;
+    background: color-mix(in srgb, var(--wood-lo) 70%, transparent);
+  }
+  .setup[data-phone-steps] .setup-table .setup-difficulty .segmented label.price-tag {
+    transform: rotate(var(--hang, 0deg)); transform-origin: 11px 50%; transition: transform 200ms var(--ease-settle, ease);
+  }
+  .setup[data-phone-steps] .price-tag[data-tag='easy'] { --hang: -2deg; }
+  .setup[data-phone-steps] .price-tag[data-tag='hard'] { --hang: 2deg; }
+  .setup[data-phone-steps] .setup-table .setup-difficulty .segmented label.price-tag:has(input:checked) { --hang: 0deg; transform: translateY(-2px); }
   .setup[data-phone-steps] .setup-panel > .pin-tin { order: 1; }
   .setup[data-phone-steps] .setup-producers-head h2 { white-space: nowrap; }
   .setup[data-phone-steps] .setup-recommend { white-space: nowrap; }
@@ -4349,7 +4360,10 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-phone-steps] > button.setup-start { position: relative; bottom: auto; margin-top: 2px; box-shadow: none; outline: 0; }
 }
 @keyframes map-deal { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .setup[data-phone-steps] .map-stage .board-mini { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .setup[data-phone-steps] .map-stage .board-mini { animation: none; }
+  .setup[data-phone-steps] .setup-table .setup-difficulty .segmented label.price-tag { transition: none; }
+}
 html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: none; }
 /* A short landscape phone: Cath, the event and the rail on the left, the steps on the right. */
 @media (max-width: 1099px) and (orientation: landscape) and (max-height: 560px) {
@@ -4371,4 +4385,29 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
   }
   .setup[data-phone-steps] .setup-next:active { transform: translateY(2px); box-shadow: none; }
   .setup[data-phone-steps] :is(.setup-producers-head, .setup-map-head, .setup-difficulty) > h2::before { content: none; }
+}
+/* Plan item 461: a short phone (an SE's 667 px) trims the stall so step 1's pair still shows: Cath 130 px, the
+   event its name and deal only, the picked pair's faces smaller. */
+@media (max-width: 599px) and (orientation: portrait) and (max-height: 740px) {
+  .setup[data-phone-steps] .setup-header { padding-bottom: 8px; }
+  .setup[data-phone-steps] .setup-header-stand { width: 92px; height: 130px; }
+  .setup[data-phone-steps] .setup-header-stand svg { width: 92px; }
+  .setup[data-phone-steps] .setup-header { grid-template-columns: 92px minmax(0, 1fr); }
+  .setup[data-phone-steps] .setup-header h1 { font-size: 1.5rem; }
+  .setup[data-phone-steps] .market-event-pin { display: none; }
+  .setup[data-phone-steps] .pair-portrait svg { width: 64px; height: 77px; }
+  .setup[data-phone-steps] .pair-ability .pair-portrait { width: 68px; margin-bottom: 12px; }
+  .setup[data-phone-steps] .map-stage .board-mini { max-height: 170px; }
+  .setup[data-phone-steps] .setup-panel { gap: 6px; }
+  .setup[data-phone-steps] .setup-panel > .settings-card { padding: 8px 10px 10px; }
+}
+/* A tablet held upright: the board and Cath grow into the height; Next follows the step's content. */
+@media (min-width: 600px) and (max-width: 1099px) and (orientation: portrait) {
+  .setup[data-phone-steps] .setup-header-cath svg { width: 96px; height: 96px; }
+  .setup[data-phone-steps] .map-stage .board-mini { max-width: 400px; max-height: 360px; }
+  .setup[data-phone-steps] .setup-next { margin-top: 12px; }
+  /* The column sits centred in the height rather than leaving a band of cloth above Start. */
+  .setup[data-phone-steps] { justify-content: center; gap: 10px; }
+  .setup[data-phone-steps] .setup-table.setup-track { flex: 0 1 auto; }
+  .setup[data-phone-steps] > button.setup-start { margin-top: 8px; }
 }
