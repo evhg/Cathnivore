@@ -1772,10 +1772,13 @@ body {
 /* The lede's own soft pool on a phone: Cath's morning line runs to three lines, and the last sat over the sunset's
    brightest band at 4.2:1. A scrim the shape of the words, feathered at its edge. */
 @media (max-width: 599.98px) {
+  /* Plan item 446: Cath's line chalked on the stall's slate in a thin wooden frame (a feathered grey scrim read as a
+     default overlay, not part of the stall as at D). */
   .hero .lede {
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--scrim) 70%, transparent);
-    box-shadow: 0 0 18px 10px color-mix(in srgb, var(--scrim) 70%, transparent);
+    padding: 0 10px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--slate-hi), var(--slate));
+    box-shadow: 0 0 0 3px var(--wood-mid), 0 0 0 4px var(--wood-lo), 0 8px 16px var(--shadow-deep);
   }
 }
 
