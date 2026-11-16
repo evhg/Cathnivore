@@ -1281,6 +1281,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // can go to, lit the moment it is touched (before the drag threshold or the click).
   const [stamp, setStamp] = useState<{ region: RegionId; key: number } | null>(null)
   const [pressRegions, setPressRegions] = useState<RegionId[] | null>(null)
+  const [hoverRegion, setHoverRegion] = useState<RegionId | null>(null)
+  useEffect(() => setHoverRegion(null), [selectedGroup])
   // Plan item 451: the keyboard's way to aim an armed card (arrows cycle the glowing regions, Enter plays).
   const aimKeysRef = useRef<((e: KeyboardEvent) => void) | null>(null)
   useEffect(() => {
@@ -1997,7 +1999,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   }
   // Plan item 451: the hex a dragged card is over (or the one an armed card has staged) shows what the move does.
-  const aimEntry = drag?.over ? drag.entries.find((e) => e.region === drag.over) : selectedGroup ? pendingChoice : null
+  const aimEntry = drag?.over
+    ? drag.entries.find((e) => e.region === drag.over)
+    : selectedGroup
+      ? (pendingChoice ?? selectedGroup.entries.find((e) => e.region === hoverRegion) ?? null)
+      : null
   const aimPreview = aimEntry && actions[aimEntry.index] ? actionPreview(state, actions[aimEntry.index]!) : undefined
   const aim =
     aimPreview && aimPreview.chips.length > 0
@@ -3643,6 +3649,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           pick={cathPickRegion && !selectedGroup && !drag ? { region: cathPickRegion, lit: previewActions.some((a) => JSON.stringify(a) === JSON.stringify(pickAction)) } : undefined}
           aim={aim}
           stamp={stamp ?? undefined}
+          onHoverRegion={setHoverRegion}
           aiming={!!(drag || pressRegions || selectedGroup) && pendingEnemyTurn.length === 0}
           faces={producerFaces}
           enemyTurn={

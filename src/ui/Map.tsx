@@ -120,6 +120,9 @@ interface Props {
   stamp?: { region: RegionId; key: number }
   /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
   aiming?: boolean
+  /** Plan item 451: the pointer entered (a region id) or left (null) a hex it could pick, so an armed card shows
+   *  what it will do there before the click. */
+  onHoverRegion?: (region: RegionId | null) => void
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -693,7 +696,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming, onHoverRegion }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -925,6 +928,8 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             data-enemy-pieces={r.outlets + r.buyouts + r.doubt + r.lostLand}
             className={`region-hex${dimmed ? ' dimmed' : ''}${glow ? ' glow' : ''}${inspected === id ? ' inspected' : ''}${onSelect ? ' region-hex-selectable' : ''}${fx[id] === 'lib' ? ' fx-liberate' : fx[id] === 'sq' || thud.has(id) ? ' fx-squeeze' : ''}`}
             onClick={onSelect ? () => onSelect(id) : inspect ? () => inspect(id) : undefined}
+            onPointerEnter={onHoverRegion && onSelect && glow ? (e) => e.pointerType === 'mouse' && onHoverRegion(id) : undefined}
+            onPointerLeave={onHoverRegion && onSelect ? () => onHoverRegion(null) : undefined}
             // A region you can pick right now is a real control: focusable, and Enter or Space picks it.
             tabIndex={onSelect && glow ? 0 : undefined}
             role={onSelect && glow ? 'button' : 'group'}

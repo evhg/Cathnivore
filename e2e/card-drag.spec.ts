@@ -159,3 +159,25 @@ test("a Supply card over its hex marks Hollowell's stack that will lose a piece"
   await expect(page.locator('.map .piece-slot[data-going]')).toHaveCount(0)
   await page.mouse.up()
 })
+
+test('with a card armed, the mouse over a glowing hex shows what it will do there before the click', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'mouse hover')
+  await start(page)
+  const cards = page.locator(':is(.actions, .table-hand) .action-card-draggable')
+  const n = await cards.count()
+  let armed = false
+  for (let i = 0; i < n && !armed; i++) {
+    const label = (await cards.nth(i).getAttribute('aria-label')) ?? (await cards.nth(i).textContent()) ?? ''
+    if (!/…|Pick a region/.test(label)) continue
+    await cards.nth(i).click()
+    armed = (await page.locator('.action-raised').count()) > 0
+  }
+  test.skip(!armed, 'no multi-region card on this seed')
+  const target = page.locator('.region-hex.glow').first()
+  const id = (await target.getAttribute('data-tutorial'))!.replace(/^region-/, '')
+  const t = (await target.locator('polygon').first().boundingBox())!
+  await page.mouse.move(t.x + t.width / 2, t.y + t.height * 0.7, { steps: 4 })
+  await expect(page.locator('.map .aim-layer')).toHaveAttribute('data-aim', id)
+  await page.mouse.move(4, 4)
+  await expect(page.locator('.map .aim-layer')).toHaveCount(0)
+})
