@@ -27,6 +27,13 @@ export default function TitleArt() {
   const expression = useMenuExpression(ritual.expression)
   return (
     <div className="title-art title-table" aria-hidden="true" data-free={Object.values(state.regions).filter((r) => r.liberated).length}>
+      {/* Plan item 453: the stall's striped awning over her on a tall phone (it unrolls in the day's opening). */}
+      <svg className="title-awning" viewBox="0 0 390 30" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path className="title-awning-roll" d="M0 0H390V6H0z" />
+        {Array.from({ length: 13 }, (_, i) => (
+          <path key={i} className={`title-awning-stripe s${i % 2}`} d={`M${i * 30} 5H${i * 30 + 30}V20Q${i * 30 + 15} 32 ${i * 30} 20z`} />
+        ))}
+      </svg>
       <div className="title-cath" data-expression={expression}>
         <p className="title-cath-line">{ritual.line ?? titleLine(completed)}</p>
         <CathArt framing="half" expression={expression} pose={SCREEN_POSE['cathnivore:title']} animate />

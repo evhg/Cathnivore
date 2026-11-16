@@ -44,6 +44,7 @@ import { LAYOUTS } from './content/layouts'
 import { PRODUCERS } from './content/producers'
 import { MARKET_EVENTS } from './engine/marketEvent'
 import { loadFullCss } from './platform/fullCss'
+import { OPENING_MS, openingThisLoad } from './ui/titleOpening'
 
 // Gate 7 (Lighthouse mobile >= 85): the title paints from the first chunk; every other screen loads on demand
 // (the service worker precaches every chunk, so offline play is unchanged).
@@ -101,6 +102,8 @@ export default function App() {
 function Screens() {
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
   const [updateReady, setUpdateReady] = useState(false)
+  // Plan item 453: the day's first title on a tall phone plays its opening ('run'), then rests ('done').
+  const [opening, setOpening] = useState<'run' | 'done' | undefined>(() => (openingThisLoad() ? 'run' : undefined))
   // Bumped by "Play again" so the same-seed game mounts fresh rather than keeping the finished one's state.
   const [gameRun, setGameRun] = useState(0)
   const saved = loadGame()
@@ -119,6 +122,18 @@ function Screens() {
     window.addEventListener('cathnivore:update-ready', onUpdateReady)
     return () => window.removeEventListener('cathnivore:update-ready', onUpdateReady)
   }, [])
+
+  // Plan item 453: the vans wait for the opening to end, then start their rounds.
+  useEffect(() => {
+    if (opening !== 'run') return
+    const vans = document.querySelector('.title-movers')?.closest('svg') ?? null
+    vans?.pauseAnimations?.()
+    const t = window.setTimeout(() => setOpening('done'), OPENING_MS)
+    return () => {
+      window.clearTimeout(t)
+      vans?.unpauseAnimations?.()
+    }
+  }, [opening])
 
   // Plan item 213: on the title the market score keeps the title's clock (its sky); a game sets it by the round.
   useEffect(() => {
@@ -266,7 +281,12 @@ function Screens() {
     // Plan item 206: the sky over the market follows the player's clock; the dark theme is always evening.
     const sky = skyForHour(new Date().getHours(), effectiveIsDark(loadSettings().theme))
     return (
-      <main className="title title-screen" data-sky={sky}>
+      <main
+        className="title title-screen"
+        data-sky={sky}
+        data-opening={opening}
+        onPointerDown={opening === 'run' ? () => setOpening('done') : undefined}
+      >
         <TitleSky sky={sky} />
         <TitleSquare />
         <div className="title-hero">

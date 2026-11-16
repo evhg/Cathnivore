@@ -1932,3 +1932,68 @@ html.no-animations .title-screen * {
   .title-menu { margin-top: 14px; gap: 8px 12px; }
   .title-tagline { font-size: 0.875rem; }
 }
+
+/* Plan item 453: the stall's awning over Cath on a tall phone, and the day's first-load opening: the awning unrolls,
+   she steps in and waves, her line pops, the tags drop onto the counter and the vans start (App.tsx pauses them).
+   1200 ms in all; a tap skips it ('done' stills every part where it rests); reduced motion gets a short fade. */
+.title-awning { display: none; }
+@media (max-width: 600px) and (min-height: 721px) {
+  .title-art.title-table .title-awning {
+    display: block;
+    position: absolute;
+    left: -20px;
+    top: -50px;
+    width: calc(100% + 40px);
+    height: 30px;
+    transform-origin: 50% 0;
+    filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink) 22%, transparent));
+    pointer-events: none;
+  }
+  /* with a save the menu takes a row and her line rises to the tagline: no room for the awning */
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-awning { display: none; }
+  .title-awning-roll { fill: var(--wood); }
+  .title-awning-stripe { stroke: color-mix(in srgb, var(--ink) 30%, transparent); stroke-width: 0.6; }
+  .title-awning-stripe.s0 { fill: var(--clay); }
+  .title-awning-stripe.s1 { fill: var(--paper-on-fixed-fill); }
+}
+@media (max-width: 600px) and (min-height: 721px) and (prefers-reduced-motion: no-preference) {
+  .title-screen[data-opening='run'] .title-art.title-table .title-awning { animation: title-awning-unroll 420ms cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+  .title-screen[data-opening='run'] .title-art.title-table .title-cath { animation: title-cath-step 620ms var(--ease-settle) both 180ms; }
+  .title-screen[data-opening='run'] .title-art.title-table .title-cath svg { animation: title-cath-hello 420ms ease-in-out both 760ms; }
+  .title-screen[data-opening='run'] .title-art.title-table .title-cath-line { animation: title-line-pop 240ms var(--ease-settle) both 700ms; transform-origin: 20% 100%; }
+  .title-screen[data-opening='run'] .title-menu > * { animation: title-tag-drop 340ms var(--ease-settle) both 560ms; }
+  .title-screen[data-opening='run'] .title-menu > :nth-child(2) { animation-delay: 640ms; }
+  .title-screen[data-opening='run'] .title-menu > :nth-child(3) { animation-delay: 720ms; }
+  .title-screen[data-opening='run'] .title-menu > :nth-child(4) { animation-delay: 800ms; }
+  .title-screen[data-opening='run'] .title-menu > :nth-child(5) { animation-delay: 860ms; }
+  /* skipped or finished: everything rests where it ends (the everyday entrance doesn't replay) */
+  .title-screen[data-opening='done'] .title-art.title-table .title-cath,
+  .title-screen[data-opening='done'] .title-art.title-table .title-cath-line,
+  .title-screen[data-opening='done'] .title-menu > * { animation: none; }
+}
+@media (max-width: 600px) and (min-height: 721px) and (prefers-reduced-motion: reduce) {
+  .title-screen[data-opening='run'] .title-hero { animation: title-opening-fade 300ms ease both !important; }
+}
+@keyframes title-awning-unroll {
+  from { transform: scaleY(0.08); }
+}
+@keyframes title-cath-step {
+  0% { transform: translateX(-72px); opacity: 0; }
+  55% { opacity: 1; }
+  80% { transform: translateX(5px); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes title-cath-hello {
+  0%, 100% { transform: none; }
+  30% { transform: rotate(-2deg) translateY(-3px); }
+  65% { transform: rotate(1.5deg); }
+}
+@keyframes title-line-pop {
+  from { transform: scale(0.6); opacity: 0; }
+}
+@keyframes title-tag-drop {
+  from { transform: translateY(-16px); opacity: 0; }
+}
+@keyframes title-opening-fade {
+  from { opacity: 0; }
+}
