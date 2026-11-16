@@ -167,8 +167,11 @@ export const KEY_EASE = 12;
  * Plan item 42: each class's coat in the pick (the outfit swap, 400 ms with the turn). The Ghost keeps her black
  * trench; the Butcher wears the olive field jacket, the Gunslinger the oxblood duster, the Wirewitch a waxed teal
  * mac, the Fixer midnight wool (the wardrobe's own coats, game/armdress.ts, where there is one).
+ * Plan item 434: lifted out of near-black (the five read as one grey coat, 3-11% apart): the Butcher's olive drab,
+ * the Gunslinger's saddle-tan duster (the Butcher's apron already holds the oxblood), the Wirewitch's green teal, the
+ * Fixer's plum wool (midnight blue sat on the Ghost's black); the Ghost alone stays in black.
  */
-const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x2f3324, gunslinger: 0x3a2018, wirewitch: 0x14282c, fixer: 0x171b2b };
+const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x4b5428, gunslinger: 0x7a4a26, wirewitch: 0x175e52, fixer: 0x4a2240 };
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 
