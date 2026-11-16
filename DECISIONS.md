@@ -501,3 +501,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 lane B: Hedgerow 3D Cath stands 1.25x on a phone canvas (item 346's one scale holds at D), as the gate sign grows there; 459 closed on measurement (135 px at D already).
 - 2026-11-16 lane B: level.ts joins POSTER_SOURCES (the title draws the street); the hash was rewritten from the posters just rendered with it.
 - 2026-11-16 22:40 lane A: item 449's Gunslinger holster moved to her left hip so her free (left) hand draws from it; a cross-draw from the right hip under the umbrella hand read worse. Item 331 (first open) skipped again: stuck on the title camera reframing; 449 has lane A's context.
+- 2026-11-16 lane B: 456 handed back with a live probe of the trench's light (emissive ~43 of ~62, specular the rest); no further lighting change shipped until the term is found.
