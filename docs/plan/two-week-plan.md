@@ -4195,7 +4195,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the transition 700-1100 ms (e2e with frame timestamps); the first visual change within 100 ms of the tap; the reduced-motion path tested; hedgerow-map specs pass; shots P and D at 0, 50 and 100%, before and after.
 - **Size:** 2
 
-## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch
+## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch *(lane A, in progress)*
 
 Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the furled umbrella aside while the rifle or shotgun is in her hand (`poseProps`), so she holds one long silhouette. Open: measure the box (one long gun per class), the coat intersection check, the class-change clip timing (≤ 50 ms), cathode-perf alone, and P/D shots of all five.
 - **Why:** `plan1116h/ns-play-D`: Cath (630-760 x 140-850) holds three long black objects at once (a rod in her left hand 630-660 x 280-650, a sniper rifle through her right side with no sling 710-830 x 210-500, the baton); the stock juts past her head; a class change swaps meshes with no motion; only the hold bar animates.
