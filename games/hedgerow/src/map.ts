@@ -5,7 +5,7 @@
 import { playDepart } from "./sound";
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
-import { ENEMIES, TWISTS, type EnemyKind, type Level } from "./engine";
+import { ENEMIES, TWISTS, isFleet, type EnemyKind, type Level } from "./engine";
 import { enemyIcon } from "./icons";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
@@ -2108,7 +2108,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       const top = [...kinds.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
       const esc = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
       body.innerHTML =
-        `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""}<span class="lcard-rounds"> · ${lv.waves.length} rounds</span></p>` +
+        `<p class="lcard-kicker">Level ${lv.id}${lv.id % 10 === 0 ? " · Boss" : ""}<span class="lcard-rounds"> · ${roundsLabel(lv)}</span></p>` +
         `<h3 class="lcard-name">${esc(lv.name)}</h3>` +
         (lv.twists?.length ? `<p class="lcard-twist"><span class="lcard-stamp">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</span></p>` : "") +
         `<p class="lcard-stars" role="img" aria-label="${stars} of 3 stars" title="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="lcard-medal${i < stars ? " is-won" : ""}" aria-hidden="true">${i < stars ? "★" : "☆"}</span>`).join("")}</p>`;
@@ -2607,4 +2607,10 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       window.setTimeout(() => you.isConnected && setPose(you, "clasped"), 2200);
     }, 1350);
   }
+}
+
+/** Plan item 462: a Fleet level plays a stretch of the Round Book, and play counts it in the Book's numbers ("Round 11
+ * of 26"), so the card names the same stretch ("rounds 11-26"), not a count ("16 rounds") that read as a mismatch. */
+function roundsLabel(lv: Level): string {
+  return isFleet(lv) && lv.book ? `rounds ${lv.book.from}–${lv.book.to}` : `${lv.waves.length} rounds`;
 }
