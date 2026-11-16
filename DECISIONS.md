@@ -476,3 +476,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 14:51 lane A: took item 442 over 319 (first open, but handed back after 79 slices with a note to restart from a critique, not more tweaks); 442 had a concrete list left.
 - 2026-11-16 lane A: Cath's free hand (wave, point, flag poses) now rests in her jacket pocket with the thumb hooked over the flap, after two critiques read the hanging hand as a claw; the gown and the pinafore have no pocket and keep the hanging hand.
 - 2026-11-16 lane A: Cath's default point is an index finger off the fist's outer edge with the thumb across the curled fingers; the slice-18 'L' still read as a rude sign in a 4x close render.
+- 2026-11-16 lane B: the dealt-hand tilt on Cathnivore's producer cards stays at tablet and desktop sizes but not on a phone, where the four are a row of tabs.
