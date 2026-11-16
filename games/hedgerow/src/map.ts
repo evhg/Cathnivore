@@ -684,7 +684,8 @@ function egret(x: number, y: number, s: number, dir: number): string {
 
 function saltmarsh(b: Brush): string {
   let o = sky(b, [[0, "#86b8d0"], [0.45, "#d2e3e2"], [0.8, "#fbe8cc"], [1, "#ffd9ac"]]);
-  o += inkSun(340, 104, 12, "#fff0c8", "#fff9e6");
+  // Lane A 2026-11-16 (455's hedge-menu-D): a warm gold disc; the near-white one on the pale sky read as a bare ring.
+  o += inkSun(340, 104, 12, "#ffe2a0", "#ffd98c");
   for (const [x, y, w] of [[110, 40, 190], [300, 26, 150], [430, 56, 130], [60, 72, 110], [210, 62, 100], [400, 84, 90]] as const) o += streak(b, x, y, w, "#ffffff", 0.55) + streak(b, x + 18, y + 5, w * 0.7, "#f8cfae", 0.5);
   // Plan item 115: the sea-fog bank sat behind the act plate as a dusky pink blob; it is a lit cumulus in the open sky.
   // Plan item 139: it still read as a flat pink smear: the banner's crop cut its top flat and its belly was the sky's
