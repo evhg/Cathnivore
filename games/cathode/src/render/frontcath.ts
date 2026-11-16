@@ -906,7 +906,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     [0.164, 0.42],
     [0.158, 0.34], // chest
     [0.136, 0.24],
+    [0.113, 0.152], // plan item 427: a row each side of the belt, for its gathers
     [0.106, 0.12], // the belted waist
+    [0.115, 0.088],
     [0.132, 0.05],
     [0.174, -0.05], // hips
     [0.202, -0.19],
@@ -914,7 +916,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     [0.266, -0.46], // the hem, just below the knee: the skirt flares from the belt
     [0.262, -0.475],
   ];
-  const HEM_FROM = 10; // profile rows from here down follow the hem particles
+  const HEM_FROM = 12; // profile rows from here down follow the hem particles
   const coatSegs = seg(48); // plan item 271: enough segments to carry the skirt's folds in the silhouette
   // LatheGeometry faces outward when the profile climbs: hem first.
   coatProfile.reverse();
@@ -928,6 +930,24 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const shade = new Float32Array(p.count * 3).fill(1);
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i);
+      // Plan item 427: the belt gathers the cloth: short pleats bunch out of it above and below at her sides and back
+      // (the waist was a smooth turned neck), the double-breasted front left flat under its lapels and buttons.
+      const nearBelt = Math.abs(y - 0.12);
+      if (nearBelt > 0.004 && nearBelt < 0.11) {
+        const gx = p.getX(i);
+        const gz = p.getZ(i);
+        const ga = Math.atan2(gz / 0.7, gx);
+        // Clear of the closure: the buttons stand 0.06 m off centre (about 0.55 rad round from the front).
+        const fromFront = Math.abs(Math.atan2(Math.cos(ga), Math.sin(ga)));
+        const g = (1 - nearBelt / 0.11) * THREE.MathUtils.smoothstep(fromFront, 0.62, 0.95);
+        const pleat = Math.sin(ga * 11 + 0.4) * 0.6 + Math.sin(ga * 17 + 1.7) * 0.4;
+        const gk = 1 + 0.065 * g * pleat;
+        p.setXYZ(i, gx * gk, y, gz * gk);
+        if (y > 0.08) {
+          shade.fill(Math.max(0.5, 1 + 0.5 * g * pleat), i * 3, i * 3 + 3);
+          continue;
+        }
+      }
       if (y > 0.08) continue;
       const x = p.getX(i);
       const z = p.getZ(i);
