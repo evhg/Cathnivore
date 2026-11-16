@@ -1516,6 +1516,7 @@ export class Renderer {
       ctx.setLineDash([]);
     }
 
+    this.sunGrade(W, H, shadowDir(level.id));
     this.ambient(W, H, s, t);
 
     // Boss bar.
@@ -2299,6 +2300,27 @@ export class Renderer {
     }
     ctx.globalAlpha = 1;
     this.parts = this.parts.filter((p) => p.age < p.life);
+  }
+
+  /**
+   * Plan item 440: the field lit by one sun. A warm wash on the act's sun side fading to a cool one on the shadow
+   * side (the same direction the cast shadows fall), and a light vignette, so the flat tints read as one lit farm.
+   */
+  private sunGrade(W: number, H: number, away: { x: number; y: number }): void {
+    const { ctx } = this;
+    const cx = W / 2, cy = H / 2, R = Math.hypot(W, H) / 2;
+    const g = ctx.createLinearGradient(cx - away.x * R, cy - away.y * R, cx + away.x * R, cy + away.y * R);
+    g.addColorStop(0, "rgba(255,206,128,0.13)");
+    g.addColorStop(0.5, "rgba(255,206,128,0)");
+    g.addColorStop(0.5, "rgba(46,58,96,0)");
+    g.addColorStop(1, "rgba(46,58,96,0.12)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    const v = ctx.createRadialGradient(cx, cy, Math.min(W, H) * 0.42, cx, cy, R * 1.05);
+    v.addColorStop(0, "rgba(34,26,16,0)");
+    v.addColorStop(1, "rgba(34,26,16,0.2)");
+    ctx.fillStyle = v;
+    ctx.fillRect(0, 0, W, H);
   }
 
   private ambient(W: number, H: number, s: number, t: number): void {

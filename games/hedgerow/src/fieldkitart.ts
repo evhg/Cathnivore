@@ -23,8 +23,9 @@ function rng(seed: number): () => number {
 const FILL: Partial<Record<BedLook, [string, string]>> = {
   // Glassy samphire: a bright yellow-green flush, reddening toward the foot.
   samphire: ["rgba(118,178,128,0.74)", "rgba(104,152,116,0.78)"],
-  // Sea-lavender: grey-green rosettes under a haze of mauve.
-  lavender: ["rgba(166,154,194,0.72)", "rgba(140,134,170,0.76)"],
+  // Sea-lavender: grey-green rosettes under a haze of mauve. Plan item 440: the bed itself is the rosettes' grey-green
+  // (a mauve fill read as purple board tiles); the mauve is only the flower sprays, a step down in value and chroma.
+  lavender: ["rgba(150,156,146,0.72)", "rgba(128,136,124,0.76)"],
   // Salt grazing: a short, blue-grey sward.
   saltgrass: ["rgba(136,198,176,0.72)", "rgba(108,174,156,0.76)"],
   // Hill oats: a green-gold crop in ear.
@@ -341,7 +342,7 @@ function scatter(ctx: C, look: BedLook, x: number, y: number, s: number, r01: ()
       for (let k = 0; k < 7; k++) {
         const a = -Math.PI / 2 + (r01() - 0.5) * 1.8;
         const d = s * (0.03 + r01() * 0.06);
-        ctx.fillStyle = k % 3 ? "rgba(168,128,206,0.95)" : "rgba(206,178,232,0.95)";
+        ctx.fillStyle = k % 3 ? "rgba(150,122,178,0.92)" : "rgba(186,168,206,0.92)";
         ctx.beginPath();
         ctx.arc(cx + Math.cos(a) * d, cy - s * 0.03 + Math.sin(a) * d * 0.8, s * 0.022, 0, Math.PI * 2);
         ctx.fill();

@@ -1813,6 +1813,8 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   const lift = enemyLift(kind) * s0;
   const tt = t + look.phase;
   groundShadow(ctx, x, y, s * 0.3, s * 0.08, lift > 0 ? 0.15 : 0.25);
+  // Plan item 440: a vehicle on the lane throws a cast shadow away from the act's sun (a flier keeps its soft spot)
+  if (lift <= 0 && !look.ghost) castShadow(ctx, x, y, s * 0.28, s * 0.1, s * 0.5, 0.16);
   ctx.save();
   if (look.ghost) ctx.globalAlpha = 0.28 + Math.sin(tt * 6) * 0.06;
   const hover = lift > 0 ? Math.sin(tt * 3) * s0 * 0.04 : 0;
@@ -2300,6 +2302,8 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
     ctx.lineWidth = lw(s);
   }
   groundShadow(ctx, x, y, s * 0.2, s * 0.06, 0.3);
+  // Plan item 440: Cath throws her shadow away from the act's sun
+  if (!look.down) castShadow(ctx, x, y, s * 0.1, s * 0.04, s * 0.95, 0.18);
   ctx.save();
   ctx.translate(x, y);
   if (look.down) {

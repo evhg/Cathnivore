@@ -4,7 +4,7 @@
 // running (leaning in, faster stride), hiding (crouched, arms over the head) and cheering (arms up, a hop).
 
 import type { Folk } from "./farmfolk";
-import { groundShadow, INK } from "./sprites";
+import { castShadow, groundShadow, INK } from "./sprites";
 
 type C = CanvasRenderingContext2D;
 
@@ -45,6 +45,8 @@ function person(ctx: C, f: Folk, x: number, y: number, s: number, t: number): vo
   const neck = hip - h * (0.34 - crouch * 0.3);
   const lean = p.run ? f.facing * h * 0.12 : 0;
   groundShadow(ctx, x, y, h * 0.42, h * 0.12, 0.22);
+  // Plan item 440: a figure throws its shadow away from the act's sun, like the towers and houses
+  castShadow(ctx, x, y, h * 0.12, h * 0.05, h * 0.9, 0.16);
   ctx.save();
   ctx.translate(x, 0);
   ctx.scale(f.facing, 1);
@@ -172,6 +174,7 @@ function dog(ctx: C, f: Folk, x: number, y: number, s: number, t: number): void 
   const lift = p.hop * L * 0.25 + p.bob * L * 0.6;
   const base = y - lift;
   groundShadow(ctx, x, y, L * 0.55, L * 0.14, 0.22);
+  castShadow(ctx, x, y, L * 0.45, L * 0.1, L * 0.7, 0.14);
   ctx.save();
   ctx.translate(x, base);
   ctx.scale(f.facing, 1);
@@ -237,6 +240,7 @@ function hen(ctx: C, f: Folk, x: number, y: number, s: number, t: number): void 
   const flap = p.run || p.cheer ? Math.abs(Math.sin(t * 20 + f.id)) : 0;
   const lift = p.hop * L * 0.4 + p.bob * L * 0.6;
   groundShadow(ctx, x, y, L * 0.5, L * 0.14, 0.2);
+  castShadow(ctx, x, y, L * 0.35, L * 0.1, L * 0.8, 0.14);
   ctx.save();
   ctx.translate(x, y - lift);
   ctx.scale(f.facing, 1);
