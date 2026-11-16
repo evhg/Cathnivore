@@ -33,13 +33,28 @@ test('a ?play case file turns Cath to the camera, in a different look for each c
   const seen = new Set<string>()
   // Plan item 140: her painted face changes with the class (the ghost set, the wirewitch winking).
   const faces: Record<string, string | null> = {}
+  const pieces: Record<string, string> = {}
   for (const cls of CLASSES) {
     await pick(page, cls, hasTouch)
     await expect.poll(dressed, { timeout: 30_000 }).toBe(cls)
     faces[cls] = await page.locator('canvas[data-expression]').first().getAttribute('data-expression')
     // Each class's own kit over the coat (the rifle sling, the apron, the holster, the wire rig, the tie).
     seen.add(`${await dressed()}/${await page.evaluate(() => (window as unknown as Front).cathodeFront!.scene()!.kit)}`)
+    // Plan item 434: and her outline changes with it (the Ghost's hood, the Gunslinger's hat and caped duster, the
+    // Wirewitch's cable halo, the Fixer's briefcase): the kit pieces shown are each class's own.
+    pieces[cls] = await page.evaluate(() => {
+      const names: string[] = []
+      const g = (window as unknown as { cathodeFront: { scene: () => { cath: { group: { traverse(f: (o: { name: string; visible: boolean; parent: unknown }) => void): void } } } } }).cathodeFront.scene().cath.group
+      g.traverse((o) => {
+        if (!/^kit-/.test(o.name) || !o.visible) return
+        for (let q = o.parent as { visible: boolean; parent: unknown } | null; q; q = q.parent as typeof q) if (!q.visible) return
+        names.push(o.name)
+      })
+      return names.sort().join(',')
+    })
   }
+  expect(new Set(Object.values(pieces)).size, JSON.stringify(pieces)).toBe(CLASSES.length)
+  expect(pieces.gunslinger).toContain('kit-gunslinger-cape-extra')
   expect([...seen]).toEqual(CLASSES.map((c) => `${c}/${c}`))
   expect(faces).toEqual({ ghost: 'determined', butcher: 'determined', gunslinger: 'smirk', wirewitch: 'wink', fixer: 'smirk' })
   // Her figure, head to hem, is a presence: 420 px or more at D, 300 at P.

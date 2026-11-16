@@ -3390,6 +3390,42 @@ float reliefShade( vec2 uv ) {
     return g;
   };
   {
+    // Plan item 434: the Gunslinger's duster has a cape: a short caped yoke from the collar over both shoulders to
+    // the upper arm, open at the front so the lapels show, in the coat's own cloth (it takes the class colour). With
+    // only a hat and a gunbelt she had the Wirewitch's and the Fixer's outline (figure-mask IoU 0.70 and 0.69).
+    const capeProfile: Array<[number, number]> = [
+      [0.248, 0.335], // the hem, over the upper arm
+      [0.244, 0.36],
+      [0.232, 0.41],
+      [0.21, 0.455],
+      [0.182, 0.492],
+      [0.146, 0.518],
+      [0.114, 0.536], // under the collar
+    ];
+    const open = 0.95; // half the front opening (rad), so the lapels and the face-framing locks stay outside it
+    const cape = new THREE.LatheGeometry(capeProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg(40), open, Math.PI * 2 - 2 * open);
+    cape.scale(1, 1, 0.8);
+    {
+      // Soft folds falling from the shoulders, deeper toward the hem.
+      const p = cape.attributes.position as THREE.BufferAttribute;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i);
+        const drop = THREE.MathUtils.clamp((0.536 - v.y) / 0.2, 0, 1);
+        const a = Math.atan2(v.x, v.z);
+        const k = 1 + 0.05 * drop * drop * Math.sin(a * 9);
+        p.setXYZ(i, v.x * k, v.y, v.z * k);
+      }
+      cape.computeVertexNormals();
+    }
+    const capeMat = coatMat.clone();
+    capeMat.side = THREE.DoubleSide;
+    coatMats.push(capeMat);
+    rimify(capeMat, 1, 0, 0, 0, false, 0, "wool", 0.35);
+    mats.push(capeMat);
+    extra("gunslinger-cape", pelvis, [[[cape], capeMat]]);
+  }
+  {
     // Ghost: the hood up, a deep cowl round the back and top of her head, open at the face, falling to the collar.
     const hood = new THREE.SphereGeometry(1, seg(28), seg(18), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
     // Plan item 260: cloth, not a shell (it read as a space helmet): folds fall from the crown and deepen toward the

@@ -12,24 +12,60 @@ await p.evaluate(() => { localStorage.clear(); localStorage.setItem('cathode:pre
 await p.goto(base + '/nightshift/?play&rs=0.5')
 await p.waitForFunction(() => window.cathodeFront?.scene()?.dressed === 'ghost', null, { timeout: 200000 })
 const out = {}
+const masks = {}
+const greenCount = async (p, png) => p.evaluate(async (c) => {
+  const i = new Image(); i.src = 'data:image/png;base64,' + c; await i.decode(); const cv = new OffscreenCanvas(i.width, i.height); const g = cv.getContext('2d'); g.drawImage(i, 0, 0); const d = g.getImageData(0, 0, i.width, i.height).data
+  const m = []; for (let k = 0; k < d.length; k += 4) m.push(d[k + 1] > 120 && d[k + 1] > d[k] + 50 && d[k + 1] > d[k + 2] + 50 ? 1 : 0)
+  return m
+}, png.toString('base64'))
+const stableMask = async (p) => {
+  let last = -1, png, mask
+  for (let t = 0; t < 8; t++) {
+    const f = await p.evaluate(() => window.cathodeFront.scene().stats.frames)
+    await p.waitForFunction((f) => window.cathodeFront.scene().stats.frames > f + 3, f, { timeout: 60000 })
+    png = await p.screenshot({ timeout: 120000 }); mask = await greenCount(p, png)
+    const n = mask.reduce((s, v) => s + v, 0)
+    if (last > 0 && Math.abs(n - last) < 0.01 * n) break
+    last = n
+  }
+  return { png, mask }
+}
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 for (const [i, cls] of ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer'].entries()) {
   await p.keyboard.press(String(i + 1)); await p.waitForTimeout(4000); if (dir) await p.screenshot({ path: `${dir}/coat-${cls}-D.png`, timeout: 120000 })
   const shotA = await p.screenshot({ timeout: 120000 })
-  const f0 = await p.evaluate(() => { const c = window.cathodeFront.scene().cath; window.__sw = []; const set = new Set(c.coatMats); c.group.traverse((o) => { if (o.isMesh && set.has(o.material)) { window.__sw.push([o, o.material]); const m = o.material.clone(); m.customProgramCacheKey = () => 'coatmask'; m.color.set(0); m.emissive?.set(0x00ff00); m.emissiveIntensity = 1; m.map = null; m.emissiveMap = null; m.needsUpdate = true; o.material = m } }); return window.cathodeFront.scene().stats.frames })
-  await p.waitForFunction((f) => window.cathodeFront.scene().stats.frames > f + 3, f0, { timeout: 60000 })
-  const shotB = await p.screenshot({ timeout: 120000 })
-  await p.evaluate(() => { for (const [o, m] of window.__sw) o.material = m })
-  out[cls] = await p.evaluate(async ([a, c]) => {
-    const load = async (u) => { const i = new Image(); i.src = 'data:image/png;base64,' + u; await i.decode(); const cv = new OffscreenCanvas(i.width, i.height); const g = cv.getContext('2d'); g.drawImage(i, 0, 0); return { W: i.width, H: i.height, d: g.getImageData(0, 0, i.width, i.height).data } }
-    const A = await load(a), B = await load(c); const { W, H } = A
-    const green = (x, y) => { const k = (y * W + x) * 4; return B.d[k + 1] > 120 && B.d[k + 1] > B.d[k] + 60 && B.d[k + 1] > B.d[k + 2] + 60 }
-    let r = 0, g = 0, bl = 0, n = 0
-    for (let y = 2; y < H - 2; y += 1) for (let x = 2; x < W - 2; x += 1) {
-      if (!(green(x, y) && green(x - 2, y) && green(x + 2, y) && green(x, y - 2) && green(x, y + 2))) continue
-      const k = (y * W + x) * 4; r += A.d[k]; g += A.d[k + 1]; bl += A.d[k + 2]; n++
+  // Her coat alone, then her whole figure (coat, kit, umbrella; not the contact shadow), drawn in one shared flat
+  // green (no fog, no tone mapping); shots repeat until the mask's size holds (a material still compiling is
+  // skipped for a frame or two, which dropped whole parts from the mask).
+  const paint = (coatOnly) => p.evaluate((coatOnly) => {
+    const c = window.cathodeFront.scene().cath
+    const M = c.coatMats[0].constructor // MeshStandardMaterial (or Physical): no THREE global on the page
+    window.__green ??= Object.assign(new M({ color: 0, roughness: 1, metalness: 0 }), { fog: false, toneMapped: false })
+    window.__green.emissive.set(0x00ff00); window.__green.emissiveIntensity = 1
+    const set = new Set(c.coatMats)
+    window.__sw = []
+    c.group.traverse((o) => { if (o.isMesh && o.material && !o.material.transparent && (!coatOnly || set.has(o.material))) { window.__sw.push([o, o.material]); o.material = window.__green } })
+  }, coatOnly)
+  const restore = () => p.evaluate(() => { for (const [o, m] of window.__sw) o.material = m })
+  await paint(true)
+  const coat = await stableMask(p)
+  await restore()
+  await paint(false)
+  const fig = await stableMask(p)
+  if (dir) require('fs').writeFileSync(`${dir}/fig-${cls}-D.png`, fig.png)
+  await restore()
+  masks[cls] = fig.mask
+  out[cls] = await p.evaluate(async ([a, m]) => {
+    const i = new Image(); i.src = 'data:image/png;base64,' + a; await i.decode(); const W = i.width, H = i.height; const cv = new OffscreenCanvas(W, H); const g = cv.getContext('2d'); g.drawImage(i, 0, 0); const d = g.getImageData(0, 0, W, H).data
+    const at = (x, y) => m[y * W + x] === 1
+    let r = 0, gg = 0, bl = 0, n = 0
+    for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
+      if (!(at(x, y) && at(x - 2, y) && at(x + 2, y) && at(x, y - 2) && at(x, y + 2))) continue
+      const k = (y * W + x) * 4; r += d[k]; gg += d[k + 1]; bl += d[k + 2]; n++
     }
-    return { n, rgb: [r / n, g / n, bl / n].map(Math.round) }
-  }, [shotA.toString('base64'), shotB.toString('base64')])
+    return { n, rgb: [r / n, gg / n, bl / n].map(Math.round) }
+  }, [shotA.toString('base64'), coat.mask])
 }
 console.log(JSON.stringify(out))
 const lab = (c) => {
@@ -41,4 +77,8 @@ const lab = (c) => {
 const k = Object.keys(out), pr = []
 for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) { const a = lab(out[k[i]].rgb), c = lab(out[k[j]].rgb); pr.push(`${k[i]}-${k[j]} dE ${Math.hypot(a[0] - c[0], a[1] - c[1], a[2] - c[2]).toFixed(1)}`) }
 console.log(pr.join(' | '))
+const iou = []
+for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) { const a = masks[k[i]], c = masks[k[j]]; let I = 0, U = 0; for (let q = 0; q < a.length; q++) { I += a[q] & c[q]; U += a[q] | c[q] } iou.push(`${k[i]}-${k[j]} IoU ${(I / U).toFixed(3)}`) }
+console.log(Object.fromEntries(k.map((c) => [c, masks[c].reduce((s, v) => s + v, 0)])))
+console.log(iou.join(' | '))
 await b.close()
