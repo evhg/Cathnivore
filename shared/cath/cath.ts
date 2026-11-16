@@ -519,7 +519,6 @@ function face(id: string): string {
 <path fill="${C.skinShade}" opacity="0.7" transform="translate(-3 5)" d="${lockD(-1)}"/>
 <ellipse cx="214" cy="100" rx="13" ry="6" fill="${C.skinLight}" opacity="0.6"/>
 <ellipse cx="236" cy="166" rx="8" ry="4.5" fill="${C.skinLight}" opacity="0.35" transform="rotate(-20 236 166)"/>
-<ellipse cx="205" cy="219" rx="5" ry="1.8" fill="${C.skinLight}" opacity="0.4"/>
 </g>
 <path fill="none" stroke="${C.skinLine}" stroke-width="1.8" stroke-linejoin="round" d="${FACE}"/>`
 }
@@ -650,15 +649,15 @@ ${mouth(id, expression)}
 // Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip (plan item 442: the waist
 // taken in 7 px a side, since at full length it read as a box).
 const JACKET = `M183 250
-C160 256 132 262 118 280
-C106 296 104 322 106 350
-C109 384 122 402 131 420
+C160 256 134 262 121 280
+C111 296 109 322 111 350
+C112 384 123 402 131 420
 C127 446 120 474 117 500
 L283 500
 C280 474 273 446 269 420
-C278 402 291 384 294 350
-C296 322 294 296 282 280
-C268 262 240 256 217 250
+C277 402 288 384 289 350
+C291 322 289 296 279 280
+C266 262 240 256 217 250
 L200 404
 L183 250 Z`
 
