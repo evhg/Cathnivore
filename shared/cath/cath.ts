@@ -968,19 +968,22 @@ function hand(kind: HandKind, x: number, y: number, rot: number, cloth: Cloth): 
     ].join('')
   } else if (kind === 'fist' || kind === 'point' || kind === 'grip') {
     body = [
-      // Plan item 442 (critique: a lone centred finger off a round fist read as a rude sign): the index rises from
-      // the thumb side, the thumb stands out sideways (an 'L': the idea gesture), and the three curled fingers show their knuckles.
-      kind === 'point' ? finger(-7, -10, -8.5, -30, skin, line, 6, bare) : '',
+      // Plan item 442 (critique, twice: a lone finger off a round fist read as a rude sign, and so did the 'L'): the
+      // index rises from the fist's outer edge, leaning out, the thumb lies across the curled fingers' front (the way
+      // a real pointing hand holds them), and the curled fingers step down beside the index as three knuckles.
+      kind === 'point' ? finger(-9.5, -9, -13, -31, skin, line, 6, bare) : '',
       `<path fill="${skin}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round" d="${fistD}"/>`,
       `<path fill="${shade}" opacity="0.6" d="M-12 8 C-14 0 -13 -6 -11 -9 C-9 -2 -7 4 -3 11 C-7 12 -10 11 -12 8 Z"/>`,
       kind === 'point' ? '' : brush([-8, -11], [-6, -6], [-7, -2], 0.2, 1, 0.2, crease),
-      brush([-2, -12], [0, -7], [-1, -2], 0.2, 1, 0.2, crease),
-      brush([4, -12], [6, -7], [5, -2], 0.2, 1, 0.2, crease),
       kind === 'point'
-        ? finger(-10, 1, -20, -6, skin, line, 5.6, false) +
-          brush([9, -11], [11, -7], [10, -2], 0.2, 1, 0.2, crease) +
-          `<path fill="none" stroke="${line}" stroke-width="1.1" stroke-linecap="round" d="M-3 -12.5 Q0 -14.5 3 -12.5 M3.5 -12.5 Q6.5 -14 9 -11.5"/>`
-        : `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-12 2 C-6 -1 2 0 6 3 C4 7 -4 8 -11 6 Z"/>`,
+        ? `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-5.5 -9 C-5 -14 0 -14.5 1 -10 C1.5 -14 6.5 -14 7 -9.5 C8 -12.5 12.5 -11.5 12 -6 L11 -1 L-5 -1 Z"/>` +
+          brush([1, -10], [1.2, -6], [0.8, -2], 0.2, 0.9, 0.2, crease, ' opacity="0.8"') +
+          brush([7, -9.5], [7.4, -6], [7, -2], 0.2, 0.9, 0.2, crease, ' opacity="0.8"') +
+          `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-12.5 0 C-7 -3.5 3 -3 9 0.5 C8 4.5 -3 5.5 -11.5 4.5 Z"/>` +
+          brush([-9, -1], [-1, -1.5], [6, 0.5], 0.2, 0.7, 0.2, crease, ' opacity="0.45"')
+        : brush([-2, -12], [0, -7], [-1, -2], 0.2, 1, 0.2, crease) +
+          brush([4, -12], [6, -7], [5, -2], 0.2, 1, 0.2, crease) +
+          `<path fill="${skin}" stroke="${line}" stroke-width="1.3" stroke-linejoin="round" d="M-12 2 C-6 -1 2 0 6 3 C4 7 -4 8 -11 6 Z"/>`,
     ].join('')
   } else if (kind === 'chin') {
     // A loose fist under her chin, knuckles towards her (no lone finger: a raised one reads as a rude sign).
@@ -1096,7 +1099,7 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
       }
       // A raised finger up and out to the viewer's right ("here's the thing"), kept inside the bust frame.
       return layer === 'back'
-        ? restLeft + sleeve('M266 300 Q292 324 298 332 Q304 304 304 280', 24, cl, 'M304 288 Q304 284 304 278') + hand('point', 307, 262, 16, cl)
+        ? restLeft + sleeve('M266 300 Q294 322 304 330 Q304 302 298 280', 24, cl, 'M300 288 Q299 284 298 279') + hand('point', 303, 264, 24, cl)
         : ''
     case 'walk':
       // Plan item 292: arms swinging with the stride, her right (viewer's left) forward, her left back.
