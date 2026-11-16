@@ -734,7 +734,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
         // Item 345: where this field meets a different crop below, a low hedge runs along the grass between them.
         const below = leadIn.has(`${c},${r + 1}`) ? undefined : looks.get(`${c},${r + 1}`);
         const flat = (l: PlotLook | undefined) => (l === "puddle" ? "earth" : l);
-        if (below && !sameField(level, c, r, c, r + 1) && flat(below) !== flat(look)) paintFieldHedge(ctx, x, y + s, s, c * 37 + r * 11 + level.id);
+        if (below && !sameField(level, c, r, c, r + 1) && flat(below) !== flat(look)) paintFieldHedge(ctx, x, y + s, s, c * 37 + r * 11 + level.id, away);
         continue;
       }
       ctx.fillStyle = "rgba(60,80,20,0.07)";
@@ -822,11 +822,14 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
 /** Plan item 52: a plot drawn by what lies under it, so neighbouring beds differ. */
 /** Plan item 345: a cell's length of low hedge along the grass between two fields, centred on `y`: a dark base
  *  line and a crown of leafy bumps, seeded so the run of hedge doesn't repeat. */
-function paintFieldHedge(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, seed: number): void {
+function paintFieldHedge(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, seed: number, away = { x: 0, y: 1 }): void {
   const r01 = rng(seed);
   ctx.save();
+  // Plan item 440: the hedge's shadow falls away from the act's sun, darkest where it meets the bed (occlusion)
   ctx.fillStyle = "rgba(40,30,10,0.2)";
-  ctx.fillRect(x, y + s * 0.02, s, s * 0.06);
+  ctx.fillRect(x + away.x * s * 0.05, y + s * 0.02 + away.y * s * 0.04, s, s * 0.06);
+  ctx.fillStyle = "rgba(40,30,10,0.12)";
+  ctx.fillRect(x + away.x * s * 0.1, y + s * 0.04 + away.y * s * 0.08, s, s * 0.05);
   ctx.fillStyle = "rgb(58,96,46)";
   ctx.fillRect(x, y - s * 0.03, s, s * 0.06);
   const bumps = 8;
@@ -839,7 +842,7 @@ function paintFieldHedge(ctx: CanvasRenderingContext2D, x: number, y: number, s:
     ctx.fill();
     ctx.fillStyle = "rgba(150,196,104,0.75)";
     ctx.beginPath();
-    ctx.arc(bx - br * 0.25, y - br * 0.35, br * 0.5, 0, Math.PI * 2);
+    ctx.arc(bx - away.x * br * 0.35, y - br * 0.35, br * 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
