@@ -5,7 +5,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 ## Now
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
-- Lane A (08:52 11-16): CI green. Item 440 done (slice 5: furrow relief and bed rims along the sun, the grade in soft-light). Item 439 slice 1 (phone 3D opens on the whole lane, vehicles lean to the lens, no cut tray card), handed back. Open unclaimed: 319, 331, 438, 439, 442.
+- Lane A (09:51 11-16): CI green (446fd041 cancelled superseded). Taking item 442 (shared Cath: stroke weight at small sizes, nails, shots, critique).
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Lane B (09:55): 442 slices 5-7 (part-list test, walking boots, full figure about six heads tall), handed back. Open unclaimed: 319, 331, 438, 442.
 - Critique bugs from the 2026-11-08 08:15 shots (`e2e/screenshots/plan1108b/`, lane A): `hedge-menu-D` the act-4 'Beyond the hedge' note cut at the viewport foot (527-913 x 850-900, likely just the scroll); `hedge-menu-P` Hollowell boards beside 'The Unboxing' (10-100 x 380-405) and 'Golden Hour' (10-100 x 455-480), a block against 'Brand Ambassador' (320-385 x 515-555). The rest went into items 282, 283, 287 and 288.
