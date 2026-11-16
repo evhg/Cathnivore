@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Plan item 215: an upright phone's 3D field opens on a closer frame round the lane's busy half (plots 44 px or
-// more, vehicles 16 px or more); the Whole field button fits every plot and comes back. A desktop and ?2d keep
-// the whole field with no button.
+// Plan item 215: an upright phone's 3D field has a closer frame round the lane's busy half (plots 44 px or more,
+// vehicles 16 px or more). Plan item 439: it opens on the whole field (every plot in view, Cath 36 px+ tall and
+// in view, no tray card cut by the tray's edge), and the Closer button pushes in and comes back. A desktop and ?2d
+// keep the whole field with no button.
 type Box = { x: number; y: number; w: number; h: number }
-type HG = { game(): unknown; plotBoxes(): Box[]; vehicleBoxes(): Box[]; sendWave(g: unknown): unknown }
+type HG = { game(): unknown; plotBoxes(): Box[]; vehicleBoxes(): Box[]; cathBox(): Box | null; sendWave(g: unknown): unknown }
 
 async function open(page: Page, query: string): Promise<void> {
   const level = 21
@@ -16,13 +17,13 @@ async function open(page: Page, query: string): Promise<void> {
   await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 90_000 })
 }
 
-test('an upright phone opens close on the lane, and Whole field fits every plot', async ({ page }) => {
+test('an upright phone opens on the whole field, and Closer pushes in on the lane', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) >= 600, 'upright phone only')
   test.setTimeout(240_000)
   await open(page, '')
   const fit = page.locator('#btn-field-fit')
   await expect(fit).toBeVisible({ timeout: 30_000 })
-  await expect(fit).toHaveText(/Whole field/i)
+  await expect(fit).toHaveText(/Closer/i)
   const fb = (await fit.boundingBox())!
   expect(fb.height).toBeGreaterThanOrEqual(44)
   // Plan item 222: clear of the tray's round tab rising into the field's foot.
@@ -31,7 +32,37 @@ test('an upright phone opens close on the lane, and Whole field fits every plot'
     const t = (await tab.boundingBox())!
     expect(fb.x < t.x + t.width && t.x < fb.x + fb.width && fb.y < t.y + t.height && t.y < fb.y + fb.height).toBe(false)
   }
-  // Plots in view read at 44 px or more.
+  // Item 439: the whole field (every plot) in view, and Cath on screen at 36 px or more.
+  await page.waitForTimeout(2000)
+  const whole = await page.evaluate(() => {
+    const c = document.getElementById('canvas')!.getBoundingClientRect()
+    const h = (window as unknown as { hedgerow: HG }).hedgerow
+    const cath = h.cathBox()
+    return {
+      all: h.plotBoxes().every((b) => b.x >= c.left - 1 && b.y >= c.top - 1 && b.x + b.w <= c.right + 1 && b.y + b.h <= c.bottom + 1),
+      cath: cath && { h: cath.h, inside: cath.x >= c.left && cath.y >= c.top && cath.x + cath.w <= c.right && cath.y + cath.h <= c.bottom },
+    }
+  })
+  expect(whole.all).toBe(true)
+  expect(whole.cath?.inside).toBe(true)
+  expect(whole.cath!.h).toBeGreaterThanOrEqual(36)
+  // Item 439: no tray card shows cut by the tray's edge or under its More arrow.
+  const cut = await page.evaluate(() => {
+    const tray = document.querySelector('.tray')!
+    const tb = tray.getBoundingClientRect()
+    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 1
+    const more = document.querySelector<HTMLElement>('.tray-more')
+    const hi = (more && !more.hidden ? more.getBoundingClientRect().left : tb.right) + 1
+    return [...tray.children].filter((k) => {
+      const b = k.getBoundingClientRect()
+      return b.width > 0 && b.right > tb.left && b.left < tb.right && Number(getComputedStyle(k).opacity) > 0.5 && (b.left < lo || b.right > hi)
+    }).length
+  })
+  expect(cut).toBe(0)
+  // Closer: plots in view read at 44 px or more.
+  await fit.click()
+  await expect(fit).toHaveText(/Whole field/i)
+  await page.waitForTimeout(2000)
   const inView = await page.evaluate(() => {
     const c = document.getElementById('canvas')!.getBoundingClientRect()
     return (window as unknown as { hedgerow: HG }).hedgerow.plotBoxes().filter((b) => b.x >= c.left && b.y >= c.top && b.x + b.w <= c.right && b.y + b.h <= c.bottom).map((b) => Math.min(b.w, b.h))
@@ -46,16 +77,8 @@ test('an upright phone opens close on the lane, and Whole field fits every plot'
   await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.vehicleBoxes().length), { timeout: 120_000 }).toBeGreaterThan(0)
   const veh = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.vehicleBoxes().map((b) => Math.max(b.w, b.h)))
   expect(Math.min(...veh)).toBeGreaterThanOrEqual(16)
-  // The whole field: every plot inside the canvas; then back.
   await fit.click()
   await expect(fit).toHaveText(/Closer/i)
-  const all = await page.evaluate(() => {
-    const c = document.getElementById('canvas')!.getBoundingClientRect()
-    return (window as unknown as { hedgerow: HG }).hedgerow.plotBoxes().every((b) => b.x >= c.left - 1 && b.y >= c.top - 1 && b.x + b.w <= c.right + 1 && b.y + b.h <= c.bottom + 1)
-  })
-  expect(all).toBe(true)
-  await fit.click()
-  await expect(fit).toHaveText(/Whole field/i)
 })
 
 test('a desktop and ?2d keep the whole field with no button', async ({ page }) => {

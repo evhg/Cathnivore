@@ -3725,6 +3725,14 @@ img.act-scene {
 .pip-row.damage b.on {
   background: var(--marks-ink);
 }
+/* Plan item 439: a card the tray's edge or More arrow would cut fades out until scrolled wholly into view. */
+.tray > .tray-cut {
+  opacity: 0;
+  pointer-events: none;
+}
+.tray > * {
+  transition: opacity 0.15s;
+}
 .tray-tower:disabled {
   opacity: 0.5;
 }

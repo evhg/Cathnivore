@@ -218,6 +218,11 @@ export class RungInstances {
   }
 
   /** One vehicle this frame: where it stands on the ground, its heading, and a bob for its id. */
+  /** Plan item 439: the steep-view lean (radians, top away from the lens) every vehicle takes this frame. */
+  tilt = 0;
+  private readonly tiltQ = new THREE.Quaternion();
+  private readonly xAxis = new THREE.Vector3(1, 0, 0);
+
   add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0, livery: THREE.Color = WHITE): void {
     const mesh = (ghost ? this.ghosts : this.meshes).get(kind);
     if (!mesh) return;
@@ -227,6 +232,7 @@ export class RungInstances {
     const k = enemyScale(kind) * 1.3 * (ghost ? 0.92 : 1);
     this.p.set(x, ground + enemyLift(kind) + bob, z);
     this.q.setFromAxisAngle(this.up, heading);
+    if (this.tilt) this.q.premultiply(this.tiltQ.setFromAxisAngle(this.xAxis, -this.tilt));
     this.s.setScalar(k);
     this.m.compose(this.p, this.q, this.s);
     mesh.setMatrixAt(i, this.m);

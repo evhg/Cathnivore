@@ -606,15 +606,15 @@ export class Renderer3D {
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
     this.resetView();
-    // Plan item 215: an upright phone opens closer, on the lane's busy half (the gate towards the field's middle),
-    // so plots and vehicles read; the whole-field button (and a double-tap) fits it all.
+    // Plan item 215: an upright phone has a closer frame on the lane's busy half (the gate towards the field's
+    // middle). Plan item 439: it opens on the whole field (the whole lane and Cath in view, no verge-filled close
+    // frame); the Closer button (and a double-tap or pinch) pushes in.
     const gate = game.level.path[0];
     this.openFrame =
       this.w < 600 && this.h > this.w && gate
         ? { zoom: 1.6, ...this.gateLook(gate[0] + 0.5, gate[1] + 0.5, cols, rows, 1.6) }
         : null;
     this.openFramePending = !!this.openFrame;
-    this.frameClose();
   }
 
   /** Where the close frame looks: towards the field's middle from the gate, as far as keeps the gate (and its
@@ -634,6 +634,7 @@ export class Renderer3D {
    * first gate's depot until at least 80% of it is in view, so the next round's count still hangs on it. */
   private fitOpenFrame(): void {
     this.openFramePending = false;
+    const close = this.zoomed;
     const f = this.openFrame;
     const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
     if (!f || !d) return;
@@ -660,7 +661,9 @@ export class Renderer3D {
       f.x += (dx / len) * 0.25;
       f.z += (dz / len) * 0.25;
     }
-    this.frameClose();
+    // The search moved the camera: put it back on the view the player has (item 439: the whole field by default).
+    if (close) this.frameClose();
+    else this.resetView();
   }
   /** Plan item 215: whether this view opens closer than the whole field (an upright phone). */
   get hasCloseFrame(): boolean {
@@ -1755,6 +1758,10 @@ export class Renderer3D {
     }
     // Plan item 45: the queue laid out as a convoy (convoy.ts); the overflow stacks up as a column at its tail.
     const lay = (this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as Enemy["kind"]), SWARM_MIN));
+    // Plan item 439: on a steep view (an upright phone) the vehicles lean back from the lens like item 98's Cath,
+    // so their near side, cab and wheels turn up to it instead of reading as roofs (stacked boxes).
+    const tilt = this.steepTilt();
+    if (this.rungs) this.rungs.tilt = tilt;
     for (const e of game.enemies) {
       const at = placeOnLane(game.level, e, lay);
       const tierUp = at.tier * 0.26 * enemyScale(e.kind);
@@ -1815,7 +1822,8 @@ export class Renderer3D {
       }
       v.last.copy(pos);
       v.obj.position.set(p.x, gy + lift + (lift ? Math.sin(t * 3 + e.id) * 0.04 : 0), p.y);
-      v.obj.rotation.y = v.heading;
+      // Yaw first, then item 439's lean about the world's x axis (Euler XYZ applies x last).
+      v.obj.rotation.set(-tilt, v.heading, 0, "XYZ");
       const inner = v.obj.userData.inner as THREE.Group;
       // Lean into corners: a gentle body roll on the ground, a proper bank in the air.
       const maxLean = lift ? 0.32 : 0.16;
@@ -2637,7 +2645,7 @@ export class Renderer3D {
   /** Plan item 103: the town named on the gate plate when its 3D board steps down on a phone. */
   private plateTown = "";
   private queueAnchors: Array<{ x: number; z: number; up: number; gx: number; gz: number }> = [];
-  private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number; s: number }> = [];
+  private queueModels: Array<{ obj: THREE.Object3D; x: number; z: number; up: number; r: number; s: number; yaw: number; shadow: THREE.Object3D }> = [];
   private gateHold = 0;
   private gateEase = 0;
   /** Plan item 160 (tests): the gate's look has let go and the boss push has eased out. */
@@ -2645,6 +2653,14 @@ export class Renderer3D {
     return this.gateHold === 0 && this.gateEase < 0.001 && Math.abs(this.bossPush - this.bossEase) < 0.001;
   }
   private gateAt = { x: 0, y: 0 };
+
+  /** Plan item 439: how far vehicles lean back from a steep lens (0 on a desktop's low view). */
+  private steepTilt(): number {
+    const c = this.camera.position, t = this.camTarget;
+    const elev = Math.atan2(c.y - t.y, Math.hypot(c.x - t.x, c.z - t.z));
+    return Math.min(0.6, Math.max(0, (elev - CATH_LEAN_FROM) * 1.7));
+  }
+  private readonly flatQ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
 
   /** Between rounds the next round queues at the Hollowell gate: its leads as models on the lane, a count plate. */
   private syncQueue(game: Game): void {
@@ -2666,8 +2682,12 @@ export class Renderer3D {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
     const shown: { leads: Rect[]; plates: Rect[]; names: Rect[]; boxes: Rect[] } = { leads: [], plates: [], names: [], boxes: [] };
+    const tilt = this.steepTilt();
     for (const m of this.queueModels) {
       m.obj.scale.setScalar(Math.max(0.001, k) * m.s);
+      // Item 439: the steep-view lean (yaw, then a tilt about the world's x); the contact shadow stays flat.
+      m.obj.rotation.set(-tilt, m.yaw, 0, "XYZ");
+      m.shadow.quaternion.copy(m.obj.quaternion).invert().multiply(this.flatQ);
       // Plan item 410 (tests): the model's true projected box, its bounding box's eight corners on the canvas.
       m.obj.updateMatrixWorld(true);
       const bb = this.qBox.setFromObject(m.obj, true);
@@ -3231,7 +3251,7 @@ export class Renderer3D {
         shadow.renderOrder = 2;
         obj.add(shadow);
         group.add(obj);
-        this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind) * QUEUE_SCALE_3D, r: enemyScale(kind) * QUEUE_SCALE_3D, s: obj.scale.x });
+        this.queueModels.push({ obj, x: p.x, z: p.y, up: lift + 0.75 * enemyScale(kind) * QUEUE_SCALE_3D, r: enemyScale(kind) * QUEUE_SCALE_3D, s: obj.scale.x, yaw: obj.rotation.y, shadow });
       });
       const tail = enemyPoint(level, { dist: 0, ...(ln.lane ? { lane: ln.lane } : {}) });
       const hd = headingAt(path, 0);

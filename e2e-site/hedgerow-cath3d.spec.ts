@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-// Plan item 162: Cath a readable hero on the 3D field. Her face shows (24 px or more on a phone, 40 at D), it is
-// lit lighter than her hair, and her pose follows the round: worried when a vehicle gets through.
+// Plan item 162: Cath a readable hero on the 3D field. Her face shows (18 px or more on a phone, 40 at D), it is
+// lit lighter than her hair, and her pose follows the round: worried when a vehicle gets through. (Item 439: a
+// phone opens on the whole field with her in view; 24 px was measured at the old close frame, which left her
+// below the canvas's foot. Her figure's box is checked at 36 px+ in hedgerow-closeframe.)
 type W = {
   hedgerow?: {
     game: () => { events: Array<Record<string, unknown>> } | null
@@ -19,7 +21,7 @@ test('her face reads in 3D, lighter than her hair, and she worries at a leak', a
     const h = (window as unknown as W).hedgerow!
     return { box: h.faceBox()!, tone: h.faceTone()! }
   })
-  expect(Math.min(m.box.w, m.box.h)).toBeGreaterThanOrEqual(hasTouch ? 24 : 40)
+  expect(Math.min(m.box.w, m.box.h)).toBeGreaterThanOrEqual(hasTouch ? 18 : 40)
   expect(m.tone.face).toBeGreaterThan(m.tone.hair)
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 30_000 })
   await page.evaluate(() => (window as unknown as W).hedgerow!.game()!.events.push({ type: 'leak', x: 1, y: 1, lost: 1 }))

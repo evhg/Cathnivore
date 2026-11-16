@@ -2902,9 +2902,23 @@ function towerTray(p: HTMLElement, g: Game): void {
     more.hidden = !over || tray.scrollLeft + tray.clientWidth >= tray.scrollWidth - 4;
     wrap.classList.toggle("overflows", over);
     wrap.classList.toggle("more-shown", !more.hidden);
+    // Plan item 439: no card shows cut by the tray's edge or under the More arrow: a card that isn't wholly in
+    // the window fades out until a scroll brings it all the way in (the arrow says there are more).
+    const tb = tray.getBoundingClientRect();
+    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 1;
+    const hi = (more.hidden ? tb.right : more.getBoundingClientRect().left) + 1;
+    for (const k of tray.children) {
+      const b = k.getBoundingClientRect();
+      k.classList.toggle("tray-cut", over && b.width > 0 && (b.left < lo || b.right > hi));
+    }
   };
   tray.addEventListener("scroll", sync, { passive: true });
   requestAnimationFrame(sync);
+  // Item 439: her dock folding (item 392) or the drawer opening moves the packets' start: check the cut again.
+  const mo = new MutationObserver(() => (tray.isConnected ? requestAnimationFrame(sync) : mo.disconnect()));
+  const dock = document.querySelector(".cath-dock");
+  if (dock) mo.observe(dock, { attributes: true, attributeFilter: ["data-folded", "hidden"] });
+  mo.observe(p, { attributes: true, attributeFilter: ["class"] });
   wrap.append(tray, more);
   p.append(wrap);
 }

@@ -28,6 +28,11 @@ for (const level of [1, 21, 34, 40]) {
     await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 60_000 })
     await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.camSettled()), { timeout: 60_000 }).toBe(true)
+    // Plan item 439: an upright phone opens on the whole field, where a side gate's depot (level 40) stands past
+    // the frame's edge and the count keeps to the gate (item 179's fallback); the Closer frame is fitted to the
+    // depot (item 215), so the depot is checked there.
+    const fit = page.locator('#btn-field-fit')
+    if (hasTouch && (await fit.isVisible()) && /Closer/i.test(await fit.innerText())) await fit.click()
     const plate = page.locator('.gate-plate[data-on-depot]').first()
     await expect(plate).toBeVisible({ timeout: 60_000 })
     await page.waitForTimeout(500)
