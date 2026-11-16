@@ -51,10 +51,24 @@ for (const how of ['tap', 'key'] as const) {
     await seed(page, 21)
     await page.goto('/hedgerow/?2d&sandbox=1&flyin&level=21')
     await page.waitForFunction(() => !!document.querySelector('[data-flyin]'), null, { timeout: 30_000 })
-    const t0 = Date.now()
+    // Timed in the page, from the input reaching it to the fly-in clearing: a wall clock round the click also counted
+    // Playwright's wait for the moving overlay to hold still (478-495 ms on loaded CI runners, about half the runs).
+    await page.evaluate(() => {
+      const w = window as unknown as { skipT?: { down?: number; gone?: number } }
+      w.skipT = {}
+      const mark = () => { w.skipT!.down ??= performance.now() }
+      addEventListener('pointerdown', mark, true)
+      addEventListener('keydown', mark, true)
+      const stage = document.querySelector('[data-flyin]')!
+      new MutationObserver((_, o) => {
+        if (!stage.hasAttribute('data-flyin')) { w.skipT!.gone ??= performance.now(); o.disconnect() }
+      }).observe(stage, { attributes: true, attributeFilter: ['data-flyin'] })
+    })
     if (how === 'tap') await page.locator('.flyin').click({ position: { x: 40, y: 40 } })
     else await page.keyboard.press('Escape')
     await expect.poll(() => flying(page), { timeout: 150, intervals: [10] }).toBe(false)
-    expect(Date.now() - t0).toBeLessThan(400)
+    const t = await page.evaluate(() => (window as unknown as { skipT: { down?: number; gone?: number } }).skipT)
+    expect(t.down).toBeDefined()
+    expect(t.gone! - t.down!).toBeLessThan(400)
   })
 }
