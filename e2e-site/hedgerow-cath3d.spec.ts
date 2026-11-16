@@ -8,6 +8,7 @@ type W = {
   hedgerow?: {
     game: () => { events: Array<Record<string, unknown>> } | null
     faceBox: () => { w: number; h: number } | null
+    figureBox: () => { w: number; h: number } | null
     faceTone: () => { face: number; hair: number } | null
   }
 }
@@ -22,6 +23,9 @@ test('her face reads in 3D, lighter than her hair, and she worries at a leak', a
     return { box: h.faceBox()!, tone: h.faceTone()! }
   })
   expect(Math.min(m.box.w, m.box.h)).toBeGreaterThanOrEqual(hasTouch ? 18 : 40)
+  // Plan item 459: her whole figure 110 px tall at D, 55 on a phone (it was 48 there).
+  const fig = await page.evaluate(() => (window as unknown as W).hedgerow!.figureBox()!)
+  expect(fig.h).toBeGreaterThanOrEqual(hasTouch ? 55 : 110)
   expect(m.tone.face).toBeGreaterThan(m.tone.hair)
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 30_000 })
   await page.evaluate(() => (window as unknown as W).hedgerow!.game()!.events.push({ type: 'leak', x: 1, y: 1, lost: 1 }))

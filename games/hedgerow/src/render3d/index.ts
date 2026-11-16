@@ -191,6 +191,8 @@ const HERO_REACH_X = 1.3;
 // Plan item 346: one scale for the farm: she stands about 1.2x a farmer (1.15 model units at 1.15 against a farmer's
 // 0.86 at FOLK_3D_SCALE); at 1.9 she was a giant doll at the field's edge, 2.5x them.
 export const CATH_3D_SCALE = 1.15;
+/** Plan item 459: her extra size on a phone's canvas (under 600 px wide). */
+const CATH_PHONE_GROW = 1.25;
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
 const CATH_LEAN_FROM = 0.95;
 
@@ -1980,8 +1982,10 @@ export class Renderer3D {
     const h = game.hero;
     const y = this.height(h.x, h.y);
     c.position.set(h.x, y, h.y);
-    // Plan item 78 made her twice her old size; item 346 brings her back to the farm's one scale.
-    c.scale.setScalar(CATH_3D_SCALE);
+    // Plan item 78 made her twice her old size; item 346 brings her back to the farm's one scale. Plan item 459: on a
+    // phone's small canvas she stands a quarter larger (about 1.5x a farmer there), as the gate's sign grows on it:
+    // at the farm's one scale her whole figure read 48 px tall at 390x844, a smudge by the lane.
+    c.scale.setScalar(CATH_3D_SCALE * (this.canvas.clientWidth < 600 ? CATH_PHONE_GROW : 1));
     // Plan item 98: a phone's camera looks down so steeply that she read as the crown of her head (a dark blob).
     // On a steep view she leans back a little, like a paper doll on a board, so her face and coat turn up to it.
     const elev = Math.atan2(this.camera.position.y - y, Math.hypot(this.camera.position.x - h.x, this.camera.position.z - h.y));

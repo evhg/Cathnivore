@@ -766,6 +766,8 @@ if (SANDBOX)
     margin3d: () => (renderer && is3D(renderer) ? renderer.margin3d() : null),
     // Plan item 102: Cath's face on screen (CSS px), null in 2D.
     faceBox: () => (renderer && is3D(renderer) ? renderer.faceBox() : null),
+    // Plan item 459: her whole 3D figure's box on the page (CSS px), for the size checks.
+    figureBox: () => (renderer && is3D(renderer) ? renderer.cathScreenBox() : null),
     vehicleBoxes: () => (renderer && game && is3D(renderer) ? renderer.vehicleBoxes(game) : []),
     // Plan item 114: Cath's drawn size in 2D (null in 3D).
     heroPx: () => (renderer as { heroPx?: () => { h: number; w: number } } | null)?.heroPx?.() ?? null,
