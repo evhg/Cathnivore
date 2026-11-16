@@ -530,7 +530,7 @@ function hatch(b: Brush, n: number, x0: number, x1: number, top: (x: number) => 
   return `<path d="${d}" stroke="${color}" stroke-width="${f(w)}" stroke-linecap="round" opacity="${a}"/>`;
 }
 
-type CloudInk = { top: string; mid: string; base: string; rim: string };
+type CloudInk = { top: string; mid: string; base: string; rim: string; ink?: string };
 
 /** A sculpted cumulus: a cauliflower of small billows under one gradient, soft inner shading, a bright rim toward the sun. */
 function bigCloud(b: Brush, x: number, y: number, w: number, c: CloudInk, lx: number, a = 1): string {
@@ -547,12 +547,20 @@ function bigCloud(b: Brush, x: number, y: number, w: number, c: CloudInk, lx: nu
   const circ = (list: [number, number, number][], dx: number, dy: number): string =>
     list.map(([px, py, r]) => `M${f(px + dx * r - r)} ${f(py + dy * r)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0`).join("");
   const upper = puffs.filter(([, py]) => py < y - w * 0.12);
-  return `<g opacity="${a}"><path d="${circ(upper, lx * 0.07, -0.05)}" fill="${c.rim}" opacity=".7"/><path d="${circ(puffs, 0, 0)}" fill="url(#${g})"/>` +
-    soft(b, [[x - lx * w * 0.12, y - w * 0.07, w * 0.3, w * 0.06], [x + lx * w * 0.2, y - w * 0.1, w * 0.18, w * 0.05]], c.base, 0.55) +
-    soft(b, [[x + lx * w * 0.12, y - h * 0.62, w * 0.16, w * 0.08]], c.rim, 0.6) + `</g>`;
+  // Plan item 441: inked, not airbrushed. The billows' outline is stroked under their fill, so only the outer half
+  // of the line shows round the whole cloud, and the belly is one flat band of shade clipped to the billows (two
+  // feathered radial smudges read as a blurred photo once the banner magnifies the crop about 3x at D).
+  const all = circ(puffs, 0, 0);
+  const clip = b.def(`bk${x},${y},${w}`, (id) => `<clipPath id="${id}"><path d="${all}"/></clipPath>`);
+  const ink = c.ink ?? "#6f7890";
+  return `<g opacity="${a}"><path d="${circ(upper, lx * 0.07, -0.05)}" fill="${c.rim}" opacity=".7"/>` +
+    `<path d="${all}" fill="none" stroke="${ink}" stroke-width="${f(Math.max(0.8, w * 0.014))}" stroke-linejoin="round"/>` +
+    `<path d="${all}" fill="url(#${g})"/>` +
+    `<rect x="${f(x - w)}" y="${f(y - w * 0.075)}" width="${f(w * 2)}" height="${f(w * 0.2)}" fill="${c.base}" opacity=".6" clip-path="url(#${clip})"/>` +
+    `<rect x="${f(x - w)}" y="${f(y - w * 0.11)}" width="${f(w * 2)}" height="${f(w * 0.035)}" fill="${c.base}" opacity=".3" clip-path="url(#${clip})"/></g>`;
 }
 
-const DAY_CLOUD: CloudInk = { top: "#fffdf6", mid: "#eef0f2", base: "#a9b6c9", rim: "#fff8e2" };
+const DAY_CLOUD: CloudInk = { top: "#fffdf6", mid: "#eef0f2", base: "#a9b6c9", rim: "#fff8e2", ink: "#6c7a92" };
 
 /** A storm bank painted in soft-edged masses: dark bellies, paler tops, warm light where it breaks toward the sun. */
 function stormBank(b: Brush, masses: [number, number, number][], sunX: number): string {
