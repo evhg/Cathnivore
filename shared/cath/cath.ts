@@ -653,15 +653,18 @@ ${mouth(id, expression)}
 // ---- outfits and accessories -------------------------------------------------------------------------------
 
 // Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip (plan item 442: the waist
-// taken in 7 px a side, since at full length it read as a box).
+// taken in 7 px a side, since at full length it read as a box; then 4 more and the hip's flare halved, the hem's corners
+// rounded: the critique still read it as boxy).
 const JACKET = `M183 250
 C160 256 134 262 121 280
 C111 296 109 322 111 350
-C112 384 123 402 131 420
-C127 446 120 474 117 500
-L283 500
-C280 474 273 446 269 420
-C277 402 288 384 289 350
+C112 384 124 402 135 418
+C131 446 126 474 123 495
+Q122 501 129 501
+L271 501
+Q278 501 277 495
+C274 474 269 446 265 418
+C276 402 288 384 289 350
 C291 322 289 296 279 280
 C266 262 240 256 217 250
 L200 404
