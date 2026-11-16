@@ -137,17 +137,23 @@ function cloud(b: Brush, x: number, y: number, w: number, light: string, shade: 
   const c = b.def(`cc${x},${y},${w}`, (id) => `<clipPath id="${id}"><rect x="${f(x - w)}" y="${f(y - h * 2)}" width="${f(w * 2)}" height="${f(h * 2 + w * 0.03)}"/></clipPath>`);
   const n = 5 + Math.floor(w / 36);
   let o = flat ? `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(w * 0.46)}" ry="${f(w * 0.03)}" fill="${shade}"/>` : "";
+  const puffs: [number, number, number][] = [];
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1) - 0.5;
     const env = Math.pow(1 - 4 * t * t, 0.6);
     const r = w * (0.07 + 0.12 * env) * b.r(0.85, 1.12);
-    o += `<circle cx="${f(x + t * w * 0.86)}" cy="${f(y - r * 0.6 - env * w * 0.06)}" r="${f(r)}" fill="url(#${g})"/>`;
+    puffs.push([x + t * w * 0.86, y - r * 0.6 - env * w * 0.06, r]);
   }
   for (let i = 0; i < 3; i++) {
     const cx = x + (i - 1) * w * 0.17 + b.r(-0.04, 0.04) * w;
     const r = w * (i === 1 ? 0.16 : 0.12) * b.r(0.9, 1.1);
-    o += `<circle cx="${f(cx)}" cy="${f(y - w * 0.13 - r * 0.7)}" r="${f(r)}" fill="url(#${g})"/>`;
+    puffs.push([cx, y - w * 0.13 - r * 0.7, r]);
   }
+  // Plan item 441: an ink line round the whole cloud (stroked under the fills, so only its outer half shows), as
+  // bigCloud's; the billows' fills come in the same order as before, so the seeded shapes are unchanged.
+  const ring = puffs.map(([cx, cy, r]) => `M${f(cx - r)} ${f(cy)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0`).join("");
+  o += `<path d="${ring}" fill="none" stroke="${shade}" stroke-width="${f(Math.max(0.8, w * 0.012))}" stroke-opacity=".85" stroke-linejoin="round"/>`;
+  for (const [cx, cy, r] of puffs) o += `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="url(#${g})"/>`;
   o += `<ellipse cx="${f(x + lx * w * 0.14)}" cy="${f(y - w * 0.27)}" rx="${f(w * 0.12)}" ry="${f(w * 0.07)}" fill="${light}" opacity=".7"/>`;
   return `<g opacity="${opacity}"${flat ? ` clip-path="url(#${c})"` : ""}>${o}</g>`;
 }
