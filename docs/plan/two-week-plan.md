@@ -4168,7 +4168,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** no empty region over 300x100 px at D (variance scan); at D her lower edge is hidden by a drawn object; on P she is not clipped by the board; the map 45%+ of the viewport at D; campaign specs pass; shots P and D before and after.
 - **Size:** 2
 
-## 445. [ ] Portfolio phone: the products above the fold, Cath presenting them
+## 445. [ ] Portfolio phone: the products above the fold, Cath presenting them *(lane B, in progress)*
 - **Why:** `plan1116g/portfolio-P`: the first 640 px are text and buttons; the first product print starts at y 645 and is cut by the fold; Cath (238-320 x 515-645) is a head and torso sliced by the print's top edge (item 350's 'not a cut-out fading at the waist' still fails at P; item 404 shows only at D); the second print is clipped at x 308-390 with no scroll cue.
 - **Build:** the phone hero shortened to the headline and a two-line lede; the four products a 2x2 mosaic starting by y 420; Cath full length beside or in front of it on a shadowed floor, as at D; the paragraph and buttons under it.
 - **Accept:** at 390x844 two or more product prints wholly above y 844; Cath whole head to feet or hidden by a drawn object; nothing clipped sideways without a visible scroll cue; Lighthouse 88+ (LCP unchanged); e2e:site portfolio specs pass; shots P and D.
