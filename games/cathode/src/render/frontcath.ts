@@ -3775,6 +3775,9 @@ float reliefShade( vec2 uv ) {
     backRifle.visible = inHand !== "rifle";
     shotgun.visible = inHand === "shotgun";
     hipGun.visible = inHand !== "shotgun";
+    // Plan item 449: one long silhouette in her hands: while she holds the rifle or the shotgun the furled umbrella
+    // is set aside (she held both, two long black rods at once, on the class pick).
+    if (inside || wearing === "ghost") furled.visible = inHand !== "rifle" && inHand !== "shotgun";
     if (inHand === "rifle") {
       stand(rifle, RIFLE_DIR, RIFLE_TOP);
       glintSprite.scale.setScalar(0.001 + 0.07 * glintK);
