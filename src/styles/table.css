@@ -5231,7 +5231,8 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 @media (min-width: 1024px) {
   .drawer-rail {
     gap: 10px;
-    padding: 10px 7px;
+    /* Plan item 462: 3 px sides (was 7), so each drawer is 8 px wider and 'MARKET' clears its bevelled panel. */
+    padding: 10px 3px;
     border-radius: 8px;
     background:
       repeating-linear-gradient(180deg, transparent 0 9px, color-mix(in srgb, var(--wood-lo) 18%, transparent) 9px 10px),
@@ -5277,9 +5278,10 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   }
   .drawer-key svg { width: 24px; height: 24px; }
   .drawer-key-word {
-    /* Plan item 403: 13 px, so 'MARKET' keeps a margin inside its 58 px drawer (at 14 px it ran edge to edge) */
+    /* Plan item 403: 13 px, so 'MARKET' keeps a margin inside its 58 px drawer (at 14 px it ran edge to edge); item 462:
+       in a 66 px drawer, a hair tighter, clear of the bevel's inner line */
     font: 760 min(var(--fs-caption), .8125rem)/1.05 var(--font-text);
-    letter-spacing: 0;
+    letter-spacing: -.01em;
     color: var(--ink);
     text-shadow: 0 1px 0 color-mix(in srgb, var(--paper-hi) 70%, transparent);
   }
