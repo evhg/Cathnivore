@@ -1827,8 +1827,9 @@ h1 {
     width: 120px;
     margin: 0 12% -150px 0;
     /* her top half shows above the prints; the rest stands behind them (plan item 424: cut at the prints' top
-       edge, not 12 px into the first print's corner and its note) */
-    clip-path: inset(-10% -40% 51% -40%);
+       edge, not 12 px into the first print's corner and its note; item 462: on down behind the prints' art, which
+       starts about 10 px under the strip's top, so she stands behind them instead of ending in the gap above) */
+    clip-path: inset(-10% -40% 45% -40%);
     filter: none;
   }
   .show-cath::after, .show-cath::before { display: none; }
