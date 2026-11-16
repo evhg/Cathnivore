@@ -4245,7 +4245,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
 - **Why (critique 2026-11-16 17:30, shots `e2e/screenshots/plan1116r`):** on `ns-title-D` (880-1130 x 380-900), `ns-title-P` and `ns-play-D` (620-800 x 250-850) her trench reads as pale grey satin under a flat white key: the brightest, least noir thing on a street that is graded well. `docs/design/cathode.md` 2 asks for a charcoal trench. Lighting and materials, not the sculpt (319).
 - **Build:** check the coat-colour history first (`scripts/cathode-coatcolour.mjs`, the class coat colours must stay apart by ΔE); the default and Ghost coat as charcoal wool with a weave normal, the blouse the one light accent; a three-point noir rig on the title and the pick (warm low key from the lamp, cold rim from the window, magenta bounce from LUNA); wet sheen on shoulders and umbrella; each class's key colour tints the rim on the pick; posters and key art re-rendered.
 - **Accept:** coat mean luminance in her mask at D ≤ 35% of the brightest neon region; a rim (≥ 2 px brighter edge) on both sides of her silhouette at P and D; coat ΔE between classes still passes; cathode-perf alone within budget; a critique subagent calls the coat dark.
