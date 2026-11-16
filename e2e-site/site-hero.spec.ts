@@ -23,9 +23,11 @@ test('the phone hero leads with the headline, then Cath behind a strip of the fo
       return { overlaps: c.bottom > s.top, strip: !!hit && strip.contains(hit) }
     })
     if (over.overlaps) expect(over.strip).toBe(true)
-    // Plan item 303: the four prints are a swiped strip, each labelled, and every one scrolls into view.
+    // Plan item 303: the four prints are a swiped strip, each labelled, and every one scrolls into view (plan item
+    // 445: a phone of 720 px or less lays them out as a 2x2 mosaic instead, every one in the screen's width).
     const strip = page.locator('.hero-show .show-strip')
-    expect(await strip.evaluate((el) => getComputedStyle(el).scrollSnapType)).toContain('x')
+    if (vw > 720) expect(await strip.evaluate((el) => getComputedStyle(el).scrollSnapType)).toContain('x')
+    else expect(await strip.evaluate((el) => getComputedStyle(el).display)).toBe('grid')
     await expect(page.locator('.hero-show .show-label')).toHaveText(['Cathnivore', 'Runnel', 'NIGHT SHIFT', 'Hedgerow'])
     for (const card of await page.locator('.hero-show .show-card').all()) {
       await card.evaluate((el) => el.scrollIntoView({ inline: 'start', block: 'nearest' }))

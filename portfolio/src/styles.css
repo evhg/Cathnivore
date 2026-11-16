@@ -1842,3 +1842,17 @@ h1 {
   }
   .show-strip .show-card { width: 78%; }
 }
+/* Plan item 445: on a phone the four prints are a 2x2 mosaic, not a swiped strip: the first row stands wholly above
+   the fold at 390x844 and nothing is cut at the screen's side (the strip showed one print, cut by the fold, and the
+   next one sliced at the edge). Tablets keep the strip. */
+@media (max-width: 720px) {
+  .show-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+    overflow: visible;
+    scroll-snap-type: none;
+    padding: 0 0 var(--sp-4);
+  }
+  .show-strip .show-card { width: auto; }
+}

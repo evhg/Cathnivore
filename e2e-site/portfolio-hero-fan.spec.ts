@@ -74,5 +74,14 @@ test('Cath stands full length on a lit floor, not fading out; the phone strip sh
     expect(m.floorWide).toBe(true)
     expect(m.bottom).toBeLessThanOrEqual(900)
   }
-  if ((page.viewportSize()?.width ?? 0) < 1100) expect(m.peek).toBeGreaterThanOrEqual(30)
+  // Plan item 445: a phone (720 px or less) shows the four prints as a 2x2 mosaic instead, its first row wholly above
+  // the fold; a tablet keeps the swiped strip with the next print peeking.
+  const vw = page.viewportSize()?.width ?? 0
+  if (vw < 1100 && vw > 720) expect(m.peek).toBeGreaterThanOrEqual(30)
+  if (vw <= 720) {
+    const vh = page.viewportSize()!.height
+    const cards = await page.locator('.show-strip .show-card').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect))
+    expect(cards.filter((r) => r.bottom <= vh).length, JSON.stringify(cards)).toBeGreaterThanOrEqual(2)
+    for (const r of cards) expect(r.left >= -1 && r.right <= vw + 1, JSON.stringify(r)).toBe(true)
+  }
 })
