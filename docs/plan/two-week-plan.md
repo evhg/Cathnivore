@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-16T11:22Z
 
 
 
@@ -4181,5 +4180,62 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Site and Runnel:** `games-P` Cath's quote on a translucent grey slab, not the stall's chalkboard as at D (22-368 x 185-265); `runnel-P` the hint 'Tap a tile to turn it, hold to pin it.' small grey on cream and repeating her bubble (60-330 x 790-805): check AA contrast or drop it while the lesson bubble shows.
   - **Hedgerow:** `hedge-l21-3d-D` the influencer vans overlapping in the depot queue (300-340 x 240-370); `hedge-l21-2d-P` the depot sign and its '216' tag over the lane and convoy (10-60 x 330-395); `hedge-l34-2d-D` the lower depot's van queue spilling out of the field, cut at its bottom (270-560 x 735-890), its label on the lane (560-665 x 818-838); `hedge-menu-P` 'Brand Ambassador' wrapping to two lines (268-385 x 512-545), 'Discount Code' (12-120 x 290-305) and the 'Next / On Air' tag (80-125 x 220-255) over lane and prop art.
   - **NIGHT SHIFT:** `ns-title-P` the HOLLOWELL fascia cut to 'HOLLOW' at the right (175-390 x 270-390, 2x halved) and bright cyan behind SETTINGS and CREDITS (30-170 x 350-420): check their contrast; `ns-title-D` the umbrella shaft reading as a beaded chain (925-950 x 120-520); `ns-play-D` her feet with no contact shadow (660-740 x 780-850). (Not taken: 'the trench should be camel': the camel trench is her market-day look, NIGHT SHIFT's is the noir black of `docs/design/cathode.md`.)
+- **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
+- **Size:** 1-2
+
+## 447. [ ] Hedgerow: Cath's coaching reads the field and points at a plot
+- **Why:** `plan1116h/hedge-l21-2d-D` (990-1270 x 470-530): 'Build a Scarecrow for the Lifestyle influencer' while a Scarecrow already stands at 575-635 x 550-615; `hedge-l34-2d-D` (1055-1330 x 495-535) repeats it word for word for the Box Lorry with a Scarecrow built (545-610 x 380-450) and a FLOOD round due (chip 1043-1120 x 396-420) that the tip never names; same on P (95-370 x 700-760). The tip is a sentence, not a gesture: nothing on the field shows the plot she means.
+- **Build:** an advice ranker (`advice.ts`) that scores what is built (counters for the lead vehicle, lane coverage per segment, flooded or fogged cells, coins) and picks one concrete move naming a plot and a reason ('the last bend has no cover', 'off the ford, it floods this round', 'upgrade your Scarecrow'); the plot shown as a pulsing ghost tower for two beats with a dotted line from Cath, in 2D and 3D; Cath turns and points; tapping the tip opens the build ring on that plot with the tower preselected; a met tip moves on and never repeats; on a twist round before Go the twist warning outranks the rest.
+- **Accept:** unit tests: with a Scarecrow covering the lead no tip says 'Build a Scarecrow'; with a flood due the tip names the flood; the ghost plot 44 px+ at P; tapping the tip opens the build ring on that plot (e2e); shots l21/l34 2D and 3D, P and D, before and after, with different tips per level.
+- **Size:** 2
+
+## 448. [ ] Hedgerow: Play from the act map as a staged departure into the field
+- **Why:** `plan1116h/hedge-menu-D`: Cath (145-185 x 230-388) half behind stop 21's disc, Play 1000 px away on the card (1135-1412 x 638-692); `hedge-menu-P` Cath about 20x50 px. Play cuts straight to the field: VISION 4's choreographed moment is missing at the game's most frequent transition.
+- **Build:** on Play, about 900 ms: Cath walks the last stretch to the stop (the trail walk), the stop's dome lifts, the card's field plate scales up into the field frame and the field fades in under it, with a paper rustle and a chime (haptics on iPhone); reduced motion a 200 ms crossfade. The next stop bobs gently and Cath beckons, so it reads as the call to action.
+- **Accept:** the transition 700-1100 ms (e2e with frame timestamps); the first visual change within 100 ms of the tap; the reduced-motion path tested; hedgerow-map specs pass; shots P and D at 0, 50 and 100%, before and after.
+- **Size:** 2
+
+## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch
+- **Why:** `plan1116h/ns-play-D`: Cath (630-760 x 140-850) holds three long black objects at once (a rod in her left hand 630-660 x 280-650, a sniper rifle through her right side with no sling 710-830 x 210-500, the baton); the stock juts past her head; a class change swaps meshes with no motion; only the hold bar animates.
+- **Build:** one carry pose per class (the Ghost's rifle slung across her back on a visible strap, the Butcher's on the shoulder, the Gunslinger's holstered, ...) and a 600-900 ms inspect or draw clip on every class change (rack, spin, check) with the light swinging to the weapon for its beat; on commit she shoulders it and turns to camera before the walk-in; the duplicate rod and baton gone from the pick (the umbrella stays hers).
+- **Accept:** at most one long-gun silhouette in her box (mesh bounds via `scene()`); the weapon does not intersect the coat mesh (bounds test); a class change starts the clip within 50 ms; cathode-perf alone within budget (phone firefight-12 sits at 260/260: merge meshes); ns-play P and D shots for all five classes, before and after.
+- **Size:** 3
+
+## 450. [ ] Hedgerow 3D: one gate, one count, and a convoy you watch leave
+- **Why:** `plan1116h/hedge-l21-3d-D`: the depot with its '216 NEXT' board (190-290 x 205-280) and the HOLLOWELL arch at the lane start (235-335 x 383-440) are two objects 150 px apart: which launches the wave? On P (5-195 x 92-112) the plate floats over the haze band, pink on translucent glass, under AA by eye; four vans stacked dead still on the lane (40-70 x 225-380).
+- **Build:** the arch folded into the depot: the lane leaves through its shutter, the LED count on its front; on Go the count ticks down as each vehicle leaves; queued vans idle (bounce, exhaust, an indicator blink) and pull out one by one, like 2D item 336's lead vehicle nosing out.
+- **Accept:** one HOLLOWELL label per view; the count 4.5:1 on its plate; it reaches 0 as the last vehicle leaves (e2e in sandbox via `sendWave`); 3D shots P and D before and after, plus a mid-launch frame.
+- **Size:** 2
+
+## 451. [ ] Cathnivore: drag a card onto the land and see what it will do before you let go
+- **Why:** `plan1116h/cath-game-P`: Open Stall (130-240 x 615-775) says 'Pick a region' in 13 px and nothing on the board (10-380 x 115-475) lights as a target; on D the hand (355-1330 x 700-880) and the board (560-1170 x 110-690) don't answer each other until after the tap; item 83's 250 ms lift is the only feedback. VISION 3: everything responds.
+- **Build:** pointer drag at P and D with tap-to-arm kept: the card lifts and follows the finger with a speed tilt and a shadow; valid regions glow at once, the rest dim; over a region, ghost pieces (the stall that will appear, the outlet that will go) and delta chips (+1 Trust, -1 Mark) from an engine preview; on release the card stamps into the hex with paper dust and the existing sound, the tally chips count up; an invalid drop springs back; keyboard arrows cycle valid regions, Enter plays; reduced motion fades only.
+- **Accept:** a unit test that the preview deltas equal the resolved result for every region action type; new drag specs at P and D and a keyboard spec; dimmed regions at most 55% of a valid one's luminance; the drag animates transform only; shots P and D mid-drag, before and after.
+- **Size:** 3
+
+## 452. [ ] /games/: today's market board, every daily and a streak
+- **Why:** `plan1116h/games-D`: the hero chalkboard (580-1110 x 85-465) holds one quote and two buttons; the four dailies show only as 13 px lines on the card feet (432-680 x 770-790, 741-940 x 770-790); Cath (280-375 x 130-300) is about 19% of the viewport's height at an empty counter; `games-P` cards start at y 650, Hedgerow and NIGHT SHIFT below the fold. Nothing remembers that you played yesterday.
+- **Build:** the counter as today's board: a tag per game read from its local save (played today, result against par, streak), a chalk week of 7 dots and a pennant at a 3-day streak (NIGHT SHIFT: names crossed off The List); Cath's line and pose by state (pointing at the first game not yet played, cheering when all are done); Cath 35%+ of the hero's height.
+- **Accept:** unit tests for the save readers (empty, corrupt, old saves); an e2e that seeds saves and checks the ticks and streak; board text AA; all four tags above y 844 at P; shots P and D, fresh and seeded.
+- **Size:** 2
+
+## 453. [ ] Cathnivore phone title: an opening that stars Cath
+- **Why:** `plan1116h/cath-title-P`: Cath (20-140 x 330-545) is about 7% of the screen, her bubble across the facades; the three choices (20-370 x 560-695) are three unrelated objects (a plank, two paper tags); a 144 px footer of small print (700-844) closes the screen; the phone has no Daily number or 'Today's Daily' board (D has one at 855-1395 x 760-850).
+- **Build:** on a phone, Cath at half length (45%+ of the width) behind the table with the board before her; the three choices one set of market tags, the Daily with its number, event and countdown; the footer one line; on the day's first load an opening (the awning unrolls, Cath steps in and waves, the vans start), 1200 ms at most, skippable by a tap, a fade under reduced motion.
+- **Accept:** her box 170x300+ at 390x844; every choice above y 760; the footer 40 px or less; LCP unchanged (under 2 s); title specs pass; shots P and D plus frames of the opening.
+- **Size:** 2
+
+## 454. [ ] Portfolio desktop: the work plays and Cath presents it
+- **Why:** `plan1116h/portfolio-D`: Cath (1190-1265 x 625-865) stands on a dark puck below and right of the mosaic (640-1340 x 160-605), about 27% of the viewport's height, pointing up at nothing; the four tiles are stills; the stats row (100-980 x 735-815) is four plain numbers. Item 404's 'presents the work' doesn't come through.
+- **Build:** hovering or focusing a tile plays its key-art loop (item 145's posterplay); Cath turns to that tile and points, with a one-line caption in her voice naming it; she stands beside the mosaic at its height; the stats a live 'last shipped' line read from the release log.
+- **Accept:** her box overlaps the mosaic's vertical span by 60%+; a loop plays only on hover or focus and never under reduced motion; portfolio e2e passes; Lighthouse 88+; shots P and D.
+- **Size:** 2
+
+## 455. [ ] The bugs from the 2026-11-16 11:40 critique, fixed as one batch
+- **Build:** (check each first in `e2e/screenshots/plan1116h`; 446 kept several by design: re-read its reasons before changing)
+  - **Cathnivore:** `cath-setup-P` the unpicked Ines and Sol tabs rotated, their top borders overrunning beside the flat picked tabs (200-375 x 380-425); `cath-game-P` Graft's yield chip over its title (20-100 x 700-735); `cath-setup-D` Cath's hand showing detached below the market poster (1150-1170 x 690-700) and the poster's six lines of bold red centred text reading as a warning label (995-1140 x 545-775) (446 kept the poster: fix the hand and the type, not the poster); `cath-game-D` Tomas and Mara's crates over Shingle Bay's corner (1215-1325 x 610-690). (446 kept: step 3 under the sticky Start bar, the '9+ more' tab.)
+  - **Site and Runnel:** `games-D` the primary 'Play today's Runnel' (615-795 x 380-428) weaker than the filled secondary 'Browse the games' (807-965 x 380-428); `runnel-D` Cath (430-530 x 525-860) about 8x the farmer and sheep and her boots on the hedge line (item 389's one scale); `portfolio-P` Cath cut at the hips by the tile edge with nothing under her (240-315 x 525-645).
+  - **Hedgerow:** `hedge-l21-3d-D` a pink-shirted farmer with a hoe on a crop plot about 1.5x Cath's size in the foreground (165-265 x 630-745); `hedge-l34-2d-D` the four-column rack dropping each card's role line (970-1340 x 85-365; item 408); `hedge-l21-2d-D` Saltmarsh's plots under a translucent mint wash, sheep and crops low in contrast (385-825 x 235-830); `hedge-menu-D` lilac blotches over the land (425-450 x 285-300, 760-785 x 285-298) and the sun a bare outline ring (985-1055 x 100-170).
+  - **NIGHT SHIFT:** `ns-play-D` her line rendered a second time as a subtitle over her boots (565-900 x 780-830) beside the quote card (60-468 x 698-775); `ns-title-P` LUNA half covered by the case file (25-195 x 517-570); stray 1 px light rules (`ns-title-P` 83-305 x 812, `ns-title-D` 585-855 x 862).
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
