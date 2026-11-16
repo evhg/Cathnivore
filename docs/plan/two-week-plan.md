@@ -4195,7 +4195,9 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** the transition 700-1100 ms (e2e with frame timestamps); the first visual change within 100 ms of the tap; the reduced-motion path tested; hedgerow-map specs pass; shots P and D at 0, 50 and 100%, before and after.
 - **Size:** 2
 
-## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch *(lane B, in progress)*
+## 449. [ ] NIGHT SHIFT class pick: Cath carries one weapon and handles it when you switch
+
+Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the furled umbrella aside while the rifle or shotgun is in her hand (`poseProps`), so she holds one long silhouette. Open: measure the box (one long gun per class), the coat intersection check, the class-change clip timing (≤ 50 ms), cathode-perf alone, and P/D shots of all five.
 - **Why:** `plan1116h/ns-play-D`: Cath (630-760 x 140-850) holds three long black objects at once (a rod in her left hand 630-660 x 280-650, a sniper rifle through her right side with no sling 710-830 x 210-500, the baton); the stock juts past her head; a class change swaps meshes with no motion; only the hold bar animates.
 - **Build:** one carry pose per class (the Ghost's rifle slung across her back on a visible strap, the Butcher's on the shoulder, the Gunslinger's holstered, ...) and a 600-900 ms inspect or draw clip on every class change (rack, spin, check) with the light swinging to the weapon for its beat; on commit she shoulders it and turns to camera before the walk-in; the duplicate rod and baton gone from the pick (the umbrella stays hers).
 - **Accept:** at most one long-gun silhouette in her box (mesh bounds via `scene()`); the weapon does not intersect the coat mesh (bounds test); a class change starts the clip within 50 ms; cathode-perf alone within budget (phone firefight-12 sits at 260/260: merge meshes); ns-play P and D shots for all five classes, before and after.
