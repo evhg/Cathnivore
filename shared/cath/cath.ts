@@ -383,14 +383,16 @@ function defs(id: string): string {
 
 // ---- hair ------------------------------------------------------------------------------------------------
 
-const HAIR_BACK = `M200 60
-C154 58 126 90 124 144
-C122 186 118 222 122 252
-C126 278 120 296 128 314
+// Plan item 442 (critique: a ruler-straight outer silhouette and a flat helmet): a little lift at the crown, and the
+// sides fall in soft S-waves to the shoulders.
+const HAIR_BACK = `M200 57
+C152 55 125 88 123 144
+C121 178 112 204 118 232
+C124 258 112 284 128 314
 L272 314
-C280 296 274 278 278 252
-C282 222 278 186 276 144
-C274 90 246 58 200 60 Z`
+C288 284 276 258 282 232
+C288 204 279 178 277 144
+C275 88 248 55 200 57 Z`
 
 const CROWN = 'M200 60 C174 60 156 70 148 86 C164 76 184 72 200 72 C216 72 236 76 252 86 C244 70 226 60 200 60 Z'
 
@@ -461,9 +463,9 @@ function hairFront(id: string): string {
   // at the part, brightest on the lit side, over a softer sheen just under it.
   const shine = [
     // the band itself: one broad, soft lighter brown across the crown, under the crisp glints
-    brush([148, 112], [200, 62], [253, 112], 0.4, 14, 0.4, C.hairShine, ' opacity="0.6"'),
+    brush([148, 112], [200, 62], [253, 112], 0.4, 14, 0.4, C.hairShine, ' opacity="0.75"'),
     strand([160, 112], [168, 100], [180, 94], 2.2, C.hairShine, 0.45),
-    strand([152, 106], [166, 86], [195, 84], 4.6, C.hairGlint, 0.7),
+    strand([152, 106], [166, 86], [195, 84], 5, C.hairGlint, 0.85),
     strand([205, 84], [236, 86], [249, 108], 5.6, C.hairGlint, 0.95),
     strand([212, 92], [232, 96], [242, 112], 2.2, C.hairShine, 0.55),
     strand([214, 85], [228, 86], [238, 94], 1.1, C.white, 0.35),
