@@ -4181,6 +4181,9 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-steps] .market-event-rule[data-stamp]::first-letter { text-transform: uppercase; }
   /* Plan item 385: the rule reads level on the poster (it stacked a -3deg stamp on the poster's tilt) and inside the counter's frame */
   .setup[data-steps] .market-event-rule[data-stamp] { display: block; margin-top: 8px; padding: 4px 6px; transform: none; font-size: var(--fs-small); letter-spacing: 0; line-height: 1.3; text-transform: none; }
+  /* Plan item 455: the week's deal in the poster's own ink between two thin rules (six lines of bold red in a red box
+     read as a warning label, not market news). */
+  .setup[data-steps] .market-event-rule[data-stamp] { border-width: 1px 0; border-style: solid; border-color: color-mix(in srgb, var(--ink) 25%, transparent); border-radius: 0; color: var(--ink); font-weight: 650; }
   .setup[data-steps] .setup-step > .pin-tin { display: block; margin: 14px 0 0; transform: rotate(-1deg); }
   .setup[data-steps] .pin-tin-head { font-size: var(--fs-caption); }
   .setup[data-steps] .pin-tin .pin-name, .setup[data-steps] .pin-tin .pin-when { font-size: var(--fs-caption); }
