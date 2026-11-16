@@ -4207,7 +4207,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** one HOLLOWELL label per view; the count 4.5:1 on its plate; it reaches 0 as the last vehicle leaves (e2e in sandbox via `sendWave`); 3D shots P and D before and after, plus a mid-launch frame.
 - **Size:** 2
 
-## 451. [ ] Cathnivore: drag a card onto the land and see what it will do before you let go
+## 451. [ ] Cathnivore: drag a card onto the land and see what it will do before you let go *(lane A, in progress)*
 - **Why:** `plan1116h/cath-game-P`: Open Stall (130-240 x 615-775) says 'Pick a region' in 13 px and nothing on the board (10-380 x 115-475) lights as a target; on D the hand (355-1330 x 700-880) and the board (560-1170 x 110-690) don't answer each other until after the tap; item 83's 250 ms lift is the only feedback. VISION 3: everything responds.
 - **Build:** pointer drag at P and D with tap-to-arm kept: the card lifts and follows the finger with a speed tilt and a shadow; valid regions glow at once, the rest dim; over a region, ghost pieces (the stall that will appear, the outlet that will go) and delta chips (+1 Trust, -1 Mark) from an engine preview; on release the card stamps into the hex with paper dust and the existing sound, the tally chips count up; an invalid drop springs back; keyboard arrows cycle valid regions, Enter plays; reduced motion fades only.
 - **Accept:** a unit test that the preview deltas equal the resolved result for every region action type; new drag specs at P and D and a keyboard spec; dimmed regions at most 55% of a valid one's luminance; the drag animates transform only; shots P and D mid-drag, before and after.
