@@ -144,6 +144,19 @@ function legShade(id: string, legs: readonly string[], fill: string): string {
     .join('')
 }
 
+/**
+ * Plan item 442: the standing boots made, not two flat blocks: a stacked heel under each, a sole edge a shade darker
+ * than the leather along the foot, a turned cuff at the top of the shaft and a polish highlight on each toe.
+ */
+function bootFinish(leather: string): string {
+  return `<path fill="${C.ink}" opacity="0.85" d="M181 868 L196 868 L195 883 L184 883 Z M212 870 L227 870 L226 884 L215 884 Z"/>
+<path fill="none" stroke="${C.ink}" stroke-width="3" stroke-linecap="round" opacity="0.7" d="M140 875 Q150 878 180 877 M228 878 Q248 879 263 877"/>
+<path fill="none" stroke="${C.ink}" stroke-width="1.3" opacity="0.55" d="M161 820 L195 820 M214 826 L247 826"/>
+<path fill="none" stroke="${leather}" stroke-width="2" opacity="0.6" d="M162 817 L194 817 M215 823 L246 823"/>
+<ellipse cx="146" cy="868" rx="6.5" ry="2.4" transform="rotate(-12 146 868)" fill="#ffffff" opacity="0.38"/>
+<ellipse cx="257" cy="870" rx="6.5" ry="2.4" transform="rotate(14 257 870)" fill="#ffffff" opacity="0.38"/>`
+}
+
 function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
   const o = LOWER[outfit]
   const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
@@ -171,6 +184,7 @@ ${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
 ${boot('M161 812 L195 812 L196 862 Q196 878 182 878 L144 878 Q132 878 139 867 L161 850 Z')}${boot('M214 818 L247 818 L248 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 Z')}
 <path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
+${bootFinish(o.boots)}
 ${skirt}`
 }
 
