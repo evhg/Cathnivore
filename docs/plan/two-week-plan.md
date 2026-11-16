@@ -4231,7 +4231,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her box overlaps the mosaic's vertical span by 60%+; a loop plays only on hover or focus and never under reduced motion; portfolio e2e passes; Lighthouse 88+; shots P and D.
 - **Size:** 2
 
-## 455. [ ] The bugs from the 2026-11-16 11:40 critique, fixed as one batch
+## 455. [ ] The bugs from the 2026-11-16 11:40 critique, fixed as one batch *(lane B, in progress)*
 - **Build:** (check each first in `e2e/screenshots/plan1116h`; 446 kept several by design: re-read its reasons before changing)
   - **Cathnivore:** `cath-setup-P` the unpicked Ines and Sol tabs rotated, their top borders overrunning beside the flat picked tabs (200-375 x 380-425); `cath-game-P` Graft's yield chip over its title (20-100 x 700-735); `cath-setup-D` Cath's hand showing detached below the market poster (1150-1170 x 690-700) and the poster's six lines of bold red centred text reading as a warning label (995-1140 x 545-775) (446 kept the poster: fix the hand and the type, not the poster); `cath-game-D` Tomas and Mara's crates over Shingle Bay's corner (1215-1325 x 610-690). (446 kept: step 3 under the sticky Start bar, the '9+ more' tab.)
   - **Site and Runnel:** `games-D` the primary 'Play today's Runnel' (615-795 x 380-428) weaker than the filled secondary 'Browse the games' (807-965 x 380-428); `runnel-D` Cath (430-530 x 525-860) about 8x the farmer and sheep and her boots on the hedge line (item 389's one scale); `portfolio-P` Cath cut at the hips by the tile edge with nothing under her (240-315 x 525-645).
