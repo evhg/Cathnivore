@@ -283,6 +283,11 @@ test('a class change starts its audition at once, her face framed and her line s
       sc.cath.play(c, at)
     }, [cls, u] as const)
     await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette?.prop ?? null), { timeout: 15_000 }).toBe(gun)
+    // Plan item 449: the class's key swings to the gun for its beat (within about a metre of it, from 1.5 m or more).
+    type L = { cathodeFront: { scene: () => { gunLight: { swing: number; dist: number | null } } } }
+    await expect.poll(() => page.evaluate(() => (window as unknown as L).cathodeFront.scene().gunLight.swing), { timeout: 15_000 }).toBeGreaterThan(0.9)
+    const gl = await page.evaluate(() => (window as unknown as L).cathodeFront.scene().gunLight)
+    expect(gl.dist ?? 9, `${cls} ${JSON.stringify(gl)}`).toBeLessThan(1)
   }
 })
 

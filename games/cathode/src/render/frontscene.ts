@@ -63,6 +63,8 @@ export interface FrontScene {
   wardrobe(cls: string | null, instant?: boolean): void;
   /** Plan item 136: the class audition playing now (its class and 0..1 through its 3 s), or null. */
   readonly vignette: { kind: string; u: number; prop: HeldProp | null } | null;
+  /** Plan item 449: how far the class key has swung to the gun in her hand (0..1), and its distance from the gun (m). */
+  readonly gunLight: { swing: number; dist: number | null };
   /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
   figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
   /** Plan item 449: the deepest weapon vertex inside her coat (m) and its weapon. */
@@ -395,6 +397,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // the Gunslinger's raking from low on her left, the Wirewitch's from over her rig, the Fixer's from her right.
   const KEY_AT = CLASS_KEY_AT;
   const keyPosWant = key.pos.clone();
+  const keyAim = key.pos.clone();
+  const gunAt = new THREE.Vector3();
+  const gunKey = new THREE.Vector3();
+  /** Plan item 449: how far the key has swung to the gun in her hand (0..1), and how fast (about 300 ms to 95%). */
+  let gunSwing = 0;
+  const GUN_SWING_EASE = 10;
   const coatBase = new THREE.Color(CATH_HERO.trench);
   const coatNow = coatBase.clone();
   const coatWant = coatBase.clone();
@@ -412,11 +420,22 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (Math.abs(wd.target - wd.w) < 0.001) wd.w = wd.target;
     // Plan item 422: about 250 ms to the new colour and angle (95% of the way; it was 400 ms).
     key.color.lerp(keyWant, 1 - Math.exp(-dt * KEY_EASE));
-    key.pos.lerp(keyPosWant, 1 - Math.exp(-dt * KEY_EASE));
+    // Plan item 449: the key swings to the weapon for its beat: while a gun is in her hand in the audition, the
+    // class's light eases to just ahead of it (toward the lens, a little above) and back to its own angle when she
+    // puts it away, so the draw, spin or rack is the lit thing in the frame.
+    const inHand = wd.w > 0.5 && !!cath.clipState?.prop && cath.propWorld(gunAt);
+    gunSwing += ((inHand ? 1 : 0) - gunSwing) * (1 - Math.exp(-dt * GUN_SWING_EASE));
+    if (inHand) {
+      gunKey.copy(cam.position).sub(gunAt).normalize().multiplyScalar(0.4).add(gunAt);
+      gunKey.y += 0.15;
+    }
+    keyAim.copy(keyPosWant).lerp(gunKey, 0.75 * smoother(gunSwing));
+    key.pos.lerp(keyAim, 1 - Math.exp(-dt * KEY_EASE));
     // Plan item 129: the kit-on flash, the key light at 2.6x the moment the kit goes on, easing back over 320 ms.
     if (wd.flash > 0) wd.flash = Math.max(0, wd.flash - dt);
     const flash = wd.flash > 0 ? 1.6 * Math.pow(wd.flash / FLASH_S, 2) : 0;
-    key.intensity = (phone ? 7 : 9) * wd.w * (1 + flash);
+    // Close to the gun the light would blow it out at full strength: it steps down as it swings in.
+    key.intensity = (phone ? 7 : 9) * wd.w * (1 + flash) * (1 - 0.15 * gunSwing);
     let yaw = Math.PI;
     if (wd.turn > 0) {
       wd.turn = Math.max(0, wd.turn - dt);
@@ -1030,6 +1049,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     get vignette() {
       return cath.clipState;
+    },
+    get gunLight() {
+      const has = cath.propWorld(gunAt);
+      return { swing: Math.round(gunSwing * 1000) / 1000, dist: has ? Math.round(key.pos.distanceTo(gunAt) * 1000) / 1000 : null };
     },
     figurePose() {
       return cath.poseState;

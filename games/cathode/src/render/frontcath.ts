@@ -46,6 +46,8 @@ export interface FrontCath {
    * from outside it), and which weapon; 0 when none goes in. A check, not drawn: sampled every few vertices.
    */
   weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
+  /** Plan item 449: the world position of the gun in her hand (its group's origin) into `out`; false with none in hand. */
+  propWorld(out: THREE.Vector3): boolean;
   /**
    * Plan item 187: where she looks, -1..1 down the title menu (the menu sits to her right of frame): her head turns
    * toward it and tips to the focused row, easing there in about 150 ms (`instant` cuts). `gaze` is the target now.
@@ -4148,6 +4150,12 @@ float reliefShade( vec2 uv ) {
     },
     get clipState() {
       return clip ? { kind: clip.kind, u: clip.u, prop: propNow } : null;
+    },
+    propWorld(out) {
+      const g = propNow === "rifle" ? rifle : propNow === "shotgun" ? shotgun : propNow ? sideGuns.get(propNow) : undefined;
+      if (!g || !g.visible) return false;
+      g.getWorldPosition(out);
+      return true;
     },
     tint(c, w) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
