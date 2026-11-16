@@ -494,14 +494,15 @@ C232 72 254 102 254 138
 C254 166 248 189 238 205
 C228 220 212 228 200 228 Z`
 
-const NECK = 'M185 206 C186 228 185 242 181 258 L219 258 C215 242 214 228 215 206 Z'
+// Plan item 442 (critique): tapered, slim under the jaw and flaring into the shoulders (a straight column read stiff).
+const NECK = 'M186 206 C188 226 188 240 177 258 L223 258 C212 240 212 226 214 206 Z'
 
 function neck(id: string): string {
   return `<path fill="url(#${id}-neck)" d="${NECK}"/>
-<path fill="none" stroke="${C.skinLine}" stroke-width="1.8" stroke-linecap="round" d="M185 206 C186 228 185 242 181 258 M215 206 C214 228 215 242 219 258"/>
+<path fill="none" stroke="${C.skinLine}" stroke-width="1.8" stroke-linecap="round" d="M186 206 C188 226 188 240 177 258 M214 206 C212 226 212 240 223 258"/>
 <path fill="${C.skinShade}" d="M185 212 C192 228 208 230 215 212 L215 234 C206 242 194 242 185 232 Z"/>
 <path fill="${C.skinDeep}" opacity="0.55" d="M186 216 C193 228 207 229 214 216 L214 222 C206 232 194 232 186 224 Z"/>
-${brush([214, 236], [214, 246], [217, 256], 0.2, 1.6, 0.2, C.rim, ' opacity="0.8"')}`
+${brush([212.5, 234], [213, 246], [220, 256], 0.2, 1.6, 0.2, C.rim, ' opacity="0.8"')}`
 }
 
 function face(id: string): string {
@@ -540,7 +541,9 @@ ${brush(p(-9, y0 + 3), p(0, y0 + 6), p(9, y0 + 3), 0.2, 1, 0.2, C.skinDeep, ' op
   const top = variant === 'narrow' ? y0 - 4 : y0 - 11
   const white = `M${n1(x(-13.5))} ${y0} Q${n1(x(-1))} ${top} ${n1(x(14))} ${y0 - 1} Q${n1(x(1))} ${y0 + 10} ${n1(x(-13.5))} ${y0} Z`
   const clip = `${id}-eye${flip === 1 ? 'r' : 'l'}`
-  return `<g class="cath-eye">
+  // Plan item 442 (critique): drawn 1.12x about the eye's centre (about 25% more area): at a phone's 60 px face the
+  // eye was a grey smudge of liner and lid shade.
+  return `<g class="cath-eye" transform="translate(${n1(x(1))} ${y0}) scale(1.12) translate(${n1(-x(1))} ${-y0})">
 <ellipse cx="${x(1)}" cy="${y0 - 5}" rx="18" ry="${variant === 'narrow' ? 6 : 9}" fill="url(#${id}-lid)"/>
 ${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.1, 0.2, C.skinLine, ' opacity="0.35"')}
 <clipPath id="${clip}"><path d="${white}"/></clipPath>
@@ -551,7 +554,7 @@ ${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.1, 0.2, C.skinLine
 <circle cx="${x(1)}" cy="${y0 + 0.5}" r="4" fill="${C.liner}"/>
 <ellipse cx="${x(1)}" cy="${top + 1}" rx="15" ry="6" fill="#3A2018" opacity="0.4"/>
 <circle cx="${x(-2.4)}" cy="${y0 - 3.2}" r="2.9" fill="${C.white}"/>
-<circle cx="${x(4.2)}" cy="${y0 + 3.6}" r="1.3" fill="${C.white}" opacity="0.9"/>
+<circle cx="${x(4.4)}" cy="${y0 + 3.8}" r="1.7" fill="${C.white}" opacity="0.95"/>
 </g>
 ${brush(p(-14.5, y0 - 0.2), p(-1, top - 3), p(14.5, y0 - 1.5), 1.2, 3.4, 3.8, C.liner)}
 ${brush(p(12.5, y0 - 1.6), p(17.5, y0 - 4.2), p(23, y0 - 8.6), 3.8, 2.2, 0.2, C.liner)}
@@ -641,15 +644,16 @@ ${mouth(id, expression)}
 
 // ---- outfits and accessories -------------------------------------------------------------------------------
 
-// Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip.
+// Shared tailored silhouette: sloped shoulders, a nipped waist and a slight flare at the hip (plan item 442: the waist
+// taken in 7 px a side, since at full length it read as a box).
 const JACKET = `M183 250
 C160 256 132 262 118 280
 C106 296 104 322 106 350
-C108 384 118 404 124 424
-C128 446 120 472 116 500
-L284 500
-C280 472 272 446 276 424
-C282 404 292 384 294 350
+C109 384 122 402 131 420
+C127 446 120 474 117 500
+L283 500
+C280 474 273 446 269 420
+C278 402 291 384 294 350
 C296 322 294 296 282 280
 C268 262 240 256 217 250
 L200 404
@@ -682,11 +686,12 @@ function fieldOutfit(id: string): string {
 <path fill="${C.oliveDeep}" opacity="0.6" d="M177 238 C186 245 214 245 223 238 L224 246 C214 252 186 252 176 246 Z"/>
 <path fill="url(#${id}-blouse)" stroke="${C.ink}" stroke-width="1.6" stroke-linejoin="round" d="M182 250 C194 256 206 256 218 250 L222 420 L178 420 Z"/>
 ${brush([208, 268], [212, 300], [206, 336], 0.3, 2.6, 0.3, C.white, ' opacity="0.7"')}
-<path fill="${SKIN}" stroke="${C.skinLine}" stroke-width="1.4" stroke-linejoin="round" d="M181 250 C192 256 208 256 219 250 L200 300 Z"/>
+<path fill="${SKIN}" stroke="${C.skinShade}" stroke-width="1" stroke-linejoin="round" d="M181 250 C192 256 208 256 219 250 L200 300 Z"/>
 <path fill="${C.skinShade}" d="M182 251 C192 258 208 258 218 251 L215 259 C206 266 194 266 185 259 Z"/>
 <path fill="${C.skinShade}" opacity="0.7" d="M182 251 L200 300 L190 268 Z"/>
 ${brush([187, 263], [192, 265], [197, 267], 0.2, 1, 0.2, C.skinDeep, ' opacity="0.7"')}${brush([203, 267], [208, 265], [213, 263], 0.2, 1, 0.2, C.skinDeep, ' opacity="0.7"')}
-<path fill="none" stroke="url(#${id}-gold)" stroke-width="1.3" d="M183 254 Q200 282 217 254"/>
+<path fill="none" stroke="url(#${id}-gold)" stroke-width="1.3" d="M183 254 Q200 296 217 254"/>
+<circle cx="200" cy="274.6" r="1.6" fill="none" stroke="url(#${id}-gold)" stroke-width="1"/>
 <path fill="url(#${id}-leaf)" stroke="${C.leafDeep}" stroke-width="0.9" d="M200 274 C195 279 196 286 200 289 C204 286 205 279 200 274 Z"/>
 <path fill="none" stroke="${C.leafLight}" stroke-width="0.6" d="M200 276 L200 287"/>
 <circle cx="201.6" cy="279" r="0.9" fill="${C.white}" opacity="0.8"/>
