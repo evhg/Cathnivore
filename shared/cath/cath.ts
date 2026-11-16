@@ -494,12 +494,12 @@ ${brush([200, 62], [200, 72], [200, 84], 1.8, 1.4, 0.3, C.hairDeep)}
 // ---- face ------------------------------------------------------------------------------------------------
 
 const FACE = `M200 228
-C188 228 172 220 162 205
-C152 189 146 166 146 138
+C189 228 176 220 165 204
+C153 187 146 166 146 138
 C146 102 168 72 200 72
 C232 72 254 102 254 138
-C254 166 248 189 238 205
-C228 220 212 228 200 228 Z`
+C254 166 247 187 235 204
+C224 220 211 228 200 228 Z`
 
 // Plan item 442 (critique): tapered, slim under the jaw and flaring into the shoulders (a straight column read stiff).
 const NECK = 'M190 206 C191.5 226 191 240 177 258 L223 258 C209 240 208.5 226 210 206 Z'
@@ -565,7 +565,7 @@ ${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.1, 0.2, C.skinLine
 ${brush(p(-14.5, y0 - 0.2), p(-1, top - 3), p(14.5, y0 - 1.5), 1.2, 3.4, 3.8, C.liner)}
 ${brush(p(12.5, y0 - 1.6), p(17.5, y0 - 4.2), p(23, y0 - 8.6), 3.8, 2.2, 0.2, C.liner)}
 ${brush(p(11, y0 - 6.5), p(13, y0 - 9.2), p(15.5, y0 - 11.2), 1.6, 1, 0.2, C.liner)}
-${brush(p(11, y0 + 4.2), p(13, y0 + 4.6), p(15.5, y0 + 6.5), 0.9, 0.7, 0.1, C.liner, ' opacity="0.7"')}
+${brush(p(6, y0 + 7), p(11, y0 + 5.6), p(14, y0 + 1.6), 0.2, 0.9, 0.3, C.liner, ' opacity="0.45"')}
 <path class="cath-lids" opacity="0" fill="${C.skinShade}" stroke="${C.liner}" stroke-width="2.4" d="M${n1(x(-15))} ${y0} Q${n1(x(-1))} ${top - 3} ${n1(x(15))} ${y0 - 1} Q${n1(x(1))} ${y0 + 10.5} ${n1(x(-15))} ${y0} Z"/>
 </g>`
 }
@@ -617,7 +617,7 @@ ${brush([186.5, 197.6], [200, 198.6], [213.5, 197.6], 0.3, 1.3, 0.3, C.lipLine)}
       return `${philtrum}<path ${lips} d="M187 197 Q194 192.5 200 195 Q207 191.5 215.5 192.5 Q209 203.5 200 203 Q192 203 187 197 Z"/>
 ${brush([187.5, 197], [200, 199.4], [215, 193], 0.3, 1.3, 0.4, C.lipLine)}
 <ellipse cx="203" cy="200.6" rx="4" ry="1.2" fill="${C.lipShine}"/>
-<ellipse cx="201" cy="207.5" rx="6" ry="1.8" fill="${C.skinShade}" opacity="0.7"/>
+<ellipse cx="201" cy="207" rx="4.5" ry="1.3" fill="${C.skinShade}" opacity="0.4"/>
 ${brush([215.5, 191.5], [219.5, 192], [218.5, 196], 0.3, 1.3, 0.2, C.skinDeep)}`
   }
 }
@@ -628,7 +628,7 @@ function nose(): string {
 ${brush([194, 178.5], [200, 182.5], [206, 178], 0.3, 1.5, 0.3, C.skinLine)}
 <ellipse cx="196.4" cy="179.2" rx="1.4" ry="0.8" fill="${C.skinDeep}"/>
 <ellipse cx="203.6" cy="179.2" rx="1.4" ry="0.8" fill="${C.skinDeep}"/>
-<ellipse cx="202" cy="175" rx="2.2" ry="1.5" fill="${C.white}" opacity="0.7"/>
+<ellipse cx="202" cy="175" rx="2.2" ry="1.4" fill="${C.white}" opacity="0.4"/>
 <ellipse cx="201.4" cy="160" rx="1" ry="5" fill="${C.white}" opacity="0.35"/>`
 }
 
