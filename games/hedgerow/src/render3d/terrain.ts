@@ -1198,9 +1198,14 @@ export function buildGround(level: Level): Ground {
     const timberPole = new THREE.Color("#5e4a36");
     for (const dx of [1.15, 2.1, 3.2])
       for (let z = -3; z <= rows + 3; z += 1) {
-        const x = cols + dx + Math.sin(z * 0.7 + dx) * 0.06;
+        // Plan item 437: ruled straight, one unbroken channel (each metre wobbled in x and angle on its own, so the
+        // ditch read as a row of slanted teal dashes).
+        const x = cols + dx;
         if (laneDistance(level, x, z) < 1.1) continue;
-        ditches.push({ x, y: heightAt(x, z) + 0.006, z, ry: Math.sin(z + dx) * 0.04, s: 1, sy: 1, color: ditchCol });
+        // Two half-metre lengths, each laid at the higher ground under its ends (a metre-long flat box sank into
+        // the marsh's swells at both ends, which cut it into dashes).
+        for (const hz of [z - 0.25, z + 0.25])
+          ditches.push({ x, y: Math.max(heightAt(x, hz - 0.26), heightAt(x, hz), heightAt(x, hz + 0.26)) + 0.008, z: hz, ry: 0, s: 1, sy: 1, color: ditchCol });
         if (deco() < 0.55)
           for (let k = 0; k < 6; k++)
             reeds.push({ x: x + (deco() < 0.5 ? -0.1 : 0.1) + (deco() - 0.5) * 0.05, y: heightAt(x, z), z: z + (deco() - 0.5) * 0.5, ry: deco() * 6.3, s: 0.8 + deco() * 0.4, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
@@ -1214,16 +1219,32 @@ export function buildGround(level: Level): Ground {
       cattle.push({ x, y: heightAt(x, z) + 0.06, z, ry, s: 1, sy: 1, color: c });
       heads.push({ x: x + Math.cos(ry) * 0.12, y: heightAt(x, z) + 0.07, z: z - Math.sin(ry) * 0.12, ry, s: 1, sy: 1, color: c });
     }
+    // Plan item 437: a telegraph line, not lone sticks: each pole carries a crossarm, and two wires run from pole
+    // to pole (with no line they read as stray dark posts in the marsh).
+    const arms: Inst[] = [];
+    const wires: Inst[] = [];
+    const wireCol = new THREE.Color("#2e2a27");
+    let lastZ: number | null = null;
     for (let z = -3; z <= rows + 3; z += 1.6) {
       const x = cols + 2.65;
-      if (laneDistance(level, x, z) < 1.1) continue;
-      poles.push({ x, y: heightAt(x, z), z, ry: 0, s: 1, sy: 1, color: timberPole });
+      if (laneDistance(level, x, z) < 1.1) {
+        lastZ = null;
+        continue;
+      }
+      const y = heightAt(x, z);
+      poles.push({ x, y, z, ry: 0, s: 1, sy: 1, color: timberPole });
+      arms.push({ x, y: y + 0.68, z, ry: 0, s: 1, sy: 1, color: timberPole });
+      if (lastZ !== null)
+        for (const ox of [-0.075, 0.075]) wires.push({ x: x + ox, y: (y + heightAt(x, lastZ)) / 2 + 0.69, z: (z + lastZ) / 2, ry: 0, s: 1, sy: 1, color: wireCol });
+      lastZ = z;
     }
     for (const m of [
-      instanced(new THREE.BoxGeometry(0.13, 0.012, 1.02), new THREE.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1 }), ditches),
+      instanced(new THREE.BoxGeometry(0.13, 0.003, 0.53), new THREE.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1 }), ditches),
       instanced(new THREE.BoxGeometry(0.2, 0.09, 0.09), new THREE.MeshStandardMaterial({ roughness: 0.8 }), cattle, true),
       instanced(new THREE.BoxGeometry(0.07, 0.06, 0.06), new THREE.MeshStandardMaterial({ roughness: 0.8 }), heads),
       instanced(new THREE.CylinderGeometry(0.018, 0.024, 0.75, 5).translate(0, 0.375, 0), new THREE.MeshStandardMaterial({ roughness: 0.9 }), poles, true),
+      instanced(new THREE.BoxGeometry(0.2, 0.022, 0.03), new THREE.MeshStandardMaterial({ roughness: 0.9 }), arms),
+      instanced(new THREE.BoxGeometry(0.006, 0.006, 1.6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), wires),
     ])
       if (m) group.add(m);
     for (const m of [
