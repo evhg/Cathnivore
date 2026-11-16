@@ -171,7 +171,7 @@ export const KEY_EASE = 12;
  * the Gunslinger's saddle-tan duster (the Butcher's apron already holds the oxblood), the Wirewitch's green teal, the
  * Fixer's plum wool (midnight blue sat on the Ghost's black); the Ghost alone stays in black.
  */
-const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x4b5428, gunslinger: 0x7a4a26, wirewitch: 0x175e52, fixer: 0x4a2240 };
+const CLASS_COAT: Record<string, number | null> = { ghost: null, butcher: 0x4f6a24, gunslinger: 0x7a4a26, wirewitch: 0x0f7d6c, fixer: 0x6c2458 };
 
 const smoother = (u: number) => u * u * u * (u * (u * 6 - 15) + 10);
 

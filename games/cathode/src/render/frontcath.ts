@@ -53,6 +53,8 @@ export interface FrontCath {
   indoors(on: boolean): void;
   /** Plan item 42: the coat's cloth colour (the class pick's outfit swap); null puts her black trench back. */
   coat(c: THREE.Color | null): void;
+  /** Plan item 434: the coat's cloth materials (body, sleeves, skirt, collar), for the pick's coat-colour check. */
+  readonly coatMats: readonly THREE.Material[];
   /** Plan item 112: the class's kit over the coat (ghost's rifle sling, butcher's apron, gunslinger's holster,
    *  wirewitch's wire rig, fixer's tie); null takes it off. One kit shows at a time. */
   kit(cls: string | null): void;
@@ -3959,6 +3961,7 @@ float reliefShade( vec2 uv ) {
     coat(c) {
       for (const m of coatMats) m.color.copy(c ?? coat0);
     },
+    coatMats,
     indoors(on) {
       inside = on;
       furl();
