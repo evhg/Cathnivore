@@ -4189,7 +4189,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit tests: with a Scarecrow covering the lead no tip says 'Build a Scarecrow'; with a flood due the tip names the flood; the ghost plot 44 px+ at P; tapping the tip opens the build ring on that plot (e2e); shots l21/l34 2D and 3D, P and D, before and after, with different tips per level.
 - **Size:** 2
 
-## 448. [ ] Hedgerow: Play from the act map as a staged departure into the field
+## 448. [ ] Hedgerow: Play from the act map as a staged departure into the field *(lane B, in progress)*
 - **Why:** `plan1116h/hedge-menu-D`: Cath (145-185 x 230-388) half behind stop 21's disc, Play 1000 px away on the card (1135-1412 x 638-692); `hedge-menu-P` Cath about 20x50 px. Play cuts straight to the field: VISION 4's choreographed moment is missing at the game's most frequent transition.
 - **Build:** on Play, about 900 ms: Cath walks the last stretch to the stop (the trail walk), the stop's dome lifts, the card's field plate scales up into the field frame and the field fades in under it, with a paper rustle and a chime (haptics on iPhone); reduced motion a 200 ms crossfade. The next stop bobs gently and Cath beckons, so it reads as the call to action.
 - **Accept:** the transition 700-1100 ms (e2e with frame timestamps); the first visual change within 100 ms of the tap; the reduced-motion path tested; hedgerow-map specs pass; shots P and D at 0, 50 and 100%, before and after.
