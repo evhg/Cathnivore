@@ -432,8 +432,11 @@ function hairFront(id: string): string {
   const shine = [
     strand([158, 102], [166, 88], [184, 82], 3.4, C.hairShine, 0.55),
     strand([166, 106], [174, 96], [190, 90], 2, C.hairShine, 0.4),
-    strand([214, 82], [234, 86], [244, 102], 4, C.hairGlint, 0.6),
-    strand([212, 90], [228, 94], [238, 108], 2.4, C.hairGlint, 0.45),
+    strand([214, 82], [234, 86], [244, 102], 4, C.hairGlint, 0.75),
+    strand([212, 90], [228, 94], [238, 108], 2.4, C.hairGlint, 0.55),
+    // Plan item 442: the band carries on over the part to the shaded side, broken, so it reads as one gloss across
+    // the crown's curve (it showed as a glint on the lit side only).
+    strand([150, 112], [154, 96], [168, 84], 2.6, C.hairShine, 0.5),
     strand([244, 112], [250, 124], [251, 140], 2.2, C.hairGlint, 0.4),
   ].join('')
   const flyaways = [
