@@ -697,6 +697,7 @@ function paintPlots(ctx: CanvasRenderingContext2D, level: Level, L: Layout): voi
   const scenery = sceneryCells(level);
   const looks = plotLooks(level);
   const away = shadowDir(level.id);
+  bedSun = away;
   for (let r = 0; r < level.rows; r++) {
     for (let c = 0; c < level.cols; c++) {
       if (lane.has(`${c},${r}`) || scenery.has(`${c},${r}`)) continue;
@@ -900,6 +901,15 @@ function litBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, 
   ctx.beginPath();
   ctx.roundRect(bx, by, bw, bh, s * 0.18);
   ctx.fill();
+  // The bed's rim: its sun-facing lip lit, its far lip a dark shade line (a raised bed under one sun).
+  const e = ctx.createLinearGradient(cx - away.x * R, cy - away.y * R, cx + away.x * R, cy + away.y * R);
+  e.addColorStop(0, "rgba(255,246,218,0.5)");
+  e.addColorStop(0.4, "rgba(255,246,218,0)");
+  e.addColorStop(0.6, "rgba(36,30,14,0)");
+  e.addColorStop(1, "rgba(36,30,14,0.42)");
+  ctx.strokeStyle = e;
+  ctx.lineWidth = Math.max(1, s * 0.03);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -1091,12 +1101,13 @@ function paintBed(ctx: CanvasRenderingContext2D, x: number, y: number, s: number
       }
       ctx.stroke();
     };
-    ctx.strokeStyle = "rgba(60,40,18,0.26)";
+    // Plan item 440: each ridge's shade falls away from the act's sun and its crest catches the light.
+    ctx.strokeStyle = "rgba(60,40,18,0.34)";
     ctx.lineWidth = Math.max(1.5, s * 0.06);
-    seg(s * 0.02, s * 0.025);
-    ctx.strokeStyle = "rgba(235,205,150,0.32)";
+    seg(bedSun.x * s * 0.03, bedSun.y * s * 0.03);
+    ctx.strokeStyle = "rgba(240,212,158,0.4)";
     ctx.lineWidth = Math.max(1, s * 0.028);
-    seg(-s * 0.012, -s * 0.012);
+    seg(-bedSun.x * s * 0.016, -bedSun.y * s * 0.016);
   }
   ctx.restore();
   // A lip of grass round the bed (the whole field's).
@@ -1576,6 +1587,8 @@ function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, 
  * (paintBackground arms it for a won level; the 3D field arms it for its first board).
  */
 let crayonNext = false;
+/** Plan item 440: the act's sun-away direction while the field paints (furrow relief follows it). */
+let bedSun: { x: number; y: number } = { x: 0.6, y: 0.8 };
 /** The panel Bea last drew on (tests), cleared when a field is painted without one. */
 export let lastCrayon: { x: number; y: number; w: number; h: number } | null = null;
 export function crayonNextBillboard(on: boolean): void {

@@ -2311,12 +2311,16 @@ export class Renderer {
     const cx = W / 2, cy = H / 2, R = Math.hypot(W, H) / 2;
     const g = ctx.createLinearGradient(cx - away.x * R, cy - away.y * R, cx + away.x * R, cy + away.y * R);
     // the lit side takes the act's own sun (warm in most acts, Saltmarsh's cool sea light)
-    g.addColorStop(0, `rgba(${sun},0.16)`);
+    g.addColorStop(0, `rgba(${sun},0.4)`);
     g.addColorStop(0.5, `rgba(${sun},0)`);
     g.addColorStop(0.5, "rgba(46,58,96,0)");
-    g.addColorStop(1, "rgba(46,58,96,0.12)");
+    g.addColorStop(1, "rgba(46,58,96,0.3)");
+    // soft-light: the wash tints light and shade without flattening the field's own contrast
+    ctx.save();
+    ctx.globalCompositeOperation = "soft-light";
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+    ctx.restore();
     const v = ctx.createRadialGradient(cx, cy, Math.min(W, H) * 0.42, cx, cy, R * 1.05);
     v.addColorStop(0, "rgba(34,26,16,0)");
     v.addColorStop(1, "rgba(34,26,16,0.2)");
