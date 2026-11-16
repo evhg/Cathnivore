@@ -4124,8 +4124,10 @@ body:has(#dlg-pause[open]) .paused-note {
     order: 99;
     margin: 6px 4px;
     padding: 6px 8px;
-    border: 2px dashed color-mix(in srgb, var(--soil) 45%, transparent);
-    border-radius: 8px;
+    /* Plan item 460: a pencilled note on the bench's ruled line, not one more (dashed) box in the panel */
+    border: 0;
+    border-bottom: 1.5px dashed color-mix(in srgb, var(--soil) 45%, transparent);
+    border-radius: 0;
     color: var(--ink-2);
     font: 700 var(--fs-label) / 1.2 var(--font-ui);
     text-align: center;
