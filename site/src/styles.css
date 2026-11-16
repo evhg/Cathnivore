@@ -2036,3 +2036,19 @@ body {
   letter-spacing: .1em;
 }
 @media (prefers-reduced-motion: reduce) { .hero-game-play { transition: none; } }
+
+/* Plan item 452: at D the wardrobe (shown once a second outfit is earned) took a cell of the hero's two-column grid
+   and pushed the chalkboard to a row of its own, the stall into its narrow layout and the posters below the fold:
+   it hangs out of the grid in the night sky at the top right, clear of the awning. */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .hero > .wardrobe,
+  .hero[data-booth] > .wardrobe {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    z-index: var(--z-booth-words);
+    max-width: 270px;
+    margin: 0;
+    justify-content: flex-end;
+  }
+}
