@@ -357,6 +357,47 @@ test('the class weapon is lit in 3D with a specular highlight', async ({ page, h
   await expect(gun).toHaveCount(1)
   // The rack's guns are thumbnails of the same meshes (desktop; the phone hides the rack).
   await expect(page.locator('.cp-opt-gear.is-lit .cp-opt-gun')).toHaveCount(5)
+  if (!hasTouch) {
+    // Plan item 434: each rack gun reads 3:1 or more on its row (its opaque pixels' median, from the screen, against
+    // the row just left of the thumbnail); they were grey shapes on black at 1.1-1.7:1.
+    await page.waitForTimeout(400)
+    const shot = (await page.screenshot()).toString('base64')
+    const rack = await page.evaluate(async (s) => {
+      const i = new Image()
+      i.src = `data:image/png;base64,${s}`
+      await i.decode()
+      const c = document.createElement('canvas')
+      c.width = i.width
+      c.height = i.height
+      const x = c.getContext('2d')!
+      x.drawImage(i, 0, 0)
+      const D = x.getImageData(0, 0, c.width, c.height).data
+      const k = c.width / innerWidth
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      const L = (X: number, Y: number) => {
+        const j = (Math.round(Y * k) * c.width + Math.round(X * k)) * 4
+        return 0.2126 * lin(D[j]!) + 0.7152 * lin(D[j + 1]!) + 0.0722 * lin(D[j + 2]!)
+      }
+      const med = (a: number[]) => [...a].sort((p, q) => p - q)[Math.floor(a.length / 2)]!
+      return [...document.querySelectorAll<HTMLImageElement>('.cp-opt-gun')].map((img) => {
+        const box = img.getBoundingClientRect()
+        const t = document.createElement('canvas')
+        t.width = img.naturalWidth
+        t.height = img.naturalHeight
+        const tx = t.getContext('2d')!
+        tx.drawImage(img, 0, 0)
+        const a = tx.getImageData(0, 0, t.width, t.height).data
+        const gun: number[] = []
+        for (let y = 0; y < t.height; y += 2) {
+          for (let X = 0; X < t.width; X += 2) if (a[(y * t.width + X) * 4 + 3]! > 230) gun.push(L(box.left + (X / t.width) * box.width, box.top + (y / t.height) * box.height))
+        }
+        const bg = med([...Array(10).keys()].map((n) => L(box.left - 6, box.top + (box.height * (n + 0.5)) / 10)))
+        const g = med(gun)
+        return { cls: img.closest<HTMLElement>('.cp-opt')!.dataset.cls, cr: (Math.max(g, bg) + 0.05) / (Math.min(g, bg) + 0.05) }
+      })
+    }, shot)
+    for (const r of rack) expect(r.cr, JSON.stringify(rack)).toBeGreaterThanOrEqual(3)
+  }
   const m = await gun.evaluate(async (img: HTMLImageElement) => {
     await img.decode()
     const c = document.createElement('canvas')

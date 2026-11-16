@@ -757,12 +757,13 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 /* Plan item 313: the rack's guns as lit thumbnails of the same meshes as the case table's: gunmetal under its class's rim (item 423)
    at rest, the picked one at full light with the class's glow round it. */
 .cp-opt-gear.is-lit { filter: none; }
-.cp-opt-gun { display: block; width: 100%; height: auto; aspect-ratio: 5 / 2; object-fit: contain; filter: grayscale(.4) brightness(1.6); opacity: .86; transition: opacity 200ms ease, filter 200ms ease; }
+/* Plan item 434: the thumbnails' dark steel lifted more than their highlights (contrast under 1, then brightness), so
+   each gun reads 3:1 or more on its dark row (they were 1.1-1.7:1, grey shapes on black); still gunmetal, not chalk. */
+.cp-opt-gun { display: block; width: 100%; height: auto; aspect-ratio: 5 / 2; object-fit: contain; filter: grayscale(.35) contrast(.66) brightness(2); opacity: 1; transition: opacity 200ms ease, filter 200ms ease; }
 .cp-opt[aria-checked="true"] .cp-opt-gun {
   opacity: 1;
-  filter: grayscale(.2) brightness(1.15) drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .8)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .4));
+  filter: contrast(.66) brightness(2) drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .8)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .4));
 }
-@media (hover: hover) { .cp-opt:hover .cp-opt-gun { opacity: .9; } }
 @media (prefers-reduced-motion: reduce) { .cp-opt, .cp-opt::after { transition: none; } }
 @media (max-height: 560px), (max-width: 700px) and (orientation: portrait) {
   .cp-list { grid-auto-rows: max(40px, calc(var(--u) * 72)); } /* px-ok: tap target */
