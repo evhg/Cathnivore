@@ -341,6 +341,9 @@ function inkNormals(g: THREE.BufferGeometry): void {
  * normal, not its fine nap) catches the crests of the folds, the belt's roll and the shoulders that face that key.
  * The skirt's fold shade (its vertex colours) darkens it again in the folds' troughs, so the folds read.
  */
+/** Plan item 456: the coat key's strength on the title (item 427's pick still eases it to 0.15). */
+const COAT_KEY_TITLE = 0.25;
+
 const COAT_KEY = `{
   vec3 cn = normalize( mix( nonPerturbedNormal, normal, 0.35 ) );
   vec3 kd = normalize( vec3( -0.8, 0.25, 0.4 ) );
@@ -432,7 +435,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // (the old 0.85 clearcoat over 0.6 roughness lit the trench like a moulded shell).
   const coatMat = phone
     ? new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.84, metalness: 0 })
-    : new THREE.MeshPhysicalMaterial({ color: CATH_HERO.trench, roughness: 0.86, metalness: 0, clearcoat: 0.22, clearcoatRoughness: 0.5, sheen: 0.32, sheenRoughness: 0.8, sheenColor: new THREE.Color(0x6a7080) });
+    : new THREE.MeshPhysicalMaterial({ color: CATH_HERO.trench, roughness: 0.86, metalness: 0, clearcoat: 0.22, clearcoatRoughness: 0.5, sheen: 0.2, sheenRoughness: 0.8, sheenColor: new THREE.Color(0x6a7080) }); // item 456: sheen 0.32 -> 0.2, charcoal not satin
   // Plan item 227: the cloth baked once into a normal map, untiled, laid on the lathe's (around, up) UV: a gabardine
   // twill and wool's uneven nap everywhere, and the folds a real coat has where it is held, gathered under the belt,
   // creased at the elbow, turned at the hem. `bands` is the fold height at (u, v) on top of the weave.
@@ -614,7 +617,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     uKey: { value: new THREE.Color(1.0, 0.86, 0.74).multiplyScalar(phone ? 1.45 : 1.3) },
     // Plan item 363: the coat's own key, a warm low light on the wool from the lens's left and a satin sheen on the
     // folds that face it, so her shoulders, arms, belt and hem read against the night instead of one black mass.
-    uCoatKey: { value: 1 },
+    // Plan item 456: 0.25 on the title (at 1 it lifted the charcoal trench to a pale grey satin, the brightest thing
+    // on a noir street; cathode.md 2 asks for a charcoal trench): the folds still catch it, the cloth reads dark.
+    uCoatKey: { value: COAT_KEY_TITLE },
     // Plan item 427: the cloth's nap, wet hem and shoulder sheen (0 turns it off), and her frame for its heights.
     uCloth: { value: 1 },
     uClothInv: { value: new THREE.Matrix4() },
@@ -4094,7 +4099,7 @@ float reliefShade( vec2 uv ) {
       // the Ghost's black trench to a flat pale grey (coat luma 111 against 35 without it) and drowned the class's
       // own key; at 0.15 the trench reads black with its folds, its cloth and the class's coloured rim.
       // (The pick tints at w 0.6, more in the kit-on flash.)
-      rimU.uCoatKey.value = 1 - 0.85 * Math.min(1, w / 0.6);
+      rimU.uCoatKey.value = COAT_KEY_TITLE - (COAT_KEY_TITLE - 0.15) * Math.min(1, w / 0.6);
     },
     coat(c) {
       for (const m of coatMats) m.color.copy(c ?? coat0);
