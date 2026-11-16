@@ -2052,3 +2052,37 @@ body {
     justify-content: flex-end;
   }
 }
+
+/* Plan item 452: today's market board, chalked in place of a returning visitor's 'Free · No ads' line: a tick per
+   game, then the week's seven dots and the run (a gold pennant at three days). */
+.today-board {
+  display: grid;
+  gap: 3px;
+  justify-items: start;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 10px 5px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--scrim) 80%, transparent);
+  color: var(--chalk);
+  font-size: var(--fs-meta);
+  line-height: 1.25;
+}
+.today-tags, .today-week { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; margin: 0; }
+.today-tag { white-space: nowrap; color: color-mix(in srgb, var(--chalk) 85%, transparent); }
+.today-tag small { font-size: 1em; color: color-mix(in srgb, var(--chalk) 75%, transparent); }
+.today-tag[data-done] { color: var(--chalk); }
+.today-tag[data-done] small { color: var(--gold-hi); }
+.today-tick { display: inline-block; width: 1.1em; color: color-mix(in srgb, var(--chalk) 60%, transparent); }
+.today-tag[data-done] .today-tick { color: var(--gold-hi); font-weight: 800; }
+.today-dots { display: inline-flex; gap: 5px; }
+.today-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--chalk) 70%, transparent); }
+.today-dots i[data-on] { background: var(--chalk); }
+.today-run { color: color-mix(in srgb, var(--chalk) 85%, transparent); }
+.today-pennant { padding: 0 12px 0 7px; clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%); background: var(--gold); color: var(--slate); font-weight: 800; }
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  /* on the slate itself at D: no backing (it spilled past the slate's frame) */
+  .today-board { padding: 2px 0 0; background: none; }
+}

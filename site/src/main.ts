@@ -10,7 +10,7 @@ import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
-import { cardLines } from './cards'
+import { cardLines, todayBoard } from './cards'
 import { mountBooth } from './booth'
 import { startPosterPlay } from './posterplay'
 
@@ -257,6 +257,28 @@ function fillCards(par?: number): void {
   }
 }
 fillCards()
+
+// Plan item 452: today's market board, for a returning visitor in place of the first visit's 'Free · No ads' line:
+// a tick per game once today's daily is played, the week in seven chalk dots and the run (a pennant at three days).
+try {
+  const b = todayBoard(localStorage, new Date())
+  const meta = document.querySelector<HTMLElement>('.hero-text .hero-meta')
+  if (b.any && meta) {
+    const names: Record<string, string> = { runnel: 'Runnel', hedgerow: 'Hedgerow', cathnivore: 'Market', nightshift: 'The List' }
+    const extra = (t: { game: string; done: boolean; label: string }) =>
+      t.game === 'nightshift' ? t.label.replace(' names crossed off', '') : t.done ? t.label.replace('Daily: best', 'best').replace('Market ', '') : ''
+    const board = document.createElement('div')
+    board.className = 'today-board'
+    board.setAttribute('role', 'group')
+    board.setAttribute('aria-label', "Today's market")
+    board.innerHTML =
+      `<p class="today-tags">${b.tags.map((t) => `<span class="today-tag" data-game="${t.game}"${t.done ? ' data-done' : ''} title="${t.label}"><span class="today-tick" aria-hidden="true">${t.done ? '✓' : '○'}</span>${names[t.game]}${extra(t) ? ` <small>${extra(t)}</small>` : ''}</span>`).join('')}</p>` +
+      `<p class="today-week"><span class="today-dots" role="img" aria-label="${b.week.filter(Boolean).length} of the last 7 days played">${b.week.map((on) => `<i${on ? ' data-on' : ''}></i>`).join('')}</span>${b.streak > 0 ? `<span class="${b.pennant ? 'today-pennant' : 'today-run'}">${b.streak}-day run</span>` : ''}</p>`
+    meta.replaceWith(board)
+  }
+} catch {
+  // Unreadable storage: the first visit's line stays.
+}
 // Today's par needs the Runnel generator: load it after first paint so it never holds up the page.
 import('../../games/runnel/src/engine')
   .then(({ dailyPuzzle, utcDateString }) => fillCards(dailyPuzzle(utcDateString(new Date())).par))

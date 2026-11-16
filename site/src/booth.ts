@@ -95,7 +95,7 @@ export function drawBooth(): void {
   }
   const o = hero.getBoundingClientRect()
   const c = union([cath], o)
-  const words = union([...text.querySelectorAll('p.kicker, .title-text, p.lede, .cta-row > *, .hero-meta')], o)
+  const words = union([...text.querySelectorAll('p.kicker, .title-text, p.lede, .cta-row > *, .hero-meta, .today-board')], o)
   if (!c || !words) return
   const rail = games.getBoundingClientRect().top - o.top + parseFloat(getComputedStyle(games, '::after').top)
   const ch = c.b - c.t
