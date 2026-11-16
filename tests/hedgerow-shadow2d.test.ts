@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ACT_LIGHT } from '../games/hedgerow/src/render3d/palette'
 import { ACT_SUN_AZ, shadowDir } from '../games/hedgerow/src/sunlight'
-import { drawFarmhouse, drawTower, setShadowSun } from '../games/hedgerow/src/sprites'
+import { drawEnemy, drawFarmhouse, drawHero, drawTower, setShadowSun } from '../games/hedgerow/src/sprites'
 import { drawFarmyard } from '../games/hedgerow/src/render'
 
 // Plan item 370: the 2D field's barns, farmhouse and towers cast a short shadow away from the act's sun, the same
@@ -64,6 +64,27 @@ describe('Hedgerow 2D cast shadows (plan item 370)', () => {
       const [ax, ay] = barnAt(dir)
       const [bx, by] = barnAt({ x: -dir.x, y: -dir.y })
       expect((ax - bx) * dir.x + (ay - by) * dir.y).toBeGreaterThan(s * 0.1)
+    })
+  }
+
+  // Plan item 440: the lane's vehicles and Cath cast their shadow downwind too (a flier keeps its soft spot).
+  for (const level of [21, 34]) {
+    const dir = shadowDir(level)
+    it(`level ${level}: a van and Cath cast toward (${dir.x.toFixed(2)}, ${dir.y.toFixed(2)})`, () => {
+      setShadowSun(dir)
+      const s = 60
+      const along = (pts: Array<[number, number]>) => {
+        const [cx, cy] = centroid(pts)
+        return (cx - 100) * dir.x + (cy - 100) * dir.y
+      }
+      const van = recorder()
+      drawEnemy(van.ctx, { kind: 'van', facing: 1, hit: 9, ghost: false, phase: 0, still: true }, 100, 100, s, 0)
+      expect(van.shadows().length).toBeGreaterThanOrEqual(1)
+      expect(Math.max(...van.shadows().map((p) => along(p.pts)))).toBeGreaterThan(s * 0.05)
+      const cath = recorder()
+      drawHero(cath.ctx, { facing: 1, walking: false, swung: 9, down: false, threw: 9, selected: false }, 100, 100, s, 0, null)
+      expect(cath.shadows().length).toBeGreaterThanOrEqual(1)
+      expect(Math.max(...cath.shadows().map((p) => along(p.pts)))).toBeGreaterThan(s * 0.05)
     })
   }
 })
