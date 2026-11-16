@@ -272,11 +272,16 @@ test('a class change starts its audition at once, her face framed and her line s
   }
   // Gone after the audition.
   await expect(page.locator('.cp-sub')).not.toHaveClass(/is-on/, { timeout: 6000 })
-  // The Ghost stands her rifle at her eye, the Butcher racks the shotgun off her hip: the gun is in her hand. Held
-  // mid-audition (as the pick's first frame holds it): under SwiftShader a frame can take longer than the gun's
-  // 2.4 s in hand.
-  for (const [cls, gun] of [['butcher', 'shotgun'], ['ghost', 'rifle']] as const) {
-    await page.evaluate((c) => (window as unknown as { cathodeFront: { scene: () => { wardrobe(c: string, i: boolean): void } } }).cathodeFront.scene().wardrobe(c, true), cls)
+  // The Ghost unslings her rifle, the Butcher racks the shotgun off her hip: the gun is in her hand. Held
+  // mid-audition: under SwiftShader a frame can take longer than the gun's 2.4 s in hand. Plan item 449: the
+  // Ghost's held stance (0.5, the pick's first frame) has the rifle slung again, so she is held at 0.4.
+  type C = { cathodeFront: { scene: () => { wardrobe(c: string, i: boolean): void; cath: { play(k: string, u?: number): void } } } }
+  for (const [cls, gun, u] of [['butcher', 'shotgun', 0.5], ['ghost', 'rifle', 0.4]] as const) {
+    await page.evaluate(([c, at]) => {
+      const sc = (window as unknown as C).cathodeFront.scene()
+      sc.wardrobe(c, true)
+      sc.cath.play(c, at)
+    }, [cls, u] as const)
     await expect.poll(() => page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.vignette?.prop ?? null), { timeout: 15_000 }).toBe(gun)
   }
 })

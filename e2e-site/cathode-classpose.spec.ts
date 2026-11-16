@@ -10,7 +10,8 @@ type F = { cathodeFront?: { scene: () => S | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
 // Plan item 422: the signature gun each class holds in her posing hand on the pick.
-const HELD: Record<string, string> = { ghost: 'rifle', butcher: 'shotgun', gunslinger: 'revolver', wirewitch: 'smg', fixer: 'launcher' }
+// Plan item 449: the Ghost's stance carries her rifle slung on her back (her hand on the sling), not in her hand.
+const HELD: Record<string, string | null> = { ghost: null, butcher: 'shotgun', gunslinger: 'revolver', wirewitch: 'smg', fixer: 'launcher' }
 
 test('each class holds its own pose on the pick, blended in 600 ms of loop time', async ({ page, hasTouch }) => {
   test.setTimeout(300_000)
@@ -48,7 +49,7 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     joints[cls] = p.joints
     // Plan item 422: her class's gun in her hand, its mesh within 3 cm of her palm.
     expect(p.prop, cls).toBe(HELD[cls])
-    expect(p.gap ?? 1, cls).toBeLessThanOrEqual(0.03)
+    if (HELD[cls]) expect(p.gap ?? 1, cls).toBeLessThanOrEqual(0.03)
     // The blend takes 300 ms of loop time (plan item 278; a long frame can overshoot a step; 600 ms is the line).
     expect(blend, cls).toBeGreaterThan(0)
     expect(blend, cls).toBeLessThanOrEqual(0.6)

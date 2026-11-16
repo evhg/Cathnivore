@@ -2763,7 +2763,10 @@ float reliefShade( vec2 uv ) {
     // Settled into the stance (its own audition past the middle, or none playing): a held pose, so the Ghost's glint
     // catches the light every few seconds instead of staying lit.
     let settled = !clip;
-    if (clip && clip.kind === stanceNow && cu > 0.5) {
+    // Plan item 449: the Ghost's audition plays to its end (she slings the rifle again and takes the sling), so her
+    // stance is the carry, not the rifle held.
+    const ghostRun = !!clip && clip.kind === "ghost" && stanceNow === "ghost" && clip.held === undefined;
+    if (clip && clip.kind === stanceNow && cu > 0.5 && !ghostRun) {
       cu = 0.5;
       settled = true;
     }
@@ -2784,12 +2787,16 @@ float reliefShade( vec2 uv ) {
           case "ghost": {
             // Plan item 136: she unslings the rifle from over her left shoulder and stands it beside her face, the
             // scope at her eye and a glint off its lens, then slings it again: rest -> shoulder -> hold, and back.
+            // Plan item 449: at rest (no audition, or the stance's held frame) the rifle rides slung on her back and her
+            // hand holds the sling at her chest: one long gun, on its strap; the audition unslings it, shows it and
+            // slings it again, its tail easing her hand from the shoulder down to the sling.
+            const slung = !clip || clip.held === 0.5 || (ghostRun && cu >= 0.89);
             const sh = (cu < 0.5 ? THREE.MathUtils.smoothstep(cu, 0, 0.13) - THREE.MathUtils.smoothstep(cu, 0.13, 0.28) : THREE.MathUtils.smoothstep(cu, 0.78, 0.89) - THREE.MathUtils.smoothstep(cu, 0.89, 1));
-            tgt.copy(wristL).lerp(GHOST_HOLD, e).lerp(GHOST_GRAB, sh);
+            tgt.copy(wristL).lerp(slung ? GHOST_SLING : GHOST_HOLD, e).lerp(GHOST_GRAB, slung && !clip ? 0 : sh);
             pole.copy(restPole).lerp(tmpV.set(1, -0.8, -0.3).normalize(), Math.max(e, sh));
-            armIK(tgt, pole, -0.4 * e);
+            armIK(tgt, pole, (slung ? -0.9 : -0.4) * e);
             armOn = true;
-            gunInHand = cu > 0.13 && cu < 0.89 && e > 0.3 ? "rifle" : null;
+            gunInHand = !slung && cu > 0.13 && cu < 0.89 && e > 0.3 ? "rifle" : null;
             headPivot.rotation.y += 0.1 * e;
             headPivot.rotation.z -= 0.08 * e;
             chest.rotation.y -= 0.06 * e;
@@ -3735,6 +3742,8 @@ float reliefShade( vec2 uv ) {
   // Plan item 422: drawn in to her thigh (x 0.4 -> 0.33), so the rifle hangs against the coat in her hand, not
   // beside her in the air.
   const GHOST_HOLD = V(0.33, -0.2, 0.17);
+  // Plan item 449: her left hand on the rifle's sling where it crosses her chest (coatStrap's [0.42, 0.32] point, in the chest frame).
+  const GHOST_SLING = V(0.2, 0.02, 0.17);
   const BUTCHER_HOLD = V(0.26, 0.04, 0.19);
   const palmRest = wristL.clone().addScaledVector(V(0, -1, 0.15).normalize(), 0.04);
   const pBasis = new THREE.Matrix4();
