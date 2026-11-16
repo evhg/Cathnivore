@@ -198,6 +198,9 @@ ${skirt}`
 
 let uid = 0
 
+/** Plan item 442: the full-length figure's head scale (about the collar at 200, 262). */
+export const FULL_HEAD = 0.84
+
 export function cathSvg(options: CathOptions = {}): string {
   const expression = options.expression ?? 'smirk'
   const outfit = options.outfit ?? 'field'
@@ -209,13 +212,18 @@ export function cathSvg(options: CathOptions = {}): string {
     : 'aria-hidden="true" focusable="false"'
   const cls = `cath cath-${expression} cath-${outfit} cath-pose-${pose}${options.animate ? ' cath-animate' : ''}${options.className ? ` ${options.className}` : ''}`
   const size = `${options.width ? ` width="${options.width}"` : ''}${options.height ? ` height="${options.height}"` : ''}`
+  // Plan item 442: at full length her head (and the hair round it) is drawn at 0.84 about the collar, so she stands
+  // about six heads tall, a grown woman's figure (it was 1:4.9, a chibi's); the bust and half framings keep the big,
+  // readable face. An outer group, so the head's own CSS tilt and the hair's sway still apply.
+  const headOpen = framing === 'full' ? `<g transform="translate(200 262) scale(${FULL_HEAD}) translate(-200 -262)">` : ''
+  const headClose = framing === 'full' ? '</g>' : ''
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
-<g class="cath-hair-back">${hairBack(id)}</g>
+${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}
 <g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
-<g class="cath-head">
+${headOpen}<g class="cath-head">
 ${neck(id)}
 ${NECKWEAR[outfit](id)}
 ${face(id)}
@@ -223,7 +231,7 @@ ${features(id, expression)}
 ${hairFront(id)}
 ${accessories(id, outfit)}
 ${options.pin ? `<g class="cath-pin" transform="translate(164 74) scale(1.5)">${pinSvg(options.pin)}</g>` : ''}
-</g>
+</g>${headClose}
 <g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>
 </svg>`
 }

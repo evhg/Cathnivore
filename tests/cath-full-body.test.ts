@@ -25,6 +25,18 @@ describe('Cath full-body figure (plan item 292)', () => {
     const soles = 878
     expect((228 - 60) / (soles - 60)).toBeGreaterThanOrEqual(0.15)
   })
+  // Plan item 442: at full length her head is drawn at FULL_HEAD about the collar (200, 262), so she is about six
+  // heads tall (15-19% of her height), a grown woman, not a chibi (it was 20.5%).
+  it('at full length her head is 15-19% of her height', async () => {
+    const { FULL_HEAD } = await import('../shared/cath/cath')
+    const crown = 262 - (262 - 60) * FULL_HEAD
+    const chin = 262 - (262 - 228) * FULL_HEAD
+    const r = (chin - crown) / (878 - crown)
+    expect(r).toBeGreaterThanOrEqual(0.15)
+    expect(r).toBeLessThanOrEqual(0.19)
+    expect(cathSvg({ framing: 'full' })).toContain(`scale(${FULL_HEAD})`)
+    expect(cathSvg({ framing: 'half' })).not.toContain(`scale(${FULL_HEAD})`)
+  })
   for (const pose of ['clasped', 'point', 'cheer', 'walk'] as const)
     it(`stands on a ground shadow in the '${pose}' pose`, () => expect(cathSvg({ framing: 'full', pose })).toContain('class="cath-ground"'))
   it('her default trousers are a light tailored cream, not near-black', () => {
