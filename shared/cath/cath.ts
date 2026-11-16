@@ -440,24 +440,27 @@ function hairFront(id: string): string {
     return [
       strand([x(152), 96], [x(139), 128], [x(141), 168], 2.2, C.hairShine, 0.7 * lit),
       strand([x(146), 182], [x(138), 212], [x(142), 240], 2, C.hairShine, 0.55 * lit),
-      strand([x(146), 256], [x(160), 278], [x(155), 306], 3, C.hairShine, 0.75 * lit),
-      strand([x(156), 330], [x(166), 350], [x(160), 374], 2.6, C.hairShine, 0.7 * lit),
-      strand([x(160), 392], [x(166), 406], [x(160), 422], 1.8, C.hairShine, 0.6 * lit),
+      // Plan item 442 (critique): soft S-waves below the shoulder: a crescent of light across each wave's bulge,
+      // turning the way the lock turns, so the waves read as waves and not a wavy outline on a flat lock.
+      strand([x(142), 254], [x(154), 268], [x(158), 296], 3.2, C.hairShine, 0.8 * lit),
+      strand([x(161), 292], [x(156), 312], [x(161), 332], 1.8, C.hairDeep, 0.7),
+      strand([x(151), 326], [x(164), 340], [x(166), 366], 3, C.hairShine, 0.75 * lit),
+      strand([x(167), 364], [x(161), 380], [x(165), 398], 1.6, C.hairDeep, 0.6),
+      strand([x(153), 396], [x(161), 406], [x(162), 424], 2.2, C.hairShine, 0.65 * lit),
       strand([x(156), 108], [x(146), 150], [x(144), 200], 1.4, C.hairDeep, 0.8),
       strand([x(136), 226], [x(148), 262], [x(150), 292], 1.6, C.hairDeep, 0.8),
       strand([x(150), 310], [x(160), 330], [x(156), 354], 1.4, C.hairDeep, 0.7),
       strand([x(176), 84], [x(160), 96], [x(152), 118], 1.6, C.hairShine, 0.5 * lit),
     ].join('')
   }
+  // Plan item 442 (critique: 'a smear by the parting'): the bible's shine band as one crisp arc round the crown, broken
+  // at the part, brightest on the lit side, over a softer sheen just under it.
   const shine = [
-    strand([158, 102], [166, 88], [184, 82], 3.4, C.hairShine, 0.55),
-    strand([166, 106], [174, 96], [190, 90], 2, C.hairShine, 0.4),
-    strand([214, 82], [234, 86], [244, 102], 4, C.hairGlint, 0.75),
-    strand([212, 90], [228, 94], [238, 108], 2.4, C.hairGlint, 0.55),
-    // Plan item 442: the band carries on over the part to the shaded side, broken, so it reads as one gloss across
-    // the crown's curve (it showed as a glint on the lit side only).
-    strand([150, 112], [154, 96], [168, 84], 2.6, C.hairShine, 0.5),
-    strand([244, 112], [250, 124], [251, 140], 2.2, C.hairGlint, 0.4),
+    strand([160, 112], [168, 100], [180, 94], 2.2, C.hairShine, 0.45),
+    strand([152, 106], [166, 86], [195, 84], 3.6, C.hairGlint, 0.6),
+    strand([205, 84], [236, 86], [249, 108], 4.2, C.hairGlint, 0.85),
+    strand([212, 92], [232, 96], [242, 112], 2.2, C.hairShine, 0.55),
+    strand([214, 85], [228, 86], [238, 94], 1.1, C.white, 0.35),
   ].join('')
   const flyaways = [
     brush([190, 62], [180, 57], [170, 61], 0.2, 0.9, 0.1, HAIR, ' opacity="0.8"'),
