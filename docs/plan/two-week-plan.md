@@ -4219,7 +4219,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** unit tests for the save readers (empty, corrupt, old saves); an e2e that seeds saves and checks the ticks and streak; board text AA; all four tags above y 844 at P; shots P and D, fresh and seeded.
 - **Size:** 2
 
-## 453. [ ] Cathnivore phone title: an opening that stars Cath
+## 453. [ ] Cathnivore phone title: an opening that stars Cath *(lane A, in progress)*
 - **Why:** `plan1116h/cath-title-P`: Cath (20-140 x 330-545) is about 7% of the screen, her bubble across the facades; the three choices (20-370 x 560-695) are three unrelated objects (a plank, two paper tags); a 144 px footer of small print (700-844) closes the screen; the phone has no Daily number or 'Today's Daily' board (D has one at 855-1395 x 760-850).
 - **Build:** on a phone, Cath at half length (45%+ of the width) behind the table with the board before her; the three choices one set of market tags, the Daily with its number, event and countdown; the footer one line; on the day's first load an opening (the awning unrolls, Cath steps in and waves, the vans start), 1200 ms at most, skippable by a tap, a fade under reduced motion.
 - **Accept:** her box 170x300+ at 390x844; every choice above y 760; the footer 40 px or less; LCP unchanged (under 2 s); title specs pass; shots P and D plus frames of the opening.
