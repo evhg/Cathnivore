@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-16 17:23 UTC
-
 
 
 
@@ -4241,5 +4239,50 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
   - **Site and Runnel:** `games-D` the primary 'Play today's Runnel' (615-795 x 380-428) weaker than the filled secondary 'Browse the games' (807-965 x 380-428); `runnel-D` Cath (430-530 x 525-860) about 8x the farmer and sheep and her boots on the hedge line (item 389's one scale); `portfolio-P` Cath cut at the hips by the tile edge with nothing under her (240-315 x 525-645).
   - **Hedgerow:** `hedge-l21-3d-D` a pink-shirted farmer with a hoe on a crop plot about 1.5x Cath's size in the foreground (165-265 x 630-745); `hedge-l34-2d-D` the four-column rack dropping each card's role line (970-1340 x 85-365; item 408); `hedge-l21-2d-D` Saltmarsh's plots under a translucent mint wash, sheep and crops low in contrast (385-825 x 235-830); `hedge-menu-D` lilac blotches over the land (425-450 x 285-300, 760-785 x 285-298) and the sun a bare outline ring (985-1055 x 100-170).
   - **NIGHT SHIFT:** `ns-play-D` her line rendered a second time as a subtitle over her boots (565-900 x 780-830) beside the quote card (60-468 x 698-775); `ns-title-P` LUNA half covered by the case file (25-195 x 517-570); stray 1 px light rules (`ns-title-P` 83-305 x 812, `ns-title-D` 585-855 x 862).
+- **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
+- **Size:** 1-2
+
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+- **Why (critique 2026-11-16 17:30, shots `e2e/screenshots/plan1116r`):** on `ns-title-D` (880-1130 x 380-900), `ns-title-P` and `ns-play-D` (620-800 x 250-850) her trench reads as pale grey satin under a flat white key: the brightest, least noir thing on a street that is graded well. `docs/design/cathode.md` 2 asks for a charcoal trench. Lighting and materials, not the sculpt (319).
+- **Build:** check the coat-colour history first (`scripts/cathode-coatcolour.mjs`, the class coat colours must stay apart by ΔE); the default and Ghost coat as charcoal wool with a weave normal, the blouse the one light accent; a three-point noir rig on the title and the pick (warm low key from the lamp, cold rim from the window, magenta bounce from LUNA); wet sheen on shoulders and umbrella; each class's key colour tints the rim on the pick; posters and key art re-rendered.
+- **Accept:** coat mean luminance in her mask at D ≤ 35% of the brightest neon region; a rim (≥ 2 px brighter edge) on both sides of her silhouette at P and D; coat ΔE between classes still passes; cathode-perf alone within budget; a critique subagent calls the coat dark.
+- **Size:** 2-3
+
+## 457. [ ] NIGHT SHIFT class pick: each class in its own set, Cath large on the phone
+- **Why:** `ns-play-D` (480-960 x 60-850) shows all five classes against one bare wall, a telescope and LUNA; `ns-play-P` has Cath small and dim in a black void taking 45% of the screen. Pillar 3 ("it looks like a trailer") fails on the screen that sells the build.
+- **Build:** five sets on one stage, swapped with a 400 ms light-led cross-fade: Ghost a rain rooftop with skyline and a water tower; Butcher a meat locker with hooks and cold fog; Gunslinger a bar back room with a card table; Wirewitch a server alley with cable and CRT glow; Fixer a workbench with crates. Each set has a key colour (feeds 456's rim). On a phone Cath fills ≥ 55% of the stage height with the set's light behind her head.
+- **Accept:** shots of all five picks at P and D show five distinct sets; dominant hue differs ≥ 30° between any two; at P Cath's box ≥ 330 px tall (about 260 now); cathode-perf phone pick within current + 10% alone; classpick/classpose/classstage specs pass.
+- **Size:** 3
+
+## 458. [ ] Runnel phone: Cath on the field, not a 50 px head
+- **Why:** `runnel-P` shows Cath as a 52 px head in a bubble (15-68 x 705-760) while `runnel-D` gives her a 450 px figure; VISION calls her Runnel's host.
+- **Build:** a waist-up Cath from `shared/cath/` at the board's foot-left, overlapping the frame edge, never a tile; expressions follow play (idle, pointing at the coached tile, delighted on a solve, worried at a dead end); the bubble attaches to her; reduced motion swaps expressions without movement; on a solve she turns toward Bea's garden.
+- **Accept:** at 390x844 Cath ≥ 150 px tall and her box overlaps no tile hit area; idle, coach and solve shots differ; the board's visible area shrinks ≤ 5%; Runnel specs pass at P and D.
+- **Size:** 2
+
+## 459. [ ] Hedgerow 3D: Cath and the neighbours modelled to the character bible
+- **Why:** `hedge-l21-3d-D` (195-290 x 540-690) Cath is a thin low-poly doll with a flat face; the farmer (940-1030 x 425-530) and the pink figure (225-300 x 740-840) are crude; at P (55-95 x 505-560) she is a 40 px smudge. The 2D sprites are far better.
+- **Build:** a stylised 3D Cath in the shared palette (centre-parted long hair with a shine band, olive field jacket collar up, cream blouse, face decal with winged eyes and smile, leaf clip); idle sway, a point-at-plot pose when coaching, a cheer on a cleared wave; neighbours in the same style (hat, overalls, readable silhouette); the Cath framing keeps her readable on a phone.
+- **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
+- **Size:** 3
+
+## 460. [ ] Hedgerow desktop play panel: one farm ledger, not 25 boxes
+- **Why:** `hedge-l21-2d-D` (885-1290 x 75-890) holds about 25 bordered boxes in 5 styles (tray, round box, tip card, tabs, three Coming-up cards, a 4-button bar, Go), all competing with the field; the Notebook teaser "Unanswered Airborne · Scarecrow +4 more" is cryptic. Same on `hedge-l34-2d-D`.
+- **Build:** three zones on one paper with ruled dividers, not borders: Seeds (the tray), This round (Cath's portrait beside the round number, vehicle counts, her tip in one row), Coming up (a hand-ruled forecast strip: round, icon, count); the Notebook teaser in plain words; Go the one strongest element.
+- **Accept:** ≤ 10 bordered containers and ≤ 3 border colours in the panel at 1440x900 (an e2e counts them); the field's share of the screen doesn't shrink; ui-css-lint holds; Hedgerow play specs pass at P and D.
+- **Size:** 2
+
+## 461. [ ] Cathnivore phone setup: a composed stall, not a scrolling form
+- **Why:** `cath-setup-P` is a stack of chips and boxes; Difficulty sits below the fold under the Start bar with the MORE pill over it (285-365 x 763-783); the map choice is three tiny thumbnails (y 660-710). The desktop's gingham table, market card and pins are lost on the phone.
+- **Build:** the gingham table as the phone backdrop; the three steps as swipeable panels with a dot rail (producers first, the two picks large); the map as one large hex preview with arrows; difficulty as the desktop's hanging tags with Cath's pins; Start fixed; Cath's line reacts per step.
+- **Accept:** at 390x844 every step's controls fully visible with no page scroll; Start overlaps no control (bounding-box e2e); map preview ≥ 200 px wide; all setup e2e pass on phone and desktop.
+- **Size:** 2
+
+## 462. [ ] The bugs from the 2026-11-16 17:30 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each in `e2e/screenshots/plan1116r` first; some repeat 455's "kept" list, so read its reasons before changing)
+  - **NIGHT SHIFT:** `ns-play-D` her line shown twice (subtitle 560-900 x 780-830 and the quote card); `ns-title-D` two glossy black spheres beside the wall (1150-1240 x 585-690); `ns-play-D` "25 · 18 avg" tiny low-contrast grey (1000-1230 x 410-450); `ns-play-P` the stat legend doesn't explain the tick marks and GRIT/NERVE red segments split (430-748 x 1150-1245); `ns-title-P` the List cards show only "Withheld" ×4 with no teasers (25-745 x 1580-1610).
+  - **Runnel:** `runnel-D` "UP NEXT · MONDAY" on a Monday (167-225 x 645-675); `runnel-P` step chips wrapping to different baselines (140-375 x 150-185).
+  - **Hedgerow:** `hedge-menu-D` the card's "16 ROUNDS" vs "ROUND 11 OF 26" in play (check sandbox); `hedge-l34-2d-D` the four-column tray dropping role lines (item 408); `hedge-l21-3d-P` "HOLLOWELL 216 NEXT" washed out (38-225 x 82-103); `hedge-l21-2d-P` the depot over the lane and queued vans (10-60 x 330-395).
+  - **Cathnivore and site:** `cath-campaign-P` Back to Title cut by the fold (95-295 x 812-844); `cath-campaign-D` chapter 5-6 goals truncated (1053-1240 x 700-870); `cath-setup-D` the market card over Cath's torso and arm (995-1140 x 565-770); `cath-game-D` MARKET touching its button edges (1355-1420 x 65-80) and Dry Spell worded differently at P and D; `portfolio-P` Cath cut at the hip with no ground (240-310 x 525-645); `portfolio-D` her plinth clipped at the right edge (1240-1440 x 525-560).
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
