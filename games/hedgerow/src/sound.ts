@@ -270,6 +270,16 @@ export function playBuild(): void {
   tone(j(160), 0.09, 0.14, "triangle", 0.07, 100);
   noise(0.16, 0.2, 0.06, { type: "lowpass", freq: 500 });
 }
+/** Plan item 448: Play's departure: the field plate lifted off the card (a paper rustle) and a soft two-note chime as
+ *  it settles over the field. */
+export function playDepart(): void {
+  if (!ready()) return;
+  noise(0, 0.12, 0.05, { type: "bandpass", freq: j(2600), q: 1.4 });
+  noise(0.08, 0.18, 0.04, { type: "bandpass", freq: j(1800), q: 1.2 });
+  whoosh(0.05, 0.5, 0.025, 600, 2600);
+  bell(784, 0.42, 0.6, 0.026);
+  bell(1175, 0.5, 0.7, 0.022);
+}
 export function playUpgrade(): void {
   if (!ready()) return;
   [523, 659, 784, 1047].forEach((f, i) => bell(f, i * 0.055, 0.45, 0.028));

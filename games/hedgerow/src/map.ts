@@ -2,6 +2,7 @@
 // a winding trail (two rows of five, the second running back the other way), the boss at the end. Cath
 // stands on the next level to play. Buttons keep the `level` class and `data-level` for tests.
 
+import { playDepart } from "./sound";
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { ENEMIES, TWISTS, type EnemyKind, type Level } from "./engine";
@@ -2130,6 +2131,7 @@ function depart(plate: HTMLElement, go: () => void): void {
   ghost.setAttribute("aria-hidden", "true");
   Object.assign(ghost.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
   document.body.append(ghost);
+  playDepart();
   const s = Math.max(innerWidth / r.width, innerHeight / r.height) * 1.04;
   const dx = innerWidth / 2 - (r.left + r.width / 2);
   const dy = innerHeight / 2 - (r.top + r.height / 2);
