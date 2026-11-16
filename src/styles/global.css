@@ -4343,7 +4343,7 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-phone-steps] .setup-panel > .setup-difficulty { order: 0; }
   /* The tags hang off one string through their eyelets, each at its own slight angle; the chosen one pulled level. */
   .setup[data-phone-steps] .setup-difficulty .segmented::before {
-    content: ''; position: absolute; left: -12px; right: -12px; top: calc(50% + 3px); height: 1.5px; border-radius: 1px;
+    content: ''; position: absolute; left: -6px; right: -6px; top: calc(50% + 3px); height: 1.5px; border-radius: 1px;
     background: color-mix(in srgb, var(--wood-lo) 70%, transparent);
   }
   .setup[data-phone-steps] .setup-table .setup-difficulty .segmented label.price-tag {
