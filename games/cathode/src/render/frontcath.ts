@@ -584,6 +584,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const hairMat = new THREE.MeshPhysicalMaterial({ color: 0x9a8678, map: strands, roughness: 0.38, metalness: 0, sheen: 0.6, sheenRoughness: 0.3, sheenColor: new THREE.Color(0x7a5a48) });
   const skinMat = new THREE.MeshStandardMaterial({ color: CATH_HERO.skin, roughness: 0.55, metalness: 0 });
   const mats: THREE.Material[] = [coatMat, blackMat, gloveMat, hairMat, skinMat];
+  // Plan item 427: the coat's hardware is polished gunmetal, not more black leather: the buttons and the belt buckle
+  // catch the street's light as small metal glints, dark enough to hold on the title's lit grey coat (pale nickel sank into it).
+  const hardwareMat = new THREE.MeshStandardMaterial({ color: 0x4a4744, roughness: 0.2, metalness: 0.9 });
+  mats.push(hardwareMat);
   const coatMats: (THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial)[] = [coatMat];
   const coat0 = coatMat.color.clone();
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
@@ -1107,7 +1111,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const by = 0.25 - i * 0.075;
       const br = rAtCoat(by);
       bt.translate(0.06 * side, by, 0.7 * Math.sqrt(Math.max(0, br * br - 0.0036)) + 0.004);
-      addS(bt, blackMat, pelvis);
+      addS(bt, hardwareMat, pelvis);
     }
     // Epaulette: a flat strap across the shoulder to the collar.
     const ep = new THREE.BoxGeometry(0.1, 0.012, 0.045);
@@ -1168,7 +1172,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   buckle.rotateZ(Math.PI / 4);
   buckle.scale(1.3, 1, 1);
   buckle.translate(0.0, 0.12, 0.09);
-  addS(buckle, blackMat, pelvis);
+  addS(buckle, hardwareMat, pelvis);
   // Belt tails hanging at her right hip.
   addS(limb(V(-0.1, 0.1, 0.09), V(-0.115, -0.08, 0.1), 0.012, 0.01, 6), blackMat, pelvis);
 
