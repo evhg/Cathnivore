@@ -3627,7 +3627,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           buttons, always on screen — see the `.game-scroll` comment above for how. */}
       <div className="action-tray">
       {phoneTableCath && (
-        <CathDock expression={cathReaction.expression} line={cathReaction.line}>
+        <CathDock expression={cathReaction.expression} line={cathReaction.line} beat={{ mood: cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind], n: cathBeat.n }}>
           {/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, off the
               board: 72 px busts side by side with a name plate in their colour; whoever's turn it is sits up, lit, the
               other back in the counter's shade. A tap opens the Farm. (They were medallions pinned on the board's edge.) */}

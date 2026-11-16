@@ -46,3 +46,16 @@ test('under reduced motion her beats are stills', async ({ page }, testInfo) => 
   await expect(page.locator('.table-cath')).toHaveAttribute('data-beat-mood', 'delighted')
   expect(await page.locator('.table-cath-figure > *').first().evaluate((e) => getComputedStyle(e).animationName)).toBe('none')
 })
+
+test('on a phone her dock bust takes the same beat', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the dock is the phone table')
+  await page.goto('/?e2eMoment=1')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.waitForFunction(() => typeof (window as unknown as { cathnivoreMoment?: unknown }).cathnivoreMoment === 'function')
+  await page.evaluate(() => (window as unknown as { cathnivoreMoment: (k: string, r: string) => void }).cathnivoreMoment('squeeze', 'kingsmarket'))
+  const dock = page.locator('.cath-dock')
+  await expect(dock).toHaveAttribute('data-beat-mood', 'worried', { timeout: 400 })
+  expect(await page.locator('.cath-dock-bust > *').first().evaluate((e) => getComputedStyle(e).animationName)).toMatch(/cath-beat-/)
+})

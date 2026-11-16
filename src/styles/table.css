@@ -5703,6 +5703,14 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
 @keyframes cath-beat-lean { 0% { rotate: 0deg; } 45% { rotate: 3.5deg; } 100% { rotate: 0deg; } }
 @keyframes cath-beat-tilt { 0% { rotate: 0deg; } 50% { rotate: -2deg; } 100% { rotate: 0deg; } }
 @keyframes cath-beat-idle { 0% { translate: 0 0; } 50% { translate: 2px 0; } 100% { translate: 0 0; } }
+/* ...and on a phone her dock's bust takes the same beats, a touch smaller (it is 64 px). */
+.cath-dock-bust > * { transform-origin: 50% 100%; }
+.cath-dock[data-beat-mood='delighted'] .cath-dock-bust > * { animation: cath-beat-hop-s 480ms cubic-bezier(.3, .7, .3, 1) both; }
+.cath-dock[data-beat-mood='worried'] .cath-dock-bust > * { animation: cath-beat-flinch 420ms ease-out both; }
+.cath-dock[data-beat-mood='determined'] .cath-dock-bust > * { animation: cath-beat-lean 460ms ease-in-out both; }
+.cath-dock[data-beat-mood='wink'] .cath-dock-bust > * { animation: cath-beat-tilt 360ms ease-in-out both; }
+@keyframes cath-beat-hop-s { 0% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } 100% { translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .table-cath[data-beat-mood] .table-cath-figure > * { animation: none; }
+  .table-cath[data-beat-mood] .table-cath-figure > *,
+  .cath-dock[data-beat-mood] .cath-dock-bust > * { animation: none; }
 }
