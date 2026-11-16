@@ -4287,7 +4287,7 @@ Progress (lane B, 2026-11-16 19:40, slice 1, `components.css` end block): at D e
 - **Accept:** at 390x844 every step's controls fully visible with no page scroll; Start overlaps no control (bounding-box e2e); map preview ≥ 200 px wide; all setup e2e pass on phone and desktop.
 - **Size:** 2
 
-## 462. [ ] The bugs from the 2026-11-16 17:30 critique, fixed as one batch *(lane B, in progress)*
+## 462. [x] The bugs from the 2026-11-16 17:30 critique, fixed as one batch *(done 2026-11-16 21:50 lane B, slices 5-6: the phone pick's other-class ticks stand above each stat bar (they crossed her red fill, which read as split); the street's bin bags are bags, not glossy balls (the title's 'two black spheres'), and level.ts joins the poster's sources so a street change can't leave the posters stale. Every point is fixed or kept with its reason below.)*
 
 Progress (lane B, 2026-11-16 18:45, slice 4): the portfolio's phone Cath clipped on down behind the prints' art (she ended in the 10 px gap above them). Kept, with reasons: `cath-game-P`'s Dry Spell '−1' (the long form truncates there: 'Coast & Science kit -…'); `hedge-l34-2d-D`'s four-column rack without role words (item 431 traded them for 40 px art and the corner role glyph when the panel runs tight); `cath-setup-D`'s market card over Cath (she holds it up, item 446). Still open: `ns-title-D`'s two glossy black ovals (1150-1240 x 585-690, in the poster: name them with a live probe); `ns-play-P`'s stat legend ticks.
 
