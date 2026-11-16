@@ -5057,13 +5057,14 @@ img.act-scene {
 #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 12px); }
 #screen-select .node.next .you svg { transform-origin: 50% 100%; }
 @media (max-width: 420px) {
-  #screen-select .node.next .you { right: calc(100% + 2px); width: 30px; height: 66px; }
+  /* plan item 441: 72 px on a phone (66) */
+  #screen-select .node.next .you { right: calc(100% + 2px); width: 33px; height: 72px; }
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
 }
 @media (min-width: 1100px) and (min-height: 860px) {
-  /* plan item 250: 120 px at D */
-  #screen-select .node.next .you { right: calc(100% - 20px); width: 54px; height: 120px; }
-  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 20px); }
+  /* plan item 250: 120 px at D; plan item 441: 172 px, so she reads as the map's guide beside her stop, not a pin */
+  #screen-select .node.next .you { right: calc(100% - 32px); width: 78px; height: 172px; }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 32px); }
 }
 @media (prefers-reduced-motion: no-preference) {
   #screen-select .you.walking svg { animation: stride 250ms ease-in-out 0.3s 4 alternate both; }
