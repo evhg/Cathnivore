@@ -90,7 +90,22 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   // reaches a new field, and waves at a solve.
   const fullAtD = () => matchMedia('(min-width: 1100px) and (min-height: 640px)').matches
   let framed: 'full' | 'half' | '' = ''
+  // Plan item 458: on an upright phone the dock's portrait is her half figure (waist up, in the pose the valley figure
+  // would take: pointing as the water runs, a cheer, a wave at the solve), standing at the board's foot-left over its
+  // frame (styles.css), not a 52 px face in a tile.
+  const phoneDock = () => matchMedia('(max-width: 600px) and (orientation: portrait) and (min-height: 700px)').matches
+  const drawFace = (expression: CathExpression) => {
+    const dock = phoneDock()
+    const p: CathPoseId = aimAlways && pose !== 'wave' ? 'point' : pose
+    face.dataset.framing = dock ? 'half' : 'face'
+    face.dataset.pose = dock ? p : ''
+    face.innerHTML = dock
+      ? cathSvg({ framing: 'half', expression, pose: p, pointAt: p === 'point' ? -40 : undefined, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+      : cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
+    face.dataset.expression = expression
+  }
   const drawStage = (expression: CathExpression) => {
+    if (phoneDock() || face.dataset.framing === 'half') drawFace(expression)
     if (!stage) return
     const framing = fullAtD() ? 'full' : 'half'
     framed = framing
@@ -115,8 +130,8 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   }
   const show = (expression: CathExpression, text: string) => {
     if (expression !== current) {
-      face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
-      face.dataset.expression = expression
+      // (on a phone drawStage draws the dock's figure)
+      if (!phoneDock()) drawFace(expression)
       current = expression
       drawStage(expression)
     }
@@ -134,8 +149,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   const mood = (expression: CathExpression) => {
     if (expression === current) return
     current = expression
-    face.innerHTML = cathSvg({ framing: 'face', expression, outfit: chosenOutfit(), pin: chosenPin(), animate: true })
-    face.dataset.expression = expression
+    if (!phoneDock()) drawFace(expression)
     drawStage(expression)
   }
   return {
@@ -153,6 +167,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     },
     frame() {
       if (framed && framed !== (fullAtD() ? 'full' : 'half')) drawStage(current ?? 'smirk')
+      else if (current && (face.dataset.framing === 'half') !== phoneDock()) drawFace(current)
     },
     aim(degrees, always = false) {
       const moved = degrees === null || aimAt === null ? degrees !== aimAt : Math.abs(degrees - aimAt) > 3

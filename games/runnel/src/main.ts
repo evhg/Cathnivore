@@ -785,7 +785,10 @@ function placeValleyCath(): void {
   // Plan item 122: one Cath. On a phone the portrait beside her line is the one (its face follows the water the
   // same way); the corner bust in the valley goes, since no bubble spot fits by it on a phone board.
   if (!matchMedia('(min-width: 1100px) and (min-height: 640px)').matches) {
-    host.aim(null)
+    // Plan item 458: in the lesson the phone dock's half figure points up at the board (host.ts), and a layout that
+    // crossed into or out of the upright phone redraws her framing.
+    host.aim(null, document.body.classList.contains('in-lesson'))
+    host.frame()
     placePhoneCath(cath)
     placeValleySay()
     return

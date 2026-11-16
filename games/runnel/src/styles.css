@@ -4944,4 +4944,21 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .app > .foot { order: 2; }
   .app > .rail { order: 3; }
   .app > .host .host-line::before { left: -6px; top: 50%; bottom: auto; transform: translateY(-50%) rotate(45deg); }
+  /* Plan item 458: her half figure, 150 px tall, stands at the board's foot-left and rises over its frame (the
+     valley's bottom-left corner holds the stream and the meadow, no tile); the dock keeps 80 px of her height, the
+     rest overlaps the board. Her line is beside her, its tail at her shoulder. */
+  .app > .host { position: relative; align-items: flex-end; }
+  .app > .host .host-face[data-framing='half'] {
+    width: 100px;
+    height: 150px;
+    margin-top: -70px;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    overflow: visible;
+    filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--ink) 18%, transparent));
+    /* the half framing ends flat at the hips: it fades out instead of stopping on a line */
+    mask-image: linear-gradient(#000 82%, transparent);
+  }
+  .app > .host .host-face[data-framing='half'] + .host-line { align-self: center; margin-bottom: 8px; }
 }
