@@ -2077,7 +2077,10 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   const go = document.createElement("button");
   go.type = "button";
   go.className = "lcard-play";
-  go.addEventListener("click", () => shown && play(shown));
+  go.addEventListener("click", () => {
+    const lv = shown;
+    if (lv) depart(thumb, () => play(lv));
+  });
   el.append(grip, thumb, body, say, foes, go);
   sync();
   return {
@@ -2107,6 +2110,54 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       go.setAttribute("aria-label", `${stars ? "Play again" : "Play"}: level ${lv.id}, ${lv.name}`);
     },
   };
+}
+
+/**
+ * Plan item 448: Play from the act map is a departure, not a cut: the card's field plate lifts and grows to fill the
+ * screen (560 ms), the field opens under it at 500 ms, and the plate fades into it once the field has painted (about
+ * 900 ms in all). Under reduced motion (and under
+ * webdriver, unless `?depart`) the field simply opens.
+ */
+function depart(plate: HTMLElement, go: () => void): void {
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator.webdriver && !new URLSearchParams(location.search).has("depart"));
+  const r = plate.getBoundingClientRect();
+  if (still || !r.width || !r.height || typeof plate.animate !== "function") {
+    go();
+    return;
+  }
+  const ghost = plate.cloneNode(true) as HTMLElement;
+  ghost.classList.add("lcard-depart");
+  ghost.setAttribute("aria-hidden", "true");
+  Object.assign(ghost.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+  document.body.append(ghost);
+  const s = Math.max(innerWidth / r.width, innerHeight / r.height) * 1.04;
+  const dx = innerWidth / 2 - (r.left + r.width / 2);
+  const dy = innerHeight / 2 - (r.top + r.height / 2);
+  const to = `translate(${dx}px, ${dy}px) scale(${s})`;
+  // The lift and the zoom hold on their last frame; the field is built under the plate at 500 ms, and the plate
+  // fades only once the field has painted (building it can block the page for a moment, which would otherwise
+  // run the whole flight out before the field showed and cut to it).
+  ghost.animate(
+    [
+      { transform: "translateY(0) scale(1)", offset: 0 },
+      { transform: "translateY(-6px) scale(1.06)", offset: 0.2 },
+      { transform: to, offset: 1 },
+    ],
+    { duration: 560, easing: "cubic-bezier(.45, 0, .2, 1)", fill: "forwards" },
+  );
+  document.documentElement.dataset.departing = "";
+  window.setTimeout(() => {
+    go();
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const fade = ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 340, easing: "ease-out", fill: "forwards" });
+        void fade.finished.finally(() => {
+          ghost.remove();
+          delete document.documentElement.dataset.departing;
+        });
+      }),
+    );
+  }, 500);
 }
 
 export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, open: (lv: Level) => void, openEndless?: (act: number) => void, showAll = false): void {
