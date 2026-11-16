@@ -127,7 +127,7 @@ for (const [W, H] of [
       // The turn is dealt once a card shows: on the rail, or in the hand on the table (where a deal can leave the rail's
       // 'Saving for' shelf empty, so waiting on the rail alone timed out in the 2026-11-11 release gates). A deal whose
       // round 7 opens on a start-of-round choice (Kingsmarket's production bonus) while the AI teammate holds the turn
-      // never shows a card here (E2E 2026-11-16): deal again (PROGRESS notes it for a look at the game itself).
+      // never showed a card here (E2E 2026-11-16: the e2e stop round halted the AI's seat too; fixed in Game.tsx). Kept as a guard.
       const cards = page.locator(".actions-sheet .action-item, .table-hand [data-hand-card]").first();
       if (await cards.waitFor({ timeout: 45_000 }).then(() => true, () => false)) break;
       expect(deal, "three deals never reached a playable round-7 turn").toBeLessThan(2);

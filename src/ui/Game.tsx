@@ -1610,7 +1610,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // synchronous HeuristicBot for every producer — including the AI teammate's own seat — so a test can
     // finish a whole game in milliseconds rather than waiting on real MCTS decisions.
     if (autoplayRef.current) {
-      if (E2E_AUTOPLAY_UNTIL > 0 && state.round >= E2E_AUTOPLAY_UNTIL) return
+      // Past the e2e stop round the human's seat waits for the test, but the AI teammate's seat (its turn, or
+      // a decision it owns, e.g. Kingsmarket's production bonus at the start of a round) still moves: halting
+      // it too left a round-7 deal stuck on 'choose a production bonus' with no card (11-16 E2E run).
+      if (E2E_AUTOPLAY_UNTIL > 0 && state.round >= E2E_AUTOPLAY_UNTIL && !(aiProducer !== null && activeProducer === aiProducer)) return
       const timer = setTimeout(() => {
         const [action, nextRng] = HeuristicBot.chooseAction(state, rngRef.current)
         rngRef.current = nextRng
