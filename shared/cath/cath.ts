@@ -500,14 +500,14 @@ C254 166 248 189 238 205
 C228 220 212 228 200 228 Z`
 
 // Plan item 442 (critique): tapered, slim under the jaw and flaring into the shoulders (a straight column read stiff).
-const NECK = 'M186 206 C188 226 188 240 177 258 L223 258 C212 240 212 226 214 206 Z'
+const NECK = 'M190 206 C191.5 226 191 240 177 258 L223 258 C209 240 208.5 226 210 206 Z'
 
 function neck(id: string): string {
   return `<path fill="url(#${id}-neck)" d="${NECK}"/>
-<path fill="none" stroke="${C.skinLine}" stroke-width="1.8" stroke-linecap="round" d="M186 206 C188 226 188 240 177 258 M214 206 C212 226 212 240 223 258"/>
-<path fill="${C.skinShade}" d="M185 212 C192 228 208 230 215 212 L215 234 C206 242 194 242 185 232 Z"/>
-<path fill="${C.skinDeep}" opacity="0.55" d="M186 216 C193 228 207 229 214 216 L214 222 C206 232 194 232 186 224 Z"/>
-${brush([212.5, 234], [213, 246], [220, 256], 0.2, 1.6, 0.2, C.rim, ' opacity="0.8"')}`
+<path fill="none" stroke="${C.skinLine}" stroke-width="1.8" stroke-linecap="round" d="M190 206 C191.5 226 191 240 177 258 M210 206 C208.5 226 209 240 223 258"/>
+<path fill="${C.skinShade}" d="M190 212 C195 227 205 228 210 212 L209.5 236 C204 243 196 243 191 234 Z"/>
+<path fill="${C.skinDeep}" opacity="0.55" d="M190.5 216 C195 227 205 228 209.5 216 L209.5 222 C204 230 196 230 190.5 224 Z"/>
+${brush([209.5, 234], [210.5, 246], [219, 256], 0.2, 1.6, 0.2, C.rim, ' opacity="0.8"')}`
 }
 
 function face(id: string): string {
@@ -875,9 +875,9 @@ ${band(`${id}-scrim`, wrap, -2.5, 1.5, C.white, 0.7)}`
 
 function accessories(id: string, outfit: CathOutfit): string {
   // Pearl studs, and a pasture-green leaf clip in her hair (VISION: "a cute touch").
-  const pearl = (cx: number) => `<circle cx="${cx + 0.8}" cy="191.4" r="4.8" fill="#000" opacity="0.25"/>
-<circle cx="${cx}" cy="190" r="4.6" fill="url(#${id}-pearl)" stroke="#8C7F70" stroke-width="0.9"/>
-<circle cx="${cx - 1.4}" cy="188.4" r="1.4" fill="${C.white}"/>`
+  const pearl = (cx: number) => `<circle cx="${cx + 0.8}" cy="181.4" r="4.8" fill="#000" opacity="0.25"/>
+<circle cx="${cx}" cy="180" r="4.6" fill="url(#${id}-pearl)" stroke="#8C7F70" stroke-width="0.9"/>
+<circle cx="${cx - 1.4}" cy="178.4" r="1.4" fill="${C.white}"/>`
   const clip = `<g transform="translate(236 92) rotate(28)">
 <path fill="#000" opacity="0.3" transform="translate(-1.5 2)" d="M0 -12 C-8 -6 -8 6 0 12 C8 6 8 -6 0 -12 Z"/>
 <path fill="url(#${id}-leaf)" stroke="${C.leafDeep}" stroke-width="1.2" d="M0 -12 C-8 -6 -8 6 0 12 C8 6 8 -6 0 -12 Z"/>
@@ -889,7 +889,8 @@ function accessories(id: string, outfit: CathOutfit): string {
     outfit === 'market'
       ? `<g transform="translate(166 90) rotate(-24)"><path fill="#C9566B" stroke="#7A2A3A" stroke-width="1.2" d="M0 0 L-12 -7 L-12 7 Z M0 0 L12 -7 L12 7 Z"/><path fill="#A63F55" d="M0 0 L-12 3 L-12 7 Z M0 0 L12 3 L12 7 Z"/><path fill="none" stroke="#F4D9DE" stroke-width="0.8" stroke-dasharray="1.6 1.6" d="M-10 -4 L-10 4 M10 -4 L10 4"/><circle r="3" fill="#A63F55" stroke="#7A2A3A" stroke-width="1"/></g>`
       : ''
-  return pearl(147) + pearl(253) + clip + ribbon
+  // Plan item 442 (critique): up on the lobes (at the jaw they floated), just outside the cheek's edge.
+  return pearl(146) + pearl(254) + clip + ribbon
 }
 
 // ---- poses (plan item 23) -----------------------------------------------------------------------------------
