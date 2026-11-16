@@ -1,15 +1,24 @@
 import { test, expect } from '@playwright/test'
 
-// ROADMAP 57: on a phone the map is the hero of the game screen (at least 45% of the viewport height).
-test('phone map takes at least 45% of the viewport height', async ({ page }, testInfo) => {
+// ROADMAP 57: on a phone the map is the hero of the game screen. Plan item 443: it was measured as the SVG's box (45%
+// of the viewport), which the viewBox letterboxed 32 px above and below the board; now the frame hugs the board, so the
+// hexes fill it: 85%+ of its height and 92%+ of its width at 390x844.
+test('phone board fills its frame', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'phone layout only')
+  await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map').waitFor()
-  const box = await page.locator('.map').boundingBox()
-  const vh = page.viewportSize()!.height
-  expect(box!.height).toBeGreaterThanOrEqual(vh * 0.45)
+  await page.locator('.map .tile-edges').waitFor()
+  await page.waitForTimeout(300)
+  const m = await page.evaluate(() => {
+    const f = document.querySelector('.map-wrap')!.getBoundingClientRect()
+    const h = document.querySelector('.map .tile-edges')!.getBoundingClientRect()
+    return { hcov: h.height / f.height, wcov: h.width / f.width, inside: h.top >= f.top - 1 && h.bottom <= f.bottom + 1 }
+  })
+  expect(m.hcov).toBeGreaterThanOrEqual(0.85)
+  expect(m.wcov).toBeGreaterThanOrEqual(0.92)
+  expect(m.inside).toBe(true)
 })
 
 // Plan item 33: the whole board shows at 390x844 without scrolling: no hex runs under the hand.

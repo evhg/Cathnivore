@@ -34,7 +34,7 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(m.lineSize).toBeGreaterThanOrEqual(13)
     expect(m.wood).toBe(true)
     expect(m.goodsBorder).toBe('0px')
-    expect(m.mapH).toBeGreaterThanOrEqual(415)
+    expect(m.mapH).toBeGreaterThanOrEqual(350) // item 443: the frame hugs the board (was 415, letterboxed)
     const axe = await new AxeBuilder({ page }).include('.cath-dock').include('.action-tray .active-producer').withRules(['color-contrast']).analyze()
     expect(axe.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([])
   })
@@ -87,7 +87,7 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(m.pill).toContain('more')
     expect(m.meets).toBe(0)
     expect(m.later).toBe('Saving for')
-    expect(m.mapH).toBeGreaterThanOrEqual(415)
+    expect(m.mapH).toBeGreaterThanOrEqual(350) // item 443: the frame hugs the board (was 415, letterboxed)
     expect(m.small).toBe(0)
   })
 }

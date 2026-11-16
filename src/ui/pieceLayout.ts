@@ -9,8 +9,9 @@ import { landmarkMinScale, pickSpot } from './landmarkSpot'
 export const TILE_R = 92
 /** The tile face less a margin, as landmarkSpot.ts measures it. */
 const FACE = TILE_R * 0.96 - 3
-/** A count's smallest size on screen, in CSS px. */
-export const MIN_COUNT_PX = 11
+/** A count's smallest size on screen, in CSS px. Plan item 443: 12.5 (was 11), so the disc is 20 px across on a
+ *  phone and its number 12 px or more. */
+export const MIN_COUNT_PX = 12.5
 /** Plan item 172: two or three of a kind stand as an offset pile; a number badge only from this many. */
 export const COUNT_FROM = 4
 /** Plan item 413: Hollowell's stacks are one glossy piece a kind, with a count badge from two (no pile). */
@@ -167,7 +168,13 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   // A crowded hex (stacks and stalls across the face) tries tiers in between: the landmark a little smaller and the
   // pieces a little under nominal, so neither is squeezed to a sketch.
   const full = landmarkMinScale(hexPx)
-  const t = LANDMARK_TIERS.reduce<PieceTray | null>((acc, [k, f]) => acc ?? layout(input, hexPx, full * k, f), null) ?? layout(input, hexPx, 0, 0)!
+  // Plan item 443: every tier is tried with the threat badge at its legible size before any tier may fall back to
+  // the badge's drawn size: on a 375x667 phone Oakvale's EXPAND drew at 1x (9 px text) though a smaller landmark
+  // tier would have held it at 12.
+  const tiers = [...LANDMARK_TIERS.map(([k, f]) => [full * k, f] as const), [0, 0] as const]
+  const t =
+    (input.badge ? tiers.reduce<PieceTray | null>((acc, [m, f]) => acc ?? layout(input, hexPx, m, f, true), null) : null) ??
+    tiers.reduce<PieceTray | null>((acc, [m, f]) => acc ?? layout(input, hexPx, m, f), null)!
   memo.set(key, t)
   return t
 }
@@ -179,7 +186,7 @@ export const LANDMARK_TIERS: ReadonlyArray<readonly [number, number]> = [
   [0.65, 0.8],
 ]
 
-function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: number): PieceTray | null {
+function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: number, badgeOnly = false): PieceTray | null {
   const unitsPerPx = TILE_R / Math.max(1, hexPx)
   const countR = Math.max(4.6, (MIN_COUNT_PX * unitsPerPx) / 1.25)
   const badgeK = Math.max(1, (MIN_BADGE_PX * unitsPerPx) / 10)
@@ -191,7 +198,9 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
   // layout below still shrinks them to fit beside the landmark and the producers.
   // A smaller hex than a phone's (40 px, a squeezed board) keeps 1.35: at 1.85 a crowded one left the week's festival
   // dressing no room (landmark-spot.test).
-  const start = Math.round(Math.min(2, Math.max(hexPx >= 50 ? 1.85 : 1.35, hexPx / 52)) * 20) / 20
+  // Plan item 443: a full phone board's hex (60 px and up, 390 wide) starts at 2, like a desktop's, so an Outlet
+  // stands about 0.22 of the hex's width there (at 1.85 they settled near 0.19, about 14 px of icon in the critique).
+  const start = Math.round(Math.min(2, Math.max(hexPx >= 60 ? 2 : hexPx >= 50 ? 1.85 : 1.35, hexPx / 52)) * 20) / 20
   // First the badge at a legible size, letting the pieces shrink only while a stall stays MIN_STALL_PX tall on
   // screen (board-scales.spec); then the old order with the badge at its drawn size.
   const stallFloor = Math.max(0.6, (MIN_STALL_PX * unitsPerPx) / PRODUCER_H)
@@ -203,6 +212,7 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
           const p = place(input, scale, ornaments, countR, k)
           if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin)
         }
+  if (badgeOnly) return null
   // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
   const floor = lmMin > 0 ? Math.max(pieceFloor, stallFloor) : 0.35
   for (let scale = start; scale >= floor - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)

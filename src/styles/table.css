@@ -5714,3 +5714,25 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   .table-cath[data-beat-mood] .table-cath-figure > *,
   .cath-dock[data-beat-mood] .cath-dock-bust > * { animation: none; }
 }
+
+/* Plan item 443: on an upright phone the board's frame hugs the board (its SVG at the viewBox's own aspect), so the
+   hexes fill the frame (94% of its height at 390x844, was 80%: the SVG was letterboxed 32 px above and below, the
+   dead paper band under the hexes). The height that frees goes to the hand: the cards stand taller (up to 168 px)
+   and their picture window grows with them, so no card's lower half is blank. A short phone (375x667) has no height to
+   spare and keeps item 171's layout. */
+@media (max-width: 599.98px) and (min-height: 700px) and (orientation: portrait) {
+  .game:has(.cath-dock) .game-scroll { flex: 0 1 auto; }
+  /* the board's 10 px drop (item 212's pennant room) is padding here: a translate overflowed the scroll area */
+  .game:has(.cath-dock) .map-wrap { flex: 0 1 auto; min-height: 0; padding-top: 12px; }
+  .game:has(.cath-dock) .map-wrap svg.map { translate: none; }
+  /* a short phone (375x667) still letterboxes the board sideways rather than scroll it */
+  .game:has(.cath-dock) .map-wrap svg.map { height: auto; max-height: 100%; aspect-ratio: 500 / 476; }
+  .game:has(.cath-dock) .action-tray { flex: 1 1 auto; }
+  .game:has(.cath-dock) .action-tray .actions-well { flex: 1 1 auto; }
+  .game:has(.cath-dock) .action-tray .actions { flex: 1 0 112px; height: auto; max-height: 184px; container-type: size; }
+  .game:has(.cath-dock) .action-tray .actions .action-item { height: auto; min-height: 96px; --art-h: max(58px, calc(100cqh - 54px)); }
+  .game:has(.cath-dock) .action-tray .actions .action-item:has(.action-pick, button[data-tight]) { --art-h: max(50px, calc(100cqh - 62px)); }
+  /* the Saving for pile's spines (item 368) keep their 84 px run up from the card's foot: a taller run, tilted with
+     the pile, leaned past the 34 px strip that shows */
+  .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label { top: auto; height: 84px; }
+}
