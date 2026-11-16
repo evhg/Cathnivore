@@ -815,7 +815,10 @@ export class Renderer3D {
   /** Plan item 98: the gate signs turn to face the camera, so the town's name reads at every framing. */
   private faceGateSigns(): void {
     this.plateTown = "";
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    let lane = -1;
     for (const sign of (this.ground?.group.userData.gateSigns as THREE.Object3D[] | undefined) ?? []) {
+      lane++;
       const parent = sign.parent;
       if (!parent) continue;
       parent.getWorldQuaternion(this.q1).invert();
@@ -836,12 +839,29 @@ export class Renderer3D {
       // steps down and the queue's plate carries the town's name instead.
       // Plan item 215: an upright phone's close frame needs no growth, but the board still stands on the plots; on a
       // phone it steps down whatever the zoom, so the town stays on the plate as the view goes close and back.
-      sign.visible = !((grow > 1 || this.openFrame) && sign.userData.inField);
+      // Plan item 450: one HOLLOWELL per view: while the lane's depot stands in the frame, its fascia names the
+      // town on its plate, so the gate steps down (the board and the plate both read HOLLOWELL, and the depot and the
+      // arch read as two gates).
+      const depot = depots[lane];
+      const fascia = !!depot && this.inFrame(depot);
+      sign.visible = !fascia && !((grow > 1 || this.openFrame) && sign.userData.inField);
+      // The depot's count plate covers its fascia's lettering, so with the board down the plate names the town.
       if (!sign.visible) this.plateTown = sign.userData.town as string;
+      // With the depot in frame the lane leaves from it: the gate's bare posts go too (alone they read as stray
+      // dark sticks).
+      parent.visible = !fascia;
       const bar = parent.userData.bar as THREE.Object3D | undefined;
       if (bar) bar.visible = sign.visible;
       sign.updateMatrixWorld();
     }
+  }
+
+  /** Plan item 450: whether an object (all its ancestors shown) has its centre inside the frame, off its very edge. */
+  private inFrame(o: THREE.Object3D): boolean {
+    for (let p: THREE.Object3D | null = o; p; p = p.parent) if (!p.visible) return false;
+    o.updateMatrixWorld();
+    const v = o.getWorldPosition(this.v2).project(this.camera);
+    return Math.abs(v.x) < 0.94 && Math.abs(v.y) < 0.94 && v.z < 1;
   }
 
   /** A gate sign's letter cap height on screen, in CSS px. */

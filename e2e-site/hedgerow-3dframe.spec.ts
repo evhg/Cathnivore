@@ -40,11 +40,11 @@ test('the 3D gate sign reads at 12 px type or more (level 21)', async ({ page })
   const seen = signs.filter((s) => s.x >= 0 && s.x <= vp.width && s.y >= 0 && s.y <= vp.height)
   for (const s of seen) expect(s.cap).toBeGreaterThanOrEqual(8.4)
   // Plan item 103: on a phone level 21's gate stands on the field, so its board steps down (it covered the next
-  // column's plots) and the queue's plate names the town instead.
-  if (vp.width < 600) {
-    expect(seen.length).toBe(0)
-    await expect(page.locator('.gate-plate-town').first()).toHaveText('HOLLOWELL')
-  } else expect(seen.length).toBeGreaterThan(0)
+  // column's plots). Plan item 450: the town is named once per view: by the board, or (with the board down, or the
+  // lane's depot in frame) by the queue's plate, never both.
+  const plates = await page.locator('.gate-plate-town').count()
+  if (vp.width < 600) expect(seen.length).toBe(0)
+  expect(seen.length + plates).toBe(1)
 })
 
 // Plan item 102: she cheers a cleared round and raises a worried hand when a vehicle gets through. Her reaction
