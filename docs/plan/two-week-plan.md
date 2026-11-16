@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-16T06:24Z
 
 
 
@@ -4124,5 +4123,62 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
   - **Site:** `games-P` the Play buttons cut at the fold (30-90 x 820-844), the italic blurb low contrast (212-360 x 785-800); `games-D` the four cards' four type systems (110-1330 x 505-845) and the 11 px condensed blurb (430-690 x 725-742).
   - **Hedgerow:** `hedge-menu-P` the level sheet over the trail and nodes (8-382 x 585-680); `hedge-l21-3d-D` lilac clumps and long fence posts outside the field (880-1080 x 280-880) read as artefacts; the fog band over the top (15-1080 x 75-210).
   - **NIGHT SHIFT:** `ns-play-P` the description and 'Her line' over her legs with no scrim (30-750 x 910-1120, 2x); `ns-title-D` the 'GAMES' back link about 11 px and dim (60-120 x 45-60).
+- **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
+- **Size:** 1-2
+
+## 438. [ ] Hedgerow 3D: a real sky and horizon at golden hour
+- **Why:** `plan1116g/hedge-l21-3d-D`: the top band (15-1080 x 75-210) is grey-lilac fog that trees and fences show through half-transparent (430-500 x 100-180, 790-830 x 110-170); the field reads as a tray in murk, and nothing in the frame is warm though item 419 set golden hour. Saltmarsh's red boats lie tilted on the beach (30-150 x 190-390).
+- **Build:** a painted sky dome per act (gradient, a low sun disc with bloom, two or three flat-shaded cloud banks, a horizon line of sea or marsh); fog coloured from the sky's horizon and starting only past the country ring; the camera eased so 10-15% of the frame is sky; the boats moored upright on the water.
+- **Accept:** the top 12% of the canvas averages hue 20-55 deg, saturation 0.25+, luminance 0.55+; no mesh in view below opacity 1 apart from water and glass; every boat's roll under 5 deg; draw calls +3 at most; hedgerow-3dframe, country3d and water specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 439. [ ] Hedgerow phone 3D: the whole lane in view, Cath on screen
+- **Why:** `plan1116g/hedge-l21-3d-P`: only the lane's top-left third is in view, grey verge fills about 25% of the canvas (0-100 x 140-680), Cath is out of frame, the convoy reads as stacked boxes with no cabs or wheels (115-155 x 280-560), the tower strip clips its fifth card (330-390 x 700-765), and a 'WHOLE FIELD' toggle (240-385 x 65-110) admits the default framing is wrong.
+- **Build:** the phone's default 3D camera frames the whole lane (about 50 deg pitch) with pinch to zoom in; Cath kept in frame near the build site; vehicles seen at a three-quarter so cabs and wheels show; the tower strip replaced by the 2D phone's build ring and drawer so no card is clipped.
+- **Accept:** at 390x844 the lane's box 100% in view, verge 10% of the canvas or less, Cath's box 36 px+ tall and in view, no tray card clipped; hedgerow camera/3dframe/closeframe specs pass; shots P before and after.
+- **Size:** 2
+
+## 440. [ ] Hedgerow 2D: the field lit by one sun
+- **Why:** `plan1116g/hedge-l21-2d-D`, `hedge-l34-2d-D`: flat tints with no light direction; buildings, hedges, towers and people cast no shadow, and the lavender plots read as purple board tiles (385-690 x 240-290, 515-820 x 495-545, 450-630 x 625-680), about 15% of the field. Beside the shadowed 3D view the 2D one looks like a board-game mat, not a painted farm.
+- **Build:** one sun vector per act (the 3D renderer's act light); soft directional drop shadows for hedges, buildings, towers, folk, Cath and vehicles; furrow shading across plots along the sun; a little occlusion where hedge meets plot; a warm grade and light vignette per act; lavender pulled down in value and saturation.
+- **Accept:** every building, tower and figure has shadow pixels within 12 px on its sun-away side (sandbox spec); purple share (hue 250-290, sat > 0.15) 8% of the field or less; field luminance SD 1.3x+; frame time holds on the phone profile; 2D specs pass, key art re-shot; shots P and D before and after.
+- **Size:** 2
+
+## 441. [ ] Hedgerow act map: an inked sky and stops with presence
+- **Why:** `plan1116g/hedge-menu-D`: the sky (0-1120 x 60-210) is a blurred photographic haze with a soft-focus cloud (460-720 x 95-200), off the ink-and-flat-colour style (VISION, art direction); all ten stops are the same pale glass dome (e.g. 305-380 x 318-395), so the next stop barely differs from locked ones; Cath is about 30x115 px (150-180 x 270-385) on a 1440 screen. `hedge-menu-P` has the same blurred sky band (0-390 x 50-170) and colliding labels.
+- **Build:** an inked sky per act (sun, banded flat clouds, birds); stops as landmark plates in the act's palette: the current one lit and standing out, won ones inked with their stars, locked ones pencil; Cath about 1.6x larger beside the current stop in a pose that answers it; phone labels on fixed-width plates on alternating sides.
+- **Accept:** no blurred layer on the map (computed filters); the current stop's plate 3:1 against locked ones; Cath 170 px+ tall at D and 70 px+ at P; no two label boxes intersect at P; map, map-ink, map-you specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 442. [ ] Shared Cath: an illustration pass on the 2D figure
+- **Why:** Cath is the face of every screen, but the 2D figure is flat avatar art: the hair one black shape with no waves or shine band, the jacket one olive tone with no tailoring, mitt hands, the head about 1/4.5 of her height (chibi). `plan1116g/cath-title-D` (610-830 x 415-760), `cath-campaign-D` (705-840 x 480-760), `cath-setup-D` (1130-1300 x 460-770), `portfolio-D` (1195-1265 x 615-860), `runnel-D` (435-535 x 515-860); the producers in `cath-game-D` (1150-1335 x 450-690) are more modelled than she is. Items 292, 305 and 436 did her poses, outfits and reactions, not her rendering.
+- **Build:** in `shared/cath/`: hair in three tone layers with six or more strand ribbons for soft waves, the bible's shine band and the leaf clip; the jacket with lapel and collar planes, princess seams and cuff turn-backs in a light and a shade tone from tokens; four-fingered hands in the wave and point poses; head to height about 1:6 for full figures; line weight scaled to rendered size so she stays crisp from 96 to 400 px. One module change reaches every game.
+- **Accept:** hair 3+ fills and jacket 3+ fills (unit test on the part list); at 360 px tall the head is 15-18% of her height; no stroke under 0.75 px at 96 px; key art re-shot (keyart-fresh); shots of all eight Cath screens P and D before and after; a subagent critique confirms the bible's points (shine band, winged liner, raised right brow, pearl studs, leaf pendant) read at D.
+- **Size:** 3
+
+## 443. [ ] Cathnivore phone play: the board fills its frame
+- **Why:** `plan1116g/cath-game-P`: under the hexes a dead paper band (about 15-375 x 470-525) sits inside the board frame, and the pieces are small: Outlet and Stall icons about 14 px, the '2' badges about 16 px, 'EXPAND' chips about 9 px text (95-160 x 195-210). Items 131 and 212 claimed the frame on phone; the table is still not the hero there (VISION 2).
+- **Build:** fit the hex cluster to the frame's real box (scale to the smaller of its width and height, no fixed padding); the event ribbon a pinned tag in the frame's corner; pieces scaled with the hex (Outlet about 0.22 of a hex's width, badges 20 px+, region labels 14 px+).
+- **Accept:** at 390x844 the hexes' box covers 85%+ of the frame's height and 92%+ of its width; piece icons 20 px+, all text 12 px+; labels 4.5:1; region targets 44 px+; phone game specs pass; shots P (and 375x667) before and after.
+- **Size:** 2
+
+## 444. [ ] Cathnivore desktop campaign: one composed spread, Cath grounded
+- **Why:** `plan1116g/cath-campaign-D`: 340-1440 x 0-140 is blank cream with a small title top left; Cath (705-840 x 480-760) floats in the gutter with nothing under her, cut mid-calf; the stats slab and 'Back to Title' (60-870 x 785-885) read as a web footer; the locked chapter cards (975-1355 x 360-880) outweigh the map. Items 373, 415, 426 and 435 fixed the parts, not the composition. On P (`cath-campaign-P`, 265-360 x 80-195) she is cut at the waist by the board's top edge.
+- **Build:** the map, the stats ledger and the chapter book on one table; the header a hanging signboard across the top band with 'The Liberation of Marrow' and the 0/6 progress as bunting; Cath standing at the table's back edge beside the map, her feet hidden by a drawn crate or counter as on the title; 'Back to Title' a small sign tag.
+- **Accept:** no empty region over 300x100 px at D (variance scan); at D her lower edge is hidden by a drawn object; on P she is not clipped by the board; the map 45%+ of the viewport at D; campaign specs pass; shots P and D before and after.
+- **Size:** 2
+
+## 445. [ ] Portfolio phone: the products above the fold, Cath presenting them
+- **Why:** `plan1116g/portfolio-P`: the first 640 px are text and buttons; the first product print starts at y 645 and is cut by the fold; Cath (238-320 x 515-645) is a head and torso sliced by the print's top edge (item 350's 'not a cut-out fading at the waist' still fails at P; item 404 shows only at D); the second print is clipped at x 308-390 with no scroll cue.
+- **Build:** the phone hero shortened to the headline and a two-line lede; the four products a 2x2 mosaic starting by y 420; Cath full length beside or in front of it on a shadowed floor, as at D; the paragraph and buttons under it.
+- **Accept:** at 390x844 two or more product prints wholly above y 844; Cath whole head to feet or hidden by a drawn object; nothing clipped sideways without a visible scroll cue; Lighthouse 88+ (LCP unchanged); e2e:site portfolio specs pass; shots P and D.
+- **Size:** 1-2
+
+## 446. [ ] The bugs from the 2026-11-16 06:40 critique, fixed as one batch
+- **Build:** (check each first in `e2e/screenshots/plan1116g`; earlier batches kept some by design)
+  - **Cathnivore:** `cath-setup-D` the 'This week at the market / Dry Spell' sign over Cath's torso and arm, its 13 px red on cream hard to read (995-1135 x 545-775); `cath-setup-P` the 'MORE' pill over the '3 Difficulty' heading (285-365 x 760-785) and step 3 under the Start bar (15-372 x 785-835) (437 kept the pill: re-check the Start bar); `cath-game-P` the '9+ more' chip astride the counter's lower edge and the hand (293-372 x 650-668); `cath-game-D` Hollowell's medallion crowding the Scout chip and the 'MAP KEY' tab under it with no gap (1205-1335 x 15-150), the hand row over the board frame's bottom rail (490-1330 x 690-710); `cath-title-P` her waving sleeve over the board's left corner (100-140 x 400-470), the unexplained flower glyph on 'Campaign' (170-205 x 572-598).
+  - **Site and Runnel:** `games-P` Cath's quote on a translucent grey slab, not the stall's chalkboard as at D (22-368 x 185-265); `runnel-P` the hint 'Tap a tile to turn it, hold to pin it.' small grey on cream and repeating her bubble (60-330 x 790-805): check AA contrast or drop it while the lesson bubble shows.
+  - **Hedgerow:** `hedge-l21-3d-D` the influencer vans overlapping in the depot queue (300-340 x 240-370); `hedge-l21-2d-P` the depot sign and its '216' tag over the lane and convoy (10-60 x 330-395); `hedge-l34-2d-D` the lower depot's van queue spilling out of the field, cut at its bottom (270-560 x 735-890), its label on the lane (560-665 x 818-838); `hedge-menu-P` 'Brand Ambassador' wrapping to two lines (268-385 x 512-545), 'Discount Code' (12-120 x 290-305) and the 'Next / On Air' tag (80-125 x 220-255) over lane and prop art.
+  - **NIGHT SHIFT:** `ns-title-P` the HOLLOWELL fascia cut to 'HOLLOW' at the right (175-390 x 270-390, 2x halved) and bright cyan behind SETTINGS and CREDITS (30-170 x 350-420): check their contrast; `ns-title-D` the umbrella shaft reading as a beaded chain (925-950 x 120-520); `ns-play-D` her feet with no contact shadow (660-740 x 780-850). (Not taken: 'the trench should be camel': the camel trench is her market-day look, NIGHT SHIFT's is the noir black of `docs/design/cathode.md`.)
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
