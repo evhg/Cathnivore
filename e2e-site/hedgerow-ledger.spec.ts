@@ -30,7 +30,7 @@ test('level 21 at D: the panel under the rack is a ruled ledger, not boxes', asy
   expect(boxed).toEqual([])
   const open = page.locator('.field-tab[aria-selected="true"]')
   expect(parseFloat(await open.evaluate((e) => getComputedStyle(e).borderBottomWidth))).toBeGreaterThanOrEqual(2)
-  await expect(page.locator('.intel-locks .intel-label')).toHaveText(/^(Not covered|Every trait covered)$/)
+  await expect(page.locator('.intel-locks .intel-label')).toHaveText(/^(Round \d+|Not covered|Every trait covered)$/)
 })
 
 // Plan item 460's count: at 1440x900 the panel holds at most 10 bordered containers (a box 60x24 px or larger with

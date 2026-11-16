@@ -5014,3 +5014,33 @@ body:has(#dlg-pause[open]) .paused-note {
     border-left: 1px dashed color-mix(in srgb, var(--line) 55%, transparent);
   }
 }
+
+/* Plan item 460 slice 3: 'This round' is one row of the ledger: the round's number and Cath's portrait share one
+   left column under a single ruled divider, her tip continuing the round's vehicles in the right column (two zones
+   parted by a dashed rule read as the round and a separate note). */
+@media (min-width: 900px) and (min-height: 560px) {
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .round-ticket { --stub: 76px; }
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .ticket-stub {
+    border-right: 1px dashed color-mix(in srgb, var(--line) 55%, transparent);
+  }
+  .play .panel .round-group:has(> .cath-plate:not([hidden])) .ticket-body { padding: 8px 4px 2px 9px; }
+  .play .panel .cath-plate:not([hidden]) {
+    border-top: 0;
+    min-height: 0;
+    gap: 10px;
+    padding-left: 2px;
+    padding-block: 2px 6px;
+  }
+  .play .panel .cath-plate:not([hidden])::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 75px;
+    border-left: 1px dashed color-mix(in srgb, var(--line) 55%, transparent);
+    pointer-events: none;
+  }
+  /* with the round row this compact a ten-packet rack keeps the column out of its tight step: its art at item 87's
+     44 px for ten or more */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { width: 44px; height: 44px; }
+}

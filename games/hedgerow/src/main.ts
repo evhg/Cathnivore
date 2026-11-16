@@ -2224,10 +2224,14 @@ function fieldIntel(g: Game): HTMLElement {
       // Plan item 348: the soonest unanswered lock in the coming rounds as a labelled chip naming its answer
       // ('Stealth · Radio Mast'); the rest as one '+4 more' chip that lists each with its answer on hover and to a
       // reader (the column's row has room for one labelled chip).
-      const soon = g.level.waves
+      const ahead = g.level.waves
         .slice(g.wave + 1)
-        .map((w) => propsOf(roundProps(g.level, w)).find((p): p is Lock => (gaps as readonly string[]).includes(p)))
-        .find((p) => p) ?? gaps[0]!;
+        .map((w) => propsOf(roundProps(g.level, w)).find((p): p is Lock => (gaps as readonly string[]).includes(p)));
+      const at = ahead.findIndex((p) => p);
+      const soon = ahead[at] ?? gaps[0]!;
+      // Plan item 460: in plain words, when and what: 'Round 12 · Airborne needs a Scarecrow' (it read 'Unanswered
+      // Airborne · Scarecrow', a code to learn).
+      if (at >= 0) lab.textContent = `Round ${waveNo(g, g.wave + 2 + at)}`;
       const answer = (lock: Lock) => {
         const keys = g.level.towers.filter((k) => towerBadges({ kind: k, tier: 1, spec: null }).find((b) => b.prop === lock)?.ok);
         const k = [...keys].sort((a, b) => towerCost(g, a) - towerCost(g, b))[0];
@@ -2239,7 +2243,8 @@ function fieldIntel(g: Game): HTMLElement {
       chip.style.setProperty("--trait", PROPERTIES[soon].colour);
       chip.title = `${say(soon)}: ${PROPERTIES[soon].lock}`;
       // thin spaces round the dot: at 1440 the column's row is two pixels short of the full answer
-      chip.append(img(propIcon(soon), "prop-icon"), `${PROPERTIES[soon].name}\u2009·\u2009${answer(soon) ?? "no answer"}`);
+      const fix = answer(soon);
+      chip.append(img(propIcon(soon), "prop-icon"), fix ? `${PROPERTIES[soon].name} needs ${/^[AEIOU]/.test(fix) ? "an" : "a"} ${fix}` : `${PROPERTIES[soon].name}: no answer here`);
       row.append(chip);
       const rest = gaps.filter((x) => x !== soon);
       if (rest.length) {

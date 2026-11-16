@@ -51,7 +51,7 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   // names every lock with its answer for a reader.
   const lock = page.locator('.intel-locks .lock-chip')
   if (await lock.count()) {
-    await expect(lock).toHaveText(/^\S+\s·\s\S/)
+    await expect(lock).toHaveText(/^\S[^:]*( needs an? \S|: no answer)/)
     const l = await lock.evaluate((e) => ({ sw: e.scrollWidth, cw: e.clientWidth, fs: parseFloat(getComputedStyle(e).fontSize) }))
     expect(l.sw).toBeLessThanOrEqual(l.cw + 1)
     expect(l.fs).toBeGreaterThanOrEqual(13)
