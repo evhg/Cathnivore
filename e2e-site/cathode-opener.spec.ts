@@ -19,7 +19,12 @@ async function start(page: Page, touch: boolean, escAt?: number): Promise<void> 
     // opener's. (The longest single gap undercounted it: CI 2026-11-15 read 4.5 s + one stall with several.)
     let last = 0
     const frame = (t: number) => {
-      if (w.rec.seen !== undefined && w.rec.gone === undefined && last) w.rec.stall += Math.max(0, t - last - 34)
+      // Each gap counts for its overlap with the opener's window: the stall that holds the opener's own end timer
+      // back ends after it goes, and counting only gaps that ended while it was up never counted it (CI 2026-11-16:
+      // 7.3-14.2 s against 4.5 s + stall on two commits with no NIGHT SHIFT change).
+      const seen = w.rec.seen
+      const end = w.rec.gone ?? t
+      if (seen !== undefined && last && last < end) w.rec.stall += Math.max(0, Math.min(t, end) - Math.max(last, seen) - 34)
       // Item 192: whether the trailing shot ran.
       const op = (window as unknown as { cathode?: { opener?: () => { on: boolean; k: number; box: { top: number; bottom: number } | null } } }).cathode?.opener?.()
       if (op?.on) w.rec.shotOn = true
