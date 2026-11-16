@@ -523,7 +523,9 @@ function face(id: string): string {
 type EyeVariant = 'open' | 'closed-happy' | 'closed-wink' | 'narrow'
 
 function eye(id: string, cx: number, flip: 1 | -1, variant: EyeVariant): string {
-  // flip = -1 for her right eye (viewer's left) so the liner wing and lashes point outwards.
+  // flip = -1 for her right eye (viewer's left) so the liner wing and lashes point outwards. Plan item 442 (critique):
+  // one solid tapered wing past the outer corner, the bible's 'neat winged liner', and a single outer lash (three lash
+  // ticks read as grey fur at title size); the lid crease fainter.
   const x = (dx: number) => cx + dx * flip
   const p = (dx: number, y: number): Pt => [x(dx), y]
   const y0 = 153
@@ -540,7 +542,7 @@ ${brush(p(-9, y0 + 3), p(0, y0 + 6), p(9, y0 + 3), 0.2, 1, 0.2, C.skinDeep, ' op
   const clip = `${id}-eye${flip === 1 ? 'r' : 'l'}`
   return `<g class="cath-eye">
 <ellipse cx="${x(1)}" cy="${y0 - 5}" rx="18" ry="${variant === 'narrow' ? 6 : 9}" fill="url(#${id}-lid)"/>
-${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.3, 0.2, C.skinLine, ' opacity="0.55"')}
+${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.1, 0.2, C.skinLine, ' opacity="0.35"')}
 <clipPath id="${clip}"><path d="${white}"/></clipPath>
 <path fill="url(#${id}-white)" d="${white}"/>
 <g clip-path="url(#${clip})">
@@ -552,10 +554,8 @@ ${brush(p(-11, top - 1), p(0, top - 7), p(13, y0 - 9), 0.2, 1.3, 0.2, C.skinLine
 <circle cx="${x(4.2)}" cy="${y0 + 3.6}" r="1.3" fill="${C.white}" opacity="0.9"/>
 </g>
 ${brush(p(-14.5, y0 - 0.2), p(-1, top - 3), p(14.5, y0 - 1.5), 1.2, 3.4, 3.8, C.liner)}
-${brush(p(13.5, y0 - 1.2), p(17, y0 - 3.5), p(20.5, y0 - 7), 3, 1.8, 0.2, C.liner)}
-${brush(p(5, top - 0.5), p(6.5, top - 4), p(8.5, top - 6.5), 1.6, 1, 0.2, C.liner)}
-${brush(p(9.5, y0 - 6.5), p(11.5, y0 - 9.5), p(14, y0 - 11.5), 1.7, 1.1, 0.2, C.liner)}
-${brush(p(13.5, y0 - 3.5), p(16, y0 - 6), p(18.5, y0 - 8.5), 1.6, 1, 0.2, C.liner)}
+${brush(p(12.5, y0 - 1.6), p(17.5, y0 - 4.2), p(23, y0 - 8.6), 3.8, 2.2, 0.2, C.liner)}
+${brush(p(11, y0 - 6.5), p(13, y0 - 9.2), p(15.5, y0 - 11.2), 1.6, 1, 0.2, C.liner)}
 ${brush(p(-2, y0 + 6.6), p(5, y0 + 7.6), p(12, y0 + 4.2), 0.2, 0.9, 0.5, C.skinLine, ' opacity="0.4"')}
 ${brush(p(11, y0 + 4.2), p(13, y0 + 4.6), p(15.5, y0 + 6.5), 0.9, 0.7, 0.1, C.liner, ' opacity="0.7"')}
 <path class="cath-lids" opacity="0" fill="${C.skinShade}" stroke="${C.liner}" stroke-width="2.4" d="M${n1(x(-15))} ${y0} Q${n1(x(-1))} ${top - 3} ${n1(x(15))} ${y0 - 1} Q${n1(x(1))} ${y0 + 10.5} ${n1(x(-15))} ${y0} Z"/>
