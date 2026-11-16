@@ -3126,7 +3126,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-attrs-key { display: flex; justify-content: flex-end; gap: 14px; margin: 0 0 4px; font: 600 var(--fs-1)/1 var(--font-ui); color: var(--ink-2); } /* px-ok */
   .cp-attrs-key span { display: inline-flex; align-items: center; gap: 5px; } /* px-ok */
   .cp-attrs-key span::before { content: ""; width: 2px; height: 12px; background: var(--ink); } /* px-ok */
-  .cp-attrs-key .cp-key-cls::before { width: 1px; height: 8px; background: rgb(var(--ink-rgb) / .55); } /* px-ok */
+  .cp-attrs-key .cp-key-cls::before { width: 1px; height: 5px; align-self: flex-start; margin-top: 2px; background: rgb(var(--ink-rgb) / .7); } /* px-ok */
   .cp-sheet[data-dossier] .cp-attrs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 20px; margin: 0 0 8px; } /* px-ok */
   .cp-sheet[data-dossier] .stat-dial { grid-template-columns: 50px minmax(0, 1fr); grid-template-rows: none; justify-items: stretch; align-items: center; row-gap: 0; } /* px-ok */
   .cp-sheet[data-dossier] .stat-dial dt { grid-row: auto; }
@@ -3135,7 +3135,9 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-bar { width: auto; height: 8px; border-radius: 1px; background: rgb(var(--ink-rgb) / .14); -webkit-mask: none; mask: none; } /* px-ok */
   .cp-sheet[data-dossier] .cp-bar-fill { display: block; top: 0; height: 100%; transform: none; border-radius: 1px; background: var(--accent, var(--blood-hot)); } /* px-ok */
   .cp-sheet[data-dossier] .cp-mark, .cp-sheet[data-dossier] .cp-avg { display: block; position: absolute; left: calc(var(--t) * 100%); transform: translateX(-50%); }
-  .cp-sheet[data-dossier] .cp-mark { top: 0; bottom: 0; width: 1px; background: rgb(var(--ink-rgb) / .55); } /* px-ok */
+  /* Plan item 462: each other class's tick stands just above the bar (it crossed her red fill, which read as split
+     segments); the average notch still crosses it, as the key above shows. */
+  .cp-sheet[data-dossier] .cp-mark { top: -5px; bottom: auto; height: 4px; width: 1px; background: rgb(var(--ink-rgb) / .7); } /* px-ok */
   .cp-sheet[data-dossier] .cp-mark.is-own { display: none; }
   .cp-sheet[data-dossier] .cp-avg { top: -2px; bottom: -2px; width: 2px; background: var(--ink); box-shadow: 0 0 0 1px rgb(var(--shade-rgb) / .7); } /* px-ok */
   .cp-sheet[data-dossier] .cp-attr-n { text-align: right; }
