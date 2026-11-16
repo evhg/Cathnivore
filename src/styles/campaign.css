@@ -1289,6 +1289,20 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   /* item 378: her half-length bust ended flat at the hem in mid-air above the map; it tucks 20 px behind the map's top
      edge (the map comes later and is positioned, so it paints over her), so she stands behind it as at a table */
   .cmp-header .cmp-host-stand { margin-bottom: -44px; }
+  /* item 444: the stall's crates stand on the board's wooden lip in front of her, so her bust ends behind a crate
+     of produce at the counter, not at the board's edge (it read as cut at the waist) */
+  .cmp-header .cmp-host-stand > .produce-crates {
+    display: block;
+    position: absolute;
+    left: 50%;
+    right: auto;
+    bottom: 32px;
+    z-index: var(--z-raised);
+    width: 76px;
+    height: auto;
+    translate: -50% 0;
+    filter: drop-shadow(0 2px 2px var(--ink-a15));
+  }
   /* item 318: her head is above the bubble here, so the tail leaves its top corner and points up at her */
   /* item 325: long enough to reach the edge of her hair, its tip within 30 px of her mouth (it stopped about 50 px off) */
   /* item 378: with her bust tucked behind the map her mouth is level with the bubble's upper half, so the tail leaves

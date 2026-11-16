@@ -111,3 +111,20 @@ test('campaign at 1440x900: one composed spread', async ({ page }, info) => {
   }, shot.toString('base64'))
   expect(empty, 'flat 300x100 blocks').toEqual([])
 })
+
+// Plan item 444: on a phone her bust ends behind the stall's crates standing on the board's lip, not at the board's edge.
+test('campaign on a phone: Cath stands behind crates on the board', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'phone layout')
+  await page.goto('/')
+  await page.getByText('Campaign', { exact: false }).first().click()
+  const crates = page.locator('.cmp-header .produce-crates')
+  await expect(crates).toBeVisible()
+  const c = (await crates.boundingBox())!
+  const map = (await page.locator('.campaign-screen > .cmp-map').boundingBox())!
+  const cath = (await page.locator('.cmp-header-cath').boundingBox())!
+  expect(Math.abs(c.y + c.height - map.y), 'the crates stand on the board').toBeLessThanOrEqual(8)
+  expect(c.x).toBeGreaterThanOrEqual(cath.x - 4)
+  expect(c.x + c.width).toBeLessThanOrEqual(cath.x + cath.width + 4)
+  // her face (the top 40% of the bust) stays clear of them
+  expect(c.y).toBeGreaterThanOrEqual(cath.y + cath.height * 0.4)
+})

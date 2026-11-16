@@ -579,8 +579,8 @@ export default function CampaignScreen({
           title="Cath"
         />
         {/* Plan item 444: at D she stands behind the stall's produce crates on the table's edge, so her half-length
-            figure ends behind something drawn, not in mid-air */}
-        {wide && <ProduceCrates />}
+            figure ends behind something drawn, not in mid-air; on a phone the crates stand on the board's lip */}
+        {(wide || phone) && <ProduceCrates />}
       </span>
     </figure>
   )
