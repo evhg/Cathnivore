@@ -4265,7 +4265,7 @@ Progress (lane B, 2026-11-16 20:50, slice 1 `cc50176`): the title's coat key (it
 - **Accept:** at 390x844 Cath ≥ 150 px tall and her box overlaps no tile hit area; idle, coach and solve shots differ; the board's visible area shrinks ≤ 5%; Runnel specs pass at P and D.
 - **Size:** 2
 
-## 459. [ ] Hedgerow 3D: Cath and the neighbours modelled to the character bible
+## 459. [ ] Hedgerow 3D: Cath and the neighbours modelled to the character bible *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (195-290 x 540-690) Cath is a thin low-poly doll with a flat face; the farmer (940-1030 x 425-530) and the pink figure (225-300 x 740-840) are crude; at P (55-95 x 505-560) she is a 40 px smudge. The 2D sprites are far better.
 - **Build:** a stylised 3D Cath in the shared palette (centre-parted long hair with a shine band, olive field jacket collar up, cream blouse, face decal with winged eyes and smile, leaf clip); idle sway, a point-at-plot pose when coaching, a cheer on a cleared wave; neighbours in the same style (hat, overalls, readable silhouette); the Cath framing keeps her readable on a phone.
 - **Accept:** at 1440x900 her figure ≥ 110 px tall, at 390x844 ≥ 55 px; three poses switched by game events (an e2e reads the pose); ≤ 8 draw calls added; hedgerow-3dframe specs pass.
