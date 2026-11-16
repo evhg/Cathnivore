@@ -4225,7 +4225,7 @@ The items come from fresh-eyes audits on 2026-11-01 and 2026-11-02 (items 25-32:
 - **Accept:** her box 170x300+ at 390x844; every choice above y 760; the footer 40 px or less; LCP unchanged (under 2 s); title specs pass; shots P and D plus frames of the opening.
 - **Size:** 2
 
-## 454. [ ] Portfolio desktop: the work plays and Cath presents it
+## 454. [ ] Portfolio desktop: the work plays and Cath presents it *(lane A, in progress)*
 - **Why:** `plan1116h/portfolio-D`: Cath (1190-1265 x 625-865) stands on a dark puck below and right of the mosaic (640-1340 x 160-605), about 27% of the viewport's height, pointing up at nothing; the four tiles are stills; the stats row (100-980 x 735-815) is four plain numbers. Item 404's 'presents the work' doesn't come through.
 - **Build:** hovering or focusing a tile plays its key-art loop (item 145's posterplay); Cath turns to that tile and points, with a one-line caption in her voice naming it; she stands beside the mosaic at its height; the stats a live 'last shipped' line read from the release log.
 - **Accept:** her box overlaps the mosaic's vertical span by 60%+; a loop plays only on hover or focus and never under reduced motion; portfolio e2e passes; Lighthouse 88+; shots P and D.
