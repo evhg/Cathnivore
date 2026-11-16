@@ -1999,7 +1999,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 451: the hex a dragged card is over (or the one an armed card has staged) shows what the move does.
   const aimEntry = drag?.over ? drag.entries.find((e) => e.region === drag.over) : selectedGroup ? pendingChoice : null
   const aimPreview = aimEntry && actions[aimEntry.index] ? actionPreview(state, actions[aimEntry.index]!) : undefined
-  const aim = aimPreview && aimPreview.chips.length > 0 ? { region: aimPreview.region, chips: aimPreview.chips } : undefined
+  const aim =
+    aimPreview && aimPreview.chips.length > 0
+      ? {
+          region: aimPreview.region,
+          chips: aimPreview.chips,
+          going: (['o', 'b', 'd'] as const).filter((k) => aimPreview.regionDelta[k === 'o' ? 'outlets' : k === 'b' ? 'buyouts' : 'doubt'] < 0),
+        }
+      : undefined
   // Arrows cycle an armed card's glowing regions, Enter plays the staged one (a focused button keeps its own Enter).
   aimKeysRef.current = (e: KeyboardEvent) => {
     if (!selectedGroup || e.altKey || e.ctrlKey || e.metaKey) return
@@ -3636,6 +3643,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           pick={cathPickRegion && !selectedGroup && !drag ? { region: cathPickRegion, lit: previewActions.some((a) => JSON.stringify(a) === JSON.stringify(pickAction)) } : undefined}
           aim={aim}
           stamp={stamp ?? undefined}
+          aiming={!!(drag || pressRegions || selectedGroup) && pendingEnemyTurn.length === 0}
           faces={producerFaces}
           enemyTurn={
             pendingEnemyTurn.length > 0 && enemyStep

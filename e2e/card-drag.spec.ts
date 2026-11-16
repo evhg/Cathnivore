@@ -14,6 +14,33 @@ async function start(page: Page): Promise<void> {
   await page.locator('.game').waitFor()
 }
 
+/** Mean relative luminance of the faces of the hexes matching `sel` (the middle of each tile, clear of its frame). */
+async function faceLuminance(page: Page, sel: string): Promise<number> {
+  const vals: number[] = []
+  for (const g of await page.locator(`.map-wrap ${sel}`).all()) {
+    const b = (await g.locator('polygon').first().boundingBox())!
+    const png = await page.screenshot({ clip: { x: b.x + b.width * 0.3, y: b.y + b.height * 0.55, width: b.width * 0.4, height: b.height * 0.3 } })
+    vals.push(
+      await page.evaluate(async (b64) => {
+        const img = new Image()
+        img.src = `data:image/png;base64,${b64}`
+        await img.decode()
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const x = c.getContext('2d')!
+        x.drawImage(img, 0, 0)
+        const d = x.getImageData(0, 0, c.width, c.height).data
+        const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+        let s = 0
+        for (let i = 0; i < d.length; i += 4) s += 0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!)
+        return s / (d.length / 4)
+      }, png.toString('base64')),
+    )
+  }
+  return vals.reduce((a, v) => a + v, 0) / vals.length
+}
+
 const pipsOn = (page: Page) => page.locator('.active-producer .pip.on').count()
 
 async function pickUp(page: Page) {
@@ -53,11 +80,11 @@ test('over a glowing hex the card shows its ghost piece and what it will change'
   const ghost = await page.locator('.drag-ghost').evaluate((el) => ({ t: getComputedStyle(el).transform, l: getComputedStyle(el).left }))
   expect(ghost.t).not.toBe('none')
   expect(ghost.l).toBe('0px')
-  // The hexes it can't go to dim to at most 55% of a lit one.
-  const dim = page.locator('.region-hex.dimmed').first()
-  if ((await dim.count()) > 0) {
-    const o = await dim.evaluate((el) => Number(getComputedStyle(el).opacity))
-    expect(o).toBeLessThanOrEqual(0.55)
+  // The hexes it can't go to dim to at most 55% of a lit one's luminance (the tiles' faces, measured on screen).
+  if ((await page.locator('.region-hex.dimmed').count()) > 0) {
+    const lit = await faceLuminance(page, '.region-hex.glow')
+    const dim = await faceLuminance(page, '.region-hex.dimmed')
+    expect(dim, `dimmed ${dim.toFixed(3)} vs lit ${lit.toFixed(3)}`).toBeLessThanOrEqual(lit * 0.55)
   }
   if (process.env.SHOTS) await page.screenshot({ path: `e2e/screenshots/card-drag-aim-${testInfo.project.name}.png` })
   const aimed = await aim.getAttribute('data-aim')
@@ -112,4 +139,23 @@ test('the keyboard aims an armed card: arrows cycle the glowing regions, Enter p
   expect(second).not.toBe(first)
   await page.keyboard.press('Enter')
   await expect.poll(() => pipsOn(page)).toBe(before - 1)
+})
+
+test("a Supply card over its hex marks Hollowell's stack that will lose a piece", async ({ page }) => {
+  await start(page)
+  const card = page.locator(':is(.actions, .table-hand) .action-card-draggable', { hasText: /Supply/ }).first()
+  test.skip((await card.count()) === 0, 'no Supply card on this seed')
+  await card.scrollIntoViewIfNeeded()
+  const from = (await card.boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(from.x + from.width / 2 + 20, from.y - 30, { steps: 4 })
+  const target = page.locator('.region-hex.glow').first()
+  const t = (await target.locator('polygon').first().boundingBox())!
+  await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2, { steps: 8 })
+  await expect(page.locator('.map .aim-chip text', { hasText: /−1 Outlet/ })).toHaveCount(1)
+  await expect(page.locator('.map .piece-slot[data-going][data-piece="o"]')).toHaveCount(1)
+  await page.mouse.move(6, 6, { steps: 4 })
+  await expect(page.locator('.map .piece-slot[data-going]')).toHaveCount(0)
+  await page.mouse.up()
 })

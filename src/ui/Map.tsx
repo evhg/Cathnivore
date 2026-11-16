@@ -115,9 +115,11 @@ interface Props {
   pick?: { region: RegionId; lit: boolean }
   /** Plan item 451: the region a dragged (or armed) card is over, with what playing it there will do: a ghost
    *  piece on the hex and signed chips above it, from the engine's own preview (`actionPreview`). */
-  aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[] }
+  aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[]; going?: ('o' | 'b' | 'd')[] }
   /** Plan item 451: a card just played into this region lands with a stamp and a puff of paper dust (`key` replays it). */
   stamp?: { region: RegionId; key: number }
+  /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
+  aiming?: boolean
 }
 
 // STYLE.md 2.3 "shape before colour" / 3.2's "texture pattern at 8% ink" per region type — a second,
@@ -691,7 +693,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -833,7 +835,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   }, [active.length])
 
   return (
-    <svg ref={svgRef} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
@@ -1123,7 +1125,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                     if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
                       const [k, n] = icons[rect.kind]
                       return (
-                        <g key={k} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece={k} data-count={n} data-silhouette={SILHOUETTE[rect.kind]}>
+                        <g
+                          key={k}
+                          className="piece-slot"
+                          transform={`translate(${x + rect.x0} ${y})`}
+                          data-piece={k}
+                          data-count={n}
+                          data-silhouette={SILHOUETTE[rect.kind]}
+                          // Plan item 451: the stack a dragged card will take pieces from lifts and fades in time.
+                          data-going={aim?.region === id && aim.going?.includes(k) ? '' : undefined}
+                        >
                           <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} countR={tray.countR} cy={tray.enemyY} />
                         </g>
                       )

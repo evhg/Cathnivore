@@ -1203,3 +1203,27 @@ html.no-animations .map .play-stamp { display: none; }
 
 /* Plan item 451: on the phone's counter too a Supply/Rebut group's name reads 'Supply 1 Outlet', one name. */
 .action-tray .actions .action-name :is(.action-colon, .action-remove) { display: none; }
+
+/* Plan item 451: while a card is aimed the hexes it can't go to darken (at most 55% of a lit hex's luminance);
+   fading them over the cream table washed them out instead of setting them back. */
+.map[data-aiming] .region-hex.dimmed {
+  opacity: 1;
+  filter: brightness(.48) saturate(.55);
+  transition: filter 140ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map[data-aiming] .region-hex.dimmed { transition: none; }
+}
+
+/* Plan item 451: Hollowell's stack that the aimed card will take pieces from lifts and fades in time, so
+   the board says which pieces go before the card is let go. Reduced motion: held faded. */
+.map .piece-slot[data-going] > * {
+  animation: piece-going 520ms ease-in-out infinite alternate;
+}
+@keyframes piece-going {
+  from { opacity: 1; translate: 0 0; }
+  to { opacity: .4; translate: 0 -5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map .piece-slot[data-going] > * { animation: none; opacity: .5; }
+}
