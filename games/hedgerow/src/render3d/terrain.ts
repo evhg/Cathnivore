@@ -240,6 +240,13 @@ const STANDING: Record<Crop, { colour: string; s: number; sy: number }> = {
   lavender: { colour: "#9a7fc8", s: 1, sy: 1.4 },
 };
 
+/** Plan item 469: Saltmarsh's three beds in 3D (2D's fills in fieldkitart.ts): the texture they borrow and their tint. */
+const MARSH_BED = {
+  samphire: { base: "clover", tint: "#86b884" },
+  lavender: { base: "clover", tint: "#8aa284" },
+  saltgrass: { base: "stubble", tint: "#8ccab4" },
+} as const;
+
 function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
   const hit = bedTex.get(look);
   if (hit) return hit;
@@ -922,7 +929,10 @@ export function buildGround(level: Level): Ground {
       plots.push({ x: c + 0.5, y: h + 0.04, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
       {
         const look = lookOf(c, r);
-        const base = bedBase(look);
+        // Plan item 469: Saltmarsh's beds are its own (2D's samphire, sea lavender and salt grazing), not Brindle's
+        // earth, stubble and clover under a coastal sky (a critique: 'a generic dry farm against 2D's teal marsh').
+        const marsh = act === 2 && look in MARSH_BED ? MARSH_BED[look as keyof typeof MARSH_BED] : null;
+        const base = marsh ? marsh.base : bedBase(look);
         // Plan item 360: the plot belongs to a field (item 345's blocks, as in 2D): its furrows run the field's long
         // way, its bed reaches across to the field's next plot, and its timber edge stands only where it meets other ground.
         const field = fieldAt(level, c, r);
@@ -930,7 +940,7 @@ export function buildGround(level: Level): Ground {
         const fm = field ? field.r1 - field.r0 + 1 : 1;
         const across = fn > fm || (fn === fm && (c * 31 + r * 17 + level.id) % 2 === 0);
         const turn = across ? 0 : Math.PI / 2;
-        const tint = new THREE.Color(bedTint[base]).multiplyScalar(0.92 + deco() * 0.16);
+        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar(0.92 + deco() * 0.16);
         beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
         const joins = (dc: number, dr: number) => sameField(level, c, r, c + dc, r + dr);
         // The 0.22 gap to the next plot of the field: three small squares of the same bed over it, and a fourth at
@@ -951,7 +961,52 @@ export function buildGround(level: Level): Ground {
         if (look === "puddle") puddles.push({ x: c + 0.3 + deco() * 0.4, y: h + 0.034, z: r + 0.3 + deco() * 0.4, ry: deco() * 6.3, s: 1, sy: 1, color: white });
         plotCount++;
         const corners: Array<[number, number]> = [[0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]];
-        if (base === "earth") {
+        if (marsh) {
+          // Kept to the bed's rim, so a tower at its middle stands clear.
+          const rim = (): [number, number] => {
+            const t = 0.12 + deco() * 0.76;
+            const e = 0.12 + deco() * 0.12;
+            const side = Math.floor(deco() * 4);
+            return side === 0 ? [t, e] : side === 1 ? [t, 1 - e] : side === 2 ? [e, t] : [1 - e, t];
+          };
+          if (look === "samphire") {
+            // Glassy jointed stems in a bright yellow-green flush, a few gone red at the tips.
+            for (let k = 0; k < 12; k++) {
+              const [dx, dz] = rim();
+              const red = deco() < 0.28;
+              tufts.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 1.1 + deco() * 0.4, sy: 1.1, color: new THREE.Color(red ? "#c8604c" : "#b6d866").multiplyScalar(0.9 + deco() * 0.2) });
+            }
+          } else if (look === "lavender") {
+            // Grey-green rosettes, each under a spray of mauve flowers.
+            for (let k = 0; k < 7; k++) {
+              const [dx, dz] = rim();
+              clumps.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 1 + deco() * 0.3, sy: 0.6, color: new THREE.Color("#6f8c6c").multiplyScalar(0.9 + deco() * 0.2) });
+              for (let j = 0; j < 4; j++)
+                cloverHeads.push({ x: c + dx + (deco() - 0.5) * 0.12, y: h + 0.05, z: r + dz + (deco() - 0.5) * 0.12, ry: deco() * 6.3, s: 1.1, sy: 1, color: new THREE.Color(j % 3 ? "#9a7cb8" : "#bca8d2") });
+            }
+          } else {
+            // Short salt sward, the odd white crust of dried salt, and sheep grazing it (as the 2D field has).
+            for (let k = 0; k < 7; k++) {
+              const [dx, dz] = rim();
+              tuft(c + dx, r + dz, 0.8, 0.55, new THREE.Color(k % 2 ? "#6e9c84" : "#b8d4c2"));
+            }
+            for (let k = 0; k < 2; k++) {
+              const [dx, dz] = rim();
+              stones.push({ x: c + dx, y: h + 0.03, z: r + dz, ry: deco() * 6.3, s: 0.055, sy: 0.12, color: new THREE.Color("#f4f6f2") });
+            }
+            if (deco() < 0.6) {
+              const [dx, dz] = rim();
+              const ry = deco() * 6.3;
+              const x = c + dx;
+              const z = r + dz;
+              // A woolly body (stones' one draw call) and a black face low at its front: she grazes.
+              // (two balls along her length, so she reads as an oval fleece, not a white stone)
+              for (const o of [-0.035, 0.035])
+                stones.push({ x: x + Math.cos(ry) * o, y: h + 0.085, z: z - Math.sin(ry) * o, ry, s: 0.085, sy: 0.72, color: new THREE.Color("#f2efe6") });
+              stones.push({ x: x + Math.cos(ry) * 0.12, y: h + 0.07, z: z - Math.sin(ry) * 0.12, ry, s: 0.04, sy: 1, color: new THREE.Color("#2a2622") });
+            }
+          }
+        } else if (base === "earth") {
           // Two ridges either side of the middle, along the bed's grain.
           const soil = new THREE.Color(bedTint.earth).multiplyScalar(0.8);
           // Plan item 236: a planted bed, not a box: four ridges, seedlings coming up along two of them.
@@ -981,7 +1036,7 @@ export function buildGround(level: Level): Ground {
             clumps.push({ x: c + dx + (deco() - 0.5) * 0.06, y: h + 0.03, z: r + dz + (deco() - 0.5) * 0.06, ry: deco() * 6.3, s: 0.9 + deco() * 0.3, sy: 1, color: leaf.clone().multiplyScalar(0.85 + deco() * 0.3) });
         }
         dressedCount++;
-        if (base === "clover")
+        if (base === "clover" && !marsh)
           for (let k = 0; k < 4; k++) cloverHeads.push({ x: c + 0.18 + deco() * 0.64, y: h + 0.02, z: r + 0.18 + deco() * 0.64, ry: deco() * 6.3, s: 0.7, sy: 1, color: new THREE.Color(k % 3 ? "#fffaf0" : "#f0b8d0") });
       }
       // Grass and flowers grow around the plot's edges, clear of where a tower stands.
