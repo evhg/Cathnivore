@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-17 23:22 UTC
 
 
 
@@ -4496,3 +4495,49 @@ Progress (lane B, 2026-11-17 17:40, slice 1): every tree has its preview (`game/
 - **Build:** each tree row or chip a button (and T): it plays that tree's signature active on the stage in 1.5-2.5 s with the game's own effects (Shroud: her coat shimmers into optic camo; Cold Read: a mark glow and weak-spot ring on the target; Longshot: 0.3x bullet-time and a tracer breaking the bottle), all 15 trees in class-by-class slices; a one-line caption in Cath's voice; a class switch cancels it; reduced motion keeps the effect and caption without the time change.
 - **Accept:** `[data-skillpreview=<tree>]` per tree and a unit test mapping all 15 to an existing active; press to first visual change ≤ 150 ms (e2e P and D); the vignette clear of the sheet and her face; cathode-perf alone in budget; shots of one per class at P and D.
 - **Size:** 3
+
+Planning 2026-11-17 23:30 lane B: shots `e2e/screenshots/plan1117b` (P 390x844, D 1440x900, every game), two subagent critiques against VISION.md, each told to check items 400-481 first; checked again here (482's D focal point is the half item 472 left open; 484 builds on the end screen's text-only `ShareResultButton` in `Game.tsx`; no Hedgerow time-of-day exists outside the Night twist, item 43).
+
+## 482. [ ] Cathnivore desktop title: one focal point, the board on the counter
+- **Why:** `cath-title-D`: the chalk menu (105-500 x 430-770), Cath (600-830 x 320-770), the board (850-1340 x 315-750) and the Daily board (855-1395 x 760-850) stand in a row and pull equally; there is no focal point (VISION 1-2). Item 472's withdrawal left this half open as its own item.
+- **Build:** desktop only (`TitleArt.tsx`, `TitleSquare.tsx`, the title CSS at 1100 px and up): one diagonal: the board centre-right at 40%+ of the width, the largest thing; Cath just behind its near-left edge, her hand over it (never over a hex); the menu as signage hung from the awning (item 327's planks and tags kept); the Daily slate set into the counter front (item 342 kept). The phone (item 453, title-counter.spec) untouched.
+- **Accept:** at 1440x900 the board 40%+ of the width and the largest element; Cath overlaps no hex (e2e boxes); the menu 22% or less of the frame; title-counter passes unchanged; shots D light and dark, P unchanged.
+- **Size:** 2
+
+## 483. [ ] Cathnivore campaign: Start a chapter as a staged departure from the atlas to the table
+- **Why:** `cath-campaign-D` (60-725 x 205-815), `-P` (15-375 x 205-505): starting a chapter is a hard cut from the atlas to the table, the campaign's most frequent transition with no moment (VISION 4). Hedgerow has this (item 448). Checked 35, 248, 373, 386, 426, 444, 5 (the story scene stays the destination).
+- **Build:** `CampaignScreen.tsx` on Start/Continue: ~900 ms: the chapter's regions on `CampaignMap` lift and glow, the atlas zooms into them, Cath steps toward them with her crates, a paper rustle; then a crossfade into the story scene or the table. A tap skips; reduced motion a 200 ms crossfade; a `?depart` test hook as Hedgerow's.
+- **Accept:** first visual change within 100 ms of the tap; the move 700-1100 ms (e2e frame timestamps); skip and reduced-motion paths tested; campaign specs pass; shots P and D at 0, 50 and 100%.
+- **Size:** 2
+
+## 484. [ ] Cathnivore Daily Market: a market-day postcard to share
+- **Why:** a Daily ends with a text-only Share (`ShareResultButton` in `Game.tsx`) and the title's receipt (item 133); nothing you'd want to send. Runnel's solve has a card and a replay (items 6, 478). `cath-title-D` 855-1395 x 760-850 asks for a daily ritual that never leaves the stall (VISION 4-5).
+- **Build:** on a Daily's end screen a postcard rendered to canvas: the final board (read-only map; item 417's grey for held land), Daily #N, its event, Trust and rounds, the streak pennants, Cath's one-line verdict with her face; Share with the image file (Web Share level 2 where `canShare({files})`), else Save image; the existing text share kept as the fallback. Tokens and loaded fonts only, no network.
+- **Accept:** `[data-daily-postcard]` only after a Daily, 1200x630; its numbers match `endSummary` (unit test); Share falls back to Save without `navigator.share` (e2e); no network request; shots P and D, a win and a loss.
+- **Size:** 2
+
+## 485. [ ] Hedgerow: the day passes over the field, morning to dusk across a level
+- **Why:** `hedge-l21-2d-D`, `hedge-l21-3d-D`: round 1 and round 26 look the same; the light is fixed per act (`sunlight.ts` `ACT_SUN_AZ`/`ACT_SUN_COLOUR`), so a long level never moves on (VISION 2, 4). Checked 440 (the act's sun stays the midday key), 419/438 (golden hour becomes one point on the arc), 469 (dressing untouched), 479 (the last round lands at dusk), 43 (the Night twist keeps its own ground).
+- **Build:** `dayPhase(round, rounds)` in `sunlight.ts` (0 morning to 1 dusk): the azimuth swings about ±40 degrees round the act's noon, shadows lengthen and warm. 2D: `render.ts` shadow direction, rim and a warm grade; 3D: `render3d/palette.ts` and `backdrop.ts` key light and sky card. The last third: the farmhouse windows lit, the depot's band and billboards in neon, folk with lanterns. Eased over 1.2 s between rounds, never mid-wave; stepped under reduced motion. Cosmetic only.
+- **Accept:** `#stage[data-day-phase]` 0-1; rounds 1 and 26 differ by 15+ dE over a 200x100 field sample and the shadow angle by 30+ degrees; `[data-lamps=on]` in the last third; `dayPhase` unit-tested (monotonic); 3D +2 draw calls or fewer; level tests unchanged; shots P and D, 2D and 3D, rounds 1, 13 and 26.
+- **Size:** 3
+
+## 486. [ ] Hedgerow phone 3D: a field you can read at 390 px
+- **Why:** `hedge-l21-3d-P` (0-390 x 55-685): plots, lane and hedges blur into one brown-olive mass, far below the 2D shot's contrast; the coast (0-40 x 60-400) is grey speckle; the depot is off frame with its sign floating (28-215 x 90-110); the right column cut (370-390 x 160-640). Item 469's critiques scored 3D P lowest (5-7). VISION 2, 6, 8. Checked 439 (it framed the lane, not the depot), 360, 469, 450.
+- **Build:** a phone grade in `render3d/` (crop saturation up, the lane's value apart from the plots with a darker rut edge, hedges inked 2 px+ on screen), the far coast's noise down at small viewports; the phone camera's fit (item 439) takes in the depot's box and the field's right edge.
+- **Accept:** at 390x844 on levels 5, 21, 34 and 40, lane-to-plot luminance 1.6:1 or more (sampled via `window.hedgerow`), the depot box and every plot inside the canvas, hedge ink 2 px+; phone draw calls +3 or fewer; D unchanged; shots P and D.
+- **Size:** 2
+
+## 487. [ ] Hedgerow act map: the masthead and keys as farm-gate signage
+- **Why:** `hedge-menu-D` 0-1440 x 0-56: a plain wordmark off-centre (370-515) and five identical brown pills (795-1425) read as web chrome; `hedge-menu-P` the dock (8-382 x 785-840) five equal brown boxes: the one undesigned strip against the painted country (VISION 1, 6). Checked 18, 47, 209, 253 (the header's function and layout kept) and 471 (stops untouched).
+- **Build:** the wordmark a carved, painted gate board on two posts over the map's top edge, the act banner hung from it; the keys hanging plaques, each illustrated (Cath's coin with her rosette, Daily a chalk slate with today's crop, the Almanac a bound book, the Seed Bank a jar with its count); at P a gate rail of five plaques; a 150 ms swing on tap (a fade under reduced motion).
+- **Accept:** `[data-masthead=gate]`; every key 44x44+ at P with its label and aria-label; the wordmark centred within 4 px at D; 4.5:1 contrast on labels; css lint; hedgerow-map specs pass; shots P and D.
+- **Size:** 2
+
+## 488. [ ] The bugs from the 2026-11-17 23:30 critique, fixed as one batch
+Check each against a fresh shot first (some may be timing in headless shots); fix at the root; shoot P and D.
+- Cathnivore: `cath-game-P` 122-236 x 615-770 a gap in the hand fan between Graft and Supply; `cath-game-D` 1130-1165 x 450-690 Tomas and Mara over the board frame's right rim; `cath-setup-D` 995-1145 x 565-770 the 'This week at the market' sign over Cath's torso and the Start counter cutting her at the waist; `cath-campaign-D` 1050-1245 x 740-870 chapters 5-6 goals ellipsised; `cath-campaign-P` 95-295 x 812-844 'Back to Title' cut by the fold; `cath-setup-P` 'Next: Where you trade' and Start as two stacked primaries over a dead band (y 670-720); `cath-title-D` 850-1340 x 745-765 the Daily board over the cloth's foot.
+- Portfolio: `portfolio-D` 1240-1440 x 525-560 Cath's pedestal disc off the right edge.
+- Hedgerow: `hedge-l21-3d-D` 1188-1340 x 588-604 a Coming-up chip cut ('Airborne needs a Scarecr'); 50-105 x 135-235 the red sailboat cut by the frame's left edge; `hedge-l34-2d-P` 10-88 x 75-140 and 10-60 x 610-660 both depots over the field's edge plots and lane; `hedge-menu-D` 460-745 x 125-205 a lumpy cloud not inked like item 441's suns; the phone's 2D and 3D benches differ (Cath's line vs the seed tray, 0-390 x 690-765).
+- NIGHT SHIFT: `ns-title-P` 17-188 x 500-570 a ghosted LUNA neon through the case-file card; `ns-title-D` 680-900 x 230-560 an unlit dark smear beside the umbrella; `ns-play-D` 455-605 x 285-450 the LUNA sign and the scope tripod crowd the class list and Cath's shoulder; `ns-play-P` 16-164 x 637-698 the weapon plate's rifle dim grey on grey.
+- **Size:** 1-2
