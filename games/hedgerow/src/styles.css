@@ -5709,3 +5709,8 @@ img.act-scene {
 @media (prefers-reduced-motion: reduce) {
   .footprint { display: none; }
 }
+
+/* Plan item 479: the win's last knockout held in 2D: the field leans in 1.15x for the slow 700 ms, then eases back
+   for the harvest (main.ts sets data-knockout; never under reduced motion). */
+#stage > #canvas { transition: scale 400ms ease-out; }
+#stage[data-knockout="2d"] > #canvas { scale: 1.15; transition: scale 220ms cubic-bezier(.3, .7, .4, 1); }

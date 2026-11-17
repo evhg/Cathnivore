@@ -434,6 +434,14 @@ let stackedWave = 0;
 /** The causes a round's leak banners have already named (Fleet: one banner per cause per round), and when the leak slow-motion ends. */
 const leakCauses = { wave: -1, seen: new Set<string>() };
 let slowUntil = 0;
+/** Plan item 479: the win's last knockout is held: the render clock runs at KNOCKOUT_RATE for KNOCKOUT_MS (the engine
+ *  has already finished, so replays and the tuner never see it), a 1.15x stage zoom in 2D, then the rising chime into
+ *  the harvest. Not under reduced motion, nor under webdriver without `?showdown` (specs keep their old timing).
+ *  `knockoutLog` keeps the frame timestamps for the spec. */
+const KNOCKOUT_MS = 700;
+const KNOCKOUT_RATE = 0.35;
+let knockoutUntil = 0;
+let knockoutLog: { start: number; end: number; frames: number[]; harvest: number } | null = null;
 /** Plan item 479: the level's last round is under way. */
 let showdown = false;
 /** Plan item 480: Hollowell's parcels on the farmhouse step, one per leak (`doorstep.ts`). */
@@ -824,6 +832,8 @@ if (SANDBOX)
       for (let k = 0; k < n; k++) doorstepLeak(doorstep);
       return doorstep.parcels;
     },
+    // Plan item 479: the win's held knockout (frame timestamps, its end and when the harvest started), null when none.
+    knockout: () => knockoutLog,
     // Plan item 480: the 2D doorstep's animations running now (null in 3D).
     doorstepAnims: () => (renderer as { stepAnims?: () => unknown } | null)?.stepAnims?.() ?? null,
     // Plan item 480: a clean round's return (the neighbours cart one parcel up the lane), as a cleared round would.
@@ -1105,6 +1115,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   leakCauses.seen.clear();
   runLeaks.length = 0;
   slowUntil = 0;
+  knockoutUntil = 0;
+  delete ui.stage.dataset.knockout;
   showdown = false;
   delete ui.stage.dataset.showdown;
   doorstep = newDoorstep();
@@ -5237,7 +5249,9 @@ function syncDepots(g: Game): void {
   // Plan item 479: through the last round the shutter stays fully up and the rep stands out at the door.
   const standOut = showdown && g.phase === "wave";
   if (renderer && "showdown" in renderer) (renderer as { showdown: boolean }).showdown = standOut;
-  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${standOut}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
+  // Toggled in place, not rebuilt: rebuilding the depots' SVG in the round's call frame delayed that frame.
+  if (layer0) for (const el of layer0.querySelectorAll<HTMLElement>(".depot")) el.toggleAttribute("data-showdown", standOut);
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;
   let layer = layer0;
@@ -5393,7 +5407,9 @@ function frame(now: number): void {
   // (sway, ripples, drifting cloud shadows and sparks all stop). `data-keyart-still` tells the shot script.
   const still = KEYART && is3D(renderer) && g.phase !== "wave" && now - keyartBorn > 5000;
   if (KEYART) document.documentElement.toggleAttribute("data-keyart-still", still);
-  renderer.draw(g, paused || introHold || still ? 0 : dt * Math.min(speed, 2));
+  const held = now < knockoutUntil;
+  if (held) knockoutLog?.frames.push(now);
+  renderer.draw(g, paused || introHold || still ? 0 : dt * Math.min(speed, 2) * (held ? KNOCKOUT_RATE : 1));
   syncFieldFit();
   syncCathSay(g, now);
   syncTwists(g);
@@ -5412,18 +5428,37 @@ function frame(now: number): void {
     ui.resultWatch.hidden = ui.resultShare.hidden = !lastReplay;
     sfx.setIntensity(0);
     if (g.phase === "won") {
-      sfx.playWin();
       haptic.win();
       renderer?.celebrate();
-      // The last enemy falls in slow motion under a gold banner; the result card follows it.
-      if (!REDUCED) slowUntil = performance.now() + 1200;
-      banner("The lane holds", "Last one down", false, "hero");
-      harvest(g);
+      // The last enemy falls in slow motion; then the chime, a gold banner and the harvest; the result card follows.
+      const hold = !REDUCED && (!navigator.webdriver || new URLSearchParams(location.search).has("showdown"));
+      const t0 = performance.now();
+      const harvestNow = (): void => {
+        if (game !== g) return;
+        knockoutUntil = 0;
+        delete ui.stage.dataset.knockout;
+        sfx.playWin();
+        banner("The lane holds", "Last one down", false, "hero");
+        harvest(g);
+        if (knockoutLog) {
+          knockoutLog.end = knockoutLog.frames.at(-1) ?? performance.now();
+          knockoutLog.harvest = performance.now();
+        }
+      };
+      if (hold) {
+        knockoutUntil = t0 + KNOCKOUT_MS;
+        knockoutLog = { start: t0, end: 0, frames: [], harvest: 0 };
+        ui.stage.dataset.knockout = renderer && is3D(renderer) ? "3d" : "2d";
+        window.setTimeout(harvestNow, KNOCKOUT_MS);
+      } else {
+        knockoutLog = null;
+        harvestNow();
+      }
     } else {
       sfx.playLose();
       haptic.lose();
     }
-    window.setTimeout(() => finish(g), g.phase === "won" ? 1800 : 700);
+    window.setTimeout(() => finish(g), g.phase === "won" ? 1800 + (knockoutUntil ? KNOCKOUT_MS : 0) : 700);
   }
 }
 
