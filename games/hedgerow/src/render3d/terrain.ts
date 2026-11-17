@@ -1143,7 +1143,11 @@ export function buildGround(level: Level): Ground {
   // its centre), so the lane runs between hedgerows as it does in 2D.
   let laneEdges = 0;
   let hedgedEdges = 0;
-  const laneHedgeCols = ["#3f6e33", "#4a7a3a", "#355e2c", "#527f3d"].map((c) => new THREE.Color(c));
+  // Plan item 469: a living hedgerow, not a row of identical dark beads round every plot (a critique): greens about
+  // 15% lighter, now and then a gap, a fuller bush. Its own random stream, so the decoration seed (and everything
+  // placed after) doesn't shift. (Flowering bushes were tried: blossom mixed into the green read as grey stones.)
+  const laneHedgeCols = ["#4a7d3c", "#578a44", "#3f6c34", "#62914a"].map((c) => new THREE.Color(c));
+  const hedgeVar = rng(level.id * 104729 + 17);
   for (const k of lane) {
     const [lc, lr] = k.split(",").map(Number) as [number, number];
     for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
@@ -1159,8 +1163,14 @@ export function buildGround(level: Level): Ground {
       for (let t = -0.42; t <= 0.42; t += 0.14) {
         const x = ex + (dr ? t : 0);
         const z = ez + (dc ? t : 0);
-        const rad = 0.065 + deco() * 0.025;
-        laneHedge.push({ x, y: heightAt(x, z) + rad * 0.85, z, ry: deco() * 6.3, s: rad, sy: 1.15 + deco() * 0.3, color: laneHedgeCols[Math.floor(deco() * laneHedgeCols.length)]! });
+        const rad0 = 0.065 + deco() * 0.025;
+        const ry = deco() * 6.3;
+        const sy = 1.15 + deco() * 0.3;
+        const color = laneHedgeCols[Math.floor(deco() * laneHedgeCols.length)]!;
+        const v = hedgeVar();
+        if (v < 0.1) continue;
+        const rad = rad0 * (v > 0.85 ? 1.3 : 0.85 + hedgeVar() * 0.25);
+        laneHedge.push({ x, y: heightAt(x, z) + rad * 0.85, z, ry, s: rad, sy, color });
       }
     }
   }
