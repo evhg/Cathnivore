@@ -5234,7 +5234,10 @@ function syncDepots(g: Game): void {
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
   r.depotMouths = mouths;
-  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
+  // Plan item 479: through the last round the shutter stays fully up and the rep stands out at the door.
+  const standOut = showdown && g.phase === "wave";
+  if (renderer && "showdown" in renderer) (renderer as { showdown: boolean }).showdown = standOut;
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${standOut}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
   if (key === depotKey) return;
   depotKey = key;
   let layer = layer0;
@@ -5252,6 +5255,7 @@ function syncDepots(g: Game): void {
       el.dataset.depot = String(sp.lane);
       el.dataset.repMood = depotMood;
       el.toggleAttribute("data-door-open", doorOpen);
+      el.toggleAttribute("data-showdown", standOut);
       el.style.setProperty("--x", `${Math.round(sp.x)}px`);
       el.style.setProperty("--y", `${Math.round(sp.y)}px`);
       el.style.setProperty("--size", `${sp.size}px`);

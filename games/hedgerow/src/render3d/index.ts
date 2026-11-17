@@ -3264,8 +3264,10 @@ export class Renderer3D {
   }
   /** Plan item 179: the shutter rolls up as a round's convoy leaves (the first 2.5 s of a round), and down again. */
   private depotOpen = 0;
+  /** Plan item 479: the last round is a showdown (set by main.ts): the shutters stay fully up through it. */
+  showdown = false;
   private syncDepotShutters(game: Game, dt: number): void {
-    const want = game.phase === "wave" && game.waveClock < 2.5 ? 1 : 0;
+    const want = game.phase === "wave" && (game.waveClock < 2.5 || this.showdown) ? 1 : 0;
     this.depotOpen = this.reducedMotion ? want : want > this.depotOpen ? Math.min(1, this.depotOpen + dt / 0.6) : Math.max(0, this.depotOpen - dt / 0.9);
     for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
       const sh = d.userData.shutter as THREE.Object3D | undefined;

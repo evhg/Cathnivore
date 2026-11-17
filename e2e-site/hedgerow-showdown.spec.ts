@@ -39,4 +39,7 @@ test('the last round is called as a showdown, an earlier one is not', async ({ p
   await expect(page.locator('.banner.showdown strong')).toHaveText(/last round/i)
   // and Cath says so where she speaks (her bubble on the field mid-round)
   await expect(page.locator('#bubble-text')).toHaveText(/last lot/i)
+  // the depot's shutter is fully up and the rep stands at the door through the round (every depot in the frame)
+  const depots = page.locator('.depot')
+  if (await depots.count()) await expect(page.locator('.depot:not([data-showdown])')).toHaveCount(0)
 })

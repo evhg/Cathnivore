@@ -5304,6 +5304,14 @@ img.act-scene {
 /* Plan item 157: the roller door rolls up as the round's convoy pulls out; in 3D the rep leans over the depot's roof. */
 .depot-door { transform-box: fill-box; transform-origin: 50% 0; transition: transform 500ms ease; }
 .depot[data-door-open] .depot-door { transform: scaleY(0.12); }
+/* Plan item 479: the last round's showdown: the shutter goes all the way up and stays up, and the rep comes down off
+   the balcony to stand in the open door (22% x 28% of the box, as on the rail: the step is a translate of his own size),
+   gloating or rattled by how the last round went. A tiny depot keeps him where he is (his rail is beside it). */
+.depot[data-showdown] .depot-door { transform: scaleY(0.02); }
+.depot[data-showdown]:not([data-tiny]) .depot-rep { left: 39%; top: 57%; animation: rep-step-out 700ms cubic-bezier(.3, .7, .4, 1) both; }
+.depot[data-showdown][data-rep-mood="gleeful"]:not([data-tiny]) .depot-rep { animation: rep-step-out 700ms cubic-bezier(.3, .7, .4, 1) both, rep-gloat 600ms ease-in-out 700ms 3 alternate; }
+.depot[data-showdown][data-rep-mood="rattled"]:not([data-tiny]) .depot-rep { animation: rep-step-out 700ms cubic-bezier(.3, .7, .4, 1) both, rep-shake 120ms linear 700ms 6 alternate; }
+@keyframes rep-step-out { from { translate: 168% -93%; } 60% { translate: 60% -20%; } to { translate: 0 0; } }
 /* Plan item 336: as the shutter rolls up on Go the floodlights flare twice over the front (a single steady glow under
    reduced motion). */
 /* Plan item 336: the round's lead vehicle noses out of the shutter (58-94% of the box) and on toward the lane. */
