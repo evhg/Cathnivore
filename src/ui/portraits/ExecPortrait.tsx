@@ -153,6 +153,8 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
       <g className="pell-body">
         <path d="M10 124q1-27 27-34l23 9 23-9q26 7 27 34Z" fill={g('suit')} />
         <path d="M30 98q6-4 12-5M90 98q-6-4-12-5" fill="none" stroke="#5f7aa3" strokeWidth="1.2" opacity=".55" />
+        <path d="M24 110q5-3 9-9M96 110q-5-3-9-9M28 118q4-2 7-7" fill="none" stroke="#121a2b" strokeWidth="1.1" strokeLinecap="round" opacity=".45" />
+        <path d="M33 96q4-2 7-2" fill="none" stroke="#9fb4d6" strokeWidth=".9" strokeLinecap="round" opacity=".55" />
         <path d="M47 89l13 15 13-15-4-5H51Z" fill="#f5f8fc" />
         <path d="M52 86l8 9 8-9" fill="none" stroke="#d3dbe6" strokeWidth="1.2" />
         <g className={`pell-tie${mood === 'defeated' ? ' pell-tie-loose' : ''}`}>
@@ -177,6 +179,7 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
         <path d="M36 50q-6 0-5 7q1 6 6 6Z" fill="#e3b49e" />
         <path d="M84 50q6 0 5 7q-1 6-6 6Z" fill="#d6a18b" />
         <path d="M34 53q1 4 3 5M86 53q-1 4-3 5" fill="none" stroke="#b9826d" strokeWidth=".9" />
+        <path d="M33.5 52q.5-2.5 2.5-2.5M86.5 52q-.5-2.5-2.5-2.5" fill="none" stroke="#fff" strokeWidth=".8" strokeLinecap="round" opacity=".45" />
 
         {/* the face: broad at the jaw, jowls softening the line, lit from the upper left */}
         <path className="pell-face" d="M60 22c14 0 24 10 24 27c0 10-1 17-4 22c-3 7-11 13-20 13s-17-6-20-13c-3-5-4-12-4-22c0-17 10-27 24-27Z" fill={g('skin')} />
@@ -197,6 +200,9 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
         <path d="M41 33q14-11 33-7" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".38" />
         <path d="M47 28.5q9-4 18-3" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity=".9" />
         <path d="M47 23q-3 3-4 7" fill="none" stroke="#6e7886" strokeWidth="1.3" strokeLinecap="round" />
+        {/* combed strands: light ones catching the over-lit room, fine grooves between */}
+        <path d="M48 25q10-4 22-1q7 2 12 8M44 29q12-5 26-2q6 2 10 6M41 35q4-6 11-8M38 42q2-8 8-12M73 27q6 3 9 9" fill="none" stroke="#f7f9fc" strokeWidth=".8" strokeLinecap="round" opacity=".75" />
+        <path d="M50 27q9-2 18 0q6 2 10 6M43 33q7-5 15-5M39 39q3-6 8-9M76 31q4 3 6 8" fill="none" stroke="#7d8794" strokeWidth=".6" strokeLinecap="round" opacity=".55" />
         <path d="M36 46q-1 5 0 9M84 46q1 5 0 9" fill="none" stroke="#cfd5dd" strokeWidth="2" strokeLinecap="round" />
         {mood === 'defeated' && <path d="M50 26q-4 8-1 14" fill="none" stroke="#bcc4ce" strokeWidth="1.6" strokeLinecap="round" />}
 
