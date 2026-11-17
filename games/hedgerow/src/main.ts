@@ -819,6 +819,11 @@ if (SANDBOX)
     gateQueue: () => (renderer as { shownQueue?: unknown } | null)?.shownQueue ?? null,
     // Plan item 160: true once the 3D camera has let go of the gate (a boss queue's look) and stands still; true in 2D.
     camSettled: () => (renderer && is3D(renderer) ? renderer.camSettled() : true),
+    // Plan item 480: lay n parcels on the farmhouse step at once (shots and tests), as n leaks would.
+    leakDoorstep: (n: number) => {
+      for (let k = 0; k < n; k++) doorstepLeak(doorstep);
+      return doorstep.parcels;
+    },
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),

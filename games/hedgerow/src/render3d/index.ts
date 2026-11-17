@@ -57,6 +57,8 @@ import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
 import { FolkMeshes, inkFigure } from "./folk";
 import { clearUnder, shadowUpright } from "./upright";
+import { Doorstep3D } from "./doorstep";
+import type { DoorstepView } from "../doorstepart";
 
 interface TowerView {
   obj: THREE.Group;
@@ -320,6 +322,9 @@ export class Renderer3D {
   aim: { x: number; y: number; r: number } | null = null;
   preview: TowerKind | null = null;
   reducedMotion = false;
+  /** Plan item 480: the farmhouse step's parcels, card and sale board, set by main.ts (`doorstep.ts`). */
+  doorstep: DoorstepView | null = null;
+  private door: Doorstep3D | null = null;
   /** Plan item 143: the people and animals working the farm. */
   readonly farm = new FarmFolk();
   shownFolk: Folk[] = [];
@@ -466,6 +471,8 @@ export class Renderer3D {
   private buildLevel(game: Game): void {
     this.levelId = game.level.id;
     // Free the last level's ground (its cached, shared materials stay for the next one).
+    this.door?.dispose();
+    this.door = null;
     for (const o of [...this.world.children]) o.traverse(disposeOwn);
     for (const m of this.motes) m.dispose();
     this.birds?.dispose();
@@ -476,6 +483,26 @@ export class Renderer3D {
     const L = hasTwist(game.level, "night") && game.level.id <= 90 ? nightLight(actLight(game.level.id)) : actLight(game.level.id);
     this.ground = buildGround(game.level);
     this.world.add(this.ground.group);
+    {
+      // Plan item 480: the parcels pile beside the farmhouse door (left of it at the field's right edge) and the sale
+      // board stands by the first lane cell, behind a lane that runs across the field or on its field side.
+      const lv = game.level;
+      const [ec] = lv.path[lv.path.length - 1]!;
+      const [c, r] = lv.path[0]!;
+      const [c2, r2] = lv.path[1]!;
+      const dx = Math.sign(c - c2);
+      const dy = Math.sign(r - r2);
+      // Planted like an estate agent's board on the field's first corner (the gate itself often stands past the frame):
+      // north of a lane that comes in across the field, beside one that comes in from the north or south, toward the middle.
+      const bx = c + 0.5 - dx * 0.25 + (dx !== 0 ? 0 : c + 0.5 < lv.cols / 2 ? 0.55 : -0.55);
+      const bz = r + 0.5 - dy * 0.25 + (dx !== 0 ? -0.55 : 0);
+      this.door = new Doorstep3D(this.reducedMotion);
+      // The pile goes on the door's camera side (the camera looks north), so it isn't hidden behind the house.
+      const yawF = this.ground.farmhouse.rotation.y;
+      const toCam = -Math.sin(yawF);
+      const side: 1 | -1 = Math.abs(toCam) > 0.3 ? (toCam > 0 ? 1 : -1) : ec >= lv.cols - 2 ? -1 : 1;
+      this.door.attach(this.ground.farmhouse, side, { x: bx, y: this.ground.heightAt(bx, bz), z: bz, yaw: 0 }, this.world);
+    }
     this.crops = new Crops(game.level, this.ground.heightAt, this.canvas, this.reducedMotion);
     this.world.add(this.crops.group);
     this.folkMeshes = new FolkMeshes();
@@ -1625,6 +1652,7 @@ export class Renderer3D {
     }
     this.syncSetPieces(game, t);
     this.syncPiles(game);
+    this.door?.update(this.doorstep, dt, this.steepTilt() * 1.2);
     this.syncOaks(game);
     if (!this.reducedMotion) for (const sails of this.landmarkSails) sails.rotation.z -= dt * 0.9;
     // Plan item 469: on a steep lens (an upright phone) the farmhouse leans back towards it a little, as towers and
