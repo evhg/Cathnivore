@@ -74,3 +74,52 @@ export function sealsEarned(chapterId: string, state: GameState): SealId[] {
 export function hasHardSeal(chapterId: string): boolean {
   return CHAPTER_SEALS[chapterId]?.hard === onHard
 }
+
+// Plan item 477: each seal's outlook while the chapter is played, so the seals are goals on the table, not a
+// surprise on the end screen. 'open' means nothing to read yet (or a seal this game can't give: the Hard seal on
+// Normal); 'onTrack' would be earned if the game were won now; 'atRisk' has one round (or one Lost Land) left;
+// 'lost' can no longer be met by any continuation; 'sealed' is earned (a won game).
+export type SealState = 'open' | 'onTrack' | 'atRisk' | 'lost' | 'sealed'
+
+export interface SealOutlook {
+  id: SealId
+  label: string
+  state: SealState
+}
+
+/** Whether this is the last round (the Pressure deck is spent: the game ends with this round's enemy turn). */
+const finalRound = (s: GameState) => s.pressureDeck.length === 0
+
+function featOutlook(chapterId: string, which: 'hard' | 'feat', s: GameState): SealState {
+  const seal = CHAPTER_SEALS[chapterId]?.[which]
+  if (!seal) return 'open'
+  if (s.result) return s.result.won && seal.earned(s) ? 'sealed' : 'lost'
+  if (seal === onHard) return s.config.difficulty === 'hard' ? (finalRound(s) ? 'atRisk' : 'onTrack') : 'open'
+  const by = ROUND_FEATS[chapterId]?.[which]
+  if (by !== undefined) return s.round > by ? 'lost' : s.round === by || finalRound(s) ? 'atRisk' : 'onTrack'
+  if (chapterId === 'growing-season') {
+    const n = lostLand(s)
+    return n > 3 ? 'lost' : n === 3 ? 'atRisk' : 'onTrack'
+  }
+  if (chapterId === 'kingsmarket') return s.publicTrust >= 12 ? 'onTrack' : finalRound(s) ? 'atRisk' : 'open'
+  return 'open'
+}
+
+/** The round-limited seals' rounds (they're won 'by round n'), so the outlook can count down to them. */
+const ROUND_FEATS: Record<string, Partial<Record<'hard' | 'feat', number>>> = {
+  'fresh-meat': { hard: 3, feat: 4 },
+  'word-of-mouth': { feat: 5 },
+  'the-plan': { feat: 4 },
+  'friends-in-low-places': { feat: 1 },
+}
+
+/** The chapter's three seals as they stand in `state`: the win, the Hard (or swift) seal, and the feat. */
+export function sealOutlook(chapterId: string, state: GameState): SealOutlook[] {
+  const seals = CHAPTER_SEALS[chapterId]
+  const win: SealState = state.result ? (state.result.won ? 'sealed' : 'lost') : finalRound(state) ? 'atRisk' : 'open'
+  return [
+    { id: 'win', label: 'Win the chapter', state: win },
+    { id: 'hard', label: seals?.hard === onHard && state.config.difficulty !== 'hard' ? 'Won on Hard (replay on Hard)' : (seals?.hard.label ?? 'Won on Hard'), state: featOutlook(chapterId, 'hard', state) },
+    { id: 'feat', label: seals?.feat.label ?? 'Chapter feat', state: featOutlook(chapterId, 'feat', state) },
+  ]
+}
