@@ -4407,6 +4407,8 @@ Pointers (lane B, 2026-11-17 09:50, no change made): the stop is `button.level.n
 - **Size:** 2
 
 ## 473. [ ] NIGHT SHIFT title: the street behind her, and Cath large on the phone
+
+Read first (lane B, 10:30): item 433 (Cath and her umbrella as one figure) and item 456 (her noir key) set the current title figure; change the framing and street around them, not the figure.
 - **Why:** `ns-title-D` (690-1220 x 0-560): the right half is the black umbrella over a grey, untextured plume; the street behind her reads as a void. `ns-title-P` (2x shot, 180-780 x 740-1260): the umbrella is the biggest shape and her face (540-700 x 1090-1260) is pushed into the corner behind The List (VISION: a clear focal point, Cath the face). Item 331 is the left half; this is the right half and the phone framing.
 - **Build:** behind her: wet cobbles with the neon's reflections, two lit shopfronts (LUNA and a Hollowell shop), a fire escape, the steam lit from below (not a grey mass), rain catching the rim light. The canopy smaller and tilted back so it frames her head. At P a portrait framing with her head in the upper-middle third, the menu over her coat on glass, The List a strip. Posters re-rendered.
 - **Accept:** at P her face 110 px+ tall (CSS px) with its centre between 30% and 55% of the height; the umbrella at most 15% of the frame at P and D (mask); the street behind her 2x the current luminance spread; cathode-front, logotype and poster specs pass; live frames shot at P and D.
@@ -4419,6 +4421,8 @@ Pointers (lane B, 2026-11-17 09:50, no change made): the stop is `button.level.n
 - **Size:** 2
 
 ## 475. [ ] Hedgerow 2D: beds planted with crops you can read
+
+Read first (lane B, 10:30): Saltmarsh's teal marsh beds are its act's own (lane A, 8dd8463, gave the 3D field samphire and sea-lavender 'as in 2D'), so judge the crops on a farmland act's level (5, 34, 40) before touching Saltmarsh.
 - **Why:** `hedge-l21-2d-D` (380-830 x 230-860), `hedge-l34-2d-D` (480-890 x 320-790), `hedge-l21-2d-P` (60-370 x 180-660): in the 2D renderer (the no-WebGL fallback and `?2d`) the beds are washed teal slabs or blank stripes, no crop, stage or variety (items 52, 59 don't show there).
 - **Build:** a small crop library drawn in code (cabbage rows, barley with ears, lavender drills, potato ridges, sunflowers, samphire for Saltmarsh), two to four per level by act, three growth stages on the existing rounds, warm earth under them in place of the teal tint; a tower on a bed parts the crop.
 - **Accept:** 3+ crop kinds visible at round 11 of level 21 and round 17 of level 34 (`data-crop`, e2e); mean bed saturation 0.35+ (was about 0.15); no bed a single flat fill; Hedgerow 2D specs pass; shots P and D for levels 5, 21, 34, 40.
