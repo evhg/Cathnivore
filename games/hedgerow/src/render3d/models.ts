@@ -1522,7 +1522,9 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       // was a van body with a box on top and read as stacked pink cubes.
       const g = hatchback("#ff86bd", "#ffd6ea");
       g.add(cyl(0.01, 0.01, 0.14, metal("#5a5e63"), -0.07, 0.35, 0, 5));
-      const ring = mesh(new THREE.TorusGeometry(0.08, 0.016, 6, 16), glow("#ffd6ea", 1), -0.07, 0.46, 0);
+      // Plan item 469: a thinner, dimmer lamp, so under bloom it reads as a ring light on its pole, not a halo
+      // floating over a pink block (a dark housing behind it was tried: it read as a black hoop).
+      const ring = mesh(new THREE.TorusGeometry(0.075, 0.012, 6, 16), glow("#ffd6ea", 0.55), -0.07, 0.46, 0);
       ring.rotation.y = Math.PI / 2;
       g.add(ring);
       return g;

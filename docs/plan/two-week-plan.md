@@ -4361,6 +4361,8 @@ Progress (lane A, 2026-11-17 03:35, slice 1): measured item 19's layer first: sh
 - **Size:** 3
 
 ## 469. [ ] Hedgerow 3D: the field set in a finished diorama *(lane A, in progress)*
+
+Progress (lane A, 2026-11-17 05:28, slice 1): the queue's 'pink blocks under halo rings' (l21 D) are the Influencer hatchbacks (`buildRung`, already with wheels, glass and a two-tone roof) whose ring light bloomed into a halo: the lamp is thinner and dimmer (glow 1 -> 0.55), so it reads as a ring on its pole (a dark housing behind it read as a black hoop; reverted). Shots scratchpad `l21-*`. Left: everything else in Build (reed clumps, creeks, foamed sea edge, framing, `?keyart` per act).
 - **Why:** `hedge-l21-3d-D` (15-300 x 80-890, 880-1080 x 75-330): flat lilac-grey ground under rows of black sticks (the reeds read as a bed of nails); the convoy still pink blocks under halo rings (item 410).
 - **Build:** Saltmarsh margins as tufted reed clumps of varied height and colour, mudflat creeks with sky reflections, a foamed sea edge; the convoy as van models (cab, wheels, livery decal) readable at D; a framing pass so bare ground is ≤ 15% of the frame; a stable `?keyart` frame per act.
 - **Accept:** in l21 D the flat margin colour covers < 15% of the frame; each van shows wheels and a cab; draw calls within budget; a critique rates the 3D shot as finished as the 2D.
