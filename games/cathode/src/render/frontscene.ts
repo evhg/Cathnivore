@@ -19,6 +19,7 @@ import type { Quality, World } from "./types";
 import { buildFrontCath, type FaceExpression, type HeldProp, type FrontCath } from "./frontcath";
 import { buildFrontNeon, NEON_H, NEON_W } from "./frontneon";
 import { buildFrontStoop } from "./frontstoop";
+import { buildFrontSets } from "./frontsets";
 import { buildFrontWet } from "./frontwet";
 import { buildFrontDiorama, SODIUM } from "./frontdiorama";
 
@@ -246,6 +247,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 338: the pick's stoop behind her (a door, a bare bulb, its baked warm light), shown only on the pick.
   const stoop = buildFrontStoop(feet, Math.PI, feet.y);
   world.scene.add(stoop.group);
+  // Plan item 457: and behind the stoop, each class's own set (rooftop, locker, back room, server alley, workbench).
+  const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
+  world.scene.add(sets.group);
   const groundAt = (x: number, z: number) => world.floorAt?.(x, feet.y + 1, z) ?? world.groundHeight(x, z);
   const neonRimI = phone ? 7 : 9;
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
@@ -862,6 +866,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
     diorama.update(time, o.still, cam.position);
     stoop.update(wd.w, wd.cls);
+    sets.update(wd.w, wd.cls, o.still ? Infinity : dt);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
     rimDir.copy(rimLight).sub(cam.position).normalize().transformDirection(cam.matrixWorldInverse);
@@ -1181,6 +1186,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       wet.dispose();
       diorama.dispose();
       stoop.dispose();
+      sets.dispose();
       delete world.renderer.domElement.dataset.keyLight;
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });

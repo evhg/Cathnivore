@@ -7,6 +7,7 @@
 
 import * as THREE from "three";
 import { LAYER_NO_REFLECT } from "./reflection";
+import { SET_KEY } from "./frontsets";
 
 export interface FrontStoop {
   readonly group: THREE.Group;
@@ -246,20 +247,29 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
         fog: false,
       }),
     );
+  // Plan item 457: the bulb's washes on the wall, step and floor take the class set's key (the bulb itself stays
+  // tungsten), so the light round her is the set's, not one warm stoop under five sets.
+  const tinted: Array<{ mat: THREE.MeshBasicMaterial; base: THREE.Color }> = [];
+  const tint = (mat: THREE.MeshBasicMaterial) => {
+    tinted.push({ mat, base: mat.color.clone() });
+    return mat;
+  };
+  let tintCls: string | null = "";
+  const keyC = new THREE.Color();
   const halo = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(0.9, 0.9)), additive(glowTex, BULB.clone().multiplyScalar(1.6), 0.85)));
   halo.position.set(BX, BY, z0 + 0.36);
-  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), additive(washTex, BULB, 1.0)));
+  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), tint(additive(washTex, BULB, 1.0))));
   wash.position.set(BX - 0.3, BY - 0.2, z0 + 0.25);
-  const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), additive(washTex, BULB, 0.85)));
+  const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), tint(additive(washTex, BULB, 0.85))));
   pool.rotation.x = -Math.PI / 2;
   pool.position.set(BX - 0.4, 0.02, z0 + 1.1);
-  const stepLit = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(DW + 0.7, 0.5)), additive(washTex, BULB, 0.85)));
+  const stepLit = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(DW + 0.7, 0.5)), tint(additive(washTex, BULB, 0.85))));
   stepLit.rotation.x = -Math.PI / 2;
   stepLit.position.set(side, 0.165, z0 + 0.3);
   // A broad, soft warm fill on the cobbles toward the lens, so the near floor she stands on isn't black. Kept dim
   // and set back from her feet, so her contact shadow lands on floor the fill doesn't wash out.
   const nearPool = add(
-    new THREE.Mesh(geo(new THREE.PlaneGeometry(5.0, 3.0)), additive(washTex, BULB.clone().lerp(new THREE.Color(1, 1, 1), 0.2), 0.22)),
+    new THREE.Mesh(geo(new THREE.PlaneGeometry(5.0, 3.0)), tint(additive(washTex, BULB.clone().lerp(new THREE.Color(1, 1, 1), 0.2), 0.22))),
   );
   nearPool.rotation.x = -Math.PI / 2;
   nearPool.position.set(-0.4, 0.015, z0 + 2.4);
@@ -584,6 +594,18 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
     group,
     update(w, cls) {
       for (const [c, g] of props) g.visible = c === cls;
+      if (cls !== tintCls) {
+        tintCls = cls;
+        const hex = cls ? SET_KEY[cls] : undefined;
+        for (const t of tinted) {
+          t.mat.color.copy(t.base);
+          if (hex == null) continue;
+          // The key's hue at the wash's own brightness.
+          keyC.set(hex);
+          keyC.multiplyScalar(Math.max(t.base.r, t.base.g, t.base.b) / Math.max(keyC.r, keyC.g, keyC.b, 1e-3));
+          t.mat.color.lerp(keyC, 0.75);
+        }
+      }
       const k = Math.max(0, Math.min(1, (w - 0.05) / 0.9));
       group.visible = k > 0.001;
       if (Math.abs(k - shown) < 1e-4) return;
