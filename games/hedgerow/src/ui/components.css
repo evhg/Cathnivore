@@ -668,6 +668,24 @@ body:has(#dlg-pause[open]) .paused-note {
 .banner.hero {
   background: linear-gradient(var(--white-a20), transparent 40%, var(--black-a16)), var(--cath);
 }
+/* Plan item 479: the last round's call: a deep red ribbon with a gold edge that unrolls from its middle (600 ms) */
+.banner.showdown {
+  background: linear-gradient(var(--white-a20), transparent 40%, var(--black-a20)), var(--clay-deep);
+  box-shadow: inset 0 3px 0 var(--wheat), inset 0 -3px 0 var(--wheat);
+}
+.banner.showdown.show {
+  animation: showdown-unroll 600ms var(--ease-out) both;
+}
+@keyframes showdown-unroll {
+  from {
+    scale: 0 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner.showdown.show {
+    animation: none;
+  }
+}
 /* The enemy's: a Hollowell billboard in white gloss and teal, no ink outline, no swallowtails */
 .banner.boss {
   clip-path: none;

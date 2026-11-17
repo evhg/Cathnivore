@@ -433,6 +433,8 @@ let stackedWave = 0;
 /** The causes a round's leak banners have already named (Fleet: one banner per cause per round), and when the leak slow-motion ends. */
 const leakCauses = { wave: -1, seen: new Set<string>() };
 let slowUntil = 0;
+/** Plan item 479: the level's last round is under way. */
+let showdown = false;
 /** The round last saved for Continue, so each round start saves once. */
 let runSavedWave = -1;
 /** Which abilities were ready last frame (a tick under the thumb when one comes back). */
@@ -1076,6 +1078,8 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   leakCauses.seen.clear();
   runLeaks.length = 0;
   slowUntil = 0;
+  showdown = false;
+  delete ui.stage.dataset.showdown;
   runSavedWave = -1;
   panelKey = "";
   earlyCalls = 0;
@@ -4925,6 +4929,15 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           if (page?.spike) sfx.playSpike();
           banner(`Round ${r}${page ? `: ${page.theme}` : ""}`, ev.early ? `Stacked early · +${ev.early} Marks` : page ? cardBody(page.card) : `Round ${r} of ${lastNo(g)}`, false, "round");
         } else banner(`Wave ${ev.wave}`, ev.early ? `Stacked early · +${ev.early} Marks` : `of ${g.level.waves.length}`);
+        // Plan item 479: the last round is called as a showdown: a ribbon unrolls over the field, Cath squares up,
+        // the music goes to its top layer (a boss round keeps its boss banner: the boss is already the finale).
+        if (ev.wave === g.level.waves.length && !player) {
+          showdown = true;
+          ui.stage.dataset.showdown = "";
+          if (!boss) banner("Last round", ui.banner.querySelector("span")?.textContent ?? "", false, "showdown");
+          hostFeel("determined");
+          say("Last lot. Hold the lane and the field is ours.");
+        }
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
         introduce(kinds, ev.wave);
         if (ev.early) {
@@ -5316,7 +5329,7 @@ function frame(now: number): void {
       renderer.feed(evs, g);
       updateHud();
       introWatch(g);
-      sfx.setIntensity(g.phase !== "wave" ? 0 : g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
+      sfx.setIntensity(g.phase !== "wave" ? 0 : showdown || g.enemies.some((e) => isBig(e.kind)) ? 2 : 1);
       // The field takes on the boss's colours while it is alive.
       const bossNow = g.enemies.find((e) => isBig(e.kind) && e.hp > 0);
       if (bossNow) ui.stage.dataset.arena = bossNow.kind;
