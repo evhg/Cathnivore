@@ -243,7 +243,9 @@ const STANDING: Record<Crop, { colour: string; s: number; sy: number }> = {
 /** Plan item 469: Saltmarsh's three beds in 3D (2D's fills in fieldkitart.ts): the texture they borrow and their tint. */
 const MARSH_BED = {
   samphire: { base: "sward", tint: "#8cbc86" },
-  lavender: { base: "clover", tint: "#8aa284" },
+  // Plan item 469: on the fine sward, not the clover blobs (a critique read the plots as blotchy); a mauve grey under
+  // its violet sprays, as 2D's lavender pads are.
+  lavender: { base: "sward", tint: "#a096ac" },
   saltgrass: { base: "sward", tint: "#86c6b2" },
 } as const;
 
