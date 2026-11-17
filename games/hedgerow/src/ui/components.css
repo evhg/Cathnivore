@@ -2996,8 +2996,10 @@ body:has(#dlg-pause[open]) .paused-note {
   color: var(--ink);
   white-space: nowrap;
 }
+/* The answer stays whole: '+N more' drops to its own line rather than cutting 'Scarecrow' to 'Scarecr' (level 21 at
+   1440, 2026-11-17); the chip cuts only when it alone outruns the column */
 .play .panel .intel-locks:has(.lock-chip) {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 3px;
 }
 .play .panel .intel-locks:has(.lock-chip) .intel-label {
@@ -3005,7 +3007,8 @@ body:has(#dlg-pause[open]) .paused-note {
   font-size: var(--fs-rack);
 }
 .play .panel .intel-locks .lock-chip {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 2px;
