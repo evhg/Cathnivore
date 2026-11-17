@@ -44,7 +44,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - **2026-11-17 05:51 lane A session:** item 469 slices 3-6 (7debde71, 8adc581c, 56f17490, b14a3ce7); 3dframe, biome3d, country3d, margins, water, fleet3d, gatequeue, vehicles, camera3d pass; new unit test hedgerow-creeks; keyart3d shots stable for all 10 acts; full `npm run check` (see below).
-- 2026-11-17 06:22 lane B: 464 slice 3; cathode-testfire (new unit test), cathode- unit tests 903 pass, keyart-fresh; posters and key art re-rendered.
+- 2026-11-17 06:22 lane B: 464 slice 3; cathode-testfire (new unit test), testfire, classpose, classpick pass at P and D (22, 6 viewport skips), cathode- unit tests 903 pass, keyart-fresh; posters and key art re-rendered.
 - 2026-11-17 05:22 lane B: E2E fix (classpose phone stage), 464 slice 2; classpose, testfire pass at P and D; NIGHT SHIFT unit tests 901 pass.
 - **2026-11-17 04:51 lane A session:** E2E red on 775bcc67 fixed (c26d4c7f); item 468 slices 4-5, done; item 469 slices 1-2. site.spec Hedgerow (51), hedgerow-attack, camera3d, 3dframe (15), css-lint, keyart-fresh, tower-models pass; full `npm run check` passed (2720 tests).
 - 2026-11-17 04:22 lane B: 464 slice 1; cathode-testfire (new) and classpick pass at P and D; posters and key art re-rendered.
