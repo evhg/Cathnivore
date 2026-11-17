@@ -4314,7 +4314,7 @@ Progress (lane B, 2026-11-16 17:55, 3 slices): fixed: Runnel's Up next says 'tod
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 463. [ ] NIGHT SHIFT: Cath's rim on both sides, and the pick's class coats apart again *(handed back 2026-11-17 07:57 by lane B: coats met when settled; the rim's cause found, not fixed: see progress)*
+## 463. [ ] NIGHT SHIFT: Cath's rim on both sides, and the pick's class coats apart again *(lane B, in progress)*
 - **Why:** 456's leftovers. A blind read of the title posters sees at most a faint edge on her right, none on her left. On the pick `scripts/cathode-coatcolour.mjs` reads butcher-fixer coat dE 7.6 (16.7 after item 434 slice 6; not from 456's toe, which reads 6.7 on and 7.6 off).
 - **Build:** probe `fr0` on the coat directly (a live debug output of the rim's factor; no rim edit, colour or shape, has moved the poster in three sessions though the live shader carries the wool rim); give her a drawn back-light edge on both sides of the silhouette; find what closed butcher-fixer (449 slice 5's class key swinging to the gun is the first suspect) and part them again.
 - **Accept:** a rim 2 px+ brighter than the cloth inside it on both sides at P and D (measured along rows through the coat); butcher-fixer dE ≥ 15 and no pair under 12; face-on-the-title and classpick pass.
