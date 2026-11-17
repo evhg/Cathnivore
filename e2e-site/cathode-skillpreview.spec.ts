@@ -31,6 +31,8 @@ test('a skill tree plays its preview on the pick', async ({ page }) => {
   expect(lag).toBeLessThanOrEqual(150)
   await expect(page.locator('canvas[data-skillpreview]')).toHaveAttribute('data-skillpreview', tree!)
   await expect(page.locator('.cp-skill-line')).not.toBeEmpty()
+  // the Ghost's first tree is Longshot: its preview slows the street to 0.3x for the shot
+  if (tree === 'longshot') await expect(page.locator('canvas[data-target-at]')).toHaveAttribute('data-time-scale', '0.3')
   // T plays the trees in turn
   await page.keyboard.press('t')
   const second = await pick.getAttribute('data-skillpreview')

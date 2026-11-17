@@ -289,6 +289,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 481: the skill previews' timers, and the camo shimmer's end (scene clock).
   const previewTimers: number[] = [];
   let camoUntil = 0;
+  let slowUntilMs = 0;
   const CAMO_TINT = new THREE.Color(0.35, 0.95, 1.3);
   // Plan item 457: and behind the stoop, each class's own set (rooftop, locker, back room, server alley, workbench).
   const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
@@ -889,6 +890,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
 
   function frame(dt: number): void {
     const t0 = performance.now();
+    // Plan item 481: Longshot's preview slows the street (rain, her, the light) to 0.3x for its shot.
+    const slowed = t0 < slowUntilMs;
+    if (slowed) dt *= 0.3;
+    if ((world.renderer.domElement.dataset.timeScale === "0.3") !== slowed) world.renderer.domElement.dataset.timeScale = slowed ? "0.3" : "1";
     if (pushT >= 0) {
       pushT += dt;
       const u = smoother(Math.min(1, pushT / pushDur));
@@ -1238,6 +1243,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       };
       switch (p.look) {
         case "slowShot":
+          // the street slows to 0.3x around the shot (not under reduced motion: the shot alone)
+          if (!still) {
+            slowUntilMs = performance.now() + 1700;
+            world.renderer.domElement.dataset.timeScale = "0.3";
+          }
           later(500, () => (fx.muzzle(hand, dir, 1.1), fx.tracer(hand, aim), breakBottle()));
           break;
         case "camo":
