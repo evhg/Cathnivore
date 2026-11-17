@@ -351,7 +351,9 @@ export class Renderer3D {
     this.fx = new Transients(this.dynamic);
     this.floaters = new Floaters(overlay);
     this.overlayEl = overlay;
-    this.composer = new EffectComposer(this.renderer);
+    // Plan item 469: the composer draws into a multisampled target (the renderer's own antialias does nothing once
+    // a composer renders the scene, so every hedge, kerb and roof edge stair-stepped and the phone frame read soft).
+    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.7, 0.55, 0.8);
     this.composer.addPass(this.bloom);
