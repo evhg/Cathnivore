@@ -1172,6 +1172,46 @@ export function buildGround(level: Level): Ground {
       }
     }
   }
+  // Plan item 469: each pond's outer bank dressed, so its edge reads as a bank, not a hard line round flat water
+  // (a critique): reed beds in clumps with gaps between, a few stones at the water's lip, tufts of longer grass on the
+  // earth band. Its own stream, into the tufts and stones already drawn: no draw call added, nothing placed before moves.
+  if (wet.size) {
+    const pb = rng(level.id * 7477 + 469);
+    const reedCols = [tuftCols[3]!.clone().multiplyScalar(0.8), new THREE.Color("#8f9a52"), new THREE.Color("#b3a564")];
+    for (const loop of wetLoops(wet)) {
+      const pts = meander(filleted(loop, 0.32));
+      let clump = 0;
+      for (const [i, p] of pts.entries()) {
+        if (i % 2) continue;
+        if (laneDistance(level, p.x, p.z) < 0.55) {
+          clump = 0;
+          continue;
+        }
+        // reed beds: runs of a few points, then open bank
+        if (clump <= 0) clump = pb() < 0.55 ? 2 + Math.floor(pb() * 3) : -(1 + Math.floor(pb() * 2));
+        if (clump > 0) {
+          clump--;
+          for (let k = 0; k < 3; k++) {
+            const o = -0.05 + pb() * 0.12;
+            const t = (pb() - 0.5) * 0.12;
+            const x = p.x + p.nx * o - p.nz * t;
+            const z = p.z + p.nz * o + p.nx * t;
+            tufts.push({ x, y: Math.max(-0.09, heightAt(x, z)) - 0.01, z, ry: pb() * 6.3, s: 1.5 + pb() * 0.5, sy: 2.6 + pb() * 1.4, color: reedCols[Math.floor(pb() * 3)]! });
+          }
+        } else {
+          clump++;
+          if (pb() < 0.6) {
+            const x = p.x - p.nx * 0.04;
+            const z = p.z - p.nz * 0.04;
+            stones.push({ x, y: -0.075, z, ry: pb() * 6.3, s: 0.07 + pb() * 0.05, sy: 0.5, color: stoneCols[Math.floor(pb() * 4)]! });
+          }
+          const x = p.x + p.nx * 0.1;
+          const z = p.z + p.nz * 0.1;
+          tufts.push({ x, y: heightAt(x, z) - 0.005, z, ry: pb() * 6.3, s: 1.1 * (0.75 + pb() * 0.6), sy: 1.4, color: tuftCols[Math.floor(pb() * tuftCols.length)]! });
+        }
+      }
+    }
+  }
   // Plan item 66: the verges dressed from the 2D field's set: a flock grazing, pines, wild-flower clumps, a scarecrow.
   const sheepBody: Inst[] = [];
   const sheepHead: Inst[] = [];
@@ -2373,7 +2413,8 @@ export function meander(pts: Array<{ x: number; z: number; nx: number; nz: numbe
 function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number, grass: THREE.Color, dirt: THREE.Color): THREE.Mesh[] {
   const IN = 0.17;
   const OUT = 0.18;
-  const FRINGE = 0.14;
+  // (Plan item 469: wider and fainter, so the bank shelves into the water instead of a hard pale ring round it)
+  const FRINGE = 0.22;
   const WATER = -0.085;
   const mud = new THREE.Color("#7d6a4c");
   const earth = grass.clone().lerp(dirt, 0.3);
@@ -2398,7 +2439,7 @@ function pondBanks(wet: Set<string>, heightAt: (x: number, y: number) => number,
       const fx = ix - p.nx * FRINGE;
       const fz = iz - p.nz * FRINGE;
       fpos.push(fx, WATER - 0.002, fz, ix, WATER - 0.002, iz);
-      fcol.push(shallow.r, shallow.g, shallow.b, 0, shallow.r, shallow.g, shallow.b, 0.6);
+      fcol.push(shallow.r, shallow.g, shallow.b, 0, shallow.r, shallow.g, shallow.b, 0.42);
     }
     const n = pts.length;
     for (let i = 0; i < n; i++) {
