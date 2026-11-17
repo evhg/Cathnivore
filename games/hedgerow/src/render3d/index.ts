@@ -1698,6 +1698,14 @@ export class Renderer3D {
           }
           obj.userData.scale = tw.crown !== undefined ? 1.4 : 1.22;
           obj.position.set(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5), tw.row + 0.5);
+          // Plan item 469: everything but the plinth stands in a lean group, so on a steep lens (an upright phone)
+          // the tower leans back towards it like item 439's vehicles: its front turns up to the eye instead of
+          // reading as a hat seen from above on a pale disc. The plinth stays flat on the plot.
+          const lean = new THREE.Group();
+          lean.name = "lean";
+          for (const c of obj.children.filter((o) => o.name !== "plinth")) lean.add(c);
+          obj.add(lean);
+          obj.userData.lean = lean;
         }
         this.dynamic.add(obj);
         obj.scale.setScalar(obj.userData.scale as number);
@@ -1729,6 +1737,8 @@ export class Renderer3D {
       d = Math.atan2(Math.sin(d), Math.cos(d));
       turret.rotation.y = cur + d * Math.min(1, dt * 10);
     }
+    const lean = ud.lean as THREE.Object3D | undefined;
+    if (lean) lean.rotation.x = -this.steepTilt();
     const kick = v.fired < 0.15 ? Math.sin((v.fired / 0.15) * Math.PI) : 0;
     // Plan item 19: every tower breathes when idle and squashes as it lets go (as in 2D).
     if (!this.reducedMotion) {
@@ -1785,7 +1795,7 @@ export class Renderer3D {
     const plinth = upgrade ? null : (obj.children.find((c) => c.name === "plinth") ?? null);
     obj.updateMatrixWorld(true);
     const box = new THREE.Box3();
-    const items = obj.children
+    const items = ((obj.userData.lean as THREE.Group | undefined)?.children ?? obj.children)
       .filter((c) => c.name !== "plinth")
       .map((o) => {
         box.setFromObject(o);

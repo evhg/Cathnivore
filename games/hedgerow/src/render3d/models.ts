@@ -376,9 +376,13 @@ function strawman(coat: string, hat = C.straw, s = 1): THREE.Group {
 const TIER_RING = ["#8a5a35", "#b9c0c8", "#d4ae58"];
 const SPEC_RING = ["#e0503a", "#3f8fe0"];
 
+/** Plan item 469: the plinth's top is a trodden mid stone, not the pale wall stone: a near-white disc was the brightest
+ * thing on a plot and on a phone the tower read as a hat on a plate. */
+const PLINTH_TOP = "#a3967d";
+
 /** The plinth every tower stands on; its rim shows the tier (wood, silver, gold) or the specialisation (glowing). */
 function plinth(tier: number, spec: 0 | 1 | null): THREE.Group {
-  const g = group(cyl(0.4, 0.44, 0.08, matte(C.stoneDark, 0.95), 0, 0, 0, 12), cyl(0.37, 0.4, 0.012, matte(C.stone, 0.95), 0, 0.075, 0, 12));
+  const g = group(cyl(0.4, 0.44, 0.08, matte(C.stoneDark, 0.95), 0, 0, 0, 12), cyl(0.37, 0.4, 0.012, matte(PLINTH_TOP, 0.95), 0, 0.075, 0, 12));
   // Named, so bake() merges it on its own: the renderer lays it first when the tower is built.
   g.name = "plinth";
   const rim =
