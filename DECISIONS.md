@@ -520,3 +520,6 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-17 lane A (item 468): 'hits this round' counts a tower's shots and gusts (each shot lands in this engine); a hedge counts as attacking while a slowed vehicle is in its reach, polled every 250 ms in main.ts, not an engine event (no change to the deterministic sim).
 - 2026-11-17 lane B: 464's test shots reuse the game's GunSound on the front's UI bus (one voice per class, keyed by class) rather than new synthesis.
 - 2026-11-17 lane B: on an upright phone the pick's test fire is the gun plate itself (no button row), since that sheet's height is her stage's (item 422's 45%).
+- 2026-11-17 05:00 lane A (item 468): on an upright phone the hits tally shows as 'N hits' with flex-basis 0 (after the Knockouts line on a short phone, after Sell on a tall one), so it can never wrap: wrapping pushed the paths' buttons off a 375x667 sheet (E2E red on 775bcc67).
+- 2026-11-17 05:20 lane A: took 469 rather than 319/331 (first open, but each handed back after many slices and needing a long fresh start) with ~25 min left; it continued this session's Hedgerow 3D setup.
+- 2026-11-17 lane A (item 469): the Influencer's ring light dimmed (glow 1 -> 0.55) instead of housed: a dark housing rendered as a black hoop in the baked rungs.
