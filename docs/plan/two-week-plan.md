@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-17T15:25Z
-
 
 
 
@@ -4443,3 +4441,39 @@ Read first (lane B, 10:30): Saltmarsh's teal marsh beds are its act's own (lane 
 - **Build:** a small crop library drawn in code (cabbage rows, barley with ears, lavender drills, potato ridges, sunflowers, samphire for Saltmarsh), two to four per level by act, three growth stages on the existing rounds, warm earth under them in place of the teal tint; a tower on a bed parts the crop.
 - **Accept:** 3+ crop kinds visible at round 11 of level 21 and round 17 of level 34 (`data-crop`, e2e); mean bed saturation 0.35+ (was about 0.15); no bed a single flat fill; Hedgerow 2D specs pass; shots P and D for levels 5, 21, 34, 40.
 - **Size:** 2
+
+## 476. [ ] Cathnivore: Harvest, the round's payout flies from the land to the stall
+- **Why (critique 2026-11-17 15:50, shots `e2e/screenshots/plan1117d`):** `cath-game-D` the mat's counts (35-315 x 80-205) and the board (565-1160 x 105-690) are never linked; the round's main payout (`round.ts`: resources += production, plus bonuses and market events) shows only as a number ticking up (item 36). VISION 3-4: the one beat every round has no moment. Checked: 28, 34, 36, 62, 183, 244 (the ledger's Harvest lines kept), 127, 189; 417 untouched (tokens only, held land stays grey).
+- **Build:** a pure `harvestSources(prev, next)` splitting each producer's gain by source (home region or Stall hex, event region, bonus); at round close each unit rises from its hex as a small painted good (crate, Mark coin, Goodwill rosette) and arcs to that producer's count on the mat (D) or counter chip (P), the count ticking per arrival; a 3+ haul delights the producer's bust; wood and coin cues; event bonuses from the event's ground with a gold rim; 900-1600 ms in seat order; a tap skips; reduced motion fades counts to totals.
+- **Accept:** `harvestSources` sums exactly to the engine's delta over 20 seeded rounds (unit); `e2e/harvest-moment.spec.ts` at P and D: `[data-moment="harvest"]` within 300 ms of round close, one `[data-harvest-good]` per unit, 900-1600 ms, final counts equal the engine's, a tap ends it in under 150 ms, no layout shift over 2 px; board-scale, desktop-no-scroll, turn-show pass; shots mid-flight P and D, light and dark.
+- **Size:** 2
+
+## 477. [ ] Cathnivore: the chapter's three seals on the table while you play
+- **Why:** the seals show only on the campaign card (`cath-campaign-D` 1180-1280 x 252-280); `sealsEarned` is computed at the end, so the feat seal is a surprise, not a goal (VISION 3-4). Checked: 35, 279, 395, 415, 435, 48, 183.
+- **Build:** in a campaign game a small wax-seal card of three seals (win, Hard, feat) by the round and Trust plate at D, a chip in the top tally opening a sheet at P; each seal live from a pure `sealOutlook(chapter, state)`: open, on-track (warm glow), at-risk (one round left; Cath warns), lost (the wax cracks, 600 ms; a fade under reduced motion), sealed; on the win the kept seals stamp in turn on the end screen before the campaign map's moment. Not in Quick or Daily games.
+- **Accept:** `sealOutlook` unit-tested on all six chapters' feats (lost exactly when a feat can no longer be met); e2e at P and D in chapter 1: three `[data-seal]` with `data-state`, a scripted game past round 4 cracks the feat, an autoplay win stamps the earned seals in order matching `recordSeals`; the board's area within 1% (phone-map-hero, board-scale); shots of on-track, at-risk and lost at P and D.
+- **Size:** 2
+
+## 478. [ ] Runnel: watch your solve, a six-second replay of the water finding its way
+- **Why:** `runnel-D`, `runnel-P`: the solve blooms (items 68, 411) but how you solved it is lost; the share card is a still (VISION 4-5). Checked: 6, 142, 68 (the win strip gets a Watch button, layout kept), 411 (plays first, unchanged), 421, 466 (the replay starts from the dry board), 458, 407.
+- **Build:** record each tap and pin `{cell, turn, t}` in the game state (a save migration and test if persisted mid-daily); a pure `replayFrames(puzzle, log)` compresses it to about 6 s (folding runs on one tile, dropping undone taps); Watch plays it on the real board (tiles spin with their tap sound, the water arrives as it would have, a tap counter climbs against par, Cath names the turning point) and ends on the bloom; Save clip exports a WebM where MediaRecorder can, else today's PNG; reduced motion steps frames without spin.
+- **Accept:** `replayFrames` reproduces the solved board exactly in 5-7 s (unit); `e2e-site/runnel-replay.spec.ts` at P and D: `[data-replay]`, `data-replay-step` 1..n, the final tiles equal the solved state, the strip and board shift 0 px; older saves hide Watch; Runnel specs pass; shots start, middle, end at P and D.
+- **Size:** 2-3
+
+## 479. [ ] Hedgerow: the last round as a showdown, the final knockout held
+- **Why:** `hedge-l21-2d-D`/`3d-D`: the climax looks like any round (only the HUD's 10/26 says so); the harvest (item 59) starts cold (VISION 4). Checked: 64, 191 (uses the round's one close-up), 450, 157, 59, 468; nothing in 469's dressing.
+- **Build:** when the last round is called a painted 'LAST ROUND' ribbon unrolls over the field (600 ms), the depot's door goes fully up and the rep steps out (gleeful or rattled), the music takes its top layer and Cath's plate a determined line; the last knockout plays the render clock at 0.35x for 700 ms with the camera held on it (3D) or a 1.15x stage zoom (2D), then a rising chime into the harvest. The engine runs at full speed (render clock only), so the tuner and replays are untouched; reduced motion and webdriver without `?showdown`: the ribbon fades, no slow-down.
+- **Accept:** `#stage[data-showdown]` within 150 ms of the last round's Go (sandbox e2e via `sendWave`, P and D, 2D and 3D); the slow window 600-800 ms by frame timestamps, `.harvest` within 400 ms after; a unit test that a level's engine tick count is unchanged; the reduced-motion path tested; level tests pass; shots of l21 and l34 at P and D.
+- **Size:** 2
+
+## 480. [ ] Hedgerow: Goodwill on the farmhouse doorstep
+- **Why:** a leak costs Goodwill and the field forgets it after a 1 s flash and a floating '-N' (`render.ts`, `render3d/index.ts`); the farmhouse (2D D 575-635 x 680-740, 3D D 545-630 x 495-660) never shows the damage (VISION 3, 6). Checked: 59, 135, 143, 162, 250, 191 (all kept); in its own `doorstep.ts` and `render3d/doorstep.ts`, outside 469's files.
+- **Build:** each leak throws a glossy Hollowell parcel onto the farmhouse step (a 400 ms arc from the van's path; up to 8 shown, then '+N'), a 'Sorry we missed you' card on the door at the first; under 25% Goodwill Hollowell's 'ACQUIRED' sale board goes up at the gate; after a clean round two neighbours cart one parcel back toward the depot; the win's harvest sweeps the step clear. 2D and 3D, at most 2-3 instanced draw calls.
+- **Accept:** `[data-doorstep]` count = leaks minus clean-round returns (unit and sandbox e2e); the sale board under 25% only; draw calls +3 or fewer (`hedgerow-drawcalls`); parcels without the arc under reduced motion; shots P and D, 2D and 3D, at 0, 3 and 8 leaks.
+- **Size:** 2
+
+## 481. [ ] NIGHT SHIFT class pick: see each skill tree in action
+- **Why:** `ns-play-D` (998-1275 x 625-770): the three trees are lines of text; `ns-play-P` chips. Optic camo, marks and bullet-time exist in the game (`game/actives.ts`, `sim/stealth.ts`) but are never shown before play (VISION 3). Checked: 464 (reuses its bottle target), 397, 210 (layout kept, rows become buttons), 400, 434, 449, 457; her model untouched (319).
+- **Build:** each tree row or chip a button (and T): it plays that tree's signature active on the stage in 1.5-2.5 s with the game's own effects (Shroud: her coat shimmers into optic camo; Cold Read: a mark glow and weak-spot ring on the target; Longshot: 0.3x bullet-time and a tracer breaking the bottle), all 15 trees in class-by-class slices; a one-line caption in Cath's voice; a class switch cancels it; reduced motion keeps the effect and caption without the time change.
+- **Accept:** `[data-skillpreview=<tree>]` per tree and a unit test mapping all 15 to an existing active; press to first visual change ≤ 150 ms (e2e P and D); the vignette clear of the sheet and her face; cathode-perf alone in budget; shots of one per class at P and D.
+- **Size:** 3
