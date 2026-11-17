@@ -56,6 +56,7 @@ import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
 import { FolkMeshes, inkFigure } from "./folk";
+import { shadowUpright } from "./upright";
 
 interface TowerView {
   obj: THREE.Group;
@@ -1625,6 +1626,12 @@ export class Renderer3D {
       const fh = this.ground.farmhouse;
       const yaw = (fh.userData.yaw as number | undefined) ?? (fh.userData.yaw = fh.rotation.y);
       fh.rotation.set(-this.steepTilt() * 0.75, yaw, 0, "XYZ");
+      if (!fh.userData.shadowUpright) {
+        fh.userData.shadowUpright = true;
+        const q = new THREE.Quaternion();
+        const up = new THREE.Vector3(0, 1, 0);
+        shadowUpright(fh, (m) => m.compose(fh.position, q.setFromAxisAngle(up, yaw), fh.scale));
+      }
     }
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
@@ -1713,6 +1720,7 @@ export class Renderer3D {
           for (const c of obj.children.filter((o) => o.name !== "plinth")) lean.add(c);
           obj.add(lean);
           obj.userData.lean = lean;
+          shadowUpright(lean, (m) => m.identity());
         }
         this.dynamic.add(obj);
         obj.scale.setScalar(obj.userData.scale as number);
@@ -1918,6 +1926,10 @@ export class Renderer3D {
         const k = enemyScale(e.kind);
         bar.scale.set(0.5 * Math.min(1.6, k), 0.06, 1);
         this.dynamic.add(obj, bar);
+        // Item 439's lean back to a steep lens is for the eye: the van's shadow is cast as it stands on its wheels.
+        const yq = new THREE.Quaternion();
+        const ye = new THREE.Euler();
+        shadowUpright(obj, (m) => m.compose(obj.position, yq.setFromEuler(ye.set(0, obj.rotation.y, 0)), obj.scale));
         const meshes: THREE.Mesh[] = [];
         obj.traverse((o) => {
           const m = o as THREE.Mesh;
@@ -3483,3 +3495,4 @@ export class Renderer3D {
     }
   }
 }
+
