@@ -37,4 +37,6 @@ test('the last round is called as a showdown, an earlier one is not', async ({ p
   expect(lag).toBeLessThanOrEqual(150 + 1000 / 15) // the call lands on the next drawn frame
   await expect(page.locator('.banner.showdown.show')).toBeVisible()
   await expect(page.locator('.banner.showdown strong')).toHaveText(/last round/i)
+  // and Cath says so where she speaks (her bubble on the field mid-round)
+  await expect(page.locator('#bubble-text')).toHaveText(/last lot/i)
 })

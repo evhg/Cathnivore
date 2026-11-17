@@ -4955,7 +4955,8 @@ function onEvents(g: Game, evs: GameEvent[]): void {
           ui.stage.dataset.showdown = "";
           if (!boss) banner("Last round", ui.banner.querySelector("span")?.textContent ?? "", false, "showdown");
           hostFeel("determined");
-          say("Last lot. Hold the lane and the field is ours.");
+          // (in her bubble, as her other lines: `say` alone only reached the screen reader)
+          tip("showdown", "Last lot. Hold the lane and the field is ours.", "determined", true);
         }
         // Let the round's banner say its piece first: the new-unit card follows it rather than stacking on it.
         introduce(kinds, ev.wave);
