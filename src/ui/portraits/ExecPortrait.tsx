@@ -26,7 +26,7 @@ const BROWS: Record<PellPose, string> = {
 
 /** The upper lids: how far each hooded lid comes down over the eye (0 open, 1 shut). */
 const LIDS: Record<PellPose, [number, number]> = {
-  smug: [0.45, 0.35],
+  smug: [0.6, 0.48],
   gloat: [0.12, 0.12],
   scheme: [0.62, 0.3],
   rattled: [0.05, 0.05],
@@ -47,8 +47,9 @@ function Mouth({ pose }: { pose: PellPose }) {
     case 'smug':
       return (
         <>
-          <path d="M51 70q9 3 18-3" fill="none" stroke="#97534a" strokeWidth="2.2" strokeLinecap="round" />
-          <path d="M68 66.5q2 0 2.5 2" fill="none" stroke="#b9786a" strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M52 70.5q8 1.2 17-4" fill="none" stroke="#97534a" strokeWidth="2.2" strokeLinecap="round" />
+          <path d="M69.5 65.2q2.4.4 2.6 3" fill="none" stroke="#b9786a" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="73.4" cy="69.6" r=".9" fill="#b9786a" opacity=".7" />
         </>
       )
     case 'gloat':
@@ -57,6 +58,7 @@ function Mouth({ pose }: { pose: PellPose }) {
           <path d="M48 66q12 12 24 0q-12 3-24 0Z" fill="#6e2f2a" />
           <path d="M49.5 66.4q10.5 2.8 21 0l-1 2.4q-9.5 2-19 0Z" fill="#fbfbf8" />
           <path d="M48 66q12 12 24 0" fill="none" stroke="#97534a" strokeWidth="2" strokeLinecap="round" />
+          <path d="M54 67.6l2.6.3" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" />
         </>
       )
     case 'scheme':
@@ -193,6 +195,9 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
         <path d="M42 70q4 8 11 11" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity=".18" />
         <path d="M56 79q4 1.5 8 0" fill="none" stroke="#c0907b" strokeWidth="1" strokeLinecap="round" opacity=".6" />
 
+        {/* the shadow the hair casts along the hairline, and the jaw's turning edge */}
+        <path d="M37 46q3-12 13-15q10-1 20 0q10 3 13 15q-4-8-13-10q-10-1-20 0q-9 2-13 10Z" fill="#a8735f" opacity=".35" />
+        <path d="M37 52q0 14 5 21q6 9 18 11q12-2 18-11q5-7 5-21" fill="none" stroke="#a8735f" strokeWidth="1.2" opacity=".4" />
         {/* silver hair, combed back from a side parting, in layers, with a gloss band across the crown */}
         <path className="pell-hair" d="M35 50c-3-19 7-31 25-31c16 0 26 10 25 29c-2-8-6-14-12-17c-10 1-20 0-29 3c-5 3-8 9-9 16Z" fill={g('hair')} />
         <path d="M44 28c6-5 16-6 24-3c5 2 9 5 12 9c-6-4-14-6-22-5c-6 0-10 0-14-1Z" fill="#f4f6fa" opacity=".8" />
