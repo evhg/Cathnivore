@@ -846,6 +846,8 @@ if (SANDBOX)
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.
     // Plan item 157: the 3D depots (canvas px and world footprint); empty in 2D.
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
+    // Plan item 486: a cell's centre on the 3D canvas (CSS px), to sample the lane and the plots in shots.
+    cellPx3d: (col: number, row: number) => (renderer && is3D(renderer) ? renderer.cellToCanvas(col, row) : null),
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
     // Plan item 360: the 3D sun's cast shadows off or on (false in 2D).
     shadows3d: (on: boolean) => (renderer && is3D(renderer) ? (renderer.setShadows(on), true) : false),

@@ -1629,6 +1629,11 @@ export class Renderer3D {
     if (s.dolly) return 1 - k * k * (3 - 2 * k);
     return s.t < 0.3 ? s.t / 0.3 : s.t > s.dur - 0.6 ? Math.max(0, (s.dur - s.t) / 0.6) : 1;
   }
+  /** Plan item 486 (tests): a cell's centre on the canvas (CSS px from its corner) at the current view. */
+  cellToCanvas(col: number, row: number): { x: number; y: number } {
+    const v = new THREE.Vector3(col + 0.5, this.height(col + 0.5, row + 0.5), row + 0.5).project(this.camera);
+    return { x: (v.x * 0.5 + 0.5) * this.canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * this.canvas.clientHeight };
+  }
   /** Tests: the camera's position, and whether a directed move is running. */
   camState(): { x: number; y: number; z: number; moving: boolean } {
     const p = this.camera.position;
