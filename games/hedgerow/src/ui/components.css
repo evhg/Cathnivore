@@ -2425,6 +2425,12 @@ body:has(#dlg-pause[open]) .paused-note {
    41.5svh with the home-indicator inset inside that cap, so the head is tight and the packets are built to fit:
    two lines of head (name and build; Target and Sell), cost and Ready on one row, and every packet's foot pinned
    level. Badges and Details scroll under the fade below them. e2e-site checks every buy button clears the inset. */
+/* Plan item 468: the hits tally waits for the side panel; on a short upright phone (375x667) it pushed the paths' buttons off the sheet */
+@media (max-width: 899.98px) {
+  .panel-paths .hits-line {
+    display: none;
+  }
+}
 @media (max-width: 899.98px) and (min-height: 701px) {
   .panel.panel-paths {
     max-height: 41.5svh;
