@@ -275,6 +275,12 @@ export class Renderer3D {
   private bossEase = 0;
   /** When the camera last eased (performance.now ms). */
   private camWall = performance.now();
+  /** Plan item 479: where the last van went down, and the win's held knockout: the camera leans in on it until
+   *  `koUntil` (wall-clock ms), eased by `koEase` (0 = the play view). */
+  private lastDown: { x: number; z: number } | null = null;
+  private koUntil = 0;
+  private koEase = 0;
+  private koAt = { x: 0, z: 0 };
   private camBase = new THREE.Vector3();
   private camTarget = new THREE.Vector3();
   private heroSwung = 9;
@@ -1106,6 +1112,7 @@ export class Renderer3D {
           break;
         }
         case "wreck": {
+          this.lastDown = { x: e.x, z: e.y };
           const y = this.height(e.x, e.y);
           if (!this.reducedMotion) {
             this.debris.emit(e.x, y + 0.3, e.y, [RUNGS[e.kind]?.colour ?? "#f2c230", "#3b3f44", "#c79a62", "#f4f6f8"], 36, 0.09, 3.2);
@@ -1128,6 +1135,7 @@ export class Renderer3D {
           break;
         }
         case "kill": {
+          this.lastDown = { x: e.x, z: e.y };
           const y = this.height(e.x, e.y);
           const big = isBig(e.kind);
           if (e.bounty === 0 && !big) {
@@ -1594,9 +1602,22 @@ export class Renderer3D {
       if (this.shot.t >= this.shot.dur) this.shot = null;
     }
   }
+  /** Plan item 479: hold the camera on the last knockout for `ms` (wall clock): it leans in over about 0.2 s and
+   *  eases back after. Any directed shot gives way to it. Not under reduced motion (main.ts doesn't call it then). */
+  holdKnockout(ms: number): void {
+    if (this.reducedMotion) return;
+    const at = this.lastDown ?? { x: this.camTarget.x, z: this.camTarget.z };
+    this.koAt = { x: at.x, z: at.z };
+    this.koUntil = performance.now() + ms;
+    this.shot = null;
+  }
+  /** Tests: how far the camera leans into the held knockout (0 to 1), and where. */
+  knockoutView(): { ease: number; held: boolean; until: number; x: number; z: number } {
+    return { ease: this.koEase, held: performance.now() < this.koUntil, until: this.koUntil, x: this.koAt.x, z: this.koAt.z };
+  }
   /** A close-up on (x, z), at most one a round and never over a move already running. */
   private closeUp(game: Game, x: number, z: number): void {
-    if (!this.directs || this.shot || this.zoomed || this.shotRound === game.wave) return;
+    if (!this.directs || this.shot || this.zoomed || this.shotRound === game.wave || performance.now() < this.koUntil) return;
     this.shotRound = game.wave;
     this.shot = { x, z, zoom: 1.5, dur: 1.6, t: 0, dolly: false };
   }
@@ -1700,7 +1721,12 @@ export class Renderer3D {
     const sw = this.shotWeight();
     if (sw > 0 && this.shot) look.lerp(this.v2.set(this.shot.x, this.camTarget.y, this.shot.z), sw * (this.shot.dolly ? 0.85 : 0.6));
     const shotZoom = this.shot ? 1 + (this.shot.zoom - 1) * sw : 1;
-    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * shotZoom * (1 + this.bossEase * 0.07 + this.gateEase * 0.14))).add(look);
+    const koOn = wall < this.koUntil;
+    this.koEase += ((koOn ? 1 : 0) - this.koEase) * ease(koOn ? 9 : 2.5);
+    if (this.koEase < 0.002) this.koEase = 0;
+    if (this.koEase > 0) look.lerp(this.v2.set(this.koAt.x, this.camTarget.y, this.koAt.z), this.koEase * 0.55);
+    const koZoom = 1 + this.koEase * 0.32;
+    this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / (this.zoom * shotZoom * koZoom * (1 + this.bossEase * 0.07 + this.gateEase * 0.14))).add(look);
     if (this.shake > 0) {
       const m = this.shake * 0.12;
       this.camera.position.x += (Math.random() - 0.5) * m;
@@ -3321,10 +3347,10 @@ export class Renderer3D {
     return (this.ground?.group.userData.dressing as ReturnType<Renderer3D["dressing"]>) ?? null;
   }
 
-  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number }> {
+  depotRects(): Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number; doorX: number; doorY: number }> {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
-    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number }> = [];
+    const out: Array<Rect & { wx0: number; wx1: number; wz0: number; wz1: number; roofX: number; roofY: number; footY: number; doorX: number; doorY: number }> = [];
     for (const d of (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []) {
       const b = new THREE.Box3().setFromObject(d);
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -3341,10 +3367,14 @@ export class Renderer3D {
       // the shed's own roof, just under its ridge (buildDepot: the pyramid roof's apex at 1.22 over the shed's centre).
       d.updateMatrixWorld(true);
       // Plan item 391: the roof is flat now (its membrane at 0.95); the hatch stands at its centre, behind the logotype.
-      const roof = d.localToWorld(this.v2.set(0, 0.95, 0)).project(this.camera);
+      // (Its own vector: sharing this.v2 with `foot` below put the roof on the foot from 2026-11-15 to 11-17.)
+      const roof = d.localToWorld(new THREE.Vector3(0, 0.95, 0)).project(this.camera);
       // Plan item 409: the depot's foot (its origin, at its door) on screen, where a board hung under it starts.
       const foot = this.v2.set(0, 0, 0).applyMatrix4(d.matrixWorld).project(this.camera);
-      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h, footY: (-foot.y * 0.5 + 0.5) * h });
+      // Plan item 479: the threshold of its door (buildDepot: the shutter in the shed's +x face at 0.735), where the rep
+      // stands in the showdown; the origin is the shed's centre, so a figure stood there sat behind the door's top.
+      const door = d.localToWorld(new THREE.Vector3(0.86, 0.04, 0)).project(this.camera);
+      out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, wx0: b.min.x, wx1: b.max.x, wz0: b.min.z, wz1: b.max.z, roofX: (roof.x * 0.5 + 0.5) * w, roofY: (-roof.y * 0.5 + 0.5) * h, footY: (-foot.y * 0.5 + 0.5) * h, doorX: (door.x * 0.5 + 0.5) * w, doorY: (-door.y * 0.5 + 0.5) * h });
     }
     return out;
   }

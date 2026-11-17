@@ -5343,6 +5343,12 @@ img.act-scene {
   margin: calc(var(--size) * -1.1) 0 0 calc(var(--size) * -0.5);
 }
 .depot-3d .depot-rep { left: 0; top: 0; width: 100%; height: 100%; }
+/* Plan item 479: in 3D the showdown's rep stands at the depot's open door (main.ts places the box at its foot) and
+   steps down to it from the roof hatch (--from-x/--from-y: the roof less the door, in px), then gloats or shakes. */
+.depot-3d[data-showdown]:not([data-tiny]) .depot-rep { left: 0; top: 0; animation: rep-step-down 700ms cubic-bezier(.3, .7, .4, 1) both; }
+.depot-3d[data-showdown][data-rep-mood="gleeful"]:not([data-tiny]) .depot-rep { left: 0; top: 0; animation: rep-step-down 700ms cubic-bezier(.3, .7, .4, 1) both, rep-gloat 600ms ease-in-out 700ms 3 alternate; }
+.depot-3d[data-showdown][data-rep-mood="rattled"]:not([data-tiny]) .depot-rep { left: 0; top: 0; animation: rep-step-down 700ms cubic-bezier(.3, .7, .4, 1) both, rep-shake 120ms linear 700ms 6 alternate; }
+@keyframes rep-step-down { from { translate: var(--from-x, 0) var(--from-y, 0); } 55% { translate: calc(var(--from-x, 0) * 0.3) calc(var(--from-y, 0) * 0.15); } to { translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) {
   .depot-door { transition: none; }
 }

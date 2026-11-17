@@ -205,6 +205,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
+import { holdsKnockout, KNOCKOUT_MS, renderStep } from "./knockout";
 import { doorstepCleared, doorstepLeak, doorstepRound, doorstepShown, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
 import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
 import { KITS } from "./hero";
@@ -438,8 +439,6 @@ let slowUntil = 0;
  *  has already finished, so replays and the tuner never see it), a 1.15x stage zoom in 2D, then the rising chime into
  *  the harvest. Not under reduced motion, nor under webdriver without `?showdown` (specs keep their old timing).
  *  `knockoutLog` keeps the frame timestamps for the spec. */
-const KNOCKOUT_MS = 700;
-const KNOCKOUT_RATE = 0.35;
 let knockoutUntil = 0;
 let knockoutLog: { start: number; end: number; frames: number[]; harvest: number } | null = null;
 /** Plan item 479: the level's last round is under way. */
@@ -834,6 +833,8 @@ if (SANDBOX)
     },
     // Plan item 479: the win's held knockout (frame timestamps, its end and when the harvest started), null when none.
     knockout: () => knockoutLog,
+    // Plan item 479: the 3D camera's lean into the held knockout (null in 2D).
+    knockoutView: () => (renderer && is3D(renderer) ? renderer.knockoutView() : null),
     // Plan item 480: the 2D doorstep's animations running now (null in 3D).
     doorstepAnims: () => (renderer as { stepAnims?: () => unknown } | null)?.stepAnims?.() ?? null,
     // Plan item 480: a clean round's return (the neighbours cart one parcel up the lane), as a cleared round would.
@@ -5139,6 +5140,9 @@ function syncDepots(g: Game): void {
   }
   // The door rolls up as a round's convoy pulls out of it (the first 2.5 s of a wave).
   const doorOpen = g.phase === "wave" && g.waveClock < 2.5;
+  // Plan item 479: through the last round the shutter stays fully up and the rep stands out at the door (2D and 3D).
+  const standOut = showdown && g.phase === "wave";
+  if (renderer && "showdown" in renderer) (renderer as { showdown: boolean }).showdown = standOut;
   if (renderer && is3D(renderer)) {
     // 3D: the depot is in the world (buildDepot); its rep leans out over its roof as a small overlay.
     const canvas3 = ui.stage.querySelector("#canvas")!.getBoundingClientRect();
@@ -5146,13 +5150,36 @@ function syncDepots(g: Game): void {
     const hudFoot = document.querySelector("#screen-play .hud")?.getBoundingClientRect().bottom ?? stage3.top;
     const reps = renderer
       .depotRects()
-      .map((d, i) => ({ x: canvas3.left - stage3.left + d.roofX, y: canvas3.top - stage3.top + d.roofY, w: d.w, lane: i }))
+      // Plan item 479: in the showdown he stands at the door (the depot's foot), stepping down from the roof.
+      .map((d, i) => ({
+        x: canvas3.left - stage3.left + (standOut ? d.doorX : d.roofX),
+        y: canvas3.top - stage3.top + (standOut ? d.doorY : d.roofY),
+        fromX: standOut ? d.roofX - d.doorX : 0,
+        fromY: standOut ? d.roofY - d.doorY : 0,
+        w: d.w,
+        lane: i,
+      }))
       .filter((d) => d.x > 0 && d.x < canvas3.width && d.y > 0 && d.y < canvas3.height)
       // Plan item 200: on an upright phone the depot's roof can sit under the top bar; the rep stands down there
       // rather than show a headless suit under the bar.
       .filter((d) => d.y - 1.1 * Math.max(24, Math.min(40, d.w * 0.28)) >= hudFoot - stage3.top);
-    const key3 = `3d|${depotMood}|${reps.map((d) => `${Math.round(d.x)},${Math.round(d.y)}`).join(";")}`;
-    if (key3 === depotKey) return;
+    // Plan item 479: a moving camera only moves the reps (their elements are kept, so the showdown's step down from the
+    // roof isn't restarted by every frame of a camera move); the mood, the showdown or the lanes in frame rebuild them.
+    const place = (el: HTMLElement, d: (typeof reps)[number]): void => {
+      el.style.setProperty("--x", `${Math.round(d.x)}px`);
+      el.style.setProperty("--y", `${Math.round(d.y)}px`);
+      el.style.setProperty("--size", `${Math.round(Math.max(24, Math.min(40, d.w * 0.28)))}px`);
+      if (standOut) {
+        el.style.setProperty("--from-x", `${Math.round(d.fromX)}px`);
+        el.style.setProperty("--from-y", `${Math.round(d.fromY)}px`);
+      }
+    };
+    const key3 = `3d|${depotMood}|${standOut}|${reps.map((d) => d.lane).join(";")}`;
+    if (key3 === depotKey && layer0) {
+      const els = layer0.querySelectorAll<HTMLElement>(".depot-3d");
+      reps.forEach((d, i) => els[i] && place(els[i], d));
+      return;
+    }
     depotKey = key3;
     let layer3 = layer0;
     if (!layer3) {
@@ -5168,10 +5195,10 @@ function syncDepots(g: Game): void {
         el.className = "depot depot-3d";
         el.dataset.depot = String(d.lane);
         el.dataset.repMood = depotMood;
-        el.style.setProperty("--x", `${Math.round(d.x)}px`);
-        el.style.setProperty("--y", `${Math.round(d.y)}px`);
-        el.style.setProperty("--size", `${Math.round(Math.max(24, Math.min(40, d.w * 0.28)))}px`);
-        el.innerHTML = `<span class="depot-rep">${repSvg(depotMood, true)}</span>`;
+        place(el, d);
+        el.toggleAttribute("data-showdown", standOut);
+        // (On the roof he stands in its hatch; at the door, out of it.)
+        el.innerHTML = `<span class="depot-rep">${repSvg(depotMood, !standOut)}</span>`;
         return el;
       }),
     );
@@ -5246,9 +5273,6 @@ function syncDepots(g: Game): void {
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
   r.depotMouths = mouths;
-  // Plan item 479: through the last round the shutter stays fully up and the rep stands out at the door.
-  const standOut = showdown && g.phase === "wave";
-  if (renderer && "showdown" in renderer) (renderer as { showdown: boolean }).showdown = standOut;
   // Toggled in place, not rebuilt: rebuilding the depots' SVG in the round's call frame delayed that frame.
   if (layer0) for (const el of layer0.querySelectorAll<HTMLElement>(".depot")) el.toggleAttribute("data-showdown", standOut);
   const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
@@ -5409,7 +5433,7 @@ function frame(now: number): void {
   if (KEYART) document.documentElement.toggleAttribute("data-keyart-still", still);
   const held = now < knockoutUntil;
   if (held) knockoutLog?.frames.push(now);
-  renderer.draw(g, paused || introHold || still ? 0 : dt * Math.min(speed, 2) * (held ? KNOCKOUT_RATE : 1));
+  renderer.draw(g, paused || introHold || still ? 0 : renderStep(dt * Math.min(speed, 2), now, knockoutUntil));
   syncFieldFit();
   syncCathSay(g, now);
   syncTwists(g);
@@ -5431,7 +5455,7 @@ function frame(now: number): void {
       haptic.win();
       renderer?.celebrate();
       // The last enemy falls in slow motion; then the chime, a gold banner and the harvest; the result card follows.
-      const hold = !REDUCED && (!navigator.webdriver || new URLSearchParams(location.search).has("showdown"));
+      const hold = holdsKnockout(REDUCED, navigator.webdriver, location.search);
       const t0 = performance.now();
       const harvestNow = (): void => {
         if (game !== g) return;
@@ -5449,6 +5473,7 @@ function frame(now: number): void {
         knockoutUntil = t0 + KNOCKOUT_MS;
         knockoutLog = { start: t0, end: 0, frames: [], harvest: 0 };
         ui.stage.dataset.knockout = renderer && is3D(renderer) ? "3d" : "2d";
+        if (renderer && is3D(renderer)) renderer.holdKnockout(KNOCKOUT_MS);
         window.setTimeout(harvestNow, KNOCKOUT_MS);
       } else {
         knockoutLog = null;
