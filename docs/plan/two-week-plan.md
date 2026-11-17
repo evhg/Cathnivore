@@ -4336,7 +4336,7 @@ Progress (lane B, 2026-11-17 04:50, slice 1): a Test fire button under the gun's
 - **Accept:** `data-cath-pose` takes ≥ 4 values across the menu; visual response ≤ 150 ms; five lines, one per print; reduced motion cross-fades poses only; full keyboard reach; posters re-rendered; shots at P and D.
 - **Size:** 2
 
-## 466. [ ] Runnel: dry grooves you can read before the water arrives
+## 466. [ ] Runnel: dry grooves you can read before the water arrives *(lane B, in progress)*
 
 Checked (lane B, 2026-11-17 02:55): at D the dry tiles' open edges already read (item 264's carved cut edge at 3.3:1 on every face, the dark bed to the rim); a notch across each groove's mouth was tried and reverted: it merged with the tile's own dark border. If this is taken up, start from a greyscale shot at P (390x844), where the critique's low contrast may be real, and from the 'joined lip' between matched neighbours, not the edge marks.
 - **Why:** `runnel-D` (900-1240 x 310-730), `runnel-P` (185-385 x 370-560): unwatered tiles are near-identical beige plates with grey bars and a brown hub; which edges are open is low contrast, so the puzzle is read by trial taps (VISION 1 and 8).
