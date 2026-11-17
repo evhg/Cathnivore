@@ -510,3 +510,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-17 01:35 lane A (item 457): the five class sets are painted flats (canvas, unlit, HDR gain 3.2) behind the shared stoop, not modelled rooms: no live light and 2 draw calls a set; the stoop's bulb washes take the set's key so each pick has one dominant hue.
 - 2026-11-17 lane B: the noir toe is title-only (eased out by the wardrobe weight on the pick); the pick's butcher-fixer dE fall to 7.6 predates it and is logged for whoever takes the pick next.
 - 2026-11-17 02:45 lane A (item 457): the phone's "Cath's box >= 330 px" is read from `figureBox()` (439-522 px): item 381's stage runs on behind the tabs and the owner's 11-08 head-to-toe pick rules out a closer phone frame; the set's light behind her head is a key-coloured additive disc, not a live light (DECISIONS 2026-11-13).
+- 2026-11-17 lane B: planned 463-470 with 3 stale items open (319, 331, 456 all NIGHT SHIFT); 456 closed for the coat with its rim and the pick's coat dE moved to 463.
+- 2026-11-17 lane B: 470's NIGHT SHIFT pick points (LUNA by her face, the tripod) left to lane A's 457, which replaces that stage.
