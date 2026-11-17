@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, startTransition, Suspense, useEffect, useState } from 'react'
 import { createGame, replay } from './engine/api'
 import type { Mode } from './ui/Setup'
 import TitleArt from './ui/TitleArt'
@@ -123,15 +123,15 @@ function Screens() {
     return () => window.removeEventListener('cathnivore:update-ready', onUpdateReady)
   }, [])
 
-  // Plan item 453: the vans wait for the opening to end, then start their rounds.
+  // Plan item 453: the opening rests after OPENING_MS. Gate 7 (2026-11-17): the vans no longer wait for it: pausing
+  // their SVG's animations (`pauseAnimations`) right after first paint cost a phone ~130 ms of main thread (Lighthouse
+  // A/B: TBT 190-320 ms with the pause, 100-170 without, the same as with no opening at all). The end's re-render is a
+  // transition, so React yields between its slices.
   useEffect(() => {
     if (opening !== 'run') return
-    const vans = document.querySelector('.title-movers')?.closest('svg') ?? null
-    vans?.pauseAnimations?.()
-    const t = window.setTimeout(() => setOpening('done'), OPENING_MS)
+    const t = window.setTimeout(() => startTransition(() => setOpening('done')), OPENING_MS)
     return () => {
       window.clearTimeout(t)
-      vans?.unpauseAnimations?.()
     }
   }, [opening])
 
