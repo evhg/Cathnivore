@@ -1437,7 +1437,9 @@ export function buildGround(level: Level): Ground {
       const z = -0.5 + ((i + 0.5) / 4) * (rows + 1);
       // Plan item 304: clear of the flats (which reach about -2.3 with their spread; the hulls were sliced by them).
       b.position.set(-3.2 - rand() * 1.0, -0.06, z);
-      b.rotation.y = Math.PI / 2 + (rand() - 0.5) * 0.6;
+      // Plan item 469: bow to the sea, so the sails face the field camera (lying along the shore, every sail stood
+      // edge-on to it: a critique read 'masts as thin lines, no sails').
+      b.rotation.y = Math.PI + (rand() - 0.5) * 0.7;
       b.userData.home = b.position.x;
       group.add(b);
       moored.push(b);
