@@ -28,3 +28,23 @@ export function shadowUpright(node: THREE.Object3D, upright: (m: THREE.Matrix4) 
     };
   });
 }
+
+/**
+ * Plan item 469: hides the instances of `m` whose base stands inside one of `boxes` (seen from above), and shows again
+ * those that no longer do; the instances' own matrices are kept, so a later call (another frame size) starts afresh.
+ * Returns how many are hidden.
+ */
+export function clearUnder(m: THREE.InstancedMesh, boxes: THREE.Box3[]): number {
+  const orig = (m.userData.orig as Float32Array | undefined) ?? (m.userData.orig = m.instanceMatrix.array.slice() as Float32Array);
+  const a = m.instanceMatrix.array as Float32Array;
+  let hidden = 0;
+  for (let i = 0; i < m.count; i++) {
+    const o = i * 16;
+    const x = orig[o + 12]!, z = orig[o + 14]!;
+    const under = boxes.some((b) => x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z);
+    for (let k = 0; k < 16; k++) a[o + k] = under ? 0 : orig[o + k]!;
+    if (under) hidden++;
+  }
+  m.instanceMatrix.needsUpdate = true;
+  return hidden;
+}

@@ -1190,6 +1190,7 @@ export function buildGround(level: Level): Ground {
   const flowerMat = withSway(new THREE.MeshStandardMaterial({ roughness: 0.7, flatShading: true, emissive: "#201810" }), 0.01, "hedgerow-flower");
   const stoneMat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true });
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
+  const vergeCover = [instanced(tuftGeometry(), tuftMat, tufts), instanced(flowerGeo, flowerMat, flowers), instanced(new THREE.IcosahedronGeometry(1, 0), stoneMat, stones)];
   for (const m of [
     ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l), ...(l === "earth" ? { normalMap: furrowNormals() } : {}) }), beds[l], false)),
     instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards),
@@ -1197,12 +1198,13 @@ export function buildGround(level: Level): Ground {
     instanced(flowerGeo, flowerMat, cloverHeads),
     instanced(plotGeo, tickMat, plots.map((p) => ({ ...p, y: p.y + 0.006 }))),
     instanced(new THREE.CylinderGeometry(0.05, 0.07, 0.22, 6), matte("#ffffff", 0.9), markers, true),
-    instanced(tuftGeometry(), tuftMat, tufts),
-    instanced(flowerGeo, flowerMat, flowers),
-    instanced(new THREE.IcosahedronGeometry(1, 0), stoneMat, stones),
+    ...vergeCover,
     instanced(padGeo, new THREE.MeshStandardMaterial({ roughness: 0.6 }), pads),
   ])
     if (m) group.add(m);
+  // Plan item 469: the verge's loose cover (tufts, flowers, stones), which the renderer clears from under a depot once
+  // it has taken its spot (the margin's thrift grew up through the hatched bay on a phone).
+  group.userData.verge = vergeCover.filter(Boolean);
 
   // Plan item 185: a low hedge along every lane edge that borders a plot (on the plot's side of the edge, clear of
   // its centre), so the lane runs between hedgerows as it does in 2D.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { shadowUpright } from "../games/hedgerow/src/render3d/upright";
+import { clearUnder, shadowUpright } from "../games/hedgerow/src/render3d/upright";
 
 // Plan item 469: a node leaned back to a steep lens casts its upright shadow (the lean is for the eye, not the sun).
 describe("shadowUpright", () => {
@@ -30,5 +30,21 @@ describe("shadowUpright", () => {
     mesh.modelViewMatrix.elements.forEach((v, i) => expect(v).toBeCloseTo(mv.elements[i]!, 6));
     (mesh.onAfterShadow as unknown as () => void)();
     expect(mesh.matrixWorld.equals(leaned)).toBe(true);
+  });
+});
+
+describe("clearUnder", () => {
+  it("hides the instances standing under a box, and shows them again when the box moves", () => {
+    const m = new THREE.InstancedMesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial(), 3);
+    [-2, 0, 2].forEach((x, i) => m.setMatrixAt(i, new THREE.Matrix4().makeTranslation(x, 0, 0)));
+    const at = (i: number) => {
+      const mx = new THREE.Matrix4();
+      m.getMatrixAt(i, mx);
+      return mx.elements[15];
+    };
+    expect(clearUnder(m, [new THREE.Box3(new THREE.Vector3(-0.5, -1, -0.5), new THREE.Vector3(0.5, 1, 0.5))])).toBe(1);
+    expect([at(0), at(1), at(2)]).toEqual([1, 0, 1]);
+    expect(clearUnder(m, [new THREE.Box3(new THREE.Vector3(1.5, -1, -0.5), new THREE.Vector3(2.5, 1, 0.5))])).toBe(1);
+    expect([at(0), at(1), at(2)]).toEqual([1, 1, 0]);
   });
 });

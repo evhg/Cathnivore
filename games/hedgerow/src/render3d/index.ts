@@ -56,7 +56,7 @@ import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
 import { FolkMeshes, inkFigure } from "./folk";
-import { shadowUpright } from "./upright";
+import { clearUnder, shadowUpright } from "./upright";
 
 interface TowerView {
   obj: THREE.Group;
@@ -3080,6 +3080,9 @@ export class Renderer3D {
       d.updateMatrixWorld(true);
       taken.push(best.r);
     }
+    // Plan item 469: no flowers, tufts or stones through a depot's floor or its bay.
+    const feet = depots.map((d) => new THREE.Box3().setFromObject(d).expandByScalar(0.06));
+    for (const m of (this.ground?.group.userData.verge as THREE.InstancedMesh[] | undefined) ?? []) clearUnder(m, feet);
   }
   /** Plan item 201: the frame the far houses were settled for (level, canvas size). */
   private farKey = "";
