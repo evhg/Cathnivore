@@ -1151,6 +1151,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-tree { display: block; }
   .cp-tree-theme { display: none; }
   .cp-tree-name { font-size: var(--fs-1); color: var(--ink-2); }
+  /* Plan item 481 fix: her preview line is a subtitle over the stage, above the class tabs, so the sheet keeps its height and the
+     stage keeps her 45% of the screen (the reserved line pushed the sheet up 14 px and shrank her to 43%). */
+  .cp-skill-line { position: fixed; left: 24px; right: 24px; bottom: calc(100svh - min(46svh, 400px) + 14px); margin: 0; min-height: 0; text-align: center; color: var(--ink); text-shadow: var(--hud-shadow); text-wrap: balance; pointer-events: none; } /* px-ok */
   .cp-foot { position: relative; bottom: auto; margin-top: 4px; padding-top: 4px; background: none; } /* px-ok */
   .cp-cue { display: none; }
   .cp-hold { width: 100%; padding: 14px 14px 14px; } /* px-ok */
