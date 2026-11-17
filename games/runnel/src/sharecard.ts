@@ -33,6 +33,13 @@ export interface CardResult {
   week?: FeatureKind[]
 }
 
+/** Plan item 478: the replay clip draws the card mid-solve: each tile at its own (possibly fractional) rotation, with
+ *  a caption of its own. Without it the card shows the solved board. */
+export interface CardView {
+  rots: readonly number[]
+  caption: string
+}
+
 export const CARD_W = 1080
 export const CARD_H = 1350
 
@@ -41,7 +48,7 @@ const PAPER = '#f6efe0'
 const COLOURS = { stone: '#9a948a', field: '#7bbf4a', spring: '#4aa3d8', channel: '#d9c39a', water: '#3d8fd1', rim: '#5a4632', bankSun: '#b98a55', bankShade: '#6e4b29', bed: '#4e3520' }
 
 /** Draws the card: a title, the solved board with water in every channel, the numbers and the address. */
-export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResult): void {
+export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResult, view?: CardView): void {
   ctx.fillStyle = PAPER
   ctx.fillRect(0, 0, CARD_W, CARD_H)
   // a band of field green along the bottom, like the edge of a meadow
@@ -53,10 +60,12 @@ export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResu
   ctx.font = '600 64px Georgia, serif'
   ctx.fillText(result.title, CARD_W / 2, 120)
   ctx.font = '36px Georgia, serif'
-  ctx.fillText('Every field is watered.', CARD_W / 2, 176)
+  ctx.fillText(view?.caption ?? 'Every field is watered.', CARD_W / 2, 176)
 
   // the board in its solved orientation, scaled to fit a 780 px square between the title and the numbers
-  const solved = puzzle.cells.map((c) => ({ ...c, rot: 0 }))
+  // (a replay view turns each tile to its rotation of the moment, the water following the whole sixths)
+  const spin = (i: number) => (view ? view.rots[i] ?? 0 : 0)
+  const solved = puzzle.cells.map((c, i) => ({ ...c, rot: view ? (((Math.round(spin(i)) % 6) + 6) % 6) : 0 }))
   const flow = computeFlow(solved)
   const xs = solved.map((c) => Math.sqrt(3) * (c.q + c.r / 2))
   const ys = solved.map((c) => 1.5 * c.r)
@@ -88,7 +97,7 @@ export function drawShareCard(ctx: CardContext, puzzle: Puzzle, result: CardResu
     // Plan item 61: every opening a ditch like the board's: a shaded and a lit slope (noon light from above), a
     // dark bed, and water in it where the river runs.
     const spokes: number[] = []
-    for (let d = 0; d < 6; d++) if (c.solved & (1 << d)) spokes.push((Math.PI / 180) * 60 * d)
+    for (let d = 0; d < 6; d++) if (c.solved & (1 << d)) spokes.push((Math.PI / 180) * 60 * (d + spin(i)))
     const along = (a: number, off: number, colour: string, width: number) => {
       const nx = -Math.sin(a) * off
       const ny = Math.cos(a) * off

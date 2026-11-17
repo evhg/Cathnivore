@@ -33,3 +33,34 @@ test('no Watch without a logged solve', async ({ page }) => {
   await expect(page.locator('#strip-card')).toBeVisible({ timeout: 10_000 })
   await expect(page.locator('#strip-watch')).toBeHidden()
 })
+
+// Save clip on the win card films the replay as a WebM (Chromium can film a canvas) and downloads it.
+test('Save clip films the replay and downloads a WebM', async ({ page }) => {
+  test.setTimeout(60_000)
+  await page.goto('/runnel/?nohelp&shotsolve')
+  await page.waitForSelector('#board .tiles > g.cell[data-last]')
+  await page.locator('#board .tiles > g.cell[data-last]').click()
+  await expect(page.locator('#strip-card')).toBeVisible({ timeout: 10_000 })
+  await page.locator('#strip-card').click()
+  const clip = page.locator('#btn-save-clip')
+  await expect(clip).toBeVisible()
+  await expect(clip).toHaveAttribute('data-clip', 'webm')
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: 20_000 }), clip.click()])
+  expect(download.suggestedFilename()).toMatch(/-replay\.webm$/)
+  await expect(clip).toHaveAttribute('data-state', 'saved')
+  expect(Number(await clip.getAttribute('data-bytes'))).toBeGreaterThan(10_000)
+})
+
+// No recorder: Save clip falls back to the card image.
+test('Save clip without a recorder saves the card image', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(window, 'MediaRecorder', { value: undefined }))
+  await page.goto('/runnel/?nohelp&shotsolve')
+  await page.waitForSelector('#board .tiles > g.cell[data-last]')
+  await page.locator('#board .tiles > g.cell[data-last]').click()
+  await expect(page.locator('#strip-card')).toBeVisible({ timeout: 10_000 })
+  await page.locator('#strip-card').click()
+  const clip = page.locator('#btn-save-clip')
+  await expect(clip).toHaveAttribute('data-clip', 'png')
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: 10_000 }), clip.click()])
+  expect(download.suggestedFilename()).toMatch(/\.png$/)
+})

@@ -63,3 +63,25 @@ export function replayEnd(start: readonly number[], frames: readonly ReplayFrame
   for (const f of frames) rots[f.cell] = f.rot
   return rots
 }
+
+/** How long a frame's tile takes to spin into place in the clip, ms. */
+export const CLIP_SPIN_MS = 220
+/** The clip holds the watered board this long after the replay ends, ms. */
+export const CLIP_HOLD_MS = 1200
+
+/**
+ * The board at `t` ms into the clip: each tile's rotation (fractional while it spins, eased), how many frames have
+ * started, and whether the replay is over. Pure, so the clip's drawing and the tests read the same board.
+ */
+export function clipFrameAt(start: readonly number[], frames: readonly ReplayFrame[], t: number): { rots: number[]; step: number; done: boolean } {
+  const rots = [...start]
+  let step = 0
+  for (const f of frames) {
+    if (t < f.at) break
+    step++
+    const p = Math.min(1, (t - f.at) / CLIP_SPIN_MS)
+    const eased = 1 - (1 - p) ** 3
+    rots[f.cell] = p >= 1 ? f.rot : f.rot - f.turn + f.turn * eased
+  }
+  return { rots, step, done: t >= REPLAY_MS }
+}

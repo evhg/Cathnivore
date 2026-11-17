@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { computeFlow, dailyPuzzle, rotateCell, tapsToSolve } from '../games/runnel/src/engine'
-import { REPLAY_MS, replayEnd, replayFrames, type TurnLog } from '../games/runnel/src/replay'
+import { CLIP_SPIN_MS, REPLAY_MS, clipFrameAt, replayEnd, replayFrames, type TurnLog } from '../games/runnel/src/replay'
+import { drawShareCard, type CardContext } from '../games/runnel/src/sharecard'
 
 // Plan item 478: the solve's replay is folded from the player's own turns and must land on exactly the board they solved,
 // inside the replay's six seconds, frames in order.
@@ -44,5 +45,42 @@ describe('Runnel solve replay (plan item 478)', () => {
   }
   it('a turn and its undo on one tile leave no frame', () => {
     expect(replayFrames([0, 0], [[1, 1, 100], [1, -1, 400]])).toEqual([])
+  })
+})
+
+describe('Runnel replay clip (plan item 478)', () => {
+  it('starts on the scrambled board, spins each tile through its turn and ends on the solved one', () => {
+    const { start, end, log } = playerSolve('2026-11-17', 3)
+    const frames = replayFrames(start, log)
+    expect(clipFrameAt(start, frames, 0)).toEqual({ rots: start, step: 0, done: false })
+    const last = clipFrameAt(start, frames, REPLAY_MS)
+    expect(last.rots).toEqual(end)
+    expect(last.step).toBe(frames.length)
+    expect(last.done).toBe(true)
+    // half way through a frame's spin its tile sits between where it was and where it lands
+    const f = frames[0]!
+    const mid = clipFrameAt(start, frames, f.at + CLIP_SPIN_MS / 2).rots[f.cell]!
+    const from = f.rot - f.turn
+    expect(Math.min(from, f.rot)).toBeLessThan(mid)
+    expect(mid).toBeLessThan(Math.max(from, f.rot))
+    expect(Number.isInteger(mid)).toBe(false)
+  })
+
+  it('draws the card mid-solve with its own caption, the water only where it runs', () => {
+    const p = dailyPuzzle('2026-11-17')
+    const start = p.cells.map((c) => c.rot)
+    const calls: string[] = []
+    const props: Record<string, unknown> = {}
+    const ctx = new Proxy({} as Record<string, unknown>, {
+      get: (_t, k: string) => (k in props ? props[k] : (...a: unknown[]) => calls.push(`${k}:${a.map(String).join(',')}:${String(props.strokeStyle)}`)),
+      set: (_t, k: string, v) => ((props[k] = v), true),
+    }) as unknown as CardContext
+    drawShareCard(ctx, p, { title: 'Runnel #1', time: '1:00', taps: 3, par: 10 }, { rots: start, caption: 'Watch the water find its way.' })
+    expect(calls.some((c) => c.startsWith('fillText:Watch the water find its way.'))).toBe(true)
+    const water = (cs: string[]) => cs.filter((c) => c.startsWith('stroke:') && c.endsWith('#3d8fd1')).length
+    const scrambled = water(calls)
+    calls.length = 0
+    drawShareCard(ctx, p, { title: 'Runnel #1', time: '1:00', taps: 3, par: 10 })
+    expect(water(calls)).toBeGreaterThan(scrambled)
   })
 })

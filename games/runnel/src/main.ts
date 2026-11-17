@@ -1,6 +1,6 @@
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
-import { drawShareCard, CARD_W, CARD_H } from './sharecard'
+import { drawShareCard, CARD_W, CARD_H, type CardResult } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
 import { gardenPlots, gardenVisitor } from './garden'
@@ -36,6 +36,7 @@ import {
 } from './engine'
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
 import { REPLAY_MS, replayEnd, replayFrames, type ReplayFrame } from './replay'
+import { clipType, recordReplayClip } from './replayclip'
 import { boardCode, parseBoardCode } from './code'
 import { initWorkshop } from './workshopui'
 import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed } from './workshop'
@@ -1231,6 +1232,10 @@ function showWin(): void {
   ui.toast.textContent = ''
   $<HTMLElement>('win-bea').innerHTML = beaDrawing(puzzle.seed, game.taps <= puzzle.par)
   renderCard(stats.streak)
+  // Plan item 478: Save clip, when the solve can be replayed (a WebM where the browser can film it, else the card image).
+  const clip = $<HTMLButtonElement>('btn-save-clip')
+  clip.hidden = !replayOf()
+  clip.dataset.clip = clipType() ? 'webm' : 'png'
   // Plan item 68: the board keeps the stage. A workshop test keeps its sheet (it carries the board's code);
   // every other win shows the slim strip at the foot, and the full sheet opens from "Your card".
   if (wsCode) {
@@ -1380,6 +1385,44 @@ function syncWinPager(): void {
 
 /** Plan item 6: the share card (the solved board and the numbers) as an image on the win card. */
 let cardBlob: Blob | null = null
+/** What the share card shows, for the replay clip (plan item 478). */
+let cardResult: CardResult | null = null
+let filming = false
+/** Plan item 478: films the solve's replay on the card and saves it as a WebM; without a recorder, saves the card image. */
+async function saveClip(): Promise<void> {
+  const btn = $<HTMLButtonElement>('btn-save-clip')
+  const r = replayOf()
+  if (!r || !cardResult || filming) return
+  if (!clipType()) {
+    $<HTMLAnchorElement>('btn-save-card').click()
+    return
+  }
+  filming = true
+  btn.disabled = true
+  btn.setAttribute('aria-busy', 'true')
+  btn.dataset.state = 'filming'
+  const label = btn.textContent
+  btn.textContent = 'Filming…'
+  const blob = await recordReplayClip(puzzle, r.start, r.frames, cardResult).catch(() => null)
+  filming = false
+  btn.disabled = false
+  btn.removeAttribute('aria-busy')
+  btn.textContent = label
+  if (!blob) {
+    delete btn.dataset.state
+    $<HTMLAnchorElement>('btn-save-card').click()
+    return
+  }
+  btn.dataset.state = 'saved'
+  btn.dataset.bytes = String(blob.size)
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `${cardResult.title.replace(/[^\w#]+/g, '-').replace(/#/g, '').toLowerCase()}-replay.webm`
+  a.click()
+  window.setTimeout(() => URL.revokeObjectURL(a.href), 30_000)
+  ui.toast.textContent = 'Clip saved.'
+}
+$<HTMLButtonElement>('btn-save-clip').addEventListener('click', () => void saveClip())
 /** The workshop code the current share card shows, if it shows one. */
 let cardCode: string | null = null
 function renderCard(streak: number): void {
@@ -1395,7 +1438,8 @@ function renderCard(streak: number): void {
   cardCode = wsCode
   // Plan item 142: a daily's card carries the week's valley (today's solve included).
   const week = mode === 'daily' ? weekFeatures(today, data.results).map((f) => f.kind) : undefined
-  drawShareCard(ctx, puzzle, { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined, ...(week?.length ? { week } : {}) })
+  cardResult = { title, time: formatTime(game.elapsedMs), taps: game.taps, par: puzzle.par, streak: mode === 'daily' ? streak : undefined, ...(week?.length ? { week } : {}) }
+  drawShareCard(ctx, puzzle, cardResult)
   const url = canvas.toDataURL('image/png')
   img.src = url
   img.alt = `${title}: the solved board, ${formatTime(game.elapsedMs)}, ${game.taps} taps, par ${puzzle.par}.`
