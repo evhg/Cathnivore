@@ -749,6 +749,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
             ${edge === "leather" ? "fr = smoothstep( 0.46, 0.6, fr0 );" : ""}
             float side = dot( rimN, uRimDir );
             vec3 rimC = uRimA * smoothstep( -0.2, 0.7, side ) + uRimB * smoothstep( 0.1, -0.8, side );
+            // Plan item 463: the coat's far edge (from the pink sign) sat in the gap between the two terms and the cyan
+            // fill's 0.4, so only one side of her silhouette lit (scripts/cathode-rimprofile.mjs): wool takes more
+            // of the cyan, reaching nearer the turn, and the pink reaches nearer it too (the phone's near edge read 3.5).
+            ${edge === "wool" ? "rimC += uRimB * 1.6 * smoothstep( 0.2, -0.4, side ) + uRimA * 0.5 * smoothstep( -0.25, 0.25, side );" : ""}
             // Plan item 319 slice 11: wool scatters the street's neon, so its rim keeps half the sign's colour and less
             // of its strength (the critique read a pink and cyan sheen down the coat as vinyl).
             ${edge === "wool" ? "rimC = mix( vec3( dot( rimC, vec3( 0.2126, 0.7152, 0.0722 ) ) ), rimC, 0.5 ) * 0.75;" : ""}
