@@ -214,6 +214,8 @@ function onTurn(index: number, clockwise: boolean): void {
   game.taps++
   game.rots[index] = puzzle.cells[index]!.rot
   if (!startedAt) resumeClock()
+  // Plan item 478: the turn, for the solve's replay.
+  ;(game.log ??= []).push([index, clockwise ? 1 : -1, Math.round(elapsed())])
   const wetBefore = wetCount
   const flow = board.refresh(index)
   wetCount = flow.wet.size

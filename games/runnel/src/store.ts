@@ -19,6 +19,9 @@ export interface SavedGame {
   solved: boolean
   /** Cath's tip was used on this puzzle. */
   hinted?: boolean
+  /** Plan item 478: every turn [cell, +1 or -1, ms on the puzzle's clock], for the solve's replay. Saves from before
+   *  it have none, and their win hides Watch. */
+  log?: [number, 1 | -1, number][]
 }
 
 export interface DailyResult {
