@@ -464,6 +464,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
+    // Plan item 456: the noir toe is the title's; on the pick it eases out with the wardrobe, so the class coats keep
+    // their colours apart (under it butcher-fixer read dE 6.7, was 16.7).
+    world.setToe?.(TITLE_TOE * (1 - wd.w));
     faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w;
     if (wd.w > 0.002 && !keyRemove && world.liveLight) {
       keyRemove = world.liveLight(key);
