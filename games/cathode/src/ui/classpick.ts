@@ -38,6 +38,8 @@ export interface ClassPickHooks {
   gunIcon?(weaponCls: string, cls?: ClassId): string | null;
   /** Plan item 449: the hold is complete (the 520 ms exit starts): she shoulders her weapon and turns to the lens. */
   onCommit?(cls: ClassId): void;
+  /** Plan item 464: a test shot of the class weapon (the scene flashes her muzzle, the audio fires the class's gun). */
+  onTestFire?(cls: ClassId): void;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -321,6 +323,40 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   let reelTimer = 0;
   let reelRetry = 0;
   let reelTries = 0;
+  // Plan item 464: the test-fire state for the class shown.
+  let testMag = 0;
+  let testMax = 0;
+  let testGapMs = 250;
+  let testReloadMs = 1500;
+  let testReloading = false;
+  let testLast = -Infinity;
+  let testShots = 0;
+  let testTimer = 0;
+  let testMagEl: HTMLElement | null = null;
+  let testCls: ClassId | null = null;
+  function testFire(): void {
+    if (done || testMax <= 0 || testReloading) return;
+    const now = performance.now();
+    if (now - testLast < testGapMs) return;
+    testLast = now;
+    testMag -= 1;
+    testShots += 1;
+    root.dataset.testfire = String(testShots);
+    root.dispatchEvent(new CustomEvent("testfire", { detail: { cls: selected, left: testMag } }));
+    hooks.onTestFire?.(selected);
+    if (testMagEl) testMagEl.textContent = `${testMag} / ${testMax}`;
+    if (testMag <= 0) {
+      testReloading = true;
+      root.dataset.reloading = "";
+      if (testMagEl) testMagEl.textContent = "Reloading";
+      testTimer = window.setTimeout(() => {
+        testReloading = false;
+        delete root.dataset.reloading;
+        testMag = testMax;
+        if (testMagEl) testMagEl.textContent = `${testMag} / ${testMax}`;
+      }, testReloadMs);
+    }
+  }
   function renderDetail(): void {
     const cls = selected;
     const def = CLASSES[cls];
@@ -454,6 +490,27 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       pair("Damage", w.pellets > 1 ? `${w.damage} × ${w.pellets}` : String(w.damage));
       pair("Rate", `${w.fireRate}/s`);
       pair("Magazine", w.magazine > 0 ? String(w.magazine) : "—");
+      // Plan item 464: try it: a test shot per tap (or F), at the weapon's own cadence; the magazine counts down and
+      // reloads at its reload time. Fresh for each class.
+      // (renderDetail also re-runs for the same class as its gun reel fills: the magazine resets only on a new class)
+      if (testCls !== cls) {
+        testCls = cls;
+        testMag = w.magazine;
+        testMax = w.magazine;
+        testGapMs = 1000 / Math.max(0.1, w.fireRate);
+        testReloadMs = w.reload * 1000;
+        testReloading = false;
+        clearTimeout(testTimer);
+      }
+      testMagEl = nums.lastElementChild?.querySelector("dd") ?? null;
+      if (testMagEl && testMag < testMax) testMagEl.textContent = testReloading ? "Reloading" : `${testMag} / ${testMax}`;
+      const tf = el("button", "cp-testfire", weapon, "Test fire") as HTMLButtonElement;
+      tf.type = "button";
+      tf.setAttribute("aria-keyshortcuts", "F");
+      tf.addEventListener("click", (e) => {
+        e.stopPropagation();
+        testFire();
+      });
     }
     el("p", "cp-weapon-pin", weapon, "and the Pin, her steel baton.");
 
@@ -541,6 +598,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       if (!ev.repeat) holdStart();
       return;
     }
+    // Plan item 464: F test-fires the class weapon (held, it fires at the weapon's cadence).
+    if ((ev.key === "f" || ev.key === "F") && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+      ev.preventDefault();
+      testFire();
+      return;
+    }
     if (inList && (ev.key === "ArrowDown" || ev.key === "ArrowRight")) next = (i + 1) % CLASS_IDS.length;
     else if (inList && (ev.key === "ArrowUp" || ev.key === "ArrowLeft")) next = (i + CLASS_IDS.length - 1) % CLASS_IDS.length;
     else if (inList && ev.key === "Home") next = 0;
@@ -595,6 +658,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);
+    clearTimeout(testTimer);
     subToken++;
     removeEventListener("resize", placeSub);
     removeEventListener("resize", fitName);

@@ -6,6 +6,7 @@
 //
 // Browsers start audio only after a gesture: `wake()` runs on the first key, click or tap, and the bed fades in
 // from there. Everything is one small graph on its own context, closed when the game takes over.
+import { GunSound } from "../game/gunsound";
 
 const db = (d: number) => Math.pow(10, d / 20);
 const CHORDS: ReadonlyArray<readonly number[]> = [
@@ -326,6 +327,23 @@ export class FrontAudio {
     sub.start(now);
     sub.stop(now + 0.26);
   }
+
+  /** Plan item 464: the class's own gun for a test shot on the pick (the game's pre-rendered voices; the first
+   *  call for a class renders its set in the background, so that shot falls back to the rack's click). */
+  testFire(cls: string): void {
+    const c = this.ctx;
+    if (!c || !this.ui || !this.awake) return;
+    this.gun ??= new GunSound(c, { world: this.ui, dry: this.ui, beds: this.ui });
+    if (!this.gun.fire(cls)) this.rack(cls);
+  }
+  /** Plan item 464: render a class's gun voices ahead of its first test shot. */
+  prepareGun(cls: string): void {
+    const c = this.ctx;
+    if (!c || !this.ui) return;
+    this.gun ??= new GunSound(c, { world: this.ui, dry: this.ui, beds: this.ui });
+    this.gun.prepare(cls);
+  }
+  private gun: GunSound | null = null;
 
   /** Plan item 129: the class's weapon-rack stinger as her kit goes on (`scheduleRack`). */
   rack(cls: string): void {

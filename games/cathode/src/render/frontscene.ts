@@ -46,6 +46,9 @@ export interface FrontScene {
   /** Plan item 465: the menu entry in focus: her face answers it (New Case sets her jaw, the Case Board gets a wink,
    *  the rest her smirk), held 4 s over the title's own turn; published as data-cath-pose on the canvas. */
   menuMood(id: string): void;
+  /** Plan item 464: a test shot on the pick: a muzzle flash at the gun in her hand and a small camera kick (none
+   *  under reduced motion). */
+  testFire(): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
   /**
@@ -1140,6 +1143,17 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         wardrobeStep(0);
         frame(0);
       }
+    },
+    testFire() {
+      const at = new THREE.Vector3();
+      // The gun in her hand; with it slung (the Ghost carries her rifle on her back, item 449), her posing hand.
+      if (!cath.propWorld(at)) at.fromArray(cath.poseState.hand).applyMatrix4(cath.group.matrixWorld);
+      // Out from her gun, across the frame toward the open street (her right of frame), a little toward the lens.
+      const dir = new THREE.Vector3().subVectors(cam.position, at).normalize().multiplyScalar(0.35);
+      dir.add(new THREE.Vector3(1, 0.05, 0).applyQuaternion(cath.group.quaternion)).normalize();
+      world.fx.muzzle(at.clone().addScaledVector(dir, 0.35), dir, 0.8);
+      if (!idleReduce && !o.still) spring.vy += 0.6;
+      world.renderer.domElement.dataset.testfire = String(Number(world.renderer.domElement.dataset.testfire ?? 0) + 1);
     },
     menuMood(id) {
       const pose = MENU_MOOD[id] ?? { pose: "idle", face: "smirk" as FaceExpression }
