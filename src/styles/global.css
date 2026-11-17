@@ -524,6 +524,25 @@ h3 {
 @media (prefers-reduced-motion: reduce) { .end-screen-hero.is-win::before { animation: none; } }
 html.no-animations .end-screen-hero.is-win::before { animation: none; }
 
+/* Plan item 467: Graham Pell in his glossy medallion at Cath's knee, taking the result. */
+.end-screen-hero > .end-rival {
+  position: absolute;
+  right: -40px;
+  bottom: 0;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--hollowell-highlight) 55%, white) 0 18%, transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--hollowell-ink) 60%, black), color-mix(in srgb, var(--hollowell-ink) 22%, black));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--hollowell-ink) 30%, black),
+    0 0 0 4px var(--hollowell),
+    var(--e2);
+}
+.end-rival svg { display: block; width: 100%; height: 100%; }
+
 .end-screen-cath svg {
   filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 25%, transparent));
 }

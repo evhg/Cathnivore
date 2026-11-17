@@ -2,7 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
-import { rivalMood } from './portraits/rivalFace'
+import { PELL_EVENT_POSE, pellPoseFor, rivalMood, type PellEvent } from './portraits/rivalFace'
+import type { PellPose } from './portraits/ExecPortrait'
 import ExecPortrait from './portraits/ExecPortrait'
 import { lightFor } from './tableLight'
 import { BeasDrawing, ProduceCrates } from './TableProps'
@@ -42,7 +43,7 @@ import { SCHEMES_BY_ID } from '../content/schemes'
 import { canUndo, popUndo, pushUndo, type UndoEntry } from './undo'
 import { enemyTurnEvents, pendingMidSceneTrigger } from './enemyTurnLog'
 import EnemyTurnPlayback from './EnemyTurnPlayback'
-import { EXECS, execFor, flightsFor, stagedRegions, stripDock, type ExecMood } from './boardroom'
+import { EXECS, execFor, flightsFor, stagedRegions, stripDock } from './boardroom'
 import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
 import RoundLedger from './RoundLedger'
@@ -281,7 +282,7 @@ const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 640px) an
 // Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with
 // the company's plastic nameplate, at the end of the papers' row on a desktop. A phone meets him in the boardroom
 // strip when Hollowell plays its turn.
-function Rival({ mood }: { mood: ExecMood }) {
+function Rival({ mood }: { mood: PellPose }) {
   const who = `${EXECS.pell.name}, ${EXECS.pell.title}`
   return (
     <aside className="rival" data-rival data-mood={mood} aria-label={`${who}, ${mood}`}>
@@ -1449,6 +1450,17 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const moodRegionsRef = useRef(initial.regions)
   const moodTimerRef = useRef<number | undefined>(undefined)
   const [producerFaces, setProducerFaces] = useState<Partial<Record<ProducerId, ProducerFace>>>({})
+  // Plan item 467: Pell's pose for a few seconds after something happens to him at the table; otherwise he mirrors Cath.
+  const [pellBeat, setPellBeat] = useState<PellPose | null>(null)
+  const pellTimerRef = useRef<number | undefined>(undefined)
+  const papersKey = `${state.squeeze?.id ?? ''}|${state.expand?.id ?? ''}|${state.scout?.id ?? ''}`
+  const papersKeyRef = useRef(papersKey)
+  const pellReact = useCallback((pose: PellPose) => {
+    setPellBeat(pose)
+    window.clearTimeout(pellTimerRef.current)
+    pellTimerRef.current = window.setTimeout(() => setPellBeat(null), 5000)
+  }, [])
+  useEffect(() => () => window.clearTimeout(pellTimerRef.current), [])
   // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
   // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
   useEffect(() => {
@@ -1459,6 +1471,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const candidate = cathReactionFor(event)
       if (candidate && (!best || candidate.rank >= best.rank)) best = candidate
     }
+    const papersMoved = papersKeyRef.current !== papersKey
+    papersKeyRef.current = papersKey
+    const pellPose = pellPoseFor(newEvents, papersMoved)
+    if (pellPose) pellReact(pellPose)
     if (best) {
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[best.reaction], line: best.line })
       strikePose(best.reaction)
@@ -1472,7 +1488,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions, strikePose, beat])
+  }, [state.log, state.regions, strikePose, beat, papersKey, pellReact])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -1480,6 +1496,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const d = (e as CustomEvent<{ kind: 'liberate' | 'squeeze'; region: RegionId }>).detail
       const reaction = d.kind === 'liberate' ? 'liberated' : 'squeeze'
       setCathReaction({ expression: CATH_REACTION_EXPRESSION[reaction], line: cathLineForRegion(reaction, d.region) })
+      pellReact(PELL_EVENT_POSE[d.kind])
       strikePose(reaction)
       beat(reaction)
       // Plan item 155: the seated producers react as to a real one: worried with a Stall under a Squeeze, the
@@ -1502,8 +1519,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       }
     }
     window.addEventListener('cathnivore-moment', on)
-    return () => window.removeEventListener('cathnivore-moment', on)
-  }, [strikePose, beat])
+    // Plan item 467: under `?e2eMoment`, any of the five table events Pell reacts to can be staged.
+    const w = window as unknown as { cathnivorePell?: (kind: PellEvent) => void }
+    if (new URLSearchParams(window.location.search).has('e2eMoment')) w.cathnivorePell = (kind) => pellReact(PELL_EVENT_POSE[kind])
+    return () => {
+      window.removeEventListener('cathnivore-moment', on)
+      delete w.cathnivorePell
+    }
+  }, [strikePose, beat, pellReact])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -1795,6 +1818,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               height={300}
               title={won ? 'Cath, cheering' : 'Cath, arms crossed, undeterred'}
             />
+            {/* Plan item 467: Graham Pell takes the result too: defeated by a win, gloating over a loss. */}
+            <span className="end-rival" data-rival-end data-pell-pose={won ? 'defeated' : 'gloat'}>
+              <ExecPortrait mood={won ? 'defeated' : 'gloat'} title={`${EXECS.pell.name}, ${won ? 'defeated' : 'gloating'}`} />
+            </span>
           </div>
           <div className={`end-stamp ${won ? 'is-win' : 'is-loss'}`} aria-hidden="true">
             {won ? 'Liberated' : 'Repossessed'}
@@ -3417,7 +3444,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         onClick={() => setPapersOpen((o) => !o)}
       >
         <span className="papers-placard-face" aria-hidden="true">
-          <ExecPortrait mood={rivalMood(cathReaction.expression)} />
+          <ExecPortrait mood={pellBeat ?? rivalMood(cathReaction.expression)} crop="face" />
         </span>
         {(['squeeze', 'expand', 'scout'] as const).map((slot) => (
           // Keyed on the card, so a card the conveyor moves in re-mounts and stamps (the strip's arming can't show while folded).
@@ -3519,7 +3546,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       </section>
       </div>
       {/* Plan item 92: Hollowell's face across the table from Cath, his mood the mirror of hers. */}
-      <Rival mood={rivalMood(cathReaction.expression)} />
+      <Rival mood={pellBeat ?? rivalMood(cathReaction.expression)} />
       </div>
 
       <section className="map-wrap" data-light={lightFor(state.round)}>
