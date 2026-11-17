@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-17T09:35Z
-
 
 
 
@@ -4393,3 +4391,33 @@ Progress (lane A, 2026-11-17 05:26, slice 1): the queue's 'pink blocks under hal
   - **Site:** `games-D` the stall's left half an empty brown panel (170-455 x 300-455).
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
+
+## 471. [ ] Hedgerow act map: every stop a place you want to go
+- **Why (critique 2026-11-17 09:50, shots `e2e/screenshots/plan1117c`):** `hedge-menu-D` (300-1060 x 320-440, 85-1060 x 725-850): the ten stops are identical glass bubbles, each a line icon with a padlock, an H badge and a number chip, beside the real landmarks (the lighthouse, the beach huts) drawn loose on the map; `hedge-menu-P` (10-380 x 210-560) reads as a list of cream pills and padlocks with the level card over the trail's foot. The first screen of Hedgerow is a menu, not a country (VISION: every screen designed, not laid out; item 73's vignettes don't show).
+- **Build:** each stop a small diorama of its level's own landmark (radio mast, lighthouse, blimp, beach huts...) on a turf plinth ringed by hedge, in the map's ink-and-wash: locked a pencil under-drawing (graphite lines, no fill, no padlock); next in full colour with a sun-glow and Cath standing on it; won coloured with its stars as stamped seals. The H and number badges merge into one small inked tag. On the phone one winding trail with the names set on the land (no pills), the level card docked below the trail, never over a stop.
+- **Accept:** each stop 110 px+ wide at D; no two adjacent stops share a landmark (`data-landmark`, e2e); no padlock glyph; at P no stop under the card; Cath 90 px+ at D, 60+ at P; shots P and D for acts 1, 3 and 6; the act-map specs pass.
+- **Size:** 2-3
+
+## 472. [ ] Cathnivore title: the board the hero again on the phone, one focal point at D
+- **Why:** `cath-title-P` (180-385 x 435-610): the board is about 205 px wide, half behind Cath's shoulder (item 231's 'board 360 px on the phone' has regressed since item 453 enlarged her); `cath-title-D` (105-1395 x 320-850): the chalkboard menu, Cath, the board and the Daily board pull equally, so there is no focal point (VISION 1-2).
+- **Build:** recompose round one diagonal: Cath behind the counter leaning over the board, the largest object, her hand on a region. At P the board in front of her at 340 px+, her bust above and behind it, never over a hex; the menu as hanging signs under the awning, the Daily folded into the counter front. At D the board 34%+ of the frame's width, the menu as stall signage hung from the awning; her waving sleeve shaded with a cuff.
+- **Accept:** board 340 px+ wide at P, 34%+ of the width at D; zero overlap between Cath and any hex (e2e at P and D); the menu's box at most 22% of the D frame; the title specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 473. [ ] NIGHT SHIFT title: the street behind her, and Cath large on the phone
+- **Why:** `ns-title-D` (690-1220 x 0-560): the right half is the black umbrella over a grey, untextured plume; the street behind her reads as a void. `ns-title-P` (2x shot, 180-780 x 740-1260): the umbrella is the biggest shape and her face (540-700 x 1090-1260) is pushed into the corner behind The List (VISION: a clear focal point, Cath the face). Item 331 is the left half; this is the right half and the phone framing.
+- **Build:** behind her: wet cobbles with the neon's reflections, two lit shopfronts (LUNA and a Hollowell shop), a fire escape, the steam lit from below (not a grey mass), rain catching the rim light. The canopy smaller and tilted back so it frames her head. At P a portrait framing with her head in the upper-middle third, the menu over her coat on glass, The List a strip. Posters re-rendered.
+- **Accept:** at P her face 110 px+ tall (CSS px) with its centre between 30% and 55% of the height; the umbrella at most 15% of the frame at P and D (mask); the street behind her 2x the current luminance spread; cathode-front, logotype and poster specs pass; live frames shot at P and D.
+- **Size:** 2-3
+
+## 474. [ ] Cathnivore: Marrow in colour under occupation
+- **Why:** `cath-game-D` (565-1165 x 140-690): the held regions are washed grey-blue under hatching beside a warm rail and hand, so the board, the hero, is the drabbest thing on screen, while the campaign atlas (`cath-campaign-D` 60-720 x 205-810) is warm and painted (VISION 2; items 267, 417).
+- **Build:** each hex painted from the atlas's palette for its region (fields, coast, moor) with small life (water shimmer, a boat's bob, sheep, chimney smoke; still under reduced motion); Hollowell's hold shown as objects on top, not a grey-out: a cellophane sheen, white fences, its miniatures. Liberating a hex peels the cellophane (with item 127's moment).
+- **Accept:** a held hex's mean chroma 80%+ of the same region on the atlas (measured in-page, P and D); held vs free still 3:1 apart through the overlay; 3+ ambient elements at D, none under reduced motion; the board specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 475. [ ] Hedgerow 2D: beds planted with crops you can read
+- **Why:** `hedge-l21-2d-D` (380-830 x 230-860), `hedge-l34-2d-D` (480-890 x 320-790), `hedge-l21-2d-P` (60-370 x 180-660): in the 2D renderer (the no-WebGL fallback and `?2d`) the beds are washed teal slabs or blank stripes, no crop, stage or variety (items 52, 59 don't show there).
+- **Build:** a small crop library drawn in code (cabbage rows, barley with ears, lavender drills, potato ridges, sunflowers, samphire for Saltmarsh), two to four per level by act, three growth stages on the existing rounds, warm earth under them in place of the teal tint; a tower on a bed parts the crop.
+- **Accept:** 3+ crop kinds visible at round 11 of level 21 and round 17 of level 34 (`data-crop`, e2e); mean bed saturation 0.35+ (was about 0.15); no bed a single flat fill; Hedgerow 2D specs pass; shots P and D for levels 5, 21, 34, 40.
+- **Size:** 2
