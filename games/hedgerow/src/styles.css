@@ -672,14 +672,16 @@ button {
   position: absolute;
   inset: 0 0 auto;
   /* Plan item 469: 96 px with an eased fall-off (it went from half haze to clear over its last 16 px, which a critique
-     read as a hard-edged fog plane over the far fence); the sky part keeps its height. */
+     read as a hard-edged fog plane over the far fence); the sky part keeps its height. Its haze half is thinner too
+     (55/28/10% -> 40/16/5%), and the sun's glow smaller and fainter (a later critique read the D frame's top as a
+     white haze washing the far country). */
   height: 96px;
   /* Plan item 438: the top edge's haze (item 307) painted as sky: the act's sky at the very top, its warm horizon, the
      low sun's glow on its side, then the haze into the far country. The fitted camera puts the far verge at the
      frame's top, so this 56 px band is all the sky there is room for (the 2D renderer sets none of these). */
   background:
-    radial-gradient(34% 82% at var(--field-sun-x, 70%) 46%, color-mix(in srgb, var(--field-horizon, var(--field-haze)) 90%, transparent), transparent 70%),
-    linear-gradient(var(--field-sky, var(--field-haze)), color-mix(in srgb, var(--field-horizon, var(--field-haze)) 92%, transparent) 27%, color-mix(in srgb, var(--field-haze) 55%, transparent) 42%, color-mix(in srgb, var(--field-haze) 28%, transparent) 60%, color-mix(in srgb, var(--field-haze) 10%, transparent) 80%, transparent);
+    radial-gradient(26% 70% at var(--field-sun-x, 70%) 40%, color-mix(in srgb, var(--field-horizon, var(--field-haze)) 60%, transparent), transparent 70%),
+    linear-gradient(var(--field-sky, var(--field-haze)), color-mix(in srgb, var(--field-horizon, var(--field-haze)) 92%, transparent) 27%, color-mix(in srgb, var(--field-haze) 40%, transparent) 42%, color-mix(in srgb, var(--field-haze) 16%, transparent) 60%, color-mix(in srgb, var(--field-haze) 5%, transparent) 80%, transparent);
   pointer-events: none;
   z-index: var(--z-fx);
 }

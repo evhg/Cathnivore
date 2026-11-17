@@ -622,10 +622,13 @@ export class Renderer3D {
       // Plan item 242: the country past the far verge fades into the act's air within a few cells, so the far
       // houses, boats and slabs at the frame's top read as distance, not as props sliced by the frame. The field
       // itself (to its far edge) stays in clear air.
-      const hazeNear = Math.min(near, farEdge + 0.8);
+      // Plan item 469: a wide frame's haze starts a cell further out and thins over 14 cells, not 8 (a critique read
+      // the far edge at D as a white haze over the country, 0-120 px); a phone keeps its short fade.
+      const wide = this.w >= 900;
+      const hazeNear = Math.min(near, farEdge + (wide ? 1.8 : 0.8));
       // Plan item 290: over 8 cells, not 4.5: the far country (houses, trees, the shore) shows softened at a wide
       // frame's top instead of a blank band of haze.
-      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + (this.w >= 900 ? 8 : 4.5));
+      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + (wide ? 14 : 4.5));
       this.scene.fog.near = hazeNear * dim;
       this.scene.fog.far = hazeFar * dim;
     }

@@ -242,11 +242,12 @@ const STANDING: Record<Crop, { colour: string; s: number; sy: number }> = {
 
 /** Plan item 469: Saltmarsh's three beds in 3D (2D's fills in fieldkitart.ts): the texture they borrow and their tint. */
 const MARSH_BED = {
-  samphire: { base: "sward", tint: "#8cbc86" },
+  samphire: { base: "sward", tint: "#9cc88a" },
   // Plan item 469: on the fine sward, not the clover blobs (a critique read the plots as blotchy); a mauve grey under
-  // its violet sprays, as 2D's lavender pads are.
-  lavender: { base: "sward", tint: "#a096ac" },
-  saltgrass: { base: "sward", tint: "#86c6b2" },
+  // its violet sprays, as 2D's lavender pads are; all three lighter and warmer so an empty bed reads as
+  // ground to build on, not a dull fill.
+  lavender: { base: "sward", tint: "#b4a6b0" },
+  saltgrass: { base: "sward", tint: "#94ccb0" },
 } as const;
 
 function bedTexture(look: "earth" | "stubble" | "clover" | "sward"): THREE.Texture {
@@ -889,7 +890,8 @@ export function buildGround(level: Level): Ground {
   const timberCols = ["#8a6a44", "#7a5c3a", "#94744c"].map((c) => new THREE.Color(c));
   const standing = STANDING[cropOf(level)];
   const lookOf = (c: number, r: number): PlotLook => looks.get(`${c},${r}`) ?? "earth";
-  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.22, depthWrite: false });
+  // Plan item 469: the corner ticks crisp enough to read as "build here" (0.22 was lost on the beds' fill).
+  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.42, depthWrite: false });
   const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
   const plots: Inst[] = [];
   const markers: Inst[] = [];
