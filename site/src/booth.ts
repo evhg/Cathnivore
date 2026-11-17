@@ -137,6 +137,23 @@ export function drawBooth(): void {
   const sy = top + (rail - top) * 0.52
   f += `<rect x="${r(sx - 66)}" y="${r(sy - 17)}" width="132" height="34" rx="4" fill="#2b3330" stroke="#6b3f24" stroke-width="3"/>`
   f += `<text x="${r(sx)}" y="${r(sy + 6)}" fill="#f4efe2" font-family="Georgia,serif" font-size="17" font-weight="700" text-anchor="middle">FRESH · FREE</text>`
+  // Plan item 470: a string of pennants across the counter's foot, so its front isn't a bare brown panel
+  // (a critique read the stall's left half as empty): it sags from post to post under the price board.
+  {
+    const by = sy + 26
+    const bl = x1 - 2
+    const br = cr - 6
+    const sag = 10
+    f += `<path d="M${r(bl)} ${r(by)}Q${r((bl + br) / 2)} ${r(by + sag * 2)} ${r(br)} ${r(by)}" stroke="#e8d3a8" stroke-width="1.5" fill="none" opacity=".85"/>`
+    const cols = ['#d9534f', '#f2c14e', '#5aa36b', '#3f7fbf', '#e8d3a8']
+    const n = Math.max(5, Math.floor((br - bl) / 26))
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / n
+      const x = bl + (br - bl) * t
+      const y = by + sag * 2 * 2 * t * (1 - t)
+      f += `<path d="M${r(x - 8)} ${r(y)}L${r(x + 8)} ${r(y)}L${r(x)} ${r(y + 16)}Z" fill="${cols[i % cols.length]}" opacity=".92"/>`
+    }
+  }
   if (!back) {
     back = layer('hero-booth')
     hero.prepend(back)
