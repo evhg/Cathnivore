@@ -4422,7 +4422,7 @@ Read first (lane B, 10:30): item 433 (Cath and her umbrella as one figure) and i
 - **Accept:** a held hex's mean chroma 80%+ of the same region on the atlas (measured in-page, P and D); held vs free still 3:1 apart through the overlay; 3+ ambient elements at D, none under reduced motion; the board specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 475. [ ] Hedgerow 2D: beds planted with crops you can read
+## 475. [x] Hedgerow 2D: beds planted with crops you can read *(withdrawn 2026-11-17 11:30 lane B: already built: item 399 sows each act's beds with its own looks (`fieldkit.ts`: oats, turnips; samphire, sea lavender; meadow, swathe, cress; ... ), item 59 grows the act's crop through the level (`growth.ts`), and level 34's pale striped beds are its FLOOD twist's water meadow. What the critique saw is how faintly those looks read in 2D at D, which is a smaller styling item if a later critique still finds it.)*
 
 Read first (lane B, 10:30): Saltmarsh's teal marsh beds are its act's own (lane A, 8dd8463, gave the 3D field samphire and sea-lavender 'as in 2D'), so judge the crops on a farmland act's level (5, 34, 40) before touching Saltmarsh.
 - **Why:** `hedge-l21-2d-D` (380-830 x 230-860), `hedge-l34-2d-D` (480-890 x 320-790), `hedge-l21-2d-P` (60-370 x 180-660): in the 2D renderer (the no-WebGL fallback and `?2d`) the beds are washed teal slabs or blank stripes, no crop, stage or variety (items 52, 59 don't show there).
