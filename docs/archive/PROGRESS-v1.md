@@ -4183,3 +4183,5 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 
 - 2026-11-17 14:22 lane B: 473 done (umbrella share measured); no code change this session.
 - **2026-11-17 13:51 lane A session:** CI green on 3c7a89ee. Item 469 slices 28-29 (3c7a89ee, 19ec97f3); farhouses3d, country3d, biome3d, dressing3d, margins, water, shadow3d pass; shore, creeks, css-lint units pass. Shots scratchpad before, a1-a4. No full `npm run check` (lane A ran it at 06:51).
+- 2026-11-17 15:24 lane B: 331 closed; planning 476-481; 476 slice 1 (harvest.test new; the full unit suite, 310 files, passes).
+- **2026-11-17 14:51 lane A session:** CI green on 3c7a89ee/de7707b6. Item 469 slices 30-31 (3c5f1a4a, b1fb1534); dressing3d, biome3d, margins, country3d, shadow3d, water, 3dframe pass (two flaky under 2 workers, pass alone). Full `npm run check` green (309 files, 2729 tests). Lock released.
