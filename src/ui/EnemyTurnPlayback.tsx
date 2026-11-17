@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { captionFor, eventRegion } from './enemyTurnLog'
 import { boardroomBeat, cathReply, EXECS, MOOD_EXPRESSION, stripDock, type Exec } from './boardroom'
 import Figure from './portraits/Figure'
+import ExecPortrait from './portraits/ExecPortrait'
 import { ENEMY_STEP_MS, loadSettings } from '../platform/settings'
 import type { GameEvent, RegionId } from '../engine/types'
 
@@ -49,7 +50,8 @@ export default function EnemyTurnPlayback({ events, onDone, onStep, hold }: { ev
         // Plan item 34: a long card (a Candor scheme) takes the bark's place in a phone's dock.
         <div className={`boardroom-row${(captionFor(events[step]!) || beat.card).length > 48 ? ' boardroom-long' : ''}`} key={step}>
           <div className="boardroom-face" aria-hidden="true">
-            <Figure character={exec} expression={MOOD_EXPRESSION[beat.mood]} />
+            {/* Plan item 467: Pell in his own corporate portrait, the face the table shows; Vane keeps the figure. */}
+            {exec === 'pell' ? <ExecPortrait mood={beat.mood} crop="face" /> : <Figure character={exec} expression={MOOD_EXPRESSION[beat.mood]} />}
           </div>
           <div className="boardroom-words">
             <span className="boardroom-who">

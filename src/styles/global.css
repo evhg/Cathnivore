@@ -524,13 +524,13 @@ h3 {
 @media (prefers-reduced-motion: reduce) { .end-screen-hero.is-win::before { animation: none; } }
 html.no-animations .end-screen-hero.is-win::before { animation: none; }
 
-/* Plan item 467: Graham Pell in his glossy medallion at Cath's knee, taking the result. */
+/* Plan item 467: Graham Pell in his glossy medallion at Cath's shoulder, clear of the stamp, taking the result. */
 .end-screen-hero > .end-rival {
   position: absolute;
-  right: -40px;
-  bottom: 0;
-  width: 76px;
-  height: 76px;
+  top: 36px;
+  right: -36px;
+  width: 72px;
+  height: 72px;
   overflow: hidden;
   border-radius: 50%;
   background:
@@ -2333,6 +2333,13 @@ html.no-animations .setup .difficulty-sheet { animation: none; }
   height: auto;
   transform: translateX(-50%);
 }
+/* Plan item 467: Pell's own portrait is drawn for a round frame: it fills it, on Hollowell's glossy ground. */
+.boardroom-face svg.exec-portrait { inset: 0; width: 100%; height: 100%; transform: none; }
+.boardroom-hollowell .boardroom-face {
+  background:
+    radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--hollowell-highlight) 55%, white) 0 18%, transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--hollowell-ink) 60%, black), color-mix(in srgb, var(--hollowell-ink) 22%, black));
+}
 .boardroom-words {
   display: grid;
   gap: 3px;
@@ -2618,6 +2625,7 @@ html.no-animations .setup .difficulty-sheet { animation: none; }
     top: -25px;
     width: 128px;
   }
+  .action-tray .actions .boardroom-face svg.exec-portrait { inset: 0; width: 100%; height: 100%; transform: none; }
   .action-tray .actions .boardroom-row { gap: 10px; }
   .action-tray .actions .boardroom-words { gap: 2px; }
   /* Plan item 34: a long bark could run the strip 6 px past the dock; it keeps two lines, the card stays whole. */
