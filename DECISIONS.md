@@ -518,3 +518,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-17 lane B: 465 answers the menu with her face (the title rig has class stances only); body poses for the title would be a new item, not a slice.
 - 2026-11-17 04:40 lane A (item 468): the 3D slow reads as a thorny tangle lying round the wheels, not hoops over the roof: vehicle heights vary too much between classic and Fleet models, so hoops either sank into the body or stood like palms. One instanced mesh for all.
 - 2026-11-17 lane A (item 468): 'hits this round' counts a tower's shots and gusts (each shot lands in this engine); a hedge counts as attacking while a slowed vehicle is in its reach, polled every 250 ms in main.ts, not an engine event (no change to the deterministic sim).
+- 2026-11-17 lane B: 464's test shots reuse the game's GunSound on the front's UI bus (one voice per class, keyed by class) rather than new synthesis.
