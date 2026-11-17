@@ -4249,7 +4249,9 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+
+Progress (lane B, 2026-11-17 01:15, slice 2 `b6a367d`): the title's grade has a noir toe (post.ts `uToe`, 0 in play, 0.6 on the title via `world.setToe`, reset at handover): display darks under 0.6 pulled toward black, warm tones (skin, sodium) spared. Poster skirt luma 66 -> 41 (LUNA's letters about 240, the lit pavement 150+), face 141 -> 139; the street's blacks now black. Face-on-the-title, classpick and classstage pass at P and D (21). Left: the coat-colour ΔE script (`cathode-coatcolour.mjs`) not rerun (it timed out behind a rebase), a blind critique read, the rim on both sides.
 
 Root cause (lane B, 2026-11-16 23:35, live probes with every front-cath rim uniform exposed, one instance): zeroing uCoatKey, uCloth and both rim colours moves the coat within frame noise (about +-8); with specular, clearcoat and sheen off the upper coat reads 37, the same as the darkest wall beside her (32). The coat is at the frame's floor: `post.ts` tone-maps with AgX then lifts blacks (`mapped * 0.99 + vec3(0.0012, 0.0022, 0.0042)`, a 0.25 S), and AgX's toe maps near-black radiance to about 35-45 sRGB, so no material change darkens it further and a red albedo shows no red (her coat gets almost no diffuse light). The 'mid grey' is the grade's low-contrast toe. Next step: a title-only grade (a deeper toe or a stronger S under the front scene, a post uniform the title sets) so blacks sit near 15-20; measure the face spec and the pick's coat ΔE after, since post.ts is shared with play. Slice 1's coat key 0.25 stays (it removed the real lift, 116 -> 66).
 

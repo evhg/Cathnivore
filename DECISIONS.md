@@ -506,3 +506,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-16 23:25 lane A: took 449 over 331 again (331's open points wait on its camera-framing question); 449's light-to-weapon beat swings the existing class key (no new pooled light, so no perf cost) rather than adding a spot.
 - 2026-11-16 lane B: 456's coat is at post.ts's AgX black floor; no more material tweaks: the next slice is a title-only grade, checked against the face spec and the pick's coat ΔE.
 - 2026-11-17 00:40 lane A (item 449): the Butcher's carry is port arms (hand at the chest, barrel back past the shoulder), not upright at arm's length; the commit beat speeds the audition's remainder to 350 ms (it ends on the carry, never a cut) and turns her to the camera's bearing computed by the scene, capped at 0.6 rad.
+- 2026-11-17 lane B: 456: the title darkens through a grade toe (uToe, title only, warm tones spared) rather than materials; play's grade is untouched (0).
