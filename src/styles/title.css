@@ -1918,6 +1918,8 @@ html.no-animations .title-screen * {
   .title-menu .title-daily .title-daily-no { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
   .title-menu .title-daily small { display: flex; flex-wrap: wrap; column-gap: 0.5em; font-size: 0.875rem; }
   .title-menu .title-daily small > .title-daily-when { margin-top: 0; }
+  /* Plan item 470: on the event's line it reads 'Great Glut · Open · 21h left' (the gap alone ran them together) */
+  .title-menu .title-daily small > .title-daily-when::before { content: '·'; margin-right: 0.5em; }
   .title-daily-event { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
   .title-menu .title-minor { margin-top: 6px; }
 
