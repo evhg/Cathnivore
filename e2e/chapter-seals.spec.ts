@@ -52,3 +52,19 @@ test('a Quick game has no seals on the table', async ({ page }) => {
   await expect(page.locator('.map-wrap')).toBeVisible({ timeout: 60_000 })
   await expect(page.locator('[data-seal-card]')).toHaveCount(0)
 })
+
+test('a won chapter stamps the seals it kept, in order, matching what the campaign records', async ({ page }) => {
+  test.setTimeout(150_000)
+  await startChapter(page, 'Word of Mouth', 99)
+  const end = page.locator('.end-screen')
+  await expect(end).toBeVisible({ timeout: 120_000 })
+  if ((await page.locator('.end-screen.is-win').count()) === 0) test.skip(true, 'the bot lost this seed')
+  await expect(page.locator('[data-end-seal]')).toHaveCount(3)
+  const stamped = await page.locator('[data-end-seal][data-stamp]').evaluateAll((els) =>
+    els.map((e) => ({ id: e.getAttribute('data-end-seal'), n: Number(e.getAttribute('data-stamp')) })).sort((a, b) => a.n - b.n).map((x) => x.id),
+  )
+  expect(stamped[0]).toBe('win')
+  await page.getByRole('button', { name: 'Continue' }).click()
+  const recorded = await page.evaluate(() => JSON.parse(localStorage.getItem('cathnivore:campaign:v1') ?? '{}').seals?.['word-of-mouth'] ?? [])
+  expect(stamped).toEqual(['win', 'hard', 'feat'].filter((s) => recorded.includes(s)))
+})

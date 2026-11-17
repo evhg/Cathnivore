@@ -5927,3 +5927,18 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   .seal-card .seal-row .seal { width: 24px; height: 24px; }
   .seal-card .seal-list { position: absolute; right: 0; bottom: calc(100% + 6px); margin: 0; }
 }
+/* Plan item 477: the won chapter's kept seals stamp onto the end screen in turn; the missed ones stay pale. */
+.end-seals { display: flex; gap: 10px; margin: var(--sp-2) 0 0; }
+.end-seals .end-seal { width: 48px; height: 48px; }
+.end-seal[data-stamp] { animation: seal-stamp .42s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: .4s; }
+.end-seal[data-stamp="1"] { animation-delay: .78s; }
+.end-seal[data-stamp="2"] { animation-delay: 1.16s; }
+@keyframes seal-stamp {
+  from { opacity: 0; scale: 1.8; rotate: -14deg; }
+  70% { opacity: 1; scale: .92; }
+  to { opacity: 1; scale: 1; rotate: 0deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .end-seal[data-stamp] { animation-name: seal-stamp-fade; }
+  @keyframes seal-stamp-fade { from { opacity: 0; } to { opacity: 1; } }
+}

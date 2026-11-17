@@ -67,7 +67,7 @@ import { CATH_REACTION_EXPRESSION, CATH_REACTION_POSE, cathLine, cathLineForRegi
 import type { CathExpression, CathPoseId } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import { harvestSources, type HarvestGood } from '../engine/harvest'
-import SealCard from './SealCard'
+import SealCard, { WaxSeal } from './SealCard'
 import HarvestMoment from './HarvestMoment'
 import {
   GoodwillIcon,
@@ -1897,6 +1897,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <small>{state.config.difficulty}</small>
             </span>
           </p>
+          {/* Plan item 477: a won chapter stamps the seals it kept, one after another (the ones missed stay pale). */}
+          {won && seals && (
+            <p className="end-seals" aria-label={`Seals kept: ${seals.filter((x) => x.state === 'sealed').map((x) => x.label).join(', ')}`}>
+              {seals.map((x) => {
+                const order = seals.filter((y) => y.state === 'sealed').findIndex((y) => y.id === x.id)
+                return (
+                  <span
+                    key={x.id}
+                    className="seal end-seal"
+                    data-end-seal={x.id}
+                    data-state={x.state === 'sealed' ? 'sealed' : 'open'}
+                    data-stamp={order >= 0 ? order : undefined}
+                    title={x.label}
+                    aria-hidden="true"
+                  >
+                    <WaxSeal id={x.id} />
+                  </span>
+                )
+              })}
+            </p>
+          )}
           <p className="end-screen-story">{won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}</p>
           {summary.play && (
             <article className="end-play">
