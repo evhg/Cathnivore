@@ -815,7 +815,7 @@ export function buildGround(level: Level): Ground {
       // Its own stream, so the surf doesn't shift the decoration seed (the pond's pads and reeds stay put).
       const surf = rng(level.id * 15485863 + 11);
       const foam: Inst[] = [];
-      const white = new THREE.Color("#f4f8f6");
+      const white = new THREE.Color("#e2ece8");
       for (let y = -MARGIN + 0.3; y < rows + MARGIN - 0.3; y += 0.16) {
         const x = coastX + sea * (0.12 + surf() * 0.14);
         if (!sunk(x, y) || laneDistance(level, x, y) < 1.3) continue;
@@ -824,7 +824,7 @@ export function buildGround(level: Level): Ground {
         foam.push({ x, y: -0.075, z: y, ry: surf() * 6.3, s, sy: 0.12, color: white });
         if (surf() < 0.5) foam.push({ x: x + sea * (0.12 + surf() * 0.1), y: -0.078, z: y + (surf() - 0.5) * 0.1, ry: surf() * 6.3, s: s * 0.6, sy: 0.1, color: white });
       }
-      const fm = instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85 }), foam);
+      const fm = instanced(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.62 }), foam);
       if (fm) {
         fm.userData.foam = true;
         group.add(fm);
@@ -2359,8 +2359,9 @@ export function shoreStrip(
   const fpos: number[] = [];
   const fcol: number[] = [];
   const fidx: number[] = [];
-  const white = new THREE.Color("#f6f8f4");
-  const spray = new THREE.Color("#d9e9ea");
+  // Plan item 469: the surf a sea-tinted white, not paper white (it bloomed into a bright smear down the coast at D).
+  const white = new THREE.Color("#dfeae6");
+  const spray = new THREE.Color("#b9d2d2");
   let prev = -1;
   let fprev = -1;
   const step = 0.08;
