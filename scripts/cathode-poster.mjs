@@ -41,9 +41,18 @@ for (const [name, vw, vh, widths] of [['front-poster', 1440, 900, [1440, 960, 64
   const p = await ctx.newPage()
   await p.goto(base)
   await p.waitForFunction(() => (window.cathodeFront?.scene?.()?.stats?.frames ?? 0) > 4, null, { timeout: 400_000 })
+  // Plan item 473: a stirring pointer keeps the title's idle push (item 187: after 6 s the lens dollies in to her
+  // face) from starting, so the poster is the title's own framing. Upright, that push had pushed her face into the
+  // corner over The List, and the phone poster (what a phone shows first) caught it mid-dolly.
+  // (round the centre, so its parallax stays at about zero: a move of 2%+ of the width resets the idle clock)
+  let side = 1
+  const stir = setInterval(() => void p.mouse.move(vw / 2 + (side = -side) * vw * 0.02, vh / 2).catch(() => {}), 1500)
   await p.waitForTimeout(6000)
   await p.addStyleTag({ content: '.screen, .front-bars, .front-grain, .front-fallback, #loading, .boot { visibility: hidden !important; }' })
   await p.waitForTimeout(2500)
+  clearInterval(stir)
+  const push = await p.evaluate(() => document.querySelector('canvas[data-idle-push]')?.dataset.idlePush ?? 'none')
+  console.log(name, 'idle push at the shot', push)
   const png = await p.screenshot()
   for (const [w, data] of await encode(png, widths)) {
     const file = `${out}/${name}-${w}.webp`
