@@ -43,6 +43,9 @@ export interface FrontScene {
   readonly cath: FrontCath;
   /** The focused menu row, -1..1 from the middle (the camera leans half a degree toward it). */
   focusBias(v: number): void;
+  /** Plan item 465: the menu entry in focus: her face answers it (New Case sets her jaw, the Case Board gets a wink,
+   *  the rest her smirk), held 4 s over the title's own turn; published as data-cath-pose on the canvas. */
+  menuMood(id: string): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
   /**
@@ -148,6 +151,15 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
 // face at the centre of an upright phone. Pulled back to head to toe under the umbrella, the street and sign behind.
 /** Plan item 456: how far the title's grade pulls its darks toward black (see post.ts uToe). */
 const TITLE_TOE = 0.6;
+/** Plan item 465: her answer to each title menu entry (a face, named as a pose for the checks), held MENU_MOOD_S. */
+const MENU_MOOD: Record<string, { pose: string; face: FaceExpression }> = {
+  new: { pose: "ready", face: "determined" },
+  continue: { pose: "back-on-it", face: "determined" },
+  cases: { pose: "knowing", face: "wink" },
+  settings: { pose: "idle", face: "smirk" },
+  credits: { pose: "fond", face: "smirk" },
+};
+const MENU_MOOD_S = 4;
 const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger gold, Wirewitch violet, Fixer green.
  *  Plan item 278: the Gunslinger's tungsten and the Fixer's amber sat at the same hue and both sank into brown
@@ -670,6 +682,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   }
 
   let idleS = 0;
+  // Plan item 465: the menu's answer on her face: which, until when (scene clock), and the clock now.
+  let moodFace: FaceExpression = "smirk";
+  let moodUntil = -1;
+  let clock = 0;
   let idleK = 0;
   const idleHead = new THREE.Vector3();
   const idleReduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -856,8 +872,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     }
     // Plan item 275: on the title (no class worn) her look turns every 10 s between the smirk and a determined set of
     // the jaw, by the scene's clock (so a frozen shot at t shows one of them); the class pick keeps the class's face.
+    clock = time;
     if (!wd.cls) {
-      const want: FaceExpression = Math.floor(time / TITLE_EXPR_S) % 2 === 1 ? "determined" : "smirk";
+      const want: FaceExpression = time < moodUntil ? moodFace : Math.floor(time / TITLE_EXPR_S) % 2 === 1 ? "determined" : "smirk";
       if (want !== cath.expressionNow) {
         cath.expression(want, true);
         world.renderer.domElement.dataset.expression = want;
@@ -1122,6 +1139,17 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         coatNow.copy(coatWant);
         wardrobeStep(0);
         frame(0);
+      }
+    },
+    menuMood(id) {
+      const pose = MENU_MOOD[id] ?? { pose: "idle", face: "smirk" as FaceExpression }
+      moodFace = pose.face;
+      moodUntil = clock + MENU_MOOD_S;
+      world.renderer.domElement.dataset.cathPose = pose.pose;
+      if (!wd.cls && pose.face !== cath.expressionNow) {
+        cath.expression(pose.face, true);
+        world.renderer.domElement.dataset.expression = pose.face;
+        world.renderer.domElement.dataset.cathExpr = pose.face;
       }
     },
     focusBias(v) {

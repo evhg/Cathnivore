@@ -572,6 +572,8 @@ function openTitle(drawLogo: boolean): void {
         if (armed && id !== "new") disarm();
         hint(id);
         scene?.focusBias((i - (buttons.length - 1) / 2) / ((buttons.length - 1) / 2));
+        // Plan item 465: and her face answers the entry.
+        scene?.menuMood(id);
       },
       confirm: (id) => void confirm(id),
       back: () => {
