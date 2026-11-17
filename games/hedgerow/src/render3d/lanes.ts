@@ -532,7 +532,11 @@ export function buildLanes(
   if (puddles.length) {
     const m = new THREE.InstancedMesh(
       new THREE.CircleGeometry(1, 14).rotateX(-Math.PI / 2),
-      new THREE.MeshStandardMaterial({ color: "#8aa2b0", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.7, depthWrite: false }),
+      // Plan item 469: on Saltmarsh's sand they are damp patches, a darker sand with a dull sheen; as glossy grey water
+      // they mirrored the dark sky fill and read as hard shadow pools on the track. Rivermead's mud keeps its puddles.
+      act === 2
+        ? new THREE.MeshStandardMaterial({ color: "#b09a78", roughness: 0.45, metalness: 0, transparent: true, opacity: 0.5, depthWrite: false })
+        : new THREE.MeshStandardMaterial({ color: "#8aa2b0", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.7, depthWrite: false }),
       puddles.length,
     );
     puddles.forEach((mx, i) => m.setMatrixAt(i, mx));
