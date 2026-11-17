@@ -5845,3 +5845,85 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   55% { transform: translateY(-44px) scale(1); }
   100% { transform: translateY(0) scale(0.7); }
 }
+
+/* Plan item 477: the chapter's three wax seals pinned to the table's top-left corner in a campaign game; a tap opens
+   their labels. Each seal reads its outlook: open (pale wax), on track (a warm glow), at risk (a pulse), lost (the wax
+   cracks, then greys), sealed (a gold rim). */
+.seal-card {
+  position: absolute;
+  z-index: var(--z-map-fx);
+  top: var(--sp-2);
+  left: var(--sp-2);
+  rotate: -1.5deg;
+}
+.seal-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--rule), 0 3px 6px rgb(var(--shadow-ink) / .18);
+  cursor: pointer;
+  list-style: none;
+}
+.seal-card > summary::-webkit-details-marker { display: none; }
+.seal-card > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.seal-card-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  color: var(--soil);
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  letter-spacing: .04em;
+}
+.seal-row { display: flex; gap: 2px; }
+.seal { display: inline-grid; width: 34px; height: 34px; }
+.seal-wax { width: 100%; height: 100%; overflow: visible; }
+.seal-blob { fill: var(--clay-deep); }
+.seal-press { fill: color-mix(in srgb, var(--clay-deep) 82%, var(--ink)); stroke: color-mix(in srgb, var(--clay) 60%, var(--paper-hi)); stroke-width: .8; }
+.seal-mark { fill: none; stroke: color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.seal[data-seal="hard"] .seal-mark { fill: color-mix(in srgb, var(--wheat) 70%, var(--paper-hi)); stroke-width: .6; }
+.seal-crack { fill: none; stroke: var(--paper); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.seal[data-state="open"] .seal-wax { opacity: .6; filter: saturate(.45); }
+.seal[data-state="onTrack"] .seal-wax { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wheat) 85%, transparent)); }
+.seal[data-state="atRisk"] .seal-wax { animation: seal-risk 1.4s ease-in-out infinite; }
+.seal[data-state="sealed"] .seal-blob { stroke: var(--wheat); stroke-width: 1.4; }
+.seal[data-state="lost"] .seal-wax { filter: saturate(.15) brightness(.85); opacity: .7; transition: filter .6s ease .3s, opacity .6s ease .3s; }
+.seal[data-state="lost"] .seal-crack { animation: seal-crack .6s ease-out forwards; }
+@keyframes seal-risk {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); scale: 1; }
+  50% { filter: drop-shadow(0 0 4px var(--clay)); scale: 1.08; }
+}
+@keyframes seal-crack { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .seal[data-state="atRisk"] .seal-wax { animation: none; filter: drop-shadow(0 0 3px var(--clay)); }
+  .seal[data-state="lost"] .seal-crack { animation: seal-crack-fade .6s ease-out forwards; stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes seal-crack-fade { to { opacity: 1; } }
+.seal-list {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--rule), 0 3px 6px rgb(var(--shadow-ink) / .18);
+  list-style: none;
+  font-size: var(--fs-small);
+  min-width: 220px;
+}
+.seal-list li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px; }
+.seal-list .seal { width: 26px; height: 26px; }
+.seal-word { color: var(--ink-muted); text-transform: none; }
+.seal-list li[data-state="atRisk"] .seal-word { color: var(--clay-deep); font-weight: 700; }
+/* On a phone Pell's portrait holds the map's top-left corner: the seals sit at its bottom-right, and the list opens upward. */
+@media (max-width: 1023.98px) {
+  .seal-card { top: auto; left: auto; bottom: var(--sp-2); right: var(--sp-2); rotate: 1.5deg; }
+  .seal-card > summary { padding: 2px 6px; gap: 0; min-height: 40px; }
+  .seal-card-title { display: none; }
+  .seal-card .seal-row { gap: 0; }
+  .seal-card .seal-row .seal { width: 24px; height: 24px; }
+  .seal-card .seal-list { position: absolute; right: 0; bottom: calc(100% + 6px); margin: 0; }
+}

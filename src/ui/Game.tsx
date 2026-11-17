@@ -15,7 +15,7 @@ import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS } from '../content/map'
-import { CHAPTER_HOMES } from '../content/campaignMap'
+import { CHAPTER_HOMES, sealOutlook, type SealOutlook } from '../content/campaignMap'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
 import { reasonForAction } from '../ai/reason'
@@ -67,6 +67,7 @@ import { CATH_REACTION_EXPRESSION, CATH_REACTION_POSE, cathLine, cathLineForRegi
 import type { CathExpression, CathPoseId } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
 import { harvestSources, type HarvestGood } from '../engine/harvest'
+import SealCard from './SealCard'
 import HarvestMoment from './HarvestMoment'
 import {
   GoodwillIcon,
@@ -1205,14 +1206,14 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       const rect = (e: Element) => e.getBoundingClientRect()
       const obstacles: DOMRect[] = [
         ...[...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)),
-        ...[...wrap.querySelectorAll('.region-plaque, .table-prop, .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
+        ...[...wrap.querySelectorAll('.region-plaque, .table-prop, .event-ticket, .seal-card, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
       ].filter((r) => r.width > 0 && r.height > 0)
       const cath = wrap.querySelector('.table-cath-figure')
       if (!phoneTableCath) {
         // The crates stay on the rim in front of them, so they are no obstacle here.
         const standing = [
           ...[...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)),
-          ...[...wrap.querySelectorAll('.region-plaque, .table-prop:not(.produce-crates), .event-ticket, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
+          ...[...wrap.querySelectorAll('.region-plaque, .table-prop:not(.produce-crates), .event-ticket, .seal-card, .map-key, .table-cath-line, .table-cath-figure, .map-overlay-btn')].map(rect),
         ].filter((r) => r.width > 0 && r.height > 0)
         const hexBoxes = [...wrap.querySelectorAll('.region-hex')].map((h) => rect(h.querySelector('polygon') ?? h)).filter((r) => r.width > 0 && r.height > 0)
         standProducers(wrap, people, standing, cath ? rect(cath).height : 300, hexBoxes)
@@ -1488,6 +1489,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 476: a producer's 3+ Harvest haul lights up its bust for a moment as the last good lands.
   const haulTimers = useRef<number[]>([])
   useEffect(() => () => haulTimers.current.forEach((t) => window.clearTimeout(t)), [])
+  // Plan item 477: in a campaign game the chapter's three seals read live on the table; when one turns at risk (its
+  // last round), Cath says so.
+  const seals: SealOutlook[] | null = chapterId ? sealOutlook(chapterId, state) : null
+  const sealRiskKey = seals ? seals.filter((x) => x.state === 'atRisk').map((x) => x.id).join(',') : ''
+  const sealRiskSeen = useRef(sealRiskKey)
+  useEffect(() => {
+    const before = sealRiskSeen.current
+    sealRiskSeen.current = sealRiskKey
+    const fresh = seals?.find((x) => x.state === 'atRisk' && x.id !== 'win' && !before.split(',').includes(x.id))
+    if (fresh && !state.result) setCathReaction({ expression: 'determined', line: `Last chance at a seal this round: ${fresh.label}.` })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sealRiskKey])
   const haulHarvest = useCallback((producer: ProducerId) => {
     setProducerFaces((f) => ({ ...f, [producer]: 'delighted' }))
     haulTimers.current.push(
@@ -3610,6 +3623,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <span className="event-rule-short" aria-hidden="true">{eventRule(state.config.marketEvent, true)}</span>
           </p>
         )}
+        {seals && <SealCard seals={seals} />}
         {/* Plan item 190: full length now, head to boots, since the papers' ticker gave the table its height. */}
         {/* Plan item 118: on a desktop Cath stands at the table's left edge, half-length, her face following the
             same reactions as her companion line (a liberation, a Squeeze, a plan reveal). Hidden below 1240 px. */}
