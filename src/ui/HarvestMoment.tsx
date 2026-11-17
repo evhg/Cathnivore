@@ -2,7 +2,7 @@
 // rises from the ground it comes from (the producer's home hex, or Shingle Bay for the Oyster Beds bonus) and arcs
 // to that producer's bust at the table, in seat order, over 900-1600 ms. A tap anywhere ends it at once; under
 // reduced motion nothing flies (the counts already show the totals).
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { HarvestGood } from '../engine/harvest'
 import type { ProducerId, ResourceKind } from '../engine/types'
 import { playCues } from '../platform/sound'
@@ -62,6 +62,7 @@ function calm(): boolean {
 
 export default function HarvestMoment({ goods, active, onLand, onHaul, onDone }: { goods: HarvestGood[]; active: ProducerId; onLand: (unit: ResourceKind) => void; onHaul?: (producer: ProducerId) => void; onDone: () => void }) {
   const [placed, setPlaced] = useState<Placed[] | null>(null)
+  const layer = useRef<HTMLDivElement>(null)
   const timing = harvestTiming(goods.length)
 
   // Measure where each good starts and lands once the new round's table has laid out.
@@ -109,7 +110,11 @@ export default function HarvestMoment({ goods, active, onLand, onHaul, onDone }:
         if (hauls.get(p.good.producer) === i) onHaul?.(p.good.producer)
       }, i * timing.step + timing.flight * 0.9),
     )
-    const skip = () => onDone()
+    // The goods vanish on the tap itself; the table's re-render (the counts' totals) follows.
+    const skip = () => {
+      if (layer.current) layer.current.hidden = true
+      onDone()
+    }
     window.addEventListener('pointerdown', skip, true)
     window.addEventListener('keydown', skip, true)
     return () => {
@@ -122,7 +127,7 @@ export default function HarvestMoment({ goods, active, onLand, onHaul, onDone }:
 
   if (!placed) return null
   return (
-    <div className="harvest-moment" data-moment="harvest" data-goods={placed.length} data-duration={timing.total} aria-hidden="true">
+    <div ref={layer} className="harvest-moment" data-moment="harvest" data-goods={placed.length} data-duration={timing.total} aria-hidden="true">
       {placed.map((p, i) => {
         return (
           <span

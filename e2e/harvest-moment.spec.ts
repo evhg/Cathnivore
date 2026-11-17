@@ -25,12 +25,24 @@ test('the Harvest flies each good from the land to its producer', async ({ page 
   // after it (where they show the engine's totals).
   const ledger = () => page.locator('[data-ledger-unit] .ledger-value').evaluateAll((els) => els.map((e) => Number(e.textContent)))
   const during = await ledger()
-  // A tap anywhere ends it.
-  const t0 = Date.now()
-  // (a pointerdown on the page, as a tap starts: a real click could land on a control)
-  await page.evaluate(() => document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })))
-  await expect(moment).toHaveCount(0, { timeout: 1000 })
-  expect(Date.now() - t0).toBeLessThan(1000)
+  // The board doesn't move while goods fly (the layer is fixed and out of flow).
+  const boardBox = () => page.locator('.map').first().evaluate((el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.width, r.height] })
+  const boxDuring = await boardBox()
+  // A tap anywhere ends it, within 150 ms timed in the page (a pointerdown, as a tap starts: a real click could
+  // land on a control).
+  const ms150 = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        const t0 = performance.now()
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+        const check = () => (document.querySelector('[data-moment="harvest"]:not([hidden])') ? requestAnimationFrame(check) : resolve(performance.now() - t0))
+        check()
+      }),
+  )
+  expect(ms150).toBeLessThan(150)
+  await expect(moment).toHaveCount(0)
+  const boxAfter = await boardBox()
+  boxAfter.forEach((v, i) => expect(Math.abs(v - boxDuring[i]!)).toBeLessThanOrEqual(2))
   const after = await ledger()
   expect(after.length).toBe(during.length)
   after.forEach((v, i) => expect(v).toBeGreaterThanOrEqual(during[i]!))
