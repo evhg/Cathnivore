@@ -4261,7 +4261,7 @@ Progress (lane B, 2026-11-16 20:50, slice 1 `cc50176`): the title's coat key (it
 - **Accept:** coat mean luminance in her mask at D ≤ 35% of the brightest neon region; a rim (≥ 2 px brighter edge) on both sides of her silhouette at P and D; coat ΔE between classes still passes; cathode-perf alone within budget; a critique subagent calls the coat dark.
 - **Size:** 2-3
 
-## 457. [ ] NIGHT SHIFT class pick: each class in its own set, Cath large on the phone
+## 457. [ ] NIGHT SHIFT class pick: each class in its own set, Cath large on the phone *(lane A, in progress)*
 - **Why:** `ns-play-D` (480-960 x 60-850) shows all five classes against one bare wall, a telescope and LUNA; `ns-play-P` has Cath small and dim in a black void taking 45% of the screen. Pillar 3 ("it looks like a trailer") fails on the screen that sells the build.
 - **Build:** five sets on one stage, swapped with a 400 ms light-led cross-fade: Ghost a rain rooftop with skyline and a water tower; Butcher a meat locker with hooks and cold fog; Gunslinger a bar back room with a card table; Wirewitch a server alley with cable and CRT glow; Fixer a workbench with crates. Each set has a key colour (feeds 456's rim). On a phone Cath fills ≥ 55% of the stage height with the set's light behind her head.
 - **Accept:** shots of all five picks at P and D show five distinct sets; dominant hue differs ≥ 30° between any two; at P Cath's box ≥ 330 px tall (about 260 now); cathode-perf phone pick within current + 10% alone; classpick/classpose/classstage specs pass.
