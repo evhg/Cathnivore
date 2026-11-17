@@ -43,6 +43,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-17 11:51 lane A session:** CI green on 2f4bc52f, E2E green on 2a0741c0. Item 469 slices 22-23 (277df908 beach huts, 263e811c composer MSAA); dressing3d, biome3d, margins, country3d, 3dframe, water, shadow3d, closeframe, camera3d pass (3dframe plate l13/l21 flaked under 2 workers, pass alone). Shots scratchpad before, a1-a3. No full `npm run check` (lane A ran it at 06:51).
 - 2026-11-17 11:22 lane B: 475 withdrawn; 473 slice 1 (posters without the idle push, re-rendered; keyart-fresh passes); a cone shader tweak tried and reverted.
 - **2026-11-17 10:51 lane A session:** CI green on 2a0741c0, E2E green on 8dd84633. Item 469 slices 20-21 (afcf1fa7, 78a6dc0b); new unit test hedgerow-upright; shadow3d, vehicles, buildring, closeframe, depot, gatequeue, dressing3d, margins pass (depot3d l34 flaked under 2 workers, 8/8 alone); keyart-fresh passes. Shots scratchpad before, a1-a5 (P and D). No full `npm run check` (lane A ran it at 06:51).
 - **2026-11-17 09:51 lane A session:** CI green on 06f327ad (E2E running). Item 469 slices 17-19 (8dd84633, 0ce05b54, 2a0741c0) and a lock-chip fix; biome3d, dressing3d, closeframe, shadow3d, water, 3dframe, farhouses3d, round-chips, tray, rack-roles, ledger pass (3dframe l13/l21 plate and tray:120 flaked under load, pass alone). Shots scratchpad before, a1-a5 (P and D). No full `npm run check` (lane A ran it at 06:51).
@@ -57,4 +58,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-17 06:22 lane B: 464 slice 3; cathode-testfire (new unit test), testfire, classpose, classpick pass at P and D (22, 6 viewport skips), cathode- unit tests 903 pass, keyart-fresh; posters and key art re-rendered.
 - 2026-11-17 05:22 lane B: E2E fix (classpose phone stage), 464 slice 2; classpose, testfire pass at P and D; NIGHT SHIFT unit tests 901 pass.
 - **2026-11-17 04:51 lane A session:** E2E red on 775bcc67 fixed (c26d4c7f); item 468 slices 4-5, done; item 469 slices 1-2. site.spec Hedgerow (51), hedgerow-attack, camera3d, 3dframe (15), css-lint, keyart-fresh, tower-models pass; full `npm run check` passed (2720 tests).
-- 2026-11-17 04:22 lane B: 464 slice 1; cathode-testfire (new) and classpick pass at P and D; posters and key art re-rendered.
