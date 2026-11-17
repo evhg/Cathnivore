@@ -242,12 +242,12 @@ const STANDING: Record<Crop, { colour: string; s: number; sy: number }> = {
 
 /** Plan item 469: Saltmarsh's three beds in 3D (2D's fills in fieldkitart.ts): the texture they borrow and their tint. */
 const MARSH_BED = {
-  samphire: { base: "clover", tint: "#86b884" },
+  samphire: { base: "sward", tint: "#8cbc86" },
   lavender: { base: "clover", tint: "#8aa284" },
-  saltgrass: { base: "stubble", tint: "#8ccab4" },
+  saltgrass: { base: "sward", tint: "#86c6b2" },
 } as const;
 
-function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
+function bedTexture(look: "earth" | "stubble" | "clover" | "sward"): THREE.Texture {
   const hit = bedTex.get(look);
   if (hit) return hit;
   const S = 64;
@@ -279,6 +279,16 @@ function bedTexture(look: "earth" | "stubble" | "clover"): THREE.Texture {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(x, y - 3, 2, 4);
       }
+  } else if (look === "sward") {
+    // Plan item 469: a close salt sward, fine and even, so a field of several plots reads as one meadow (the stubble
+    // and clover patterns tiled into a carpet with seams where the joins scale them down).
+    const img = ctx.createImageData(S, S);
+    for (let k = 0; k < S * S; k++) {
+      const v = 226 + (r01() - 0.5) * 34;
+      img.data[k * 4] = img.data[k * 4 + 1] = img.data[k * 4 + 2] = v;
+      img.data[k * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
   } else {
     ctx.fillStyle = "#b8b8b8";
     ctx.fillRect(0, 0, S, S);
@@ -866,9 +876,9 @@ export function buildGround(level: Level): Ground {
   // Plan item 19: the bed itself carries the plot (stronger soil); the corner ticks are only a quiet hint now.
   // Plan item 52: each plot a soil bed with a timber edge, by what lies under it, so neighbours differ.
   const looks = plotLooks(level);
-  const bedLooks = ["earth", "stubble", "clover"] as const;
-  const bedTint: Record<(typeof bedLooks)[number], string> = { earth: "#7a5c38", stubble: "#d2b06a", clover: "#6f9a4e" };
-  const beds: Record<(typeof bedLooks)[number], Inst[]> = { earth: [], stubble: [], clover: [] };
+  const bedLooks = ["earth", "stubble", "clover", "sward"] as const;
+  const bedTint: Record<(typeof bedLooks)[number], string> = { earth: "#7a5c38", stubble: "#d2b06a", clover: "#6f9a4e", sward: "#8ccab4" };
+  const beds: Record<(typeof bedLooks)[number], Inst[]> = { earth: [], stubble: [], clover: [], sward: [] };
   const boards: Inst[] = [];
   const puddles: Inst[] = [];
   const cloverHeads: Inst[] = [];
