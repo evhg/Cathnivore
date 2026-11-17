@@ -481,6 +481,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
       u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
     },
+    setToe(k) {
+      post.grade.uniforms.uToe!.value = THREE.MathUtils.clamp(k, 0, 1);
+    },
     setPause(k) {
       post.grade.uniforms.uPause!.value = THREE.MathUtils.clamp(k, 0, 1);
       // The viewmodel leaves as the blur comes in (S9.7): a sharp baton under the case note reads as a bug.

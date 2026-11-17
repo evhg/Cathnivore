@@ -156,6 +156,8 @@ export interface World {
   setFocus?(x: number, y: number): void;
   /** C14 (S9.7): the pause grade, 0..1. */
   setPause?(k: number): void;
+  /** Plan item 456: the grade's deeper toe, 0..1 (the title only; 0 in play). */
+  setToe?(k: number): void;
   setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
   benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;

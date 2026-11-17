@@ -145,6 +145,8 @@ const FRAMES: ReadonlyArray<{ pos: [number, number, number]; look: [number, numb
 // knees up, so the class pick shows who's walking back in.
 // Owner (iPhone, 2026-11-08: "is this a nice graphic? looks weird?"): the knees-up close-up put the simple figure's
 // face at the centre of an upright phone. Pulled back to head to toe under the umbrella, the street and sign behind.
+/** Plan item 456: how far the title's grade pulls its darks toward black (see post.ts uToe). */
+const TITLE_TOE = 0.6;
 const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger gold, Wirewitch violet, Fixer green.
  *  Plan item 278: the Gunslinger's tungsten and the Fixer's amber sat at the same hue and both sank into brown
@@ -196,6 +198,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const world = await createWorld(canvas, { quality: o.quality, intensity: o.intensity, shot: o.shot }, o.onProgress);
   // Behind the menus the street can afford less: a half-resolution mirror, shadows every second frame (render/world.ts).
   world.calm?.(true);
+  // Plan item 456: the title's noir toe (blacks black, her trench charcoal); play's grade gets it back at handover.
+  world.setToe?.(TITLE_TOE);
   const phone = o.quality === "phone";
   const cam = world.camera;
   cam.fov = FOV;
@@ -1160,6 +1164,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       frozen = true;
     },
     handover() {
+      world.setToe?.(0);
       // the street is the job's now: everyone shows again
       world.street?.keepClear?.(null);
       running = false;

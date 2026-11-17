@@ -344,6 +344,9 @@ const GradeShader = {
     uFocus: { value: new THREE.Vector2(0.5, 0.5) },
     // Plan item 1: a district's colour cast in the shadows and midtones (the clinic's surgical green).
     uCast: { value: new THREE.Vector3(1, 1, 1) },
+    // Plan item 456: the title's deeper toe (0 in play): AgX and the lifted blacks held near-black at about 40 sRGB,
+    // so Cath's charcoal trench read mid grey however dark it was lit.
+    uToe: { value: 0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -353,6 +356,7 @@ const GradeShader = {
     uniform vec2 uRes;
     uniform float uDrama;
     uniform vec3 uCast;
+    uniform float uToe;
     uniform float uExposure;
     uniform float uFlash;
     uniform float uHurt;
@@ -561,6 +565,11 @@ const GradeShader = {
       // Lifted, cool blacks and a gentle S.
       mapped = mapped * 0.99 + vec3( 0.0012, 0.0022, 0.0042 );
       mapped = mix( mapped, mapped * mapped * ( 3.0 - 2.0 * mapped ), 0.25 );
+      // Plan item 456: on the title, the darks pulled down toward black (up to uToe at black, none from 0.6 up), so
+      // the noir street's blacks are black and her charcoal reads charcoal; the lit face, signs and lamps keep theirs.
+      // Warm tones (her skin, the sodium light) are spared, so her face keeps its key while the cool trench goes dark.
+      float toeWarm = smoothstep( 0.02, 0.12, mapped.r - mapped.b );
+      mapped *= 1.0 - uToe * ( 1.0 - toeWarm * 0.85 ) * ( 1.0 - smoothstep( 0.0, 0.6, dot( mapped, vec3( 0.2126, 0.7152, 0.0722 ) ) ) );
       // The Vitals pass (S6.4), after the tone map: a blood vignette that closes in with the wound and flares on
       // a hit, a red lobe on the side the hit came from, and the colour draining from the edges as she weakens.
       if ( uWound + uHurt + uLensOn + uRegen + uStim > 0.001 ) {
