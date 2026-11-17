@@ -562,7 +562,7 @@ function LedgerChip({ term, Icon, value, income, tick, incomeTick = 0, tutorial,
   if (last.current.value !== value) last.current = { value, dir: value > last.current.value ? 'up' : 'down' }
   return (
     <Tooltip term={term}>
-      <span className={art ? 'ledger-chip mat-store' : 'ledger-chip'} data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
+      <span className={art ? 'ledger-chip mat-store' : 'ledger-chip'} data-ledger-unit={term.toLowerCase()} data-tutorial={tutorial} data-delta={delta ? delta : undefined} data-delta-label={delta ? (delta > 0 ? `+${delta}` : `\u2212${-delta}`) : undefined}>
         {art ? (
           <span key={`a${tick}`} className="mat-art-slot" data-bump={tick > 0 ? last.current.dir : undefined} aria-hidden="true">
             {art}
@@ -824,18 +824,31 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // of Hooks hold regardless of which branch below actually renders.
   const roundTick = useHudTick(state.round)
   // Plan item 476: a new round means the Harvest just paid out; stage it (the state's production is what it paid).
+  // The active producer's counts hold back what is still in flight and tick up as each good lands on them.
   const [harvest, setHarvest] = useState<{ round: number; goods: HarvestGood[] } | null>(null)
+  const [harvestHeld, setHarvestHeld] = useState<Record<ResourceKind, number> | null>(null)
   const harvestRound = useRef(state.round)
-  useEffect(() => {
-    if (state.round > harvestRound.current && !state.result) setHarvest({ round: state.round, goods: harvestSources(state) })
+  useLayoutEffect(() => {
+    if (state.round > harvestRound.current && !state.result) {
+      const goods = harvestSources(state)
+      const held = { produce: 0, marks: 0, goodwill: 0 }
+      for (const g of goods) if (g.producer === state.activeProducer) held[g.unit] += 1
+      setHarvest({ round: state.round, goods })
+      setHarvestHeld(held)
+    }
     harvestRound.current = state.round
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.round])
-  const endHarvest = useCallback(() => setHarvest(null), [])
+  const endHarvest = useCallback(() => {
+    setHarvest(null)
+    setHarvestHeld(null)
+  }, [])
+  const landHarvest = useCallback((unit: ResourceKind) => setHarvestHeld((h) => (h ? { ...h, [unit]: Math.max(0, h[unit] - 1) } : h)), [])
   const trustTick = useHudTick(state.publicTrust)
   const lostLandTick = useHudTick(state.lostLandPool)
   const riftTick = useHudTick(state.rift)
-  const activeResources = state.producers[state.activeProducer]?.resources
+  const realResources = state.producers[state.activeProducer]?.resources
+  const activeResources = realResources && harvestHeld ? { produce: realResources.produce - harvestHeld.produce, marks: realResources.marks - harvestHeld.marks, goodwill: realResources.goodwill - harvestHeld.goodwill } : realResources
   const produceTick = useHudTick(`${state.activeProducer}:${activeResources?.produce}`)
   const marksTick = useHudTick(`${state.activeProducer}:${activeResources?.marks}`)
   const goodwillTick = useHudTick(`${state.activeProducer}:${activeResources?.goodwill}`)
@@ -3221,9 +3234,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           {/* Plan item 167: on a big desktop the ledger is the producer's player mat: a crate, a coin stack and a
               rosette on a wooden board, each with its count and this round's income. */}
           <span className={mat ? 'ledger player-mat' : 'ledger'} data-player-mat={mat ? '' : undefined}>
-            <LedgerChip term="Produce" Icon={ProduceIcon} value={active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" delta={previewDelta((g) => g.producers[g.activeProducer].resources.produce)} art={mat ? <MatCrate count={active.resources.produce} /> : undefined} />
-            <LedgerChip term="Marks" Icon={MarksIcon} value={active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} delta={previewDelta((g) => g.producers[g.activeProducer].resources.marks)} art={mat ? <MatCoins count={active.resources.marks} /> : undefined} />
-            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" delta={previewDelta((g) => g.producers[g.activeProducer].resources.goodwill)} art={mat ? <MatRosette count={active.resources.goodwill} /> : undefined} />
+            <LedgerChip term="Produce" Icon={ProduceIcon} value={activeResources?.produce ?? active.resources.produce} income={active.production.produce} tick={produceTick} incomeTick={produceIncomeTick} tutorial="produce" delta={previewDelta((g) => g.producers[g.activeProducer].resources.produce)} art={mat ? <MatCrate count={activeResources?.produce ?? active.resources.produce} /> : undefined} />
+            <LedgerChip term="Marks" Icon={MarksIcon} value={activeResources?.marks ?? active.resources.marks} income={active.production.marks} tick={marksTick} incomeTick={marksIncomeTick} delta={previewDelta((g) => g.producers[g.activeProducer].resources.marks)} art={mat ? <MatCoins count={activeResources?.marks ?? active.resources.marks} /> : undefined} />
+            <LedgerChip term="Goodwill" Icon={GoodwillIcon} value={activeResources?.goodwill ?? active.resources.goodwill} income={active.production.goodwill} tick={goodwillTick} incomeTick={goodwillIncomeTick} tutorial="goodwill" delta={previewDelta((g) => g.producers[g.activeProducer].resources.goodwill)} art={mat ? <MatRosette count={activeResources?.goodwill ?? active.resources.goodwill} /> : undefined} />
           </span>
           <span className="pips" data-tutorial="actions-left" role="img" aria-label={`Actions left: ${state.actionsLeft} of ${ACTIONS_PER_ROUND}`}>
             <span className="pips-label">Actions</span>
@@ -3887,7 +3900,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </div>
       )}
       {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
-      {harvest && <HarvestMoment key={harvest.round} goods={harvest.goods} onDone={endHarvest} />}
+      {harvest && <HarvestMoment key={harvest.round} goods={harvest.goods} active={state.activeProducer} onLand={landHarvest} onDone={endHarvest} />}
     </div>
   )
 }

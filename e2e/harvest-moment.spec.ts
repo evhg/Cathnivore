@@ -21,10 +21,17 @@ test('the Harvest flies each good from the land to its producer', async ({ page 
     expect(['produce', 'marks', 'goodwill']).toContain(g.unit)
     expect(seated).toContain(g.pid)
   }
+  // The active producer's counts hold back what is still in flight, so they read no higher during the moment than
+  // after it (where they show the engine's totals).
+  const ledger = () => page.locator('[data-ledger-unit] .ledger-value').evaluateAll((els) => els.map((e) => Number(e.textContent)))
+  const during = await ledger()
   // A tap anywhere ends it.
   const t0 = Date.now()
   // (a pointerdown on the page, as a tap starts: a real click could land on a control)
   await page.evaluate(() => document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })))
   await expect(moment).toHaveCount(0, { timeout: 1000 })
   expect(Date.now() - t0).toBeLessThan(1000)
+  const after = await ledger()
+  expect(after.length).toBe(during.length)
+  after.forEach((v, i) => expect(v).toBeGreaterThanOrEqual(during[i]!))
 })

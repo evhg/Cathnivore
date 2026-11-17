@@ -4,6 +4,7 @@
 // reduced motion nothing flies (the counts already show the totals).
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { HarvestGood } from '../engine/harvest'
+import type { ProducerId, ResourceKind } from '../engine/types'
 import { GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
 import { harvestTiming } from './harvestTiming'
 
@@ -28,7 +29,7 @@ function calm(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')
 }
 
-export default function HarvestMoment({ goods, onDone }: { goods: HarvestGood[]; onDone: () => void }) {
+export default function HarvestMoment({ goods, active, onLand, onDone }: { goods: HarvestGood[]; active: ProducerId; onLand: (unit: ResourceKind) => void; onDone: () => void }) {
   const [placed, setPlaced] = useState<Placed[] | null>(null)
   const timing = harvestTiming(goods.length)
 
@@ -41,8 +42,11 @@ export default function HarvestMoment({ goods, onDone }: { goods: HarvestGood[];
     const out: Placed[] = []
     goods.forEach((good, i) => {
       const from = centre(document.querySelector(`.map [data-region="${good.from}"]`))
-      const busts = [...document.querySelectorAll(`[data-table-producer="${good.producer}"]`)]
-      const to = busts.map(centre).find((c) => c !== null) ?? null
+      // The active producer's goods land on its own counts (the mat at D, the counter's chips on a phone), which
+      // tick up as each arrives; everyone else's on their bust at the table.
+      const targets = good.producer === active ? [...document.querySelectorAll(`[data-ledger-unit="${good.unit}"]`)] : []
+      targets.push(...document.querySelectorAll(`[data-table-producer="${good.producer}"]`))
+      const to = targets.map(centre).find((c) => c !== null) ?? null
       if (!from || !to) return
       // A little spread so a haul reads as several goods, not one stacked token.
       const jx = ((i * 37) % 11) - 5
@@ -59,15 +63,17 @@ export default function HarvestMoment({ goods, onDone }: { goods: HarvestGood[];
   useEffect(() => {
     if (!placed) return
     const t = window.setTimeout(onDone, timing.total + 60)
+    const lands = placed.flatMap((p, i) => (p.good.producer === active ? [window.setTimeout(() => onLand(p.good.unit), i * timing.step + timing.flight * 0.9)] : []))
     const skip = () => onDone()
     window.addEventListener('pointerdown', skip, true)
     window.addEventListener('keydown', skip, true)
     return () => {
       window.clearTimeout(t)
+      for (const l of lands) window.clearTimeout(l)
       window.removeEventListener('pointerdown', skip, true)
       window.removeEventListener('keydown', skip, true)
     }
-  }, [placed, timing.total, onDone])
+  }, [placed, timing.total, timing.step, timing.flight, active, onLand, onDone])
 
   if (!placed) return null
   return (
