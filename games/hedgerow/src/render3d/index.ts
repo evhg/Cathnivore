@@ -271,6 +271,8 @@ export class Renderer3D {
   /** 1 while a big enemy is on the field: the camera eases in a few percent (the boss-wave nudge). */
   private bossPush = 0;
   private bossEase = 0;
+  /** When the camera last eased (performance.now ms). */
+  private camWall = performance.now();
   private camBase = new THREE.Vector3();
   private camTarget = new THREE.Vector3();
   private heroSwung = 9;
@@ -1655,10 +1657,15 @@ export class Renderer3D {
     // Camera: zoom towards the target, offset by the pan; then shake.
     const look = this.v3.copy(this.camTarget).add(this.v2.set(this.pan.x, 0, this.pan.y));
     // (Plan item 191: under reduced motion these cut rather than ease.)
-    const ease = (k: number) => (this.reducedMotion ? 1 : Math.min(1, dt * k));
+    // The camera's looks run on wall-clock seconds, not the game's capped frame step: at a few frames a second
+    // (a slow device, headless WebGL) a 2.6 s gate look otherwise lasted a minute. Paused (dt 0), they hold.
+    const wall = performance.now();
+    const camDt = dt > 0 ? Math.min(1, Math.max(dt, (wall - this.camWall) / 1000)) : 0;
+    this.camWall = wall;
+    const ease = (k: number) => (this.reducedMotion ? 1 : Math.min(1, camDt * k));
     this.bossEase += (this.bossPush - this.bossEase) * ease(1.2);
     // Plan item 72: a boss round's queue draws the eye to the gate for a few seconds, then lets it go.
-    this.gateHold = Math.max(0, this.gateHold - dt);
+    this.gateHold = Math.max(0, this.gateHold - camDt);
     this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * ease(1.6);
     if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
     this.direct(game, dt);
