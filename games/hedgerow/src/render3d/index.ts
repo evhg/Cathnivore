@@ -1619,6 +1619,13 @@ export class Renderer3D {
     this.syncPiles(game);
     this.syncOaks(game);
     if (!this.reducedMotion) for (const sails of this.landmarkSails) sails.rotation.z -= dt * 0.9;
+    // Plan item 469: on a steep lens (an upright phone) the farmhouse leans back towards it a little, as towers and
+    // vans do, so it shows its walls, door and lit window, not a red roof slab from straight above.
+    if (this.ground) {
+      const fh = this.ground.farmhouse;
+      const yaw = (fh.userData.yaw as number | undefined) ?? (fh.userData.yaw = fh.rotation.y);
+      fh.rotation.set(-this.steepTilt() * 0.75, yaw, 0, "XYZ");
+    }
     // Farmhouse smoke, darker as Goodwill falls.
     if (this.ground && Math.random() < dt * 3) {
       const c = this.ground.farmhouse.localToWorld((this.ground.farmhouse.userData.chimney as THREE.Vector3).clone());
