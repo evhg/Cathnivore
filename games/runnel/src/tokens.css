@@ -25,9 +25,9 @@
   /* Plan item 61: a ditch's bed, its sunlit and shaded banks, pebbles, a stone basin and each ground's lip.
      Plan item 421: a dry ditch is stone-lined with a pale sandy bed (it was a dark brown bar that read as mud or a
      plank), so a groove waiting for water reads as a channel; the water runs deep blue against the sand. */
-  /* Plan item 466: the sand a step below the tile's face, and the sunlit wall dulled, so the whole cut sits lower
-     than the ground it is dug in (the pale bed and wall read as a raised plank at P). */
-  --groove-bed: #b8955f;
+  /* Plan item 466: the bed stays item 421's pale sand (its water must read 3:1 against it, which needs a bed
+     luminance of about 0.54); the sunlit wall is dulled instead, so the cut reads below the tile's face. */
+  --groove-bed: #dcc493;
   --groove-bed-wet: #3a2a1a;
   --bank-sun: #b9aa8a;
   --bank-shade: #2c2720;
