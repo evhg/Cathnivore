@@ -35,3 +35,23 @@ test('the Harvest flies each good from the land to its producer', async ({ page 
   expect(after.length).toBe(during.length)
   after.forEach((v, i) => expect(v).toBeGreaterThanOrEqual(during[i]!))
 })
+
+// Each good lands with its sound (a crate's wood, a Mark's coin, a rosette's paper), and a producer whose haul is
+// three goods or more lights up at the table as the last one lands.
+test('the Harvest lands with its sounds and a big haul delights its producer', async ({ page }) => {
+  await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=2')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  const moment = page.locator('[data-moment="harvest"]')
+  await expect(moment).toBeVisible({ timeout: 90_000 })
+  const goods = await moment.locator('[data-harvest-good]').evaluateAll((els) => els.map((e) => ({ unit: e.getAttribute('data-harvest-good')!, pid: e.getAttribute('data-producer')! })))
+  const count = new Map<string, number>()
+  for (const g of goods) count.set(g.pid, (count.get(g.pid) ?? 0) + 1)
+  const big = [...count].filter(([, n]) => n >= 3).map(([p]) => p)
+  if (big.length > 0) await expect(page.locator(`[data-table-producer="${big[0]}"][data-expression="delighted"]`).first()).toBeAttached({ timeout: 8000 })
+  await expect(moment).toHaveCount(0, { timeout: 8000 })
+  const log = await page.evaluate(() => (window as unknown as { __cathnivoreSound: { log: string[] } }).__cathnivoreSound.log)
+  const want = { produce: 'woodClack', marks: 'coinOne', goodwill: 'paperFlip' } as Record<string, string>
+  // (close landings share one sound, so only the first good's is certain)
+  expect(log).toContain(want[goods[0]!.unit])
+})

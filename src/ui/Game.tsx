@@ -1485,6 +1485,20 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     pellTimerRef.current = window.setTimeout(() => setPellBeat(null), 5000)
   }, [])
   useEffect(() => () => window.clearTimeout(pellTimerRef.current), [])
+  // Plan item 476: a producer's 3+ Harvest haul lights up its bust for a moment as the last good lands.
+  const haulTimers = useRef<number[]>([])
+  useEffect(() => () => haulTimers.current.forEach((t) => window.clearTimeout(t)), [])
+  const haulHarvest = useCallback((producer: ProducerId) => {
+    setProducerFaces((f) => ({ ...f, [producer]: 'delighted' }))
+    haulTimers.current.push(
+      window.setTimeout(() => setProducerFaces((f) => {
+        if (f[producer] !== 'delighted') return f
+        const next = { ...f }
+        delete next[producer]
+        return next
+      }), 2400),
+    )
+  }, [])
   // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
   // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
   useEffect(() => {
@@ -3900,7 +3914,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </div>
       )}
       {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
-      {harvest && <HarvestMoment key={harvest.round} goods={harvest.goods} active={state.activeProducer} onLand={landHarvest} onDone={endHarvest} />}
+      {harvest && <HarvestMoment key={harvest.round} goods={harvest.goods} active={state.activeProducer} onLand={landHarvest} onHaul={haulHarvest} onDone={endHarvest} />}
     </div>
   )
 }

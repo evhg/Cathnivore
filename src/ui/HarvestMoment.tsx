@@ -5,7 +5,8 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { HarvestGood } from '../engine/harvest'
 import type { ProducerId, ResourceKind } from '../engine/types'
-import { harvestTiming } from './harvestTiming'
+import { playCues } from '../platform/sound'
+import { bigHauls, HARVEST_CUE, HARVEST_CUE_GAP_MS, harvestTiming } from './harvestTiming'
 
 /** Plan item 476: each good as the mat paints it (PlayerMat.tsx): a piece of veg, a Mark coin, a Goodwill rosette. */
 function GoodArt({ unit }: { unit: ResourceKind }) {
@@ -59,7 +60,7 @@ function calm(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('no-animations')
 }
 
-export default function HarvestMoment({ goods, active, onLand, onDone }: { goods: HarvestGood[]; active: ProducerId; onLand: (unit: ResourceKind) => void; onDone: () => void }) {
+export default function HarvestMoment({ goods, active, onLand, onHaul, onDone }: { goods: HarvestGood[]; active: ProducerId; onLand: (unit: ResourceKind) => void; onHaul?: (producer: ProducerId) => void; onDone: () => void }) {
   const [placed, setPlaced] = useState<Placed[] | null>(null)
   const timing = harvestTiming(goods.length)
 
@@ -93,7 +94,21 @@ export default function HarvestMoment({ goods, active, onLand, onDone }: { goods
   useEffect(() => {
     if (!placed) return
     const t = window.setTimeout(onDone, timing.total + 60)
-    const lands = placed.flatMap((p, i) => (p.good.producer === active ? [window.setTimeout(() => onLand(p.good.unit), i * timing.step + timing.flight * 0.9)] : []))
+    // Each landing makes its good's sound (wood, coin, paper; close landings share one) and, for the active
+    // producer, ticks its count; a producer's 3+ haul delights its bust as the last good lands.
+    const hauls = bigHauls(placed.map((p) => p.good))
+    let lastCue = -Infinity
+    const lands = placed.map((p, i) =>
+      window.setTimeout(() => {
+        if (p.good.producer === active) onLand(p.good.unit)
+        const now = performance.now()
+        if (now - lastCue >= HARVEST_CUE_GAP_MS) {
+          lastCue = now
+          playCues([HARVEST_CUE[p.good.unit]])
+        }
+        if (hauls.get(p.good.producer) === i) onHaul?.(p.good.producer)
+      }, i * timing.step + timing.flight * 0.9),
+    )
     const skip = () => onDone()
     window.addEventListener('pointerdown', skip, true)
     window.addEventListener('keydown', skip, true)
@@ -103,7 +118,7 @@ export default function HarvestMoment({ goods, active, onLand, onDone }: { goods
       window.removeEventListener('pointerdown', skip, true)
       window.removeEventListener('keydown', skip, true)
     }
-  }, [placed, timing.total, timing.step, timing.flight, active, onLand, onDone])
+  }, [placed, timing.total, timing.step, timing.flight, active, onLand, onHaul, onDone])
 
   if (!placed) return null
   return (
