@@ -1359,6 +1359,41 @@ export function buildGround(level: Level): Ground {
       instanced(new THREE.BoxGeometry(0.006, 0.006, 1.6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), wires),
     ])
       if (m) group.add(m);
+    // Plan item 469: a row of painted beach huts on the grazing marsh, as the 2D field has along its east stream (the
+    // land east of the field read as plain grass and ditches). Own stream, so nothing placed before them moves; two
+    // draw calls (the painted walls tinted per hut, the white roofs and plank decks).
+    {
+      const hr = rng(level.id * 7919 + 11);
+      const paint = ["#3f7fb8", "#2f9a8f", "#c4473f", "#e0b54a", "#6fae8a", "#d97a8e"].map((c) => new THREE.Color(c));
+      const walls: Inst[] = [];
+      const roofs: Inst[] = [];
+      const white = new THREE.Color("#ffffff");
+      const x0 = cols + 1.62;
+      // In short terraces of three to five, shoulder to shoulder, with wide gaps between (one even row read as a
+      // line of beehives).
+      let left = 3 + Math.floor(hr() * 3);
+      for (let z = -1.2 + hr() * 0.6, k = Math.floor(hr() * paint.length); z < rows + 1.5; ) {
+        const x = x0 + (hr() - 0.5) * 0.04;
+        z += 0.36;
+        if (--left <= 0) {
+          left = 3 + Math.floor(hr() * 3);
+          z += 1.8 + hr() * 1.6;
+        }
+        if (laneDistance(level, x, z) < 1.1 || cattle.some((c) => Math.hypot(c.x - x, c.z - z) < 0.4)) continue;
+        const y = Math.max(heightAt(x - 0.15, z), heightAt(x + 0.15, z), heightAt(x, z - 0.15), heightAt(x, z + 0.15));
+        const ry = -Math.PI / 2 + (hr() - 0.5) * 0.08;
+        walls.push({ x, y, z, ry, s: 1, sy: 0.92 + hr() * 0.16, color: paint[k++ % paint.length]! });
+        roofs.push({ x, y, z, ry, s: 1, sy: 1, color: white });
+      }
+      for (const m of [
+        instanced(beachHutGeometry("walls"), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75 }), walls, true),
+        instanced(beachHutGeometry("roof"), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }), roofs, true),
+      ])
+        if (m) {
+          m.userData.beachHuts = true;
+          group.add(m);
+        }
+    }
     // Plan item 469: tidal creeks winding into the flats from the sea, and across the salt meadow behind the field and
     // inland past the telegraph line, holding the sky (the flat margin read as bare lilac-grey ground). Own stream,
     // so nothing placed before them moves.
@@ -2494,6 +2529,45 @@ export function shoreStrip(
 }
 
 /** Plan item 469: a grazing cow (facing +x): a body on four legs, standing on y = 0. */
+/** Plan item 469: a beach hut, facing +z before its yaw. "walls" (white, tinted per hut) carry a dark door and two
+ *  white boards across the front; "roof" is the white gable roof, a plank deck and its stilts (not tinted). */
+function beachHutGeometry(part: "walls" | "roof"): THREE.BufferGeometry {
+  const paint = (g: THREE.BufferGeometry, hex: string) => {
+    const c = new THREE.Color(hex);
+    const n = g.getAttribute("position").count;
+    const a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3);
+    g.setAttribute("color", new THREE.BufferAttribute(a, 3));
+    return g.index ? g.toNonIndexed() : g;
+  };
+  const W = 0.24, D = 0.26, H = 0.3, base = 0.07;
+  if (part === "walls") {
+    return mergeGeometries([
+      paint(new THREE.BoxGeometry(W, H, D).translate(0, base + H / 2, 0), "#ffffff"),
+      paint(new THREE.BoxGeometry(0.1, 0.2, 0.012).translate(0, base + 0.1, D / 2 + 0.004), "#3b3431"),
+      paint(new THREE.BoxGeometry(0.022, H, 0.012).translate(-W / 2 + 0.02, base + H / 2, D / 2 + 0.003), "#ffffff"),
+      paint(new THREE.BoxGeometry(0.022, H, 0.012).translate(W / 2 - 0.02, base + H / 2, D / 2 + 0.003), "#ffffff"),
+    ])!;
+  }
+  const slope = Math.hypot(W / 2 + 0.03, 0.12);
+  const ang = Math.atan2(0.12, W / 2 + 0.03);
+  const left = new THREE.BoxGeometry(slope, 0.025, D + 0.06).rotateZ(ang).translate(-(W / 2 + 0.03) / 2, base + H + 0.06, 0);
+  const right = new THREE.BoxGeometry(slope, 0.025, D + 0.06).rotateZ(-ang).translate((W / 2 + 0.03) / 2, base + H + 0.06, 0);
+  const tri = new THREE.BufferGeometry();
+  const gy = base + H, hw = W / 2;
+  tri.setAttribute("position", new THREE.Float32BufferAttribute([-hw, gy, D / 2, hw, gy, D / 2, 0, gy + 0.12, D / 2, hw, gy, -D / 2, -hw, gy, -D / 2, 0, gy + 0.12, -D / 2], 3));
+  tri.computeVertexNormals();
+  const parts = [
+    paint(left, "#f3eee4"),
+    paint(right, "#f3eee4"),
+    paint(tri, "#f3eee4"),
+    paint(new THREE.BoxGeometry(W + 0.08, 0.02, D + 0.16).translate(0, base - 0.01, 0.04), "#8a6c4c"),
+  ];
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) parts.push(paint(new THREE.BoxGeometry(0.025, base, 0.025).translate(sx * (W / 2), base / 2 - 0.01, sz * (D / 2)), "#5e4a36"));
+  for (const g of parts) g.deleteAttribute("uv");
+  return mergeGeometries(parts)!;
+}
+
 function cowGeometry(): THREE.BufferGeometry {
   const parts = [new THREE.BoxGeometry(0.2, 0.085, 0.09).translate(0, 0.1, 0)];
   for (const lx of [-0.07, 0.07]) for (const lz of [-0.03, 0.03]) parts.push(new THREE.BoxGeometry(0.026, 0.065, 0.026).translate(lx, 0.0325, lz));
