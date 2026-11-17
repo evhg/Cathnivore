@@ -2256,7 +2256,8 @@ function shotSolve(): void {
 }
 
 // Plan item 39's e2e: under webdriver, set the board one tap from solved (the tile is marked `data-last`).
-if (navigator.webdriver) (window as unknown as { runnelTest: object }).runnelTest = { nearlySolve: shotSolve }
+// Plan item 478's shots: `tapsLeft()` gives each tile's clockwise taps to its solution, so a script can solve by hand.
+if (navigator.webdriver) (window as unknown as { runnelTest: object }).runnelTest = { nearlySolve: shotSolve, tapsLeft: () => puzzle.cells.map((c) => (c.kind === 'stone' || c.fixed ? 0 : tapsToSolve(c))) }
 
 function workshopCode(seed: string): string | null {
   return isWorkshopSeed(seed) ? seed.slice('workshop-'.length) : null
