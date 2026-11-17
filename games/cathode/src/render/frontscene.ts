@@ -67,6 +67,8 @@ export interface FrontScene {
   readonly gunLight: { swing: number; dist: number | null };
   /** Plan item 180: the class stance she holds on the pick (its kind and blend weight, 1 when settled). */
   figurePose(): { kind: string | null; w: number; blendS: number; hand: [number, number, number] };
+  /** Plan item 449: the pick's commit: she ends her audition on her carry and squares up to the lens (350 ms). */
+  ready(): void;
   /** Plan item 449: the deepest weapon vertex inside her coat (m) and its weapon. */
   weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
   /** Plan item 140: the expression painted on her face now. */
@@ -1059,6 +1061,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     weaponInCoat() {
       return cath.weaponInCoat();
+    },
+    ready() {
+      // Plan item 449: the lens's bearing in her own frame (+z ahead of her), so she squares up to the camera.
+      const at = cath.group.worldToLocal(cam.getWorldPosition(new THREE.Vector3()));
+      cath.ready(Math.atan2(at.x, at.z));
     },
     get kit() {
       return cath.wearing;

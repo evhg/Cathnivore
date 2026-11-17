@@ -723,7 +723,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           resolve(c);
         },
         "ghost",
-        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump(), gunReel: pickGunReel, gunIcon: pickGunIcon },
+        { onSelect: (c) => ((shown = c), scene?.wardrobe(c), audio.rack(c)), onThump: () => audio.thump(), onCommit: () => scene?.ready(), gunReel: pickGunReel, gunIcon: pickGunIcon },
       );
       stagePick();
       // Escape from the case file goes back to the title.

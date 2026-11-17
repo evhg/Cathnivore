@@ -38,7 +38,7 @@ export interface FrontCath {
    */
   stance(kind: string | null, instant?: boolean): void;
   /** Plan item 180: the stance she holds now, its weight (0..1; 1 once the blend is done), how long the last blend took (loop s) and her posing hand. */
-  readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: HeldProp | null; gap: number | null; joints: string };
+  readonly poseState: { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: HeldProp | null; gap: number | null; joints: string; ready: number };
   /** Plan item 136: the class idle playing now, how far through it is (0..1) and the gun in her hand, or null. */
   readonly clipState: { kind: string; u: number; prop: HeldProp | null } | null;
   /**
@@ -46,6 +46,12 @@ export interface FrontCath {
    * from outside it), and which weapon; 0 when none goes in. A check, not drawn: sampled every few vertices.
    */
   weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
+  /**
+   * Plan item 449: the pick's commit: whatever is left of the audition plays out in 350 ms (so she ends on her carry:
+   * the shotgun shouldered, the rifle slung, the revolver holstered) and she squares up to the lens, chin up. `yaw`
+   * is the lens's bearing in her frame (rad, 0 straight ahead of her; turned toward by up to 0.6).
+   */
+  ready(yaw?: number): void;
   /** Plan item 449: the world position of the gun in her hand (its group's origin) into `out`; false with none in hand. */
   propWorld(out: THREE.Vector3): boolean;
   /**
@@ -2675,6 +2681,12 @@ float reliefShade( vec2 uv ) {
   let gazeWant: number | null = null;
   let gazeNow = 0;
   let gazeW = 0;
+  // Plan item 449: the commit's squaring up (loop time it began, -1 none) and its weight now.
+  let readyT0: number | null = null;
+  let readyWant = false;
+  let readyK = 0;
+  let readyYaw = 0;
+  const READY_S = 0.35;
   function update(dt: number, t: number, wind: { x: number; z: number }): void {
     const step = Math.min(dt, 1 / 20);
     // Plan item 427: the cloth's heights in her own frame (last frame's matrix is near enough).
@@ -2761,6 +2773,20 @@ float reliefShade( vec2 uv ) {
       if (stanceW === 1) blendS = blendClock;
     }
     let cu = 0;
+    if (readyWant) {
+      readyWant = false;
+      readyT0 = t;
+      // The audition's remainder runs out over READY_S, so it ends where it would have (on the carry), only sooner.
+      if (clip && clip.held === undefined && clip.t0 !== null) {
+        const u0 = Math.min(1, Math.max(0, (t - clip.t0) / clip.dur));
+        if (u0 < 1) {
+          clip.dur = Math.min(clip.dur, READY_S / (1 - u0));
+          clip.t0 = t - u0 * clip.dur;
+        }
+      }
+    }
+    if (readyT0 !== null && t < readyT0) readyT0 = t;
+    readyK = readyT0 === null ? 0 : THREE.MathUtils.smootherstep(t - readyT0, 0, READY_S);
     if (clip) {
       if (clip.t0 === null) clip.t0 = t;
       cu = clip.held ?? (t - clip.t0) / clip.dur;
@@ -2915,6 +2941,15 @@ float reliefShade( vec2 uv ) {
     }
     // Only the Ghost's draw and the Fixer's collar keep the cigarette in hand: in a fist (the Butcher), on the hip or
     // flung out with the umbrella it read as a loose stick by her hip (C14 review), so it is palmed away.
+    if (readyK > 0) {
+      // Plan item 449: squared up to the lens for the walk-in: the class's turn of the hips, chest and head eases out
+      // and her chin comes up.
+      const k = 1 - 0.85 * readyK;
+      pelvis.rotation.y = pelvis.rotation.y * k + readyYaw * 0.7 * readyK;
+      chest.rotation.y = chest.rotation.y * k + readyYaw * 0.2 * readyK;
+      headPivot.rotation.y = headPivot.rotation.y * k + readyYaw * 0.1 * readyK;
+      headPivot.rotation.x -= 0.08 * readyK;
+    }
     handNow.copy(armOn ? tgt : wristL);
     carrying = carryNow;
     if (caseUp && caseDown && wearing === "fixer") {
@@ -3793,10 +3828,11 @@ float reliefShade( vec2 uv ) {
   const GHOST_SLING = V(0.2, 0.02, 0.17);
   // Plan item 449: out from her hip (x 0.26 -> 0.29, z 0.19 -> 0.21): the shotgun's stock sat 2.4 cm inside the coat.
   const BUTCHER_HOLD = V(0.29, 0.04, 0.21);
-  // Plan item 449: the shoulder carry: her hand on the grip before her left breast, the barrel back over her shoulder.
-  const BUTCHER_SHOULDER = V(0.34, 0.06, 0.28);
-  const SHOT_SHOULDER_DIR = V(0.02, 0.97, 0.12);
-  const SHOT_SHOULDER_TOP = V(-1, 0, 0.35);
+  // Plan item 449: the shoulder carry: her hand on the grip before her left breast, the barrel back past her shoulder
+  // (port arms; at x 0.34 her hand held it beside her at arm's length and it read as hanging at her side).
+  const BUTCHER_SHOULDER = V(0.16, 0.1, 0.22);
+  const SHOT_SHOULDER_DIR = V(0.22, 0.68, -0.7);
+  const SHOT_SHOULDER_TOP = V(0, 0.6, 0.8);
   let shotK = 0;
   const BUTCHER_SHOULDER_K: number = 1;
   // Plan item 449: the Gunslinger's hand over the holstered grip (offsets from the grip point, chest frame), on it to
@@ -4059,7 +4095,11 @@ float reliefShade( vec2 uv ) {
       rimU.uRimDir.value.copy(viewDir).normalize();
     },
     stance(kind, instant) {
-      if (kind !== stanceWant) blendClock = 0;
+      if (kind !== stanceWant) {
+        blendClock = 0;
+        readyT0 = null;
+        readyWant = false;
+      }
       stanceWant = kind;
       if (instant) {
         stanceNow = kind;
@@ -4088,7 +4128,11 @@ float reliefShade( vec2 uv ) {
       }
       const q = (n: number) => Math.round(n * 100) / 100;
       const joints = [...upperL.matrix.elements, ...foreL.matrix.elements, chest.rotation.x, chest.rotation.y, chest.rotation.z, pelvis.rotation.y, pelvis.rotation.z, headPivot.rotation.x, headPivot.rotation.y, headPivot.rotation.z].map(q).join(",");
-      return { kind: stanceNow, w: stanceW, blendS, hand: [r(handNow.x), r(handNow.y), r(handNow.z)] as [number, number, number], prop: propNow, gap, joints };
+      return { kind: stanceNow, w: stanceW, blendS, hand: [r(handNow.x), r(handNow.y), r(handNow.z)] as [number, number, number], prop: propNow, gap, joints, ready: r(readyK) };
+    },
+    ready(yaw = 0) {
+      readyWant = true;
+      readyYaw = THREE.MathUtils.clamp(yaw, -0.6, 0.6);
     },
     play(kind, u, seconds) {
       clip = { kind, t0: null, held: u, dur: seconds ?? CLIP_S, u: u ?? 0 };

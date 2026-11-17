@@ -36,6 +36,8 @@ export interface ClassPickHooks {
   /** Plan item 313: a weapon class's lit thumbnail for the names' rack, from the same meshes. null keeps the stencil. */
   /** Plan item 423: `cls` rims the thumbnail in that class's key colour. */
   gunIcon?(weaponCls: string, cls?: ClassId): string | null;
+  /** Plan item 449: the hold is complete (the 520 ms exit starts): she shoulders her weapon and turns to the lens. */
+  onCommit?(cls: ClassId): void;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -518,6 +520,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     done = true;
     go.classList.add("is-done");
     const cls = selected;
+    hooks.onCommit?.(cls);
     root.classList.add("cp-leaving");
     const finish = () => {
       root.remove();

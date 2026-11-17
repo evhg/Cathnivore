@@ -4,8 +4,8 @@ import { expect, test } from './own-gpu'
 // is done (the stage's data-class drives scene().figurePose()); a change of class blends over 300 ms (item 278) of the loop's
 // time; her face reads (90 px+ tall at D, 45 at P) and her body meets neither the list nor the sheet at D.
 type Box = { left: number; top: number; right: number; bottom: number }
-type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: string | null; gap: number | null; joints: string }
-type S = { time: number; dressed: string | null; figurePose(): Pose; weaponInCoat(): { depth: number; gun: string | null }; faceBox(): Box; figureBox(body?: boolean): Box }
+type Pose = { kind: string | null; w: number; blendS: number; hand: [number, number, number]; prop: string | null; gap: number | null; joints: string; ready: number }
+type S = { time: number; dressed: string | null; figurePose(): Pose; ready(): void; weaponInCoat(): { depth: number; gun: string | null }; faceBox(): Box; figureBox(body?: boolean): Box }
 type F = { cathodeFront?: { scene: () => S | null } }
 
 const CLASSES = ['ghost', 'butcher', 'gunslinger', 'wirewitch', 'fixer']
@@ -86,4 +86,13 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
     }
   // Plan item 422: and five different sets of joint angles (arm, chest, pelvis, head).
   expect(new Set(Object.values(joints)).size, JSON.stringify(joints)).toBe(5)
+  // Plan item 449: the commit (the hold complete) squares her up to the lens: her hips, chest and head turn from the
+  // Ghost's held stance, still on her carry (the rifle slung, nothing in her hand, nothing in the coat).
+  await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.ready())
+  await expect.poll(async () => (await pose())?.ready ?? 0, { timeout: 60_000 }).toBe(1)
+  const sq = (await pose())!
+  expect(sq.joints).not.toBe(joints.ghost)
+  expect(sq.prop).toBe(HELD.ghost)
+  const inCoat = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.weaponInCoat())
+  expect(inCoat.depth, JSON.stringify(inCoat)).toBeLessThanOrEqual(0.005)
 })
