@@ -25,6 +25,11 @@ export interface FrontSets {
 /** The flat's size in metres (x across her, y up from the floor). */
 const FW = 11;
 const FH = 5.5;
+/** The key's disc behind her head: size (m), height of its middle, distance behind her, strength. */
+const HALO_M = 2.2;
+const HALO_Y = 1.5;
+const HALO_BACK = 1.0;
+const HALO_A = 0.55;
 /** The flats' HDR gain over their painted colour. */
 const FLAT_GAIN = 3.2;
 
@@ -143,23 +148,23 @@ const ghost: Paint = (g, X, Y, s) => {
 const butcher: Paint = (g, X, Y, s) => {
   const r = rng(23);
   g.fillStyle = vgrad(g, Y(FH), Y(0), [
-    [0, "#1a0204"],
-    [0.55, "#4a0a0e"],
-    [1, "#2a0507"],
+    [0, "#1a0208"],
+    [0.55, "#4a0a1c"],
+    [1, "#2a0510"],
   ]);
   g.fillRect(0, 0, X(FW / 2), Y(0));
   // The tiles: a grout grid and a lit edge on each.
   const t = 0.3;
   for (let y = 0; y < FH; y += t)
     for (let x = -FW / 2; x < FW / 2; x += t) {
-      g.fillStyle = `rgba(255,${60 + Math.round(r() * 30)},${60 + Math.round(r() * 30)},${0.05 + r() * 0.05})`;
+      g.fillStyle = `rgba(255,${50 + Math.round(r() * 30)},${90 + Math.round(r() * 30)},${0.05 + r() * 0.05})`;
       g.fillRect(X(x) + 2 * s, Y(y + t) + 2 * s, X(x + t) - X(x) - 4 * s, Y(y) - Y(y + t) - 4 * s);
     }
   g.fillStyle = "rgba(10,0,1,0.6)";
   for (let y = 0; y < FH; y += t) g.fillRect(0, Y(y), X(FW / 2), 2 * s);
   for (let x = -FW / 2; x < FW / 2; x += t) g.fillRect(X(x), 0, 2 * s, Y(0));
   // A red-lit band of the key across the middle.
-  glow(g, X(0.2), Y(2.4), 260 * s, "rgba(255,40,40,A)", 0.35);
+  glow(g, X(0.2), Y(2.4), 260 * s, "rgba(255,30,80,A)", 0.35);
   // The rail and its hooks, the sides of meat on them.
   g.fillStyle = "#0c0102";
   g.fillRect(0, Y(3.45), X(FW / 2), 7 * s);
@@ -187,8 +192,8 @@ const butcher: Paint = (g, X, Y, s) => {
   }
   // The cold: fog pooled at the floor and the locker's steel door frame round the stoop.
   g.fillStyle = vgrad(g, Y(1.5), Y(0), [
-    [0, "rgba(255,170,175,0)"],
-    [1, "rgba(255,170,175,0.42)"],
+    [0, "rgba(235,180,215,0)"],
+    [1, "rgba(235,180,215,0.42)"],
   ]);
   g.fillRect(0, Y(1.5), X(FW / 2), Y(0) - Y(1.5));
   g.fillStyle = "#3a2a2c";
@@ -199,19 +204,19 @@ const butcher: Paint = (g, X, Y, s) => {
 const gunslinger: Paint = (g, X, Y, s) => {
   const r = rng(37);
   g.fillStyle = vgrad(g, Y(FH), Y(0), [
-    [0, "#1a0c02"],
-    [0.5, "#4a2a06"],
-    [1, "#2a1604"],
+    [0, "#1a1202"],
+    [0.5, "#4a3806"],
+    [1, "#2a1e04"],
   ]);
   g.fillRect(0, 0, X(FW / 2), Y(0));
   // Wallpaper stripes over a dado rail and boarded wainscot.
   for (let x = -FW / 2; x < FW / 2; x += 0.24) {
-    g.fillStyle = "rgba(255,190,80,0.07)";
+    g.fillStyle = "rgba(255,215,80,0.07)";
     g.fillRect(X(x), 0, X(x + 0.09) - X(x), Y(1.15));
   }
   g.fillStyle = "#1e0f03";
   g.fillRect(0, Y(1.15), X(FW / 2), Y(0) - Y(1.15));
-  g.fillStyle = "#d89a32";
+  g.fillStyle = "#e0b832";
   g.fillRect(0, Y(1.15), X(FW / 2), 3 * s);
   g.fillStyle = "rgba(0,0,0,0.45)";
   for (let x = -FW / 2; x < FW / 2; x += 0.18) g.fillRect(X(x), Y(1.12), 2 * s, Y(0) - Y(1.12));
@@ -221,13 +226,13 @@ const gunslinger: Paint = (g, X, Y, s) => {
     [1.6, 5.2],
   ] as const)
     for (const y of [1.75, 2.45]) {
-      glow(g, X((x0 + x1) / 2), Y(y + 0.2), 200 * s, "rgba(255,190,70,A)", 0.3);
+      glow(g, X((x0 + x1) / 2), Y(y + 0.2), 200 * s, "rgba(255,215,60,A)", 0.3);
       g.fillStyle = "#120801";
       g.fillRect(X(x0), Y(y), X(x1) - X(x0), 6 * s);
       for (let x = x0 + 0.1; x < x1 - 0.1; x += 0.13 + r() * 0.08) {
         const h = 0.22 + r() * 0.16;
         const hue = r();
-        g.fillStyle = hue < 0.6 ? "#c8801a" : hue < 0.85 ? "#7a3a08" : "#e8c070";
+        g.fillStyle = hue < 0.6 ? "#d0a01a" : hue < 0.85 ? "#7a5208" : "#f0d870";
         g.globalAlpha = 0.85;
         g.fillRect(X(x), Y(y + h * 0.7), X(x + 0.09) - X(x), Y(y) - Y(y + h * 0.7));
         g.fillRect(X(x + 0.03), Y(y + h), X(x + 0.06) - X(x + 0.03), Y(y + h * 0.7) - Y(y + h));
@@ -238,7 +243,7 @@ const gunslinger: Paint = (g, X, Y, s) => {
     }
   // The card table under its lamp, right of the door: a round top lit gold, the cards fanned on it, two chairs.
   const cx = 3.2;
-  glow(g, X(cx), Y(1.6), 230 * s, "rgba(255,200,90,A)", 0.55);
+  glow(g, X(cx), Y(1.6), 230 * s, "rgba(255,220,80,A)", 0.55);
   g.fillStyle = "#0e0601";
   g.fillRect(X(cx) - 2 * s, 0, 4 * s, Y(3.0));
   g.beginPath();
@@ -254,7 +259,7 @@ const gunslinger: Paint = (g, X, Y, s) => {
   g.ellipse(X(cx), Y(0.78), X(cx + 0.75) - X(cx), 14 * s, 0, 0, Math.PI * 2);
   g.fill();
   g.fillRect(X(cx) - 5 * s, Y(0.78), 10 * s, Y(0) - Y(0.78));
-  g.fillStyle = "#e0a040";
+  g.fillStyle = "#e8c040";
   g.fillRect(X(cx - 0.75), Y(0.78), X(cx + 0.75) - X(cx - 0.75), 2 * s);
   for (let i = 0; i < 5; i++) {
     g.fillStyle = i % 2 ? "#f4ead2" : "#e8dcc0";
@@ -403,7 +408,9 @@ const fixer: Paint = (g, X, Y, s) => {
 
 const PAINT: Record<string, Paint> = { ghost, butcher, gunslinger, wirewitch, fixer };
 /** Each set's pool on the floor (sRGB), its key colour. */
-export const SET_KEY: Record<string, number> = { ghost: 0x2ab8d8, butcher: 0xd01820, gunslinger: 0xe8a028, wirewitch: 0x8a40ff, fixer: 0x58d028 };
+// The Butcher's red leans crimson and the Gunslinger's gold toward yellow, so their sets sit 30 degrees or more apart
+// in hue (they read 21 apart when both were plain warm red and amber).
+export const SET_KEY: Record<string, number> = { ghost: 0x2ab8d8, butcher: 0xd0103c, gunslinger: 0xf0c030, wirewitch: 0x8a40ff, fixer: 0x58d028 };
 
 function paintFlat(cls: string, phone: boolean): THREE.CanvasTexture {
   const W = phone ? 512 : 1024;
@@ -450,8 +457,12 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
   disposables.push(poolTex);
   const flatGeo = new THREE.PlaneGeometry(FW, FH);
   const poolGeo = new THREE.PlaneGeometry(4.2, 3.2);
-  disposables.push(flatGeo, poolGeo);
-  const sets = new Map<string, { flat: THREE.MeshBasicMaterial; pool: THREE.MeshBasicMaterial; group: THREE.Group; k: number }>();
+  const haloGeo = new THREE.PlaneGeometry(HALO_M, HALO_M);
+  disposables.push(flatGeo, poolGeo, haloGeo);
+  const sets = new Map<
+    string,
+    { flat: THREE.MeshBasicMaterial; pool: THREE.MeshBasicMaterial; halo: THREE.MeshBasicMaterial; group: THREE.Group; k: number }
+  >();
   for (const cls of SET_CLASSES) {
     const sg = new THREE.Group();
     sg.name = `front-set-${cls}`;
@@ -475,13 +486,27 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
     const pm = new THREE.Mesh(poolGeo, pool);
     pm.rotation.x = -Math.PI / 2;
     pm.position.set(0, 0.012, -back + 1.1);
-    for (const m of [fm, pm]) {
+    // The set's light behind her head: a soft disc of the key between her and the flat, so her hair and shoulders
+    // stand out against the set's colour (on a phone, where the flat behind her is mostly shadow, too).
+    const halo = new THREE.MeshBasicMaterial({
+      map: poolTex,
+      color: new THREE.Color(SET_KEY[cls]!),
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      fog: false,
+    });
+    const hm = new THREE.Mesh(haloGeo, halo);
+    hm.position.set(0, HALO_Y, -HALO_BACK);
+    hm.renderOrder = -1;
+    for (const m of [fm, pm, hm]) {
       m.layers.enable(LAYER_NO_REFLECT);
       sg.add(m);
     }
     group.add(sg);
-    disposables.push(map, flat, pool);
-    sets.set(cls, { flat, pool, group: sg, k: 0 });
+    disposables.push(map, flat, pool, halo);
+    sets.set(cls, { flat, pool, halo, group: sg, k: 0 });
   }
   let first = true;
   return {
@@ -498,6 +523,7 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
         st.group.visible = a > 0.001;
         st.flat.opacity = a;
         st.pool.opacity = 0.32 * a;
+        st.halo.opacity = HALO_A * a;
       }
       if (cls) first = false;
       if (!cls || pick < 0.001) first = true;
