@@ -194,7 +194,9 @@ export function nightLight(L: ActLight): ActLight {
  * multipliers the renderer applies. Night keeps its own moonlit set. */
 export function dayKey(L: ActLight, night: boolean): { el: number; warm: number; sun: number; hemi: number; rim: number } {
   if (night) return { el: L.sunEl, warm: 0, sun: 1.25, hemi: 1.4, rim: 2.2 };
-  return { el: Math.min(L.sunEl, 32), warm: 0.42, sun: 1.5, hemi: 0.58, rim: 0.45 };
+  // Plan item 469: sky fill 0.58 -> 0.7: a critique read the house and barn shadows as black holes over the pond
+  // and plot beside them; shadows stay under 0.8x the lit ground (hedgerow-shadow3d).
+  return { el: Math.min(L.sunEl, 32), warm: 0.42, sun: 1.5, hemi: 0.7, rim: 0.45 };
 }
 
 export function actLight(levelId: number): ActLight {
