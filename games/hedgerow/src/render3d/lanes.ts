@@ -20,7 +20,8 @@ interface LaneStyle {
 const STYLES: LaneStyle[] = [
   { half: 0.46, fade: 0.3, rough: 0.95, looseStones: true }, // Brindle Hills: packed earth
   { half: 0.46, fade: 0.3, rough: 0.95, looseStones: true }, // Highmoor: peat and stones
-  { half: 0.46, fade: 0.3, rough: 0.9, looseStones: true }, // Saltmarsh: sandy track (plan item 269; was a boardwalk)
+  // Saltmarsh: sandy track (plan item 269; was a boardwalk). Plan item 469: a short fade, so its cream kerbs hold.
+  { half: 0.46, fade: 0.14, rough: 0.9, looseStones: true },
   { half: 0.47, fade: 0.32, rough: 0.6, looseStones: true }, // Rivermead: wet mud
   { half: 0.46, fade: 0.34, rough: 0.95, looseStones: true }, // Oakvale: leaf litter
   { half: 0.47, fade: 0.28, rough: 0.9, looseStones: true }, // Shingle Bay: shingle
@@ -147,6 +148,10 @@ const PAINT: Paint[] = [
       streak(ctx, u - 0.07, 3, "#e6d4ac", 0.4);
       streak(ctx, u + 0.07, 3, "#e6d4ac", 0.4);
     }
+    // Plan item 469: cream kerbs along both edges with a darker line outside them, as the 2D track draws its edges
+    // (the 3D track faded into the verge over a third of its width and its course was hard to follow at D).
+    for (const u of [0.11, 0.89]) streak(ctx, u, 5, "#f3e8cb", 0.9);
+    for (const u of [0.065, 0.935]) streak(ctx, u, 2.5, "#8a7350", 0.7);
     for (let i = 0; i < 160; i++) {
       const x = TW * (0.5 + (r() - 0.5) * 0.12);
       const y = r() * TH;
