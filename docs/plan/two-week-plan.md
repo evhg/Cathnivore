@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane B, 2026-11-17 02:35 UTC
+
 
 
 
@@ -4249,7 +4251,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
+## 456. [x] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(done 2026-11-17 02:35 lane B, slices 1-3: coat key 0.25, a title-only noir toe in the grade (uToe), eased out on the pick; a blind read calls the coat charcoal to near-black, darker than the neon and pavement, her face clearly lit; skirt luma 41 against LUNA's ~240. Moved to item 463: the rim on both sides (no rim edit has registered: the live shader carries the wool rim, so the next taker should probe fr0 on the coat directly) and the pick's butcher-fixer coat dE 7.6, not from 456.)*
 
 Progress (lane B, 2026-11-17 01:55, slice 3): a blind read of the new posters calls the coat 'charcoal to near-black', darker than the neon and the lit pavement, her face clearly lit (accept met for the coat: skirt luma 41, under 35% of LUNA's ~240). The toe now eases out on the pick with the wardrobe. **Regression found, not from 456:** `cathode-coatcolour.mjs` on the pick reads butcher-fixer dE 7.6 with the toe off (6.7 on), against 16.7 after item 434 slice 6 (ghost-butcher 20.5, butcher-wirewitch 14.7); likely 449 slice 5's class key swinging to the gun, check that first. Left: the rim on both sides (the wool's rim is a soft 0.5 bloom; a 2.5x cold rim showed nothing: it needs the wool rim's shape changed, not its colour).
 
