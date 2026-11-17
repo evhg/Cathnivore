@@ -1979,6 +1979,56 @@ export class Renderer {
     ctx.restore();
   }
 
+  /**
+   * Plan item 468: a hedge's slow reads as brambles. A thorny bed spreads on the lane under the vehicle, and two
+   * stems curl up over its body (thorns and a leaf each), swaying a little; the bed's green wash tints the wheels.
+   */
+  private drawBrambles(id: number, x: number, y: number, s: number, t: number): void {
+    const { ctx } = this;
+    const sway = this.reducedMotion ? 0 : Math.sin(t * 2.2 + id) * s * 0.015;
+    ctx.save();
+    ctx.fillStyle = "rgba(70,120,45,0.32)";
+    ctx.beginPath();
+    ctx.ellipse(x, y, s * 0.36, s * 0.09, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineCap = "round";
+    for (const side of [-1, 1] as const) {
+      const x0 = x + side * s * 0.3;
+      const x1 = x - side * s * 0.12 + sway;
+      const y1 = y - s * 0.3;
+      const cx = x0 + side * s * 0.02;
+      const cy = y - s * 0.34;
+      // A dark under-stroke so the stem reads on a white van and on the green verge alike.
+      ctx.strokeStyle = "rgba(30,45,20,0.7)";
+      ctx.lineWidth = Math.max(2.5, s * 0.05);
+      ctx.beginPath();
+      ctx.moveTo(x0, y);
+      ctx.quadraticCurveTo(cx, cy, x1, y1);
+      ctx.stroke();
+      ctx.strokeStyle = "#5f9a3c";
+      ctx.lineWidth = Math.max(1.5, s * 0.028);
+      ctx.stroke();
+      // Thorns along the curve, pointing outward.
+      ctx.strokeStyle = "#3d5e26";
+      ctx.lineWidth = Math.max(1, s * 0.014);
+      for (const u of [0.3, 0.55, 0.8]) {
+        const a = 1 - u;
+        const px = a * a * x0 + 2 * a * u * cx + u * u * x1;
+        const py = a * a * y + 2 * a * u * cy + u * u * y1;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + side * s * 0.035, py - s * 0.03);
+        ctx.stroke();
+      }
+      // A leaf near the tip.
+      ctx.fillStyle = "#79b84d";
+      ctx.beginPath();
+      ctx.ellipse(x1 - side * s * 0.03, y1 + s * 0.02, s * 0.045, s * 0.022, side * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   private drawStatus(e: Game["enemies"][number], x: number, y: number, s: number, t: number): void {
     const { ctx } = this;
     const k = enemyScale(e.kind);
@@ -1995,17 +2045,7 @@ export class Renderer {
         ctx.stroke();
       }
     }
-    if (e.slowed && e.stun <= 0) {
-      ctx.strokeStyle = "rgba(90,150,60,0.9)";
-      ctx.lineWidth = Math.max(1.5, s * 0.03);
-      for (let i = 0; i < 3; i++) {
-        const lx = x - s * 0.22 + i * s * 0.22;
-        ctx.beginPath();
-        ctx.moveTo(lx, y);
-        ctx.quadraticCurveTo(lx + s * 0.04, y - s * 0.1, lx + s * 0.02, y - s * 0.16);
-        ctx.stroke();
-      }
-    }
+    if (e.slowed && e.stun <= 0) this.drawBrambles(e.id, x, y, s * k, t);
     if (e.stickyLeft && e.stickyLeft > 0) {
       ctx.fillStyle = "rgba(240,180,41,0.85)";
       for (let i = 0; i < 3; i++) {

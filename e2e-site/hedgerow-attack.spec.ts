@@ -7,6 +7,7 @@ type HG = {
   game(): { wave: number; level: { cols: number; rows: number }; towers: Array<{ id: number }> }
   sendWave(g: unknown, force?: boolean): void
   place(g: unknown, kind: string, c: number, r: number): { ok: boolean }
+  inReach(): number[]
 }
 for (const reduced of [false, true])
   test(`towers attack and knockouts pay into the purse${reduced ? ' (reduced motion)' : ''}`, async ({ page, hasTouch }) => {
@@ -22,13 +23,40 @@ for (const reduced of [false, true])
     await page.evaluate(() => {
       const hg = (window as unknown as { hedgerow: HG }).hedgerow
       const g = hg.game()
-      let placed = 0
-      for (let r = 0; r < g.level.rows && placed < 8; r++) for (let c = 0; c < g.level.cols && placed < 8; c++) if (hg.place(g, 'scarecrow', c, r).ok) placed++
+      // Spaced apart (scarecrows next door to each other throw slower), alternating scarecrows and hedges.
+      const at: Array<[number, number]> = []
+      for (let r = 0; r < g.level.rows && at.length < 8; r++)
+        for (let c = 0; c < g.level.cols && at.length < 8; c++) {
+          if (at.some(([ac, ar]) => Math.abs(ac - c) <= 1 && Math.abs(ar - r) <= 1)) continue
+          if (hg.place(g, at.length % 2 ? 'hedgerow' : 'scarecrow', c, r).ok) at.push([c, r])
+        }
       hg.sendWave(g, true)
     })
     const stage = page.locator('#stage')
     await expect.poll(() => stage.getAttribute('data-attack'), { timeout: 60_000 }).not.toBeNull()
     await expect.poll(async () => (await stage.getAttribute('data-attack-towers'))?.split(',').filter(Boolean).length ?? 0, { timeout: 30_000 }).toBeGreaterThan(0)
+    // Every tower (turnips or a hedge's slow) with a vehicle in reach attacks within a second: take the towers in
+    // reach now, then every tower the stage names over the next 1.2 s must include them.
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.inReach().length), { timeout: 30_000 }).toBeGreaterThan(1)
+    const { want, missed } = await page.evaluate(
+      () =>
+        new Promise<{ want: number[]; missed: number[] }>((done) => {
+          const hg = (window as unknown as { hedgerow: HG }).hedgerow
+          const st = document.getElementById('stage')!
+          const want = hg.inReach()
+          const seen = new Set<string>()
+          const read = () => (st.dataset.attackTowers ?? '').split(',').forEach((id) => id && seen.add(id))
+          const obs = new MutationObserver(read)
+          obs.observe(st, { attributes: true, attributeFilter: ['data-attack-towers'] })
+          setTimeout(() => {
+            obs.disconnect()
+            read()
+            done({ want, missed: want.filter((id) => !seen.has(String(id))) })
+          }, 1200)
+        }),
+    )
+    expect(want.length).toBeGreaterThan(0)
+    expect(missed).toEqual([])
     if (reduced) {
       await page.waitForTimeout(4000)
       expect(await stage.getAttribute('data-coins')).toBeNull()

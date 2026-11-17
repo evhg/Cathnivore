@@ -2159,6 +2159,11 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel-paths .tower-head .ko-line .ko-n {
     color: var(--on-fill);
   }
+  /* Plan item 468: the hits tally under the knockouts, on the oak. */
+  .panel-paths .tower-head .hits-line {
+    margin: 0;
+    color: var(--on-oak-dim) !important;
+  }
   .panel-paths .sheet-close {
     display: none;
   }
@@ -2286,7 +2291,8 @@ body:has(#dlg-pause[open]) .paused-note {
     display: none;
   }
   /* One line of head: the Knockouts tally waits for the side panel or a portrait sheet */
-  .panel-paths .ko-line {
+  .panel-paths .ko-line,
+  .panel-paths .hits-line {
     display: none;
   }
   .panel-paths .panel-title {
@@ -2439,7 +2445,8 @@ body:has(#dlg-pause[open]) .paused-note {
   .panel-paths .tower-titles {
     gap: 4px 6px;
   }
-  .panel-paths .ko-line {
+  .panel-paths .ko-line,
+  .panel-paths .hits-line {
     display: none;
   }
   .panel-paths .target-btn,

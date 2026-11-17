@@ -2792,6 +2792,14 @@ dialog.sheet.story #story-skip {
   color: #a07c2c !important;
   font-weight: 700;
 }
+/* Plan item 468: the tower's hits this round, a quiet tally under its knockouts. */
+.hits-line {
+  margin: 1px 0 0;
+  font-size: var(--fs-small) !important;
+  color: var(--ink-2) !important;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 /* Hedgerow 2: a fleet tower's Knockouts, big and ticking, with the Marks it has earned. */
 .ko-line {
   margin: 2px 0 0;
@@ -3403,7 +3411,8 @@ img.act-scene {
     font-size: var(--fs-body);
   }
   .panel.choosing .vet-line,
-  .panel.choosing .ko-line {
+  .panel.choosing .ko-line,
+  .panel.choosing .hits-line {
     display: none;
   }
   .controls .go-pill {
@@ -3431,7 +3440,8 @@ img.act-scene {
    sticky so it can't draw over the choice; it scrolls in under the stats instead. */
 @media (max-width: 899.98px), (max-height: 520px) {
   .panel.choosing .vet-line,
-  .panel.choosing .ko-line {
+  .panel.choosing .ko-line,
+  .panel.choosing .hits-line {
     display: none;
   }
   .panel.choosing .tower-icon {

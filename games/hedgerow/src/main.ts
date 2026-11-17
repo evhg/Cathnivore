@@ -111,6 +111,8 @@ import {
   type Tower,
   NO_PERKS,
   isFleet,
+  enemyPoint,
+  isRevealed,
 } from "./engine";
 import { livery, roundBanner, roundLead, roundMix } from "./roundchips";
 import { LIVE_CAP, P, PROPERTIES, RUNGS, fvOf, propsOf, type Property } from "./fleet";
@@ -752,6 +754,21 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 468: the towers (damage or slow) with a live vehicle in reach now, for the attack spec.
+    inReach: () =>
+      game
+        ? game.towers
+            .filter((t) => {
+              const st = towerStats(t);
+              if (st.damage <= 0 && st.slow >= 1) return false;
+              return game!.enemies.some((e) => {
+                if (e.hp <= 0 || (ENEMIES[e.kind].flying && !st.air) || !isRevealed(game!, e)) return false;
+                const p = enemyPoint(game!.level, e);
+                return Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= st.range * 0.9;
+              });
+            })
+            .map((t) => t.id)
+        : [],
     // Plan item 399: the plain plots (keys "c,r") and the look each is sown with, in the act's field kit.
     plotLooks: () => (game ? [...plotLooks(game.level)] : []),
     // Plan item 202: what the 2D field painted in its margins (the act's set and its pieces).
@@ -1430,6 +1447,7 @@ function syncControls(): void {
 
 /** The selected fleet tower's Knockouts and Marks earned, ticking live in its panel. */
 function syncKnockouts(): void {
+  syncHits();
   const el = document.querySelector<HTMLElement>(".ko-line");
   if (!el || !game) return;
   const t = game.towers.find((x) => String(x.id) === el.dataset.tower);
@@ -1441,6 +1459,16 @@ function syncKnockouts(): void {
     big.textContent = text;
     el.querySelector(".ko-m")!.textContent = `· ${text} Marks earned`;
   }
+}
+
+/** Plan item 468: the open tower card's 'hits this round', kept live while the card is up. */
+function syncHits(): void {
+  const el = document.querySelector<HTMLElement>(".hits-line");
+  if (!el || !game) return;
+  const n = roundHits.wave === game.wave ? (roundHits.by.get(Number(el.dataset.tower)) ?? 0) : 0;
+  if (el.dataset.hits === String(n)) return;
+  el.dataset.hits = String(n);
+  el.textContent = n === 1 ? "1 hit this round" : `${n.toLocaleString("en-GB")} hits this round`;
 }
 
 /**
@@ -3201,6 +3229,13 @@ function towerCard(p: HTMLElement, g: Game, t: Tower): void {
     );
     titles.append(vet);
   }
+  if (st.damage > 0 || st.gustEvery > 0) {
+    const hits = document.createElement("p");
+    hits.className = "hits-line";
+    hits.dataset.tower = String(t.id);
+    titles.append(hits);
+    syncHits();
+  }
   if (st.damage > 0) {
     // Targeting is one small cycling button: it rarely needs changing.
     const tb = document.createElement("button");
@@ -3349,6 +3384,12 @@ function pathCard(p: HTMLElement, g: Game, t: Tower): void {
     ko.dataset.tower = String(t.id);
     ko.innerHTML = `<strong class="ko-n"></strong> <span>Knockouts</span> <span class="ko-m"></span>`;
     titles.append(ko);
+  }
+  if (st.damage > 0 || st.gustEvery > 0) {
+    const hits = document.createElement("p");
+    hits.className = "hits-line";
+    hits.dataset.tower = String(t.id);
+    titles.append(hits);
   }
   if (st.damage > 0) {
     const tb = document.createElement("button");
@@ -4731,8 +4772,40 @@ function flyCoin(x: number, y: number, n: number): void {
 // Plan item 468: which towers attacked in the last second, for the field's `data-attack` (e2e) and its count.
 const lastAttack = new Map<number, number>();
 let attacks = 0;
+/** Plan item 468: each tower's hits (shots and gusts) in the current round, for its card. */
+const roundHits = { wave: -1, by: new Map<number, number>() };
+function countHit(g: Game, tower: number): void {
+  if (roundHits.wave !== g.wave) {
+    roundHits.wave = g.wave;
+    roundHits.by.clear();
+  }
+  roundHits.by.set(tower, (roundHits.by.get(tower) ?? 0) + 1);
+}
+
+/** Plan item 468: a hedge attacks by slowing; every quarter second, each slower with a slowed vehicle in reach counts. */
+let slowSeenAt = 0;
+function noteSlowers(g: Game): void {
+  const now = performance.now();
+  if (now - slowSeenAt < 250 || g.phase !== "wave") return;
+  slowSeenAt = now;
+  const slowed = g.enemies.filter((e) => e.slowed && e.hp > 0);
+  for (const t of slowed.length ? g.towers : []) {
+    const st = towerStats(t);
+    if (st.slow >= 1) continue;
+    const near = slowed.some((e) => {
+      const p = enemyPoint(g.level, e);
+      return Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= st.range;
+    });
+    if (near) lastAttack.set(t.id, now);
+  }
+  publishAttacks(now);
+}
+function publishAttacks(now: number): void {
+  ui.stage.dataset.attackTowers = [...lastAttack].filter(([, t]) => now - t < 1000).map(([id]) => id).join(",");
+}
 
 function onEvents(g: Game, evs: GameEvent[]): void {
+  noteSlowers(g);
   let shots = 0;
   let gusts = 0;
   const knocks: number[] = [];
@@ -4766,10 +4839,11 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
         {
           const now = performance.now();
+          countHit(g, ev.tower);
           lastAttack.set(ev.tower, now);
           attacks++;
           ui.stage.dataset.attack = String(attacks);
-          ui.stage.dataset.attackTowers = [...lastAttack].filter(([, t]) => now - t < 1000).map(([id]) => id).join(",");
+          publishAttacks(now);
         }
         break;
       case "kill":
@@ -4880,6 +4954,8 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "gust":
         if (gusts++ < 1) sfx.playGust();
+        countHit(g, ev.tower);
+        lastAttack.set(ev.tower, performance.now());
         break;
       case "pop":
         sfx.playPop();
