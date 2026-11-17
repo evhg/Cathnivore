@@ -889,6 +889,12 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-tree { display: grid; grid-template-columns: calc(var(--u) * 170) 1fr; gap: calc(var(--u) * 16); align-items: baseline; }
 .cp-tree-name { font: 700 var(--fs-2)/1.2 var(--font-ui); color: var(--ink); font-stretch: var(--wdth-label); text-transform: uppercase; letter-spacing: .03em; }
 .cp-tree-theme { font: 400 var(--fs-2)/1.35 var(--font-ui); color: var(--ink-3); text-wrap: balance; }
+/* Plan item 481: a tree is a button that plays its signature active on the stage; her line types under the sheet. */
+.cp-tree[role="button"] { cursor: pointer; border-radius: calc(var(--u) * 4); }
+.cp-tree[role="button"]:hover .cp-tree-name, .cp-tree[role="button"]:focus-visible .cp-tree-name { color: var(--blood-hot); }
+.cp-tree[role="button"]:focus-visible { outline: calc(var(--u) * 2) solid var(--blood-hot); outline-offset: calc(var(--u) * 4); }
+.cp[data-skillpreview] .cp-tree[data-tree] { opacity: .7; }
+.cp-skill-line { margin: calc(var(--u) * 8) 0 0; min-height: calc(var(--u) * 22); font: 400 var(--fs-2)/1.35 var(--font-ui); font-style: italic; color: var(--ink-2); }
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

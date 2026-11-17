@@ -14,7 +14,8 @@ import { gunIcon, gunReel, type GunReel } from "./gunportrait";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
 import { testFireLook } from "../game/testfire";
-import type { ClassId } from "../sim/types";
+import type { ClassId, TreeId } from "../sim/types";
+import { SKILL_PREVIEWS } from "../game/skillpreview";
 import { createWorld } from "./world";
 import { AutoScale, frontDynOptions } from "../game/autoscale";
 import type { Quality, World } from "./types";
@@ -51,6 +52,8 @@ export interface FrontScene {
   /** Plan item 464: a test shot on the pick: a muzzle flash at the gun in her hand and a small camera kick (none
    *  under reduced motion). */
   testFire(cls?: ClassId): void;
+  /** Plan item 481: plays a skill tree's preview on the pick's stage (game/skillpreview.ts). */
+  skillPreview(tree: TreeId): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
   /**
@@ -283,6 +286,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   target.visible = false;
   world.scene.add(target);
   const bottle = target.getObjectByName("bottle")!;
+  // Plan item 481: the skill previews' timers, and the camo shimmer's end (scene clock).
+  const previewTimers: number[] = [];
+  let camoUntil = 0;
+  const CAMO_TINT = new THREE.Color(0.35, 0.95, 1.3);
   // Plan item 457: and behind the stoop, each class's own set (rooftop, locker, back room, server alley, workbench).
   const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
   world.scene.add(sets.group);
@@ -500,6 +507,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
+    // Plan item 481: the optic camo preview: a cold shimmer runs over her and fades.
+    if (camoUntil > clock) {
+      const u = (camoUntil - clock) / 2.2;
+      cath.tint(CAMO_TINT, Math.min(1, 0.9 * Math.sin(u * Math.PI) + 0.25 * Math.sin(clock * 40)));
+    }
     // Plan item 456: the noir toe is the title's; on the pick it eases out with the wardrobe, so the class coats keep
     // their colours apart (under it butcher-fixer read dE 6.7, was 16.7).
     world.setToe?.(TITLE_TOE * (1 - wd.w));
@@ -1205,6 +1217,79 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       }
       if (!idleReduce && !o.still) spring.vy += 0.6;
       world.renderer.domElement.dataset.testfire = String(Number(world.renderer.domElement.dataset.testfire ?? 0) + 1);
+    },
+    skillPreview(tree) {
+      const p = SKILL_PREVIEWS[tree];
+      if (!p) return;
+      for (const t of previewTimers) clearTimeout(t);
+      previewTimers.length = 0;
+      const later = (ms: number, f: () => void) => previewTimers.push(window.setTimeout(f, ms));
+      const hand = new THREE.Vector3();
+      if (!cath.propWorld(hand)) hand.fromArray(cath.poseState.hand).applyMatrix4(cath.group.matrixWorld);
+      const aim = bottle.visible ? bottle.getWorldPosition(new THREE.Vector3()) : target.position.clone().setY(target.position.y + 0.22);
+      const dir = aim.clone().sub(hand).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const fx = world.fx;
+      const still = idleReduce || o.still;
+      const breakBottle = () => {
+        if (!bottle.visible) return;
+        bottle.visible = false;
+        fx.shards?.(aim, dir, new THREE.Color(0.3, 1.2, 0.5));
+      };
+      switch (p.look) {
+        case "slowShot":
+          later(500, () => (fx.muzzle(hand, dir, 1.1), fx.tracer(hand, aim), breakBottle()));
+          break;
+        case "camo":
+          camoUntil = clock + 2.2;
+          break;
+        case "mark":
+          for (let i = 0; i < 8; i++) later(i * 90, () => fx.sparks(aim.clone().add(new THREE.Vector3(Math.cos(i * 0.785) * 0.25, Math.sin(i * 0.785) * 0.25, 0)), up, 3));
+          break;
+        case "cleave":
+          for (let i = 0; i < 5; i++) later(i * 50, () => fx.sparks(hand.clone().add(new THREE.Vector3(-0.3 + i * 0.15, 0.15 - Math.abs(i - 2) * 0.08, 0.3)), dir, 6));
+          break;
+        case "dragon":
+          later(300, () => (fx.muzzle(hand, dir, 2.2, false, undefined, new THREE.Color(1.6, 0.6, 0.2)), fx.sparks(aim, dir, 30), breakBottle()));
+          break;
+        case "warCry":
+          if (!still) spring.vy += 2.2;
+          break;
+        case "fan":
+          for (let i = 0; i < 6; i++) later(250 + i * 110, () => (fx.muzzle(hand, dir, 0.9), fx.tracer(hand, aim.clone().add(new THREE.Vector3(0, (i - 3) * 0.03, 0))), i === 5 && breakBottle()));
+          break;
+        case "hose":
+          for (let i = 0; i < 12; i++) later(150 + i * 80, () => (fx.muzzle(hand, dir, 0.6), i % 3 === 0 && fx.tracer(hand, aim), i === 11 && breakBottle()));
+          break;
+        case "spin":
+          for (let i = 0; i < 6; i++) later(200 + i * 70, () => fx.casing(hand, new THREE.Vector3(Math.cos(i) * 0.8, 2 + i * 0.1, Math.sin(i) * 0.8)));
+          break;
+        case "hack":
+          for (let i = 0; i < 4; i++) later(200 + i * 300, () => fx.sparks(aim, up, 4));
+          break;
+        case "overload":
+          later(400, () => (fx.sparks(aim, up, 40), fx.impact(aim, dir.clone().negate(), "metal", 1.4), breakBottle()));
+          break;
+        case "moth":
+          later(200, () => fx.vent?.(hand, up));
+          later(700, () => fx.sparks(aim, dir, 6));
+          break;
+        case "frag":
+          later(600, () => (fx.explosion(aim, 0.9), breakBottle()));
+          break;
+        case "sentry":
+          for (let i = 0; i < 8; i++) later(300 + i * 90, () => (fx.muzzle(target.position.clone().setY(target.position.y + 0.5), dir.clone().negate(), 0.5), fx.casing(target.position.clone().setY(target.position.y + 0.5), new THREE.Vector3(0.6, 1.6, 0))));
+          break;
+        case "molotov":
+          later(500, () => (fx.explosion(aim, 0.6), fx.vent?.(aim, up), breakBottle()));
+          break;
+      }
+      // the bottle stands again once the preview is over
+      later(p.ms, () => {
+        bottle.visible = true;
+        world.renderer.domElement.dataset.target = "standing";
+      });
+      world.renderer.domElement.dataset.skillpreview = tree;
     },
     menuMood(id) {
       const pose = MENU_MOOD[id] ?? { pose: "idle", face: "smirk" as FaceExpression }

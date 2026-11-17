@@ -9,7 +9,8 @@
 import { CLASSES, TREES } from "../sim/classes";
 import { CLASS_SIGNATURE, newCharacter } from "../sim/character";
 import { CLASS_START_ATTRIBUTES } from "../sim/stats";
-import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId } from "../sim/types";
+import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId, type TreeId } from "../sim/types";
+import { SKILL_PREVIEWS } from "../game/skillpreview";
 import { WEAPON_BASES } from "../sim/weapons";
 import { CLASS_COPY } from "./classart";
 import { button, el, reducedMotion, trapTab } from "./dom";
@@ -40,6 +41,8 @@ export interface ClassPickHooks {
   onCommit?(cls: ClassId): void;
   /** Plan item 464: a test shot of the class weapon (the scene flashes her muzzle, the audio fires the class's gun). */
   onTestFire?(cls: ClassId): void;
+  /** Plan item 481: a skill tree's preview to play on the stage (its look and length, game/skillpreview.ts). */
+  onSkillPreview?(tree: TreeId): void;
 }
 
 export const ATTRIBUTE_LABEL: Record<AttributeId, string> = { grit: "Grit", aim: "Aim", nerve: "Nerve", wire: "Wire" };
@@ -334,6 +337,26 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   let testTimer = 0;
   let testMagEl: HTMLElement | null = null;
   let testCls: ClassId | null = null;
+  // Plan item 481: a tree's preview: her line under the sheet for its length, the stage plays its look.
+  let previewTimer = 0;
+  let previewNext = 0;
+  const skillLine = el("p", "cp-skill-line", sheet);
+  skillLine.setAttribute("aria-live", "polite");
+  function previewTree(t: TreeId): void {
+    if (done) return;
+    const p = SKILL_PREVIEWS[t];
+    clearTimeout(previewTimer);
+    root.dataset.skillpreview = t;
+    skillLine.textContent = `\u201c${p.line}\u201d`;
+    root.dispatchEvent(new CustomEvent("skillpreview", { detail: { tree: t, active: p.active } }));
+    hooks.onSkillPreview?.(t);
+    previewTimer = window.setTimeout(endPreview, p.ms);
+  }
+  function endPreview(): void {
+    clearTimeout(previewTimer);
+    delete root.dataset.skillpreview;
+    skillLine.textContent = "";
+  }
   function testFire(): void {
     if (done || testMax <= 0 || testReloading) return;
     const now = performance.now();
@@ -506,6 +529,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       // reloads at its reload time. Fresh for each class.
       // (renderDetail also re-runs for the same class as its gun reel fills: the magazine resets only on a new class)
       if (testCls !== cls) {
+        endPreview();
+        previewNext = 0;
         testCls = cls;
         testMag = w.magazine;
         testMax = w.magazine;
@@ -532,6 +557,22 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       const li = el("li", "cp-tree skill-row", trees);
       el("span", "cp-tree-name", li, TREES[t].name);
       el("span", "cp-tree-theme", li, TREES[t].theme);
+      // Plan item 481: a tree is a button: it plays the tree's signature active on the stage.
+      li.dataset.tree = t;
+      li.tabIndex = 0;
+      li.setAttribute("role", "button");
+      li.setAttribute("aria-label", `See ${TREES[t].name} in action`);
+      li.addEventListener("click", (e) => {
+        e.stopPropagation();
+        previewTree(t);
+      });
+      li.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        // (Enter elsewhere on the pick holds to commit; on a tree row it plays the preview)
+        e.preventDefault();
+        e.stopPropagation();
+        if (!e.repeat) previewTree(t);
+      });
     }
     goLabel.textContent = `Walk in as the ${def.name}`;
   }
@@ -611,6 +652,15 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       if (!ev.repeat) holdStart();
       return;
     }
+    // Plan item 481: T plays the class's skill trees in turn.
+    if ((ev.key === "t" || ev.key === "T") && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+      ev.preventDefault();
+      if (!ev.repeat) {
+        const ts = CLASSES[selected].trees;
+        previewTree(ts[previewNext++ % ts.length]!);
+      }
+      return;
+    }
     // Plan item 464: F test-fires the class weapon (held, it fires at the weapon's cadence).
     if ((ev.key === "f" || ev.key === "F") && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
       ev.preventDefault();
@@ -671,6 +721,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     clearTimeout(holdTimer);
     clearTimeout(thumpTimer);
     clearTimeout(subTimer);
+    clearTimeout(previewTimer);
     clearTimeout(testTimer);
     subToken++;
     removeEventListener("resize", placeSub);
