@@ -4332,7 +4332,7 @@ Progress (lane B, 2026-11-16 17:55, 3 slices): fixed: Runnel's Up next says 'tod
 - **Accept:** `data-cath-pose` takes ≥ 4 values across the menu; visual response ≤ 150 ms; five lines, one per print; reduced motion cross-fades poses only; full keyboard reach; posters re-rendered; shots at P and D.
 - **Size:** 2
 
-## 466. [ ] Runnel: dry grooves you can read before the water arrives
+## 466. [ ] Runnel: dry grooves you can read before the water arrives *(lane B, in progress)*
 - **Why:** `runnel-D` (900-1240 x 310-730), `runnel-P` (185-385 x 370-560): unwatered tiles are near-identical beige plates with grey bars and a brown hub; which edges are open is low contrast, so the puzzle is read by trial taps (VISION 1 and 8).
 - **Build:** each dry channel a dark cut ditch to a marked notch at every open edge; matched edges between neighbours get a joined lip, visible before any water; a quieter hub so the channels lead; a pinned tile shows a peg; a turn glints its new connections.
 - **Accept:** groove-to-tile contrast ≥ 3:1; every open edge carries `[data-open-edge]`; an e2e checks joined edges draw a lip; a greyscale shot still shows the connections; Runnel specs pass; shots P and D.
