@@ -4,6 +4,7 @@
 // level id, so a level always looks the same.
 
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { hasTwist, isProtected, laneCellsOf, landmarks, plotKind, sceneryCells, type Level } from "../engine";
 import { twistDressing } from "../landmarks";
 import { fieldAt, plotLooks, sameField, type PlotLook } from "../plotlook";
@@ -1177,7 +1178,7 @@ export function buildGround(level: Level): Ground {
         // Reeds stand in tight clumps (item 262: loose ones read as scattered black sticks from above).
         if (deco() < 0.4)
           for (let k = 0; k < 9; k++)
-            reeds.push({ x: jx + (deco() - 0.5) * 0.12, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.12, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: reedCols[Math.floor(deco() * reedCols.length)]! });
+            reeds.push({ x: jx + (deco() - 0.5) * 0.12, y: heightAt(jx, jz), z: jz + (deco() - 0.5) * 0.12, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 0.65 + deco() * 0.8, color: reedCols[Math.floor(deco() * reedCols.length)]! });
       }
     for (let i = 0; i < 5; i++) {
       const x = -1.4 + deco() * 0.8;
@@ -1250,7 +1251,9 @@ export function buildGround(level: Level): Ground {
     for (const m of [
       // Plan item 307: flat wet patches (sphere caps, faceted, read as broken grey rock at the field's edge).
       instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.06 }), flats),
-      instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
+      // Plan item 469: each reed a tuft of three blades leaning apart, at varied heights (single upright cones of one
+      // height read as a bed of nails from the field camera).
+      instanced(reedTuft(), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
       instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretBody, true),
       instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),
     ])
@@ -1302,7 +1305,9 @@ export function buildGround(level: Level): Ground {
     for (const m of [
       instanced(new THREE.CylinderGeometry(0.035, 0.05, 0.7, 6).translate(0, 0.35, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), trunks, true),
       instanced(crownGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true, side: THREE.DoubleSide }), crowns, true),
-      instanced(new THREE.ConeGeometry(0.016, 0.36, 4).translate(0, 0.18, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
+      // Plan item 469: each reed a tuft of three blades leaning apart, at varied heights (single upright cones of one
+      // height read as a bed of nails from the field camera).
+      instanced(reedTuft(), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
     ])
       if (m) group.add(m);
   }
@@ -2145,4 +2150,15 @@ export function regionShapes(wet: Set<string>, offset: number, rad = 0.3): THREE
     const pts = filleted(loop, rad).map((p) => new THREE.Vector2(p.x + p.nx * offset, -(p.z + p.nz * offset)));
     return new THREE.Shape(pts);
   });
+}
+
+/** Plan item 469: three reed blades from one root, leaning apart (one geometry, so a marsh of them is one draw call). */
+function reedTuft(): THREE.BufferGeometry {
+  const blades = [0, 2.1, 4.2].map((a, i) => {
+    const b = new THREE.ConeGeometry(0.014, 0.36 - i * 0.06, 4).translate(0, 0.18 - i * 0.03, 0);
+    b.rotateZ(0.2 + i * 0.06);
+    b.rotateY(a);
+    return b;
+  });
+  return mergeGeometries(blades)!;
 }
