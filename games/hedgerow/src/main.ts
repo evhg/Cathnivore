@@ -205,7 +205,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
-import { doorstepCleared, doorstepLeak, doorstepRound, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
+import { doorstepCleared, doorstepLeak, doorstepRound, doorstepShown, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
 import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
@@ -443,6 +443,7 @@ function syncDoorstep(g: Game): void {
   const n = String(doorstep.parcels);
   if (ui.stage.dataset.doorstep !== n) ui.stage.dataset.doorstep = n;
   const sale = saleBoard(g.goodwill, g.maxGoodwill);
+  if (renderer && "doorstep" in renderer) (renderer as { doorstep: unknown }).doorstep = { ...doorstepShown(doorstep), card: doorstep.card, sale };
   if (sale !== ("saleboard" in ui.stage.dataset)) {
     if (sale) ui.stage.dataset.saleboard = "";
     else delete ui.stage.dataset.saleboard;

@@ -4,6 +4,7 @@
 // Projectiles and particles are fed from the engine's event list: the engine is hitscan, so the flight
 // times here are short and only for show.
 
+import { drawDoorstep, drawSaleBoard, type DoorstepView } from "./doorstepart";
 import { P, PROPERTIES, RUNGS, crackStage } from "./fleet";
 import { PLOT_STITCH, PLOT_STITCH_UNDER } from "./plotlook";
 import { kitFor } from "./fieldkit";
@@ -259,6 +260,10 @@ export class Renderer {
   shownOutlines: Array<{ col: number; row: number; width: number }> = [];
   private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
+  /** Plan item 480: the farmhouse step (parcels, the door card, the sale board), set by main.ts each frame. */
+  doorstep: DoorstepView | null = null;
+  /** Plan item 480: parcels in the air, from where each leak got through (cells), and their age in seconds. */
+  private tossed: Array<{ x: number; y: number; age: number }> = [];
   /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
   harvesting = false;
   /** Plan item 143: the people and animals working the farm. */
@@ -518,6 +523,7 @@ export class Renderer {
           break;
         case "leak":
           this.leaksThisWave++;
+          if (!this.reducedMotion) this.tossed.push({ x: e.x, y: e.y, age: 0 });
           if (this.moodCheer > 1.2) this.moodWorry = 0;
           this.kick(0.3);
           this.flashOnce("220,40,30", 0.35);
@@ -894,8 +900,22 @@ export class Renderer {
     const end = level.path[level.path.length - 1]!;
     items.push({
       y: end[1] + 0.84,
-      draw: () => drawFarmhouse(ctx, X(end[0] + 0.5), Y(end[1] + 0.5), s, t, game.goodwill / game.maxGoodwill, kitFor(level).house),
+      draw: () => {
+        drawFarmhouse(ctx, X(end[0] + 0.5), Y(end[1] + 0.5), s, t, game.goodwill / game.maxGoodwill, kitFor(level).house);
+        // Plan item 480: Hollowell's parcels on the step, the newest still arcing in over 400 ms.
+        const d = this.doorstep;
+        for (const p of this.tossed) p.age += dt;
+        this.tossed = this.tossed.filter((p) => p.age < 0.4).slice(-Math.max(0, d?.shown ?? 0));
+        if (d && (d.shown || d.card)) {
+          const flying = this.tossed.map((p) => ({ from: [X(p.x), Y(p.y)] as [number, number], p: p.age / 0.4 }));
+          drawDoorstep(ctx, d, X(end[0] + 0.5), Y(end[1] + 0.5), s, flying, end[0] >= level.cols - 2 ? -1 : 1);
+        }
+      },
     });
+    if (this.doorstep?.sale) {
+      const gate = level.path[0]!;
+      items.push({ y: gate[1] + 0.5, draw: () => drawSaleBoard(ctx, X(gate[0] + 0.5), Y(gate[1] + 0.5), s) });
+    }
     for (const tw of game.towers) {
       const since = this.fired.get(tw.id) ?? 9;
       const age = this.built.get(tw.id);
