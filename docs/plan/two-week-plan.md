@@ -4340,7 +4340,7 @@ Checked (lane B, 2026-11-17 02:55): at D the dry tiles' open edges already read 
 - **Accept:** groove-to-tile contrast ≥ 3:1; every open edge carries `[data-open-edge]`; an e2e checks joined edges draw a lip; a greyscale shot still shows the connections; Runnel specs pass; shots P and D.
 - **Size:** 2
 
-## 467. [ ] Cathnivore: Pell drawn to Cath's standard, reacting at the table
+## 467. [ ] Cathnivore: Pell drawn to Cath's standard, reacting at the table *(lane A, in progress)*
 - **Why:** `cath-game-D` (1208-1335 x 15-150), `cath-game-P` (8-66 x 68-125): Hollowell's face is the weakest drawing on the table (a pale disc, grey hair blob, dot eyes) beside a shaded Cath, Mara and Tomas (VISION 5).
 - **Build:** redraw Pell in the shared art style (layered silver hair with a shine band, a shaded jowly face, hooded eyes, navy suit, Hollowell-orange tie, lapel pin); five poses keyed to events (smug, gloating at a Squeeze, scheming as his intents show, rattled at a liberation, defeated at the win); idle blink and a tie straighten; 250 ms ease-out changes, no overshoot; at D a half-length bust on the boardroom rail, at P the medallion with the new head.
 - **Accept:** face ≥ 90 px tall at D, ≥ 52 at P; an e2e fires the five events and reads `data-pell-pose` change within 300 ms; reduced motion fades only; a critique rates his craft as matching Cath's.
