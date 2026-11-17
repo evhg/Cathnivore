@@ -45,7 +45,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
-- **2026-11-17 14:51 lane A session:** CI green on 3c7a89ee/de7707b6. Item 469 slices 30-31 (3c5f1a4a, b1fb1534); dressing3d, biome3d, margins, country3d, shadow3d, water, 3dframe pass (two flaky under 2 workers, pass alone). Full check: see below.
+- **2026-11-17 14:51 lane A session:** CI green on 3c7a89ee/de7707b6. Item 469 slices 30-31 (3c5f1a4a, b1fb1534); dressing3d, biome3d, margins, country3d, shadow3d, water, 3dframe pass (two flaky under 2 workers, pass alone). Full `npm run check` green (309 files, 2729 tests). Lock released.
 - 2026-11-17 14:22 lane B: 473 done (umbrella share measured); no code change this session.
 - **2026-11-17 13:51 lane A session:** CI green on 3c7a89ee. Item 469 slices 28-29 (3c7a89ee, 19ec97f3); farhouses3d, country3d, biome3d, dressing3d, margins, water, shadow3d pass; shore, creeks, css-lint units pass. Shots scratchpad before, a1-a4. No full `npm run check` (lane A ran it at 06:51).
 - **2026-11-17 12:52 lane A session:** CI and E2E green on 263e811c. Item 469 slices 24-27 (9d9709f1, de77b584, 38a98d12 and the drifts commit); critique 3D 7 D / 2D 7.5; biome3d, farhouses3d, water, dressing3d, 3dframe (plate cases flaky under 2 workers, pass alone), shadow3d, margins, country3d and hedgerow plotlook/fieldkit/shore/creeks units pass. Shots scratchpad before, a1-a4. No full `npm run check` (lane A ran it at 06:51).
