@@ -4326,7 +4326,7 @@ Progress (lane B, 2026-11-16 17:55, 3 slices): fixed: Runnel's Up next says 'tod
 - **Accept:** a `[data-testfire]` event per shot; five distinct voice ids and muzzle colours (unit test); MAG decrements and reloads (e2e at P and D); input to flash ≤ 100 ms; cathode-perf on the pick within budget alone; shots with the flash at P and D.
 - **Size:** 2-3
 
-## 465. [ ] NIGHT SHIFT title: the front door answers the player
+## 465. [ ] NIGHT SHIFT title: the front door answers the player *(lane B, in progress)*
 - **Why:** `ns-title-D/P`: Cath holds one pose (D 900-1130 x 260-900) while you move through five menu entries and five mugshots; nothing in the world reacts (VISION 3 and 5). Item 331 is layout; this is response.
 - **Build:** each menu focus drives a pose (New Case: she lowers the umbrella and looks to the lens; Case Board: she glances to The List; Settings, Credits: a small idle); a focused List print lifts (about 1.04 with a shadow), its string tightens, and one line in Cath's voice types under it (one per target, cathode.md's voice rules); the disabled Continue collapses to one small 'No case open' line; rain bed, neon hum and a soft focus click behind the sound setting.
 - **Accept:** `data-cath-pose` takes ≥ 4 values across the menu; visual response ≤ 150 ms; five lines, one per print; reduced motion cross-fades poses only; full keyboard reach; posters re-rendered; shots at P and D.
