@@ -5,7 +5,7 @@
 import { boardSky, type TimeOfDay } from './sky'
 import { furrowAngle, groundFor } from './ground'
 import { arrivalMs, bankSunlit, CASCADE_MS } from './water'
-import { boardHexes, computeFlow, DIRECTIONS, hashString, type Cell, type Flow, type Puzzle } from './engine'
+import { boardHexes, computeFlow, currentMask, DIRECTIONS, hashString, neighbourTable, type Cell, type Flow, type Puzzle } from './engine'
 
 const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
@@ -83,6 +83,9 @@ export class Board {
   private readonly handlers: BoardHandlers
   private readonly views: CellView[] = []
   private readonly puddles: SVGGElement
+  /** Plan item 466: the joined lips where two neighbours' channels meet, redrawn as tiles turn. */
+  private readonly joins: SVGGElement
+  private readonly nbrs: number[][]
   private flow: Flow
   private readonly reducedMotion: boolean
   private pressTimer = 0
@@ -136,6 +139,8 @@ export class Board {
     el('polygon', { points: hexPoints(S * 0.965 - 2.6) }, tileClip)
     const tiles = el('g', { class: 'tiles' }, svg)
     puzzle.cells.forEach((cell, i) => this.views.push(this.drawCell(tiles, cell, i)))
+    this.joins = el('g', { class: 'joins', 'aria-hidden': 'true' }, svg)
+    this.nbrs = neighbourTable(puzzle.cells)
     this.puddles = el('g', { class: 'puddles' }, svg)
     this.drawSky(svg, defs)
     // drawCell already gave the first playable cell tabindex="0" as the sole initial roving-tabindex
@@ -345,7 +350,8 @@ export class Board {
       const end = edgePoint(d, APOTHEM + 1.5)
       // Plan item 264: the cut's outer edge, a dark line just past the lip, so the groove reads as carved into the
       // tile (the lip alone was 2.4:1 on the face; this is 3:1 or more in light and dark).
-      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-cut' }, cuts)
+      // Plan item 466: each open edge named (in the piece's own frame; the piece turns with the tile).
+      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-cut', 'data-open-edge': String(d) }, cuts)
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-lip' }, lips)
       el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove' }, grooves)
       const a = (Math.PI / 180) * 60 * d
@@ -395,8 +401,8 @@ export class Board {
     const first = view.spokeDirs[0] ?? 0
     const gate = el('g', { class: 'sluice', transform: `rotate(${first * 60 + 90})` }, piece)
     const gw = S * 0.17
-    el('rect', { x: -gw, y: -1.6, width: gw * 2, height: 3.2, rx: 0.8, class: 'sluice-board' }, gate)
-    for (const sx of [-gw, gw]) el('circle', { cx: sx, cy: 0, r: 2.1, class: 'sluice-post' }, gate)
+    el('rect', { x: -gw, y: -1.1, width: gw * 2, height: 2.2, rx: 0.6, class: 'sluice-board' }, gate)
+    for (const sx of [-gw, gw]) el('circle', { cx: sx, cy: 0, r: 1.6, class: 'sluice-post' }, gate)
 
     if (cell.bridge) this.drawBridge(piece)
     if (cell.kind === 'spring') this.drawSpring(root)
@@ -727,6 +733,27 @@ export class Board {
       if (wet) this.setInflow(view, cell, flow.inflow.get(i))
       root.classList.toggle('leaking', flow.leaks.has(i))
       this.describe(i, flow)
+    })
+
+    // Plan item 466: where two neighbours' channels meet, a joined lip bridges the seam (dry or wet), so a match
+    // reads before any water arrives; it waits out the turn so it lands as the tile settles.
+    this.joins.replaceChildren()
+    this.joins.style.setProperty('--delay', `${settle}ms`)
+    this.puzzle.cells.forEach((cell, i) => {
+      if (cell.kind === 'stone') return
+      const mine = currentMask(cell)
+      for (let d = 0; d < 3; d++) {
+        const j = this.nbrs[i]![d]!
+        const other = j >= 0 ? this.puzzle.cells[j]! : null
+        if (!other || other.kind === 'stone' || !(mine & (1 << d)) || !(currentMask(other) & (1 << ((d + 3) % 6)))) continue
+        const c = cellCentre(cell.q, cell.r)
+        const p = edgePoint(d, APOTHEM)
+        const g = el('g', { class: 'join', transform: `translate(${(c.x + p.x).toFixed(2)} ${(c.y + p.y).toFixed(2)}) rotate(${d * 60})` }, this.joins)
+        g.dataset.join = `${i}-${j}`
+        g.classList.toggle('wet', flow.wet.has(i) && flow.wet.has(j))
+        el('rect', { x: -4.6, y: -9.5, width: 9.2, height: 19, class: 'join-lip' }, g)
+        el('rect', { x: -4.8, y: -3.25, width: 9.6, height: 6.5, class: 'join-bed' }, g)
+      }
     })
 
     // Puddles where water spills onto dry ground: drawn unrotated, at the spilling edge.
