@@ -4498,7 +4498,7 @@ Progress (lane B, 2026-11-17 17:40, slice 1): every tree has its preview (`game/
 
 Planning 2026-11-17 23:30 lane B: shots `e2e/screenshots/plan1117b` (P 390x844, D 1440x900, every game), two subagent critiques against VISION.md, each told to check items 400-481 first; checked again here (482's D focal point is the half item 472 left open; 484 builds on the end screen's text-only `ShareResultButton` in `Game.tsx`; no Hedgerow time-of-day exists outside the Night twist, item 43).
 
-## 482. [ ] Cathnivore desktop title: one focal point, the board on the counter
+## 482. [ ] Cathnivore desktop title: one focal point, the board on the counter *(lane A, in progress)*
 - **Why:** `cath-title-D`: the chalk menu (105-500 x 430-770), Cath (600-830 x 320-770), the board (850-1340 x 315-750) and the Daily board (855-1395 x 760-850) stand in a row and pull equally; there is no focal point (VISION 1-2). Item 472's withdrawal left this half open as its own item.
 - **Build:** desktop only (`TitleArt.tsx`, `TitleSquare.tsx`, the title CSS at 1100 px and up): one diagonal: the board centre-right at 40%+ of the width, the largest thing; Cath just behind its near-left edge, her hand over it (never over a hex); the menu as signage hung from the awning (item 327's planks and tags kept); the Daily slate set into the counter front (item 342 kept). The phone (item 453, title-counter.spec) untouched.
 - **Accept:** at 1440x900 the board 40%+ of the width and the largest element; Cath overlaps no hex (e2e boxes); the menu 22% or less of the frame; title-counter passes unchanged; shots D light and dark, P unchanged.
