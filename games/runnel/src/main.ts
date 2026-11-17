@@ -1305,6 +1305,8 @@ function replayOf(): { start: number[]; frames: ReplayFrame[] } | null {
 }
 
 let replaying = false
+/** Cath on the replay's turning point (the turn that watered the most). */
+const KEY_LINES = ['That bend was the key.', 'There. That one opened the valley.', 'Watch this turn. That was the clever bit.']
 /** Plays the solve again on the real board: back to where it started, then each turn at the player's rhythm in about
  *  six seconds, the water following and the tap count climbing, ending on the watered board. */
 async function watchReplay(): Promise<void> {
@@ -1324,6 +1326,20 @@ async function watchReplay(): Promise<void> {
     }
   })
   ui.hudTaps.textContent = '0'
+  // The turning point: the frame after which the most fields run wet. Cath names it as it plays.
+  const probe = puzzle.cells.map((c) => ({ ...c }))
+  let key = -1
+  let best = 0
+  let wetBefore = computeFlow(probe).wet.size
+  for (const [k, f] of r.frames.entries()) {
+    probe[f.cell]!.rot = f.rot
+    const wet = computeFlow(probe).wet.size
+    if (wet - wetBefore > best) {
+      best = wet - wetBefore
+      key = k
+    }
+    wetBefore = wet
+  }
   await wait(reduce ? 200 : 500)
   const t0 = performance.now()
   for (const [k, f] of r.frames.entries()) {
@@ -1332,6 +1348,7 @@ async function watchReplay(): Promise<void> {
     board.refresh(f.cell)
     if (!reduce) playTurn()
     body.dataset.replayStep = String(k + 1)
+    if (k === key && r.frames.length > 1) host.say('delighted', KEY_LINES[(r.frames.length + key) % KEY_LINES.length]!)
     ui.hudTaps.textContent = String(Math.round((game.taps * (k + 1)) / r.frames.length))
   }
   await wait(REPLAY_MS - (performance.now() - t0))
