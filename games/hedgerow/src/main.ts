@@ -205,6 +205,7 @@ import { leakDebrief } from "./debrief";
 import { cheer, panic } from "./farmfolk";
 import { ringLayout } from "./buildring";
 import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
+import { doorstepCleared, doorstepLeak, doorstepRound, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
 import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
@@ -435,6 +436,18 @@ const leakCauses = { wave: -1, seen: new Set<string>() };
 let slowUntil = 0;
 /** Plan item 479: the level's last round is under way. */
 let showdown = false;
+/** Plan item 480: Hollowell's parcels on the farmhouse step, one per leak (`doorstep.ts`). */
+let doorstep: Doorstep = newDoorstep();
+/** Mirrors the step onto the stage: `data-doorstep` is the parcels on it, `data-saleboard` while the board is up. */
+function syncDoorstep(g: Game): void {
+  const n = String(doorstep.parcels);
+  if (ui.stage.dataset.doorstep !== n) ui.stage.dataset.doorstep = n;
+  const sale = saleBoard(g.goodwill, g.maxGoodwill);
+  if (sale !== ("saleboard" in ui.stage.dataset)) {
+    if (sale) ui.stage.dataset.saleboard = "";
+    else delete ui.stage.dataset.saleboard;
+  }
+}
 /** The round last saved for Continue, so each round start saves once. */
 let runSavedWave = -1;
 /** Which abilities were ready last frame (a tick under the thumb when one comes back). */
@@ -1080,6 +1093,9 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   slowUntil = 0;
   showdown = false;
   delete ui.stage.dataset.showdown;
+  doorstep = newDoorstep();
+  delete ui.stage.dataset.saleboard;
+  ui.stage.dataset.doorstep = "0";
   runSavedWave = -1;
   panelKey = "";
   earlyCalls = 0;
@@ -4880,6 +4896,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "leak":
+        doorstepLeak(doorstep);
         hostFeel("worried");
         if (ev.kind) runLeaks.push({ kind: ev.kind, lost: ev.lost ?? 1, round: waveNo(g, g.wave) });
         sfx.playLeak();
@@ -4914,6 +4931,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "wave": {
+        doorstepRound(doorstep);
         sfx.playWave();
         const groups = g.level.waves[ev.wave - 1] ?? [];
         const kinds = waveSummary(groups).map((x) => x.kind);
@@ -4948,6 +4966,8 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       }
       case "cleared":
         sfx.playCleared();
+        // Plan item 480: after a clean round the neighbours cart one of Hollowell's parcels back off the step.
+        if (doorstepCleared(doorstep) && !player && ev.wave < g.level.waves.length) say("The neighbours are taking one of those parcels back to Hollowell.");
         if (ev.wave < g.level.waves.length) roundRosette(g, waveNo(g, ev.wave), ev.reward, !runLeaks.some((l) => l.round === waveNo(g, ev.wave)));
         // Plan item 135: a round that leaked gets Cath's debrief on the field.
         if (ev.wave < g.level.waves.length && !player) {
@@ -5362,6 +5382,8 @@ function frame(now: number): void {
   const pose = (renderer as { heroMood?: string } | null)?.heroMood;
   if (pose && ui.stage.dataset.cathPose !== pose) ui.stage.dataset.cathPose = pose;
   syncDepots(g);
+  if (g.phase === "won" && doorstep.parcels) doorstepSwept(doorstep);
+  syncDoorstep(g);
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {
