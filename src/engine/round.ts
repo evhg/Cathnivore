@@ -1,7 +1,8 @@
 import { refreshAllLiberation, runEnemyTurn } from './enemy'
 import { addOutlets, countGameStats, countLiberated } from './pieces'
 import { shuffle } from './rng'
-import { hasImprovement, improvementCount } from './producer'
+import { improvementCount } from './producer'
+import { harvestGains } from './harvest'
 import { PRODUCERS } from '../content/producers'
 import { ACTIONS_PER_ROUND } from './region'
 import type { GameState, ProducerId } from './types'
@@ -108,8 +109,8 @@ function cleanup(state: GameState): GameState {
   // SPEC 4.5.1 Harvest happens at the start of the next round's producer turns.
   for (const pid of next.config.producers) {
     const p = next.producers[pid]
-    // SPEC 7 "Oyster Beds": at Harvest, also gain 1 Goodwill if the owner has a Stall in Shingle Bay.
-    const oysterBonus = hasImprovement(next, pid, 'oyster-beds') && (next.regions.shingleBay.stalls[pid] ?? 0) > 0 ? 1 : 0
+    // Plan item 476: one arithmetic for the engine and the table's Harvest moment (harvest.ts).
+    const gain = harvestGains(next, pid)
     next = {
       ...next,
       producers: {
@@ -117,9 +118,9 @@ function cleanup(state: GameState): GameState {
         [pid]: {
           ...p,
           resources: {
-            produce: p.resources.produce + p.production.produce,
-            marks: p.resources.marks + p.production.marks,
-            goodwill: p.resources.goodwill + p.production.goodwill + oysterBonus,
+            produce: p.resources.produce + gain.produce,
+            marks: p.resources.marks + gain.marks,
+            goodwill: p.resources.goodwill + gain.goodwill,
           },
         },
       },
