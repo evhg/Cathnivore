@@ -4534,7 +4534,7 @@ Planning 2026-11-17 23:30 lane B: shots `e2e/screenshots/plan1117b` (P 390x844, 
 - **Accept:** `[data-masthead=gate]`; every key 44x44+ at P with its label and aria-label; the wordmark centred within 4 px at D; 4.5:1 contrast on labels; css lint; hedgerow-map specs pass; shots P and D.
 - **Size:** 2
 
-## 488. [ ] The bugs from the 2026-11-17 23:30 critique, fixed as one batch
+## 488. [ ] The bugs from the 2026-11-17 23:30 critique, fixed as one batch *(lane B, in progress)*
 Check each against a fresh shot first (some may be timing in headless shots); fix at the root; shoot P and D.
 - Cathnivore: `cath-game-P` 122-236 x 615-770 a gap in the hand fan between Graft and Supply; `cath-game-D` 1130-1165 x 450-690 Tomas and Mara over the board frame's right rim; `cath-setup-D` 995-1145 x 565-770 the 'This week at the market' sign over Cath's torso and the Start counter cutting her at the waist; `cath-campaign-D` 1050-1245 x 740-870 chapters 5-6 goals ellipsised; `cath-campaign-P` 95-295 x 812-844 'Back to Title' cut by the fold; `cath-setup-P` 'Next: Where you trade' and Start as two stacked primaries over a dead band (y 670-720); `cath-title-D` 850-1340 x 745-765 the Daily board over the cloth's foot.
 - Portfolio: `portfolio-D` 1240-1440 x 525-560 Cath's pedestal disc off the right edge.
