@@ -895,6 +895,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-tree[role="button"]:focus-visible { outline: calc(var(--u) * 2) solid var(--blood-hot); outline-offset: calc(var(--u) * 4); }
 .cp[data-skillpreview] .cp-tree[data-tree] { opacity: .7; }
 .cp-skill-line { margin: calc(var(--u) * 8) 0 0; min-height: calc(var(--u) * 22); font: 400 var(--fs-2)/1.35 var(--font-ui); font-style: italic; color: var(--ink-2); }
+.cp-skill-line:empty { display: none; }
+/* (upright, the sheet's height is her stage's (items 422, 464): the line floats over the stage's foot instead) */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-skill-line { position: absolute; left: 0; right: 0; bottom: 100%; margin: 0 0 calc(var(--u) * 6); padding: calc(var(--u) * 6) calc(var(--u) * 10); text-align: center; color: var(--ink); text-shadow: var(--hud-shadow, none); pointer-events: none; }
+}
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
