@@ -5803,3 +5803,48 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
      the pile, leaned past the 34 px strip that shows */
   .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]):not(:last-child):not(:focus-within) > button:first-child > .action-label-group > .action-label { top: auto; height: 84px; }
 }
+
+/* Plan item 476: the Harvest moment. Each good rises off its hex, arcs over and drops onto its producer's bust:
+   the outer span carries the straight run from start to end, the inner one the lift of the arc. */
+.harvest-moment {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-fx);
+}
+.harvest-good {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  translate: var(--hx0) var(--hy0);
+  animation: harvest-run var(--hf) cubic-bezier(0.45, 0, 0.3, 1) var(--hd) both;
+}
+.harvest-good-arc {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  aspect-ratio: 1;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: var(--e3);
+  color: var(--ink);
+  animation: harvest-lift var(--hf) cubic-bezier(0.3, 0, 0.4, 1) var(--hd) both;
+}
+.harvest-good[data-bonus] .harvest-good-arc {
+  outline: 2px solid color-mix(in srgb, var(--sky-golden-low) 40%, var(--ink) 20%);
+  outline-offset: 1px;
+}
+@keyframes harvest-run {
+  0% { translate: var(--hx0) var(--hy0); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { translate: var(--hx1) var(--hy1); opacity: 0; }
+}
+@keyframes harvest-lift {
+  0% { transform: translateY(0) scale(0.6); }
+  18% { transform: translateY(-18px) scale(1.05); }
+  55% { transform: translateY(-44px) scale(1); }
+  100% { transform: translateY(0) scale(0.7); }
+}

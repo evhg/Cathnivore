@@ -66,6 +66,8 @@ import Tooltip from './Tooltip'
 import { CATH_REACTION_EXPRESSION, CATH_REACTION_POSE, cathLine, cathLineForRegion, type CathReaction } from '../content/cathCompanionLines'
 import type { CathExpression, CathPoseId } from '../../shared/cath/cath'
 import { WIN_LINE, LOSS_LINE, LOSS_REASON_LABEL } from '../content/endLines'
+import { harvestSources, type HarvestGood } from '../engine/harvest'
+import HarvestMoment from './HarvestMoment'
 import {
   GoodwillIcon,
   MarksIcon,
@@ -821,6 +823,15 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // before any of this component's early returns (pass-device, end screen, tutorial rules), so the Rules
   // of Hooks hold regardless of which branch below actually renders.
   const roundTick = useHudTick(state.round)
+  // Plan item 476: a new round means the Harvest just paid out; stage it (the state's production is what it paid).
+  const [harvest, setHarvest] = useState<{ round: number; goods: HarvestGood[] } | null>(null)
+  const harvestRound = useRef(state.round)
+  useEffect(() => {
+    if (state.round > harvestRound.current && !state.result) setHarvest({ round: state.round, goods: harvestSources(state) })
+    harvestRound.current = state.round
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.round])
+  const endHarvest = useCallback(() => setHarvest(null), [])
   const trustTick = useHudTick(state.publicTrust)
   const lostLandTick = useHudTick(state.lostLandPool)
   const riftTick = useHudTick(state.rift)
@@ -3876,6 +3887,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         </div>
       )}
       {guidedStep && <TutorialCoach {...coachProps(guidedStep)} />}
+      {harvest && <HarvestMoment key={harvest.round} goods={harvest.goods} onDone={endHarvest} />}
     </div>
   )
 }
