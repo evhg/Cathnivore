@@ -2822,8 +2822,8 @@ html.no-animations .cath-companion .cameo {
   transition: transform 250ms ease-out;
 }
 .exec-portrait[data-pell-pose='smug'] .pell-head { transform: rotate(-2deg); }
-.exec-portrait[data-pell-pose='gloat'] .pell-head { transform: translateY(-1.5px) rotate(2.5deg); }
-.exec-portrait[data-pell-pose='scheme'] .pell-head { transform: translate(-1px, 1.5px) rotate(-5deg); }
+.exec-portrait[data-pell-pose='gloat'] .pell-head { transform: translateY(-3px) rotate(5deg); }
+.exec-portrait[data-pell-pose='scheme'] .pell-head { transform: translate(-1.5px, 1px) rotate(-7deg); }
 .exec-portrait[data-pell-pose='rattled'] .pell-head { transform: translateX(1.5px) rotate(1deg) scale(.985); }
 .exec-portrait[data-pell-pose='defeated'] .pell-head { transform: translateY(4px) rotate(6deg); }
 .exec-portrait .pell-feat { animation: pell-feat-in 250ms ease-out both; }

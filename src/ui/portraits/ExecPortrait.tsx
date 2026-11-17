@@ -18,8 +18,8 @@ export type PellPose = ExecMood | 'scheme' | 'defeated'
 
 const BROWS: Record<PellPose, string> = {
   smug: 'M43 42q6-5 13-2M64 40q7-3 13 0',
-  gloat: 'M42 40q7-6 14-2M64 38q7-5 14 1',
-  scheme: 'M43 43q7-1 13 1M64 44q6-3 13-3',
+  gloat: 'M41 37q8-8 15-2M64 35q7-7 15 1',
+  scheme: 'M43 45q7-2 13 1M64 39q7-6 13 0',
   rattled: 'M43 42q7 0 12-4M65 38q5 4 12 4',
   defeated: 'M43 41q7 2 12 0M65 41q5-2 12 0',
 }
@@ -27,8 +27,8 @@ const BROWS: Record<PellPose, string> = {
 /** The upper lids: how far each hooded lid comes down over the eye (0 open, 1 shut). */
 const LIDS: Record<PellPose, [number, number]> = {
   smug: [0.45, 0.35],
-  gloat: [0.42, 0.42],
-  scheme: [0.55, 0.55],
+  gloat: [0.12, 0.12],
+  scheme: [0.62, 0.3],
   rattled: [0.05, 0.05],
   defeated: [0.8, 0.8],
 }
@@ -37,7 +37,7 @@ const LIDS: Record<PellPose, [number, number]> = {
 const GAZE: Record<PellPose, [number, number]> = {
   smug: [0.6, 0],
   gloat: [0, -0.2],
-  scheme: [1.6, 0.3],
+  scheme: [2.1, 0.2],
   rattled: [-0.8, 0],
   defeated: [0, 1.4],
 }
@@ -186,6 +186,8 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
         <ellipse cx="46" cy="62" rx="5" ry="3" fill="#e9a08c" opacity=".16" />
         <ellipse cx="74" cy="62" rx="5" ry="3" fill="#d98e7b" opacity=".16" />
         <path d="M53 63q-3 3-1 7M67 63q3 3 1 7" fill="none" stroke="#c0907b" strokeWidth="1" strokeLinecap="round" opacity=".75" />
+        <ellipse cx="58" cy="80" rx="4" ry="1.8" fill="#fff" opacity=".22" />
+        <path d="M42 70q4 8 11 11" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity=".18" />
         <path d="M56 79q4 1.5 8 0" fill="none" stroke="#c0907b" strokeWidth="1" strokeLinecap="round" opacity=".6" />
 
         {/* silver hair, combed back from a side parting, in layers, with a gloss band across the crown */}
@@ -209,24 +211,26 @@ export default function ExecPortrait({ mood, title, crop = 'bust' }: { mood: Pel
         </g>
 
         {/* rimless glasses: faint lenses, a bridge and a hard glint */}
-        <rect x="41.5" y="45" width="17" height="12.5" rx="4" fill="#dff0ff" opacity=".22" />
-        <rect x="61.5" y="45" width="17" height="12.5" rx="4" fill="#dff0ff" opacity=".22" />
+        <rect x="41.5" y="45" width="17" height="12.5" rx="4" fill="#e6f3ff" fillOpacity=".1" stroke="#aeb9c6" strokeWidth=".8" />
+        <rect x="61.5" y="45" width="17" height="12.5" rx="4" fill="#e6f3ff" fillOpacity=".1" stroke="#aeb9c6" strokeWidth=".8" />
         <path d="M58.5 49.5q1.5-1 3 0M41.5 49l-5-1M78.5 49l5-1" fill="none" stroke="#b9c3cf" strokeWidth="1.2" />
-        <path d="M43 46.6l2.6 2.2M63 46.6l2.6 2.2" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity=".9" />
+        <path d="M43.4 46.8q1.6-.8 3.4-.6M63.4 46.8q1.6-.8 3.4-.6" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" opacity=".95" />
 
         {/* the nose: a lit ridge and a shaded side */}
         <path d="M61 52q-1 6-3 10q2 2 5 1" fill="none" stroke="#c4937f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M60.5 54q-.5 4 .5 7" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" opacity=".5" />
+        <path d="M62 52q2 6 1.5 10.5q2.5-.5 3.5-2q-2-3-5-8.5Z" fill="#b98370" opacity=".35" />
       </g>
 
       {/* scheming: fingers steepled under his chin */}
       {mood === 'scheme' && (
         <g className="pell-feat pell-hands">
-          <path d="M40 124l6-26q2-4 6-3l6 4-4 25Z" fill={g('suit')} />
-          <path d="M80 124l-6-26q-2-4-6-3l-6 4 4 25Z" fill={g('suit')} />
-          <path d="M50 98q2-12 9-18q1 0 1 1q7 6 9 17q-5 3-9 3q-6 0-10-3Z" fill={g('hand')} />
-          <path d="M60 81l0 18M56 84l-2 13M64 84l2 13" fill="none" stroke="#c99580" strokeWidth=".9" strokeLinecap="round" />
-          <path d="M49 98q11 5 21 0" fill="none" stroke="#f7f9fc" strokeWidth="2.6" />
+          <path d="M40 124l6-28q2-4 6-3l5 4-3 27Z" fill={g('suit')} />
+          <path d="M80 124l-6-28q-2-4-6-3l-5 4 3 27Z" fill={g('suit')} />
+          <path d="M49 93q2-13 10-19q1-.5 2 0q8 6 10 19q-5 3-11 3q-6 0-11-3Z" fill={g('hand')} />
+          <path d="M60 75l0 19M56 78l-2.5 13M64 78l2.5 13M52.5 85l-1.5 6M67.5 85l1.5 6" fill="none" stroke="#c08b76" strokeWidth=".9" strokeLinecap="round" />
+          <path d="M57 76q3-2 6 0" fill="none" stroke="#fff" strokeWidth=".9" strokeLinecap="round" opacity=".6" />
+          <path d="M48 93q12 5 24 0" fill="none" stroke="#f7f9fc" strokeWidth="2.6" />
         </g>
       )}
     </svg>
