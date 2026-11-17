@@ -121,6 +121,33 @@ function withCloudShadows(mat: THREE.MeshStandardMaterial): THREE.MeshStandardMa
   return mat;
 }
 
+/**
+ * Plan item 469: a bed's texture laid in world space along its grain (the instance's own x axis), so a field's plots
+ * and the small squares bridging them read as one continuous ground; mapped per box, the bridges showed the pattern
+ * at a third of its scale and every plot's edge a seam.
+ */
+function withFieldUv(mat: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
+  mat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace(
+      "#include <uv_vertex>",
+      `#include <uv_vertex>
+      #ifdef USE_INSTANCING
+        vec2 bedW = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xz;
+        vec2 bedAx = normalize(instanceMatrix[0].xz);
+        vec2 bedUv = vec2(dot(bedW, bedAx), dot(bedW, vec2(-bedAx.y, bedAx.x))) / 0.78;
+        #ifdef USE_MAP
+          vMapUv = bedUv;
+        #endif
+        #ifdef USE_NORMALMAP
+          vNormalMapUv = bedUv;
+        #endif
+      #endif`,
+    );
+  };
+  mat.customProgramCacheKey = () => `hedgerow-bed-fielduv-${mat.normalMap ? 1 : 0}`;
+  return mat;
+}
+
 /** Plants bend in the breeze: the higher a vertex, the further it sways, each plant out of step. */
 function withSway(mat: THREE.Material, amount: number, key: string): THREE.Material {
   mat.onBeforeCompile = (sh) => {
@@ -198,6 +225,23 @@ function tickTexture(): THREE.Texture {
   return tickTex;
 }
 
+let cornerTex: THREE.Texture | null = null;
+/**
+ * Plan item 469: one corner of the buildable ticks (its top-left quarter: the canvas' top-left is the plane's -x -z),
+ * laid only at a field's outer corners, so a field reads as one bracketed meadow, not a grid of ticked squares.
+ */
+function cornerTickTexture(): THREE.Texture {
+  if (cornerTex) return cornerTex;
+  const S = 32;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const ctx = c.getContext("2d")!;
+  ctx.drawImage(tickTexture().image as HTMLCanvasElement, 0, 0, S, S, 0, 0, S, S);
+  cornerTex = new THREE.CanvasTexture(c);
+  cornerTex.colorSpace = THREE.SRGBColorSpace;
+  return cornerTex;
+}
+
 const bedTex = new Map<string, THREE.Texture>();
 /**
  * Plan item 52: the top of a soil bed, by what lies under it. Greyscale (the instance colour tints it): furrows for
@@ -228,6 +272,7 @@ function furrowNormals(): THREE.Texture {
   }
   ctx.putImageData(img, 0, 0);
   furrowTex = new THREE.CanvasTexture(c);
+  furrowTex.wrapS = furrowTex.wrapT = THREE.RepeatWrapping;
   return furrowTex;
 }
 
@@ -301,14 +346,19 @@ function bedTexture(look: "earth" | "stubble" | "clover" | "sward"): THREE.Textu
       for (let a = 0; a < 3; a++) {
         const ang = (a / 3) * Math.PI * 2;
         ctx.fillStyle = k % 2 ? "#ffffff" : "#e2e2e2";
-        ctx.beginPath();
-        ctx.arc(x + Math.cos(ang) * 2.4, y + Math.sin(ang) * 2.4, 2.6, 0, Math.PI * 2);
-        ctx.fill();
+        // (drawn on every side too, so the tile wraps: item 469 lays the beds in world space)
+        for (const ox of [-S, 0, S])
+          for (const oy of [-S, 0, S]) {
+            ctx.beginPath();
+            ctx.arc(x + ox + Math.cos(ang) * 2.4, y + oy + Math.sin(ang) * 2.4, 2.6, 0, Math.PI * 2);
+            ctx.fill();
+          }
       }
     }
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
   bedTex.set(look, t);
   return t;
 }
@@ -891,8 +941,8 @@ export function buildGround(level: Level): Ground {
   const standing = STANDING[cropOf(level)];
   const lookOf = (c: number, r: number): PlotLook => looks.get(`${c},${r}`) ?? "earth";
   // Plan item 469: the corner ticks crisp enough to read as "build here" (0.22 was lost on the beds' fill).
-  const tickMat = new THREE.MeshBasicMaterial({ map: tickTexture(), transparent: true, opacity: 0.42, depthWrite: false });
-  const plotGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
+  const tickMat = new THREE.MeshBasicMaterial({ map: cornerTickTexture(), transparent: true, opacity: 0.42, depthWrite: false });
+  const plotGeo = new THREE.PlaneGeometry(0.4, 0.4).rotateX(-Math.PI / 2);
   const plots: Inst[] = [];
   const markers: Inst[] = [];
   const tufts: Inst[] = [];
@@ -940,7 +990,6 @@ export function buildGround(level: Level): Ground {
       }
       // Plan item 360: a barn's cell is its farmyard (models.ts), not a bed.
       if (level.barns?.some(([bc, br]) => bc === c && br === r)) continue;
-      plots.push({ x: c + 0.5, y: h + 0.04, z: r + 0.5, ry: 0, s: 1, sy: 1, color: white });
       {
         const look = lookOf(c, r);
         // Plan item 469: Saltmarsh's beds are its own (2D's samphire, sea lavender and salt grazing), not Brindle's
@@ -952,16 +1001,27 @@ export function buildGround(level: Level): Ground {
         const field = fieldAt(level, c, r);
         const fn = field ? field.c1 - field.c0 + 1 : 1;
         const fm = field ? field.r1 - field.r0 + 1 : 1;
-        const across = fn > fm || (fn === fm && (c * 31 + r * 17 + level.id) % 2 === 0);
+        // Plan item 469: one grain and one tint for the whole field (a square field's plots had turned their furrows
+        // and shifted their tint plot by plot, so the field read as a quilt of slabs with seams, not one meadow).
+        const fc = field ? field.c0 : c;
+        const fr = field ? field.r0 : r;
+        const across = fn > fm || (fn === fm && (fc * 31 + fr * 17 + level.id) % 2 === 0);
         const turn = across ? 0 : Math.PI / 2;
-        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar(0.92 + deco() * 0.16);
+        const jitter = deco();
+        const fieldJitter = field ? (((fc * 73 + fr * 151 + level.id * 29) % 97) + 0.5) / 97 : jitter;
+        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar(0.92 + fieldJitter * 0.16);
         beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
         const joins = (dc: number, dr: number) => sameField(level, c, r, c + dc, r + dr);
+        // The ticks at the field's outer corners only (each plot's quarter at a corner no plot of its field shares).
+        for (const [sx, sz, ry] of [[-1, -1, 0], [1, -1, -Math.PI / 2], [-1, 1, Math.PI / 2], [1, 1, Math.PI]] as const)
+          if (!joins(sx, 0) && !joins(0, sz)) plots.push({ x: c + 0.5 + sx * 0.2, y: h + 0.04, z: r + 0.5 + sz * 0.2, ry, s: 1, sy: 1, color: white });
         // The 0.22 gap to the next plot of the field: three small squares of the same bed over it, and a fourth at
         // a corner shared by four plots of the field.
-        if (joins(1, 0)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 1, y: h, z: r + 0.5 + o, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
-        if (joins(0, 1)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 0.5 + o, y: h, z: r + 1, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
-        if (joins(1, 0) && joins(0, 1) && joins(1, 1)) beds[base].push({ x: c + 1, y: h, z: r + 1, ry: turn, s: 0.32, sy: 1 / 0.32, color: tint });
+        // (a hair below the beds, so where they overlap the bed's top wins instead of the two z-fighting into a seam)
+        const yj = h - 0.003;
+        if (joins(1, 0)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 1, y: yj, z: r + 0.5 + o, ry: turn, s: 0.36, sy: 1 / 0.36, color: tint });
+        if (joins(0, 1)) for (const o of [-0.265, 0, 0.265]) beds[base].push({ x: c + 0.5 + o, y: yj, z: r + 1, ry: turn, s: 0.36, sy: 1 / 0.36, color: tint });
+        if (joins(1, 0) && joins(0, 1) && joins(1, 1)) beds[base].push({ x: c + 1, y: yj, z: r + 1, ry: turn, s: 0.36, sy: 1 / 0.36, color: tint });
         const sides: Array<[number, number]> = [[0, -1], [0, 1], [-1, 0], [1, 0]];
         for (const [side, [dc, dr]] of sides.entries()) {
           // (none toward the next plot of its field, the lane, whose hedge edges it, or the field's outer hedge)
@@ -1061,8 +1121,19 @@ export function buildGround(level: Level): Ground {
         const side = Math.floor(deco() * 4);
         const [x, z] = side === 0 ? [c + along, r + inset] : side === 1 ? [c + along, r + 1 - inset] : side === 2 ? [c + inset, r + along] : [c + 1 - inset, r + along];
         if (laneDistance(level, x, z) < 0.5 || nearWater(x, z)) continue;
+        // Plan item 469: not along a side the plot shares with the next plot of its field (lines of tufts there drew
+        // the field's plot grid back over the one meadow); the rolls are still taken so nothing after moves.
+        const [jc, jr] = side === 0 ? [0, -1] : side === 1 ? [0, 1] : side === 2 ? [-1, 0] : [1, 0];
+        const inner = sameField(level, c, r, c + jc, r + jr);
         if (deco() < mood.flowerRate) {
-          flowers.push({ x, y: heightAt(x, z), z, ry: deco() * 6.3, s: 0.8 + deco() * 0.5, sy: 1, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
+          const ry = deco() * 6.3;
+          const s = 0.8 + deco() * 0.5;
+          const col = flowerCols[Math.floor(deco() * flowerCols.length)]!;
+          if (!inner) flowers.push({ x, y: heightAt(x, z), z, ry, s, sy: 1, color: col });
+        } else if (inner) {
+          deco();
+          deco();
+          deco();
         } else tuft(x, z);
       }
     }
@@ -1199,7 +1270,7 @@ export function buildGround(level: Level): Ground {
   const padGeo = new THREE.CircleGeometry(0.07, 9, 0.35, Math.PI * 2 - 0.35).rotateX(-Math.PI / 2);
   const vergeCover = [instanced(tuftGeometry(), tuftMat, tufts), instanced(flowerGeo, flowerMat, flowers), instanced(new THREE.IcosahedronGeometry(1, 0), stoneMat, stones)];
   for (const m of [
-    ...bedLooks.map((l) => instanced(bedGeo, new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l), ...(l === "earth" ? { normalMap: furrowNormals() } : {}) }), beds[l], false)),
+    ...bedLooks.map((l) => instanced(bedGeo, withFieldUv(new THREE.MeshStandardMaterial({ roughness: 1, map: bedTexture(l), ...(l === "earth" ? { normalMap: furrowNormals() } : {}) })), beds[l], false)),
     instanced(boardGeo, new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), boards),
     instanced(new THREE.CircleGeometry(0.15, 14).scale(1, 0.62, 1).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#8fb8d4", roughness: 0.08, metalness: 0.3 }), puddles),
     instanced(flowerGeo, flowerMat, cloverHeads),
