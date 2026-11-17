@@ -666,7 +666,10 @@ test("her face reads on the title, clear of the menu", async ({ page, hasTouch }
       // ?shot draws its held frame a moment after ready (the face canvas uploads on the first draw).
       await page.waitForTimeout(3000)
       const f = m.face
-      const buf = await page.screenshot({ clip: { x: f.left, y: f.top, width: f.right - f.left, height: f.bottom - f.top } })
+      // Plan item 473: the face's middle 60% (her skin), not the box's corners: those are the street behind her head,
+      // and a steam plume there (since kept low at the grate) had been lifting this reading.
+      const fw = f.right - f.left, fh = f.bottom - f.top
+      const buf = await page.screenshot({ clip: { x: f.left + fw * 0.2, y: f.top + fh * 0.2, width: fw * 0.6, height: fh * 0.6 } })
       const px = await page.evaluate(async (b64) => {
         const img = new Image()
         img.src = 'data:image/png;base64,' + b64
