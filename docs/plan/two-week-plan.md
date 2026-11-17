@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-17 02:35 UTC
-
 
 
 
@@ -4313,5 +4311,57 @@ Progress (lane B, 2026-11-16 17:55, 3 slices): fixed: Runnel's Up next says 'tod
   - **Runnel:** `runnel-D` "UP NEXT · MONDAY" on a Monday (167-225 x 645-675); `runnel-P` step chips wrapping to different baselines (140-375 x 150-185).
   - **Hedgerow:** `hedge-menu-D` the card's "16 ROUNDS" vs "ROUND 11 OF 26" in play (check sandbox); `hedge-l34-2d-D` the four-column tray dropping role lines (item 408); `hedge-l21-3d-P` "HOLLOWELL 216 NEXT" washed out (38-225 x 82-103); `hedge-l21-2d-P` the depot over the lane and queued vans (10-60 x 330-395).
   - **Cathnivore and site:** `cath-campaign-P` Back to Title cut by the fold (95-295 x 812-844); `cath-campaign-D` chapter 5-6 goals truncated (1053-1240 x 700-870); `cath-setup-D` the market card over Cath's torso and arm (995-1140 x 565-770); `cath-game-D` MARKET touching its button edges (1355-1420 x 65-80) and Dry Spell worded differently at P and D; `portfolio-P` Cath cut at the hip with no ground (240-310 x 525-645); `portfolio-D` her plinth clipped at the right edge (1240-1440 x 525-560).
+- **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
+- **Size:** 1-2
+
+## 463. [ ] NIGHT SHIFT: Cath's rim on both sides, and the pick's class coats apart again
+- **Why:** 456's leftovers. A blind read of the title posters sees at most a faint edge on her right, none on her left. On the pick `scripts/cathode-coatcolour.mjs` reads butcher-fixer coat dE 7.6 (16.7 after item 434 slice 6; not from 456's toe, which reads 6.7 on and 7.6 off).
+- **Build:** probe `fr0` on the coat directly (a live debug output of the rim's factor; no rim edit, colour or shape, has moved the poster in three sessions though the live shader carries the wool rim); give her a drawn back-light edge on both sides of the silhouette; find what closed butcher-fixer (449 slice 5's class key swinging to the gun is the first suspect) and part them again.
+- **Accept:** a rim 2 px+ brighter than the cloth inside it on both sides at P and D (measured along rows through the coat); butcher-fixer dE ≥ 15 and no pair under 12; face-on-the-title and classpick pass.
+- **Size:** 1-2
+
+## 464. [ ] NIGHT SHIFT class pick: test-fire the class weapon
+- **Why (critique 2026-11-17 02:40, shots `e2e/screenshots/plan1117b`):** on `ns-play-D` the weapon is a dead picture: the inspect (995-1385 x 230-350) and DAMAGE/RATE/MAG are numbers. A shooter's pick should let you feel the gun (VISION 3, pillar 4).
+- **Build:** tap the inspect or press F: Cath shoulders the class weapon in the set and fires at a prop target (a bottle on a crate, a paper silhouette); per shot the class-coloured muzzle flash, a casing, a camera kick and that weapon's synthesised voice, an impact decal or the bottle breaking; MAG counts down and reloads at the weapon's timing; RATE is the real cadence; switching class resets the target; reduced motion keeps sound and flash, drops kick and shake; haptics on iPhone.
+- **Accept:** a `[data-testfire]` event per shot; five distinct voice ids and muzzle colours (unit test); MAG decrements and reloads (e2e at P and D); input to flash ≤ 100 ms; cathode-perf on the pick within budget alone; shots with the flash at P and D.
+- **Size:** 2-3
+
+## 465. [ ] NIGHT SHIFT title: the front door answers the player
+- **Why:** `ns-title-D/P`: Cath holds one pose (D 900-1130 x 260-900) while you move through five menu entries and five mugshots; nothing in the world reacts (VISION 3 and 5). Item 331 is layout; this is response.
+- **Build:** each menu focus drives a pose (New Case: she lowers the umbrella and looks to the lens; Case Board: she glances to The List; Settings, Credits: a small idle); a focused List print lifts (about 1.04 with a shadow), its string tightens, and one line in Cath's voice types under it (one per target, cathode.md's voice rules); the disabled Continue collapses to one small 'No case open' line; rain bed, neon hum and a soft focus click behind the sound setting.
+- **Accept:** `data-cath-pose` takes ≥ 4 values across the menu; visual response ≤ 150 ms; five lines, one per print; reduced motion cross-fades poses only; full keyboard reach; posters re-rendered; shots at P and D.
+- **Size:** 2
+
+## 466. [ ] Runnel: dry grooves you can read before the water arrives
+- **Why:** `runnel-D` (900-1240 x 310-730), `runnel-P` (185-385 x 370-560): unwatered tiles are near-identical beige plates with grey bars and a brown hub; which edges are open is low contrast, so the puzzle is read by trial taps (VISION 1 and 8).
+- **Build:** each dry channel a dark cut ditch to a marked notch at every open edge; matched edges between neighbours get a joined lip, visible before any water; a quieter hub so the channels lead; a pinned tile shows a peg; a turn glints its new connections.
+- **Accept:** groove-to-tile contrast ≥ 3:1; every open edge carries `[data-open-edge]`; an e2e checks joined edges draw a lip; a greyscale shot still shows the connections; Runnel specs pass; shots P and D.
+- **Size:** 2
+
+## 467. [ ] Cathnivore: Pell drawn to Cath's standard, reacting at the table
+- **Why:** `cath-game-D` (1208-1335 x 15-150), `cath-game-P` (8-66 x 68-125): Hollowell's face is the weakest drawing on the table (a pale disc, grey hair blob, dot eyes) beside a shaded Cath, Mara and Tomas (VISION 5).
+- **Build:** redraw Pell in the shared art style (layered silver hair with a shine band, a shaded jowly face, hooded eyes, navy suit, Hollowell-orange tie, lapel pin); five poses keyed to events (smug, gloating at a Squeeze, scheming as his intents show, rattled at a liberation, defeated at the win); idle blink and a tie straighten; 250 ms ease-out changes, no overshoot; at D a half-length bust on the boardroom rail, at P the medallion with the new head.
+- **Accept:** face ≥ 90 px tall at D, ≥ 52 at P; an e2e fires the five events and reads `data-pell-pose` change within 300 ms; reduced motion fades only; a critique rates his craft as matching Cath's.
+- **Size:** 2
+
+## 468. [ ] Hedgerow: towers you can watch fight
+- **Why:** `hedge-l21-2d-D` (570-640 x 550-620) and 3D: in no frame does a tower read as attacking (VISION 3). Measure item 19's impact layer first.
+- **Build:** each family a readable attack in 2D and 3D (Shoots: a crow dive or a seed arc with a dust burst; Splash: a bee cloud with a ground ring; Slows: brambles curl over the lane and tint the vehicle); hits flash the vehicle white 80 ms with a 2 px knock-back; a knockout pops and its coin flies to the counter with '+N', the counter bouncing 120 ms; a tower's range ring and 'hits this round' on hover or tap; one sound per family, ≤ 3 voices.
+- **Accept:** mid-round, every tower with a target in range shows an attack within 1 s (e2e counts `data-attack`); the coin reaches the counter within 600 ms; phone 2D fps within its budget; reduced motion keeps only the flash and the count; shots P and D.
+- **Size:** 3
+
+## 469. [ ] Hedgerow 3D: the field set in a finished diorama
+- **Why:** `hedge-l21-3d-D` (15-300 x 80-890, 880-1080 x 75-330): flat lilac-grey ground under rows of black sticks (the reeds read as a bed of nails); the convoy still pink blocks under halo rings (item 410).
+- **Build:** Saltmarsh margins as tufted reed clumps of varied height and colour, mudflat creeks with sky reflections, a foamed sea edge; the convoy as van models (cab, wheels, livery decal) readable at D; a framing pass so bare ground is ≤ 15% of the frame; a stable `?keyart` frame per act.
+- **Accept:** in l21 D the flat margin colour covers < 15% of the frame; each van shows wheels and a cab; draw calls within budget; a critique rates the 3D shot as finished as the 2D.
+- **Size:** 3
+
+## 470. [ ] The bugs from the 2026-11-17 02:40 critique, fixed as one batch *(lane B, in progress)*
+- **Build:** (check each in `e2e/screenshots/plan1117b` first; several repeat earlier "kept" lists, so read their reasons)
+  - **NIGHT SHIFT:** `ns-play-D` LUNA beside her face competing with it (500-605 x 285-328; P 30-265 x 455-555 over the scope); the scope tripod cut by the class list's fades (430-570 x 400-690); an empty band between the inspect and the stat rows (970-1408 x 350-400); `ns-title-D` the title's T into the umbrella's edge (640-720 x 100-175).
+  - **Runnel:** `runnel-D` the spring's jet a translucent blob over the hex border (765-810 x 215-275).
+  - **Cathnivore:** `cath-title-P` 'The Ring · Great Glut Open · 21h 32m left' missing a separator (50-335 x 728-746); `cath-game-P` region plates and '2' badges colliding (25-250 x 240-310); `cath-campaign-P` Cath jammed in the corner, crates over the map frame (285-360 x 85-185).
+  - **Hedgerow:** `hedge-l21-3d-D` a red wedge (clipped boat hull) under the depot (50-105 x 190-245); `hedge-l21-3d-P` the right plot column cropped (355-390 x 150-650); `hedge-menu-P` the tag and Cath's feet over stop 21's medallion (60-185 x 215-260).
+  - **Site:** `games-D` the stall's left half an empty brown panel (170-455 x 300-455).
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
