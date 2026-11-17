@@ -15,7 +15,9 @@ test('test-fire the class weapon: the magazine counts down and reloads', async (
   const mag = page.locator('.cp-weapon-nums div').nth(2).locator('dd')
   const full = Number(await mag.textContent())
   expect(full).toBeGreaterThan(0)
-  const fire = page.locator('.cp-testfire')
+  // At D the Test fire button; on an upright phone (no button: the sheet's height is her stage's) the gun's plate.
+  const button = page.locator('.cp-testfire')
+  const fire = (await button.isVisible()) ? button : page.locator('.cp-weapon-art')
   await expect(fire).toBeVisible()
   await fire.click()
   await expect(pick).toHaveAttribute('data-testfire', '1')

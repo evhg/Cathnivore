@@ -866,8 +866,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-weapon-nums dd { margin: 0; font: 700 var(--fs-3)/1 var(--font-ui); font-variant-numeric: tabular-nums; font-stretch: var(--wdth-num); }
 /* Plan item 464: try the gun: an outlined stencil button under its numbers (F on a keyboard); greyed while it reloads. */
 .cp-testfire {
-  justify-self: start;
-  margin: calc(var(--u) * 10) 0 0;
+  margin: 0;
   padding: calc(var(--u) * 6) calc(var(--u) * 14);
   min-height: 44px; /* px-ok: a tap target */
   border: max(1px, calc(var(--u) * 1.5)) solid color-mix(in srgb, var(--accent, var(--blood-hot)) 70%, transparent);
@@ -881,6 +880,10 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 .cp-testfire:hover, .cp-testfire:focus-visible { background: color-mix(in srgb, var(--accent, var(--blood-hot)) 22%, transparent); }
 .cp[data-reloading] .cp-testfire { opacity: .5; cursor: wait; }
+.cp-testfire-slot { display: flex; align-items: flex-end; margin-left: auto; }
+.cp-weapon-art.cp-case { cursor: crosshair; }
+/* Plan item 464: on an upright phone the gun's plate is the trigger (the button's height would come off her stage). */
+.cp-sheet[data-dossier] .cp-testfire-slot { display: none; }
 .cp-weapon-pin { margin: calc(var(--u) * 10) 0 0; font: 400 var(--fs-2)/1.4 var(--font-ui); color: var(--ink-3); }
 .cp-trees { display: grid; gap: calc(var(--u) * 10); margin: 0; padding: 0; list-style: none; }
 .cp-tree { display: grid; grid-template-columns: calc(var(--u) * 170) 1fr; gap: calc(var(--u) * 16); align-items: baseline; }

@@ -411,6 +411,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       // (item 112's line art) extruded in layers so it has a body, turning slowly; a class change slides the new
       // one in over 250 ms (a fade, and no turn, under reduced motion).
       const art = el("span", "cp-weapon-art cp-case", weapon);
+      // Plan item 464: a tap on the gun's own plate is a test shot too (the phone's only trigger: its button is
+      // hidden, since the sheet's height is her stage's there).
+      art.addEventListener("click", (e) => {
+        e.stopPropagation();
+        testFire();
+      });
       art.dataset.armouryProp = cls;
       art.dataset.weapon = w.cls;
       art.setAttribute("role", "img");
@@ -502,9 +508,10 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
         testReloading = false;
         clearTimeout(testTimer);
       }
-      testMagEl = nums.lastElementChild?.querySelector("dd") ?? null;
+      testMagEl = nums.children[2]?.querySelector("dd") ?? null;
       if (testMagEl && testMag < testMax) testMagEl.textContent = testReloading ? "Reloading" : `${testMag} / ${testMax}`;
-      const tf = el("button", "cp-testfire", weapon, "Test fire") as HTMLButtonElement;
+      // In the numbers' row, so it adds no height (on an upright phone the sheet's height is her stage's; item 422).
+      const tf = el("button", "cp-testfire", el("div", "cp-testfire-slot", nums), "Test fire") as HTMLButtonElement;
       tf.type = "button";
       tf.setAttribute("aria-keyshortcuts", "F");
       tf.addEventListener("click", (e) => {
