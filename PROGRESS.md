@@ -43,7 +43,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
-- 2026-11-17 08:21 lane B: 463 done (rim on both sides, cathode-rimprofile new); cathode-front face and upright, classpick pass at P and D; keyart-fresh; posters and key art re-rendered.
+- 2026-11-17 08:21 lane B: 463 done (rim on both sides, cathode-rimprofile new); cathode-front face and upright (3), classpick (18) pass at P and D; keyart-fresh; posters and key art re-rendered.
 - **2026-11-17 07:51 lane A session:** item 469 slices 11-12 (83d399cf, 57fee274); 3dframe, buildring, shadow3d, tower-lineup, silhouettes, folk pass (32); hedgerow 3D/model/folk units pass (48). Shots scratchpad before/a2/a3/a4 (P and D). No full `npm run check` (lane A ran it at 06:51).
 - 2026-11-17 07:22 lane B: 464 done (cathode-testtarget new, passes at P and D); 463 coats measured (FROZEN coatcolour, 18-27 dE), rim probed and handed back.
 - **2026-11-17 06:51 lane A session:** item 469 slices 7-10 (262863ff and three after); hedgerow-shore (new unit test), creeks, farhouses3d, biome3d, 3dframe, water, margins, country3d, vehicles, gatequeue, css-lint pass; full `npm run check` passed (2727 tests). Independent critique: 3D still 6 D / 5.5 P; its list is in the plan.
