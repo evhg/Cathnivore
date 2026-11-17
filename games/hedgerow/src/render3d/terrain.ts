@@ -398,7 +398,7 @@ type BorderStyle = "hedge" | "dark-hedge" | "wall" | "rubble" | "fence" | "reeds
 export const COUNTRY: readonly (readonly [string, string, string])[] = [
   ["#b4bf5c", "#6f9a48", "#9c7a52"],
   ["#8e6a84", "#a6743e", "#8c9460"],
-  ["#c4b07a", "#7e9a5a", "#9686b4"],
+  ["#c4b07a", "#7e9a5a", "#6b8462"],
   ["#82ac4e", "#d0c45a", "#4f7a5e"],
   ["#4f7a3a", "#8e6a3e", "#6c70b0"],
   ["#c88a9c", "#7c9a5c", "#bcb09a"],
@@ -1248,6 +1248,49 @@ export function buildGround(level: Level): Ground {
       instanced(new THREE.BoxGeometry(0.006, 0.006, 1.6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), wires),
     ])
       if (m) group.add(m);
+    // Plan item 469: tidal creeks winding into the flats from the sea, and across the salt meadow behind the field and
+    // inland past the telegraph line, holding the sky (the flat margin read as bare lilac-grey ground). Own stream,
+    // so nothing placed before them moves.
+    {
+      const cr = rng(level.id * 31337 + 5);
+      const starts: Array<{ x: number; z: number; heading: number; length: number; width: number; seed: number }> = [];
+      for (let z = -2 + cr() * 1.2; z < rows + 2.5; z += 1.7 + cr() * 1.2)
+        starts.push({ x: -1.8, z, heading: (cr() - 0.5) * 0.6, length: 1.1 + cr() * 0.7, width: 0.06 + cr() * 0.03, seed: cr() * 20 });
+      for (let i = 0; i < 3; i++)
+        starts.push({ x: -2 + cr() * 3, z: -1.6 - i * 1.3 - cr() * 0.4, heading: (cr() - 0.5) * 0.5, length: cols + 4 + cr() * 3, width: 0.13 + cr() * 0.05, seed: cr() * 20 });
+      for (let i = 0; i < 2; i++)
+        starts.push({ x: cols + 4 + i * 1.6 + cr() * 0.5, z: -2.5 + cr(), heading: Math.PI / 2 + (cr() - 0.5) * 0.4, length: rows + 4, width: 0.13 + cr() * 0.05, seed: cr() * 20 });
+      const skip = (x: number, z: number) =>
+        laneDistance(level, x, z) < 0.95 ||
+        (x > -0.6 && x < cols + 0.8 && z > -1.05 && z < rows + 0.6) ||
+        (x > cols + 0.8 && x < cols + 3.55 && z > -1.05) ||
+        sunk(x, z);
+      const geo = creekRibbons(starts, heightAt, skip, { top: light.skyTop, bottom: light.skyBottom, bank: "#6f6b55" });
+      if (geo) {
+        const creeks = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true }));
+        creeks.userData.creeks = true;
+        group.add(creeks);
+      }
+      // Sea lavender in flower: drifts of small violet heads over the salt meadow, not a flat lilac floor.
+      const heads: Inst[] = [];
+      const violet = ["#9b86c8", "#b49fdc", "#7f6aae"].map((c) => new THREE.Color(c));
+      for (let i = 0; i < 110 && heads.length < 900; i++) {
+        const cx = -MARGIN + cr() * W;
+        const cz = -MARGIN + cr() * H;
+        const out = Math.max(0, -cx, cx - cols, -cz, cz - rows);
+        if (out < 1.2 || out > 6.5 || cx < -0.4) continue;
+        // Clear of the grazing marsh's ruled ditches.
+        if (cx > cols + 0.8 && Math.min(...[1.15, 2.1, 3.2].map((d) => Math.abs(cx - cols - d))) < 0.45) continue;
+        for (let k = 0; k < 14; k++) {
+          const x = cx + (cr() - 0.5) * 0.7;
+          const z = cz + (cr() - 0.5) * 0.5;
+          if (laneDistance(level, x, z) < 1 || nearWater(x, z, 0.2)) continue;
+          heads.push({ x, y: heightAt(x, z) + 0.02, z, ry: cr() * 6.3, s: 0.028 + cr() * 0.022, sy: 0.7, color: violet[Math.floor(cr() * 3)]! });
+        }
+      }
+      const hm = instanced(new THREE.IcosahedronGeometry(1, 0), matte("#ffffff"), heads);
+      if (hm) group.add(hm);
+    }
     for (const m of [
       // Plan item 307: flat wet patches (sphere caps, faceted, read as broken grey rock at the field's edge).
       instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.06 }), flats),
@@ -2161,4 +2204,68 @@ function reedTuft(): THREE.BufferGeometry {
     return b;
   });
   return mergeGeometries(blades)!;
+}
+
+/**
+ * Plan item 469: Saltmarsh's tidal creeks, winding channels that hold the sky. Each creek is a meander (heading
+ * wandering on two slow sines, narrowing toward its head) laid as a three-strip ribbon a hair over the ground: a
+ * muddy bank colour at its edges and the sky's colour down its middle, brighter where it faces away from the camera,
+ * so it reads as still water mirroring the sky (no environment map: unlit vertex colours, one draw call for all).
+ * `skip` breaks a creek (lanes, the sea). Pure geometry, so the unit test can count its strips.
+ */
+export function creekRibbons(
+  starts: ReadonlyArray<{ x: number; z: number; heading: number; length: number; width: number; seed: number }>,
+  heightAt: (x: number, z: number) => number,
+  skip: (x: number, z: number) => boolean,
+  sky: { top: string; bottom: string; bank: string },
+  lift = 0.022,
+): THREE.BufferGeometry | null {
+  const top = new THREE.Color(sky.top);
+  const bottom = new THREE.Color(sky.bottom);
+  const bank = new THREE.Color(sky.bank);
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const tmp = new THREE.Color();
+  for (const s of starts) {
+    let x = s.x;
+    let z = s.z;
+    let a = s.heading + 0.75 * Math.sin(s.seed) + 0.3 * Math.sin(s.seed * 2.3);
+    const step = 0.09;
+    const n = Math.max(2, Math.round(s.length / step));
+    let prev = -1; // index of the previous cross-section's first vertex, -1 when the ribbon is broken
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      // Wide at the mouth, a thread at the head.
+      const w = s.width * (1 - 0.75 * t) * (0.85 + 0.15 * Math.sin(i * 0.7 + s.seed));
+      if (skip(x, z)) {
+        prev = -1;
+      } else {
+        const nx = -Math.sin(a);
+        const nz = Math.cos(a);
+        const base = pos.length / 3;
+        // Sky down the middle, lighter toward the horizon end of each reach; mud at the banks.
+        tmp.copy(bottom).lerp(top, 0.62 + 0.25 * Math.sin(i * 0.11 + s.seed));
+        for (const k of [-1, 0, 1]) {
+          const px = x + nx * w * k;
+          const pz = z + nz * w * k;
+          pos.push(px, heightAt(px, pz) + lift, pz);
+          const c = k === 0 ? tmp : bank;
+          col.push(c.r, c.g, c.b);
+        }
+        if (prev >= 0) for (const k of [0, 1]) idx.push(prev + k, prev + k + 1, base + k, prev + k + 1, base + k + 1, base + k);
+        prev = base;
+      }
+      // Swings about its course (a running sum of the swing curled it back on itself).
+      a = s.heading + 0.75 * Math.sin(i * 0.13 + s.seed) + 0.3 * Math.sin(i * 0.37 + s.seed * 2.3);
+      x += Math.cos(a) * step;
+      z += Math.sin(a) * step;
+    }
+  }
+  if (!idx.length) return null;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(idx);
+  return geo;
 }
