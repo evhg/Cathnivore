@@ -4346,7 +4346,7 @@ Checked (lane B, 2026-11-17 02:55): at D the dry tiles' open edges already read 
 - **Accept:** face ≥ 90 px tall at D, ≥ 52 at P; an e2e fires the five events and reads `data-pell-pose` change within 300 ms; reduced motion fades only; a critique rates his craft as matching Cath's.
 - **Size:** 2
 
-## 468. [ ] Hedgerow: towers you can watch fight
+## 468. [ ] Hedgerow: towers you can watch fight *(lane A, in progress)*
 - **Why:** `hedge-l21-2d-D` (570-640 x 550-620) and 3D: in no frame does a tower read as attacking (VISION 3). Measure item 19's impact layer first.
 - **Build:** each family a readable attack in 2D and 3D (Shoots: a crow dive or a seed arc with a dust burst; Splash: a bee cloud with a ground ring; Slows: brambles curl over the lane and tint the vehicle); hits flash the vehicle white 80 ms with a 2 px knock-back; a knockout pops and its coin flies to the counter with '+N', the counter bouncing 120 ms; a tower's range ring and 'hits this round' on hover or tap; one sound per family, ≤ 3 voices.
 - **Accept:** mid-round, every tower with a target in range shows an attack within 1 s (e2e counts `data-attack`); the coin reaches the counter within 600 ms; phone 2D fps within its budget; reduced motion keeps only the flash and the count; shots P and D.
