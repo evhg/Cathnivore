@@ -35,6 +35,7 @@ import {
   sundayPuzzle,
 } from './engine'
 import { isMuted, playMusic, playTurn, playWater, playWin, setMusicLevel, setMuted } from './sound'
+import { REPLAY_MS, replayEnd, replayFrames, type ReplayFrame } from './replay'
 import { boardCode, parseBoardCode } from './code'
 import { initWorkshop } from './workshopui'
 import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed } from './workshop'
@@ -1259,6 +1260,8 @@ function showStrip(isDaily: boolean, streak: number): void {
   strip.nums.textContent = [formatTime(game.elapsedMs), `${taps} · par ${puzzle.par}`, isDaily ? `streak ${streak}` : ''].filter(Boolean).join(' · ')
   strip.next.textContent = ui.btnNext.textContent
   strip.toast.textContent = ui.toast.textContent
+  // Plan item 478: Watch, when this solve's turns were all logged (a game resumed from before the log has a partial one).
+  $<HTMLButtonElement>('strip-watch').hidden = !replayOf()
   strip.root.hidden = false
   document.body.classList.add('has-win-strip')
   placeStrip()
@@ -1287,6 +1290,57 @@ $<HTMLButtonElement>('strip-card').addEventListener('click', () => {
   syncWinPager()
 })
 strip.next.addEventListener('click', () => ui.btnNext.click())
+
+/** Plan item 478: the solve's replay, if its log is whole: the board it started from and the frames that solve it. */
+function replayOf(): { start: number[]; frames: ReplayFrame[] } | null {
+  const log = game.log
+  if (!log?.length || log.length !== game.taps) return null
+  const end = puzzle.cells.map((c) => c.rot)
+  const net = end.map(() => 0)
+  for (const [c, d] of log) net[c] = (net[c] ?? 0) + d
+  const start = end.map((r, i) => (((r - (net[i] ?? 0)) % 6) + 6) % 6)
+  const frames = replayFrames(start, log)
+  if (!frames.length || replayEnd(start, frames).some((r, i) => r !== end[i])) return null
+  return { start, frames }
+}
+
+let replaying = false
+/** Plays the solve again on the real board: back to where it started, then each turn at the player's rhythm in about
+ *  six seconds, the water following and the tap count climbing, ending on the watered board. */
+async function watchReplay(): Promise<void> {
+  const r = replayOf()
+  if (!r || replaying) return
+  replaying = true
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const end = puzzle.cells.map((c) => c.rot)
+  const wait = (ms: number) => new Promise((res) => window.setTimeout(res, Math.max(0, ms)))
+  const body = document.body
+  body.dataset.replay = 'on'
+  r.start.forEach((rot, i) => {
+    const c = puzzle.cells[i]!
+    if (c.rot !== rot) {
+      c.rot = rot
+      board.refresh(i)
+    }
+  })
+  ui.hudTaps.textContent = '0'
+  await wait(reduce ? 200 : 500)
+  const t0 = performance.now()
+  for (const [k, f] of r.frames.entries()) {
+    await wait(f.at - (performance.now() - t0))
+    puzzle.cells[f.cell]!.rot = f.rot
+    board.refresh(f.cell)
+    if (!reduce) playTurn()
+    body.dataset.replayStep = String(k + 1)
+    ui.hudTaps.textContent = String(Math.round((game.taps * (k + 1)) / r.frames.length))
+  }
+  await wait(REPLAY_MS - (performance.now() - t0))
+  end.forEach((rot, i) => (puzzle.cells[i]!.rot = rot))
+  body.dataset.replay = 'done'
+  replaying = false
+  render()
+}
+$<HTMLButtonElement>('strip-watch').addEventListener('click', () => void watchReplay())
 
 /** Plan item 47: dots under the keepsakes when they page sideways (a phone), one per keepsake. */
 function syncWinPager(): void {

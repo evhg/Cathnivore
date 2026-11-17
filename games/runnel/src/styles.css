@@ -3687,6 +3687,13 @@ body[data-mode='practice'] #week-slot {
     min-width: 0;
     padding-inline: 8px;
   }
+  /* Plan item 478: with Watch beside them the four buttons go two by two ('Play practice' ran off the edge in one row) */
+  .strip-actions:has(#strip-watch:not([hidden])) {
+    flex-wrap: wrap;
+  }
+  .strip-actions:has(#strip-watch:not([hidden])) .btn {
+    flex: 1 1 calc(50% - 4px);
+  }
   .strip-toast {
     grid-column: 1 / -1;
   }
