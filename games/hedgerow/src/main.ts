@@ -4796,9 +4796,20 @@ function noteSlowers(g: Game): void {
       const p = enemyPoint(g.level, e);
       return Math.hypot(t.col + 0.5 - p.x, t.row + 0.5 - p.y) <= st.range;
     });
-    if (near) lastAttack.set(t.id, now);
+    if (!near) continue;
+    // A hedge that just caught something rustles (one voice of the three attack sounds may have).
+    if (now - (lastAttack.get(t.id) ?? -1e9) > 1500 && attackVoice(now)) sfx.playRustle();
+    lastAttack.set(t.id, now);
   }
   publishAttacks(now);
+}
+/** Plan item 468: at most three attack sounds ring at once (any family), each counted for 150 ms. */
+const attackVoices: number[] = [];
+function attackVoice(now: number): boolean {
+  while (attackVoices.length && now - attackVoices[0]! > 150) attackVoices.shift();
+  if (attackVoices.length >= 3) return false;
+  attackVoices.push(now);
+  return true;
 }
 function publishAttacks(now: number): void {
   ui.stage.dataset.attackTowers = [...lastAttack].filter(([, t]) => now - t < 1000).map(([id]) => id).join(",");
@@ -4836,7 +4847,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         if (!REDUCED) slowUntil = performance.now() + 400;
         break;
       case "shot":
-        if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
+        if (shots++ < 2 && attackVoice(performance.now())) sfx.playShot(ev.kind, !!ev.crit);
         {
           const now = performance.now();
           countHit(g, ev.tower);
@@ -4953,7 +4964,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "split":
         break;
       case "gust":
-        if (gusts++ < 1) sfx.playGust();
+        if (gusts++ < 1 && attackVoice(performance.now())) sfx.playGust();
         countHit(g, ev.tower);
         lastAttack.set(ev.tower, performance.now());
         break;

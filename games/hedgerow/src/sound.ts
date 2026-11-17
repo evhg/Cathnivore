@@ -339,6 +339,12 @@ export function playGust(): void {
   whoosh(0, 0.6, 0.06, j(400), 2200);
   whoosh(0.08, 0.5, 0.03, j(1200), 300);
 }
+/** Plan item 468: a hedge catches a vehicle: a dry rustle of brambles and a twig's snap. */
+export function playRustle(): void {
+  if (!ready()) return;
+  for (let i = 0; i < 3; i++) noise(i * 0.05 + Math.random() * 0.02, 0.07, 0.025, { type: "bandpass", freq: j(1800, 0.3), q: 2 });
+  noise(0.12, 0.015, 0.04, { type: "highpass", freq: 3500 });
+}
 export function playPop(): void {
   if (!ready()) return;
   for (let i = 0; i < 4; i++) noise(i * 0.025 + Math.random() * 0.01, 0.02, 0.06, { type: "bandpass", freq: j(2600, 0.3), q: 6 });

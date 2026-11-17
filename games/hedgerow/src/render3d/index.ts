@@ -237,6 +237,12 @@ export class Renderer3D {
   private floaters: Floaters;
   private selection: THREE.Group;
   private rangeRing: THREE.Mesh;
+  private brambles!: THREE.InstancedMesh;
+  private brambleM = new THREE.Matrix4();
+  private brambleQ = new THREE.Quaternion();
+  private brambleE = new THREE.Euler();
+  private brambleS = new THREE.Vector3();
+  private brambleP = new THREE.Vector3();
   private aimDisc: THREE.Mesh;
   /** Cath's post between rounds: green when a tower reaches it, amber when nothing does. */
   private postRing: THREE.Mesh;
@@ -399,6 +405,14 @@ export class Renderer3D {
     this.coachRing.rotation.x = -Math.PI / 2;
     this.coachRing.visible = false;
     this.scene.add(this.selection, this.rangeRing, this.aimDisc, this.postRing, this.heroHalo, this.coachRing);
+    // Plan item 468: a slowed vehicle is caught in brambles, a thorny tangle round its wheels (one instanced draw call).
+    {
+      const arch = new THREE.TorusGeometry(0.3, 0.032, 5, 16, Math.PI);
+      this.brambles = new THREE.InstancedMesh(arch, new THREE.MeshLambertMaterial({ color: "#5fa83a", emissive: "#1d3a10" }), 160);
+      this.brambles.count = 0;
+      this.brambles.frustumCulled = false;
+      this.scene.add(this.brambles);
+    }
 
     // Boss bar: HTML over the canvas.
     this.bossBar = document.createElement("div");
@@ -1445,6 +1459,11 @@ export class Renderer3D {
           this.fx.decal(to.x, to.y - 0.25, to.z, "#d27a22", 0.3, 3);
         } else if (kind === "pond") {
           this.sparks.emit(to.x, to.y, to.z, "#bfe9ff", 14, 1.6, 0.08, 0.45, -5);
+          // Plan item 468: Splash marks the ground it covers: a ripple ring where the water lands.
+          if (this.splashRingOk()) this.fx.ring(to.x, to.y - 0.2, to.z, "#bfe9ff", 0.8, 0.4);
+        } else if (kind === "beehive") {
+          // The swarm settles over the lane in an amber ring.
+          if (this.splashRingOk()) this.fx.ring(to.x, to.y - 0.2, to.z, "#f0b429", 0.8, 0.4);
         }
         this.sparks.emit(to.x, to.y, to.z, colour, crit ? 30 : 8, crit ? 3 : 1.8, crit ? 0.2 : 0.1, 0.4);
         if (crit) {
@@ -1454,6 +1473,32 @@ export class Renderer3D {
         }
       }
     });
+  }
+
+  /** Plan item 468: Splash rings at most one every 120 ms in all (each is a draw call for its 0.4 s). */
+  private lastSplashRing = 0;
+  private splashRingOk(): boolean {
+    const now = performance.now();
+    if (now - this.lastSplashRing < 120) return false;
+    this.lastSplashRing = now;
+    return true;
+  }
+
+  /** A thorny tangle round a slowed vehicle's wheels at (x, y, z), swaying a touch (still under reduced motion). */
+  private addBramble(x: number, y: number, z: number, heading: number, scale: number, id: number, t: number): void {
+    const b = this.brambles;
+    if (b.count + 2 > b.instanceMatrix.count) return;
+    const sway = this.reducedMotion ? 0 : Math.sin(t * 2.2 + id) * 0.08;
+    for (const side of [-1, 1]) {
+      // Two half hoops lie round the wheels, one each side, tipped up a little so they catch the light: a tangle
+      // on the lane the vehicle is stuck in, the same at any vehicle size or camera.
+      this.brambleE.set(-Math.PI / 2 + 0.35 + sway, heading + (side > 0 ? 0 : Math.PI), 0, "YXZ");
+      this.brambleQ.setFromEuler(this.brambleE);
+      this.brambleS.set(scale * 1.2, scale * 0.85, scale * 2);
+      this.brambleP.set(x, y + 0.04, z);
+      this.brambleM.compose(this.brambleP, this.brambleQ, this.brambleS);
+      b.setMatrixAt(b.count++, this.brambleM);
+    }
   }
 
   private kick(amount: number): void {
@@ -1803,6 +1848,7 @@ export class Renderer3D {
       this.dynamic.add(this.rungs.group);
     }
     this.rungs?.begin(this.camera);
+    this.brambles.count = 0;
     // Gold floaters for the Marks the knocks paid, merged into one every GOLD_WINDOW.
     this.gold.age += dt;
     if (this.gold.age >= GOLD_WINDOW) {
@@ -1836,6 +1882,7 @@ export class Renderer3D {
         if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.95 * enemyScale(e.kind), p.y);
         if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
         if (e.slowed && Math.random() < dt * 2) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.05, p.y, "#7fd06a", 1, 0.5, 0.09, 0.5, 0.5);
+        if (e.slowed && e.stun <= 0) this.addBramble(p.x, this.height(p.x, p.y) + tierUp, p.y, heading, enemyScale(e.kind), e.id, t);
         continue;
       }
       seen.add(e.id);
@@ -1910,6 +1957,7 @@ export class Renderer3D {
       const top = gy + lift + 0.62 * enemyScale(e.kind);
       if (e.stun > 0 && Math.random() < dt * 10) this.sparks.emit(p.x, top + 0.1, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
       if (e.slowed && Math.random() < dt * 4) this.sparks.emit(p.x, gy + 0.05, p.y, "#7fd06a", 1, 0.5, 0.09, 0.5, 0.5);
+      if (e.slowed && e.stun <= 0 && !lift) this.addBramble(p.x, gy, p.y, v.heading, enemyScale(e.kind), e.id, t);
       if (e.poisonLeft && e.poisonLeft > 0 && Math.random() < dt * 8) this.sparks.emit(p.x, top, p.y, "#c07aff", 1, 0.4, 0.1, 0.6, 1);
       if (e.stickyLeft && e.stickyLeft > 0 && Math.random() < dt * 8) this.sparks.emit(p.x, gy + 0.15, p.y, "#ffb829", 1, 0.3, 0.1, 0.5, -2);
       if (e.held && Math.random() < dt * 8) this.sparks.emit(p.x, gy + 0.05, p.y, "#d9cbb0", 1, 0.8, 0.12, 0.5, 0.5);
@@ -1942,6 +1990,7 @@ export class Renderer3D {
       if (flash !== v.flashing) this.setFlash(v, flash);
     }
     this.rungs?.end();
+    this.brambles.instanceMatrix.needsUpdate = true;
     for (const [id, v] of this.enemies)
       if (!seen.has(id)) {
         this.dynamic.remove(v.bar);
