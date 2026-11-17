@@ -344,6 +344,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     root.dataset.testfire = String(testShots);
     root.dispatchEvent(new CustomEvent("testfire", { detail: { cls: selected, left: testMag } }));
     hooks.onTestFire?.(selected);
+    // A short kick in the hand where the phone can buzz (iPhone Safari can't; Android Chrome can).
+    try {
+      navigator.vibrate?.(14);
+    } catch {
+      // no vibration
+    }
     if (testMagEl) testMagEl.textContent = `${testMag} / ${testMax}`;
     if (testMag <= 0) {
       testReloading = true;
