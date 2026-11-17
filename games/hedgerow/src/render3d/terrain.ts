@@ -1079,19 +1079,22 @@ export function buildGround(level: Level): Ground {
   if (act === 2) {
     const mg = rng(level.id * 2654435 + 7);
     const drift = ["#e48fb2", "#f3eee4", "#a58fd0", "#d77aa0"].map((c) => new THREE.Color(c));
-    for (let i = 0; i < 150; i++) {
+    // Fewer, fuller drifts with grass between (a critique read 150 two-colour clumps as confetti over the meadow): each
+    // drift mostly one flower, sometimes edged with a second.
+    for (let i = 0; i < 85; i++) {
       const cx = -2 + mg() * (cols + 4);
       const cz = -2 + mg() * (rows + 4);
       const out = Math.max(0, -cx, cx - cols, -cz, cz - rows);
       const near = mg();
       if (out < 0.3 || out > 1.8 || cx < -1.3) continue;
-      const pair = [drift[Math.floor(near * 4)]!, drift[Math.floor(mg() * 4)]!];
+      const second = mg();
+      const pair = [drift[Math.floor(near * 4)]!, second < 0.3 ? drift[Math.floor((second / 0.3) * 4)]! : drift[Math.floor(near * 4)]!];
       for (let k = 0; k < 22; k++) {
         const x = cx + (mg() - 0.5) * 0.55;
         const z = cz + (mg() - 0.5) * 0.4;
         const o = Math.max(0, -x, x - cols, -z, z - rows);
         if (o < 0.25 || laneDistance(level, x, z) < 0.6 || nearWater(x, z, 0.25)) continue;
-        if (k < 16) flowers.push({ x, y: heightAt(x, z), z, ry: mg() * 6.3, s: 1.9 + mg() * 0.9, sy: 1, color: pair[k & 1]! });
+        if (k < 16) flowers.push({ x, y: heightAt(x, z), z, ry: mg() * 6.3, s: 1.9 + mg() * 0.9, sy: 1, color: pair[k % 4 === 3 ? 1 : 0]! });
         else tufts.push({ x, y: heightAt(x, z) - 0.005, z, ry: mg() * 6.3, s: 1.1 + mg() * 0.4, sy: 1.5, color: tuftCols[Math.floor(mg() * 3)]! });
       }
     }
