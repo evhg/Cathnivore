@@ -1006,6 +1006,29 @@ export function buildGround(level: Level): Ground {
     if (deco() < mood.flowerRate * 0.6) flowers.push({ x, y: heightAt(x, z), z, ry: deco() * 6.3, s: 0.9 + deco() * 0.5, sy: 1, color: flowerCols[Math.floor(deco() * flowerCols.length)]! });
     else tuft(x, z, 1.25, 1.2);
   }
+  // Plan item 469: Saltmarsh's near margin, between the field's hedge and its fence, in drifts of thrift, sea lavender
+  // and sea campion among longer grass, as the 2D margin has (in 3D it was bare mown green). Its own stream, and into
+  // the flowers and tufts already drawn, so no draw call is added and nothing placed before moves.
+  if (act === 2) {
+    const mg = rng(level.id * 2654435 + 7);
+    const drift = ["#e48fb2", "#f3eee4", "#a58fd0", "#d77aa0"].map((c) => new THREE.Color(c));
+    for (let i = 0; i < 150; i++) {
+      const cx = -2 + mg() * (cols + 4);
+      const cz = -2 + mg() * (rows + 4);
+      const out = Math.max(0, -cx, cx - cols, -cz, cz - rows);
+      const near = mg();
+      if (out < 0.3 || out > 1.8 || cx < -1.3) continue;
+      const pair = [drift[Math.floor(near * 4)]!, drift[Math.floor(mg() * 4)]!];
+      for (let k = 0; k < 22; k++) {
+        const x = cx + (mg() - 0.5) * 0.55;
+        const z = cz + (mg() - 0.5) * 0.4;
+        const o = Math.max(0, -x, x - cols, -z, z - rows);
+        if (o < 0.25 || laneDistance(level, x, z) < 0.6 || nearWater(x, z, 0.25)) continue;
+        if (k < 16) flowers.push({ x, y: heightAt(x, z), z, ry: mg() * 6.3, s: 1.9 + mg() * 0.9, sy: 1, color: pair[k & 1]! });
+        else tufts.push({ x, y: heightAt(x, z) - 0.005, z, ry: mg() * 6.3, s: 1.1 + mg() * 0.4, sy: 1.5, color: tuftCols[Math.floor(mg() * 3)]! });
+      }
+    }
+  }
   // Plan item 66: the verges dressed from the 2D field's set: a flock grazing, pines, wild-flower clumps, a scarecrow.
   const sheepBody: Inst[] = [];
   const sheepHead: Inst[] = [];
