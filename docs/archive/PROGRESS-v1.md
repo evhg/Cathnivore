@@ -4180,3 +4180,6 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-17 11:22 lane B: 475 withdrawn; 473 slice 1 (posters without the idle push, re-rendered; keyart-fresh passes); a cone shader tweak tried and reverted.
 - 2026-11-17 12:24 lane B: 473 slice 2 probes (cone gate, steam shading, a hide-each-child luma probe), nothing kept; no code change this session.
 - **2026-11-17 12:52 lane A session:** CI and E2E green on 263e811c. Item 469 slices 24-27 (9d9709f1, de77b584, 38a98d12 and the drifts commit); critique 3D 7 D / 2D 7.5; biome3d, farhouses3d, water, dressing3d, 3dframe (plate cases flaky under 2 workers, pass alone), shadow3d, margins, country3d and hedgerow plotlook/fieldkit/shore/creeks units pass. Shots scratchpad before, a1-a4. No full `npm run check` (lane A ran it at 06:51).
+
+- 2026-11-17 14:22 lane B: 473 done (umbrella share measured); no code change this session.
+- **2026-11-17 13:51 lane A session:** CI green on 3c7a89ee. Item 469 slices 28-29 (3c7a89ee, 19ec97f3); farhouses3d, country3d, biome3d, dressing3d, margins, water, shadow3d pass; shore, creeks, css-lint units pass. Shots scratchpad before, a1-a4. No full `npm run check` (lane A ran it at 06:51).
