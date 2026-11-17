@@ -1221,7 +1221,8 @@ export function buildGround(level: Level): Ground {
   // Plan item 66: the verges dressed from the 2D field's set: a flock grazing, pines, wild-flower clumps, a scarecrow.
   const sheepBody: Inst[] = [];
   const sheepHead: Inst[] = [];
-  const wool = new THREE.Color("#f4efe4");
+  const sheepLegs: Inst[] = [];
+  const wool = new THREE.Color("#ece5d6");
   const face = new THREE.Color("#2e2724");
   for (const v of vergeScatter(level)) {
     const h = heightAt(v.x, v.y);
@@ -1236,9 +1237,12 @@ export function buildGround(level: Level): Ground {
       tuft(v.x, v.y, 1.3, 1.2);
     } else if (v.kind === "sheep") {
       const s = 0.12 * v.s;
-      sheepBody.push({ x: v.x, y: h + s * 0.95, z: v.y, ry: v.ry, s, sy: 0.78, color: wool });
+      // Plan item 469: on four dark legs, the body a touch higher (a legless fleece read as a white bead, a row of
+      // them on Saltmarsh's dune as a sea wall's beads at D).
+      sheepBody.push({ x: v.x, y: h + s * 1.08, z: v.y, ry: v.ry, s, sy: 0.78, color: wool });
+      sheepLegs.push({ x: v.x, y: h, z: v.y, ry: v.ry, s, sy: 1, color: face });
       // The head leans down to graze, ahead of the body along its facing.
-      sheepHead.push({ x: v.x + Math.cos(v.ry) * s * 1.05, y: h + s * 0.55, z: v.y - Math.sin(v.ry) * s * 1.05, ry: v.ry, s: s * 0.42, sy: 1.1, color: face });
+      sheepHead.push({ x: v.x + Math.cos(v.ry) * s * 1.05, y: h + s * 0.62, z: v.y - Math.sin(v.ry) * s * 1.05, ry: v.ry, s: s * 0.42, sy: 1.1, color: face });
     } else if (v.kind === "pine") {
       const t = buildTree("pine", deco, ["#3f6e33", "#355e2c", "#4a7a3a"]);
       t.position.set(v.x, h, v.y);
@@ -1254,6 +1258,7 @@ export function buildGround(level: Level): Ground {
   for (const m of [
     instanced(new THREE.IcosahedronGeometry(1, 1), matte("#ffffff", 0.95), sheepBody, true),
     instanced(new THREE.SphereGeometry(1, 8, 6), matte("#ffffff", 0.8), sheepHead, true),
+    instanced(mergeGeometries([-0.5, 0.5].flatMap((lx) => [-0.38, 0.38].map((lz) => new THREE.CylinderGeometry(0.08, 0.07, 0.62, 5).translate(lx, 0.31, lz))))!, matte("#ffffff", 0.9), sheepLegs, true),
   ])
     if (m) group.add(m);
   // The lane's own surface for the act (earth, boardwalk, tarmac, cobbles...).
@@ -1385,8 +1390,7 @@ export function buildGround(level: Level): Ground {
     biome = "saltmarsh";
     const flats: Inst[] = [];
     const reeds: Inst[] = [];
-    const egretBody: Inst[] = [];
-    const egretNeck: Inst[] = [];
+    const egrets: Inst[] = [];
     // Plan item 228: wet silt, grey-sand and silvered, with samphire greens and tide pools among it (the old browns,
     // stacked as pebbles, read as a band of mud at the phone's left edge).
     // Plan item 262: three colours in broad patches (silt, samphire, damp tide-pool grey; item 288: a pale grey read as broken white fragments on a phone), not six speckled cell by cell.
@@ -1419,8 +1423,10 @@ export function buildGround(level: Level): Ground {
       const z = deco() * rows;
       if (laneDistance(level, x, z) < 1.1) continue;
       const ry = deco() * 6.3;
-      egretBody.push({ x, y: heightAt(x, z) + 0.12, z, ry, s: 0.07, sy: 0.75, color: white });
-      egretNeck.push({ x: x + Math.cos(ry) * 0.05, y: heightAt(x, z) + 0.16, z: z - Math.sin(ry) * 0.05, ry, s: 1, sy: 1, color: white });
+      if (laneDistance(level, x * 0.55 - 0.15, z) < 0.8) continue;
+      // Plan item 469: a wading bird on legs on the flats, not a white ball on the beach (five floating spheres
+      // read as a sea wall's white beads at D). Same draws from the stream, so nothing after it moves.
+      egrets.push({ x: x * 0.55 - 0.15, y: heightAt(x * 0.55 - 0.15, z), z, ry, s: 1, sy: 1, color: white });
     }
     // Plan item 290: inland (east, the wide frame's empty side) grazing marsh: drainage ditches ruled through the
     // grass with reeds along them, a few cattle and a line of telegraph poles to the horizon.
@@ -1587,8 +1593,7 @@ export function buildGround(level: Level): Ground {
       // Plan item 469: each reed a tuft of three blades leaning apart, at varied heights (single upright cones of one
       // height read as a bed of nails from the field camera).
       instanced(reedTuft(), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
-      instanced(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretBody, true),
-      instanced(new THREE.CylinderGeometry(0.008, 0.012, 0.12, 5).translate(0, 0.06, 0), new THREE.MeshStandardMaterial({ roughness: 0.6 }), egretNeck),
+      instanced(egretGeometry(), new THREE.MeshStandardMaterial({ roughness: 0.7, vertexColors: true }), egrets, true),
     ])
       if (m) group.add(m);
     // Boats moored off the flats, along the shore. Plan item 228: the renderer settles each wholly into the frame's
@@ -2490,6 +2495,31 @@ export function regionShapes(wet: Set<string>, offset: number, rad = 0.3): THREE
     const pts = filleted(loop, rad).map((p) => new THREE.Vector2(p.x + p.nx * offset, -(p.z + p.nz * offset)));
     return new THREE.Shape(pts);
   });
+}
+
+/** Plan item 469: an egret facing +x, feet at the origin: a long body on two dark legs, an S of neck, a yellow bill
+ * (one geometry with its own colours, so the flock is one draw call). */
+export function egretGeometry(): THREE.BufferGeometry {
+  const paint = (g: THREE.BufferGeometry, hex: string) => {
+    const c = new THREE.Color(hex);
+    const n = g.getAttribute("position").count;
+    const a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3);
+    g.setAttribute("color", new THREE.BufferAttribute(a, 3));
+    g.deleteAttribute("uv");
+    return g.index ? g.toNonIndexed() : g;
+  };
+  const white = "#eeebe2";
+  const parts = [
+    // body: an egg drawn out along +x, tail down a touch
+    paint(new THREE.SphereGeometry(1, 10, 6).scale(0.07, 0.035, 0.032).rotateZ(0.25).translate(0, 0.12, 0), white),
+    // neck rising forward, then the head
+    paint(new THREE.CylinderGeometry(0.008, 0.011, 0.08, 5).rotateZ(-0.35).translate(0.06, 0.17, 0), white),
+    paint(new THREE.SphereGeometry(0.017, 8, 5).translate(0.075, 0.21, 0), white),
+    paint(new THREE.ConeGeometry(0.006, 0.05, 4).rotateZ(-Math.PI / 2).translate(0.11, 0.205, 0), "#d9a72e"),
+  ];
+  for (const sz of [-0.012, 0.012]) parts.push(paint(new THREE.CylinderGeometry(0.004, 0.004, 0.11, 4).translate(0.005, 0.055, sz), "#2f2b26"));
+  return mergeGeometries(parts)!;
 }
 
 /** Plan item 469: three reed blades from one root, leaning apart (one geometry, so a marsh of them is one draw call). */
