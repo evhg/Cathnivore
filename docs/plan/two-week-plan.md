@@ -4249,7 +4249,7 @@ Progress (lane B, 2026-11-16 16:50): slice 1 done, `5c3fb69`: the Ghost sets the
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key
+## 456. [ ] NIGHT SHIFT: Cath lit as noir, a charcoal trench in a rain-wet key *(lane B, in progress)*
 
 Progress (lane B, 2026-11-17 01:15, slice 2 `b6a367d`): the title's grade has a noir toe (post.ts `uToe`, 0 in play, 0.6 on the title via `world.setToe`, reset at handover): display darks under 0.6 pulled toward black, warm tones (skin, sodium) spared. Poster skirt luma 66 -> 41 (LUNA's letters about 240, the lit pavement 150+), face 141 -> 139; the street's blacks now black. Face-on-the-title, classpick and classstage pass at P and D (21). Left: the coat-colour ΔE script (`cathode-coatcolour.mjs`) not rerun (it timed out behind a rebase), a blind critique read, the rim on both sides.
 
