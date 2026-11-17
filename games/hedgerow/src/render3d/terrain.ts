@@ -1275,7 +1275,9 @@ export function buildGround(level: Level): Ground {
     // Plan item 262: three colours in broad patches (silt, samphire, damp tide-pool grey; item 288: a pale grey read as broken white fragments on a phone), not six speckled cell by cell.
     // Plan item 307: the tide pools hold water (a blue-grey that takes the light), so the flats read as wet marsh, not
     // grey rock.
-    const [silt, samphire, pool] = ["#a39d80", "#8a9866", "#7f9fa8"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
+    // Plan item 469: a deeper silt and samphire under a duller sheen (the pale silt mirrored the sky fill and read as a
+    // pale blurred strip down an upright phone's left edge); the pools keep their gloss in colour.
+    const [silt, samphire, pool] = ["#8f8766", "#7a9256", "#789aa6"].map((c) => new THREE.Color(c)) as [THREE.Color, THREE.Color, THREE.Color];
     const patchOf = (x: number, z: number): THREE.Color => {
       const v = 0.55 * Math.sin(z * 1.1 + x * 1.7) + 0.45 * Math.sin(z * 0.43 - x * 0.9 + 1.3);
       return v > 0.3 ? samphire : v < -0.5 ? pool : silt;
@@ -1464,7 +1466,7 @@ export function buildGround(level: Level): Ground {
     for (let i = flats.length - 1; i >= 0; i--) if (flats[i]!.x - flats[i]!.s < -1.5) flats.splice(i, 1);
     for (const m of [
       // Plan item 307: flat wet patches (sphere caps, faceted, read as broken grey rock at the field's edge).
-      instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.06 }), flats),
+      instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.06 }), flats),
       // Plan item 469: each reed a tuft of three blades leaning apart, at varied heights (single upright cones of one
       // height read as a bed of nails from the field camera).
       instanced(reedTuft(), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), reeds),
@@ -2468,10 +2470,12 @@ export function shoreStrip(
 ): { sand: THREE.BufferGeometry; surf: THREE.BufferGeometry | null } | null {
   // Across the strip, landward (+) to seaward (-) of the waterline: offset, colour, height (null = on the ground).
   const prof: Array<[number, string, number | null]> = [
-    [0.4, "#a39d80", null],
-    [0.24, "#d6caa2", null],
-    [0.11, "#d0c398", null],
-    [0.0, "#ab9e7a", waterY + 0.018],
+    // Plan item 469: warm sand, as 2D's beach is (the grey khaki read as a pale blurred strip down an upright phone's
+    // left edge).
+    [0.4, "#b2a27a", null],
+    [0.24, "#e6d09c", null],
+    [0.11, "#dec690", null],
+    [0.0, "#bba474", waterY + 0.018],
     [-0.16, "#8d876c", waterY - 0.05],
   ];
   const cols = prof.map(([, c]) => new THREE.Color(c));
