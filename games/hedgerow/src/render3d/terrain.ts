@@ -775,6 +775,8 @@ export function buildGround(level: Level): Ground {
   /** Near enough the water's edge that the sloping bank would leave a plant floating. */
   const nearWater = (x: number, y: number, m = 0.22): boolean =>
     hasWater && (sunk(x, y) || sunk(x - m, y) || sunk(x + m, y) || sunk(x, y - m) || sunk(x, y + m));
+  const beachSeed = level.id * 0.37;
+  const beach = shoreLine(-1.7, beachSeed);
   if (hasWater) {
     // Two ripple layers scroll across each other (the base normal and the clear coat's), so the light on
     // the water never sits still.
@@ -833,6 +835,12 @@ export function buildGround(level: Level): Ground {
       const x = pos.getX(i) + cols / 2;
       const y = pos.getZ(i) + rows / 2;
       if (sunk(x, y)) pos.setY(i, Math.min(pos.getY(i), wet.has(`${Math.floor(x)},${Math.floor(y)}`) ? -0.2 : -0.4));
+      // Plan item 469: Saltmarsh's ground steps down under its beach (the dune's grassy top stood through the sand's
+      // seaward slope as a green band along the coast).
+      else if (act === 2 && x < -1.2 && x > -2.2) {
+        const d = x - beach(y);
+        if (d < 0.2 && laneDistance(level, beach(y), y) >= 1.25) pos.setY(i, Math.min(pos.getY(i), d <= 0 ? -0.4 : -0.12 + d * 0.5));
+      }
     }
     pos.needsUpdate = true;
     geo.computeVertexNormals();
@@ -1293,7 +1301,25 @@ export function buildGround(level: Level): Ground {
       }
       const hm = instanced(new THREE.IcosahedronGeometry(1, 0), matte("#ffffff"), heads);
       if (hm) group.add(hm);
+      // The west coast: a sand beach sloping into the sea and a broken line of surf off it (the flats met the water
+      // in the ground's ragged step, with no shore to read).
+      const shore = shoreStrip(-1.7, -1, -MARGIN + 0.5, rows + MARGIN - 0.5, heightAt, (x, z) => laneDistance(level, x, z) < 1.25, beachSeed);
+      if (shore) {
+        const sand = new THREE.Mesh(shore.sand, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 }));
+        sand.receiveShadow = true;
+        sand.userData.shore = true;
+        group.add(sand);
+        if (shore.surf) {
+          const surfMesh = new THREE.Mesh(shore.surf, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.88 }));
+          surfMesh.userData.surf = true;
+          group.add(surfMesh);
+        }
+      }
     }
+    // No reeds on the beach (they stood in the sand and the surf), and the flats stop at its landward edge (their
+    // discs sat at dune height out over the sea and made the coast a ragged scallop of silt).
+    for (let i = reeds.length - 1; i >= 0; i--) if (reeds[i]!.x < -1.42) reeds.splice(i, 1);
+    for (let i = flats.length - 1; i >= 0; i--) if (flats[i]!.x - flats[i]!.s < -1.5) flats.splice(i, 1);
     for (const m of [
       // Plan item 307: flat wet patches (sphere caps, faceted, read as broken grey rock at the field's edge).
       instanced(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.06 }), flats),
@@ -2271,6 +2297,97 @@ export function creekRibbons(
   geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   geo.setIndex(idx);
   return geo;
+}
+
+/** Plan item 469: the beach's waterline along z (wobbling about `coastX` on two sines). */
+export function shoreLine(coastX: number, seed: number): (z: number) => number {
+  return (z) => coastX + 0.06 * Math.sin(z * 1.4 + seed) + 0.035 * Math.sin(z * 3.7 + seed * 2.1);
+}
+
+/**
+ * Plan item 469: a coastal field's shore, a beach laid as a ribbon running along z over the sea's edge: the flats'
+ * silt on its landward side, pale dry sand, wet sand at the waterline and a shelf just under the water; and a broken
+ * line of surf a little out from it. The line wobbles on two sines so the coast isn't ruled. `sea` is -1 when the sea
+ * is toward -x. `skip` breaks both (lanes). Water lies at y = `waterY`. Pure geometry, so the unit test can read it.
+ */
+export function shoreStrip(
+  coastX: number,
+  sea: 1 | -1,
+  zFrom: number,
+  zTo: number,
+  heightAt: (x: number, z: number) => number,
+  skip: (x: number, z: number) => boolean,
+  seed: number,
+  waterY = -0.09,
+): { sand: THREE.BufferGeometry; surf: THREE.BufferGeometry | null } | null {
+  // Across the strip, landward (+) to seaward (-) of the waterline: offset, colour, height (null = on the ground).
+  const prof: Array<[number, string, number | null]> = [
+    [0.4, "#a39d80", null],
+    [0.24, "#d6caa2", null],
+    [0.11, "#d0c398", null],
+    [0.0, "#ab9e7a", waterY + 0.018],
+    [-0.16, "#8d876c", waterY - 0.05],
+  ];
+  const cols = prof.map(([, c]) => new THREE.Color(c));
+  const line = shoreLine(coastX, seed);
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const fpos: number[] = [];
+  const fcol: number[] = [];
+  const fidx: number[] = [];
+  const white = new THREE.Color("#f6f8f4");
+  const spray = new THREE.Color("#d9e9ea");
+  let prev = -1;
+  let fprev = -1;
+  const step = 0.08;
+  // Faces up whichever side the sea is on (a down-facing strip is culled from the camera above).
+  const quad = (ix: number[], a: number, b: number, c: number, d: number) =>
+    sea < 0 ? ix.push(a, c, b, c, d, b) : ix.push(a, b, c, c, b, d);
+  for (let z = zFrom; z <= zTo; z += step) {
+    const xc = line(z);
+    if (skip(xc, z)) {
+      prev = fprev = -1;
+      continue;
+    }
+    const base = pos.length / 3;
+    prof.forEach(([d, , y], k) => {
+      const x = xc - sea * d;
+      // The dry sand stays on the dune; the last landward point eases down toward the waterline so the beach slopes.
+      const h = y ?? heightAt(x, z) + 0.03;
+      const yy = k === 2 ? Math.max(waterY + 0.05, Math.min(h, (heightAt(x, z) + waterY) / 2 + 0.05)) : h;
+      pos.push(x, yy, z);
+      const c = cols[k]!;
+      // A faint grain along the beach, so the sand isn't one flat colour.
+      const g = 1 + 0.04 * Math.sin(z * 9.1 + seed) * Math.sin(z * 2.3);
+      col.push(c.r * g, c.g * g, c.b * g);
+    });
+    if (prev >= 0) for (let k = 0; k < prof.length - 1; k++) quad(idx, prev + k, base + k, prev + k + 1, base + k + 1);
+    prev = base;
+    // Surf: a thin white band a little out, broken into lengths, its width breathing.
+    const on = Math.sin(z * 2.2 + seed * 3) + 0.6 * Math.sin(z * 5.3 + seed) > -0.55;
+    if (on) {
+      const fb = fpos.length / 3;
+      const w = 0.035 + 0.025 * (0.5 + 0.5 * Math.sin(z * 4.1 + seed));
+      const out = w + 0.03 + 0.03 * (0.5 + 0.5 * Math.sin(z * 1.7 + seed * 0.7));
+      for (const [d, c] of [[-out + w, spray], [-out, white], [-out - w, spray]] as const) {
+        fpos.push(xc - sea * d, waterY + 0.012, z);
+        fcol.push(c.r, c.g, c.b);
+      }
+      if (fprev >= 0) for (let k = 0; k < 2; k++) quad(fidx, fprev + k, fb + k, fprev + k + 1, fb + k + 1);
+      fprev = fb;
+    } else fprev = -1;
+  }
+  if (!idx.length) return null;
+  const mk = (p: number[], c: number[], ix: number[]) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(p, 3));
+    g.setAttribute("color", new THREE.Float32BufferAttribute(c, 3));
+    g.setIndex(ix);
+    g.computeVertexNormals();
+    return g;
+  };
+  return { sand: mk(pos, col, idx), surf: fidx.length ? mk(fpos, fcol, fidx) : null };
 }
 
 /** Plan item 469: a grazing cow (facing +x): a body on four legs, standing on y = 0. */

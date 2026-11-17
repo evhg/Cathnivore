@@ -3088,7 +3088,7 @@ export class Renderer3D {
       while (r.y + r.h > 0 && z > home - 8);
     }
     // Plan item 228: Saltmarsh's moored boats, likewise across the frame's left edge: in toward the flats (no nearer
-    // than -2.3, still on the water) until wholly in, or out to sea until wholly out.
+    // than -2.55, out past the beach and its surf) until wholly in, or out to sea until wholly out.
     const moored = (this.ground?.group.userData.moored as THREE.Object3D[] | undefined) ?? [];
     const boat = (o: THREE.Object3D, x: number): Rect => {
       o.position.x = x;
@@ -3101,7 +3101,7 @@ export class Renderer3D {
       let x = home;
       let r = boat(o, x);
       if (!cut(r)) continue;
-      while (cut(r) && x + 0.1 <= -2.3) r = boat(o, (x += 0.1));
+      while (cut(r) && x + 0.1 <= -2.55) r = boat(o, (x += 0.1));
       if (!cut(r)) continue;
       x = home;
       do r = boat(o, (x -= 0.25));
