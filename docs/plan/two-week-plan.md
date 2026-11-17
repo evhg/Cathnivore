@@ -4398,7 +4398,7 @@ Progress (lane A, 2026-11-17 05:26, slice 1): the queue's 'pink blocks under hal
 - **Accept:** each stop 110 px+ wide at D; no two adjacent stops share a landmark (`data-landmark`, e2e); no padlock glyph; at P no stop under the card; Cath 90 px+ at D, 60+ at P; shots P and D for acts 1, 3 and 6; the act-map specs pass.
 - **Size:** 2-3
 
-## 472. [ ] Cathnivore title: the board the hero again on the phone, one focal point at D
+## 472. [ ] Cathnivore title: the board the hero again on the phone, one focal point at D *(lane B, in progress)*
 - **Why:** `cath-title-P` (180-385 x 435-610): the board is about 205 px wide, half behind Cath's shoulder (item 231's 'board 360 px on the phone' has regressed since item 453 enlarged her); `cath-title-D` (105-1395 x 320-850): the chalkboard menu, Cath, the board and the Daily board pull equally, so there is no focal point (VISION 1-2).
 - **Build:** recompose round one diagonal: Cath behind the counter leaning over the board, the largest object, her hand on a region. At P the board in front of her at 340 px+, her bust above and behind it, never over a hex; the menu as hanging signs under the awning, the Daily folded into the counter front. At D the board 34%+ of the frame's width, the menu as stall signage hung from the awning; her waving sleeve shaded with a cuff.
 - **Accept:** board 340 px+ wide at P, 34%+ of the width at D; zero overlap between Cath and any hex (e2e at P and D); the menu's box at most 22% of the D frame; the title specs pass; shots P and D, light and dark.
