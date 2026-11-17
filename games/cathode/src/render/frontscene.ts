@@ -16,6 +16,7 @@ import * as THREE from "three";
 import { testFireLook } from "../game/testfire";
 import type { ClassId, TreeId } from "../sim/types";
 import { SKILL_PREVIEWS } from "../game/skillpreview";
+import { buildPreviewFx } from "./previewfx";
 import { createWorld } from "./world";
 import { AutoScale, frontDynOptions } from "../game/autoscale";
 import type { Quality, World } from "./types";
@@ -291,6 +292,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   let camoUntil = 0;
   let slowUntilMs = 0;
   const CAMO_TINT = new THREE.Color(0.35, 0.95, 1.3);
+  // Plan item 481, slice 3: the pieces a preview leaves standing (reticle, wire cage, the Moth, the sentry).
+  const previewFx = buildPreviewFx();
+  world.scene.add(previewFx.group);
   // Plan item 457: and behind the stoop, each class's own set (rooftop, locker, back room, server alley, workbench).
   const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
   world.scene.add(sets.group);
@@ -928,6 +932,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     diorama.update(time, o.still, cam.position);
     stoop.update(wd.w, wd.cls);
     target.visible = wd.w > 0.5;
+    if (!target.visible) previewFx.stop();
+    previewFx.update(time, cam);
+    const showing = previewFx.showing();
+    if ((world.renderer.domElement.dataset.previewFx ?? "") !== showing) world.renderer.domElement.dataset.previewFx = showing;
     if (target.visible) {
       const ndc = target.position.clone().setY(target.position.y + 0.4).project(cam);
       const at = `${ndc.x.toFixed(2)},${ndc.y.toFixed(2)}`;
@@ -1161,6 +1169,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       if (cls !== wd.cls) {
         bottle.visible = true;
         world.renderer.domElement.dataset.target = "standing";
+        // a class switch ends a skill preview: its timers, its stage pieces, the camo and the slow time
+        for (const t of previewTimers) clearTimeout(t);
+        previewTimers.length = 0;
+        previewFx.stop();
+        camoUntil = 0;
+        slowUntilMs = 0;
       }
       wd.cls = cls;
       wd.target = cls ? 1 : 0;
@@ -1236,6 +1250,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const up = new THREE.Vector3(0, 1, 0);
       const fx = world.fx;
       const still = idleReduce || o.still;
+      const crateAt = target.position.clone();
+      // the sentry stands in front of the crate, toward the lens (her frame: +x to her left, +z to the lens)
+      const sentryAt = toWorld(0.5, 0, -0.18);
+      sentryAt.y = target.position.y;
+      previewFx.play(p.look, clock, p.ms, hand, aim, crateAt, sentryAt);
       const breakBottle = () => {
         if (!bottle.visible) return;
         bottle.visible = false;
@@ -1254,7 +1273,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
           camoUntil = clock + 2.2;
           break;
         case "mark":
-          for (let i = 0; i < 8; i++) later(i * 90, () => fx.sparks(aim.clone().add(new THREE.Vector3(Math.cos(i * 0.785) * 0.25, Math.sin(i * 0.785) * 0.25, 0)), up, 3));
+          // the reticle (previewfx) closes on the bottle; a small glint as it locks
+          later(550, () => fx.sparks(aim, up, 2));
           break;
         case "cleave":
           for (let i = 0; i < 5; i++) later(i * 50, () => fx.sparks(hand.clone().add(new THREE.Vector3(-0.3 + i * 0.15, 0.15 - Math.abs(i - 2) * 0.08, 0.3)), dir, 6));
@@ -1263,7 +1283,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
           later(300, () => (fx.muzzle(hand, dir, 2.2, false, undefined, new THREE.Color(1.6, 0.6, 0.2)), fx.sparks(aim, dir, 30), breakBottle()));
           break;
         case "warCry":
+          // the lens shakes and her key flares twice, a shout and its echo
           if (!still) spring.vy += 2.2;
+          wd.flash = FLASH_S;
+          later(420, () => (wd.flash = FLASH_S * 0.8));
           break;
         case "fan":
           for (let i = 0; i < 6; i++) later(250 + i * 110, () => (fx.muzzle(hand, dir, 0.9), fx.tracer(hand, aim.clone().add(new THREE.Vector3(0, (i - 3) * 0.03, 0))), i === 5 && breakBottle()));
@@ -1288,7 +1311,14 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
           later(600, () => (fx.explosion(aim, 0.9), breakBottle()));
           break;
         case "sentry":
-          for (let i = 0; i < 8; i++) later(300 + i * 90, () => (fx.muzzle(target.position.clone().setY(target.position.y + 0.5), dir.clone().negate(), 0.5), fx.casing(target.position.clone().setY(target.position.y + 0.5), new THREE.Vector3(0.6, 1.6, 0))));
+          // the sentry drops in, then chatters out to the street from its own barrel
+          for (let i = 0; i < 8; i++)
+            later(500 + i * 90, () => {
+              const m = previewFx.sentryMuzzle(new THREE.Vector3());
+              const out = m.clone().sub(previewFx.group.getObjectByName("sentryHead")?.getWorldPosition(new THREE.Vector3()) ?? target.position).setY(0).normalize();
+              fx.muzzle(m, out, 0.5);
+              fx.casing(m, new THREE.Vector3(0, 1.6, 0).addScaledVector(out, -0.4));
+            });
           break;
         case "molotov":
           later(500, () => (fx.explosion(aim, 0.6), fx.vent?.(aim, up), breakBottle()));
@@ -1374,6 +1404,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       faceKeyRemove = null;
       for (const c of chalk) c.removeFromParent();
       neon.dispose();
+      previewFx.dispose();
       wet.dispose();
       diorama.dispose();
       stoop.dispose();
