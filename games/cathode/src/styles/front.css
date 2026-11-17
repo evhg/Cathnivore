@@ -625,6 +625,8 @@
   color: var(--ink-2);
 }
 .menu-why[hidden] { display: none; }
+/* Plan item 465: a shut slot collapses to one small line (its big grey label read as a heading among the live rows). */
+.menu-item:disabled .menu-label { font-size: var(--fs-2); letter-spacing: .06em; }
 .menu-hint {
   min-height: calc(var(--u) * 24);
   margin: calc(var(--u) * 22) 0 0;
