@@ -139,7 +139,7 @@ const PAINT: Paint[] = [
   // its seams and the bends' radial planks a parquet floor): pale packed sand, two wheel ruts, a crown of marram
   // tufts, shell grit and the odd damp patch where the tide seeps up.
   (ctx, r) => {
-    ctx.fillStyle = "#cbb489";
+    ctx.fillStyle = "#d3bd90"; // plan item 469: a step toward 2D's cream track (was #cbb489, dull against the beds)
     ctx.fillRect(0, 0, TW, TH);
     for (let i = 0; i < 22; i++) ellipse(ctx, r() * TW, r() * TH, 8 + r() * 16, 5 + r() * 9, r() * 3, `rgba(${150 + r() * 20},${132 + r() * 14},${100 + r() * 10},0.35)`);
     speckle(ctx, r, 900, ["#b89f74", "#ddc79c", "#a88f66"], 2, 0.5);
@@ -150,8 +150,9 @@ const PAINT: Paint[] = [
     }
     // Plan item 469: cream kerbs along both edges with a darker line outside them, as the 2D track draws its edges
     // (the 3D track faded into the verge over a third of its width and its course was hard to follow at D).
-    for (const u of [0.11, 0.89]) streak(ctx, u, 5, "#f3e8cb", 0.9);
-    for (const u of [0.065, 0.935]) streak(ctx, u, 2.5, "#8a7350", 0.7);
+    // (Wider, brighter and a little inboard: at 5 px on 0.11 they read as a faint line at D, not an edge.)
+    for (const u of [0.165, 0.835]) streak(ctx, u, 6, "#f6ecd2", 0.95);
+    for (const u of [0.12, 0.88]) streak(ctx, u, 2.5, "#8a7350", 0.75);
     for (let i = 0; i < 160; i++) {
       const x = TW * (0.5 + (r() - 0.5) * 0.12);
       const y = r() * TH;

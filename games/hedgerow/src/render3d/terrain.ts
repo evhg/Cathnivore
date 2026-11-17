@@ -1180,6 +1180,8 @@ export function buildGround(level: Level): Ground {
     const reedCols = [tuftCols[3]!.clone().multiplyScalar(0.8), new THREE.Color("#8f9a52"), new THREE.Color("#b3a564")];
     for (const loop of wetLoops(wet)) {
       const pts = meander(filleted(loop, 0.32));
+      // A one-cell pond is all near bank at this scale: its tall beds stood over the water from every side.
+      const small = loop.length <= 4;
       let clump = 0;
       for (const [i, p] of pts.entries()) {
         if (i % 2) continue;
@@ -1191,12 +1193,16 @@ export function buildGround(level: Level): Ground {
         if (clump <= 0) clump = pb() < 0.55 ? 2 + Math.floor(pb() * 3) : -(1 + Math.floor(pb() * 2));
         if (clump > 0) {
           clump--;
+          // The camera looks from +z: on the near bank (outward normal towards it) tall reeds stood in front of the
+          // water and hid a small pond's middle, so the near bank grows short sedge and the tall beds stand behind.
+          const near = small || p.nz > 0.35;
           for (let k = 0; k < 3; k++) {
             const o = -0.05 + pb() * 0.12;
             const t = (pb() - 0.5) * 0.12;
             const x = p.x + p.nx * o - p.nz * t;
             const z = p.z + p.nz * o + p.nx * t;
-            tufts.push({ x, y: Math.max(-0.09, heightAt(x, z)) - 0.01, z, ry: pb() * 6.3, s: 1.5 + pb() * 0.5, sy: 2.6 + pb() * 1.4, color: reedCols[Math.floor(pb() * 3)]! });
+            const tall = 2.6 + pb() * 1.4;
+            tufts.push({ x, y: Math.max(-0.09, heightAt(x, z)) - 0.01, z, ry: pb() * 6.3, s: 1.5 + pb() * 0.5, sy: near ? tall * 0.45 : tall, color: reedCols[Math.floor(pb() * 3)]! });
           }
         } else {
           clump++;
@@ -2235,8 +2241,10 @@ export function buildGround(level: Level): Ground {
   // lower sun) left the lit water ΔE 18 darker than the 2D pond (hedgerow-water.spec allows 15).
   // 2026-11-15 22:51: greener, toward the 2D pond's teal (#6da6b0): the sky's reflection on the clear coat adds blue,
   // and the lit water read (97-128, 142-165, 175-201), ΔE 16-17 off the 2D pond on CI.
-  const waterBase = new THREE.Color("#3a8a92");
-  const waterLight = new THREE.Color("#4ea4aa");
+  // 2026-11-17 (item 469): a step lighter again (were #3a8a92 and #4ea4aa): the pond's middle read L 49-56 against the
+  // 2D pond's 65 (ΔE 15-17, at the spec's bound by ripple alone), and a critique saw the ponds as flat navy.
+  const waterBase = new THREE.Color("#4a989f");
+  const waterLight = new THREE.Color("#5fb1b5");
   const update = (t: number, dt: number) => {
     timeU.value = t * windy;
     cloudOff.value.x -= dt * 0.006 * windy;
