@@ -43,7 +43,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
-- **2026-11-17 06:51 lane A session:** item 469 slices 7-10 (262863ff and three after); hedgerow-shore (new unit test), creeks, farhouses3d, biome3d, 3dframe, water, margins, country3d, vehicles, gatequeue, css-lint pass; full `npm run check` (see below).
+- **2026-11-17 06:51 lane A session:** item 469 slices 7-10 (262863ff and three after); hedgerow-shore (new unit test), creeks, farhouses3d, biome3d, 3dframe, water, margins, country3d, vehicles, gatequeue, css-lint pass; full `npm run check` passed (2727 tests). Independent critique: 3D still 6 D / 5.5 P; its list is in the plan.
 - **2026-11-17 05:51 lane A session:** item 469 slices 3-6 (7debde71, 8adc581c, 56f17490, b14a3ce7); 3dframe, biome3d, country3d, margins, water, fleet3d, gatequeue, vehicles, camera3d pass; new unit test hedgerow-creeks; keyart3d shots stable for all 10 acts; full `npm run check` (see below).
 - 2026-11-17 06:22 lane B: 464 slice 3; cathode-testfire (new unit test), testfire, classpose, classpick pass at P and D (22, 6 viewport skips), cathode- unit tests 903 pass, keyart-fresh; posters and key art re-rendered.
 - 2026-11-17 05:22 lane B: E2E fix (classpose phone stage), 464 slice 2; classpose, testfire pass at P and D; NIGHT SHIFT unit tests 901 pass.
