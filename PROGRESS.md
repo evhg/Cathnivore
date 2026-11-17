@@ -42,8 +42,8 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
-- **2026-11-17 04:51 lane A session:** E2E red on 775bcc67 fixed (c26d4c7f); item 468 slices 4-5, done; item 469 slices 1-2. site.spec Hedgerow (51), hedgerow-attack, camera3d, 3dframe (15), css-lint, keyart-fresh, tower-models pass; full `npm run check` started at the end (result in the next session's notes / CI).
 - 2026-11-17 05:22 lane B: E2E fix (classpose phone stage), 464 slice 2; classpose, testfire pass at P and D; NIGHT SHIFT unit tests 901 pass.
+- **2026-11-17 04:51 lane A session:** E2E red on 775bcc67 fixed (c26d4c7f); item 468 slices 4-5, done; item 469 slices 1-2. site.spec Hedgerow (51), hedgerow-attack, camera3d, 3dframe (15), css-lint, keyart-fresh, tower-models pass; full `npm run check` passed (2720 tests).
 - 2026-11-17 04:22 lane B: 464 slice 1; cathode-testfire (new) and classpick pass at P and D; posters and key art re-rendered.
 - **2026-11-17 03:51 lane A session:** CI and E2E green on 3b647ecb. Item 468 slices 2-3 (775bcc67, 31c59136); hedgerow-attack (P, D, D reduced, 6/6 with repeat), camera3d, hedgerow/keyart-fresh/css-lint units pass; Hedgerow key art re-shot; phone 2D frame time A/B'd. No full `npm run check`.
 - 2026-11-17 03:22 lane B: 465 slices 1-2; cathode-menumood (new), cathode-front, critique79 pass at P and D; posters and key art re-rendered (keyart.json merged by hand over lane A's Hedgerow re-shoot).
