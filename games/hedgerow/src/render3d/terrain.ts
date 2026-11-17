@@ -1217,8 +1217,9 @@ export function buildGround(level: Level): Ground {
       if (laneDistance(level, x, z) < 1.2 || Math.min(...[1.15, 2.1, 3.2].map((d) => Math.abs(x - cols - d))) < 0.25) continue;
       const ry = deco() * 6.3;
       const c = hide[i % 3]!;
-      cattle.push({ x, y: heightAt(x, z) + 0.06, z, ry, s: 1, sy: 1, color: c });
-      heads.push({ x: x + Math.cos(ry) * 0.12, y: heightAt(x, z) + 0.07, z: z - Math.sin(ry) * 0.12, ry, s: 1, sy: 1, color: c });
+      cattle.push({ x, y: heightAt(x, z), z, ry, s: 1, sy: 1, color: c });
+      // Grazing: the head low at the front of the body.
+      heads.push({ x: x + Math.cos(ry) * 0.12, y: heightAt(x, z) + 0.075, z: z - Math.sin(ry) * 0.12, ry, s: 1, sy: 1, color: c });
     }
     // Plan item 437: a telegraph line, not lone sticks: each pole carries a crossarm, and two wires run from pole
     // to pole (with no line they read as stray dark posts in the marsh).
@@ -1241,7 +1242,9 @@ export function buildGround(level: Level): Ground {
     }
     for (const m of [
       instanced(new THREE.BoxGeometry(0.13, 0.003, 0.53), new THREE.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1 }), ditches),
-      instanced(new THREE.BoxGeometry(0.2, 0.09, 0.09), new THREE.MeshStandardMaterial({ roughness: 0.8 }), cattle, true),
+      // Plan item 469: each beast stands on four legs (a legless box floated over the marsh and the black ones read as
+      // stray blobs); one merged geometry, so still one draw call.
+      instanced(cowGeometry(), new THREE.MeshStandardMaterial({ roughness: 0.8 }), cattle, true),
       instanced(new THREE.BoxGeometry(0.07, 0.06, 0.06), new THREE.MeshStandardMaterial({ roughness: 0.8 }), heads),
       instanced(new THREE.CylinderGeometry(0.018, 0.024, 0.75, 5).translate(0, 0.375, 0), new THREE.MeshStandardMaterial({ roughness: 0.9 }), poles, true),
       instanced(new THREE.BoxGeometry(0.2, 0.022, 0.03), new THREE.MeshStandardMaterial({ roughness: 0.9 }), arms),
@@ -2268,4 +2271,11 @@ export function creekRibbons(
   geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   geo.setIndex(idx);
   return geo;
+}
+
+/** Plan item 469: a grazing cow (facing +x): a body on four legs, standing on y = 0. */
+function cowGeometry(): THREE.BufferGeometry {
+  const parts = [new THREE.BoxGeometry(0.2, 0.085, 0.09).translate(0, 0.1, 0)];
+  for (const lx of [-0.07, 0.07]) for (const lz of [-0.03, 0.03]) parts.push(new THREE.BoxGeometry(0.026, 0.065, 0.026).translate(lx, 0.0325, lz));
+  return mergeGeometries(parts, false)!;
 }
