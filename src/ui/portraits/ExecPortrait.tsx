@@ -26,7 +26,7 @@ const BROWS: Record<PellPose, string> = {
 
 /** The upper lids: how far each hooded lid comes down over the eye (0 open, 1 shut). */
 const LIDS: Record<PellPose, [number, number]> = {
-  smug: [0.6, 0.48],
+  smug: [0.5, 0.36],
   gloat: [0.12, 0.12],
   scheme: [0.62, 0.3],
   rattled: [0.05, 0.05],
