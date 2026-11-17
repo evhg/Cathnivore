@@ -36,30 +36,35 @@ test('joined channels draw a lip across their seam, and a turn redraws it', asyn
   // seam), and six turns later they are the same set as before.
   const set = () => page.evaluate(() => [...document.querySelectorAll<SVGGElement>('#board .join')].map((j) => j.dataset.join).sort().join(' '))
   const original = await set()
-  const pick = await page.evaluate((pairs) => {
+  const pick: number = await page.evaluate((pairs: [number, number][]) => {
     const cells = [...document.querySelectorAll<SVGGElement>('#board .tiles > g.cell')]
     for (const [a, b] of pairs) for (const i of [a, b]) if (!cells[i]!.classList.contains('fixed') && !cells[i]!.classList.contains('locked')) return i
     return -1
-  }, seams.map((s) => [s.a, s.b]))
+  }, seams.map((s): [number, number] => [s.a, s.b]))
   expect(pick).toBeGreaterThanOrEqual(0)
   const cell = page.locator('#board .tiles > g.cell').nth(pick)
   const seen = new Set<string>()
+  let glints = 0
+  expect(await page.locator('#board .join.glint').count()).toBe(0)
   for (let k = 0; k < 6; k++) {
     await cell.click()
     await page.waitForTimeout(700)
     seen.add(await set())
+    glints += await page.locator('#board .join.glint').count()
     for (const key of (await set()).split(' ').filter(Boolean)) {
       const [a, b] = key.split('-').map(Number) as [number, number]
       // neighbours: a lip only ever joins two adjacent tiles
-      const d = await page.evaluate(([a, b]) => {
+      const d = await page.evaluate(([a, b]: [number, number]) => {
         const cells = document.querySelectorAll<SVGGElement>('#board .tiles > g.cell polygon.tile')
         const r1 = cells[a]!.getBoundingClientRect()
         const r2 = cells[b]!.getBoundingClientRect()
         return Math.hypot(r1.x - r2.x, r1.y - r2.y) / r1.width
-      }, [a, b])
+      }, [a, b] as [number, number])
       expect(d, key).toBeLessThan(1.1)
     }
   }
   expect(await set()).toBe(original)
   expect(seen.size, 'the lips change as the tile turns').toBeGreaterThan(1)
+  // a connection a turn made glints; the first draw has none
+  expect(glints, 'a turn that makes a connection glints it').toBeGreaterThan(0)
 })

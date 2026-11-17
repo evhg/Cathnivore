@@ -4990,3 +4990,16 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
     opacity: 1;
   }
 }
+/* ...and a connection a turn has just made glints once as it lands. */
+.join.glint .join-lip {
+  animation: join-glint 520ms ease-out var(--delay, 0ms);
+}
+@keyframes join-glint {
+  0%, 30% { fill: var(--water-hi); }
+  100% { fill: var(--groove); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .join.glint .join-lip {
+    animation: none;
+  }
+}

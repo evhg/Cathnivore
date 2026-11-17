@@ -86,6 +86,7 @@ export class Board {
   /** Plan item 466: the joined lips where two neighbours' channels meet, redrawn as tiles turn. */
   private readonly joins: SVGGElement
   private readonly nbrs: number[][]
+  private joinKeys = new Set<string>()
   private flow: Flow
   private readonly reducedMotion: boolean
   private pressTimer = 0
@@ -738,6 +739,7 @@ export class Board {
     // Plan item 466: where two neighbours' channels meet, a joined lip bridges the seam (dry or wet), so a match
     // reads before any water arrives; it waits out the turn so it lands as the tile settles.
     this.joins.replaceChildren()
+    const keys = new Set<string>()
     this.joins.style.setProperty('--delay', `${settle}ms`)
     this.puzzle.cells.forEach((cell, i) => {
       if (cell.kind === 'stone') return
@@ -750,11 +752,16 @@ export class Board {
         const p = edgePoint(d, APOTHEM)
         const g = el('g', { class: 'join', transform: `translate(${(c.x + p.x).toFixed(2)} ${(c.y + p.y).toFixed(2)}) rotate(${d * 60})` }, this.joins)
         g.dataset.join = `${i}-${j}`
+        keys.add(g.dataset.join)
+        // a connection a turn has just made glints once (not on the first draw, nor one that was already there)
+        if (!initial && turned.size && !this.joinKeys.has(g.dataset.join)) g.classList.add('glint')
         g.classList.toggle('wet', flow.wet.has(i) && flow.wet.has(j))
         el('rect', { x: -4.6, y: -9.5, width: 9.2, height: 19, class: 'join-lip' }, g)
         el('rect', { x: -4.8, y: -3.25, width: 9.6, height: 6.5, class: 'join-bed' }, g)
       }
     })
+
+    this.joinKeys = keys
 
     // Puddles where water spills onto dry ground: drawn unrotated, at the spilling edge.
     this.puddles.replaceChildren()
