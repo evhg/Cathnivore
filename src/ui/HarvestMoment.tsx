@@ -5,10 +5,40 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { HarvestGood } from '../engine/harvest'
 import type { ProducerId, ResourceKind } from '../engine/types'
-import { GoodwillIcon, MarksIcon, ProduceIcon } from './icons/ResourceIcons'
 import { harvestTiming } from './harvestTiming'
 
-const ICON = { produce: ProduceIcon, marks: MarksIcon, goodwill: GoodwillIcon }
+/** Plan item 476: each good as the mat paints it (PlayerMat.tsx): a piece of veg, a Mark coin, a Goodwill rosette. */
+function GoodArt({ unit }: { unit: ResourceKind }) {
+  return (
+    <svg className="harvest-art" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      {unit === 'produce' && (
+        <>
+          <circle cx="16" cy="18" r="10" fill="var(--clay)" stroke="var(--ink)" strokeWidth="1.2" />
+          <path d="M14 8.5 q2.5 -5 6.5 -3.6" fill="none" stroke="var(--pasture-deep)" strokeWidth="2" strokeLinecap="round" />
+          <ellipse cx="12.5" cy="15" rx="3" ry="2" fill="var(--paper-hi)" opacity=".45" />
+        </>
+      )}
+      {unit === 'marks' && (
+        <>
+          <ellipse cx="16" cy="19.5" rx="12" ry="6" fill="var(--clay-deep)" stroke="var(--ink)" strokeWidth="1.1" />
+          <ellipse cx="16" cy="16" rx="12" ry="6" fill="var(--wheat)" stroke="var(--ink)" strokeWidth="1.1" />
+          <ellipse cx="16" cy="16" rx="7" ry="3.2" fill="none" stroke="var(--ink-a35)" strokeWidth="1" />
+        </>
+      )}
+      {unit === 'goodwill' && (
+        <>
+          <path d="M12 19 L8 30 L12 28 L14 31 L16 20 Z" fill="var(--clay)" stroke="var(--ink)" strokeWidth=".9" strokeLinejoin="round" />
+          <path d="M20 19 L24 30 L20 28 L18 31 L16 20 Z" fill="var(--clay-deep)" stroke="var(--ink)" strokeWidth=".9" strokeLinejoin="round" />
+          {Array.from({ length: 8 }, (_, i) => {
+            const a = (i / 8) * Math.PI * 2
+            return <circle key={i} cx={16 + Math.cos(a) * 7} cy={13 + Math.sin(a) * 7} r="4.2" fill="var(--pasture)" stroke="var(--ink)" strokeWidth=".8" />
+          })}
+          <circle cx="16" cy="13" r="5.6" fill="var(--paper-hi)" stroke="var(--ink)" strokeWidth=".9" />
+        </>
+      )}
+    </svg>
+  )
+}
 
 interface Placed {
   good: HarvestGood
@@ -79,7 +109,6 @@ export default function HarvestMoment({ goods, active, onLand, onDone }: { goods
   return (
     <div className="harvest-moment" data-moment="harvest" data-goods={placed.length} data-duration={timing.total} aria-hidden="true">
       {placed.map((p, i) => {
-        const Icon = ICON[p.good.unit]
         return (
           <span
             key={i}
@@ -99,7 +128,7 @@ export default function HarvestMoment({ goods, active, onLand, onDone }: { goods
             }
           >
             <span className="harvest-good-arc">
-              <Icon size={22} />
+              <GoodArt unit={p.good.unit} />
             </span>
           </span>
         )

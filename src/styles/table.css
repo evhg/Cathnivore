@@ -5821,20 +5821,17 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   animation: harvest-run var(--hf) cubic-bezier(0.45, 0, 0.3, 1) var(--hd) both;
 }
 .harvest-good-arc {
-  display: grid;
-  place-items: center;
-  width: 30px;
+  display: block;
+  width: 34px;
   aspect-ratio: 1;
-  margin: -15px 0 0 -15px;
-  border-radius: 50%;
-  background: var(--paper);
-  box-shadow: var(--e3);
-  color: var(--ink);
+  margin: -17px 0 0 -17px;
+  filter: drop-shadow(0 3px 2px rgb(var(--shadow-ink) / .35));
   animation: harvest-lift var(--hf) cubic-bezier(0.3, 0, 0.4, 1) var(--hd) both;
 }
-.harvest-good[data-bonus] .harvest-good-arc {
-  outline: 2px solid color-mix(in srgb, var(--sky-golden-low) 40%, var(--ink) 20%);
-  outline-offset: 1px;
+.harvest-art { display: block; width: 100%; height: 100%; }
+.harvest-good[data-bonus] .harvest-art {
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wheat) 80%, var(--ink));
 }
 @keyframes harvest-run {
   0% { translate: var(--hx0) var(--hy0); opacity: 0; }
