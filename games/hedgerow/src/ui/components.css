@@ -5044,3 +5044,22 @@ body:has(#dlg-pause[open]) .paused-note {
      44 px for ten or more */
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img { width: 44px; height: 44px; }
 }
+
+/* Plan item 468: a knockout's Marks fly to the purse (main.ts flyCoin). */
+.coin-fly {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-banner);
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.2em;
+  padding: 0.2em 0.5em;
+  border-radius: 99em;
+  background: var(--mat-brass);
+  box-shadow: 0 0 0 1.5px var(--brass-lo), 0 2px 6px color-mix(in srgb, var(--brass-lo) 45%, transparent);
+  color: var(--marks-ink);
+  font: 850 var(--fs-small) / 1 var(--font-num);
+  pointer-events: none;
+  will-change: transform;
+}

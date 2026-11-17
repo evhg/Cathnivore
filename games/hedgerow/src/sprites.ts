@@ -1821,14 +1821,19 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   ctx.translate(x, y - lift + hover);
   // Plan item 19: a hit squashes the body down and out, then it springs back past rest and settles.
   const q = !look.still && look.hit < 0.24 ? Math.sin((look.hit / 0.24) * Math.PI * 1.5) * (1 - look.hit / 0.24) : 0;
+  // Plan item 468: and it is knocked back about 2 px against its travel for the first 120 ms.
+  const kb = !look.still && look.hit < 0.12 ? s0 * 0.04 * (1 - look.hit / 0.12) : 0;
   // Plan item 285: up or down the lane a vehicle is seen from above, nose along the lane, centred over its ground
   // point (the side view stands on it).
   fromAbove = !!look.heading && TOP_DOWN.has(kind);
   if (fromAbove) {
-    ctx.translate(0, -s * 0.2);
+    ctx.translate(0, -s * 0.2 + (look.heading === "down" ? -kb : kb));
     ctx.rotate(look.heading === "down" ? Math.PI / 2 : -Math.PI / 2);
     ctx.scale(1 + q * 0.16, 1 - q * 0.2);
-  } else ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
+  } else {
+    ctx.translate(-look.facing * kb, 0);
+    ctx.scale(look.facing * (1 + q * 0.16), 1 - q * 0.2);
+  }
   // Hit flash: the sprite itself brightens for a moment (no effect where canvas filters are unsupported).
   if (look.hit < 0.08) ctx.filter = "brightness(1.7)";
   ctx.lineWidth = lw(s0);

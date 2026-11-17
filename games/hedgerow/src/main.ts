@@ -4689,6 +4689,49 @@ function coinFlight(from: HTMLElement, n: number): void {
 /** Pop pitch steps by rung: the smaller the rung that was hit, the higher the pop. */
 const RUNG_STEP: Partial<Record<EnemyKind, number>> = { courier: 7, drone: 7, hatchback: 5, quad: 5, van: 4, pickup: 2, sprinter: 1, lorry: 0, boss: -5 };
 
+// Plan item 468: a knockout's Marks fly from the vehicle to the purse as a coin with '+N' (at most six in the air);
+// the purse bumps as it lands. Reduced motion keeps the count and the field's own floater only.
+let coinsInAir = 0;
+let coinsLanded = 0;
+function flyCoin(x: number, y: number, n: number): void {
+  if (REDUCED || coinsInAir >= 6 || !renderer) return;
+  const from = renderer.cellCenter(x - 0.5, y - 0.5);
+  const purse = ui.hudMarks.parentElement!;
+  const to = purse.getBoundingClientRect();
+  if (!from || to.width === 0) return;
+  const coin = document.createElement("span");
+  coin.className = "coin-fly";
+  coin.setAttribute("aria-hidden", "true");
+  coin.textContent = `+${n}`;
+  document.body.append(coin);
+  coinsInAir++;
+  // The coin sits at the page's corner (components.css) and the keyframes carry it, so no inline style is set.
+  const tx = to.left + to.width / 2;
+  const ty = to.top + to.height / 2;
+  const at = (x: number, y: number, k: number) => `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${k})`;
+  const a = coin.animate(
+    [
+      { transform: at(from.x, from.y, 1), opacity: 1 },
+      { transform: at(from.x + (tx - from.x) * 0.35, from.y + (ty - from.y) * 0.15 - 30, 1.15), opacity: 1, offset: 0.3 },
+      { transform: at(tx, ty, 0.6), opacity: 0.9 },
+    ],
+    { duration: 520, easing: "ease-in" },
+  );
+  const done = () => {
+    coin.remove();
+    coinsInAir--;
+    coinsLanded++;
+    ui.stage.dataset.coins = String(coinsLanded);
+    bump(purse, "gain");
+  };
+  a.onfinish = done;
+  a.oncancel = done;
+}
+
+// Plan item 468: which towers attacked in the last second, for the field's `data-attack` (e2e) and its count.
+const lastAttack = new Map<number, number>();
+let attacks = 0;
+
 function onEvents(g: Game, evs: GameEvent[]): void {
   let shots = 0;
   let gusts = 0;
@@ -4699,6 +4742,8 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "knock":
         knocks.push(RUNG_STEP[ev.from] ?? 3);
         if (ev.to) peeled = true;
+        // Fleet pays a Mark a layer: the knockout's last layer sends its coin to the purse.
+        else flyCoin(ev.x, ev.y, ev.n);
         break;
       case "crown": {
         // A Crown is a moment: a gold banner and a stinger (the camera beat is the banner's 1 s).
@@ -4719,10 +4764,18 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "shot":
         if (shots++ < 2) sfx.playShot(ev.kind, !!ev.crit);
+        {
+          const now = performance.now();
+          lastAttack.set(ev.tower, now);
+          attacks++;
+          ui.stage.dataset.attack = String(attacks);
+          ui.stage.dataset.attackTowers = [...lastAttack].filter(([, t]) => now - t < 1000).map(([id]) => id).join(",");
+        }
         break;
       case "kill":
         // Fleet: the last layer's pop already sounded (its Mark came with the knock); bosses still crash.
         if (ev.bounty > 0 || isBig(ev.kind)) sfx.playKill(isBig(ev.kind));
+        if (ev.bounty > 0) flyCoin(ev.x, ev.y, ev.bounty);
         // Defeat vignette: a beat of slow motion, a gold banner and a word from Cath.
         if (isBig(ev.kind) && !player) {
           banner(`${ENEMIES[ev.kind].name} is beaten`, "The lane is quiet again", true, "hero");
