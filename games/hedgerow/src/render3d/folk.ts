@@ -317,16 +317,18 @@ function hen(f: Folk): Rig {
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  const legs = [hinge("#d99a2b", L * 0.06, L * 0.3, 0, L * 0.3, -L * 0.08), hinge("#d99a2b", L * 0.06, L * 0.3, 0, L * 0.3, L * 0.08)];
+  // Plan item 469: she sits low on sturdier legs: on a 0.06 L leg her body hung a quarter of her height over its own
+  // shadow, and from the field's camera (a low sun) a hen read as floating over the plot.
+  const legs = [hinge("#d99a2b", L * 0.1, L * 0.24, 0, L * 0.24, -L * 0.08), hinge("#d99a2b", L * 0.1, L * 0.24, 0, L * 0.24, L * 0.08)];
   body.add(...legs);
-  body.add(part("ball", col, L * 0.8, L * 0.58, L * 0.55, 0, L * 0.55, 0));
-  body.add(part("cone", col, L * 0.3, L * 0.4, L * 0.3, -L * 0.38, L * 0.78, 0));
+  body.add(part("ball", col, L * 0.8, L * 0.58, L * 0.55, 0, L * 0.48, 0));
+  body.add(part("cone", col, L * 0.3, L * 0.4, L * 0.3, -L * 0.38, L * 0.71, 0));
   const wing = new THREE.Group();
-  wing.position.set(0, L * 0.62, 0);
+  wing.position.set(0, L * 0.55, 0);
   wing.add(part("ball", f.id % 2 ? "#9a5530" : "#e2d6bf", L * 0.45, L * 0.28, L * 0.62));
   body.add(wing);
   const head = new THREE.Group();
-  head.position.set(L * 0.36, L * 0.9, 0);
+  head.position.set(L * 0.36, L * 0.83, 0);
   head.add(part("ball", col, L * 0.3, L * 0.3, L * 0.3));
   head.add(part("ball", "#d4543c", L * 0.14, L * 0.14, L * 0.08, -L * 0.02, L * 0.17, 0));
   const beak = part("cone", "#e7a83a", L * 0.1, L * 0.16, L * 0.1, L * 0.18, 0, 0);
@@ -403,7 +405,7 @@ export class FolkMeshes {
     }
     if (f.kind === "hen") {
       const peck = f.tending ? Math.max(0, Math.sin(f.t * 7 + f.id * 1.7)) : 0;
-      r.head.position.set(r.h * (0.36 + peck * 0.1), r.h * (0.9 - peck * 0.55), 0);
+      r.head.position.set(r.h * (0.36 + peck * 0.1), r.h * (0.83 - peck * 0.5), 0);
       if (r.wing) r.wing.rotation.x = run || cheer ? Math.sin(t * 22 + f.id) * 0.6 : 0;
     }
   }
