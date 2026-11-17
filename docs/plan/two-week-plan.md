@@ -4470,7 +4470,7 @@ Progress (lane B, 2026-11-17 16:35, slice 1): every turn is logged on the saved 
 - **Accept:** `replayFrames` reproduces the solved board exactly in 5-7 s (unit); `e2e-site/runnel-replay.spec.ts` at P and D: `[data-replay]`, `data-replay-step` 1..n, the final tiles equal the solved state, the strip and board shift 0 px; older saves hide Watch; Runnel specs pass; shots start, middle, end at P and D.
 - **Size:** 2-3
 
-## 479. [ ] Hedgerow: the last round as a showdown, the final knockout held
+## 479. [ ] Hedgerow: the last round as a showdown, the final knockout held *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D`/`3d-D`: the climax looks like any round (only the HUD's 10/26 says so); the harvest (item 59) starts cold (VISION 4). Checked: 64, 191 (uses the round's one close-up), 450, 157, 59, 468; nothing in 469's dressing.
 - **Build:** when the last round is called a painted 'LAST ROUND' ribbon unrolls over the field (600 ms), the depot's door goes fully up and the rep steps out (gleeful or rattled), the music takes its top layer and Cath's plate a determined line; the last knockout plays the render clock at 0.35x for 700 ms with the camera held on it (3D) or a 1.15x stage zoom (2D), then a rising chime into the harvest. The engine runs at full speed (render clock only), so the tuner and replays are untouched; reduced motion and webdriver without `?showdown`: the ribbon fades, no slow-down.
 - **Accept:** `#stage[data-showdown]` within 150 ms of the last round's Go (sandbox e2e via `sendWave`, P and D, 2D and 3D); the slow window 600-800 ms by frame timestamps, `.harvest` within 400 ms after; a unit test that a level's engine tick count is unchanged; the reduced-motion path tested; level tests pass; shots of l21 and l34 at P and D.
