@@ -4008,6 +4008,9 @@ body:has(#dlg-pause[open]) .paused-note {
   white-space: nowrap;
   pointer-events: none;
   will-change: transform, opacity;
+  /* Plan item 469: over the top haze (the fx layer sits under it, and on a phone the plate stands in that band, its
+     count washed to a pale ghost). */
+  z-index: calc(var(--z-fx) + var(--z-raise));
 }
 
 /* Plan item 87: at D the shop is a grid of seed packets, three to a row: each tower drawn, its name, its role tag
