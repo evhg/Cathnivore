@@ -24,6 +24,9 @@ export interface FrontDiorama {
 
 /** Low-pressure sodium: a deep amber, a little hotter than the market's own tubes so it reads as one lamp. */
 export const SODIUM = new THREE.Color(1.0, 0.52, 0.16);
+/** Plan item 473: steam where it leaves the grate (lit from below) and where it thins into the dark above. */
+const STEAM_LOW = new THREE.Color(1.1, 0.64, 0.32);
+const STEAM_HIGH = new THREE.Color(0.3, 0.3, 0.33);
 
 function poolTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
@@ -387,10 +390,14 @@ export function buildFrontDiorama(lamp: THREE.Vector3, toward: THREE.Vector3, gr
     for (const p of puffs) {
       const u = (p.o + t * 0.09) % 1;
       const sway = Math.sin((u + p.o) * 6.3) * 0.25;
-      p.s.position.set(grate.x + sway, ground + 0.2 + u * 2.6, grate.z + sway * 0.4);
-      const w = 0.7 + u * 1.8;
+      // Plan item 473: wisps that stay low by the grate, lit from below, and thin out as they climb: the full-height
+      // column's top puff (2.6 m up, 2.5 m wide) hung behind her head on the title as a flat grey plume (hiding it
+      // alone took 9 of the 29 luma there).
+      p.s.position.set(grate.x + sway, ground + 0.15 + u * 1.7, grate.z + sway * 0.4);
+      const w = 0.6 + u * 1.2;
       p.s.scale.set(w, w, 1);
-      p.m.opacity = Math.sin(u * Math.PI) * 0.5;
+      p.m.color.copy(STEAM_LOW).lerp(STEAM_HIGH, u * u * (3 - 2 * u));
+      p.m.opacity = Math.sin(Math.min(1, u * 2.2) * Math.PI * 0.5) * (1 - u) * (1 - u) * 0.55;
     }
   };
   placePuffs(0);
