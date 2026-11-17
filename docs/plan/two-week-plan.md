@@ -4408,7 +4408,7 @@ Pointers (lane B, 2026-11-17 09:50, no change made): the stop is `button.level.n
 - **Accept:** board 340 px+ wide at P, 34%+ of the width at D; zero overlap between Cath and any hex (e2e at P and D); the menu's box at most 22% of the D frame; the title specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 473. [ ] NIGHT SHIFT title: the street behind her, and Cath large on the phone
+## 473. [ ] NIGHT SHIFT title: the street behind her, and Cath large on the phone *(lane B, in progress)*
 
 Read first (lane B, 10:30): item 433 (Cath and her umbrella as one figure) and item 456 (her noir key) set the current title figure; change the framing and street around them, not the figure.
 - **Why:** `ns-title-D` (690-1220 x 0-560): the right half is the black umbrella over a grey, untextured plume; the street behind her reads as a void. `ns-title-P` (2x shot, 180-780 x 740-1260): the umbrella is the biggest shape and her face (540-700 x 1090-1260) is pushed into the corner behind The List (VISION: a clear focal point, Cath the face). Item 331 is the left half; this is the right half and the phone framing.
