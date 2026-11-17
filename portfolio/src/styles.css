@@ -1899,7 +1899,8 @@ h1 {
   .show-cath { left: auto; right: calc(-1 * var(--hang)); top: 1%; width: var(--cath-w); }
   /* her dais under her alone, clear of the wall's last print */
   /* Her dais and light stop 8 px past her (she ends 12 px or more short of the window), so nothing scrolls sideways. */
-  .show-cath::after { left: -12%; right: -8px; }
+  /* plan item 488: centred under her (left -12% with right -8px made a lopsided disc that read as cut by the window) */
+  .show-cath::after { left: -8px; right: -8px; }
   .show-cath::before { left: -40%; right: -8px; }
   /* the lede ends clear of the wall at any width (it measured against the window, and ran under NIGHT SHIFT at 1920) */
   .hero .lede { max-width: min(600px, calc(100% - min(48.8vw, 702px) - 40px)); }

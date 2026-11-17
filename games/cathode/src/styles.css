@@ -3184,9 +3184,12 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-weapon-art {
     background:
       radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .05) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: felt nap */
-      radial-gradient(70% 90% at 50% 40%, color-mix(in srgb, var(--ink) 9%, var(--night)), color-mix(in srgb, var(--ink) 3%, var(--night)));
+      radial-gradient(56% 70% at 50% 48%, color-mix(in srgb, var(--ink) 32%, var(--night)), color-mix(in srgb, var(--ink) 9%, var(--night)) 72%, color-mix(in srgb, var(--ink) 3%, var(--night)));
     box-shadow: inset 0 0 0 1px rgb(var(--ink-rgb) / .1); /* px-ok */
   }
+  /* Plan item 488: the gun read dim grey on the slab (ns-play-P 16-164 x 637-698): a pool of light under it on the
+     felt and the render lifted, so the class gun is the plate's subject. */
+  .cp-sheet[data-dossier] .cp-case.is-lit .cp-gun { filter: brightness(1.75) contrast(1.18) drop-shadow(0 2px 3px rgb(var(--shade-rgb) / .8)); } /* px-ok */
   .cp-sheet[data-dossier] .cp-case-lamp { display: none; }
   .cp-sheet[data-dossier] .cp-case.is-lit .cp-prop { inset: 0; height: auto; }
   .cp-sheet[data-dossier] .cp-case.is-lit .cp-gun { object-fit: cover; object-position: 50% 58%; }
