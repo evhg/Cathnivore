@@ -1471,6 +1471,8 @@ export function buildGround(level: Level): Ground {
     group.userData.moored = moored;
     for (let i = 0; i < 4; i++) {
       const b = buildBoat(rand);
+      // Plan item 469: dinghies, not yachts: at full size a mast stood as tall as the depot beside them.
+      b.scale.setScalar(0.6);
       const z = -0.5 + ((i + 0.5) / 4) * (rows + 1);
       // Plan item 304: clear of the flats (which reach about -2.3 with their spread; the hulls were sliced by them).
       b.position.set(-3.2 - rand() * 1.0, -0.06, z);

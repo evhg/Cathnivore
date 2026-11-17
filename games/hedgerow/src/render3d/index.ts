@@ -580,7 +580,7 @@ export class Renderer3D {
         // Plan item 307: the coast's sea mist and spray (soft puffs a cell across) drift over the water, not the plots,
         // where they read as white blobs in front of the field.
         const still = weather.size >= 1 ? { ...box, x0: -5, x1: -0.7, y0: 0.1, y1: 0.9 } : { ...box, y0: 0.1, y1: 0.9 };
-        this.motes.push(new Motes(Math.round(weather.count * airK), { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : still, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.alpha, additive: weather.additive }));
+        this.motes.push(new Motes(Math.round(weather.count * airK), { kind: "pollen", color: weather.color, size: weather.size, box: weather.fall && weather.fall < 0 ? { ...sky, y1: 2.2 } : weather.fall ? sky : still, wind: weather.wind * wind, fall: weather.fall, alphaMax: weather.size >= 1 ? weather.alpha * 1.6 : weather.alpha, additive: weather.additive, soft: weather.size >= 1 }));
       }
       const coast = lv.id > 20 && lv.id <= 30 ? true : lv.id > 50 && lv.id <= 60;
       if (mood.birds && !hasTwist(lv, "fog")) this.birds = new Birds(mood.birds, cx, cz, span, false, coast ? "#f4f2ec" : "#3b3540");

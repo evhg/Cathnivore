@@ -402,6 +402,9 @@ export interface MoteOptions {
   alphaMax?: number;
   /** Glow additively (embers) instead of blending normally. */
   additive?: boolean;
+  /** A falloff with no flat core, for mist and spray a cell across (plan item 469: with the seed's flat core, the
+   * big puffs read as round bokeh discs, lens dirt, over the sea). */
+  soft?: boolean;
 }
 
 /**
@@ -451,7 +454,10 @@ export class Motes {
         ? `uniform vec3 color; varying float vAlpha; void main() { float d = length(gl_PointCoord - 0.5);
           float a = smoothstep(0.5, 0.0, d); a = a * a * vAlpha; if (a <= 0.003) discard;
           gl_FragColor = vec4(color * a + vec3(smoothstep(0.12, 0.0, d) * vAlpha), a); }`
-        : `uniform vec3 color; varying float vAlpha; void main() { float a = smoothstep(0.5, 0.15, length(gl_PointCoord - 0.5)) * vAlpha;
+        : o.soft
+          ? `uniform vec3 color; varying float vAlpha; void main() { float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
+          a = a * a * a * vAlpha; if (a <= 0.004) discard; gl_FragColor = vec4(color, a); }`
+          : `uniform vec3 color; varying float vAlpha; void main() { float a = smoothstep(0.5, 0.15, length(gl_PointCoord - 0.5)) * vAlpha;
           if (a <= 0.01) discard; gl_FragColor = vec4(color, a); }`,
       transparent: true,
       depthWrite: false,
