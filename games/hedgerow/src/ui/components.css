@@ -2425,10 +2425,32 @@ body:has(#dlg-pause[open]) .paused-note {
    41.5svh with the home-indicator inset inside that cap, so the head is tight and the packets are built to fit:
    two lines of head (name and build; Target and Sell), cost and Ready on one row, and every packet's foot pinned
    level. Badges and Details scroll under the fade below them. e2e-site checks every buy button clears the inset. */
-/* Plan item 468: the hits tally waits for the side panel; on a short upright phone (375x667) it pushed the paths' buttons off the sheet */
-@media (max-width: 899.98px) {
-  .panel-paths .hits-line {
+/* Plan item 468: on an upright phone the hits tally rides the Target and Sell row as 'N hits', taking only the room
+   left there (a basis of 0 never wraps it onto a line of its own: that pushed the paths' buttons off a 375x667 sheet) */
+@media (max-width: 899.98px) and (orientation: portrait) {
+  .panel-paths .tower-titles .hits-line {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .panel-paths .tower-titles .hits-line .hits-when {
     display: none;
+  }
+  /* A short phone shows the Knockouts line: the count follows it. A tall one hides that line: after Sell. */
+  .panel-paths .tower-titles .ko-line + .hits-line::before {
+    content: "· ";
+  }
+}
+@media (max-width: 899.98px) and (orientation: portrait) and (min-height: 701px) {
+  .panel-paths .tower-titles .hits-line {
+    order: 1;
+  }
+  .panel-paths .tower-titles .ko-line + .hits-line::before {
+    content: none;
   }
 }
 @media (max-width: 899.98px) and (min-height: 701px) {

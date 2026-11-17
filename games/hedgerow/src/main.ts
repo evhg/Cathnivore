@@ -1468,7 +1468,12 @@ function syncHits(): void {
   const n = roundHits.wave === game.wave ? (roundHits.by.get(Number(el.dataset.tower)) ?? 0) : 0;
   if (el.dataset.hits === String(n)) return;
   el.dataset.hits = String(n);
-  el.textContent = n === 1 ? "1 hit this round" : `${n.toLocaleString("en-GB")} hits this round`;
+  // 'this round' is its own span: an upright phone's sheet shows just 'N hits' on its Target and Sell row.
+  el.textContent = n === 1 ? "1 hit" : `${n.toLocaleString("en-GB")} hits`;
+  const when = document.createElement("span");
+  when.className = "hits-when";
+  when.textContent = " this round";
+  el.append(when);
 }
 
 /**
