@@ -1,6 +1,6 @@
 // Plan item 52: draw calls per frame and frames per second of Hedgerow's 3D field at a size, in `?sandbox=1`
 // with nothing built (counted by wrapping the WebGL draw functions). Compare before and after a 3D art change.
-// Usage: HEDGEROW_URL=http://localhost:4180/hedgerow/ SIZE=P LEVEL=13 node scripts/hedgerow-drawcalls.mjs
+// Usage: [PARCELS=9] HEDGEROW_URL=http://localhost:4180/hedgerow/ SIZE=P LEVEL=13 node scripts/hedgerow-drawcalls.mjs
 import { chromium } from '@playwright/test'
 
 const base = process.env.HEDGEROW_URL ?? 'http://localhost:4180/hedgerow/'
@@ -25,6 +25,9 @@ await page.goto(`${base}?sandbox=1`)
 await page.evaluate((l) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: Object.fromEntries(Array.from({ length: l - 1 }, (_, i) => [String(i + 1), 3])), seenBefore: { [l]: true }, tips: { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true } })), level)
 await page.goto(`${base}?sandbox=1&level=${level}${process.env.QUERY ?? ''}`)
 await page.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 90000 })
+// Plan item 480: PARCELS=n lays n parcels on the farmhouse step and puts up the sale board (the doorstep's worst case).
+const parcels = Number(process.env.PARCELS ?? 0)
+if (parcels) await page.evaluate((n) => { window.hedgerow.leakDoorstep(n); const g = window.hedgerow.game(); g.goodwill = Math.max(1, Math.floor(g.maxGoodwill * 0.2)) }, parcels)
 await page.waitForTimeout(8000)
 const r = await page.evaluate(() => new Promise((res) => {
   let frames = 0
@@ -37,5 +40,5 @@ const r = await page.evaluate(() => new Promise((res) => {
   }
   requestAnimationFrame(tick)
 }))
-console.log(JSON.stringify({ level, size: `${w}x${h}`, callsPerFrame: Math.round(r.calls), fps: +r.fps.toFixed(1) }))
+console.log(JSON.stringify({ level, parcels, size: `${w}x${h}`, callsPerFrame: Math.round(r.calls), fps: +r.fps.toFixed(1) }))
 await browser.close()

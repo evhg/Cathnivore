@@ -14,6 +14,9 @@ const PH = 0.105;
 const PD = 0.12;
 /** How long a parcel's arc from the lane takes (s). */
 const ARC_S = 0.4;
+/** A parcel carted back slides off the step and up the lane over this long (s); the win's sweep takes this long. */
+const CART_S = 1.4;
+const SWEEP_S = 0.9;
 
 /** The pile's slots in the farmhouse's frame: four on the ground, three on them, one on top, right of the door
  *  (`side` -1 piles them left, for a house at the field's right edge). The door is at x 0, z 0.285. */
@@ -138,6 +141,8 @@ export class Doorstep3D {
   private shown = 0;
   /** The newest parcel's arc: seconds since it was thrown (ARC_S or more: landed). */
   private arc = ARC_S;
+  /** Parcels leaving the step (a clean round's cart-back or the win's sweep): the pile they leave from, its age (s). */
+  private leaving: { from: number; age: number; sweep: boolean } | null = null;
   private side: 1 | -1 = 1;
   private readonly m = new THREE.Matrix4();
   private readonly q = new THREE.Quaternion();
@@ -148,7 +153,8 @@ export class Doorstep3D {
     const mat = new THREE.MeshStandardMaterial({ map: parcelTexture(), roughness: 0.22, metalness: 0 });
     this.parcels = new THREE.InstancedMesh(new THREE.BoxGeometry(PW, PH, PD), mat, DOORSTEP_SHOWN);
     this.parcels.count = 0;
-    this.parcels.castShadow = true;
+    // No shadows: the pile and the board casting doubled their cost on a phone (+7 draw calls, measured with scripts/hedgerow-drawcalls.mjs PARCELS=9), over the item's +3; the pile sits in the house's own shadow.
+    this.parcels.castShadow = false;
     this.parcels.frustumCulled = false;
     const cv = document.createElement("canvas");
     cv.width = 128;
@@ -161,7 +167,7 @@ export class Doorstep3D {
     this.card.rotation.z = -0.08;
     this.card.visible = false;
     this.board = new THREE.Mesh(boardGeometry(), new THREE.MeshStandardMaterial({ map: boardTexture(), roughness: 0.6 }));
-    this.board.castShadow = true;
+    this.board.castShadow = false;
     this.board.visible = false;
   }
 
@@ -183,7 +189,13 @@ export class Doorstep3D {
     if (shown !== this.shown) {
       // A new parcel arcs in; a cart-back or a sweep just takes them away.
       this.arc = shown > this.shown && this.shown >= 0 && !this.reducedMotion ? 0 : ARC_S;
+      // Fewer: the neighbours cart the top one up the lane, or the win's harvest sweeps the lot off the step.
+      this.leaving = shown < this.shown && this.shown > 0 && !this.reducedMotion ? { from: this.shown, age: 0, sweep: !!view?.won } : null;
       this.shown = shown;
+      this.layOut(1);
+    } else if (this.leaving) {
+      this.leaving.age += dt;
+      if (this.leaving.age >= (this.leaving.sweep ? SWEEP_S : CART_S)) this.leaving = null;
       this.layOut(1);
     } else if (this.arc < ARC_S) {
       this.arc = Math.min(ARC_S, this.arc + dt);
@@ -203,11 +215,26 @@ export class Doorstep3D {
 
   /** Places the pile; the newest parcel is `p` (0-1) along its arc from the lane in front of the door. */
   private layOut(p: number): void {
-    this.parcels.count = this.shown;
-    for (let k = 0; k < this.shown; k++) {
+    const go = this.leaving;
+    this.parcels.count = go ? Math.max(this.shown, go.from) : this.shown;
+    for (let k = 0; k < this.parcels.count; k++) {
       const to = parcelSlot3d(k, this.side);
       let tilt = ((k * 37) % 7) * 0.05 - 0.15;
-      if (k === this.shown - 1 && p < 1) {
+      this.s.setScalar(1);
+      if (go && k >= this.shown) {
+        const q = Math.min(1, go.age / (go.sweep ? SWEEP_S : CART_S));
+        const e = 1 - (1 - q) * (1 - q);
+        if (go.sweep) {
+          // skidding off away from the door, hopping, tumbling, shrinking away
+          const kick = 0.7 + ((k * 53) % 5) * 0.15;
+          this.p.set(to.x + this.side * e * 0.9 * kick, to.y + Math.sin(Math.PI * Math.min(1, q * 1.6)) * 0.18 * kick, to.z + e * 0.25);
+          tilt += this.side * e * 3 * kick;
+        } else {
+          // lifted off the pile, then out along the path in front of the door and away
+          this.p.set(to.x * (1 - e), to.y + Math.sin(Math.PI * Math.min(1, q * 2)) * 0.12, to.z + e * 1.4);
+        }
+        this.s.setScalar(Math.max(0.001, 1 - q * q));
+      } else if (k === this.shown - 1 && p < 1) {
         // From the lane, about a cell out in front of the door, over a 0.35-high arc.
         const e = 1 - (1 - p) * (1 - p);
         this.p.set(to.x * e, to.y + (1 - e) * 0.25 + Math.sin(p * Math.PI) * 0.35, to.z + (1 - e) * 0.6);
@@ -217,6 +244,7 @@ export class Doorstep3D {
       this.m.compose(this.p, this.q, this.s);
       this.parcels.setMatrixAt(k, this.m);
     }
+    this.s.setScalar(1);
     this.parcels.instanceMatrix.needsUpdate = true;
   }
 

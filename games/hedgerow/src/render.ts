@@ -4,7 +4,7 @@
 // Projectiles and particles are fed from the engine's event list: the engine is hitscan, so the flight
 // times here are short and only for show.
 
-import { drawDoorstep, drawSaleBoard, type DoorstepView } from "./doorstepart";
+import { CART_SECONDS, drawCart, drawDoorstep, drawSaleBoard, drawSweep, SWEEP_SECONDS, type DoorstepView } from "./doorstepart";
 import { P, PROPERTIES, RUNGS, crackStage } from "./fleet";
 import { PLOT_STITCH, PLOT_STITCH_UNDER } from "./plotlook";
 import { kitFor } from "./fieldkit";
@@ -21,6 +21,8 @@ import {
   isRevealed,
   enemyPoint,
   headingAt,
+  pointAt,
+  pathLength,
   betweenRounds,
   waveSpawns,
   postMarker,
@@ -264,6 +266,12 @@ export class Renderer {
   doorstep: DoorstepView | null = null;
   /** Plan item 480: parcels in the air, from where each leak got through (cells), and their age in seconds. */
   private tossed: Array<{ x: number; y: number; age: number }> = [];
+  /** Plan item 480: handcarts heading up the lane with a parcel (their age in seconds), the returns seen so far, and
+   *  the win's sweep (the parcels it clears and its age). */
+  private carts: number[] = [];
+  private cartsSeen = 0;
+  private sweep: { n: number; age: number } | null = null;
+  private stepWas: DoorstepView | null = null;
   /** Plan item 59: the harvest's Cath walks the beds over the field, so the field's own Cath steps out. */
   harvesting = false;
   /** Plan item 143: the people and animals working the farm. */
@@ -707,6 +715,24 @@ export class Renderer {
     this.parts.push({ x, y, vx: 0, vy: -0.9, g: 0, age: 0, life: 1.1, size: 0.3, color, shape: "text", rot: 0, vr: 0, text, big });
   }
 
+  /** Plan item 480: the doorstep's animations running now (handcarts up the lane, the win's sweep), for tests. */
+  stepAnims(): { carts: number; sweep: boolean } {
+    return { carts: this.carts.length, sweep: !!this.sweep };
+  }
+
+  /** Plan item 480: starts a handcart for each new return and the sweep when the win clears the step. */
+  private watchStep(d: DoorstepView | null): void {
+    const returned = d?.returned ?? 0;
+    if (returned < this.cartsSeen) this.cartsSeen = returned;
+    while (this.cartsSeen < returned) {
+      this.cartsSeen++;
+      if (!this.reducedMotion) this.carts.push(0);
+    }
+    const was = this.stepWas;
+    if (d?.won && was && was.shown > 0 && d.shown === 0 && !this.reducedMotion) this.sweep = { n: was.shown, age: 0 };
+    this.stepWas = d ? { ...d } : null;
+  }
+
   private kick(amount: number): void {
     if (!this.reducedMotion) this.shake = Math.max(this.shake, amount);
   }
@@ -898,20 +924,43 @@ export class Renderer {
     // Sprites in depth order.
     const items: Array<{ y: number; draw: () => void }> = [];
     const end = level.path[level.path.length - 1]!;
+    const side = end[0] >= level.cols - 2 ? -1 : 1;
     items.push({
       y: end[1] + 0.84,
       draw: () => {
         drawFarmhouse(ctx, X(end[0] + 0.5), Y(end[1] + 0.5), s, t, game.goodwill / game.maxGoodwill, kitFor(level).house);
         // Plan item 480: Hollowell's parcels on the step, the newest still arcing in over 400 ms.
         const d = this.doorstep;
+        this.watchStep(d);
         for (const p of this.tossed) p.age += dt;
         this.tossed = this.tossed.filter((p) => p.age < 0.4).slice(-Math.max(0, d?.shown ?? 0));
         if (d && (d.shown || d.card)) {
           const flying = this.tossed.map((p) => ({ from: [X(p.x), Y(p.y)] as [number, number], p: p.age / 0.4 }));
-          drawDoorstep(ctx, d, X(end[0] + 0.5), Y(end[1] + 0.5), s, flying, end[0] >= level.cols - 2 ? -1 : 1);
+          drawDoorstep(ctx, d, X(end[0] + 0.5), Y(end[1] + 0.5), s, flying, side);
+        }
+        // Plan item 480: the win's harvest sweeps the step clear.
+        if (this.sweep) {
+          this.sweep.age += dt;
+          if (this.sweep.age >= SWEEP_SECONDS) this.sweep = null;
+          else drawSweep(ctx, this.sweep.n, X(end[0] + 0.5), Y(end[1] + 0.5), s, this.sweep.age / SWEEP_SECONDS, side);
         }
       },
     });
+    // Plan item 480: after a clean round two neighbours cart a parcel off the step and up the lane toward the depot.
+    if (this.carts.length) {
+      for (let k = 0; k < this.carts.length; k++) this.carts[k]! += dt;
+      this.carts = this.carts.filter((a) => a < CART_SECONDS);
+      const len = pathLength(level.path);
+      for (const age of this.carts) {
+        const p = age / CART_SECONDS;
+        const back = Math.min(len, 0.35 + p * 2.6);
+        const at = pointAt(level.path, len - back);
+        const ahead = pointAt(level.path, len - back - 0.3);
+        const dir = ahead.x < at.x - 0.01 ? -1 : ahead.x > at.x + 0.01 ? 1 : side;
+        const alpha = Math.min(1, age / 0.25) * Math.min(1, (CART_SECONDS - age) / 0.6);
+        items.push({ y: at.y + 0.3, draw: () => drawCart(ctx, X(at.x), Y(at.y + 0.3), s, age, dir, alpha) });
+      }
+    }
     if (this.doorstep?.sale) {
       const gate = level.path[0]!;
       items.push({ y: gate[1] + 0.5, draw: () => drawSaleBoard(ctx, X(gate[0] + 0.5), Y(gate[1] + 0.5), s) });

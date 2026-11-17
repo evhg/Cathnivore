@@ -443,7 +443,7 @@ function syncDoorstep(g: Game): void {
   const n = String(doorstep.parcels);
   if (ui.stage.dataset.doorstep !== n) ui.stage.dataset.doorstep = n;
   const sale = saleBoard(g.goodwill, g.maxGoodwill);
-  if (renderer && "doorstep" in renderer) (renderer as { doorstep: unknown }).doorstep = { ...doorstepShown(doorstep), card: doorstep.card, sale };
+  if (renderer && "doorstep" in renderer) (renderer as { doorstep: unknown }).doorstep = { ...doorstepShown(doorstep), card: doorstep.card, sale, returned: doorstep.returned, won: g.phase === "won" };
   if (sale !== ("saleboard" in ui.stage.dataset)) {
     if (sale) ui.stage.dataset.saleboard = "";
     else delete ui.stage.dataset.saleboard;
@@ -822,6 +822,14 @@ if (SANDBOX)
     // Plan item 480: lay n parcels on the farmhouse step at once (shots and tests), as n leaks would.
     leakDoorstep: (n: number) => {
       for (let k = 0; k < n; k++) doorstepLeak(doorstep);
+      return doorstep.parcels;
+    },
+    // Plan item 480: the 2D doorstep's animations running now (null in 3D).
+    doorstepAnims: () => (renderer as { stepAnims?: () => unknown } | null)?.stepAnims?.() ?? null,
+    // Plan item 480: a clean round's return (the neighbours cart one parcel up the lane), as a cleared round would.
+    cartDoorstep: () => {
+      doorstep.leakedThisRound = false;
+      doorstepCleared(doorstep);
       return doorstep.parcels;
     },
     // Plan item 132: the 3D gate signs' boards (canvas px, like gateQueue); empty in 2D.

@@ -63,6 +63,125 @@ export interface DoorstepView {
   extra: number;
   card: boolean;
   sale: boolean;
+  /** Parcels the neighbours have carted back this level: each rise sends a handcart up the lane. */
+  returned?: number;
+  /** The level is won (its harvest sweeps the step). */
+  won?: boolean;
+}
+
+/** How long the neighbours' handcart takes up the lane, and the win's sweep (seconds). */
+export const CART_SECONDS = 3.2;
+export const SWEEP_SECONDS = 0.9;
+
+const SMOCKS = ["#5f7f4a", "#b5763a"];
+
+/** One neighbour, walking: a smock, a cap, a round face, legs scissoring with `step`. Feet at (x, y). */
+function drawNeighbour(ctx: C, x: number, y: number, s: number, step: number, smock: string, lean: number): void {
+  const h = s * 0.42;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(lean);
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, s * 0.014);
+  ctx.lineCap = "round";
+  const swing = Math.sin(step) * s * 0.05;
+  // trousers: two thick legs scissoring, outlined, with boots
+  for (const sw of [-swing, swing]) {
+    ctx.lineWidth = Math.max(2, s * 0.05);
+    ctx.strokeStyle = INK;
+    ctx.beginPath();
+    ctx.moveTo(sw * 0.2, -h * 0.4);
+    ctx.lineTo(sw, -s * 0.012);
+    ctx.stroke();
+    ctx.lineWidth = Math.max(1, s * 0.032);
+    ctx.strokeStyle = "#4a5266";
+    ctx.stroke();
+  }
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, s * 0.014);
+  ctx.fillStyle = smock;
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.06, -h * 0.35);
+  ctx.lineTo(s * 0.06, -h * 0.35);
+  ctx.lineTo(s * 0.045, -h * 0.78);
+  ctx.lineTo(-s * 0.045, -h * 0.78);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#e9c3a0";
+  ctx.beginPath();
+  ctx.arc(0, -h * 0.9, s * 0.045, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = INK;
+  ctx.fillRect(-s * 0.05, -h * 0.98 - s * 0.03, s * 0.1, s * 0.025);
+  ctx.restore();
+}
+
+/**
+ * The neighbours carting one of Hollowell's parcels back: a wooden handcart with the parcel aboard, one neighbour at
+ * the shafts, one pushing behind. (x, y) is the cart's foot, `dir` the way it faces (1 right, -1 left), `t` seconds.
+ */
+export function drawCart(ctx: C, x: number, y: number, s0: number, t: number, dir: 1 | -1, alpha = 1): void {
+  // drawn a size up from the step's parcels, so the neighbours stand as tall as the farm's own folk
+  const s = s0 * 1.6;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  const step = t * 9;
+  drawNeighbour(ctx, x + dir * s * 0.32, y, s, step, SMOCKS[0]!, dir * 0.12);
+  drawNeighbour(ctx, x - dir * s * 0.3, y, s, step + Math.PI, SMOCKS[1]!, dir * 0.18);
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, s * 0.014);
+  // the shafts, the bed and a wheel
+  ctx.beginPath();
+  ctx.moveTo(x + dir * s * 0.12, y - s * 0.11);
+  ctx.lineTo(x + dir * s * 0.3, y - s * 0.17);
+  ctx.stroke();
+  ctx.fillStyle = "#8a5a32";
+  ctx.fillRect(x - s * 0.15, y - s * 0.14, s * 0.3, s * 0.05);
+  ctx.strokeRect(x - s * 0.15, y - s * 0.14, s * 0.3, s * 0.05);
+  ctx.fillStyle = "#6b4a2b";
+  ctx.beginPath();
+  ctx.arc(x, y - s * 0.055, s * 0.055, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  const a = t * 6 * dir;
+  ctx.moveTo(x + Math.cos(a) * s * 0.05, y - s * 0.055 + Math.sin(a) * s * 0.05);
+  ctx.lineTo(x - Math.cos(a) * s * 0.05, y - s * 0.055 - Math.sin(a) * s * 0.05);
+  ctx.stroke();
+  drawParcel(ctx, x, y - s * 0.135, s0 * 1.05, dir * -0.05);
+  ctx.restore();
+}
+
+/**
+ * The win's harvest sweeping the step: the parcels that were there skid off away from the door, tumble and fade,
+ * chased by a gust of straw. `p` runs 0 to 1 over SWEEP_SECONDS.
+ */
+export function drawSweep(ctx: C, n: number, x: number, y: number, s: number, p: number, side: 1 | -1 = 1): void {
+  const base = y + s * 0.34;
+  const e = 1 - (1 - p) * (1 - p);
+  ctx.save();
+  for (let k = 0; k < Math.min(n, DOORSTEP_SHOWN); k++) {
+    const [px, py] = parcelSlot(k, x, base, s, side);
+    const kick = 0.6 + ((k * 53) % 5) * 0.18;
+    ctx.globalAlpha = Math.max(0, 1 - p * 1.1);
+    const hop = Math.sin(Math.PI * Math.min(1, p * 1.6)) * s * 0.18 * kick;
+    drawParcel(ctx, px + side * e * s * 1.1 * kick, py + e * s * 0.12 - hop, s, side * e * 3 * kick);
+  }
+  // the gust: straw strokes sweeping out from the door
+  ctx.globalAlpha = Math.max(0, Math.sin(Math.PI * p)) * 0.9;
+  ctx.strokeStyle = "#e3c46a";
+  ctx.lineWidth = Math.max(1, s * 0.02);
+  ctx.lineCap = "round";
+  for (let k = 0; k < 7; k++) {
+    const r = s * (0.25 + k * 0.1) + e * s * 0.5;
+    const a0 = -0.5 + k * 0.17;
+    ctx.beginPath();
+    ctx.arc(x, base, r, side === 1 ? a0 : Math.PI - a0 - 0.5, side === 1 ? a0 + 0.5 : Math.PI - a0);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** The pile and the card by the farmhouse at (x, y) (the house's cell centre), at cell size s. */
