@@ -741,11 +741,13 @@ export class Board {
       const at = fresh && depth !== undefined && Number.isFinite(minNewDepth) ? arrivalMs(depth, minNewDepth, settle) + CASCADE_MS : 0
       for (let d = 0; d < 6; d++) {
         if (!(mask & (1 << d))) continue
-        const p = edgePoint(d, APOTHEM * 0.93)
+        // Plan item 470: a little in from the edge (0.93 straddled the hex border as an oval and read as a glitch),
+        // and a lobed puddle, not a perfect ellipse, so it reads as water on the ground.
+        const p = edgePoint(d, APOTHEM * 0.86)
         const g = el('g', { class: fresh ? 'puddle splash' : 'puddle', transform: `translate(${(c.x + p.x).toFixed(2)} ${(c.y + p.y).toFixed(2)}) rotate(${d * 60})` }, this.puddles)
         g.dataset.spill = String(i)
         g.style.setProperty('--delay', `${fresh ? at : 0}ms`)
-        el('ellipse', { rx: 9, ry: 13, class: 'puddle-water' }, g)
+        el('path', { d: puddlePath(i * 7 + d), class: 'puddle-water' }, g)
         el('ellipse', { rx: 4, ry: 6, cx: -1, cy: -2, class: 'puddle-shine' }, g)
         if (fresh) {
           el('ellipse', { rx: 9, ry: 13, class: 'splash-ring' }, g)
@@ -837,4 +839,24 @@ function fieldSprouts(key: string): Array<[number, number]> {
     out.push([Math.cos(a) * r, Math.sin(a) * r + 2])
   }
   return out
+}
+
+/** Plan item 470: a spill's puddle outline (about 9 x 13 like the ellipse it replaced): a smooth closed curve through
+ *  the midpoints of eight seeded lobe points, each point its curve's control. */
+function puddlePath(seed: number): string {
+  let h = (seed * 2654435761) >>> 0
+  const rnd = () => (h = (Math.imul(h, 1664525) + 1013904223) >>> 0) / 4294967296
+  const pts: Array<[number, number]> = []
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2
+    const w = 0.82 + rnd() * 0.32
+    pts.push([Math.cos(a) * 9 * w, Math.sin(a) * 13 * w])
+  }
+  const mid = (a: [number, number], b: [number, number]) => `${((a[0] + b[0]) / 2).toFixed(1)} ${((a[1] + b[1]) / 2).toFixed(1)}`
+  let d = `M${mid(pts[0]!, pts[1]!)}`
+  for (let k = 1; k <= 8; k++) {
+    const c = pts[k % 8]!
+    d += ` Q${c[0].toFixed(1)} ${c[1].toFixed(1)} ${mid(c, pts[(k + 1) % 8]!)}`
+  }
+  return `${d} Z`
 }
