@@ -5,6 +5,7 @@
 // isn't available.
 
 import { fitCamera3d } from "./camerafit";
+import { brambleGeometry } from "./bramble";
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { BACKDROP_SKY_Y, BACKDROP_Z, buildBackdrop } from "./backdrop";
@@ -407,8 +408,7 @@ export class Renderer3D {
     this.scene.add(this.selection, this.rangeRing, this.aimDisc, this.postRing, this.heroHalo, this.coachRing);
     // Plan item 468: a slowed vehicle is caught in brambles, a thorny tangle round its wheels (one instanced draw call).
     {
-      const arch = new THREE.TorusGeometry(0.3, 0.032, 5, 16, Math.PI);
-      this.brambles = new THREE.InstancedMesh(arch, new THREE.MeshLambertMaterial({ color: "#5fa83a", emissive: "#1d3a10" }), 160);
+      this.brambles = new THREE.InstancedMesh(brambleGeometry(), new THREE.MeshLambertMaterial({ vertexColors: true, emissive: "#14280a" }), 160);
       this.brambles.count = 0;
       this.brambles.frustumCulled = false;
       this.scene.add(this.brambles);
