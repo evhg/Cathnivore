@@ -4392,7 +4392,7 @@ Progress (lane A, 2026-11-17 05:26, slice 1): the queue's 'pink blocks under hal
 - **Accept:** each point fixed or logged as kept with a reason; the specs for each screen pass; shots P and D before and after.
 - **Size:** 1-2
 
-## 471. [ ] Hedgerow act map: every stop a place you want to go
+## 471. [ ] Hedgerow act map: every stop a place you want to go *(lane B, in progress)*
 - **Why (critique 2026-11-17 09:50, shots `e2e/screenshots/plan1117c`):** `hedge-menu-D` (300-1060 x 320-440, 85-1060 x 725-850): the ten stops are identical glass bubbles, each a line icon with a padlock, an H badge and a number chip, beside the real landmarks (the lighthouse, the beach huts) drawn loose on the map; `hedge-menu-P` (10-380 x 210-560) reads as a list of cream pills and padlocks with the level card over the trail's foot. The first screen of Hedgerow is a menu, not a country (VISION: every screen designed, not laid out; item 73's vignettes don't show).
 - **Build:** each stop a small diorama of its level's own landmark (radio mast, lighthouse, blimp, beach huts...) on a turf plinth ringed by hedge, in the map's ink-and-wash: locked a pencil under-drawing (graphite lines, no fill, no padlock); next in full colour with a sun-glow and Cath standing on it; won coloured with its stars as stamped seals. The H and number badges merge into one small inked tag. On the phone one winding trail with the names set on the land (no pills), the level card docked below the trail, never over a stop.
 - **Accept:** each stop 110 px+ wide at D; no two adjacent stops share a landmark (`data-landmark`, e2e); no padlock glyph; at P no stop under the card; Cath 90 px+ at D, 60+ at P; shots P and D for acts 1, 3 and 6; the act-map specs pass.
