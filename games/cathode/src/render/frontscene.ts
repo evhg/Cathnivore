@@ -13,6 +13,8 @@
 import { gunIcon, gunReel, type GunReel } from "./gunportrait";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
+import { testFireLook } from "../game/testfire";
+import type { ClassId } from "../sim/types";
 import { createWorld } from "./world";
 import { AutoScale, frontDynOptions } from "../game/autoscale";
 import type { Quality, World } from "./types";
@@ -48,7 +50,7 @@ export interface FrontScene {
   menuMood(id: string): void;
   /** Plan item 464: a test shot on the pick: a muzzle flash at the gun in her hand and a small camera kick (none
    *  under reduced motion). */
-  testFire(): void;
+  testFire(cls?: ClassId): void;
   /** Where she sits across the frame: 0 centre, 1 the right edge (default 0.42, the right third). */
   setFraming(k: number): void;
   /**
@@ -262,6 +264,25 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Plan item 338: the pick's stoop behind her (a door, a bare bulb, its baked warm light), shown only on the pick.
   const stoop = buildFrontStoop(feet, Math.PI, feet.y);
   world.scene.add(stoop.group);
+  // Plan item 464: a test-fire target on the pick: a bottle on a crate at her right, in the stoop's light. A test
+  // shot breaks the bottle (glass flies); later shots splinter the crate; a new class stands a fresh bottle.
+  const target = new THREE.Group();
+  {
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.36), new THREE.MeshStandardMaterial({ color: 0x7a5434, roughness: 0.85 }));
+    crate.position.y = 0.18;
+    const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.04, 0.24, 10), new THREE.MeshStandardMaterial({ color: 0x1f6a3a, roughness: 0.15, metalness: 0.1, emissive: 0x1d6a38 }));
+    bottle.position.y = 0.36 + 0.12;
+    bottle.name = "bottle";
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.03, 0.09, 8), bottle.material);
+    neck.position.y = 0.165;
+    bottle.add(neck);
+    target.add(crate, bottle);
+  }
+  target.position.copy(toWorld(0.42, 0, -0.6));
+  target.position.y = world.floorAt?.(target.position.x, feet.y + 1, target.position.z) ?? feet.y;
+  target.visible = false;
+  world.scene.add(target);
+  const bottle = target.getObjectByName("bottle")!;
   // Plan item 457: and behind the stoop, each class's own set (rooftop, locker, back room, server alley, workbench).
   const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
   world.scene.add(sets.group);
@@ -889,6 +910,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
     diorama.update(time, o.still, cam.position);
     stoop.update(wd.w, wd.cls);
+    target.visible = wd.w > 0.5;
+    if (target.visible) {
+      const ndc = target.position.clone().setY(target.position.y + 0.4).project(cam);
+      const at = `${ndc.x.toFixed(2)},${ndc.y.toFixed(2)}`;
+      if (world.renderer.domElement.dataset.targetAt !== at) world.renderer.domElement.dataset.targetAt = at;
+    }
     sets.update(wd.w, wd.cls, o.still ? Infinity : dt);
     // The rim follows the back light as the camera moves round her.
     cam.updateMatrixWorld();
@@ -1114,6 +1141,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         }
         wd.flash = FLASH_S;
       }
+      if (cls !== wd.cls) {
+        bottle.visible = true;
+        world.renderer.domElement.dataset.target = "standing";
+      }
       wd.cls = cls;
       wd.target = cls ? 1 : 0;
       const c = cls ? CLASS_KEY[cls] ?? CLASS_KEY.ghost! : [0, 0, 0];
@@ -1144,14 +1175,34 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         frame(0);
       }
     },
-    testFire() {
+    testFire(cls) {
+      const look = cls ? testFireLook(cls) : null;
       const at = new THREE.Vector3();
       // The gun in her hand; with it slung (the Ghost carries her rifle on her back, item 449), her posing hand.
       if (!cath.propWorld(at)) at.fromArray(cath.poseState.hand).applyMatrix4(cath.group.matrixWorld);
       // Out from her gun, across the frame toward the open street (her right of frame), a little toward the lens.
       const dir = new THREE.Vector3().subVectors(cam.position, at).normalize().multiplyScalar(0.35);
       dir.add(new THREE.Vector3(1, 0.05, 0).applyQuaternion(cath.group.quaternion)).normalize();
-      world.fx.muzzle(at.clone().addScaledVector(dir, 0.35), dir, 0.8);
+      // At the target when it stands: the bottle first, then the crate.
+      const hit = target.visible ? (bottle.visible ? bottle.getWorldPosition(new THREE.Vector3()) : target.position.clone().setY(target.position.y + 0.22)) : null;
+      if (hit) dir.subVectors(hit, at).normalize();
+      const tip = at.clone().addScaledVector(dir, 0.35);
+      world.fx.muzzle(tip, dir, look?.size ?? 0.8, false, undefined, look ? new THREE.Color(...look.flash) : undefined);
+      // A casing kicks out to her right and up, and rings on the wet ground (the revolver keeps its brass, the
+      // launcher has none).
+      if (look && look.voice !== "revolver" && look.voice !== "launcher") {
+        const side = new THREE.Vector3(0, 0, 1).applyQuaternion(cath.group.quaternion);
+        world.fx.casing(at.clone().addScaledVector(dir, 0.08), side.multiplyScalar(1.6).add(new THREE.Vector3(0, 2.2, 0)));
+      }
+      if (hit) {
+        const back = dir.clone().negate();
+        if (bottle.visible) {
+          bottle.visible = false;
+          world.fx.shards?.(hit, dir, new THREE.Color(0.3, 1.2, 0.5));
+          world.fx.impact(hit, back, "glass", 1.2);
+        } else world.fx.impact(hit, back, "wood", 1);
+        world.renderer.domElement.dataset.target = bottle.visible ? "standing" : "broken";
+      }
       if (!idleReduce && !o.still) spring.vy += 0.6;
       world.renderer.domElement.dataset.testfire = String(Number(world.renderer.domElement.dataset.testfire ?? 0) + 1);
     },

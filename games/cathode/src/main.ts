@@ -730,7 +730,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           onThump: () => audio.thump(),
           onCommit: () => scene?.ready(),
           // Plan item 464: a test shot: her muzzle flashes and the class's own gun sounds.
-          onTestFire: (c) => (scene?.testFire(), audio.testFire(c)),
+          onTestFire: (c) => (scene?.testFire(c), audio.testFire(c)),
           gunReel: pickGunReel,
           gunIcon: pickGunIcon,
         },

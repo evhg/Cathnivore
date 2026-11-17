@@ -456,8 +456,11 @@ export function createFx(o: {
         lights[i]!.intensity = 0;
       }
     },
-    muzzle(pos, dir, size = 1, suppressed = false, light) {
+    muzzle(pos, dir, size = 1, suppressed = false, light, tint) {
       const d = dir.clone().normalize();
+      // Plan item 464: the pick's test shot wears its class colour.
+      const hot = tint ? WHITE_HOT.clone().multiply(tint) : WHITE_HOT;
+      const orange = tint ? ORANGE.clone().multiply(tint) : ORANGE;
       if (suppressed) {
         // S2.3: the can eats the flash. Only a faint warm light on the wet street for 40 ms (the viewmodel draws
         // the puff and the smoke at the crown); the old 0.2 to 0.36 m white cross is gone. The spec's 0.6, in the
@@ -469,11 +472,11 @@ export function createFx(o: {
       // a muzzle 40 cm from the eye filled the screen with a white cross. Their world share is the sparks, the
       // smoke and the light on the street.
       if (!light) {
-        spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: WHITE_HOT });
-        spawn({ pos: pos.clone().addScaledVector(d, 0.18 * size), vel: d.clone().multiplyScalar(2), kind: K.streak, additive: true, life: 0.05, size0: 0.09 * size, len: 0.5 * size, color: ORANGE });
+        spawn({ pos: pos.clone().addScaledVector(d, 0.05 * size), kind: K.flash, additive: true, life: 0.055, size0: 0.28 * size, size1: 0.36 * size, color: hot });
+        spawn({ pos: pos.clone().addScaledVector(d, 0.18 * size), vel: d.clone().multiplyScalar(2), kind: K.streak, additive: true, life: 0.05, size0: 0.09 * size, len: 0.5 * size, color: orange });
       }
       for (let i = 0; i < 5; i++)
-        spawn({ pos: pos.clone(), vel: cone(d, 0.35, new THREE.Vector3()).multiplyScalar(14 + rand() * 10), kind: K.streak, additive: true, life: 0.06 + rand() * 0.06, size0: 0.008, len: 0.12, color: ORANGE, drag: 3 });
+        spawn({ pos: pos.clone(), vel: cone(d, 0.35, new THREE.Vector3()).multiplyScalar(14 + rand() * 10), kind: K.streak, additive: true, life: 0.06 + rand() * 0.06, size0: 0.008, len: 0.12, color: orange, drag: 3 });
       // Her own guns' muzzle is 40 cm from the eye: a world puff there grew into a grey veil over the lower frame
       // (C18 review, phone). The viewmodel's GunSmoke draws her smoke at the crown; the world's starts 1.5 m out.
       if (light) spawn({ pos: pos.clone().addScaledVector(d, 1.5), vel: d.clone().multiplyScalar(0.8).add(tmpV.set(0, 0.25, 0)), kind: K.smoke, life: 0.7, size0: 0.1 * size, size1: 0.35 * size, color: ambient(pos, new THREE.Color(0.7, 0.7, 0.72), 0.3), alpha: 0.18, drag: 1.5 });
