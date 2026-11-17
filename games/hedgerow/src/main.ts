@@ -378,7 +378,9 @@ ui.heroFace.innerHTML = cathSvg({ framing: "face", expression: "determined", out
 
 // Plan item 116: `?keyart` is the site poster's frame (scripts/keyart.mjs): the field alone, no HUD, panel,
 // controls or Cath's lines (styles.css "key art").
-if (new URLSearchParams(location.search).has("keyart")) document.documentElement.dataset.keyart = "";
+const KEYART = new URLSearchParams(location.search).has("keyart");
+if (KEYART) document.documentElement.dataset.keyart = "";
+const keyartBorn = performance.now();
 
 let game: Game | null = null;
 /** 3D when WebGL is there (and `?2d` isn't asked for); the 2D canvas renderer otherwise. */
@@ -5334,7 +5336,12 @@ function frame(now: number): void {
         tip("pie-ready", "Pie's ready. Tap it, then tap the thick of them.", "delighted");
     }
   }
-  renderer.draw(g, paused || introHold ? 0 : dt * Math.min(speed, 2));
+  // Plan item 469: a stable 3D key-art frame. Under `?keyart` the 3D world runs 5 s (the camera settles, the crops
+  // and folk take their places), then its clock stands still between rounds, so two shots of an act's frame match
+  // (sway, ripples, drifting cloud shadows and sparks all stop). `data-keyart-still` tells the shot script.
+  const still = KEYART && is3D(renderer) && g.phase !== "wave" && now - keyartBorn > 5000;
+  if (KEYART) document.documentElement.toggleAttribute("data-keyart-still", still);
+  renderer.draw(g, paused || introHold || still ? 0 : dt * Math.min(speed, 2));
   syncFieldFit();
   syncCathSay(g, now);
   syncTwists(g);
