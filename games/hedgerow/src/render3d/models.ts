@@ -1407,7 +1407,9 @@ function hatchback(body: string, trim: string): THREE.Group {
     });
   const bodyMat = plastic(body);
   g.add(mesh(extrude("hatchBody", [[-0.215, 0.04], [0.215, 0.04], [0.225, 0.12], [0.12, 0.16], [-0.2, 0.2], [-0.222, 0.18]], w - 0.024), bodyMat, 0, 0, 0));
-  g.add(mesh(extrude("hatchGlass", [[0.11, 0.165], [0.015, 0.255], [-0.15, 0.255], [-0.19, 0.198]], w - 0.05), glass(), 0, 0, 0));
+  // Plan item 469: tinted glass that holds a little sky (the near-black glass read as a hole from the field camera,
+  // which sees the queue's rears, so each car was a pink block with a black slot).
+  g.add(mesh(extrude("hatchGlass", [[0.11, 0.165], [0.015, 0.255], [-0.15, 0.255], [-0.19, 0.198]], w - 0.05), glass("#3d5c78"), 0, 0, 0));
   // Plan item 410: the roof in the livery's second colour (the 2D sprite's stripe), so from the field camera, which
   // sees roofs, each car is two-tone glossy plastic rather than one pink lozenge.
   g.add(box(0.17, 0.018, w - 0.03, plastic(trim), -0.065, 0.268, 0));
@@ -1417,10 +1419,16 @@ function hatchback(body: string, trim: string): THREE.Group {
   // A trim line along each flank, the pillars between screen and side glass, and the lights.
   for (const side of [-1, 1]) {
     g.add(box(0.4, 0.016, 0.004, glow(trim, 0.6), -0.005, 0.12, side * (w / 2 + 0.001)));
-    g.add(box(0.012, 0.03, 0.03, glow("#ff2a2a", 1.8), -0.226, 0.13, side * w * 0.34));
+    // Plan item 469: tail-light clusters wide enough to read from the field camera, and the livery's ring decal
+    // on each door.
+    g.add(box(0.012, 0.03, 0.05, glow("#ff2a2a", 1.8), -0.226, 0.13, side * w * 0.33));
+    g.add(rot(cyl(0.032, 0.032, 0.004, matte("#fff6fa", 0.5), 0.01, 0.1, side * (w / 2 + 0.003), 12), Math.PI / 2));
+    g.add(rot(cyl(0.018, 0.018, 0.005, plastic(body), 0.01, 0.1, side * (w / 2 + 0.003), 12), Math.PI / 2));
     g.add(ball(0.022, glow("#fff2b0", 2.5), 0.226, 0.1, side * w * 0.32, 0));
   }
   g.add(box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), 0.23, 0.05, 0), box(0.03, 0.03, w * 1.02, metal("#3a3d42", 0.5), -0.23, 0.05, 0));
+  // A number plate on the hatch, so its rear reads as a car's.
+  g.add(box(0.004, 0.026, 0.08, matte("#f4f0e2", 0.5), -0.232, 0.09, 0));
   const wheels: THREE.Object3D[] = [];
   // Plan item 410: the tyres stand a little proud of the body, so from above a black edge marks each wheel.
   for (const x of [-0.14, 0.14])
