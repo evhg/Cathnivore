@@ -4478,7 +4478,7 @@ Progress (lane B, 2026-11-17 16:35, slice 1): every turn is logged on the saved 
 - **Accept:** `[data-doorstep]` count = leaks minus clean-round returns (unit and sandbox e2e); the sale board under 25% only; draw calls +3 or fewer (`hedgerow-drawcalls`); parcels without the arc under reduced motion; shots P and D, 2D and 3D, at 0, 3 and 8 leaks.
 - **Size:** 2
 
-## 481. [ ] NIGHT SHIFT class pick: see each skill tree in action
+## 481. [ ] NIGHT SHIFT class pick: see each skill tree in action *(lane B, in progress)*
 - **Why:** `ns-play-D` (998-1275 x 625-770): the three trees are lines of text; `ns-play-P` chips. Optic camo, marks and bullet-time exist in the game (`game/actives.ts`, `sim/stealth.ts`) but are never shown before play (VISION 3). Checked: 464 (reuses its bottle target), 397, 210 (layout kept, rows become buttons), 400, 434, 449, 457; her model untouched (319).
 - **Build:** each tree row or chip a button (and T): it plays that tree's signature active on the stage in 1.5-2.5 s with the game's own effects (Shroud: her coat shimmers into optic camo; Cold Read: a mark glow and weak-spot ring on the target; Longshot: 0.3x bullet-time and a tracer breaking the bottle), all 15 trees in class-by-class slices; a one-line caption in Cath's voice; a class switch cancels it; reduced motion keeps the effect and caption without the time change.
 - **Accept:** `[data-skillpreview=<tree>]` per tree and a unit test mapping all 15 to an existing active; press to first visual change ≤ 150 ms (e2e P and D); the vignette clear of the sheet and her face; cathode-perf alone in budget; shots of one per class at P and D.
