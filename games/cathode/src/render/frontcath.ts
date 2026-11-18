@@ -2297,7 +2297,9 @@ float reliefShade( vec2 uv ) {
     // (a torus round the oval sleeve stood off it at the sides and read as a floating bracelet).
     const d = wr.clone().sub(foreA).normalize();
     const tAt = 1 - 0.04 / foreA.distanceTo(wr);
-    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), gloveMat, parent);
+    // Plan item 319 slice 81: the strap is the coat's own cloth at the facing's tone (coatMat), not glossy black
+    // leather: a lit leather ring round each forearm read as a ball-joint seam at the wrist (critique 2026-11-18).
+    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), coatMat, parent);
   };
   // Plan item 319 slice 73: the shoulder joints 7 mm in, with the coat's narrower shoulder line.
   const shoulderR = V(-0.143, 0.25, -0.005);
@@ -2347,7 +2349,7 @@ float reliefShade( vec2 uv ) {
     add(tube, sleeveMat, chest).name = "cath-sleeve-r";
     // The cuff strap, on the turn-back.
     // Plan item 319: a flat band on the sleeve (see the left arm's).
-    addS(cuffBand(curve.getPointAt(0.9), curve.getTangentAt(0.9), radius(0.9), 1, seg(24)), gloveMat, chest);
+    addS(cuffBand(curve.getPointAt(0.9), curve.getTangentAt(0.9), radius(0.9), 1, seg(24)), coatMat, chest);
   }
   // Plan item 147: her right hand is a gloved fist round the umbrella's shaft, not a mitt: the back of the hand
   // outside the shaft, four fingers curling round its front (index highest, the little finger smallest), the

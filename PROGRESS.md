@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (11:51 11-18): item 498 done (985266c2: the Ghost's rifle clears her hood, `slungBox()`; dark share and perf checked). Open unclaimed: 319, 471, 486, 495, 496, 497 (6: plan next when under 3). CI green on f6f773c1. Next release 19:51 11-18.
+- Lane A (12:51 11-18): item 319 slices 80-81 (the trench in tones via `COAT_TONE`; cuff straps in matte coat cloth, not glossy leather rings), handed back. Next from the 11-18 critique list: elbow seam (the left arm is two IK'd tubes; one skinned tube would end it), hair slabs, face liner/catchlights at pick distance. Open unclaimed: 319, 471, 486, 495, 496. Next release 19:51 11-18.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 12:51 lane A session:** 319 slices 80-81. cathode-front/classpick (face, looks, hero, class), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, a2, a3).
 - 2026-11-18 12:21 lane B: 497 slice 3 and done; margins, field, crayon, landmark, rollout (P, D, 23), margins unit, keyart-fresh pass; 497 measure h497c.
 - **2026-11-18 11:51 lane A session:** 498 slice 2 and done. cathode-setprops (with the new slung check) and cathode-classpose (D) pass; keyart-fresh after re-rendering posters and key art; cathode-perf alone within budget; tsc, eslint. No full check. Lock released. Shots scratchpad p498 (before, m0, m1, a2).
 - **2026-11-18 10:51 lane A session:** 498 slice 1. cathode-setprops (new, D), classstage (D), setprops unit (new), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad p498 (before, a1-a3).
@@ -56,4 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-18 06:51 lane A session:** 494 done (slices 1-2 and the measure). cathode-frontpage (new unit test and spec, P and D), cathode-front's dossier/mugshot/captions/never-meet/upright cases (P, D, 375x667), cathode-type, ui-css-lint, tsc, eslint, paper-cover measure (new). Full `npm run check` passed (322 files, 2783 tests). Lock released. Shots scratchpad p494.
 - **2026-11-18 05:51 lane A session:** 491 slice 2 and done, 493 slices 1-2 and done. portfolio-studio (new), portfolio-present, site-hero, site.spec's portfolio axe, hedgerow-plate-preview (new), level-card, hedgerow-map, depart, masthead, map-you pass at P and D; portfolio units, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (321 files, 2778 tests). Lock released. Shots scratchpad s491, s493.
 - 2026-11-18 06:21 lane B: 492 slice 2; hedgerow-cathlevel (now with the trail and its reduced-motion path), cath2d (P, D, 10), keyart-fresh pass.
-- 2026-11-18 05:21 lane B: 492 slice 1; hedgerow-cathlevel (new), cath2d, showdown, fleet3d (P, D, 14), hedgerow-water (D), keyart-fresh, hedgerow-fleet unit pass.
