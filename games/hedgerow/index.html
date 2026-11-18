@@ -36,7 +36,7 @@
   <body>
     <div class="app">
       <section id="screen-select" class="screen">
-        <header class="top">
+        <header class="top" data-masthead="gate">
           <a class="back" href="/" aria-label="All games">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M15 5 8 12l7 7" />
@@ -45,6 +45,7 @@
           </a>
           <h1 class="wordmark">Hedgerow</h1>
           <div class="top-tools">
+          <div class="keys-side keys-l">
           <button class="bank-btn cath-btn" id="btn-cath" type="button">
             <span class="cath-btn-face" id="cath-btn-face" aria-hidden="true"></span>
             <span>Cath <b class="num" id="cath-level">1</b></span>
@@ -57,6 +58,8 @@
           <button class="bank-btn" id="btn-continue" type="button" hidden>
             <span aria-hidden="true">▶</span> <span class="bank-word" id="continue-word">Continue</span>
           </button>
+          </div>
+          <div class="keys-side keys-r">
           <button class="bank-btn almanac-btn" id="btn-almanac" type="button" aria-label="Almanac">
             <span class="chip-ico" aria-hidden="true">&#128214;</span> <span class="bank-word">Almanac</span>
           </button>
@@ -84,6 +87,7 @@
             <span class="chip-ico" aria-hidden="true">★</span> <span class="num" id="bank-stars">0</span>
             <span class="bank-word">Seed Bank</span>
           </button>
+          </div>
           </div>
         </header>
         <div class="map-hud" id="map-hud">
