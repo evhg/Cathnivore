@@ -3348,7 +3348,7 @@ export class Renderer3D {
     let folkPlain = 0;
     this.folkMeshes.group.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
+      if (!m.isMesh || m.userData.prop) return;
       if ((m.material as THREE.Material).type === "MeshToonMaterial") folkToon++;
       else folkPlain++;
     });

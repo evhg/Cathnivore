@@ -358,6 +358,8 @@ export class FolkMeshes {
     this.group.name = "farmfolk";
     this.lanterns.count = 0;
     this.lanterns.frustumCulled = false;
+    // a lit lantern, not a figure: the people's toon check (item 255) leaves it out
+    this.lanterns.userData.prop = true;
     this.group.add(this.lanterns);
   }
 
