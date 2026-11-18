@@ -687,7 +687,7 @@ export const FARMHOUSE_3D_SCALE = 1.6;
 
 /** Plan item 486: how an upright phone's lane ribbon is toned per act, apart from its beds (darker where the beds are
  *  light; lighter where they are dark earth). */
-const PHONE_LANE: Record<number, number> = { 3: 2.4 };
+const PHONE_LANE: Record<number, number> = { 3: 5.4 };
 /** Plan item 486: `phone` (an upright phone's frame, set at build): the lane's packed earth a shade darker and the
  *  beds a shade lighter, so at 390 px the lane reads apart from the plots (lane-to-plot contrast 1.0-1.3 on the
  *  darker acts before; `scripts/hedgerow-486-measure`). */

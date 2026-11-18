@@ -31,18 +31,39 @@ for (const [size, viewport] of [['P', { width: 390, height: 844 }], ['D', { widt
       const hg = window.hedgerow
       const L = hg.game().level
       const c = document.querySelector('#canvas').getBoundingClientRect()
-      const lane = new Set(L.path.map(([x, y]) => `${x},${y}`))
-      const plots = []
-      for (const [x, y] of L.path) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      // Every lane cell (path and path2 hold only waypoints; consecutive ones share a row or a column), both lanes.
+      // A ford (the first lane's stretch under water, in path distance) isn't lane ground.
+      const cells = []
+      const fordCells = []
+      for (const path of [L.path, L.path2].filter(Boolean)) {
+        const run = [path[0]]
+        for (let i = 1; i < path.length; i++) {
+          const [ax, ay] = path[i - 1], [bx, by] = path[i]
+          const n = Math.max(Math.abs(bx - ax), Math.abs(by - ay))
+          for (let t = 1; t <= n; t++) run.push([ax + Math.sign(bx - ax) * t, ay + Math.sign(by - ay) * t])
+        }
+        // the cell at index d is path distance d from the lane's first cell
+        run.forEach((cell, d) => {
+          if (path === L.path && (L.fords ?? []).some((f) => d >= f.from - 0.5 && d <= f.to + 0.5)) fordCells.push(cell)
+          cells.push(cell)
+        })
+      }
+      const key = ([x, y]) => `${x},${y}`
+      const lane = new Set(cells.map(key))
+      // Water (ponds, a flood set piece's cells, which can cover the lane as a ford), barns and oaks aren't plots.
+      const wet = new Set([...fordCells, ...(L.terrain?.water ?? []), ...(L.setPieces ?? []).flatMap((p) => (p.kind === 'flood' ? p.cells : []))].map(key))
+      const notPlot = new Set([...wet, ...[...(L.barns ?? []), ...(L.oaks ?? [])].map(key)])
+      const plots = new Map()
+      for (const [x, y] of cells) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const k = `${x + dx},${y + dy}`
-        if (!lane.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < L.cols && y + dy < L.rows) plots.push([x + dx, y + dy])
+        if (!lane.has(k) && !notPlot.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < L.cols && y + dy < L.rows) plots.set(k, [x + dx, y + dy])
       }
       const px = ([x, y]) => { const p = hg.cellPx3d(x, y); return p && [c.left + p.x, c.top + p.y] }
       const inside = (r) => {
         const w = Math.max(0, Math.min(c.width, r.x + r.w) - Math.max(0, r.x)), h = Math.max(0, Math.min(c.height, r.y + r.h) - Math.max(0, r.y))
         return r.w * r.h > 0 ? (w * h) / (r.w * r.h) : 0
       }
-      return { canvas: [c.left, c.top, c.width, c.height], lane: L.path.map(px), plots: plots.map(px), depotsInside: hg.depots3d().map(inside) }
+      return { canvas: [c.left, c.top, c.width, c.height], lane: cells.filter((c) => !wet.has(key(c))).map(px), plots: [...plots.values()].map(px), depotsInside: hg.depots3d().map(inside) }
     })
     report[`l${level}-${size}`].shot = shot
     await page.close()
