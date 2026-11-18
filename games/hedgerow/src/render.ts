@@ -238,6 +238,14 @@ export class Renderer {
   heroMood: "rest" | "cheer" | "worried" | "plant" | "swing" = "rest";
   /** Plan item 492: seconds since her last level-up (the rosette's stamp and the leaves run 0.7 s). */
   private levelBeat = 9;
+  /** Plan item 492: her footprints as she's moved across the field, each fading out over 1 s (none under reduced
+   *  motion). Left and right in turn, about every 0.16 of a cell. */
+  private prints: { x: number; y: number; a: number; ang: number }[] = [];
+  private printFrom: { x: number; y: number } | null = null;
+  private printLeft = false;
+  get printCount(): number {
+    return this.prints.length;
+  }
   levelUp(): void {
     this.levelBeat = 0;
   }
@@ -1295,6 +1303,32 @@ export class Renderer {
     this.levelBeat += dt;
     this.heroMood = this.heroSwung < 0.3 && h.down === 0 ? "swing" : mood;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
+    if (walking && !this.reducedMotion) {
+      if (!this.printFrom || Math.hypot(h.x - this.printFrom.x, h.y - this.printFrom.y) > 0.16) {
+        const ang = Math.atan2(h.ty - h.y, h.tx - h.x);
+        this.printLeft = !this.printLeft;
+        const off = (this.printLeft ? 1 : -1) * 0.05;
+        this.prints.push({ x: h.x - Math.sin(ang) * off, y: h.y + 0.2 + Math.cos(ang) * off, a: 0, ang });
+        this.printFrom = { x: h.x, y: h.y };
+      }
+    } else if (!walking) this.printFrom = null;
+    for (const fp of this.prints) fp.a += dt;
+    this.prints = this.prints.filter((fp) => fp.a < 1);
+    for (const fp of this.prints)
+      items.push({
+        y: fp.y - 0.3,
+        draw: () => {
+          ctx.save();
+          ctx.globalAlpha = 0.62 * (1 - fp.a * fp.a);
+          ctx.fillStyle = "#2e1f12";
+          ctx.translate(X(fp.x), Y(fp.y));
+          ctx.rotate(fp.ang);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, s * 0.055, s * 0.026, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        },
+      });
     // Plan item 132: the site poster (`?keyart`) stands its own Cath in front, so the field leaves hers out.
     const keyart = typeof document !== "undefined" && document.documentElement.dataset.keyart !== undefined;
     if (!hasTwist(level, "nocath") && !this.harvesting && !keyart) items.push({

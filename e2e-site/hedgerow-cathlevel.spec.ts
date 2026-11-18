@@ -26,3 +26,32 @@ test('Cath levels up on the field: the stage carries her level and moves with it
   const lag = await page.evaluate(() => { const w = window as unknown as { __up: number; __seen: number }; return w.__seen - w.__up })
   expect(lag).toBeLessThanOrEqual(150 + 1000 / 15)
 })
+
+// Plan item 492: moved across the field she leaves footprints that fade within a second; none under reduced motion.
+type HF = { game(): { hero: { x: number; y: number; tx: number; ty: number } } | null; sendWave(g: unknown, f?: boolean): void; footprints(): number | null }
+for (const reduce of [false, true]) {
+  test(`Cath leaves footprints as she walks${reduce ? ' (reduced motion: none)' : ''}`, async ({ page }) => {
+    test.setTimeout(120_000)
+    if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' })
+    const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+    await page.goto('/hedgerow/?sandbox=1&2d')
+    await page.evaluate((t) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { 1: 3, 2: 3 }, seenBefore: { 3: true }, tips: t })), tips)
+    await page.goto('/hedgerow/?sandbox=1&2d&level=3')
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HF }).hedgerow?.game(), null, { timeout: 60_000 })
+    await page.evaluate(() => {
+      const hg = (window as unknown as { hedgerow: HF }).hedgerow
+      const g = hg.game()!
+      hg.sendWave(g, true)
+      g.hero.tx = g.hero.x + 3
+      g.hero.ty = g.hero.y + 1
+    })
+    if (reduce) {
+      await page.waitForTimeout(800)
+      expect(await page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints())).toBe(0)
+      return
+    }
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints()), { timeout: 10_000 }).toBeGreaterThan(2)
+    // she arrives, and the trail fades out behind her
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints()), { timeout: 20_000 }).toBe(0)
+  })
+}
