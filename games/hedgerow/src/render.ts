@@ -194,6 +194,8 @@ export class Renderer {
   private wonAt: number | null = null;
   private shots: Shot[] = [];
   private parts: Particle[] = [];
+  /** Plan item 497 (tests): how many vehicles have kicked up dust pulling out of the gate. */
+  rolloutDust = 0;
   /** Fleet levels: Marks from knocks not yet shown, flushed as one "+N" floater every GOLD_WINDOW seconds. */
   private gold = { n: 0, x: 0, y: 0, age: 0 };
   /** Plan item 45: each tower's Marks from knocks pooled into one rising "+N" over it, gone 0.9 s after its last knock. */
@@ -1242,6 +1244,11 @@ export class Renderer {
       if (this.lay.inColumn.has(e.id)) continue;
       const p = this.placeEnemy(level, e);
       const lx = this.lastX.get(e.id);
+      // Plan item 497: a vehicle's first frame near the gate (it pulls out of the queue) kicks up a puff of lane dust.
+      if (lx === undefined && e.dist < 1.2 && !this.reducedMotion && this.parts.length < 380) {
+        this.rolloutDust++;
+        for (let i = 0; i < 6; i++) this.parts.push(this.particle(p.x, p.y + 0.22, i % 2 ? "#a8875a" : "#8a6a44", "dot", 0.085, 0.6));
+      }
       if (lx !== undefined && Math.abs(p.x - lx) > 0.0005) this.facing.set(e.id, p.x > lx ? 1 : -1);
       this.lastX.set(e.id, p.x);
       const since = this.hitAt.get(e.id) ?? 9;
