@@ -9,6 +9,7 @@ describe('departFrame', () => {
     expect(f.x).toBe(250)
     expect(f.y).toBe(200)
     expect(f.scale).toBe(3)
+    expect([f.dx, f.dy]).toEqual([35, 35])
   })
   it('keeps two far-apart homes in frame with a gentler zoom, never under 1.4', () => {
     const f = departFrame([{ left: 120, top: 60, width: 100, height: 100 }, { left: 560, top: 400, width: 100, height: 100 }], map)
@@ -21,7 +22,7 @@ describe('departFrame', () => {
     expect(departFrame(homes, map, { left: 640, top: 0, width: 20, height: 300 }).step).toBe(-2)
   })
   it('falls back to the map centre with no homes', () => {
-    expect(departFrame([], map)).toEqual({ x: 300, y: 250, scale: 1.4, step: 0 })
+    expect(departFrame([], map)).toEqual({ x: 300, y: 250, scale: 1.4, step: 0, dx: 0, dy: 0 })
   })
 })
 

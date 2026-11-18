@@ -587,6 +587,8 @@ export default function CampaignScreen({
       main.style.setProperty('--dep-y', `${f.y}px`)
       main.style.setProperty('--dep-s', String(f.scale))
       main.style.setProperty('--dep-step', `${f.step}px`)
+      main.style.setProperty('--dep-dx', `${f.dx}px`)
+      main.style.setProperty('--dep-dy', `${f.dy}px`)
     }
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches
     leave.current = { chapter, timer: window.setTimeout(finish, still ? DEPART_STILL_MS : DEPART_MS) }

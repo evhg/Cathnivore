@@ -1746,7 +1746,7 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .campaign[data-departing] { animation: cmp-depart-fade 200ms ease-in both; }
 }
 @keyframes cmp-depart-zoom {
-  to { transform: scale(var(--dep-s, 1.6)); }
+  to { transform: translate(var(--dep-dx, 0px), var(--dep-dy, 0px)) scale(var(--dep-s, 1.6)); }
 }
 @keyframes cmp-depart-step {
   45% { transform: translate(calc(var(--dep-step, 0px) * .6), -6px); }
