@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (13:51 11-18): item 319 slices 82-83 (the left sleeve one bent tube, no elbow ball; the long hair as 34 finer rounded locks in two layers), handed back. Next from the 11-18 critique list: the face's liner, catchlights and lip gloss already exist in the paint but don't read at pick distance (measure there first), then a fresh critique. Open: 319, 471, 486, 495 (unclaimed), 496 (lane B). Next release 19:51 11-18.
+- Lane A (14:51 11-18): item 319 slices 84-86 (catch-lights after the skin knee; determined's half-smile and brow; the fringe under the Ghost's hood), handed back. Fresh critique FAILED on jaw facets, glove hands, the neck: next taker starts there. Open: 319, 471, 486, 495, 496 (unclaimed). Next release 19:51 11-18.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -43,6 +43,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - 2026-11-18 15:21 lane B: 496 slices 2-3; map, map-ink, map-you (110 px bar), ambient, level-card, masthead (P, D, 60) pass.
+- **2026-11-18 14:51 lane A session:** 319 slices 84-86. cathode-front/classpick face, eyes, looks, hero, class specs; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad f319.
 - 2026-11-18 14:21 lane B: 496 slice 1; hedgerow-ambient (new), map, map-ink, masthead (P, D, 59), keyart-fresh pass.
 - **2026-11-18 13:51 lane A session:** 319 slices 82-83. classpose, setprops, cathode-front face/hero/looks/eyes (D) on slice 82, phone front/pose subset on 82-83; cathode-perf alone within budget (phone 256 calls / 230k tris); keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, after2, hair).
 - **2026-11-18 12:51 lane A session:** 319 slices 80-81. cathode-front/classpick (face, looks, hero, class), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, a2, a3).

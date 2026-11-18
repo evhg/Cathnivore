@@ -1724,7 +1724,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 140: higher over the larger eyes, a little fuller and longer.
         // Determined: both level, drawn down at the inner ends. A wink lowers the winking side's brow.
         // Plan item 275: the bible's raised right brow, there in every look (most in the smirk), and clear at title distance.
-        const raise = sx < 0 ? (expr === "smirk" ? 0.0068 : expr === "wink" ? 0.0042 : 0.0026) : 0;
+        // Plan item 319 slice 85: the determined look's raise 0.0026 -> 0.004 (the critique read the Ghost's pick brows as
+        // a level pair).
+        const raise = sx < 0 ? (expr === "smirk" ? 0.0068 : expr === "wink" ? 0.0042 : 0.004) : 0;
         // Plan item 289: set higher over the larger eyes, lighter and arched.
         const by = 0.0315 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0);
         const inner = expr === "determined" ? -0.0034 : 0;
@@ -1754,7 +1756,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.translate(0, my);
       // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
       // Plan item 319 slice 9: the smirk's lifted corner higher (0.0038 -> 0.0056): it read as a neutral line.
-      const [lc, rc] = expr === "determined" ? [0.0006, 0.0008] : expr === "wink" ? [0.0028, 0.004] : [0.0018, 0.0056];
+      // Plan item 319 slice 85: determined keeps a trace of her half-smile (her left corner 0.0008 -> 0.0026): level
+      // corners read sullen on the Ghost's and Butcher's picks (the bible's default is a confident half-smile).
+      const [lc, rc] = expr === "determined" ? [0.0006, 0.0026] : expr === "wink" ? [0.0028, 0.004] : [0.0018, 0.0056];
       // Plan item 289: a little wider again (1.3 -> 1.42), so the rose mouth carries at title distance.
       g.scale(1.42, expr === "determined" ? 1.18 : 1.45);
       g.translate(0, -my);
@@ -2166,6 +2170,21 @@ float reliefShade( vec2 uv ) {
           lidx.push(p0, p0 + 1, p1, p1, p0 + 1, p1 + 1);
         }
     };
+    // Plan item 319 slice 86: built before the sheet's cut, so it stays under the Ghost's hood (cut with the curtains,
+    // the cap met her forehead in a flat line with a notch at the pick).
+    // Plan item 319 slice 74: a soft side-swept fringe from the parting across the top of her forehead to her right
+    // temple (the side toward the lens), where it tucks into the curtain: the cap's edge met bare skin in one hard curve (the 11-13 critique's
+    // 'skull-cap hairline'). Kept above the brows (y 0.03+ until the temple) and just off the skull (`skullZ`).
+    {
+      const sk = (x: number, y: number, lift: number) => V(x, y, Math.max(skullZ(x, Math.min(y, 0.05)), 0.04) + lift);
+      strand([
+        capShape(0.84, 0.05, 0.02).applyMatrix4(capPlace),
+        sk(-0.008, 0.062, 0.005),
+        sk(-0.036, 0.053, 0.005),
+        sk(-0.058, 0.036, 0.005),
+        V(-0.073, 0.006, 0.05),
+      ], -1, 1.15, 0.25, false);
+    }
     lockSheetIdx = lidx.length;
     for (const sx of [-1, 1]) {
       // Plan item 275: two loose wisps per side, out of the hairline at the temple, down past the outer eye to the
@@ -2210,19 +2229,6 @@ float reliefShade( vec2 uv ) {
         });
         strand(ks, sx, 1.25 * wk, 1, true, ph);
       }
-    }
-    // Plan item 319 slice 74: a soft side-swept fringe from the parting across the top of her forehead to her right
-    // temple (the side toward the lens), where it tucks into the curtain: the cap's edge met bare skin in one hard curve (the 11-13 critique's
-    // 'skull-cap hairline'). Kept above the brows (y 0.03+ until the temple) and just off the skull (`skullZ`).
-    {
-      const sk = (x: number, y: number, lift: number) => V(x, y, Math.max(skullZ(x, Math.min(y, 0.05)), 0.04) + lift);
-      strand([
-        capShape(0.84, 0.05, 0.02).applyMatrix4(capPlace),
-        sk(-0.008, 0.062, 0.005),
-        sk(-0.036, 0.053, 0.005),
-        sk(-0.058, 0.036, 0.005),
-        V(-0.073, 0.006, 0.05),
-      ], -1, 1.15, 0.25, false);
     }
     const locks = new THREE.BufferGeometry();
     locks.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
