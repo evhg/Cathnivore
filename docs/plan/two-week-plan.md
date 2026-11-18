@@ -4586,7 +4586,7 @@ Done (lane A, 05:25): `AbilityPreview.tsx` stands a tile of the producer's home 
 - **Accept:** `[data-studio-track]` a notch per session in a fixture; a card's frame matches its `apps.ts` entry; no author fields in the JSON (unit test in `tests/portfolio.test.ts`); 100-1340 px at 1440, no page scroll at 390; cards keyboard-reachable; `e2e:site` passes; shots P and D.
 - **Size:** 2
 
-## 492. [ ] Hedgerow: Cath fights on the field and grows through a run
+## 492. [ ] Hedgerow: Cath fights on the field and grows through a run *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` (330-375 x 635-715), `hedge-l34-2d-D` (830-885 x 280-375), `hedge-l21-2d-P` (15-55 x 480-545), 3D (150-235 x 505-640): she stands on her ring as still as the scarecrow while she levels up inside a run (`hero.ts` `levelFor`, max 20) unseen (VISION 3-5). Checked 447 (her plate), 459 and 346 (her 3D model and one scale: kept, no bigger figure), 162 (her rest/cheer/worry poses: extended), 420/448, 468 (towers' attacks), 479, 480.
 - **Build:** a pose set in 2D (`sprites.ts`/`render.ts`) and 3D: an idle sway, a crook swing at a vehicle in reach (468's 2 px knock-back), a flinch when hit, a cheer on a knockout; her level a small inked rosette at her feet; a level-up a 700 ms beat (leaves spiral, the rosette stamps the number, one line through `cathsay.ts`); a footprint trail that fades in 1 s when she's moved. Reduced motion: the rosette's number and the line only.
 - **Accept:** `[data-cath-pose]` takes 4+ values in a sandbox wave (`window.hedgerow.sendWave`); `data-hero-level` matches `levelFor` at each level-up, its beat within 150 ms; her size unchanged (346); phone 2D fps in budget, 3D +2 draw calls or fewer; shots l21 and l34 P and D, 2D and 3D, one mid level-up.
