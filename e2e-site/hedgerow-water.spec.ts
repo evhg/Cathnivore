@@ -7,6 +7,9 @@ import { expect, test, type Page } from '@playwright/test'
 // edge: under the deliberate far haze (scene fog and the CSS haze band), beside the gate queue and at a grazing angle,
 // it read pale and moving (ΔE 14-19 by ripple and queue) while the near ponds matched 2D within ΔE 8-10. The colour
 // was nudged four times chasing that sample (aa3e735, 13afa15, 3d3a54a); the check is the water's colour, not the haze.
+// 2026-11-18: and not a cast shadow. Item 485's morning sun is low in the west, and Cath, standing west of that pond at
+// the level's start, laid her 1.8x shadow across its middle (3D 17,72,83, a correct render). The check samples five
+// spots across the pond (each a 9x9 median, so a glint or the lily pad can't decide it) and compares the most sunlit.
 const LEVEL = 31
 type HG = { game(): { level: { rows: number; terrain?: { water: Array<[number, number]> } } } | null; cellCenter(c: number, r: number): { x: number; y: number } | null }
 
@@ -24,16 +27,22 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
   // The 3D camera eases in for longer than 12 s on a loaded machine; sampled mid-ease, the pond's middle read from a
   // moving frame. Sample it settled.
   if (mode === '3d') await page.waitForFunction(() => (window as unknown as { hedgerow: { camSettled(): boolean } }).hedgerow.camSettled(), null, { timeout: 180_000 })
-  const at = await page.evaluate(() => {
+  const spots = await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: HG }).hedgerow
     const lv = hg.game()!.level
     const mid = (lv.rows - 1) / 2
     const [c, r] = [...lv.terrain!.water].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid))[0]!
-    return hg.cellCenter(c, r)
+    return [[0, 0], [-0.22, 0], [0.22, 0], [0, -0.22], [0, 0.22]].map(([dc, dr]) => hg.cellCenter(c + dc!, r + dr!))
   })
-  expect(at).not.toBeNull()
-  const png = (await page.screenshot({ clip: { x: at!.x - 4, y: at!.y - 4, width: 9, height: 9 } })).toString('base64')
-  return page.evaluate(async (b64) => {
+  expect(spots.every(Boolean)).toBe(true)
+  const shot = await page.screenshot()
+  const samples = await Promise.all(spots.map((at) => median(page, shot, at!)))
+  return samples.sort((a, b) => lab(b)[0] - lab(a)[0])[0]!
+}
+
+async function median(page: Page, shot: Buffer, at: { x: number; y: number }): Promise<[number, number, number]> {
+  const png = shot.toString('base64')
+  return page.evaluate(async ([b64, x0, y0]) => {
     const img = new Image()
     img.src = `data:image/png;base64,${b64}`
     await img.decode()
@@ -42,12 +51,12 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
     c.height = img.height
     const x = c.getContext('2d')!
     x.drawImage(img, 0, 0)
-    const d = x.getImageData(0, 0, c.width, c.height).data
+    const d = x.getImageData(Math.round(x0) - 4, Math.round(y0) - 4, 9, 9).data
     const rs: number[] = [], gs: number[] = [], bs: number[] = []
     for (let i = 0; i < d.length; i += 4) { rs.push(d[i]!); gs.push(d[i + 1]!); bs.push(d[i + 2]!) }
     const med = (a: number[]) => a.sort((p, q) => p - q)[Math.floor(a.length / 2)]!
     return [med(rs), med(gs), med(bs)] as [number, number, number]
-  }, png)
+  }, [png, at.x, at.y] as const)
 }
 
 function lab([r, g, b]: [number, number, number]): [number, number, number] {
