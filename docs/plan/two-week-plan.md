@@ -1,4 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
+Planning: lane B, 2026-11-18 17:35 UTC
 
 
 
@@ -4612,7 +4613,7 @@ Progress (lane A, 2026-11-18 07:15, slice 1): the case file is the morning paper
 - **Accept:** `[data-front-page]` with `data-case` of the last closed case; the headline changes after a sandboxed case (e2e); headline 7:1, body 4.5:1; 5% or less of Cath's silhouette covered at P and D (433's mask method); sizes in `var(--u)` (`cathode-type`, `ui-css-lint`); posters re-rendered, keyart-fresh; shots P and D, fresh and after a case.
 - **Size:** 2-3
 
-## 495. [ ] Cathnivore desktop table: the board wins, one voice at a time *(lane B, in progress)*
+## 495. [x] Cathnivore desktop table: the board wins, one voice at a time *(closed 2026-11-18 17:35 lane B, short of its 28%/25% board share: one voice at a time is done (slice 1), the board 24.6% -> 25.6% at 1440x900 and 16.3% -> 22.5% at 1280x800 (slices 2-3). The rest is boxed in: slice 4's hand foot and one-line chips reach 27.8%/24.7% but the board then meets Cath's figure and the producers fall under item 374's 0.75 of her height (they're placed into the gap the board leaves, already at its limit on the head; the frame's right edge has about 16 px before the right rail). Further growth needs the right rail moved, planned as its own item; the marker-kind line was dropped by lane A (items 55/417))*
 
 Progress (lane B, 2026-11-18 13:50, slice 4, measured and reverted): both of lane A's next steps work for the board and fail the people around it. (1) Expand's region chips side by side in one line (the only memo whose target wrapped to two lines, 39 px: it set the whole row's 77 px): +0.4 pt. (2) The hand's foot from 24 px to 4 (padding 12 and a hard-coded +12 in `layoutHand`, Game.tsx ~1160): +1.8 pt. Together 1440x900 25.6% -> 27.8%, 1280x800 22.5% -> 24.7%, no scroll, hand names whole. But board-scale ('1280x800 Cath meets a hex'), table-cath ('1440x900 brindleHills') and table-producers (Mara 0.707-0.709 of Cath's height, item 374's bar 0.75) fail, and the producers fail even with the chips alone (+4 px of board): `standProducers` sizes them into the gap the board leaves, and that gap is already at the limit on the current head (it passes). So the next gain needs the producers' room first: e.g. let them stand partly over the frame's right rim, or a narrower right rail at 1240 px+, then the foot and chips above (the CSS is small: `--hand-foot` read by layoutHand, the chips' flex row under `.table-head.with-table-cath`). The scoreboard (2x2) and Scout's two-line note also hold the head row near 78 px after the chips. Measure: `scripts/cathnivore-495-measure.mjs` with `CSS=` for trials.
 
