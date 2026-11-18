@@ -870,6 +870,25 @@ export class Renderer {
       const bctx = this.bg.getContext("2d")!;
       bctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       paintBackground(bctx, level, { width: W, height: H, cell: s, offX, offY });
+      // Plan item 497: the country round the field steps back: a soft warm veil over everything outside the field's
+      // own rectangle (14%, deepening a little toward the frame's edges), so the lane, plots and towers lead and the
+      // margins' huts, boats and trees read as setting, as the 3D diorama's haze does. Baked once with the field.
+      {
+        const fx0 = X(0), fy0 = Y(0), fx1 = X(level.cols), fy1 = Y(level.rows);
+        bctx.save();
+        bctx.beginPath();
+        bctx.rect(0, 0, W, H);
+        bctx.rect(fx0 - s * 0.12, fy0 - s * 0.12, fx1 - fx0 + s * 0.24, fy1 - fy0 + s * 0.24);
+        bctx.clip("evenodd");
+        bctx.fillStyle = "rgba(246, 238, 218, 0.14)";
+        bctx.fillRect(0, 0, W, H);
+        const edge = bctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.hypot(W, H) * 0.6);
+        edge.addColorStop(0, "rgba(246, 238, 218, 0)");
+        edge.addColorStop(1, "rgba(246, 238, 218, 0.12)");
+        bctx.fillStyle = edge;
+        bctx.fillRect(0, 0, W, H);
+        bctx.restore();
+      }
       crayonNextBillboard(false);
       this.marginPieces = (lastMargin?.pieces ?? []).filter((p) => LIVE_PIECES.has(p.kind));
       this.bgKey = key;
