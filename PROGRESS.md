@@ -43,7 +43,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - 2026-11-18 15:21 lane B: 496 slices 2-3; map, map-ink, map-you (110 px bar), ambient, level-card, masthead (P, D, 60) pass.
-- **2026-11-18 14:51 lane A session:** 319 slices 84-86. cathode-front/classpick face, eyes, looks, hero, class specs; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad f319.
+- **2026-11-18 14:51 lane A session:** 319 slices 84-86. cathode-front/classpick specs started locally but not finished by wrap-up (left to CI E2E); keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad f319.
 - 2026-11-18 14:21 lane B: 496 slice 1; hedgerow-ambient (new), map, map-ink, masthead (P, D, 59), keyart-fresh pass.
 - **2026-11-18 13:51 lane A session:** 319 slices 82-83. classpose, setprops, cathode-front face/hero/looks/eyes (D) on slice 82, phone front/pose subset on 82-83; cathode-perf alone within budget (phone 256 calls / 230k tris); keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, after2, hair).
 - **2026-11-18 12:51 lane A session:** 319 slices 80-81. cathode-front/classpick (face, looks, hero, class), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, a2, a3).
