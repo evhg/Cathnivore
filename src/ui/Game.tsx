@@ -3685,7 +3685,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             data-beat-mood={cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind]}
             aria-label="Cath"
           >
-            <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line}>
+            {/* Plan item 495: one voice at a time: while a producer answers from their seat, her line steps back. */}
+            <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line} data-hushed={producerLine ? '' : undefined}>
               {cathReaction.line}
               {bubbleSuggest && suggestBody && (
                 <span className="suggest-line table-cath-suggest" data-testid="suggest-line">

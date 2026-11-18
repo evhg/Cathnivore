@@ -39,11 +39,15 @@ for (const [width, height] of sizes) {
     }
     const cath = await page.locator('.table-cath-line').boundingBox()
     if (cath) expect(meets(box, cath), 'her bubble').toBe(false)
+    // Plan item 495: one voice at a time: her line steps back while the producer speaks, and comes back after.
+    await expect(page.locator('.table-cath-line[data-hushed]')).toHaveCount(1)
+    expect(await page.locator('.table-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).opacity))).toBeLessThan(0.5)
     const map = (await page.locator('.map-wrap').boundingBox())!
     expect(box.x).toBeGreaterThanOrEqual(map.x)
     expect(box.x + box.width).toBeLessThanOrEqual(map.x + map.width + 1)
     // it leaves after 3.5 s
     await expect(page.locator('[data-producer-line]')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.locator('.table-cath-line[data-hushed]')).toHaveCount(0)
   })
 }
 
