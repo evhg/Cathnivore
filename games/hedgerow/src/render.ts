@@ -265,6 +265,7 @@ export class Renderer {
   /** Plan item 485: the day's phase as drawn (eased toward the round's), and the level it belongs to. */
   day = -1;
   private dayLevel = 0;
+  private dayAt = 0;
   /** Plan item 480: the farmhouse step (parcels, the door card, the sale board), set by main.ts each frame. */
   doorstep: DoorstepView | null = null;
   /** Plan item 480: parcels in the air, from where each leak got through (cells), and their age in seconds. */
@@ -803,8 +804,12 @@ export class Renderer {
     // (the build phase shows the next round's light, so it never turns mid-wave), eased over 1.2 s, stepped under
     // reduced motion; low sun, longer shadows.
     const dayTo = dayPhase(Math.max(1, game.phase === "build" ? game.wave + 1 : game.wave), game.level.waves.length);
+    // (on wall-clock time: between rounds the game's dt is 0 while it waits on Go, and the light would never move on)
+    const nowMs = performance.now();
+    const wall = this.dayAt ? Math.min(0.1, (nowMs - this.dayAt) / 1000) : 0;
+    this.dayAt = nowMs;
     if (this.day < 0 || this.reducedMotion || game.level.id !== this.dayLevel) this.day = dayTo;
-    else this.day += Math.sign(dayTo - this.day) * Math.min(Math.abs(dayTo - this.day), dt / 1.2);
+    else this.day += Math.sign(dayTo - this.day) * Math.min(Math.abs(dayTo - this.day), wall / 1.2);
     this.dayLevel = game.level.id;
     const away = dayShadowDir(game.level.id, this.day);
     const len = dayShadowLength(this.day);
