@@ -6,7 +6,19 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { studioSessions, type StudioCommit } from '../portfolio/src/studioLog'
 
+/** A shallow clone (Vercel's) holds only the last few commits: fetch back past the window, best effort. */
+function deepen(hours: number): void {
+  try {
+    if (execFileSync('git', ['rev-parse', '--is-shallow-repository'], { encoding: 'utf8' }).trim() !== 'true') return
+    const since = new Date(Date.now() - (hours + 2) * 3600_000).toISOString()
+    execFileSync('git', ['fetch', '--quiet', `--shallow-since=${since}`, 'origin', 'HEAD'], { stdio: 'ignore', timeout: 30_000 })
+  } catch {
+    // Offline or refused: the log covers what the clone holds.
+  }
+}
+
 export function readCommits(hours = 24): StudioCommit[] {
+  deepen(hours)
   let raw = ''
   try {
     raw = execFileSync('git', ['log', `--since=${hours}.hours`, '--no-merges', '--format=%x1e%ct%x1f%s%x1f%(trailers:key=Claude-Session,valueonly,separator=)%x1f', '--name-only'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })

@@ -161,5 +161,21 @@ describe('studio log', async () => {
     expect(shortSubject('One thing. Another.')).toBe('One thing')
     expect(shortSubject('x'.repeat(10) + ' ' + 'y '.repeat(100)).length).toBeLessThanOrEqual(140)
     expect(gameOf('games/cathode/src/a.ts')).toBe('nightshift')
+    // A short label before a colon keeps its clause.
+    expect(shortSubject('Hedgerow 3D: The hens sit low. More.')).toBe('Hedgerow 3D: The hens sit low')
+  })
+  it("splits a routine that reuses one session into its runs at that lane's locks, and tells an untagged run's lane by the clock", () => {
+    const at = (h: number, m: number) => Date.UTC(2027, 0, 15, h, m) / 1000
+    const k = (t: number, subject: string, session: string, files: string[]) => ({ time: t, subject, session, files })
+    const end = at(12, 0)
+    const runs = studioSessions([
+      k(at(6, 22), 'Lane B lock 06:22', '', ['.build-lock-b']),
+      k(at(6, 40), 'Lane B claims 464', 'b', ['docs/plan/two-week-plan.md']),
+      k(at(6, 46), 'NIGHT SHIFT pick: test shots fire', 'b', ['games/cathode/src/game/testfire.ts', 'portfolio/public/work/a.webp', 'portfolio/public/work/b.webp']),
+      k(at(7, 22), 'Lane B lock 07:22', '', ['.build-lock-b']),
+      k(at(7, 24), 'Runnel: a glint', 'b', ['games/runnel/src/board.ts']),
+      k(at(8, 11), 'Hedgerow 3D: hens', 'a2', ['games/hedgerow/src/render3d/hens.ts']),
+    ], end)
+    expect(runs.sessions.map((s) => [s.lane, s.game])).toEqual([['B', 'nightshift'], ['B', 'runnel'], ['A', 'hedgerow']])
   })
 })

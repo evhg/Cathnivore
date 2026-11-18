@@ -1936,3 +1936,173 @@ h1 {
   .show-cath[data-facing] svg, .show-say[data-game] .show-say-text { animation: none; }
   .hero-show .show-card { transition: none; }
 }
+
+/* Plan item 491: today in the studio. With the build's studio log the numbers row becomes a 24-hour track of the build
+   sessions (portfolio/src/studio.ts): a row per lane, a notch per session, the four numbers as captions under its two
+   ends. A notch opens its card: over the track at D, a swiped row under it on a phone. */
+.studio[hidden] { display: none; }
+.studio {
+  position: relative;
+  margin: var(--sp-8) 0 0;
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line);
+}
+.ready .studio { animation: rise 1s var(--ease-out) 920ms both; }
+.studio-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-5);
+  margin-bottom: var(--sp-4);
+}
+.studio-title, .studio-legend { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2) var(--sp-4); margin: 0; }
+.studio-eyebrow {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+}
+.studio-sum, .studio-legend { font-size: var(--fs-small); color: var(--text-muted); }
+.studio-key { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.studio-key::before { content: ""; width: 18px; height: 8px; border-radius: var(--r-pill); background: var(--lane); }
+.studio-key-a, .notch[data-lane="A"], .studio-card[data-lane="A"] { --lane: var(--accent-gold); }
+.studio-key-b, .notch[data-lane="B"], .studio-card[data-lane="B"] { --lane: var(--accent-teal); }
+.studio-stage { position: relative; }
+.studio-track {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 10px 0 30px;
+}
+.studio-row {
+  position: relative;
+  height: 22px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+.studio-ticks { position: absolute; inset: 0; pointer-events: none; }
+.studio-tick, .studio-now {
+  position: absolute;
+  left: var(--at);
+  bottom: 0;
+  translate: -50% 0;
+  font-size: var(--fs-eyebrow);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+.studio-tick::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  height: 80px;
+  border-left: 1px dashed color-mix(in srgb, var(--text) 10%, transparent);
+  translate: 0 -4px;
+}
+.studio-now { left: auto; right: 0; translate: 0 0; color: var(--live); }
+.studio-now::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  width: 2px;
+  height: 66px;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--live), transparent);
+}
+.notch {
+  position: absolute;
+  left: var(--at);
+  top: 3px;
+  width: max(var(--w), 10px);
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--lane);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent);
+  cursor: pointer;
+  transition: scale 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+.notch::after { content: ""; position: absolute; inset: -6px -3px; }
+.notch:hover, .notch[aria-pressed="true"] {
+  scale: 1 1.35;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent), 0 0 18px color-mix(in srgb, var(--lane) 60%, transparent);
+}
+.notch:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.studio-card {
+  border: 1px solid var(--line-strong);
+  border-top: 2px solid var(--lane);
+  border-radius: 16px;
+  background: var(--glass-solid);
+  overflow: hidden;
+}
+.studio-frame { aspect-ratio: 16 / 10; background: var(--show-ground); }
+.studio-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.studio-frame-site {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 30%, var(--glow-a), transparent 60%), radial-gradient(circle at 75% 70%, var(--glow-b), transparent 60%), var(--ink-2);
+}
+.studio-frame-word { font: 400 1.5rem/1 var(--font-display); color: var(--text); }
+.studio-card-body { padding: var(--sp-3) var(--sp-4) var(--sp-4); }
+.studio-card-meta { display: flex; gap: var(--sp-3); margin: 0; font-size: var(--fs-eyebrow); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.studio-lane { color: var(--lane); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.studio-card-game { margin: var(--sp-1) 0 var(--sp-2); font: 400 1.375rem/1.15 var(--font-display); }
+.studio-card-list { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--fs-small); line-height: 1.4; color: var(--text-muted); }
+.studio-card-list li {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  padding-left: var(--sp-3); border-left: 2px solid color-mix(in srgb, var(--lane) 45%, transparent); }
+.studio-card-list .studio-more { border-left-color: transparent; color: var(--text-faint); }
+/* the numbers as captions under the track's two ends */
+.has-studio .studio .stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-6);
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  animation: none;
+}
+.has-studio .studio .stats div { flex-direction: row-reverse; justify-content: flex-end; align-items: baseline; gap: var(--sp-2); }
+.has-studio .studio .stats dd { font-size: 1.75rem; }
+.has-studio .studio .stats div:nth-child(3) { margin-left: auto; }
+.has-studio .shipped { margin-top: var(--sp-3); }
+@media (min-width: 1100px) {
+  .studio-cards { position: absolute; left: var(--x, 0); bottom: calc(100% + var(--sp-2)); z-index: var(--z-top); }
+  .studio-card { display: none; grid-template-columns: 300px 320px; width: 620px; box-shadow: 0 30px 60px -20px var(--show-shadow); }
+  .studio-card.is-active { display: grid; animation: rise 240ms var(--ease-out) both; }
+  .studio-frame { aspect-ratio: auto; min-height: 188px; }
+}
+@media (max-width: 1099.98px) {
+  .hero .studio { order: 2; }
+  .studio-cards {
+    display: flex;
+    gap: var(--sp-3);
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) var(--sp-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--gutter);
+    scrollbar-width: none;
+  }
+  .studio-cards::-webkit-scrollbar { display: none; }
+  .studio-cards { position: relative; }
+  .studio-tick:not([data-major]) { display: none; }
+  .studio-card-list li { -webkit-line-clamp: 2; }
+  .studio-card { flex: 0 0 min(78%, 320px); scroll-snap-align: center; opacity: 0.6; transition: opacity 200ms; }
+  .studio-card.is-active { opacity: 1; }
+  .has-studio .studio .stats { display: grid; grid-template-columns: 1fr 1fr; }
+  .has-studio .studio .stats div:nth-child(3) { margin-left: 0; }
+  .has-studio .studio .stats dd { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ready .studio, .studio-card.is-active { animation: none; }
+  .notch, .studio-card { transition: none; }
+}

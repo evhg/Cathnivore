@@ -9,6 +9,7 @@ import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { startField } from './hero'
 import { cards, counters, kinetic, pulse, shippedLine, viewTransitionNames, words } from './fx'
 import { startPosterPlay } from '../../site/src/posterplay'
+import { loadStudio, renderStudio } from './studio'
 
 // Plan item 442: her line weight at small sizes, including a figure prerendered into the page.
 watchCathLines()
@@ -61,6 +62,7 @@ startPosterPlay(
 )
 if (heroCath) presentWork(heroCath, showCards)
 void shipped(document.querySelector<HTMLElement>('#shipped-text'))
+void studio(document.querySelector<HTMLElement>('#studio'))
 
 function presentWork(cath: HTMLElement, cards: HTMLElement[]): void {
   const say = document.querySelector<HTMLElement>('#show-say .show-say-text')
@@ -128,4 +130,12 @@ async function shipped(el: HTMLElement | null): Promise<void> {
   } catch {
     // Offline: the static line stays.
   }
+}
+
+/** Plan item 491: the numbers row becomes the last 24 hours of build sessions when the build wrote its studio log. */
+async function studio(host: HTMLElement | null): Promise<void> {
+  if (!host) return
+  const log = await loadStudio()
+  if (!log) return
+  renderStudio(host, log, { reduced, stats: document.querySelector<HTMLElement>('.hero .stats'), desk: matchMedia('(min-width: 1100px)') })
 }
