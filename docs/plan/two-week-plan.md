@@ -4636,7 +4636,7 @@ Progress (lane B, 2026-11-18 09:55, slice 1): measured first (`scripts/hedgerow-
 - **Accept:** lane luminance 15%+ over plots on l5, l21, l34, l40 at P and D (a measure script like 486's); tower sprite bounding box 1.4x+ the tile width; no more than 2 queued vehicles drawn outside the lane; hedgerow 2D specs and key art fresh; shots P and D.
 - **Size:** 2
 
-## 498. [ ] NIGHT SHIFT class pick: a dressed set per class, the gun carried right
+## 498. [ ] NIGHT SHIFT class pick: a dressed set per class, the gun carried right *(lane A, in progress)*
 - **Why:** `plan1118a/ns-play-D`: behind Cath the set is a grey box with a tripod, a green bottle and a crate, and much of the frame is near-black; the Ghost's rifle cuts through her hood (820-870 x 195-420). Item 457 gave each class its own set and key light; this dresses them.
 - **Build:** three or more class props per set (Ghost: rooftop scope rig and rain-wet ledge; Butcher: meat hooks and a locker; Gunslinger: card table and lamp; Wirewitch: cable runs and a terminal; Fixer: workbench and charges), wet floor reflections and depth fog; the slung weapon's carry offset clears hood and hair for every class.
 - **Accept:** each class shows 3+ props of its own (scene tags, e2e switching classes); under 40% of the D frame's pixels below luminance 10; slung weapon's box doesn't intersect the head/hood box for any class (render-spec check); `cathode-perf` within budget run alone; shots P, D and 844x390.
