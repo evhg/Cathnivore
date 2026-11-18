@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-18 17:35 UTC
 
 
 
@@ -4665,3 +4664,41 @@ Progress (lane A, 11:40, slice 1, f6f773c1): `render/frontsetprops.ts` dresses e
 - `hedge-l21-3d-P`: the plan shot shows the whole-field frame ('Closer' showing), not item 215's close opening frame: check `plan-shots.mjs`'s intent before treating either as a bug.
 - **Accept:** each point fixed or checked and noted here; shots P and D.
 - **Size:** 1
+
+Planning 2026-11-18 17:40 lane B: shots `e2e/screenshots/plan1118b` (P 390x844, D 1440x900), two subagent critiques against VISION.md (features only), each checked against items 400-500; checked again here (503's setup event card over Cath is item 367's held poster: dropped from it; 504 keeps item 453's phone opening and gate 7's Lighthouse budget in mind; 501 is item 495's planned next step).
+
+## 501. [ ] Cathnivore desktop table: the right rail moves off the table's edge, so the board can grow
+- **Why:** `cath-game-D`: the MARKET/PLAN/LOG rail (1352-1424 x 12-262) holds a 72 px column the full height; the table frame (348-1336 x 98-705) stops 16 px short of it. Item 495 measured the board boxed in (Cath left; the producers right, placed by `standProducers` into the gap the board leaves; the head row and hand). Its slice-4 changes (the hand's foot 24 -> 4 px, Expand's chips on one line) reach 27.8%/24.7% but drop the producers to 0.707 of Cath and a hex meets Cath (VISION 2). Checked 495, 249/413 (head-row fold), 374/387 (producer scale), 393/291 (hand).
+- **Build:** at 1240 px+ the three keys leave the rail: tabs in the frame's top-right rim, or beside Pell in the head row (whichever measures better), each keeping its accessible name, badge, drawer and key order; the frame and stage widen into the freed 72 px and `standProducers` (src/ui/Game.tsx ~360) gets it as seat room; then 495's slice 4 (`--hand-foot` read by `layoutHand`; Expand's chips in a flex row under `.table-head.with-table-cath`). Below 1240 px and phones unchanged.
+- **Accept:** the hex board 28%+ of 1440x900 and 25%+ of 1280x800 (`scripts/cathnivore-495-measure.mjs`); producers 0.75+ of Cath (table-producers); Cath clear of every hex (board-scale, table-cath); no scroll, hand names whole; each key opens its drawer by mouse and keyboard; P unchanged; shots P, D, 1280x800 before/after.
+- **Size:** 2
+
+## 502. [ ] Cathnivore desktop Setup: the opening table you'll play, drawn as you pick
+- **Why:** `cath-setup-D`: step 2's maps (105-585 x 530-760) are bare thumbnails, step 3's threat three lines of text (610-1000 x 590-700): nothing shows the board you'll open on (VISION 1-2, 5). Checked 67/195/239/367 (layout and the held poster kept), 490 (step 1's power previews), 461 (phone track), 436.
+- **Build:** under the picked map a `BoardMiniature` opening preview (`src/ui/Setup.tsx`, `BoardMiniature.tsx`) from `createGame(seed, map, difficulty, pair)`: Hollowell's opening Outlets and Buyouts per region, the producers' home stalls, the event's ground marks (item 144) where it hits; a pick updates it within 250 ms (pieces settle 200 ms, Hollowell's without overshoot); on a phone step 2's panel shows it at 200 px+.
+- **Accept:** a unit test that the preview's pieces match `createGame` for 3 maps x 3 difficulties; e2e: a difficulty change updates `[data-opening-preview]` within 250 ms; 360 px+ wide at 1440x900; no scroll at 1440x900, 1280x800, 390x844; setup, ability-preview, quick-game specs pass; shots P and D.
+- **Size:** 2
+
+## 503. [ ] Cathnivore title: the board on the counter previews your next chapter
+- **Why:** `cath-title-D` the board (860-1395 x 285-740) is the largest thing on screen (item 482) and a still; `cath-title-P` (180-375 x 425-600) the same: nothing moves or shows what Campaign will do (VISION 3-4). Checked 60 (the save-driven board: the loop returns to it), 453 (the phone opening plays first), 482, 127 (the moment reused), 133/342.
+- **Build:** `titleBoard.ts` `nextChapterBeat(save)` (the next unwon chapter's home regions) and a loop in `TitleArt.tsx`, one beat about every 10 s while visible: a Hollowell van rolls into a held region, the next chapter's region plays item 127's liberation flip for about 1.2 s, eases back after 2 s, Cath points with one line ('Brindle Hills next. Shall we?'); paused while the pointer or focus is on the menu or the tab is hidden; on the phone only after item 453's opening; a still highlight under reduced motion; under webdriver only with `?attract`; started after the page has settled (gate 7: item 453's opening once cost Lighthouse 3-6 points).
+- **Accept:** `[data-attract-beat]` at most once per 8 s; after a cycle the board's DOM equals the save's (e2e); no long task over 50 ms at 4x CPU throttle; gate 7 (Lighthouse mobile 85+) on a run alone; no transform animation under reduced motion; title-table, title-counter, title-sky pass; shots P and D at rest and mid-beat.
+- **Size:** 2
+
+## 504. [ ] NIGHT SHIFT desktop pick: the spec column as a paper case file on the table
+- **Why:** `ns-play-D` (970-1408 x 52-852): the right column is a dark glass web card (ring dials, a gun render, label/value blocks, the trees as plain rows), the one part of the pick laid out, not designed (VISION 1), and apart from the front door's paper (the Ledger, the List). Checked 210/397 (the phone dossier kept: desktop only), 334/199 (the gun as the file's photo), 400, 464/481 (test fire and tree previews as tabs on the file), 494 (its paper and type).
+- **Build:** at 1100 px+ (`ui/classpick.ts`, its CSS) `[data-casefile]`: a cream folder on the wet table under the lamp: a paper-clipped Polaroid of the lit gun (item 313), typed stats in the mono face with the dials as stamped figures, the three trees as inked seals with their one-line powers, Cath's line as a margin note; a class switch flips the page (220 ms ease-out, a fade under reduced motion); the walk-in CTA a red stamp at the folder's foot.
+- **Accept:** `[data-casefile][data-class]` at 1440x900 and 1280x800, changing on keys 1-5; body 4.5:1, headline 7:1; sizes in `var(--u)` (cathode-type, ui-css-lint); the flip 250 ms or less; classpick, armoury, test-fire specs pass; cathode-perf in budget run alone; shots P (unchanged) and D for all five.
+- **Size:** 2
+
+## 505. [ ] NIGHT SHIFT desktop title: one focal point, Cath the brightest thing on the street
+- **Why:** `ns-title-D`: the menu (28-276 x 275-540), the Ledger (405-835 x 218-535, near-white and the brightest shape), the List (50-755 x 580-815) and Cath (880-1110 x 230-900, a mid-grey coat, her face 965-1050 x 265-360 dimmer than the paper) compete; the eye lands on a newspaper (VISION 1, 5: Cath is the face). Checked 494 (content and spin-in kept, only its hang), 331, 433/456/473 (figure, key, street untouched), 412/321, 319 (lane A's sculpt untouched).
+- **Build:** `front.css` and `showDossier`: the left half one case wall on the window glass (the menu top left, the Ledger pinned under it at about 70% and graded down to about 0.75 value under a rain glaze, the List on the same red string beneath); the right two-thirds hers; a value pass on the title so her face key is the frame's brightest region with a soft pool under the umbrella; posters re-rendered (`scripts/cathode-poster.mjs`).
+- **Accept:** her face's mean luminance over the Ledger's and the List's (a measure on a live frame and the poster); nothing DOM-drawn over x 860+ but LUNA (494's cover check 0% at D); menu and paper 7:1; cathode-front, the paper and List specs, keyart-fresh pass; shots D 1440x900 and 1280x800, fresh and after a case; P unchanged.
+- **Size:** 2
+
+## 506. [ ] Hedgerow 3D: beds and water that read the way the 2D field does
+- **Why:** `hedge-l21-3d-D`: the lavender and samphire beds read as flat lilac-grey paving (160-330 x 685-830, 470-560 x 430-480, 660-760 x 690-750, 770-830 x 225-280; P 160-300 x 400-440) where 2D's are planted rows with heads; the reed pool by the farmhouse is a near-black sheet (D 650-935 x 535-590, P 240-360 x 480-520) beside a lit blue river (VISION 2, 6). Checked 59/185/236 (`render3d/crops.ts`' four plants a plot vanish at play distance: volume at distance, not a redesign), 330/429 (the water model extended to the pool), 469/486 (diorama and phone lane kept), 475.
+- **Build:** `crops.ts`: each act's bed crop dense instanced rows (3-4 drills a plot, stem tufts with a head band in the 2D fieldkit's colours, a vertex-shader sway; two instanced meshes, two draw calls; parting round a tower's footprint); `terrain.ts`: every water body one sky-tinted fresnel ramp with shallows, so a reed pool reads as water (hedgerow-water's 2D/3D check kept).
+- **Accept:** the lilac/grey share inside the bed plots at D l21 down 50%+ (a mask script); every water body's mean luminance within 25% of the river's; +2 draw calls or fewer and fps unchanged on a Hedgerow perf read; 486's measure holds (P l21 1.6+); 3dframe, water, closeframe pass; key art re-shot; shots P and D of l21, l34, act 1.
+- **Size:** 2
